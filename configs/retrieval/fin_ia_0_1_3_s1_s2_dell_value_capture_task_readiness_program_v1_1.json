@@ -1,0 +1,442 @@
+{
+  "schema_version": "fin_ia_s1_s2_task_pack_readiness_materialization_program_v1_1",
+  "status": "approved_zero_call_task_pack_readiness_successor",
+  "case_key": "DELL",
+  "input_bindings": {
+    "product_replay": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_proposition_coverage/dell-proposition-internal-r3/internal_runtime_result.json",
+      "sha256": "70a152426bec39fc34f76418ec4b26b3ec1468025d47537daa11d9a176f00319"
+    },
+    "evidence_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+      "sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1"
+    },
+    "predecessor_task_readiness_full_result": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_s2_task_pack_readiness/dell-value-capture-r1/full_result.json",
+      "sha256": "4917bb1eac3d7d7cb99ccc8040f4190c54e9d10012f83f990d7a078bbcf91bd0",
+      "result_digest": "b37581b050c8a8f854dc54f94c11e5426e10236a5286bb31e06e35149e3bd9e0"
+    },
+    "anchor_catalog": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_6.json",
+      "sha256": "40f8085bedb10e86e569a8371e0225ae17fdb647443fe8893561f223bcb07aa0"
+    },
+    "task_quantitative_public_result": {
+      "ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_task_quantitative_program_result_v1_1.json",
+      "sha256": "792c0c87f7b2b508e123c9a9780be7bc6909d4cc83b80f86c920d913721dd95d",
+      "result_digest": "7c2d0019f1b50aa6e41cc5d8ab5e9046eefbb4ea068dbeb88ff28bce74074e2e"
+    },
+    "product_value_bridge_public_result": {
+      "ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_product_value_bridge_result_v1_0.json",
+      "sha256": "2c23d775ebc2b24cea4b6a250cfe5986a0ed4a0300af1b49ad581c8152df2447",
+      "result_digest": "627d67f541906799cdabf77a40daedf8374056e5b8ba4596e2b00f326c3bc054"
+    }
+  },
+  "review_successor_program": {
+    "schema_version": "fin_ia_s1_requirement_review_successor_program_v1_0",
+    "status": "approved_zero_call_review_successor",
+    "case_key": "DELL",
+    "predecessor_bindings": {
+      "pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+      "review_plan_digest": "b1c20850a6a03c12c7582b69edbb046d9662785622d4553d1e0ae993c3f3d8d1",
+      "polarity_plan_digest": "1138307ff788d9eceeb45ef86f6c61f8ebb619732d22cc43d956d9658038310d"
+    },
+    "target_pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98",
+    "review_schema_version": "fin_ia_s1_natural_requirement_evidence_review_v1_3",
+    "polarity_schema_version": "fin_ia_s1_natural_requirement_polarity_review_v1_4",
+    "expected_new_evidence_item_digests": [
+      "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f",
+      "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a",
+      "7304ae15ab5660573cc4d85536cc7720b701cf242b240c87ebf6dc297811ff7b",
+      "b9e41b6799ac41ee3440bdfe2124e27f8e4092b6398b10d894c61a9c8e854d21",
+      "d0b73d9640d6d9f267d3c8eb8475a14b431f5de32933dce1d2b0bf5dac6d6473",
+      "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f",
+      "7f2b9ca12aea63dcdba77f8fed257b31c9f8d6c8457d04352147ce990d55cb7a"
+    ],
+    "review_updates": [
+      {
+        "requirement_id": "MER::6fa3c163925322baf3cf",
+        "set_fields": {
+          "decision_state": "accepted_bounded",
+          "supported_product_ids": [
+            "AI server configuration tiers",
+            "AI server observable price range",
+            "GPU HBM networking and storage configuration mix"
+          ],
+          "unsupported_product_ids": [],
+          "decision_reason_zh": "Dell 官方配置、可追溯推荐捆绑报价及公共采购合同共同建立了有界的配置和价格观察面。",
+          "claim_boundary_zh": "报价和采购合同均包含异质硬件、交换机、部署或多年服务；只可作为可观察 bundle，不是裸机成交区间、公司 ASP 或销量权重。"
+        },
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f",
+            "required_slot_id": "pricing_mix_value_capture",
+            "required_facet_ids": [
+              "observable_bundled_price_range",
+              "recommended_price_boundary"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a",
+            "required_slot_id": "pricing_mix_value_capture",
+            "required_facet_ids": [
+              "saleable_configuration_example",
+              "gpu_memory_storage_mix"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f",
+            "required_slot_id": "pricing_mix_value_capture",
+            "required_facet_ids": [
+              "bounded_public_procurement_contract_value",
+              "bundled_service_boundary"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::9cd50ca8d91504f3269e",
+        "set_fields": {
+          "decision_state": "accepted_bounded",
+          "supported_product_ids": [
+            "AI server configuration tiers",
+            "AI server observable price range",
+            "GPU HBM networking and storage configuration mix"
+          ],
+          "unsupported_product_ids": [],
+          "decision_reason_zh": "两个公开 bundle 价格观察和明确 XE9680 配置足以形成研究可消费的配置／价格背景。",
+          "claim_boundary_zh": "样本口径不可比，不能平均、相除或外推为 Dell ASP、成交分布或公司收入。"
+        },
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f",
+            "required_slot_id": "pricing_mix_value_capture",
+            "required_facet_ids": [
+              "observable_bundled_price_range",
+              "recommended_price_boundary"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a",
+            "required_slot_id": "pricing_mix_value_capture",
+            "required_facet_ids": [
+              "saleable_configuration_example",
+              "gpu_memory_storage_mix"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f",
+            "required_slot_id": "pricing_mix_value_capture",
+            "required_facet_ids": [
+              "bounded_public_procurement_contract_value",
+              "bundled_service_boundary"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::b7b216504cfbbd943afc",
+        "set_fields": {
+          "decision_state": "partial",
+          "supported_product_ids": [
+            "industry AI server shipment volume"
+          ],
+          "unsupported_product_ids": [
+            "AI server units shipped",
+            "Dell shipment share proxy"
+          ],
+          "decision_reason_zh": "行业出货情景和单一高校四套 XE9680 采购观察提供外部量边界，但没有 Dell 公司级 shipments 或同口径份额代理。",
+          "claim_boundary_zh": "四套只属于一个采购项目；订单、收入、backlog、行业增速和单项目数量均不得外推为 Dell 公司 units 或 share。"
+        },
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f",
+            "required_slot_id": "demand_volume_quality",
+            "required_facet_ids": [
+              "bounded_public_procurement_unit_observation"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "7f2b9ca12aea63dcdba77f8fed257b31c9f8d6c8457d04352147ce990d55cb7a",
+            "required_slot_id": "demand_volume_quality",
+            "required_facet_ids": [
+              "bounded_public_procurement_unit_observation",
+              "saleable_configuration_example"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::f43c3f3856fdcdf0daca",
+        "set_fields": {
+          "decision_state": "partial",
+          "supported_product_ids": [
+            "industry AI server shipment volume"
+          ],
+          "unsupported_product_ids": [
+            "AI server units shipped",
+            "Dell shipment share proxy"
+          ],
+          "decision_reason_zh": "行业高基数与架构迁移形成反方，单项目数量说明 units 可被观察但没有公司分母；Dell 公司级量和份额仍不可复算。",
+          "claim_boundary_zh": "行业或项目层数量只用于边界和 what-would-change，不能生成 Dell units、share 或 PVM volume effect。"
+        }
+      },
+      {
+        "requirement_id": "MER::ec78906c154821fb49f7",
+        "set_fields": {
+          "decision_state": "accepted_bounded",
+          "supported_product_ids": [
+            "Dell names supplier",
+            "delivery or allocation relationship",
+            "supplier names Dell"
+          ],
+          "unsupported_product_ids": [],
+          "decision_reason_zh": "Dell 官方当前材料点名 NVIDIA、双方高管确认合作和公开 availability；NVIDIA 官方同时点名 Dell 并披露 GB200 shipping-at-scale 与案例交付能力，构成当前双向关系和公开交付证据。",
+          "claim_boundary_zh": "公开关系与案例级交付不等于 NVIDIA 对 Dell 的私有 allocation、采购合同、良率、到货承诺或公司可用数量。"
+        },
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "7304ae15ab5660573cc4d85536cc7720b701cf242b240c87ebf6dc297811ff7b",
+            "required_slot_id": "relationship_attribution",
+            "required_facet_ids": [
+              "supplier_names_dell",
+              "current_platform_shipping_scale",
+              "public_delivery_execution"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "b9e41b6799ac41ee3440bdfe2124e27f8e4092b6398b10d894c61a9c8e854d21",
+            "required_slot_id": "relationship_attribution",
+            "required_facet_ids": [
+              "issuer_names_nvidia_current_collaboration",
+              "current_platform_adoption",
+              "public_customer_adoption"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "d0b73d9640d6d9f267d3c8eb8475a14b431f5de32933dce1d2b0bf5dac6d6473",
+            "required_slot_id": "relationship_attribution",
+            "required_facet_ids": [
+              "bilateral_executive_confirmation",
+              "public_solution_availability",
+              "issuer_product_timing"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      }
+    ],
+    "polarity_updates": [
+      {
+        "requirement_id": "MER::6fa3c163925322baf3cf",
+        "axis_updates": [
+          {
+            "product_id": "AI server configuration tiers",
+            "add_evidence_item_digests": [
+              "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "context_only",
+              "decision_reason_zh": "Dell 产品层级与公开 XE9680 双节点配置共同显示可销售配置面。",
+              "claim_boundary_zh": "没有完整 SKU、销量权重或成交分布。",
+              "scope_boundary_codes": [
+                "configuration_observed_not_distribution"
+              ]
+            }
+          },
+          {
+            "product_id": "AI server observable price range",
+            "add_evidence_item_digests": [
+              "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f",
+              "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "context_only",
+              "decision_reason_zh": "推荐捆绑报价与公共采购总合同值提供两个有界公开价格观察。",
+              "claim_boundary_zh": "两个 bundle 的硬件、部署和服务口径不同，只能并列观察，不能构造标准化价格区间或公司 ASP。",
+              "scope_boundary_codes": [
+                "heterogeneous_public_bundle_observations_only"
+              ]
+            }
+          },
+          {
+            "product_id": "GPU HBM networking and storage configuration mix",
+            "add_evidence_item_digests": [
+              "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "context_only",
+              "decision_reason_zh": "公开配置补充了 CPU、内存、存储和 HGX H100 的具体组合。",
+              "claim_boundary_zh": "单一配置不是 Dell 实际销售组合或权重。",
+              "scope_boundary_codes": [
+                "configuration_mix_proxy_only"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::9cd50ca8d91504f3269e",
+        "axis_updates": [
+          {
+            "product_id": "AI server configuration tiers",
+            "add_evidence_item_digests": [
+              "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "context_only",
+              "decision_reason_zh": "产品和公开样本形成配置层级背景。",
+              "claim_boundary_zh": "不代表完整 SKU 或成交分布。",
+              "scope_boundary_codes": [
+                "configuration_observed_not_distribution"
+              ]
+            }
+          },
+          {
+            "product_id": "AI server observable price range",
+            "add_evidence_item_digests": [
+              "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f",
+              "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "context_only",
+              "decision_reason_zh": "两个可追溯公开 bundle 建立有界价格观察面。",
+              "claim_boundary_zh": "异质 bundle 不能平均、相除或升级为 ASP。",
+              "scope_boundary_codes": [
+                "heterogeneous_public_bundle_observations_only"
+              ]
+            }
+          },
+          {
+            "product_id": "GPU HBM networking and storage configuration mix",
+            "add_evidence_item_digests": [
+              "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "context_only",
+              "decision_reason_zh": "明确 XE9680 样本补充组件组合背景。",
+              "claim_boundary_zh": "不得当成 Dell 公司销售组合。",
+              "scope_boundary_codes": [
+                "configuration_mix_proxy_only"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::ec78906c154821fb49f7",
+        "axis_updates": [
+          {
+            "product_id": "Dell names supplier",
+            "add_evidence_item_digests": [
+              "b9e41b6799ac41ee3440bdfe2124e27f8e4092b6398b10d894c61a9c8e854d21",
+              "d0b73d9640d6d9f267d3c8eb8475a14b431f5de32933dce1d2b0bf5dac6d6473"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "supports",
+              "decision_reason_zh": "Dell 官方当前新闻稿和双方高管表述直接点名 NVIDIA 合作。",
+              "claim_boundary_zh": "公开合作不等于私有供应合同或 allocation。",
+              "scope_boundary_codes": [
+                "issuer_named_current_supplier_relationship"
+              ]
+            }
+          },
+          {
+            "product_id": "delivery or allocation relationship",
+            "add_evidence_item_digests": [
+              "7304ae15ab5660573cc4d85536cc7720b701cf242b240c87ebf6dc297811ff7b",
+              "d0b73d9640d6d9f267d3c8eb8475a14b431f5de32933dce1d2b0bf5dac6d6473"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "supports",
+              "decision_reason_zh": "NVIDIA 披露 Dell GB200 shipping-at-scale 和案例交付能力，Dell 同时披露产品可用状态。",
+              "claim_boundary_zh": "只证明公开交付执行和 availability；私有配额、数量、合同和到货承诺仍不可见。",
+              "scope_boundary_codes": [
+                "public_delivery_observed_private_allocation_not_observed"
+              ]
+            }
+          },
+          {
+            "product_id": "supplier names Dell",
+            "add_evidence_item_digests": [
+              "7304ae15ab5660573cc4d85536cc7720b701cf242b240c87ebf6dc297811ff7b"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "supports",
+              "decision_reason_zh": "NVIDIA 官方当前材料直接点名 Dell 并说明 GB200 shipping scale。",
+              "claim_boundary_zh": "供应商点名和案例交付不授予 Dell 私有 allocation 或公司 units。",
+              "scope_boundary_codes": [
+                "supplier_named_current_oem_with_public_delivery"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "known_boundary": "This reviewed successor maps exactly seven R4 direct-source Evidence items onto existing DELL requirements. It makes the bounded public price/configuration request and current bilateral relationship request research-consumable, while company units/share remain not ready. It creates no Evidence or NumericFact, closes no Pack gap, claims no public-information boundary, and grants no qualified-human or S1 authority."
+  },
+  "task_readiness_program": {
+    "schema_version": "fin_ia_s1_s2_task_pack_readiness_v1_0",
+    "status": "approved_zero_call_task_pack_readiness",
+    "case_key": "DELL",
+    "cell_id": "value_capture",
+    "required_research_consumable_request_ids": [
+      "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "REQ::DELL::PVM_BRIDGE::V1",
+      "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+      "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "REQ::DELL::COUNTER_ISSUER::V1",
+      "REQ::DELL::COUNTER_ECOSYSTEM::V1"
+    ],
+    "actionable_gap_requests": [
+      {
+        "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+        "required_open_gap_ids": [
+          "dell-gap-pricing-units"
+        ],
+        "next_action": "retain_single_project_unit_observation_as_boundary_and_seek_company_units_or_same_basis_share_proxy"
+      }
+    ],
+    "expected_integrated_summary": {
+      "requirement_count": 20,
+      "fully_satisfied_requirement_count": 7,
+      "research_consumable_requirement_count": 18,
+      "request_count": 12,
+      "ready_request_count": 2,
+      "research_consumable_request_count": 11
+    },
+    "expected_open_gap_count": 14,
+    "expected_evidence_count": 55,
+    "required_product_value_bridge_digest": "719748b06af88e3215099a79f821d15a561179d8f04d3fdf1ff911f437b6cf8a",
+    "required_bridge_gap_ids": [
+      "dell-gap-pricing-asp",
+      "dell-gap-pricing-units",
+      "dell-gap-price-volume-mix-bridge",
+      "dell-gap-product-profit-attribution"
+    ],
+    "task_known_boundary": "This is task-relative readiness for one DELL value_capture dynamic unit. Eleven requests are research-consumable; company unit/share remains actionable. The product revenue bridge is available, but company PVM and product-profit calculations remain explicitly non-calculable with four open bridge gaps. This does not qualify S1, S2, S3, the full DELL case, Writer, Workbench or release."
+  }
+}

@@ -1,0 +1,661 @@
+{
+  "schema_version": "fin_ia_s2_product_value_bridge_public_result_v1_0",
+  "status": "bounded_product_value_bridge_with_typed_gaps",
+  "recorded_at": "2026-08-24T21:39:35+08:00",
+  "prepared_from_commit": "9f0f4b005571dba500246461bc5267c36abeb26e",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "evidence_pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98",
+  "task_quantitative_projection_digest": "8bcf479a2116880aecac23c9b292bdbda7686d95c1e4a0aa218fe48bf1cf7539",
+  "source_numeric_observations": [
+    {
+      "observation_id": "dell_ai_server_revenue_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "ai_optimized_server_revenue",
+      "value_decimal": "16132",
+      "unit": "USD_million",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_product_revenue",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_ai_server_revenue_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "ai_optimized_server_revenue",
+      "value_decimal": "1882",
+      "unit": "USD_million",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_product_revenue",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_revenue_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_revenue",
+      "value_decimal": "29009",
+      "unit": "USD_million",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_segment_revenue",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_revenue_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_revenue",
+      "value_decimal": "10317",
+      "unit": "USD_million",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_segment_revenue",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_company_revenue_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "company_revenue",
+      "value_decimal": "43842",
+      "unit": "USD_million",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_total_revenue_surface",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_company_revenue_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "company_revenue",
+      "value_decimal": "23378",
+      "unit": "USD_million",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_total_revenue_surface",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_operating_income_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_operating_income",
+      "value_decimal": "3055",
+      "unit": "USD_million",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_segment_operating_income",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_operating_income_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_operating_income",
+      "value_decimal": "998",
+      "unit": "USD_million",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_segment_operating_income",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_operating_margin_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_operating_margin",
+      "value_decimal": "10.5",
+      "unit": "percent",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_segment_operating_margin",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_operating_margin_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_operating_margin",
+      "value_decimal": "9.7",
+      "unit": "percent",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_segment_operating_margin",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_public_recommended_bundle_price_sample",
+      "support_id": "SUPPORT::DELL-PUBLIC-RECOMMENDED-BUNDLE-QUOTE",
+      "metric_id": "public_recommended_bundle_price",
+      "value_decimal": "757231",
+      "unit": "USD_bundled_recommended_quote",
+      "period_label": "quote_observed_2025_03_12",
+      "observation_scope": "bounded_configuration_and_service_bundle",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_public_procurement_contract_value_sample",
+      "support_id": "SUPPORT::DELL-PUBLIC-PROCUREMENT-PRICE",
+      "metric_id": "public_procurement_contract_value",
+      "value_decimal": "2278577.28",
+      "unit": "USD_bundled_procurement_contract",
+      "period_label": "board_book_2025_02_20",
+      "observation_scope": "single_public_project_with_delivery_training_and_five_year_support",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_public_procurement_system_count_sample",
+      "support_id": "SUPPORT::DELL-PUBLIC-PROCUREMENT-UNITS",
+      "metric_id": "public_procurement_system_count",
+      "value_decimal": "4",
+      "unit": "systems_single_public_project",
+      "period_label": "board_book_2025_02_20",
+      "observation_scope": "single_public_project_not_company_shipments",
+      "authority_mode": "source_visible_exact_observation_not_numeric_fact",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    }
+  ],
+  "deterministic_source_surface_derivations": [
+    {
+      "derived_metric_id": "dell_ai_server_revenue_yoy_growth",
+      "value_decimal": "7.57173219978746014877789585547290117",
+      "unit": "ratio",
+      "formula": "(current_ai_server_revenue - prior_ai_server_revenue) / prior_ai_server_revenue",
+      "input_observation_ids": [
+        "dell_ai_server_revenue_q1_fy27",
+        "dell_ai_server_revenue_q1_fy26"
+      ],
+      "authority_mode": "deterministic_source_surface_derivation",
+      "numeric_fact_authority": false,
+      "product_profit_attribution_authorized": false,
+      "derived_metric_digest": "dcdda8babf9d63c715e3c6936530646c63b2589e2e0e3a56e6084ba3e6843839"
+    },
+    {
+      "derived_metric_id": "dell_ai_server_share_of_isg_revenue_q1_fy27",
+      "value_decimal": "0.556103278292943569237133303457547658",
+      "unit": "ratio",
+      "formula": "ai_server_revenue / isg_revenue",
+      "input_observation_ids": [
+        "dell_ai_server_revenue_q1_fy27",
+        "dell_isg_revenue_q1_fy27"
+      ],
+      "authority_mode": "deterministic_source_surface_derivation",
+      "numeric_fact_authority": false,
+      "product_profit_attribution_authorized": false,
+      "derived_metric_digest": "8a565d2cdaf74cc5ef1ce11b2df3e569e93f25e5851753d4c0f965b2ae84a894"
+    },
+    {
+      "derived_metric_id": "dell_ai_server_share_of_isg_revenue_q1_fy26",
+      "value_decimal": "0.182417369390326645342638363865464767",
+      "unit": "ratio",
+      "formula": "ai_server_revenue / isg_revenue",
+      "input_observation_ids": [
+        "dell_ai_server_revenue_q1_fy26",
+        "dell_isg_revenue_q1_fy26"
+      ],
+      "authority_mode": "deterministic_source_surface_derivation",
+      "numeric_fact_authority": false,
+      "product_profit_attribution_authorized": false,
+      "derived_metric_digest": "bf357d2bda449fb5fcf88341e3d1589902ccda542865844291e1568991de5706"
+    },
+    {
+      "derived_metric_id": "dell_ai_server_share_of_company_revenue_q1_fy27",
+      "value_decimal": "0.367957666164864741572008576251083436",
+      "unit": "ratio",
+      "formula": "ai_server_revenue / company_revenue",
+      "input_observation_ids": [
+        "dell_ai_server_revenue_q1_fy27",
+        "dell_company_revenue_q1_fy27"
+      ],
+      "authority_mode": "deterministic_source_surface_derivation",
+      "numeric_fact_authority": false,
+      "product_profit_attribution_authorized": false,
+      "derived_metric_digest": "99fd8d38ecc32fef294724706171be20829d9bf4c9cbb53478796ff47dac53df"
+    },
+    {
+      "derived_metric_id": "dell_ai_server_share_of_company_revenue_q1_fy26",
+      "value_decimal": "0.0805030370433741124133801009496107451",
+      "unit": "ratio",
+      "formula": "ai_server_revenue / company_revenue",
+      "input_observation_ids": [
+        "dell_ai_server_revenue_q1_fy26",
+        "dell_company_revenue_q1_fy26"
+      ],
+      "authority_mode": "deterministic_source_surface_derivation",
+      "numeric_fact_authority": false,
+      "product_profit_attribution_authorized": false,
+      "derived_metric_digest": "46cd6c43e5f265d67b9f5be3caa14aae7b7feb0b62c69c9c1c928d4cfb66717f"
+    },
+    {
+      "derived_metric_id": "dell_isg_operating_margin_recalculated_q1_fy27",
+      "value_decimal": "10.5312144506877176048812437519390534",
+      "unit": "percent",
+      "formula": "isg_operating_income / isg_revenue * 100",
+      "input_observation_ids": [
+        "dell_isg_operating_income_q1_fy27",
+        "dell_isg_revenue_q1_fy27"
+      ],
+      "authority_mode": "deterministic_source_surface_derivation",
+      "numeric_fact_authority": false,
+      "product_profit_attribution_authorized": false,
+      "derived_metric_digest": "6d4382c13a9afec0097ad67fcea56b2205059572a6a4d0afa507c73c09886d26"
+    },
+    {
+      "derived_metric_id": "dell_isg_operating_margin_recalculated_q1_fy26",
+      "value_decimal": "9.67335465736163613453523311040031017",
+      "unit": "percent",
+      "formula": "isg_operating_income / isg_revenue * 100",
+      "input_observation_ids": [
+        "dell_isg_operating_income_q1_fy26",
+        "dell_isg_revenue_q1_fy26"
+      ],
+      "authority_mode": "deterministic_source_surface_derivation",
+      "numeric_fact_authority": false,
+      "product_profit_attribution_authorized": false,
+      "derived_metric_digest": "96bde5e44a8b0759e829ab6ba81cfe2afe8ebd3bf8681eaed15fb88f75832b93"
+    }
+  ],
+  "company_context": [
+    {
+      "selector_id": "company_revenue_q1_fy27",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "revenue",
+      "derived_metric_id": null,
+      "value_decimal": "43842000000",
+      "unit": "USD",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2026-01-31",
+      "period_end": "2026-05-01",
+      "authority_ref": "NUMFACT::ebbffc145486de8819b20ef46063ffb9",
+      "equivalent_authority_refs": [
+        "NUMFACT::ebbffc145486de8819b20ef46063ffb9"
+      ],
+      "numeric_fact_authority": true,
+      "deterministic_formula_authority": false
+    },
+    {
+      "selector_id": "company_revenue_q1_fy26",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "revenue",
+      "derived_metric_id": null,
+      "value_decimal": "23378000000",
+      "unit": "USD",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2025-02-01",
+      "period_end": "2025-05-02",
+      "authority_ref": "NUMFACT::c67f048b88b9ddc032a79c26dc357bc5",
+      "equivalent_authority_refs": [
+        "NUMFACT::c67f048b88b9ddc032a79c26dc357bc5"
+      ],
+      "numeric_fact_authority": true,
+      "deterministic_formula_authority": false
+    },
+    {
+      "selector_id": "company_gross_profit_q1_fy27",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "gross_profit",
+      "derived_metric_id": null,
+      "value_decimal": "7782000000",
+      "unit": "USD",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2026-01-31",
+      "period_end": "2026-05-01",
+      "authority_ref": "NUMFACT::2e8520c5cd6c9d9c982b26dc1d3c1278",
+      "equivalent_authority_refs": [
+        "NUMFACT::2e8520c5cd6c9d9c982b26dc1d3c1278"
+      ],
+      "numeric_fact_authority": true,
+      "deterministic_formula_authority": false
+    },
+    {
+      "selector_id": "company_gross_profit_q1_fy26",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "gross_profit",
+      "derived_metric_id": null,
+      "value_decimal": "4937000000",
+      "unit": "USD",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2025-02-01",
+      "period_end": "2025-05-02",
+      "authority_ref": "NUMFACT::ce82ea9d1b6efba0b3853975c18c5971",
+      "equivalent_authority_refs": [
+        "NUMFACT::ce82ea9d1b6efba0b3853975c18c5971"
+      ],
+      "numeric_fact_authority": true,
+      "deterministic_formula_authority": false
+    },
+    {
+      "selector_id": "company_operating_income_q1_fy27",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "operating_income",
+      "derived_metric_id": null,
+      "value_decimal": "3656000000",
+      "unit": "USD",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2026-01-31",
+      "period_end": "2026-05-01",
+      "authority_ref": "NUMFACT::bae5fcb6b06a973d44d06438032d2c7b",
+      "equivalent_authority_refs": [
+        "NUMFACT::bae5fcb6b06a973d44d06438032d2c7b",
+        "NUMFACT::d98a724f827f8089522c0b54a7b30f67"
+      ],
+      "numeric_fact_authority": true,
+      "deterministic_formula_authority": false
+    },
+    {
+      "selector_id": "company_operating_income_q1_fy26",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "operating_income",
+      "derived_metric_id": null,
+      "value_decimal": "1165000000",
+      "unit": "USD",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2025-02-01",
+      "period_end": "2025-05-02",
+      "authority_ref": "NUMFACT::29d51cbbc164e528071408dcf347f88f",
+      "equivalent_authority_refs": [
+        "NUMFACT::29d51cbbc164e528071408dcf347f88f",
+        "NUMFACT::36fc30f3bc4fe9837b26d86d81de0c1e"
+      ],
+      "numeric_fact_authority": true,
+      "deterministic_formula_authority": false
+    },
+    {
+      "selector_id": "company_gross_margin_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "gross_margin",
+      "derived_metric_id": "gross_margin",
+      "value_decimal": "17.75010264130286027097303955111537",
+      "unit": "percent",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2026-01-31",
+      "period_end": "2026-05-01",
+      "authority_ref": "NUMFACT::ba6856d2628c37ec450bec12f1d957b2",
+      "equivalent_authority_refs": [
+        "NUMFACT::ba6856d2628c37ec450bec12f1d957b2",
+        "NUMFACT::e534b58c4488733f5264890cacf1f122"
+      ],
+      "numeric_fact_authority": false,
+      "deterministic_formula_authority": true
+    },
+    {
+      "selector_id": "company_gross_margin_q1_fy26",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "gross_margin",
+      "derived_metric_id": "gross_margin",
+      "value_decimal": "21.11814526477885191205406792711096",
+      "unit": "percent",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2025-02-01",
+      "period_end": "2025-05-02",
+      "authority_ref": "NUMFACT::757427ede3a5306d35191ca9e89b0f25",
+      "equivalent_authority_refs": [
+        "NUMFACT::757427ede3a5306d35191ca9e89b0f25",
+        "NUMFACT::c559cbc832924d1b58e15f47374b58b7"
+      ],
+      "numeric_fact_authority": false,
+      "deterministic_formula_authority": true
+    },
+    {
+      "selector_id": "company_operating_margin_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "operating_margin",
+      "derived_metric_id": "operating_margin",
+      "value_decimal": "8.339035627936681720724419506409379",
+      "unit": "percent",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2026-01-31",
+      "period_end": "2026-05-01",
+      "authority_ref": "NUMFACT::7acd687792e6bdd1ee6755c5613be59a",
+      "equivalent_authority_refs": [
+        "NUMFACT::7acd687792e6bdd1ee6755c5613be59a",
+        "NUMFACT::c1945ab7dd747c7363760906fd014460"
+      ],
+      "numeric_fact_authority": false,
+      "deterministic_formula_authority": true
+    },
+    {
+      "selector_id": "company_operating_margin_q1_fy26",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "operating_margin",
+      "derived_metric_id": "operating_margin",
+      "value_decimal": "4.983317649071776884250149713405766",
+      "unit": "percent",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": "2025-02-01",
+      "period_end": "2025-05-02",
+      "authority_ref": "NUMFACT::a32ad55bd3a45bbce0ef8cab39ba7b26",
+      "equivalent_authority_refs": [
+        "NUMFACT::a32ad55bd3a45bbce0ef8cab39ba7b26",
+        "NUMFACT::dc007fa3d88825fdcb7184334d7d7a43"
+      ],
+      "numeric_fact_authority": false,
+      "deterministic_formula_authority": true
+    },
+    {
+      "selector_id": "company_revenue_yoy_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "revenue",
+      "derived_metric_id": "revenue_year_over_year_growth",
+      "value_decimal": "0.87535289588502010437163144837026264",
+      "unit": "ratio",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": null,
+      "period_end": null,
+      "authority_ref": "DERIVED::7D0EDFC9A54699CBC2360CB3",
+      "equivalent_authority_refs": [
+        "DERIVED::7D0EDFC9A54699CBC2360CB3"
+      ],
+      "numeric_fact_authority": false,
+      "deterministic_formula_authority": true
+    },
+    {
+      "selector_id": "company_gross_profit_yoy_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "gross_profit",
+      "derived_metric_id": "gross_profit_year_over_year_growth",
+      "value_decimal": "0.576260887178448450475997569374113834",
+      "unit": "ratio",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": null,
+      "period_end": null,
+      "authority_ref": "DERIVED::E9FCEAD49EFF52E397A5DC9D",
+      "equivalent_authority_refs": [
+        "DERIVED::E9FCEAD49EFF52E397A5DC9D"
+      ],
+      "numeric_fact_authority": false,
+      "deterministic_formula_authority": true
+    },
+    {
+      "selector_id": "company_operating_income_yoy_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "operating_income",
+      "derived_metric_id": "operating_income_year_over_year_growth",
+      "value_decimal": "2.13819742489270386266094420600858369",
+      "unit": "ratio",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete",
+      "period_start": null,
+      "period_end": null,
+      "authority_ref": "DERIVED::EDE71D96B8357AE094CCE1C2",
+      "equivalent_authority_refs": [
+        "DERIVED::EDE71D96B8357AE094CCE1C2"
+      ],
+      "numeric_fact_authority": false,
+      "deterministic_formula_authority": true
+    }
+  ],
+  "pvm_bridge": {
+    "state": "not_calculable_typed_input_gaps",
+    "reported_product_revenue_current_available": true,
+    "reported_product_revenue_prior_available": true,
+    "target_company_asp_available": false,
+    "target_company_units_available": false,
+    "comparable_configuration_weights_available": false,
+    "price_effect_value": null,
+    "volume_effect_value": null,
+    "mix_effect_value": null,
+    "unexplained_residual_value": null,
+    "formula_contract": {
+      "revenue_identity": "sum_i(price_i * volume_i)",
+      "price_effect": "sum_i((price_current_i - price_prior_i) * volume_prior_i)",
+      "volume_effect": "sum_i((volume_current_i - volume_prior_i) * price_prior_i)",
+      "mix_effect": "revenue_change - price_effect - volume_effect"
+    },
+    "bounded_price_observation_ids": [
+      "dell_public_recommended_bundle_price_sample",
+      "dell_public_procurement_contract_value_sample"
+    ],
+    "bounded_unit_observation_ids": [
+      "dell_public_procurement_system_count_sample"
+    ],
+    "industry_estimate_keys": [
+      "global_ai_server_shipment_growth_2025_base",
+      "global_ai_server_shipment_growth_2025_downside"
+    ],
+    "required_open_gap_ids": [
+      "dell-gap-price-volume-mix-bridge",
+      "dell-gap-pricing-asp",
+      "dell-gap-pricing-units"
+    ],
+    "claim_boundary_zh": "已披露产品收入可建立收入边界；公开报价、采购数量和行业增速仅是异质样本或外部情景，不能代替 Dell 公司级 ASP、units 或配置权重，因此不得生成伪精确 PVM 分解。"
+  },
+  "product_profit_bridge": {
+    "state": "not_calculable_product_profit_attribution_gap",
+    "reported_product_revenue_available": true,
+    "segment_revenue_and_operating_income_available": true,
+    "management_product_profitability_target_available": true,
+    "realized_product_gross_profit_available": false,
+    "realized_product_operating_profit_available": false,
+    "product_cost_and_opex_allocation_available": false,
+    "implied_product_operating_profit_value": null,
+    "formula_contract": {
+      "product_gross_profit": "product_revenue - product_cost_of_revenue",
+      "product_operating_profit": "product_gross_profit - attributable_product_operating_expense",
+      "company_profit_contribution": "product_operating_profit / company_operating_income"
+    },
+    "required_open_gap_ids": [
+      "dell-gap-product-profit-attribution"
+    ],
+    "claim_boundary_zh": "AI server 收入、ISG 收入和 ISG 经营利润可同表观察；管理层的中个位数目标是定性目标带，不是已审计产品利润率。没有产品成本和费用分配时，禁止把 ISG 经营利润归因给 AI server，也禁止用目标带乘收入生成产品利润。"
+  },
+  "bridge_gap_receipts": [
+    {
+      "gap_id": "dell-gap-price-volume-mix-bridge",
+      "owning_stage": "S2",
+      "gap_code": "formula_input_missing",
+      "source": "evidence_pack_residual_gap",
+      "closed": false,
+      "public_information_gap_authority": false
+    },
+    {
+      "gap_id": "dell-gap-pricing-asp",
+      "owning_stage": "S1_S2_boundary",
+      "gap_code": "metric_not_disclosed",
+      "source": "evidence_pack_residual_gap",
+      "closed": false,
+      "public_information_gap_authority": false
+    },
+    {
+      "gap_id": "dell-gap-pricing-units",
+      "owning_stage": "S1_S2_boundary",
+      "gap_code": "metric_not_disclosed",
+      "source": "evidence_pack_residual_gap",
+      "closed": false,
+      "public_information_gap_authority": false
+    },
+    {
+      "gap_id": "dell-gap-product-profit-attribution",
+      "owning_stage": "S2",
+      "gap_code": "product_cost_and_opex_allocation_not_disclosed",
+      "reason_zh": "AI server 收入与 ISG 收入／经营利润可以同表观察，但没有 AI server 产品成本、已实现产品毛利、经营费用分配或经审计产品经营利润；管理层目标带不能替代这些输入。",
+      "closed": false,
+      "public_information_gap_authority": false
+    }
+  ],
+  "bridge_readiness": {
+    "safe_for_bounded_dynamic_research": true,
+    "reported_product_revenue_bridge_available": true,
+    "target_company_pvm_calculable": false,
+    "product_profit_bridge_calculable": false,
+    "s2_stage_qualified": false,
+    "checks": {
+      "all_program_evidence_supports_bound": true,
+      "all_source_numeric_observations_surface_bound": true,
+      "company_context_quantitative_rows_bound": true,
+      "industry_scenarios_bound_without_target_company_authority": true,
+      "pvm_values_remain_null_while_inputs_missing": true,
+      "product_profit_value_remains_null_while_attribution_missing": true,
+      "bounded_bundle_not_divided_into_asp": true,
+      "all_bridge_gaps_open_without_public_gap_authority": true
+    }
+  },
+  "authority": {
+    "source_visible_values_are_not_automatically_numeric_facts": true,
+    "deterministic_ratios_are_not_product_profit_attribution": true,
+    "management_target_is_not_realized_margin": true,
+    "bounded_quotes_are_not_company_asp": true,
+    "procurement_units_are_not_company_shipments": true,
+    "candidate_or_model_numbers_created": false,
+    "public_information_gap_claimed": false,
+    "product_publication": false
+  },
+  "source_bindings": {
+    "program": {
+      "ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_product_value_bridge_program_v1_0.json",
+      "sha256": "8111581a123f7e81b9cc7ebec28f9586ebef4f9c8de96e7cd9ef2639a88bf001"
+    },
+    "evidence_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+      "sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1"
+    },
+    "task_quantitative_public_result": {
+      "ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_task_quantitative_program_result_v1_1.json",
+      "sha256": "792c0c87f7b2b508e123c9a9780be7bc6909d4cc83b80f86c920d913721dd95d",
+      "result_digest": "7c2d0019f1b50aa6e41cc5d8ab5e9046eefbb4ea068dbeb88ff28bce74074e2e"
+    },
+    "task_quantitative_private_result": {
+      "ref": "data/workbench_private/fin_0_1_3_s2_task_quantitative_program/dell-r2/full_result.json",
+      "sha256": "45781c70a6959f78cd4aea3772e7c1315e4a5ffea64ee9ee93eb6d8109d21eeb"
+    }
+  },
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s2_product_value_bridge/dell-r1/full_result.json",
+  "full_result_sha256": "93e9bd7cb3be6a24df8bfb4e9e876050062810eb6ad8a85fd3adee9e856b1ab6",
+  "known_boundary": "This zero-call bridge compiles source-visible DELL product, segment and company revenue surfaces, deterministic revenue-share and segment-margin ratios, company NumericFact context, bounded price/unit observations and industry scenarios. It intentionally leaves target-company PVM and product-profit values null while ASP, units, mix weights, product costs and operating-expense allocation are missing. It creates no NumericFact, does not divide bundled contracts into ASP, does not multiply management targets into product profit, and does not qualify S2, S3 or the product.",
+  "result_digest": "627d67f541906799cdabf77a40daedf8374056e5b8ba4596e2b00f326c3bc054"
+}

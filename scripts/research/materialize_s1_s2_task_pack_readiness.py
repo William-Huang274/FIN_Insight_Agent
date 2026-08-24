@@ -37,6 +37,9 @@ DEFAULT_PUBLIC_OUTPUT = (
     "configs/retrieval/"
     "fin_ia_0_1_3_s1_s2_dell_value_capture_task_readiness_result_v1_0.json"
 )
+SUCCESSOR_PROGRAM_SCHEMA = (
+    "fin_ia_s1_s2_task_pack_readiness_materialization_program_v1_1"
+)
 
 
 def _resolve(ref: str) -> Path:
@@ -97,12 +100,19 @@ def main() -> int:
     recorded_at = datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
     program_path = _resolve(args.program)
     program = _json(program_path)
-    if (
-        program.get("schema_version")
-        != "fin_ia_s1_s2_task_pack_readiness_materialization_program_v1_0"
-        or program.get("status")
-        != "approved_zero_call_task_pack_readiness_materialization"
-    ):
+    program_schema = str(program.get("schema_version") or "")
+    legacy_program = (
+        program_schema
+        == "fin_ia_s1_s2_task_pack_readiness_materialization_program_v1_0"
+        and program.get("status")
+        == "approved_zero_call_task_pack_readiness_materialization"
+    )
+    successor_program = (
+        program_schema == SUCCESSOR_PROGRAM_SCHEMA
+        and program.get("status")
+        == "approved_zero_call_task_pack_readiness_successor"
+    )
+    if not (legacy_program or successor_program):
         raise ValueError("task_pack_readiness_materialization_program_invalid")
 
     source_paths: dict[str, Path] = {}
@@ -137,10 +147,32 @@ def main() -> int:
     if not isinstance(quantitative_projection, Mapping):
         raise ValueError("task_pack_readiness_quantitative_projection_missing")
 
+    if successor_program:
+        predecessor_full = inputs["predecessor_task_readiness_full_result"]
+        predecessor_binding = program["input_bindings"][
+            "predecessor_task_readiness_full_result"
+        ]
+        if predecessor_full.get("result_digest") != predecessor_binding.get(
+            "result_digest"
+        ):
+            raise ValueError("task_pack_readiness_predecessor_result_digest_mismatch")
+        predecessor_successor = predecessor_full.get("review_successor")
+        if not isinstance(predecessor_successor, Mapping):
+            raise ValueError("task_pack_readiness_predecessor_review_missing")
+        predecessor_review_plan = predecessor_successor.get("review_plan")
+        predecessor_polarity_plan = predecessor_successor.get("polarity_plan")
+        if not isinstance(predecessor_review_plan, Mapping) or not isinstance(
+            predecessor_polarity_plan, Mapping
+        ):
+            raise ValueError("task_pack_readiness_predecessor_review_invalid")
+    else:
+        predecessor_review_plan = inputs["predecessor_review_plan"]
+        predecessor_polarity_plan = inputs["predecessor_polarity_plan"]
+
     successor = compile_requirement_review_successor(
         program=program["review_successor_program"],
-        predecessor_review_plan=inputs["predecessor_review_plan"],
-        predecessor_polarity_plan=inputs["predecessor_polarity_plan"],
+        predecessor_review_plan=predecessor_review_plan,
+        predecessor_polarity_plan=predecessor_polarity_plan,
         evidence_pack=inputs["evidence_pack"],
         recorded_at=recorded_at,
     )
@@ -155,12 +187,34 @@ def main() -> int:
         anchor_catalog=inputs["anchor_catalog"],
         recorded_at=recorded_at,
     )
+    product_value_bridge = None
+    product_value_bridge_private_path = None
+    if successor_program:
+        bridge_public = inputs["product_value_bridge_public_result"]
+        bridge_binding = program["input_bindings"][
+            "product_value_bridge_public_result"
+        ]
+        if bridge_public.get("result_digest") != bridge_binding.get("result_digest"):
+            raise ValueError("task_pack_readiness_product_bridge_digest_mismatch")
+        product_value_bridge_private_path = _resolve(
+            str(bridge_public.get("full_result_ref") or "")
+        )
+        if _sha256(product_value_bridge_private_path) != bridge_public.get(
+            "full_result_sha256"
+        ):
+            raise ValueError("task_pack_readiness_product_bridge_private_mismatch")
+        bridge_full = _json(product_value_bridge_private_path)
+        product_value_bridge = bridge_full.get("product_value_bridge")
+        if not isinstance(product_value_bridge, Mapping):
+            raise ValueError("task_pack_readiness_product_bridge_missing")
+
     readiness = compile_task_pack_readiness(
         program=program["task_readiness_program"],
         integrated_readiness=integrated,
         quantitative_projection=quantitative_projection,
         evidence_pack=inputs["evidence_pack"],
         recorded_at=recorded_at,
+        product_value_bridge=product_value_bridge,
     )
     source_bindings = {
         "program": {"ref": _relative(program_path), "sha256": _sha256(program_path)},
@@ -173,8 +227,17 @@ def main() -> int:
             "sha256": _sha256(quantitative_private_path),
         },
     }
+    if product_value_bridge_private_path is not None:
+        source_bindings["product_value_bridge_private_result"] = {
+            "ref": _relative(product_value_bridge_private_path),
+            "sha256": _sha256(product_value_bridge_private_path),
+        }
     full_body = {
-        "schema_version": "fin_ia_s1_s2_task_pack_readiness_full_result_v1_0",
+        "schema_version": (
+            "fin_ia_s1_s2_task_pack_readiness_full_result_v1_1"
+            if successor_program
+            else "fin_ia_s1_s2_task_pack_readiness_full_result_v1_0"
+        ),
         "status": "completed_zero_call_task_pack_readiness",
         "recorded_at": recorded_at,
         "prepared_from_commit": prepared_from_commit,
@@ -212,7 +275,11 @@ def main() -> int:
         for row in integrated["requirements"]
     }
     public_body = {
-        "schema_version": "fin_ia_s1_s2_task_pack_readiness_public_result_v1_0",
+        "schema_version": (
+            "fin_ia_s1_s2_task_pack_readiness_public_result_v1_1"
+            if successor_program
+            else "fin_ia_s1_s2_task_pack_readiness_public_result_v1_0"
+        ),
         "status": readiness["status"],
         "recorded_at": recorded_at,
         "prepared_from_commit": prepared_from_commit,
@@ -226,6 +293,7 @@ def main() -> int:
         "request_states": integrated["requests"],
         "requirement_states": requirement_states,
         "task_pack_readiness": readiness,
+        "product_value_bridge": readiness.get("product_value_bridge"),
         "authority": {
             **readiness["authority"],
             "new_evidence_promoted_in_this_run": False,

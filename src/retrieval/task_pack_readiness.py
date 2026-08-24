@@ -262,6 +262,7 @@ def compile_task_pack_readiness(
     quantitative_projection: Mapping[str, Any],
     evidence_pack: Mapping[str, Any],
     recorded_at: str,
+    product_value_bridge: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """Qualify one dynamic task while keeping unresolved requests actionable."""
 
@@ -357,6 +358,89 @@ def compile_task_pack_readiness(
         quantitative_projection.get("quantitative_authority", {}).get("summary"),
         "task_pack_quantitative_summary_missing",
     )
+    required_bridge_digest = str(
+        payload.get("required_product_value_bridge_digest") or ""
+    )
+    bridge_checks: dict[str, bool] = {}
+    bridge_summary: dict[str, Any] | None = None
+    if required_bridge_digest:
+        bridge = _mapping(
+            product_value_bridge,
+            "task_pack_product_value_bridge_missing",
+        )
+        bridge_readiness = _mapping(
+            bridge.get("bridge_readiness"),
+            "task_pack_product_value_bridge_readiness_missing",
+        )
+        required_bridge_gap_ids = set(
+            _strings(
+                payload.get("required_bridge_gap_ids"),
+                "task_pack_required_bridge_gap_ids_invalid",
+            )
+        )
+        bridge_gap_rows = {
+            str(row.get("gap_id") or ""): row
+            for row in bridge.get("bridge_gap_receipts") or ()
+            if isinstance(row, Mapping)
+        }
+        bridge_checks = {
+            "product_value_bridge_digest_bound": bridge.get(
+                "product_value_bridge_digest"
+            )
+            == required_bridge_digest,
+            "product_value_bridge_pack_bound": bridge.get(
+                "evidence_pack_payload_digest"
+            )
+            == pack_digest,
+            "product_value_bridge_quantitative_projection_bound": bridge.get(
+                "task_quantitative_projection_digest"
+            )
+            == quantitative_projection.get("task_quantitative_projection_digest"),
+            "product_value_bridge_safe_for_bounded_research": bridge_readiness.get(
+                "safe_for_bounded_dynamic_research"
+            )
+            is True,
+            "target_company_pvm_not_falsely_calculable": bridge_readiness.get(
+                "target_company_pvm_calculable"
+            )
+            is False,
+            "product_profit_bridge_not_falsely_calculable": bridge_readiness.get(
+                "product_profit_bridge_calculable"
+            )
+            is False,
+            "s2_stage_not_falsely_qualified": bridge_readiness.get(
+                "s2_stage_qualified"
+            )
+            is False,
+            "required_bridge_gaps_explicit_and_open": required_bridge_gap_ids
+            == set(bridge_gap_rows)
+            and all(
+                row.get("closed") is False
+                and row.get("public_information_gap_authority") is False
+                for row in bridge_gap_rows.values()
+            ),
+        }
+        _require(
+            all(bridge_checks.values()),
+            "task_pack_product_value_bridge_checks_failed",
+        )
+        bridge_summary = {
+            "product_value_bridge_digest": required_bridge_digest,
+            "safe_for_bounded_dynamic_research": True,
+            "reported_product_revenue_bridge_available": bridge_readiness.get(
+                "reported_product_revenue_bridge_available"
+            )
+            is True,
+            "target_company_pvm_calculable": False,
+            "product_profit_bridge_calculable": False,
+            "required_bridge_gap_ids": sorted(required_bridge_gap_ids),
+            "checks": bridge_checks,
+        }
+    else:
+        _require(
+            product_value_bridge is None,
+            "task_pack_unrequested_product_value_bridge_forbidden",
+        )
     checks = {
         "required_requests_research_consumable": True,
         "only_declared_requests_remain_not_ready": {
@@ -383,6 +467,7 @@ def compile_task_pack_readiness(
             row.get("public_information_gap_authority") is False
             for row in gap_rows.values()
         ),
+        **bridge_checks,
     }
     _require(all(checks.values()), "task_pack_readiness_checks_failed")
     unsigned = {
@@ -396,6 +481,7 @@ def compile_task_pack_readiness(
         "task_quantitative_projection_digest": quantitative_projection.get(
             "task_quantitative_projection_digest"
         ),
+        "product_value_bridge": bridge_summary,
         "required_research_consumable_request_ids": sorted(required_consumable),
         "actionable_gap_requests": actionable,
         "checks": checks,

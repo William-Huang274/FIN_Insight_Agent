@@ -1,7 +1,7 @@
 # S1 工作记录 079：8GB 量化 4B shadow 获取与同池评测
 
 日期：2026-08-24
-状态：`acquisition_r1_succeeded / controlled_shadow_r1_failed / r2_required`
+状态：`acquisition_r1_succeeded / controlled_shadow_r1_failed / r2_complete_not_credible`
 
 ## 1. 决策目标
 
@@ -111,3 +111,34 @@ R1 结果不得补写成功阶段、不得复用未公开的 embedding score。R
 successor loader 内容寻址读取 R1 program 与 failure，硬编码只允许上述两项变化；其余
 settings、四节点 TokenBudgetBasis、quality gates、authority 与 known boundary 从 R1
 继承。R2 attempt ID 为 `controlled-shadow-r2`，输出使用 v1.1，绝不覆盖 v1.0。
+
+## 8. controlled-shadow-r2 完整结果
+
+R2 从 clean／upstream-equal commit `4aacaea3` 完整重跑四个节点，结果文件为
+`configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_result_v1_1.json`：
+
+- file SHA-256：`f92f94de20990548e452fa2050ef63149e090015b6ba7b01f4bbf934c63223e0`；
+- result digest：`27159f56fcc1586e3396bb6be3edfd2987ed1449644a0d80ee04c199b3d91189`；
+- private full result 与 public result 逐字节相同，result digest 重算通过；
+- embedding／reranker server 均明确记录 `offloaded 37/37 layers to GPU`；peak used VRAM
+  分别 4,524 MiB／4,333 MiB，证明当前 8GB GPU 能完整运行两个 Q4_K_M 4B；
+- 0.6B embedding／reranker peak used VRAM 分别 3,616 MiB／5,548 MiB；
+- external network 0、provider 0、paid model 0；四节点按顺序各自重跑。
+
+指标（17 个 eligible query、79 positive-negative comparisons）：
+
+| 节点 | Pairwise | Top1 | MRR | 耗时 |
+|---|---:|---:|---:|---:|
+| 0.6B embedding FP16 | 0.822785 | 0.647059 | 0.769608 | 86.816s |
+| 4B embedding Q4_K_M | 0.848101 | 0.764706 | 0.852941 | 66.783s |
+| 0.6B reranker FP16 | 0.734177 | 0.647059 | 0.756863 | 89.596s |
+| 4B reranker Q4_K_M | 0.696203 | 0.588235 | 0.714706 | 208.657s |
+
+4B embedding 整体改善，但不能单独通过 preregistered no-case-regression：DELL 0.777778→
+0.888889、MU 0.750000→0.916667，NVDA 却从 0.891892 降到 0.783784。4B reranker 更明确
+失败：整体比 0.6B 低 0.037974，且未达到 0.80 floor；MU／NVDA 分别从 0.708333／
+0.756757 降到 0.625000／0.702703。
+
+因此 decision 为 `quantized_4b_shadow_not_credible_on_controlled_pool`。不得启动 4B
+natural-candidate-pool eval、不得替换 current 0.6B runtime、不得关闭 S1 来源 gap。这个结果
+回答了“8GB 是否装得下”：装得下且能全 GPU 跑；阻止推广的是受控质量，而不是显存。

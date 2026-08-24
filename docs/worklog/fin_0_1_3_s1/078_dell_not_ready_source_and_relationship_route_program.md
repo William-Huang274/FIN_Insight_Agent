@@ -338,3 +338,12 @@ public readiness digest 为 `9021eae8...d4d4e0`。截至本节，R4 Pack、ancho
 仍是后继资产；current runtime registry 仍绑定 R3 Pack／anchor v1.5。必须走原子 promotion，
 验证完整 predecessor digest、保留 MU/NVDA/holdout，再能称为 current。远端 push 仍因连接
 reset 未证实，任何 promotion authority 不能伪造 `pushed_head_required` 已满足。
+
+为满足 current promotion 的既有 S1 consumer contract，另以 R4 Pack 重新物化 DELL current
+ProductReadiness v1.7。它绑定同一冻结 candidate replay、compiled objects 与 source records，
+只把 reviewed-pack 输入从 R3 换成 R4；`0` network／provider／model。结果仍为
+`blocked_by_evidence_admission`，`8` 个既有产品请求中 `1` ready、`3` partial、`4` blocked，
+没有因为 R4 新增材料而伪造 S1 资格。public result digest 为
+`bd6d652c...805e40f`，private SHA-256 为 `c6af4681...b0db42`。这份 v1.7 是原子
+promotion 所需的 S1 current consumer 资产；它与更细的 12-request R4 task readiness 各自保留
+用途，不互相冒充。

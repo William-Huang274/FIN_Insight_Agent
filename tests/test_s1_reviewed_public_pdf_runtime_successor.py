@@ -136,13 +136,34 @@ def test_reviewed_pdf_successor_is_exact_append_with_lineage_and_cuda_cache() ->
     }
 
 
-def test_r35_current_receipt_binds_pdf_successor_without_stage_qualification() -> None:
+def test_r36_current_receipt_binds_pdf_successor_without_stage_qualification() -> None:
     receipt = _json(
-        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_11.json"
+        "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_12.json"
     )
-    assert receipt["registry_binding"]["registry_id"].endswith("R35")
+    assert receipt["registry_binding"]["registry_id"].endswith("R36")
     assert receipt["source_object_index_lineage"]["source_record_count"] == 1886
     assert receipt["source_object_index_lineage"]["compiled_object_count"] == 34189
     assert receipt["embedding_index"]["object_count"] == 34189
     assert receipt["acceptance"]["s1_qualified_stable"] is False
     assert receipt["product_readiness"]["public_information_gap_authority"] is False
+
+
+def test_r36_source_route_successor_covers_bounded_public_roles() -> None:
+    policy = _json(
+        "configs/retrieval/fin_ia_0_1_3_s1_source_route_portfolio_policy_v1_1.json"
+    )
+    routes = {row["route_id"]: row for row in policy["routes"]}
+    bounded_roles = {
+        "issuer_or_bounded_price_configuration_context",
+        "issuer_or_bounded_customer_demand_context",
+        "issuer_or_registered_supplier_direct_mention",
+    }
+    local = routes["current_local_snapshot"]
+    assert {"PUBLIC_WEB", "PUBLIC_PDF"}.issubset(local["source_types"])
+    assert bounded_roles.issubset(local["source_roles"])
+    exact = routes["registered_reviewed_public_document_intake"]
+    assert exact["capture_required"] is True
+    assert exact["exhaustion_authority"] is True
+    assert exact["exact_registry_required"] is True
+    assert policy["successor_change"]["candidate_is_not_evidence"] is True
+    assert policy["successor_change"]["public_information_gap_authority"] is False

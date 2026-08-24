@@ -169,6 +169,17 @@ def test_open_period_uses_one_current_interim_filing_cohort(tmp_path: Path) -> N
     rows = (
         _observation("OBS-Q1", "revenue", "43842000000"),
         _observation(
+            "OBS-Q1-COMPARABLE-ORIGIN",
+            "revenue",
+            "23378000000",
+            accepted_at="2025-05-29T20:00:00+00:00",
+            accession="0001571996-25-000011",
+            period_start="2025-02-01",
+            period_end="2025-05-02",
+            fiscal_year=2026,
+            fiscal_period="Q1",
+        ),
+        _observation(
             "OBS-Q1-COMPARABLE",
             "revenue",
             "23378000000",
@@ -313,6 +324,17 @@ def test_contemporaneous_period_identity_rejects_later_comparable_relabels(
         fiscal_year=2025,
         fiscal_period="Q2",
     )
+    comparable_q3_origin = _observation(
+        "OBS-Q3-COMPARABLE-ORIGIN",
+        "net_income",
+        "1885000000",
+        accepted_at="2025-06-25T22:50:42+00:00",
+        accession="0000723125-25-000021",
+        period_start="2025-02-28",
+        period_end="2025-05-29",
+        fiscal_year=2025,
+        fiscal_period="Q3",
+    )
     comparable_q3 = _observation(
         "OBS-Q3-COMPARABLE",
         "net_income",
@@ -342,6 +364,7 @@ def test_contemporaneous_period_identity_rejects_later_comparable_relabels(
             contemporaneous_q2,
             later_q3_copy,
             later_q2_copy,
+            comparable_q3_origin,
             comparable_q3,
             current_q3,
         ),
@@ -573,6 +596,64 @@ def test_period_identity_without_timely_origin_fails_closed(tmp_path: Path) -> N
     )
 
 
+def test_unanimous_late_copies_do_not_create_period_identity_authority(
+    tmp_path: Path,
+) -> None:
+    metrics = (_metric("net_income"),)
+    rows = (
+        _observation(
+            "OBS-LATE-FY-COPY-1",
+            "net_income",
+            "10",
+            accepted_at="2026-03-01T00:00:00+00:00",
+            period_start="2025-01-01",
+            period_end="2025-03-31",
+            fiscal_year=2026,
+            fiscal_period="FY",
+        ),
+        _observation(
+            "OBS-LATE-FY-COPY-2",
+            "net_income",
+            "10",
+            accepted_at="2026-06-01T00:00:00+00:00",
+            period_start="2025-01-01",
+            period_end="2025-03-31",
+            fiscal_year=2026,
+            fiscal_period="FY",
+        ),
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=rows,
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+
+    result = execute_fact_lookup(
+        sqlite_path,
+        FactLookup(
+            fact_request_id="TEST::UNVERIFIED-PERIOD-IDENTITY",
+            ticker="DELL",
+            metric_id="net_income",
+            research_as_of="2026-08-01",
+            period={
+                "start_date": "2025-01-01",
+                "end_date": "2025-03-31",
+                "fiscal_years": [2026],
+            },
+            granularity="quarter_discrete",
+            requested_unit="reported_source_unit",
+        ),
+    )
+
+    assert result.status == "typed_conflict"
+    assert result.facts == ()
+    assert result.typed_conflict["conflicts"][0]["code"] == (
+        "typed_fact_physical_period_identity_source_unavailable"
+    )
+
+
 def test_derived_margin_and_fcf_require_aligned_source_period(tmp_path: Path) -> None:
     metrics = (
         _metric("revenue"),
@@ -608,6 +689,104 @@ def test_derived_margin_and_fcf_require_aligned_source_period(tmp_path: Path) ->
     ]
     assert fcf.status == "resolved"
     assert fcf.facts[0].value_decimal == "30"
+
+
+def test_derived_formula_propagates_input_identity_conflict(tmp_path: Path) -> None:
+    metrics = (
+        _metric("revenue"),
+        _metric("gross_profit"),
+        _metric(
+            "gross_margin",
+            unit_family="percentage",
+            formula="gross_profit / revenue * 100",
+        ),
+    )
+    rows = (
+        _observation("OBS-GP-ORIGIN", "gross_profit", "50"),
+        _observation(
+            "OBS-REV-LATE-Q1",
+            "revenue",
+            "200",
+            accepted_at="2026-09-01T00:00:00+00:00",
+            fiscal_period="Q1",
+        ),
+        _observation(
+            "OBS-REV-LATE-Q2",
+            "revenue",
+            "200",
+            accepted_at="2026-10-01T00:00:00+00:00",
+            fiscal_period="Q2",
+        ),
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=rows,
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+
+    result = execute_fact_lookup(
+        sqlite_path,
+        _lookup("gross_margin", research_as_of="2026-12-31"),
+    )
+
+    assert result.status == "typed_conflict"
+    assert result.typed_gap is None
+    propagated = result.typed_conflict["conflicts"][0]
+    assert propagated["code"] == "derived_formula_input_conflict"
+    assert propagated["input_side"] == "right"
+    assert propagated["input_metric"] == "revenue"
+    assert propagated["input_conflicts"][0]["code"] == (
+        "typed_fact_physical_period_identity_ambiguous"
+    )
+
+
+def test_unrelated_period_role_cannot_create_identity_conflict(
+    tmp_path: Path,
+) -> None:
+    metrics = (_metric("revenue"),)
+    annual_copy = _observation(
+        "OBS-LATE-ANNUAL-COPY",
+        "revenue",
+        "200",
+        accepted_at="2027-06-01T00:00:00+00:00",
+        period_role="fiscal_year",
+        period_start="2026-01-01",
+        period_end="2026-12-31",
+        fiscal_year=2027,
+        fiscal_period="FY",
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=(annual_copy,),
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+
+    result = execute_fact_lookup(
+        sqlite_path,
+        FactLookup(
+            fact_request_id="TEST::NO-UNRELATED-ROLE-CONFLICT",
+            ticker="DELL",
+            metric_id="revenue",
+            research_as_of="2027-12-31",
+            period={
+                "start_date": "2026-01-01",
+                "end_date": "2026-12-31",
+                "fiscal_years": [2027],
+            },
+            granularity="quarter_discrete",
+            requested_unit="reported_source_unit",
+        ),
+    )
+
+    assert result.status == "typed_gap"
+    assert result.typed_conflict is None
+    assert result.typed_gap["gap_code"] == (
+        "typed_fact_not_found_for_as_of_and_period"
+    )
 
 
 def test_s1_typed_fact_request_executes_against_s2_mart(tmp_path: Path) -> None:

@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_ia_s2_derived_conflict_boundary_independent_audit_failure_v1_0",
+  "status": "failed_preserved_successor_required",
+  "recorded_at": "2026-08-24",
+  "attempt_id": "FIN-0.1.3-S2-PHYSICAL-PERIOD-IDENTITY-R2-CLEAN-INDEPENDENT-AUDIT",
+  "review": {
+    "review_mode": "clean_successor_read_only_git_object_and_read_only_mart_audit",
+    "independent_review": true,
+    "qualified_human_review": false,
+    "reviewed_commit": "5f35b116ba8e906a7e0c73ed1972679699c6ab1c",
+    "reviewer_was_forbidden_from_reading_uncommitted_worktree": true,
+    "network_provider_and_model_calls": 0
+  },
+  "bound_predecessor": {
+    "executor_ref": "src/financial_facts/executor.py",
+    "executor_sha256_at_reviewed_commit": "4e8d2bd4085e02dc1af0f93d65ed5812836bf36aa69c7b8eeebe1a9abb880423",
+    "result_ref": "configs/financial_facts/fin_ia_0_1_3_s2_mu_physical_period_identity_successor_result_v1_1.json",
+    "result_sha256": "a5bd60c47beea65972aab2fa6f74d309d598f85c84aa419ab181a917908a72c1",
+    "result_digest": "6823104ce6e99688f18173215e585261e68c8601f969f7a05930bc377461abd7"
+  },
+  "findings": [
+    {
+      "classification": "P1_material_gap_conflict_boundary",
+      "code": "derived_formula_input_conflict_was_downgraded_to_missing_gap",
+      "root_cause": "The reviewed _execute_derived implementation mapped every input status other than resolved to typed_gap derived_formula_input_missing, including authoritative typed_conflict results from physical-period identity admission.",
+      "impact": "A disputed or unproved input identity could be reported downstream as missing public information. This violates the repository rule that retrieval or authority failures must not masquerade as genuine information boundaries.",
+      "required_successor": "If any formula input returns typed_conflict, the derived request must return typed_conflict and preserve the input side, metric, request id, conflict code, and nested conflicts. Only conflict-free missing inputs may produce a typed gap."
+    },
+    {
+      "classification": "P2_period_role_scope",
+      "code": "unrelated_period_role_could_trigger_identity_conflict_before_role_selection",
+      "root_cause": "The reviewed candidate query admitted every period role before the empty-row fast path. When the requested role had no rows, an identity conflict belonging only to another role could cause _execute_direct to return conflict before _select_latest_period_roles filtered it.",
+      "impact": "A quarter-discrete request could receive a false conflict from an annual or instant row that was outside its requested granularity.",
+      "required_successor": "Constrain candidate rows to the roles admitted by the requested granularity before physical-period identity admission."
+    }
+  ],
+  "positive_read_only_mart_evidence": {
+    "observation_rows": 1319,
+    "physical_groups": 728,
+    "label_varying_groups": 78,
+    "label_varying_groups_with_unique_timely_identity": 72,
+    "label_varying_groups_without_timely_origin_expected_to_conflict": 6,
+    "mu_six_asof_results_match_predecessor_receipt": true,
+    "mu_current_three_fact_inventory_matches_predecessor_receipt": true,
+    "latest_dell_mu_nvda_derived_lookups_resolved": true
+  },
+  "predecessor_disposition": {
+    "specific_mu_six_asof_and_current_inventory_valid": true,
+    "generic_direct_identity_admission_positive_on_current_mart": true,
+    "generic_derived_gap_conflict_boundary_valid": false,
+    "generic_empty_target_role_disposition_valid": false
+  },
+  "calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0
+  },
+  "authority": {
+    "s2_stage_qualification_authorized": false,
+    "public_information_gap_authority_granted": false,
+    "publication_or_release_authorized": false
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "schema_version": "fin_ia_s1_large_model_gate_status_bypass_independent_audit_failure_v1_0",
+  "status": "failed_preserved_successor_required",
+  "recorded_at": "2026-08-24",
+  "attempt_id": "FIN-0.1.3-S1-LARGE-MODEL-CHALLENGER-R2-INDEPENDENT-AUDIT",
+  "review": {
+    "review_mode": "clean_successor_read_only_git_object_audit",
+    "independent_review": true,
+    "qualified_human_review": false,
+    "reviewed_commit": "5f35b116ba8e906a7e0c73ed1972679699c6ab1c",
+    "reviewer_was_forbidden_from_reading_uncommitted_worktree": true,
+    "network_provider_and_model_calls": 0
+  },
+  "bound_predecessor": {
+    "program_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_program_v1_1.json",
+    "program_sha256": "c78d28c49d638a7265c0112030171bf8fd8457c514e6bdb436e00cc2d7d00023",
+    "preflight_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_preflight_result_v1_1.json",
+    "preflight_result_sha256": "7c271432a4f81758f01a3ea9adb7af7b5e86faf0a06532fe680e52ead62507f4",
+    "gate_ref": "src/retrieval/large_model_challenger.py",
+    "gate_sha256_at_reviewed_commit": "4ead770064ad4de21de8615c8738504148ddfd5861b778f397ec855456a80429",
+    "preflight_materializer_ref": "scripts/data_retrieval/materialize_s1_large_model_challenger_preflight_v2.py",
+    "preflight_materializer_sha256": "300756a5959d37bf644ae12f19033a55c5afa730dff2fdfb5fbd7e9d5cc79fb6",
+    "test_ref": "tests/test_s1_large_model_challenger.py",
+    "test_sha256_at_reviewed_commit": "3c3716b7e8b0681eef81c7bfb71069d0987b7f20a26a6b6ea4378ecae31addd0"
+  },
+  "finding": {
+    "classification": "P1_material",
+    "code": "caller_supplied_identity_status_bypasses_local_artifact_revalidation",
+    "root_cause": "The R2 preflight materializer computed identity v3 correctly on its normal path, but the reusable resource-gate API treated caller-supplied model_artifacts[*].status == identity_bound_v3 as sufficient. The gate did not reopen the local directory, recompute the acquisition-manifest closure, or compare an independently derived receipt.",
+    "deterministic_reproduction": "On otherwise suitable synthetic hardware and storage, two dictionaries containing only status=identity_bound_v3 produced eligible_for_preregistered_development_attempt.",
+    "impact": "The recorded 8 GB local preflight remains truthful and zero-call because it was resource-blocked and both artifacts were absent. A future caller on a suitable host could nevertheless cross the attempt-eligibility seam without proving that either expected model exists or matches the frozen model id and recursive file closure.",
+    "required_successor": "The current gate must derive identity from an absolute local directory using the program-bound model id and artifact kind. Caller status may be retained only as diagnostic input. Historical v1.0/v1.1 programs may replay their resource blockers but must never authorize a new attempt."
+  },
+  "additional_findings": [
+    {
+      "classification": "P2_material_replay_compatibility",
+      "code": "historical_v1_0_preflight_cli_schema_replay_broken",
+      "root_cause": "At the reviewed commit, the retained v1.0 materializer imported the shared gate after that gate had been hard-switched to the v1.1 program schema and identity-v3 status. The v1.0 CLI therefore raised large_model_challenger_program_schema_invalid before it could reproduce its historical resource decision.",
+      "impact": "The immutable v1.0 receipt remains truthful, but repository-local historical validation was incomplete.",
+      "required_successor": "Dispatch legacy schemas through an explicit historical-only validator. Preserve their resource and artifact diagnostics while making a fully satisfied legacy contract return historical_identity_contract_not_authorized_for_new_attempt."
+    },
+    {
+      "classification": "P1_material_artifact_closure",
+      "code": "symlinked_or_reparse_directory_was_silently_omitted_from_identity_v3",
+      "root_cause": "The reviewed recursive closure used Path.rglob. Its runtime does not descend into a symlinked directory, while that directory entry is not a regular file and was therefore silently omitted instead of reaching the existing path-escape check.",
+      "impact": "A model loader could consume remote code or nested config through a symlink or Windows junction while the manifest, file set, and model digest bound none of that external content.",
+      "required_successor": "Use an explicit non-following directory scan and fail closed on every symlink or Windows reparse entry, including directories, files, the manifest, and the model root."
+    },
+    {
+      "classification": "P1_material_split_authority",
+      "code": "gate_did_not_bind_preregistered_program_or_development_input_inventory",
+      "root_cause": "The reviewed gate validated schema, status, identity flags, and hardware but not the program digest, program id, split policy, allowed or forbidden cases, or bound development inputs. The CLI also accepted an arbitrary --program path.",
+      "impact": "A future caller could remove the COST and hidden-reference prohibitions or replace development inputs while retaining the accepted schema and receive attempt eligibility.",
+      "required_successor": "Pin the approved program digest, validate the exact DELL/MU/NVDA versus COST/hidden split contract, and re-hash every declared development input before eligibility."
+    },
+    {
+      "classification": "P1_material_holdout_input_contradiction",
+      "code": "bound_role_eval_file_contained_holdout_unseen_cases",
+      "root_cause": "The checked-in R2 program prohibited hidden and holdout loading but named the whole financial_role_eval_set_v1_1 as a development input. That file contains holdout_unseen_case ORCL, ASML, and ANET rows plus heldout pack bindings.",
+      "impact": "No 4B attempt ran, so there was no actual model leakage. A future runner that loaded the named file wholesale would violate the program before scoring.",
+      "required_successor": "Exclude the mixed file from executable inputs and materialize a content-addressed development-only DELL/MU/NVDA projection with no holdout rows or bindings."
+    },
+    {
+      "classification": "P2_upstream_acquisition_provenance",
+      "code": "local_manifest_bound_a_provenance_claim_not_a_hub_attestation",
+      "root_cause": "Identity v3 bound the local manifest's model id, resolved revision, acquisition tool, and file closure, but the manifest was a local assertion. It did not prove that snapshot_download returned that commit, and the program had no owner-approved immutable revision or acquisition receipt.",
+      "impact": "Current artifacts are absent and calls are zero, so no quality or execution authority was granted. A future local directory could otherwise pair a truthful byte closure with an unproved upstream-origin claim.",
+      "required_successor": "Keep attempt eligibility blocked until a separate recorded acquisition attempt binds its invocation, Hub-returned commit, exact identity digest, implementation, and receipt; then require an owner-approved resolved revision in a new program."
+    }
+  ],
+  "predecessor_disposition": {
+    "recorded_local_hardware_receipt_truthful": true,
+    "recorded_resource_blocked_status_truthful": true,
+    "recorded_calls_remain_zero": true,
+    "identity_v3_filesystem_closure_implementation_sound": true,
+    "generic_gate_attempt_eligibility_authority_valid": false,
+    "s1_qualification_or_runtime_promotion_was_granted": false
+  },
+  "calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0
+  },
+  "authority": {
+    "new_model_attempt_authorized": false,
+    "runtime_promotion_authorized": false,
+    "s1_qualification_authorized": false,
+    "publication_or_release_authorized": false
+  }
+}

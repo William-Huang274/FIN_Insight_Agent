@@ -1660,3 +1660,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Owner 在用户授权范围内开零模型 R16，只改 7 个 model-text surface；Evidence／NumericFact／Relation／gap refs、remaining gaps、topology 和 protected numbers 均不变。
 - R16 本地 contract surface／hard／quality finding 为 `0/0/0`，calls=`0/0/0`，但它由当前 Codex 编写，仍须第二个全新 read-only reviewer。independent／qualified-human／S3／product／publication／release 全为 false。
 - 本轮仓库门禁：联合定向 `129 passed`；全仓 `1201 passed, 2 warnings`；compileall、10 个变更 Python 文件 pyflakes、992 config JSON、8 Project OS JSONL／1137 行、active baseline `212／8／5／28／0`、Workbench typecheck／build、7,878-file secret scan／0 和 diff check 全通过。
+
+### 2026-08-24 fresh audit 后的 S1 R3、S2 v1.4 与 S3 R17 successor
+
+- fresh reviewer 对 immutable `5f35b116...` 判定 FAIL。S1 R2 只信 caller status、未校验 approved program／split／input digest，`Path.rglob` 可漏 symlink／reparse，mixed role eval 含 ORCL／ASML／ANET holdout rows，本地 manifest 也不是 Hub acquisition attestation。R3 现由 gate 自行重验 filesystem、program、DELL／MU／NVDA dev-only input 与 link/reparse closure；legacy schema 只能历史回放。当前 approved revision／receipt 为空且本机仅 8.59GB，因此 4B attempt 与质量结果仍不存在。
+- S2 撤回“无及时来源但晚期 label 一致即可接纳”。真实 728-group 对账证明该 fallback 会接纳错误 FY role。当前无 timely origin 一律 fail closed；direct input conflict 在 derived request 中保持 typed conflict；无关 period role 在 identity admission 前隔离。v1.2 receipt 自审失败、v1.3 strict-origin pass、v1.4 fresh-audit successor pass 均不可变保留。S2 仍只是标准化报表事实 executor，不含 ASP／units／PVM／利润桥。
+- R16 fresh independent review 因 reversal 条件中的 `persist OR breach` 而失败：one-off threshold breach 或 persistent-but-below-threshold 都可能误触发。R17 只同步两个 model-text path 为 `material AND AI-linked AND persistent AND evaluated as breaching a predeclared threshold`，并绑定 materializer／validator／renderer SHA；references、gaps、topology 与 protected numbers 不变，calls=`0/0/0`。
+- R17 由当前 Codex 编写，只是 local candidate。下一合法门是先提交成不可变 commit，再由新的 clean read-only reviewer 审计；在此之前 fresh independent、qualified-human、S3、产品、publication 和 release 均为 false。

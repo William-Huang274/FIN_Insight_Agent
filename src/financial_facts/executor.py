@@ -251,6 +251,32 @@ def _execute_derived(
             }
         ),
     )
+    input_conflicts = []
+    for side, metric_id, result in (
+        ("left", left_metric, left),
+        ("right", right_metric, right),
+    ):
+        if result.status != "typed_conflict":
+            continue
+        input_conflicts.append(
+            {
+                "code": "derived_formula_input_conflict",
+                "formula": formula,
+                "input_side": side,
+                "input_metric": metric_id,
+                "input_fact_request_id": result.fact_request_id,
+                "input_conflict_code": (
+                    result.typed_conflict or {}
+                ).get("conflict_code"),
+                "input_conflicts": list(
+                    (result.typed_conflict or {}).get("conflicts") or ()
+                ),
+                "left_status": left.status,
+                "right_status": right.status,
+            }
+        )
+    if input_conflicts:
+        return _conflict(lookup, input_conflicts)
     if left.status != "resolved" or right.status != "resolved":
         return _gap(
             fact_request_id=lookup.fact_request_id,
@@ -404,6 +430,13 @@ def _candidate_rows(
     if start_date:
         clauses.append("(current.period_start IS NULL OR current.period_start >= ?)")
         params.append(str(start_date))
+    allowed_roles = sorted(_roles_for_granularity(lookup.granularity))
+    clauses.append(
+        "current.period_role IN ("
+        + ", ".join("?" for _ in allowed_roles)
+        + ")"
+    )
+    params.extend(allowed_roles)
     query = (
         "SELECT current.* FROM company_fact_observations AS current WHERE "
         + " AND ".join(clauses)
@@ -428,8 +461,9 @@ def _admit_physical_period_identities(
     when the value belongs to an earlier physical quarter.  A comparable copy
     therefore cannot rename that period.  A 10-Q/10-K accepted inside the
     applicable filing window supplies the identity; later rows may update the
-    value only when they retain it.  Without a timely origin, every observed
-    vintage must agree or the executor fails closed.
+    value only when they retain it.  Agreement among later copies is not an
+    independent identity source, so a group without a timely origin fails
+    closed even when every observed label agrees.
     """
 
     requested_years = {int(value) for value in fiscal_years}
@@ -461,8 +495,6 @@ def _admit_physical_period_identities(
         }
         if timely_rows and len(timely_labels) == 1:
             canonical_label = next(iter(timely_labels))
-        elif not timely_rows and len(labels) == 1:
-            canonical_label = next(iter(labels))
         else:
             candidate_years = {
                 int(year) for year, _ in labels if isinstance(year, int)
@@ -471,7 +503,11 @@ def _admit_physical_period_identities(
                 continue
             conflicts.append(
                 {
-                    "code": "typed_fact_physical_period_identity_ambiguous",
+                    "code": (
+                        "typed_fact_physical_period_identity_source_unavailable"
+                        if not timely_rows and len(labels) == 1
+                        else "typed_fact_physical_period_identity_ambiguous"
+                    ),
                     "period_start": key[2],
                     "period_end": key[3],
                     "period_role": key[4],

@@ -1,0 +1,121 @@
+{
+  "artifact_blockers": [
+    "model_artifact_absent:qwen3_embedding_4b",
+    "model_artifact_absent:qwen3_reranker_4b"
+  ],
+  "calls": {
+    "model": 0,
+    "network": 0,
+    "provider": 0
+  },
+  "decision": {
+    "development_execution_authorized_by_this_preflight": false,
+    "evidence_or_numeric_authority_granted": false,
+    "hidden_or_temporal_qualification_authorized": false,
+    "model_download_authorized_by_this_preflight": false,
+    "next_action": "move_the_frozen_profile_to_a_suitable_cuda_host_then_repeat_preflight",
+    "runtime_promotion_authorized": false
+  },
+  "hardware": {
+    "compute_capability": [
+      8,
+      9
+    ],
+    "cuda_available": true,
+    "cuda_runtime_version": "12.6",
+    "device_count": 1,
+    "device_index": 0,
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "free_memory_bytes": 7443841024,
+    "torch_version": "2.10.0+cu126",
+    "total_memory_bytes": 8585216000
+  },
+  "historical_replay_only": false,
+  "identity_contract": {
+    "absolute_local_directory_required": true,
+    "acquisition_manifest_name": "fin_ia_model_acquisition_manifest_v1_0.json",
+    "acquisition_manifest_required": true,
+    "acquisition_manifest_schema": "fin_ia_local_model_acquisition_manifest_v1_0",
+    "acquisition_tool": "huggingface_hub.snapshot_download",
+    "caller_supplied_digest_is_authority": false,
+    "caller_supplied_status_is_authority": false,
+    "exact_recursive_file_closure_required": true,
+    "expected_model_id_must_match_manifest": true,
+    "extra_or_missing_files_fail_closed": true,
+    "gate_revalidates_local_files": true,
+    "identity_contract_version": "local_model_identity_v3",
+    "immutable_resolved_revision_required": true,
+    "local_manifest_proves_upstream_origin": false,
+    "owner_approved_resolved_revision_required": true,
+    "remote_code_and_nested_configs_bound": true,
+    "resolved_revision_format": "lowercase_40_hex_git_commit",
+    "separate_acquisition_receipt_required": true,
+    "symlink_escape_forbidden": true
+  },
+  "implementation_refs": [
+    {
+      "path": "src/retrieval/model_identity.py",
+      "sha256": "e51f9729018267bbe0db51393b5b59ce6859ef99f24cad53b2039307f826f045"
+    },
+    {
+      "path": "src/retrieval/large_model_challenger.py",
+      "sha256": "24252cd9456e7c7453f3bfa521f797c4deee7f52a3f3697abffd4590215f0346"
+    },
+    {
+      "path": "scripts/data_retrieval/materialize_s1_large_model_challenger_preflight_v3.py",
+      "sha256": "9157ec7e61c6820f67b0e513928198146e20d37f67fab77ac15402e3f1cf1a9b"
+    }
+  ],
+  "known_boundary": "This zero-call preflight does not download or load a model, compute vectors or scores, inspect COST or hidden references, grant Evidence or NumericFact authority, qualify S1, or promote a runtime. A suitable host must still open a new recorded candidate-ceiling-first attempt.",
+  "model_artifacts": {
+    "qwen3_embedding_4b": {
+      "caller_claimed_status": "absent",
+      "gate_revalidated_from_local_files": false,
+      "local_dir": "Z:\\hf_models\\Qwen__Qwen3-Embedding-4B",
+      "model_id": "Qwen/Qwen3-Embedding-4B",
+      "status": "absent"
+    },
+    "qwen3_reranker_4b": {
+      "caller_claimed_status": "absent",
+      "gate_revalidated_from_local_files": false,
+      "local_dir": "Z:\\hf_models\\Qwen__Qwen3-Reranker-4B",
+      "model_id": "Qwen/Qwen3-Reranker-4B",
+      "status": "absent"
+    }
+  },
+  "predecessor": {
+    "disposition": "R2 remains immutable. Its local 8 GB resource-blocked zero-call receipt is truthful, but its generic caller-status gate cannot authorize a future attempt.",
+    "independent_audit_failure_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_gate_status_bypass_independent_audit_failure_v1_0.json",
+    "independent_audit_failure_sha256": "9c0f33366245f6462c656e23feef04b3f07684fb079045c43c6079e7d087d482",
+    "preflight_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_preflight_result_v1_1.json",
+    "preflight_result_sha256": "7c271432a4f81758f01a3ea9adb7af7b5e86faf0a06532fe680e52ead62507f4",
+    "program_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_program_v1_1.json",
+    "program_sha256": "c78d28c49d638a7265c0112030171bf8fd8457c514e6bdb436e00cc2d7d00023"
+  },
+  "program_id": "FIN-0.1.3-S1-LARGE-MODEL-CHALLENGER-R3",
+  "program_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_program_v1_2.json",
+  "program_sha256": "bbf452ef1a35551eb090e5a3417c2ea9f9dc548289b296793b1703d9f30edf77",
+  "recorded_at": "2026-08-24",
+  "required_profile": {
+    "cpu_model_fallback_allowed": false,
+    "device": "cuda",
+    "minimum_free_memory_bytes_before_load": 21474836480,
+    "minimum_free_storage_bytes_before_download": 21474836480,
+    "minimum_total_memory_bytes": 24000000000,
+    "precision": "fp16",
+    "quantized_qualification_allowed": false
+  },
+  "resource_blockers": [
+    "gpu_total_memory_below_preregistered_profile",
+    "gpu_free_memory_below_preregistered_profile"
+  ],
+  "schema_version": "fin_ia_s1_large_model_challenger_preflight_result_v1_2",
+  "status": "resource_blocked_before_download",
+  "storage": {
+    "free_bytes": 32641236992,
+    "observed_existing_parent": "Z:\\",
+    "requested_root": "Z:\\hf_models",
+    "total_bytes": 419430395904,
+    "used_bytes": 386789158912
+  }
+}

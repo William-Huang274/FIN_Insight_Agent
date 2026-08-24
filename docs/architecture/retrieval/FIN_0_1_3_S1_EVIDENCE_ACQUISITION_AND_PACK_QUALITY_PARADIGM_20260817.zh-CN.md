@@ -693,3 +693,18 @@ v3 使用独立 acquisition manifest：expected model ID 必须一致，resolved
 R1 可执行程序中曾内嵌历史 COST-derived 诊断，却同时声称禁止全部 COST reference access。它没有导致本次 hidden-label 执行泄漏：bound inputs 不含 COST，preflight 没有读取 qrel／hidden。但合同文字不一致，因此 R2 将该诊断从 executable hypothesis 移除，并明确禁止任何 historical forbidden-case diagnostic 进入运行输入。
 
 新程序／preflight 为 `program_v1_1`／`preflight_result_v1_1`。本机仍因总显存和 free memory 双重不足在下载前停止，两个 4B artifact 均 absent，0 network／Provider／model。新结果只证明 resource 与 identity gate 的工程语义，不包含 embedding、reranker、candidate ceiling、latency 或质量观察。
+
+## 36. fresh audit 更正：R3 gate 自验、development split 与 acquisition attestation（2026-08-24）
+
+§35 对“exact recursive closure”和 acquisition provenance 的表述仍然过强。fresh reviewer 证明 `Path.rglob` 会跳过 symlink directory，Windows junction／reparse point 也可能绕过 regular-file inventory；shared gate 又只读取 caller 提供的 `identity_bound_v3` 状态，没有自己重验目录、approved program、split 或 input digest。更重要的是，本地 manifest 中手写的 model ID／revision 只是 provenance claim，不是 Hugging Face Hub 返回 commit 的独立 acquisition attestation。因此 R2 的资源事实继续有效，但 future-attempt authority 再次撤回。
+
+R3 将权限改成以下合取门：
+
+1. gate 以 program-bound model ID、artifact kind 与绝对目录自行重算 identity，caller status／digest 只作诊断；
+2. 使用显式 `os.scandir`，不 follow links；model root、manifest、文件或目录只要是 symlink 或 Windows reparse point 就 fail closed；
+3. 代码钉死 approved program 的 canonical digest，并逐份重验 executable input path、SHA 与 case inventory；development split 必须精确为 DELL／MU／NVDA，COST／hidden／frozen／holdout 全部禁止；
+4. 原 mixed role-eval 文件包含 ORCL／ASML／ANET `holdout_unseen_case`，故从 executable inputs 移除。新 dev-only projection 只保留 18 个 `primary_three_case` query，不复制 holdout row、heldout pack binding 或 source-bound input；
+5. v1.0／v1.1 只可历史回放，不得授予新 attempt；
+6. acquisition receipt 必须单独绑定 snapshot invocation、Hub 返回的 40-hex commit、下载目录闭包、实现 SHA 与 receipt digest，且 exact revision 经 Owner 批准。当前两候选的批准 revision／receipt 均为 `null`，所以即便未来目录存在也会返回 `model_artifact_upstream_revision_not_owner_approved`。
+
+主候选仍是 Qwen3-Embedding-4B＋Qwen3-Reranker-4B，BGE reranker v2 Gemma 为次级；gte-Qwen2-7B、e5-mistral-7B、NV-Embed-v2 8B 与 Jina Embeddings v4 只作为资源／许可／长上下文取舍已登记的替代观察项，不代表已下载或已比较。当前 RTX 4060 Laptop 总显存 `8,585,216,000` bytes，R3 preflight 仍在下载前停止，calls=`0/0/0`。因此现在成立的是“更严格的工程运行门”，不是 4B embedding／reranker 质量能力、S1 qualification、runtime promotion 或产品提升。

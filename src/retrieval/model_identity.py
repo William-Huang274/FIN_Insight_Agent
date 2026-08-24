@@ -2,9 +2,11 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 from dataclasses import dataclass
 from pathlib import Path
 import re
+import stat
 from typing import Any, Mapping, Sequence
 
 from .query_plan import canonical_digest
@@ -24,6 +26,66 @@ ACQUISITION_MANIFEST_SCHEMA_VERSION = (
     "fin_ia_local_model_acquisition_manifest_v1_0"
 )
 _REVISION_PATTERN = re.compile(r"[0-9a-f]{40}")
+
+
+def _is_link_or_reparse(path: Path) -> bool:
+    try:
+        metadata = path.lstat()
+    except OSError as exc:
+        raise ValueError("local_model_acquisition_entry_stat_failed") from exc
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0)
+    file_attributes = getattr(metadata, "st_file_attributes", 0)
+    return stat.S_ISLNK(metadata.st_mode) or bool(
+        reparse_flag and file_attributes & reparse_flag
+    )
+
+
+def _regular_files_without_links(model_dir: Path) -> tuple[Path, ...]:
+    """Enumerate every regular file while rejecting link-like entries.
+
+    ``Path.rglob`` intentionally does not descend into a symlinked directory,
+    which would make runtime-consumable remote code disappear from the model
+    closure.  Windows junctions and other reparse points have the same risk.
+    Reject them at the root and at every nested entry instead of following or
+    silently omitting them.
+    """
+
+    if _is_link_or_reparse(model_dir):
+        raise ValueError("local_model_acquisition_root_link_forbidden")
+    pending = [model_dir]
+    files: list[Path] = []
+    while pending:
+        directory = pending.pop()
+        try:
+            with os.scandir(directory) as iterator:
+                entries = sorted(iterator, key=lambda entry: entry.name)
+        except OSError as exc:
+            raise ValueError("local_model_acquisition_directory_scan_failed") from exc
+        for entry in entries:
+            path = Path(entry.path)
+            relative = path.relative_to(model_dir).as_posix()
+            if _is_link_or_reparse(path):
+                raise ValueError(
+                    "local_model_acquisition_link_or_reparse_forbidden:"
+                    f"{relative}"
+                )
+            try:
+                if entry.is_dir(follow_symlinks=False):
+                    pending.append(path)
+                elif entry.is_file(follow_symlinks=False):
+                    files.append(path)
+                else:
+                    raise ValueError(
+                        "local_model_acquisition_non_regular_entry_forbidden:"
+                        f"{relative}"
+                    )
+            except OSError as exc:
+                raise ValueError(
+                    f"local_model_acquisition_entry_stat_failed:{relative}"
+                ) from exc
+    return tuple(
+        sorted(files, key=lambda path: path.relative_to(model_dir).as_posix())
+    )
 
 
 @dataclass(frozen=True)
@@ -166,6 +228,8 @@ def _read_acquisition_manifest(
     manifest_path = model_dir / ACQUISITION_MANIFEST_NAME
     if not manifest_path.is_file():
         raise ValueError("local_model_acquisition_manifest_missing")
+    if _is_link_or_reparse(manifest_path):
+        raise ValueError("local_model_acquisition_manifest_link_forbidden")
     model_root = model_dir.resolve()
     if manifest_path.resolve().parent != model_root:
         raise ValueError("local_model_acquisition_manifest_path_invalid")
@@ -209,8 +273,8 @@ def _read_acquisition_manifest(
         by_relative_path[relative_text] = row
 
     actual_by_relative_path: dict[str, Path] = {}
-    for path in model_dir.rglob("*"):
-        if not path.is_file() or path == manifest_path:
+    for path in _regular_files_without_links(model_dir):
+        if path == manifest_path:
             continue
         resolved = path.resolve()
         if not resolved.is_relative_to(model_root):

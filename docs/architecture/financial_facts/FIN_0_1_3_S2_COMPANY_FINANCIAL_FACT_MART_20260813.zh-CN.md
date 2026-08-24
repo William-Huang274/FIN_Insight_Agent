@@ -127,3 +127,13 @@ successor 将 fiscal identity 与 numeric vintage 分离：同物理期间的 10
 真实回放中，六个 historical as-of 全部稳定为 FY2023/Q1，最终错误 copy 从未被选；原 MU current request 的三条 source-bound facts、exact periods、values、accessions、observation IDs 与 authority inventory 均保持一致。旧 result、独立失败和新 `physical_period_identity_successor_result_v1_1` 均保留。
 
 因此 RC-S2-006 的历史“PIT 通用关闭”记录无效；新 RC-S2-010 只关闭 final-pointer authority 根因。当前 bound mart timestamps 全为 UTC、pointer scope invariant 当前无违规；offset canonicalization 与 deprecated pointer 的未来误用仍作为 generic hardening 开放。RC-S2-004、产品桥、S2 qualification 和 release 不变。
+
+## 12. fresh audit 更正：无及时来源不是身份，derived conflict 不能降级（2026-08-24）
+
+§11 中“没有 timely origin 时，只要全部 labels 一致即可接纳”的 fallback 已撤回。对真实 mart 的 728 个 physical groups 复核发现，40 组没有及时 origin，34 组只有一个一致 label，其中 19 组出现 `quarter_discrete/fiscal_ytd` 与 `FY` 等明显 role／label 不一致。晚期非权威 copies 的一致，只能说明它们互相重复，不能证明 contemporaneous fiscal identity。
+
+当前 executor 采用更严格边界：同 physical key 必须由 10-Q 45 天或 10-K 90 天窗口内的及时来源唯一给出 fiscal identity；无 timely origin 一律 typed fail closed，即使晚期 labels 全部一致。later filing 只在 canonical label 下更新 numeric vintage。requested granularity 在 candidate SQL 中先过滤 period role，防止无关 annual／instant 行制造 quarter identity conflict。
+
+fresh reviewer 还发现 derived formula 会把 direct input 的 `typed_conflict` 降为 `derived_formula_input_missing` gap。successor 现在传播 authoritative conflict，并保留 input side、metric、request ID、conflict code 与 nested conflicts；只有 conflict-free 的真实缺失输入才能形成 gap。这使“数据互相矛盾”和“公开信息缺失”继续是两个不同状态。
+
+不可变 attempt 链为：v1.2 业务检查为真但 receipt shape 自审失败；v1.3 修复自审并证明 strict origin；v1.4 在 fresh finding 后新增 derived-conflict 与 unrelated-role probes。v1.4 对原 MU 三事实、六个 FY2023/Q1 as-of、DELL no-origin counterexample、728-group population、derived conflict 与 irrelevant-role 共八项检查全部为 true，calls=`0/0/0`。这只关闭 executor 身份／冲突边界，不重建 mart，也不提供 ASP、units、PVM、产品利润桥或 S2 产品资格。

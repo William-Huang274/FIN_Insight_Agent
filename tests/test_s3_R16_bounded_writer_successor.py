@@ -60,13 +60,16 @@ def test_R16_material_correction_keeps_distinct_financial_gates() -> None:
     ]
 
 
-@pytest.mark.skipif(
-    not PUBLIC_PATH.is_file(),
-    reason="private R16 materialization is not present in this checkout",
-)
 def test_R16_materialized_receipt_revalidates_without_authority_expansion() -> None:
     public = json.loads(PUBLIC_PATH.read_text(encoding="utf-8"))
+    unsigned = {key: value for key, value in public.items() if key != "result_digest"}
+    assert public["result_digest"] == canonical_digest(unsigned)
+    assert public["acceptance"]["independent_post_writer_review_pass"] is False
+    assert public["acceptance"]["S3_pass"] is False
+
     private_path = ROOT / public["private_full_result_ref"]
+    if not private_path.is_file():
+        pytest.skip("private R16 materialization is not present in this checkout")
     private = json.loads(private_path.read_text(encoding="utf-8"))
 
     assert hashlib.sha256(private_path.read_bytes()).hexdigest() == public[
@@ -88,5 +91,3 @@ def test_R16_materialized_receipt_revalidates_without_authority_expansion() -> N
         "new_evidence_items": 0,
         "candidate_promotions": 0,
     }
-    assert public["acceptance"]["independent_post_writer_review_pass"] is False
-    assert public["acceptance"]["S3_pass"] is False

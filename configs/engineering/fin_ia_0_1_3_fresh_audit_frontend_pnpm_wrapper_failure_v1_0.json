@@ -1,0 +1,35 @@
+{
+  "schema_version": "fin_ia_engineering_gate_failure_v1_0",
+  "attempt_id": "fin-0.1.3-fresh-audit-frontend-pnpm-wrapper-r1",
+  "occurred_at": "2026-08-24T13:23:00+08:00",
+  "status": "failed_before_frontend_script_execution",
+  "owned_stage": "engineering_verification_tooling",
+  "requested_checks": [
+    "frontend_typecheck",
+    "frontend_build"
+  ],
+  "invocation": "bundled_pnpm_run_typecheck_then_build",
+  "observed_failure": {
+    "exit_code": 1,
+    "code": "ERR_PNPM_IGNORED_BUILDS",
+    "blocked_package": "esbuild@0.28.1",
+    "reason": "bundled_pnpm_wrapper_ran_dependency_status_install_and_rejected_an_unapproved_dependency_build_script_before_the_requested_typecheck_started"
+  },
+  "bound_inputs": {
+    "package_json_sha256": "339b50576193f56d251ba21019b8e430bb82fc16595d9c19df6671806c22c9d5",
+    "package_lock_sha256": "42561de38d4edd04f630d08d90d4b0ccfd7d2b82eee8cabef01fea5ae31fac91"
+  },
+  "repository_or_dependency_mutation_authorized": false,
+  "repository_or_dependency_mutation_performed": true,
+  "transient_untracked_files_created": [
+    "apps/workbench/frontend/pnpm-lock.yaml",
+    "apps/workbench/frontend/pnpm-workspace.yaml"
+  ],
+  "transient_untracked_files_removed_after_exact_target_verification": true,
+  "final_dependency_or_generated_scaffold_delta_present": false,
+  "model_calls": 0,
+  "provider_calls": 0,
+  "network_research_calls": 0,
+  "successor_rule": "run_the_existing_lockfile_installed_local_typescript_and_vite_entrypoints_with_the_bundled_node_runtime_without_installing_or_approving_new_dependency_scripts",
+  "known_boundary": "this_is_a_bundled_pnpm_wrapper_precheck_failure_not_a_typescript_or_vite_result"
+}

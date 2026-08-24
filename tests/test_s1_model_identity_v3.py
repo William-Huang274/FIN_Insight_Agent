@@ -3,9 +3,12 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import stat
+from types import SimpleNamespace
 
 import pytest
 
+from retrieval import model_identity as model_identity_module
 from retrieval.model_identity import (
     ACQUISITION_MANIFEST_NAME,
     ACQUISITION_MANIFEST_SCHEMA_VERSION,
@@ -136,6 +139,56 @@ def test_v3_identity_rejects_unmanifested_runtime_file(tmp_path: Path) -> None:
         match="local_model_acquisition_manifest_file_set_mismatch",
     ):
         local_embedding_model_identity_v3(tmp_path, model_id)
+
+
+def test_v3_identity_rejects_symlinked_nested_directory(
+    tmp_path: Path,
+) -> None:
+    model_id = "Qwen/Qwen3-Embedding-4B"
+    model_dir = tmp_path / "model"
+    model_dir.mkdir()
+    _write_remote_code_model(model_dir, model_id=model_id)
+    external = tmp_path / "external-remote-code"
+    external.mkdir()
+    (external / "modeling_external.py").write_text(
+        "MODEL_KIND = 'mutable_external'\n",
+        encoding="utf-8",
+    )
+    linked = model_dir / "linked_remote_code"
+    try:
+        linked.symlink_to(external, target_is_directory=True)
+    except OSError as exc:
+        pytest.skip(f"directory symlink unavailable on this host: {exc}")
+
+    with pytest.raises(
+        ValueError,
+        match=(
+            "local_model_acquisition_link_or_reparse_forbidden:"
+            "linked_remote_code"
+        ),
+    ):
+        local_embedding_model_identity_v3(model_dir, model_id)
+
+
+def test_windows_reparse_attribute_is_classified_as_link_like(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    reparse_flag = 0x400
+    monkeypatch.setattr(
+        model_identity_module.stat,
+        "FILE_ATTRIBUTE_REPARSE_POINT",
+        reparse_flag,
+        raising=False,
+    )
+
+    class ReparseEntry:
+        def lstat(self) -> SimpleNamespace:
+            return SimpleNamespace(
+                st_mode=stat.S_IFDIR,
+                st_file_attributes=reparse_flag,
+            )
+
+    assert model_identity_module._is_link_or_reparse(ReparseEntry()) is True
 
 
 def test_v3_identity_requires_immutable_commit_revision(tmp_path: Path) -> None:

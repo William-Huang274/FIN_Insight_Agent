@@ -145,7 +145,7 @@
   - [x] clean `883b0e46...`／tree `4f158ecf...` 后 exclusive-create R3 private/public v1.2；content digest `f2ab6795...8afc2`，public/private digest `afc37e76...76e2`／`c31a51cf...49b9`，exact recompile 通过
   - [x] 第三名 fresh author-separated reviewer 审计 immutable `7ba8bb2a...` R3：新 findings `0/0/0/0`；engineering `PASS_BOUNDED`、crosswalk content `PASS_BOUNDED_CONTENT_ONLY`、report `OPEN_NOT_ASSESSABLE`、qualified-human false；只签 bounded `G1=PASS`
   - [x] append-only G1 收据：`configs/audits/fin_ia_0_1_3_commit_7ba8bb2a_dell_rsq_r3_fresh_final_audit_pass_v1_0.json`，digest `4f28008e...42dd4`
-- [x] `DELL-RSQ-02A` 作者工程实现：纠正为“8 请求／16 项全量 human decision set＋4 blocked 请求／8 项 blocker subset”；identity-sealed private packet／无 excerpt 或 URL 的 public manifest 编译器已通过 10 项测试，尚未物化或完成人工决定
+- [x] `DELL-RSQ-02A` clean `29b4fc2e...` 后已物化：纠正为“8 请求／16 项全量 human decision set＋4 blocked 请求／8 项 blocker subset”；packet digest `6bcee241...cec7`，public/private exact recompile 与无 excerpt/URL 泄漏检查通过；人工决定仍为 0
 - [ ] `DELL-RSQ-02B` qualified human 对全部 16 项签发 accept/rebind/accept-new/reject/defer；候选不得自动晋升 Evidence，4 个 blocked 请求只含其中 8 项
 - [x] `DELL-RSQ-03A` 作者工程实现：14 Pack gap＋独立产品利润 gap 全量分区，9 个补源 target／7 层路线／63 contracts；旧 22 fresh query 先复核、禁止原样重跑；11 项测试通过，尚未物化或执行
 - [ ] 执行获准且不与 admission 重叠的 03B 内部链与 03C 真实 residual 外源梯子，并为每项形成 closed／narrowed／route-exhausted／proved-boundary receipt

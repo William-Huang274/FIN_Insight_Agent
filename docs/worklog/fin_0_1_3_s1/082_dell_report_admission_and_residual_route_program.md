@@ -118,3 +118,35 @@ manifest；在 clean 状态下用该 manifest 物化 03A program。最后由无�
 
 在 qualified human 完成 16 项决定前，G2、02C、Pack promotion、Readiness/S2 重编、动态 Agent、Writer、
 report quality、S1/S2/S3、product、publication 和 release 均保持 false。
+
+## 6. Clean implementation commit 与 Project OS 时间纠正
+
+实现提交：`29b4fc2e108cd9b3d4776ce911f21bca77f05856`；tree：
+`ff9520105323d48fe82420ae67febb2ae893160a`；commit time：
+`2026-08-25T15:41:22+08:00`。提交后工作树 clean。首次 push 因 GitHub 443 无法连接而失败，
+本地分支相对 origin 为 ahead 1／behind 0；没有远端变更。
+
+该提交里的两条 RC-S1-065／capability 作者状态记录误把手填计划时间 `16:30/16:55` 当成
+`updated_at/occurred_at`，晚于机器实际时间。代码、测试、输入 SHA、commit/tree 和物化结果不受影响，
+但这两条时间不能作为真实 chronology。按 append-only 规则不改写提交，已在机器时间
+`2026-08-25T15:43:06+08:00` 追加 `RC-S0-102` 和 capability correction；旧两行只保留为错误记录
+证据，其实质状态由纠正行接续。
+
+## 7. 02A exclusive-create materialization
+
+从 clean implementation commit `29b4fc2e...f05856` 物化：
+
+- public manifest：
+  `configs/retrieval/fin_ia_0_1_3_s1_dell_report_evidence_admission_manifest_v1_0.json`；
+- private packet：
+  `data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r1/full_result.json`；
+- recorded at：`2026-08-25T15:42:23+08:00`；
+- packet digest：`6bcee241c5dc7366b1fde513973448d590dcb30094f6bdc06cd2ed95f651cec7`；
+- public result digest／SHA：`199b5d56e7ea419268a56deb333e66fa8c06f46000d3e53c5cab1e10340edcb2`／
+  `5af6e9b4028c0ba02642733330db9a8f6ff564073e9d116b984710ba8b3f7306`；
+- private result digest／SHA：`d5494b4ea30653792f3d7daf6efab00c0b9dbbcdee09a32f6040c553e9e9950a`／
+  `895d340ebdd9e79f4aa8b46344aaf925ed83ead5aa50c3310d946f07cd7ef0f7`。
+
+用相同 `recorded_at`、`prepared_from_commit` 和 private ref 重编，public/private 对象逐字段完全相等；
+21 项定向合同复跑通过，公开文件不含 `bounded_excerpt`、`source_url` 或 `https://`。决定计数仍为 0，
+G2 与所有阶段／产品 authority 均为 false。

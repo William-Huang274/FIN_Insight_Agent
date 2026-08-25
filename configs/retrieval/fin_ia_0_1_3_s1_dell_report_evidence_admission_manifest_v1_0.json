@@ -1,0 +1,405 @@
+{
+  "schema_version": "fin_ia_dell_report_evidence_admission_public_manifest_v1_0",
+  "status": "packet_frozen_qualified_human_decisions_pending",
+  "recorded_at": "2026-08-25T15:42:23+08:00",
+  "prepared_from_commit": "29b4fc2e108cd9b3d4776ce911f21bca77f05856",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "program_digest": "60fd30e57fa588837fd72025aa74ca96e96e5f468e5649fb18c211df08b0776b",
+  "scope_reconciliation": {
+    "frozen_program_wording": "four_requests_sixteen_human_items",
+    "actual_predecessor_scope": {
+      "all_human_required_decision_set": {
+        "request_count": 8,
+        "human_item_count": 16,
+        "required_for_G2": true
+      },
+      "four_request_readiness_blocker_subset": {
+        "request_count": 4,
+        "human_item_count": 8,
+        "request_ids": [
+          "REQ::081c06389f9dcb8487886b57",
+          "REQ::273bf40c53d28f49de438b41",
+          "REQ::c21c10d6e8f13263cf69ffa5",
+          "REQ::e17c40f93e25438950673210"
+        ],
+        "changes_four_blocked_readiness_states": true
+      }
+    },
+    "false_interpretation_rejected": "four_requests_each_with_four_human_items",
+    "immutable_execution_program_rewritten": false
+  },
+  "counts": {
+    "request_count": 8,
+    "all_human_required_item_count": 16,
+    "blocked_request_count": 4,
+    "blocked_request_human_item_count": 8,
+    "qualified_human_decision_count": 0
+  },
+  "items": [
+    {
+      "review_item_ref": "CANDOBJ::0381BE87C0EE31414BA6EA4E",
+      "predecessor_review_item_digest": "0bd1c306dbd895bfc7eac7bfe1a457c986e9ce18b5771e6ae48bb416a7110f22",
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "cc5938a01eae151695597e78b8cbce64e3ec1e362fc627ebb619024610319d63",
+      "report_claim_use": {
+        "proposed_report_effect": "limit_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::653D7E95ECA46E262391",
+          "WPCLAIM::BD2D18FD0931E6E3E68E",
+          "WPCLAIM::DFDFF241544B90012DA1"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "def30dff30096e3c5b3b50798681942c3bc70ffbc608606d7e162d98281391c0",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::040A820BE15FD0CEAF83C0AD",
+      "predecessor_review_item_digest": "ebc02f66b559e1631f29488e3a5e237da4939fba2ef3a28309c4764678ee2feb",
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "4abf39992cf1adae1eb5f171d470460695339502020932f088b89b5eb9a79005",
+      "report_claim_use": {
+        "proposed_report_effect": "limit_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::653D7E95ECA46E262391",
+          "WPCLAIM::B1BDD811CE1DF55EE55E",
+          "WPCLAIM::BD2D18FD0931E6E3E68E",
+          "WPCLAIM::E3BFD59CC60F05B1BD7C",
+          "WPCLAIM::FC2C8B1EA97D7EF82311"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "16fd76c5664cb5c76f2d82dcd6b19d15d3f68d113445dd7e4621cb114e8058ee",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::0B13DC6BFDAF674340B451BC",
+      "predecessor_review_item_digest": "b813c1005b5854dc1422dcdc1ceef128403320ef0fea5539272761cb6a2b06cd",
+      "request_id": "REQ::07e898259cfe6b2e12d7f82c",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "4abf39992cf1adae1eb5f171d470460695339502020932f088b89b5eb9a79005",
+      "report_claim_use": {
+        "proposed_report_effect": "limit_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::72BFBAD47FC79A3722E7",
+          "WPCLAIM::B1BDD811CE1DF55EE55E",
+          "WPCLAIM::E3BFD59CC60F05B1BD7C",
+          "WPCLAIM::FC2C8B1EA97D7EF82311"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "600a02dc03f4eecab8e346a779acfaacdb31d21e466d7f5480ad9c1da137fc44",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::27FD9953E64ED8DF1F3B2428",
+      "predecessor_review_item_digest": "a2364d9afdff35d1c050708366560561cf11f9bd4bf77c485589bbe5bf4c4dd7",
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "2699e1870a7178f1e70e0f817688c07d9c25eb57677f9dcff7d1cdf572ce28e0",
+      "report_claim_use": {
+        "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+        "report_claim_refs": [
+          "WPCLAIM::05DBE34A9E501DA6588A",
+          "WPCLAIM::2B4F6A85A1B574D20ED2",
+          "WPCLAIM::86BBF5595F64AAC5A325"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "3022d678a75f8752a85811bf6d49de6ed3d5b5ca3f0cd931f007e4e9dce8ec45",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::51BFECDF1794E6CE42A7B2CE",
+      "predecessor_review_item_digest": "09cddcda4bfdd2c53889d6b9cea118818b665f11483f47582849e406c3260e69",
+      "request_id": "REQ::081c06389f9dcb8487886b57",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "5488a58c3dd1b12f92d37c8048e67d081a0149426497c83f97f2da40c12514a7",
+      "report_claim_use": {
+        "proposed_report_effect": "support_and_limit_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::0E1B77AE079F812F2C65",
+          "WPCLAIM::2ED97A04C2264BA689D4",
+          "WPCLAIM::5D9F46AE15F105A4B50D",
+          "WPCLAIM::75D965BE6E71E9B90737"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "a2d24ff5c68f8abce712453400178eae9508fec4b0472cff48c0a34cde75e175",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::6E0870ECD8935A2BE7A6110F",
+      "predecessor_review_item_digest": "e2d5cf130dcacf1dac526c0b44846178797978a965d4bb01c997c3262348df89",
+      "request_id": "REQ::273bf40c53d28f49de438b41",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "721b6cc48338a470e221c4f6ac0bb184994a20fdbf6e3600bf370abcc0800caa",
+      "report_claim_use": {
+        "proposed_report_effect": "limit_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::B9FB00649A060D443976",
+          "WPCLAIM::E4FC61636C07C7CFA7D7"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "ae7246105ce301a307dcca6485f708a0d07419e8ccc85ba9f34007d4165621f7",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::884E327B61E2F4DCB0788D95",
+      "predecessor_review_item_digest": "5e5a3316586074463b1b35322a22980a1cfcf58c5879e650acbde88e33319b48",
+      "request_id": "REQ::07e898259cfe6b2e12d7f82c",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "a29e743a1c8aae9d2d1203ebf85c8c88b50fc8ab80c13b2e6531b8a983f7408a",
+      "report_claim_use": {
+        "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+        "report_claim_refs": [
+          "WPCLAIM::375C5BCE78D89B22A295",
+          "WPCLAIM::B1BDD811CE1DF55EE55E",
+          "WPCLAIM::E3BFD59CC60F05B1BD7C"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "6f3f12f421948fc608e8206cd7a3096ae78881c208a0508689a63e12d59b9eb1",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::8EDA130D7FDA0F0B66BA53B5",
+      "predecessor_review_item_digest": "ae21569fc5bd4876aa286f45f4a37465293497bd30dffedda98bc27b515f5f3c",
+      "request_id": "REQ::e17c40f93e25438950673210",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "889451e2032475cf2326272a39b7878702d07182f83b697655ae930cce1ff10d",
+      "report_claim_use": {
+        "proposed_report_effect": "support_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::0E1B77AE079F812F2C65",
+          "WPCLAIM::5D9F46AE15F105A4B50D",
+          "WPCLAIM::75D965BE6E71E9B90737"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "ec1aef29c7b641484b362b4cb902e87d3a38d5b874c673a633f67986d561a941",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::9A29D551F01388C5C785FF82",
+      "predecessor_review_item_digest": "5a368493e2e560911847346d3c724773af7601f3735040a03feb07f3d8433763",
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "c4e98f82b6728e55e27d2be3b2a9a425632d47d315e2f611699eaebd63be023e",
+      "report_claim_use": {
+        "proposed_report_effect": "support_and_limit_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::05DBE34A9E501DA6588A",
+          "WPCLAIM::2B4F6A85A1B574D20ED2",
+          "WPCLAIM::86BBF5595F64AAC5A325"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "da9b3557c1873209f19af4c3ffd74942b7f3acdc6d84fd81a042b4209a36ef4f",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::C20F9F784D691747A36DADC3",
+      "predecessor_review_item_digest": "85c4d56d66c0c5e5f44f1444380a866ce96f9f26550312b9d40a6a9d0a067df6",
+      "request_id": "REQ::081c06389f9dcb8487886b57",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "931a2ffacc6bb49c1130a346cbd21c39a6e0394f6cfc1aceafcb01e1e91d27cd",
+      "report_claim_use": {
+        "proposed_report_effect": "support_and_limit_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::2339C903BA4B36F0C033",
+          "WPCLAIM::5D9F46AE15F105A4B50D",
+          "WPCLAIM::75D965BE6E71E9B90737"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "4034ca03ff887dceaf4066310e7855e6e5e8b4613c7be7d5ba188ff5cf63c0f2",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::C250AD7345231BD7C1DF0CBB",
+      "predecessor_review_item_digest": "f25a6f642033764f55d601441f0468a3e47a8ece8ab7b3f69042a748fb495293",
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "40431fa783c3307bf45964c2fdac9add6be767dd21774c861ddfc4373f368b5c",
+      "report_claim_use": {
+        "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+        "report_claim_refs": [
+          "WPCLAIM::62D1CEB2B807786057DB",
+          "WPCLAIM::8B09D8AAC24EE52BD74B"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "13a43f46e221b271bae0a215043ca6450860aacc8a0ea28ad07bc2e8e37ca88f",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::D7769F8FD29DE6807D0B57F6",
+      "predecessor_review_item_digest": "6f5e8565ef221147685cd6b6bd9d715a75ffb45a053726e3b0bab3f017c7396a",
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "e5473c2f8c2b7f5d102da6acfbb2fc13e5cacd6316cca646745bc6e0e3270d7c",
+      "report_claim_use": {
+        "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+        "report_claim_refs": [
+          "WPCLAIM::62D1CEB2B807786057DB",
+          "WPCLAIM::7A84BEB46A4E45FE3DBD",
+          "WPCLAIM::8B09D8AAC24EE52BD74B",
+          "WPCLAIM::F2E9BB4B2AF8901A7146"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "b7f71931884a99ede608b8e81a937ead38e18a1cc6dc0d1a660a064fecedee9d",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::D7A996F5F40E35C760851932",
+      "predecessor_review_item_digest": "b594920f4f80823c725aa0cdb99e15df69d28ac6c7278650ebe134c525c626a4",
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "894df96bf453ee3fdff0bac6450e84db370311a65a10d3e243d037dd8a220fcf",
+      "report_claim_use": {
+        "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+        "report_claim_refs": [
+          "WPCLAIM::653D7E95ECA46E262391",
+          "WPCLAIM::BD2D18FD0931E6E3E68E"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "1d9e56d924633bf9e0e064b6c5c3c7d598902af9442166b6a92ff8c9b0031707",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::E56F86F06307372B2F18FA97",
+      "predecessor_review_item_digest": "8fa6a5bea5271cf7827728c61d5915a000ac54c84d90e825fcaadf10d3b467ef",
+      "request_id": "REQ::273bf40c53d28f49de438b41",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "d4d020b0f9a720353cf5a329a237874ad1002771dd842faced9afb75185266a6",
+      "report_claim_use": {
+        "proposed_report_effect": "support_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::1075BD357D0BD279E58F",
+          "WPCLAIM::B9FB00649A060D443976",
+          "WPCLAIM::E4FC61636C07C7CFA7D7"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "3e8213d3f8e4ea7660fb22baffd15073ddd00d78ab1725f3e2ec660ed3bee459",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::E591113506AF79306D11D8AD",
+      "predecessor_review_item_digest": "3674c9ed006637a3771df271f067358530f50e00fc34af67a5a293a809e0b0a2",
+      "request_id": "REQ::e17c40f93e25438950673210",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "af7c1fc86f1c1616387f81fcebd3deb93d726185f519695d661b76a8c509403f",
+      "report_claim_use": {
+        "proposed_report_effect": "support_and_limit_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::2339C903BA4B36F0C033",
+          "WPCLAIM::5D9F46AE15F105A4B50D",
+          "WPCLAIM::75D965BE6E71E9B90737",
+          "WPCLAIM::A3326287D929BC21E958"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "ec28dfe5c548fb96c5affbf3bb37c969ef71950535998d4de52d610d51e3d8f9",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::E9A0B4076252D3978B8DAB73",
+      "predecessor_review_item_digest": "5a83aa396988f3d2a14f2a1ef3e7d3fa80c12bce6e69f61d1f027a7cd11f1688",
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "2839d80239ed12c864ba76f03e344fc28baeb14e01d5e10e61502210b3963c17",
+      "report_claim_use": {
+        "proposed_report_effect": "support_and_limit_if_admitted",
+        "report_claim_refs": [
+          "WPCLAIM::653D7E95ECA46E262391",
+          "WPCLAIM::BD2D18FD0931E6E3E68E",
+          "WPCLAIM::DFDFF241544B90012DA1"
+        ],
+        "material_report_use_required_for_acceptance": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "a60dc30b4707ed3cf70a21dbfdc63f3469ef8bdb8f36ca065caf6b3e69d7d0ef",
+      "decision_state": "qualified_human_pending"
+    }
+  ],
+  "admission_packet_digest": "6bcee241c5dc7366b1fde513973448d590dcb30094f6bdc06cd2ed95f651cec7",
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r1/full_result.json",
+  "execution": {
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "embedding_calls": 0,
+    "reranker_calls": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0
+  },
+  "authority": {
+    "qualified_human_decisions_complete": false,
+    "G2_pass": false,
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "report_quality_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "known_boundary": "This artifact freezes review work only. Every one of the sixteen human-required items still needs an authorized qualified-human decision. The eight-item blocker subset explains four current readiness blocks but does not replace the full G2 decision set.",
+  "private_full_result_sha256": "895d340ebdd9e79f4aa8b46344aaf925ed83ead5aa50c3310d946f07cd7ef0f7",
+  "result_digest": "199b5d56e7ea419268a56deb333e66fa8c06f46000d3e53c5cab1e10340edcb2"
+}

@@ -2,7 +2,7 @@
 
 日期：2026-08-25
 
-状态：`R1_R2_independent_FAIL_immutable / R3_clean_materialized / fresh_reaudit_pending / G1_false`
+状态：`R1_R2_independent_FAIL_immutable / R3_fresh_reaudit_PASS_0_0_0_0 / bounded_G1_true / report_quality_open`
 
 ## 1. 为什么不能把 R1 追认为通过
 
@@ -212,3 +212,35 @@ G1、S1/S2/S3、report/product/publication/release 仍全部 false。下一合�
 `f9e2194181902518f518bea350248430b80637e0` 形成后，GitHub 连接恢复；此前积压的四个本地提交已成功
 推送到 `origin/codex/fin013-dell-s1-s2-product-bridge`。早先两次 443 失败仍保留为当时的真实传输
 证据，但“远端待同步”边界已关闭。
+
+## 9. R3 fresh final audit 与 bounded G1
+
+第三名 `fork_turns=none`、author-separated、read-only reviewer 对 immutable
+`7ba8bb2a84075e72a3b49c1b6e50993be1e49aa6`／tree
+`f9237827bc2b0f6db9e234d9950eb37909718254` 完成终审。起止 worktree/index/untracked 均为空；
+reviewer 未写文件、未联网、未读取凭据、未调用模型/Provider/embedding/reranker。
+
+独立复核结果：
+
+- 新 findings：`P0/P1/P2/P3 = 0/0/0/0`；
+- engineering/evidence：`PASS_BOUNDED`；
+- crosswalk content：`PASS_BOUNDED_CONTENT_ONLY`；
+- report quality：`OPEN_NOT_ASSESSABLE`；
+- qualified-human：`FALSE_NOT_GRANTED`；
+- `G1=PASS`，且只适用于 `DELL-RSQ-01A–01C` 的机器 crosswalk gate。
+
+reviewer 独立重算全部 public/private/verification SHA 与 digest、九个 tracked binding 的 raw SHA＋
+clean-filter blob＋historical `commit:path` blob、12 项 baseline count 和 recorded-time exact recompile；
+指定三文件离线测试为 `40 passed in 5.51s`。R1 全部攻击均拒绝；R2 nested deletion/toggle 在 stale
+summary 下拒绝，在同步重签后分别真实返回 17/15 和 18/15，不能维持冻结 18/16。
+
+append-only 审计收据：
+
+- `configs/audits/fin_ia_0_1_3_commit_7ba8bb2a_dell_rsq_r3_fresh_final_audit_pass_v1_0.json`；
+- result digest：`4f28008ea1a15a9813ec0ac22ec5e8219519de9c3195cf6b6928d0c6c1542dd4`。
+
+R3 artifact 内的 `G1_pass=false` 是物化时“复核尚未发生”的正确状态，不回写；本外部收据追加签发
+bounded G1。它不关闭 R17 reader-citation P1、WWC P2、formal 8D、source closure、4 requests/16
+human items、S2 bridge、Writer successor 或 qualified-human。S1/S2/S3、report、product、publication、
+release 仍全为 false。下一合法工程范围是 `DELL-RSQ-02A` admission packet 与 `03A` residual route
+manifest 的确定性准备；02B 人工决策和任何 live/call 仍需另行权限。

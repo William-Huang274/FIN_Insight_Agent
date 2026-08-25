@@ -1,0 +1,164 @@
+{
+  "schema_version": "fin_ia_independent_readonly_audit_result_v1_0",
+  "audit_id": "AUDIT::FIN-0.1.3::7BA8BB2A::DELL-RSQ-R3::FINAL",
+  "status": "pass_bounded_crosswalk_G1_report_quality_open",
+  "recorded_at": "2026-08-25T14:49:37+08:00",
+  "reviewed_identity": {
+    "commit": "7ba8bb2a84075e72a3b49c1b6e50993be1e49aa6",
+    "tree": "f9237827bc2b0f6db9e234d9950eb37909718254",
+    "parent": "5f256f61fda5b2caad6898cf2b8bd2c7b63406de",
+    "implementation_commit": "883b0e467a43ccf542b3c02f77e265f55befeb30",
+    "implementation_tree": "4f158ecf0a144e0d1faf5a60e38fa1c26819e329",
+    "remote_branch": "origin/codex/fin013-dell-s1-s2-product-bridge",
+    "remote_equals_target_at_review_start": true,
+    "start_worktree_clean": true,
+    "end_worktree_clean": true,
+    "start_index_clean": true,
+    "end_index_clean": true,
+    "untracked_empty": true
+  },
+  "reviewer": {
+    "task": "/root/r3_crosswalk_fresh_final_audit",
+    "fresh_context_fork": "none",
+    "author_separated": true,
+    "read_only": true,
+    "repository_writes": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "embedding_calls": 0,
+    "reranker_calls": 0,
+    "paid_calls": 0,
+    "credential_reads": 0
+  },
+  "immutable_program": {
+    "ref": "docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md",
+    "sha256": "5bbb52691fd183bae5c61c6d6dd1b119544e76ffa2625a42dcb1297bd1ae4f0d",
+    "exact_match": true
+  },
+  "reviewed_artifacts": {
+    "public": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_2.json",
+      "sha256": "990972fc1acb62696f0bebbc12713e100597271ec562424296cf8d220ff577f5",
+      "result_digest": "afc37e760cd88c107365e727d10b53694b299f93c4245cf90110775ec22676e2"
+    },
+    "private": {
+      "ref": "data/workbench_private/fin_0_1_3_report_gap_crosswalk/dell-r3/full_result.json",
+      "sha256": "61e627686bae188cfe9f3d58e95cbf230ac4195b855b9fb829975c6dda608880",
+      "full_result_digest": "c31a51cf7b2252f94f66cdfff96d0263cb850835ab4d1ea264e1e217085849b9"
+    },
+    "crosswalk_content_digest": "f2ab679522d15ba9fe22e3f17b0010a032a4fb142fa918b56b5d344c47b8afc2",
+    "baseline_verification_v1_1_digest": "232be552ae24de61c92069d0b40dc5932216d8fcd48eac05336a5adb83c57c87",
+    "recorded_time": "2026-08-25T14:18:05+08:00",
+    "exact_public_private_object_and_byte_recompile": true
+  },
+  "predecessor_failure_preservation": {
+    "R1_failed_public_raw_sha256": "858e3d753004659f5a6614e779b37c60bbdf56e2905f3912ab6b651c85086545",
+    "R1_failed_public_result_digest": "09686edf180371f8676abb85b8cda90991bcab144d2e62a06923a3229a2b520c",
+    "R2_failed_public_raw_sha256": "365471c0a3c2a9e5a12134eb6726b25f00d2846dcd2a855cce5cb691201b12f0",
+    "R2_failed_public_result_digest": "3678204233d595df3090dd6526d19ebb4cdd748f6d5ead57ae344e6ba85a85e6",
+    "predecessor_baseline_raw_sha256": "4bf0fa0e07d27fd3edcbaaea4a8b3002cfe4c0e227b8214c217666350ad4edc0",
+    "predecessor_baseline_digest": "3faebbd9a53639c5e1dba4479d212bb8f0fccb255eb1391fbf59fdc55690dd14",
+    "predecessor_verification_raw_sha256": "e2c1dc9ec2806d92536eed4a089d3b8ab1d2414e1a89d1b6d3d012472dfe2d79",
+    "predecessor_verification_digest": "f3a3c4a68cf5c33a0d358f520ef881d3602eec4fd6d76f5651965090f475d7fc",
+    "all_raw_sha_clean_filter_blob_and_historical_commit_path_bindings_passed": true
+  },
+  "tests": {
+    "command": "python -m pytest -q -p no:cacheprovider tests/test_dell_report_gap_crosswalk.py tests/test_s2_product_value_bridge.py tests/test_s3_R17_reversal_gate_successor.py",
+    "passed": 40,
+    "failed": 0,
+    "duration_seconds": 5.51,
+    "cache_disabled": true,
+    "bytecode_disabled": true
+  },
+  "baseline_actual_recount": {
+    "pack_evidence_items": 55,
+    "pack_residual_gaps": 14,
+    "pack_closed_gaps": 0,
+    "pack_narrowed_gaps": 3,
+    "dynamic_unit_gap_refs": 9,
+    "writer_gap_groups": 4,
+    "writer_gap_refs": 10,
+    "S2_bridge_gaps": 4,
+    "product_readiness_requests": 8,
+    "product_readiness_blocked_by_evidence_admission": 4,
+    "candidate_review_items": 18,
+    "candidate_human_review_required_items": 16,
+    "request_sets_per_request_top_level_issue_counts_unique_refs_digests_and_self_digests_passed": true
+  },
+  "adversarial_probes": {
+    "R1_attack_families_all_fail_closed": true,
+    "stale_nested_human_item_deletion_rejected": true,
+    "stale_human_flag_toggle_rejected": true,
+    "synchronized_deletion_actual_counts": {
+      "candidate_review_items": 17,
+      "candidate_human_review_required_items": 15,
+      "differs_from_frozen_18_16": true
+    },
+    "synchronized_toggle_actual_counts": {
+      "candidate_review_items": 18,
+      "candidate_human_review_required_items": 15,
+      "differs_from_frozen_18_16": true
+    },
+    "altered_source_bytes_raw_sha_rejected": true,
+    "dirty_worktree_and_output_collision_rejected": true
+  },
+  "severity_counts": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": 0
+  },
+  "verdicts": {
+    "engineering_and_evidence_pipeline_verdict": "PASS_BOUNDED",
+    "crosswalk_research_quality_verdict": "PASS_BOUNDED_CONTENT_ONLY",
+    "report_research_quality_verdict": "OPEN_NOT_ASSESSABLE",
+    "qualified_human_product_verdict": "FALSE_NOT_GRANTED",
+    "G1_crosswalk_pass": true
+  },
+  "crosswalk_content_assessment": {
+    "pack_gaps": 14,
+    "dynamic_selected_gaps": 9,
+    "writer_groups": 4,
+    "writer_gap_refs": 10,
+    "S2_bridge_gaps": 4,
+    "pack_gaps_not_selected_by_unit": 5,
+    "pack_gaps_not_referenced_by_writer": 4,
+    "narrowed_gap_ids": [
+      "dell-gap-pricing-asp",
+      "dell-gap-pricing-units",
+      "dell-gap-supplier-capacity-readthrough"
+    ],
+    "closed_gap_count": 0,
+    "proved_information_boundary_count": 0,
+    "PVM_null_reader_visible": true,
+    "independent_product_profit_null_reader_visible": true,
+    "false_source_gap_closure_found": false
+  },
+  "report_quality_open_items": [
+    "R17 reader-citation P1",
+    "R17 WWC operationality P2",
+    "R17 report-level 14/9/4 finding until a successor report consumes this artifact",
+    "formal Q1-Q8 scoring",
+    "source closure and proved-information-boundary decisions",
+    "four-request sixteen-human-item Evidence admission",
+    "L1/L2 report packet and numeric bridge",
+    "reader citation appendix and final render",
+    "non-overwrite Writer successor",
+    "qualified-human product acceptance"
+  ],
+  "authority": {
+    "material_findings_open_against_R3": 0,
+    "independent_crosswalk_G1_pass": true,
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "report_quality_pass": false,
+    "qualified_human": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "known_boundary": "This receipt signs only the bounded DELL-RSQ machine-readable crosswalk G1. It is not Evidence admission, source closure, a new report, formal eight-dimension scoring, qualified-human review, S1/S2/S3 acceptance, product acceptance, publication or release.",
+  "result_digest": "4f28008ea1a15a9813ec0ac22ec5e8219519de9c3195cf6b6928d0c6c1542dd4"
+}

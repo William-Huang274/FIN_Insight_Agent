@@ -87,6 +87,17 @@ public v1.2 后由第三名 fresh author-separated reviewer 同时复核工程�
 不得提前把 G1、补源或研报质量写成通过。物化记录 commit `5f256f61...` 已成功推送到同名远端分支，
 先前 GitHub 443 失败只保留为历史传输证据，当前远端同步边界已关闭。
 
+第三名 fresh author-separated read-only reviewer 已对最终 immutable `7ba8bb2a...`／tree
+`f9237827...` 完成 R3 终审：新 findings `P0/P1/P2/P3=0/0/0/0`，engineering/evidence
+`PASS_BOUNDED`，crosswalk content `PASS_BOUNDED_CONTENT_ONLY`，report quality
+`OPEN_NOT_ASSESSABLE`，qualified-human `FALSE_NOT_GRANTED`。reviewer 独立重算全部 SHA/digest、九个
+tracked binding、12 项 count、public/private exact recompile，并重放 R1/R2 attacks；三文件测试
+`40 passed in 5.51s`，起止工作树 clean。append-only 收据为
+`configs/audits/fin_ia_0_1_3_commit_7ba8bb2a_dell_rsq_r3_fresh_final_audit_pass_v1_0.json`，digest
+`4f28008e...42dd4`。据此只签 `DELL-RSQ-01A–01C bounded G1=PASS`；R17 citation P1、WWC P2、
+formal 8D、补源、4 requests/16 human items、S2/Writer/qualified-human 和全部 stage/product/publication/
+release 仍开放。下一合法实现为零调用 `02A` admission packet 与 `03A` residual route manifest 准备。
+
 ## 历史上下文（保留）
 
 DELL current 动态多 Agent 的 R10 六份 workpaper 已通过独立 L1／L2，原七项 material finding 全部关闭；R10 public digest=`83dc3d60...6112`、private full digest=`cab0b654...e900`，Writer 当时未调用。R10 scope 已消费，旧 decision 不能再次签权。

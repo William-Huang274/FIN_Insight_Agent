@@ -143,7 +143,8 @@
   - [x] 第二名 fresh author-separated reviewer 审计 immutable R2：`FAIL，P0/P1/P2/P3=0/0/1/0`；当前 nested packet 确为 18/16，但 R2 实际重算函数删除底层 item 后仍错误返回 summary 18/16，`G1=false`
   - [x] R3 作者工程修复：append-only verification v1.1 绑定 R1/R2 failure；逐 request 重数 nested items/human flags/issue classes，校验 request 集合、小计、唯一 ref/digest 和三层自摘要；定向 `29`、相邻 `40`、全仓 `1313 passed, 2 skipped, 2 warnings`
   - [x] clean `883b0e46...`／tree `4f158ecf...` 后 exclusive-create R3 private/public v1.2；content digest `f2ab6795...8afc2`，public/private digest `afc37e76...76e2`／`c31a51cf...49b9`，exact recompile 通过
-  - [ ] 第三名 fresh author-separated reviewer 同时审计 immutable R3 的工程、crosswalk 内容和研报质量边界；此前 `G1=false`
+  - [x] 第三名 fresh author-separated reviewer 审计 immutable `7ba8bb2a...` R3：新 findings `0/0/0/0`；engineering `PASS_BOUNDED`、crosswalk content `PASS_BOUNDED_CONTENT_ONLY`、report `OPEN_NOT_ASSESSABLE`、qualified-human false；只签 bounded `G1=PASS`
+  - [x] append-only G1 收据：`configs/audits/fin_ia_0_1_3_commit_7ba8bb2a_dell_rsq_r3_fresh_final_audit_pass_v1_0.json`，digest `4f28008e...42dd4`
 - [ ] 完成 blocked-by-evidence-admission 的 4 个 DELL 产品请求及 16 个 human-review item；候选不得自动晋升 Evidence
 - [ ] 执行真实 residual 的任务绑定外源梯子，并为每项形成 closed／narrowed／route-exhausted／proved-boundary receipt
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap

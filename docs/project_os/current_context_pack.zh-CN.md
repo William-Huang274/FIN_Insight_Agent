@@ -13,7 +13,7 @@ not-ready；14 gap 为 0 closed、3 narrowed。8GB 可以 full-offload 量化 4B
 NVDA embedding 和整体/MU/NVDA reranker 质量回退，不是显存。
 
 bounded crosswalk G1 已由第三名 fresh reviewer 以 `0/0/0/0` 通过。当前 02A/03A 作者实现已完成
-全仓门并形成 clean commit `29b4fc2e...f05856`；02A 已 exclusive-create 物化，03A 与独立审计待后续。
+全仓门并形成 clean commit `29b4fc2e...f05856`；02A、03A 均已 exclusive-create 物化，独立审计待后续。
 真实 ProductReadiness 是 8 请求／18 review item／16
 human-required；4 个 blocked 请求只包含其中 8 项。02A 因此冻结“16 项全量决策集＋8 项阻断子集”；
 03A 全量分区 14 Pack gap 和独立产品利润 gap，9 个补源 target 中 3 个 admission-held、6 个只具后续
@@ -1809,4 +1809,5 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - prior external ladder 的 22 fresh provider queries 作为 immutable predecessor，必须先复核 capture/object/candidate，禁止原样重复付费检索。BM25＋0.6B baseline、4-bit 4B embedding shadow 和 4-bit 4B reranker 均保留，candidate ceiling 先于 reranker，当前 authority 全 false。
 - 02A/03A 定向 `21 passed`，相邻合同 `75 passed`，全仓 `1334 passed, 2 skipped, 2 warnings`；active baseline `213/8/5/28/0`、1116 config JSON、8 Project OS JSONL／1191 行、8073-file secret scan／0 均通过。0 network/provider/model/embedding/reranker/promotion/closure。clean materialization、author-separated engineering/evidence/report-quality audit、16 项 qualified-human decision、真实补源、S2/Pack/Readiness、Agent/Writer 和产品验收均待后续。详见 `docs/worklog/fin_0_1_3_s1/082_dell_report_admission_and_residual_route_program.md`。
 - clean implementation commit=`29b4fc2e...f05856`／tree=`ff952010...160a`；首次 push 因 GitHub 443 失败。02A packet digest=`6bcee241...cec7`，public/private digest=`199b5d56...dcb2`／`d5494b4e...950a`，exact recompile 和 public no-excerpt/no-URL 通过；16 项 qualified-human decision 仍为 0。
+- 02A manifest record commit=`f66f07d7...6bd82`。03A program digest/SHA=`eccc6dfb...8ad8`／`a2caf24d...d90d`，exact recompile 通过：14 Pack gaps、9 acquisition targets、6 unoverlapped、3 admission-held、7 route families、63 contracts；query URL/qrel leakage=0，旧 22 fresh query 不重跑，所有调用=0，G3=false。
 - 实现提交内两条 Project OS 状态误用了未来的 `16:30/16:55` 手填时间；机器实际为 `15:43:06+08:00`。按 append-only 不改写，已由 `RC-S0-102` 和 capability correction 接续；错误时间行不能作为 chronology。

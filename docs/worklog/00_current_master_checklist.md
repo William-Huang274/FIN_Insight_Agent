@@ -147,7 +147,7 @@
   - [x] append-only G1 收据：`configs/audits/fin_ia_0_1_3_commit_7ba8bb2a_dell_rsq_r3_fresh_final_audit_pass_v1_0.json`，digest `4f28008e...42dd4`
 - [x] `DELL-RSQ-02A` clean `29b4fc2e...` 后已物化：纠正为“8 请求／16 项全量 human decision set＋4 blocked 请求／8 项 blocker subset”；packet digest `6bcee241...cec7`，public/private exact recompile 与无 excerpt/URL 泄漏检查通过；人工决定仍为 0
 - [ ] `DELL-RSQ-02B` qualified human 对全部 16 项签发 accept/rebind/accept-new/reject/defer；候选不得自动晋升 Evidence，4 个 blocked 请求只含其中 8 项
-- [x] `DELL-RSQ-03A` 作者工程实现：14 Pack gap＋独立产品利润 gap 全量分区，9 个补源 target／7 层路线／63 contracts；旧 22 fresh query 先复核、禁止原样重跑；11 项测试通过，尚未物化或执行
+- [x] `DELL-RSQ-03A` clean `f66f07d7...` 后已物化：program digest `eccc6dfb...8ad8`；14 Pack gap＋独立产品利润 gap 全量分区，9 个补源 target／7 层路线／63 contracts；旧 22 fresh query 先复核、禁止原样重跑；3 项 admission-held，0 次调用，G3 仍 false
 - [ ] 执行获准且不与 admission 重叠的 03B 内部链与 03C 真实 residual 外源梯子，并为每项形成 closed／narrowed／route-exhausted／proved-boundary receipt
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
 - [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止

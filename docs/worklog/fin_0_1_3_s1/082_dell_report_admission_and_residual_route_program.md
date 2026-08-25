@@ -150,3 +150,23 @@ report quality、S1/S2/S3、product、publication 和 release 均保持 false。
 用相同 `recorded_at`、`prepared_from_commit` 和 private ref 重编，public/private 对象逐字段完全相等；
 21 项定向合同复跑通过，公开文件不含 `bounded_excerpt`、`source_url` 或 `https://`。决定计数仍为 0，
 G2 与所有阶段／产品 authority 均为 false。
+
+## 8. 03A exclusive-create materialization
+
+02A public manifest 和时间纠正进入 commit
+`f66f07d73e976cd7f15bdf3af2e5aaf9b126bd82`、tree
+`f13402bc401c7f1177ce4970999ee6cf5c954481` 后，工作树恢复 clean。03A 随后绑定该 commit 与
+02A manifest 的 SHA/result/packet digest，exclusive-create：
+
+- output：
+  `configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_0.json`；
+- recorded at：`2026-08-25T15:45:53+08:00`；
+- prepared from commit：`f66f07d73e976cd7f15bdf3af2e5aaf9b126bd82`；
+- program digest：`eccc6dfbe421ccc30e0ef0ab500da3e52a7808a722f087f6c48fee55a4788ad8`；
+- file SHA：`a2caf24d0e2dd8bddc5bbe9d40ffcbdeb82027273a34c92d05b85de006ced90d`。
+
+用保存的时间和 commit 重编，程序对象逐字段完全相等。结果精确为 14 Pack gap、8 Pack acquisition
+target、1 independent S2 product-profit target、9 targets、6 unoverlapped、3 admission-held、6
+non-acquisition Pack dispositions、7 route families、63 route contracts。三项 held 是 demand durability、
+product profit 和 working capital；所有 locator template 均无 URL/qrel seed。execution 的
+network/provider/model/embedding/reranker 均为 0，`G3=false`。

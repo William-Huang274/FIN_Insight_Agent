@@ -13,6 +13,12 @@ from .query_plan import canonical_digest
 
 
 POLICY_SCHEMA_VERSION = "fin_ia_dell_report_internal_chain_ceiling_policy_v1_0"
+SUCCESSOR_POLICY_SCHEMA_VERSION = (
+    "fin_ia_dell_report_internal_chain_ceiling_policy_v1_1"
+)
+FAILURE_RECEIPT_SCHEMA_VERSION = (
+    "fin_ia_dell_report_internal_chain_ceiling_failure_receipt_v1_0"
+)
 PRIVATE_RESULT_SCHEMA_VERSION = (
     "fin_ia_dell_report_internal_chain_ceiling_private_result_v1_0"
 )
@@ -174,6 +180,11 @@ def validate_dell_report_internal_chain_ceiling_policy(
         "dell_03B_policy_status_invalid",
     )
     _require(
+        parsed.get("program_id") == "FIN-0.1.3-S1-DELL-RSQ-03B-R1"
+        and parsed.get("attempt_id") == "dell-rsq-03b-internal-chain-r1",
+        "dell_03B_R1_identity_invalid",
+    )
+    _require(
         residual_program.get("program_id") == "FIN-0.1.3-S1-DELL-RSQ-03A-R2"
         and residual_program.get("program_digest")
         == parsed.get("bound_inputs", {}).get("residual_program_digest"),
@@ -322,6 +333,190 @@ def validate_dell_report_internal_chain_ceiling_policy(
         "dell_03B_candidate_ceiling_contract_invalid",
     )
     return parsed
+
+
+def validate_dell_report_internal_chain_ceiling_successor_policy(
+    successor_policy: Mapping[str, Any],
+    *,
+    predecessor_policy: Mapping[str, Any],
+    predecessor_failure_receipt: Mapping[str, Any],
+    residual_program: Mapping[str, Any],
+    execution_program: Mapping[str, Any],
+    runtime_registry: Mapping[str, Any],
+    runtime_binding_receipt: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate the non-overwriting R2 authority and return its inherited R1 contract."""
+
+    predecessor = validate_dell_report_internal_chain_ceiling_policy(
+        predecessor_policy,
+        residual_program=residual_program,
+        execution_program=execution_program,
+        runtime_registry=runtime_registry,
+        runtime_binding_receipt=runtime_binding_receipt,
+    )
+    successor = dict(successor_policy)
+    _require(
+        successor.get("schema_version") == SUCCESSOR_POLICY_SCHEMA_VERSION,
+        "dell_03B_R2_policy_schema_invalid",
+    )
+    _require(
+        successor.get("status")
+        == "scoped_internal_chain_successor_execution_authorized_after_R1_terminal_failure",
+        "dell_03B_R2_policy_status_invalid",
+    )
+    _require(
+        successor.get("program_id") == "FIN-0.1.3-S1-DELL-RSQ-03B-R2"
+        and successor.get("attempt_id") == "dell-rsq-03b-internal-chain-r2",
+        "dell_03B_R2_identity_invalid",
+    )
+    unsigned_successor = {
+        key: value for key, value in successor.items() if key != "result_digest"
+    }
+    _require(
+        successor.get("result_digest") == canonical_digest(unsigned_successor),
+        "dell_03B_R2_policy_digest_invalid",
+    )
+
+    lineage = _mapping(
+        successor.get("predecessor"), "dell_03B_R2_predecessor_binding_missing"
+    )
+    _require(
+        lineage.get("policy_ref")
+        == "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_0.json"
+        and lineage.get("failure_receipt_ref")
+        == "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_r1_failure_receipt_v1_0.json"
+        and re.fullmatch(r"[0-9a-f]{64}", str(lineage.get("policy_sha256") or ""))
+        and re.fullmatch(
+            r"[0-9a-f]{64}", str(lineage.get("failure_receipt_sha256") or "")
+        )
+        and lineage.get("program_id") == predecessor.get("program_id")
+        and lineage.get("attempt_id") == predecessor.get("attempt_id")
+        and lineage.get("policy_canonical_digest")
+        == canonical_digest(predecessor),
+        "dell_03B_R2_predecessor_policy_invalid",
+    )
+    failure = dict(predecessor_failure_receipt)
+    unsigned_failure = {
+        key: value for key, value in failure.items() if key != "result_digest"
+    }
+    _require(
+        failure.get("schema_version") == FAILURE_RECEIPT_SCHEMA_VERSION
+        and failure.get("status")
+        == "terminal_failed_source_record_identity_field_assumption"
+        and failure.get("attempt_id") == predecessor.get("attempt_id")
+        and failure.get("result_digest") == canonical_digest(unsigned_failure)
+        == lineage.get("failure_receipt_result_digest"),
+        "dell_03B_R2_failure_receipt_invalid",
+    )
+    failure_execution = _mapping(
+        failure.get("execution_receipt"),
+        "dell_03B_R2_failure_execution_receipt_invalid",
+    )
+    _require(
+        failure_execution.get("local_qwen_0_6B_query_embedding_batch_started")
+        is True
+        and failure_execution.get("network_calls") == 0
+        and failure_execution.get("provider_calls") == 0
+        and failure_execution.get("generation_model_calls") == 0
+        and failure_execution.get("external_capture_calls") == 0
+        and failure_execution.get("4B_embedding_calls") == 0
+        and failure_execution.get("reranker_calls") == 0
+        and failure_execution.get("candidate_promotions") == 0
+        and failure_execution.get("evidence_promotions") == 0
+        and failure_execution.get("gap_closures") == 0
+        and failure_execution.get("private_output_created") is False
+        and failure_execution.get("public_output_created") is False,
+        "dell_03B_R2_failure_boundary_invalid",
+    )
+    _require(
+        failure.get("failure_disposition", {}).get(
+            "R1_reuse_or_relabel_forbidden"
+        )
+        is True
+        and failure.get("failure_disposition", {}).get(
+            "same_attempt_retry_forbidden"
+        )
+        is True,
+        "dell_03B_R2_R1_reuse_boundary_invalid",
+    )
+
+    expected_inheritance = [
+        "six_unoverlapped_targets_and_three_held_targets",
+        "five_exact_request_payloads",
+        "target_semantic_contracts_and_date_ticker_bounds",
+        "full_R38_source_object_index_SQL_population",
+        "BM25_Qwen0_6B_typed_graph_candidate_chain",
+        "candidate_union_96_final_review_16_and_useful_at_10",
+        "4B_reranker_and_03C_eligibility_rules",
+        "zero_network_provider_generation_external_4B_reranker_promotion_and_gap_closure",
+        "candidate_not_evidence_and_no_downstream_acceptance",
+    ]
+    _require(
+        successor.get("inherited_without_change") == expected_inheritance,
+        "dell_03B_R2_inheritance_contract_invalid",
+    )
+    _require(
+        successor.get("only_successor_changes")
+        == {
+            "source_store_identity_field": "evidence_id",
+            "compiled_object_identity_projection_field": "source_record_id",
+            "source_store_source_record_id_alias_accepted": False,
+            "source_population_requires_nonblank_unique_evidence_ids": True,
+            "source_and_compiled_lineage_populations_require_exact_set_equality": True,
+            "R1_query_scores_or_partial_state_reused": False,
+            "R1_result_relabelled_as_success": False,
+            "fresh_R2_query_embedding_batch_required": True,
+        },
+        "dell_03B_R2_delta_invalid",
+    )
+    _require(
+        successor.get("execution_budget") == predecessor.get("execution_budget"),
+        "dell_03B_R2_execution_budget_drift",
+    )
+    _require(
+        successor.get("authority") == predecessor.get("authority"),
+        "dell_03B_R2_authority_drift",
+    )
+    token_basis = _mapping(
+        successor.get("TokenBudgetBasis"),
+        "dell_03B_R2_token_budget_basis_missing",
+    )
+    for field in (
+        "node_purpose",
+        "input_scale",
+        "required_outputs",
+        "schema_burden",
+        "materiality_quality_risk",
+        "comparable_run_evidence",
+        "reasoning_profile",
+        "stop_and_truncation",
+    ):
+        _nonblank(
+            token_basis.get(field),
+            f"dell_03B_R2_token_budget_basis_missing:{field}",
+        )
+    implementation_bindings = _sequence(
+        successor.get("implementation_bindings"),
+        "dell_03B_R2_implementation_bindings_invalid",
+    )
+    _require(
+        {
+            str(row.get("path") or "")
+            for row in implementation_bindings
+            if isinstance(row, Mapping)
+        }
+        == {
+            "src/retrieval/dell_report_internal_chain_ceiling.py",
+            "scripts/data_retrieval/run_dell_report_internal_chain_ceiling.py",
+        }
+        and all(
+            isinstance(row, Mapping)
+            and re.fullmatch(r"[0-9a-f]{64}", str(row.get("sha256") or ""))
+            for row in implementation_bindings
+        ),
+        "dell_03B_R2_implementation_bindings_invalid",
+    )
+    return predecessor
 
 
 def classify_internal_chain_object(
@@ -518,6 +713,67 @@ def _project_match(
     return row
 
 
+def validate_dell_report_source_compiled_identity_population(
+    *,
+    object_rows: Sequence[Mapping[str, Any]],
+    source_record_ids: Iterable[str],
+    runtime_binding_receipt: Mapping[str, Any],
+) -> tuple[dict[str, dict[str, Any]], set[str]]:
+    """Prove the canonical source population equals the compiled lineage population."""
+
+    objects_by_id = {
+        _nonblank(row.get("compiled_object_id"), "dell_03B_object_id_missing"): dict(row)
+        for row in object_rows
+    }
+    _require(
+        len(objects_by_id) == len(object_rows), "dell_03B_object_ids_duplicate"
+    )
+    binding = runtime_binding_receipt.get("source_object_index_lineage") or {}
+    _require(
+        len(objects_by_id) == int(binding.get("compiled_object_count") or 0),
+        "dell_03B_object_population_binding_invalid",
+    )
+    source_values = list(source_record_ids)
+    _require(
+        all(
+            isinstance(value, str) and value.strip() and value == value.strip()
+            for value in source_values
+        ),
+        "dell_03B_source_identity_population_invalid",
+    )
+    source_ids = set(source_values)
+    _require(
+        len(source_ids) == len(source_values),
+        "dell_03B_source_identity_population_duplicate",
+    )
+    _require(
+        len(source_ids) == int(binding.get("source_record_count") or 0),
+        "dell_03B_source_population_binding_invalid",
+    )
+    _require(
+        binding.get("all_source_records_lineage_bound") is True
+        and binding.get("compiled_lineage_ids_outside_bound_source_store") == []
+        and binding.get("source_records_missing_from_compiled_lineage") == []
+        and int(binding.get("compiled_lineage_source_record_count") or 0)
+        == len(source_ids),
+        "dell_03B_source_lineage_receipt_invalid",
+    )
+    compiled_lineage_ids: set[str] = set()
+    for object_id, object_row in objects_by_id.items():
+        lineage_ids = list(object_row.get("lineage_source_record_ids") or ())
+        _require(
+            bool(lineage_ids)
+            and all(isinstance(value, str) and value.strip() for value in lineage_ids),
+            f"dell_03B_object_lineage_invalid:{object_id}",
+        )
+        compiled_lineage_ids.update(value.strip() for value in lineage_ids)
+    _require(
+        compiled_lineage_ids == source_ids,
+        "dell_03B_source_compiled_lineage_population_mismatch",
+    )
+    return objects_by_id, source_ids
+
+
 def compile_dell_report_internal_chain_ceiling_result(
     *,
     policy: Mapping[str, Any],
@@ -575,22 +831,10 @@ def compile_dell_report_internal_chain_ceiling_result(
         set(request_results_by_id) == expected_request_ids,
         "dell_03B_executed_request_set_invalid",
     )
-    objects_by_id = {
-        _nonblank(row.get("compiled_object_id"), "dell_03B_object_id_missing"): dict(row)
-        for row in object_rows
-    }
-    _require(
-        len(objects_by_id) == len(object_rows), "dell_03B_object_ids_duplicate"
-    )
-    binding = runtime_binding_receipt.get("source_object_index_lineage") or {}
-    _require(
-        len(objects_by_id) == int(binding.get("compiled_object_count") or 0),
-        "dell_03B_object_population_binding_invalid",
-    )
-    source_ids = {str(value) for value in source_record_ids if str(value)}
-    _require(
-        len(source_ids) == int(binding.get("source_record_count") or 0),
-        "dell_03B_source_population_binding_invalid",
+    objects_by_id, source_ids = validate_dell_report_source_compiled_identity_population(
+        object_rows=object_rows,
+        source_record_ids=source_record_ids,
+        runtime_binding_receipt=runtime_binding_receipt,
     )
     residual_targets = {
         str(row.get("target_id") or ""): dict(row)
@@ -997,11 +1241,15 @@ def build_dell_report_internal_chain_ceiling_public_projection(
 __all__ = [
     "DellReportInternalChainCeilingError",
     "EXPECTED_UNOVERLAPPED_TARGET_IDS",
+    "FAILURE_RECEIPT_SCHEMA_VERSION",
     "POLICY_SCHEMA_VERSION",
+    "SUCCESSOR_POLICY_SCHEMA_VERSION",
     "PRIVATE_RESULT_SCHEMA_VERSION",
     "PUBLIC_RESULT_SCHEMA_VERSION",
     "build_dell_report_internal_chain_ceiling_public_projection",
     "classify_internal_chain_object",
     "compile_dell_report_internal_chain_ceiling_result",
     "validate_dell_report_internal_chain_ceiling_policy",
+    "validate_dell_report_internal_chain_ceiling_successor_policy",
+    "validate_dell_report_source_compiled_identity_population",
 ]

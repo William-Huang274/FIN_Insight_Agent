@@ -1865,3 +1865,23 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
   报告 claim-use/source quality。真实补源、02B human
   decisions、S2/Pack/Readiness、新报告和产品验收均未开始；所有 stage/report/product/release verdict
   继续为 false。
+
+### 2026-08-25 DELL-RSQ-02A/03A fresh pass、03B R1 失败与 R2 工程门
+
+- fresh author-separated reviewer 已对 immutable 02A/03A R2 给出 `PASS，P0/P1/P2/P3=0/0/0/0`；这只通过
+  bounded preparation。16 项 qualified-human decision 仍为 `0/16`，上一版研报信源缺口、新报告质量和
+  产品验收仍未关闭。
+- 03B R1 在 clean、remote-synced `7468e5c5...` 上执行 5 个 request 并消费 1 个本地 0.6B query batch，
+  随后因 runner 错把 source-store 的 `evidence_id` 当成对象层 `source_record_id` 而 terminal failed。
+  private/public 输出、current mutation、network/provider/generation/external/4B/reranker/promotion/gap closure
+  全为 0；R1 不重试、不追认，failure digest=`71dabc96...94ffdf9`。
+- R2 v1.1 只修该 identity seam：1,888 个 source record 必须有非空唯一 canonical `evidence_id`，拒绝
+  `source_record_id` alias；34,198 个 compiled object lineage 必须与 1,888 个 source identity 精确集合相等。
+  该门已移到 query embedding 前，并在结果编译时复验。R1 score／partial state 不复用。
+- 最终作者工程门为 03B focused `29 passed`、DELL S1 adjacent `125 passed`、全仓
+  `1390 passed, 2 skipped, 2 warnings`；compileall、pyflakes、active baseline `213/8/5/28/0`、1127 config
+  JSON、8 Project OS JSONL／1220 行、8091-file secret scan／0 和 diff check 通过。
+- 当前只允许精确提交/push 后，在 clean 且 `HEAD==upstream` 时执行唯一
+  `dell-rsq-03b-internal-chain-r2`。R2 仍限 1 个 0.6B query batch，4B、reranker、03C、Evidence/gap closure
+  权限均为 0；成功结果只决定下一步 eligibility，不等于信源、研报或产品通过。详见
+  `docs/worklog/fin_0_1_3_s1/084_dell_03b_internal_chain_R2_identity_successor.md`。

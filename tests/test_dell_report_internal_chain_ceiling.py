@@ -14,7 +14,9 @@ from retrieval.dell_report_internal_chain_ceiling import (
     classify_internal_chain_object,
     compile_dell_report_internal_chain_ceiling_result,
     validate_dell_report_internal_chain_ceiling_policy,
+    validate_dell_report_internal_chain_ceiling_successor_policy,
 )
+from retrieval.query_plan import canonical_digest
 
 
 pytestmark = pytest.mark.requires_local_data
@@ -25,6 +27,18 @@ POLICY_PATH = (
     / "configs"
     / "retrieval"
     / "fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_0.json"
+)
+SUCCESSOR_POLICY_PATH = (
+    ROOT
+    / "configs"
+    / "retrieval"
+    / "fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_1.json"
+)
+FAILURE_RECEIPT_PATH = (
+    ROOT
+    / "configs"
+    / "retrieval"
+    / "fin_ia_0_1_3_s1_dell_03b_internal_chain_r1_failure_receipt_v1_0.json"
 )
 RUNNER_PATH = (
     ROOT / "scripts" / "data_retrieval" / "run_dell_report_internal_chain_ceiling.py"
@@ -44,6 +58,15 @@ def bound_inputs() -> tuple[dict, dict, dict, dict, dict]:
     registry = _read(ROOT / bindings["runtime_registry_ref"])
     receipt = _read(ROOT / bindings["runtime_binding_receipt_ref"])
     return policy, residual, execution_program, registry, receipt
+
+
+@pytest.fixture(scope="module")
+def runner_module():
+    spec = importlib.util.spec_from_file_location("dell_03B_runner", RUNNER_PATH)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def _contract(policy: dict, target_id: str) -> dict:
@@ -220,6 +243,96 @@ def test_policy_mutations_fail_closed(bound_inputs, mutation, reason) -> None:
         )
 
 
+def _validate_successor(
+    successor: dict,
+    *,
+    bound_inputs: tuple[dict, dict, dict, dict, dict],
+    failure: dict | None = None,
+) -> dict:
+    predecessor, residual, execution_program, registry, receipt = bound_inputs
+    return validate_dell_report_internal_chain_ceiling_successor_policy(
+        successor,
+        predecessor_policy=predecessor,
+        predecessor_failure_receipt=failure or _read(FAILURE_RECEIPT_PATH),
+        residual_program=residual,
+        execution_program=execution_program,
+        runtime_registry=registry,
+        runtime_binding_receipt=receipt,
+    )
+
+
+def _reseal(value: dict) -> None:
+    value["result_digest"] = canonical_digest(
+        {key: row for key, row in value.items() if key != "result_digest"}
+    )
+
+
+def test_R2_successor_inherits_exact_R1_contract(bound_inputs) -> None:
+    successor = _read(SUCCESSOR_POLICY_PATH)
+    inherited = _validate_successor(successor, bound_inputs=bound_inputs)
+    assert inherited["program_id"] == "FIN-0.1.3-S1-DELL-RSQ-03B-R1"
+    assert successor["attempt_id"] == "dell-rsq-03b-internal-chain-r2"
+    assert successor["execution_budget"] == inherited["execution_budget"]
+    assert successor["authority"] == inherited["authority"]
+
+
+@pytest.mark.parametrize(
+    ("mutation", "reason"),
+    [
+        (
+            lambda value: value.update(
+                {"attempt_id": "dell-rsq-03b-internal-chain-r1"}
+            ),
+            "dell_03B_R2_identity_invalid",
+        ),
+        (
+            lambda value: value["only_successor_changes"].update(
+                {"source_store_source_record_id_alias_accepted": True}
+            ),
+            "dell_03B_R2_delta_invalid",
+        ),
+        (
+            lambda value: value["execution_budget"].update(
+                {"local_embedding_inference_batches_maximum": 2}
+            ),
+            "dell_03B_R2_execution_budget_drift",
+        ),
+        (
+            lambda value: value["authority"].update(
+                {"reranker_authorized": True}
+            ),
+            "dell_03B_R2_authority_drift",
+        ),
+    ],
+)
+def test_R2_successor_mutations_fail_closed(
+    bound_inputs, mutation, reason
+) -> None:
+    successor = deepcopy(_read(SUCCESSOR_POLICY_PATH))
+    mutation(successor)
+    _reseal(successor)
+    with pytest.raises(DellReportInternalChainCeilingError, match=reason):
+        _validate_successor(successor, bound_inputs=bound_inputs)
+
+
+def test_R2_rejects_mutated_R1_failure_receipt(bound_inputs) -> None:
+    successor = _read(SUCCESSOR_POLICY_PATH)
+    failure = deepcopy(_read(FAILURE_RECEIPT_PATH))
+    failure["execution_receipt"]["4B_embedding_calls"] = 1
+    failure["result_digest"] = canonical_digest(
+        {key: row for key, row in failure.items() if key != "result_digest"}
+    )
+    with pytest.raises(
+        DellReportInternalChainCeilingError,
+        match="dell_03B_R2_failure_receipt_invalid",
+    ):
+        _validate_successor(
+            successor,
+            bound_inputs=bound_inputs,
+            failure=failure,
+        )
+
+
 def test_asp_rule_rejects_traditional_server_asp_as_complete(bound_inputs) -> None:
     policy = bound_inputs[0]
     row = _object(
@@ -344,6 +457,14 @@ def test_compile_routes_embedding_reranker_and_external_separately(
     synthetic_receipt["source_object_index_lineage"]["source_record_count"] = len(
         objects
     )
+    synthetic_receipt["source_object_index_lineage"].update(
+        {
+            "all_source_records_lineage_bound": True,
+            "compiled_lineage_ids_outside_bound_source_store": [],
+            "compiled_lineage_source_record_count": len(objects),
+            "source_records_missing_from_compiled_lineage": [],
+        }
+    )
     synthetic_receipt["embedding_index"]["object_count"] = len(objects)
     result = compile_dell_report_internal_chain_ceiling_result(
         policy=policy,
@@ -374,6 +495,50 @@ def test_compile_routes_embedding_reranker_and_external_separately(
     ] is True
     assert result["summary"]["held_target_execution_count"] == 0
     assert result["authority"]["03D_4B_embedding_authorized"] is False
+    exact_source_ids = [
+        row["base_object_view"]["source_record_id"] for row in objects
+    ]
+    with pytest.raises(
+        DellReportInternalChainCeilingError,
+        match="dell_03B_source_identity_population_duplicate",
+    ):
+        compile_dell_report_internal_chain_ceiling_result(
+            policy=policy,
+            residual_program=residual,
+            execution_program=execution_program,
+            runtime_registry=registry,
+            runtime_binding_receipt=synthetic_receipt,
+            execution=execution,
+            object_rows=objects,
+            source_record_ids=[*exact_source_ids, exact_source_ids[0]],
+            recorded_at="2026-08-25T00:00:00+00:00",
+            prepared_from_commit="a" * 40,
+            attempt_id="test-source-duplicate",
+            input_bindings={},
+        )
+    source_ids = {
+        row["base_object_view"]["source_record_id"] for row in objects
+    }
+    source_ids.remove("SRC::COBJ::NEUTRAL")
+    source_ids.add("SRC::NOT-IN-COMPILED-LINEAGE")
+    with pytest.raises(
+        DellReportInternalChainCeilingError,
+        match="dell_03B_source_compiled_lineage_population_mismatch",
+    ):
+        compile_dell_report_internal_chain_ceiling_result(
+            policy=policy,
+            residual_program=residual,
+            execution_program=execution_program,
+            runtime_registry=registry,
+            runtime_binding_receipt=synthetic_receipt,
+            execution=execution,
+            object_rows=objects,
+            source_record_ids=source_ids,
+            recorded_at="2026-08-25T00:00:00+00:00",
+            prepared_from_commit="a" * 40,
+            attempt_id="test-lineage-mismatch",
+            input_bindings={},
+        )
 
 
 def test_reranker_remains_eligible_when_complete_target_is_rank_11(
@@ -414,6 +579,14 @@ def test_reranker_remains_eligible_when_complete_target_is_rank_11(
     )
     synthetic_receipt["source_object_index_lineage"]["source_record_count"] = len(
         objects
+    )
+    synthetic_receipt["source_object_index_lineage"].update(
+        {
+            "all_source_records_lineage_bound": True,
+            "compiled_lineage_ids_outside_bound_source_store": [],
+            "compiled_lineage_source_record_count": len(objects),
+            "source_records_missing_from_compiled_lineage": [],
+        }
     )
     synthetic_receipt["embedding_index"]["object_count"] = len(objects)
     result = compile_dell_report_internal_chain_ceiling_result(
@@ -476,20 +649,71 @@ def test_public_projection_excludes_candidate_text(bound_inputs) -> None:
     assert "secret" not in serialized
 
 
-def test_runner_material_blueprints_are_exact_subset(bound_inputs) -> None:
-    spec = importlib.util.spec_from_file_location("dell_03B_runner", RUNNER_PATH)
-    assert spec is not None and spec.loader is not None
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+def test_runner_material_blueprints_are_exact_subset(
+    bound_inputs, runner_module
+) -> None:
     policy, _, execution_program, _, _ = bound_inputs
     request_ids = {
         request_id
         for contract in policy["target_contracts"]
         for request_id in contract["request_ids"]
     }
-    result = module._material_blueprints(
+    result = runner_module._material_blueprints(
         execution_program, request_ids=request_ids
     )
     assert set(result) == request_ids
     assert len(result) == policy["execution_budget"]["request_count"]
     assert all(row["material_requirements"] for row in result.values())
+
+
+def test_runner_reads_real_source_store_canonical_evidence_ids(
+    bound_inputs, runner_module
+) -> None:
+    receipt = bound_inputs[-1]
+    source_ref = receipt["bindings"]["source_records"]["ref"]
+    source_rows = runner_module._read_jsonl(ROOT / source_ref)
+    assert len(source_rows) == 1888
+    assert all("evidence_id" in row for row in source_rows)
+    assert all("source_record_id" not in row for row in source_rows)
+    source_ids = runner_module._source_record_ids(source_rows)
+    assert len(source_ids) == 1888
+    assert len(source_ids) == receipt["source_object_index_lineage"][
+        "source_record_count"
+    ]
+    object_ref = receipt["bindings"]["compiled_objects"]["ref"]
+    object_rows = runner_module._read_jsonl(ROOT / object_ref)
+    objects_by_id, compiled_source_ids = (
+        runner_module.validate_dell_report_source_compiled_identity_population(
+            object_rows=object_rows,
+            source_record_ids=source_ids,
+            runtime_binding_receipt=receipt,
+        )
+    )
+    assert len(objects_by_id) == 34198
+    assert compiled_source_ids == source_ids
+
+
+@pytest.mark.parametrize(
+    ("rows", "reason"),
+    [
+        (
+            [{"source_record_id": "SRC::OBJECT-ALIAS"}],
+            "dell_03B_source_record_id_alias_forbidden:1",
+        ),
+        ([{}], "dell_03B_source_evidence_id_missing:1"),
+        ([{"evidence_id": " padded "}], "dell_03B_source_evidence_id_missing:1"),
+        (
+            [{"evidence_id": "SRC::1"}, {"evidence_id": "SRC::1"}],
+            "dell_03B_source_evidence_id_duplicate:SRC::1",
+        ),
+    ],
+)
+def test_runner_source_identity_contract_fails_closed(
+    runner_module, rows, reason
+) -> None:
+    with pytest.raises(ValueError, match=reason):
+        runner_module._source_record_ids(rows)
+
+
+def test_runner_R2_implementation_bindings_are_exact(runner_module) -> None:
+    runner_module._validate_implementation_bindings(_read(SUCCESSOR_POLICY_PATH))

@@ -25,9 +25,11 @@ from apps.workbench.backend.application.research_retrieval_service import (  # n
     ResearchRetrievalService,
 )
 from retrieval.dell_report_internal_chain_ceiling import (  # noqa: E402
+    SUCCESSOR_POLICY_SCHEMA_VERSION,
     build_dell_report_internal_chain_ceiling_public_projection,
     compile_dell_report_internal_chain_ceiling_result,
-    validate_dell_report_internal_chain_ceiling_policy,
+    validate_dell_report_internal_chain_ceiling_successor_policy,
+    validate_dell_report_source_compiled_identity_population,
 )
 
 
@@ -35,7 +37,7 @@ POLICY = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_0.json"
+    / "fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_1.json"
 )
 DEFAULT_PRIVATE_ROOT = (
     ROOT
@@ -47,7 +49,7 @@ DEFAULT_PUBLIC = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_0.json"
+    / "fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_1.json"
 )
 
 
@@ -102,26 +104,34 @@ def _resolve(value: str) -> Path:
     return path.resolve() if path.is_absolute() else (ROOT / path).resolve()
 
 
-def _head() -> str:
+def _git(*args: str) -> str:
     return subprocess.run(
-        ["git", "rev-parse", "HEAD"],
+        ["git", *args],
         cwd=ROOT,
         check=True,
         capture_output=True,
         text=True,
-    ).stdout.strip().lower()
+        encoding="utf-8",
+    ).stdout.strip()
 
 
 def _require_clean() -> None:
-    status = subprocess.run(
-        ["git", "status", "--porcelain"],
-        cwd=ROOT,
-        check=True,
-        capture_output=True,
-        text=True,
-    ).stdout.strip()
-    if status:
+    if _git("status", "--porcelain", "--untracked-files=all"):
         raise RuntimeError("dell_03B_clean_worktree_required")
+
+
+def _clean_synced_git_receipt() -> dict[str, Any]:
+    status = _git("status", "--porcelain", "--untracked-files=all")
+    head = _git("rev-parse", "HEAD").lower()
+    upstream = _git("rev-parse", "@{upstream}").lower()
+    if status or head != upstream:
+        raise RuntimeError("dell_03B_clean_synced_commit_required")
+    return {
+        "head": head,
+        "upstream": upstream,
+        "clean": True,
+        "upstream_equal": True,
+    }
 
 
 def _bound_json(
@@ -138,6 +148,44 @@ def _bound_json(
     if actual_sha != str(bindings.get(sha_field) or ""):
         raise ValueError(f"dell_03B_bound_input_sha_drift:{ref_field}")
     return path, _read_json(path)
+
+
+def _successor_bound_json(
+    successor_policy: Mapping[str, Any],
+    *,
+    ref_field: str,
+    sha_field: str,
+) -> tuple[Path, dict[str, Any]]:
+    lineage = successor_policy.get("predecessor") or {}
+    path = _resolve(str(lineage.get(ref_field) or ""))
+    if not path.is_file():
+        raise ValueError(f"dell_03B_R2_bound_input_missing:{ref_field}")
+    if _sha256(path) != str(lineage.get(sha_field) or ""):
+        raise ValueError(f"dell_03B_R2_bound_input_sha_drift:{ref_field}")
+    return path, _read_json(path)
+
+
+def _validate_implementation_bindings(policy: Mapping[str, Any]) -> None:
+    rows = policy.get("implementation_bindings")
+    if not isinstance(rows, Sequence) or isinstance(rows, (str, bytes)):
+        raise ValueError("dell_03B_R2_implementation_bindings_invalid")
+    expected_paths = {
+        "src/retrieval/dell_report_internal_chain_ceiling.py",
+        "scripts/data_retrieval/run_dell_report_internal_chain_ceiling.py",
+    }
+    seen_paths: set[str] = set()
+    for row in rows:
+        if not isinstance(row, Mapping):
+            raise ValueError("dell_03B_R2_implementation_bindings_invalid")
+        ref = str(row.get("path") or "")
+        if ref in seen_paths:
+            raise ValueError("dell_03B_R2_implementation_binding_duplicate")
+        seen_paths.add(ref)
+        path = _resolve(ref)
+        if not path.is_file() or _sha256(path) != str(row.get("sha256") or ""):
+            raise ValueError(f"dell_03B_R2_implementation_binding_drift:{ref}")
+    if seen_paths != expected_paths:
+        raise ValueError("dell_03B_R2_implementation_binding_set_invalid")
 
 
 def _material_blueprints(
@@ -203,13 +251,22 @@ def _material_blueprints(
 
 
 def _source_record_ids(rows: Sequence[Mapping[str, Any]]) -> set[str]:
-    result = set()
-    for row in rows:
-        source_id = str(row.get("source_record_id") or "")
-        if not source_id:
-            raise ValueError("dell_03B_source_record_id_missing")
+    result: set[str] = set()
+    for row_number, row in enumerate(rows, start=1):
+        if "source_record_id" in row:
+            raise ValueError(
+                f"dell_03B_source_record_id_alias_forbidden:{row_number}"
+            )
+        raw_source_id = row.get("evidence_id")
+        if (
+            not isinstance(raw_source_id, str)
+            or not raw_source_id.strip()
+            or raw_source_id != raw_source_id.strip()
+        ):
+            raise ValueError(f"dell_03B_source_evidence_id_missing:{row_number}")
+        source_id = raw_source_id
         if source_id in result:
-            raise ValueError(f"dell_03B_source_record_id_duplicate:{source_id}")
+            raise ValueError(f"dell_03B_source_evidence_id_duplicate:{source_id}")
         result.add(source_id)
     return result
 
@@ -220,43 +277,60 @@ def run(
     private_output: Path,
     public_output: Path,
 ) -> dict[str, Any]:
-    _require_clean()
+    git_receipt = _clean_synced_git_receipt()
     if private_output.exists():
         raise FileExistsError(f"dell_03B_private_output_exists:{private_output}")
     if public_output.exists():
         raise FileExistsError(f"dell_03B_public_output_exists:{public_output}")
-    policy = _read_json(policy_path)
+    if policy_path.resolve() != POLICY.resolve():
+        raise ValueError("dell_03B_R2_canonical_policy_required")
+    successor_policy = _read_json(policy_path)
+    if successor_policy.get("schema_version") != SUCCESSOR_POLICY_SCHEMA_VERSION:
+        raise ValueError("dell_03B_R2_policy_schema_invalid")
+    predecessor_policy_path, predecessor_policy = _successor_bound_json(
+        successor_policy,
+        ref_field="policy_ref",
+        sha_field="policy_sha256",
+    )
+    failure_receipt_path, failure_receipt = _successor_bound_json(
+        successor_policy,
+        ref_field="failure_receipt_ref",
+        sha_field="failure_receipt_sha256",
+    )
+    _validate_implementation_bindings(successor_policy)
     residual_path, residual_program = _bound_json(
-        policy,
+        predecessor_policy,
         ref_field="residual_program_ref",
         sha_field="residual_program_sha256",
     )
     execution_program_path, execution_program = _bound_json(
-        policy,
+        predecessor_policy,
         ref_field="execution_program_ref",
         sha_field="execution_program_sha256",
     )
     registry_path, runtime_registry = _bound_json(
-        policy,
+        predecessor_policy,
         ref_field="runtime_registry_ref",
         sha_field="runtime_registry_sha256",
     )
     receipt_path, runtime_binding_receipt = _bound_json(
-        policy,
+        predecessor_policy,
         ref_field="runtime_binding_receipt_ref",
         sha_field="runtime_binding_receipt_sha256",
     )
     readiness_path, readiness = _bound_json(
-        policy,
+        predecessor_policy,
         ref_field="dell_product_readiness_ref",
         sha_field="dell_product_readiness_sha256",
     )
-    if readiness.get("result_digest") != policy["bound_inputs"][
+    if readiness.get("result_digest") != predecessor_policy["bound_inputs"][
         "dell_product_readiness_digest"
     ]:
         raise ValueError("dell_03B_readiness_digest_drift")
-    validate_dell_report_internal_chain_ceiling_policy(
-        policy,
+    policy = validate_dell_report_internal_chain_ceiling_successor_policy(
+        successor_policy,
+        predecessor_policy=predecessor_policy,
+        predecessor_failure_receipt=failure_receipt,
         residual_program=residual_program,
         execution_program=execution_program,
         runtime_registry=runtime_registry,
@@ -276,16 +350,6 @@ def run(
         raise ValueError("dell_03B_request_payload_population_invalid")
     blueprints = _material_blueprints(execution_program, request_ids=request_ids)
 
-    service = ResearchRetrievalService.from_runtime_paths(ROOT)
-    principal = ResearchRetrievalPrincipal(
-        mode="current", permissions=frozenset({"current_product:read"})
-    )
-    execution = service.execute_current_runtime_requests(
-        "DELL",
-        request_payloads,
-        principal,
-        material_requirement_blueprints=blueprints,
-    )
     bindings = runtime_binding_receipt.get("bindings") or {}
     objects_binding = bindings.get("compiled_objects") or {}
     sources_binding = bindings.get("source_records") or {}
@@ -297,10 +361,42 @@ def run(
         raise ValueError("dell_03B_source_record_sha_drift")
     object_rows = _read_jsonl(objects_path)
     source_rows = _read_jsonl(sources_path)
+    source_record_ids = _source_record_ids(source_rows)
+    validate_dell_report_source_compiled_identity_population(
+        object_rows=object_rows,
+        source_record_ids=source_record_ids,
+        runtime_binding_receipt=runtime_binding_receipt,
+    )
+
+    service = ResearchRetrievalService.from_runtime_paths(ROOT)
+    principal = ResearchRetrievalPrincipal(
+        mode="current", permissions=frozenset({"current_product:read"})
+    )
+    execution = service.execute_current_runtime_requests(
+        "DELL",
+        request_payloads,
+        principal,
+        material_requirement_blueprints=blueprints,
+    )
     recorded_at = datetime.now(timezone.utc).replace(microsecond=0).isoformat()
-    prepared_from_commit = _head()
+    prepared_from_commit = str(git_receipt["head"])
     input_bindings = {
-        "policy": {"ref": _relative(policy_path), "sha256": _sha256(policy_path)},
+        "successor_policy": {
+            "ref": _relative(policy_path),
+            "sha256": _sha256(policy_path),
+            "result_digest": successor_policy.get("result_digest"),
+            "program_id": successor_policy.get("program_id"),
+        },
+        "predecessor_policy": {
+            "ref": _relative(predecessor_policy_path),
+            "sha256": _sha256(predecessor_policy_path),
+            "program_id": predecessor_policy.get("program_id"),
+        },
+        "predecessor_failure_receipt": {
+            "ref": _relative(failure_receipt_path),
+            "sha256": _sha256(failure_receipt_path),
+            "result_digest": failure_receipt.get("result_digest"),
+        },
         "residual_program": {
             "ref": _relative(residual_path),
             "sha256": _sha256(residual_path),
@@ -346,10 +442,10 @@ def run(
         runtime_binding_receipt=runtime_binding_receipt,
         execution=execution,
         object_rows=object_rows,
-        source_record_ids=_source_record_ids(source_rows),
+        source_record_ids=source_record_ids,
         recorded_at=recorded_at,
         prepared_from_commit=prepared_from_commit,
-        attempt_id=str(policy["attempt_id"]),
+        attempt_id=str(successor_policy["attempt_id"]),
         input_bindings=input_bindings,
     )
     private_bytes = _json_bytes(private_result)

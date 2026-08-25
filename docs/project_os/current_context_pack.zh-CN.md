@@ -12,6 +12,13 @@ DELL 定向补源、R4 Pack/anchor/readiness 已原子晋升 current R34：`55 E
 not-ready；14 gap 为 0 closed、3 narrowed。8GB 可以 full-offload 量化 4B，未晋升原因是
 NVDA embedding 和整体/MU/NVDA reranker 质量回退，不是显存。
 
+bounded crosswalk G1 已由第三名 fresh reviewer 以 `0/0/0/0` 通过。当前 02A/03A 作者实现已完成
+首轮 21 项定向测试，但尚未物化或独立审计：真实 ProductReadiness 是 8 请求／18 review item／16
+human-required；4 个 blocked 请求只包含其中 8 项。02A 因此冻结“16 项全量决策集＋8 项阻断子集”；
+03A 全量分区 14 Pack gap 和独立产品利润 gap，9 个补源 target 中 3 个 admission-held、6 个只具后续
+计划。旧 22 次 external-ladder fresh query 不得原样重跑；0.6B baseline、4-bit 4B embedding shadow
+和 4-bit 4B reranker 均保留但当前无调用 authority。
+
 S2 产品价值桥现在已进入 current 动态 workpaper：13 source observations、7 deterministic
 derivations、4 open bridge gaps；公开输入不足使 PVM 和 AI 产品利润继续为 null。DELL R34
 zero-call canary R1 的 Harness mutation 失败已不可变保留，R2 两轮成功；fresh R34 三案例回执
@@ -1792,3 +1799,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - successor 作者门为定向 `24 passed`、全仓 `1284 passed, 2 skipped, 2 warnings`、compileall／pyflakes、1102 config JSON、8 Project OS JSONL、active baseline `213/8/5/28/0`、8,045-file secret scan／0 和 diff check。
 - 第二名无上下文继承的 fresh read-only reviewer 对 `e9d1bf1e...` 判定 `PASS，P0/P1/P2/P3=0/0/0/1`；它独立覆盖 5 final＋5 temporary collision、R38 zero-write、R34 fresh path、receipt digest 和无跨阶段 drift。唯一 P3 是该被审 commit 尚未写入 `1284 passed` 与 fresh PASS，本段和顶部现已闭合；原 `d63e` FAIL 不追认为 PASS。
 - GitHub HTTPS 在多次 push 时持续 connection reset，本地分支 ahead、behind 0；这是远端传输边界，不改变本地 commit/tree 或产品判断。qualified human、S1／S2／S3、产品、publication 和 release 继续为 false。
+
+### 2026-08-25 DELL-RSQ-02A/03A scope reconciliation 与作者实现
+
+- ProductReadiness v1.7 的实际底层对象是 8 requests／18 review items／16 human-required；4 个 `blocked_by_evidence_admission` requests 各 2 项，共 8 项。冻结 program 的“4 请求／16 项”不能解释为四个请求各四项。
+- 02A 以不改写 frozen program 的双集合合同实现：全部 16 项仍须 qualified human 决定才能通过 G2；8 项 blocker subset 只解释四个当前 readiness block。每项绑定来源 owner/subject/period/role/route/right、private excerpt、requirement alignment、R17 claim-use 和 forbidden inference；public 不含 excerpt/URL，decision 不预填。
+- 03A 把 14 Pack gap 和独立 product-profit gap 全量分区为 9 acquisition target、6 non-acquisition Pack disposition；demand durability、working capital、product profit 因 admission 重叠而 held，其余 6 项也只冻结 internal/external 路线，不授权调用。
+- prior external ladder 的 22 fresh provider queries 作为 immutable predecessor，必须先复核 capture/object/candidate，禁止原样重复付费检索。BM25＋0.6B baseline、4-bit 4B embedding shadow 和 4-bit 4B reranker 均保留，candidate ceiling 先于 reranker，当前 authority 全 false。
+- 02A/03A 定向 `21 passed`，相邻合同 `75 passed`，全仓 `1334 passed, 2 skipped, 2 warnings`；active baseline `213/8/5/28/0`、1116 config JSON、8 Project OS JSONL／1191 行、8073-file secret scan／0 均通过。0 network/provider/model/embedding/reranker/promotion/closure。clean materialization、author-separated engineering/evidence/report-quality audit、16 项 qualified-human decision、真实补源、S2/Pack/Readiness、Agent/Writer 和产品验收均待后续。详见 `docs/worklog/fin_0_1_3_s1/082_dell_report_admission_and_residual_route_program.md`。

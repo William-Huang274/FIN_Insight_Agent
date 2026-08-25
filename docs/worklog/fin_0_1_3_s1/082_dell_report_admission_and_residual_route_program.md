@@ -287,3 +287,45 @@ network/provider/model/embedding/reranker/capture/promotion/gap closure 全为 0
 独立重放 R1 attacks、R2 新增 admission-map attacks、exact recompile，并逐项审 16 个 claim-use 的
 period/basis/owner/role/material report use。工程审计必须与研报质量审计分别判定。审计通过也仍不等于
 qualified-human 02B、真实补源、S2 重编、Writer 或产品验收。
+
+## 13. Fresh author-separated R2 工程与研报来源双审计
+
+全新、无历史上下文继承、只读且作者分离的 reviewer 对 immutable commit
+`33a93e7c2916d4f7c0c0ae7f5b96fd79c5a0a94d`／tree
+`6169fc66fa453e85bd20641ddeaf8c6ad1f7e151` 完成复核。审计开始和结束时 HEAD、tree、index、
+tracked/untracked worktree 均相同；reviewer 写入、network/provider/model/embedding/reranker/paid call、
+qualified-human decision 全为 0。
+
+独立重算结果如下：
+
+- 02A public/private 与 03A 均 exact object/byte recompile，所有 raw SHA、自摘要和 target commit binding
+  一致；实际 population 为 8 requests／18 nested items／16 human items、4 blocked requests／8 blocker
+  items，人工决定仍为 `0/16`。
+- reviewer 逐项检查全部 16 个 claim-use：5 个仅保留 bounded possible use，10 个
+  `reject_no_current_material_report_use`，1 个 exact duplicate rebind；reject/rebind 的 claim/surface 为空，
+  未发现残留 period/basis/owner/role mismatch 或 citation padding。
+- 03A 精确重算为 14 Pack gaps＋1 independent product-profit gap、9 targets／6 unoverlapped／3 held、
+  7 route families／63 contracts，prior query 为 `50=28 replay+22 fresh`；三个 held target 仍仅为 demand
+  durability、product profit、working capital。
+- R1 nested-delete、identity mutation、ninth request、claim/request swap、held/gap swap、prior 99-query、
+  nested authority、4B embedding/reranker authority 与 URL-like locator attacks，以及 R2 新增 admission-map
+  attacks 全部 fail closed。只读测试 `89 passed`；3 个会写文件的测试被 deselect，并以无写入 collision
+  probe 等价验证。
+
+最终 verdict：`P0/P1/P2/P3=0/0/0/0`；engineering/Evidence 为
+`PASS_BOUNDED_02A_03A_R2_PREPARATION`，report-source/claim-use preparation 为
+`PASS_BOUNDED_PREPARATION_ONLY`，new-report research quality 为 `OPEN_NOT_ASSESSABLE`，
+qualified-human product verdict 为 `NOT_ISSUED`。回执：
+`configs/audits/fin_ia_0_1_3_commit_33a93e7c_dell_02a_03a_r2_fresh_dual_audit_pass_v1_0.json`，
+canonical result digest=`4dd0343c...daf9`，file SHA=`030cdaab...9d2d`。
+
+作者仅对审计记录和 Project OS 做落盘复证：audit digest／全部 artifact SHA 重算、`git diff --check`、
+1124 份 config JSON、8 个 Project OS JSONL／1216 行、active baseline `213/8/5/28/0`、8,081-file
+secret scan／0，以及 Project OS＋02A＋03A 联合 `130 passed` 全部通过；没有新增模型、Provider、网络、
+embedding、reranker、source execution、promotion 或 gap closure。
+
+该通过只关闭 R1 在 02A/03A preparation scope 的 RC-S1-066／067／068，不关闭上一版研报的真实信源
+缺口。下一合法门是外部 qualified human 对 16 项执行 02B；另可单独准备 6 个 unoverlapped target 的
+03B internal-chain scoped authority，但本审计没有授予执行权。3 个 held target 等待 02B。真实内／外源
+执行、Evidence admission、G2/G3、Pack／Readiness／S2 重编、动态 Agent、Writer successor、formal
+Q1–Q8、report/product/publication/release 全部仍未进入。

@@ -161,8 +161,9 @@
   - [x] successor 作者工程门：定向 48、相邻 101、全仓 `1361 passed, 2 skipped, 2 warnings`，active baseline／JSON／JSONL／secret／frozen SHA 全通过
   - [x] 02A R2 non-overwriting public/private 物化与 exact recompile；8/18/16、4/8、建议 5/10/1、decision 0/16，public 无 excerpt/URL
   - [x] 03A R2 non-overwriting 物化与 exact recompile；14+1 gaps、9/6/3 targets、7 routes／63 contracts、prior 50/22、URL-like 0、G3=false
-  - [ ] 新的 fresh engineering＋report-quality 双审计
-  - [ ] 上述 successor 双审计 PASS 后方可进入 02B qualified-human review；当前 0/16 decision
+  - [x] 新的 fresh engineering＋report-source/claim-use 双审计已对 immutable `33a93e7c...` 完成：`P0/P1/P2/P3=0/0/0/0`；两项 preparation verdict 均 bounded PASS，新报告质量仍 `OPEN_NOT_ASSESSABLE`
+  - [x] append-only 审计回执已记录：`configs/audits/fin_ia_0_1_3_commit_33a93e7c_dell_02a_03a_r2_fresh_dual_audit_pass_v1_0.json`，digest `4dd0343c...daf9`
+  - [ ] `DELL-RSQ-02B` 现为下一 qualified-human review 门；当前仍为 0/16 decision，审计 Agent 未代签
   - [ ] 真实 residual 内/外源执行与上一版研报信源补齐仍未开始，不能把 route program 当作已补源
   - [ ] R17 citation P1、WWC P2、formal Q1–Q8、新 Writer/report 和 reader-readable appendix 仍待后续报告门
   - [ ] S1／S2／S3、report quality、product、publication、release 全部保持 false

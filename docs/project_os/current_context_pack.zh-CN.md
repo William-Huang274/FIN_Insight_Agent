@@ -15,8 +15,12 @@ NVDA embedding 和整体/MU/NVDA reranker 质量回退，不是显存。
 bounded crosswalk G1 已由第三名 fresh reviewer 以 `0/0/0/0` 通过。02A/03A R1 虽已物化，但随后
 fresh reviewer 判定 `FAIL，P0/P1/P2/P3=1/2/1/0`，失败已不可变保留，R1 不可进入 human review 或
 source execution。当前同阶段 R2 作者实现已通过定向 `48`、相邻 `101` 和全仓 `1361 passed, 2 skipped,
-2 warnings`；02A/03A R2 均已 non-overwriting 物化并 exact recompile，新的独立工程＋研报质量复核
-仍待后续。
+2 warnings`；02A/03A R2 均已 non-overwriting 物化并 exact recompile。新的 fresh author-separated
+read-only reviewer 已对 immutable `33a93e7c...`／tree `6169fc66...` 完成工程＋研报来源双审计：
+`P0/P1/P2/P3=0/0/0/0`，engineering/Evidence 与 report-source/claim-use preparation 均 bounded PASS；
+新报告研报质量仍为 `OPEN_NOT_ASSESSABLE`，qualified-human decision 仍为 `0/16`。
+append-only 回执为 `configs/audits/fin_ia_0_1_3_commit_33a93e7c_dell_02a_03a_r2_fresh_dual_audit_pass_v1_0.json`，
+digest=`4dd0343c...daf9`。
 真实 ProductReadiness 是 8 请求／18 review item／16
 human-required；4 个 blocked 请求只包含其中 8 项。02A 因此冻结“16 项全量决策集＋8 项阻断子集”；
 03A 全量分区 14 Pack gap 和独立产品利润 gap，9 个补源 target 中 3 个 admission-held、6 个只具后续

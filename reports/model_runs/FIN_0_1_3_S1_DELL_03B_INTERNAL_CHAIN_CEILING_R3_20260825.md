@@ -54,3 +54,20 @@ R3 没有解决上一版研报全部信源问题：55 Evidence／14 gaps、02B `
 R17 的 reader-facing citations/source appendix、WWC 和正文质量仍 open。只有新的 author-separated reviewer 同时
 通过工程与研报质量后，才能决定是否修本地 materialization、单独授权 ASP reranker、运行 bounded residual 03C，
 以及再进入 admission、S2、动态单元和新报告。
+
+## 2026-08-26 fresh audit 后置更正
+
+Fresh fork-none、作者分离、只读 reviewer 对 immutable `28158e04...720d` 判定 **FAIL**。R3 新增
+`P0/P1/P2/P3=0/1/1/0`；执行/attempt/integrity/privacy seal 独立通过，但语义与 route 未通过。
+
+P1：units 的 5 个 coverage occurrence 全是 NVIDIA 出口许可或行业 shipment-growth partial context，不是 Dell
+company-period physical units；`local repair targets=3` 撤回。Parent/slice 必须去重，partnering material core
+已编译，真正本地缺文是 Dell factory weekly Blackwell shipping sentence。
+
+P2：negated partnership、yield 后置 future A14 qualifier、客户收到四台 Dell systems，以及相隔 300 个对象的
+同源 ASP roles 都能绕过当前 classifier。实际 R38 ASP `2/2/2/2` ranks 15/16 与 supplier `4/4/4/2` rank 2
+仍可作为 bounded observation，但不能让通用 03B 通过。
+
+R3 不改写、不重跑。下一合法动作是 non-overwriting same-stage R4；其 fresh audit 通过前，03C、4B、reranker、
+Evidence、gap closure 和所有 stage/report/product authority 继续为 false。R17 report quality 仍为
+`OPEN/NOT_ASSESSABLE`，但不阻塞 S1 R4 修复。

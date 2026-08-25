@@ -1942,3 +1942,21 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
   citation/source appendix 与报告质量仍 open。
 - 下一步先提交 immutable R3 result，再由全新 fork-none、作者分离、只读 reviewer 同时审工程与研报质量。
   审计前不运行 03C、4B、reranker，不修 current 数据、不做 Evidence/S2/新报告或产品验收。详见工作记录 086。
+
+### 2026-08-26 DELL-RSQ-03B R3 fresh audit FAIL 与 R4 要求
+
+- Fresh fork-none、作者分离、只读 reviewer 审计 immutable `28158e04...720d`，最终 FAIL。R3 新增
+  `P0/P1/P2/P3=0/1/1/0`，连同 R17 open 项为 `0/2/3/1`；审计仓库写入 0，02B 仍 `0/16`。
+- Execution/attempt/integrity/privacy seal 独立通过：exact Git parent/tree/path、4 implementation＋6 predecessor
+  bindings、5 unique requests、1 batch、每 request 96/16 unique/rank、12 类 zero authority、atomic pair、三份
+  digest/SHA 与 exact reprojection 均通过；R4 继承该 seal。
+- P1：units 的 5 个 coverage occurrence 是 NVIDIA 出口许可与行业 shipment-growth partial context，不是 Dell
+  physical units，故 `local repair targets=3` 撤回。Parent/slice 与非 material tail 需去重；真正本地 loss 是 Dell
+  factory weekly Blackwell shipping sentence。
+- P2：negated partnership、yield 后置 future A14、客户收到四台 Dell systems、同源相距 300 objects 的 ASP
+  roles 都能误过。Real ASP `2/2/2/2` final 15/16 和 supplier `4/4/4/2` best 2 保持 bounded observation。
+- R17 仍无 reader-visible citation/source appendix，crosswalk 未消费、WWC 不 operational、重复/事实密度 open；
+  report quality=`OPEN/NOT_ASSESSABLE`。它不阻塞 S1 R4，但 R4 也不能让报告通过。
+- 下一步为 non-overwriting R4：coverage materiality＋source-family dedup、negation、双向 future qualifier、公司出货/
+  客户部署分离、真实 adjacency、factory sentence materialization 与六 target route 重算；fresh audit 前所有下游
+  authority 继续 false。详见工作记录 087 与 audit digest `2cc497f2...e2fc9`。

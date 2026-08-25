@@ -123,3 +123,11 @@ gap closure 全 0。它只证明 deterministic contract 和 R1 materialization�
 mutation gate。该 verdict 尚未签发，所以 `independent_review_pass=false`、`G1=false`。复核通过后，
 下一实现片是并行准备 `DELL-RSQ-02A` 的 4-request/16-item admission packet 与 `03A` residual route
 manifest；qualified-human 02B 决定仍不能由 Codex 或模型代签。
+
+## 7. Append-only independent review disposition
+
+后续 fresh author-separated reviewer 对 immutable `4cce5d51...` 判定
+`FAIL，P0/P1/P2/P3=1/2/1/0`。R1 实际内容值正确，但 baseline 的真实计数／Git identity、完整质量协议、
+三投影确定性证明和 technical/unit 正交轴均存在 fail-closed 缺口，因此本记录第 2–6 节只能作为作者
+实现和 R1 失败前状态，不能继续表述为 G1 可验收 successor。R1 保持不可变；修复和新 attempt 详见
+`docs/worklog/fin_0_1_3_s3/174_DELL_RSQ_R1_independent_failure_and_R2_fail_closed_successor.md`。

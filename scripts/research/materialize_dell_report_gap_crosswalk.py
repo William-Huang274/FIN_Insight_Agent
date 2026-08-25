@@ -26,6 +26,10 @@ DEFAULT_BASELINE = (
     "configs/research/evals/"
     "fin_ia_0_1_3_dell_source_report_quality_program_baseline_manifest_v1_0.json"
 )
+DEFAULT_BASELINE_VERIFICATION = (
+    "configs/research/evals/"
+    "fin_ia_0_1_3_dell_source_report_quality_baseline_verification_v1_0.json"
+)
 DEFAULT_PROTOCOL = (
     "configs/research/evals/"
     "fin_ia_0_1_3_dell_source_report_quality_evaluation_protocol_v1_0.json"
@@ -39,11 +43,11 @@ DEFAULT_PROGRAM = (
     "fin_ia_0_1_3_dell_report_gap_crosswalk_program_v1_0.json"
 )
 DEFAULT_PRIVATE_OUTPUT = (
-    "data/workbench_private/fin_0_1_3_report_gap_crosswalk/dell-r1/full_result.json"
+    "data/workbench_private/fin_0_1_3_report_gap_crosswalk/dell-r2/full_result.json"
 )
 DEFAULT_PUBLIC_OUTPUT = (
     "configs/research/evals/"
-    "fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_0.json"
+    "fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_1.json"
 )
 
 
@@ -104,6 +108,37 @@ def _require_clean_worktree(status_porcelain: str) -> None:
         )
 
 
+def _git_blob_at_commit(commit: str, ref: str) -> str:
+    try:
+        blob = _git_output("rev-parse", "--verify", f"{commit}:{ref}")
+        object_type = _git_output("cat-file", "-t", blob)
+    except subprocess.CalledProcessError as exc:
+        raise DellReportGapCrosswalkMaterializationError(
+            f"report_gap_crosswalk_git_commit_path_invalid:{commit}:{ref}"
+        ) from exc
+    if object_type != "blob":
+        raise DellReportGapCrosswalkMaterializationError(
+            f"report_gap_crosswalk_git_object_not_blob:{commit}:{ref}"
+        )
+    return blob
+
+
+def _git_blob_for_source_bytes(ref: str, payload: bytes) -> str:
+    try:
+        completed = subprocess.run(
+            ["git", "hash-object", "--stdin", "--path", ref],
+            cwd=ROOT,
+            check=True,
+            input=payload,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        raise DellReportGapCrosswalkMaterializationError(
+            f"report_gap_crosswalk_git_source_blob_invalid:{ref}"
+        ) from exc
+    return completed.stdout.decode("ascii").strip()
+
+
 def _render_json(payload: Mapping[str, Any]) -> bytes:
     return (
         json.dumps(dict(payload), ensure_ascii=False, indent=2) + "\n"
@@ -133,6 +168,7 @@ def _governance_binding(
 def compile_materialization(
     *,
     baseline_path: Path,
+    baseline_verification_path: Path,
     protocol_path: Path,
     authority_template_path: Path,
     program_path: Path,
@@ -141,17 +177,35 @@ def compile_materialization(
     prepared_from_commit: str,
 ) -> dict[str, dict[str, Any]]:
     baseline = _read_json(baseline_path)
+    baseline_verification = _read_json(baseline_verification_path)
     protocol = _read_json(protocol_path)
     authority_template = _read_json(authority_template_path)
     program = _read_json(program_path)
 
     source_bytes_by_ref: dict[str, bytes] = {}
-    for raw_binding in dict(baseline.get("input_bindings") or {}).values():
+    git_blob_by_source_ref: dict[str, str] = {}
+    git_blob_by_commit_ref: dict[str, str] = {}
+    all_bindings = [
+        *dict(baseline.get("input_bindings") or {}).values(),
+        *dict(baseline_verification.get("input_bindings") or {}).values(),
+    ]
+    for raw_binding in all_bindings:
         ref = str(dict(raw_binding).get("ref") or "")
-        source_bytes_by_ref[ref] = _resolve(ref).read_bytes()
+        payload = _resolve(ref).read_bytes()
+        source_bytes_by_ref[ref] = payload
+        binding = dict(raw_binding)
+        if binding.get("git_tracking") == "tracked":
+            commit = str(binding.get("git_commit") or "")
+            git_blob_by_source_ref[ref] = _git_blob_for_source_bytes(ref, payload)
+            git_blob_by_commit_ref[f"{commit}:{ref}"] = _git_blob_at_commit(
+                commit, ref
+            )
     parsed = validate_program_baseline_manifest(
         baseline,
+        verification=baseline_verification,
         source_bytes_by_ref=source_bytes_by_ref,
+        git_blob_by_source_ref=git_blob_by_source_ref,
+        git_blob_by_commit_ref=git_blob_by_commit_ref,
     )
     compiled = compile_report_gap_crosswalk(
         baseline_manifest=baseline,
@@ -159,6 +213,8 @@ def compile_materialization(
         authority_template=authority_template,
         program=program,
         pack=parsed["R4_current_pack"],
+        R4_successor_result=parsed["R4_successor_result"],
+        R4_evidence_gate_result=parsed["R4_evidence_gate_result"],
         dynamic_full_result=parsed["R38_private_full_result"],
         writer_full_result=parsed["R17_private_full_result"],
         readiness_public_result=parsed["product_readiness_public"],
@@ -169,6 +225,11 @@ def compile_materialization(
     governance_bindings = {
         "baseline_manifest": _governance_binding(
             baseline_path, baseline, "manifest_digest"
+        ),
+        "baseline_verification": _governance_binding(
+            baseline_verification_path,
+            baseline_verification,
+            "verification_digest",
         ),
         "evaluation_protocol": _governance_binding(
             protocol_path, protocol, "protocol_digest"
@@ -181,14 +242,20 @@ def compile_materialization(
         ),
     }
     full_body: dict[str, Any] = {
-        "schema_version": "fin_ia_dell_report_gap_crosswalk_full_result_v1_0",
-        "status": "materialized_zero_call_independent_review_pending",
+        "schema_version": "fin_ia_dell_report_gap_crosswalk_full_result_v1_1",
+        "status": "materialized_zero_call_R1_audit_correction_reaudit_pending",
         "recorded_at": recorded_at,
         "prepared_from_commit": prepared_from_commit,
         "case_key": "DELL",
         "research_as_of": "2026-08-06",
         "governance_bindings": governance_bindings,
         "baseline_input_bindings": baseline["input_bindings"],
+        "baseline_verification_input_bindings": baseline_verification[
+            "input_bindings"
+        ],
+        "R1_independent_audit_failure": baseline_verification[
+            "R1_independent_audit_failure"
+        ],
         "crosswalk_content_digest": compiled["crosswalk_content_digest"],
         "audit_projection": compiled["audit_projection"],
         "model_visible_projection": compiled["model_visible_projection"],
@@ -204,7 +271,10 @@ def compile_materialization(
             "gap_closures": 0,
         },
         "acceptance": {
+            "R1_independent_audit_failed": True,
             "baseline_manifest_valid": True,
+            "baseline_actual_counts_recomputed": True,
+            "tracked_git_commit_path_blobs_verified": True,
             "quality_protocol_valid": True,
             "execution_authority_template_valid": True,
             "crosswalk_deterministic_contract_pass": True,
@@ -218,10 +288,11 @@ def compile_materialization(
             "release_ready": False,
         },
         "known_boundary": (
-            "This zero-call artifact proves a deterministic, typed 14/9/4 crosswalk and "
-            "separate audit/model/reader projections. It closes no research gap, admits no "
-            "candidate, authorizes no source, embedding, reranker, Agent or Writer call, and "
-            "does not pass G1 until a fresh author-separated reviewer can explain the mapping."
+            "R1 failed author-separated review and remains immutable. This R2 zero-call "
+            "correction recomputes the predecessor counts, verifies tracked commit:path blobs, "
+            "freezes the complete quality protocol, and deterministically rebuilds all three "
+            "projections. It closes no research gap, admits no candidate, authorizes no source, "
+            "embedding, reranker, Agent or Writer call, and does not pass G1 until fresh review."
         ),
     }
     full = {
@@ -230,8 +301,8 @@ def compile_materialization(
     }
     private_bytes = _render_json(full)
     public_body: dict[str, Any] = {
-        "schema_version": "fin_ia_dell_report_gap_crosswalk_public_result_v1_0",
-        "status": "materialized_zero_call_independent_review_pending",
+        "schema_version": "fin_ia_dell_report_gap_crosswalk_public_result_v1_1",
+        "status": "materialized_zero_call_R1_audit_correction_reaudit_pending",
         "recorded_at": recorded_at,
         "prepared_from_commit": prepared_from_commit,
         "case_key": "DELL",
@@ -258,6 +329,9 @@ def compile_materialization(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--baseline", default=DEFAULT_BASELINE)
+    parser.add_argument(
+        "--baseline-verification", default=DEFAULT_BASELINE_VERIFICATION
+    )
     parser.add_argument("--protocol", default=DEFAULT_PROTOCOL)
     parser.add_argument("--authority-template", default=DEFAULT_AUTHORITY_TEMPLATE)
     parser.add_argument("--program", default=DEFAULT_PROGRAM)
@@ -277,6 +351,7 @@ def main() -> int:
     recorded_at = datetime.now(timezone.utc).astimezone().isoformat(timespec="seconds")
     compiled = compile_materialization(
         baseline_path=_resolve(args.baseline),
+        baseline_verification_path=_resolve(args.baseline_verification),
         protocol_path=_resolve(args.protocol),
         authority_template_path=_resolve(args.authority_template),
         program_path=_resolve(args.program),

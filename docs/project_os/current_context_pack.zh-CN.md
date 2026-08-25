@@ -50,6 +50,22 @@ contract tests 与相邻合同合计 `28 passed`。本片 0 模型／Provider／
 gap closure；fresh author-separated crosswalk review 尚未完成，因此 `G1=false`，下一合法工作是只读
 复核该 immutable 实现片，随后才进入 `DELL-RSQ-02A` admission packet 和 `03A` residual route manifest。
 
+上述 R1 已由 fresh author-separated reviewer 审完，不能通过：target `4cce5d51...`／tree
+`f9104073...`，`P0/P1/P2/P3=1/2/1/0`，engineering/crosswalk quality 均 `FAIL`、report quality
+`OPEN_NOT_ASSESSABLE`、qualified-human `FALSE_NOT_GRANTED`、`G1=false`。实际 14／9／4／10 值正确，
+但 validator 可接受 55→54 后重签的基线、伪造 Git identity、不完整 8D/P1/reason-ref 协议、只同步
+digest 字符串的漂移投影和被隐藏的 product-profit null；5 个未选择 gap 还把 technical state 错写成
+unit-selection 值。R1 public/private 与 v1.0 governance 全部保持不可变。
+
+R2 工程 successor 已按最早责任层实现、尚未物化：append-only baseline verification 绑定 R1 failure、
+R4 result/gate 和全部实际计数；tracked identity 改为 raw SHA-256＋同 bytes 的 Git clean-filter blob＋
+历史 `commit:path` blob 三重验证；quality protocol 全面 exact-freeze；audit canonical content 现在会重算
+digest 并确定性重建 model/reader；technical state 改为 closed/not-evaluated 独立枚举，PVM 与 product
+profit null 均强制可见。crosswalk 定向 `25 passed`、与 S2/R17 相邻合同 `36 passed`。下一门是 clean
+commit 后 exclusive-create R2/v1.1，再由另一名 fresh read-only reviewer 审 immutable R2；作者工程
+全仓门为 `1309 passed, 2 skipped, 2 warnings`。此前 G1、
+Evidence admission、补源、研报质量和所有 stage/product/release verdict 均未通过。详见 S3/174。
+
 ## 历史上下文（保留）
 
 DELL current 动态多 Agent 的 R10 六份 workpaper 已通过独立 L1／L2，原七项 material finding 全部关闭；R10 public digest=`83dc3d60...6112`、private full digest=`cab0b654...e900`，Writer 当时未调用。R10 scope 已消费，旧 decision 不能再次签权。

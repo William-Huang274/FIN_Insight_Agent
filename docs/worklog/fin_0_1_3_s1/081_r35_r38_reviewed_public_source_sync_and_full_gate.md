@@ -87,5 +87,17 @@ registry 回退到 R35。失败审计 digest=`7189f504...`，不得追认为通�
 确认写调用为 0；每一个输出和 temporary collision 都会 fail closed。相关定向测试 `15 passed`，
 pyflakes／diff check 通过。
 
-context pack 顶部的过期“下一步仍是全量门”同时修正。当前只是 finding 的 engineering successor；
-仍需 full gate、clean commit 和另一名全新只读 reviewer，不能自行把原审计 FAIL 改写成 PASS。
+context pack 顶部的过期“下一步仍是全量门”同时修正。该 finding 的 engineering successor
+`e9d1bf1e...` 已在 clean tree 上通过全仓 `1284 passed, 2 skipped, 2 warnings`；原审计 FAIL
+不改写。
+
+## 7. fresh re-audit 结论
+
+第二名 `fork=none` 的 read-only reviewer 独立验证 failure receipt digest、Git ancestry、R38
+zero-write、exact R34 fresh path、5 final＋5 `.tmp` collision、共享 helper 不漂移及跨阶段 blobs
+不变，给出 `PASS，P0/P1/P2/P3=0/0/0/1`。material finding 为 0；唯一 P3 是被审 commit 当时尚未
+记录作者 `1284 passed` 和 fresh PASS，本节与 current context 已补齐。
+
+reviewer 没有重跑 pytest、联网、调用模型或写仓库；因此 full gate 是作者运行证据，审计结论来自
+独立静态／hash／内存 probe。它不是 qualified-human 或 S1 stage qualification。GitHub push 仍因
+connection reset 未确认，属于传输边界。

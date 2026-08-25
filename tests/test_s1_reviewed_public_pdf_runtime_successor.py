@@ -78,17 +78,14 @@ def test_r35_promotion_requires_every_versioned_output_to_be_fresh(
         ):
             r35_promotion._require_new_outputs()
         path.unlink()
-
-    temporary = (tmp_path / r35_promotion.VERSIONED_OUTPUT_REFS[0]).with_suffix(
-        ".json.tmp"
-    )
-    temporary.parent.mkdir(parents=True, exist_ok=True)
-    temporary.write_text("partial", encoding="utf-8")
-    with pytest.raises(
-        FileExistsError,
-        match="reviewed_public_pdf_runtime_output_exists",
-    ):
-        r35_promotion._require_new_outputs()
+        temporary = path.with_suffix(path.suffix + ".tmp")
+        temporary.write_text("partial", encoding="utf-8")
+        with pytest.raises(
+            FileExistsError,
+            match="reviewed_public_pdf_runtime_output_exists",
+        ):
+            r35_promotion._require_new_outputs()
+        temporary.unlink()
 
 
 def test_reviewed_pdf_successor_contracts_are_single_lane_and_fail_closed() -> None:

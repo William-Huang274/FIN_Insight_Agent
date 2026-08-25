@@ -20,10 +20,11 @@ zero-call canary R1 的 Harness mutation 失败已不可变保留，R2 两轮成
 qualified-human、产品、publication 和 release 均未通过。
 
 R17 Writer 已有 fresh author-separated independent content pass；没有 R17 内容 finding，不创建
-R18。首轮整合审计对 `d63e7966...` 判定 `P0/P1/P2/P3=0/0/1/1`：S1／4B／S2／R17／R38
-数据和权限边界均通过，但 R35 promotion runner 缺 replay guard，可能把 current R38 回退到 R35；
-另有本段状态过时的 P3。当前只允许在 S1 所属层关闭该 finding、重跑工程门并交给新的只读
-reviewer；reviewer 不能替代 qualified human。详见 S1/081、S2/010、S3/171。
+R18。首轮整合审计对 `d63e7966...` 判定 `0/0/1/1`；R35 replay P2 已由 `e9d1bf1e...`
+successor 关闭，作者 full gate 为 `1284 passed, 2 skipped, 2 warnings`。第二名 fresh read-only
+reviewer 对该 commit 判定 `PASS，P0/P1/P2/P3=0/0/0/1`；唯一 P3 是当时顶部尚未记录上述结果，
+本 current-state successor 已更正。reviewer 不是 qualified human；S1／S2／S3、产品、publication
+和 release 仍为 false。详见 S1/081、S2/010、S3/171。
 
 ## 历史上下文（保留）
 
@@ -1711,3 +1712,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R38 DELL canary R9 执行 `12/12` requests、两轮 current runtime、15 Evidence、17 NumericFacts、9 gaps，public digest=`f05731a7...`。三案 R3 回执 digest=`812b1a10...`：DELL `55/14`、MU `14/15`、NVDA `25/13`，每案 12/12 control gates，但 readiness 仍分别 blocked by evidence admission／candidate coverage，public-gap authority 全为 `0`。
 - 4-bit Qwen 4B 已在本机 8GB full-offload；未晋升是 NVDA 与 reranker 质量回退，不是显存不足。S2 产品桥已到动态 Agent，且 Decimal 精度只在局部 context 使用；公开证据仍不能计算 Dell 公司 ASP／units／mix、PVM 或 AI 产品利润。
 - fresh 全仓门为 `1282 passed, 2 skipped, 2 warnings`；compileall、pyflakes、active baseline `213/8/5/28/0`、14 changed JSON＋8 Project OS JSONL、8,041-file secret scan／0 与 diff check 均通过。R17 fresh independent pass 保持，不开 R18；qualified human、S1／S2／S3、产品、publication 和 release 仍为 false。下一门是 clean push 后全新只读 subagent 审计本轮 immutable commit。
+
+### 2026-08-25 R35 replay guard successor 与 fresh re-audit
+
+- 第一名全新只读 reviewer 审计 `d63e7966...`／tree `af5a0595...`，独立复算 S1、4B、S2、R17、R37/R38、TokenBudgetBasis 和冻结文件后给出 `FAIL，0/0/1/1`。唯一 P2 是 R35 promotion runner 可在 current R38 下覆盖五个历史输出并把 registry 回退到 R35；P3 是顶部状态过时。failure receipt digest=`7189f504...`。
+- `e9d1bf1e...`／tree `13013e48...` 在任何写入前要求 exact R34 registry 和五个 final＋五个 `.tmp` 全 fresh；真实 R38 下 `main()` 零写拒绝，exact R34＋fresh 可进入原逻辑。旧实现由 predecessor Git blob 保留，未发现 authority SHA 冻结。
+- successor 作者门为定向 `24 passed`、全仓 `1284 passed, 2 skipped, 2 warnings`、compileall／pyflakes、1102 config JSON、8 Project OS JSONL、active baseline `213/8/5/28/0`、8,045-file secret scan／0 和 diff check。
+- 第二名无上下文继承的 fresh read-only reviewer 对 `e9d1bf1e...` 判定 `PASS，P0/P1/P2/P3=0/0/0/1`；它独立覆盖 5 final＋5 temporary collision、R38 zero-write、R34 fresh path、receipt digest 和无跨阶段 drift。唯一 P3 是该被审 commit 尚未写入 `1284 passed` 与 fresh PASS，本段和顶部现已闭合；原 `d63e` FAIL 不追认为 PASS。
+- GitHub HTTPS 在多次 push 时持续 connection reset，本地分支 ahead、behind 0；这是远端传输边界，不改变本地 commit/tree 或产品判断。qualified human、S1／S2／S3、产品、publication 和 release 继续为 false。

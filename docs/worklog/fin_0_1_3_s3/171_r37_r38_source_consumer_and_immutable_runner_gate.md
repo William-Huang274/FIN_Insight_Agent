@@ -46,3 +46,10 @@ reviewer 对 `d63e7966...` 给出 FAIL，唯一 P2 属 S1 R35 promotion replay g
 R17 内容或自然 Agent finding；另一个 P3 是 context pack 顶部状态漂移。因此没有开 R18，也没有
 改 R17。P2 已迁回 S1 所属层修复并保存独立 failure receipt；新的 full gate 与 fresh reviewer
 通过前，S3／产品／publication／release 继续为 false。
+
+## 5. fresh successor 审计结果
+
+R35 guard successor 的作者 full gate 为 `1284 passed, 2 skipped, 2 warnings`；第二名 fresh
+read-only reviewer 对 `e9d1bf1e...` 判定 `PASS，0/0/0/1`。唯一 P3 只是被审 commit 尚未记账，
+当前文档 successor 已修正。没有 S3 或 R17 material finding，不开 R18；qualified human、S3、
+产品、publication 和 release 仍为 false。

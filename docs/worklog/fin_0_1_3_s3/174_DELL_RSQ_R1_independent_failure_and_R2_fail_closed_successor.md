@@ -207,3 +207,8 @@ R3 execution 的 model/provider/network/embedding/reranker/candidate/Evidence/ga
 acceptance 保留 R1/R2 independent failure，声明 nested count 已实际重算，但 fresh independent review、
 G1、S1/S2/S3、report/product/publication/release 仍全部 false。下一合法动作是提交 public v1.2 收据并
 对该 immutable target 做第三次 fresh author-separated read-only audit；不能将作者物化追认为 G1。
+
+传输后续更正：物化记录 commit `5f256f61fda5b2caad6898cf2b8bd2c7b63406de`、tree
+`f9e2194181902518f518bea350248430b80637e0` 形成后，GitHub 连接恢复；此前积压的四个本地提交已成功
+推送到 `origin/codex/fin013-dell-s1-s2-product-bridge`。早先两次 443 失败仍保留为当时的真实传输
+证据，但“远端待同步”边界已关闭。

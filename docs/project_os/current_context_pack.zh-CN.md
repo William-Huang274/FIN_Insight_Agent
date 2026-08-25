@@ -84,7 +84,8 @@ human-flag toggle 在陈旧 summary 下 fail closed；即使同步重签也会�
 `f2ab6795...8afc2`，public/private digest 为 `afc37e76...76e2`／`c31a51cf...49b9`，逐字段 exact
 recompile 通过。0 source/model/provider/network/embedding/reranker/promotion/closure；下一门是提交
 public v1.2 后由第三名 fresh author-separated reviewer 同时复核工程、crosswalk 内容和研报质量边界。
-不得提前把 G1、补源或研报质量写成通过。GitHub 443 仍不可达，本地分支远端同步待恢复。
+不得提前把 G1、补源或研报质量写成通过。物化记录 commit `5f256f61...` 已成功推送到同名远端分支，
+先前 GitHub 443 失败只保留为历史传输证据，当前远端同步边界已关闭。
 
 ## 历史上下文（保留）
 

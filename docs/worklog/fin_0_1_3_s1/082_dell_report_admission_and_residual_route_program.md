@@ -2,7 +2,7 @@
 
 日期：2026-08-25
 
-状态：`DELL-RSQ-02A/03A author implementation complete / 21 targeted tests pass / clean materialization and independent audit pending`
+状态：`R1 independent audit failed and preserved / R2 author implementation full gate pass / clean materialization and fresh independent audit pending`
 
 ## 1. 先纠正 4 请求／16 human item 的口径
 
@@ -200,3 +200,43 @@ digest `061cd35c...a3ea`。R1 产物不覆盖、不追认为 PASS。
 重验 prior self-digest/22-query 和 URL-like leakage。新 attempt 通过定向、全仓、exact recompile 后，
 必须再次交由新的 fresh read-only reviewer 同时审工程和研报来源/claim-use 质量。此前 G2/G3、
 S1/S2/S3、report/product/publication/release 全部为 false，上一版研报信源缺口仍未解决。
+
+## 10. 同阶段 R2 作者实现与完整工程门
+
+R1 failure receipt 已先进入独立提交 `6431f69c...`，R1 代码、public/private packet 和 route program
+均未覆盖。随后在同一 S1 owning stage 实现 02A/03A R2：
+
+- 02A v1.1 从 public/private ProductReadiness 的全部 8 requests／18 nested items 重新计数，逐项校验
+  request/ref/digest/human flag、per-request item/human/issue-class counts、全局唯一性以及 item/request/
+  packet 自摘要，并冻结 18 项精确 inventory；删除或改写两个 non-human item、增加第九个 zero-human
+  request、切换 human flag，即使同步重签底层摘要也必须失败。
+- 16 个 human item 不再强制挂 claim。作者建议分区为 5 个 bounded possible use、10 个
+  `reject_no_current_material_report_use`、1 个 exact duplicate rebind；reject/rebind 项必须为空 claim／
+  surface。5 个可能用途只保留历史同公司 timing/backlog/mix context、FCF definition boundary 和
+  Dell 风险反证，且精确绑定 R17 surface path。所有建议仍不是 human decision，`0/16` 不变。
+- 03A v1.1 冻结 9 个 target 的 exact target↔Pack/S2 gap↔crosswalk disposition↔prior proposition↔
+  admission overlap map，以及 demand/WWC/product-profit 三个 exact held identity；重算 predecessor
+  七命题全部 `50=28 replay+22 fresh` 及 fresh `6/6/10` query units。
+- 03A 递归拒绝 nested execution/model/embedding/reranker authority，拒绝 scheme、`www`、裸域名、
+  qrel/answer locator；并精确消费 02A 的 16 项 request/claim-use/decision map、18 项 inventory digest、
+  execution/authority/lineage。作者自审额外发现“重新签名后交换 admission item request/claim-use”
+  仍可能仅靠数量通过，已在提交前补成攻击测试并 fail closed。
+- BM25＋Qwen3-Embedding-0.6B baseline、4-bit Qwen 4B embedding shadow challenger 和 4-bit
+  Qwen 4B reranker 均保留；candidate ceiling 仍先于 reranker，所有 TokenBudgetBasis authority=false。
+
+R2 配置身份：
+
+- 02A program digest／SHA：`0b34d8f6...fb267`／`57cac427...381c8`；
+- 03A policy digest／SHA：`cb0b4d61...fd819`／`ce02b647...92130`；
+- frozen execution program SHA 仍为 `5bbb5269...ae4f0d`。
+
+作者工程门：02A/03A 定向 `48 passed`；连同 crosswalk、candidate review、external ladder、S2 bridge、
+R17 的相邻合同 `101 passed`；全仓 `1361 passed, 2 skipped, 2 warnings`，warning 为既有 SWIG
+deprecation。compileall、pyflakes、diff check、active baseline `213/8/5/28/0`、1121 config JSON、
+8 个 Project OS JSONL／1203 行、8078-file secret scan／0 均通过。全程
+network/provider/model/embedding/reranker/promotion/gap-closure=`0/0/0/0/0/0/0`。
+
+这只是作者实现通过：尚未物化 R2 public/private/program，尚未 exact recompile，尚未经过新的
+author-separated 审计。02B human admission、03B/03C source execution、真实 residual 补源、Pack／
+Readiness／S2 重编、新 Writer 和报告质量验收均未发生；上一版研报信源缺口仍未解决，G2/G3、
+S1/S2/S3、report/product/publication/release 继续为 false。

@@ -22,15 +22,15 @@ from retrieval.dell_report_residual_source_program import (  # noqa: E402
 
 DEFAULT_POLICY = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_dell_report_residual_source_ladder_policy_v1_0.json"
+    "fin_ia_0_1_3_s1_dell_report_residual_source_ladder_policy_v1_1.json"
 )
 DEFAULT_ADMISSION_MANIFEST = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_dell_report_evidence_admission_manifest_v1_0.json"
+    "fin_ia_0_1_3_s1_dell_report_evidence_admission_manifest_v1_1.json"
 )
 DEFAULT_OUTPUT = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_0.json"
+    "fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_1.json"
 )
 
 

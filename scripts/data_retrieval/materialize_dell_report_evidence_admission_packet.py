@@ -23,15 +23,15 @@ from retrieval.query_plan import canonical_digest  # noqa: E402
 
 DEFAULT_PROGRAM = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_dell_report_evidence_admission_program_v1_0.json"
+    "fin_ia_0_1_3_s1_dell_report_evidence_admission_program_v1_1.json"
 )
 DEFAULT_PRIVATE_OUTPUT = (
     "data/workbench_private/fin_0_1_3_dell_report_evidence_admission/"
-    "dell-r1/full_result.json"
+    "dell-r2/full_result.json"
 )
 DEFAULT_PUBLIC_OUTPUT = (
     "configs/retrieval/"
-    "fin_ia_0_1_3_s1_dell_report_evidence_admission_manifest_v1_0.json"
+    "fin_ia_0_1_3_s1_dell_report_evidence_admission_manifest_v1_1.json"
 )
 
 

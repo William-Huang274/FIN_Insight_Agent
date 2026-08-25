@@ -10,6 +10,8 @@ import pytest
 
 from retrieval.dell_report_residual_source_program import (
     DellReportResidualSourceProgramError,
+    _compile_route,
+    _contains_url_like_answer_locator,
     compile_dell_report_residual_source_program,
     validate_dell_report_residual_source_policy,
 )
@@ -118,6 +120,38 @@ def test_real_policy_compiles_complete_gap_and_route_partition(
     }
     assert len(result["gap_disposition_register"]) == 15
     assert len({row["gap_id"] for row in result["gap_disposition_register"]}) == 15
+    target_gap_map = {
+        row["target_id"]: (
+            row["pack_gap_id"],
+            row["independent_S2_bridge_gap_id"],
+            row["predecessor_ladder"]["prior_proposition_id"],
+            tuple(row["admission_overlap_request_ids"]),
+        )
+        for row in result["route_targets"]
+    }
+    assert target_gap_map[
+        "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE"
+    ] == (
+        "dell-gap-capacity-release-timing",
+        None,
+        "DELL-PROP-SUPPLY-CHAIN",
+        (),
+    )
+    assert target_gap_map["DELL-RSQ-03A-TARGET-DEMAND-DURABILITY"] == (
+        "dell-gap-demand-pull-forward-digestion",
+        None,
+        "DELL-PROP-CUSTOMER-DEMAND",
+        (
+            "REQ::eb2e808dd2e48b4fe7474223",
+            "REQ::fb06661b946711fc3b334146",
+        ),
+    )
+    assert target_gap_map["DELL-RSQ-03A-TARGET-PRODUCT-PROFIT"] == (
+        None,
+        "dell-gap-product-profit-attribution",
+        "DELL-PROP-VALUE-POOL",
+        ("REQ::081c06389f9dcb8487886b57",),
+    )
     assert result["program_digest"] == canonical_digest(
         {key: value for key, value in result.items() if key != "program_digest"}
     )
@@ -176,6 +210,25 @@ def test_prior_22_query_ladder_is_reconciled_not_repeated(local_inputs: dict) ->
     assert result["prior_ladder_reconciliation"][
         "fresh_provider_query_count_already_spent"
     ] == 22
+    assert result["prior_ladder_reconciliation"]["prior_total_query_count"] == 50
+    assert result["prior_ladder_reconciliation"][
+        "prior_replayed_query_count"
+    ] == 28
+    assert result["prior_ladder_reconciliation"][
+        "fresh_query_unit_counts_by_proposition"
+    ] == {
+        "DELL-PROP-PRICE-CONFIGURATION": 6,
+        "DELL-PROP-UNIT-VOLUME": 6,
+        "DELL-PROP-SUPPLY-CHAIN": 10,
+    }
+    assert result["prior_ladder_reconciliation"]["held_target_ids"] == [
+        "DELL-RSQ-03A-TARGET-DEMAND-DURABILITY",
+        "DELL-RSQ-03A-TARGET-PRODUCT-PROFIT",
+        "DELL-RSQ-03A-TARGET-WORKING-CAPITAL",
+    ]
+    assert result["prior_ladder_reconciliation"][
+        "prior_self_digests_recomputed"
+    ] is True
     assert result["prior_ladder_reconciliation"][
         "repeat_old_query_units_as_fresh_calls"
     ] is False
@@ -229,7 +282,7 @@ def test_crosswalk_disposition_mutation_fails_target_contract(
 
     with pytest.raises(
         DellReportResidualSourceProgramError,
-        match="dell_report_residual_target_crosswalk_mismatch",
+        match="dell_report_residual_input_self_digest_invalid:G1_crosswalk_private",
     ):
         _compile(local_inputs, input_payloads=payloads)
 
@@ -246,7 +299,7 @@ def test_admission_partition_mutation_fails_closed(local_inputs: dict) -> None:
 
     with pytest.raises(
         DellReportResidualSourceProgramError,
-        match="dell_report_residual_admission_partition_invalid",
+        match="dell_report_residual_target_semantics_drift",
     ):
         _compile(local_inputs, policy=policy)
 
@@ -256,6 +309,74 @@ def test_decided_or_drifted_admission_manifest_requires_new_program_state(
 ) -> None:
     admission = deepcopy(local_inputs["admission"])
     admission["counts"]["qualified_human_decision_count"] = 1
+    _redigest(admission, "result_digest")
+
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_admission_state_invalid",
+    ):
+        _compile(local_inputs, admission_manifest=admission)
+
+
+def test_resigned_admission_item_request_swap_fails_exact_semantic_map(
+    local_inputs: dict,
+) -> None:
+    admission = deepcopy(local_inputs["admission"])
+    first = next(
+        row
+        for row in admission["items"]
+        if row["review_item_ref"] == "CANDOBJ::0381BE87C0EE31414BA6EA4E"
+    )
+    second = next(
+        row
+        for row in admission["items"]
+        if row["review_item_ref"] == "CANDOBJ::E591113506AF79306D11D8AD"
+    )
+    first["request_id"], second["request_id"] = (
+        second["request_id"],
+        first["request_id"],
+    )
+    _redigest(admission, "result_digest")
+
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_admission_item_semantics_drift",
+    ):
+        _compile(local_inputs, admission_manifest=admission)
+
+
+def test_resigned_admission_claim_use_swap_fails_exact_semantic_map(
+    local_inputs: dict,
+) -> None:
+    admission = deepcopy(local_inputs["admission"])
+    first = next(
+        row
+        for row in admission["items"]
+        if row["review_item_ref"] == "CANDOBJ::0381BE87C0EE31414BA6EA4E"
+    )
+    second = next(
+        row
+        for row in admission["items"]
+        if row["review_item_ref"] == "CANDOBJ::E591113506AF79306D11D8AD"
+    )
+    first["report_claim_use"], second["report_claim_use"] = (
+        second["report_claim_use"],
+        first["report_claim_use"],
+    )
+    _redigest(admission, "result_digest")
+
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_admission_item_semantics_drift",
+    ):
+        _compile(local_inputs, admission_manifest=admission)
+
+
+def test_resigned_admission_nested_stage_authority_fails_closed(
+    local_inputs: dict,
+) -> None:
+    admission = deepcopy(local_inputs["admission"])
+    admission["authority"]["S1_pass"] = True
     _redigest(admission, "result_digest")
 
     with pytest.raises(
@@ -283,6 +404,162 @@ def test_route_attempt_budget_and_input_sha_fail_closed(local_inputs: dict) -> N
         match="dell_report_residual_input_sha256_mismatch:prior_ladder_result",
     ):
         _compile(local_inputs, input_sha256_by_ref=sha256_by_ref)
+
+
+def test_resigned_held_identity_move_and_pack_gap_swap_fail_semantic_map(
+    local_inputs: dict,
+) -> None:
+    moved = deepcopy(local_inputs["policy"])
+    demand = next(
+        row
+        for row in moved["target_policies"]
+        if row["target_id"] == "DELL-RSQ-03A-TARGET-DEMAND-DURABILITY"
+    )
+    capacity = next(
+        row
+        for row in moved["target_policies"]
+        if row["target_id"] == "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE"
+    )
+    capacity["admission_overlap_request_ids"] = demand[
+        "admission_overlap_request_ids"
+    ]
+    demand["admission_overlap_request_ids"] = []
+    _redigest(moved, "policy_digest")
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_target_semantics_drift",
+    ):
+        validate_dell_report_residual_source_policy(moved)
+
+    swapped = deepcopy(local_inputs["policy"])
+    release = next(
+        row
+        for row in swapped["target_policies"]
+        if row["target_id"] == "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE"
+    )
+    utilization = next(
+        row
+        for row in swapped["target_policies"]
+        if row["target_id"]
+        == "DELL-RSQ-03A-TARGET-CAPACITY-UTILIZATION-YIELD"
+    )
+    release["pack_gap_id"], utilization["pack_gap_id"] = (
+        utilization["pack_gap_id"],
+        release["pack_gap_id"],
+    )
+    _redigest(swapped, "policy_digest")
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_target_semantics_drift",
+    ):
+        validate_dell_report_residual_source_policy(swapped)
+
+
+@pytest.mark.parametrize(
+    ("field", "node_id"),
+    [
+        ("current_authority", None),
+        ("authority_granted", "qwen_4b_embedding_shadow_challenger_4bit"),
+        ("authority_granted", "qwen_4b_reranker_4bit"),
+    ],
+)
+def test_resigned_nested_model_authority_is_rejected_recursively(
+    local_inputs: dict,
+    field: str,
+    node_id: str | None,
+) -> None:
+    policy = deepcopy(local_inputs["policy"])
+    ranking = policy["mixed_retrieval_and_ranking_dependency"]
+    if node_id is None:
+        ranking[field] = True
+    else:
+        node = next(row for row in ranking["nodes"] if row["node_id"] == node_id)
+        node["TokenBudgetBasis"][field] = True
+    _redigest(policy, "policy_digest")
+
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_positive_execution_authority",
+    ):
+        validate_dell_report_residual_source_policy(policy)
+
+
+@pytest.mark.parametrize(
+    "locator",
+    [
+        "https://answer.example/path",
+        "http://answer.example/path",
+        "answer.example/path",
+        "www.answer.example/path",
+        "site:answer.example exact answer",
+        "qrel seeded answer",
+    ],
+)
+def test_scheme_and_bare_domain_answer_locator_leakage_is_rejected(
+    local_inputs: dict,
+    locator: str,
+) -> None:
+    assert _contains_url_like_answer_locator(locator) is True
+    target = deepcopy(local_inputs["policy"]["target_policies"][0])
+    route = deepcopy(local_inputs["policy"]["route_family_policies"][0])
+    target["route_owner_terms"][route["route_family_id"]] = locator
+
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_query_leaks_answer",
+    ):
+        _compile_route(target=target, route=route, currently_held=False)
+
+
+def test_prior_query_count_99_fails_stale_resigned_and_binding_bypass(
+    local_inputs: dict,
+) -> None:
+    stale_payloads = deepcopy(local_inputs["payloads"])
+    stale_payloads["prior_ladder_result"]["propositions"][0][
+        "query_count"
+    ] = 99
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_input_self_digest_invalid:prior_ladder_result",
+    ):
+        _compile(local_inputs, input_payloads=stale_payloads)
+
+    resigned_payloads = deepcopy(local_inputs["payloads"])
+    resigned_payloads["prior_ladder_result"]["propositions"][0][
+        "query_count"
+    ] = 99
+    _redigest(resigned_payloads["prior_ladder_result"], "result_digest")
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_input_digest_mismatch:prior_ladder_result",
+    ):
+        _compile(local_inputs, input_payloads=resigned_payloads)
+
+    rebound_policy = deepcopy(local_inputs["policy"])
+    rebound_policy["input_bindings"]["prior_ladder_result"]["digest"] = (
+        resigned_payloads["prior_ladder_result"]["result_digest"]
+    )
+    _redigest(rebound_policy, "policy_digest")
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_input_binding_contract_drift",
+    ):
+        validate_dell_report_residual_source_policy(rebound_policy)
+
+
+def test_policy_component_digest_rejects_route_semantic_drift(
+    local_inputs: dict,
+) -> None:
+    policy = deepcopy(local_inputs["policy"])
+    policy["target_policies"][0]["target_proposition"] = (
+        "Semantically different proposition"
+    )
+    _redigest(policy, "policy_digest")
+    with pytest.raises(
+        DellReportResidualSourceProgramError,
+        match="dell_report_residual_policy_component_drift:target_policies",
+    ):
+        validate_dell_report_residual_source_policy(policy)
 
 
 def test_program_has_zero_calls_and_no_false_closure(local_inputs: dict) -> None:

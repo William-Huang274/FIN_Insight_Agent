@@ -12,8 +12,10 @@ DELL 定向补源、R4 Pack/anchor/readiness 已原子晋升 current R34：`55 E
 not-ready；14 gap 为 0 closed、3 narrowed。8GB 可以 full-offload 量化 4B，未晋升原因是
 NVDA embedding 和整体/MU/NVDA reranker 质量回退，不是显存。
 
-bounded crosswalk G1 已由第三名 fresh reviewer 以 `0/0/0/0` 通过。当前 02A/03A 作者实现已完成
-全仓门并形成 clean commit `29b4fc2e...f05856`；02A、03A 均已 exclusive-create 物化，独立审计待后续。
+bounded crosswalk G1 已由第三名 fresh reviewer 以 `0/0/0/0` 通过。02A/03A R1 虽已物化，但随后
+fresh reviewer 判定 `FAIL，P0/P1/P2/P3=1/2/1/0`，失败已不可变保留，R1 不可进入 human review 或
+source execution。当前同阶段 R2 作者实现已通过定向 `48`、相邻 `101` 和全仓 `1361 passed, 2 skipped,
+2 warnings`，但尚未物化、exact recompile 或独立复核。
 真实 ProductReadiness 是 8 请求／18 review item／16
 human-required；4 个 blocked 请求只包含其中 8 项。02A 因此冻结“16 项全量决策集＋8 项阻断子集”；
 03A 全量分区 14 Pack gap 和独立产品利润 gap，9 个补源 target 中 3 个 admission-held、6 个只具后续
@@ -1831,3 +1833,22 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 当前只允许同阶段 non-overwriting 02A/03A successor、测试、物化和另一名 fresh reviewer；02B、
   03B/03C/03D、G2/G3、S1/S2/S3、report/product/publication/release 均 false。上一版研报信源缺口
   未解决。
+
+### 2026-08-25 DELL-RSQ-02A/03A R2 作者实现完整门
+
+- 02A v1.1 对 8 requests／18 nested items／16 human items 做精确 inventory、逐 request 重数、全局
+  ref/digest 唯一性及 item/request/packet 自摘要校验；R1 的 non-human delete/mutation/ninth-request
+  绕过均已转为 fail-closed tests。
+- 16 项 claim-use 重分为 5 个 bounded possible use、10 个 no-current-material-use reject、1 个 exact
+  duplicate rebind；reject/rebind 必须空 claim/surface，5 个 possible use 精确绑定 R17 surface。作者
+  recommendation 不是 human decision，当前仍 `0/16`。
+- 03A v1.1 冻结 exact target↔gap↔prior proposition↔overlap/held map，重算 prior 50 queries 和
+  22 fresh units，递归阻断 nested authority，并拒绝 scheme／裸域名／qrel。02A manifest 的 16 项
+  request/claim-use/decision map、18 项 inventory、lineage、execution/authority 也改为精确消费。
+- 4B embedding shadow 和 4B reranker 均保留且 authority=false。作者门为 targeted `48`、adjacent
+  `101`、full `1361 passed, 2 skipped, 2 warnings`；active baseline `213/8/5/28/0`、1121 config JSON、
+  8 Project OS JSONL／1203 行、8078-file secret scan／0 通过，frozen program SHA 未变，全部调用为 0。
+- 下一门是 clean implementation commit、non-overwriting R2 物化和 exact recompile，再交给新的
+  fresh read-only reviewer 同时审工程/Evidence 与报告 claim-use/source quality。真实补源、02B human
+  decisions、S2/Pack/Readiness、新报告和产品验收均未开始；所有 stage/report/product/release verdict
+  继续为 false。

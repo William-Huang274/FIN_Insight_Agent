@@ -1,0 +1,593 @@
+{
+  "schema_version": "fin_ia_dell_report_residual_source_policy_v1_1",
+  "policy_id": "DELL-RSQ-03A-R2",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "successor_lineage": {
+    "policy_id": "DELL-RSQ-03A-R2",
+    "predecessor_attempt": "DELL-RSQ-03A-R1",
+    "predecessor_commit": "581c1d6e89f27981298d8fd9379bf53b40dc488c",
+    "predecessor_verdict": "FAIL",
+    "predecessor_audit_digest": "061cd35cbf624e8a7f84b379466396e0870f122799627107afc6ae9541d4a3ea",
+    "same_stage_root_cause_ids": [
+      "RC-S1-068-DELL-03A-semantic-authority-and-provenance-not-fail-closed"
+    ],
+    "predecessor_overwrite_forbidden": true,
+    "execution_authority_carried_forward": false
+  },
+  "expected_counts": {
+    "crosswalk_pack_gap_count": 14,
+    "pack_gap_acquisition_target_count": 8,
+    "independent_S2_acquisition_target_count": 1,
+    "total_acquisition_target_count": 9,
+    "currently_unoverlapped_target_count": 6,
+    "admission_held_target_count": 3,
+    "non_acquisition_pack_gap_count": 6,
+    "route_family_count": 7,
+    "compiled_route_contract_count": 63
+  },
+  "input_bindings": {
+    "G1_independent_audit": {
+      "ref": "configs/audits/fin_ia_0_1_3_commit_7ba8bb2a_dell_rsq_r3_fresh_final_audit_pass_v1_0.json",
+      "sha256": "9429d75f101097da5e48815e8a0fab8ffb8966a38c4f5dd499eb5df1c4b27189",
+      "digest_field": "result_digest",
+      "digest": "4f28008ea1a15a9813ec0ac22ec5e8219519de9c3195cf6b6928d0c6c1542dd4"
+    },
+    "G1_crosswalk_public": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_2.json",
+      "sha256": "990972fc1acb62696f0bebbc12713e100597271ec562424296cf8d220ff577f5",
+      "digest_field": "result_digest",
+      "digest": "afc37e760cd88c107365e727d10b53694b299f93c4245cf90110775ec22676e2"
+    },
+    "G1_crosswalk_private": {
+      "ref": "data/workbench_private/fin_0_1_3_report_gap_crosswalk/dell-r3/full_result.json",
+      "sha256": "61e627686bae188cfe9f3d58e95cbf230ac4195b855b9fb829975c6dda608880",
+      "digest_field": "full_result_digest",
+      "digest": "c31a51cf7b2252f94f66cdfff96d0263cb850835ab4d1ea264e1e217085849b9"
+    },
+    "admission_02A_program": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_evidence_admission_program_v1_1.json",
+      "sha256": "57cac4279186a66ef6c83afd48437c583ea8d61d4b6864be7c5541c5283381c8",
+      "digest_field": "program_digest",
+      "digest": "0b34d8f68115b1c43af6a9a77af7dba7db883d59ffb2f9d45a59d8c00eafb267"
+    },
+    "prior_ladder_spec": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_external_source_ladder_residual_successor_spec_v1_1.json",
+      "sha256": "f7196fa82cf929a839abf7fbde36a34fea2b2096dacbb0701cc532451049772f",
+      "digest_field": "spec_digest",
+      "digest": "b941e5c843bdc9daf4ab79634b44957cec0387fb9e6023a3c645de37b043ebe0"
+    },
+    "prior_ladder_result": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_external_source_ladder_result_v1_2.json",
+      "sha256": "7bde79d13fcf0044df712345c7a5a8ebee0b0cacbbc48e7090500bd9923c3c0f",
+      "digest_field": "result_digest",
+      "digest": "9aeb7a80e32b51ff4e51d13daf4ad85226a125477adb5704d2be8e601e8fb9ce"
+    },
+    "immutable_execution_program": {
+      "ref": "docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md",
+      "sha256": "5bbb52691fd183bae5c61c6d6dd1b119544e76ffa2625a42dcb1297bd1ae4f0d"
+    },
+    "R1_failed_audit": {
+      "ref": "configs/audits/fin_ia_0_1_3_commit_581c1d6e_dell_02a_03a_fresh_audit_fail_v1_0.json",
+      "sha256": "892e11be5ac74ae1191e19a6012a41b6f44cb66103836e3a4d10e7edd03260e4",
+      "digest_field": "result_digest",
+      "digest": "061cd35cbf624e8a7f84b379466396e0870f122799627107afc6ae9541d4a3ea"
+    },
+    "R1_residual_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_policy_v1_0.json",
+      "sha256": "d13c2c5165f3760921f151f8e25b948ef4c2b0a273a9df0fd2f7bf221a850956",
+      "digest_field": "policy_digest",
+      "digest": "b5a5ca4fac8bd31d3c32957862bee095279b7229465fdad0c9d22b651b3c40a3"
+    },
+    "R1_residual_program": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_0.json",
+      "sha256": "a2caf24d0e2dd8bddc5bbe9d40ffcbdeb82027273a34c92d05b85de006ced90d",
+      "digest_field": "program_digest",
+      "digest": "eccc6dfbe421ccc30e0ef0ab500da3e52a7808a722f087f6c48fee55a4788ad8"
+    }
+  },
+  "route_family_policies": [
+    {
+      "route_family_id": "local_data_object_index_sql",
+      "source_role": "local_internal_chain_receipt",
+      "max_attempts": 1,
+      "capture_policy": "Record local source existence, source-object existence, index membership, SQL or NumericFact execution, candidate-pool membership, rank and admission state with exact digests.",
+      "fallback": "Repair the earliest failing local S1 layer before any external acquisition or ranking experiment.",
+      "stop_condition": "Stop the route when the proposition is already answered by admitted Evidence or when an unresolved local binding/index/SQL defect owns the failure."
+    },
+    {
+      "route_family_id": "official_issuer_regulator",
+      "source_role": "issuer_or_regulator_primary",
+      "max_attempts": 2,
+      "capture_policy": "Capture original issuer or regulator material first, including publisher, title, speaker, date, period, page or section, locator and citation rights.",
+      "fallback": "Use the issuer filing, prepared remarks, presentation or regulator archive in that order; never substitute a search snippet for the original.",
+      "stop_condition": "Stop after the mandatory official families are captured or a receipt proves non-disclosure for the bounded proposition and period."
+    },
+    {
+      "route_family_id": "named_customer",
+      "source_role": "named_customer_primary",
+      "max_attempts": 2,
+      "capture_policy": "Capture original customer filing, procurement notice, deployment case or executive statement with the customer as evidence owner.",
+      "fallback": "Retain the customer fact as context only if a Dell relationship bridge cannot be established.",
+      "stop_condition": "Stop if no named relationship is evidenced or if the customer-owned fact cannot materially support or limit a DELL report claim."
+    },
+    {
+      "route_family_id": "named_supplier",
+      "source_role": "named_supplier_primary",
+      "max_attempts": 2,
+      "capture_policy": "Capture original supplier filing, prepared remarks, capacity schedule or product availability statement with direction and period.",
+      "fallback": "Retain supplier disclosure as industry context and preserve Dell allocation as an open boundary.",
+      "stop_condition": "Stop before inferring Dell allocation, yield, shipment or economics from supplier-wide capacity or revenue."
+    },
+    {
+      "route_family_id": "industry_primary",
+      "source_role": "industry_association_or_market_tracking_primary",
+      "max_attempts": 2,
+      "capture_policy": "Capture the original methodology, denominator, geography, calendar period and vendor definition together with the industry measure.",
+      "fallback": "Use the measure only as a typed estimate or context when Dell company-level mapping is unavailable.",
+      "stop_condition": "Stop when the denominator, period or company mapping is incompatible with the target proposition."
+    },
+    {
+      "route_family_id": "product_procurement_deployment",
+      "source_role": "product_configuration_procurement_or_deployment_primary",
+      "max_attempts": 2,
+      "capture_policy": "Capture exact configuration, quote date, quantity, included components, service terms, deployment unit and buyer context.",
+      "fallback": "Keep observations as configuration examples or scenario inputs; never promote them to company-wide ASP or units.",
+      "stop_condition": "Stop when configurations are not comparable or when the sample cannot support a defined denominator and period."
+    },
+    {
+      "route_family_id": "trusted_context_counter",
+      "source_role": "trusted_context_or_counterevidence",
+      "max_attempts": 1,
+      "capture_policy": "Capture a traceable original or trusted report with named sources, date, proposition polarity and explicit separation from target-company fact.",
+      "fallback": "Use only to locate an original or to frame a bounded counter-scenario.",
+      "stop_condition": "Stop when the context lacks an original lineage, duplicates an existing route, or would be used as Dell-owned fact."
+    }
+  ],
+  "target_policies": [
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE",
+      "pack_gap_id": "dell-gap-capacity-release-timing",
+      "expected_crosswalk_disposition": "source_route_pending",
+      "report_placement": "demand_quality_and_supply_chain",
+      "target_proposition": "When relevant accelerator, packaging and server-system capacity becomes usable and whether any of it is verifiably allocated or deliverable to Dell.",
+      "subject": "Dell Technologies AI-server supply execution",
+      "owner_scope": "Dell, NVIDIA, TSMC and other explicitly named upstream owners",
+      "time_scope": "2025-02-01 through 2026-08-06 with exact event and reporting periods",
+      "desired_evidence_role": "supplier timetable plus Dell-specific allocation or delivery bridge",
+      "forbidden_inference": "A supplier-wide production ramp does not establish Dell allocation, Dell delivery timing or Dell revenue realization.",
+      "prior_proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "query_terms": [
+        "AI server",
+        "capacity release",
+        "production ramp",
+        "allocation",
+        "delivery timing"
+      ],
+      "mandatory_route_families": [
+        "local_data_object_index_sql",
+        "official_issuer_regulator",
+        "named_supplier"
+      ],
+      "admission_overlap_request_ids": [],
+      "route_owner_terms": {
+        "local_data_object_index_sql": "DELL local source object index SQL",
+        "official_issuer_regulator": "Dell Technologies official filing investor relations",
+        "named_customer": "named Dell customer deployment procurement",
+        "named_supplier": "NVIDIA TSMC official supplier capacity",
+        "industry_primary": "semiconductor packaging accelerator industry primary",
+        "product_procurement_deployment": "Dell PowerEdge deployment availability",
+        "trusted_context_counter": "trusted supply constraint counterevidence"
+      }
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-UTILIZATION-YIELD",
+      "pack_gap_id": "dell-gap-capacity-utilization-yield",
+      "expected_crosswalk_disposition": "source_route_pending",
+      "report_placement": "demand_quality_and_supply_chain",
+      "target_proposition": "Observed utilization or yield for the relevant accelerator, memory or advanced-packaging supply chain in the report period.",
+      "subject": "Upstream capacity utilization and yield relevant to Dell AI servers",
+      "owner_scope": "NVIDIA, Micron, TSMC and explicitly named manufacturing owners",
+      "time_scope": "2025-02-01 through 2026-08-06 with fiscal-to-calendar mapping",
+      "desired_evidence_role": "supplier-owned utilization or yield fact with a bounded Dell relationship",
+      "forbidden_inference": "Product ramp, revenue growth or advanced-node mix is not a measured utilization rate or yield.",
+      "prior_proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "query_terms": [
+        "accelerator",
+        "HBM",
+        "advanced packaging",
+        "utilization",
+        "yield"
+      ],
+      "mandatory_route_families": [
+        "local_data_object_index_sql",
+        "official_issuer_regulator",
+        "named_supplier",
+        "industry_primary"
+      ],
+      "admission_overlap_request_ids": [],
+      "route_owner_terms": {
+        "local_data_object_index_sql": "DELL local supplier object index SQL",
+        "official_issuer_regulator": "supplier official filing prepared remarks",
+        "named_customer": "named customer deployment bottleneck",
+        "named_supplier": "NVIDIA Micron TSMC manufacturing disclosure",
+        "industry_primary": "semiconductor memory packaging industry methodology",
+        "product_procurement_deployment": "server deployment component lead time",
+        "trusted_context_counter": "trusted yield utilization counterevidence"
+      }
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-DEMAND-DURABILITY",
+      "pack_gap_id": "dell-gap-demand-pull-forward-digestion",
+      "expected_crosswalk_disposition": "source_route_pending",
+      "report_placement": "demand_quality_and_supply_chain",
+      "target_proposition": "Whether Dell AI-server demand reflects durable deployment and conversion rather than pull-forward, cancellation or later digestion.",
+      "subject": "Dell AI-server demand durability and order-to-shipment conversion",
+      "owner_scope": "Dell and named end customers or deployment owners",
+      "time_scope": "2025-02-01 through 2026-08-06 with order, backlog, shipment and revenue periods separated",
+      "desired_evidence_role": "issuer or customer-owned conversion, cancellation, cadence or inventory fact",
+      "forbidden_inference": "Backlog, order growth or one deployment does not by itself prove non-cancelability, cohort conversion or durable aggregate demand.",
+      "prior_proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "query_terms": [
+        "Dell AI server",
+        "orders",
+        "backlog",
+        "shipment cadence",
+        "cancellation",
+        "customer deployment"
+      ],
+      "mandatory_route_families": [
+        "local_data_object_index_sql",
+        "official_issuer_regulator",
+        "named_customer",
+        "product_procurement_deployment"
+      ],
+      "admission_overlap_request_ids": [
+        "REQ::fb06661b946711fc3b334146",
+        "REQ::eb2e808dd2e48b4fe7474223"
+      ],
+      "route_owner_terms": {
+        "local_data_object_index_sql": "DELL local demand object index SQL",
+        "official_issuer_regulator": "Dell official orders backlog shipments",
+        "named_customer": "named Dell AI infrastructure customer deployment",
+        "named_supplier": "supplier delivery context Dell systems",
+        "industry_primary": "AI server demand shipment tracking methodology",
+        "product_procurement_deployment": "Dell PowerEdge procurement deployment case",
+        "trusted_context_counter": "trusted cancellation pull-forward digestion counterevidence"
+      }
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-HBM-SUPPLY",
+      "pack_gap_id": "dell-gap-hbm-supply",
+      "expected_crosswalk_disposition": "source_route_pending",
+      "report_placement": "demand_quality_and_supply_chain",
+      "target_proposition": "HBM availability, capacity, yield or tightness relevant to Dell AI-server configurations and delivery.",
+      "subject": "HBM supply constraint and Dell AI-server relationship",
+      "owner_scope": "Micron and other named HBM suppliers, Dell and relevant accelerator owners",
+      "time_scope": "2025-02-01 through 2026-08-06 with product generation and shipment period",
+      "desired_evidence_role": "HBM supplier fact plus a verified Dell configuration, allocation or delivery relationship",
+      "forbidden_inference": "General memory growth, DDR5, SOCAMM or SSD commentary is not HBM supply, yield or Dell allocation.",
+      "prior_proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "query_terms": [
+        "HBM",
+        "capacity",
+        "yield",
+        "supply tightness",
+        "Dell PowerEdge",
+        "allocation"
+      ],
+      "mandatory_route_families": [
+        "local_data_object_index_sql",
+        "official_issuer_regulator",
+        "named_supplier",
+        "industry_primary"
+      ],
+      "admission_overlap_request_ids": [],
+      "route_owner_terms": {
+        "local_data_object_index_sql": "DELL local HBM object index SQL",
+        "official_issuer_regulator": "Dell official AI server HBM configuration",
+        "named_customer": "named customer HBM server deployment",
+        "named_supplier": "Micron HBM official capacity yield",
+        "industry_primary": "HBM market capacity supply industry primary",
+        "product_procurement_deployment": "Dell PowerEdge HBM configuration procurement",
+        "trusted_context_counter": "trusted HBM shortage counterevidence"
+      }
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-ASP",
+      "pack_gap_id": "dell-gap-pricing-asp",
+      "expected_crosswalk_disposition": "narrowed",
+      "report_placement": "pricing_mix_and_value_capture",
+      "target_proposition": "A period-defined Dell AI-server selling price or a bounded configuration-price estimate with a valid denominator.",
+      "subject": "Dell AI-server ASP or configuration-price distribution",
+      "owner_scope": "Dell, named buyers, procurement records and method-disclosed configuration datasets",
+      "time_scope": "2025-02-01 through 2026-08-06 with quote and delivery dates separated",
+      "desired_evidence_role": "company price fact or explicitly typed estimate with configuration and denominator",
+      "forbidden_inference": "A list price, one quote, one configuration or industry price is not Dell company-wide realized ASP.",
+      "prior_proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "query_terms": [
+        "Dell PowerEdge AI server",
+        "price",
+        "configuration",
+        "quantity",
+        "quote date",
+        "ASP denominator"
+      ],
+      "mandatory_route_families": [
+        "local_data_object_index_sql",
+        "official_issuer_regulator",
+        "product_procurement_deployment"
+      ],
+      "admission_overlap_request_ids": [],
+      "route_owner_terms": {
+        "local_data_object_index_sql": "DELL local price configuration object index SQL",
+        "official_issuer_regulator": "Dell official pricing mix prepared remarks",
+        "named_customer": "named buyer Dell AI server procurement",
+        "named_supplier": "supplier component configuration price context",
+        "industry_primary": "AI server pricing methodology industry primary",
+        "product_procurement_deployment": "Dell PowerEdge configuration quote procurement",
+        "trusted_context_counter": "trusted Dell server pricing counterevidence"
+      }
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-UNITS",
+      "pack_gap_id": "dell-gap-pricing-units",
+      "expected_crosswalk_disposition": "narrowed",
+      "report_placement": "pricing_mix_and_value_capture",
+      "target_proposition": "Dell AI-server shipments or a compatible equivalent-unit denominator for the report period.",
+      "subject": "Dell AI-server shipment units or equivalent compute units",
+      "owner_scope": "Dell, named customers and methodology-disclosed industry trackers",
+      "time_scope": "2025-02-01 through 2026-08-06 with fiscal and calendar periods reconciled",
+      "desired_evidence_role": "company shipment fact or typed estimate with vendor, geography, product and denominator",
+      "forbidden_inference": "Orders, backlog, revenue, racks, GPUs or industry shipments are not interchangeable with Dell AI-server units.",
+      "prior_proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "query_terms": [
+        "Dell AI server",
+        "shipments",
+        "units",
+        "vendor share",
+        "equivalent compute unit",
+        "period denominator"
+      ],
+      "mandatory_route_families": [
+        "local_data_object_index_sql",
+        "official_issuer_regulator",
+        "industry_primary"
+      ],
+      "admission_overlap_request_ids": [],
+      "route_owner_terms": {
+        "local_data_object_index_sql": "DELL local unit share object index SQL",
+        "official_issuer_regulator": "Dell official AI server shipments units",
+        "named_customer": "named customer Dell server deployment units",
+        "named_supplier": "supplier Dell platform shipment relationship",
+        "industry_primary": "IDC Omdia Canalys server shipment methodology",
+        "product_procurement_deployment": "Dell PowerEdge deployment system count",
+        "trusted_context_counter": "trusted unit share estimate counterevidence"
+      }
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-SUPPLIER-READTHROUGH",
+      "pack_gap_id": "dell-gap-supplier-capacity-readthrough",
+      "expected_crosswalk_disposition": "narrowed",
+      "report_placement": "supply_context_boundary_register",
+      "target_proposition": "A verifiable relationship, allocation or delivery bridge from named supplier capacity to Dell AI-server availability.",
+      "subject": "Named supplier capacity read-through to Dell",
+      "owner_scope": "Dell, NVIDIA, Micron, TSMC and explicitly identified counterparties",
+      "time_scope": "2025-02-01 through 2026-08-06 with relationship and delivery periods",
+      "desired_evidence_role": "two-sided supplier relationship or Dell-specific allocation and delivery fact",
+      "forbidden_inference": "Supplier-wide growth, capacity or customer concentration cannot be assigned to Dell without a relationship and allocation bridge.",
+      "prior_proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "query_terms": [
+        "Dell",
+        "named supplier",
+        "allocation",
+        "delivery",
+        "PowerEdge",
+        "capacity relationship"
+      ],
+      "mandatory_route_families": [
+        "local_data_object_index_sql",
+        "official_issuer_regulator",
+        "named_supplier"
+      ],
+      "admission_overlap_request_ids": [],
+      "route_owner_terms": {
+        "local_data_object_index_sql": "DELL local relationship graph object index SQL",
+        "official_issuer_regulator": "Dell official named supplier relationship",
+        "named_customer": "named customer Dell supplier configuration",
+        "named_supplier": "NVIDIA Micron TSMC official Dell relationship",
+        "industry_primary": "supplier allocation industry methodology",
+        "product_procurement_deployment": "Dell PowerEdge supplier configuration availability",
+        "trusted_context_counter": "trusted Dell supplier allocation counterevidence"
+      }
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-WORKING-CAPITAL",
+      "pack_gap_id": "dell-gap-ai-working-capital",
+      "expected_crosswalk_disposition": "candidate_admission_pending",
+      "report_placement": "cash_conversion_and_balance_sheet",
+      "target_proposition": "AI-linked working-capital attribution, turnover or a reconciled cash-flow bridge for Dell.",
+      "subject": "Dell AI-server working-capital attribution and cash absorption",
+      "owner_scope": "Dell and, only for bounded context, named customers or suppliers",
+      "time_scope": "2025-02-01 through 2026-08-06 with stock and flow periods separated",
+      "desired_evidence_role": "Dell-owned product attribution or an explicitly typed controlled estimate",
+      "forbidden_inference": "Company AR, inventory and AP stock changes or risk language are not AI cash absorption or product cash conversion.",
+      "prior_proposition_id": "DELL-PROP-COUNTEREVIDENCE-WWC",
+      "query_terms": [
+        "Dell AI server",
+        "working capital",
+        "accounts receivable",
+        "inventory",
+        "accounts payable",
+        "cash flow reconciliation"
+      ],
+      "mandatory_route_families": [
+        "local_data_object_index_sql",
+        "official_issuer_regulator"
+      ],
+      "admission_overlap_request_ids": [
+        "REQ::c21c10d6e8f13263cf69ffa5"
+      ],
+      "route_owner_terms": {
+        "local_data_object_index_sql": "DELL local working capital NumericFact SQL",
+        "official_issuer_regulator": "Dell official AI working capital cash flow",
+        "named_customer": "named customer payment procurement terms",
+        "named_supplier": "named supplier payment inventory terms Dell",
+        "industry_primary": "server working capital benchmark methodology",
+        "product_procurement_deployment": "Dell AI server procurement payment terms",
+        "trusted_context_counter": "trusted working capital attribution counterevidence"
+      }
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-PRODUCT-PROFIT",
+      "independent_S2_bridge_gap_id": "dell-gap-product-profit-attribution",
+      "report_placement": "pricing_mix_and_value_capture",
+      "target_proposition": "Dell AI-server product operating margin or a valid bridge from product revenue and costs to product profit.",
+      "subject": "Dell AI-server product-profit attribution",
+      "owner_scope": "Dell and typed cost or configuration sources that cannot override company disclosure",
+      "time_scope": "2025-02-01 through 2026-08-06 with segment, product and consolidated definitions separated",
+      "desired_evidence_role": "Dell-owned product margin fact or explicitly typed estimate with formula and uncertainty",
+      "forbidden_inference": "Consolidated margin, ISG segment profit, industry BOM or management range language is not audited AI-server product profit.",
+      "prior_proposition_id": "DELL-PROP-VALUE-POOL",
+      "query_terms": [
+        "Dell AI server",
+        "product margin",
+        "operating profit",
+        "cost bridge",
+        "configuration mix",
+        "attribution"
+      ],
+      "mandatory_route_families": [
+        "local_data_object_index_sql",
+        "official_issuer_regulator"
+      ],
+      "admission_overlap_request_ids": [
+        "REQ::081c06389f9dcb8487886b57"
+      ],
+      "route_owner_terms": {
+        "local_data_object_index_sql": "DELL local margin NumericFact object SQL",
+        "official_issuer_regulator": "Dell official AI server margin profit",
+        "named_customer": "named buyer price configuration economics",
+        "named_supplier": "supplier component cost context Dell configuration",
+        "industry_primary": "AI server BOM margin methodology",
+        "product_procurement_deployment": "Dell PowerEdge configuration cost procurement",
+        "trusted_context_counter": "trusted product profitability counterevidence"
+      }
+    }
+  ],
+  "non_acquisition_pack_gap_policies": {
+    "dell-gap-invalidation-threshold": {
+      "expected_crosswalk_disposition": "S3_method_parameter",
+      "program_disposition": "excluded_S3_method_parameter",
+      "current_route_state": "owned_by_S3_method_registry_not_source_acquisition"
+    },
+    "dell-gap-observable-quarterly-threshold": {
+      "expected_crosswalk_disposition": "S3_method_parameter",
+      "program_disposition": "excluded_S3_method_parameter",
+      "current_route_state": "owned_by_S3_method_registry_not_source_acquisition"
+    },
+    "dell-gap-price-in-boundary": {
+      "expected_crosswalk_disposition": "S2_numeric_or_bridge_gap",
+      "program_disposition": "deferred_valuation_scope",
+      "current_route_state": "not_current_source_closure_priority"
+    },
+    "dell-gap-price-volume-mix-bridge": {
+      "expected_crosswalk_disposition": "S2_numeric_or_bridge_gap",
+      "program_disposition": "derived_bridge_dependency",
+      "current_route_state": "wait_for_authorized_ASP_units_and_mix_inputs"
+    },
+    "dell-gap-scenario-sensitivity": {
+      "expected_crosswalk_disposition": "S2_numeric_or_bridge_gap",
+      "program_disposition": "deferred_valuation_scope",
+      "current_route_state": "owner_assumption_and_formula_program_not_source_acquisition"
+    },
+    "dell-gap-valuation-basis": {
+      "expected_crosswalk_disposition": "S2_numeric_or_bridge_gap",
+      "program_disposition": "deferred_valuation_scope",
+      "current_route_state": "market_PIT_and_valuation_basis_later"
+    }
+  },
+  "mixed_retrieval_and_ranking_dependency": {
+    "stage": "DELL-RSQ-03D conditional only",
+    "candidate_ceiling_before_reranker": true,
+    "target_in_pool_or_semantic_equivalent_required": true,
+    "same_candidate_set_comparison_required": true,
+    "cross_case_no_regression_required": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "current_authority": false,
+    "nodes": [
+      {
+        "node_id": "bm25_plus_qwen3_embedding_0_6b_baseline",
+        "role": "regression_baseline",
+        "runtime_profile": "Existing BM25 plus 0.6B dense retrieval; no execution in 03A.",
+        "TokenBudgetBasis": {
+          "node_purpose": "Establish the current candidate ceiling and reproducible baseline.",
+          "input_scale": "Only bounded proposition queries and the frozen source-object corpus.",
+          "required_outputs": "Target-in-pool, semantic-equivalent coverage, rank and per-case regression receipts.",
+          "schema_burden": "Per-query candidate IDs, route membership, ranks and digests.",
+          "materiality_and_quality_risk": "A false ceiling diagnosis can waste external calls or hide a retrieval defect.",
+          "comparable_run_evidence": "Current S1 candidate packet and prior DELL/MU/NVDA retrieval results.",
+          "reasoning_profile": "Embedding inference only; no generative decision authority.",
+          "stop_and_truncation_behavior": "Stop on missing target pool, corpus drift, resource failure or any case regression.",
+          "authority_granted": false
+        }
+      },
+      {
+        "node_id": "qwen_4b_embedding_shadow_challenger_4bit",
+        "role": "same_pool_shadow_challenger",
+        "runtime_profile": "4-bit 4B embedding model loaded alone on the 8GB GPU after an empirical memory probe; no execution in 03A.",
+        "TokenBudgetBasis": {
+          "node_purpose": "Test material recall or ranking gain over the 0.6B baseline without replacing it by assertion.",
+          "input_scale": "The exact same bounded queries and candidate corpus as the baseline.",
+          "required_outputs": "Per-query recall, semantic-equivalent coverage, rank deltas, latency, peak VRAM and no-case-regression receipts.",
+          "schema_burden": "Same candidate identity and metric schema as baseline plus resource telemetry.",
+          "materiality_and_quality_risk": "Larger embeddings may improve semantic matching but can add irrelevant context or fail operationally on 8GB VRAM.",
+          "comparable_run_evidence": "Must compare against the frozen 0.6B baseline on DELL, MU and NVDA.",
+          "reasoning_profile": "Embedding inference only; 4-bit shadow execution and no admission authority.",
+          "stop_and_truncation_behavior": "Stop on OOM, model swap contamination, candidate drift, all gains being irrelevant context, or any material case regression.",
+          "authority_granted": false
+        }
+      },
+      {
+        "node_id": "qwen_4b_reranker_4bit",
+        "role": "conditional_reranker",
+        "runtime_profile": "4-bit reranker loaded separately only after target-in-pool is proved; no execution in 03A.",
+        "TokenBudgetBasis": {
+          "node_purpose": "Improve ordering among an already adequate candidate pool.",
+          "input_scale": "Only the preregistered top-N candidate set from each bounded query.",
+          "required_outputs": "NDCG or MRR-style ranking metrics, material top-k hit rate, cross-case regression and resource receipts.",
+          "schema_burden": "Exact query-candidate pairs, scores, ranks, labels and immutable evaluation split.",
+          "materiality_and_quality_risk": "A reranker cannot repair missing candidates and may over-rank fluent but non-authoritative context.",
+          "comparable_run_evidence": "Only runs after baseline and 4B embedding candidate-ceiling receipts are frozen.",
+          "reasoning_profile": "Pairwise or listwise ranking only; no Evidence or report decision authority.",
+          "stop_and_truncation_behavior": "Do not start when target-in-pool fails; stop below the preregistered floor, on case regression, OOM or unacceptable latency.",
+          "authority_granted": false
+        }
+      }
+    ]
+  },
+  "authority": {
+    "03A_policy_compilation_authorized": true,
+    "network_calls_authorized": false,
+    "provider_calls_authorized": false,
+    "embedding_calls_authorized": false,
+    "reranker_calls_authorized": false,
+    "candidate_decision_authorized": false,
+    "evidence_promotion_authorized": false,
+    "proved_information_boundary_authorized": false,
+    "gap_closure_authorized": false
+  },
+  "decision_boundary": {
+    "exact_target_gap_prior_proposition_and_overlap_map_required": true,
+    "all_nested_execution_and_model_authority_must_be_false": true,
+    "prior_result_self_digest_and_50_28_22_query_reconciliation_required": true,
+    "scheme_and_bare_domain_answer_locator_forbidden": true,
+    "03B_03C_03D_execution_authority": false,
+    "candidate_or_evidence_promotion_authority": false,
+    "gap_closure_or_proved_information_boundary_authority": false
+  },
+  "policy_digest": "cb0b4d610315028b39fc86dda5eeeeabb3d671fe716fbcfcdf2ca7b1e91fd819"
+}

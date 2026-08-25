@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_audit_receipt_correction_v1_0",
+  "correction_id": "CORRECTION::FIN-0.1.3::4F75693C::R35-GUARD-FOLLOWUP::R1",
+  "recorded_at": "2026-08-25T08:16:50+08:00",
+  "status": "closed_append_only_metadata_correction",
+  "audited_target": {
+    "commit": "4f75693cc039ef3d29bb37eecc77bb37518e35e3",
+    "tree": "9d4df5d09759e8c381416541d030100729df5007",
+    "parent": "e9d1bf1e8bf9305bf6ee38fd7b3073c4e97dc42f"
+  },
+  "reviewer": {
+    "task": "/root/r35_guard_fresh_reaudit",
+    "author_separated": true,
+    "read_only": true,
+    "repository_writes": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "credential_reads": 0
+  },
+  "corrected_receipt": {
+    "ref": "configs/audits/fin_ia_0_1_3_commit_e9d1bf1e_r35_guard_fresh_reaudit_pass_v1_0.json",
+    "git_blob": "6bc39da3b028d4e7ead37c050bf41e1327c22a44",
+    "raw_sha256": "76723342fc37621402705c2bd25482219ac922877999ac6200a1505dd7e2ea36",
+    "result_digest": "ece3f878602c7db4cd867c0ecaf34aebfa71f0fe49d4f4bc8325864ee3e01cae",
+    "original_receipt_remains_immutable": true
+  },
+  "finding": {
+    "finding_id": "P3-PREDECESSOR-FAILURE-RECEIPT-RAW-SHA256-METADATA-MISMATCH",
+    "severity": "P3",
+    "status": "closed_by_this_append_only_correction",
+    "json_pointer": "/predecessor_failure_receipt/raw_sha256",
+    "recorded_value": "535d37f8f94de194e727860c85a4e8c5e4f25ef58cdb5b1334e2dc0c327f1b38",
+    "corrected_value": "535d37f88f5d2c6045850e0f490b5eb5c69b3cb3515c8df83f01a6fa2593e633",
+    "hash_basis": "sha256_of_exact_git_blob_bytes",
+    "independently_verified": true,
+    "material_finding_reopened": false,
+    "verdict_unchanged": true
+  },
+  "predecessor_failure_receipt": {
+    "ref": "configs/audits/fin_ia_0_1_3_commit_d63e7966_r38_integrated_readonly_audit_failure_v1_0.json",
+    "git_blob": "05719932fca2aec3f0d79ab71953982d25a4fbbf",
+    "raw_sha256": "535d37f88f5d2c6045850e0f490b5eb5c69b3cb3515c8df83f01a6fa2593e633",
+    "result_digest": "7189f504060333d8595d516fed314e1f624edc1b7e37741e3410c7230958abf2",
+    "historical_fail_unchanged": true
+  },
+  "followup_verdict": {
+    "status": "pass_with_one_nonmaterial_P3_closed_by_append_only_correction",
+    "severity_counts": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 1
+    },
+    "material_findings_open": 0,
+    "new_findings_other_than_corrected_P3": 0
+  },
+  "authority": {
+    "audit_pass": true,
+    "qualified_human": false,
+    "S1_qualified": false,
+    "S2_qualified": false,
+    "S3_accepted": false,
+    "product_accepted": false,
+    "publication": false,
+    "release": false
+  },
+  "verification_boundaries": [
+    "The follow-up reviewer did not rerun pytest; the exact-target 1284-pass full gate remains author-run evidence.",
+    "The correction changes only a redundant raw-byte hash metadata field and does not alter the canonical failure digest, Git blob, P2 closure or audit verdict.",
+    "Remote GitHub transport remains unverified."
+  ],
+  "result_digest": "fe8fac59060d6d6f245e27419fb6d0fbe6bee54b9f9449a1bdf5106586b4187e"
+}

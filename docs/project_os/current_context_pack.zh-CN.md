@@ -1885,3 +1885,19 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
   `dell-rsq-03b-internal-chain-r2`。R2 仍限 1 个 0.6B query batch，4B、reranker、03C、Evidence/gap closure
   权限均为 0；成功结果只决定下一步 eligibility，不等于信源、研报或产品通过。详见
   `docs/worklog/fin_0_1_3_s1/084_dell_03b_internal_chain_R2_identity_successor.md`。
+
+### 2026-08-25 DELL-RSQ-03B R2 实际完成
+
+- implementation commit `53ea34a1...4f5` 已推送，runner 在 clean 且 `HEAD==upstream` 的状态完成唯一
+  `dell-rsq-03b-internal-chain-r2`。5 requests、1 个本地 0.6B query batch；network/provider/generation/
+  external/4B/reranker/promotion/gap closure 全为 0，3 个 admission-held target 未执行。
+- R38 source/object identity 为 1,888／34,198 且 lineage 集合精确相等。请求层产生 339 union candidates、
+  80 final candidates；按 6 个 target 合并后有 795 union occurrences。
+- 6 个 target 的 complete corpus／union／final 全为 0；partial corpus 为 ASP 84、capacity release 2、
+  capacity utilization/yield 3、HBM supply 15、supplier read-through 7、units 3。故 03C required=6，
+  4B embedding recall eligible=0、same-pool reranker eligible=0。
+- public result digest=`6c8159ed...132496`，private digest=`eaa604ad...7d65df`；public 无 candidate text／URL。
+  该结果证明 current local corpus 缺完整 target object，不证明外源也不存在，更不证明 public-information gap。
+- 下一步先把结果提交/push，再由全新只读 reviewer 审工程与 semantic false-negative、信源充分性、上一版研报
+  gap crosswalk 和未来 claim-source/citation 质量；审计前不启动 03C。02B human decision、03C、4B/reranker、
+  Evidence admission、S2/Pack/Readiness、新报告和产品验收均继续 false。

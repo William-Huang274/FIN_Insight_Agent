@@ -2,7 +2,7 @@
 
 日期：2026-08-25
 
-状态：`full engineering gate pass / clean commit and push pending / execution false`
+状态：`R2 executed and materialized / author review complete / fresh read-only audit pending`
 
 ## 1. 需求票与依赖
 
@@ -48,7 +48,7 @@ commit/push → one R2 run → immutable result → fresh read-only audit → 03
 - full repository：`1390 passed, 2 skipped, 2 warnings in 259.44s`；两条 warning 为既有 SWIG
   deprecation。compileall、精确 pyflakes、active baseline `213/8/5/28/0`、1127 config JSON、8 份
   Project OS JSONL／1220 行、Project OS `82 passed`、8091-file secret scan／0 和 diff check 全部通过。
-  当前只剩 exact stage／commit／push；push 未成功或 `HEAD!=upstream` 时 runner 会在模型前拒绝。
+  这些工程门支持随后的 exact stage／commit／push；push 未成功或 `HEAD!=upstream` 时 runner 会在模型前拒绝。
 
 ## 5. 研报质量接口
 
@@ -60,6 +60,26 @@ read-through 方向和 forbidden inference。新的 author-separated 审计必�
 
 ## 6. 不变边界
 
-当前仍无 02B human decision、R2 execution result、真实补源、4B/reranker 运行、Evidence promotion、S2 bridge
-重编、新研报或产品验收。R2 的成功只决定下一步应走已有证据 admission、03C source acquisition、4B recall
-challenger 还是 same-pool reranker；eligibility 本身不授予执行权限。
+当前仍无 02B human decision、真实补源、4B/reranker 运行、Evidence promotion、S2 bridge 重编、新研报或
+产品验收。R2 的成功只决定下一步 eligibility；它本身不授予 03C、CandidateDecision、Evidence admission、
+gap closure、S1/S2/S3、report/product/publication/release 权限。
+
+## 7. R2 实际结果
+
+implementation commit `53ea34a1...4f5` 推送成功后，runner 的 clean/synced、output collision、predecessor、
+failure、implementation、source/object SHA 与 exact 1,888-source／34,198-object lineage preflight 全部通过。
+唯一 R2 在 `2026-08-25T12:47:13+00:00` 完成：5 requests、1 local 0.6B query batch、339 union candidates、
+80 final candidates；network/provider/generation/external/4B/reranker/promotion/gap closure 全为 0。
+
+6 个 target 的 complete-corpus／complete-union／complete-final 都是 0。partial corpus 分别为 ASP 84、
+capacity release 2、capacity utilization/yield 3、HBM supply 15、supplier read-through 7、units 3；partial
+union/final 分别为 6/3、0/0、0/0、4/2、2/0、2/1。因此 4B embedding recall challenger eligible=0、
+same-pool reranker eligible=0、03C external route required=6。
+
+public result：`configs/retrieval/
+fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_1.json`，digest=`6c8159ed...132496`；
+private digest=`eaa604ad...7d65df`。作者侧 top-partial 抽查没有看到完整 target 被错误降级，但这不是独立结论。
+post-result validation 为 03B＋Project OS `111 passed`、1128 config JSON、8 Project OS JSONL／1222 行、
+8092-file secret scan／0、public/private digest／SHA parity 和 diff check 全通过。
+下一步先提交/push immutable result，再让无上下文继承的只读 reviewer 复核工程、语义假阴性、信源充分性、
+上一版研报 gap crosswalk 和未来研报 claim-source/citation 质量；审计通过前不启动 03C。

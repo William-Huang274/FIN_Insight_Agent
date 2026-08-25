@@ -2,7 +2,7 @@
 
 ## 摘要
 
-- 状态：`preregistered_successor / full_engineering_gate_pass / clean_commit_and_push_pending / not_executed`。
+- 状态：`executed_success / candidate_ceiling_materialized / independent_quality_audit_pending`。
 - 新 attempt：`dell-rsq-03b-internal-chain-r2`；R1 保持 terminal failed，禁止重试、复用分数或改名为成功。
 - 唯一修复：source-store 只接受 canonical `evidence_id`；compiled object 继续使用其对象层投影
   `source_record_id`。两层身份不可混用，也不接受 alias 宽松回退。
@@ -46,8 +46,35 @@ R2 只回答“完整目标对象在本地语料、候选 union 和 useful@10 �
 分母和禁止推断审查。只有被 admission 的证据才能进入 citation/source appendix；未找到完整对象时只能证明
 “当前本地语料缺对象”，不能直接宣称公开信息不存在。
 
+## 实际执行结果
+
+- clean/synced implementation commit：`53ea34a1cef5a28c640693fadd15876e877aa4f5`；
+- recorded at：`2026-08-25T12:47:13+00:00`；
+- 5 requests、6 targets、3 held target executions=`0`；
+- 1 个本地 Qwen3-Embedding-0.6B query batch，34,198 个 cached document embeddings 只读复用；
+- 339 个 request-level hybrid union candidates、80 个 final selected candidates、795 个 target-scoped union
+  occurrences；
+- network/provider/generation/external/4B/reranker/candidate promotion/Evidence promotion/gap closure=`0`；
+- public digest=`6c8159ed...132496`，SHA256=`2c8f3c13...7b46ef`；private digest=`eaa604ad...7d65df`，
+  SHA256=`40bbccba...6e56e53`；public 无 `model_text` 和 URL。
+
+| target | complete corpus | partial corpus | complete union/final | partial union/final | earliest limitation | next eligibility |
+|---|---:|---:|---:|---:|---|---|
+| ASP | 0 | 84 | 0 / 0 | 6 / 3 | local corpus missing complete target | 03C |
+| capacity release | 0 | 2 | 0 / 0 | 0 / 0 | local corpus missing complete target | 03C |
+| capacity utilization/yield | 0 | 3 | 0 / 0 | 0 / 0 | local corpus missing complete target | 03C |
+| HBM supply | 0 | 15 | 0 / 0 | 4 / 2 | local corpus missing complete target | 03C |
+| supplier→Dell read-through | 0 | 7 | 0 / 0 | 2 / 0 | local corpus missing complete target | 03C |
+| Dell AI-server units | 0 | 3 | 0 / 0 | 2 / 1 | local corpus missing complete target | 03C |
+
+作者侧抽查与 target contract 一致：ASP 命中为 traditional server／consumer／commercial ASP，不含 Dell
+AI-server 单位分母；units 只有 shipments 时序，没有物理台数；capacity/HBM 只有供应商自身扩产或风险，
+没有 Dell allocation；yield 只有泛制造风险，无观测比例；relationship 是无关合作或泛 allocation 文本，
+没有 supplier→Dell bridge。该抽查仍须由作者分离 reviewer 复核。
+
 ## 当前边界
 
-R2 成功也不等于 02B human decision、03C acquisition、03D 4B／reranker、Evidence admission、gap closure、
+R2 成功不等于 02B human decision、03C acquisition、03D 4B／reranker、Evidence admission、gap closure、
 G3、S1/S2/S3、Pack/Readiness 重编、新研报质量、产品验收、publication 或 release。实际执行只能发生在完整
-工程门通过、implementation commit clean 且与 upstream 相等之后。
+工程门通过、implementation commit clean 且与 upstream 相等之后。当前结果只把 6 项都路由为 03C
+eligible；它没有授权 03C，也没有证明公开信息边界。

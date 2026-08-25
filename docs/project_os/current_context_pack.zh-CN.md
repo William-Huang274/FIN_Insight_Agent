@@ -30,6 +30,15 @@ Owner 于 2026-08-25 新增强制纠正：上一版 R17 研报的信源问题不
 
 该只读审计已对 immutable `aae2ccc...` 固定结论：`P0/P1/P2/P3=0/1/2/1`；工程／机器 source binding 为 `PASS_BOUNDED`，研报质量为 `OPEN/NOT_ASSESSABLE`，qualified-human 为 `FALSE/NOT_GRANTED`。P1 是读者侧仅有 EV/GAP、没有标题／发行人／日期／期间／locator／source table；两个 P2 是 14/9/4 crosswalk 缺失与 WWC 阈值／窗口／owner 未操作化；P3 是重复和 Facts 密度。正式八维不得复用作者 diagnostic 分数。审计期间共享 worktree 的文档修改来自本 current-state 作者，不属于 reviewer 写入；reviewer 结论绑定审计开始时 clean 的 immutable target 和精确私有 artifact SHA。
 
+Owner 随后要求在继续实现前补齐 program-level execution plan，并明确每个细项同时验收工程、模型
+节点输出和最终研报输出。该程序已记录于
+`docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md`：
+七项拆成七个交付 epic，加一个治理前置，共 34 张 ticket；依赖顺序为 baseline／quality protocol→14/9/4 crosswalk→Evidence admission
+与 residual source ladder→Pack/Readiness/S2→affected dynamic cells→non-overwrite Writer→dual audit/
+qualified human。4B embedding 只进入受控混合 challenger，reranker 保留独立 bake-off；二者都不能
+获得 Evidence 权限。当前状态只是 `program_documented / implementation_not_started`，下一张票为
+`DELL-RSQ-00A`，没有新的 Runtime、网络、模型、Agent 或 Writer 执行。
+
 ## 历史上下文（保留）
 
 DELL current 动态多 Agent 的 R10 六份 workpaper 已通过独立 L1／L2，原七项 material finding 全部关闭；R10 public digest=`83dc3d60...6112`、private full digest=`cab0b654...e900`，Writer 当时未调用。R10 scope 已消费，旧 decision 不能再次签权。

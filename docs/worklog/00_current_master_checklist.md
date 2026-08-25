@@ -131,6 +131,9 @@
 - [x] Owner 明确纠正：R38 工程信源同步通过不等于上一版研报信源缺口全部解决；研报质量必须进入独立／综合审计
 - [x] 已向作者分离的只读审计 Agent 下达新增范围：逐 Claim 信源、14/9/4 gap 映射、定量桥、反方／WWC、可读引用和八维内容质量
 - [x] 当前 R17 只读质量基线完成：`P0/P1/P2/P3=0/1/2/1`，engineering PASS_BOUNDED，report OPEN/NOT_ASSESSABLE，qualified-human false
+- [x] program-level 执行计划完成：七个交付 epic 加一个治理前置，共 34 张 ticket；每票同时具备工程/Evidence、模型节点输出和最终研报质量门、输入输出、测试、停止条件与责任阶段
+  - source-of-truth：`docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md`
+  - 当前下一票：`DELL-RSQ-00A` baseline manifest；当前仍为 implementation not started
 - [ ] 固化 R17 四组 remaining gaps 到 current `55 Evidence / 14 gaps`、R38 9 gaps 和 Writer 4 groups 的机器可读映射
 - [ ] 完成 blocked-by-evidence-admission 的 4 个 DELL 产品请求及 16 个 human-review item；候选不得自动晋升 Evidence
 - [ ] 执行真实 residual 的任务绑定外源梯子，并为每项形成 closed／narrowed／route-exhausted／proved-boundary receipt

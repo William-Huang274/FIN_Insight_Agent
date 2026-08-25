@@ -561,3 +561,17 @@ Owner 明确纠正：上一版 R17 研报展示出的信源问题尚未全部解
 - P3：WWC 重复与 Facts 密度降低 senior-reader 可用性。
 
 正式八维只能为 `OPEN/NOT_ASSESSABLE`，不得复用同作者 R15 diagnostic `27/32`。该基线审计用于确定修复计划，不替代未来 Writer successor 的重新审计和 qualified-human 验收。
+
+#### 7C.4 Program-level 执行程序（2026-08-25 Owner 追加要求）
+
+七项现已在
+`docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md`
+拆成七个交付 epic 加一个治理前置、共 34 张可跟踪 ticket。每张票均定义 owner／责任阶段、依赖、输入输出、工程与 Evidence 管线门、
+模型／排序节点输出质量门、最终研报质量影响、测试／审计和停止条件。计划明确保留 4B embedding
+混合 challenger 与独立 reranker bake-off，但二者都受 candidate-ceiling、同池、split 隔离和逐案
+no-material-regression 约束；排序分数不得获得 Evidence 或 gap closure 权限。
+
+执行门固定为：先做基线 manifest、评测协议和 14/9/4 crosswalk，再并行准备 4 请求／16 human item
+admission 与真实 residual source ladder；随后才允许 Pack／Readiness／S2 bridge、受影响动态单元、
+非覆盖 Writer successor 和双轨审计。当前仅为 `program_documented / implementation_not_started`，
+没有因此关闭任何 gap、运行模型／网络或授予 S1/S2/S3／产品／publication／release。

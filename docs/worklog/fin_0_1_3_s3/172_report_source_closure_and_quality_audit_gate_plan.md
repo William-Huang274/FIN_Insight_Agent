@@ -81,3 +81,24 @@ Findings：
 4. **P3 重复和 Facts 密度**：section 与顶层 WWC 重复，执行摘要和 confidence 重复展示大量 typed facts，降低 senior-reader 可用性。
 
 通过项也必须保留：18 个被用 Evidence 的主体、时点、来源等级和 supplier read-through 方向机器绑定完整；units/share、ASP/mix、PVM、AI 产品利润、营运资金归因、供应分配和需求持续性均没有被伪关闭；行业 estimate、bundle 样本、同季订单／收入／backlog 和现金／营运资金 proxy 的边界总体克制。这些通过项不能补偿 P1/P2，也不能授予产品权限。
+
+## 7. Program-level execution plan 已补齐
+
+Owner 进一步要求：继续实现前，必须把第 3 节的七项拆成需求票、依赖图、输入输出、验收测试、
+停止条件和责任阶段；细项不能只审工程，还要审模型各环节输出和最终研报输出。
+
+已新增：
+
+- `docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md`
+
+该程序把七项拆成七个交付 epic，加一个治理前置，共 34 张 ticket，并建立 E/M/R 三条互不替代的 Definition of Done：
+
+1. E：工程、数据、Evidence、数值、不可变性和 replay；
+2. M：embedding/reranker、动态 Agent、Writer 各节点的实际输出质量与 TokenBudgetBasis；
+3. R：逐 Claim 来源、定量桥、counter、WWC、可读 citation/source appendix、八维质量和最终交付。
+
+程序同时把 4B embedding 放入混合 challenger，保留独立 reranker bake-off；历史 4B reranker 失败
+不被改写，任何 challenger 都必须先过 candidate ceiling、同池、逐案稳定性和 report-material gain。
+第一张实现票固定为 `DELL-RSQ-00A` baseline manifest；本记录更新仍是文档／治理工作，没有修改
+Runtime、Evidence、Pack、模型、报告或产品代码，没有网络、embedding、reranker、Provider、动态
+Agent 或 Writer 调用，也不代表任何 stage 或产品门通过。

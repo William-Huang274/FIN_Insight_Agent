@@ -125,3 +125,18 @@
 - [ ] DELL 动态多单元／多 Agent 研究与完整报告
 - [ ] Writer 产品能力：DeliverableBrief、BilingualStylePack、VisualRequest、DocumentModel
 - [ ] MU／NVDA／异质留出、qualified-human、S3／S4／S5 验收
+
+## 2026-08-25 上一版研报信源闭环与研报质量审计强制门
+
+- [x] Owner 明确纠正：R38 工程信源同步通过不等于上一版研报信源缺口全部解决；研报质量必须进入独立／综合审计
+- [x] 已向作者分离的只读审计 Agent 下达新增范围：逐 Claim 信源、14/9/4 gap 映射、定量桥、反方／WWC、可读引用和八维内容质量
+- [x] 当前 R17 只读质量基线完成：`P0/P1/P2/P3=0/1/2/1`，engineering PASS_BOUNDED，report OPEN/NOT_ASSESSABLE，qualified-human false
+- [ ] 固化 R17 四组 remaining gaps 到 current `55 Evidence / 14 gaps`、R38 9 gaps 和 Writer 4 groups 的机器可读映射
+- [ ] 完成 blocked-by-evidence-admission 的 4 个 DELL 产品请求及 16 个 human-review item；候选不得自动晋升 Evidence
+- [ ] 执行真实 residual 的任务绑定外源梯子，并为每项形成 closed／narrowed／route-exhausted／proved-boundary receipt
+- [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
+- [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止
+- [ ] 生成不覆盖 R17 的 Writer successor，提供读者可读 citation/source appendix；内部 EV/GAP ID 仅作 lineage
+- [ ] 作者分离审计分别签发 engineering/evidence verdict 与 report/research-quality verdict；不得以 0 engineering finding 代替报告验收
+- [ ] qualified-human 完成八维内容与最终交付使用价值验收
+- [ ] 上述门完成前，S1／S2／S3、产品、publication 和 release 保持 false

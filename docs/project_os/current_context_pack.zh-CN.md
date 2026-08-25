@@ -19,12 +19,16 @@ zero-call canary R1 的 Harness mutation 失败已不可变保留，R2 两轮成
 `blocked_by_candidate_coverage`，三案都没有 public-information-gap authority，S1/S2/S3、
 qualified-human、产品、publication 和 release 均未通过。
 
-R17 Writer 已有 fresh author-separated independent content pass；没有 R17 内容 finding，不创建
+R17 Writer 已有 fresh author-separated independent content pass；旧 two-path bounded review 内没有 R17 内容 finding，不创建
 R18。首轮整合审计对 `d63e7966...` 判定 `0/0/1/1`；R35 replay P2 已由 `e9d1bf1e...`
 successor 关闭，作者 full gate 为 `1284 passed, 2 skipped, 2 warnings`。第二名 fresh read-only
 reviewer 对该 commit 判定 `PASS，P0/P1/P2/P3=0/0/0/1`；唯一 P3 是当时顶部尚未记录上述结果，
 本 current-state successor 已更正。reviewer 不是 qualified human；S1／S2／S3、产品、publication
 和 release 仍为 false。详见 S1/081、S2/010、S3/171。
+
+Owner 于 2026-08-25 新增强制纠正：上一版 R17 研报的信源问题不能因 R38 工程同步通过而视为全部解决。R17 四组 remaining gaps、当前 `55 Evidence / 14 gaps` 的 `0 closed / 3 narrowed`、R38 单元 9 gaps 和 Writer 4 groups 必须建立显式映射；blocked-by-admission、未执行外源梯子、S2 bridge null 与读者侧 `EV::`／`GAP::` 内部引用展示都进入当前计划。今后 integrated/final audit 必须分别签发工程／Evidence 管线 verdict 和研报研究质量 verdict，并审查逐 Claim 信源、可读 citation、定量桥、因果边界、反方、WWC 与八维质量；工程 finding 为 0 不等于报告、产品或 publication 通过。作者分离的只读审计 Agent 已收到该新增范围，qualified-human 仍未授予。
+
+该只读审计已对 immutable `aae2ccc...` 固定结论：`P0/P1/P2/P3=0/1/2/1`；工程／机器 source binding 为 `PASS_BOUNDED`，研报质量为 `OPEN/NOT_ASSESSABLE`，qualified-human 为 `FALSE/NOT_GRANTED`。P1 是读者侧仅有 EV/GAP、没有标题／发行人／日期／期间／locator／source table；两个 P2 是 14/9/4 crosswalk 缺失与 WWC 阈值／窗口／owner 未操作化；P3 是重复和 Facts 密度。正式八维不得复用作者 diagnostic 分数。审计期间共享 worktree 的文档修改来自本 current-state 作者，不属于 reviewer 写入；reviewer 结论绑定审计开始时 clean 的 immutable target 和精确私有 artifact SHA。
 
 ## 历史上下文（保留）
 

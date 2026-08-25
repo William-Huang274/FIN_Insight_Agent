@@ -1,7 +1,7 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`repository_baseline_complete / S1_VS1_to_VS3_and_DELL_MU_NVDA_VS4_vertical_slices_integrated / VS5_all_positive_frozen_holdout_and_qualification_open / S2_company_fact_mart_pass / S2_product_bridge_open / fixed_pack_and_dynamic_single_cell_accepted / DELL_R7_complete_five_cell_report_contract_pass_truth_reconciliation_fail / reflective_agent_runtime_contract_frozen_not_implemented / full_product_chain_blocked_until_S1_qualified / product_iteration_not_closed`
+状态：`current_R38_engineering_baseline_clean / DELL_R4_55_Evidence_14_gaps_0_closed_3_narrowed / R17_bounded_two_path_content_pass_but_report_quality_OPEN_P0P1P2P3_0_1_2_1 / report_source_closure_and_integrated_quality_audit_release_blocking / S1_S2_S3_product_publication_release_open`
 ## 1. 这份文件拥有哪项真值
 
 本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
@@ -520,3 +520,44 @@ R2 证明 12 条请求能够进入当前检索 Runtime，但其材料门仍错�
 `retrieval_context_only` 指标允许在 S1 没有对应的 S2 typed route，但必须显式记录 `not_routed_retrieval_context`；它既不是 NumericFact，也不是 S2 typed gap。typed conflict 仍阻断。下一门是 formal clean-bound readiness materialization 和上述四类 residual external ladder；未获得 Evidence 前不得 current promotion 或调用动态 Agent。
 
 若免费公开源仍无法形成直接销量／份额，必须先审查可替代输入充分集，而不是永久要求所有路径同时满足：直接销量、第三方份额＋行业量、或收入＋可观察价格区间＋配置输入均可能成为 S2 unit-range 的不同合法输入路径。该合同调整必须由 residual live 证据触发，不得预先降低门槛。
+
+### 7C. 上一版研报信源闭环与研报质量审计强制门（2026-08-25 Owner 纠正）
+
+Owner 明确纠正：上一版 R17 研报展示出的信源问题尚未全部解决，必须进入 FIN 0.1.3 当前执行计划；此后任何独立／综合审计都必须把研报质量作为正式审计对象，不能只审代码、回执、不可变性和测试。
+
+当前基线必须按以下三类分账，禁止用一个“source pass”合并：
+
+1. **已关闭的工程断链**：R38 已把已审阅公共资料补齐到 source／object／index／material policy／dynamic consumer，reviewed-label missing occurrence 为 `4 -> 0`。这只关闭 Pack 到 Runtime 的消费缺陷。
+2. **仍待关闭的 Evidence 与来源工作**：DELL current Pack 为 `55 Evidence / 14 gaps`，`0 closed / 3 narrowed`；product projection 仍有 4 个请求 blocked by Evidence admission，current task 仍有公司级 unit/share not-ready。三案 public-information-gap authority 均为 0，不能把未执行路线写成“公开信息不存在”。
+3. **仍待产品化的研报交付**：R17 的四组 remaining gaps 未变，读者侧仍不能只看到 `EV::`／`GAP::` 内部 ID；必须提供可读来源名、发布主体、文档／页面标题、报告期或事件期、发布日期、原文 locator／链接和内部 lineage。
+
+#### 7C.1 执行顺序
+
+1. 建立 R17 四组 report-facing gap 到 current `14 Pack gaps / 9 dynamic-unit gaps / 4 Writer groups` 的不可歧义映射；逐项标记 `technical_chain_closed`、`candidate_admission_pending`、`source_route_pending`、`narrowed`、`proved_information_boundary` 或 `S3_method_parameter`。
+2. 先裁决当前已有候选和 reviewed material：完成 blocked-by-admission 请求的 CandidateDecision／Evidence Gate／qualified-human admission，不用新增网页掩盖已有候选未准入。
+3. 对真实 residual 执行任务绑定的外源梯子：发行人／监管、客户、供应商、行业 primary、产品目录／公共采购／部署案例和可信反方 context；search 只做 locator，所有材料先 capture、再解析、去重、Evidence Role/Gate 和 claim-use 裁决。
+4. 重编 current Pack、Proposition Coverage、EvidencePackReadiness 和受影响 S2：公司 units/share 或同口径 proxy、ASP／configuration mix、PVM、AI 产品利润及营运资金归因必须得到新权威、受控 estimate/scenario，或保持显式 null/gap。
+5. 只有上述 readiness 达标后，才运行受影响的 DELL 动态单元；不得直接重跑完整多 Agent。新 EvidenceResponse 必须自然改变／收窄判断，或形成合法 StopDecision 与 route-exhaustion receipt。
+6. 生成新的 Writer successor，不覆盖 R17。新报告必须把核心结论、反方、WWC、定量桥和剩余边界写清，并生成读者可读的 citation／source appendix；内部 EV/GAP ID 只作为 lineage，不是 publication-ready 引用。
+7. 完成双轨独立审计和 qualified-human 内容验收后，才允许讨论 S3、产品、publication 或 release。
+
+#### 7C.2 双轨审计与阻断规则
+
+每次 integrated/final audit 必须分别签发，不得合并：
+
+- `engineering_and_evidence_pipeline_verdict`：代码、数据合同、source/object/index/runtime、Evidence 权限、数值权威、不可变性和测试；
+- `report_research_quality_verdict`：逐 Claim 信源、来源等级／时点／主体／口径、14/9/4 gap 映射、因果克制、定量桥、反方、WWC、可读引用和八维内容质量；
+- `qualified_human_product_verdict`：独立人工对继续研究／决策价值和最终交付可用性的接受。
+
+任一前置 verdict 未通过或材料不足时，后续门保持 open。`0 material engineering findings` 不等于研报质量 PASS；没有新的完整候选报告时，只能给出 report-quality gate open，不能用“未发现问题”代替验收。任何把 candidate、bundle 报价、行业样本、供应商 read-through 或研究阈值写成 Dell 公司事实的行为均为阻断 finding。
+
+#### 7C.3 当前 R17 只读质量基线
+
+作者分离的只读 reviewer 已对 immutable `aae2ccc...` 和精确 R17／R34／R38 私有 artifact 完成新增范围审计：`P0/P1/P2/P3 = 0/1/2/1`。`engineering_and_evidence_pipeline_verdict=PASS_BOUNDED`，`report_research_quality_verdict=OPEN/NOT_ASSESSABLE`，`qualified_human_product_verdict=FALSE/NOT_GRANTED`。
+
+- P1：R17 只展示内部 EV/GAP，缺读者可核验 citation/source appendix，直接阻断 Q2/Q8 与 publication readiness；
+- P2：14 Pack gaps、9 dynamic-unit gaps、4 Writer groups 没有层级 crosswalk；
+- P2：WWC 缺冻结的 metric/event、窗口、阈值、owner 和完整证据路线，Q7 仍 open；
+- P3：WWC 重复与 Facts 密度降低 senior-reader 可用性。
+
+正式八维只能为 `OPEN/NOT_ASSESSABLE`，不得复用同作者 R15 diagnostic `27/32`。该基线审计用于确定修复计划，不替代未来 Writer successor 的重新审计和 qualified-human 验收。

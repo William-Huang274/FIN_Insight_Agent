@@ -112,3 +112,30 @@ L1/L2 deterministic gate
 ## 9. 当前状态
 
 本 Rubric 已成为 FIN 0.1.3 产品与 release 约束。`013-S0-03` 已完成四层分类 registry；`013-S3-05` 已将逐案八维 ScorePacket、L1/L2 前置阻断、dimension-specific reason refs、paired material gain 和独立 qualified-human content decision 编译为 fail-closed 工程合同。当前三份 fixture-mixed 预览均在评分前拒绝；三案正式评分、paired 与人工内容接受仍为 0。Workbench 展示、真实 reviewer action 和 S5 RG3/RG4 仍待 S4/S5 消费。因此当前状态是 `S3_contract_engineering_pass / formal_natural_candidate_scoring_pending`，不得宣称三案例内容质量已实现或已通过。
+
+## 10. Integrated Audit 强制消费（2026-08-25 Owner 纠正）
+
+本 Rubric 从本节起不仅用于 S3／S4 的候选报告评分，也必须由每一次 integrated、final、release-readiness 或 author-separated audit 显式消费。审计不得只给一个总 PASS；至少分别输出：
+
+1. `engineering_and_evidence_pipeline_verdict`；
+2. `report_research_quality_verdict`；
+3. `qualified_human_product_verdict`。
+
+研报质量审计至少必须覆盖：
+
+- 每个核心 Claim 到 Evidence／NumericFact／typed gap 的逐声明绑定；
+- 来源主体、来源等级、speaker、报告期／事件期、发布日期、单位、口径、关系方向和 freshness；
+- candidate、reviewed Evidence、bounded context、estimate/scenario 和 company exact fact 的权限隔离；
+- Pack gap、动态单元 gap 与 Writer 聚合 gap 的映射，禁止把 `14 -> 9 -> 4` 误读为缺口已经关闭；
+- 公司 units/share、ASP/mix、PVM、产品利润、营运资金归因、供应分配和需求持续性等 material boundary；
+- strongest counter-thesis、反方证据、可执行 WWC、因果克制和替代解释；
+- 读者侧 citation/source appendix 是否展示来源名、标题、时点和可访问 locator；`EV::`／`GAP::` 只能作为内部 lineage；
+- 八维绝对分数、逐维理由、L1/L2 前置状态和 qualified-human 决策。
+
+审计结论必须遵守以下阻断规则：
+
+- 工程审计 PASS 不能自动授予研报质量 PASS；
+- source-consumer 同步 PASS 不能自动表示来源充分或 public-information gap 已证明；
+- 没有完整、当前、verifier-bound 的候选报告时，`report_research_quality_verdict` 必须是 `open/not_assessable`，不能因为 finding 数为 0 而写 PASS；
+- 影响核心 thesis、Q2/Q3/Q6/Q8、引用可验证性或 publication readiness 的 finding 必须阻断相应产品门；只有不影响判断与核验的纯展示 advisory 才可保持非阻断；
+- Codex／LLM 独立 reviewer 可以签发 author-separated content audit，但不能冒充 qualified human、product acceptance、publication 或 release。

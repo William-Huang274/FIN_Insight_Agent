@@ -149,3 +149,13 @@ S2 authority changed
 7. **用 MU、NVDA 和异质留出案例复证**：证明 source strength、补源调度、状态失效和边界去重不是 DELL 特判。
 
 新的 DeepSeek live 只有在前四步零调用／真实 source capture 通过后才有信息价值；否则继续调用只会稳定地产出同一份稀疏材料下的谨慎报告。
+
+## 八、2026-08-25 Owner 纠正：质量 finding 进入正式审计门
+
+第六节记录的“非阻断质量 finding”只描述 2026-08-22 当时的历史回放处置，不再控制当前验收含义。Owner 已明确要求：研报质量必须成为独立／综合审计的正式内容。
+
+当前采用双轨结论：工程／source-consumer 审计与 report research-quality 审计分别签发。R38 的 reviewed public source runtime sync 可以判工程通过，但不能关闭 R17 四组 remaining gaps、不能证明完整外源梯子穷尽，也不能把内部 `EV::`／`GAP::` 引用视为读者可用的来源展示。影响核心 thesis、逐声明信源、定量桥、反方、WWC、八维质量或 publication readiness 的 finding 必须阻断相应门；只有纯展示且不影响判断或核验的 advisory 才能保持非阻断。
+
+下一份 DELL successor 报告必须在同一 reviewer packet 中提供：R17 四组 gap 到 current 14/9/4 层级的映射、每组处置状态、逐 Claim source/authority、可读 citation/source appendix、八维评分和 qualified-human 独立决策。缺任一项时，报告质量门保持 open。
+
+作者分离的 current R17 只读基线审计已按该纠正执行，固定结论为 `P0/P1/P2/P3=0/1/2/1`：机器级 source binding `PASS_BOUNDED`，研报质量 `OPEN/NOT_ASSESSABLE`，qualified-human `FALSE/NOT_GRANTED`。P1 为读者侧引证不可独立核验；两个 P2 为 14/9/4 层级映射缺失和 WWC 尚不可执行；P3 为重复与 Facts 密度。它不修改 R17，也不替代新报告的独立复审。

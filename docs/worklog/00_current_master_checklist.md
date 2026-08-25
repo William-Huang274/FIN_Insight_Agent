@@ -159,7 +159,9 @@
   - [x] 02A successor 作者实现：复数 8 requests／18 nested items／16 human items、逐 request/item identity 与 public/private summary；逐项重做 16 个 claim-use，清除 period/basis/owner/role 错配和 citation padding
   - [x] 03A successor 作者实现：冻结 exact target↔gap↔prior proposition↔held overlap；递归零权限；重验 predecessor self-digest／22-query；阻断 scheme URL 与裸域名泄漏，并精确消费 02A item map
   - [x] successor 作者工程门：定向 48、相邻 101、全仓 `1361 passed, 2 skipped, 2 warnings`，active baseline／JSON／JSONL／secret／frozen SHA 全通过
-  - [ ] non-overwriting successor 物化、exact recompile 与新的 fresh engineering＋report-quality 双审计
+  - [x] 02A R2 non-overwriting public/private 物化与 exact recompile；8/18/16、4/8、建议 5/10/1、decision 0/16，public 无 excerpt/URL
+  - [ ] 03A R2 non-overwriting 物化与 exact recompile
+  - [ ] 新的 fresh engineering＋report-quality 双审计
   - [ ] 上述 successor 双审计 PASS 后方可进入 02B qualified-human review；当前 0/16 decision
   - [ ] 真实 residual 内/外源执行与上一版研报信源补齐仍未开始，不能把 route program 当作已补源
   - [ ] R17 citation P1、WWC P2、formal Q1–Q8、新 Writer/report 和 reader-readable appendix 仍待后续报告门

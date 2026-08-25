@@ -240,3 +240,25 @@ network/provider/model/embedding/reranker/promotion/gap-closure=`0/0/0/0/0/0/0`�
 author-separated 审计。02B human admission、03B/03C source execution、真实 residual 补源、Pack／
 Readiness／S2 重编、新 Writer 和报告质量验收均未发生；上一版研报信源缺口仍未解决，G2/G3、
 S1/S2/S3、report/product/publication/release 继续为 false。
+
+## 11. 02A R2 non-overwriting materialization
+
+从 clean implementation commit `8dbdb96356875ba99f0dff829ba49f01e31e3d84`／tree
+`c3d658e5e1bee3b259c36e3d2a5bf54f71dfb5b2` exclusive-create：
+
+- public manifest：
+  `configs/retrieval/fin_ia_0_1_3_s1_dell_report_evidence_admission_manifest_v1_1.json`；
+- private packet：
+  `data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r2/full_result.json`；
+- recorded at：`2026-08-25T17:19:08+08:00`；
+- packet digest：`6ea77971bdb039008df6ebb74294fb5d17cef2d55bc8d3867b78104c53b2882f`；
+- public result digest／SHA：`0b74f9698326a4649c3970d5097a65eb0ed3d30bdb8eb7235b0fa5b161f6ab68`／
+  `5064dbbc964b4062ec40d29e3258a3effce1ca130df1527bcec85f9ba2954e1f`；
+- private full result digest／SHA：`a90ed777fe85956889976aea2baa50d3b2f84f7a058e21e3eacde3f5b1f6c4fd`／
+  `9679d9e73668f12fb3e306eb3f5e73723e65a5a97247f74607374367668bcf11`。
+
+用保存的 recorded_at、prepared commit 和 private ref 重编，public/private 逐字段完全相等；公开
+manifest 不含 bounded excerpt、`source_url`、HTTP(S) locator 或完整私有来源。结果仍是
+8 requests／18 predecessor items／16 human items、4 blocked requests／8 blocker items、建议分区
+5/10/1、qualified-human decisions `0/16`；全部调用和 promotion 为 0，G2 及所有 stage/report/product
+authority 为 false。该物化不是 02B admission、Evidence promotion、真实补源或研报质量通过。

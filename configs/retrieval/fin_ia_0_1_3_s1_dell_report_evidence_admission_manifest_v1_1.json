@@ -1,0 +1,501 @@
+{
+  "schema_version": "fin_ia_dell_report_evidence_admission_public_manifest_v1_1",
+  "status": "packet_frozen_qualified_human_decisions_pending",
+  "recorded_at": "2026-08-25T17:19:08+08:00",
+  "prepared_from_commit": "8dbdb96356875ba99f0dff829ba49f01e31e3d84",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "program_digest": "0b34d8f68115b1c43af6a9a77af7dba7db883d59ffb2f9d45a59d8c00eafb267",
+  "successor_lineage": {
+    "predecessor_attempt": "DELL-RSQ-02A-R1",
+    "predecessor_verdict": "FAIL",
+    "predecessor_audit_ref": "configs/audits/fin_ia_0_1_3_commit_581c1d6e_dell_02a_03a_fresh_audit_fail_v1_0.json",
+    "predecessor_audit_digest": "061cd35cbf624e8a7f84b379466396e0870f122799627107afc6ae9541d4a3ea",
+    "successor_attempt": "DELL-RSQ-02A-R2",
+    "same_stage_root_cause_ids": [
+      "RC-S1-066-DELL-02A-nested-population-not-recounted",
+      "RC-S1-067-DELL-02A-report-claim-use-semantic-padding"
+    ],
+    "predecessor_overwritten": false
+  },
+  "scope_reconciliation": {
+    "frozen_program_wording": "four_requests_sixteen_human_items",
+    "actual_predecessor_scope": {
+      "all_human_required_decision_set": {
+        "request_count": 8,
+        "candidate_review_item_count": 18,
+        "human_item_count": 16,
+        "required_for_G2": true
+      },
+      "four_request_readiness_blocker_subset": {
+        "request_count": 4,
+        "human_item_count": 8,
+        "request_ids": [
+          "REQ::081c06389f9dcb8487886b57",
+          "REQ::273bf40c53d28f49de438b41",
+          "REQ::c21c10d6e8f13263cf69ffa5",
+          "REQ::e17c40f93e25438950673210"
+        ],
+        "changes_four_blocked_readiness_states": true
+      }
+    },
+    "false_interpretation_rejected": "four_requests_each_with_four_human_items",
+    "immutable_execution_program_rewritten": false
+  },
+  "predecessor_review_inventory_summary": {
+    "request_count": 8,
+    "review_item_count": 18,
+    "human_review_required_count": 16,
+    "inventory_digest": "4137a3be5f6269133fefd0f90e61091f139d71e281861409d105bb4e619a8da3"
+  },
+  "claim_use_recommendation_counts": {
+    "bounded_or_direct_material_use_candidate_count": 5,
+    "recommend_reject_no_current_material_report_use_count": 10,
+    "recommend_rebind_duplicate_to_canonical_candidate_count": 1
+  },
+  "counts": {
+    "request_count": 8,
+    "candidate_review_item_count": 18,
+    "all_human_required_item_count": 16,
+    "blocked_request_count": 4,
+    "blocked_request_human_item_count": 8,
+    "bounded_or_direct_material_use_candidate_count": 5,
+    "recommend_reject_no_current_material_report_use_count": 10,
+    "recommend_rebind_duplicate_to_canonical_candidate_count": 1,
+    "qualified_human_decision_count": 0
+  },
+  "items": [
+    {
+      "review_item_ref": "CANDOBJ::0381BE87C0EE31414BA6EA4E",
+      "predecessor_review_item_digest": "0bd1c306dbd895bfc7eac7bfe1a457c986e9ce18b5771e6ae48bb416a7110f22",
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "cc5938a01eae151695597e78b8cbce64e3ec1e362fc627ebb619024610319d63",
+      "report_claim_use": {
+        "review_recommendation": "consider_bounded_context",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "historical_same_company_timing_context",
+        "report_claim_refs": [
+          "WPCLAIM::653D7E95ECA46E262391",
+          "WPCLAIM::DFDFF241544B90012DA1"
+        ],
+        "report_surface_paths": [
+          "trusted_report.sections[0].clauses[3]"
+        ],
+        "period_relationship": "historical_interim_context_not_current_quarter_fact",
+        "basis_alignment": "issuer_timing_nonlinearity_context_only",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": false,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "67aa4f41c4436d6090065645b12b31f73cca33b030c181cbadb0649be5ae9b38",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::040A820BE15FD0CEAF83C0AD",
+      "predecessor_review_item_digest": "ebc02f66b559e1631f29488e3a5e237da4939fba2ef3a28309c4764678ee2feb",
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "4abf39992cf1adae1eb5f171d470460695339502020932f088b89b5eb9a79005",
+      "report_claim_use": {
+        "review_recommendation": "recommend_rebind_duplicate_to_canonical_candidate",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "duplicate_source_no_separate_report_citation",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "as_of_valid_risk_disclosure_duplicate",
+        "basis_alignment": "exact_duplicate_source_reserved_for_canonical_counterevidence_item",
+        "duplicate_of_review_item_ref": "CANDOBJ::0B13DC6BFDAF674340B451BC",
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "cda92837895dbf9bccc6095f840d4152ebff5693fd09a5a823f91e77f0af1438",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::0B13DC6BFDAF674340B451BC",
+      "predecessor_review_item_digest": "b813c1005b5854dc1422dcdc1ceef128403320ef0fea5539272761cb6a2b06cd",
+      "request_id": "REQ::07e898259cfe6b2e12d7f82c",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "4abf39992cf1adae1eb5f171d470460695339502020932f088b89b5eb9a79005",
+      "report_claim_use": {
+        "review_recommendation": "consider_risk_counterevidence",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "same_issuer_as_of_valid_risk_counterevidence",
+        "report_claim_refs": [
+          "WPCLAIM::B1BDD811CE1DF55EE55E",
+          "WPCLAIM::E3BFD59CC60F05B1BD7C",
+          "WPCLAIM::FC2C8B1EA97D7EF82311"
+        ],
+        "report_surface_paths": [
+          "trusted_report.sections[4].clauses[0]"
+        ],
+        "period_relationship": "as_of_valid_risk_disclosure_not_realized_loss",
+        "basis_alignment": "issuer_AI_order_working_capital_cancellation_inventory_risk_counterevidence",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": false,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "66add86dcf95e18e2e315b8483d336270584acd44f54d3f35c54a53103f06223",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::27FD9953E64ED8DF1F3B2428",
+      "predecessor_review_item_digest": "a2364d9afdff35d1c050708366560561cf11f9bd4bf77c485589bbe5bf4c4dd7",
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "2699e1870a7178f1e70e0f817688c07d9c25eb57677f9dcff7d1cdf572ce28e0",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "generic_accounting_policy_no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "as_of_valid_policy_without_measured_current_period_change",
+        "basis_alignment": "generic_ECL_policy_not_credit_deterioration_working_capital_or_AI_attribution",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "7780b55a6d5754db9f368ddd7b167e58f70eafd975f064091409c4da3295e245",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::51BFECDF1794E6CE42A7B2CE",
+      "predecessor_review_item_digest": "09cddcda4bfdd2c53889d6b9cea118818b665f11483f47582849e406c3260e69",
+      "request_id": "REQ::081c06389f9dcb8487886b57",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "5488a58c3dd1b12f92d37c8048e67d081a0149426497c83f97f2da40c12514a7",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "annual_consolidated_row_not_current_quarter_fact",
+        "basis_alignment": "annual_company_results_do_not_support_Q1_FY2027_claims_or_product_attribution",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "43449e0cf2c0a4b343e91fb0b63cbe285f8f40661d4c71d2af8b3fd5b9d2f6a4",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::6E0870ECD8935A2BE7A6110F",
+      "predecessor_review_item_digest": "e2d5cf130dcacf1dac526c0b44846178797978a965d4bb01c997c3262348df89",
+      "request_id": "REQ::273bf40c53d28f49de438b41",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "721b6cc48338a470e221c4f6ac0bb184994a20fdbf6e3600bf370abcc0800caa",
+      "report_claim_use": {
+        "review_recommendation": "consider_definition_boundary",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "same_issuer_non_GAAP_definition_boundary",
+        "report_claim_refs": [
+          "WPCLAIM::B9FB00649A060D443976"
+        ],
+        "report_surface_paths": [
+          "trusted_report.sections[3].clauses[0]"
+        ],
+        "period_relationship": "as_of_valid_definition_not_numeric_period_fact",
+        "basis_alignment": "FCF_non_GAAP_definition_boundary_only",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": false,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "e9f4965ecd1931ce6a3f5f3b6e6028fd6b53dbd30dc9234bcfc7f86e1638a37d",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::884E327B61E2F4DCB0788D95",
+      "predecessor_review_item_digest": "5e5a3316586074463b1b35322a22980a1cfcf58c5879e650acbde88e33319b48",
+      "request_id": "REQ::07e898259cfe6b2e12d7f82c",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "a29e743a1c8aae9d2d1203ebf85c8c88b50fc8ab80c13b2e6531b8a983f7408a",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "generic_strategy_risk_no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "generic_as_of_risk_without_AI_event_or_threshold",
+        "basis_alignment": "generic_inventory_management_language_not_AI_impairment_cancellation_or_realized_loss",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "9fbf5a552b434b95c3c8a72df3dfa6eff483c2077b1c3251337c86ae0cdd8436",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::8EDA130D7FDA0F0B66BA53B5",
+      "predecessor_review_item_digest": "ae21569fc5bd4876aa286f45f4a37465293497bd30dffedda98bc27b515f5f3c",
+      "request_id": "REQ::e17c40f93e25438950673210",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "889451e2032475cf2326272a39b7878702d07182f83b697655ae930cce1ff10d",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "annual_segment_row_not_current_quarter_company_or_product_fact",
+        "basis_alignment": "reportable_segment_operating_income_not_company_bridge_or_AI_product_profit",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "aebf9602dc4abdf2c964373f60d4f9ac2bd9e97c11ebd922edab63883906b764",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::9A29D551F01388C5C785FF82",
+      "predecessor_review_item_digest": "5a368493e2e560911847346d3c724773af7601f3735040a03feb07f3d8433763",
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "c4e98f82b6728e55e27d2be3b2a9a425632d47d315e2f611699eaebd63be023e",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "stale_period_row_no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "nine_month_prior_period_row_not_May_2026_quarter_working_capital",
+        "basis_alignment": "single_receivables_cash_flow_row_not_current_quarter_complete_working_capital_bridge",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "461254cd576f1f8e70e30e301adb7d7c62a1d63075c8c2c11ae6981aca897f45",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::C20F9F784D691747A36DADC3",
+      "predecessor_review_item_digest": "85c4d56d66c0c5e5f44f1444380a866ce96f9f26550312b9d40a6a9d0a067df6",
+      "request_id": "REQ::081c06389f9dcb8487886b57",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "931a2ffacc6bb49c1130a346cbd21c39a6e0394f6cfc1aceafcb01e1e91d27cd",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "annual_non_GAAP_row_not_current_quarter_GAAP_bridge",
+        "basis_alignment": "non_GAAP_annual_gross_margin_not_Q1_FY2027_GAAP_signed_bridge",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "b40f291a37c70e90cdfdf9c9a6a76a6497980675d6d8a4632fc726744ca47ded",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::C250AD7345231BD7C1DF0CBB",
+      "predecessor_review_item_digest": "f25a6f642033764f55d601441f0468a3e47a8ece8ab7b3f69042a748fb495293",
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "40431fa783c3307bf45964c2fdac9add6be767dd21774c861ddfc4373f368b5c",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "unbridged_cross_company_context_no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "other_company_current_period_without_Dell_relationship_bridge",
+        "basis_alignment": "Micron_equipment_supplier_dependency_not_Dell_HBM_allocation_delivery_or_NVIDIA_claim",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "d824dbc322d89b6b821ee1f172b165c4f29579ba5927969bb118e7dbf7cb422d",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::D7769F8FD29DE6807D0B57F6",
+      "predecessor_review_item_digest": "6f5e8565ef221147685cd6b6bd9d715a75ffb45a053726e3b0bab3f017c7396a",
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "e5473c2f8c2b7f5d102da6acfbb2fc13e5cacd6316cca646745bc6e0e3270d7c",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "unbridged_cross_company_context_no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "other_company_current_period_without_Dell_relationship_bridge",
+        "basis_alignment": "Microsoft_component_risk_not_NVIDIA_export_control_hyperscaler_or_Dell_fact",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "94dfedbed7bcccf9a3ad3fdefd2ad20b6bb9581e3f203ba55ee06cdcc2bb8741",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::D7A996F5F40E35C760851932",
+      "predecessor_review_item_digest": "b594920f4f80823c725aa0cdb99e15df69d28ac6c7278650ebe134c525c626a4",
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "894df96bf453ee3fdff0bac6450e84db370311a65a10d3e243d037dd8a220fcf",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "historical_interim_unrelated_to_customer_conversion",
+        "basis_alignment": "supplier_purchase_order_timing_not_customer_order_conversion",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "5aec27cb52bb1e73b18f2ad4239818e48440a79be5c182f84cf6aafebdf88a57",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::E56F86F06307372B2F18FA97",
+      "predecessor_review_item_digest": "8fa6a5bea5271cf7827728c61d5915a000ac54c84d90e825fcaadf10d3b467ef",
+      "request_id": "REQ::273bf40c53d28f49de438b41",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "d4d020b0f9a720353cf5a329a237874ad1002771dd842faced9afb75185266a6",
+      "report_claim_use": {
+        "review_recommendation": "recommend_reject_no_current_material_report_use",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "wrong_cash_flow_row_no_current_material_report_use",
+        "report_claim_refs": [],
+        "report_surface_paths": [],
+        "period_relationship": "annual_financing_cash_flow_row_not_current_quarter_OCF_or_FCF",
+        "basis_alignment": "financing_cash_flow_cannot_support_operating_cash_flow_free_cash_flow_or_product_cash_conversion",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": true,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "20453a7d9d92fd4d2359177e0b41f799c13a474d67360a28692ee3808e18adf1",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::E591113506AF79306D11D8AD",
+      "predecessor_review_item_digest": "3674c9ed006637a3771df271f067358530f50e00fc34af67a5a293a809e0b0a2",
+      "request_id": "REQ::e17c40f93e25438950673210",
+      "four_request_readiness_blocker_subset": true,
+      "source_identity_digest": "af7c1fc86f1c1616387f81fcebd3deb93d726185f519695d661b76a8c509403f",
+      "report_claim_use": {
+        "review_recommendation": "consider_bounded_context",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "historical_same_company_mix_context",
+        "report_claim_refs": [
+          "WPCLAIM::2339C903BA4B36F0C033"
+        ],
+        "report_surface_paths": [
+          "trusted_report.sections[2].clauses[0]"
+        ],
+        "period_relationship": "historical_interim_mix_context_not_current_quarter_bridge",
+        "basis_alignment": "issuer_mix_explanation_not_ASP_units_PVM_or_product_profit",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": false,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "a044e863f7ed8be2c48d4a99a0d625d1f82c53039070130bbca1245fbd8af9b4",
+      "decision_state": "qualified_human_pending"
+    },
+    {
+      "review_item_ref": "CANDOBJ::E9A0B4076252D3978B8DAB73",
+      "predecessor_review_item_digest": "5a83aa396988f3d2a14f2a1ef3e7d3fa80c12bce6e69f61d1f027a7cd11f1688",
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "four_request_readiness_blocker_subset": false,
+      "source_identity_digest": "2839d80239ed12c864ba76f03e344fc28baeb14e01d5e10e61502210b3963c17",
+      "report_claim_use": {
+        "review_recommendation": "consider_bounded_context",
+        "recommendation_is_not_qualified_human_decision": true,
+        "material_use_class": "historical_same_company_backlog_context",
+        "report_claim_refs": [
+          "WPCLAIM::653D7E95ECA46E262391"
+        ],
+        "report_surface_paths": [
+          "trusted_report.sections[0].clauses[3]"
+        ],
+        "period_relationship": "historical_annual_context_not_current_quarter_order_fact",
+        "basis_alignment": "issuer_backlog_history_context_without_conversion_inference",
+        "duplicate_of_review_item_ref": null,
+        "material_report_use_required_for_acceptance_or_rebind": true,
+        "empty_claim_set_means_no_current_report_citation": false,
+        "citation_padding_forbidden": true,
+        "qualified_human_may_reject_or_rebind": true,
+        "decision_authority": "qualified_human_only"
+      },
+      "packet_item_digest": "8f53b1207e09243e6f8975a9aebc7849dc055f69cf199eba9cb8c5c5d1a290eb",
+      "decision_state": "qualified_human_pending"
+    }
+  ],
+  "admission_packet_digest": "6ea77971bdb039008df6ebb74294fb5d17cef2d55bc8d3867b78104c53b2882f",
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r2/full_result.json",
+  "execution": {
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "embedding_calls": 0,
+    "reranker_calls": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0
+  },
+  "authority": {
+    "qualified_human_decisions_complete": false,
+    "G2_pass": false,
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "report_quality_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "known_boundary": "This successor freezes review recommendations only. Five candidates have a bounded possible R17 use, ten are recommended for rejection because no current material report use is demonstrated, and one is recommended for duplicate rebind. None is a decision. Every one of the sixteen human-required items still needs an authorized qualified-human decision; the eight-item blocker subset does not replace the full G2 decision set.",
+  "private_full_result_sha256": "9679d9e73668f12fb3e306eb3f5e73723e65a5a97247f74607374367668bcf11",
+  "result_digest": "0b74f9698326a4649c3970d5097a65eb0ed3d30bdb8eb7235b0fa5b161f6ab68"
+}

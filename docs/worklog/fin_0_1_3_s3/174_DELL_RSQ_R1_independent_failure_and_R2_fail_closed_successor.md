@@ -2,7 +2,7 @@
 
 日期：2026-08-25
 
-状态：`R1_R2_independent_FAIL_immutable / R3_engineering_full_gate_pass / clean_materialization_pending / G1_false`
+状态：`R1_R2_independent_FAIL_immutable / R3_clean_materialized / fresh_reaudit_pending / G1_false`
 
 ## 1. 为什么不能把 R1 追认为通过
 
@@ -182,3 +182,28 @@ R2 failure 和 `candidate_packet_actual_counts_recomputed`，仍保持 independe
 report/product/publication/release 为 false。本节只是作者工程 successor；必须先形成 clean immutable
 implementation commit，再 exclusive-create R3 并由第三名 fresh read-only reviewer 复审工程、
 crosswalk 内容和研报质量边界。
+
+## 8. Clean R3 materialization
+
+R3 工程 successor commit：`883b0e467a43ccf542b3c02f77e265f55befeb30`；tree：
+`4f158ecf0a144e0d1faf5a60e38fa1c26819e329`。提交后工作树 clean；向 GitHub HTTPS 443 push 再次因
+连接失败而没有产生远端变更，本地 immutable identity 不受影响。
+
+2026-08-25T14:18:05+08:00 exclusive-create R3：
+
+- public：`configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_2.json`；
+- private：`data/workbench_private/fin_0_1_3_report_gap_crosswalk/dell-r3/full_result.json`；
+- content digest：`f2ab679522d15ba9fe22e3f17b0010a032a4fb142fa918b56b5d344c47b8afc2`；
+- public result digest：`afc37e760cd88c107365e727d10b53694b299f93c4245cf90110775ec22676e2`；
+- public file SHA-256：`990972fc1acb62696f0bebbc12713e100597271ec562424296cf8d220ff577f5`；
+- private full result digest：`c31a51cf7b2252f94f66cdfff96d0263cb850835ab4d1ea264e1e217085849b9`；
+- private file SHA-256：`61e627686bae188cfe9f3d58e95cbf230ac4195b855b9fb829975c6dda608880`。
+
+R3 content digest 与 R2 相同是预期行为：本 successor 修的是 baseline actual-count proof，不改写
+14/9/4/10 的研究内容。用保存的 `recorded_at`、`prepared_from_commit` 和同一 private ref 重新编译，
+public/private 均逐字段完全相等；物化后定向＋相邻合同仍为 `40 passed`。
+
+R3 execution 的 model/provider/network/embedding/reranker/candidate/Evidence/gap-closure 均为 0；
+acceptance 保留 R1/R2 independent failure，声明 nested count 已实际重算，但 fresh independent review、
+G1、S1/S2/S3、report/product/publication/release 仍全部 false。下一合法动作是提交 public v1.2 收据并
+对该 immutable target 做第三次 fresh author-separated read-only audit；不能将作者物化追认为 G1。

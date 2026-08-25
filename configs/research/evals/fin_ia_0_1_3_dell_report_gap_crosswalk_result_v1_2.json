@@ -1,0 +1,561 @@
+{
+  "schema_version": "fin_ia_dell_report_gap_crosswalk_public_result_v1_2",
+  "status": "materialized_zero_call_R2_audit_correction_reaudit_pending",
+  "recorded_at": "2026-08-25T14:18:05+08:00",
+  "prepared_from_commit": "883b0e467a43ccf542b3c02f77e265f55befeb30",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "crosswalk_content_digest": "f2ab679522d15ba9fe22e3f17b0010a032a4fb142fa918b56b5d344c47b8afc2",
+  "counts": {
+    "pack_gaps": 14,
+    "dynamic_unit_gaps": 9,
+    "writer_groups": 4,
+    "writer_gap_refs": 10,
+    "S2_bridge_gaps": 4,
+    "pack_gaps_not_selected_by_unit": 5,
+    "pack_gaps_not_referenced_by_writer": 4
+  },
+  "model_visible_projection": {
+    "schema_version": "fin_ia_report_gap_crosswalk_model_projection_v1_1",
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "crosswalk_content_digest": "f2ab679522d15ba9fe22e3f17b0010a032a4fb142fa918b56b5d344c47b8afc2",
+    "counts": {
+      "pack_gaps": 14,
+      "dynamic_unit_gaps": 9,
+      "writer_groups": 4,
+      "writer_gap_refs": 10,
+      "S2_bridge_gaps": 4,
+      "pack_gaps_not_selected_by_unit": 5,
+      "pack_gaps_not_referenced_by_writer": 4
+    },
+    "authority": {
+      "candidate_is_not_evidence": true,
+      "not_selected_does_not_mean_closed": true,
+      "method_parameter_is_not_company_disclosure": true,
+      "industry_context_is_not_company_exact_fact": true,
+      "numeric_values_may_not_be_created": true,
+      "gap_closure_authorized": false
+    },
+    "gap_boundaries": [
+      {
+        "facet_id": "ai_working_capital_absorption",
+        "research_disposition": "candidate_admission_pending",
+        "next_legal_action": "complete_qualified_human_admission_then_execute_only_residual_working_capital_routes",
+        "stage_owner": "S1_S2_boundary",
+        "unit_selection_state": "not_selected_by_unit",
+        "technical_chain_state": "technical_chain_not_evaluated",
+        "source_or_method_type": "source_evidence_boundary",
+        "company_vs_industry_boundary": "Company totals cannot be assigned to the AI product line without direct attribution.",
+        "numeric_authority_boundary": "AR, inventory and AP stock changes are not an AI cash-absorption measure.",
+        "why_it_matters_zh": "Dell 已披露 AI 动态提高库存、应收和应付，并说明大单会占用营运资金；但未披露 AI 产品级金额、周转天数桥或各科目由 AI 导致的具体增量。",
+        "what_evidence_would_change_zh": "正式研究可使用方向和机制；如需量化归属，只接受 Dell 后续披露或独立受控估算，并明确标注为估算。",
+        "stop_boundary": "Do not call the gap closed or commercial while sixteen human-required packet items remain undecided."
+      },
+      {
+        "facet_id": "capacity_release_timing",
+        "research_disposition": "source_route_pending",
+        "next_legal_action": "execute_bound_supplier_timetable_and_Dell_allocation_routes",
+        "stage_owner": "S1_S3_boundary",
+        "unit_selection_state": "selected_by_unit",
+        "technical_chain_state": "technical_chain_closed",
+        "source_or_method_type": "source_evidence_boundary",
+        "company_vs_industry_boundary": "Supplier capacity is industry context until Dell allocation is directly supported.",
+        "numeric_authority_boundary": "No Dell capacity quantity or delivery share may be inferred.",
+        "why_it_matters_zh": "供应链资料能证明产品或制程在爬坡，但没有说明新增容量何时释放、其中多少分配给 Dell。",
+        "what_evidence_would_change_zh": "后续只接受供应商官方产能时间表、Dell 自述或可验证的分配证据。",
+        "stop_boundary": "Do not declare non-disclosure until reachable official routes and candidate admission are receipted."
+      },
+      {
+        "facet_id": "utilization_or_yield",
+        "research_disposition": "source_route_pending",
+        "next_legal_action": "execute_bound_supplier_utilization_and_yield_routes",
+        "stage_owner": "S1_S3_boundary",
+        "unit_selection_state": "selected_by_unit",
+        "technical_chain_state": "technical_chain_closed",
+        "source_or_method_type": "source_evidence_boundary",
+        "company_vs_industry_boundary": "Supplier process metrics cannot be converted into Dell delivery metrics without a relationship bridge.",
+        "numeric_authority_boundary": "No utilization or yield percentage may be inferred from ramp language.",
+        "why_it_matters_zh": "产品爬坡和先进制程收入占比不等于产能利用率或良率。",
+        "what_evidence_would_change_zh": "寻找供应商 prepared remarks、产能/良率披露或保留商业数据缺口。",
+        "stop_boundary": "Preserve a commercial-data boundary if admissible sources remain unavailable after the full ladder."
+      },
+      {
+        "facet_id": "pull_forward_or_digestion",
+        "research_disposition": "source_route_pending",
+        "next_legal_action": "execute_bound_Dell_and_customer_durability_routes",
+        "stage_owner": "S1_S3_boundary",
+        "unit_selection_state": "selected_by_unit",
+        "technical_chain_state": "technical_chain_closed",
+        "source_or_method_type": "source_evidence_boundary",
+        "company_vs_industry_boundary": "Industry demand does not prove Dell order durability or customer inventory health.",
+        "numeric_authority_boundary": "No pull-forward magnitude may be inferred from backlog or revenue co-movement.",
+        "why_it_matters_zh": "现有材料说明订单到交付可能非线性，也披露客户集中和取消风险，但没有量化本季是否存在提前采购或后续消化。",
+        "what_evidence_would_change_zh": "后续定向查找订单取消、交付节奏、客户库存和管理层关于 pull-forward 或 digestion 的明确表述。",
+        "stop_boundary": "Retain an open commercial boundary while mandatory source routes or candidates remain unadjudicated."
+      },
+      {
+        "facet_id": "high_bandwidth_memory_supply",
+        "research_disposition": "source_route_pending",
+        "next_legal_action": "execute_bound_HBM_capacity_yield_and_allocation_routes",
+        "stage_owner": "S1_S3_boundary",
+        "unit_selection_state": "selected_by_unit",
+        "technical_chain_state": "technical_chain_closed",
+        "source_or_method_type": "source_evidence_boundary",
+        "company_vs_industry_boundary": "Memory-industry evidence remains context unless the Dell delivery path is proved.",
+        "numeric_authority_boundary": "No HBM quantity, yield or Dell share may be created from narrative context.",
+        "why_it_matters_zh": "美光候选讲 DDR5、SOCAMM2 和 SSD，没有 HBM 产能、良率或 Dell 分配。",
+        "what_evidence_would_change_zh": "外源补充应定向 HBM 产能、供应紧张度和分配，而非泛内存新闻。",
+        "stop_boundary": "Generic memory news and unavailable routes do not prove a public-information boundary."
+      },
+      {
+        "facet_id": "observable_invalidation_threshold",
+        "research_disposition": "S3_method_parameter",
+        "next_legal_action": "freeze_owner_approved_invalidation_method_parameter_in_S3",
+        "stage_owner": "S3",
+        "unit_selection_state": "selected_by_unit",
+        "technical_chain_state": "technical_chain_closed",
+        "source_or_method_type": "research_method_parameter",
+        "company_vs_industry_boundary": "The threshold is a research choice and must not be attributed to Dell or a supplier.",
+        "numeric_authority_boundary": "Any numeric threshold is an owner-approved method parameter, not a reported fact.",
+        "why_it_matters_zh": "来源给出了风险和监控指标，但没有替研究者定义 thesis 失效阈值。",
+        "what_evidence_would_change_zh": "阈值应由研究方法或用户假设冻结，不能伪装成公司披露。",
+        "stop_boundary": "Do not search indefinitely for a company-defined research threshold or present an unfrozen value as disclosed."
+      },
+      {
+        "facet_id": "observable_quarterly_threshold",
+        "research_disposition": "S3_method_parameter",
+        "next_legal_action": "freeze_quarterly_WWC_metric_window_threshold_owner_and_route",
+        "stage_owner": "S3",
+        "unit_selection_state": "selected_by_unit",
+        "technical_chain_state": "technical_chain_closed",
+        "source_or_method_type": "research_method_parameter",
+        "company_vs_industry_boundary": "Reported metrics may feed the trigger, but the trigger rule belongs to the research method.",
+        "numeric_authority_boundary": "Baseline facts remain S2 authority; trigger thresholds remain typed S3 parameters.",
+        "why_it_matters_zh": "资料给出可持续跟踪的订单、收入、利润、现金和监管风险，但没有替研究者定义可操作的季度失效阈值。",
+        "what_evidence_would_change_zh": "由后续研究方法层基于基准值和用户风险偏好冻结阈值，并保持与公司披露分离。",
+        "stop_boundary": "Do not accept a generic continue-to-monitor statement as an executable WWC."
+      },
+      {
+        "facet_id": "price_in_boundary",
+        "research_disposition": "S2_numeric_or_bridge_gap",
+        "next_legal_action": "bind_market_PIT_and_reproducible_valuation_inputs_in_S2",
+        "stage_owner": "S2_S3_boundary",
+        "unit_selection_state": "not_selected_by_unit",
+        "technical_chain_state": "technical_chain_not_evaluated",
+        "source_or_method_type": "numeric_or_bridge_boundary",
+        "company_vs_industry_boundary": "Peer or sector multiples cannot substitute for Dell point-in-time market facts.",
+        "numeric_authority_boundary": "Market PIT and valuation calculations must be produced by the numeric authority layer.",
+        "why_it_matters_zh": "没有市场时点数据，不能判断增长预期是否已反映在价格中。",
+        "what_evidence_would_change_zh": "后续绑定市场 PIT、估值区间与明确 as-of。",
+        "stop_boundary": "Do not present a price-in conclusion while the market PIT surface is absent."
+      },
+      {
+        "facet_id": "price_volume_mix_bridge",
+        "research_disposition": "S2_numeric_or_bridge_gap",
+        "next_legal_action": "recompile_S2_PVM_only_after_ASP_units_and_mix_inputs_are_authorized",
+        "stage_owner": "S2",
+        "unit_selection_state": "selected_by_unit",
+        "technical_chain_state": "technical_chain_closed",
+        "source_or_method_type": "numeric_or_bridge_boundary",
+        "company_vs_industry_boundary": "Industry shipments or pricing may form scenarios but cannot become Dell bridge inputs without attribution.",
+        "numeric_authority_boundary": "Price, volume and mix effects remain null until S2 has compatible authoritative inputs.",
+        "why_it_matters_zh": "公司披露 AI 服务器 mix 压低毛利率，但没有把收入变化拆成价格、台数和配置组合三部分。",
+        "what_evidence_would_change_zh": "需要产品 ASP、出货量或可复算的配置桥；否则保持不可推断。",
+        "stop_boundary": "PVM must remain null; no model or Writer may fill missing bridge terms."
+      },
+      {
+        "facet_id": "price_or_asp",
+        "research_disposition": "narrowed",
+        "next_legal_action": "retain_narrowed_status_and_execute_only_residual_ASP_routes_before_S2_recompile",
+        "stage_owner": "S1_S2_boundary",
+        "unit_selection_state": "selected_by_unit",
+        "technical_chain_state": "technical_chain_closed",
+        "source_or_method_type": "numeric_or_bridge_boundary",
+        "company_vs_industry_boundary": "Bundles and market samples cannot be substituted for Dell aggregate ASP.",
+        "numeric_authority_boundary": "A bounded quote is not a company NumericFact and cannot be divided into an ASP.",
+        "why_it_matters_zh": "现有材料披露收入和 mix，但未披露 AI 服务器 ASP。",
+        "what_evidence_would_change_zh": "优先寻找管理层 prepared remarks、产品价格数据或明确的价格/配置桥。",
+        "stop_boundary": "Do not compute PVM or company ASP from bundles, four-system procurement samples or industry prices."
+      },
+      {
+        "facet_id": "volume_or_units",
+        "research_disposition": "narrowed",
+        "next_legal_action": "retain_narrowed_status_and_execute_only_residual_unit_routes_before_S2_recompile",
+        "stage_owner": "S1_S2_boundary",
+        "unit_selection_state": "selected_by_unit",
+        "technical_chain_state": "technical_chain_closed",
+        "source_or_method_type": "numeric_or_bridge_boundary",
+        "company_vs_industry_boundary": "Industry shipments and procurement quantities cannot be re-labeled as Dell company shipments.",
+        "numeric_authority_boundary": "Units must be typed and period-aligned before they can enter ASP or PVM formulas.",
+        "why_it_matters_zh": "AI 服务器收入没有配套出货台数或等价算力单位。",
+        "what_evidence_would_change_zh": "查找公司演示、产业出货数据或保留商业数据缺口。",
+        "stop_boundary": "Do not infer Dell units from industry share, contract bundles or component quantities."
+      },
+      {
+        "facet_id": "scenario_or_sensitivity",
+        "research_disposition": "S2_numeric_or_bridge_gap",
+        "next_legal_action": "freeze_S2_scenario_inputs_ranges_and_formula_lineage",
+        "stage_owner": "S2",
+        "unit_selection_state": "not_selected_by_unit",
+        "technical_chain_state": "technical_chain_not_evaluated",
+        "source_or_method_type": "numeric_or_bridge_boundary",
+        "company_vs_industry_boundary": "Industry scenarios may inform assumptions but are not Dell reported facts.",
+        "numeric_authority_boundary": "Every scenario value must be typed as an assumption or estimate, never an exact fact.",
+        "why_it_matters_zh": "尚未冻结估值假设和敏感度输入。",
+        "what_evidence_would_change_zh": "由 Numeric Program 与用户假设共同生成可复算情景。",
+        "stop_boundary": "Do not generate model-memory valuation inputs or backfill a false exact point estimate."
+      },
+      {
+        "facet_id": "supplier_capacity_readthrough",
+        "research_disposition": "narrowed",
+        "next_legal_action": "retain_narrowed_industry_context_and_execute_only_residual_Dell_allocation_routes",
+        "stage_owner": "S1_S3_boundary",
+        "unit_selection_state": "not_selected_by_unit",
+        "technical_chain_state": "technical_chain_not_evaluated",
+        "source_or_method_type": "source_evidence_boundary",
+        "company_vs_industry_boundary": "Supplier growth remains directional context and may not be presented as Dell-specific capacity.",
+        "numeric_authority_boundary": "No supplier share or capacity amount may be assigned to Dell without a typed relationship bridge.",
+        "why_it_matters_zh": "MU、NVIDIA 和 TSMC 的自述可作行业供给背景，但现有来源没有把容量或供货份额明确归属到 Dell。",
+        "what_evidence_would_change_zh": "后续保留行业 read-through 与 Dell 特定供给归因的边界，不能用行业增长替代 Dell 分配证据。",
+        "stop_boundary": "Narrowed does not mean closed; preserve the Dell attribution boundary in the report."
+      },
+      {
+        "facet_id": "valuation_basis",
+        "research_disposition": "S2_numeric_or_bridge_gap",
+        "next_legal_action": "bind_dated_market_and_valuation_basis_in_S2",
+        "stage_owner": "S2_S3_boundary",
+        "unit_selection_state": "not_selected_by_unit",
+        "technical_chain_state": "technical_chain_not_evaluated",
+        "source_or_method_type": "numeric_or_bridge_boundary",
+        "company_vs_industry_boundary": "A peer multiple is context until its period, metric and comparability are reconciled to Dell.",
+        "numeric_authority_boundary": "Valuation inputs and formulas require period, unit and source lineage in S2.",
+        "why_it_matters_zh": "本地财报材料没有截至日市场价格和估值倍数。",
+        "what_evidence_would_change_zh": "后续接入 market PIT 或用户提供的估值时点。",
+        "stop_boundary": "No valuation or price-in conclusion may be written from filing-only evidence."
+      }
+    ],
+    "writer_theme_index": [
+      {
+        "theme": "Demand durability and supply execution",
+        "report_placement": "demand_quality_and_supply_chain",
+        "boundary_count": 4
+      },
+      {
+        "theme": "Units, ASP and price-volume-mix bridge",
+        "report_placement": "pricing_mix_and_value_capture",
+        "boundary_count": 3
+      },
+      {
+        "theme": "Research invalidation and quarterly review thresholds",
+        "report_placement": "counter_thesis_and_what_would_change",
+        "boundary_count": 2
+      },
+      {
+        "theme": "AI working-capital attribution and magnitude",
+        "report_placement": "cash_conversion_and_balance_sheet",
+        "boundary_count": 1
+      }
+    ],
+    "S2_bridge_boundaries": [
+      {
+        "label": "Price-volume-mix bridge",
+        "stage_owner": "S2",
+        "current_value_state": "null_until_authorized_inputs"
+      },
+      {
+        "label": "Dell AI-server ASP",
+        "stage_owner": "S1_S2_boundary",
+        "current_value_state": "null_until_authorized_inputs"
+      },
+      {
+        "label": "Dell AI-server shipments or equivalent units",
+        "stage_owner": "S1_S2_boundary",
+        "current_value_state": "null_until_authorized_inputs"
+      },
+      {
+        "label": "AI-server product-profit attribution",
+        "stage_owner": "S2",
+        "current_value_state": "null_until_authorized_inputs"
+      }
+    ]
+  },
+  "reader_visible_projection": {
+    "schema_version": "fin_ia_report_gap_crosswalk_reader_projection_v1_1",
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "crosswalk_content_digest": "f2ab679522d15ba9fe22e3f17b0010a032a4fb142fa918b56b5d344c47b8afc2",
+    "summary_uncertainty_zh": "当前 14 项材料边界均未关闭；动态单元只选择其中 9 项，报告将 10 个引用聚合成 4 个主题，这些层级变化不代表缺口减少。",
+    "summary_uncertainty_en": "All 14 source-pack boundaries remain open. The dynamic unit selected nine, while the report grouped ten references into four themes; those layer changes do not mean that gaps were eliminated.",
+    "report_theme_index": [
+      {
+        "label_zh": "需求持续性与供应兑现",
+        "label_en": "Demand durability and supply execution",
+        "report_placement": "demand_quality_and_supply_chain",
+        "boundary_count": 4
+      },
+      {
+        "label_zh": "台数、ASP 与价格-数量-组合桥",
+        "label_en": "Units, ASP and price-volume-mix bridge",
+        "report_placement": "pricing_mix_and_value_capture",
+        "boundary_count": 3
+      },
+      {
+        "label_zh": "研究失效与季度复核阈值",
+        "label_en": "Research invalidation and quarterly review thresholds",
+        "report_placement": "counter_thesis_and_what_would_change",
+        "boundary_count": 2
+      },
+      {
+        "label_zh": "AI 营运资金归因与规模",
+        "label_en": "AI working-capital attribution and magnitude",
+        "report_placement": "cash_conversion_and_balance_sheet",
+        "boundary_count": 1
+      }
+    ],
+    "boundary_register": [
+      {
+        "label_zh": "AI 营运资金归因与规模",
+        "label_en": "AI working-capital attribution and magnitude",
+        "current_disposition": "candidate_admission_pending",
+        "why_it_matters_zh": "Dell 已披露 AI 动态提高库存、应收和应付，并说明大单会占用营运资金；但未披露 AI 产品级金额、周转天数桥或各科目由 AI 导致的具体增量。",
+        "why_it_matters_en": "Company balance-sheet movements are only proxies until product attribution and a cash-flow reconciliation are available.",
+        "what_evidence_would_change_zh": "正式研究可使用方向和机制；如需量化归属，只接受 Dell 后续披露或独立受控估算，并明确标注为估算。",
+        "what_evidence_would_change_en": "Qualified review of existing candidates followed, if still needed, by Dell product attribution, turnover or reconciled cash-flow disclosure.",
+        "report_placement": "cash_conversion_and_balance_sheet",
+        "selected_by_current_dynamic_unit": false
+      },
+      {
+        "label_zh": "供应产能释放时间与 Dell 分配",
+        "label_en": "Supplier capacity release timing and Dell allocation",
+        "current_disposition": "source_route_pending",
+        "why_it_matters_zh": "供应链资料能证明产品或制程在爬坡，但没有说明新增容量何时释放、其中多少分配给 Dell。",
+        "why_it_matters_en": "A supplier ramp does not establish when capacity becomes usable or how much reaches Dell.",
+        "what_evidence_would_change_zh": "后续只接受供应商官方产能时间表、Dell 自述或可验证的分配证据。",
+        "what_evidence_would_change_en": "An official supplier timetable plus Dell disclosure or verifiable allocation evidence.",
+        "report_placement": "demand_quality_and_supply_chain",
+        "selected_by_current_dynamic_unit": true
+      },
+      {
+        "label_zh": "供应链利用率与良率",
+        "label_en": "Supply-chain utilization and yield",
+        "current_disposition": "source_route_pending",
+        "why_it_matters_zh": "产品爬坡和先进制程收入占比不等于产能利用率或良率。",
+        "why_it_matters_en": "Product ramps and advanced-node revenue are not measurements of utilization or yield.",
+        "what_evidence_would_change_zh": "寻找供应商 prepared remarks、产能/良率披露或保留商业数据缺口。",
+        "what_evidence_would_change_en": "Supplier prepared remarks or audited capacity, utilization or yield disclosure for the relevant period.",
+        "report_placement": "demand_quality_and_supply_chain",
+        "selected_by_current_dynamic_unit": true
+      },
+      {
+        "label_zh": "需求提前采购与后续消化",
+        "label_en": "Demand pull-forward and later digestion",
+        "current_disposition": "source_route_pending",
+        "why_it_matters_zh": "现有材料说明订单到交付可能非线性，也披露客户集中和取消风险，但没有量化本季是否存在提前采购或后续消化。",
+        "why_it_matters_en": "Backlog and revenue growth can coexist with customer concentration, cancellation risk or non-linear shipment timing.",
+        "what_evidence_would_change_zh": "后续定向查找订单取消、交付节奏、客户库存和管理层关于 pull-forward 或 digestion 的明确表述。",
+        "what_evidence_would_change_en": "Bound statements or data on cancellations, delivery cadence, customer inventory, pull-forward or digestion.",
+        "report_placement": "demand_quality_and_supply_chain",
+        "selected_by_current_dynamic_unit": true
+      },
+      {
+        "label_zh": "HBM 供给、良率与 Dell 分配",
+        "label_en": "HBM supply, yield and Dell allocation",
+        "current_disposition": "source_route_pending",
+        "why_it_matters_zh": "美光候选讲 DDR5、SOCAMM2 和 SSD，没有 HBM 产能、良率或 Dell 分配。",
+        "why_it_matters_en": "General memory commentary does not establish HBM availability, yield or Dell-specific allocation.",
+        "what_evidence_would_change_zh": "外源补充应定向 HBM 产能、供应紧张度和分配，而非泛内存新闻。",
+        "what_evidence_would_change_en": "Admissible HBM capacity, tightness, yield or allocation evidence tied to the relevant period and relationship.",
+        "report_placement": "demand_quality_and_supply_chain",
+        "selected_by_current_dynamic_unit": true
+      },
+      {
+        "label_zh": "核心判断失效阈值",
+        "label_en": "Core-thesis invalidation threshold",
+        "current_disposition": "S3_method_parameter",
+        "why_it_matters_zh": "来源给出了风险和监控指标，但没有替研究者定义 thesis 失效阈值。",
+        "why_it_matters_en": "Observed risks cannot reverse a thesis consistently until materiality and threshold rules are frozen.",
+        "what_evidence_would_change_zh": "阈值应由研究方法或用户假设冻结，不能伪装成公司披露。",
+        "what_evidence_would_change_en": "A preregistered research-method threshold tied to a metric or event, direction, window, owner and response route.",
+        "report_placement": "counter_thesis_and_what_would_change",
+        "selected_by_current_dynamic_unit": true
+      },
+      {
+        "label_zh": "季度复核阈值",
+        "label_en": "Quarterly reassessment threshold",
+        "current_disposition": "S3_method_parameter",
+        "why_it_matters_zh": "资料给出可持续跟踪的订单、收入、利润、现金和监管风险，但没有替研究者定义可操作的季度失效阈值。",
+        "why_it_matters_en": "A monitoring list is not operational unless each trigger has a direction, window, threshold authority and follow-up action.",
+        "what_evidence_would_change_zh": "由后续研究方法层基于基准值和用户风险偏好冻结阈值，并保持与公司披露分离。",
+        "what_evidence_would_change_en": "A frozen method register using current baselines and owner risk preferences, kept separate from company disclosure.",
+        "report_placement": "counter_thesis_and_what_would_change",
+        "selected_by_current_dynamic_unit": true
+      },
+      {
+        "label_zh": "增长预期是否已反映在价格中",
+        "label_en": "Whether growth expectations are priced in",
+        "current_disposition": "S2_numeric_or_bridge_gap",
+        "why_it_matters_zh": "没有市场时点数据，不能判断增长预期是否已反映在价格中。",
+        "why_it_matters_en": "Operating growth cannot be translated into an investment view without point-in-time market context.",
+        "what_evidence_would_change_zh": "后续绑定市场 PIT、估值区间与明确 as-of。",
+        "what_evidence_would_change_en": "A bound market price, valuation interval and explicit as-of date with comparable definitions.",
+        "report_placement": "valuation_and_price_in",
+        "selected_by_current_dynamic_unit": false
+      },
+      {
+        "label_zh": "价格-数量-组合桥",
+        "label_en": "Price-volume-mix bridge",
+        "current_disposition": "S2_numeric_or_bridge_gap",
+        "why_it_matters_zh": "公司披露 AI 服务器 mix 压低毛利率，但没有把收入变化拆成价格、台数和配置组合三部分。",
+        "why_it_matters_en": "Product revenue growth cannot be decomposed while price, unit and configuration weights are missing.",
+        "what_evidence_would_change_zh": "需要产品 ASP、出货量或可复算的配置桥；否则保持不可推断。",
+        "what_evidence_would_change_en": "Compatible Dell ASP, shipment units and mix weights with same-period reconciliation to reported revenue.",
+        "report_placement": "pricing_mix_and_value_capture",
+        "selected_by_current_dynamic_unit": true
+      },
+      {
+        "label_zh": "Dell AI 服务器 ASP",
+        "label_en": "Dell AI-server ASP",
+        "current_disposition": "narrowed",
+        "why_it_matters_zh": "现有材料披露收入和 mix，但未披露 AI 服务器 ASP。",
+        "why_it_matters_en": "Revenue and mix disclosure do not reveal a company-wide AI-server average selling price.",
+        "what_evidence_would_change_zh": "优先寻找管理层 prepared remarks、产品价格数据或明确的价格/配置桥。",
+        "what_evidence_would_change_en": "Admitted Dell price or configuration evidence with a defined denominator and period, or an explicitly typed estimate.",
+        "report_placement": "pricing_mix_and_value_capture",
+        "selected_by_current_dynamic_unit": true
+      },
+      {
+        "label_zh": "Dell AI 服务器出货台数或等价单位",
+        "label_en": "Dell AI-server shipments or equivalent units",
+        "current_disposition": "narrowed",
+        "why_it_matters_zh": "AI 服务器收入没有配套出货台数或等价算力单位。",
+        "why_it_matters_en": "Reported AI-server revenue has no compatible shipment count or compute-unit denominator.",
+        "what_evidence_would_change_zh": "查找公司演示、产业出货数据或保留商业数据缺口。",
+        "what_evidence_would_change_en": "Admitted Dell shipment or equivalent-unit evidence with period, entity and denominator definitions.",
+        "report_placement": "pricing_mix_and_value_capture",
+        "selected_by_current_dynamic_unit": true
+      },
+      {
+        "label_zh": "估值情景与敏感度",
+        "label_en": "Valuation scenarios and sensitivity",
+        "current_disposition": "S2_numeric_or_bridge_gap",
+        "why_it_matters_zh": "尚未冻结估值假设和敏感度输入。",
+        "why_it_matters_en": "A thesis without frozen scenario inputs does not show how uncertainty changes value or risk.",
+        "what_evidence_would_change_zh": "由 Numeric Program 与用户假设共同生成可复算情景。",
+        "what_evidence_would_change_en": "Reproducible base facts plus explicit owner assumptions, ranges and sensitivity formulas.",
+        "report_placement": "valuation_and_price_in",
+        "selected_by_current_dynamic_unit": false
+      },
+      {
+        "label_zh": "供应商产能对 Dell 的映射",
+        "label_en": "Supplier-capacity read-through to Dell",
+        "current_disposition": "narrowed",
+        "why_it_matters_zh": "MU、NVIDIA 和 TSMC 的自述可作行业供给背景，但现有来源没有把容量或供货份额明确归属到 Dell。",
+        "why_it_matters_en": "MU, NVIDIA and TSMC disclosures are useful industry context but do not establish Dell allocation or delivery share.",
+        "what_evidence_would_change_zh": "后续保留行业 read-through 与 Dell 特定供给归因的边界，不能用行业增长替代 Dell 分配证据。",
+        "what_evidence_would_change_en": "A verified Dell-supplier relationship, allocation or delivery bridge with direction and period.",
+        "report_placement": "supply_context_boundary_register",
+        "selected_by_current_dynamic_unit": false
+      },
+      {
+        "label_zh": "估值基准与市场时点",
+        "label_en": "Valuation basis and market timestamp",
+        "current_disposition": "S2_numeric_or_bridge_gap",
+        "why_it_matters_zh": "本地财报材料没有截至日市场价格和估值倍数。",
+        "why_it_matters_en": "The report cannot make a valuation claim without a dated price and a defined multiple or cash-flow basis.",
+        "what_evidence_would_change_zh": "后续接入 market PIT 或用户提供的估值时点。",
+        "what_evidence_would_change_en": "Market PIT data or owner-supplied valuation date, metric definitions and comparable basis.",
+        "report_placement": "valuation_and_price_in",
+        "selected_by_current_dynamic_unit": false
+      }
+    ],
+    "S2_bridge_register": [
+      {
+        "label_zh": "价格-数量-组合桥",
+        "label_en": "Price-volume-mix bridge",
+        "current_value_state": "null_until_authorized_inputs",
+        "report_placement": "pricing_mix_and_value_capture"
+      },
+      {
+        "label_zh": "Dell AI 服务器 ASP",
+        "label_en": "Dell AI-server ASP",
+        "current_value_state": "null_until_authorized_inputs",
+        "report_placement": "pricing_mix_and_value_capture"
+      },
+      {
+        "label_zh": "Dell AI 服务器出货台数或等价单位",
+        "label_en": "Dell AI-server shipments or equivalent units",
+        "current_value_state": "null_until_authorized_inputs",
+        "report_placement": "pricing_mix_and_value_capture"
+      },
+      {
+        "label_zh": "AI 服务器产品利润归因",
+        "label_en": "AI-server product-profit attribution",
+        "current_value_state": "null_until_authorized_inputs",
+        "report_placement": "pricing_mix_and_value_capture"
+      }
+    ],
+    "reader_source_status": "Current internal lineage is bound; publication-ready title, publisher, date, section and locator surfaces remain pending the reader citation appendix."
+  },
+  "governance_bindings": {
+    "baseline_manifest": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_program_baseline_manifest_v1_0.json",
+      "sha256": "4bf0fa0e07d27fd3edcbaaea4a8b3002cfe4c0e227b8214c217666350ad4edc0",
+      "manifest_digest": "3faebbd9a53639c5e1dba4479d212bb8f0fccb255eb1391fbf59fdc55690dd14"
+    },
+    "baseline_verification": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_baseline_verification_v1_1.json",
+      "sha256": "7cdbda5829eefb613cb653548bf14c9a35ed5d40a9527d956d904814f2cb15e7",
+      "verification_digest": "232be552ae24de61c92069d0b40dc5932216d8fcd48eac05336a5adb83c57c87"
+    },
+    "evaluation_protocol": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_evaluation_protocol_v1_0.json",
+      "sha256": "fe5b5f28554a6d2c930984359f2feb92248e976f1025db4af9f5c9ba555255ac",
+      "protocol_digest": "5e377dc03044112b3b3187b8936f218d533a1c0d33e634f3416222ae6afba1a1"
+    },
+    "execution_authority_template": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_execution_authority_template_v1_0.json",
+      "sha256": "be8e95c3069cd5a75da2e38d44be92b34d8df99cafa6dd4aac6611119851ef8f",
+      "template_digest": "08307e0f12c3d0c0dba8c750bb75c2c42d02e0453b9062975313967a0c4ffbf4"
+    },
+    "crosswalk_program": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_program_v1_0.json",
+      "sha256": "d1fe11aa210b13c4ebaa23bf4323c036476a0352b40e19bda3ac8a663c40e592",
+      "program_digest": "95f9826cf25eaf86c1f77969ce4e45577c0b7756ac86385debe9237a745130ae"
+    }
+  },
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_report_gap_crosswalk/dell-r3/full_result.json",
+  "private_full_result_sha256": "61e627686bae188cfe9f3d58e95cbf230ac4195b855b9fb829975c6dda608880",
+  "private_full_result_digest": "c31a51cf7b2252f94f66cdfff96d0263cb850835ab4d1ea264e1e217085849b9",
+  "execution": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "embedding_calls": 0,
+    "reranker_calls": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0,
+    "gap_closures": 0
+  },
+  "acceptance": {
+    "R1_independent_audit_failed": true,
+    "R2_independent_audit_failed": true,
+    "baseline_manifest_valid": true,
+    "baseline_actual_counts_recomputed": true,
+    "candidate_packet_actual_counts_recomputed": true,
+    "tracked_git_commit_path_blobs_verified": true,
+    "quality_protocol_valid": true,
+    "execution_authority_template_valid": true,
+    "crosswalk_deterministic_contract_pass": true,
+    "independent_review_pass": false,
+    "G1_pass": false,
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "known_boundary": "R1 and R2 failed author-separated review and remain immutable. This R3 zero-call correction recomputes candidate packet counts from nested request items, verifies per-request and top-level counts, unique refs and digests, and deterministically rebuilds the unchanged crosswalk content. It closes no research gap, admits no candidate, authorizes no source, embedding, reranker, Agent or Writer call, and does not pass G1 until a new author-separated review passes.",
+  "result_digest": "afc37e760cd88c107365e727d10b53694b299f93c4245cf90110775ec22676e2"
+}

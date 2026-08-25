@@ -79,10 +79,12 @@ engineering `FAIL`、report quality `OPEN_NOT_ASSESSABLE`、qualified-human fals
 per-request/top-level 小计、全局 ref/digest 唯一性与 item/request/packet 自摘要。nested deletion 与
 human-flag toggle 在陈旧 summary 下 fail closed；即使同步重签也会真实产生 17/15 或 18/15，并与
 冻结 18/16 不等。R3 定向 `29 passed`、相邻合同 `40 passed`、全仓
-`1313 passed, 2 skipped, 2 warnings`，compileall/pyflakes/diff check 通过；默认输出前移到
-`dell-r3`／public v1.2。当前仍只是未物化、未独立签署的作者工程实现：0 source/model/provider/network/
-embedding/reranker/promotion/closure，下一门是 clean implementation commit、exclusive-create R3 和
-第三名 fresh author-separated 双范围复核；不得提前把 G1、补源或研报质量写成通过。
+`1313 passed, 2 skipped, 2 warnings`，compileall/pyflakes/diff check 通过。R3 已从 clean
+`883b0e46...`／tree `4f158ecf...` exclusive-create 到 `dell-r3`／public v1.2；content 仍为
+`f2ab6795...8afc2`，public/private digest 为 `afc37e76...76e2`／`c31a51cf...49b9`，逐字段 exact
+recompile 通过。0 source/model/provider/network/embedding/reranker/promotion/closure；下一门是提交
+public v1.2 后由第三名 fresh author-separated reviewer 同时复核工程、crosswalk 内容和研报质量边界。
+不得提前把 G1、补源或研报质量写成通过。GitHub 443 仍不可达，本地分支远端同步待恢复。
 
 ## 历史上下文（保留）
 

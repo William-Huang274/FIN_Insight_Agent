@@ -1,0 +1,180 @@
+{
+  "schema_version": "fin_ia_independent_readonly_audit_result_v1_0",
+  "audit_id": "AUDIT::FIN-0.1.3::581C1D6E::DELL-RSQ-02A-03A::R1",
+  "status": "fail_material_findings_preserved_successor_required",
+  "recorded_at": "2026-08-25T16:14:23+08:00",
+  "reviewed_identity": {
+    "commit": "581c1d6e89f27981298d8fd9379bf53b40dc488c",
+    "tree": "55b5c81a80d2db03765f6ec79ffaefb4ffa85e66",
+    "parent": "f66f07d73e976cd7f15bdf3af2e5aaf9b126bd82",
+    "remote_commit": "da9e141dc13c98f6b7e2891179762785a0c9c329",
+    "local_ahead_count": 3,
+    "local_behind_count": 0,
+    "remote_difference_is_transport_only": true,
+    "start_worktree_clean": true,
+    "end_worktree_clean": true,
+    "start_index_clean": true,
+    "end_index_clean": true,
+    "untracked_empty": true
+  },
+  "reviewer": {
+    "task": "/root/dell_02a_03a_fresh_audit",
+    "fresh_context_fork": "none",
+    "author_separated": true,
+    "read_only": true,
+    "repository_writes": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "embedding_calls": 0,
+    "reranker_calls": 0,
+    "paid_calls": 0,
+    "qualified_human_authority": false,
+    "qualified_human_decisions_issued": 0
+  },
+  "immutable_program": {
+    "ref": "docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md",
+    "sha256": "5bbb52691fd183bae5c61c6d6dd1b119544e76ffa2625a42dcb1297bd1ae4f0d",
+    "exact_match": true
+  },
+  "reviewed_artifacts": {
+    "02A_program": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_evidence_admission_program_v1_0.json",
+      "sha256": "4ebebcd60ca276d0d188013cc6d1ceec41e83585348365e5b61861a5f9cf02ee",
+      "program_digest": "60fd30e57fa588837fd72025aa74ca96e96e5f468e5649fb18c211df08b0776b"
+    },
+    "02A_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_evidence_admission_manifest_v1_0.json",
+      "sha256": "5af6e9b4028c0ba02642733330db9a8f6ff564073e9d116b984710ba8b3f7306",
+      "result_digest": "199b5d56e7ea419268a56deb333e66fa8c06f46000d3e53c5cab1e10340edcb2"
+    },
+    "02A_private": {
+      "ref": "data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r1/full_result.json",
+      "sha256": "895d340ebdd9e79f4aa8b46344aaf925ed83ead5aa50c3310d946f07cd7ef0f7",
+      "full_result_digest": "d5494b4ea30653792f3d7daf6efab00c0b9dbbcdee09a32f6040c553e9e9950a",
+      "admission_packet_digest": "6bcee241c5dc7366b1fde513973448d590dcb30094f6bdc06cd2ed95f651cec7"
+    },
+    "03A_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_policy_v1_0.json",
+      "sha256": "d13c2c5165f3760921f151f8e25b948ef4c2b0a273a9df0fd2f7bf221a850956",
+      "policy_digest": "b5a5ca4fac8bd31d3c32957862bee095279b7229465fdad0c9d22b651b3c40a3"
+    },
+    "03A_program": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_0.json",
+      "sha256": "a2caf24d0e2dd8bddc5bbe9d40ffcbdeb82027273a34c92d05b85de006ced90d",
+      "program_digest": "eccc6dfbe421ccc30e0ef0ab500da3e52a7808a722f087f6c48fee55a4788ad8"
+    },
+    "exact_02A_and_03A_byte_recompile": true,
+    "all_tracked_historical_commit_path_sha_bindings_match": true
+  },
+  "baseline_actual_recount": {
+    "product_readiness_requests": 8,
+    "candidate_review_items": 18,
+    "human_required_items": 16,
+    "blocked_requests": 4,
+    "blocked_request_human_items": 8,
+    "qualified_human_decisions": 0,
+    "pack_gaps": 14,
+    "independent_product_profit_gap": 1,
+    "acquisition_targets": 9,
+    "currently_unoverlapped_targets": 6,
+    "admission_held_targets": 3,
+    "non_acquisition_pack_dispositions": 6,
+    "route_families": 7,
+    "route_contracts": 63,
+    "current_committed_snapshot_counts_match": true
+  },
+  "material_findings": [
+    {
+      "finding_id": "AUDIT-581C1D6E-P0-01",
+      "priority": "P0",
+      "earliest_owner": "S1/DELL-RSQ-03A policy validator and compiler",
+      "root_cause_id": "RC-S1-068-DELL-03A-semantic-authority-and-provenance-not-fail-closed",
+      "finding": "A canonically re-signed policy can grant ranking or model-node authority while top-level authority remains false; a stale predecessor self-digest and altered query count can pass; and a bare-domain answer locator bypasses the leakage guard.",
+      "required_successor": "Recursively force every execution and model authority surface false, recompute and reconcile predecessor self-digests and the frozen 22-query population, and reject URL-like locators including bare domains."
+    },
+    {
+      "finding_id": "AUDIT-581C1D6E-P1-01",
+      "priority": "P1",
+      "earliest_owner": "S1/DELL-RSQ-02A item_claim_use_policies",
+      "root_cause_id": "RC-S1-067-DELL-02A-report-claim-use-semantic-padding",
+      "finding": "At least ten of sixteen private candidate-to-R17 mappings are wrong, padded, or lack demonstrated material report use, including financing versus operating cash flow, annual versus current-quarter, non-GAAP versus GAAP, segment versus company or product, stale-period working capital, and unrelated Microsoft or Micron claims.",
+      "required_successor": "Reject or semantically rebind each candidate by report, period, basis, owner, evidence role, and exact R17 claim meaning; an item with no material R17 use must have an empty claim set and an explicit reject/no-current-use recommendation rather than citation padding."
+    },
+    {
+      "finding_id": "AUDIT-581C1D6E-P1-02",
+      "priority": "P1",
+      "earliest_owner": "S1/DELL-RSQ-03A target and admission integrity validator",
+      "root_cause_id": "RC-S1-068-DELL-03A-semantic-authority-and-provenance-not-fail-closed",
+      "finding": "Count-only validation accepts moving the three held admission overlaps to the wrong targets and swapping pack_gap_id values between targets with the same disposition.",
+      "required_successor": "Freeze and validate the exact target-to-gap-to-prior-proposition-to-overlap identity map, not only its cardinality."
+    },
+    {
+      "finding_id": "AUDIT-581C1D6E-P2-01",
+      "priority": "P2",
+      "earliest_owner": "S1/DELL-RSQ-02A candidate packet compiler",
+      "root_cause_id": "RC-S1-066-DELL-02A-nested-population-not-recounted",
+      "finding": "The compiler trusts advertised 8-request and 18-item summaries while compiling only the sixteen human rows; a deleted or mutated non-human item and an added ninth zero-human request can pass after partial resealing.",
+      "required_successor": "Recount every request and all eighteen nested items, validate every per-request population and every item identity and self-digest, and reconcile public and private request summaries before compiling the human subset."
+    }
+  ],
+  "severity_counts": {
+    "P0": 1,
+    "P1": 2,
+    "P2": 1,
+    "P3": 0
+  },
+  "tests": {
+    "focused_offline_passed": 71,
+    "focused_offline_failed": 0,
+    "deselected_filesystem_mutating_tests": 4,
+    "duration_seconds": 7.82,
+    "cache_disabled": true,
+    "bytecode_disabled": true,
+    "equivalent_dirty_tree_and_output_collision_probes_rejected_read_only": true
+  },
+  "passing_boundaries": {
+    "immutable_identity_and_cleanliness": true,
+    "current_digests_bindings_and_exact_recompile": true,
+    "current_counts_and_partition": true,
+    "model_and_reranker_retention": true,
+    "current_authority_all_false": true,
+    "zero_execution": true,
+    "timestamp_append_only_correction": true,
+    "existing_G1_crosswalk": true
+  },
+  "verdicts": {
+    "engineering_and_evidence_pipeline_verdict": "FAIL",
+    "report_source_and_claim_use_preparation_verdict": "FAIL",
+    "residual_route_subject_coverage_verdict": "PASS_BOUNDED_COVERAGE_ONLY",
+    "new_report_research_quality_verdict": "OPEN_NOT_ASSESSABLE",
+    "qualified_human_product_verdict": "FALSE_NOT_GRANTED",
+    "G2_pass": false,
+    "G3_pass": false
+  },
+  "open_report_quality_items": [
+    "R17 reader-citation P1",
+    "R17 WWC operationality P2",
+    "formal Q1-Q8 scoring",
+    "successor report consumption of the G1 crosswalk",
+    "reader-readable citation and source appendix",
+    "non-overwriting Writer successor",
+    "qualified-human product acceptance"
+  ],
+  "authority": {
+    "DELL_RSQ_02B_entered": false,
+    "qualified_human_decision_count": 0,
+    "G2_pass": false,
+    "G3_pass": false,
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "report_quality_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "next_legal_action": "Preserve R1 and open a same-stage non-overwriting 02A/03A successor that closes all four findings, rematerialize under new attempt identities, and obtain another fresh author-separated read-only engineering and report-quality audit before 02B or any source execution.",
+  "known_boundary": "This failed audit does not say the current bytes, counts, model-retention plan, or zero-call claim are false. It proves that the validator and report-use policy do not fail closed under semantically altered successor inputs. No source deficiency is solved and no human, stage, product, publication, or release authority is granted.",
+  "result_digest": "061cd35cbf624e8a7f84b379466396e0870f122799627107afc6ae9541d4a3ea"
+}

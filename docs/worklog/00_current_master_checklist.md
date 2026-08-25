@@ -155,3 +155,11 @@
 - [ ] 作者分离审计分别签发 engineering/evidence verdict 与 report/research-quality verdict；不得以 0 engineering finding 代替报告验收
 - [ ] qualified-human 完成八维内容与最终交付使用价值验收
 - [ ] 上述门完成前，S1／S2／S3、产品、publication 和 release 保持 false
+  - [x] 第一轮 02A/03A fresh author-separated 双审计已封存失败：`P0/P1/P2/P3=1/2/1/0`；通过边界仅为当前摘要/数量/exact recompile/zero-call/G1，不能进入 02B 或 03B
+  - [ ] 02A successor：复数 8 requests／18 nested items／16 human items、逐 request/item identity 与 public/private summary；逐项重做 16 个 claim-use，清除 period/basis/owner/role 错配和 citation padding
+  - [ ] 03A successor：冻结 exact target↔gap↔prior proposition↔held overlap；递归零权限；重验 predecessor self-digest／22-query；阻断 scheme URL 与裸域名泄漏
+  - [ ] non-overwriting successor 物化、全仓门、exact recompile 与新的 fresh engineering＋report-quality 双审计
+  - [ ] 上述 successor 双审计 PASS 后方可进入 02B qualified-human review；当前 0/16 decision
+  - [ ] 真实 residual 内/外源执行与上一版研报信源补齐仍未开始，不能把 route program 当作已补源
+  - [ ] R17 citation P1、WWC P2、formal Q1–Q8、新 Writer/report 和 reader-readable appendix 仍待后续报告门
+  - [ ] S1／S2／S3、report quality、product、publication、release 全部保持 false

@@ -1811,3 +1811,23 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - clean implementation commit=`29b4fc2e...f05856`／tree=`ff952010...160a`；首次 push 因 GitHub 443 失败。02A packet digest=`6bcee241...cec7`，public/private digest=`199b5d56...dcb2`／`d5494b4e...950a`，exact recompile 和 public no-excerpt/no-URL 通过；16 项 qualified-human decision 仍为 0。
 - 02A manifest record commit=`f66f07d7...6bd82`。03A program digest/SHA=`eccc6dfb...8ad8`／`a2caf24d...d90d`，exact recompile 通过：14 Pack gaps、9 acquisition targets、6 unoverlapped、3 admission-held、7 route families、63 contracts；query URL/qrel leakage=0，旧 22 fresh query 不重跑，所有调用=0，G3=false。
 - 实现提交内两条 Project OS 状态误用了未来的 `16:30/16:55` 手填时间；机器实际为 `15:43:06+08:00`。按 append-only 不改写，已由 `RC-S0-102` 和 capability correction 接续；错误时间行不能作为 chronology。
+
+### 2026-08-25 DELL-RSQ-02A/03A R1 fresh audit failure 与同阶段 successor
+
+- fresh author-separated read-only reviewer 审计 immutable `581c1d6e...488c`／tree
+  `55b5c81a...5e66`，最终 `FAIL，P0/P1/P2/P3=1/2/1/0`。当前 SHA/digest、exact recompile、
+  `8/18/16 + 4/8`、`14+1/9/6/3/6/7/63`、模型节点保留、zero-call 和既有 G1 均真实；失败不在
+  当前静态数字，而在 validator 对重签语义漂移未 fail closed。
+- `RC-S1-066`：02A 未遍历复数全部 request/item/per-request population 和 non-human identity；
+  resealed delete/mutation/ninth zero-human request 可通过。
+- `RC-S1-067`：至少 10/16 R17 claim-use 有 period/basis/owner/role 错配或 citation padding；融资现金
+  流不能支持 OCF/FCF，年度/non-GAAP/segment/旧 WWC/跨公司资料不能硬挂当季 GAAP/company/Dell
+  claim。16 项必须逐项 direct/limited/context/counter/reject 分类，无 current material use 时允许空 claim。
+- `RC-S1-068`：03A held 与 target-gap 只按数量校验，nested model authority 可暗开，prior 22-query
+  self-digest/count 未重验，裸域名可绕过 URL leak guard。
+- failure receipt：
+  `configs/audits/fin_ia_0_1_3_commit_581c1d6e_dell_02a_03a_fresh_audit_fail_v1_0.json`，digest
+  `061cd35c...a3ea`。R1 不追认为 PASS。
+- 当前只允许同阶段 non-overwriting 02A/03A successor、测试、物化和另一名 fresh reviewer；02B、
+  03B/03C/03D、G2/G3、S1/S2/S3、report/product/publication/release 均 false。上一版研报信源缺口
+  未解决。

@@ -170,3 +170,33 @@ target、1 independent S2 product-profit target、9 targets、6 unoverlapped、3
 non-acquisition Pack dispositions、7 route families、63 route contracts。三项 held 是 demand durability、
 product profit 和 working capital；所有 locator template 均无 URL/qrel seed。execution 的
 network/provider/model/embedding/reranker 均为 0，`G3=false`。
+
+## 9. Fresh author-separated R1 审计失败（不可变保留）
+
+全新、无历史上下文继承、只读且作者分离的审计者检查 immutable commit
+`581c1d6e89f27981298d8fd9379bf53b40dc488c`／tree
+`55b5c81a80d2db03765f6ec79ffaefb4ffa85e66`，最终 verdict 为 **FAIL**，
+`P0/P1/P2/P3 = 1/2/1/0`。开始和结束时 HEAD/tree/index/worktree 完全相同；审计者 0 写入、
+0 network/provider/model/embedding/reranker 调用，未签发任何 qualified-human decision。
+
+通过的边界仅是：当前文件 SHA/self-digest、历史 commit:path 绑定、02A/03A exact recompile、当前
+`8/18/16 + 4/8` 和 `14 + 1 / 9 / 6 / 3 / 6 / 7 / 63` 快照、三模型节点保留、当前权限全 false、
+零执行、时间 append-only 更正以及既有 G1。失败根因是：
+
+1. `RC-S1-066`：02A 只编译 16 个 human rows，未从全部嵌套对象复数 8 requests／18 items；重签后
+   删除或修改 non-human item、增加第九个 zero-human request 仍可通过。
+2. `RC-S1-067`：至少 10/16 claim-use 存在融资流→OCF、年度→季度、non-GAAP→GAAP、segment→
+   company/product、旧期间 WWC 或跨公司无关映射；`forbidden_inference` 不能修复错误的
+   `support_if_admitted`，无 material use 的候选不得作为 citation padding 硬挂 R17 claim。
+3. `RC-S1-068`：03A 只守数量而未守 exact target↔gap↔held identity；子节点可暗开 authority，
+   predecessor 可在 stale digest 下把 22 改成 99，裸域名可绕过 URL guard。
+
+失败回执：
+`configs/audits/fin_ia_0_1_3_commit_581c1d6e_dell_02a_03a_fresh_audit_fail_v1_0.json`，
+digest `061cd35c...a3ea`。R1 产物不覆盖、不追认为 PASS。
+
+下一合法动作不是 02B 或 03B，而是在 S1 同阶段形成 non-overwriting 02A/03A successor：全量嵌套
+重数和 identity seal；逐项 reject/rebind 16 个 claim-use；冻结 exact semantic map；递归零权限；
+重验 prior self-digest/22-query 和 URL-like leakage。新 attempt 通过定向、全仓、exact recompile 后，
+必须再次交由新的 fresh read-only reviewer 同时审工程和研报来源/claim-use 质量。此前 G2/G3、
+S1/S2/S3、report/product/publication/release 全部为 false，上一版研报信源缺口仍未解决。

@@ -28,7 +28,7 @@ DEFAULT_BASELINE = (
 )
 DEFAULT_BASELINE_VERIFICATION = (
     "configs/research/evals/"
-    "fin_ia_0_1_3_dell_source_report_quality_baseline_verification_v1_0.json"
+    "fin_ia_0_1_3_dell_source_report_quality_baseline_verification_v1_1.json"
 )
 DEFAULT_PROTOCOL = (
     "configs/research/evals/"
@@ -43,11 +43,11 @@ DEFAULT_PROGRAM = (
     "fin_ia_0_1_3_dell_report_gap_crosswalk_program_v1_0.json"
 )
 DEFAULT_PRIVATE_OUTPUT = (
-    "data/workbench_private/fin_0_1_3_report_gap_crosswalk/dell-r2/full_result.json"
+    "data/workbench_private/fin_0_1_3_report_gap_crosswalk/dell-r3/full_result.json"
 )
 DEFAULT_PUBLIC_OUTPUT = (
     "configs/research/evals/"
-    "fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_1.json"
+    "fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_2.json"
 )
 
 
@@ -242,8 +242,8 @@ def compile_materialization(
         ),
     }
     full_body: dict[str, Any] = {
-        "schema_version": "fin_ia_dell_report_gap_crosswalk_full_result_v1_1",
-        "status": "materialized_zero_call_R1_audit_correction_reaudit_pending",
+        "schema_version": "fin_ia_dell_report_gap_crosswalk_full_result_v1_2",
+        "status": "materialized_zero_call_R2_audit_correction_reaudit_pending",
         "recorded_at": recorded_at,
         "prepared_from_commit": prepared_from_commit,
         "case_key": "DELL",
@@ -255,6 +255,9 @@ def compile_materialization(
         ],
         "R1_independent_audit_failure": baseline_verification[
             "R1_independent_audit_failure"
+        ],
+        "R2_independent_audit_failure": baseline_verification[
+            "R2_independent_audit_failure"
         ],
         "crosswalk_content_digest": compiled["crosswalk_content_digest"],
         "audit_projection": compiled["audit_projection"],
@@ -272,8 +275,10 @@ def compile_materialization(
         },
         "acceptance": {
             "R1_independent_audit_failed": True,
+            "R2_independent_audit_failed": True,
             "baseline_manifest_valid": True,
             "baseline_actual_counts_recomputed": True,
+            "candidate_packet_actual_counts_recomputed": True,
             "tracked_git_commit_path_blobs_verified": True,
             "quality_protocol_valid": True,
             "execution_authority_template_valid": True,
@@ -288,11 +293,12 @@ def compile_materialization(
             "release_ready": False,
         },
         "known_boundary": (
-            "R1 failed author-separated review and remains immutable. This R2 zero-call "
-            "correction recomputes the predecessor counts, verifies tracked commit:path blobs, "
-            "freezes the complete quality protocol, and deterministically rebuilds all three "
-            "projections. It closes no research gap, admits no candidate, authorizes no source, "
-            "embedding, reranker, Agent or Writer call, and does not pass G1 until fresh review."
+            "R1 and R2 failed author-separated review and remain immutable. This R3 zero-call "
+            "correction recomputes candidate packet counts from nested request items, verifies "
+            "per-request and top-level counts, unique refs and digests, and deterministically "
+            "rebuilds the unchanged crosswalk content. It closes no research gap, admits no "
+            "candidate, authorizes no source, embedding, reranker, Agent or Writer call, and "
+            "does not pass G1 until a new author-separated review passes."
         ),
     }
     full = {
@@ -301,8 +307,8 @@ def compile_materialization(
     }
     private_bytes = _render_json(full)
     public_body: dict[str, Any] = {
-        "schema_version": "fin_ia_dell_report_gap_crosswalk_public_result_v1_1",
-        "status": "materialized_zero_call_R1_audit_correction_reaudit_pending",
+        "schema_version": "fin_ia_dell_report_gap_crosswalk_public_result_v1_2",
+        "status": "materialized_zero_call_R2_audit_correction_reaudit_pending",
         "recorded_at": recorded_at,
         "prepared_from_commit": prepared_from_commit,
         "case_key": "DELL",

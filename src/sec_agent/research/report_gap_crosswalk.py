@@ -11,6 +11,9 @@ from sec_agent.canonical_runtime import canonical_digest
 
 BASELINE_SCHEMA_VERSION = "fin_ia_dell_source_report_quality_baseline_manifest_v1_0"
 BASELINE_VERIFICATION_SCHEMA_VERSION = (
+    "fin_ia_dell_source_report_quality_baseline_verification_v1_1"
+)
+PREDECESSOR_BASELINE_VERIFICATION_SCHEMA_VERSION = (
     "fin_ia_dell_source_report_quality_baseline_verification_v1_0"
 )
 EVALUATION_PROTOCOL_SCHEMA_VERSION = (
@@ -38,6 +41,9 @@ FROZEN_CROSSWALK_PROGRAM_DIGEST = (
     "95f9826cf25eaf86c1f77969ce4e45577c0b7756ac86385debe9237a745130ae"
 )
 FROZEN_BASELINE_VERIFICATION_DIGEST = (
+    "232be552ae24de61c92069d0b40dc5932216d8fcd48eac05336a5adb83c57c87"
+)
+FROZEN_PREDECESSOR_BASELINE_VERIFICATION_DIGEST = (
     "f3a3c4a68cf5c33a0d358f520ef881d3602eec4fd6d76f5651965090f475d7fc"
 )
 
@@ -110,9 +116,11 @@ REQUIRED_BASELINE_BINDINGS = frozenset(
 REQUIRED_BASELINE_VERIFICATION_BINDINGS = frozenset(
     {
         "predecessor_baseline_manifest",
+        "predecessor_baseline_verification",
         "R4_successor_result",
         "R4_evidence_gate_result",
         "R1_failed_public_result",
+        "R2_failed_public_result",
     }
 )
 REQUIRED_PACKET_COMPONENTS = frozenset(
@@ -485,10 +493,172 @@ def _recompute_baseline_counts(parsed: Mapping[str, Mapping[str, Any]]) -> dict[
         readiness_private.get("candidate_review_packet"),
         "baseline_private_review_packet_invalid",
     )
+
+    packet_requests = _unique_by(
+        _sequence(
+            private_packet.get("requests"),
+            "baseline_private_review_packet_requests_invalid",
+        ),
+        "request_id",
+        code="baseline_private_review_packet_request_duplicate_or_invalid",
+    )
     _require(
-        public_packet.get("review_item_count") == private_packet.get("review_item_count")
-        and public_packet.get("human_review_required_count")
-        == private_packet.get("human_review_required_count"),
+        set(packet_requests) == set(public_requests) == set(private_requests),
+        "baseline_review_packet_request_set_mismatch",
+    )
+    _require(
+        private_packet.get("request_count") == len(packet_requests),
+        "baseline_private_review_packet_request_count_mismatch",
+    )
+
+    actual_review_item_count = 0
+    actual_human_review_required_count = 0
+    actual_issue_class_counts: dict[str, int] = {}
+    global_review_item_refs: set[str] = set()
+    global_review_item_digests: set[str] = set()
+    for request_id, raw_packet_request in packet_requests.items():
+        packet_request = _mapping(
+            raw_packet_request,
+            f"baseline_private_review_packet_request_invalid:{request_id}",
+        )
+        _require(
+            packet_request.get("facet_id")
+            == public_requests[request_id].get("facet_id")
+            == private_requests[request_id].get("facet_id")
+            and packet_request.get("slot_id")
+            == public_requests[request_id].get("slot_id")
+            == private_requests[request_id].get("slot_id"),
+            f"baseline_review_packet_request_identity_mismatch:{request_id}",
+        )
+        review_items = _sequence(
+            packet_request.get("review_items"),
+            f"baseline_review_packet_items_invalid:{request_id}",
+        )
+        review_items_by_ref = _unique_by(
+            review_items,
+            "review_item_ref",
+            code=f"baseline_review_packet_item_ref_duplicate_or_invalid:{request_id}",
+        )
+        _require(
+            packet_request.get("review_item_count") == len(review_items_by_ref),
+            f"baseline_review_packet_request_item_count_mismatch:{request_id}",
+        )
+
+        request_human_review_required_count = 0
+        request_issue_class_counts: dict[str, int] = {}
+        for review_item_ref, raw_review_item in review_items_by_ref.items():
+            review_item = _mapping(
+                raw_review_item,
+                f"baseline_review_packet_item_invalid:{review_item_ref}",
+            )
+            _require(
+                review_item.get("request_id") == request_id,
+                f"baseline_review_packet_item_request_mismatch:{review_item_ref}",
+            )
+            human_review_required = review_item.get("human_review_required")
+            _require(
+                isinstance(human_review_required, bool),
+                f"baseline_review_packet_human_flag_invalid:{review_item_ref}",
+            )
+            request_human_review_required_count += int(human_review_required)
+
+            review_item_digest = _text(
+                review_item.get("review_item_digest"),
+                f"baseline_review_packet_item_digest_missing:{review_item_ref}",
+            )
+            _self_digest(
+                review_item,
+                "review_item_digest",
+                f"baseline_review_packet_item_digest_invalid:{review_item_ref}",
+            )
+            _require(
+                review_item_ref not in global_review_item_refs,
+                f"baseline_review_packet_item_ref_reused:{review_item_ref}",
+            )
+            _require(
+                review_item_digest not in global_review_item_digests,
+                f"baseline_review_packet_item_digest_reused:{review_item_digest}",
+            )
+            global_review_item_refs.add(review_item_ref)
+            global_review_item_digests.add(review_item_digest)
+
+            issue_classes = [
+                _text(
+                    issue_class,
+                    f"baseline_review_packet_issue_class_invalid:{review_item_ref}",
+                )
+                for issue_class in _sequence(
+                    review_item.get("issue_classes"),
+                    f"baseline_review_packet_issue_classes_invalid:{review_item_ref}",
+                )
+            ]
+            _require(
+                len(issue_classes) == len(set(issue_classes)),
+                f"baseline_review_packet_issue_class_duplicate:{review_item_ref}",
+            )
+            for issue_class in issue_classes:
+                request_issue_class_counts[issue_class] = (
+                    request_issue_class_counts.get(issue_class, 0) + 1
+                )
+                actual_issue_class_counts[issue_class] = (
+                    actual_issue_class_counts.get(issue_class, 0) + 1
+                )
+
+        _require(
+            packet_request.get("human_review_required_count")
+            == request_human_review_required_count,
+            f"baseline_review_packet_request_human_count_mismatch:{request_id}",
+        )
+        _require(
+            packet_request.get("issue_class_counts") == request_issue_class_counts,
+            f"baseline_review_packet_request_issue_counts_mismatch:{request_id}",
+        )
+        _self_digest(
+            packet_request,
+            "request_review_digest",
+            f"baseline_review_packet_request_digest_invalid:{request_id}",
+        )
+        actual_review_item_count += len(review_items_by_ref)
+        actual_human_review_required_count += request_human_review_required_count
+
+    _require(
+        len(global_review_item_refs)
+        == len(global_review_item_digests)
+        == actual_review_item_count,
+        "baseline_review_packet_global_item_identity_mismatch",
+    )
+    _require(
+        private_packet.get("review_item_count") == actual_review_item_count,
+        "baseline_private_review_packet_item_count_mismatch",
+    )
+    _require(
+        private_packet.get("human_review_required_count")
+        == actual_human_review_required_count,
+        "baseline_private_review_packet_human_count_mismatch",
+    )
+    _require(
+        private_packet.get("issue_class_counts") == actual_issue_class_counts,
+        "baseline_private_review_packet_issue_counts_mismatch",
+    )
+    _self_digest(
+        private_packet,
+        "review_packet_digest",
+        "baseline_private_review_packet_digest_invalid",
+    )
+    _require(
+        all(
+            public_packet.get(field) == private_packet.get(field)
+            for field in (
+                "schema_version",
+                "status",
+                "review_item_count",
+                "human_review_required_count",
+                "issue_class_counts",
+                "review_packet_digest",
+            )
+        )
+        and public_packet.get("private_packet_required_for_bounded_excerpt_projection")
+        is True,
         "baseline_public_private_review_packet_mismatch",
     )
 
@@ -518,9 +688,9 @@ def _recompute_baseline_counts(parsed: Mapping[str, Mapping[str, Any]]) -> dict[
             row.get("readiness_state") == "blocked_by_evidence_admission"
             for row in public_requests.values()
         ),
-        "candidate_review_items": int(public_packet.get("review_item_count", -1)),
-        "candidate_human_review_required_items": int(
-            public_packet.get("human_review_required_count", -1)
+        "candidate_review_items": actual_review_item_count,
+        "candidate_human_review_required_items": (
+            actual_human_review_required_count
         ),
     }
 
@@ -570,7 +740,10 @@ def validate_program_baseline_manifest(
     _require(
         verification.get("schema_version") == BASELINE_VERIFICATION_SCHEMA_VERSION
         and verification.get("status")
-        == "R1_failed_audit_correction_inputs_frozen_calls_not_authorized"
+        == (
+            "R2_failed_nested_candidate_recount_correction_inputs_frozen_"
+            "calls_not_authorized"
+        )
         and verification.get("case_key") == "DELL"
         and verification.get("research_as_of") == "2026-08-06",
         "baseline_verification_identity_invalid",
@@ -597,11 +770,27 @@ def validate_program_baseline_manifest(
         verification_parsed["predecessor_baseline_manifest"] == manifest,
         "baseline_verification_predecessor_manifest_mismatch",
     )
+    predecessor_verification = verification_parsed[
+        "predecessor_baseline_verification"
+    ]
+    _require(
+        predecessor_verification.get("schema_version")
+        == PREDECESSOR_BASELINE_VERIFICATION_SCHEMA_VERSION
+        and predecessor_verification.get("status")
+        == "R1_failed_audit_correction_inputs_frozen_calls_not_authorized"
+        and predecessor_verification.get("verification_digest")
+        == FROZEN_PREDECESSOR_BASELINE_VERIFICATION_DIGEST,
+        "baseline_verification_predecessor_verification_mismatch",
+    )
     parsed.update(
         {
             key: value
             for key, value in verification_parsed.items()
-            if key != "predecessor_baseline_manifest"
+            if key
+            not in {
+                "predecessor_baseline_manifest",
+                "predecessor_baseline_verification",
+            }
         }
     )
 
@@ -677,6 +866,10 @@ def validate_program_baseline_manifest(
         },
         "baseline_verification_R1_failure_contract_mismatch",
     )
+    _require(
+        predecessor_verification.get("R1_independent_audit_failure") == r1_failure,
+        "baseline_verification_R1_failure_predecessor_mismatch",
+    )
     r1_result = parsed["R1_failed_public_result"]
     _require(
         r1_result.get("result_digest")
@@ -688,6 +881,62 @@ def validate_program_baseline_manifest(
         )
         is False,
         "baseline_verification_R1_result_mismatch",
+    )
+    r2_failure = _mapping(
+        verification.get("R2_independent_audit_failure"),
+        "baseline_verification_R2_failure_invalid",
+    )
+    _require(
+        r2_failure
+        == {
+            "review_target_commit": "1f3c3a5b93b96cd93650a443c5337cc89cd48ca6",
+            "review_target_tree": "516b3f2634fc056354787c890ea0ab30f8b94191",
+            "implementation_commit": "324bf2bc4a9529981b5015126737f0193c00823d",
+            "implementation_tree": "119ff18f11177bb2790aec4939e362a2e6988215",
+            "finding_counts": {"P0": 0, "P1": 0, "P2": 1, "P3": 0},
+            "finding_codes": ["candidate_packet_actual_recount_incomplete"],
+            "current_nested_counts_verified": {
+                "candidate_review_items": 18,
+                "candidate_human_review_required_items": 16,
+            },
+            "mutation_proof": {
+                "mutation": "delete_one_nested_human_review_required_item",
+                "actual_counts_after_mutation": {
+                    "candidate_review_items": 17,
+                    "candidate_human_review_required_items": 15,
+                },
+                "R2_recomputed_counts_after_mutation": {
+                    "candidate_review_items": 18,
+                    "candidate_human_review_required_items": 16,
+                },
+            },
+            "engineering_and_evidence_pipeline_verdict": "FAIL",
+            "crosswalk_research_quality_verdict": "PASS_BOUNDED_CONTENT_ONLY",
+            "report_research_quality_verdict": "OPEN_NOT_ASSESSABLE",
+            "qualified_human_product_verdict": "FALSE_NOT_GRANTED",
+            "G1_pass": False,
+        },
+        "baseline_verification_R2_failure_contract_mismatch",
+    )
+    r2_result = parsed["R2_failed_public_result"]
+    _require(
+        r2_result.get("schema_version")
+        == "fin_ia_dell_report_gap_crosswalk_public_result_v1_1"
+        and r2_result.get("result_digest")
+        == "3678204233d595df3090dd6526d19ebb4cdd748f6d5ead57ae344e6ba85a85e6"
+        and _path_value(
+            r2_result,
+            ["acceptance", "baseline_actual_counts_recomputed"],
+            "baseline_verification_R2_recompute_claim_missing",
+        )
+        is True
+        and _path_value(
+            r2_result,
+            ["acceptance", "G1_pass"],
+            "baseline_verification_R2_acceptance_missing",
+        )
+        is False,
+        "baseline_verification_R2_result_mismatch",
     )
     _require(
         manifest.get("manifest_digest") == FROZEN_BASELINE_MANIFEST_DIGEST,

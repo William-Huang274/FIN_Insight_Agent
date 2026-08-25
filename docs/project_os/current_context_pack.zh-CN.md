@@ -67,6 +67,23 @@ v1.1 后由另一名 fresh read-only reviewer 审 immutable R2；作者工程全
 `1309 passed, 2 skipped, 2 warnings`。首次 GitHub push 因 443 不可达失败，远端同步待重试。此前 G1、
 Evidence admission、补源、研报质量和所有 stage/product/release verdict 均未通过。详见 S3/174。
 
+R2 的第二名 fresh read-only reviewer 已完成 immutable `1f3c3a5b...`／tree `516b3f26...` 复核。
+R1 的全部 P0/P1/P2 attack 已 fail closed，current 14/9/4/10 content 可判
+`PASS_BOUNDED_CONTENT_ONLY`；但新增 `P0/P1/P2/P3=0/0/1/0`：最后两项 candidate packet count
+仍从 summary 读取，删除一个 nested human item 后真实 17/15、R2 函数仍返回 18/16。因此
+engineering `FAIL`、report quality `OPEN_NOT_ASSESSABLE`、qualified-human false、`G1=false`；R2
+保持不可变。
+
+同阶段 R3 作者 successor 已实现：append-only baseline verification v1.1 绑定 R1/R2 失败；validator
+逐 request 从 nested review items 重算 item/human/issue-class count，校验 request 集合、facet/slot、
+per-request/top-level 小计、全局 ref/digest 唯一性与 item/request/packet 自摘要。nested deletion 与
+human-flag toggle 在陈旧 summary 下 fail closed；即使同步重签也会真实产生 17/15 或 18/15，并与
+冻结 18/16 不等。R3 定向 `29 passed`、相邻合同 `40 passed`、全仓
+`1313 passed, 2 skipped, 2 warnings`，compileall/pyflakes/diff check 通过；默认输出前移到
+`dell-r3`／public v1.2。当前仍只是未物化、未独立签署的作者工程实现：0 source/model/provider/network/
+embedding/reranker/promotion/closure，下一门是 clean implementation commit、exclusive-create R3 和
+第三名 fresh author-separated 双范围复核；不得提前把 G1、补源或研报质量写成通过。
+
 ## 历史上下文（保留）
 
 DELL current 动态多 Agent 的 R10 六份 workpaper 已通过独立 L1／L2，原七项 material finding 全部关闭；R10 public digest=`83dc3d60...6112`、private full digest=`cab0b654...e900`，Writer 当时未调用。R10 scope 已消费，旧 decision 不能再次签权。

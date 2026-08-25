@@ -128,6 +128,7 @@ def test_baseline_manifest_binds_exact_predecessors_and_forbids_calls(
         "R4_successor_result",
         "R4_evidence_gate_result",
         "R1_failed_public_result",
+        "R2_failed_public_result",
     }
     assert baseline["frozen_counts"]["pack_residual_gaps"] == 14
     assert baseline["frozen_counts"]["dynamic_unit_gap_refs"] == 9
@@ -142,6 +143,34 @@ def test_baseline_manifest_binds_exact_predecessors_and_forbids_calls(
     assert baseline["frozen_R17_report_quality_baseline"][
         "author_diagnostic_score_reusable"
     ] is False
+    assert local_inputs["verification"]["R2_independent_audit_failure"] == {
+        "review_target_commit": "1f3c3a5b93b96cd93650a443c5337cc89cd48ca6",
+        "review_target_tree": "516b3f2634fc056354787c890ea0ab30f8b94191",
+        "implementation_commit": "324bf2bc4a9529981b5015126737f0193c00823d",
+        "implementation_tree": "119ff18f11177bb2790aec4939e362a2e6988215",
+        "finding_counts": {"P0": 0, "P1": 0, "P2": 1, "P3": 0},
+        "finding_codes": ["candidate_packet_actual_recount_incomplete"],
+        "current_nested_counts_verified": {
+            "candidate_review_items": 18,
+            "candidate_human_review_required_items": 16,
+        },
+        "mutation_proof": {
+            "mutation": "delete_one_nested_human_review_required_item",
+            "actual_counts_after_mutation": {
+                "candidate_review_items": 17,
+                "candidate_human_review_required_items": 15,
+            },
+            "R2_recomputed_counts_after_mutation": {
+                "candidate_review_items": 18,
+                "candidate_human_review_required_items": 16,
+            },
+        },
+        "engineering_and_evidence_pipeline_verdict": "FAIL",
+        "crosswalk_research_quality_verdict": "PASS_BOUNDED_CONTENT_ONLY",
+        "report_research_quality_verdict": "OPEN_NOT_ASSESSABLE",
+        "qualified_human_product_verdict": "FALSE_NOT_GRANTED",
+        "G1_pass": False,
+    }
 
 
 def test_baseline_manifest_rejects_byte_mutation_and_missing_private_input(
@@ -191,6 +220,122 @@ def test_baseline_recomputes_actual_counts_and_rejects_55_to_54_mutation(
         match="baseline_R4_coverage_recompute_mismatch",
     ):
         CROSSWALK._recompute_baseline_counts(parsed)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "error"),
+    [
+        ("nested_deletion", "baseline_review_packet_request_item_count_mismatch"),
+        ("human_flag_toggle", "baseline_review_packet_request_human_count_mismatch"),
+    ],
+)
+def test_candidate_packet_nested_mutations_do_not_trust_stale_summaries(
+    local_inputs: dict, mutation: str, error: str
+) -> None:
+    parsed = deepcopy(local_inputs["parsed"])
+    packet = parsed["product_readiness_private"]["candidate_review_packet"]
+    request = next(
+        row
+        for row in packet["requests"]
+        if any(item["human_review_required"] for item in row["review_items"])
+    )
+    if mutation == "nested_deletion":
+        target_index = next(
+            index
+            for index, item in enumerate(request["review_items"])
+            if item["human_review_required"]
+        )
+        request["review_items"].pop(target_index)
+    else:
+        target = next(
+            item for item in request["review_items"] if item["human_review_required"]
+        )
+        target["human_review_required"] = False
+        _redigest(target, "review_item_digest")
+    _redigest(request, "request_review_digest")
+    _redigest(packet, "review_packet_digest")
+
+    with pytest.raises(ReportGapCrosswalkError, match=error):
+        CROSSWALK._recompute_baseline_counts(parsed)
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_review_items", "expected_human_review_required"),
+    [
+        ("nested_deletion", 17, 15),
+        ("human_flag_toggle", 18, 15),
+    ],
+)
+def test_candidate_packet_nested_mutations_are_actually_recounted_when_resigned(
+    local_inputs: dict,
+    mutation: str,
+    expected_review_items: int,
+    expected_human_review_required: int,
+) -> None:
+    parsed = deepcopy(local_inputs["parsed"])
+    packet = parsed["product_readiness_private"]["candidate_review_packet"]
+    request = next(
+        row
+        for row in packet["requests"]
+        if any(item["human_review_required"] for item in row["review_items"])
+    )
+    if mutation == "nested_deletion":
+        target_index = next(
+            index
+            for index, item in enumerate(request["review_items"])
+            if item["human_review_required"]
+        )
+        request["review_items"].pop(target_index)
+    else:
+        target = next(
+            item for item in request["review_items"] if item["human_review_required"]
+        )
+        target["human_review_required"] = False
+        _redigest(target, "review_item_digest")
+
+    aggregate_issue_counts: dict[str, int] = {}
+    for packet_request in packet["requests"]:
+        request_issue_counts: dict[str, int] = {}
+        for item in packet_request["review_items"]:
+            for issue_class in item["issue_classes"]:
+                request_issue_counts[issue_class] = (
+                    request_issue_counts.get(issue_class, 0) + 1
+                )
+                aggregate_issue_counts[issue_class] = (
+                    aggregate_issue_counts.get(issue_class, 0) + 1
+                )
+        packet_request["review_item_count"] = len(packet_request["review_items"])
+        packet_request["human_review_required_count"] = sum(
+            item["human_review_required"] for item in packet_request["review_items"]
+        )
+        packet_request["issue_class_counts"] = request_issue_counts
+        _redigest(packet_request, "request_review_digest")
+
+    packet["review_item_count"] = sum(
+        row["review_item_count"] for row in packet["requests"]
+    )
+    packet["human_review_required_count"] = sum(
+        row["human_review_required_count"] for row in packet["requests"]
+    )
+    packet["issue_class_counts"] = aggregate_issue_counts
+    _redigest(packet, "review_packet_digest")
+    public_summary = parsed["product_readiness_public"][
+        "candidate_review_packet_summary"
+    ]
+    for field in (
+        "review_item_count",
+        "human_review_required_count",
+        "issue_class_counts",
+        "review_packet_digest",
+    ):
+        public_summary[field] = packet[field]
+
+    actual_counts = CROSSWALK._recompute_baseline_counts(parsed)
+    assert actual_counts["candidate_review_items"] == expected_review_items
+    assert (
+        actual_counts["candidate_human_review_required_items"]
+        == expected_human_review_required
+    )
 
 
 def test_baseline_rejects_forged_tracked_git_identity(local_inputs: dict) -> None:
@@ -571,6 +716,15 @@ def test_materializer_builds_self_bound_zero_call_outputs(local_inputs: dict) ->
     )
     private = compiled["private"]
     public = compiled["public"]
+    assert private["schema_version"] == (
+        "fin_ia_dell_report_gap_crosswalk_full_result_v1_2"
+    )
+    assert public["schema_version"] == (
+        "fin_ia_dell_report_gap_crosswalk_public_result_v1_2"
+    )
+    assert public["status"] == (
+        "materialized_zero_call_R2_audit_correction_reaudit_pending"
+    )
     assert private["full_result_digest"] == canonical_digest(
         {key: value for key, value in private.items() if key != "full_result_digest"}
     )
@@ -588,5 +742,7 @@ def test_materializer_builds_self_bound_zero_call_outputs(local_inputs: dict) ->
         "gap_closures": 0,
     }
     assert public["acceptance"]["crosswalk_deterministic_contract_pass"] is True
+    assert public["acceptance"]["R2_independent_audit_failed"] is True
+    assert public["acceptance"]["candidate_packet_actual_counts_recomputed"] is True
     assert public["acceptance"]["independent_review_pass"] is False
     assert public["acceptance"]["G1_pass"] is False

@@ -1,8 +1,8 @@
-# S3 工作记录 174：DELL-RSQ R1 独立审计失败与 R2 fail-closed successor
+# S3 工作记录 174：DELL-RSQ R1/R2 独立审计失败与 R3 fail-closed successor
 
 日期：2026-08-25
 
-状态：`R1_independent_FAIL_immutable / R2_materialized / fresh_reaudit_pending / G1_false`
+状态：`R1_R2_independent_FAIL_immutable / R3_engineering_full_gate_pass / clean_materialization_pending / G1_false`
 
 ## 1. 为什么不能把 R1 追认为通过
 
@@ -122,3 +122,63 @@ R2 acceptance 明确记录 R1 independent failure、12-count actual recomputatio
 `commit:path` blob verification 为 true；fresh independent review、G1、S1/S2/S3、product、
 publication 和 release 全为 false。下一动作只允许提交这份新 public receipt 后，对 immutable R2
 执行 fresh read-only re-audit；不能先进入需要 G1 的后续 live。
+
+## 6. R2 fresh author-separated re-audit：唯一 P2，G1 仍失败
+
+第二名无历史上下文继承的 reviewer 全程只读审计 immutable target
+`1f3c3a5b93b96cd93650a443c5337cc89cd48ca6`、tree
+`516b3f2634fc056354787c890ea0ab30f8b94191`。起止 worktree 均 clean，指定合同为
+`36 passed`；public/private exact recompile、全部 SHA/self digest/content digest、tracked bytes/
+clean-filter/`commit:path` blob 和 R1 immutable preservation 均通过。R1 的 55→54、伪造 Git
+identity、协议重签漂移、digest-string-only projection drift、private leakage、隐藏 PVM／profit null、
+非法 technical/unit 轴、缺 dynamic ref 和 Writer membership 攻击也全部 fail closed。
+
+唯一 material finding 为 `R2-NEW-P2-01 candidate_packet_actual_recount_incomplete`：当前 private
+packet 的底层对象逐项确实为 18 个 review item、16 个 `human_review_required=true`，且 request 小计、
+唯一 ref/digest 均正确；完整文件改写也会被 frozen SHA/blob 拒绝。但
+`_recompute_baseline_counts()` 对最后两项仍取 public/private summary。纯内存删除一个需人工 review
+的 nested item、保留 summary 后，真实值变成 17/15，函数仍返回 18/16。因此 R2 的
+`baseline_actual_counts_recomputed=true` 声明过强，12 项中末两项没有得到所声称的底层重算证明。
+
+固定 verdict：
+
+- `P0/P1/P2/P3 = 0/0/1/0`；
+- engineering/evidence：`FAIL`；
+- crosswalk content：`PASS_BOUNDED_CONTENT_ONLY`；
+- report quality：`OPEN_NOT_ASSESSABLE`；
+- qualified-human：`FALSE_NOT_GRANTED`；
+- `G1=false`。
+
+R2 public/private/v1.1 均保持不可变；内容正确不能抵消验收证明不实，也不能进入需 G1 的 human
+admission、动态 Agent 或 Writer。
+
+## 7. R3 同阶段 fail-closed successor 实现
+
+新增 append-only verification v1.1：
+
+- `configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_baseline_verification_v1_1.json`；
+- verification digest：`232be552ae24de61c92069d0b40dc5932216d8fcd48eac05336a5adb83c57c87`；
+- 精确绑定 predecessor verification v1.0、R1/R2 failed public result、两次审计 findings 和 R4
+  disposition inputs；不覆盖任何前代治理或结果文件。
+
+R3 的 `_recompute_baseline_counts()` 现在：
+
+- 要求 candidate packet、public readiness、private readiness 的 8 个 request ID 集合完全一致，并
+  逐 request 对齐 facet/slot；
+- 从每个 request 的 nested `review_items` 实际计数 review item 与 human-review flag，不再读取摘要
+  作为 actual；flag 必须是真正的 boolean；
+- 校验每 request 及 top-level 的 item/human/issue-class 小计；
+- 校验 review-item ref 与 digest 全局唯一、item/request/packet canonical self digest；
+- public summary 必须与已实际重算的 private packet 的 schema/status/counts/issue classes/digest 一致。
+
+新增两组 attack proof：保留陈旧 summary 时，nested deletion 与 human-flag toggle 必须立即失败；
+同步重签所有 summary/digest 时，函数分别真实返回 17/15 与 18/15，随后会与 frozen 18/16 基线不等，
+不能冒充通过。crosswalk 定向从 25 增至 29，与 S2/R17 相邻合同为 `40 passed`；全仓为
+`1313 passed, 2 skipped, 2 warnings in 327.51s`，两条 warning 仍是既有 SWIG deprecation。
+compileall、精确 pyflakes 和 `git diff --check` 通过。
+
+materializer 默认已前移到不可覆盖的 `dell-r3/full_result.json` 与 public v1.2；R3 acceptance 新增
+R2 failure 和 `candidate_packet_actual_counts_recomputed`，仍保持 independent review、G1、S1/S2/S3、
+report/product/publication/release 为 false。本节只是作者工程 successor；必须先形成 clean immutable
+implementation commit，再 exclusive-create R3 并由第三名 fresh read-only reviewer 复审工程、
+crosswalk 内容和研报质量边界。

@@ -94,7 +94,13 @@ def bound_inputs() -> dict[str, dict]:
         "r2_audit": _read(R2_AUDIT_PATH),
         "residual": _read(ROOT / bindings["residual_program_ref"]),
         "execution_program": _read(ROOT / bindings["execution_program_ref"]),
-        "registry": _read(ROOT / bindings["runtime_registry_ref"]),
+        # The current-runtime registry path advanced to R39. R3 remains an
+        # immutable R38 attempt and must be replayed against the exact identity
+        # sealed by R1, never against whatever the current pointer contains.
+        "registry": {
+            "registry_id": bindings["runtime_registry_id"],
+            "resource_canonical_digest": bindings["runtime_registry_digest"],
+        },
         "receipt": _read(ROOT / bindings["runtime_binding_receipt_ref"]),
     }
 

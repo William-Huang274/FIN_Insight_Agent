@@ -1,0 +1,71 @@
+{
+  "acceptance": {
+    "abbreviation_aware_exact_offset_binding": true,
+    "base_objects_retained_exactly": true,
+    "historical_v8_immutable": true,
+    "single_previously_missing_material_claim_internalized": true,
+    "source_records_unchanged": true
+  },
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "evidence_promoted": false,
+    "gap_closed_by_compilation_alone": false,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "provider_calls": 0
+  },
+  "inputs": {
+    "base_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v8/objects.jsonl",
+    "base_objects_sha256": "6c6fc8aae3fb3e04ab6f78e82749cb5a2d83716f551f2e5736ece75005b45386",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_5.json",
+    "kernel_sha256": "4b42a4942a5026719263e1bdd86c66bc3f602e79d422dcd0c8f5cc07ecfe753c",
+    "predecessor_route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_5.json",
+    "predecessor_route_policy_sha256": "05975a2dbe5503797e3e7487083ffa5a9c695b5587bec2f8ef8ed68857c37be7",
+    "records": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v5/records.jsonl",
+      "sha256": "d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45"
+    },
+    "successor_route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_6.json",
+    "successor_route_policy_sha256": "e056f715fae2b99b5f2845393ea25aa5a6ffaffe12413141225d749dbc0ceac0"
+  },
+  "known_boundary": "R39 repairs one proved local source-to-object loss caused by the historical U.S. abbreviation split. It retains the complete v8 object prefix and unchanged v5 source store, grants no Evidence or NumericFact authority, and does not by itself prove any external information boundary or close any research proposition.",
+  "object_compilation_summary": {
+    "compiled_object_count": 34199,
+    "compiled_object_kind_counts": {
+      "bounded_parent_context": 1232,
+      "claim": 24435,
+      "metric_row": 8532
+    },
+    "source_record_count": 1888
+  },
+  "output_binding": {
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v9/diagnostics.jsonl",
+    "diagnostics_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v9/objects.jsonl",
+    "objects_sha256": "1c3e48486f933d23306dbabacb1641e26cb9bbc5b474da932d602752dff3fa92"
+  },
+  "outputs": {
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v9/diagnostics.jsonl",
+    "diagnostics_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v9/objects.jsonl",
+    "objects_sha256": "1c3e48486f933d23306dbabacb1641e26cb9bbc5b474da932d602752dff3fa92"
+  },
+  "recorded_at": "2026-08-26",
+  "result_digest": "9b57c0336a866d1dc63df2fe046f5fe63133a4a45bc6b87d34fe3a3c30b7cecc",
+  "schema_version": "fin_ia_s1_abbreviation_claim_repair_successor_result_v1_0",
+  "status": "missing_local_claim_compiled_into_append_only_candidate_successor",
+  "summary": {
+    "appended_char_end": 1183,
+    "appended_char_start": 1087,
+    "appended_compiled_object_id": "COBJ::00d728a389f931920f8ff525",
+    "appended_object_count": 1,
+    "base_object_count": 34198,
+    "base_source_record_count": 1888,
+    "successor_object_count": 34199,
+    "successor_source_record_count": 1888,
+    "target_page_id": "PUBLIC::DELL-EXT::2184F13EB685F627C757",
+    "target_sentence_sha256": "747565c6a86e55833923956ff6e3baffe7dc3941754ed374feadab69aca717ab",
+    "target_slice_id": "PUBLIC::DELL-EXT::2184F13EB685F627C757::SLICE::62BC91E7D73822D5A187"
+  }
+}

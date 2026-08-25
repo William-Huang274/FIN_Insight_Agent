@@ -302,7 +302,11 @@ def load_query_object_fact_route_policy(
     )
     _require(
         segmentation_mode
-        in {"legacy_line_v1", "sentence_with_wrapped_line_reflow_v1"}
+        in {
+            "legacy_line_v1",
+            "sentence_with_wrapped_line_reflow_v1",
+            "sentence_with_wrapped_line_reflow_v2",
+        }
         and overflow_policy
         in {
             "legacy_silent_limit",

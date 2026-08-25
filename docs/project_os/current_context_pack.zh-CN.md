@@ -1960,3 +1960,28 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 下一步为 non-overwriting R4：coverage materiality＋source-family dedup、negation、双向 future qualifier、公司出货/
   客户部署分离、真实 adjacency、factory sentence materialization 与六 target route 重算；fresh audit 前所有下游
   authority 继续 false。详见工作记录 087 与 audit digest `2cc497f2...e2fc9`。
+
+### 2026-08-26 R39 本地 claim 修复与 DELL-RSQ-03B R4 作者预编译
+
+- R3 的 genuine factory loss 已定位为 `U.S.` 缩写句点误切导致的本地 compiler failure，而不是外源缺失。
+  R39 保留 source v5=1,888 与 object v8=34,198 精确前缀，只追加 exact offset `1087:1183` 的一个
+  candidate object；本地 0.6B CUDA/FP16 只补算 1 个 embedding，current R39 objects/cache=34,199。
+- R39 promotion R1 在零 current output/零 registry mutation 时因 policy 发布顺序失败，failure receipt 已保存；
+  R2 修正后成功。Route v1.6 仅启用 abbreviation-aware v2＋typed overflow，registry/binding receipt 已验证，
+  S1 qualified 仍 false。
+- R4 作者实现使用 canonical family dedup、绝对位置最多 8-unit window、supplier negation、future/wrong-process
+  yield、Dell seller/company-period units 和 target-material numeric/time anchor coverage。Fresh audit 四个 bypass、
+  factory 2-occurrence/1-family loss、真实 ASP rank-16 regression 均通过。
+- 全 R39 corpus 只读重算六目标 coverage canonical/occurrence gaps 均为 0。R3 raw pool 预编译保留 ASP
+  `2/2/2/2` best 15（唯一 reranker challenger）与 supplier `2/2/2/1` best 2；capacity/yield/HBM/units
+  complete=0、local repair=false、bounded 03C candidate=true；target-specific 4B recall=0。
+- 以上仍只是 author preview。完整仓库门、clean implementation/policy commit、fresh R39 exact query batch、immutable
+  R4 result 和新的 fork-none read-only audit 尚未完成。03C/4B/reranker/Evidence/S2/report/product authority 全 false；
+  R17 的 citation/source appendix、14-gap crosswalk、WWC 与 0/16 human decisions 继续 OPEN/NOT_ASSESSABLE。
+
+### 2026-08-26 R39/R4 全仓门与冻结编译器纠偏
+
+- 首轮全仓 `1434 passed, 4 failed` 暴露作者把缩写修复写入 VS5 preregistration 冻结 v1 compiler 的错误；不得更新冻结清单追认。v1 已恢复 SHA `043cbf8e...d8482`，能力迁入 `object_view_compiler_v2.py` 的显式 v2 route。
+- R39 append-only 对象、exact offset 与 embedding bytes 保持有效；历史 R1–R3 按封存 R38 id/digest 验证，current 产品仍严格绑定 R39，生产 validator 没有放宽。
+- 最终作者门：focused 118、DELL/S1 adjacent 248、full `1439 passed, 2 skipped, 2 existing warnings`；compileall、pyflakes、active baseline `213/8/5/28/0`、1139 JSON、8 JSONL／1237 行、Project OS 82、8117-file secret scan／0、diff check 全通过。
+- 下一步仍是 clean implementation commit/push → 唯一单文件 R4 authority commit/push → fresh R39 exact 0.6B query batch → immutable result → 全新 fork-none reviewer 同审工程语义与 R17 研报质量。03C/4B/reranker/Evidence/S2/report/product authority 仍全 false。

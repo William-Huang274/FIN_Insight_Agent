@@ -26,13 +26,13 @@ POLICY = (
     ROOT
     / "configs"
     / "retrieval"
-    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_13.json"
+    / "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_14.json"
 )
 RECEIPT = (
     ROOT
     / "configs"
     / "runtime"
-    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_14.json"
+    / "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_15.json"
 )
 
 
@@ -48,7 +48,7 @@ def test_current_runtime_receipt_preserves_lineage_and_open_gates() -> None:
 
     lineage = receipt["source_object_index_lineage"]
     assert lineage["source_record_count"] == 1888
-    assert lineage["compiled_object_count"] == 34198
+    assert lineage["compiled_object_count"] == 34199
     assert lineage["deduplicated_source_records_carried_only_by_lineage"] == 51
     assert lineage["all_source_records_lineage_bound"] is True
     assert lineage["source_records_missing_from_compiled_lineage"] == []

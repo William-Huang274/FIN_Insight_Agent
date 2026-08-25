@@ -55,7 +55,14 @@ def bound_inputs() -> tuple[dict, dict, dict, dict, dict]:
     bindings = policy["bound_inputs"]
     residual = _read(ROOT / bindings["residual_program_ref"])
     execution_program = _read(ROOT / bindings["execution_program_ref"])
-    registry = _read(ROOT / bindings["runtime_registry_ref"])
+    # The registry ref is the intentionally mutable current-runtime pointer.
+    # R1/R2 are immutable R38 attempts, so exercise their validator with the
+    # exact registry identity sealed in the policy instead of silently
+    # substituting the now-current R39 bytes.
+    registry = {
+        "registry_id": bindings["runtime_registry_id"],
+        "resource_canonical_digest": bindings["runtime_registry_digest"],
+    }
     receipt = _read(ROOT / bindings["runtime_binding_receipt_ref"])
     return policy, residual, execution_program, registry, receipt
 

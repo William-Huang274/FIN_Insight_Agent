@@ -1,11 +1,20 @@
 from __future__ import annotations
 
+from dataclasses import replace
+import re
 from typing import Any, Iterable, Mapping
 
+from .evidence_role_contract import (
+    EvidenceRoleContractError,
+    build_evidence_object_view,
+)
 from .object_view_compiler import (
     ObjectStoreCompilation,
     _TABLE_PATTERN,
+    _bounded_spans,
     _is_navigation_only,
+    _normalize_model_text,
+    _trim_span,
     compile_record_object_views as compile_record_object_views_v1,
 )
 from .query_plan import canonical_digest
@@ -16,6 +25,251 @@ COMPILED_OBJECT_SCHEMA_VERSION = "fin_ia_compiled_financial_object_view_v1_3"
 OBJECT_STORE_COMPILATION_SCHEMA_VERSION = (
     "fin_ia_financial_object_store_compilation_v1_1"
 )
+_COMMON_NONTERMINAL_ABBREVIATIONS = frozenset(
+    {
+        "corp",
+        "dr",
+        "e.g",
+        "i.e",
+        "inc",
+        "jr",
+        "ltd",
+        "mr",
+        "mrs",
+        "ms",
+        "prof",
+        "sr",
+        "st",
+        "u.k",
+        "u.s",
+        "vs",
+    }
+)
+
+
+def _period_is_nonterminal_abbreviation(text: str, period_index: int) -> bool:
+    """Return whether a full stop belongs to a bounded abbreviation."""
+
+    prefix = text[: period_index + 1]
+    initialism = re.search(r"([A-Za-z](?:\.[A-Za-z])+\.)$", prefix)
+    if initialism is not None:
+        return True
+    word = re.search(r"([A-Za-z]+(?:\.[A-Za-z]+)*)\.$", prefix)
+    return bool(
+        word is not None
+        and word.group(1).casefold() in _COMMON_NONTERMINAL_ABBREVIATIONS
+    )
+
+
+def _abbreviation_aware_sentence_spans(text: str) -> list[tuple[int, int]]:
+    """Locate exact sentence spans without splitting common abbreviations."""
+
+    spans: list[tuple[int, int]] = []
+    start = 0
+    index = 0
+    while index < len(text):
+        character = text[index]
+        if character not in ".!?":
+            index += 1
+            continue
+        end = index + 1
+        while end < len(text) and text[end] in {'"', "”", "’"}:
+            end += 1
+        if end < len(text) and not text[end].isspace():
+            index += 1
+            continue
+        if character == "." and _period_is_nonterminal_abbreviation(text, index):
+            index += 1
+            continue
+        spans.append((start, end))
+        start = end
+        index = end
+    if start < len(text):
+        spans.append((start, len(text)))
+    return spans
+
+
+def _abbreviation_aware_claim_units(
+    raw_text: str,
+    table_spans: list[tuple[int, int]],
+    *,
+    minimum: int,
+    maximum: int,
+    limit: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """Compile exact-offset claim units while protecting abbreviations."""
+
+    narrative_ranges: list[tuple[int, int]] = []
+    cursor = 0
+    for table_start, table_end in sorted(table_spans):
+        if cursor < table_start:
+            narrative_ranges.append((cursor, table_start))
+        cursor = max(cursor, table_end)
+    if cursor < len(raw_text):
+        narrative_ranges.append((cursor, len(raw_text)))
+
+    spans: list[tuple[int, int]] = []
+    for range_start, range_end in narrative_ranges:
+        range_output_start = len(spans)
+        sentence_spans: list[tuple[int, int]] = []
+        segment = raw_text[range_start:range_end]
+        for relative_start, relative_end in _abbreviation_aware_sentence_spans(
+            segment
+        ):
+            start, end = _trim_span(
+                raw_text,
+                range_start + relative_start,
+                range_start + relative_end,
+            )
+            if start >= end or _is_navigation_only(raw_text[start:end]):
+                continue
+            sentence_spans.extend(
+                _bounded_spans(raw_text, start, end, maximum=maximum)
+            )
+
+        pending: tuple[int, int] | None = None
+        for start, end in sentence_spans:
+            if pending is None:
+                pending = (start, end)
+            elif end - pending[0] <= maximum:
+                pending = (pending[0], end)
+            else:
+                spans.append(pending)
+                pending = (start, end)
+            if (
+                pending is not None
+                and len(
+                    _normalize_model_text(
+                        raw_text[pending[0] : pending[1]]
+                    )
+                )
+                >= minimum
+            ):
+                spans.append(pending)
+                pending = None
+        if pending is not None:
+            if (
+                len(spans) > range_output_start
+                and spans[-1][1] <= pending[0]
+                and pending[1] - spans[-1][0] <= maximum
+            ):
+                spans[-1] = (spans[-1][0], pending[1])
+            elif (
+                len(
+                    _normalize_model_text(
+                        raw_text[pending[0] : pending[1]]
+                    )
+                )
+                >= minimum
+            ):
+                spans.append(pending)
+
+    units: list[dict[str, Any]] = []
+    seen: set[tuple[int, int]] = set()
+    for start, end in spans:
+        if (start, end) in seen:
+            continue
+        seen.add((start, end))
+        surface = raw_text[start:end]
+        model_text = _normalize_model_text(surface)
+        if (
+            len(model_text) < minimum
+            or len(model_text) > maximum
+            or _is_navigation_only(model_text)
+        ):
+            continue
+        units.append(
+            {
+                "surface": surface,
+                "model_text": model_text,
+                "char_start": start,
+                "char_end": end,
+            }
+        )
+
+    diagnostics: list[dict[str, Any]] = []
+    if len(units) > limit:
+        omitted = units[limit:]
+        diagnostics.append(
+            {
+                "diagnostic_code": "claim_unit_limit_exceeded",
+                "candidate_claim_unit_count": len(units),
+                "emitted_claim_unit_count": limit,
+                "omitted_claim_unit_count": len(omitted),
+                "first_omitted_surface_digest": canonical_digest(
+                    omitted[0]["surface"]
+                ),
+            }
+        )
+    return units[:limit], diagnostics
+
+
+def _compile_abbreviation_aware_claims(
+    *,
+    record: Mapping[str, Any],
+    parent: Mapping[str, Any],
+    policy: QueryObjectFactRoutePolicy,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    raw_text = str(record.get("text") or "")
+    source_record_id = str(record.get("evidence_id") or "")
+    table_matches = list(_TABLE_PATTERN.finditer(raw_text))
+    claim_units, claim_diagnostics = _abbreviation_aware_claim_units(
+        raw_text,
+        [(match.start(), match.end()) for match in table_matches],
+        minimum=int(policy.object_compiler["claim_min_characters"]),
+        maximum=int(policy.object_compiler["claim_max_characters"]),
+        limit=int(policy.object_compiler["max_claims_per_source_record"]),
+    )
+    diagnostics = [
+        {"source_record_id": source_record_id, **row}
+        for row in claim_diagnostics
+    ]
+    max_text = int(policy.object_compiler["max_model_text_characters"])
+    output: list[dict[str, Any]] = []
+    for claim_unit in claim_units:
+        surface = str(claim_unit["surface"])
+        start = int(claim_unit["char_start"])
+        end = int(claim_unit["char_end"])
+        try:
+            base = build_evidence_object_view(
+                object_key=(
+                    f"{source_record_id}::claim_offset::"
+                    f"{start:08d}:{end:08d}"
+                ),
+                object_form="claim",
+                locator={
+                    "mode": "offset_bound_text",
+                    "char_start": start,
+                    "char_end": end,
+                    "surface_digest": canonical_digest(surface),
+                },
+                record=record,
+                parent=parent,
+            ).as_dict()
+        except EvidenceRoleContractError as exc:
+            diagnostics.append(
+                {
+                    "diagnostic_code": str(exc),
+                    "source_record_id": source_record_id,
+                }
+            )
+            continue
+        output.append(
+            {
+                "schema_version": COMPILED_OBJECT_SCHEMA_VERSION,
+                "compiled_object_id": (
+                    f"COBJ::{canonical_digest(base)[:24]}"
+                ),
+                "object_kind": "claim",
+                "base_object_view": base,
+                "structured_projection": {},
+                "model_text": str(claim_unit["model_text"])[:max_text],
+                "candidate_not_evidence": True,
+                "numeric_authority": False,
+                "evidence_promoted": False,
+            }
+        )
+    return output, diagnostics
 
 
 def _table_local_context(raw_text: str, table_start: int) -> list[str]:
@@ -165,11 +419,53 @@ def compile_record_object_views(
 ) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
     """Compile v1 objects, then remove cross-table context before deduplication."""
 
+    segmentation_mode = str(
+        policy.object_compiler.get("claim_segmentation_mode")
+        or "legacy_line_v1"
+    )
+    predecessor_policy = policy
+    if segmentation_mode == "sentence_with_wrapped_line_reflow_v2":
+        predecessor_policy = replace(
+            policy,
+            object_compiler={
+                **dict(policy.object_compiler),
+                "claim_segmentation_mode": (
+                    "sentence_with_wrapped_line_reflow_v1"
+                ),
+            },
+        )
     rows, diagnostics = compile_record_object_views_v1(
         record=record,
         parent=parent,
-        policy=policy,
+        policy=predecessor_policy,
     )
+    if segmentation_mode == "sentence_with_wrapped_line_reflow_v2":
+        successor_claims, successor_claim_diagnostics = (
+            _compile_abbreviation_aware_claims(
+                record=record,
+                parent=parent,
+                policy=policy,
+            )
+        )
+        context_rows = [
+            row
+            for row in rows
+            if str(row.get("object_kind") or "")
+            == "bounded_parent_context"
+        ]
+        table_rows = [
+            row
+            for row in rows
+            if str(row.get("object_kind") or "") == "metric_row"
+        ]
+        rows = [*context_rows, *successor_claims, *table_rows]
+        diagnostics = [
+            row
+            for row in diagnostics
+            if str(row.get("diagnostic_code") or "")
+            != "claim_unit_limit_exceeded"
+        ]
+        diagnostics.extend(successor_claim_diagnostics)
     raw_text = str(record.get("text") or "")
     table_start_by_id = {
         str(match.group("table_id")): int(match.start())

@@ -485,6 +485,74 @@ def test_successor_claim_compiler_reflows_pdf_lines_and_keeps_late_claims() -> N
     ) == 0
 
 
+def test_v2_claim_compiler_keeps_US_factory_sentence_as_exact_offset_object() -> None:
+    parent = {
+        "document_id": "PUBLIC_DOC::NVIDIA::DELL_FACTORY",
+        "ticker": "NVDA",
+        "company": "NVIDIA Corporation",
+        "source_type": "PUBLIC_WEB",
+        "source_tier": "named_counterparty_or_standards_primary",
+        "publication_date": "2025-05-27",
+        "period_end": "",
+        "fiscal_year": None,
+    }
+    target = (
+        "One of Dell’s U.S. factories can ship thousands of NVIDIA Blackwell "
+        "GPUs to customers in a week."
+    )
+    record = {
+        **parent,
+        "evidence_id": "PUBLIC::NVIDIA::DELL_FACTORY::SLICE",
+        "section": "Reviewed public source",
+        "subsection": "NVIDIA Corporation",
+        "metadata": {"parent_document_id": parent["document_id"]},
+        "text": (
+            "Dell servers with NVIDIA GB200 are shipping at scale for a variety "
+            f"of customers. {target} It’s why a large customer selected Dell "
+            "to deploy 100,000 NVIDIA GPUs in six weeks."
+        ),
+    }
+    policy = replace(
+        _policy(),
+        object_compiler={
+            **dict(_policy().object_compiler),
+            "claim_segmentation_mode": "sentence_with_wrapped_line_reflow_v2",
+            "claim_overflow_policy": (
+                "emit_typed_diagnostic_and_fail_qualification"
+            ),
+            "max_claims_per_source_record": 12,
+        },
+    )
+    result = compile_object_store_v2(
+        records=[record],
+        parents_by_id={parent["document_id"]: parent},
+        policy=policy,
+    )
+    matches = [
+        row for row in result.objects if str(row.get("model_text") or "") == target
+    ]
+    assert len(matches) == 1
+    base = matches[0]["base_object_view"]
+    binding = base["focus_binding"]
+    assert binding["mode"] == "offset_bound_text"
+    assert record["text"][binding["char_start"] : binding["char_end"]] == target
+    assert "::claim_offset::" in base["object_key"]
+
+
+def test_route_policy_loader_accepts_abbreviation_aware_v2_only_with_overflow_receipt() -> None:
+    payload = _policy_payload()
+    payload["object_compiler"] = {
+        **dict(payload["object_compiler"]),
+        "claim_segmentation_mode": "sentence_with_wrapped_line_reflow_v2",
+        "claim_overflow_policy": "emit_typed_diagnostic_and_fail_qualification",
+    }
+    policy = load_query_object_fact_route_policy(payload, _kernel())
+    assert (
+        policy.object_compiler["claim_segmentation_mode"]
+        == "sentence_with_wrapped_line_reflow_v2"
+    )
+
+
 def test_successor_claim_compiler_makes_overflow_explicit() -> None:
     parent = {
         "document_id": "CURRENT_DOC::DELL::TRANSCRIPT::OVERFLOW",

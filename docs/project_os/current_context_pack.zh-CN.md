@@ -1921,3 +1921,24 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 下一合法动作是 non-overwriting R3：exact execution/attempt/canonical atomic output seal、role-aware 同源相邻
   slice package、token/entity/relation direction、source→object semantic coverage gate 与真实 corpus attack tests。
   fresh re-audit 通过前，03C、4B、reranker、Evidence、S2、新报告、产品、publication、release 全为 false。
+
+### 2026-08-25 DELL-RSQ-03B R3 exact-once 执行与 fresh audit 门
+
+- R3 implementation `6548e0fb...2de3` 与单文件 authority `41959e0a...6fd7` 已推送；authority 的唯一父提交为
+  implementation，唯一变更路径为 policy。Clean `HEAD==upstream` 后执行唯一 attempt
+  `dell-rsq-03b-internal-chain-r3`，先写 consumption receipt、禁止 retry，并原子发布 private/public pair。
+- 5 个唯一 request、1 个本地 0.6B query batch；每 request 精确 96 union／16 final 和完整 rank；network/model/
+  provider/external/4B/reranker/retry/mutation/promotion/gap closure 全为 0。公共结果 exact reprojection、三份
+  self-digest、private/attempt SHA 与 raw execution validator 均通过。
+- R3 重算后：ASP complete source/compiled/union/final=`2/2/2/2`、best final rank 15，supplier=`4/4/4/2`、
+  best rank 2；前者仅为 configuration/bundle price，后者仅为 relationship/delivery。Company-wide realized ASP/
+  units/mix 与 supplier capacity/allocation 仍 open。
+- capacity release、yield、HBM bridge、units complete 均为 0；作者侧 route 为 bounded external target 4、ASP
+  same-pool reranker target 1、4B recall target 0。Capacity release、supplier、units 同时有 source→object coverage
+  occurrence `4/4/5`，其中 parent/slice 可重复且 units 含 NVIDIA/industry partial context；必须由 fresh reviewer
+  审 materiality、去重与本地修复顺序，不能直接签发 03C。
+- 结果 public digest=`7efa24a4...067e3`、private digest=`7e108554...b7c20`。这只是 author-integrity pass；
+  03B independent pass 仍 false。上一版研报仍为 55 Evidence／14 gaps／0 closure、02B `0/16`，R17 reader-facing
+  citation/source appendix 与报告质量仍 open。
+- 下一步先提交 immutable R3 result，再由全新 fork-none、作者分离、只读 reviewer 同时审工程与研报质量。
+  审计前不运行 03C、4B、reranker，不修 current 数据、不做 Evidence/S2/新报告或产品验收。详见工作记录 086。

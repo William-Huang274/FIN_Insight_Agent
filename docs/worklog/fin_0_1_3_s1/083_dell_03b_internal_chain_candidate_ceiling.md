@@ -2,7 +2,7 @@
 
 日期：2026-08-25
 
-状态：`implementation_and_preregistration_targeted_gate_pass / clean_commit_and_single_R38_attempt_pending`
+状态：`R1 terminal failure preserved / same-stage R2 source identity fix pending`
 
 ## 1. 为什么不能复用旧“12/12 complete”结论
 
@@ -55,10 +55,26 @@ challenger eligible；complete object 已在 union 但不在 useful@10 才使 re
 - `1125` 份 config JSON、8 个 Project OS JSONL／`1216` 行通过；
 - secret scan：`8087 files / 0 findings`。
 
-当前仍未执行 R38 03B、未产生 private/public result、未使用本地 embedding inference。下一门是完整
-工程回归后形成 clean implementation commit，再从该 clean commit 消费唯一一次 R1 authority。
+上述工程门支持 R1 从 clean commit 启动，不代表 R1 运行结果；实际终态见下一节。
 
-## 5. 不变边界
+## 5. R1 真实执行失败
+
+实现与 authority 进入 clean、remote-synced commit `7468e5c55155682fbcb9c8360bb3f9883b8a8a68` 后，
+唯一一次 `dell-rsq-03b-internal-chain-r1` 启动。5 个 request 和本地 Qwen-0.6B query batch 已执行；
+在 private/public 编译和写入前，runner 的 source population validator 抛出
+`dell_03B_source_record_id_missing` 并终止。
+
+真实 R38 source store 共 1,888 行，全部使用顶层 canonical `evidence_id`，没有顶层
+`source_record_id`；后者是 compiled object base view 对同一 identity 的字段名。新 runner 错把对象层字段
+名强加给 source-store 层。该错误属于 S1 03B runner identity projection，不是 local source 不存在、
+retrieval/ranking/model 质量失败或 public-information boundary。
+
+R1 没有创建 private/public 输出，没有 current mutation；network/provider/generation/external/4B/
+reranker/promotion/gap closure 均为 0。R1 不重试、不追认。下一合法动作是保留失败回执，增加真实
+source-store regression，只接受并校验 `evidence_id`，然后用新 policy/attempt R2 在新的 clean commit
+上执行；所有 6/3 target、5-request 和调用预算保持不变。
+
+## 6. 不变边界
 
 03B 的 deterministic semantic gates 只定位 candidate ceiling，不签 CandidateDecision、Evidence、
 NumericFact 或 information boundary。02B 仍为 `0/16`；03C/03D 需根据 03B 结果另行授权；G2/G3、

@@ -1,0 +1,250 @@
+{
+  "schema_version": "fin_ia_dell_source_report_quality_baseline_manifest_v1_0",
+  "status": "baseline_frozen_calls_not_authorized",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "prepared_from_commit": "f6e205419f9de6aa1f327db78e7e4f7195db6ad0",
+  "input_bindings": {
+    "R17_private_full_result": {
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-reversal-gate-r17/full_result.json",
+      "sha256": "433b2c486f8753d4f0b2468aa66f21c0ef2ff0e4bcc7d9347233e239b30ec0e8",
+      "git_tracking": "private_workbench_ignored",
+      "git_blob": null,
+      "git_commit": null,
+      "content_type": "application/json",
+      "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_R17_reversal_gate_successor_full_result_v1_0",
+      "status": "R17_local_bounded_candidate_fresh_review_pending",
+      "identity_checks": [
+        {
+          "path": ["case_key"],
+          "expected": "DELL"
+        },
+        {
+          "path": ["run_id"],
+          "expected": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_REVERSAL_GATE_R17"
+        }
+      ],
+      "canonical_digest_field": "full_result_digest",
+      "canonical_digest": "3be5a5453c8cf18cf5a14f7b7de7535b8d8c64367275e2f509dc0849db587743"
+    },
+    "R17_public_candidate": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R17_reversal_gate_successor_candidate_result_v1_0.json",
+      "sha256": "65aa45f10638a1210ca0b4428f1c9ca9e658ea1006dcfb2baffbb08d90ed06cb",
+      "git_tracking": "tracked",
+      "git_blob": "5be329a2acddb3f26922e724c672f20fbae3f2c8",
+      "git_commit": "1243b3cc2e1e1c17a46437195c24ab076d3b4365",
+      "content_type": "application/json",
+      "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_R17_reversal_gate_successor_public_result_v1_0",
+      "status": "R17_local_bounded_candidate_fresh_review_pending",
+      "identity_checks": [
+        {
+          "path": ["case_key"],
+          "expected": "DELL"
+        },
+        {
+          "path": ["run_id"],
+          "expected": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_REVERSAL_GATE_R17"
+        }
+      ],
+      "canonical_digest_field": "result_digest",
+      "canonical_digest": "cbdb99e902241fd98bf56bd0ba803e6055d38adc42cbf523c88b386c8838e8e9"
+    },
+    "R4_current_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+      "sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+      "git_tracking": "private_workbench_ignored",
+      "git_blob": null,
+      "git_commit": null,
+      "content_type": "application/json",
+      "schema_version": "fin_ia_0_1_3_s1_local_evidence_pack_v1_0",
+      "status": "local_evidence_pack_ready_with_declared_residual_gaps",
+      "identity_checks": [
+        {
+          "path": ["case_key"],
+          "expected": "DELL"
+        },
+        {
+          "path": ["research_as_of"],
+          "expected": "2026-08-06"
+        }
+      ],
+      "canonical_digest_field": "pack_payload_digest",
+      "canonical_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98"
+    },
+    "R38_private_full_result": {
+      "ref": "data/workbench_private/fin_0_1_3_s3_dynamic_single_unit_zero_call/dell-r38-reviewed-public-source-sync-zero-call-r9-20260824T211209Z/full_result.json",
+      "sha256": "7c66944711f0481eef9b1d1007e48fdffc40c1c84fb7f7968707429de0fe816e",
+      "git_tracking": "private_workbench_ignored",
+      "git_blob": null,
+      "git_commit": null,
+      "content_type": "application/json",
+      "schema_version": "fin_ia_s3_dynamic_single_unit_zero_call_full_v1_0",
+      "status": "current_dynamic_single_unit_zero_call_proven",
+      "identity_checks": [
+        {
+          "path": ["workpaper_context", "case_identity", "case_key"],
+          "expected": "DELL"
+        },
+        {
+          "path": ["workpaper_context", "case_identity", "research_as_of"],
+          "expected": "2026-08-06"
+        },
+        {
+          "path": ["session", "objective_ref"],
+          "expected": "objective://OBJ::DELL::DYNAMIC-VALUE-CAPTURE-R38-REVIEWED-PUBLIC-WEB-SYNC"
+        }
+      ],
+      "canonical_digest_field": "result_digest",
+      "canonical_digest": "1b28725576bebdce941051ff12f1607906a7bc0c4b64031e782a0faec58023ee"
+    },
+    "product_readiness_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_7.json",
+      "sha256": "67a65f8efbde97bef20e2cc2ff8439e30eb3fac4ddeb2680c369d67f1361b19b",
+      "git_tracking": "tracked",
+      "git_blob": "810524d42c94ecfe90b94bc9361b64f2fc9899cf",
+      "git_commit": "2745f349d9396750433fc381dca85a49c1e394b3",
+      "content_type": "application/json",
+      "schema_version": "fin_ia_s1_current_product_readiness_result_v1_1",
+      "status": "current_product_pack_readiness_materialized",
+      "identity_checks": [
+        {
+          "path": ["case_key"],
+          "expected": "DELL"
+        },
+        {
+          "path": ["candidate_review_packet_summary", "review_packet_digest"],
+          "expected": "b586c09fc66051afbb434ffe5e357e1b7dbdd4827dc22464381dfb425bc2db32"
+        }
+      ],
+      "canonical_digest_field": "result_digest",
+      "canonical_digest": "bd6d652cc4b9551fc3d046724702d57b62beb56bfd76f6131c4513a4c805e40f"
+    },
+    "product_readiness_private": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_current_product_readiness/dell-r9/full_result.json",
+      "sha256": "c6af46811dd9f85487eface3c2e49aaafd22a4b7b2c7fa2960b75c9670b0db42",
+      "git_tracking": "private_workbench_ignored",
+      "git_blob": null,
+      "git_commit": null,
+      "content_type": "application/json",
+      "schema_version": "fin_ia_s1_current_product_readiness_full_result_v1_1",
+      "status": "current_product_pack_readiness_materialized",
+      "identity_checks": [
+        {
+          "path": ["case_key"],
+          "expected": "DELL"
+        },
+        {
+          "path": ["pack_readiness", "research_as_of"],
+          "expected": "2026-08-06"
+        }
+      ],
+      "canonical_digest_field": "result_digest",
+      "canonical_digest": "2f09b9832d09ce1600f5ef403499e25fbb83ab5cf40079681be42aaa2e2c7665"
+    },
+    "S2_product_bridge_public": {
+      "ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_product_value_bridge_result_v1_0.json",
+      "sha256": "2c23d775ebc2b24cea4b6a250cfe5986a0ed4a0300af1b49ad581c8152df2447",
+      "git_tracking": "tracked",
+      "git_blob": "6436d0cbc8cd122378d224a293a97474c76edf4f",
+      "git_commit": "9c3b94c8877606b21790ecc545a0328a7d1a30a3",
+      "content_type": "application/json",
+      "schema_version": "fin_ia_s2_product_value_bridge_public_result_v1_0",
+      "status": "bounded_product_value_bridge_with_typed_gaps",
+      "identity_checks": [
+        {
+          "path": ["case_key"],
+          "expected": "DELL"
+        },
+        {
+          "path": ["research_as_of"],
+          "expected": "2026-08-06"
+        }
+      ],
+      "canonical_digest_field": "result_digest",
+      "canonical_digest": "627d67f541906799cdabf77a40daedf8374056e5b8ba4596e2b00f326c3bc054"
+    },
+    "S2_product_bridge_private": {
+      "ref": "data/workbench_private/fin_0_1_3_s2_product_value_bridge/dell-r1/full_result.json",
+      "sha256": "93e9bd7cb3be6a24df8bfb4e9e876050062810eb6ad8a85fd3adee9e856b1ab6",
+      "git_tracking": "private_workbench_ignored",
+      "git_blob": null,
+      "git_commit": null,
+      "content_type": "application/json",
+      "schema_version": "fin_ia_s2_product_value_bridge_full_result_v1_0",
+      "status": "completed_zero_call_product_value_bridge",
+      "identity_checks": [
+        {
+          "path": ["product_value_bridge", "case_key"],
+          "expected": "DELL"
+        },
+        {
+          "path": ["product_value_bridge", "research_as_of"],
+          "expected": "2026-08-06"
+        }
+      ],
+      "canonical_digest_field": "result_digest",
+      "canonical_digest": "bb51f8b70f6b4cb2bdeb05413d5540e62aec6b97a34878ff94c4ba692ffc02c5"
+    },
+    "report_quality_rubric": {
+      "ref": "docs/eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md",
+      "sha256": "41d6fa622374842ecd63c3ac320f5f7b0f07a803913777f12ae37fda6339682e",
+      "git_tracking": "tracked",
+      "git_blob": "e60d23d92d4a7af499f60907be822b008889f071",
+      "git_commit": "e02b7e333f9d559de4e8c9e61f8dba0ae557f87e",
+      "content_type": "text/markdown"
+    },
+    "execution_program": {
+      "ref": "docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md",
+      "sha256": "5bbb52691fd183bae5c61c6d6dd1b119544e76ffa2625a42dcb1297bd1ae4f0d",
+      "git_tracking": "tracked",
+      "git_blob": "47e64aee03da2328b1f7cc87328f0692d986546b",
+      "git_commit": "f6e205419f9de6aa1f327db78e7e4f7195db6ad0",
+      "content_type": "text/markdown"
+    }
+  },
+  "frozen_counts": {
+    "pack_evidence_items": 55,
+    "pack_residual_gaps": 14,
+    "pack_closed_gaps": 0,
+    "pack_narrowed_gaps": 3,
+    "dynamic_unit_gap_refs": 9,
+    "writer_gap_groups": 4,
+    "writer_gap_refs": 10,
+    "S2_bridge_gaps": 4,
+    "product_readiness_requests": 8,
+    "product_readiness_blocked_by_evidence_admission": 4,
+    "candidate_review_items": 18,
+    "candidate_human_review_required_items": 16
+  },
+  "frozen_R17_report_quality_baseline": {
+    "severity_counts": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 2,
+      "P3": 1
+    },
+    "engineering_and_evidence_pipeline_verdict": "PASS_BOUNDED",
+    "report_research_quality_verdict": "OPEN_NOT_ASSESSABLE",
+    "qualified_human_product_verdict": "FALSE_NOT_GRANTED",
+    "formal_eight_dimension_score": null,
+    "author_diagnostic_score_reusable": false,
+    "finding_codes": [
+      "reader_citations_not_independently_verifiable",
+      "report_pack_dynamic_14_9_4_crosswalk_missing",
+      "what_would_change_not_operational",
+      "repetition_and_facts_density"
+    ]
+  },
+  "future_model_node_authorities": {
+    "external_source_retrieval": "not_authorized",
+    "embedding_0_6b_baseline": "not_authorized",
+    "embedding_4b_challenger": "not_authorized",
+    "reranker_baseline": "not_authorized",
+    "reranker_challenger": "not_authorized",
+    "dynamic_research_agent": "not_authorized",
+    "writer": "not_authorized",
+    "shadow_model_evaluator": "not_authorized"
+  },
+  "known_boundary": "This manifest freezes predecessor identity and the failed R17 report-quality baseline. It authorizes no source, embedding, reranker, provider, Agent, Writer, score, product, publication or release action.",
+  "manifest_digest": "3faebbd9a53639c5e1dba4479d212bb8f0fccb255eb1391fbf59fdc55690dd14"
+}

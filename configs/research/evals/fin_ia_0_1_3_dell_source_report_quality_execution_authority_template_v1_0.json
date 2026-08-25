@@ -1,0 +1,256 @@
+{
+  "schema_version": "fin_ia_dell_source_report_quality_execution_authority_template_v1_0",
+  "status": "template_only_all_calls_not_authorized",
+  "case_key": "DELL",
+  "baseline_manifest_binding": {
+    "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_program_baseline_manifest_v1_0.json",
+    "sha256": "4bf0fa0e07d27fd3edcbaaea4a8b3002cfe4c0e227b8214c217666350ad4edc0",
+    "manifest_digest": "3faebbd9a53639c5e1dba4479d212bb8f0fccb255eb1391fbf59fdc55690dd14"
+  },
+  "node_templates": {
+    "external_source_retrieval": {
+      "authority_status": "not_authorized",
+      "attempt_id": null,
+      "model_calls_authorized": false,
+      "provider_calls_authorized": false,
+      "network_calls_authorized": false,
+      "TokenBudgetBasis": {
+        "node_purpose": null,
+        "input_scale": null,
+        "required_outputs": null,
+        "schema_burden": null,
+        "materiality_and_quality_risk": null,
+        "comparable_run_evidence": null,
+        "reasoning_profile": null,
+        "stop_and_truncation_behavior": null
+      },
+      "execution_contract": {
+        "input_digests": null,
+        "maximum_logical_nodes": null,
+        "maximum_provider_routes": null,
+        "maximum_network_routes": null,
+        "retry_policy": null,
+        "fallback_policy": null,
+        "capture_first": null,
+        "exclusive_create": null,
+        "failure_disposition": null
+      }
+    },
+    "embedding_0_6b_baseline": {
+      "authority_status": "not_authorized",
+      "attempt_id": null,
+      "model_calls_authorized": false,
+      "provider_calls_authorized": false,
+      "network_calls_authorized": false,
+      "TokenBudgetBasis": {
+        "node_purpose": null,
+        "input_scale": null,
+        "required_outputs": null,
+        "schema_burden": null,
+        "materiality_and_quality_risk": null,
+        "comparable_run_evidence": null,
+        "reasoning_profile": null,
+        "stop_and_truncation_behavior": null
+      },
+      "execution_contract": {
+        "input_digests": null,
+        "maximum_logical_nodes": null,
+        "maximum_provider_routes": null,
+        "maximum_network_routes": null,
+        "retry_policy": null,
+        "fallback_policy": null,
+        "capture_first": null,
+        "exclusive_create": null,
+        "failure_disposition": null
+      }
+    },
+    "embedding_4b_challenger": {
+      "authority_status": "not_authorized",
+      "attempt_id": null,
+      "model_calls_authorized": false,
+      "provider_calls_authorized": false,
+      "network_calls_authorized": false,
+      "TokenBudgetBasis": {
+        "node_purpose": null,
+        "input_scale": null,
+        "required_outputs": null,
+        "schema_burden": null,
+        "materiality_and_quality_risk": null,
+        "comparable_run_evidence": null,
+        "reasoning_profile": null,
+        "stop_and_truncation_behavior": null
+      },
+      "execution_contract": {
+        "input_digests": null,
+        "maximum_logical_nodes": null,
+        "maximum_provider_routes": null,
+        "maximum_network_routes": null,
+        "retry_policy": null,
+        "fallback_policy": null,
+        "capture_first": null,
+        "exclusive_create": null,
+        "failure_disposition": null
+      }
+    },
+    "reranker_baseline": {
+      "authority_status": "not_authorized",
+      "attempt_id": null,
+      "model_calls_authorized": false,
+      "provider_calls_authorized": false,
+      "network_calls_authorized": false,
+      "TokenBudgetBasis": {
+        "node_purpose": null,
+        "input_scale": null,
+        "required_outputs": null,
+        "schema_burden": null,
+        "materiality_and_quality_risk": null,
+        "comparable_run_evidence": null,
+        "reasoning_profile": null,
+        "stop_and_truncation_behavior": null
+      },
+      "execution_contract": {
+        "input_digests": null,
+        "maximum_logical_nodes": null,
+        "maximum_provider_routes": null,
+        "maximum_network_routes": null,
+        "retry_policy": null,
+        "fallback_policy": null,
+        "capture_first": null,
+        "exclusive_create": null,
+        "failure_disposition": null
+      }
+    },
+    "reranker_challenger": {
+      "authority_status": "not_authorized",
+      "attempt_id": null,
+      "model_calls_authorized": false,
+      "provider_calls_authorized": false,
+      "network_calls_authorized": false,
+      "TokenBudgetBasis": {
+        "node_purpose": null,
+        "input_scale": null,
+        "required_outputs": null,
+        "schema_burden": null,
+        "materiality_and_quality_risk": null,
+        "comparable_run_evidence": null,
+        "reasoning_profile": null,
+        "stop_and_truncation_behavior": null
+      },
+      "execution_contract": {
+        "input_digests": null,
+        "maximum_logical_nodes": null,
+        "maximum_provider_routes": null,
+        "maximum_network_routes": null,
+        "retry_policy": null,
+        "fallback_policy": null,
+        "capture_first": null,
+        "exclusive_create": null,
+        "failure_disposition": null
+      }
+    },
+    "dynamic_research_agent": {
+      "authority_status": "not_authorized",
+      "attempt_id": null,
+      "model_calls_authorized": false,
+      "provider_calls_authorized": false,
+      "network_calls_authorized": false,
+      "TokenBudgetBasis": {
+        "node_purpose": null,
+        "input_scale": null,
+        "required_outputs": null,
+        "schema_burden": null,
+        "materiality_and_quality_risk": null,
+        "comparable_run_evidence": null,
+        "reasoning_profile": null,
+        "stop_and_truncation_behavior": null
+      },
+      "execution_contract": {
+        "input_digests": null,
+        "maximum_logical_nodes": null,
+        "maximum_provider_routes": null,
+        "maximum_network_routes": null,
+        "retry_policy": null,
+        "fallback_policy": null,
+        "capture_first": null,
+        "exclusive_create": null,
+        "failure_disposition": null
+      }
+    },
+    "writer": {
+      "authority_status": "not_authorized",
+      "attempt_id": null,
+      "model_calls_authorized": false,
+      "provider_calls_authorized": false,
+      "network_calls_authorized": false,
+      "TokenBudgetBasis": {
+        "node_purpose": null,
+        "input_scale": null,
+        "required_outputs": null,
+        "schema_burden": null,
+        "materiality_and_quality_risk": null,
+        "comparable_run_evidence": null,
+        "reasoning_profile": null,
+        "stop_and_truncation_behavior": null
+      },
+      "execution_contract": {
+        "input_digests": null,
+        "maximum_logical_nodes": null,
+        "maximum_provider_routes": null,
+        "maximum_network_routes": null,
+        "retry_policy": null,
+        "fallback_policy": null,
+        "capture_first": null,
+        "exclusive_create": null,
+        "failure_disposition": null
+      }
+    },
+    "shadow_model_evaluator": {
+      "authority_status": "not_authorized",
+      "attempt_id": null,
+      "model_calls_authorized": false,
+      "provider_calls_authorized": false,
+      "network_calls_authorized": false,
+      "TokenBudgetBasis": {
+        "node_purpose": null,
+        "input_scale": null,
+        "required_outputs": null,
+        "schema_burden": null,
+        "materiality_and_quality_risk": null,
+        "comparable_run_evidence": null,
+        "reasoning_profile": null,
+        "stop_and_truncation_behavior": null
+      },
+      "execution_contract": {
+        "input_digests": null,
+        "maximum_logical_nodes": null,
+        "maximum_provider_routes": null,
+        "maximum_network_routes": null,
+        "retry_policy": null,
+        "fallback_policy": null,
+        "capture_first": null,
+        "exclusive_create": null,
+        "failure_disposition": null
+      }
+    }
+  },
+  "evaluation_split_contract": {
+    "valid_test_holdout_isolation_required": true,
+    "expected_label_visible_to_implementer": false,
+    "label_exposure_invalidates_blind_claim": true,
+    "same_candidate_pool_required_for_embedding_comparison": true,
+    "same_candidate_pool_required_for_reranker_comparison": true,
+    "case_level_no_regression_required": true
+  },
+  "activation_requirements": {
+    "new_attempt_id": true,
+    "materialized_input_digests": true,
+    "task_specific_TokenBudgetBasis_complete": true,
+    "source_ceiling_gate_passed_when_applicable": true,
+    "clean_synced_worktree": true,
+    "exclusive_outputs_preflighted": true,
+    "failure_attempt_preserved_immutable": true,
+    "silent_required_context_reduction_forbidden": true
+  },
+  "known_boundary": "Every node remains not authorized. A future node-specific authority must fill all null fields, bind one attempt and its actual inputs, and pass the applicable upstream gate; this template is not reusable call authority.",
+  "template_digest": "08307e0f12c3d0c0dba8c750bb75c2c42d02e0453b9062975313967a0c4ffbf4"
+}

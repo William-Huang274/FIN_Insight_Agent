@@ -15,8 +15,8 @@ NVDA embedding 和整体/MU/NVDA reranker 质量回退，不是显存。
 bounded crosswalk G1 已由第三名 fresh reviewer 以 `0/0/0/0` 通过。02A/03A R1 虽已物化，但随后
 fresh reviewer 判定 `FAIL，P0/P1/P2/P3=1/2/1/0`，失败已不可变保留，R1 不可进入 human review 或
 source execution。当前同阶段 R2 作者实现已通过定向 `48`、相邻 `101` 和全仓 `1361 passed, 2 skipped,
-2 warnings`；02A R2 已从 clean `8dbdb963...e3d84` non-overwriting 物化并 exact recompile，03A R2
-物化与新的独立复核仍待后续。
+2 warnings`；02A/03A R2 均已 non-overwriting 物化并 exact recompile，新的独立工程＋研报质量复核
+仍待后续。
 真实 ProductReadiness 是 8 请求／18 review item／16
 human-required；4 个 blocked 请求只包含其中 8 项。02A 因此冻结“16 项全量决策集＋8 项阻断子集”；
 03A 全量分区 14 Pack gap 和独立产品利润 gap，9 个补源 target 中 3 个 admission-held、6 个只具后续
@@ -1852,7 +1852,10 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - clean implementation commit=`8dbdb963...e3d84`。02A R2 public/private 已 exclusive-create 到 v1.1／
   `dell-r2`，packet digest=`6ea77971...882f`，public/private digest=`0b74f969...ab68`／
   `a90ed777...c4fd`；exact recompile 与公开 no-excerpt/no-URL 通过，decision 仍为 0/16。
-- 下一门是提交 02A record、clean 物化 03A R2 和 exact recompile，再交给新的 fresh read-only reviewer
-  同时审工程/Evidence 与报告 claim-use/source quality。真实补源、02B human
+- 03A R2 已绑定 clean 02A record commit `75d99f8d...46a1d` 物化；program digest/SHA=
+  `ed6f11a8...19d50`／`581c290d...0f64`。exact recompile 通过，14+1 gaps／9 targets／6 unoverlapped／
+  3 exact held／7 routes／63 contracts，URL-like locator=0，prior 50/22 对账，所有调用=0，G3=false。
+- 下一门是提交 immutable 03A record，再交给新的 fresh read-only reviewer 同时审工程/Evidence 与
+  报告 claim-use/source quality。真实补源、02B human
   decisions、S2/Pack/Readiness、新报告和产品验收均未开始；所有 stage/report/product/release verdict
   继续为 false。

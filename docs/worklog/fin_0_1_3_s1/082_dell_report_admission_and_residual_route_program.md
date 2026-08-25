@@ -262,3 +262,28 @@ manifest 不含 bounded excerpt、`source_url`、HTTP(S) locator 或完整私有
 8 requests／18 predecessor items／16 human items、4 blocked requests／8 blocker items、建议分区
 5/10/1、qualified-human decisions `0/16`；全部调用和 promotion 为 0，G2 及所有 stage/report/product
 authority 为 false。该物化不是 02B admission、Evidence promotion、真实补源或研报质量通过。
+
+## 12. 03A R2 non-overwriting materialization
+
+02A public record 进入 clean commit `75d99f8d208282d5d050002bd210454103e46a1d`／tree
+`edb1d7a42ea128a7ac8fdbc709485ba87b240a26` 后，03A R2 精确绑定其 public SHA/result/packet digest 并
+exclusive-create：
+
+- output：
+  `configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_1.json`；
+- recorded at：`2026-08-25T17:24:48+08:00`；
+- prepared from commit：`75d99f8d208282d5d050002bd210454103e46a1d`；
+- program digest：`ed6f11a8fe091d84362d2df041d5ea0bffa50a5c781274f60eaf9e73d6919d50`；
+- file SHA：`581c290df98b75fb06fb86842532cdc2c719d235b2aa6524f89f99a534780f64`；
+- bound 02A manifest SHA：`5064dbbc964b4062ec40d29e3258a3effce1ca130df1527bcec85f9ba2954e1f`。
+
+保存的 recorded_at／prepared commit 重编后逐字段相等。结果精确为 14 Pack gaps、8 Pack targets、
+1 independent S2 product-profit target、9 total targets、6 unoverlapped、3 held、6 non-acquisition、
+7 route families、63 contracts；held identity 仅 demand durability、product profit、working capital。
+全部 63 个 locator template 的 URL-like/qrel 计数为 0；prior 50 queries／22 fresh 已对账；
+network/provider/model/embedding/reranker/capture/promotion/gap closure 全为 0，`G3=false`。
+
+下一门是将本 program 与记录提交为 immutable target，再由全新、无历史上下文继承的只读 reviewer
+独立重放 R1 attacks、R2 新增 admission-map attacks、exact recompile，并逐项审 16 个 claim-use 的
+period/basis/owner/role/material report use。工程审计必须与研报质量审计分别判定。审计通过也仍不等于
+qualified-human 02B、真实补源、S2 重编、Writer 或产品验收。

@@ -36,8 +36,19 @@ Owner 随后要求在继续实现前补齐 program-level execution plan，并明
 七项拆成七个交付 epic，加一个治理前置，共 34 张 ticket；依赖顺序为 baseline／quality protocol→14/9/4 crosswalk→Evidence admission
 与 residual source ladder→Pack/Readiness/S2→affected dynamic cells→non-overwrite Writer→dual audit/
 qualified human。4B embedding 只进入受控混合 challenger，reranker 保留独立 bake-off；二者都不能
-获得 Evidence 权限。当前状态只是 `program_documented / implementation_not_started`，下一张票为
-`DELL-RSQ-00A`，没有新的 Runtime、网络、模型、Agent 或 Writer 执行。
+获得 Evidence 权限。
+
+Owner 已授权计划完成后开始实现。`DELL-RSQ-00A/00B/00C` 与 `01A/01B/01C` 的确定性首片已在
+commit `43e3a555...a2d2` 实现并物化 R1：baseline manifest 逐文件绑定 R17、R4 Pack、R38、
+ProductReadiness、S2 bridge、Rubric 与执行程序；质量协议冻结 L1/L2、P0–P3、八维阈值、三 verdict
+和 reviewer reason-ref；8 个未来 source／embedding／reranker／Agent／Writer／shadow evaluator 节点
+均为 `not_authorized`。crosswalk content digest=`10fefe2f...54d17`，机器计数为 Pack `14`、R38 `9`、
+Writer `4 groups / 10 refs`、S2 bridge `4`；5 个 Pack gap 未被 R38 选择、4 个未被 Writer 引用，
+`dell-gap-product-profit-attribution` 保持独立 S2 gap。三个投影共用同一 content digest，模型视图不含
+private path/digest，读者视图不要求理解 EV/GAP；PVM 与产品利润继续明确为 null。17 个 mutation／
+contract tests 与相邻合同合计 `28 passed`。本片 0 模型／Provider／网络／embedding／reranker／晋升／
+gap closure；fresh author-separated crosswalk review 尚未完成，因此 `G1=false`，下一合法工作是只读
+复核该 immutable 实现片，随后才进入 `DELL-RSQ-02A` admission packet 和 `03A` residual route manifest。
 
 ## 历史上下文（保留）
 

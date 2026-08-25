@@ -102,3 +102,16 @@ Owner 进一步要求：继续实现前，必须把第 3 节的七项拆成需�
 第一张实现票固定为 `DELL-RSQ-00A` baseline manifest；本记录更新仍是文档／治理工作，没有修改
 Runtime、Evidence、Pack、模型、报告或产品代码，没有网络、embedding、reranker、Provider、动态
 Agent 或 Writer 调用，也不代表任何 stage 或产品门通过。
+
+## 8. DELL-RSQ-00A—01C 实现 successor
+
+Owner 已授权计划完成后开始实现。确定性首片已在 commit `43e3a555...a2d2` 建立 baseline manifest、
+质量协议、逐节点权限模板、provider-neutral crosswalk compiler、materializer 和 17 个 mutation／合同
+测试，并在该 clean commit 上物化 R1。完整记录见：
+
+- `docs/worklog/fin_0_1_3_s3/173_DELL_RSQ_00A_01C_baseline_quality_and_crosswalk_materialization.md`。
+
+R1 content digest=`10fefe2f...54d17`，精确计数 `14 Pack / 9 dynamic / 4 Writer groups / 10 Writer
+refs / 4 S2 bridge`；closed 与 proved boundary 均为 0。实现把 technical chain、unit selection、research
+disposition 和 next action 分成正交状态，防止把 14→9→4 写成 gap closure。fresh author-separated
+crosswalk review 尚未完成，因此 `G1=false`；本计划记录不能被引用为独立验收。

@@ -133,8 +133,11 @@
 - [x] 当前 R17 只读质量基线完成：`P0/P1/P2/P3=0/1/2/1`，engineering PASS_BOUNDED，report OPEN/NOT_ASSESSABLE，qualified-human false
 - [x] program-level 执行计划完成：七个交付 epic 加一个治理前置，共 34 张 ticket；每票同时具备工程/Evidence、模型节点输出和最终研报质量门、输入输出、测试、停止条件与责任阶段
   - source-of-truth：`docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md`
-  - 当前下一票：`DELL-RSQ-00A` baseline manifest；当前仍为 implementation not started
-- [ ] 固化 R17 四组 remaining gaps 到 current `55 Evidence / 14 gaps`、R38 9 gaps 和 Writer 4 groups 的机器可读映射
+  - [x] `DELL-RSQ-00A/00B/00C`：baseline manifest、质量协议和逐节点权限模板已实现；8 个未来调用节点全部 `not_authorized`
+- [x] `DELL-RSQ-01A/01B/01C` 确定性实现与 R1 物化：R17 四组 remaining gaps 到 current `55 Evidence / 14 gaps`、R38 9 gaps、Writer 4 groups／10 refs 和 S2 4 bridge gaps 的机器可读映射
+  - [x] 三投影共用 content digest `10fefe2f...54d17`；5 个 not-selected、4 个 not-writer-referenced 和独立 product-profit gap 均显式
+  - [x] 17 个 crosswalk／mutation tests；连同 S2/R17 相邻合同为 `28 passed`；0 model/provider/network/embedding/reranker/promotion/closure
+  - [ ] fresh author-separated reviewer 解释 14/9/4 并签发只读 verdict；完成前 `G1=false`
 - [ ] 完成 blocked-by-evidence-admission 的 4 个 DELL 产品请求及 16 个 human-review item；候选不得自动晋升 Evidence
 - [ ] 执行真实 residual 的任务绑定外源梯子，并为每项形成 closed／narrowed／route-exhausted／proved-boundary receipt
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap

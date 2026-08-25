@@ -1901,3 +1901,23 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 下一步先把结果提交/push，再由全新只读 reviewer 审工程与 semantic false-negative、信源充分性、上一版研报
   gap crosswalk 和未来 claim-source/citation 质量；审计前不启动 03C。02B human decision、03C、4B/reranker、
   Evidence admission、S2/Pack/Readiness、新报告和产品验收均继续 false。
+
+### 2026-08-25 DELL-RSQ-03B R2 fresh audit FAIL 与状态撤回
+
+- 无上下文继承、作者分离、只读 reviewer 审计 immutable `2a604156...`，03B 新增 finding 为
+  `P0/P1/P2/P3=1/1/1/0`；连同仍 open 的 R17 研报质量项为 `1/2/3/1`。Reviewer 不是 qualified human，
+  02B 决定仍为 `0/16`。
+- P0：compiler 未精确校验 batch=1、五个唯一 request、每 request 96/16 与全部 zero-authority fields，且
+  public 若干 zero 是硬编码；runner 可用 alternate output 重放同一 attempt、未绑定 exact branch/commit/tree，
+  private/public 同径可留下半输出。保存 trace 的 96/16 可复算，但不是 fail-closed authority seal。
+- P1：object-only AND 造成真实假阴性。两组 reviewed bounded configuration-price package 已在 current corpus
+  和 final rank 14/15/16；Dell/NVIDIA official partnership/delivery/availability 也已在 local corpus，supplier
+  final rank 2。ASP 不等于 company-wide realized ASP，supplier capacity/allocation 仍 open，但不应为已存在事实
+  再做全量补源。
+- P2：裸子串把 `Wendell` 当成 `Dell`；整页/整文档拼接又会制造泛关系假阳性。source-lineage identity set
+  equality 不能证明 source text 完整物化，source 1887 有 material 句子未进入对应 compiled objects。
+- 因此 append-only 撤回 `03B=True`、真实 local complete=0、`03C required=6`、`4B eligible=0`、
+  `reranker eligible=0`；R2 bytes、R1 failure、identity equality、saved traces 和 exact public projection 保持真实。
+- 下一合法动作是 non-overwriting R3：exact execution/attempt/canonical atomic output seal、role-aware 同源相邻
+  slice package、token/entity/relation direction、source→object semantic coverage gate 与真实 corpus attack tests。
+  fresh re-audit 通过前，03C、4B、reranker、Evidence、S2、新报告、产品、publication、release 全为 false。

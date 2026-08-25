@@ -78,3 +78,20 @@ R2 成功不等于 02B human decision、03C acquisition、03D 4B／reranker、Ev
 G3、S1/S2/S3、Pack/Readiness 重编、新研报质量、产品验收、publication 或 release。实际执行只能发生在完整
 工程门通过、implementation commit clean 且与 upstream 相等之后。当前结果只把 6 项都路由为 03C
 eligible；它没有授权 03C，也没有证明公开信息边界。
+
+## 2026-08-25 fresh audit 后置更正
+
+无上下文继承、作者分离的只读 reviewer 对 immutable result commit `2a604156...` 判定 **FAIL**；本轮 03B
+新增 `P0/P1/P2/P3=1/1/1/0`。本报告上述“successful／六项 03C／4B 与 reranker 均不适用”只能保留为
+R2 当时的执行输出，不能再作为独立接受的工程或研究 verdict。
+
+R2 private/public SHA、digest、exact projection、1,888 source／34,198 object identity equality，以及保存的五个
+request 各 96/16 和 rank trace 均可复算；但 compiler 未 fail-close exact batch、request uniqueness、96/16、
+全部 zero-authority fields，runner 也未锁死 exact attempt/canonical atomic output。因此 exact-once 与零越权只能
+降级为“未发现相反文件的实际观察”。
+
+更重要的是，ASP 的两组 reviewed configuration-price package 和 Dell/NVIDIA official relationship/delivery
+已经存在于 current local corpus／final candidates，却因对象级 AND、ticker scope 与 morphology 规则被漏判。
+故撤回 `complete=0` 作为真实语料判断、`03C required=6`、`4B eligible=0` 和 `reranker eligible=0`。R2 不改写、
+不追认；下一合法动作是同阶段非覆盖 R3。详见
+`configs/audits/fin_ia_0_1_3_commit_2a604156_dell_03b_r2_fresh_audit_fail_v1_0.json` 与工作记录 085。

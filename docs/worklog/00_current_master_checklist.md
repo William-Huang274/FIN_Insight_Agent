@@ -139,7 +139,7 @@
   - [x] 17 个 crosswalk／mutation tests；连同 S2/R17 相邻合同为 `28 passed`；0 model/provider/network/embedding/reranker/promotion/closure
   - [x] fresh author-separated R1 review：`FAIL，P0/P1/P2/P3=1/2/1/0`；baseline/Git、质量协议、投影和状态轴均有 material finding，R1 不可追认为 PASS
   - [x] R2 作者工程修复：实际 12-count 复算、Git bytes/clean-filter/commit:path 三重绑定、完整 8D/P1/reason-ref 冻结、确定性三投影、technical/unit 正交轴；`25 + adjacent = 36 passed`，全仓 `1309 passed, 2 skipped, 2 warnings`
-  - [ ] clean commit 后 exclusive-create R2 private/public v1.1；不得覆盖 R1
+  - [x] clean `324bf2bc...` 后 exclusive-create R2 private/public v1.1；content digest `f2ab6795...8afc2`，不得覆盖 R1
   - [ ] 另一名 fresh author-separated reviewer 审计 immutable R2 并签 verdict；完成前 `G1=false`
 - [ ] 完成 blocked-by-evidence-admission 的 4 个 DELL 产品请求及 16 个 human-review item；候选不得自动晋升 Evidence
 - [ ] 执行真实 residual 的任务绑定外源梯子，并为每项形成 closed／narrowed／route-exhausted／proved-boundary receipt

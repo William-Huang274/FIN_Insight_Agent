@@ -57,13 +57,14 @@ gap closure；fresh author-separated crosswalk review 尚未完成，因此 `G1=
 digest 字符串的漂移投影和被隐藏的 product-profit null；5 个未选择 gap 还把 technical state 错写成
 unit-selection 值。R1 public/private 与 v1.0 governance 全部保持不可变。
 
-R2 工程 successor 已按最早责任层实现、尚未物化：append-only baseline verification 绑定 R1 failure、
+R2 工程 successor 已按最早责任层实现并从 clean `324bf2bc...`／tree `119ff18f...` 物化：append-only baseline verification 绑定 R1 failure、
 R4 result/gate 和全部实际计数；tracked identity 改为 raw SHA-256＋同 bytes 的 Git clean-filter blob＋
 历史 `commit:path` blob 三重验证；quality protocol 全面 exact-freeze；audit canonical content 现在会重算
 digest 并确定性重建 model/reader；technical state 改为 closed/not-evaluated 独立枚举，PVM 与 product
-profit null 均强制可见。crosswalk 定向 `25 passed`、与 S2/R17 相邻合同 `36 passed`。下一门是 clean
-commit 后 exclusive-create R2/v1.1，再由另一名 fresh read-only reviewer 审 immutable R2；作者工程
-全仓门为 `1309 passed, 2 skipped, 2 warnings`。此前 G1、
+profit null 均强制可见。R2 content digest=`f2ab6795...8afc2`，public result digest=
+`36782042...85e6`；crosswalk 定向 `25 passed`、与 S2/R17 相邻合同 `36 passed`。下一门是提交 public
+v1.1 后由另一名 fresh read-only reviewer 审 immutable R2；作者工程全仓门为
+`1309 passed, 2 skipped, 2 warnings`。首次 GitHub push 因 443 不可达失败，远端同步待重试。此前 G1、
 Evidence admission、补源、研报质量和所有 stage/product/release verdict 均未通过。详见 S3/174。
 
 ## 历史上下文（保留）

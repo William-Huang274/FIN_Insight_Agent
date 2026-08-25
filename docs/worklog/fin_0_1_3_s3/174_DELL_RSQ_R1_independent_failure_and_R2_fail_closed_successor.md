@@ -2,7 +2,7 @@
 
 日期：2026-08-25
 
-状态：`R1_independent_FAIL_immutable / R2_engineering_successor_ready_for_clean_materialization / G1_false`
+状态：`R1_independent_FAIL_immutable / R2_materialized / fresh_reaudit_pending / G1_false`
 
 ## 1. 为什么不能把 R1 追认为通过
 
@@ -97,3 +97,28 @@ deprecation）；compileall、pyflakes、Project OS JSONL parse、JSON parse、s
 研报信源，未重编 Pack／Readiness／S2，未运行 embedding、reranker、Agent 或 Writer，也未修复 R17
 reader citation、WWC 或生成新研报。因此 S1／S2／S3、report quality、qualified-human、product、
 publication 和 release 继续为 false。
+
+## 5. Clean R2 materialization
+
+工程 successor commit：`324bf2bc4a9529981b5015126737f0193c00823d`；tree：
+`119ff18f11177bb2790aec4939e362a2e6988215`。物化前工作树 clean。GitHub HTTPS 443 当时不可达，
+所以该 commit 的第一次 push 失败且没有远端变更；本地 immutable identity 不受影响，远端同步继续
+作为交付边界保留。
+
+2026-08-25T13:28:43+08:00 exclusive-create R2：
+
+- public：`configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_1.json`；
+- private：`data/workbench_private/fin_0_1_3_report_gap_crosswalk/dell-r2/full_result.json`；
+- content digest：`f2ab679522d15ba9fe22e3f17b0010a032a4fb142fa918b56b5d344c47b8afc2`；
+- public result digest：`3678204233d595df3090dd6526d19ebb4cdd748f6d5ead57ae344e6ba85a85e6`；
+- public file SHA-256：`365471c0a3c2a9e5a12134eb6726b25f00d2846dcd2a855cce5cb691201b12f0`；
+- private full result digest：`f9a1eaab3b97f3e4059ac11ae9c99a03cc37f072f6aec9643decee9879bc144f`；
+- private file SHA-256：`06bbf47abde9ae989a3a93a6c5751d366c59059b939b2dcf7ea1821d8e984eae`。
+
+用保存的 `recorded_at`、`prepared_from_commit` 和同一 private output ref 重新执行内存编译，public 与
+private 两份对象均逐字段完全相等（`R2_exact_recompile_ok`）。
+
+R2 acceptance 明确记录 R1 independent failure、12-count actual recomputation 和 tracked
+`commit:path` blob verification 为 true；fresh independent review、G1、S1/S2/S3、product、
+publication 和 release 全为 false。下一动作只允许提交这份新 public receipt 后，对 immutable R2
+执行 fresh read-only re-audit；不能先进入需要 G1 的后续 live。

@@ -1473,6 +1473,20 @@ class ResearchRetrievalService:
                 "network_calls": 0,
                 "model_calls": 0,
                 "generation_model_calls": 0,
+                # This current-runtime entrypoint has no provider, external-capture,
+                # large-embedding, reranker, retry, mutation, promotion, or gap-close
+                # branch. Keep the complete authority surface in the raw service
+                # receipt so downstream bounded runs validate observed execution
+                # fields instead of manufacturing zeroes in a report compiler.
+                "provider_calls": 0,
+                "external_capture_calls": 0,
+                "4B_embedding_calls": 0,
+                "reranker_calls": 0,
+                "retries": 0,
+                "current_mutations": 0,
+                "candidate_promotions": 0,
+                "evidence_promotions": 0,
+                "gap_closures": 0,
             },
             "material_compilation_receipts": material_receipts,
             "material_scope": {

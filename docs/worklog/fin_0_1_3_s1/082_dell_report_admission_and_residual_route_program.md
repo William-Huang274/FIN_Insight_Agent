@@ -329,3 +329,11 @@ embedding、reranker、source execution、promotion 或 gap closure。
 03B internal-chain scoped authority，但本审计没有授予执行权。3 个 held target 等待 02B。真实内／外源
 执行、Evidence admission、G2/G3、Pack／Readiness／S2 重编、动态 Agent、Writer successor、formal
 Q1–Q8、report/product/publication/release 全部仍未进入。
+
+## 14. 审计记录提交与远端同步边界
+
+审计回执和 Project OS 记录已提交为 `afc6ba6d516a01f9a72498679ad94dfb0aada4b9`／tree
+`d9cf53c3b88472e89709955c5f062760bcb2295e`，提交后工作树 clean。随后执行一次
+`git push origin HEAD`，在约 21 秒后因无法连接 `github.com:443` 失败；远端没有变化。该失败只是
+Git transport boundary，不改变本地审计 verdict，也不得写成远端已同步。待网络恢复后从当前分支
+重试非破坏性 push，不重跑 02A/03A、不创建新产品版本或新研究 attempt。

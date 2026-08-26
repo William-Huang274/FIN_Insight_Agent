@@ -2061,3 +2061,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - P2 privacy：recursive key allowlist 已生效且当前 public 无实际泄漏，但允许字符串字段仍可放行 credential-like/secret-like payload、percent-encoded locator 与 relative traversal，未来投影不 fail-close。
 - R17 继续 FAIL_GATE/OPEN_NOT_ASSESSABLE：读者 citation/source appendix 缺失，14/9/4/10 crosswalk 未消费，WWC operational=`0/6`，事实与 WWC 重复，02B decisions=`0/16`，formal 8D 无效。
 - R6 不覆盖、不重试。下一步必须先写 R7 program-level execution plan，再开 non-overwriting same-stage R7；R17 successor 保持分离。03C/4B/reranker/Evidence/NumericFact/S2/report/product/publication/release 全 false。Audit digest=`11935696...16342`，详见工作记录 095。
+
+### 2026-08-26 DELL-RSQ-03B R7 program-level plan
+
+- R7 计划已把 R6 fresh audit 的三项根因拆成八张依赖票：predecessor/audit freeze、TypedProposition IR、六 target role contracts、single-proposition completion、role-bound anchor v3、field-typed public content validator、exact execution seal、fresh dual audit/authority transition。
+- 核心不变量是“一个 complete 对应一个 proposition”：actor/predicate/object/recipient、polarity/modality/status/revocation、report owner、quantity/measure/currency/unit/qualifier、product/period/process 必须同命题绑定；不得跨 clause/sentence 聚合 required groups。
+- audit 的 semantic false-complete/positive-control、产品/FY/货币/无关数字 anchor、allowed-field secret-like/encoded locator/traversal 全部冻结；current R6 counts 默认应保持，但任何改变必须逐 proposition 解释，未解释前不签 policy。
+- 计划同时保留完整下游顺序：R7 fresh pass 后才重算 residual crosswalk，ASP rank-15 reranker challenger、四 residual 外源梯子、条件式 4B mixed embedding challenger、Evidence/human admission、Pack/Readiness、S2、非覆盖式新报告、工程与研报双审计、qualified-human 验收。它们均未在 R7 计划阶段执行。
+- R17 reader citations/source appendix、14/9/4/10 crosswalk、WWC operational=`0/6`、密度/重复、02B `0/16` 与 formal 8D 继续失败，必须进入 future report-quality audit；R7 成功不能自动修改 R17 verdict。
+- 当前仅允许 R7 implementation/tests/zero-model preview；v1.6 policy、attempt `dell-rsq-03b-internal-chain-r7`、private/public result 均不存在。详见工作记录 096。

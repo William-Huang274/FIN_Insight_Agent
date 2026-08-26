@@ -2042,3 +2042,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 复用 immutable R5 raw execution 对 1,888 source／34,199 objects 做最终零调用 full-corpus compile 与 public projection，用时 `224.279s`；ASP=`2/2/2/2` rank 15、supplier=`2/2/2/1` rank 2，其余四 target=`0/0/0/0`，六项 coverage gap=0、external=4、reranker=1、4B recall=0，与 R5 current observations 完全一致。
 - Project OS=`82 passed`、全仓=`1575 passed, 2 skipped, 2 existing SWIG warnings`、compileall/pyflakes/diff check、active baseline=`213/8/5/28/0`、1,146 config JSON、8 Project OS JSONL／1,275 行与 8,137-file secret scan／0 已通过。R6 policy/attempt/result 尚不存在；先完成 clean implementation push，之后才允许 policy-only authority 与唯一新 attempt。
 - R17 citation/source appendix、crosswalk、WWC、density、02B `0/16` 与 formal 8D 继续独立失败。03C/4B/reranker/Evidence/NumericFact/S2/report/product/publication/release authority 均保持 false。详见工作记录 093。
+
+### 2026-08-26 DELL-RSQ-03B R6 唯一执行与作者完整性
+
+- implementation=`512aa32b...20d38`、authority=`b6410eb2...1cd48`；authority 仅含 v1.5 policy，唯一父提交为 implementation。执行前 clean/synced、24 inputs、14 implementation SHA、canonical collision 与 free bytes=`1,370,591,232` 全通过。
+- 一次非 canonical `python -c` import wrapper 在进入 runner 前即 `ModuleNotFoundError`；复核 private/public/receipt/parent directory 全不存在，故零写、零调用、未消费 attempt。随后 canonical runner 唯一正式执行成功，recorded at=`2026-08-26T09:26:11+00:00`。
+- 正式执行 request=5、local 0.6B query-embedding batch=1、union=338、final=80；network/provider/generation/external/4B/reranker/retry/mutation/promotion/closure=0。ASP=`2/2/2/2` rank15、supplier=`2/2/2/1` rank2、其余四项=`0/0/0/0`，coverage=0、external=4、reranker eligible=1、4B eligible=0。
+- policy/receipt/private/public self-digest、private link 与 raw execution SHA 全通过。用保存的 raw execution 对 1,888/34,199 exact replay `218.543s`，private 逐字段全等、public reprojection 逐字段全等；public SHA=`53114d29...d00a`。
+- 这仍只是 author-integrity pass。提交 immutable result 后必须启动全新 fork-none read-only auditor，同时审 R6 engineering/semantics/anchors/privacy/routes 与 R17 report quality；其前 03B/S1/S2/report/product/publication/release 全为 false。详见工作记录 094 与 R6 model-run。
+- Post-result gate：targeted=`95 passed`、Project OS=`82 passed`、active baseline=`213/8/5/28/0`、1,148 config JSON、8 Project OS JSONL／1,280 行、8,141-file secret scan／0、compileall、四份 self-digest 与 diff check 均通过。

@@ -2133,3 +2133,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Frozen 63+8 negatives、6+11 positives、原 anchor attack、15 public attacks/3 valid controls 通过；public privacy=`PASS_BOUNDED`。source→compiled accepted-frame digest 变换是否有完整 provenance 未完成，记 `NOT_ASSESSABLE`。
 - R17=`FAIL_GATE_OPEN_NOT_ASSESSABLE`，open=`0/1/2/1`：55/55 source passages/URLs 在底层 pack 可解析，但报告 18 EV 无一对一 passage/URL binding，reader URL=0/source appendix=false；14/9/4/10 crosswalk 未消费，WWC 0/6，72 facts/36 unique，02B 0/16，formal 8D score=null。数值/公式与产品边界通过不能替代 reader source/product gate。
 - Audit digest=`d8f2176e...5cb612`。R8 不覆盖、不重试；下一步先写 non-overwriting R9 program plan，修 frame split、semantic state、price-role locality 与 frame provenance。R9 fresh pass 前 03C/4B/reranker/Evidence/Pack/S2/R17 successor/product/publication/release 全 false。详见工作记录 103。
+
+### 2026-08-27 DELL-RSQ-03B R9 program-level plan
+
+- R9 计划把 R8 三项 P2 与一项 provenance `NOT_ASSESSABLE` 拆为九张顺序票：audit/pass-surface freeze、punctuation-independent coordination、frame-local semantic state/ScopeEdge、argument-group product-price attachment、source→compiled transformation seal、六 target integration/preview、risk-tier freeze、exact formal seal、bounded fresh audit。
+- 不以“再加几个词”修复：coordination 由两侧 predicate＋右侧显式 subject 决定并保留 compound subject；revocation/exploration/leading attribution 使用 typed state 与 scope edge；price 必须先绑定 hardware/support 等 object group，无法唯一归属即 partial。
+- 新增 representation digest 与 semantic signature 分离，以及 `FrameTransformationBinding`；source/compiled frame digest 可因表示改变而不同，但 complete 必须逐 role 有无损 source→compiled 映射。
+- 测试不默认全仓：T0 每 patch，T1 ticket、T2 R8+R9 explicit、必要 T3；只有 shared/active consumer 改动、unknown import impact 或跨域失败才触发一次 T4。T1/T2/T3 硬停分别 90/120/180s；preview 70s warning、120s hard stop。
+- R17 immutable bundle 未变时，R9 audit 只验证 14-file SHA 与 audit receipt 并 carry forward `FAIL_GATE`；只有 report/source-binding/crosswalk/method/human artifact 改变才重复内容审计。未来报告仍必须补 EV/claim→passage/URL locator、reader appendix、14/9/4/10、WWC、72/36 duplication 和 0/16 human gate。
+- 当前仅 plan 完成；R9 implementation/policy/attempt/result、03B independent、03C/4B/reranker/Evidence/Pack/S2/report/product/publication/release 全 false。详见工作记录 104。

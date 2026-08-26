@@ -73,6 +73,13 @@
 
 若第一段发现 material engineering finding，先停止产品结论并回 owning stage；若工程通过但研报失败，只回 S1/S2/S3/Writer 的实际责任层。审计不以“重跑所有作者门”代替作者分离的判断。
 
+审计效率补充（2026-08-27 R7 实证纠偏）：
+
+1. 作者在 immutable result commit 中同时提供 hash-bound audit manifest：exact files/hashes、predecessor findings、positive controls、actual-route expectations、report checklist、允许命令与禁止范围。Reviewer 必须独立复验 manifest，但不自行重新做项目发现。
+2. AGENTS 要求的 Project OS/context/policy 仍须完整读取；该要求不授权递归扫描所有历史 ledgers、worklogs 或 archive。只读取 manifest 明确引用的最新状态行和 predecessor artifacts。
+3. Engineering 与 report 两段各完成后先交 checkpoint；若固定 bundle 缺 source passage/locator 或 qualified-human evidence，标 `NOT_ASSESSABLE` 并写清缺件，不扩大搜索。
+4. Supervisor 可在 reviewer 越出 manifest、重复无关历史或未按 checkpoint 交付时中断；恢复后用已收集证据交付，不把“独立审计”解释成无限时长。
+
 ## 6. R7 的即时适用
 
 R7 production/test implementation 冻结后已经完成一次 T4：`1726 passed, 2 skipped, 2 existing SWIG warnings`，耗时 `1319.73s`；同时 T1=`151`、T2=`357` 已通过。随后仅追加 Project OS/worklog 与本策略，不改变 R7 executable semantics，因此不再重复 T4：

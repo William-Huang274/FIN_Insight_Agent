@@ -2089,3 +2089,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - policy/receipt/private/public self-digest、canonical bytes、private links、raw SHA 全通过；保存 raw execution 对 1,888/34,199 exact replay=`34.222s`，private exact recompile 与 public exact reprojection 均逐字段全等。R7 targeted=`151 passed in 11.49s`。
 - 依风险分层策略，post-result 不重复 1,726 项全仓：production/test/shared validator/active consumer 未变，由 R7 targeted、exact replay/reprojection、Project OS、active baseline、JSON/JSONL、secret/static/diff 覆盖。Fresh reviewer 只因具体 material finding 升级 mutation/targeted；影响面未知才升级全仓。
 - 当前仅 author-integrity pass，03B independent=false。四 external targets、Evidence admission、Pack/Readiness、S2 和新报告均未开始；R17 citation/source appendix、crosswalk、WWC、density、02B `0/16`、formal 8D/human 继续失败。先提交 immutable result，再启动全新 fork-none read-only R7/R17 dual audit；其前 03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。详见工作记录 098 与 R7 model-run。
+
+### 2026-08-27 DELL-RSQ-03B R7 fresh dual-audit FAIL
+
+- Fresh fork-none、作者分离、只读 reviewer 对 result commit `22c85026...b35e` 判定 Overall FAIL；R7 新 finding=`0/0/3/0`，R17 open=`0/1/2/1`，combined=`0/1/5/1`。Audit digest=`90463766...44abb`。
+- R7 integrity/current public/actual route 均 pass/bounded；29/17 bindings、四 self-digest、receipt links、raw digest、public reprojection、exact-once population 通过。ASP `1/1/1/1 rank2`、supplier `3/3/2/1 rank2`、四 residual 0、coverage 0、external 4、local repair/4B/reranker 0 仅保留为 bounded observations。
+- P2 semantics：同句不同 predicate frame 仍跨事件借 actor/predicate/object/recipient/product/price/count/process；trailing allegedly/unconfirmed 不生效。P2 anchor/recall：`$150 support + $15 XE9680` 错绑 `$150`，`provides/released/yielded/uses/dispatched/offered` 六正例全漏。P2 privacy：grammar-valid 高熵 ID 与四层 percent-encoded URL 绕过。
+- R17 数值关系重算通过，但 reader URL=0/source appendix=false、crosswalk 未消费、WWC 0/6、事实 71/32 重复、02B 0/16、formal 8D invalid；原文语义支持因 bundle 缺 passages/locator 为 NOT_ASSESSABLE。
+- 审计未跑全仓；localized mutation 已足够证明 failure。实际延迟来自递归历史阅读，主 Agent 两次中断限缩。风险分层策略已要求 future hash-bound audit manifest、engineering/report phase checkpoints 与 bundle 缺失即 NOT_ASSESSABLE。
+- R7 不覆盖、不重试。下一合法动作只允许保存 audit failure 后写 R8 program plan；03C/4B/reranker/Evidence/NumericFact/S2/report/human/product/publication/release 全 false。详见工作记录 099。

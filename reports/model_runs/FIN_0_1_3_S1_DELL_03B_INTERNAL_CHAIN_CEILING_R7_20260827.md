@@ -40,3 +40,15 @@ Post-result 不重复全仓：implementation freeze 已有一次 1,726-test evid
 Fresh fork-none reviewer 必须同时审 immutable R7 工程/语义/anchor/privacy/route，以及 R17 reader-visible citation appendix、gap crosswalk、WWC、密度/重复和 qualified-human/formal 8D。审计前 03B、S1、S2、report quality、product、publication 与 release 均不通过。
 
 Post-result risk-tiered gate：R7 targeted=`151 passed in 11.49s`、Project OS=`82 passed in 28.91s`、exact replay/reprojection=`34.222s`、active baseline=`213/8/5/28/0`、1,151 config JSON 与 8 Project OS JSONL／1,294 rows parse pass。全仓未重复；若独立审计发现 material finding，再按影响面升级 targeted/mutation 或 T4。
+
+## Fresh independent dual audit
+
+Fresh fork-none、作者分离、只读 reviewer 对 immutable result commit `22c85026...b35e` 判定 Overall=`FAIL`。R7 新 finding=`P0/P1/P2/P3=0/0/3/0`；R17 open=`0/1/2/1`；combined=`0/1/5/1`。Audit digest=`904637666c90ce9c65a45ef741ac7669b19bd118c1797de6ebffa5d601844abb`。
+
+Integrity、actual current route、current public cleanliness 均 pass/bounded；正式 ASP=`1/1/1/1 rank2`、supplier=`3/3/2/1 rank2`、四 residual=0、external=4、4B=0、reranker=0 保留为 immutable bounded observations。
+
+General qualification 失败：同句不同 predicate frame 仍可跨事件借 actor/predicate/object/recipient/product/price/count/process，尾部 `allegedly/unconfirmed` 不覆盖 proposition；`$150 support + $15 XE9680` 错绑 `$150`，六个正常同义正例全漏；grammar-valid 高熵 ID 和四层 encoded URL 可绕过 public allowed-value guard。现有 151 tests 全通过但未覆盖这些攻击。
+
+R17 九条财务关系与衍生 margin/FCF/expense bridge 重算通过；但 reader URL=0、source appendix=false、crosswalk 未消费、WWC 0/6 operational、71/32 fact repetition、02B 0/16、formal 8D invalid，original-source semantic support 因缺 passages/locator 为 NOT_ASSESSABLE。
+
+R7 不重试；下一步只允许先写 non-overwriting same-stage R8 program plan。详见 audit artifact 与工作记录 099。

@@ -2,7 +2,7 @@
 
 日期：2026-08-26
 
-状态：`R5 author implementation + full-corpus zero-call preview pass / exact attempt not consumed / fresh dual audit pending`
+状态：`R5 exact execution success / author exact recompile + reprojection pass / immutable result commit and fresh dual audit pending`
 
 ## 1. 为什么必须开 R5
 
@@ -48,13 +48,25 @@ R5 runner 新增 pre-attempt capacity gate：canonical attempt receipt 之前必
 - 使用 immutable R4 raw execution 做只读、零模型、零网络的全量 R5 single-pass preview；最终 scope-guard 版本对 1,888 source／34,199 objects 耗时 `94.953s`。未写 private/public/receipt，未消费 R5 attempt。
 - Preview 结果：ASP=`2/2/2/2`、best final rank 15、reranker eligible；supplier=`2/2/2/1`、best rank 2；capacity release、observed yield、Dell-HBM bridge、Dell company-period physical units 均=`0/0/0/0`。六 target coverage gaps=`0`，external candidate=`4`、4B recall candidate=`0`，全部 authority=false。
 
-## 6. 下一门
+## 6. 执行门状态
 
 1. 最终 focused、Project OS、active baseline、JSON/JSONL、secret 与 full repository gate 已通过；
-2. clean implementation commit/push，记录 exact commit/tree/file SHA；
-3. 只新增并 push R5 policy，authority commit 的唯一父提交必须为 implementation，唯一 changed path 必须为 policy；
-4. clean `HEAD==upstream`、free disk 达标且 canonical attempt path 不存在时，只执行一次 fresh local Qwen3-Embedding-0.6B batch；同 attempt 不重试；
-5. immutable result 经作者 exact recompile/reprojection 后，再交给另一个 fresh fork-none、作者分离、只读 reviewer，同时审 R5 工程/route 与 R17 研报质量；
+2. implementation commit=`9ed08c73...971d0`、tree=`241c22e5...436a` 已 clean push；
+3. authority commit=`1e327656...51d6` 的唯一父提交为 implementation，唯一 changed path 为 R5 policy，且执行时 `HEAD==upstream`；
+4. 执行前 free bytes=`1,419,427,840`，attempt/output 不存在；唯一 fresh local Qwen3-Embedding-0.6B batch 已成功，同 attempt 不重试；
+5. immutable result 已通过作者 exact recompile/reprojection；下一门是提交结果，再交给另一个 fresh fork-none、作者分离、只读 reviewer，同时审 R5 工程/route 与 R17 研报质量；
 6. fresh audit 前不运行 03C、4B 或 reranker，也不补源、晋升 Evidence、重编 S2 或新报告。
 
 R17 仍为 55 Evidence／14 gaps／0 closure、02B qualified-human decisions=`0/16`；reader-visible citations/source appendix、14/9/4/10 crosswalk、六项 WWC operationalization 与事实密度仍未通过。
+
+## 7. R5 唯一精确执行结果
+
+- attempt=`dell-rsq-03b-internal-chain-r5`；recorded at=`2026-08-26T06:07:12+00:00`。5 个唯一 request、1 个本地 0.6B query-embedding batch、每 request 精确 96 union／16 final；network/provider/generation/external/4B/reranker/retry/mutation/promotion/closure 全为 0。
+- ASP=`2/2/2/2`、best final rank 15；supplier=`2/2/2/1`、best rank 2；capacity release、observed yield、Dell-HBM bridge、Dell company-period units 均=`0/0/0/0`。六 target material coverage canonical/occurrence=`0/0`、external route candidate=4、reranker candidate=1、target-specific 4B recall candidate=0，全部 downstream authority=false。
+- policy digest=`5477240d...a776c`；public digest=`bc916af9...0c3c1`、SHA=`1b8dc62c...36c9f`；private digest=`7949d84d...56df3`、SHA=`23b87124...b5c5d`；receipt digest=`5251a8d7...b4044`、SHA=`ea88579e...ade02`；raw execution SHA=`0e9e4456...9f7458`。
+- 四份 self-digest、private link、raw execution SHA 均通过。作者只读全量 exact recompile 耗时 `144.925s`，private 逐字段相等，public exact reprojection 逐字段相等，且 public 不含 model text、material sentence 或 URL。
+- 这是 author-integrity pass，不是 independent 03B pass，也没有改变 R17 的 14 gaps／0 closure 与研报质量失败。只有 immutable result commit/push 后才能启动全新的作者分离只读双审计。
+
+## 8. post-result repository gate
+
+R5 targeted=`41 passed`、Project OS=`82 passed`、active baseline=`213/8/5/28/0`、config JSON=`1,145`、Project OS JSONL=`8 files / 1,264 lines`、四份 self-digest 与 correction cross-binding、secret scan=`8,130 files / 0 findings`、diff check 全部通过。结果提交仍只允许 public result、model-run、worklog 与 Project OS；private 与 attempt receipt 保持在 ignored canonical private path。

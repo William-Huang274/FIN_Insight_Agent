@@ -2012,3 +2012,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - Preview 使用 immutable R4 raw execution，不调用 embedding/model/network/reranker、不写 result/receipt、不消费 R5 attempt。下一门仍是最终全仓门、clean implementation/push、单 policy authority/push、唯一 fresh 0.6B attempt、immutable result 与另一名 fresh fork-none dual audit。
 - 最终作者门已通过：focused=`154 passed`、Project OS=`82 passed`、全仓=`1480 passed, 2 skipped, 2 existing SWIG warnings`、active baseline=`213/8/5/28/0`、1,143 config JSON、8 JSONL／1,258 行、8,127-file secret scan／0、compileall、pyflakes、correction self-digest/internal-SHA cross-binding 与 diff check 全部通过；门禁期间 R5 attempt 仍未消费。
 - R17 仍为 55 Evidence／14 gaps／0 closure、02B=`0/16`；reader-visible citation/source appendix、14/9/4/10 crosswalk、六 WWC operationalization 与事实密度继续失败。03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。
+
+### 2026-08-26 DELL-RSQ-03B R5 exact-once 作者结果
+
+- implementation=`9ed08c73...971d0`、tree=`241c22e5...436a`；authority=`1e327656...51d6` 的唯一父提交为 implementation，唯一 changed path 为 R5 policy。执行时 clean、`HEAD==upstream`、attempt/output 不存在，free bytes=`1,419,427,840` ≥`536,870,912`。
+- 唯一 attempt 消费 5 个冻结 request、1 个本地 Qwen3-Embedding-0.6B batch；每 request 精确 96 union／16 final。network/provider/generation/external/4B/reranker/retry/mutation/Candidate/Evidence/NumericFact promotion/gap closure 全为 0。
+- ASP=`2/2/2/2` rank 15、supplier=`2/2/2/1` rank 2；capacity release、observed yield、Dell-HBM bridge、Dell company-period units 均=`0/0/0/0`。六 target material coverage canonical/occurrence=`0/0`，external candidate=4、reranker candidate=1、4B recall candidate=0，全部 authority=false。
+- policy/public/private/receipt digest 分别为 `5477240d...a776c`／`bc916af9...0c3c1`／`7949d84d...56df3`／`5251a8d7...b4044`；raw execution SHA=`0e9e4456...9f7458`。作者使用保存 raw execution 对 1,888/34,199 全量 exact recompile=`144.925s`，private 与 public reprojection 均逐字段相等且 public leak guard 通过。
+- 这只是 author-integrity pass。下一合法动作是提交 immutable public/model-run/Project-OS result，再由全新 fork-none、作者分离、只读 reviewer 同时审 R5 工程/语义/route 与 R17 citations/source appendix、14/9/4/10 crosswalk、六 WWC、重复/密度和八维质量；审计前 03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。
+- Post-result gate：R5=`41 passed`、Project OS=`82 passed`、active baseline=`213/8/5/28/0`、1,145 config JSON、8 JSONL／1,264 行、8,130-file secret scan／0、四份 self-digest/correction cross-binding/diff check 全通过。private 与 receipt 只保留在 canonical ignored path；result commit 只收 public、model-run、worklog 与 Project OS。

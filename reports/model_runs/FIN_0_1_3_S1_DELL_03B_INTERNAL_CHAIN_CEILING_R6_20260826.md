@@ -2,7 +2,7 @@
 
 ## 摘要
 
-- 状态：`executed_success / author_exact_recompile_and_reprojection_pass / fresh_independent_dual_audit_pending`。
+- 状态：`executed_success / author_exact_recompile_and_reprojection_pass / fresh_independent_dual_audit_FAIL / immutable_bounded_observations_retained / same_stage_R7_required`。
 - attempt：`dell-rsq-03b-internal-chain-r6`；R5 result 与 fresh-audit failure 保持不可变，不覆盖、不重试。
 - 目的：用 clause-scoped typed propositions、entity/period canonical anchors v2 与 recursive explicit public allowlist，重算 current R39 上 6 个 DELL report-material target。
 - 权限：仅 5 个冻结 request、1 个本地 Qwen3-Embedding-0.6B query batch。网络、Provider、生成模型、外源、4B、reranker、retry、mutation、promotion 与 closure 均为 0。
@@ -36,3 +36,13 @@ R6 没有补源，未运行 4B 或 reranker。Rank-15 ASP 的 reranker challenge
 Fresh fork-none reviewer 必须同时审 immutable R6 的工程/语义/anchor/privacy/route，以及 R17 reader-visible citation appendix、gap crosswalk、WWC、密度/重复和 qualified-human/formal 8D。审计前 03B、S1、S2、report quality、product、publication 与 release 均不通过。
 
 Post-result gate：R6 targeted=`95 passed`、Project OS=`82 passed`、active baseline=`213/8/5/28/0`、1,148 config JSON、8 个 Project OS JSONL／1,280 行、8,141-file secret scan／0、compileall、四份 self-digest 与 diff check 全部通过。
+
+## Fresh independent dual audit
+
+全新的 fork-none、作者分离、只读 reviewer 对 immutable result commit `9ca3c83087644496c08ddcc43b5a7d871efa52ef` 判定 Overall=`FAIL`。R6 新 finding=`P0/P1/P2/P3=0/0/3/0`；R17 open=`0/1/2/1`；combined=`0/1/5/1`。审计 self-digest=`11935696805f386364661f95c0ab1ae3076f86f5edc562d8d58f339e39516342`。
+
+Integrity、exact execution、saved-raw replay、当前 public cleanliness 与 actual route 均独立通过；reviewer 以零模型方式对 1,888/34,199 全量重编 `126.711s`，private/public exact equal。因此当前 ASP=`2/2/2/2` rank15、supplier=`2/2/2/1` rank2、四 residual target=0、external=4、reranker eligible=1、4B eligible=0 仍是 bounded observations。
+
+通用资格失败的三项 P2 为：完成组仍可跨 proposition/clause/sentence 拼接且无法稳定处理 polarity/modality/revocation/reported owner；material anchors 仍非 role-bound 并受产品/期间/货币语法及无关数字污染；public key allowlist 的允许字段仍可放行 credential-like、secret-like、encoded locator 与 relative traversal 内容。R17 仍缺 reader citation/source appendix、crosswalk consumption、operational WWC，并有事实/WWC 重复；formal 8D 和 qualified-human gate 无效。
+
+R6 不覆盖、不重试。下一合法动作只允许先写 R7 program-level execution plan，再做 non-overwriting same-stage R7；03C、4B、reranker、Evidence/NumericFact、gap closure、S2、R17 successor、产品、publication 与 release 均不获授权。详见 audit artifact 与工作记录 095。

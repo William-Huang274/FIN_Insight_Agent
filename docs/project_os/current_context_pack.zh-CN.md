@@ -2051,3 +2051,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - policy/receipt/private/public self-digest、private link 与 raw execution SHA 全通过。用保存的 raw execution 对 1,888/34,199 exact replay `218.543s`，private 逐字段全等、public reprojection 逐字段全等；public SHA=`53114d29...d00a`。
 - 这仍只是 author-integrity pass。提交 immutable result 后必须启动全新 fork-none read-only auditor，同时审 R6 engineering/semantics/anchors/privacy/routes 与 R17 report quality；其前 03B/S1/S2/report/product/publication/release 全为 false。详见工作记录 094 与 R6 model-run。
 - Post-result gate：targeted=`95 passed`、Project OS=`82 passed`、active baseline=`213/8/5/28/0`、1,148 config JSON、8 Project OS JSONL／1,280 行、8,141-file secret scan／0、compileall、四份 self-digest 与 diff check 均通过。
+
+### 2026-08-26 DELL-RSQ-03B R6 fresh dual-audit FAIL
+
+- Fresh fork-none、作者分离、只读 reviewer 对 immutable result commit `9ca3c830...52ef` 判定 Overall FAIL；R6 新 finding=`P0/P1/P2/P3=0/0/3/0`，R17 open=`0/1/2/1`，combined=`0/1/5/1`。03B independent pass=false。
+- R6 integrity、exact execution、24 input/14 implementation bindings、5×96/16、所有 zero-authority counters、saved-raw exact replay=`126.711s`、当前 public cleanliness 与 actual route 均独立通过；ASP `2/2/2/2` rank15、supplier `2/2/2/1` rank2、四 residual=0、external=4、reranker=1、4B=0 仅作为 bounded observations 保留。
+- P2 semantic：R6 仍以枚举正则和 package-level existential group aggregation 代替单一 typed proposition role binding，传闻/否认/能力态/撤销/转述/跨句价格数量可 false complete，多个真实同义正例会 false negative。
+- P2 anchor：material anchors 仍未绑定到同一 accepted proposition 的 product/price/quantity/period/process role；产品码、FY、货币/单位/限定语法不稳定，无关 support/freight/第三方数字可制造 false gap 或 false zero gap。
+- P2 privacy：recursive key allowlist 已生效且当前 public 无实际泄漏，但允许字符串字段仍可放行 credential-like/secret-like payload、percent-encoded locator 与 relative traversal，未来投影不 fail-close。
+- R17 继续 FAIL_GATE/OPEN_NOT_ASSESSABLE：读者 citation/source appendix 缺失，14/9/4/10 crosswalk 未消费，WWC operational=`0/6`，事实与 WWC 重复，02B decisions=`0/16`，formal 8D 无效。
+- R6 不覆盖、不重试。下一步必须先写 R7 program-level execution plan，再开 non-overwriting same-stage R7；R17 successor 保持分离。03C/4B/reranker/Evidence/NumericFact/S2/report/product/publication/release 全 false。Audit digest=`11935696...16342`，详见工作记录 095。

@@ -1975,8 +1975,8 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 全 R39 corpus 只读重算六目标 coverage canonical/occurrence gaps 均为 0。R3 raw pool 预编译保留 ASP
   `2/2/2/2` best 15（唯一 reranker challenger）与 supplier `2/2/2/1` best 2；capacity/yield/HBM/units
   complete=0、local repair=false、bounded 03C candidate=true；target-specific 4B recall=0。
-- 以上仍只是 author preview。完整仓库门、clean implementation/policy commit、fresh R39 exact query batch、immutable
-  R4 result 和新的 fork-none read-only audit 尚未完成。03C/4B/reranker/Evidence/S2/report/product authority 全 false；
+- 作者 preview 后，完整仓库门、clean implementation/policy commit 和 fresh R39 exact query batch 已完成；immutable
+  R4 result 已生成并通过作者完整性复验，新的 fork-none read-only audit 尚未完成。03C/4B/reranker/Evidence/S2/report/product authority 全 false；
   R17 的 citation/source appendix、14-gap crosswalk、WWC 与 0/16 human decisions 继续 OPEN/NOT_ASSESSABLE。
 
 ### 2026-08-26 R39/R4 全仓门与冻结编译器纠偏
@@ -1984,4 +1984,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 首轮全仓 `1434 passed, 4 failed` 暴露作者把缩写修复写入 VS5 preregistration 冻结 v1 compiler 的错误；不得更新冻结清单追认。v1 已恢复 SHA `043cbf8e...d8482`，能力迁入 `object_view_compiler_v2.py` 的显式 v2 route。
 - R39 append-only 对象、exact offset 与 embedding bytes 保持有效；历史 R1–R3 按封存 R38 id/digest 验证，current 产品仍严格绑定 R39，生产 validator 没有放宽。
 - 最终作者门：focused 118、DELL/S1 adjacent 248、full `1439 passed, 2 skipped, 2 existing warnings`；compileall、pyflakes、active baseline `213/8/5/28/0`、1139 JSON、8 JSONL／1237 行、Project OS 82、8117-file secret scan／0、diff check 全通过。
-- 下一步仍是 clean implementation commit/push → 唯一单文件 R4 authority commit/push → fresh R39 exact 0.6B query batch → immutable result → 全新 fork-none reviewer 同审工程语义与 R17 研报质量。03C/4B/reranker/Evidence/S2/report/product authority 仍全 false。
+- implementation `14f11b8c...` 与单文件 authority `aa61687f...` 已推送；唯一 R4 attempt 已成功生成 immutable result。下一步只允许提交结果／Project OS 后，由全新 fork-none reviewer 同审工程语义与 R17 研报质量。03C/4B/reranker/Evidence/S2/report/product authority 仍全 false。
+
+### 2026-08-26 DELL-RSQ-03B R4 exact-once 作者结果
+
+- R4 在 clean、`HEAD==upstream` 的 authority `aa61687f...43d74` 上消费唯一 attempt；authority 的唯一父提交为 implementation `14f11b8c...51789a`，唯一 changed path 为 R4 policy。
+- 5 个唯一 request、1 个本地 Qwen3-Embedding-0.6B query batch；每 request 精确 96 union／16 final。network/Provider/generation/external/4B/reranker/retry/mutation/Candidate/Evidence promotion/gap closure 全为 0。
+- 六 target 的 material coverage canonical/occurrence gaps 全为 0。ASP=`2/2/2/2`、best final rank 15，是唯一 same-pool reranker challenger；supplier=`2/2/2/1`、best rank 2。capacity release、observed yield、Dell-HBM bridge、Dell company-period physical units 均 complete=0，author route 为 bounded 03C candidate；target-specific 4B recall challenger=0。
+- public digest=`cb72f7a5...2113ca6`、private digest=`9f21a1f8...f412d65`。policy/public/private/receipt self-digest、private link、raw execution SHA/validator 与 public exact reprojection 均通过。
+- 这仍只是 author-integrity pass。必须先提交 immutable result，再由全新 fork-none、作者分离、只读 reviewer 同时审工程/语义/route 和 R17 研报质量；reviewer 不是 qualified human。R17 仍为 55 Evidence／14 gaps／0 closure、02B `0/16`，citation/source appendix、crosswalk、WWC、事实密度与八维质量继续 OPEN/NOT_ASSESSABLE。

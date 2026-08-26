@@ -2,7 +2,7 @@
 
 日期：2026-08-26
 阶段：S1 / DELL-RSQ-03B same-stage R4
-当前结论：R39 current runtime 已只追加修复一个真实本地对象损失；R4 作者实现与只读预编译通过，完整工程门、精确执行及 fresh audit 尚未完成。
+当前结论：R39 current runtime 已只追加修复一个真实本地对象损失；R4 完整工程门与唯一精确执行已通过作者完整性复验，fresh author-separated dual audit 尚未完成。
 
 ## 1. 为什么不是继续“补网页”
 
@@ -69,3 +69,12 @@ R4 继承 R3 已独立通过的 exact execution/attempt/integrity/privacy seal�
 纠偏后的最终作者门：focused `118 passed`，DELL/S1 adjacent `248 passed`，full repository `1439 passed, 2 skipped, 2 existing SWIG warnings`；compileall、pyflakes、active baseline `213/8/5/28/0`、1139 config JSON、8 份 Project OS JSONL／1237 行、Project OS `82 passed`、8117-file secret scan／0 和 diff check 全部通过。JSON/JSONL 校验工具 R1 因 PowerShell 冒号变量插值语法在读取前失败，R2 修正后完整通过；R1 不追认为数据门执行。
 
 这些门只使 implementation snapshot 可以提交，不等于 R4 exact attempt、03B independent pass、信源缺口关闭或研报质量通过。
+
+## 7. R4 唯一精确执行结果
+
+- implementation commit=`14f11b8c...51789a`、tree=`e2d30481...0f2e1f` 已推送；authority commit=`aa61687f...43d74` 的唯一父提交为 implementation，唯一 changed path 为 R4 policy，执行时 `HEAD==upstream` 且工作树 clean。
+- attempt `dell-rsq-03b-internal-chain-r4` 在 current R39 上只执行 1 个本地 Qwen3-Embedding-0.6B query batch；5 个唯一 request、每 request 精确 96 union／16 final，network/Provider/generation/external/4B/reranker/retry/mutation/promotion/closure 全为 0。
+- 六 target 的 material coverage canonical/occurrence gaps 全为 `0/0`，local repair target=0。ASP=`2/2/2/2`、best rank 15、reranker challenger=1；supplier=`2/2/2/1`、best rank 2；capacity release、observed yield、Dell-HBM bridge、Dell company-period units 均=`0/0/0/0`，author route 仍为 bounded 03C candidate；target-specific 4B recall challenger=0。
+- public digest=`cb72f7a5...2113ca6`、SHA=`9cf1b4f8...a3fd79`；private digest=`9f21a1f8...f412d65`、SHA=`85cab9d0...c54836b`；receipt SHA=`921d71b4...132cbe`。四份 self-digest、raw execution validator、private link 与 public exact reprojection 全部通过。
+- post-result 门：R4/R39 定向 `76 passed`、Project OS `82 passed`、active baseline=`213/8/5/28/0`、config JSON=`1141/0 invalid`、Project OS JSONL=`8 files / 1246 lines / 0 invalid`、secret scan=`8120 files / 0 findings`、diff check 通过。
+- 这是 author-integrity result，不是 03B independent pass。下一步只允许提交 immutable result 与 Project OS，然后启动全新的 fork-none、只读 reviewer，同时审 R4 工程/语义/route 和 R17 的 claim-source、citation/source appendix、14/9/4 crosswalk、WWC、密度/重复及八维质量。审计前所有下游 authority 继续 false。

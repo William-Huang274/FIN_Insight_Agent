@@ -36,3 +36,11 @@
 R4 的作者结果只证明 current local candidate chain 的可重放状态。六目标的 target-specific 4B recall challenger 为 0，不等于通用 mixed 4B program 被取消；ASP reranker 也只有实验资格，没有执行权限。四个 03C target 只是外源路线候选，必须先消费 prior-capture crosswalk，不能被称为真实公共信息缺口。
 
 上一版 R17 仍是 55 Evidence／14 gaps／0 closure，02B qualified-human decisions 仍为 `0/16`。reader-visible citation/source appendix、14/9/4 crosswalk consumption、WWC operationality、重复与事实密度仍为 `OPEN/NOT_ASSESSABLE`。下一步必须把 immutable R4 交给新的 fork-none、作者分离、只读 reviewer，同时审工程语义和研报研究质量；审计通过前，03C、4B、reranker、Evidence、S2、Pack/Readiness、新报告、产品、publication 与 release 全部禁止。
+
+## 2026-08-26 fresh dual-audit 后置更正
+
+Fresh fork-none、作者分离、只读 reviewer 对 immutable `3629272c...41056` 判定 **FAIL**。R4 新 finding=`P0/P1/P2/P3=0/1/1/0`，历史 R17 open=`0/1/2/1`，combined=`0/2/3/1`。
+
+Execution/integrity/privacy、14 input/10 implementation binding、5×96/16、private exact recompile、public exact reprojection、R39 append-only/frozen-v1 和本次实际六 target 结果独立通过。失败来自通用 qualification：重复 source sentence 在编号前被去重会压缩真实 adjacency；numeric anchor 用 substring，`15` 可被 `150` 假覆盖；普通 `no/lack/denied/not/never/unavailable`、`will/forecast/planned`、pilot/wrong-process 和 reported-speech seller/shipper 仍可产生 complete false positive。
+
+R4 不改写、不重跑。下一合法动作是 non-overwriting same-stage R5；审计 digest=`908f0db0...ae13a8`。R5 fresh audit 前，03C、4B、reranker、Evidence、S2、report/product/publication/release authority 继续 false。

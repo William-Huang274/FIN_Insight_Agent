@@ -1,0 +1,281 @@
+{
+  "schema_version": "fin_ia_independent_readonly_audit_result_v1_0",
+  "audit_id": "AUDIT::FIN-0.1.3::3629272C::DELL-RSQ-03B-R4::R1",
+  "status": "fail_material_semantic_route_and_report_findings_same_stage_R5_required",
+  "recorded_at": "2026-08-26T11:25:00+08:00",
+  "reviewed_identity": {
+    "branch": "codex/fin013-dell-s1-s2-product-bridge",
+    "commit": "3629272c9bf0717a755983d9b698041c25241056",
+    "tree": "65b94061faba26b9557abdd23be2a389dca54ea1",
+    "parent": "aa61687f4a6f70e95578d9f2fe6b5960dad43d74",
+    "implementation_commit": "14f11b8c00c41922ed3637626c47202aea51789a",
+    "authority_commit": "aa61687f4a6f70e95578d9f2fe6b5960dad43d74",
+    "upstream_equal": true,
+    "ahead": 0,
+    "behind": 0,
+    "start_worktree_clean": true,
+    "end_worktree_clean": true,
+    "repository_writes_during_audit": 0
+  },
+  "reviewer": {
+    "task": "/root/dell_03b_r4_fresh_dual_audit",
+    "fresh_context_fork": "none",
+    "author_separated": true,
+    "read_only": true,
+    "network_calls": 0,
+    "source_acquisition_calls": 0,
+    "provider_calls": 0,
+    "generation_model_calls": 0,
+    "embedding_calls": 0,
+    "4B_embedding_calls": 0,
+    "reranker_calls": 0,
+    "paid_calls": 0,
+    "qualified_human_authority": false,
+    "qualified_human_decisions_issued": 0
+  },
+  "reviewed_artifacts": {
+    "R4_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_3.json",
+      "sha256": "b4a73d9aa117bd0e69001b9b3fc7bf7b412f07a651a881f26f8d5e4c6de78add",
+      "policy_digest": "a9e3479c968f094b856da857235847a4ffc2cea1eb40b0c025f600ed4677de67"
+    },
+    "R4_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_3.json",
+      "sha256": "9cf1b4f8d6f084c7073fd998eca69ff17bb1661d0d579aeb1dcfabf0f1a3fd79",
+      "result_digest": "cb72f7a5bfbc1a75bd811b499d63183052f18b2af1799d81a08cd996452113ca6"
+    },
+    "R4_private": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r4/full_result.json",
+      "sha256": "85cab9d07169f6a1d8b0615a5160e26fecea191dcf7ddf47dc22df512c54836b",
+      "result_digest": "9f21a1f8e9a6766cdd95a60c02162373712d6e3ef3d127c00ebfcd788f412d65",
+      "exact_public_reprojection": true,
+      "exact_private_recompile": true
+    },
+    "R4_attempt_receipt": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r4/attempt_consumption_receipt.json",
+      "sha256": "921d71b4eaa9f87180ff429dfa3a3ee9d3e7b384c026f044bb7aaa0163132cbe",
+      "result_digest": "43979b2faf458495f63d204aa785e3d515ef42654230fb2f8bc255b55e2f1fed2"
+    },
+    "raw_execution": {
+      "sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+      "projection_digest": "772b39225338b997161695af1857f3d19b2c8103f442d3cfd959b9df003088370"
+    }
+  },
+  "verdicts": {
+    "overall": "FAIL",
+    "new_R4_P0_P1_P2_P3": [0, 1, 1, 0],
+    "carried_R17_P0_P1_P2_P3": [0, 1, 2, 1],
+    "combined_open_P0_P1_P2_P3": [0, 2, 3, 1],
+    "engineering_execution_integrity_privacy": "PASS_BOUNDED",
+    "bounded_semantic_material_coverage_and_route": "FAIL",
+    "03B_independent_pass": false,
+    "report_research_quality": "FAIL_FORMAL_ASSESSMENT_NOT_YET_VALID",
+    "qualified_human_review": "NOT_PERFORMED",
+    "G3_pass": false,
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "report_quality_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "verified_execution_and_integrity": {
+    "authority_parent_implementation_exact": true,
+    "authority_changed_path_policy_only": true,
+    "target_result_commit_expected_paths_only": 6,
+    "bound_input_SHA_bindings_match": 14,
+    "implementation_SHA_bindings_match": 10,
+    "request_ids_unique": 5,
+    "request_queries_unique": 5,
+    "local_embedding_batches": 1,
+    "each_request_union_unique_and_rank_1_96": true,
+    "each_request_final_unique_and_rank_1_16": true,
+    "final_ids_are_union_members": true,
+    "all_zero_authority_counters_validated": true,
+    "candidate_not_evidence_fields_intact": true,
+    "policy_public_private_attempt_self_digests_match": true,
+    "raw_execution_SHA_and_validator_match": true,
+    "private_exact_recompile": true,
+    "public_exact_reprojection": true,
+    "public_private_text_URL_or_private_key_leak": false,
+    "R39_source_count": 1888,
+    "R39_object_count": 34199,
+    "R39_append_only_object_count": 1,
+    "frozen_v1_compiler_SHA_match": true,
+    "R39_repaired_family_coverage_before_after": [1, 0],
+    "R39_repaired_family_raw_occurrence_before_after": [2, 0]
+  },
+  "material_findings": [
+    {
+      "finding_id": "AUDIT-3629272C-P1-01",
+      "priority": "P1",
+      "earliest_owner": "S1/DELL-RSQ-03B absolute evidence-unit position and typed material-anchor coverage",
+      "root_cause_id": "RC-S1-077-DELL-03B-dedup-before-position-and-substring-anchor-equivalence",
+      "finding": "R4 globally deduplicates normalized source sentences before assigning unit positions, so 20 identical intervening units collapse and a genuinely 22-unit-separated ASP pair becomes span 3 and complete. Material numeric/time coverage also uses raw substring containment: source anchor 15 is treated as covered by compiled 150, and bare product-code digits can enter the anchor fingerprint.",
+      "code_evidence": [
+        "src/retrieval/dell_report_internal_chain_ceiling_r4.py:920-945",
+        "src/retrieval/dell_report_internal_chain_ceiling_r4.py:1236-1245",
+        "src/retrieval/dell_report_internal_chain_ceiling_r4.py:1294-1299"
+      ],
+      "reproduced_evidence": [
+        "twenty_identical_intervening_source_sentences_real_span22_collapsed_span3_complete",
+        "twenty_distinct_intervening_source_sentences_remain_partial",
+        "source_numeric_anchor15_compiled_only150_marked_covered",
+        "source_numeric_anchor16_compiled_only150_remains_gap",
+        "product_code_H100_can_contribute_bare_numeric_fingerprint"
+      ],
+      "impact": "False adjacency or false coverage can create a complete local package, suppress an external route, or remove/create a local-repair and reranker eligibility decision.",
+      "required_successor": "R5 must assign immutable raw positions before any display/family deduplication and preserve occurrence positions, while material numeric and time anchors use typed token-exact normalized equality with product-code and unit boundaries."
+    },
+    {
+      "finding_id": "AUDIT-3629272C-P2-01",
+      "priority": "P2",
+      "earliest_owner": "S1/DELL-RSQ-03B polarity, direction, process, shipper and allocation role guards",
+      "root_cause_id": "RC-S1-078-DELL-03B-polarity-direction-shipper-future-and-process-guards-incomplete",
+      "finding": "R4 still classifies controlled negatives as complete for supplier, yield, Dell units, capacity and HBM. The guards miss ordinary no/lack/denied/never/not/unavailable polarity; planned/forecast/will future phrases; N2 pilot-line wrong-process values; and reported-speech seller/shipper direction such as Dell said NVIDIA shipped.",
+      "code_evidence": [
+        "src/retrieval/dell_report_internal_chain_ceiling_r4.py:442-459",
+        "src/retrieval/dell_report_internal_chain_ceiling_r4.py:463-483",
+        "src/retrieval/dell_report_internal_chain_ceiling_r4.py:486-529",
+        "src/retrieval/dell_report_internal_chain_ceiling_r4.py:666-680",
+        "src/retrieval/dell_report_internal_chain_ceiling_r4.py:767-784",
+        "src/retrieval/dell_report_internal_chain_ceiling_r4.py:798-829"
+      ],
+      "reproduced_evidence": [
+        "Dell_and_NVIDIA_have_no_lack_or_denied_a_partnership_complete",
+        "GPU_capacity_was_not_or_never_allocated_to_Dell_complete",
+        "yield_will_forecast_or_planned_to_reach_90_percent_complete",
+        "N2_pilot_line_yield_value_complete",
+        "HBM_unavailable_to_Dell_complete_due_available_substring",
+        "Dell_has_not_never_or_denied_it_shipped_complete",
+        "Dell_said_NVIDIA_shipped_four_Dell_AI_servers_complete"
+      ],
+      "impact": "Future runs can convert negative, prospective, wrong-process or counterparty activity into affirmative local evidence and distort local-versus-external routing even though the immutable R4 corpus observations themselves remain deterministic.",
+      "required_successor": "R5 must add scoped token-bound polarity, directional subject-object and reported-speech seller/shipper guards, symmetric future/planned/forecast qualifiers, wrong-process and pilot-line exclusions, and freeze every reproduced attack as a regression."
+    },
+    {
+      "finding_id": "AUDIT-3629272C-P1-R17-01",
+      "priority": "P1",
+      "earliest_owner": "S3 Writer and reader-visible citation compiler",
+      "finding": "R17 exposes internal EV/GAP identifiers but no reader-visible claim-level URL, source title, issuer or publisher, paired measurement/publication period, page or section locator, source role, bibliography or source appendix.",
+      "verified_positive_boundary": "All 39 R17 surfaces, 42 claim references, 18 unique Evidence references and 10 unique gap references resolve through the R10 authority catalog and source bindings.",
+      "impact": "A reader cannot independently verify claims, so formal report quality remains invalid.",
+      "required_successor": "A non-overwriting report successor must implement the frozen claim-level citation and source-appendix contract after evidence and numeric truth are ready."
+    },
+    {
+      "finding_id": "AUDIT-3629272C-P2-R17-02",
+      "priority": "P2",
+      "earliest_owner": "S3 report compiler and source-closure program",
+      "finding": "Current Pack remains 55 Evidence and 14 gaps with zero closures. R17 predates and does not consume the 14 Pack / 9 R38 / 4 Writer-group / 10 Writer-gap-reference crosswalk. Four Pack gaps are not referenced by Writer: price-in boundary, scenario or sensitivity, supplier-capacity read-through and valuation basis.",
+      "required_successor": "Consume the frozen crosswalk without relabelling route aggregation as closure."
+    },
+    {
+      "finding_id": "AUDIT-3629272C-P2-R17-03",
+      "priority": "P2",
+      "earliest_owner": "S3 research judgment and Writer",
+      "finding": "All six R17 WWC items lack a structured owner, frozen observation window, calibrated threshold and authority, and complete evidence route. Qualifiers such as visibly elevated, persistent decline, material and minimal are not operational thresholds.",
+      "required_successor": "Operationalize every material WWC before report acceptance."
+    },
+    {
+      "finding_id": "AUDIT-3629272C-P3-R17-04",
+      "priority": "P3",
+      "earliest_owner": "S3 Writer presentation",
+      "finding": "R17 has 20574 characters and 71 fact occurrences but only 38 unique fact fragments; inventory 15.052B appears five times, revenue 43.842B appears three times, and all six WWC themes are duplicated across body and top-level presentation.",
+      "required_successor": "Deduplicate presentation after evidence and numeric truth are frozen."
+    }
+  ],
+  "six_target_disposition": [
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-ASP",
+      "complete_source_compiled_union_final": [2, 2, 2, 2],
+      "best_final_rank": 15,
+      "recorded_route": "same_pool_reranker_candidate",
+      "authority_granted": false
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE",
+      "complete_source_compiled_union_final": [0, 0, 0, 0],
+      "recorded_route": "bounded_external_candidate",
+      "authority_granted": false
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-UTILIZATION-YIELD",
+      "complete_source_compiled_union_final": [0, 0, 0, 0],
+      "recorded_route": "bounded_external_candidate",
+      "authority_granted": false
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-HBM-SUPPLY",
+      "complete_source_compiled_union_final": [0, 0, 0, 0],
+      "recorded_route": "bounded_external_candidate",
+      "authority_granted": false
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-SUPPLIER-READTHROUGH",
+      "complete_source_compiled_union_final": [2, 2, 2, 1],
+      "best_final_rank": 2,
+      "recorded_route": "relationship_delivery_local_capacity_allocation_open",
+      "authority_granted": false
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-UNITS",
+      "complete_source_compiled_union_final": [0, 0, 0, 0],
+      "recorded_route": "bounded_external_candidate",
+      "authority_granted": false
+    }
+  ],
+  "report_quality": {
+    "state": "FAIL_FORMAL_ASSESSMENT_NOT_YET_VALID",
+    "R17_surface_count": 39,
+    "claim_reference_occurrences": 42,
+    "unique_Evidence_references": 18,
+    "unique_gap_references": 10,
+    "all_references_resolve": true,
+    "current_pack_evidence": 55,
+    "current_pack_gaps": 14,
+    "gap_closures": 0,
+    "qualified_human_decisions_completed": 0,
+    "qualified_human_decisions_required": 16,
+    "reader_visible_claim_citations": false,
+    "reader_visible_source_appendix": false,
+    "crosswalk_14_9_4_10_consumed_by_R17": false,
+    "WWC_item_count": 6,
+    "WWC_operational": false,
+    "formal_eight_dimension_score_valid": false,
+    "verified_quantitative_boundaries": [
+      "gross_margin_21_12_to_17_75_equals_negative_3_37pp",
+      "operating_margin_4_98_to_8_34_equals_positive_3_36pp",
+      "implied_expense_ratio_contribution_positive_6_73pp",
+      "OCF_and_FCF_growth_arithmetic_correct",
+      "FCF_labelled_deterministic_non_GAAP",
+      "guidance_probability_cohort_supplier_pricing_PVM_units_and_causal_boundaries_bounded"
+    ],
+    "report_character_count": 20574,
+    "fact_occurrences": 71,
+    "unique_fact_fragments": 38
+  },
+  "next_legal_action": "Preserve R4 unchanged and open one non-overwriting same-stage R5 with a fresh policy, authority and attempt. Retain raw absolute positions before deduplication, require typed token-exact numeric and time anchors, strengthen scoped polarity, direction, seller or shipper, future, planned, forecast, pilot-line and wrong-process guards, and freeze all reproduced attacks as regressions. Obtain another fresh author-separated dual audit before any 03C, 4B, reranker, Evidence or downstream execution.",
+  "authority": {
+    "R5_same_stage_successor_authorized": true,
+    "R4_retry_or_overwrite_authorized": false,
+    "03B_pass": false,
+    "03C_external_capture_authorized": false,
+    "4B_embedding_authorized": false,
+    "reranker_authorized": false,
+    "candidate_decision_authorized": false,
+    "evidence_promotion_authorized": false,
+    "numeric_fact_promotion_authorized": false,
+    "gap_closure_authorized": false,
+    "public_information_boundary_authorized": false,
+    "G3_pass": false,
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "report_quality_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "result_digest": "908f0db0b0e4880b3f61cb893cbb6cd086eab2905305b1bb58a7b79d62ae13a8"
+}

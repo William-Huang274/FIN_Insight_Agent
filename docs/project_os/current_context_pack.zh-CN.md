@@ -1993,3 +1993,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 六 target 的 material coverage canonical/occurrence gaps 全为 0。ASP=`2/2/2/2`、best final rank 15，是唯一 same-pool reranker challenger；supplier=`2/2/2/1`、best rank 2。capacity release、observed yield、Dell-HBM bridge、Dell company-period physical units 均 complete=0，author route 为 bounded 03C candidate；target-specific 4B recall challenger=0。
 - public digest=`cb72f7a5...2113ca6`、private digest=`9f21a1f8...f412d65`。policy/public/private/receipt self-digest、private link、raw execution SHA/validator 与 public exact reprojection 均通过。
 - 这仍只是 author-integrity pass。必须先提交 immutable result，再由全新 fork-none、作者分离、只读 reviewer 同时审工程/语义/route 和 R17 研报质量；reviewer 不是 qualified human。R17 仍为 55 Evidence／14 gaps／0 closure、02B `0/16`，citation/source appendix、crosswalk、WWC、事实密度与八维质量继续 OPEN/NOT_ASSESSABLE。
+
+### 2026-08-26 DELL-RSQ-03B R4 fresh dual-audit FAIL
+
+- Fresh fork-none、作者分离、只读 reviewer 审计 immutable `3629272c...41056`，R4 新 finding=`P0/P1/P2/P3=0/1/1/0`；历史 R17 open 独立保持 `0/1/2/1`，combined=`0/2/3/1`。03B independent pass=false。
+- Execution/integrity/privacy 为 `PASS_BOUNDED`：exact Git topology、14 bound inputs、10 implementation bindings、5 unique requests/queries、1 batch、每 request 96/16、全部 zero authority、private exact recompile、public exact reprojection、R39 append-only/frozen-v1 均通过；实际 ASP/supplier/four residual routes 结果可重放。
+- P1：source sentences 在赋绝对位置前全局去重，20 条相同中间句可把真实 22-unit ASP separation 压成 span 3；material numeric/time coverage 用 substring，source `15` 可被 compiled `150` 假覆盖，产品码裸数字也会污染 fingerprint。
+- P2：`no/lack/denied partnership`、`not/never allocated`、`unavailable`、`will/forecast/planned yield`、N2 pilot line、`Dell has not shipped` 与 `Dell said NVIDIA shipped` 等 controlled negatives 仍被判 complete。
+- R17 的 39 surfaces/42 claim refs/18 EV/10 gaps 均可解析，定量桥和因果/反方边界总体受控；但仍无 reader-visible citation/source appendix，未消费 14/9/4/10 crosswalk，六 WWC 未操作化，重复/密度 open，formal 8D 与 qualified-human 均无效。
+- 下一合法动作是 non-overwriting same-stage R5：去重前冻结 raw positions，typed token-exact numeric/time anchors，scope-aware polarity/direction/shipper/future/process guards，并冻结全部攻击回归。fresh R5 audit 前 03C/4B/reranker/Evidence/S2/report/product authority 全 false。审计 digest=`908f0db0...ae13a8`。

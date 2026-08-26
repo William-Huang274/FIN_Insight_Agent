@@ -40,3 +40,9 @@ R5 的作者结果只证明 current local candidate chain 在本次 successor �
 上一版 R17 仍是 55 Evidence／14 gaps／0 closure，02B qualified-human decisions 仍为 `0/16`。reader-visible citation/source appendix、14/9/4/10 crosswalk、六项 WWC operationalization、重复与事实密度仍为 `OPEN/NOT_ASSESSABLE`。下一步必须先提交 immutable R5 result，再交给一个全新的 fork-none、作者分离、只读 reviewer，同时审 R5 engineering/semantics/route 与 R17 研报质量。审计通过前，03C、4B、reranker、Evidence/NumericFact admission、S2 重编、Pack/Readiness、新报告、产品、publication 与 release 全部禁止。
 
 Post-result repository gate：R5 targeted=`41 passed`、Project OS=`82 passed`、active baseline=`213/8/5/28/0`、1,145 config JSON、8 Project OS JSONL／1,264 行、8,130-file secret scan／0、四份 self-digest、correction cross-binding 与 diff check 全部通过。
+
+## 2026-08-26 fresh dual-audit 后置结果
+
+Fresh fork-none、作者分离、只读 reviewer 判定 Overall **FAIL**。R5 新 finding=`P0/P1/P2/P3=0/0/3/0`：sentence-wide polarity/direction/modality 与 ASP affirmation 仍有 false complete/false partial；product-code 分隔符与 FY26/FY2026 typed anchor 不等价；public projector 是 denylist，未知 private 字段可进入未来 public。当前 immutable public 没有实际泄漏，实际 raw result、Git/19+12 bindings、四 digest、5×96/16、zero authority、private exact recompile 与 public exact reprojection全部独立通过。
+
+R17 open finding=`0/1/2/1`：reader-visible citation/source appendix P1、crosswalk/WWC P2、density P3。Combined=`0/1/5/1`。R5 不覆盖、不重试；下一合法动作是 non-overwriting same-stage R6，且 R17 successor 继续分阶段等待 prerequisites。Audit digest=`56fc24881da2d814bce4daf7caac94df886e4c43be308b2105a07faaf48d7499`。

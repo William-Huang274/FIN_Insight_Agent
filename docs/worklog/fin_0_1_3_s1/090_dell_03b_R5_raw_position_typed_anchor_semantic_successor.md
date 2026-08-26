@@ -2,7 +2,7 @@
 
 日期：2026-08-26
 
-状态：`R5 exact execution success / author exact recompile + reprojection pass / immutable result commit and fresh dual audit pending`
+状态：`R5 exact execution and author integrity retained / fresh dual audit FAIL / same-stage R6 required`
 
 ## 1. 为什么必须开 R5
 
@@ -70,3 +70,7 @@ R17 仍为 55 Evidence／14 gaps／0 closure、02B qualified-human decisions=`0/
 ## 8. post-result repository gate
 
 R5 targeted=`41 passed`、Project OS=`82 passed`、active baseline=`213/8/5/28/0`、config JSON=`1,145`、Project OS JSONL=`8 files / 1,264 lines`、四份 self-digest 与 correction cross-binding、secret scan=`8,130 files / 0 findings`、diff check 全部通过。结果提交仍只允许 public result、model-run、worklog 与 Project OS；private 与 attempt receipt 保持在 ignored canonical private path。
+
+## 9. fresh dual-audit 后置结果
+
+Fresh fork-none、作者分离、只读 reviewer 判定 Overall FAIL：R5 新 finding=`0/0/3/0`，R17 open=`0/1/2/1`，combined=`0/1/5/1`。R5 execution/integrity、actual route、current public cleanliness 与 exact recompile/reprojection 独立通过；通用 clause polarity/direction/modality/ASP affirmation、product/FY typed-anchor normalization 和 fail-closed public projection 未通过。R5 不覆盖、不重试；下一合法动作是 same-stage non-overwriting R6。详见工作记录 091 与 audit digest=`56fc2488...d7499`。

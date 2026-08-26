@@ -2021,3 +2021,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - policy/public/private/receipt digest 分别为 `5477240d...a776c`／`bc916af9...0c3c1`／`7949d84d...56df3`／`5251a8d7...b4044`；raw execution SHA=`0e9e4456...9f7458`。作者使用保存 raw execution 对 1,888/34,199 全量 exact recompile=`144.925s`，private 与 public reprojection 均逐字段相等且 public leak guard 通过。
 - 这只是 author-integrity pass。下一合法动作是提交 immutable public/model-run/Project-OS result，再由全新 fork-none、作者分离、只读 reviewer 同时审 R5 工程/语义/route 与 R17 citations/source appendix、14/9/4/10 crosswalk、六 WWC、重复/密度和八维质量；审计前 03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。
 - Post-result gate：R5=`41 passed`、Project OS=`82 passed`、active baseline=`213/8/5/28/0`、1,145 config JSON、8 JSONL／1,264 行、8,130-file secret scan／0、四份 self-digest/correction cross-binding/diff check 全通过。private 与 receipt 只保留在 canonical ignored path；result commit 只收 public、model-run、worklog 与 Project OS。
+
+### 2026-08-26 DELL-RSQ-03B R5 fresh dual-audit FAIL
+
+- Fresh fork-none、作者分离、只读 reviewer 对 immutable `8fe2caaf...96e2b` 判定 Overall FAIL；R5 新 finding=`P0/P1/P2/P3=0/0/3/0`，R17 open=`0/1/2/1`，combined=`0/1/5/1`。03B independent pass=false。
+- R5 integrity 与 actual route 为 `PASS_BOUNDED_FOR_ACTUAL_IMMUTABLE_EXECUTION`：Git topology、19/12 bindings、四 self-digest、5×96/16、1 batch/zero authorities、raw SHA、private exact recompile=`151.949s`、public exact reprojection、当前 public 无实际泄漏均独立通过；实际 ASP/supplier/四 residual target counts 保留为 bounded observations。
+- R5 P2：整句 regex 未覆盖 failed/rejected/should/anticipated/estimated/prototype/refuted/disclosed 等 polarity/modality/direction，ASP 无 affirmative quote guard，且无关否定从句可误杀正例；product-code 的 slash/space 形式泄漏裸数字，FY26/FY2026 不等价；public projector 删除五个字段的 denylist 可放行未知 private 字段与 `www.` locator。
+- R17 P1/P2/P2/P3：repo 内 lineage、定量和边界可解析，但 reader citation/source appendix 缺失，14/9/4/10 crosswalk 未被早一天生成的 R17 消费，WWC operational=`0/6`，事实/WWC 重复；02B qualified-human=`0/16`，formal 8D 无效。
+- R5 不覆盖、不重试。下一合法动作是 same-stage non-overwriting R6，修复 `RC-S1-079`、`RC-S1-080`、`RC-S0-105` 后走新 policy/attempt/result 与另一 fresh audit；R17 successor 与 S1 R6 分离。03C/4B/reranker/Evidence/NumericFact/S2/report/product/publication/release 全 false。Audit digest=`56fc2488...d7499`。

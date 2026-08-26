@@ -2124,3 +2124,12 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - ASP=`1/1/1/1 rank2`、supplier=`3/3/2/1 rank2`、四 residual=`0/0/0/0`；coverage/local repair=`0/0`、external=`4`、4B/reranker eligible=`0/0`，与 preview 完全一致。
 - policy/receipt/raw capture/private/public self-digest 与全部 links 通过。保存 raw capture 对 1,888/34,199 exact replay=`42.489s`，private/public dict 与 canonical bytes 均逐字节全等；raw execution SHA=`0e9e4456...9f7458`。
 - 当前仅 R8 author-integrity pass，03B independent=false。结果提交后必须生成 hash-bound fixed audit manifest，并由全新 fork-none、作者分离、只读 reviewer 同审 R8 工程与 R17 研报质量。四 residual 外源、Evidence/Pack/Readiness、S2、新报告和 human gates 仍未完成；其前 03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。详见工作记录 102 与 R8 model-run。
+
+### 2026-08-27 DELL-RSQ-03B R8 fresh split dual-audit FAIL
+
+- Fixed manifest commit=`4db3c4bf...67a3`。首名 combined reviewer 因连续 checkpoint stall 被中断；随后由两名全新 fork-none、作者分离、只读 reviewer 分别审 R8 工程与 R17 研报。最终均 0 writes、0 network/model/external、0 formal attempt、0 targeted/full pytest。
+- R8 Phase A=`PASS_BOUNDED`：15/15 engineering bundle、34/34 inputs、21/21 implementation bindings、Git topology、五份 self-digest/links、raw SHA、5×96/16、exact public reprojection 与全部 zero-authority counters 通过。实际 ASP `1/1/1/1 rank2`、supplier `3/3/2/1 rank2`、四 residual 0、external 4 仅作为 immutable bounded observations 保留。
+- R8 new finding=`P0/P1/P2/P3=0/0/3/0`：无逗号 coordinator 仍跨事件拼 role；demonstrative revocation、discontinued、exploring、leading analyst attribution 被误作 active/direct；support `$150` 与 hardware `$15` 的变体仍会把 `$150` 错绑 hardware。03B fresh independent=false。
+- Frozen 63+8 negatives、6+11 positives、原 anchor attack、15 public attacks/3 valid controls 通过；public privacy=`PASS_BOUNDED`。source→compiled accepted-frame digest 变换是否有完整 provenance 未完成，记 `NOT_ASSESSABLE`。
+- R17=`FAIL_GATE_OPEN_NOT_ASSESSABLE`，open=`0/1/2/1`：55/55 source passages/URLs 在底层 pack 可解析，但报告 18 EV 无一对一 passage/URL binding，reader URL=0/source appendix=false；14/9/4/10 crosswalk 未消费，WWC 0/6，72 facts/36 unique，02B 0/16，formal 8D score=null。数值/公式与产品边界通过不能替代 reader source/product gate。
+- Audit digest=`d8f2176e...5cb612`。R8 不覆盖、不重试；下一步先写 non-overwriting R9 program plan，修 frame split、semantic state、price-role locality 与 frame provenance。R9 fresh pass 前 03C/4B/reranker/Evidence/Pack/S2/R17 successor/product/publication/release 全 false。详见工作记录 103。

@@ -2108,3 +2108,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R7 preview baseline=`223.188s`；R8 相同输入若超过 600 秒或出现无解释的两倍回退即停止/profile。Fresh reviewer 使用 hash-bound 固定包和五相 checkpoint；缺材料直接 `NOT_ASSESSABLE`，不递归历史阅读，不重复 full pytest。
 - R8 fresh PASS 后才允许 residual 外源梯子、0.6B/4B mixed shadow、条件式 reranker、Evidence admission、Pack/Readiness、S2 和受影响动态单元；新报告必须非覆盖 R17，并补 reader citations/source appendix、14/9/4/10 crosswalk、六 WWC、数值血缘、密度/重复与 qualified-human gate。
 - 当前只完成 plan；R8 implementation/policy/attempt/result、03B independent、03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。详见工作记录 100。
+
+### 2026-08-27 DELL-RSQ-03B R8 作者实现、零调用预演与单次冻结门
+
+- R8 新增 immutable `PredicateFrame`/`RoleBinding`、predicate-frame-local 六目标合同、full-span scope/revocation、span-bound anchor v4、bounded positive recall 与 threat-first fixed-point public validator；R7 的 63 条 negative matrix、fresh 8/1/6/2 attacks/controls 均冻结。
+- 最终 direct=`97`、R7+R8 adjacent=`248`、Project OS+S1 foundation=`93`；compileall/pyflakes/diff、active baseline=`213/8/5/28/0`、1,152 config JSON、8 Project OS JSONL、5 changed-path secret scan／0 与唯一 full secret scan=`8,163 files / 0 findings` 均通过。
+- 唯一一次 implementation-freeze T4=`1823 passed, 2 skipped, 2 existing SWIG warnings in 508.75s`。后续 policy/result/Project OS/audit 不重复全仓；只有 production/test/shared validator/active consumer 变化或未知影响面才使 receipt 失效。四个 S3 慢测合计约 260 秒，留作 future positive-marker/fixture/profile 优化，不在本轮冻结后改 test semantics。
+- Immutable-R7-raw 零调用 preview 对 1,888 source／34,199 objects 用时 `35.276s`：ASP=`1/1/1/1 rank2`、supplier=`3/3/2/1 rank2`、四 residual=`0/0/0/0`；四层 crosswalk 无 add/remove，coverage/local repair=`0/0`、external=`4`、4B/reranker eligible=`0/0`。
+- 当前仅 author implementation/preview/local freeze pass；v1.7 policy、R8 attempt/private/public result 与 fresh dual audit 尚不存在。四 residual 外源、Evidence/Pack/Readiness、S2、新报告和 R17 citation/crosswalk/WWC/density/human 仍未完成；03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。详见工作记录 101。

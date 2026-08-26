@@ -2116,3 +2116,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 唯一一次 implementation-freeze T4=`1823 passed, 2 skipped, 2 existing SWIG warnings in 508.75s`。后续 policy/result/Project OS/audit 不重复全仓；只有 production/test/shared validator/active consumer 变化或未知影响面才使 receipt 失效。四个 S3 慢测合计约 260 秒，留作 future positive-marker/fixture/profile 优化，不在本轮冻结后改 test semantics。
 - Immutable-R7-raw 零调用 preview 对 1,888 source／34,199 objects 用时 `35.276s`：ASP=`1/1/1/1 rank2`、supplier=`3/3/2/1 rank2`、四 residual=`0/0/0/0`；四层 crosswalk 无 add/remove，coverage/local repair=`0/0`、external=`4`、4B/reranker eligible=`0/0`。
 - 当前仅 author implementation/preview/local freeze pass；v1.7 policy、R8 attempt/private/public result 与 fresh dual audit 尚不存在。四 residual 外源、Evidence/Pack/Readiness、S2、新报告和 R17 citation/crosswalk/WWC/density/human 仍未完成；03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。详见工作记录 101。
+
+### 2026-08-27 DELL-RSQ-03B R8 唯一执行与作者完整性
+
+- implementation=`a9403e32...f93a6`、authority=`f4c3c629...f8ce4`；authority 唯一父提交精确为 implementation，唯一 changed path 为 v1.7 policy。执行前 clean/synced、34 inputs、21 implementation SHA、collision 与 free bytes=`1,303,891,968` 全通过。
+- canonical runner 唯一执行成功：attempt=`dell-rsq-03b-internal-chain-r8`，5 requests、1 local 0.6B batch、338 union／80 final；network/provider/generation/external/4B/reranker/retry/mutation/promotion/closure=0。Raw execution 在 compilation 前独占保存，terminal failure receipt absent。
+- ASP=`1/1/1/1 rank2`、supplier=`3/3/2/1 rank2`、四 residual=`0/0/0/0`；coverage/local repair=`0/0`、external=`4`、4B/reranker eligible=`0/0`，与 preview 完全一致。
+- policy/receipt/raw capture/private/public self-digest 与全部 links 通过。保存 raw capture 对 1,888/34,199 exact replay=`42.489s`，private/public dict 与 canonical bytes 均逐字节全等；raw execution SHA=`0e9e4456...9f7458`。
+- 当前仅 R8 author-integrity pass，03B independent=false。结果提交后必须生成 hash-bound fixed audit manifest，并由全新 fork-none、作者分离、只读 reviewer 同审 R8 工程与 R17 研报质量。四 residual 外源、Evidence/Pack/Readiness、S2、新报告和 human gates 仍未完成；其前 03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。详见工作记录 102 与 R8 model-run。

@@ -2098,3 +2098,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R17 数值关系重算通过，但 reader URL=0/source appendix=false、crosswalk 未消费、WWC 0/6、事实 71/32 重复、02B 0/16、formal 8D invalid；原文语义支持因 bundle 缺 passages/locator 为 NOT_ASSESSABLE。
 - 审计未跑全仓；localized mutation 已足够证明 failure。实际延迟来自递归历史阅读，主 Agent 两次中断限缩。风险分层策略已要求 future hash-bound audit manifest、engineering/report phase checkpoints 与 bundle 缺失即 NOT_ASSESSABLE。
 - R7 不覆盖、不重试。下一合法动作只允许保存 audit failure 后写 R8 program plan；03C/4B/reranker/Evidence/NumericFact/S2/report/human/product/publication/release 全 false。详见工作记录 099。
+
+### 2026-08-27 DELL-RSQ-03B R8 program-level plan
+
+- R8 已把 fresh R7 audit 的三项 P2 拆成十张顺序票：predecessor/audit freeze、immutable PredicateFrame/RoleBinding、六 target frame-local contract、完整 polarity/modality/reporting scope、anchor provenance/ambiguity、bounded synonym recall、Unicode/fixed-point threat-first public validation、四层 compiler/crosswalk、exact execution seal、hash-bound fresh dual audit。
+- 核心不变量升级为“一个 complete 对应一个 predicate frame”：每个 actor/predicate/object/recipient/product/price/quantity/period/process role 都必须有 span、frame 与 normalization provenance；同句独立事件、trailing uncertainty、多值 anchor 不得再靠 sentence-wide union 或 nearest-value heuristic 通过。
+- R7 fresh audit 的八条 false-complete、一个 `$150 support + $15 hardware` anchor attack、六个 positive controls、grammar-valid 高熵 ID 和四层 encoded URL 已逐项冻结；current R7 counts 只是 bounded expectation，R8 任何变化必须逐 frame 解释。
+- 验证采用风险分层：代码编辑只跑 T1 direct，ticket freeze 跑 T2 adjacent，共享 seam 变化才跑 T3；全仓 T4 只在 R8 implementation/test freeze 跑一次并记录 `--durations=50`。其后 policy-only、result、Project OS、审计文档不重复全仓，除非 production/test/shared validator/active consumer 语义再变或影响面未知。
+- R7 preview baseline=`223.188s`；R8 相同输入若超过 600 秒或出现无解释的两倍回退即停止/profile。Fresh reviewer 使用 hash-bound 固定包和五相 checkpoint；缺材料直接 `NOT_ASSESSABLE`，不递归历史阅读，不重复 full pytest。
+- R8 fresh PASS 后才允许 residual 外源梯子、0.6B/4B mixed shadow、条件式 reranker、Evidence admission、Pack/Readiness、S2 和受影响动态单元；新报告必须非覆盖 R17，并补 reader citations/source appendix、14/9/4/10 crosswalk、六 WWC、数值血缘、密度/重复与 qualified-human gate。
+- 当前只完成 plan；R8 implementation/policy/attempt/result、03B independent、03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。详见工作记录 100。

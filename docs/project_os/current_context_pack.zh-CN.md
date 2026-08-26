@@ -1991,7 +1991,7 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R4 在 clean、`HEAD==upstream` 的 authority `aa61687f...43d74` 上消费唯一 attempt；authority 的唯一父提交为 implementation `14f11b8c...51789a`，唯一 changed path 为 R4 policy。
 - 5 个唯一 request、1 个本地 Qwen3-Embedding-0.6B query batch；每 request 精确 96 union／16 final。network/Provider/generation/external/4B/reranker/retry/mutation/Candidate/Evidence promotion/gap closure 全为 0。
 - 六 target 的 material coverage canonical/occurrence gaps 全为 0。ASP=`2/2/2/2`、best final rank 15，是唯一 same-pool reranker challenger；supplier=`2/2/2/1`、best rank 2。capacity release、observed yield、Dell-HBM bridge、Dell company-period physical units 均 complete=0，author route 为 bounded 03C candidate；target-specific 4B recall challenger=0。
-- public digest=`cb72f7a5...2113ca6`、private digest=`9f21a1f8...f412d65`。policy/public/private/receipt self-digest、private link、raw execution SHA/validator 与 public exact reprojection 均通过。
+- public 实际 64 位 digest=`cb72f7a5...213ca6`、private digest=`9f21a1f8...f412d65`。R4 audit 后来把 public digest 手工多抄一位，已由 append-only correction `0946e508...62ea4` 纠正；policy/public/private/receipt self-digest、private link、raw execution SHA/validator 与 public exact reprojection仍通过。
 - 这仍只是 author-integrity pass。必须先提交 immutable result，再由全新 fork-none、作者分离、只读 reviewer 同时审工程/语义/route 和 R17 研报质量；reviewer 不是 qualified human。R17 仍为 55 Evidence／14 gaps／0 closure、02B `0/16`，citation/source appendix、crosswalk、WWC、事实密度与八维质量继续 OPEN/NOT_ASSESSABLE。
 
 ### 2026-08-26 DELL-RSQ-03B R4 fresh dual-audit FAIL
@@ -2002,3 +2002,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - P2：`no/lack/denied partnership`、`not/never allocated`、`unavailable`、`will/forecast/planned yield`、N2 pilot line、`Dell has not shipped` 与 `Dell said NVIDIA shipped` 等 controlled negatives 仍被判 complete。
 - R17 的 39 surfaces/42 claim refs/18 EV/10 gaps 均可解析，定量桥和因果/反方边界总体受控；但仍无 reader-visible citation/source appendix，未消费 14/9/4/10 crosswalk，六 WWC 未操作化，重复/密度 open，formal 8D 与 qualified-human 均无效。
 - 下一合法动作是 non-overwriting same-stage R5：去重前冻结 raw positions，typed token-exact numeric/time anchors，scope-aware polarity/direction/shipper/future/process guards，并冻结全部攻击回归。fresh R5 audit 前 03C/4B/reranker/Evidence/S2/report/product authority 全 false。审计 digest=`908f0db0...ae13a8`。
+
+### 2026-08-26 DELL-RSQ-03B R5 作者实现与零调用预演
+
+- R5 已以新 module/runner/test/schema 实现 raw occurrence 先赋 absolute position、typed token-exact currency/percent/number/time anchor、产品码数字排除，以及 supplier/capacity/HBM/yield/units 的 scope-aware polarity、future/process 与 seller/shipper/reported-speech direction。
+- R4 audit 的 public digest 65 位手抄错误由新 correction receipt 独立绑定原 audit SHA、actual public SHA 与 64 位 self-digest；原 audit bytes、P0/P1/P2/P3、route 与 R17 verdict 不改写。R5 policy 必须同时绑定原 audit 与 correction。
+- 写实现时 D 盘曾为 0 bytes；zero-byte untracked 文件已删除，经 Owner 明确授权只清理四个 `D:\temp` installer/diagnostic/pip 临时目录，释放约 1.34 GiB。R5 runner 现要求 attempt consumption 前 free bytes ≥536,870,912，不足则零写零调用退出。
+- R5 targeted 当前 `41 passed`，R1/R3/R4/R5/R39/query-object focused=`154 passed`；single-pass 全 R39 corpus zero-call preview 对 1,888 sources／34,199 objects 成功。ASP=`2/2/2/2` rank 15、supplier=`2/2/2/1` rank 2，其余四 target=`0/0/0/0`，六 target coverage gaps=0、external candidate=4、reranker candidate=1、4B recall=0，全部 authority=false。
+- Preview 使用 immutable R4 raw execution，不调用 embedding/model/network/reranker、不写 result/receipt、不消费 R5 attempt。下一门仍是最终全仓门、clean implementation/push、单 policy authority/push、唯一 fresh 0.6B attempt、immutable result 与另一名 fresh fork-none dual audit。
+- 最终作者门已通过：focused=`154 passed`、Project OS=`82 passed`、全仓=`1480 passed, 2 skipped, 2 existing SWIG warnings`、active baseline=`213/8/5/28/0`、1,143 config JSON、8 JSONL／1,258 行、8,127-file secret scan／0、compileall、pyflakes、correction self-digest/internal-SHA cross-binding 与 diff check 全部通过；门禁期间 R5 attempt 仍未消费。
+- R17 仍为 55 Evidence／14 gaps／0 closure、02B=`0/16`；reader-visible citation/source appendix、14/9/4/10 crosswalk、六 WWC operationalization 与事实密度继续失败。03C/4B/reranker/Evidence/S2/report/product/publication/release 全 false。

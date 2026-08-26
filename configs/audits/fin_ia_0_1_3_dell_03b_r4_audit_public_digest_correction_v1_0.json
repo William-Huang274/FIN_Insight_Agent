@@ -1,0 +1,45 @@
+{
+  "schema_version": "fin_ia_audit_artifact_correction_receipt_v1_0",
+  "correction_id": "CORRECTION::FIN-0.1.3::DELL-RSQ-03B-R4-AUDIT::PUBLIC-DIGEST::R1",
+  "status": "append_only_public_result_digest_transcription_correction_no_verdict_change",
+  "recorded_at": "2026-08-26T12:57:55+08:00",
+  "original_audit": {
+    "ref": "configs/audits/fin_ia_0_1_3_commit_3629272c_dell_03b_r4_fresh_dual_audit_fail_v1_0.json",
+    "sha256": "f5ac0d72ca84e9b341b8ca6f89760c395f33a1154fbc2bcf00de92dc17af7bdb",
+    "result_digest": "908f0db0b0e4880b3f61cb893cbb6cd086eab2905305b1bb58a7b79d62ae13a8",
+    "preserved_unchanged": true
+  },
+  "corrected_binding": {
+    "field": "reviewed_artifacts.R4_public.result_digest",
+    "recorded_value": "cb72f7a5bfbc1a75bd811b499d63183052f18b2af1799d81a08cd996452113ca6",
+    "recorded_value_length": 65,
+    "correct_value": "cb72f7a5bfbc1a75bd811b499d63183052f18b2af1799d81a08cd99645213ca6",
+    "correct_value_length": 64,
+    "R4_public_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_3.json",
+    "R4_public_sha256": "9cf1b4f8d6f084c7073fd998eca69ff17bb1661d0d579aeb1dcfabf0f1a3fd79",
+    "R4_public_self_digest_valid": true
+  },
+  "scope": {
+    "cause": "manual_digest_transcription_inserted_one_extra_character",
+    "changed_source_or_result_files": 0,
+    "changed_audit_verdicts": 0,
+    "changed_P0_P1_P2_P3_counts": 0,
+    "changed_route_or_authority_decisions": 0,
+    "correction_only": true
+  },
+  "authority": {
+    "R4_audit_overwrite_authorized": false,
+    "R4_retry_authorized": false,
+    "R5_may_bind_original_audit_plus_this_correction": true,
+    "03C_external_capture_authorized": false,
+    "4B_embedding_authorized": false,
+    "reranker_authorized": false,
+    "evidence_promotion_authorized": false,
+    "gap_closure_authorized": false,
+    "S1_pass": false,
+    "report_quality_pass": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "result_digest": "0946e508573b7c8e6068aea6406baae7b0c3a3c2558ac8f16a69acd2b4362ea4"
+}

@@ -2029,3 +2029,16 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R5 P2：整句 regex 未覆盖 failed/rejected/should/anticipated/estimated/prototype/refuted/disclosed 等 polarity/modality/direction，ASP 无 affirmative quote guard，且无关否定从句可误杀正例；product-code 的 slash/space 形式泄漏裸数字，FY26/FY2026 不等价；public projector 删除五个字段的 denylist 可放行未知 private 字段与 `www.` locator。
 - R17 P1/P2/P2/P3：repo 内 lineage、定量和边界可解析，但 reader citation/source appendix 缺失，14/9/4/10 crosswalk 未被早一天生成的 R17 消费，WWC operational=`0/6`，事实/WWC 重复；02B qualified-human=`0/16`，formal 8D 无效。
 - R5 不覆盖、不重试。下一合法动作是 same-stage non-overwriting R6，修复 `RC-S1-079`、`RC-S1-080`、`RC-S0-105` 后走新 policy/attempt/result 与另一 fresh audit；R17 successor 与 S1 R6 分离。03C/4B/reranker/Evidence/NumericFact/S2/report/product/publication/release 全 false。Audit digest=`56fc2488...d7499`。
+
+### 2026-08-26 DELL-RSQ-03B R6 program-level plan
+
+- R6 已拆为四张需求票：typed clause proposition（含 ASP affirmative polarity）、product/FY typed anchor v2、recursive public allowlist/schema、R5-failure-bound exact execution seal；依赖、输入输出、工程与模型环节质量、研报边界、测试、停止条件见工作记录 092。
+- 实现必须同时消除 false complete 与 false partial；current corpus 若改变必须逐 target 解释；public 未知字段/`www.`/private locator 必须 fail-close。R5 41 tests、fresh audit attacks 与新增同义/从句/正例 controls 全冻结。
+- R6 policy/attempt 尚不存在；当前只允许实现、零模型 preview 与门禁。R17 citation/crosswalk/WWC/density/human/8D 继续独立失败，不能混入 R6 或由 R6 自动解冻。
+
+### 2026-08-26 DELL-RSQ-03B R6 作者实现与零调用预演
+
+- R6 clause-scoped typed proposition、product/FY canonical anchor v2、proposition-slot anchor 与 recursive explicit public allowlist 已实现；R5 audit 的三类 P2 attacks、扩展 speculative/third-party/unknown-field attacks 和正向 recall controls 已冻结。R6 targeted=`95 passed`，R1–R6 相邻合同=`206 passed`。
+- 复用 immutable R5 raw execution 对 1,888 source／34,199 objects 做最终零调用 full-corpus compile 与 public projection，用时 `224.279s`；ASP=`2/2/2/2` rank 15、supplier=`2/2/2/1` rank 2，其余四 target=`0/0/0/0`，六项 coverage gap=0、external=4、reranker=1、4B recall=0，与 R5 current observations 完全一致。
+- Project OS=`82 passed`、全仓=`1575 passed, 2 skipped, 2 existing SWIG warnings`、compileall/pyflakes/diff check、active baseline=`213/8/5/28/0`、1,146 config JSON、8 Project OS JSONL／1,275 行与 8,137-file secret scan／0 已通过。R6 policy/attempt/result 尚不存在；先完成 clean implementation push，之后才允许 policy-only authority 与唯一新 attempt。
+- R17 citation/source appendix、crosswalk、WWC、density、02B `0/16` 与 formal 8D 继续独立失败。03C/4B/reranker/Evidence/NumericFact/S2/report/product/publication/release authority 均保持 false。详见工作记录 093。

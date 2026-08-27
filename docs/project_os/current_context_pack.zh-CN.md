@@ -1,11 +1,13 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-25
+更新时间：2026-08-27
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-dell-s1-s2-product-bridge`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
+
+2026-08-27 R9 successor：implementation=`3b608ca6…c6b1`、policy authority=`2c6d7ba5…cc48` 已 clean/synced。此前反复 GitHub reset 的根因是 Git 未继承 Windows 已启用的 `127.0.0.1:6696`，因而直连当前不可达的 `github.com:443`；现已写入本仓库 GitHub 专用 proxy，连续 5 次远端读取及实际 push通过。唯一 R9 formal已成功：5 requests、1本地 Qwen3-Embedding-0.6B batch、338 union/80 final、forbidden calls全0；raw capture、private/public和 exact saved-formal replay均通过，public digest=`b60fd484…32ae`。这只把 R9 engineering推进到 author-integrity；fresh author-separated工程＋R17研报质量审计尚未完成，03B independent仍false。四条 residual外源、changed-pool 4B/reranker、Evidence/02B、Readiness/S2/S3、新报告、formal 8D、qualified-human、product/publication/release全部仍开放。详见 S1/106。
 
 DELL 定向补源、R4 Pack/anchor/readiness 已原子晋升 current R34：`55 Evidence / 14 gaps`，
 三个原 not-ready 请求中供应关系 ready、价格／配置可在边界下研究，公司级 unit/share 仍

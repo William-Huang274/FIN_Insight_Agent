@@ -388,3 +388,12 @@ R9 plan done：本文件与 Project OS 明确记录 tickets、依赖、输入输
 - R9-06 行为与静态门已通过：T1=`56`、T2=`153`、T3=`93`，compileall/pyflakes/import isolation、active baseline=`213/8/5/28/0`、8 JSONL/1,319 rows、8,179-file secret scan/0均通过。R9 未修改 shared/active surface且无跨域失败，故 T4 trigger 为 false；staged diff/commit/push仍在 implementation Git closeout。
 - R9-07/08 仍未执行：v1.8 policy、formal attempt、private/public result、exact replay、immutable audit manifest和 fresh dual audit 均不存在。工作记录 105 是本状态的详细证据。
 - 更正本计划末尾的旧状态：`R9 implementation=false` 已被作者实现与 preview证据取代；但 `R9 executed=false`、`R9 independent=false` 以及所有 03C/4B/reranker/Evidence/S2/S3/report/product authority 仍为 false。R17 固定 14 文件质量失败继续原样 carry forward。
+
+## 11. 2026-08-27 formal execution successor
+
+- R9-07 的 policy-only authority 已从 exact implementation parent 创建并推送：implementation=`3b608ca6…c6b1`，authority=`2c6d7ba5…cc48`，唯一 changed path 为 v1.8 policy。
+- GitHub 多次 reset 的最早原因已查明并修复：Git 直连不可达的 `github.com:443`，没有继承 Windows 的 `127.0.0.1:6696` 代理。仓库级 `http.https://github.com.proxy` 配置后连续远端读取与实际 push 通过，未放宽 clean/synced gate。详见工作记录 106。
+- 唯一 `dell-rsq-03b-internal-chain-r9` 已成功消费；raw-first capture、private/public atomic publication和 terminal-failure seal均符合合同。5 requests、1 local 0.6B batch、338 union、80 final，forbidden counters全为0。
+- saved-formal replay返回 `private_dict_and_bytes_equal=true`；R9 direct post-result=`56 passed in 7.66s`，Project OS preflight=`82 passed in 30.40s`，8 JSONL/1,324 rows解析通过。R9-07作者完整性完成。
+- R9-08 尚未完成：immutable result commit/push、fixed audit manifest和 fresh author-separated dual audit仍在后续门。故 `R9 executed=true`、`R9 author integrity=true`，但 `R9 independent=false`、`03B independent=false`。
+- 四条 03C residual、changed-pool 0.6B/4B/reranker、Evidence/02B、Readiness/S2/S3/report successor和三重验收全部仍未执行；R17 质量继续 `FAIL_GATE_OPEN_NOT_ASSESSABLE`。

@@ -88,3 +88,7 @@ Implementation freeze 的行为、静态、活动图、JSONL 和 secret 门已�
 3. 执行唯一 formal R9，立即 raw capture，生成 private/public；用 saved raw exact replay/reprojection封印。
 4. 提交 immutable public/model-run/Project OS result，建立固定 audit manifest；启动全新 fork-none、作者分离、只读 reviewer，同时审工程与 R17 研报质量。Reviewer 不重复全仓 pytest，只有具体 material suspicion 才跑 targeted/mutation。
 5. fresh audit pass 后才进入四条 residual 外源→真实 candidate pool→条件式 0.6B/4B/reranker→Evidence/human admission→Readiness→S2→受影响 S3→非覆盖式新报告→工程/研报/qualified-human 三重验收。
+
+## 10. Successor note
+
+本记录冻结的是 implementation/preview 时点，不回写覆盖其历史证据。后续 policy、网络根因修复、唯一 formal execution、raw capture 和 exact replay 已完成；当前状态与摘要哈希见 `docs/worklog/fin_0_1_3_s1/106_dell_03b_R9_exact_execution_network_root_cause_and_author_integrity.md`。Fresh author-separated audit仍未完成，故本记录不得被解释为 03B independent、source closure 或研报质量通过。

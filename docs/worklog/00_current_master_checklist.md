@@ -152,7 +152,8 @@
   - [x] 03B R9-00～R9-06 作者实现与 zero-call preview：typed frame/scope/argument anchor、source→compiled transformation、exact-once runner；T1/T2/T3=`56/153/93`，1,888/34,199 preview=`39.649437s`，完整计数/排名不变，complete transformation=`6/6`
   - [x] R9 implementation/policy/formal/exact replay 完成；fresh 作者分离审计冻结两个 P2，R9 engineering FAIL、R17 仍 `FAIL_GATE_OPEN_NOT_ASSESSABLE`
   - [x] R10 作者实现与 immutable-R9-raw preview：开放词结构边界、同组 product↔price relational completion/transformation；T1/T2/T3=`66/122/93`，supplier 不变，generic-hardware ASP false complete `1/1/1/1→0/0/0/0`
-  - [ ] R10 focused implementation commit/push、v1.9 policy-only authority、唯一 fresh 0.6B formal、exact replay 与新作者分离工程＋R17 研报质量审计；其前 03B independent=false
+  - [x] R10 focused implementation `70015d11...`、v1.9 policy-only authority `d3ab2456...`、唯一 fresh 0.6B formal 与 exact replay 完成：338 union/80 final，supplier `3/3/2/1 rank2`、ASP `0/0/0/0`、forbidden=0
+  - [ ] 冻结 R10 immutable result 与 fixed manifest，并完成新作者分离工程＋R17 研报质量审计；其前 03B independent=false
   - [ ] fresh R10 audit pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
 - [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止

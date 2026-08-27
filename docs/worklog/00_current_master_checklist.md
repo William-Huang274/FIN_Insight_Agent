@@ -160,8 +160,11 @@
   - [x] R11 result/manifest 与 fresh 双审计已冻结：identity/execution/privacy `PASS_BOUNDED`，engineering `FAIL 0/1/3/0`；route state-erasure、clause ownership、governing nominal head 与 transformation proof rebind 阻断 03B
   - [x] non-overwriting R12 program-level plan冻结：route恒常identity、结构化clause ownership、governing price head、connector proof identity、zero-model exact successor与工程/模型/研报三层验收
   - [x] R12四项R11根因＋四项冻结前完整性边界修复、分层测试、immutable-R11-raw zero-call preview、唯一 exact attempt/replay完成；新增调用全为0
-  - [ ] R12 reviewed-result/fixed manifest冻结与 fresh author-separated工程＋R17研报质量双审计；fresh independent PASS尚未取得
-  - [ ] fresh R12 audit pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
+  - [x] R12 reviewed-result `057eb98e...` 与 fixed manifest `3db8e535...` 已冻结；fresh双审计确认stored result `PASS_BOUNDED`，但engineering `FAIL 0/1/2/0`，另有manifest envelope P2，R17仍`FAIL 0/1/2/1`
+  - [x] R12 failure与non-overwriting R13 program-level plan已固化：authoritative summary reconciliation、event-local predicate roles、participial/relative governing head、case-correct manifest与工程/模型/研报三层标准
+  - [x] R13 authoritative persisted reconciliation、ownerless unseen event barrier、participial/relative governing head与R12直系raw lineage已实现；T1/T2/T3=`162/292/140`，最终immutable-R12-raw preview=`25.315615s`，complete count/family/rank/route不变
+  - [ ] 冻结R13 implementation/policy-only authority，执行唯一formal/exact replay，生成case-correct manifest并取得fresh independent engineering PASS
+  - [ ] fresh R13 audit pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
 - [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止
 - [ ] 生成不覆盖 R17 的 Writer successor，提供读者可读 citation/source appendix；内部 EV/GAP ID 仅作 lineage

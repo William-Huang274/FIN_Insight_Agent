@@ -23,6 +23,8 @@
   - DELL 03B R9 program-level 执行计划：`fin_0_1_3_s1/104_dell_03b_R9_program_level_execution_plan.md`
   - DELL 03B R9 作者实现与零调用预演：`fin_0_1_3_s1/105_dell_03b_R9_author_implementation_and_zero_call_preview.md`
   - DELL 03B R9 唯一执行、连接重置根因与作者完整性复证：`fin_0_1_3_s1/106_dell_03b_R9_exact_execution_network_root_cause_and_author_integrity.md`
+  - DELL 03B R9 fresh 双审计失败与 R10 要求：`fin_0_1_3_s1/107_dell_03b_R9_fresh_dual_audit_failure_and_R10_requirement.md`
+  - DELL 03B R10 program-level 执行计划：`fin_0_1_3_s1/108_dell_03b_R10_program_level_execution_plan.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`

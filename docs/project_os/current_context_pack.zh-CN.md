@@ -2154,3 +2154,11 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 风险分层证据：T1 R9 direct=`56 passed in 8.88s`；T2 R8+R9=`153 passed in 21.68s`；T3 Project OS+S1 foundation=`93 passed in 40.62s`；compileall/pyflakes/import isolation、active baseline=`213/8/5/28/0`、8 JSONL/1,319 rows和8,179-file secret scan/0均通过。R9 未改 shared/active surface且没有跨域失败，T4 trigger 为 false，不重复约 20 分钟全仓。
 - 当前仅 author implementation/preview，v1.8 policy、formal attempt/raw/private/public、exact replay、immutable audit manifest和 fresh dual audit均不存在。四条 residual 外源、真实 candidate pool 上的条件式 0.6B/4B/reranker、Evidence/human admission、Readiness、S2、受影响 S3和非覆盖式新报告均未开始。
 - R17 固定 14 文件继续 `FAIL_GATE_OPEN_NOT_ASSESSABLE`：reader citation/source appendix、EV→passage/URL/locator、14/9/4/10 crosswalk、六 WWC、72/36 duplication、02B `0/16`、formal 8D与 qualified-human未通过；未来独立审计必须同时覆盖 R9 工程和研报质量。详见工作记录 105。
+
+### 2026-08-27 DELL-RSQ-03B R9 fresh dual-audit FAIL 与 R10 门
+
+- Fresh fork-none、作者分离、只读 reviewer 对 immutable result `6e2189de...0e5f` 完成五相双审计；20/20 engineering、14/14 R17 SHA/size、Git topology、self-digest、5×96/16、raw/private/public links 与 exact projection 通过。R9 actual integrity/route=`PASS_BOUNDED`。
+- R9 新 finding=`0/0/2/0`。P2-1：coordinator split 依赖封闭 `_FRAME_RIGHT_SUBJECT` 枚举，`Acme`/`Supermicro` 等未见主体可让 Dell 左事件与右侧 product/price 跨 frame 拼成 complete。P2-2：ASP completion 和 semantic transformation 没有强制 product↔price 属于同一 hardware argument group，可把 generic hardware `$15` 错证为 XE9680 price。
+- R9 engineering=`FAIL`、R9 independent=false、03B independent=false；R9 不覆盖、不重试。完整机器结论见 `configs/audits/fin_ia_0_1_3_commit_6e2189de_dell_03b_r9_fresh_dual_audit_fail_v1_0.json` 与工作记录 107。
+- R17 固定包 unchanged，继续 `FAIL_GATE_OPEN_NOT_ASSESSABLE`=`0/1/2/1`：reader 0 URL、0/18 exact passage/locator binding，14/9/4/10 未绑定，WWC 0/6，Facts 72/36，02B 0/16，8D null。
+- 下一合法动作是工作记录 108 定义的 non-overwriting R10：结构性开放词事件边界、同组 product-price completion、relational semantic signature/transformation、风险分层门、zero-call preview、新 policy/attempt/replay 与 fresh audit。其前 03C/4B/reranker/Evidence/S2/S3/report/product/publication/release全 false。

@@ -31,6 +31,7 @@
   - DELL 03B R11 program-level 执行计划：`fin_0_1_3_s1/112_dell_03b_R11_program_level_execution_plan.md`
   - DELL 03B R11 作者实现与零调用预演：`fin_0_1_3_s1/113_dell_03b_R11_author_implementation_and_zero_call_preview.md`
   - DELL 03B R11 唯一执行与作者完整性复证：`fin_0_1_3_s1/114_dell_03b_R11_exact_execution_and_author_integrity.md`
+  - DELL 03B R11 fresh 双审计失败与 R12 要求：`fin_0_1_3_s1/115_dell_03b_R11_fresh_dual_audit_failure_and_R12_requirement.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`

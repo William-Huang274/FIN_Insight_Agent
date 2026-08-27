@@ -157,8 +157,9 @@
   - [x] R11 program-level plan冻结：ClauseOwnershipDecision v2、PriceAttachmentProof v1、proof-aware transformation、风险分层门、唯一formal与fresh双审计
   - [x] R11作者实现与immutable-R10-raw零调用preview通过：T1/T2/T3=`93/159/152`；完整六target count/family/rank与下游处置不变，complete transformation=`6/6`，partial proof-schema delta逐family留痕
   - [x] R11 implementation `23014238...`、v2.0 policy-only authority `9522ccee...`、唯一fresh 0.6B formal与exact replay完成：338 union/80 final，supplier=`3/3/2/1 rank2`、其余五项=`0/0/0/0`、forbidden=0
-  - [ ] 冻结R11 result/manifest并取得fresh engineering independent PASS；其前03B independent=false
-  - [ ] fresh R10 audit pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
+  - [x] R11 result/manifest 与 fresh 双审计已冻结：identity/execution/privacy `PASS_BOUNDED`，engineering `FAIL 0/1/3/0`；route state-erasure、clause ownership、governing nominal head 与 transformation proof rebind 阻断 03B
+  - [ ] non-overwriting R12 program plan、四项根因修复、分层测试、immutable-R11-raw zero-call preview、唯一 formal/replay 与 fresh independent PASS
+  - [ ] fresh R12 audit pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
 - [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止
 - [ ] 生成不覆盖 R17 的 Writer successor，提供读者可读 citation/source appendix；内部 EV/GAP ID 仅作 lineage

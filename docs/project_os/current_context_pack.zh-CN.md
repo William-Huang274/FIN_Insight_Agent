@@ -1,13 +1,13 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-27
+更新时间：2026-08-28
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-dell-s1-s2-product-bridge`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-2026-08-27 DELL 03B R11 唯一 formal、exact replay、reviewed-result=`cd1d41b3...` 与 fixed manifest=`e1cc7aaa...` 均已冻结；34/34 hashes、Git implementation→authority→result→manifest、14/14 inputs、33/33 implementation bindings、exact-once/raw-first、5×96→16、338 union/80 final、forbidden counters=0 与 public privacy 均通过。但 fresh 作者分离只读双审计判定 engineering=`FAIL 0/1/3/0`、R11/03B independent=false：ASP route contract 在 `external_required false→true` 后被 state-erasure，导致声明五条梯子但 ASP exact IDs 为空；lowercase/open-vocabulary clause owner 可伪合并、未见 adjunct 可误拆；service/financing governing nominal head 可被误认硬件价；connector/proof rebind 可无 flag 通过 transformation。R11 保持不可变失败证据；同阶段 non-overwriting R12 program plan 已冻结为 route恒常identity、结构化clause ownership、governing price head、connector proof identity与immutable-R11-raw zero-model exact successor，implementation尚未开始。R17 仍是 reader URL=0、claim-passage=`0/18`、crosswalk 未绑定、WWC=`0/6`、human=`0/16` 的 `FAIL_GATE_OPEN_NOT_ASSESSABLE (0/1/2/1)`。GitHub reset 根因已由 repo-only `127.0.0.1:6696` proxy 持久关闭并多次 push 证明；外源、4B/reranker、Evidence、Readiness/S2/S3、新报告、8D、product/publication/release 全部 false。
+2026-08-28 DELL 03B R11 唯一 formal、exact replay、reviewed-result=`cd1d41b3...` 与 fixed manifest=`e1cc7aaa...` 均保持不可变；fresh 作者分离双审计仍为 engineering=`FAIL 0/1/3/0`、R11/03B independent=false。其同阶段 non-overwriting R12 作者实现现已关闭四个已知攻击族：03A-R2 恒常 route identity 修复 ASP `external_required false→true` state-erasure；case-independent structural clause ownership 拒绝 lowercase/open-vocabulary owner伪合并并保留未见 adjunct shared-subject；governing nominal head阻止 service/financing/contract冒充硬件价；connector proof identity拒绝 `for→at` 无标记改绑。冻结前 staged-diff 自审另关闭 saved proof-rebind 漏验、五项 candidate-generation binding drift、raw 写盘未重读、public transformation summary 未先对私有行自校验四个完整性边界。R12 formal path只允许精确复用 immutable R11 raw SHA=`0e9e4456...f7458`，R12 新增 embedding/model/provider/network/external/4B/reranker调用均为0。最终零调用 full-corpus preview为1,888 source／34,199 objects／794 union、`23.882675s`、digest=`ad4ef78c...b4a`；真实全语料1,601条 transformation binding逐行／汇总一致；六target complete family/count/rank与R11精确相同，supplier=`3/3/2/1 rank2`，其余五项=`0/0/0/0`，complete transformation coverage 6/6、proof-rebind=0，ASP exact external IDs已恢复。T1=`130 passed in 22.85s`、T2=`223 in 28.15s`、T3=`140 in 41.66s`，T4 trigger=false；初始284.73s preview因重复 frame/boundary解析触发hard stop，现以一次解析、runtime frame复用、sound guard和延迟diagnostics关闭。当前仍只是 author implementation＋preview，v2.1 policy、R12 attempt/result/replay和fresh independent audit均未发生。R17继续为 reader URL=0、claim-passage=`0/18`、crosswalk未绑定、WWC=`0/6`、human=`0/16`的`FAIL_GATE_OPEN_NOT_ASSESSABLE (0/1/2/1)`。GitHub reset根因已由repo-only `127.0.0.1:6696` proxy持久关闭并经多次push证明；外源、4B/reranker、Evidence、Readiness/S2/S3、新报告、8D、product/publication/release全部false。详见S1/117。
 
 DELL 定向补源、R4 Pack/anchor/readiness 已原子晋升 current R34：`55 Evidence / 14 gaps`，
 三个原 not-ready 请求中供应关系 ready、价格／配置可在边界下研究，公司级 unit/share 仍

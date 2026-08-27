@@ -149,6 +149,9 @@
 - [ ] `DELL-RSQ-02B` qualified human 对全部 16 项签发 accept/rebind/accept-new/reject/defer；候选不得自动晋升 Evidence，4 个 blocked 请求只含其中 8 项
 - [x] `DELL-RSQ-03A` clean `f66f07d7...` 后已物化：program digest `eccc6dfb...8ad8`；14 Pack gap＋独立产品利润 gap 全量分区，9 个补源 target／7 层路线／63 contracts；旧 22 fresh query 先复核、禁止原样重跑；3 项 admission-held，0 次调用，G3 仍 false
 - [ ] 执行获准且不与 admission 重叠的 03B 内部链与 03C 真实 residual 外源梯子，并为每项形成 closed／narrowed／route-exhausted／proved-boundary receipt
+  - [x] 03B R9-00～R9-06 作者实现与 zero-call preview：typed frame/scope/argument anchor、source→compiled transformation、exact-once runner；T1/T2/T3=`56/153/93`，1,888/34,199 preview=`39.649437s`，完整计数/排名不变，complete transformation=`6/6`
+  - [ ] R9 implementation commit/push、policy-only authority、唯一 fresh 0.6B formal、exact replay 与作者分离工程＋R17 研报质量审计；其前 03B independent=false
+  - [ ] fresh R9 audit pass 后执行四条 residual 外源；当前 external required=4，上一版研报信源仍未补齐
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
 - [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止
 - [ ] 生成不覆盖 R17 的 Writer successor，提供读者可读 citation/source appendix；内部 EV/GAP ID 仅作 lineage

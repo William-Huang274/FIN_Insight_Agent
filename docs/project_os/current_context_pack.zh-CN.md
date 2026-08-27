@@ -2142,3 +2142,13 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - 测试不默认全仓：T0 每 patch，T1 ticket、T2 R8+R9 explicit、必要 T3；只有 shared/active consumer 改动、unknown import impact 或跨域失败才触发一次 T4。T1/T2/T3 硬停分别 90/120/180s；preview 70s warning、120s hard stop。
 - R17 immutable bundle 未变时，R9 audit 只验证 14-file SHA 与 audit receipt 并 carry forward `FAIL_GATE`；只有 report/source-binding/crosswalk/method/human artifact 改变才重复内容审计。未来报告仍必须补 EV/claim→passage/URL locator、reader appendix、14/9/4/10、WWC、72/36 duplication 和 0/16 human gate。
 - 当前仅 plan 完成；R9 implementation/policy/attempt/result、03B independent、03C/4B/reranker/Evidence/Pack/S2/report/product/publication/release 全 false。详见工作记录 104。
+
+### 2026-08-27 DELL-RSQ-03B R9 作者实现与零调用预演
+
+- R9-00～R9-06 已实现：无逗号 predicate/subject frame boundary、typed actuality/lifecycle/speech/assertion-owner 与 `ScopeEdge`、hardware/support argument-group price attachment、representation/semantic digest 分离、逐 role `FrameTransformationBinding`、六 target compiler，以及 explicit preview/formal/replay、exact-once、raw-first、redacted terminal failure 和 atomic private/public runner。
+- 作者期纠正了两个实质设计偏差：transformation 不能用 best-source 对 best-compiled，而须在同 family 全部 compiled windows 内按 semantic signature 匹配；formal 不能复用 R8 raw，而须执行一次 fresh local 0.6B batch，只有 preview 才允许 zero-call saved-raw recompile。
+- Immutable-R8-raw full-corpus preview：1,888 source／34,199 object，`39.649437s`，digest=`c515f44d...32bb7b`。ASP=`1/1/1/1 rank2`、supplier=`3/3/2/1 rank2`、四 residual=`0/0/0/0`；六 target complete transformation coverage=true，完整计数/排名无 R8→R9 delta、local repair=0、external=4、当前 4B/reranker eligible=0。
+- 312 条 partial-family transformation diagnostics 按 ASP/capacity/yield/HBM/supplier/units=`154/70/0/7/21/60` 保留；它们不构成 complete materialization failure，也不得冒充 Evidence 或 proved information boundary。
+- 风险分层证据：T1 R9 direct=`56 passed in 8.88s`；T2 R8+R9=`153 passed in 21.68s`；T3 Project OS+S1 foundation=`93 passed in 40.62s`；compileall/pyflakes/import isolation、active baseline=`213/8/5/28/0`、8 JSONL/1,319 rows和8,179-file secret scan/0均通过。R9 未改 shared/active surface且没有跨域失败，T4 trigger 为 false，不重复约 20 分钟全仓。
+- 当前仅 author implementation/preview，v1.8 policy、formal attempt/raw/private/public、exact replay、immutable audit manifest和 fresh dual audit均不存在。四条 residual 外源、真实 candidate pool 上的条件式 0.6B/4B/reranker、Evidence/human admission、Readiness、S2、受影响 S3和非覆盖式新报告均未开始。
+- R17 固定 14 文件继续 `FAIL_GATE_OPEN_NOT_ASSESSABLE`：reader citation/source appendix、EV→passage/URL/locator、14/9/4/10 crosswalk、六 WWC、72/36 duplication、02B `0/16`、formal 8D与 qualified-human未通过；未来独立审计必须同时覆盖 R9 工程和研报质量。详见工作记录 105。

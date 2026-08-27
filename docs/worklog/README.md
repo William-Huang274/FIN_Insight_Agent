@@ -20,6 +20,8 @@
   - 人工可操作、来源对账、Evidence admission 与 blind gate：`fin_0_1_3_s1/054_s1_human_operability_source_asset_reconciliation_admission_and_blind_gate.md`
   - 产品／内外源／Agent／Writer 历史再对齐与执行门更正：`fin_0_1_3_s1/055_product_retrieval_agent_writer_history_alignment_and_gate_correction.md`
   - DELL not-ready 补源与关系路线修复程序：`fin_0_1_3_s1/078_dell_not_ready_source_and_relationship_route_program.md`
+  - DELL 03B R9 program-level 执行计划：`fin_0_1_3_s1/104_dell_03b_R9_program_level_execution_plan.md`
+  - DELL 03B R9 作者实现与零调用预演：`fin_0_1_3_s1/105_dell_03b_R9_author_implementation_and_zero_call_preview.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`

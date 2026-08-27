@@ -2,7 +2,7 @@
 
 日期：2026-08-27
 
-状态：`same-stage non-overwriting R9 plan / audit failure frozen / implementation not started / no R9 policy, attempt, private or public result`
+状态：`same-stage non-overwriting R9 plan / R9-00～R9-06 author implementation, zero-call preview and local engineering freeze pass / implementation commit and push pending / no R9 policy, attempt, private or public result`
 
 ## 1. 目标、成功含义与不可变边界
 
@@ -379,4 +379,12 @@ R9 plan done：本文件与 Project OS 明确记录 tickets、依赖、输入输
 - immutable R8 raw zero-call preview；
 - clean implementation commit/push 后再建立 policy-only authority、唯一 formal R9 与 bounded fresh audit。
 
-当前明确 false：R9 implementation/policy/attempt/result/fresh pass、03B independent、03C external、4B、reranker、CandidateDecision、Evidence/NumericFact、gap closure、Pack/Readiness、S1/S2/S3、R17 successor、formal 8D、qualified human、product、publication、release。
+当前明确 false：R9 policy/attempt/result/fresh pass、03B independent、03C external、4B、reranker、CandidateDecision、Evidence/NumericFact、gap closure、Pack/Readiness、S1/S2/S3、R17 successor、formal 8D、qualified human、product、publication、release。R9 author implementation/preview 的后续状态见第 10 节。
+
+## 10. 2026-08-27 实施状态回写
+
+- R9-00～R9-05 已实现：punctuation-independent `FrameBoundaryDecision`、typed semantic state/`ScopeEdge`、`ArgumentGroupBinding`、representation/semantic digest separation、lossless `FrameTransformationBinding`、六 target compiler、explicit preview/formal/replay runner、exact-once/raw-first/redacted-failure/atomic-pair 合同均已有直接测试。
+- 零调用全量 preview 读取 immutable R8 raw、1,888 source/34,199 object，用时 `39.649437s`；ASP=`1/1/1/1 rank2`、supplier=`3/3/2/1 rank2`、四 residual=`0/0/0/0`，六 target complete transformation coverage=true，完整计数/排序相对 R8 无变化。312 条 partial-family diagnostics 保留为显式非 complete receipt；external target=4，当前 4B/reranker eligible=0。
+- R9-06 行为与静态门已通过：T1=`56`、T2=`153`、T3=`93`，compileall/pyflakes/import isolation、active baseline=`213/8/5/28/0`、8 JSONL/1,319 rows、8,179-file secret scan/0均通过。R9 未修改 shared/active surface且无跨域失败，故 T4 trigger 为 false；staged diff/commit/push仍在 implementation Git closeout。
+- R9-07/08 仍未执行：v1.8 policy、formal attempt、private/public result、exact replay、immutable audit manifest和 fresh dual audit 均不存在。工作记录 105 是本状态的详细证据。
+- 更正本计划末尾的旧状态：`R9 implementation=false` 已被作者实现与 preview证据取代；但 `R9 executed=false`、`R9 independent=false` 以及所有 03C/4B/reranker/Evidence/S2/S3/report/product authority 仍为 false。R17 固定 14 文件质量失败继续原样 carry forward。

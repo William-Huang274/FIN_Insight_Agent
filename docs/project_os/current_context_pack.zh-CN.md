@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-2026-08-27 R9 successor：implementation=`3b608ca6…c6b1`、policy authority=`2c6d7ba5…cc48` 已 clean/synced。此前反复 GitHub reset 的根因是 Git 未继承 Windows 已启用的 `127.0.0.1:6696`，因而直连当前不可达的 `github.com:443`；现已写入本仓库 GitHub 专用 proxy，连续 5 次远端读取及实际 push通过。唯一 R9 formal已成功：5 requests、1本地 Qwen3-Embedding-0.6B batch、338 union/80 final、forbidden calls全0；raw capture、private/public和 exact saved-formal replay均通过，public digest=`b60fd484…32ae`。这只把 R9 engineering推进到 author-integrity；fresh author-separated工程＋R17研报质量审计尚未完成，03B independent仍false。四条 residual外源、changed-pool 4B/reranker、Evidence/02B、Readiness/S2/S3、新报告、formal 8D、qualified-human、product/publication/release全部仍开放。详见 S1/106。
+2026-08-27 DELL 03B 当前已进入 non-overwriting R10 作者冻结前：R9 fresh 审计的两个 P2 均已在新路径修复，开放词事件切分不再依赖公司白名单，ASP completion／semantic signature／source→compiled mapping 必须保留同参数组的 specific product↔price relation。direct／R9+R10 adjacent／Project OS+foundation=`66/122/93`，active baseline=`213/8/5/28/0`；immutable-R9-raw 零调用 preview=`1,888 sources / 34,199 objects / 39.46156s`。supplier 保持 `3/3/2/1 rank2`；R9 唯一 ASP complete 实为泛化“hardware”报价，R10 正确由 `1/1/1/1` 降为 `0/0/0/0`，故后续真实 external-required 从四目标增为五目标。R10 policy、formal attempt/result、exact replay 和 fresh audit仍未发生，03B independent=false。GitHub 多次 reset 的根因仍已由仓库级 `127.0.0.1:6696` GitHub proxy关闭并经连续远端读取／实际 push验证。R17 继续为 reader URL=0、claim-passage=`0/18`、02B=`0/16` 的 `FAIL_GATE_OPEN_NOT_ASSESSABLE`；4B/reranker、Evidence、Readiness/S2/S3、新报告、formal 8D、qualified-human、product/publication/release全部仍开放。详见 S1/106～109。
 
 DELL 定向补源、R4 Pack/anchor/readiness 已原子晋升 current R34：`55 Evidence / 14 gaps`，
 三个原 not-ready 请求中供应关系 ready、价格／配置可在边界下研究，公司级 unit/share 仍

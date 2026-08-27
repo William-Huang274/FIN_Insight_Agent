@@ -159,7 +159,8 @@
   - [x] R11 implementation `23014238...`、v2.0 policy-only authority `9522ccee...`、唯一fresh 0.6B formal与exact replay完成：338 union/80 final，supplier=`3/3/2/1 rank2`、其余五项=`0/0/0/0`、forbidden=0
   - [x] R11 result/manifest 与 fresh 双审计已冻结：identity/execution/privacy `PASS_BOUNDED`，engineering `FAIL 0/1/3/0`；route state-erasure、clause ownership、governing nominal head 与 transformation proof rebind 阻断 03B
   - [x] non-overwriting R12 program-level plan冻结：route恒常identity、结构化clause ownership、governing price head、connector proof identity、zero-model exact successor与工程/模型/研报三层验收
-  - [ ] R12四项根因修复、分层测试、immutable-R11-raw zero-call preview、唯一 exact attempt/replay 与 fresh independent PASS
+  - [x] R12四项R11根因＋四项冻结前完整性边界修复、分层测试、immutable-R11-raw zero-call preview、唯一 exact attempt/replay完成；新增调用全为0
+  - [ ] R12 reviewed-result/fixed manifest冻结与 fresh author-separated工程＋R17研报质量双审计；fresh independent PASS尚未取得
   - [ ] fresh R12 audit pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
 - [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止

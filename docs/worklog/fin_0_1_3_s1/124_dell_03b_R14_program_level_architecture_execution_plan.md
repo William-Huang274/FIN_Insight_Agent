@@ -1,7 +1,7 @@
 # S1 工作记录 124：DELL 03B R14 program-level 架构执行计划
 
 日期：2026-08-28
-状态：`revision 1 after fresh plan audit PLAN_FAIL / implementation not started / awaiting fresh read-only re-review / no policy / no attempt / no downstream authority`
+状态：`revision 2 candidate after exact revision 1 PLAN_FAIL 0/1/0/0 / lifecycle bootstrap made unique / implementation not started / awaiting fresh exact-commit read-only review / no policy / no attempt / no downstream authority`
 
 ## 1. 目标、非目标与版本边界
 
@@ -36,16 +36,23 @@ R14必须同时存在：
 
 前者证明“应处理哪些输入”。后者只证明“被审查实现当时承诺了什么确定性输出”，不是独立语义真值。语义独立性来自versioned structural grammar、独立oracle／decoder、implementation freeze后才生成的reviewer holdout，以及author-separated审查。formal result必须从source／object重新执行compiler后再与commitment比较；不得把preview output作为extraction／classification输入。
 
-#### 2.1.1 非自引用、不可换签的`I → B → A → P`线性freeze topology
+#### 2.1.1 非自引用plan bootstrap与`I → B → A → P`线性freeze topology
 
-本计划与R13 failure audit先形成治理基线commit `G`。每个pre-formal cycle必须满足：
+R14 implementation前先有独立的plan-review bootstrap；candidate plan不能自行宣告`PLAN_FROZEN`：
 
-1. `I`（implementation freeze）：parent=`G`或上一个FAIL audit commit；只允许R14 parser／schema／target contract／manifest builder与独立validator／compiler／runner／projector／tests及machine-readable requirement manifest路径变化。禁止preview、policy、attempt或result。`I`记录exact commit、tree、parent和changed-path allowlist；
+1. `C_n`（candidate plan commit）：changed path必须exact等于`docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md`，不含其他plan artifact、implementation、policy或attempt；fresh reviewer审exact `C_n` commit/tree/parent、plan blob/SHA/bytes；
+2. 若review=`FAIL`，作者把structured FAIL payload原样物化到parent=`C_n`的`F_n`，`F_n`只允许一个plan-audit receipt、一个plan-audit worklog与必要的append-only Project OS状态；lifecycle=`PLAN_REVIEW_FAIL_REVISION_REQUIRED`，下一候选`C_(n+1).parent=F_n`，仍禁止implementation；
+3. 若review=`PASS`且P0/P1/P2=`0/0/0`，作者把structured PASS payload原样物化到parent=`C_n`的治理commit `G`。`GChangedPathManifest`只可列：一个`configs/audits/*R14*plan*audit*pass*.json`、一个`docs/worklog/fin_0_1_3_s1/*R14*plan*review*.md`、`docs/project_os/{capability_status_ledger.jsonl,root_cause_issue_ledger.jsonl,current_context_pack.zh-CN.md}`与`docs/worklog/{00_current_master_checklist.md,README.md}`；实际未更新的可省略，任何其他path拒绝。禁止改变本计划blob或任何implementation；receipt绑定`C_n` commit/tree/parent、plan blob/SHA/bytes、reviewer/task/payload digest、verdict/counts；
+4. `PLAN_FROZEN` validator必须验证`G.parent=C_n`、`C_n→G` exact `GChangedPathManifest`、plan blob在两commit相同、PASS receipt SHA/self-digest/payload identity以及R13 frozen audit。没有exact `G`不得进入implementation。
+
+首个pre-formal cycle随后唯一满足：
+
+1. `I`（implementation freeze）：首个`I.parent=G`；pre-formal FAIL后的同R14 revision则`I′.parent=A_FAIL`。只允许R14 parser／schema／target contract／manifest builder与独立validator／compiler／runner／projector／tests及machine-readable requirement manifest路径变化。禁止preview、policy、attempt或result。`I`记录exact commit、tree、parent和changed-path allowlist；
 2. `B`（pre-formal bundle freeze）：parent=`I`；只允许public-safe manifest commitment、preview commitment、decision-vector／property／mutation receipts和preview worklog。`PreFormalDecisionCommitment`绑定`I`，不绑定自身`B`，因此不存在commit/tree自引用；
 3. `A`（author-separated audit freeze）：parent=`B`；只允许fresh pre-formal audit receipt和必要的append-only治理状态。receipt必须绑定`I`、`B`、二者tree／parent／changed paths、Manifest／Commitment SHA＋digest、property／mutation roots和reviewer fresh holdout root；
-4. `P`（policy-only authority）：parent=`A`；只允许一个新policy路径变化。policy必须绑定exact `I/B/A`、PASS audit receipt、Manifest／Commitment、所有frozen input和TokenBudgetBasis。任何额外path变化都拒绝。
+4. `P`（policy-only authority）：只允许`A_PASS`作为parent，且只允许一个新policy路径变化。policy必须绑定exact `I/B/A_PASS`、PASS audit receipt、Manifest／Commitment、所有frozen input和TokenBudgetBasis。任何额外path变化都拒绝。
 
-若`A`为FAIL，不得创建`P`。后续修复仍属于R14，但必须从该FAIL audit之后创建新`I′ → B′ → A′`，旧`I/B/A`保持不可变；只有最新`A′=PASS`才可创建唯一`P`。这阻止审查Commitment A后在policy前偷偷换成Commitment B，也阻止因失败惯性创建R15。
+若`A=FAIL`，lifecycle唯一进入`PREFORMAL_FAIL_REVISION_REQUIRED`：不得创建`P`，只允许同一R14从immutable `A_FAIL`创建新`I′ → B′ → A′`；由于没有消费attempt，不要求OwnerDecisionReceipt。旧`I/B/A`保持不可变；只有最新`A′=PASS`才可创建`P`。这阻止审查Commitment A后在policy前偷偷换签，也阻止因失败惯性创建R15。
 
 完整private `InputPopulationManifest`、decision details和source locators保留在ignored private workbench；`B`只提交其SHA／self-digest／counts／roots和不含原文、私有locator、长ID的public-safe commitment。review packet可在本机只读访问private artifact，但tracked audit不得泄漏内容。
 
@@ -163,6 +170,7 @@ R14 plan与implementation必须绑定：
 
 formal前的artifact必须分commit生成，不得混在一次提交：
 
+- `C_n/F_n/G` bootstrap：candidate plan、FAIL receipt或PASS governance receipt按第2.1.1节分离；只有`G=PLAN_FROZEN`后可进入实现；
 - `I`：R14 machine-readable requirement/grammar/topology schemas、implementation、runner/projector和tests；
 - `B`：private `InputPopulationManifest`的public-safe commitment、zero-call `PreFormalDecisionCommitment`、compact vectors/details roots、property/mutation receipts、canonical byte-count receipt和preview worklog；
 - `A`：fresh pre-formal author-separated audit receipt及append-only治理状态；
@@ -173,9 +181,13 @@ formal前的artifact必须分commit生成，不得混在一次提交：
 ### 3.3 Dependency graph
 
 ```text
-R13 fresh failure + R17 carry-forward
+candidate plan C_n + R13 fresh failure + R17 carry-forward
         |
-        v
+        v fresh exact-commit plan review
+  FAIL F_n --> revised candidate C_(n+1)
+  PASS G (PLAN_FROZEN; exact PASS receipt; plan blob unchanged)
+        |
+        v first I.parent == G
 R14-00 machine requirements/grammar/oracle freeze
         |
         +--> R14-01 InputPopulationManifest
@@ -209,7 +221,7 @@ R14-11 fixed manifest + independent post-formal review
 03C external and later downstream sequence
 ```
 
-R14-09通过前不得创建policy或attempt；R14-11通过前不得进入03C。
+exact plan PASS receipt进入`G`前不得创建`I`；R14-09通过前不得创建policy或attempt；R14-11通过前不得进入03C。
 
 ## 4. 数据合同
 
@@ -368,11 +380,31 @@ Property Receipt另存operator grammar、fixed author seed、generated keyset、
 
 ### 4.9 `R14LifecycleReceipt v1`
 
-机器状态唯一为：
+机器状态与唯一合法transition为：
 
-`PLAN_FROZEN → IMPLEMENTATION_FROZEN → BUNDLE_FROZEN → PREFORMAL_REVIEW_PENDING → PREFORMAL_PASS → POLICY_BOUND → ATTEMPT_CONSUMED → FORMAL_TERMINAL → POSTFORMAL_PASS`
+```text
+PLAN_CANDIDATE_FROZEN
+  -> PLAN_REVIEW_PENDING
+     -> PLAN_REVIEW_FAIL_REVISION_REQUIRED -> PLAN_CANDIDATE_FROZEN
+     -> PLAN_FROZEN
+        -> IMPLEMENTATION_FROZEN
+           -> BUNDLE_FROZEN
+              -> PREFORMAL_REVIEW_PENDING
+                 -> PREFORMAL_FAIL_REVISION_REQUIRED -> IMPLEMENTATION_FROZEN
+                 -> PREFORMAL_PASS
+                    -> POLICY_BOUND
+                       -> ATTEMPT_CONSUMED
+                          -> FORMAL_TERMINAL_PASS -> POSTFORMAL_REVIEW_PENDING
+                             -> POSTFORMAL_PASS
+                             -> R14_STOP_OWNER_DECISION_REQUIRED
+                          -> R14_STOP_OWNER_DECISION_REQUIRED
+```
 
-任一审查或formal材料失败进入`R14_STOP_OWNER_DECISION_REQUIRED`。每次transition receipt绑定prior state/root、actor、authority、allowed paths、required artifacts和result digest；runner只接受上一个exact state，不允许跳转或覆盖。STOP状态下禁止R15、03C和任何downstream policy创建/执行；只有单独`OwnerDecisionReceipt`可选择：同一R14更换parser/IR并回到新的`IMPLEMENTATION_FROZEN` cycle、永久route `partial＋human`、或终止03B。该receipt不能把失败attempt抹去或重新消费同一attempt ID。
+`PLAN_REVIEW_FAIL_REVISION_REQUIRED`只允许新plan candidate，禁止implementation。`PREFORMAL_FAIL_REVISION_REQUIRED`只允许同一R14新`I′.parent=A_FAIL`，禁止`P`、attempt、R15、03C和任何downstream；这两个pre-attempt revision state都不要求OwnerDecisionReceipt。
+
+只有`ATTEMPT_CONSUMED`之后的formal或post-formal材料失败进入`R14_STOP_OWNER_DECISION_REQUIRED`。STOP状态下禁止R15、03C和任何downstream policy创建/执行；只有单独`OwnerDecisionReceipt`可选择：同一R14更换parser/IR、永久route `partial＋human`、或终止03B。该receipt不能抹去失败attempt或复用ID。
+
+每次transition receipt绑定prior state/root、actor、authority、allowed paths、required artifacts和result digest；validator只接受上一个exact state，不允许跳转、覆盖或用通用`FAIL`自行选择分支。`POLICY_BOUND`后若磁盘等可恢复preflight条件在attempt reservation前漂移，只能保持同一`P`等待条件恢复，不能创建新policy或attempt；本计划不授权在该等待态改写任何frozen artifact。
 
 ## 5. 需求票与双重质量验收
 
@@ -679,9 +711,11 @@ implementation preview阶段可仅保留小型tracked commitment，但private co
 
 ### 9.1 Pre-formal进入条件
 
-- 本计划、fresh plan-review failure receipt、R13 fresh audit和root-cause更正已提交，lifecycle=`PLAN_FROZEN`；
+- exact candidate plan `C_n`已clean/synced pushed，fresh author-separated reviewer对其给`PLAN_PASS`且P0/P1/P2=`0/0/0`；
+- parent=`C_n`的`G`已原样物化PASS receipt，`G` changed paths只含一个plan-PASS audit receipt、一个review worklog和预声明的append-only Project OS状态；plan blob在`C_n/G`相同；
+- `PLAN_FROZEN` validator已验证`C_n/G` commit/tree/parent/pathset、plan blob/SHA/bytes、review payload/SHA/self-digest/task identity/verdict/counts与R13 fresh audit；
 - R13 immutables exact；
-- `I`的parser backend、StructuralProofGrammar、ambiguity policy、六target topology、schemas、property/mutation denominator冻结；
+- 首个`I.parent=G`（pre-formal revision则`I′.parent=A_FAIL`），且`I`的parser backend、StructuralProofGrammar、ambiguity policy、六target topology、schemas、property/mutation denominator冻结；
 - parent=`I`的`B`含classifier-independent manifest commitment与same-compiler decision commitment；manifest可由独立rebuilder重建，commitment可由`I`从raw input重算；
 - no policy／no attempt；
 - `I/B` branch clean／synced且changed-path allowlist exact；
@@ -722,16 +756,19 @@ implementation preview阶段可仅保留小型tracked commitment，但private co
 - critical property mutant存活或full-corpus silent drop；
 - direct／list／supplier正例无结构性解释退化；
 - count／family／rank／route delta无法解释；
-- pre-或post-formal独立审查出现任一材料P0/P1/P2；
+- plan、pre-formal或post-formal独立审查出现任一材料P0/P1/P2；
 - Git／input／manifest／commitment／policy／attempt／atomic／replay不exact；
 - 磁盘、内存或runtime hard limit失败。
 
-formal前失败：留在同一R14实现周期修根因并重新pre-formal review，不消费attempt。
-formal后失败：R14 attempt保持immutable，lifecycle进入`R14_STOP_OWNER_DECISION_REQUIRED`并停止03B program。runner和03C/downstream preflight在该状态必须拒绝任何R15／03C／model／Evidence／S2／S3／Writer authority。只有独立`OwnerDecisionReceipt`可选择更换parser／IR后仍在R14创建新`I′/B′/A′` cycle、永久路由`partial＋human`、或终止03B；不能靠编号或新policy绕过。
+plan review失败：进入`PLAN_REVIEW_FAIL_REVISION_REQUIRED`，只允许新candidate plan，不允许implementation。
+
+pre-formal `A_FAIL`：进入`PREFORMAL_FAIL_REVISION_REQUIRED`，不消费attempt、不要求OwnerDecision；只允许同一R14以`I′.parent=A_FAIL`修根因并重新走`I′/B′/A′`，禁止`P`及所有下游。
+
+`ATTEMPT_CONSUMED`后的formal或post-formal材料失败：R14 attempt保持immutable，lifecycle进入`R14_STOP_OWNER_DECISION_REQUIRED`并停止03B program。runner和03C/downstream preflight在该状态必须拒绝任何R15／03C／model／Evidence／S2／S3／Writer authority。只有独立`OwnerDecisionReceipt`可选择同一R14更换parser／IR、永久路由`partial＋human`、或终止03B；不能靠编号或新policy绕过。
 
 ### 9.5 Machine-enforced preflight与hybrid boundary
 
-`R14LifecycleReceipt` validator在commit、policy、runner、03C四个入口执行，逐项验证prior state、commit topology、changed paths、artifact SHA/root、audit verdict和allowed transition；Markdown状态不参与授权。repo hash可以强制“审查的是哪些bytes、结论有没有被替换”，不能数学证明reviewer的主观独立性；fresh task identity、no-fork/read-only attestation和作者分离仍是明确记录的治理事实。任何attestation缺失均fail closed。
+`R14LifecycleReceipt` validator在candidate-plan governance `G`、implementation commit、policy、runner、03C五个入口执行，逐项验证prior state、commit topology、changed paths、artifact SHA/root、audit verdict和唯一allowed transition；Markdown状态不参与授权。首个`I`缺exact `G`、`G`缺exact plan PASS receipt、或`C_n→G`改变plan blob时，`PLAN_FROZEN→IMPLEMENTATION_FROZEN`必须拒绝。repo hash可以强制“审查的是哪些bytes、结论有没有被替换”，不能数学证明reviewer的主观独立性；fresh task identity、no-fork/read-only attestation和作者分离仍是明确记录的治理事实。任何attestation缺失均fail closed。
 
 ## 10. R14通过后的下游完整顺序与质量门
 
@@ -804,7 +841,7 @@ eligibility通过后才比较gain、irrelevant context、case regression、VRAM�
 
 ## 11. Authority matrix
 
-| 动作 | 当前：fresh plan re-review待完成 | fresh plan PASS后 | R14 pre-formal PASS后 | R14 post-formal independent PASS后 |
+| 动作 | 当前：revision 2 exact review待完成 | exact plan PASS receipt进入`G`后 | R14 pre-formal PASS后 | R14 post-formal independent PASS后 |
 |---|---:|---:|---:|---:|
 | plan/audit/governance revision | true | frozen | frozen | frozen |
 | R14 implementation/tests/preview | false | true | frozen | frozen |
@@ -818,4 +855,4 @@ eligibility通过后才比较gain、irrelevant context、case regression、VRAM�
 | S3/Writer model nodes | false | false | false | sequential + per-node TokenBudgetBasis |
 | report/product/publication/release | false | false | false | still false until separate acceptance |
 
-当前唯一允许的动作是完成本次plan审计记录、修订计划并做fresh author-separated只读re-review。只有该review给出`PLAN_PASS`且P0/P1/P2=`0/0/0`，才可按R14-00→R14-08创建`I/B`、再进入R14-09；仍不创建任何模型或外源authority。
+当前唯一允许的动作是把revision 2作为exact candidate `C_n`提交/推送并做fresh author-separated只读review。只有review给出`PLAN_PASS`且P0/P1/P2=`0/0/0`、PASS payload随后原样进入parent=`C_n`的治理commit `G`、且`PLAN_FROZEN` validator验证全部identity后，首个`I.parent=G`才可按R14-00→R14-08实现并进入R14-09；仍不创建任何模型或外源authority。

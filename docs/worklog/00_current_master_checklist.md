@@ -164,8 +164,12 @@
   - [x] R12 failure与non-overwriting R13 program-level plan已固化：authoritative summary reconciliation、event-local predicate roles、participial/relative governing head、case-correct manifest与工程/模型/研报三层标准
   - [x] R13 authoritative persisted reconciliation、ownerless unseen event barrier、participial/relative governing head与R12直系raw lineage已实现；T1/T2/T3=`162/292/140`，最终immutable-R12-raw preview=`25.315615s`，complete count/family/rank/route不变
   - [x] R13 implementation=`11caf389...`、policy-only authority=`492218a9...`、唯一zero-new-call formal与exact replay完成；persisted summary 6/6重算、public rebuild exact、supplier=`3/3/2/1 rank2`、其余五项=`0/0/0/0`
-  - [ ] 冻结R13 reviewed-result与case-correct manifest，并取得fresh independent engineering PASS；R17研报质量必须在同一双审计中继续判定
-  - [ ] fresh R13 audit pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
+  - [x] R13 reviewed-result=`07909cc1...`与case-correct manifest=`8dd03fa9...`已冻结；fresh split双审计确认current artifact `PASS_NARROW`，但general engineering `FAIL 0/1/2/0`：缺独立population anchor、flat event role union与connector-enumerated price head；R17继续`FAIL_GATE 0/1/2/1`
+  - [x] R14初版program plan已接受fresh fork-none只读审计并冻结失败：`PLAN_FAIL 0/3/2/1`；authority freeze、可执行grammar、machine mutation/lifecycle、vector encoding、crash-atomic transaction和conditional 4B门不足，未开始实现
+  - [x] R14 revision 1已补`I→B→A→P`、StructuralProofGrammar＋六target topology、frozen mutation denominator、pre/post audit与lifecycle receipt、唯一2-bit vector/error合同、Windows transaction和per-node TokenBudgetBasis；当前仍只是作者修订
+  - [ ] fresh author-separated只读re-review须先给`PLAN_PASS`且P0/P1/P2=`0/0/0`；通过前R14 implementation=false，不得创建policy/attempt或用R15绕过
+  - [ ] plan PASS后再实现R14并完成T0/T1/T2、immutable-R13-raw zero-call preview、`I/B/A/P` freeze与fresh pre-formal P0/P1/P2=`0/0/0`
+  - [ ] R14 post-formal independent pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
 - [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止
 - [ ] 生成不覆盖 R17 的 Writer successor，提供读者可读 citation/source appendix；内部 EV/GAP ID 仅作 lineage

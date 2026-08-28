@@ -39,6 +39,9 @@
   - DELL 03B R13 program-level 执行计划：`fin_0_1_3_s1/120_dell_03b_R13_program_level_execution_plan.md`
   - DELL 03B R13 作者实现、R12直系谱系修正与零调用预演：`fin_0_1_3_s1/121_dell_03b_R13_author_implementation_and_zero_call_preview.md`
   - DELL 03B R13 唯一零调用执行与作者完整性复证：`fin_0_1_3_s1/122_dell_03b_R13_exact_execution_and_author_integrity.md`
+  - DELL 03B R13 fresh 双审计失败与 R14 架构要求：`fin_0_1_3_s1/123_dell_03b_R13_fresh_dual_audit_failure_and_R14_architecture_requirement.md`
+  - DELL 03B R14 program-level 架构执行计划：`fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md`
+  - DELL 03B R14 program plan fresh 审计失败与修订门：`fin_0_1_3_s1/125_dell_03b_R14_program_plan_fresh_audit_failure_and_revision_gate.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`

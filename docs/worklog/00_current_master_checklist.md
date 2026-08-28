@@ -167,7 +167,8 @@
   - [x] R13 reviewed-result=`07909cc1...`与case-correct manifest=`8dd03fa9...`已冻结；fresh split双审计确认current artifact `PASS_NARROW`，但general engineering `FAIL 0/1/2/0`：缺独立population anchor、flat event role union与connector-enumerated price head；R17继续`FAIL_GATE 0/1/2/1`
   - [x] R14初版program plan已接受fresh fork-none只读审计并冻结失败：`PLAN_FAIL 0/3/2/1`；authority freeze、可执行grammar、machine mutation/lifecycle、vector encoding、crash-atomic transaction和conditional 4B门不足，未开始实现
   - [x] R14 revision 1已补`I→B→A→P`、StructuralProofGrammar＋六target topology、frozen mutation denominator、pre/post audit与lifecycle receipt、唯一2-bit vector/error合同、Windows transaction和per-node TokenBudgetBasis；当前仍只是作者修订
-  - [ ] fresh author-separated只读re-review须先给`PLAN_PASS`且P0/P1/P2=`0/0/0`；通过前R14 implementation=false，不得创建policy/attempt或用R15绕过
+  - [x] revision 1 exact pushed `46cccb10` fresh只读re-review=`PLAN_FAIL 0/1/0/0`：其余初审finding均关闭，只剩pre-formal FAIL状态冲突与首个I未绑定exact plan PASS receipt
+  - [ ] revision 2唯一化`candidate C→PASS receipt G→first I.parent=G`；pre-formal FAIL只进同R14 revision-required，attempt后材料FAIL才进OwnerDecision STOP；再获fresh `PLAN_PASS 0/0/0`
   - [ ] plan PASS后再实现R14并完成T0/T1/T2、immutable-R13-raw zero-call preview、`I/B/A/P` freeze与fresh pre-formal P0/P1/P2=`0/0/0`
   - [ ] R14 post-formal independent pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap

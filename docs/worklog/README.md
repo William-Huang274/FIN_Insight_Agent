@@ -42,6 +42,7 @@
   - DELL 03B R13 fresh 双审计失败与 R14 架构要求：`fin_0_1_3_s1/123_dell_03b_R13_fresh_dual_audit_failure_and_R14_architecture_requirement.md`
   - DELL 03B R14 program-level 架构执行计划：`fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md`
   - DELL 03B R14 program plan fresh 审计失败与修订门：`fin_0_1_3_s1/125_dell_03b_R14_program_plan_fresh_audit_failure_and_revision_gate.md`
+  - DELL 03B R14 revision 1 fresh plan 审计失败与 lifecycle bootstrap 修正：`fin_0_1_3_s1/126_dell_03b_R14_revision1_fresh_plan_audit_failure_and_lifecycle_bootstrap_fix.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`

@@ -1,0 +1,92 @@
+{
+  "schema_version": "fin_ia_dell_03B_R14_revision1_fresh_plan_audit_fail_v1_0",
+  "status": "fresh_author_separated_readonly_exact_commit_plan_review_complete_PLAN_FAIL_one_lifecycle_bootstrap_P1",
+  "audit_id": "FIN-0.1.3-S1-DELL-03B-R14-REVISION1-FRESH-PLAN-AUDIT",
+  "recorded_at": "2026-08-28T13:36:20+08:00",
+  "audit_target": {
+    "branch": "codex/fin013-dell-s1-s2-product-bridge",
+    "commit": "46cccb104281b54aa51177399d511f785ff37bc2",
+    "tree": "34445a65331fc1aabffaaaa7785a56303c9ad317",
+    "parent": "8dd03fa9b55477e08b3b14608e26359fa08b72a7",
+    "plan_ref": "docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md",
+    "plan_blob": "4c190884b838082eeafaa60a206c674648e8c151",
+    "plan_sha256": "78ac2464e3636345d474042cd3664290160a7e6c12a6ff739640c79813c6ddf7",
+    "plan_bytes": 65552,
+    "initial_plan_audit_ref": "configs/audits/fin_ia_0_1_3_head_8dd03fa9_dell_03b_r14_program_plan_fresh_audit_fail_v1_0.json",
+    "initial_plan_findings": "0_3_2_1"
+  },
+  "reviewer_execution": {
+    "reviewer_task": "/root/r14_revision1_fresh_review",
+    "reviewer_count": 1,
+    "fresh_fork_none_author_separated": true,
+    "read_only_exact_git_commit_review": true,
+    "writes": 0,
+    "commits": 0,
+    "pushes": 0,
+    "formal_attempts": 0,
+    "pytest_runs": 0,
+    "dynamic_semantic_probes": 0,
+    "network_model_external_embedding_4B_reranker_calls": 0
+  },
+  "verdict": {
+    "result": "PLAN_FAIL",
+    "severity_counts": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 0,
+      "P3": 0
+    },
+    "implementation_authorized": false,
+    "policy_or_attempt_authorized": false,
+    "downstream_authorized": false
+  },
+  "blocking_finding": {
+    "finding_id": "R14-REV1-PLAN-P1-LIFECYCLE-BOOTSTRAP-NONUNIQUE",
+    "severity": "P1",
+    "evidence_lines": [
+      "docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md:48",
+      "docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md:369-375",
+      "docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md:680-688",
+      "docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md:713-730",
+      "docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md:805-821"
+    ],
+    "problem": "The plan simultaneously allowed a preformal FAIL to create a new same_R14 I_prime_B_prime_A_prime directly and required every review failure to enter R14_STOP_OWNER_DECISION_REQUIRED. It also allowed first I.parent_equal_G without machine binding the exact fresh revision1 PLAN_PASS receipt into G and PLAN_FROZEN.",
+    "impact": "One lifecycle validator would have two incompatible transitions and implementation could begin from a governance baseline that did not contain an exact PASS receipt for the reviewed plan.",
+    "required_fix": [
+      "Use a unique PREFORMAL_FAIL_REVISION_REQUIRED state before attempt consumption; only same_R14 I_prime_B_prime_A_prime is allowed and no OwnerDecisionReceipt is required.",
+      "After ATTEMPT_CONSUMED any formal_or_postformal material failure enters R14_STOP_OWNER_DECISION_REQUIRED and requires OwnerDecisionReceipt.",
+      "Add a noncircular plan bootstrap: candidate plan commit C is reviewed; PASS is materialized in successor governance commit G; first I.parent must equal exact G.",
+      "PLAN_FROZEN validator must bind C commit_tree_blob_sha_bytes, plan audit receipt SHA_digest_payload identity, PASS counts and G changed_path allowlist."
+    ]
+  },
+  "initial_findings_closed_at_plan_level": {
+    "non_self_referential_I_B_A_P_and_formal_recompute": true,
+    "manifest_dependency_isolation": true,
+    "StructuralProofGrammar_and_six_target_topology": true,
+    "mutation_denominator_and_audit_receipt_schemas": true,
+    "two_bit_vector_detail_error_contract": true,
+    "Windows_multi_sidecar_transaction_and_disk_formula": true,
+    "conditional_4B_and_per_node_TokenBudgetBasis": true,
+    "R17_external_Evidence_S2_S3_report_human_order_separated": true,
+    "remaining_material_plan_issue_count": 1
+  },
+  "required_revision_2_entry_conditions": [
+    "lifecycle_and_bootstrap_have_one_machine_interpretation",
+    "new_exact_plan_commit_is_pushed",
+    "new_fresh_author_separated_readonly_reviewer_returns_PLAN_PASS_P0P1P2_0_0_0",
+    "PASS_payload_is_materialized_without_rewriting_in_successor_G",
+    "first_R14_implementation_commit_parent_equals_exact_G",
+    "all_R13_immutables_and_downstream_false_authority_remain_exact"
+  ],
+  "authority": {
+    "audit_and_plan_governance_revision": true,
+    "R14_implementation_tests_preview": false,
+    "R14_policy_formal_attempt": false,
+    "R15": false,
+    "external_0_6B_4B_reranker": false,
+    "CandidateDecision_Evidence_Pack_Readiness": false,
+    "S2_S3_Writer_report": false,
+    "product_publication_release": false
+  },
+  "result_digest": "420ca794e68471efae97438c18805d26911921de00d1dfd1d957a0f550bd485c"
+}

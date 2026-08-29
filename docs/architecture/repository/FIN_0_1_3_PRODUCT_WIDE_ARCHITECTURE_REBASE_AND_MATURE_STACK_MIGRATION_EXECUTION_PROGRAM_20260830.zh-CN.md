@@ -1,12 +1,18 @@
 # FIN 0.1.3 全产品架构重基线与成熟技术栈迁移执行程序
 
-日期：2026-08-30  
-程序 ID：FIN-0.1.3-PRODUCT-WIDE-ARCHITECTURE-REBASE-20260830  
-计划合同版本：v1.0  
-状态：PLAN CANDIDATE / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权任何组件晋升  
-当前分支：codex/fin013-dell-s1-s2-product-bridge  
-计划起草基线：34589b6b8552e0236912dacb0664d7714bbf275c  
-R14 implementation freeze：7e25cad95ee84b39fb2a51063100405bc27da6e5  
+日期：2026-08-30
+
+程序 ID：FIN-0.1.3-PRODUCT-WIDE-ARCHITECTURE-REBASE-20260830
+
+计划合同版本：v1.0
+
+状态：PLAN CANDIDATE / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权任何组件晋升
+
+当前分支：codex/fin013-dell-s1-s2-product-bridge
+
+计划起草基线：34589b6b8552e0236912dacb0664d7714bbf275c
+
+R14 implementation freeze：7e25cad95ee84b39fb2a51063100405bc27da6e5
 
 本文件是跨 S1–S5、跨数据面、控制面、产品面和仓库面的技术执行权威。它把此前口头说明的 Phase 0–7 变成可逐票执行、逐门验收、可停止、可回滚、可复审的工程程序。计划允许后续根据实测证据修订，但修订必须进入 Git、机器合同和工作记录，不得只依赖聊天记忆。
 

@@ -4,9 +4,9 @@
 
 程序 ID：FIN-0.1.3-PRODUCT-WIDE-ARCHITECTURE-REBASE-20260830
 
-计划合同版本：v1.2
+计划合同版本：v1.3
 
-状态：REVISION CANDIDATE / exact v1.1 commit `3fc3dcf3...` author-separated first-view review=`PLAN_FAIL 0/2/0/1` / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权任何组件晋升
+状态：REVISION CANDIDATE / exact v1.2 commit `e595d343...` author-separated read-only review=`PLAN_FAIL 0/1/1/1` / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权任何组件晋升
 
 当前分支：codex/fin013-dell-s1-s2-product-bridge
 
@@ -395,27 +395,34 @@ Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist
 | production_integration_code_test_config_lock_write | Phase 5 slice authority；Phase 0/3 各有独立受限动作 | exact MIG slice allowlist | Evidence/S2/S3/report/release |
 | package_model_image_download | Phase 3 candidate manifest | Z qualification lab exact roots | dependency promotion、模型调用 |
 | qualification_service_install_start | Phase 3 ticket | 隔离端口、进程、容器、Z roots | current product route |
+| qualification_service_stop_uninstall | 与 install/start 同一 QL candidate contract 预授权，失败/stop/expiry 时才可消费 | exact candidate process/service/container/env/image；只允许停止及移除无共享引用的 candidate 资源 | current/promoted/shared service、current product data、其他 candidate |
 | local_fixture_benchmark | Phase 3 ticket | frozen/synthetic fixtures | human/product truth |
 | external_source_call | 单独 Phase 3/6 source ticket | exact domain/request/data class | Evidence admission |
 | provider_model_call | 单独 Phase 3/6 model ticket＋TokenBudgetBasis | exact model/deployment/profile/request budget | Evidence/NumericFact/S2/S3/release |
 | qualification_index_or_data_write | Phase 3 ticket | Z lab；若含 D 必须 exact explicit root | current index/data authority |
 | shadow_artifact_write | Phase 3/5 slice | unadmitted candidate namespace | Evidence/NumericFact/judgment |
+| qualification_candidate_artifact_retire_delete | terminal failed/held QL result 或 exact rollback authority receipt | exact candidate-local qualification index/data/artifact roots | D current indexes、current/promoted/admitted data、冻结 failure/corpus/receipt |
+| unadmitted_shadow_artifact_retire_delete | Phase 3/5 exact candidate/slice rollback authority receipt | exact unadmitted shadow DB/object/projection namespace | current/promoted/admitted artifact、historical evidence、其他 slice |
+| migration_slice_stop_disable | 与 Phase 5 MIG candidate contract 同时预授权，失败/stop/expiry 时才可消费 | exact non-current candidate route/writer/exporter/feature switch | current consumer expansion、cutover、其他 slice |
+| unconsumed_migration_scaffold_retire_delete | Phase 5 exact MIG rollback authority receipt | 仅本 slice 新建且 imports/registry/current consumers=0 的 exact scaffold paths | current/legacy/historical source、其他 slice、product data |
 | dual_read_compare | Phase 5 slice | frozen old/new readers，不改变 current consumer | cutover、retire |
-| current_consumer_cutover | Phase 6 对应 S-stage activation | exact consumer/feature flag | 后续 S-stage、publication/release |
+| current_consumer_cutover | Phase 6 对应 S-stage activation | exact consumer/feature flag，以及同一 grant 预授权的 last-active-qualified-route rollback | 后续 S-stage、publication/release、新 route expansion |
 | old_index_delete | 独立 index-retirement authority receipt | 仅通过 10.6 硬门的 direct target roots | new retrieval active |
 | legacy_source_retire_delete | Phase 7 ticket | active imports/registry/consumers=0 的 exact paths | historical evidence deletion |
 | evidence_admission | Phase 6 `ACC-S1` activation | qualified Candidate→Evidence | NumericFact/S2/S3 |
 | numeric_fact_and_s2_authority | Phase 6 `ACC-S2` activation | qualified FactObservation→NumericFact/bridge | S3/report/release |
 | s3_research_judgment | Phase 6 `ACC-S3` activation | evidence-bound research judgment | human approval/release |
-| report_candidate_generation | Phase 6 `ACC-S4-CANDIDATE` | non-released report candidate | publication/release |
-| qualified_human_approval | Phase 6 explicit human gate | exact case/review packet | product/publication/release |
-| product_publication_release | Phase 6/7 Owner release receipt | exact product/version/deployment | 任何未列 scope |
+| report_candidate_generation | Phase 6 `ACC-S4-CANDIDATE` activation receipt | non-released report candidate | current reader deliverable、qualified-human approval、publication/release |
+| qualified_human_approval | Phase 6 `ACC-S4` activation＋explicit human gate | exact case/review packet | product/publication/release |
+| product_publication_release | Phase 6 `ACC-S5` activation＋Phase 7 Owner release receipt | exact product/version/deployment | 任何未列 scope |
 
 Phase 3 的 qualification repo write 必须在任何 download/install/run 前先物化 candidate contract；candidate、result、review、activation 分离，失败 append-only，不能运行后补写 candidate 来反向授权既有动作。其 allowlist 只能包含 `scripts/qualification`、`tests/qualification`、`configs/qualification`、`configs/audits`、qualification research/worklog 等 candidate-specific 路径；不得修改 production `src`、`pyproject.toml`、正式依赖锁、current product config/data 或 domain authority。
 
-Phase 5 最多取得 production integration code/test/config/lock 写入、qualification-only data、shadow 和 dual-read 权限；它不能签发 Evidence、NumericFact、S2/S3 judgment、reader deliverable、human approval 或 release。Phase 6 也不是一次性打开全部下游：`ACC-S1 → ACC-S2 → ACC-S3 → ACC-S4 → ACC-S5` 分别独立验收、独立激活，后序 PASS 不能补偿前序 FAIL。Phase 7 只允许在 consumer/rollback/root-cause/release 条件分别满足后收口，不因“项目结束”获得广义删除权。
+停止/卸载和清理不是 install/write 的隐含反向动作。`qualification_service_stop_uninstall` 必须在 install/start 前由同一 QL candidate contract 预授权，`migration_slice_stop_disable` 必须在 MIG implementation/run 前由同一 slice contract 预授权，使失败时可以立即 fail closed；消费时仍须绑定 exact process/service/container/env/image 或 route/writer/exporter/feature-switch identity、active/shared-reference proof 和 post-action receipt。candidate/shadow/scaffold delete 动作只有在 terminal result/failure/rollback receipt、exact target manifest、必要 failure evidence/digest 已保留、active handle/service/import/registry/current-consumer proof 完成后才可消费；执行后必须追加 actual target、released bytes 与 recoverability receipt。目标出现 shared/promoted/admitted/current 引用、D current indexes、历史 frozen failure/corpus/receipt、legacy/current source、其他 slice 或 containment/identity 不确定时保持 false 并停止。
 
-程序状态至少包含：`plan_candidate`、`phase0_candidate`、`phase0_pass`、`phase1_inventory_active/pass`、`phase2_research_active/pass`、`phase3_qualification_active/pass`、`phase4_adr_active/frozen`、`phase5_integration_active/pass`、`phase6_s1/s2/s3/s4/s5_active/pass`、`phase7_closeout_candidate`，以及 terminal `complete/partial/stopped/failed`。并行只通过各 phase/ticket 独立状态表达；不得用一个粗粒度 `current_phase` 覆盖事实。
+Phase 5 最多取得 production integration code/test/config/lock 写入、qualification-only data、shadow 和 dual-read 权限；它不能签发 Evidence、NumericFact、S2/S3 judgment、reader deliverable、human approval 或 release。Phase 6 的每个 `current_consumer_cutover` grant 必须在切换前同时冻结 last-active qualified route 和 exact rollback authority；rollback 只能回到该已验证旧 route，不能借回滚扩展新 consumer。Phase 6 也不是一次性打开全部下游：`ACC-S1 → ACC-S2 → ACC-S3 → ACC-S4-CANDIDATE → ACC-S4 → ACC-S5` 分别独立验收、独立激活，后序 PASS 不能补偿前序 FAIL。`ACC-S4-CANDIDATE` 是注册的非发布候选权限票，不是 S4 PASS：它只能在 `ACC-S3` PASS 后以独立 activation receipt 授予 `report_candidate_generation`；随后依次形成 non-released report result、作者分离的 S4 review/repair result、`ACC-S4` activation。它不能授予 qualified-human approval、current reader deliverable、publication 或 release。Phase 7 只允许在 consumer/rollback/root-cause/release 条件分别满足后收口，不因“项目结束”获得广义删除权。
+
+程序状态至少包含：`plan_candidate`、`phase0_candidate`、`phase0_pass`、`phase1_inventory_active/pass`、`phase2_research_active/pass`、`phase3_qualification_active/pass`、`phase4_adr_active/frozen`、`phase5_integration_active/pass`、`phase6_s1/s2/s3_active/pass`、`phase6_s4_candidate_authorized/result/review`、`phase6_s4_active/pass`、`phase6_s5_active/pass`、`phase7_closeout_candidate`，以及 terminal `complete/partial/stopped/failed`。并行只通过各 phase/ticket 独立状态表达；不得用一个粗粒度 `current_phase` 覆盖事实。
 
 ### 6.5 可机检 ticket/slice registry
 
@@ -429,7 +436,7 @@ Phase 0 必须创建 machine-readable `program_ticket_registry_v1`。每条记�
 - Phase 3 qualification：`QL-01` 至 `QL-13`，每个 candidate 使用 `QL-xx-Cnn`；
 - Phase 4：`ADR-01` 至 `ADR-14`，并生成 `migration_slice_registry_v1`；
 - Phase 5：`MIG-{capability}-{nn}`，每个 slice 单变量、单 feature switch、单 rollback；
-- Phase 6：`ACC-S1` 至 `ACC-S5`，另有 `R14-REPLACEMENT-S1-CLOSURE`；
+- Phase 6：`ACC-S1`、`ACC-S2`、`ACC-S3`、`ACC-S4-CANDIDATE`、`ACC-S4`、`ACC-S5`，另有 `R14-REPLACEMENT-S1-CLOSURE`；
 - Phase 7：`CLS-01` feasibility、`CLS-02` dependency cleanup、`CLS-03` legacy retirement、`CLS-04` operations/rollback、`CLS-05` Project OS、`CLS-06` final independent review/Owner recommendation。
 
 Phase transition 只能由 registry 的 required tickets terminal PASS、exact digest 和 activation receipt 计算；自由文本“已完成”没有机器效力。Phase 5 不得开始，直到 Phase 4 registry 被 fresh review，且所有将执行 slice 已有精确授权、回滚和 stop contract。
@@ -882,19 +889,19 @@ Owner 已明确授权：如果成熟技术栈测试确需 D 盘空间，可以�
 
 | Wave | 内容 | 前置 | 回滚 |
 |---|---|---|---|
-| W0 | namespace/ports/contracts scaffold，不改产品结果 | Phase 4 ADR | 删除新未消费 scaffold |
-| W1 | passive trace/experiment/contract validation | QL-01/12 | 关闭 exporter，FIN artifact 不变 |
-| W2 | source/XBRL/document intake adapters | QL-02/03/04/05 | route 回旧 capture，保留 shadow artifact |
-| W3a | canonical metadata passive projection | QL-01/06 | 停止 projection；canonical FIN artifact 不变 |
-| W3b | artifact/storage shadow | QL-06 | 关闭 shadow writer；删除未晋升 shadow DB/objects |
-| W3c | fixed qualified embedder 下的 index-engine A/B | QL-07/08 | 丢弃 qualification indexes；旧 index 不变 |
-| W3d | retriever dual-read | W3c winner + exact query contract | feature switch 回旧 retriever；不改 admission |
-| W3e | target-in-pool 后的 reranker shadow | QL-09 + W3d candidate pool pass | 关闭 reranker；保留原 candidate order |
-| W4a | provider SDK saved/synthetic fixture parity | QL-11 provider sub-result | feature switch 回旧 transport；无 live call |
-| W4b | workflow/checkpoint over saved provider fixtures | QL-11 workflow sub-result + W4a | 关闭新 workflow；恢复旧 runner/checkpoint namespace |
-| W4c | semantic candidate shadow | QL-10 + qualified human gold | 关闭 semantic route；删除未准入 shadow projection |
-| W4d | provider/workflow/semantic bounded integration | W4a/W4b/W4c 分别 PASS | 整体 feature flag off；三个独立 rollback 均可执行 |
-| W5 | report/render/review UX | QL-13 + Workbench contract | 回旧 renderer/read surface |
+| W0 | namespace/ports/contracts scaffold，不改产品结果 | Phase 4 ADR | 以 `unconsumed_migration_scaffold_retire_delete` 删除新未消费 scaffold |
+| W1 | passive trace/experiment/contract validation | QL-01/12 | 以 `migration_slice_stop_disable` 关闭 exporter，FIN artifact 不变 |
+| W2 | source/XBRL/document intake adapters shadow/dual-read | QL-02/03/04/05 | 以 `migration_slice_stop_disable` 关闭 candidate adapter；旧 capture 始终是 current，保留 shadow artifact |
+| W3a | canonical metadata passive projection | QL-01/06 | 以 `migration_slice_stop_disable` 停止 projection；canonical FIN artifact 不变 |
+| W3b | artifact/storage shadow | QL-06 | 以 `migration_slice_stop_disable` 关闭 shadow writer；以 `unadmitted_shadow_artifact_retire_delete` 删除未晋升 shadow DB/objects |
+| W3c | fixed qualified embedder 下的 index-engine A/B | QL-07/08 | 以 `qualification_candidate_artifact_retire_delete` 丢弃 qualification indexes；旧 index 不变 |
+| W3d | retriever dual-read | W3c winner + exact query contract | 以 `migration_slice_stop_disable` 关闭 candidate reader；旧 retriever 始终是 current，不改 admission |
+| W3e | target-in-pool 后的 reranker shadow | QL-09 + W3d candidate pool pass | 以 `migration_slice_stop_disable` 关闭 reranker；保留原 candidate order |
+| W4a | provider SDK saved/synthetic fixture parity | QL-11 provider sub-result | 以 `migration_slice_stop_disable` 关闭 candidate transport；旧 transport 始终是 current，无 live call |
+| W4b | workflow/checkpoint over saved provider fixtures | QL-11 workflow sub-result + W4a | 以 `migration_slice_stop_disable` 关闭新 workflow；current runner/checkpoint namespace 从未切换 |
+| W4c | semantic candidate shadow | QL-10 + qualified human gold | 以 `migration_slice_stop_disable` 关闭 semantic route；以 `unadmitted_shadow_artifact_retire_delete` 删除未准入 shadow projection |
+| W4d | provider/workflow/semantic bounded integration | W4a/W4b/W4c 分别 PASS | 以 `migration_slice_stop_disable` 关闭整体 feature flag；三个独立 rollback 均可执行 |
+| W5 | non-released report/render/review UX candidate preview | QL-13 + Workbench contract | 以 `migration_slice_stop_disable` 关闭 candidate preview；旧 renderer/read surface 始终是 current |
 | W6 | Phase 6 controlled consumer cutover 与 legacy regression-only | 对应 ACC-Sn activation | compatibility shim re-enable；不恢复 attempt-specific R3–R14 |
 
 Wave 只是排序容器，不是一次实现提交。W3a–W3e、W4a–W4d 每项必须是独立 `MIG-*` slice，分别具有 input digest、feature switch、result、fresh review 和 rollback；不得用一个 W3/W4 commit 同时改变多项变量。
@@ -990,6 +997,8 @@ S5 product, operations, security, rollback and release decision
 ~~~
 
 每一阶段独立通过；后序 PASS 不能抵消前序失败。
+
+S4 的机器顺序固定为：`ACC-S3 PASS → ACC-S4-CANDIDATE activation receipt → non-released report candidate result → author-separated S4 review/repair result → ACC-S4 activation → ACC-S5`。`ACC-S4-CANDIDATE` 票据仅存在、仅 candidate commit 或自由文本状态都不产生权限；只有合法 activation receipt 才能临时打开 `report_candidate_generation`，且 qualified-human approval、current reader deliverable、publication、release 继续为 false。
 
 ### 13.3 质量门
 
@@ -1220,6 +1229,11 @@ S5：
 | package/repo/model 下载 | false，Phase 3 manifest 前不允许 |
 | Z 盘 qualification install/service/local fixture run | false，Phase 3 candidate/ticket 前不允许 |
 | qualification-only index/data/shadow write | false，Phase 3/5 exact root/ticket 前不允许 |
+| qualification service stop/uninstall | false，install/start 前必须由同一 QL candidate contract 预授权；只在 exact stop/failure/expiry 消费 |
+| failed/held qualification candidate artifact retire/delete | false，terminal result/rollback receipt、exact target manifest 与 evidence retention proof 前不允许 |
+| unadmitted shadow artifact retire/delete | false，exact candidate/slice rollback receipt、target manifest 与 no-current/admitted-reference proof 前不允许 |
+| migration candidate route/writer/exporter/feature switch stop/disable | false，MIG implementation/run 前必须由同一 slice contract 预授权；只在 exact stop/failure/expiry 消费 |
+| unconsumed migration scaffold retire/delete | false，exact MIG rollback receipt 与 imports/registry/current-consumers=0 proof 前不允许 |
 | Phase 4 ADR/migration registry write | false，Phase 1/2/3 PASS 前不允许 |
 | Phase 5 src/test/config/lock implementation write | false，Phase 4 frozen slice authority 前不允许 |
 | dual-read compare | false，Phase 5 exact MIG ticket 前不允许 |
@@ -1235,8 +1249,8 @@ S5：
 | Evidence admission | false，ACC-S1 activation 前不允许 |
 | NumericFact/S2 authority | false，ACC-S2 activation 前不允许 |
 | S3 research judgment | false，ACC-S3 activation 前不允许 |
-| report candidate generation | false，ACC-S4-CANDIDATE 前不允许 |
-| qualified-human approval | false，exact human gate 前不允许 |
+| report candidate generation | false，ACC-S4-CANDIDATE activation receipt 前不允许 |
+| qualified-human approval | false，ACC-S4 activation＋exact human gate 前不允许 |
 | product/publication/release | false，ACC-S5＋Owner release receipt 前不允许 |
 
 ## 19. 计划冻结后的第一执行队列
@@ -1254,7 +1268,7 @@ S5：
 
 本队列不包含 package install、模型调用、外源、formal、索引删除或生产迁移。
 
-## 20. Plan review history 与 v1.2 修正
+## 20. Plan review history 与 v1.3 修正
 
 exact v1.0 commit `01ffc77b213899d3f177b13b1d38a43e390d3d0c`、tree=`7e8d5ee26d6c2947edec8e6690e11233c8e6d895`、plan blob=`3017dcc4a5e29af5298a26d42fa6de039722beb8` 经 fresh、作者分离、只读审阅得到 `PLAN_FAIL_REVISION_REQUIRED / P0-P1-P2-P3=0/5/2/0`。该失败保持不可变；v1.1 针对七项 finding 作出：
 
@@ -1274,20 +1288,47 @@ exact v1.1 commit `3fc3dcf3d44984f702ce20d27a364bcd2229857e`、tree=`fcee84fe0c2
 2. 增加独立 `phase3_qualification_contract_evidence_write`：candidate manifest 必须先于 download/install/run，qualification allowlist 与 production `src`/`pyproject.toml`/正式 lock/current config/data deny 明确分离，candidate/result/review/activation 不得互相覆盖；
 3. 删除候选目标目录树中重复的 `tests/regression/`，只保留一个根并在其下承载 `legacy_r14/`。
 
-v1.2 必须重新形成 plan-only commit 并接受 exact、作者分离、只读全量审阅；本段不能自行关闭 v1.1 findings。
+exact v1.2 commit `e595d343cc1e7ffa75df2b2eee690a624430687e`、tree=`c1b36147e416bb88460f1d40300ef7d21b7fcf59`、parent=`3fc3dcf3d44984f702ce20d27a364bcd2229857e`、plan blob=`6af6227f6c0c8d697d4dfbcf06b8eda9672625b9`、raw SHA-256=`d300b8515ad04455ec26548fb642abc5507580803dafc5d84b4c0338dc7d7074`、bytes=`73688`，经作者分离、只读全量审阅得到 `PLAN_FAIL_REVISION_REQUIRED / P0-P1-P2-P3=0/1/1/1`。受协作树硬节点上限影响，该 reviewer 复用了参与过 v1.1 只读设计审计、但未参与 v1.2 写作的既有任务身份，不冒充新的 fork-none 节点；其审阅前后 repo clean、local origin-tracking ref aligned，且 writes/network/model/install/formal/delete/old-live-state 均为 0。该失败保持不可变；v1.3 针对三项 finding 作出：
+
+1. 把 `ACC-S4-CANDIDATE` 注册为稳定票据并冻结 `ACC-S3 PASS → candidate authority → non-released result → S4 review/repair → ACC-S4 activation → ACC-S5` 的非自引用顺序；
+2. 新增 `qualification_service_stop_uninstall`、`qualification_candidate_artifact_retire_delete`、`unadmitted_shadow_artifact_retire_delete`、`migration_slice_stop_disable` 与 `unconsumed_migration_scaffold_retire_delete`，为 fail-closed stop 和 W0/W3b/W3c/W4c 清理绑定 exact target、证据保留、pre/post receipt 与保护面 deny；同时把 W2/W5 改成始终不切 current consumer 的 shadow/candidate preview；
+3. 将 P0-04 必须 supersede 的 current baseline/S0–S5 closeout plan 补入 Source index，并区分 P0-04 update set、continuity worklog、Project OS update set 与 read-only input set。
+
+v1.3 必须重新形成 plan-only commit 并接受 exact、作者分离、只读全量审阅；本段不能自行关闭 v1.2 findings。
 
 ## 21. Source index
 
+P0-04 supersession/update source set；H0 仍须把最终 exact changed-path allowlist 写入 machine manifest，不能由本节隐式扩大：
+
 - docs/product/FIN_0_1_3_PRODUCT_CAPABILITY_BUILD_ADOPT_HOLD_RETIRE_AUDIT_20260830.zh-CN.md
+- docs/product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md
 - docs/architecture/research/FIN_0_1_3_MATURE_TECH_STACK_LANDSCAPE_AND_ADOPTION_DECISION_PACKET_20260830.zh-CN.md
-- docs/architecture/research/FIN_0_1_3_MATURE_STACK_RESEARCH_SNAPSHOT_MANIFEST_20260830.zh-CN.md
-- docs/architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md
 - docs/architecture/repository/FIN_0_1_3_STRICT_MAINLINE_REBASELINE_ACCEPTANCE_AND_MIGRATION_PROGRAM_20260811.zh-CN.md
 - docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md
 - docs/worklog/fin_0_1_3_s1/128_dell_03b_R14_I2_corpus_parity_governance_correction_and_reaudit_pass.md
+
+Phase 0 decision-continuity worklog append set：
+
 - docs/worklog/fin_0_1_3_s1/129_product_capability_audit_and_mature_stack_decision_packet.md
+
+P0-05 Project OS update set：
+
 - docs/project_os/current_context_pack.zh-CN.md
 - docs/project_os/capability_status_ledger.jsonl
 - docs/project_os/root_cause_issue_ledger.jsonl
+
+Phase 0 current-navigation/checklist materialization candidate set；只有 C0 PASS receipt 和 H0 manifest 的 exact allowlist 才能最终授权：
+
+- docs/worklog/00_current_master_checklist.md
+- docs/README.md
+- docs/architecture/repository/README.md
+- docs/product/README.md
+- docs/worklog/README.md
+
+只读事实输入；H0 没有新增对应外部证据或金融方法时不得为“看起来完整”而重复追加：
+
+- docs/architecture/research/FIN_0_1_3_MATURE_STACK_RESEARCH_SNAPSHOT_MANIFEST_20260830.zh-CN.md
+- docs/architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md
+- docs/project_os/README.md
 - docs/project_os/external_pattern_registry.jsonl
 - docs/project_os/financial_research_method_registry.jsonl

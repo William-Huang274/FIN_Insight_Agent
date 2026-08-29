@@ -4,9 +4,9 @@
 
 程序 ID：FIN-0.1.3-PRODUCT-WIDE-ARCHITECTURE-REBASE-20260830
 
-计划合同版本：v1.0
+计划合同版本：v1.1
 
-状态：PLAN CANDIDATE / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权任何组件晋升
+状态：REVISION CANDIDATE / exact v1.0 commit `01ffc77b...` fresh review=`PLAN_FAIL 0/5/2/0` / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权任何组件晋升
 
 当前分支：codex/fin013-dell-s1-s2-product-bridge
 
@@ -181,7 +181,7 @@ FIN 产品应用
 
 ### 5.2 候选代码结构
 
-以下是 Phase 4 前的候选目标，不授权 Phase 0 立即批量移动文件。Phase 1 import/consumer 审计和 Phase 3 spike 可能修正命名，但职责分层不得反向合并。
+以下是 Phase 4 前的候选目标，不授权 Phase 0/1 立即创建整套新目录或批量移动文件。Phase 1 必须先冻结活动 consumer、真实 import cycle、runtime resource exact-digest 绑定和 R3–R14 reachability；Phase 3 spike 可能修正命名，Phase 4 ADR 才能把候选结构变成迁移权威，但职责分层不得反向合并。
 
 ~~~text
 src/finsight/
@@ -227,10 +227,10 @@ src/finsight/
     receipts/
     security/
     configuration/
-  legacy_bridge/
-    retrieval_r3_r14/
-    research_runtime/
-    provider_transport/
+  compat/
+    retrieval_import_shim.py
+    research_runtime_adapter.py
+    provider_transport_adapter.py
 
 apps/workbench/
   backend/
@@ -254,6 +254,11 @@ tests/
   integration/
   product/
   security/
+  regression/
+    legacy_r14/
+
+archive/versions/
+  # 完整旧实现、origin/redirect/digest 与历史审计；不进入 package discovery
 ~~~
 
 ### 5.3 与当前代码的过渡关系
@@ -268,10 +273,28 @@ tests/
 | src/sec_agent/providers | REPLACE | 官方 SDK＋薄 capability/receipt adapter |
 | src/sec_agent/research | SPLIT | 金融方法和 domain state 保留；通用 orchestration/session/trace 迁出 |
 | project_os_preflight.py | SHRINK | 跨版本不变量保留；attempt-specific 分支数据化/退役 |
-| R3–R14 modules | REGRESSION_ONLY | 冻结、可重放，不进入新生产主路径 |
+| R3–R14 modules | REGRESSION_ONLY | 完整实现只留 Git/history archive；有界 harness/case 放非 package regression root；不进入新生产主路径 |
 | apps/workbench | KEEP_PRODUCT + THIN | 留金融 Evidence/Gap/Review/Release；通用 trace/run UI 交成熟平台 |
 
-任何真实目录移动必须等 Phase 4 ADR 冻结，并在 Phase 5 通过 compatibility shim、import map、consumer tests 和 rollback slice 完成。
+`src/finsight/compat` 只能容纳当前仍被消费、具 removal ticket 的薄 shim/adapter，不得复制 R3–R14 attempt-specific implementation。历史 replay 只能由显式 `historical_audit`/qualification profile 执行，默认 wheel、Runtime Registry、API/UI 和 CI 主路径不得发现或导入它。
+
+任何真实目录创建、模块移动或 import 重写必须等 Phase 4 ADR 冻结，并在 Phase 5 通过 compatibility shim、import map、consumer tests 和 rollback slice 完成。不得先建立空的“目标架构骨架”，再用它反向证明目标结构合理。
+
+### 5.4 当前真实实现锚点与 Phase 1 必须复现的初查事实
+
+以下是 plan revision 前的只读 surface scan；它们是 Phase 1 的待复现输入，不是未经机器 artifact 固定的最终审计结论：
+
+- 当前产品 composition roots 是 `apps/workbench/backend/app.py`、`scripts/dev/run_workbench_backend.py` 和前端 ResearchWorkspace/Operations，而不是候选 `src/finsight`；
+- 当前 `src` 下约有 retrieval 118、sec_agent 65、ingestion 8、financial_facts 5、connectors/evidence 3、indexing 2 个 Python 文件；`sec_agent.research` 约 20 处依赖 retrieval，retrieval 又有 2 处反向依赖 sec_agent，形成真实 package cycle；
+- `financial_facts` 约有 4 处依赖 retrieval，属于需要在迁移前拆开的 domain inversion；
+- `research_retrieval_service.py` 直接组合约 19 个 retrieval 模块及其他 domain，不是可直接替换的薄 adapter；
+- runtime registry 当前按 exact digest 绑定约 28 个资源；移动文件、改内容或只改 import 都可能让 application/replay gate 失败；
+- `configs` 约 1,190 份，混合 policy、result、current、attempt 和 audit；`scripts/data_retrieval` 与 `scripts/research` 混合正式 runner、一次性工具、live/zero-call 路径；
+- `data` 总量约 74.69 GiB，其中 `data/indexes` 约 25.93 GiB；容量不是删除授权，producer/input/consumer/rebuild map 仍是前置条件；
+- `pyproject.toml` 已声明 contract、integration、full-chain、paid/network/local-data 等 marker vocabulary，但约 200 个 test 尚未完成逐测试分类；默认 pytest 是否会意外触发本地数据、网络或付费调用仍需证明；
+- 当前仓库没有已冻结的 ports/adapters/infrastructure/legacy package 边界，不能把候选目录图误报为现状。
+
+Phase 1 必须以可重放命令和机器输出复现或修正这些数字；若结果不同，保留差异并解释时间点、扫描规则和 consumer 定义，不得静默覆盖。
 
 ## 6. 程序拓扑、提交拓扑与变更控制
 
@@ -281,7 +304,14 @@ tests/
 Plan-only commit C0
         |
         v fresh read-only plan review
-Phase 0 governance authority G0
+Phase 0 candidate H0
+  machine manifest + source docs + tests
+  Phase 1 authority still false
+        |
+        v fresh read-only exact-H0 review
+Phase 0 PASS receipt G0
+  G0.parent=H0; only materializes review receipt
+  effective Phase 1 read-only authority becomes true
         |
         v
 Phase 1 capability/import/data/consumer migration inventory
@@ -308,16 +338,18 @@ Phase 6 S1–S5 real-case acceptance
 Phase 7 closeout, retirement and release recommendation
 ~~~
 
-Phase 1 与 Phase 2 可在 Phase 0 后并行，但 Phase 3 只能消费二者冻结的输入。Phase 5 不能在 Phase 4 ADR 前开始。Phase 6 不能用尚未通过 Phase 5 slice gate 的组件。Phase 7 不能删除或退休仍被活动 consumer 使用的旧代码。
+Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist 必须消费 Phase 1 已确认的 capability constraints，Phase 3 只能消费二者冻结的输入。Phase 5 不能在 Phase 4 ADR 前开始。Phase 6 不能用尚未通过 Phase 5 slice gate 的组件。Phase 7 不能删除或退休仍被活动 consumer 使用的旧代码。
 
 ### 6.2 提交拓扑
 
 1. C0：只包含本执行程序。
 2. C0-review：fresh、作者分离、只读 reviewer 返回结构化 verdict；reviewer 不写仓库。
-3. G0：Phase 0 authority commit，绑定 C0 commit/tree/blob/SHA/bytes；可包含一个机器程序合同、必要 source-doc supersession、Project OS、checklist、worklog 和定向测试。
-4. 后续每个 release slice 独立提交：contract → implementation → frozen result → fresh review。失败 slice 不覆盖。
-5. 大型组件安装和 run artifact 不进 Git；Git 只保存 lock、manifest、digest、license/SBOM 结论、测试代码和有界结果。
-6. 不为每个小状态创建独立 authority 文件。维护一个 canonical current program manifest；材料 phase transition 或失败才创建 append-only audit receipt。
+3. H0：物化 C0 plan review receipt，并提交 Phase 0 candidate machine manifest、必要 source-doc supersession、Project OS、checklist、worklog 和定向测试。H0 内 manifest 必须写 `phase0_candidate_awaiting_fresh_review`，所有 Phase 1+ 权限仍为 false。
+4. H0-review：另一名 fresh、作者分离、只读 reviewer 只审 exact H0；reviewer 不写仓库。若发现 P0/P1/P2，H0 保持不可变，先物化 failure receipt，再创建非覆盖 H1 candidate。
+5. G0：仅当 H0 review 为 `PASS 0/0/0/*` 时，创建固定路径的 Phase 0 PASS receipt。G0 必须满足 `G0.parent=H0`、changed path 仅该 receipt、H0 machine manifest blob/bytes 不变。有效 Phase 1 权限由 H0 manifest＋G0 receipt 联合计算；不允许自引用 G0 commit。
+6. 后续每个 release slice 独立提交：contract → implementation candidate → frozen result → fresh review → 独立 activation receipt。失败 slice 不覆盖。
+7. 大型组件安装和 run artifact 不进 Git；Git 只保存 lock、manifest、digest、license/SBOM 结论、测试代码和有界结果。
+8. 不为每个小状态创建独立 current manifest。维护一个 canonical program manifest，加 append-only ticket/result/review/activation receipt；任何 PASS 都不能在被审 candidate 中自我声明。
 
 ### 6.3 计划修订
 
@@ -329,6 +361,75 @@ Phase 1 与 Phase 2 可在 Phase 0 后并行，但 Phase 3 只能消费二者冻
 - 纯运行重试只增加 rN，不增加合同版本；
 - 涉及产品范围、发布含义、付费规模、安全或不可逆动作时再次向 Owner 报告；
 - 已完成/失败的历史证据不回写。
+
+### 6.4 权限状态机：允许“做什么”与允许“把什么当真”分开
+
+程序采用 deny-by-default。章节标题、计划顺序、代码已存在或候选安装成功都不构成权限。机器合同必须同时维护：
+
+1. `phase_status`：Phase 0–7 各自 planned/candidate/in_progress/passed/failed/stopped；
+2. `ticket_status`：每个 ticket 的 predecessor、candidate、result、review 和 activation；
+3. `action_grants`：允许执行的动作；
+4. `domain_authority`：Candidate、Evidence、NumericFact、S2、S3、report、human、product/release 的权威；
+5. `allowed_roots_and_surfaces`：动作能读写的精确路径、服务、API、数据类型与消费者。
+
+每个 `action_grant` 至少包含：
+
+- stable action ID 和 `default=false`；
+- grant phase/ticket；
+- exact authority commit/receipt；
+- predecessor gate；
+- allowed roots/surfaces 和显式 deny roots；
+- input manifest/digest；
+- budget/TokenBudgetBasis（适用时）；
+- start/expiry/consumption；
+- stop、rollback 和 reviewer receipt。
+
+最低动作矩阵如下；未来 machine registry 可以增加更细动作，不能合并这些行：
+
+| Action ID | 最早可能 grant | 允许范围 | 不随之获得的权威 |
+|---|---|---|---|
+| governance_docs_write | H0 | 本程序、source supersession、Project OS、worklog、governance config/test | component adoption、产品行为 |
+| phase1_audit_read_and_bounded_write | G0 | repo/data metadata 只读；Phase 1 docs/configs/audit artifacts 写入 | src/product data mutation、component execution |
+| phase2_network_research | G0＋RSH ticket | 官方 docs/repo/spec/paper 调研与来源快照 | external source product call、package download |
+| repository_code_test_config_lock_write | Phase 5 slice authority；Phase 0 治理文件为单独 allowlist | exact slice allowlist | Evidence/S2/S3/report/release |
+| package_model_image_download | Phase 3 candidate manifest | Z qualification lab exact roots | dependency promotion、模型调用 |
+| qualification_service_install_start | Phase 3 ticket | 隔离端口、进程、容器、Z roots | current product route |
+| local_fixture_benchmark | Phase 3 ticket | frozen/synthetic fixtures | human/product truth |
+| external_source_call | 单独 Phase 3/6 source ticket | exact domain/request/data class | Evidence admission |
+| provider_model_call | 单独 Phase 3/6 model ticket＋TokenBudgetBasis | exact model/deployment/profile/request budget | Evidence/NumericFact/S2/S3/release |
+| qualification_index_or_data_write | Phase 3 ticket | Z lab；若含 D 必须 exact explicit root | current index/data authority |
+| shadow_artifact_write | Phase 3/5 slice | unadmitted candidate namespace | Evidence/NumericFact/judgment |
+| dual_read_compare | Phase 5 slice | frozen old/new readers，不改变 current consumer | cutover、retire |
+| current_consumer_cutover | Phase 6 对应 S-stage activation | exact consumer/feature flag | 后续 S-stage、publication/release |
+| old_index_delete | 独立 index-retirement authority receipt | 仅通过 10.6 硬门的 direct target roots | new retrieval active |
+| legacy_source_retire_delete | Phase 7 ticket | active imports/registry/consumers=0 的 exact paths | historical evidence deletion |
+| evidence_admission | Phase 6 `ACC-S1` activation | qualified Candidate→Evidence | NumericFact/S2/S3 |
+| numeric_fact_and_s2_authority | Phase 6 `ACC-S2` activation | qualified FactObservation→NumericFact/bridge | S3/report/release |
+| s3_research_judgment | Phase 6 `ACC-S3` activation | evidence-bound research judgment | human approval/release |
+| report_candidate_generation | Phase 6 `ACC-S4-CANDIDATE` | non-released report candidate | publication/release |
+| qualified_human_approval | Phase 6 explicit human gate | exact case/review packet | product/publication/release |
+| product_publication_release | Phase 6/7 Owner release receipt | exact product/version/deployment | 任何未列 scope |
+
+Phase 5 最多取得 repository code/test/config/lock 写入、qualification-only data、shadow 和 dual-read 权限；它不能签发 Evidence、NumericFact、S2/S3 judgment、reader deliverable、human approval 或 release。Phase 6 也不是一次性打开全部下游：`ACC-S1 → ACC-S2 → ACC-S3 → ACC-S4 → ACC-S5` 分别独立验收、独立激活，后序 PASS 不能补偿前序 FAIL。Phase 7 只允许在 consumer/rollback/root-cause/release 条件分别满足后收口，不因“项目结束”获得广义删除权。
+
+程序状态至少包含：`plan_candidate`、`phase0_candidate`、`phase0_pass`、`phase1_inventory_active/pass`、`phase2_research_active/pass`、`phase3_qualification_active/pass`、`phase4_adr_active/frozen`、`phase5_integration_active/pass`、`phase6_s1/s2/s3/s4/s5_active/pass`、`phase7_closeout_candidate`，以及 terminal `complete/partial/stopped/failed`。并行只通过各 phase/ticket 独立状态表达；不得用一个粗粒度 `current_phase` 覆盖事实。
+
+### 6.5 可机检 ticket/slice registry
+
+Phase 0 必须创建 machine-readable `program_ticket_registry_v1`。每条记录至少包含 stable ID、capability family、owner/author/reviewer、exact input path/schema/digest、output path/schema、predecessor、requested/granted authority、资源预算、TokenBudgetBasis 引用、acceptance、stop、rollback、candidate/result/review/activation receipt、terminal status。
+
+稳定 ID 命名空间：
+
+- Phase 0：`P0-01` 至 `P0-09`；
+- Phase 1：`P1-01` 至 `P1-15`；
+- Phase 2 families：`RSH-01` 至 `RSH-15`，对应 9.3 的十五个技术面；
+- Phase 3 qualification：`QL-01` 至 `QL-13`，每个 candidate 使用 `QL-xx-Cnn`；
+- Phase 4：`ADR-01` 至 `ADR-14`，并生成 `migration_slice_registry_v1`；
+- Phase 5：`MIG-{capability}-{nn}`，每个 slice 单变量、单 feature switch、单 rollback；
+- Phase 6：`ACC-S1` 至 `ACC-S5`，另有 `R14-REPLACEMENT-S1-CLOSURE`；
+- Phase 7：`CLS-01` feasibility、`CLS-02` dependency cleanup、`CLS-03` legacy retirement、`CLS-04` operations/rollback、`CLS-05` Project OS、`CLS-06` final independent review/Owner recommendation。
+
+Phase transition 只能由 registry 的 required tickets terminal PASS、exact digest 和 activation receipt 计算；自由文本“已完成”没有机器效力。Phase 5 不得开始，直到 Phase 4 registry 被 fresh review，且所有将执行 slice 已有精确授权、回滚和 stop contract。
 
 ## 7. Phase 0：R14 终止与新架构治理重基线
 
@@ -350,22 +451,25 @@ Phase 1 与 Phase 2 可在 Phase 0 后并行，但 Phase 3 只能消费二者冻
 |---|---|---|---|
 | P0-01 plan freeze | 本文件 C0 | exact plan commit/blob/SHA/bytes | fresh reviewer P0/P1/P2=0/0/0 |
 | P0-02 R14 strategic disposition | R14 freeze、I2、RC-S1-109/110、Owner 决定 | R14 active=false、regression=true、PASS=false、R15/R16=false | old failure/count/digest不变 |
-| P0-03 program authority | C0 identity、phase matrix、deny set | configs/repository/fin_0_1_3_product_wide_architecture_rebase_execution_program_v1_0.json | JSON/semantic test pass |
+| P0-03 program candidate | C0 identity、phase/action/ticket/domain-authority matrix、deny set | configs/repository/fin_0_1_3_product_wide_architecture_rebase_execution_program_v1_0.json | H0 status=candidate；Phase 1+ false |
 | P0-04 source supersession | 产品审计、成熟栈包、R14 plan/I2、baseline docs | 原位 owner-decision/supersession notes | 不改写历史结论 |
 | P0-05 Project OS | capability/root-cause/current context/checklist/README | append-only current state | JSONL parse、current context一致 |
-| P0-06 governance test | machine authority 与 C0 Git binding | tests/test_product_wide_architecture_rebase_program.py | exact Git blob/SHA、authority/deny/index boundary pass |
-| P0-07 worklog | 所有变更、命令、未执行项 | docs/worklog/product_wide_architecture_rebase/130_phase0_program_blueprint_and_authority.md | factual、可恢复 |
+| P0-06 governance test | machine authority、C0 Git binding、H0/G0 非自引用激活 | tests/test_product_wide_architecture_rebase_program.py | 无 G0 receipt 时 Phase1=false；exact PASS receipt 后仅 Phase1 audit=true |
+| P0-07 worklog | 所有变更、命令、未执行项 | docs/worklog/fin_0_1_3_architecture_rebase/001_phase0_program_freeze_and_authority.md | factual、可恢复 |
+| P0-08 exact H0 review | clean H0 candidate | fresh read-only review payload | P0/P1/P2=0/0/0；writes=0 |
+| P0-09 G0 activation | H0 PASS payload | fixed Phase 0 PASS receipt only | G0.parent=H0、one changed path、H0 manifest blob不变、effective Phase1 audit=true |
 
 ### 7.4 Phase 0 机器合同最低字段
 
-- schema_version、program_id、contract_version、status；
+- schema_version、program_id、contract_version、candidate/effective status；
 - owner_decision_at、owner_decision_summary；
-- canonical_branch、authority_commit_parent、plan path/commit/tree/blob/SHA/bytes；
+- canonical_branch、H0 parent、plan path/commit/tree/blob/SHA/bytes、expected fixed H0 review receipt path；
 - product_version、S-stage status、R14 implementation freeze；
 - R14 disposition、failure counts、open root causes；
-- current phase、phase sequence、phase transition rules；
-- current allowed actions、explicit denied actions；
-- component promotion、model、network、paid、external、Evidence、S2/S3/report/release booleans；
+- per-phase status vector、phase sequence、phase transition rules；
+- machine ticket registry 与 migration slice registry schema；
+- action grants、domain-authority matrix、allowed/denied roots and surfaces；
+- component promotion、model、network、paid、external、shadow、dual-read、cutover、Evidence、NumericFact、S2/S3/report/human/product/release booleans；
 - data/index destructive boundary；
 - source docs、ledgers、review receipt；
 - change control、stop conditions、known boundary。
@@ -373,12 +477,13 @@ Phase 1 与 Phase 2 可在 Phase 0 后并行，但 Phase 3 只能消费二者冻
 ### 7.5 Phase 0 退出门
 
 - plan fresh review 无 P0/P1/P2；
-- machine config 与 exact plan commit 一致；
+- H0 machine config 与 exact plan commit 一致，并在 review 前不自报 PASS；
+- fresh H0 review 无 P0/P1/P2；G0 只物化 fixed PASS receipt；
 - R14 在所有 current source 中均为 strategic termination / not PASS；
 - RC-S1-109/110 仍 open；
 - RC-S0-111 进入 owner-authorized architecture rebase active；
 - no R15/R16；
-- no component/model/network/migration/delete authority 被意外打开；
+- effective authority 只新增 Phase 1 bounded read/audit write；no component/model/network/package/service/code migration/shadow/cutover/delete/domain authority 被意外打开；
 - targeted tests、JSON/JSONL parse、diff check、Git clean；
 - commit 与 non-force push 成功。
 
@@ -401,21 +506,31 @@ Phase 1 与 Phase 2 可在 Phase 0 后并行，但 Phase 3 只能消费二者冻
 - R14/R17/Project OS frozen evidence；
 - current local data/artifact roots，仅做路径、schema、consumer 和容量审计，不读取 hidden outcome。
 
-### 8.3 需求票
+### 8.3 执行顺序
+
+Phase 1 不是并行填写十五张表。先执行 P1-01、P1-02、P1-04、P1-10，冻结活动入口、package cycle、runtime resource compatibility spine 与 R3–R14 reachability；这四项未通过前，禁止创建目标目录、移动模块或把某个旧模块宣布为 retired。随后执行 P1-03、P1-05 至 P1-13，最后由 P1-14 汇总迁移矩阵、P1-15 冻结 ports 和验收合同。
+
+### 8.4 需求票
 
 | Ticket | 工作内容 | 主要输出 |
 |---|---|---|
-| P1-01 active import graph | Python、frontend、runtime resource、CLI/API/worker entrypoints | active_consumer_graph_v1 |
-| P1-02 capability inventory | S1–S5、data/control/product/security/ops 全能力 | product_capability_inventory_v1 |
+| P1-01 baseline and active consumers | Git/baseline、backend/frontend composition roots、CLI/API/worker、runtime entrypoints | active_consumer_graph_v1 |
+| P1-02 package graph and cycle plan | Python/TypeScript imports、dynamic imports、service composition、domain inversion | package_dependency_and_cycle_break_plan_v1 |
 | P1-03 domain-kernel extraction | identity/source/Evidence/Numeric/PIT/bridge/Gap/WWC/release | fin_domain_kernel_map_v1 |
-| P1-04 legacy R-chain audit | R3–R14 files、tests、fixtures、current consumers、historical-only paths | r_chain_legacy_disposition_v1 |
-| P1-05 artifact/data map | raw/source/object/index/SQL/model/trace/eval/report/private/public | artifact_lineage_and_rebuild_map_v1 |
-| P1-06 contract map | schemas、IDs、failure codes、receipts、API/UI surfaces | canonical_contract_gap_map_v1 |
-| P1-07 dependency/license map | direct/transitive deps、duplicate capability、platform constraints | dependency_and_license_baseline_v1 |
-| P1-08 migration matrix | retain/wrap/replace/regression/retire，owner、consumer、risk、rollback | capability_migration_matrix_v1 |
-| P1-09 acceptance fixture map | current fixtures、blind restrictions、missing gold、real-case needs | qualification_input_readiness_v1 |
+| P1-04 runtime-resource compatibility spine | runtime registry、exact digest、resource path、replay/app consumers | runtime_resource_compatibility_map_v1 |
+| P1-05 artifact/data/index map | raw/source/object/index/SQL/model/trace/eval/report/private/public | artifact_lineage_and_rebuild_map_v1 |
+| P1-06 S1 capability map | capture/document/XBRL/index/retrieval/ranking/semantics/Evidence | s1_capability_and_authority_map_v1 |
+| P1-07 S2 capability map | financial fact/normalization/bridge/derivation/forecast inputs | s2_capability_and_authority_map_v1 |
+| P1-08 S3 capability map | causal/counter/WWC/gap/research method/model nodes | s3_capability_and_authority_map_v1 |
+| P1-09 S4/S5 and product map | writer/citation/render/review/release/workbench/operations | s4_s5_product_capability_map_v1 |
+| P1-10 legacy R-chain reachability | R3–R14 files、tests、fixtures、current consumers、historical-only paths | r_chain_legacy_disposition_v1 |
+| P1-11 config and runner taxonomy | 1,000+ configs、formal/one-off/current/result/policy、live/zero-call runners | config_and_runner_taxonomy_v1 |
+| P1-12 test/eval spine | declared markers、逐测试分类、gold/blind/replay/integration/full-chain、default pytest safety | test_and_eval_spine_v1 |
+| P1-13 dependency/deploy/SBOM | direct/transitive deps、duplicate capability、platform/privacy/license constraints | dependency_deployment_and_license_baseline_v1 |
+| P1-14 unified migration matrix | retain/wrap/replace/regression/retire、owner、consumer、risk、wave、rollback | capability_migration_matrix_v1 |
+| P1-15 ports and acceptance contracts | canonical schema、IDs、failure codes、receipts、API/UI、fixtures、shadow parity | target_ports_and_qualification_input_v1 |
 
-### 8.4 每个模块必须回答
+### 8.5 每个模块必须回答
 
 - 谁 import/调用/展示它；
 - 输入、输出、schema、side effect 和 data root；
@@ -429,22 +544,26 @@ Phase 1 与 Phase 2 可在 Phase 0 后并行，但 Phase 3 只能消费二者冻
 - 删除后如何恢复；
 - 许可证、隐私、部署和资源限制。
 
-### 8.5 Phase 1 输出路径
+### 8.6 Phase 1 输出路径
 
 - docs/architecture/repository/FIN_0_1_3_PRODUCT_CAPABILITY_AND_LEGACY_MIGRATION_INVENTORY_20260830.zh-CN.md；
 - configs/repository/fin_0_1_3_product_capability_migration_matrix_v1_0.json；
 - configs/repository/fin_0_1_3_active_consumer_and_artifact_rebuild_map_v1_0.json；
+- configs/repository/fin_0_1_3_runtime_resource_and_r_chain_compatibility_map_v1_0.json；
+- configs/repository/fin_0_1_3_test_eval_and_runner_taxonomy_v1_0.json；
 - 对现有 code map 的增量 supersession note；
 - Phase 1 worklog 和 fresh read-only review receipt。
 
-### 8.6 退出门与停止条件
+### 8.7 退出门与停止条件
 
 通过要求：
 
 - S1–S5 每个产品能力都有 owner 和 decision；
 - 所有活动 import/consumer 都有归属；
+- package cycle、domain inversion 与 runtime exact-digest 绑定均有可回滚拆解顺序；
 - 所有大 artifact 都有 producer、input、rebuild、consumer、retention；
 - R3–R14 不再被误标为多个活动产品版本；
+- 所有 test 都按已声明 marker vocabulary 分类，默认测试路径不会意外触发 local-data、network 或 paid-model；
 - domain kernel 不依赖具体 vendor schema；
 - migration matrix 可以逐模块执行和回滚。
 
@@ -615,12 +734,15 @@ quarantine/
 | QL-04 capture/WARC | Scrapy + Playwright + warcio | redirect/resume/rate/raw round-trip/as-of |
 | QL-05 document | Docling vs MinerU + one managed ceiling if approved | page/bbox/cell/span/footnote/cross-page table |
 | QL-06 storage | PostgreSQL + Parquet + DuckDB | transaction/PITR/snapshot/rebuild/locking |
-| QL-07 retrieval | PostgreSQL+pgvector vs OpenSearch | identifier/period/unit/source-role/PIT/Recall/MRR/nDCG/p95/rebuild |
-| QL-08 rerank | BGE v2-m3 vs managed ceiling | target-in-pool first、material slice、latency/resource |
-| QL-09 semantic | LangExtract pattern + DeepSeek shadow | exact span/schema/hard validator/abstain/human gold |
-| QL-10 workflow/provider | LangGraph + official SDK | max_retries=0、checkpoint、HITL、duplicate-risk、crash recovery |
-| QL-11 trace/eval | OTel/OpenInference + MLflow | passive import、privacy、export、authority independence |
-| QL-12 rendering | Quarto/Pandoc/CSL | claim/citation precheck、PDF/DOCX/HTML visual parity |
+| QL-07 embedding | BGE-M3 vs Qwen3-Embedding bounded local candidates + managed ceiling if approved | fixed qrels、identifier zero-miss、target-in-pool、Recall@k、critical issuer/period/unit/source-role slices、p95、RAM/VRAM、index bytes、rebuild |
+| QL-08 retrieval engine | fixed qualified embedder；PostgreSQL+pgvector vs OpenSearch | 单一 embedding input 下的 PIT/Recall/MRR/nDCG/p95/rebuild/operations |
+| QL-09 rerank | qualified candidate pool；BGE v2-m3 vs managed ceiling | target-in-pool first、material slice、latency/resource |
+| QL-10 semantic | LangExtract pattern + DeepSeek shadow | exact span/schema/hard validator/abstain/human gold |
+| QL-11 workflow/provider | LangGraph + official SDK | max_retries=0、checkpoint、HITL、duplicate-risk、crash recovery |
+| QL-12 trace/eval | OTel/OpenInference + MLflow | passive import、privacy、export、authority independence |
+| QL-13 rendering | Quarto/Pandoc/CSL | claim/citation precheck、PDF/DOCX/HTML visual parity |
+
+QL-07 必须独立冻结 model/revision/weights/tokenizer、pooling、normalization、dimension、precision/quantization、max length/truncation、dense/sparse/multi-vector mode、batch/device。只有 QL-07 得到 winner 或有证据的 KEEP/HOLD，QL-08 才能在固定 embedder 上比较 index engine；只有 QL-08 的 target-in-pool/candidate pool 通过，QL-09 才能比较 reranker。若沿用 current embedding，也必须有独立 KEEP/HOLD receipt，不能隐含在 retrieval 结果里。
 
 ### 10.5 DeepSeek API 使用合同
 
@@ -656,7 +778,14 @@ Owner 已明确授权：如果成熟技术栈测试确需 D 盘空间，可以�
 5. data\indexes 当前无活动 writer/reader/job/service；
 6. 已生成并提交 index retirement manifest；
 7. 已冻结 retrieval suspension 状态和 rebuild acceptance；
-8. 已向 Owner 在执行更新中报告将触发该授权。
+8. 已向 Owner 在执行更新中报告将触发该授权；
+9. `known_non_reproducible_items == []`，每个 producer/config/commit 与全部 retained input digest 都可读且验证成功；
+10. 每个删除目标已满足下列恢复路线之一，并有 fresh review：
+    - content-addressed old-index snapshot/export 已写入独立受控根，并完成一次 restore drill；或
+    - 已从冻结输入在独立 scratch root 成功 rebuild，且通过旧 query/index contract、identifier zero-miss、row/object count、known regression 和 digest/semantic equivalence；
+11. exact target manifest、恢复证明、active-handle/service proof、Owner 通知和 authority grant 已进入一个先提交的 index-retirement authority receipt；该 receipt 没有 PASS 时 delete action=false。
+
+若无法满足第 9–11 项，即使磁盘不足也必须停止或缩小 candidate，不得把“已记录不可复现风险”当成删除许可。
 
 删除前 manifest 至少记录：
 
@@ -669,21 +798,26 @@ Owner 已明确授权：如果成熟技术栈测试确需 D 盘空间，可以�
 - old query/index contract；
 - known non-reproducible items；
 - rebuild command、target new adapter、acceptance；
+- snapshot/export/restore 或 isolated rebuild proof；
+- target canonical path、volume serial/file identity、link count/reparse status/ADS 检查；
+- root ACL/owner/audit policy、active handle/service proof；
 - before-free-space 和预计释放。
 
 删除边界：
 
-- 只允许删除 D:\FIN_Insight_Agent\data\indexes 的后代内容；
-- 保留并重新创建空的 data\indexes 根；
+- D:\FIN_Insight_Agent\data\indexes 根本身永远不是删除目标，根必须原位保留，ACL、owner、ADS、audit/mount 语义不变；
+- 只枚举执行时该根的 direct children 作为显式 target roots，再在每个已验证 target root 内递归；不得对根执行 recursive delete；
 - D:\FIN_Insight_Agent\data\staging 不在范围；
 - data\processed_private、raw/source/object、workbench_private、eval/report、R14 evidence、Codex live state 均不在范围；
 - 即使存在同名 staging，只有位于 data\indexes 内的后代才属于本授权；
-- 必须在一个 PowerShell 流程中解析、验证全部 absolute target，再逐项 Remove-Item -LiteralPath；
+- 必须在一个 PowerShell 流程中解析、验证全部 absolute target，再逐项 Remove-Item -LiteralPath；每个 target 的 resolved/canonical path、volume/file identity 必须仍在同一根内；
+- 根或任一 target/descendant 出现 reparse point、junction、symlink、mount point、无法解释的 hard-link/reflink、alternate data stream 或 containment/file-identity 漂移时立即停止；
 - 禁止 glob、环境变量拼接、跨 shell 删除和 broad recursive target。
 
 删除后：
 
 - 记录实际删除项、释放空间和是否可恢复；
+- 在独立 post-delete receipt 中绑定 pre-delete authority、实际 target、实际释放字节和恢复路线状态；
 - old retrieval status=temporarily_suspended_for_architecture_rebuild；
 - 所有依赖旧 index 的命令/API/UI 必须 fail visibly，不能静默返回空结果或 public gap；
 - 新 retrieval 只有通过 input digest、row/object count、identifier zero-miss、query suite、known regression、lineage、rebuild、backup/restore 和 fresh review 后才可恢复 active。
@@ -742,12 +876,21 @@ Owner 已明确授权：如果成熟技术栈测试确需 D 盘空间，可以�
 | Wave | 内容 | 前置 | 回滚 |
 |---|---|---|---|
 | W0 | namespace/ports/contracts scaffold，不改产品结果 | Phase 4 ADR | 删除新未消费 scaffold |
-| W1 | passive trace/experiment/contract validation | QL-01/11 | 关闭 exporter，FIN artifact 不变 |
+| W1 | passive trace/experiment/contract validation | QL-01/12 | 关闭 exporter，FIN artifact 不变 |
 | W2 | source/XBRL/document intake adapters | QL-02/03/04/05 | route 回旧 capture，保留 shadow artifact |
-| W3 | metadata/storage/retrieval/ranking | QL-06/07/08 | dual-read 回旧 index snapshot |
-| W4 | semantic/provider/workflow | QL-09/10 | semantic shadow off，旧 product route不变 |
-| W5 | report/render/review UX | QL-12 + Workbench contract | 回旧 renderer/read surface |
-| W6 | consumer cutover 与 legacy regression-only | Phase 6 slice pass | compatibility shim re-enable |
+| W3a | canonical metadata passive projection | QL-01/06 | 停止 projection；canonical FIN artifact 不变 |
+| W3b | artifact/storage shadow | QL-06 | 关闭 shadow writer；删除未晋升 shadow DB/objects |
+| W3c | fixed qualified embedder 下的 index-engine A/B | QL-07/08 | 丢弃 qualification indexes；旧 index 不变 |
+| W3d | retriever dual-read | W3c winner + exact query contract | feature switch 回旧 retriever；不改 admission |
+| W3e | target-in-pool 后的 reranker shadow | QL-09 + W3d candidate pool pass | 关闭 reranker；保留原 candidate order |
+| W4a | provider SDK saved/synthetic fixture parity | QL-11 provider sub-result | feature switch 回旧 transport；无 live call |
+| W4b | workflow/checkpoint over saved provider fixtures | QL-11 workflow sub-result + W4a | 关闭新 workflow；恢复旧 runner/checkpoint namespace |
+| W4c | semantic candidate shadow | QL-10 + qualified human gold | 关闭 semantic route；删除未准入 shadow projection |
+| W4d | provider/workflow/semantic bounded integration | W4a/W4b/W4c 分别 PASS | 整体 feature flag off；三个独立 rollback 均可执行 |
+| W5 | report/render/review UX | QL-13 + Workbench contract | 回旧 renderer/read surface |
+| W6 | Phase 6 controlled consumer cutover 与 legacy regression-only | 对应 ACC-Sn activation | compatibility shim re-enable；不恢复 attempt-specific R3–R14 |
+
+Wave 只是排序容器，不是一次实现提交。W3a–W3e、W4a–W4d 每项必须是独立 `MIG-*` slice，分别具有 input digest、feature switch、result、fresh review 和 rollback；不得用一个 W3/W4 commit 同时改变多项变量。
 
 Phase 4 退出前禁止批量移动当前模块、删除旧代码或更换产品主路由。
 
@@ -904,7 +1047,36 @@ S5：
 
 任何未知 completion、duplicate risk、data drift 或 authority mismatch 必须 fail closed。
 
-### 13.5 Phase 6 退出门
+### 13.5 `R14-REPLACEMENT-S1-CLOSURE` 同阶段关闭票
+
+这张票独立于 QL-10 semantic 安装/小切片资格，也独立于通用 `ACC-S1`。QL-10 PASS 只说明候选可继续；不能关闭 RC-S1-109/110、不能退役旧回归证据。
+
+固定输入至少包括：
+
+- R14 implementation freeze=`7e25cad95ee84b39fb2a51063100405bc27da6e5`；
+- frozen source：1,888 rows，SHA-256=`d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45`；
+- frozen compiled：34,199 rows，SHA-256=`1c3e48486f933d23306dbabacb1641e26cb9bbc5b474da932d602752dff3fa92`；
+- full corpus=`27,026`，原 preview=`26,787 pass / 239 fail`；
+- case failure inventory digest=`49acf114c03ab97e059ee3bd928736d06d70b1d5a6d8d3af2dcdfabc68e2a5d1`；
+- event mismatch inventory digest=`68d267f77400a350cd698bf3c4baf7152067b437290084596a4fa370965276e5`；
+- mismatch events=`277`，四形态=`246/9/5/17`；
+- 原 population/event/price/property/mutation/resource/transaction/privacy validators 与 gates。
+
+必须分层保存 old parser output、new deterministic/LLM SemanticCandidate、hard-validator output、abstain/human route 和 case-correct human-adjudicated gold。旧 parser 与旧 validator 的错误输出只是 regression/adversarial baseline，不是真值；模型输出也不是真值。
+
+关闭验收同时要求：
+
+1. 239/239 failed cases 与 277/277 mismatch events 均有 case-correct human adjudication；
+2. replacement 对 full frozen corpus 的 validation 为 27,026/27,026，277/277 mismatch 已依新真值消除；允许模型 abstain，但必须在该冻结资格内由预声明 human route 形成最终 adjudicated outcome，不能把 abstain 当自动 PASS；
+3. zero new failure code，原 population/event/price/property/mutation/resource/transaction/privacy gates 不弱化；
+4. 禁止 case key、text SHA、event ID、first-exception 或已知例句特判；
+5. exact-span、strict schema、hard validator、abstain/escalation、materiality slice 与未观察异质 case 均通过；
+6. old/new full-corpus regression、mutation 与 fresh author-separated read-only review 为 PASS；
+7. review PASS 后仍由 Owner 以独立 receipt 明确关闭、合并或重新处置 RC-S1-109/110；R14 自身永久保持 not PASS。
+
+任何一项不满足，RC-S1-109/110 继续 open，replacement 不能成为 current consumer，Phase 7 只能标 `partial/stopped`，不得标 `complete`，也不得删除冻结 R14 failure/corpus/validator/harness。
+
+### 13.6 Phase 6 退出门
 
 - 关键金融 slice 无未解释 P0/P1；
 - deterministic、model、human 三层结果分开；
@@ -913,6 +1085,7 @@ S5：
 - cost/latency/resource/security/operations 可接受；
 - old/new comparison 与 rollback 演练通过；
 - S1–S5 各自 verdict 明确；
+- `R14-REPLACEMENT-S1-CLOSURE` 已 PASS 且 Owner 已处置 RC-S1-109/110，或程序明确以 partial/stopped 收口而非 complete；
 - 不通过弱化 validator、删 case 或隐藏失败得到 PASS。
 
 ## 14. Phase 7：迁移收口与最终可行性方案
@@ -932,11 +1105,14 @@ S5：
 11. fresh engineering/Evidence/report/product/security review；
 12. Owner 决定产品版本和 release，不由程序自动推断。
 
+`CLS-03` 的 legacy retirement 硬门为：historical implementation package discovery=0、active imports=0、Runtime Registry refs=0、current consumers=0、archive redirect/origin/digest complete、`verify_active_baseline.py` 与 clean-main proof 通过。rollback 只能重新启用已资格验证的薄 compatibility adapter，不能把 attempt-specific R3–R14 还原为活动实现。
+
 ### 14.2 完成定义
 
 本程序只有在以下全部成立时才 complete：
 
 - R14 已正确 strategic close，未假装 PASS；
+- `R14-REPLACEMENT-S1-CLOSURE` 已 PASS 且 Owner 已明确处置 RC-S1-109/110；若仍 open，程序只能 partial/stopped；
 - 旧规划已被当前程序和 ADR 正确 supersede；
 - S1–S5 每个能力有 Build/Adopt/Hold/Retire；
 - Adopt 能力有广泛 longlist、排除记录和 research saturation；
@@ -944,7 +1120,7 @@ S5：
 - Z 盘 lab 可复现；
 - 当前分支已按目标架构集成；
 - FIN domain kernel 与 vendor/framework 隔离；
-- 旧代码有兼容、回归、退役和 rollback；
+- 旧代码有兼容、回归、退役和 rollback，历史实现不在默认 package/Runtime/API/UI/CI 主路径；
 - 真实 case 和 DeepSeek 允许节点已验证；
 - critical financial slice 无未解释重大错误；
 - S1–S5、人审、报告、产品、运维、安全分别有 verdict；
@@ -1030,18 +1206,30 @@ S5：
 | 动作 | 当前 |
 |---|---:|
 | 写作、审查本计划 | true |
-| Phase 0 authority/source-doc/Project OS 更新 | plan fresh PASS 后 true |
-| Phase 1 read-only audit | Phase 0 PASS 后 true |
-| Phase 2 网络调研 | Phase 0 PASS 后按 research ticket true |
+| H0 governance/source-doc/Project OS candidate 写入 | plan fresh PASS 后 exact allowlist true；不激活 Phase 1 |
+| Phase 1 repo/data metadata 只读＋bounded audit artifact 写入 | valid H0＋G0 PASS receipt 后 true |
+| Phase 2 官方来源网络调研 | valid G0 后按 RSH ticket true |
 | package/repo/model 下载 | false，Phase 3 manifest 前不允许 |
-| Z 盘 qualification install/run | false，Phase 3 entry gate 前不允许 |
+| Z 盘 qualification install/service/local fixture run | false，Phase 3 candidate/ticket 前不允许 |
+| qualification-only index/data/shadow write | false，Phase 3/5 exact root/ticket 前不允许 |
+| Phase 4 ADR/migration registry write | false，Phase 1/2/3 PASS 前不允许 |
+| Phase 5 src/test/config/lock implementation write | false，Phase 4 frozen slice authority 前不允许 |
+| dual-read compare | false，Phase 5 exact MIG ticket 前不允许 |
+| current consumer cutover | false，Phase 6 exact ACC-Sn activation 前不允许 |
 | 删除 D:\FIN_Insight_Agent\data\indexes | false，Phase 3 条件全部满足后才允许 |
+| legacy source retire/delete | false，Phase 7 CLS-03 硬门前不允许 |
 | R14 implementation/pre-formal/formal | false / permanently not on active route |
 | R15/R16 | false |
 | DeepSeek live | false，Phase 3/6 ticket + TokenBudgetBasis 后才允许 |
 | external source execution | false，单独 route ticket 前不允许 |
-| embedding/reranker | false，target-in-pool 与 qualification gate 前不允许 |
-| Evidence/S2/S3/new report/product/release | false，按 Phase 6 顺序分别验收 |
+| embedding execution | false，独立 QL-07 前不允许 |
+| retrieval engine/reranker execution | false，依次 QL-07→QL-08→QL-09 前不允许 |
+| Evidence admission | false，ACC-S1 activation 前不允许 |
+| NumericFact/S2 authority | false，ACC-S2 activation 前不允许 |
+| S3 research judgment | false，ACC-S3 activation 前不允许 |
+| report candidate generation | false，ACC-S4-CANDIDATE 前不允许 |
+| qualified-human approval | false，exact human gate 前不允许 |
+| product/publication/release | false，ACC-S5＋Owner release receipt 前不允许 |
 
 ## 19. 计划冻结后的第一执行队列
 
@@ -1050,15 +1238,29 @@ S5：
 1. fresh、作者分离、只读审查本 plan-only commit；
 2. 修复所有 P0/P1/P2，必要时新 plan-only revision；
 3. 提交并推送 exact plan；
-4. 创建 Phase 0 machine authority，绑定 exact plan identity；
-5. 原位更新 R14、产品审计、成熟栈包、Project OS、checklist 和 README；
-6. 添加 Phase 0 machine-semantic test；
-7. targeted verification、fresh Phase 0 review、commit/push；
-8. 只在 Phase 0 PASS 后开始 Phase 1 read-only capability/import/data audit。
+4. 创建 H0 Phase 0 candidate：物化 plan PASS receipt、machine manifest、source supersession、Project OS、worklog 和 machine-semantic test；
+5. 对 clean exact H0 做 fresh read-only review；失败则保留 H0/failure receipt 并创建 successor；
+6. 仅在 H0 review PASS 后创建 one-path G0 activation receipt，验证 H0 manifest blob 未变；
+7. targeted verification、commit、non-force push，并由 machine test 计算 effective Phase0 PASS；
+8. 只在 valid G0 后开始 Phase 1 bounded read/audit-write 和有独立 ticket 的 Phase 2 research。
 
 本队列不包含 package install、模型调用、外源、formal、索引删除或生产迁移。
 
-## 20. Source index
+## 20. Plan review history 与 v1.1 修正
+
+exact v1.0 commit `01ffc77b213899d3f177b13b1d38a43e390d3d0c`、tree=`7e8d5ee26d6c2947edec8e6690e11233c8e6d895`、plan blob=`3017dcc4a5e29af5298a26d42fa6de039722beb8` 经 fresh、作者分离、只读审阅得到 `PLAN_FAIL_REVISION_REQUIRED / P0-P1-P2-P3=0/5/2/0`。该失败保持不可变；v1.1 针对七项 finding 作出：
+
+1. 完整逐动作 authority/domain-authority 状态机与 H0→G0 非自引用激活；
+2. index 删除前 snapshot/restore 或 isolated rebuild 硬门、non-reproducible=0 与重解析/identity containment；
+3. `R14-REPLACEMENT-S1-CLOSURE` 27,026/239/277/human-gold/原 gate/Owner 处置合同；
+4. 独立 QL-07 embedding，再固定 embedder 比 QL-08 engine，最后 QL-09 reranker；
+5. 完整历史实现移出 production `src`，compat 只留薄 shim；
+6. Phase 2–7 stable ticket/slice registry；
+7. W3/W4 拆成独立 feature switch/result/review/rollback 子 slice。
+
+v1.1 另吸收真实 repo-surface 初查：package cycles、domain inversion、28-resource exact-digest spine、config/runner taxonomy 与 pytest marker 分类缺口。v1.1 必须重新形成 plan-only commit 并由新的 fresh reviewer 独立签发；本段不能自行关闭 v1.0 findings。
+
+## 21. Source index
 
 - docs/product/FIN_0_1_3_PRODUCT_CAPABILITY_BUILD_ADOPT_HOLD_RETIRE_AUDIT_20260830.zh-CN.md
 - docs/architecture/research/FIN_0_1_3_MATURE_TECH_STACK_LANDSCAPE_AND_ADOPTION_DECISION_PACKET_20260830.zh-CN.md

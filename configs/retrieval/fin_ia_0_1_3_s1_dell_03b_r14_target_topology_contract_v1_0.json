@@ -1,0 +1,681 @@
+{
+  "schema_version": "fin_ia_dell_03B_R14_target_topology_contract_v1_0",
+  "contract_id": "FIN-0.1.3-S1-DELL-03B-R14-TARGET-TOPOLOGY-V1",
+  "grammar_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_r14_structural_proof_grammar_v1_0.json",
+  "grammar_result_digest": "628f12fcf3df3be2dd922230ef152d5f2b67b30994a403df01425d5d13edf8a8",
+  "ontology_authority": "candidate_discovery_and_semantic_typing_only",
+  "outcome_precedence": [
+    "MALFORMED_TO_E",
+    "CANDIDATE_WITH_CONFLICT_MISSING_AMBIGUOUS_OR_UNSUPPORTED_TO_P",
+    "CANDIDATE_WITH_ALL_REQUIRED_PROVED_TO_C",
+    "NO_CANDIDATE_TO_N"
+  ],
+  "graph_type_registry": {
+    "schema_version": "fin_ia_dell_03B_R14_graph_type_registry_v1_0",
+    "mention_node_types": [
+      "bundle",
+      "entity",
+      "nominal_head",
+      "period",
+      "predicate",
+      "price",
+      "product_or_hardware",
+      "quantity",
+      "quantity_or_percent"
+    ],
+    "event_role_types": [
+      "actor",
+      "beneficiary",
+      "counterparty",
+      "measure",
+      "object",
+      "owner",
+      "period",
+      "predicate",
+      "price",
+      "product_supplier",
+      "quantity",
+      "recipient",
+      "seller",
+      "shipper",
+      "supplier"
+    ],
+    "nominal_relation_types": [
+      "apposition",
+      "bundle_member",
+      "complement",
+      "coordination",
+      "event_object_head",
+      "participial",
+      "price_attachment",
+      "relative"
+    ],
+    "event_types": [
+      "Dell_configuration_or_delivery",
+      "HBM_supply_state",
+      "capacity_allocation",
+      "delivery",
+      "observed_measurement",
+      "physical_unit_sale_or_shipment",
+      "pricing",
+      "relationship_or_delivery",
+      "supplier_relationship",
+      "unknown"
+    ],
+    "predicate_event_type_terms": {
+      "Dell_configuration_or_delivery": ["configure", "deliver", "ship"],
+      "HBM_supply_state": ["allocate", "available", "deliver", "reserve", "ship", "supply"],
+      "capacity_allocation": ["allocate", "available", "release", "reserve", "supply"],
+      "delivery": ["available", "deliver", "provide", "ship", "supply"],
+      "observed_measurement": ["achieve", "operate", "reach", "report", "run", "utilize", "yield"],
+      "physical_unit_sale_or_shipment": ["deliver", "dispatch", "sell", "ship", "sold"],
+      "pricing": ["cost", "offer", "price", "quote", "sale", "sell", "sold"],
+      "relationship_or_delivery": ["alliance", "available", "collaborate", "deliver", "expand", "include", "partner", "provide", "ship", "supply", "team"],
+      "supplier_relationship": ["alliance", "collaborate", "expand", "include", "partner", "team"]
+    },
+    "cardinality_enums": [
+      "at_least_one",
+      "exactly_one",
+      "exactly_one_or_one_canonical_entity",
+      "exactly_one_or_proved_hardware_bundle"
+    ],
+    "proof_rule_ids": [
+      "G00-MALFORMED",
+      "G10-SENTENCE",
+      "G11-HARD-CLAUSE",
+      "G20-EXPLICIT-EVENT",
+      "G21-COORD-EVENT",
+      "G22-OBJECT-LIST",
+      "G23-SUBJECT-INHERIT",
+      "G30-ROLE-LOCAL",
+      "G31-TEMPORAL-LOCAL",
+      "G40-NOMINAL-HEAD",
+      "G50-PRICE-DIRECT",
+      "G51-PRICE-NOMINAL",
+      "G52-HARDWARE-BUNDLE",
+      "G90-CONFLICT"
+    ],
+    "target_mention_type_bindings": {
+      "Dell_entity": ["entity"],
+      "Dell_entity_or_product": ["entity", "product_or_hardware"],
+      "Dell_recipient": ["entity"],
+      "HBM_product": ["product_or_hardware"],
+      "entity": ["entity"],
+      "entity_or_Dell_product": ["entity", "product_or_hardware"],
+      "period": ["period"],
+      "predicate": ["predicate"],
+      "price": ["price"],
+      "process_or_capacity_object": ["nominal_head", "product_or_hardware"],
+      "product_or_hardware": ["product_or_hardware"],
+      "product_or_hardware_configuration": ["bundle", "product_or_hardware"],
+      "quantity": ["quantity"],
+      "quantity_or_percent": ["quantity", "quantity_or_percent"],
+      "supplier_entity": ["entity"],
+      "supply_or_capacity_object": ["nominal_head", "product_or_hardware"]
+    },
+    "target_edge_bindings": {
+      "actor_counterparty_or_product_supplier": {"edge_family": "event_role", "allowed_types": ["actor", "counterparty", "product_supplier"]},
+      "actor_or_owner": {"edge_family": "event_role", "allowed_types": ["actor", "owner"]},
+      "actor_or_seller": {"edge_family": "event_role", "allowed_types": ["actor", "seller"]},
+      "actor_recipient_or_counterparty": {"edge_family": "event_role", "allowed_types": ["actor", "counterparty", "recipient"]},
+      "event_object": {"edge_family": "event_role", "allowed_types": ["object"]},
+      "event_object_or_process": {"edge_family": "event_role", "allowed_types": ["object"]},
+      "measure": {"edge_family": "event_role", "allowed_types": ["measure"]},
+      "predicate_head": {"edge_family": "event_role", "allowed_types": ["predicate"]},
+      "price_attachment": {"edge_family": "nominal_relation", "allowed_types": ["price_attachment"]},
+      "priced_object": {"edge_family": "nominal_relation", "allowed_types": ["event_object_head"]},
+      "quantity_of_product": {"edge_family": "event_role", "allowed_types": ["quantity"]},
+      "recipient_counterparty_or_typed_bridge": {"edge_family": "event_role_or_bridge", "allowed_types": ["counterparty", "recipient", "typed_target_bridge"]},
+      "recipient_or_beneficiary": {"edge_family": "event_role", "allowed_types": ["beneficiary", "recipient"]},
+      "relationship_or_delivery": {"edge_family": "event_type", "allowed_types": ["delivery", "relationship_or_delivery", "supplier_relationship"]},
+      "temporal_scope": {"edge_family": "temporal", "allowed_types": ["period"]}
+    },
+    "bridge_types": [
+      "HBM_STATE_TO_DELL",
+      "SUPPLIER_RELATIONSHIP_TO_DELIVERY",
+      "typed_target_bridge"
+    ],
+    "semantic_identity_contract": {
+      "schema_version": "fin_ia_dell_03B_R14_semantic_identity_v1_0",
+      "allowed_prefixes": [
+        "BUNDLE::",
+        "ENTITY::",
+        "EVENT_TYPE::",
+        "MEASURE::",
+        "NOMINAL_HEAD::",
+        "OPERATOR::",
+        "PRODUCT::",
+        "TARGET::"
+      ],
+      "contains_raw_or_normalized_surface": false,
+      "mention_identity_recomputed_before_projection": true,
+      "bridge_shared_identity_prefixes": [
+        "ENTITY::",
+        "PRODUCT::"
+      ]
+    },
+    "typed_bridge_edge_contract": {
+      "collection": "target_bridge_edges",
+      "maximum_events_per_edge": 2,
+      "same_local_scope_and_sentence": true,
+      "adjacent_events_only": true,
+      "proof_state": "PROVED",
+      "proof_rule_id": "G30-ROLE-LOCAL",
+      "identity_intersection_recomputed": true
+    },
+    "compiler_input_contract": {
+      "view": "TargetGraphViewR14",
+      "contains_raw_text": false,
+      "contains_token_surface": false,
+      "allowed_inputs": ["typed_nodes", "typed_edges", "proofs", "digests", "target_topology_contract"],
+      "forbidden_inputs": ["raw_sentence", "regex_complete_rule", "R13_output", "preview_vector"]
+    }
+  },
+  "targets": [
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-ASP",
+      "target_proposition": "bounded_Dell_hardware_or_configuration_price_surface_not_realized_company_ASP",
+      "candidate_ontology": {
+        "entity_terms": [
+          "dell",
+          "poweredge"
+        ],
+        "product_terms": [
+          "ai server",
+          "appliance",
+          "configuration",
+          "gb200",
+          "hardware",
+          "poweredge",
+          "server",
+          "system",
+          "xe9680"
+        ],
+        "predicate_terms": [
+          "cost",
+          "offer",
+          "price",
+          "quote",
+          "sale",
+          "sell",
+          "sold"
+        ],
+        "measure_types": [
+          "MONEY"
+        ]
+      },
+      "required_roles": [
+        {
+          "role": "dell_subject",
+          "mention_type": "entity",
+          "edge": "actor_or_seller",
+          "event_local": true,
+          "cardinality": "exactly_one_or_one_canonical_entity"
+        },
+        {
+          "role": "affirmative_price_quote",
+          "mention_type": "predicate",
+          "edge": "predicate_head",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "price_surface",
+          "mention_type": "price",
+          "edge": "price_attachment",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "bounded_object",
+          "mention_type": "product_or_hardware_configuration",
+          "edge": "priced_object",
+          "event_local": true,
+          "cardinality": "exactly_one_or_proved_hardware_bundle"
+        }
+      ],
+      "event_cardinality": {
+        "minimum": 1,
+        "maximum": 1,
+        "event_type": "pricing"
+      },
+      "allowed_bridges": [],
+      "required_price_proof_rules": [
+        "G50-PRICE-DIRECT",
+        "G51-PRICE-NOMINAL",
+        "G52-HARDWARE-BUNDLE"
+      ],
+      "forbidden_inference": [
+        "configuration_or_bundle_quote_is_not_realized_company_ASP_or_mix",
+        "component_price_is_not_contract_total",
+        "service_support_finance_lease_freight_or_maintenance_total_is_not_hardware_price"
+      ],
+      "positive_family_fingerprints": [
+        "pricing_event_product_and_price_complement",
+        "product_priced_at_price",
+        "explicit_price_or_cost_of_for_product_copular_amount",
+        "all_hardware_bounded_bundle_total"
+      ]
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-SUPPLIER-READTHROUGH",
+      "target_proposition": "named_supplier_directional_relationship_or_delivery_to_Dell",
+      "candidate_ontology": {
+        "entity_terms": [
+          "broadcom",
+          "dell",
+          "micron",
+          "nvidia",
+          "sk hynix",
+          "taiwan semiconductor",
+          "tsmc"
+        ],
+        "product_terms": [
+          "accelerator",
+          "gb200",
+          "gpu",
+          "poweredge",
+          "server"
+        ],
+        "predicate_terms": [
+          "alliance",
+          "available",
+          "collaborate",
+          "deliver",
+          "expand",
+          "include",
+          "partner",
+          "provide",
+          "ship",
+          "supply",
+          "team"
+        ],
+        "measure_types": []
+      },
+      "required_roles": [
+        {
+          "role": "dell_subject",
+          "mention_type": "entity_or_Dell_product",
+          "edge": "actor_recipient_or_counterparty",
+          "event_local": true,
+          "cardinality": "at_least_one"
+        },
+        {
+          "role": "named_supplier",
+          "mention_type": "supplier_entity",
+          "edge": "actor_counterparty_or_product_supplier",
+          "event_local": true,
+          "cardinality": "at_least_one"
+        },
+        {
+          "role": "directional_relationship_delivery",
+          "mention_type": "predicate",
+          "edge": "relationship_or_delivery",
+          "event_local": true,
+          "cardinality": "at_least_one"
+        }
+      ],
+      "event_cardinality": {
+        "minimum": 1,
+        "maximum": 2,
+        "event_type": "relationship_or_delivery"
+      },
+      "allowed_bridges": [
+        {
+          "bridge_id": "SUPPLIER_RELATIONSHIP_TO_DELIVERY",
+          "source_event_type": "supplier_relationship",
+          "destination_event_type": "delivery",
+          "shared_roles": [
+            "same_named_supplier",
+            "same_Dell_entity_or_product"
+          ],
+          "direction": "relationship_to_delivery",
+          "maximum_events": 2
+        }
+      ],
+      "forbidden_inference": [
+        "non_relationship_include_context_is_not_supplier_relationship",
+        "relationship_or_delivery_is_not_allocation",
+        "relationship_or_delivery_is_not_capacity_release",
+        "relationship_or_delivery_is_not_yield_or_utilization",
+        "relationship_or_delivery_is_not_physical_quantity"
+      ],
+      "positive_family_fingerprints": [
+        "Dell_and_supplier_partnership",
+        "supplier_and_Dell_partnering_to_deliver",
+        "Dell_product_with_supplier_component_shipping_or_available",
+        "named_supplier_in_Dell_partner_ecosystem"
+      ]
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE",
+      "target_proposition": "upstream_capacity_or_availability_allocated_or_released_to_Dell_with_timing",
+      "candidate_ontology": {
+        "entity_terms": [
+          "dell",
+          "micron",
+          "nvidia",
+          "sk hynix",
+          "taiwan semiconductor",
+          "tsmc"
+        ],
+        "product_terms": [
+          "accelerator",
+          "blackwell",
+          "capacity",
+          "cowos",
+          "gpu",
+          "hbm",
+          "supply"
+        ],
+        "predicate_terms": [
+          "allocate",
+          "available",
+          "release",
+          "reserve",
+          "supply"
+        ],
+        "measure_types": [
+          "PERIOD"
+        ]
+      },
+      "required_roles": [
+        {
+          "role": "relevant_supply",
+          "mention_type": "supply_or_capacity_object",
+          "edge": "event_object",
+          "event_local": true,
+          "cardinality": "at_least_one"
+        },
+        {
+          "role": "capacity_or_availability_event",
+          "mention_type": "predicate",
+          "edge": "predicate_head",
+          "event_local": true,
+          "cardinality": "exactly_one",
+          "required_semantic_identity_ids": [
+            "OPERATOR::ALLOCATE",
+            "OPERATOR::AVAILABLE",
+            "OPERATOR::RELEASE",
+            "OPERATOR::RESERVE"
+          ]
+        },
+        {
+          "role": "upstream_Dell_allocation",
+          "mention_type": "Dell_recipient",
+          "edge": "recipient_or_beneficiary",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "timing_surface",
+          "mention_type": "period",
+          "edge": "temporal_scope",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        }
+      ],
+      "event_cardinality": {
+        "minimum": 1,
+        "maximum": 1,
+        "event_type": "capacity_allocation"
+      },
+      "allowed_bridges": [],
+      "forbidden_inference": [
+        "generic_supply_or_delivery_is_not_Dell_capacity_release",
+        "industry_capacity_is_not_Dell_allocation"
+      ],
+      "positive_family_fingerprints": [
+        "upstream_capacity_allocated_to_Dell_with_period"
+      ]
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-UTILIZATION-YIELD",
+      "target_proposition": "observed_issuer_yield_or_utilization_measure_with_owner_and_timing",
+      "candidate_ontology": {
+        "entity_terms": [
+          "micron",
+          "sk hynix",
+          "taiwan semiconductor",
+          "tsmc"
+        ],
+        "product_terms": [
+          "capacity",
+          "cowos",
+          "fab",
+          "hbm",
+          "wafer"
+        ],
+        "predicate_terms": [
+          "achieve",
+          "operate",
+          "reach",
+          "report",
+          "run",
+          "utilize",
+          "yield"
+        ],
+        "measure_types": [
+          "PERCENT",
+          "NUMBER",
+          "PERIOD"
+        ]
+      },
+      "required_roles": [
+        {
+          "role": "relevant_supply",
+          "mention_type": "process_or_capacity_object",
+          "edge": "event_object_or_process",
+          "event_local": true,
+          "cardinality": "at_least_one"
+        },
+        {
+          "role": "observed_yield_or_utilization",
+          "mention_type": "predicate",
+          "edge": "predicate_head",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "observed_measure",
+          "mention_type": "quantity_or_percent",
+          "edge": "measure",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "timing_surface",
+          "mention_type": "period",
+          "edge": "temporal_scope",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "process_owner",
+          "mention_type": "entity",
+          "edge": "actor_or_owner",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        }
+      ],
+      "event_cardinality": {
+        "minimum": 1,
+        "maximum": 1,
+        "event_type": "observed_measurement"
+      },
+      "allowed_bridges": [],
+      "forbidden_inference": [
+        "plan_goal_capability_or_industry_figure_is_not_observed_issuer_measure"
+      ],
+      "positive_family_fingerprints": [
+        "issuer_reported_yield_percent_with_period",
+        "issuer_reported_utilization_measure_with_period"
+      ]
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-HBM-SUPPLY",
+      "target_proposition": "upstream_HBM_supply_state_directionally_bound_to_Dell_with_timing",
+      "candidate_ontology": {
+        "entity_terms": [
+          "dell",
+          "micron",
+          "nvidia",
+          "sk hynix"
+        ],
+        "product_terms": [
+          "hbm",
+          "hbm3",
+          "hbm3e",
+          "high bandwidth memory",
+          "poweredge"
+        ],
+        "predicate_terms": [
+          "allocate",
+          "available",
+          "deliver",
+          "reserve",
+          "ship",
+          "supply"
+        ],
+        "measure_types": [
+          "PERIOD"
+        ]
+      },
+      "required_roles": [
+        {
+          "role": "hbm_subject",
+          "mention_type": "HBM_product",
+          "edge": "event_object",
+          "event_local": true,
+          "cardinality": "at_least_one"
+        },
+        {
+          "role": "supply_state",
+          "mention_type": "predicate",
+          "edge": "predicate_head",
+          "event_local": true,
+          "cardinality": "at_least_one"
+        },
+        {
+          "role": "directional_Dell_bridge",
+          "mention_type": "Dell_entity_or_product",
+          "edge": "recipient_counterparty_or_typed_bridge",
+          "event_local": false,
+          "cardinality": "at_least_one"
+        },
+        {
+          "role": "timing_surface",
+          "mention_type": "period",
+          "edge": "temporal_scope",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        }
+      ],
+      "event_cardinality": {
+        "minimum": 1,
+        "maximum": 2,
+        "event_type": "HBM_supply_state"
+      },
+      "allowed_bridges": [
+        {
+          "bridge_id": "HBM_STATE_TO_DELL",
+          "source_event_type": "HBM_supply_state",
+          "destination_event_type": "Dell_configuration_or_delivery",
+          "shared_roles": [
+            "same_HBM_product_or_supplier"
+          ],
+          "direction": "upstream_state_to_Dell",
+          "maximum_events": 2
+        }
+      ],
+      "forbidden_inference": [
+        "document_brochure_guidance_or_announcement_is_not_Dell_supply_state",
+        "generic_HBM_market_or_supplier_relationship_is_not_Dell_supply_state"
+      ],
+      "positive_family_fingerprints": [
+        "upstream_HBM_supply_or_allocation_to_Dell_with_period"
+      ]
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-UNITS",
+      "target_proposition": "Dell_company_physical_server_units_shipped_or_sold_with_timing",
+      "candidate_ontology": {
+        "entity_terms": [
+          "dell",
+          "poweredge"
+        ],
+        "product_terms": [
+          "ai server",
+          "appliance",
+          "node",
+          "poweredge",
+          "server",
+          "system"
+        ],
+        "predicate_terms": [
+          "deliver",
+          "dispatch",
+          "sell",
+          "ship",
+          "sold"
+        ],
+        "measure_types": [
+          "NUMBER",
+          "PERIOD"
+        ]
+      },
+      "required_roles": [
+        {
+          "role": "dell_subject",
+          "mention_type": "Dell_entity",
+          "edge": "actor_or_seller",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "physical_server_quantity",
+          "mention_type": "quantity",
+          "edge": "quantity_of_product",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "Dell_seller_or_shipper_role",
+          "mention_type": "predicate",
+          "edge": "predicate_head",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "timing_surface",
+          "mention_type": "period",
+          "edge": "temporal_scope",
+          "event_local": true,
+          "cardinality": "exactly_one"
+        },
+        {
+          "role": "Dell_AI_server_product",
+          "mention_type": "product_or_hardware",
+          "edge": "event_object",
+          "event_local": true,
+          "cardinality": "at_least_one"
+        }
+      ],
+      "event_cardinality": {
+        "minimum": 1,
+        "maximum": 1,
+        "event_type": "physical_unit_sale_or_shipment"
+      },
+      "allowed_bridges": [],
+      "forbidden_inference": [
+        "project_node_install_customer_or_noncompany_count_is_not_Dell_company_units",
+        "revenue_or_order_value_is_not_physical_units"
+      ],
+      "positive_family_fingerprints": [
+        "Dell_shipped_number_of_servers_with_period",
+        "Dell_sold_number_of_PowerEdge_systems_with_period"
+      ]
+    }
+  ],
+  "result_digest": "2bd2fa194b6789ff1b37aeae15c98e02ad1d24bcfc6fc79d434912eaee33e483"
+}

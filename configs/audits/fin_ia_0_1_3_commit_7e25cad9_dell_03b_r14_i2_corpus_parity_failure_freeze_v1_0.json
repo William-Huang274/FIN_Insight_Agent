@@ -1,0 +1,2490 @@
+{
+  "schema_version": "fin_ia_dell_03B_R14_I2_corpus_parity_failure_freeze_v1_0",
+  "freeze_id": "FIN-0.1.3-S1-DELL-03B-R14-I2-CORPUS-PARITY-FAILURE-FREEZE-V1",
+  "recorded_at": "2026-08-29T21:21:57+08:00",
+  "authority": {
+    "product_version": "FIN_0_1_3",
+    "stage": "S1_03B_internal_chain_engineering_general_contract",
+    "product_iteration": "R14",
+    "governance_slice": "I2_owner_visible_correction_before_B_and_preformal",
+    "lifecycle_state_before": "IMPLEMENTATION_FROZEN",
+    "lifecycle_state_after": "IMPLEMENTATION_FROZEN",
+    "formal_attempt_consumed": false,
+    "implementation_change_authorized": false,
+    "automatic_R15_or_R16_authorized": false,
+    "model_provider_calls_authorized": 0,
+    "network_calls_authorized": 0
+  },
+  "implementation_identity": {
+    "branch": "codex/fin013-dell-s1-s2-product-bridge",
+    "commit": "7e25cad95ee84b39fb2a51063100405bc27da6e5",
+    "parent": "50fc4a706f00f40d831ec9624d33889180e1baa0",
+    "commit_subject": "feat(retrieval): freeze DELL R14 implementation",
+    "implementation_tree": "744e1b45582bff6daab8534c8786e8032edd28fa"
+  },
+  "frozen_contract_bindings": {
+    "requirement_manifest": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_r14_requirement_manifest_v1_0.json",
+      "sha256": "56d1b5900b537392e0a40822d71b4651adaf6615a1f3e155f415abf1a495c24c",
+      "result_digest": "d0c41fc55bc866b99f05749999359d3db8961e538f66d08615876f76a4a3ff5c"
+    },
+    "structural_proof_grammar": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_r14_structural_proof_grammar_v1_0.json",
+      "sha256": "179192586cc6b388bd0e77cb66745cd3e88817fed783fd4d6978b4c955ac8b40"
+    },
+    "target_topology_contract": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_r14_target_topology_contract_v1_0.json",
+      "sha256": "700e80db2c6fb691a2098484e3149fcfb0e3bdb88b6362e570017a0d7f718ef1"
+    },
+    "graph_producer": {
+      "ref": "src/retrieval/dell_report_structural_graph_r14.py",
+      "sha256": "d9c0155d0549e4231fbbb3b11618fcb52d1d292c1fc94bfa30f1de068b0de529"
+    },
+    "graph_validator": {
+      "ref": "src/retrieval/dell_report_graph_schema_r14.py",
+      "sha256": "b5e3896165cfdaa2c2888509a99ceaf32f0e127dc7c5b7f87dee445edaf72661"
+    }
+  },
+  "input_contract": {
+    "source_records": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v5/records.jsonl",
+      "sha256": "d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45",
+      "row_count": 1888,
+      "scan_lane": "source",
+      "selection": "all_rows_in_file_order"
+    },
+    "compiled_objects": {
+      "ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v9/objects.jsonl",
+      "sha256": "1c3e48486f933d23306dbabacb1641e26cb9bbc5b474da932d602752dff3fa92",
+      "object_row_count": 34199,
+      "unique_model_text_case_count": 25138,
+      "scan_lane": "compiled_unique_text",
+      "selection": "first_compiled_object_identity_per_model_text_sha256_in_file_order"
+    },
+    "scanner": {
+      "ref": "scripts/data_retrieval/scan_dell_report_r14_corpus_contracts.py",
+      "sha256": "92c37476a547fc6f003c26774f7e4b16026c902922677bfe9707a1bbb993dc0a",
+      "total_case_count": 27026,
+      "model_provider_calls": 0,
+      "network_calls": 0,
+      "files_written": 0
+    },
+    "failure_row_primary_key": [
+      "failure_code",
+      "lane",
+      "identity",
+      "text_sha256"
+    ],
+    "total_logical_decision_count_from_requirement": 216522
+  },
+  "original_preview_failure_authority": {
+    "authority_type": "safe_continuation_checkpoint",
+    "checkpoint_ref": "D:/temp/codex_history_recovery_checkpoint_2026-08-29.md",
+    "checkpoint_statement": "the unique preview exposed 239 corpus parity failures: 228 event-semantics and 11 assertion-semantics",
+    "preview_count": 1,
+    "status": "FAIL",
+    "failed_case_count": 239,
+    "failure_counts": {
+      "R14_graph_event_semantics_recomputation_failed": 228,
+      "R14_graph_event_assertion_semantics_recomputation_failed": 11
+    },
+    "interpretation": "production semantic contract mismatch; B, preformal, policy and formal remain unauthorized"
+  },
+  "readonly_reproduction_receipt": {
+    "purpose": "I2_inventory_recovery_and_counterexample_reproduction_only",
+    "classification": "NOT_PREVIEW_NOT_B_NOT_PREFORMAL_NOT_FORMAL",
+    "implementation_commit": "7e25cad95ee84b39fb2a51063100405bc27da6e5",
+    "case_count": 27026,
+    "passed": 26787,
+    "failed": 239,
+    "failure_counts": {
+      "R14_graph_event_semantics_recomputation_failed": 228,
+      "R14_graph_event_assertion_semantics_recomputation_failed": 11
+    },
+    "lane_counts": {
+      "source": {
+        "failed": 135
+      },
+      "compiled_unique_text": {
+        "failed": 104
+      }
+    },
+    "unique_failure_text_sha256_count": 235,
+    "duplicate_identity_count": 0,
+    "duplicate_failure_row_key_count": 0,
+    "cross_lane_same_text_group_count": 2,
+    "model_provider_calls": 0,
+    "network_calls": 0,
+    "files_written": 0,
+    "original_preview_overwritten": false
+  },
+  "earliest_responsibility_clusters": [
+    {
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "status": "AUTHOR_HYPOTHESIS_PENDING_FRESH_AUTHOR_SEPARATED_READONLY_AUDIT",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "case_count": 228,
+      "unique_text_sha256_count": 224,
+      "lane_counts": {
+        "source": 132,
+        "compiled_unique_text": 96
+      },
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "producer_observation": "_synthetic_ambiguous_predicate emits semantic_labels=[] and event_types=['unknown'] even when the selected predicate token is a frozen target/event semantic term",
+      "independent_recomputation_observation": "validate_event_argument_graph_r14 recomputes semantics from event.predicate_normalized and recovers the frozen target/event types",
+      "downstream_detector_layer": "R14_graph_schema_validator",
+      "excluded_as_earliest_layers": [
+        "immutable_input_population",
+        "R14-04_target_compiler",
+        "R14-05_property_or_mutation_oracle",
+        "B_bundle",
+        "preformal_review",
+        "formal_attempt"
+      ],
+      "counterexamples": [
+        {
+          "lane": "source",
+          "identity": "DELL_2023_10K_ITEM1A_BLOCK_0030_PART_01_OF_04",
+          "text_sha256": "245cc226b2d2248dbaea3c4e05b8ce8fd472a1f33aa5e5337ca139d2d779a191",
+          "predicate": "price",
+          "producer": {
+            "semantic_labels": [],
+            "event_types": [
+              "unknown"
+            ]
+          },
+          "recomputation": {
+            "semantic_labels": [
+              "DELL-RSQ-03A-TARGET-ASP"
+            ],
+            "event_types": [
+              "pricing"
+            ]
+          }
+        },
+        {
+          "lane": "source",
+          "identity": "DELL_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+          "text_sha256": "891ce2c3ddc7b733073ed21304a141bb2e69a60fa5d86c80816ab3994beec4a1",
+          "predicate": "provide",
+          "producer": {
+            "semantic_labels": [],
+            "event_types": [
+              "unknown"
+            ]
+          },
+          "recomputation": {
+            "semantic_labels": [
+              "DELL-RSQ-03A-TARGET-SUPPLIER-READTHROUGH"
+            ],
+            "event_types": [
+              "delivery",
+              "relationship_or_delivery"
+            ]
+          }
+        },
+        {
+          "lane": "source",
+          "identity": "DELL_2023_10K_ITEM1_BLOCK_0009_PART_02_OF_05",
+          "text_sha256": "0e22a2367ae21e9acd33c394b6aa2802ff3c6ea3787a21e23766a7438ff0c7e0",
+          "predicate": "supply",
+          "producer": {
+            "semantic_labels": [],
+            "event_types": [
+              "unknown"
+            ]
+          },
+          "recomputation": {
+            "semantic_labels": [
+              "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE",
+              "DELL-RSQ-03A-TARGET-HBM-SUPPLY",
+              "DELL-RSQ-03A-TARGET-SUPPLIER-READTHROUGH"
+            ],
+            "event_types": [
+              "HBM_supply_state",
+              "capacity_allocation",
+              "delivery",
+              "relationship_or_delivery"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "status": "AUTHOR_HYPOTHESIS_PENDING_FRESH_AUTHOR_SEPARATED_READONLY_AUDIT",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "case_count": 11,
+      "unique_text_sha256_count": 11,
+      "lane_counts": {
+        "source": 3,
+        "compiled_unique_text": 8
+      },
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "producer_observation": "speech_mode is computed while graph construction still exposes an intermediate mention collection",
+      "independent_recomputation_observation": "validator recomputes speech_mode from the finalized immutable graph mention collection and obtains a different attribution class",
+      "downstream_detector_layer": "R14_graph_schema_validator",
+      "excluded_as_earliest_layers": [
+        "immutable_input_population",
+        "R14-04_target_compiler",
+        "R14-05_property_or_mutation_oracle",
+        "B_bundle",
+        "preformal_review",
+        "formal_attempt"
+      ],
+      "counterexamples": [
+        {
+          "lane": "source",
+          "identity": "DELL_2025_10K_ITEM1A_BLOCK_0020_CHUNK_0001",
+          "text_sha256": "3926a61abb16cd79b5544586d0db18fae2e29220e347908da45ad8eb83b6aad7",
+          "predicate": "goals",
+          "assertion_owner": "esg",
+          "producer_speech_mode": "reported_speech",
+          "recomputed_speech_mode": "issuer_reported"
+        },
+        {
+          "lane": "source",
+          "identity": "NVDA_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+          "text_sha256": "9bbc78a6aa612d09475c1974905c744a4ec514790bad224c795a9903d2c90c2f",
+          "predicate": "group",
+          "assertion_owner": "softbank",
+          "producer_speech_mode": "reported_speech",
+          "recomputed_speech_mode": "issuer_reported"
+        },
+        {
+          "lane": "source",
+          "identity": "NVDA_2023_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+          "text_sha256": "a1ed9b08d346605dfc8cbc66a77f5762d0e79737fe8caccae4ecec73db98e68d",
+          "predicate": "group",
+          "assertion_owner": "softbank",
+          "producer_speech_mode": "reported_speech",
+          "recomputed_speech_mode": "issuer_reported"
+        }
+      ]
+    }
+  ],
+  "acceptance_contract": {
+    "governance_I2_review_gate": [
+      "reviewer_is_fresh_author_separated_and_read_only",
+      "reviewer_binds_exact_implementation_commit_and_this_candidate_artifact_digest",
+      "all_239_failure_rows_are_present_unique_and_bound_to_the_frozen_input_contract",
+      "earliest_responsibility_classification_covers_239_of_239_without_downstream_blame_shift",
+      "counterexamples_support_each_root_cause_hypothesis",
+      "input_contract_acceptance_and_stop_conditions_are_machine_readable_and_owner_visible",
+      "P0_P1_P2_counts_are_all_zero"
+    ],
+    "only_after_governance_gate_pass_may_owner_decide_same_R14_change": [
+      "use_one_canonical_semantic derivation for ordinary and synthetic predicates",
+      "compute assertion attribution from a finalized immutable graph view or an equivalently independent two_pass contract",
+      "eliminate_the_frozen_239_case_failures_without_case_identity_or_text_digest_special_casing",
+      "replay_exact_27026_case_contract_and_accept_only_zero_failures_and_zero_new_failure_codes",
+      "retain_existing_population_event_price_property_mutation_resource_transaction_and_privacy_acceptance",
+      "freeze_new_same_R14_implementation_identity_before_any_B_or_preformal_review"
+    ],
+    "forbidden_as_acceptance": [
+      "editing_or_dropping_failing_input_rows",
+      "special_casing_any_of_the_239_identities_or_text_sha256_values",
+      "weakening_or_bypassing_independent_recomputation",
+      "moving_failure_detection_to_R14_04_or_later",
+      "declaring_B_or_preformal_pass_from_unit_tests_only",
+      "creating_R15_or_R16"
+    ]
+  },
+  "stop_conditions": [
+    {
+      "condition": "fresh_governance_reviewer_reports_any_P0_P1_or_P2",
+      "action": "revise_I2_governance_only_then_freeze_new_candidate_and_reaudit",
+      "implementation_change_authorized": false
+    },
+    {
+      "condition": "any_failure_or_counterexample_falls_outside_the_two_frozen_root_families",
+      "action": "stop_for_owner_decision_under_single_batch_rule",
+      "implementation_change_authorized": false
+    },
+    {
+      "condition": "input_path_sha_row_count_case_selection_or_implementation_identity_drifts",
+      "action": "invalidate_this_inventory_and_stop_without_rerun_or_version_inflation",
+      "implementation_change_authorized": false
+    },
+    {
+      "condition": "repair_requires_target_scope_or_compatibility_change",
+      "action": "stop_for_explicit_owner_product_scope_decision",
+      "implementation_change_authorized": false
+    },
+    {
+      "condition": "same_R14_candidate_repeats_either_root_invariant_after_authorized_change",
+      "action": "do_not_loop_local_patches; choose_same_R14_parser_IR_restructure_or_partial_plus_human_route_with_owner",
+      "implementation_change_authorized": false
+    }
+  ],
+  "downstream_blocks": [
+    "B_bundle",
+    "preformal_review",
+    "policy",
+    "formal_attempt",
+    "R15",
+    "R16",
+    "03C_external_source_supplement",
+    "4B_or_reranker",
+    "Evidence_admission",
+    "S2",
+    "S3",
+    "Writer",
+    "new_report"
+  ],
+  "failure_inventory_digest": "49acf114c03ab97e059ee3bd928736d06d70b1d5a6d8d3af2dcdfabc68e2a5d1",
+  "failures": [
+    {
+      "failure_ordinal": 1,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "COBJ::2c40140360eb839785d5d94f",
+      "lane": "compiled_unique_text",
+      "text_sha256": "6455f5f8af3754d6da40a12b52ff87f59069fa04e263ebc84c817244af206be3"
+    },
+    {
+      "failure_ordinal": 2,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "COBJ::502995a15a4b9a80eb9317f8",
+      "lane": "compiled_unique_text",
+      "text_sha256": "ebf1b5a5bec28bda63da7d006af4e12956dfb68d24eebf1d4d23c7111491ece8"
+    },
+    {
+      "failure_ordinal": 3,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "COBJ::6b7d3d196b599cb5dad97f7d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "45c87ccdc0f05463a1d7ff5279a3d125de9da086a79a63e158ab970dc536f400"
+    },
+    {
+      "failure_ordinal": 4,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "COBJ::6fac2c78d9e9ee21d4f7b28c",
+      "lane": "compiled_unique_text",
+      "text_sha256": "0f77523663c4f7a55e75bf940961bc97ae259ca6780f42b0f24b2380f5dd9a2c"
+    },
+    {
+      "failure_ordinal": 5,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "COBJ::739c2efdabc29ecbb91c7aa2",
+      "lane": "compiled_unique_text",
+      "text_sha256": "529d381fee845ad869feca8ec3c1b3878a2304e33cbf7ec011a1ace95ecfc0eb"
+    },
+    {
+      "failure_ordinal": 6,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "COBJ::946830bffa75ef18607fc221",
+      "lane": "compiled_unique_text",
+      "text_sha256": "8eb3d30d538561a11dc10f1e4b5d97c3f2b1c1482729f96f0063032552124914"
+    },
+    {
+      "failure_ordinal": 7,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "COBJ::ac2daaa8833d6d36bddefcc4",
+      "lane": "compiled_unique_text",
+      "text_sha256": "92beb79bcc90a7fba1cfb5e9a6c89dd15ac56e9ae953650cac3ab26a98672c38"
+    },
+    {
+      "failure_ordinal": 8,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "COBJ::d105ff520279f5813d4f7fcd",
+      "lane": "compiled_unique_text",
+      "text_sha256": "3c575c46561f5bb23f4099698a04a23df7ef4361ff44a50e93fbfd4f040d1c9f"
+    },
+    {
+      "failure_ordinal": 9,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "DELL_2025_10K_ITEM1A_BLOCK_0020_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "3926a61abb16cd79b5544586d0db18fae2e29220e347908da45ad8eb83b6aad7"
+    },
+    {
+      "failure_ordinal": 10,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "9bbc78a6aa612d09475c1974905c744a4ec514790bad224c795a9903d2c90c2f"
+    },
+    {
+      "failure_ordinal": 11,
+      "cluster_id": "R14-I2-RC-02-CONSTRUCTION-SNAPSHOT-ASSERTION-ATTRIBUTION-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_assertion_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM1_BLOCK_0001_PART_02_OF_03",
+      "lane": "source",
+      "text_sha256": "a1ed9b08d346605dfc8cbc66a77f5762d0e79737fe8caccae4ecec73db98e68d"
+    },
+    {
+      "failure_ordinal": 12,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::0238791ecbae5aeb4afeeec6",
+      "lane": "compiled_unique_text",
+      "text_sha256": "75bb4c6d237baf79c48f8371b750ab593d07b712ea9edb200cb95b8ad967af0f"
+    },
+    {
+      "failure_ordinal": 13,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::03c47dafdd03ec81ac7ae6ec",
+      "lane": "compiled_unique_text",
+      "text_sha256": "685f5230896eb7de7dcdd756c406bed633689b57f757f36ec328225950392e48"
+    },
+    {
+      "failure_ordinal": 14,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::03fa75baac479e6366d8fc60",
+      "lane": "compiled_unique_text",
+      "text_sha256": "3b34e6982810db8ff484ee5c6472d8e9fd4d179d597a94ec5b062e0efb990b23"
+    },
+    {
+      "failure_ordinal": 15,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::05cb6bbdce1b16be09ac9821",
+      "lane": "compiled_unique_text",
+      "text_sha256": "f1c0f74138b497862c353bc6cf6f8937e8c479f26049cb1233f03dcfbb7b08c7"
+    },
+    {
+      "failure_ordinal": 16,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::0a60c766e7b2344bd81e451e",
+      "lane": "compiled_unique_text",
+      "text_sha256": "09156787894156cf72c5a8cad3b633daa003b1c1d83b4dca78351c1506554a15"
+    },
+    {
+      "failure_ordinal": 17,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::0d5591834d577771aef9242d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "56ff784e0ac8b9518f5b309d48519281c65766e47bf34e6bd996989aa49755ff"
+    },
+    {
+      "failure_ordinal": 18,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::0e4d3a6d316d7757cdcf21a2",
+      "lane": "compiled_unique_text",
+      "text_sha256": "304cb0a73d112547cc52f6a933a214e51429d0fffb075c7c5764c12bfae3a943"
+    },
+    {
+      "failure_ordinal": 19,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::0ea317ebc699dfccd1db7097",
+      "lane": "compiled_unique_text",
+      "text_sha256": "5b2df3ac031dfd24edd86d70790c9ce0203b03d59c6d1aacfc6532d793191bd6"
+    },
+    {
+      "failure_ordinal": 20,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::0f5fa5d0d50233448de9cfa2",
+      "lane": "compiled_unique_text",
+      "text_sha256": "5b21d116bfd85dc3fbeb1b0ac856185c600a6ddf153ccec675911185ef353540"
+    },
+    {
+      "failure_ordinal": 21,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::0fa5de456671350135e34584",
+      "lane": "compiled_unique_text",
+      "text_sha256": "10670ca5447b93141a72b80ef2b9d2e7302fa407e9b3f737e837d119ccf0ed09"
+    },
+    {
+      "failure_ordinal": 22,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::103e2bda8bc508690b7dd5f3",
+      "lane": "compiled_unique_text",
+      "text_sha256": "006619fc0b2a37ea8057e732a356ba9fbde40cca0528f2c897707a000ab5fac2"
+    },
+    {
+      "failure_ordinal": 23,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::10a5a72862644eda9a9e89f7",
+      "lane": "compiled_unique_text",
+      "text_sha256": "63c71bb77fbe24c3d76f5ce7ad14da6b83a6e33ad399b44cf8b0be7fbf611629"
+    },
+    {
+      "failure_ordinal": 24,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::131c8addff6cf7186870db1f",
+      "lane": "compiled_unique_text",
+      "text_sha256": "48573bc0efeec71551146befeeaa73a731c2c91b8a12f650941e36a11b02f86d"
+    },
+    {
+      "failure_ordinal": 25,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::14da7a35889fce759aab77e3",
+      "lane": "compiled_unique_text",
+      "text_sha256": "b6c0350e825d94bf22f1381aab7385354d4c4204a832104e0531d436ed65b144"
+    },
+    {
+      "failure_ordinal": 26,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::16a0885084451fe6ecf375c4",
+      "lane": "compiled_unique_text",
+      "text_sha256": "c69dcbdd635b93f97a69e8319f64ebae1d7e2af2c697ff30119cf3841d59ee2e"
+    },
+    {
+      "failure_ordinal": 27,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::1771b43a9f764e60ec0e8c05",
+      "lane": "compiled_unique_text",
+      "text_sha256": "44ec8c24f32ef3856ce89a39457c18ab5af52c9a69d7c72e85ab803a66159aae"
+    },
+    {
+      "failure_ordinal": 28,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::18845ca71dc097b32319beb9",
+      "lane": "compiled_unique_text",
+      "text_sha256": "a72015501aba128d23f9ee29968ba12ee5b5d9810300454debaff28164bdda03"
+    },
+    {
+      "failure_ordinal": 29,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::1a6ed17b88dee689db0a10ae",
+      "lane": "compiled_unique_text",
+      "text_sha256": "9f3f8297efe138f16628110434563791c39c71c05d1852b8cd903c6a7d090f69"
+    },
+    {
+      "failure_ordinal": 30,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::1da9a410f1afdb41630cc84d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "e0c917301ba8850cc928b4af27da126f1936d2a404185b4c99dcdebeafdc9299"
+    },
+    {
+      "failure_ordinal": 31,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::1f15445e79108b15b0ac913b",
+      "lane": "compiled_unique_text",
+      "text_sha256": "a5e501d958c15f068d6a6eb2d44750a5c56300a2e130bfb5d7708de3744d6f27"
+    },
+    {
+      "failure_ordinal": 32,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::217398eafb03009d8ccc4ce3",
+      "lane": "compiled_unique_text",
+      "text_sha256": "debe5fca44338344c4f727ec3ecc5b913b01f34e2cac5fbaa6d4e4cc67bd68ce"
+    },
+    {
+      "failure_ordinal": 33,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::27aa4a95ef6a5f847cd7411d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "d4b9303ae6ab827f1cda80d325d180c9394dc1af897643b7a8b68460415c1aa0"
+    },
+    {
+      "failure_ordinal": 34,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::28df9d2f56d5566aef5b95b9",
+      "lane": "compiled_unique_text",
+      "text_sha256": "d913aa06eadbea2ed2135f3be45c70fc40207d87195d99aaa1026fcdb8eefecc"
+    },
+    {
+      "failure_ordinal": 35,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::29440e4d200246591b389f09",
+      "lane": "compiled_unique_text",
+      "text_sha256": "4116513037ab781a4222d992dcccc2efe69e36d69fa70f1e69620ecb5d325f9c"
+    },
+    {
+      "failure_ordinal": 36,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::2b82bee49f720f51488783da",
+      "lane": "compiled_unique_text",
+      "text_sha256": "9bfe8f2e4f803af1f70ffb0ca41ade8661173dc3fb036eb5223f71ba5b52aef4"
+    },
+    {
+      "failure_ordinal": 37,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::2c6b94b482357372332d8b4f",
+      "lane": "compiled_unique_text",
+      "text_sha256": "ce8defe3e9be6a99f2a78ce59402cb8886b0098212029c782b01f65a39756d9e"
+    },
+    {
+      "failure_ordinal": 38,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::2cbd2672a460d9febc058ac7",
+      "lane": "compiled_unique_text",
+      "text_sha256": "90dc8739e818571852f3708dee24f22a1b3718acfa402ac6527927ef382d452f"
+    },
+    {
+      "failure_ordinal": 39,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::30d30019d5ea237487913efd",
+      "lane": "compiled_unique_text",
+      "text_sha256": "b92015378006f2aa4828d233652c1c44fd0b097f4b242ac5be9166d768dd27e3"
+    },
+    {
+      "failure_ordinal": 40,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::31d27cfa636b9569b4c826c9",
+      "lane": "compiled_unique_text",
+      "text_sha256": "54761bf9a42f959e01a62b434aec1093903470166bac553db5cc8cfcbca77b1f"
+    },
+    {
+      "failure_ordinal": 41,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::35f27ecf9135b1624318ea47",
+      "lane": "compiled_unique_text",
+      "text_sha256": "b539490f68f721779e1b8a648c862829345e84eb98fea248bde4271e03252789"
+    },
+    {
+      "failure_ordinal": 42,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::39294d7becf5d1fed77da646",
+      "lane": "compiled_unique_text",
+      "text_sha256": "d73c0c5ca59901b6d1f3013c69c9e6f9a774c8b0f4039895d1d98d2eab54f97c"
+    },
+    {
+      "failure_ordinal": 43,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::396425c9cc56dec0ff128d14",
+      "lane": "compiled_unique_text",
+      "text_sha256": "df6df0ee8731ad33852954867497a05ce4356c580aeccb90eb9e9abf93c77f4a"
+    },
+    {
+      "failure_ordinal": 44,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::3ac3de70b1f175b685f41634",
+      "lane": "compiled_unique_text",
+      "text_sha256": "f211b70387948b24e36d54cdf6c1d14b0c78d569939dfabe5da663d6c691143e"
+    },
+    {
+      "failure_ordinal": 45,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::41e22390664429668355c148",
+      "lane": "compiled_unique_text",
+      "text_sha256": "4e3736163d5e6ac74d8800a0f697afa345915b08e0c97fa0082ae43eee492982"
+    },
+    {
+      "failure_ordinal": 46,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::45bc69d379f8d94fc48a1ee4",
+      "lane": "compiled_unique_text",
+      "text_sha256": "b15b8047f3bcc14fb7259041ade862c2aba79da5056687e090ee5747d2e45834"
+    },
+    {
+      "failure_ordinal": 47,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::470168b397c1f2a05380a51d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "dc81d10a118586796bfd142b14fa3292a620b7af11110dd1fc4bf950896cef9a"
+    },
+    {
+      "failure_ordinal": 48,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::4ae543ff353a4ea2a3425bbb",
+      "lane": "compiled_unique_text",
+      "text_sha256": "9057fa0a333d2917f396f31f9fc3450b3c3fbd673a7110b776142eee0d26550c"
+    },
+    {
+      "failure_ordinal": 49,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::4e5be1a497a2ec7e172e5fc2",
+      "lane": "compiled_unique_text",
+      "text_sha256": "4ebe2826db5d9d7a61ed57f0afaecc55cd54c4b6b82f4fd9141d2fd2a18a1fef"
+    },
+    {
+      "failure_ordinal": 50,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::50e6e8dd32215dc8890938b5",
+      "lane": "compiled_unique_text",
+      "text_sha256": "9b94a380749f238224d79a30980fed3cc6068e208c9d5d57a8a419fed4e34c72"
+    },
+    {
+      "failure_ordinal": 51,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::562228d0a0d549f3cba38150",
+      "lane": "compiled_unique_text",
+      "text_sha256": "595b83a91283bac4c13a41064464cf35f877666654115a47234431f628c4f000"
+    },
+    {
+      "failure_ordinal": 52,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::5911687e50d775d7330175f1",
+      "lane": "compiled_unique_text",
+      "text_sha256": "a68be859a25b250b011ba5e60322664afd732a21b4271afc5969d2e64dc6c079"
+    },
+    {
+      "failure_ordinal": 53,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::617c17a98a07ac5980a8234e",
+      "lane": "compiled_unique_text",
+      "text_sha256": "ca28d030ada62218a60af7f2f32cc76ac753cf84a53351b090ef9a3334a45773"
+    },
+    {
+      "failure_ordinal": 54,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::65a412dce1565c1c6d355847",
+      "lane": "compiled_unique_text",
+      "text_sha256": "f209ba6070ffe7ab2d4adda08f20ef0788f01d68765ad4a52f40eb950b2565f9"
+    },
+    {
+      "failure_ordinal": 55,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::6875b35d59e4c260aec4a6c0",
+      "lane": "compiled_unique_text",
+      "text_sha256": "26da8ce4bcbc4424b5f3e8a99660bd98f11d99b6cb7dd79a407a7d9469deede1"
+    },
+    {
+      "failure_ordinal": 56,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::69d71bc90fab61bfa35584e7",
+      "lane": "compiled_unique_text",
+      "text_sha256": "edeb1971698f1b4c72710b5afcc3f6385274b8aaeedb6a2c3b7ce8a35b46974e"
+    },
+    {
+      "failure_ordinal": 57,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::7273ec4ea0d4851bc19f6ea0",
+      "lane": "compiled_unique_text",
+      "text_sha256": "98750e6e9cc3cab94d46ba9bbe06614212307ed00c80ae5052ae2a2bb693db44"
+    },
+    {
+      "failure_ordinal": 58,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::7a11929718942a5edc81b919",
+      "lane": "compiled_unique_text",
+      "text_sha256": "3a02857bdf36be6dd9544a62abc8bdb0bca9a944a0663d4ec79196d37f85faf2"
+    },
+    {
+      "failure_ordinal": 59,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::7c81c04ef6a3cb7d8bc0bd6c",
+      "lane": "compiled_unique_text",
+      "text_sha256": "84e805390bb44199abc0143ca700509e07369cd9104d2260534861176d1c0854"
+    },
+    {
+      "failure_ordinal": 60,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::7c8571a0e249bd25b8e21a8a",
+      "lane": "compiled_unique_text",
+      "text_sha256": "18c02699e64a8c164b8e0b0b2844547284f3359d62bd44d78a9923e9088c73d9"
+    },
+    {
+      "failure_ordinal": 61,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::7efc747a5a2eda87ffc9bf0f",
+      "lane": "compiled_unique_text",
+      "text_sha256": "cfc8086fab5f9471d52d4341b91c1c9ca59841276eb18dc576f88eadd20b7d6a"
+    },
+    {
+      "failure_ordinal": 62,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::8552c82025c52ba1593b88e3",
+      "lane": "compiled_unique_text",
+      "text_sha256": "62e1c2003b6f71170f4d65bca06289e9466de497e9add660cea2ad695b25c5aa"
+    },
+    {
+      "failure_ordinal": 63,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::85c9b181c60e4634400967c7",
+      "lane": "compiled_unique_text",
+      "text_sha256": "d07bfbba6a6c2bffee0c965b87fc9897240733f0d4ee389058e36325a692905b"
+    },
+    {
+      "failure_ordinal": 64,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::8bf887d80901d8ca32ddbe54",
+      "lane": "compiled_unique_text",
+      "text_sha256": "49f345921d316e49f71e680533fd80edadf6b9f35a58eae4952a8a3ddceebf13"
+    },
+    {
+      "failure_ordinal": 65,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::8ee9fdc0d2f9df42bfeb5d50",
+      "lane": "compiled_unique_text",
+      "text_sha256": "5cb93915875db51befb6503147c323e35f1ad9095ba31a84181c4427bab7663c"
+    },
+    {
+      "failure_ordinal": 66,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::91ad05ee45facf781e1068e1",
+      "lane": "compiled_unique_text",
+      "text_sha256": "351a3cdc1bddc25b20d90538a3a34c2a37aec2d5f492bc6f7b9ec0687ccbae7e"
+    },
+    {
+      "failure_ordinal": 67,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::9238304b1709fe63ad3c02d7",
+      "lane": "compiled_unique_text",
+      "text_sha256": "7535c115a3d3c78114e4830d5b81fc6d6d74d31f72d236e5765404b349ddcf3f"
+    },
+    {
+      "failure_ordinal": 68,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::96a9cb01f62b2fe03c8ddd86",
+      "lane": "compiled_unique_text",
+      "text_sha256": "85855fb578a09a907f9b49f02f1e473d91ffa8287a73e07f12468c65dc454c49"
+    },
+    {
+      "failure_ordinal": 69,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::98577eec66131177d1e64d64",
+      "lane": "compiled_unique_text",
+      "text_sha256": "567cf1b3ee21a4e0996642d7cd86712792af3c333e18e747c7b4fd28c34b7f12"
+    },
+    {
+      "failure_ordinal": 70,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::9a1f9ce24fdb27b70b915a51",
+      "lane": "compiled_unique_text",
+      "text_sha256": "6ebbb9f8b58cd59eb551674f7bde888286a2d2e71e689d8dd1481e26961f7cc9"
+    },
+    {
+      "failure_ordinal": 71,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::9eddbc2c1594e5f5bb1d1f9a",
+      "lane": "compiled_unique_text",
+      "text_sha256": "eb6db4bbc2c33c00c523c2a489b0d3e01b6fb143bba117848b1a8ea7d61090d9"
+    },
+    {
+      "failure_ordinal": 72,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::9f9279d910296dcbe9103bff",
+      "lane": "compiled_unique_text",
+      "text_sha256": "270adce43d9b723b96da431f9302f0604c7eceb17f6bea95dd2868a08243082a"
+    },
+    {
+      "failure_ordinal": 73,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::a06f05b50693ed9dab6521ef",
+      "lane": "compiled_unique_text",
+      "text_sha256": "61bb697be12ccc91405d23ee11f2d279fe34bd670243b99178da7751748f132d"
+    },
+    {
+      "failure_ordinal": 74,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::a0e473e9e59a7df07b89505a",
+      "lane": "compiled_unique_text",
+      "text_sha256": "b3c7a6666ed9daf8aa5a3befc79822c88057610e7124f836a85a3c9232f1d095"
+    },
+    {
+      "failure_ordinal": 75,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::a1136720b8d2762b836d7fcd",
+      "lane": "compiled_unique_text",
+      "text_sha256": "d3afb25e18b7268402ddf473c4d7f4a2add4ff71fd9364e79a4df9ff7181d8be"
+    },
+    {
+      "failure_ordinal": 76,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::a2e9b7a34aece1efa973b96d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "6b48a19625c51e2936372ec37ff94e7220a62d34fe219dfae19bd03604963751"
+    },
+    {
+      "failure_ordinal": 77,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::a7e2d07e557800d87c572095",
+      "lane": "compiled_unique_text",
+      "text_sha256": "bd069b34f06a747baa432073a6b952c9b3099d022032451f492d9c12a6b3ffd9"
+    },
+    {
+      "failure_ordinal": 78,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::ab081dbe2bc7f97ab6c5ed42",
+      "lane": "compiled_unique_text",
+      "text_sha256": "ff8167eb141841d0e8ebf8e7ca06a8ae6b6064c1ed7541b48e93a2a05b88b5b2"
+    },
+    {
+      "failure_ordinal": 79,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::adee51f1175dd8a174cbc868",
+      "lane": "compiled_unique_text",
+      "text_sha256": "e78857f12b7ed43ec36c3b993d46283a7df54016a6e2d0311912e98c80491190"
+    },
+    {
+      "failure_ordinal": 80,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::af47089cd5778823d8e4912d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "62151df3871a8ad5a4d8881674173cf7453f85c6ccd455a58846fb00896650ce"
+    },
+    {
+      "failure_ordinal": 81,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::af4b9e4f8aa622bde73ef85d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "8edaa437efdcd9d550555a2ea3bad4b12639edf0826328836f270538c1bc71f2"
+    },
+    {
+      "failure_ordinal": 82,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::b054022a46aa65e6a0c7969a",
+      "lane": "compiled_unique_text",
+      "text_sha256": "21d06dfc671ba875991416e41c8c4c9432f8e0b54734caf902e039d42e7ae961"
+    },
+    {
+      "failure_ordinal": 83,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::b2063488fe23e0c1dc42ef0e",
+      "lane": "compiled_unique_text",
+      "text_sha256": "be532e139eb29130614fa8a4b30724dbc8e13c3249ca6941a61ccebd7b5b8006"
+    },
+    {
+      "failure_ordinal": 84,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::b5f43acf36e2cde11e8b9bc3",
+      "lane": "compiled_unique_text",
+      "text_sha256": "6f7b97265f59594bd55c0656cb4e88f41814e7c760af9d34195c182f45a80011"
+    },
+    {
+      "failure_ordinal": 85,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::b6f16a14d394964ceb538dfd",
+      "lane": "compiled_unique_text",
+      "text_sha256": "8620653c209f162ea49b482cdd2cb28911745cbe051ac3c0893ee85f8155665c"
+    },
+    {
+      "failure_ordinal": 86,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::bb0d0645ee1b41bf9e6e15f6",
+      "lane": "compiled_unique_text",
+      "text_sha256": "e161459215fe0c6391d9353a32fc5886c50c57caf76177781aa128ace7a64574"
+    },
+    {
+      "failure_ordinal": 87,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::bbc02c59c7a82134f4c53e89",
+      "lane": "compiled_unique_text",
+      "text_sha256": "bf8f4056100b0be959eacf4ff625c1e805298493ba024e21494b2ceec3f4d3dd"
+    },
+    {
+      "failure_ordinal": 88,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::c3b66a43fe3e0eb8b53f993f",
+      "lane": "compiled_unique_text",
+      "text_sha256": "d7efbeefec200905f1425fe4f32866a98f0dd9e605572c97513565b9c469bdd0"
+    },
+    {
+      "failure_ordinal": 89,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::c502c57d6931a38c86ed7f7c",
+      "lane": "compiled_unique_text",
+      "text_sha256": "de7c880f415b5ea4fc4e607be5ca8b5b8eaeb8830cf4eb2e036f5bd32a2fea42"
+    },
+    {
+      "failure_ordinal": 90,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::c5aae0d33f77c43b990d5c82",
+      "lane": "compiled_unique_text",
+      "text_sha256": "ea6962626cc414d59d043b931bb856073849463cc893658f5928d6d7d8c06777"
+    },
+    {
+      "failure_ordinal": 91,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::c786b57e127d56608f1dc24d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "f5d0b820790c0920c48b3d8e373fa8e7e3a29e70c94c24a92dae570e63cc7229"
+    },
+    {
+      "failure_ordinal": 92,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::ca4f636d748dcf1f299e157b",
+      "lane": "compiled_unique_text",
+      "text_sha256": "a702ece57783b871365a08ab68f2198dfe993cf60cf296d54c1f52548cb53a00"
+    },
+    {
+      "failure_ordinal": 93,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::d2581dde72c804e74bbbb255",
+      "lane": "compiled_unique_text",
+      "text_sha256": "2368197f98bcb732de7af4564abbfeb15429313ac560a03bba884b2a5a1637ad"
+    },
+    {
+      "failure_ordinal": 94,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::d9f3b79337fbf5f1c728e94b",
+      "lane": "compiled_unique_text",
+      "text_sha256": "5b04bea799e29d275d61c7a104624aa67090dc92cd24d52cc80bc35bc83a136e"
+    },
+    {
+      "failure_ordinal": 95,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::dea4621d6c9000383cc401df",
+      "lane": "compiled_unique_text",
+      "text_sha256": "82c32e12d66687ee494d10c9572daa86cbe8af02c52643be3f5b5aad23de2022"
+    },
+    {
+      "failure_ordinal": 96,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::e5dc707f99e70614b01d7ba2",
+      "lane": "compiled_unique_text",
+      "text_sha256": "d846366378d01db34ca8055417414bd174cb1679c7275a1110511d1ad271c910"
+    },
+    {
+      "failure_ordinal": 97,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::e60114158124b6e22639bfe6",
+      "lane": "compiled_unique_text",
+      "text_sha256": "ab7450a40c19b0a941ea41ee136bff37f70787ccd2523de04bfc0f8896fcd12a"
+    },
+    {
+      "failure_ordinal": 98,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::ebf6ccf32ef51dfaf63a1d82",
+      "lane": "compiled_unique_text",
+      "text_sha256": "a3d72ad2f1bb7bd3d5628621438a80606158e38a601dc168a470b8e9dbed26ff"
+    },
+    {
+      "failure_ordinal": 99,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::ec1ab8c55f91ffe0964add10",
+      "lane": "compiled_unique_text",
+      "text_sha256": "197b68797e67146aad3d51fd846e32ae5f589177c3eef5331818672fa0d47238"
+    },
+    {
+      "failure_ordinal": 100,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::ef13bac8d724636ddca2119a",
+      "lane": "compiled_unique_text",
+      "text_sha256": "aac8946cecee29def73844f7633691dccbe16c1127ab02a3df5af2fd9ad56013"
+    },
+    {
+      "failure_ordinal": 101,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::f129cb46f4395910d28f8db8",
+      "lane": "compiled_unique_text",
+      "text_sha256": "b85d42e359824c394df816fc369a32586966d3641b8467b4185c76db4ffb1190"
+    },
+    {
+      "failure_ordinal": 102,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::f2e4b9108daf99aca11ece80",
+      "lane": "compiled_unique_text",
+      "text_sha256": "b81d9bd892e17583019f3c7372ad6356a3914243c9fc28f3d67afb900653f2c3"
+    },
+    {
+      "failure_ordinal": 103,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::fa6448bacec8f62a427a2ef6",
+      "lane": "compiled_unique_text",
+      "text_sha256": "32d118ee8beedbd392a70f936c0681bc4ec2d39b149c843784d5bbbb924e2682"
+    },
+    {
+      "failure_ordinal": 104,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::fbe0e69d834c9c2561567418",
+      "lane": "compiled_unique_text",
+      "text_sha256": "c6f67b9f9941be8b12c388dc5e905d0a6a88f55e99eeef544f41389b2e841117"
+    },
+    {
+      "failure_ordinal": 105,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::fc0e4c422f7f7df697e72a74",
+      "lane": "compiled_unique_text",
+      "text_sha256": "2bdf97ffb693803f5c8d1451164a812cba5525be98ef301dff25afa192c709a1"
+    },
+    {
+      "failure_ordinal": 106,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::ff7994b5d38fe089d350dae1",
+      "lane": "compiled_unique_text",
+      "text_sha256": "f40168230994b12307abc27403a95b41a8dc2f8ece1baf07e74baad98c49140b"
+    },
+    {
+      "failure_ordinal": 107,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "COBJ::ffcc30511a603ceadbabac2d",
+      "lane": "compiled_unique_text",
+      "text_sha256": "b0b7a4a9557c096a1777a14840d1520d1286d803b6168081ddb7577ac74f4de6"
+    },
+    {
+      "failure_ordinal": 108,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "b729b9798b987b0e31200b808545f46412ae664d6c45bfa1f218a9ace01512e1"
+    },
+    {
+      "failure_ordinal": 109,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_02_OF_02",
+      "lane": "source",
+      "text_sha256": "e5fee7c89882628693e48876979b7e80168033307d2d1ccb182fffd6644cdff2"
+    },
+    {
+      "failure_ordinal": 110,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0002::PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "34175cd55128e8fd729b21a18c98c368bfec9ada6abed60b28a354e122a5dcb8"
+    },
+    {
+      "failure_ordinal": 111,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0002::PART_02_OF_02",
+      "lane": "source",
+      "text_sha256": "3373b0e2481ba8e4f9dbd6228c464e8191a0f3593fd0c1e0aa75875d677f7245"
+    },
+    {
+      "failure_ordinal": 112,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0005::PART_03_OF_03",
+      "lane": "source",
+      "text_sha256": "5fe2611129d67589f9b40f0d4ba5a8112c0db0ef6d19553f2776f526f4b4b067"
+    },
+    {
+      "failure_ordinal": 113,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0007::PART_02_OF_05",
+      "lane": "source",
+      "text_sha256": "acb11570b1fcbc9a021b0f9af3d8eed2d3310b76f761bc5d55aa6ccf99ae422b"
+    },
+    {
+      "failure_ordinal": 114,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0007::PART_03_OF_05",
+      "lane": "source",
+      "text_sha256": "ce088e21bdbb20f15139fd42df1abbce61a9be8134e5d665f58fc16d4be20f26"
+    },
+    {
+      "failure_ordinal": 115,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0023::PART_01_OF_04",
+      "lane": "source",
+      "text_sha256": "626c0928c17fc0697f728666a5ced8178ab6fc099ad408a86c845bf2be1020c6"
+    },
+    {
+      "failure_ordinal": 116,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0010::PART_01_OF_01",
+      "lane": "source",
+      "text_sha256": "425ef95d1441198626070d98145c17d2385455648cf27fec09abe3ef56704542"
+    },
+    {
+      "failure_ordinal": 117,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0022::PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "6152a0d926f84b64878a31f5f9fa8d1cd8947bef3e5ed4f285fd9995b6d837b5"
+    },
+    {
+      "failure_ordinal": 118,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_8::BLOCK_0004::PART_04_OF_07",
+      "lane": "source",
+      "text_sha256": "92f86ea8051c823026b0c49f253ac8ca7f25e8341ec3401d700ed4781257094c"
+    },
+    {
+      "failure_ordinal": 119,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004",
+      "lane": "source",
+      "text_sha256": "c23f75abb05d0b1aed4da090e54e14ddcbf58be0253e9cc99ca2be8003cd4966"
+    },
+    {
+      "failure_ordinal": 120,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0001::PART_01_OF_01",
+      "lane": "source",
+      "text_sha256": "fde3f6cbbe2a385afc824eaa6a95cc4f170e20c4ea4727ae15f0fdf04d5e1761"
+    },
+    {
+      "failure_ordinal": 121,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0005::PART_01_OF_01",
+      "lane": "source",
+      "text_sha256": "9c35eec258d416344268a5663b6d9e25423560f6f6ef43ee262d49510907c8e7"
+    },
+    {
+      "failure_ordinal": 122,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "23408639e4d1a3cc83649ea0e0c848a455e561d9707445c1dfe6464ab1cde5f4"
+    },
+    {
+      "failure_ordinal": 123,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0017::PART_01_OF_01",
+      "lane": "source",
+      "text_sha256": "9e8bfcdb61ff87ca306e8ae3c260e744e55bb9d1b6b34e091a792db8463810ae"
+    },
+    {
+      "failure_ordinal": 124,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0002::PART_01_OF_01",
+      "lane": "source",
+      "text_sha256": "fb4910afd033fcf36e339e0f4126530e875ace4527213654bcc5be6330d939d6"
+    },
+    {
+      "failure_ordinal": 125,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "ad18ba4c970ef1dcd74db45f49bed0f1d38540f5e68f23ffb142778697aef9c2"
+    },
+    {
+      "failure_ordinal": 126,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04",
+      "lane": "source",
+      "text_sha256": "8dee626b3de826a35076e1ef32c5e586951f18275536495f21c0f2df718d2267"
+    },
+    {
+      "failure_ordinal": 127,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0003::PART_01_OF_09",
+      "lane": "source",
+      "text_sha256": "e441de9dcf6b71eaede859c662203ab44bbda2fb01fbde3e3ba54b929b0357d5"
+    },
+    {
+      "failure_ordinal": 128,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0003::PART_04_OF_09",
+      "lane": "source",
+      "text_sha256": "8cc511d6124de3affb779d6b79771ee11c896c3a6cbd51408d0aa4d44a54cd4d"
+    },
+    {
+      "failure_ordinal": 129,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0003::PART_07_OF_09",
+      "lane": "source",
+      "text_sha256": "f96144b863597a40e9d112aeda75f6fc98b15fc7c20d11fbc75545734439d056"
+    },
+    {
+      "failure_ordinal": 130,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0003::PART_09_OF_09",
+      "lane": "source",
+      "text_sha256": "a103ca35d11f80b7e050834e874a1b415cca9516e2890bd063f6aff50caaa93d"
+    },
+    {
+      "failure_ordinal": 131,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "bbff6e8cc129c5c8d5e533b1ce6901f5b02e2d8c39dcae6ca2529a1916681dc1"
+    },
+    {
+      "failure_ordinal": 132,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2023_10K_ITEM1A_BLOCK_0030_PART_01_OF_04",
+      "lane": "source",
+      "text_sha256": "245cc226b2d2248dbaea3c4e05b8ce8fd472a1f33aa5e5337ca139d2d779a191"
+    },
+    {
+      "failure_ordinal": 133,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "891ce2c3ddc7b733073ed21304a141bb2e69a60fa5d86c80816ab3994beec4a1"
+    },
+    {
+      "failure_ordinal": 134,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2023_10K_ITEM1_BLOCK_0009_PART_02_OF_05",
+      "lane": "source",
+      "text_sha256": "0e22a2367ae21e9acd33c394b6aa2802ff3c6ea3787a21e23766a7438ff0c7e0"
+    },
+    {
+      "failure_ordinal": 135,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2023_10K_ITEM1_BLOCK_0009_PART_04_OF_05",
+      "lane": "source",
+      "text_sha256": "46ecdbadd8e84cca125c4adc203be9214b57528bf704cf9c71209f35b5eacef5"
+    },
+    {
+      "failure_ordinal": 136,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2023_10K_ITEM7_BLOCK_0007_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "c209510ff7d7746ce4cedd02399c296762febf3657cbe7436be57f3dab0c4d9c"
+    },
+    {
+      "failure_ordinal": 137,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2023_10K_ITEM7_BLOCK_0017_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "48746cf66758d5631f212604361ad569eea812ce03f74b500f32749b7ad6650d"
+    },
+    {
+      "failure_ordinal": 138,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2023_10K_ITEM8_BLOCK_0004_PART_03_OF_05",
+      "lane": "source",
+      "text_sha256": "02d762a07466e5f25382e447abc667f117934ae91f5911e88a7af91dc64a5201"
+    },
+    {
+      "failure_ordinal": 139,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2024_10K_ITEM1A_BLOCK_0022_PART_01_OF_04",
+      "lane": "source",
+      "text_sha256": "c8ed28327000ef550c21c64e30dd14ab7e19a7814f591a4567b08f28b94b8da7"
+    },
+    {
+      "failure_ordinal": 140,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2024_10K_ITEM1_BLOCK_0002_PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "768e08f3610967d9f043a1b18cab6fcb9804d447c0ecb887ab611e6f75659f71"
+    },
+    {
+      "failure_ordinal": 141,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2024_10K_ITEM1_BLOCK_0009_PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "0edc7f681cebabd0ac7bf1e6ff52af2627c2b5b59f938ae3fd19bf43f156863d"
+    },
+    {
+      "failure_ordinal": 142,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2024_10K_ITEM1_BLOCK_0009_PART_03_OF_04",
+      "lane": "source",
+      "text_sha256": "d0dd151a18fd46f871ad95d39cbddb797094cff6748008ef918802e784e540d5"
+    },
+    {
+      "failure_ordinal": 143,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2024_10K_ITEM7_BLOCK_0019_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "b8c340ede7a9469437eea22982089351142ac2450cec31ac294e2b5fe1b08815"
+    },
+    {
+      "failure_ordinal": 144,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2024_10K_ITEM8_BLOCK_0004_PART_04_OF_05",
+      "lane": "source",
+      "text_sha256": "61b48c7f7b96bd0ad162507f284cc2ccbc2e4ee2e3f75c6b1d333ae350ec200a"
+    },
+    {
+      "failure_ordinal": 145,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2025_10K_ITEM1A_BLOCK_0023_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "79846e87268d513b36ea834398876af6b695a97a99afef22cb9f01a76ec44a54"
+    },
+    {
+      "failure_ordinal": 146,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2025_10K_ITEM1_BLOCK_0002_PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "39f0ec0e968b486cca480765927875740eb2ae5427391c174db31d9a1260936d"
+    },
+    {
+      "failure_ordinal": 147,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2025_10K_ITEM1_BLOCK_0005_PART_02_OF_03",
+      "lane": "source",
+      "text_sha256": "0712fb9eb89848fad040a3e2d44ed1599f0680957aece88e400920b858879fff"
+    },
+    {
+      "failure_ordinal": 148,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2025_10K_ITEM1_BLOCK_0008_PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "c6badf164cddcaf7d7ce50ccf3a14d5e28600884bb7ba184f4bd1221dcadb1f7"
+    },
+    {
+      "failure_ordinal": 149,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "c5e9a300ffce612d24991970ba091221ea6b790f1a2f3df14e9c2c4bcb80ba64"
+    },
+    {
+      "failure_ordinal": 150,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2025_10K_ITEM7_BLOCK_0021_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "f7bbb28cf82e75299707cefe32d04f1f333c3672cb652ff2a5557dc8291f7759"
+    },
+    {
+      "failure_ordinal": 151,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2025_10K_ITEM8_BLOCK_0004_PART_04_OF_05",
+      "lane": "source",
+      "text_sha256": "fda78fb802a144cc1caeee338770afed6b07961b2706a8618b732105c8f04e4a"
+    },
+    {
+      "failure_ordinal": 152,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2026_10Q_ITEM2_BLOCK_0001_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "1b4f0e88409e19342865fe46cdc8db9e141f11634bfa3ce3c4aadf80c7298cff"
+    },
+    {
+      "failure_ordinal": 153,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2026_10Q_ITEM2_BLOCK_0007_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "1ae6bb8f81a13917fb5e0fbcbc756690fefa6a838c7a1fe1b16d8e2272ad6548"
+    },
+    {
+      "failure_ordinal": 154,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "DELL_2026_10Q_ITEM2_BLOCK_0015_PART_01_OF_04",
+      "lane": "source",
+      "text_sha256": "891fa6bdf2652eb1a04bbba18f84480389dfbd4f6ed8799cfffa3b5708cb995a"
+    },
+    {
+      "failure_ordinal": 155,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2023_10K_ITEM1A_BLOCK_0020_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "3e6187467c404150028232655b0c62e8857665f543c5ec2e21ee589d2f92ba3f"
+    },
+    {
+      "failure_ordinal": 156,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2023_10K_ITEM1_BLOCK_0001_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "c4ae345a1224653c653badca2b4553f8ba96c7521cb644117b585575e1e269fe"
+    },
+    {
+      "failure_ordinal": 157,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2023_10K_ITEM1_BLOCK_0003_PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "2f46f005605e1eda1516da4df620759a29a037cdc546d3275b88744a0f5a3560"
+    },
+    {
+      "failure_ordinal": 158,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2023_10K_ITEM1_BLOCK_0005_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "66bff328c7686c9010eeececcaf9cf713f8ca3c11466ebc43be7c43ec093a71e"
+    },
+    {
+      "failure_ordinal": 159,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2023_10K_ITEM1_BLOCK_0006_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "670ae56cc251830b185059a1a657237c022bf61adb18a74acb909daf1f1d5bac"
+    },
+    {
+      "failure_ordinal": 160,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2023_10K_ITEM1_BLOCK_0008_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "1ce8b2f446dfc6667221a1117b3a88101160c6608c61d94a246d33c3b47d436a"
+    },
+    {
+      "failure_ordinal": 161,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2024_10K_ITEM1A_BLOCK_0019_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "2d7427067a01533016fc5b26c6787029fe9104cdfb015e8e88bf9e26d48a69f7"
+    },
+    {
+      "failure_ordinal": 162,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2024_10K_ITEM1A_BLOCK_0032_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "a231e887264f5b1a3363b6b9d6e17735a46f624402d722589a0ea22be6592a2a"
+    },
+    {
+      "failure_ordinal": 163,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2024_10K_ITEM1_BLOCK_0001_PART_01_OF_04",
+      "lane": "source",
+      "text_sha256": "41edb35c394cfb5a19c7472b9f28f03a6d4abc60c192567b1085a2ad7776a99e"
+    },
+    {
+      "failure_ordinal": 164,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2024_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "735fba71e2d09d7b48104a7babfb97911a22b52b9a57a41d231e0d438f915653"
+    },
+    {
+      "failure_ordinal": 165,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2024_10K_ITEM1_BLOCK_0004_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "5a430f2363d57ad5b4150f41824e4a528866b425e22407e7f422baf87625a435"
+    },
+    {
+      "failure_ordinal": 166,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2024_10K_ITEM1_BLOCK_0006_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "30d7bbac909051a7cc4eaff303e5e9c6fb75e8d0c55b7d5561b2ba55d28e412c"
+    },
+    {
+      "failure_ordinal": 167,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2024_10K_ITEM1_BLOCK_0008_PART_02_OF_02",
+      "lane": "source",
+      "text_sha256": "4a10cd471e6913765b3c965732f9dbfaab70ecbc49943899cb898814d2d264e1"
+    },
+    {
+      "failure_ordinal": 168,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2024_10K_ITEM8_BLOCK_0022_PART_01_OF_04",
+      "lane": "source",
+      "text_sha256": "b9c7ff65b201bb459c458f403285ed88344def9ac98ae6529ec20ed601a6f09a"
+    },
+    {
+      "failure_ordinal": 169,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2024_10K_ITEM8_BLOCK_0022_PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "722ed1066cba64655e84f07deeb2eeb82238f52771d7341afbb564d2dc9b05f9"
+    },
+    {
+      "failure_ordinal": 170,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2025_10K_ITEM1A_BLOCK_0034_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "9fbac5a9b50d428a4e4359106d2b0ab26d3e4670c397993d31692f59bb5e7da9"
+    },
+    {
+      "failure_ordinal": 171,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "c233bcbdef07b2ccb912c571f612316af484aff81345224e15430b50597c4685"
+    },
+    {
+      "failure_ordinal": 172,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2025_10K_ITEM1_BLOCK_0002_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "412f9242d801e3e8c282b232bc93f88fb15bd5124c8f7b4ac6b7cc8ef9ff3c78"
+    },
+    {
+      "failure_ordinal": 173,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2025_10K_ITEM1_BLOCK_0003_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "52386a28fc75a8191c2910c63ecaa69a15fb1fc57bb76336aa1c5247f7023d5b"
+    },
+    {
+      "failure_ordinal": 174,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2025_10K_ITEM1_BLOCK_0008_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "9be7508f553307cfd345523ce993ee674da60315fed0f31b20b84b7e9ad56007"
+    },
+    {
+      "failure_ordinal": 175,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2025_10K_ITEM8_BLOCK_0022_PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "56bacd1bf6e7c96a48351f476ba8509dea9f9633bd1e601435e8b5762df15d22"
+    },
+    {
+      "failure_ordinal": 176,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2026_10Q_ITEM1A_BLOCK_0034_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "47a88abd1e4c8c38b3627bfca2b6291ca0edbeeb9a063f29da29f8835a134d10"
+    },
+    {
+      "failure_ordinal": 177,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2026_10Q_ITEM1_BLOCK_0026_PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "9e03f3d3811007cc9370e0287beeac91a3a4176b302f13fc2cc27c48de99050d"
+    },
+    {
+      "failure_ordinal": 178,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MSFT_2026_10Q_ITEM1_BLOCK_0026_PART_02_OF_02",
+      "lane": "source",
+      "text_sha256": "2cfb74fe99841b3b07914ce057499dcf431f766aa66fc42651c49596c1c9ca65"
+    },
+    {
+      "failure_ordinal": 179,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2023_10K_ITEM1A_BLOCK_0003_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "c848a87cd5a016370db90ddd25a177a96227f48193e6c9319e40b3b21811a2aa"
+    },
+    {
+      "failure_ordinal": 180,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2023_10K_ITEM1A_BLOCK_0016_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "3a52cd04e5f8c5a10eba638bb0fc5e1eaca2e0786b6a350874e4bd3a3641740f"
+    },
+    {
+      "failure_ordinal": 181,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2023_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "c81a8776667850d5fc9c5e4dcc6f7e2884e35b049a9639e49f5c6eb592a964bf"
+    },
+    {
+      "failure_ordinal": 182,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2023_10K_ITEM1_BLOCK_0006_PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "26065023d58dcaacc8e51272986b362c516cb56fd8ef4451bfc737f96fd0fdeb"
+    },
+    {
+      "failure_ordinal": 183,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2024_10K_ITEM1A_BLOCK_0003_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "7537fdc345211d1ff1b272b160846c82d5403100207849c55153a525a9b22a55"
+    },
+    {
+      "failure_ordinal": 184,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2024_10K_ITEM1A_BLOCK_0015_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "229f8b67049ee0fa144977f4c593249678232953b2cda597fad5c2b4d140e27d"
+    },
+    {
+      "failure_ordinal": 185,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2024_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "06867e65b144be31d42aa3084d35e9e8751ea08a27d79c8f7a1ec7cac1be1e82"
+    },
+    {
+      "failure_ordinal": 186,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2024_10K_ITEM1_BLOCK_0006_PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "9228c693b12ea07bee441565e214fd2c7b6f7dc5b5e35c3b0d16e1eb3a0059f2"
+    },
+    {
+      "failure_ordinal": 187,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2024_10K_ITEM7_BLOCK_0001_PART_03_OF_03",
+      "lane": "source",
+      "text_sha256": "b5a11f7cb6d2d58d9e1e4d0e23aef25c7b9000ca9faa4f002051569a16cce50e"
+    },
+    {
+      "failure_ordinal": 188,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2025_10K_ITEM1A_BLOCK_0004_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "5f360b55e99225e7afed414a46f8d092ef04e8896aacbf750170478a60bca875"
+    },
+    {
+      "failure_ordinal": 189,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2025_10K_ITEM1A_BLOCK_0016_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "50e13d531f4e1a4dddb0751cd52ee2c68ebc464983a4bae8b831d5bc95575451"
+    },
+    {
+      "failure_ordinal": 190,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "45737a8ab901beb029c9e5c604bc1ad8eaa1571cf807977779852d60e7ea7d57"
+    },
+    {
+      "failure_ordinal": 191,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2025_10K_ITEM1_BLOCK_0007_PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "f6abd6497fa5296327466047d5cc6530f817dc9d78ba2c80556acad5d7080955"
+    },
+    {
+      "failure_ordinal": 192,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2026_10Q_ITEM1A_BLOCK_0001_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "3095de16307d1f630fcecfdd5f7ba516fd8cdb7e47f1db0f47294fd7e4f128df"
+    },
+    {
+      "failure_ordinal": 193,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2026_10Q_ITEM1A_BLOCK_0004_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "3024524df518f8541153f183593bab4a16a6fa6bce4e4fff5b1c3b6e2ef78621"
+    },
+    {
+      "failure_ordinal": 194,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2026_10Q_ITEM1A_BLOCK_0006_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "7d7ca508726cd68c18ec09f26d79c0b3caf31a64d3fb193f3787b1052d0e5195"
+    },
+    {
+      "failure_ordinal": 195,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2026_10Q_ITEM1A_BLOCK_0016_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "9e8bfcdb61ff87ca306e8ae3c260e744e55bb9d1b6b34e091a792db8463810ae"
+    },
+    {
+      "failure_ordinal": 196,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "MU_2026_10Q_ITEM2_BLOCK_0001_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "ea249bc208a96af41e74c04ad06438135513e4dbb1fe581b91b1556d33fda754"
+    },
+    {
+      "failure_ordinal": 197,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM1A_BLOCK_0005_PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "df93efae08ac02d4803984d31d1b337605617d89658c66db402f38fb9df64516"
+    },
+    {
+      "failure_ordinal": 198,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM1A_BLOCK_0006_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "32494c505bad7de1e58e31407cadf23de985e55b27a7741b09010c42ad0a4d94"
+    },
+    {
+      "failure_ordinal": 199,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM1A_BLOCK_0010_PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "ed79e14906173243a258f27897f277953c3aa14045ea6c628bb5dc0946e4a806"
+    },
+    {
+      "failure_ordinal": 200,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM1A_BLOCK_0010_PART_02_OF_02",
+      "lane": "source",
+      "text_sha256": "ac53df09a78f1ab11b5c915257bbc24a1c9ffeca34c13dd90282f82df8a238e7"
+    },
+    {
+      "failure_ordinal": 201,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM1_BLOCK_0003_PART_02_OF_02",
+      "lane": "source",
+      "text_sha256": "8e0bf5a43fb071c05ddbd4c1cb49e954c464288d97147b9f673bcbc32bd7e4c8"
+    },
+    {
+      "failure_ordinal": 202,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM1_BLOCK_0005_PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "60880d7a52b39beb64ae8de326f6c2e770c4cba98abd622e1a64fdd4dddead89"
+    },
+    {
+      "failure_ordinal": 203,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM1_BLOCK_0005_PART_02_OF_02",
+      "lane": "source",
+      "text_sha256": "16550bc72d57f76f3f010792b14f06080affb0738c20b3b07e7f294600d3e991"
+    },
+    {
+      "failure_ordinal": 204,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM7_BLOCK_0001_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "84c366d48bcaf1a98e568a0e9457a095afdb8a27393604d2ab5e29c92329237f"
+    },
+    {
+      "failure_ordinal": 205,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM7_BLOCK_0002_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "153c86af2b3379c0ca9741a68ad92f38c1aeb268cb48c0b4f044c46d54b47add"
+    },
+    {
+      "failure_ordinal": 206,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2023_10K_ITEM7_BLOCK_0004_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "7f2e60c144ad92e1e9c5e656d84feffb2f60b8dc526d0f7f4d17a40d46667738"
+    },
+    {
+      "failure_ordinal": 207,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM1A_BLOCK_0004_PART_01_OF_04",
+      "lane": "source",
+      "text_sha256": "03e41a535ababd4ada349f6455eb12840a82ccbaa100cc115feb2896b5ffc0f1"
+    },
+    {
+      "failure_ordinal": 208,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM1A_BLOCK_0004_PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "4393746dfd2bef87832bcf308741215cc720f7d8e5eda64ba92d66cb5bc062ca"
+    },
+    {
+      "failure_ordinal": 209,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM1A_BLOCK_0004_PART_03_OF_04",
+      "lane": "source",
+      "text_sha256": "1837b17f2356f606857ecb86d9f19a064fc9380be5ec466b350f4dc56f434360"
+    },
+    {
+      "failure_ordinal": 210,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM1A_BLOCK_0005_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "c85dd769ab9e52a69e73d80064a02d4b24d456c50cd1fc51087d043705094bc1"
+    },
+    {
+      "failure_ordinal": 211,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM1A_BLOCK_0011_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "4804744a1bbe9f41507b7f8dbac352433aba0bba4c93406cc5a6d3c518656038"
+    },
+    {
+      "failure_ordinal": 212,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM1A_BLOCK_0011_PART_03_OF_03",
+      "lane": "source",
+      "text_sha256": "4a50b3de42974df5c48bbb54211b49371de0f342c0be3442d6e360e25b915e72"
+    },
+    {
+      "failure_ordinal": 213,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM1_BLOCK_0003_PART_02_OF_02",
+      "lane": "source",
+      "text_sha256": "a3ae6036c897a9f72edf4a8eef76d9a4672ec694151111cbc60882756d508a06"
+    },
+    {
+      "failure_ordinal": 214,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_01_OF_04",
+      "lane": "source",
+      "text_sha256": "f770d575dd858eed96609039cebeadda83136bda94b925549bbe47a658528def"
+    },
+    {
+      "failure_ordinal": 215,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_03_OF_04",
+      "lane": "source",
+      "text_sha256": "f5fcb711b492864b8cb1f1752302a233588bcf99084fcd90680e17df8c2be30a"
+    },
+    {
+      "failure_ordinal": 216,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2024_10K_ITEM7_BLOCK_0002_PART_04_OF_04",
+      "lane": "source",
+      "text_sha256": "a0101ff861422fdafed9af13a07100899517c14d87cd8c8e300bb288a28feef2"
+    },
+    {
+      "failure_ordinal": 217,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "4d95cfa19935e7a2ba60b5462ddc39e3edd139e5c77e498920de219e85e20bb3"
+    },
+    {
+      "failure_ordinal": 218,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM1A_BLOCK_0004_PART_02_OF_03",
+      "lane": "source",
+      "text_sha256": "d4190e3d09dd45e4678e823b0f36cc1d978c4cc29a22e54f0f9a5753352d0038"
+    },
+    {
+      "failure_ordinal": 219,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM1A_BLOCK_0005_CHUNK_0001",
+      "lane": "source",
+      "text_sha256": "b127f8a9efd8abfa59ff628e43f2415721481bcc8a06d76324f1259086ddba4e"
+    },
+    {
+      "failure_ordinal": 220,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "b391b90c75714c0858482bde07e5932eca306c7c54d33452686b126930ee6fe8"
+    },
+    {
+      "failure_ordinal": 221,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_01_OF_03",
+      "lane": "source",
+      "text_sha256": "715c85f579b41935c5d8f49293be73e2907281e9365aeed67ab30cb632e71a4b"
+    },
+    {
+      "failure_ordinal": 222,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM1A_BLOCK_0013_PART_02_OF_03",
+      "lane": "source",
+      "text_sha256": "8536fa95a8667598cd0b4d3f0d4a432780d22a299e73ffcc21cc99db37f29b79"
+    },
+    {
+      "failure_ordinal": 223,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM1_BLOCK_0003_PART_02_OF_02",
+      "lane": "source",
+      "text_sha256": "a79fa54f3d7472ec141fee85bcf320c995e0abcb3fe5f11178f121383fdd4aa5"
+    },
+    {
+      "failure_ordinal": 224,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM1_BLOCK_0005_PART_02_OF_03",
+      "lane": "source",
+      "text_sha256": "d91aa63807c1b4de52201993d7cc24f39c371a0d829bf893788c437308e8449f"
+    },
+    {
+      "failure_ordinal": 225,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04",
+      "lane": "source",
+      "text_sha256": "fb4be8d692ed9728bdf0b615bf8426bf192a0f438d82cbe281938ab64f9fc549"
+    },
+    {
+      "failure_ordinal": 226,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_02_OF_04",
+      "lane": "source",
+      "text_sha256": "3c0c44f8e3071fde5842bbcaf9bdfada342cd6533dd5ee8fb9d472501a7ad5c5"
+    },
+    {
+      "failure_ordinal": 227,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04",
+      "lane": "source",
+      "text_sha256": "ec01596ef682533fe7687465e4cf6e4ff93cea82418555d8b4e945257bf1d980"
+    },
+    {
+      "failure_ordinal": 228,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_04_OF_04",
+      "lane": "source",
+      "text_sha256": "8656490431c4e87d32f7cb74d12c4ca0e4ea3c4e4f32337f7d0e9d9f997464b5"
+    },
+    {
+      "failure_ordinal": 229,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_02_OF_03",
+      "lane": "source",
+      "text_sha256": "6ebd4b0095e5ce87082c67a31d285f84996bc8c6159e2e2fbe9ca9304fe5c7bb"
+    },
+    {
+      "failure_ordinal": 230,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_03_OF_03",
+      "lane": "source",
+      "text_sha256": "92f321c95cd599b07af63d997c74ad14d9ec5023e5b77869f12fb612b459e8fb"
+    },
+    {
+      "failure_ordinal": 231,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_01_OF_07",
+      "lane": "source",
+      "text_sha256": "e4c863bdf6ebbdb67d587fd41c271d04d7c096f31ed59152042e597b4aa2dc75"
+    },
+    {
+      "failure_ordinal": 232,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07",
+      "lane": "source",
+      "text_sha256": "b459712467eca12b233268eec99d3b45d98bb53732027b6deb8d0214cc34301e"
+    },
+    {
+      "failure_ordinal": 233,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_05_OF_07",
+      "lane": "source",
+      "text_sha256": "8ad0c04454254684aff49fa6051eeb2966f678ad962e98162f3575679dc00b05"
+    },
+    {
+      "failure_ordinal": 234,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_06_OF_07",
+      "lane": "source",
+      "text_sha256": "d874eef8a107d623631faaf8a359b0471efa2beeb03eb4f12ba9cc5e1c627a13"
+    },
+    {
+      "failure_ordinal": 235,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_01_OF_02",
+      "lane": "source",
+      "text_sha256": "1dc30fe3bd84939b4acda8457a9a557c43df08108e56cd2e461ac216ac6b3d98"
+    },
+    {
+      "failure_ordinal": 236,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC",
+      "lane": "source",
+      "text_sha256": "9fe649aad85b49ae505c12ae61abc92f159018f61c802b51e2a947ba9b367a9f"
+    },
+    {
+      "failure_ordinal": 237,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC::SLICE::62151DF3871A8AD5A4D8",
+      "lane": "source",
+      "text_sha256": "62151df3871a8ad5a4d8881674173cf7453f85c6ccd455a58846fb00896650ce"
+    },
+    {
+      "failure_ordinal": 238,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "PUBLIC::DELL-EXT::D16CACF50B768E445DEB",
+      "lane": "source",
+      "text_sha256": "5cb93915875db51befb6503147c323e35f1ad9095ba31a84181c4427bab7663c"
+    },
+    {
+      "failure_ordinal": 239,
+      "cluster_id": "R14-I2-RC-01-SYNTHETIC-AMBIGUOUS-PREDICATE-SEMANTIC-DRIFT",
+      "earliest_responsibility_layer": "R14-02_EventArgumentGraph_producer",
+      "failure_code": "R14_graph_event_semantics_recomputation_failed",
+      "identity": "PUBLIC::DELL-EXT::D16CACF50B768E445DEB::SLICE::5CB93915875DB51BEFB6",
+      "lane": "source",
+      "text_sha256": "5cb93915875db51befb6503147c323e35f1ad9095ba31a84181c4427bab7663c"
+    }
+  ],
+  "result_digest": "7ebe811d7a9cc2a3e7c113f43aa8418ef2e69150fb7d9147b3fcfb0880f1cd02"
+}

@@ -4,6 +4,7 @@
 
 当前入口：
 
+- `FIN_0_1_3_PRODUCT_CAPABILITY_BUILD_ADOPT_HOLD_RETIRE_AUDIT_20260830.zh-CN.md`：产品能力 Build / Adopt / Hold / Retire 全面审计；该文档是 owner-visible 架构建议，不是成熟栈迁移或 R14 修改权限。
 - `PRD_20260628_b2b_financial_research_workbench.zh-CN.md`：完整产品愿景。
 - `FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`：FIN 0.1.3 唯一当前计划与阶段责任。
 - `FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md`：PRD 能力与版本归属。

@@ -169,7 +169,10 @@
   - [x] R14 revision 1已补`I→B→A→P`、StructuralProofGrammar＋六target topology、frozen mutation denominator、pre/post audit与lifecycle receipt、唯一2-bit vector/error合同、Windows transaction和per-node TokenBudgetBasis；当前仍只是作者修订
   - [x] revision 1 exact pushed `46cccb10` fresh只读re-review=`PLAN_FAIL 0/1/0/0`：其余初审finding均关闭，只剩pre-formal FAIL状态冲突与首个I未绑定exact plan PASS receipt
   - [x] R14 revision 2 exact candidate=`ade8ebde...65e`唯一化`candidate C→PASS receipt G→first I.parent=G`；第三名fresh只读review=`PLAN_PASS 0/0/0/0`，canonical payload=`fe052ea1...aeed`，由本治理G物化且plan blob保持`14d9d9a...1b4ae`
-  - [ ] plan PASS后再实现R14并完成T0/T1/T2、immutable-R13-raw zero-call preview、`I/B/A/P` freeze与fresh pre-formal P0/P1/P2=`0/0/0`
+  - [x] R14 implementation 已冻结于 `7e25cad9...`；唯一 corpus parity preview 为 `27,026` cases、`239` failures（event semantics=`228`、assertion semantics=`11`），因此 implementation 尚未通过
+  - [x] R14 I2 owner-visible failure freeze 已完成 append-only 治理纠正：v1.0 exact `8544c7ee...` fresh review=`FAIL 0/0/2/0`；v1.1 exact `8e7e7693...` 冻结 `239 cases / 277 events / 246+9+5+17 / 2 roots`，fresh re-audit=`I2_GOVERNANCE_PASS 0/0/0/0`
+  - [ ] Owner 另行决定是否授权同一 R14 revised implementation；I2 PASS 本身不授权改代码，决定前保持 `7e25cad9...` 冻结且不创建 R15/R16
+  - [ ] 获授权后才可在同一 R14 修复 `R14-02` 两个 producer 根因，并以 `27,026/27,026` zero failure、`277/277` frozen mismatch eliminated、zero new code、原门不弱化及 fresh pre-formal P0/P1/P2=`0/0/0` 验收
   - [ ] R14 post-formal independent pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
 - [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
 - [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止

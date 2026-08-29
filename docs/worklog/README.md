@@ -44,6 +44,7 @@
   - DELL 03B R14 program plan fresh 审计失败与修订门：`fin_0_1_3_s1/125_dell_03b_R14_program_plan_fresh_audit_failure_and_revision_gate.md`
   - DELL 03B R14 revision 1 fresh plan 审计失败与 lifecycle bootstrap 修正：`fin_0_1_3_s1/126_dell_03b_R14_revision1_fresh_plan_audit_failure_and_lifecycle_bootstrap_fix.md`
   - DELL 03B R14 revision 2 fresh plan review PASS 与实现入口：`fin_0_1_3_s1/127_dell_03b_R14_revision2_fresh_plan_review_pass_and_implementation_gate.md`
+  - DELL 03B R14 I2 corpus parity 治理纠正与 fresh re-audit PASS：`fin_0_1_3_s1/128_dell_03b_R14_I2_corpus_parity_governance_correction_and_reaudit_pass.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
   - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`

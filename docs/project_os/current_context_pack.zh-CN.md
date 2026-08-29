@@ -1,11 +1,13 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-08-28
+更新时间：2026-08-29
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-dell-s1-s2-product-bridge`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
+
+2026-08-29 安全续接已验证目标分支 `codex/fin013-dell-s1-s2-product-bridge` 的 R14 implementation freeze 为 clean `7e25cad95ee84b39fb2a51063100405bc27da6e5`。唯一 corpus parity preview 的真实状态是 `27,026 cases / 26,787 pass / 239 fail`，其中 event semantics=`228`、assertion semantics=`11`；没有创建 R15/R16。I2 v1.0 failure freeze exact commit=`8544c7ee...` 已被 fresh、作者分离、只读 reviewer 判定 `FAIL 0/0/2/0`，失败回执不可变保留；v1.1 exact commit=`8e7e7693...` 已完整冻结 `239 cases / 277 events`，四种形态=`246/9/5/17`，只有两个根因簇且最早责任层均为 `R14-02_EventArgumentGraph_producer`。第二名 fresh、作者分离、只读 reviewer 独立重建全部 `277/277` event rows 后判定 `I2_GOVERNANCE_PASS 0/0/0/0`，PASS digest=`b46a9b5d...a16a`。这个 PASS 只足以让 Owner 另行决定是否授权同一 R14 revised implementation；当前代码仍冻结于 `7e25cad9...`，B/pre-formal、policy/formal、03C、外源、0.6B/4B、reranker、Evidence、Pack/Readiness、S2/S3、新研报、人工、产品、publication/release 均为 false。建议授权的修复仅限：synthetic/ordinary predicate 共用 canonical semantic derivation，以及 assertion attribution 以 finalized graph 计算；验收必须为 `27,026/27,026` zero failure、`277/277` mismatch eliminated、zero new failure code、既有门不弱化和新的 fresh pre-formal PASS。详见 S1/128。
 
 2026-08-28 DELL 03B R13 reviewed-result=`07909cc1...`与case-correct fixed manifest=`8dd03fa9...`已冻结。两名全新`fork_turns=none`、作者分离、只读reviewer分别完成工程与R17/S1/S2/研报质量审计：40/40 bundle、Git/tree/parent/mixed-case paths、attempt/raw/private/public、当前`1,596=1,273+323` transformation和supplier=`3/3/2/1 rank2`／其余五target=`0/0/0/0`均为`PASS_NARROW`，未观察到当前stored family/count/rank错误；但general engineering=`FAIL 0/1/2/0`。P1是package population没有独立于packages/summary的冻结输入锚；两个P2是flat frame跨event拼complete与price governing head依赖connector枚举。R17继续`FAIL_GATE_OPEN_NOT_ASSESSABLE 0/1/2/1`：reader citation=`0/18`、14/9/4/10/4 crosswalk未消费、WWC=`0/6`、Facts=`72/36`、S2五段桥未完成、human=`0/16`。R14初版plan审计失败`0/3/2/1`，revision 1收敛为唯一lifecycle/bootstrap P1=`0/1/0/0`；revision 2 exact candidate `C=ade8ebde4e6bca04de290eec6f8e46b55daee65e`现已由第三名fresh、作者分离、只读reviewer判定`PLAN_PASS 0/0/0/0`。plan blob/SHA/bytes=`14d9d9a...1b4ae`／`5b39ac6c...09a2`／`69,820`，canonical PASS payload SHA=`fe052ea1...aeed`。唯一状态机为`C→PASS governance G→first I.parent=G`；pre-formal FAIL只进同R14 `PREFORMAL_FAIL_REVISION_REQUIRED`，只有attempt消费后的材料失败才进OwnerDecision STOP。本治理提交G原样物化PASS payload且不改plan；只有post-commit `PLAN_FROZEN`验证G parent/pathset、plan blob、payload/self-digest和R13 audit后才解锁R14实现，policy/formal仍false。当前D盘free=`457,838,592 bytes`，低于floor=`536,870,912`；不删除历史evidence。03C、0.6B/4B、reranker、Evidence、Pack/Readiness、S2/S3、新报告、产品/publication/release全部false。详见S1/123～127。
 

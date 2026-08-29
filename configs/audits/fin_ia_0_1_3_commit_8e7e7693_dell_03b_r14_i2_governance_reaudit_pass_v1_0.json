@@ -1,0 +1,120 @@
+{
+  "schema_version": "fin_ia_dell_03B_R14_I2_fresh_readonly_governance_audit_v1_1",
+  "audit_id": "FIN-0.1.3-S1-DELL-03B-R14-I2-CANDIDATE-V1-1-FRESH-READONLY-REAUDIT",
+  "recorded_at": "2026-08-29T22:23:47+08:00",
+  "review_contract": {
+    "reviewer_task": "/root/r14_i2_rereview",
+    "author_separated": true,
+    "fork_turns": "none",
+    "read_only": true,
+    "writes": 0,
+    "git_mutations": 0,
+    "tests": 0,
+    "full_corpus_preview_runs": 0,
+    "formal_runs": 0,
+    "network_calls": 0,
+    "model_provider_calls": 0,
+    "external_source_calls": 0,
+    "downstream_actions": 0
+  },
+  "audited_candidate": {
+    "commit": "8e7e76932a38dc920d99583aad7883a2d7ef7de5",
+    "parent": "8544c7ee5f1cdcbe8863591714775bae9f656157",
+    "implementation_ancestor": "7e25cad95ee84b39fb2a51063100405bc27da6e5",
+    "tree": "2958ba4f1fc8ce57da4b4121287e8435bb98e23a",
+    "changed_paths": [
+      "configs/audits/fin_ia_0_1_3_commit_7e25cad9_dell_03b_r14_i2_corpus_parity_failure_freeze_v1_1.json",
+      "configs/audits/fin_ia_0_1_3_commit_8544c7ee_dell_03b_r14_i2_governance_audit_fail_v1_0.json"
+    ],
+    "artifact_ref": "configs/audits/fin_ia_0_1_3_commit_7e25cad9_dell_03b_r14_i2_corpus_parity_failure_freeze_v1_1.json",
+    "artifact_git_blob": "9e3c84fd04980ffa733ab48e24cfcf851b32b1a7",
+    "artifact_sha256": "eabbddb17907e87f81973c8b5fbecbf65656a7dee792784d24c1d520413a093a",
+    "artifact_result_digest": "93bd682707bb5f5ee3cfd337edae76c7f74d2e5bb23f4388bd9b035c6e73373a",
+    "case_failure_inventory_digest": "49acf114c03ab97e059ee3bd928736d06d70b1d5a6d8d3af2dcdfabc68e2a5d1",
+    "event_mismatch_inventory_digest": "68d267f77400a350cd698bf3c4baf7152067b437290084596a4fa370965276e5"
+  },
+  "immutable_failure_chain": {
+    "failed_candidate_commit": "8544c7ee5f1cdcbe8863591714775bae9f656157",
+    "failed_candidate_artifact_blob_at_parent": "1ff406f281faf061919b5c227294893d71c4bce4",
+    "failed_candidate_artifact_blob_at_audited_candidate": "1ff406f281faf061919b5c227294893d71c4bce4",
+    "failed_candidate_preserved": true,
+    "failure_receipt_ref": "configs/audits/fin_ia_0_1_3_commit_8544c7ee_dell_03b_r14_i2_governance_audit_fail_v1_0.json",
+    "failure_receipt_git_blob": "cd0202a8d5e2a6dd0d7dd920a6bfad0066482811",
+    "failure_receipt_sha256": "fe44630a0426b8d51a89d7e11c5a71510b8428144bf8261a25c5e31c3612bfc3",
+    "failure_receipt_result_digest": "116ed25b1f4f30d3026edd3a73fa166eede4fbff63e3a54ed3d17260633e6800"
+  },
+  "independent_verification": {
+    "frozen_source_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v5/records.jsonl",
+    "frozen_source_sha256": "d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45",
+    "frozen_source_rows": 1888,
+    "frozen_compiled_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v9/objects.jsonl",
+    "frozen_compiled_sha256": "1c3e48486f933d23306dbabacb1641e26cb9bbc5b474da932d602752dff3fa92",
+    "frozen_compiled_rows": 34199,
+    "compiled_unique_text_cases": 25138,
+    "full_corpus_case_denominator": 27026,
+    "failed_cases_recomputed_in_memory": 239,
+    "final_events_examined": 11621,
+    "mismatch_events_recomputed": 277,
+    "event_inventory_exact_object_equality": "277_of_277",
+    "failure_case_links": "239_of_239",
+    "stable_event_keys_unique": "277_of_277",
+    "morphologies": {
+      "RC01_SYNTHETIC_EMPTY_UNKNOWN": 246,
+      "RC01_SYNTHETIC_EMPTY_UNKNOWN_WITH_SCOPE_AMBIGUITY": 9,
+      "RC01_SYNTHETIC_NOMINAL_PRICE_PARTIAL_AUGMENTATION": 5,
+      "RC02_ASSERTION_REPORTED_TO_ISSUER_FINAL_MENTION_DRIFT": 17
+    },
+    "root_clusters": 2,
+    "third_root_cluster_found": false,
+    "earliest_responsibility_layer_for_both": "R14-02_EventArgumentGraph_producer",
+    "full_27026_case_preview_executed": false,
+    "verification_boundary": "the 239 frozen failing cases were fully recomputed at event level; the future 27026 zero-failure replay remains an acceptance obligation after a separately authorized same-R14 implementation change"
+  },
+  "acceptance_and_authority_review": {
+    "case_classification": "239_of_239",
+    "event_classification": "277_of_277",
+    "exact_future_acceptance": [
+      "27026_of_27026_cases_zero_failure",
+      "277_of_277_frozen_event_mismatches_eliminated",
+      "zero_new_failure_codes",
+      "existing_R14_population_event_price_property_mutation_resource_transaction_privacy_gates_retained"
+    ],
+    "forbidden_acceptance": [
+      "case_identity_special_case",
+      "text_sha256_special_case",
+      "event_id_special_case",
+      "first_exception_only_repair",
+      "validator_weakening_or_bypass",
+      "blame_shift_to_R14_04_or_later",
+      "unit_test_only_B_or_preformal_claim",
+      "R15_or_R16"
+    ],
+    "downstream_deny_set_is_plan_strict_superset": true,
+    "all_downstream_authority": false,
+    "unlisted_actions_authorized": false,
+    "current_allowed_actions": [
+      "revise_I2_governance_only",
+      "freeze_new_I2_candidate",
+      "fresh_author_separated_readonly_I2_re_review"
+    ]
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [],
+    "P3": []
+  },
+  "finding_counts": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": 0
+  },
+  "verdict": "I2_GOVERNANCE_PASS",
+  "pass_effect": "sufficient_for_owner_to_make_one_separate_same_R14_implementation_decision",
+  "implementation_change_authorized": false,
+  "B_or_preformal_authorized": false,
+  "policy_or_formal_authorized": false,
+  "downstream_authorized": false,
+  "result_digest": "b46a9b5d0027f704a0413022691220c199d1a133b5d38c6cbae6eed0ff90a16a"
+}

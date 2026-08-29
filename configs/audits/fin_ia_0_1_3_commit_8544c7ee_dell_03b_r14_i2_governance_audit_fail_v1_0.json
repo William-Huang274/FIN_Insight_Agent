@@ -1,0 +1,111 @@
+{
+  "schema_version": "fin_ia_dell_03B_R14_I2_fresh_readonly_governance_audit_v1_0",
+  "audit_id": "FIN-0.1.3-S1-DELL-03B-R14-I2-CANDIDATE-V1-FRESH-READONLY-AUDIT",
+  "recorded_at": "2026-08-29T21:54:26+08:00",
+  "review_contract": {
+    "reviewer_task": "/root/r14_i2_readonly_audit",
+    "author_separated": true,
+    "fork_turns": "none",
+    "read_only": true,
+    "writes": 0,
+    "git_mutations": 0,
+    "formal_runs": 0,
+    "preview_runs": 0,
+    "network_calls": 0,
+    "model_provider_calls": 0,
+    "external_source_calls": 0,
+    "downstream_actions": 0
+  },
+  "audited_candidate": {
+    "commit": "8544c7ee5f1cdcbe8863591714775bae9f656157",
+    "parent": "7e25cad95ee84b39fb2a51063100405bc27da6e5",
+    "tree": "922f2c94878c415d57029c88bc512b62f6a84bd3",
+    "artifact_ref": "configs/audits/fin_ia_0_1_3_commit_7e25cad9_dell_03b_r14_i2_corpus_parity_failure_freeze_v1_0.json",
+    "artifact_git_blob": "1ff406f281faf061919b5c227294893d71c4bce4",
+    "artifact_sha256": "0e22333310bdb332bb39b96a9b61610068656c57af3640d85acca33cdf35fefc",
+    "artifact_result_digest": "7ebe811d7a9cc2a3e7c113f43aa8418ef2e69150fb7d9147b3fcfb0880f1cd02",
+    "failure_inventory_digest": "49acf114c03ab97e059ee3bd928736d06d70b1d5a6d8d3af2dcdfabc68e2a5d1"
+  },
+  "verified_passes": {
+    "exact_candidate_parent_tree_and_single_changed_path": true,
+    "frozen_binding_sha256": true,
+    "source_rows_and_sha256": true,
+    "compiled_rows_unique_identity_first_text_selection_and_sha256": true,
+    "case_denominator_27026": true,
+    "case_failure_inventory_239_of_239": true,
+    "failure_counts_228_and_11": true,
+    "lane_counts_135_and_104": true,
+    "unique_failure_text_count_235": true,
+    "root_family_count_2": true,
+    "earliest_responsibility_layer_for_both": "R14-02_EventArgumentGraph_producer",
+    "third_root_family_found": false,
+    "input_or_validator_or_downstream_blame_shift_found": false
+  },
+  "findings": {
+    "P0": [],
+    "P1": [],
+    "P2": [
+      {
+        "finding_id": "R14-I2-AUDIT-P2-01-EVENT-LEVEL-DENOMINATOR-AND-MORPHOLOGY-NOT-FROZEN",
+        "evidence": [
+          "/earliest_responsibility_clusters/0/case_count",
+          "/earliest_responsibility_clusters/0/producer_observation",
+          "/earliest_responsibility_clusters/0/counterexamples",
+          "/earliest_responsibility_clusters/1/case_count",
+          "/failures",
+          "/acceptance_contract/governance_I2_review_gate"
+        ],
+        "finding": "239 failed cases contain 277 mismatch events, but the candidate freezes only case-level rows; it omits event multiplicity and final-event morphologies, including five nominal-price partial augmentations, nine accompanying scope ambiguities, and the exact 17 assertion event denominator",
+        "impact": "owner cannot verify one-batch root coverage or prevent a repair that only clears the first thrown event in each case",
+        "required_correction": [
+          "freeze all 277 event-level mismatch rows with stable event keys producer state recomputed state mismatch fields and ambiguity flags",
+          "freeze morphology counts 246 9 5 and 17",
+          "describe synthetic initialization and later nominal-price partial augmentation as separate phases of the same root",
+          "add an augmentation counterexample",
+          "require 239_of_239 case classification 277_of_277 event classification zero residual event mismatches and zero new failure codes"
+        ]
+      },
+      {
+        "finding_id": "R14-I2-AUDIT-P2-02-DOWNSTREAM-DENY-SET-INCOMPLETE",
+        "evidence": [
+          "/downstream_blocks",
+          "docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md#section-10-and-11",
+          "docs/worklog/fin_0_1_3_s1/127_dell_03b_R14_revision2_fresh_plan_review_pass_and_implementation_gate.md"
+        ],
+        "finding": "the candidate block list omits local 0.6B, CandidateDecision, Evidence Pack, ProductReadiness, qualified-human gates, product acceptance or promotion, publication and release",
+        "impact": "zero network and zero model authority do not fail-close local or human downstream actions",
+        "required_correction": [
+          "bind the exact authoritative R14 plan identity",
+          "set all_downstream_authority false and unlisted_actions_authorized false",
+          "allow only I2 governance revision and fresh read-only I2 review",
+          "expand downstream_blocks to the complete R14 authority matrix deny set"
+        ]
+      }
+    ],
+    "P3": []
+  },
+  "finding_counts": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 2,
+    "P3": 0
+  },
+  "verdict": "I2_GOVERNANCE_FAIL_REVISION_REQUIRED",
+  "implementation_change_authorized": false,
+  "current_allowed_actions": [
+    "revise_I2_governance_only",
+    "freeze_new_I2_candidate",
+    "fresh_author_separated_readonly_I2_re_review"
+  ],
+  "forbidden_actions": [
+    "R14_implementation_change",
+    "B_bundle",
+    "preformal_review",
+    "policy",
+    "formal_attempt",
+    "R15",
+    "R16",
+    "all_downstream"
+  ],
+  "result_digest": "116ed25b1f4f30d3026edd3a73fa166eede4fbff63e3a54ed3d17260633e6800"
+}

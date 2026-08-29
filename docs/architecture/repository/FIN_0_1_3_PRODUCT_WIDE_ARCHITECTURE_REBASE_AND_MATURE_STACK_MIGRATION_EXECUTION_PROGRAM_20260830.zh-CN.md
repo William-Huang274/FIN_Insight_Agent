@@ -4,9 +4,9 @@
 
 程序 ID：FIN-0.1.3-PRODUCT-WIDE-ARCHITECTURE-REBASE-20260830
 
-计划合同版本：v1.4
+计划合同版本：v1.5
 
-状态：REVISION CANDIDATE / exact v1.3 commit `b1c961ed...` author-separated read-only review=`PLAN_FAIL 0/1/1/0` / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权任何组件晋升
+状态：REVISION CANDIDATE / exact v1.4 commit `eeb75e1185898802b081577c1d20c7c32b71c476` author-separated read-only review=`PLAN_FAIL 0/4/3/1` / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权 Phase 0、Phase 1 或任何组件动作
 
 当前分支：codex/fin013-dell-s1-s2-product-bridge
 
@@ -31,7 +31,7 @@ Owner 已明确要求：
 7. 使用真实 case 验证完整产品链；允许在独立权限和预算合同下调用 DeepSeek API；
 8. 最终交付必须是已集成、已验证、可回滚的可行架构，不是只写一份调研报告。
 
-本程序把上述要求解释为一项新的“架构迁移程序”，不是新的产品版本、不是新的 S-stage，也不是 R15/R16。程序阶段使用 Phase 0–7，只描述迁移工作的成熟度；FIN 0.1.3、S0–S5、合同版本和执行 attempt 继续保持相互独立。
+本程序把上述要求解释为一项新的“架构迁移程序”，不是新的产品版本、不是新的 S-stage，也不是 `dell_03b_s1_internal_chain` 的 R15/R16 successor。程序阶段使用 Phase 0–7，只描述迁移工作的成熟度；FIN 0.1.3、S0–S5、合同版本和执行 attempt 继续保持相互独立。
 
 ## 2. 当前事实基线与 R14 的准确收口
 
@@ -47,7 +47,9 @@ Owner 已明确要求：
 
 计划冻结 commit 不能自我引用。Phase 0 的机器合同必须在 plan-only commit 之后绑定本文件的 exact commit、Git blob、文件 SHA-256 和字节数。
 
-### 2.2 R14 不是 PASS，也不再是活动实现路线
+### 2.2 `dell_03b_s1_internal_chain` 的 R14 不是 PASS，也不再是活动实现路线
+
+本节以及全文中未另行限定的“R14 implementation freeze”“R14 replacement”“不得创建 R15/R16”和“没有 R15/R16 successor”，只指 `dell_03b_s1_internal_chain` / DELL 03B S1 corpus-parity replacement 这一责任命名空间。它们不指 S3 Writer R15、VS2 lineage R16、其他 S-stage、其他能力或历史文件名中的 R-number attempt；Phase 0 supersession 也不得重写那些其他轨道的 R15/R16 历史。机器键必须使用 `dell_03b_s1_internal_chain.*`，不得使用无命名空间的 `r14/r15/r16` 全局字段。
 
 唯一 R14 corpus parity preview 的不可变事实为：
 
@@ -59,9 +61,9 @@ Owner 已明确要求：
 - event mismatches：277；
 - I2 governance：PASS，仅表示失败清单、输入、两类最早责任层、验收和停止条件已冻结；
 - R14 product capability delta：none；
-- R15/R16：不存在，也不得因本迁移程序创建。
+- `dell_03b_s1_internal_chain.r15_successor_created=false`、`dell_03b_s1_internal_chain.r16_successor_created=false`；不得因本迁移程序创建该命名空间的 R15/R16 successor。
 
-R14 的程序处置定义为：
+该命名空间 R14 的程序处置定义为：
 
 > active implementation strategically terminated / failed evidence preserved / regression baseline retained / no PASS / no root-cause erasure。
 
@@ -73,7 +75,17 @@ R14 的程序处置定义为：
 - RC-S1-109 与 RC-S1-110 在 replacement 完整通过并由 Owner 作出同阶段责任处置前继续 open；
 - 冻结 corpus、239 case、277 event mismatch、validator、旧输出和失败 receipt 继续作为 regression/adversarial evidence；
 - 旧 parser 输出只能是 baseline，不能充当 human gold 或 truth oracle；
-- replacement 的产品身份属于同一 S1 责任面，不使用 R15/R16 编号。
+- replacement 的产品身份属于同一 S1 责任面，不使用 `dell_03b_s1_internal_chain` 的 R15/R16 编号。
+
+Phase 0 的 typed machine disposition 必须至少冻结：
+
+- `dell_03b_s1_internal_chain.r14_implementation_freeze="7e25cad95ee84b39fb2a51063100405bc27da6e5"`；
+- `dell_03b_s1_internal_chain.r14_implementation_lifecycle="regression_only"`；
+- `dell_03b_s1_internal_chain.r14_attempt_terminal_status="failed"`；
+- `dell_03b_s1_internal_chain.r15_successor_created=false`；
+- `dell_03b_s1_internal_chain.r16_successor_created=false`。
+
+`r14_is_current=false` 与 `r14_is_product_pass=false` 只能是从这些 typed fields、冻结失败 receipt 与 current-consumer map 重算出的 derived booleans，不得作为另一个自由状态源。
 
 ### 2.3 旧规划的权威变化
 
@@ -108,23 +120,26 @@ Phase 0 必须在这些原文件中写入不破坏历史的 supersession / owner
 |---|---|---|
 | `phase_status` | `planned / candidate / in_progress / passed / failed / stopped / blocked / superseded` | Phase 0–7 的阶段状态 |
 | `phase_review_status` | `not_started / pending / passed / failed` | 对当前 phase candidate/result 的独立 review 状态 |
+| `phase_entry_eligible` | `true / false` | 上一阶段已允许为本阶段建立逐票候选；只表示可申请，不是任何 action grant |
 | `ticket_lifecycle_stage` | `planned / candidate / candidate_reviewed / execution_authorized / result_frozen / result_reviewed / terminal` | 单票从事前合同到不可变结果的生命周期 |
 | `ticket_terminal_status` | `null / passed / failed / stopped / held / superseded` | 仅当 lifecycle=`terminal` 时才允许非 null |
+| `attempt_terminal_status` | `null / passed / failed / stopped / superseded` | 历史 execution/run/attempt 的结局，不能替代 phase/ticket/program 状态 |
 | `downstream_activation_status` | `not_applicable / pending / activated / denied / revoked` | terminal PASS 后是否已独立激活下游消费或下一阶段 |
 | `action_grant_status` | `not_granted / authorized / active / consumed / expired / revoked` | 某个 exact action 当前是否可执行；同时必须有 `granted:boolean` |
 | `program_terminal_status` | `null / complete / partial / stopped / failed` | 整个 Phase 0–7 程序的最终状态，非 phase/ticket 状态 |
 | `artifact_immutability` | `mutable_candidate / frozen_immutable` | manifest/result/corpus/receipt 的证据属性，`frozen` 不是 phase 状态 |
 | `implementation_lifecycle` | `current / shadow / compatibility / regression_only / retired` | 代码/组件实现所处产品生命周期，非程序状态 |
+| `consumer_route_availability` | `available / degraded / suspended / unavailable / retired` | 某个 consumer route 的可用性；原因另写 `availability_reason`，不能塞进状态值 |
 
 有执行动作的 ticket 必须按 `planned → candidate → candidate_reviewed → execution_authorized → result_frozen → result_reviewed → terminal` 前进；`execution_authorized` 必须有独立 `execution_authority_receipt`，它发生在动作和结果之前。无执行动作的只读/聚合 ticket 可以不经过 `execution_authorized`，但必须显式写 `execution_authority_receipt=null/not_applicable`。`ticket_terminal_status=passed` 只能在 result review PASS 后物化；`downstream_activation_status=activated` 又只能在 terminal PASS 后由另一个 `downstream_activation_receipt` 物化。execution authority 与 downstream activation 永不共用同一 receipt。
 
 `action_grant_status=not_granted/consumed/expired/revoked` 时 `granted=false`；只有 `authorized/active` 时 `granted=true`。缺 receipt、前驱、预算、allowlist 或 reviewer 时必须 fail closed。`held` 是一次 ticket 的 terminal 结果；`HOLD_TRIGGER` 是 3.3 的 capability decision，两者不能互换。
 
-`phase0_candidate_awaiting_fresh_review`、`plan_candidate`、`phase6_s4_candidate_authorized`、`phase*_active/pass` 等长标签只能作为由上述原始字段计算出的 boolean `derived_state_flags`，不能作为 enum 输入、receipt verdict 或 action grant。例：`phase0_candidate_awaiting_fresh_review=true` 必须等价于 `phase_status=candidate AND phase_review_status=pending AND downstream_activation_status=pending AND G0_absent=true`；`active` 只能从 `phase_status=in_progress` 与有效 action grant 推导。
+`phase0_candidate_awaiting_fresh_review`、`plan_candidate`、`phase6_s4_candidate_authorized`、`phase*_active/pass`、`r14_is_current`、`r14_is_product_pass` 等长标签只能作为由上述原始字段计算出的 boolean `derived_state_flags`，不能作为 enum 输入、receipt verdict 或 action grant。例：`phase0_candidate_awaiting_fresh_review=true` 必须等价于 `phase_status=candidate AND phase_review_status=pending AND downstream_activation_status=pending AND T0_absent=true AND G0_absent=true`；`active` 只能从 `phase_status=in_progress` 与有效 action grant 推导。
 
-为避免 self-reference，candidate manifest 只冻结 `candidate_state` 原始字段与 transition rules；`effective_state` 由 validator 把不可变 candidate manifest、exact review/terminal receipts 和 downstream-activation receipts 联合计算，不能回写 candidate。以 Phase 0 为例，H0 中 `candidate_state.phase_status=candidate`；只有 valid G0 存在时，计算结果才是 `effective_state.phase_status=passed`、`effective_state.downstream_activation_status=activated`，H0 字节保持不变。
+为避免 self-reference，candidate manifest 只冻结 `candidate_state` 原始字段与 transition rules；`effective_state` 由 validator 把不可变 candidate manifest、exact review/terminal receipts 和 downstream-activation receipts 联合计算，不能回写 candidate。以 Phase 0 为例，H0 中 `candidate_state.phase_status=candidate`；valid T0 只能令计算结果成为 `effective_state.phase_status=passed`、`effective_state.phase_review_status=passed`、`effective_state.downstream_activation_status=pending`，随后 valid G0 才令 `effective_state.downstream_activation_status=activated` 并令 `phase1.phase_entry_eligible=true`。H0 字节在 T0/G0 均保持不变，G0 不签 Phase 0 PASS，也不授予 Phase 1 action。
 
-validator 必须拒绝非法组合，包括：terminal status 在非 terminal lifecycle 中非 null、ticket 未审即 execution-authorized、result 先于 authority、terminal PASS 缺 result-review PASS、terminal PASS 前 downstream activated、phase PASS 缺 required ticket terminal PASS、program complete 缺全部 completion gate。禁止使用含义不明的 done、ready、green；每个 passed 必须带 scope、证据和 known boundary。
+validator 必须拒绝非法组合，包括：terminal status 在非 terminal lifecycle 中非 null、ticket 未审即 execution-authorized、result 先于 authority、terminal PASS 缺 result-review PASS、terminal PASS 前 downstream activated、phase PASS 缺 required ticket terminal PASS、program complete 缺全部 completion gate。它还必须拒绝任何未注册的原始 `status`、`active`、`pass/PASS`、`regression` 字段，拒绝用 `phase_entry_eligible=true` 推导 action grant，并拒绝把 `availability_reason` 拼进 `consumer_route_availability`。禁止使用含义不明的 done、ready、green；每个 passed 必须带 scope、证据和 known boundary。
 
 ### 3.3 决策标签
 
@@ -190,7 +205,7 @@ FIN 产品应用
 
 ### 5.2 候选代码结构
 
-以下是 Phase 4 前的候选目标，不授权 Phase 0/1 立即创建整套新目录或批量移动文件。Phase 1 必须先冻结活动 consumer、真实 import cycle、runtime resource exact-digest 绑定和 R3–R14 reachability；Phase 3 spike 可能修正命名，Phase 4 ADR 才能把候选结构变成迁移权威，但职责分层不得反向合并。
+以下是 Phase 4 前的候选目标，不授权 Phase 0/1 立即创建整套新目录或批量移动文件。Phase 1 必须先冻结活动 consumer、真实 import cycle、runtime resource exact-digest 绑定和按责任命名空间拆分的历史 R-attempt reachability（现有文件名范围可见 R3–R14，但不是全局产品序列）；Phase 3 spike 可能修正命名，Phase 4 ADR 才能把候选结构变成迁移权威，但职责分层不得反向合并。
 
 ~~~text
 src/finsight/
@@ -281,10 +296,10 @@ archive/versions/
 | src/sec_agent/providers | REPLACE | 官方 SDK＋薄 capability/receipt adapter |
 | src/sec_agent/research | SPLIT | 金融方法和 domain state 保留；通用 orchestration/session/trace 迁出 |
 | project_os_preflight.py | SHRINK | 跨版本不变量保留；attempt-specific 分支数据化/退役 |
-| R3–R14 modules | REGRESSION_ONLY | 完整实现只留 Git/history archive；有界 harness/case 放非 package regression root；不进入新生产主路径 |
+| namespaced historical R-attempt modules（现有文件名可含 R3–R14） | REGRESSION_ONLY | 完整实现只留 Git/history archive；有界 harness/case 放非 package regression root；不进入新生产主路径 |
 | apps/workbench | KEEP_PRODUCT + THIN | 留金融 Evidence/Gap/Review/Release；通用 trace/run UI 交成熟平台 |
 
-`src/finsight/compat` 只能容纳当前仍被消费、具 removal ticket 的薄 shim/adapter，不得复制 R3–R14 attempt-specific implementation。历史 replay 只能由显式 `historical_audit`/qualification profile 执行，默认 wheel、Runtime Registry、API/UI 和 CI 主路径不得发现或导入它。
+`src/finsight/compat` 只能容纳当前仍被消费、具 removal ticket 的薄 shim/adapter，不得复制任何 namespaced historical R-attempt implementation。历史 replay 只能由显式 `historical_audit`/qualification profile 执行，默认 wheel、Runtime Registry、API/UI 和 CI 主路径不得发现或导入它。
 
 任何真实目录创建、模块移动或 import 重写必须等 Phase 4 ADR 冻结，并在 Phase 5 通过 compatibility shim、import map、consumer tests 和 rollback slice 完成。不得先建立空的“目标架构骨架”，再用它反向证明目标结构合理。
 
@@ -314,15 +329,25 @@ Plan-only commit C0
         v fresh read-only plan review
 Phase 0 candidate H0
   machine manifest + source docs + tests
-  Phase 1 authority still false
+  Phase 1 entry eligibility and all action grants still false
         |
         v fresh read-only exact-H0 review
-Phase 0 PASS receipt G0
-  G0.parent=H0; only materializes review receipt
-  effective Phase 1 bounded read/audit-write authority becomes true
+        +---------------- PASS ----------------+
+        |                                      |
+        v                                      |
+Phase 0 terminal PASS receipt T0               |
+  T0.parent=H0; one terminal-receipt path       |
+        |                                      |
+        v                                      |
+Phase 0 downstream-activation receipt G0       |
+  G0.parent=T0; one activation-receipt path     |
+  Phase 1 entry eligible=true; action grants=false
         |
         v
-Phase 1 capability/import/data/consumer migration inventory
+Phase 1 per-ticket candidate -> review -> execution authority
+        |
+        v
+Phase 1 capability/import/data/consumer migration inventory/result
         |
         +----------------------+
         |                      |
@@ -344,20 +369,27 @@ Phase 6 S1–S5 real-case acceptance
                    |
                    v
 Phase 7 closeout, retirement and release recommendation
+
+Hn -- exact review FAIL --> Fn terminal FAIL receipt
+Fn -- successor materialization authority --> Sn
+Sn -- exact changed-path allowlist --> H(n+1) candidate
 ~~~
 
-Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist 必须消费 Phase 1 已确认的 capability constraints，Phase 3 只能消费二者冻结的输入。Phase 5 不能在 Phase 4 ADR 前开始。Phase 6 不能用尚未通过 Phase 5 slice gate 的组件。Phase 7 不能删除或退休仍被活动 consumer 使用的旧代码。
+G0 只让 Phase 1 进入“可以提出逐票 candidate”的资格态，不直接授权任何审计读取、bounded write 或 Phase 2 动作。Phase 1 每张票取得自己的 execution-authority receipt 后才可执行；Phase 2 也只能按 RSH ticket 独立授权。两者可在各自授权后并行，但 Phase 2 shortlist 必须消费 Phase 1 已确认的 capability constraints，Phase 3 只能消费二者冻结的输入。Phase 5 不能在 Phase 4 ADR 前开始。Phase 6 不能用尚未通过 Phase 5 slice gate 的组件。Phase 7 不能删除或退休仍被活动 consumer 使用的旧代码。
 
 ### 6.2 提交拓扑
 
 1. C0：只包含本执行程序。
 2. C0-review：fresh、作者分离、只读 reviewer 返回结构化 verdict；reviewer 不写仓库。
-3. H0：物化 C0 plan review receipt，并提交 Phase 0 candidate machine manifest、必要 source-doc supersession、Project OS、checklist、worklog 和定向测试。H0 内 manifest 的原始字段必须写 `candidate_state.phase_status=candidate`、`candidate_state.phase_review_status=pending`、`candidate_state.downstream_activation_status=pending`、`G0_absent=true`，并由此计算 `derived_state_flags.phase0_candidate_awaiting_fresh_review=true`；所有 Phase 1+ 权限仍为 false。H0 changed paths 必须排除 plan path，且 `H0:<plan path>` 的 Git blob、raw SHA-256 和 bytes 必须与 C0 完全相等。
-4. H0-review：另一名 fresh、作者分离、只读 reviewer 只审 exact H0；reviewer 不写仓库。若发现 P0/P1/P2，H0 保持不可变，先物化 failure receipt，再创建非覆盖 H1 candidate。
-5. G0：仅当 H0 review 为 `PASS 0/0/0/*` 时，创建固定路径的 Phase 0 PASS receipt。G0 必须满足 `G0.parent=H0`、changed path 仅该 receipt、H0 machine manifest 与 plan blob/SHA/bytes 不变。有效 Phase 1 权限由 H0 manifest＋G0 receipt 联合计算；不允许自引用 G0 commit。
-6. 后续每个 action-bearing release slice 独立提交：candidate contract → candidate review → execution-authority receipt → implementation/run → frozen result → result review → terminal receipt → 可选 downstream-activation receipt。execution authority 必须先于动作，downstream activation 必须后于 terminal PASS；失败 slice 不覆盖。
-7. 大型组件安装和 run artifact 不进 Git；Git 只保存 lock、manifest、digest、license/SBOM 结论、测试代码和有界结果。
-8. 不为每个小状态创建独立 current manifest。维护一个 canonical program manifest，加 append-only candidate/candidate-review/execution-authority/result/result-review/terminal/downstream-activation receipts；任何 PASS 都不能在被审 candidate 中自我声明。
+3. H0：C0 plan review PASS payload 授权 `phase0_governance_candidate_materialization_write` 的 H0 one-shot instance。H0 物化 exact C0 plan review receipt，并提交 Phase 0 candidate machine manifest、必要 source-doc supersession、Project OS、checklist、worklog 和定向测试。H0 内 manifest 的原始字段必须写 `candidate_state.phase_status=candidate`、`candidate_state.phase_review_status=pending`、`candidate_state.downstream_activation_status=pending`、`phase1.phase_status=planned`、`phase1.phase_entry_eligible=false`、`T0_absent=true`、`G0_absent=true`，并由此计算 `derived_state_flags.phase0_candidate_awaiting_fresh_review=true`；所有 Phase 1+ action grants 仍为 false。H0 changed paths 必须排除 plan path，且 `H0:<plan path>` 的 Git blob、raw SHA-256 和 bytes 必须与 C0 完全相等。
+4. Hn-review：另一名 fresh、作者分离、只读 reviewer 只审 exact Hn；reviewer 不写仓库，也不修 candidate。其 payload 必须绑定 exact Hn commit/tree/parent/changed paths/manifest digests，并给出 `PASS 0/0/0/*` 或不可变 FAIL findings。
+5. Tn/Fn：`phase0_review_terminal_receipt_materialization_write` 的本 attempt one-shot instance 只能逐字节物化 exact external Hn review payload，并且只走一个分支。PASS 时创建 Tn terminal PASS receipt commit：`Tn.parent=Hn`，changed path 只有 fixed Tn receipt；它同时保存 Hn review/result-review/terminal PASS 的同一不可变 payload，但不激活下游。FAIL 时创建 Fn terminal FAIL receipt commit：`Fn.parent=Hn`，changed path 只有 fixed Fn receipt；不得修复 Hn 或改写 reviewer findings。每个 action instance 物化后立即 `consumed`。
+6. Sn 与 H(n+1)：只有 Fn 后，`phase0_successor_authority_receipt_materialization_write` 的本 attempt instance 才能创建 one-path Sn。`Sn.parent=Fn`，其 payload 必须绑定 exact failed Hn、exact review/findings、非零 P0/P1/P2、exact H(n+1) changed-path allowlist、plan deny/immutability、无 downstream/Phase 1 grant。随后 `phase0_governance_candidate_materialization_write` 的新 attempt instance 才能创建 `H(n+1)`，且 `H(n+1).parent=Sn`、只改 allowlist、保留 Hn/Fn/Sn、plan blob/raw SHA-256/bytes 不变。历史 Hn 永不覆盖。
+7. G0：仅当 T0 terminal PASS 已存在时，`phase0_downstream_activation_receipt_materialization_write` 的 one-shot instance 创建 fixed G0。`G0.parent=T0`，changed path 只有 downstream-activation receipt；H0 manifest、T0 receipt 和 plan blob/SHA/bytes 均不变。G0 只令 `phase1.phase_entry_eligible=true`，Phase 1 仍为 `phase_status=planned`，`phase1_audit_read_and_bounded_write.granted=false`。G0 从不签 PASS，也不冒充 Phase 1 execution authority。
+8. Phase 1 的 P1-01 至 P1-15 每个 action-bearing ticket 都独立提交：candidate contract → read-only candidate review → execution-authority receipt → bounded audit read/write → frozen result → read-only result review → terminal receipt → 必要的 downstream-activation receipt。`phase_entry_eligible` 只允许提出 candidate contract，不允许执行审计；每个 execution authority 必须先于动作，downstream activation 必须后于 terminal PASS；失败 ticket 不覆盖。
+9. 后续每个 action-bearing release slice 使用同样拓扑：candidate contract → candidate review → execution-authority receipt → implementation/run → frozen result → result review → terminal receipt → 可选 downstream-activation receipt。
+10. 大型组件安装和 run artifact 不进 Git；Git 只保存 lock、manifest、digest、license/SBOM 结论、测试代码和有界结果。
+11. 不为每个小状态创建独立 current manifest。维护一个 canonical program manifest，加 append-only candidate/candidate-review/execution-authority/result/result-review/terminal/downstream-activation receipts；任何 PASS 都不能在被审 candidate 中自我声明。
 
 ### 6.3 计划修订
 
@@ -366,7 +398,7 @@ Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist
 - 新证据写入 issue/capability ledger；
 - 说明原假设、证据、影响、选择与 rollback；
 - 计划合同版本仅在行为/门/接口变化时递增；
-- 任何计划行为、门、权限或接口变化都必须形成新的 plan-only `C1/Cn`，重新接受 exact plan review；不得夹带在 H0、G0 或普通 phase/ticket commit；
+- 任何计划行为、门、权限或接口变化都必须形成新的 plan-only `C1/Cn`，重新接受 exact plan review；不得夹带在 Hn、Tn/Fn、Sn、G0 或普通 phase/ticket commit；
 - 纯运行重试只增加 rN，不增加合同版本；
 - 涉及产品范围、发布含义、付费规模、安全或不可逆动作时再次向 Owner 报告；
 - 已完成/失败的历史证据不回写。
@@ -377,10 +409,11 @@ Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist
 
 1. `phase_state`：3.2 的 `phase_status`、`phase_review_status` 与证据绑定；
 2. `ticket_state`：predecessor、`ticket_lifecycle_stage`、`ticket_terminal_status` 及 candidate/candidate-review/execution-authority/result/result-review/terminal receipts；
-3. `downstream_activation_state`：terminal PASS 后的独立 activation status/receipt；
-4. `action_grants`：3.2 的 `granted:boolean`＋`action_grant_status`，说明允许执行的动作；
-5. `domain_authority`：Candidate、Evidence、NumericFact、S2、S3、report、human、product/release 的权威；
-6. `allowed_roots_and_surfaces`：动作能读写的精确路径、服务、API、数据类型与消费者。
+3. `phase_entry_eligible`：上一 phase downstream activation 后能否提出本 phase 的逐票 candidate；它不是 action grant；
+4. `downstream_activation_state`：terminal PASS 后的独立 activation status/receipt；
+5. `action_grants`：3.2 的 `granted:boolean`＋`action_grant_status`，说明允许执行的动作；
+6. `domain_authority`：Candidate、Evidence、NumericFact、S2、S3、report、human、product/release 的权威；
+7. `allowed_roots_and_surfaces`：动作能读写的精确路径、服务、API、数据类型与消费者。
 
 每个 `action_grant` 至少包含：
 
@@ -398,8 +431,11 @@ Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist
 
 | Action ID | 最早可能 grant | 允许范围 | 不随之获得的权威 |
 |---|---|---|---|
-| h0_governance_materialization_write | H0 one-shot | C0 plan review receipt、source supersession、Project OS、worklog、governance config/test exact allowlist；plan path 显式 deny | plan mutation、component adoption、产品行为 |
-| phase1_audit_read_and_bounded_write | G0 | repo/data metadata 只读；Phase 1 docs/configs/audit artifacts 写入 | src/product data mutation、component execution |
+| phase0_governance_candidate_materialization_write | per-attempt one-shot；H0 由 exact C0 plan PASS review payload，H(n+1) 由 exact Sn | C0 review receipt、source supersession、Project OS、worklog、governance config/test exact allowlist；successor 仅 Sn allowlist；plan path 显式 deny | terminal/review/activation receipt、plan mutation、Phase 1、component adoption、产品行为 |
+| phase0_review_terminal_receipt_materialization_write | exact external Hn review payload 后的 per-attempt one-shot | 二选一 fixed Tn PASS 或 Fn FAIL receipt；只逐字节物化 review/result-review/terminal payload | candidate repair、successor、downstream activation、Phase 1 action |
+| phase0_successor_authority_receipt_materialization_write | exact Fn terminal FAIL 后的 per-attempt one-shot | fixed Sn receipt，绑定 failed Hn/review/findings 与 exact H(n+1) allowlist | Hn overwrite、plan mutation、downstream activation、Phase 1 action |
+| phase0_downstream_activation_receipt_materialization_write | exact T0 terminal PASS 后 one-shot | fixed G0 receipt；只令 Phase 1 entry eligible | Phase 0 PASS 签发、Phase 1 audit/write 或任何 action grant |
+| phase1_audit_read_and_bounded_write | G0 后 exact P1-xx candidate review＋该票 execution-authority receipt | 该票 exact repo/data metadata 只读；该票 Phase 1 docs/configs/audit artifacts 写入 | 其他 P1 ticket、src/product data mutation、component execution |
 | phase2_network_research | G0＋RSH execution-authority receipt | 官方 docs/repo/spec/paper 调研与来源快照 | external source product call、package download |
 | phase3_qualification_contract_evidence_write | Phase 3 exact QL candidate-contract authority receipt | candidate manifest 先行；仅 scripts/tests/configs/docs 的 qualification/audit/worklog exact paths，以及 lock/revision/SBOM/bounded candidate/review/authority/result/terminal receipts | production src、pyproject/current config/data、component promotion、domain authority |
 | production_integration_code_test_config_lock_write | Phase 5 MIG execution-authority receipt；Phase 0/3 各有独立受限动作 | exact MIG slice allowlist | Evidence/S2/S3/report/release |
@@ -422,10 +458,10 @@ Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist
 | evidence_admission | Phase 6 `ACC-S1 execution_authority_receipt` | qualified Candidate→Evidence | NumericFact/S2/S3 |
 | numeric_fact_and_s2_authority | Phase 6 `ACC-S2 execution_authority_receipt` | qualified FactObservation→NumericFact/bridge | S3/report/release |
 | s3_research_judgment | Phase 6 `ACC-S3 execution_authority_receipt` | evidence-bound research judgment | human approval/release |
-| report_candidate_generation | Phase 6 `ACC-S4-CANDIDATE execution_authority_receipt` | non-released report candidate | current reader deliverable、qualified-human approval、publication/release |
-| qualified_human_approval | Phase 6 `ACC-S4 execution_authority_receipt`；其 predecessor 为 `ACC-S4-CANDIDATE terminal PASS` | exact S4 case/report/review packet 与 denominator | product acceptance、publication/release |
+| report_candidate_generation | Phase 6 exact `ACC-S4-CANDIDATE-Cnn execution_authority_receipt` | non-released report candidate | current reader deliverable、qualified-human approval、publication/release |
+| qualified_human_approval | Phase 6 `ACC-S4 execution_authority_receipt`；其 predecessor 同时绑定 `ACC-S4-CANDIDATE terminal PASS` 与独立 downstream-activation receipt | exact S4 case/report/review packet 与 denominator | product acceptance、publication/release |
 | qualified_human_product_acceptance | Phase 6 `ACC-S5 execution_authority_receipt`；其 predecessor 绑定 `ACC-S4 terminal PASS` digest＋downstream activation | exact end-user workflow/product acceptance packet | publication/release |
-| product_publication_release | Phase 6 `ACC-S5 terminal PASS` digest＋downstream activation＋Phase 7 Owner release receipt | exact product/version/deployment | 任何未列 scope |
+| product_publication_release | Phase 7 `CLS-07-OWNER-RELEASE-DECISION` decision=`release` 后另行物化的 `release_execution_authority_receipt` | receipt 中 exact product/version/deployment/scope、expiry、consumption 与 rollback | 任何未列 scope；Owner decision 本身不是执行授权 |
 
 Phase 3 的 qualification repo write 必须在任何 download/install/run 前先物化 candidate contract；candidate、result、review、activation 分离，失败 append-only，不能运行后补写 candidate 来反向授权既有动作。其 allowlist 只能包含 `scripts/qualification`、`tests/qualification`、`configs/qualification`、`configs/audits`、qualification research/worklog 等 candidate-specific 路径；不得修改 production `src`、`pyproject.toml`、正式依赖锁、current product config/data 或 domain authority。
 
@@ -437,10 +473,13 @@ Phase 6 也不是一次性打开全部下游。`ACC-S1`、`ACC-S2`、`ACC-S3` �
 
 ~~~text
 ACC-S3 terminal PASS + downstream activation
-  -> ACC-S4-CANDIDATE candidate review + execution authority
-  -> non-released report result
-  -> author-separated report review/repair PASS
-  -> ACC-S4-CANDIDATE terminal PASS
+  -> ACC-S4-CANDIDATE-Cnn candidate review + execution authority
+  -> non-released report result frozen
+  -> author-separated read-only report-result review
+       PASS -> ACC-S4-CANDIDATE-Cnn terminal PASS
+            -> independent ACC-S4-CANDIDATE downstream activation
+       FAIL -> immutable ACC-S4-CANDIDATE-Fnn terminal failure receipt
+            -> new ACC-S4-CANDIDATE-C(n+1) candidate/review/authority/result
   -> ACC-S4 candidate review + execution authority
   -> exact qualified-human decisions
   -> immutable human result + denominator/binding/authority review
@@ -450,12 +489,13 @@ ACC-S3 terminal PASS + downstream activation
   -> operations/security/rollback/end-user + qualified-human product-acceptance results
   -> ACC-S5 terminal PASS
   -> independent ACC-S5 downstream activation
-  -> Phase 7 Owner release receipt
+  -> Phase 7 CLS-07 Owner release decision candidate/review/decision receipt
+  -> only if decision=release: separate release execution-authority receipt
 ~~~
 
-`ACC-S4-CANDIDATE` execution authority 只能授予 `report_candidate_generation`；`ACC-S4` execution authority 只能授予 exact S4 `qualified_human_approval`；`ACC-S5` execution authority 可以授予 exact `qualified_human_product_acceptance`，三者都不能授予 publication/release。所有 execution-authority 阶段产生的 Evidence/NumericFact/judgment/report/human/product artifacts 在本票 terminal PASS＋downstream activation 前只能存在于 exact ticket-scoped、不可被 current consumer 读取的 namespace。
+`ACC-S4-CANDIDATE-Cnn` 是 stable `ACC-S4-CANDIDATE` 的不可变 attempt；其 execution authority 只能授予 `report_candidate_generation`。result 一旦 frozen，作者不得在同一 attempt “repair”；reviewer 只读，FAIL 必须先形成 immutable failure receipt，再用新 `C(n+1)` candidate/review/authority/result 修正。只有 result-review PASS、terminal PASS 和独立 `ACC-S4-CANDIDATE downstream_activation_receipt` 都存在，才能提出 `ACC-S4` candidate。`ACC-S4` execution authority 只能授予 exact S4 `qualified_human_approval`；`ACC-S5` execution authority 可以授予 exact `qualified_human_product_acceptance`，三者都不能授予 publication/release。所有 execution-authority 阶段产生的 Evidence/NumericFact/judgment/report/human/product artifacts 在本票 terminal PASS＋downstream activation 前只能存在于 exact ticket-scoped、不可被 current consumer 读取的 namespace。
 
-`ACC-S4 execution_authority_receipt` 必须在 human action 前绑定 exact case/report/review packet、required-item denominator、author/reviewer/human 身份和角色分离、admit/reject/rebind/defer/reopen vocabulary、allowed action、expiry/consumption、no-current/no-release deny，以及 result/review/terminal/downstream receipt fixed paths。`ACC-S4 terminal_receipt` 必须逐字节绑定 report-review digest、immutable human-result digest、完整 denominator 与 authority review；所有 required items 必须有 terminal disposition，deny/defer/timeout 不得当 PASS。`ACC-S5.predecessor` 又必须逐字节绑定该 terminal receipt result digest 和 downstream activation receipt identity。Phase 7 只允许在 consumer/rollback/root-cause/release 条件分别满足后收口，不因“项目结束”获得广义删除权。
+`ACC-S4.predecessor` 必须同时逐字节绑定 `ACC-S4-CANDIDATE-Cnn` terminal result digest 与该 stable ticket downstream-activation receipt identity；`ACC-S4 execution_authority_receipt` 绝不能兼任上一票激活。它还必须在 human action 前绑定 exact case/report/review packet、required-item denominator、author/reviewer/human 身份和角色分离、admit/reject/rebind/defer/reopen vocabulary、allowed action、expiry/consumption、no-current/no-release deny，以及 result/review/terminal/downstream receipt fixed paths。`ACC-S4 terminal_receipt` 必须逐字节绑定 report-review digest、immutable human-result digest、完整 denominator 与 authority review；所有 required items 必须有 terminal disposition，deny/defer/timeout 不得当 PASS。`ACC-S5.predecessor` 又必须逐字节绑定该 terminal receipt result digest 和 downstream activation receipt identity。Phase 7 只允许在 consumer/rollback/root-cause/release 条件分别满足后收口，不因“项目结束”获得广义删除权。
 
 machine manifest 必须在 `candidate_state` 中存 3.2 的原始轴与 transition rules；允许额外输出只读 derived booleans，如 `phase0_candidate_awaiting_fresh_review`、`phase6_s4_report_candidate_authorized`、`phase6_s4_human_authorized`、`phase6_s4_terminal_pass`、`phase6_s5_terminal_pass`。`effective_state` 与这些 derived flags 必须由 validator 从不可变 manifest＋receipts 重算，不得作为 transition、PASS 或 grant 的输入。并行只通过各 phase/ticket 独立原始状态表达；不得用一个粗粒度 `current_phase` 或长状态字符串覆盖事实。
 
@@ -471,8 +511,8 @@ Phase 0 必须创建 machine-readable `program_ticket_registry_v1`。每条记�
 - Phase 3 qualification：`QL-01` 至 `QL-13`，每个 candidate 使用 `QL-xx-Cnn`；
 - Phase 4：`ADR-01` 至 `ADR-14`，并生成 `migration_slice_registry_v1`；
 - Phase 5：`MIG-{capability}-{nn}`，每个 slice 单变量、单 feature switch、单 rollback；
-- Phase 6：`ACC-S1`、`ACC-S2`、`ACC-S3`、`ACC-S4-CANDIDATE`、`ACC-S4`、`ACC-S5`，另有 `R14-REPLACEMENT-S1-CLOSURE`；
-- Phase 7：`CLS-01` feasibility、`CLS-02` dependency cleanup、`CLS-03` legacy retirement、`CLS-04` operations/rollback、`CLS-05` Project OS、`CLS-06` final independent review/Owner recommendation。
+- Phase 6：`ACC-S1`、`ACC-S2`、`ACC-S3`、`ACC-S4-CANDIDATE`（attempt=`ACC-S4-CANDIDATE-Cnn`）、`ACC-S4`、`ACC-S5`，另有 `DELL-03B-S1-R14-REPLACEMENT-CLOSURE`；
+- Phase 7：`CLS-01` feasibility、`CLS-02` dependency cleanup、`CLS-03` legacy retirement、`CLS-04` operations/rollback、`CLS-05` Project OS、`CLS-06` final independent review/Owner recommendation、`CLS-07-OWNER-RELEASE-DECISION`。
 
 Phase transition 只能由 registry 的 required tickets terminal PASS、exact terminal digest 和独立 downstream-activation receipt 计算；execution-authority receipt 只能授权本票动作，不能冒充 terminal PASS 或下游激活。自由文本“已完成”没有机器效力。Phase 5 不得开始，直到 Phase 4 registry 被 fresh review，且所有将执行 slice 已有精确授权、回滚和 stop contract。
 
@@ -495,24 +535,27 @@ Phase transition 只能由 registry 的 required tickets terminal PASS、exact t
 | Ticket | 输入 | 输出 | 验收 |
 |---|---|---|---|
 | P0-01 plan freeze | 本文件 C0 | exact plan commit/blob/SHA/bytes | fresh reviewer P0/P1/P2=0/0/0 |
-| P0-02 R14 strategic disposition | R14 freeze、I2、RC-S1-109/110、Owner 决定 | R14 active=false、regression=true、PASS=false、R15/R16=false | old failure/count/digest不变 |
-| P0-03 program candidate | C0 identity、phase/action/ticket/domain-authority matrix、deny set | configs/repository/fin_0_1_3_product_wide_architecture_rebase_execution_program_v1_0.json | H0 candidate_state.phase_status=candidate、phase_review_status=pending、G0 absent；Phase 1+ false |
+| P0-02 `dell_03b_s1_internal_chain` R14 strategic disposition | freeze、I2、RC-S1-109/110、Owner 决定 | typed `.r14_implementation_lifecycle=regression_only`、`.r14_attempt_terminal_status=failed`、`.r15_successor_created=false`、`.r16_successor_created=false` 均挂在 `dell_03b_s1_internal_chain` 对象下；current/product-pass 仅 derived false | old failure/count/digest 不变；其他轨道 R15/R16 历史不变 |
+| P0-03 program candidate | C0 identity、phase/action/ticket/domain-authority matrix、deny set | configs/repository/fin_0_1_3_product_wide_architecture_rebase_execution_program_v1_0.json | H0 candidate；T0/G0 absent；Phase 1 planned、entry eligible=false、all action grants=false |
 | P0-04 source supersession | 产品审计、成熟栈包、R14 plan/I2、baseline docs | 原位 owner-decision/supersession notes | 不改写历史结论 |
 | P0-05 Project OS | capability/root-cause/current context/checklist/README | append-only current state | JSONL parse、current context一致 |
-| P0-06 governance test | machine authority、C0 Git binding、H0/G0 非自引用激活、plan immutability、3.2 状态轴 | tests/test_product_wide_architecture_rebase_program.py | H0 diff 排除 plan 且 H0 plan blob/SHA/bytes=C0；非法状态组合 fail closed；无 G0 receipt 时 Phase1=false；exact PASS receipt 后仅 Phase1 audit=true |
+| P0-06 governance test | machine authority、C0 Git binding、C0→H0→T0→G0 和 Hn→Fn→Sn→H(n+1)、plan immutability、3.2 状态轴 | tests/test_product_wide_architecture_rebase_program.py | H0 diff 排除 plan 且 plan identity=C0；非法/未注册 raw 状态 fail closed；T0 只签 terminal；G0 只令 Phase1 entry eligible；Phase1 audit grant 仍 false |
 | P0-07 worklog | 所有变更、命令、未执行项 | docs/worklog/fin_0_1_3_architecture_rebase/001_phase0_program_freeze_and_authority.md | factual、可恢复 |
-| P0-08 exact H0 review | clean H0 candidate | fresh read-only review payload | P0/P1/P2=0/0/0；writes=0；plan unchanged/excluded |
-| P0-09 G0 downstream activation | H0 PASS payload | fixed Phase 0 PASS/downstream-activation receipt only | G0.parent=H0、one changed path、H0 manifest 与 plan blob/SHA/bytes 不变、effective Phase0=passed、仅 Phase1 audit=true |
+| P0-08 exact Hn review | clean Hn candidate | fresh read-only exact review payload | reviewer writes/repair=0；plan unchanged/excluded；PASS 或 immutable FAIL findings |
+| P0-09 Tn/Fn terminal receipt | exact Hn review payload | exactly one fixed terminal PASS/FAIL receipt path | P0/P1/P2=0 才走 Tn；非零才走 Fn；parent=Hn、one changed path；review payload 不改写；Tn 不激活，Fn 不修复 |
+| P0-10 G0 downstream activation | T0 terminal PASS | fixed G0 one-path downstream-activation receipt | G0.parent=T0、Phase1 entry eligible only；不签 PASS、不授 Phase1 action |
+
+P0-09 若走 Fn，不执行 P0-10；而是进入 attempt-scoped `P0-Hn-FAIL-SUCCESSOR` 恢复控制票：先用 `phase0_successor_authority_receipt_materialization_write` 物化 Sn，再用新的 per-attempt candidate action 物化 H(n+1)。该恢复票不增加产品/phase 票号，不改变 plan，不产生 downstream activation 或 Phase 1 grant。
 
 ### 7.4 Phase 0 机器合同最低字段
 
 - schema_version、program_id、contract_version、3.2 全部原始状态轴与可重算 derived flags；
 - owner_decision_at、owner_decision_summary；
 - canonical_branch、C0 plan path/commit/tree/parent/blob/raw SHA-256/bytes、H0 expected parent=C0；
-- fixed C0 plan review receipt path、fixed G0 Phase 0 downstream-activation receipt path、H0/G0 changed-path rules；
-- H0 action allowlist/denylist；plan path 必须在 denylist，且 H0/G0 plan blob/raw SHA-256/bytes 必须等于 C0；
-- product_version、S-stage status、R14 implementation freeze；
-- R14 disposition、failure counts、open root causes；
+- fixed C0 plan review、per-attempt Tn/Fn terminal、Sn successor-authority、fixed G0 downstream-activation receipt paths，以及 Hn/Tn/Fn/Sn/G0 parent/changed-path rules；
+- Hn action allowlist/denylist；plan path 必须在 denylist，且 Hn/Tn/Fn/Sn/G0 读取到的 plan blob/raw SHA-256/bytes 必须等于 C0；
+- product_version、S-stage status、`dell_03b_s1_internal_chain.r14_implementation_freeze`；
+- namespaced R14 typed disposition、failure counts、open root causes、namespaced R15/R16 successor booleans；
 - per-phase status/review vector、ticket lifecycle/terminal/downstream-activation vector、phase sequence、transition rules；
 - machine ticket registry 与 migration slice registry schema；
 - action grants、domain-authority matrix、allowed/denied roots and surfaces；
@@ -525,13 +568,14 @@ Phase transition 只能由 registry 的 required tickets terminal PASS、exact t
 
 - plan fresh review 无 P0/P1/P2；
 - H0 machine config 与 exact plan commit 一致，并在 review 前不自报 PASS；H0 changed paths 排除 plan，且 H0 plan blob/raw SHA-256/bytes 与 C0 相等；
-- fresh H0 review 无 P0/P1/P2；G0 只物化 fixed PASS receipt，且 H0 manifest 与 plan 均保持原 blob/raw SHA-256/bytes；
-- 3.2 每个原始状态轴均使用合法 enum/boolean，所有非法 lifecycle/terminal/grant/activation 组合在 mutation test 中 fail closed；H0 candidate_state 不被回写，valid G0 只改变 validator 计算出的 effective state；
-- R14 在所有 current source 中均为 strategic termination / not PASS；
+- fresh H0 review 无 P0/P1/P2；T0 只物化 fixed review/result-review/terminal PASS receipt，`T0.parent=H0`；G0 再只物化 fixed downstream-activation receipt，`G0.parent=T0`；H0 manifest、T0 receipt与 plan 均保持原 blob/raw SHA-256/bytes；
+- mutation test 同时证明 FAIL 路径只能 `Hn→Fn→Sn→H(n+1)`、每个 action instance 独立 consumed、successor exact allowlist、历史 candidate/receipt 不覆盖；
+- 3.2 每个原始状态轴均使用合法 enum/boolean，未注册的 raw status/active/pass/regression 字段与非法 lifecycle/terminal/grant/activation/eligibility 组合均 fail closed；H0 candidate_state 不被回写，T0 只计算 Phase0 terminal PASS，G0 只计算 downstream activated 与 Phase1 entry eligible；
+- `dell_03b_s1_internal_chain` R14 在所有 current source 中均为 strategic termination / not product PASS；
 - RC-S1-109/110 仍 open；
 - RC-S0-111 记录为 owner-authorized architecture rebase、effective Phase 0 passed，但 issue 仍 open 且 migration authority=false；
-- no R15/R16；
-- effective authority 只新增 Phase 1 bounded read/audit write；no component/model/network/package/service/code migration/shadow/cutover/delete/domain authority 被意外打开；
+- `dell_03b_s1_internal_chain.r15_successor_created=false` 且 `.r16_successor_created=false`；其他轨道 R15/R16 历史不被改写；
+- G0 后 effective state 只新增 `phase1.phase_entry_eligible=true`；`phase1_audit_read_and_bounded_write.granted=false`，直至 exact P1 ticket candidate review 与 execution-authority receipt；no component/model/network/package/service/code migration/shadow/cutover/delete/domain authority 被意外打开；
 - targeted tests、JSON/JSONL parse、diff check、Git clean；
 - commit 与 non-force push 成功。
 
@@ -551,12 +595,14 @@ Phase transition 只能由 registry 的 required tickets terminal PASS、exact t
 - pyproject/requirements/lockfiles；
 - src、apps、scripts、configs、tests、data contracts；
 - Runtime registry、Workbench composition root；
-- R14/R17/Project OS frozen evidence；
+- `dell_03b_s1_internal_chain` R14、其他明确命名空间的历史 R-attempt、Project OS frozen evidence；
 - current local data/artifact roots，仅做路径、schema、consumer 和容量审计，不读取 hidden outcome。
 
 ### 8.3 执行顺序
 
-Phase 1 不是并行填写十五张表。先执行 P1-01、P1-02、P1-04、P1-10，冻结活动入口、package cycle、runtime resource compatibility spine 与 R3–R14 reachability；这四项未通过前，禁止创建目标目录、移动模块或把某个旧模块宣布为 retired。随后执行 P1-03、P1-05 至 P1-13，最后由 P1-14 汇总迁移矩阵、P1-15 冻结 ports 和验收合同。
+Phase 1 不是并行填写十五张表。G0 之后 Phase 1 仍为 `phase_status=planned`，只有 `phase_entry_eligible=true`；P1-01 至 P1-15 每张 action-bearing ticket 都必须先建 candidate contract、接受只读 candidate review、再以独立 execution-authority receipt 精确授权该票的 metadata read 与 bounded artifact write。没有该票 receipt，`phase1_audit_read_and_bounded_write.granted=false`，不得用另一 P1 ticket 或 G0 借权。
+
+在逐票授权内，先执行 P1-01、P1-02、P1-04、P1-10，冻结活动入口、package cycle、runtime resource compatibility spine 与历史 R-attempt reachability；这四项未通过前，禁止创建目标目录、移动模块或把某个旧模块宣布为 retired。随后执行 P1-03、P1-05 至 P1-13，最后由 P1-14 汇总迁移矩阵、P1-15 冻结 ports 和验收合同。每张票的 bounded audit 完成后都按 frozen result → read-only result review → terminal receipt 前进；只有确有下游消费者的票才另建 downstream-activation receipt。
 
 ### 8.4 需求票
 
@@ -571,7 +617,7 @@ Phase 1 不是并行填写十五张表。先执行 P1-01、P1-02、P1-04、P1-10
 | P1-07 S2 capability map | financial fact/normalization/bridge/derivation/forecast inputs | s2_capability_and_authority_map_v1 |
 | P1-08 S3 capability map | causal/counter/WWC/gap/research method/model nodes | s3_capability_and_authority_map_v1 |
 | P1-09 S4/S5 and product map | writer/citation/render/review/release/workbench/operations | s4_s5_product_capability_map_v1 |
-| P1-10 legacy R-chain reachability | R3–R14 files、tests、fixtures、current consumers、historical-only paths | r_chain_legacy_disposition_v1 |
+| P1-10 legacy R-chain reachability | 按 capability/责任命名空间识别的 R-attempt files、tests、fixtures、current consumers、historical-only paths；禁止把 S3 Writer/VS2/DELL 03B 等轨道混成一个全局序列 | r_chain_legacy_disposition_v1 |
 | P1-11 config and runner taxonomy | 1,000+ configs、formal/one-off/current/result/policy、live/zero-call runners | config_and_runner_taxonomy_v1 |
 | P1-12 test/eval spine | declared markers、逐测试分类、gold/blind/replay/integration/full-chain、default pytest safety | test_and_eval_spine_v1 |
 | P1-13 dependency/deploy/SBOM | direct/transitive deps、duplicate capability、platform/privacy/license constraints | dependency_deployment_and_license_baseline_v1 |
@@ -610,10 +656,11 @@ Phase 1 不是并行填写十五张表。先执行 P1-01、P1-02、P1-04、P1-10
 - 所有活动 import/consumer 都有归属；
 - package cycle、domain inversion 与 runtime exact-digest 绑定均有可回滚拆解顺序；
 - 所有大 artifact 都有 producer、input、rebuild、consumer、retention；
-- R3–R14 不再被误标为多个活动产品版本；
+- 每条 R-attempt 都绑定 capability/责任命名空间，不再被误标为多个活动产品版本，也不因 DELL 03B R14 disposition 删除其他轨道历史；
 - 所有 test 都按已声明 marker vocabulary 分类，默认测试路径不会意外触发 local-data、network 或 paid-model；
 - domain kernel 不依赖具体 vendor schema；
 - migration matrix 可以逐模块执行和回滚。
+- P1-01 至 P1-15 每张 action-bearing ticket 均有 candidate、candidate review、execution authority、frozen result、result review 与 terminal receipt；G0 没有直接授予任何一张票的动作。
 
 停止：
 
@@ -869,7 +916,7 @@ Owner 已明确授权：如果成熟技术栈测试确需 D 盘空间，可以�
 
 - 记录实际删除项、释放空间和是否可恢复；
 - 在独立 post-delete receipt 中绑定 pre-delete authority、实际 target、实际释放字节和恢复路线状态；
-- old retrieval status=temporarily_suspended_for_architecture_rebuild；
+- old retrieval 写入 typed state：`consumer_route_availability="suspended"`、`availability_reason="architecture_rebuild"`；禁止另造 `old retrieval status=...` 复合字段；
 - 所有依赖旧 index 的命令/API/UI 必须 fail visibly，不能静默返回空结果或 public gap；
 - 新 retrieval 只有通过 input digest、row/object count、identifier zero-miss、query suite、known regression、lineage、rebuild、backup/restore 和 fresh review 后才可恢复 active。
 
@@ -939,7 +986,7 @@ Owner 已明确授权：如果成熟技术栈测试确需 D 盘空间，可以�
 | W4c | semantic candidate shadow | QL-10 + qualified human gold | 以 `migration_slice_stop_disable` 关闭 semantic route；以 `unadmitted_shadow_artifact_retire_delete` 删除未准入 shadow projection |
 | W4d | provider/workflow/semantic bounded integration | W4a/W4b/W4c 分别 PASS | 以 `migration_slice_stop_disable` 关闭整体 feature flag；三个独立 rollback 均可执行 |
 | W5 | non-released report/render/review UX candidate preview | QL-13 + Workbench contract | 以 `migration_slice_stop_disable` 关闭 candidate preview；旧 renderer/read surface 始终是 current |
-| W6 | Phase 6 controlled consumer cutover 与 legacy regression-only | 对应 ACC-Sn terminal PASS＋downstream activation | compatibility shim re-enable；不恢复 attempt-specific R3–R14 |
+| W6 | Phase 6 controlled consumer cutover 与 legacy regression-only | 对应 ACC-Sn terminal PASS＋downstream activation | compatibility shim re-enable；不恢复任何 namespaced historical R-attempt implementation |
 
 Wave 只是排序容器，不是一次实现提交。W3a–W3e、W4a–W4d 每项必须是独立 `MIG-*` slice，分别具有 input digest、feature switch、result、fresh review 和 rollback；不得用一个 W3/W4 commit 同时改变多项变量。
 
@@ -1029,13 +1076,13 @@ S1 source/capture/parse/object/index/retrieval/rank
    -> CandidateDecision / Evidence admission / GapEligibility
 S2 NumericFact / PIT / unit-period-vintage-conflict / financial bridge
 S3 research plan / evidence-bound judgment / counter / WWC / report model
-S4 review / repair / approval / reader citation / source appendix
+S4 review / new-attempt repair / approval / reader citation / source appendix
 S5 product, operations, security, rollback and release decision
 ~~~
 
 每一阶段独立通过；后序 PASS 不能抵消前序失败。
 
-S4/S5 的机器顺序采用 6.4 的完整序列。`ACC-S4-CANDIDATE` 票据仅存在、仅 candidate commit 或自由文本状态都不产生权限；只有合法 execution-authority receipt 才能临时打开 `report_candidate_generation`。report result/review 后必须先得到该子票 terminal PASS，主票 `ACC-S4` 的 execution-authority receipt 才能打开 exact human action；human result/denominator/authority review 后才能 terminal PASS，并另行 downstream activate。`ACC-S5.predecessor` 必须绑定该 terminal digest 与 downstream receipt；qualified-human product acceptance 完成并审阅前不得 ACC-S5 terminal PASS。全过程 current reader publication/release 继续为 false。
+S4/S5 的机器顺序采用 6.4 的完整序列。`ACC-S4-CANDIDATE` 票据仅存在、仅 candidate commit 或自由文本状态都不产生权限；每次生成使用不可变 `ACC-S4-CANDIDATE-Cnn`。只有合法 execution-authority receipt 才能临时打开 `report_candidate_generation`。report result 必须先冻结，再由作者分离 reviewer 只读审查；PASS 才能得到 terminal PASS，FAIL 必须先形成 immutable failure receipt，并以新 Cnn candidate/review/authority/result 修正，reviewer 不在同一结果上 repair。terminal PASS 后还必须单独物化 `ACC-S4-CANDIDATE downstream_activation_receipt`；主票 `ACC-S4.predecessor` 同时绑定 candidate terminal result digest 与该 activation identity，之后 `ACC-S4` 自己的 candidate review 和 execution-authority receipt 才能打开 exact human action。human result/denominator/authority review 后才能 terminal PASS，并另行 downstream activate。`ACC-S5.predecessor` 必须绑定该 terminal digest 与 downstream receipt；qualified-human product acceptance 完成并审阅前不得 ACC-S5 terminal PASS。全过程 current reader publication/release 继续为 false。
 
 ### 13.3 质量门
 
@@ -1072,7 +1119,7 @@ S4：
 - claim→passage/page/table/cell；
 - reader-visible title/issuer/date/period/locator/URL；
 - source appendix；
-- repair 不覆盖原失败。
+- repair 不覆盖原失败；report result FAIL 必须用新的 `ACC-S4-CANDIDATE-Cnn` attempt。
 
 S5：
 
@@ -1101,13 +1148,13 @@ S5：
 
 任何未知 completion、duplicate risk、data drift 或 authority mismatch 必须 fail closed。
 
-### 13.5 `R14-REPLACEMENT-S1-CLOSURE` 同阶段关闭票
+### 13.5 `DELL-03B-S1-R14-REPLACEMENT-CLOSURE` 同阶段关闭票
 
 这张票独立于 QL-10 semantic 安装/小切片资格，也独立于通用 `ACC-S1`。QL-10 PASS 只说明候选可继续；不能关闭 RC-S1-109/110、不能退役旧回归证据。
 
 固定输入至少包括：
 
-- R14 implementation freeze=`7e25cad95ee84b39fb2a51063100405bc27da6e5`；
+- `dell_03b_s1_internal_chain.r14_implementation_freeze="7e25cad95ee84b39fb2a51063100405bc27da6e5"`；
 - frozen source：1,888 rows，SHA-256=`d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45`；
 - frozen compiled：34,199 rows，SHA-256=`1c3e48486f933d23306dbabacb1641e26cb9bbc5b474da932d602752dff3fa92`；
 - full corpus=`27,026`，原 preview=`26,787 pass / 239 fail`；
@@ -1135,12 +1182,12 @@ S5：
 - 关键金融 slice 无未解释 P0/P1；
 - deterministic、model、human 三层结果分开；
 - DeepSeek 真实 case 不是 self-judge 唯一标准；
-- `ACC-S4-CANDIDATE` report result/review terminal PASS、`ACC-S4` qualified-human immutable result/denominator/authority review terminal PASS、独立 downstream activation 均完成；
+- `ACC-S4-CANDIDATE-Cnn` report result frozen/read-only review/terminal PASS、stable candidate downstream activation、`ACC-S4` qualified-human immutable result/denominator/authority review terminal PASS 与其独立 downstream activation 均完成；
 - `ACC-S5.predecessor` 精确绑定 ACC-S4 terminal digest/downstream receipt，qualified-human product acceptance 与 product review terminal PASS；
 - cost/latency/resource/security/operations 可接受；
 - old/new comparison 与 rollback 演练通过；
 - S1–S5 各自 verdict 明确；
-- `R14-REPLACEMENT-S1-CLOSURE` 已 PASS 且 Owner 已处置 RC-S1-109/110，或程序明确以 partial/stopped 收口而非 complete；
+- `DELL-03B-S1-R14-REPLACEMENT-CLOSURE` 已 PASS 且 Owner 已处置 RC-S1-109/110，或程序明确以 partial/stopped 收口而非 complete；
 - 不通过弱化 validator、删 case 或隐藏失败得到 PASS。
 
 ## 14. Phase 7：迁移收口与最终可行性方案
@@ -1157,17 +1204,22 @@ S5：
 8. 最终 architecture、feasibility、migration、operations 文档；
 9. Project OS、worklog、README、checklist、public docs 一致；
 10. clean branch、exact staging、commit、non-force push；
-11. fresh engineering/Evidence/report/product/security review；
-12. Owner 决定产品版本和 release，不由程序自动推断。
+11. `CLS-06` fresh engineering/Evidence/report/product/security independent review 与 Owner recommendation；
+12. `CLS-07-OWNER-RELEASE-DECISION` 生成 exact release-decision packet，先接受只读完整性 review，再由 Owner 决定 exact 产品版本、deployment、scope 和 `release / no_release / hold`，不由程序或 CLS-06 自动推断；
+13. 只有 Owner decision=`release` 后，另行创建并审查 `release_execution_authority_receipt`；decision receipt 不执行发布。
 
-`CLS-03` 的 legacy retirement 硬门为：historical implementation package discovery=0、active imports=0、Runtime Registry refs=0、current consumers=0、archive redirect/origin/digest complete、`verify_active_baseline.py` 与 clean-main proof 通过。rollback 只能重新启用已资格验证的薄 compatibility adapter，不能把 attempt-specific R3–R14 还原为活动实现。
+`CLS-03` 的 legacy retirement 硬门为：historical implementation package discovery=0、active imports=0、Runtime Registry refs=0、current consumers=0、archive redirect/origin/digest complete、`verify_active_baseline.py` 与 clean-main proof 通过。rollback 只能重新启用已资格验证的薄 compatibility adapter，不能把任何责任命名空间下、文件名可能标作 R3–R14 的 attempt-specific implementation 还原为活动实现。
+
+`CLS-07-OWNER-RELEASE-DECISION` 是稳定票据，不是自由文本签字。它的固定输入至少包括：`CLS-06` engineering/product/security review terminal receipt；`ACC-S5` terminal result digest 与 downstream-activation receipt identity；`DELL-03B-S1-R14-REPLACEMENT-CLOSURE`/RC-S1-109/110 处置；exact product version、deployment target、consumer/publication scope、rollback route、known boundaries 与 expiry。先冻结 candidate decision packet，再由作者分离 reviewer 只读审查 packet 的完整性；reviewer 不替 Owner 决策。Owner 随后签发 immutable decision receipt，唯一 decision vocabulary 为 `release / no_release / hold`，并映射为：`release → ticket_terminal_status=passed`、`no_release → ticket_terminal_status=stopped`、`hold → ticket_terminal_status=held`。
+
+Owner decision receipt 与发布执行授权必须分离。registry 必须提前冻结 CLS-07 candidate packet、read-only packet review、immutable Owner decision receipt、release-authority request、read-only authority review、`release_execution_authority_receipt` 与 post-action receipt 的固定路径。只有 decision=`release` 且 ticket terminal passed 时，才能先提交 release-authority request、接受作者/操作者分离的只读 review，再另行物化 `release_execution_authority_receipt`；它必须绑定 decision receipt digest、exact product/version/deployment/scope、allowed publication surfaces、deny surfaces、start/expiry、one-shot consumption、operator、rollback 与 post-action receipt fixed paths。`no_release` 或 `hold` 不得生成该 authority；此时产品不发布，程序诚实收口为 `program_terminal_status=stopped` 或 `partial`，不得伪造 release 或 complete。即便 decision=`release`，receipt 未物化、已过期或已消费时，`product_publication_release.granted=false`。
 
 ### 14.2 完成定义
 
 本程序只有在以下全部成立时才 complete：
 
 - R14 已正确 strategic close，未假装 PASS；
-- `R14-REPLACEMENT-S1-CLOSURE` 已 PASS 且 Owner 已明确处置 RC-S1-109/110；若仍 open，程序只能 partial/stopped；
+- `DELL-03B-S1-R14-REPLACEMENT-CLOSURE` 已 PASS 且 Owner 已明确处置 RC-S1-109/110；若仍 open，程序只能 partial/stopped；
 - 旧规划已被当前程序和 ADR 正确 supersede；
 - S1–S5 每个能力有 Build/Adopt/Hold/Retire；
 - Adopt 能力有广泛 longlist、排除记录和 research saturation；
@@ -1179,6 +1231,7 @@ S5：
 - 真实 case 和 DeepSeek 允许节点已验证；
 - critical financial slice 无未解释重大错误；
 - S1–S5、人审、报告、产品、运维、安全分别有 verdict；
+- `CLS-06` review terminal PASS、`CLS-07-OWNER-RELEASE-DECISION` decision=`release` 且 ticket terminal passed；如实际执行 publication，还必须有独立、有效、未消费前的 `release_execution_authority_receipt` 与执行后 receipt；
 - 没有隐藏失败、削弱 validator 或用 vendor benchmark 替代产品证明；
 - Git/Project OS clean、同步、可恢复。
 
@@ -1190,14 +1243,14 @@ S5：
 
 | Level | 内容 | 何时运行 |
 |---|---|---|
-| T0 | compile、JSON/schema、changed-file static、diff | 每次小改 |
-| T1 | ticket direct unit/contract/security fixture | 每张票 |
-| T2 | adjacent adapter/consumer/regression | 每个 slice |
-| T3 | phase integration、frozen benchmark/rebuild/recovery | phase freeze |
-| T4 | full repository、frontend/build/browser/secret | shared surface 或 phase close |
-| T5 | real-case S1–S5、model/human/product/operations | Phase 6 |
+| V0 | compile、JSON/schema、changed-file static、diff | 每次小改 |
+| V1 | ticket direct unit/contract/security fixture | 每张票 |
+| V2 | adjacent adapter/consumer/regression | 每个 slice |
+| V3 | phase integration、frozen benchmark/rebuild/recovery | phase freeze |
+| V4 | full repository、frontend/build/browser/secret | shared surface 或 phase close |
+| V5 | real-case S1–S5、model/human/product/operations | Phase 6 |
 
-高风险迁移不得仅用 T0/T1。全仓也不应在每次小改重复运行；trigger 和超时写入 ticket。
+高风险迁移不得仅用 V0/V1。全仓也不应在每次小改重复运行；trigger 和超时写入 ticket。
 
 ### 15.2 证据等级
 
@@ -1261,8 +1314,11 @@ S5：
 | 动作 | 当前 |
 |---|---:|
 | 写作、审查本计划 | true |
-| H0 governance/source-doc/Project OS candidate 写入 | plan fresh PASS 后 exact allowlist true；不激活 Phase 1 |
-| Phase 1 repo/data metadata 只读＋bounded audit artifact 写入 | valid H0＋G0 PASS receipt 后 true |
+| Hn governance/source-doc/Project OS candidate 写入 | H0：plan fresh PASS payload 后 per-attempt exact allowlist；successor：Fn→Sn 后新 attempt；不激活 Phase 1 |
+| Hn review terminal receipt materialization | false，直至 exact external Hn review；之后本 attempt 只能 one-path Tn 或 Fn，消费即关闭 |
+| FAIL successor authority/materialization | false；仅 Fn 后可 one-path Sn，再按 exact allowlist 建 H(n+1) |
+| Phase 0 downstream activation G0 | false；仅 T0 terminal PASS 后 one-path；只令 Phase1 entry eligible，不授动作 |
+| Phase 1 repo/data metadata 只读＋bounded audit artifact 写入 | false；valid G0 后仍须 exact P1-xx candidate review＋该票 execution-authority receipt |
 | Phase 2 官方来源网络调研 | false；valid G0 后仍须 exact RSH execution-authority receipt |
 | Phase 3 qualification contract/evidence repo 写入 | false，QL candidate-contract authority receipt 前不允许；仅 qualification exact allowlist，禁止 production src/pyproject/current config/data |
 | package/repo/model 下载 | false，QL candidate review＋execution-authority receipt 前不允许 |
@@ -1279,8 +1335,8 @@ S5：
 | current consumer cutover | false，Phase 6 exact ACC-Sn terminal PASS＋downstream-activation receipt 前不允许 |
 | 删除 D:\FIN_Insight_Agent\data\indexes | false，Phase 3 条件全部满足后才允许 |
 | legacy source retire/delete | false，Phase 7 CLS-03 硬门前不允许 |
-| R14 implementation/pre-formal/formal | false / permanently not on active route |
-| R15/R16 | false |
+| `dell_03b_s1_internal_chain` R14 implementation/pre-formal/formal | false / permanently not on active route |
+| `dell_03b_s1_internal_chain` R15/R16 successor creation | false；不表示其他轨道的历史 R15/R16 不存在 |
 | DeepSeek live | false，Phase 3/6 model execution-authority receipt＋TokenBudgetBasis 前不允许 |
 | external source execution | false，单独 route execution-authority receipt 前不允许 |
 | embedding execution | false，独立 QL-07 execution-authority receipt 前不允许 |
@@ -1291,7 +1347,8 @@ S5：
 | report candidate generation | false，ACC-S4-CANDIDATE execution-authority receipt 前不允许 |
 | qualified-human S4 approval | false，ACC-S4 execution-authority receipt＋exact human gate 前不允许 |
 | qualified-human product acceptance | false，ACC-S5 execution-authority receipt＋exact product-human gate 前不允许 |
-| product/publication/release | false，ACC-S5 terminal PASS digest＋downstream activation＋Owner release receipt 前不允许 |
+| CLS-07 Owner release decision | false；CLS-06 terminal、ACC-S5 terminal/downstream 与 exact product/version/deployment/scope packet 前不允许；decision 仅 `release/no_release/hold` |
+| product/publication/release | false；CLS-07 decision=`release`/terminal passed 后仍须独立 `release_execution_authority_receipt`；no_release/hold 永不授权 |
 
 ## 19. 计划冻结后的第一执行队列
 
@@ -1300,15 +1357,17 @@ S5：
 1. fresh、作者分离、只读审查本 plan-only commit；
 2. 修复所有 P0/P1/P2，必要时新 plan-only revision；
 3. 提交并推送 exact plan；
-4. 创建 H0 Phase 0 candidate：物化 plan PASS receipt、machine manifest、source supersession、Project OS、worklog 和 machine-semantic test；H0 changed paths 必须排除本计划，H0 plan blob/raw SHA-256/bytes 必须等于 C0；
-5. 对 clean exact H0 做 fresh read-only review；失败则保留 H0/failure receipt 并创建 successor；
-6. 仅在 H0 review PASS 后创建 one-path G0 activation receipt，验证 H0 manifest 与 plan blob/raw SHA-256/bytes 均未变；
-7. targeted verification、commit、non-force push，并由 machine test 计算 effective Phase0 PASS；
-8. 只在 valid G0 后开始 Phase 1 bounded read/audit-write 和有独立 ticket 的 Phase 2 research。
+4. 以 plan PASS payload 授权的 per-attempt action 创建 H0 Phase 0 candidate：物化 plan PASS receipt、machine manifest、source supersession、Project OS、worklog 和 machine-semantic test；H0 changed paths 必须排除本计划，H0 plan blob/raw SHA-256/bytes 必须等于 C0；
+5. 对 clean exact H0 做 fresh read-only review；reviewer 不写不修；
+6. PASS 路径只创建 one-path T0 terminal receipt（`T0.parent=H0`），再创建 one-path G0 activation receipt（`G0.parent=T0`）；FAIL 路径只创建 Fn failure receipt，再创建 Sn successor-authority receipt和非覆盖 H(n+1)；
+7. targeted verification、commit、non-force push，并由 machine test 计算 T0 后 effective Phase0 terminal PASS、G0 后 downstream activated/Phase1 entry eligible，同时确认 Phase1 action grants 仍 false；
+8. valid G0 后只可提出 P1 ticket candidate；每张 P1-01..P1-15 经 candidate review 与独立 execution-authority receipt 后才开始该票 bounded read/audit-write。Phase 2 research 同样须独立 RSH ticket authority。
 
 本队列不包含 package install、模型调用、外源、formal、索引删除或生产迁移。
 
-## 20. Plan review history 与 v1.4 修正
+## 20. Plan review history 与 v1.5 修正
+
+本节在记录旧 revision 时保留当时使用的票名和问题摘要（例如旧 `H0→G0`、未命名空间化的 `R14-REPLACEMENT-S1-CLOSURE`、`review/repair`）；它们只是不可变审计历史，不是 v1.5 的现行机器语义。现行权威只取第 2–19 节及本节明确列出的 v1.5 修正。
 
 exact v1.0 commit `01ffc77b213899d3f177b13b1d38a43e390d3d0c`、tree=`7e8d5ee26d6c2947edec8e6690e11233c8e6d895`、plan blob=`3017dcc4a5e29af5298a26d42fa6de039722beb8` 经 fresh、作者分离、只读审阅得到 `PLAN_FAIL_REVISION_REQUIRED / P0-P1-P2-P3=0/5/2/0`。该失败保持不可变；v1.1 针对七项 finding 作出：
 
@@ -1339,7 +1398,18 @@ exact v1.3 commit `b1c961edde4689c18d12aee0db4260a5021b93cb`、tree=`d100ac1b9b4
 1. 冻结 phase、ticket lifecycle/terminal、downstream activation、action grant、program terminal、artifact immutability、implementation lifecycle 等独立原始状态轴；把 execution authority 与 terminal PASS 后的 downstream activation 拆成不同 receipt，compound labels 只允许做可重算 derived flags；
 2. 修正 S4→S5 人工权限链：`ACC-S4-CANDIDATE` 先生成并审 report，`ACC-S4 execution_authority_receipt` 再授权 exact human decisions，human result/denominator/authority review 后才允许 ACC-S4 terminal PASS/downstream activation；`ACC-S5.predecessor` 绑定该 terminal digest/activation，另以 `qualified_human_product_acceptance` 完成 S5 human result，最后才可能 terminal PASS/release。
 
-v1.4 必须重新形成 plan-only commit 并接受 exact、作者分离、只读全量审阅；本段不能自行关闭 v1.3 findings。
+exact v1.4 commit `eeb75e1185898802b081577c1d20c7c32b71c476`、tree=`9b80346b347f4fb313b76b0d97fc3f6e69fc7b9a`、parent=`b1c961edde4689c18d12aee0db4260a5021b93cb`、plan blob=`84a217b92038bb2406f0ded46af4b426e0c85737`、raw SHA-256=`e65534997487383dd6a25944ac5a24b5cb192e360af7d104fba5a345fa275c93`、bytes=`93045`，经作者分离、只读、对 exact v1.4 首次完整阅读的 reviewer 审阅得到 `PLAN_FAIL_REVISION_REQUIRED / P0-P1-P2-P3=0/4/3/1`。受协作树硬节点上限影响，该 reviewer 复用了曾做 exact v1.1 只读 review 与 v1.2 H0 machine mapping、但未参与 v1.4 写作的既有任务身份，不冒充新的 fork-none 节点；审阅前后 repo clean、local origin-tracking ref aligned，且 writes/network/model/install/formal/delete/old-live-state 均为 0。该失败保持不可变；v1.5 针对八类 finding 作出：
+
+1. 把 Phase 0 terminal PASS 与 downstream activation 拆为 `H0→T0→G0`：T0 只物化 review/result-review/terminal PASS，G0 只物化 downstream activation，`G0.parent=T0`；
+2. 新增 `phase_entry_eligible`，G0 只令 Phase 1 可以提出逐票 candidate；P1-01 至 P1-15 的 bounded read/write 各自要求 candidate review 和 execution-authority receipt；
+3. 在 `ACC-S4-CANDIDATE` terminal PASS 与 `ACC-S4` candidate 之间增加独立 downstream-activation receipt，`ACC-S4.predecessor` 同时绑定 terminal result digest 与 activation identity；
+4. 为 Phase 0 注册 per-attempt candidate、review-terminal、successor-authority 和 downstream-activation materialization actions，失败固定走 `Hn→Fn→Sn→H(n+1)`，每个 instance 单独消费且旧 candidate 不覆盖；
+5. 增加 `attempt_terminal_status`、`consumer_route_availability` 与 typed R14 disposition；validator 拒绝未注册 raw status/active/pass/regression，旧 retrieval suspension 也改为 typed availability＋reason；
+6. 注册 `CLS-07-OWNER-RELEASE-DECISION`，把 Owner 的 `release/no_release/hold` immutable decision receipt 与之后的 `release_execution_authority_receipt` 拆开；
+7. 将 R14/R15/R16 的处置限定到 `dell_03b_s1_internal_chain` / DELL 03B S1 corpus-parity replacement，禁止覆盖 S3 Writer、VS2 或其他责任轨道的 R-number 历史；
+8. 把 report result review 与 repair 拆开：`ACC-S4-CANDIDATE-Cnn` result 冻结后 reviewer 只读，FAIL 先留失败 receipt，再创建新的 C(n+1) candidate/review/authority/result。
+
+v1.5 必须重新形成 plan-only commit 并接受 exact、作者分离、只读全量审阅；只有 P0/P1/P2=`0/0/0` 的 review payload 被后续 H0 物化后，才能进入 Phase 0 candidate。本文不能自行关闭 v1.4 findings。
 
 ## 21. Source index
 

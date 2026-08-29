@@ -4,9 +4,9 @@
 
 程序 ID：FIN-0.1.3-PRODUCT-WIDE-ARCHITECTURE-REBASE-20260830
 
-计划合同版本：v1.1
+计划合同版本：v1.2
 
-状态：REVISION CANDIDATE / exact v1.0 commit `01ffc77b...` fresh review=`PLAN_FAIL 0/5/2/0` / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权任何组件晋升
+状态：REVISION CANDIDATE / exact v1.1 commit `3fc3dcf3...` author-separated first-view review=`PLAN_FAIL 0/2/0/1` / OWNER 已授权先冻结本计划，再从 Phase 0 开始执行 / 尚未授权任何组件晋升
 
 当前分支：codex/fin013-dell-s1-s2-product-bridge
 
@@ -250,12 +250,11 @@ configs/
 tests/
   contract/
   regression/
+    legacy_r14/
   qualification/
   integration/
   product/
   security/
-  regression/
-    legacy_r14/
 
 archive/versions/
   # 完整旧实现、origin/redirect/digest 与历史审计；不进入 package discovery
@@ -311,7 +310,7 @@ Phase 0 candidate H0
         v fresh read-only exact-H0 review
 Phase 0 PASS receipt G0
   G0.parent=H0; only materializes review receipt
-  effective Phase 1 read-only authority becomes true
+  effective Phase 1 bounded read/audit-write authority becomes true
         |
         v
 Phase 1 capability/import/data/consumer migration inventory
@@ -344,9 +343,9 @@ Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist
 
 1. C0：只包含本执行程序。
 2. C0-review：fresh、作者分离、只读 reviewer 返回结构化 verdict；reviewer 不写仓库。
-3. H0：物化 C0 plan review receipt，并提交 Phase 0 candidate machine manifest、必要 source-doc supersession、Project OS、checklist、worklog 和定向测试。H0 内 manifest 必须写 `phase0_candidate_awaiting_fresh_review`，所有 Phase 1+ 权限仍为 false。
+3. H0：物化 C0 plan review receipt，并提交 Phase 0 candidate machine manifest、必要 source-doc supersession、Project OS、checklist、worklog 和定向测试。H0 内 manifest 必须写 `phase0_candidate_awaiting_fresh_review`，所有 Phase 1+ 权限仍为 false。H0 changed paths 必须排除 plan path，且 `H0:<plan path>` 的 Git blob、raw SHA-256 和 bytes 必须与 C0 完全相等。
 4. H0-review：另一名 fresh、作者分离、只读 reviewer 只审 exact H0；reviewer 不写仓库。若发现 P0/P1/P2，H0 保持不可变，先物化 failure receipt，再创建非覆盖 H1 candidate。
-5. G0：仅当 H0 review 为 `PASS 0/0/0/*` 时，创建固定路径的 Phase 0 PASS receipt。G0 必须满足 `G0.parent=H0`、changed path 仅该 receipt、H0 machine manifest blob/bytes 不变。有效 Phase 1 权限由 H0 manifest＋G0 receipt 联合计算；不允许自引用 G0 commit。
+5. G0：仅当 H0 review 为 `PASS 0/0/0/*` 时，创建固定路径的 Phase 0 PASS receipt。G0 必须满足 `G0.parent=H0`、changed path 仅该 receipt、H0 machine manifest 与 plan blob/SHA/bytes 不变。有效 Phase 1 权限由 H0 manifest＋G0 receipt 联合计算；不允许自引用 G0 commit。
 6. 后续每个 release slice 独立提交：contract → implementation candidate → frozen result → fresh review → 独立 activation receipt。失败 slice 不覆盖。
 7. 大型组件安装和 run artifact 不进 Git；Git 只保存 lock、manifest、digest、license/SBOM 结论、测试代码和有界结果。
 8. 不为每个小状态创建独立 current manifest。维护一个 canonical program manifest，加 append-only ticket/result/review/activation receipt；任何 PASS 都不能在被审 candidate 中自我声明。
@@ -358,6 +357,7 @@ Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist
 - 新证据写入 issue/capability ledger；
 - 说明原假设、证据、影响、选择与 rollback；
 - 计划合同版本仅在行为/门/接口变化时递增；
+- 任何计划行为、门、权限或接口变化都必须形成新的 plan-only `C1/Cn`，重新接受 exact plan review；不得夹带在 H0、G0 或普通 phase/ticket commit；
 - 纯运行重试只增加 rN，不增加合同版本；
 - 涉及产品范围、发布含义、付费规模、安全或不可逆动作时再次向 Owner 报告；
 - 已完成/失败的历史证据不回写。
@@ -388,10 +388,11 @@ Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist
 
 | Action ID | 最早可能 grant | 允许范围 | 不随之获得的权威 |
 |---|---|---|---|
-| governance_docs_write | H0 | 本程序、source supersession、Project OS、worklog、governance config/test | component adoption、产品行为 |
+| h0_governance_materialization_write | H0 one-shot | C0 plan review receipt、source supersession、Project OS、worklog、governance config/test exact allowlist；plan path 显式 deny | plan mutation、component adoption、产品行为 |
 | phase1_audit_read_and_bounded_write | G0 | repo/data metadata 只读；Phase 1 docs/configs/audit artifacts 写入 | src/product data mutation、component execution |
 | phase2_network_research | G0＋RSH ticket | 官方 docs/repo/spec/paper 调研与来源快照 | external source product call、package download |
-| repository_code_test_config_lock_write | Phase 5 slice authority；Phase 0 治理文件为单独 allowlist | exact slice allowlist | Evidence/S2/S3/report/release |
+| phase3_qualification_contract_evidence_write | Phase 3 exact QL candidate authority | candidate manifest 先行；仅 scripts/tests/configs/docs 的 qualification/audit/worklog exact paths，以及 lock/revision/SBOM/bounded result/failure/review/activation receipt | production src、pyproject/current config/data、component promotion、domain authority |
+| production_integration_code_test_config_lock_write | Phase 5 slice authority；Phase 0/3 各有独立受限动作 | exact MIG slice allowlist | Evidence/S2/S3/report/release |
 | package_model_image_download | Phase 3 candidate manifest | Z qualification lab exact roots | dependency promotion、模型调用 |
 | qualification_service_install_start | Phase 3 ticket | 隔离端口、进程、容器、Z roots | current product route |
 | local_fixture_benchmark | Phase 3 ticket | frozen/synthetic fixtures | human/product truth |
@@ -410,7 +411,9 @@ Phase 1 与 Phase 2 可在 G0 后分别按 ticket 并行，但 Phase 2 shortlist
 | qualified_human_approval | Phase 6 explicit human gate | exact case/review packet | product/publication/release |
 | product_publication_release | Phase 6/7 Owner release receipt | exact product/version/deployment | 任何未列 scope |
 
-Phase 5 最多取得 repository code/test/config/lock 写入、qualification-only data、shadow 和 dual-read 权限；它不能签发 Evidence、NumericFact、S2/S3 judgment、reader deliverable、human approval 或 release。Phase 6 也不是一次性打开全部下游：`ACC-S1 → ACC-S2 → ACC-S3 → ACC-S4 → ACC-S5` 分别独立验收、独立激活，后序 PASS 不能补偿前序 FAIL。Phase 7 只允许在 consumer/rollback/root-cause/release 条件分别满足后收口，不因“项目结束”获得广义删除权。
+Phase 3 的 qualification repo write 必须在任何 download/install/run 前先物化 candidate contract；candidate、result、review、activation 分离，失败 append-only，不能运行后补写 candidate 来反向授权既有动作。其 allowlist 只能包含 `scripts/qualification`、`tests/qualification`、`configs/qualification`、`configs/audits`、qualification research/worklog 等 candidate-specific 路径；不得修改 production `src`、`pyproject.toml`、正式依赖锁、current product config/data 或 domain authority。
+
+Phase 5 最多取得 production integration code/test/config/lock 写入、qualification-only data、shadow 和 dual-read 权限；它不能签发 Evidence、NumericFact、S2/S3 judgment、reader deliverable、human approval 或 release。Phase 6 也不是一次性打开全部下游：`ACC-S1 → ACC-S2 → ACC-S3 → ACC-S4 → ACC-S5` 分别独立验收、独立激活，后序 PASS 不能补偿前序 FAIL。Phase 7 只允许在 consumer/rollback/root-cause/release 条件分别满足后收口，不因“项目结束”获得广义删除权。
 
 程序状态至少包含：`plan_candidate`、`phase0_candidate`、`phase0_pass`、`phase1_inventory_active/pass`、`phase2_research_active/pass`、`phase3_qualification_active/pass`、`phase4_adr_active/frozen`、`phase5_integration_active/pass`、`phase6_s1/s2/s3/s4/s5_active/pass`、`phase7_closeout_candidate`，以及 terminal `complete/partial/stopped/failed`。并行只通过各 phase/ticket 独立状态表达；不得用一个粗粒度 `current_phase` 覆盖事实。
 
@@ -454,16 +457,18 @@ Phase transition 只能由 registry 的 required tickets terminal PASS、exact d
 | P0-03 program candidate | C0 identity、phase/action/ticket/domain-authority matrix、deny set | configs/repository/fin_0_1_3_product_wide_architecture_rebase_execution_program_v1_0.json | H0 status=candidate；Phase 1+ false |
 | P0-04 source supersession | 产品审计、成熟栈包、R14 plan/I2、baseline docs | 原位 owner-decision/supersession notes | 不改写历史结论 |
 | P0-05 Project OS | capability/root-cause/current context/checklist/README | append-only current state | JSONL parse、current context一致 |
-| P0-06 governance test | machine authority、C0 Git binding、H0/G0 非自引用激活 | tests/test_product_wide_architecture_rebase_program.py | 无 G0 receipt 时 Phase1=false；exact PASS receipt 后仅 Phase1 audit=true |
+| P0-06 governance test | machine authority、C0 Git binding、H0/G0 非自引用激活、plan immutability | tests/test_product_wide_architecture_rebase_program.py | H0 diff 排除 plan 且 H0 plan blob/SHA/bytes=C0；无 G0 receipt 时 Phase1=false；exact PASS receipt 后仅 Phase1 audit=true |
 | P0-07 worklog | 所有变更、命令、未执行项 | docs/worklog/fin_0_1_3_architecture_rebase/001_phase0_program_freeze_and_authority.md | factual、可恢复 |
-| P0-08 exact H0 review | clean H0 candidate | fresh read-only review payload | P0/P1/P2=0/0/0；writes=0 |
-| P0-09 G0 activation | H0 PASS payload | fixed Phase 0 PASS receipt only | G0.parent=H0、one changed path、H0 manifest blob不变、effective Phase1 audit=true |
+| P0-08 exact H0 review | clean H0 candidate | fresh read-only review payload | P0/P1/P2=0/0/0；writes=0；plan unchanged/excluded |
+| P0-09 G0 activation | H0 PASS payload | fixed Phase 0 PASS receipt only | G0.parent=H0、one changed path、H0 manifest 与 plan blob/SHA/bytes 不变、effective Phase1 audit=true |
 
 ### 7.4 Phase 0 机器合同最低字段
 
 - schema_version、program_id、contract_version、candidate/effective status；
 - owner_decision_at、owner_decision_summary；
-- canonical_branch、H0 parent、plan path/commit/tree/blob/SHA/bytes、expected fixed H0 review receipt path；
+- canonical_branch、C0 plan path/commit/tree/parent/blob/raw SHA-256/bytes、H0 expected parent=C0；
+- fixed C0 plan review receipt path、fixed H0 activation receipt path、H0/G0 changed-path rules；
+- H0 action allowlist/denylist；plan path 必须在 denylist，且 H0/G0 plan blob/raw SHA-256/bytes 必须等于 C0；
 - product_version、S-stage status、R14 implementation freeze；
 - R14 disposition、failure counts、open root causes；
 - per-phase status vector、phase sequence、phase transition rules；
@@ -477,8 +482,8 @@ Phase transition 只能由 registry 的 required tickets terminal PASS、exact d
 ### 7.5 Phase 0 退出门
 
 - plan fresh review 无 P0/P1/P2；
-- H0 machine config 与 exact plan commit 一致，并在 review 前不自报 PASS；
-- fresh H0 review 无 P0/P1/P2；G0 只物化 fixed PASS receipt；
+- H0 machine config 与 exact plan commit 一致，并在 review 前不自报 PASS；H0 changed paths 排除 plan，且 H0 plan blob/raw SHA-256/bytes 与 C0 相等；
+- fresh H0 review 无 P0/P1/P2；G0 只物化 fixed PASS receipt，且 H0 manifest 与 plan 均保持原 blob/raw SHA-256/bytes；
 - R14 在所有 current source 中均为 strategic termination / not PASS；
 - RC-S1-109/110 仍 open；
 - RC-S0-111 进入 owner-authorized architecture rebase active；
@@ -652,6 +657,8 @@ Phase 1 不是并行填写十五张表。先执行 P1-01、P1-02、P1-04、P1-10
 - fresh reviewer 对事实引用与 recommendation 分离给 PASS。
 
 ## 10. Phase 3：Z 盘 qualification lab 与组件实测
+
+进入任何 candidate 的下载、安装、启动或运行前，必须先创建并提交该 candidate 的 `QL-xx-Cnn` qualification contract/manifest。该 candidate commit 只能使用 `phase3_qualification_contract_evidence_write`，exact allowlist 必须逐路径列出 `scripts/qualification/`、`tests/qualification/`、`configs/qualification/`、`configs/audits/`、qualification research/worklog 中本 candidate 的文件；production `src/`、`pyproject.toml`、正式依赖锁、current product config/data 均为显式 deny。candidate、run result/failure、author-separated review、activation receipt 必须是互不覆盖的独立对象；run 不能反向给 candidate 补授权，review 不能改实现，activation 不能改 manifest 或 result。
 
 ### 10.1 实验室根与隔离
 
@@ -1209,6 +1216,7 @@ S5：
 | H0 governance/source-doc/Project OS candidate 写入 | plan fresh PASS 后 exact allowlist true；不激活 Phase 1 |
 | Phase 1 repo/data metadata 只读＋bounded audit artifact 写入 | valid H0＋G0 PASS receipt 后 true |
 | Phase 2 官方来源网络调研 | valid G0 后按 RSH ticket true |
+| Phase 3 qualification contract/evidence repo 写入 | false，QL candidate authority 前不允许；仅 qualification exact allowlist，禁止 production src/pyproject/current config/data |
 | package/repo/model 下载 | false，Phase 3 manifest 前不允许 |
 | Z 盘 qualification install/service/local fixture run | false，Phase 3 candidate/ticket 前不允许 |
 | qualification-only index/data/shadow write | false，Phase 3/5 exact root/ticket 前不允许 |
@@ -1238,15 +1246,15 @@ S5：
 1. fresh、作者分离、只读审查本 plan-only commit；
 2. 修复所有 P0/P1/P2，必要时新 plan-only revision；
 3. 提交并推送 exact plan；
-4. 创建 H0 Phase 0 candidate：物化 plan PASS receipt、machine manifest、source supersession、Project OS、worklog 和 machine-semantic test；
+4. 创建 H0 Phase 0 candidate：物化 plan PASS receipt、machine manifest、source supersession、Project OS、worklog 和 machine-semantic test；H0 changed paths 必须排除本计划，H0 plan blob/raw SHA-256/bytes 必须等于 C0；
 5. 对 clean exact H0 做 fresh read-only review；失败则保留 H0/failure receipt 并创建 successor；
-6. 仅在 H0 review PASS 后创建 one-path G0 activation receipt，验证 H0 manifest blob 未变；
+6. 仅在 H0 review PASS 后创建 one-path G0 activation receipt，验证 H0 manifest 与 plan blob/raw SHA-256/bytes 均未变；
 7. targeted verification、commit、non-force push，并由 machine test 计算 effective Phase0 PASS；
 8. 只在 valid G0 后开始 Phase 1 bounded read/audit-write 和有独立 ticket 的 Phase 2 research。
 
 本队列不包含 package install、模型调用、外源、formal、索引删除或生产迁移。
 
-## 20. Plan review history 与 v1.1 修正
+## 20. Plan review history 与 v1.2 修正
 
 exact v1.0 commit `01ffc77b213899d3f177b13b1d38a43e390d3d0c`、tree=`7e8d5ee26d6c2947edec8e6690e11233c8e6d895`、plan blob=`3017dcc4a5e29af5298a26d42fa6de039722beb8` 经 fresh、作者分离、只读审阅得到 `PLAN_FAIL_REVISION_REQUIRED / P0-P1-P2-P3=0/5/2/0`。该失败保持不可变；v1.1 针对七项 finding 作出：
 
@@ -1258,7 +1266,15 @@ exact v1.0 commit `01ffc77b213899d3f177b13b1d38a43e390d3d0c`、tree=`7e8d5ee26d6
 6. Phase 2–7 stable ticket/slice registry；
 7. W3/W4 拆成独立 feature switch/result/review/rollback 子 slice。
 
-v1.1 另吸收真实 repo-surface 初查：package cycles、domain inversion、28-resource exact-digest spine、config/runner taxonomy 与 pytest marker 分类缺口。v1.1 必须重新形成 plan-only commit 并由新的 fresh reviewer 独立签发；本段不能自行关闭 v1.0 findings。
+v1.1 另吸收真实 repo-surface 初查：package cycles、domain inversion、28-resource exact-digest spine、config/runner taxonomy 与 pytest marker 分类缺口。
+
+exact v1.1 commit `3fc3dcf3d44984f702ce20d27a364bcd2229857e`、tree=`fcee84fe0c2164de4a3c0321595cbfd5a614a9d2`、parent=`01ffc77b213899d3f177b13b1d38a43e390d3d0c`、plan blob=`baaa86192ef07c15b1024d8307a15496fcedd861`、raw SHA-256=`63d8b0e060d2d65006ab05ab76c08b7abc27f3843eed434c180aa755a03035db`、bytes=`69343`，经作者分离、只读、对该 exact candidate 首次完整阅读的 reviewer 审阅得到 `PLAN_FAIL_REVISION_REQUIRED / P0-P1-P2-P3=0/2/0/1`。受协作树硬节点上限影响，该 reviewer 复用了一个此前未读写 v1.1 的既有只读任务身份，不冒充新的 fork-none 节点；其审阅前后 repo clean、origin aligned，且 writes/network/model/install/formal/old-live-state 均为 0。该失败保持不可变；v1.2 针对三项 finding 作出：
+
+1. `h0_governance_materialization_write` 显式排除本计划；H0 与 G0 均强制保持 C0 plan blob/raw SHA-256/bytes 不变，计划行为、门、权限或接口变化只能走新的 plan-only `Cn`；
+2. 增加独立 `phase3_qualification_contract_evidence_write`：candidate manifest 必须先于 download/install/run，qualification allowlist 与 production `src`/`pyproject.toml`/正式 lock/current config/data deny 明确分离，candidate/result/review/activation 不得互相覆盖；
+3. 删除候选目标目录树中重复的 `tests/regression/`，只保留一个根并在其下承载 `legacy_r14/`。
+
+v1.2 必须重新形成 plan-only commit 并接受 exact、作者分离、只读全量审阅；本段不能自行关闭 v1.1 findings。
 
 ## 21. Source index
 

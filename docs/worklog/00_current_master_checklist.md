@@ -5,10 +5,11 @@
 - [x] Owner 明确否决继续扩写自研 Phase 0–7 plan-execution protocol；旧约 570 KB 计划原位标记 `SUPERSEDED / AUDIT-ONLY / NO EXECUTION AUTHORITY`，历史内容和 R14 证据不删除。
 - [x] 根 `AGENTS.md` 和 Project OS 已写入成熟栈优先、工程/运行时/FIN domain 三层分责、复杂度预算、docs-only 连续工作止损和按风险分级控制。
 - [x] 新 ADR 与 bounded execution baseline 已建立；不再创建自定义 ticket/epoch/CAS/receipt runtime。
-- [ ] 在 Z 盘隔离环境实际安装、固定版本并运行首个成熟控制面 FIN qualification slice；输出 measured result，不以计划代替。
-- [ ] 复核 S1–S5 Build/Adopt/Hold/Retire，并形成模块级 `retain/wrap/replace/regression/retire` 迁移矩阵。
-- [ ] 只有通过 qualification 的 winner 才可进入 thin adapter 集成；Temporal、DVC、OPA 等未达到触发条件的能力保持 HOLD，不因“成熟”而全量安装。
-- [ ] R14 保持 `7e25cad9...` 和 `239/277` 冻结；不创建 R15/R16、不 formal、不自动 Evidence/S2/report/release，不删除 `D:\FIN_Insight_Agent\data\indexes`。
+- [x] 在 Z 盘隔离环境安装并固定 277-package lock；用真实 FIN fact-mart 代码路径上的同一确定性 DELL-shaped PIT fixture 真跑 Dagster/Prefect retry、MLflow readback、OTel、OpenLineage 与 DVC round-trip。它不是现场 SEC 来源/金融真值资格；Dagster=`primary candidate`，Prefect=`challenger`；PostgreSQL 因 Docker Desktop startup 被环境阻断，不是假 PASS。
+- [x] 复核 S1–S5 Build/Adopt/Hold/Retire，并在产品审计第 12 节冻结模块级 `retain/wrap/replace/regression/retire` 迁移矩阵；LangGraph 不再预设为全局控制面。
+- [x] Temporal 因无 durable-long-running 触发继续 HOLD；DVC 仅大型资产 conditional adopt；MLflow 因漏洞/PostgreSQL blocker 只作 qualification backend。没有为了“栈完整”全量部署。
+- [x] R14 保持 `7e25cad9...` 和 `239/277` 冻结；未创建 R15/R16、未 formal、未自动 Evidence/S2/report/release，未修改 `D:\FIN_Insight_Agent\data\indexes`。
+- [ ] 下一阶段仅在 Owner 决定后执行：统一 dependency source/lock、完成 PostgreSQL transaction/lock/restart/backup 资格，再接一条 Dagster vertical；禁止一次性全仓迁移。
 
 - [x] S0 权威干净基线
 - [x] S1-A 类型化本地检索纵切接入 Workbench

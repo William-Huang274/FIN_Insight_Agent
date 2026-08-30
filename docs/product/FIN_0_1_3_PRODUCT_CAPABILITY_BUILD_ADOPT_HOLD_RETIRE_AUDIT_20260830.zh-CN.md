@@ -1,8 +1,10 @@
 # FIN 0.1.3 产品能力全面审计：Build / Adopt / Hold / Retire
 
 日期：2026-08-30
-状态：READ-ONLY AUDIT COMPLETE / OWNER DECISION PENDING / IMPLEMENTATION FROZEN
-审计基线：codex/fin013-dell-s1-s2-product-bridge @ 9f2b62834fa1bedcf48f353466f40f3ae75d4c43
+状态：STEP 3 RECONCILED / MODULE MIGRATION BASELINE FROZEN / QUALIFICATION-ONLY / NO PRODUCTION ADOPTION
+原审计基线：codex/fin013-dell-s1-s2-product-bridge @ 9f2b62834fa1bedcf48f353466f40f3ae75d4c43
+Reconciliation 基线：codex/fin013-dell-s1-s2-product-bridge @ 088ab1bbcebb43057be6c328ccd73de32994b309
+Qualification summary：`Z:\FIN_Insight_Agent_qualification\20260831_control_plane_slice_v1\manifests\qualification-summary.json`，SHA-256=`c6750a23b729b80b769cb6c850a7320cded818ca9d50443f680d5c6afbea8150`
 R14 implementation freeze：7e25cad95ee84b39fb2a51063100405bc27da6e5
 
 ## 1. 先给不拐弯的结论
@@ -257,7 +259,9 @@ FIN 产品表面
 架构上只允许：
 
 - 一个 canonical FIN contract source；
-- 一个全局 Agent state machine；
+- 每个责任层一个主实现：外层数据/研究 workflow 与内层 LLM Agent graph 不合并；
+- 当前外层 workflow 的 primary candidate 为 Dagster、Prefect 为 challenger；LangGraph 只在单研究 vertical 中竞争内层 Agent graph；
+- Temporal 只有真实跨 worker、跨重启长任务、timer/signal 或 Saga 需求出现后才进入；
 - 一个主要 trace/experiment backend；
 - 一个 canonical metadata store；
 - 每类能力一个 default、最多一个 challenger 和一个 managed ceiling；
@@ -278,13 +282,86 @@ FIN 产品表面
 
 这不是“少做准确性”，而是把准确性从“证明我们自己写的 NLP/运行时”重新放回“证明研究结论对用户可靠”。
 
-## 12. Owner 需要决定的事项
+## 12. 2026-08-31 Step 3 reconciliation：实测后的模块迁移基线
+
+### 12.1 漂移复核与新增事实
+
+从原产品审计提交到 Step 1 基线，生产代码、测试和依赖没有发生会推翻 Build / Adopt / Hold / Retire 结论的漂移；原统计已独立复算一致。新增的真实证据不是另一轮市场清单，而是：
+
+- 整个 `scripts` 已达 169 个 Python 文件／103,967 非空行；其中 `scripts/data_retrieval` 为 103／43,818，不能只审 R14 与 `scripts/research`；
+- Workbench backend/frontend 约 7,693 行，包含一套自建 store、job、process runner、operations 和 artifacts 通用运维面；
+- 当前活动 import graph 中 DELL R3–R14 的 43 个版本模块活动数量为 0，因此它们应作为 regression/adversarial evidence，而不是下一条生产主线；
+- 当前活动图仍有 `evidence_role_v2/v3/v4`、`financial_intent_v2/v3` 等 16 个版本家族／5,455 行，需要选一个 canonical implementation；
+- `Dockerfile` 安装 `requirements.txt`，但 Workbench 顶层路径需要的 `pypdf` 和 `playwright` 只在 `pyproject.toml`，Pydantic 约束也分别为 `>=2.7.0` 与 `>=2.13,<3`；干净 `requirements.txt` 环境已实证在导入 Workbench 时因 `ModuleNotFoundError: pypdf` 失败；仓库也没有 Python lockfile。
+
+### 12.2 成熟控制面确定性 fixture 切片结果
+
+同一手工、确定性的 DELL-shaped revenue PIT fixture 被两个 workflow adapter 调用：截至 2026-06-01 选择 `40,000,000,000`，截至 2026-08-06 选择 `43,842,000,000`，保留 fixture 中的 accession 与占位 source digest。引擎只编排，未复制或改写 FIN `NumericFact` 权威。这证明真实 FIN fact-mart 代码路径可被成熟 workflow 调用，但 `real SEC source replay=false`、`data correctness qualification=false`、`source admission=false`。
+
+| 能力 | Exact build | 实测结果 | 当前决定 |
+|---|---|---|---|
+| Dagster | `1.13.20` | 原生 retry 1 次后成功；持久化 run=`7b4015c2-c170-4bdb-aea8-c6acb9aed5b0`，新进程读回 `SUCCESS`；状态均在 Z 盘，遥测关闭 | 外层数据/研究 workflow `PRIMARY CANDIDATE`；不是 production PASS |
+| Prefect | `3.8.4` | 原生 retry 1 次后成功；最终 run=`34c26437-b02c-4f5b-abf1-bae8d75ad3b8`；显式关闭 result persistence、固定 memo/state 后不再写 C 盘，状态重读为 `COMPLETED` | `CHALLENGER`；默认用户目录写入和临时服务启动开销是迁移 caveat |
+| PostgreSQL | official `18.6` 目标 | Docker Desktop 因本机 listener 路径错误启动失败；未拉镜像、未伪造 SQLite 代替事务/锁/重启/备份证明 | `REQUIRED BUT ENVIRONMENT_BLOCKED`；生产 workflow/state integration 继续 blocked |
+| MLflow | `3.15.2` | 本地 tracking server、artifact 写入、client readback 均通过；Windows job execution backend 报不支持 | 仅作 qualification backend；生产采用等待 PostgreSQL/object store 与安全阻断关闭 |
+| OpenTelemetry | `1.44.0` | 每次 FIN slice 产生 1 root + 3 child spans，未写正文或 secret | 标准语义 `ADOPT`，collector/backend 后续资格 |
+| OpenLineage client | `1.52.0` | FileTransport 的 START/COMPLETE 共 2 事件且 run ID 一致 | 标准 event `ADOPT`；当前不部署第二套 lineage backend |
+| DVC | `3.67.1` | Windows 本地远端首次 `file://` 配置失败证据保留；改为受支持路径后 push，移走工作文件和本地 cache，再 pull 恢复，SHA-256 exact | 只对大型版本化 corpus/model/index `CONDITIONAL ADOPT`；小 receipt 不用 DVC |
+| lock / SBOM / license | uv `0.10.7`；277 packages | hash-locked resolve/install、277-component CycloneDX SBOM、272-package license list完成 | 以后候选必须 lock + SBOM；本次 lab 不直接进入 production dependencies |
+| vulnerability audit | pip-audit `2.10.1` | 3 个已知漏洞：cryptography 49.0.0、diskcache 5.6.3、pytest 8.4.2 | 当前组合 `PRODUCTION BLOCKED`；MLflow `<50` 阻止 cryptography 修复，diskcache 暂无修复，pytest 应升级或不进入 runtime |
+
+实验目录逻辑大小约 1.94 GiB；结束时 D/Z 可用约 4.643/16.142 GiB，低于 5 GiB 实验预算且未触发任何索引删除条件。`D:\FIN_Insight_Agent\data\indexes` 未修改。
+
+### 12.3 模块级 retain / wrap / replace / regression / retire
+
+下表冻结“旧代码与成熟 owner 的关系”，不是声称迁移已经完成。`retain` 只表示保留 FIN 权威和可复用实现，不表示文件内每一行永久保留；`replace` 也必须先 shadow/dual-read/rollback，不能直接删除历史。
+
+| Stage / capability | Current modules | Disposition / mature owner | FIN 保留的 port / authority | 前置、验收与退出 |
+|---|---|---|---|---|
+| S1 canonical contracts | `retrieval/contracts.py`、`artifact_spine.py`、`source_use_policy.py`、`evidence_admission.py`、`evidence_set_coverage.py`、`human_operability.py`、`evidence_role_contract.py`、`temporal.py` | `retain` | issuer/as-of/source role、Candidate/Evidence 分权、admission、Gap、locator、人工操作 | 供应商输出只进 unadmitted envelope；关键金融 slice 不退化 |
+| S1 official capture | `connectors/sec_edgar_connector.py`、`ingestion/official_source_capture.py`、`source_intake.py` | `wrap`：SEC/Arelle + Scrapy/Playwright/warcio + intake security | SourceCapture receipt、许可、来源身份、PIT、安全分类 | raw hash/WARC round-trip、rate/retry/resume、SSRF/malware fixtures；旧 capture 可重放 |
+| S1 PDF/layout | `ingestion/section_splitter.py`、`pdf_layout.py`、`official_pdf.py` | `replace`：Docling default、MinerU challenger、最多一个 managed ceiling | ParsedElement/TableCell/Locator 投影与财务表验收 | frozen hard-PDF、page/bbox/cell/footnote parity；不合格即回旧 parser |
+| S1 object/search | `financial_objects.py`、`hybrid_candidate_runtime.py`、`candidate_retriever.py`、`embedding_runtime.py`、`cross_encoder.py`、Workbench `research_retrieval_service.py` | `wrap/replace`：PostgreSQL+pgvector vs OpenSearch；BGE vs managed ceiling | FinancialEvidenceObject、query hard constraints、qrels、Evidence gate | 同 corpus/query A/B、PIT/source filter、rebuild/rollback；index 可由 canonical objects 重建 |
+| S1 活动版本链 | `evidence_role_v2/v3/v4`、`financial_intent_v2/v3` 等 16 文件 | 选一个 `canonical retain`；旧版 `compatibility/regression` 后 `retire` | 当前合同兼容与 gold | import/consumer 图归一；shadow parity 后才移除活动依赖 |
+| S1 R3–R14 | 43 文件／55,032 行；活动 import=0 | `regression`，replacement 通过后 archive/retire | 27,026 corpus、239 failure、277 mismatch、validator、失败回执 | 不再扩写；不是 truth oracle；RC-S1-109/110 继续 open |
+| S2 NumericFact/PIT | `financial_facts/contracts.py`、`sec_companyfacts.py`、`executor.py`、`mart.py` 及 numeric authority/bridge | `retain/wrap` | period/unit/vintage/conflict、formula lineage、产品→收入/利润/现金 bridge | 确定性 DELL-shaped fixture 已证明真实代码路径可被成熟 workflow 调用；真实来源、金融真值、完整 bridge/product acceptance 仍开放 |
+| S2 XBRL | `sec_companyfacts.py` 中 transport/parse 与映射混合面 | `wrap`：SEC API + Arelle | FIN concept mapping、supersession、conflict、NumericFact admission | accession-bound raw filing、amendment 和 dimension parity |
+| S2 physical mart | 当前 SQLite/DuckDB/JSON/Parquet 路径 | `replace physical owner`：PostgreSQL online + Parquet snapshot + DuckDB local audit | canonical schema 与 typed lookup port | PostgreSQL transaction/unique/lock/restart/backup 尚 blocked；旧 SQLite 可回放到切换门通过 |
+| S3 research domain | `material_scope.py`、claim/report/research context、reviewed pack/anchor、finance tool contracts、actionable state/eval | `retain` | materiality、claim authority、counter/WWC、Evidence/NumericFact consumption、失败归属 | 人工 gold 与真实 report acceptance；workflow 不获得研究结论权威 |
+| S3 mixed loops | `bounded_finance_loop.py`、`current_consumer.py`、`case_truth_reconciliation.py` | `split/wrap` | 抽出 FIN 决策与 evaluator；执行循环进入 outer workflow/inner agent ports | 逐 consumer shadow；不把 legacy loop state变成新框架 schema |
+| S3 attempt runtimes | `multi_agent_preview.py`、`multi_agent_preview_runtime.py`、`multi_agent_successor.py`、dynamic/five-cell loops、17 个活动 research runner | `regression/retire` | 成功/失败案例、gold、TokenBudgetBasis 和必要领域合同 | 单 canonical vertical 接管后逐波退役；禁止再建 R-number 通用 runtime |
+| S3 provider transport | 当前 HTTP/SSE/live transport package | `replace`：官方 SDK + thin capability adapter | max-retry policy、request hash、unknown completion、task-specific TokenBudgetBasis、post-validation | saved fixture parity；SDK internal retry默认 0；provider schema 不上渗 |
+| S3 inner Agent graph | 当前 dynamic loop 中混合的 graph/HITL | `hold qualification`：LangGraph 单 vertical candidate | domain state、human decision、tool permission | 不承担 capture/index/experiment/outer pipeline；crash/interrupt/idempotency proof 后再选 |
+| S4 Research Workspace | `ResearchWorkspace.tsx`、workspace/evidence services | `retain` | Evidence/Gap/Review/Repair/lineage/approval 产品交互 | 用户可完成 16 项 admission 与 citation drilldown；generic trace UI 不复制 |
+| S4 generic operations | `sec_agent/workbench/store.py`、`process_runner.py`、`jobs.py`、backend/frontend operations、`artifacts.py` | `replace/shrink`：outer workflow + PostgreSQL + MLflow | case/evidence 产品投影和必要操作入口 | 功能逐项映射、dual-read、旧 job/history 导出后收缩 |
+| S5 application stack | FastAPI/Uvicorn、React/Vite、Playwright、Pydantic、Docker、GitHub Actions、DuckDB、pytest/npm | `retain mature` | FIN API/UI contracts 和验收 | 先修依赖源漂移；clean build/import/E2E 后才称可复现 |
+| S5 outer workflow | `scripts/data_retrieval`、`scripts/research`、Workbench jobs 中的调度/重试/状态 | Dagster `primary candidate`；Prefect `challenger` | typed job input/output、attempt identity、side-effect idempotency | PostgreSQL backend、并发/重启/UI/operator proof；winner 接管后退出另一常驻引擎 |
+| S5 durable long jobs | 尚无独立成熟 owner；部分逻辑散在自建 runner | Temporal `HOLD` | external side-effect idempotency / Saga domain decision | 仅多 worker、长人工等待、跨重启 event history、timer/signal 或 Saga 触发 |
+| S5 experiment/telemetry/lineage | result/authority/trace 文件堆与 runner 内自建记录 | OTel `adopt`；MLflow `pilot/blocker`；OpenLineage concepts/client `adopt` | immutable FIN receipt、artifact digest、gold、release gate | 漏洞与 PostgreSQL/object-store blocker关闭；删除 backend 不改变 Evidence |
+| S5 large artifacts | ignored eval/corpus/model/index 与散落 manifest | DVC `conditional adopt` | frozen manifest/digest 与 retention authority | 只在大型资产使用；Windows path adapter；任何 artifact 可导出并由 canonical source 重建 |
+| S5 dependency/supply chain | `pyproject.toml`、不完整 `requirements.txt`、Dockerfile、无 Python lock | `replace process`：单一依赖源 + uv lock + SBOM/audit/signing | FIN supported profile 与 release gate | 当前 clean import FAIL 必须先关闭；漏洞为 0 或有显式隔离/风险决定 |
+| S5 identity/security | 客户端 `X-Fin-Case-Permissions` header、本地 secret/日志 | `replace`：部署战略确定后选 OIDC/IAM、secret manager、audit log | organization、financial role、domain permissions | 当前只算本地开发；企业部署前必须做 issuer/tenant/role 隔离 |
+| S5 report rendering | 当前自建 report/output path | `adopt`：Quarto + Pandoc + CSL | typed report、claim/evidence/locator pre-render validation | HTML/PDF/DOCX visual QA；renderer 不判断 citation correctness |
+
+### 12.4 当前迁移先后顺序
+
+这张表不会触发一次性重写。下一组最小工程前置应是：
+
+1. 先统一 Python 依赖源并完成 clean build/import/lock/SBOM；
+2. 修复 Docker Desktop 或改用明确支持的 PostgreSQL 资格画像，完成 transaction/lock/restart/backup；
+3. 只把一条外层数据/研究 vertical 接到 Dagster primary candidate，Prefect 保持同输入 challenger；
+4. 同时保持 R14、Evidence、S2 bridge、报告和产品权限不变；
+5. 再按 S1 parser、search、S3 agent、S4 operations 各自 frozen benchmark 逐波迁移，不做全仓大爆炸式重写。
+
+当前 Step 3 完成的是“关系和顺序冻结”，不是 legacy code 已删除、成熟栈已生产接入或产品已经 PASS。
+
+## 13. Owner 需要决定的事项
 
 本审计完成后，没有任何迁移自动获得授权。建议 Owner 依次决定：
 
 1. 是否接受 Build / Adopt / Hold / Retire 边界，作为后续架构宪法；
 2. R14 选择 A 满足 S1/128 全门的最小修复后退役，还是 B 在 RC-S1-109/110 继续 open 的前提下，以 human-adjudicated gold 证明同阶段 replacement；
-3. 是否授权一组无生产切换的 P0 qualification pilots；
+3. 是否接受 Dagster 作为外层 workflow primary candidate、Prefect 作为 challenger，并授权 PostgreSQL 环境修复与单 vertical integration；
 4. 是否选择“低运维本地优先”还是“较早采用托管云 ceiling”的部署取向；
 5. 何时才允许逐步退役旧代码。
 
@@ -296,7 +373,7 @@ FIN 产品表面
 - external/model/reranker/Evidence/S2/S3/report/product/release authority=false；
 - mature stack migration=false。
 
-## 13. 证据索引
+## 14. 证据索引
 
 - [产品定位](PRODUCT_20260628_finsight_tob_toc_positioning_and_product_line.zh-CN.md)
 - [当前基线](FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)
@@ -307,3 +384,5 @@ FIN 产品表面
 - [R14 I2 closeout](../worklog/fin_0_1_3_s1/128_dell_03b_R14_I2_corpus_parity_governance_correction_and_reaudit_pass.md)
 - [成熟技术栈详细决策包](../architecture/research/FIN_0_1_3_MATURE_TECH_STACK_LANDSCAPE_AND_ADOPTION_DECISION_PACKET_20260830.zh-CN.md)
 - [技术来源快照清单](../architecture/research/FIN_0_1_3_MATURE_STACK_RESEARCH_SNAPSHOT_MANIFEST_20260830.zh-CN.md)
+- [成熟栈优先架构决定与 Steps 1–3 基线](../architecture/repository/FIN_0_1_3_MATURE_STACK_FIRST_ARCHITECTURE_DECISION_AND_EXECUTION_BASELINE_20260830.zh-CN.md)
+- [Steps 1–3 工作记录](../worklog/fin_0_1_3_s1/130_mature_stack_first_rebase_and_steps_1_to_3_start.md)

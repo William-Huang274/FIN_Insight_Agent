@@ -1,7 +1,7 @@
 # FIN 0.1.3 成熟技术栈全景与采用决策包
 
 日期：2026-08-30
-状态：OFFICIAL-SOURCE LANDSCAPE RESEARCH COMPLETE / EXACT VERSION-PIN QUALIFICATION PENDING / RECOMMENDATION ONLY / NO ADOPTION AUTHORITY
+状态：OFFICIAL-SOURCE LANDSCAPE COMPLETE / CONTROL-PLANE QUALIFICATION EXECUTED / DATA-PLANE QUALIFICATION PENDING / NO PRODUCTION ADOPTION AUTHORITY
 产品审计：[FIN 0.1.3 产品能力全面审计](../../product/FIN_0_1_3_PRODUCT_CAPABILITY_BUILD_ADOPT_HOLD_RETIRE_AUDIT_20260830.zh-CN.md)
 来源快照：[成熟栈来源与版本资格快照清单](FIN_0_1_3_MATURE_STACK_RESEARCH_SNAPSHOT_MANIFEST_20260830.zh-CN.md)
 审计基线：codex/fin013-dell-s1-s2-product-bridge @ 9f2b62834fa1bedcf48f353466f40f3ae75d4c43
@@ -30,14 +30,16 @@ R14 implementation freeze：7e25cad95ee84b39fb2a51063100405bc27da6e5
   abstain / disagreement / human escalation
 
 控制面
-  LangGraph：单一 Agent state/checkpoint/HITL
+  Dagster：外层数据/研究 workflow primary candidate
+  Prefect：同一外层责任的 challenger
+  LangGraph：仅内层 Agent state/checkpoint/HITL candidate
   官方 OpenAI Python SDK 指向 DeepSeek + 薄 capability adapter
   OpenTelemetry + OpenInference
   MLflow：一个主要 run/trace/eval/artifact backend
   Quarto + Pandoc + CSL：确定性报告渲染
 
 达到触发条件以后才加
-  Temporal · LiteLLM · OPA · Langfuse · DVC · enterprise IAM/SCIM
+  Temporal · LiteLLM · OPA · Langfuse · enterprise IAM/SCIM
 ~~~
 
 FIN 继续拥有：
@@ -48,7 +50,7 @@ FIN 继续拥有：
 - claim↔locator、causal/materiality/WWC；
 - human acceptance、release gate 和 immutable receipts。
 
-本决策包不授权安装、调用、迁移、双写、删除旧代码或修改 R14。
+Owner 后续已授权 Steps 1–3 的本机隔离 qualification；本决策包仍不授权生产迁移、双写、删除旧代码、模型/外源调用或修改 R14。
 
 ### 1.1 阅读图例
 
@@ -60,9 +62,25 @@ FIN 继续拥有：
 | QUALIFICATION REQUIRED | 必须在 frozen fixture/corpus/gold 上实测，未经测试不得晋升 |
 | UNVERIFIED / TIME-SENSITIVE | 版本、许可、价格、region、retention 或 Windows 路径尚未固定 |
 
-本文件给出的软件名称是 landscape shortlist，不是已选择的 exact build。所有 P0 候选的 version/tag/commit、core/model license、部署画像和 artifact digest 当前均为 UNPINNED；它们必须在 Owner 批准后写入独立 qualification manifest，不能从滚动网页链接推导生产资格。
+本文件给出的软件名称大部分仍是 landscape shortlist，不是已选择的 production build。下节列出的控制面子集已经 exact pin 并写入 qualification manifest；其余 data/model/product 候选仍为 UNPINNED，不能从滚动网页链接推导生产资格。
 
-### 1.2 目录
+### 1.2 2026-08-31 控制面 qualification delta
+
+Owner 已批准并完成一个不切生产的 Z 盘 control-plane slice：它调用真实 FIN fact-mart 代码路径，但输入是手工、确定性的 DELL-shaped PIT fixture，并非现场 SEC 来源回放。隔离环境使用 Python 3.13.7、uv 0.10.7 和 277-package hash lock；summary 位于 `Z:\FIN_Insight_Agent_qualification\20260831_control_plane_slice_v1\manifests\qualification-summary.json`，SHA-256=`c6750a23b729b80b769cb6c850a7320cded818ca9d50443f680d5c6afbea8150`。
+
+- Dagster `1.13.20`：原生 retry、持久化 run、跨进程 readback、Z 盘状态和 telemetry-off 均通过，成为外层 workflow primary candidate；
+- Prefect `3.8.4`：原生 retry 与最终状态通过；默认用户目录写入曾失败，显式关闭 result persistence 并固定 home/memo/state 后通过，保留 challenger；
+- MLflow `3.15.2`：run/params/metrics/artifact/client readback 通过，但 Windows job execution backend 不支持，且 transitive security gate 未过；
+- OpenTelemetry `1.44.0`：1 root + 3 child spans 通过；OpenLineage `1.52.0` FileTransport START/COMPLETE 同 run ID 通过；
+- DVC `3.67.1`：一次 Windows `file://` 本地远端失败保留；改用受支持路径后完成 push、移走 workspace/cache、remote pull 和 digest exact round-trip；
+- PostgreSQL `18.6`：Docker Desktop 在本机启动时因 listener 路径错误失败，事务、锁、重启和备份仍未资格化；
+- CycloneDX/Python license/pip-audit 完成；发现 cryptography 49.0.0、diskcache 5.6.3、pytest 8.4.2 三个已知漏洞。MLflow `3.15.2` 的 `<50` 约束阻止 cryptography 升到修复版，故整套 lab 不得原封不动进入 production；
+- `requirements.txt` 干净环境的 Workbench import 已实证因缺 `pypdf` 失败；单一 dependency source/lock 是任何集成前置。
+- 同 package/version 集的 lab-only Git hash lock、MLflow launcher 和最小复现说明已保存到 `scripts/qualification/`；adapter 会 fail closed 校验 Prefect/Dagster 状态目录，避免默认写回用户目录。
+
+实验目录约 1.94 GiB；D/Z 结束可用约 4.643/16.142 GiB。`D:\FIN_Insight_Agent\data\indexes` 未修改。以上只把候选从“纸面”推进到“确定性 fixture 上的实测控制面结论”，不证明真实来源、金融真值、Evidence、产品或 release 权威。
+
+### 1.3 目录
 
 - [总体决策矩阵](#3-总体决策矩阵)
 - [官方披露、XBRL 与 source connectors](#4-官方披露xbrl-与-source-connectors)
@@ -134,14 +152,15 @@ FIN 继续拥有：
 | local reranker | BGE reranker v2-m3 | current baseline | CHALLENGER |
 | managed reranker | 不默认 | Cohere | CEILING |
 | source-grounded semantic extraction | LangExtract pattern + DeepSeek candidate | 本地 vLLM/另一已资格模型 | SHADOW PILOT ONLY |
-| Agent state/checkpoint/HITL | LangGraph OSS | 无第二全局 orchestrator | ADOPT PILOT |
-| distributed durable jobs | 薄本地 runner | Temporal | TRIGGER-GATED |
+| 外层数据/研究 workflow | Dagster `1.13.20` | Prefect `3.8.4` | REAL SLICE PASS；Dagster primary candidate / Prefect challenger；production blocked |
+| 内层 Agent state/checkpoint/HITL | LangGraph OSS | 无第二内层 Agent graph | QUALIFICATION PENDING；不得承担外层 pipeline |
+| distributed durable jobs | 当前无主实现 | Temporal | TRIGGER-GATED |
 | provider transport | official openai SDK → DeepSeek | thin capability adapter | ADOPT PILOT |
 | multi-provider gateway | 无 | LiteLLM | TRIGGER-GATED |
 | typed contract | Pydantic strict → JSON Schema | provider-specific compiler | ADOPT |
 | tool protocol | FIN typed interface | MCP for external read-only tools | P1 |
 | trace semantics | OTel + OpenInference | 无 | ADOPT |
-| run/eval/artifact backend | MLflow | Phoenix 一次内部 UX 比较 | ADOPT PILOT |
+| run/eval/artifact backend | MLflow `3.15.2` | Phoenix 一次内部 UX 比较 | LOCAL READBACK PASS / SECURITY+POSTGRES BLOCKED |
 | generic eval metrics | deterministic + FIN gold | selected Ragas metrics | ASSISTIVE ONLY |
 | enterprise identity | 当前本地 auth | WorkOS/Entra/Auth0/Keycloak 按部署选型 | TRIGGER-GATED |
 | dynamic policy | FIN in-code contracts | OPA | TRIGGER-GATED |
@@ -151,6 +170,8 @@ FIN 继续拥有：
 | Graph retrieval | 无 | Neo4j after gate | HOLD |
 | whole RAG platform | 无 | RAGFlow benchmark only | DO NOT TAKE OVER |
 | whole LLM app platform | 无 | Dify reference only | EXCLUDE NOW |
+| large artifact versioning | DVC `3.67.1` | object store versioning | Z local remote round-trip PASS；仅大型资产 conditional adopt |
+| dependency lock / SBOM | uv + CycloneDX + pip-audit | CI scanner/signing later | LAB PASS；production lock/security gate open |
 
 ### 3.1 P0 candidate 部署画像
 
@@ -171,11 +192,14 @@ FIN 继续拥有：
 | Playwright | native_windows | docker_linux | 仓库已有基础，但新 capture/WARC contract 未资格验证 |
 | Docling | native_windows | WSL2/docker_linux | UNTESTED；需 pin core、OCR engine、model weights、CPU/GPU |
 | MinerU | WSL2 或 docker_linux 优先 | native_windows challenger | UNTESTED；CUDA/模型下载/许可/资源路径为 blocker |
-| PostgreSQL | native_windows pilot | docker_linux/remote_linux | UNTESTED；backup/PITR/locking 要实测 |
+| PostgreSQL `18.6` target | docker_linux pilot | native_windows/remote_linux | Docker Desktop listener 路径错误导致 ENVIRONMENT_BLOCKED；image 未拉取，backup/PITR/locking 未测 |
 | pgvector | 与 PostgreSQL 同 profile | docker_linux/remote_linux | Windows extension build/package 路径未固定 |
 | OpenSearch | docker_linux 或 remote_linux 优先 | native Windows ZIP challenger | JVM、filesystem lock、recovery、RAM 未验证 |
-| LangGraph | native_windows Python | WSL2/docker_linux | SQLite/Postgres checkpointer 锁、并发和 crash recovery 未验证 |
-| MLflow | native_windows local pilot | docker_linux/remote_linux + Postgres/object store | SQLite 只用于低并发 pilot；迁移/备份未验证 |
+| Dagster `1.13.20` | native_windows Python | docker_linux/remote_linux | Z 盘 SQLite persistent run/retry/readback PASS；PostgreSQL storage 与 daemon/UI production proof pending |
+| Prefect `3.8.4` | native_windows Python | docker_linux/remote_linux | retry/state PASS；默认 home 写入 caveat 已由显式配置消除；作为 challenger |
+| LangGraph | native_windows Python | WSL2/docker_linux | 未运行；只测内层 Agent vertical，SQLite/Postgres checkpointer 锁、并发和 crash recovery 未验证 |
+| MLflow `3.15.2` | native_windows local pilot | docker_linux/remote_linux + Postgres/object store | tracking/artifact/client readback PASS；Windows job backend、漏洞、迁移/备份未通过 |
+| DVC `3.67.1` | native_windows Python | object store remote | Z local path push/pull/digest PASS；Windows `file://` path 失败证据保留 |
 | Quarto/Pandoc | native_windows CLI | docker_linux | renderer/font/template/version 未固定 |
 | Temporal | remote_linux/managed | docker_linux dev | 当前不进入 P0；Windows 只作为 SDK/client 路径考虑 |
 
@@ -547,9 +571,16 @@ DeepSeek 官方支持 JSON mode 和 strict tool calls，但 JSON mode 不等于 
 
 ## 10. Agent orchestration、checkpoint、HITL 与 durable execution
 
-### 10.1 LangGraph：当前首选单一 Agent 状态机
+### 10.1 外层 workflow 与内层 Agent graph 必须分责
 
-LangGraph 提供 thread state、checkpoint、resume、interrupt/HITL 和 time travel；MIT 许可，本地 SQLite/Postgres checkpointer 对当前环境较友好。[LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence)、[LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts)
+原稿把 LangGraph 预设为“单一全局状态机”，这会再次把数据采集/解析/索引/评测、后台 job 和 LLM 会话三种问题压进一个框架。Step 3 已纠正为：
+
+- Dagster/Prefect 比较外层数据、研究、评测和迁移 pipeline；在真实 FIN fact-mart 代码路径的同一确定性 DELL-shaped PIT fixture 上运行后，Dagster 是 primary candidate，Prefect 是 challenger；
+- LangGraph 只在单研究 vertical 中竞争 LLM Agent thread/checkpoint/interrupt/HITL；当前尚未安装或资格化；
+- PostgreSQL 负责 canonical transaction/lock state；MLflow/OTel/OpenLineage 负责 experiment/telemetry/lineage；
+- Temporal 只在跨 worker、跨重启长任务、timer/signal、Saga 或明确 SLA 出现后加入。
+
+LangGraph 本身提供 thread state、checkpoint、resume、interrupt/HITL 和 time travel；MIT 许可，本地 SQLite/Postgres checkpointer 对当前环境较友好。[LangGraph persistence](https://docs.langchain.com/oss/python/langgraph/persistence)、[LangGraph interrupts](https://docs.langchain.com/oss/python/langgraph/interrupts)
 
 重要 caveat：含 interrupt 的节点恢复时会从节点开头重新执行。因此：
 
@@ -557,11 +588,12 @@ LangGraph 提供 thread state、checkpoint、resume、interrupt/HITL 和 time tr
 - checkpoint 不等于 external exactly-once；
 - 每次副作用需要 idempotency key、request hash 和 immutable receipt。
 
-推荐：
+LangGraph 后续资格边界：
 
 - 只做一条 vertical pilot；
-- 只允许一个全局 Agent state machine；
-- Haystack 若用于 data pipeline，不再拥有全局 Agent state；
+- 只允许一个内层 Agent graph；
+- 不承担 outer workflow、canonical metadata、experiment backend 或 release authority；
+- Haystack 若用于 data pipeline，不再拥有内层 Agent state；
 - 不把 product/S-stage/attempt 语义塞进框架内部黑盒。
 
 ### 10.2 Temporal：成熟但暂缓
@@ -683,6 +715,8 @@ MLflow = run/metric/trace/artifact URI/digest/lineage view
 ~~~
 
 删除 MLflow 记录不得改变 FIN Evidence 或 release 状态。冻结 gold/corpus 仍由不可变 manifest 绑定。
+
+本机 `3.15.2` qualification 已证明 tracking server、SQLite backend、file artifact、params/metrics 和官方 client readback；同时暴露三条硬边界：Windows job execution backend 不可用、生产 metadata/object store 未证明、`cryptography<50` 与当前安全修复发生冲突。因此 MLflow 仍是主要 backend candidate，但不是已获生产采用权的 winner；在升级/替换能关闭 transitive vulnerability 且 PostgreSQL/object store/backup 通过前，只能用于隔离实验。
 
 ### 12.3 Phoenix、Langfuse、LangSmith 与 Ragas
 
@@ -984,6 +1018,8 @@ Dify workflow/human input/app publishing 很成熟，但与 FIN control plane �
 
 ### P0：Owner 批准后，先做无生产切换 qualification
 
+2026-08-31 状态：Owner 已批准其中控制面子集，Dagster/Prefect + MLflow + OTel + OpenLineage + DVC 已真实运行；PostgreSQL 因 Docker Desktop 启动失败 blocked。下面其余 data/model/product pilots 仍未获自动权限，也不能因为控制面通过而批量执行。
+
 1. Pydantic 单一合同源 spike；
 2. untrusted-content intake security fixture/sandbox proof；
 3. official OpenAI SDK → DeepSeek fixture parity，max_retries=0；
@@ -1033,14 +1069,15 @@ Dify workflow/human input/app publishing 很成熟，但与 FIN control plane �
 
 ## 20. Owner 决策菜单
 
-建议 Owner 下一步只决定，不马上实施：
+Steps 1–3 结果出来后，建议 Owner 下一步只决定，不把多个 data/model/product pilot 一次性并发打开：
 
 1. 是否批准总体 Build/Adopt/Hold/Retire 边界；
 2. R14 选 A 满足 S1/128 全部验收门后 legacy，还是 B 在 RC-S1-109/110 继续 open、old parser 只作 baseline、human-adjudicated gold 作真值的前提下证明同阶段 replacement；
-3. 是否批准上述 P0 qualification program；
-4. pgvector/OpenSearch 是否都进入 A/B；
-5. managed ceiling 的云战略：none / Azure / AWS / GCP / vendor SaaS；
-6. observability 是否采用 MLflow primary、Phoenix 仅 UX bakeoff；
-7. 何时才触发 Temporal/LiteLLM/OPA/IAM。
+3. 是否接受 Dagster 为外层 workflow primary candidate、Prefect 为 challenger，并先授权 dependency source/lock 修复与 PostgreSQL 资格画像修复；
+4. 是否在上述共同前置闭合后只接一条 vertical，不做全仓迁移；
+5. pgvector/OpenSearch 是否都进入后续 frozen A/B；
+6. managed ceiling 的云战略：none / Azure / AWS / GCP / vendor SaaS；
+7. MLflow 是等待无漏洞 upstream 组合，还是另测 Phoenix/其他 backend；
+8. 何时才触发 Temporal/LiteLLM/OPA/IAM。
 
 在明确批准前，本文件只有推荐权，没有执行权。

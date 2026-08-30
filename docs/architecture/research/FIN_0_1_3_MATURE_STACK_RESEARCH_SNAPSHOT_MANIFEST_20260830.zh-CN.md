@@ -1,7 +1,7 @@
 # FIN 0.1.3 成熟技术栈调研来源与版本资格快照清单
 
 日期：2026-08-30
-状态：LANDSCAPE SOURCE SNAPSHOT / EXACT BUILD UNPINNED / LEGAL AND RUNTIME QUALIFICATION PENDING
+状态：LANDSCAPE SOURCE SNAPSHOT / CONTROL-PLANE BUILD PINNED AND TESTED / DATA-MODEL-LEGAL QUALIFICATION PENDING
 父决策包：[成熟技术栈全景与采用决策包](FIN_0_1_3_MATURE_TECH_STACK_LANDSCAPE_AND_ADOPTION_DECISION_PACKET_20260830.zh-CN.md)
 
 ## 1. 这份清单解决什么问题
@@ -17,7 +17,7 @@
 - deployment profile：建议在哪种环境资格验证；
 - blocker：进入 P0 前还缺什么。
 
-除明确写为 PINNED 的项以外，全部视为 UNPINNED。Owner 批准 P0 后，每个实际 challenger 必须新增机器可读 qualification manifest，至少绑定：
+除明确写为 PINNED 的项以外，全部视为 UNPINNED。每个实际 challenger 必须有机器可读 qualification manifest，至少绑定：
 
 - package/version/tag/commit；
 - source URL 和访问时间；
@@ -28,6 +28,33 @@
 - region/retention/training/use-of-data/pricing snapshot；
 - SBOM 与 transitive license review；
 - export/rollback/exit plan。
+
+### 1.1 2026-08-31 PINNED 控制面补充快照
+
+以下子集已在 Z 盘隔离环境安装并真实运行，不能再归类为“未安装”；但 `PINNED/TESTED` 不等于 production adopted：
+
+| Item | Exact snapshot | Runtime evidence | Remaining blocker |
+|---|---|---|---|
+| Python / resolver | Python `3.13.7` / uv `0.10.7` | 277-package unified hash lock 安装成功 | 生产依赖源尚未统一 |
+| Prefect | `3.8.4` | 真实 FIN fact-mart 代码路径 + 确定性 DELL-shaped PIT fixture、native retry、state readback、最终 Z-only state PASS | 非现场 SEC 来源回放；默认 home 写入 caveat；只保留 challenger |
+| Dagster / webserver / Postgres adapter | `1.13.20` / `1.13.20` / `0.29.20` | 同一确定性 fixture、native retry、persistent run、新进程 readback PASS | 非金融真值/source admission 资格；PostgreSQL storage 和生产 daemon/UI 未测 |
+| MLflow | `3.15.2` | tracking server、metrics、artifact、client readback PASS | Windows job backend、PostgreSQL/object store、cryptography blocker |
+| DVC | `3.67.1` | Z local remote push/pull、workspace+cache removal、digest exact PASS | `file://` Windows 失败；仅大型资产 conditional adopt |
+| OpenLineage | `1.52.0` | FileTransport START/COMPLETE 同 run ID PASS | backend 未部署，当前不需要第二 lineage store |
+| OpenTelemetry SDK/exporter | `1.44.0` | 4-span FIN slice PASS | collector/backend 与 privacy production proof pending |
+| psycopg | `3.3.4` | package installed | PostgreSQL server未启动，连接/事务/锁全部未测 |
+| compliance tooling | CycloneDX BOM `7.3.1` / pip-audit `2.10.1` / pip-licenses `5.5.5` | SBOM 277 components、license list 272 packages、audit 完成 | 3 个漏洞未关闭 |
+
+固定文件：
+
+- `requirements.in` SHA-256=`5e35ca47ee11ea1adef95cf81858f36068b729d88f03de7b4d508cea67572f73`；
+- `requirements.lock` SHA-256=`5e252aefef18946160692f4a396ab6315f9b34942d8402ba543768cb4189dc1e`；
+- 仓库 lab-only 重建 lock `scripts/qualification/requirements.lock` SHA-256=`ec3ccbd13d2a51acc3a067b3706e6f11747c7a79cbe99702d13a137256198782`，与实际 Z 盘 lock 的 277 个 package/version 条目完全一致；最小命令和状态目录约束见 `scripts/qualification/README.zh-CN.md`；
+- CycloneDX SBOM SHA-256=`75fc7da0bba130264146e917a4cb3cdb7e9c45a17ea9c46107056b76ff53c96f`；
+- vulnerability audit SHA-256=`176bbc02f5ff2c587e7e821c3da93e85efbb8a08050c6a3065602586f3ac1116`；
+- qualification summary SHA-256=`c6750a23b729b80b769cb6c850a7320cded818ca9d50443f680d5c6afbea8150`。
+
+实际漏洞：cryptography `49.0.0` / `PYSEC-2026-3552`（fix 50.0.0，但 MLflow 3.15.2 要求 `<50`）、diskcache `5.6.3` / `PYSEC-2026-2447`（审计时无 fix）、pytest `8.4.2` / `PYSEC-2026-1845`（fix 9.0.3）。因此本快照只可复现 control-plane fixture 实验，不可直接复制为 production lock，也不能用来声称真实 SEC 数据或金融真值已资格化。
 
 ## 2. 数据面来源快照
 
@@ -97,14 +124,16 @@
 | RAGFlow | [Official repository](https://github.com/infiniflow/ragflow) | whole RAG/KB/Agent platform | version/images/dependencies/license UNPINNED；Apache-2.0 observed | isolated benchmark only |
 | Dify | [License](https://github.com/langgenius/dify/blob/main/LICENSE) | whole LLM app/workflow platform | version/license/hosted restrictions UNPINNED | excluded as current core |
 
-## 4. 本轮没有验证的事项
+## 4. 仍未验证的事项与边界
 
-- 任一 package 在当前 host 实际安装、启动或恢复；
+- 上述控制面子集以外的 package/model 在当前 host 的实际安装、启动或恢复；
 - 任一模型在 FIN corpus 上的质量；
 - 任一 cloud/managed service 的实时价格、region、retention、training/use-of-data；
 - 任一许可证的正式法律意见；
-- exact SBOM 或 transitive license；
-- current Windows/WSL2/Docker/CUDA driver compatibility；
+- data/model 候选的 exact SBOM 或 transitive license；
+- PostgreSQL、pgvector、OpenSearch、LangGraph、Docling、MinerU、Quarto/Pandoc 的 current Windows/WSL2/Docker/CUDA compatibility；
+- PostgreSQL transaction/lock/restart/backup：Docker Desktop startup 环境阻断；
+- 控制面 lock 的 3 个漏洞修复与 production deployment profile；
 - upstream rolling page 在未来日期是否仍保持同一内容。
 
-因此，主决策包中的 ADOPT、CHALLENGER、CEILING 都只是进入资格验证的推荐，不是 production qualification。
+因此，主决策包中的 data/model ADOPT、CHALLENGER、CEILING 仍只是进入资格验证的推荐；控制面子集也只达到 qualification evidence，不是 production qualification、迁移完成或产品 PASS。

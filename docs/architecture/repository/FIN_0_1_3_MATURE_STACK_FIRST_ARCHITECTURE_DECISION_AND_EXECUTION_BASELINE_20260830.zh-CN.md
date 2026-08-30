@@ -1,7 +1,7 @@
 # FIN 0.1.3 成熟栈优先架构决定与执行基线
 
 日期：2026-08-30
-状态：ACCEPTED BY OWNER / STEPS 1–3 ACTIVE
+状态：ACCEPTED BY OWNER / STEPS 1–3 EVIDENCE MATERIALIZED / PRODUCTION MIGRATION NOT AUTHORIZED
 性质：人类可读的架构决定与有界实施基线，不是 runtime authority source，不定义 ticket、epoch、CAS、receipt 或 reducer。
 
 ## 1. 决定
@@ -144,3 +144,21 @@ Git 使用三个普通 release slice：A=guideline/收口，B=qualification 代�
 ## 9. 重新考虑有限自研的条件
 
 只有冻结 benchmark 证明成熟候选无法满足关键 FIN 需求，且配置、组合与薄 adapter 都不能解决时，才可提出有限自研。提案必须说明：实际测试过的候选、可复现 failure、最小 FIN-specific gap、维护 owner、退出路径，以及将删除哪套重复旧实现。
+
+## 10. 2026-08-31 实际 closeout
+
+Step 1 已以 commit `088ab1bbcebb43057be6c328ccd73de32994b309` 推送：旧协议 superseded、根规则/guideline/本基线生效。
+
+Step 2 qualification 代码/lock/复现入口已以 commit `b6597ba25ce705735c2310915a5e1f157b50b4a4` 落盘；实际 Z 盘运行位于 `Z:\FIN_Insight_Agent_qualification\20260831_control_plane_slice_v1`，使用真实 FIN fact-mart 代码路径上的确定性 DELL-shaped PIT fixture slice：
+
+- fixture 使用手工 observation、accession、占位 URL 和占位 digest；它不是现场 SEC 来源回放，不证明 source admission、金融真值或 S2 产品资格；
+
+- Dagster `1.13.20` 与 Prefect `3.8.4` 都观察到一次原生 retry 后成功；Dagster 持久化和新进程 readback 更直接，定为 primary candidate，Prefect 保留 challenger；
+- MLflow `3.15.2`、OpenTelemetry `1.44.0`、OpenLineage `1.52.0` 与 DVC `3.67.1` 均有实际写入/读回或 digest round-trip；
+- PostgreSQL `18.6` 因 Docker Desktop listener 路径错误被环境阻断，没有用自研或 SQLite 假证明替代；
+- 277-package lock、SBOM、license、vulnerability audit 已生成；同 package/version 集的 lab-only Git lock 和最小复现说明已进入 `scripts/qualification/`；3 个已知漏洞阻止当前 lab lock 原样进入 production；
+- 实验目录约 1.94 GiB，未删除或修改 `D:\FIN_Insight_Agent\data\indexes`。
+
+Step 3 已把既有全产品审计更新为 S1–S5 模块级 `retain/wrap/replace/regression/retire` 迁移基线，并纠正“LangGraph 作为全局控制面”为外层 workflow、内层 Agent graph、durable workflow、transaction store、experiment/telemetry 五层分责。详细结果见产品审计第 12 节和成熟栈决策包的 2026-08-31 delta。
+
+这三个步骤完成的产品增量仍为 0；真实工程/资格增量不再是 0。当前没有生产依赖加入、没有 legacy 删除、没有 R14 修改、没有 Evidence/S2/report/release 权限变化。下一阶段必须先处理单一 dependency source/lock 与 PostgreSQL 环境资格，再由 Owner 决定是否授权一条 Dagster vertical integration；不得回到旧 Phase 0–7 协议，也不得一次性全仓重写。

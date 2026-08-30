@@ -1,5 +1,15 @@
 # 当前主清单
 
+## 2026-08-30 成熟栈优先纠偏与 Steps 1–3
+
+- [x] Owner 明确否决继续扩写自研 Phase 0–7 plan-execution protocol；旧约 570 KB 计划原位标记 `SUPERSEDED / AUDIT-ONLY / NO EXECUTION AUTHORITY`，历史内容和 R14 证据不删除。
+- [x] 根 `AGENTS.md` 和 Project OS 已写入成熟栈优先、工程/运行时/FIN domain 三层分责、复杂度预算、docs-only 连续工作止损和按风险分级控制。
+- [x] 新 ADR 与 bounded execution baseline 已建立；不再创建自定义 ticket/epoch/CAS/receipt runtime。
+- [ ] 在 Z 盘隔离环境实际安装、固定版本并运行首个成熟控制面 FIN qualification slice；输出 measured result，不以计划代替。
+- [ ] 复核 S1–S5 Build/Adopt/Hold/Retire，并形成模块级 `retain/wrap/replace/regression/retire` 迁移矩阵。
+- [ ] 只有通过 qualification 的 winner 才可进入 thin adapter 集成；Temporal、DVC、OPA 等未达到触发条件的能力保持 HOLD，不因“成熟”而全量安装。
+- [ ] R14 保持 `7e25cad9...` 和 `239/277` 冻结；不创建 R15/R16、不 formal、不自动 Evidence/S2/report/release，不删除 `D:\FIN_Insight_Agent\data\indexes`。
+
 - [x] S0 权威干净基线
 - [x] S1-A 类型化本地检索纵切接入 Workbench
 - [x] S1-B current official source/object 重建（工程通过，typed gaps 转交 S1-C/S1-D）

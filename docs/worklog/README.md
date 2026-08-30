@@ -45,6 +45,8 @@
   - DELL 03B R14 revision 1 fresh plan 审计失败与 lifecycle bootstrap 修正：`fin_0_1_3_s1/126_dell_03b_R14_revision1_fresh_plan_audit_failure_and_lifecycle_bootstrap_fix.md`
   - DELL 03B R14 revision 2 fresh plan review PASS 与实现入口：`fin_0_1_3_s1/127_dell_03b_R14_revision2_fresh_plan_review_pass_and_implementation_gate.md`
   - DELL 03B R14 I2 corpus parity 治理纠正与 fresh re-audit PASS：`fin_0_1_3_s1/128_dell_03b_R14_I2_corpus_parity_governance_correction_and_reaudit_pass.md`
+  - 全产品能力审计与成熟技术栈决策包：`fin_0_1_3_s1/129_product_capability_audit_and_mature_stack_decision_packet.md`
+  - 成熟栈优先纠偏、旧自研协议收口与 Steps 1–3 启动：`fin_0_1_3_s1/130_mature_stack_first_rebase_and_steps_1_to_3_start.md`
   - 产品能力全面审计与成熟技术栈决策包：`fin_0_1_3_s1/129_product_capability_audit_and_mature_stack_decision_packet.md`
 - FIN 0.1.3 S2：`fin_0_1_3_s2/`
 - FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`

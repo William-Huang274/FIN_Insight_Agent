@@ -88,7 +88,8 @@ Syft能够列出ELF、import关系与部分binary package，但对wheel中hash�
 - 运行前 Git工作树必须 clean；开始/结束绑定 HEAD、status/diff SHA 与关键文件 SHA，并要求执行期间完全稳定；
 - 收据记录完整安装包 inventory 与关键 direct versions，拒绝错误或含已安装第一方 project 的环境；
 - container/network 使用完整 UUID 名称和 attempt label；清理前必须验证 exact ownership；
-- Docker network必须由 Engine回读为 `Internal=true`，允许 PostgreSQL互联与 loopback发布，但不给本轮零外源 job普通互联网出口；
+- Windows本地qualification的金融builder与Dagster client运行在宿主进程；Docker Desktop实测中`--internal`会使已发布的loopback端口对宿主不可达，而且不能隔离宿主client。该拓扑改用attempt-labeled dedicated bridge，Engine必须回读`Driver=bridge`、`Internal=false`、默认host binding=`127.0.0.1`、唯一network attachment、创建请求中的loopback binding，以及container启动后`NetworkSettings.Ports`的唯一实际`5432/tcp -> 127.0.0.1:<host-port>`；这只限制数据库的宿主暴露面，不宣称阻断container或host-runner egress；
+- CI中的Dagster client与PostgreSQL都在container内，继续使用internal network且不发布数据库host port；本地修正不得扩散成CI网络放宽；
 - secret 目录在写密钥前限制 ACL，密码不进入结果；cleanup 必须证明 container、network、secret file 与 secret directory 均已消失，否则不能 PASS；
 - PostgreSQL rollback、UNIQUE、advisory lock、stop/start readback；
 - Dagster run/event storage 写入、新 instance读回、PostgreSQL再次重启后的读回；
@@ -122,6 +123,8 @@ CI只有仓库内容，没有 private captures，因此 Docker CI只能证明镜
 2. `20260831T032728Z-2c296ed6`：错误把 psycopg 3 `executemany` 当 connection API；
 3. `20260831T032838Z-*`：修正 readiness/API 后继续暴露早期 runner边界；
 4. `20260831T034026Z-a8700e1b` 与 `20260831T040515Z-eb3bd7b5`：当时代码可得到 bounded PASS，但没有绑定后续 adapter、lock、cleanup、runtime inventory与 backup round-trip hardening。
+5. exact clean commit `4817a556...`首次preflight被仓库ignored的`src/finsight_agent.egg-info`元数据影子拒绝；失败收据保存在`final-clean-4817a556/preflight-failures/20260831T174102+0800-first-party-metadata-shadow.json`，该生成目录已可恢复地移到Z盘quarantine，未删除用户源码或索引；
+6. `20260831T094310Z-ac7fd1d9`：official PostgreSQL最终PID 1、container-local `SELECT 1`、clean implementation binding、secret scan和ownership cleanup均通过，但Windows宿主`psycopg`连接`127.0.0.1:55432`超时。结果/日志SHA-256分别为`ce6be960...f729a`／`af6260a1...545d9`。同Engine无secret A/B证明ordinary bridge+loopback可达、`--internal`+同loopback publish不可达，最早错误因此是host-runner网络拓扑合同；失败attempt保持不可变，修复后只能用新attempt ID。独立诊断收据保存于`artifacts/network-topology-diagnostics/20260831T181951+0800/receipt.json`，SHA-256=`ddf8a4e3...db7d0`，记录Docker Engine 29.5.2／Docker Desktop linux-amd64、两组精确命令、inspect、localhost结果与四个对象cleanup；明确`diagnostic_only=true / final_qualification=false`且不向其他host/Engine泛化。
 
 因此 `034026`/`040515` 不再是当前实现的“最终证据”，不能用于关闭当前工作包。失败与旧 PASS均不覆盖、不删除。
 
@@ -132,6 +135,7 @@ CI只有仓库内容，没有 private captures，因此 Docker CI只能证明镜
 - active baseline=`213 Python / 8 frontend / 0 forbidden`、archive redirect=`6059 / PASS`、repository secret scan=`8325 files / 0 findings`；
 - runner/adapter/launcher/S1/CUDA/EvidencePack最新作者短门：`37 passed, 2 skipped`；作者分离代码／安全review另跑`60 passed, 1 skipped`。skip是缺可选 CUDA/torch或环境条件，不被伪装成 PASS；
 - qualification adapter/runner/secret launcher直接短门：`36 passed`，覆盖路径逃逸、run-scoped replay、锁、timeout、digest、缺 SQLite、凭据剥离、secret不回显、module origin、cleanup ownership、secret scan、固定uv locked-profile check、首尾HEAD/branch绑定，以及最终summary写盘前的内存敏感值扫描；
+- exact-clean首次失败后的同阶段网络修正短门先为`tests/qualification=51 passed`，补入credential/proxy、启动后effective port mapping和CI database无host-publish回归后最新为`59 passed`；另用临时Docker对象真实回读dedicated bridge为`Driver=bridge / Internal=false / host_binding_ipv4=127.0.0.1`，container为唯一attempt network且`5432/tcp`精确绑定loopback，探针对象结束后均已移除。该结果只验证修正合同，不替代新的完整qualification attempt；
 - Workbench只读数据／可写状态分离针对性回归：`10 passed`；镜像现在从`/app/data/workbench_private`读取产品私有输入，并把运行SQLite写到`/app/state/workbench.sqlite`，修复了默认只读data mount下启动即报`unable to open database file`或空state缺readiness对象的问题；
 - Workbench EvidencePack route targeted：`9 passed`；
 - FastAPI/Starlette/httpx2真实 TestClient：HTTP 200；
@@ -146,7 +150,7 @@ CI只有仓库内容，没有 private captures，因此 Docker CI只能证明镜
 
 只有同时满足以下条件，才把本工作包改为 bounded engineering PASS：
 
-1. 先提交候选实现，使 runner从 clean commit运行；
+1. 提交当前同阶段网络拓扑修正，使 receipt v1.1 runner从新的 clean commit运行；
 2. 新建空 qualification env，精确执行 `uv sync --locked --no-dev --extra control-plane --extra qualification --no-install-project`；
 3. runner PASS，repository/runtime/start-end binding、cleanup、restart、host-roundtrip backup/restore、Dagster run/event与 1,319 observations / 24 of 24 qrels全部可独立复算；
 4. 最终 control-plane image从同一 commit构建，默认 CMD启动，并以只读 private source mount真实执行 Dagster job；

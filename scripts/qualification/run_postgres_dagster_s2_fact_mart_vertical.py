@@ -25,6 +25,11 @@ POSTGRES_IMAGE = (
 POSTGRES_VERSION = "16.15"
 REQUIRED_UV_VERSION = "0.10.7"
 DOCKER_ATTEMPT_LABEL = "com.finsight.qualification.attempt"
+QUALIFICATION_NETWORK_DRIVER = "bridge"
+QUALIFICATION_NETWORK_HOST_BINDING_OPTION = (
+    "com.docker.network.bridge.host_binding_ipv4"
+)
+QUALIFICATION_NETWORK_HOST_BINDING_ADDRESS = "127.0.0.1"
 POLICY_REF = (
     "configs/financial_facts/"
     "fin_ia_0_1_3_s2_company_financial_fact_mart_policy_v1_0.json"
@@ -86,6 +91,212 @@ def validate_qualification_root(
             "qualification_root_must_be_under_Z_fin_insight_qualification"
         ) from exc
     return qualification_root
+
+
+def validate_qualification_host_port(value: int) -> int:
+    """Keep the host-runner qualification on an explicit unprivileged TCP port."""
+
+    if isinstance(value, bool) or not 1024 <= value <= 65535:
+        raise ValueError("qualification_host_port_must_be_between_1024_and_65535")
+    return value
+
+
+def validate_qualification_network(
+    payload: Mapping[str, Any],
+    *,
+    attempt_id: str,
+) -> dict[str, Any]:
+    """Validate the Windows host-runner loopback bridge contract.
+
+    The financial builder and Dagster process run on the host in this qualification,
+    so a Docker ``--internal`` network cannot isolate those processes. On Docker
+    Desktop it also makes the explicitly published PostgreSQL port unreachable from
+    the host. This profile limits PostgreSQL exposure to host loopback; it does not
+    claim container or host-runner egress isolation.
+    """
+
+    driver = str(payload.get("Driver") or "")
+    internal = bool(payload.get("Internal"))
+    options = payload.get("Options")
+    if not isinstance(options, Mapping):
+        options = {}
+    labels = payload.get("Labels")
+    if not isinstance(labels, Mapping):
+        labels = {}
+    host_binding = str(
+        options.get(QUALIFICATION_NETWORK_HOST_BINDING_OPTION) or ""
+    )
+    attempt_label_match = labels.get(DOCKER_ATTEMPT_LABEL) == attempt_id
+    receipt = {
+        "driver": driver,
+        "internal": internal,
+        "default_host_binding_ipv4": host_binding,
+        "attempt_label_match": attempt_label_match,
+        "postgres_host_exposure": "loopback_only",
+        "postgres_container_egress_blocked_by_network": False,
+        "host_runner_egress_blocked_by_network": False,
+        "isolation_claim": "loopback_host_exposure_only_not_egress_isolation",
+    }
+    if (
+        driver != QUALIFICATION_NETWORK_DRIVER
+        or internal
+        or host_binding != QUALIFICATION_NETWORK_HOST_BINDING_ADDRESS
+        or not attempt_label_match
+    ):
+        raise AssertionError(
+            "qualification_network_loopback_bridge_contract_failed:"
+            + canonical_json(receipt)
+        )
+    receipt["pass"] = True
+    return receipt
+
+
+def validate_postgres_container_network_contract(
+    payload: Mapping[str, Any],
+    *,
+    attempt_id: str,
+    network_name: str,
+    host_port: int,
+) -> dict[str, Any]:
+    """Read back loopback publication, ownership, mounts, and network attachment."""
+
+    config = payload.get("Config")
+    host_config = payload.get("HostConfig")
+    network_settings = payload.get("NetworkSettings")
+    mounts = payload.get("Mounts")
+    if not isinstance(config, Mapping):
+        config = {}
+    if not isinstance(host_config, Mapping):
+        host_config = {}
+    if not isinstance(network_settings, Mapping):
+        network_settings = {}
+    if not isinstance(mounts, list):
+        mounts = []
+
+    labels = config.get("Labels")
+    if not isinstance(labels, Mapping):
+        labels = {}
+    attempt_label_match = labels.get(DOCKER_ATTEMPT_LABEL) == attempt_id
+
+    port_bindings = host_config.get("PortBindings")
+    if not isinstance(port_bindings, Mapping):
+        port_bindings = {}
+    postgres_bindings = port_bindings.get("5432/tcp")
+    expected_bindings = [
+        {
+            "HostIp": QUALIFICATION_NETWORK_HOST_BINDING_ADDRESS,
+            "HostPort": str(host_port),
+        }
+    ]
+
+    networks = network_settings.get("Networks")
+    if not isinstance(networks, Mapping):
+        networks = {}
+    attached_networks = sorted(str(name) for name in networks)
+
+    mount_receipt: dict[str, bool] = {}
+    mount_destinations: list[str] = []
+    for mount in mounts:
+        if not isinstance(mount, Mapping):
+            continue
+        destination = str(mount.get("Destination") or "")
+        mount_destinations.append(destination)
+        mount_receipt[destination] = bool(mount.get("RW"))
+
+    environment = config.get("Env")
+    if not isinstance(environment, list):
+        environment = []
+    environment_names = {
+        str(item).partition("=")[0] for item in environment if isinstance(item, str)
+    }
+    forbidden_credential_or_proxy_environment_names = sorted(
+        name
+        for name in environment_names
+        if (
+            name.upper().endswith(
+                ("_API_KEY", "_CREDENTIAL", "_CREDENTIALS", "_PASSWORD", "_SECRET", "_TOKEN")
+            )
+            or "_SECRET_" in name.upper()
+            or name.upper()
+            in {
+                "ALL_PROXY",
+                "AWS_ACCESS_KEY_ID",
+                "DATABASE_URL",
+                "HTTP_PROXY",
+                "HTTPS_PROXY",
+                "NO_PROXY",
+                "POSTGRES_PASSWORD",
+            }
+        )
+        and name.upper() != "POSTGRES_PASSWORD_FILE"
+    )
+
+    network_mode = str(host_config.get("NetworkMode") or "")
+    expected_mounts = {
+        "/run/secrets/postgres_password": False,
+        "/var/lib/postgresql/data": True,
+    }
+    receipt = {
+        "attempt_label_match": attempt_label_match,
+        "network_mode": network_mode,
+        "attached_networks": attached_networks,
+        "postgres_port_bindings": postgres_bindings,
+        "mount_destinations": sorted(mount_destinations),
+        "provider_or_proxy_environment_present": bool(
+            forbidden_credential_or_proxy_environment_names
+        ),
+        "private_captures_mounted": any(
+            "raw_private" in destination.lower()
+            or "capture" in destination.lower()
+            for destination in mount_destinations
+        ),
+        "container_egress_possible": True,
+    }
+    if (
+        not attempt_label_match
+        or network_mode != network_name
+        or attached_networks != [network_name]
+        or set(port_bindings) != {"5432/tcp"}
+        or postgres_bindings != expected_bindings
+        or mount_receipt != expected_mounts
+        or forbidden_credential_or_proxy_environment_names
+        or receipt["private_captures_mounted"]
+    ):
+        raise AssertionError(
+            "postgres_container_network_contract_failed:" + canonical_json(receipt)
+        )
+    receipt["pass"] = True
+    return receipt
+
+
+def validate_postgres_effective_port_binding(
+    payload: Mapping[str, Any],
+    *,
+    host_port: int,
+) -> dict[str, Any]:
+    """Confirm the running container exposes PostgreSQL only on host loopback."""
+
+    network_settings = payload.get("NetworkSettings")
+    if not isinstance(network_settings, Mapping):
+        network_settings = {}
+    ports = network_settings.get("Ports")
+    if not isinstance(ports, Mapping):
+        ports = {}
+    bindings = ports.get("5432/tcp")
+    expected = [
+        {
+            "HostIp": QUALIFICATION_NETWORK_HOST_BINDING_ADDRESS,
+            "HostPort": str(host_port),
+        }
+    ]
+    receipt = {"effective_postgres_port_bindings": bindings}
+    if set(ports) != {"5432/tcp"} or bindings != expected:
+        raise AssertionError(
+            "postgres_effective_port_binding_contract_failed:"
+            + canonical_json(receipt)
+        )
+    receipt["pass"] = True
+    return receipt
 
 
 def sha256_file(path: Path) -> str:
@@ -804,6 +1015,7 @@ def main() -> int:
     args = parser.parse_args()
 
     qualification_root = validate_qualification_root(args.qualification_root)
+    host_port = validate_qualification_host_port(args.host_port)
     runtime_receipt = runtime_environment_receipt(qualification_root)
     binding_start = implementation_binding()
     if not binding_start["git_status_clean"]:
@@ -827,10 +1039,10 @@ def main() -> int:
     postgres_url = database_url(
         password=password,
         database="finsight_qualification",
-        host_port=args.host_port,
+        host_port=host_port,
     )
     summary: dict[str, Any] = {
-        "schema_version": "fin_ia_postgres_dagster_s2_vertical_qualification_v1_0",
+        "schema_version": "fin_ia_postgres_dagster_s2_vertical_qualification_v1_1",
         "attempt_id": attempt_id,
         "recorded_at": datetime.now(timezone.utc).isoformat(),
         "repository_head": binding_start["repository_head"],
@@ -842,7 +1054,10 @@ def main() -> int:
             "expected_version": POSTGRES_VERSION,
             "container_name": container_name,
             "network_name": network_name,
-            "host_binding": f"127.0.0.1:{args.host_port}",
+            "client_location": "windows_host_process",
+            "host_binding": (
+                f"{QUALIFICATION_NETWORK_HOST_BINDING_ADDRESS}:{host_port}"
+            ),
             "data_directory": str(postgres_data),
             "credential_persisted_in_result": False,
         },
@@ -873,7 +1088,13 @@ def main() -> int:
                 "docker",
                 "network",
                 "create",
-                "--internal",
+                "--driver",
+                QUALIFICATION_NETWORK_DRIVER,
+                "--opt",
+                (
+                    f"{QUALIFICATION_NETWORK_HOST_BINDING_OPTION}="
+                    f"{QUALIFICATION_NETWORK_HOST_BINDING_ADDRESS}"
+                ),
                 "--label",
                 f"{DOCKER_ATTEMPT_LABEL}={attempt_id}",
                 network_name,
@@ -884,10 +1105,10 @@ def main() -> int:
             ["docker", "network", "inspect", network_name]
         )
         network_payload = json.loads(network_inspect.stdout)[0]
-        network_internal = bool(network_payload.get("Internal"))
-        if not network_internal:
-            raise AssertionError("qualification_network_is_not_internal")
-        summary["postgres"]["network_internal"] = network_internal
+        summary["postgres"]["network_profile"] = validate_qualification_network(
+            network_payload,
+            attempt_id=attempt_id,
+        )
         run_command(
             [
                 "docker",
@@ -903,7 +1124,10 @@ def main() -> int:
                 "--pull",
                 "never",
                 "--publish",
-                f"127.0.0.1:{args.host_port}:5432",
+                (
+                    f"{QUALIFICATION_NETWORK_HOST_BINDING_ADDRESS}:"
+                    f"{host_port}:5432"
+                ),
                 "--env",
                 "POSTGRES_USER=finsight_qualification",
                 "--env",
@@ -918,7 +1142,29 @@ def main() -> int:
             ]
         )
         container_created = True
+        container_inspect = run_command(
+            ["docker", "container", "inspect", container_name]
+        )
+        container_payload = json.loads(container_inspect.stdout)[0]
+        summary["postgres"]["container_network_contract"] = (
+            validate_postgres_container_network_contract(
+                container_payload,
+                attempt_id=attempt_id,
+                network_name=network_name,
+                host_port=host_port,
+            )
+        )
         run_command(["docker", "start", container_name])
+        running_container_inspect = run_command(
+            ["docker", "container", "inspect", container_name]
+        )
+        running_container_payload = json.loads(running_container_inspect.stdout)[0]
+        summary["postgres"]["effective_port_binding"] = (
+            validate_postgres_effective_port_binding(
+                running_container_payload,
+                host_port=host_port,
+            )
+        )
         wait_for_postgres(container_name)
         contract = exercise_postgres_contract(postgres_url)
         if contract["server_version"] != POSTGRES_VERSION:
@@ -1183,7 +1429,7 @@ def main() -> int:
         restored_url = database_url(
             password=password,
             database="finsight_qualification_restore",
-            host_port=args.host_port,
+            host_port=host_port,
         )
         restored_rows = read_qualification_rows(restored_url)
         restore_pass = restored_rows == post_restart

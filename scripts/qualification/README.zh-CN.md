@@ -128,13 +128,15 @@ $env:PYTHONPATH = 'D:\FIN_Insight_Agent;D:\FIN_Insight_Agent\src'
 
 前置要求不只有 Docker：仓库必须 clean；解释器必须位于同一 Z 盘 qualification root；必须从根 `uv.lock` fresh sync `control-plane + qualification`；Git、policy、tracked result和 runner绑定文件必须存在；`data/raw_private` 还必须预先物化 policy列出的 DELL/MU/NVDA 12 个 capture/metadata对象并通过 digest校验。另需可用 Docker daemon、未占用 loopback port，以及已拉取并按 digest固定的 official PostgreSQL image。runner每次创建独立 container/network/data/secret，验证 native transaction、UNIQUE、advisory lock、restart、host-roundtrip custom dump/restore、Dagster PostgreSQL run/event storage和一条真实 local source-bound S2 CompanyFacts materialization。结束时只移除本 attempt拥有的 container/network与 ephemeral secret；成功、失败、数据库目录和 dump均留在 Z 盘。
 
+这里有两种不能混写的成熟Docker拓扑：本Windows runner的client在宿主进程中，因此使用attempt专属普通bridge，并把PostgreSQL精确发布到`127.0.0.1`；Engine回读必须证明driver、`Internal=false`、loopback binding、attempt label与唯一network attachment，并在container启动后再次证明实际`NetworkSettings.Ports`只有这一条loopback映射。它限制的是数据库宿主暴露面，不是zero-egress或air-gap。CI中的client和PostgreSQL都在container内，仍使用internal network且不发布数据库host port。未来若要更强隔离，应另行资格化“runner也容器化”的成熟拓扑，不在本修正里引入自研proxy或防火墙编排。
+
 当前 exact image：
 
 ```text
 postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
 ```
 
-`20260831T034026Z-a8700e1b` 与后续 `040515` 只代表当时代码的历史 bounded PASS；它们没有绑定当前 hardened adapter、runtime inventory、cleanup与 host-roundtrip restore，不能称为最终 replay。最终 exact attempt必须在候选实现提交后从 clean commit和全新 locked qualification环境重跑，再在本节填入。
+`20260831T034026Z-a8700e1b` 与后续 `040515` 只代表当时代码的历史 bounded PASS；它们没有绑定当前 hardened adapter、runtime inventory、cleanup与 host-roundtrip restore，不能称为最终 replay。`20260831T094310Z-ac7fd1d9`又证明clean binding和cleanup，但因Windows host-runner误用internal network而在host PostgreSQL连接处失败，同样不能升级为PASS。最终 exact attempt必须在网络合同修正提交后，从该新clean commit和全新 locked qualification环境用新attempt ID重跑，再在本节填入。
 
 即使最终 `status=bounded_engineering_pass`，它也只证明本地 PostgreSQL 16.15 profile与一条 Dagster outer-workflow adapter；不授权 production cutover、Evidence/S2 bridge、R14、LangGraph、report/product/release，也不把 Dagster storage当作金融事实权威。schedule/sensor user state在本纵切中不适用且未测。用于非Compose部署时，把 `configs/control_plane/dagster.postgres.yaml`复制到独立可写的`DAGSTER_HOME/dagster.yaml`，并把 PostgreSQL URL通过平台secret或只读文件交给`DAGSTER_POSTGRES_URL_FILE`；不要把明文URL或密码提交到Git。
 

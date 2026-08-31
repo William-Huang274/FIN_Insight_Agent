@@ -15,9 +15,244 @@ from scripts.qualification.run_postgres_dagster_s2_fact_mart_vertical import (
     sha256_json,
     validate_interpreter_location,
     validate_module_origin,
+    validate_postgres_container_network_contract,
+    validate_postgres_effective_port_binding,
+    validate_qualification_host_port,
+    validate_qualification_network,
     validate_qualification_root,
     validate_result_digest,
 )
+
+
+def test_qualification_host_port_rejects_privileged_or_out_of_range_values() -> None:
+    assert validate_qualification_host_port(55432) == 55432
+    for invalid in (True, 0, 1023, 65536):
+        with pytest.raises(
+            ValueError,
+            match="qualification_host_port_must_be_between_1024_and_65535",
+        ):
+            validate_qualification_host_port(invalid)
+
+
+def test_qualification_network_requires_dedicated_loopback_bridge() -> None:
+    receipt = validate_qualification_network(
+        {
+            "Driver": "bridge",
+            "Internal": False,
+            "Options": {
+                "com.docker.network.bridge.host_binding_ipv4": "127.0.0.1",
+            },
+            "Labels": {"com.finsight.qualification.attempt": "attempt-a"},
+        },
+        attempt_id="attempt-a",
+    )
+
+    assert receipt["driver"] == "bridge"
+    assert receipt["internal"] is False
+    assert receipt["default_host_binding_ipv4"] == "127.0.0.1"
+    assert receipt["attempt_label_match"] is True
+    assert receipt["postgres_container_egress_blocked_by_network"] is False
+    assert receipt["host_runner_egress_blocked_by_network"] is False
+    assert receipt["pass"] is True
+
+
+@pytest.mark.parametrize(
+    "payload",
+    [
+        {
+            "Driver": "bridge",
+            "Internal": True,
+            "Options": {
+                "com.docker.network.bridge.host_binding_ipv4": "127.0.0.1",
+            },
+            "Labels": {"com.finsight.qualification.attempt": "attempt-a"},
+        },
+        {
+            "Driver": "overlay",
+            "Internal": False,
+            "Options": {
+                "com.docker.network.bridge.host_binding_ipv4": "127.0.0.1",
+            },
+            "Labels": {"com.finsight.qualification.attempt": "attempt-a"},
+        },
+        {
+            "Driver": "bridge",
+            "Internal": False,
+            "Options": {},
+            "Labels": {"com.finsight.qualification.attempt": "attempt-a"},
+        },
+        {
+            "Driver": "bridge",
+            "Internal": False,
+            "Options": {
+                "com.docker.network.bridge.host_binding_ipv4": "0.0.0.0",
+            },
+            "Labels": {"com.finsight.qualification.attempt": "attempt-a"},
+        },
+        {
+            "Driver": "bridge",
+            "Internal": False,
+            "Options": {
+                "com.docker.network.bridge.host_binding_ipv4": "127.0.0.1",
+            },
+            "Labels": {"com.finsight.qualification.attempt": "attempt-b"},
+        },
+    ],
+)
+def test_qualification_network_rejects_unreachable_or_unowned_profiles(
+    payload: dict[str, object],
+) -> None:
+    with pytest.raises(
+        AssertionError,
+        match="qualification_network_loopback_bridge_contract_failed",
+    ):
+        validate_qualification_network(payload, attempt_id="attempt-a")
+
+
+def _postgres_container_inspect_payload() -> dict[str, object]:
+    return {
+        "Config": {
+            "Labels": {"com.finsight.qualification.attempt": "attempt-a"},
+            "Env": [
+                "POSTGRES_USER=finsight_qualification",
+                "POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password",
+            ],
+        },
+        "HostConfig": {
+            "NetworkMode": "attempt-network",
+            "PortBindings": {
+                "5432/tcp": [{"HostIp": "127.0.0.1", "HostPort": "55432"}],
+            },
+        },
+        "NetworkSettings": {"Networks": {"attempt-network": {}}},
+        "Mounts": [
+            {"Destination": "/run/secrets/postgres_password", "RW": False},
+            {"Destination": "/var/lib/postgresql/data", "RW": True},
+        ],
+    }
+
+
+def test_postgres_container_network_contract_reads_back_exact_loopback_scope() -> None:
+    receipt = validate_postgres_container_network_contract(
+        _postgres_container_inspect_payload(),
+        attempt_id="attempt-a",
+        network_name="attempt-network",
+        host_port=55432,
+    )
+
+    assert receipt["postgres_port_bindings"] == [
+        {"HostIp": "127.0.0.1", "HostPort": "55432"}
+    ]
+    assert receipt["attached_networks"] == ["attempt-network"]
+    assert receipt["provider_or_proxy_environment_present"] is False
+    assert receipt["private_captures_mounted"] is False
+    assert receipt["container_egress_possible"] is True
+    assert receipt["pass"] is True
+
+
+@pytest.mark.parametrize(
+    ("mutation_path", "replacement"),
+    [
+        (("HostConfig", "PortBindings", "5432/tcp", 0, "HostIp"), "0.0.0.0"),
+        (("HostConfig", "PortBindings", "5432/tcp", 0, "HostPort"), "55433"),
+        (("HostConfig", "NetworkMode"), "other-network"),
+        (("Config", "Labels", "com.finsight.qualification.attempt"), "attempt-b"),
+        (("Config", "Env", 0), "EIA_API_KEY=forbidden"),
+        (("Config", "Env", 0), "HTTPS_PROXY=http://local-proxy.invalid"),
+        (("Config", "Env", 0), "AWS_SECRET_ACCESS_KEY=forbidden"),
+        (("Config", "Env", 0), "POSTGRES_PASSWORD=forbidden"),
+        (("Mounts", 0, "Destination"), "/app/data/raw_private"),
+    ],
+)
+def test_postgres_container_network_contract_rejects_scope_drift(
+    mutation_path: tuple[object, ...],
+    replacement: object,
+) -> None:
+    payload = _postgres_container_inspect_payload()
+    target: object = payload
+    for key in mutation_path[:-1]:
+        target = target[key]  # type: ignore[index]
+    target[mutation_path[-1]] = replacement  # type: ignore[index]
+
+    with pytest.raises(
+        AssertionError,
+        match="postgres_container_network_contract_failed",
+    ):
+        validate_postgres_container_network_contract(
+            payload,
+            attempt_id="attempt-a",
+            network_name="attempt-network",
+            host_port=55432,
+        )
+
+
+def test_postgres_effective_port_binding_requires_one_loopback_mapping() -> None:
+    receipt = validate_postgres_effective_port_binding(
+        {
+            "NetworkSettings": {
+                "Ports": {
+                    "5432/tcp": [
+                        {"HostIp": "127.0.0.1", "HostPort": "55432"},
+                    ],
+                },
+            },
+        },
+        host_port=55432,
+    )
+
+    assert receipt["effective_postgres_port_bindings"] == [
+        {"HostIp": "127.0.0.1", "HostPort": "55432"}
+    ]
+    assert receipt["pass"] is True
+
+
+@pytest.mark.parametrize(
+    "ports",
+    [
+        {"5432/tcp": [{"HostIp": "0.0.0.0", "HostPort": "55432"}]},
+        {"5432/tcp": [{"HostIp": "::", "HostPort": "55432"}]},
+        {"5432/tcp": [{"HostIp": "127.0.0.1", "HostPort": "55433"}]},
+        {
+            "5432/tcp": [{"HostIp": "127.0.0.1", "HostPort": "55432"}],
+            "80/tcp": [{"HostIp": "127.0.0.1", "HostPort": "55433"}],
+        },
+    ],
+)
+def test_postgres_effective_port_binding_rejects_runtime_exposure_drift(
+    ports: dict[str, object],
+) -> None:
+    with pytest.raises(
+        AssertionError,
+        match="postgres_effective_port_binding_contract_failed",
+    ):
+        validate_postgres_effective_port_binding(
+            {"NetworkSettings": {"Ports": ports}},
+            host_port=55432,
+        )
+
+
+def test_container_to_container_ci_keeps_internal_network() -> None:
+    workflow = (
+        Path(__file__).resolve().parents[2] / ".github/workflows/docker-smoke.yml"
+    ).read_text(encoding="utf-8")
+    step = workflow.split(
+        "      - name: Boot the PostgreSQL-backed Dagster UI on an internal network",
+        maxsplit=1,
+    )[1].split("      - name: Start container", maxsplit=1)[0]
+    postgres_run = step.split("--name finsight-postgres-ci", maxsplit=1)[1].split(
+        "postgres@sha256:",
+        maxsplit=1,
+    )[0]
+    control_plane_run = step.split(
+        "--name finsight-control-plane-ci",
+        maxsplit=1,
+    )[1].split("finsight-control-plane:ci", maxsplit=1)[0]
+
+    assert step.count("docker network create --internal finsight-control-plane-ci") == 1
+    assert "--network finsight-control-plane-ci" in postgres_run
+    assert "--publish" not in postgres_run
+    assert "\n            -p " not in postgres_run
+    assert "--network finsight-control-plane-ci" in control_plane_run
 
 
 def test_semantic_projection_ignores_path_specific_receipt_fields() -> None:

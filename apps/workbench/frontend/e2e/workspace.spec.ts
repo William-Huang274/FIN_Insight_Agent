@@ -44,13 +44,14 @@ test("workspace exposes the three identity-bound reviewed cases", async ({ page 
   await expect(page.getByText("不可变绑定")).toBeVisible();
   await page.getByRole("button", { name: /证据与缺口/ }).click();
   await expect(page.getByRole("heading", { name: "当前 S1 产品就绪诊断" })).toBeVisible();
-  await expect(page.getByText("等待 S3 明确研究范围", { exact: true }).first()).toBeVisible();
+  const productReadiness = page.locator("section.research-workspace__product-readiness");
+  await expect(productReadiness.getByText("候选待证据准入", { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/不会因展示而自动成为 Evidence/)).toBeVisible();
   await expect(page.getByText(/workbench_private/)).toHaveCount(0);
   await expect(page.getByRole("heading", { name: "S1 命题级证据账本" })).toBeVisible();
-  await expect(page.getByText(/当前 3 个缺口尚未完成官方或外源补证/)).toBeVisible();
+  await expect(page.getByText(/当前 14 个缺口尚未完成官方或外源补证/)).toBeVisible();
   await expect(page.getByText(/本轮可认定的公开信息真空为 0/)).toBeVisible();
-  for (const label of ["已接受 Evidence", "候选待复核", "既有证据未召回", "尚未补证缺口"]) {
+  for (const label of ["当前精确绑定 Evidence", "候选待复核", "既有证据未召回", "尚未补证缺口"]) {
     await expect(page.getByText(label, { exact: true })).toBeVisible();
   }
   await expect(page.getByRole("heading", { name: "已审 Evidence" })).toBeVisible();

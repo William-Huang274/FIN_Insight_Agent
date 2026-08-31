@@ -1,7 +1,7 @@
 # FIN 0.1.3 单一依赖源、PostgreSQL profile 与 Dagster S2 shadow 纵切
 
 日期：2026-08-31
-状态：EXPLICIT NONPRODUCTION CANDIDATE / D127 EXACT ATTEMPT FAILED AT PREEXISTING S2 DIGEST / SAME-STAGE FIX TESTED / NEW CLEAN ATTEMPT PENDING / PRODUCT DELTA 0
+状态：BOUNDED NONPRODUCTION ENGINEERING PASS AT EXACT `43bd6344` / IMAGE SUPPLY AND PRODUCTION CUTOVER BLOCKED / CURRENT S2 AUTHORITY DEBT OPEN / PRODUCT DELTA 0
 分支：`codex/fin013-dell-s1-s2-product-bridge`
 
 ## 1. Owner 授权与本工作包边界
@@ -130,6 +130,8 @@ CI只有仓库内容，没有 private captures，因此 Docker CI只能证明镜
 
 ## 7. 截至候选实现冻结前的验证
 
+> 历史冻结说明：第7–10节记录candidate、d127失败与同阶段修正当时的真实状态，均保留用于追溯；当前结论与下一步以第11–15节的exact-clean successor为准，不得从本节恢复“仍待首次final attempt”的旧状态。
+
 - `uv lock --check`：PASS，lock解析`157`个package records；独立`supply` env与build backend精确版本可执行；Z盘Syft/Grype通过版本与发布checksum校验，CVE Binary Tool稳定版因自身闭包6个known findings被明确拒绝，不能计为工具门PASS；
 - `git diff --check`、YAML parse、`docker compose --profile control-plane config --quiet`：PASS；
 - active baseline=`213 Python / 8 frontend / 0 forbidden`、archive redirect=`6059 / PASS`、repository secret scan=`8325 files / 0 findings`；
@@ -206,3 +208,103 @@ CI只有仓库内容，没有 private captures，因此 Docker CI只能证明镜
 `Z:\FIN_Insight_Agent_qualification\20260831_production_dependency_and_vertical_v1\artifacts\tracked-s2-result-integrity-diagnostic\20260831T215722+0800-final-patch`
 
 fresh result file SHA=`eccd53b1...e5b17`，claimed/recomputed digest均为`fda4b03e...cb90`，SQLite SHA=`363780c0...5ac4`，1,319 observations、24/24 qrels、mutations all pass，完整 semantic projection与current-bound artifact exact，projection SHA=`794977ca...ca28`。诊断 receipt SHA=`d0647343...54fc`。这些是 working-tree root-cause evidence，不是 final clean PostgreSQL/Dagster qualification；下一合法动作是提交同阶段修正，从新 clean commit、新 locked env和新 attempt ID重跑完整纵切。
+
+## 11. 43bd exact-clean 最终资格与同阶段后继
+
+同阶段 S2 producer／qualification harness 修正已冻结并推送为：
+
+`43bd634446822086f783e387f8292d85e240203c`
+
+从新的 Z 盘根、fresh locked combined environment 执行 attempt `20260831T145529Z-eef901a4`，最终收据为：
+
+`Z:\FIN_Insight_Agent_qualification\20260831_production_dependency_and_vertical_v1\final-clean-43bd6344\artifacts\postgres-dagster-s2\20260831T145529Z-eef901a4\qualification-result.json`
+
+其 SHA-256=`9c65ca53bde8c98b0ac29916c2c4c6f27e4f764287a2b9888af310397a15ffb2`，状态为 `bounded_engineering_pass`。该 clean attempt 精确证明：
+
+- repository start/end 均绑定 clean `43bd6344`；
+- PostgreSQL `16.15` 的 transaction rollback、UNIQUE、advisory lock、restart readback、custom dump/restore全部通过；backup SHA=`5939160f...0183`；
+- Dagster PostgreSQL run/event storage 在新 instance与PostgreSQL再次重启后均读回 `SUCCESS`，并通过异库 restore readback；
+- legacy与Dagster均得到1,319 observations、24/24 qrels，完整 semantic projection exact，SHA=`794977ca1e7ab963db12b067ea053a276d9c37d9063525adc22958868bb7ca28`；
+- attempt内 legacy/Dagster SQLite物理SHA exact；与current-bound tracked v1.1的物理SHA不等，但完整语义投影exact，符合已冻结的兼容合同；
+- container/network/secret cleanup通过，0 model、0 provider、0金融外源调用。
+
+因此 RC-S5-008 的“qualification reader修改signed payload”已由最终clean attempt关闭；RC-S2-020只关闭“fresh producer现在能生成self-valid结果”这一子问题。current-bound S2 v1.1文件仍保持原字节和SHA=`4dd68cb...e6c22`，其self-integrity仍为false，未创建v1.2，未迁移R39或current authority。
+
+## 12. 最终镜像、真实容器 job 与不可变失败
+
+同一 exact commit 构建了两张最终镜像：
+
+- `finsight-control-plane:43bd6344`，image ID=`sha256:ec64652210cad78e7428360c9687a2c424a157bbf55b51b6d2cbbc3112588c45`；
+- `finsight-workbench:43bd6344`，image ID=`sha256:1c4e08dee597739341f8c60411f1c06826d9d849c2ba01ddbf8f5516f17e5a17`。
+
+第一次真实 control-plane container attempt `20260831T154054Z-e2c9c386407747548fc620af1c6f857f`不可变失败，summary SHA=`dc832d8b1d561e7afd2e68b41b0ae526de45750fb2a225ec67f7b97d02a902a4`。它错误要求Windows qualification的SQLite 3.50.4输出与Linux container的SQLite 3.46.1输出物理文件SHA相等。旧runner已内容寻址保全为`run_control_plane_container_job_failed_fffd5755.py`，SHA=`fffd5755e9bb2bee8b2e52501d04aada280d6145315b83626caf5e2aed6ef434`；旧attempt没有被改标或追认为PASS。
+
+同阶段successor runner SHA=`7a262fd0a321bd0620e0de7c901f02f69567cb2c7a73133d5cc54201614e40cc`撤销这条跨runtime物理字节假门，同时保留attempt内实体SHA、self-digest、schema、sorted logical rows、counts、qrels、mutations、完整result semantic projection、Dagster/PostgreSQL readback、secret与cleanup门。新attempt `20260831T155249Z-65000a8b0e6a40aba283fd7292c4a338`通过，summary SHA=`e6b7308cb2b6048ee7ef22bf63512bc5b37b8ae3bf537d3866175ce6a31c3bbb`：
+
+- final control-plane默认CMD可启动，UID/GID=`10001:10001`；raw private与secret mount只读，attempt state volume可写；
+- attempt-scoped internal bridge内的PostgreSQL=`16.15`；provider credentials absent；
+- Dagster run=`3eb18373-7a8f-40ea-b254-d462032913fe`、status=`SUCCESS`、16 events；
+- container result self-digest通过，1,319 observations、24/24 qrels、6项mutations通过；
+- host/container SQLite物理SHA明确不同，但schema、三表列/行数/sorted rows与logical receipt SHA=`ce6fdafbb53f583fce9d3870ab371e4e7b8015897af0e38bc3f9d9d697fa5721` exact；四份result完整semantic projection均为`794977ca...ca28`；
+- PostgreSQL dump SHA=`e737bd9a...3b99`；所有selected artifact SHA、secret scan和对象cleanup通过；0 model／0金融外源调用。
+
+作者分离治理复核允许签发“最终control-plane镜像真实只读job”子门，finding=`P0/P1/P2/P3=0/0/2/1`。两项P2与一项P3不推翻本次静态artifact的bounded pass，但 future reusable runner必须补：完整semantic projection成为default-closed内建门；SQLite SHA/header/query绑定同一不可变snapshot并把无`ORDER BY`的natural row digest降为诊断；successor receipt显式绑定旧runner snapshot路径与SHA。
+
+Workbench runtime contract v2 SHA=`9a26d8e7b4681f50305bc6af7b71776fe1c5b0b392a306db156d46ce85fba379`。它独立证明health、exact image/revision、UID10001、frontend存在、pip/uv absent、state可写、provider credentials absent、network=`none`、configs/data/reviewed-evidence三个只读mount，以及container清理。state-volume absence只见frontend summary／postflight，受第13节P3 provenance边界约束，不冒充该runtime receipt内已有的独立字段。
+
+## 13. 前端真实 E2E 与全仓回归
+
+本机没有可直接使用的host Node/npm；前端门使用固定`node:22-bookworm-slim@sha256:7af03b14...c732`（Node 22.22.3／npm 10.9.8）和`mcr.microsoft.com/playwright@sha256:baed2032...9d07`（Playwright 1.62.0）。每次attempt均创建fresh `node_modules` volume并执行`npm ci --no-audit --no-fund`、typecheck和production build；最终均为71 packages、1,676 modules，dist index/JS/CSS SHA分别为`fbabd2b6...aad5`／`0b8aef48...59f6`／`cea4fdae...432b`。
+
+E2E拓扑由exact Workbench image backend、Vite和Playwright共享backend的`--network none` namespace，不发布host port；产品数据和reviewed evidence只读，state volume可写。三次失败逐次暴露同一测试文件中的陈旧产品合同，均原样保留：
+
+1. `e2e-20260901-final1`：旧“等待 S3 明确研究范围”，result SHA=`e1b63f3a...e3dd`；
+2. `e2e-20260901-final2`：旧“当前 3 个缺口”，result SHA=`5c45bea6...569f`；
+3. `e2e-20260901-final3`：旧“已接受 Evidence”，result SHA=`5e6b1fbd...e04f`。
+
+修正只让test回到当前digest-bound产品语义：`候选待证据准入`、14个gap、`当前精确绑定 Evidence`，并把readiness locator缩到对应section；没有skip、retry、timeout放宽、模糊匹配或产品代码变更。`e2e-20260901-final4`为完整目录`3/3 passed`、0 unexpected／skipped／flaky／retry，result SHA=`4537067f735b9d0f90c4317fb49b20b476f6f71ef455b61ba63a8febc1e43f60`。总summary SHA=`07c5e26cb1e9e2a8613da9e3b4d4e4cdd6984a998110ef2672b0dda743d29f4e`；作者分离代码／断言复核为`P0/P1/P2/P3=0/0/0/0`。
+
+该前端结果绑定产品镜像commit `43bd6344`与测试文件物理SHA=`c5679ed9...2115`，测试运行时文件尚未进入同一Git commit，故记为content-addressed successor E2E，而不是同commit test-input证明；cleanup字段也只有summary/postflight，没有独立Docker inspect receipt，保存的harness副本生成于运行后但可观察配置与Playwright result一致。这三项均为P3 provenance hardening，不改变本次bounded frontend behavior结论，也不得被描述为production或产品验收。
+
+最终全仓第一次误用core-only `.venv`，在collection阶段因缺Dagster失败，0 tests执行；它是环境profile错误，不是代码测试失败。正确的locked union profile命令为：
+
+`uv run --locked --extra control-plane --extra qualification python -m pytest -q`
+
+结果=`2671 passed, 5 skipped in 1142.14s`，exit 0。最终另有compileall、active baseline=`213 Python / 8 frontend / 5 detectors / 28 runtime / 0 forbidden`、archive redirect=`6059`、repository secret scan=`8325 files / 0 findings`与`git diff --check`通过。skip保持可见，不冒充执行成功。
+
+## 14. 最终镜像供应链审计：执行完成，门仍阻断
+
+最终、不可变供应链证据位于：
+
+`Z:\FIN_Insight_Agent_qualification\20260831_production_dependency_and_vertical_v1\final-clean-43bd6344\artifacts\image-supply-final\20260831T162103Z-957675f80266`
+
+`audit-summary.json` SHA=`a549f201892ce77dd746ba33024fc4a8d18a3e35959bd63a6850970b697e8047`；`artifact-manifest-v2.json` SHA=`4a5136db748dfa54d875ec7f6b3115509b17890f32559d400156d6db34d1e5c1`，覆盖41 files／20,262,048 bytes，0 rehash error且JSON全部可解析。Syft=`1.51.1`、Grype=`0.116.1`，数据库schema=`v6.1.9`、built=`2026-08-30T06:27:52Z`。
+
+- control-plane Syft=186 components，Workbench=137；
+- 每张镜像Grype raw均为236：7 Critical／31 High／75 Medium／11 Low／61 Negligible／51 Unknown；
+- fix state均为92 fixed／65 not-fixed／72 wont-fix／7 unknown；7 Critical没有fix-known，31 High中10 fix-known、21非fix-known；
+- 两镜像标准化finding集合完全一致，SHA=`a7739d95...158b`；29条generic finding只进入source-bound triage候选，最终VEX／false-positive裁定数仍为0，没有从raw数中扣除任何一条；
+- control-plane含`psycopg2-binary 2.9.12`；34/34带hash的RECORD行一致，但15个dpkg-unowned原生文件共11,179,239 bytes，运行时为libpq 17.9与wheel OpenSSL 3.5.6，而系统OpenSSL为3.5.7；
+- 同一Syft对抽取出的15个原生文件识别0 component，Grype得到0 match。该0明确是scanner blind spot，不是安全证据；native vulnerability mapping未闭合。
+
+最终决定固定为：`bounded engineering inventory claim=supported`，但`image_supply_gate=BLOCKED`、`production_pass=false`。允许下一步仅为：保留raw findings的source-bound triage/VEX、修复可修系统包后以新image ID重建复扫、以及以system-linked或其他provenance可闭合profile替换production `psycopg2-binary`。禁止宣称production ready、production supply PASS、R14 PASS、S2 authority migration或product release。
+
+## 15. 工作包最终权限与下一责任层
+
+本工作包现按“执行了所有计划门，并如实保留其中的阻断结论”收为 **bounded nonproduction engineering PASS**：单一依赖源、fresh PostgreSQL支持画像、一个Dagster S2 shadow、最终control-plane真实job、Workbench runtime、frontend behavior和全仓回归均有当前证据。它不是“所有门都绿”，也不是production adoption。
+
+最终权限矩阵：
+
+- single dependency source／locked profiles：bounded engineering true；
+- local PostgreSQL final qualification：true；
+- one Dagster S2 shadow final qualification：true；
+- final control-plane real readonly job：true；
+- Workbench runtime/frontend bounded behavior：true；
+- image supply／native supply／production deployable：false／false／false；
+- current S2 authority self-integrity／migration：false／false；
+- EIA credential外部轮换：无项目收据，仍由Owner完成；
+- legacy deletion：0；indexes未改；
+- product/research authority delta：0；
+- R14、R15/R16、formal、外源、4B/reranker、Evidence admission、S2 bridge、S3、report、product、publication、release：全部false。
+
+下一最早责任层不是继续R14或扩写自研治理协议，而是独立的S5 image/native supply remediation：先用现成供应链工具完成source-bound triage与可修包重建，再资格验证system-linked数据库client方案；若无法在合理复杂度内闭合，就保持本地nonproduction shadow，不得用自研scanner或宽松ignore把门做绿。

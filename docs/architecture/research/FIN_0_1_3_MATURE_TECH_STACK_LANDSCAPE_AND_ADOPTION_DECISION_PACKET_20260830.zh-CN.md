@@ -1,7 +1,7 @@
 # FIN 0.1.3 成熟技术栈全景与采用决策包
 
 日期：2026-08-30
-状态：OFFICIAL-SOURCE LANDSCAPE COMPLETE / CONTROL-PLANE QUALIFICATION EXECUTED / DATA-PLANE QUALIFICATION PENDING / NO PRODUCTION ADOPTION AUTHORITY
+状态：OFFICIAL-SOURCE LANDSCAPE COMPLETE / POSTGRES+DAGSTER S2 SHADOW IMPLEMENTATION CANDIDATE / FINAL CLEAN QUALIFICATION PENDING / NO PRODUCTION CUTOVER AUTHORITY
 产品审计：[FIN 0.1.3 产品能力全面审计](../../product/FIN_0_1_3_PRODUCT_CAPABILITY_BUILD_ADOPT_HOLD_RETIRE_AUDIT_20260830.zh-CN.md)
 来源快照：[成熟栈来源与版本资格快照清单](FIN_0_1_3_MATURE_STACK_RESEARCH_SNAPSHOT_MANIFEST_20260830.zh-CN.md)
 审计基线：codex/fin013-dell-s1-s2-product-bridge @ 9f2b62834fa1bedcf48f353466f40f3ae75d4c43
@@ -50,7 +50,7 @@ FIN 继续拥有：
 - claim↔locator、causal/materiality/WWC；
 - human acceptance、release gate 和 immutable receipts。
 
-Owner 后续已授权 Steps 1–3 的本机隔离 qualification；本决策包仍不授权生产迁移、双写、删除旧代码、模型/外源调用或修改 R14。
+Owner 后续已授权 Steps 1–3 的本机隔离 qualification，并继续授权单一依赖源、PostgreSQL支持画像和一条 Dagster shadow vertical；本决策包仍不授权生产切换、删除旧代码、模型/外源调用或修改 R14。
 
 ### 1.1 阅读图例
 
@@ -79,6 +79,19 @@ Owner 已批准并完成一个不切生产的 Z 盘 control-plane slice：它调
 - 同 package/version 集的 lab-only Git hash lock、MLflow launcher 和最小复现说明已保存到 `scripts/qualification/`；adapter 会 fail closed 校验 Prefect/Dagster 状态目录，避免默认写回用户目录。
 
 实验目录约 1.94 GiB；D/Z 结束可用约 4.643/16.142 GiB。`D:\FIN_Insight_Agent\data\indexes` 未修改。以上只把候选从“纸面”推进到“确定性 fixture 上的实测控制面结论”，不证明真实来源、金融真值、Evidence、产品或 release 权威。
+
+### 1.2A 2026-08-31 locked profile 与真实 source-bound vertical delta
+
+Owner随后授权上一轮的精确工程前置；截至当前已形成implementation candidate，旧attempt只作可行性证据，最终clean复证仍待跑：
+
+- `pyproject.toml + uv.lock`取代两份手工requirements；当前lock=`157 records`并隔离supply tooling/build backend且含setuptools artifact hashes。v2 actual-env 33/86/88与当时0 known Python vulnerabilities是pre-successor历史，final fresh env、image/OS/Node与法律门仍open；
+- Dagster `1.13.20`、dagster-postgres `0.29.20`、dagster-webserver `1.13.20`、filelock `3.32.4`进入独立`control-plane` runtime；psycopg `3.3.4`只在qualification overlay；
+- official PostgreSQL `16.15-alpine`固定为exact digest；旧attempt有transaction/lock/restart/dump-restore/Dagster run-event可行性证据，当前hardened runner的clean/runtime/cleanup/host-roundtrip复证待跑；
+- 一条真实local source-bound S2 CompanyFacts历史纵切曾各重建1,319 observations并达到24/24 qrels与legacy/Dagster业务投影exact；最终commit与Docker只读source mount复证待跑；
+- domain-thin adapter复用现有CLI，同时用成熟filelock并负责路径/凭据/timeout/digest边界；legacy entrypoint保留为canonical business path和rollback，未删除旧代码；
+- LangGraph在该确定性数据任务中没有 checkpoint/HITL/Agent graph需求，因此 HOLD且未测试。
+
+`20260831T034026Z-a8700e1b`及`040515`已降为历史可行性证据，不能代表当前实现。只有successor绑定clean HEAD、全新combined locked runtime、start/end文件SHA、cleanup、restart、host-roundtrip restore、Dagster run/event与Docker真实job后，才可把当前candidate升级为bounded adoption；production HA/TLS/PITR/operator/daemon/UI、多租户、全产品migration、Evidence/S2 bridge、report/product/release继续未通过。
 
 ### 1.3 目录
 
@@ -152,7 +165,7 @@ Owner 已批准并完成一个不切生产的 Z 盘 control-plane slice：它调
 | local reranker | BGE reranker v2-m3 | current baseline | CHALLENGER |
 | managed reranker | 不默认 | Cohere | CEILING |
 | source-grounded semantic extraction | LangExtract pattern + DeepSeek candidate | 本地 vLLM/另一已资格模型 | SHADOW PILOT ONLY |
-| 外层数据/研究 workflow | Dagster `1.13.20` | Prefect `3.8.4` | REAL SLICE PASS；Dagster primary candidate / Prefect challenger；production blocked |
+| 外层数据/研究 workflow | Dagster `1.13.20` | Prefect `3.8.4` | Dagster S2 shadow implementation candidate已落盘；旧real-slice为历史可行性证据，最终clean receipt与Docker真实job待跑；Prefect仍为challenger；production blocked |
 | 内层 Agent state/checkpoint/HITL | LangGraph OSS | 无第二内层 Agent graph | QUALIFICATION PENDING；不得承担外层 pipeline |
 | distributed durable jobs | 当前无主实现 | Temporal | TRIGGER-GATED |
 | provider transport | official openai SDK → DeepSeek | thin capability adapter | ADOPT PILOT |
@@ -171,7 +184,7 @@ Owner 已批准并完成一个不切生产的 Z 盘 control-plane slice：它调
 | whole RAG platform | 无 | RAGFlow benchmark only | DO NOT TAKE OVER |
 | whole LLM app platform | 无 | Dify reference only | EXCLUDE NOW |
 | large artifact versioning | DVC `3.67.1` | object store versioning | Z local remote round-trip PASS；仅大型资产 conditional adopt |
-| dependency lock / SBOM | uv + CycloneDX + pip-audit | CI scanner/signing later | LAB PASS；production lock/security gate open |
+| dependency lock / SBOM | uv `0.10.7` + CycloneDX `7.3.1` + pip-audit `2.10.1` + pip-licenses `5.5.5` | image scanner/signing later | 根pyproject+157-record uv.lock单一依赖candidate；tools/build backend独立locked group；v2 33/86/88是pre-successor；fresh env、image/Node/OS、license legal与final regression仍open |
 
 ### 3.1 P0 candidate 部署画像
 
@@ -192,10 +205,10 @@ Owner 已批准并完成一个不切生产的 Z 盘 control-plane slice：它调
 | Playwright | native_windows | docker_linux | 仓库已有基础，但新 capture/WARC contract 未资格验证 |
 | Docling | native_windows | WSL2/docker_linux | UNTESTED；需 pin core、OCR engine、model weights、CPU/GPU |
 | MinerU | WSL2 或 docker_linux 优先 | native_windows challenger | UNTESTED；CUDA/模型下载/许可/资源路径为 blocker |
-| PostgreSQL `18.6` target | docker_linux pilot | native_windows/remote_linux | Docker Desktop listener 路径错误导致 ENVIRONMENT_BLOCKED；image 未拉取，backup/PITR/locking 未测 |
+| PostgreSQL `16.15` exact digest local profile | docker_linux pilot | remote_linux | Docker daemon已可用；旧attempt已验证本地transaction/UNIQUE/advisory-lock/restart/dump-restore可行性；当前hardened clean-commit/host-roundtrip最终复证待跑，HA/TLS/PITR/operator未测 |
 | pgvector | 与 PostgreSQL 同 profile | docker_linux/remote_linux | Windows extension build/package 路径未固定 |
 | OpenSearch | docker_linux 或 remote_linux 优先 | native Windows ZIP challenger | JVM、filesystem lock、recovery、RAM 未验证 |
-| Dagster `1.13.20` | native_windows Python | docker_linux/remote_linux | Z 盘 SQLite persistent run/retry/readback PASS；PostgreSQL storage 与 daemon/UI production proof pending |
+| Dagster `1.13.20` | docker_linux target + native_windows qualification | remote_linux | optional locked profile、PostgreSQL run/event历史可行性和S2 adapter candidate存在；最终clean runtime-bound receipt、只读private-source Docker job待跑；schedule/sensor未测，daemon/operator production proof pending |
 | Prefect `3.8.4` | native_windows Python | docker_linux/remote_linux | retry/state PASS；默认 home 写入 caveat 已由显式配置消除；作为 challenger |
 | LangGraph | native_windows Python | WSL2/docker_linux | 未运行；只测内层 Agent vertical，SQLite/Postgres checkpointer 锁、并发和 crash recovery 未验证 |
 | MLflow `3.15.2` | native_windows local pilot | docker_linux/remote_linux + Postgres/object store | tracking/artifact/client readback PASS；Windows job backend、漏洞、迁移/备份未通过 |
@@ -1018,7 +1031,7 @@ Dify workflow/human input/app publishing 很成熟，但与 FIN control plane �
 
 ### P0：Owner 批准后，先做无生产切换 qualification
 
-2026-08-31 状态：Owner 已批准其中控制面子集，Dagster/Prefect + MLflow + OTel + OpenLineage + DVC 已真实运行；PostgreSQL 因 Docker Desktop 启动失败 blocked。下面其余 data/model/product pilots 仍未获自动权限，也不能因为控制面通过而批量执行。
+2026-08-31 状态：Owner已批准dependency/PostgreSQL/单Dagster vertical子集。Dagster/Prefect + MLflow + OTel + OpenLineage + DVC的早期lab证据保留；PostgreSQL Docker环境阻断已解除并形成历史可行性证据；当前hardened候选的final clean receipt、Docker真实job、镜像扫描、全量回归和独立复审仍待跑。下面其余data/model/product pilots未获自动权限，不能因一个控制面纵切而批量执行。
 
 1. Pydantic 单一合同源 spike；
 2. untrusted-content intake security fixture/sandbox proof；
@@ -1073,8 +1086,8 @@ Steps 1–3 结果出来后，建议 Owner 下一步只决定，不把多个 dat
 
 1. 是否批准总体 Build/Adopt/Hold/Retire 边界；
 2. R14 选 A 满足 S1/128 全部验收门后 legacy，还是 B 在 RC-S1-109/110 继续 open、old parser 只作 baseline、human-adjudicated gold 作真值的前提下证明同阶段 replacement；
-3. 是否接受 Dagster 为外层 workflow primary candidate、Prefect 为 challenger，并先授权 dependency source/lock 修复与 PostgreSQL 资格画像修复；
-4. 是否在上述共同前置闭合后只接一条 vertical，不做全仓迁移；
+3. 已决定：Dagster为外层workflow primary candidate、Prefect为challenger；dependency source/lock、PostgreSQL本地资格画像和单vertical仅获候选实施授权，final bounded adoption仍等待clean-commit证据签发；
+4. 已决定：只接一条S2 fact-mart shadow vertical，不做全仓迁移；其后先由Owner选择下一条有用户价值的vertical；
 5. pgvector/OpenSearch 是否都进入后续 frozen A/B；
 6. managed ceiling 的云战略：none / Azure / AWS / GCP / vendor SaaS；
 7. MLflow 是等待无漏洞 upstream 组合，还是另测 Phoenix/其他 backend；

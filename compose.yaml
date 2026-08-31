@@ -5,9 +5,8 @@ services:
       dockerfile: Dockerfile
       target: workbench
       args:
-        REQUIREMENTS_FILE: requirements.txt
-        WORKBENCH_IMAGE_KIND: current-product
-        WORKBENCH_RUNTIME_PROFILE: reviewed-evidence
+        WORKBENCH_RELEASE_ID: ${FINSIGHT_IMAGE_REVISION:?set FINSIGHT_IMAGE_REVISION to the exact clean Git commit}
+        OCI_REVISION: ${FINSIGHT_IMAGE_REVISION:?set FINSIGHT_IMAGE_REVISION to the exact clean Git commit}
     image: finsight-workbench:compose
     ports:
       - "127.0.0.1:8765:8765"
@@ -16,15 +15,14 @@ services:
       WORKBENCH_IMAGE_KIND: current-product
       WORKBENCH_RUNTIME_PROFILE: reviewed-evidence
       WORKBENCH_SCRIPT_UPDATE_MODE: image_rebuild
-      WORKBENCH_DATA_UPDATE_MODE: data_build_jobs
+      WORKBENCH_DATA_UPDATE_MODE: external_data_build_jobs
       FINSIGHT_DATA_ROOT: "/app/data"
       FINSIGHT_REVIEWED_EVIDENCE_ROOT: "/app/reviewed-evidence"
-      FINSIGHT_WORKBENCH_PRIVATE_ROOT: "/app/state/workbench_private"
-      FMP_API_KEY: "${FMP_API_KEY:-}"
-      EIA_API_KEY: "${EIA_API_KEY:-}"
+      FINSIGHT_WORKBENCH_PRIVATE_ROOT: "/app/data/workbench_private"
+      FINSIGHT_WORKBENCH_STORE_PATH: "/app/state/workbench.sqlite"
     volumes:
       - ${WORKBENCH_CONFIGS_MOUNT:-./configs}:/app/configs:ro
-      - ${WORKBENCH_DATA_MOUNT:-./data}:/app/data
+      - ${WORKBENCH_DATA_MOUNT:-./data}:/app/data:ro
       - ${WORKBENCH_REVIEWED_EVIDENCE_MOUNT:-./data/workbench_private}:/app/reviewed-evidence:ro
       - finsight-workbench-state:/app/state
     healthcheck:
@@ -34,5 +32,43 @@ services:
       retries: 3
       start_period: 20s
 
+  control-plane:
+    profiles: ["control-plane"]
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: control-plane
+      args:
+        WORKBENCH_RELEASE_ID: ${FINSIGHT_IMAGE_REVISION:?set FINSIGHT_IMAGE_REVISION to the exact clean Git commit}
+        OCI_REVISION: ${FINSIGHT_IMAGE_REVISION:?set FINSIGHT_IMAGE_REVISION to the exact clean Git commit}
+    image: finsight-control-plane:compose
+    ports:
+      - "127.0.0.1:3000:3000"
+    environment:
+      DAGSTER_POSTGRES_URL_FILE: "/run/secrets/dagster_postgres_url"
+      FINSIGHT_REPOSITORY_ROOT: "/app"
+      FINSIGHT_S2_POLICY_ROOT: "/app/configs/financial_facts"
+      FINSIGHT_S2_OUTPUT_ROOT: "/app/state/s2-shadow"
+    volumes:
+      - ${FINSIGHT_CONTROL_PLANE_DATA_MOUNT:-./data/raw_private}:/app/data/raw_private:ro
+      - finsight-control-plane-state:/app/state
+    secrets:
+      - source: dagster_postgres_url
+        target: dagster_postgres_url
+        uid: "10001"
+        gid: "10001"
+        mode: 0400
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/', timeout=5).read()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
 volumes:
   finsight-workbench-state:
+  finsight-control-plane-state:
+
+secrets:
+  dagster_postgres_url:
+    environment: DAGSTER_POSTGRES_URL

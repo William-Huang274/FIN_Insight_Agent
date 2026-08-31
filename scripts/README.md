@@ -6,7 +6,7 @@
 - `data_sec/`：SEC filing 与 8-K earnings 的下载、manifest、chunk 和 source-gap 合并。
 - `data_retrieval/`：Evidence Store 与 BM25 索引。
   - `build_current_compiled_object_views.py`：把当前 source-bound child 编译为去重的 claim、metric-row 与 bounded-context 候选，并显式保留 S2 数据库事实路线；输出没有 Evidence 或 NumericFact 权限。
-  - `run_s1c_compiled_object_retriever_comparison.py`：在同一编译对象、硬过滤和预算上运行 BM25／BGE／Qwen shadow；模型资产不完整时必须写 typed block，不能生成伪结果。依赖位于 `requirements-retrieval-eval.txt`，不进入产品 Runtime 依赖。
+  - `run_s1c_compiled_object_retriever_comparison.py`：在同一编译对象、硬过滤和预算上运行 BM25／BGE／Qwen shadow；模型资产不完整时必须写 typed block，不能生成伪结果。GPU／reranker 依赖仍属于未晋升的隔离 qualification 候选，不进入产品 Runtime lock。
 - `market/`：离线行情快照、事件、分析和 Evidence Pack 构建。
 - `industry/`：受合同约束的行业来源快照。
 

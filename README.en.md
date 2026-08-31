@@ -7,13 +7,15 @@ This release does not claim open-ended agentic research, realtime market data, a
 ## Run locally
 
 ```powershell
-python -m pip install -r requirements.txt
+uv sync --locked
 cd apps/workbench/frontend
 npm ci
 npm run build
 cd ../../..
-python scripts/dev/run_workbench_backend.py --host 127.0.0.1 --port 8765
+uv run --locked python scripts/dev/run_workbench_backend.py --host 127.0.0.1 --port 8765
 ```
+
+Python dependencies are maintained only in `pyproject.toml` and pinned by the tracked `uv.lock`; do not add a second hand-maintained requirements file.
 
 - Product: `http://127.0.0.1:8765/workspace`
 - Operations: `http://127.0.0.1:8765/operations`
@@ -24,9 +26,9 @@ The repository does not distribute the private reviewed-pack objects. Without a 
 ## Verify the baseline
 
 ```powershell
-python scripts/engineering/verify_active_baseline.py --pretty
-python scripts/engineering/build_archive_redirect_index.py --check
-python -m pytest -q
+uv run --locked python scripts/engineering/verify_active_baseline.py --pretty
+uv run --locked python scripts/engineering/build_archive_redirect_index.py --check
+uv run --locked python -m pytest -q
 ```
 
 See the [current code map](docs/architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md) and [current context pack](docs/project_os/current_context_pack.zh-CN.md) for the exact product and repository boundary.

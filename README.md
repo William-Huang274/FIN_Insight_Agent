@@ -16,24 +16,26 @@ FinSight Agent 当前是一套可审计的本地金融研究工作台基线。�
 ## 本地启动
 
 ```powershell
-python -m pip install -r requirements.txt
+uv sync --locked
 
 cd apps/workbench/frontend
 npm ci
 npm run build
 cd ../../..
 
-python scripts/dev/run_workbench_backend.py --host 127.0.0.1 --port 8765
+uv run --locked python scripts/dev/run_workbench_backend.py --host 127.0.0.1 --port 8765
 ```
+
+Python 依赖只在 `pyproject.toml` 人工维护，并由 tracked `uv.lock` 固定；不要另建手工 requirements 文件。
 
 仓库不分发三份 reviewed Evidence Pack 的私有对象。只启动代码时，案例目录仍可读，但三个详情入口会明确显示“证据对象未挂载”，`/api/readiness` 返回 typed HTTP 503。要验收完整案例，请把包含 `workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects` 的数据根挂载为 `data/`，或在启动前设置 `FINSIGHT_DATA_ROOT`。凭据只放环境变量，禁止写入 Git。
 
 ## 验证当前基线
 
 ```powershell
-python scripts/engineering/verify_active_baseline.py --pretty
-python scripts/engineering/build_archive_redirect_index.py --check
-python -m pytest -q
+uv run --locked python scripts/engineering/verify_active_baseline.py --pretty
+uv run --locked python scripts/engineering/build_archive_redirect_index.py --check
+uv run --locked python -m pytest -q
 ```
 
 前端验证：

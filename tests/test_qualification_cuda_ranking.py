@@ -16,6 +16,17 @@ from retrieval.qualification_cuda_ranking import (
 from retrieval.retrieval_need import RetrievalNeed
 
 
+def _cuda_runtime_available() -> bool:
+    try:
+        import torch
+    except ModuleNotFoundError:
+        return False
+    return bool(torch.cuda.is_available())
+
+
+CUDA_RUNTIME_AVAILABLE = _cuda_runtime_available()
+
+
 def _need() -> RetrievalNeed:
     return RetrievalNeed(
         need_id="N1",
@@ -44,7 +55,7 @@ def test_qualification_vector_scoring_fails_closed_without_cuda() -> None:
 
 
 @pytest.mark.skipif(
-    __import__("torch").cuda.is_available() is False,
+    not CUDA_RUNTIME_AVAILABLE,
     reason="qualification vector scoring is intentionally CUDA-only",
 )
 def test_dense_and_learned_sparse_similarity_execute_on_cuda_fp16() -> None:
@@ -79,7 +90,7 @@ def test_dense_and_learned_sparse_similarity_execute_on_cuda_fp16() -> None:
 
 
 @pytest.mark.skipif(
-    __import__("torch").cuda.is_available() is False,
+    not CUDA_RUNTIME_AVAILABLE,
     reason="qualification vector scoring is intentionally CUDA-only",
 )
 def test_multi_vector_similarity_does_not_use_flagembedding_cpu_helper() -> None:

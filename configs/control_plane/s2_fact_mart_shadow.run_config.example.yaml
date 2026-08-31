@@ -1,0 +1,5 @@
+ops:
+  materialize_existing_s2_company_fact_mart:
+    config:
+      policy_path: /app/configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_policy_v1_0.json
+      timeout_seconds: 900

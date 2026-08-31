@@ -17,6 +17,7 @@ from retrieval.evidence_set_coverage import EvidenceSetCoverageError
 from retrieval.hybrid_candidate_runtime import (
     HybridCandidateRuntimeError,
     LazyLocalQwenHybridCandidateRuntime,
+    local_qwen_runtime_dependencies_available,
 )
 from retrieval.financial_intent_v3 import (
     FinancialIntentError,
@@ -413,7 +414,7 @@ class ResearchRetrievalService:
             CURRENT_HYBRID_CANDIDATE_RUNTIME_POLICY_RESOURCE_ID,
         )
         active_hybrid_runtime = hybrid_candidate_runtime
-        if active_hybrid_runtime is None:
+        if active_hybrid_runtime is None and local_qwen_runtime_dependencies_available():
             active_hybrid_runtime = LazyLocalQwenHybridCandidateRuntime(
                 repository_root,
                 hybrid_candidate_policy,

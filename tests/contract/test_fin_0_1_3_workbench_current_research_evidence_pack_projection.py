@@ -572,7 +572,9 @@ def test_workbench_api_exposes_reviewed_content_and_gaps_without_raw_material(
         workbench_runtime_mode="fixture",
     )
     client = TestClient(app)
-    route_paths = {route.path for route in app.routes}
+    route_paths = {
+        route.path for route in app.routes if hasattr(route, "path")
+    }
     assert {"/next", "/next/{frontend_path:path}"}.issubset(route_paths)
 
     listed = client.get(
@@ -731,7 +733,7 @@ def test_primary_workspace_binds_subject_case_and_evidence_pack(
     assert payload["evidence_items"][0]["source"]["evidence_owner_ticker"] == "DELL"
     assert payload["residual_gaps"]
     assert {"/workspace", "/workspace/{frontend_path:path}"}.issubset(
-        {route.path for route in app.routes}
+        {route.path for route in app.routes if hasattr(route, "path")}
     )
 
 

@@ -40,6 +40,11 @@ def _candidate_ranking_runner():
 
 
 def test_learned_ranking_fails_closed_when_cuda_is_unavailable(monkeypatch) -> None:
+    if importlib.util.find_spec("torch") is None:
+        with pytest.raises(RuntimeError, match="candidate_ranking_cuda_runtime_missing"):
+            _candidate_ranking_runner()._required_cuda_execution_receipt()
+        return
+
     import torch
 
     monkeypatch.setattr(torch.cuda, "is_available", lambda: False)

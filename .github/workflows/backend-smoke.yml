@@ -1,5 +1,8 @@
 name: current-baseline
 
+permissions:
+  contents: read
+
 on:
   pull_request:
   push:
@@ -7,38 +10,61 @@ on:
 
 jobs:
   engineering-and-product:
-    runs-on: ubuntu-latest
-    timeout-minutes: 25
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.11"
-          cache: pip
 
-      - uses: actions/setup-node@v4
+      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          version: "0.10.7"
+          enable-cache: true
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
           cache: npm
           cache-dependency-path: apps/workbench/frontend/package-lock.json
 
-      - name: Install Python dependencies
+      - name: Verify the locked core runtime profile
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt "pytest>=8,<9" "httpx>=0.27"
+          uv lock --check
+          uv sync --locked --no-dev
+          uv run --locked --no-dev python -c "from apps.workbench.backend.app import create_app; assert callable(create_app)"
+          uv run --locked --no-dev python -c "import importlib.util as i; assert all(i.find_spec(name) is None for name in ('dagster', 'dagster_webserver', 'dagster_postgres', 'dagster_graphql', 'filelock', 'psycopg', 'psycopg2'))"
+
+      - name: Verify the locked optional control-plane profile
+        run: |
+          uv sync --locked --no-dev --extra control-plane
+          uv run --locked --no-dev --extra control-plane python -c "import importlib.metadata as m, importlib.util as i; from dagster_webserver import __version__; from sec_agent.adapters.dagster_s2_fact_mart import defs; assert __version__ == '1.13.20'; assert len(defs.get_job_def('fin013_s2_fact_mart_shadow').nodes) == 1; assert all(i.find_spec(name) is not None for name in ('dagster', 'dagster_webserver', 'dagster_postgres', 'dagster_graphql', 'filelock', 'psycopg2')); assert i.find_spec('psycopg') is None; assert m.version('psycopg2-binary') == '2.9.12'"
+          uv run --locked --extra control-plane python -m pytest tests/qualification/test_dagster_s2_fact_mart_adapter.py tests/qualification/test_dagster_control_plane_launcher.py -q
+
+      - name: Verify the locked qualification overlay
+        run: |
+          uv sync --locked --no-dev --extra control-plane --extra qualification
+          uv run --locked --no-dev --extra control-plane --extra qualification python -c "import importlib.metadata as m, importlib.util as i, psycopg; assert psycopg.__version__ == '3.3.4'; assert all(i.find_spec(name) is not None for name in ('dagster', 'dagster_webserver', 'dagster_postgres', 'dagster_graphql', 'filelock', 'psycopg', 'psycopg2')); assert m.version('psycopg-binary') == '3.3.4'; assert m.version('psycopg2-binary') == '2.9.12'"
+          uv run --locked --extra control-plane --extra qualification python -m pytest tests/qualification/test_postgres_dagster_s2_fact_mart_vertical.py -q
+
+      - name: Install the locked development profile
+        run: uv sync --locked
 
       - name: Verify active code and archive integrity
         run: |
-          python scripts/engineering/verify_active_baseline.py --pretty
-          python scripts/engineering/build_archive_redirect_index.py --check
-          python scripts/engineering/check_repository_secrets.py
+          uv run --locked python scripts/engineering/verify_active_baseline.py --pretty
+          uv run --locked python scripts/engineering/build_archive_redirect_index.py --check
+          uv run --locked python scripts/engineering/check_repository_secrets.py
 
       - name: Compile and test current Python baseline
         run: |
-          python -m compileall -q apps src scripts
-          python -m pytest -q
+          uv run --locked python -m compileall -q apps src scripts
+          uv run --locked python -m pytest -q
 
       - name: Build and test the browser product
         working-directory: apps/workbench/frontend
@@ -51,8 +77,108 @@ jobs:
 
       - name: Upload failed browser evidence
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: current-workspace-playwright-failure
           path: apps/workbench/frontend/test-results
           if-no-files-found: ignore
+
+  locked-supply-chain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.11"
+
+      - uses: astral-sh/setup-uv@cec208311dfd045dd5311c1add060b2062131d57 # v8.0.0
+        with:
+          version: "0.10.7"
+          enable-cache: true
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/workbench/frontend/package-lock.json
+
+      - name: Export, audit and inventory the promoted core and control-plane profiles
+        env:
+          PYTHONUTF8: "1"
+        run: |
+          mkdir -p supply-artifacts
+          uv lock --check
+          uv export --locked --no-dev --no-emit-project -o supply-artifacts/core-requirements.txt
+          uv export --locked --no-dev --no-emit-project --extra control-plane -o supply-artifacts/control-plane-requirements.txt
+          uv export --locked --no-dev --no-emit-project --extra control-plane --extra qualification -o supply-artifacts/qualification-requirements.txt
+          uv export --locked --only-group supply --no-emit-project -o supply-artifacts/supply-tooling-requirements.txt
+          UV_PROJECT_ENVIRONMENT=.venv-supply uv sync --locked --only-group supply --no-install-project
+          UV_PROJECT_ENVIRONMENT=.venv-license-core uv sync --locked --no-dev --no-install-project
+          UV_PROJECT_ENVIRONMENT=.venv-license-control-plane uv sync --locked --no-dev --no-install-project --extra control-plane
+          UV_PROJECT_ENVIRONMENT=.venv-license-qualification uv sync --locked --no-dev --no-install-project --extra control-plane --extra qualification
+          scan_status=0
+          for profile in core control-plane qualification; do
+            if ! UV_PROJECT_ENVIRONMENT=.venv-supply uv run --locked --only-group supply --no-sync pip-audit \
+              --strict --progress-spinner off \
+              --requirement "supply-artifacts/${profile}-requirements.txt" \
+              --format json \
+              --output "supply-artifacts/${profile}-vulnerability-audit.json"; then
+              scan_status=1
+            fi
+            if ! UV_PROJECT_ENVIRONMENT=.venv-supply uv run --locked --only-group supply --no-sync cyclonedx-py requirements \
+              "supply-artifacts/${profile}-requirements.txt" \
+              --pyproject pyproject.toml \
+              --output-reproducible \
+              --output-format JSON \
+              --output-file "supply-artifacts/${profile}-sbom.cdx.json"; then
+              scan_status=1
+            fi
+            if ! UV_PROJECT_ENVIRONMENT=.venv-supply uv run --locked --only-group supply --no-sync pip-licenses \
+              --python ".venv-license-${profile}/bin/python" \
+              --from mixed --format json --with-urls \
+              --output-file "supply-artifacts/${profile}-third-party-license-inventory.json"; then
+              scan_status=1
+            fi
+          done
+          if ! UV_PROJECT_ENVIRONMENT=.venv-supply uv run --locked --only-group supply --no-sync pip-audit \
+            --strict --progress-spinner off \
+            --requirement supply-artifacts/supply-tooling-requirements.txt \
+            --format json \
+            --output supply-artifacts/supply-tooling-vulnerability-audit.json; then
+            scan_status=1
+          fi
+          if ! UV_PROJECT_ENVIRONMENT=.venv-supply uv run --locked --only-group supply --no-sync cyclonedx-py requirements \
+            supply-artifacts/supply-tooling-requirements.txt \
+            --pyproject pyproject.toml \
+            --output-reproducible \
+            --output-format JSON \
+            --output-file supply-artifacts/supply-tooling-sbom.cdx.json; then
+            scan_status=1
+          fi
+          if ! UV_PROJECT_ENVIRONMENT=.venv-supply uv run --locked --only-group supply --no-sync pip-licenses \
+            --python .venv-supply/bin/python \
+            --from mixed --format json --with-urls \
+            --output-file supply-artifacts/supply-tooling-third-party-license-inventory.json; then
+            scan_status=1
+          fi
+          if ! npm audit \
+            --prefix apps/workbench/frontend \
+            --package-lock-only \
+            --audit-level=high \
+            --json > supply-artifacts/frontend-npm-audit.json; then
+            scan_status=1
+          fi
+          exit "${scan_status}"
+
+      - name: Upload locked supply-chain evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: locked-python-supply-chain
+          path: supply-artifacts
+          if-no-files-found: warn

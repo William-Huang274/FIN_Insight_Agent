@@ -14,7 +14,10 @@ from retrieval.contracts import (
     load_evidence_request,
     load_financial_research_kernel,
 )
-from retrieval.hybrid_candidate_runtime import retrieve_hybrid_candidates
+from retrieval.hybrid_candidate_runtime import (
+    LazyLocalQwenHybridCandidateRuntime,
+    retrieve_hybrid_candidates,
+)
 from retrieval.route_compiler import load_query_object_fact_route_policy
 
 
@@ -66,6 +69,50 @@ def _contracts():
         kernel,
     )
     return kernel, route, request
+
+
+def test_lazy_qwen_runtime_preserves_retrieve_many_interface_without_model_load() -> None:
+    class RecordingDelegate:
+        def __init__(self) -> None:
+            self.call = None
+
+        def retrieve_many(self, requests, **kwargs):
+            self.call = (requests, kwargs)
+            return ({"status": "delegated"},)
+
+    delegate = RecordingDelegate()
+    runtime = LazyLocalQwenHybridCandidateRuntime(ROOT, {})
+    runtime._delegate = delegate
+    requests = (object(),)
+    kernel = object()
+    route_policy = object()
+    material_runtime_inputs = {"request": {"input": True}}
+    material_runtime_policy = {"policy": True}
+    intent_ontology = {"ontology": True}
+    retrieval_need_policy = {"need": True}
+
+    result = runtime.retrieve_many(
+        requests,
+        kernel=kernel,
+        route_policy=route_policy,
+        material_runtime_inputs=material_runtime_inputs,
+        material_runtime_policy=material_runtime_policy,
+        intent_ontology=intent_ontology,
+        retrieval_need_policy=retrieval_need_policy,
+    )
+
+    assert result == ({"status": "delegated"},)
+    assert delegate.call == (
+        requests,
+        {
+            "kernel": kernel,
+            "route_policy": route_policy,
+            "material_runtime_inputs": material_runtime_inputs,
+            "material_runtime_policy": material_runtime_policy,
+            "intent_ontology": intent_ontology,
+            "retrieval_need_policy": retrieval_need_policy,
+        },
+    )
 
 
 def _object(

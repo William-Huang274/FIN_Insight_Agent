@@ -161,4 +161,19 @@ Step 2 qualification 代码/lock/复现入口已以 commit `b6597ba25ce705735c23
 
 Step 3 已把既有全产品审计更新为 S1–S5 模块级 `retain/wrap/replace/regression/retire` 迁移基线，并纠正“LangGraph 作为全局控制面”为外层 workflow、内层 Agent graph、durable workflow、transaction store、experiment/telemetry 五层分责。详细结果见产品审计第 12 节和成熟栈决策包的 2026-08-31 delta。
 
-这三个步骤完成的产品增量仍为 0；真实工程/资格增量不再是 0。当前没有生产依赖加入、没有 legacy 删除、没有 R14 修改、没有 Evidence/S2/report/release 权限变化。下一阶段必须先处理单一 dependency source/lock 与 PostgreSQL 环境资格，再由 Owner 决定是否授权一条 Dagster vertical integration；不得回到旧 Phase 0–7 协议，也不得一次性全仓重写。
+这三个步骤完成的产品增量仍为0；真实工程/资格增量不再是0。Owner随后已经授权单一dependency source/lock、PostgreSQL本地支持画像和一条Dagster vertical；截至当前它们已形成implementation candidate，但最终clean-commit qualification、Docker真实job、镜像审计、全量回归和独立复审仍待完成。没有legacy删除、R14修改或Evidence/S2/report/release权限变化；不得回到旧Phase 0–7协议，也不得一次性全仓重写。
+
+## 11. 2026-08-31 Owner 授权后的 bounded integration delta
+
+Owner已授权上一段的精确下一步；当前结果是候选实现与历史可行性证据，最终clean签发仍待完成：
+
+- `pyproject.toml + uv.lock` 成为唯一 Python dependency source/lock；Docker与 CI改为 `uv sync --locked`，两份手工 requirements退出；
+- pre-supply-lock v2 actual environment的core/control-plane/combined inventory为33/86/88且当时Python known vulnerabilities为0；当前uv.lock因独立supply tooling/build backend group扩为157 records并给setuptools artifact hash，runtime profiles与final manifests必须从candidate commit重建。任何数字都不得与marker-expanded export SBOM、镜像扫描或法律批准混写；
+- Dagster/PostgreSQL作为独立 `control-plane` extra进入 lock，不污染默认runtime；Dagster `1.13.20`、dagster-postgres `0.29.20`、dagster-webserver `1.13.20`与filelock `3.32.4`属于runtime，psycopg `3.3.4`只属于qualification overlay；
+- official PostgreSQL `16.15-alpine`按RepoDigest固定；旧attempt有native transaction、UNIQUE、advisory lock、restart、dump/restore与Dagster run/event可行性证据，当前hardened clean/runtime/cleanup/host-roundtrip最终复证待跑；
+- domain-thin adapter调用现有S2 CompanyFacts materializer，不复制业务逻辑，但负责mature filelock、路径/凭据/timeout/digest边界；旧DELL/MU/NVDA replay得到1,319 observations、24/24 qrels与semantic exact，最终commit/Docker job复证待跑；
+- 这一条S2 fact-mart outer workflow仍为`implementation candidate / final qualification pending`，不是全产品production cutover。legacy CLI仍为canonical business entrypoint与rollback；legacy deletion=0；
+- 本 vertical没有 model checkpoint/HITL/Agent graph，LangGraph继续 HOLD，未为“栈完整”安装；
+- 旧 R14、239/277、RC-S1-109/110、Evidence/S2 bridge/S3/report/product/release及索引状态全部不变。
+
+旧Z盘attempt `20260831T034026Z-a8700e1b`及`040515`只证明当时代码的历史可行性，未绑定后续adapter/runner/lock/Docker hardening，已撤销“最终”称谓。当前完成门是先提交干净候选，再从全新combined locked env生成绑定HEAD、start/end文件SHA、完整runtime inventory、cleanup、restart、host-roundtrip backup/restore与Dagster run/event的successor receipt，并以同一commit镜像只读挂载真实数据执行job。完整失败链与边界见工作记录131。

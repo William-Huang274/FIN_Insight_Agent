@@ -73,6 +73,9 @@ __pycache__/
 .ruff_cache/
 .ipynb_checkpoints/
 .venv/
+build/
+*.egg-info/
+.secrets/
 venv/
 node_modules/
 dist/

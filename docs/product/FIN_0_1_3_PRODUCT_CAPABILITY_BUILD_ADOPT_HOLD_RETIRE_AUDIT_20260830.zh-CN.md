@@ -326,7 +326,7 @@ FIN 产品表面
 | S1 R3–R14 | 43 文件／55,032 行；活动 import=0 | `regression`，replacement 通过后 archive/retire | 27,026 corpus、239 failure、277 mismatch、validator、失败回执 | 不再扩写；不是 truth oracle；RC-S1-109/110 继续 open |
 | S2 NumericFact/PIT | `financial_facts/contracts.py`、`sec_companyfacts.py`、`executor.py`、`mart.py` 及 numeric authority/bridge | `retain/wrap` | period/unit/vintage/conflict、formula lineage、产品→收入/利润/现金 bridge | 确定性 DELL-shaped fixture 已证明真实代码路径可被成熟 workflow 调用；真实来源、金融真值、完整 bridge/product acceptance 仍开放 |
 | S2 XBRL | `sec_companyfacts.py` 中 transport/parse 与映射混合面 | `wrap`：SEC API + Arelle | FIN concept mapping、supersession、conflict、NumericFact admission | accession-bound raw filing、amendment 和 dimension parity |
-| S2 physical mart | 当前 SQLite/DuckDB/JSON/Parquet 路径 | `replace physical owner`：PostgreSQL online + Parquet snapshot + DuckDB local audit | canonical schema 与 typed lookup port | PostgreSQL transaction/unique/lock/restart/backup 尚 blocked；旧 SQLite 可回放到切换门通过 |
+| S2 physical mart | 当前 SQLite/DuckDB/JSON/Parquet 路径 | `replace physical owner`：PostgreSQL online + Parquet snapshot + DuckDB local audit | canonical schema 与 typed lookup port | PostgreSQL 16.15 本地单容器 transaction/unique/advisory-lock/restart/host-roundtrip backup/restore已有历史可行性证据，hardened clean-commit复证待跑；canonical cutover、HA/TLS/PITR/operator仍 blocked；旧 SQLite继续是 rollback |
 | S3 research domain | `material_scope.py`、claim/report/research context、reviewed pack/anchor、finance tool contracts、actionable state/eval | `retain` | materiality、claim authority、counter/WWC、Evidence/NumericFact consumption、失败归属 | 人工 gold 与真实 report acceptance；workflow 不获得研究结论权威 |
 | S3 mixed loops | `bounded_finance_loop.py`、`current_consumer.py`、`case_truth_reconciliation.py` | `split/wrap` | 抽出 FIN 决策与 evaluator；执行循环进入 outer workflow/inner agent ports | 逐 consumer shadow；不把 legacy loop state变成新框架 schema |
 | S3 attempt runtimes | `multi_agent_preview.py`、`multi_agent_preview_runtime.py`、`multi_agent_successor.py`、dynamic/five-cell loops、17 个活动 research runner | `regression/retire` | 成功/失败案例、gold、TokenBudgetBasis 和必要领域合同 | 单 canonical vertical 接管后逐波退役；禁止再建 R-number 通用 runtime |
@@ -334,18 +334,18 @@ FIN 产品表面
 | S3 inner Agent graph | 当前 dynamic loop 中混合的 graph/HITL | `hold qualification`：LangGraph 单 vertical candidate | domain state、human decision、tool permission | 不承担 capture/index/experiment/outer pipeline；crash/interrupt/idempotency proof 后再选 |
 | S4 Research Workspace | `ResearchWorkspace.tsx`、workspace/evidence services | `retain` | Evidence/Gap/Review/Repair/lineage/approval 产品交互 | 用户可完成 16 项 admission 与 citation drilldown；generic trace UI 不复制 |
 | S4 generic operations | `sec_agent/workbench/store.py`、`process_runner.py`、`jobs.py`、backend/frontend operations、`artifacts.py` | `replace/shrink`：outer workflow + PostgreSQL + MLflow | case/evidence 产品投影和必要操作入口 | 功能逐项映射、dual-read、旧 job/history 导出后收缩 |
-| S5 application stack | FastAPI/Uvicorn、React/Vite、Playwright、Pydantic、Docker、GitHub Actions、DuckDB、pytest/npm | `retain mature` | FIN API/UI contracts 和验收 | 先修依赖源漂移；clean build/import/E2E 后才称可复现 |
-| S5 outer workflow | `scripts/data_retrieval`、`scripts/research`、Workbench jobs 中的调度/重试/状态 | Dagster `primary candidate`；Prefect `challenger` | typed job input/output、attempt identity、side-effect idempotency | PostgreSQL backend、并发/重启/UI/operator proof；winner 接管后退出另一常驻引擎 |
+| S5 application stack | FastAPI/Uvicorn、React/Vite、Playwright、Pydantic、Docker、GitHub Actions、DuckDB、pytest/npm | `retain mature` | FIN API/UI contracts 和验收 | `pyproject.toml + uv.lock` 单一依赖 candidate已落盘；最终 clean full regression、Docker真实 job与供应链收据待签发 |
+| S5 outer workflow | `scripts/data_retrieval`、`scripts/research`、Workbench jobs 中的调度/重试/状态 | Dagster `primary candidate`；Prefect `challenger` | typed job input/output、attempt identity、side-effect idempotency | 一条 S2 shadow adapter implementation candidate已落盘；最终 clean PostgreSQL run/event/restart/restore和Docker只读真实数据执行待签发；production daemon/operator未测 |
 | S5 durable long jobs | 尚无独立成熟 owner；部分逻辑散在自建 runner | Temporal `HOLD` | external side-effect idempotency / Saga domain decision | 仅多 worker、长人工等待、跨重启 event history、timer/signal 或 Saga 触发 |
 | S5 experiment/telemetry/lineage | result/authority/trace 文件堆与 runner 内自建记录 | OTel `adopt`；MLflow `pilot/blocker`；OpenLineage concepts/client `adopt` | immutable FIN receipt、artifact digest、gold、release gate | 漏洞与 PostgreSQL/object-store blocker关闭；删除 backend 不改变 Evidence |
 | S5 large artifacts | ignored eval/corpus/model/index 与散落 manifest | DVC `conditional adopt` | frozen manifest/digest 与 retention authority | 只在大型资产使用；Windows path adapter；任何 artifact 可导出并由 canonical source 重建 |
-| S5 dependency/supply chain | `pyproject.toml`、不完整 `requirements.txt`、Dockerfile、无 Python lock | `replace process`：单一依赖源 + uv lock + SBOM/audit/signing | FIN supported profile 与 release gate | 当前 clean import FAIL 必须先关闭；漏洞为 0 或有显式隔离/风险决定 |
+| S5 dependency/supply chain | 根 `pyproject.toml + uv.lock`；旧 requirements已退出；locked Docker/CI | `retain mature process`：uv + CycloneDX/pip-audit/pip-licenses；镜像采用checksum-pinned Syft＋Grype；OSSF CVE Binary Tool稳定版因自身脆弱依赖闭包被拒绝，仅保留无`gsutil`上游commit作为隔离challenger；签名/来源证明后续独立门 | 本轮晋升的core/control-plane/qualification profiles与release gate | 当前lock157 records并隔离supply/build tools、含setuptools hashes；前端nanoid high已修复；候选全仓2628/5通过；Python 3.11.16＋OpenSSL 3.5.7 dirty v6镜像raw Grype各为236 matches（7 Critical/31 High），从v1的352/11/94实质下降但仍非PASS；剩余含待来源绑定triage的generic binary finding、Debian stable无修复项和NOT_PROVEN wheel native身份，final fresh env、同commit镜像、license/legal与production gate均未签发 |
 | S5 identity/security | 客户端 `X-Fin-Case-Permissions` header、本地 secret/日志 | `replace`：部署战略确定后选 OIDC/IAM、secret manager、audit log | organization、financial role、domain permissions | 当前只算本地开发；企业部署前必须做 issuer/tenant/role 隔离 |
 | S5 report rendering | 当前自建 report/output path | `adopt`：Quarto + Pandoc + CSL | typed report、claim/evidence/locator pre-render validation | HTML/PDF/DOCX visual QA；renderer 不判断 citation correctness |
 
 ### 12.4 当前迁移先后顺序
 
-这张表不会触发一次性重写。下一组最小工程前置应是：
+这张表不会触发一次性重写。Owner已授权以下第1–3项；当前是 implementation candidate，最终 clean证据仍待跑：
 
 1. 先统一 Python 依赖源并完成 clean build/import/lock/SBOM；
 2. 修复 Docker Desktop 或改用明确支持的 PostgreSQL 资格画像，完成 transaction/lock/restart/backup；
@@ -353,17 +353,29 @@ FIN 产品表面
 4. 同时保持 R14、Evidence、S2 bridge、报告和产品权限不变；
 5. 再按 S1 parser、search、S3 agent、S4 operations 各自 frozen benchmark 逐波迁移，不做全仓大爆炸式重写。
 
-当前 Step 3 完成的是“关系和顺序冻结”，不是 legacy code 已删除、成熟栈已生产接入或产品已经 PASS。
+当前第1–3项的代码候选已经形成，但旧034026/040515不绑定后续 hardening，不能签发完成；legacy code未删除、成熟栈未生产切换、产品未PASS。
+
+### 12.5 Owner 授权后的候选实现与未关闭门
+
+Owner 随后明确授权上述第1–3项。真实安装、历史可行性纵切和候选实现已经发生，但当前版本仍须从clean commit重跑最终证据：
+
+- 单一依赖源/lock已进入代码，当前lock为157 records并含独立locked supply/build tooling与setuptools artifact hashes；v2实际环境33/86/88与当时0 known Python vulnerabilities只作pre-successor历史，这不是镜像、法律或最终签发；
+- `control-plane`固定 Dagster `1.13.20`、dagster-postgres `0.29.20`、dagster-webserver `1.13.20`、filelock `3.32.4`；psycopg `3.3.4`已拆到qualification-only overlay；
+- official PostgreSQL `16.15-alpine` exact digest已有 transaction、UNIQUE、advisory lock、restart、dump/restore历史可行性证据；最终runner增加了clean Git、runtime inventory、ownership cleanup、真实host-roundtrip restore和run/event校验，尚待新attempt；
+- DELL/MU/NVDA本地 source-bound captures的历史纵切得到1,319 observations、24/24 qrels与legacy/Dagster业务投影 exact；最终Docker只读mount和最终commit复证仍待跑；
+- domain-thin adapter进入 `src/sec_agent/adapters/`，用成熟filelock并执行路径/凭据/timeout/digest边界；默认Workbench不安装Dagster；legacy CLI仍是canonical business entrypoint与rollback，删除量为0；
+- LangGraph因该确定性数据物化没有 checkpoint/HITL/Agent graph需求而继续 HOLD。
+
+因此迁移矩阵中 `S5 outer workflow → S2 fact-mart shadow` 目前仍是 `implementation candidate / final qualification pending`，尚不能写成最终 bounded adoption。旧 `034026`/`040515`只作历史可行性证据。即使最终通过，也不是S2产品晋升、全仓production migration或用户功能完成；产品增量仍为0。
 
 ## 13. Owner 需要决定的事项
 
-本审计完成后，没有任何迁移自动获得授权。建议 Owner 依次决定：
+本审计完成后，没有任何迁移自动获得授权。Owner 已接受成熟栈优先边界，并授权实施 dependency/PostgreSQL/单 Dagster vertical 候选；最终 bounded adoption 仍须由 clean-commit 资格证据另行签发。剩余建议 Owner依次决定：
 
-1. 是否接受 Build / Adopt / Hold / Retire 边界，作为后续架构宪法；
-2. R14 选择 A 满足 S1/128 全门的最小修复后退役，还是 B 在 RC-S1-109/110 继续 open 的前提下，以 human-adjudicated gold 证明同阶段 replacement；
-3. 是否接受 Dagster 作为外层 workflow primary candidate、Prefect 作为 challenger，并授权 PostgreSQL 环境修复与单 vertical integration；
-4. 是否选择“低运维本地优先”还是“较早采用托管云 ceiling”的部署取向；
-5. 何时才允许逐步退役旧代码。
+1. R14 选择 A 满足 S1/128 全门的最小修复后退役，还是 B 在 RC-S1-109/110 继续 open 的前提下，以 human-adjudicated gold 证明同阶段 replacement；
+2. 是否选择“低运维本地优先”还是“较早采用托管云 ceiling”的部署取向；
+3. 下一条具备用户价值的产品 vertical是什么，以及它自己的 benchmark/rollback；
+4. 何时才允许逐步退役旧代码。
 
 在 Owner 决定之前：
 
@@ -371,7 +383,7 @@ FIN 产品表面
 - R14 pre-formal/formal=false；
 - R15/R16=false；
 - external/model/reranker/Evidence/S2/S3/report/product/release authority=false；
-- mature stack migration=false。
+- S2 fact-mart Dagster shadow implementation candidate=true；final bounded adoption=false；production stack cutover=false；legacy retirement=false。
 
 ## 14. 证据索引
 
@@ -386,3 +398,4 @@ FIN 产品表面
 - [技术来源快照清单](../architecture/research/FIN_0_1_3_MATURE_STACK_RESEARCH_SNAPSHOT_MANIFEST_20260830.zh-CN.md)
 - [成熟栈优先架构决定与 Steps 1–3 基线](../architecture/repository/FIN_0_1_3_MATURE_STACK_FIRST_ARCHITECTURE_DECISION_AND_EXECUTION_BASELINE_20260830.zh-CN.md)
 - [Steps 1–3 工作记录](../worklog/fin_0_1_3_s1/130_mature_stack_first_rebase_and_steps_1_to_3_start.md)
+- [Dependency/PostgreSQL/Dagster 真实纵切面工作记录](../worklog/fin_0_1_3_s1/131_dependency_postgres_and_dagster_real_vertical_integration.md)

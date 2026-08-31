@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 from dataclasses import replace
 import json
 import os
@@ -1980,10 +1981,15 @@ class LazyLocalQwenHybridCandidateRuntime:
         if self._delegate is None:
             with self._load_lock:
                 if self._delegate is None:
-                    self._delegate = LocalQwenHybridCandidateRuntime.from_policy(
-                        self._repository_root,
-                        self._policy,
-                    )
+                    try:
+                        self._delegate = LocalQwenHybridCandidateRuntime.from_policy(
+                            self._repository_root,
+                            self._policy,
+                        )
+                    except ModuleNotFoundError as exc:
+                        raise HybridCandidateRuntimeError(
+                            f"hybrid_runtime_optional_dependency_missing:{exc.name}"
+                        ) from exc
         return self._delegate
 
     def retrieve_many(
@@ -2008,6 +2014,15 @@ class LazyLocalQwenHybridCandidateRuntime:
         )
 
 
+def local_qwen_runtime_dependencies_available() -> bool:
+    """Report whether the optional learned-retrieval runtime is installed."""
+
+    return all(
+        importlib.util.find_spec(module_name) is not None
+        for module_name in ("sentence_transformers", "torch")
+    )
+
+
 __all__ = [
     "HYBRID_RESULT_SCHEMA_VERSION",
     "HYBRID_RESULT_MATERIAL_AWARE_SCHEMA_VERSION",
@@ -2024,5 +2039,6 @@ __all__ = [
     "HybridCandidateRuntimeError",
     "LazyLocalQwenHybridCandidateRuntime",
     "LocalQwenHybridCandidateRuntime",
+    "local_qwen_runtime_dependencies_available",
     "retrieve_hybrid_candidates",
 ]

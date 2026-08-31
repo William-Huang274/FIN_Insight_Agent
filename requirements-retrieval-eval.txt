@@ -1,5 +1,0 @@
-# Optional local retrieval-evaluation stack. Core Workbench runtime does not import it.
-# Install torch separately for the workstation's CUDA version.
-FlagEmbedding==1.4.0
-sentence-transformers==5.2.3
-scipy>=1.11,<2

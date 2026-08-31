@@ -1010,6 +1010,9 @@ def default_store_path(
     *,
     workbench_private_root: str | Path | None = None,
 ) -> Path:
+    configured_store = str(os.environ.get("FINSIGHT_WORKBENCH_STORE_PATH") or "").strip()
+    if configured_store:
+        return Path(configured_store).resolve()
     private_root = (
         Path(workbench_private_root)
         if workbench_private_root is not None

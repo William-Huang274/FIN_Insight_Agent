@@ -106,4 +106,48 @@ New-Item -ItemType Directory -Path $manifestRoot -Force | Out-Null
 Stop-Process -Id $mlflow.MlflowPid
 ```
 
+## 5. 2026-08-31 locked control-plane profile 与真实 S2 vertical
+
+旧 277-package lock 继续只复现早期候选比较，不再作为 production candidate。仓库根 `pyproject.toml` / `uv.lock` 现在是唯一依赖源；默认 profile不安装工作流引擎，显式 `control-plane` extra提供运行时，`qualification` extra只提供测试 runner所需的 psycopg 3。最终支持结论仍须由 fresh locked env与最终 clean commit收据签发：
+
+```powershell
+$qualificationRoot = 'Z:\FIN_Insight_Agent_qualification\replay_postgres_dagster_s2_v1'
+$env:UV_PROJECT_ENVIRONMENT = Join-Path $qualificationRoot 'env-final-qualification-py311'
+$env:UV_CACHE_DIR = Join-Path $qualificationRoot 'cache\uv'
+$env:UV_PYTHON_DOWNLOADS = '0'
+
+uv sync --locked --no-dev --extra control-plane --extra qualification --no-install-project `
+    --python 'Z:\FIN_Insight_Agent_qualification\20260831_production_dependency_and_vertical_v1\python\cpython-3.11.14-windows-x86_64-none\python.exe'
+
+$env:PYTHONPATH = 'D:\FIN_Insight_Agent;D:\FIN_Insight_Agent\src'
+& (Join-Path $env:UV_PROJECT_ENVIRONMENT 'Scripts\python.exe') `
+    -m scripts.qualification.run_postgres_dagster_s2_fact_mart_vertical `
+    --qualification-root $qualificationRoot `
+    --host-port 55432
+```
+
+前置要求不只有 Docker：仓库必须 clean；解释器必须位于同一 Z 盘 qualification root；必须从根 `uv.lock` fresh sync `control-plane + qualification`；Git、policy、tracked result和 runner绑定文件必须存在；`data/raw_private` 还必须预先物化 policy列出的 DELL/MU/NVDA 12 个 capture/metadata对象并通过 digest校验。另需可用 Docker daemon、未占用 loopback port，以及已拉取并按 digest固定的 official PostgreSQL image。runner每次创建独立 container/network/data/secret，验证 native transaction、UNIQUE、advisory lock、restart、host-roundtrip custom dump/restore、Dagster PostgreSQL run/event storage和一条真实 local source-bound S2 CompanyFacts materialization。结束时只移除本 attempt拥有的 container/network与 ephemeral secret；成功、失败、数据库目录和 dump均留在 Z 盘。
+
+当前 exact image：
+
+```text
+postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
+```
+
+`20260831T034026Z-a8700e1b` 与后续 `040515` 只代表当时代码的历史 bounded PASS；它们没有绑定当前 hardened adapter、runtime inventory、cleanup与 host-roundtrip restore，不能称为最终 replay。最终 exact attempt必须在候选实现提交后从 clean commit和全新 locked qualification环境重跑，再在本节填入。
+
+即使最终 `status=bounded_engineering_pass`，它也只证明本地 PostgreSQL 16.15 profile与一条 Dagster outer-workflow adapter；不授权 production cutover、Evidence/S2 bridge、R14、LangGraph、report/product/release，也不把 Dagster storage当作金融事实权威。schedule/sensor user state在本纵切中不适用且未测。用于非Compose部署时，把 `configs/control_plane/dagster.postgres.yaml`复制到独立可写的`DAGSTER_HOME/dagster.yaml`，并把 PostgreSQL URL通过平台secret或只读文件交给`DAGSTER_POSTGRES_URL_FILE`；不要把明文URL或密码提交到Git。
+
+Docker 的 opt-in Compose profile为 `control-plane`。它把 `${FINSIGHT_CONTROL_PLANE_DATA_MOUNT:-./data/raw_private}`只读挂到`/app/data/raw_private`，把输出写入独立state volume；真实job使用`configs/control_plane/s2_fact_mart_shadow.run_config.example.yaml`。Compose secret的宿主source是环境变量`DAGSTER_POSTGRES_URL`，容器只收到`/run/secrets/dagster_postgres_url`文件；launcher不会接受旧的Compose明文environment映射。最小启动形状是：
+
+```powershell
+$env:DAGSTER_POSTGRES_URL = 'postgresql://USER:PERCENT_ENCODED_PASSWORD@HOST:5432/DB'
+$env:FINSIGHT_IMAGE_REVISION = (git rev-parse HEAD)
+if (git status --porcelain) { throw 'Compose image build requires a clean worktree' }
+docker compose --profile control-plane config --quiet
+docker compose --profile control-plane up --build control-plane
+```
+
+不要执行会打印resolved model的普通`docker compose config`。默认Compose不再映射任何provider API key；曾被旧配置展开过的EIA credential必须在外部提供方轮换，仓库修复不能替代轮换。直接`docker run`时，secret file必须让容器UID 10001可读；CI/qualification必须实际证明读取成功，不能只凭Compose字段推断权限。
+
 原始成功/失败证据仍位于 `Z:\FIN_Insight_Agent_qualification\20260831_control_plane_slice_v1`；本说明不修改、迁移或重写该目录，也不触碰 `D:\FIN_Insight_Agent\data\indexes`。

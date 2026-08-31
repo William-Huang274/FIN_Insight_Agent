@@ -1,7 +1,7 @@
 # FIN 0.1.3 成熟技术栈调研来源与版本资格快照清单
 
 日期：2026-08-30
-状态：LANDSCAPE SOURCE SNAPSHOT / CONTROL-PLANE BUILD PINNED AND TESTED / DATA-MODEL-LEGAL QUALIFICATION PENDING
+状态：LANDSCAPE SOURCE SNAPSHOT / PREDECESSOR DAGSTER+POSTGRES S2 SHADOW TESTED / CURRENT EXACT CANDIDATE FINAL CLEAN QUALIFICATION PENDING / DATA-MODEL-LEGAL QUALIFICATION PENDING
 父决策包：[成熟技术栈全景与采用决策包](FIN_0_1_3_MATURE_TECH_STACK_LANDSCAPE_AND_ADOPTION_DECISION_PACKET_20260830.zh-CN.md)
 
 ## 1. 这份清单解决什么问题
@@ -137,3 +137,21 @@
 - upstream rolling page 在未来日期是否仍保持同一内容。
 
 因此，主决策包中的 data/model ADOPT、CHALLENGER、CEILING 仍只是进入资格验证的推荐；控制面子集也只达到 qualification evidence，不是 production qualification、迁移完成或产品 PASS。
+
+## 5. 2026-08-31 locked profile successor snapshot
+
+本节取代第 4 节中“PostgreSQL环境阻断”和“旧 control-plane lock漏洞未隔离”两项前序状态；其他未验证事项继续有效。
+
+| Family | Exact build | Locked profile result | Remaining boundary |
+|---|---|---|---|
+| uv project | uv `0.10.7`; root `pyproject.toml + uv.lock` | single-source candidate；当前lock=`157 records`并含独立locked supply tooling与setuptools artifact hashes；pre-successor v2 actual env=`33/86/88`且当时Python known vulnerabilities=`0/0/0` | 最终fresh env、平台marker、镜像/Node/OS、license legal与未晋升extras仍须分别审计 |
+| Dagster | `1.13.20` | optional `control-plane` extra、Docker target与一条S2 shadow adapter candidate已实现；旧attempt有PostgreSQL run/event readback可行性证据 | 当前hardened clean-commit receipt与Docker真实job待跑；schedule/sensor user state未测，daemon/operator/production deployment未资格 |
+| dagster-postgres | `0.29.20` | 旧attempt实际写入PostgreSQL 16.15并由新instance读回run/event；当前hardened candidate待clean successor | schedule/sensor未测；HA/TLS/secret rotation/PITR未资格 |
+| psycopg | `3.3.4` + binary；qualification-only overlay | 旧attempt有host transaction/UNIQUE/advisory-lock/restart/dump-restore可行性证据；最终runner将完整版本/inventory绑定receipt | 不属于control-plane镜像；application pool/timeout/failover未资格 |
+| PostgreSQL | official `16.15-alpine`; `postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685` | 旧attempt有local loopback、Z data、native transaction/lock、restart、dump/restore可行性证据；当前host-roundtrip hardened successor待跑 | 不是production topology或canonical cutover |
+| real FIN vertical | existing S2 CompanyFacts CLI + domain-thin Dagster op | 旧attempt在DELL/MU/NVDA local source-bound captures得到1,319 observations、24/24 qrels与legacy/Dagster semantic exact；最终commit/Docker复证待跑 | 不新增事实、Evidence、S2 bridge或产品能力 |
+| LangGraph | not installed | `HOLD / NOT TESTED`，该确定性数据任务没有 checkpoint/HITL/Agent graph | 仅未来内层 Agent vertical触发 |
+
+旧76-package control-plane manifests已被后续dagster-webserver/filelock/profile split取代。`...\manifests\20260831_locked_profiles_v2`记录pre-supply-lock actual env core/control-plane/combined=`33/86/88`与当时0 known Python vulnerabilities；当前157-record lock的final successor尚待clean commit后生成，因此v2不得作final。旧277-package comparison lab的三个漏洞仍是真实历史，但该组合没有被复制进现行optional profile。
+
+`20260831T034026Z-a8700e1b`与`040515`已降为历史可行性证据。最终exact attempt必须来自候选实现提交后的clean HEAD、全新combined locked env与当前hardened runner；在该successor生成前，dependency/PostgreSQL/单vertical只能称implementation candidate，不能称最终bounded adoption。完整失败链、路径和边界见S1/131。

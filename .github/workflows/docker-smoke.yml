@@ -1,16 +1,20 @@
 name: current-workbench-container
 
+permissions:
+  contents: read
+
 on:
   workflow_dispatch:
   pull_request:
     paths:
       - Dockerfile
       - .dockerignore
-      - requirements.txt
+      - pyproject.toml
+      - uv.lock
       - compose.yaml
       - apps/workbench/**
-      - configs/runtime/**
-      - scripts/dev/**
+      - configs/**
+      - scripts/**
       - src/**
       - .github/workflows/docker-smoke.yml
   push:
@@ -18,32 +22,102 @@ on:
     paths:
       - Dockerfile
       - .dockerignore
-      - requirements.txt
+      - pyproject.toml
+      - uv.lock
       - compose.yaml
       - apps/workbench/**
-      - configs/runtime/**
-      - scripts/dev/**
+      - configs/**
+      - scripts/**
       - src/**
       - .github/workflows/docker-smoke.yml
 
 jobs:
   workbench-container:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
 
-      - name: Validate Compose and build the only product image
+      - name: Validate Compose and build the current product image
+        env:
+          FINSIGHT_IMAGE_REVISION: ${{ github.sha }}
         run: |
-          docker compose config
+          docker compose --profile control-plane config --quiet
           docker build \
             --target workbench \
-            --build-arg REQUIREMENTS_FILE=requirements.txt \
-            --build-arg WORKBENCH_IMAGE_KIND=current-product \
-            --build-arg WORKBENCH_RUNTIME_PROFILE=reviewed-evidence \
+            --build-arg WORKBENCH_RELEASE_ID="${GITHUB_SHA}" \
+            --build-arg OCI_REVISION="${GITHUB_SHA}" \
             -t finsight-workbench:ci \
             .
+          docker run --rm --entrypoint python finsight-workbench:ci \
+            -c "import os; assert os.geteuid() == 10001; assert os.environ['WORKBENCH_IMAGE_KIND'] == 'current-product'; assert os.environ['WORKBENCH_RUNTIME_PROFILE'] == 'reviewed-evidence'; assert os.environ['WORKBENCH_RELEASE_ID'] == '${GITHUB_SHA}'"
+          test "$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' finsight-workbench:ci)" = "${GITHUB_SHA}"
+          test "$(docker image inspect --format '{{ index .Config.Labels "io.finsight.image.kind" }}' finsight-workbench:ci)" = "current-product"
+
+      - name: Build and import the locked optional control-plane image
+        run: |
+          docker build \
+            --target control-plane \
+            --build-arg WORKBENCH_RELEASE_ID="${GITHUB_SHA}" \
+            --build-arg OCI_REVISION="${GITHUB_SHA}" \
+            -t finsight-control-plane:ci \
+            .
+          docker run --rm --entrypoint python finsight-control-plane:ci \
+            -c "import os; from sec_agent.adapters.dagster_s2_fact_mart import defs, resolve_repository_root; assert os.geteuid() == 10001; assert os.environ['WORKBENCH_IMAGE_KIND'] == 'control-plane'; assert os.environ['WORKBENCH_RUNTIME_PROFILE'] == 'dagster-postgres-shadow'; assert os.environ['WORKBENCH_RELEASE_ID'] == '${GITHUB_SHA}'; assert resolve_repository_root().as_posix() == '/app'; assert defs.get_job_def('fin013_s2_fact_mart_shadow').name == 'fin013_s2_fact_mart_shadow'"
+          test "$(docker image inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' finsight-control-plane:ci)" = "${GITHUB_SHA}"
+          test "$(docker image inspect --format '{{ index .Config.Labels "io.finsight.image.kind" }}' finsight-control-plane:ci)" = "control-plane"
+
+      - name: Prove Compose materializes the database secret for the non-root runtime
+        env:
+          FINSIGHT_IMAGE_REVISION: ${{ github.sha }}
+          DAGSTER_POSTGRES_URL: postgresql://finsight_ci:placeholder@postgres.invalid:5432/finsight_ci
+        run: |
+          docker tag finsight-control-plane:ci finsight-control-plane:compose
+          docker compose --profile control-plane run --rm --no-deps \
+            --entrypoint python control-plane \
+            -c "from pathlib import Path; import os, stat; path=Path('/run/secrets/dagster_postgres_url'); metadata=path.stat(); assert os.geteuid() == 10001; assert 'DAGSTER_POSTGRES_URL' not in os.environ; assert metadata.st_uid == 10001; assert metadata.st_gid == 10001; assert stat.S_IMODE(metadata.st_mode) == 0o400; assert not os.access(path, os.W_OK); assert path.read_text(encoding='utf-8').strip() == 'postgresql://finsight_ci:placeholder@postgres.invalid:5432/finsight_ci'"
+
+      - name: Boot the PostgreSQL-backed Dagster UI on an internal network
+        run: |
+          umask 077
+          printf '%s' 'finsight_ci_ephemeral' > /tmp/finsight-postgres-password
+          printf '%s' 'postgresql://finsight_ci:finsight_ci_ephemeral@finsight-postgres-ci:5432/finsight_ci' > /tmp/finsight-dagster-postgres-url
+          sudo chown 10001:10001 /tmp/finsight-dagster-postgres-url
+          sudo chmod 0400 /tmp/finsight-dagster-postgres-url
+          docker network create --internal finsight-control-plane-ci
+          docker run --rm -d \
+            --name finsight-postgres-ci \
+            --network finsight-control-plane-ci \
+            -e POSTGRES_USER=finsight_ci \
+            -e POSTGRES_PASSWORD_FILE=/run/secrets/postgres_password \
+            -e POSTGRES_DB=finsight_ci \
+            --mount type=bind,source=/tmp/finsight-postgres-password,target=/run/secrets/postgres_password,readonly \
+            postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
+          for i in $(seq 1 30); do
+            if docker exec finsight-postgres-ci pg_isready -U finsight_ci -d finsight_ci; then
+              break
+            fi
+            sleep 2
+          done
+          docker exec finsight-postgres-ci pg_isready -U finsight_ci -d finsight_ci
+          docker exec finsight-postgres-ci psql -U finsight_ci -d finsight_ci -v ON_ERROR_STOP=1 -c 'SELECT 1' >/dev/null
+          docker run --rm -d \
+            --name finsight-control-plane-ci \
+            --network finsight-control-plane-ci \
+            -p 127.0.0.1:3000:3000 \
+            -e DAGSTER_POSTGRES_URL_FILE=/run/secrets/dagster_postgres_url \
+            --mount type=bind,source=/tmp/finsight-dagster-postgres-url,target=/run/secrets/dagster_postgres_url,readonly \
+            finsight-control-plane:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+              break
+            fi
+            sleep 2
+          done
+          curl -fsS http://127.0.0.1:3000/ >/dev/null
 
       - name: Start container
         run: |
@@ -76,3 +150,17 @@ jobs:
         run: |
           docker logs finsight-workbench-ci || true
           docker stop finsight-workbench-ci || true
+
+      - name: Show control-plane logs and remove qualification resources
+        if: always()
+        run: |
+          docker logs finsight-control-plane-ci || true
+          docker rm -f finsight-control-plane-ci || true
+          docker logs finsight-postgres-ci || true
+          docker rm -f finsight-postgres-ci || true
+          docker network rm finsight-control-plane-ci || true
+          FINSIGHT_IMAGE_REVISION="${GITHUB_SHA}" \
+            DAGSTER_POSTGRES_URL='postgresql://finsight_ci:placeholder@postgres.invalid:5432/finsight_ci' \
+            docker compose --profile control-plane down --volumes --remove-orphans || true
+          rm -f /tmp/finsight-postgres-password
+          sudo rm -f /tmp/finsight-dagster-postgres-url

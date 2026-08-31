@@ -150,7 +150,7 @@ CI只有仓库内容，没有 private captures，因此 Docker CI只能证明镜
 
 只有同时满足以下条件，才把本工作包改为 bounded engineering PASS：
 
-1. 提交当前同阶段的 S2 producer digest composition、qualification harness signed-payload 与 private output 修正，使 receipt v1.2 runner 从新的 clean commit 运行；网络拓扑修正已由 `d127e327...` 冻结，不得把旧修正冒充为当前待提交项；
+1. 提交当前同阶段的 S2 producer digest composition、qualification harness signed-payload 与 private output 修正，使 qualification receipt schema v1.2 的 runner 从新的 clean commit 运行；网络拓扑修正已由 `d127e327...` 冻结，不得把旧修正冒充为当前待提交项；
 2. 新建空 qualification env，精确执行 `uv sync --locked --no-dev --extra control-plane --extra qualification --no-install-project`；
 3. runner PASS，repository/runtime/start-end binding、cleanup、restart、host-roundtrip backup/restore、Dagster run/event与 1,319 observations / 24 of 24 qrels全部可独立复算；
 4. 最终 control-plane image从同一 commit构建，默认 CMD启动，并以只读 private source mount真实执行 Dagster job；

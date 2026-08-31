@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from scripts.data_retrieval.build_s2_company_financial_fact_mart import (
+    CURRENT_BOUND_RESULT,
+    DEFAULT_RESULT_OUTPUT,
+)
 from sec_agent.workbench.data_build import data_build_catalog
 
 
@@ -73,3 +77,9 @@ def test_data_build_catalog_exposes_s1c_as_one_controlled_comparison_chain() -> 
         "sqlite",
         "output",
     }
+    fact_mart_output = next(
+        row for row in fact_mart.parameters if row.name == "output"
+    )
+    assert fact_mart_output.default == DEFAULT_RESULT_OUTPUT
+    assert str(fact_mart_output.default).startswith("data/workbench_private/")
+    assert (ROOT / str(fact_mart_output.default)).resolve() != CURRENT_BOUND_RESULT

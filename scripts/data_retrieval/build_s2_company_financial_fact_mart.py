@@ -23,6 +23,25 @@ from financial_facts import (  # noqa: E402
 from retrieval.query_plan import canonical_digest  # noqa: E402
 
 
+CURRENT_BOUND_RESULT = (
+    ROOT
+    / "configs/financial_facts/"
+    "fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json"
+).resolve()
+HISTORICAL_RESULT_V1_0 = (
+    ROOT
+    / "configs/financial_facts/"
+    "fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_0.json"
+).resolve()
+PROTECTED_RESULT_OUTPUTS = frozenset(
+    {CURRENT_BOUND_RESULT, HISTORICAL_RESULT_V1_0}
+)
+DEFAULT_RESULT_OUTPUT = (
+    "data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/"
+    "v1/company_financial_fact_mart_result.json"
+)
+
+
 def _resolve(value: str | Path) -> Path:
     path = Path(value)
     return path.resolve() if path.is_absolute() else (ROOT / path).resolve()
@@ -50,6 +69,42 @@ def _write_json(path: Path, value: Mapping[str, Any]) -> None:
         encoding="utf-8",
     )
     temporary.replace(path)
+
+
+def _validated_unsigned_build_result(
+    payload: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Validate the materialization receipt before composing the outer result."""
+
+    claimed = payload.get("result_digest")
+    unsigned = {key: value for key, value in payload.items() if key != "result_digest"}
+    if not isinstance(claimed, str) or claimed != canonical_digest(unsigned):
+        raise ValueError("company_fact_mart_build_result_digest_invalid")
+    return unsigned
+
+
+def _validated_result_output(value: str | Path) -> Path:
+    output = _resolve(value)
+    if output in PROTECTED_RESULT_OUTPUTS:
+        raise ValueError("protected_s2_result_output_forbidden")
+    return output
+
+
+def _compose_outer_result(
+    build_result: Mapping[str, Any],
+    outer_fields: Mapping[str, Any],
+) -> dict[str, Any]:
+    if "result_digest" in outer_fields:
+        raise ValueError("outer_result_digest_field_forbidden")
+    build_unsigned = _validated_unsigned_build_result(build_result)
+    forbidden_overrides = (set(build_unsigned) & set(outer_fields)) - {"status"}
+    if forbidden_overrides:
+        raise ValueError("outer_result_reserved_field_override_forbidden")
+    unsigned = {
+        **build_unsigned,
+        **outer_fields,
+    }
+    return {**unsigned, "result_digest": canonical_digest(unsigned)}
 
 
 def _evaluate_qrels(
@@ -268,11 +323,12 @@ def main() -> int:
     )
     parser.add_argument(
         "--output",
-        default="configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json",
+        default=DEFAULT_RESULT_OUTPUT,
     )
     args = parser.parse_args()
     policy_path = _resolve(args.policy)
     sqlite_path = _resolve(args.sqlite)
+    output = _validated_result_output(args.output)
     policy_payload = _read_json(policy_path)
     policy = load_company_fact_mart_policy(policy_payload)
     build_result = build_company_fact_mart(
@@ -308,23 +364,23 @@ def main() -> int:
         )
         else "s2_company_financial_fact_mart_failed"
     )
-    unsigned = {
-        **build_result,
-        "status": status,
-        "policy_ref": _relative(policy_path),
-        "policy_digest": canonical_digest(policy_payload),
-        "qrel_evaluation": qrels,
-        "mutation_evaluation": mutations,
-        "acceptance": acceptance,
-        "known_boundary": (
-            "This engineering gate authorizes source-bound company NumericFact lookup "
-            "for the three current cases. It does not promote narrative candidates to "
-            "Evidence, provide PIT market valuation, close S1 source gaps, or prove S3 "
-            "research quality."
-        ),
-    }
-    result = {**unsigned, "result_digest": canonical_digest(unsigned)}
-    output = _resolve(args.output)
+    result = _compose_outer_result(
+        build_result,
+        {
+            "status": status,
+            "policy_ref": _relative(policy_path),
+            "policy_digest": canonical_digest(policy_payload),
+            "qrel_evaluation": qrels,
+            "mutation_evaluation": mutations,
+            "acceptance": acceptance,
+            "known_boundary": (
+                "This engineering gate authorizes source-bound company NumericFact "
+                "lookup for the three current cases. It does not promote narrative "
+                "candidates to Evidence, provide PIT market valuation, close S1 source "
+                "gaps, or prove S3 research quality."
+            ),
+        },
+    )
     _write_json(output, result)
     print(
         json.dumps(

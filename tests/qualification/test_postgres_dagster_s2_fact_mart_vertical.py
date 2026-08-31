@@ -1,14 +1,21 @@
+import json
 from pathlib import Path
 import subprocess
 from types import SimpleNamespace
 
 import pytest
 
+from retrieval.query_plan import canonical_digest as query_plan_canonical_digest
+from sec_agent.adapters.dagster_s2_fact_mart import (
+    canonical_digest as dagster_canonical_digest,
+)
+import scripts.qualification.run_postgres_dagster_s2_fact_mart_vertical as vertical
 from scripts.qualification.run_postgres_dagster_s2_fact_mart_vertical import (
     docker_absence_confirmed,
     docker_object_owned_by_attempt,
     fact_mart_semantic_projection,
     locked_environment_check,
+    load_exact_preexisting_bound_result,
     redact_sensitive_text,
     secret_persistence_scan,
     sensitive_text_scan,
@@ -257,9 +264,14 @@ def test_container_to_container_ci_keeps_internal_network() -> None:
 
 def test_semantic_projection_ignores_path_specific_receipt_fields() -> None:
     common = {
+        "schema_version": "fin_ia_s2_company_financial_fact_mart_build_result_v1_0",
         "status": "s2_company_financial_fact_mart_engineering_pass",
+        "recorded_at": "2026-08-13",
+        "research_as_of": "2026-08-06",
         "counts": {"observations": 1319},
         "source_summary": {"source_count": 3},
+        "authority": {"source_capture_digest_required": True},
+        "policy_ref": "configs/financial_facts/policy.json",
         "qrel_evaluation": {"exact_match_count": 24, "qrel_count": 24},
         "mutation_evaluation": {"all_pass": True},
         "acceptance": {"all_qrels_exact": True},
@@ -271,6 +283,7 @@ def test_semantic_projection_ignores_path_specific_receipt_fields() -> None:
         "storage": {
             "sqlite_ref": "legacy.sqlite",
             "sqlite_sha256": "b" * 64,
+            "sqlite_bytes": 100,
             "observation_digest": "c" * 64,
         },
         "result_digest": "d" * 64,
@@ -280,6 +293,7 @@ def test_semantic_projection_ignores_path_specific_receipt_fields() -> None:
         "storage": {
             "sqlite_ref": "dagster.sqlite",
             "sqlite_sha256": "f" * 64,
+            "sqlite_bytes": 200,
             "observation_digest": "c" * 64,
         },
         "result_digest": "e" * 64,
@@ -288,8 +302,83 @@ def test_semantic_projection_ignores_path_specific_receipt_fields() -> None:
     assert fact_mart_semantic_projection(first) == fact_mart_semantic_projection(second)
 
 
+def test_semantic_projection_preserves_unknown_storage_semantics() -> None:
+    baseline = {
+        "storage": {
+            "sqlite_ref": "legacy.sqlite",
+            "sqlite_sha256": "a" * 64,
+            "sqlite_bytes": 100,
+            "observation_digest": "b" * 64,
+            "future_semantic_field": {"mode": "strict"},
+        }
+    }
+    changed = {
+        **baseline,
+        "storage": {
+            **baseline["storage"],
+            "future_semantic_field": {"mode": "relaxed"},
+        },
+    }
+
+    assert fact_mart_semantic_projection(baseline) != fact_mart_semantic_projection(
+        changed
+    )
+
+
+@pytest.mark.parametrize("storage", (None, [], "not-an-object"))
+def test_semantic_projection_requires_storage_object(storage: object) -> None:
+    with pytest.raises(AssertionError, match="s2_result_storage_object_required"):
+        fact_mart_semantic_projection({"storage": storage})
+
+
+@pytest.mark.parametrize(
+    ("field", "drifted"),
+    (
+        ("schema_version", "fin_ia_s2_company_financial_fact_mart_build_result_v9_9"),
+        ("recorded_at", "2099-01-01"),
+        ("research_as_of", "2099-01-01"),
+        ("authority", {"source_capture_digest_required": False}),
+        ("policy_ref", "configs/financial_facts/different-policy.json"),
+    ),
+)
+def test_semantic_projection_detects_contract_or_authority_drift(
+    field: str,
+    drifted: object,
+) -> None:
+    baseline = {
+        "schema_version": "fin_ia_s2_company_financial_fact_mart_build_result_v1_0",
+        "status": "s2_company_financial_fact_mart_engineering_pass",
+        "recorded_at": "2026-08-13",
+        "research_as_of": "2026-08-06",
+        "authority": {"source_capture_digest_required": True},
+        "policy_ref": "configs/financial_facts/policy.json",
+        "storage": {"observation_digest": "a" * 64},
+        "result_digest": "b" * 64,
+    }
+    changed = {**baseline, field: drifted}
+
+    assert fact_mart_semantic_projection(baseline) != fact_mart_semantic_projection(
+        changed
+    )
+
+
 def test_canonical_json_digest_is_order_independent() -> None:
     assert sha256_json({"a": 1, "b": 2}) == sha256_json({"b": 2, "a": 1})
+
+
+def test_result_digest_implementations_share_one_canonical_json_contract() -> None:
+    value = {
+        "unicode": "财务事实",
+        "nested": {"z": [3, 2, 1], "a": {"enabled": True}},
+    }
+
+    assert len(
+        {
+            sha256_json(value),
+            query_plan_canonical_digest(value),
+            dagster_canonical_digest(value),
+        }
+    ) == 1
 
 
 def test_qualification_root_requires_path_containment() -> None:
@@ -315,8 +404,192 @@ def test_result_digest_tamper_is_rejected() -> None:
     valid = {**unsigned, "result_digest": sha256_json(unsigned)}
 
     assert validate_result_digest(valid) == valid["result_digest"]
-    with pytest.raises(AssertionError, match="tracked_s2_result_self_digest_invalid"):
+    with pytest.raises(AssertionError, match="s2_result_self_digest_invalid"):
         validate_result_digest({**valid, "counts": {"observations": 2}})
+
+
+def test_legacy_builder_reader_preserves_signed_payload_and_rejects_bad_digest(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    unsigned = {"status": "bounded", "counts": {"observations": 1}}
+    valid = {**unsigned, "result_digest": sha256_json(unsigned)}
+    result_path = tmp_path / "result.json"
+    result_path.write_text(json.dumps(valid), encoding="utf-8")
+    monkeypatch.setattr(
+        vertical,
+        "run_command",
+        lambda *args, **kwargs: subprocess.CompletedProcess([], 0, "stdout", ""),
+    )
+
+    returned = vertical.run_fact_mart_builder(
+        policy_path=tmp_path / "policy.json",
+        sqlite_path=tmp_path / "facts.sqlite",
+        result_path=result_path,
+    )
+
+    assert returned == valid
+    assert "qualification_cli_stdout" not in returned
+
+    result_path.write_text(
+        json.dumps({**valid, "counts": {"observations": 2}}),
+        encoding="utf-8",
+    )
+    with pytest.raises(AssertionError, match="s2_result_self_digest_invalid"):
+        vertical.run_fact_mart_builder(
+            policy_path=tmp_path / "policy.json",
+            sqlite_path=tmp_path / "facts.sqlite",
+            result_path=result_path,
+        )
+
+
+def test_exact_preexisting_binding_never_claims_self_digest_valid(
+    monkeypatch: pytest.MonkeyPatch,
+    tmp_path: Path,
+) -> None:
+    tracked_path = (
+        Path(__file__).resolve().parents[2]
+        / "configs/financial_facts/"
+        "fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json"
+    )
+    payload, receipt = load_exact_preexisting_bound_result(tracked_path)
+
+    assert receipt["self_digest_valid"] is False
+    assert receipt["compatibility_scope"] == (
+        "exact_preexisting_bound_artifact_for_shadow_parity_only"
+    )
+    assert receipt["fresh_outputs_require_valid_self_digest"] is True
+    assert receipt["bound_artifact_mutation_allowed"] is False
+    assert receipt["still_referenced_by_current_runtime_binding"] is True
+    assert receipt["current_runtime_registry_id"] == (
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R39"
+    )
+    assert receipt["current_s2_authority_self_integrity_pass"] is False
+    assert receipt["current_s2_authority_migration_authorized"] is False
+    assert receipt["file_sha256"] == (
+        "4dd68cb1822e49a70be20235a404c6c52c0961b29292a737a86ee7d9e84e6c22"
+    )
+    assert receipt["claimed_result_digest"] == (
+        "0c25c917f08e4e14b30d481d0dbb2724b951797c052e52b0ff940b2971f595a1"
+    )
+    assert receipt["canonical_recomputed_digest"] == (
+        "e3f955dccbd7cd823a1d0fe248d255449d31269fc74c098def23a58770a705fd"
+    )
+    assert (
+        receipt["claimed_result_digest"]
+        != receipt["canonical_recomputed_digest"]
+    )
+    with pytest.raises(AssertionError, match="s2_result_self_digest_invalid"):
+        validate_result_digest(payload)
+
+    copied_path = tmp_path / "copied-result.json"
+    copied_path.write_bytes(tracked_path.read_bytes())
+    with pytest.raises(
+        AssertionError,
+        match="tracked_s2_bound_path_mismatch",
+    ):
+        load_exact_preexisting_bound_result(copied_path)
+
+    monkeypatch.setattr(vertical, "EXPECTED_TRACKED_RESULT_FILE_SHA256", "0" * 64)
+    with pytest.raises(
+        AssertionError,
+        match="tracked_s2_bound_file_sha256_drift",
+    ):
+        load_exact_preexisting_bound_result(tracked_path)
+
+
+def test_exact_preexisting_binding_reads_each_authority_file_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    expected_paths = {
+        (
+            vertical.ROOT / vertical.TRACKED_RESULT_REF
+        ).resolve(),
+        (
+            vertical.ROOT / vertical.CURRENT_RUNTIME_BINDING_POLICY_REF
+        ).resolve(),
+        (
+            vertical.ROOT / vertical.CURRENT_RUNTIME_BINDING_RECEIPT_REF
+        ).resolve(),
+        (
+            vertical.ROOT / vertical.CURRENT_RUNTIME_REGISTRY_REF
+        ).resolve(),
+    }
+    original_read_bytes = Path.read_bytes
+    read_counts = {path: 0 for path in expected_paths}
+
+    def counted_read_bytes(path: Path) -> bytes:
+        resolved = path.resolve()
+        if resolved in read_counts:
+            read_counts[resolved] += 1
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", counted_read_bytes)
+    load_exact_preexisting_bound_result(
+        vertical.ROOT / vertical.TRACKED_RESULT_REF
+    )
+
+    assert set(read_counts.values()) == {1}
+
+
+def test_exact_preexisting_binding_rejects_duplicate_registry_resource_id(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    registry_path = (
+        vertical.ROOT / vertical.CURRENT_RUNTIME_REGISTRY_REF
+    ).resolve()
+    original_read_bytes = Path.read_bytes
+    registry = json.loads(original_read_bytes(registry_path))
+    registry["resources"].append(dict(registry["resources"][0]))
+    duplicate_registry_bytes = json.dumps(
+        registry,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+    def duplicate_registry_read(path: Path) -> bytes:
+        if path.resolve() == registry_path:
+            return duplicate_registry_bytes
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", duplicate_registry_read)
+    with pytest.raises(
+        AssertionError,
+        match="current_runtime_registry_duplicate_resource_id",
+    ):
+        load_exact_preexisting_bound_result(
+            vertical.ROOT / vertical.TRACKED_RESULT_REF
+        )
+
+
+def test_exact_preexisting_binding_rejects_invalid_runtime_receipt_snapshot(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    receipt_path = (
+        vertical.ROOT / vertical.CURRENT_RUNTIME_BINDING_RECEIPT_REF
+    ).resolve()
+    original_read_bytes = Path.read_bytes
+    receipt = json.loads(original_read_bytes(receipt_path))
+    receipt["result_digest"] = "0" * 64
+    invalid_receipt_bytes = json.dumps(
+        receipt,
+        ensure_ascii=False,
+        separators=(",", ":"),
+    ).encode("utf-8")
+
+    def invalid_receipt_read(path: Path) -> bytes:
+        if path.resolve() == receipt_path:
+            return invalid_receipt_bytes
+        return original_read_bytes(path)
+
+    monkeypatch.setattr(Path, "read_bytes", invalid_receipt_read)
+    with pytest.raises(
+        AssertionError,
+        match="current_runtime_binding_validator_rejected",
+    ):
+        load_exact_preexisting_bound_result(
+            vertical.ROOT / vertical.TRACKED_RESULT_REF
+        )
 
 
 def test_secret_scan_and_error_redaction_do_not_persist_plaintext(tmp_path: Path) -> None:

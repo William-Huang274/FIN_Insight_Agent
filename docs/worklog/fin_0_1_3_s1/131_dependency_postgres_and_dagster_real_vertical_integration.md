@@ -1,7 +1,7 @@
 # FIN 0.1.3 单一依赖源、PostgreSQL profile 与 Dagster S2 shadow 纵切
 
 日期：2026-08-31
-状态：EXPLICIT NONPRODUCTION IMPLEMENTATION CANDIDATE / PRECOMMIT GATES PASS / FINAL CLEAN QUALIFICATION PENDING / PRODUCT DELTA 0
+状态：EXPLICIT NONPRODUCTION CANDIDATE / D127 EXACT ATTEMPT FAILED AT PREEXISTING S2 DIGEST / SAME-STAGE FIX TESTED / NEW CLEAN ATTEMPT PENDING / PRODUCT DELTA 0
 分支：`codex/fin013-dell-s1-s2-product-bridge`
 
 ## 1. Owner 授权与本工作包边界
@@ -150,7 +150,7 @@ CI只有仓库内容，没有 private captures，因此 Docker CI只能证明镜
 
 只有同时满足以下条件，才把本工作包改为 bounded engineering PASS：
 
-1. 提交当前同阶段网络拓扑修正，使 receipt v1.1 runner从新的 clean commit运行；
+1. 提交当前同阶段的 S2 producer digest composition、qualification harness signed-payload 与 private output 修正，使 receipt v1.2 runner 从新的 clean commit 运行；网络拓扑修正已由 `d127e327...` 冻结，不得把旧修正冒充为当前待提交项；
 2. 新建空 qualification env，精确执行 `uv sync --locked --no-dev --extra control-plane --extra qualification --no-install-project`；
 3. runner PASS，repository/runtime/start-end binding、cleanup、restart、host-roundtrip backup/restore、Dagster run/event与 1,319 observations / 24 of 24 qrels全部可独立复算；
 4. 最终 control-plane image从同一 commit构建，默认 CMD启动，并以只读 private source mount真实执行 Dagster job；
@@ -171,3 +171,38 @@ CI只有仓库内容，没有 private captures，因此 Docker CI只能证明镜
 - legacy deletion：0；
 - product/research authority delta：0；
 - R14和全部下游门：不变。
+
+## 10. d127 exact-clean attempt 与结果摘要根因
+
+网络修正已提交并推送为 `d127e32715abe76abfd326be173c627bfd061bbe`。随后从新的 Z 盘根创建 Python 3.11.14、uv 0.10.7、88 个实际 distribution 的 fresh locked 环境，并以新 attempt `20260831T110518Z-a77be8f5`运行完整纵切。该 attempt 已通过：
+
+- dedicated bridge 的 requested/effective `127.0.0.1`绑定；
+- PostgreSQL 16.15 transaction rollback、UNIQUE、advisory lock、三行 readback与 restart readback；
+- clean start/end implementation binding；
+- container/network/secret cleanup；
+- secret scan `1275 files / 0 matches`；
+- 0 model、0 provider、0 financial-source network call。
+
+它在启动 legacy/Dagster S2 builder之前以 `tracked_s2_result_self_digest_invalid`终止。失败 result SHA-256=`ef14bfa4...54e23`，container log SHA-256=`49eabad8...80cf`。该失败不可变保留于：
+
+`Z:\FIN_Insight_Agent_qualification\20260831_production_dependency_and_vertical_v1\final-clean-d127e327\artifacts\postgres-dagster-s2\20260831T110518Z-a77be8f5`
+
+后续只读诊断证明这是两个不同责任层的缺陷：
+
+1. **S2 producer envelope**：`build_company_fact_mart()`返回的内层对象已有 `result_digest`；CLI 将它展开到外层 unsigned，再以同名外层字段覆盖。tracked v1.1 文件 SHA=`4dd68cb1...e6c22`，历史 claimed digest=`0c25c917...95a1`，正常 canonical recompute=`e3f955dc...05fd`。从持久化正文恢复内层 digest=`a7094622...656ce` 后，能精确重建历史 claimed outer digest，证明不是随机损坏。
+2. **S5 qualification harness**：`run_fact_mart_builder()`读回已签名 JSON 后又注入 `qualification_cli_stdout`，会再次破坏任何正确新结果的自摘要；stdout 从未被其他消费者使用。
+
+同阶段最小修正没有创建 corrected S2 result v1.2／current S2 authority successor，没有改 current-bound v1.1，也没有迁移 S2 authority；这里的 qualification receipt schema v1.2 只是本纵切的收据合同版本，不是 S2 result 版本或产品版本：
+
+- producer 先校验内层摘要并从外层 preimage移除；外层 finalizer禁止 `result_digest`再入口以及除 `status`外的保留字段覆盖；
+- v1.0 与 current-bound v1.1 都进入精确 protected output集合；builder与Workbench默认写私有可变 result；
+- qualification reader不再修改 signed payload，读回即走正常 self-digest validator；Dagster adapter继续独立验证 result与SQLite digest；
+- current-bound v1.1只允许 canonical path + exact file SHA + claimed/canonical三元组 + runtime registry R39／policy v1.14／receipt v1.15 绑定的 shadow parity兼容；receipt明确 `self_digest_valid=false`、`current_s2_authority_self_integrity_pass=false`、`current_s2_authority_migration_authorized=false`；
+- semantic projection默认比较所有顶层字段，只排除 result digest和路径相关SQLite字段；`schema_version`、`recorded_at`、`research_as_of`、`authority`、`policy_ref`任一漂移都会失败；
+- producer、Dagster adapter与qualification三份 canonical JSON实现用中文、嵌套和乱序键做交叉回归。
+
+21:57诊断patch的定向组合为`80 passed`；作者分离复核随后补齐同一bytes快照、现有current-runtime policy/receipt validator复用、registry重复ID拒绝、receipt/registry identity交叉绑定以及未来未知storage语义字段fail-closed。最终增量后的qualification、S2 builder、Workbench catalog、current registry/binding与S1d相邻组合为`123 passed in 19.82s`。最终 patch fresh rebuild保存于：
+
+`Z:\FIN_Insight_Agent_qualification\20260831_production_dependency_and_vertical_v1\artifacts\tracked-s2-result-integrity-diagnostic\20260831T215722+0800-final-patch`
+
+fresh result file SHA=`eccd53b1...e5b17`，claimed/recomputed digest均为`fda4b03e...cb90`，SQLite SHA=`363780c0...5ac4`，1,319 observations、24/24 qrels、mutations all pass，完整 semantic projection与current-bound artifact exact，projection SHA=`794977ca...ca28`。诊断 receipt SHA=`d0647343...54fc`。这些是 working-tree root-cause evidence，不是 final clean PostgreSQL/Dagster qualification；下一合法动作是提交同阶段修正，从新 clean commit、新 locked env和新 attempt ID重跑完整纵切。

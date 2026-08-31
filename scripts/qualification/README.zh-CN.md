@@ -136,7 +136,11 @@ $env:PYTHONPATH = 'D:\FIN_Insight_Agent;D:\FIN_Insight_Agent\src'
 postgres@sha256:cf78e76683b9ca8c5733cbbdce6c9262b45b6767934dd0a95e671f9a0fc20685
 ```
 
-`20260831T034026Z-a8700e1b` 与后续 `040515` 只代表当时代码的历史 bounded PASS；它们没有绑定当前 hardened adapter、runtime inventory、cleanup与 host-roundtrip restore，不能称为最终 replay。`20260831T094310Z-ac7fd1d9`又证明clean binding和cleanup，但因Windows host-runner误用internal network而在host PostgreSQL连接处失败，同样不能升级为PASS。最终 exact attempt必须在网络合同修正提交后，从该新clean commit和全新 locked qualification环境用新attempt ID重跑，再在本节填入。
+`20260831T034026Z-a8700e1b` 与后续 `040515` 只代表当时代码的历史 bounded PASS；它们没有绑定当前 hardened adapter、runtime inventory、cleanup与 host-roundtrip restore，不能称为最终 replay。`20260831T094310Z-ac7fd1d9`又证明clean binding和cleanup，但因Windows host-runner误用internal network而在host PostgreSQL连接处失败，同样不能升级为PASS。
+
+网络修正commit `d127e327...`上的`20260831T110518Z-a77be8f5`已证明loopback bridge、PostgreSQL事务/锁/重启、binding、secret scan与cleanup，但在执行S2 builder前发现current-bound v1.1结果的历史claimed digest不可从持久化对象重算。runner v1.2只允许canonical tracked path、exact file SHA、claimed/canonical三元组以及runtime registry R39／policy v1.14／receipt v1.15同时匹配时，将它作为shadow parity输入；receipt必须写`self_digest_valid=false`、`current_s2_authority_self_integrity_pass=false`和`current_s2_authority_migration_authorized=false`。所有fresh legacy/Dagster结果继续走正常self-digest validator，不能进入该兼容入口。
+
+builder与Workbench默认结果已改写到`data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_fact_mart_result.json`；tracked v1.0与current-bound v1.1均禁止作为新输出目标。最终 exact attempt必须在producer/harness修正提交后，从该新clean commit和全新 locked qualification环境用新attempt ID重跑，再在本节填入。
 
 即使最终 `status=bounded_engineering_pass`，它也只证明本地 PostgreSQL 16.15 profile与一条 Dagster outer-workflow adapter；不授权 production cutover、Evidence/S2 bridge、R14、LangGraph、report/product/release，也不把 Dagster storage当作金融事实权威。schedule/sensor user state在本纵切中不适用且未测。用于非Compose部署时，把 `configs/control_plane/dagster.postgres.yaml`复制到独立可写的`DAGSTER_HOME/dagster.yaml`，并把 PostgreSQL URL通过平台secret或只读文件交给`DAGSTER_POSTGRES_URL_FILE`；不要把明文URL或密码提交到Git。
 

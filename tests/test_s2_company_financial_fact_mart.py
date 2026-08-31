@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import sys
 
+import pytest
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
@@ -23,6 +25,12 @@ from financial_facts import (
 )
 from retrieval.route_compiler import TypedFactRequest
 from retrieval.query_plan import canonical_digest
+from scripts.data_retrieval.build_s2_company_financial_fact_mart import (
+    PROTECTED_RESULT_OUTPUTS,
+    _compose_outer_result,
+    _validated_result_output,
+    _validated_unsigned_build_result,
+)
 from apps.workbench.backend.application.research_retrieval_service import (
     ResearchRetrievalPrincipal,
     ResearchRetrievalService,
@@ -1198,6 +1206,54 @@ def test_tracked_real_build_closes_annual_and_current_interim_qrels() -> None:
     }
     assert result["mutation_evaluation"]["all_pass"] is True
     assert result["acceptance"]["candidate_or_metric_row_grants_numeric_authority"] is False
+
+
+def test_outer_result_digest_does_not_overwrite_an_inner_digest_dependency() -> None:
+    inner_unsigned = {
+        "schema_version": "fin_ia_s2_company_financial_fact_mart_build_result_v1_0",
+        "status": "company_financial_fact_mart_materialized_acceptance_pending",
+        "counts": {"observations": 1},
+    }
+    inner = {
+        **inner_unsigned,
+        "result_digest": canonical_digest(inner_unsigned),
+    }
+
+    outer = _compose_outer_result(
+        inner,
+        {
+            "status": "s2_company_financial_fact_mart_engineering_pass",
+            "acceptance": {"all_qrels_exact": True},
+        },
+    )
+
+    assert "result_digest" not in _validated_unsigned_build_result(inner)
+    assert outer["result_digest"] == canonical_digest(
+        {key: value for key, value in outer.items() if key != "result_digest"}
+    )
+    with pytest.raises(
+        ValueError,
+        match="company_fact_mart_build_result_digest_invalid",
+    ):
+        _validated_unsigned_build_result({**inner, "counts": {"observations": 2}})
+    with pytest.raises(ValueError, match="outer_result_digest_field_forbidden"):
+        _compose_outer_result(inner, {"result_digest": "forbidden"})
+    with pytest.raises(
+        ValueError,
+        match="outer_result_reserved_field_override_forbidden",
+    ):
+        _compose_outer_result(inner, {"counts": {"observations": 999}})
+
+
+@pytest.mark.parametrize("protected_output", sorted(PROTECTED_RESULT_OUTPUTS))
+def test_builder_cannot_overwrite_protected_results(
+    protected_output: Path,
+) -> None:
+    with pytest.raises(
+        ValueError,
+        match="protected_s2_result_output_forbidden",
+    ):
+        _validated_result_output(protected_output)
 
 
 def test_current_transcript_objects_cannot_enter_the_s2_numeric_fact_mart() -> None:

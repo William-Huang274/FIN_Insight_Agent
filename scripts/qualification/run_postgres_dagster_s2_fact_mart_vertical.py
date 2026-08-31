@@ -16,6 +16,12 @@ from typing import Any, Mapping, Sequence
 from urllib.parse import quote
 from uuid import uuid4
 
+from retrieval.current_runtime_binding import (
+    CurrentS1RuntimeBindingError,
+    load_current_s1_runtime_binding_policy,
+    validate_current_s1_runtime_binding_receipt,
+)
+
 
 ROOT = Path(__file__).resolve().parents[2]
 QUALIFICATION_BASE_ROOT = Path("Z:/FIN_Insight_Agent_qualification")
@@ -38,8 +44,38 @@ TRACKED_RESULT_REF = (
     "configs/financial_facts/"
     "fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json"
 )
-EXPECTED_TRACKED_RESULT_DIGEST = (
+CURRENT_RUNTIME_BINDING_POLICY_REF = (
+    "configs/retrieval/"
+    "fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_14.json"
+)
+CURRENT_RUNTIME_BINDING_RECEIPT_REF = (
+    "configs/runtime/"
+    "fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_15.json"
+)
+CURRENT_RUNTIME_REGISTRY_REF = (
+    "configs/runtime/"
+    "fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
+)
+EXPECTED_CURRENT_RUNTIME_REGISTRY_ID = (
+    "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R39"
+)
+EXPECTED_CURRENT_RUNTIME_REGISTRY_SCHEMA = (
+    "fin_ia_0_1_3_runtime_resource_registry_v1_0"
+)
+EXPECTED_CURRENT_RUNTIME_REGISTRY_STATUS = (
+    "tracked_typed_runtime_resource_authority"
+)
+EXPECTED_CURRENT_RUNTIME_BINDING_POLICY_ID = (
+    "FIN-0.1.3-S1-CURRENT-PRODUCT-RUNTIME-BINDING-V1.14"
+)
+EXPECTED_TRACKED_RESULT_FILE_SHA256 = (
+    "4dd68cb1822e49a70be20235a404c6c52c0961b29292a737a86ee7d9e84e6c22"
+)
+EXPECTED_TRACKED_RESULT_CLAIMED_DIGEST = (
     "0c25c917f08e4e14b30d481d0dbb2724b951797c052e52b0ff940b2971f595a1"
+)
+EXPECTED_TRACKED_RESULT_CANONICAL_DIGEST = (
+    "e3f955dccbd7cd823a1d0fe248d255449d31269fc74c098def23a58770a705fd"
 )
 EXPECTED_OBSERVATION_DIGEST = (
     "8bb7b9f452e9ad5d1da4f50b565aba8397a05f40d7ecd3a5b09e5a438af3ed97"
@@ -51,6 +87,9 @@ IMPLEMENTATION_REFS = (
     "scripts/data_retrieval/build_s2_company_financial_fact_mart.py",
     POLICY_REF,
     TRACKED_RESULT_REF,
+    CURRENT_RUNTIME_BINDING_POLICY_REF,
+    CURRENT_RUNTIME_BINDING_RECEIPT_REF,
+    CURRENT_RUNTIME_REGISTRY_REF,
     "pyproject.toml",
     "uv.lock",
     "Dockerfile",
@@ -380,8 +419,170 @@ def validate_result_digest(payload: Mapping[str, Any]) -> str:
     unsigned = {key: value for key, value in payload.items() if key != "result_digest"}
     actual = sha256_json(unsigned)
     if not isinstance(claimed, str) or claimed != actual:
-        raise AssertionError("tracked_s2_result_self_digest_invalid")
+        raise AssertionError("s2_result_self_digest_invalid")
     return actual
+
+
+def _read_json_object_snapshot(
+    path: Path,
+    *,
+    error_code: str,
+) -> tuple[dict[str, Any], bytes]:
+    """Read once so parsing, byte length, and SHA all bind the same snapshot."""
+
+    encoded = path.read_bytes()
+    try:
+        payload = json.loads(encoded)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        raise AssertionError(error_code) from exc
+    if not isinstance(payload, dict):
+        raise AssertionError(error_code)
+    return payload, encoded
+
+
+def load_exact_preexisting_bound_result(
+    path: Path,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Bind the current pre-existing artifact without claiming self-integrity."""
+
+    canonical_path = (ROOT / TRACKED_RESULT_REF).resolve()
+    if path.resolve() != canonical_path:
+        raise AssertionError("tracked_s2_bound_path_mismatch")
+    encoded = canonical_path.read_bytes()
+    file_sha256 = hashlib.sha256(encoded).hexdigest()
+    if file_sha256 != EXPECTED_TRACKED_RESULT_FILE_SHA256:
+        raise AssertionError("tracked_s2_bound_file_sha256_drift")
+    payload = json.loads(encoded)
+    if not isinstance(payload, dict):
+        raise AssertionError("tracked_s2_bound_result_object_required")
+    claimed = payload.get("result_digest")
+    if claimed != EXPECTED_TRACKED_RESULT_CLAIMED_DIGEST:
+        raise AssertionError("tracked_s2_bound_claimed_digest_drift")
+    unsigned = {key: value for key, value in payload.items() if key != "result_digest"}
+    canonical_recomputed = sha256_json(unsigned)
+    if canonical_recomputed != EXPECTED_TRACKED_RESULT_CANONICAL_DIGEST:
+        raise AssertionError("tracked_s2_bound_canonical_digest_drift")
+    if claimed == canonical_recomputed:
+        raise AssertionError("tracked_s2_bound_digest_debt_not_reproduced")
+
+    binding_policy, binding_policy_bytes = _read_json_object_snapshot(
+        ROOT / CURRENT_RUNTIME_BINDING_POLICY_REF,
+        error_code="current_runtime_binding_policy_object_required",
+    )
+    binding_receipt, binding_receipt_bytes = _read_json_object_snapshot(
+        ROOT / CURRENT_RUNTIME_BINDING_RECEIPT_REF,
+        error_code="current_runtime_binding_receipt_object_required",
+    )
+    runtime_registry, _runtime_registry_bytes = _read_json_object_snapshot(
+        ROOT / CURRENT_RUNTIME_REGISTRY_REF,
+        error_code="current_runtime_registry_object_required",
+    )
+    if (
+        runtime_registry.get("registry_id") != EXPECTED_CURRENT_RUNTIME_REGISTRY_ID
+        or runtime_registry.get("schema_version")
+        != EXPECTED_CURRENT_RUNTIME_REGISTRY_SCHEMA
+        or runtime_registry.get("status")
+        != EXPECTED_CURRENT_RUNTIME_REGISTRY_STATUS
+    ):
+        raise AssertionError("current_runtime_registry_id_drift")
+    raw_registry_resources = runtime_registry.get("resources")
+    if not isinstance(raw_registry_resources, list) or not raw_registry_resources:
+        raise AssertionError("current_runtime_registry_rows_invalid")
+    registry_resources: dict[str, Mapping[str, Any]] = {}
+    for row in raw_registry_resources:
+        if not isinstance(row, Mapping):
+            raise AssertionError("current_runtime_registry_row_invalid")
+        resource_id = row.get("resource_id")
+        if not isinstance(resource_id, str) or not resource_id.strip():
+            raise AssertionError("current_runtime_registry_row_invalid")
+        if resource_id in registry_resources:
+            raise AssertionError("current_runtime_registry_duplicate_resource_id")
+        registry_resources[resource_id] = row
+    if runtime_registry.get("resource_count") != len(registry_resources):
+        raise AssertionError("current_runtime_registry_resource_count_drift")
+    try:
+        binding_policy = load_current_s1_runtime_binding_policy(binding_policy)
+        binding_receipt = validate_current_s1_runtime_binding_receipt(
+            binding_receipt,
+            binding_policy,
+        )
+    except CurrentS1RuntimeBindingError as exc:
+        raise AssertionError("current_runtime_binding_validator_rejected") from exc
+    registry_binding = binding_receipt.get("registry_binding")
+    receipt_runtime_registry_binding = (
+        binding_receipt.get("bindings", {}).get("runtime_registry")
+    )
+    if (
+        binding_policy.get("policy_id")
+        != EXPECTED_CURRENT_RUNTIME_BINDING_POLICY_ID
+        or binding_receipt.get("policy_id")
+        != EXPECTED_CURRENT_RUNTIME_BINDING_POLICY_ID
+        or not isinstance(registry_binding, Mapping)
+        or registry_binding.get("registry_id")
+        != EXPECTED_CURRENT_RUNTIME_REGISTRY_ID
+        or not isinstance(receipt_runtime_registry_binding, Mapping)
+        or receipt_runtime_registry_binding.get("ref")
+        != CURRENT_RUNTIME_REGISTRY_REF
+        or receipt_runtime_registry_binding.get("registry_id")
+        != EXPECTED_CURRENT_RUNTIME_REGISTRY_ID
+        or binding_policy.get("assets", {}).get("runtime_registry", {}).get("ref")
+        != CURRENT_RUNTIME_REGISTRY_REF
+    ):
+        raise AssertionError("current_runtime_binding_identity_drift")
+    expected_registry_bindings = {
+        "application.config.current_s1_runtime_binding_policy": (
+            CURRENT_RUNTIME_BINDING_POLICY_REF,
+            binding_policy_bytes,
+        ),
+        "application.result.current_s1_runtime_binding_receipt": (
+            CURRENT_RUNTIME_BINDING_RECEIPT_REF,
+            binding_receipt_bytes,
+        ),
+    }
+    for resource_id, (ref, source_bytes) in expected_registry_bindings.items():
+        row = registry_resources.get(resource_id)
+        if (
+            not isinstance(row, Mapping)
+            or row.get("repo_relative_path") != ref
+            or row.get("sha256") != hashlib.sha256(source_bytes).hexdigest()
+            or row.get("bytes") != len(source_bytes)
+        ):
+            raise AssertionError("current_runtime_registry_binding_drift")
+    if (
+        binding_policy.get("assets", {})
+        .get("s2_fact_mart_result", {})
+        .get("ref")
+        != TRACKED_RESULT_REF
+    ):
+        raise AssertionError("current_runtime_policy_s2_result_binding_drift")
+    receipt_binding = (
+        binding_receipt.get("bindings", {}).get("s2_fact_mart_result", {})
+    )
+    if (
+        receipt_binding.get("ref") != TRACKED_RESULT_REF
+        or receipt_binding.get("sha256") != file_sha256
+        or binding_receipt.get("s2_sibling", {}).get("result_digest") != claimed
+    ):
+        raise AssertionError("current_runtime_receipt_s2_result_binding_drift")
+    return payload, {
+        "ref": TRACKED_RESULT_REF,
+        "file_sha256": file_sha256,
+        "claimed_result_digest": claimed,
+        "canonical_recomputed_digest": canonical_recomputed,
+        "self_digest_valid": False,
+        "compatibility_scope": (
+            "exact_preexisting_bound_artifact_for_shadow_parity_only"
+        ),
+        "still_referenced_by_current_runtime_binding": True,
+        "current_runtime_binding_policy_ref": CURRENT_RUNTIME_BINDING_POLICY_REF,
+        "current_runtime_binding_receipt_ref": CURRENT_RUNTIME_BINDING_RECEIPT_REF,
+        "current_runtime_registry_ref": CURRENT_RUNTIME_REGISTRY_REF,
+        "current_runtime_registry_id": EXPECTED_CURRENT_RUNTIME_REGISTRY_ID,
+        "current_s2_authority_self_integrity_pass": False,
+        "current_s2_authority_migration_authorized": False,
+        "fresh_outputs_require_valid_self_digest": True,
+        "bound_artifact_mutation_allowed": False,
+    }
 
 
 def write_json(path: Path, value: Mapping[str, Any]) -> None:
@@ -742,18 +943,20 @@ def docker_object_owned_by_attempt(
 def fact_mart_semantic_projection(payload: Mapping[str, Any]) -> dict[str, Any]:
     """Compare business output while excluding output-path-specific receipt fields."""
 
-    storage = payload.get("storage") or {}
-    return {
-        "status": payload.get("status"),
-        "counts": payload.get("counts"),
-        "observation_digest": storage.get("observation_digest"),
-        "source_summary": payload.get("source_summary"),
-        "qrel_evaluation": payload.get("qrel_evaluation"),
-        "mutation_evaluation": payload.get("mutation_evaluation"),
-        "acceptance": payload.get("acceptance"),
-        "policy_digest": payload.get("policy_digest"),
-        "known_boundary": payload.get("known_boundary"),
+    storage = payload.get("storage")
+    if not isinstance(storage, Mapping):
+        raise AssertionError("s2_result_storage_object_required")
+    projection = {
+        key: value
+        for key, value in payload.items()
+        if key not in {"result_digest", "storage"}
     }
+    projection["storage"] = {
+        key: value
+        for key, value in storage.items()
+        if key not in {"sqlite_ref", "sqlite_sha256", "sqlite_bytes"}
+    }
+    return projection
 
 
 def run_fact_mart_builder(
@@ -762,7 +965,7 @@ def run_fact_mart_builder(
     sqlite_path: Path,
     result_path: Path,
 ) -> dict[str, Any]:
-    completed = run_command(
+    run_command(
         [
             sys.executable,
             "-m",
@@ -779,7 +982,7 @@ def run_fact_mart_builder(
     payload = json.loads(result_path.read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise RuntimeError("fact_mart_result_object_required")
-    payload["qualification_cli_stdout"] = completed.stdout.strip()
+    validate_result_digest(payload)
     return payload
 
 
@@ -1042,7 +1245,7 @@ def main() -> int:
         host_port=host_port,
     )
     summary: dict[str, Any] = {
-        "schema_version": "fin_ia_postgres_dagster_s2_vertical_qualification_v1_1",
+        "schema_version": "fin_ia_postgres_dagster_s2_vertical_qualification_v1_2",
         "attempt_id": attempt_id,
         "recorded_at": datetime.now(timezone.utc).isoformat(),
         "repository_head": binding_start["repository_head"],
@@ -1069,6 +1272,9 @@ def main() -> int:
             "network_calls_for_financial_sources": 0,
             "model_calls": 0,
             "orchestrator_business_logic_rewrite": False,
+            "current_s2_authority_successor_created": False,
+            "current_s2_authority_self_integrity_pass": False,
+            "current_s2_authority_migration_authorized": False,
         },
     }
     container_created = False
@@ -1188,10 +1394,10 @@ def main() -> int:
         }
 
         policy_path = ROOT / POLICY_REF
-        tracked_result = json.loads((ROOT / TRACKED_RESULT_REF).read_text(encoding="utf-8"))
-        tracked_result_digest = validate_result_digest(tracked_result)
-        if tracked_result_digest != EXPECTED_TRACKED_RESULT_DIGEST:
-            raise AssertionError("tracked_s2_result_digest_drift")
+        tracked_result, tracked_result_integrity = (
+            load_exact_preexisting_bound_result(ROOT / TRACKED_RESULT_REF)
+        )
+        summary["tracked_s2_baseline_integrity"] = tracked_result_integrity
         legacy_sqlite = shadow_root / "legacy-company-financial-facts.sqlite"
         legacy_result_path = shadow_root / "legacy-result.json"
         legacy_result = run_fact_mart_builder(
@@ -1265,6 +1471,7 @@ def main() -> int:
                 dagster_result = execution.output_for_node(
                     "materialize_existing_s2_company_fact_mart"
                 )
+                dagster_result_digest = validate_result_digest(dagster_result)
                 if not dagster_result_path.is_file():
                     raise RuntimeError("dagster_run_scoped_result_missing")
                 execution_event_receipt = dagster_event_receipt(
@@ -1306,6 +1513,8 @@ def main() -> int:
             ),
             "dagster_status": dagster_result.get("status"),
             "legacy_status": legacy_result.get("status"),
+            "legacy_result_digest": legacy_result["result_digest"],
+            "dagster_result_digest": dagster_result_digest,
         }
         required_parity_checks = (
             "legacy_vs_dagster_semantic_exact",

@@ -102,7 +102,9 @@ S1 将 Dell／TSMC 法说接回 current retrieval 后，S2 做了独立非回归
 
 第一次重建 R1 虽然得到与现有库完全相同的 SQLite SHA 和 24/24 qrel，却被旧 mutation 判失败。根因不是数据变化，而是历史检查仍禁止上年同期 Q1；当前 executor 为了给 S3 提供合法同比，已经正确保留当前 10-Q 中的本期 Q1 与上年同期 Q1。successor 将门改为“保留同口径对比端点，同时禁止旧 Q3 YTD 混入”。
 
-旧 v1.0 result 保持不可变；current builder 与 Workbench 构建入口使用 `fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json`。v1.1 仍为 1,319 observations、9/9 最新财年、15/15 current interim，result digest=`0c25c917...95a1`。formal regression 见 `configs/financial_facts/fin_ia_0_1_3_s2_transcript_numeric_authority_regression_result_v1_0.json`。
+旧 v1.0 result 保持不可变；v1.1 仍被 current runtime binding 按文件 SHA 与其历史 claimed digest 绑定，但 2026-08-31 的 exact-clean 资格运行证明它的 `result_digest=0c25c917...95a1` 不能从最终持久化对象重新计算，正常 canonical 值为 `e3f955dc...05fd`。根因是底层 materialization result 已含一个 `result_digest`，外层 builder 把该字段带入摘要 preimage 后又用同名外层字段覆盖，导致参与计算的内层值在落盘对象中消失。当前 v1.1 不改写、不宣称 self-integrity PASS，也没有获得创建或迁移 S2 authority successor 的权限。
+
+producer 已改为先验证并移除内层摘要，再生成可复算的外层摘要；builder CLI 与 Workbench 的默认输出改到 `data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_fact_mart_result.json`。v1.0 与 current-bound v1.1 都受代码保护，不能作为新 build 的输出目标。Z 盘 fresh rebuild 仍为 1,319 observations、9/9 最新财年、15/15 current interim、24/24 qrels，完整语义投影与 v1.1 exact，fresh result 自摘要有效。formal regression 仍见 `configs/financial_facts/fin_ia_0_1_3_s2_transcript_numeric_authority_regression_result_v1_0.json`；该回归的历史 identity 不因本次 shadow qualification 被重写。
 
 该 successor 不关闭 `RC-S2-004`：产品收入、ASP、PVM、出货量、产品利润与公司／分部利润桥仍可能公开不可得。S2 不会为填满五单元而从法说叙事抽取一个伪 NumericFact。
 

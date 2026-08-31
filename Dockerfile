@@ -1,5 +1,5 @@
 ARG NODE_IMAGE=node:22-bookworm-slim@sha256:7af03b14a13c8cdd38e45058fd957bf00a72bbe17feac43b1c15a689c029c732
-ARG PYTHON_IMAGE=python:3.11.16-slim-trixie@sha256:9c900dea9e8fb7e16277c179b555cc72d29a352dbc33cff48ad5a0412fd5bfc7
+ARG PYTHON_IMAGE=python:3.11.16-slim-trixie@sha256:1042b61448fef4ba92d16a8c7eb4996d027568ce64792a7877fd88511e0af7c6
 ARG UV_IMAGE=ghcr.io/astral-sh/uv:0.10.7@sha256:edd1fd89f3e5b005814cc8f777610445d7b7e3ed05361f9ddfae67bebfe8456a
 
 FROM ${UV_IMAGE} AS uv-bin
@@ -83,18 +83,53 @@ USER 10001:10001
 FROM workbench-base AS control-plane
 ARG OCI_REVISION=uncommitted
 ARG OCI_SOURCE=https://github.com/William-Huang274/FIN_Insight_Agent
+ARG DEBIAN_GCC_VERSION=4:14.2.0-1
+ARG DEBIAN_LIBC6_DEV_VERSION=2.41-12+deb13u3
+ARG DEBIAN_LIBPQ_VERSION=17.11-0+deb13u1
 ENV WORKBENCH_IMAGE_KIND=control-plane
 ENV WORKBENCH_RUNTIME_PROFILE=dagster-postgres-shadow
 ENV FINSIGHT_REPOSITORY_ROOT=/app
 ENV FINSIGHT_S2_POLICY_ROOT=/app/configs/financial_facts
 ENV FINSIGHT_S2_OUTPUT_ROOT=/app/state/s2-shadow
 ENV DAGSTER_HOME=/app/dagster-home
-RUN --mount=type=cache,target=/root/.cache/uv \
-    uv sync --locked --no-dev --extra control-plane --no-editable \
+RUN saved_apt_mark="$(apt-mark showmanual)" \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends \
+        "gcc=${DEBIAN_GCC_VERSION}" \
+        "libc6-dev=${DEBIAN_LIBC6_DEV_VERSION}" \
+        "libpq-dev=${DEBIAN_LIBPQ_VERSION}" \
+        "libpq5=${DEBIAN_LIBPQ_VERSION}" \
+    && uv sync --locked --no-dev --extra control-plane --no-editable \
+        --no-binary-package psycopg2-binary --no-cache \
+    && test "$(python -c 'import importlib.metadata as metadata; print(metadata.version("psycopg2-binary"))')" = "2.9.12" \
+    && python -c 'import psycopg2; from psycopg2 import extensions; assert psycopg2.__libpq_version__ == extensions.libpq_version() == 170011' \
+    && test ! -d /opt/finsight-venv/lib/python3.11/site-packages/psycopg2_binary.libs \
+    && psycopg2_module="$(python -c 'import psycopg2._psycopg as module; print(module.__file__)')" \
+    && ldd "$psycopg2_module" > /tmp/psycopg2.ldd \
+    && grep -Eq 'libpq\.so\.5 => /(lib|usr/lib)/' /tmp/psycopg2.ldd \
+    && ! grep -F 'site-packages' /tmp/psycopg2.ldd \
+    && apt-mark auto '.*' > /dev/null \
+    && apt-mark manual $saved_apt_mark libpq5 > /dev/null \
+    && apt-get purge -y --auto-remove \
+    && rm -rf /var/lib/apt/lists/* /tmp/psycopg2.ldd \
+    && test "$(dpkg-query -W -f='${Version}' libpq5)" = "${DEBIAN_LIBPQ_VERSION}" \
+    && psycopg2_module="$(python -c 'import psycopg2._psycopg as module; print(module.__file__)')" \
+    && libpq_path="$(ldd "$psycopg2_module" | awk '$1 == "libpq.so.5" {print $3}')" \
+    && test -n "$libpq_path" \
+    && dpkg-query -S "$(readlink -f "$libpq_path")" | grep -Eq '^libpq5(:amd64)?: ' \
+    && ! dpkg-query -W -f='${db:Status-Status}\n' gcc libc6-dev libpq-dev libssl-dev 2>/dev/null | grep -Fx 'Installed' \
+    && test ! -e /usr/bin/gcc \
+    && test ! -e /usr/bin/pg_config \
+    && test ! -e /usr/include/postgresql/libpq-fe.h \
+    && python -c 'import psycopg2; from psycopg2 import extensions; assert psycopg2.__libpq_version__ == extensions.libpq_version() == 170011' \
     && mkdir -p "$DAGSTER_HOME" "$FINSIGHT_S2_OUTPUT_ROOT" \
     && cp configs/control_plane/dagster.postgres.yaml "$DAGSTER_HOME/dagster.yaml" \
     && chown -R 10001:10001 "$DAGSTER_HOME" /app/state \
-    && rm -f /bin/uv /bin/uvx
+    && rm -f /bin/uv /bin/uvx \
+    && test ! -e /bin/uv \
+    && test ! -e /bin/uvx \
+    && ! python -m pip --version > /dev/null 2>&1 \
+    && python -c 'import importlib.util; assert importlib.util.find_spec("pip") is None; assert importlib.util.find_spec("setuptools") is None'
 LABEL org.opencontainers.image.source=${OCI_SOURCE} \
       org.opencontainers.image.revision=${OCI_REVISION} \
       io.finsight.image.kind=control-plane \

@@ -122,6 +122,19 @@
 - [ ] S4 审阅修复产品闭环
 - [ ] S5 FIN 0.1.3 release decision
 
+## 2026-09-01 S5 image/native supply remediation
+
+- [x] S1/131 的 236 raw finding 与 `psycopg2-binary` 原生盲区按最早责任层冻结；R14 和全部研究/产品权限保持不变
+- [x] 官方 Python 3.11.16 trixie base 更新 dirty build：util-linux fixed cohort 真实进入 runtime
+- [x] `psycopg2-binary 2.9.12` 官方 sdist + Debian `libpq5 17.11` 系统链接 dirty runtime probe；vendored native/build tooling absent
+- [x] dirty Syft/Grype：Workbench `236→166`；control-plane `236→191`，新增 25 项为新可见 Kerberos/LDAP 闭包
+- [x] vexctl v0.4.4 自审失败并拒绝门禁；采用 OpenVEX 标准＋Grype，不自研 suppression engine
+- [x] fresh 独立 Docker/evidence review：代码 `P0/P1/P2/P3=0/0/0/0`，资格层 3 个 P2 保留，允许 nonproduction candidate commit
+- [ ] exact clean candidate commit/push 与 linux/amd64 两镜像无缓存复建
+- [ ] exact image ID runtime probe、三格式 SBOM、raw Grype 和 source-bound OpenVEX 双结果
+- [ ] fresh PostgreSQL/Dagster vertical、control-plane 真实只读 source job、Workbench smoke 与独立 closeout review
+- [ ] image/native production gate；7 Critical/其余 High/Python/glibc/perl、license/legal、Debian long-term reproducibility 未闭合前保持 false
+
 ## 2026-08-22 产品／检索／Writer 再对齐后的当前门
 
 - [x] Actionable Uncertainty 1–7 current-data 工程闭环（来源权利、定量类型、Feedback／Plan／checkpoint／stop、S3 consumer、Workbench；0 natural model／network／paid）

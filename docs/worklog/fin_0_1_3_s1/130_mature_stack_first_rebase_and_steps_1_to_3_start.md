@@ -128,3 +128,11 @@ qualification summary SHA-256=`c6750a23b729b80b769cb6c850a7320cded818ca9d50443f6
 - PowerShell launcher AST、Python compileall、213-Python active baseline、3 份 Project OS JSONL、8,316-file secret scan 和 `git diff --check` 均 PASS；
 - 全仓 pytest=`2,598 passed / 3 skipped / 0 failed`，耗时 `1,085.04s`；只有 2 条既有 SWIG type deprecation warning；
 - reviewer 确认 R14、PostgreSQL blocker、3 个漏洞、product delta=0、production integration=0、真实 SEC/source admission/金融真值未资格化等边界均未被改写。
+
+## 9. 2026-09-01 successor：最小前置已执行，不再停留在计划
+
+Owner 随后授权按上述最小路径继续。统一 dependency source/lock、真实 PostgreSQL 16.15、thin Dagster S2 shadow、exact Workbench 与 image/native supply remediation 已分别在 S1/131 和 S1/132 真实实施并留证，不再是“下一步计划”。最新 exact clean commit=`e965f235e41b219e38ff8d01783fa5df4eeaf2e9`；两张 exact image、system-linked libpq、SBOM/raw/OpenVEX、fresh PostgreSQL/Dagster、exact control-plane real job、exact Workbench DELL/MU/NVDA readiness 和全仓 `2671 passed, 5 skipped` 已通过有界非生产资格，统一 summary SHA=`80f5121d...943b`。
+
+这验证了本次成熟栈纠偏的核心方向：PostgreSQL、Dagster、uv、Syft、Grype 和 OpenVEX 可以通过薄适配接管通用工程责任，FIN domain kernel、旧回归与 authority 边界仍由项目保留，没有建设新的通用 scheduler、database、scanner 或计划执行 runtime。
+
+但 production image/native supply 仍为 BLOCKED；它不能被非生产工程成功自动升级。剩余 7 Critical、residual High、Python/gzip/Debian处置、发布时最新数据库、license/legal、长期 Debian byte-reproducible source 和 production hardening 必须由 Owner 决定继续在 S5 处理，或先冻结当前可行性证据并转到全产品迁移路线的下一个已批准能力面。R14、R15/R16、formal、Evidence、current S2 authority、S3、report、product 和 release 仍未获得新权限。详见 `docs/worklog/fin_0_1_3_s1/132_image_native_supply_remediation.md`。

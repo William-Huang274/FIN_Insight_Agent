@@ -13,7 +13,8 @@
 - [x] thin Dagster adapter只编排现有 CLI，legacy入口与 rollback保留、删除量0；LangGraph因本纵切面无 checkpoint/HITL/Agent graph需求而继续 HOLD。
 - [x] 同阶段producer/harness修正已冻结为`43bd6344`；最终control-plane真实只读job successor通过（attempt=`20260831T155249Z-65000a8b...`、summary SHA=`e6b7308c...c3bbb`），Workbench runtime contract通过；前端固定Node/Playwright环境完成typecheck/build与完整`3/3` E2E；全仓union profile=`2671 passed, 5 skipped`。所有中途失败保持不可变，详见S1/131。
 - [x] 两个exact image的Syft/Grype/native审计和artifact manifest已完成，但结论为`image_supply_gate=BLOCKED / production_pass=false`：每张镜像保留236 raw findings（7 Critical／31 High），29 generic项尚无VEX，control-plane的15个`psycopg2-binary`原生文件为扫描盲区。扫描“完成”不得改写成供应链“通过”。
-- [ ] 下一最早责任层为S5 image/native supply remediation：source-bound triage、可修系统包新image ID重建复扫、system-linked或其他provenance可闭合数据库client资格。current S2 authority self-integrity仍为false且migration未授权；EIA key外部轮换仍由Owner完成；禁止自动全仓Dagster化、PostgreSQL cutover、LangGraph引入、R14恢复或任何下游晋升。
+- [x] S5 image/native supply remediation 的 exact-clean 非生产资格已完成：`e965f235` 两张 exact image 重建复扫；system-linked libpq native closure 19/19 dpkg-owned；OpenVEX exact allowlist 与 raw 守恒；fresh PostgreSQL/Dagster、exact control-plane 真实 job、exact Workbench DELL/MU/NVDA readiness、全仓 `2671 passed, 5 skipped` 与两路独立复核通过。统一 summary SHA=`80f5121d...943b`，详见 S1/132。
+- [ ] Owner 决策门：当前只能签 `exact-clean bounded nonproduction qualification PASS`；production image/native supply 仍因每镜像 7 Critical、residual High、Python/gzip/Debian处置、release-time最新DB、license/legal、Debian长期字节复建和production hardening而 BLOCKED。决定继续同一 S5 production remediation，或冻结本证据并进入全产品迁移路线的下一个已批准能力面。current S2 authority self-integrity仍为false且migration未授权；EIA key外部轮换仍由Owner完成；禁止自动全仓Dagster化、PostgreSQL cutover、LangGraph引入、R14恢复或任何下游晋升。
 
 - [x] S0 权威干净基线
 - [x] S1-A 类型化本地检索纵切接入 Workbench

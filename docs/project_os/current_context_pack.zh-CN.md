@@ -1,11 +1,13 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-09-01
+更新时间：2026-09-02
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-dell-s1-s2-product-bridge`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
+
+2026-09-02 successor（取代 MinerU 作为当前活动面）：Owner 已明确把目标收敛为一个可用于公开展示和求职叙事的 DELL 完整纵切，不继续 R14，也不继续扩张 PDF parser challenger。数据地基已冻结为 18 份官方正文／597 个 candidate records（SHA `47d518b9...bef9`）、base 55＋FY27 Q2 case overlay 6＝61 条 Reviewed Evidence（composite digest `c91d5c58...7e7d`），以及 11 ticker／4,586 observations 的 A04 S2 mart（SHA `9c962b1d...a656`）；current Q2 Exhibit 可作为文字 Evidence，但在 10-Q/XBRL 进入前仍不是 S2 NumericFact。运行地基采用 LangGraph checkpoint／interrupt、官方 MCP、Pydantic、`langchain-deepseek` 和只读 SQLite qualification，真实拓扑为 Planner→Evidence/Finance 并行→9 个隔离 Specialist→Counter→最多 1 次回派→Lead→verify→HITL→resume/render；外源单点失败可带收据降级，真正 fatal tool failure 会在 Counter/Lead 前停止；没有再造调度器、Crawler、向量数据库或 cell 壳。67 项 focused offline gate 已通过，覆盖 aggregate budget、调用 journal、max concurrency、citation index、MCP failure receipt/degradation/fail-fast、S2 SHA TOCTOU、Git/source SHA 与实际 module origin binding、唯一 run authority 和 terminal checkpoint 幂等恢复；真实 DeepSeek／外源调用仍为 0。首轮唯一 attempt/run/data snapshot 已预注册为 `20260902-dell-reference-vertical-q1-a01`／`dell-reference-vertical-q1-run-a01`／`20260902-dell-a02-a04-reviewed-evidence-composition`，唯一执行入口为 `scripts/research/run_dell_reference_vertical_q1_a01.ps1`；必须先 clean commit＋push＋zero-call preflight，再只运行到 HITL；人工逐 claim/source/numeric audit 前不得 approve、发布或宣称产品通过。详见 S3/175。
 
 2026-09-01 18:23 successor：MinerU 3.4.5成熟challenger已经从“只读preflight”推进到真实落盘，但尚未执行文档推理。Z盘native-Windows独立环境由SHA=`75c099d2...e66`的83-distribution lock安装；实际inventory 83/83、binary-only audit、`uv pip check`、46组imports、Torch 2.6.0+cu124／CUDA 12.4／torchvision native ops和RTX 4060微型张量均通过，lmdeploy/vllm/gradio/ray/xgrammar均不存在，engine日志精确为Transformers。HF exact revision=`bff20d4a...97ed`的13-file／2,328,028,720-byte VLM snapshot已完整下载并逐文件复算；weight SHA=`abf8681c...a5f0`、tokenizer SHA=`dceac5fc...87fe`，model manifest SHA=`84ac49fd...141d`。local/offline config解析为source=`local`、engine=`transformers`；源码审计证明未来除`MINERU_TABLE_MERGE_ENABLE=false`外还必须令processing window=1，才能隔离另一层硬编码跨页判断。首次immutable推理preflight=`20260901T102240Z-preflight1`绑定Tencent物理页130，但三次free RAM仅4.224/4.205/4.201 GiB、free VRAM均6,964 MiB，低于冻结的10 GiB/7,680 MiB双门，故在model load/PDFium subset/document inference前正确返回`HOLD_RESOURCE`，receipt SHA=`f5a75cb5...e257`、输出0。没有降门、杀Owner进程或删除`data/indexes`。MinerU pipeline继续`HOLD_LICENSE`；VLM仅environment/model supply PASS，文档质量、FIN adapter、cell provenance、adoption、mainline、Evidence、生产/SaaS/再分发仍false。下一合法动作只是在资源自然满足后以新attempt运行同一页单并发smoke；R14和全部下游权限不变。详见S1/133。
 

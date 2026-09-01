@@ -1,0 +1,249 @@
+{
+  "schema_version": "fin_ia_dell_reference_vertical_data_seed_v1_0",
+  "status": "fy2027_q2_8k_captured_structured_10q_pending",
+  "recorded_at": "2026-09-02T04:45:00+08:00",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "research_cutoff": "2026-09-02T04:45:00+08:00",
+  "event_boundary": {
+    "event": "DELL_FY2027_Q2",
+    "scheduled_call_time": "2026-09-02T04:30:00+08:00",
+    "state_at_seed": "official_8k_and_earnings_exhibit_captured_call_window_reached",
+    "allowed_public_claim": "event_aware_issuer_disclosed_results_with_explicit_non_XBRL_current_quarter_numeric_boundary",
+    "public_complete_demo_requires": "E0_event_seal; E1_remains_required_only_for_current_quarter_structured_numeric_completeness"
+  },
+  "verified_local_assets": [
+    {
+      "asset_role": "current_narrative_candidate_store",
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v5/records.jsonl",
+      "sha256": "d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45",
+      "record_count": 1888,
+      "parent_document_count": 51,
+      "authority": "retrieval_candidates_and_previously_reviewed_inputs_not_automatic_evidence",
+      "read_only_legacy_bridge": true
+    },
+    {
+      "asset_role": "current_company_financial_fact_mart",
+      "ref": "data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_facts.sqlite",
+      "sha256": "d05b0cc8e08d063a252d3032db13f6840abe0048200f3696b3ffccaa9d93c585",
+      "observation_count": 1319,
+      "authority": "existing_s2_numeric_fact_read_only_port",
+      "migration_policy": "do_not_recompute_or_relabel_during_foundation_cutover"
+    },
+    {
+      "asset_role": "current_s1_binding_receipt",
+      "ref": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_15.json",
+      "sha256": "f581f3aff02aaf5e34455f3020578c4fb40b83a9d47e6fe097767dff171fc3ae",
+      "authority": "legacy_binding_identity_only"
+    },
+    {
+      "asset_role": "current_object_store_result",
+      "ref": "configs/runtime/fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_4.json",
+      "sha256": "eb3b8c2372464195426c58d3bede4cb2f52c08fe3d0666e249df74da94f98c06",
+      "authority": "legacy_store_build_receipt_only"
+    }
+  ],
+  "local_candidate_inventory": {
+    "records_by_owner": {
+      "DELL": 687,
+      "MSFT": 440,
+      "MU": 436,
+      "NVDA": 269,
+      "TSM": 24,
+      "other_public_source_organizations": 32
+    },
+    "records_by_source_type": {
+      "10-K": 1334,
+      "10-Q": 414,
+      "8-K": 52,
+      "6-K": 2,
+      "EARNINGS_CALL_TRANSCRIPT": 36,
+      "PUBLIC_WEB": 38,
+      "PUBLIC_PDF": 9,
+      "MARKET_SNAPSHOT": 3
+    },
+    "dell": {
+      "candidate_records": 687,
+      "parent_documents": 11,
+      "publication_window": ["2023-03-30", "2026-06-24"],
+      "source_types": {
+        "10-K": 567,
+        "10-Q": 81,
+        "8-K": 17,
+        "EARNINGS_CALL_TRANSCRIPT": 14,
+        "PUBLIC_WEB": 4,
+        "PUBLIC_PDF": 3,
+        "MARKET_SNAPSHOT": 1
+      },
+      "latest_issuer_narrative_period": "FY2027_Q1",
+      "latest_issuer_narrative_date": "2026-05-28"
+    },
+    "known_absent_or_insufficient_owner_families": [
+      "AMZN",
+      "GOOGL",
+      "META",
+      "AMD",
+      "INTC",
+      "HPE",
+      "SMCI",
+      "LENOVO",
+      "current_export_control_corpus",
+      "public_procurement_price_observation_set",
+      "current_model_compute_primary_source_set"
+    ]
+  },
+  "local_numeric_inventory": {
+    "dell_observation_count": 390,
+    "dell_form_counts": {"10-K": 100, "10-Q": 290},
+    "dell_latest_period_end": "2026-05-01",
+    "dell_latest_filed_at": "2026-06-09",
+    "dell_metric_counts": {
+      "accounts_payable": 24,
+      "accounts_receivable": 24,
+      "capital_expenditures": 32,
+      "cash_and_equivalents": 30,
+      "diluted_eps": 38,
+      "gross_profit": 45,
+      "inventory": 30,
+      "net_income": 45,
+      "operating_cash_flow": 32,
+      "operating_income": 45,
+      "revenue": 45
+    },
+    "numeric_route": "SEC CompanyFacts and Submissions raw snapshots to normalized SQL",
+    "narrative_file_numeric_fallback": "forbidden_when_the_same_standardized_fact_is_available_from_SEC_API",
+    "known_nulls": [
+      "Dell_company_AI_server_units",
+      "Dell_company_AI_server_ASP",
+      "exact_Dell_price_volume_mix",
+      "Dell_specific_GPU_or_HBM_allocation",
+      "Dell_Greater_China_revenue"
+    ]
+  },
+  "foundation_routes": {
+    "stable_structured_api": "raw_response_snapshot_then_normalized_postgresql_tables",
+    "versioned_local_document": "content_addressed_capture_then_parse_then_postgresql_knowledge_chunks",
+    "time_sensitive_public_web": "search_locator_then_policy_approved_capture_then_parse_then_review",
+    "commercial_private_or_undisclosed": "typed_bounded_gap_with_route_receipt",
+    "legacy_s1_store": "read_only_shadow_source_until_postgresql_projection_matches_frozen_queries",
+    "legacy_s2_sqlite": "read_only_numeric_fact_port_until_a_separate_S2_authority_migration_is_approved"
+  },
+  "required_pre_demo_seed_groups": [
+    {
+      "seed_group_id": "G1_DELL_E1_REFRESH",
+      "question_branches": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM"],
+      "source_families": ["F1_SEC_ISSUER_FACTS", "F2_DELL_IR_EARNINGS"],
+      "minimum_source_set": [
+        "new SEC submission and accession identity",
+        "8-K and EX-99 earnings release or tables",
+        "prepared remarks or performance review when published",
+        "FY2027 Q2 10-Q and refreshed CompanyFacts"
+      ],
+      "stop_condition": "The demo may proceed after the E0 event seal, but it must not label FY2027 Q2 as structured SQL numeric-complete before the 10-Q or another issuer structured table is available."
+    },
+    {
+      "seed_group_id": "G2_CUSTOMER_DEMAND",
+      "question_branches": ["Q2_DEMAND_QUALITY", "Q6_MODEL_COMPUTE_DEMAND"],
+      "source_families": ["F4_CUSTOMER_CAPEX_DEPLOYMENT"],
+      "bounded_entities": ["MSFT", "AMZN", "GOOGL", "META"],
+      "minimum_source_set": [
+        "latest two reported quarters of primary capex or capacity disclosures",
+        "only explicitly named Dell or Dell-SKU customer relationship evidence"
+      ],
+      "stop_condition": "Generic hyperscaler capex remains industry context and cannot prove Dell demand."
+    },
+    {
+      "seed_group_id": "G3_PLATFORM_RAMP_AND_SUPPLY",
+      "question_branches": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE"],
+      "source_families": ["F3_DELL_PRODUCT_SUPPORT", "F6_COMPUTE_PLATFORM_SUPPLIERS", "F7_MEMORY_FOUNDRY_NETWORK_STORAGE"],
+      "bounded_entities": ["DELL", "NVDA", "AMD", "INTC", "MU", "SK_HYNIX", "TSM"],
+      "minimum_source_set": [
+        "current architecture lifecycle documents",
+        "Dell support or compatibility document",
+        "supplier production and availability evidence",
+        "memory storage networking and packaging price or capacity direction"
+      ],
+      "stop_condition": "Announcement, sampling, qualification, production, shipment, deployment and revenue must not be collapsed into one state."
+    },
+    {
+      "seed_group_id": "G4_OEM_COMPETITION",
+      "question_branches": ["Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"],
+      "source_families": ["F8_OEM_COMPETITION"],
+      "bounded_entities": ["HPE", "SMCI", "LENOVO"],
+      "minimum_source_set": [
+        "latest two reported periods where public",
+        "metric definition and period reconciliation before comparison"
+      ],
+      "stop_condition": "Non-comparable order, backlog and AI revenue definitions remain separate."
+    },
+    {
+      "seed_group_id": "G5_MODEL_COMPUTE",
+      "question_branches": ["Q6_MODEL_COMPUTE_DEMAND"],
+      "source_families": ["F9_MODEL_COMPUTE_AND_BENCHMARKS"],
+      "minimum_source_set": [
+        "primary model card or technical report",
+        "MLCommons or equivalent reproducible benchmark context",
+        "observable deployment or capex bridge kept separate from benchmark performance"
+      ],
+      "stop_condition": "Benchmark or model capability cannot be promoted to purchase volume or Dell revenue."
+    },
+    {
+      "seed_group_id": "G6_EXPORT_CONTROL",
+      "question_branches": ["Q7_EXPORT_CONTROL_CHINA"],
+      "source_families": ["F10_EXPORT_CONTROL_AND_POLICY"],
+      "minimum_source_set": [
+        "Federal Register rule identity and publication date",
+        "eCFR current text or amendment state",
+        "BIS implementation guidance when material"
+      ],
+      "stop_condition": "No legal conclusion from a search snippet, press summary or superseded rule."
+    },
+    {
+      "seed_group_id": "G7_PRICE_OBSERVATIONS",
+      "question_branches": ["Q3_UNITS_ASP_PVM"],
+      "source_families": ["F5_PUBLIC_PROCUREMENT"],
+      "minimum_source_set": [
+        "bounded public award or quote observations with configuration and date",
+        "bundle scope and coverage field for every observation"
+      ],
+      "stop_condition": "A few observations cannot be extrapolated to Dell company units, ASP or PVM."
+    },
+    {
+      "seed_group_id": "G8_INDEPENDENT_COUNTEREVIDENCE",
+      "question_branches": ["Q9_COUNTEREVIDENCE_WWC"],
+      "source_families": ["F12_INDEPENDENT_COUNTEREVIDENCE"],
+      "minimum_source_set": [
+        "at least one source-bound counterclaim for every material positive thesis",
+        "one monitorable what-would-change condition"
+      ],
+      "stop_condition": "Search snippets and aggregators remain locators until the underlying source is captured."
+    }
+  ],
+  "acquisition_budget": {
+    "maximum_live_pages_per_run": 24,
+    "target_new_primary_or_independent_documents": "18_to_22",
+    "whole_case_cumulative_document_ceiling_before_owner_reassessment": 50,
+    "maximum_search_rounds_per_high_materiality_branch": 2,
+    "maximum_results_per_search": 6,
+    "maximum_captures_per_branch": 4,
+    "required_coverage_is_source_family_and_question_based_not_page_count_based": true
+  },
+  "promotion_states": [
+    "retrieval_candidate",
+    "source_capture",
+    "parsed_element",
+    "reviewed_evidence",
+    "numeric_fact",
+    "deterministic_derived_metric",
+    "research_scenario",
+    "typed_gap"
+  ],
+  "non_goals": [
+    "download_the_open_web",
+    "rebuild_all_legacy_indexes",
+    "infer_missing_company_units_or_ASP",
+    "implement_a_custom_web_search_engine",
+    "implement_a_custom_general_crawler",
+    "claim_current_quarter_structured_numeric_complete_before_DELL_E1_refresh",
+    "turn_search_or_parser_success_into_Evidence_automatically"
+  ]
+}

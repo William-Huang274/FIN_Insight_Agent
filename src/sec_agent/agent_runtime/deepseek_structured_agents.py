@@ -1,0 +1,1008 @@
+"""Thin DeepSeek structured-output adapters for the DELL reference vertical.
+
+The model is deliberately limited to semantic payloads.  Runtime identity,
+state bindings, digests and execution receipts remain host authority and are
+never fields in a model output schema.
+"""
+
+from __future__ import annotations
+
+import json
+from collections.abc import Callable, Mapping, Sequence
+from datetime import date, datetime, timezone
+from hashlib import sha256
+from pathlib import Path
+import re
+from time import perf_counter
+from typing import Any, Literal, Protocol, TypeVar, cast
+
+from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_deepseek import ChatDeepSeek
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    SecretStr,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
+
+from .dell_reference_vertical_contracts import (
+    BranchWorkpaper,
+    CounterDecision,
+    EvidenceRequest,
+    LeadOutput,
+    PlannerOutput,
+    RuntimeReceipt,
+    canonical_json_bytes,
+    canonical_sha256,
+)
+
+
+NodeRole = Literal["planner", "specialist", "counter", "lead"]
+PayloadT = TypeVar("PayloadT", bound=BaseModel)
+ModelCallAuditSink = Callable[[Mapping[str, Any]], None]
+
+
+class DeepSeekStructuredAgentError(ValueError):
+    """Fail-closed model-adapter or configuration boundary."""
+
+
+class _StrictSemanticModel(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        strict=True,
+        str_strip_whitespace=True,
+    )
+
+
+# Backward-compatible public name; there is only one evidence-request schema.
+EvidenceRequestPayload = EvidenceRequest
+
+
+class FinancialFactRequestPayload(_StrictSemanticModel):
+    ticker: str = Field(min_length=1, max_length=16)
+    metric_ids: tuple[str, ...] = Field(min_length=1, max_length=12)
+    granularity: Literal[
+        "quarter_discrete", "fiscal_ytd", "fiscal_year", "instant"
+    ]
+    period_start: date | None = None
+    period_end: date | None = None
+    fiscal_years: tuple[int, ...] = Field(default=(), max_length=4)
+    requested_unit: str = Field(
+        default="reported_source_unit", min_length=1, max_length=64
+    )
+    unit_family: str | None = Field(default=None, min_length=1, max_length=64)
+
+    @field_validator("ticker")
+    @classmethod
+    def normalize_ticker(cls, value: str) -> str:
+        normalized = value.strip().upper()
+        if not re.fullmatch(r"[A-Z][A-Z0-9.-]{0,15}", normalized):
+            raise ValueError("financial_fact_ticker_invalid")
+        return normalized
+
+    @field_validator("metric_ids")
+    @classmethod
+    def validate_metric_ids(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        normalized = tuple(dict.fromkeys(value.strip() for value in values))
+        if len(normalized) != len(values) or any(
+            re.fullmatch(r"[a-z][a-z0-9_]{1,95}", value) is None
+            for value in normalized
+        ):
+            raise ValueError("financial_fact_metric_ids_invalid")
+        return normalized
+
+    @field_validator("fiscal_years")
+    @classmethod
+    def validate_fiscal_years(cls, values: tuple[int, ...]) -> tuple[int, ...]:
+        if len(set(values)) != len(values) or any(
+            year < 1990 or year > 2200 for year in values
+        ):
+            raise ValueError("financial_fact_fiscal_years_invalid")
+        return values
+
+    @model_validator(mode="after")
+    def validate_period(self) -> "FinancialFactRequestPayload":
+        if self.period_start and self.period_end and self.period_start > self.period_end:
+            raise ValueError("financial_fact_period_inverted")
+        return self
+
+
+class PlannerTaskPayload(_StrictSemanticModel):
+    branch_id: str = Field(min_length=1, max_length=120)
+    objective: str = Field(min_length=1, max_length=2_000)
+    evidence_requests: tuple[EvidenceRequestPayload, ...] = Field(
+        min_length=1, max_length=8
+    )
+    fact_requests: tuple[FinancialFactRequestPayload, ...] = Field(
+        default=(), max_length=24
+    )
+
+
+class PlannerSemanticPayload(_StrictSemanticModel):
+    tasks: tuple[PlannerTaskPayload, ...] = Field(min_length=1, max_length=16)
+
+
+class SpecialistSemanticPayload(_StrictSemanticModel):
+    terminal_state: Literal["supported", "countered", "bounded_gap", "not_material"]
+    thesis: str = Field(min_length=1, max_length=4_000)
+    mechanism: str = Field(min_length=1, max_length=6_000)
+    counterevidence: tuple[str, ...] = Field(min_length=1, max_length=8)
+    what_would_change: tuple[str, ...] = Field(min_length=1, max_length=8)
+    evidence_ids: tuple[str, ...] = Field(default=(), max_length=32)
+    fact_ids: tuple[str, ...] = Field(default=(), max_length=48)
+    open_gaps: tuple[str, ...] = Field(default=(), max_length=16)
+
+
+class CounterReroutePayload(_StrictSemanticModel):
+    target_branch_id: str = Field(min_length=1, max_length=120)
+    reason: str = Field(min_length=1, max_length=2_000)
+    evidence_requests: tuple[EvidenceRequestPayload, ...] = Field(
+        min_length=1, max_length=8
+    )
+    fact_requests: tuple[FinancialFactRequestPayload, ...] = Field(
+        default=(), max_length=24
+    )
+
+
+class CounterSemanticPayload(_StrictSemanticModel):
+    strongest_counter_thesis: str = Field(min_length=1, max_length=4_000)
+    challenges: tuple[str, ...] = Field(min_length=1, max_length=12)
+    what_would_change: tuple[str, ...] = Field(min_length=1, max_length=12)
+    reroute: CounterReroutePayload | None = None
+
+
+class LeadBranchConclusionPayload(_StrictSemanticModel):
+    branch_id: str = Field(min_length=1, max_length=120)
+    conclusion: str = Field(min_length=1, max_length=3_000)
+    evidence_ids: tuple[str, ...] = Field(default=(), max_length=24)
+    fact_ids: tuple[str, ...] = Field(default=(), max_length=32)
+
+
+class LeadSemanticPayload(_StrictSemanticModel):
+    verdict: Literal[
+        "positive",
+        "mixed_positive",
+        "neutral",
+        "mixed_negative",
+        "negative",
+    ]
+    confidence: int = Field(ge=0, le=100)
+    headline: str = Field(min_length=1, max_length=240)
+    executive_summary: str = Field(min_length=1, max_length=8_000)
+    branch_conclusions: tuple[LeadBranchConclusionPayload, ...] = Field(min_length=1)
+    counter_response: str = Field(min_length=1, max_length=4_000)
+
+
+class TokenBudgetBasis(_StrictSemanticModel):
+    node_role: NodeRole
+    node_purpose: str = Field(min_length=1, max_length=1_000)
+    input_scale: str = Field(min_length=1, max_length=1_000)
+    required_outputs: tuple[str, ...] = Field(min_length=1, max_length=16)
+    schema_burden: str = Field(min_length=1, max_length=1_000)
+    materiality_quality_risk: str = Field(min_length=1, max_length=1_000)
+    comparable_run_evidence: str = Field(min_length=1, max_length=1_000)
+    reasoning_profile: Literal[
+        "independent_single_turn_thinking_disabled_structured_reasoning"
+    ]
+    max_input_characters: int = Field(ge=10_000, le=500_000)
+    max_output_tokens: int = Field(ge=1_000, le=32_000)
+    timeout_seconds: float = Field(ge=30, le=600)
+    max_transport_attempts: Literal[1]
+    retry_policy: Literal["none"]
+    truncation_stop_behavior: Literal["fail_closed_no_partial_promotion"]
+    input_ceiling_behavior: Literal["fail_before_transport"]
+
+    @model_validator(mode="after")
+    def validate_required_outputs(self) -> "TokenBudgetBasis":
+        if len(self.required_outputs) != len(set(self.required_outputs)):
+            raise ValueError("token_budget_required_output_duplicate")
+        return self
+
+
+class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
+    schema_version: Literal[
+        "fin_ia_dell_reference_vertical_deepseek_structured_agents_v1_0"
+    ]
+    provider: Literal["deepseek"]
+    model: Literal["deepseek-v4-pro"]
+    base_url: Literal["https://api.deepseek.com"]
+    structured_output_method: Literal["function_calling"]
+    strict_provider_schema: Literal[False]
+    thinking: Literal["disabled"]
+    temperature: Literal[0.0]
+    max_retries: Literal[0]
+    token_budget_basis: dict[NodeRole, TokenBudgetBasis]
+
+    @model_validator(mode="after")
+    def validate_node_budgets(self) -> "DeepSeekStructuredAgentConfig":
+        expected = {"planner", "specialist", "counter", "lead"}
+        if set(self.token_budget_basis) != expected:
+            raise ValueError("deepseek_token_budget_role_set_invalid")
+        for role, basis in self.token_budget_basis.items():
+            if role != basis.node_role:
+                raise ValueError("deepseek_token_budget_role_binding_mismatch")
+        return self
+
+
+class _StructuredRunnable(Protocol):
+    def invoke(self, input: Any, config: Any | None = None, **kwargs: Any) -> Any: ...
+
+
+class _StructuredOutputCapable(Protocol):
+    def with_structured_output(
+        self,
+        schema: type[BaseModel],
+        *,
+        method: str,
+        include_raw: bool,
+        strict: bool | None,
+    ) -> _StructuredRunnable: ...
+
+
+def load_deepseek_structured_agent_config(
+    path: str | Path,
+) -> DeepSeekStructuredAgentConfig:
+    """Read one strict, secret-free per-node budget configuration."""
+
+    config_path = Path(path)
+    try:
+        raw = config_path.read_text(encoding="utf-8")
+        return DeepSeekStructuredAgentConfig.model_validate_json(raw)
+    except (OSError, ValueError, ValidationError) as exc:
+        raise DeepSeekStructuredAgentError(
+            "deepseek_structured_agent_config_invalid"
+        ) from exc
+
+
+_SYSTEM_PROMPTS: dict[NodeRole, str] = {
+    "planner": (
+        "You are the planning node for one bounded DELL financial-research case. "
+        "Select only supplied branches and express search/fact requests using only "
+        "the supplied tool capabilities and output schema. Do not answer the research "
+        "question and do not invent runtime IDs, "
+        "digests, receipts, snapshots, plans, or execution metadata. Keep the "
+        "human-readable objective and purpose concise. Write each retrieval query "
+        "in source-language English with explicit company, product and metric terms "
+        "because the bounded corpus is English; this is a retrieval contract, not "
+        "the language of the final report. Treat the supplied scope ceiling as a "
+        "hard execution budget: for each branch use at most two external_required "
+        "requests, no request limit above six, no more than ten requested sources "
+        "in total, and no more than four captured pages; across all branches request "
+        "at most twenty-four captured pages. Prefer one focused reviewed_first or "
+        "local_only request and add external_required only for material freshness."
+    ),
+    "specialist": (
+        "You are one isolated financial-research specialist. Use only the supplied "
+        "branch method and typed tool results. Retrieval candidates are not reviewed "
+        "evidence; tool failure is not an information gap. Return a source-linked "
+        "workpaper semantic payload only, without runtime metadata or receipts. Write "
+        "all analytical prose in clear Simplified Chinese. Lead with the branch's "
+        "business conclusion, mechanism, timing and material figures where supported; "
+        "preserve uncertainty without turning the workpaper into boundary boilerplate."
+    ),
+    "counter": (
+        "You are the independent counter-thesis node. Challenge material mechanisms "
+        "in the supplied workpapers. Request at most one targeted branch reroute only "
+        "when it could change the conclusion. Return semantic content only; the host "
+        "owns challenge IDs, bindings, digests, receipts and execution policy. Write "
+        "all analytical prose in clear Simplified Chinese."
+    ),
+    "lead": (
+        "You are the lead analyst for one bounded DELL case. Synthesize every supplied "
+        "branch, address the counter-thesis, preserve cited IDs, and state calibrated "
+        "confidence. Return report semantics only; never generate runtime identity, "
+        "binding, digest, receipt, snapshot or plan fields. Write all analytical prose "
+        "in clear Simplified Chinese. Lead with a decision-useful business conclusion, "
+        "the few material numbers and mechanisms, the time horizon and the strongest "
+        "countercase; keep evidence-boundary language concise and subordinate."
+    ),
+}
+
+
+def _as_mapping(value: Any, *, label: str) -> dict[str, Any]:
+    if not isinstance(value, Mapping):
+        raise DeepSeekStructuredAgentError(f"{label}_must_be_mapping")
+    try:
+        result = json.loads(json.dumps(dict(value), ensure_ascii=False, allow_nan=False))
+    except (TypeError, ValueError) as exc:
+        raise DeepSeekStructuredAgentError(f"{label}_must_be_json") from exc
+    return cast(dict[str, Any], result)
+
+
+def _audit_value(value: Any) -> Any:
+    """Project provider objects into a bounded, secret-free JSON shape."""
+
+    if value is None or isinstance(value, (str, int, float, bool)):
+        return value
+    if isinstance(value, BaseModel):
+        return _audit_value(value.model_dump(mode="json"))
+    if isinstance(value, Mapping):
+        return {str(key): _audit_value(item) for key, item in value.items()}
+    if isinstance(value, Sequence) and not isinstance(
+        value, (str, bytes, bytearray)
+    ):
+        return [_audit_value(item) for item in value]
+    if isinstance(value, BaseException):
+        return {
+            "error_type": type(value).__name__,
+            "error_message": str(value)[:500],
+        }
+    if hasattr(value, "model_dump"):
+        return _audit_value(value.model_dump(mode="json"))
+    return {
+        "python_type": type(value).__name__,
+        "string_value": str(value)[:2_000],
+    }
+
+
+def _required_mapping(value: Mapping[str, Any], key: str) -> dict[str, Any]:
+    return _as_mapping(value.get(key), label=key)
+
+
+def _required_text(value: Mapping[str, Any], key: str) -> str:
+    item = value.get(key)
+    if not isinstance(item, str) or not item.strip():
+        raise DeepSeekStructuredAgentError(f"{key}_required")
+    return item.strip()
+
+
+def _semantic_workpaper(value: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        key: value.get(key)
+        for key in (
+            "branch_id",
+            "revision",
+            "terminal_state",
+            "thesis",
+            "mechanism",
+            "counterevidence",
+            "what_would_change",
+            "evidence_ids",
+            "fact_ids",
+            "open_gaps",
+        )
+    }
+
+
+def _semantic_counter(value: Mapping[str, Any]) -> dict[str, Any]:
+    result = {
+        key: value.get(key)
+        for key in (
+            "strongest_counter_thesis",
+            "challenges",
+            "what_would_change",
+        )
+    }
+    reroute = value.get("reroute")
+    if reroute is None:
+        result["reroute"] = None
+    else:
+        reroute_value = _as_mapping(reroute, label="counter_reroute")
+        result["reroute"] = {
+            key: reroute_value.get(key)
+            for key in (
+                "target_branch_id",
+                "reason",
+                "evidence_requests",
+                "fact_requests",
+            )
+        }
+    return result
+
+
+def _project_request(role: NodeRole, request: Mapping[str, Any]) -> dict[str, Any]:
+    if role == "planner":
+        catalog = request.get("branch_catalog")
+        if not isinstance(catalog, Sequence) or isinstance(catalog, (str, bytes)):
+            raise DeepSeekStructuredAgentError("branch_catalog_required")
+        branches = []
+        for raw in catalog:
+            row = _as_mapping(raw, label="branch_catalog_row")
+            branches.append(
+                {
+                    "branch_id": row.get("branch_id"),
+                    "priority": row.get("priority"),
+                    "objective": row.get("objective"),
+                    "method_context": row.get("method_context"),
+                }
+            )
+        capabilities = _required_mapping(request, "planner_tool_capabilities")
+        capabilities_digest = _required_text(
+            request, "planner_tool_capabilities_digest"
+        )
+        if capabilities.get("projection_digest") != capabilities_digest:
+            raise DeepSeekStructuredAgentError(
+                "planner_tool_capabilities_digest_mismatch"
+            )
+        return {
+            "research_question": _required_text(request, "research_question"),
+            "research_as_of": _required_text(request, "research_as_of"),
+            "branches": branches,
+            "required_branch_ids": request.get("required_branch_ids"),
+            "tool_capabilities": {
+                key: value
+                for key, value in capabilities.items()
+                if key
+                not in {"projection_digest", "mart_sha256", "snapshot_id"}
+            },
+        }
+
+    if role == "specialist":
+        task = _required_mapping(request, "task")
+        evidence = _required_mapping(request, "evidence_result")
+        finance = _required_mapping(request, "finance_result")
+        prior = request.get("prior_workpaper")
+        counter = request.get("counter_challenge")
+        return {
+            "turn_index": request.get("turn_index"),
+            "branch": {
+                "branch_id": task.get("branch_id"),
+                "revision": task.get("revision"),
+                "priority": task.get("priority"),
+                "objective": task.get("objective"),
+                "evidence_requests": task.get("evidence_requests"),
+                "fact_requests": task.get("fact_requests"),
+            },
+            "method_context": request.get("method_context"),
+            "evidence_result": {
+                "status": evidence.get("status"),
+                "result_states": evidence.get("result_states"),
+                "items": evidence.get("items"),
+                "failure": evidence.get("failure"),
+            },
+            "finance_result": {
+                "status": finance.get("status"),
+                "result_states": finance.get("result_states"),
+                "items": finance.get("items"),
+                "failure": finance.get("failure"),
+            },
+            "prior_workpaper": (
+                _semantic_workpaper(_as_mapping(prior, label="prior_workpaper"))
+                if prior is not None
+                else None
+            ),
+            "counter_challenge": (
+                {
+                    key: _as_mapping(counter, label="counter_challenge").get(key)
+                    for key in (
+                        "target_branch_id",
+                        "reason",
+                        "evidence_requests",
+                        "fact_requests",
+                    )
+                }
+                if counter is not None
+                else None
+            ),
+        }
+
+    workpapers = request.get("workpapers")
+    if not isinstance(workpapers, Sequence) or isinstance(workpapers, (str, bytes)):
+        raise DeepSeekStructuredAgentError("workpapers_required")
+    semantic_workpapers = [
+        _semantic_workpaper(_as_mapping(row, label="workpaper")) for row in workpapers
+    ]
+    common = {
+        "case_id": request.get("case_id"),
+        "research_question": _required_text(request, "research_question"),
+        "research_as_of": _required_text(request, "research_as_of"),
+        "workpapers": semantic_workpapers,
+    }
+    if role == "counter":
+        return common
+    return {
+        **common,
+        "counter_decision": _semantic_counter(
+            _required_mapping(request, "counter_decision")
+        ),
+    }
+
+
+def _usage(raw: Any) -> tuple[int, int, int, bool]:
+    usage = getattr(raw, "usage_metadata", None)
+    if not isinstance(usage, Mapping):
+        response_metadata = getattr(raw, "response_metadata", None)
+        token_usage = (
+            response_metadata.get("token_usage")
+            if isinstance(response_metadata, Mapping)
+            else None
+        )
+        usage = token_usage if isinstance(token_usage, Mapping) else {}
+
+    def integer(*keys: str) -> int | None:
+        for key in keys:
+            value = usage.get(key)
+            if value is not None:
+                if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                    raise DeepSeekStructuredAgentError("model_usage_invalid")
+                return value
+        return None
+
+    usage_reported = bool(usage)
+    input_tokens = integer("input_tokens", "prompt_tokens") or 0
+    output_tokens = integer("output_tokens", "completion_tokens") or 0
+    total = integer("total_tokens")
+    if total is None:
+        total = input_tokens + output_tokens
+    if total < input_tokens + output_tokens:
+        raise DeepSeekStructuredAgentError("model_usage_total_invalid")
+    return input_tokens, output_tokens, total, usage_reported
+
+
+def _validate_payload(schema: type[PayloadT], value: Any) -> PayloadT:
+    if isinstance(value, schema):
+        return value
+    try:
+        encoded = json.dumps(value, ensure_ascii=False, allow_nan=False)
+        return schema.model_validate_json(encoded)
+    except (TypeError, ValueError, ValidationError) as exc:
+        raise DeepSeekStructuredAgentError("model_structured_payload_invalid") from exc
+
+
+def _validate_contract(model: type[PayloadT], value: Mapping[str, Any]) -> PayloadT:
+    try:
+        return model.model_validate_json(
+            json.dumps(value, ensure_ascii=False, allow_nan=False)
+        )
+    except (TypeError, ValueError, ValidationError) as exc:
+        raise DeepSeekStructuredAgentError("host_model_contract_invalid") from exc
+
+
+def _receipt(
+    *,
+    role: NodeRole,
+    actor: str,
+    request: Mapping[str, Any],
+    output: Mapping[str, Any],
+    raw: Any,
+    elapsed_ms: float,
+) -> RuntimeReceipt:
+    input_tokens, output_tokens, total_tokens, usage_reported = _usage(raw)
+    request_digest = canonical_sha256(request)
+    output_digest = canonical_sha256(output)
+    return RuntimeReceipt(
+        receipt_id=(
+            f"model:{role}:{request_digest[:20]}:{output_digest[:20]}"
+        ),
+        kind="model",
+        actor=actor,
+        status="success",
+        request_digest=request_digest,
+        output_digest=output_digest,
+        elapsed_ms=elapsed_ms,
+        input_tokens=input_tokens,
+        output_tokens=output_tokens,
+        total_tokens=total_tokens,
+        usage_reported=usage_reported,
+        transport_attempts=1,
+    )
+
+
+class DeepSeekStructuredAgentAdapter:
+    """One generic adapter with four role schemas and no agent framework of its own."""
+
+    def __init__(
+        self,
+        *,
+        config: DeepSeekStructuredAgentConfig,
+        chat_models: Mapping[NodeRole, _StructuredOutputCapable],
+        audit_sink: ModelCallAuditSink | None = None,
+    ) -> None:
+        expected = {"planner", "specialist", "counter", "lead"}
+        if set(chat_models) != expected:
+            raise DeepSeekStructuredAgentError("deepseek_chat_model_role_set_invalid")
+        self._config = config
+        self._chat_models = dict(chat_models)
+        self._audit_sink = audit_sink
+
+    @classmethod
+    def from_config(
+        cls,
+        *,
+        config: DeepSeekStructuredAgentConfig,
+        api_key: SecretStr,
+        audit_sink: ModelCallAuditSink | None = None,
+    ) -> "DeepSeekStructuredAgentAdapter":
+        """Construct four independently budgeted ChatDeepSeek clients.
+
+        The credential is injected by the composition root.  This method never
+        reads an environment variable and never records the credential.
+        """
+
+        models: dict[NodeRole, _StructuredOutputCapable] = {}
+        for role in ("planner", "specialist", "counter", "lead"):
+            basis = config.token_budget_basis[role]
+            models[role] = ChatDeepSeek(
+                model=config.model,
+                api_key=api_key,
+                base_url=config.base_url,
+                temperature=config.temperature,
+                max_tokens=basis.max_output_tokens,
+                timeout=basis.timeout_seconds,
+                max_retries=config.max_retries,
+                streaming=False,
+                use_responses_api=False,
+                extra_body={"thinking": {"type": config.thinking}},
+            )
+        return cls(config=config, chat_models=models, audit_sink=audit_sink)
+
+    def _audit(self, event: Mapping[str, Any]) -> None:
+        if self._audit_sink is None:
+            return
+        try:
+            self._audit_sink(dict(event))
+        except Exception as exc:
+            raise DeepSeekStructuredAgentError(
+                "model_call_audit_persistence_failed"
+            ) from exc
+
+    def _invoke(
+        self,
+        *,
+        role: NodeRole,
+        request: Mapping[str, Any],
+        schema: type[PayloadT],
+    ) -> tuple[PayloadT, Any, float]:
+        request_value = _as_mapping(request, label=f"{role}_request")
+        semantic_input = _project_request(role, request_value)
+        request_digest = canonical_sha256(request_value)
+        semantic_input_digest = canonical_sha256(semantic_input)
+        actor = _required_text(request_value, "agent_id")
+        call_id = (
+            f"{role}-{canonical_sha256(actor)[:12]}-{request_digest[:20]}"
+        )
+        semantic_json = json.dumps(
+            semantic_input,
+            ensure_ascii=False,
+            allow_nan=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        input_characters = len(semantic_json)
+        input_utf8_bytes = len(semantic_json.encode("utf-8"))
+        basis = self._config.token_budget_basis[role]
+        if input_characters > basis.max_input_characters:
+            self._audit(
+                {
+                    "schema_version": "fin_ia_model_call_audit_event_v1_0",
+                    "event": "outcome",
+                    "status": "blocked_before_transport_input_limit",
+                    "call_id": call_id,
+                    "role": role,
+                    "actor": actor,
+                    "recorded_at": datetime.now(timezone.utc).isoformat(),
+                    "request_digest": request_digest,
+                    "semantic_input_digest": semantic_input_digest,
+                    "semantic_input": semantic_input,
+                    "input_characters": input_characters,
+                    "input_utf8_bytes": input_utf8_bytes,
+                    "max_input_characters": basis.max_input_characters,
+                    "provider_call_attempted": False,
+                }
+            )
+            raise DeepSeekStructuredAgentError(
+                f"deepseek_{role}_input_character_limit_exceeded"
+            )
+        messages = [
+            SystemMessage(content=_SYSTEM_PROMPTS[role]),
+            HumanMessage(content=semantic_json),
+        ]
+        runnable = self._chat_models[role].with_structured_output(
+            schema,
+            method=self._config.structured_output_method,
+            include_raw=True,
+            strict=self._config.strict_provider_schema,
+        )
+        self._audit(
+            {
+                "schema_version": "fin_ia_model_call_audit_event_v1_0",
+                "event": "started",
+                "call_id": call_id,
+                "role": role,
+                "actor": actor,
+                "recorded_at": datetime.now(timezone.utc).isoformat(),
+                "request_digest": request_digest,
+                "semantic_input_digest": semantic_input_digest,
+                "semantic_input": semantic_input,
+                "provider": self._config.provider,
+                "model": self._config.model,
+                "structured_output_method": self._config.structured_output_method,
+                "thinking": self._config.thinking,
+                "input_characters": input_characters,
+                "input_utf8_bytes": input_utf8_bytes,
+                "max_input_characters": basis.max_input_characters,
+                "max_output_tokens": basis.max_output_tokens,
+                "provider_call_attempted": True,
+                "transport_attempt_limit": 1,
+            }
+        )
+        started = perf_counter()
+        try:
+            envelope = runnable.invoke(messages)
+        except Exception as exc:
+            self._audit(
+                {
+                    "schema_version": "fin_ia_model_call_audit_event_v1_0",
+                    "event": "outcome",
+                    "status": "provider_call_failed",
+                    "call_id": call_id,
+                    "role": role,
+                    "actor": actor,
+                    "recorded_at": datetime.now(timezone.utc).isoformat(),
+                    "request_digest": request_digest,
+                    "semantic_input_digest": semantic_input_digest,
+                    "elapsed_ms": round((perf_counter() - started) * 1_000, 3),
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc)[:500],
+                    "usage_available": False,
+                }
+            )
+            raise DeepSeekStructuredAgentError(
+                f"deepseek_{role}_single_call_failed"
+            ) from exc
+        elapsed_ms = (perf_counter() - started) * 1_000
+        if not isinstance(envelope, Mapping):
+            self._audit(
+                {
+                    "schema_version": "fin_ia_model_call_audit_event_v1_0",
+                    "event": "outcome",
+                    "status": "provider_envelope_invalid",
+                    "call_id": call_id,
+                    "role": role,
+                    "actor": actor,
+                    "recorded_at": datetime.now(timezone.utc).isoformat(),
+                    "request_digest": request_digest,
+                    "semantic_input_digest": semantic_input_digest,
+                    "elapsed_ms": round(elapsed_ms, 3),
+                    "envelope_type": type(envelope).__name__,
+                }
+            )
+            raise DeepSeekStructuredAgentError("model_structured_envelope_invalid")
+        if envelope.get("parsing_error") is not None or envelope.get("parsed") is None:
+            parsing_error = envelope.get("parsing_error")
+            self._audit(
+                {
+                    "schema_version": "fin_ia_model_call_audit_event_v1_0",
+                    "event": "outcome",
+                    "status": "structured_parse_failed",
+                    "call_id": call_id,
+                    "role": role,
+                    "actor": actor,
+                    "recorded_at": datetime.now(timezone.utc).isoformat(),
+                    "request_digest": request_digest,
+                    "semantic_input_digest": semantic_input_digest,
+                    "elapsed_ms": round(elapsed_ms, 3),
+                    "raw_response": _audit_value(envelope.get("raw")),
+                    "error_type": (
+                        type(parsing_error).__name__
+                        if parsing_error is not None
+                        else "MissingParsedPayload"
+                    ),
+                    "error_message": (
+                        str(parsing_error)[:500]
+                        if parsing_error is not None
+                        else "parsed payload missing"
+                    ),
+                }
+            )
+            raise DeepSeekStructuredAgentError("model_structured_parse_failed")
+        if envelope.get("raw") is None:
+            self._audit(
+                {
+                    "schema_version": "fin_ia_model_call_audit_event_v1_0",
+                    "event": "outcome",
+                    "status": "structured_raw_missing",
+                    "call_id": call_id,
+                    "role": role,
+                    "actor": actor,
+                    "recorded_at": datetime.now(timezone.utc).isoformat(),
+                    "request_digest": request_digest,
+                    "semantic_input_digest": semantic_input_digest,
+                    "elapsed_ms": round(elapsed_ms, 3),
+                    "parsed_payload": _audit_value(envelope.get("parsed")),
+                }
+            )
+            raise DeepSeekStructuredAgentError("model_structured_raw_missing")
+        try:
+            parsed = _validate_payload(schema, envelope["parsed"])
+            usage = _usage(envelope["raw"])
+        except DeepSeekStructuredAgentError as exc:
+            self._audit(
+                {
+                    "schema_version": "fin_ia_model_call_audit_event_v1_0",
+                    "event": "outcome",
+                    "status": "host_payload_validation_failed",
+                    "call_id": call_id,
+                    "role": role,
+                    "actor": actor,
+                    "recorded_at": datetime.now(timezone.utc).isoformat(),
+                    "request_digest": request_digest,
+                    "semantic_input_digest": semantic_input_digest,
+                    "elapsed_ms": round(elapsed_ms, 3),
+                    "raw_response": _audit_value(envelope["raw"]),
+                    "parsed_payload": _audit_value(envelope.get("parsed")),
+                    "error_type": type(exc).__name__,
+                    "error_message": str(exc)[:500],
+                }
+            )
+            raise
+        self._audit(
+            {
+                "schema_version": "fin_ia_model_call_audit_event_v1_0",
+                "event": "outcome",
+                "status": "success",
+                "call_id": call_id,
+                "role": role,
+                "actor": actor,
+                "recorded_at": datetime.now(timezone.utc).isoformat(),
+                "request_digest": request_digest,
+                "semantic_input_digest": semantic_input_digest,
+                "elapsed_ms": round(elapsed_ms, 3),
+                "input_tokens": usage[0],
+                "output_tokens": usage[1],
+                "total_tokens": usage[2],
+                "usage_reported": usage[3],
+                "raw_response": _audit_value(envelope["raw"]),
+                "parsed_payload": parsed.model_dump(mode="json"),
+            }
+        )
+        return (
+            parsed,
+            envelope.get("raw"),
+            elapsed_ms,
+        )
+
+    def planner(self, request: Mapping[str, Any]) -> dict[str, Any]:
+        request_value = _as_mapping(request, label="planner_request")
+        payload, raw, elapsed_ms = self._invoke(
+            role="planner", request=request_value, schema=PlannerSemanticPayload
+        )
+        body = {
+            "tasks": [row.model_dump(mode="json") for row in payload.tasks],
+        }
+        receipt = _receipt(
+            role="planner",
+            actor=_required_text(request_value, "agent_id"),
+            request=request_value,
+            output=body,
+            raw=raw,
+            elapsed_ms=elapsed_ms,
+        )
+        return _validate_contract(
+            PlannerOutput,
+            {**body, "runtime_receipt": receipt.model_dump(mode="json")},
+        ).model_dump(mode="json")
+
+    def specialist(self, request: Mapping[str, Any]) -> dict[str, Any]:
+        request_value = _as_mapping(request, label="specialist_request")
+        task = _required_mapping(request_value, "task")
+        evidence = _required_mapping(request_value, "evidence_result")
+        finance = _required_mapping(request_value, "finance_result")
+        payload, raw, elapsed_ms = self._invoke(
+            role="specialist",
+            request=request_value,
+            schema=SpecialistSemanticPayload,
+        )
+        body = {
+            "branch_id": task.get("branch_id"),
+            "revision": task.get("revision"),
+            "agent_id": request_value.get("agent_id"),
+            "context_digest": request_value.get("context_digest"),
+            "snapshot_id": task.get("snapshot_id"),
+            "foundation_digest": task.get("foundation_digest"),
+            "method_digest": task.get("method_digest"),
+            "plan_digest": task.get("plan_digest"),
+            **payload.model_dump(mode="json"),
+            "tool_receipt_ids": [
+                _required_mapping(evidence, "runtime_receipt").get("receipt_id"),
+                _required_mapping(finance, "runtime_receipt").get("receipt_id"),
+            ],
+        }
+        receipt = _receipt(
+            role="specialist",
+            actor=_required_text(request_value, "agent_id"),
+            request=request_value,
+            output=body,
+            raw=raw,
+            elapsed_ms=elapsed_ms,
+        )
+        return _validate_contract(
+            BranchWorkpaper,
+            {**body, "runtime_receipt": receipt.model_dump(mode="json")},
+        ).model_dump(mode="json")
+
+    def counter(self, request: Mapping[str, Any]) -> dict[str, Any]:
+        request_value = _as_mapping(request, label="counter_request")
+        payload, raw, elapsed_ms = self._invoke(
+            role="counter", request=request_value, schema=CounterSemanticPayload
+        )
+        reroute = None
+        if payload.reroute is not None:
+            semantic = payload.reroute.model_dump(mode="json")
+            challenge_digest = sha256(
+                canonical_json_bytes(
+                    {
+                        "request_digest": canonical_sha256(request_value),
+                        "semantic": semantic,
+                    }
+                )
+            ).hexdigest()
+            reroute = {
+                "target_branch_id": payload.reroute.target_branch_id,
+                "challenge_id": f"counter-challenge:{challenge_digest[:24]}",
+                "reason": payload.reroute.reason,
+                "owner_layer": "agent",
+                "evidence_requests": [
+                    row.model_dump(mode="json")
+                    for row in payload.reroute.evidence_requests
+                ],
+                "fact_requests": [
+                    row.model_dump(mode="json") for row in payload.reroute.fact_requests
+                ],
+            }
+        body = {
+            "agent_id": request_value.get("agent_id"),
+            "context_digest": request_value.get("context_digest"),
+            "snapshot_id": request_value.get("snapshot_id"),
+            "foundation_digest": request_value.get("foundation_digest"),
+            "plan_digest": request_value.get("plan_digest"),
+            "strongest_counter_thesis": payload.strongest_counter_thesis,
+            "challenges": list(payload.challenges),
+            "what_would_change": list(payload.what_would_change),
+            "reroute": reroute,
+        }
+        receipt = _receipt(
+            role="counter",
+            actor=_required_text(request_value, "agent_id"),
+            request=request_value,
+            output=body,
+            raw=raw,
+            elapsed_ms=elapsed_ms,
+        )
+        return _validate_contract(
+            CounterDecision,
+            {**body, "runtime_receipt": receipt.model_dump(mode="json")},
+        ).model_dump(mode="json")
+
+    def lead(self, request: Mapping[str, Any]) -> dict[str, Any]:
+        request_value = _as_mapping(request, label="lead_request")
+        payload, raw, elapsed_ms = self._invoke(
+            role="lead", request=request_value, schema=LeadSemanticPayload
+        )
+        body = {
+            "agent_id": request_value.get("agent_id"),
+            "context_digest": request_value.get("context_digest"),
+            "snapshot_id": request_value.get("snapshot_id"),
+            "foundation_digest": request_value.get("foundation_digest"),
+            "plan_digest": request_value.get("plan_digest"),
+            **payload.model_dump(mode="json"),
+        }
+        receipt = _receipt(
+            role="lead",
+            actor=_required_text(request_value, "agent_id"),
+            request=request_value,
+            output=body,
+            raw=raw,
+            elapsed_ms=elapsed_ms,
+        )
+        return _validate_contract(
+            LeadOutput,
+            {**body, "runtime_receipt": receipt.model_dump(mode="json")},
+        ).model_dump(mode="json")
+
+
+__all__ = [
+    "CounterSemanticPayload",
+    "DeepSeekStructuredAgentAdapter",
+    "DeepSeekStructuredAgentConfig",
+    "DeepSeekStructuredAgentError",
+    "EvidenceRequestPayload",
+    "LeadSemanticPayload",
+    "PlannerSemanticPayload",
+    "SpecialistSemanticPayload",
+    "TokenBudgetBasis",
+    "load_deepseek_structured_agent_config",
+]

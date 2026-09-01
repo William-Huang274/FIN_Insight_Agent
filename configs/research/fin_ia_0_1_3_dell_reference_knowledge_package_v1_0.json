@@ -1,0 +1,110 @@
+{
+  "schema_version": "fin_ia_dell_reference_knowledge_package_plan_v1_0",
+  "status": "qualification_input_not_evidence",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "as_of": "2026-09-02T04:15:00+08:00",
+  "limits": {
+    "max_sources": 20,
+    "max_total_declared_bytes": 52000000,
+    "min_document_chars": 200,
+    "chunk_size_chars": 2400,
+    "chunk_overlap_chars": 300
+  },
+  "processing_policy": {
+    "html_parser": "trafilatura_2_2_0_then_beautifulsoup4_4_15_0_lxml",
+    "pdf_parser": "pypdf_born_digital_text_only",
+    "splitter": "langchain_recursive_character_text_splitter_1_1_2",
+    "splitter_basis": "langchain-text-splitters 1.1.2 is pinned in the agent-runtime optional dependency profile",
+    "numeric_authority": false,
+    "search_snippets_admitted": false,
+    "parser_failure_action": "typed_failure_no_site_specific_fallback",
+    "model_calls": 0
+  },
+  "capture_plan": {
+    "schema_version": "fin_ia_official_source_capture_plan_v1_0",
+    "status": "official_source_capture_plan",
+    "policy": {
+      "capture_before_parse": true,
+      "https_only": true,
+      "credentials_forbidden": true
+    },
+    "sources": [
+      {
+        "route_id": "dell_fy2026_10k_narrative", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Dell Technologies FY2026 Form 10-K", "publisher": "U.S. SEC", "publication_date": "2026-03-16", "source_role": "issuer_filing_narrative", "document_kind": "html", "branches": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM", "Q5_SUPPLY_AND_PRICE", "Q7_EXPORT_CONTROL_CHINA", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm", "stable_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm", "allowed_hosts": ["www.sec.gov"], "expected_content_types": ["text/html"], "byte_ceiling": 4000000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "dell_fy2027_q1_release", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Dell Technologies FY2027 Q1 Financial Results", "publisher": "Dell Technologies", "publication_date": "2026-05-28", "source_role": "issuer_management_disclosure", "document_kind": "html", "branches": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM", "Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://investors.delltechnologies.com/news-releases/news-release-details/dell-technologies-delivers-first-quarter-fiscal-2027-financial", "stable_url": "https://investors.delltechnologies.com/news-releases/news-release-details/dell-technologies-delivers-first-quarter-fiscal-2027-financial", "allowed_hosts": ["investors.delltechnologies.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "dell_fy2027_q1_performance_review", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Dell Technologies FY2027 Q1 Performance Review", "publisher": "Dell Technologies", "publication_date": "2026-05-28", "source_role": "issuer_management_disclosure", "document_kind": "pdf", "branches": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM", "Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://investors.delltechnologies.com/static-files/a75bf8cc-b60f-4f72-8413-2e4090e46f93", "stable_url": "https://investors.delltechnologies.com/static-files/a75bf8cc-b60f-4f72-8413-2e4090e46f93", "allowed_hosts": ["investors.delltechnologies.com"], "expected_content_types": ["application/pdf"], "byte_ceiling": 3000000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "dell_fy2027_q1_transcript", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Dell Technologies FY2027 Q1 Earnings Call Transcript", "publisher": "Dell Technologies", "publication_date": "2026-05-28", "source_role": "issuer_management_disclosure", "document_kind": "pdf", "branches": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM", "Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759", "stable_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759", "allowed_hosts": ["investors.delltechnologies.com"], "expected_content_types": ["application/pdf"], "byte_ceiling": 3000000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "dell_fy2027_q1_10q_narrative", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Dell Technologies FY2027 Q1 Form 10-Q", "publisher": "U.S. SEC", "publication_date": "2026-06-09", "source_role": "issuer_filing_narrative", "document_kind": "html", "branches": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM", "Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q7_EXPORT_CONTROL_CHINA", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm", "stable_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm", "allowed_hosts": ["www.sec.gov"], "expected_content_types": ["text/html"], "byte_ceiling": 4000000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "dell_mistral_named_deployment", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Mistral AI Powers AI Innovation on Dell Technologies Infrastructure", "publisher": "Dell Technologies", "publication_date": "2026-05-18", "source_role": "named_deployment_primary", "document_kind": "html", "branches": ["Q2_DEMAND_QUALITY", "Q4_ARCHITECTURE_RAMP", "Q6_MODEL_COMPUTE_DEMAND", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~05~mistral-ai-powers-ai-innovation-on-dell-technologies-infrastructure.htm", "stable_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~05~mistral-ai-powers-ai-innovation-on-dell-technologies-infrastructure.htm", "allowed_hosts": ["www.dell.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "dell_nxtgen_named_deployment", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Dell Technologies Enables NxtGen to Build India's Largest AI Factory", "publisher": "Dell Technologies", "publication_date": "2026-01-28", "source_role": "named_deployment_primary", "document_kind": "html", "branches": ["Q2_DEMAND_QUALITY", "Q4_ARCHITECTURE_RAMP", "Q6_MODEL_COMPUTE_DEMAND", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~1~dell-technologies-enables-nxtgen-to-build-indias-largest-ai-factory.htm", "stable_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~usa~2026~1~dell-technologies-enables-nxtgen-to-build-indias-largest-ai-factory.htm", "allowed_hosts": ["www.dell.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "microsoft_fy2026_q4_call", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Microsoft FY2026 Q4 Earnings Call", "publisher": "Microsoft", "publication_date": "2026-07-29", "source_role": "hyperscaler_demand_primary", "document_kind": "html", "branches": ["Q2_DEMAND_QUALITY", "Q4_ARCHITECTURE_RAMP", "Q6_MODEL_COMPUTE_DEMAND", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4", "stable_url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4", "allowed_hosts": ["www.microsoft.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "amazon_2026_q2_release", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Amazon Announces Second Quarter 2026 Results", "publisher": "Amazon", "publication_date": "2026-07-30", "source_role": "hyperscaler_demand_primary", "document_kind": "html", "branches": ["Q2_DEMAND_QUALITY", "Q4_ARCHITECTURE_RAMP", "Q6_MODEL_COMPUTE_DEMAND", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx", "stable_url": "https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/default.aspx", "allowed_hosts": ["ir.aboutamazon.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "nvidia_fy2027_q2_release", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "NVIDIA FY2027 Q2 Financial Results", "publisher": "NVIDIA", "publication_date": "2026-08-26", "source_role": "supplier_management_disclosure", "document_kind": "html", "branches": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Second-Quarter-Fiscal-2027/default.aspx", "stable_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Announces-Financial-Results-for-Second-Quarter-Fiscal-2027/default.aspx", "allowed_hosts": ["investor.nvidia.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "nvidia_gb300_blackwell_ultra", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "NVIDIA Blackwell Ultra AI Factory Platform", "publisher": "NVIDIA", "publication_date": "2025-03-18", "source_role": "supplier_platform_primary", "document_kind": "html", "branches": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://nvidianews.nvidia.com/news/nvidia-blackwell-ultra-ai-factory-platform-paves-way-for-age-of-ai-reasoning", "stable_url": "https://nvidianews.nvidia.com/news/nvidia-blackwell-ultra-ai-factory-platform-paves-way-for-age-of-ai-reasoning", "allowed_hosts": ["nvidianews.nvidia.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "nvidia_vera_rubin_production", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "NVIDIA Vera Rubin Ramps Into Full Production", "publisher": "NVIDIA", "publication_date": "2026-05-31", "source_role": "supplier_platform_primary", "document_kind": "html", "branches": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Vera-Rubin-Ramps-Into-Full-Production-to-Power-Agentic-AI-Factories-Worldwide/default.aspx", "stable_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Vera-Rubin-Ramps-Into-Full-Production-to-Power-Agentic-AI-Factories-Worldwide/default.aspx", "allowed_hosts": ["investor.nvidia.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "micron_fy2026_q3_release", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Micron FY2026 Q3 Financial Results", "publisher": "Micron", "publication_date": "2026-06-24", "source_role": "supplier_management_disclosure", "document_kind": "html", "branches": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx", "stable_url": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx", "allowed_hosts": ["investors.micron.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "micron_fy2026_q3_remarks", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Micron FY2026 Q3 Prepared Remarks", "publisher": "Micron", "publication_date": "2026-06-24", "source_role": "supplier_management_disclosure", "document_kind": "pdf", "branches": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe", "stable_url": "https://investors.micron.com/static-files/631b1a32-5537-46ae-8f40-82e42fc79dfe", "allowed_hosts": ["investors.micron.com"], "expected_content_types": ["application/pdf"], "byte_ceiling": 3000000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "tsmc_2026_q2_transcript", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "TSMC 2Q 2026 Earnings Conference Transcript", "publisher": "TSMC", "publication_date": "2026-07-16", "source_role": "semiconductor_foundry_primary", "document_kind": "pdf", "branches": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/547d1696765e05ce3adb81c108ce1c8c1682b80c/TSMC%202Q26%20Transcript.pdf", "stable_url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/547d1696765e05ce3adb81c108ce1c8c1682b80c/TSMC%202Q26%20Transcript.pdf", "allowed_hosts": ["investor.tsmc.com"], "expected_content_types": ["application/pdf"], "byte_ceiling": 3000000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "mlcommons_inference_6_0", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "MLPerf Inference v6.0 Results", "publisher": "MLCommons", "publication_date": "2026-04-01", "source_role": "industry_benchmark_primary", "document_kind": "html", "branches": ["Q4_ARCHITECTURE_RAMP", "Q6_MODEL_COMPUTE_DEMAND", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://mlcommons.org/2026/04/mlperf-inference-v6-0-results/", "stable_url": "https://mlcommons.org/2026/04/mlperf-inference-v6-0-results/", "allowed_hosts": ["mlcommons.org"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "openai_gpt_5_6", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Introducing GPT-5.6", "publisher": "OpenAI", "publication_date": "2026-07-09", "source_role": "model_provider_primary", "document_kind": "html", "branches": ["Q4_ARCHITECTURE_RAMP", "Q6_MODEL_COMPUTE_DEMAND", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://openai.com/index/gpt-5-6/", "stable_url": "https://openai.com/index/gpt-5-6/", "allowed_hosts": ["openai.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "anthropic_fable_5", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Introducing Claude Fable 5 and Mythos 5", "publisher": "Anthropic", "publication_date": "2026-06-09", "source_role": "model_provider_primary", "document_kind": "html", "branches": ["Q4_ARCHITECTURE_RAMP", "Q6_MODEL_COMPUTE_DEMAND", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://www.anthropic.com/news/claude-fable-5-mythos-5", "stable_url": "https://www.anthropic.com/news/claude-fable-5-mythos-5", "allowed_hosts": ["www.anthropic.com"], "expected_content_types": ["text/html"], "byte_ceiling": 2500000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      },
+      {
+        "route_id": "bis_2026_china_semiconductor_policy", "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL", "title": "Commerce Revises License Review Policy for Semiconductor Exports to China", "publisher": "U.S. Bureau of Industry and Security", "publication_date": "2026-01-13", "source_role": "regulator_primary", "document_kind": "pdf", "branches": ["Q7_EXPORT_CONTROL_CHINA", "Q8_COMPETITION_VALUE_POOL", "Q9_COUNTEREVIDENCE_WWC"], "numeric_authority": false,
+        "url": "https://media.bis.gov/sites/default/files/documents/DoC%20Revises%20License%20Review%20Policy%20for%20Semiconductors%20Exports.pdf", "stable_url": "https://media.bis.gov/sites/default/files/documents/DoC%20Revises%20License%20Review%20Policy%20for%20Semiconductors%20Exports.pdf", "allowed_hosts": ["media.bis.gov"], "expected_content_types": ["application/pdf"], "byte_ceiling": 2000000, "timeout_seconds": 45, "transport": "requests", "max_transport_retries": 0
+      }
+    ]
+  }
+}

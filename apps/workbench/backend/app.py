@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import shutil
-from typing import Any, Literal
+from typing import Any, Literal, Mapping
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +11,10 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from sec_agent.runtime_bridge.paths import RuntimePathRegistry, resolve_runtime_paths
+from sec_agent.agent_runtime.runtime_foundation import (
+    DellRuntimeFoundation,
+    RuntimeFoundationError,
+)
 from sec_agent.workbench.api_contracts import install_api_contracts
 from sec_agent.workbench.store import WorkbenchStore, default_store_path
 
@@ -95,6 +99,18 @@ def create_app(
         CODE_ROOT,
         runtime_paths,
     )
+    runtime_state_root = Path(
+        os.environ.get(
+            "FINSIGHT_AGENT_RUNTIME_STATE_ROOT",
+            CODE_ROOT / ".codex_runtime",
+        )
+    ).resolve()
+    dell_runtime_foundation = DellRuntimeFoundation.from_environment(
+        os.environ,
+        default_state_root=runtime_state_root,
+    )
+    if dell_runtime_foundation.profile == "postgres_pilot":
+        raise RuntimeFoundationError("postgres_pilot_runtime_not_composed")
 
     app = FastAPI(
         title="FinSight Research Workbench API",
@@ -108,6 +124,9 @@ def create_app(
     app.state.primary_product_route = "/workspace"
     app.state.operator_route = "/operations"
     app.state.retired_product_runtime_loaded = False
+    app.state.dell_runtime_foundation = (
+        dell_runtime_foundation.public_projection()
+    )
     install_api_contracts(app)
     app.add_middleware(
         CORSMiddleware,
@@ -128,7 +147,6 @@ def create_app(
         app.include_router(
             build_research_retrieval_router(retrieval), prefix="/api/v1"
         )
-
     def system_status() -> dict[str, Any]:
         return _system_status(
             store=store,
@@ -136,6 +154,9 @@ def create_app(
             evidence_packs=evidence_packs,
             fixture_mode=workbench_runtime_mode == "fixture",
             frontend_dist_root=resolved_frontend_dist_root,
+            dell_runtime_foundation=(
+                dell_runtime_foundation.public_projection()
+            ),
         )
 
     app.include_router(
@@ -276,6 +297,7 @@ def _system_status(
     evidence_packs: ResearchEvidencePackService,
     fixture_mode: bool,
     frontend_dist_root: Path,
+    dell_runtime_foundation: Mapping[str, object],
 ) -> dict[str, Any]:
     store_health = store.inspect_health()
     product_readiness = _evidence_pack_readiness(
@@ -323,6 +345,7 @@ def _system_status(
             "operator_route": "/operations",
             "retired_product_runtime_loaded": False,
             "readiness": product_readiness,
+            "dell_reference_vertical": dict(dell_runtime_foundation),
         },
     }
 

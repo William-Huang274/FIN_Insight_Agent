@@ -1,0 +1,17 @@
+{
+  "schema_version": "fin_ia_sec_snapshot_input_v1_0",
+  "attempt_id": "SEC-DELL-FOUNDATION-POSTEVENT-20260902-A04",
+  "companies": [
+    {"ticker": "DELL", "cik": "0001571996", "legal_name": "Dell Technologies Inc."},
+    {"ticker": "NVDA", "cik": "0001045810", "legal_name": "NVIDIA CORP"},
+    {"ticker": "AMD", "cik": "0000002488", "legal_name": "ADVANCED MICRO DEVICES INC"},
+    {"ticker": "MU", "cik": "0000723125", "legal_name": "Micron Technology, Inc."},
+    {"ticker": "HPE", "cik": "0001645590", "legal_name": "Hewlett Packard Enterprise Company"},
+    {"ticker": "SMCI", "cik": "0001375365", "legal_name": "Super Micro Computer, Inc."},
+    {"ticker": "MSFT", "cik": "0000789019", "legal_name": "MICROSOFT CORPORATION"},
+    {"ticker": "AMZN", "cik": "0001018724", "legal_name": "AMAZON.COM, INC."},
+    {"ticker": "GOOGL", "cik": "0001652044", "legal_name": "Alphabet Inc."},
+    {"ticker": "META", "cik": "0001326801", "legal_name": "Meta Platforms, Inc."},
+    {"ticker": "AVGO", "cik": "0001730168", "legal_name": "Broadcom Inc."}
+  ]
+}

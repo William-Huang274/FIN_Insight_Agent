@@ -1,0 +1,171 @@
+{
+  "schema_version": "fin_ia_dell_reference_knowledge_package_plan_v1_0",
+  "status": "qualification_input_not_evidence",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "as_of": "2026-09-02T04:58:00+08:00",
+  "limits": {
+    "max_sources": 5,
+    "max_total_declared_bytes": 8000000,
+    "min_document_chars": 200,
+    "chunk_size_chars": 2400,
+    "chunk_overlap_chars": 300
+  },
+  "processing_policy": {
+    "html_parser": "trafilatura_2_2_0_then_beautifulsoup4_4_15_0_lxml",
+    "pdf_parser": "pypdf_born_digital_text_only",
+    "splitter": "langchain_recursive_character_text_splitter_1_1_2",
+    "splitter_basis": "langchain-text-splitters 1.1.2 is pinned in the agent-runtime optional dependency profile",
+    "numeric_authority": false,
+    "search_snippets_admitted": false,
+    "parser_failure_action": "typed_failure_no_site_specific_fallback",
+    "model_calls": 0
+  },
+  "foundation_lifecycle_gate": {
+    "foundation_contract_path": "configs/research/fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json",
+    "expected_foundation_sha256": "bf214a085916c296428f51e77c8518f2905b5d451290535fea54040fb2d96d47",
+    "special_event": "DELL_FY2027_Q2",
+    "allowed_snapshot_states": [
+      "FY2027_Q2_E0_8K_captured_10Q_XBRL_pending"
+    ],
+    "use_boundary": "E0 may support an event-aware retrieval candidate package; it does not create current-quarter SQL NumericFact authority."
+  },
+  "capture_plan": {
+    "schema_version": "fin_ia_official_source_capture_plan_v1_0",
+    "status": "official_source_capture_plan",
+    "policy": {
+      "capture_before_parse": true,
+      "https_only": true,
+      "credentials_forbidden": true
+    },
+    "sources": [
+      {
+        "route_id": "dell_fy2027_q2_sec_exhibit_99_1",
+        "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+        "event_id": "DELL_FY2027_Q2",
+        "title": "Dell Technologies FY2027 Q2 Earnings Release, SEC Exhibit 99.1",
+        "publisher": "Dell Technologies via U.S. SEC",
+        "publication_date": "2026-09-01",
+        "source_role": "issuer_management_disclosure",
+        "document_kind": "html",
+        "branches": [
+          "Q1_ISSUER_TRUTH",
+          "Q2_DEMAND_QUALITY",
+          "Q3_UNITS_ASP_PVM",
+          "Q4_ARCHITECTURE_RAMP",
+          "Q5_SUPPLY_AND_PRICE",
+          "Q9_COUNTEREVIDENCE_WWC"
+        ],
+        "numeric_authority": false,
+        "url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000039/exhibit991earnings8kq2fy27.htm",
+        "stable_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000039/exhibit991earnings8kq2fy27.htm",
+        "allowed_hosts": ["www.sec.gov"],
+        "expected_content_types": ["text/html"],
+        "byte_ceiling": 1500000,
+        "timeout_seconds": 45,
+        "transport": "requests",
+        "max_transport_retries": 0
+      },
+      {
+        "route_id": "hpe_fy2026_q2_earnings_transcript",
+        "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+        "title": "HPE Fiscal 2026 Second Quarter Earnings Call Transcript",
+        "publisher": "Hewlett Packard Enterprise",
+        "publication_date": "2026-06-01",
+        "source_role": "peer_management_disclosure",
+        "document_kind": "pdf",
+        "branches": [
+          "Q2_DEMAND_QUALITY",
+          "Q3_UNITS_ASP_PVM",
+          "Q4_ARCHITECTURE_RAMP",
+          "Q5_SUPPLY_AND_PRICE",
+          "Q8_COMPETITION_VALUE_POOL",
+          "Q9_COUNTEREVIDENCE_WWC"
+        ],
+        "numeric_authority": false,
+        "url": "https://investors.hpe.com/~/media/Files/H/HP-Enterprise-IR/documents/q2-2026/q2-2026-transcript.pdf",
+        "stable_url": "https://investors.hpe.com/~/media/Files/H/HP-Enterprise-IR/documents/q2-2026/q2-2026-transcript.pdf",
+        "allowed_hosts": ["investors.hpe.com"],
+        "expected_content_types": ["application/pdf"],
+        "byte_ceiling": 1000000,
+        "timeout_seconds": 45,
+        "transport": "requests",
+        "max_transport_retries": 0
+      },
+      {
+        "route_id": "meta_2026_q2_sec_exhibit_99_1",
+        "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+        "title": "Meta Platforms Q2 2026 Results, SEC Exhibit 99.1",
+        "publisher": "Meta Platforms via U.S. SEC",
+        "publication_date": "2026-07-29",
+        "source_role": "hyperscaler_demand_primary",
+        "document_kind": "html",
+        "branches": [
+          "Q2_DEMAND_QUALITY",
+          "Q5_SUPPLY_AND_PRICE",
+          "Q6_MODEL_COMPUTE_DEMAND",
+          "Q8_COMPETITION_VALUE_POOL",
+          "Q9_COUNTEREVIDENCE_WWC"
+        ],
+        "numeric_authority": false,
+        "url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026050596/meta-06302026xexhibit991.htm",
+        "stable_url": "https://www.sec.gov/Archives/edgar/data/1326801/000162828026050596/meta-06302026xexhibit991.htm",
+        "allowed_hosts": ["www.sec.gov"],
+        "expected_content_types": ["text/html"],
+        "byte_ceiling": 1500000,
+        "timeout_seconds": 45,
+        "transport": "requests",
+        "max_transport_retries": 0
+      },
+      {
+        "route_id": "meta_2026_q2_earnings_call_transcript",
+        "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+        "title": "Meta Q2 2026 Earnings Call Transcript",
+        "publisher": "Meta Platforms",
+        "publication_date": "2026-07-29",
+        "source_role": "hyperscaler_demand_primary",
+        "document_kind": "pdf",
+        "branches": [
+          "Q2_DEMAND_QUALITY",
+          "Q5_SUPPLY_AND_PRICE",
+          "Q6_MODEL_COMPUTE_DEMAND",
+          "Q8_COMPETITION_VALUE_POOL",
+          "Q9_COUNTEREVIDENCE_WWC"
+        ],
+        "numeric_authority": false,
+        "url": "https://s21.q4cdn.com/399680738/files/doc_financials/2026/q2/META-Q2-2026-Earnings-Call-Transcript.pdf",
+        "stable_url": "https://s21.q4cdn.com/399680738/files/doc_financials/2026/q2/META-Q2-2026-Earnings-Call-Transcript.pdf",
+        "allowed_hosts": ["s21.q4cdn.com"],
+        "expected_content_types": ["application/pdf"],
+        "byte_ceiling": 1000000,
+        "timeout_seconds": 45,
+        "transport": "requests",
+        "max_transport_retries": 0
+      },
+      {
+        "route_id": "hpe_fy2026_q2_earnings_press_release",
+        "case_key": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+        "title": "HPE Fiscal 2026 Second Quarter Earnings Press Release",
+        "publisher": "Hewlett Packard Enterprise",
+        "publication_date": "2026-06-01",
+        "source_role": "peer_financial_disclosure",
+        "document_kind": "pdf",
+        "branches": [
+          "Q2_DEMAND_QUALITY",
+          "Q3_UNITS_ASP_PVM",
+          "Q5_SUPPLY_AND_PRICE",
+          "Q8_COMPETITION_VALUE_POOL",
+          "Q9_COUNTEREVIDENCE_WWC"
+        ],
+        "numeric_authority": false,
+        "url": "https://investors.hpe.com/~/media/Files/H/HP-Enterprise-IR/documents/q2-2026/q2-2026-earnings-press-release.pdf",
+        "stable_url": "https://investors.hpe.com/~/media/Files/H/HP-Enterprise-IR/documents/q2-2026/q2-2026-earnings-press-release.pdf",
+        "allowed_hosts": ["investors.hpe.com"],
+        "expected_content_types": ["application/pdf"],
+        "byte_ceiling": 1000000,
+        "timeout_seconds": 45,
+        "transport": "requests",
+        "max_transport_retries": 0
+      }
+    ]
+  }
+}

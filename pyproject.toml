@@ -36,12 +36,23 @@ control-plane = [
 qualification = [
   "psycopg[binary]==3.3.4",
 ]
+agent-runtime = [
+  "langchain-deepseek==1.1.0",
+  "langchain-text-splitters==1.1.2",
+  "langgraph==1.2.11",
+  "langgraph-checkpoint-postgres==3.1.2",
+  "langgraph-checkpoint-sqlite==3.1.1",
+  "mcp==2.1.1",
+  "psycopg[binary,pool]==3.3.4",
+]
 complex-pdf = [
   "pdfplumber>=0.11.9",
   "pypdfium2>=5.7.1",
   "rapidocr-onnxruntime>=1.4.4",
 ]
 external-search = [
+  "ddgs==9.16.0",
+  "trafilatura==2.2.0",
   "tencentcloud-sdk-python>=3.1.162",
 ]
 

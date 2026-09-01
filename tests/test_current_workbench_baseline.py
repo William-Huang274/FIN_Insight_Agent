@@ -74,6 +74,19 @@ def test_operations_surface_reads_version_neutral_store_and_runtime(tmp_path: Pa
     assert payload["product_runtime"]["operator_route"] == "/operations"
     assert payload["product_runtime"]["retired_product_runtime_loaded"] is False
     assert payload["product_runtime"]["readiness"]["status"] == "fixture_injected"
+    assert payload["product_runtime"]["dell_reference_vertical"] == {
+        "schema_version": "fin_ia_dell_runtime_foundation_v1",
+        "profile": "disabled",
+        "checkpoint_backend": "none",
+        "durable_cross_process_resume": False,
+        "product_pilot_eligible": False,
+        "outer_lifecycle_owner": "dagster",
+        "inner_agent_state_owner": "langgraph",
+        "financial_fact_authority": "existing_s2_read_only_port",
+        "custom_scheduler_or_retry_engine": False,
+        "dsn_exposed": False,
+    }
+    assert client.post("/api/v1/anchor-demo/dell/runs", json={}).status_code == 404
     assert client.get("/api/operations/profiles").json() == {"profiles": []}
     assert client.get("/api/operations/source-bundles").json() == {"bundles": []}
     assert client.get("/api/operations/runs").json() == {"runs": []}

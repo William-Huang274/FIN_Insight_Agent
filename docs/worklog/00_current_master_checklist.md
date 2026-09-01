@@ -1,5 +1,23 @@
 # 当前主清单
 
+## 2026-09-02 DELL 单案例完整纵切
+
+- [x] 停止继续 R14／MinerU 扩张，冻结一个 DELL 最终产品形态演示范围
+- [x] 本地 Knowledge：18 份官方正文、597 个 candidate record，禁止自动晋升 Evidence
+- [x] Reviewed Evidence：base 55＋FY27 Q2 overlay 6＝61；current Q2 文字 Evidence 与 S2 NumericFact 分权
+- [x] S2：11 ticker、4,586 observations、12 direct＋3 derived metric，只读 mart SHA 绑定
+- [x] MCP 数据工具：Knowledge／Evidence／Finance／外源发现与抓取统一协议，failure receipt 和 partial-not-promoted 完整
+- [x] LangGraph 真实多 Agent：动态 Planner、Evidence/Finance 并行、9 Specialist、Counter、最多一次定向回派、Lead、HITL、resume/render
+- [x] 输入／调用／并发／外源 aggregate budget、model journal、citation index、Git/source binding、S2 TOCTOU 和 terminal repair 工程门
+- [x] focused offline gate：67 passed，0 模型／0 网络调用
+- [x] 新纵切与 Workbench 相邻回归：175 passed；secret scan 8,386 files／0 findings
+- [ ] clean commit、push，并在 exact clean commit 上重跑 zero-call preflight
+- [ ] 唯一真实 attempt `20260902-dell-reference-vertical-q1-a01` 运行到 HITL 后停止
+- [ ] 人工逐 claim/source/numeric、9 workpapers、counter/reroute、token/latency/receipt 内容验收
+- [ ] 只有人工审计通过后，Owner 才决定同一 commit 上 approve/resume 和公开展示
+
+Source of truth：`docs/worklog/fin_0_1_3_s3/175_dell_reference_vertical_data_runtime_foundation_and_live_gate.md`
+
 ## 2026-08-30 成熟栈优先纠偏与 Steps 1–3
 
 - [x] Owner 明确否决继续扩写自研 Phase 0–7 plan-execution protocol；旧约 570 KB 计划原位标记 `SUPERSEDED / AUDIT-ONLY / NO EXECUTION AUTHORITY`，历史内容和 R14 证据不删除。

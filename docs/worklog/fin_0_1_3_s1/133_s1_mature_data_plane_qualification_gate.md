@@ -188,3 +188,26 @@ real source
 - 下一步不是再扩写协议：完成独立只读代码/API 复核与最小 Project OS 投影，把本轮 runner 与本日志提交并推送形成 clean implementation；随后在资源门通过时运行 DELL 9 页控制 case，并与旧 `official_pdf.py` / `pdf_layout.py` 基线做结构、表格、provenance、耗时和资源对照。
 - 在 Docling 控制 case 和 baseline comparison 形成前，不做 PDF adapter cutover；在 clean replay 与供应链/许可边界补齐前，不签 `ADOPT_PILOT_NATIVE_LAYOUT`。
 - R14 继续冻结；不创建 R15/R16，不进入 formal、Evidence、S2、S3/report/product/release。
+
+### 8.7 Clean提交后的首次Docling预检：资源门正确止损
+
+- 四个qualification runner、四个targeted test与本日志已作为commit `dd84b0dd97402c8d3c93a62796384f9d26e8c655`推送到`origin/codex/fin013-dell-s1-s2-product-bridge`；执行前branch、HEAD、upstream一致，工作树干净。因此11:48所述dirty/untracked实现边界已被clean implementation替代，但先前pgvector/Qwen/dense attempts本身仍是其原始dirty-bound development evidence，不能被事后改签为clean replay。
+- 首个clean Docling attempt为`Z:\FIN_Insight_Agent_qualification\20260901_s1_mature_data_plane_v1\attempts\docling_pdf\dell_fy26_results\20260901T042108Z-preflight1`，模式明确为`preflight`。它重新验证了DELL 9页输入、runner、Git、104-distribution runtime manifest、`docling-slim` 269个带hash运行时文件和10个模型文件；全部身份检查通过。
+- 预检时D盘可用`3.349308 GiB`、Z盘可用`54.546925 GiB`，均高于冻结线；宿主可用物理内存为`2.435715 GiB`，低于`3.0 GiB`运行安全线。因此terminal status=`HOLD_RESOURCE`，reason=`free_memory_below_runtime_safety_line`，component execution=`NOT_STARTED`，adoption=`NOT_DECIDED`。
+- 该attempt没有初始化converter、没有加载模型、没有解析PDF，conversion count仍为0；attempt内仅有`receipt.json`与空的attempt-local `runtime-cache/pycache`、`runtime-cache/temp`目录。receipt文件SHA-256=`b2c7e1c9c956d3fca11f9d39189433f113a1cc3f82dc6c829b3d180977b448ff`，内部result digest=`bf18655b31910c286a22e4ab68baf7a948c7bf2141caaf33dcf51b0a1281060a`。
+- 结论不是`REJECT_DOCLING`或质量失败，而是宿主资源尚未达到已冻结的安全运行条件。不得降低3 GiB安全线、不得终止用户应用/WSL/Codex来制造通过、不得因为等待资源而转回自研parser。资源等待期间只做低资源、只读的本地完整DELL accession/DTS搜索与现有`official_pdf.py`／`pdf_layout.py`基线定位；可用内存自然恢复后必须使用新的attempt ID执行真实conversion，不得复用或覆盖`preflight1`。
+
+### 8.8 DELL accession/DTS本地闭包审计
+
+- 作者分离、只读搜索覆盖`D:\FIN_Insight_Agent`和当前Z盘S1 qualification lab；没有联网、没有修改文件、没有读取hidden/holdout expected outcomes。结果是本机没有可直接离线重放的DELL FY2023 10-K完整accession/DTS package。
+- filing身份由`data/raw_private/sec/2023/ai_servers_enterprise_hardware/DELL/10-K.metadata.json`绑定：1,306 bytes，SHA-256=`977736652b5f99d038ea14efdaa288c56f7906265e7dc83ab819e15106d6342c`，accession=`0001571996-23-000007`，SEC path segment=`000157199623000007`，primary document=`dell-20230203.htm`，filing date=`2023-03-30`，report date=`2023-02-03`。同目录只有该metadata和已冻结的`10-K.html`。
+- 主HTML唯一直接DTS入口是`dell-20230203.xsd`；获准范围内没有该XSD、常见`_pre/_cal/_def/_lab.xml` company linkbases、DELL XBRL sidecars、该accession的WARC/WACZ/ZIP/TAR或完整filing目录。现有非环境归档的成员名复核也没有该package；其他披露ZIP明确属于DART公司，不是DELL。
+- 当前Arelle环境还没有本地SEC/FASB 2022 taxonomy cache，`plugin/validate`没有EFM validator，a1亦报告`Disclosure System "efm" not recognized`。这是公司DTS缺失之后的次级环境/profile缺口，不能覆盖最早责任层。
+- 因此不得继续用单HTML重跑Arelle。下一合法输入是通过合规来源取得并冻结完整accession package，然后按公司XSD中的`import/include/linkbaseRef`递归求闭包；逐文件记录relative path/bytes/SHA、accession/canonical locator/capture metadata与整包manifest digest。补齐匹配的SEC/FASB taxonomy和EFM profile后，先做完全离线DTS closure preflight，再以新attempt分别报告generic XBRL parse与SEC EFM validation。当前决定保持`HOLD_SOURCE_CAPTURE_PACKAGE`。
+
+### 8.9 既有PDF parser基线审计与最小执行选择
+
+- 同一冻结DELL FY26 9页PDF没有既存legacy parser artifact；仓库按文件名和精确SHA只命中新Docling runner/test/worklog，Z lab只存在`preflight1`的`HOLD_RESOURCE` receipt。已有page 1/2 PNG不是9页parser baseline；现有complex-PDF canonical artifact属于IFX，不能冒充DELL对照。
+- 当前最低资源、可直接复用的基线是`src/ingestion/official_pdf.py::parse_captured_official_pdf`：只依赖当前`.venv`已有的pypdf 6.16.2，读取683,251-byte PDF并逐页输出text、character count和digest；权限明确停在`parsed_source_only_not_evidence`。下一步不写新script，只作一次性函数级执行并将产物写入Z盘新attempt。
+- layout-rich旧基线仍应复用`src/ingestion/pdf_layout.py::parse_captured_pdf_layout`，它能输出words/lines/bbox/table regions/footnotes/text blocks与quality receipt；但当前`.venv`缺`pdfplumber`及OCR闭包，且函数会在native text不足时自动进入OCR，不能虚构成native-only pass。待使用已经存在且可固定的依赖环境后再运行，不为本对照新增长期harness。
+- `scripts/data_retrieval/parse_captured_official_pdf_layout.py`要求现成response-capture/source-spec并会复制raw body、编译objects；本case没有这两项，为跑对照而伪造它们是多余治理。`run_s1d_official_pdf_successor.py`会跨入Evidence/pack/S2，明确超出当前权限，禁止使用。

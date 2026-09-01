@@ -15,7 +15,7 @@ import re
 from typing import Any, Mapping, Sequence
 
 
-DOCLING_SHADOW_SCHEMA_VERSION = "fin_ia_docling_candidate_shadow_v1_0"
+DOCLING_SHADOW_SCHEMA_VERSION = "fin_ia_docling_candidate_shadow_v1_1"
 _HEX = re.compile(r"^[0-9a-fA-F]{64}$")
 _DASH_PERCENT = re.compile(r"^[\-−–—]\s*%$")
 _FOOTNOTE = re.compile(r"\(([a-z])\)", re.IGNORECASE)
@@ -176,7 +176,11 @@ def _root(value: Any, expected: str) -> dict[str, Any]:
     return value
 
 
-def _leaf_order(document: Mapping[str, Any], refs: Mapping[str, Mapping[str, Any]]) -> list[str]:
+def _projection_order(
+    document: Mapping[str, Any],
+    refs: Mapping[str, Mapping[str, Any]],
+    kinds: Mapping[str, str],
+) -> list[str]:
     body = _root(document.get("body"), "#/body")
     furniture = _root(document.get("furniture"), "#/furniture")
     _require(not furniture["children"], "docling_furniture_content_not_supported")
@@ -184,29 +188,38 @@ def _leaf_order(document: Mapping[str, Any], refs: Mapping[str, Mapping[str, Any
     visited: set[str] = set()
     active: set[str] = set()
 
-    def walk(children: Sequence[Any], parent: str) -> None:
-        for child in children:
-            child_ref = _ref(child, "docling_child_ref_invalid")
-            _require(child_ref in refs, f"docling_child_ref_unknown:{child_ref}")
-            actual_parent = _ref(refs[child_ref].get("parent"), "docling_parent_ref_invalid")
-            _require(actual_parent == parent, "docling_parent_ref_mismatch")
-            if child_ref.startswith("#/groups/"):
-                _require(child_ref not in active, "docling_group_cycle")
-                _require(child_ref not in visited, "docling_group_duplicate")
-                children = refs[child_ref].get("children")
-                _require(isinstance(children, list), "docling_group_children_invalid")
-                visited.add(child_ref)
-                active.add(child_ref)
-                walk(children, child_ref)
-                active.remove(child_ref)
-            else:
-                _require(child_ref not in order, "docling_leaf_ref_duplicate")
-                order.append(child_ref)
+    def walk(child: Any, parent: str) -> None:
+        child_ref = _ref(child, "docling_child_ref_invalid")
+        _require(child_ref in refs, f"docling_child_ref_unknown:{child_ref}")
+        _require(child_ref not in active, f"docling_node_cycle:{child_ref}")
+        _require(child_ref not in visited, f"docling_node_duplicate:{child_ref}")
+        item = refs[child_ref]
+        actual_parent = _ref(item.get("parent"), f"docling_parent_ref_invalid:{child_ref}")
+        _require(actual_parent == parent, f"docling_parent_ref_mismatch:{child_ref}")
+        children = item.get("children")
+        _require(isinstance(children, list), f"docling_node_children_invalid:{child_ref}")
+        _string(item.get("content_layer"), f"docling_content_layer_invalid:{child_ref}", nonempty=True)
 
-    walk(body["children"], "#/body")
-    groups = {ref for ref in refs if ref.startswith("#/groups/")}
-    _require(visited == groups, "docling_group_inventory_mismatch")
-    _require(set(order) == set(refs) - groups, "docling_leaf_inventory_mismatch")
+        visited.add(child_ref)
+        active.add(child_ref)
+        if kinds[child_ref] != "groups":
+            order.append(child_ref)
+        for nested in children:
+            walk(nested, child_ref)
+        active.remove(child_ref)
+
+    for child in body["children"]:
+        walk(child, "#/body")
+
+    missing = set(refs) - visited
+    if missing:
+        for ref in sorted(missing):
+            parent = _ref(refs[ref].get("parent"), f"docling_parent_ref_invalid:{ref}")
+            _require(
+                parent in refs or parent in {"#/body", "#/furniture"},
+                f"docling_parent_ref_unknown:{ref}:{parent}",
+            )
+        _fail("docling_node_inventory_mismatch")
     return order
 
 
@@ -227,7 +240,7 @@ def _bbox(value: Any, code: str, size: Mapping[str, Any] | None) -> dict[str, An
     return box
 
 
-def _provenance(value: Any, self_ref: str, pages: Mapping[int, Mapping[str, Any]], text: str | None) -> list[dict[str, Any]]:
+def _provenance(value: Any, self_ref: str, pages: Mapping[int, Mapping[str, Any]], orig: str | None) -> list[dict[str, Any]]:
     _require(isinstance(value, list) and bool(value), f"docling_provenance_missing:{self_ref}")
     result: list[dict[str, Any]] = []
     previous_start = previous_end = -1
@@ -240,8 +253,8 @@ def _provenance(value: Any, self_ref: str, pages: Mapping[int, Mapping[str, Any]
         _require(isinstance(span, list) and len(span) == 2, code)
         start, end = (_integer(part, code) for part in span)
         _require(end >= start, code)
-        if text is not None:
-            _require(end <= len(text), f"docling_provenance_charspan_out_of_range:{self_ref}:{index}")
+        if orig is not None:
+            _require(end <= len(orig), f"docling_provenance_charspan_out_of_range:{self_ref}:{index}")
             _require(start >= previous_start and start >= previous_end, f"docling_provenance_charspan_overlap:{self_ref}:{index}")
             previous_start, previous_end = start, end
         result.append({
@@ -249,13 +262,13 @@ def _provenance(value: Any, self_ref: str, pages: Mapping[int, Mapping[str, Any]
             "bbox": _bbox(entry.get("bbox"), f"docling_provenance_bbox_invalid:{self_ref}:{index}", pages[page]["size"]),
             "charspan": [start, end],
         })
-    if text is not None:
+    if orig is not None:
         end = 0
         for entry in result:
             start, next_end = entry["charspan"]
-            _require(not text[end:start].strip(), f"docling_provenance_charspan_nonwhitespace_gap:{self_ref}")
+            _require(not orig[end:start].strip(), f"docling_provenance_charspan_nonwhitespace_gap:{self_ref}")
             end = next_end
-        _require(not text[end:].strip(), f"docling_provenance_charspan_nonwhitespace_gap:{self_ref}")
+        _require(not orig[end:].strip(), f"docling_provenance_charspan_nonwhitespace_gap:{self_ref}")
     return result
 
 
@@ -281,16 +294,22 @@ def _finding(code: str, self_ref: str, digest: str, location: Mapping[str, Any],
 
 
 def _text(item: Mapping[str, Any], digest: str, prov: Sequence[Mapping[str, Any]]) -> tuple[list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]], list[dict[str, Any]]]:
-    ref, text = str(item["self_ref"]), str(item["text"])
+    ref = str(item["self_ref"])
+    normalized_text = _string(item.get("text"), f"docling_text_value_invalid:{ref}")
+    orig = _string(item.get("orig"), f"docling_text_orig_invalid:{ref}")
+    parent_ref = _ref(item.get("parent"), f"docling_parent_ref_invalid:{ref}")
+    content_layer = _string(item.get("content_layer"), f"docling_content_layer_invalid:{ref}", nonempty=True)
     candidates = []
     for index, entry in enumerate(prov):
         start, end = entry["charspan"]
         candidates.append({
             "element_id": _stable("text_fragment", digest, ref, str(index)),
             "kind": "text_fragment", "upstream_self_ref": ref, "provenance_index": index,
+            "upstream_parent_ref": parent_ref, "content_layer": content_layer,
             "page_no": entry["page_no"], "bbox": entry["bbox"], "charspan": [start, end],
-            "text": text[start:end],
-            "source_payload": {"text": text, "orig": item.get("orig"), "label": item.get("label")},
+            "charspan_basis": "orig", "text": orig[start:end],
+            "normalized_text": normalized_text,
+            "source_payload": {"text": normalized_text, "orig": orig, "label": item.get("label")},
         })
     page_numbers = sorted({entry["page_no"] for entry in prov})
     if len(page_numbers) <= 1:
@@ -301,7 +320,7 @@ def _text(item: Mapping[str, Any], digest: str, prov: Sequence[Mapping[str, Any]
         "upstream_self_ref": ref, "page_numbers": page_numbers, "blocker_codes": [code],
         "source_payload": item,
     }]
-    findings = [_finding(code, ref, digest, {"page_numbers": page_numbers}, text)]
+    findings = [_finding(code, ref, digest, {"page_numbers": page_numbers}, orig)]
     unresolved = [{
         "relationship_id": _stable("relationship", digest, ref, code),
         "type": "cross_page_text_fragmentation", "status": "unresolved", "source_ref": ref,
@@ -340,19 +359,19 @@ def _table(item: Mapping[str, Any], digest: str, prov: Sequence[Mapping[str, Any
     _require(isinstance(raw_cells, list), f"docling_table_cells_invalid:{ref}")
     page_numbers = sorted({entry["page_no"] for entry in prov})
     size = pages[page_numbers[0]]["size"] if len(page_numbers) == 1 else None
-    cells, lineage, occupied = [], [], {}
-    seen: set[tuple[int, int, int, int]] = set()
+    cells: list[dict[str, Any]] = []
+    lineage: list[dict[str, Any]] = []
+    occupied: dict[tuple[int, int], list[int]] = {}
+    overlaps: dict[tuple[int, int], list[tuple[int, int]]] = {}
     for index, raw in enumerate(raw_cells):
         cell = _cell(raw, ref, index, rows, cols, size)
-        bounds = cell["start_row"], cell["end_row"], cell["start_col"], cell["end_col"]
-        _require(bounds not in seen, f"docling_table_cell_duplicate:{ref}:{index}")
-        seen.add(bounds)
         for row in range(cell["start_row"], cell["end_row"]):
             for col in range(cell["start_col"], cell["end_col"]):
                 coordinate = row, col
-                if coordinate in occupied:
-                    _fail(f"docling_table_cell_overlap:{ref}:{occupied[coordinate]}:{index}")
-                occupied[coordinate] = index
+                previous = occupied.setdefault(coordinate, [])
+                for previous_index in previous:
+                    overlaps.setdefault((previous_index, index), []).append(coordinate)
+                previous.append(index)
         cells.append(cell)
         lineage.append({
             "cell_id": _stable("table_cell", digest, ref, str(index), str(cell["start_row"]), str(cell["start_col"])),
@@ -362,6 +381,15 @@ def _table(item: Mapping[str, Any], digest: str, prov: Sequence[Mapping[str, Any
             "text": cell["text"], "bbox": cell["bbox"],
         })
     findings, unresolved = [], []
+    for (first_index, second_index), coordinates in overlaps.items():
+        findings.append(_finding("table_cell_overlap", ref, digest, {
+            "first_cell_ref": _cell_ref(ref, first_index),
+            "second_cell_ref": _cell_ref(ref, second_index),
+            "coordinates": [
+                {"row_index": row, "column_index": col}
+                for row, col in coordinates
+            ],
+        }))
     if len(page_numbers) > 1:
         findings.append(_finding("cross_page_table_provenance_unresolved", ref, digest, {"page_numbers": page_numbers}))
     for row in range(rows):
@@ -472,9 +500,15 @@ def compile_docling_shadow(
     _require(origin.get("mimetype") == "application/pdf", "docling_document_origin_mimetype_invalid")
     pages = _pages(document, source)
     refs, kinds = _index(document)
-    order = _leaf_order(document, refs)
+    order = _projection_order(document, refs, kinds)
     provenance = {
-        ref: _provenance(item.get("prov"), ref, pages, _string(item.get("text"), "docling_text_value_invalid") if kinds[ref] == "texts" else None)
+        ref: _provenance(
+            item.get("prov"),
+            ref,
+            pages,
+            _string(item.get("orig"), f"docling_text_orig_invalid:{ref}")
+            if kinds[ref] == "texts" else None,
+        )
         for ref, item in refs.items() if kinds[ref] != "groups"
     }
     candidates: list[dict[str, Any]] = []
@@ -504,8 +538,12 @@ def compile_docling_shadow(
     unresolved.extend(_adjacency(order, provenance, kinds, document_digest))
     candidate_ids = [row["element_id"] for row in candidates]
     quarantine_ids = [row["element_id"] for row in quarantined]
+    finding_ids = [row["finding_id"] for row in findings]
+    relationship_ids = [row["relationship_id"] for row in unresolved]
     _require(len(set(candidate_ids)) == len(candidate_ids) and len(set(quarantine_ids)) == len(quarantine_ids), "docling_shadow_element_id_duplicate")
     _require(not set(candidate_ids) & set(quarantine_ids), "docling_shadow_candidate_quarantine_overlap")
+    _require(len(set(finding_ids)) == len(finding_ids), "docling_shadow_finding_id_duplicate")
+    _require(len(set(relationship_ids)) == len(relationship_ids), "docling_shadow_relationship_id_duplicate")
     _require(not any(row.get("kind") == "table" and row.get("blocker_codes") for row in candidates), "docling_shadow_blocked_table_candidate")
     _require(all(row.get("status") == "unresolved" for row in unresolved), "docling_shadow_relationship_authority_invalid")
     candidate_counts = Counter(str(row["kind"]) for row in candidates)

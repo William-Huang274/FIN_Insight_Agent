@@ -50,14 +50,23 @@ def _prov(
 def _text(
     value: str = "Dell result",
     prov: list[dict[str, Any]] | None = None,
+    *,
+    orig: str | None = None,
+    self_ref: str = "#/texts/0",
+    parent: str = "#/body",
+    children: list[dict[str, str]] | None = None,
+    content_layer: str = "body",
+    label: str = "text",
 ) -> dict[str, Any]:
+    raw = value if orig is None else orig
     return {
-        "children": [],
-        "label": "text",
-        "orig": value,
-        "parent": {"$ref": "#/body"},
-        "prov": prov or [_prov(span=(0, len(value)))],
-        "self_ref": "#/texts/0",
+        "children": children or [],
+        "content_layer": content_layer,
+        "label": label,
+        "orig": raw,
+        "parent": {"$ref": parent},
+        "prov": prov or [_prov(span=(0, len(raw)))],
+        "self_ref": self_ref,
         "text": value,
     }
 
@@ -91,6 +100,9 @@ def _table(
     *,
     prov: list[dict[str, Any]] | None = None,
     header_rows: set[int] | None = None,
+    self_ref: str = "#/tables/0",
+    parent: str = "#/body",
+    children: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
     headers = header_rows or set()
     cells = [
@@ -100,6 +112,8 @@ def _table(
     ]
     return {
         "captions": [],
+        "children": children or [],
+        "content_layer": "body",
         "data": {
             "grid": [],
             "num_cols": max(map(len, rows)),
@@ -109,10 +123,46 @@ def _table(
         },
         "footnotes": [],
         "label": "table",
-        "parent": {"$ref": "#/body"},
+        "parent": {"$ref": parent},
         "prov": prov or [_prov()],
         "references": [],
-        "self_ref": "#/tables/0",
+        "self_ref": self_ref,
+    }
+
+
+def _picture(
+    index: int,
+    *,
+    parent: str = "#/body",
+    children: list[dict[str, str]] | None = None,
+) -> dict[str, Any]:
+    return {
+        "annotations": [],
+        "captions": [],
+        "children": children or [],
+        "content_layer": "body",
+        "footnotes": [],
+        "label": "picture",
+        "parent": {"$ref": parent},
+        "prov": [_prov()],
+        "references": [],
+        "self_ref": f"#/pictures/{index}",
+    }
+
+
+def _group(
+    index: int,
+    *,
+    parent: str = "#/body",
+    children: list[dict[str, str]] | None = None,
+) -> dict[str, Any]:
+    return {
+        "children": children or [],
+        "content_layer": "body",
+        "label": "group",
+        "name": "group",
+        "parent": {"$ref": parent},
+        "self_ref": f"#/groups/{index}",
     }
 
 
@@ -120,10 +170,22 @@ def _document(
     *,
     text: dict[str, Any] | None = None,
     table: dict[str, Any] | None = None,
+    texts: list[dict[str, Any]] | None = None,
+    tables: list[dict[str, Any]] | None = None,
+    pictures: list[dict[str, Any]] | None = None,
+    groups: list[dict[str, Any]] | None = None,
+    body_children: list[dict[str, str]] | None = None,
 ) -> dict[str, Any]:
-    texts = [text or _text()]
-    tables = [] if table is None else [table]
-    children = [{"$ref": item["self_ref"]} for item in [*texts, *tables]]
+    text_items = list(texts) if texts is not None else [text or _text()]
+    table_items = list(tables) if tables is not None else ([] if table is None else [table])
+    picture_items = list(pictures or [])
+    group_items = list(groups or [])
+    items = [*text_items, *table_items, *picture_items, *group_items]
+    children = body_children if body_children is not None else [
+        {"$ref": item["self_ref"]}
+        for item in items
+        if item.get("parent") == {"$ref": "#/body"}
+    ]
     return {
         "body": {
             "children": children,
@@ -138,7 +200,7 @@ def _document(
             "parent": None,
             "self_ref": "#/furniture",
         },
-        "groups": [],
+        "groups": group_items,
         "key_value_items": [],
         "name": "dell_fy26_results",
         "origin": {
@@ -153,10 +215,10 @@ def _document(
             }
             for page in (1, 2)
         },
-        "pictures": [],
+        "pictures": picture_items,
         "schema_name": "DoclingDocument",
-        "tables": tables,
-        "texts": texts,
+        "tables": table_items,
+        "texts": text_items,
         "version": "1.10.0",
     }
 
@@ -214,6 +276,7 @@ def test_safe_projection_is_deterministic_and_authority_is_fail_closed() -> None
     candidate = first["candidate_elements"][0]
 
     assert first == second
+    assert first["schema_version"] == "fin_ia_docling_candidate_shadow_v1_1"
     assert len(first["result_digest"]) == 64
     assert first["status"] != "ADOPTED"
     assert (candidate["kind"], candidate["upstream_self_ref"], candidate["text"]) == (
@@ -229,6 +292,27 @@ def test_safe_projection_is_deterministic_and_authority_is_fail_closed() -> None
     }
     assert not any(first["authority"].values())
     assert not _has_key(first, "numeric_value")
+    assert candidate["upstream_parent_ref"] == "#/body"
+    assert candidate["content_layer"] == "body"
+    assert candidate["charspan_basis"] == "orig"
+    assert candidate["normalized_text"] == "Dell result"
+
+
+def test_text_provenance_slices_orig_and_preserves_normalized_list_text() -> None:
+    raw = "- Revenue increased by 16%."
+    normalized = "Revenue increased by 16%."
+    result = _compile(_document(text=_text(normalized, orig=raw, label="list_item")))
+    candidate = result["candidate_elements"][0]
+
+    assert candidate["text"] == raw
+    assert candidate["normalized_text"] == normalized
+    assert candidate["charspan"] == [0, len(raw)]
+    assert candidate["charspan_basis"] == "orig"
+    assert candidate["source_payload"] == {
+        "label": "list_item",
+        "orig": raw,
+        "text": normalized,
+    }
 
 
 def test_quoted_nan_text_is_preserved_but_never_gains_authority() -> None:
@@ -274,11 +358,162 @@ def test_financial_counterexample_quarantines_without_repair(
         assert relation["candidate_target_refs"] == []
 
 
+def test_duplicate_finding_ids_fail_closed_without_redefining_footnotes() -> None:
+    table = _table(
+        [["Role", "Count"], ["Director(s) or employee(s)", "3"]],
+        header_rows={0},
+    )
+
+    with pytest.raises(DoclingShadowAdapterError, match="finding_id_duplicate"):
+        _compile(_document(table=table))
+
+
 def test_header_blank_first_cell_is_not_unlabeled_numeric_row() -> None:
     rows = [["", "January 30, 2026", "January 31, 2025"], ["Revenue", "12", "11"]]
     result = _compile(_document(table=_table(rows, header_rows={0})))
     assert "unlabeled_numeric_row" not in _codes(result)
     assert _table_element(result, "candidate_elements")
+
+
+def test_group_children_are_traversed_but_group_is_not_projected() -> None:
+    text = _text(parent="#/groups/0")
+    group = _group(0, children=[{"$ref": "#/texts/0"}])
+    result = _compile(_document(texts=[text], groups=[group]))
+
+    assert [item["kind"] for item in result["candidate_elements"]] == ["text_fragment"]
+    assert result["candidate_elements"][0]["upstream_parent_ref"] == "#/groups/0"
+    assert not any(
+        item["upstream_self_ref"].startswith("#/groups/")
+        for item in [*result["candidate_elements"], *result["quarantined_elements"]]
+    )
+
+
+def test_picture_child_is_preordered_without_caption_or_ocr_inference() -> None:
+    child = _text("Chart label", parent="#/pictures/0")
+    picture = _picture(0, children=[{"$ref": "#/texts/0"}])
+    result = _compile(_document(texts=[child], pictures=[picture]))
+
+    assert [item["kind"] for item in result["candidate_elements"]] == [
+        "picture_locator", "text_fragment",
+    ]
+    text_candidate = result["candidate_elements"][1]
+    assert text_candidate["upstream_parent_ref"] == "#/pictures/0"
+    assert text_candidate["text"] == "Chart label"
+    assert result["unresolved_relationships"] == []
+    assert not _has_key(result, "ocr_text")
+    assert not result["authority"]["automatic_relationships_allowed"]
+
+
+def test_table_caption_child_is_preordered_but_relation_stays_blocked() -> None:
+    caption = _text(
+        "Revenue by segment",
+        parent="#/tables/0",
+        label="caption",
+    )
+    table = _table(
+        [["Metric", "FY26"], ["Revenue", "12"]],
+        header_rows={0},
+        children=[{"$ref": "#/texts/0"}],
+    )
+    table["captions"] = [{"$ref": "#/texts/0"}]
+    result = _compile(_document(texts=[caption], tables=[table]))
+    blocked = _table_element(result, "quarantined_elements")
+
+    assert "upstream_relation_projection_not_supported" in blocked["blocker_codes"]
+    assert result["candidate_elements"][0]["upstream_self_ref"] == "#/texts/0"
+    assert result["candidate_elements"][0]["upstream_parent_ref"] == "#/tables/0"
+    assert blocked["linked_footnotes"] == []
+    assert not result["authority"]["automatic_relationships_allowed"]
+
+
+def test_nested_non_group_children_keep_complete_preorder() -> None:
+    text = _text("Nested label", parent="#/pictures/1")
+    inner = _picture(
+        1,
+        parent="#/pictures/0",
+        children=[{"$ref": "#/texts/0"}],
+    )
+    outer = _picture(0, children=[{"$ref": "#/pictures/1"}])
+    result = _compile(_document(texts=[text], pictures=[outer, inner]))
+
+    assert [item["upstream_self_ref"] for item in result["candidate_elements"]] == [
+        "#/pictures/0", "#/pictures/1", "#/texts/0",
+    ]
+    assert result["candidate_elements"][-1]["upstream_parent_ref"] == "#/pictures/1"
+
+
+def test_node_cycle_fails_closed() -> None:
+    outer = _picture(0, children=[{"$ref": "#/pictures/1"}])
+    inner = _picture(
+        1,
+        parent="#/pictures/0",
+        children=[{"$ref": "#/pictures/0"}],
+    )
+    with pytest.raises(DoclingShadowAdapterError, match="cycle"):
+        _compile(_document(texts=[], pictures=[outer, inner]))
+
+
+def test_duplicate_node_reference_fails_closed() -> None:
+    text = _text()
+    duplicate = [{"$ref": "#/texts/0"}, {"$ref": "#/texts/0"}]
+    with pytest.raises(DoclingShadowAdapterError, match="duplicate"):
+        _compile(_document(texts=[text], body_children=duplicate))
+
+
+def test_orphan_node_fails_closed_inventory() -> None:
+    first = _text("First", self_ref="#/texts/0")
+    orphan = _text("Orphan", self_ref="#/texts/1")
+    with pytest.raises(DoclingShadowAdapterError, match="inventory"):
+        _compile(
+            _document(
+                texts=[first, orphan],
+                body_children=[{"$ref": "#/texts/0"}],
+            )
+        )
+
+
+def test_parent_mismatch_fails_closed() -> None:
+    text = _text(parent="#/pictures/0")
+    picture = _picture(0)
+    with pytest.raises(DoclingShadowAdapterError, match="parent_ref_mismatch"):
+        _compile(
+            _document(
+                texts=[text],
+                pictures=[picture],
+                body_children=[{"$ref": "#/texts/0"}],
+            )
+        )
+
+
+def test_unknown_child_reference_fails_closed() -> None:
+    with pytest.raises(DoclingShadowAdapterError, match="child_ref_unknown"):
+        _compile(
+            _document(
+                texts=[],
+                body_children=[{"$ref": "#/texts/99"}],
+            )
+        )
+
+
+@pytest.mark.parametrize(
+    ("collection", "match"),
+    [
+        ("furniture", "furniture_content_not_supported"),
+        ("form_items", "collection_not_supported:form_items"),
+        ("key_value_items", "collection_not_supported:key_value_items"),
+    ],
+)
+def test_unsupported_node_routes_remain_fail_closed(
+    collection: str,
+    match: str,
+) -> None:
+    document = _document()
+    if collection == "furniture":
+        document[collection]["children"] = [{"$ref": "#/texts/0"}]
+    else:
+        document[collection] = [{"self_ref": f"#/{collection}/0"}]
+    with pytest.raises(DoclingShadowAdapterError, match=match):
+        _compile(document)
 
 
 def test_cross_page_text_is_mechanically_split_not_auto_joined() -> None:
@@ -367,11 +602,25 @@ def test_charspan_whitespace_gap_is_allowed() -> None:
     ],
     ids=["exact", "partial-row", "partial-column"],
 )
-def test_overlapping_table_cells_fail_closed(cells: list[dict[str, Any]]) -> None:
+def test_overlapping_table_cells_quarantine_whole_table(
+    cells: list[dict[str, Any]],
+) -> None:
     table = _table([["A", "B"], ["C", "D"]])
     table["data"]["table_cells"] = cells
-    with pytest.raises(DoclingShadowAdapterError, match="overlap|duplicate|cell"):
-        _compile(_document(table=table))
+    result = _compile(_document(table=table))
+    blocked = _table_element(result, "quarantined_elements")
+    finding = next(item for item in result["findings"] if item["code"] == "table_cell_overlap")
+
+    assert "table_cell_overlap" in blocked["blocker_codes"]
+    assert finding["severity"] == "blocker"
+    assert finding["disposition"] == "quarantine_without_repair"
+    assert len(blocked["cell_lineage"]) == len(cells)
+    assert blocked["source_payload"]["data"]["table_cells"] == cells
+    assert not any(
+        item["upstream_self_ref"] == "#/tables/0"
+        for item in result["candidate_elements"]
+    )
+    assert not result["authority"]["repair_performed"]
 
 
 @pytest.mark.parametrize("field", ["captions", "footnotes", "references"])

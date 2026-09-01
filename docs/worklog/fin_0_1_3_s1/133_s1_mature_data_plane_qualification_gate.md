@@ -1,6 +1,6 @@
 # S1 成熟数据面迁移：资格实验门与首轮执行记录
 
-> 状态：`AUTHORIZED / IN_PROGRESS / DIRTY BOUNDED EVIDENCE`
+> 状态：`AUTHORIZED / IN_PROGRESS / MIXED EVIDENCE: DOCLING CLEAN-BOUND COMPONENT PASS; RAW OUTPUT HOLD_QUALITY; THIN-ADAPTER SHADOW PENDING; PRODUCT DELTA NONE`
 > 日期：2026-09-01
 > 分支：`codex/fin013-dell-s1-s2-product-bridge`
 > 起始提交：`86e31761798fb618fa1a473c7c028d5f8b4728fe`
@@ -211,3 +211,32 @@ real source
 - 当前最低资源、可直接复用的基线是`src/ingestion/official_pdf.py::parse_captured_official_pdf`：只依赖当前`.venv`已有的pypdf 6.16.2，读取683,251-byte PDF并逐页输出text、character count和digest；权限明确停在`parsed_source_only_not_evidence`。下一步不写新script，只作一次性函数级执行并将产物写入Z盘新attempt。
 - layout-rich旧基线仍应复用`src/ingestion/pdf_layout.py::parse_captured_pdf_layout`，它能输出words/lines/bbox/table regions/footnotes/text blocks与quality receipt；但当前`.venv`缺`pdfplumber`及OCR闭包，且函数会在native text不足时自动进入OCR，不能虚构成native-only pass。待使用已经存在且可固定的依赖环境后再运行，不为本对照新增长期harness。
 - `scripts/data_retrieval/parse_captured_official_pdf_layout.py`要求现成response-capture/source-spec并会复制raw body、编译objects；本case没有这两项，为跑对照而伪造它们是多余治理。`run_s1d_official_pdf_successor.py`会跨入Evidence/pack/S2，明确超出当前权限，禁止使用。
+
+### 8.10 真实旧基线与Docling首次转换
+
+- 同一冻结输入先使用现有`src/ingestion/official_pdf.py::parse_captured_official_pdf`运行pypdf 6.16.2低成本基线，不新增parser或产品harness。attempt=`Z:\FIN_Insight_Agent_qualification\20260901_s1_mature_data_plane_v1\attempts\legacy_pdf\dell_fy26_results\20260901T043744Z-pypdf1`；9/9页非空、30,215个页面文本字符、耗时`0.986475s`、采样峰值RSS=`65,605,632` bytes。`parsed_document.json` SHA-256=`efe03b9ae1cbab99f131d4e3f05ad58d756f6f89aa4ebee6a174bf5621817259`，`summary.json` SHA-256=`ab907b43f7b27e7f76b39adb008524b49a2cbaca157e063cdee36801a19a8136`。它只承担page-text coverage sentinel，不拥有layout、table、Evidence或NumericFact权限。
+- layout-rich旧基线复用现有`src/ingestion/pdf_layout.py::parse_captured_pdf_layout`，在隔离的pdfplumber 0.11.10环境中直接加载该模块，未触发OCR、模型或网络。attempt=`Z:\FIN_Insight_Agent_qualification\20260901_s1_mature_data_plane_v1\attempts\legacy_pdf_layout\dell_fy26_results\20260901T044958Z-pdfplumber2`；9页、4,566 words、1,165 lines、20个启发式table regions、78个text blocks、耗时`3.583128s`、采样峰值RSS=`125,296,640` bytes。`parsed_layout.json` SHA-256=`ba14f64601ee0311ab264f0c20e1cfeafa9ffb680a85d67f0f35c79535b4835b`，`summary.json` SHA-256=`27d599103f31403b83a58882a2f3b2ada528bac062d95234d0e61b0fd85dc7e7`。它在第7、8、9页均识别出`0`个table region，故不能替代Docling的结构候选。
+- 首次真实Docling conversion attempt=`20260901T043846Z-run1`绑定clean `87f2f3ce4620be9446a66a8feddc220e84469014`并成功产出9页、15表、1,048 cells、118个带provenance/bbox的顶层对象；JSON/Markdown SHA分别为`2e3039664f83005b490e1ef7709838960f1e0aa421828a5f09bc9f419c0b2032`和`fca855100c7ca265854b9c4006aa9fb8d27e059a44545615b14628aa3b48f9b8`。但是v1.0 terminal receipt含20个Python宽松JSON允许、RFC 8259不允许的裸`NaN`；人工review PNG还曾在terminal后写入attempt目录，随后已移到attempt外的`review_artifacts` sibling。核心四文件当前未被覆盖或改写，但run1只能记为`COMPONENT_EXECUTION_PASS_BOUNDED / TERMINAL_RECEIPT_FORMAT_DEFECT / POST_TERMINAL_BOUNDARY_EVENT / ADOPTION_PENDING`，不能签clean qualification package。
+- 同阶段修正没有碰Docling算法或表格内容，只把非有限float确定性归一化为字符串sentinel`"NaN"/"Infinity"/"-Infinity"`，所有JSON writer与canonical digest固定`allow_nan=False`；receipt schema和attempt-start schema均升到v1.1，并显式记录`json_canonicalization=strict_rfc8259_nonfinite_string_v1`。修正commit=`aabbcba11b1434a2ea68628e733a94bd8972ed79`已推送；四组qualification tests=`28 passed`、Python 3.10 AST=PASS、secret scan=`8,335 files / 0 findings`，独立review P0/P1/P2=`0/0/0`。
+
+### 8.11 v1.1 clean-bound Docling重跑
+
+- 宿主可用内存自然恢复后，没有降低`3.0 GiB`线、没有终止Owner进程，使用全新attempt=`Z:\FIN_Insight_Agent_qualification\20260901_s1_mature_data_plane_v1\attempts\docling_pdf\dell_fy26_results\20260901T050341Z-run2-strict`。start时branch、HEAD、upstream一致，工作树clean；receipt绑定HEAD=`aabbcba11b1434a2ea68628e733a94bd8972ed79`、runner SHA-256=`d0f91c76cf81bca89b934030d936269fe70bc69c6c4e22d2b4b6e9ec5b4c76e2`、同一PDF SHA、104-distribution manifest和10-file model package。
+- 资源门观测D盘`3.347458 GiB`、Z盘`54.460182 GiB`、可用物理内存`3.063671 GiB`，全部越过冻结线。CPU/2 threads、OCR=false、remote services=false；conversion success，耗时`183.06198s`、峰值RSS=`1,538,908,160` bytes、CUDA allocated=`0`。
+- terminal status=`COMPONENT_OUTPUT_READY_FOR_COMPARISON`、component execution=`PASS`、adoption=`NOT_DECIDED_PENDING_BASELINE_AND_HUMAN_REVIEW`。9页、102 texts、15 tables、1,048 cells、118个对象带provenance、118个对象带bbox，provenance覆盖1–9页。`docling-document.json`为1,634,341 bytes，SHA-256=`2e3039664f83005b490e1ef7709838960f1e0aa421828a5f09bc9f419c0b2032`；Markdown为62,894 bytes，SHA-256=`fca855100c7ca265854b9c4006aa9fb8d27e059a44545615b14628aa3b48f9b8`，与run1逐字节相同。
+- attempt目录只有`attempt-start.json`、`docling-document.json`、`docling-document.md`、`receipt.json`四个文件，runtime-cache内无文件。严格parser显式拒绝bare `NaN/Infinity`后仍能读取全部JSON；attempt-start claimed/recomputed digest均为`498d93d6b9de54f788dfc7c21bb989ac96df6145a5a8c38a172b7045f151feaa`，terminal claimed/recomputed digest均为`b0b6126e79b004ecc521454a95cdd7b11452f75227174114795de9fc20c765c8`。attempt-start文件SHA-256=`f9e6efcf4e31a804a62c71e86cd1397b6f1522e1f8cb55d7b993f7bd546b7b87`，receipt文件SHA-256=`31bcfea2b3434937bb4b4bfd379dd9eae6b34dc9698c9a755b7c42ee691600d8`。start/end repository、runtime、models、input、script均unchanged。
+- 因此可以签`QUALIFICATION_PACKAGE_INTEGRITY=CLEAN_BOUND`与`COMPONENT_EXECUTION=PASS`。这两项只证明可重放资格包和真实成熟组件执行，不证明金融表格语义、adapter、adoption、mainline、Evidence或产品质量通过。
+- 完整性独立复核为`P0/P1/P2/P3=0/0/0/1`。唯一P3是terminal receipt绑定正式输出，却没有内生封存整个attempt目录inventory；本次复核以相对POSIX path、type、bytes、SHA-256的7行canonical list冻结出inventory digest=`220116cc46bb469073c418f1fc4264a0a4e0e6358122a092253c157024365706`（4文件＋`runtime-cache`、`runtime-cache/pycache`、`runtime-cache/temp`三条目录记录）。它不要求再次改runner或重跑，但禁止向该attempt追加任何review/截图/说明；未来runner可把exact inventory作为非阻断hardening。
+
+### 8.12 作者分离的输出质量复核
+
+- reviewer未修改文件、未运行模型或网络、未读取hidden/holdout expected outcomes；只比较冻结原PDF、Docling JSON/Markdown和同输入pypdf coverage sentinel。Docling覆盖9/9页，1,048/1,048个非空逻辑table cell都有bbox；逐页财务数字、日期、小数、百分比和括号负数token多重集与pypdf完全一致，各页为`80/154/20/169/123/121/134/121/20`，合计`942/942`，没有观察到数字字符丢失或新增。
+- 但发现4个会阻止原始结果直接进入产品的P1问题簇：第一，第7页`#/tables/10`把Operating income输出成`$ 3,092 $ | 2,159`，把Stock-based compensation的`723/785`移到无row label的下一行，并漏掉`Non-GAAP adjustments:`层级；第二，跨页guidance list item被拆断，另一个对象把第5页superheader与第6页rounding footnote融合，continued tables没有typed continuation edge；第三，15/15 tables的`captions/footnotes/references`均为空，重复脚注marker无法安全盲配；第四，原文`— %`被归一为`-%`，不得解释为负百分比或静默改成`0%`。
+- 本次`parse_score=1.0`且layout分数较高，但`table_score="NaN"`；它无法发现上述金融行归属错误。Markdown还丢失page/bbox/charspan/self_ref，只能用于人眼预览。质量结论为`P0=0 / P1=4 issue clusters / RAW_DIRECT_CONSUMPTION=HOLD_QUALITY`。run2输出与run1逐字节相同，因此反例被完整保留，没有被严格JSON修正掩盖。
+
+### 8.13 当前决定与下一合法动作
+
+- 当前精确状态为`QUALIFIED_FOR_FAIL_CLOSED_THIN_ADAPTER_SHADOW / NOT_ADOPTED / NOT_MAINLINE / NOT_EVIDENCE`。JSON-first薄层只允许保留并投影原始`self_ref/page/bbox/charspan/cell text`，先按provenance拆开跨页对象，并把continuation、caption和footnote关系保留为candidate/ambiguous/unresolved状态。
+- shadow validator至少必须fail closed拦截：有数字却无row label、一个amount cell含重复`$`、期间维度数不一致、continued表缺前后关系、关键section label缺失、未解析脚注以及`-%`语义不明。pypdf page text只做逐页覆盖和数字守恒对照；不得自动把`723/785`搬回上一行，不得生成“修正后金融事实”。
+- 下一实施动作是先用已冻结DELL反例证明薄adapter确实能暴露并拒绝上述异常，再对Tencent/TEL等不同布局的真实case做同样shadow。若为了继续通过需要积累issuer-specific分支、表格重建启发式或人工硬编码数值归属，立即停止扩写adapter，保持Docling `HOLD_QUALITY`并比较MinerU或其他成熟challenger；禁止把薄层演变成自研修表引擎。
+- 第7节第4项“真实财报PDF的Docling与旧基线对照receipt”现已满足；整体S1/133仍为`IN_PROGRESS`，因为Arelle完整accession package、HNSW若仍在范围内的资源资格、multi-case adapter shadow与最终adoption/retirement决定均未完成。product delta、mainline consumption和legacy retirement仍为0；`data/indexes`未删，R14继续冻结，R15/R16、formal、Evidence、S2/S3/report/product/release仍false。

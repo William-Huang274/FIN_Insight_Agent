@@ -10,6 +10,7 @@ import importlib.metadata
 import importlib.util
 import io
 import json
+import math
 import os
 from pathlib import Path
 import platform
@@ -21,7 +22,9 @@ import time
 from typing import Any, Mapping, Sequence
 
 
-SCHEMA_VERSION = "fin_ia_s1_docling_pdf_qualification_v1_0"
+SCHEMA_VERSION = "fin_ia_s1_docling_pdf_qualification_v1_1"
+ATTEMPT_START_SCHEMA_VERSION = "fin_ia_s1_docling_pdf_attempt_start_v1_1"
+JSON_CANONICALIZATION = "strict_rfc8259_nonfinite_string_v1"
 QUALIFICATION_ROOT = Path(r"Z:\FIN_Insight_Agent_qualification")
 EXPECTED_BRANCH = "codex/fin013-dell-s1-s2-product-bridge"
 EXPECTED_PYTHON_VERSION = "3.11.14"
@@ -161,10 +164,26 @@ def sha256_file(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _strict_json_value(value: Any) -> Any:
+    if isinstance(value, float) and not math.isfinite(value):
+        if math.isnan(value):
+            return "NaN"
+        return "Infinity" if value > 0 else "-Infinity"
+    if isinstance(value, Mapping):
+        return {
+            str(key): _strict_json_value(item)
+            for key, item in value.items()
+        }
+    if isinstance(value, (list, tuple)):
+        return [_strict_json_value(item) for item in value]
+    return value
+
+
 def canonical_digest(value: Any) -> str:
     return hashlib.sha256(
         json.dumps(
-            value,
+            _strict_json_value(value),
+            allow_nan=False,
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
@@ -198,14 +217,28 @@ def _atomic_write_text(path: Path, value: str) -> None:
 def _atomic_write_json(path: Path, value: Mapping[str, Any]) -> None:
     _atomic_write_text(
         path,
-        json.dumps(value, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
+        json.dumps(
+            _strict_json_value(value),
+            allow_nan=False,
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
+        + "\n",
     )
 
 
 def _exclusive_write_json(path: Path, value: Mapping[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("x", encoding="utf-8") as handle:
-        json.dump(value, handle, ensure_ascii=False, indent=2, sort_keys=True)
+        json.dump(
+            _strict_json_value(value),
+            handle,
+            allow_nan=False,
+            ensure_ascii=False,
+            indent=2,
+            sort_keys=True,
+        )
         handle.write("\n")
 
 
@@ -803,6 +836,7 @@ def _receipt_base(
 ) -> dict[str, Any]:
     return {
         "schema_version": SCHEMA_VERSION,
+        "json_canonicalization": JSON_CANONICALIZATION,
         "mode": mode,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "script": {
@@ -890,7 +924,7 @@ def run(args: argparse.Namespace) -> int:
 
         attempt_start = {
             **base,
-            "schema_version": "fin_ia_s1_docling_pdf_attempt_start_v1_0",
+            "schema_version": ATTEMPT_START_SCHEMA_VERSION,
             "status": "STARTED_IMMUTABLE_INPUTS_FROZEN",
         }
         attempt_start["result_digest"] = canonical_digest(attempt_start)
@@ -962,6 +996,7 @@ def run(args: argparse.Namespace) -> int:
         failure = {
             **base,
             "schema_version": SCHEMA_VERSION,
+            "json_canonicalization": JSON_CANONICALIZATION,
             "mode": args.mode,
             "status": "FAILED_WITH_EVIDENCE",
             "failed_at": datetime.now(timezone.utc).isoformat(),

@@ -5,6 +5,8 @@ import base64
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 import hashlib
+import json
+import math
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -13,6 +15,7 @@ import pytest
 from scripts.qualification import run_s1_docling_pdf_qualification as runner
 from scripts.qualification.run_s1_docling_pdf_qualification import (
     DoclingQualificationError,
+    _atomic_write_json,
     _configure_runtime_isolation,
     _document_metrics,
     _distribution_module_ownership,
@@ -22,6 +25,51 @@ from scripts.qualification.run_s1_docling_pdf_qualification import (
     _verify_distribution_record_files,
     sha256_file,
 )
+
+
+def test_json_artifacts_are_strict_and_normalize_nonfinite_values(
+    tmp_path: Path,
+) -> None:
+    assert runner.SCHEMA_VERSION.endswith("_v1_1")
+    assert runner.ATTEMPT_START_SCHEMA_VERSION.endswith("_v1_1")
+    assert (
+        runner.JSON_CANONICALIZATION
+        == "strict_rfc8259_nonfinite_string_v1"
+    )
+    payload = {
+        "finite": 1.5,
+        "nonfinite": [float("nan"), float("inf"), float("-inf")],
+    }
+    atomic_path = tmp_path / "atomic.json"
+    exclusive_path = tmp_path / "exclusive.json"
+
+    _atomic_write_json(atomic_path, payload)
+    _exclusive_write_json(exclusive_path, payload)
+
+    expected = {
+        "finite": 1.5,
+        "nonfinite": ["NaN", "Infinity", "-Infinity"],
+    }
+    assert json.loads(atomic_path.read_text(encoding="utf-8")) == expected
+    assert json.loads(exclusive_path.read_text(encoding="utf-8")) == expected
+    assert ": NaN" not in atomic_path.read_text(encoding="utf-8")
+    assert ": NaN" not in exclusive_path.read_text(encoding="utf-8")
+    assert runner.canonical_digest(payload) == runner.canonical_digest(expected)
+    assert math.isnan(payload["nonfinite"][0])
+    assert payload["nonfinite"][1:] == [float("inf"), float("-inf")]
+
+    receipt = {**payload, "status": "complete"}
+    receipt["result_digest"] = runner.canonical_digest(receipt)
+    receipt_path = tmp_path / "receipt.json"
+    _exclusive_write_json(receipt_path, receipt)
+    loaded_receipt = json.loads(
+        receipt_path.read_text(encoding="utf-8"),
+        parse_constant=lambda token: pytest.fail(
+            f"non-standard JSON constant: {token}"
+        ),
+    )
+    claimed_digest = loaded_receipt.pop("result_digest")
+    assert runner.canonical_digest(loaded_receipt) == claimed_digest
 
 
 def test_exclusive_receipt_write_cannot_overwrite(tmp_path: Path) -> None:

@@ -236,7 +236,21 @@ real source
 
 ### 8.13 当前决定与下一合法动作
 
-- 当前精确状态为`QUALIFIED_FOR_FAIL_CLOSED_THIN_ADAPTER_SHADOW / NOT_ADOPTED / NOT_MAINLINE / NOT_EVIDENCE`。JSON-first薄层只允许保留并投影原始`self_ref/page/bbox/charspan/cell text`，先按provenance拆开跨页对象，并把continuation、caption和footnote关系保留为candidate/ambiguous/unresolved状态。
-- shadow validator至少必须fail closed拦截：有数字却无row label、一个amount cell含重复`$`、期间维度数不一致、continued表缺前后关系、关键section label缺失、未解析脚注以及`-%`语义不明。pypdf page text只做逐页覆盖和数字守恒对照；不得自动把`723/785`搬回上一行，不得生成“修正后金融事实”。
-- 下一实施动作是先用已冻结DELL反例证明薄adapter确实能暴露并拒绝上述异常，再对Tencent/TEL等不同布局的真实case做同样shadow。若为了继续通过需要积累issuer-specific分支、表格重建启发式或人工硬编码数值归属，立即停止扩写adapter，保持Docling `HOLD_QUALITY`并比较MinerU或其他成熟challenger；禁止把薄层演变成自研修表引擎。
-- 第7节第4项“真实财报PDF的Docling与旧基线对照receipt”现已满足；整体S1/133仍为`IN_PROGRESS`，因为Arelle完整accession package、HNSW若仍在范围内的资源资格、multi-case adapter shadow与最终adoption/retirement决定均未完成。product delta、mainline consumption和legacy retirement仍为0；`data/indexes`未删，R14继续冻结，R15/R16、formal、Evidence、S2/S3/report/product/release仍false。
+- 当前精确状态已由“shadow eligible、尚未执行”推进为`ONE_CASE_FAIL_CLOSED_SHADOW_PASS / NOT_ADOPTED / NOT_MAINLINE / NOT_EVIDENCE`。JSON-first薄层只保留并投影原始`self_ref/page/bbox/charspan/cell text/source payload`，按provenance机械拆分跨页文本，并把脚注、跨页邻接和跨页碎片关系保留为unresolved；它不做金融事实重建。
+- 当前通用validator已经fail closed拦截冻结DELL反例中的无row label数值行、一个cell重复`$`、未解析脚注、`-%`语义不明、跨页文本和跨页表，并对非空upstream关系字段整表隔离。它**没有**证明期间维度、缺失关键section label或真实continued语义，也不会为了单个DELL case加入发行人／科目特例。没有显式通用异常信号的表仍可能留在candidate层，因此candidate仍不是金融事实或Evidence。
+- 下一实施动作不再扩写DELL规则，而是对Tencent/TEL等第二发行人的真实case同时做官方`DoclingDocument.model_validate_json`与同一FIN adapter双验证。若第二case要求新增issuer-specific分支、表格重建启发式、缺失section猜测或人工硬编码数值归属，立即停止扩写adapter，保持Docling `HOLD_QUALITY`并比较MinerU或其他成熟challenger；禁止把薄层演变成自研修表引擎。
+- 第7节第4项“真实财报PDF的Docling与旧基线对照receipt”及DELL单案例fail-closed shadow现已满足；整体S1/133仍为`IN_PROGRESS`，因为Arelle完整accession package、HNSW若仍在范围内的资源资格、第二发行人shadow与最终adoption/retirement决定均未完成。product delta、mainline consumption和legacy retirement仍为0；`data/indexes`未删，R14继续冻结，R15/R16、formal、Evidence、S2/S3/report/product/release仍false。
+
+### 8.14 Fail-closed薄adapter实现与独立复核
+
+- 新增`src/ingestion/docling_shadow_adapter.py`，公开面仅为`compile_docling_shadow(...)`、`DoclingShadowAdapterError`和schema version。它不import或调用Docling、不加载模型、不联网、不读写文件，不接runner、配置、Workbench、retrieval、Evidence或产品入口，也未从`src/ingestion/__init__.py`默认导出。上游成熟组件继续负责文档模型；本模块只承担FIN边界上的严格输入校验、候选投影、异常隔离和权限封顶。
+- 初次作者分离审计发现两个P1：非空白charspan可能静默遗漏，以及table cell可能发生逻辑网格重叠；两项均在提交前按通用结构合同修正并加入回归。随后把生产模块从1,205行收敛为545行、测试从738行收敛为442行；独立逐对象比较safe fixture、冻结DELL反例和完整DELL JSON，瘦身前后对象、summary与`result_digest`完全一致。后续不再以压缩行数为目标，唯一非阻断P3是少量密集写法的可读性。
+- 最终验证为adapter行为测试`42/42`、相邻S1成熟栈测试`70/70`、pyflakes与AST/compile通过、`git diff --check`通过、repository secret scan=`8,337 files / 0 findings`；最终独立代码复核`P0/P1/P2/P3=0/0/0/1`。实现以commit `389545a913f38388c2dd9374cf06e1b5760ddb8d`推送并与upstream一致；该提交只授权隔离shadow candidate，不授权Docling adoption或任何产品接线。
+
+### 8.15 Clean commit上的DELL官方模型＋FIN边界双验证
+
+- 新attempt为`Z:\FIN_Insight_Agent_qualification\20260901_s1_mature_data_plane_v1\attempts\docling_shadow\dell_fy26_results\20260901T061520Z-shadow1`，目录只有两个文件。`official-model-validation.json`为971 bytes、SHA-256=`67d21fe8566b63dbabb4033125d3e463a0cbed13604fc4a31139fab29df990cf`；它使用成熟栈原生`docling_core.types.doc.DoclingDocument.model_validate_json`验证同一1,634,341-byte输入（SHA-256=`2e3039664f83005b490e1ef7709838960f1e0aa421828a5f09bc9f419c0b2032`），结果为DoclingDocument v1.10.0、9 pages、102 texts、15 tables、1 picture、8 groups，status=`PASS_OFFICIAL_MODEL_VALIDATION`。这只证明官方schema模型接受，不证明金融语义。
+- `docling-shadow.json`为2,328,680 bytes、SHA-256=`0280b3d5ca27b4240cf82c7f5fb69306d8431c2989d1ccf41d13401f6c3a919e`，claimed/recomputed `result_digest`均为`71ca0ef2089f9fae62e1c02bb1b7f8e21fab6f22a30c4634171155b0f6acc38c`。118个source leaves被投影为112个candidates（104 text fragments、7 tables、1 picture）与9个quarantines（8 tables、1个原始跨页text）；共有23 findings和24 unresolved relationships。两文件按sorted-key compact JSON list（`path/type/bytes/sha256`）计算的inventory digest=`e89094f4f60681818491b21d5d3c83a1493566e0b25409dcbe36e961d151dafb`。
+- 冻结反例行为符合fail-closed合同：`#/tables/10`因`repeated_currency_marker`和`unlabeled_numeric_row`被整表隔离，原始`$ 3,092 $`、`723`、`785`均未改写；4个`-%`保持原文且无`numeric_value`；16个脚注marker形成16个目标为空的unresolved关系；跨第5／6页的原始text对象被隔离并仅机械拆成三个片段。8项authority全部为false，包括raw direct consumption、financial semantic association、NumericFact、Evidence、automatic relationships、repair与adoption。
+- 单案例仍不能覆盖OCR/scanned、多语言、长文档、多发行人，也不能直接发现缺失`Non-GAAP adjustments:`或证明continued关系；`(a)`通用marker规则还可能跨发行人误报。故本attempt结论只为`ONE_DELL_NATIVE_TEXT_FAIL_CLOSED_SHADOW_PASS`。下一步是保持同一adapter不加DELL规则，做第二发行人双验证；出现新的语义修复需求时转成熟challenger比较，而不是继续自研。
+- 作者分离的最终落盘复核重新执行官方model validation、严格JSON与duplicate-key检查、结果digest重算、全部数组重数、原始table10／text66逐对象比较和authority检查，结论`P0/P1/P2/P3=0/0/0/0`。它确认目录为2 files／0 subdirectories／0 hidden entries，并逐文件复算出与上文完全相同的bytes与SHA-256。复核者另报的替代inventory序列化摘要因算法细节未完整封存，不纳入权威证据；本门只采用上文可独立复现的sorted-key compact JSON-list digest。

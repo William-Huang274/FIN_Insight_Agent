@@ -368,3 +368,20 @@ search result
 精确 receipt 字段为：`attempted_route_count=4`、`passed_route_count=4`、`exact_url_mode=true`、`model_calls=0`、`deepseek_calls=0`、`paid_calls=0`、`candidate_is_not_evidence=true`、`source_capture_authority=false`、`evidence_admission_authorized=false`、`mcp_promotion_authorized=false`、`production_status=HOLD`。manifest digest=`c49c3f575cdf5ad49de555bbf8fdbf71655fcd85cc9be9332368d907276ed9c9`。
 
 “zero-model”只表示本项目没有调用生成模型或 DeepSeek；transport 为 `exa_hosted_web_fetch`，且 manifest 明确 `hosted_transport_internal_model_usage_observable=false`，不能对托管服务内部实现作无模型声明。r4 关闭的是四个 frozen exact URL 的 transport/capture identity smoke，不是十个 topic family 的完整覆盖，也不是 claim-level admission。所有 captured text 仍是 candidate；在人工 admission 前不得引用、进入 Reviewed Evidence、写入 S2 或触发 A02。
+
+## 10. exact-URL r12 完整候选包与人工复核
+
+最终冻结 attempt：
+
+`Z:\FIN_Insight_Agent_qualification\dell_reference_vertical\external_exact_url_qualification\dell_external_exact_url_zero_model_20260902_r12\manifest.json`
+
+- manifest file SHA-256=`db7eae9aaa8108faadbe7ff07404dd25414e0191b7f62af0c7a42b85a0938b94`；manifest digest=`c12d47a7a6dc9c6b5a4134c70e9916753e25d00ca494ee117e8147511f7a79df`。
+- declared/attempted/passed=`12/12/12`；FIN model/DeepSeek/paid calls=`0/0/0`。
+- r5-r11 的失败均保留且未覆盖：Dell IR static PDF、NVIDIA PDF 和过窄 marker 等失败先后暴露了 route 与验收条件问题；r12 只在改用可读官方 HTML／eCFR living text并把 marker 收敛到正文真实可见内容后通过。
+- 12 条 official routes 覆盖九个分支：Dell FY27 Q2 SEC Exhibit、Volta 133MW named deployment、Dell AI Factory availability、NVIDIA Vera Rubin production、BIS China licensing policy、eCFR 15 CFR 742.6、HPE FY26 Q2 transcript、Supermicro FY26 Q4 preliminary results、Western Digital FY26 Q4 results、OpenAI GPT-5.6、TSMC 2Q26 transcript、Micron FY26 Q3 prepared remarks。
+
+实现者逐页查看了正文而非只接受通过数。关键 does-not-support 边界为：Volta 不能证明 Dell revenue/order value；Dell/NVIDIA product readiness 不能证明 Dell shipment/revenue recognition；BIS/eCFR 规则不能量化 Dell China exposure；HPE/SMCI facts 不能变成 Dell facts，且 SMCI 页面明确 preliminary/unaudited；WD 只能支持 storage demand 与 gross-margin direction，不能证明 Dell HDD BOM 或合同价；OpenAI compute demand 不能推出 Dell share。
+
+现有 MCP 的薄接线遵循：frozen exact URL 先提供已校验 locator/text；不足 `max_results` 时由 Exa primary 实时补足；全局 canonical URL 去重和 limit；有 frozen/primary candidate 时不运行 DDGS diagnostic。Q5 同分支按 route ID 稳定为 TSMC→Micron→WD，所以 `capture_limit=2` 先读最直接的 foundry/memory 原文，同时 limit=4 仍为 SK Hynix/Broadcom 等 live supplement 留位置。这个顺序不使用 query-specific issuer 规则。
+
+r12 与 MCP 输出始终保持 `candidate_is_not_evidence=true`、`source_capture_authority=false`、`admission_required_before_citation=true`、`citation_eligible=false`、`evidence_admission_authorized=false`、`mcp_promotion_authorized=false`、`s2_write_authorized=false`、`numeric_fact_authority=false`、`production_status=HOLD`。它关闭的是 A02 candidate input 的已知官方 URL 可读性和可复放性，不是 claim-level Evidence admission、完整市场覆盖、formal 或产品验收。

@@ -129,6 +129,8 @@ def _parser() -> argparse.ArgumentParser:
     start.add_argument("--foundation-sha256", required=True)
     start.add_argument("--deepseek-config-path", type=Path, required=True)
     start.add_argument("--deepseek-config-sha256", required=True)
+    start.add_argument("--project-os-decision-source-path", type=Path)
+    start.add_argument("--project-os-decision-source-sha256")
     start.add_argument("--knowledge-bridge-result-path", type=Path, required=True)
     start.add_argument("--knowledge-bridge-result-sha256", required=True)
     start.add_argument("--knowledge-records-path", type=Path, required=True)
@@ -166,6 +168,16 @@ def _parser() -> argparse.ArgumentParser:
     start.add_argument("--reviewed-evidence-overlay-projection-sha256")
     start.add_argument("--reviewed-evidence-overlay-receipt-path", type=Path)
     start.add_argument("--reviewed-evidence-overlay-receipt-sha256")
+    start.add_argument(
+        "--external-candidate-pack-manifest-path",
+        type=Path,
+        help=(
+            "optional frozen exact-URL qualification manifest; when bound, "
+            "same-branch candidates are replayed from its verified local text "
+            "before live discovery, without Evidence or citation authority"
+        ),
+    )
+    start.add_argument("--external-candidate-pack-manifest-sha256")
     start.add_argument(
         "--api-key-env",
         default=DEFAULT_API_KEY_ENV,
@@ -279,7 +291,11 @@ def _git_output(repository_root: Path, *arguments: str) -> str:
     return result.stdout.strip()
 
 
-def _implementation_source_paths(repository_root: Path) -> tuple[Path, ...]:
+def _implementation_source_paths(
+    repository_root: Path,
+    *,
+    project_os_decision_path: Path | None = None,
+) -> tuple[Path, ...]:
     explicit = (
         repository_root / "scripts/research/run_dell_reference_vertical.py",
         repository_root
@@ -305,12 +321,50 @@ def _implementation_source_paths(repository_root: Path) -> tuple[Path, ...]:
             key=lambda path: path.relative_to(repository_root).as_posix(),
         )
     )
-    paths = tuple(dict.fromkeys((*explicit, *discovered)))
+    additional: tuple[Path, ...] = ()
+    if project_os_decision_path is not None:
+        decision_path = project_os_decision_path.resolve()
+        try:
+            decision_path.relative_to(repository_root)
+        except ValueError as exc:
+            raise DellReferenceVerticalCLIError(
+                "project_os_decision_source_outside_repository"
+            ) from exc
+        additional = (decision_path,)
+    paths = tuple(dict.fromkeys((*explicit, *additional, *discovered)))
     if not paths or any(not path.is_file() for path in paths):
         raise DellReferenceVerticalCLIError(
             "implementation_source_bundle_incomplete"
         )
     return paths
+
+
+def _bound_project_os_decision_source(
+    *,
+    repository_root: Path,
+    path: Path | None,
+    sha256: str | None,
+) -> tuple[Path | None, dict[str, str] | None]:
+    if path is None and not str(sha256 or "").strip():
+        return None, None
+    if path is None or not str(sha256 or "").strip():
+        raise DellReferenceVerticalCLIError(
+            "project_os_decision_source_binding_incomplete"
+        )
+    bound_path = _required_file(path, str(sha256), "project_os_decision_source")
+    try:
+        relative = bound_path.relative_to(repository_root).as_posix()
+    except ValueError as exc:
+        raise DellReferenceVerticalCLIError(
+            "project_os_decision_source_outside_repository"
+        ) from exc
+    return bound_path, {
+        "path": relative,
+        "sha256": _required_digest(
+            str(sha256),
+            "project_os_decision_source_sha256",
+        )
+    }
 
 
 def _implementation_module_origins(
@@ -351,7 +405,11 @@ def _implementation_module_origins(
     return origins
 
 
-def _repository_implementation_binding(repository_root: Path) -> dict[str, Any]:
+def _repository_implementation_binding(
+    repository_root: Path,
+    *,
+    project_os_decision_path: Path | None = None,
+) -> dict[str, Any]:
     from sec_agent.agent_runtime.dell_reference_vertical_graph import (
         GRAPH_CONTRACT_VERSION,
     )
@@ -378,7 +436,14 @@ def _repository_implementation_binding(repository_root: Path) -> dict[str, Any]:
     branch = _git_output(root, "symbolic-ref", "--quiet", "--short", "HEAD")
     if branch != EXPECTED_GIT_BRANCH:
         raise DellReferenceVerticalCLIError("git_branch_binding_mismatch")
-    source_paths = _implementation_source_paths(root)
+    source_paths = (
+        _implementation_source_paths(
+            root,
+            project_os_decision_path=project_os_decision_path,
+        )
+        if project_os_decision_path is not None
+        else _implementation_source_paths(root)
+    )
     relative_paths = tuple(
         path.relative_to(root).as_posix() for path in source_paths
     )
@@ -440,7 +505,36 @@ def _assert_current_implementation_matches(manifest: Mapping[str, Any]) -> None:
         raise DellReferenceVerticalCLIError(
             "implementation_repository_root_missing"
         )
-    current = _repository_implementation_binding(Path(repository_root))
+    root = Path(repository_root).resolve()
+    raw_decision = input_bindings.get("project_os_decision_source")
+    if raw_decision is not None and (
+        not isinstance(raw_decision, Mapping)
+        or set(raw_decision) != {"path", "sha256"}
+    ):
+        raise DellReferenceVerticalCLIError(
+            "project_os_decision_source_manifest_invalid"
+        )
+    decision_path, normalized_decision = _bound_project_os_decision_source(
+        repository_root=root,
+        path=(root / str(raw_decision.get("path") or ""))
+        if isinstance(raw_decision, Mapping)
+        else None,
+        sha256=str(raw_decision.get("sha256") or "")
+        if isinstance(raw_decision, Mapping)
+        else None,
+    )
+    if normalized_decision != raw_decision:
+        raise DellReferenceVerticalCLIError(
+            "project_os_decision_source_manifest_drift"
+        )
+    current = (
+        _repository_implementation_binding(
+            root,
+            project_os_decision_path=decision_path,
+        )
+        if decision_path is not None
+        else _repository_implementation_binding(root)
+    )
     if current != dict(expected):
         raise DellReferenceVerticalCLIError("implementation_binding_drift")
 
@@ -971,6 +1065,11 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
         ExternalSourceCapture,
         ExternalSourceDiscovery,
     )
+    from sec_agent.research_foundation.frozen_external_candidate_pack import (
+        FrozenExternalCandidatePack,
+        FrozenExternalCandidatePackProvider,
+        FrozenFirstExternalSourceCapture,
+    )
     from sec_agent.research_foundation.mcp_server import (
         DellFoundationMethodReader,
         ResearchDataMCPDependencies,
@@ -980,7 +1079,17 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
     repository_root = _required_directory(args.repository_root, "repository_root")
     if repository_root != SCRIPT_REPOSITORY_ROOT:
         raise DellReferenceVerticalCLIError("repository_root_script_mismatch")
-    implementation_binding = _repository_implementation_binding(repository_root)
+    project_os_decision_path, project_os_decision_binding = (
+        _bound_project_os_decision_source(
+            repository_root=repository_root,
+            path=getattr(args, "project_os_decision_source_path", None),
+            sha256=getattr(args, "project_os_decision_source_sha256", None),
+        )
+    )
+    implementation_binding = _repository_implementation_binding(
+        repository_root,
+        project_os_decision_path=project_os_decision_path,
+    )
     state_root = _state_root(args.state_root)
     attempt_id = _required_identifier(args.attempt_id, "attempt_id")
     run_id = _required_identifier(args.run_id, "run_id")
@@ -1091,6 +1200,26 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
         raise DellReferenceVerticalCLIError(
             "reviewed_evidence_overlay_binding_incomplete"
         )
+    external_pack_inputs = (
+        getattr(args, "external_candidate_pack_manifest_path", None),
+        getattr(args, "external_candidate_pack_manifest_sha256", None),
+    )
+    external_pack_requested = any(
+        value not in (None, "") for value in external_pack_inputs
+    )
+    if external_pack_requested and not all(
+        value not in (None, "") for value in external_pack_inputs
+    ):
+        raise DellReferenceVerticalCLIError(
+            "external_candidate_pack_binding_incomplete"
+        )
+    external_pack_manifest_path: Path | None = None
+    if external_pack_requested:
+        external_pack_manifest_path = _required_file(
+            external_pack_inputs[0],
+            str(external_pack_inputs[1]),
+            "external_candidate_pack_manifest",
+        )
     if args.knowledge_record_count < 1:
         raise DellReferenceVerticalCLIError("knowledge_record_count_invalid")
     _validate_knowledge_bridge(
@@ -1114,6 +1243,22 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
         branch_ids
     ):
         raise DellReferenceVerticalCLIError("foundation_must_have_exactly_nine_branches")
+    external_candidate_pack = None
+    if external_pack_manifest_path is not None:
+        try:
+            external_candidate_pack = FrozenExternalCandidatePack.load(
+                external_pack_manifest_path,
+                expected_sha256=str(external_pack_inputs[1]),
+            )
+            external_candidate_pack.validate_runtime_binding(
+                case_id=case_id,
+                branch_ids=branch_ids,
+                research_as_of=research_as_of,
+            )
+        except Exception as exc:
+            raise DellReferenceVerticalCLIError(
+                f"external_candidate_pack_invalid:{exc}"
+            ) from exc
 
     runtime_paths = _runtime_registry(
         repository_root=repository_root,
@@ -1178,8 +1323,21 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
     discovery = ExternalSourceDiscovery(
         primary=ExaHostedMCPProvider(),
         diagnostic_fallback=DDGSDiagnosticProvider(),
+        frozen_candidate_provider=(
+            FrozenExternalCandidatePackProvider(external_candidate_pack)
+            if external_candidate_pack is not None
+            else None
+        ),
     )
-    capture = ExternalSourceCapture.with_default_transports()
+    live_capture = ExternalSourceCapture.with_default_transports()
+    capture = (
+        FrozenFirstExternalSourceCapture(
+            pack=external_candidate_pack,
+            fallback=live_capture,
+        )
+        if external_candidate_pack is not None
+        else live_capture
+    )
     mcp_server = build_research_data_mcp_server(
         ResearchDataMCPDependencies(
             method_reader=DellFoundationMethodReader(foundation),
@@ -1256,6 +1414,7 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
         "planner_tool_capabilities": planner_capabilities.model_dump(mode="json"),
         "input_bindings": {
             "repository_root": str(repository_root),
+            "project_os_decision_source": project_os_decision_binding,
             "foundation_path": str(foundation_path),
             "foundation_file_sha256": _required_digest(
                 args.foundation_sha256, "foundation_sha256"
@@ -1305,10 +1464,23 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
                 active_evidence_projection["projection_digest"]
             ),
             "reviewed_evidence_case_only_overlay": evidence_overlay_binding,
+            "external_candidate_pack": (
+                external_candidate_pack.manifest_binding()
+                if external_candidate_pack is not None
+                else None
+            ),
         },
         "authority_boundaries": {
             "candidate_is_not_evidence": True,
             "captured_candidate_requires_separate_admission": True,
+            "frozen_external_candidate_pack_bound": (
+                external_candidate_pack is not None
+            ),
+            "frozen_external_candidate_pack_source_capture_authority": False,
+            "frozen_external_candidate_pack_evidence_admission_authorized": False,
+            "frozen_external_candidate_pack_mcp_promotion_authorized": False,
+            "frozen_external_candidate_pack_s2_write_authorized": False,
+            "frozen_external_candidate_pack_numeric_fact_authority": False,
             "current_q2_source_visible_values_are_textual_evidence_only": True,
             "current_q2_s2_numeric_fact_authority": False,
             "current_q2_derived_arithmetic_authorized": False,
@@ -1332,6 +1504,10 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
             "model_transport_retries": model_config.max_retries,
             "maximum_counter_reroutes": (
                 foundation.scope_ceiling.maximum_targeted_counter_reroutes
+            ),
+            "maximum_specialist_model_rounds": (
+                composition.foundation_binding.scope_ceiling
+                .maximum_specialist_model_rounds
             ),
             "maximum_branches": EXPECTED_BRANCH_COUNT,
             "maximum_graph_concurrency": MAX_GRAPH_CONCURRENCY,

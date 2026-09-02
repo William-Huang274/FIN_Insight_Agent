@@ -339,11 +339,13 @@ class ExternalSourceDiscovery:
         *,
         primary: SearchProvider,
         diagnostic_fallback: SearchProvider | None = None,
+        frozen_candidate_provider: SearchProvider | None = None,
         clock: Callable[[], datetime] | None = None,
         monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
         self.primary = primary
         self.diagnostic_fallback = diagnostic_fallback
+        self.frozen_candidate_provider = frozen_candidate_provider
         self._clock = clock or (lambda: datetime.now(timezone.utc))
         self._monotonic = monotonic
 
@@ -355,12 +357,17 @@ class ExternalSourceDiscovery:
         candidates: list[RetrievalCandidate] = []
         seen_urls: set[str] = set()
 
-        providers = [self.primary]
+        providers: list[tuple[str, SearchProvider]] = []
+        if self.frozen_candidate_provider is not None:
+            providers.append(("frozen", self.frozen_candidate_provider))
+        providers.append(("primary", self.primary))
         if self.diagnostic_fallback is not None:
-            providers.append(self.diagnostic_fallback)
+            providers.append(("diagnostic", self.diagnostic_fallback))
 
-        for provider_index, provider in enumerate(providers):
-            if provider_index and candidates:
+        for provider_role, provider in providers:
+            if len(candidates) >= request.max_results:
+                break
+            if provider_role == "diagnostic" and candidates:
                 break
             try:
                 hits = tuple(await provider.search(request))
@@ -555,6 +562,7 @@ class CaptureAttempt(BaseModel):
         "trafilatura_static",
         "exa_hosted_web_fetch",
         "playwright_browser",
+        "frozen_exact_url_candidate_replay",
     ]
     status: Literal["ok", "empty", "tool_failure"]
     extracted_characters: int = Field(ge=0)
@@ -589,6 +597,7 @@ class CaptureReceipt(BaseModel):
         "trafilatura_static",
         "exa_hosted_web_fetch",
         "playwright_browser",
+        "frozen_exact_url_candidate_replay",
     ] | None
     attempts: tuple[CaptureAttempt, ...]
     text: str

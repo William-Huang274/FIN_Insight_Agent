@@ -180,12 +180,19 @@ class AgentRuntimeScopeCeiling(_StrictFrozenModel):
     maximum_captured_pages_per_branch: int = Field(ge=1, le=32)
     maximum_live_pages_per_run: int = Field(ge=1, le=256)
     maximum_sources_visible_per_agent_step: int = Field(ge=1, le=64)
-    maximum_targeted_counter_reroutes: Literal[1]
+    maximum_specialist_model_rounds: int = Field(ge=1, le=2)
+    maximum_targeted_counter_reroutes: int = Field(ge=0, le=1)
 
     @model_validator(mode="after")
     def validate_aggregate_bounds(self) -> "AgentRuntimeScopeCeiling":
         if self.maximum_captured_pages_per_branch > self.maximum_live_pages_per_run:
             raise ValueError("branch_capture_ceiling_exceeds_run_ceiling")
+        if self.maximum_specialist_model_rounds != (
+            1 + self.maximum_targeted_counter_reroutes
+        ):
+            raise ValueError(
+                "specialist_round_ceiling_must_equal_initial_plus_counter_reroutes"
+            )
         return self
 
 

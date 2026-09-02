@@ -302,6 +302,31 @@ def _validate_cumulative_branch_external_budget(
         )
 
 
+def _validate_specialist_round_authority(
+    *,
+    binding: CaseFoundationBinding,
+    completed_rounds: int,
+    requested_round: int,
+) -> None:
+    """Enforce the foundation-owned specialist ceiling before a model dispatch."""
+
+    if requested_round != completed_rounds + 1:
+        raise DellReferenceVerticalGraphError("specialist_round_sequence_invalid")
+    if requested_round > binding.scope_ceiling.maximum_specialist_model_rounds:
+        raise DellReferenceVerticalGraphError("specialist_round_limit_exceeded")
+
+
+def _completed_specialist_rounds(
+    state: Mapping[str, Any], *, branch_id: str
+) -> int:
+    initial = state.get("initial_workpapers_by_branch")
+    rounds = int(isinstance(initial, Mapping) and branch_id in initial)
+    rework = state.get("rework_workpaper")
+    if isinstance(rework, Mapping) and rework.get("branch_id") == branch_id:
+        rounds += 1
+    return rounds
+
+
 def _task_by_branch(state: Mapping[str, Any]) -> dict[str, BoundBranchTask]:
     tasks = [_validate_model(BoundBranchTask, row, label="bound_branch_task") for row in state.get("branch_tasks", [])]
     return {row.branch_id: row for row in tasks}
@@ -943,8 +968,16 @@ def _verification_errors(state: Mapping[str, Any]) -> list[str]:
         errors.append("effective_workpaper_set_mismatch")
     if not set(binding.required_branch_ids).issubset(effective):
         errors.append("required_workpaper_missing")
-    if not 0 <= int(state.get("reroute_count", -1)) <= 1:
+    if not 0 <= int(state.get("reroute_count", -1)) <= (
+        binding.scope_ceiling.maximum_targeted_counter_reroutes
+    ):
         errors.append("reroute_count_invalid")
+    if any(
+        row.revision + 1
+        > binding.scope_ceiling.maximum_specialist_model_rounds
+        for row in effective.values()
+    ):
+        errors.append("specialist_round_count_invalid")
 
     initial_results: dict[tuple[str, str], ToolLaneResult] = {}
     for lane, key in (
@@ -1396,6 +1429,11 @@ def build_dell_reference_vertical_graph(
         branch_inputs: dict[str, PlainDict] = {}
         for branch_id, task in sorted(tasks.items()):
             evidence_result, finance_result = joined_results[branch_id]
+            _validate_specialist_round_authority(
+                binding=binding,
+                completed_rounds=0,
+                requested_round=1,
+            )
             agent_input = _branch_context(
                 run_id=state["run_id"],
                 task=task,
@@ -1508,8 +1546,6 @@ def build_dell_reference_vertical_graph(
         }
         if decision.reroute is None:
             return update
-        if int(state.get("reroute_count", 0)) != 0:
-            raise DellReferenceVerticalGraphError("counter_reroute_limit_exceeded")
         tasks = _task_by_branch(state)
         target = tasks.get(decision.reroute.target_branch_id)
         if target is None:
@@ -1518,6 +1554,19 @@ def build_dell_reference_vertical_graph(
             CaseFoundationBinding,
             state.get("foundation_binding"),
             label="foundation_binding",
+        )
+        if int(state.get("reroute_count", 0)) >= (
+            binding.scope_ceiling.maximum_targeted_counter_reroutes
+        ):
+            raise DellReferenceVerticalGraphError("counter_reroute_limit_exceeded")
+        completed_rounds = _completed_specialist_rounds(
+            state,
+            branch_id=target.branch_id,
+        )
+        _validate_specialist_round_authority(
+            binding=binding,
+            completed_rounds=completed_rounds,
+            requested_round=completed_rounds + 1,
         )
         reroute_requests = _evidence_requests(
             decision.reroute.evidence_requests,
@@ -1669,6 +1718,24 @@ def build_dell_reference_vertical_graph(
         value = state.get("rework_branch_input")
         if not isinstance(value, Mapping):
             raise DellReferenceVerticalGraphError("rework_branch_input_missing")
+        task = _validate_model(
+            BoundBranchTask,
+            state.get("rework_task"),
+            label="rework_task",
+        )
+        binding = _validate_model(
+            CaseFoundationBinding,
+            state.get("foundation_binding"),
+            label="foundation_binding",
+        )
+        _validate_specialist_round_authority(
+            binding=binding,
+            completed_rounds=_completed_specialist_rounds(
+                state,
+                branch_id=task.branch_id,
+            ),
+            requested_round=task.revision + 1,
+        )
         workpaper = _run_specialist(value, agent=dependencies.specialist_agent)
         return {
             "rework_workpaper": workpaper.model_dump(mode="json"),

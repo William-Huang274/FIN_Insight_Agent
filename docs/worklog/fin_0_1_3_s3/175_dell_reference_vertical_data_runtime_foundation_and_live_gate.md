@@ -188,3 +188,19 @@ FIN 只保留薄的、确实属于产品的部分：
 - 断言证明返回的是 `structured_document_tree=true / legacy_read_only_bridge=false` 的 candidate，而不是旧 flat bridge。
 
 迁移后核心九分支 composition 测试 `1 passed`；structured reader／真实 MCP／DeepSeek adapter／graph 相邻组 `32 passed`；包含 structured corpus、RAG qualification、external exact URL、S1/S2 MCP、candidate judge、graph/CLI 和九分支 resume 的本轮组合回归为 `207 passed in 82.85s`。这些是 zero-paid deterministic/本地集成验证；不把失败的 candidate judge 变成 PASS，也不授权新的付费 A02、Evidence admission、报告、formal 或产品发布。
+
+## 14. 2026-09-02 structured A02 启动前 Runtime 收口
+
+本节只记录启动前已经进入 working-tree successor、且可由测试复算的事实。A02 尚未执行，不能把“具备运行资格”写成“纵切已经跑通”。
+
+- foundation 的 `maximum_specialist_model_rounds=2` 已投影到 `AgentRuntimeScopeCeiling`、MCP composition 和 attempt composition manifest，不再是死字段。合同要求 `maximum_specialist_model_rounds == 1 + maximum_targeted_counter_reroutes`；当前值为首轮 1 次、最多一条 Counter 定向回派、单分支总计最多 2 次 Specialist 模型调用。
+- 图在首轮 dispatch、Counter 回派、rework 模型调用前和最终 verification 都消费该 authority。第三轮明确以 `specialist_round_limit_exceeded` fail closed；HITL resume 回归确认不会重跑初始工具、回派工具或 Specialist。
+- 外源没有新建 MCP 工具或协议；runner 只增加成对的 frozen-pack path/SHA 参数，并把通过完整性校验的 r12 作为现有 discovery/capture lane 的第一候选来源。candidate 未填满时仍调用实时 primary 补充，不把冻结包误当成完整互联网。
+- successor DeepSeek config 只更新 Planner 的 comparable-run evidence：A01 实际 HTTP 200、input `21,465`、output `2,076`、total `23,541`，失败在本地 parser，不是 token ceiling。Planner/Specialist/Counter/Lead 原 task-specific 输入、输出、schema、质量风险、stop/truncation 和 0 retry 合同均未削弱。
+- A02 唯一身份预定为 attempt=`20260902-dell-reference-vertical-structured-a02`、run=`dell-reference-vertical-structured-run-a02`、snapshot=`20260902-dell-structured-s1-s2-external-a02`。启动权限只到 HITL：不自动 approve/reject resume、render、publication、formal qualification、product acceptance 或 release。
+- A02 的 Project OS gate 曾一度把本地 RAG/S2/pack 校验再实现一遍，独立审查确认这是重复治理后已从约 327 行收薄到 120 个物理行：现在只绑定本次 identity、一次 `start → HITL` authority、launcher SHA 和 known boundary；真实数据、config、pack、MCP、graph、checkpoint 与 Git implementation binding 仍由既有 runner 校验。该 one-off shim 只服务 A02，A03／下一案例不得复制新 schema，应改成数据化的通用 bounded paid-start decision 或直接复用既有合同。
+- 启动前 root 已独立复跑 Runtime graph/MCP `44 passed`、frozen pack/external/CLI/real-composition `45 passed`，以及包含上述各面和 A02 gate 的稳定合并回归 `115 passed in 72.10s`。A02 专用 gate `5 passed`，独立 reviewer 的 P0/P1=`0/0`；`git diff --check` 已通过。一次 dirty-tree launcher `-PreflightOnly` 也按设计在 Project OS 的 `project_os_repository_not_synced` fail closed，模型／网络／provider calls 均为 0。
+- 更大的历史 `test_project_os_preflight.py` 回归曾得到 `33 failed / 164 passed`：其中一个新旧 projection 的 `evidence_mode` 兼容错误已在同一层修复并由 A02 与一个旧 fixed-pack 聚焦回归验证；其余失败主体是历史 live-authority JSON 固定绑定 `project_os_preflight.py` 的旧 HEAD SHA，任何合法修改都会触发预期 drift。没有改写几十份历史不可变 decision，也没有削弱 SHA validator；这属于既有 live-authority fixture 的可维护性设计债，不是把 A02 验证伪装为全仓绿色。
+- clean commit/push 和 clean 状态下的 Project OS、launcher 两次 zero-call preflight 仍是下一门；截至本节 A02 仍未启动。
+
+这次对 paid start 使用严格门是因为它会产生真实费用、不可变 attempt 和多节点外部调用；同等门不得外推到普通文件读取、局部测试或只读审计。若专用 gate 与 runner 已有 SHA/composition 绑定重复，收口时应删除重复层而不是继续扩写。

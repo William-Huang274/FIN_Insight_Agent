@@ -800,6 +800,53 @@ def test_repository_implementation_binding_requires_exact_clean_commit(
         cli._repository_implementation_binding(repository)
 
 
+def test_project_os_decision_source_is_bound_and_rechecked_on_resume(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    decision = tmp_path / "decision.json"
+    decision.write_text('{"scope":"A02"}\n', encoding="utf-8")
+    decision_sha = cli._stream_sha256(decision)
+    bound_path, binding = cli._bound_project_os_decision_source(
+        repository_root=tmp_path.resolve(),
+        path=decision,
+        sha256=decision_sha,
+    )
+
+    assert bound_path == decision.resolve()
+    assert binding == {"path": "decision.json", "sha256": decision_sha}
+
+    expected = {"binding_digest": "a" * 64}
+    observed: list[Path | None] = []
+
+    def _binding(
+        _root: Path,
+        *,
+        project_os_decision_path: Path | None = None,
+    ) -> dict[str, str]:
+        observed.append(project_os_decision_path)
+        return expected
+
+    monkeypatch.setattr(cli, "_repository_implementation_binding", _binding)
+    manifest = {
+        "implementation_binding": expected,
+        "input_bindings": {
+            "repository_root": str(tmp_path.resolve()),
+            "project_os_decision_source": binding,
+        },
+    }
+
+    cli._assert_current_implementation_matches(manifest)
+    assert observed == [decision.resolve()]
+
+    decision.write_text('{"scope":"drifted"}\n', encoding="utf-8")
+    with pytest.raises(
+        cli.DellReferenceVerticalCLIError,
+        match="project_os_decision_source_sha256_mismatch",
+    ):
+        cli._assert_current_implementation_matches(manifest)
+
+
 def test_runtime_module_origins_are_exactly_contained_in_bound_checkout(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

@@ -236,3 +236,7 @@ Attempt：
 该 attempt 只做了一次 DeepSeek V4 Pro nonthinking JSON 调用：HTTP 200、finish reason=`stop`、usage=`8,676` tokens，但输出未通过 strict host schema，终态为 `candidate_judge_output_invalid / terminal_failed_candidate_only_no_retry`。`terminal_failure.json` SHA256=`7235ad01b4d23357e0d093416b6a949be1613e4b8fc0777100c0e6c70cc8ef92`；`retry_count=0`、`fallback_model_used=false`、`candidate_selection_promoted=false`、`source_attempt_mutated=false`、`evidence_promotion_authorized=false`、`formal_qualification_claimed=false`，因此 full-stack attempt03 未被修改。
 
 语义复核也不支持绕过 schema：L23 错选缺少 Data Center q/q 的 `MIXEDPROSE::050572...`，把总营收 q/q 迁移成 Data Center q/q，并将真正完整的 `CHUNK::E8B7CE442115ACDBFFDD38A4` 判为 partial；L26 虽正确选择完整 actual 表 `BLOCK::66DB3ED43C0D0E1952012210`，却又把仅有 revenue 的 `MIXEDPROSE::0E3F...` 自相矛盾地判为 `full_support`。结论保持 **HOLD / no retry**：模型判断可作为候选辅助，但不能替代 host schema、原文核对和 qrel/precedence validation，也不能修饰 attempt03 的机械指标或产生 promotion。
+
+## 15. A02 使用边界
+
+Owner 已授权新 Dell vertical 做一次完整九分支 start→HITL 资格运行，但这不改变本工作包的 formal 结论。A02 可以把 attempt03 的 structured BM25 path 作为明确标注的 engineering-preview candidate input；不允许宣称 Haystack、parent-child、Dense、reranker、PDF/image 或 qrel precedence 已正式通过，也不允许自动把任何 retrieval candidate 晋升为 Evidence。若 A02 内容质量良好，只能证明这一个 case 在当前候选数据面上能够产生可审计 workpapers/Counter/Lead；formal retrieval promotion 仍须另行关闭 L23/L26 qrel precedence、L10 reranker、truncation 与完整人工 receipt。

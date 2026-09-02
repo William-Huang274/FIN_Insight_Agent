@@ -455,7 +455,8 @@ def build_research_data_mcp_server(
     @server.tool(
         name=CAPTURE_EXTERNAL_SOURCE_TOOL,
         description=(
-            "Transition-capture one public locator with direct trafilatura, Exa's "
+            "Read one bound frozen exact-URL candidate when available, otherwise "
+            "transition-capture one public locator with direct trafilatura, Exa's "
             "maintained web_fetch fallback, and an optional Playwright fallback. "
             "This tool does not enforce robots or create WARC/archive-grade "
             "records; the result remains a candidate until FIN evidence admission."

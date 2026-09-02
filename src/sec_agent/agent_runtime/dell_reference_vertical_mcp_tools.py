@@ -179,6 +179,9 @@ def compose_dell_mcp_graph_run(
             maximum_sources_visible_per_agent_step=(
                 foundation.scope_ceiling.maximum_sources_visible_per_agent_step
             ),
+            maximum_specialist_model_rounds=(
+                foundation.scope_ceiling.maximum_specialist_model_rounds
+            ),
             maximum_targeted_counter_reroutes=(
                 foundation.scope_ceiling.maximum_targeted_counter_reroutes
             ),

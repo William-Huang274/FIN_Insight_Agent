@@ -30,6 +30,7 @@ from sec_agent.agent_runtime.dell_reference_vertical_graph import (
     _join_initial_lane_results,
     _validate_agent_step_budget,
     _validate_cumulative_branch_external_budget,
+    _validate_specialist_round_authority,
     _validate_workpaper,
     build_dell_reference_vertical_graph,
 )
@@ -172,6 +173,7 @@ class FakeRuntime:
                 maximum_captured_pages_per_branch=4,
                 maximum_live_pages_per_run=24,
                 maximum_sources_visible_per_agent_step=10,
+                maximum_specialist_model_rounds=2,
                 maximum_targeted_counter_reroutes=1,
             ),
             branch_methods=self.method_bindings(),
@@ -585,6 +587,42 @@ def test_foundation_scope_ceiling_blocks_unbounded_planner_and_reroute_requests(
         )
 
 
+def test_foundation_owns_specialist_round_ceiling_and_third_round_is_blocked() -> None:
+    runtime = FakeRuntime()
+    binding = CaseFoundationBinding.model_validate_json(
+        json.dumps(runtime.foundation_binder(_start_input()))
+    )
+
+    assert binding.scope_ceiling.maximum_specialist_model_rounds == 2
+    assert binding.scope_ceiling.maximum_specialist_model_rounds == (
+        1 + binding.scope_ceiling.maximum_targeted_counter_reroutes
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="specialist_round_ceiling_must_equal_initial_plus_counter_reroutes",
+    ):
+        AgentRuntimeScopeCeiling(
+            maximum_external_search_rounds_per_high_materiality_branch=2,
+            maximum_results_per_search=6,
+            maximum_captured_pages_per_branch=4,
+            maximum_live_pages_per_run=24,
+            maximum_sources_visible_per_agent_step=10,
+            maximum_specialist_model_rounds=1,
+            maximum_targeted_counter_reroutes=1,
+        )
+
+    with pytest.raises(
+        DellReferenceVerticalGraphError,
+        match="specialist_round_limit_exceeded",
+    ):
+        _validate_specialist_round_authority(
+            binding=binding,
+            completed_rounds=2,
+            requested_round=3,
+        )
+
+
 def _build(runtime: FakeRuntime):
     return build_dell_reference_vertical_graph(
         dependencies=runtime.dependencies(),
@@ -708,9 +746,13 @@ def test_counter_reroutes_only_one_branch_once_and_preserves_other_workpaper() -
     assert runtime.counter_calls == 1
     assert runtime.lead_calls == 1
 
+    calls_before_resume = list(runtime.calls)
+    specialist_count_before_resume = len(runtime.specialist_inputs)
     completed = graph.invoke(Command(resume={"action": "approve"}), _config())
     assert completed["phase"] == "completed"
     assert completed["final_report"]["reroute_count"] == 1
+    assert runtime.calls == calls_before_resume
+    assert len(runtime.specialist_inputs) == specialist_count_before_resume
     assert runtime.counter_calls == 1
     assert runtime.lead_calls == 1
 

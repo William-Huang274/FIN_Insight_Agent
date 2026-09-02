@@ -71,6 +71,15 @@ def _binding():
     return _COMPOSITION.mcp_run_binding
 
 
+def test_run_composition_projects_foundation_specialist_round_authority() -> None:
+    ceiling = _COMPOSITION.foundation_binding.scope_ceiling
+
+    assert ceiling.maximum_specialist_model_rounds == 2
+    assert ceiling.maximum_specialist_model_rounds == (
+        1 + ceiling.maximum_targeted_counter_reroutes
+    )
+
+
 def _task(
     lane: str,
     *,

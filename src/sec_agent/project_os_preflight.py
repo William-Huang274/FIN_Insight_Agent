@@ -11,6 +11,10 @@ import subprocess
 from typing import Any
 
 from sec_agent.canonical_runtime import canonical_digest
+from sec_agent.dell_reference_vertical_a02_gate import (
+    DELL_REFERENCE_VERTICAL_A02_DECISION_SCHEMA,
+    validate_dell_reference_vertical_a02_paid_start_scope_decision,
+)
 from sec_agent.research.material_scope_canary import (
     MATERIAL_SCOPE_CANARY_AUTHORITY_SCHEMA,
     MATERIAL_SCOPE_CONTRACT_REPAIR_AUTHORITY_SCHEMA,
@@ -613,6 +617,14 @@ def _validate_nested_artifact_binding(
 def _validate_fixed_pack_decision(
     *, root: Path, decision: Mapping[str, Any]
 ) -> dict[str, Any]:
+    if (
+        decision.get("schema_version")
+        == DELL_REFERENCE_VERTICAL_A02_DECISION_SCHEMA
+    ):
+        return validate_dell_reference_vertical_a02_paid_start_scope_decision(
+            root=root,
+            decision=decision,
+        )
     if decision.get("schema_version") in {
         REPORT_REMAP_SCOPE_DECISION_SCHEMA_VERSION,
         REPORT_REMAP_REPLACEMENT_SCOPE_DECISION_SCHEMA_VERSION,
@@ -13602,6 +13614,11 @@ def build_preflight(
     decision_path = _repo_path(root, decision_ref)
     decision = _load_json(decision_path)
     decision_projection = _validate_fixed_pack_decision(root=root, decision=decision)
+    if "evidence_mode" not in decision_projection:
+        decision_projection = {
+            **decision_projection,
+            "evidence_mode": decision["evidence_mode"],
+        }
     scope_projection = _scope_blocker_projection(
         root=root, run_scope_id=str(decision["run_scope_id"])
     )
@@ -14247,6 +14264,17 @@ def build_preflight(
         raise ValueError(
             "project_os_full_fragment_causal_polarity_scope_allowance_missing"
         )
+    if decision_projection.get("dell_reference_vertical_a02_paid_start") is True:
+        required_allowances = {
+            "RC-S1-120-dell-external-discovery-and-capture-route-instability",
+            "RC-S3-102-dell-A01-provider-structured-parser-rejected-valid-JSON-arrays",
+            "RC-S3-103-dell-model-call-ceiling-and-dead-specialist-round-config",
+        }
+        actual_allowances = set(scope_projection["explicit_allow_issue_ids"])
+        if not required_allowances.issubset(actual_allowances):
+            raise ValueError(
+                "project_os_dell_reference_vertical_a02_scope_allowance_missing"
+            )
 
     env = os.environ if environment is None else environment
     api_key_env = str(decision_projection["api_key_env"])
@@ -14260,7 +14288,19 @@ def build_preflight(
         "clean": "not_checked",
         "synced": "not_checked",
     }
-    if (
+    if decision_projection.get("dell_reference_vertical_a02_paid_start") is True:
+        known_boundary = (
+            "This authority permits exactly one paid DELL structured A02 start to "
+            "HITL from a clean pushed commit after both Project OS and launcher "
+            "zero-call preflights pass. It consumes the bound structured RAG only "
+            "as an engineering candidate, the fresh exact-period S2 successor, the "
+            "Reviewed Evidence overlay, and the frozen exact-URL pack as "
+            "candidate-only input with no automatic Evidence admission. It grants "
+            "no approve or reject resume, no render, no publication, no formal "
+            "qualification, no product acceptance, and no release. Any failure is "
+            "immutable and requires a new owner-authorized attempt identity."
+        )
+    elif (
         decision_projection.get(
             "current_dynamic_multi_agent_protected_writer_submission_successor"
         )
@@ -15114,6 +15154,28 @@ def build_preflight(
             "live authority, dynamic Agentic Research, five-cell acceptance, "
             "publication, or release."
         )
+    if decision_projection.get("dell_reference_vertical_a02_paid_start") is True:
+        checks = {
+            "project_os_documents_available_and_parseable": True,
+            "decision_scope_and_authority_valid": True,
+            "launcher_binding_valid": True,
+            "root_cause_scope_allowed": True,
+            "provider_credential_present_value_unread": credential_present,
+            "real_evidence_mode": decision_projection["evidence_mode"],
+            "repository_clean_and_synced": repository["clean"] is True,
+            "runner_zero_call_preflight_required_before_start": True,
+        }
+    else:
+        checks = {
+            "project_os_documents_available_and_parseable": True,
+            "immutable_clean_proof_and_failure_bindings_valid": True,
+            "root_cause_scope_allowed": True,
+            "token_and_call_budget_bounded": True,
+            "provider_profile_and_recent_complete_capture_valid": True,
+            "provider_credential_present_value_unread": credential_present,
+            "real_evidence_mode": decision_projection["evidence_mode"],
+            "repository_clean_and_synced": repository["clean"] is True,
+        }
     return {
         "schema_version": CURRENT_PREFLIGHT_SCHEMA,
         "status": "pass_current_decision_bound_preflight",
@@ -15123,16 +15185,7 @@ def build_preflight(
         "run_scope_id": decision["run_scope_id"],
         "case_key": decision["case_key"],
         "cell_id": decision["cell_id"],
-        "checks": {
-            "project_os_documents_available_and_parseable": True,
-            "immutable_clean_proof_and_failure_bindings_valid": True,
-            "root_cause_scope_allowed": True,
-            "token_and_call_budget_bounded": True,
-            "provider_profile_and_recent_complete_capture_valid": True,
-            "provider_credential_present_value_unread": credential_present,
-            "real_evidence_mode": decision["evidence_mode"],
-            "repository_clean_and_synced": repository["clean"] is True,
-        },
+        "checks": checks,
         "decision_projection": decision_projection,
         "scope_projection": scope_projection,
         "repository": repository,

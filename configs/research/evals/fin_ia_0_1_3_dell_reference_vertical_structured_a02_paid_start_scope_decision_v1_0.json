@@ -1,0 +1,33 @@
+{
+  "schema_version": "fin_ia_dell_reference_vertical_a02_paid_start_scope_decision_v1_0",
+  "status": "owner_authorized_one_A02_paid_start_to_HITL_after_clean_pushed_commit_and_zero_call_preflights",
+  "case_key": "DELL",
+  "cell_id": "DELL_AI_INFRA_REFERENCE_VERTICAL::STRUCTURED_A02",
+  "run_scope_id": "one_DELL_reference_vertical_structured_A02_start_to_HITL_exact_once",
+  "attempt_id": "20260902-dell-reference-vertical-structured-a02",
+  "run_id": "dell-reference-vertical-structured-run-a02",
+  "snapshot_id": "20260902-dell-structured-s1-s2-external-a02",
+  "research_as_of": "2026-09-02T23:59:59+08:00",
+  "credential_presence_required": true,
+  "api_key_env": "DEEPSEEK_API_KEY",
+  "authority": {
+    "automatic_human_approval": false,
+    "candidate_promotion_authorized": false,
+    "evidence_admission_authorized": false,
+    "formal_qualification_authorized": false,
+    "model_fallback_authorized": false,
+    "model_retry_authorized": false,
+    "paid_start_to_hitl_attempts": 1,
+    "product_acceptance_authorized": false,
+    "publication_authorized": false,
+    "release_authorized": false,
+    "render_authorized": false,
+    "resume_approve_authorized": false,
+    "resume_reject_authorized": false
+  },
+  "launcher_binding": {
+    "ref": "scripts/research/run_dell_reference_vertical_structured_a02.ps1",
+    "sha256": "e534aa777460bbf13a94e6e7a236f1c7b35c36f8c42a767fdc8f52bcf42fc087"
+  },
+  "known_boundary": "This authority permits one paid A02 start to HITL from a clean pushed commit after Project OS and launcher zero-call preflights pass. Structured RAG and the frozen external pack remain candidate-only, with no automatic Evidence admission. There is no approve or reject resume and no render, publication, formal qualification, product acceptance, or release. Any terminal failure is immutable and requires a new owner-authorized attempt identity."
+}

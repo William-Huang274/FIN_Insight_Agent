@@ -1,11 +1,13 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-09-02
+更新时间：2026-09-03
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-dell-s1-s2-product-bridge`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
+
+2026-09-03 00:20 A02 不可变失败：在 clean pushed `e50713b3d6d29ff4c9bc464dae004d9479bef269` 上，Project OS 与 launcher 两道 zero-call preflight 均 PASS 后，Owner 授权的 attempt=`20260902-dell-reference-vertical-structured-a02` 唯一启动一次。仅 Planner 发生 1 次真实 DeepSeek V4 Pro 调用：HTTP 200／`tool_calls`，input/output/total=`21,489/2,874/24,363`，随后为 `host_payload_validation_failed`；无 retry/fallback，S1/S2/MCP、9 Specialists、Counter、Lead、HITL 和 report 全部未运行。A01 的 plain-JSON parser successor 已被真实证明有效，因为 payload 成功到达 host validator；新最早责任层是项目自有的 source-family→Planner capability/schema→实际 MCP selector 编译断层。Q6/Q7 local request 缺 issuer，Q9 external request 携带 local-only selectors；provider-visible schema 没有表达这些条件，prompt 还与 hidden validator 冲突。更深审计证明 A02 的 16 个 local requests 把 `F1…F12` 抽象 source-family IDs、authority roles 和 ticker 当成 1,025-node corpus 的 concrete route/source-role/issuer，按真实 metadata-prefilter 重放为 `16/16` 零命中；因 `route_ids` 非空还会绕过 Reviewed Evidence。17 个请求只有 Q9 一条 external，故 r12 的九分支冻结外源几乎不会被消费。不能只放松 validator 或 retry，否则大概率仍生成材料贫乏的边界报告。A02 永久 `start_failed`；新门 `RC-S3-105` 要求用标准 discriminated request schema、从现有 inventory 派生的薄 source-family→physical-selector compiler、九分支 answer-free minimum route plan 和零模型 selector/coverage 回归关闭该断层。没有创建或授权 A03；详见 S3/178。
 
 2026-09-02 23:50 A02 启动前 successor：A01 的十类 external-required 资料已收敛为 exact-URL r12，12/12 官方页面完成无 FIN 模型抓取和逐页人工复核；manifest file SHA=`db7eae9a...8b94`、manifest digest=`c12d47a7...a79df`。r12 只作为 candidate-only 输入，`source_capture_authority/Evidence admission/MCP promotion/S2 write/NumericFact authority` 全为 false。现有 `search_external_sources`／`capture_external_source` 已通过一个薄 adapter 消费该冻结包：同分支先用已校验正文、未填满才由 Exa 实时补足、统一 URL 去重和 limit，Q5 固定先给 TSMC／Micron 再给 WD；没有新建第二套 MCP 或 crawler。`maximum_specialist_model_rounds=2` 也已从死配置变成 Runtime authority：初始 1 轮＋最多一次 Counter 定向回派，第三轮在模型调用前拒绝，HITL resume 不重跑。A02 一次性 gate 已经独立审查并从重复验证收薄为 120 行 identity/authority/launcher 边界，P0/P1=`0/0`；稳定产品相关回归=`115 passed`。`d99ded97...cceb` 上 Project OS clean zero-call gate 已 PASS，但 Windows PowerShell 5.1 在 runner 前暴露无 BOM UTF-8 中文 literal 的解析失败；模型／网络／provider calls=0，attempt/checkpoint 均未创建。现已用语义等价的 ASCII 问题和 CRLF 稳定哈希最小修复，gate＋CLI=`31 passed`，须重新 clean commit/push 并从两道 zero-call gate 重跑。Structured RAG 仍是 candidate-only engineering preview，formal 与自动 Evidence admission 均 HOLD。
 

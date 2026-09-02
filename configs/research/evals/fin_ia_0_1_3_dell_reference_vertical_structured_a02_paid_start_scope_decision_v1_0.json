@@ -27,7 +27,7 @@
   },
   "launcher_binding": {
     "ref": "scripts/research/run_dell_reference_vertical_structured_a02.ps1",
-    "sha256": "e534aa777460bbf13a94e6e7a236f1c7b35c36f8c42a767fdc8f52bcf42fc087"
+    "sha256": "72637741b556ca767431fe67d14692340f4ae5aa13e9cb98dcb2bdb7e2be59f8"
   },
   "known_boundary": "This authority permits one paid A02 start to HITL from a clean pushed commit after Project OS and launcher zero-call preflights pass. Structured RAG and the frozen external pack remain candidate-only, with no automatic Evidence admission. There is no approve or reject resume and no render, publication, formal qualification, product acceptance, or release. Any terminal failure is immutable and requires a new owner-authorized attempt identity."
 }

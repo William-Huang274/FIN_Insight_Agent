@@ -70,9 +70,12 @@ $runArguments = @(
     '--snapshot-id', '20260902-dell-structured-s1-s2-external-a02',
     '--research-as-of', '2026-09-02T23:59:59+08:00',
     '--research-question', (
-        '截至 2026 年 9 月 2 日，Dell 的 AI 基础设施业务增长到底有多大、多可持续、' +
-        '能否转化为收入利润和现金流；架构迭代、GPU 与内存供给、价格数量组合、' +
-        '客户需求及对华出口管制分别怎样影响兑现，最强反证和后续验证指标是什么？'
+        'As of September 2, 2026, how large and sustainable is Dell AI ' +
+        'infrastructure growth, and can it convert into revenue, profit, and ' +
+        'cash flow? How do architecture transitions, GPU and memory supply, ' +
+        'price-volume mix, customer demand, and US export controls toward ' +
+        'China affect conversion? What are the strongest counterarguments ' +
+        'and what evidence would change the conclusion?'
     ),
     '--foundation-path', (
         'D:\FIN_Insight_Agent\configs\research\' +

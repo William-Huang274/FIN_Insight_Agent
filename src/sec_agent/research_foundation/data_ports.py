@@ -37,8 +37,16 @@ FINANCIAL_FACT_QUERY_SCHEMA_VERSION = "fin_ia_company_financial_fact_query_v1_0"
 LOCAL_KNOWLEDGE_READ_SCHEMA_VERSION = (
     "fin_ia_frozen_legacy_local_knowledge_read_v1_0"
 )
+STRUCTURED_LOCAL_KNOWLEDGE_READ_SCHEMA_VERSION = (
+    "fin_ia_structured_local_knowledge_read_v1_0"
+)
 _TICKER_RE = re.compile(r"^[A-Z][A-Z0-9.-]{0,15}$")
 _METRIC_RE = re.compile(r"^[a-z][a-z0-9_]{1,95}$")
+_SCOPE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,119}$")
+_STRUCTURED_TOKEN_RE = re.compile(
+    r"[a-z0-9]+(?:[.&/+_-][a-z0-9]+)*|[\u3400-\u4dbf\u4e00-\u9fff]",
+    re.IGNORECASE,
+)
 _GRANULARITIES = frozenset(
     {
         "quarter_discrete",
@@ -70,13 +78,12 @@ class CompanyFinancialFactQuery(BaseModel):
     ticker: str = Field(min_length=1, max_length=16)
     metric_ids: tuple[str, ...] = Field(min_length=1, max_length=12)
     research_as_of: date
+    selection_mode: Literal["exact_period_end", "latest_on_or_before"]
     period_start: date | None = None
     period_end: date | None = None
     fiscal_years: tuple[int, ...] = Field(default_factory=tuple, max_length=4)
     granularity: str
-    requested_unit: str = Field(
-        default="reported_source_unit", min_length=1, max_length=64
-    )
+    requested_unit: Literal["reported_source_unit"] = "reported_source_unit"
     unit_family: str | None = Field(default=None, min_length=1, max_length=64)
 
     @field_validator("ticker")
@@ -121,7 +128,56 @@ class CompanyFinancialFactQuery(BaseModel):
             raise ValueError("financial_fact_period_inverted")
         if self.period_end and self.period_end > self.research_as_of:
             raise ValueError("financial_fact_period_after_research_as_of")
+        if self.selection_mode == "exact_period_end" and self.period_end is None:
+            raise ValueError("financial_fact_exact_period_end_required")
         return self
+
+
+class LocalKnowledgeScope(BaseModel):
+    """Answer-free metadata constraints applied before local ranking."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    issuer_ids: tuple[str, ...] = Field(default_factory=tuple, max_length=8)
+    fiscal_periods: tuple[str, ...] = Field(default_factory=tuple, max_length=8)
+    source_roles: tuple[str, ...] = Field(default_factory=tuple, max_length=8)
+    route_ids: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
+    lanes: tuple[Literal["prose_leaf", "table_leaf"], ...] = Field(
+        default_factory=tuple,
+        max_length=2,
+    )
+
+    @field_validator("issuer_ids")
+    @classmethod
+    def normalize_issuer_scope(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        normalized = tuple(str(value).strip().upper() for value in values)
+        if (
+            len(normalized) != len(set(normalized))
+            or any(not _SCOPE_ID_RE.fullmatch(value) for value in normalized)
+        ):
+            raise ValueError("local_knowledge_scope_value_invalid")
+        return normalized
+
+    @field_validator("fiscal_periods", "source_roles", "route_ids")
+    @classmethod
+    def validate_scope_values(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        normalized = tuple(str(value).strip() for value in values)
+        if (
+            len(normalized) != len(set(normalized))
+            or any(not _SCOPE_ID_RE.fullmatch(value) for value in normalized)
+        ):
+            raise ValueError("local_knowledge_scope_value_invalid")
+        return normalized
+
+    @field_validator("lanes")
+    @classmethod
+    def validate_lanes(
+        cls,
+        values: tuple[Literal["prose_leaf", "table_leaf"], ...],
+    ) -> tuple[Literal["prose_leaf", "table_leaf"], ...]:
+        if len(values) != len(set(values)):
+            raise ValueError("local_knowledge_scope_lane_duplicate")
+        return values
 
 
 class LocalKnowledgeCandidate(_StrictOutputModel):
@@ -136,17 +192,42 @@ class LocalKnowledgeCandidate(_StrictOutputModel):
     section: str
     source_url: str
     source_locator_available: bool
+    source_locator: str = ""
+    route_id: str = ""
+    parent_document_id: str = ""
+    branches: tuple[str, ...] = ()
+    chunk_index: int | None = None
+    page: int | None = None
+    parser: str = ""
+    splitter: str = ""
+    text_sha256: str = ""
+    raw_body_sha256: str = ""
+    issuer_id: str = ""
+    fiscal_period: str = ""
+    source_role: str = ""
+    node_kind: str = ""
+    lane: str = ""
+    parent_section_id: str = ""
+    section_path: tuple[str, ...] = ()
+    page_start: int | None = None
+    page_end: int | None = None
+    delivered_context_node_ids: tuple[str, ...] = ()
+    delivered_context: str = ""
+    delivered_context_truncated: bool = False
     citation_eligible: Literal[False]
+    numeric_authority: Literal[False] = False
     excerpt: str
     excerpt_truncated: bool
     bm25_score: float
     candidate_is_not_evidence: Literal[True]
-    legacy_read_only_bridge: Literal[True]
+    legacy_read_only_bridge: bool
+    structured_document_tree: bool = False
 
 
 class LocalKnowledgeReadResult(_StrictOutputModel):
     schema_version: Literal[
-        "fin_ia_frozen_legacy_local_knowledge_read_v1_0"
+        "fin_ia_frozen_legacy_local_knowledge_read_v1_0",
+        "fin_ia_structured_local_knowledge_read_v1_0",
     ]
     authority_state: Literal["retrieval_candidate_set"]
     branch_id: str
@@ -156,11 +237,21 @@ class LocalKnowledgeReadResult(_StrictOutputModel):
     snapshot_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
     physical_record_count: int = Field(ge=0)
     visible_record_count: int = Field(ge=0)
+    eligible_candidate_count: int = Field(default=0, ge=0)
+    retrieval_scope: LocalKnowledgeScope = Field(
+        default_factory=LocalKnowledgeScope
+    )
+    metadata_prefilter_applied: bool = False
+    retrieval_strategy: Literal[
+        "legacy_bm25_postfilter",
+        "metadata_prefilter_bm25",
+    ] = "legacy_bm25_postfilter"
     candidates: tuple[LocalKnowledgeCandidate, ...]
     candidate_is_not_evidence: Literal[True]
     evidence_admission_performed: Literal[False]
     target_route: Literal[
-        "postgres_pgvector_exact_after_capture_lineage_import"
+        "postgres_pgvector_exact_after_capture_lineage_import",
+        "structured_metadata_prefilter_bm25",
     ]
     read_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
 
@@ -700,6 +791,7 @@ class ExistingS2FinancialFactReader:
         period: dict[str, Any] = {
             "end_date": (query.period_end or query.research_as_of).isoformat(),
             "fiscal_years": list(query.fiscal_years),
+            "selection_mode": query.selection_mode,
         }
         if query.period_start is not None:
             period["start_date"] = query.period_start.isoformat()
@@ -718,6 +810,7 @@ class ExistingS2FinancialFactReader:
                 "metric_id": metric_id,
                 "research_as_of": query.research_as_of.isoformat(),
                 "period": period,
+                "selection_mode": query.selection_mode,
                 "granularity": query.granularity,
                 "requested_unit": query.requested_unit,
                 "unit_family": query.unit_family,
@@ -878,6 +971,26 @@ class FrozenLegacyLocalKnowledgeReader:
                     raise DataPortContractError(
                         f"legacy_local_record_identity_invalid:{ordinal}"
                     )
+                raw_row_branches = row.get("branches")
+                if raw_row_branches is None:
+                    row_branches: tuple[str, ...] = ()
+                elif not isinstance(raw_row_branches, list):
+                    raise DataPortContractError(
+                        f"legacy_local_record_branches_invalid:{ordinal}"
+                    )
+                else:
+                    row_branches = tuple(
+                        str(value).strip() for value in raw_row_branches
+                    )
+                    if (
+                        any(not value for value in row_branches)
+                        or len(set(row_branches)) != len(row_branches)
+                        or not set(row_branches).issubset(branches)
+                    ):
+                        raise DataPortContractError(
+                            f"legacy_local_record_branches_invalid:{ordinal}"
+                        )
+                row["_normalized_branches"] = row_branches
                 if publication_date <= research_as_of:
                     rows.append(row)
         if len(rows) > expected_record_count:
@@ -903,6 +1016,7 @@ class FrozenLegacyLocalKnowledgeReader:
         branch_id: str,
         limit: int,
         run_scope: DellResearchRunScope,
+        retrieval_scope: Mapping[str, Any] | LocalKnowledgeScope | None = None,
     ) -> LocalKnowledgeReadResult:
         normalized_query = str(query).strip()
         normalized_branch = _require_branch_in_scope(
@@ -920,6 +1034,13 @@ class FrozenLegacyLocalKnowledgeReader:
         tokens = tokenize(normalized_query)
         if not tokens:
             raise DataPortContractError("legacy_local_query_tokens_empty")
+        scope = (
+            retrieval_scope
+            if isinstance(retrieval_scope, LocalKnowledgeScope)
+            else LocalKnowledgeScope.model_validate(retrieval_scope or {})
+        )
+        if any(scope.model_dump(mode="json").values()):
+            raise DataPortContractError("legacy_local_scope_prefilter_unsupported")
 
         scores = self._index.get_scores(tokens)
         ranked = sorted(
@@ -934,8 +1055,22 @@ class FrozenLegacyLocalKnowledgeReader:
             if float(raw_score) <= 0:
                 continue
             row = self._rows[row_index]
+            row_branches = tuple(row.get("_normalized_branches") or ())
+            if row_branches and normalized_branch not in row_branches:
+                continue
             text = re.sub(r"\s+", " ", str(row["text"])).strip()
             source_record_id = str(row["evidence_id"])
+            route_id = str(row.get("route_id") or "")
+            chunk_index = row.get("chunk_index")
+            page = row.get("page")
+            locator_parts = []
+            if page is not None:
+                locator_parts.append(f"page={page}")
+            if chunk_index is not None:
+                locator_parts.append(f"chunk={chunk_index}")
+            source_locator = route_id or str(row.get("source_url") or "")
+            if locator_parts:
+                source_locator += "#" + "&".join(locator_parts)
             identity = {
                 "snapshot_sha256": self._path_digest,
                 "branch_id": normalized_branch,
@@ -955,13 +1090,29 @@ class FrozenLegacyLocalKnowledgeReader:
                     "period_end": str(row.get("period_end") or ""),
                     "section": str(row.get("section") or ""),
                     "source_url": str(row.get("source_url") or ""),
-                    "source_locator_available": bool(row.get("source_url")),
+                    "source_locator_available": bool(source_locator),
+                    "source_locator": source_locator,
+                    "route_id": route_id,
+                    "parent_document_id": str(
+                        row.get("parent_document_id") or ""
+                    ),
+                    "branches": row_branches,
+                    "chunk_index": chunk_index,
+                    "page": page,
+                    "parser": str(row.get("parser") or ""),
+                    "splitter": str(row.get("splitter") or ""),
+                    "text_sha256": str(row.get("text_sha256") or ""),
+                    "raw_body_sha256": str(
+                        row.get("raw_body_sha256") or ""
+                    ),
                     "citation_eligible": False,
+                    "numeric_authority": False,
                     "excerpt": text[: self._maximum_excerpt_characters],
                     "excerpt_truncated": len(text) > self._maximum_excerpt_characters,
                     "bm25_score": round(float(raw_score), 8),
                     "candidate_is_not_evidence": True,
                     "legacy_read_only_bridge": True,
+                    "structured_document_tree": False,
                 })
             )
             if len(candidates) >= limit:
@@ -976,6 +1127,10 @@ class FrozenLegacyLocalKnowledgeReader:
             "snapshot_sha256": self._path_digest,
             "physical_record_count": self._physical_record_count,
             "visible_record_count": len(self._rows),
+            "eligible_candidate_count": len(self._rows),
+            "retrieval_scope": scope.model_dump(mode="json"),
+            "metadata_prefilter_applied": False,
+            "retrieval_strategy": "legacy_bm25_postfilter",
             "candidates": [row.model_dump(mode="json") for row in candidates],
             "candidate_is_not_evidence": True,
             "evidence_admission_performed": False,
@@ -987,11 +1142,400 @@ class FrozenLegacyLocalKnowledgeReader:
         )
 
 
+class StructuredLocalKnowledgeReader:
+    """Thin BM25 port over one frozen structured Document/Section/leaf tree.
+
+    The reader consumes the immutable qualification node artifact instead of
+    rebuilding parsing or chunking inside the agent runtime.  Answer-free
+    issuer/period/source/route/lane constraints are applied *before* BM25.
+    Transcript delivery may add only the adjacent prose leaf on either side;
+    ranking and anchor identity remain unchanged.
+    """
+
+    _NODE_KINDS = frozenset({"section", "chunk", "mixed_prose_span", "table"})
+    _LEAF_KINDS = frozenset({"chunk", "mixed_prose_span", "table"})
+
+    def __init__(
+        self,
+        *,
+        nodes_path: str | Path,
+        expected_sha256: str,
+        expected_node_count: int,
+        research_as_of: date,
+        allowed_branch_ids: Sequence[str],
+        maximum_excerpt_characters: int = 2_000,
+        maximum_delivered_context_characters: int = 12_000,
+        transcript_neighbor_chunk_radius: int = 1,
+    ) -> None:
+        path = Path(nodes_path).resolve()
+        if not path.is_file():
+            raise DataPortContractError("structured_local_nodes_unavailable")
+        if (
+            not re.fullmatch(r"[0-9a-f]{64}", expected_sha256)
+            or _stream_sha256(path) != expected_sha256
+        ):
+            raise DataPortContractError("structured_local_nodes_digest_drift")
+        if expected_node_count < 1:
+            raise DataPortContractError("structured_local_node_count_invalid")
+        branches = frozenset(str(value).strip() for value in allowed_branch_ids)
+        if not branches or any(not value for value in branches):
+            raise DataPortContractError("structured_local_branch_contract_invalid")
+        if not 400 <= maximum_excerpt_characters <= 6_000:
+            raise DataPortContractError("structured_local_excerpt_limit_invalid")
+        if not 2_000 <= maximum_delivered_context_characters <= 24_000:
+            raise DataPortContractError("structured_local_delivery_limit_invalid")
+        if not 0 <= transcript_neighbor_chunk_radius <= 2:
+            raise DataPortContractError("structured_local_neighbor_radius_invalid")
+
+        all_rows: list[dict[str, Any]] = []
+        node_ids: set[str] = set()
+        physical_count = 0
+        with path.open("r", encoding="utf-8") as stream:
+            for ordinal, line in enumerate(stream, start=1):
+                physical_count += 1
+                try:
+                    row = json.loads(line)
+                except json.JSONDecodeError as exc:
+                    raise DataPortContractError(
+                        f"structured_local_node_json_invalid:{ordinal}"
+                    ) from exc
+                if not isinstance(row, dict):
+                    raise DataPortContractError(
+                        f"structured_local_node_shape_invalid:{ordinal}"
+                    )
+                node_id = str(row.get("node_id") or "").strip()
+                node_kind = str(row.get("node_kind") or "").strip()
+                if (
+                    not node_id
+                    or node_id in node_ids
+                    or node_kind not in self._NODE_KINDS
+                    or row.get("candidate_is_not_evidence") is not True
+                    or row.get("citation_eligible") is not False
+                    or row.get("numeric_authority") is not False
+                ):
+                    raise DataPortContractError(
+                        f"structured_local_node_contract_invalid:{ordinal}"
+                    )
+                node_ids.add(node_id)
+                publication_text = str(row.get("publication_date") or "").strip()
+                try:
+                    publication = date.fromisoformat(publication_text)
+                except ValueError as exc:
+                    raise DataPortContractError(
+                        f"structured_local_publication_date_invalid:{ordinal}"
+                    ) from exc
+                content = str(row.get("content") or "")
+                model_text = str(row.get("model_text") or "")
+                if node_kind in self._LEAF_KINDS:
+                    content_sha256 = str(row.get("content_sha256") or "")
+                    if (
+                        not content.strip()
+                        or not model_text.strip()
+                        or not re.fullmatch(r"[0-9a-f]{64}", content_sha256)
+                        or sha256(content.encode("utf-8")).hexdigest()
+                        != content_sha256
+                        or str(row.get("lane") or "")
+                        not in {"prose_leaf", "table_leaf"}
+                    ):
+                        raise DataPortContractError(
+                            f"structured_local_leaf_contract_invalid:{ordinal}"
+                        )
+                row["_publication_date"] = publication
+                if publication <= research_as_of:
+                    all_rows.append(row)
+        if physical_count != expected_node_count:
+            raise DataPortContractError("structured_local_node_count_drift")
+
+        parent_ids = {
+            str(row["node_id"])
+            for row in all_rows
+            if row.get("node_kind") == "section"
+        }
+        leaves = tuple(
+            row for row in all_rows if row.get("node_kind") in self._LEAF_KINDS
+        )
+        if not leaves or any(
+            str(row.get("parent_section_id") or "") not in parent_ids
+            for row in leaves
+        ):
+            raise DataPortContractError("structured_local_parent_lineage_invalid")
+
+        prose_by_route: dict[str, list[dict[str, Any]]] = {}
+        for row in leaves:
+            if row.get("lane") != "prose_leaf" or row.get("page_start") is None:
+                continue
+            prose_by_route.setdefault(str(row.get("route_id") or ""), []).append(row)
+        for rows in prose_by_route.values():
+            rows.sort(
+                key=lambda row: (
+                    int(row.get("page_start") or 0),
+                    int(row.get("section_chunk_index") or 0),
+                    str(row["node_id"]),
+                )
+            )
+
+        self._leaves = leaves
+        self._node_index = {
+            str(row["node_id"]): row for row in all_rows
+        }
+        self._prose_by_route = {
+            route_id: tuple(rows) for route_id, rows in prose_by_route.items()
+        }
+        self._path_digest = expected_sha256
+        self._physical_record_count = physical_count
+        self._research_as_of = research_as_of
+        self._allowed_branch_ids = branches
+        self._maximum_excerpt_characters = maximum_excerpt_characters
+        self._maximum_delivered_context_characters = (
+            maximum_delivered_context_characters
+        )
+        self._transcript_neighbor_chunk_radius = transcript_neighbor_chunk_radius
+
+    @staticmethod
+    def _matches_scope(
+        row: Mapping[str, Any],
+        scope: LocalKnowledgeScope,
+    ) -> bool:
+        issuer_ids = {value.casefold() for value in scope.issuer_ids}
+        return (
+            (
+                not issuer_ids
+                or str(row.get("issuer_id") or "").casefold() in issuer_ids
+            )
+            and (
+                not scope.fiscal_periods
+                or str(row.get("fiscal_period") or "") in scope.fiscal_periods
+            )
+            and (
+                not scope.source_roles
+                or str(row.get("source_role") or "") in scope.source_roles
+            )
+            and (
+                not scope.route_ids
+                or str(row.get("route_id") or "") in scope.route_ids
+            )
+            and (not scope.lanes or str(row.get("lane") or "") in scope.lanes)
+        )
+
+    def _delivery_rows(self, anchor: Mapping[str, Any]) -> tuple[Mapping[str, Any], ...]:
+        route_id = str(anchor.get("route_id") or "")
+        anchor_id = str(anchor["node_id"])
+        if (
+            "transcript" not in route_id
+            or anchor.get("page_start") is None
+            or anchor.get("lane") != "prose_leaf"
+        ):
+            return (anchor,)
+        rows = self._prose_by_route.get(route_id, ())
+        anchor_index = next(
+            (
+                index
+                for index, row in enumerate(rows)
+                if str(row["node_id"]) == anchor_id
+            ),
+            None,
+        )
+        if anchor_index is None:
+            return (anchor,)
+        radius = self._transcript_neighbor_chunk_radius
+        return tuple(
+            rows[
+                max(0, anchor_index - radius) : min(
+                    len(rows), anchor_index + radius + 1
+                )
+            ]
+        )
+
+    def __call__(
+        self,
+        *,
+        query: str,
+        branch_id: str,
+        limit: int,
+        run_scope: DellResearchRunScope,
+        retrieval_scope: Mapping[str, Any] | LocalKnowledgeScope | None = None,
+    ) -> LocalKnowledgeReadResult:
+        normalized_query = str(query).strip()
+        normalized_branch = _require_branch_in_scope(
+            branch_id=branch_id,
+            run_scope=run_scope,
+        )
+        if normalized_branch not in self._allowed_branch_ids:
+            raise DataPortContractError("structured_local_branch_unknown")
+        if self._research_as_of > run_scope.research_as_of.date():
+            raise DataPortContractError("structured_local_snapshot_after_run_as_of")
+        if len(normalized_query) < 3 or len(normalized_query) > 2_000:
+            raise DataPortContractError("structured_local_query_invalid")
+        if not 1 <= limit <= 12:
+            raise DataPortContractError("structured_local_limit_invalid")
+        tokens = _structured_tokenize(normalized_query)
+        if not tokens:
+            raise DataPortContractError("structured_local_query_tokens_empty")
+        scope = (
+            retrieval_scope
+            if isinstance(retrieval_scope, LocalKnowledgeScope)
+            else LocalKnowledgeScope.model_validate(retrieval_scope or {})
+        )
+        if not scope.issuer_ids or not scope.source_roles:
+            raise DataPortContractError("structured_local_scope_underbounded")
+        eligible = tuple(
+            row for row in self._leaves if self._matches_scope(row, scope)
+        )
+        ranked: list[tuple[int, float]] = []
+        if eligible:
+            index = BM25Okapi(
+                [_structured_tokenize(str(row["model_text"])) for row in eligible]
+            )
+            scores = index.get_scores(tokens)
+            ranked = sorted(
+                enumerate(scores),
+                key=lambda item: (
+                    -float(item[1]),
+                    str(eligible[item[0]]["node_id"]),
+                ),
+            )
+
+        candidates: list[LocalKnowledgeCandidate] = []
+        query_token_set = set(tokens)
+        for row_index, raw_score in ranked:
+            row = eligible[row_index]
+            if not query_token_set.intersection(
+                _structured_tokenize(str(row["model_text"]))
+            ):
+                continue
+            content = str(row["content"])
+            delivery_rows = self._delivery_rows(row)
+            delivered_context = "\n\n".join(
+                f"[{item['node_id']}]\n{item['content']}" for item in delivery_rows
+            )
+            delivered_truncated = (
+                len(delivered_context) > self._maximum_delivered_context_characters
+            )
+            delivered_context = delivered_context[
+                : self._maximum_delivered_context_characters
+            ]
+            node_id = str(row["node_id"])
+            route_id = str(row.get("route_id") or "")
+            page_start = row.get("page_start")
+            page_end = row.get("page_end")
+            locator_parts = [
+                f"section={row.get('parent_section_id') or ''}",
+                f"node={node_id}",
+            ]
+            if page_start is not None:
+                locator_parts.append(
+                    f"page={page_start}"
+                    if page_start == page_end
+                    else f"pages={page_start}-{page_end}"
+                )
+            source_locator = route_id + "#" + "&".join(locator_parts)
+            identity = {
+                "snapshot_sha256": self._path_digest,
+                "branch_id": normalized_branch,
+                "query": normalized_query,
+                "retrieval_scope": scope.model_dump(mode="json"),
+                "source_record_id": node_id,
+            }
+            candidates.append(
+                LocalKnowledgeCandidate.model_validate(
+                    {
+                        "authority_state": "retrieval_candidate",
+                        "candidate_id": "STRUCTCAND::"
+                        + canonical_digest(identity)[:24].upper(),
+                        "source_record_id": node_id,
+                        "owner_ticker": str(row.get("ticker") or "").upper(),
+                        "source_type": str(row.get("source_role") or ""),
+                        "source_tier": "official_primary_structured_candidate",
+                        "publication_date": str(row.get("publication_date") or ""),
+                        "period_end": str(row.get("period_end") or ""),
+                        "section": " > ".join(
+                            str(value)
+                            for value in row.get("section_path") or ()
+                        ),
+                        "source_url": str(row.get("stable_url") or ""),
+                        "source_locator_available": True,
+                        "source_locator": source_locator,
+                        "route_id": route_id,
+                        "parent_document_id": str(
+                            row.get("parent_document_id") or ""
+                        ),
+                        "branches": (normalized_branch,),
+                        "chunk_index": row.get("section_chunk_index"),
+                        "page": page_start,
+                        "parser": "frozen_structured_corpus",
+                        "splitter": "section_aware_leaf_tree",
+                        "text_sha256": str(row.get("content_sha256") or ""),
+                        "raw_body_sha256": str(
+                            row.get("raw_body_sha256") or ""
+                        ),
+                        "issuer_id": str(row.get("issuer_id") or ""),
+                        "fiscal_period": str(row.get("fiscal_period") or ""),
+                        "source_role": str(row.get("source_role") or ""),
+                        "node_kind": str(row.get("node_kind") or ""),
+                        "lane": str(row.get("lane") or ""),
+                        "parent_section_id": str(
+                            row.get("parent_section_id") or ""
+                        ),
+                        "section_path": tuple(row.get("section_path") or ()),
+                        "page_start": page_start,
+                        "page_end": page_end,
+                        "delivered_context_node_ids": tuple(
+                            str(item["node_id"]) for item in delivery_rows
+                        ),
+                        "delivered_context": delivered_context,
+                        "delivered_context_truncated": delivered_truncated,
+                        "citation_eligible": False,
+                        "numeric_authority": False,
+                        "excerpt": content[: self._maximum_excerpt_characters],
+                        "excerpt_truncated": len(content)
+                        > self._maximum_excerpt_characters,
+                        "bm25_score": round(float(raw_score), 8),
+                        "candidate_is_not_evidence": True,
+                        "legacy_read_only_bridge": False,
+                        "structured_document_tree": True,
+                    }
+                )
+            )
+            if len(candidates) >= limit:
+                break
+
+        body = {
+            "schema_version": STRUCTURED_LOCAL_KNOWLEDGE_READ_SCHEMA_VERSION,
+            "authority_state": "retrieval_candidate_set",
+            "branch_id": normalized_branch,
+            "run_scope_digest": run_scope.run_scope_digest,
+            "query": normalized_query,
+            "research_as_of": self._research_as_of.isoformat(),
+            "snapshot_sha256": self._path_digest,
+            "physical_record_count": self._physical_record_count,
+            "visible_record_count": len(self._leaves),
+            "eligible_candidate_count": len(eligible),
+            "retrieval_scope": scope.model_dump(mode="json"),
+            "metadata_prefilter_applied": any(
+                scope.model_dump(mode="json").values()
+            ),
+            "retrieval_strategy": "metadata_prefilter_bm25",
+            "candidates": [row.model_dump(mode="json") for row in candidates],
+            "candidate_is_not_evidence": True,
+            "evidence_admission_performed": False,
+            "target_route": "structured_metadata_prefilter_bm25",
+        }
+        return LocalKnowledgeReadResult(
+            **body,
+            read_digest=canonical_digest(body),
+        )
+
+
+def _structured_tokenize(text: str) -> list[str]:
+    return [token.casefold() for token in _STRUCTURED_TOKEN_RE.findall(text)]
+
+
 __all__ = [
     "EVIDENCE_READ_SCHEMA_VERSION",
     "EVIDENCE_SEARCH_SCHEMA_VERSION",
     "FINANCIAL_FACT_QUERY_SCHEMA_VERSION",
     "LOCAL_KNOWLEDGE_READ_SCHEMA_VERSION",
+    "STRUCTURED_LOCAL_KNOWLEDGE_READ_SCHEMA_VERSION",
     "CompanyFinancialFactQuery",
     "CompanyFinancialFactQueryResult",
     "CurrentReviewedEvidenceReader",
@@ -1000,6 +1544,8 @@ __all__ = [
     "FinancialMetricResult",
     "FrozenLegacyLocalKnowledgeReader",
     "LocalKnowledgeReadResult",
+    "LocalKnowledgeScope",
     "ReviewedEvidenceReadResult",
     "ReviewedEvidenceSearchResult",
+    "StructuredLocalKnowledgeReader",
 ]

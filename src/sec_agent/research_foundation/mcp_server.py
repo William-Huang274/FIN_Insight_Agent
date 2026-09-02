@@ -33,6 +33,7 @@ from .data_ports import (
     CompanyFinancialFactQuery,
     CompanyFinancialFactQueryResult,
     LocalKnowledgeReadResult,
+    LocalKnowledgeScope,
     ReviewedEvidenceReadResult,
     ReviewedEvidenceSearchResult,
 )
@@ -67,6 +68,7 @@ class LocalKnowledgeReader(Protocol):
         branch_id: str,
         limit: int,
         run_scope: DellResearchRunScope,
+        retrieval_scope: LocalKnowledgeScope,
     ) -> LocalKnowledgeReadResult | Awaitable[LocalKnowledgeReadResult]: ...
 
 
@@ -224,9 +226,16 @@ def build_research_data_mcp_server(
         branch_id: str,
         run_scope: DellResearchRunScope,
         limit: int = 8,
+        issuer_ids: list[str] | None = None,
+        fiscal_periods: list[str] | None = None,
+        source_roles: list[str] | None = None,
+        route_ids: list[str] | None = None,
+        lanes: list[Literal["prose_leaf", "table_leaf"]] | None = None,
     ) -> LocalKnowledgeReadResult:
         if not 1 <= limit <= 12:
             raise ValueError("local_knowledge_limit_invalid")
+        if not issuer_ids or not source_roles:
+            raise ValueError("local_knowledge_scope_underbounded")
         await _validate_scope(
             dependencies.method_reader,
             run_scope=run_scope,
@@ -239,6 +248,13 @@ def build_research_data_mcp_server(
             branch_id=branch_id.strip(),
             limit=limit,
             run_scope=run_scope,
+            retrieval_scope=LocalKnowledgeScope(
+                issuer_ids=tuple(issuer_ids or ()),
+                fiscal_periods=tuple(fiscal_periods or ()),
+                source_roles=tuple(source_roles or ()),
+                route_ids=tuple(route_ids or ()),
+                lanes=tuple(lanes or ()),
+            ),
         )
 
     @server.tool(
@@ -320,6 +336,9 @@ def build_research_data_mcp_server(
         metric_ids: list[str],
         research_as_of: date,
         granularity: str,
+        selection_mode: Literal[
+            "exact_period_end", "latest_on_or_before"
+        ],
         period_start: date | None = None,
         period_end: date | None = None,
         fiscal_years: list[int] | None = None,
@@ -338,6 +357,7 @@ def build_research_data_mcp_server(
             period_start=period_start,
             period_end=period_end,
             fiscal_years=tuple(fiscal_years or ()),
+            selection_mode=selection_mode,
             granularity=granularity,
             requested_unit=requested_unit,
             unit_family=unit_family,
@@ -435,10 +455,10 @@ def build_research_data_mcp_server(
     @server.tool(
         name=CAPTURE_EXTERNAL_SOURCE_TOOL,
         description=(
-            "Transition-capture one public locator with trafilatura and an optional "
-            "Playwright fallback. This tool does not enforce robots or create WARC/"
-            "archive-grade records; the result remains a candidate until FIN "
-            "evidence admission."
+            "Transition-capture one public locator with direct trafilatura, Exa's "
+            "maintained web_fetch fallback, and an optional Playwright fallback. "
+            "This tool does not enforce robots or create WARC/archive-grade "
+            "records; the result remains a candidate until FIN evidence admission."
         ),
         structured_output=True,
     )
@@ -448,7 +468,7 @@ def build_research_data_mcp_server(
         branch_id: str,
         run_scope: DellResearchRunScope,
         max_characters: int = 12_000,
-        render_policy: Literal["auto", "static", "browser"] = "auto",
+        render_policy: Literal["auto", "static", "hosted", "browser"] = "auto",
     ) -> CaptureReceipt:
         await _validate_scope(
             dependencies.method_reader,

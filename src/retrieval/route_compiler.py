@@ -430,6 +430,16 @@ def compile_retrieval_execution_plan(
         )
 
     facts: list[TypedFactRequest] = []
+    period_selection_mode = (
+        "latest_on_or_before"
+        if request.period.end_date is None
+        or request.period.end_date == request.research_as_of
+        else "exact_period_end"
+    )
+    typed_fact_period = {
+        **request.period.as_dict(),
+        "selection_mode": period_selection_mode,
+    }
     for metric in resolved:
         allowed_selected = tuple(
             family_id
@@ -441,7 +451,7 @@ def compile_retrieval_execution_plan(
                 "request_id": request.request_id,
                 "target_entity": target,
                 "metric_id": metric.metric_id,
-                "period": request.period.as_dict(),
+                "period": typed_fact_period,
                 "as_of": request.research_as_of.isoformat(),
             }
             fact_request_id = f"TFR::{canonical_digest(identity)[:24]}"
@@ -459,7 +469,7 @@ def compile_retrieval_execution_plan(
                     metric_id=metric.metric_id,
                     query_family_ids=allowed_selected,
                     research_as_of=request.research_as_of.isoformat(),
-                    period=request.period.as_dict(),
+                    period=typed_fact_period,
                     granularity=request.granularity,
                     requested_unit=request.unit,
                     unit_family=metric.unit_family,

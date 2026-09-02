@@ -10,7 +10,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from contextlib import AbstractContextManager
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import date, datetime
 import json
 from threading import RLock
 from time import perf_counter
@@ -31,6 +31,10 @@ from sec_agent.research_foundation.mcp_server import (
     SEARCH_EXTERNAL_SOURCES_TOOL,
     SEARCH_LOCAL_KNOWLEDGE_TOOL,
     SEARCH_REVIEWED_EVIDENCE_TOOL,
+)
+from sec_agent.research_foundation.data_ports import (
+    CompanyFinancialFactQuery,
+    CompanyFinancialFactQueryResult,
 )
 from .dell_reference_vertical_contracts import (
     AgentRuntimeScopeCeiling,
@@ -60,7 +64,8 @@ _EVIDENCE_KEYS = frozenset(EvidenceRequest.model_fields)
 _FACT_KEYS = frozenset(
     {
         "ticker", "metric_id", "metric_ids", "research_as_of", "granularity",
-        "period_start", "period_end", "fiscal_years", "requested_unit", "unit_family",
+        "period_start", "period_end", "fiscal_years", "selection_mode",
+        "requested_unit", "unit_family",
     }
 )
 
@@ -474,10 +479,32 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                 "run_scope": scope.model_dump(mode="json"),
                 "limit": request.limit,
             }
+            local_scope = {
+                "issuer_ids": list(request.issuer_ids),
+                "fiscal_periods": list(request.fiscal_periods),
+                "source_roles": list(request.source_roles),
+                "route_ids": list(request.route_ids),
+                "lanes": list(request.retrieval_lanes),
+            }
             if request.source_route == "local_only":
                 self._local(
                     lane_task,
-                    common,
+                    {**common, **local_scope},
+                    receipt_prefix=[],
+                    items=items,
+                    states=states,
+                    calls=calls,
+                )
+                continue
+
+            # Reviewed Evidence v1 has no canonical route identity.  An exact-route
+            # request therefore cannot safely use reviewed-first: a nearby reviewed
+            # hit would suppress the scoped local lookup.  Keep the request on the
+            # structured metadata-prefilter path and fail closed on an exact miss.
+            if request.route_ids:
+                self._local(
+                    lane_task,
+                    {**common, **local_scope},
                     receipt_prefix=[],
                     items=items,
                     states=states,
@@ -532,10 +559,24 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                         )
                     )
                     states.add("typed_gap")
+                # Reviewed Evidence v1 is case-bound but does not expose a
+                # source-role/fiscal-period identity that can prove this
+                # request's structured retrieval scope.  Keep valid reviewed
+                # rows, then also execute the scoped local lookup; an
+                # unscoped reviewed hit must not suppress a period/source
+                # constrained candidate search.
+                self._local(
+                    lane_task,
+                    {**common, **local_scope},
+                    receipt_prefix=[],
+                    items=items,
+                    states=states,
+                    calls=calls,
+                )
                 continue
             self._local(
                 lane_task,
-                common,
+                {**common, **local_scope},
                 receipt_prefix=[search.receipt],
                 items=items,
                 states=states,
@@ -559,6 +600,29 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         candidates = local.content.get("candidates")
         if not isinstance(candidates, list):
             raise DellMCPToolAdapterError("mcp_local_candidates_invalid")
+        requested_scope = {
+            key: list(arguments.get(key) or ())
+            for key in (
+                "issuer_ids",
+                "fiscal_periods",
+                "source_roles",
+                "route_ids",
+                "lanes",
+            )
+        }
+        response_scope = local.content.get("retrieval_scope")
+        if (
+            not isinstance(response_scope, Mapping)
+            or {
+                key: list(response_scope.get(key) or ())
+                for key in requested_scope
+            }
+            != requested_scope
+            or local.content.get("metadata_prefilter_applied") is not True
+            or local.content.get("retrieval_strategy")
+            != "metadata_prefilter_bm25"
+        ):
+            raise DellMCPToolAdapterError("mcp_local_scope_binding_failed")
         receipts = [*receipt_prefix, local.receipt]
         for row in candidates:
             if (
@@ -567,6 +631,21 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                 or row.get("citation_eligible") is not False
             ):
                 raise DellMCPToolAdapterError("mcp_candidate_authority_failed")
+            candidate_values = {
+                "issuer_ids": str(row.get("issuer_id") or ""),
+                "fiscal_periods": str(row.get("fiscal_period") or ""),
+                "source_roles": str(row.get("source_role") or ""),
+                "route_ids": str(row.get("route_id") or ""),
+                "lanes": str(row.get("lane") or ""),
+            }
+            if any(
+                requested_scope[key]
+                and candidate_values[key] not in requested_scope[key]
+                for key in requested_scope
+            ):
+                raise DellMCPToolAdapterError(
+                    "mcp_local_candidate_scope_substitution"
+                )
             items.append(
                 {
                     **row,
@@ -577,15 +656,21 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
             )
             states.add("retrieval_candidate")
         if not candidates:
+            exact_route = bool(requested_scope["route_ids"])
             items.append(
                 self._gap(
                     (
-                        "no_reviewed_evidence_or_local_candidate"
-                        if receipt_prefix
-                        else "no_local_candidate"
+                        "exact_route_local_candidate_unavailable"
+                        if exact_route
+                        else (
+                            "no_reviewed_evidence_or_local_candidate"
+                            if receipt_prefix
+                            else "no_local_candidate"
+                        )
                     ),
                     receipts,
                     query=str(arguments["query"]),
+                    retrieval_scope=requested_scope,
                 )
             )
             states.add("typed_gap")
@@ -737,6 +822,24 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
     ) -> None:
         for request in lane_task.task.fact_requests:
             self._keys(request, _FACT_KEYS, "mcp_fact_request")
+            if "selection_mode" not in request:
+                raise DellMCPToolAdapterError(
+                    "mcp_fact_selection_mode_required"
+                )
+            if request.get("selection_mode") not in {
+                "exact_period_end",
+                "latest_on_or_before",
+            }:
+                raise DellMCPToolAdapterError(
+                    "mcp_fact_selection_mode_invalid"
+                )
+            if (
+                request.get("selection_mode") == "exact_period_end"
+                and not request.get("period_end")
+            ):
+                raise DellMCPToolAdapterError(
+                    "mcp_fact_exact_period_end_required"
+                )
             metric_ids = request.get("metric_ids")
             if metric_ids is None and request.get("metric_id") is not None:
                 metric_ids = [request["metric_id"]]
@@ -761,7 +864,13 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
             calls.append(call)
             if call.error or call.content is None:
                 continue
-            results = call.content.get("results")
+            content = _validated_financial_response(
+                content=call.content,
+                request_arguments=arguments,
+                branch_id=lane_task.task.branch_id,
+                run_scope=scope,
+            )
+            results = content.get("results")
             if not isinstance(results, list):
                 raise DellMCPToolAdapterError("mcp_financial_results_invalid")
             for row in results:
@@ -991,6 +1100,147 @@ def _digest(value: Any) -> bool:
         and len(value) == 64
         and all(char in "0123456789abcdef" for char in value)
     )
+
+
+def _validated_financial_response(
+    *,
+    content: Mapping[str, Any],
+    request_arguments: Mapping[str, Any],
+    branch_id: str,
+    run_scope: DellResearchRunScope,
+) -> dict[str, Any]:
+    """Rebind an MCP S2 response to the exact request before exposing facts.
+
+    MCP structured output proves shape, not that a cached, substituted, or
+    otherwise stale response belongs to this call.  Revalidating the canonical
+    digest and the query/fact identities here keeps period authority at the S2
+    boundary rather than trusting transport success.
+    """
+
+    claimed_digest = content.get("query_digest")
+    unsigned = {
+        key: value for key, value in content.items() if key != "query_digest"
+    }
+    if (
+        not isinstance(claimed_digest, str)
+        or claimed_digest != canonical_sha256(unsigned)
+    ):
+        raise DellMCPToolAdapterError(
+            "mcp_financial_response_digest_invalid"
+        )
+    query_fields = {
+        field: request_arguments[field]
+        for field in CompanyFinancialFactQuery.model_fields
+        if field in request_arguments
+    }
+    try:
+        expected_query = CompanyFinancialFactQuery.model_validate(query_fields)
+        response = CompanyFinancialFactQueryResult.model_validate(content)
+    except ValueError as exc:
+        raise DellMCPToolAdapterError(
+            "mcp_financial_response_contract_invalid"
+        ) from exc
+    if response.query != expected_query:
+        raise DellMCPToolAdapterError(
+            "mcp_financial_response_query_binding_mismatch"
+        )
+    if (
+        response.branch_id != branch_id
+        or response.run_scope_digest != run_scope.run_scope_digest
+    ):
+        raise DellMCPToolAdapterError(
+            "mcp_financial_response_scope_binding_mismatch"
+        )
+    if tuple(row.metric_id for row in response.results) != expected_query.metric_ids:
+        raise DellMCPToolAdapterError(
+            "mcp_financial_response_metric_binding_mismatch"
+        )
+
+    query_as_of = expected_query.research_as_of
+    requested_period_end = expected_query.period_end or query_as_of
+    requested_fiscal_years = set(expected_query.fiscal_years)
+    allowed_period_roles = {
+        "quarter_discrete": {"quarter_discrete"},
+        "fiscal_ytd": {"fiscal_ytd"},
+        "fiscal_year": {"fiscal_year"},
+        "instant": {"instant"},
+        "quarter": {"quarter_discrete"},
+        "quarter_and_fiscal_year": {
+            "quarter_discrete",
+            "fiscal_ytd",
+            "fiscal_year",
+            "instant",
+        },
+    }[expected_query.granularity]
+    for row in response.results:
+        if row.ticker != expected_query.ticker:
+            raise DellMCPToolAdapterError(
+                "mcp_financial_response_ticker_binding_mismatch"
+            )
+        for fact in row.facts:
+            if (
+                fact.ticker != expected_query.ticker
+                or fact.metric_id != row.metric_id
+                or fact.fact_request_id != row.fact_request_id
+                or _iso_date(fact.research_as_of, "fact_research_as_of")
+                != query_as_of
+            ):
+                raise DellMCPToolAdapterError(
+                    "mcp_financial_fact_identity_binding_mismatch"
+                )
+            if fact.period_role not in allowed_period_roles:
+                raise DellMCPToolAdapterError(
+                    "mcp_financial_fact_granularity_binding_mismatch"
+                )
+            if (
+                expected_query.unit_family is not None
+                and fact.unit_family != expected_query.unit_family
+            ):
+                raise DellMCPToolAdapterError(
+                    "mcp_financial_fact_unit_family_binding_mismatch"
+                )
+            fact_period_end = _iso_date(fact.period_end, "fact_period_end")
+            if expected_query.selection_mode == "exact_period_end":
+                if fact_period_end != requested_period_end:
+                    raise DellMCPToolAdapterError(
+                        "mcp_financial_fact_exact_period_binding_mismatch"
+                    )
+            elif fact_period_end > requested_period_end:
+                raise DellMCPToolAdapterError(
+                    "mcp_financial_fact_latest_period_binding_mismatch"
+                )
+            if fact_period_end > query_as_of:
+                raise DellMCPToolAdapterError(
+                    "mcp_financial_fact_period_after_research_as_of"
+                )
+            if (
+                expected_query.period_start is not None
+                and fact.period_start is not None
+                and _iso_date(fact.period_start, "fact_period_start")
+                < expected_query.period_start
+            ):
+                raise DellMCPToolAdapterError(
+                    "mcp_financial_fact_start_period_binding_mismatch"
+                )
+            if (
+                requested_fiscal_years
+                and fact.fiscal_year not in requested_fiscal_years
+            ):
+                raise DellMCPToolAdapterError(
+                    "mcp_financial_fact_fiscal_year_binding_mismatch"
+                )
+            if _iso_date(fact.accepted_at, "fact_accepted_at") > query_as_of:
+                raise DellMCPToolAdapterError(
+                    "mcp_financial_fact_after_research_as_of"
+                )
+    return response.model_dump(mode="json")
+
+
+def _iso_date(value: Any, label: str) -> date:
+    try:
+        return date.fromisoformat(str(value)[:10])
+    except (TypeError, ValueError) as exc:
+        raise DellMCPToolAdapterError(f"mcp_{label}_invalid") from exc
 
 
 def _bounded_diagnostic(value: Any, *, depth: int = 0) -> Any:

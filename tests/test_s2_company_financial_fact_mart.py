@@ -135,6 +135,7 @@ def _lookup(
             "start_date": "2026-01-31",
             "end_date": "2026-05-01",
             "fiscal_years": [2027],
+            "selection_mode": "exact_period_end",
         },
         granularity=granularity,
         requested_unit="reported_source_unit",
@@ -171,6 +172,156 @@ def test_exact_lookup_is_point_in_time_and_preserves_vintages(tmp_path: Path) ->
     assert after.status == "resolved"
     assert after.facts[0].value_decimal == "43842000000"
     assert len(after.facts[0].source_digests) == 2
+
+
+def test_direct_period_selection_exact_does_not_fall_back_but_latest_does(
+    tmp_path: Path,
+) -> None:
+    metrics = (_metric("revenue"),)
+    rows = (
+        _observation(
+            "OBS-Q1-REV",
+            "revenue",
+            "200",
+            accepted_at="2026-05-20T20:00:00+00:00",
+            accession="0001571996-26-000020",
+        ),
+        _observation(
+            "OBS-Q2-REV",
+            "revenue",
+            "240",
+            accepted_at="2026-08-20T20:00:00+00:00",
+            accession="0001571996-26-000040",
+            period_start="2026-05-02",
+            period_end="2026-07-31",
+            fiscal_period="Q2",
+        ),
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=rows,
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+    boundary = {
+        "start_date": "2026-01-31",
+        "end_date": "2026-06-30",
+        "fiscal_years": [2027],
+    }
+    base = _lookup("revenue", research_as_of="2026-09-30")
+
+    exact = execute_fact_lookup(
+        sqlite_path,
+        replace(
+            base,
+            fact_request_id="TEST::DIRECT-EXACT",
+            period={**boundary, "selection_mode": "exact_period_end"},
+        ),
+    )
+    latest = execute_fact_lookup(
+        sqlite_path,
+        replace(
+            base,
+            fact_request_id="TEST::DIRECT-LATEST",
+            period={**boundary, "selection_mode": "latest_on_or_before"},
+        ),
+    )
+    missing_mode = execute_fact_lookup(
+        sqlite_path,
+        replace(
+            base,
+            fact_request_id="TEST::DIRECT-MISSING-MODE",
+            period=boundary,
+        ),
+    )
+
+    assert exact.status == "typed_gap"
+    assert exact.typed_gap["gap_code"] == (
+        "typed_fact_not_found_for_as_of_and_period"
+    )
+    assert latest.status == "resolved"
+    assert [(fact.period_end, fact.value_decimal) for fact in latest.facts] == [
+        ("2026-05-01", "200")
+    ]
+    assert missing_mode.status == "typed_gap"
+    assert missing_mode.typed_gap == {
+        "gap_code": "typed_fact_period_selection_mode_required",
+        "supported_selection_modes": [
+            "exact_period_end",
+            "latest_on_or_before",
+        ],
+    }
+
+
+def test_invalid_or_incomplete_period_selection_mode_fails_closed(
+    tmp_path: Path,
+) -> None:
+    metrics = (_metric("revenue"),)
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=(_observation("OBS-REV", "revenue", "200"),),
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+    base = _lookup("revenue")
+
+    missing = execute_fact_lookup(
+        sqlite_path,
+        replace(
+            base,
+            period={
+                key: value
+                for key, value in base.period.items()
+                if key != "selection_mode"
+            },
+        ),
+    )
+    invalid = execute_fact_lookup(
+        sqlite_path,
+        replace(
+            base,
+            period={**base.period, "selection_mode": "nearest"},
+        ),
+    )
+    missing_exact_end = execute_fact_lookup(
+        sqlite_path,
+        replace(
+            base,
+            period={
+                "start_date": "2026-01-31",
+                "end_date": None,
+                "fiscal_years": [2027],
+                "selection_mode": "exact_period_end",
+            },
+        ),
+    )
+
+    assert missing.status == "typed_gap"
+    assert missing.facts == ()
+    assert missing.typed_gap == {
+        "gap_code": "typed_fact_period_selection_mode_required",
+        "supported_selection_modes": [
+            "exact_period_end",
+            "latest_on_or_before",
+        ],
+    }
+    assert invalid.status == "typed_gap"
+    assert invalid.facts == ()
+    assert invalid.typed_gap == {
+        "gap_code": "typed_fact_period_selection_mode_invalid",
+        "selection_mode": "nearest",
+        "supported_selection_modes": [
+            "exact_period_end",
+            "latest_on_or_before",
+        ],
+    }
+    assert missing_exact_end.status == "typed_gap"
+    assert missing_exact_end.facts == ()
+    assert missing_exact_end.typed_gap == {
+        "gap_code": "typed_fact_exact_period_end_required"
+    }
 
 
 def test_open_period_uses_one_current_interim_filing_cohort(tmp_path: Path) -> None:
@@ -238,6 +389,7 @@ def test_open_period_uses_one_current_interim_filing_cohort(tmp_path: Path) -> N
             "start_date": None,
             "end_date": "2026-08-06",
             "fiscal_years": [2026, 2027],
+            "selection_mode": "latest_on_or_before",
         },
         granularity="quarter_and_fiscal_year",
         requested_unit="reported_source_unit",
@@ -392,6 +544,7 @@ def test_contemporaneous_period_identity_rejects_later_comparable_relabels(
                 "start_date": "2024-11-29",
                 "end_date": "2025-02-27",
                 "fiscal_years": [2025],
+                "selection_mode": "exact_period_end",
             },
             granularity="quarter_discrete",
             requested_unit="reported_source_unit",
@@ -408,6 +561,7 @@ def test_contemporaneous_period_identity_rejects_later_comparable_relabels(
                 "start_date": "2024-11-29",
                 "end_date": "2025-02-27",
                 "fiscal_years": [2025],
+                "selection_mode": "exact_period_end",
             },
             granularity="quarter_discrete",
             requested_unit="reported_source_unit",
@@ -424,6 +578,7 @@ def test_contemporaneous_period_identity_rejects_later_comparable_relabels(
                 "start_date": "2024-09-01",
                 "end_date": "2026-08-06",
                 "fiscal_years": [2025, 2026],
+                "selection_mode": "latest_on_or_before",
             },
             granularity="quarter_and_fiscal_year",
             requested_unit="reported_source_unit",
@@ -521,6 +676,7 @@ def test_multi_vintage_period_identity_is_stable_at_every_research_as_of(
                     "start_date": "2022-09-02",
                     "end_date": "2022-12-01",
                     "fiscal_years": [2022, 2023],
+                    "selection_mode": "exact_period_end",
                 },
                 granularity="quarter_discrete",
                 requested_unit="reported_source_unit",
@@ -592,6 +748,7 @@ def test_period_identity_without_timely_origin_fails_closed(tmp_path: Path) -> N
                 "start_date": "2025-01-01",
                 "end_date": "2025-03-31",
                 "fiscal_years": [2025],
+                "selection_mode": "exact_period_end",
             },
             granularity="quarter_discrete",
             requested_unit="reported_source_unit",
@@ -650,6 +807,7 @@ def test_unanimous_late_copies_do_not_create_period_identity_authority(
                 "start_date": "2025-01-01",
                 "end_date": "2025-03-31",
                 "fiscal_years": [2026],
+                "selection_mode": "exact_period_end",
             },
             granularity="quarter_discrete",
             requested_unit="reported_source_unit",
@@ -704,6 +862,7 @@ def test_requested_or_automatic_comparable_identity_conflict_is_not_dropped(
                     "start_date": None,
                     "end_date": "2026-08-06",
                     "fiscal_years": fiscal_years,
+                    "selection_mode": "latest_on_or_before",
                 },
                 granularity="quarter_discrete",
                 requested_unit="reported_source_unit",
@@ -781,6 +940,7 @@ def test_derived_formula_propagates_requested_comparable_identity_conflict(
                 "start_date": None,
                 "end_date": "2026-08-06",
                 "fiscal_years": [2026, 2027],
+                "selection_mode": "latest_on_or_before",
             },
             granularity="quarter_discrete",
             requested_unit="reported_source_unit",
@@ -862,6 +1022,93 @@ def test_derived_margin_and_fcf_require_aligned_source_period(tmp_path: Path) ->
     ]
     assert fcf.status == "resolved"
     assert fcf.facts[0].value_decimal == "30"
+
+
+def test_derived_period_selection_exact_does_not_fall_back_but_latest_does(
+    tmp_path: Path,
+) -> None:
+    metrics = (
+        _metric("revenue"),
+        _metric("gross_profit"),
+        _metric(
+            "gross_margin",
+            unit_family="percentage",
+            formula="gross_profit / revenue * 100",
+        ),
+    )
+    rows = (
+        _observation(
+            "OBS-Q1-REV",
+            "revenue",
+            "200",
+            accepted_at="2026-05-20T20:00:00+00:00",
+            accession="0001571996-26-000020",
+        ),
+        _observation(
+            "OBS-Q1-GP",
+            "gross_profit",
+            "50",
+            accepted_at="2026-05-20T20:00:00+00:00",
+            accession="0001571996-26-000020",
+        ),
+        _observation(
+            "OBS-Q2-REV",
+            "revenue",
+            "240",
+            accepted_at="2026-08-20T20:00:00+00:00",
+            accession="0001571996-26-000040",
+            period_start="2026-05-02",
+            period_end="2026-07-31",
+            fiscal_period="Q2",
+        ),
+        _observation(
+            "OBS-Q2-GP",
+            "gross_profit",
+            "72",
+            accepted_at="2026-08-20T20:00:00+00:00",
+            accession="0001571996-26-000040",
+            period_start="2026-05-02",
+            period_end="2026-07-31",
+            fiscal_period="Q2",
+        ),
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(
+        sqlite_path,
+        observations=rows,
+        metrics=metrics,
+        policy=_policy(metrics=metrics),
+    )
+    boundary = {
+        "start_date": "2026-01-31",
+        "end_date": "2026-06-30",
+        "fiscal_years": [2027],
+    }
+    base = _lookup("gross_margin", research_as_of="2026-09-30")
+
+    exact = execute_fact_lookup(
+        sqlite_path,
+        replace(
+            base,
+            fact_request_id="TEST::DERIVED-EXACT",
+            period={**boundary, "selection_mode": "exact_period_end"},
+        ),
+    )
+    latest = execute_fact_lookup(
+        sqlite_path,
+        replace(
+            base,
+            fact_request_id="TEST::DERIVED-LATEST",
+            period={**boundary, "selection_mode": "latest_on_or_before"},
+        ),
+    )
+
+    assert exact.status == "typed_gap"
+    assert exact.typed_gap["gap_code"] == "derived_formula_input_missing"
+    assert latest.status == "resolved"
+    assert [(fact.period_end, fact.value_decimal) for fact in latest.facts] == [
+        ("2026-05-01", "25")
+    ]
 
 
 def test_derived_formula_propagates_input_identity_conflict(tmp_path: Path) -> None:
@@ -949,6 +1196,7 @@ def test_unrelated_period_role_cannot_create_identity_conflict(
                 "start_date": "2026-01-01",
                 "end_date": "2026-12-31",
                 "fiscal_years": [2027],
+                "selection_mode": "exact_period_end",
             },
             granularity="quarter_discrete",
             requested_unit="reported_source_unit",
@@ -986,6 +1234,7 @@ def test_s1_typed_fact_request_executes_against_s2_mart(tmp_path: Path) -> None:
             "start_date": "2026-01-31",
             "end_date": "2026-05-01",
             "fiscal_years": [2027],
+            "selection_mode": "exact_period_end",
         },
         granularity="quarter_discrete",
         requested_unit="reported_source_unit",

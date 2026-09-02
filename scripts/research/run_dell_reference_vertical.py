@@ -134,6 +134,20 @@ def _parser() -> argparse.ArgumentParser:
     start.add_argument("--knowledge-records-path", type=Path, required=True)
     start.add_argument("--knowledge-records-sha256", required=True)
     start.add_argument("--knowledge-record-count", type=int, required=True)
+    start.add_argument("--structured-rag-result-path", type=Path, required=True)
+    start.add_argument("--structured-rag-result-sha256", required=True)
+    start.add_argument("--structured-rag-nodes-path", type=Path, required=True)
+    start.add_argument("--structured-rag-nodes-sha256", required=True)
+    start.add_argument("--structured-rag-node-count", type=int, required=True)
+    start.add_argument(
+        "--allow-engineering-preview-candidate-runtime",
+        action="store_true",
+        help=(
+            "explicitly allow a review-required structured RAG artifact only as "
+            "candidate input for an engineering demo; never claims formal "
+            "qualification, retrieval promotion, or Evidence admission"
+        ),
+    )
     start.add_argument("--s2-result-path", type=Path, required=True)
     start.add_argument("--s2-result-sha256", required=True)
     start.add_argument("--s2-mart-path", type=Path, required=True)
@@ -478,9 +492,22 @@ def _validate_knowledge_bridge(
 ) -> dict[str, Any]:
     value = _read_json(result_path, "knowledge_bridge_result")
     output = value.get("output")
+    schema_version = value.get("schema_version")
+    schema_supported = schema_version in {
+        "fin_ia_dell_knowledge_reader_bridge_result_v1_0",
+        "fin_ia_dell_knowledge_reader_bridge_result_v1_2",
+    }
+    v1_2_contract_valid = schema_version != (
+        "fin_ia_dell_knowledge_reader_bridge_result_v1_2"
+    ) or (
+        value.get("provenance_fields_preserved") is True
+        and value.get("text_sha256_recomputed") is True
+        and value.get("parent_content_materialized") is False
+        and value.get("parent_child_retrieval_performed") is False
+    )
     if (
-        value.get("schema_version")
-        != "fin_ia_dell_knowledge_reader_bridge_result_v1_0"
+        not schema_supported
+        or not v1_2_contract_valid
         or value.get("status")
         != "qualification_candidate_bridge_materialized"
         or value.get("authority_state") != "retrieval_candidate_set"
@@ -496,10 +523,70 @@ def _validate_knowledge_bridge(
     return value
 
 
+def _validate_structured_rag_result(
+    *,
+    result_path: Path,
+    nodes_path: Path,
+    nodes_sha256: str,
+    allow_engineering_preview: bool = False,
+) -> dict[str, Any]:
+    """Bind the runtime to the reviewed BM25 candidate artifact.
+
+    This is deliberately not a formal-qualification or Evidence-promotion
+    check.  A review-required artifact is rejected by default and can enter an
+    engineering demo only through the explicit CLI opt-in.  The opt-in never
+    reverses the producer's promotion flags.
+    """
+
+    value = _read_json(result_path, "structured_rag_result")
+    artifacts = value.get("artifacts")
+    nodes = (
+        artifacts.get("retrieval_nodes.jsonl")
+        if isinstance(artifacts, Mapping)
+        else None
+    )
+    metrics = value.get("metrics")
+    bm25 = metrics.get("bm25") if isinstance(metrics, Mapping) else None
+    if (
+        value.get("schema_version")
+        != "fin_ia_dell_structured_rag_qualification_result_v1_0"
+        or value.get("status")
+        != "ENGINEERING_PREVIEW_MEASURED_REVIEW_REQUIRED"
+        or value.get("attempt_mode") != "engineering_preview"
+        or value.get("formal_eligible") is not False
+        or value.get("manual_review_complete") is not False
+        or value.get("deepseek_calls") != 0
+        or value.get("generation_model_calls") != 0
+        or value.get("paid_calls") != 0
+        or value.get("retrieval_promotion_authorized") is not False
+        or value.get("mcp_promotion_authorized") is not False
+        or not isinstance(nodes, Mapping)
+        or not _same_path(nodes.get("path"), nodes_path)
+        or str(nodes.get("sha256") or "").lower() != nodes_sha256
+        or not isinstance(bm25, Mapping)
+        or bm25.get("hit_rate_at_10") != 1.0
+        or bm25.get("critical_miss_count_at_5") != 0
+        or bm25.get("critical_delivered_context_required_facet_miss_count_at_5")
+        != 0
+        or bm25.get("hard_negative_rank_1_count") != 0
+        or bm25.get("critical_acceptable_precedence_failure_count") != 0
+    ):
+        raise DellReferenceVerticalCLIError("structured_rag_binding_invalid")
+    if not allow_engineering_preview:
+        raise DellReferenceVerticalCLIError(
+            "structured_rag_engineering_preview_not_authorized"
+        )
+    return value
+
+
 def _validate_s2_result(
     *, result_path: Path, mart_path: Path, mart_sha256: str
 ) -> dict[str, Any]:
     value = _read_json(result_path, "s2_result")
+    claimed_result_digest = value.get("result_digest")
+    unsigned_result = {
+        key: item for key, item in value.items() if key != "result_digest"
+    }
     storage = value.get("storage")
     acceptance = value.get("acceptance")
     if (
@@ -512,6 +599,8 @@ def _validate_s2_result(
         or not isinstance(acceptance, Mapping)
         or acceptance.get("candidate_or_metric_row_grants_numeric_authority")
         is not False
+        or not isinstance(claimed_result_digest, str)
+        or claimed_result_digest != _canonical_digest(unsigned_result)
     ):
         raise DellReferenceVerticalCLIError("s2_result_binding_invalid")
     return value
@@ -760,21 +849,46 @@ def _model_call_audit_summary(attempt_dir: Path) -> dict[str, Any]:
     started = sorted(root.glob("*.started.json")) if root.is_dir() else []
     outcomes = sorted(root.glob("*.outcome.json")) if root.is_dir() else []
     statuses: dict[str, int] = {}
-    total_tokens = 0
+    provider_reported_total_tokens = 0
+    successful_call_tokens = 0
+    failed_post_response_call_tokens = 0
     for path in outcomes:
         value = _read_json(path, "model_call_audit_outcome")
         status = str(value.get("status") or "unknown")
         statuses[status] = statuses.get(status, 0) + 1
         tokens = value.get("total_tokens")
+        if not (
+            isinstance(tokens, int)
+            and not isinstance(tokens, bool)
+            and tokens >= 0
+        ):
+            raw_response = value.get("raw_response")
+            usage = (
+                raw_response.get("usage_metadata")
+                if isinstance(raw_response, Mapping)
+                else None
+            )
+            tokens = usage.get("total_tokens") if isinstance(usage, Mapping) else None
         if isinstance(tokens, int) and not isinstance(tokens, bool) and tokens >= 0:
-            total_tokens += tokens
+            provider_reported_total_tokens += tokens
+            if status == "success":
+                successful_call_tokens += tokens
+            elif status in {
+                "structured_parse_failed",
+                "host_payload_validation_failed",
+                "structured_raw_missing",
+            }:
+                failed_post_response_call_tokens += tokens
     return {
         "journal_root": str(root),
         "started_call_count": len(started),
         "outcome_call_count": len(outcomes),
         "unfinished_call_count": max(0, len(started) - len(outcomes)),
         "outcome_status_counts": dict(sorted(statuses.items())),
-        "successful_total_tokens": total_tokens,
+        "provider_reported_total_tokens": provider_reported_total_tokens,
+        "successful_call_tokens": successful_call_tokens,
+        "failed_post_response_call_tokens": failed_post_response_call_tokens,
+        "successful_total_tokens": successful_call_tokens,
         "append_only_started_and_outcome_events": True,
     }
 
@@ -849,7 +963,7 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
     from sec_agent.research_foundation.data_ports import (
         CurrentReviewedEvidenceReader,
         ExistingS2FinancialFactReader,
-        FrozenLegacyLocalKnowledgeReader,
+        StructuredLocalKnowledgeReader,
     )
     from sec_agent.research_foundation.external_sources import (
         DDGSDiagnosticProvider,
@@ -909,6 +1023,58 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
     knowledge_sha = _required_digest(
         args.knowledge_records_sha256, "knowledge_records_sha256"
     )
+    structured_inputs = (
+        getattr(args, "structured_rag_result_path", None),
+        getattr(args, "structured_rag_result_sha256", None),
+        getattr(args, "structured_rag_nodes_path", None),
+        getattr(args, "structured_rag_nodes_sha256", None),
+        getattr(args, "structured_rag_node_count", None),
+    )
+    structured_requested = any(value not in (None, "") for value in structured_inputs)
+    if not structured_requested:
+        raise DellReferenceVerticalCLIError(
+            "structured_rag_runtime_binding_required"
+        )
+    if structured_requested and not all(
+        value not in (None, "") for value in structured_inputs
+    ):
+        raise DellReferenceVerticalCLIError("structured_rag_binding_incomplete")
+    structured_result_path: Path | None = None
+    structured_nodes_path: Path | None = None
+    structured_nodes_sha: str | None = None
+    structured_node_count: int | None = None
+    structured_result: dict[str, Any] | None = None
+    if structured_requested:
+        structured_result_path = _required_file(
+            structured_inputs[0],
+            str(structured_inputs[1]),
+            "structured_rag_result",
+        )
+        structured_nodes_path = _required_file(
+            structured_inputs[2],
+            str(structured_inputs[3]),
+            "structured_rag_nodes",
+        )
+        structured_nodes_sha = _required_digest(
+            str(structured_inputs[3]), "structured_rag_nodes_sha256"
+        )
+        structured_node_count = int(structured_inputs[4])
+        if structured_node_count < 1:
+            raise DellReferenceVerticalCLIError(
+                "structured_rag_node_count_invalid"
+            )
+        structured_result = _validate_structured_rag_result(
+            result_path=structured_result_path,
+            nodes_path=structured_nodes_path,
+            nodes_sha256=structured_nodes_sha,
+            allow_engineering_preview=bool(
+                getattr(
+                    args,
+                    "allow_engineering_preview_candidate_runtime",
+                    False,
+                )
+            ),
+        )
     s2_sha = _required_digest(args.s2_mart_sha256, "s2_mart_sha256")
     evidence_digest = _required_digest(
         args.reviewed_evidence_projection_digest,
@@ -985,10 +1151,10 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
             else evidence_service.get_case(case_key, evidence_principal)
         )
     )
-    local_reader = FrozenLegacyLocalKnowledgeReader(
-        records_path=knowledge_records_path,
-        expected_sha256=knowledge_sha,
-        expected_record_count=args.knowledge_record_count,
+    local_reader = StructuredLocalKnowledgeReader(
+        nodes_path=structured_nodes_path,
+        expected_sha256=str(structured_nodes_sha),
+        expected_node_count=int(structured_node_count),
         research_as_of=research_as_of.date(),
         allowed_branch_ids=branch_ids,
     )
@@ -1069,6 +1235,16 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
         "branch_ids": list(branch_ids),
         "branch_count": len(branch_ids),
         "knowledge_record_count": args.knowledge_record_count,
+        "local_retrieval_runtime": (
+            "structured_metadata_prefilter_bm25"
+            if structured_result is not None
+            else "legacy_bm25_postfilter"
+        ),
+        "structured_rag_artifact_maturity": (
+            "engineering_preview_candidate_only"
+            if structured_result is not None
+            else None
+        ),
         "reviewed_evidence_count": len(
             active_evidence_projection.get("evidence_items", [])
         ),
@@ -1096,6 +1272,26 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
             "knowledge_records_path": str(knowledge_records_path),
             "knowledge_records_sha256": knowledge_sha,
             "knowledge_record_count": args.knowledge_record_count,
+            "structured_rag_result_path": (
+                str(structured_result_path)
+                if structured_result_path is not None
+                else None
+            ),
+            "structured_rag_result_sha256": (
+                _required_digest(
+                    str(structured_inputs[1]),
+                    "structured_rag_result_sha256",
+                )
+                if structured_result is not None
+                else None
+            ),
+            "structured_rag_nodes_path": (
+                str(structured_nodes_path)
+                if structured_nodes_path is not None
+                else None
+            ),
+            "structured_rag_nodes_sha256": structured_nodes_sha,
+            "structured_rag_node_count": structured_node_count,
             "s2_result_path": str(s2_result_path),
             "s2_result_sha256": _required_digest(
                 args.s2_result_sha256, "s2_result_sha256"
@@ -1117,6 +1313,22 @@ def _compose_start(args: argparse.Namespace) -> dict[str, Any]:
             "current_q2_s2_numeric_fact_authority": False,
             "current_q2_derived_arithmetic_authorized": False,
             "automatic_human_approval": False,
+            "structured_rag_formal_eligible": (
+                structured_result.get("formal_eligible")
+                if structured_result is not None
+                else None
+            ),
+            "structured_rag_manual_review_complete": (
+                structured_result.get("manual_review_complete")
+                if structured_result is not None
+                else None
+            ),
+            "structured_rag_mcp_promotion_authorized": (
+                structured_result.get("mcp_promotion_authorized")
+                if structured_result is not None
+                else None
+            ),
+            "formal_qualification_claimed": False,
             "model_transport_retries": model_config.max_retries,
             "maximum_counter_reroutes": (
                 foundation.scope_ceiling.maximum_targeted_counter_reroutes

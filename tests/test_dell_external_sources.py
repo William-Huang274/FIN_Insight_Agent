@@ -7,6 +7,7 @@ from hashlib import sha256
 from typing import Any
 
 import pytest
+import requests
 
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research_foundation.contracts import (
@@ -15,6 +16,7 @@ from sec_agent.research_foundation.contracts import (
 )
 from sec_agent.research_foundation.external_sources import (
     DDGSDiagnosticProvider,
+    ExaHostedMCPPageFetcher,
     ExaHostedMCPProvider,
     ExternalCaptureRequest,
     ExternalSearchRequest,
@@ -167,6 +169,31 @@ class _FakeSession:
         return _OversizedResponse()
 
 
+class _ForbiddenResponse(_OversizedResponse):
+    headers = {"Content-Length": "20", "Content-Type": "text/html"}
+    status_code = 403
+
+
+class _ForbiddenSession(_FakeSession):
+    def get(self, *_: Any, **__: Any) -> _ForbiddenResponse:
+        return _ForbiddenResponse()
+
+
+class _NotModifiedResponse(_OversizedResponse):
+    headers = {"Content-Length": "0", "Content-Type": "text/html"}
+    status_code = 304
+
+
+class _NotModifiedSession(_FakeSession):
+    def get(self, *_: Any, **__: Any) -> _NotModifiedResponse:
+        return _NotModifiedResponse()
+
+
+class _TimeoutSession(_FakeSession):
+    def get(self, *_: Any, **__: Any) -> _ForbiddenResponse:
+        raise requests.Timeout("fixture timeout")
+
+
 def _public_guard() -> PublicURLGuard:
     return PublicURLGuard(resolver=lambda _host: ("93.184.216.34",))
 
@@ -274,6 +301,54 @@ def test_exa_prefers_structured_content_over_text_fallback() -> None:
 
     assert [row.title for row in hits] == ["Structured SEC result"]
     assert hits[0].snippet == "Structured locator snippet"
+
+
+def test_exa_hosted_web_fetch_binds_exact_official_url_and_text() -> None:
+    url = "https://investor.tsmc.com/english/q2.pdf"
+    client = _FakeExaClient(
+        "# TSMC Q2 transcript\n"
+        f"URL: {url}\n\n"
+        "Official transcript text with enough content for capture."
+    )
+    fetcher = ExaHostedMCPPageFetcher(
+        guard=_public_guard(),
+        client_factory=lambda: _FakeClientContext(client),
+        max_characters=12_000,
+    )
+
+    page = asyncio.run(fetcher.fetch(url, timeout_seconds=20))
+
+    assert page.final_url == url
+    assert page.status_code == 200
+    assert page.content_type == "text/markdown; transport=exa_web_fetch"
+    assert page.extracted_text is not None
+    assert "Official transcript text" in page.extracted_text
+    assert client.calls == [
+        (
+            "web_fetch_exa",
+            {"urls": [url], "maxCharacters": 12_000},
+        )
+    ]
+
+
+def test_exa_hosted_web_fetch_rejects_returned_url_substitution() -> None:
+    client = _FakeExaClient(
+        "# Nearby source\nURL: https://example.com/nearby\n\nWrong route."
+    )
+    fetcher = ExaHostedMCPPageFetcher(
+        guard=_public_guard(),
+        client_factory=lambda: _FakeClientContext(client),
+    )
+
+    with pytest.raises(ExternalSourceError) as error:
+        asyncio.run(
+            fetcher.fetch(
+                "https://example.com/exact",
+                timeout_seconds=20,
+            )
+        )
+
+    assert error.value.code == "exa_mcp_web_fetch_url_mismatch"
 
 
 def test_discovery_filters_domains_and_marks_candidate_not_evidence() -> None:
@@ -404,6 +479,103 @@ def test_capture_uses_browser_when_static_extraction_is_empty() -> None:
     assert receipt.text_digest == sha256(receipt.text.encode("utf-8")).hexdigest()
 
 
+def test_capture_uses_hosted_fetch_before_browser_after_static_failure() -> None:
+    guard = _public_guard()
+    static = _FakeFetcher(ExternalSourceError("capture_http_status_403"))
+    hosted = _FakeFetcher(
+        FetchedPage(
+            final_url="https://openai.com/index/gpt-5-6/",
+            extracted_text=(
+                "# GPT-5.6\nURL: https://openai.com/index/gpt-5-6/\n\n"
+                "Official provider text with enough bounded content."
+            ),
+            status_code=200,
+            content_type="text/markdown; transport=exa_web_fetch",
+        )
+    )
+    browser = _FakeFetcher(ExternalSourceError("should_not_run"))
+    capture = ExternalSourceCapture(
+        guard=guard,
+        static_fetcher=static,
+        hosted_fetcher=hosted,
+        browser_fetcher=browser,
+        extractor=lambda html: html,
+        clock=lambda: _NOW,
+        monotonic=lambda: 1.0,
+    )
+
+    receipt = asyncio.run(
+        capture.capture(
+            _capture_request(
+                "https://openai.com/index/gpt-5-6/",
+                "Q6_MODEL_COMPUTE_DEMAND",
+                minimum_useful_characters=20,
+                max_characters=500,
+            )
+        )
+    )
+
+    assert receipt.status == "captured"
+    assert receipt.capture_method == "exa_hosted_web_fetch"
+    assert [row.failure_code for row in receipt.attempts] == [
+        "capture_http_status_403",
+        None,
+    ]
+    assert receipt.decoded_html_utf8_sha256 is None
+    assert browser.calls == []
+
+
+def test_capture_rejects_browser_block_page_with_non_success_status() -> None:
+    guard = _public_guard()
+    static = _FakeFetcher(
+        FetchedPage(
+            final_url="https://www.sec.gov/Archives/",
+            html="<html><body>Forbidden</body></html>",
+            status_code=403,
+            content_type="text/html",
+        )
+    )
+    browser = _FakeFetcher(
+        FetchedPage(
+            final_url="https://www.sec.gov/Archives/",
+            html=(
+                "<html><body>Your Request Originates from an Undeclared "
+                "Automated Tool</body></html>"
+            ),
+            status_code=403,
+            content_type="text/html",
+        )
+    )
+    capture = ExternalSourceCapture(
+        guard=guard,
+        static_fetcher=static,
+        browser_fetcher=browser,
+        extractor=lambda html: html,
+        clock=lambda: _NOW,
+        monotonic=lambda: 1.0,
+    )
+
+    receipt = asyncio.run(
+        capture.capture(
+            _capture_request(
+                "https://www.sec.gov/Archives/",
+                "Q1_ISSUER_TRUTH",
+                minimum_useful_characters=20,
+                max_characters=500,
+            )
+        )
+    )
+
+    assert receipt.status == "tool_failure"
+    assert receipt.authority_state == "tool_failure"
+    assert [row.failure_code for row in receipt.attempts] == [
+        "capture_http_status_403",
+        "capture_http_status_403",
+    ]
+    assert receipt.text == ""
+    assert receipt.failure_is_not_public_information_gap is True
+
+
 def test_capture_rejects_private_resolution_before_transport() -> None:
     guard = PublicURLGuard(resolver=lambda _host: ("127.0.0.1",))
     static = _FakeFetcher(
@@ -447,6 +619,42 @@ def test_static_transport_enforces_response_byte_ceiling_before_read() -> None:
         )
 
     assert error.value.code == "capture_response_too_large"
+
+
+def test_static_transport_preserves_http_status_as_typed_failure() -> None:
+    fetcher = StaticHTTPPageFetcher(
+        guard=_public_guard(),
+        session_factory=_ForbiddenSession,
+    )
+
+    with pytest.raises(ExternalSourceError) as error:
+        asyncio.run(fetcher.fetch("https://example.com/", timeout_seconds=5))
+
+    assert error.value.code == "capture_http_status_403"
+
+
+def test_static_transport_rejects_non_redirect_3xx_as_typed_failure() -> None:
+    fetcher = StaticHTTPPageFetcher(
+        guard=_public_guard(),
+        session_factory=_NotModifiedSession,
+    )
+
+    with pytest.raises(ExternalSourceError) as error:
+        asyncio.run(fetcher.fetch("https://example.com/", timeout_seconds=5))
+
+    assert error.value.code == "capture_http_status_304"
+
+
+def test_static_transport_preserves_timeout_as_typed_failure() -> None:
+    fetcher = StaticHTTPPageFetcher(
+        guard=_public_guard(),
+        session_factory=_TimeoutSession,
+    )
+
+    with pytest.raises(ExternalSourceError) as error:
+        asyncio.run(fetcher.fetch("https://example.com/", timeout_seconds=5))
+
+    assert error.value.code == "capture_static_timeout"
 
 
 def test_playwright_route_guard_aborts_private_subresource() -> None:

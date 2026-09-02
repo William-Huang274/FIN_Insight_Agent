@@ -47,7 +47,7 @@ from sec_agent.research_foundation.contracts import (
 from sec_agent.research_foundation.data_ports import (
     CurrentReviewedEvidenceReader,
     ExistingS2FinancialFactReader,
-    FrozenLegacyLocalKnowledgeReader,
+    StructuredLocalKnowledgeReader,
 )
 from sec_agent.research_foundation.external_sources import (
     ExternalSearchRequest,
@@ -74,20 +74,22 @@ AGENT_CONFIG_PATH = (
     ROOT
     / "configs/research/fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json"
 )
-A02_RECORDS_PATH = Path(
-    "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/knowledge_bridge/"
-    "a02_bridge_attempt_20260902_01/records.jsonl"
+STRUCTURED_NODES_PATH = Path(
+    "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/rag_mature_stack/"
+    "retrieval_qualification/dell_rag_full_stack_preview_attempt_20260902_03/"
+    "retrieval_nodes.jsonl"
 )
-A02_RECORDS_SHA256 = (
-    "05354f873af050d644290fa6dbdf089bc0aefa852728c4fdb4c9acd984d3c7ff"
+STRUCTURED_NODES_SHA256 = (
+    "f7fbf9f43a68933bad52146c3a8aa3c9a1b52bba81e4e804c2b05a0aff9d0817"
 )
-A02_RECORD_COUNT = 458
-A04_S2_MART_PATH = Path(
+STRUCTURED_NODE_COUNT = 1_025
+FRESH_S2_MART_PATH = Path(
     "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/s2/"
-    "20260902-sec-a04-current-rebuild-a01/company_financial_facts.sqlite"
+    "s2_exact_period_contract_successor_20260902_r1/"
+    "company_financial_facts.sqlite"
 )
-A04_S2_MART_SHA256 = (
-    "9c962b1d00bfd8dc99b5a3cb719689f301dd7a44132ec05d006d8a61b568a656"
+FRESH_S2_MART_SHA256 = (
+    "363780c076d0f8766c0ceaafdb8b93d308d339636504b2a263127bb6ca365ac4"
 )
 
 RUN_ID = "20260902-dell-real-nine-branch-composition-a01"
@@ -164,7 +166,7 @@ class _DeterministicStructuredModel:
 
     def __init__(self, role: str) -> None:
         self.role = role
-        self.schema: type[Any] | None = None
+        self.schema: type[Any] | dict[str, Any] | None = None
         self.invocations = 0
         self.paid_provider_calls = 0
         self.network_calls = 0
@@ -172,7 +174,7 @@ class _DeterministicStructuredModel:
 
     def with_structured_output(
         self,
-        schema: type[Any],
+        schema: type[Any] | dict[str, Any],
         *,
         method: str,
         include_raw: bool,
@@ -189,6 +191,13 @@ class _DeterministicStructuredModel:
         self.invocations += 1
         semantic_input = json.loads(str(messages[-1].content))
         response = self._response(semantic_input)
+        parsed = (
+            response
+            if isinstance(self.schema, dict)
+            else self.schema.model_validate_json(
+                json.dumps(response, ensure_ascii=False, allow_nan=False)
+            )
+        )
         return {
             "raw": AIMessage(
                 content="",
@@ -198,9 +207,7 @@ class _DeterministicStructuredModel:
                     "total_tokens": 0,
                 },
             ),
-            "parsed": self.schema.model_validate_json(
-                json.dumps(response, ensure_ascii=False, allow_nan=False)
-            ),
+            "parsed": parsed,
             "parsing_error": None,
         }
 
@@ -221,6 +228,7 @@ class _DeterministicStructuredModel:
             "ticker": "DELL",
             "metric_ids": ["revenue"],
             "granularity": "quarter_discrete",
+            "selection_mode": "latest_on_or_before",
             "period_start": None,
             "period_end": None,
             "fiscal_years": [],
@@ -255,6 +263,16 @@ class _DeterministicStructuredModel:
                                 ["dell.com"]
                                 if source_route == "external_required"
                                 else []
+                            ),
+                            **(
+                                {}
+                                if source_route == "external_required"
+                                else {
+                                    "issuer_ids": ["DELL"],
+                                    "source_roles": [
+                                        "issuer_management_disclosure"
+                                    ],
+                                }
                             ),
                             "limit": 3,
                             "source_route": source_route,
@@ -337,6 +355,8 @@ class _DeterministicStructuredModel:
                         "query": "Dell AI server backlog conversion demand quality",
                         "purpose": "Refresh only the challenged branch.",
                         "include_domains": [],
+                        "issuer_ids": ["DELL"],
+                        "source_roles": ["issuer_management_disclosure"],
                         "limit": 3,
                         "source_route": "local_only",
                         "capture_limit": 1,
@@ -420,10 +440,10 @@ def _mcp_dependencies(
     )
     return ResearchDataMCPDependencies(
         method_reader=DellFoundationMethodReader(foundation),
-        local_knowledge_reader=FrozenLegacyLocalKnowledgeReader(
-            records_path=A02_RECORDS_PATH,
-            expected_sha256=A02_RECORDS_SHA256,
-            expected_record_count=A02_RECORD_COUNT,
+        local_knowledge_reader=StructuredLocalKnowledgeReader(
+            nodes_path=STRUCTURED_NODES_PATH,
+            expected_sha256=STRUCTURED_NODES_SHA256,
+            expected_node_count=STRUCTURED_NODE_COUNT,
             research_as_of=date(2026, 9, 2),
             allowed_branch_ids=tuple(
                 row.branch_id for row in foundation.question_branches
@@ -431,7 +451,7 @@ def _mcp_dependencies(
         ),
         reviewed_evidence_search_reader=reviewed.search,
         reviewed_evidence_reader=reviewed,
-        financial_fact_reader=ExistingS2FinancialFactReader(A04_S2_MART_PATH),
+        financial_fact_reader=ExistingS2FinancialFactReader(FRESH_S2_MART_PATH),
         external_discovery=discovery,
         external_capture=capture,
     )
@@ -450,13 +470,13 @@ def test_real_nine_branch_zero_paid_call_composition_and_sqlite_resume(
     """Accept the real-data composition seam, not research or release quality."""
 
     assert FOUNDATION_PATH.is_file()
-    assert A02_RECORDS_PATH.is_file()
-    assert A04_S2_MART_PATH.is_file()
-    assert _stream_sha256(A02_RECORDS_PATH) == A02_RECORDS_SHA256
-    assert sum(1 for _ in A02_RECORDS_PATH.open(encoding="utf-8")) == (
-        A02_RECORD_COUNT
+    assert STRUCTURED_NODES_PATH.is_file()
+    assert FRESH_S2_MART_PATH.is_file()
+    assert _stream_sha256(STRUCTURED_NODES_PATH) == STRUCTURED_NODES_SHA256
+    assert sum(1 for _ in STRUCTURED_NODES_PATH.open(encoding="utf-8")) == (
+        STRUCTURED_NODE_COUNT
     )
-    assert _stream_sha256(A04_S2_MART_PATH) == A04_S2_MART_SHA256
+    assert _stream_sha256(FRESH_S2_MART_PATH) == FRESH_S2_MART_SHA256
 
     foundation = load_dell_reference_vertical_foundation(FOUNDATION_PATH)
     branch_ids = tuple(row.branch_id for row in foundation.question_branches)
@@ -482,11 +502,11 @@ def test_real_nine_branch_zero_paid_call_composition_and_sqlite_resume(
         execution_attempt_id=RUN_ID,
     )
     capabilities = derive_planner_tool_capabilities(
-        sqlite_path=A04_S2_MART_PATH,
-        expected_mart_sha256=A04_S2_MART_SHA256,
+        sqlite_path=FRESH_S2_MART_PATH,
+        expected_mart_sha256=FRESH_S2_MART_SHA256,
         snapshot_id=SNAPSHOT_ID,
     )
-    assert capabilities.mart_sha256 == A04_S2_MART_SHA256
+    assert capabilities.mart_sha256 == FRESH_S2_MART_SHA256
     assert "DELL" in capabilities.finance.supported_tickers
     assert "revenue" in {row.metric_id for row in capabilities.finance.metrics}
 
@@ -589,12 +609,19 @@ def test_real_nine_branch_zero_paid_call_composition_and_sqlite_resume(
         ensure_ascii=False,
     )
     # The public MCP projection intentionally omits source file paths and their
-    # private binding digest.  Real A02/A04 identity is proved above at the port
-    # construction boundary; lane output proves those ports were consumed.
+    # private binding digest.  Structured S1 and fresh S2 identity are proved
+    # above at the port construction boundary; lane output proves those ports
+    # were consumed.
     assert any(
-        item.get("legacy_read_only_bridge") is True
+        item.get("structured_document_tree") is True
         for result in interrupted["initial_evidence_results"]
         for item in result["items"]
+    )
+    assert all(
+        item.get("legacy_read_only_bridge") is False
+        for result in interrupted["initial_evidence_results"]
+        for item in result["items"]
+        if "legacy_read_only_bridge" in item
     )
     assert all(
         item.get("numeric_fact_authority") is True

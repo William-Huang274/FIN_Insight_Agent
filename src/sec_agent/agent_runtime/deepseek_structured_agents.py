@@ -17,6 +17,7 @@ from time import perf_counter
 from typing import Any, Literal, Protocol, TypeVar, cast
 
 from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.utils.function_calling import convert_to_openai_tool
 from langchain_deepseek import ChatDeepSeek
 from pydantic import (
     BaseModel,
@@ -67,6 +68,7 @@ class FinancialFactRequestPayload(_StrictSemanticModel):
     granularity: Literal[
         "quarter_discrete", "fiscal_ytd", "fiscal_year", "instant"
     ]
+    selection_mode: Literal["exact_period_end", "latest_on_or_before"]
     period_start: date | None = None
     period_end: date | None = None
     fiscal_years: tuple[int, ...] = Field(default=(), max_length=4)
@@ -107,6 +109,8 @@ class FinancialFactRequestPayload(_StrictSemanticModel):
     def validate_period(self) -> "FinancialFactRequestPayload":
         if self.period_start and self.period_end and self.period_start > self.period_end:
             raise ValueError("financial_fact_period_inverted")
+        if self.selection_mode == "exact_period_end" and self.period_end is None:
+            raise ValueError("financial_fact_exact_period_end_required")
         return self
 
 
@@ -234,12 +238,34 @@ class _StructuredRunnable(Protocol):
 class _StructuredOutputCapable(Protocol):
     def with_structured_output(
         self,
-        schema: type[BaseModel],
+        schema: type[BaseModel] | Mapping[str, Any],
         *,
         method: str,
         include_raw: bool,
         strict: bool | None,
     ) -> _StructuredRunnable: ...
+
+
+def _provider_function_schema(
+    schema: type[BaseModel],
+    *,
+    strict: bool | None,
+) -> dict[str, Any]:
+    """Use a JSON-schema tool contract and keep Pydantic validation host-side.
+
+    LangChain's Pydantic tools parser validates Python tool-call arguments.
+    DeepSeek correctly returns JSON arrays for tuple-shaped fields, but strict
+    Pydantic Python validation rejects those lists before this adapter can
+    validate the original JSON.  Passing a provider function schema returns a
+    plain mapping; ``_validate_payload`` then performs the intended strict JSON
+    validation without weakening the host contract.
+    """
+
+    tool = convert_to_openai_tool(schema, strict=strict)
+    function_schema = tool.get("function")
+    if not isinstance(function_schema, dict):
+        raise DeepSeekStructuredAgentError("provider_function_schema_invalid")
+    return function_schema
 
 
 def load_deepseek_structured_agent_config(
@@ -267,7 +293,15 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
         "human-readable objective and purpose concise. Write each retrieval query "
         "in source-language English with explicit company, product and metric terms "
         "because the bounded corpus is English; this is a retrieval contract, not "
-        "the language of the final report. Treat the supplied scope ceiling as a "
+        "the language of the final report. For reviewed_first or local_only, copy "
+        "answer-free issuer, fiscal-period, source-role, exact-route and prose/table "
+        "constraints from the supplied method/source catalog into the typed retrieval "
+        "scope; leave a constraint empty when the method does not establish it, and "
+        "never use a nearby route as a substitute for a requested official source. "
+        "For a fact tied to a named quarter or date, use exact_period_end; use "
+        "latest_on_or_before only when the task explicitly asks for the latest "
+        "available fact as of the research cut-off. "
+        "Treat the supplied scope ceiling as a "
         "hard execution budget: for each branch use at most two external_required "
         "requests, no request limit above six, no more than ten requested sources "
         "in total, and no more than four captured pages; across all branches request "
@@ -532,6 +566,25 @@ def _usage(raw: Any) -> tuple[int, int, int, bool]:
     return input_tokens, output_tokens, total, usage_reported
 
 
+def _usage_audit_fields(raw: Any) -> dict[str, Any]:
+    try:
+        input_tokens, output_tokens, total_tokens, usage_reported = _usage(raw)
+    except DeepSeekStructuredAgentError as exc:
+        return {
+            "input_tokens": 0,
+            "output_tokens": 0,
+            "total_tokens": 0,
+            "usage_reported": False,
+            "usage_extraction_error": str(exc),
+        }
+    return {
+        "input_tokens": input_tokens,
+        "output_tokens": output_tokens,
+        "total_tokens": total_tokens,
+        "usage_reported": usage_reported,
+    }
+
+
 def _validate_payload(schema: type[PayloadT], value: Any) -> PayloadT:
     if isinstance(value, schema):
         return value
@@ -691,7 +744,10 @@ class DeepSeekStructuredAgentAdapter:
             HumanMessage(content=semantic_json),
         ]
         runnable = self._chat_models[role].with_structured_output(
-            schema,
+            _provider_function_schema(
+                schema,
+                strict=self._config.strict_provider_schema,
+            ),
             method=self._config.structured_output_method,
             include_raw=True,
             strict=self._config.strict_provider_schema,
@@ -776,6 +832,7 @@ class DeepSeekStructuredAgentAdapter:
                     "semantic_input_digest": semantic_input_digest,
                     "elapsed_ms": round(elapsed_ms, 3),
                     "raw_response": _audit_value(envelope.get("raw")),
+                    **_usage_audit_fields(envelope.get("raw")),
                     "error_type": (
                         type(parsing_error).__name__
                         if parsing_error is not None
@@ -803,6 +860,7 @@ class DeepSeekStructuredAgentAdapter:
                     "semantic_input_digest": semantic_input_digest,
                     "elapsed_ms": round(elapsed_ms, 3),
                     "parsed_payload": _audit_value(envelope.get("parsed")),
+                    **_usage_audit_fields(None),
                 }
             )
             raise DeepSeekStructuredAgentError("model_structured_raw_missing")
@@ -824,6 +882,7 @@ class DeepSeekStructuredAgentAdapter:
                     "elapsed_ms": round(elapsed_ms, 3),
                     "raw_response": _audit_value(envelope["raw"]),
                     "parsed_payload": _audit_value(envelope.get("parsed")),
+                    **_usage_audit_fields(envelope["raw"]),
                     "error_type": type(exc).__name__,
                     "error_message": str(exc)[:500],
                 }

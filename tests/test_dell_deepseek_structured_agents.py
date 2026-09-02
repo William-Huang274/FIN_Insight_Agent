@@ -6,6 +6,7 @@ from typing import Any
 
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
+from langchain_core.utils.function_calling import convert_to_openai_tool
 from pydantic import SecretStr, ValidationError
 
 import sec_agent.agent_runtime.deepseek_structured_agents as adapter_module
@@ -42,13 +43,13 @@ class FakeStructuredModel:
         self.response = response
         self.parse_error = parse_error
         self.calls = 0
-        self.schemas: list[type[Any]] = []
+        self.schemas: list[type[Any] | dict[str, Any]] = []
         self.options: list[dict[str, Any]] = []
         self.inputs: list[Any] = []
 
     def with_structured_output(
         self,
-        schema: type[Any],
+        schema: type[Any] | dict[str, Any],
         *,
         method: str,
         include_raw: bool,
@@ -70,11 +71,22 @@ class FakeStructuredModel:
         schema = self.schemas[-1]
         if self.parse_error:
             return {
-                "raw": AIMessage(content="invalid"),
+                "raw": AIMessage(
+                    content="invalid",
+                    usage_metadata={
+                        "input_tokens": 101,
+                        "output_tokens": 37,
+                        "total_tokens": 138,
+                    },
+                ),
                 "parsed": None,
                 "parsing_error": ValueError("fixture parse failure"),
             }
-        parsed = schema.model_validate_json(json.dumps(self.response))
+        parsed = (
+            self.response
+            if isinstance(schema, dict)
+            else schema.model_validate_json(json.dumps(self.response))
+        )
         return {
             "raw": AIMessage(
                 content="",
@@ -98,6 +110,8 @@ def _evidence_request(query: str) -> dict[str, Any]:
         "query": query,
         "purpose": "Test one material branch mechanism.",
         "include_domains": ["dell.com"],
+        "issuer_ids": ["DELL"],
+        "source_roles": ["issuer_management_disclosure"],
         "limit": 6,
         "source_route": "reviewed_first",
         "capture_limit": 2,
@@ -111,7 +125,8 @@ def _fact_request() -> dict[str, Any]:
         "granularity": "quarter_discrete",
         "period_start": None,
         "period_end": None,
-        "fiscal_years": [2026],
+        "selection_mode": "latest_on_or_before",
+        "fiscal_years": [],
         "requested_unit": "reported_source_unit",
         "unit_family": None,
     }
@@ -489,7 +504,9 @@ def test_adapter_maps_semantic_payloads_to_host_bound_graph_contracts() -> None:
         assert model.options == [
             {"method": "function_calling", "include_raw": True, "strict": False}
         ]
-        schema_names = _schema_property_names(model.schemas[0].model_json_schema())
+        provider_schema = model.schemas[0]
+        assert isinstance(provider_schema, dict)
+        schema_names = _schema_property_names(provider_schema["parameters"])
         assert not forbidden_schema_fields.intersection(schema_names), role
         messages = model.inputs[0]
         assert len(messages) == 2
@@ -501,6 +518,48 @@ def test_adapter_maps_semantic_payloads_to_host_bound_graph_contracts() -> None:
         assert DIGEST_B not in model_visible
         assert DIGEST_C not in model_visible
         assert DIGEST_D not in model_visible
+
+
+def test_provider_dict_schema_preserves_langchain_pydantic_tool_contract() -> None:
+    expected = convert_to_openai_tool(
+        adapter_module.PlannerSemanticPayload,
+        strict=False,
+    )["function"]
+
+    actual = adapter_module._provider_function_schema(
+        adapter_module.PlannerSemanticPayload,
+        strict=False,
+    )
+
+    assert actual == expected
+    assert actual["parameters"] != (
+        adapter_module.PlannerSemanticPayload.model_json_schema()
+    )
+
+
+def test_real_chatdeepseek_dict_path_selects_json_not_pydantic_parser() -> None:
+    model = adapter_module.ChatDeepSeek(
+        model="deepseek-v4-pro",
+        api_key=SecretStr("dummy-key-no-network-call"),
+        base_url="https://api.deepseek.com",
+        max_retries=0,
+    )
+    provider_schema = adapter_module._provider_function_schema(
+        adapter_module.PlannerSemanticPayload,
+        strict=False,
+    )
+
+    runnable = model.with_structured_output(
+        provider_schema,
+        method="function_calling",
+        include_raw=True,
+        strict=False,
+    )
+    runnable_repr = repr(runnable)
+
+    assert "JsonOutputKeyToolsParser" in runnable_repr
+    assert "PydanticToolsParser" not in runnable_repr
+    assert "$defs" not in json.dumps(provider_schema)
 
 
 def test_parse_failure_is_single_call_and_never_promoted() -> None:
@@ -552,6 +611,10 @@ def test_model_call_audit_records_exact_input_raw_usage_and_parse_failure() -> N
     assert [event["event"] for event in failure_events] == ["started", "outcome"]
     assert failure_events[1]["status"] == "structured_parse_failed"
     assert failure_events[1]["raw_response"]["content"] == "invalid"
+    assert failure_events[1]["input_tokens"] == 101
+    assert failure_events[1]["output_tokens"] == 37
+    assert failure_events[1]["total_tokens"] == 138
+    assert failure_events[1]["usage_reported"] is True
 
 
 def test_input_character_ceiling_blocks_before_provider_transport() -> None:
@@ -596,6 +659,7 @@ def test_input_character_ceiling_blocks_before_provider_transport() -> None:
         {"fiscal_years": [2026, 2026]},
         {"period_start": "2026-08-01", "period_end": "2026-07-01"},
         {"metric_ids": ["Revenue"]},
+        {"selection_mode": "nearest"},
     ],
 )
 def test_financial_fact_request_rejects_shapes_the_s2_port_cannot_accept(
@@ -604,4 +668,12 @@ def test_financial_fact_request_rejects_shapes_the_s2_port_cannot_accept(
     value = _fact_request()
     value.update(update)
     with pytest.raises(ValidationError):
+        FinancialFactRequestPayload.model_validate_json(json.dumps(value))
+
+
+def test_financial_fact_request_requires_explicit_period_selection_mode() -> None:
+    value = _fact_request()
+    value.pop("selection_mode")
+
+    with pytest.raises(ValidationError, match="selection_mode"):
         FinancialFactRequestPayload.model_validate_json(json.dumps(value))

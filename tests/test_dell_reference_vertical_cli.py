@@ -40,24 +40,125 @@ def test_help_exposes_only_start_and_resume(capsys: pytest.CaptureFixture[str]) 
     assert cli._graph_config("fixture-run")["max_concurrency"] == 3
 
 
-def test_q1_a01_run_authority_freezes_complete_secret_free_start_inputs() -> None:
+def test_structured_preview_requires_explicit_candidate_runtime_opt_in(
+    tmp_path: Path,
+) -> None:
+    nodes = tmp_path / "retrieval_nodes.jsonl"
+    nodes.write_text("{}\n", encoding="utf-8")
+    nodes_sha = cli._stream_sha256(nodes)
+    result_path = tmp_path / "result.json"
+    result = {
+        "schema_version": "fin_ia_dell_structured_rag_qualification_result_v1_0",
+        "status": "ENGINEERING_PREVIEW_MEASURED_REVIEW_REQUIRED",
+        "attempt_mode": "engineering_preview",
+        "formal_eligible": False,
+        "manual_review_complete": False,
+        "generation_model_calls": 0,
+        "deepseek_calls": 0,
+        "paid_calls": 0,
+        "retrieval_promotion_authorized": False,
+        "mcp_promotion_authorized": False,
+        "artifacts": {
+            "retrieval_nodes.jsonl": {
+                "path": str(nodes),
+                "sha256": nodes_sha,
+            }
+        },
+        "metrics": {
+            "bm25": {
+                "hit_rate_at_10": 1.0,
+                "critical_miss_count_at_5": 0,
+                "critical_delivered_context_required_facet_miss_count_at_5": 0,
+                "hard_negative_rank_1_count": 0,
+                "critical_acceptable_precedence_failure_count": 0,
+            }
+        },
+    }
+    result_path.write_text(json.dumps(result), encoding="utf-8")
+
+    with pytest.raises(
+        cli.DellReferenceVerticalCLIError,
+        match="structured_rag_engineering_preview_not_authorized",
+    ):
+        cli._validate_structured_rag_result(
+            result_path=result_path,
+            nodes_path=nodes,
+            nodes_sha256=nodes_sha,
+        )
+
+    accepted = cli._validate_structured_rag_result(
+        result_path=result_path,
+        nodes_path=nodes,
+        nodes_sha256=nodes_sha,
+        allow_engineering_preview=True,
+    )
+    assert accepted["mcp_promotion_authorized"] is False
+    assert accepted["formal_eligible"] is False
+
+
+def test_structured_preview_opt_in_cannot_reverse_producer_authority(
+    tmp_path: Path,
+) -> None:
+    nodes = tmp_path / "retrieval_nodes.jsonl"
+    nodes.write_text("{}\n", encoding="utf-8")
+    nodes_sha = cli._stream_sha256(nodes)
+    result_path = tmp_path / "result.json"
+    result_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "fin_ia_dell_structured_rag_qualification_result_v1_0",
+                "status": "ENGINEERING_PREVIEW_MEASURED_REVIEW_REQUIRED",
+                "attempt_mode": "engineering_preview",
+                "formal_eligible": False,
+                "manual_review_complete": False,
+                "generation_model_calls": 0,
+                "deepseek_calls": 0,
+                "paid_calls": 0,
+                "retrieval_promotion_authorized": False,
+                "mcp_promotion_authorized": True,
+                "artifacts": {
+                    "retrieval_nodes.jsonl": {
+                        "path": str(nodes),
+                        "sha256": nodes_sha,
+                    }
+                },
+                "metrics": {"bm25": {}},
+            }
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(
+        cli.DellReferenceVerticalCLIError,
+        match="structured_rag_binding_invalid",
+    ):
+        cli._validate_structured_rag_result(
+            result_path=result_path,
+            nodes_path=nodes,
+            nodes_sha256=nodes_sha,
+            allow_engineering_preview=True,
+        )
+
+
+def test_structured_a01_run_authority_freezes_complete_secret_free_start_inputs() -> None:
     authority_path = (
         cli.SCRIPT_REPOSITORY_ROOT
-        / "scripts/research/run_dell_reference_vertical_q1_a01.ps1"
+        / "scripts/research/run_dell_reference_vertical_structured_a01.ps1"
     )
     text = authority_path.read_text(encoding="utf-8")
 
     for value in (
         "D:\\FIN_Insight_Agent",
-        "20260902-dell-reference-vertical-q1-a01",
-        "dell-reference-vertical-q1-run-a01",
-        "20260902-dell-a02-a04-reviewed-evidence-composition",
+        "20260902-dell-reference-vertical-structured-a01",
+        "dell-reference-vertical-structured-run-a01",
+        "20260902-dell-structured-rag-s2-successor-candidate",
         "bf214a085916c296428f51e77c8518f2905b5d451290535fea54040fb2d96d47",
         "03115289a715fb65aa72e9d2c9b5463cc459c4c927a0e81fd54d6da9b1216fc8",
         "5d2014ebf6a0561e3f3ea0b6e76e4b5d838b5db7bb097ff086a452ececba9bf2",
         "47d518b937390a446444dd27893a297b97d2aa297a06ac382e13fba9fd26bef9",
-        "bc5830e912c52d8979a18ccdd38a475acc4f9f17d6728d78e31344e437f60922",
-        "9c962b1d00bfd8dc99b5a3cb719689f301dd7a44132ec05d006d8a61b568a656",
+        "2ad27d586a64ad7018e460ca836ca689f84615772a561f6b5ebaba196a28191c",
+        "f7fbf9f43a68933bad52146c3a8aa3c9a1b52bba81e4e804c2b05a0aff9d0817",
+        "dd2c92400de777867545de2c41b975d1f07ca6060f4ed431075b7081ab16ed82",
+        "363780c076d0f8766c0ceaafdb8b93d308d339636504b2a263127bb6ca365ac4",
         "2d4e3d572494e6fc7b7537b567a644a894cdf1e82143d325812860c4cc84eccd",
         "1479e49f0cde7166fe6474a74b666dfb646b31a5291f1317689aaa6bc8391eb9",
         "e846fc5d85defa9909779d0ef12f6a1e0c5b00a99ef1eb2d1fffa6ed16492d70",
@@ -65,6 +166,8 @@ def test_q1_a01_run_authority_freezes_complete_secret_free_start_inputs() -> Non
     ):
         assert value in text
     assert ".venv\\Scripts\\python.exe" in text
+    assert "--allow-engineering-preview-candidate-runtime" in text
+    assert "--structured-rag-node-count', '1025'" in text
     assert "$runArguments += '--preflight-only'" in text
     assert "[switch]$PreflightOnly" in text
     assert "$env:DEEPSEEK_API_KEY" not in text
@@ -860,6 +963,9 @@ def test_model_call_artifact_journal_is_append_only_and_secret_scanned(
     assert summary["started_call_count"] == 1
     assert summary["outcome_call_count"] == 1
     assert summary["unfinished_call_count"] == 0
+    assert summary["provider_reported_total_tokens"] == 42
+    assert summary["successful_call_tokens"] == 42
+    assert summary["failed_post_response_call_tokens"] == 0
     assert summary["successful_total_tokens"] == 42
 
     with pytest.raises(
@@ -892,6 +998,177 @@ def test_model_call_artifact_journal_is_append_only_and_secret_scanned(
         / "model-calls"
         / f"{secret_call_id}.started.json"
     ).exists()
+
+
+def test_model_call_summary_counts_paid_post_response_failure_tokens(
+    tmp_path: Path,
+) -> None:
+    journal = cli._ModelCallArtifactJournal(tmp_path / "attempt", secrets=())
+    call_id = "planner-eeeeeeeeeeee-ffffffffffffffffffff"
+    journal(
+        {
+            "event": "started",
+            "call_id": call_id,
+            "semantic_input": {"question": "fixture"},
+        }
+    )
+    journal(
+        {
+            "event": "outcome",
+            "call_id": call_id,
+            "status": "structured_parse_failed",
+            "raw_response": {
+                "usage_metadata": {
+                    "input_tokens": 21_465,
+                    "output_tokens": 2_076,
+                    "total_tokens": 23_541,
+                }
+            },
+        }
+    )
+
+    summary = cli._model_call_audit_summary(tmp_path / "attempt")
+
+    assert summary["provider_reported_total_tokens"] == 23_541
+    assert summary["successful_call_tokens"] == 0
+    assert summary["failed_post_response_call_tokens"] == 23_541
+    assert summary["successful_total_tokens"] == 0
+
+
+def test_validate_knowledge_bridge_accepts_provenance_v1_2(
+    tmp_path: Path,
+) -> None:
+    records_path = tmp_path / "records.jsonl"
+    records_path.write_text('{"candidate_is_not_evidence":true}\n', encoding="utf-8")
+    records_sha256 = cli._stream_sha256(records_path)
+    result_path = tmp_path / "result.json"
+    result_path.write_text(
+        json.dumps(
+            {
+                "schema_version": (
+                    "fin_ia_dell_knowledge_reader_bridge_result_v1_2"
+                ),
+                "status": "qualification_candidate_bridge_materialized",
+                "authority_state": "retrieval_candidate_set",
+                "output": {
+                    "records_path": records_path.as_posix(),
+                    "sha256": records_sha256,
+                    "record_count": 1,
+                },
+                "provenance_fields_preserved": True,
+                "text_sha256_recomputed": True,
+                "parent_content_materialized": False,
+                "parent_child_retrieval_performed": False,
+                "candidate_is_not_evidence": True,
+                "citation_eligible": False,
+                "evidence_admission_performed": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    value = cli._validate_knowledge_bridge(
+        result_path=result_path,
+        records_path=records_path,
+        records_sha256=records_sha256,
+        record_count=1,
+    )
+
+    assert value["schema_version"].endswith("_v1_2")
+
+
+def test_validate_knowledge_bridge_rejects_incomplete_provenance_v1_2(
+    tmp_path: Path,
+) -> None:
+    records_path = tmp_path / "records.jsonl"
+    records_path.write_text('{"candidate_is_not_evidence":true}\n', encoding="utf-8")
+    records_sha256 = cli._stream_sha256(records_path)
+    result_path = tmp_path / "result.json"
+    result_path.write_text(
+        json.dumps(
+            {
+                "schema_version": (
+                    "fin_ia_dell_knowledge_reader_bridge_result_v1_2"
+                ),
+                "status": "qualification_candidate_bridge_materialized",
+                "authority_state": "retrieval_candidate_set",
+                "output": {
+                    "records_path": records_path.as_posix(),
+                    "sha256": records_sha256,
+                    "record_count": 1,
+                },
+                "provenance_fields_preserved": False,
+                "text_sha256_recomputed": True,
+                "parent_content_materialized": False,
+                "parent_child_retrieval_performed": False,
+                "candidate_is_not_evidence": True,
+                "citation_eligible": False,
+                "evidence_admission_performed": False,
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        cli.DellReferenceVerticalCLIError,
+        match="knowledge_bridge_binding_invalid",
+    ):
+        cli._validate_knowledge_bridge(
+            result_path=result_path,
+            records_path=records_path,
+            records_sha256=records_sha256,
+            record_count=1,
+        )
+
+
+def test_validate_s2_result_recomputes_canonical_result_digest(
+    tmp_path: Path,
+) -> None:
+    mart_path = tmp_path / "company_financial_facts.sqlite"
+    mart_path.write_bytes(b"sqlite-fixture")
+    mart_sha256 = "a" * 64
+    unsigned = {
+        "schema_version": (
+            "fin_ia_s2_company_financial_fact_mart_build_result_v1_0"
+        ),
+        "status": "s2_company_financial_fact_mart_engineering_pass",
+        "storage": {
+            "sqlite_ref": str(mart_path),
+            "sqlite_sha256": mart_sha256,
+        },
+        "acceptance": {
+            "candidate_or_metric_row_grants_numeric_authority": False,
+        },
+    }
+    result_path = tmp_path / "s2_result.json"
+    result_path.write_text(
+        json.dumps(
+            {**unsigned, "result_digest": cli._canonical_digest(unsigned)},
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+
+    validated = cli._validate_s2_result(
+        result_path=result_path,
+        mart_path=mart_path,
+        mart_sha256=mart_sha256,
+    )
+    assert validated["result_digest"] == cli._canonical_digest(unsigned)
+
+    result_path.write_text(
+        json.dumps({**unsigned, "result_digest": "f" * 64}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    with pytest.raises(
+        cli.DellReferenceVerticalCLIError,
+        match="s2_result_binding_invalid",
+    ):
+        cli._validate_s2_result(
+            result_path=result_path,
+            mart_path=mart_path,
+            mart_sha256=mart_sha256,
+        )
 
 
 def test_write_or_validate_json_recovers_matching_orphan_temporary_file(

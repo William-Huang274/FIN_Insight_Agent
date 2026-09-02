@@ -1,11 +1,32 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import os
 from pathlib import Path
 from typing import Any, Sequence
 
-from .financial_objects import sha256_file
-from .query_plan import canonical_digest
+
+def sha256_file(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for block in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(block)
+    return digest.hexdigest()
+
+
+def canonical_digest(value: Any) -> str:
+    payload = (
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def _required_cuda_device(torch: Any) -> Any:
@@ -19,11 +40,25 @@ def _required_cuda_device(torch: Any) -> Any:
 def cross_encoder_model_identity(
     model_dir: Path, *, model_id: str = "BAAI/bge-reranker-v2-m3"
 ) -> dict[str, Any]:
-    files = [model_dir / "config.json", model_dir / "model.safetensors"]
-    if not all(path.is_file() for path in files):
+    required = [model_dir / "config.json"]
+    weights = [path for path in model_dir.glob("*.safetensors") if path.is_file()]
+    weights.extend(path for path in model_dir.glob("pytorch_model*.bin") if path.is_file())
+    if not all(path.is_file() for path in required) or not weights:
         raise ValueError("cross_encoder_model_files_missing")
+    files = [
+        path
+        for path in model_dir.rglob("*")
+        if path.is_file()
+        and ".cache" not in path.relative_to(model_dir).parts
+        and path.name not in {"README.md", ".gitattributes"}
+    ]
+    files.sort(key=lambda path: path.relative_to(model_dir).as_posix())
     rows = [
-        {"name": path.name, "bytes": path.stat().st_size, "sha256": sha256_file(path)}
+        {
+            "name": path.relative_to(model_dir).as_posix(),
+            "bytes": path.stat().st_size,
+            "sha256": sha256_file(path),
+        }
         for path in files
     ]
     body = {
@@ -102,10 +137,12 @@ def load_local_qwen3_reranker(
         str(model_dir),
         padding_side="left",
         local_files_only=True,
+        trust_remote_code=False,
     )
     model = AutoModelForCausalLM.from_pretrained(
         str(model_dir),
         local_files_only=True,
+        trust_remote_code=False,
         dtype=torch.float16,
     )
     model.to(device)

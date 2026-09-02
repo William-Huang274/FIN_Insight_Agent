@@ -39,6 +39,12 @@ _PERIOD_IDENTITY_MAX_FILING_LAG_DAYS = {
     "10-Q": 45,
     "10-K": 90,
 }
+_PERIOD_SELECTION_EXACT = "exact_period_end"
+_PERIOD_SELECTION_LATEST = "latest_on_or_before"
+_PERIOD_SELECTION_MODES = {
+    _PERIOD_SELECTION_EXACT,
+    _PERIOD_SELECTION_LATEST,
+}
 
 
 @dataclass(frozen=True)
@@ -81,6 +87,38 @@ def execute_fact_lookup(
     sqlite_path: Path,
     lookup: FactLookup,
 ) -> TypedFactExecutionResult:
+    if "selection_mode" not in lookup.period:
+        return _gap(
+            fact_request_id=lookup.fact_request_id,
+            ticker=lookup.ticker,
+            metric_id=lookup.metric_id,
+            code="typed_fact_period_selection_mode_required",
+            details={
+                "supported_selection_modes": sorted(_PERIOD_SELECTION_MODES),
+            },
+        )
+    selection_mode = _period_selection_mode(lookup.period)
+    if selection_mode is None:
+        return _gap(
+            fact_request_id=lookup.fact_request_id,
+            ticker=lookup.ticker,
+            metric_id=lookup.metric_id,
+            code="typed_fact_period_selection_mode_invalid",
+            details={
+                "selection_mode": lookup.period.get("selection_mode"),
+                "supported_selection_modes": sorted(_PERIOD_SELECTION_MODES),
+            },
+        )
+    if (
+        selection_mode == _PERIOD_SELECTION_EXACT
+        and not str(lookup.period.get("end_date") or "").strip()
+    ):
+        return _gap(
+            fact_request_id=lookup.fact_request_id,
+            ticker=lookup.ticker,
+            metric_id=lookup.metric_id,
+            code="typed_fact_exact_period_end_required",
+        )
     if not sqlite_path.is_file():
         return _gap(
             fact_request_id=lookup.fact_request_id,
@@ -413,18 +451,31 @@ def _candidate_rows(
     connection: sqlite3.Connection,
     lookup: FactLookup,
 ) -> tuple[list[Mapping[str, Any]], list[Mapping[str, Any]]]:
+    selection_mode = _period_selection_mode(lookup.period)
+    if selection_mode is None:
+        raise ValueError("fact_lookup_period_selection_mode_unvalidated")
+    period_end_operator = (
+        "="
+        if selection_mode == _PERIOD_SELECTION_EXACT
+        else "<="
+    )
     clauses = [
         "current.ticker = ?",
         "current.metric_id = ?",
         "substr(current.accepted_at, 1, 10) <= ?",
-        "current.period_end <= ?",
+        f"current.period_end {period_end_operator} ?",
     ]
-    as_of_end = str(lookup.period.get("end_date") or lookup.research_as_of)
+    requested_end = str(lookup.period.get("end_date") or lookup.research_as_of)
+    period_end = (
+        requested_end
+        if selection_mode == _PERIOD_SELECTION_EXACT
+        else min(requested_end, lookup.research_as_of)
+    )
     params: list[Any] = [
         lookup.ticker.upper(),
         lookup.metric_id,
         lookup.research_as_of,
-        min(as_of_end, lookup.research_as_of),
+        period_end,
     ]
     start_date = lookup.period.get("start_date")
     if start_date:
@@ -448,6 +499,14 @@ def _candidate_rows(
         rows,
         fiscal_years=lookup.period.get("fiscal_years") or (),
     )
+
+
+def _period_selection_mode(period: Mapping[str, Any]) -> str | None:
+    raw_mode = period.get("selection_mode")
+    if not isinstance(raw_mode, str):
+        return None
+    normalized = raw_mode.strip().casefold()
+    return normalized if normalized in _PERIOD_SELECTION_MODES else None
 
 
 def _admit_physical_period_identities(

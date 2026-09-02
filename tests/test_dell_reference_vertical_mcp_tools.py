@@ -30,6 +30,7 @@ from sec_agent.research_foundation.mcp_server import (
     CAPTURE_EXTERNAL_SOURCE_TOOL,
     GET_RESEARCH_METHOD_TOOL,
     QUERY_COMPANY_FINANCIAL_FACTS_TOOL,
+    READ_REVIEWED_EVIDENCE_BY_ID_TOOL,
     SEARCH_EXTERNAL_SOURCES_TOOL,
     SEARCH_LOCAL_KNOWLEDGE_TOOL,
     SEARCH_REVIEWED_EVIDENCE_TOOL,
@@ -89,6 +90,9 @@ def _task(
                 "query": "Dell AI server backlog definition",
                 "purpose": "Locate reviewed issuer evidence for the bounded branch.",
                 "source_route": "reviewed_first",
+                "issuer_ids": ["DELL"],
+                "fiscal_periods": ["FY2027_Q1"],
+                "source_roles": ["issuer_management_disclosure"],
             },
         ),
         fact_requests=(
@@ -97,6 +101,7 @@ def _task(
                 "metric_ids": ["revenue"],
                 "granularity": "quarter_discrete",
                 "period_end": "2026-05-01",
+                "selection_mode": "exact_period_end",
             },
         ),
         research_as_of=_AS_OF,
@@ -150,6 +155,409 @@ def test_sync_facade_discovers_and_calls_non_cell_mcp_tools_with_bound_scope() -
         lane_task = ToolLaneTask.model_validate_json(json.dumps(_task(lane)))
         validated = ToolLaneResult.model_validate_json(json.dumps(output))
         _validate_tool_result(validated, lane_task=lane_task)
+
+
+def test_finance_lane_requires_explicit_period_selection_mode() -> None:
+    request = _task("finance")
+    request["task"]["fact_requests"][0].pop("selection_mode")
+
+    with DellMCPToolLaneAdapter(
+        _build_server(),
+        run_binding=_binding(),
+    ) as adapter:
+        result = adapter.finance_tool(request)
+
+    assert result["status"] == "tool_failure"
+    assert result["failure"]["owner_layer"] == "s2_tool"
+    assert result["failure"]["code"] == "mcp_fact_selection_mode_required"
+
+
+def test_finance_lane_rejects_response_query_substitution(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with DellMCPToolLaneAdapter(
+        _build_server(),
+        run_binding=_binding(),
+    ) as adapter:
+        original_call = adapter._call
+
+        def substitute_query(name: str, arguments: dict) -> object:
+            call = original_call(name, arguments)
+            if name != QUERY_COMPANY_FINANCIAL_FACTS_TOOL or call.content is None:
+                return call
+            content = json.loads(json.dumps(call.content))
+            content["query"]["period_end"] = "2026-04-30"
+            content["query_digest"] = canonical_sha256(
+                {
+                    key: value
+                    for key, value in content.items()
+                    if key != "query_digest"
+                }
+            )
+            return mcp_tools_module._Call(
+                content=content,
+                error=False,
+                failure_kind=None,
+                receipt={
+                    **call.receipt,
+                    "output_digest": canonical_sha256(content),
+                },
+            )
+
+        monkeypatch.setattr(adapter, "_call", substitute_query)
+        result = adapter.finance_tool(_task("finance"))
+
+    assert result["status"] == "tool_failure"
+    assert result["failure"]["owner_layer"] == "s2_tool"
+    assert result["failure"]["code"] == (
+        "mcp_financial_response_query_binding_mismatch"
+    )
+
+
+def test_finance_lane_rejects_resolved_fact_from_another_period(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with DellMCPToolLaneAdapter(
+        _build_server(),
+        run_binding=_binding(),
+    ) as adapter:
+        original_call = adapter._call
+
+        def substitute_fact_period(name: str, arguments: dict) -> object:
+            call = original_call(name, arguments)
+            if name != QUERY_COMPANY_FINANCIAL_FACTS_TOOL or call.content is None:
+                return call
+            content = json.loads(json.dumps(call.content))
+            row = content["results"][0]
+            row.update(
+                {
+                    "status": "resolved",
+                    "facts": [
+                        {
+                            "schema_version": "fin_ia_numeric_fact_v1_0",
+                            "numeric_fact_id": "NUMFACT::SUBSTITUTED",
+                            "fact_request_id": row["fact_request_id"],
+                            "ticker": "DELL",
+                            "metric_id": "revenue",
+                            "value_decimal": "100",
+                            "unit": "USD",
+                            "unit_family": "currency",
+                            "period_start": "2025-11-01",
+                            "period_end": "2026-04-30",
+                            "period_role": "quarter_discrete",
+                            "fiscal_year": 2027,
+                            "fiscal_period": "Q1",
+                            "research_as_of": "2026-09-02",
+                            "authority_mode": "company_reported_exact",
+                            "accession_numbers": ["0001571996-26-000030"],
+                            "accepted_at": "2026-06-09T20:11:41+00:00",
+                            "source_observation_ids": ["OBS::SUBSTITUTED"],
+                            "citation_urls": [
+                                "https://www.sec.gov/Archives/example"
+                            ],
+                            "source_digests": ["a" * 64],
+                            "formula_trace": None,
+                            "numeric_fact_authority": True,
+                        }
+                    ],
+                    "typed_gap": None,
+                    "typed_conflict": None,
+                }
+            )
+            content["resolved_metric_count"] = 1
+            content["typed_gap_count"] = 0
+            content["typed_conflict_count"] = 0
+            content["query_digest"] = canonical_sha256(
+                {
+                    key: value
+                    for key, value in content.items()
+                    if key != "query_digest"
+                }
+            )
+            return mcp_tools_module._Call(
+                content=content,
+                error=False,
+                failure_kind=None,
+                receipt={
+                    **call.receipt,
+                    "output_digest": canonical_sha256(content),
+                },
+            )
+
+        monkeypatch.setattr(adapter, "_call", substitute_fact_period)
+        result = adapter.finance_tool(_task("finance"))
+
+    assert result["status"] == "tool_failure"
+    assert result["failure"]["owner_layer"] == "s2_tool"
+    assert result["failure"]["code"] == (
+        "mcp_financial_fact_exact_period_binding_mismatch"
+    )
+
+
+def test_exact_route_reviewed_first_bypasses_unscoped_reviewed_search() -> None:
+    request = _task(
+        "evidence",
+        evidence_request={
+            "query": "Dell FY27 Q1 performance review pricing units",
+            "purpose": "Require the exact official route without substitution.",
+            "source_route": "reviewed_first",
+            "issuer_ids": ["DELL"],
+            "source_roles": ["issuer_management_disclosure"],
+            "route_ids": ["dell_fy2027_q1_performance_review"],
+            "limit": 3,
+        },
+    )
+    with DellMCPToolLaneAdapter(_build_server(), run_binding=_binding()) as adapter:
+        result = adapter.evidence_tool(request)
+
+    assert result["status"] == "success"
+    assert _tool_names(result) == [
+        GET_RESEARCH_METHOD_TOOL,
+        SEARCH_LOCAL_KNOWLEDGE_TOOL,
+    ]
+    gap = next(item for item in result["items"] if item.get("gap_code"))
+    assert gap["gap_code"] == "exact_route_local_candidate_unavailable"
+    assert gap["retrieval_scope"]["route_ids"] == [
+        "dell_fy2027_q1_performance_review"
+    ]
+
+
+def test_unscoped_reviewed_hit_does_not_suppress_scoped_local_lookup(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with DellMCPToolLaneAdapter(_build_server(), run_binding=_binding()) as adapter:
+        original_call = adapter._call
+
+        def reviewed_hit(name: str, arguments: dict) -> object:
+            call = original_call(name, arguments)
+            if call.content is None:
+                return call
+            content = json.loads(json.dumps(call.content))
+            if name == SEARCH_REVIEWED_EVIDENCE_TOOL:
+                content["hits"] = [{"evidence_id": "EV::SCOPETEST"}]
+            elif name == READ_REVIEWED_EVIDENCE_BY_ID_TOOL:
+                content["evidence"] = [
+                    {
+                        "authority_state": "reviewed_evidence",
+                        "writer_citable": True,
+                        "evidence_id": "EV::SCOPETEST",
+                    }
+                ]
+                content["missing_evidence_ids"] = []
+            else:
+                return call
+            return mcp_tools_module._Call(
+                content=content,
+                error=False,
+                failure_kind=None,
+                receipt={
+                    **call.receipt,
+                    "output_digest": canonical_sha256(content),
+                },
+            )
+
+        monkeypatch.setattr(adapter, "_call", reviewed_hit)
+        result = adapter.evidence_tool(_task("evidence"))
+
+    assert result["status"] == "success"
+    assert result["result_states"] == ["reviewed_evidence", "typed_gap"]
+    tool_names = _tool_names(result)
+    assert SEARCH_REVIEWED_EVIDENCE_TOOL in tool_names
+    assert READ_REVIEWED_EVIDENCE_BY_ID_TOOL in tool_names
+    assert tool_names[-1] == SEARCH_LOCAL_KNOWLEDGE_TOOL
+
+
+def test_local_response_scope_drift_fails_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    with DellMCPToolLaneAdapter(_build_server(), run_binding=_binding()) as adapter:
+        original_call = adapter._call
+
+        def drift_scope(name: str, arguments: dict) -> object:
+            call = original_call(name, arguments)
+            if name != SEARCH_LOCAL_KNOWLEDGE_TOOL or call.content is None:
+                return call
+            content = dict(call.content)
+            content["retrieval_scope"] = {
+                **dict(content["retrieval_scope"]),
+                "issuer_ids": ["NVIDIA"],
+            }
+            return mcp_tools_module._Call(
+                content=content,
+                error=False,
+                failure_kind=None,
+                receipt=call.receipt,
+            )
+
+        monkeypatch.setattr(adapter, "_call", drift_scope)
+        result = adapter.evidence_tool(
+            _task(
+                "evidence",
+                evidence_request={
+                    "query": "Dell exact local result",
+                    "purpose": "Reject a response outside the request scope.",
+                    "source_route": "local_only",
+                    "issuer_ids": ["DELL"],
+                    "source_roles": ["issuer_management_disclosure"],
+                    "limit": 2,
+                },
+            )
+        )
+
+    assert result["status"] == "tool_failure"
+    assert result["failure"]["owner_layer"] == "s1_tool"
+    assert result["failure"]["code"] == "mcp_local_scope_binding_failed"
+
+
+def test_local_evidence_request_requires_bounded_issuer_and_source_role() -> None:
+    with pytest.raises(ValueError, match="local_evidence_request_scope_underbounded"):
+        EvidenceRequestPayload(
+            query="unbounded local query",
+            purpose="This must not silently search the full corpus.",
+            source_route="local_only",
+        )
+
+    normalized = EvidenceRequestPayload(
+        query="bounded local query",
+        purpose="Canonicalize issuer identity before MCP dispatch.",
+        source_route="local_only",
+        issuer_ids=["dell"],
+        source_roles=["issuer_management_disclosure"],
+    )
+    assert normalized.issuer_ids == ("DELL",)
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    [
+        ("issuer_ids", " "),
+        ("issuer_ids", "DELL/../../"),
+        ("source_roles", " "),
+        ("source_roles", "issuer management disclosure"),
+        ("fiscal_periods", " "),
+        ("fiscal_periods", "FY2027/Q1"),
+        ("route_ids", " "),
+        ("route_ids", "https://example.com/source"),
+    ],
+)
+def test_local_evidence_request_rejects_blank_or_invalid_scope_ids(
+    field: str,
+    value: str,
+) -> None:
+    payload = {
+        "query": "bounded local query",
+        "purpose": "Reject malformed answer-free metadata scope.",
+        "source_route": "local_only",
+        "issuer_ids": ["DELL"],
+        "source_roles": ["issuer_management_disclosure"],
+        field: [value],
+    }
+
+    with pytest.raises(
+        ValueError,
+        match="evidence_request_retrieval_scope_value_invalid",
+    ):
+        EvidenceRequestPayload.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    ("fact_overrides", "request_overrides", "expected_code"),
+    [
+        (
+            {"fact_request_id": "MCPFACT::WRONG"},
+            {},
+            "mcp_financial_fact_identity_binding_mismatch",
+        ),
+        (
+            {"period_role": "instant"},
+            {},
+            "mcp_financial_fact_granularity_binding_mismatch",
+        ),
+        (
+            {"unit_family": "percentage"},
+            {"unit_family": "currency"},
+            "mcp_financial_fact_unit_family_binding_mismatch",
+        ),
+    ],
+)
+def test_finance_lane_rejects_cross_field_fact_substitution(
+    monkeypatch: pytest.MonkeyPatch,
+    fact_overrides: dict,
+    request_overrides: dict,
+    expected_code: str,
+) -> None:
+    request = _task("finance")
+    request["task"]["fact_requests"][0].update(request_overrides)
+    with DellMCPToolLaneAdapter(
+        _build_server(), run_binding=_binding()
+    ) as adapter:
+        original_call = adapter._call
+
+        def substitute_fact(name: str, arguments: dict) -> object:
+            call = original_call(name, arguments)
+            if name != QUERY_COMPANY_FINANCIAL_FACTS_TOOL or call.content is None:
+                return call
+            content = json.loads(json.dumps(call.content))
+            row = content["results"][0]
+            fact = {
+                "schema_version": "fin_ia_numeric_fact_v1_0",
+                "numeric_fact_id": "NUMFACT::SUBSTITUTED",
+                "fact_request_id": row["fact_request_id"],
+                "ticker": "DELL",
+                "metric_id": "revenue",
+                "value_decimal": "43842000000",
+                "unit": "USD",
+                "unit_family": "currency",
+                "period_start": "2026-01-31",
+                "period_end": "2026-05-01",
+                "period_role": "quarter_discrete",
+                "fiscal_year": 2027,
+                "fiscal_period": "Q1",
+                "research_as_of": "2026-09-02",
+                "authority_mode": "source_bound_company_reported_numeric_fact",
+                "accession_numbers": ["0001571996-26-000030"],
+                "accepted_at": "2026-06-09T20:11:41+00:00",
+                "source_observation_ids": ["OBS::SUBSTITUTED"],
+                "citation_urls": ["https://www.sec.gov/Archives/example"],
+                "source_digests": ["a" * 64],
+                "formula_trace": None,
+                "numeric_fact_authority": True,
+            }
+            fact.update(fact_overrides)
+            row.update(
+                {
+                    "status": "resolved",
+                    "facts": [fact],
+                    "typed_gap": None,
+                    "typed_conflict": None,
+                }
+            )
+            content["resolved_metric_count"] = 1
+            content["typed_gap_count"] = 0
+            content["typed_conflict_count"] = 0
+            content["query_digest"] = canonical_sha256(
+                {
+                    key: value
+                    for key, value in content.items()
+                    if key != "query_digest"
+                }
+            )
+            return mcp_tools_module._Call(
+                content=content,
+                error=False,
+                failure_kind=None,
+                receipt={
+                    **call.receipt,
+                    "output_digest": canonical_sha256(content),
+                },
+            )
+
+        monkeypatch.setattr(adapter, "_call", substitute_fact)
+        result = adapter.finance_tool(request)
+
+    assert result["status"] == "tool_failure"
+    assert result["failure"]["owner_layer"] == "s2_tool"
+    assert result["failure"]["code"] == expected_code
 
 
 def test_graph_and_mcp_bindings_are_atomically_derived_from_one_foundation() -> None:
@@ -323,6 +731,8 @@ def test_mid_lane_transport_failure_preserves_calls_and_partial_items(
             "query": "first local query",
             "purpose": "Create one bounded partial result.",
             "source_route": "local_only",
+            "issuer_ids": ["DELL"],
+            "source_roles": ["issuer_management_disclosure"],
             "limit": 2,
         },
     )
@@ -331,6 +741,8 @@ def test_mid_lane_transport_failure_preserves_calls_and_partial_items(
             "query": "second local query",
             "purpose": "Exercise transport failure after partial success.",
             "source_route": "local_only",
+            "issuer_ids": ["DELL"],
+            "source_roles": ["issuer_management_disclosure"],
             "limit": 2,
             "include_domains": [],
             "capture_limit": 1,

@@ -10,7 +10,20 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 from scipy.sparse import csr_matrix, load_npz, save_npz
 
-from .query_plan import canonical_digest
+
+
+def canonical_digest(value: Any) -> str:
+    payload = (
+        json.dumps(
+            value,
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+            allow_nan=False,
+        )
+        + "\n"
+    ).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
 
 
 def sha256_file(path: Path) -> str:
@@ -23,29 +36,24 @@ def sha256_file(path: Path) -> str:
 
 def local_model_identity(model_dir: Path, expected_name: str) -> dict[str, Any]:
     config = model_dir / "config.json"
-    weights = [
-        path
-        for name in ("model.safetensors", "pytorch_model.bin")
-        if (path := model_dir / name).is_file()
-    ]
+    weights = [path for path in model_dir.glob("*.safetensors") if path.is_file()]
+    weights.extend(path for path in model_dir.glob("pytorch_model*.bin") if path.is_file())
     if not config.is_file() or not weights:
         raise ValueError(f"local_model_incomplete:{expected_name}")
-    tokenizer_files = [
+    files = [
         path
-        for name in (
-            "tokenizer.json",
-            "tokenizer_config.json",
-            "sentencepiece.bpe.model",
-        )
-        if (path := model_dir / name).is_file()
+        for path in model_dir.rglob("*")
+        if path.is_file()
+        and ".cache" not in path.relative_to(model_dir).parts
+        and path.name not in {"README.md", ".gitattributes"}
     ]
-    files = [config, *weights, *tokenizer_files]
+    files.sort(key=lambda path: path.relative_to(model_dir).as_posix())
     body = {
         "model_name": expected_name,
         "directory_name": model_dir.name,
         "files": [
             {
-                "name": path.name,
+                "name": path.relative_to(model_dir).as_posix(),
                 "bytes": path.stat().st_size,
                 "sha256": sha256_file(path),
             }
@@ -72,7 +80,7 @@ def load_qwen_embedding_runtime(model_dir: Path):
         str(model_dir),
         device="cuda",
         local_files_only=True,
-        trust_remote_code=True,
+        trust_remote_code=False,
     )
     runtime.half()
     return runtime
@@ -167,6 +175,7 @@ def load_or_build_qwen_embedding_cache(
     if dense_path.is_file() and manifest_path.is_file():
         existing = _read_json(manifest_path)
         cache_hit = all(existing.get(key) == value for key, value in expected.items())
+        cache_hit = cache_hit and existing.get("dense_sha256") == sha256_file(dense_path)
     runtime = load_qwen_embedding_runtime(model_dir)
     runtime.max_seq_length = maximum_sequence_length
     if not cache_hit:
@@ -191,6 +200,8 @@ def load_or_build_qwen_embedding_cache(
     dense = np.load(dense_path, mmap_mode="r")
     if dense.shape[0] != len(objects):
         raise ValueError("qwen_cache_shape_drift")
+    if not np.isfinite(dense).all():
+        raise ValueError("qwen_cache_non_finite")
     return dense, {**manifest, "cache_hit": cache_hit}, runtime
 
 

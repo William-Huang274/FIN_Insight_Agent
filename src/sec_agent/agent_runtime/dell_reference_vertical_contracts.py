@@ -9,16 +9,18 @@ from __future__ import annotations
 
 import json
 import operator
+import re
 from hashlib import sha256
 from typing import Annotated, Any, Literal, TypedDict
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 Digest = str
 ToolLane = Literal["evidence", "finance"]
 ToolExecutionStatus = Literal["success", "not_applicable", "tool_failure"]
 EvidenceSourceRoute = Literal["reviewed_first", "local_only", "external_required"]
+_RETRIEVAL_SCOPE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,119}$")
 ToolResultState = Literal[
     "retrieval_candidate",
     "captured_source_candidate",
@@ -102,9 +104,70 @@ class EvidenceRequest(_StrictFrozenModel):
     query: str = Field(min_length=1, max_length=2_000)
     purpose: str = Field(min_length=1, max_length=1_000)
     include_domains: tuple[str, ...] = Field(default=(), max_length=12)
+    issuer_ids: tuple[str, ...] = Field(default=(), max_length=8)
+    fiscal_periods: tuple[str, ...] = Field(default=(), max_length=8)
+    source_roles: tuple[str, ...] = Field(default=(), max_length=8)
+    route_ids: tuple[str, ...] = Field(default=(), max_length=12)
+    retrieval_lanes: tuple[
+        Literal["prose_leaf", "table_leaf"], ...
+    ] = Field(default=(), max_length=2)
     limit: int = Field(default=6, ge=1, le=6)
     source_route: EvidenceSourceRoute
     capture_limit: int = Field(default=2, ge=1, le=3)
+
+    @field_validator("issuer_ids")
+    @classmethod
+    def normalize_issuer_ids(cls, values: tuple[str, ...]) -> tuple[str, ...]:
+        """Use one canonical issuer identity across planner, MCP and readers."""
+
+        normalized = tuple(str(value).strip().upper() for value in values)
+        if any(
+            _RETRIEVAL_SCOPE_ID_RE.fullmatch(value) is None
+            for value in normalized
+        ):
+            raise ValueError("evidence_request_retrieval_scope_value_invalid")
+        return normalized
+
+    @field_validator("fiscal_periods", "source_roles", "route_ids")
+    @classmethod
+    def validate_retrieval_scope_ids(
+        cls,
+        values: tuple[str, ...],
+    ) -> tuple[str, ...]:
+        normalized = tuple(str(value).strip() for value in values)
+        if any(
+            _RETRIEVAL_SCOPE_ID_RE.fullmatch(value) is None
+            for value in normalized
+        ):
+            raise ValueError("evidence_request_retrieval_scope_value_invalid")
+        return normalized
+
+    @model_validator(mode="after")
+    def validate_answer_free_retrieval_scope(self) -> "EvidenceRequest":
+        for values in (
+            self.issuer_ids,
+            self.fiscal_periods,
+            self.source_roles,
+            self.route_ids,
+            self.retrieval_lanes,
+        ):
+            if len(values) != len(set(values)):
+                raise ValueError("evidence_request_retrieval_scope_duplicate")
+        if self.source_route == "external_required" and any(
+            (
+                self.issuer_ids,
+                self.fiscal_periods,
+                self.source_roles,
+                self.route_ids,
+                self.retrieval_lanes,
+            )
+        ):
+            raise ValueError("external_request_local_retrieval_scope_forbidden")
+        if self.source_route in {"reviewed_first", "local_only"} and (
+            not self.issuer_ids or not self.source_roles
+        ):
+            raise ValueError("local_evidence_request_scope_underbounded")
+        return self
 
 
 class AgentRuntimeScopeCeiling(_StrictFrozenModel):

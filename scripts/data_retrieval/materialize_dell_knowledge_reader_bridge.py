@@ -9,7 +9,7 @@ from typing import Any, Sequence
 from urllib.parse import urlsplit
 
 
-RESULT_SCHEMA = "fin_ia_dell_knowledge_reader_bridge_result_v1_0"
+RESULT_SCHEMA = "fin_ia_dell_knowledge_reader_bridge_result_v1_2"
 ROW_AUTHORITY = "retrieval_candidate"
 SOURCE_TIER = "official_primary_qualification_candidate"
 
@@ -31,13 +31,35 @@ def _sha256(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _is_sha256(value: str) -> bool:
+    return len(value) == 64 and all(
+        character in "0123456789abcdef" for character in value
+    )
+
+
+def _parent_document_id(*, route_id: str, raw_body_sha256: str) -> str:
+    identity = {
+        "route_id": route_id,
+        "raw_body_sha256": raw_body_sha256,
+    }
+    return "DOC::" + hashlib.sha256(_canonical_bytes(identity)).hexdigest()[:24].upper()
+
+
 def _mechanical_row(source: dict[str, Any], ordinal: int) -> dict[str, Any]:
     chunk_id = str(source.get("chunk_id") or "").strip()
+    route_id = str(source.get("route_id") or "").strip()
     source_url = str(source.get("stable_url") or "").strip()
     text = str(source.get("text") or "").strip()
+    text_sha256 = str(source.get("text_sha256") or "").strip().lower()
+    raw_body_sha256 = str(source.get("raw_body_sha256") or "").strip().lower()
     publication_date = str(source.get("publication_date") or "").strip()
     source_role = str(source.get("source_role") or "").strip()
     title = str(source.get("title") or "").strip()
+    parser = str(source.get("parser") or "").strip()
+    splitter = str(source.get("splitter") or "").strip()
+    chunk_index = source.get("chunk_index")
+    page = source.get("page")
+    raw_branches = source.get("branches")
     parts = urlsplit(source_url)
     try:
         date.fromisoformat(publication_date)
@@ -46,14 +68,43 @@ def _mechanical_row(source: dict[str, Any], ordinal: int) -> dict[str, Any]:
             f"bridge_publication_date_invalid:{ordinal}"
         ) from exc
     if not (
-        chunk_id and text and source_role and title
+        chunk_id and route_id and text and source_role and title
+        and parser and splitter
+        and _is_sha256(text_sha256) and _is_sha256(raw_body_sha256)
         and parts.scheme == "https" and parts.netloc
         and source.get("numeric_authority") is False
     ):
         raise KnowledgeReaderBridgeError(f"bridge_source_row_invalid:{ordinal}")
+    if hashlib.sha256(text.encode("utf-8")).hexdigest() != text_sha256:
+        raise KnowledgeReaderBridgeError(f"bridge_text_sha256_mismatch:{ordinal}")
+    if not isinstance(chunk_index, int) or isinstance(chunk_index, bool) or chunk_index < 0:
+        raise KnowledgeReaderBridgeError(f"bridge_chunk_index_invalid:{ordinal}")
+    if page is not None and (
+        not isinstance(page, int) or isinstance(page, bool) or page < 1
+    ):
+        raise KnowledgeReaderBridgeError(f"bridge_page_invalid:{ordinal}")
+    if not isinstance(raw_branches, list):
+        raise KnowledgeReaderBridgeError(f"bridge_branches_invalid:{ordinal}")
+    branches = tuple(str(value).strip() for value in raw_branches)
+    if (
+        not branches
+        or any(not value for value in branches)
+        or len(set(branches)) != len(branches)
+    ):
+        raise KnowledgeReaderBridgeError(f"bridge_branches_invalid:{ordinal}")
     return {
         "authority_state": ROW_AUTHORITY,
         "evidence_id": chunk_id,
+        "route_id": route_id,
+        "parent_document_id": _parent_document_id(
+            route_id=route_id,
+            raw_body_sha256=raw_body_sha256,
+        ),
+        "chunk_index": chunk_index,
+        "page": page,
+        "parser": parser,
+        "splitter": splitter,
+        "text_sha256": text_sha256,
         "source_url": source_url,
         "text": text,
         "publication_date": publication_date,
@@ -62,10 +113,10 @@ def _mechanical_row(source: dict[str, Any], ordinal: int) -> dict[str, Any]:
         "section": title,
         "ticker": "",
         "period_end": "",
-        "branches": source.get("branches") or [],
+        "branches": list(branches),
         "source_role": source_role,
         "publisher": str(source.get("publisher") or ""),
-        "raw_body_sha256": str(source.get("raw_body_sha256") or ""),
+        "raw_body_sha256": raw_body_sha256,
         "candidate_is_not_evidence": True,
         "citation_eligible": False,
         "evidence_admission_performed": False,
@@ -205,8 +256,18 @@ def materialize_bridge(
             "text": "text", "publication_date": "publication_date",
             "source_type": "source_role", "source_tier": SOURCE_TIER,
             "section": "title", "ticker": "", "period_end": "",
+            "route_id": "route_id", "chunk_index": "chunk_index",
+            "page": "page", "parser": "parser", "splitter": "splitter",
+            "text_sha256": "text_sha256",
+            "raw_body_sha256": "raw_body_sha256",
+            "parent_document_id": "sha256(route_id,raw_body_sha256)",
+            "branches": "branches",
             "input_order": "caller_declared_then_source_line_order",
         },
+        "provenance_fields_preserved": True,
+        "text_sha256_recomputed": True,
+        "parent_content_materialized": False,
+        "parent_child_retrieval_performed": False,
         "candidate_is_not_evidence": True,
         "citation_eligible": False,
         "evidence_admission_performed": False,

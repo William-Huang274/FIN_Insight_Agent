@@ -17,6 +17,7 @@ from sec_agent.research.finance_tool_contract import (
 )
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research_foundation.data_ports import (
+    CompanyFinancialFactQuery,
     CompanyFinancialFactQueryResult,
     FinancialMetricResult,
     LocalKnowledgeReadResult,
@@ -50,6 +51,21 @@ from sec_agent.research_foundation.mcp_server import (
 _NOW = datetime(2026, 9, 2, 2, 0, tzinfo=timezone.utc)
 _SNAPSHOT = "DELL-MCP-TEST-SNAPSHOT-01"
 _ATTEMPT = "DELL-MCP-TEST-A01"
+
+
+def test_company_financial_fact_query_rejects_unimplemented_unit_conversion() -> None:
+    with pytest.raises(ValueError, match="reported_source_unit"):
+        CompanyFinancialFactQuery.model_validate(
+            {
+                "ticker": "DELL",
+                "metric_ids": ["revenue"],
+                "research_as_of": "2026-09-02",
+                "selection_mode": "exact_period_end",
+                "period_end": "2026-05-01",
+                "granularity": "quarter_discrete",
+                "requested_unit": "USD_millions",
+            }
+        )
 
 
 class _Provider:
@@ -104,9 +120,9 @@ def _build_server(
         monotonic=lambda: 1.0,
     )
 
-    def local_reader(*, query, branch_id, limit, run_scope):
+    def local_reader(*, query, branch_id, limit, run_scope, retrieval_scope):
         body = {
-            "schema_version": "fin_ia_frozen_legacy_local_knowledge_read_v1_0",
+            "schema_version": "fin_ia_structured_local_knowledge_read_v1_0",
             "authority_state": "retrieval_candidate_set",
             "branch_id": branch_id,
             "run_scope_digest": run_scope.run_scope_digest,
@@ -115,10 +131,14 @@ def _build_server(
             "snapshot_sha256": "1" * 64,
             "physical_record_count": 0,
             "visible_record_count": 0,
+            "eligible_candidate_count": 0,
+            "retrieval_scope": retrieval_scope.model_dump(mode="json"),
+            "metadata_prefilter_applied": True,
+            "retrieval_strategy": "metadata_prefilter_bm25",
             "candidates": [],
             "candidate_is_not_evidence": True,
             "evidence_admission_performed": False,
-            "target_route": "postgres_pgvector_exact_after_capture_lineage_import",
+            "target_route": "structured_metadata_prefilter_bm25",
         }
         return LocalKnowledgeReadResult(**body, read_digest=_digest_model_body(body))
 
@@ -269,6 +289,18 @@ def test_mcp_exposes_strong_typed_non_cell_surface_and_scope() -> None:
             assert {"ticker", "metric_ids", "research_as_of", "granularity"} <= set(
                 properties
             )
+            assert "selection_mode" in properties
+            assert "selection_mode" in finance_schema["required"]
+            local_properties = by_name[SEARCH_LOCAL_KNOWLEDGE_TOOL].input_schema[
+                "properties"
+            ]
+            assert {
+                "issuer_ids",
+                "fiscal_periods",
+                "source_roles",
+                "route_ids",
+                "lanes",
+            } <= set(local_properties)
             assert by_name[
                 QUERY_COMPANY_FINANCIAL_FACTS_TOOL
             ].output_schema.get("additionalProperties") is False
@@ -286,7 +318,15 @@ def test_mcp_exposes_strong_typed_non_cell_surface_and_scope() -> None:
             common = {"branch_id": "Q1_ISSUER_TRUTH", "run_scope": scope}
             local = await client.call_tool(
                 SEARCH_LOCAL_KNOWLEDGE_TOOL,
-                {**common, "query": "AI server backlog definition", "limit": 4},
+                {
+                    **common,
+                    "query": "AI server backlog definition",
+                    "limit": 4,
+                    "issuer_ids": ["DELL"],
+                    "fiscal_periods": ["FY2027_Q1"],
+                    "source_roles": ["issuer_management_disclosure"],
+                    "lanes": ["prose_leaf"],
+                },
             )
             evidence_search = await client.call_tool(
                 SEARCH_REVIEWED_EVIDENCE_TOOL,
@@ -304,6 +344,7 @@ def test_mcp_exposes_strong_typed_non_cell_surface_and_scope() -> None:
                     "metric_ids": ["revenue"],
                     "research_as_of": "2026-06-24",
                     "period_end": "2026-05-01",
+                    "selection_mode": "exact_period_end",
                     "granularity": "quarter_discrete",
                 },
             )

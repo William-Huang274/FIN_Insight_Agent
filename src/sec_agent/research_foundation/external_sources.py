@@ -491,7 +491,7 @@ class ExternalCaptureRequest(BaseModel):
     branch_id: str = Field(min_length=1, max_length=96)
     run_scope: DellResearchRunScope
     max_characters: int = Field(default=12_000, ge=500, le=50_000)
-    render_policy: Literal["auto", "static", "browser"] = "auto"
+    render_policy: Literal["auto", "static", "hosted", "browser"] = "auto"
     minimum_useful_characters: int = Field(default=200, ge=1, le=2_000)
     timeout_seconds: float = Field(default=20.0, ge=1.0, le=60.0)
     transport_authority: Literal["qualification_only"] = "qualification_only"
@@ -538,7 +538,8 @@ class FetchedPage(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     final_url: str
-    html: str
+    html: str = ""
+    extracted_text: str | None = None
     status_code: int | None = None
     content_type: str | None = None
 
@@ -550,7 +551,11 @@ class PageFetcher(Protocol):
 class CaptureAttempt(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
-    method: Literal["trafilatura_static", "playwright_browser"]
+    method: Literal[
+        "trafilatura_static",
+        "exa_hosted_web_fetch",
+        "playwright_browser",
+    ]
     status: Literal["ok", "empty", "tool_failure"]
     extracted_characters: int = Field(ge=0)
     failure_code: str | None = None
@@ -580,7 +585,11 @@ class CaptureReceipt(BaseModel):
     requested_url: str
     final_url: str | None
     source_domain: str | None
-    capture_method: Literal["trafilatura_static", "playwright_browser"] | None
+    capture_method: Literal[
+        "trafilatura_static",
+        "exa_hosted_web_fetch",
+        "playwright_browser",
+    ] | None
     attempts: tuple[CaptureAttempt, ...]
     text: str
     extracted_characters: int = Field(ge=0)
@@ -682,7 +691,11 @@ class StaticHTTPPageFetcher:
                             raise ExternalSourceError("capture_redirect_location_missing")
                         url = self.guard.validate(urljoin(url, location))
                         continue
-                    response.raise_for_status()
+                    status_code = int(response.status_code)
+                    if status_code < 200 or status_code >= 300:
+                        raise ExternalSourceError(
+                            f"capture_http_status_{status_code}"
+                        )
                     declared_length = str(
                         response.headers.get("Content-Length") or ""
                     ).strip()
@@ -703,18 +716,113 @@ class StaticHTTPPageFetcher:
                     return FetchedPage(
                         final_url=final_url,
                         html=bytes(body).decode(encoding, errors="replace"),
-                        status_code=response.status_code,
+                        status_code=status_code,
                         content_type=response.headers.get("Content-Type"),
                     )
         raise ExternalSourceError("capture_static_unreachable")
 
     async def fetch(self, url: str, *, timeout_seconds: float) -> FetchedPage:
+        import requests
+
         try:
             return await asyncio.to_thread(self._fetch_sync, url, timeout_seconds)
         except ExternalSourceError:
             raise
+        except requests.Timeout as exc:
+            raise ExternalSourceError("capture_static_timeout") from exc
+        except requests.ConnectionError as exc:
+            raise ExternalSourceError("capture_static_connection_failed") from exc
+        except requests.RequestException as exc:
+            raise ExternalSourceError("capture_static_request_failed") from exc
         except Exception as exc:
             raise ExternalSourceError("capture_static_fetch_failed") from exc
+
+
+class ExaHostedMCPPageFetcher:
+    """Thin hosted full-text fallback over Exa's maintained ``web_fetch_exa``.
+
+    Exa performs the cross-site retrieval and document-to-markdown conversion.
+    FIN still validates the requested public URL before transmission and requires
+    the returned document header to bind back to that exact canonical URL.  The
+    returned text remains a capture candidate; it is not archive-grade source
+    bytes and receives no Evidence authority here.
+    """
+
+    transport_authority = "qualification_only"
+    production_status = "HOLD"
+
+    def __init__(
+        self,
+        *,
+        guard: PublicURLGuard,
+        endpoint: str = EXA_HOSTED_MCP_ENDPOINT,
+        client_factory: Callable[[], AsyncContextManager[_MCPClient]] | None = None,
+        max_characters: int = 50_000,
+        maximum_response_bytes: int = 2_000_000,
+    ) -> None:
+        if max_characters < 1 or maximum_response_bytes < 1:
+            raise ValueError("exa_hosted_fetch_limit_invalid")
+        self.guard = guard
+        self.endpoint = endpoint
+        self._client_factory = client_factory
+        self.max_characters = max_characters
+        self.maximum_response_bytes = maximum_response_bytes
+
+    def _client(
+        self,
+        *,
+        timeout_seconds: float,
+    ) -> AsyncContextManager[_MCPClient]:
+        if self._client_factory is not None:
+            return self._client_factory()
+        try:
+            from mcp import Client
+        except ImportError as exc:  # pragma: no cover - dependency profile guard
+            raise ExternalSourceError("exa_mcp_dependency_missing") from exc
+        return Client(self.endpoint, read_timeout_seconds=timeout_seconds)
+
+    async def fetch(self, url: str, *, timeout_seconds: float) -> FetchedPage:
+        requested_url = await asyncio.to_thread(self.guard.validate, url)
+        try:
+            async with self._client(timeout_seconds=timeout_seconds) as client:
+                result = await client.call_tool(
+                    "web_fetch_exa",
+                    {
+                        "urls": [requested_url],
+                        "maxCharacters": self.max_characters,
+                    },
+                )
+        except ExternalSourceError:
+            raise
+        except Exception as exc:
+            raise ExternalSourceError("exa_mcp_web_fetch_failed") from exc
+
+        if bool(_read_attr(result, "is_error", "isError", default=False)):
+            raise ExternalSourceError("exa_mcp_web_fetch_tool_error")
+        text = "\n".join(_tool_result_text(result)).strip()
+        if not text:
+            raise ExternalSourceError("exa_mcp_web_fetch_empty")
+        if len(text.encode("utf-8")) > self.maximum_response_bytes:
+            raise ExternalSourceError("capture_response_too_large")
+
+        returned_url = _first_exa_document_url(text)
+        if returned_url is None:
+            raise ExternalSourceError("exa_mcp_web_fetch_url_missing")
+        try:
+            returned_url = await asyncio.to_thread(
+                self.guard.validate,
+                returned_url,
+            )
+        except ExternalSourceError as exc:
+            raise ExternalSourceError("exa_mcp_web_fetch_url_invalid") from exc
+        if returned_url != requested_url:
+            raise ExternalSourceError("exa_mcp_web_fetch_url_mismatch")
+        return FetchedPage(
+            final_url=returned_url,
+            extracted_text=text,
+            status_code=200,
+            content_type="text/markdown; transport=exa_web_fetch",
+        )
 
 
 class PlaywrightPageFetcher:
@@ -771,18 +879,23 @@ class PlaywrightPageFetcher:
                         wait_until="domcontentloaded",
                         timeout=round(timeout_seconds * 1000),
                     )
+                    if response is None:
+                        raise ExternalSourceError(
+                            "capture_browser_response_missing"
+                        )
+                    status_code = int(response.status)
+                    if status_code < 200 or status_code >= 300:
+                        raise ExternalSourceError(
+                            f"capture_http_status_{status_code}"
+                        )
                     await page.wait_for_timeout(750)
                     final_url = await asyncio.to_thread(self.guard.validate, page.url)
                     html = self._require_bounded_html(await page.content())
                     return FetchedPage(
                         final_url=final_url,
                         html=html,
-                        status_code=response.status if response else None,
-                        content_type=(
-                            (await response.header_value("content-type"))
-                            if response is not None
-                            else None
-                        ),
+                        status_code=status_code,
+                        content_type=await response.header_value("content-type"),
                     )
                 finally:
                     await browser.close()
@@ -818,13 +931,15 @@ class ExternalSourceCapture:
         *,
         guard: PublicURLGuard,
         static_fetcher: PageFetcher,
-        browser_fetcher: PageFetcher | None,
+        hosted_fetcher: PageFetcher | None = None,
+        browser_fetcher: PageFetcher | None = None,
         extractor: Callable[[str], str] = trafilatura_extract_text,
         clock: Callable[[], datetime] | None = None,
         monotonic: Callable[[], float] = time.monotonic,
     ) -> None:
         self.guard = guard
         self.static_fetcher = static_fetcher
+        self.hosted_fetcher = hosted_fetcher
         self.browser_fetcher = browser_fetcher
         self.extractor = extractor
         self._clock = clock or (lambda: datetime.now(timezone.utc))
@@ -836,6 +951,7 @@ class ExternalSourceCapture:
         return cls(
             guard=guard,
             static_fetcher=StaticHTTPPageFetcher(guard=guard),
+            hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard),
             browser_fetcher=PlaywrightPageFetcher(guard=guard),
         )
 
@@ -863,22 +979,43 @@ class ExternalSourceCapture:
             )
 
         methods: list[
-            tuple[Literal["trafilatura_static", "playwright_browser"], PageFetcher]
+            tuple[
+                Literal[
+                    "trafilatura_static",
+                    "exa_hosted_web_fetch",
+                    "playwright_browser",
+                ],
+                PageFetcher,
+            ]
         ] = []
         if request.render_policy in {"auto", "static"}:
             methods.append(("trafilatura_static", self.static_fetcher))
+        if (
+            request.render_policy in {"auto", "hosted"}
+            and self.hosted_fetcher is not None
+        ):
+            methods.append(("exa_hosted_web_fetch", self.hosted_fetcher))
         if request.render_policy in {"auto", "browser"} and self.browser_fetcher:
             methods.append(("playwright_browser", self.browser_fetcher))
-        if request.render_policy == "browser" and not methods:
+        if request.render_policy in {"browser", "hosted"} and not methods:
+            missing_method = (
+                "playwright_browser"
+                if request.render_policy == "browser"
+                else "exa_hosted_web_fetch"
+            )
             return self._failure_receipt(
                 request=request,
                 requested_url=requested_url,
                 attempts=(
                     CaptureAttempt(
-                        method="playwright_browser",
+                        method=missing_method,
                         status="tool_failure",
                         extracted_characters=0,
-                        failure_code="capture_browser_fetcher_unavailable",
+                        failure_code=(
+                            "capture_browser_fetcher_unavailable"
+                            if request.render_policy == "browser"
+                            else "capture_hosted_fetcher_unavailable"
+                        ),
                     ),
                 ),
                 captured_at=captured_at,
@@ -887,16 +1024,30 @@ class ExternalSourceCapture:
 
         last_page: FetchedPage | None = None
         last_text = ""
-        selected_method: Literal["trafilatura_static", "playwright_browser"] | None = None
+        selected_method: Literal[
+            "trafilatura_static",
+            "exa_hosted_web_fetch",
+            "playwright_browser",
+        ] | None = None
         for method, fetcher in methods:
             try:
                 page = await fetcher.fetch(
                     requested_url,
                     timeout_seconds=request.timeout_seconds,
                 )
+                if page.status_code is not None and not (
+                    200 <= page.status_code < 300
+                ):
+                    raise ExternalSourceError(
+                        f"capture_http_status_{page.status_code}"
+                    )
                 final_url = await asyncio.to_thread(self.guard.validate, page.final_url)
                 page = page.model_copy(update={"final_url": final_url})
-                text = self.extractor(page.html).strip()
+                text = (
+                    page.extracted_text.strip()
+                    if page.extracted_text is not None
+                    else self.extractor(page.html).strip()
+                )
             except ExternalSourceError as exc:
                 attempts.append(
                     CaptureAttempt(
@@ -978,7 +1129,11 @@ class ExternalSourceCapture:
             "text": bounded_text,
             "extracted_characters": len(last_text),
             "truncated": len(last_text) > len(bounded_text),
-            "decoded_html_utf8_sha256": _utf8_sha256(last_page.html),
+            "decoded_html_utf8_sha256": (
+                _utf8_sha256(last_page.html)
+                if last_page.extracted_text is None
+                else None
+            ),
             "text_digest": _utf8_sha256(last_text),
             "captured_at": _iso(captured_at),
             "elapsed_ms": max(0, round((self._monotonic() - started_tick) * 1000)),
@@ -1141,6 +1296,16 @@ def _tool_result_text(result: Any) -> list[str]:
     return output
 
 
+def _first_exa_document_url(text: str) -> str | None:
+    """Read the bound URL header emitted for the first fetched Exa document."""
+
+    for line in text.splitlines()[:12]:
+        if line.startswith("URL:"):
+            value = line.partition(":")[2].strip()
+            return value or None
+    return None
+
+
 def _read_attr(value: Any, *names: str, default: Any = None) -> Any:
     for name in names:
         if isinstance(value, Mapping) and name in value:
@@ -1258,6 +1423,7 @@ __all__ = [
     "DDGSDiagnosticProvider",
     "DiscoveryReceipt",
     "ExaHostedMCPProvider",
+    "ExaHostedMCPPageFetcher",
     "ExternalCaptureRequest",
     "ExternalSearchRequest",
     "ExternalSourceCapture",

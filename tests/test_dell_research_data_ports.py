@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timezone
+import hashlib
+import json
 from pathlib import Path
 
 import pytest
@@ -156,6 +158,7 @@ def test_generic_s2_reader_resolves_multiple_metrics_without_cell_binding() -> N
             "research_as_of": "2026-06-24",
             "period_start": "2026-01-31",
             "period_end": "2026-05-01",
+            "selection_mode": "exact_period_end",
             "fiscal_years": [2027],
             "granularity": "quarter_discrete",
         },
@@ -186,6 +189,7 @@ def test_unknown_metric_stays_a_typed_s2_gap() -> None:
             "metric_ids": ["company_ai_server_units"],
             "research_as_of": "2026-06-24",
             "period_end": "2026-05-01",
+            "selection_mode": "exact_period_end",
             "granularity": "quarter_discrete",
         },
         branch_id="Q3_UNITS_ASP_PVM",
@@ -200,6 +204,16 @@ def test_unknown_metric_stays_a_typed_s2_gap() -> None:
 
 
 def test_fact_query_rejects_future_period_and_duplicate_metrics() -> None:
+    with pytest.raises(ValidationError, match="selection_mode"):
+        CompanyFinancialFactQuery.model_validate(
+            {
+                "ticker": "DELL",
+                "metric_ids": ["revenue"],
+                "research_as_of": "2026-06-24",
+                "period_end": "2026-05-01",
+                "granularity": "quarter_discrete",
+            }
+        )
     with pytest.raises(ValidationError, match="financial_fact_period_after_research_as_of"):
         CompanyFinancialFactQuery.model_validate(
             {
@@ -207,6 +221,7 @@ def test_fact_query_rejects_future_period_and_duplicate_metrics() -> None:
                 "metric_ids": ["revenue"],
                 "research_as_of": "2026-06-24",
                 "period_end": "2026-06-25",
+                "selection_mode": "exact_period_end",
                 "granularity": "quarter",
             }
         )
@@ -243,6 +258,11 @@ def test_frozen_legacy_local_reader_is_real_non_cell_candidate_search() -> None:
     assert result["evidence_admission_performed"] is False
     assert all("local_path" not in row for row in result["candidates"])
     assert all(row["legacy_read_only_bridge"] for row in result["candidates"])
+    assert all(row["source_locator_available"] for row in result["candidates"])
+    assert all(
+        row["source_locator"] == row["source_url"]
+        for row in result["candidates"]
+    )
 
 
 def test_frozen_legacy_reader_rejects_snapshot_drift_and_unknown_branch() -> None:
@@ -282,8 +302,69 @@ def test_frozen_legacy_reader_rejects_snapshot_drift_and_unknown_branch() -> Non
                 "metric_ids": ["revenue", "revenue"],
                 "research_as_of": "2026-06-24",
                 "granularity": "quarter",
+                "selection_mode": "latest_on_or_before",
             }
         )
+
+
+def test_frozen_reader_enforces_row_branch_and_preserves_locator(
+    tmp_path: Path,
+) -> None:
+    rows = []
+    for index, (branch_id, unique_term) in enumerate(
+        (
+            ("Q1_ISSUER_TRUTH", "issuertruthalpha"),
+            ("Q2_DEMAND_QUALITY", "demandqualitybeta"),
+            ("Q2_DEMAND_QUALITY", "unrelatedgamma"),
+        )
+    ):
+        text = "AI server research " + unique_term
+        rows.append({
+            "authority_state": "retrieval_candidate",
+            "evidence_id": f"CHUNK-{index}",
+            "route_id": f"route-{index}",
+            "parent_document_id": f"DOC::{index}",
+            "chunk_index": index,
+            "page": index + 1,
+            "parser": "fixture_parser",
+            "splitter": "fixture_splitter",
+            "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+            "raw_body_sha256": str(index) * 64,
+            "source_url": f"https://official.example/{index}",
+            "text": text,
+            "publication_date": "2026-08-01",
+            "source_type": "issuer_management_disclosure",
+            "source_tier": "official_primary_qualification_candidate",
+            "section": "Official Release",
+            "ticker": "DELL",
+            "period_end": "",
+            "branches": [branch_id],
+        })
+    records = tmp_path / "records.jsonl"
+    records.write_text(
+        "".join(json.dumps(row) + "\n" for row in rows),
+        encoding="utf-8",
+    )
+    digest = hashlib.sha256(records.read_bytes()).hexdigest()
+    reader = FrozenLegacyLocalKnowledgeReader(
+        records_path=records,
+        expected_sha256=digest,
+        expected_record_count=3,
+        research_as_of=date.fromisoformat("2026-09-02"),
+        allowed_branch_ids=("Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY"),
+    )
+
+    result = reader(
+        query="issuertruthalpha demandqualitybeta",
+        branch_id="Q1_ISSUER_TRUTH",
+        limit=4,
+        run_scope=_scope("Q1_ISSUER_TRUTH"),
+    )
+
+    assert [row.route_id for row in result.candidates] == ["route-0"]
+    assert result.candidates[0].branches == ("Q1_ISSUER_TRUTH",)
+    assert result.candidates[0].source_locator == "route-0#page=1&chunk=0"
+    assert result.candidates[0].parent_document_id == "DOC::0"
 
 
 def test_s2_multi_metric_query_fails_entire_batch_on_digest_drift(
@@ -301,6 +382,7 @@ def test_s2_multi_metric_query_fails_entire_batch_on_digest_drift(
                 "metric_ids": ["revenue", "gross_profit"],
                 "research_as_of": "2026-06-24",
                 "period_end": "2026-05-01",
+                "selection_mode": "exact_period_end",
                 "granularity": "quarter_discrete",
             },
             branch_id="Q1_ISSUER_TRUTH",
@@ -335,6 +417,7 @@ def test_s2_reader_rejects_stable_replacement_after_composition(
                 "metric_ids": ["revenue"],
                 "research_as_of": "2026-06-24",
                 "period_end": "2026-05-01",
+                "selection_mode": "exact_period_end",
                 "granularity": "quarter_discrete",
             },
             branch_id="Q1_ISSUER_TRUTH",

@@ -74,3 +74,8 @@
   - R10 Demand＋Lead exact-once live authority：`fin_0_1_3_s3/157_R10_Demand_Lead_exact_once_live_authority.md`
   - R10 四节点成功、独立 L1／L2 通过与 protected Writer 边界：`fin_0_1_3_s3/158_R10_contract_success_independent_pass_and_protected_writer_boundary.md`
   - 上一版研报信源闭环与研报质量审计强制门：`fin_0_1_3_s3/172_report_source_closure_and_quality_audit_gate_plan.md`
+  - Dell 新纵切数据与 Runtime 地基：`fin_0_1_3_s3/175_dell_reference_vertical_data_runtime_foundation_and_live_gate.md`
+  - Dell 外源可达性与 exact-URL 候选门：`fin_0_1_3_s3/176_dell_reference_vertical_external_source_reachability_gate.md`
+  - Dell RAG 成熟栈资格化与人工复核：`fin_0_1_3_s3/177_dell_reference_vertical_rag_mature_stack_qualification_and_human_review.md`
+  - Dell A02 不可变 Planner 合同失败与 successor 停止门：`fin_0_1_3_s3/178_dell_reference_vertical_A02_immutable_planner_contract_failure.md`
+  - Dell Agentic 完整纵切技术详设冻结与零模型实现入口：`fin_0_1_3_s3/179_dell_agentic_vertical_design_and_progressive_disclosure_foundation.md`

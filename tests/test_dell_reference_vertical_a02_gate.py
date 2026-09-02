@@ -72,7 +72,7 @@ def test_a02_decision_rejects_any_render_authority_before_paid_start() -> None:
         )
 
 
-def test_repository_a02_decision_and_project_os_dispatch_pass() -> None:
+def test_historical_a02_decision_remains_structurally_valid_and_non_resumable() -> None:
     decision = _decision()
     direct = validate_dell_reference_vertical_a02_paid_start_scope_decision(
         root=ROOT,
@@ -89,23 +89,17 @@ def test_repository_a02_decision_and_project_os_dispatch_pass() -> None:
     assert direct["formal_qualification_authorized"] is False
 
 
-def test_actual_project_os_build_preflight_reports_only_verified_a02_checks() -> None:
-    result = build_preflight(
-        root=ROOT,
-        decision_ref=DECISION_REF,
-        environment={"DEEPSEEK_API_KEY": "present-but-never-read-or-persisted"},
-        check_repository=False,
-    )
-
-    assert result["status"] == "pass_current_decision_bound_preflight"
-    assert result["network_calls"] == result["model_calls"] == 0
-    checks = result["checks"]
-    assert checks["decision_scope_and_authority_valid"] is True
-    assert checks["launcher_binding_valid"] is True
-    assert checks["runner_zero_call_preflight_required_before_start"] is True
-    assert "immutable_clean_proof_and_failure_bindings_valid" not in checks
-    assert "provider_profile_and_recent_complete_capture_valid" not in checks
-    assert result["decision_projection"]["resume_authorized"] is False
+def test_consumed_a02_authority_fails_current_project_os_preflight_closed() -> None:
+    with pytest.raises(
+        ValueError,
+        match="project_os_dell_reference_vertical_a02_scope_allowance_missing",
+    ):
+        build_preflight(
+            root=ROOT,
+            decision_ref=DECISION_REF,
+            environment={},
+            check_repository=False,
+        )
 
 
 def test_a02_launcher_binds_decision_and_final_external_pack_without_hash_cycle() -> None:

@@ -107,7 +107,7 @@ A02 还证明了更深的问题：16 个本地请求把抽象 source-family、�
 | 能力 | 冻结选择 | 决策 |
 |---|---|---|
 | Agent orchestration | LangGraph OSS `StateGraph / Send / Command / ToolNode / interrupt` | `ADOPT` |
-| Provider adapter | 当前 `langchain-deepseek` 封装在 `ModelRuntimePort` 后 | `RETAIN_TRANSITIONALLY` |
+| Provider adapter | legacy Dell 路径当前仍直接使用 `langchain-deepseek`；目标是在 Wave 2 前收敛到 `ModelRuntimePort` | `RETAIN_TRANSITIONALLY` |
 | 通用高层 Agent framework | 不引入 Deep Agents、AutoGen、CrewAI 或第二套框架 | `REJECT_THIS_SLICE` |
 | 数据/工具协议 | 官方 MCP Python SDK 2.1.1，同一个 server | `ADOPT` |
 | 领域 schema | Pydantic 2 / JSON Schema，从同一 canonical model 投影 | `ADOPT` |
@@ -128,7 +128,7 @@ A02 还证明了更深的问题：16 个本地请求把抽象 source-family、�
 
 LangGraph 是执行引擎，`langchain-deepseek` 当前只承担 DeepSeek 模型和 tool-call transport 适配。FIN 的 Evidence、NumericFact、Claim、权限、checkpoint 语义和产品 API 不依赖 LangChain 对象。
 
-本轮不会为了“清除 LangChain”而自行实现 provider tool loop；也不会让 LangChain 接管领域真值。`ModelRuntimePort` 保证以后可用官方 OpenAI-compatible SDK 做等价替换，但只有真实 tool-call、reasoning-content 连续轮、usage 和错误语义 parity 通过后才切换。
+本轮不会为了“清除 LangChain”而自行实现 provider tool loop；也不会让 LangChain 接管领域真值。`ModelRuntimePort` 是本设计要求的目标边界，不是当前仓库已经完成的事实；在它真正接住现有调用、usage、error 和 reasoning-content 连续轮之前，不得声称 provider 已被隔离。以后只有官方 OpenAI-compatible SDK 的真实 tool-call、reasoning-content 连续轮、usage 和错误语义 parity 通过后才切换。
 
 ### 3.3 为什么当前不直接采用 LangGraph Agent Server
 
@@ -190,14 +190,16 @@ FastAPI Research Run BFF
 
 ### 4.2 Canonical v1.2 compatibility decision
 
-新纵切采用 canonical runtime `v1.2 successor`，而不是在 Dell 模块中另建第二套 Session/Event/Plan 真值。v1.0/v1.1 继续不可变，作为 legacy 输入经显式 adapter 映射：
+新纵切采用 canonical runtime `v1.2 successor`，而不是在 Dell 模块中另建第二套 Session/Event/Plan 真值。v1.0/v1.1 继续不可变；legacy 只有在来源制品、摘要和身份基数均可证明时才能经显式 adapter 映射，不能仅凭一个旧 `AgentSession` 猜出完整运行历史：
 
 | 身份 | v1.2 基数与语义 | legacy 映射 |
 |---|---|---|
-| `AgentSession` | 一个稳定 case conversation / 顶层 LangGraph `thread_id`；一对多 ResearchRun | v1.0 的单 `run_id` 映射为该 session 的唯一 legacy ResearchRun |
-| `ResearchRun` | 一次完整研究生命周期；pause/resume 不创建新 Run；follow-up 创建带 parent 的 child Run | 旧 run 保持原 ID 和终态 |
-| `RunInvocation` | 一次 start/resume/recovery 的 worker 调度与 lease；同一 Run 可有多个，不改写旧 invocation | 旧一次执行映射为 invocation 1 |
-| `ActionAttempt` | 一次 model/tool/capture/publish 副作用尝试；每次 retry/correction 使用新 ID | 旧 RuntimeReceipt 映射为一个 ActionAttempt receipt |
+| `AgentSession` | 一个稳定 case conversation / 顶层 LangGraph `thread_id`；一对多 ResearchRun | 通用 v1.0 adapter 只投影 session envelope，不证明 Run/Invocation/Action |
+| `ResearchRun` | 一次完整研究生命周期；pause/resume 不创建新 Run；follow-up 创建带 parent 的 child Run | exact import bundle 必须给出原 run ID 与终态；付费执行标签不能冒充 run ID |
+| `RunInvocation` | 一次 start/resume/recovery 的 worker 调度与 lease；同一 Run 可有多个，不改写旧 invocation | 仅在原始 start/resume/recovery 证据足够时映射；否则 fail closed |
+| `ActionAttempt` | 一次 model/tool/capture/publish 副作用尝试；每次 retry/correction 使用新 ID | 仅由原 request/receipt digest、actor、时间和结果映射，不能由调用者自由填写 |
+
+A02 使用一份 answer-free、content-addressed 的精确导入包，分别绑定原 `PaidFullChainExecution`、ResearchRun、首个 RunInvocation 和 Planner ActionAttempt；历史 `started/finished` 时间来自不可变来源，`imported_at` 只表示迁移发生时间。A01 在取得同等级来源包前拒绝完整身份迁移。A01/A02 都优先走 exact mapper，禁止落入通用 session adapter。v1.1 event adapter 只能接受已经校验并互相绑定的 `ResearchRun / RunInvocation / ActionAttempt` 对象；调用者不能再自由提交 run/invocation/action ID 来拼接历史。
 
 `CanonicalSessionEventV1_2` 扩展 v1.1 的事件 union，保留旧 18 类事件及 digest-chain 语义，并新增 run/node/disclosure/admission/decision/finding/intervention/artifact/publish 等判别事件。canonical sequence 始终 `session-scoped`、从 1 连续递增，是唯一审计顺序。
 
@@ -323,6 +325,7 @@ Runtime 对 `ResearchPlan/PlanDelta` 做 DAG 无环、依赖存在、角色/权�
 - 每项 action 绑定 target task/obligation、reason 与 Feedback refs、coverage-before/after、replacement 或 defer deadline、budget delta 和 authority impact；
 - 取消 material obligation 必须有等价 replacement，或明确 Human/Verifier disposition；
 - base plan digest、catalog/policy digest、accepted plan digest 和 resulting graph digest 全部冻结；
+- CoverageGap 与 PlanDelta 校验必须在调用时通过 host repository/resolver 读取当前 verified-artifact registry，并校验 revision/tip；调用者携带的旧 snapshot 不能成为当前权威。纯领域层使用依赖注入端口，真实 backend composition root 必须把该端口固定到可信 repository，API/model 输入不得提交 resolver；
 - accepted delta、canonical event 和 checkpoint 在同一 durable replay unit 中引用同一个新 plan digest，禁止只更新内存 active-plan 指针。
 
 ### 6.4 Lead、Counter、Verifier 的区别
@@ -451,7 +454,13 @@ AvailableActionMenu
 Budget / stop / intervention status
 ```
 
-case identity、as-of、authority 和安全规则来自版本化、机器可读且 content-addressed 的 `RuntimePolicySnapshot`，始终 pinned，不是模型可选择卸载的 Skill。`AGENTS.md` 与 Project OS 是人类/工程设计输入；模型只能看到从 canonical policy 生成的非权威简要说明，Markdown 文案本身不能授予或撤销权限。若提示摘要与 host validator 冲突，以服务端 contract 为准；修改 Markdown 不得改变权限，修改 canonical policy 必须改变 digest 并让 stale projection fail closed。
+case identity、as-of、authority 和安全规则来自版本化、机器可读且 content-addressed 的 `RuntimePolicySnapshot`，始终 pinned，不是模型可选择卸载的 Skill。Runtime policy 与 progressive-disclosure policy 是两个不同对象、两个不同 digest；RuntimePolicySnapshot 明确绑定当前 disclosure-policy digest，RuntimeScope 和授权回执同时绑定两者，不能要求一个 digest 同时代表两份不同内容。`AGENTS.md` 与 Project OS 是人类/工程设计输入；模型只能看到从 canonical policy 生成的非权威简要说明，Markdown 文案本身不能授予或撤销权限。若提示摘要与 host validator 冲突，以服务端 contract 为准；修改 Markdown 不得改变权限，修改任一 canonical policy 必须改变对应 digest 并让 stale projection fail closed。
+
+`ModelVisibleContextManifest` 中的 objective 不是调用者可以自由替换的 prompt 文本。Host 必须从重新验证过的 current accepted `ResearchPlan` 中，以 `task_id` 唯一解析 `ResearchTaskSpec`，再签发 `RuntimeScopeAuthorizationRecord`；该记录同时绑定 `objective_digest / accepted_plan_digest / research_graph_digest / task_assignment_digest`，其中 task-assignment digest 还绑定 agent、role、task 和 task-kind。签发前必须验证 plan 的 case、runtime policy、authority matrix、`ResearchTaskSpec.owner_role == RuntimeScope.agent_role` 以及 task 所需 authority 均与 sealed scope 相容。角色身份先使用同一 canonical role ref 精确相等；未来若引入 alias，只能由 current authoritative role-mapping resolver 解析，不能由调用者自由声明。manifest 只能投影 current authorization 中的这些摘要，并重新计算 raw objective 的摘要；同一 scope 下只改 objective、换角色、使用 draft/stale plan 或提交不相干 graph 均 fail closed。调用者不能把 objective/graph digest 作为独立权威参数传入。
+
+manifest 中的“当前运行事实”也不能由普通函数/API 参数提交。`latest_plan_delta_refs / observation_refs / unresolved_feedback_refs / available_next_actions / budget_status / stop_status / intervention_status / context_checkpoint_ref` 必须由 composition root 注入的 `CurrentModelContextResolver` 读取带 self-digest 的 host-current snapshot。只写 `issued_by=host` 或让 snapshot 自己重签不构成权威：snapshot ID、resolver ref、current store revision、上述字段和 Session/Run/Invocation/Action/Task identity 先确定性生成 `model_context_state_digest`，并在该 ActionAttempt 的 sealed `RuntimeScope` 签发时写入 scope；current scope authorization 与 canonical `action_intent_committed` event 已绑定整个 scope digest。manifest 消费时重新计算 snapshot state digest，并必须与这个先行 scope anchor 完全相等。因此调用者改写来源 revision、任何当前 refs、action menu 或 status 后即使同时重签 snapshot，也不能通过。snapshot 还绑定 current authorization、accepted plan/graph、canonical event-ledger snapshot/tip/revision，以及 runtime/disclosure 两份 policy；每次组装 manifest 都重新读取、重建并逐项核对。摘要相同只是第一层：`RuntimePolicySnapshot` 内部的 case、版本、as-of、data snapshot 还必须与 RuntimeScope 一致，data snapshot 同时与 catalog inventory 一致，catalog digest 与 current catalog 一致，disclosure-policy digest 与 current disclosure policy/scope 一致，scope branch/permission 必须是 runtime policy allowlist 的子集。`governance_summary` 只能由完成这些交叉验证的 canonical `RuntimePolicySnapshot` 确定性派生。manifest 额外携带 current-model-context snapshot digest，使 verifier 能证明该轮看到的是哪一个当前状态。调用者即使自签不存在的 PlanDelta/Observation/Feedback、伪称 intervention 已生效、预算已耗尽、研究已足够，或把 Dell scope 绑定到另一 case/未来 as-of 的自签 policy，也不能令 runtime 为其生成合法 manifest。
+
+所有有 self-digest 的 current-state、identity、plan/evidence 和 recovery 对象都在消费边界重新结构化验证，不能依赖 Pydantic 对象“曾经构造成功”：disclosure catalog（包括嵌套 resource/capability 语义）、disclosure policy、DisclosureReceipt、RuntimePolicySnapshot、ModelNodeAuthorityMatrix（包括嵌套 node authority）、RuntimeScopeAuthorizationRecord、RuntimeScope、CanonicalEventLedgerSnapshot、ACL snapshot（包括嵌套 grant）、canonical event/projection、ContextCheckpoint 及其 Session/Run/Invocation/current-material snapshot、CurrentModelContextSnapshot、RecoveryDisposition 及其绑定的 Action/Invocation/Run、ResearchPlan/PlanDelta、current verified-artifact registry（包括嵌套 artifact）、CoverageGap 请求和 model-visible context，均须从其序列化内容重建并重算摘要。manifest 即使没有任何 grant，也必须无条件核对并显式携带 disclosure-policy digest；L1 answer-free、not-authorized node 的 provider binding、receipt token、ledger repository/events、policy budget、ACL issuer、checkpoint graph digest、model-current plan/ledger/policy binding、recovery decision、plan route proof 和 registry nested artifact 等字段经 `model_copy/model_construct` 修改而保留或重签摘要时必须立即拒绝。
 
 ### 8.2 统一披露层级
 
@@ -654,6 +663,8 @@ Verifier 因此能判断“Agent 当时看到了什么”，不需要读取隐�
 - LangGraph checkpoint ref 与最后 canonical event digest。
 
 恢复所需集合由已绑定的 accepted plan、event ledger、notebook revision 和 open findings 自动推导，调用方不能用默认空集合绕过。漏 Claim、漏未关闭 finding、漏 minimum obligation、漏权限/stop/budget state 的 resume 或 compaction mutation 均必须 fail closed；不得把全部状态无类型地塞入 `agent_local_state_refs`。
+
+Wave 0A 的实现性收紧是：checkpoint creator/validator 不再接受调用者提交的 `events`、`expected_notebook_refs`、`expected_open_finding_refs`、graph/coverage/minimum-route 或任何其他 current-authority/typed-material 字段，而只通过 composition root 注入的 `CurrentContextMaterialResolver` 读取一个带 self-digest 的 current snapshot。该 snapshot 同时绑定 accepted plan/graph、host canonical event-ledger snapshot、notebook revision、coverage/minimum-route、accepted Evidence、NumericFact、ClaimLedger、Calculation、disclosure/Skill receipt、open gap、unresolved feedback、counterevidence、open question/finding、pending intervention、authority、active stop、budget、context projection 与 LangGraph checkpoint。`notebook_refs` 由上述全部 typed current state 的并集确定性派生，不能由调用者另给一个较小集合；`finding_opened/finding_resolved` 的未关闭集合还须能从 snapshot 内的 canonical events 重建并与 repository view 一致。checkpoint 绑定 material-snapshot digest 与 event-ledger-snapshot digest，恢复时必须重新读取当前 snapshot；API/model 无权提交 resolver。这样既避免建设第二套 notebook/backend，也关闭“调用者传空 expected 集合或漏掉某类当前材料再自证通过”的语义权威漏洞。
 
 ### 10.6 Compaction
 
@@ -1123,7 +1134,8 @@ tests/test_dell_progressive_disclosure.py
 - `CoverageObligation / MinimumRouteObligation / BaselineSourcePlan / ResearchTaskSpec / ResearchPlan`；
 - `CapabilityDescriptor / DisclosureRequest / DisclosureReceipt / AvailableNextAction`；
 - sealed `RuntimeScope` 与 provider-visible intent 分离；
-- `ModelVisibleContextManifest / DecisionArtifact / ToolFailureReceipt / GapEligibilityReceipt`；
+- accepted-plan 派生的 `RuntimeScopeAuthorizationRecord`，显式绑定 objective/plan/graph/task assignment；
+- `ModelVisibleContextManifest / DecisionArtifact / ToolFailureReceipt / GapEligibilityReceipt`；manifest 无 grant 时也绑定 disclosure policy；
 - `RuntimePolicySnapshot / ModelNodeAuthorityMatrix` 与 provider envelope allowlist sanitizer；
 - schema/digest/stale catalog/public-gap/authority/compatibility/CoT 的确定性验证。
 
@@ -1203,7 +1215,7 @@ tests/test_dell_progressive_disclosure.py
 
 ### 21.1 Zero-model 合同门
 
-- canonical v1.2 对 v1.0/v1.1 有逐字段 adapter，AgentSession/ResearchRun/RunInvocation/ActionAttempt 和 event sequence 只有一份真值；A02 legacy fixture 不得把 full-chain 映射成单个 ActionAttempt；
+- canonical v1.2 对 v1.0/v1.1 有证据约束的 adapter：通用 v1.0 只投影 session envelope；A02 exact bundle 分开映射付费执行标签、ResearchRun、RunInvocation 和 Planner ActionAttempt，历史时间与导入时间分离；A01 缺 exact bundle 时 fail closed；v1.1 event 只能绑定已校验身份对象；全链不得被压成单个 ActionAttempt；
 - provider-visible schema 的 local/external 非法字段组合不可表达；
 - MCP/provider/host 三层映射来自同一 canonical source；
 - stale catalog/snapshot/digest fail closed；
@@ -1346,6 +1358,8 @@ tests/test_dell_progressive_disclosure.py
 
 本文冻结以下设计方向：稳定外层图 + agentic 内层 loop；动态计划作为数据；MCP/Runtime/模型三层契约；可信 scope 注入；SourceFamilyCompiler；L0–L4 渐进披露；自由 Markdown + ClaimLedger；两层 verifier；隐藏 CoT 不持久化、不向产品/审查面或其他接收方传输、不展示，仅在同一 provider ActionAttempt 内为协议连续性瞬时回传原 provider；PostgreSQL 持久真值、Redis 瞬时辅助；SSE + REST command；终态 child-run follow-up；A03 必须另行授权。
 
-2026-09-03 作者分离的三轮只读反证审查已经收口。审查先后发现并关闭：Agent Server 资格测试顺序和 provider shadow 授权漏洞；canonical v1.2 identity/sequence/Plan/Checkpoint 兼容；SourceFamily 过窄/过宽与 Reviewed Evidence precedence；Writer 后最终语义复核；provider/tool crash 双写裂缝；HITL authority 与 publication 竞态；GapEligibility、CoT allowlist、prompt injection、SSE projection 和 A03 phantom identity。最终结论为 `PASS / P0=0 / P1=0`。这只冻结设计并授权零模型实现，不关闭 RC-S3-105，不创建 A03，不证明产品已跑通。
+2026-09-03 作者分离的三轮只读反证审查已经收口。审查先后发现并关闭：Agent Server 资格测试顺序和 provider shadow 授权漏洞；canonical v1.2 identity/sequence/Plan/Checkpoint 兼容；SourceFamily 过窄/过宽与 Reviewed Evidence precedence；Writer 后最终语义复核；provider/tool crash 双写裂缝；HITL authority 与 publication 竞态；GapEligibility、CoT allowlist、prompt injection、SSE projection 和 A03 phantom identity。该次结论 `PASS / P0=0 / P1=0` 只针对设计冻结。
+
+随后 Wave 0A 实施证据继续修正了设计假设：RuntimePolicy 与 disclosure policy 必须使用不同 digest 并显式交叉绑定；runtime policy 的摘要绑定仍不够，其内部 case/version/as-of/data/catalog/disclosure-policy/allowlist 还必须与 current scope/catalog/policy 逐字段对齐；PlanDelta/Gap 校验必须重新读取当前 registry；legacy `AgentSession` 不足以无条件恢复四层身份，A02 必须 exact bundle、A01 当前必须 fail closed；A02 四层 ID 与 paid execution label 必须按字段面永久保留，不能跨 identity surface 复用；A02 离线回放还必须重新验证 host-resolved immutable source record，不能仅核对可由伪造对象自行重签的摘要；所有 canonical event、ACL、projection、checkpoint、recovery、plan、registry、policy、receipt、current ledger snapshot 和 current authorization 对象都必须在每次消费时重跑类型、嵌套语义与 self-digest 校验；checkpoint 的 plan/graph/event-ledger 及全部 typed current material 必须来自 host-owned current-material resolver，不能由调用者同时提供现状和 expected 值来自证；manifest 的 objective/plan/graph/task assignment 必须来自 current accepted plan authority，PlanDelta/observation/feedback/action menu/budget/stop/intervention/checkpoint 则必须来自 host-owned current-model-context resolver，并将整组当前状态摘要先行封入 sealed RuntimeScope，不能靠 resolver 名称或 snapshot 自签自证；governance summary 必须由已完成内部字段交叉验证的 current canonical runtime policy 派生，均不能由 caller 文本提供。上述修订替代原文中更宽松的兼容表述；它们仍不关闭 RC-S3-105，不创建 A03，不证明 provider、backend 或产品已跑通。
 
 实现可以根据零模型测试和成熟组件 spike 修正字段名、表名、依赖版本和内部模块拆分，但若要改变上述方向、引入第二套框架、扩大产品范围、改变 Evidence/NumericFact/public-gap authority、强制上 Redis/云端或创建付费 successor，必须先更新本文并向 Owner 解释新证据和影响。

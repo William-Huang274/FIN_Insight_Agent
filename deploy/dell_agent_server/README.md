@@ -142,7 +142,7 @@ does not grant that authority.
 
 The checked-in r8 probe is an acceptance harness around this same server; it is
 not a second serving runtime. It uses an explicit qualification Compose overlay,
-a separately named `finsight-dell-qualification-20260904-r8a2` project/fresh
+a separately named `finsight-dell-qualification-20260904-r8a3` project/fresh
 volume, the official FIN client, the real Evidence and Finance
 MCP lanes, native interrupt/resume, restart/readback, resumable SSE and one
 LangSmith project. Run it only from a clean commit:
@@ -178,6 +178,18 @@ r8 probe therefore requires the START run to be `success` while the thread is
 present. After RESUME it requires both runs to be `success`, the thread to be
 `idle`, and the current state to have no next node or interrupt. These are
 different state layers and must not be collapsed into one status field.
+
+The pinned `langsmith==0.12.1` query client must be called without an explicit
+`limit`: that public iterator follows server cursors, while a supplied limit is
+both sent to `/runs/query` and used as a total client-side cutoff. The r8 probe
+consumes one overflow sentinel and admits at most two exact roots and 100 spans
+per trace. It also treats exactly one non-root `qualification_interrupt`
+`GraphInterrupt` in the START trace as expected LangGraph control flow; every
+other trace error remains fatal. This does not claim blanket trace privacy.
+The receipt claims only observed input/output hiding, no credential or host/data
+locator exposure, and zero unexpected span errors. Normal container traceback
+code paths and the bounded correlation metadata can remain visible in the
+developer-only LangSmith project.
 
 ## Local invocation
 

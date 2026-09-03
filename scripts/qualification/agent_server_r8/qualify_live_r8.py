@@ -67,8 +67,8 @@ ATTEMPTS_ROOT = Path(
     "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/"
     "agent_server_control_plane/attempts"
 )
-COMPOSE_PROJECT = "finsight-dell-qualification-20260904-r8a2"
-HOST_PORT = 18129
+COMPOSE_PROJECT = "finsight-dell-qualification-20260904-r8a3"
+HOST_PORT = 18130
 MANIFEST_SCHEMA_VERSION = "fin_ia_dell_agent_server_live_r8_manifest_v1_0"
 RECEIPT_SCHEMA_VERSION = "fin_ia_dell_agent_server_live_r8_receipt_v1_0"
 FAILURE_SCHEMA_VERSION = "fin_ia_dell_agent_server_live_r8_failure_v1_0"
@@ -836,7 +836,9 @@ def main() -> None:
                 "redis_process_restart_readback": True,
                 "same_project_stop_start_readback": True,
                 "sse_full_and_suffix_replay": True,
-                "langsmith_trace_and_payload_hiding_observed": True,
+                "langsmith_trace_input_output_hiding_observed": True,
+                "langsmith_expected_graph_interrupt_classified": True,
+                "langsmith_unexpected_span_errors": 0,
                 "model_provider_calls": 0,
                 "live_external_research_calls": 0,
                 "research_data_provider_paid_calls": 0,

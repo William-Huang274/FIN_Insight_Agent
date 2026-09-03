@@ -6,7 +6,7 @@ from importlib.util import module_from_spec, spec_from_file_location
 import json
 from pathlib import Path
 import subprocess
-from types import ModuleType
+from types import ModuleType, SimpleNamespace
 from typing import Any
 from uuid import UUID
 
@@ -452,6 +452,7 @@ def test_r8_langsmith_waits_for_complete_stable_trace_span_sets(
             name: str,
             run_type: str,
             invocation_id: str | None = None,
+            error: str | None = None,
         ) -> None:
             self.id = UUID(int=run_id)
             self.trace_id = UUID(int=trace_id)
@@ -463,7 +464,7 @@ def test_r8_langsmith_waits_for_complete_stable_trace_span_sets(
             self.run_type = run_type
             self.start_time = observed_at
             self.end_time = observed_at
-            self.error = None
+            self.error = error
             self.inputs = {}
             self.outputs = {}
             self.extra = {
@@ -522,6 +523,19 @@ def test_r8_langsmith_waits_for_complete_stable_trace_span_sets(
         name="evidence_tool",
         run_type="tool",
     )
+    start_interrupt = FakeRun(
+        run_id=205,
+        trace_id=201,
+        parent_run_id=201,
+        dotted_order="1.2",
+        name="qualification_interrupt",
+        run_type="chain",
+        error=(
+            "GraphInterrupt((Interrupt(value={'kind': 'qualification'}, id='x'),))\n"
+            "Traceback (most recent call last):\n"
+            "langgraph.errors.GraphInterrupt: (Interrupt(...),)"
+        ),
+    )
     resume_root = FakeRun(
         run_id=203,
         trace_id=203,
@@ -560,18 +574,25 @@ def test_r8_langsmith_waits_for_complete_stable_trace_span_sets(
             }
         )
     by_trace = {
-        str(start_root.trace_id): [start_root, start_child],
+        str(start_root.trace_id): [start_root, start_child, start_interrupt],
         str(resume_root.trace_id): [resume_root, resume_child],
     }
 
     class FakeLangSmithClient:
         def __init__(self, *, auto_batch_tracing: bool) -> None:
             assert auto_batch_tracing is False
+            self.root_calls = 0
             self.span_calls = {trace_id: 0 for trace_id in by_trace}
 
         def list_runs(self, **kwargs: Any) -> Any:
             assert tuple(kwargs["select"]) == live_phase._LANGSMITH_RUN_SELECT
+            assert "limit" not in kwargs
             if kwargs.get("is_root") is True:
+                self.root_calls += 1
+                if self.root_calls == 1:
+                    raise live_phase.langsmith_utils.LangSmithConnectionError(
+                        "transient"
+                    )
                 assert set(map(str, kwargs["run_ids"])) == set(by_trace)
                 return iter([start_root, resume_root])
             trace_id = str(kwargs["trace_id"])
@@ -598,9 +619,192 @@ def test_r8_langsmith_waits_for_complete_stable_trace_span_sets(
 
     assert result["trace_count"] == 2
     assert result["queried_root_count"] == 2
-    assert result["queried_trace_span_count"] == 4
+    assert result["queried_trace_span_count"] == 5
+    assert fake_client.root_calls == 2
     assert all(count == 3 for count in fake_client.span_calls.values())
-    assert all(trace["span_count"] == 2 for trace in result["traces"])
+    assert [trace["span_count"] for trace in result["traces"]] == [3, 2]
+    assert [
+        trace["expected_graph_interrupt_span_count"] for trace in result["traces"]
+    ] == [1, 0]
+    assert "langgraph.errors.GraphInterrupt" not in json.dumps(result)
+
+
+def test_r8_langsmith_cursor_iterator_is_bounded_with_overflow_sentinel(
+    live_phase: ModuleType,
+) -> None:
+    assert live_phase._bounded_langsmith_rows(
+        iter(range(2)), maximum=2, overflow_code="overflow"
+    ) == [0, 1]
+
+    with pytest.raises(live_phase.LivePhaseError) as exc_info:
+        live_phase._bounded_langsmith_rows(
+            iter(range(3)), maximum=2, overflow_code="overflow"
+        )
+    assert exc_info.value.code == "overflow"
+
+
+def test_r8_langsmith_query_retry_classification_uses_status_without_body(
+    live_phase: ModuleType,
+) -> None:
+    def wrapped_status(status_code: int) -> BaseException:
+        inner = RuntimeError("body-must-not-be-inspected")
+        inner.response = SimpleNamespace(status_code=status_code)  # type: ignore[attr-defined]
+        outer = live_phase.langsmith_utils.LangSmithError("outer")
+        outer.__context__ = inner
+        return outer
+
+    assert live_phase._langsmith_query_error_is_retryable(wrapped_status(408))
+    assert live_phase._langsmith_query_error_is_retryable(wrapped_status(429))
+    assert live_phase._langsmith_query_error_is_retryable(wrapped_status(503))
+    assert not live_phase._langsmith_query_error_is_retryable(wrapped_status(400))
+    assert not live_phase._langsmith_query_error_is_retryable(wrapped_status(401))
+    assert not live_phase._langsmith_query_error_is_retryable(RuntimeError("x"))
+
+
+def test_r8_langsmith_expected_graph_interrupt_is_narrowly_classified(
+    live_phase: ModuleType,
+) -> None:
+    trace_id = str(UUID(int=501))
+    parent_id = UUID(int=502)
+    valid = SimpleNamespace(
+        trace_id=UUID(trace_id),
+        parent_run_id=parent_id,
+        name="qualification_interrupt",
+        run_type="chain",
+        error=(
+            "GraphInterrupt((Interrupt(value={'kind': 'qualification'}, id='x'),))\n"
+            "Traceback (most recent call last):\n"
+            "langgraph.errors.GraphInterrupt: (Interrupt(...),)"
+        ),
+    )
+    assert live_phase._is_expected_graph_interrupt_span(
+        valid, start_trace_id=trace_id
+    )
+
+    mutations = (
+        {"trace_id": UUID(int=503)},
+        {"parent_run_id": None},
+        {"name": "other_node"},
+        {"run_type": "tool"},
+        {"error": "RuntimeError: langgraph.errors.GraphInterrupt: fake"},
+        {
+            "error": (
+                valid.error
+                + "\nDuring handling of the above exception, another exception occurred:"
+            )
+        },
+    )
+    for mutation in mutations:
+        candidate = SimpleNamespace(**{**vars(valid), **mutation})
+        assert not live_phase._is_expected_graph_interrupt_span(
+            candidate, start_trace_id=trace_id
+        )
+
+
+def test_r8_langsmith_requires_exactly_one_start_interrupt_and_no_other_errors(
+    live_phase: ModuleType,
+) -> None:
+    expected = {"error_disposition": "expected_graph_interrupt_control_flow"}
+    clean = {"error_disposition": "none"}
+    unexpected = {"error_disposition": "unexpected"}
+
+    assert live_phase._validate_langsmith_span_errors(
+        [clean, expected], is_start_trace=True
+    ) == 1
+    assert live_phase._validate_langsmith_span_errors(
+        [clean], is_start_trace=False
+    ) == 0
+
+    for rows, is_start, code in (
+        ([clean], True, "r8_langsmith_expected_interrupt_missing"),
+        (
+            [expected, expected],
+            True,
+            "r8_langsmith_expected_interrupt_missing",
+        ),
+        (
+            [expected],
+            False,
+            "r8_langsmith_expected_interrupt_wrong_trace",
+        ),
+        ([expected, unexpected], True, "r8_langsmith_span_error"),
+        ([unexpected], False, "r8_langsmith_span_error"),
+    ):
+        with pytest.raises(live_phase.LivePhaseError) as exc_info:
+            live_phase._validate_langsmith_span_errors(
+                rows, is_start_trace=is_start
+            )
+        assert exc_info.value.code == code
+
+
+@pytest.mark.parametrize(
+    ("mutation", "expected_code"),
+    [
+        ({"trace_id": UUID(int=604)}, "r8_langsmith_span_trace_identity_mismatch"),
+        ({"id": UUID(int=601)}, "r8_langsmith_span_identity_not_unique"),
+        ({"parent_run_id": UUID(int=699)}, "r8_langsmith_span_parent_missing"),
+    ],
+)
+def test_r8_langsmith_trace_integrity_rejects_malformed_span_sets(
+    live_phase: ModuleType,
+    mutation: dict[str, Any],
+    expected_code: str,
+) -> None:
+    trace_id = str(UUID(int=601))
+    root = SimpleNamespace(
+        id=UUID(trace_id), trace_id=UUID(trace_id), parent_run_id=None
+    )
+    child = SimpleNamespace(
+        id=UUID(int=602), trace_id=UUID(trace_id), parent_run_id=root.id
+    )
+    assert live_phase._validated_langsmith_trace_root(trace_id, [root, child]) is root
+
+    malformed_child = SimpleNamespace(**{**vars(child), **mutation})
+    with pytest.raises(live_phase.LivePhaseError) as exc_info:
+        live_phase._validated_langsmith_trace_root(
+            trace_id, [root, malformed_child]
+        )
+    assert exc_info.value.code == expected_code
+
+
+def test_r8_langsmith_permanent_query_error_is_not_retried(
+    host_runner: ModuleType,
+    live_phase: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    manifest = host_runner._manifest(
+        "20260904T030000+0800-zero-model-r8-query-failure",
+        "a" * 40,
+    )
+    _session, research_run, start, resume = live_phase._manifest_contracts(manifest)
+
+    class FailingClient:
+        calls = 0
+
+        def __init__(self, *, auto_batch_tracing: bool) -> None:
+            assert auto_batch_tracing is False
+
+        def list_runs(self, **_kwargs: Any) -> Any:
+            self.calls += 1
+            raise live_phase.langsmith_utils.LangSmithError("permanent")
+
+    failing_client = FailingClient(auto_batch_tracing=False)
+    monkeypatch.setattr(live_phase, "_require_container_environment", lambda: "x")
+    monkeypatch.setattr(
+        live_phase,
+        "_durable_server_run_ids",
+        lambda _uri, _run, _ids: {
+            start.invocation_id: str(UUID(int=701)),
+            resume.invocation_id: str(UUID(int=702)),
+        },
+    )
+    monkeypatch.setattr(live_phase, "LangSmithClient", lambda **_kwargs: failing_client)
+    monkeypatch.setattr(live_phase.time, "sleep", lambda _delay: None)
+
+    with pytest.raises(live_phase.LivePhaseError) as exc_info:
+        live_phase._langsmith_result(manifest)
+    assert exc_info.value.code == "r8_langsmith_query_failed"
+    assert failing_client.calls == 1
 
 
 def test_r8_phase_sequence_treats_final_as_completed_exact_replay(

@@ -1416,7 +1416,8 @@ span、token/cost=0 与限定 secret/内部 locator 扫描。canonical digest �
 SHA 分开记录，失败子进程的内容最小化 observation 和 typed phase failure 必须保留。
 
 r8 PASS 也只允许声明：真实 Agent Server + FIN final binding + frozen local MCP +
-interrupt/checkpoint/restart/resume/SSE + 本次 trace payload hiding。以下继续为 false：
+interrupt/checkpoint/restart/resume/SSE + 本次 LangSmith exact trace 与 input/output hiding。
+它不等于全部 trace payload/error/metadata 隐藏或完整 privacy qualification。以下继续为 false：
 distributed exactly-once、unknown outcome 自动重试、durable orphan lifecycle、Redis
 丢失/替换、HA/DR、product multi-agent、任何模型/外源研究/付费调用、Evidence admission、
 S2 write、Workbench HITL、最终 Dell 报告与 production security。是否申请第一条 paid
@@ -1441,6 +1442,44 @@ interrupt 与下一节点。不能把三层状态压成一个 `interrupted Run`�
 不覆盖、不清理。修正后的新 attempt 使用独立
 `finsight-dell-qualification-20260904-r8a2`、fresh volume 与 `127.0.0.1:18129`，仍属同一
 R8 root-cause rerun，不产生新产品版本或 paid/model authority。
+
+### 25.3 LangSmith cursor 查询、预期 GraphInterrupt 与声明边界
+
+fresh attempt2=`20260904T052346+0800-zero-model-r8` 已证明 START、三次 restart
+readback、RESUME 与 final phase-local 执行成功，但最终在 LangSmith phase 失败，故仍是
+immutable failed、不是 r8 PASS。根因不是 Docker proxy/VPN：同一 API 容器完成 DNS、
+metadata upload 和 `limit<=100` 查询；只有 harness 的 `limit=500` 被当前 `/runs/query`
+以 HTTP 400 拒绝。
+
+固定 `langsmith==0.12.1` 的 public `Client.list_runs` 只有在省略 limit 时才会由内部
+cursor paginator 读取全部页面；显式 limit 既进入后端 request body，又会截断 iterator。
+因此 r8 继续复用该成熟 SDK，不实现自研分页器，也不简单把 500 改成 100：root 查询只
+从 public iterator 消费最多 3 行并把第 3 行作为 overflow；每条 exact trace 只消费最多
+101 行并把第 101 行作为 overflow，分别承认最多 2 roots/100 spans。所有 span 必须属于
+exact durable trace、ID 唯一、唯一 root ID 等于 trace ID、每个 child parent 均在完整
+集合中。connection/408/429/5xx 允许 bounded retry；永久/未知 query error 立即停止，
+eventual flush 则继续通过成功但未完成/未稳定的结果集 polling 表达。
+
+native `interrupt()` 的第一遍节点执行会抛 `GraphInterrupt` 保存 checkpoint；固定
+LangGraph 源码明确该异常不是 execution failure。LangSmith 仍会在 START 的
+`qualification_interrupt` child span 中保存 error traceback。因此资格门只允许以下唯一
+组合：START exact trace、非 root、name=`qualification_interrupt`、run_type=`chain`、
+error 首行为 `GraphInterrupt(`、末个非空行为 fully-qualified
+`langgraph.errors.GraphInterrupt:`、marker 恰好一次且无 exception chaining；整个
+START trace 恰好一个。START root、其他 START span、RESUME 全 trace 的 error 必须为空。
+raw error 只在内存中扫描，不写 phase result/receipt；result 仅保存 disposition 和计数。
+
+LangSmith input/output hiding 不等于 traceback、metadata 或全部 payload hiding。正常
+Python traceback 会包含镜像内的源码路径；这不是 credential、研究正文或 host/data
+locator。故 r8 PASS 最多声明：exact trace 已查询；input/output hiding 已观察；credential、
+PostgreSQL/Redis URI、D/Z host path 和 `/run/fin-insight` 数据路径未出现；一个预期
+GraphInterrupt 已受控分类；其他 error、LLM span、token/cost 均为零。不得写成所有 trace
+payload、error、metadata 或完整 privacy 均已隐藏。`list_runs` 的 removal 日期属于后续
+pinned SDK migration debt，不在同一 R8 根因修正中扩写第二套查询/runtime。
+
+attempt2 的 project/volume/receipt 保留不变；successor 必须用 clean pushed commit、
+fresh project=`finsight-dell-qualification-20260904-r8a3`、fresh volume 和
+`127.0.0.1:18130`。它仍是同一 R8，不创建 A03，也不放开模型、外源、付费或产品门。
 
 ## 26. 2026-09-04 实施证据与当前剩余门
 

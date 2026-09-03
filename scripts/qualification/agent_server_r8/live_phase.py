@@ -15,6 +15,7 @@ import argparse
 from collections.abc import Iterable, Mapping, Sequence
 from datetime import datetime
 from hashlib import sha256
+from itertools import islice
 import json
 import os
 import sys
@@ -25,6 +26,7 @@ from uuid import UUID
 from langgraph_sdk import get_sync_client
 from langgraph_sdk.schema import StreamPart
 from langsmith import Client as LangSmithClient
+from langsmith import utils as langsmith_utils
 from psycopg_pool import ConnectionPool
 
 from sec_agent.agent_runtime.dell_agent_server_client import (
@@ -63,6 +65,15 @@ LANGSMITH_PROJECT = "fin-insight-dell-reference-vertical"
 AGENT_SERVER_URL = "http://127.0.0.1:8000"
 FIN_RUNTIME_URI_ENV = "FIN_RUNTIME_POSTGRES_URI"
 _PHASES = ("start", "readback", "resume", "final", "langsmith")
+_LANGSMITH_ROOT_MAX_ROWS = 2
+_LANGSMITH_TRACE_MAX_SPANS = 100
+_LANGGRAPH_INTERRUPT_ERROR_PREFIX = "langgraph.errors.GraphInterrupt:"
+_RETRYABLE_LANGSMITH_ERRORS = (
+    langsmith_utils.LangSmithConnectionError,
+    langsmith_utils.LangSmithRequestTimeout,
+    langsmith_utils.LangSmithAPIError,
+    langsmith_utils.LangSmithRateLimitError,
+)
 _FORBIDDEN_SAFE_OUTPUT_FRAGMENTS = (
     "bounded_excerpt",
     "source_url",
@@ -678,7 +689,97 @@ def _metadata(value: Any) -> Mapping[str, Any]:
     return metadata if isinstance(metadata, Mapping) else {}
 
 
-def _span_safe_projection(run: Any) -> dict[str, Any]:
+def _bounded_langsmith_rows(
+    runs: Iterable[Any],
+    *,
+    maximum: int,
+    overflow_code: str,
+) -> list[Any]:
+    """Consume a public cursor-paginated LangSmith iterator with a sentinel.
+
+    ``Client.list_runs(limit=N)`` sends ``N`` to the legacy ``/runs/query``
+    endpoint and also stops the iterator after ``N`` rows.  The currently
+    deployed service rejects values above 100, while using 100 directly can
+    silently truncate a larger trace.  Omitting the API limit lets the pinned
+    public client follow cursors; consuming only ``maximum + 1`` rows keeps the
+    qualification bounded and turns overflow into an explicit failure.
+    """
+
+    rows = list(islice(runs, maximum + 1))
+    if len(rows) > maximum:
+        raise LivePhaseError(overflow_code)
+    return rows
+
+
+def _langsmith_query_error_is_retryable(error: BaseException) -> bool:
+    """Classify only safe retry facts; never inspect or persist response bodies."""
+
+    if isinstance(error, _RETRYABLE_LANGSMITH_ERRORS):
+        return True
+    pending: list[BaseException] = [error]
+    seen: set[int] = set()
+    while pending and len(seen) < 8:
+        current = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+        response = getattr(current, "response", None)
+        status_code = getattr(response, "status_code", None)
+        if isinstance(status_code, int):
+            return status_code in (408, 429) or 500 <= status_code <= 599
+        for nested in (current.__cause__, current.__context__):
+            if isinstance(nested, BaseException):
+                pending.append(nested)
+    return False
+
+
+def _is_expected_graph_interrupt_span(run: Any, *, start_trace_id: str) -> bool:
+    """Recognise the one expected LangGraph HITL control-flow exception."""
+
+    if (
+        str(run.trace_id) != start_trace_id
+        or run.parent_run_id is None
+        or str(run.name) != "qualification_interrupt"
+        or str(run.run_type) != "chain"
+        or not isinstance(run.error, str)
+    ):
+        return False
+    error = run.error
+    lines = [line.strip() for line in error.splitlines() if line.strip()]
+    return bool(
+        lines
+        and lines[0].startswith("GraphInterrupt(")
+        and lines[-1].startswith(_LANGGRAPH_INTERRUPT_ERROR_PREFIX)
+        and error.count("langgraph.errors.GraphInterrupt") == 1
+        and "During handling of the above exception" not in error
+        and "The above exception was the direct cause" not in error
+    )
+
+
+def _validated_langsmith_trace_root(trace_id: str, spans: Sequence[Any]) -> Any:
+    if any(str(row.trace_id) != trace_id for row in spans):
+        raise LivePhaseError("r8_langsmith_span_trace_identity_mismatch")
+    span_ids = [str(row.id) for row in spans]
+    if len(set(span_ids)) != len(span_ids):
+        raise LivePhaseError("r8_langsmith_span_identity_not_unique")
+    trace_roots = [row for row in spans if row.parent_run_id is None]
+    if len(trace_roots) != 1 or str(trace_roots[0].id) != trace_id:
+        raise LivePhaseError("r8_langsmith_root_trace_not_unique")
+    span_id_set = set(span_ids)
+    if any(
+        row.parent_run_id is not None
+        and str(row.parent_run_id) not in span_id_set
+        for row in spans
+    ):
+        raise LivePhaseError("r8_langsmith_span_parent_missing")
+    return trace_roots[0]
+
+
+def _span_safe_projection(run: Any, *, start_trace_id: str) -> dict[str, Any]:
+    expected_graph_interrupt = _is_expected_graph_interrupt_span(
+        run,
+        start_trace_id=start_trace_id,
+    )
     return {
         "run_id": str(run.id),
         "trace_id": str(run.trace_id),
@@ -690,11 +791,37 @@ def _span_safe_projection(run: Any) -> dict[str, Any]:
         "inputs_hidden": run.inputs in ({}, None),
         "outputs_hidden": run.outputs in ({}, None),
         "error_free": run.error is None,
+        "error_disposition": (
+            "expected_graph_interrupt_control_flow"
+            if expected_graph_interrupt
+            else "none"
+            if run.error is None
+            else "unexpected"
+        ),
         "prompt_tokens": run.prompt_tokens or 0,
         "completion_tokens": run.completion_tokens or 0,
         "total_tokens": run.total_tokens or 0,
         "total_cost": float(run.total_cost or 0),
     }
+
+
+def _validate_langsmith_span_errors(
+    spans: Sequence[Mapping[str, Any]],
+    *,
+    is_start_trace: bool,
+) -> int:
+    expected_interrupt_count = sum(
+        row.get("error_disposition")
+        == "expected_graph_interrupt_control_flow"
+        for row in spans
+    )
+    if is_start_trace and expected_interrupt_count != 1:
+        raise LivePhaseError("r8_langsmith_expected_interrupt_missing")
+    if not is_start_trace and expected_interrupt_count:
+        raise LivePhaseError("r8_langsmith_expected_interrupt_wrong_trace")
+    if any(row.get("error_disposition") == "unexpected" for row in spans):
+        raise LivePhaseError("r8_langsmith_span_error")
+    return expected_interrupt_count
 
 
 _LANGSMITH_RUN_SELECT = (
@@ -783,18 +910,24 @@ def _langsmith_result(manifest: Mapping[str, Any]) -> dict[str, Any]:
         if delay:
             time.sleep(delay)
         try:
-            root_runs = list(
+            root_runs = _bounded_langsmith_rows(
                 client.list_runs(
                     project_name=LANGSMITH_PROJECT,
                     start_time=window_start,
                     is_root=True,
                     run_ids=list(expected_invocation_by_run),
                     select=_LANGSMITH_RUN_SELECT,
-                    limit=500,
-                )
+                ),
+                maximum=_LANGSMITH_ROOT_MAX_ROWS,
+                overflow_code="r8_langsmith_root_query_overflow",
             )
-        except Exception:
-            if delay == delays[-1]:
+        except LivePhaseError:
+            raise
+        except Exception as exc:
+            if (
+                not _langsmith_query_error_is_retryable(exc)
+                or delay == delays[-1]
+            ):
                 raise LivePhaseError("r8_langsmith_query_failed") from None
             continue
         matched = {invocation_id: [] for invocation_id in wanted}
@@ -856,21 +989,24 @@ def _langsmith_result(manifest: Mapping[str, Any]) -> dict[str, Any]:
         if delay:
             time.sleep(delay)
         current_spans: dict[str, list[Any]] = {}
-        query_failed = False
         try:
             for trace_id in trace_ids.values():
-                current_spans[trace_id] = list(
+                current_spans[trace_id] = _bounded_langsmith_rows(
                     client.list_runs(
                         project_name=LANGSMITH_PROJECT,
                         trace_id=trace_id,
                         select=_LANGSMITH_RUN_SELECT,
-                        limit=500,
-                    )
+                    ),
+                    maximum=_LANGSMITH_TRACE_MAX_SPANS,
+                    overflow_code="r8_langsmith_trace_span_overflow",
                 )
-        except Exception:
-            query_failed = True
-        if query_failed:
-            if delay == delays[-1]:
+        except LivePhaseError:
+            raise
+        except Exception as exc:
+            if (
+                not _langsmith_query_error_is_retryable(exc)
+                or delay == delays[-1]
+            ):
                 raise LivePhaseError("r8_langsmith_query_failed") from None
             stable_span_sets = None
             continue
@@ -905,18 +1041,22 @@ def _langsmith_result(manifest: Mapping[str, Any]) -> dict[str, Any]:
     for invocation_id in invocation_order:
         trace_id = trace_ids[invocation_id]
         spans = spans_by_trace[trace_id]
-        trace_roots = [row for row in spans if row.parent_run_id is None]
-        if len(trace_roots) != 1:
-            raise LivePhaseError("r8_langsmith_root_trace_not_unique")
-        span_projection = [_span_safe_projection(row) for row in spans]
+        trace_root = _validated_langsmith_trace_root(trace_id, spans)
+        start_trace_id = trace_ids[start.invocation_id]
+        span_projection = [
+            _span_safe_projection(row, start_trace_id=start_trace_id)
+            for row in spans
+        ]
         if any(row["run_type"] == "llm" for row in span_projection):
             raise LivePhaseError("r8_langsmith_llm_span_forbidden")
         if any(not row["inputs_hidden"] for row in span_projection):
             raise LivePhaseError("r8_langsmith_input_payload_visible")
         if any(not row["outputs_hidden"] for row in span_projection):
             raise LivePhaseError("r8_langsmith_output_payload_visible")
-        if any(not row["error_free"] for row in span_projection):
-            raise LivePhaseError("r8_langsmith_span_error")
+        expected_interrupt_count = _validate_langsmith_span_errors(
+            span_projection,
+            is_start_trace=invocation_id == start.invocation_id,
+        )
         if any(
             row["prompt_tokens"]
             or row["completion_tokens"]
@@ -952,7 +1092,6 @@ def _langsmith_result(manifest: Mapping[str, Any]) -> dict[str, Any]:
                 "Z:/",
                 "Z:\\",
                 "/run/fin-insight",
-                "/deps/FIN_Insight_Agent",
                 "postgres://",
                 "postgresql://",
                 "redis://",
@@ -963,11 +1102,13 @@ def _langsmith_result(manifest: Mapping[str, Any]) -> dict[str, Any]:
             {
                 "run_invocation_id": invocation_id,
                 "trace_id": trace_id,
-                "root_run_id": str(trace_roots[0].id),
+                "root_run_id": str(trace_root.id),
                 "span_count": len(spans),
+                "expected_graph_interrupt_span_count": expected_interrupt_count,
+                "unexpected_error_span_count": 0,
                 "spans": sorted(span_projection, key=lambda row: row["start_time"]),
                 "queried_span_set_sha256": sha256(raw_span_bytes).hexdigest(),
-                "privacy_scan_passed": True,
+                "credential_and_data_locator_scan_passed": True,
             }
         )
     result = {

@@ -424,3 +424,79 @@ live external、Evidence admission、S2 write、HITL 或报告。
 未发现新 P0/P1。Project OS 重跑=`81 passed / 1 failed in 22.79s`，唯一失败仍是既存
 dynamic-writer sealed SHA drift，本轮不重签历史 authority，故 full repository green=false。
 successor 仍须先形成 clean pushed commit，不能在 dirty tree 上启动 attempt2。
+
+### 12.10 r8 fresh attempt2：本地全链完成，LangSmith 查询契约误用而失败
+
+Run/Thread/State 修正以 clean pushed commit=
+`587853944cf6610d9f38edcf3c65be2dd7b8aa1c` 冻结后，fresh attempt2=
+`20260904T052346+0800-zero-model-r8` 在独立 project=
+`finsight-dell-qualification-20260904-r8a2`、loopback `18129` 与 fresh volume 上执行。
+attempt manifest file SHA-256=
+`e5e54964e574c3c156c3599200062d4f92c7385057d5aec3a5b9759eefa42bb7`，
+failure receipt SHA-256=
+`04986641acb8a922710fea39ffb100d0051cad2bbae6def2fba85c9447c9801d`。
+该 attempt 必须保留为 immutable failed；`cleanup_performed=false`、
+`prior_attempts_modified=false`、`model_or_paid_call_authorized=false`，旧 project、容器和
+volume 没有复用或删除。
+
+attempt2 不是“什么都没跑”。receipt 中 `start`、`api_readback`、
+`redis_readback`、`full_stack_readback`、`resume` 与 `final` 六个 phase 均返回 0；实际
+完成三容器 healthy、真实 Q1 zero-model Evidence/Finance MCP、native interrupt、API
+restart、Redis process restart、同 project stop/start、resume 和 final exact replay。
+关键耗时为 build/up=`96.062s`、START=`12.594s`、API readback=`2.672s`、Redis
+readback=`2.719s`、full-stack readback=`2.344s`、RESUME=`9.625s`、final=
+`2.656s`。但 host 尚未越过最后 LangSmith phase 和最终 cross-phase/receipt 断言，因此
+这些只能写成已观察到的 phase-local 成功，不能把 attempt2 或完整 r8 写成 PASS。
+
+唯一失败为 `r8_langsmith_query_failed`，LangSmith phase=`62.719s`。同一个 API 容器的
+只读诊断证明 DNS 可解析 `api.smith.langchain.com`，Agent Server 日志已记录 metadata
+上传成功；`Client.list_runs(limit=1)`、精确 root `limit=100` 均成功，而 `limit=101`
+和 `limit=500` 稳定返回 HTTP 400。Docker daemon 同时仍配置
+`DockerHTTPProxy/DockerHTTPSProxy=http.docker.internal:3128`，但 build、Git push、
+Agent Server、metadata upload 和合法 LangSmith query 都已通过。因此当前失败与梯子/
+代理无因果关系，最早责任层是项目 harness 把 `500` 误作可接受的 `/runs/query` limit，
+并把同一确定性 400 按 polling 延迟重复执行。
+
+固定 `langsmith==0.12.1` 的 public `Client.list_runs` 会把非空 limit 同时传给后端并作为
+整个 iterator 的截断值；简单改成 `100` 仍可能静默漏掉第 101 个 span。successor 因而
+不另造查询框架：省略 API limit，继续使用 pinned public cursor pagination；host 只消费
+`maximum+1` 个对象作为上界哨兵，root 最多承认 2 条、单 trace 最多承认 100 spans，
+第 3/101 条分别 typed overflow。确定性 LangSmith 错误立即失败；SDK 暴露的 connection、
+408、429 和 5xx 类才允许现有有界重试。另增加 trace ID、span ID 唯一性、唯一 root 与
+parent closure 校验。
+
+同一现场无 limit 查询得到 START=`5` spans、RESUME=`3` spans。START 的唯一非空 error
+位于非 root `qualification_interrupt` chain span；其首行/末行与唯一 fully-qualified
+marker 精确对应 `langgraph.errors.GraphInterrupt`。固定 LangGraph 源码明确首次
+`interrupt()` 通过该异常保存 checkpoint，且 `GraphInterrupts are not considered
+failures`；START root、其余 children、RESUME root/children 均无 error。因此原“所有
+span error-free”断言同样是 harness false negative。修正只允许 START trace 中恰好这一
+个精确控制流 error，其他任何 error 继续拒绝，原 traceback 不落盘。
+
+现场 GraphInterrupt traceback 不含 credential、PostgreSQL/Redis URI、D/Z host path 或
+数据挂载路径，但会按 Python 正常 traceback 暴露容器源码路径
+`/deps/FIN_Insight_Agent`。在已采用 LangSmith 的本地非商用观测范围内，把“不得出现任何
+容器源码路径”设为 privacy PASS 会让 native interrupt 天然不可验收，且 LangSmith 的
+input/output hiding 不承诺隐藏 traceback code path。故 claim 收窄为：本次 trace 的
+input/output hiding 已观察、credential 与数据 locator scan 通过、预期 GraphInterrupt
+count=`1`、unexpected error=`0`；不得写成全部 payload/error/metadata 隐藏或完整 privacy
+qualification。`Client.list_runs` 的 2027-01-31 removal 是后续 SDK migration debt，不在
+本次失败上扩成 runtime 重写。
+
+successor 继续属于同一 R8，使用 fresh project=
+`finsight-dell-qualification-20260904-r8a3`、fresh volume 与 loopback `18130`；必须在
+回归、作者分离复核、clean commit/push 后才能创建 attempt3。attempt1/attempt2 均不得
+修改或清理；R7 仍是 current accepted baseline，模型、DeepSeek、live external、付费、
+Evidence admission、S2 write、完整 multi-agent、HITL 和报告仍未授权。
+
+本轮 Project OS 回归=`81 passed / 1 failed in 28.60s`；唯一失败仍是未由本轮修改的
+`src/sec_agent/project_os_preflight.py` 与历史
+`current_dynamic_writer_submission_successor` sealed SHA 不一致。本轮不重签该历史
+authority，因此 full repository green=false，且该既存失败不归因于 r8 或代理。
+LangSmith 修正的直接测试=`19 passed in 2.37s`，13 文件相邻回归=
+`223 passed in 27.11s`；compile、`uv lock --check`、Compose quiet config、两份 JSONL
+逐行解析、added-line secret-shape scan 与 `git diff --check` 均通过。
+作者分离只读终审结论=`P0=0 / P1=0`；另以禁用 pytest cache/pyc 的直接 R8＋部署
+组合复核 `34 passed in 2.98s`。P2 仅保留 pinned `list_runs` 的 removal debt、100-span
+有意 fail-closed ceiling、限定模式而非 blanket privacy，以及未来若声称字段级稳定应扩大
+stable signature；均不阻断本次 clean pre-live commit，也不构成 r8 PASS。

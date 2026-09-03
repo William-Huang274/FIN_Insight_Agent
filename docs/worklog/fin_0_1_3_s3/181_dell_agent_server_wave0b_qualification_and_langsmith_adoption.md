@@ -2,7 +2,7 @@
 
 日期：2026-09-03
 
-状态：`ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / REAL_ZERO_MODEL_DATA_COMPOSITION_PASS / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED / R8_PREFLIGHT1_NOT_STARTED_PATH_NORMALIZATION_CLOSED / R8_LIVE_GRAPH_CANDIDATE_IMPLEMENTED_NEW_CLEAN_FREEZE_PENDING / NO_RUNTIME_FALLBACK / FIN_SERVER_IDENTITY_LIVE_INTEGRATION_PENDING / LANGSMITH_RUN_TRACE_PENDING / GRAPH_MODEL_DEEPSEEK_MULTI_AGENT_PRODUCT_FALSE / A03_ABSENT`
+状态：`ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / REAL_ZERO_MODEL_DATA_COMPOSITION_PASS / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED / R8_PREFLIGHT1_NOT_STARTED_PATH_NORMALIZATION_CLOSED / R8_FRESH_ATTEMPT1_FAILED_ON_HARNESS_RUN_THREAD_STATUS_LAYERING_FALSE_NEGATIVE / R8_ATTEMPT2_CORRECTION_CANDIDATE / NO_RUNTIME_FALLBACK / FIN_SERVER_IDENTITY_FULL_R8_INTEGRATION_PENDING / LANGSMITH_RUN_TRACE_PENDING / GRAPH_MODEL_DEEPSEEK_MULTI_AGENT_PRODUCT_FALSE / A03_ABSENT`
 
 分支：`codex/fin013-dell-s1-s2-product-bridge`
 
@@ -387,3 +387,40 @@ case-fold 后的原始字符串等值。修正改为两边 `Path.resolve()` 后�
 forward-slash 返回值反例。修正后窄相邻回归=`104 passed in 9.71s`，compile/diff 通过。
 必须形成新的 clean pushed commit 后才能再次进入 preflight；不得把本次未启动事件算作
 唯一 fresh live attempt，也不得修改 r8 的模型/外源/付费零权限。
+
+### 12.9 r8 fresh attempt1：真实图已到 interrupt，但 harness 混淆 run/thread 状态而失败
+
+修复 preflight 的 clean pushed commit=`2b88bbf106d7976b3bb0c2e804188289213e6af5`。
+真正 fresh attempt1=`20260904T045906+0800-zero-model-r8` 已创建且必须永久保留为
+failed；manifest SHA-256=`727cd3fb8803bf2711bbb46ca0d5def39b793834160c7d7edbcd3f72a0b50b5e`，
+failure receipt SHA-256=`84046a2696e301200cf535cd4222202fa64a4c866fd4225704f1d4e96e36667b`。
+Compose config 与 build/up 都成功，三容器 healthy，API 只绑定 `127.0.0.1:18128`；
+attempt1 project、容器和 volume 未清理、旧 receipt 未覆盖、模型/付费 authority=false。
+
+失败码=`r8_remote_terminal_status_mismatch`。只读现场证据不是图失败：同一个
+server run=`01a06914-3ab5-71f2-8e7d-5f5bf162bb36` 实际为 `success`，thread=
+`43a9046a-5c49-5d4d-bfdf-5a1d04a13500` 实际为 `interrupted`，current state 为
+`phase=zero_model_mcp_qualified`、interrupt count=`1`、
+`next=["qualification_interrupt"]`；Agent Server 原生日志同时记录
+`run_status=success / thread_status=interrupted / has_next=true`、
+`Background run succeeded`。因此最早责任层是 r8 harness：它把 dynamic interrupt 的
+thread 状态错误地当成 run 终态。Docker 当前仍经
+`http.docker.internal:3128` 成功完成 164.016 秒 build/up，图也本地执行 8.295 秒；
+LangSmith phase 尚未开始，故本次失败不能归因于梯子、Docker 网络或 LangSmith。
+
+同一 R8 的最小根修正是分层验收，不另造 runtime：START 与 RESUME 的 remote run 都须
+为 `success`；START/readback 的 thread 必须为 `interrupted`，current state 必须只有
+`next=["qualification_interrupt"]` 与唯一资格 interrupt；RESUME/final 的 thread 必须
+为 `idle`，next/interrupt 必须为空且 decision 合法。thread 与 next 的安全投影进入
+跨 API/Redis/full-stack restart exact continuity。由于 failed attempt1 的 project/volume
+必须保留，successor 使用 fresh project=`finsight-dell-qualification-20260904-r8a2`、
+fresh volume 与可绑定 loopback `18129`；只有修正回归、作者分离复核、clean commit/push
+后才能创建新的 attempt2。它仍是 r8，不创建 R15/R16/A03，也不放开模型、DeepSeek、
+live external、Evidence admission、S2 write、HITL 或报告。
+
+修正后的直接 r8 测试=`11 passed in 2.41s`，13 文件相邻回归=
+`215 passed in 21.74s`；compile、lock、Compose quiet config、JSONL parse 与 diff check
+通过。作者分离只读复核确认原 P1 已按 Run/Thread/State 三层关闭，当前 successor diff
+未发现新 P0/P1。Project OS 重跑=`81 passed / 1 failed in 22.79s`，唯一失败仍是既存
+dynamic-writer sealed SHA drift，本轮不重签历史 authority，故 full repository green=false。
+successor 仍须先形成 clean pushed commit，不能在 dirty tree 上启动 attempt2。

@@ -167,10 +167,120 @@ def test_r8_safe_state_accepts_only_the_bounded_zero_model_projection(
     )
 
     assert safe["phase"] == "zero_model_mcp_qualified"
+    assert safe["next_nodes"] == ["qualification_interrupt"]
     assert safe["qualification_summary"]["mcp_call_count"] == 2
     serialized = json.dumps(safe, ensure_ascii=False)
     assert "source_url" not in serialized
     assert "value_decimal" not in serialized
+
+    raw_without_resumable_next = deepcopy(raw)
+    raw_without_resumable_next["next"] = []
+    with pytest.raises(live_phase.LivePhaseError) as exc_info:
+        live_phase._safe_state(
+            raw_without_resumable_next,
+            expected_phase="zero_model_mcp_qualified",
+        )
+    assert exc_info.value.code == "r8_interrupt_contract_invalid"
+
+    completed = deepcopy(raw)
+    completed["values"]["phase"] = "zero_model_control_plane_completed"
+    completed["values"]["zero_model_qualification_decision"] = {
+        "action": "complete_zero_model_qualification",
+        "reason_provided": True,
+        "reason_digest": "d" * 64,
+    }
+    completed["interrupts"] = []
+    completed["next"] = []
+    assert live_phase._safe_state(
+        completed,
+        expected_phase="zero_model_control_plane_completed",
+    )["next_nodes"] == []
+
+    completed_with_residual_next = deepcopy(completed)
+    completed_with_residual_next["next"] = ["qualification_interrupt"]
+    with pytest.raises(live_phase.LivePhaseError) as exc_info:
+        live_phase._safe_state(
+            completed_with_residual_next,
+            expected_phase="zero_model_control_plane_completed",
+        )
+    assert exc_info.value.code == "r8_completed_state_still_interrupted"
+
+
+def test_r8_remote_snapshot_projects_and_validates_thread_status(
+    live_phase: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    thread_id = str(UUID(int=51))
+    run_id = str(UUID(int=52))
+    assistant_id = str(UUID(int=53))
+    invocation_id = "invocation-start"
+
+    class FakeRuns:
+        def list(self, *_args: Any, **_kwargs: Any) -> list[dict[str, Any]]:
+            return [
+                {
+                    "run_id": run_id,
+                    "thread_id": thread_id,
+                    "assistant_id": assistant_id,
+                    "status": "success",
+                    "metadata": {
+                        "run_invocation_id": invocation_id,
+                        "execution_profile": "zero_model_control_plane_v1",
+                    },
+                }
+            ]
+
+    class FakeThreads:
+        row: dict[str, Any] = {
+            "thread_id": thread_id,
+            "status": "interrupted",
+        }
+        fail = False
+
+        def get(self, _thread_id: str) -> dict[str, Any]:
+            if self.fail:
+                raise RuntimeError("thread lookup failed")
+            return self.row
+
+    class FakeSDK:
+        def __init__(self) -> None:
+            self.runs = FakeRuns()
+            self.threads = FakeThreads()
+
+        def close(self) -> None:
+            pass
+
+    sdk = FakeSDK()
+    monkeypatch.setattr(live_phase, "get_sync_client", lambda **_kwargs: sdk)
+
+    projected = live_phase._remote_snapshot(
+        server_thread_id=thread_id,
+        expected_assistant_uuid=assistant_id,
+        expected_invocation_ids={invocation_id},
+    )
+    assert projected["thread"] == {
+        "thread_id": thread_id,
+        "status": "interrupted",
+    }
+
+    sdk.threads.row = {"thread_id": str(UUID(int=54)), "status": "interrupted"}
+    with pytest.raises(live_phase.LivePhaseError) as exc_info:
+        live_phase._remote_snapshot(
+            server_thread_id=thread_id,
+            expected_assistant_uuid=assistant_id,
+            expected_invocation_ids={invocation_id},
+        )
+    assert exc_info.value.code == "r8_remote_thread_identity_mismatch"
+
+    sdk.threads.row = {"thread_id": thread_id, "status": "interrupted"}
+    sdk.threads.fail = True
+    with pytest.raises(live_phase.LivePhaseError) as exc_info:
+        live_phase._remote_snapshot(
+            server_thread_id=thread_id,
+            expected_assistant_uuid=assistant_id,
+            expected_invocation_ids={invocation_id},
+        )
+    assert exc_info.value.code == "r8_remote_thread_get_failed"
 
 
 def test_r8_stream_projection_accepts_normal_eof_and_rejects_internal_end(
@@ -257,7 +367,10 @@ def test_r8_host_requires_exact_restart_replay_and_trace_identity(
         "session": {"server_thread_id": str(UUID(int=404))},
         "bindings": {"start": start_binding},
         "identity": {"invocation_count": 1},
-        "remote": {"runs": [{"status": "interrupted"}]},
+        "remote": {
+            "thread": {"status": "interrupted"},
+            "runs": [{"status": "success"}],
+        },
         "stream": {"full_digest": "b" * 64, "suffix_digest": "c" * 64},
         "state": {
             "raw_state_sha256": "d" * 64,
@@ -272,7 +385,8 @@ def test_r8_host_requires_exact_restart_replay_and_trace_identity(
     }
     completed["identity"] = {"invocation_count": 2}
     completed["remote"] = {
-        "runs": [{"status": "interrupted"}, {"status": "success"}]
+        "thread": {"status": "idle"},
+        "runs": [{"status": "success"}, {"status": "success"}],
     }
     completed["stream"] = {
         "full_digest": "f" * 64,
@@ -565,7 +679,7 @@ def test_r8_phase_sequence_treats_final_as_completed_exact_replay(
                 server_thread_id=server_thread_id,
                 server_run_id=start_run_id,
                 invocation_kind="start",
-                server_status="interrupted",
+                server_status="success",
                 execution_profile="zero_model_control_plane_v1",
             )
 
@@ -627,7 +741,7 @@ def test_r8_phase_sequence_treats_final_as_completed_exact_replay(
                         }
                     ]
                 ),
-                "next": [],
+                "next": [] if completed else ["qualification_interrupt"],
                 "metadata": {},
                 "tasks": [],
             }
@@ -653,14 +767,23 @@ def test_r8_phase_sequence_treats_final_as_completed_exact_replay(
     )
     def fake_remote_snapshot(**kwargs: Any) -> dict[str, Any]:
         expected = kwargs["expected_invocation_ids"]
+        completed = runtime["phase"] == "zero_model_control_plane_completed"
         return {
+            "thread": {
+                "thread_id": server_thread_id,
+                "status": runtime.get(
+                    "remote_thread_status_override",
+                    "idle" if completed else "interrupted",
+                ),
+            },
             "selected_run_count": len(expected),
             "runs": [
                 {
                     "run_invocation_id": invocation_id,
                     "status": (
-                        "interrupted"
-                        if invocation_id == manifest["start_invocation"]["invocation_id"]
+                        runtime.get("remote_start_run_status_override", "success")
+                        if invocation_id
+                        == manifest["start_invocation"]["invocation_id"]
                         else "success"
                     ),
                 }
@@ -680,3 +803,15 @@ def test_r8_phase_sequence_treats_final_as_completed_exact_replay(
     assert resume["state"]["phase"] == "zero_model_control_plane_completed"
     assert final["state"]["phase"] == "zero_model_control_plane_completed"
     assert runtime["resume_calls"] == 2
+
+    runtime["remote_thread_status_override"] = "interrupted"
+    with pytest.raises(live_phase.LivePhaseError) as exc_info:
+        live_phase._phase_runtime(manifest, "final")
+    assert exc_info.value.code == "r8_remote_thread_status_mismatch"
+
+    runtime.pop("remote_thread_status_override")
+    runtime["phase"] = "zero_model_mcp_qualified"
+    runtime["remote_start_run_status_override"] = "interrupted"
+    with pytest.raises(live_phase.LivePhaseError) as exc_info:
+        live_phase._phase_runtime(manifest, "start")
+    assert exc_info.value.code == "r8_remote_terminal_status_mismatch"

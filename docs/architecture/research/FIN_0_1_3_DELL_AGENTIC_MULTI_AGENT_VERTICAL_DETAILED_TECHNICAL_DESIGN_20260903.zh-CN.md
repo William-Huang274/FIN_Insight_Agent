@@ -1422,6 +1422,26 @@ distributed exactly-once、unknown outcome 自动重试、durable orphan lifecyc
 S2 write、Workbench HITL、最终 Dell 报告与 production security。是否申请第一条 paid
 successor，必须在 r8 结果和这些剩余边界上重新做 Owner 决策，不能由 r8 自动授权。
 
+### 25.2 dynamic interrupt 的 Run、Thread 与 State 分层合同
+
+fresh attempt1=`20260904T045906+0800-zero-model-r8` 暴露了一个 harness false
+negative：固定 Agent Server 0.13.3 在图到达 dynamic `interrupt()` 时，会把本次后台
+Run 正常提交为 `success`，同时把 Thread 标记为 `interrupted`，current state 保留唯一
+interrupt 与下一节点。不能把三层状态压成一个 `interrupted Run`。
+
+因此 r8 successor 固定下列组合断言：
+
+| 时点 | Run 层 | Thread 层 | current state 层 |
+|---|---|---|---|
+| START 与三次 readback | START=`success` | `interrupted` | `phase=zero_model_mcp_qualified`、唯一资格 interrupt、`next=["qualification_interrupt"]`、decision=null |
+| RESUME 与 final replay | START=`success`、RESUME=`success` | `idle` | `phase=zero_model_control_plane_completed`、interrupt/next 为空、decision 合法 |
+
+三层任何一层不一致都必须 fail closed；thread/status 与 next 的 content-free 投影必须
+加入 restart/replay exact continuity。attempt1 的 failed receipt、project、容器和 volume
+不覆盖、不清理。修正后的新 attempt 使用独立
+`finsight-dell-qualification-20260904-r8a2`、fresh volume 与 `127.0.0.1:18129`，仍属同一
+R8 root-cause rerun，不产生新产品版本或 paid/model authority。
+
 ## 26. 2026-09-04 实施证据与当前剩余门
 
 本节是冻结设计的 implementation-evidence successor，不改变产品范围、Agent Server/LangSmith 单一路径或 A03 必须另行授权的设计。实现提交为 `f0de87e024686660db4f5c0bfdcf85bddce1f120`。

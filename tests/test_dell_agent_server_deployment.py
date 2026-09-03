@@ -243,7 +243,7 @@ def test_zero_model_qualification_requires_an_explicit_compose_override() -> Non
     )
 
     assert override == {
-        "name": "finsight-dell-qualification-20260904-r8",
+        "name": "finsight-dell-qualification-20260904-r8a2",
         "services": {
             "langgraph-api": {
                 "environment": {

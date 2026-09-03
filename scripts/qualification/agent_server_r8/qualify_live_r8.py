@@ -67,8 +67,8 @@ ATTEMPTS_ROOT = Path(
     "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/"
     "agent_server_control_plane/attempts"
 )
-COMPOSE_PROJECT = "finsight-dell-qualification-20260904-r8"
-HOST_PORT = 18128
+COMPOSE_PROJECT = "finsight-dell-qualification-20260904-r8a2"
+HOST_PORT = 18129
 MANIFEST_SCHEMA_VERSION = "fin_ia_dell_agent_server_live_r8_manifest_v1_0"
 RECEIPT_SCHEMA_VERSION = "fin_ia_dell_agent_server_live_r8_receipt_v1_0"
 FAILURE_SCHEMA_VERSION = "fin_ia_dell_agent_server_live_r8_failure_v1_0"

@@ -142,7 +142,7 @@ does not grant that authority.
 
 The checked-in r8 probe is an acceptance harness around this same server; it is
 not a second serving runtime. It uses an explicit qualification Compose overlay,
-a separately named `finsight-dell-qualification-20260904-r8` project/fresh
+a separately named `finsight-dell-qualification-20260904-r8a2` project/fresh
 volume, the official FIN client, the real Evidence and Finance
 MCP lanes, native interrupt/resume, restart/readback, resumable SSE and one
 LangSmith project. Run it only from a clean commit:
@@ -169,6 +169,15 @@ the runner requires input/output hiding and verifies the exact r8 traces, while
 the bounded run identifiers/digests needed for trace correlation remain
 metadata. The base Compose profile remains `product`; the explicit overlay is
 qualification-only and must not be used as the product default.
+
+For the pinned Agent Server 0.13.3 semantics, a graph invocation that reaches a
+dynamic interrupt has a successful **run** and an interrupted **thread**. The
+r8 probe therefore requires the START run to be `success` while the thread is
+`interrupted`, the current state has exactly
+`next=["qualification_interrupt"]`, and the one qualification interrupt is
+present. After RESUME it requires both runs to be `success`, the thread to be
+`idle`, and the current state to have no next node or interrupt. These are
+different state layers and must not be collapsed into one status field.
 
 ## Local invocation
 

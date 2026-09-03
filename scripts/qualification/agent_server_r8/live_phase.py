@@ -357,6 +357,14 @@ def _safe_state(
     interrupts = raw_state.get("interrupts")
     if not isinstance(interrupts, list):
         raise LivePhaseError("r8_state_interrupts_invalid")
+    next_nodes = raw_state.get("next")
+    if (
+        not isinstance(next_nodes, Sequence)
+        or isinstance(next_nodes, (str, bytes, bytearray))
+        or any(not isinstance(item, str) or not item for item in next_nodes)
+    ):
+        raise LivePhaseError("r8_state_next_invalid")
+    next_nodes = list(next_nodes)
     interrupt_contracts = [
         item
         for item in _walk_mappings(interrupts)
@@ -364,10 +372,14 @@ def _safe_state(
     ]
     decision_value = values.get("zero_model_qualification_decision")
     if expected_phase == "zero_model_mcp_qualified":
-        if len(interrupt_contracts) != 1 or decision_value is not None:
+        if (
+            len(interrupt_contracts) != 1
+            or decision_value is not None
+            or next_nodes != ["qualification_interrupt"]
+        ):
             raise LivePhaseError("r8_interrupt_contract_invalid")
     else:
-        if interrupts or interrupt_contracts:
+        if interrupts or interrupt_contracts or next_nodes:
             raise LivePhaseError("r8_completed_state_still_interrupted")
         _contract(
             SafeZeroModelQualificationDecision,
@@ -385,6 +397,7 @@ def _safe_state(
             if interrupt_contracts
             else None
         ),
+        "next_nodes": next_nodes,
         "qualification_summary": summary.model_dump(mode="json"),
         "qualification_summary_sha256": canonical_sha256(summary),
         "decision": (
@@ -407,18 +420,36 @@ def _remote_snapshot(
 ) -> dict[str, Any]:
     sdk = get_sync_client(url=AGENT_SERVER_URL)
     try:
-        rows = sdk.runs.list(
-            server_thread_id,
-            limit=100,
-            offset=0,
-            select=["run_id", "thread_id", "assistant_id", "status", "metadata"],
-        )
-    except Exception:
-        raise LivePhaseError("r8_remote_run_list_failed") from None
+        try:
+            rows = sdk.runs.list(
+                server_thread_id,
+                limit=100,
+                offset=0,
+                select=[
+                    "run_id",
+                    "thread_id",
+                    "assistant_id",
+                    "status",
+                    "metadata",
+                ],
+            )
+        except Exception:
+            raise LivePhaseError("r8_remote_run_list_failed") from None
+        try:
+            thread = sdk.threads.get(server_thread_id)
+        except Exception:
+            raise LivePhaseError("r8_remote_thread_get_failed") from None
     finally:
         sdk.close()
     if not isinstance(rows, list):
         raise LivePhaseError("r8_remote_run_list_invalid")
+    if not isinstance(thread, Mapping):
+        raise LivePhaseError("r8_remote_thread_invalid")
+    if thread.get("thread_id") != server_thread_id:
+        raise LivePhaseError("r8_remote_thread_identity_mismatch")
+    thread_status = _required_string(
+        thread.get("status"), "r8_remote_thread_status_invalid", maximum=80
+    )
     selected: list[dict[str, Any]] = []
     for row in rows:
         if not isinstance(row, Mapping):
@@ -454,6 +485,10 @@ def _remote_snapshot(
     if len(selected) != len(expected_invocation_ids):
         raise LivePhaseError("r8_remote_invocation_duplicate")
     return {
+        "thread": {
+            "thread_id": server_thread_id,
+            "status": thread_status,
+        },
         "selected_run_count": len(selected),
         "runs": sorted(selected, key=lambda row: row["run_invocation_id"]),
         "all_thread_run_count": len(rows),
@@ -598,11 +633,19 @@ def _phase_runtime(manifest: Mapping[str, Any], phase: str) -> dict[str, Any]:
     remote_statuses = {
         row["run_invocation_id"]: row["status"] for row in remote["runs"]
     }
-    expected_remote_statuses = {start.invocation_id: "interrupted"}
+    # Agent Server 0.13.3 commits a dynamic interrupt as a successful Run.
+    # The resumable wait is represented by the Thread and current-state
+    # checkpoint, not by Run.status.
+    expected_remote_statuses = {start.invocation_id: "success"}
     if phase in {"resume", "final"}:
         expected_remote_statuses[resume.invocation_id] = "success"
     if remote_statuses != expected_remote_statuses:
         raise LivePhaseError("r8_remote_terminal_status_mismatch")
+    expected_thread_status = (
+        "interrupted" if phase in {"start", "readback"} else "idle"
+    )
+    if remote["thread"]["status"] != expected_thread_status:
+        raise LivePhaseError("r8_remote_thread_status_mismatch")
     result = {
         "schema_version": PHASE_RESULT_SCHEMA_VERSION,
         "phase": phase,

@@ -286,7 +286,7 @@ def run_probe(base_url: str, output_root: Path) -> dict[str, Any]:
             payload={
                 "assistant_id": GRAPH_IDS["counter"],
                 "input": {"case_id": "DELL", "delta": 1, "total": 0},
-                "stream_mode": ["updates", "values"],
+                "stream_mode": ["updates"],
                 "stream_resumable": True,
                 "durability": "sync",
             },
@@ -297,23 +297,56 @@ def run_probe(base_url: str, output_root: Path) -> dict[str, Any]:
             "GET", f"/threads/{stream_thread_id}/runs"
         ).json()
         stream_run_id = stream_runs[0]["run_id"]
+        stream_state = recorder.request(
+            "GET", f"/threads/{stream_thread_id}/state"
+        ).json()
+        live_events = summarize_sse(stream_text)
+        live_ids = [event["id"] for event in live_events]
+        if not live_events or any(event_id is None for event_id in live_ids):
+            raise AssertionError(f"live SSE events did not have stable IDs: {live_events}")
+        if len(set(live_ids)) != len(live_ids) or live_ids != sorted(
+            live_ids
+        ):
+            raise AssertionError(f"live SSE IDs were not unique and ordered: {live_ids}")
+        if any(event["event"] == "values" for event in live_events):
+            raise AssertionError(
+                f"single-mode updates stream unexpectedly exposed values frames: {live_events}"
+            )
+        if not any(event["event"] == "updates" for event in live_events):
+            raise AssertionError(
+                f"single-mode updates stream did not expose an updates frame: {live_events}"
+            )
+        if len(live_events) < 2:
+            raise AssertionError(
+                f"resumable stream did not expose enough frames for a suffix replay: {live_events}"
+            )
         replay_response = recorder.request(
             "GET",
             f"/threads/{stream_thread_id}/runs/{stream_run_id}/stream",
             headers={"Last-Event-ID": "-1"},
             record_body=False,
         )
-        live_events = summarize_sse(stream_text)
         replay_events = summarize_sse(replay_response.text)
-        live_ids = [event["id"] for event in live_events]
-        replay_ids = [event["id"] for event in replay_events]
-        if not live_events or any(event_id is None for event_id in live_ids):
-            raise AssertionError(f"live SSE events did not have stable IDs: {live_events}")
-        if len(set(live_ids)) != len(live_ids) or live_ids != sorted(live_ids):
-            raise AssertionError(f"live SSE IDs were not unique and ordered: {live_ids}")
         if replay_events != live_events:
             raise AssertionError(
                 f"SSE replay did not reproduce the persisted stream: {replay_events}"
+            )
+        resume_after_id = live_events[0]["id"]
+        suffix_replay_response = recorder.request(
+            "GET",
+            f"/threads/{stream_thread_id}/runs/{stream_run_id}/stream",
+            headers={"Last-Event-ID": resume_after_id},
+            record_body=False,
+        )
+        suffix_replay_events = summarize_sse(suffix_replay_response.text)
+        if suffix_replay_events != live_events[1:]:
+            raise AssertionError(
+                "SSE resume after a received event ID did not return the exact suffix: "
+                f"{suffix_replay_events}"
+            )
+        if stream_state.get("values", {}).get("total") != 1:
+            raise AssertionError(
+                "single-mode updates stream must be paired with the public state endpoint"
             )
         result["checks"]["sse_and_replay"] = {
             "thread_id": stream_thread_id,
@@ -322,6 +355,14 @@ def run_probe(base_url: str, output_root: Path) -> dict[str, Any]:
             "live_events": live_events,
             "replay_content_type": replay_response.headers.get("content-type"),
             "replay_events": replay_events,
+            "resume_after_event_id": resume_after_id,
+            "suffix_replay_events": suffix_replay_events,
+            "full_state_source": "GET /threads/{thread_id}/state",
+            "full_state_total": stream_state["values"]["total"],
+            "rejected_usage_pattern": (
+                "combining updates and values because one native ID can cover "
+                "multiple frames"
+            ),
         }
 
         parallel_thread = recorder.request(

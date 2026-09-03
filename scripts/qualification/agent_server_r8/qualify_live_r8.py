@@ -550,7 +550,8 @@ def _exclusive_json(path: Path, value: Any) -> None:
 
 
 def _preflight(environment: Mapping[str, str]) -> str:
-    if _git(["rev-parse", "--show-toplevel"]).casefold() != str(ROOT).casefold():
+    git_root = Path(_git(["rev-parse", "--show-toplevel"])).resolve()
+    if git_root != ROOT.resolve():
         raise QualificationError("r8_repo_root_mismatch")
     if _git(["branch", "--show-current"]) != EXPECTED_BRANCH:
         raise QualificationError("r8_branch_mismatch")

@@ -70,6 +70,31 @@ def test_r8_manifest_round_trips_all_canonical_identities(
     assert loaded is not None
 
 
+def test_r8_preflight_normalizes_windows_git_path_style(
+    host_runner: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    commit = "b" * 40
+
+    def fake_git(args: list[str]) -> str:
+        if args == ["rev-parse", "--show-toplevel"]:
+            return str(host_runner.ROOT).replace("\\", "/")
+        if args == ["branch", "--show-current"]:
+            return host_runner.EXPECTED_BRANCH
+        if args == ["status", "--porcelain"]:
+            return ""
+        if args == ["rev-parse", "HEAD"]:
+            return commit
+        raise AssertionError(args)
+
+    monkeypatch.setattr(host_runner, "_git", fake_git)
+    monkeypatch.setattr(host_runner, "_project_container_ids", lambda _env: [])
+    monkeypatch.setattr(host_runner, "_volume_exists", lambda _env: False)
+    monkeypatch.setattr(host_runner, "_port_is_available", lambda: True)
+
+    assert host_runner._preflight({}) == commit
+
+
 def test_r8_safe_output_rejects_content_and_secret_surfaces(
     live_phase: ModuleType,
     monkeypatch: pytest.MonkeyPatch,

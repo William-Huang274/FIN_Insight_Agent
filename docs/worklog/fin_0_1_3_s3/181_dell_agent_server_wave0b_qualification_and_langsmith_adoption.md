@@ -2,7 +2,7 @@
 
 日期：2026-09-03
 
-状态：`ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / REAL_ZERO_MODEL_DATA_COMPOSITION_PASS / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED / R8_LIVE_GRAPH_CANDIDATE_IMPLEMENTED_DIRTY_PRELIVE_REVIEW_PENDING / NO_RUNTIME_FALLBACK / FIN_SERVER_IDENTITY_LIVE_INTEGRATION_PENDING / LANGSMITH_RUN_TRACE_PENDING / GRAPH_MODEL_DEEPSEEK_MULTI_AGENT_PRODUCT_FALSE / A03_ABSENT`
+状态：`ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / REAL_ZERO_MODEL_DATA_COMPOSITION_PASS / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED / R8_PREFLIGHT1_NOT_STARTED_PATH_NORMALIZATION_CLOSED / R8_LIVE_GRAPH_CANDIDATE_IMPLEMENTED_NEW_CLEAN_FREEZE_PENDING / NO_RUNTIME_FALLBACK / FIN_SERVER_IDENTITY_LIVE_INTEGRATION_PENDING / LANGSMITH_RUN_TRACE_PENDING / GRAPH_MODEL_DEEPSEEK_MULTI_AGENT_PRODUCT_FALSE / A03_ABSENT`
 
 分支：`codex/fin013-dell-s1-s2-product-bridge`
 
@@ -371,3 +371,19 @@ review、clean commit/push、fresh project/port/volume/attempt preflight。为�
 `automatic_retry_after_unknown_outcome`、`distributed_exactly_once` 仍为 false；本轮也
 继续禁止模型、DeepSeek、live external research、Evidence admission、S2 write、HITL 和
 最终报告。
+
+### 12.8 r8 preflight1 未启动与 Windows 路径规范化
+
+clean pushed implementation commit=`b5ae2aaa0125122fa1d8da399f3a048542bec9f7` 后首次调用
+runner，但在 attempt 目录与任何 Docker command 创建前被
+`r8_repo_root_mismatch` 拒绝；终端 failure projection 为 `commands=[]`、
+`completed_phase_names=[]`、`cleanup_performed=false`、模型/付费 authority=false。
+因此该事件是 `NOT_STARTED / PREFLIGHT_BLOCKED`，不是 live r8 attempt，也没有生成
+Z 盘 attempt/receipt、Compose project、容器或 volume。
+
+最早责任层是 host preflight 的 Windows path normalization：Git 返回
+`D:/FIN_Insight_Agent`，而 Python `Path` 字符串为 `D:\\FIN_Insight_Agent`；原实现只做
+case-fold 后的原始字符串等值。修正改为两边 `Path.resolve()` 后比较，并增加 Git
+forward-slash 返回值反例。修正后窄相邻回归=`104 passed in 9.71s`，compile/diff 通过。
+必须形成新的 clean pushed commit 后才能再次进入 preflight；不得把本次未启动事件算作
+唯一 fresh live attempt，也不得修改 r8 的模型/外源/付费零权限。

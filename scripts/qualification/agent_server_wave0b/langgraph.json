@@ -1,0 +1,29 @@
+{
+  "$schema": "https://langgra.ph/schema.json",
+  "dependencies": ["."],
+  "graphs": {
+    "wave0b_counter": {
+      "path": "./fin_wave0b_probe/graphs.py:counter_graph",
+      "description": "Zero-model state continuity probe"
+    },
+    "wave0b_approval": {
+      "path": "./fin_wave0b_probe/graphs.py:approval_graph",
+      "description": "Zero-model interrupt and resume probe"
+    },
+    "wave0b_slow": {
+      "path": "./fin_wave0b_probe/graphs.py:slow_graph",
+      "description": "Zero-model cancellation probe"
+    },
+    "wave0b_parallel": {
+      "path": "./fin_wave0b_probe/graphs.py:parallel_graph",
+      "description": "Zero-model in-run branch concurrency probe"
+    }
+  },
+  "http": {
+    "disable_a2a": true,
+    "disable_mcp": true,
+    "disable_store": true,
+    "disable_ui": true,
+    "disable_webhooks": true
+  }
+}

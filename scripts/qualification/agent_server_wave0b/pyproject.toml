@@ -1,0 +1,15 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fin-agent-server-wave0b-probe"
+version = "0.0.0"
+description = "Zero-model LangGraph Agent Server qualification fixture for FIN Wave 0B"
+requires-python = ">=3.11,<3.14"
+dependencies = [
+  "langgraph==1.2.11",
+]
+
+[tool.setuptools]
+packages = ["fin_wave0b_probe"]

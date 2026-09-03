@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections import Counter
+from datetime import datetime, timezone
 import hashlib
 import inspect
 import json
@@ -10,6 +11,14 @@ import pytest
 
 from sec_agent.agent_runtime.dell_agentic_contracts import canonical_digest
 from sec_agent.agent_runtime import dell_reviewed_evidence_inventory as inventory
+from sec_agent.research_foundation.contracts import (
+    bind_dell_research_method,
+    load_dell_reference_vertical_foundation,
+)
+from sec_agent.research_foundation.data_ports import (
+    CurrentReviewedEvidenceReader,
+    reviewed_evidence_id,
+)
 
 
 REAL_INPUTS_AVAILABLE = all(
@@ -293,14 +302,92 @@ class TestRealReviewedEvidenceEnrichment:
             for row in first.rows
         )
 
-    def test_executable_index_is_blocked_without_owner_receipt(self) -> None:
-        with pytest.raises(
-            inventory.ReviewedEvidenceEnrichmentError,
-            match=(
-                "owner_receipt_missing_and_physical_catalog_candidate"
-            ),
-        ):
-            inventory.load_executable_reviewed_evidence_index_v1_2()
+    def test_owner_decision_projects_56_executable_and_5_audit_only_rows(self) -> None:
+        projection = inventory.load_reviewed_evidence_enrichment_candidate()
+        index = inventory.load_executable_reviewed_evidence_index_v1_2()
+        excluded = {
+            row.evidence_item_digest
+            for row in projection.rows
+            if row.provenance_mapping_state
+            == "item_level_family_ambiguity_owner_review_required"
+        }
+
+        assert projection.item_count == 61
+        assert index.indexed_item_count == 56
+        assert excluded.isdisjoint(row.item_digest for row in index.rows)
+        assert all(row.metadata_state == "complete" for row in index.rows)
+        serialized = json.dumps(index.model_dump(mode="json"))
+        assert "D:/" not in serialized
+        assert "Z:/" not in serialized
+
+    def test_owner_composite_reader_includes_overlay_and_excludes_ambiguity(self) -> None:
+        projection = inventory.load_reviewed_evidence_enrichment_candidate()
+        excluded = {
+            row.evidence_item_digest
+            for row in projection.rows
+            if row.provenance_mapping_state
+            == "item_level_family_ambiguity_owner_review_required"
+        }
+        case = inventory.load_owner_approved_reviewed_case()
+        index = inventory.load_executable_reviewed_evidence_index_v1_2()
+        overlay = _load_json(inventory.DEFAULT_OVERLAY_PATH)
+        overlay_digests = {
+            row["evidence_item_digest"] for row in overlay["evidence_items"]
+        }
+        case_by_digest = {
+            row["evidence_item_digest"]: row for row in case["evidence_items"]
+        }
+        assert case["item_count"] == 56
+        assert overlay_digests.issubset(case_by_digest)
+        assert case["projection_digest"] == index.source_pack_digest
+        assert {
+            reviewed_evidence_id(
+                case_key="DELL",
+                target_id=row["target_id"],
+                evidence_item_digest=row["evidence_item_digest"],
+            )
+            for row in case["evidence_items"]
+        } == {row.evidence_id for row in index.rows}
+
+        scope = bind_dell_research_method(
+            load_dell_reference_vertical_foundation(),
+            ("Q1_ISSUER_TRUTH",),
+            research_as_of=datetime(2026, 9, 2, tzinfo=timezone.utc),
+            data_snapshot_id="owner-data-gate-composite-test",
+            execution_attempt_id="owner-data-gate-composite-test-a01",
+        ).run_scope
+        reader = CurrentReviewedEvidenceReader(case_reader=lambda _key: case)
+        overlay_ids = tuple(
+            row.evidence_id
+            for row in index.rows
+            if row.item_digest in overlay_digests
+        )
+        read = reader(
+            evidence_ids=overlay_ids,
+            branch_id="Q1_ISSUER_TRUTH",
+            run_scope=scope,
+        )
+        assert len(read.evidence) == 6
+        assert not read.missing_evidence_ids
+        assert read.source_pack_projection_digest == index.source_pack_digest
+
+        ambiguous = next(
+            row
+            for row in projection.rows
+            if row.evidence_item_digest in excluded
+        )
+        ambiguous_id = reviewed_evidence_id(
+            case_key="DELL",
+            target_id=ambiguous.target_id,
+            evidence_item_digest=ambiguous.evidence_item_digest,
+        )
+        missing = reader(
+            evidence_ids=(ambiguous_id,),
+            branch_id="Q1_ISSUER_TRUTH",
+            run_scope=scope,
+        )
+        assert missing.missing_evidence_ids == (ambiguous_id,)
+        assert not missing.evidence
 
     def test_base_pack_byte_change_fails_before_projection(self, tmp_path: Path) -> None:
         changed = tmp_path / "pack.json"

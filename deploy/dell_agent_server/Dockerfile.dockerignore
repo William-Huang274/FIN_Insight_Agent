@@ -3,6 +3,21 @@
 # rules take precedence over the broader repository .dockerignore.
 **
 !pyproject.toml
+!uv.lock
 !README.md
 !src/
-!src/**
+!src/**/
+!src/**/*.py
+!src/**/*.sql
+# The source allowlist above must never re-admit interpreter/build residue.
+**/__pycache__/**
+**/*.pyc
+**/*.pyo
+**/*.pyd
+!configs/
+!configs/research/
+!configs/research/fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json
+!configs/research/fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json
+!configs/research/fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json
+!configs/research/fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json
+!configs/research/fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json

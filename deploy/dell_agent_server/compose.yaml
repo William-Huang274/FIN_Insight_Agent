@@ -4,7 +4,7 @@ name: finsight-dell-agent-server-local
 
 services:
   langgraph-redis:
-    image: redis:6
+    image: redis:6@sha256:143f7bfc2358911d6b36138eabfbfffea46273c5d4b5696d90e5cbf23d633cf8
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -12,30 +12,62 @@ services:
       retries: 5
 
   langgraph-postgres:
-    image: pgvector/pgvector:pg16
+    image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
     environment:
       POSTGRES_DB: postgres
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD:?set FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD in the repository .env}
+      FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD: ${FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD:?set FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD in the repository .env}
+      FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD: ${FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD:?set FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD in the repository .env}
     command:
       - postgres
       - -c
       - shared_preload_libraries=vector
     volumes:
       - langgraph-data:/var/lib/postgresql/data
+      - type: bind
+        source: ./postgres-init/010-create-runtime-roles.sh
+        target: /docker-entrypoint-initdb.d/010-create-runtime-roles.sh
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./postgres-init/020-install-fin-runtime-identity.sh
+        target: /docker-entrypoint-initdb.d/020-install-fin-runtime-identity.sh
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./postgres-init/030-runtime-readiness.sh
+        target: /usr/local/bin/fin-postgres-runtime-readiness
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ../../src/sec_agent/agent_runtime/sql/001_dell_agent_server_identity_v1_0.sql
+        target: /opt/fin-insight/001_dell_agent_server_identity_v1_0.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ./postgres-init/040-fin-runtime-schema-fingerprint.sql
+        target: /opt/fin-insight/040-fin-runtime-schema-fingerprint.sql
+        read_only: true
+        bind:
+          create_host_path: false
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD", "/bin/sh", "/usr/local/bin/fin-postgres-runtime-readiness"]
       start_period: 10s
-      timeout: 1s
-      retries: 5
-      interval: 60s
+      timeout: 5s
+      retries: 12
+      interval: 5s
 
   langgraph-api:
     build:
       context: ../..
       dockerfile: deploy/dell_agent_server/Dockerfile
     ports:
-      - "127.0.0.1:8123:8000"
+      - "127.0.0.1:${FINSIGHT_AGENT_SERVER_HOST_PORT:-18123}:8000"
     depends_on:
       langgraph-redis:
         condition: service_healthy
@@ -43,15 +75,61 @@ services:
         condition: service_healthy
     environment:
       REDIS_URI: redis://langgraph-redis:6379
-      POSTGRES_URI: postgres://postgres:${FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD:?set FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD in the repository .env}@langgraph-postgres:5432/postgres?sslmode=disable
+      POSTGRES_URI: postgres://langgraph_runtime:${FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD:?set FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD in the repository .env}@langgraph-postgres:5432/postgres?sslmode=disable
       LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:?set LANGSMITH_API_KEY in the repository .env}
       LANGSMITH_TRACING: "true"
       LANGSMITH_PROJECT: fin-insight-dell-reference-vertical
-      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:?set DEEPSEEK_API_KEY in the repository .env}
+      N_JOBS_PER_WORKER: "4"
+      FIN_REPO_ROOT: /deps/FIN_Insight_Agent
+      FINSIGHT_DELL_S1_NODES_PATH: /run/fin-insight/s1/retrieval_nodes.jsonl
+      FINSIGHT_DELL_REVIEWED_BASE_PACK_PATH: /run/fin-insight/reviewed/base/pack.json
+      FINSIGHT_DELL_REVIEWED_OVERLAY_PATH: /run/fin-insight/reviewed/overlay/reviewed-evidence-case-projection.json
+      FINSIGHT_DELL_S2_RESULT_PATH: /run/fin-insight/s2/company_financial_fact_mart_result.json
+      FINSIGHT_COMPANY_FINANCIAL_FACT_MART_PATH: /run/fin-insight/s2/company_financial_facts.sqlite
+      FINSIGHT_DELL_EXTERNAL_MANIFEST_PATH: /run/fin-insight/external-r12/manifest.json
+    volumes:
+      - type: bind
+        source: "${FINSIGHT_DELL_S1_NODES_HOST_PATH:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/rag_mature_stack/retrieval_qualification/dell_rag_full_stack_preview_attempt_20260902_03/retrieval_nodes.jsonl}"
+        target: /run/fin-insight/s1/retrieval_nodes.jsonl
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${FINSIGHT_DELL_REVIEWED_BASE_PACK_HOST_PATH:-D:/FIN_Insight_Agent/data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json}"
+        target: /run/fin-insight/reviewed/base/pack.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${FINSIGHT_DELL_REVIEWED_OVERLAY_HOST_PATH:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/evidence_overlay/attempts/20260902T051005+0800-dell-fy27q2-sec-ex99-review-a01/reviewed-evidence-case-projection.json}"
+        target: /run/fin-insight/reviewed/overlay/reviewed-evidence-case-projection.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${FINSIGHT_DELL_S2_RESULT_HOST_PATH:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/s2/s2_exact_period_contract_successor_20260902_r1/company_financial_fact_mart_result.json}"
+        target: /run/fin-insight/s2/company_financial_fact_mart_result.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${FINSIGHT_DELL_S2_MART_HOST_PATH:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/s2/s2_exact_period_contract_successor_20260902_r1/company_financial_facts.sqlite}"
+        target: /run/fin-insight/s2/company_financial_facts.sqlite
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${FINSIGHT_DELL_EXTERNAL_PACK_HOST_ROOT:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/external_exact_url_qualification/dell_external_exact_url_zero_model_20260902_r12}"
+        target: /run/fin-insight/external-r12
+        read_only: true
+        bind:
+          create_host_path: false
     healthcheck:
       test: ["CMD", "python", "/api/healthcheck.py"]
       interval: 60s
       start_period: 10s
+      timeout: 10s
+      retries: 5
 
 volumes:
   langgraph-data:

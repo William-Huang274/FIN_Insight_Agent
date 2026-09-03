@@ -18,7 +18,7 @@ from sec_agent.agent_runtime.dell_reference_vertical_contracts import (
     BranchMethodBinding,
     BranchWorkpaper,
     CaseFoundationBinding,
-    EvidenceRequest,
+    EvidenceIntentRequest,
     RuntimeReceipt,
     ToolLaneResult,
     ToolLaneTask,
@@ -42,6 +42,100 @@ RESEARCH_AS_OF = "2026-09-02T04:35:00+08:00"
 SNAPSHOT_ID = "dell-e1-snapshot-20260902"
 FOUNDATION_DIGEST = canonical_sha256({"foundation": "v1"})
 QUESTION = "DELL AI server demand conversion, economics, risks, and what would change?"
+
+
+def _reviewed_evidence_request(
+    query: str,
+    *,
+    branch_id: str = "Q1_ISSUER_TRUTH",
+    limit: int = 3,
+) -> dict[str, Any]:
+    return {
+        "minimum_route_obligation_id": f"route:{branch_id}:required-reviewed",
+        "intent": {
+            "intent_kind": "reviewed_evidence",
+            "query": query,
+            "purpose": f"Bound reviewed evidence for {branch_id}.",
+            "entity_refs": ["DELL"],
+            "period_intents": [],
+            "expected_information_gain": (
+                "Determine whether reviewed evidence supports the branch."
+            ),
+            "limit": limit,
+            "topic_refs": [branch_id],
+            "evidence_role_refs": [],
+            "minimum_authority_tier": "reviewed",
+        },
+    }
+
+
+def _external_evidence_request(
+    query: str,
+    *,
+    branch_id: str = "Q1_ISSUER_TRUTH",
+    limit: int = 3,
+) -> dict[str, Any]:
+    return {
+        "minimum_route_obligation_id": f"route:{branch_id}:test-external",
+        "intent": {
+            "intent_kind": "external_source",
+            "query": query,
+            "purpose": "Bound one current external source.",
+            "entity_refs": ["DELL"],
+            "period_intents": [],
+            "expected_information_gain": (
+                "Determine whether a current primary source changes the branch."
+            ),
+            "limit": limit,
+            "semantic_source_family_refs": ["F8"],
+            "domain_allowlist": [],
+            "published_not_before": None,
+            "published_not_after": None,
+        },
+    }
+
+
+def _source_route_catalog() -> dict[str, Any]:
+    rows = []
+    for branch_id in ("Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY"):
+        rows.extend(
+            (
+                {
+                    "minimum_route_obligation_id": (
+                        f"route:{branch_id}:required-reviewed"
+                    ),
+                    "coverage_obligation_id": branch_id,
+                    "requirement": "required",
+                    "intent_kind": "reviewed_evidence",
+                    "semantic_source_family_refs": ["F8"],
+                    "entity_refs": [],
+                    "period_intents": [],
+                    "required_authority_refs": ["authority:reviewed-read"],
+                },
+                {
+                    "minimum_route_obligation_id": (
+                        f"route:{branch_id}:test-external"
+                    ),
+                    "coverage_obligation_id": branch_id,
+                    "requirement": "optional",
+                    "intent_kind": "external_source",
+                    "semantic_source_family_refs": ["F8"],
+                    "entity_refs": [],
+                    "period_intents": [],
+                    "required_authority_refs": ["authority:primary-read"],
+                },
+            )
+        )
+    rows.sort(key=lambda row: row["minimum_route_obligation_id"])
+    unsigned = {
+        "schema_version": "fin_ia_dell_provider_source_route_catalog_v1_0",
+        "inventory_snapshot_digest": "1" * 64,
+        "baseline_source_plan_digest": "2" * 64,
+        "routes": rows,
+        "physical_selectors_exposed": False,
+        "answer_free": True,
+    }
+    return {**unsigned, "catalog_digest": canonical_sha256(unsigned)}
 
 
 class _DellReferenceVerticalTestGraph:
@@ -260,16 +354,10 @@ class FakeRuntime:
                 "branch_id": branch_id,
                 "objective": f"Bounded objective for {branch_id}",
                 "evidence_requests": [
-                    {
-                        "query": f"evidence for {branch_id}",
-                        "purpose": f"Bound evidence for {branch_id}",
-                        "include_domains": [],
-                        "issuer_ids": ["DELL"],
-                        "source_roles": ["issuer_management_disclosure"],
-                        "limit": 3,
-                        "source_route": "reviewed_first",
-                        "capture_limit": 1,
-                    }
+                    _reviewed_evidence_request(
+                        f"evidence for {branch_id}",
+                        branch_id=branch_id,
+                    )
                 ],
                 "fact_requests": [{"metric_id": f"metric_{branch_id}"}],
             }
@@ -482,16 +570,10 @@ class FakeRuntime:
                 "reason": "One material issue needs one bounded refresh.",
                 "owner_layer": "agent",
                 "evidence_requests": [
-                    {
-                        "query": "targeted counter refresh",
-                        "purpose": "Resolve one material counter challenge.",
-                        "include_domains": [],
-                        "issuer_ids": ["DELL"],
-                        "source_roles": ["issuer_management_disclosure"],
-                        "limit": 3,
-                        "source_route": "reviewed_first",
-                        "capture_limit": 1,
-                    }
+                    _reviewed_evidence_request(
+                        "targeted counter refresh",
+                        branch_id=self.reroute_branch,
+                    )
                 ],
                 "fact_requests": [{"metric_id": "targeted_metric"}],
             }
@@ -555,6 +637,7 @@ class FakeRuntime:
         return DellReferenceVerticalDependencies(
             foundation_binder=self.foundation_binder,
             planner_tool_capabilities=_planner_tool_capabilities(),
+            planner_source_route_catalog=_source_route_catalog(),
             planner_agent=self.planner,
             evidence_tool=self.evidence_tool,
             finance_tool=self.finance_tool,
@@ -598,13 +681,8 @@ def test_foundation_scope_ceiling_blocks_unbounded_planner_and_reroute_requests(
     binding = CaseFoundationBinding.model_validate_json(
         json.dumps(runtime.foundation_binder(_start_input()))
     )
-    external = lambda query: EvidenceRequest(
-        query=query,
-        purpose="Bound one current external source.",
-        include_domains=(),
-        limit=3,
-        source_route="external_required",
-        capture_limit=2,
+    external = lambda query: EvidenceIntentRequest.model_validate_json(
+        json.dumps(_external_evidence_request(query))
     )
 
     with pytest.raises(
@@ -617,22 +695,22 @@ def test_foundation_scope_ceiling_blocks_unbounded_planner_and_reroute_requests(
             label="fixture",
         )
 
-    reviewed = EvidenceRequest(
-        query="reviewed",
-        purpose="Read reviewed evidence.",
-        include_domains=(),
-        issuer_ids=("DELL",),
-        source_roles=("issuer_management_disclosure",),
-        limit=6,
-        source_route="reviewed_first",
-        capture_limit=1,
+    reviewed = EvidenceIntentRequest.model_validate_json(
+        json.dumps(_reviewed_evidence_request("reviewed", limit=6))
     )
     with pytest.raises(
         DellReferenceVerticalGraphError,
         match="visible_source_limit_exceeded",
     ):
         _validate_agent_step_budget(
-            (reviewed, reviewed.model_copy(update={"query": "reviewed two"})),
+            (
+                reviewed,
+                EvidenceIntentRequest.model_validate_json(
+                    json.dumps(
+                        _reviewed_evidence_request("reviewed two", limit=6)
+                    )
+                ),
+            ),
             binding=binding,
             label="fixture",
         )
@@ -906,7 +984,9 @@ def test_join_rejects_duplicate_missing_and_cross_branch_lane_results() -> None:
             revision=0,
             priority="high",
             objective=f"Objective {branch_id}",
-            evidence_requests=({"query": branch_id},),
+            evidence_requests=(
+                _reviewed_evidence_request(branch_id, branch_id=branch_id),
+            ),
             fact_requests=({"metric_id": branch_id},),
             research_as_of=RESEARCH_AS_OF,
             snapshot_id=SNAPSHOT_ID,

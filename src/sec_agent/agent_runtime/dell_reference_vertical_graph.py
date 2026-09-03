@@ -29,7 +29,7 @@ from .dell_reference_vertical_contracts import (
     CaseFoundationBinding,
     CounterDecision,
     DellReferenceVerticalState,
-    EvidenceRequest,
+    EvidenceIntentRequest,
     HumanReviewDecision,
     LeadOutput,
     PlannerOutput,
@@ -99,6 +99,7 @@ class DellAgentServerRunContext(BaseModel):
 class DellReferenceVerticalDependencies:
     foundation_binder: FoundationBinder
     planner_tool_capabilities: Mapping[str, Any]
+    planner_source_route_catalog: Mapping[str, Any]
     planner_agent: PlannerAgent
     evidence_tool: ToolExecutor
     finance_tool: ToolExecutor
@@ -183,30 +184,184 @@ def _method_by_branch(
 
 def _evidence_requests(
     values: Sequence[Mapping[str, Any]], *, label: str
-) -> tuple[EvidenceRequest, ...]:
+) -> tuple[EvidenceIntentRequest, ...]:
     return tuple(
-        _validate_model(EvidenceRequest, value, label=f"{label}_request")
+        _validate_model(EvidenceIntentRequest, value, label=f"{label}_request")
         for value in values
     )
 
 
-def _external_budget(requests: Sequence[EvidenceRequest]) -> tuple[int, int]:
+_SOURCE_ROUTE_CATALOG_KEYS = frozenset(
+    {
+        "schema_version",
+        "inventory_snapshot_digest",
+        "baseline_source_plan_digest",
+        "routes",
+        "physical_selectors_exposed",
+        "answer_free",
+        "catalog_digest",
+    }
+)
+_SOURCE_ROUTE_ROW_KEYS = frozenset(
+    {
+        "minimum_route_obligation_id",
+        "coverage_obligation_id",
+        "requirement",
+        "intent_kind",
+        "semantic_source_family_refs",
+        "entity_refs",
+        "period_intents",
+        "required_authority_refs",
+    }
+)
+_PHYSICAL_SELECTOR_KEYS = frozenset(
+    {
+        "issuer_ids",
+        "fiscal_periods",
+        "source_roles",
+        "route_ids",
+        "lanes",
+        "domain_allowlist",
+        "external_route_ref",
+        "local_scope",
+        "locator",
+        "path",
+    }
+)
+
+
+def _validate_source_route_catalog(value: Mapping[str, Any]) -> PlainDict:
+    """Validate the answer-free catalog before any model can observe it."""
+
+    catalog = _plain_mapping(value, label="planner_source_route_catalog")
+    if set(catalog) != _SOURCE_ROUTE_CATALOG_KEYS:
+        raise DellReferenceVerticalGraphError(
+            "planner_source_route_catalog_schema_mismatch"
+        )
+    if (
+        catalog.get("schema_version")
+        != "fin_ia_dell_provider_source_route_catalog_v1_0"
+        or catalog.get("physical_selectors_exposed") is not False
+        or catalog.get("answer_free") is not True
+    ):
+        raise DellReferenceVerticalGraphError(
+            "planner_source_route_catalog_authority_mismatch"
+        )
+    for digest_key in (
+        "inventory_snapshot_digest",
+        "baseline_source_plan_digest",
+        "catalog_digest",
+    ):
+        digest = catalog.get(digest_key)
+        if not isinstance(digest, str) or len(digest) != 64 or any(
+            char not in "0123456789abcdef" for char in digest
+        ):
+            raise DellReferenceVerticalGraphError(
+                f"planner_source_route_catalog_{digest_key}_invalid"
+            )
+    unsigned = {key: item for key, item in catalog.items() if key != "catalog_digest"}
+    if canonical_sha256(unsigned) != catalog["catalog_digest"]:
+        raise DellReferenceVerticalGraphError(
+            "planner_source_route_catalog_digest_mismatch"
+        )
+
+    def reject_physical_keys(node: Any) -> None:
+        if isinstance(node, Mapping):
+            forbidden = _PHYSICAL_SELECTOR_KEYS.intersection(node)
+            if forbidden:
+                raise DellReferenceVerticalGraphError(
+                    "planner_source_route_catalog_physical_selector_exposed"
+                )
+            for child in node.values():
+                reject_physical_keys(child)
+        elif isinstance(node, list):
+            for child in node:
+                reject_physical_keys(child)
+
+    reject_physical_keys(catalog)
+    rows = catalog.get("routes")
+    if not isinstance(rows, list) or not rows:
+        raise DellReferenceVerticalGraphError(
+            "planner_source_route_catalog_routes_missing"
+        )
+    route_ids: list[str] = []
+    required_branches: set[str] = set()
+    for raw in rows:
+        if not isinstance(raw, Mapping) or set(raw) != _SOURCE_ROUTE_ROW_KEYS:
+            raise DellReferenceVerticalGraphError(
+                "planner_source_route_catalog_route_schema_mismatch"
+            )
+        route_id = raw.get("minimum_route_obligation_id")
+        branch_id = raw.get("coverage_obligation_id")
+        requirement = raw.get("requirement")
+        intent_kind = raw.get("intent_kind")
+        if (
+            not isinstance(route_id, str)
+            or not route_id
+            or not isinstance(branch_id, str)
+            or not branch_id
+            or requirement not in {"required", "optional"}
+            or intent_kind
+            not in {"reviewed_evidence", "local_evidence", "external_source"}
+        ):
+            raise DellReferenceVerticalGraphError(
+                "planner_source_route_catalog_route_invalid"
+            )
+        for ref_key in (
+            "semantic_source_family_refs",
+            "entity_refs",
+            "period_intents",
+            "required_authority_refs",
+        ):
+            refs = raw.get(ref_key)
+            if (
+                not isinstance(refs, list)
+                or any(not isinstance(item, str) or not item for item in refs)
+                or refs != sorted(set(refs))
+            ):
+                raise DellReferenceVerticalGraphError(
+                    f"planner_source_route_catalog_{ref_key}_invalid"
+                )
+        if not raw["semantic_source_family_refs"] or not raw["required_authority_refs"]:
+            raise DellReferenceVerticalGraphError(
+                "planner_source_route_catalog_route_authority_incomplete"
+            )
+        if requirement == "required":
+            if intent_kind != "reviewed_evidence" or branch_id in required_branches:
+                raise DellReferenceVerticalGraphError(
+                    "planner_source_route_catalog_required_route_invalid"
+                )
+            required_branches.add(branch_id)
+        route_ids.append(route_id)
+    if route_ids != sorted(set(route_ids)):
+        raise DellReferenceVerticalGraphError(
+            "planner_source_route_catalog_route_order_or_uniqueness_invalid"
+        )
+    return catalog
+
+
+def _external_budget(requests: Sequence[EvidenceIntentRequest]) -> tuple[int, int]:
     external = tuple(
-        row for row in requests if row.source_route == "external_required"
+        row for row in requests if row.intent.intent_kind == "external_source"
     )
-    return len(external), sum(row.capture_limit for row in external)
+    # Capture breadth is host-owned.  A semantic external intent can authorize
+    # at most two page captures after SourceFamilyCompiler binds exact routes.
+    return len(external), sum(min(2, row.intent.limit) for row in external)
 
 
 def _validate_agent_step_budget(
-    requests: Sequence[EvidenceRequest],
+    requests: Sequence[EvidenceIntentRequest],
     *,
     binding: CaseFoundationBinding,
     label: str,
 ) -> None:
     ceiling = binding.scope_ceiling
-    if any(row.limit > ceiling.maximum_results_per_search for row in requests):
+    if any(
+        row.intent.limit > ceiling.maximum_results_per_search
+        for row in requests
+    ):
         raise DellReferenceVerticalGraphError(f"{label}_result_limit_exceeded")
-    if sum(row.limit for row in requests) > ceiling.maximum_sources_visible_per_agent_step:
+    if sum(row.intent.limit for row in requests) > ceiling.maximum_sources_visible_per_agent_step:
         raise DellReferenceVerticalGraphError(f"{label}_visible_source_limit_exceeded")
     external_rounds, captured_pages = _external_budget(requests)
     if (
@@ -219,7 +374,7 @@ def _validate_agent_step_budget(
 
 
 def _validate_cumulative_branch_external_budget(
-    requests: Sequence[EvidenceRequest],
+    requests: Sequence[EvidenceIntentRequest],
     *,
     binding: CaseFoundationBinding,
     label: str,
@@ -1111,6 +1266,52 @@ def build_dell_reference_vertical_state_graph(
         dependencies.planner_tool_capabilities,
         label="planner_tool_capabilities",
     )
+    planner_source_route_catalog = _validate_source_route_catalog(
+        dependencies.planner_source_route_catalog
+    )
+    source_routes_by_id = {
+        row["minimum_route_obligation_id"]: row
+        for row in planner_source_route_catalog["routes"]
+    }
+
+    def validate_source_route_requests(
+        requests: Sequence[EvidenceIntentRequest],
+        *,
+        branch_id: str,
+        label: str,
+        require_minimum_routes: bool,
+    ) -> None:
+        requested_ids = [row.minimum_route_obligation_id for row in requests]
+        if len(requested_ids) != len(set(requested_ids)):
+            raise DellReferenceVerticalGraphError(f"{label}_route_duplicate")
+        for request in requests:
+            route = source_routes_by_id.get(request.minimum_route_obligation_id)
+            if route is None:
+                raise DellReferenceVerticalGraphError(f"{label}_route_unknown")
+            if route["coverage_obligation_id"] != branch_id:
+                raise DellReferenceVerticalGraphError(f"{label}_route_branch_mismatch")
+            if route["intent_kind"] != request.intent.intent_kind:
+                raise DellReferenceVerticalGraphError(f"{label}_route_lane_mismatch")
+            requested_families = getattr(
+                request.intent, "semantic_source_family_refs", ()
+            )
+            if requested_families and not set(requested_families).issubset(
+                route["semantic_source_family_refs"]
+            ):
+                raise DellReferenceVerticalGraphError(
+                    f"{label}_route_source_family_mismatch"
+                )
+        if require_minimum_routes:
+            required_ids = {
+                route_id
+                for route_id, route in source_routes_by_id.items()
+                if route["coverage_obligation_id"] == branch_id
+                and route["requirement"] == "required"
+            }
+            if not required_ids.issubset(requested_ids):
+                raise DellReferenceVerticalGraphError(
+                    f"{label}_required_route_missing"
+                )
 
     def bind_case(state: DellReferenceVerticalState) -> DellReferenceVerticalState:
         run_id = _require_text(state.get("run_id"), label="run_id", maximum=180)
@@ -1156,6 +1357,15 @@ def build_dell_reference_vertical_state_graph(
                 raise DellReferenceVerticalGraphError(
                     f"foundation_binding_{field}_mismatch"
                 )
+        required_route_branches = {
+            row["coverage_obligation_id"]
+            for row in planner_source_route_catalog["routes"]
+            if row["requirement"] == "required"
+        }
+        if required_route_branches != set(binding.required_branch_ids):
+            raise DellReferenceVerticalGraphError(
+                "foundation_source_route_catalog_branch_mismatch"
+            )
         return {
             "graph_contract_version": GRAPH_CONTRACT_VERSION,
             "foundation_binding": binding.model_dump(mode="json"),
@@ -1204,6 +1414,10 @@ def build_dell_reference_vertical_state_graph(
             "planner_tool_capabilities_digest": (
                 planner_tool_capabilities.projection_digest
             ),
+            "source_route_catalog": planner_source_route_catalog,
+            "source_route_catalog_digest": planner_source_route_catalog[
+                "catalog_digest"
+            ],
         }
         raw = dependencies.planner_agent(request)
         output = _validate_model(PlannerOutput, raw, label="planner_output")
@@ -1247,6 +1461,12 @@ def build_dell_reference_vertical_state_graph(
             requests = _evidence_requests(
                 row.evidence_requests,
                 label=f"planner_{row.branch_id}",
+            )
+            validate_source_route_requests(
+                requests,
+                branch_id=row.branch_id,
+                label=f"planner_{row.branch_id}",
+                require_minimum_routes=True,
             )
             _validate_agent_step_budget(
                 requests,
@@ -1447,6 +1667,10 @@ def build_dell_reference_vertical_state_graph(
             "workpapers": [
                 workpapers_raw[key] for key in sorted(workpapers_raw)
             ],
+            "source_route_catalog": planner_source_route_catalog,
+            "source_route_catalog_digest": planner_source_route_catalog[
+                "catalog_digest"
+            ],
         }
         request = {
             **request_base,
@@ -1502,6 +1726,12 @@ def build_dell_reference_vertical_state_graph(
         reroute_requests = _evidence_requests(
             decision.reroute.evidence_requests,
             label=f"counter_{target.branch_id}",
+        )
+        validate_source_route_requests(
+            reroute_requests,
+            branch_id=target.branch_id,
+            label=f"counter_{target.branch_id}",
+            require_minimum_routes=False,
         )
         _validate_agent_step_budget(
             reroute_requests,

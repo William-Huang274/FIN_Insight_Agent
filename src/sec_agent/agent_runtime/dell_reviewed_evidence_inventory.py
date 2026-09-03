@@ -1,15 +1,19 @@
-"""Thin, answer-free Reviewed Evidence inventory candidate for Dell.
+"""Thin, answer-free Reviewed Evidence inventory and approved runtime view.
 
 This adapter validates the exact 55-item base pack, 6-item case overlay and
-current physical catalog, then emits metadata-only audit rows.  It does not
-infer provenance from narrative content or retrieval prompts.  Both checked-in
-catalogs still await Owner review, so executable index construction is blocked.
+current physical catalog, then emits metadata-only audit rows.  A separately
+pinned Owner decision can project exactly 56 non-ambiguous rows into a transient
+runtime view without modifying or promoting either source artifact.  It does
+not infer provenance from narrative content or retrieval prompts.
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import re
+from copy import deepcopy
+from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Any, Literal, Mapping
@@ -21,8 +25,20 @@ from sec_agent.agent_runtime.dell_agentic_contracts import canonical_digest
 from sec_agent.agent_runtime.dell_source_family_compiler import (
     DELL_REQUIRED_SOURCE_FAMILIES_BY_COVERAGE,
     ReviewedEvidenceIndexV1_2,
+    ReviewedEvidenceIndexRowV1_2,
+)
+from sec_agent.agent_runtime.dell_owner_data_gate import (
+    DellOwnerDataGateDecision,
+    DellOwnerDataGateError,
+    load_dell_owner_data_gate_decision,
+    validate_trusted_dell_owner_data_gate_decision,
 )
 from sec_agent.canonical_runtime.contracts_v1_2 import StrictFrozenModel
+from sec_agent.research_foundation.data_ports import reviewed_evidence_id
+from sec_agent.research.reviewed_evidence_pack import (
+    ReviewedEvidencePackError,
+    validate_reviewed_evidence_pack,
+)
 
 
 Digest = str
@@ -982,10 +998,15 @@ def load_executable_reviewed_evidence_index_v1_2(
     physical_catalog_path: Path = DEFAULT_PHYSICAL_CATALOG_PATH,
     expected_config_sha256: str = DEFAULT_EXPECTED_CONFIG_SHA256,
     expected_enrichment_digest: str = DEFAULT_EXPECTED_ENRICHMENT_DIGEST,
+    owner_decision: DellOwnerDataGateDecision | None = None,
 ) -> ReviewedEvidenceIndexV1_2:
-    """Validate the candidate, then reject it because no Owner receipt exists."""
+    """Materialize the exact 56-row Owner-approved executable metadata view.
 
-    load_reviewed_evidence_enrichment_candidate(
+    The five ambiguous rows are omitted only from this executable index.  They
+    remain byte-for-byte present in the 61-row candidate and audit projection.
+    """
+
+    projection = load_reviewed_evidence_enrichment_candidate(
         config_path=config_path,
         base_pack_path=base_pack_path,
         overlay_path=overlay_path,
@@ -993,9 +1014,528 @@ def load_executable_reviewed_evidence_index_v1_2(
         expected_config_sha256=expected_config_sha256,
         expected_enrichment_digest=expected_enrichment_digest,
     )
-    raise ReviewedEvidenceEnrichmentError(
-        "reviewed_evidence_enrichment_owner_receipt_missing_and_physical_catalog_candidate"
+    try:
+        decision = validate_trusted_dell_owner_data_gate_decision(
+            owner_decision or load_dell_owner_data_gate_decision()
+        )
+    except DellOwnerDataGateError as exc:
+        raise ReviewedEvidenceEnrichmentError(str(exc)) from exc
+    _validate_owner_decision_for_reviewed_projection(
+        decision=decision,
+        projection=projection,
+        config_path=config_path,
+        base_pack_path=base_pack_path,
+        physical_catalog_path=physical_catalog_path,
     )
+
+    excluded = set(
+        decision.reviewed_evidence_decision.ambiguous_item_digests
+    )
+    rows: list[ReviewedEvidenceIndexRowV1_2] = []
+    included_digests: list[str] = []
+    for audit_row in projection.rows:
+        if audit_row.evidence_item_digest in excluded:
+            continue
+        if (
+            audit_row.source_family_ref is None
+            or audit_row.authority_tier_candidate is None
+            or audit_row.route_relation == "unresolved"
+        ):
+            raise ReviewedEvidenceEnrichmentError(
+                "owner_approved_reviewed_row_still_ambiguous"
+            )
+        evidence_id = reviewed_evidence_id(
+            case_key=projection.case_key,
+            target_id=audit_row.target_id,
+            evidence_item_digest=audit_row.evidence_item_digest,
+        )
+        locator = _runtime_logical_locator(audit_row, projection)
+        row_body = {
+            "case_key": projection.case_key,
+            "source_family_ref": audit_row.source_family_ref,
+            "coverage_obligation_ids": audit_row.coverage_obligation_ids,
+            "minimum_route_eligible_branch_ids": (
+                audit_row.proposed_minimum_route_eligible_branch_ids
+            ),
+            "entity_ids": audit_row.entity_ids,
+            "target_id": audit_row.target_id,
+            "topic_refs": audit_row.topic_refs,
+            "evidence_role": audit_row.source_evidence_role,
+            "authority_tier": audit_row.authority_tier_candidate,
+            "publication_date": audit_row.publication_date,
+            "period_refs": audit_row.period_refs,
+            "source_reporting_period_end": (
+                audit_row.source_reporting_period_end
+            ),
+            "source_type": audit_row.source_type,
+            "source_tier": audit_row.source_tier,
+            "evidence_id": evidence_id,
+            "locator": locator,
+            "locator_digest": canonical_digest({"locator": locator}),
+            "item_digest": audit_row.evidence_item_digest,
+            "metadata_state": "complete",
+        }
+        rows.append(
+            ReviewedEvidenceIndexRowV1_2(
+                **row_body,
+                row_digest=canonical_digest(row_body),
+            )
+        )
+        included_digests.append(audit_row.evidence_item_digest)
+
+    rows.sort(key=lambda row: row.evidence_id)
+    included = tuple(sorted(included_digests))
+    if (
+        len(rows)
+        != decision.reviewed_evidence_decision.executable_item_count
+        or len(included) != len(set(included))
+        or set(included).intersection(excluded)
+    ):
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_approved_reviewed_index_population_mismatch"
+        )
+    source_pack_digest = canonical_digest(
+        {
+            "schema_version": (
+                "fin_ia_dell_owner_approved_reviewed_evidence_view_v1_0"
+            ),
+            "base_pack_payload_digest": projection.base_pack_payload_digest,
+            "overlay_projection_digest": projection.overlay_projection_digest,
+            "composite_identity_digest": projection.composite_identity_digest,
+            "enrichment_digest": projection.enrichment_digest,
+            "owner_data_gate_decision_digest": decision.decision_digest,
+            "included_evidence_item_digests": included,
+            "excluded_audit_only_item_digests": tuple(sorted(excluded)),
+        }
+    )
+    index_body = {
+        "contract_version": "1.2",
+        "index_id": (
+            "reviewed-index:dell:owner-data-gate:"
+            f"{decision.decision_digest[:24]}"
+        ),
+        "case_key": projection.case_key,
+        "research_as_of": projection.research_as_of,
+        "source_pack_digest": source_pack_digest,
+        "rows": tuple(rows),
+        "indexed_item_count": len(rows),
+        "answer_free": True,
+    }
+    return ReviewedEvidenceIndexV1_2(
+        **index_body,
+        index_digest=canonical_digest(index_body),
+    )
+
+
+def _runtime_logical_locator(
+    row: ReviewedEvidenceAuditRow,
+    projection: ReviewedEvidenceAuditProjection,
+) -> str:
+    """Build a host-independent, content-addressed locator for runtime traces."""
+
+    if row.origin == "base":
+        artifact_kind = "reviewed-pack-payload"
+        artifact_digest = projection.base_pack_payload_digest
+    else:
+        artifact_kind = "reviewed-overlay-projection"
+        artifact_digest = projection.overlay_projection_digest
+    return (
+        f"{artifact_kind}:sha256:{artifact_digest}"
+        f"#evidence_item_digest={row.evidence_item_digest}"
+    )
+
+
+def _validate_owner_decision_for_reviewed_projection(
+    *,
+    decision: DellOwnerDataGateDecision,
+    projection: ReviewedEvidenceAuditProjection,
+    config_path: Path,
+    base_pack_path: Path,
+    physical_catalog_path: Path,
+) -> None:
+    bound = decision.bound_inputs
+    reviewed = decision.reviewed_evidence_decision
+    if not (
+        decision.authority.reviewed_index_runtime_consumption_authorized
+        and decision.authority.capability_inventory_composition_authorized
+        and _sha256_file(Path(config_path)) == bound.reviewed_enrichment_sha256
+        and projection.enrichment_digest == bound.reviewed_enrichment_digest
+        and projection.projection_digest == bound.reviewed_audit_projection_digest
+        and projection.composite_identity_digest
+        == bound.reviewed_composite_identity_digest
+        and _sha256_file(Path(physical_catalog_path))
+        == bound.physical_catalog_sha256
+        and projection.physical_catalog_digest == bound.physical_catalog_digest
+        and projection.item_count == reviewed.audited_item_count
+    ):
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_data_gate_reviewed_input_binding_mismatch"
+        )
+
+    ambiguous = {
+        row.evidence_item_digest
+        for row in projection.rows
+        if row.provenance_mapping_state
+        == "item_level_family_ambiguity_owner_review_required"
+    }
+    if ambiguous != set(reviewed.ambiguous_item_digests):
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_data_gate_ambiguity_population_mismatch"
+        )
+    _validate_micron_sec_identity_binding(
+        decision=decision,
+        projection=projection,
+        base_pack_path=Path(base_pack_path),
+    )
+
+
+def _validate_micron_sec_identity_binding(
+    *,
+    decision: DellOwnerDataGateDecision,
+    projection: ReviewedEvidenceAuditProjection,
+    base_pack_path: Path,
+) -> None:
+    binding = decision.reviewed_evidence_decision.micron_sec_filing_identity_binding
+    audit = next(
+        (
+            row
+            for row in projection.rows
+            if row.evidence_item_digest == binding.evidence_item_digest
+        ),
+        None,
+    )
+    if audit is None or not (
+        audit.evidence_owner_id == binding.raw_evidence_owner_id
+        and audit.canonical_evidence_owner_id
+        == binding.canonical_evidence_owner_id
+        and audit.source_record_id == binding.source_record_id
+        and audit.source_domain == binding.observed_domain
+        and audit.entity_resolution_state
+        == "unresolved_alias_domain_conflict_owner_review_required"
+        and binding.observed_domain not in audit.canonical_domain_refs
+        and binding.adds_sec_domain_to_canonical_domain_registry is False
+    ):
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_data_gate_micron_audit_binding_mismatch"
+        )
+
+    pack = _read_json(base_pack_path, "base_pack")
+    items = pack.get("evidence_items")
+    materials = _source_materials(pack)
+    item = next(
+        (
+            row
+            for row in items
+            if isinstance(row, Mapping)
+            and row.get("evidence_item_digest") == binding.evidence_item_digest
+        ),
+        None,
+    ) if isinstance(items, list) else None
+    material = (
+        materials.get(item.get("source_material_ref"))
+        if isinstance(item, Mapping)
+        else None
+    )
+    if not isinstance(material, Mapping):
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_data_gate_micron_source_material_missing"
+        )
+    source_record_id = material.get("source_record_id")
+    source_url = material.get("source_url")
+    record_match = re.fullmatch(
+        r"SUPP::MU::([0-9]{18})::CHUNK_[0-9]{4}",
+        str(source_record_id or ""),
+    )
+    url_match = re.fullmatch(
+        r"https://www[.]sec[.]gov/Archives/edgar/data/([0-9]+)/"
+        r"([0-9]{18})/[^/?#]+",
+        str(source_url or ""),
+    )
+    accession_digits = binding.sec_accession.replace("-", "")
+    if record_match is None or url_match is None or not (
+        source_record_id == binding.source_record_id
+        and source_url == binding.sec_archive_url
+        and material.get("evidence_owner_ticker") == binding.raw_evidence_owner_id
+        and record_match.group(1) == accession_digits
+        and url_match.group(2) == accession_digits
+        and url_match.group(1).zfill(10) == binding.sec_cik
+        and accession_digits[:10] == binding.sec_cik
+    ):
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_data_gate_micron_cik_accession_binding_mismatch"
+        )
+
+
+_RUNTIME_ITEM_FIELDS = (
+    "case_key",
+    "target_id",
+    "source_record_id",
+    "disposition",
+    "evidence_role",
+    "publication_date",
+    "source_reporting_period_end",
+    "research_as_of",
+    "numeric_use_boundary",
+    "causal_attribution_authorized",
+    "writer_citable",
+    "evidence_item_digest",
+    "source_content_digest",
+)
+_RUNTIME_SOURCE_FIELDS = (
+    "material_ref",
+    "source_record_id",
+    "evidence_owner_ticker",
+    "source_tier",
+    "source_type",
+    "source_url",
+    "publication_date",
+    "period_end",
+    "license_scope",
+    "redistributable",
+    "source_text_digest",
+)
+
+
+def _project_runtime_reviewed_item(
+    *,
+    item: Mapping[str, Any],
+    source: Mapping[str, Any],
+    index_row: ReviewedEvidenceIndexRowV1_2,
+    maximum_excerpt_characters: int,
+    raw_source_text: str | None,
+) -> dict[str, Any]:
+    """Project one already-validated item without source bytes or host paths."""
+
+    if raw_source_text is not None:
+        source_text_digest = hashlib.sha256(
+            raw_source_text.encode("utf-8")
+        ).hexdigest()
+        excerpt_source = raw_source_text.strip()
+    else:
+        source_text_digest = str(source.get("source_text_digest") or "")
+        excerpt_source = str(source.get("reviewed_source_excerpt") or "").strip()
+    item_digest = str(item.get("evidence_item_digest") or "")
+    source_content_digest = str(item.get("source_content_digest") or "")
+    source_record_id = str(item.get("source_record_id") or "")
+    source_url = str(source.get("source_url") or "")
+    if not (
+        item_digest == index_row.item_digest
+        and str(item.get("target_id") or "") == index_row.target_id
+        and reviewed_evidence_id(
+            case_key=index_row.case_key,
+            target_id=item.get("target_id"),
+            evidence_item_digest=item_digest,
+        )
+        == index_row.evidence_id
+        and str(source.get("material_ref") or "")
+        == str(item.get("source_material_ref") or "")
+        and str(source.get("source_record_id") or "") == source_record_id
+        and source_text_digest == str(source.get("source_text_digest") or "")
+        and source_text_digest == source_content_digest
+        and excerpt_source
+        and urlparse(source_url).scheme == "https"
+        and bool(urlparse(source_url).hostname)
+        and item.get("writer_citable") is True
+        and item.get("causal_attribution_authorized") is False
+        and (
+            item.get("disposition"),
+            item.get("evidence_role"),
+        )
+        in {
+            ("accepted_direct_source_evidence", "issuer_direct_source"),
+            (
+                "accepted_bounded_context_evidence",
+                "counterparty_or_ecosystem_readthrough",
+            ),
+        }
+    ):
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_approved_reviewed_runtime_item_binding_mismatch"
+        )
+
+    bounded_excerpt = excerpt_source[:maximum_excerpt_characters]
+    projected = {
+        key: deepcopy(item.get(key))
+        for key in _RUNTIME_ITEM_FIELDS
+    }
+    projected["source"] = {
+        key: deepcopy(source.get(key))
+        for key in _RUNTIME_SOURCE_FIELDS
+    }
+    projected["source"].update(
+        {
+            "reviewed_source_excerpt": bounded_excerpt,
+            "excerpt_truncated": (
+                len(excerpt_source) > maximum_excerpt_characters
+                or bool(source.get("excerpt_truncated"))
+            ),
+            "excerpt_use_boundary": (
+                "Authenticated internal review only; never auto-promote the "
+                "excerpt into a deliverable or financial-truth store."
+            ),
+            "source_locator": {
+                "locator_kind": "owner_approved_reviewed_item",
+                "logical_ref": index_row.locator,
+                "locator_digest": index_row.locator_digest,
+            },
+        }
+    )
+    return projected
+
+
+def load_owner_approved_reviewed_case(
+    *,
+    config_path: Path = DEFAULT_CONFIG_PATH,
+    base_pack_path: Path = DEFAULT_BASE_PACK_PATH,
+    overlay_path: Path = DEFAULT_OVERLAY_PATH,
+    physical_catalog_path: Path = DEFAULT_PHYSICAL_CATALOG_PATH,
+    expected_config_sha256: str = DEFAULT_EXPECTED_CONFIG_SHA256,
+    expected_enrichment_digest: str = DEFAULT_EXPECTED_ENRICHMENT_DIGEST,
+    owner_decision: DellOwnerDataGateDecision | None = None,
+    maximum_excerpt_characters: int = 1_200,
+) -> dict[str, Any]:
+    """Return the transient 56-item case consumed by the existing reader.
+
+    This is not a Workbench-current promotion.  It is a read-only composite of
+    the exact base and overlay bytes authorized by the pinned Owner decision.
+    """
+
+    if not 200 <= maximum_excerpt_characters <= 4_000:
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_approved_reviewed_excerpt_limit_invalid"
+        )
+    decision = owner_decision or load_dell_owner_data_gate_decision()
+    index = load_executable_reviewed_evidence_index_v1_2(
+        config_path=config_path,
+        base_pack_path=base_pack_path,
+        overlay_path=overlay_path,
+        physical_catalog_path=physical_catalog_path,
+        expected_config_sha256=expected_config_sha256,
+        expected_enrichment_digest=expected_enrichment_digest,
+        owner_decision=decision,
+    )
+    base = _read_json(Path(base_pack_path), "base_pack")
+    overlay = _read_json(Path(overlay_path), "overlay_projection")
+    try:
+        validate_reviewed_evidence_pack(base)
+    except (ReviewedEvidencePackError, TypeError, ValueError) as exc:
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_approved_base_pack_contract_invalid"
+        ) from exc
+    base_items = base.get("evidence_items")
+    overlay_items = overlay.get("evidence_items")
+    if not isinstance(base_items, list) or not isinstance(overlay_items, list):
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_approved_reviewed_case_items_invalid"
+        )
+    materials = _source_materials(base)
+    source_items: dict[str, tuple[Mapping[str, Any], Mapping[str, Any], str | None]] = {}
+    for item in base_items:
+        if not isinstance(item, Mapping):
+            raise ReviewedEvidenceEnrichmentError(
+                "owner_approved_base_item_invalid"
+            )
+        source = materials.get(str(item.get("source_material_ref") or ""))
+        if not isinstance(source, Mapping):
+            raise ReviewedEvidenceEnrichmentError(
+                "owner_approved_base_source_missing"
+            )
+        raw_source_text = source.get("source_text")
+        if not isinstance(raw_source_text, str):
+            raise ReviewedEvidenceEnrichmentError(
+                "owner_approved_base_source_text_invalid"
+            )
+        digest = str(item.get("evidence_item_digest") or "")
+        if digest in source_items:
+            raise ReviewedEvidenceEnrichmentError(
+                "owner_approved_reviewed_item_duplicate"
+            )
+        source_items[digest] = (item, source, raw_source_text)
+    for item in overlay_items:
+        if not isinstance(item, Mapping) or not isinstance(
+            item.get("source"), Mapping
+        ):
+            raise ReviewedEvidenceEnrichmentError(
+                "owner_approved_overlay_item_invalid"
+            )
+        digest = str(item.get("evidence_item_digest") or "")
+        if digest in source_items:
+            raise ReviewedEvidenceEnrichmentError(
+                "owner_approved_reviewed_item_duplicate"
+            )
+        source_items[digest] = (item, item["source"], None)
+
+    projected: list[dict[str, Any]] = []
+    for index_row in index.rows:
+        bound = source_items.get(index_row.item_digest)
+        if bound is None:
+            raise ReviewedEvidenceEnrichmentError(
+                "owner_approved_reviewed_index_item_missing"
+            )
+        item, source, raw_source_text = bound
+        projected.append(
+            _project_runtime_reviewed_item(
+                item=item,
+                source=source,
+                index_row=index_row,
+                maximum_excerpt_characters=maximum_excerpt_characters,
+                raw_source_text=raw_source_text,
+            )
+        )
+    projected_ids = {
+        reviewed_evidence_id(
+            case_key=index.case_key,
+            target_id=item["target_id"],
+            evidence_item_digest=item["evidence_item_digest"],
+        )
+        for item in projected
+    }
+    if (
+        len(projected) != index.indexed_item_count
+        or projected_ids != {row.evidence_id for row in index.rows}
+        or set(decision.reviewed_evidence_decision.ambiguous_item_digests)
+        .intersection(item["evidence_item_digest"] for item in projected)
+    ):
+        raise ReviewedEvidenceEnrichmentError(
+            "owner_approved_reviewed_case_population_mismatch"
+        )
+    return {
+        "schema_version": "fin_ia_dell_owner_approved_reviewed_case_v1_0",
+        "status": "owner_approved_transient_composite_not_workbench_current",
+        "case_key": index.case_key,
+        "projection_digest": index.source_pack_digest,
+        "reviewed_index_digest": index.index_digest,
+        "owner_data_gate_decision_digest": decision.decision_digest,
+        "evidence_items": projected,
+        "item_count": len(projected),
+        "candidate_artifacts_mutated": False,
+    }
+
+
+@dataclass(frozen=True)
+class OwnerApprovedReviewedCaseReader:
+    """Callable case source for ``CurrentReviewedEvidenceReader``."""
+
+    config_path: Path = DEFAULT_CONFIG_PATH
+    base_pack_path: Path = DEFAULT_BASE_PACK_PATH
+    overlay_path: Path = DEFAULT_OVERLAY_PATH
+    physical_catalog_path: Path = DEFAULT_PHYSICAL_CATALOG_PATH
+    owner_decision: DellOwnerDataGateDecision | None = None
+    maximum_excerpt_characters: int = 1_200
+
+    def __call__(self, case_key: str) -> Mapping[str, Any]:
+        if str(case_key).strip().upper() != "DELL":
+            raise ReviewedEvidenceEnrichmentError(
+                "owner_approved_reviewed_case_key_invalid"
+            )
+        return load_owner_approved_reviewed_case(
+            config_path=self.config_path,
+            base_pack_path=self.base_pack_path,
+            overlay_path=self.overlay_path,
+            physical_catalog_path=self.physical_catalog_path,
+            owner_decision=self.owner_decision,
+            maximum_excerpt_characters=self.maximum_excerpt_characters,
+        )
 
 
 __all__ = [
@@ -1005,9 +1545,11 @@ __all__ = [
     "DEFAULT_EXPECTED_ENRICHMENT_DIGEST",
     "DEFAULT_OVERLAY_PATH",
     "DEFAULT_PHYSICAL_CATALOG_PATH",
+    "OwnerApprovedReviewedCaseReader",
     "ReviewedEvidenceAuditProjection",
     "ReviewedEvidenceAuditRow",
     "ReviewedEvidenceEnrichmentError",
     "load_executable_reviewed_evidence_index_v1_2",
+    "load_owner_approved_reviewed_case",
     "load_reviewed_evidence_enrichment_candidate",
 ]

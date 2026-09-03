@@ -1,32 +1,32 @@
 # Generated from the repository langgraph.json with langgraph-cli==0.4.31.
 # Keep this image aligned with that file; the Compose boundary is local-only.
-FROM langchain/langgraph-api:0.13.3-py3.13
-
-RUN PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir -c /api/constraints.txt \
-    langchain-core==1.6.1 \
-    langchain-deepseek==1.1.0 \
-    langchain-text-splitters==1.1.2 \
-    langgraph==1.2.11 \
-    langgraph-sdk==0.4.4 \
-    langsmith==0.12.1 \
-    mcp==2.1.1 \
-    'psycopg[binary,pool]==3.3.4'
+FROM langchain/langgraph-api:0.13.3-py3.13@sha256:ec26d6f6eb7ce3428ca476700f572205e6aff65fe62151b8e32541b0d93f2a1d
 
 # -- Adding the minimum local package sources --
 # Never copy the repository wholesale: local data, captures, receipts and
 # developer runtime state must not enter the image or even the build context.
-RUN mkdir -p /deps/FIN_Insight_Agent
-COPY pyproject.toml README.md /deps/FIN_Insight_Agent/
+RUN mkdir -p /deps/FIN_Insight_Agent/configs/research
+COPY pyproject.toml uv.lock README.md /deps/FIN_Insight_Agent/
 COPY src /deps/FIN_Insight_Agent/src
+COPY configs/research/fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json \
+     /deps/FIN_Insight_Agent/configs/research/
 # -- End of minimum local package sources --
 
 # -- Installing all local dependencies --
-RUN for dep in /deps/*; do \
-        echo "Installing $dep"; \
-        if [ -d "$dep" ]; then \
-            (cd "$dep" && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir -c /api/constraints.txt -e .); \
-        fi; \
-    done
+RUN cd /deps/FIN_Insight_Agent \
+    && uv export --locked --no-dev --extra agent-runtime --no-emit-project \
+        --no-header --no-annotate --format requirements-txt \
+        --output-file /tmp/finsight-agent-runtime-requirements.txt \
+    && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir \
+        -c /api/constraints.txt \
+        -r /tmp/finsight-agent-runtime-requirements.txt \
+    && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir \
+        --no-deps -e . \
+    && rm -f /tmp/finsight-agent-runtime-requirements.txt
 # -- End of local dependencies install --
 
 ENV LANGGRAPH_HTTP='{"disable_a2a": true, "disable_mcp": true, "disable_ui": true, "disable_webhooks": true}'

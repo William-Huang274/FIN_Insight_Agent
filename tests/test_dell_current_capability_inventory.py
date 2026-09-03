@@ -18,6 +18,7 @@ from sec_agent.agent_runtime.dell_current_capability_inventory import (
     EXPECTED_S2_RESULT_DIGEST,
     EXPECTED_S2_RESULT_SHA256,
     build_current_capability_inventory,
+    build_current_host_owned_baseline_source_plan,
     build_external_inventory_buckets_from_manifest,
     build_local_inventory_buckets_from_nodes,
     build_s2_capability_bucket_from_verified_result,
@@ -27,6 +28,16 @@ from sec_agent.agent_runtime.dell_current_capability_inventory import (
 from sec_agent.agent_runtime.planner_tool_capabilities import (
     derive_planner_tool_capabilities,
 )
+from sec_agent.agent_runtime.dell_owner_data_gate import (
+    load_dell_owner_data_gate_decision,
+)
+from sec_agent.agent_runtime.dell_reviewed_evidence_inventory import (
+    DEFAULT_BASE_PACK_PATH,
+    DEFAULT_CONFIG_PATH,
+    DEFAULT_OVERLAY_PATH,
+    load_executable_reviewed_evidence_index_v1_2,
+)
+from sec_agent.agent_runtime.dell_source_family_compiler import SourceFamilyCompiler
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -278,4 +289,107 @@ def test_total_inventory_refuses_candidate_catalog_before_touching_other_inputs(
             planner_capabilities=None,  # type: ignore[arg-type]
             reviewed_index=None,  # type: ignore[arg-type]
             snapshot_id="inventory:must-not-exist",
+        )
+
+
+@pytest.mark.skipif(
+    not all(
+        path.is_file()
+        for path in (
+            LOCAL_NODES_PATH,
+            EXTERNAL_MANIFEST_PATH,
+            S2_RESULT_PATH,
+            S2_SQLITE_PATH,
+            DEFAULT_CONFIG_PATH,
+            DEFAULT_BASE_PACK_PATH,
+            DEFAULT_OVERLAY_PATH,
+        )
+    ),
+    reason="exact Dell Owner-gated runtime artifacts unavailable",
+)
+def test_owner_decision_composes_exact_56_and_frozen_s2_inventory() -> None:
+    decision = load_dell_owner_data_gate_decision()
+    foundation = _raw_foundation()
+    planner = derive_planner_tool_capabilities(
+        sqlite_path=S2_SQLITE_PATH,
+        expected_mart_sha256=decision.bound_inputs.s2_mart_sha256,
+        snapshot_id="s2:owner-data-gate:test",
+    )
+    reviewed = load_executable_reviewed_evidence_index_v1_2(
+        owner_decision=decision
+    )
+    snapshot = build_current_capability_inventory(
+        physical_catalog_path=CATALOG_PATH,
+        expected_physical_catalog_sha256=(
+            decision.bound_inputs.physical_catalog_sha256
+        ),
+        foundation_source_families=foundation["source_families"],
+        foundation_question_branches=foundation["question_branches"],
+        local_nodes_path=LOCAL_NODES_PATH,
+        external_manifest_path=EXTERNAL_MANIFEST_PATH,
+        s2_result_path=S2_RESULT_PATH,
+        expected_s2_result_sha256=decision.bound_inputs.s2_result_sha256,
+        planner_capabilities=planner,
+        reviewed_index=reviewed,
+        snapshot_id="inventory:owner-data-gate:test",
+        owner_data_gate_decision=decision,
+    )
+
+    assert snapshot.reviewed_evidence_count == 56
+    assert snapshot.s2_observation_count == 1_319
+    assert snapshot.owner_data_gate_decision_digest == decision.decision_digest
+    assert {
+        row.capability_kind: row.validated_object_count
+        for row in snapshot.component_bindings
+    } == {
+        "external_source": 12,
+        "local_candidate": 890,
+        "reviewed_evidence": 56,
+        "s2_numeric_fact": 1_319,
+    }
+    baseline = build_current_host_owned_baseline_source_plan(
+        inventory=snapshot,
+        owner_data_gate_decision=decision,
+    )
+    compiler = SourceFamilyCompiler(inventory=snapshot, baseline=baseline)
+    provider_catalog = compiler.provider_route_catalog()
+    route_ids = {
+        row["minimum_route_obligation_id"] for row in provider_catalog["routes"]
+    }
+    assert "route:Q3_UNITS_ASP_PVM:F3_DELL_PRODUCT_SUPPORT:local" not in route_ids
+    assert "route:Q4_ARCHITECTURE_RAMP:F4_CUSTOMER_CAPEX_DEPLOYMENT:local" not in route_ids
+    assert not any(
+        row["coverage_obligation_id"] == "Q9_COUNTEREVIDENCE_WWC"
+        and row["intent_kind"] == "external_source"
+        for row in provider_catalog["routes"]
+    )
+    serialized_catalog = json.dumps(provider_catalog)
+    for physical_key in (
+        "issuer_ids",
+        "route_ids",
+        "lanes",
+        "domain_allowlist",
+        "external_route_ref",
+    ):
+        assert physical_key not in serialized_catalog
+
+    with pytest.raises(
+        CurrentCapabilityInventoryError,
+        match="owner_data_gate_s2_runtime_binding_mismatch",
+    ):
+        build_current_capability_inventory(
+            physical_catalog_path=CATALOG_PATH,
+            expected_physical_catalog_sha256=(
+                decision.bound_inputs.physical_catalog_sha256
+            ),
+            foundation_source_families=foundation["source_families"],
+            foundation_question_branches=foundation["question_branches"],
+            local_nodes_path=LOCAL_NODES_PATH,
+            external_manifest_path=EXTERNAL_MANIFEST_PATH,
+            s2_result_path=S2_RESULT_PATH,
+            expected_s2_result_sha256="0" * 64,
+            planner_capabilities=planner,
+            reviewed_index=reviewed,
+            snapshot_id="inventory:owner-data-gate:forged-s2",
+            owner_data_gate_decision=decision,
         )

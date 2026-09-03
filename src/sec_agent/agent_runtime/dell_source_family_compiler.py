@@ -570,6 +570,11 @@ class CapabilityInventorySnapshot(_StrictFrozenModel):
     reviewed_evidence_count: int = Field(ge=0, le=1_000_000)
     s2_observation_count: int = Field(ge=0, le=10_000_000)
     external_object_count: int = Field(ge=0, le=1_000_000)
+    # Optional for generic v1.2 inventories; mandatory at the Dell current-data
+    # successor seam and explicitly compared before a host baseline is issued.
+    owner_data_gate_decision_digest: Digest | None = Field(
+        default=None, pattern=_DIGEST_PATTERN
+    )
     answer_free: Literal[True] = True
     inventory_snapshot_digest: Digest = Field(pattern=_DIGEST_PATTERN)
 
@@ -762,6 +767,7 @@ def build_capability_inventory_snapshot(
     reviewed_evidence_index: ReviewedEvidenceIndexV1_2,
     s2_buckets: Sequence[S2CapabilityBucket],
     external_buckets: Sequence[ExternalInventoryBucket],
+    owner_data_gate_decision_digest: Digest | None = None,
 ) -> CapabilityInventorySnapshot:
     """Build a snapshot only from explicit, previously verified metadata inputs."""
 
@@ -818,6 +824,7 @@ def build_capability_inventory_snapshot(
         "external_object_count": sum(
             row.eligible_object_count for row in external_rows
         ),
+        "owner_data_gate_decision_digest": owner_data_gate_decision_digest,
         "answer_free": True,
     }
     return CapabilityInventorySnapshot(
@@ -1108,6 +1115,7 @@ class CompiledExternalSourceTarget(_StrictFrozenModel):
     published_not_after: str | None = Field(default=None, min_length=10, max_length=10)
     authority_refs: tuple[str, ...] = Field(min_length=1, max_length=16)
     eligible_object_count: int = Field(ge=1, le=1_000_000)
+    search_limit: int = Field(ge=1, le=8)
     source_bucket_digest: Digest = Field(pattern=_DIGEST_PATTERN)
     inventory_snapshot_digest: Digest = Field(pattern=_DIGEST_PATTERN)
     tool_call_authorized: Literal[True] = True
@@ -1409,6 +1417,72 @@ class SourceFamilyCompiler:
     @property
     def inventory_snapshot_digest(self) -> str:
         return self._inventory.inventory_snapshot_digest
+
+    @property
+    def reviewed_evidence_index(self) -> ReviewedEvidenceIndexV1_2:
+        """Return the frozen index bound to this compiler instance."""
+
+        return self._inventory.reviewed_evidence_index
+
+    @property
+    def data_authority_refs(self) -> tuple[str, ...]:
+        """Return the read authorities represented by the host baseline."""
+
+        return tuple(
+            sorted(
+                {
+                    ref
+                    for route in self._baseline.source_plan.route_obligations
+                    for ref in route.required_authority_refs
+                }
+            )
+        )
+
+    def provider_route_catalog(
+        self,
+        *,
+        branch_ids: Sequence[str] | None = None,
+    ) -> dict[str, Any]:
+        """Project semantic route choices without any physical selectors."""
+
+        selected = set(branch_ids or DELL_COVERAGE_OBLIGATION_IDS)
+        if not selected.issubset(DELL_COVERAGE_OBLIGATION_IDS):
+            raise SourceFamilyCompilerError("provider_route_catalog_branch_unknown")
+        routes = tuple(sorted((
+            {
+                "minimum_route_obligation_id": route.route_obligation_id,
+                "coverage_obligation_id": route.coverage_obligation_id,
+                "requirement": route.requirement,
+                "intent_kind": {
+                    "reviewed_evidence": "reviewed_evidence",
+                    "local_candidate": "local_evidence",
+                    "external_source": "external_source",
+                }[route.route_kind],
+                "semantic_source_family_refs": tuple(
+                    sorted(set(route.semantic_source_family_refs))
+                ),
+                "entity_refs": tuple(sorted(set(route.entity_refs))),
+                "period_intents": tuple(sorted(set(route.period_intents))),
+                "required_authority_refs": tuple(
+                    sorted(set(route.required_authority_refs))
+                ),
+            }
+            for route in self._baseline.source_plan.route_obligations
+            if route.coverage_obligation_id in selected
+            and route.route_kind
+            in {"reviewed_evidence", "local_candidate", "external_source"}
+        ), key=lambda row: row["minimum_route_obligation_id"]))
+        body = {
+            "schema_version": "fin_ia_dell_provider_source_route_catalog_v1_0",
+            "inventory_snapshot_digest": self._inventory.inventory_snapshot_digest,
+            "baseline_source_plan_digest": (
+                self._baseline.source_plan.source_plan_digest
+            ),
+            "routes": routes,
+            "physical_selectors_exposed": False,
+            "answer_free": True,
+        }
+        return {**body, "catalog_digest": canonical_digest(body)}
 
     def compile(
         self,
@@ -2070,7 +2144,7 @@ def _compile_external(
 ) -> SourceFamilyCompilationReceipt:
     required_families = set(route.semantic_source_family_refs)
     required_authorities = set(route.required_authority_refs)
-    targets: list[CompiledExternalSourceTarget] = []
+    candidate_bodies: list[dict[str, Any]] = []
     missing_families: set[str] = set()
     matched_domains: set[str] = set()
     unmatched_entities: set[str] = set(intent.entity_refs)
@@ -2139,7 +2213,6 @@ def _compile_external(
             )
             body = {
                 "contract_version": "1.2",
-                "target_ref": f"{compilation_receipt_id}/external/{len(targets) + 1}",
                 "branch_id": branch_id,
                 "coverage_obligation_id": route.coverage_obligation_id,
                 "source_family_ref": family_ref,
@@ -2157,16 +2230,108 @@ def _compile_external(
                 "inventory_snapshot_digest": inventory.inventory_snapshot_digest,
                 "tool_call_authorized": True,
             }
-            targets.append(
-                CompiledExternalSourceTarget(
-                    **body, target_digest=canonical_digest(body)
-                )
-            )
+            candidate_bodies.append(body)
             family_had_target = True
         if not family_had_target:
             missing_families.add(family_ref)
 
     unmatched_domains = requested_domains - matched_domains
+
+    # ``intent.limit`` is one semantic request budget, not a per-bucket
+    # multiplier. Select a deterministic bounded set of targets, retain one
+    # target per available required family first, and distribute the remaining
+    # result budget round-robin. This keeps the sum of downstream discovery
+    # and capture ceilings within the provider-authored global limit.
+    ordered_candidates = sorted(
+        candidate_bodies,
+        key=lambda row: (
+            str(row["source_family_ref"]),
+            str(row["external_route_ref"]),
+            str(row["source_bucket_digest"]),
+        ),
+    )
+    available_families = tuple(
+        sorted({str(row["source_family_ref"]) for row in ordered_candidates})
+    )
+    if len(available_families) > intent.limit:
+        return _receipt(
+            compilation_receipt_id=compilation_receipt_id,
+            intent_kind="external_source",
+            disposition="rejected",
+            branch_id=branch_id,
+            route=route,
+            baseline=baseline,
+            expected_inventory_snapshot_digest=expected_inventory_snapshot_digest,
+            inventory=inventory,
+            intent_digest=canonical_digest(intent),
+            task_authority_refs=task_authority_refs,
+            corrections=(
+                _correction(
+                    severity="blocking",
+                    code="external_limit_below_required_family_count",
+                    message=(
+                        "The global external result limit cannot retain one "
+                        "target for every available required source family."
+                    ),
+                    next_action="submit_plan_delta",
+                    source_family_refs=available_families,
+                ),
+            ),
+        )
+
+    selected_bodies: list[dict[str, Any]] = []
+    for family_ref in available_families:
+        selected_bodies.append(
+            next(
+                row
+                for row in ordered_candidates
+                if row["source_family_ref"] == family_ref
+            )
+        )
+    for row in ordered_candidates:
+        if len(selected_bodies) >= intent.limit:
+            break
+        if row not in selected_bodies:
+            selected_bodies.append(row)
+    selected_bodies.sort(
+        key=lambda row: (
+            str(row["source_family_ref"]),
+            str(row["external_route_ref"]),
+            str(row["source_bucket_digest"]),
+        )
+    )
+    limits = [1 for _row in selected_bodies]
+    remaining_limit = intent.limit - len(selected_bodies)
+    while remaining_limit > 0:
+        advanced = False
+        for index, row in enumerate(selected_bodies):
+            target_ceiling = min(int(row["eligible_object_count"]), 8)
+            if limits[index] >= target_ceiling:
+                continue
+            limits[index] += 1
+            remaining_limit -= 1
+            advanced = True
+            if remaining_limit == 0:
+                break
+        if not advanced:
+            break
+
+    targets: list[CompiledExternalSourceTarget] = []
+    for index, (body, search_limit) in enumerate(
+        zip(selected_bodies, limits, strict=True),
+        start=1,
+    ):
+        target_body = {
+            **body,
+            "target_ref": f"{compilation_receipt_id}/external/{index}",
+            "search_limit": search_limit,
+        }
+        targets.append(
+            CompiledExternalSourceTarget(
+                **target_body,
+                target_digest=canonical_digest(target_body),
+            )
+        )
 
     eligible_count = sum(row.eligible_object_count for row in targets)
     if not targets or eligible_count > maximum_total_eligible_count:

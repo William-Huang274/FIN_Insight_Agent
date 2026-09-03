@@ -206,12 +206,13 @@ def test_execution_requires_one_deployment_owned_langsmith_project(
     assert run_override.value.code == "langsmith_run_project_override_forbidden"
 
 
-def test_current_execution_stops_at_unapproved_data_authority(
+def test_execution_requires_exact_approved_runtime_mount_configuration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("LANGSMITH_TRACING", "true")
     monkeypatch.setenv("LANGSMITH_API_KEY", "test-only-not-a-real-key")
     monkeypatch.setenv("LANGSMITH_PROJECT", entry.DELL_LANGSMITH_PROJECT)
+    monkeypatch.delenv("FIN_REPO_ROOT", raising=False)
 
     async def exercise() -> None:
         async with entry.dell_reference_vertical_graph(
@@ -221,7 +222,7 @@ def test_current_execution_stops_at_unapproved_data_authority(
 
     with pytest.raises(entry.DellAgentServerEntryError) as failure:
         asyncio.run(exercise())
-    assert failure.value.code == "dell_execution_data_authority_not_approved"
+    assert failure.value.code == "approved_repository_root_missing"
 
 
 def test_identity_binding_keeps_domain_and_server_namespaces_separate() -> None:
@@ -277,6 +278,7 @@ def test_authorized_resources_are_scoped_to_one_factory_lifecycle(
     dependencies = DellReferenceVerticalDependencies(
         foundation_binder=unavailable,
         planner_tool_capabilities=entry._schema_only_capability_projection(),
+        planner_source_route_catalog=entry._schema_only_source_route_catalog(),
         planner_agent=unavailable,
         evidence_tool=unavailable,
         finance_tool=unavailable,
@@ -327,6 +329,7 @@ def test_research_run_binding_does_not_compare_to_server_thread_id() -> None:
     dependencies = DellReferenceVerticalDependencies(
         foundation_binder=foundation,
         planner_tool_capabilities=entry._schema_only_capability_projection(),
+        planner_source_route_catalog=entry._schema_only_source_route_catalog(),
         planner_agent=unavailable,
         evidence_tool=unavailable,
         finance_tool=unavailable,

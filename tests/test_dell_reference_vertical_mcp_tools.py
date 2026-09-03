@@ -13,14 +13,15 @@ import sec_agent.agent_runtime.dell_reference_vertical_mcp_tools as mcp_tools_mo
 
 from sec_agent.agent_runtime.dell_reference_vertical_contracts import (
     BoundBranchTask,
+    EvidenceRequest,
     ToolLaneResult,
     ToolLaneTask,
     canonical_sha256,
 )
 from sec_agent.agent_runtime.deepseek_structured_agents import (
-    EvidenceRequestPayload,
     PlannerSemanticPayload,
 )
+from sec_agent.agent_runtime.dell_source_family_compiler import SourceFamilyCompiler
 from sec_agent.agent_runtime.dell_reference_vertical_mcp_tools import (
     DellMCPToolLaneAdapter,
     compose_dell_mcp_graph_run,
@@ -40,6 +41,10 @@ from sec_agent.research_foundation.contracts import (
     project_dell_research_method,
 )
 from test_dell_research_mcp import _build_server
+from test_dell_source_family_compiler import (
+    baseline as _compiler_baseline_fixture,
+    inventory as _compiler_inventory_fixture,
+)
 
 
 _BRANCH = "Q1_ISSUER_TRUTH"
@@ -65,6 +70,12 @@ _METHOD_DIGEST = next(
 _FULL_METHOD_DIGEST = project_dell_research_method(
     _FOUNDATION, _BRANCHES
 ).method_sha256
+_COMPILER_INVENTORY = _compiler_inventory_fixture.__wrapped__()
+_COMPILER_BASELINE = _compiler_baseline_fixture.__wrapped__(_COMPILER_INVENTORY)
+_SOURCE_FAMILY_COMPILER = SourceFamilyCompiler(
+    inventory=_COMPILER_INVENTORY,
+    baseline=_COMPILER_BASELINE,
+)
 
 
 def _binding():
@@ -116,7 +127,11 @@ def _task(
         research_as_of=_AS_OF,
         snapshot_id=_SNAPSHOT,
         foundation_digest=_FOUNDATION_DIGEST,
-        method_digest=_METHOD_DIGEST,
+        method_digest=next(
+            row.method_digest
+            for row in _COMPOSITION.foundation_binding.branch_methods
+            if row.branch_id == branch_id
+        ) if branch_id in _BRANCHES else _METHOD_DIGEST,
         plan_digest=_PLAN_DIGEST,
     )
     return ToolLaneTask(lane=lane, task=task).model_dump(mode="json")
@@ -421,13 +436,13 @@ def test_local_response_scope_drift_fails_closed(
 
 def test_local_evidence_request_requires_bounded_issuer_and_source_role() -> None:
     with pytest.raises(ValueError, match="local_evidence_request_scope_underbounded"):
-        EvidenceRequestPayload(
+        EvidenceRequest(
             query="unbounded local query",
             purpose="This must not silently search the full corpus.",
             source_route="local_only",
         )
 
-    normalized = EvidenceRequestPayload(
+    normalized = EvidenceRequest(
         query="bounded local query",
         purpose="Canonicalize issuer identity before MCP dispatch.",
         source_route="local_only",
@@ -467,7 +482,7 @@ def test_local_evidence_request_rejects_blank_or_invalid_scope_ids(
         ValueError,
         match="evidence_request_retrieval_scope_value_invalid",
     ):
-        EvidenceRequestPayload.model_validate(payload)
+        EvidenceRequest.model_validate(payload)
 
 
 @pytest.mark.parametrize(
@@ -864,22 +879,33 @@ def test_one_runtime_owned_client_supports_parallel_graph_lane_calls() -> None:
     assert finance["status"] == "success"
 
 
-def test_deepseek_evidence_schema_flows_directly_to_external_mcp_capture() -> None:
+def test_deepseek_semantic_intent_flows_through_compiler_to_local_mcp() -> None:
     planner_output = PlannerSemanticPayload.model_validate_json(
         json.dumps(
             {
                 "tasks": [
                     {
-                        "branch_id": _BRANCH,
-                        "objective": "Refresh current official issuer evidence.",
+                        "branch_id": "Q2_DEMAND_QUALITY",
+                        "objective": "Check a bounded customer demand source family.",
                         "evidence_requests": [
                             {
-                                "query": "official Dell earnings result",
-                                "purpose": "Locate current official issuer evidence.",
-                                "include_domains": ["delltechnologies.com"],
-                                "limit": 3,
-                                "source_route": "external_required",
-                                "capture_limit": 1,
+                                "minimum_route_obligation_id": "route:Q2:F4:local",
+                                "intent": {
+                                    "intent_kind": "local_evidence",
+                                    "query": "customer capital spending deployment",
+                                    "purpose": "Locate bounded customer deployment context.",
+                                    "entity_refs": [],
+                                    "period_intents": [],
+                                    "expected_information_gain": (
+                                        "Determine whether a current customer source is reachable."
+                                    ),
+                                    "limit": 3,
+                                    "semantic_source_family_refs": [
+                                        "F4_CUSTOMER_CAPEX_DEPLOYMENT"
+                                    ],
+                                    "source_role_intents": [],
+                                    "content_surface_intents": ["prose"],
+                                },
                             }
                         ],
                         "fact_requests": [],
@@ -890,42 +916,35 @@ def test_deepseek_evidence_schema_flows_directly_to_external_mcp_capture() -> No
     )
     request = planner_output.tasks[0].evidence_requests[0].model_dump(mode="json")
 
-    with DellMCPToolLaneAdapter(_build_server(), run_binding=_binding()) as adapter:
+    assert "issuer_ids" not in json.dumps(request)
+    assert "route_ids" not in json.dumps(request)
+    with DellMCPToolLaneAdapter(
+        _build_server(),
+        run_binding=_binding(),
+        source_family_compiler=_SOURCE_FAMILY_COMPILER,
+    ) as adapter:
         result = adapter.evidence_tool(
-            _task("evidence", evidence_request=request)
+            _task(
+                "evidence",
+                branch_id="Q2_DEMAND_QUALITY",
+                evidence_request=request,
+            )
         )
 
     assert result["status"] == "success"
-    assert result["result_states"] == [
-        "captured_source_candidate",
-        "retrieval_candidate",
-    ]
-    locator = next(
-        row for row in result["items"] if row["result_state"] == "retrieval_candidate"
+    assert set(result["result_states"]).issubset(
+        {"retrieval_candidate", "typed_gap"}
     )
-    captured = next(
-        row
-        for row in result["items"]
-        if row["result_state"] == "captured_source_candidate"
-    )
-    assert locator["candidate_is_not_evidence"] is True
-    assert locator["citation_eligible"] is False
-    assert captured["captured_candidate_is_not_evidence"] is True
-    assert captured["admission_required_before_citation"] is True
-    assert captured["source_capture_authority"] is False
-    assert captured["citation_eligible"] is False
-    assert [
-        receipt["tool_name"] for receipt in captured["mcp_receipt_chain"]
-    ] == [
-        GET_RESEARCH_METHOD_TOOL,
-        SEARCH_EXTERNAL_SOURCES_TOOL,
-        CAPTURE_EXTERNAL_SOURCE_TOOL,
-    ]
-    assert sum(
-        receipt["tool_name"] == CAPTURE_EXTERNAL_SOURCE_TOOL
+    assert any(
+        receipt.get("contract_version") == "1.2"
         for row in result["items"]
         for receipt in row["mcp_receipt_chain"]
-    ) == 1
+    )
+    assert any(
+        receipt.get("tool_name") == SEARCH_LOCAL_KNOWLEDGE_TOOL
+        for row in result["items"]
+        for receipt in row["mcp_receipt_chain"]
+    )
 
 
 def test_finance_adapter_preserves_typed_gap_and_typed_conflict() -> None:
@@ -954,7 +973,7 @@ def test_finance_adapter_preserves_typed_gap_and_typed_conflict() -> None:
 
 def test_canonical_evidence_request_enforces_per_request_capture_ceiling() -> None:
     with pytest.raises(ValueError, match="less than or equal to 3"):
-        EvidenceRequestPayload(
+        EvidenceRequest(
             query="official Dell evidence",
             purpose="Bound one request.",
             source_route="external_required",

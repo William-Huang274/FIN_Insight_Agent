@@ -927,9 +927,146 @@ def test_pure_external_intent_compiles_without_local_selectors(
     assert receipt.disposition == "accepted"
     assert receipt.local_scopes == ()
     assert receipt.reviewed_targets == ()
-    assert len(receipt.external_targets) == 12
-    assert receipt.eligible_object_count == 12
+    assert len(receipt.external_targets) == 8
+    assert receipt.eligible_object_count == 8
     assert all(target.domain_allowlist == ("www.bis.gov",) for target in receipt.external_targets)
+    assert all(target.search_limit == 1 for target in receipt.external_targets)
+    assert sum(target.search_limit for target in receipt.external_targets) <= intent.limit
+    assert all(
+        target.target_digest
+        == canonical_digest(
+            target.model_dump(mode="json", exclude={"target_digest"})
+        )
+        for target in receipt.external_targets
+    )
+
+
+@pytest.mark.fast_contract
+def test_external_semantic_limit_is_global_across_physical_buckets(
+    inventory: CapabilityInventorySnapshot,
+    baseline: Any,
+) -> None:
+    intent = ExternalSourceIntent(
+        intent_kind="external_source",
+        query="Find one current official export-control publication",
+        purpose="Prove one semantic limit is not multiplied by physical buckets.",
+        entity_refs=("US_BIS",),
+        period_intents=(),
+        expected_information_gain=(
+            "Bound the total downstream discovery and capture candidate count."
+        ),
+        limit=1,
+        semantic_source_family_refs=("F10_EXPORT_CONTROL_AND_POLICY",),
+        domain_allowlist=("www.bis.gov",),
+    )
+    receipt = _compile(
+        intent,
+        inventory=inventory,
+        baseline=baseline,
+        route_id="route:Q7:F10:external",
+        branch_id="Q7_EXPORT_CONTROL_CHINA",
+    )
+
+    assert receipt.disposition == "accepted"
+    assert len(receipt.external_targets) == 1
+    assert sum(
+        target.search_limit for target in receipt.external_targets
+    ) == 1
+    assert receipt.eligible_object_count == 1
+
+
+@pytest.mark.fast_contract
+def test_external_limit_below_required_family_count_returns_valid_plan_delta(
+    inventory: CapabilityInventorySnapshot,
+    baseline: Any,
+) -> None:
+    second_family_bucket = _signed(
+        ExternalInventoryBucket,
+        "bucket_digest",
+        bucket_id="external:bis:compute-platform",
+        source_family_ref="F6_COMPUTE_PLATFORM_SUPPLIERS",
+        coverage_obligation_ids=("Q7_EXPORT_CONTROL_CHINA",),
+        external_route_ref="external-route:bis:compute-platform",
+        canonical_entity_id="US_BIS",
+        entity_refs=("BIS", "US_BIS"),
+        period_refs=(),
+        domain_allowlist=("www.bis.gov",),
+        authority_refs=("authority:primary-read",),
+        available_not_before="2026-01-01",
+        available_not_after="2026-09-02",
+        source_artifact_digest=EXTERNAL_ARTIFACT_DIGEST,
+        eligible_object_count=1,
+        foundation_required_family_match=True,
+    )
+    external_buckets = tuple(
+        sorted((*inventory.external_buckets, second_family_bucket), key=lambda row: row.bucket_id)
+    )
+    bindings = tuple(
+        _binding("external_source", EXTERNAL_ARTIFACT_DIGEST, 13)
+        if row.capability_kind == "external_source"
+        else row
+        for row in inventory.component_bindings
+    )
+    expanded_inventory = _signed(
+        CapabilityInventorySnapshot,
+        "inventory_snapshot_digest",
+        **{
+            **_model_values(inventory, "inventory_snapshot_digest"),
+            "snapshot_id": "inventory:dell:test:two-external-families",
+            "component_bindings": bindings,
+            "external_buckets": external_buckets,
+            "external_object_count": 13,
+        },
+    )
+    expanded_routes = tuple(
+        _route(
+            "route:Q7:F10-F6:external",
+            "Q7_EXPORT_CONTROL_CHINA",
+            "external_source",
+            (
+                "F10_EXPORT_CONTROL_AND_POLICY",
+                "F6_COMPUTE_PLATFORM_SUPPLIERS",
+            ),
+            "authority:primary-read",
+        )
+        if row.route_obligation_id == "route:Q7:F10:external"
+        else row
+        for row in baseline.source_plan.route_obligations
+    )
+    expanded_baseline = build_host_owned_baseline_source_plan(
+        authority_ref="authority:host-owned-baseline:two-external-families",
+        source_plan_id="source-plan:dell:test:two-external-families",
+        inventory=expanded_inventory,
+        route_obligations=expanded_routes,
+        policy_digest=POLICY_DIGEST,
+    )
+    intent = ExternalSourceIntent(
+        intent_kind="external_source",
+        query="Find one current official policy or compute-platform source",
+        purpose="Prove an undersized global limit returns typed replanning feedback.",
+        entity_refs=("US_BIS",),
+        period_intents=(),
+        expected_information_gain="Retain one result for each required source family.",
+        limit=1,
+        semantic_source_family_refs=(
+            "F10_EXPORT_CONTROL_AND_POLICY",
+            "F6_COMPUTE_PLATFORM_SUPPLIERS",
+        ),
+        domain_allowlist=("www.bis.gov",),
+    )
+
+    receipt = _compile(
+        intent,
+        inventory=expanded_inventory,
+        baseline=expanded_baseline,
+        route_id="route:Q7:F10-F6:external",
+        branch_id="Q7_EXPORT_CONTROL_CHINA",
+    )
+
+    assert receipt.disposition == "rejected"
+    assert receipt.tool_call_authorized is False
+    assert _correction_codes(receipt) == {"external_limit_below_required_family_count"}
+    assert receipt.corrections[0].next_action == "submit_plan_delta"
 
 
 @pytest.mark.fast_contract

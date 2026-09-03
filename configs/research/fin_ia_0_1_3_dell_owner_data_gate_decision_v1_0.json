@@ -1,0 +1,168 @@
+{
+  "schema_version": "fin_ia_dell_owner_data_gate_decision_v1_0",
+  "decision_id": "FIN-0.1.3-S3-RC-S3-105-OWNER-DATA-GATE-20260903",
+  "recorded_at": "2026-09-03",
+  "status": "owner_accepted_data_composition_successor_only",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "case_key": "DELL",
+  "product_version": "FIN-0.1.3",
+  "s_stage": "S3_RC-S3-105_SUCCESSOR",
+  "authority": {
+    "answer_free": true,
+    "physical_catalog_runtime_consumption_authorized": true,
+    "reviewed_index_runtime_consumption_authorized": true,
+    "capability_inventory_composition_authorized": true,
+    "granted_data_authority_refs": [
+      "authority:primary-read",
+      "authority:reviewed-read"
+    ],
+    "candidate_artifact_mutation_authorized": false,
+    "model_or_provider_calls_authorized": false,
+    "network_calls_authorized": false,
+    "paid_calls_authorized": false,
+    "evidence_admission_authority": false,
+    "numeric_fact_authority": false,
+    "public_information_gap_authority": false
+  },
+  "bound_inputs": {
+    "physical_catalog_ref": "configs/research/fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json",
+    "physical_catalog_sha256": "5e5c57ec952e44da4e319a19ccd128ed58b6fd1442696b203c2f39c30cf0c74b",
+    "physical_catalog_digest": "5aa9d723bbfd86aa7eacec9e9c64f03378aaea43e79d62e6ee8e2f9d4d985cfa",
+    "reviewed_enrichment_ref": "configs/research/fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json",
+    "reviewed_enrichment_sha256": "1604eea6e7b7b832b081c86c3a97a54abf96b706c49dee5b7cccd6fc6768960a",
+    "reviewed_enrichment_digest": "365a65744a58d03092dd16aedffcc0e78df9a20a8ed63c546529afa1a04e78e3",
+    "reviewed_audit_projection_digest": "b7ae5b9403635d902b9e7ace2d59a2b76a71ebc0222a6be876da023a3a9471bc",
+    "reviewed_composite_identity_digest": "188f0eda28a025d6ae13cf9327187d9edf2fc1a83d4920cc3af20ce6646e12a6",
+    "s2_result_ref": "qualification/dell_reference_vertical/s2/s2_exact_period_contract_successor_20260902_r1/company_financial_fact_mart_result.json",
+    "s2_result_sha256": "dd2c92400de777867545de2c41b975d1f07ca6060f4ed431075b7081ab16ed82",
+    "s2_result_digest": "f5a3ef877214766409a981d02349a2fd7ea010ed4a2548314531b7554a899ea6",
+    "s2_mart_ref": "qualification/dell_reference_vertical/s2/s2_exact_period_contract_successor_20260902_r1/company_financial_facts.sqlite",
+    "s2_mart_sha256": "363780c076d0f8766c0ceaafdb8b93d308d339636504b2a263127bb6ca365ac4",
+    "s2_observation_count": 1319,
+    "s2_entity_count": 3,
+    "s2_metric_count": 12
+  },
+  "route_catalog_decision": {
+    "accepted_owner_review_ids": [
+      "OR-001-Q9-FAMILY-MISMATCH",
+      "OR-002-Q3-F3-LOCAL-ZERO",
+      "OR-003-F4-Q4-LOCAL-ZERO",
+      "OR-004-TOPIC-MAPPING-PRECEDENCE"
+    ],
+    "accepted_route_ids": [
+      "E01_OPENAI_GPT56_COMPUTE",
+      "E02_TSMC_2Q26_TRANSCRIPT",
+      "E03_MICRON_Q3_FY26_PREPARED_REMARKS",
+      "E05_DELL_Q2_FY27_SEC_EXHIBIT",
+      "E06_DELL_VOLTA_133MW_DEPLOYMENT",
+      "E07_DELL_AI_FACTORY_AVAILABILITY",
+      "E08_NVIDIA_VERA_RUBIN_PRODUCTION",
+      "E09_BIS_CHINA_LICENSE_POLICY",
+      "E10_HPE_Q2_FY26_TRANSCRIPT",
+      "E11_SMCI_Q4_FY26_RESULTS",
+      "E12_ECFR_ADVANCED_COMPUTING_RULE",
+      "E13_WDC_Q4_FY26_RESULTS",
+      "amazon_2026_q2_release",
+      "anthropic_fable_5",
+      "bis_2026_china_semiconductor_policy",
+      "dell_fy2026_10k_narrative",
+      "dell_fy2027_q1_10q_narrative",
+      "dell_fy2027_q1_release",
+      "dell_fy2027_q1_transcript",
+      "dell_fy2027_q2_sec_exhibit_99_1",
+      "dell_mistral_named_deployment",
+      "dell_nxtgen_named_deployment",
+      "hpe_fy2026_q2_earnings_press_release",
+      "hpe_fy2026_q2_earnings_transcript",
+      "meta_2026_q2_earnings_call_transcript",
+      "meta_2026_q2_sec_exhibit_99_1",
+      "micron_fy2026_q3_release",
+      "microsoft_fy2026_q4_call",
+      "mlcommons_inference_6_0",
+      "nvidia_fy2027_q2_release",
+      "nvidia_gb300_blackwell_ultra",
+      "nvidia_vera_rubin_production"
+    ],
+    "accepted_local_route_count": 20,
+    "accepted_external_route_count": 12,
+    "accepted_total_route_count": 32,
+    "candidate_routes_remain_candidates_not_evidence": true,
+    "route_registration_is_not_branch_coverage": true,
+    "route_registration_is_not_source_family_satisfaction": true,
+    "smci_q9_supplemental_decision": {
+      "route_id": "E11_SMCI_Q4_FY26_RESULTS",
+      "canonical_issuer_id": "SMCI",
+      "branch_id": "Q9_COUNTEREVIDENCE_WWC",
+      "source_family_ref": "F8_OEM_COMPETITION",
+      "approved_route_relation": "supplemental_only",
+      "foundation_required_family_match": false,
+      "may_satisfy_f12_minimum_route": false,
+      "f12_minimum_route_status": "unmet_must_remain_typed_gap"
+    },
+    "local_zero_boundaries": [
+      {
+        "branch_id": "Q3_UNITS_ASP_PVM",
+        "source_family_ref": "F3_DELL_PRODUCT_SUPPORT",
+        "eligible_local_route_count": 0,
+        "eligible_local_searchable_leaf_count": 0,
+        "boundary_action": "preserve_typed_local_insufficiency"
+      },
+      {
+        "branch_id": "Q4_ARCHITECTURE_RAMP",
+        "source_family_ref": "F4_CUSTOMER_CAPEX_DEPLOYMENT",
+        "eligible_local_route_count": 0,
+        "eligible_local_searchable_leaf_count": 0,
+        "boundary_action": "preserve_typed_local_insufficiency"
+      }
+    ],
+    "topic_mapping_decision": {
+      "accepted_topic_mapping_count": 10,
+      "topic_mapping_digest": "f20b9bce87f18e5426e95b106126c1c8224ce26a13185da763cd7668281d2c91",
+      "mapping_semantics": "selector_only",
+      "proves_claim_relevance": false,
+      "proves_branch_coverage": false,
+      "may_suppress_reviewed_lane": false
+    }
+  },
+  "reviewed_evidence_decision": {
+    "audited_item_count": 61,
+    "non_ambiguous_candidate_mappings_accepted": true,
+    "executable_item_count": 56,
+    "ambiguous_audit_only_item_count": 5,
+    "ambiguity_operation": "exclude_from_executable_index_preserve_in_audit_projection",
+    "ambiguous_items_deleted": false,
+    "ambiguous_item_digests": [
+      "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a",
+      "3b054965c17526b1a94c279f7502344468179b740134041829d36d7eae4f5299",
+      "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f",
+      "b9e41b6799ac41ee3440bdfe2124e27f8e4092b6398b10d894c61a9c8e854d21",
+      "d0b73d9640d6d9f267d3c8eb8475a14b431f5de32933dce1d2b0bf5dac6d6473"
+    ],
+    "micron_sec_filing_identity_binding": {
+      "evidence_item_digest": "30a99d1a9de9a6dd7b30e20c2223e6e73d0c75096d039b2e5e8fba6e1972c261",
+      "raw_evidence_owner_id": "MU",
+      "canonical_evidence_owner_id": "MICRON",
+      "sec_cik": "0000723125",
+      "sec_accession": "0000723125-26-000013",
+      "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0003",
+      "observed_domain": "www.sec.gov",
+      "sec_archive_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+      "binding_rule": "raw_alias_and_canonical_issuer_plus_sec_cik_and_accession",
+      "binding_scope": "this_evidence_item_only",
+      "adds_sec_domain_to_canonical_domain_registry": false
+    }
+  },
+  "known_boundaries": [
+    "decision_does_not_authorize_evidence_admission_numeric_facts_or_public_gap_claims",
+    "decision_does_not_authorize_model_provider_network_or_paid_calls",
+    "five_ambiguous_items_remain_immutable_audit_evidence",
+    "smci_q9_f8_route_does_not_close_the_f12_minimum_route"
+  ],
+  "digest_contract": {
+    "algorithm": "sha256",
+    "canonicalization": "utf8_json_ensure_ascii_false_sort_keys_true_separators_comma_colon",
+    "self_digest_field": "decision_digest",
+    "self_digest_field_excluded_from_digest": true
+  },
+  "decision_digest": "739df0f5d2880af8e27a08b5f9e31e10e894f4900fb72681e7b02e065e89b204"
+}

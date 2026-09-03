@@ -1,11 +1,16 @@
 """Thin LangGraph Agent Server SDK client for the Dell reference vertical.
 
 Agent Server owns threads, runs, queues, checkpointing, resumable streams, and
-state storage.  This module only returns the identity mappings that FIN's
-``AgentSession`` / ``ResearchRun`` / ``RunInvocation`` store must durably
-persist, and fixes the qualified client options.  It is not itself that durable
-store.  It deliberately has no direct graph invocation, SQLite checkpointer,
-HTTP server, retry loop, or alternate runtime path.
+state storage. This module uses the FIN-owned PostgreSQL identity repository to
+bind canonical ``AgentSession`` / ``ResearchRun`` / ``RunInvocation`` IDs to
+opaque server IDs. It deliberately has no direct graph invocation, SQLite
+checkpointer, HTTP server, retry loop, or alternate runtime path.
+
+The Agent Server create and FIN database bind cannot share one transaction. A
+successful create followed by a bind failure is therefore reported fail-closed
+and may leave an unbound server orphan. Reconciliation is an explicit future
+operator concern; this client does not hide that boundary with retry or
+compensation machinery.
 """
 
 from __future__ import annotations
@@ -15,19 +20,41 @@ from dataclasses import dataclass
 import re
 from typing import Any, Literal
 from urllib.parse import urlsplit
-from uuid import UUID
+from uuid import NAMESPACE_URL, UUID, uuid5
 
 from langgraph_sdk import get_sync_client
 from langgraph_sdk.schema import StreamPart, ThreadState
 
+from sec_agent.canonical_runtime.contracts_v1_2 import (
+    AgentSessionV1_2,
+    ResearchRun,
+    RunInvocation,
+)
+
+from .dell_agent_server_identity import (
+    DELL_AGENT_SERVER_ASSISTANT_ID,
+    DellAgentServerIdentityRepository,
+    DellAgentServerIdentityStoreError,
+    PersistedAgentSessionBinding,
+    PersistedRunInvocationBinding,
+    agent_session_identity_digest,
+    research_run_identity_digest,
+    run_invocation_identity_digest,
+    validate_agent_session,
+    validate_research_run,
+    validate_run_invocation,
+)
 from .dell_reference_vertical_graph import DellReferenceVerticalGraphInput
 
 
-DELL_AGENT_SERVER_ASSISTANT_ID = "dell_reference_vertical"
 DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION = "fin_ia_dell_agent_server_client_v1_0"
 
 _STREAM_ID_PATTERN = re.compile(r"^(?P<milliseconds>[0-9]+)-(?P<sequence>[0-9]+)$")
 _ALLOWED_STREAM_EVENTS = frozenset({"metadata", "updates", "end"})
+_DELL_SESSION_THREAD_NAMESPACE = uuid5(
+    NAMESPACE_URL,
+    "https://fin-insight.local/dell-agent-server/session/v1",
+)
 
 
 class DellAgentServerClientError(RuntimeError):
@@ -67,9 +94,29 @@ def _stream_order_key(value: str, *, code: str) -> tuple[int, int]:
     return int(match.group("milliseconds")), int(match.group("sequence"))
 
 
+def _deterministic_session_thread_id(session: AgentSessionV1_2) -> str:
+    """Derive the stable Agent Server thread UUID for one FIN session key."""
+
+    return str(
+        uuid5(
+            _DELL_SESSION_THREAD_NAMESPACE,
+            f"{session.session_id}\0{session.thread_id}",
+        )
+    )
+
+
+def _validate_identity_contract(validator: Any, value: Any) -> Any:
+    try:
+        return validator(value)
+    except DellAgentServerIdentityStoreError as exc:
+        raise DellAgentServerClientError(exc.code) from None
+    except Exception:
+        raise DellAgentServerClientError("fin_identity_contract_invalid") from None
+
+
 @dataclass(frozen=True, slots=True)
 class DellAgentServerSessionBinding:
-    """One FIN AgentSession bound to one server-assigned thread UUID."""
+    """One FIN AgentSession bound to one Agent Server thread UUID."""
 
     agent_session_id: str
     server_thread_id: str
@@ -144,19 +191,30 @@ class DellAgentServerClient:
     from supported environment variables.
     """
 
-    __slots__ = ("_closed", "_owns_sdk_client", "_sdk")
+    __slots__ = (
+        "_closed",
+        "_identity_repository",
+        "_owns_sdk_client",
+        "_sdk",
+    )
 
     def __init__(
         self,
         sdk_client: Any,
         *,
+        identity_repository: DellAgentServerIdentityRepository,
         owns_sdk_client: bool = False,
     ) -> None:
         if sdk_client is None:
             raise DellAgentServerClientError("agent_server_sdk_client_required")
+        if identity_repository is None:
+            raise DellAgentServerClientError(
+                "fin_identity_repository_required"
+            )
         if not isinstance(owns_sdk_client, bool):
             raise DellAgentServerClientError("agent_server_sdk_ownership_invalid")
         self._sdk = sdk_client
+        self._identity_repository = identity_repository
         self._owns_sdk_client = owns_sdk_client
         self._closed = False
 
@@ -165,6 +223,7 @@ class DellAgentServerClient:
         cls,
         *,
         url: str,
+        identity_repository: DellAgentServerIdentityRepository,
         timeout: Any | None = None,
     ) -> "DellAgentServerClient":
         """Create the official sync SDK client without handling a key itself."""
@@ -177,6 +236,8 @@ class DellAgentServerClient:
         parsed = urlsplit(server_url)
         if parsed.scheme not in {"http", "https"} or not parsed.hostname:
             raise DellAgentServerClientError("agent_server_url_invalid")
+        if parsed.query or parsed.fragment:
+            raise DellAgentServerClientError("agent_server_url_invalid")
         if parsed.username is not None or parsed.password is not None:
             raise DellAgentServerClientError("agent_server_url_credentials_forbidden")
         try:
@@ -188,6 +249,7 @@ class DellAgentServerClient:
             raise DellAgentServerClientError("agent_server_sdk_connect_failed") from None
         return cls(
             sdk_client,
+            identity_repository=identity_repository,
             owns_sdk_client=True,
         )
 
@@ -225,30 +287,52 @@ class DellAgentServerClient:
     def create_agent_session(
         self,
         *,
-        agent_session_id: str,
+        agent_session: AgentSessionV1_2,
     ) -> DellAgentServerSessionBinding:
-        """Create the Agent Server thread owned by one FIN AgentSession.
+        """Return or create the one thread durably owned by an AgentSession.
 
-        Agent Server 0.13.3 requires thread IDs to be UUIDs.  The server assigns
-        that UUID.  This method only returns the mapping; the canonical FIN
-        AgentSession store must still persist it durably instead of reusing the
-        FIN session ID as a server ID.
+        Agent Server 0.13.3 accepts a caller-supplied thread UUID and supports
+        ``if_exists=do_nothing``. New sessions therefore use a deterministic
+        UUID and every call idempotently ensures that exact remote thread. A
+        previously persisted non-deterministic UUID remains readable for
+        migration compatibility and is also ensured rather than replaced.
         """
 
         self._ensure_open()
-        session_id = _required_identifier(
-            agent_session_id,
-            code="fin_agent_session_id_invalid",
-            maximum=180,
+        session_contract = _validate_identity_contract(
+            validate_agent_session,
+            agent_session,
         )
+        session_id = session_contract.session_id
+        identity_digest = agent_session_identity_digest(session_contract)
+        persisted = self._identity_read(
+            self._identity_repository.get_agent_session,
+            agent_session_id=session_id,
+        )
+        if persisted is not None:
+            durable_binding = self._session_binding_from_persisted(
+                persisted,
+                agent_session=session_contract,
+                expected_identity_digest=identity_digest,
+            )
+            server_thread_id = durable_binding.server_thread_id
+        else:
+            durable_binding = None
+            server_thread_id = _deterministic_session_thread_id(
+                session_contract
+            )
+
         metadata = {
             "fin_client_schema_version": DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION,
             "agent_session_id": session_id,
+            "fin_thread_id": session_contract.thread_id,
+            "session_identity_digest": identity_digest,
         }
         try:
             created = self._sdk.threads.create(
                 metadata=metadata,
-                if_exists="raise",
+                thread_id=server_thread_id,
+                if_exists="do_nothing",
                 graph_id=DELL_AGENT_SERVER_ASSISTANT_ID,
             )
         except Exception:
@@ -257,28 +341,35 @@ class DellAgentServerClient:
             ) from None
         if not isinstance(created, Mapping):
             raise DellAgentServerClientError("agent_server_session_response_invalid")
-        server_thread_id = _server_uuid(
+        returned_thread_id = _server_uuid(
             created.get("thread_id"),
             code="agent_server_session_response_invalid",
         )
-        returned_metadata = created.get("metadata")
-        if not isinstance(returned_metadata, Mapping) or returned_metadata.get(
-            "agent_session_id"
-        ) != session_id:
+        if returned_thread_id != server_thread_id:
             raise DellAgentServerClientError(
                 "agent_server_session_identity_mismatch"
             )
-        return DellAgentServerSessionBinding(
-            agent_session_id=session_id,
-            server_thread_id=server_thread_id,
+        returned_metadata = created.get("metadata")
+        if not isinstance(returned_metadata, Mapping) or any(
+            returned_metadata.get(key) != value
+            for key, value in metadata.items()
+        ):
+            raise DellAgentServerClientError(
+                "agent_server_session_identity_mismatch"
+            )
+        if durable_binding is not None:
+            return durable_binding
+        return self._persist_session_binding(
+            agent_session=session_contract,
+            server_thread_id=returned_thread_id,
         )
 
     def start_run(
         self,
         *,
         session: DellAgentServerSessionBinding,
-        research_run_id: str,
-        run_invocation_id: str,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
         graph_input: Mapping[str, Any],
     ) -> DellAgentServerRunBinding:
         """Create a background server run for a new FIN ResearchRun invocation."""
@@ -286,6 +377,20 @@ class DellAgentServerClient:
         self._ensure_open()
         if not isinstance(session, DellAgentServerSessionBinding):
             raise DellAgentServerClientError("agent_server_session_binding_invalid")
+        run_contract = _validate_identity_contract(
+            validate_research_run,
+            research_run,
+        )
+        invocation_contract = _validate_identity_contract(
+            validate_run_invocation,
+            run_invocation,
+        )
+        self._validate_run_lineage(
+            session=session,
+            research_run=run_contract,
+            run_invocation=invocation_contract,
+            invocation_kind="start",
+        )
         if not isinstance(graph_input, Mapping):
             raise DellAgentServerClientError("agent_server_graph_input_invalid")
         try:
@@ -296,12 +401,12 @@ class DellAgentServerClient:
             raise DellAgentServerClientError(
                 "agent_server_graph_input_invalid"
             ) from None
-        if validated_input.run_id != research_run_id:
+        if validated_input.run_id != run_contract.run_id:
             raise DellAgentServerClientError("fin_research_run_input_mismatch")
         return self._create_run(
             session=session,
-            research_run_id=research_run_id,
-            run_invocation_id=run_invocation_id,
+            research_run=run_contract,
+            run_invocation=invocation_contract,
             invocation_kind="start",
             graph_input=validated_input.model_dump(mode="json"),
             resume_payload=None,
@@ -311,7 +416,8 @@ class DellAgentServerClient:
         self,
         *,
         prior_run: DellAgentServerRunBinding,
-        run_invocation_id: str,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
         resume_payload: Mapping[str, Any],
     ) -> DellAgentServerRunBinding:
         """Resume an interrupted ResearchRun as a new server RunInvocation."""
@@ -319,23 +425,42 @@ class DellAgentServerClient:
         self._ensure_open()
         if not isinstance(prior_run, DellAgentServerRunBinding):
             raise DellAgentServerClientError("agent_server_prior_run_binding_invalid")
-        invocation_id = _required_identifier(
-            run_invocation_id,
-            code="fin_run_invocation_id_invalid",
-            maximum=180,
+        run_contract = _validate_identity_contract(
+            validate_research_run,
+            research_run,
         )
-        if invocation_id == prior_run.run_invocation_id:
+        invocation_contract = _validate_identity_contract(
+            validate_run_invocation,
+            run_invocation,
+        )
+        if invocation_contract.invocation_id == prior_run.run_invocation_id:
             raise DellAgentServerClientError("fin_run_invocation_id_reused")
+        if (
+            prior_run.agent_session_id != run_contract.session_id
+            or prior_run.research_run_id != run_contract.run_id
+        ):
+            raise DellAgentServerClientError("fin_research_run_lineage_mismatch")
         if not isinstance(resume_payload, Mapping) or not resume_payload:
             raise DellAgentServerClientError("agent_server_resume_payload_invalid")
         session = DellAgentServerSessionBinding(
             agent_session_id=prior_run.agent_session_id,
             server_thread_id=prior_run.server_thread_id,
         )
+        self._validate_run_lineage(
+            session=session,
+            research_run=run_contract,
+            run_invocation=invocation_contract,
+            invocation_kind="resume",
+        )
+        self._validate_durable_resume_predecessor(
+            prior_run=prior_run,
+            research_run=run_contract,
+            run_invocation=invocation_contract,
+        )
         return self._create_run(
             session=session,
-            research_run_id=prior_run.research_run_id,
-            run_invocation_id=invocation_id,
+            research_run=run_contract,
+            run_invocation=invocation_contract,
             invocation_kind="resume",
             graph_input=None,
             resume_payload=dict(resume_payload),
@@ -345,22 +470,50 @@ class DellAgentServerClient:
         self,
         *,
         session: DellAgentServerSessionBinding,
-        research_run_id: str,
-        run_invocation_id: str,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
         invocation_kind: Literal["start", "resume"],
         graph_input: Mapping[str, Any] | None,
         resume_payload: Mapping[str, Any] | None,
     ) -> DellAgentServerRunBinding:
-        research_id = _required_identifier(
-            research_run_id,
-            code="fin_research_run_id_invalid",
-            maximum=180,
+        research_id = research_run.run_id
+        invocation_id = run_invocation.invocation_id
+        persisted_session = self._identity_read(
+            self._identity_repository.get_agent_session,
+            agent_session_id=session.agent_session_id,
         )
-        invocation_id = _required_identifier(
-            run_invocation_id,
-            code="fin_run_invocation_id_invalid",
-            maximum=180,
+        if persisted_session is None:
+            raise DellAgentServerClientError(
+                "fin_agent_session_durable_binding_missing"
+            )
+        if (
+            persisted_session.server_thread_id != session.server_thread_id
+            or persisted_session.assistant_id != DELL_AGENT_SERVER_ASSISTANT_ID
+        ):
+            raise DellAgentServerClientError(
+                "fin_agent_session_durable_binding_conflict"
+            )
+        existing = self._identity_read(
+            self._identity_repository.get_run_invocation,
+            run_invocation_id=invocation_id,
         )
+        if existing is not None:
+            return self._run_binding_from_persisted(
+                existing,
+                session=session,
+                research_run=research_run,
+                run_invocation=run_invocation,
+                invocation_kind=invocation_kind,
+            )
+        if invocation_kind == "start":
+            aggregate = self._identity_read(
+                self._identity_repository.get_research_run_aggregate,
+                research_run_id=research_id,
+            )
+            if aggregate is not None:
+                raise DellAgentServerClientError(
+                    "fin_start_durable_invocation_conflict"
+                )
         context = {
             "agent_session_id": session.agent_session_id,
             "research_run_id": research_id,
@@ -402,22 +555,258 @@ class DellAgentServerClient:
         )
         if server_thread_id != session.server_thread_id:
             raise DellAgentServerClientError("agent_server_run_thread_mismatch")
-        return DellAgentServerRunBinding(
-            agent_session_id=session.agent_session_id,
-            research_run_id=research_id,
-            run_invocation_id=invocation_id,
+        return self._persist_run_binding(
+            research_run=research_run,
+            run_invocation=run_invocation,
+            invocation_kind=invocation_kind,
             server_thread_id=server_thread_id,
             server_run_id=_server_uuid(
                 created.get("run_id"),
                 code="agent_server_run_response_invalid",
             ),
-            invocation_kind=invocation_kind,
             server_status=_required_identifier(
                 created.get("status"),
                 code="agent_server_run_response_invalid",
                 maximum=80,
             ),
         )
+
+    def _persist_session_binding(
+        self,
+        *,
+        agent_session: AgentSessionV1_2,
+        server_thread_id: str,
+    ) -> DellAgentServerSessionBinding:
+        persisted = self._identity_write(
+            self._identity_repository.bind_agent_session,
+            agent_session=agent_session,
+            server_thread_id=server_thread_id,
+            assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+        )
+        return self._session_binding_from_persisted(
+            persisted,
+            agent_session=agent_session,
+            expected_identity_digest=agent_session_identity_digest(agent_session),
+        )
+
+    def _persist_run_binding(
+        self,
+        *,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
+        invocation_kind: Literal["start", "resume"],
+        server_thread_id: str,
+        server_run_id: str,
+        server_status: str,
+    ) -> DellAgentServerRunBinding:
+        persisted = self._identity_write(
+            self._identity_repository.bind_run_invocation,
+            research_run=research_run,
+            run_invocation=run_invocation,
+            server_thread_id=server_thread_id,
+            server_run_id=server_run_id,
+            server_invocation_kind=invocation_kind,
+            first_server_status=server_status,
+            assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+        )
+        return self._run_binding_from_persisted(
+            persisted,
+            session=DellAgentServerSessionBinding(
+                agent_session_id=research_run.session_id,
+                server_thread_id=server_thread_id,
+            ),
+            research_run=research_run,
+            run_invocation=run_invocation,
+            invocation_kind=invocation_kind,
+            observed_server_status=server_status,
+        )
+
+    def _session_binding_from_persisted(
+        self,
+        persisted: PersistedAgentSessionBinding,
+        *,
+        agent_session: AgentSessionV1_2,
+        expected_identity_digest: str,
+    ) -> DellAgentServerSessionBinding:
+        if (
+            persisted.agent_session_id != agent_session.session_id
+            or persisted.fin_thread_id != agent_session.thread_id
+            or persisted.assistant_id != DELL_AGENT_SERVER_ASSISTANT_ID
+            or persisted.session_identity_digest != expected_identity_digest
+        ):
+            raise DellAgentServerClientError(
+                "fin_agent_session_durable_binding_conflict"
+            )
+        return DellAgentServerSessionBinding(
+            agent_session_id=persisted.agent_session_id,
+            server_thread_id=persisted.server_thread_id,
+        )
+
+    def _run_binding_from_persisted(
+        self,
+        persisted: PersistedRunInvocationBinding,
+        *,
+        session: DellAgentServerSessionBinding,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
+        invocation_kind: Literal["start", "resume"],
+        observed_server_status: str | None = None,
+    ) -> DellAgentServerRunBinding:
+        aggregate = self._identity_read(
+            self._identity_repository.get_research_run_aggregate,
+            research_run_id=research_run.run_id,
+        )
+        if aggregate is None:
+            raise DellAgentServerClientError(
+                "fin_research_run_durable_aggregate_missing"
+            )
+        if (
+            aggregate.research_run.run_identity_digest
+            != research_run_identity_digest(research_run)
+            or persisted.run_invocation_id != run_invocation.invocation_id
+            or persisted.research_run_id != research_run.run_id
+            or persisted.agent_session_id != research_run.session_id
+            or persisted.invocation_ordinal != run_invocation.ordinal
+            or persisted.invocation_identity_digest
+            != run_invocation_identity_digest(run_invocation)
+            or persisted.server_invocation_kind != invocation_kind
+            or persisted.server_thread_id != session.server_thread_id
+            or persisted.assistant_id != DELL_AGENT_SERVER_ASSISTANT_ID
+        ):
+            raise DellAgentServerClientError(
+                "fin_run_invocation_durable_binding_conflict"
+            )
+        return DellAgentServerRunBinding(
+            agent_session_id=persisted.agent_session_id,
+            research_run_id=persisted.research_run_id,
+            run_invocation_id=persisted.run_invocation_id,
+            server_thread_id=persisted.server_thread_id,
+            server_run_id=persisted.server_run_id,
+            invocation_kind=invocation_kind,
+            server_status=(
+                observed_server_status or persisted.first_server_status
+            ),
+        )
+
+    def _validate_run_lineage(
+        self,
+        *,
+        session: DellAgentServerSessionBinding,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
+        invocation_kind: Literal["start", "resume"],
+    ) -> None:
+        if research_run.session_id != session.agent_session_id:
+            raise DellAgentServerClientError("fin_research_run_session_mismatch")
+        if (
+            run_invocation.session_id != research_run.session_id
+            or run_invocation.run_id != research_run.run_id
+        ):
+            raise DellAgentServerClientError("fin_run_invocation_lineage_mismatch")
+        if invocation_kind == "start":
+            if (
+                run_invocation.invocation_kind != "START"
+                or run_invocation.ordinal != 1
+            ):
+                raise DellAgentServerClientError(
+                    "fin_run_invocation_kind_mismatch"
+                )
+        elif (
+            run_invocation.invocation_kind not in {"RESUME", "RECOVERY"}
+            or run_invocation.ordinal <= 1
+        ):
+            raise DellAgentServerClientError("fin_run_invocation_kind_mismatch")
+
+    def _validate_durable_resume_predecessor(
+        self,
+        *,
+        prior_run: DellAgentServerRunBinding,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
+    ) -> None:
+        aggregate = self._identity_read(
+            self._identity_repository.get_research_run_aggregate,
+            research_run_id=research_run.run_id,
+        )
+        if aggregate is None or not aggregate.invocations:
+            raise DellAgentServerClientError(
+                "fin_resume_durable_predecessor_missing"
+            )
+        if (
+            aggregate.research_run.agent_session_id != research_run.session_id
+            or aggregate.research_run.run_identity_digest
+            != research_run_identity_digest(research_run)
+        ):
+            raise DellAgentServerClientError(
+                "fin_resume_durable_predecessor_conflict"
+            )
+        first = aggregate.invocations[0]
+        if (
+            first.invocation_ordinal != 1
+            or first.canonical_invocation_kind != "START"
+            or first.server_invocation_kind != "start"
+        ):
+            raise DellAgentServerClientError(
+                "fin_resume_durable_start_missing"
+            )
+        predecessor_index = run_invocation.ordinal - 2
+        if predecessor_index < 0 or predecessor_index >= len(
+            aggregate.invocations
+        ):
+            raise DellAgentServerClientError(
+                "fin_resume_durable_predecessor_missing"
+            )
+        predecessor = aggregate.invocations[predecessor_index]
+        if (
+            predecessor.run_invocation_id != prior_run.run_invocation_id
+            or predecessor.research_run_id != prior_run.research_run_id
+            or predecessor.agent_session_id != prior_run.agent_session_id
+            or predecessor.server_thread_id != prior_run.server_thread_id
+            or predecessor.server_run_id != prior_run.server_run_id
+            or predecessor.server_invocation_kind != prior_run.invocation_kind
+            or predecessor.assistant_id != DELL_AGENT_SERVER_ASSISTANT_ID
+        ):
+            raise DellAgentServerClientError(
+                "fin_resume_durable_predecessor_conflict"
+            )
+        matching_current = tuple(
+            item
+            for item in aggregate.invocations
+            if item.run_invocation_id == run_invocation.invocation_id
+        )
+        if matching_current:
+            if (
+                len(matching_current) != 1
+                or matching_current[0].invocation_ordinal
+                != run_invocation.ordinal
+            ):
+                raise DellAgentServerClientError(
+                    "fin_resume_durable_invocation_conflict"
+                )
+        elif run_invocation.ordinal != len(aggregate.invocations) + 1:
+            raise DellAgentServerClientError(
+                "fin_resume_durable_invocation_gap"
+            )
+
+    def _identity_read(self, operation: Any, **kwargs: Any) -> Any:
+        try:
+            return operation(**kwargs)
+        except DellAgentServerIdentityStoreError as exc:
+            raise DellAgentServerClientError(exc.code) from None
+        except Exception:
+            raise DellAgentServerClientError(
+                "fin_identity_repository_read_failed"
+            ) from None
+
+    def _identity_write(self, operation: Any, **kwargs: Any) -> Any:
+        try:
+            return operation(**kwargs)
+        except DellAgentServerIdentityStoreError as exc:
+            raise DellAgentServerClientError(exc.code) from None
+        except Exception:
+            raise DellAgentServerClientError(
+                "fin_identity_repository_write_failed"
+            ) from None
 
     def join_updates(
         self,

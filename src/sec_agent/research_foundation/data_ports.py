@@ -437,13 +437,28 @@ class CompanyFinancialFactQueryResult(_StrictOutputModel):
         return self
 
 
-def _evidence_id(case_key: str, item: Mapping[str, Any]) -> str:
+def reviewed_evidence_id(
+    *,
+    case_key: str,
+    target_id: Any,
+    evidence_item_digest: Any,
+) -> str:
+    """Return the one stable Reviewed Evidence identity used by all readers."""
+
     identity = {
         "case_key": case_key,
-        "target_id": item.get("target_id"),
-        "evidence_item_digest": item.get("evidence_item_digest"),
+        "target_id": target_id,
+        "evidence_item_digest": evidence_item_digest,
     }
     return f"EV::{canonical_digest(identity)[:16].upper()}"
+
+
+def _evidence_id(case_key: str, item: Mapping[str, Any]) -> str:
+    return reviewed_evidence_id(
+        case_key=case_key,
+        target_id=item.get("target_id"),
+        evidence_item_digest=item.get("evidence_item_digest"),
+    )
 
 
 def _validate_reviewed_evidence_item(item: Mapping[str, Any]) -> None:
@@ -1548,4 +1563,5 @@ __all__ = [
     "ReviewedEvidenceReadResult",
     "ReviewedEvidenceSearchResult",
     "StructuredLocalKnowledgeReader",
+    "reviewed_evidence_id",
 ]

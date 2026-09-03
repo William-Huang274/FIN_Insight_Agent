@@ -107,14 +107,23 @@ def _config():
 
 def _evidence_request(query: str) -> dict[str, Any]:
     return {
-        "query": query,
-        "purpose": "Test one material branch mechanism.",
-        "include_domains": ["dell.com"],
-        "issuer_ids": ["DELL"],
-        "source_roles": ["issuer_management_disclosure"],
-        "limit": 6,
-        "source_route": "reviewed_first",
-        "capture_limit": 2,
+        "minimum_route_obligation_id": (
+            "route:Q1_ISSUER_TRUTH:required-reviewed"
+        ),
+        "intent": {
+            "intent_kind": "reviewed_evidence",
+            "query": query,
+            "purpose": "Test one material branch mechanism.",
+            "entity_refs": ["DELL"],
+            "period_intents": [],
+            "expected_information_gain": (
+                "Determine whether reviewed evidence supports the mechanism."
+            ),
+            "limit": 6,
+            "topic_refs": ["operating_performance"],
+            "evidence_role_refs": [],
+            "minimum_authority_tier": "reviewed",
+        },
     }
 
 
@@ -129,6 +138,29 @@ def _fact_request() -> dict[str, Any]:
         "fiscal_years": [],
         "requested_unit": "reported_source_unit",
         "unit_family": None,
+    }
+
+
+def _source_route_catalog() -> dict[str, Any]:
+    return {
+        "schema_version": "fin_ia_dell_provider_source_route_catalog_v1_0",
+        "catalog_digest": DIGEST_C,
+        "routes": [
+            {
+                "minimum_route_obligation_id": (
+                    "route:Q1_ISSUER_TRUTH:required-reviewed"
+                ),
+                "coverage_obligation_id": "Q1_ISSUER_TRUTH",
+                "requirement": "required",
+                "intent_kind": "reviewed_evidence",
+                "semantic_source_family_refs": ["F1_SEC_ISSUER_FACTS"],
+                "entity_refs": [],
+                "period_intents": [],
+                "required_authority_refs": ["authority:reviewed-read"],
+            }
+        ],
+        "physical_selectors_exposed": False,
+        "answer_free": True,
     }
 
 
@@ -160,6 +192,8 @@ def _planner_request() -> dict[str, Any]:
         "required_branch_ids": ["Q1_ISSUER_TRUTH"],
         "planner_tool_capabilities": capabilities,
         "planner_tool_capabilities_digest": DIGEST_D,
+        "source_route_catalog": _source_route_catalog(),
+        "source_route_catalog_digest": DIGEST_C,
     }
 
 
@@ -284,6 +318,8 @@ def _counter_request() -> dict[str, Any]:
         "plan_digest": DIGEST_C,
         "context_digest": DIGEST_D,
         "workpapers": [_workpaper()],
+        "source_route_catalog": _source_route_catalog(),
+        "source_route_catalog_digest": DIGEST_C,
     }
 
 
@@ -531,10 +567,74 @@ def test_provider_dict_schema_preserves_langchain_pydantic_tool_contract() -> No
         strict=False,
     )
 
-    assert actual == expected
+    assert actual["name"] == expected["name"]
+    assert actual["description"] == expected["description"]
+    assert actual.get("strict") == expected.get("strict")
+    assert "$defs" not in json.dumps(actual)
+    assert '"$ref"' not in json.dumps(actual)
     assert actual["parameters"] != (
         adapter_module.PlannerSemanticPayload.model_json_schema()
     )
+
+
+def test_provider_planner_schema_rejects_physical_evidence_selectors() -> None:
+    physical_request = {
+        "query": "Dell AI server backlog",
+        "purpose": "Test one material branch mechanism.",
+        "include_domains": ["dell.com"],
+        "issuer_ids": ["DELL"],
+        "source_roles": ["issuer_management_disclosure"],
+        "limit": 6,
+        "source_route": "reviewed_first",
+        "capture_limit": 2,
+    }
+    payload = _models()["planner"].response
+    payload["tasks"][0]["evidence_requests"] = [physical_request]
+
+    with pytest.raises(ValidationError):
+        adapter_module.PlannerSemanticPayload.model_validate_json(
+            json.dumps(payload)
+        )
+
+
+def test_specialist_projection_strips_host_compilation_receipts() -> None:
+    request = _specialist_request()
+    request["evidence_result"]["items"][0]["mcp_receipt_chain"] = [
+        {
+            "contract_version": "1.2",
+            "local_scopes": [
+                {
+                    "issuer_ids": ["DELL"],
+                    "fiscal_periods": ["FY2027_Q2"],
+                    "route_ids": ["physical-route-secret"],
+                    "lanes": ["local"],
+                }
+            ],
+        }
+    ]
+    request["evidence_result"]["items"][0]["cell_binding_used"] = False
+
+    projected = adapter_module._project_request("specialist", request)
+    encoded = json.dumps(projected, ensure_ascii=False)
+
+    assert "mcp_receipt_chain" not in encoded
+    assert "cell_binding_used" not in encoded
+    assert "physical-route-secret" not in encoded
+    assert "issuer_ids" not in encoded
+    assert projected["evidence_result"]["items"][0]["evidence_id"] == "E-1"
+
+
+def test_specialist_projection_fails_closed_on_unwrapped_physical_selector() -> None:
+    request = _specialist_request()
+    request["evidence_result"]["items"][0]["route_ids"] = [
+        "unwrapped-physical-route"
+    ]
+
+    with pytest.raises(
+        DeepSeekStructuredAgentError,
+        match="provider_tool_item_physical_selector_exposed",
+    ):
+        adapter_module._project_request("specialist", request)
 
 
 def test_real_chatdeepseek_dict_path_selects_json_not_pydantic_parser() -> None:

@@ -40,12 +40,20 @@ from .dell_reference_vertical_contracts import (
     AgentRuntimeScopeCeiling,
     BranchMethodBinding,
     CaseFoundationBinding,
+    EvidenceIntentRequest,
     EvidenceRequest,
     RuntimeReceipt,
     ToolFailure,
     ToolLaneResult,
     ToolLaneTask,
     canonical_sha256,
+)
+from .dell_source_family_compiler import (
+    CompiledExternalSourceTarget,
+    CompiledReviewedEvidenceTarget,
+    ReviewedEvidenceIndexRowV1_2,
+    SourceFamilyCompilationReceipt,
+    SourceFamilyCompiler,
 )
 
 
@@ -221,12 +229,14 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         server: Any,
         *,
         run_binding: DellMCPRunBinding,
+        source_family_compiler: SourceFamilyCompiler | None = None,
         subject_ticker: str = "DELL",
         default_financial_granularity: str = "quarter_discrete",
         read_timeout_seconds: float = 60.0,
     ) -> None:
         self._server = server
         self._binding = run_binding
+        self._source_family_compiler = source_family_compiler
         self._ticker = subject_ticker.strip().upper()
         self._granularity = default_financial_granularity.strip()
         self._timeout = read_timeout_seconds
@@ -462,7 +472,46 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         calls: list[_Call],
         recoverable_calls: list[_Call],
     ) -> None:
-        for raw_request in lane_task.task.evidence_requests:
+        for request_index, raw_request in enumerate(
+            lane_task.task.evidence_requests, start=1
+        ):
+            if "intent" in raw_request or "minimum_route_obligation_id" in raw_request:
+                if self._source_family_compiler is None:
+                    raise DellMCPToolAdapterError(
+                        "mcp_source_family_compiler_required"
+                    )
+                semantic = EvidenceIntentRequest.model_validate(raw_request)
+                receipt = self._source_family_compiler.compile(
+                    semantic.intent,
+                    minimum_route_obligation_id=(
+                        semantic.minimum_route_obligation_id
+                    ),
+                    branch_id=lane_task.task.branch_id,
+                    task_authority_refs=(
+                        self._source_family_compiler.data_authority_refs
+                    ),
+                    expected_inventory_snapshot_digest=(
+                        self._source_family_compiler.inventory_snapshot_digest
+                    ),
+                    compilation_receipt_id=(
+                        f"compile:{self._binding.execution_attempt_id}:"
+                        f"{lane_task.task.task_id}:{request_index}"
+                    ),
+                )
+                self._compiled_evidence(
+                    lane_task,
+                    scope,
+                    receipt,
+                    items=items,
+                    states=states,
+                    calls=calls,
+                    recoverable_calls=recoverable_calls,
+                )
+                continue
+            if self._source_family_compiler is not None:
+                raise DellMCPToolAdapterError(
+                    "mcp_legacy_physical_evidence_request_forbidden"
+                )
             request = EvidenceRequest.model_validate(raw_request)
             if request.source_route == "external_required":
                 self._external(
@@ -473,6 +522,7 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                     states=states,
                     calls=calls,
                     recoverable_calls=recoverable_calls,
+                    receipt_prefix=(),
                 )
                 continue
 
@@ -574,6 +624,217 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                 calls=calls,
             )
 
+    def _compiled_evidence(
+        self,
+        lane_task: ToolLaneTask,
+        scope: DellResearchRunScope,
+        compilation: SourceFamilyCompilationReceipt,
+        *,
+        items: list[dict[str, Any]],
+        states: set[str],
+        calls: list[_Call],
+        recoverable_calls: list[_Call],
+    ) -> None:
+        compiler = self._source_family_compiler
+        if compiler is None:  # pragma: no cover - guarded by caller
+            raise DellMCPToolAdapterError("mcp_source_family_compiler_required")
+        compilation_receipt = compilation.model_dump(mode="json")
+        receipt_prefix = [compilation_receipt]
+        if not compilation.tool_call_authorized:
+            items.append(
+                self._gap(
+                    "source_family_compilation_rejected",
+                    receipt_prefix,
+                    compilation_disposition=compilation.disposition,
+                    corrections=[
+                        row.model_dump(mode="json")
+                        for row in compilation.corrections
+                    ],
+                )
+            )
+            states.add("typed_gap")
+            return
+        if compilation.corrections:
+            items.append(
+                self._gap(
+                    "source_family_compilation_residual",
+                    receipt_prefix,
+                    compilation_disposition=compilation.disposition,
+                    corrections=[
+                        row.model_dump(mode="json")
+                        for row in compilation.corrections
+                    ],
+                )
+            )
+            states.add("typed_gap")
+        for local_scope in compilation.local_scopes:
+            self._local(
+                lane_task,
+                {
+                    "query": local_scope.query,
+                    "branch_id": lane_task.task.branch_id,
+                    "run_scope": scope.model_dump(mode="json"),
+                    "limit": local_scope.search_limit,
+                    "issuer_ids": list(local_scope.issuer_ids),
+                    "fiscal_periods": list(local_scope.fiscal_periods),
+                    "source_roles": list(local_scope.source_roles),
+                    "route_ids": list(local_scope.route_ids),
+                    "lanes": list(local_scope.lanes),
+                },
+                receipt_prefix=receipt_prefix,
+                items=items,
+                states=states,
+                calls=calls,
+            )
+        for target in compilation.reviewed_targets:
+            self._reviewed(
+                lane_task,
+                scope,
+                target,
+                compilation_receipt=compilation_receipt,
+                items=items,
+                states=states,
+                calls=calls,
+            )
+        for target in compilation.external_targets:
+            self._external(
+                lane_task,
+                scope,
+                target,
+                items=items,
+                states=states,
+                calls=calls,
+                recoverable_calls=recoverable_calls,
+                receipt_prefix=tuple(receipt_prefix),
+            )
+
+    def _reviewed(
+        self,
+        lane_task: ToolLaneTask,
+        scope: DellResearchRunScope,
+        target: CompiledReviewedEvidenceTarget,
+        *,
+        compilation_receipt: dict[str, Any],
+        items: list[dict[str, Any]],
+        states: set[str],
+        calls: list[_Call],
+    ) -> None:
+        compiler = self._source_family_compiler
+        if compiler is None:  # pragma: no cover - guarded by caller
+            raise DellMCPToolAdapterError("mcp_source_family_compiler_required")
+        index = compiler.reviewed_evidence_index
+        if target.reviewed_index_digest != index.index_digest:
+            raise DellMCPToolAdapterError("mcp_reviewed_index_binding_mismatch")
+        eligible = {
+            row.evidence_id: row
+            for row in index.rows
+            if _reviewed_row_matches_target(row, target)
+        }
+        if len(eligible) != target.strict_eligible_item_count:
+            raise DellMCPToolAdapterError(
+                "mcp_reviewed_target_population_mismatch"
+            )
+        common = {
+            "query": target.query,
+            "branch_id": lane_task.task.branch_id,
+            "run_scope": scope.model_dump(mode="json"),
+            "limit": target.search_limit,
+        }
+        search = self._call(SEARCH_REVIEWED_EVIDENCE_TOOL, common)
+        calls.append(search)
+        if search.error or search.content is None:
+            return
+        if search.content.get("source_pack_projection_digest") != index.source_pack_digest:
+            raise DellMCPToolAdapterError(
+                "mcp_reviewed_source_pack_binding_mismatch"
+            )
+        hits = search.content.get("hits")
+        if not isinstance(hits, list):
+            raise DellMCPToolAdapterError("mcp_evidence_search_hits_invalid")
+        ids: list[str] = []
+        for hit in hits:
+            if not isinstance(hit, Mapping):
+                raise DellMCPToolAdapterError("mcp_evidence_search_hit_invalid")
+            evidence_id = str(hit.get("evidence_id") or "")
+            indexed = next(
+                (row for row in index.rows if row.evidence_id == evidence_id),
+                None,
+            )
+            if indexed is None or hit.get("evidence_item_digest") != indexed.item_digest:
+                raise DellMCPToolAdapterError(
+                    "mcp_reviewed_search_identity_binding_mismatch"
+                )
+            if evidence_id in eligible:
+                ids.append(evidence_id)
+        ids = list(dict.fromkeys(ids))[: target.search_limit]
+        if not ids:
+            items.append(
+                self._gap(
+                    "reviewed_exact_metadata_scope_not_recalled",
+                    [compilation_receipt, search.receipt],
+                    target_ref=target.target_ref,
+                )
+            )
+            states.add("typed_gap")
+            return
+        read = self._call(
+            READ_REVIEWED_EVIDENCE_BY_ID_TOOL,
+            {
+                "evidence_ids": ids,
+                "branch_id": lane_task.task.branch_id,
+                "run_scope": scope.model_dump(mode="json"),
+            },
+        )
+        calls.append(read)
+        if read.error or read.content is None:
+            return
+        if read.content.get("source_pack_projection_digest") != index.source_pack_digest:
+            raise DellMCPToolAdapterError(
+                "mcp_reviewed_read_source_pack_binding_mismatch"
+            )
+        evidence = read.content.get("evidence")
+        if not isinstance(evidence, list):
+            raise DellMCPToolAdapterError("mcp_evidence_read_items_invalid")
+        observed_ids: set[str] = set()
+        for row in evidence:
+            if not isinstance(row, Mapping) or row.get("writer_citable") is not True:
+                raise DellMCPToolAdapterError("mcp_evidence_authority_failed")
+            evidence_id = str(row.get("evidence_id") or "")
+            indexed = eligible.get(evidence_id)
+            if (
+                indexed is None
+                or row.get("evidence_item_digest") != indexed.item_digest
+                or evidence_id in observed_ids
+            ):
+                raise DellMCPToolAdapterError(
+                    "mcp_reviewed_read_identity_binding_mismatch"
+                )
+            observed_ids.add(evidence_id)
+            items.append(
+                {
+                    **row,
+                    "result_state": "reviewed_evidence",
+                    "mcp_receipt_chain": [
+                        compilation_receipt,
+                        search.receipt,
+                        read.receipt,
+                    ],
+                    "cell_binding_used": False,
+                }
+            )
+            states.add("reviewed_evidence")
+        missing = set(ids).difference(observed_ids)
+        missing.update(str(value) for value in read.content.get("missing_evidence_ids", ()))
+        if missing:
+            items.append(
+                self._gap(
+                    "reviewed_evidence_id_missing",
+                    [compilation_receipt, search.receipt, read.receipt],
+                    missing_evidence_ids=sorted(missing),
+                )
+            )
+            states.add("typed_gap")
+
     def _local(
         self,
         lane_task: ToolLaneTask,
@@ -670,13 +931,20 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         self,
         lane_task: ToolLaneTask,
         scope: DellResearchRunScope,
-        request: EvidenceRequest,
+        request: EvidenceRequest | CompiledExternalSourceTarget,
         *,
         items: list[dict[str, Any]],
         states: set[str],
         calls: list[_Call],
         recoverable_calls: list[_Call],
+        receipt_prefix: Sequence[dict[str, Any]],
     ) -> None:
+        compiled = isinstance(request, CompiledExternalSourceTarget)
+        request_limit = request.search_limit if compiled else request.limit
+        capture_limit = min(2, request_limit) if compiled else request.capture_limit
+        include_domains = (
+            request.domain_allowlist if compiled else request.include_domains
+        )
         discovery = self._call(
             SEARCH_EXTERNAL_SOURCES_TOOL,
             {
@@ -684,8 +952,8 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                 "branch_id": lane_task.task.branch_id,
                 "run_scope": scope.model_dump(mode="json"),
                 "purpose": request.purpose,
-                "max_results": request.limit,
-                "include_domains": list(request.include_domains),
+                "max_results": request_limit,
+                "include_domains": list(include_domains),
             },
         )
         if discovery.error or discovery.content is None:
@@ -695,6 +963,7 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                     discovery,
                     stage="discovery",
                     query=request.query,
+                    receipt_prefix=receipt_prefix,
                 )
             )
             states.add("tool_failure")
@@ -704,7 +973,7 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         candidates = discovery.content.get("candidates")
         if status not in {"ok", "zero_results"} or not isinstance(candidates, list):
             raise DellMCPToolAdapterError("mcp_external_discovery_invalid")
-        if len(candidates) > request.limit:
+        if len(candidates) > request_limit:
             raise DellMCPToolAdapterError("mcp_external_discovery_limit_exceeded")
 
         for row in candidates:
@@ -715,13 +984,13 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                     **row,
                     "result_state": "retrieval_candidate",
                     "citation_eligible": False,
-                    "mcp_receipt_chain": [discovery.receipt],
+                    "mcp_receipt_chain": [*receipt_prefix, discovery.receipt],
                     "cell_binding_used": False,
                 }
             )
             states.add("retrieval_candidate")
 
-        for row in candidates[: request.capture_limit]:
+        for row in candidates[:capture_limit]:
             capture = self._call(
                 CAPTURE_EXTERNAL_SOURCE_TOOL,
                 {
@@ -741,6 +1010,7 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                         stage="capture",
                         query=request.query,
                         candidate_id=str(row["candidate_id"]),
+                        receipt_prefix=receipt_prefix,
                     )
                 )
                 states.add("tool_failure")
@@ -759,7 +1029,11 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                     **capture.content,
                     "result_state": "captured_source_candidate",
                     "citation_eligible": False,
-                    "mcp_receipt_chain": [discovery.receipt, capture.receipt],
+                    "mcp_receipt_chain": [
+                        *receipt_prefix,
+                        discovery.receipt,
+                        capture.receipt,
+                    ],
                     "cell_binding_used": False,
                 }
             )
@@ -769,7 +1043,7 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
             items.append(
                 self._gap(
                     "no_external_candidate",
-                    [discovery.receipt],
+                    [*receipt_prefix, discovery.receipt],
                     query=request.query,
                 )
             )
@@ -782,6 +1056,7 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         stage: Literal["discovery", "capture"],
         query: str,
         candidate_id: str | None = None,
+        receipt_prefix: Sequence[dict[str, Any]] = (),
     ) -> dict[str, Any]:
         """Preserve one external failure without turning it into a data gap.
 
@@ -795,7 +1070,7 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
             "failure_scope": f"external_{stage}",
             "query": query,
             "candidate_id": candidate_id,
-            "mcp_receipt_chain": [call.receipt],
+            "mcp_receipt_chain": [*receipt_prefix, call.receipt],
             "structured_output_projection": _bounded_diagnostic(call.content),
             "tool_failure_is_not_information_gap": True,
             "partial_result_may_continue": True,
@@ -1090,6 +1365,40 @@ def _digest(value: Any) -> bool:
         isinstance(value, str)
         and len(value) == 64
         and all(char in "0123456789abcdef" for char in value)
+    )
+
+
+def _reviewed_row_matches_target(
+    row: ReviewedEvidenceIndexRowV1_2,
+    target: CompiledReviewedEvidenceTarget,
+) -> bool:
+    """Repeat the compiler's public target contract at the MCP postfilter."""
+
+    authority_ok = (
+        row.authority_tier == "primary"
+        if target.minimum_authority_tier == "primary"
+        else row.authority_tier in {"reviewed", "primary"}
+    )
+    return bool(
+        row.metadata_state == "complete"
+        and row.case_key == target.case_key
+        and target.coverage_obligation_id
+        in row.minimum_route_eligible_branch_ids
+        and row.source_family_ref == target.source_family_ref
+        and (
+            not target.entity_refs
+            or set(target.entity_refs).intersection(row.entity_ids)
+        )
+        and (
+            not target.period_intents
+            or set(target.period_intents).intersection(row.period_refs)
+        )
+        and set(target.topic_refs).intersection(row.topic_refs)
+        and (
+            not target.evidence_role_refs
+            or row.evidence_role in target.evidence_role_refs
+        )
+        and authority_ok
     )
 
 

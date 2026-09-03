@@ -15,6 +15,8 @@ from typing import Annotated, Any, Literal, TypedDict
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from .dell_agentic_contracts import ProviderEvidenceIntent
+
 
 Digest = str
 ToolLane = Literal["evidence", "finance"]
@@ -88,6 +90,13 @@ class ToolFailure(_StrictFrozenModel):
     ]
     retryable: bool
     exception_type: str | None = Field(default=None, max_length=160)
+
+
+class EvidenceIntentRequest(_StrictFrozenModel):
+    """Provider-visible semantic request bound to one host route obligation."""
+
+    minimum_route_obligation_id: str = Field(min_length=1, max_length=240)
+    intent: ProviderEvidenceIntent
 
 
 class EvidenceRequest(_StrictFrozenModel):
@@ -538,6 +547,7 @@ __all__ = [
     "CounterDecision",
     "CounterReroute",
     "DellReferenceVerticalState",
+    "EvidenceIntentRequest",
     "EvidenceRequest",
     "EvidenceSourceRoute",
     "HumanReviewDecision",

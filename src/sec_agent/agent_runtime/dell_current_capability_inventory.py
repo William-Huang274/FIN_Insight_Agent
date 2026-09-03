@@ -17,7 +17,16 @@ import re
 from typing import Any, Iterable, Mapping, Sequence
 from urllib.parse import urlparse
 
-from sec_agent.agent_runtime.dell_agentic_contracts import canonical_digest
+from sec_agent.agent_runtime.dell_agentic_contracts import (
+    MinimumRouteObligation,
+    canonical_digest,
+)
+from sec_agent.agent_runtime.dell_owner_data_gate import (
+    DEFAULT_EXPECTED_OWNER_DATA_GATE_DECISION_DIGEST,
+    DellOwnerDataGateDecision,
+    DellOwnerDataGateError,
+    validate_trusted_dell_owner_data_gate_decision,
+)
 from sec_agent.agent_runtime.dell_source_family_compiler import (
     CapabilityArtifactBinding,
     CapabilityInventorySnapshot,
@@ -29,6 +38,8 @@ from sec_agent.agent_runtime.dell_source_family_compiler import (
     S2CapabilityBucket,
     SourceFamilyCatalog,
     SourceFamilyCatalogEntry,
+    HostOwnedBaselineSourcePlan,
+    build_host_owned_baseline_source_plan,
     build_local_inventory_buckets,
 )
 from sec_agent.agent_runtime.planner_tool_capabilities import (
@@ -760,6 +771,11 @@ def build_external_inventory_buckets_from_manifest(
 
 def build_s2_capability_bucket_from_verified_result(
     *, result_path: str | Path, expected_result_sha256: str,
+    expected_result_digest: str = EXPECTED_S2_RESULT_DIGEST,
+    expected_mart_sha256: str | None = None,
+    expected_observation_count: int | None = None,
+    expected_entity_count: int | None = None,
+    expected_metric_count: int | None = None,
     planner_capabilities: PlannerToolCapabilityProjection,
     catalog: ValidatedPhysicalRouteCatalog,
 ) -> S2CapabilityBucket:
@@ -781,14 +797,34 @@ def build_s2_capability_bucket_from_verified_result(
         metric.metric_id for metric in planner_capabilities.finance.metrics
         if metric.observed_tickers
     ))
+    mart_sha = _sha(storage.get("sqlite_sha256"), "s2_mart_sha_invalid")
     if (result.get("schema_version") != _S2_SCHEMA
             or _canonical_self_digest(result, "result_digest") != result_digest
+            or result_digest
+            != _sha(expected_result_digest, "s2_expected_result_digest_invalid")
             or result.get("status") != "s2_company_financial_fact_mart_engineering_pass"
             or not isinstance(by_ticker, dict)
             or observations != sum(_count(value, "s2_ticker_count_invalid") for value in by_ticker.values())
             or counts.get("tickers") != len(planner_capabilities.finance.supported_tickers)
             or counts.get("metrics") != len(observed_metrics)
-            or _sha(storage.get("sqlite_sha256"), "s2_mart_sha_invalid") != planner_capabilities.mart_sha256
+            or mart_sha != planner_capabilities.mart_sha256
+            or (
+                expected_mart_sha256 is not None
+                and mart_sha
+                != _sha(expected_mart_sha256, "s2_expected_mart_sha_invalid")
+            )
+            or (
+                expected_observation_count is not None
+                and observations != expected_observation_count
+            )
+            or (
+                expected_entity_count is not None
+                and counts.get("tickers") != expected_entity_count
+            )
+            or (
+                expected_metric_count is not None
+                and counts.get("metrics") != expected_metric_count
+            )
             or acceptance.get("all_qrels_exact") is not True
             or acceptance.get("mutations_pass") is not True
             or acceptance.get("network_calls") != 0 or acceptance.get("model_calls") != 0
@@ -816,11 +852,12 @@ def build_s2_capability_bucket_from_verified_result(
 
 
 def _binding(kind: str, ref: str, digest: str, count: int,
-             catalog_digest: str) -> CapabilityArtifactBinding:
+             catalog_digest: str, owner_decision_digest: str) -> CapabilityArtifactBinding:
     receipt = canonical_digest({
         "adapter": "dell_current_capability_inventory", "capability_kind": kind,
         "artifact_digest": digest, "validated_object_count": count,
         "physical_catalog_digest": catalog_digest,
+        "owner_data_gate_decision_digest": owner_decision_digest,
     })
     body = {
         "capability_kind": kind, "artifact_ref": ref, "artifact_digest": digest,
@@ -839,16 +876,33 @@ def build_current_capability_inventory(
     s2_result_path: str | Path, expected_s2_result_sha256: str,
     planner_capabilities: PlannerToolCapabilityProjection,
     reviewed_index: ReviewedEvidenceIndexV1_2, snapshot_id: str,
+    owner_data_gate_decision: DellOwnerDataGateDecision | None = None,
     case_version: str = "FIN-0.1.3",
 ) -> CapabilityInventorySnapshot:
-    """Compose verified inputs, but fail closed while owner review remains open."""
+    """Compose the exact inventory only under the separate Owner decision."""
 
     catalog = load_physical_route_catalog(
         physical_catalog_path, expected_file_sha256=expected_physical_catalog_sha256
     )
-    if catalog.owner_review_required or not catalog.execution_authority:
+    if owner_data_gate_decision is None:
         blockers = ",".join(catalog.blocking_owner_review_ids) or "catalog_authority"
         raise CurrentCapabilityInventoryError(f"physical_catalog_not_execution_authority:{blockers}")
+    try:
+        decision = validate_trusted_dell_owner_data_gate_decision(
+            owner_data_gate_decision
+        )
+    except DellOwnerDataGateError as exc:
+        raise CurrentCapabilityInventoryError(str(exc)) from exc
+    _validate_owner_data_gate_for_physical_catalog(catalog, decision)
+    bound = decision.bound_inputs
+    if (
+        _sha(expected_s2_result_sha256, "s2_expected_result_sha_invalid")
+        != bound.s2_result_sha256
+        or planner_capabilities.mart_sha256 != bound.s2_mart_sha256
+    ):
+        raise CurrentCapabilityInventoryError(
+            "owner_data_gate_s2_runtime_binding_mismatch"
+        )
     family_catalog = build_source_family_catalog(
         catalog, foundation_source_families=foundation_source_families,
         foundation_question_branches=foundation_question_branches,
@@ -868,16 +922,22 @@ def build_current_capability_inventory(
     )
     s2 = build_s2_capability_bucket_from_verified_result(
         result_path=s2_result_path, expected_result_sha256=expected_s2_result_sha256,
+        expected_result_digest=bound.s2_result_digest,
+        expected_mart_sha256=bound.s2_mart_sha256,
+        expected_observation_count=bound.s2_observation_count,
+        expected_entity_count=bound.s2_entity_count,
+        expected_metric_count=bound.s2_metric_count,
         planner_capabilities=planner_capabilities, catalog=catalog,
     )
     reviewed = ReviewedEvidenceIndexV1_2.model_validate(reviewed_index.model_dump(mode="python"))
-    if reviewed.indexed_item_count != 61:
+    reviewed_count = decision.reviewed_evidence_decision.executable_item_count
+    if reviewed.indexed_item_count != reviewed_count:
         raise CurrentCapabilityInventoryError("current_reviewed_index_count_mismatch")
     bindings = tuple(sorted((
-        _binding("local_candidate", catalog.local_nodes_ref, catalog.local_nodes_sha256, 890, catalog.catalog_digest),
-        _binding("reviewed_evidence", reviewed.index_id, reviewed.source_pack_digest, 61, catalog.catalog_digest),
-        _binding("s2_numeric_fact", Path(s2_result_path).as_posix(), s2.source_artifact_digest, 1319, catalog.catalog_digest),
-        _binding("external_source", catalog.external_manifest_ref, catalog.external_manifest_sha256, 12, catalog.catalog_digest),
+        _binding("local_candidate", catalog.local_nodes_ref, catalog.local_nodes_sha256, 890, catalog.catalog_digest, decision.decision_digest),
+        _binding("reviewed_evidence", reviewed.index_id, reviewed.source_pack_digest, reviewed_count, catalog.catalog_digest, decision.decision_digest),
+        _binding("s2_numeric_fact", bound.s2_result_ref, s2.source_artifact_digest, bound.s2_observation_count, catalog.catalog_digest, decision.decision_digest),
+        _binding("external_source", catalog.external_manifest_ref, catalog.external_manifest_sha256, 12, catalog.catalog_digest, decision.decision_digest),
     ), key=lambda row: row.capability_kind))
     body = {
         "contract_version": "1.2", "snapshot_id": snapshot_id,
@@ -892,9 +952,231 @@ def build_current_capability_inventory(
         "reviewed_evidence_count": reviewed.indexed_item_count,
         "s2_observation_count": s2.eligible_observation_count,
         "external_object_count": sum(row.eligible_object_count for row in external),
+        "owner_data_gate_decision_digest": decision.decision_digest,
         "answer_free": True,
     }
     return CapabilityInventorySnapshot(**body, inventory_snapshot_digest=canonical_digest(body))
+
+
+def _validate_owner_data_gate_for_physical_catalog(
+    catalog: ValidatedPhysicalRouteCatalog,
+    decision: DellOwnerDataGateDecision,
+) -> None:
+    bound = decision.bound_inputs
+    route_decision = decision.route_catalog_decision
+    route_ids = tuple(
+        sorted(
+            row.route_id
+            for row in (*catalog.local_routes, *catalog.external_routes)
+        )
+    )
+    if not (
+        decision.authority.physical_catalog_runtime_consumption_authorized
+        and decision.authority.capability_inventory_composition_authorized
+        and catalog.file_sha256 == bound.physical_catalog_sha256
+        and catalog.catalog_digest == bound.physical_catalog_digest
+        and catalog.case_id == decision.case_id
+        and catalog.case_key == decision.case_key
+        and route_ids == route_decision.accepted_route_ids
+        and len(catalog.local_routes) == route_decision.accepted_local_route_count
+        and len(catalog.external_routes)
+        == route_decision.accepted_external_route_count
+        and len(route_ids) == route_decision.accepted_total_route_count
+    ):
+        raise CurrentCapabilityInventoryError(
+            "owner_data_gate_physical_catalog_binding_mismatch"
+        )
+
+    smci = next(
+        (
+            row
+            for row in catalog.external_routes
+            if row.route_id
+            == route_decision.smci_q9_supplemental_decision.route_id
+        ),
+        None,
+    )
+    smci_decision = route_decision.smci_q9_supplemental_decision
+    if smci is None or not (
+        smci.canonical_issuer_id == smci_decision.canonical_issuer_id
+        and smci.branch_ids == (smci_decision.branch_id,)
+        and smci.source_family_refs == (smci_decision.source_family_ref,)
+        and smci.foundation_required_family_match is False
+        and smci_decision.may_satisfy_f12_minimum_route is False
+    ):
+        raise CurrentCapabilityInventoryError(
+            "owner_data_gate_smci_supplemental_binding_mismatch"
+        )
+
+    for boundary in route_decision.local_zero_boundaries:
+        eligible = tuple(
+            row
+            for row in catalog.local_routes
+            if boundary.branch_id in row.branch_ids
+            and boundary.source_family_ref in row.source_family_refs
+        )
+        if (
+            len(eligible) != boundary.eligible_local_route_count
+            or sum(row.searchable_leaf_count for row in eligible)
+            != boundary.eligible_local_searchable_leaf_count
+        ):
+            raise CurrentCapabilityInventoryError(
+                f"owner_data_gate_local_zero_boundary_mismatch:{boundary.branch_id}"
+            )
+
+    raw = _json(catalog.catalog_path)
+    review_ids = tuple(
+        sorted(
+            _text(row.get("review_id"), "catalog_review_id_invalid")
+            for row in raw.get("owner_review_items", ())
+            if isinstance(row, Mapping)
+        )
+    )
+    mapping = raw.get("reviewed_topic_branch_mapping")
+    mapping_digest = canonical_digest({"reviewed_topic_branch_mapping": mapping})
+    topic = route_decision.topic_mapping_decision
+    if not (
+        review_ids == route_decision.accepted_owner_review_ids
+        and isinstance(mapping, list)
+        and len(mapping) == topic.accepted_topic_mapping_count
+        and mapping_digest == topic.topic_mapping_digest
+        and topic.mapping_semantics == "selector_only"
+        and topic.proves_claim_relevance is False
+        and topic.proves_branch_coverage is False
+        and topic.may_suppress_reviewed_lane is False
+    ):
+        raise CurrentCapabilityInventoryError(
+            "owner_data_gate_topic_or_review_binding_mismatch"
+        )
+
+
+def build_current_host_owned_baseline_source_plan(
+    *,
+    inventory: CapabilityInventorySnapshot,
+    owner_data_gate_decision: DellOwnerDataGateDecision,
+) -> HostOwnedBaselineSourcePlan:
+    """Build the semantic route catalog exposed to the planner/compiler.
+
+    Required Reviewed routes preserve the foundation's exact family floor.
+    Local and external routes are optional alternatives created only where the
+    approved current inventory has a matching physical bucket.  No issuer,
+    domain, local route ID, lane, or other physical selector is returned to the
+    provider-facing plan.
+    """
+
+    current = CapabilityInventorySnapshot.model_validate(
+        inventory.model_dump(mode="python")
+    )
+    try:
+        decision = validate_trusted_dell_owner_data_gate_decision(
+            owner_data_gate_decision
+        )
+    except DellOwnerDataGateError as exc:
+        raise CurrentCapabilityInventoryError(str(exc)) from exc
+    if not (
+        decision.authority.capability_inventory_composition_authorized
+        and decision.decision_digest
+        == DEFAULT_EXPECTED_OWNER_DATA_GATE_DECISION_DIGEST
+        and current.owner_data_gate_decision_digest == decision.decision_digest
+    ):
+        raise CurrentCapabilityInventoryError(
+            "owner_data_gate_baseline_composition_binding_mismatch"
+        )
+
+    def route(
+        *,
+        route_id: str,
+        branch_id: str,
+        route_kind: str,
+        family_refs: tuple[str, ...],
+        authority_ref: str,
+        requirement: str,
+    ) -> MinimumRouteObligation:
+        body = {
+            "route_obligation_id": route_id,
+            "coverage_obligation_id": branch_id,
+            "requirement": requirement,
+            "route_kind": route_kind,
+            "semantic_source_family_refs": family_refs,
+            "entity_refs": (),
+            "period_intents": (),
+            "metric_refs": (),
+            "required_authority_refs": (authority_ref,),
+            "substitution_policy": "none",
+            "acceptable_replacement_route_kinds": (),
+            "replacement_conditions": (),
+            "answer_free": True,
+        }
+        return MinimumRouteObligation(
+            **body,
+            route_digest=canonical_digest(body),
+        )
+
+    routes: list[MinimumRouteObligation] = []
+    for branch_id, family_refs in DELL_REQUIRED_SOURCE_FAMILIES_BY_COVERAGE:
+        routes.append(
+            route(
+                route_id=f"route:{branch_id}:required-reviewed",
+                branch_id=branch_id,
+                route_kind="reviewed_evidence",
+                family_refs=family_refs,
+                authority_ref="authority:reviewed-read",
+                requirement="required",
+            )
+        )
+        for family_ref in family_refs:
+            if any(
+                row.source_family_ref == family_ref
+                and branch_id in row.branch_refs
+                for row in current.local_buckets
+            ):
+                routes.append(
+                    route(
+                        route_id=f"route:{branch_id}:{family_ref}:local",
+                        branch_id=branch_id,
+                        route_kind="local_candidate",
+                        family_refs=(family_ref,),
+                        authority_ref="authority:primary-read",
+                        requirement="optional",
+                    )
+                )
+            if any(
+                row.source_family_ref == family_ref
+                and branch_id in row.coverage_obligation_ids
+                and row.foundation_required_family_match
+                for row in current.external_buckets
+            ):
+                routes.append(
+                    route(
+                        route_id=f"route:{branch_id}:{family_ref}:external",
+                        branch_id=branch_id,
+                        route_kind="external_source",
+                        family_refs=(family_ref,),
+                        authority_ref="authority:primary-read",
+                        requirement="optional",
+                    )
+                )
+    routes.sort(key=lambda row: row.route_obligation_id)
+    policy_digest = canonical_digest(
+        {
+            "policy": "owner_approved_current_inventory_semantic_route_projection_v1",
+            "owner_data_gate_decision_digest": decision.decision_digest,
+            "inventory_snapshot_digest": current.inventory_snapshot_digest,
+        }
+    )
+    return build_host_owned_baseline_source_plan(
+        authority_ref=(
+            "authority:owner-data-gate:"
+            f"{decision.decision_digest[:24]}"
+        ),
+        source_plan_id=(
+            "source-plan:dell:owner-data-gate:"
+            f"{decision.decision_digest[:24]}"
+        ),
+        inventory=current,
+        route_obligations=tuple(routes),
+        policy_digest=policy_digest,
+    )
 
 
 __all__ = [
@@ -904,6 +1186,7 @@ __all__ = [
     "EXPECTED_PHYSICAL_ROUTE_CATALOG_SHA256", "EXPECTED_S2_RESULT_DIGEST",
     "EXPECTED_S2_RESULT_SHA256", "PhysicalExternalRoute", "PhysicalLocalRoute",
     "ValidatedPhysicalRouteCatalog", "build_current_capability_inventory",
+    "build_current_host_owned_baseline_source_plan",
     "build_external_inventory_buckets_from_manifest",
     "build_local_inventory_buckets_from_nodes",
     "build_s2_capability_bucket_from_verified_result",

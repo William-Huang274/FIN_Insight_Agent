@@ -4,10 +4,10 @@ This is the only product serving seam.  It deliberately contains no direct
 invoke path, application-owned saver/store, HTTP server, queue, or SQLite
 runtime.  Agent Server owns those concerns and injects its checkpointer/store.
 
-The current data/source authority successor is still Owner-gated.  Until it is
-approved, execution stops before provider, MCP, corpus, or database resources
-are opened.  Schema and state-read calls still receive the exact graph
-topology, using dependencies that cannot execute.
+The Owner-approved data/source successor is opened only for execution calls.
+Schema and state-read calls still receive the exact graph topology without
+opening MCP, corpus or database resources.  Model transport remains separately
+gated and is not authorized by the data decision.
 """
 
 from __future__ import annotations
@@ -23,6 +23,10 @@ from langgraph_sdk.runtime import ServerRuntime
 from pydantic import BaseModel, ConfigDict, Field
 
 from .dell_reference_vertical_contracts import canonical_sha256
+from .dell_agent_server_data_composition import (
+    DellApprovedDataCompositionError,
+    open_dell_approved_data_composition,
+)
 from .dell_reference_vertical_graph import (
     DellAgentServerRunContext,
     DellReferenceVerticalDependencies,
@@ -156,6 +160,32 @@ def _schema_only_capability_projection() -> dict[str, Any]:
     return {**unsigned, "projection_digest": canonical_sha256(unsigned)}
 
 
+def _schema_only_source_route_catalog() -> dict[str, Any]:
+    route = {
+        "minimum_route_obligation_id": "route:schema-only:required-reviewed",
+        "coverage_obligation_id": "schema-only",
+        "requirement": "required",
+        "intent_kind": "reviewed_evidence",
+        "semantic_source_family_refs": ["schema-only-family"],
+        "entity_refs": [],
+        "period_intents": [],
+        "required_authority_refs": ["schema-only-read"],
+    }
+    unsigned = {
+        "schema_version": "fin_ia_dell_provider_source_route_catalog_v1_0",
+        "inventory_snapshot_digest": canonical_sha256(
+            {"kind": "schema_only_inventory"}
+        ),
+        "baseline_source_plan_digest": canonical_sha256(
+            {"kind": "schema_only_baseline"}
+        ),
+        "routes": [route],
+        "physical_selectors_exposed": False,
+        "answer_free": True,
+    }
+    return {**unsigned, "catalog_digest": canonical_sha256(unsigned)}
+
+
 def _schema_only_unavailable(*_args: Any, **_kwargs: Any) -> Any:
     raise DellAgentServerEntryError("schema_introspection_graph_not_executable")
 
@@ -164,6 +194,7 @@ def _schema_only_dependencies() -> DellReferenceVerticalDependencies:
     return DellReferenceVerticalDependencies(
         foundation_binder=_schema_only_unavailable,
         planner_tool_capabilities=_schema_only_capability_projection(),
+        planner_source_route_catalog=_schema_only_source_route_catalog(),
         planner_agent=_schema_only_unavailable,
         evidence_tool=_schema_only_unavailable,
         finance_tool=_schema_only_unavailable,
@@ -221,18 +252,24 @@ def _bind_dependencies_to_identity(
 
 @asynccontextmanager
 async def _open_execution_dependencies(
-    _identity: DellAgentServerIdentityBinding,
-    _context: DellAgentServerRunContext,
+    identity: DellAgentServerIdentityBinding,
+    context: DellAgentServerRunContext,
 ) -> AsyncIterator[DellReferenceVerticalDependencies]:
-    """Hard gate awaiting the Owner-approved RC-S3-105 data successor.
+    """Open the exact approved readers and one MCP lifecycle for this run.
 
-    This context-manager boundary is where the approved composition will later
-    open per-run provider/MCP/data resources and close them in ``finally``.
-    There is intentionally no legacy CLI, no-op, or local runtime fallback.
+    The Owner decision authorizes only zero-network data composition.  Model
+    callables remain fail-closed until a separate paid-execution decision.
     """
 
-    raise DellAgentServerEntryError("dell_execution_data_authority_not_approved")
-    yield  # pragma: no cover - keeps this an async context manager
+    if identity.research_run_id != context.research_run_id:
+        raise DellAgentServerEntryError("fin_research_run_id_mismatch")
+    try:
+        with open_dell_approved_data_composition(
+            run_invocation_id=identity.run_invocation_id
+        ) as composition:
+            yield composition.dependencies
+    except DellApprovedDataCompositionError as exc:
+        raise DellAgentServerEntryError(exc.code) from exc
 
 
 @asynccontextmanager

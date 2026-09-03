@@ -32,7 +32,7 @@ from pydantic import (
 from .dell_reference_vertical_contracts import (
     BranchWorkpaper,
     CounterDecision,
-    EvidenceRequest,
+    EvidenceIntentRequest,
     LeadOutput,
     PlannerOutput,
     RuntimeReceipt,
@@ -58,8 +58,8 @@ class _StrictSemanticModel(BaseModel):
     )
 
 
-# Backward-compatible public name; there is only one evidence-request schema.
-EvidenceRequestPayload = EvidenceRequest
+# Public provider schema.  Physical selectors exist only after host compilation.
+EvidenceRequestPayload = EvidenceIntentRequest
 
 
 class FinancialFactRequestPayload(_StrictSemanticModel):
@@ -265,7 +265,67 @@ def _provider_function_schema(
     function_schema = tool.get("function")
     if not isinstance(function_schema, dict):
         raise DeepSeekStructuredAgentError("provider_function_schema_invalid")
-    return function_schema
+    projected = json.loads(json.dumps(function_schema))
+    parameters = projected.get("parameters")
+    if not isinstance(parameters, Mapping):
+        raise DeepSeekStructuredAgentError("provider_function_parameters_invalid")
+    projected["parameters"] = _inline_local_schema_refs(parameters)
+    return projected
+
+
+def _inline_local_schema_refs(value: Mapping[str, Any]) -> dict[str, Any]:
+    """Inline every local Pydantic ``$defs`` reference for provider transport."""
+
+    definitions = value.get("$defs", {})
+    if not isinstance(definitions, Mapping):
+        raise DeepSeekStructuredAgentError("provider_schema_definitions_invalid")
+
+    def project(node: Any, trail: tuple[str, ...] = ()) -> Any:
+        if isinstance(node, list):
+            return [project(item, trail) for item in node]
+        if not isinstance(node, Mapping):
+            return node
+        reference = node.get("$ref")
+        if reference is not None:
+            if not isinstance(reference, str) or not reference.startswith("#/$defs/"):
+                raise DeepSeekStructuredAgentError(
+                    "provider_schema_reference_unsupported"
+                )
+            name = reference.removeprefix("#/$defs/")
+            target = definitions.get(name)
+            if not isinstance(target, Mapping) or name in trail:
+                raise DeepSeekStructuredAgentError(
+                    "provider_schema_reference_invalid"
+                )
+            resolved = project(target, (*trail, name))
+            if not isinstance(resolved, dict):  # pragma: no cover - mapping above
+                raise DeepSeekStructuredAgentError(
+                    "provider_schema_reference_invalid"
+                )
+            siblings = {
+                str(key): project(child, trail)
+                for key, child in node.items()
+                if key != "$ref"
+            }
+            return {**resolved, **siblings}
+        return {
+            str(key): project(child, trail)
+            for key, child in node.items()
+            if key != "$defs"
+            and not (
+                key == "mapping"
+                and "propertyName" in node
+                and isinstance(child, Mapping)
+            )
+        }
+
+    result = project(value)
+    if not isinstance(result, dict):  # pragma: no cover - root is Mapping
+        raise DeepSeekStructuredAgentError("provider_function_parameters_invalid")
+    serialized = json.dumps(result, ensure_ascii=False, allow_nan=False)
+    if "$defs" in serialized or '"$ref"' in serialized:
+        raise DeepSeekStructuredAgentError("provider_schema_reference_not_inlined")
+    return result
 
 
 def load_deepseek_structured_agent_config(
@@ -290,23 +350,25 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
         "the supplied tool capabilities and output schema. Do not answer the research "
         "question and do not invent runtime IDs, "
         "digests, receipts, snapshots, plans, or execution metadata. Keep the "
-        "human-readable objective and purpose concise. Write each retrieval query "
+        "human-readable objective and purpose concise. Choose only a supplied "
+        "minimum_route_obligation_id and emit the matching lane-discriminated "
+        "semantic intent; issuer IDs, physical route IDs, retrieval lanes and "
+        "storage selectors are host-owned and forbidden in your output. Write each retrieval query "
         "in source-language English with explicit company, product and metric terms "
         "because the bounded corpus is English; this is a retrieval contract, not "
-        "the language of the final report. For reviewed_first or local_only, copy "
-        "answer-free issuer, fiscal-period, source-role, exact-route and prose/table "
-        "constraints from the supplied method/source catalog into the typed retrieval "
-        "scope; leave a constraint empty when the method does not establish it, and "
-        "never use a nearby route as a substitute for a requested official source. "
+        "the language of the final report. Preserve supplied semantic source-family, "
+        "topic, entity, period, role and content-surface constraints; leave an "
+        "optional semantic constraint empty when the method does not establish it, "
+        "and never substitute a nearby family or route obligation. "
         "For a fact tied to a named quarter or date, use exact_period_end; use "
         "latest_on_or_before only when the task explicitly asks for the latest "
         "available fact as of the research cut-off. "
         "Treat the supplied scope ceiling as a "
-        "hard execution budget: for each branch use at most two external_required "
+        "hard execution budget: for each branch use at most two external_source "
         "requests, no request limit above six, no more than ten requested sources "
         "in total, and no more than four captured pages; across all branches request "
-        "at most twenty-four captured pages. Prefer one focused reviewed_first or "
-        "local_only request and add external_required only for material freshness."
+        "at most twenty-four captured pages. Prefer one focused reviewed_evidence or "
+        "local_evidence intent and add external_source only for material freshness."
     ),
     "specialist": (
         "You are one isolated financial-research specialist. Use only the supplied "
@@ -383,6 +445,31 @@ def _required_text(value: Mapping[str, Any], key: str) -> str:
     return item.strip()
 
 
+def _project_source_route_catalog(request: Mapping[str, Any]) -> dict[str, Any]:
+    catalog = _required_mapping(request, "source_route_catalog")
+    catalog_digest = _required_text(request, "source_route_catalog_digest")
+    if catalog.get("catalog_digest") != catalog_digest:
+        raise DeepSeekStructuredAgentError("source_route_catalog_digest_mismatch")
+    if (
+        catalog.get("schema_version")
+        != "fin_ia_dell_provider_source_route_catalog_v1_0"
+        or catalog.get("physical_selectors_exposed") is not False
+        or catalog.get("answer_free") is not True
+    ):
+        raise DeepSeekStructuredAgentError("source_route_catalog_invalid")
+    routes = catalog.get("routes")
+    if not isinstance(routes, Sequence) or isinstance(routes, (str, bytes)):
+        raise DeepSeekStructuredAgentError("source_route_catalog_routes_required")
+    return {
+        "schema_version": catalog["schema_version"],
+        "routes": [
+            _as_mapping(row, label="source_route_catalog_row") for row in routes
+        ],
+        "physical_selectors_exposed": False,
+        "answer_free": True,
+    }
+
+
 def _semantic_workpaper(value: Mapping[str, Any]) -> dict[str, Any]:
     return {
         key: value.get(key)
@@ -427,6 +514,90 @@ def _semantic_counter(value: Mapping[str, Any]) -> dict[str, Any]:
     return result
 
 
+_PROVIDER_INTERNAL_TOOL_ITEM_KEYS = frozenset(
+    {"mcp_receipt_chain", "mcp_receipt", "cell_binding_used"}
+)
+_PROVIDER_PHYSICAL_SELECTOR_KEYS = frozenset(
+    {
+        "issuer_ids",
+        "fiscal_periods",
+        "source_roles",
+        "route_ids",
+        "lanes",
+        "local_scopes",
+        "reviewed_targets",
+        "external_targets",
+        "domain_allowlist",
+        "external_route_ref",
+    }
+)
+_PROVIDER_EVIDENCE_PHYSICAL_RESULT_KEYS = frozenset(
+    {
+        "issuer_id",
+        "fiscal_period",
+        "source_role",
+        "route_id",
+        "lane",
+        "branches",
+    }
+)
+
+
+def _nested_mapping_keys(value: Any) -> set[str]:
+    if isinstance(value, Mapping):
+        return {
+            *(str(key) for key in value),
+            *(
+                child_key
+                for child in value.values()
+                for child_key in _nested_mapping_keys(child)
+            ),
+        }
+    if isinstance(value, Sequence) and not isinstance(
+        value, (str, bytes, bytearray)
+    ):
+        return {
+            child_key
+            for child in value
+            for child_key in _nested_mapping_keys(child)
+        }
+    return set()
+
+
+def _provider_tool_items(
+    value: Any,
+    *,
+    label: str,
+    financial_facts: bool,
+) -> list[dict[str, Any]]:
+    """Remove host receipts while preserving evidence/fact-bearing results."""
+
+    if not isinstance(value, Sequence) or isinstance(
+        value, (str, bytes, bytearray)
+    ):
+        raise DeepSeekStructuredAgentError(f"{label}_must_be_sequence")
+    projected: list[dict[str, Any]] = []
+    excluded_keys = _PROVIDER_INTERNAL_TOOL_ITEM_KEYS
+    if not financial_facts:
+        excluded_keys = excluded_keys | _PROVIDER_EVIDENCE_PHYSICAL_RESULT_KEYS
+    forbidden_keys = _PROVIDER_PHYSICAL_SELECTOR_KEYS
+    if not financial_facts:
+        forbidden_keys = forbidden_keys | _PROVIDER_EVIDENCE_PHYSICAL_RESULT_KEYS
+    for raw in value:
+        item = _as_mapping(raw, label=f"{label}_item")
+        semantic = {
+            key: item_value
+            for key, item_value in item.items()
+            if key not in excluded_keys
+        }
+        if forbidden_keys.intersection(_nested_mapping_keys(semantic)):
+            raise DeepSeekStructuredAgentError(
+                "provider_tool_item_physical_selector_exposed"
+            )
+        projected.append(semantic)
+    return projected
+
+
 def _project_request(role: NodeRole, request: Mapping[str, Any]) -> dict[str, Any]:
     if role == "planner":
         catalog = request.get("branch_catalog")
@@ -460,8 +631,14 @@ def _project_request(role: NodeRole, request: Mapping[str, Any]) -> dict[str, An
                 key: value
                 for key, value in capabilities.items()
                 if key
-                not in {"projection_digest", "mart_sha256", "snapshot_id"}
+                not in {
+                    "evidence_routes",
+                    "projection_digest",
+                    "mart_sha256",
+                    "snapshot_id",
+                }
             },
+            "source_route_catalog": _project_source_route_catalog(request),
         }
 
     if role == "specialist":
@@ -484,13 +661,21 @@ def _project_request(role: NodeRole, request: Mapping[str, Any]) -> dict[str, An
             "evidence_result": {
                 "status": evidence.get("status"),
                 "result_states": evidence.get("result_states"),
-                "items": evidence.get("items"),
+                "items": _provider_tool_items(
+                    evidence.get("items"),
+                    label="evidence_result_items",
+                    financial_facts=False,
+                ),
                 "failure": evidence.get("failure"),
             },
             "finance_result": {
                 "status": finance.get("status"),
                 "result_states": finance.get("result_states"),
-                "items": finance.get("items"),
+                "items": _provider_tool_items(
+                    finance.get("items"),
+                    label="finance_result_items",
+                    financial_facts=True,
+                ),
                 "failure": finance.get("failure"),
             },
             "prior_workpaper": (
@@ -526,7 +711,10 @@ def _project_request(role: NodeRole, request: Mapping[str, Any]) -> dict[str, An
         "workpapers": semantic_workpapers,
     }
     if role == "counter":
-        return common
+        return {
+            **common,
+            "source_route_catalog": _project_source_route_catalog(request),
+        }
     return {
         **common,
         "counter_decision": _semantic_counter(

@@ -45,6 +45,7 @@ agent-runtime = [
   "langsmith==0.12.1",
   "mcp==2.1.1",
   "psycopg[binary,pool]==3.3.4",
+  "sse-starlette==3.3.4",
 ]
 complex-pdf = [
   "pdfplumber>=0.11.9",
@@ -78,6 +79,9 @@ package-dir = {"" = "src"}
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"sec_agent.agent_runtime" = ["sql/*.sql"]
 
 [tool.pytest.ini_options]
 pythonpath = [".", "src"]

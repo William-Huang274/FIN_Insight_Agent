@@ -9,32 +9,126 @@ fallback.
 
 This Compose project is **not a production deployment**. Agent Server uses noop
 authentication in this local setup. Loopback binding is the trust boundary:
-only `127.0.0.1:8123` is published, while PostgreSQL and Redis have no host
+only `127.0.0.1:${FINSIGHT_AGENT_SERVER_HOST_PORT:-18123}` is published, while PostgreSQL and Redis have no host
 ports. Do not change the API binding to `0.0.0.0`, expose it through a reverse
 proxy, or use it on a shared/untrusted host without a separately reviewed
 authentication and production deployment design.
 
 The Compose and Dockerfile contain no credential values. Put real values only
-in the repository-root `.env`, which is excluded by both `.gitignore` and
-the Dockerfile-specific deny-by-default build-context allowlist. The image only
-copies `pyproject.toml`, `README.md`, and `src/`; local data, captures, reports,
-Git state and runtime artifacts are neither sent in the build context nor
-copied into the image. Compose uses that file only for variable interpolation
-and passes the four explicitly listed product variables to Agent Server; it
-does not inject unrelated repository credentials. At minimum, the local file
-must define:
+in the repository-root `.env`, which is excluded by both `.gitignore` and the
+Dockerfile-specific deny-by-default build-context allowlist. The image copies
+only `pyproject.toml`, `uv.lock`, `README.md`, Python source files below `src/`,
+the packaged FIN identity SQL, and five exact non-secret control documents: the
+Dell foundation, structured-agent configuration, physical-route candidate,
+Reviewed Evidence enrichment candidate, and separate Owner data decision. The
+allowlist re-excludes `__pycache__` and compiled Python artifacts after
+admitting source directories. It does not copy a whole `src/` or `configs/`
+tree. Local corpus rows, Reviewed Evidence bodies, S2 data, external captures,
+reports, Git state and runtime artifacts are neither sent in the build context
+nor copied into the image.
+
+Compose uses `.env` only for explicit variable interpolation. Secret values are
+passed only through the listed Agent Server/PostgreSQL environment fields. The
+six `FINSIGHT_DELL_*_HOST_*` values below are used only as bind-mount sources and
+are not injected into the container environment or receipts. The local file
+must define exactly these four secrets for this stack:
 
 ```dotenv
 LANGSMITH_API_KEY=<local secret>
-LANGSMITH_TRACING=true
-LANGSMITH_PROJECT=fin-insight-dell-reference-vertical
-DEEPSEEK_API_KEY=<local secret>
 FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD=<strong URL-safe local secret>
+FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD=<distinct strong URL-safe local secret>
+FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD=<distinct strong URL-safe local secret>
 ```
 
-Use a URL-safe PostgreSQL password because the same value is interpolated into
-the internal `POSTGRES_URI`. Never commit `.env`, paste its contents into a
-receipt, or add a credential value to Compose.
+Tracing is fixed to `true`, the LangSmith project is fixed to
+`fin-insight-dell-reference-vertical`, and server job concurrency is fixed to
+four in Compose; putting alternate values for those names in `.env` does not
+override the checked-in policy. The following source paths already have
+workstation defaults and belong in `.env` only when the same digest-bound data
+is stored somewhere else:
+
+```dotenv
+FINSIGHT_DELL_S1_NODES_HOST_PATH=Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/rag_mature_stack/retrieval_qualification/dell_rag_full_stack_preview_attempt_20260902_03/retrieval_nodes.jsonl
+FINSIGHT_DELL_REVIEWED_BASE_PACK_HOST_PATH=D:/FIN_Insight_Agent/data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json
+FINSIGHT_DELL_REVIEWED_OVERLAY_HOST_PATH=Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/evidence_overlay/attempts/20260902T051005+0800-dell-fy27q2-sec-ex99-review-a01/reviewed-evidence-case-projection.json
+FINSIGHT_DELL_S2_RESULT_HOST_PATH=Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/s2/s2_exact_period_contract_successor_20260902_r1/company_financial_fact_mart_result.json
+FINSIGHT_DELL_S2_MART_HOST_PATH=Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/s2/s2_exact_period_contract_successor_20260902_r1/company_financial_facts.sqlite
+FINSIGHT_DELL_EXTERNAL_PACK_HOST_ROOT=Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/external_exact_url_qualification/dell_external_exact_url_zero_model_20260902_r12
+```
+
+`DEEPSEEK_API_KEY` may remain in the ignored `.env` for a future separately
+approved paid/model gate. The current zero-model Compose service deliberately
+does not inject it into the API container. LangSmith tracing remains mandatory.
+
+Use three distinct URL-safe PostgreSQL passwords. The first is bootstrap-admin
+only, the second belongs to the non-superuser Agent Server role, and the third
+belongs to `fin_runtime_app`, which receives only schema usage plus
+`SELECT`/`INSERT` and sequence access on `fin_runtime`. Never commit `.env`,
+paste its contents into a receipt, or add a credential value to Compose. The
+role bootstrap script runs only for a fresh PostgreSQL volume. PostgreSQL is
+not considered healthy until all three credentials authenticate over TCP and
+the FIN identity schema matches a digest-pinned, secret-free full catalog
+fingerprint. That fingerprint covers the version comment, roles, relations,
+columns, defaults, constraints, indexes, triggers, function bodies, ownership
+and grants—not just the three table names or six trigger names. This prevents
+an old, partial or silently drifted named volume that skipped
+`docker-entrypoint-initdb.d` from appearing ready.
+
+When intentionally reusing a volume that is already known to contain this exact
+v1.0 schema, start PostgreSQL alone, then run the reviewed credential bootstrap
+and digest-pinned idempotency verifier explicitly:
+
+```powershell
+docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml up -d langgraph-postgres
+docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml exec -T langgraph-postgres /bin/sh /docker-entrypoint-initdb.d/010-create-runtime-roles.sh
+docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml exec -T langgraph-postgres /bin/sh /docker-entrypoint-initdb.d/020-install-fin-runtime-identity.sh
+docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml up -d
+```
+
+The first `up` may correctly report PostgreSQL as unhealthy until the two
+explicit steps finish. The schema installer accepts only an absent schema or a
+catalog fingerprint identical to the frozen v1.0 contract; it refuses
+unversioned, partial or drifted schemas—including changed constraints or
+function bodies—instead of stamping them as current. Such a volume needs a
+separately reviewed migration. Do not replace migration with deletion of the named volume unless
+its contents have been separately audited and deletion has been authorized.
+The bootstrap rejects short, non-URL-safe or reused passwords before sending
+role DDL; its password-bearing session disables statement and error-parameter
+logging before any secret-bearing SQL is sent.
+
+## Runtime data mounts
+
+Only the `langgraph-api` service receives data mounts. PostgreSQL and Redis do
+not receive corpus or evidence files. Each mount uses Compose long syntax with
+`read_only: true` and `create_host_path: false`; a missing or misspelled source
+therefore fails instead of creating an empty host directory. The container sees
+only stable Linux paths:
+
+| Frozen resource | Container path | Expected SHA-256 / boundary |
+| --- | --- | --- |
+| S1 structured nodes | `/run/fin-insight/s1/retrieval_nodes.jsonl` | `f7fbf9f43a68933bad52146c3a8aa3c9a1b52bba81e4e804c2b05a0aff9d0817` / 1,025 nodes |
+| Reviewed base pack | `/run/fin-insight/reviewed/base/pack.json` | `b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1` / 55 evidence items |
+| Reviewed overlay | `/run/fin-insight/reviewed/overlay/reviewed-evidence-case-projection.json` | `1479e49f0cde7166fe6474a74b666dfb646b31a5291f1317689aaa6bc8391eb9` / 6 evidence items |
+| S2 result | `/run/fin-insight/s2/company_financial_fact_mart_result.json` | `dd2c92400de777867545de2c41b975d1f07ca6060f4ed431075b7081ab16ed82` / 1,319 observations |
+| S2 SQLite mart | `/run/fin-insight/s2/company_financial_facts.sqlite` | `363780c076d0f8766c0ceaafdb8b93d308d339636504b2a263127bb6ca365ac4` / read-only query surface |
+| Frozen external r12 attempt | `/run/fin-insight/external-r12` | whole 49-file attempt directory; `manifest.json` SHA-256 `db7eae9aaa8108faadbe7ff07404dd25414e0191b7f62af0c7a42b85a0938b94` |
+
+The whole external attempt directory is required because its manifest binds
+relative artifact paths and validates every referenced file. Do not replace any
+of these mounts with a whole-drive mount, a repository-wide private-data mount,
+or a Docker socket. `FIN_REPO_ROOT` and all data paths passed to the application
+are fixed container paths; host `D:/` and `Z:/` values must never enter model
+context, LangSmith traces, MCP receipts or user-visible errors.
+
+The two Reviewed mounts jointly preserve all 61 audited items. The separate
+Owner decision admits only the 56-item executable index; the five ambiguous
+items remain in the audit projection and must not become runtime candidates.
+
+These mounts only make the approved bytes reachable. Runtime loaders must still
+verify their exact digests, counts and authority before opening MCP. Reviewed,
+local and captured external text may later be sent to a model or LangSmith only
+under the separate model/paid/privacy authority; the Owner data decision alone
+does not grant that authority.
 
 ## Local invocation
 
@@ -53,7 +147,7 @@ required local credentials are available. This checked-in configuration alone
 does not prove that Agent Server, LangSmith tracing, persistence or restart
 parity has passed a live qualification.
 
-Even after the services start, the current Dell graph intentionally fails
-closed before opening data or provider resources until its separate Owner data
-authority gate is approved. That refusal is part of the single runtime path;
-it is not a fallback.
+Even after the services start, successful bind mounting alone does not authorize
+a model, provider, paid call, Evidence admission, S2 write, publication or
+public-information-gap claim. Those refusals are part of the single runtime
+path; they are not fallbacks.

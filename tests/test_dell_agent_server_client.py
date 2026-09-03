@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from datetime import date, datetime, timezone
 from typing import Any
+from uuid import NAMESPACE_URL, uuid5
 
 import pytest
 from langgraph_sdk.schema import StreamPart
@@ -14,11 +16,38 @@ from sec_agent.agent_runtime.dell_agent_server_client import (
     DellAgentServerRunBinding,
     DellAgentServerSessionBinding,
 )
+from sec_agent.agent_runtime.dell_agent_server_identity import (
+    PersistedAgentSessionBinding,
+    PersistedResearchRunAggregate,
+    PersistedResearchRunIdentity,
+    PersistedRunInvocationBinding,
+    agent_session_identity_digest,
+    research_run_identity_digest,
+    run_invocation_identity_digest,
+)
+from sec_agent.canonical_runtime.contracts_v1_2 import (
+    AgentSessionV1_2,
+    ResearchRun,
+    RunInvocation,
+    create_agent_session_v1_2,
+    create_research_run,
+    create_run_invocation,
+)
 
 
-THREAD_ID = "01a065aa-23ec-72f3-bf4e-09cf92ac08c7"
+THREAD_NAMESPACE = uuid5(
+    NAMESPACE_URL,
+    "https://fin-insight.local/dell-agent-server/session/v1",
+)
+THREAD_ID = str(
+    uuid5(THREAD_NAMESPACE, "fin-session-001\0fin-thread-001")
+)
 START_RUN_ID = "01a065aa-7091-7a93-8153-7956fb32f946"
 RESUME_RUN_ID = "01a065aa-7311-7e62-b147-93aca9a4ee82"
+NOW = datetime(2026, 9, 3, 2, 0, tzinfo=timezone.utc)
+DIGEST_A = "a" * 64
+DIGEST_B = "b" * 64
+DIGEST_C = "c" * 64
 
 
 class _FakeThreads:
@@ -27,7 +56,7 @@ class _FakeThreads:
         self.get_state_calls: list[tuple[str, dict[str, Any]]] = []
         self.create_result: Any = {
             "thread_id": THREAD_ID,
-            "metadata": {"agent_session_id": "fin-session-001"},
+            "metadata": {},
         }
         self.state_result: Any = {
             "values": {"phase": "awaiting_review"},
@@ -42,6 +71,8 @@ class _FakeThreads:
 
     def create(self, **kwargs: Any) -> Any:
         self.create_calls.append(kwargs)
+        self.create_result["thread_id"] = kwargs.get("thread_id", THREAD_ID)
+        self.create_result["metadata"] = dict(kwargs["metadata"])
         return self.create_result
 
     def get_state(self, thread_id: str, **kwargs: Any) -> Any:
@@ -91,12 +122,202 @@ class _FakeSdk:
         self.close_count += 1
 
 
-def _client(sdk: _FakeSdk | None = None) -> tuple[DellAgentServerClient, _FakeSdk]:
+class _MemoryIdentityRepository:
+    def __init__(self) -> None:
+        self.sessions: dict[str, PersistedAgentSessionBinding] = {}
+        self.runs: dict[str, PersistedResearchRunIdentity] = {}
+        self.invocations: dict[str, PersistedRunInvocationBinding] = {}
+        self.session_bind_calls = 0
+        self.invocation_bind_calls = 0
+
+    def get_agent_session(
+        self,
+        *,
+        agent_session_id: str,
+    ) -> PersistedAgentSessionBinding | None:
+        return self.sessions.get(agent_session_id)
+
+    def bind_agent_session(
+        self,
+        *,
+        agent_session: AgentSessionV1_2,
+        server_thread_id: str,
+        assistant_id: str,
+    ) -> PersistedAgentSessionBinding:
+        self.session_bind_calls += 1
+        stored = PersistedAgentSessionBinding(
+            agent_session_id=agent_session.session_id,
+            fin_thread_id=agent_session.thread_id,
+            server_thread_id=server_thread_id,
+            assistant_id=assistant_id,
+            session_identity_digest=agent_session_identity_digest(agent_session),
+            bound_at=NOW,
+        )
+        self.sessions.setdefault(agent_session.session_id, stored)
+        return self.sessions[agent_session.session_id]
+
+    def get_run_invocation(
+        self,
+        *,
+        run_invocation_id: str,
+    ) -> PersistedRunInvocationBinding | None:
+        return self.invocations.get(run_invocation_id)
+
+    def bind_run_invocation(
+        self,
+        *,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
+        server_thread_id: str,
+        server_run_id: str,
+        server_invocation_kind: str,
+        first_server_status: str,
+        assistant_id: str,
+    ) -> PersistedRunInvocationBinding:
+        self.invocation_bind_calls += 1
+        self.runs.setdefault(
+            research_run.run_id,
+            PersistedResearchRunIdentity(
+                research_run_id=research_run.run_id,
+                agent_session_id=research_run.session_id,
+                parent_research_run_id=research_run.parent_run_id,
+                run_identity_digest=research_run_identity_digest(research_run),
+                first_bound_at=NOW,
+            ),
+        )
+        stored = PersistedRunInvocationBinding(
+            run_invocation_id=run_invocation.invocation_id,
+            research_run_id=research_run.run_id,
+            agent_session_id=research_run.session_id,
+            invocation_ordinal=run_invocation.ordinal,
+            canonical_invocation_kind=run_invocation.invocation_kind,
+            server_invocation_kind=server_invocation_kind,
+            server_thread_id=server_thread_id,
+            server_run_id=server_run_id,
+            assistant_id=assistant_id,
+            invocation_identity_digest=run_invocation_identity_digest(
+                run_invocation
+            ),
+            first_server_status=first_server_status,
+            bound_at=NOW,
+        )
+        self.invocations.setdefault(run_invocation.invocation_id, stored)
+        return self.invocations[run_invocation.invocation_id]
+
+    def get_research_run_aggregate(
+        self,
+        *,
+        research_run_id: str,
+    ) -> PersistedResearchRunAggregate | None:
+        run = self.runs.get(research_run_id)
+        if run is None:
+            return None
+        invocations = tuple(
+            sorted(
+                (
+                    item
+                    for item in self.invocations.values()
+                    if item.research_run_id == research_run_id
+                ),
+                key=lambda item: item.invocation_ordinal,
+            )
+        )
+        return PersistedResearchRunAggregate(
+            research_run=run,
+            invocations=invocations,
+        )
+
+
+def _client(
+    sdk: _FakeSdk | None = None,
+    repository: _MemoryIdentityRepository | None = None,
+    *,
+    prebound_session: bool = False,
+) -> tuple[DellAgentServerClient, _FakeSdk]:
     actual_sdk = sdk or _FakeSdk()
+    actual_repository = repository or _MemoryIdentityRepository()
+    if prebound_session:
+        actual_repository.bind_agent_session(
+            agent_session=_agent_session_contract(),
+            server_thread_id=THREAD_ID,
+            assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+        )
     return (
-        DellAgentServerClient(actual_sdk),
+        DellAgentServerClient(
+            actual_sdk,
+            identity_repository=actual_repository,
+        ),
         actual_sdk,
     )
+
+
+def _agent_session_contract(**overrides: Any) -> AgentSessionV1_2:
+    fields = {
+        "session_id": "fin-session-001",
+        "thread_id": "fin-thread-001",
+        "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+        "case_version": "FIN_0_1_3",
+        "as_of_date": date(2026, 9, 3),
+        "objective_ref": "objective://dell/reference-vertical",
+        "objective_digest": DIGEST_A,
+        "data_snapshot_ref": "snapshot://dell/accepted-data",
+        "data_snapshot_digest": DIGEST_B,
+        "runtime_policy_ref": "policy://dell/runtime/v1",
+        "runtime_policy_digest": DIGEST_C,
+        "authority_refs": ("authority://owner/data-gate",),
+        "active_plan_ref": "plan://dell/1",
+        "active_plan_digest": DIGEST_A,
+        "status": "ACTIVE",
+        "created_at": NOW,
+        "updated_at": NOW,
+    }
+    fields.update(overrides)
+    return create_agent_session_v1_2(**fields)
+
+
+def _research_run_contract(**overrides: Any) -> ResearchRun:
+    session = _agent_session_contract()
+    fields = {
+        "run_id": "fin-research-run-001",
+        "session_id": session.session_id,
+        "parent_run_id": None,
+        "origin_kind": "INITIAL",
+        "legacy_paid_full_chain_execution_label": None,
+        "status": "RUNNING",
+        "base_plan_ref": session.active_plan_ref,
+        "base_plan_digest": session.active_plan_digest,
+        "current_plan_ref": session.active_plan_ref,
+        "current_plan_digest": session.active_plan_digest,
+        "last_session_sequence": 0,
+        "created_at": NOW,
+        "terminal_at": None,
+    }
+    fields.update(overrides)
+    return create_research_run(**fields)
+
+
+def _run_invocation_contract(
+    *,
+    resume: bool = False,
+    **overrides: Any,
+) -> RunInvocation:
+    run = _research_run_contract()
+    fields = {
+        "invocation_id": (
+            "fin-run-invocation-002" if resume else "fin-run-invocation-001"
+        ),
+        "session_id": run.session_id,
+        "run_id": run.run_id,
+        "ordinal": 2 if resume else 1,
+        "invocation_kind": "RESUME" if resume else "START",
+        "status": "RUNNING",
+        "trigger_ref": "command://resume/2" if resume else "command://start/1",
+        "lease_ref": "lease://agent-server/2" if resume else "lease://agent-server/1",
+        "started_at": NOW,
+        "finished_at": None,
+    }
+    fields.update(overrides)
+    return create_run_invocation(**fields)
 
 
 def _session() -> DellAgentServerSessionBinding:
@@ -143,6 +364,7 @@ def test_connect_uses_official_sdk_without_accepting_or_forwarding_a_key(
 
     connected = DellAgentServerClient.connect(
         url="http://127.0.0.1:2024",
+        identity_repository=_MemoryIdentityRepository(),
         timeout=30,
     )
 
@@ -153,9 +375,21 @@ def test_connect_uses_official_sdk_without_accepting_or_forwarding_a_key(
     with pytest.raises(DellAgentServerClientError) as embedded_secret:
         DellAgentServerClient.connect(
             url="https://secret@example.test",
+            identity_repository=_MemoryIdentityRepository(),
         )
     assert embedded_secret.value.code == "agent_server_url_credentials_forbidden"
     assert "secret" not in str(embedded_secret.value)
+
+    for invalid_url in (
+        "http://127.0.0.1:2024?token=forbidden",
+        "http://127.0.0.1:2024/#fragment",
+    ):
+        with pytest.raises(DellAgentServerClientError) as invalid:
+            DellAgentServerClient.connect(
+                url=invalid_url,
+                identity_repository=_MemoryIdentityRepository(),
+            )
+        assert invalid.value.code == "agent_server_url_invalid"
 
 
 def test_connect_owns_sdk_and_context_manager_closes_it_once(
@@ -170,6 +404,7 @@ def test_connect_owns_sdk_and_context_manager_closes_it_once(
 
     with DellAgentServerClient.connect(
         url="http://127.0.0.1:2024",
+        identity_repository=_MemoryIdentityRepository(),
     ) as connected:
         assert sdk.close_count == 0
         assert isinstance(connected, DellAgentServerClient)
@@ -178,7 +413,7 @@ def test_connect_owns_sdk_and_context_manager_closes_it_once(
     connected.close()
     assert sdk.close_count == 1
     with pytest.raises(DellAgentServerClientError) as closed:
-        connected.create_agent_session(agent_session_id="fin-session-001")
+        connected.create_agent_session(agent_session=_agent_session_contract())
     assert closed.value.code == "agent_server_client_closed"
 
 
@@ -192,10 +427,10 @@ def test_injected_sdk_remains_caller_owned_when_wrapper_closes() -> None:
     assert sdk.close_count == 0
 
 
-def test_create_agent_session_lets_server_assign_uuid_and_binds_metadata() -> None:
+def test_create_agent_session_ensures_deterministic_uuid_and_binds_metadata() -> None:
     client, sdk = _client()
 
-    binding = client.create_agent_session(agent_session_id="fin-session-001")
+    binding = client.create_agent_session(agent_session=_agent_session_contract())
 
     assert binding == _session()
     assert sdk.threads.create_calls == [
@@ -205,22 +440,26 @@ def test_create_agent_session_lets_server_assign_uuid_and_binds_metadata() -> No
                     client_module.DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION
                 ),
                 "agent_session_id": "fin-session-001",
+                "fin_thread_id": "fin-thread-001",
+                "session_identity_digest": agent_session_identity_digest(
+                    _agent_session_contract()
+                ),
             },
-            "if_exists": "raise",
+            "thread_id": THREAD_ID,
+            "if_exists": "do_nothing",
             "graph_id": DELL_AGENT_SERVER_ASSISTANT_ID,
         }
     ]
-    assert "thread_id" not in sdk.threads.create_calls[0]
 
 
 def test_start_run_uses_only_qualified_agent_server_options() -> None:
-    client, sdk = _client()
+    client, sdk = _client(prebound_session=True)
     graph_input = _graph_input()
 
     run = client.start_run(
         session=_session(),
-        research_run_id="fin-research-run-001",
-        run_invocation_id="fin-run-invocation-001",
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
         graph_input=graph_input,
     )
 
@@ -256,12 +495,28 @@ def test_start_run_uses_only_qualified_agent_server_options() -> None:
 
 
 def test_resume_creates_new_server_run_with_same_research_run_and_new_invocation() -> None:
-    client, sdk = _client()
+    repository = _MemoryIdentityRepository()
+    repository.bind_agent_session(
+        agent_session=_agent_session_contract(),
+        server_thread_id=THREAD_ID,
+        assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+    )
+    repository.bind_run_invocation(
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        server_thread_id=THREAD_ID,
+        server_run_id=START_RUN_ID,
+        server_invocation_kind="start",
+        first_server_status="pending",
+        assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+    )
+    client, sdk = _client(repository=repository)
     sdk.runs.create_results.pop(0)
 
     resumed = client.resume_run(
         prior_run=_start_run(),
-        run_invocation_id="fin-run-invocation-002",
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(resume=True),
         resume_payload={"action": "approve", "reason": "reviewed"},
     )
 
@@ -285,6 +540,67 @@ def test_resume_creates_new_server_run_with_same_research_run_and_new_invocation
     assert kwargs["multitask_strategy"] == "reject"
     assert "langsmith_tracing" not in kwargs
 
+    replay_client, _ = _client(sdk, repository)
+    replayed = replay_client.resume_run(
+        prior_run=_start_run(),
+        research_run=_research_run_contract(status="PAUSED"),
+        run_invocation=_run_invocation_contract(
+            resume=True,
+            status="SUCCEEDED",
+            finished_at=NOW,
+        ),
+        resume_payload={"action": "approve", "reason": "reviewed"},
+    )
+    assert replayed == resumed
+    assert len(sdk.runs.create_calls) == 1
+
+
+def test_resume_requires_durable_start_and_exact_prior_binding() -> None:
+    repository = _MemoryIdentityRepository()
+    repository.bind_agent_session(
+        agent_session=_agent_session_contract(),
+        server_thread_id=THREAD_ID,
+        assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+    )
+    client, sdk = _client(repository=repository)
+
+    with pytest.raises(DellAgentServerClientError) as missing:
+        client.resume_run(
+            prior_run=_start_run(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(resume=True),
+            resume_payload={"action": "approve"},
+        )
+    assert missing.value.code == "fin_resume_durable_predecessor_missing"
+
+    repository.bind_run_invocation(
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        server_thread_id=THREAD_ID,
+        server_run_id=START_RUN_ID,
+        server_invocation_kind="start",
+        first_server_status="pending",
+        assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+    )
+    wrong_prior = DellAgentServerRunBinding(
+        agent_session_id="fin-session-001",
+        research_run_id="fin-research-run-001",
+        run_invocation_id="fin-run-invocation-001",
+        server_thread_id=THREAD_ID,
+        server_run_id=RESUME_RUN_ID,
+        invocation_kind="start",
+        server_status="pending",
+    )
+    with pytest.raises(DellAgentServerClientError) as conflict:
+        client.resume_run(
+            prior_run=wrong_prior,
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(resume=True),
+            resume_payload={"action": "approve"},
+        )
+    assert conflict.value.code == "fin_resume_durable_predecessor_conflict"
+    assert sdk.runs.create_calls == []
+
 
 def test_resume_refuses_reused_invocation_before_calling_server() -> None:
     client, sdk = _client()
@@ -292,7 +608,8 @@ def test_resume_refuses_reused_invocation_before_calling_server() -> None:
     with pytest.raises(DellAgentServerClientError) as failure:
         client.resume_run(
             prior_run=_start_run(),
-            run_invocation_id="fin-run-invocation-001",
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
             resume_payload={"action": "approve"},
         )
 
@@ -308,12 +625,45 @@ def test_start_refuses_graph_input_bound_to_another_research_run() -> None:
     with pytest.raises(DellAgentServerClientError) as failure:
         client.start_run(
             session=_session(),
-            research_run_id="fin-research-run-001",
-            run_invocation_id="fin-run-invocation-001",
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
             graph_input=graph_input,
         )
 
     assert failure.value.code == "fin_research_run_input_mismatch"
+    assert sdk.runs.create_calls == []
+
+
+def test_start_rejects_another_ordinal_one_before_remote_side_effect() -> None:
+    repository = _MemoryIdentityRepository()
+    repository.bind_agent_session(
+        agent_session=_agent_session_contract(),
+        server_thread_id=THREAD_ID,
+        assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+    )
+    repository.bind_run_invocation(
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        server_thread_id=THREAD_ID,
+        server_run_id=START_RUN_ID,
+        server_invocation_kind="start",
+        first_server_status="pending",
+        assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+    )
+    client, sdk = _client(repository=repository)
+    second_start = _run_invocation_contract(
+        invocation_id="fin-run-invocation-other-start"
+    )
+
+    with pytest.raises(DellAgentServerClientError) as failure:
+        client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=second_start,
+            graph_input=_graph_input(),
+        )
+
+    assert failure.value.code == "fin_start_durable_invocation_conflict"
     assert sdk.runs.create_calls == []
 
 
@@ -335,8 +685,8 @@ def test_start_strictly_rejects_invalid_or_extra_graph_input_before_server_call(
     with pytest.raises(DellAgentServerClientError) as failure:
         client.start_run(
             session=_session(),
-            research_run_id="fin-research-run-001",
-            run_invocation_id="fin-run-invocation-001",
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
             graph_input=graph_input,
         )
 
@@ -428,8 +778,103 @@ def test_sdk_failures_are_typed_and_secret_free() -> None:
 
     sdk.threads.create = fail  # type: ignore[method-assign]
     with pytest.raises(DellAgentServerClientError) as failure:
-        client.create_agent_session(agent_session_id="fin-session-001")
+        client.create_agent_session(agent_session=_agent_session_contract())
 
     assert failure.value.code == "agent_server_session_create_failed"
     assert "sk-test-secret" not in str(failure.value)
     assert "sk-test-secret" not in repr(failure.value)
+
+
+def test_session_create_persists_once_and_replay_idempotently_ensures_thread() -> None:
+    sdk = _FakeSdk()
+    repository = _MemoryIdentityRepository()
+    first_client, _ = _client(sdk, repository)
+
+    first = first_client.create_agent_session(
+        agent_session=_agent_session_contract()
+    )
+    # A fresh wrapper represents a later ingress process.  It must read the
+    # PostgreSQL port rather than creating a second server thread.
+    replay_client, _ = _client(sdk, repository)
+    replay = replay_client.create_agent_session(
+        agent_session=_agent_session_contract(status="PAUSED")
+    )
+
+    assert replay == first == _session()
+    assert repository.session_bind_calls == 1
+    assert len(sdk.threads.create_calls) == 2
+    assert {
+        call["thread_id"] for call in sdk.threads.create_calls
+    } == {THREAD_ID}
+    assert all(
+        call["if_exists"] == "do_nothing"
+        for call in sdk.threads.create_calls
+    )
+
+
+def test_durable_session_conflict_stops_before_agent_server_call() -> None:
+    repository = _MemoryIdentityRepository()
+    repository.bind_agent_session(
+        agent_session=_agent_session_contract(),
+        server_thread_id=THREAD_ID,
+        assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+    )
+    sdk = _FakeSdk()
+    client, _ = _client(sdk, repository)
+
+    with pytest.raises(DellAgentServerClientError) as failure:
+        client.create_agent_session(
+            agent_session=_agent_session_contract(
+                objective_digest=DIGEST_B,
+            )
+        )
+
+    assert failure.value.code == "fin_agent_session_durable_binding_conflict"
+    assert sdk.threads.create_calls == []
+
+
+def test_run_create_persists_once_and_fresh_client_reads_same_server_run() -> None:
+    sdk = _FakeSdk()
+    repository = _MemoryIdentityRepository()
+    repository.bind_agent_session(
+        agent_session=_agent_session_contract(),
+        server_thread_id=THREAD_ID,
+        assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+    )
+    first_client, _ = _client(sdk, repository)
+
+    first = first_client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
+    replay_client, _ = _client(sdk, repository)
+    replay = replay_client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(status="PAUSED"),
+        run_invocation=_run_invocation_contract(
+            status="SUCCEEDED",
+            finished_at=NOW,
+        ),
+        graph_input=_graph_input(),
+    )
+
+    assert replay == first == _start_run()
+    assert repository.invocation_bind_calls == 1
+    assert len(sdk.runs.create_calls) == 1
+
+
+def test_run_create_requires_durable_session_before_remote_side_effect() -> None:
+    client, sdk = _client()
+
+    with pytest.raises(DellAgentServerClientError) as failure:
+        client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert failure.value.code == "fin_agent_session_durable_binding_missing"
+    assert sdk.runs.create_calls == []

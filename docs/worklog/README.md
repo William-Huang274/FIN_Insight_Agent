@@ -79,3 +79,4 @@
   - Dell RAG 成熟栈资格化与人工复核：`fin_0_1_3_s3/177_dell_reference_vertical_rag_mature_stack_qualification_and_human_review.md`
   - Dell A02 不可变 Planner 合同失败与 successor 停止门：`fin_0_1_3_s3/178_dell_reference_vertical_A02_immutable_planner_contract_failure.md`
   - Dell Agentic 完整纵切技术详设冻结与零模型实现入口：`fin_0_1_3_s3/179_dell_agentic_vertical_design_and_progressive_disclosure_foundation.md`
+  - Dell Agentic Wave 0A 零模型合同与 A02 精确身份边界：`fin_0_1_3_s3/180_dell_agentic_vertical_wave0a_zero_model_contracts_and_identity_boundary.md`

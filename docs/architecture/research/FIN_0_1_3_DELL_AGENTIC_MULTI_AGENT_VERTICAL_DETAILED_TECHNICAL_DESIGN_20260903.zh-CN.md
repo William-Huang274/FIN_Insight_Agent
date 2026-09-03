@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN / INDEPENDENT_P0_P1_0_0 / ZERO_MODEL_IMPLEMENTATION_ALLOWED / A03_PAID_RUN_NOT_AUTHORIZED`
+文档状态：`DESIGN_FROZEN_REVISION_1_1 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / WAVE_0B_DEV_ONLINE_PASS / DEPLOYMENT_PARITY_KEY_PENDING / A03_PAID_RUN_NOT_AUTHORIZED`
 
 冻结日期：2026-09-03
 
@@ -22,7 +22,7 @@
 6. 专业 Agent 的正文恢复为自由 Markdown，证据、数字、计算、推断和边界另存为 `ClaimLedger`；Harness 不再尝试用一个统一语言模板判定整篇自然语言是否合法；
 7. 确定性 Validator 检查身份、期间、单位、权限、lineage、公式和引用存在性；Semantic Verifier 检查证据是否真正支撑命题、是否因果过度、是否遗漏反证；发现问题后路由回最早责任 Agent 修复；
 8. 前端展示可审计的计划、动作、工具回执、证据、决策摘要、错误责任和修复链；provider 隐藏 chain-of-thought 不持久化、不向产品/审查面或其他接收方传输、不展示，仅允许在同一 provider ActionAttempt 内为协议连续性瞬时回传原 provider；
-9. PostgreSQL 是目标部署下唯一持久控制面真值；Redis 只做瞬时通知、缓存、限流或成熟队列 broker，当前单案例不会为了架构图而强制引入；
+9. Dell 演示运行底座采用 LangSmith/LangGraph Agent Server；其部署态使用 PostgreSQL 和 Redis，FIN 领域事件仍写独立 PostgreSQL schema，Redis 只承担 Agent Server 所需的瞬时队列、通知与流式协调，不成为 Evidence、Fact、Claim 或 FIN SessionEvent 的真值；
 10. A02 仍是不可变 `start_failed`。本设计和其零模型实现不创建、恢复或授权 A03；只有 RC-S3-105、运行时零模型门、独立审查和 Owner 新授权均通过后，才讨论新的付费 ResearchRun 及其首个 RunInvocation。
 
 这是一套 Dell 单案例的“最终产品形态纵切”，不是全产品通用平台重写。凡是不直接帮助 Dell case 跑通、解释、干预、恢复或验收的通用能力，本轮均不扩建。
@@ -111,9 +111,9 @@ A02 还证明了更深的问题：16 个本地请求把抽象 source-family、�
 | 通用高层 Agent framework | 不引入 Deep Agents、AutoGen、CrewAI 或第二套框架 | `REJECT_THIS_SLICE` |
 | 数据/工具协议 | 官方 MCP Python SDK 2.1.1，同一个 server | `ADOPT` |
 | 领域 schema | Pydantic 2 / JSON Schema，从同一 canonical model 投影 | `ADOPT` |
-| 持久 checkpoint | SQLite 本地资格；PostgresSaver 为 Dell parity/部署目标 | `ADOPT` |
-| 持久控制面 | PostgreSQL | `ADOPT_FOR_PARITY` |
-| Redis | 瞬时 fan-out、cancel signal、短 TTL cache；仅触发后启用 | `HOLD_UNTIL_TRIGGER` |
+| 持久 checkpoint | Agent Server 管理的部署态持久化；SQLite/in-memory 只用于零模型测试 | `ADOPT_SERVER_OWNED` |
+| 持久控制面 | Agent Server PostgreSQL + 独立 FIN 领域 schema；不读取或复制 server 内部表 | `ADOPT_FOR_PARITY` |
+| Redis | Agent Server `local_parity` 的运行依赖；仅作瞬时队列、signal 和 stream 协调 | `ADOPT_AS_SERVER_DEPENDENCY` |
 | 外层数据/评测编排 | 现有 Dagster | `RETAIN_OUTER_ONLY` |
 | Web backend | 现有 FastAPI Workbench BFF | `RETAIN_AND_EXTEND` |
 | 实时浏览器通道 | SSE；用户操作用 REST command | `ADOPT` |
@@ -121,7 +121,7 @@ A02 还证明了更深的问题：16 个本地请求把抽象 source-family、�
 | Frontend | 现有 React 19/Vite；按需采用 TanStack Query/Virtual、Radix | `ADOPT_INCREMENTALLY` |
 | DAG 可视化 | 首批用可访问列表；真实复杂度证明后再用 React Flow | `HOLD` |
 | Observability | OpenTelemetry/OpenInference 风格 trace；业务事件另存 | `ADOPT_INCREMENTALLY` |
-| LangGraph Agent Server | 需许可证、key、egress 和本地 parity spike | `CONDITIONAL_CEILING` |
+| LangSmith/LangGraph Agent Server | Dell 个人非商用、本地演示的唯一 serving/runtime 路径 | `ADOPT_OWNER_DECIDED` |
 | Temporal/Celery/自写 Redis Streams queue | 当前不引入 | `HOLD` |
 
 ### 3.2 为什么仍有 LangChain
@@ -130,18 +130,22 @@ LangGraph 是执行引擎，`langchain-deepseek` 当前只承担 DeepSeek 模型
 
 本轮不会为了“清除 LangChain”而自行实现 provider tool loop；也不会让 LangChain 接管领域真值。`ModelRuntimePort` 是本设计要求的目标边界，不是当前仓库已经完成的事实；在它真正接住现有调用、usage、error 和 reasoning-content 连续轮之前，不得声称 provider 已被隔离。以后只有官方 OpenAI-compatible SDK 的真实 tool-call、reasoning-content 连续轮、usage 和错误语义 parity 通过后才切换。
 
-### 3.3 为什么当前不直接采用 LangGraph Agent Server
+### 3.3 LangSmith/LangGraph Agent Server 采用裁决
 
-Agent Server 已提供 thread/run/task queue/streaming/PostgreSQL/Redis 的成熟实现，是减少自研 backend 的最高上限；但 standalone self-host 需要 LangSmith/LangGraph 许可和 key，通常还有 license beacon egress，生产建议路径也偏向 Kubernetes。
+2026-09-03 Owner 明确选择：Dell 个人非商用、本地演示直接采用 LangSmith/LangGraph Agent Server，不实现也不保留自研 single-worker runtime fallback。许可、合法 API key、egress 和部署能力仍是必须如实验证的配置前置，不能因为“不商用”而虚构授权；但缺少 key 的处理是阻断部署验收并请求配置，不是转向自造运行时。
 
-因此它是一个必须在自建运行服务之前裁决的 serving-boundary qualification gate，而不是默认依赖：
+Wave 0B 已在 `a101292dfb42930502b0f970286d5e3a0acb5d37` 上完成第一段真实资格测试：`langgraph dev` 配置 per-worker concurrent-job cap=`4`，加载 4 个零模型 graph，共发生 69 次 HTTP/SSE 交换；thread 多 run 状态、interrupt/resume、同线程并发拒绝、图内和跨线程并发、cancel、非法输入拒绝及 live-process resumable SSE 均通过。执行窗口重叠证明了并发执行，但尚未证明 multi-worker deployment、worker failover 或 HA。实测同时发现并冻结两个边界：
 
-- 在实现 Research Run repository、dispatcher、typed SSE 或恢复服务之前，先以零模型 Docker spike 验证许可、egress、Windows/Docker 资源、API、thread/run、cancel、SSE、数据驻留和 FIN 领域事件投影边界；
-- spike 必须验证而非按名字猜测 identity mapping：FIN `AgentSession ↔ Agent Server thread`，FIN `ResearchRun ↔ 跨一个或多个 server run 的领域 aggregate`，FIN `RunInvocation ↔ Agent Server run`，FIN `ActionAttempt ↔ FIN receipt`；若实际 server resume/cancel 语义不支持该基数，ADR 必须记录不同映射或拒绝采用；
-- 通过则采用其 server/queue/thread/run/stream，Workbench 只实现 FIN 领域合同、权限、证据/Claim 投影和薄 BFF；不得再平行自建同功能的 SQLite/PostgreSQL runner、queue 或 stream service；
-- 未通过必须保存可复算的阻断 receipt，才允许采用 LangGraph OSS + Dell-specific FastAPI 单 worker；该 fallback 只实现 Dell 纵切所需的最小产品 API，不复制完整 Agent Server；
-- 该裁决不阻塞纯 FIN domain contracts、progressive disclosure 和 RC-S3-105 的零模型修复，但阻塞所有可能与成熟 serving stack 重复的 backend/runtime 实现；
-- 只有 Agent Server 被有证据拒绝且真实出现多 worker 需求时，才另做 Linux 成熟队列技术选型，不在本轮顺手造 scheduler。
+- 原生流不得同时订阅 `updates + values`：两帧可能共享同一个 SSE ID，断线点会产生漏帧窗口。FIN 客户端只订阅单一 `updates`，完整状态另读 `GET /threads/{thread_id}/state`；探针必须用真实已接收 event ID 验证 exact-suffix resume；
+- `langgraph dev` 的 in-memory runtime 在进程重启后恢复了 thread checkpoint 和 run records，但已完成 run 的 resumable SSE 帧返回空流。因此它只用于零模型开发/在线语义资格，不能冒充 Dell `local_parity` 部署证明。
+
+采用后的强制边界是：
+
+- Dell 最终演示前必须用官方 `langgraph up` 部署形态、PostgreSQL 与 Redis 复跑 restart、checkpoint、interrupt/resume、cancel、并行与 SSE replay；合法 LangSmith key 是配置前置；
+- FIN `AgentSession ↔ Agent Server thread`，FIN `ResearchRun ↔ 一个或多个 server run 的领域 aggregate`，FIN `RunInvocation ↔ Agent Server run`，FIN `ActionAttempt ↔ FIN receipt`；业务代码不得因为两边都叫 run 而合并身份；
+- Workbench 只实现 FIN 领域合同、权限、Evidence/Claim/SessionEvent 投影、snapshot-first 读取和薄 BFF，不复制 Agent Server 的 scheduler、queue、thread/run 状态机或 cancel/resume 实现；
+- 不再设计 `REJECT_WITH_RECEIPT_AND_USE_OSS_SINGLE_WORKER` 分支，也不引入 Temporal、Celery、自写 Redis Streams queue 或第二套 Agent framework；
+- `langgraph up` 资格门未通过时，Wave 4/5 serving 与最终演示验收保持阻断；RC-S3-105 的 inventory/compiler/data-disclosure 零模型工作可并行继续，因为它不实现重叠 runtime。
 
 ## 4. 总体架构
 
@@ -157,7 +161,7 @@ FastAPI Research Run BFF
         ├── Runtime context & disclosure service
         │      trusted scope injection / catalog / skill / projection
         │
-        └── LangGraph runtime
+        └── LangSmith/LangGraph Agent Server runtime
                │
                ├── Research Lead agentic loop
                ├── dynamic ResearchPlan scheduler (`Send`)
@@ -793,11 +797,10 @@ reconciliation 不改写旧 ActionAttempt，而创建不可变 `RecoveryDisposit
 
 ### 12.4 Queue 决策
 
-- 当前 local-lite 复用单 worker/受控子进程，不建设通用队列；
-- Dell local-parity 优先验证 Agent Server 是否可用；
-- Agent Server gate 通过则采用它的 queue/thread/run/stream；
-- gate 不通过且出现真实多 worker 需求后，才对 Linux 成熟队列做独立 qualification；
-- 不在 Windows 上把 Celery 当默认，也不自写 Redis Streams 或 Postgres `SKIP LOCKED` scheduler。
+- `langgraph dev` 只用于零模型单机资格和快速开发，不是产品运行 fallback；
+- Dell `local_parity` 固定采用 Agent Server 的 queue/thread/run/stream/cancel/interrupt；
+- PostgreSQL 和 Redis 按官方 Agent Server 拓扑运行，FIN 不自行实现第二套 dispatcher 或 scheduler；
+- 不引入 Celery、Temporal、自写 Redis Streams 或 Postgres `SKIP LOCKED` scheduler。
 
 ## 13. 后端 API、事件与 HITL
 
@@ -1039,26 +1042,27 @@ Child run 保存 parent run、artifact refs、manifest digest、as-of policy、�
 ### 17.1 `local_lite`
 
 - Windows native FastAPI + React；
-- 单 worker/受控 subprocess；
-- SQLite Workbench + SqliteSaver；
+- `langgraph dev` 或纯 LangGraph fixture；
+- in-memory/SQLite 仅保存零模型测试材料；
 - filesystem artifact store；
 - 无 Redis；
 - 用于零模型开发、HITL/UI/replay qualification；
-- 不声称 crash durability、HA、多 worker 或生产能力。
+- 不是 Dell 产品运行 fallback，不声称进程重启后 completed-stream replay、HA、多 worker 部署或生产能力。
 
 ### 17.2 `local_parity`（Dell 最终演示前必须通过）
 
-- Docker Compose 或等价本地容器；
-- PostgreSQL 16：产品控制面 + 独立 LangGraph saver schema；
+- 官方 `langgraph up` 本地容器拓扑；
+- Agent Server API/worker + PostgreSQL + Redis；
+- PostgreSQL 16：Agent Server 持久化 + 独立 FIN 产品控制面 schema，FIN 不读取 server 内部表；
 - filesystem 或 S3-compatible local object store；
-- FastAPI BFF + Agent worker；
+- FastAPI 薄 BFF，不自建 Agent worker/queue；
 - OpenTelemetry Collector；
-- Redis 只有在 Agent Server/多实例 fan-out 方案实际采用时启用；
+- Redis 作为 Agent Server 的瞬时运行依赖，不作为 FIN 领域真值；
 - 做进程/容器重启、checkpoint、SSE replay、HITL 和 idempotency failure injection。
 
 ### 17.3 `production`（本轮不宣称完成）
 
-优先条件采用成熟 Agent Server；需要许可、egress、数据驻留和运维评审。未采用时才单独选择 Linux queue。PostgreSQL HA/TLS/PITR、Redis HA、object store、OIDC、Kubernetes 和多 worker 属于后续生产门，不阻止 Dell local-parity 证明。
+Dell vertical 已采用 Agent Server，但本轮只声明个人作品集/本地开发演示，不声明商业或生产部署资格。“非商用”不等于免除 key/license；若未来转为长期公网、真实用户或生产服务，必须重新完成许可、egress、数据驻留和运维评审。PostgreSQL HA/TLS/PITR、Redis HA、object store、OIDC、Kubernetes 和生产多 worker 属于后续生产门，不阻止 Dell `local_parity` 证明。
 
 ## 18. Token、调用数、时延与停止条件
 
@@ -1141,18 +1145,19 @@ tests/test_dell_progressive_disclosure.py
 
 不接模型、不接网络、不接 Redis、不创建 A03。
 
-### Wave 0B：成熟 serving boundary 资格测试与二选一冻结
+### Wave 0B：LangSmith/Agent Server 采用资格测试
 
-目标：在写 Research Run backend、queue、SSE 和恢复服务前，先证明应复用哪一条成熟 serving 路径，避免先自研再推翻。
+目标：在写 Research Run BFF、领域投影和前端前，验证已经选定的 LangSmith/LangGraph Agent Server serving 路径，避免复制成熟 runtime。
 
-- 使用本地 Docker、fake graph 和 zero-model fixture 资格化 LangGraph Agent Server；
+- 先用 `langgraph dev`、fake graph 和 zero-model fixture 验证 API 与运行语义，再用 `langgraph up` 验证 PostgreSQL/Redis 部署态；
 - 精确记录 package/image/version/license、LangSmith key/egress 要求、PostgreSQL/Redis 拓扑、thread/run/cancel/interrupt/resume/SSE 行为、资源占用和数据驻留；
 - 验证 FIN `SessionEvent / Claim / Evidence / Intervention` 能否只做薄投影，而不修改或复制 Agent Server 内部状态机；
 - 输出 FIN identity 与 server thread/run/assistant/cron/task 的 cardinality map、ID binding 和恢复映射，禁止因为两边都叫 run 就默认等价；
-- 形成二选一 ADR：`ADOPT_AGENT_SERVER` 或 `REJECT_WITH_RECEIPT_AND_USE_OSS_SINGLE_WORKER`；
+- 冻结唯一 ADR：`ADOPT_LANGSMITH_AGENT_SERVER_FOR_DELL_DEV_LOCAL_PARITY`；不再保留 OSS single-worker runtime fallback；
+- 原生 resumable stream 只订阅单一 `updates`，完整状态走 `GET /threads/{thread_id}/state`；FIN BFF 的公开事件使用自己的 projection sequence，不把多 `stream_mode` frame 当领域事件协议；
 - 裁决前禁止实现新的 dispatch queue、research-run persistence、product SSE replay 或通用恢复服务；现有 Operations 代码只作为事实源和回归基线，不继续扩写。
 
-若资格测试因必须的许可/key/egress 无法合法执行，应记录为明确的 adoption blocker；这足以拒绝本轮采用，但不等于技术质量失败，也不授权自造多 worker 平台。整个测试不调用模型，不创建付费 ResearchRun 或 PaidFullChainExecution。
+若 `langgraph up` 因合法 key/license/egress 未配置而无法执行，应记录为部署验收 blocker 并等待合法配置；不得因此切换到自研 runtime。整个 Wave 0B 不调用模型，不创建付费 ResearchRun 或 PaidFullChainExecution。`langgraph dev` 在线通过不等于 `local_parity`、managed deployment 或 production 通过。
 
 ### Wave 1：RC-S3-105 与数据披露
 
@@ -1186,19 +1191,19 @@ tests/test_dell_progressive_disclosure.py
 
 ### Wave 4：按 Wave 0B 裁决实现 Backend、SSE 与 HITL
 
-- 若 `ADOPT_AGENT_SERVER`：复用其 thread/run/queue/stream/cancel，FIN 只实现 Research Session/Event/Command 的领域投影、权限与薄 BFF；
-- 若 `REJECT_WITH_RECEIPT_AND_USE_OSS_SINGLE_WORKER`：实现 Dell-specific Research Session/Run/Event/Command API 和 local-lite SQLite repository；
-- 两条路径都必须提供 typed FIN event projection、`Last-Event-ID` 和数据库/成熟 server replay，且仓库中只能有一个活动执行真值；
+- 复用 Agent Server 的 thread/run/queue/stream/cancel/interrupt，FIN 只实现 Research Session/Event/Command 的领域投影、权限与薄 BFF；
+- typed FIN event projection 使用自己的单调 sequence 和 snapshot-first 恢复；它只投影业务语义，不复制 Agent Server 运行状态机；
+- 仓库中只能有一个活动执行真值，不实现 SQLite/FastAPI runner fallback；
 - pause/resume/cancel/final review；
 - Workbench run page、timeline、proof inspector、intervention drawer；
 - private reasoning zero-leak tests。
 
 ### Wave 5：PostgreSQL local-parity 与部署证明
 
-- PostgreSQL product schema + PostgresSaver；
+- `langgraph up` 的 Agent Server + PostgreSQL + Redis，以及独立 FIN product schema；
 - restart/failure injection、idempotency、SSE replay；
-- 执行 Wave 0B 已冻结的 serving 路径，不在本阶段重新选型；
-- Redis 只在已采用方案需要时启用并做失效测试；
+- 执行 Wave 0B 已冻结的 Agent Server serving 路径，不在本阶段重新选型；
+- Redis 作为 server 瞬时依赖做丢失/重连测试，不成为 FIN replay 真值；
 - OTel trace、token/cost/latency dashboard；
 - Docker Compose 可复现运行。
 
@@ -1298,12 +1303,12 @@ tests/test_dell_progressive_disclosure.py
 -为了前端效果伪造 Agent 运行；
 -提前删除旧 graph、A02 artifacts 或历史失败。
 
-### 22.3 待决但已有默认方向
+### 22.3 已决方向与剩余资格门
 
-| 待决项 | 默认方向 | 决策触发 |
+| 事项 | 当前决定 | 剩余资格门/触发 |
 |---|---|---|
-| Agent Server 是否采用 | 条件 qualification；不阻塞 Wave 0A 与 Wave 1–3 纯领域工作，但阻塞 Wave 4 serving/backend 实现 | 许可/egress/本地 parity spike |
-| Redis 是否启用 | 当前关闭 | 多 worker/fan-out/queue 实测需求 |
+| Agent Server 是否采用 | 已决：Dell 个人本地演示采用，不设 runtime fallback | 合法 key + `langgraph up` local-parity 仍须实测 |
+| Redis 是否启用 | 已决：仅作为 Agent Server 部署依赖 | local-parity 中验证失效/重连，永不作为 FIN 真值 |
 | React Flow | 当前关闭 | 真实 DAG 列表已无法解释 |
 | Provider adapter 切官方 SDK | 当前不切 | tool-loop/reasoning/usage parity |
 | Specialist 永久 child thread | 当前不建 | 跨 turn 独立并发/长期记忆实证 |
@@ -1331,6 +1336,11 @@ tests/test_dell_progressive_disclosure.py
 - [LangGraph Subgraphs](https://docs.langchain.com/oss/python/langgraph/use-subgraphs)
 - [LangChain Context Engineering](https://docs.langchain.com/oss/python/langchain/context-engineering)
 - [LangGraph Standalone Agent Server](https://docs.langchain.com/langsmith/deploy-standalone-server)
+- [LangGraph CLI `dev` / `up`](https://docs.langchain.com/langsmith/cli)
+- [LangSmith account and API key](https://docs.langchain.com/langsmith/create-account-api-key)
+- [LangSmith platform setup](https://docs.langchain.com/langsmith/platform-setup)
+- [Agent Server storage and privacy](https://docs.langchain.com/langsmith/data-storage-and-privacy)
+- [Agent Server streaming](https://docs.langchain.com/langsmith/streaming)
 - [Redis Pub/Sub delivery semantics](https://redis.io/docs/latest/develop/pubsub/)
 - [Redis Streams](https://redis.io/docs/latest/develop/data-types/streams/)
 - [WHATWG Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html)
@@ -1363,3 +1373,5 @@ tests/test_dell_progressive_disclosure.py
 随后 Wave 0A 实施证据继续修正了设计假设：RuntimePolicy 与 disclosure policy 必须使用不同 digest 并显式交叉绑定；runtime policy 的摘要绑定仍不够，其内部 case/version/as-of/data/catalog/disclosure-policy/allowlist 还必须与 current scope/catalog/policy 逐字段对齐；PlanDelta/Gap 校验必须重新读取当前 registry；legacy `AgentSession` 不足以无条件恢复四层身份，A02 必须 exact bundle、A01 当前必须 fail closed；A02 四层 ID 与 paid execution label 必须按字段面永久保留，不能跨 identity surface 复用；A02 离线回放还必须重新验证 host-resolved immutable source record，不能仅核对可由伪造对象自行重签的摘要；所有 canonical event、ACL、projection、checkpoint、recovery、plan、registry、policy、receipt、current ledger snapshot 和 current authorization 对象都必须在每次消费时重跑类型、嵌套语义与 self-digest 校验；checkpoint 的 plan/graph/event-ledger 及全部 typed current material 必须来自 host-owned current-material resolver，不能由调用者同时提供现状和 expected 值来自证；manifest 的 objective/plan/graph/task assignment 必须来自 current accepted plan authority，PlanDelta/observation/feedback/action menu/budget/stop/intervention/checkpoint 则必须来自 host-owned current-model-context resolver，并将整组当前状态摘要先行封入 sealed RuntimeScope，不能靠 resolver 名称或 snapshot 自签自证；governance summary 必须由已完成内部字段交叉验证的 current canonical runtime policy 派生，均不能由 caller 文本提供。上述修订替代原文中更宽松的兼容表述；它们仍不关闭 RC-S3-105，不创建 A03，不证明 provider、backend 或产品已跑通。
 
 实现可以根据零模型测试和成熟组件 spike 修正字段名、表名、依赖版本和内部模块拆分，但若要改变上述方向、引入第二套框架、扩大产品范围、改变 Evidence/NumericFact/public-gap authority、强制上 Redis/云端或创建付费 successor，必须先更新本文并向 Owner 解释新证据和影响。
+
+2026-09-03 Owner 进一步裁决并修订本冻结：Dell vertical 直接采用 LangSmith/LangGraph Agent Server，删除运行时 fallback。这个修订废止本文和历史工作记录中“Agent Server 拒绝后可实现 OSS single-worker runtime”的未来授权，但不改写那些记录在当时的事实。当前采用状态为 `ADOPT_DIRECTION_OWNER_APPROVED / DEV_ONLINE_QUALIFIED / LANGGRAPH_UP_KEY_AND_RESTART_PARITY_PENDING`；它不等于 Agent Server 已接入 mainline，不等于 multi-agent、HITL、报告或产品已通过，也不创建 A03 或 paid authority。

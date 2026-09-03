@@ -6,6 +6,8 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from langgraph.checkpoint.memory import InMemorySaver
+from langgraph.types import Command
 
 
 pytest.importorskip("mcp", reason="agent-runtime optional dependency")
@@ -22,6 +24,12 @@ from sec_agent.agent_runtime.dell_reference_vertical_contracts import (
     ToolLaneResult,
     ToolLaneTask,
     canonical_sha256,
+)
+from sec_agent.agent_runtime.dell_reference_vertical_graph import (
+    build_dell_reference_vertical_state_graph,
+)
+from sec_agent.agent_runtime.dell_zero_model_graph_qualification import (
+    ZERO_MODEL_EXECUTION_PROFILE,
 )
 from sec_agent.research_foundation.contracts import (
     load_dell_reference_vertical_foundation,
@@ -386,6 +394,81 @@ def test_owner_approved_semantic_compiler_and_mcp_real_composition() -> None:
             match="model_execution_not_authorized",
         ):
             dependencies.planner_agent({})
+
+
+def test_real_composition_runs_zero_model_graph_to_interrupt_and_resume() -> None:
+    """Exercise the real bounded graph/MCP path without any model-owned port."""
+
+    _assert_runtime_assets_present()
+    foundation = load_dell_reference_vertical_foundation(FOUNDATION_PATH)
+    run_id = "test:dell-zero-model-real-graph"
+    with open_dell_approved_data_composition(
+        run_invocation_id=f"{RUN_INVOCATION_ID}:zero-model-graph",
+        environment=RUNTIME_ENVIRONMENT,
+    ) as composition:
+        graph = build_dell_reference_vertical_state_graph(
+            dependencies=composition.dependencies,
+            execution_profile=ZERO_MODEL_EXECUTION_PROFILE,
+        ).compile(
+            checkpointer=InMemorySaver(),
+            name="dell_zero_model_real_composition_test",
+        )
+        config = {"configurable": {"thread_id": run_id}}
+        interrupted = graph.invoke(
+            {
+                "run_id": run_id,
+                "case_id": foundation.case_identity.case_id,
+                "research_question": (
+                    foundation.case_identity.top_level_question_zh
+                ),
+                "research_as_of": DELL_APPROVED_RESEARCH_AS_OF,
+                "snapshot_id": DELL_APPROVED_DATA_SNAPSHOT_ID,
+                "foundation_digest": canonical_sha256(foundation),
+            },
+            config,
+        )
+
+        assert interrupted["phase"] == "zero_model_mcp_qualified"
+        assert "__interrupt__" in interrupted
+        summary = interrupted["zero_model_qualification_summary"]
+        assert summary["tool_lane_execution_count"] == 2
+        assert summary["mcp_call_count"] > 0
+        assert summary["mcp_error_call_count"] == 0
+        assert sum(summary["mcp_tool_call_counts"].values()) == summary[
+            "mcp_call_count"
+        ]
+        assert summary["model_call_count"] == 0
+        assert summary["live_external_research_call_count"] == 0
+        assert summary["paid_call_count"] == 0
+        safe_summary = json.dumps(summary, ensure_ascii=False, sort_keys=True)
+        for forbidden in (
+            "bounded_excerpt",
+            "source_url",
+            "value_decimal",
+            "citation_urls",
+            "Z:/",
+            "Z:\\",
+            "D:/",
+            "D:\\",
+            "/run/fin-insight",
+            "postgres://",
+            "redis://",
+        ):
+            assert forbidden not in safe_summary
+
+        completed = graph.invoke(
+            Command(
+                resume={
+                    "action": "complete_zero_model_qualification",
+                    "reason": "real composition checkpoint verified",
+                }
+            ),
+            config,
+        )
+
+        assert completed["phase"] == "zero_model_control_plane_completed"
+        assert completed["zero_model_qualification_summary"] == summary
+        assert completed["final_report"] is None
 
 
 def test_compiler_backed_real_composition_rejects_legacy_physical_request() -> None:

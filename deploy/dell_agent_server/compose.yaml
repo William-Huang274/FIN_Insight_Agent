@@ -76,9 +76,13 @@ services:
     environment:
       REDIS_URI: redis://langgraph-redis:6379
       POSTGRES_URI: postgres://langgraph_runtime:${FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD:?set FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD in the repository .env}@langgraph-postgres:5432/postgres?sslmode=disable
+      FIN_RUNTIME_POSTGRES_URI: postgres://fin_runtime_app:${FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD:?set FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD in the repository .env}@langgraph-postgres:5432/postgres?sslmode=disable
       LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:?set LANGSMITH_API_KEY in the repository .env}
       LANGSMITH_TRACING: "true"
       LANGSMITH_PROJECT: fin-insight-dell-reference-vertical
+      LANGSMITH_HIDE_INPUTS: "true"
+      LANGSMITH_HIDE_OUTPUTS: "true"
+      FINSIGHT_DELL_EXECUTION_PROFILE: product
       N_JOBS_PER_WORKER: "4"
       FIN_REPO_ROOT: /deps/FIN_Insight_Agent
       FINSIGHT_DELL_S1_NODES_PATH: /run/fin-insight/s1/retrieval_nodes.jsonl

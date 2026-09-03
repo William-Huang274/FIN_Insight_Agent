@@ -3,9 +3,11 @@ from __future__ import annotations
 import asyncio
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 import json
 from pathlib import Path
 import tomllib
+import traceback
 from typing import Any
 
 import pytest
@@ -48,6 +50,25 @@ def _config() -> dict[str, dict[str, str]]:
             "run_id": "019-server-run",
         }
     }
+
+
+def _persisted_binding(**overrides: Any) -> entry.PersistedRunInvocationBinding:
+    fields = {
+        "run_invocation_id": "fin-run-invocation-001",
+        "research_run_id": "fin-research-run-001",
+        "agent_session_id": "fin-session-001",
+        "invocation_ordinal": 1,
+        "canonical_invocation_kind": "START",
+        "server_invocation_kind": "start",
+        "server_thread_id": "019-server-thread",
+        "server_run_id": "019-server-run",
+        "assistant_id": entry.DELL_AGENT_SERVER_ASSISTANT_ID,
+        "invocation_identity_digest": "a" * 64,
+        "first_server_status": "pending",
+        "bound_at": datetime(2026, 9, 4, tzinfo=timezone.utc),
+    }
+    fields.update(overrides)
+    return entry.PersistedRunInvocationBinding(**fields)
 
 
 def test_root_langgraph_config_exposes_only_the_dell_server_factory() -> None:
@@ -103,6 +124,7 @@ def test_read_and_schema_access_open_no_execution_resources(
     monkeypatch.setattr(entry, "_open_execution_dependencies", forbidden)
     monkeypatch.delenv("LANGSMITH_API_KEY", raising=False)
     monkeypatch.delenv("LANGSMITH_TRACING", raising=False)
+    monkeypatch.setenv(entry.DELL_EXECUTION_PROFILE_ENV, "not-a-valid-profile")
 
     async def exercise() -> None:
         async with entry.dell_reference_vertical_graph({}, _ReadRuntime()) as graph:
@@ -130,6 +152,63 @@ def test_read_and_schema_access_open_no_execution_resources(
     asyncio.run(exercise())
 
     assert opened == 0
+
+
+def test_execution_profile_is_deployment_owned_and_checked_before_resources(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    opened = 0
+
+    @asynccontextmanager
+    async def forbidden(*_args: Any, **_kwargs: Any) -> AsyncIterator[Any]:
+        nonlocal opened
+        opened += 1
+        raise AssertionError("invalid profile must not open execution resources")
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(entry, "_open_execution_dependencies", forbidden)
+    monkeypatch.setenv(entry.DELL_EXECUTION_PROFILE_ENV, "qualification")
+
+    async def exercise() -> None:
+        async with entry.dell_reference_vertical_graph(
+            _config(), _ExecutionRuntime(_context())
+        ):
+            pass
+
+    with pytest.raises(entry.DellAgentServerEntryError) as failure:
+        asyncio.run(exercise())
+    assert failure.value.code == "dell_execution_profile_invalid"
+    assert opened == 0
+
+
+def test_invalid_run_context_traceback_does_not_chain_rejected_input() -> None:
+    rejected = "SECRET-REJECTED-CONTEXT-VALUE"
+    try:
+        entry.bind_agent_server_identity(
+            config=_config(),
+            run_context={"agent_session_id": rejected},
+        )
+    except entry.DellAgentServerEntryError as exc:
+        rendered = "".join(
+            traceback.format_exception(type(exc), exc, exc.__traceback__)
+        )
+    else:  # pragma: no cover - the strict context must reject this input
+        raise AssertionError("invalid context unexpectedly accepted")
+
+    assert rejected not in rendered
+    assert "fin_run_context_invalid" in rendered
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["product", "zero_model_control_plane_v1"],
+)
+def test_execution_profile_accepts_only_exact_supported_values(
+    monkeypatch: pytest.MonkeyPatch,
+    value: str,
+) -> None:
+    monkeypatch.setenv(entry.DELL_EXECUTION_PROFILE_ENV, value)
+    assert entry._require_execution_profile() == value
 
 
 def test_schema_graph_is_not_an_execution_fallback() -> None:
@@ -170,6 +249,11 @@ def test_execution_requires_langsmith_tracing_and_pat(
         asyncio.run(missing_tracing_call())
     assert missing_tracing.value.code == "langsmith_tracing_required"
 
+    monkeypatch.setenv("LANGSMITH_TRACING", "1")
+    with pytest.raises(entry.DellAgentServerEntryError) as tracing_alias:
+        asyncio.run(missing_tracing_call())
+    assert tracing_alias.value.code == "langsmith_tracing_required"
+
     monkeypatch.setenv("LANGSMITH_TRACING", "true")
     with pytest.raises(entry.DellAgentServerEntryError) as missing_pat:
         asyncio.run(missing_tracing_call())
@@ -206,13 +290,56 @@ def test_execution_requires_one_deployment_owned_langsmith_project(
     assert run_override.value.code == "langsmith_run_project_override_forbidden"
 
 
+def test_execution_requires_langsmith_input_and_output_redaction(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LANGSMITH_TRACING", "true")
+    monkeypatch.setenv("LANGSMITH_API_KEY", "test-only-not-a-real-key")
+    monkeypatch.setenv("LANGSMITH_PROJECT", entry.DELL_LANGSMITH_PROJECT)
+    monkeypatch.delenv("LANGSMITH_HIDE_INPUTS", raising=False)
+    monkeypatch.delenv("LANGSMITH_HIDE_OUTPUTS", raising=False)
+    runtime = _ExecutionRuntime(_context())
+
+    async def call() -> None:
+        async with entry.dell_reference_vertical_graph(_config(), runtime):
+            pass
+
+    with pytest.raises(entry.DellAgentServerEntryError) as missing_inputs:
+        asyncio.run(call())
+    assert missing_inputs.value.code == "langsmith_inputs_must_be_hidden"
+
+    monkeypatch.setenv("LANGSMITH_HIDE_INPUTS", "true")
+    with pytest.raises(entry.DellAgentServerEntryError) as missing_outputs:
+        asyncio.run(call())
+    assert missing_outputs.value.code == "langsmith_outputs_must_be_hidden"
+
+    monkeypatch.setenv("LANGSMITH_HIDE_INPUTS", "1")
+    monkeypatch.setenv("LANGSMITH_HIDE_OUTPUTS", "true")
+    with pytest.raises(entry.DellAgentServerEntryError) as truthy_alias:
+        asyncio.run(call())
+    assert truthy_alias.value.code == "langsmith_inputs_must_be_hidden"
+
+    monkeypatch.setenv("LANGSMITH_HIDE_INPUTS", "true")
+    monkeypatch.setenv("LANGSMITH_HIDE_OUTPUTS", "1")
+    with pytest.raises(entry.DellAgentServerEntryError) as output_alias:
+        asyncio.run(call())
+    assert output_alias.value.code == "langsmith_outputs_must_be_hidden"
+
+
 def test_execution_requires_exact_approved_runtime_mount_configuration(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setenv("LANGSMITH_TRACING", "true")
     monkeypatch.setenv("LANGSMITH_API_KEY", "test-only-not-a-real-key")
     monkeypatch.setenv("LANGSMITH_PROJECT", entry.DELL_LANGSMITH_PROJECT)
+    monkeypatch.setenv("LANGSMITH_HIDE_INPUTS", "true")
+    monkeypatch.setenv("LANGSMITH_HIDE_OUTPUTS", "true")
     monkeypatch.delenv("FIN_REPO_ROOT", raising=False)
+    monkeypatch.setattr(
+        entry,
+        "_require_durable_execution_binding",
+        lambda _identity: None,
+    )
 
     async def exercise() -> None:
         async with entry.dell_reference_vertical_graph(
@@ -223,6 +350,70 @@ def test_execution_requires_exact_approved_runtime_mount_configuration(
     with pytest.raises(entry.DellAgentServerEntryError) as failure:
         asyncio.run(exercise())
     assert failure.value.code == "approved_repository_root_missing"
+
+
+def test_durable_identity_guard_requires_uri_and_exact_persisted_binding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    identity = entry.bind_agent_server_identity(
+        config=_config(), run_context=_context()
+    )
+    monkeypatch.delenv(entry.FIN_RUNTIME_POSTGRES_URI_ENV, raising=False)
+
+    with pytest.raises(entry.DellAgentServerEntryError) as missing_uri:
+        entry._read_durable_run_binding(identity)
+    assert missing_uri.value.code == "fin_runtime_postgres_uri_required"
+
+    monkeypatch.setattr(
+        entry,
+        "_read_durable_run_binding",
+        lambda _identity: _persisted_binding(),
+    )
+    entry._require_durable_execution_binding(identity)
+
+    monkeypatch.setattr(
+        entry,
+        "_read_durable_run_binding",
+        lambda _identity: _persisted_binding(server_run_id="another-server-run"),
+    )
+    with pytest.raises(entry.DellAgentServerEntryError) as conflict:
+        entry._require_durable_execution_binding(identity)
+    assert conflict.value.code == "fin_server_run_durable_binding_conflict"
+
+
+def test_missing_durable_binding_opens_no_data_or_mcp_resources(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    identity = entry.bind_agent_server_identity(
+        config=_config(), run_context=_context()
+    )
+    opened = 0
+
+    @asynccontextmanager
+    async def forbidden_data_open(*_args: Any, **_kwargs: Any) -> AsyncIterator[Any]:
+        nonlocal opened
+        opened += 1
+        raise AssertionError("data composition must remain closed")
+        yield  # pragma: no cover
+
+    monkeypatch.setattr(entry, "_read_durable_run_binding", lambda _identity: None)
+    monkeypatch.setattr(
+        entry,
+        "open_dell_approved_data_composition",
+        forbidden_data_open,
+    )
+
+    async def exercise() -> None:
+        async with entry._open_execution_dependencies(
+            identity,
+            DellAgentServerRunContext.model_validate(_context()),
+        ):
+            pass
+
+    with pytest.raises(entry.DellAgentServerEntryError) as failure:
+        asyncio.run(exercise())
+    assert failure.value.code == "fin_server_run_durable_binding_missing"
+    assert opened == 0
 
 
 def test_identity_binding_keeps_domain_and_server_namespaces_separate() -> None:
@@ -303,6 +494,8 @@ def test_authorized_resources_are_scoped_to_one_factory_lifecycle(
     monkeypatch.setenv("LANGSMITH_TRACING", "true")
     monkeypatch.setenv("LANGSMITH_API_KEY", "test-only-not-a-real-key")
     monkeypatch.setenv("LANGSMITH_PROJECT", entry.DELL_LANGSMITH_PROJECT)
+    monkeypatch.setenv("LANGSMITH_HIDE_INPUTS", "true")
+    monkeypatch.setenv("LANGSMITH_HIDE_OUTPUTS", "true")
 
     async def exercise() -> None:
         async with entry.dell_reference_vertical_graph(

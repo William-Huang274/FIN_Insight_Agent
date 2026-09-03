@@ -1,0 +1,15 @@
+name: finsight-dell-qualification-20260904-r8
+
+services:
+  langgraph-api:
+    environment:
+      FINSIGHT_DELL_EXECUTION_PROFILE: zero_model_control_plane_v1
+      LANGSMITH_HIDE_INPUTS: "true"
+      LANGSMITH_HIDE_OUTPUTS: "true"
+    volumes:
+      - type: bind
+        source: ../../scripts/qualification/agent_server_r8
+        target: /opt/fin-insight-qualification/r8
+        read_only: true
+        bind:
+          create_host_path: false

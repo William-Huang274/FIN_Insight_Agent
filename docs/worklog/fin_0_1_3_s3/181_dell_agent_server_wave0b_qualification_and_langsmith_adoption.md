@@ -2,7 +2,7 @@
 
 日期：2026-09-03
 
-状态：`ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / REAL_ZERO_MODEL_DATA_COMPOSITION_PASS / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED / NO_RUNTIME_FALLBACK / FIN_SERVER_IDENTITY_LIVE_INTEGRATION_PENDING / LANGSMITH_RUN_TRACE_PENDING / GRAPH_MODEL_DEEPSEEK_AGENT_SERVER_MCP_MULTI_AGENT_PRODUCT_FALSE / A03_ABSENT`
+状态：`ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / REAL_ZERO_MODEL_DATA_COMPOSITION_PASS / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED / R8_LIVE_GRAPH_CANDIDATE_IMPLEMENTED_DIRTY_PRELIVE_REVIEW_PENDING / NO_RUNTIME_FALLBACK / FIN_SERVER_IDENTITY_LIVE_INTEGRATION_PENDING / LANGSMITH_RUN_TRACE_PENDING / GRAPH_MODEL_DEEPSEEK_MULTI_AGENT_PRODUCT_FALSE / A03_ABSENT`
 
 分支：`codex/fin013-dell-s1-s2-product-bridge`
 
@@ -315,3 +315,59 @@ r7 不清理，receipt 与 SBOM 保存在：
 qualification receipt 最终为 19,195 bytes，SHA-256=`c5821993bcb729c10e18c912ba4f27272afce707562a59cef4b35e83e2971ebb`；SBOM SHA-256=`4ba5a4e16e9ca7a0ee0e702a5c85e5e180abbae94019acde4e17b462d4300ecd`。仓库中的 closeout 文档以这两个摘要绑定 Z 盘证据；后续若需纠错必须创建 successor receipt，不能静默覆盖。
 
 下一合法门不是启动 A03 或调用模型，而是：实现 live FIN↔server ingress/binding 和 remote-create→FIN-bind orphan reconciliation；验证 Agent Server retry/idempotency；运行一条真实零模型 graph，覆盖 checkpoint/resume、API/Redis/full-stack restart、SSE retention/replay，并产生可核验的 LangSmith run trace 与 privacy 结论。只有这些门关闭后，才向 Owner 提交新的 `PaidExecutionOwnerDecision` 与 task-specific `TokenBudgetBasis`，申请第一条新的 paid/model successor。
+
+### 12.7 r8 live graph candidate 已实现、现场 attempt 尚未启动
+
+本轮没有继续写通用 backend/runtime，而是在同一正式图和官方 Agent Server SDK 接缝上
+完成最窄 r8 candidate：
+
+- client schema 升到 v1.1；profile、当前 deployment 唯一 concrete assistant UUID、
+  FIN 三层 identity digest 与 launch digest 进入 remote metadata；create 前与不确定响应
+  后做 bounded exact reconciliation，分页、不稳定快照、重复、身份/assistant 冲突均
+  fail closed，no-match transport exception 明确为 `outcome_unknown` 且不自动重发；
+- Agent Server entry 在打开 approved data composition/MCP 前反查 FIN durable binding；
+  product/qualification profile 分离，LangSmith input/output hiding 只接受 pinned client
+  真正识别的字面值 `true`，入口异常不再 chain 原始输入/路径到 traceback；
+- 同一 `dell_reference_vertical` 图增加固定 Q1 zero-model 路径：真实 Evidence/Finance
+  MCP → content-free summary → native interrupt → ordinal 2 resume；resume 不重跑工具且
+  `final_report=null`；
+- 显式 qualification overlay 只用于 fresh project，并只读挂载资格 phase probe；宿主
+  runner 固定 `finsight-dell-qualification-20260904-r8`、loopback `18128`、fresh named
+  volume、API/Redis/full-stack restart、SSE full/suffix replay 与 LangSmith trace audit；
+  runner 没有 `down -v`、volume delete、旧 attempt overwrite 或 DeepSeek 注入路径。
+- pre-live review 修正三类 false-pass：SSE 按 Agent Server 0.13.3 的正常 EOF 而非伪造
+  `end` 帧，并从非末帧验证非空 exact suffix；manifest 用 Owner 数据门完整 digest 与
+  冻结 `2026-09-02` as-of；四次 interrupted readback、resume/final replay 逐字段等值，
+  LangSmith root 必须与 FIN durable `server_run_id` 相等，且完整 span 集须连续两次稳定；
+  child failure 仍保留 content-minimised command observation 与 typed phase failure。
+
+最新相邻回归命令为 `.venv\\Scripts\\python.exe -m pytest` 加下列 13 个文件：
+`test_dell_agent_server_data_composition.py`、`test_dell_agent_server_client.py`、
+`test_dell_agent_server_live_r8.py`、`test_dell_agent_server_identity.py`、
+`test_dell_agent_server_entry.py`、`test_dell_agent_server_deployment.py`、
+`test_dell_current_capability_inventory.py`、`test_dell_reference_vertical_real_composition.py`、
+`test_dell_reference_vertical_mcp_tools.py`、`test_dell_reference_vertical_graph.py`、
+`test_dell_owner_data_gate.py`、`test_dell_reviewed_evidence_inventory.py` 和
+`test_dell_source_family_compiler.py`，参数 `-q`。working-tree candidate 结果为
+`213 passed in 20.24s`（Python `3.11.14`）；同时
+通过修改文件的 `py_compile`、`uv lock --check` 与 `git diff --check`。Compose
+`config --quiet` 已在独立 qualification project name 与派生本地角色口令环境下通过，
+且没有渲染 secret 到 stdout。该测试是 dirty candidate 工程证据，不是 fresh live qualification，
+也不代表全仓绿色；没有另造 live receipt。Docker 当前代理仍为
+`http.docker.internal:3128`；同一链路已完成 r7 build/start/LangSmith metadata，因此代理
+不是 current blocker。`.env` 的 PostgreSQL 本地秘密不满足 init script 的直接
+URL-safe/长度合同；r8 runner 只把它当 secret seed，在内存派生三个不同 64-char
+口令，不回显、不改写 `.env`、不进 receipt。
+
+Project OS 回归为 `81 passed / 1 failed in 35.35s`；唯一失败仍是既存
+`current_dynamic_writer_submission_successor` 对未由本轮修改的
+`src/sec_agent/project_os_preflight.py` sealed SHA drift。本轮不重签、不修补该历史
+authority，也不把它归因给 r8；因此 `full_repository_suite_green=false` 保持不变。
+
+本段是 pre-live implementation 记录，不是 r8 PASS。现场运行前仍需：作者分离只读
+review、clean commit/push、fresh project/port/volume/attempt preflight。为避免把资格跑成
+时序赌博，r8 不故意制造首次 FIN bind failure；该逻辑只保留 deterministic fake tests。
+因此即便现场全绿，`durable_pending_orphan_reconciled_lifecycle`、
+`automatic_retry_after_unknown_outcome`、`distributed_exactly_once` 仍为 false；本轮也
+继续禁止模型、DeepSeek、live external research、Evidence admission、S2 write、HITL 和
+最终报告。

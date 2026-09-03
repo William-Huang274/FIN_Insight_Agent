@@ -27,15 +27,29 @@ from .dell_agent_server_data_composition import (
     DellApprovedDataCompositionError,
     open_dell_approved_data_composition,
 )
+from .dell_agent_server_identity import (
+    DELL_AGENT_SERVER_ASSISTANT_ID,
+    DellAgentServerIdentityStoreError,
+    PersistedRunInvocationBinding,
+    PostgresDellAgentServerIdentityRepository,
+)
 from .dell_reference_vertical_graph import (
     DellAgentServerRunContext,
     DellReferenceVerticalDependencies,
     build_dell_reference_vertical_state_graph,
 )
+from .dell_zero_model_graph_qualification import (
+    DellExecutionProfile,
+    DellZeroModelQualificationError,
+    PRODUCT_EXECUTION_PROFILE,
+    require_execution_profile,
+)
 
 
 DELL_AGENT_SERVER_GRAPH_ID = "dell_reference_vertical"
 DELL_LANGSMITH_PROJECT = "fin-insight-dell-reference-vertical"
+FIN_RUNTIME_POSTGRES_URI_ENV = "FIN_RUNTIME_POSTGRES_URI"
+DELL_EXECUTION_PROFILE_ENV = "FINSIGHT_DELL_EXECUTION_PROFILE"
 
 
 class DellAgentServerEntryError(RuntimeError):
@@ -93,8 +107,8 @@ def bind_agent_server_identity(
 
     try:
         context = DellAgentServerRunContext.model_validate(run_context)
-    except Exception as exc:
-        raise DellAgentServerEntryError("fin_run_context_invalid") from exc
+    except Exception:
+        raise DellAgentServerEntryError("fin_run_context_invalid") from None
     configurable = config.get("configurable")
     if not isinstance(configurable, Mapping):
         raise DellAgentServerEntryError("agent_server_configurable_missing")
@@ -204,12 +218,27 @@ def _schema_only_dependencies() -> DellReferenceVerticalDependencies:
     )
 
 
-def _compile_graph(dependencies: DellReferenceVerticalDependencies) -> Any:
-    graph = build_dell_reference_vertical_state_graph(dependencies=dependencies)
+def _compile_graph(
+    dependencies: DellReferenceVerticalDependencies,
+    *,
+    execution_profile: DellExecutionProfile = PRODUCT_EXECUTION_PROFILE,
+) -> Any:
+    graph = build_dell_reference_vertical_state_graph(
+        dependencies=dependencies,
+        execution_profile=execution_profile,
+    )
     return graph.compile(name=DELL_AGENT_SERVER_GRAPH_ID)
 
 
 _SCHEMA_ONLY_GRAPH = _compile_graph(_schema_only_dependencies())
+
+
+def _require_execution_profile() -> DellExecutionProfile:
+    raw = os.environ.get(DELL_EXECUTION_PROFILE_ENV, PRODUCT_EXECUTION_PROFILE)
+    try:
+        return require_execution_profile(raw)
+    except DellZeroModelQualificationError:
+        raise DellAgentServerEntryError("dell_execution_profile_invalid") from None
 
 
 def _require_langsmith_execution_environment(config: Mapping[str, Any]) -> None:
@@ -222,7 +251,7 @@ def _require_langsmith_execution_environment(config: Mapping[str, Any]) -> None:
     """
 
     tracing = os.environ.get("LANGSMITH_TRACING", "").strip().lower()
-    if tracing not in {"1", "true"}:
+    if tracing != "true":
         raise DellAgentServerEntryError("langsmith_tracing_required")
     if not os.environ.get("LANGSMITH_API_KEY", "").strip():
         raise DellAgentServerEntryError("langsmith_api_key_required")
@@ -234,6 +263,13 @@ def _require_langsmith_execution_environment(config: Mapping[str, Any]) -> None:
         "__langsmith_project__"
     ) is not None:
         raise DellAgentServerEntryError("langsmith_run_project_override_forbidden")
+    # The pinned LangSmith client enables this control only for the literal
+    # string ``true``.  Accepting truthy aliases here would let the entry gate
+    # pass while the tracer still exported payloads.
+    if os.environ.get("LANGSMITH_HIDE_INPUTS", "").strip().lower() != "true":
+        raise DellAgentServerEntryError("langsmith_inputs_must_be_hidden")
+    if os.environ.get("LANGSMITH_HIDE_OUTPUTS", "").strip().lower() != "true":
+        raise DellAgentServerEntryError("langsmith_outputs_must_be_hidden")
 
 
 def _bind_dependencies_to_identity(
@@ -250,6 +286,60 @@ def _bind_dependencies_to_identity(
     return replace(dependencies, foundation_binder=bound_foundation_binder)
 
 
+def _read_durable_run_binding(
+    identity: DellAgentServerIdentityBinding,
+) -> PersistedRunInvocationBinding | None:
+    """Read FIN-owned identity state without exposing its credential or DSN."""
+
+    uri = os.environ.get(FIN_RUNTIME_POSTGRES_URI_ENV, "").strip()
+    if not uri:
+        raise DellAgentServerEntryError("fin_runtime_postgres_uri_required")
+    try:
+        import psycopg
+
+        repository = PostgresDellAgentServerIdentityRepository(
+            lambda: psycopg.connect(
+                uri,
+                connect_timeout=5,
+                application_name="fin_dell_agent_server_identity_guard",
+            )
+        )
+        return repository.get_run_invocation(
+            run_invocation_id=identity.run_invocation_id
+        )
+    except DellAgentServerIdentityStoreError as exc:
+        raise DellAgentServerEntryError(
+            f"fin_durable_identity_guard_failed:{exc.code}"
+        ) from None
+    except Exception:
+        raise DellAgentServerEntryError(
+            "fin_durable_identity_guard_read_failed"
+        ) from None
+
+
+def _require_durable_execution_binding(
+    identity: DellAgentServerIdentityBinding,
+) -> None:
+    """Reject an unbound or spoofed server run before opening any data port."""
+
+    persisted = _read_durable_run_binding(identity)
+    if persisted is None:
+        raise DellAgentServerEntryError(
+            "fin_server_run_durable_binding_missing"
+        )
+    if (
+        persisted.agent_session_id != identity.agent_session_id
+        or persisted.research_run_id != identity.research_run_id
+        or persisted.run_invocation_id != identity.run_invocation_id
+        or persisted.server_thread_id != identity.server_thread_id
+        or persisted.server_run_id != identity.server_run_id
+        or persisted.assistant_id != DELL_AGENT_SERVER_ASSISTANT_ID
+    ):
+        raise DellAgentServerEntryError(
+            "fin_server_run_durable_binding_conflict"
+        )
+
+
 @asynccontextmanager
 async def _open_execution_dependencies(
     identity: DellAgentServerIdentityBinding,
@@ -263,13 +353,14 @@ async def _open_execution_dependencies(
 
     if identity.research_run_id != context.research_run_id:
         raise DellAgentServerEntryError("fin_research_run_id_mismatch")
+    _require_durable_execution_binding(identity)
     try:
         with open_dell_approved_data_composition(
             run_invocation_id=identity.run_invocation_id
         ) as composition:
             yield composition.dependencies
     except DellApprovedDataCompositionError as exc:
-        raise DellAgentServerEntryError(exc.code) from exc
+        raise DellAgentServerEntryError(exc.code) from None
 
 
 @asynccontextmanager
@@ -290,6 +381,7 @@ async def dell_reference_vertical_graph(
         yield _SCHEMA_ONLY_GRAPH
         return
 
+    execution_profile = _require_execution_profile()
     _require_langsmith_execution_environment(config)
     identity = bind_agent_server_identity(
         config=config,
@@ -297,12 +389,17 @@ async def dell_reference_vertical_graph(
     )
     context = DellAgentServerRunContext.model_validate(execution_runtime.context)
     async with _open_execution_dependencies(identity, context) as dependencies:
-        yield _compile_graph(_bind_dependencies_to_identity(dependencies, identity))
+        yield _compile_graph(
+            _bind_dependencies_to_identity(dependencies, identity),
+            execution_profile=execution_profile,
+        )
 
 
 __all__ = [
     "DELL_AGENT_SERVER_GRAPH_ID",
+    "DELL_EXECUTION_PROFILE_ENV",
     "DELL_LANGSMITH_PROJECT",
+    "FIN_RUNTIME_POSTGRES_URI_ENV",
     "DellAgentServerEntryError",
     "DellAgentServerIdentityBinding",
     "bind_agent_server_identity",

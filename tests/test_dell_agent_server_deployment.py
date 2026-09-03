@@ -11,6 +11,9 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 DEPLOY = ROOT / "deploy" / "dell_agent_server"
 COMPOSE_PATH = DEPLOY / "compose.yaml"
+ZERO_MODEL_COMPOSE_OVERRIDE_PATH = (
+    DEPLOY / "compose.zero-model-qualification.yaml"
+)
 DOCKERFILE_PATH = DEPLOY / "Dockerfile"
 DOCKERIGNORE_PATH = DEPLOY / "Dockerfile.dockerignore"
 POSTGRES_INIT_PATH = DEPLOY / "postgres-init" / "010-create-runtime-roles.sh"
@@ -180,7 +183,11 @@ def test_env_and_build_context_cannot_copy_checked_in_secrets() -> None:
     assert set(api["environment"]) == {
         "REDIS_URI",
         "POSTGRES_URI",
+        "FIN_RUNTIME_POSTGRES_URI",
+        "FINSIGHT_DELL_EXECUTION_PROFILE",
         "LANGSMITH_API_KEY",
+        "LANGSMITH_HIDE_INPUTS",
+        "LANGSMITH_HIDE_OUTPUTS",
         "LANGSMITH_TRACING",
         "LANGSMITH_PROJECT",
         "N_JOBS_PER_WORKER",
@@ -188,15 +195,21 @@ def test_env_and_build_context_cannot_copy_checked_in_secrets() -> None:
     }
     assert api["environment"]["REDIS_URI"] == "redis://langgraph-redis:6379"
     assert api["environment"]["LANGSMITH_TRACING"] == "true"
+    assert api["environment"]["LANGSMITH_HIDE_INPUTS"] == "true"
+    assert api["environment"]["LANGSMITH_HIDE_OUTPUTS"] == "true"
     assert (
         api["environment"]["LANGSMITH_PROJECT"]
         == "fin-insight-dell-reference-vertical"
     )
     assert api["environment"]["N_JOBS_PER_WORKER"] == "4"
+    assert api["environment"]["FINSIGHT_DELL_EXECUTION_PROFILE"] == "product"
     assert str(api["environment"]["LANGSMITH_API_KEY"]).startswith("${")
     assert "DEEPSEEK_API_KEY" not in api["environment"]
     assert str(api["environment"]["POSTGRES_URI"]).startswith(
         "postgres://langgraph_runtime:${"
+    )
+    assert str(api["environment"]["FIN_RUNTIME_POSTGRES_URI"]).startswith(
+        "postgres://fin_runtime_app:${"
     )
     assert {
         name: api["environment"][name] for name in CONTAINER_DATA_PATHS
@@ -221,6 +234,39 @@ def test_env_and_build_context_cannot_copy_checked_in_secrets() -> None:
         r"(?:sk-|lsv2_|api[_-]?key\s*[:=]\s*[^$\s])",
         without_interpolation_contracts,
         re.I,
+    )
+
+
+def test_zero_model_qualification_requires_an_explicit_compose_override() -> None:
+    override = yaml.safe_load(
+        ZERO_MODEL_COMPOSE_OVERRIDE_PATH.read_text(encoding="utf-8")
+    )
+
+    assert override == {
+        "name": "finsight-dell-qualification-20260904-r8",
+        "services": {
+            "langgraph-api": {
+                "environment": {
+                    "FINSIGHT_DELL_EXECUTION_PROFILE": (
+                        "zero_model_control_plane_v1"
+                    ),
+                    "LANGSMITH_HIDE_INPUTS": "true",
+                    "LANGSMITH_HIDE_OUTPUTS": "true",
+                },
+                "volumes": [
+                    {
+                        "type": "bind",
+                        "source": "../../scripts/qualification/agent_server_r8",
+                        "target": "/opt/fin-insight-qualification/r8",
+                        "read_only": True,
+                        "bind": {"create_host_path": False},
+                    }
+                ],
+            }
+        }
+    }
+    assert "${" not in ZERO_MODEL_COMPOSE_OVERRIDE_PATH.read_text(
+        encoding="utf-8"
     )
 
 
@@ -608,8 +654,16 @@ def test_postgres_readiness_rejects_process_only_or_stale_volume_health() -> Non
     assert "echo" not in script
 
 
-def test_agent_server_does_not_receive_unused_fin_or_model_secret() -> None:
+def test_agent_server_receives_only_the_fin_identity_guard_and_no_model_secret() -> None:
     api_environment = _compose()["services"]["langgraph-api"]["environment"]
 
-    assert "FIN_RUNTIME_POSTGRES_URI" not in api_environment
+    assert str(api_environment["FIN_RUNTIME_POSTGRES_URI"]).startswith(
+        "postgres://fin_runtime_app:${"
+    )
+    assert "postgres://postgres:" not in str(
+        api_environment["FIN_RUNTIME_POSTGRES_URI"]
+    )
+    assert "postgres://langgraph_runtime:" not in str(
+        api_environment["FIN_RUNTIME_POSTGRES_URI"]
+    )
     assert "DEEPSEEK_API_KEY" not in api_environment

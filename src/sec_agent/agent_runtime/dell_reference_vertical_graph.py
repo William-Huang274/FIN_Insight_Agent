@@ -41,6 +41,19 @@ from .dell_reference_vertical_contracts import (
     canonical_sha256,
 )
 from .planner_tool_capabilities import PlannerToolCapabilityProjection
+from .dell_zero_model_graph_qualification import (
+    DellExecutionProfile,
+    DellZeroModelQualificationError,
+    PRODUCT_EXECUTION_PROFILE,
+    SafeZeroModelQualificationDecision,
+    ZERO_MODEL_EXECUTION_PROFILE,
+    ZeroModelQualificationDecision,
+    ZeroModelQualificationSummary,
+    build_zero_model_qualification_tasks,
+    project_zero_model_qualification_summary,
+    require_execution_profile,
+    safe_zero_model_decision,
+)
 
 
 GRAPH_CONTRACT_VERSION = "fin_ia_dell_reference_vertical_graph_v1_0"
@@ -1259,8 +1272,13 @@ def _runtime_summary(state: Mapping[str, Any]) -> PlainDict:
 def build_dell_reference_vertical_state_graph(
     *,
     dependencies: DellReferenceVerticalDependencies,
+    execution_profile: DellExecutionProfile = PRODUCT_EXECUTION_PROFILE,
 ) -> StateGraph:
     """Build an uncompiled graph so Agent Server can own persistence."""
+    try:
+        selected_execution_profile = require_execution_profile(execution_profile)
+    except DellZeroModelQualificationError as exc:
+        raise DellReferenceVerticalGraphError(str(exc)) from None
     planner_tool_capabilities = _validate_model(
         PlannerToolCapabilityProjection,
         dependencies.planner_tool_capabilities,
@@ -1368,6 +1386,7 @@ def build_dell_reference_vertical_state_graph(
             )
         return {
             "graph_contract_version": GRAPH_CONTRACT_VERSION,
+            "execution_profile": selected_execution_profile,
             "foundation_binding": binding.model_dump(mode="json"),
             "foundation_binding_digest": canonical_sha256(binding),
             "initial_evidence_results": [],
@@ -1385,7 +1404,119 @@ def build_dell_reference_vertical_state_graph(
             "citation_index": None,
             "human_review": None,
             "final_report": None,
+            "zero_model_qualification_summary": None,
+            "zero_model_qualification_decision": None,
             "phase": "foundation_bound",
+        }
+
+    def route_after_bind_case(
+        _state: DellReferenceVerticalState,
+    ) -> Literal["plan", "qualification_mcp_smoke"]:
+        if selected_execution_profile == ZERO_MODEL_EXECUTION_PROFILE:
+            return "qualification_mcp_smoke"
+        return "plan"
+
+    def qualification_mcp_smoke(
+        state: DellReferenceVerticalState,
+    ) -> DellReferenceVerticalState:
+        if selected_execution_profile != ZERO_MODEL_EXECUTION_PROFILE:
+            raise DellReferenceVerticalGraphError(
+                "zero_model_qualification_profile_required"
+            )
+        route = source_routes_by_id.get(
+            "route:Q1_ISSUER_TRUTH:required-reviewed"
+        )
+        if (
+            route is None
+            or route.get("coverage_obligation_id") != "Q1_ISSUER_TRUTH"
+            or route.get("requirement") != "required"
+            or route.get("intent_kind") != "reviewed_evidence"
+        ):
+            raise DellReferenceVerticalGraphError(
+                "zero_model_qualification_source_route_invalid"
+            )
+        binding = _validate_model(
+            CaseFoundationBinding,
+            state.get("foundation_binding"),
+            label="foundation_binding",
+        )
+        try:
+            evidence_task, finance_task = build_zero_model_qualification_tasks(
+                binding=binding,
+                run_id=state["run_id"],
+            )
+        except DellZeroModelQualificationError as exc:
+            raise DellReferenceVerticalGraphError(str(exc)) from None
+
+        evidence_result = _execute_tool(
+            evidence_task.model_dump(mode="json"),
+            executor=dependencies.evidence_tool,
+        )
+        finance_result = _execute_tool(
+            finance_task.model_dump(mode="json"),
+            executor=dependencies.finance_tool,
+        )
+        try:
+            summary = project_zero_model_qualification_summary(
+                evidence_result=evidence_result,
+                finance_result=finance_result,
+            )
+        except DellZeroModelQualificationError as exc:
+            raise DellReferenceVerticalGraphError(str(exc)) from None
+        return {
+            "zero_model_qualification_summary": summary,
+            "phase": "zero_model_mcp_qualified",
+        }
+
+    def qualification_interrupt(
+        state: DellReferenceVerticalState,
+    ) -> DellReferenceVerticalState:
+        summary = _validate_model(
+            ZeroModelQualificationSummary,
+            state.get("zero_model_qualification_summary"),
+            label="zero_model_qualification_summary",
+        )
+        raw = interrupt(
+            {
+                "kind": "dell_zero_model_control_plane_qualification",
+                "schema_version": (
+                    "fin_ia_dell_zero_model_control_plane_interrupt_v1_0"
+                ),
+                "run_id": state["run_id"],
+                "case_id": state["case_id"],
+                "research_as_of": state["research_as_of"],
+                "snapshot_id": state["snapshot_id"],
+                "foundation_digest": state["foundation_digest"],
+                "qualification_digest": canonical_sha256(summary),
+                "allowed_actions": ["complete_zero_model_qualification"],
+            }
+        )
+        decision = _validate_model(
+            ZeroModelQualificationDecision,
+            raw,
+            label="zero_model_qualification_decision",
+        )
+        return {
+            "zero_model_qualification_decision": safe_zero_model_decision(decision),
+            "phase": "zero_model_qualification_reviewed",
+        }
+
+    def qualification_completed(
+        state: DellReferenceVerticalState,
+    ) -> DellReferenceVerticalState:
+        _validate_model(
+            ZeroModelQualificationSummary,
+            state.get("zero_model_qualification_summary"),
+            label="zero_model_qualification_summary",
+        )
+        _validate_model(
+            SafeZeroModelQualificationDecision,
+            state.get("zero_model_qualification_decision"),
+            label="zero_model_qualification_decision_receipt",
+        )
+        return {
+            "final_report": None,
+            "phase": "zero_model_control_plane_completed",
         }
 
     def plan(state: DellReferenceVerticalState) -> DellReferenceVerticalState:
@@ -2069,6 +2200,9 @@ def build_dell_reference_vertical_state_graph(
         input_schema=DellReferenceVerticalGraphInput,
     )
     graph.add_node("bind_case", bind_case)
+    graph.add_node("qualification_mcp_smoke", qualification_mcp_smoke)
+    graph.add_node("qualification_interrupt", qualification_interrupt)
+    graph.add_node("qualification_completed", qualification_completed)
     graph.add_node("plan", plan)
     graph.add_node("validate_plan", validate_plan)
     graph.add_node("initial_evidence_lane", initial_evidence_lane)
@@ -2088,7 +2222,17 @@ def build_dell_reference_vertical_state_graph(
     graph.add_node("render", render)
 
     graph.add_edge(START, "bind_case")
-    graph.add_edge("bind_case", "plan")
+    graph.add_conditional_edges(
+        "bind_case",
+        route_after_bind_case,
+        {
+            "plan": "plan",
+            "qualification_mcp_smoke": "qualification_mcp_smoke",
+        },
+    )
+    graph.add_edge("qualification_mcp_smoke", "qualification_interrupt")
+    graph.add_edge("qualification_interrupt", "qualification_completed")
+    graph.add_edge("qualification_completed", END)
     graph.add_edge("plan", "validate_plan")
     graph.add_conditional_edges("validate_plan", dispatch_initial_tools)
     graph.add_edge(

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import Counter
 from collections.abc import Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 import json
 from threading import Barrier, Lock
 from typing import Any
@@ -33,6 +33,9 @@ from sec_agent.agent_runtime.dell_reference_vertical_graph import (
     _validate_specialist_round_authority,
     _validate_workpaper,
     build_dell_reference_vertical_state_graph,
+)
+from sec_agent.agent_runtime.dell_zero_model_graph_qualification import (
+    ZERO_MODEL_EXECUTION_PROFILE,
 )
 
 
@@ -193,12 +196,16 @@ def _build_dell_reference_vertical_test_graph(
     *,
     dependencies: DellReferenceVerticalDependencies,
     checkpointer: Any,
+    execution_profile: str = "product",
 ) -> _DellReferenceVerticalTestGraph:
     if checkpointer is None:
         raise DellReferenceVerticalGraphError(
             "checkpointer_required_for_interrupt_resume"
         )
-    builder = build_dell_reference_vertical_state_graph(dependencies=dependencies)
+    builder = build_dell_reference_vertical_state_graph(
+        dependencies=dependencies,
+        execution_profile=execution_profile,
+    )
     return _DellReferenceVerticalTestGraph(
         builder.compile(
             checkpointer=checkpointer,
@@ -300,6 +307,7 @@ class FakeRuntime:
     barriers: dict[int, Barrier] = field(default_factory=dict)
     calls: list[tuple[str, str, int]] = field(default_factory=list)
     specialist_inputs: list[dict[str, Any]] = field(default_factory=list)
+    planner_calls: int = 0
     counter_calls: int = 0
     lead_calls: int = 0
     _lock: Lock = field(default_factory=Lock)
@@ -344,6 +352,8 @@ class FakeRuntime:
         ).model_dump(mode="json")
 
     def planner(self, request: Mapping[str, Any]) -> dict[str, Any]:
+        with self._lock:
+            self.planner_calls += 1
         capabilities = dict(request["planner_tool_capabilities"])
         digest = capabilities.pop("projection_digest")
         assert digest == request["planner_tool_capabilities_digest"]
@@ -770,11 +780,163 @@ def test_foundation_owns_specialist_round_ceiling_and_third_round_is_blocked() -
         )
 
 
-def _build(runtime: FakeRuntime):
+def _build(runtime: FakeRuntime, *, execution_profile: str = "product"):
     return _build_dell_reference_vertical_test_graph(
         dependencies=runtime.dependencies(),
         checkpointer=InMemorySaver(),
+        execution_profile=execution_profile,
     )
+
+
+def test_zero_model_qualification_calls_each_real_lane_once_and_resumes() -> None:
+    runtime = FakeRuntime()
+
+    def forbidden_model_port(*_args: Any, **_kwargs: Any) -> Any:
+        raise AssertionError("zero-model qualification reached a model-owned port")
+
+    dependencies = replace(
+        runtime.dependencies(),
+        planner_agent=forbidden_model_port,
+        specialist_agent=forbidden_model_port,
+        counter_agent=forbidden_model_port,
+        lead_agent=forbidden_model_port,
+    )
+    graph = _build_dell_reference_vertical_test_graph(
+        dependencies=dependencies,
+        checkpointer=InMemorySaver(),
+        execution_profile=ZERO_MODEL_EXECUTION_PROFILE,
+    )
+
+    interrupted = graph.invoke(_start_input(), _config())
+
+    assert interrupted["phase"] == "zero_model_mcp_qualified"
+    assert "__interrupt__" in interrupted
+    assert Counter(runtime.calls) == Counter(
+        {
+            ("evidence", "Q1_ISSUER_TRUTH", 0): 1,
+            ("finance", "Q1_ISSUER_TRUTH", 0): 1,
+        }
+    )
+    assert runtime.planner_calls == 0
+    assert runtime.specialist_inputs == []
+    assert runtime.counter_calls == 0
+    assert runtime.lead_calls == 0
+    assert interrupted["final_report"] is None
+
+    summary_json = json.dumps(
+        interrupted["zero_model_qualification_summary"],
+        ensure_ascii=False,
+        sort_keys=True,
+    )
+    for forbidden in (
+        "bounded_excerpt",
+        "source_url",
+        "value_decimal",
+        "citation_urls",
+        "D:/",
+        "D:\\\\",
+        "Z:/",
+        "Z:\\\\",
+        "/run/fin-insight",
+        "postgres://",
+        "redis://",
+        "LANGSMITH_API_KEY",
+    ):
+        assert forbidden not in summary_json
+
+    calls_before_resume = list(runtime.calls)
+    completed = graph.invoke(
+        Command(
+            resume={
+                "action": "complete_zero_model_qualification",
+                "reason": "checkpoint/restart readback passed",
+            }
+        ),
+        _config(),
+    )
+
+    assert completed["phase"] == "zero_model_control_plane_completed"
+    assert completed["final_report"] is None
+    assert runtime.calls == calls_before_resume
+    assert completed["zero_model_qualification_decision"] == {
+        "action": "complete_zero_model_qualification",
+        "reason_provided": True,
+        "reason_digest": canonical_sha256(
+            {"reason": "checkpoint/restart readback passed"}
+        ),
+    }
+    assert "checkpoint/restart readback passed" not in json.dumps(
+        completed["zero_model_qualification_decision"]
+    )
+
+
+@pytest.mark.parametrize("failure_lane", ["evidence", "finance"])
+def test_zero_model_qualification_tool_failure_cannot_reach_interrupt(
+    failure_lane: str,
+) -> None:
+    runtime = FakeRuntime(
+        tool_failure_branch="Q1_ISSUER_TRUTH",
+        tool_failure_lane=failure_lane,
+    )
+    graph = _build(runtime, execution_profile=ZERO_MODEL_EXECUTION_PROFILE)
+
+    with pytest.raises(
+        DellReferenceVerticalGraphError,
+        match=f"zero_model_qualification_{failure_lane}_not_success",
+    ):
+        graph.invoke(_start_input(), _config())
+    assert runtime.planner_calls == 0
+    assert runtime.specialist_inputs == []
+
+
+def test_zero_model_qualification_resume_contract_is_strict() -> None:
+    runtime = FakeRuntime()
+    graph = _build(runtime, execution_profile=ZERO_MODEL_EXECUTION_PROFILE)
+    graph.invoke(_start_input(), _config())
+    calls_before_resume = list(runtime.calls)
+
+    with pytest.raises(
+        DellReferenceVerticalGraphError,
+        match="zero_model_qualification_decision_invalid",
+    ):
+        graph.invoke(
+            Command(
+                resume={
+                    "action": "approve",
+                    "extra": "not allowed",
+                }
+            ),
+            _config(),
+        )
+    assert runtime.calls == calls_before_resume
+
+
+def test_execution_profile_is_strict_and_does_not_change_public_input() -> None:
+    runtime = FakeRuntime()
+    with pytest.raises(
+        DellReferenceVerticalGraphError,
+        match="dell_execution_profile_invalid",
+    ):
+        build_dell_reference_vertical_state_graph(
+            dependencies=runtime.dependencies(),
+            execution_profile="qualification",
+        )
+
+    graph = build_dell_reference_vertical_state_graph(
+        dependencies=runtime.dependencies(),
+        execution_profile=ZERO_MODEL_EXECUTION_PROFILE,
+    ).compile(name="dell_zero_model_schema_test")
+    schema = graph.input_schema.model_json_schema()
+    assert set(schema["required"]) == {
+        "run_id",
+        "case_id",
+        "research_question",
+        "research_as_of",
+        "snapshot_id",
+        "foundation_digest",
+    }
+    assert "execution_profile" not in schema["properties"]
+    assert "zero_model_qualification_summary" not in schema["properties"]
 
 
 def test_dynamic_graph_parallel_fanout_agent_isolation_and_hitl_resume() -> None:

@@ -485,6 +485,7 @@ class DellReferenceVerticalState(TypedDict, total=False):
     """One LangGraph thread; parallel Agent results use append reducers only."""
 
     graph_contract_version: str
+    execution_profile: str
     run_id: str
     case_id: str
     research_question: str
@@ -516,6 +517,8 @@ class DellReferenceVerticalState(TypedDict, total=False):
     citation_index: dict[str, Any] | None
     human_review: dict[str, Any] | None
     final_report: dict[str, Any] | None
+    zero_model_qualification_summary: dict[str, Any] | None
+    zero_model_qualification_decision: dict[str, Any] | None
     phase: str
 
 

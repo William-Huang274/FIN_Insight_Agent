@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_1 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED / FIN_SERVER_IDENTITY_LIVE_INTEGRATION_AND_LANGSMITH_RUN_TRACE_PENDING / A03_PAID_RUN_NOT_AUTHORIZED`
+文档状态：`DESIGN_FROZEN_REVISION_1_1 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED_REMAINS_CURRENT / R8_LIVE_FIN_IDENTITY_ZERO_MODEL_GRAPH_IMPLEMENTATION_CANDIDATE / FRESH_R8_LIVE_QUALIFICATION_NOT_STARTED / A03_PAID_RUN_NOT_AUTHORIZED`
 
 冻结日期：2026-09-03
 
@@ -1307,12 +1307,12 @@ tests/test_dell_progressive_disclosure.py
 
 | 事项 | 当前决定 | 剩余资格门/触发 |
 |---|---|---|
-| Agent Server 是否采用 | 已决：Dell 个人本地演示采用，不设 runtime fallback | fresh r7 零模型本地控制面 bounded qualification 已通过；真实 graph/run/checkpoint/SSE、FIN↔server live identity、LangSmith run trace/privacy 与共享/production 鉴权仍待 |
-| Redis 是否启用 | 已决：仅作为 Agent Server 部署依赖 | r7 空 thread 的 idle restart/readback 已通过；真实 graph execution state、checkpoint 与 stream retention/replay 仍待，Redis 永不作为 FIN 真值 |
+| Agent Server 是否采用 | 已决：Dell 个人本地演示采用，不设 runtime fallback | fresh r7 零模型本地控制面 bounded qualification 已通过并仍是 current；r8 已编码 live FIN final binding、固定 Q1 零模型 graph/checkpoint/restart/SSE/LangSmith exact trace 候选，但 fresh live result 尚不存在，共享/production 鉴权仍待 |
+| Redis 是否启用 | 已决：仅作为 Agent Server 部署依赖 | r7 空 thread 的 idle restart/readback 已通过；r8 只准备验证真实图在 Redis 进程重启后的 readback，不把该观察写成 Redis 持久真值；Redis loss/replacement recovery 仍不在本轮 |
 | React Flow | 当前关闭 | 真实 DAG 列表已无法解释 |
 | Provider adapter 切官方 SDK | 当前不切 | tool-loop/reasoning/usage parity |
 | Specialist 永久 child thread | 当前不建 | 跨 turn 独立并发/长期记忆实证 |
-| 首个付费 successor | 当前不存在 | 新 `PaidExecutionOwnerDecision` + task-specific `TokenBudgetBasis` + clean pushed commit + live FIN↔server identity ingress + LangSmith run trace/privacy readiness；RC-S3-105 只在零模型 data-composition scope 关闭，不自动授予 paid authority |
+| 首个付费 successor | 当前不存在 | 新 `PaidExecutionOwnerDecision` + task-specific `TokenBudgetBasis` + clean pushed commit；r8 即使通过也不关闭 durable pending/orphan/reconciled lifecycle、unknown-outcome 自动重试或 exactly-once。旧 paid-entry 门是否保留须由 Owner 在 r8 结果后明确裁决，不能由实现者静默放宽；RC-S3-105 只在零模型 data-composition scope 关闭，不自动授予 paid authority |
 
 ## 23. 本设计如何避免再次“埋头一天但真正工作没开始”
 
@@ -1375,6 +1375,52 @@ tests/test_dell_progressive_disclosure.py
 实现可以根据零模型测试和成熟组件 spike 修正字段名、表名、依赖版本和内部模块拆分，但若要改变上述方向、引入第二套框架、扩大产品范围、改变 Evidence/NumericFact/public-gap authority、强制上 Redis/云端或创建付费 successor，必须先更新本文并向 Owner 解释新证据和影响。
 
 2026-09-03 Owner 进一步裁决并修订本冻结：Dell vertical 直接采用 LangSmith/LangGraph Agent Server，删除运行时 fallback。这个修订废止本文和历史工作记录中“Agent Server 拒绝后可实现 OSS single-worker runtime”的未来授权，但不改写那些记录在当时的事实。2026-09-04 的 current 采用状态已推进为 `ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED`；它不等于真实 Agent Server graph、model、Agent Server graph-initiated/live-external MCP、multi-agent、HITL、报告或产品已通过，也不创建 A03 或 paid authority。
+
+### 25.1 r8 live graph 资格实现合同（执行前冻结）
+
+下一段不另建 runtime。现有单一 `dell_reference_vertical` StateGraph 增加部署拥有的
+`zero_model_control_plane_v1` 资格 profile：它只执行冻结 Q1 的真实 Evidence/Finance
+MCP 两条 lane，生成 content-free summary，随后进入 LangGraph 原生 dynamic
+interrupt；合法 resume 只完成资格状态，不重跑 MCP，也不生成 final report。基础
+Compose 始终为 `product`，资格 profile 只能由显式 overlay 和独立 Compose project
+启用；API 只发布 loopback，PostgreSQL/Redis 不发布 host port，DeepSeek key 不进入
+容器，LangSmith input/output hiding 必须精确为字符串 `true`。
+
+正式 `DellAgentServerClient` 负责 canonical FIN Session/ResearchRun/RunInvocation 与
+server thread/run 绑定，并把 profile、concrete assistant UUID、三层身份 digest 与
+launch digest 放入 remote metadata。create 前和不确定响应后只接受唯一精确匹配；
+重复、身份冲突、assistant 冲突或不稳定分页一律拒绝；transport create 结果未知时
+不得自动重发。服务端 entry 在打开数据/MCP 前反查 FIN durable final binding。此处是
+bounded reconciliation，不是跨事务 exactly-once：SQL 尚无 durable
+PENDING/ORPHAN/RECONCILED 生命周期，profile/launch digest 尚未冻结进 FIN row，2 秒
+scheduled-start 只是本地缓冲，不是事务 happens-before。
+
+checked-in r8 runner 只编排一条 fresh、clean-commit 现场验收：START 到 interrupt，
+API restart readback，Redis process restart readback，同 project/同 volume stop-start
+readback，ordinal 2 RESUME，START/RESUME exact replay，SSE full/suffix replay，最后查询
+固定 LangSmith project。runner 只保存 ID、计数、大小与 digest，不落盘 graph state、
+Evidence/NumericFact body、SSE payload 或原始 span；失败 attempt 不覆盖、不清理，且
+不会用故障注入抢 2 秒窗口来伪造 live orphan recovery。LangSmith 是实际 outbound
+observability egress；input/output 必须为空，但用于唯一关联的 bounded UUID/digest
+metadata 仍会离开本机，不能写成全 metadata 本地驻留。
+
+pre-live review 又把资格证明收紧为实际协议事实：AgentSession 的 as-of 直接取冻结
+`2026-09-02`，data snapshot digest 绑定 Owner 数据门完整 self-digest，不能拿 research
+foundation digest 代替；Agent Server 0.13.3 的 SSE 允许正常 EOF，若出现 `end` 则只能
+位于末尾，断点必须从非末帧开始并得到非空 exact suffix；四个 interrupted readback
+之间的 session/binding/FIN identity/remote run/SSE/state 必须逐项相等，resume 与 final
+也必须 exact replay。LangSmith 必须先由 FIN PostgreSQL 取得两个 durable
+`server_run_id`，再证明每个 root `id=trace_id=server_run_id`、metadata 身份一致、所有
+span 已结束且在有间隔的两次查询中集合稳定，之后才可检查 input/output hiding、无 LLM
+span、token/cost=0 与限定 secret/内部 locator 扫描。canonical digest 与落盘文件字节
+SHA 分开记录，失败子进程的内容最小化 observation 和 typed phase failure 必须保留。
+
+r8 PASS 也只允许声明：真实 Agent Server + FIN final binding + frozen local MCP +
+interrupt/checkpoint/restart/resume/SSE + 本次 trace payload hiding。以下继续为 false：
+distributed exactly-once、unknown outcome 自动重试、durable orphan lifecycle、Redis
+丢失/替换、HA/DR、product multi-agent、任何模型/外源研究/付费调用、Evidence admission、
+S2 write、Workbench HITL、最终 Dell 报告与 production security。是否申请第一条 paid
+successor，必须在 r8 结果和这些剩余边界上重新做 Owner 决策，不能由 r8 自动授权。
 
 ## 26. 2026-09-04 实施证据与当前剩余门
 

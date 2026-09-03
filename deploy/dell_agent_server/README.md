@@ -41,9 +41,17 @@ FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD=<distinct strong URL-safe local secret>
 ```
 
 Tracing is fixed to `true`, the LangSmith project is fixed to
-`fin-insight-dell-reference-vertical`, and server job concurrency is fixed to
-four in Compose; putting alternate values for those names in `.env` does not
-override the checked-in policy. The following source paths already have
+`fin-insight-dell-reference-vertical`, and trace inputs/outputs are hidden by
+the checked-in `LANGSMITH_HIDE_INPUTS=true` and
+`LANGSMITH_HIDE_OUTPUTS=true` policy. This configuration is intended to hide
+graph and tool payloads while retaining topology, timing, status and bounded
+correlation metadata; only an exact live qualification trace can establish
+that the pinned client observed that behavior for that attempt. It is not a
+blanket privacy guarantee, and UUIDs/digests needed for correlation still leave
+the workstation through LangSmith observability.
+Server job concurrency is fixed to four in Compose; putting alternate values
+for those names in `.env` does not override the checked-in policy. The
+following source paths already have
 workstation defaults and belong in `.env` only when the same digest-bound data
 is stored somewhere else:
 
@@ -129,6 +137,38 @@ verify their exact digests, counts and authority before opening MCP. Reviewed,
 local and captured external text may later be sent to a model or LangSmith only
 under the separate model/paid/privacy authority; the Owner data decision alone
 does not grant that authority.
+
+## Bounded zero-model r8 qualification
+
+The checked-in r8 probe is an acceptance harness around this same server; it is
+not a second serving runtime. It uses an explicit qualification Compose overlay,
+a separately named `finsight-dell-qualification-20260904-r8` project/fresh
+volume, the official FIN client, the real Evidence and Finance
+MCP lanes, native interrupt/resume, restart/readback, resumable SSE and one
+LangSmith project. Run it only from a clean commit:
+
+```powershell
+.\.venv\Scripts\python.exe scripts\qualification\agent_server_r8\qualify_live_r8.py
+```
+
+For this fresh disposable qualification project, the runner treats
+`FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD` as local secret material and derives
+three distinct 64-character URL-safe PostgreSQL role passwords in memory. It
+does not rewrite `.env`, print a value, or persist a value in the attempt
+receipt. Normal manual/product Compose use still requires the three explicit
+passwords documented above.
+
+The runner is intentionally fail-preserving: it never uses `down -v`, removes a
+volume, overwrites a prior attempt, or retries a create whose outcome is
+unknown. It also never injects `DEEPSEEK_API_KEY`. A passing r8 proves only the
+single local zero-model attempt described by its receipt. It does not prove
+distributed exactly-once, delayed orphan recovery, Redis loss/replacement,
+multi-worker HA, product multi-agent execution, model quality, frontend HITL,
+or production security. LangSmith remains a real outbound observability path;
+the runner requires input/output hiding and verifies the exact r8 traces, while
+the bounded run identifiers/digests needed for trace correlation remain
+metadata. The base Compose profile remains `product`; the explicit overlay is
+qualification-only and must not be used as the product default.
 
 ## Local invocation
 

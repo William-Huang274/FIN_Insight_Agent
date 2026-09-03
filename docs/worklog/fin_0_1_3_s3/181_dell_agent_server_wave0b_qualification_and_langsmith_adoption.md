@@ -2,7 +2,7 @@
 
 日期：2026-09-03
 
-状态：`ADOPT_DIRECTION_OWNER_APPROVED / DEV_ONLINE_QUALIFIED / MAINLINE_SERVER_SEAM_AND_SDK_CLIENT_IMPLEMENTED / LEGACY_RUNTIME_RETIRED / NO_RUNTIME_FALLBACK / SECURE_LOCAL_COMPOSE_STATIC_QUALIFIED / FRESH_REVIEW_P0_P1_0_0 / LIVE_BUILD_BLOCKED_BY_REGISTRY / LANGSMITH_TRACE_PENDING_KEY / RC-S3-105_OWNER_DATA_GATE_OPEN / A03_ABSENT`
+状态：`ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / REAL_ZERO_MODEL_DATA_COMPOSITION_PASS / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED / NO_RUNTIME_FALLBACK / FIN_SERVER_IDENTITY_LIVE_INTEGRATION_PENDING / LANGSMITH_RUN_TRACE_PENDING / GRAPH_MODEL_DEEPSEEK_AGENT_SERVER_MCP_MULTI_AGENT_PRODUCT_FALSE / A03_ABSENT`
 
 分支：`codex/fin013-dell-s1-s2-product-bridge`
 
@@ -245,3 +245,73 @@ Project OS 直接测试当前另有一个与本轮 changed paths 无关的既存
 
 因此当前不是 Dell 纵切 PASS。下一合法动作仍是：Owner 决定 physical/Reviewed data gate；用户在 ignored
 `.env` 配置合法 LangSmith PAT 与本地 PG password；随后先完成 real build/supply-chain qualification、durable identity 和 approved MCP composition，再运行第一条真实 LangSmith-traced Dell run。
+
+## 12. Owner 数据门、fresh r6/r7 与零模型本地控制面收口（2026-09-04）
+
+### 12.1 Owner 数据门与 real composition
+
+Owner 已接受当前 32 条 physical routes，并明确保持以下边界：SMCI E11 只作为 Q9 的 F8 supplemental；Q3 本地 F3、Q4 本地 F4 的真实缺口保持为零而不伪造；Reviewed topic map 只作 selector；Micron SEC 8-K 只有在 issuer/CIK/accession 精确绑定时才能进入 F7；五个歧义 Reviewed 项继续排除并保留审计记录。
+
+本轮随后运行的是真实、answer-free、零模型组合，不是 mock 数量：
+
+- Owner decision digest：`739df0f5d2880af8e27a08b5f9e31e10e894f4900fb72681e7b02e065e89b204`；
+- current inventory digest：`895c4663e9a19ea790101d92f3cb9696d20d6eff6b0e6495befc6d4959eb3f41`；
+- provider/source route catalog digest：`eca993bb65edb2f41c9112912532316e07dd06cf3b46e61118d0851d7bda1002`；
+- 组合结果：Reviewed=`56`、S2 observations=`1,319`、external routes=`12`、local candidates=`890`；
+- provider projection 只有 36 条语义 route，不暴露 D/Z 盘路径、workbench/qualification 路径或 physical selectors；
+- 官方 MCP client 已在本进程内实际调用冻结的 Evidence/Finance tools；model、DeepSeek、live external provider、外网和付费调用的授权及实际次数均为 `0`。
+
+这关闭的是 `RC-S3-105` 的零模型 inventory/compiler/data-composition 根因，并证明 local in-process frozen MCP client tool execution；它不授权 A02 retry、A03、任何 paid/model execution，也不证明 Agent Server graph 发起的 MCP、实时外源 MCP capture 或研究答案质量。
+
+### 12.2 r6 成功及后续审查 supersession
+
+fresh r6 在当时定义的部署合同下真实 build、启动并通过，不删除、不覆盖，也不是伪造 PASS。作者分离复核随后发现其 PostgreSQL catalog fingerprint 没有覆盖 role GUC、`rolconnlimit` 与 `rolvaliduntil`；这些状态会改变运行角色行为，却可能绕过旧 fingerprint。因此 r6 保留为 immutable 的早期成功尝试，但不再代表 current qualification。
+
+修正仍归 `RC-S3-106` 的 deployment/schema exactness 最早责任层，没有另造新的治理 issue。新版 fingerprint 还覆盖 schema/comment/ACL、role flags/成员边、database role settings、relation/index/sequence owner/ACL/security、column/default/collation、constraint/index definition/flags、trigger/function body、default ACL 与 database privileges。current attempt 改为 fresh r7，并把这些状态纳入 exact replay 与 drift detection。
+
+### 12.3 r7 admitted catalog projection fingerprint、fresh deployment 与 image 证据
+
+current fresh attempt：`20260904T0140+0800-zero-model-r7`，Compose project：`finsight-dell-qualification-20260904-r7`。
+
+- implementation commit：`f0de87e024686660db4f5c0bfdcf85bddce1f120`；
+- local image ID：`sha256:c658b11a177cb14949ee92a13b674f930dd24fb77d8265f2a59430ebee94fba6`，大小 `409,475,038` bytes；它只是本机 image ID，不是 registry-published digest；
+- 040 source SHA：`dec88b731a59d696509c184cf45ea1344d5840d7aa0c07515b3902b3de9ddd00`；
+- admitted/relevant catalog projection：91 rows，SHA=`28c2bb8501d78ca3b43e1a490acae050df46b8226d2c2511a34b99a1723ec4a8`；
+- FIN runtime schema source SHA：`8102f5ab615bd616f64bd83f610b2e3c3206a9de023d7e27a48069f39e864209`；
+- fresh Agent Server、PostgreSQL、Redis 三容器均 healthy；API 仅发布 `127.0.0.1:18127`，PostgreSQL/Redis 没有 host port；
+- 六个产品数据目录全部 read-only，PostgreSQL 只有 named data volume 可写；API 未接收 DeepSeek key 或 FIN runtime URI；
+- existing-volume installer 的 exact replay 返回 catalog contract match；三个数据库口令的 URL-safe、长度和两两不同门通过，相等的 dummy credentials 被拒绝；
+- 事务内并回滚的 role global GUC、database-local GUC、unique constraint、function body、role membership 五类 drift 均产生不同 catalog SHA；没有留下持久变更。
+
+本轮还对同一个本地 image 做了 host↔image exhaustive manifest 校验：249 个允许文件、`9,692,127` raw bytes，missing/extra/changed 均为 0，canonical manifest SHA=`57a08411937e0a791a38fe8e8cdae4f30dfbbf47af480c2f3437b47b42569411`。CycloneDX 1.5 inventory 为 707 components、987,816 bytes，SHA=`4ba5a4e16e9ca7a0ee0e702a5c85e5e180abbae94019acde4e17b462d4300ecd`；其 metadata 的 r5 tag 只是同一 `c658...` image 的旧 local alias，不是 r7 provenance，证据以 image ID 绑定。这只使 `sbom_inventory_generated=true`；由于尚无 CVE/license policy、signature、provenance 与 registry-published digest，`image_supply_chain_qualified=false`。镜像仍以 root 运行，当前 Compose 也没有 readonly rootfs、cap drop、no-new-privileges 或资源限制；LangSmith key 与 PostgreSQL URI 由容器 environment 传入，本地 Docker administrator 可 inspect，`container_secret_manager=false`。这些边界在 loopback 单用户 qualification 内接受，不能外推到共享或 production。
+
+这里的 040 只对当前 FIN runtime 所承认的 91-row PostgreSQL catalog projection 做 exact binding，不是字面上的整个 PostgreSQL catalog。当前 r7 只读检查没有异常 relkind、column ACL 或 global migrator default ACL，因此不阻断本次 bounded pass；其他 relkind、column ACL 与更广 default-ACL hardening 作为 P2 保留，不能把当前证据写成 entire/full-catalog qualification。
+
+### 12.4 FIN identity、官方 SDK thread 与 restart 证据边界
+
+r7 上独立 FIN identity qualifier 产生 1 个 AgentSession、1 个 ResearchRun、3 个 RunInvocation；ordinal 精确为 1/2/3，同一 ordinal 3 的并发写入一胜一冲突，exact replay 幂等，连接池重建后仍存在。runtime role 对 update/delete/truncate/alter/drop trigger 的拒绝均为 SQLSTATE `42501`，migrator 对 append-only trigger 的拒绝为 `55000`；三个角色均非 superuser，migrator 为 nologin；table DML grants 只含 SELECT/INSERT，另有必要的 database CONNECT、schema USAGE 和 sequence USAGE/SELECT，没有 UPDATE/DELETE/TRUNCATE/DDL；六个保护 trigger 存在。
+
+官方 SDK 只读/空线程 probe 确认 Agent Server 只有一个 `dell_reference_vertical` graph；输入 schema 精确要求 `case_id/foundation_digest/research_as_of/research_question/run_id/snapshot_id` 六项，context 精确要求 `agent_session_id/research_run_id/run_invocation_id` 三项，均拒绝额外字段。固定 thread `433f0098-d302-5993-979c-df81574455c3` 两次 `if_exists=do_nothing` 只得到一个 idle thread，values 为 null，runs=`0`。API restart、Redis restart、整个 Compose stop/start 后均能读回同一 idle thread；FIN counts 仍为 `1/1/3`，91-row admitted catalog projection readiness 仍通过。
+
+以上只证明 control-plane loader/schema、空 thread 的 idle readback 与独立 FIN identity persistence。当前 synthetic FIN IDs 没有映射到该 live Agent Server thread，所以 `fin_server_identity_live_integration=false`；也没有 graph run，因此 `graph_execution=false`、`run_checkpoint_restart_parity=false`、`redis_execution_state_persistence=false`、`sse_restart_replay=false`、`single_job_enforced=false`、`exactly_once=false`。当前 `N_WORKERS=1`、`N_JOBS_PER_WORKER=4` 只是一份并发上限配置，不能写成单任务或 exactly-once 证明；server 内建 retry 与未来付费副作用的幂等仍须单独验证。
+
+### 12.5 LangSmith 与代理诊断
+
+r7 Agent Server 日志中的 metadata POST 返回 HTTP 204，且明确是 `n_nodes=0`、`n_runs=0`；API 与全栈重启后仍可达。这证明当前 PAT、固定 project `fin-insight-dell-reference-vertical` 与 metadata endpoint 连通，但没有 run/span，故 `langsmith_run_trace=false`、`trace_privacy_qualified=false`，也没有可在 UI 中验收的研究 trace。
+
+Docker 当前通过 `http.docker.internal:3128` 代理访问网络。在该配置下，真实 image build、三容器启动和 LangSmith metadata 均已成功，因此代理不是 current blocker。较早 Docker/PyPI TLS EOF 与代理/VPN 波动存在合理相关性，但没有当时的 packet/proxy 证据，不能把它记为确定或唯一根因。`18123` 当时不可用另由 Windows 端口保留/动态分配行为解释；current r7 使用 loopback `18127`。
+
+### 12.6 当前通过项、未通过项与下一门
+
+当前唯一准确的通过标签是：`ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED`。实现相关 targeted deployment+identity 回归为 `24 passed`，更广的相关集合为 `195 passed`；lock freshness、compileall、五份 JSON、shell syntax、diff 与 changed implementation secret-pattern scan 均通过。作者分离终审结论为 `P0=0 / P1=0`，仅适用于上述 bounded scope。全仓 plain pytest 因未安装可选 Dagster 依赖在 collection 阶段失败；排除该单个可选 Dagster 文件后的辅助诊断为 `3,162 passed / 6 skipped / 41 failed / 23 errors`，用时 `1,666.53s`，失败主要落在 claim-authority base input、Project OS sealed SHA、VS5 policy binding 与 immutable A02 replay。由于该长跑期间 closeout 文档和 append-only ledgers 正在写入，它不是 clean isolated qualification，也没有在本轮裁决这些跨阶段失败的根因。因此 `full_repository_suite_green=false`；不能用大量通过项覆盖失败，也不把这些失败未经审计地归因于本轮 r7 实现。
+
+已经为 true 的 MCP 边界仅是 local in-process frozen MCP client 对 Evidence/Finance tools 的真实调用。仍为 false：FIN↔server live identity binding、跨事务 create→bind orphan reconciliation、真实 graph/run/checkpoint/resume、Agent Server graph-initiated MCP、live external MCP capture、Redis execution state persistence、SSE replay、LangSmith run trace/privacy、任何 model/DeepSeek、dynamic multi-agent、HITL、最终报告、产品纵切、shared/production deployment 和完整 image supply-chain qualification。
+
+r7 不清理，receipt 与 SBOM 保存在：
+
+- `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/agent_server_control_plane/attempts/20260904T0140+0800-zero-model-r7/receipts/zero-model-local-control-plane-qualification.json`；
+- `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/agent_server_control_plane/attempts/20260904T0140+0800-zero-model-r7/receipts/agent-server-image.cyclonedx.json`。
+
+qualification receipt 最终为 19,195 bytes，SHA-256=`c5821993bcb729c10e18c912ba4f27272afce707562a59cef4b35e83e2971ebb`；SBOM SHA-256=`4ba5a4e16e9ca7a0ee0e702a5c85e5e180abbae94019acde4e17b462d4300ecd`。仓库中的 closeout 文档以这两个摘要绑定 Z 盘证据；后续若需纠错必须创建 successor receipt，不能静默覆盖。
+
+下一合法门不是启动 A03 或调用模型，而是：实现 live FIN↔server ingress/binding 和 remote-create→FIN-bind orphan reconciliation；验证 Agent Server retry/idempotency；运行一条真实零模型 graph，覆盖 checkpoint/resume、API/Redis/full-stack restart、SSE retention/replay，并产生可核验的 LangSmith run trace 与 privacy 结论。只有这些门关闭后，才向 Owner 提交新的 `PaidExecutionOwnerDecision` 与 task-specific `TokenBudgetBasis`，申请第一条新的 paid/model successor。

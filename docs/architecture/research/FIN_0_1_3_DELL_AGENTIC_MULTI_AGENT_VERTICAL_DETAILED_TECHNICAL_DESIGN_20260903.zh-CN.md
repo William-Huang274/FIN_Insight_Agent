@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_1 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / WAVE_0B_DEV_ONLINE_PASS / DEPLOYMENT_PARITY_KEY_PENDING / A03_PAID_RUN_NOT_AUTHORIZED`
+文档状态：`DESIGN_FROZEN_REVISION_1_1 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED / FIN_SERVER_IDENTITY_LIVE_INTEGRATION_AND_LANGSMITH_RUN_TRACE_PENDING / A03_PAID_RUN_NOT_AUTHORIZED`
 
 冻结日期：2026-09-03
 
@@ -141,11 +141,11 @@ Wave 0B 已在 `a101292dfb42930502b0f970286d5e3a0acb5d37` 上完成第一段真�
 
 采用后的强制边界是：
 
-- Dell 最终演示前必须用官方 `langgraph up` 部署形态、PostgreSQL 与 Redis 复跑 restart、checkpoint、interrupt/resume、cancel、并行与 SSE replay；合法 LangSmith key 是配置前置；
+- Dell 最终演示前必须用 checked-in、digest-pinned Agent Server Compose、PostgreSQL 与 Redis 复跑真实 graph 的 restart、checkpoint、interrupt/resume、cancel、并行与 SSE replay；合法 LangSmith key 是配置前置；
 - FIN `AgentSession ↔ Agent Server thread`，FIN `ResearchRun ↔ 一个或多个 server run 的领域 aggregate`，FIN `RunInvocation ↔ Agent Server run`，FIN `ActionAttempt ↔ FIN receipt`；业务代码不得因为两边都叫 run 而合并身份；
 - Workbench 只实现 FIN 领域合同、权限、Evidence/Claim/SessionEvent 投影、snapshot-first 读取和薄 BFF，不复制 Agent Server 的 scheduler、queue、thread/run 状态机或 cancel/resume 实现；
 - 不再设计 `REJECT_WITH_RECEIPT_AND_USE_OSS_SINGLE_WORKER` 分支，也不引入 Temporal、Celery、自写 Redis Streams queue 或第二套 Agent framework；
-- `langgraph up` 资格门未通过时，Wave 4/5 serving 与最终演示验收保持阻断；RC-S3-105 的 inventory/compiler/data-disclosure 零模型工作可并行继续，因为它不实现重叠 runtime。
+- checked-in Agent Server Compose 的真实 run/checkpoint/SSE/LangSmith trace 资格门未通过时，Wave 4/5 serving 与最终演示验收保持阻断；inventory/compiler/data-disclosure 零模型工作可并行继续，因为它不实现重叠 runtime。
 
 ## 4. 总体架构
 
@@ -1051,7 +1051,7 @@ Child run 保存 parent run、artifact refs、manifest digest、as-of policy、�
 
 ### 17.2 `local_parity`（Dell 最终演示前必须通过）
 
-- 官方 `langgraph up` 本地容器拓扑；
+- checked-in、digest-pinned Agent Server 本地 Compose 拓扑；
 - Agent Server API/worker + PostgreSQL + Redis；
 - PostgreSQL 16：Agent Server 持久化 + 独立 FIN 产品控制面 schema，FIN 不读取 server 内部表；
 - filesystem 或 S3-compatible local object store；
@@ -1149,7 +1149,7 @@ tests/test_dell_progressive_disclosure.py
 
 目标：在写 Research Run BFF、领域投影和前端前，验证已经选定的 LangSmith/LangGraph Agent Server serving 路径，避免复制成熟 runtime。
 
-- 先用 `langgraph dev`、fake graph 和 zero-model fixture 验证 API 与运行语义，再用 `langgraph up` 验证 PostgreSQL/Redis 部署态；
+- 先用 `langgraph dev`、fake graph 和 zero-model fixture 验证 API 与运行语义，再用 checked-in、digest-pinned Agent Server Compose 验证 PostgreSQL/Redis 部署态；
 - 精确记录 package/image/version/license、LangSmith key/egress 要求、PostgreSQL/Redis 拓扑、thread/run/cancel/interrupt/resume/SSE 行为、资源占用和数据驻留；
 - 验证 FIN `SessionEvent / Claim / Evidence / Intervention` 能否只做薄投影，而不修改或复制 Agent Server 内部状态机；
 - 输出 FIN identity 与 server thread/run/assistant/cron/task 的 cardinality map、ID binding 和恢复映射，禁止因为两边都叫 run 就默认等价；
@@ -1157,7 +1157,7 @@ tests/test_dell_progressive_disclosure.py
 - 原生 resumable stream 只订阅单一 `updates`，完整状态走 `GET /threads/{thread_id}/state`；FIN BFF 的公开事件使用自己的 projection sequence，不把多 `stream_mode` frame 当领域事件协议；
 - 裁决前禁止实现新的 dispatch queue、research-run persistence、product SSE replay 或通用恢复服务；现有 Operations 代码只作为事实源和回归基线，不继续扩写。
 
-若 `langgraph up` 因合法 key/license/egress 未配置而无法执行，应记录为部署验收 blocker 并等待合法配置；不得因此切换到自研 runtime。整个 Wave 0B 不调用模型，不创建付费 ResearchRun 或 PaidFullChainExecution。`langgraph dev` 在线通过不等于 `local_parity`、managed deployment 或 production 通过。
+若 checked-in Agent Server Compose 因合法 key/license/egress 未配置而无法执行，应记录为部署验收 blocker 并等待合法配置；不得因此切换到自研 runtime。整个 Wave 0B 不调用模型，不创建付费 ResearchRun 或 PaidFullChainExecution。`langgraph dev` 在线通过不等于 `local_parity`、managed deployment 或 production 通过；fresh r7 的 bounded local control-plane pass 也不等于真实 graph/run/checkpoint/SSE 或产品通过。
 
 ### Wave 1：RC-S3-105 与数据披露
 
@@ -1200,7 +1200,7 @@ tests/test_dell_progressive_disclosure.py
 
 ### Wave 5：PostgreSQL local-parity 与部署证明
 
-- `langgraph up` 的 Agent Server + PostgreSQL + Redis，以及独立 FIN product schema；
+- checked-in、digest-pinned Compose 的 Agent Server + PostgreSQL + Redis，以及独立 FIN product schema；
 - restart/failure injection、idempotency、SSE replay；
 - 执行 Wave 0B 已冻结的 Agent Server serving 路径，不在本阶段重新选型；
 - Redis 作为 server 瞬时依赖做丢失/重连测试，不成为 FIN replay 真值；
@@ -1307,12 +1307,12 @@ tests/test_dell_progressive_disclosure.py
 
 | 事项 | 当前决定 | 剩余资格门/触发 |
 |---|---|---|
-| Agent Server 是否采用 | 已决：Dell 个人本地演示采用，不设 runtime fallback | 合法 key + `langgraph up` local-parity 仍须实测 |
-| Redis 是否启用 | 已决：仅作为 Agent Server 部署依赖 | local-parity 中验证失效/重连，永不作为 FIN 真值 |
+| Agent Server 是否采用 | 已决：Dell 个人本地演示采用，不设 runtime fallback | fresh r7 零模型本地控制面 bounded qualification 已通过；真实 graph/run/checkpoint/SSE、FIN↔server live identity、LangSmith run trace/privacy 与共享/production 鉴权仍待 |
+| Redis 是否启用 | 已决：仅作为 Agent Server 部署依赖 | r7 空 thread 的 idle restart/readback 已通过；真实 graph execution state、checkpoint 与 stream retention/replay 仍待，Redis 永不作为 FIN 真值 |
 | React Flow | 当前关闭 | 真实 DAG 列表已无法解释 |
 | Provider adapter 切官方 SDK | 当前不切 | tool-loop/reasoning/usage parity |
 | Specialist 永久 child thread | 当前不建 | 跨 turn 独立并发/长期记忆实证 |
-| 首个付费 successor | 当前不存在 | RC-S3-105 + zero-model + independent review + Owner decision |
+| 首个付费 successor | 当前不存在 | 新 `PaidExecutionOwnerDecision` + task-specific `TokenBudgetBasis` + clean pushed commit + live FIN↔server identity ingress + LangSmith run trace/privacy readiness；RC-S3-105 只在零模型 data-composition scope 关闭，不自动授予 paid authority |
 
 ## 23. 本设计如何避免再次“埋头一天但真正工作没开始”
 
@@ -1374,4 +1374,16 @@ tests/test_dell_progressive_disclosure.py
 
 实现可以根据零模型测试和成熟组件 spike 修正字段名、表名、依赖版本和内部模块拆分，但若要改变上述方向、引入第二套框架、扩大产品范围、改变 Evidence/NumericFact/public-gap authority、强制上 Redis/云端或创建付费 successor，必须先更新本文并向 Owner 解释新证据和影响。
 
-2026-09-03 Owner 进一步裁决并修订本冻结：Dell vertical 直接采用 LangSmith/LangGraph Agent Server，删除运行时 fallback。这个修订废止本文和历史工作记录中“Agent Server 拒绝后可实现 OSS single-worker runtime”的未来授权，但不改写那些记录在当时的事实。当前采用状态为 `ADOPT_DIRECTION_OWNER_APPROVED / DEV_ONLINE_QUALIFIED / LANGGRAPH_UP_KEY_AND_RESTART_PARITY_PENDING`；它不等于 Agent Server 已接入 mainline，不等于 multi-agent、HITL、报告或产品已通过，也不创建 A03 或 paid authority。
+2026-09-03 Owner 进一步裁决并修订本冻结：Dell vertical 直接采用 LangSmith/LangGraph Agent Server，删除运行时 fallback。这个修订废止本文和历史工作记录中“Agent Server 拒绝后可实现 OSS single-worker runtime”的未来授权，但不改写那些记录在当时的事实。2026-09-04 的 current 采用状态已推进为 `ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED`；它不等于真实 Agent Server graph、model、Agent Server graph-initiated/live-external MCP、multi-agent、HITL、报告或产品已通过，也不创建 A03 或 paid authority。
+
+## 26. 2026-09-04 实施证据与当前剩余门
+
+本节是冻结设计的 implementation-evidence successor，不改变产品范围、Agent Server/LangSmith 单一路径或 A03 必须另行授权的设计。实现提交为 `f0de87e024686660db4f5c0bfdcf85bddce1f120`。
+
+Owner 数据门已接受；answer-free 的真实组合得到 Reviewed=`56`、S2=`1,319`、external routes=`12`、local candidates=`890`。官方 MCP client 已在本进程内实际调用冻结的 Evidence/Finance tools；model/live-external/network/paid=`0`。这使 `RC-S3-105` 可以在零模型 inventory/compiler/composition 范围关闭，但 A02 永久不重试，未来 paid successor 仍需新的独立 Owner authority。
+
+fresh r6 在当时合同下真实成功，随后因其 admitted catalog projection fingerprint 未覆盖 role GUC、connection limit 与 valid-until 而被 review supersede；历史不删除。current fresh r7 image local ID 为 `sha256:c658b11a177cb14949ee92a13b674f930dd24fb77d8265f2a59430ebee94fba6`，040 source SHA 为 `dec88b731a59d696509c184cf45ea1344d5840d7aa0c07515b3902b3de9ddd00`，91-row admitted catalog projection SHA 为 `28c2bb8501d78ca3b43e1a490acae050df46b8226d2c2511a34b99a1723ec4a8`。fresh Agent Server/PostgreSQL/Redis healthy，API 只在 `127.0.0.1:18127`，现有卷 exact installer replay、五类事务回滚 drift 反例、独立 FIN identity `1/1/3`、官方 SDK 唯一 graph 的 6-input/3-context schema，以及固定空 thread 的 API/Redis/full-stack idle restart readback 均通过。040 精确绑定的是当前承认的 projection，不是 entire PostgreSQL catalog；其他 relkind、column ACL 与 global migrator default ACL hardening 保留为 P2。镜像仍为 root/writable，Compose 没有 cap-drop/no-new-privileges/resources，容器环境也不是 secret manager，所以 shared/production qualification 仍为 false。
+
+LangSmith metadata HTTP 204 且 `n_runs=0` 只证明 key/project connectivity，不证明 run trace、span flush、UI 可见或 privacy。Docker 当前使用 `http.docker.internal:3128` 代理仍完成 build、启动和 metadata 请求，因此代理不是 current blocker；较早 TLS EOF 最多是 plausible transient proxy/VPN effect，不能作为确定根因。
+
+当前 `ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED` 已包含 local in-process frozen MCP client tool execution，但明确不含：live FIN↔server identity binding、remote-create→FIN-bind orphan reconciliation、真实 graph/run/checkpoint/resume、Agent Server graph-initiated MCP、live external MCP capture、Redis execution-state persistence、SSE restart replay、LangSmith run trace/privacy、DeepSeek/model、dynamic multi-agent、HITL、report、product、shared/production 或完整 image supply-chain qualification。下一实现门依次是 live identity ingress/binding 与 orphan reconciliation；server retry/idempotency；零模型真实 graph 的 checkpoint/restart/SSE/LangSmith trace/privacy。完成并 clean push 后，才可向 Owner 提交新的 paid execution 决策和 task-specific token budget。

@@ -500,3 +500,67 @@ LangSmith 修正的直接测试=`19 passed in 2.37s`，13 文件相邻回归=
 组合复核 `34 passed in 2.98s`。P2 仅保留 pinned `list_runs` 的 removal debt、100-span
 有意 fail-closed ceiling、限定模式而非 blanket privacy，以及未来若声称字段级稳定应扩大
 stable signature；均不阻断本次 clean pre-live commit，也不构成 r8 PASS。
+
+### 12.11 r8 fresh attempt3：零模型 live control plane bounded PASS
+
+LangSmith 根修正以 clean pushed commit=
+`a76163abf97a7f43031d200c6ac5e05cbe8a677c` 冻结后，fresh attempt3=
+`20260904T060948+0800-zero-model-r8` 在全新 project=
+`finsight-dell-qualification-20260904-r8a3`、loopback `127.0.0.1:18130` 与 fresh
+PostgreSQL volume 上完整通过。正式 receipt：
+`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/agent_server_control_plane/attempts/20260904T060948+0800-zero-model-r8/receipts/dell-agent-server-live-r8-qualification.json`；
+canonical SHA-256=
+`6a6d64604e31b8470a2eb4752da7825b70a59293a0c79c65ee587a8e0b68c277`，
+file SHA-256=
+`dd937f332f75903489819d40df0960f5f0e94453c1d0dd721857d1361b5777d4`。
+manifest canonical SHA-256=
+`4c63072d16880821426a2e0e52086af99bbb97fc7a8d9d3f6c1a89bdaa68e145`，
+file SHA-256=
+`1555497251ed40433c83792c788a3721059c7828cc78ea5915bdb7a7ff17a80c`。
+receipt canonical digest 已由 host 独立复算一致；Git start/end 均为同一 clean pushed commit。
+
+13 个现场 command 全为 return code 0：Compose config=`0.328s`、build/up=`77.906s`、
+START=`13.172s`、API restart/readback=`2.782/2.468s`、Redis restart/readback=
+`1.297/2.609s`、full-stack stop/start/readback=`2.531/6.984/3.219s`、RESUME=
+`10.250s`、final exact replay=`2.656s`、LangSmith=`13.531s`。三容器在 initial/final
+snapshot 和运行后只读复核中均 healthy；API 仅发布 loopback `18130`，PostgreSQL/Redis
+不发布 host port，fresh volume identity 在前后 snapshot 一致。
+
+START remote Run=`success`、Thread=`interrupted`，state=
+`phase=zero_model_mcp_qualified`、interrupt=`1`、
+`next=["qualification_interrupt"]`；真实 Q1 answer-free graph 通过现有 MCP client 执行
+Evidence/Finance 两条 lane，共 `6` 个 MCP protocol/tool calls、`0` error，Evidence 输出
+`2` 个 content-free result states、Finance 输出 `2` 个 NumericFact-state items。API、Redis
+process 与同 project/full-stack 重启后的 start binding、FIN identity、remote state、SSE
+full/suffix 和 qualification summary exact continuity 均通过。RESUME 后两个 remote Runs
+均为 `success`、Thread=`idle`、state=
+`phase=zero_model_control_plane_completed`、interrupt/next 为空；final 对 resume exact
+replay 通过，未生成第三 invocation 或 final report。
+
+LangSmith 精确查询到两个 durable `server_run_id` 对应的 roots 与完整 traces：START=
+`5` spans、RESUME=`3` spans，总计 `8`；root ID=trace ID=FIN durable server run ID，所有
+span ended、ID 唯一、parent closure 完整且连续两次结构稳定。START 仅一个预期
+`qualification_interrupt` GraphInterrupt，unexpected error=`0`；所有 span inputs/outputs
+均隐藏，credential、PostgreSQL/Redis URI、D/Z host path 与 `/run/fin-insight` data locator
+扫描通过；LLM span、token、cost 都为 0。此结论不等于 traceback、correlation metadata
+或 blanket privacy 全部隐藏。
+
+模型/provider、DeepSeek、live external research 与付费调用均为 `0`。attempt1、attempt2
+的失败 receipt SHA 复核仍分别为 `84046a26…667b` 与 `04986641…801d`，旧 project、容器、
+volume 和 receipt 均未修改/清理；attempt3 stack 也保留 healthy，未执行 `down -v`。
+
+因此 current baseline 从 r7 提升为
+`R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED`。它证明的是单机本地、单个固定 Q1、
+零模型的 Agent Server/FIN binding/MCP/interrupt/checkpoint/restart/resume/SSE/LangSmith
+控制面，不是 Dell 完整 multi-agent 产品或报告。`RC-S3-107` 的 durable
+PENDING/ORPHAN/RECONCILED lifecycle、unknown-outcome 自动重试、distributed
+exactly-once、server-side profile row binding、guard/binder 权限分离、Redis loss、HA/DR、
+模型、实时外源、Evidence admission、S2 write、HITL、前端与报告继续为 false。下一步若
+要进入首个新模型/付费 successor，必须先由 Owner 对 `RC-S3-107` 的阻断意义作明确裁决，
+并新建 task-specific `PaidExecutionOwnerDecision` 与 `TokenBudgetBasis`；r8 PASS 本身不
+自动授权。
+
+PASS closeout 后 Project OS 回归=`81 passed / 1 failed in 25.51s`；唯一失败仍精确为
+`current_dynamic_writer_submission_successor:implementation:3` 对未修改的
+`src/sec_agent/project_os_preflight.py` sealed SHA drift。该历史 authority 未被重签，
+因此 R8 bounded PASS 与 `full_repository_suite_green=false` 两个事实同时成立。

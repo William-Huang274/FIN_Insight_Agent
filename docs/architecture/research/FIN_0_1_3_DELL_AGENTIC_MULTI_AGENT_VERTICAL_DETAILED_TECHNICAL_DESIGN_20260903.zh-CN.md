@@ -1481,6 +1481,30 @@ attempt2 的 project/volume/receipt 保留不变；successor 必须用 clean pus
 fresh project=`finsight-dell-qualification-20260904-r8a3`、fresh volume 和
 `127.0.0.1:18130`。它仍是同一 R8，不创建 A03，也不放开模型、外源、付费或产品门。
 
+### 25.4 r8 现场验收结果与新当前边界
+
+fresh attempt3=`20260904T060948+0800-zero-model-r8` 已在 clean pushed
+`a76163abf97a7f43031d200c6ac5e05cbe8a677c`、独立 r8a3 project、fresh volume 与
+loopback `18130` 上完整 PASS。receipt canonical/file SHA-256 分别为
+`6a6d64604e31b8470a2eb4752da7825b70a59293a0c79c65ee587a8e0b68c277` /
+`dd937f332f75903489819d40df0960f5f0e94453c1d0dd721857d1361b5777d4`。
+
+本次真实观察同时关闭 25.1–25.3 的 bounded 现场门：FIN Session/ResearchRun/两次
+RunInvocation 与 Agent Server thread/run final binding；固定 Q1 的真实本地
+Evidence/Finance MCP；START Run success + Thread interrupted + exact state；API、Redis
+process 与同 project/full-stack restart exact readback；RESUME Run success + Thread idle；
+SSE full/non-empty exact suffix；resume/final exact replay；两个 LangSmith durable roots 与
+5/3 spans 完整 closure；唯一预期 GraphInterrupt；input/output hiding；unexpected error、
+LLM span、token、cost、模型/provider/live-external/paid calls 均为 0。
+
+因此 current runtime 资格名为 `R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED`，取代 r7
+作为当前最强证据，但不改变目标设计的产品门。尤其不能由 r8 推导：跨存储 exactly-once、
+durable orphan recovery、unknown-outcome 自动重试、Redis loss recovery、HA/DR、共享/
+生产安全、动态 multi-agent 自主规划、模型质量、实时外源、Evidence admission、S2 write、
+前端 HITL 或最终 Dell 报告。第一条新模型/付费 successor 仍需单独解决或由 Owner 明确
+裁决 `RC-S3-107`，并冻结新的 PaidExecutionOwnerDecision 和 task-specific
+TokenBudgetBasis；不得复用 A02 authority，也不得仅凭 r8 PASS 自动启动。
+
 ## 26. 2026-09-04 实施证据与当前剩余门
 
 本节是冻结设计的 implementation-evidence successor，不改变产品范围、Agent Server/LangSmith 单一路径或 A03 必须另行授权的设计。实现提交为 `f0de87e024686660db4f5c0bfdcf85bddce1f120`。

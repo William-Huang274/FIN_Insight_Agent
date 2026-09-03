@@ -191,6 +191,16 @@ locator exposure, and zero unexpected span errors. Normal container traceback
 code paths and the bounded correlation metadata can remain visible in the
 developer-only LangSmith project.
 
+The current bounded acceptance is fresh attempt
+`20260904T060948+0800-zero-model-r8` on source commit
+`a76163abf97a7f43031d200c6ac5e05cbe8a677c`. Its immutable PASS receipt is
+`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/agent_server_control_plane/attempts/20260904T060948+0800-zero-model-r8/receipts/dell-agent-server-live-r8-qualification.json`
+(file SHA-256
+`dd937f332f75903489819d40df0960f5f0e94453c1d0dd721857d1361b5777d4`).
+This supersedes r7 only for the bounded zero-model live control-plane claims;
+it does not authorize a model, paid successor, product multi-agent run, HITL or
+report.
+
 ## Local invocation
 
 Run Compose from the repository root and name the ignored env file explicitly:

@@ -1,0 +1,28 @@
+{
+  "dependencies": [
+    ".",
+    "langchain-core==1.6.1",
+    "langchain-deepseek==1.1.0",
+    "langchain-text-splitters==1.1.2",
+    "langgraph==1.2.11",
+    "langgraph-sdk==0.4.4",
+    "langsmith==0.12.1",
+    "mcp==2.1.1",
+    "psycopg[binary,pool]==3.3.4"
+  ],
+  "graphs": {
+    "dell_reference_vertical": {
+      "path": "sec_agent.agent_runtime.dell_agent_server_entry:dell_reference_vertical_graph",
+      "description": "Dell research vertical; the only product serving graph"
+    }
+  },
+  "env": ".env",
+  "api_version": "0.13.3",
+  "python_version": "3.13",
+  "http": {
+    "disable_a2a": true,
+    "disable_mcp": true,
+    "disable_ui": true,
+    "disable_webhooks": true
+  }
+}

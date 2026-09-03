@@ -18,8 +18,8 @@ from time import perf_counter
 from typing import Any, Literal, TypeVar, cast
 
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Command, Send, interrupt
-from pydantic import BaseModel, ValidationError
+from langgraph.types import Send, interrupt
+from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from .dell_reference_vertical_contracts import (
     BoundBranchTask,
@@ -60,6 +60,41 @@ class DellReferenceVerticalGraphError(ValueError):
     """Fail-closed graph boundary or state-invariant error."""
 
 
+class DellReferenceVerticalGraphInput(BaseModel):
+    """Public start schema; internal checkpoint fields are never caller input."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    run_id: str = Field(
+        min_length=1,
+        max_length=180,
+        description=(
+            "FIN ResearchRun identifier. This is not the Agent Server thread_id "
+            "or server run_id."
+        ),
+    )
+    case_id: str = Field(min_length=1, max_length=80)
+    research_question: str = Field(min_length=1, max_length=2_000)
+    research_as_of: str = Field(min_length=1, max_length=80)
+    snapshot_id: str = Field(min_length=1, max_length=240)
+    foundation_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+
+class DellAgentServerRunContext(BaseModel):
+    """Explicit FIN identities supplied as Agent Server run context.
+
+    Agent Server owns its thread/run identities.  These three FIN identifiers
+    remain separate namespaces and never grant execution or data authority by
+    themselves.
+    """
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    agent_session_id: str = Field(min_length=1, max_length=180)
+    research_run_id: str = Field(min_length=1, max_length=180)
+    run_invocation_id: str = Field(min_length=1, max_length=180)
+
+
 @dataclass(frozen=True)
 class DellReferenceVerticalDependencies:
     foundation_binder: FoundationBinder
@@ -70,104 +105,6 @@ class DellReferenceVerticalDependencies:
     specialist_agent: SpecialistAgent
     counter_agent: CounterAgent
     lead_agent: LeadAgent
-
-
-class DellReferenceVerticalCompiledGraph:
-    """Narrow start/resume surface around the compiled LangGraph."""
-
-    __slots__ = ("_compiled",)
-
-    def __init__(self, compiled: Any) -> None:
-        self._compiled = compiled
-
-    @staticmethod
-    def _thread_id(config: Mapping[str, Any] | None) -> str:
-        configurable = config.get("configurable") if isinstance(config, Mapping) else None
-        thread_id = configurable.get("thread_id") if isinstance(configurable, Mapping) else None
-        if not isinstance(thread_id, str) or not thread_id.strip():
-            raise DellReferenceVerticalGraphError("thread_id_required")
-        return thread_id.strip()
-
-    @classmethod
-    def _safe_input(
-        cls,
-        value: Any,
-        config: Mapping[str, Any] | None,
-    ) -> Any:
-        thread_id = cls._thread_id(config)
-        if isinstance(value, Command):
-            if value.update is not None:
-                raise DellReferenceVerticalGraphError("command_update_not_allowed")
-            if value.goto:
-                raise DellReferenceVerticalGraphError("command_goto_not_allowed")
-            if value.graph is not None:
-                raise DellReferenceVerticalGraphError("command_graph_override_not_allowed")
-            if value.resume is None:
-                raise DellReferenceVerticalGraphError("command_resume_value_required")
-            return Command(resume=_plain_json(value.resume, label="resume_value"))
-
-        initial = _plain_mapping(value, label="initial_graph_input")
-        allowed = {
-            "run_id",
-            "case_id",
-            "research_question",
-            "research_as_of",
-            "snapshot_id",
-            "foundation_digest",
-        }
-        unexpected = sorted(set(initial).difference(allowed))
-        if unexpected:
-            raise DellReferenceVerticalGraphError(
-                f"initial_graph_input_unexpected_keys:{','.join(unexpected)}"
-            )
-        if initial.get("run_id") != thread_id:
-            raise DellReferenceVerticalGraphError("thread_id_run_id_mismatch")
-        return initial
-
-    def invoke(
-        self,
-        value: Any,
-        config: Mapping[str, Any] | None = None,
-        **kwargs: Any,
-    ) -> Any:
-        return self._compiled.invoke(self._safe_input(value, config), config, **kwargs)
-
-    def continue_from_checkpoint(
-        self,
-        config: Mapping[str, Any],
-        **kwargs: Any,
-    ) -> Any:
-        """Continue only the next persisted node without accepting new state.
-
-        This narrow path exists for recovery from a process interruption after
-        HITL approval was checkpointed but before the deterministic render node
-        completed.  It cannot be used to start a graph or mutate checkpointed
-        values.
-        """
-
-        self._thread_id(config)
-        return self._compiled.invoke(None, config, **kwargs)
-
-    async def ainvoke(
-        self,
-        value: Any,
-        config: Mapping[str, Any] | None = None,
-        **kwargs: Any,
-    ) -> Any:
-        return await self._compiled.ainvoke(
-            self._safe_input(value, config), config, **kwargs
-        )
-
-    def get_state(self, config: Mapping[str, Any], **kwargs: Any) -> Any:
-        self._thread_id(config)
-        return self._compiled.get_state(config, **kwargs)
-
-    def get_state_history(self, config: Mapping[str, Any], **kwargs: Any) -> Any:
-        self._thread_id(config)
-        return self._compiled.get_state_history(config, **kwargs)
-
-    def get_graph(self, **kwargs: Any) -> Any:
-        return self._compiled.get_graph(**kwargs)
 
 
 def _plain_json(value: Any, *, label: str) -> Any:
@@ -1164,17 +1101,11 @@ def _runtime_summary(state: Mapping[str, Any]) -> PlainDict:
     }
 
 
-def build_dell_reference_vertical_graph(
+def build_dell_reference_vertical_state_graph(
     *,
     dependencies: DellReferenceVerticalDependencies,
-    checkpointer: Any,
-) -> DellReferenceVerticalCompiledGraph:
-    """Build the bounded dynamic DELL graph around injected dependencies."""
-
-    if checkpointer is None:
-        raise DellReferenceVerticalGraphError(
-            "checkpointer_required_for_interrupt_resume"
-        )
+) -> StateGraph:
+    """Build an uncompiled graph so Agent Server can own persistence."""
     planner_tool_capabilities = _validate_model(
         PlannerToolCapabilityProjection,
         dependencies.planner_tool_capabilities,
@@ -1902,7 +1833,11 @@ def build_dell_reference_vertical_graph(
         report["report_digest"] = canonical_sha256(report)
         return {"final_report": report, "phase": "completed"}
 
-    graph = StateGraph(DellReferenceVerticalState)
+    graph = StateGraph(
+        DellReferenceVerticalState,
+        context_schema=DellAgentServerRunContext,
+        input_schema=DellReferenceVerticalGraphInput,
+    )
     graph.add_node("bind_case", bind_case)
     graph.add_node("plan", plan)
     graph.add_node("validate_plan", validate_plan)
@@ -1958,18 +1893,14 @@ def build_dell_reference_vertical_graph(
     )
     graph.add_edge("render", END)
 
-    return DellReferenceVerticalCompiledGraph(
-        graph.compile(
-            checkpointer=checkpointer,
-            name="dell_reference_vertical_graph",
-        )
-    )
+    return graph
 
 
 __all__ = [
-    "DellReferenceVerticalCompiledGraph",
     "DellReferenceVerticalDependencies",
     "DellReferenceVerticalGraphError",
+    "DellReferenceVerticalGraphInput",
+    "DellAgentServerRunContext",
     "GRAPH_CONTRACT_VERSION",
-    "build_dell_reference_vertical_graph",
+    "build_dell_reference_vertical_state_graph",
 ]

@@ -37,11 +37,12 @@ qualification = [
   "psycopg[binary]==3.3.4",
 ]
 agent-runtime = [
+  "langchain-core==1.6.1",
   "langchain-deepseek==1.1.0",
   "langchain-text-splitters==1.1.2",
   "langgraph==1.2.11",
-  "langgraph-checkpoint-postgres==3.1.2",
-  "langgraph-checkpoint-sqlite==3.1.1",
+  "langgraph-sdk==0.4.4",
+  "langsmith==0.12.1",
   "mcp==2.1.1",
   "psycopg[binary,pool]==3.3.4",
 ]
@@ -59,6 +60,9 @@ external-search = [
 [dependency-groups]
 dev = [
   "httpx2>=2.12,<3",
+  # Hermetic legacy/replay tests only. Dell product serving is Agent Server.
+  "langgraph-checkpoint-postgres==3.1.2",
+  "langgraph-checkpoint-sqlite==3.1.1",
   "psutil>=5.9,<8",
   "pytest>=9.0.3,<10",
 ]

@@ -303,7 +303,7 @@ def test_finance_lane_rejects_resolved_fact_from_another_period(
     )
 
 
-def test_exact_route_reviewed_first_bypasses_unscoped_reviewed_search() -> None:
+def test_exact_local_route_never_suppresses_reviewed_first_search() -> None:
     request = _task(
         "evidence",
         evidence_request={
@@ -322,6 +322,7 @@ def test_exact_route_reviewed_first_bypasses_unscoped_reviewed_search() -> None:
     assert result["status"] == "success"
     assert _tool_names(result) == [
         GET_RESEARCH_METHOD_TOOL,
+        SEARCH_REVIEWED_EVIDENCE_TOOL,
         SEARCH_LOCAL_KNOWLEDGE_TOOL,
     ]
     gap = next(item for item in result["items"] if item.get("gap_code"))

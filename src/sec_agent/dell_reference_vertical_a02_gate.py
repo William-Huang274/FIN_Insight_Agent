@@ -46,6 +46,9 @@ _AUTHORITY = {
     "resume_reject_authorized": False,
 }
 _LAUNCHER_REF = "scripts/research/run_dell_reference_vertical_structured_a02.ps1"
+_LEGACY_RUNTIME_RETIREMENT_CODE = (
+    "dell_legacy_runtime_retired_agent_server_langsmith_required"
+)
 _SHA256 = re.compile(r"^[0-9a-f]{64}$")
 
 
@@ -76,7 +79,15 @@ def validate_dell_reference_vertical_a02_paid_start_scope_decision(
         raise ValueError("dell_a02_launcher_binding_invalid")
     launcher_path = (root.resolve() / _LAUNCHER_REF).resolve()
     launcher_path.relative_to(root.resolve())
-    if not launcher_path.is_file() or _sha256(launcher_path) != launcher_sha:
+    if not launcher_path.is_file():
+        raise ValueError("dell_a02_launcher_binding_drift")
+    try:
+        launcher_text = launcher_path.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError) as exc:
+        raise ValueError("dell_a02_launcher_binding_drift") from exc
+    if _LEGACY_RUNTIME_RETIREMENT_CODE in launcher_text:
+        raise ValueError("dell_a02_launcher_retired")
+    if _sha256(launcher_path) != launcher_sha:
         raise ValueError("dell_a02_launcher_binding_drift")
 
     known_boundary = str(decision.get("known_boundary") or "")

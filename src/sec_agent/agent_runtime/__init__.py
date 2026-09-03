@@ -12,11 +12,11 @@ from typing import Any
 
 
 _GRAPH_EXPORTS = {
-    "DellReferenceVerticalCompiledGraph",
     "DellReferenceVerticalDependencies",
     "DellReferenceVerticalGraphError",
+    "DellReferenceVerticalGraphInput",
     "GRAPH_CONTRACT_VERSION",
-    "build_dell_reference_vertical_graph",
+    "build_dell_reference_vertical_state_graph",
 }
 
 
@@ -28,9 +28,9 @@ def __getattr__(name: str) -> Any:
     return value
 
 __all__ = [
-    "DellReferenceVerticalCompiledGraph",
     "DellReferenceVerticalDependencies",
     "DellReferenceVerticalGraphError",
+    "DellReferenceVerticalGraphInput",
     "GRAPH_CONTRACT_VERSION",
-    "build_dell_reference_vertical_graph",
+    "build_dell_reference_vertical_state_graph",
 ]

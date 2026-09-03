@@ -1,9 +1,11 @@
-"""Deployment boundary for the DELL reference-vertical runtime.
+"""Legacy local-checkpointer compatibility for hermetic tests only.
 
-The current DELL graph can be exercised with SQLite during local qualification,
-but a product pilot must persist LangGraph checkpoints in PostgreSQL.  This
-module keeps that choice outside graph/domain code and deliberately exposes no
-queue, scheduler, retry engine or application run registry.
+This module has no current Dell product execution authority.  The sole product
+runtime is LangGraph Agent Server with server-owned PostgreSQL/Redis persistence
+and mandatory LangSmith tracing.  The old foundation types remain temporarily
+so historical Workbench metadata can fail closed and tests can exercise graph
+semantics; no source, script, or app may compose ``open_runtime_checkpointer``
+as a serving, qualification, or fallback path.
 """
 
 from __future__ import annotations
@@ -153,11 +155,10 @@ def open_runtime_checkpointer(
     *,
     initialize_postgres_schema: bool = False,
 ) -> Iterator[Any]:
-    """Open the selected official LangGraph checkpointer lazily.
+    """Open a legacy local checkpointer for hermetic tests only.
 
-    ``setup()`` is explicit because schema migration is a deployment action,
-    not something every web request should perform.  SQLite remains an
-    explicitly named qualification profile only.
+    This function conveys no product runtime authority.  Product start/resume
+    must go through Agent Server and the official SDK client.
     """
 
     if foundation.profile == "disabled":

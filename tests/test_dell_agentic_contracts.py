@@ -5,7 +5,7 @@ import json
 from typing import Any, TypeVar
 
 import pytest
-from pydantic import ValidationError
+from pydantic import TypeAdapter, ValidationError
 
 from sec_agent.agent_runtime.dell_agentic_contracts import (
     DELL_COVERAGE_OBLIGATION_IDS,
@@ -28,6 +28,7 @@ from sec_agent.agent_runtime.dell_agentic_contracts import (
     ModelNodeAuthorityMatrix,
     ModelVisibleContextManifest,
     ModifyTaskAction,
+    ProviderEvidenceIntent,
     ResearchPlan,
     ResearchTaskSpec,
     ReviewedEvidenceIntent,
@@ -44,6 +45,7 @@ from sec_agent.agent_runtime.dell_agentic_contracts import (
     canonical_digest,
     coverage_state_snapshot,
     issue_runtime_scope_authorization_record,
+    parse_provider_evidence_intent_json,
     payload_without,
     prepare_provider_envelope_for_persistence,
     research_plan_graph_digest,
@@ -774,6 +776,7 @@ def test_sealed_scope_and_provider_intents_make_lane_mixing_unrepresentable() ->
     assert scope.sealed is True and scope.provider_visible is False
 
     reviewed_values = {
+        "intent_kind": "reviewed_evidence",
         "query": "Dell latest AI server orders",
         "purpose": "Find reviewed issuer evidence for the latest quarter",
         "entity_refs": ("issuer:DELL",),
@@ -786,6 +789,7 @@ def test_sealed_scope_and_provider_intents_make_lane_mixing_unrepresentable() ->
         ReviewedEvidenceIntent(**reviewed_values, route_ids=("route:sec",))
 
     local_values = {
+        "intent_kind": "local_evidence",
         "query": "Dell backlog and orders",
         "purpose": "Retrieve bounded local Candidate passages",
         "entity_refs": ("issuer:DELL",),
@@ -798,6 +802,7 @@ def test_sealed_scope_and_provider_intents_make_lane_mixing_unrepresentable() ->
         LocalEvidenceIntent(**local_values, domain_allowlist=("sec.gov",))
 
     external_values = {
+        "intent_kind": "external_source",
         "query": "GB300 production availability",
         "purpose": "Discover current external supplier evidence",
         "entity_refs": ("issuer:NVDA",),
@@ -818,6 +823,77 @@ def test_sealed_scope_and_provider_intents_make_lane_mixing_unrepresentable() ->
         assert "action_attempt_id" not in schema
         assert "physical_route_selectors" not in schema
         assert "paid_model_transport_authorized" not in schema
+
+
+def test_provider_intent_schema_and_json_transport_agree_on_discriminator_and_arrays() -> None:
+    models = (
+        ReviewedEvidenceIntent,
+        LocalEvidenceIntent,
+        ExternalSourceIntent,
+    )
+    for model in models:
+        assert "intent_kind" in model.model_json_schema()["required"]
+
+    payloads = (
+        {
+            "intent_kind": "reviewed_evidence",
+            "query": "Dell latest AI server orders",
+            "purpose": "Find reviewed issuer evidence for the latest quarter",
+            "entity_refs": ["DELL"],
+            "period_intents": ["FY2027-Q2"],
+            "expected_information_gain": "Confirm reported demand quality",
+            "topic_refs": ["demand_volume_quality"],
+            "evidence_role_refs": [],
+            "minimum_authority_tier": "reviewed",
+            "limit": 8,
+        },
+        {
+            "intent_kind": "local_evidence",
+            "query": "Dell backlog and orders",
+            "purpose": "Retrieve bounded local candidate passages",
+            "entity_refs": ["DELL"],
+            "period_intents": ["FY2027-Q2"],
+            "expected_information_gain": "Locate candidate primary statements",
+            "semantic_source_family_refs": ["F2_DELL_IR_EARNINGS"],
+            "source_role_intents": [
+                "issuer_narrative_and_company_defined_metrics"
+            ],
+            "content_surface_intents": ["prose", "table"],
+            "limit": 8,
+        },
+        {
+            "intent_kind": "external_source",
+            "query": "GB300 production availability",
+            "purpose": "Discover current external supplier evidence",
+            "entity_refs": ["NVIDIA"],
+            "period_intents": ["current"],
+            "expected_information_gain": "Establish architecture ramp timing",
+            "semantic_source_family_refs": ["F6_COMPUTE_PLATFORM_SUPPLIERS"],
+            "domain_allowlist": ["nvidia.com"],
+            "limit": 8,
+        },
+    )
+    adapter = TypeAdapter(ProviderEvidenceIntent)
+    expected_types = (
+        ReviewedEvidenceIntent,
+        LocalEvidenceIntent,
+        ExternalSourceIntent,
+    )
+    for payload, expected_type in zip(payloads, expected_types, strict=True):
+        from_mapping = adapter.validate_python(payload)
+        from_json = parse_provider_evidence_intent_json(
+            json.dumps(payload, ensure_ascii=False)
+        )
+        assert isinstance(from_mapping, expected_type)
+        assert isinstance(from_json, expected_type)
+        assert parse_provider_evidence_intent_json(
+            from_json.model_dump_json()
+        ) == from_json
+
+    missing_tag = dict(payloads[0])
+    missing_tag.pop("intent_kind")
+    with pytest.raises(ValidationError, match="union_tag_not_found"):
+        parse_provider_evidence_intent_json(json.dumps(missing_tag))
 
 
 def test_tool_failure_empty_and_scope_exhausted_never_become_public_gap() -> None:

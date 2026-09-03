@@ -32,7 +32,7 @@ from sec_agent.agent_runtime.dell_reference_vertical_graph import (
     _validate_cumulative_branch_external_budget,
     _validate_specialist_round_authority,
     _validate_workpaper,
-    build_dell_reference_vertical_graph,
+    build_dell_reference_vertical_state_graph,
 )
 
 
@@ -42,6 +42,75 @@ RESEARCH_AS_OF = "2026-09-02T04:35:00+08:00"
 SNAPSHOT_ID = "dell-e1-snapshot-20260902"
 FOUNDATION_DIGEST = canonical_sha256({"foundation": "v1"})
 QUESTION = "DELL AI server demand conversion, economics, risks, and what would change?"
+
+
+class _DellReferenceVerticalTestGraph:
+    """Test-only local adapter; production must use Agent Server and its SDK."""
+
+    def __init__(self, compiled: Any) -> None:
+        self._compiled = compiled
+
+    @staticmethod
+    def _thread_id(config: Mapping[str, Any] | None) -> str:
+        configurable = config.get("configurable") if isinstance(config, Mapping) else None
+        thread_id = configurable.get("thread_id") if isinstance(configurable, Mapping) else None
+        if not isinstance(thread_id, str) or not thread_id.strip():
+            raise DellReferenceVerticalGraphError("thread_id_required")
+        return thread_id.strip()
+
+    @classmethod
+    def _safe_input(
+        cls,
+        value: Any,
+        config: Mapping[str, Any] | None,
+    ) -> Any:
+        thread_id = cls._thread_id(config)
+        if isinstance(value, Command):
+            if value.update is not None:
+                raise DellReferenceVerticalGraphError("command_update_not_allowed")
+            if value.goto:
+                raise DellReferenceVerticalGraphError("command_goto_not_allowed")
+            if value.graph is not None:
+                raise DellReferenceVerticalGraphError("command_graph_override_not_allowed")
+            if value.resume is None:
+                raise DellReferenceVerticalGraphError("command_resume_value_required")
+            return value
+        if not isinstance(value, Mapping):
+            raise DellReferenceVerticalGraphError("initial_graph_input_must_be_mapping")
+        initial = dict(value)
+        if initial.get("run_id") != thread_id:
+            raise DellReferenceVerticalGraphError("thread_id_run_id_mismatch")
+        return initial
+
+    def invoke(
+        self,
+        value: Any,
+        config: Mapping[str, Any] | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        return self._compiled.invoke(self._safe_input(value, config), config, **kwargs)
+
+    def get_state(self, config: Mapping[str, Any], **kwargs: Any) -> Any:
+        self._thread_id(config)
+        return self._compiled.get_state(config, **kwargs)
+
+
+def _build_dell_reference_vertical_test_graph(
+    *,
+    dependencies: DellReferenceVerticalDependencies,
+    checkpointer: Any,
+) -> _DellReferenceVerticalTestGraph:
+    if checkpointer is None:
+        raise DellReferenceVerticalGraphError(
+            "checkpointer_required_for_interrupt_resume"
+        )
+    builder = build_dell_reference_vertical_state_graph(dependencies=dependencies)
+    return _DellReferenceVerticalTestGraph(
+        builder.compile(
+            checkpointer=checkpointer,
+            name="dell_reference_vertical_test_graph",
+        )
+    )
 
 
 def _planner_tool_capabilities() -> dict[str, Any]:
@@ -512,7 +581,7 @@ def _config(run_id: str = RUN_ID) -> dict[str, dict[str, str]]:
 
 def test_model_output_with_failure_receipt_is_rejected() -> None:
     runtime = FakeRuntime(planner_failure_receipt=True)
-    graph = build_dell_reference_vertical_graph(
+    graph = _build_dell_reference_vertical_test_graph(
         dependencies=runtime.dependencies(),
         checkpointer=InMemorySaver(),
     )
@@ -624,7 +693,7 @@ def test_foundation_owns_specialist_round_ceiling_and_third_round_is_blocked() -
 
 
 def _build(runtime: FakeRuntime):
-    return build_dell_reference_vertical_graph(
+    return _build_dell_reference_vertical_test_graph(
         dependencies=runtime.dependencies(),
         checkpointer=InMemorySaver(),
     )
@@ -883,13 +952,13 @@ def test_join_rejects_duplicate_missing_and_cross_branch_lane_results() -> None:
         )
 
 
-def test_product_graph_requires_checkpointer_and_exact_thread_binding() -> None:
+def test_local_test_wrapper_requires_checkpointer_and_exact_thread_binding() -> None:
     runtime = FakeRuntime()
     with pytest.raises(
         DellReferenceVerticalGraphError,
         match="checkpointer_required",
     ):
-        build_dell_reference_vertical_graph(
+        _build_dell_reference_vertical_test_graph(
             dependencies=runtime.dependencies(),
             checkpointer=None,
         )
@@ -899,6 +968,33 @@ def test_product_graph_requires_checkpointer_and_exact_thread_binding() -> None:
         graph.invoke(_start_input(), _config("another-thread"))
     with pytest.raises(DellReferenceVerticalGraphError, match="command_update_not_allowed"):
         graph.invoke(Command(update={"phase": "completed"}), _config())
+
+
+def test_agent_server_builder_has_strict_public_input_and_no_app_persistence() -> None:
+    runtime = FakeRuntime()
+    builder = build_dell_reference_vertical_state_graph(
+        dependencies=runtime.dependencies()
+    )
+    graph = builder.compile(name="dell_reference_vertical_agent_server_test")
+
+    assert graph.checkpointer is None
+    assert graph.store is None
+    schema = graph.input_schema.model_json_schema()
+    assert schema["additionalProperties"] is False
+    assert set(schema["required"]) == {
+        "run_id",
+        "case_id",
+        "research_question",
+        "research_as_of",
+        "snapshot_id",
+        "foundation_digest",
+    }
+    assert not {
+        "phase",
+        "planner_output",
+        "human_review",
+        "final_report",
+    }.intersection(schema["properties"])
 
 
 def test_tool_result_identity_drift_fails_before_specialist() -> None:

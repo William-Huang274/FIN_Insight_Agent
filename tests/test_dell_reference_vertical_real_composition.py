@@ -28,7 +28,6 @@ from sec_agent.agent_runtime.deepseek_structured_agents import (
 )
 from sec_agent.agent_runtime.dell_reference_vertical_graph import (
     DellReferenceVerticalDependencies,
-    build_dell_reference_vertical_graph,
 )
 from sec_agent.agent_runtime.dell_reference_vertical_mcp_tools import (
     DellMCPToolLaneAdapter,
@@ -63,6 +62,9 @@ from sec_agent.research_foundation.mcp_server import (
     build_research_data_mcp_server,
 )
 from sec_agent.runtime_bridge.paths import resolve_runtime_paths
+from test_dell_reference_vertical_graph import (
+    _build_dell_reference_vertical_test_graph,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -561,7 +563,7 @@ def test_real_nine_branch_zero_paid_call_composition_and_sqlite_resume(
             lead_agent=agents.lead,
         )
         with open_runtime_checkpointer(runtime) as checkpointer:
-            graph = build_dell_reference_vertical_graph(
+            graph = _build_dell_reference_vertical_test_graph(
                 dependencies=dependencies,
                 checkpointer=checkpointer,
             )
@@ -678,7 +680,7 @@ def test_real_nine_branch_zero_paid_call_composition_and_sqlite_resume(
             lead_agent=agents.lead,
         )
         with open_runtime_checkpointer(runtime) as checkpointer:
-            resumed_graph = build_dell_reference_vertical_graph(
+            resumed_graph = _build_dell_reference_vertical_test_graph(
                 dependencies=resumed_dependencies,
                 checkpointer=checkpointer,
             )

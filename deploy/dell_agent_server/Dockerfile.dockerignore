@@ -1,0 +1,8 @@
+# Deny the whole repository build context, then admit only the package files
+# consumed by deploy/dell_agent_server/Dockerfile. Dockerfile-specific ignore
+# rules take precedence over the broader repository .dockerignore.
+**
+!pyproject.toml
+!README.md
+!src/
+!src/**

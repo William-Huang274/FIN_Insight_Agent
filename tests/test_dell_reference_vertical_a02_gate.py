@@ -10,7 +10,6 @@ from sec_agent.agent_runtime.deepseek_structured_agents import (
     load_deepseek_structured_agent_config,
 )
 from sec_agent.dell_reference_vertical_a02_gate import (
-    DELL_REFERENCE_VERTICAL_A02_RUN_SCOPE,
     validate_dell_reference_vertical_a02_paid_start_scope_decision,
 )
 from sec_agent.project_os_preflight import (
@@ -72,27 +71,21 @@ def test_a02_decision_rejects_any_render_authority_before_paid_start() -> None:
         )
 
 
-def test_historical_a02_decision_remains_structurally_valid_and_non_resumable() -> None:
+def test_historical_a02_decision_cannot_reactivate_the_retired_launcher() -> None:
     decision = _decision()
-    direct = validate_dell_reference_vertical_a02_paid_start_scope_decision(
-        root=ROOT,
-        decision=decision,
-    )
-
-    assert direct == _validate_fixed_pack_decision(root=ROOT, decision=decision)
-    assert direct["run_scope_id"] == DELL_REFERENCE_VERTICAL_A02_RUN_SCOPE
-    assert direct["evidence_mode"].startswith("reviewed_evidence_plus_")
-    assert direct["start_to_hitl_only"] is True
-    assert direct["resume_authorized"] is False
-    assert direct["render_authorized"] is False
-    assert direct["publication_authorized"] is False
-    assert direct["formal_qualification_authorized"] is False
+    with pytest.raises(ValueError, match="dell_a02_launcher_retired"):
+        validate_dell_reference_vertical_a02_paid_start_scope_decision(
+            root=ROOT,
+            decision=decision,
+        )
+    with pytest.raises(ValueError, match="dell_a02_launcher_retired"):
+        _validate_fixed_pack_decision(root=ROOT, decision=decision)
 
 
 def test_consumed_a02_authority_fails_current_project_os_preflight_closed() -> None:
     with pytest.raises(
         ValueError,
-        match="project_os_dell_reference_vertical_a02_scope_allowance_missing",
+        match="dell_a02_launcher_retired",
     ):
         build_preflight(
             root=ROOT,
@@ -102,19 +95,11 @@ def test_consumed_a02_authority_fails_current_project_os_preflight_closed() -> N
         )
 
 
-def test_a02_launcher_binds_decision_and_final_external_pack_without_hash_cycle() -> None:
+def test_a02_launcher_is_a_side_effect_free_typed_retirement_tombstone() -> None:
     text = LAUNCHER_PATH.read_text(encoding="utf-8")
 
-    assert DECISION_REF in text.replace("' +\n    '", "")
-    assert "Get-FileHash -Algorithm SHA256" in text
-    assert "$projectOsPreflight.decision_sha256" in text
-    assert "--project-os-decision-source-path" in text
-    assert "--project-os-decision-source-sha256" in text
-    assert "dell_external_exact_url_zero_model_20260902_r12\\manifest.json" in text
-    assert (
-        "db7eae9aaa8108faadbe7ff07404dd25414e0191b7f62af0c7a42b85a0938b94"
-        in text
-    )
+    assert "throw 'dell_legacy_runtime_retired_agent_server_langsmith_required'" in text
     assert "[switch]$PreflightOnly" in text
-    assert "$runArguments += '--preflight-only'" in text
-    assert "--run-authority-source" not in text
+    assert "Get-FileHash" not in text
+    assert "DEEPSEEK_API_KEY" not in text
+    assert "runArguments" not in text

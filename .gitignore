@@ -96,6 +96,9 @@ docs/interview/
 **/.codex_runtime/
 /output/
 
+# LangGraph dev-only in-memory persistence; product state belongs to Agent Server.
+/.langgraph_api/
+
 # Capture-first provider diagnostics: preserve raw responses locally for audit,
 # but commit only redacted assessments, digests, and bounded worklogs.
 /artifacts/runtime/

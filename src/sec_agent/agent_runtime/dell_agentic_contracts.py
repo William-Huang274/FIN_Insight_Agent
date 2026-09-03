@@ -23,11 +23,11 @@ import html
 import json
 from datetime import date
 import re
-from typing import Any, Iterable, Literal, Mapping, Protocol, TypeVar
+from typing import Annotated, Any, Iterable, Literal, Mapping, Protocol, TypeVar
 from urllib.parse import unquote
 import unicodedata
 
-from pydantic import BaseModel, Field, field_validator, model_validator
+from pydantic import BaseModel, Field, TypeAdapter, field_validator, model_validator
 
 from sec_agent.canonical_runtime.contracts_v1_2 import (
     StrictFrozenModel,
@@ -1637,6 +1637,13 @@ class _ProviderIntent(_StrictFrozenModel):
     expected_information_gain: str = Field(min_length=8, max_length=1_000)
     limit: int = Field(default=8, ge=1, le=32)
 
+    @field_validator("entity_refs", "period_intents", mode="before")
+    @classmethod
+    def accept_json_arrays_for_shared_refs(cls, value: Any) -> Any:
+        """Normalize standard JSON arrays before strict domain validation."""
+
+        return tuple(value) if isinstance(value, list) else value
+
     @model_validator(mode="after")
     def validate_shared_intent(self) -> "_ProviderIntent":
         _unique(self.entity_refs, "provider_intent_entity_ref_duplicate")
@@ -1647,12 +1654,17 @@ class _ProviderIntent(_StrictFrozenModel):
 class ReviewedEvidenceIntent(_ProviderIntent):
     """Semantic query for the Reviewed Evidence index; no local selectors."""
 
-    intent_kind: Literal["reviewed_evidence"] = "reviewed_evidence"
+    intent_kind: Literal["reviewed_evidence"]
     topic_refs: tuple[str, ...] = Field(min_length=1, max_length=32)
     evidence_role_refs: tuple[str, ...] = Field(default=(), max_length=16)
     minimum_authority_tier: Literal["reviewed", "primary", "any_reviewed"] = (
         "reviewed"
     )
+
+    @field_validator("topic_refs", "evidence_role_refs", mode="before")
+    @classmethod
+    def accept_json_arrays_for_reviewed_refs(cls, value: Any) -> Any:
+        return tuple(value) if isinstance(value, list) else value
 
     @model_validator(mode="after")
     def validate_reviewed_intent(self) -> "ReviewedEvidenceIntent":
@@ -1664,12 +1676,22 @@ class ReviewedEvidenceIntent(_ProviderIntent):
 class LocalEvidenceIntent(_ProviderIntent):
     """Semantic local Candidate intent; runtime compiles all physical selectors."""
 
-    intent_kind: Literal["local_evidence"] = "local_evidence"
+    intent_kind: Literal["local_evidence"]
     semantic_source_family_refs: tuple[str, ...] = Field(min_length=1, max_length=32)
     source_role_intents: tuple[str, ...] = Field(default=(), max_length=16)
     content_surface_intents: tuple[
         Literal["prose", "table", "image", "footnote"], ...
     ] = Field(default=("prose", "table"), max_length=4)
+
+    @field_validator(
+        "semantic_source_family_refs",
+        "source_role_intents",
+        "content_surface_intents",
+        mode="before",
+    )
+    @classmethod
+    def accept_json_arrays_for_local_refs(cls, value: Any) -> Any:
+        return tuple(value) if isinstance(value, list) else value
 
     @model_validator(mode="after")
     def validate_local_intent(self) -> "LocalEvidenceIntent":
@@ -1685,11 +1707,16 @@ class LocalEvidenceIntent(_ProviderIntent):
 class ExternalSourceIntent(_ProviderIntent):
     """External discovery intent; local routes, lanes, and roles are impossible."""
 
-    intent_kind: Literal["external_source"] = "external_source"
+    intent_kind: Literal["external_source"]
     semantic_source_family_refs: tuple[str, ...] = Field(min_length=1, max_length=32)
     domain_allowlist: tuple[str, ...] = Field(default=(), max_length=32)
     published_not_before: str | None = Field(default=None, min_length=10, max_length=10)
     published_not_after: str | None = Field(default=None, min_length=10, max_length=10)
+
+    @field_validator("semantic_source_family_refs", "domain_allowlist", mode="before")
+    @classmethod
+    def accept_json_arrays_for_external_refs(cls, value: Any) -> Any:
+        return tuple(value) if isinstance(value, list) else value
 
     @model_validator(mode="after")
     def validate_external_intent(self) -> "ExternalSourceIntent":
@@ -1711,6 +1738,32 @@ class ExternalSourceIntent(_ProviderIntent):
         if start is not None and end is not None and start > end:
             raise ValueError("external_date_range_invalid")
         return self
+
+
+# Provider-facing evidence requests are semantic and lane-discriminated.  The
+# model never receives the physical issuer/route/lane selectors produced by the
+# host-owned SourceFamilyCompiler.
+ProviderEvidenceIntent = Annotated[
+    ReviewedEvidenceIntent | LocalEvidenceIntent | ExternalSourceIntent,
+    Field(discriminator="intent_kind"),
+]
+
+_PROVIDER_EVIDENCE_INTENT_ADAPTER = TypeAdapter(ProviderEvidenceIntent)
+
+
+def parse_provider_evidence_intent_json(
+    raw_json: str | bytes | bytearray,
+) -> ProviderEvidenceIntent:
+    """Validate the provider transport at its native JSON boundary.
+
+    Provider schemas expose arrays, while the immutable domain objects retain
+    tuples.  Keeping one raw-JSON entry point prevents callers from accidentally
+    applying strict Python tuple rules to a valid provider JSON response.
+    """
+
+    if not isinstance(raw_json, (str, bytes, bytearray)):
+        raise TypeError("provider_evidence_intent_raw_json_required")
+    return _PROVIDER_EVIDENCE_INTENT_ADAPTER.validate_json(raw_json)
 
 
 class AvailableNextAction(_StrictFrozenModel):
@@ -3130,6 +3183,7 @@ __all__ = [
     "ResearchPlan",
     "ResearchTaskSpec",
     "RejectedAlternative",
+    "ProviderEvidenceIntent",
     "ReviewedEvidenceIntent",
     "RouteReplacement",
     "RuntimePolicySnapshot",
@@ -3150,6 +3204,7 @@ __all__ = [
     "coverage_state_snapshot",
     "issue_runtime_scope_authorization_record",
     "payload_without",
+    "parse_provider_evidence_intent_json",
     "prepare_provider_envelope_for_persistence",
     "research_plan_graph_digest",
     "research_objective_digest",

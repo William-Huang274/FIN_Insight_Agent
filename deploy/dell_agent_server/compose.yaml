@@ -1,0 +1,58 @@
+# LOCAL DEMO ONLY: Agent Server currently uses noop authentication.
+# The API is therefore loopback-only. PostgreSQL and Redis publish no host ports.
+name: finsight-dell-agent-server-local
+
+services:
+  langgraph-redis:
+    image: redis:6
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 1s
+      retries: 5
+
+  langgraph-postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD:?set FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD in the repository .env}
+    command:
+      - postgres
+      - -c
+      - shared_preload_libraries=vector
+    volumes:
+      - langgraph-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      start_period: 10s
+      timeout: 1s
+      retries: 5
+      interval: 60s
+
+  langgraph-api:
+    build:
+      context: ../..
+      dockerfile: deploy/dell_agent_server/Dockerfile
+    ports:
+      - "127.0.0.1:8123:8000"
+    depends_on:
+      langgraph-redis:
+        condition: service_healthy
+      langgraph-postgres:
+        condition: service_healthy
+    environment:
+      REDIS_URI: redis://langgraph-redis:6379
+      POSTGRES_URI: postgres://postgres:${FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD:?set FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD in the repository .env}@langgraph-postgres:5432/postgres?sslmode=disable
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:?set LANGSMITH_API_KEY in the repository .env}
+      LANGSMITH_TRACING: "true"
+      LANGSMITH_PROJECT: fin-insight-dell-reference-vertical
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:?set DEEPSEEK_API_KEY in the repository .env}
+    healthcheck:
+      test: ["CMD", "python", "/api/healthcheck.py"]
+      interval: 60s
+      start_period: 10s
+
+volumes:
+  langgraph-data:
+    driver: local

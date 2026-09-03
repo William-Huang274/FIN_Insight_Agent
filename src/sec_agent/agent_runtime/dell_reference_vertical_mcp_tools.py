@@ -500,21 +500,9 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                 )
                 continue
 
-            # Reviewed Evidence v1 has no canonical route identity.  An exact-route
-            # request therefore cannot safely use reviewed-first: a nearby reviewed
-            # hit would suppress the scoped local lookup.  Keep the request on the
-            # structured metadata-prefilter path and fail closed on an exact miss.
-            if request.route_ids:
-                self._local(
-                    lane_task,
-                    {**common, **local_scope},
-                    receipt_prefix=[],
-                    items=items,
-                    states=states,
-                    calls=calls,
-                )
-                continue
-
+            # Reviewed Evidence and local Candidate retrieval are independent
+            # authority lanes.  Physical local selectors must never suppress the
+            # reviewed search; they are passed only to the local reader below.
             search = self._call(SEARCH_REVIEWED_EVIDENCE_TOOL, common)
             calls.append(search)
             if search.error or search.content is None:

@@ -860,11 +860,12 @@ dependencies = [
 
 [package.optional-dependencies]
 agent-runtime = [
+    { name = "langchain-core" },
     { name = "langchain-deepseek" },
     { name = "langchain-text-splitters" },
     { name = "langgraph" },
-    { name = "langgraph-checkpoint-postgres" },
-    { name = "langgraph-checkpoint-sqlite" },
+    { name = "langgraph-sdk" },
+    { name = "langsmith" },
     { name = "mcp" },
     { name = "psycopg", extra = ["binary", "pool"] },
 ]
@@ -891,6 +892,8 @@ qualification = [
 [package.dev-dependencies]
 dev = [
     { name = "httpx2" },
+    { name = "langgraph-checkpoint-postgres" },
+    { name = "langgraph-checkpoint-sqlite" },
     { name = "psutil" },
     { name = "pytest" },
 ]
@@ -911,11 +914,12 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.0.0" },
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "filelock", marker = "extra == 'control-plane'", specifier = "==3.32.4" },
+    { name = "langchain-core", marker = "extra == 'agent-runtime'", specifier = "==1.6.1" },
     { name = "langchain-deepseek", marker = "extra == 'agent-runtime'", specifier = "==1.1.0" },
     { name = "langchain-text-splitters", marker = "extra == 'agent-runtime'", specifier = "==1.1.2" },
     { name = "langgraph", marker = "extra == 'agent-runtime'", specifier = "==1.2.11" },
-    { name = "langgraph-checkpoint-postgres", marker = "extra == 'agent-runtime'", specifier = "==3.1.2" },
-    { name = "langgraph-checkpoint-sqlite", marker = "extra == 'agent-runtime'", specifier = "==3.1.1" },
+    { name = "langgraph-sdk", marker = "extra == 'agent-runtime'", specifier = "==0.4.4" },
+    { name = "langsmith", marker = "extra == 'agent-runtime'", specifier = "==0.12.1" },
     { name = "lxml", specifier = ">=6.1.1" },
     { name = "mcp", marker = "extra == 'agent-runtime'", specifier = "==2.1.1" },
     { name = "numpy", specifier = ">=1.26,<3" },
@@ -940,6 +944,8 @@ provides-extras = ["control-plane", "qualification", "agent-runtime", "complex-p
 [package.metadata.requires-dev]
 dev = [
     { name = "httpx2", specifier = ">=2.12,<3" },
+    { name = "langgraph-checkpoint-postgres", specifier = "==3.1.2" },
+    { name = "langgraph-checkpoint-sqlite", specifier = "==3.1.1" },
     { name = "psutil", specifier = ">=5.9,<8" },
     { name = "pytest", specifier = ">=9.0.3,<10" },
 ]
@@ -1725,7 +1731,7 @@ wheels = [
 
 [[package]]
 name = "langsmith"
-version = "0.12.0"
+version = "0.12.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "anyio" },
@@ -1743,9 +1749,9 @@ dependencies = [
     { name = "xxhash" },
     { name = "zstandard" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/a0/27/5128ab90b7cb8ebadf2e88e5ab016fe9905c51c56345c65ad9b21ea5d5f3/langsmith-0.12.0.tar.gz", hash = "sha256:0e569e0034e5a2a0855d37806ac57eb0a6a3f69cd2d95eed57d8188702f7ca0c", size = 4851396, upload-time = "2026-09-01T14:35:50.031Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/bf/9a/b07aa9c457265e4bd04a868afbd35b0b6b12d655459bf274f7dba0b70be5/langsmith-0.12.1.tar.gz", hash = "sha256:8916c1a8daa4282511f311f569fd5cb2f0aba8d89a4d1761620ed37b57f72c00", size = 4851951, upload-time = "2026-09-01T17:43:55.828Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/16/10af271836f40a42593b33acca2ffa76da36a45b5badc0d570a66461aab0/langsmith-0.12.0-py3-none-any.whl", hash = "sha256:b8663d41b103e8f5898880ae385c6d69d6adc0deb046007262ffdbc05782f34b", size = 758245, upload-time = "2026-09-01T14:35:47.83Z" },
+    { url = "https://files.pythonhosted.org/packages/e9/61/a61db7922016b77afe212c97744cd8b0aad54430a1d3df23fc792fb963bf/langsmith-0.12.1-py3-none-any.whl", hash = "sha256:34574d4411947f62825e8368fd172cad2505ddfb73bf5d8ed7c0e7a41e4c4879", size = 758328, upload-time = "2026-09-01T17:43:53.319Z" },
 ]
 
 [[package]]

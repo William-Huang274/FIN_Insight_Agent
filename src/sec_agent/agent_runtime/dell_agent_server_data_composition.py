@@ -47,6 +47,7 @@ from .dell_current_capability_inventory import (
     load_physical_route_catalog,
 )
 from .dell_owner_data_gate import load_dell_owner_data_gate_decision
+from .dell_reference_vertical_contracts import CaseFoundationBinding
 from .dell_reference_vertical_graph import DellReferenceVerticalDependencies
 from .dell_reference_vertical_mcp_tools import (
     DellMCPToolLaneAdapter,
@@ -56,7 +57,10 @@ from .dell_reviewed_evidence_inventory import (
     load_executable_reviewed_evidence_index_v1_2,
     load_owner_approved_reviewed_case,
 )
-from .dell_source_family_compiler import SourceFamilyCompiler
+from .dell_source_family_compiler import (
+    HostOwnedBaselineSourcePlan,
+    SourceFamilyCompiler,
+)
 from .planner_tool_capabilities import derive_planner_tool_capabilities
 
 
@@ -137,6 +141,9 @@ def _model_execution_not_authorized(*_args: Any, **_kwargs: Any) -> Any:
 @dataclass(frozen=True)
 class DellApprovedDataComposition:
     dependencies: DellReferenceVerticalDependencies
+    foundation_binding: CaseFoundationBinding
+    baseline_source_plan: HostOwnedBaselineSourcePlan
+    source_route_catalog: dict[str, Any]
     decision_digest: str
     inventory_snapshot_digest: str
     source_route_catalog_digest: str
@@ -327,6 +334,9 @@ def open_dell_approved_data_composition(
             )
             yield DellApprovedDataComposition(
                 dependencies=dependencies,
+                foundation_binding=graph_run.foundation_binding,
+                baseline_source_plan=baseline,
+                source_route_catalog=source_route_catalog,
                 decision_digest=decision.decision_digest,
                 inventory_snapshot_digest=inventory.inventory_snapshot_digest,
                 source_route_catalog_digest=source_route_catalog["catalog_digest"],

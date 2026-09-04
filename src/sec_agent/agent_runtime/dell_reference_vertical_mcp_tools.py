@@ -51,9 +51,11 @@ from .dell_reference_vertical_contracts import (
 from .dell_source_family_compiler import (
     CompiledExternalSourceTarget,
     CompiledReviewedEvidenceTarget,
+    ReviewedEvidenceRereadMetadata,
     ReviewedEvidenceIndexRowV1_2,
     SourceFamilyCompilationReceipt,
     SourceFamilyCompiler,
+    filter_reviewed_evidence_hits,
 )
 
 
@@ -796,6 +798,8 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         if not isinstance(evidence, list):
             raise DellMCPToolAdapterError("mcp_evidence_read_items_invalid")
         observed_ids: set[str] = set()
+        reread_rows: list[ReviewedEvidenceRereadMetadata] = []
+        evidence_by_id: dict[str, Mapping[str, Any]] = {}
         for row in evidence:
             if not isinstance(row, Mapping) or row.get("writer_citable") is not True:
                 raise DellMCPToolAdapterError("mcp_evidence_authority_failed")
@@ -809,15 +813,62 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                 raise DellMCPToolAdapterError(
                     "mcp_reviewed_read_identity_binding_mismatch"
                 )
+            source_locator = row.get("source_locator")
+            if not isinstance(source_locator, Mapping):
+                raise DellMCPToolAdapterError(
+                    "mcp_reviewed_read_locator_missing"
+                )
+            reread_body = {
+                "evidence_id": evidence_id,
+                "item_digest": str(row.get("evidence_item_digest") or ""),
+                "locator_digest": str(
+                    source_locator.get("locator_digest") or ""
+                ),
+                "authority_tier": indexed.authority_tier,
+                "source_reporting_period_end": row.get(
+                    "source_reporting_period_end"
+                ),
+                "reviewed_index_digest": index.index_digest,
+            }
+            reread_rows.append(
+                ReviewedEvidenceRereadMetadata(
+                    **reread_body,
+                    reread_digest=canonical_sha256(reread_body),
+                )
+            )
             observed_ids.add(evidence_id)
+            evidence_by_id[evidence_id] = row
+        filter_receipt = filter_reviewed_evidence_hits(
+            compiled_target=target,
+            reviewed_index=index,
+            search_hit_ids=tuple(ids),
+            reread_metadata=tuple(reread_rows),
+            expected_index_digest=index.index_digest,
+            filter_receipt_id=(
+                "reviewed-filter:"
+                + canonical_sha256(
+                    {
+                        "target_digest": target.target_digest,
+                        "search_hit_ids": ids,
+                        "read_receipt": read.receipt,
+                    }
+                )[:32]
+            ),
+        )
+        filter_receipt_body = filter_receipt.model_dump(mode="json")
+        for evidence_id in filter_receipt.accepted_evidence_ids:
+            row = evidence_by_id[evidence_id]
             items.append(
                 {
                     **row,
                     "result_state": "reviewed_evidence",
+                    "compiled_target_ref": target.target_ref,
+                    "source_family_ref": target.source_family_ref,
                     "mcp_receipt_chain": [
                         compilation_receipt,
                         search.receipt,
                         read.receipt,
+                        filter_receipt_body,
                     ],
                     "cell_binding_used": False,
                 }
@@ -1317,11 +1368,14 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
             "status": status, "result_states": sorted(states), "items": items,
             "failure": failure.model_dump(mode="json") if failure else None,
         }
+        request_digest = canonical_sha256(task)
         receipt = RuntimeReceipt(
-            receipt_id=f"{task.task.task_id}:{task.lane}:mcp", kind="tool",
+            receipt_id=(
+                f"{task.task.task_id}:{task.lane}:mcp:{request_digest[:24]}"
+            ), kind="tool",
             actor=f"{task.lane}_tool", status="failure" if failure else "success",
-            request_digest=canonical_sha256(task),
-            output_digest=None if failure else canonical_sha256(body),
+            request_digest=request_digest,
+            output_digest=canonical_sha256(body),
             elapsed_ms=round((perf_counter() - started) * 1_000, 3),
         )
         branch = task.task

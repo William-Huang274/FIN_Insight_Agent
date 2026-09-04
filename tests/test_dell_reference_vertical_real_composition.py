@@ -365,7 +365,7 @@ def test_owner_approved_semantic_compiler_and_mcp_real_composition() -> None:
             receipt["receipt_digest"]: receipt
             for item in evidence.items
             for receipt in item.get("mcp_receipt_chain", [])
-            if receipt.get("contract_version") == "1.2"
+            if receipt.get("compilation_receipt_id")
             and "receipt_digest" in receipt
         }
         assert {

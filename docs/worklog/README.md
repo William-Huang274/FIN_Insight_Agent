@@ -80,4 +80,5 @@
   - Dell A02 不可变 Planner 合同失败与 successor 停止门：`fin_0_1_3_s3/178_dell_reference_vertical_A02_immutable_planner_contract_failure.md`
   - Dell Agentic 完整纵切技术详设冻结与零模型实现入口：`fin_0_1_3_s3/179_dell_agentic_vertical_design_and_progressive_disclosure_foundation.md`
   - Dell Agentic Wave 0A 零模型合同与 A02 精确身份边界：`fin_0_1_3_s3/180_dell_agentic_vertical_wave0a_zero_model_contracts_and_identity_boundary.md`
-  - Dell Agent Server Wave 0B 资格测试与 LangSmith 采用裁决（Owner no-fallback；fresh r7 零模型本地控制面 bounded pass 仍为 current；r8 live FIN identity + 固定 Q1 零模型 graph 候选已实现，fresh live qualification 待执行）：`fin_0_1_3_s3/181_dell_agent_server_wave0b_qualification_and_langsmith_adoption.md`
+  - Dell Agent Server Wave 0B 资格测试与 LangSmith 采用裁决（Owner no-fallback；current live baseline=`R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED`）：`fin_0_1_3_s3/181_dell_agent_server_wave0b_qualification_and_langsmith_adoption.md`
+  - Dell Wave 2 单 Specialist scripted qualification 与真实本地 MCP 组合：`fin_0_1_3_s3/182_dell_wave2_single_specialist_zero_model_loop_and_real_mcp_composition.md`

@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_1 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED_REMAINS_CURRENT / R8_LIVE_FIN_IDENTITY_ZERO_MODEL_GRAPH_IMPLEMENTATION_CANDIDATE / FRESH_R8_LIVE_QUALIFICATION_NOT_STARTED / A03_PAID_RUN_NOT_AUTHORIZED`
+文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED_CURRENT / WAVE2_Q1_SPECIALIST_SCRIPTED_ZERO_CALL_REAL_IN_PROCESS_MCP_QUALIFICATION_PASS_BOUNDED / AGENT_SERVER_SPECIALIST_AND_PAID_SHADOW_NOT_AUTHORIZED`
 
 冻结日期：2026-09-03
 
@@ -1180,6 +1180,12 @@ tests/test_dell_progressive_disclosure.py
 
 即使单 Specialist 的零模型门通过，真实 provider shadow 也必须另有 `PaidExecutionOwnerDecision`、clean pushed commit、专用 ResearchRun/RunInvocation/ActionAttempt IDs、task-specific `TokenBudgetBasis`、调用范围和停止条件；不得把它解释成“不是 full A03 所以可以先调用”。
 
+2026-09-04 的 Wave 2 实施只关闭了这一 Wave 的第一小段：一个固定 Q1 Specialist 的循环合同可由 scripted action driver 多轮驱动，并真实消费现有本进程 Evidence/Finance MCP。它会记录 action、typed observation/feedback、route completion 和 source-bound submission；scripted turn 固定标记为 `model_execution_evidence=false`，不能冒充真实模型执行。当前 disclosure 不在 provider action schema、allowed actions 或 graph dispatch topology 中；未来只有接入既有 sealed `RuntimeScope` 与 current disclosure resolvers 后才能另行加入。
+
+这一 bounded qualification 还证明了三个确定性安全边界：Owner data-gate、inventory、catalog digest 必须贯穿 input/notebook/tool request/completion/handoff 并在 MCP dispatch 前与 host-current 值等值；未分配 evidence route 在 dispatch 前拒绝；required route 只能由 existing SourceFamilyCompiler compilation receipt、Reviewed Evidence mandatory reread/filter receipt、current index 与 exact target coverage 推导，direct tool 不能自行宣告完成。terminal human-review artifact 明确标记 `qualification_terminal_not_server_bound`，只表示本图停止，不表示 durable HITL 或可恢复 checkpoint。
+
+本段状态为 `WAVE2_Q1_SPECIALIST_SCRIPTED_ZERO_CALL_REAL_IN_PROCESS_MCP_QUALIFICATION_PASS_BOUNDED`，不是 Wave 2 整体完成。`ContextProjection`、compaction、current-state progressive disclosure、正式 ModelRuntimePort/saved-response replay、Agent Server serving graph consumption、跨 thread 唯一 RunInvocation 绑定、非 Q1 分支、Lead/Counter/Verifier、报告和产品验收仍未完成。
+
 ### Wave 3：动态 Lead / Multi-Agent / Counter / Verifier
 
 - `Send` 动态 fan-out；
@@ -1307,11 +1313,12 @@ tests/test_dell_progressive_disclosure.py
 
 | 事项 | 当前决定 | 剩余资格门/触发 |
 |---|---|---|
-| Agent Server 是否采用 | 已决：Dell 个人本地演示采用，不设 runtime fallback | fresh r7 零模型本地控制面 bounded qualification 已通过并仍是 current；r8 已编码 live FIN final binding、固定 Q1 零模型 graph/checkpoint/restart/SSE/LangSmith exact trace 候选，但 fresh live result 尚不存在，共享/production 鉴权仍待 |
+| Agent Server 是否采用 | 已决：Dell 个人本地演示采用，不设 runtime fallback | current live baseline 已为 `R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED`；它仍不证明 durable unknown-outcome/orphan lifecycle、distributed exactly-once、model/paid、dynamic multi-agent、durable HITL、report/product 或共享生产鉴权 |
 | Redis 是否启用 | 已决：仅作为 Agent Server 部署依赖 | r7 空 thread 的 idle restart/readback 已通过；r8 只准备验证真实图在 Redis 进程重启后的 readback，不把该观察写成 Redis 持久真值；Redis loss/replacement recovery 仍不在本轮 |
 | React Flow | 当前关闭 | 真实 DAG 列表已无法解释 |
 | Provider adapter 切官方 SDK | 当前不切 | tool-loop/reasoning/usage parity |
 | Specialist 永久 child thread | 当前不建 | 跨 turn 独立并发/长期记忆实证 |
+| Wave 2 单 Specialist | fixed Q1、scripted semantic turns、真实本进程 Evidence/Finance MCP 的 qualification bounded pass；不是产品 runtime | `ContextProjection`、compaction、current disclosure authority、正式 ModelRuntimePort/saved-response replay、Agent Server serving consumption 与 durable thread/checkpoint binding；真实 provider 另需 Owner paid authority |
 | 首个付费 successor | 当前不存在 | 新 `PaidExecutionOwnerDecision` + task-specific `TokenBudgetBasis` + clean pushed commit；r8 即使通过也不关闭 durable pending/orphan/reconciled lifecycle、unknown-outcome 自动重试或 exactly-once。旧 paid-entry 门是否保留须由 Owner 在 r8 结果后明确裁决，不能由实现者静默放宽；RC-S3-105 只在零模型 data-composition scope 关闭，不自动授予 paid authority |
 
 ## 23. 本设计如何避免再次“埋头一天但真正工作没开始”
@@ -1374,7 +1381,7 @@ tests/test_dell_progressive_disclosure.py
 
 实现可以根据零模型测试和成熟组件 spike 修正字段名、表名、依赖版本和内部模块拆分，但若要改变上述方向、引入第二套框架、扩大产品范围、改变 Evidence/NumericFact/public-gap authority、强制上 Redis/云端或创建付费 successor，必须先更新本文并向 Owner 解释新证据和影响。
 
-2026-09-03 Owner 进一步裁决并修订本冻结：Dell vertical 直接采用 LangSmith/LangGraph Agent Server，删除运行时 fallback。这个修订废止本文和历史工作记录中“Agent Server 拒绝后可实现 OSS single-worker runtime”的未来授权，但不改写那些记录在当时的事实。2026-09-04 的 current 采用状态已推进为 `ADOPT_DIRECTION_OWNER_APPROVED / OWNER_DATA_GATE_ACCEPTED / FRESH_R7_ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED`；它不等于真实 Agent Server graph、model、Agent Server graph-initiated/live-external MCP、multi-agent、HITL、报告或产品已通过，也不创建 A03 或 paid authority。
+2026-09-03 Owner 进一步裁决并修订本冻结：Dell vertical 直接采用 LangSmith/LangGraph Agent Server，删除运行时 fallback。这个修订废止本文和历史工作记录中“Agent Server 拒绝后可实现 OSS single-worker runtime”的未来授权，但不改写那些记录在当时的事实。2026-09-04 的 current live baseline 已推进为 `R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED`；随后新增的 Wave 2 fixed-Q1 scripted qualification 仍未进入 Agent Server serving graph。两者都不等于 model、dynamic multi-agent、durable HITL、报告或产品已通过，也不创建 A03 或 paid authority。
 
 ### 25.1 r8 live graph 资格实现合同（执行前冻结）
 
@@ -1515,4 +1522,18 @@ fresh r6 在当时合同下真实成功，随后因其 admitted catalog projecti
 
 LangSmith metadata HTTP 204 且 `n_runs=0` 只证明 key/project connectivity，不证明 run trace、span flush、UI 可见或 privacy。Docker 当前使用 `http.docker.internal:3128` 代理仍完成 build、启动和 metadata 请求，因此代理不是 current blocker；较早 TLS EOF 最多是 plausible transient proxy/VPN effect，不能作为确定根因。
 
-当前 `ZERO_MODEL_LOCAL_CONTROL_PLANE_PARITY_PASS_BOUNDED` 已包含 local in-process frozen MCP client tool execution，但明确不含：live FIN↔server identity binding、remote-create→FIN-bind orphan reconciliation、真实 graph/run/checkpoint/resume、Agent Server graph-initiated MCP、live external MCP capture、Redis execution-state persistence、SSE restart replay、LangSmith run trace/privacy、DeepSeek/model、dynamic multi-agent、HITL、report、product、shared/production 或完整 image supply-chain qualification。下一实现门依次是 live identity ingress/binding 与 orphan reconciliation；server retry/idempotency；零模型真实 graph 的 checkpoint/restart/SSE/LangSmith trace/privacy。完成并 clean push 后，才可向 Owner 提交新的 paid execution 决策和 task-specific token budget。
+本节前半记录的是 r8 现场资格之前的历史边界；其 live identity、restart/resume、SSE 与 LangSmith 结果已由 25.4 的 fresh attempt3 supersede。current baseline 仍只到 `R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED`；remote-create→FIN-bind 的完整 PENDING/ORPHAN/RECONCILED unknown-outcome lifecycle（`RC-S3-107`）、dynamic multi-agent、durable HITL、DeepSeek/model、report、product、shared/production 与完整 image supply-chain qualification仍未通过。
+
+### 26.1 Wave 2 单 Specialist scripted qualification 实施证据
+
+代码提交：`469484a04127c2d5f993c8b2749a6bcf406c8a04`。
+
+实现复用现有 LangGraph、官方 MCP client、Dell approved data composition、SourceFamilyCompiler、Reviewed Evidence filter/reread 与 S2 NumericFact authority，没有新增 retriever、MCP server、数据库、队列、checkpointer、route-authority 协议或模型 SDK。循环拓扑是 `initialize → scripted action → Evidence/Finance MCP → typed observation/feedback → revise → source-bound submission / terminal review`。
+
+锁定环境为 `D:\FIN_Insight_Agent\.venv\Scripts\python.exe`，Python=`3.11.14`、MCP=`2.1.1`、LangGraph=`1.2.11`、pytest=`9.1.1`。直接 Wave 2 suite 为 `30 passed`；扩大相邻 Agent Server/S1/S2/MCP/authority regression 为 `280 passed`。两轮作者分离只读审计在初轮发现 receipt 自证、replaceable composition、direct completion 与 thread/checkpoint 边界后完成根因修正，最终复审均为 `P0=0 / P1=0`；P1 清零只针对本段 bounded qualification。
+
+Project OS 定向回归仍为 `81 passed / 1 failed`；唯一失败是工作日志 181 已保存、且本段未修改的 `current_dynamic_writer_submission_successor:implementation:3` 对 `src/sec_agent/project_os_preflight.py` sealed SHA drift。本段不重签历史 authority，故 `full_repository_green=false`，也不使用 30/280 的通过数覆盖该失败。
+
+明确未运行或未证明：provider/DeepSeek/model=`0`、network/live-external=`0`、paid=`0`、Agent Server Specialist graph=`false`、ContextProjection/compaction=`false`、current progressive disclosure=`false`、canonical durable HITL=`false`、Lead/Counter/Verifier/multi-agent=`false`、report/product/human acceptance=`false`。因此本结果不是自然模型质量证明、不是 Agent Server Specialist PASS、不是 paid-shadow ready，也不产生产品 capability delta。
+
+进入一次真实 DeepSeek Specialist shadow 之前，顺序不得跳过：关闭或由 Owner 明确重裁 `RC-S3-107`；把 Specialist 纳入唯一正式 Agent Server graph 并用现有 FIN↔server durable identity store证明 single-entry/checkpoint；落最小 `ContextProjection`/compaction；通过现有 DeepSeekStructuredAgentAdapter、canonical ActionAttempt 与 LangSmith/audit capture 完成零调用 saved-response replay；最后才冻结新的 `PaidExecutionOwnerDecision` 与 task-specific `TokenBudgetBasis`。不得新增第二套 receipt、scope、route authority 或 handoff store。

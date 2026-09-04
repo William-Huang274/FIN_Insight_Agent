@@ -978,6 +978,57 @@ def _graph_input() -> dict[str, Any]:
     }
 
 
+def _specialist_graph_input() -> dict[str, Any]:
+    return {
+        "schema_version": "fin_ia_dell_specialist_agentic_graph_v1_0",
+        "run_id": "fin-research-run-001",
+        "run_invocation_id": "fin-run-invocation-001",
+        "agent_id": "specialist:Q1_ISSUER_TRUTH",
+        "task": {
+            "task_id": "task:q1:001",
+            "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+            "branch_id": "Q1_ISSUER_TRUTH",
+            "revision": 0,
+            "priority": "high",
+            "objective": "Establish the current issuer-reported operating truth.",
+            "evidence_requests": [
+                {
+                    "minimum_route_obligation_id": (
+                        "route:Q1_ISSUER_TRUTH:required-reviewed"
+                    ),
+                    "answer_free_intent_kind": "reviewed_evidence",
+                }
+            ],
+            "fact_requests": [],
+            "research_as_of": "2026-09-02T00:00:00Z",
+            "snapshot_id": "snapshot-q1",
+            "foundation_digest": "a" * 64,
+            "method_digest": "b" * 64,
+            "plan_digest": "c" * 64,
+        },
+        "required_route_obligation_ids": [
+            "route:Q1_ISSUER_TRUTH:required-reviewed"
+        ],
+        "l0_context": {
+            "owner_data_gate_decision_digest": "d" * 64,
+            "source_route_catalog_digest": "e" * 64,
+            "inventory_snapshot_digest": "f" * 64,
+            "disclosure_runtime_state": (
+                "current_state_authority_unavailable_fail_closed"
+            ),
+            "capability_summaries": [
+                {
+                    "capability_ref": "capability:dell:reviewed-evidence",
+                    "purpose": "Read reviewed issuer evidence.",
+                }
+            ],
+            "skill_summaries": [],
+        },
+        "max_model_turns": 8,
+        "max_tool_actions": 12,
+    }
+
+
 def test_connect_uses_official_sdk_without_accepting_or_forwarding_a_key(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1166,6 +1217,32 @@ def test_start_run_uses_only_qualified_agent_server_options() -> None:
     assert callable(kwargs["on_run_created"])
     assert "langsmith_tracing" not in kwargs
     assert "command" not in kwargs
+
+
+def test_start_specialist_run_reuses_the_same_durable_server_options() -> None:
+    client, sdk = _client(prebound_session=True)
+    graph_input = _specialist_graph_input()
+
+    run = client.start_specialist_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=graph_input,
+    )
+
+    assert run == _start_run()
+    assert len(sdk.runs.create_calls) == 1
+    _, assistant_id, kwargs = sdk.runs.create_calls[0]
+    assert assistant_id == DELL_AGENT_SERVER_ASSISTANT_ID
+    assert kwargs["input"] == graph_input
+    assert kwargs["stream_mode"] == ["updates"]
+    assert kwargs["stream_resumable"] is True
+    assert kwargs["durability"] == "sync"
+    assert kwargs["multitask_strategy"] == "reject"
+    assert kwargs["if_not_exists"] == "reject"
+    assert kwargs["context"]["run_invocation_id"] == (
+        graph_input["run_invocation_id"]
+    )
 
 
 def test_resume_creates_new_server_run_with_same_research_run_and_new_invocation() -> None:

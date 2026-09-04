@@ -107,6 +107,32 @@ def _action(kind: str, **fields: Any) -> Callable[[Mapping[str, Any]], dict[str,
     return build
 
 
+def _model_turn_receipt(
+    request: Mapping[str, Any],
+    action: Mapping[str, Any],
+    **overrides: Any,
+) -> dict[str, Any]:
+    receipt = {
+        "receipt_id": (
+            "model:specialist:"
+            f"{canonical_sha256(request)[:20]}:{canonical_sha256(action)[:20]}"
+        ),
+        "kind": "model",
+        "actor": request["agent_id"],
+        "status": "success",
+        "request_digest": canonical_sha256(request),
+        "output_digest": canonical_sha256(action),
+        "elapsed_ms": 12.5,
+        "input_tokens": 101,
+        "output_tokens": 37,
+        "total_tokens": 138,
+        "usage_reported": True,
+        "transport_attempts": 1,
+    }
+    receipt.update(overrides)
+    return receipt
+
+
 def _evidence_action(query: str = "Dell latest infrastructure demand") -> Callable[[Mapping[str, Any]], dict[str, Any]]:
     return _action(
         "request_evidence",
@@ -1003,6 +1029,132 @@ def test_model_port_cannot_self_issue_a_runtime_receipt() -> None:
         match="specialist_model_action_invalid",
     ):
         graph.invoke(_input(), {"recursion_limit": 20})
+    assert tools.calls == []
+
+
+@pytest.mark.parametrize(
+    ("turn_source", "model_execution_evidence"),
+    [
+        ("provider_model", True),
+        ("saved_response_replay", False),
+    ],
+)
+def test_receipted_turn_is_bound_to_composition_owned_source(
+    turn_source: str,
+    model_execution_evidence: bool,
+) -> None:
+    tools = _ToolPorts()
+    requests: list[dict[str, Any]] = []
+
+    def receipted_turn(request: Mapping[str, Any]) -> dict[str, Any]:
+        request_value = dict(request)
+        requests.append(request_value)
+        action = {
+            **_action(
+                "request_human_review",
+                blocker_code="explicit_owner_review",
+            )(request),
+            "context_digest": request["context_digest"],
+        }
+        receipt_overrides = (
+            {}
+            if turn_source == "provider_model"
+            else {
+                "receipt_id": "host:specialist-replay:fixture",
+                "kind": "host",
+                "actor": "dell_specialist_saved_response_replay",
+                "input_tokens": 0,
+                "output_tokens": 0,
+                "total_tokens": 0,
+                "usage_reported": None,
+            }
+        )
+        return {
+            "action": action,
+            "runtime_receipt": _model_turn_receipt(
+                request,
+                action,
+                **receipt_overrides,
+            ),
+        }
+
+    graph = build_dell_specialist_agentic_state_graph(
+        dependencies=DellSpecialistAgenticDependencies(
+            model_turn=receipted_turn,
+            evidence_tool=tools.evidence,
+            finance_tool=tools.finance,
+            turn_source=turn_source,
+        )
+    ).compile()
+
+    result = graph.invoke(_input(), {"recursion_limit": 10})
+    notebook = SpecialistNotebook.model_validate_json(
+        json.dumps(result["notebook"])
+    )
+    record = notebook.model_turn_records[0]
+    assert record.turn_source == turn_source
+    assert record.model_execution_evidence is model_execution_evidence
+    assert record.runtime_receipt is not None
+    assert record.runtime_receipt.kind == (
+        "model" if turn_source == "provider_model" else "host"
+    )
+    assert record.runtime_receipt.actor == (
+        _input()["agent_id"]
+        if turn_source == "provider_model"
+        else "dell_specialist_saved_response_replay"
+    )
+    assert record.runtime_receipt.request_digest == canonical_sha256(requests[0])
+    assert record.runtime_receipt.output_digest == record.action_digest
+    assert record.runtime_receipt.total_tokens == (
+        138 if turn_source == "provider_model" else 0
+    )
+    assert result["phase"] == "specialist_human_review_handoff_emitted"
+    assert tools.calls == []
+
+
+@pytest.mark.parametrize(
+    "receipt_override",
+    [
+        {"kind": "host", "usage_reported": None},
+        {"actor": "attacker-model"},
+        {"request_digest": "0" * 64},
+        {"output_digest": "0" * 64},
+        {"transport_attempts": 2},
+    ],
+)
+def test_receipted_turn_rejects_unbound_receipt_before_dispatch(
+    receipt_override: dict[str, Any],
+) -> None:
+    tools = _ToolPorts()
+
+    def tampered_turn(request: Mapping[str, Any]) -> dict[str, Any]:
+        action = {
+            **_evidence_action("Dell receipt binding")(request),
+            "context_digest": request["context_digest"],
+        }
+        return {
+            "action": action,
+            "runtime_receipt": _model_turn_receipt(
+                request,
+                action,
+                **receipt_override,
+            ),
+        }
+
+    graph = build_dell_specialist_agentic_state_graph(
+        dependencies=DellSpecialistAgenticDependencies(
+            model_turn=tampered_turn,
+            evidence_tool=tools.evidence,
+            finance_tool=tools.finance,
+            turn_source="provider_model",
+        )
+    ).compile()
+
+    with pytest.raises(
+        DellSpecialistAgenticGraphError,
+        match="specialist_model_turn_receipt_binding_invalid",
+    ):
+        graph.invoke(_input(), {"recursion_limit": 10})
     assert tools.calls == []
 
 

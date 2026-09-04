@@ -268,6 +268,92 @@ def _specialist_request() -> dict[str, Any]:
     }
 
 
+def _agentic_turn_request() -> dict[str, Any]:
+    body = {
+        "schema_version": "fin_ia_dell_specialist_agentic_graph_v1_0",
+        "agent_id": "specialist:Q1:host-owned",
+        "task": {
+            "task_id": "task-host-owned",
+            "case_id": "DELL_REFERENCE_VERTICAL",
+            "branch_id": "Q1_ISSUER_TRUTH",
+            "revision": 0,
+            "priority": "high",
+            "objective": "Establish issuer truth.",
+            "evidence_requests": [
+                {
+                    "minimum_route_obligation_id": (
+                        "route:Q1_ISSUER_TRUTH:required-reviewed"
+                    ),
+                    "answer_free_intent_kind": "reviewed_evidence",
+                }
+            ],
+            "fact_requests": [],
+            "research_as_of": "2026-09-02T00:00:00+08:00",
+            "snapshot_id": "snapshot-host-owned",
+            "foundation_digest": DIGEST_A,
+            "method_digest": DIGEST_B,
+            "plan_digest": DIGEST_C,
+        },
+        "l0_context": {
+            "owner_data_gate_decision_digest": DIGEST_A,
+            "source_route_catalog_digest": DIGEST_B,
+            "inventory_snapshot_digest": DIGEST_C,
+            "disclosure_runtime_state": (
+                "current_state_authority_unavailable_fail_closed"
+            ),
+            "capability_summaries": [
+                {
+                    "capability_ref": "capability:dell:reviewed-evidence",
+                    "purpose": "Read current reviewed issuer evidence.",
+                    "authority_digest": DIGEST_D,
+                }
+            ],
+            "skill_summaries": [],
+        },
+        "notebook": {
+            "model_turn_count": 0,
+            "required_route_obligation_ids": [
+                "route:Q1_ISSUER_TRUTH:required-reviewed"
+            ],
+            "satisfied_route_obligation_ids": [],
+            "model_turn_records": [],
+            "observations": [],
+            "feedback": [],
+            "notebook_digest": DIGEST_D,
+        },
+        "execution_budget": {
+            "max_model_turns": 8,
+            "used_model_turns": 0,
+            "remaining_model_turns": 8,
+            "max_tool_actions": 12,
+            "used_tool_actions": 0,
+            "remaining_tool_actions": 12,
+            "ceiling_semantics": "hard_anomaly_stop_not_completion_target",
+        },
+        "allowed_actions": [
+            "request_evidence",
+            "request_finance",
+            "submit_workpaper",
+            "request_human_review",
+        ],
+        "privacy_contract": {
+            "return_structured_action_only": True,
+            "hidden_reasoning_must_not_be_returned": True,
+            "reason_summary_is_decision_rationale_not_chain_of_thought": True,
+        },
+    }
+    return {**body, "context_digest": canonical_sha256(body)}
+
+
+def _agentic_action(*, context_digest: str) -> dict[str, Any]:
+    return {
+        "action": "request_human_review",
+        "context_digest": context_digest,
+        "reason_summary": "Stop for an explicit bounded owner review.",
+        "blocker_code": "saved_response_fixture_review",
+    }
+
+
 def _workpaper() -> dict[str, Any]:
     return {
         "branch_id": "Q1_ISSUER_TRUTH",
@@ -635,6 +721,166 @@ def test_specialist_projection_fails_closed_on_unwrapped_physical_selector() -> 
         match="provider_tool_item_physical_selector_exposed",
     ):
         adapter_module._project_request("specialist", request)
+
+
+def test_agentic_specialist_turn_uses_sanitized_action_contract_and_receipt() -> None:
+    request = _agentic_turn_request()
+    models = _models()
+    specialist_model = FakeStructuredModel(
+        _agentic_action(context_digest=request["context_digest"])
+    )
+    models["specialist"] = specialist_model
+    adapter = DeepSeekStructuredAgentAdapter(
+        config=_config(),
+        chat_models=models,
+    )
+
+    result = adapter.specialist_model_turn(request)
+
+    assert specialist_model.calls == 1
+    provider_schema = specialist_model.schemas[0]
+    assert isinstance(provider_schema, dict)
+    encoded_schema = json.dumps(provider_schema, ensure_ascii=False)
+    assert "$defs" not in encoded_schema
+    assert '"$ref"' not in encoded_schema
+    for action_name in (
+        "request_evidence",
+        "request_finance",
+        "request_human_review",
+        "submit_workpaper",
+    ):
+        assert action_name in encoded_schema
+    assert "request_disclosure" not in encoded_schema
+    schema_names = _schema_property_names(provider_schema["parameters"])
+    assert not {
+        "runtime_receipt",
+        "receipt_id",
+        "action_attempt_id",
+        "issuer_ids",
+        "route_ids",
+    }.intersection(schema_names)
+
+    action = result["action"]
+    receipt = result["runtime_receipt"]
+    assert action["action"] == "request_human_review"
+    assert action["context_digest"] == request["context_digest"]
+    assert receipt["kind"] == "model"
+    assert receipt["actor"] == request["agent_id"]
+    assert receipt["request_digest"] == canonical_sha256(request)
+    assert receipt["output_digest"] == canonical_sha256(action)
+    assert (receipt["input_tokens"], receipt["output_tokens"]) == (101, 37)
+    assert receipt["total_tokens"] == 138
+    assert receipt["usage_reported"] is True
+    assert receipt["transport_attempts"] == 1
+
+    model_visible = str(specialist_model.inputs[0][1].content)
+    assert request["context_digest"] in model_visible
+    assert "snapshot-host-owned" not in model_visible
+    assert "specialist:Q1:host-owned" not in model_visible
+    assert DIGEST_A not in model_visible
+    assert DIGEST_B not in model_visible
+    assert DIGEST_C not in model_visible
+    assert DIGEST_D not in model_visible
+    assert "runtime_receipt" not in model_visible
+    assert "notebook_digest" not in model_visible
+    assert '"remaining_model_turns":8' in model_visible
+    assert '"remaining_tool_actions":12' in model_visible
+
+
+def test_agentic_observation_projection_strips_receipt_and_transport_internals() -> None:
+    request = _agentic_turn_request()
+    request["notebook"]["observations"] = [
+        {
+            "kind": "evidence",
+            "status": "success",
+            "references": [],
+            "content": [
+                {
+                    "bounded_excerpt": "Dell retained semantic evidence.",
+                    "mcp_receipt_chain": [{"route_ids": ["private-route"]}],
+                    "source_tool_lane_receipt_id": "private-receipt",
+                    "call_id": "private-call",
+                    "elapsed_ms": 91.2,
+                    "input_tokens": 99,
+                    "transport_attempts": 1,
+                }
+            ],
+            "route_completions": [],
+            "failure": None,
+        }
+    ]
+
+    projected = adapter_module._project_request(
+        "specialist",
+        request,
+        specialist_mode="agentic_turn",
+    )
+    encoded = json.dumps(projected, ensure_ascii=False)
+
+    assert "Dell retained semantic evidence." in encoded
+    for forbidden in (
+        "private-route",
+        "private-receipt",
+        "private-call",
+        "mcp_receipt_chain",
+        "source_tool_lane_receipt_id",
+        "elapsed_ms",
+        "input_tokens",
+        "transport_attempts",
+    ):
+        assert forbidden not in encoded
+
+
+def test_agentic_saved_response_replay_skips_transport_and_records_truth() -> None:
+    request = _agentic_turn_request()
+    models = _models()
+    specialist_model = FakeStructuredModel({"must_not_be_used": True})
+    models["specialist"] = specialist_model
+    events: list[dict[str, Any]] = []
+    adapter = DeepSeekStructuredAgentAdapter(
+        config=_config(),
+        chat_models=models,
+        audit_sink=lambda event: events.append(dict(event)),
+    )
+    replay_body = {
+        "schema_version": "fin_ia_dell_specialist_action_replay_record_v1_0",
+        "replay_source": "synthetic_qualification",
+        "request_digest": canonical_sha256(request),
+        "parsed_action": _agentic_action(
+            context_digest=request["context_digest"]
+        ),
+    }
+    replay_record = {
+        **replay_body,
+        "replay_record_digest": canonical_sha256(replay_body),
+    }
+
+    result = adapter.replay_specialist_model_turn(
+        request,
+        replay_record=replay_record,
+    )
+
+    assert specialist_model.calls == 0
+    assert specialist_model.schemas == []
+    assert result["runtime_receipt"]["request_digest"] == canonical_sha256(
+        request
+    )
+    assert result["runtime_receipt"]["output_digest"] == canonical_sha256(
+        result["action"]
+    )
+    assert result["runtime_receipt"]["kind"] == "host"
+    assert result["runtime_receipt"]["actor"] == (
+        "dell_specialist_saved_response_replay"
+    )
+    assert result["runtime_receipt"]["total_tokens"] == 0
+    assert [event["event"] for event in events] == ["started", "outcome"]
+    assert all(event["provider_call_attempted"] is False for event in events)
+    assert all(
+        event["execution_source"] == "saved_response_replay"
+        for event in events
+    )
+    assert all("semantic_input" not in event for event in events)
+    assert all("raw_response" not in event for event in events)
 
 
 def test_real_chatdeepseek_dict_path_selects_json_not_pydantic_parser() -> None:

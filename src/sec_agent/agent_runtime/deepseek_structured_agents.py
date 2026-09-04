@@ -16,19 +16,21 @@ import re
 from time import perf_counter
 from typing import Any, Literal, Protocol, TypeVar, cast
 
-from langchain_core.messages import HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.utils.function_calling import convert_to_openai_tool
 from langchain_deepseek import ChatDeepSeek
 from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
+    RootModel,
     SecretStr,
     ValidationError,
     field_validator,
     model_validator,
 )
 
+from .dell_specialist_agentic_graph import SpecialistAction
 from .dell_reference_vertical_contracts import (
     BranchWorkpaper,
     CounterDecision,
@@ -42,6 +44,7 @@ from .dell_reference_vertical_contracts import (
 
 
 NodeRole = Literal["planner", "specialist", "counter", "lead"]
+SpecialistRequestMode = Literal["legacy_workpaper", "agentic_turn"]
 PayloadT = TypeVar("PayloadT", bound=BaseModel)
 ModelCallAuditSink = Callable[[Mapping[str, Any]], None]
 
@@ -138,6 +141,31 @@ class SpecialistSemanticPayload(_StrictSemanticModel):
     evidence_ids: tuple[str, ...] = Field(default=(), max_length=32)
     fact_ids: tuple[str, ...] = Field(default=(), max_length=48)
     open_gaps: tuple[str, ...] = Field(default=(), max_length=16)
+
+
+class SpecialistActionPayload(RootModel[SpecialistAction]):
+    """Provider envelope for exactly one action in the Specialist inner loop."""
+
+    model_config = ConfigDict(strict=True, frozen=True)
+
+
+class SpecialistActionReplayRecord(_StrictSemanticModel):
+    """Exact, JSON-only action fixture for a zero-transport replay turn."""
+
+    schema_version: Literal[
+        "fin_ia_dell_specialist_action_replay_record_v1_0"
+    ]
+    replay_source: Literal["synthetic_qualification", "saved_structured_response"]
+    request_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+    parsed_action: SpecialistAction
+    replay_record_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+
+    @model_validator(mode="after")
+    def validate_replay_record(self) -> "SpecialistActionReplayRecord":
+        unsigned = self.model_dump(mode="json", exclude={"replay_record_digest"})
+        if canonical_sha256(unsigned) != self.replay_record_digest:
+            raise ValueError("specialist_action_replay_record_digest_mismatch")
+        return self
 
 
 class CounterReroutePayload(_StrictSemanticModel):
@@ -397,6 +425,23 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
     ),
 }
 
+_AGENTIC_SPECIALIST_SYSTEM_PROMPT = (
+    "You are one autonomous financial-research Specialist operating inside a "
+    "bounded tool loop for the supplied DELL branch. Decide only the next action; "
+    "do not pretend that a requested tool has already run. Copy the supplied "
+    "context_digest exactly as an opaque binding. Use only assigned evidence "
+    "routes, disclosed topic constraints and disclosed finance metrics. Reviewed "
+    "Evidence may support reported facts; authoritative NumericFacts may support "
+    "numeric facts. Retrieval candidates are not citable Evidence, calculations "
+    "must be marked non-authoritative, and a tool failure is not a public-information "
+    "gap. After each observation, either request a materially useful next tool, "
+    "submit an evidence-bound Chinese workpaper, or request human review when the "
+    "bounded tools cannot proceed. Treat the disclosed remaining-turn and "
+    "remaining-tool counts as hard anomaly ceilings, not completion targets. "
+    "Return only one action matching the schema. "
+    "reason_summary is a concise decision rationale, never hidden chain-of-thought."
+)
+
 
 def _as_mapping(value: Any, *, label: str) -> dict[str, Any]:
     if not isinstance(value, Mapping):
@@ -598,7 +643,155 @@ def _provider_tool_items(
     return projected
 
 
-def _project_request(role: NodeRole, request: Mapping[str, Any]) -> dict[str, Any]:
+_AGENTIC_HOST_ONLY_KEYS = frozenset(
+    {
+        "run_id",
+        "run_invocation_id",
+        "agent_id",
+        "task_id",
+        "action_attempt_id",
+        "runtime_receipt",
+        "source_runtime_receipt",
+        "receipt_id",
+        "notebook_digest",
+        "observation_digest",
+        "turn_record_digest",
+        "action_digest",
+        "artifact_digest",
+        "compilation_receipt_digest",
+        "reviewed_index_digests",
+        "filter_receipt_digests",
+        "mcp_receipt_chain",
+        "mcp_receipt",
+        "cell_binding_used",
+        "source_tool_lane_receipt_id",
+        "tool_receipt_id",
+        "call_id",
+        "tool_name",
+        "elapsed_ms",
+        "input_tokens",
+        "output_tokens",
+        "total_tokens",
+        "usage_reported",
+        "transport_attempts",
+    }
+)
+
+
+def _agentic_semantic_value(value: Any) -> Any:
+    """Remove host identity/authority internals from model-visible loop state."""
+
+    if isinstance(value, Mapping):
+        return {
+            str(key): _agentic_semantic_value(child)
+            for key, child in value.items()
+            if str(key) not in _AGENTIC_HOST_ONLY_KEYS
+            and not str(key).endswith("_digest")
+            and str(key) not in _PROVIDER_PHYSICAL_SELECTOR_KEYS
+            and str(key) not in _PROVIDER_EVIDENCE_PHYSICAL_RESULT_KEYS
+        }
+    if isinstance(value, Sequence) and not isinstance(
+        value, (str, bytes, bytearray)
+    ):
+        return [_agentic_semantic_value(child) for child in value]
+    return value
+
+
+def _project_agentic_specialist_request(
+    request: Mapping[str, Any],
+) -> dict[str, Any]:
+    task = _required_mapping(request, "task")
+    l0_context = _required_mapping(request, "l0_context")
+    notebook = _required_mapping(request, "notebook")
+    execution_budget = _required_mapping(request, "execution_budget")
+    allowed_actions = request.get("allowed_actions")
+    if not isinstance(allowed_actions, Sequence) or isinstance(
+        allowed_actions, (str, bytes, bytearray)
+    ):
+        raise DeepSeekStructuredAgentError("allowed_actions_required")
+    observations = notebook.get("observations", ())
+    if not isinstance(observations, Sequence) or isinstance(
+        observations, (str, bytes, bytearray)
+    ):
+        raise DeepSeekStructuredAgentError("specialist_observations_invalid")
+    projected_observations: list[dict[str, Any]] = []
+    for raw in observations:
+        observation = _as_mapping(raw, label="specialist_observation")
+        projected_observations.append(
+            {
+                key: _agentic_semantic_value(observation.get(key))
+                for key in (
+                    "kind",
+                    "status",
+                    "references",
+                    "content",
+                    "route_completions",
+                    "failure",
+                )
+            }
+        )
+    model_turn_count = notebook.get("model_turn_count", 0)
+    if isinstance(model_turn_count, bool) or not isinstance(model_turn_count, int):
+        raise DeepSeekStructuredAgentError("specialist_model_turn_count_invalid")
+    return {
+        "context_digest": _required_text(request, "context_digest"),
+        "turn_index": model_turn_count + 1,
+        "branch": {
+            "branch_id": task.get("branch_id"),
+            "revision": task.get("revision"),
+            "priority": task.get("priority"),
+            "objective": task.get("objective"),
+            "evidence_requests": _agentic_semantic_value(
+                task.get("evidence_requests", ())
+            ),
+            "fact_requests": _agentic_semantic_value(
+                task.get("fact_requests", ())
+            ),
+            "research_as_of": task.get("research_as_of"),
+        },
+        "l0_context": {
+            "disclosure_runtime_state": l0_context.get(
+                "disclosure_runtime_state"
+            ),
+            "capability_summaries": _agentic_semantic_value(
+                l0_context.get("capability_summaries", ())
+            ),
+            "skill_summaries": _agentic_semantic_value(
+                l0_context.get("skill_summaries", ())
+            ),
+        },
+        "progress": {
+            "required_route_obligation_ids": notebook.get(
+                "required_route_obligation_ids", ()
+            ),
+            "satisfied_route_obligation_ids": notebook.get(
+                "satisfied_route_obligation_ids", ()
+            ),
+            "prior_actions": _agentic_semantic_value(
+                [
+                    _as_mapping(row, label="specialist_model_turn_record").get(
+                        "action"
+                    )
+                    for row in notebook.get("model_turn_records", ())
+                ]
+            ),
+            "observations": projected_observations,
+            "feedback": _agentic_semantic_value(notebook.get("feedback", ())),
+        },
+        "execution_budget": _agentic_semantic_value(execution_budget),
+        "allowed_actions": list(allowed_actions),
+        "privacy_contract": _agentic_semantic_value(
+            _required_mapping(request, "privacy_contract")
+        ),
+    }
+
+
+def _project_request(
+    role: NodeRole,
+    request: Mapping[str, Any],
+    *,
+    specialist_mode: SpecialistRequestMode = "legacy_workpaper",
+) -> dict[str, Any]:
     if role == "planner":
         catalog = request.get("branch_catalog")
         if not isinstance(catalog, Sequence) or isinstance(catalog, (str, bytes)):
@@ -640,6 +833,9 @@ def _project_request(role: NodeRole, request: Mapping[str, Any]) -> dict[str, An
             },
             "source_route_catalog": _project_source_route_catalog(request),
         }
+
+    if role == "specialist" and specialist_mode == "agentic_turn":
+        return _project_agentic_specialist_request(request)
 
     if role == "specialist":
         task = _required_mapping(request, "task")
@@ -886,12 +1082,29 @@ class DeepSeekStructuredAgentAdapter:
         role: NodeRole,
         request: Mapping[str, Any],
         schema: type[PayloadT],
+        specialist_mode: SpecialistRequestMode = "legacy_workpaper",
+        saved_envelope: Mapping[str, Any] | None = None,
     ) -> tuple[PayloadT, Any, float]:
+        if role != "specialist" and specialist_mode != "legacy_workpaper":
+            raise DeepSeekStructuredAgentError(
+                "agentic_request_mode_only_valid_for_specialist"
+            )
         request_value = _as_mapping(request, label=f"{role}_request")
-        semantic_input = _project_request(role, request_value)
+        semantic_input = _project_request(
+            role,
+            request_value,
+            specialist_mode=specialist_mode,
+        )
         request_digest = canonical_sha256(request_value)
         semantic_input_digest = canonical_sha256(semantic_input)
         actor = _required_text(request_value, "agent_id")
+        provider_call_attempted = saved_envelope is None
+        execution_source = (
+            "live_provider"
+            if provider_call_attempted
+            else "saved_response_replay"
+        )
+        persist_model_payloads = specialist_mode == "legacy_workpaper"
         call_id = (
             f"{role}-{canonical_sha256(actor)[:12]}-{request_digest[:20]}"
         )
@@ -917,29 +1130,21 @@ class DeepSeekStructuredAgentAdapter:
                     "recorded_at": datetime.now(timezone.utc).isoformat(),
                     "request_digest": request_digest,
                     "semantic_input_digest": semantic_input_digest,
-                    "semantic_input": semantic_input,
                     "input_characters": input_characters,
                     "input_utf8_bytes": input_utf8_bytes,
                     "max_input_characters": basis.max_input_characters,
                     "provider_call_attempted": False,
+                    "execution_source": execution_source,
+                    **(
+                        {"semantic_input": semantic_input}
+                        if persist_model_payloads
+                        else {}
+                    ),
                 }
             )
             raise DeepSeekStructuredAgentError(
                 f"deepseek_{role}_input_character_limit_exceeded"
             )
-        messages = [
-            SystemMessage(content=_SYSTEM_PROMPTS[role]),
-            HumanMessage(content=semantic_json),
-        ]
-        runnable = self._chat_models[role].with_structured_output(
-            _provider_function_schema(
-                schema,
-                strict=self._config.strict_provider_schema,
-            ),
-            method=self._config.structured_output_method,
-            include_raw=True,
-            strict=self._config.strict_provider_schema,
-        )
         self._audit(
             {
                 "schema_version": "fin_ia_model_call_audit_event_v1_0",
@@ -950,7 +1155,6 @@ class DeepSeekStructuredAgentAdapter:
                 "recorded_at": datetime.now(timezone.utc).isoformat(),
                 "request_digest": request_digest,
                 "semantic_input_digest": semantic_input_digest,
-                "semantic_input": semantic_input,
                 "provider": self._config.provider,
                 "model": self._config.model,
                 "structured_output_method": self._config.structured_output_method,
@@ -959,34 +1163,70 @@ class DeepSeekStructuredAgentAdapter:
                 "input_utf8_bytes": input_utf8_bytes,
                 "max_input_characters": basis.max_input_characters,
                 "max_output_tokens": basis.max_output_tokens,
-                "provider_call_attempted": True,
+                "provider_call_attempted": provider_call_attempted,
+                "execution_source": execution_source,
                 "transport_attempt_limit": 1,
+                **(
+                    {"semantic_input": semantic_input}
+                    if persist_model_payloads
+                    else {}
+                ),
             }
         )
         started = perf_counter()
-        try:
-            envelope = runnable.invoke(messages)
-        except Exception as exc:
-            self._audit(
-                {
-                    "schema_version": "fin_ia_model_call_audit_event_v1_0",
-                    "event": "outcome",
-                    "status": "provider_call_failed",
-                    "call_id": call_id,
-                    "role": role,
-                    "actor": actor,
-                    "recorded_at": datetime.now(timezone.utc).isoformat(),
-                    "request_digest": request_digest,
-                    "semantic_input_digest": semantic_input_digest,
-                    "elapsed_ms": round((perf_counter() - started) * 1_000, 3),
-                    "error_type": type(exc).__name__,
-                    "error_message": str(exc)[:500],
-                    "usage_available": False,
-                }
+        if provider_call_attempted:
+            messages = [
+                SystemMessage(
+                    content=(
+                        _AGENTIC_SPECIALIST_SYSTEM_PROMPT
+                        if specialist_mode == "agentic_turn"
+                        else _SYSTEM_PROMPTS[role]
+                    )
+                ),
+                HumanMessage(content=semantic_json),
+            ]
+            runnable = self._chat_models[role].with_structured_output(
+                _provider_function_schema(
+                    schema,
+                    strict=self._config.strict_provider_schema,
+                ),
+                method=self._config.structured_output_method,
+                include_raw=True,
+                strict=self._config.strict_provider_schema,
             )
-            raise DeepSeekStructuredAgentError(
-                f"deepseek_{role}_single_call_failed"
-            ) from exc
+            try:
+                envelope: Any = runnable.invoke(messages)
+            except Exception as exc:
+                self._audit(
+                    {
+                        "schema_version": "fin_ia_model_call_audit_event_v1_0",
+                        "event": "outcome",
+                        "status": "provider_call_failed",
+                        "call_id": call_id,
+                        "role": role,
+                        "actor": actor,
+                        "recorded_at": datetime.now(timezone.utc).isoformat(),
+                        "request_digest": request_digest,
+                        "semantic_input_digest": semantic_input_digest,
+                        "elapsed_ms": round(
+                            (perf_counter() - started) * 1_000, 3
+                        ),
+                        "error_type": type(exc).__name__,
+                        "error_message": (
+                            str(exc)[:500]
+                            if persist_model_payloads
+                            else "provider_call_failed"
+                        ),
+                        "usage_available": False,
+                        "provider_call_attempted": True,
+                        "execution_source": execution_source,
+                    }
+                )
+                raise DeepSeekStructuredAgentError(
+                    f"deepseek_{role}_single_call_failed"
+                ) from exc
+        else:
+            envelope = saved_envelope
         elapsed_ms = (perf_counter() - started) * 1_000
         if not isinstance(envelope, Mapping):
             self._audit(
@@ -1002,6 +1242,8 @@ class DeepSeekStructuredAgentAdapter:
                     "semantic_input_digest": semantic_input_digest,
                     "elapsed_ms": round(elapsed_ms, 3),
                     "envelope_type": type(envelope).__name__,
+                    "provider_call_attempted": provider_call_attempted,
+                    "execution_source": execution_source,
                 }
             )
             raise DeepSeekStructuredAgentError("model_structured_envelope_invalid")
@@ -1019,7 +1261,6 @@ class DeepSeekStructuredAgentAdapter:
                     "request_digest": request_digest,
                     "semantic_input_digest": semantic_input_digest,
                     "elapsed_ms": round(elapsed_ms, 3),
-                    "raw_response": _audit_value(envelope.get("raw")),
                     **_usage_audit_fields(envelope.get("raw")),
                     "error_type": (
                         type(parsing_error).__name__
@@ -1028,8 +1269,21 @@ class DeepSeekStructuredAgentAdapter:
                     ),
                     "error_message": (
                         str(parsing_error)[:500]
+                        if parsing_error is not None and persist_model_payloads
+                        else "structured parse failed"
                         if parsing_error is not None
                         else "parsed payload missing"
+                    ),
+                    "provider_call_attempted": provider_call_attempted,
+                    "execution_source": execution_source,
+                    **(
+                        {"raw_response": _audit_value(envelope.get("raw"))}
+                        if persist_model_payloads
+                        else {
+                            "provider_response_digest": canonical_sha256(
+                                _audit_value(envelope.get("raw"))
+                            )
+                        }
                     ),
                 }
             )
@@ -1047,8 +1301,18 @@ class DeepSeekStructuredAgentAdapter:
                     "request_digest": request_digest,
                     "semantic_input_digest": semantic_input_digest,
                     "elapsed_ms": round(elapsed_ms, 3),
-                    "parsed_payload": _audit_value(envelope.get("parsed")),
+                    **(
+                        {"parsed_payload": _audit_value(envelope.get("parsed"))}
+                        if persist_model_payloads
+                        else {
+                            "parsed_payload_digest": canonical_sha256(
+                                _audit_value(envelope.get("parsed"))
+                            )
+                        }
+                    ),
                     **_usage_audit_fields(None),
+                    "provider_call_attempted": provider_call_attempted,
+                    "execution_source": execution_source,
                 }
             )
             raise DeepSeekStructuredAgentError("model_structured_raw_missing")
@@ -1068,11 +1332,29 @@ class DeepSeekStructuredAgentAdapter:
                     "request_digest": request_digest,
                     "semantic_input_digest": semantic_input_digest,
                     "elapsed_ms": round(elapsed_ms, 3),
-                    "raw_response": _audit_value(envelope["raw"]),
-                    "parsed_payload": _audit_value(envelope.get("parsed")),
+                    **(
+                        {"parsed_payload": _audit_value(envelope.get("parsed"))}
+                        if persist_model_payloads
+                        else {
+                            "parsed_payload_digest": canonical_sha256(
+                                _audit_value(envelope.get("parsed"))
+                            )
+                        }
+                    ),
                     **_usage_audit_fields(envelope["raw"]),
                     "error_type": type(exc).__name__,
                     "error_message": str(exc)[:500],
+                    "provider_call_attempted": provider_call_attempted,
+                    "execution_source": execution_source,
+                    **(
+                        {"raw_response": _audit_value(envelope["raw"])}
+                        if persist_model_payloads
+                        else {
+                            "provider_response_digest": canonical_sha256(
+                                _audit_value(envelope["raw"])
+                            )
+                        }
+                    ),
                 }
             )
             raise
@@ -1092,8 +1374,26 @@ class DeepSeekStructuredAgentAdapter:
                 "output_tokens": usage[1],
                 "total_tokens": usage[2],
                 "usage_reported": usage[3],
-                "raw_response": _audit_value(envelope["raw"]),
-                "parsed_payload": parsed.model_dump(mode="json"),
+                **(
+                    {"parsed_payload": parsed.model_dump(mode="json")}
+                    if persist_model_payloads
+                    else {
+                        "action_digest": canonical_sha256(
+                            parsed.model_dump(mode="json")
+                        )
+                    }
+                ),
+                "provider_call_attempted": provider_call_attempted,
+                "execution_source": execution_source,
+                **(
+                    {"raw_response": _audit_value(envelope["raw"])}
+                    if persist_model_payloads
+                    else {
+                        "provider_response_digest": canonical_sha256(
+                            _audit_value(envelope["raw"])
+                        )
+                    }
+                ),
             }
         )
         return (
@@ -1160,6 +1460,94 @@ class DeepSeekStructuredAgentAdapter:
             BranchWorkpaper,
             {**body, "runtime_receipt": receipt.model_dump(mode="json")},
         ).model_dump(mode="json")
+
+    def _specialist_action_turn(
+        self,
+        request: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        request_value = _as_mapping(request, label="specialist_agentic_request")
+        payload, raw, elapsed_ms = self._invoke(
+            role="specialist",
+            request=request_value,
+            schema=SpecialistActionPayload,
+            specialist_mode="agentic_turn",
+        )
+        action = payload.root.model_dump(mode="json")
+        receipt = _receipt(
+            role="specialist",
+            actor=_required_text(request_value, "agent_id"),
+            request=request_value,
+            output=action,
+            raw=raw,
+            elapsed_ms=elapsed_ms,
+        )
+        return {
+            "action": action,
+            "runtime_receipt": receipt.model_dump(mode="json"),
+        }
+
+    def specialist_model_turn(
+        self,
+        request: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Execute one live, receipted action decision for the agentic loop."""
+
+        return self._specialist_action_turn(request)
+
+    def replay_specialist_model_turn(
+        self,
+        request: Mapping[str, Any],
+        *,
+        replay_record: Mapping[str, Any],
+    ) -> dict[str, Any]:
+        """Validate one exact action fixture without touching model transport."""
+
+        request_value = _as_mapping(request, label="specialist_agentic_request")
+        try:
+            record = SpecialistActionReplayRecord.model_validate_json(
+                json.dumps(replay_record, ensure_ascii=False, allow_nan=False)
+            )
+        except Exception:
+            raise DeepSeekStructuredAgentError(
+                "specialist_action_replay_record_invalid"
+            ) from None
+        if record.request_digest != canonical_sha256(request_value):
+            raise DeepSeekStructuredAgentError(
+                "specialist_action_replay_request_mismatch"
+            )
+        payload, _raw, elapsed_ms = self._invoke(
+            role="specialist",
+            request=request_value,
+            schema=SpecialistActionPayload,
+            specialist_mode="agentic_turn",
+            saved_envelope={
+                "raw": AIMessage(content=""),
+                "parsed": record.parsed_action.model_dump(mode="json"),
+                "parsing_error": None,
+            },
+        )
+        action = payload.root.model_dump(mode="json")
+        receipt = RuntimeReceipt(
+            receipt_id=(
+                "host:specialist-replay:"
+                f"{record.request_digest[:20]}:{canonical_sha256(action)[:20]}"
+            ),
+            kind="host",
+            actor="dell_specialist_saved_response_replay",
+            status="success",
+            request_digest=record.request_digest,
+            output_digest=canonical_sha256(action),
+            elapsed_ms=elapsed_ms,
+            input_tokens=0,
+            output_tokens=0,
+            total_tokens=0,
+            usage_reported=None,
+            transport_attempts=1,
+        )
+        return {
+            "action": action,
+            "runtime_receipt": receipt.model_dump(mode="json"),
+        }
 
     def counter(self, request: Mapping[str, Any]) -> dict[str, Any]:
         request_value = _as_mapping(request, label="counter_request")
@@ -1249,6 +1637,8 @@ __all__ = [
     "EvidenceRequestPayload",
     "LeadSemanticPayload",
     "PlannerSemanticPayload",
+    "SpecialistActionPayload",
+    "SpecialistActionReplayRecord",
     "SpecialistSemanticPayload",
     "TokenBudgetBasis",
     "load_deepseek_structured_agent_config",

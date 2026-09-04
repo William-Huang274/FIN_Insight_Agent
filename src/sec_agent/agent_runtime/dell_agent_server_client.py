@@ -24,6 +24,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator, Mapping, Sequence
 from dataclasses import dataclass
+import json
 import re
 from typing import Any, Literal
 from urllib.parse import urlsplit
@@ -59,6 +60,7 @@ from .dell_agent_server_recovery import (
 )
 from .dell_reference_vertical_contracts import canonical_sha256
 from .dell_reference_vertical_graph import DellReferenceVerticalGraphInput
+from .dell_specialist_agentic_graph import SpecialistAgenticInput
 from .dell_zero_model_graph_qualification import (
     DellExecutionProfile,
     DellZeroModelQualificationError,
@@ -494,6 +496,58 @@ class DellAgentServerClient:
                 "agent_server_graph_input_invalid"
             ) from None
         if validated_input.run_id != run_contract.run_id:
+            raise DellAgentServerClientError("fin_research_run_input_mismatch")
+        return self._create_run(
+            session=session,
+            research_run=run_contract,
+            run_invocation=invocation_contract,
+            invocation_kind="start",
+            graph_input=validated_input.model_dump(mode="json"),
+            resume_payload=None,
+        )
+
+    def start_specialist_run(
+        self,
+        *,
+        session: DellAgentServerSessionBinding,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
+        graph_input: Mapping[str, Any],
+    ) -> DellAgentServerRunBinding:
+        """Start the dedicated Specialist graph through the same durable seam."""
+
+        self._ensure_open()
+        if not isinstance(session, DellAgentServerSessionBinding):
+            raise DellAgentServerClientError("agent_server_session_binding_invalid")
+        run_contract = _validate_identity_contract(
+            validate_research_run,
+            research_run,
+        )
+        invocation_contract = _validate_identity_contract(
+            validate_run_invocation,
+            run_invocation,
+        )
+        self._validate_run_lineage(
+            session=session,
+            research_run=run_contract,
+            run_invocation=invocation_contract,
+            invocation_kind="start",
+        )
+        if not isinstance(graph_input, Mapping):
+            raise DellAgentServerClientError("agent_server_graph_input_invalid")
+        try:
+            validated_input = SpecialistAgenticInput.model_validate_json(
+                json.dumps(graph_input, ensure_ascii=False, allow_nan=False)
+            )
+        except Exception:
+            raise DellAgentServerClientError(
+                "agent_server_graph_input_invalid"
+            ) from None
+        if (
+            validated_input.run_id != run_contract.run_id
+            or validated_input.run_invocation_id
+            != invocation_contract.invocation_id
+        ):
             raise DellAgentServerClientError("fin_research_run_input_mismatch")
         return self._create_run(
             session=session,

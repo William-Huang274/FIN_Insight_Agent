@@ -224,6 +224,38 @@ def test_read_and_schema_access_open_no_execution_resources(
     assert opened == 0
 
 
+def test_paid_shadow_schema_uses_same_server_factory_without_credentials(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv(
+        entry.DELL_SERVING_MODE_ENV,
+        entry.DELL_Q1_PAID_SHADOW_SERVING_MODE,
+    )
+    monkeypatch.delenv("DEEPSEEK_API_KEY", raising=False)
+    monkeypatch.delenv(entry.DELL_Q1_PAID_SHADOW_AUTHORITY_ENV, raising=False)
+
+    async def exercise() -> None:
+        async with entry.dell_reference_vertical_graph({}, _ReadRuntime()) as graph:
+            assert set(graph.get_graph().nodes) >= {
+                "initialize",
+                "model_decide",
+                "execute_evidence",
+                "execute_finance",
+                "validate_submission",
+                "human_review",
+            }
+            assert set(graph.input_schema.model_json_schema()["required"]) == {
+                "run_id",
+                "run_invocation_id",
+                "agent_id",
+                "task",
+                "required_route_obligation_ids",
+                "l0_context",
+            }
+
+    asyncio.run(exercise())
+
+
 def test_execution_profile_is_deployment_owned_and_checked_before_resources(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

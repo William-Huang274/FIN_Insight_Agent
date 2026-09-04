@@ -16,11 +16,12 @@ import os
 from collections.abc import AsyncIterator, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import replace
+from pathlib import Path
 from typing import Any, Literal
 
 from langchain_core.runnables import RunnableConfig
 from langgraph_sdk.runtime import ServerRuntime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, SecretStr
 
 from .dell_reference_vertical_contracts import canonical_sha256
 from .dell_agent_server_data_composition import (
@@ -39,6 +40,30 @@ from .dell_reference_vertical_graph import (
     DellReferenceVerticalDependencies,
     build_dell_reference_vertical_state_graph,
 )
+from .deepseek_structured_agents import (
+    DeepSeekStructuredAgentAdapter,
+    DeepSeekStructuredAgentError,
+    load_deepseek_structured_agent_config,
+)
+from .dell_specialist_agentic_composition import (
+    DellSpecialistAgenticCompositionError,
+    open_dell_specialist_receipted_composition,
+)
+from .dell_specialist_agentic_graph import (
+    DellSpecialistAgenticDependencies,
+    build_dell_specialist_agentic_state_graph,
+)
+from .dell_specialist_paid_shadow import (
+    DELL_IMPLEMENTATION_COMMIT_ENV,
+    DELL_Q1_PAID_SHADOW_AUTHORITY_ENV,
+    DELL_Q1_PAID_SHADOW_SERVING_MODE,
+    DellSpecialistPaidShadowError,
+    build_public_model_audit_sink,
+    file_sha256,
+    load_dell_q1_paid_shadow_authority,
+    require_data_authority_binding,
+    require_runtime_authority_binding,
+)
 from .dell_zero_model_graph_qualification import (
     DellExecutionProfile,
     DellZeroModelQualificationError,
@@ -51,6 +76,8 @@ DELL_AGENT_SERVER_GRAPH_ID = "dell_reference_vertical"
 DELL_LANGSMITH_PROJECT = "fin-insight-dell-reference-vertical"
 FIN_RUNTIME_POSTGRES_URI_ENV = "FIN_RUNTIME_POSTGRES_URI"
 DELL_EXECUTION_PROFILE_ENV = "FINSIGHT_DELL_EXECUTION_PROFILE"
+DELL_SERVING_MODE_ENV = "FINSIGHT_DELL_SERVING_MODE"
+DELL_REFERENCE_VERTICAL_SERVING_MODE = "reference_vertical"
 
 
 class DellAgentServerEntryError(RuntimeError):
@@ -233,6 +260,31 @@ def _compile_graph(
 
 _SCHEMA_ONLY_GRAPH = _compile_graph(_schema_only_dependencies())
 
+_SCHEMA_ONLY_SPECIALIST_GRAPH = build_dell_specialist_agentic_state_graph(
+    dependencies=DellSpecialistAgenticDependencies(
+        model_turn=_schema_only_unavailable,
+        evidence_tool=_schema_only_unavailable,
+        finance_tool=_schema_only_unavailable,
+        turn_source="provider_model",
+    )
+).compile(name=DELL_AGENT_SERVER_GRAPH_ID)
+
+
+def _require_serving_mode() -> Literal[
+    "reference_vertical",
+    "q1_specialist_paid_shadow_v1",
+]:
+    raw = os.environ.get(
+        DELL_SERVING_MODE_ENV,
+        DELL_REFERENCE_VERTICAL_SERVING_MODE,
+    ).strip()
+    if raw not in {
+        DELL_REFERENCE_VERTICAL_SERVING_MODE,
+        DELL_Q1_PAID_SHADOW_SERVING_MODE,
+    }:
+        raise DellAgentServerEntryError("dell_serving_mode_invalid")
+    return raw  # type: ignore[return-value]
+
 
 def _require_execution_profile() -> DellExecutionProfile:
     raw = os.environ.get(DELL_EXECUTION_PROFILE_ENV, PRODUCT_EXECUTION_PROFILE)
@@ -407,6 +459,133 @@ async def _open_execution_dependencies(
 
 
 @asynccontextmanager
+async def _open_q1_paid_shadow_graph(
+    identity: DellAgentServerIdentityBinding,
+    context: DellAgentServerRunContext,
+    *,
+    execution_profile: DellExecutionProfile,
+) -> AsyncIterator[Any]:
+    """Open the one Owner-authorized DeepSeek Specialist graph."""
+
+    if execution_profile != PRODUCT_EXECUTION_PROFILE:
+        raise DellAgentServerEntryError(
+            "paid_shadow_requires_product_execution_profile"
+        )
+    if identity.research_run_id != context.research_run_id:
+        raise DellAgentServerEntryError("fin_research_run_id_mismatch")
+    _require_durable_execution_binding(
+        identity,
+        execution_profile=execution_profile,
+    )
+    authority_path = os.environ.get(
+        DELL_Q1_PAID_SHADOW_AUTHORITY_ENV,
+        "",
+    ).strip()
+    implementation_commit = os.environ.get(
+        DELL_IMPLEMENTATION_COMMIT_ENV,
+        "",
+    ).strip()
+    repository_root = os.environ.get("FIN_REPO_ROOT", "").strip()
+    api_key = os.environ.get("DEEPSEEK_API_KEY", "").strip()
+    if not authority_path:
+        raise DellAgentServerEntryError("paid_shadow_authority_path_required")
+    if not implementation_commit:
+        raise DellAgentServerEntryError(
+            "paid_shadow_implementation_commit_required"
+        )
+    if not repository_root:
+        raise DellAgentServerEntryError("paid_shadow_repository_root_required")
+    if not api_key:
+        raise DellAgentServerEntryError("deepseek_api_key_required")
+    try:
+        authority = load_dell_q1_paid_shadow_authority(authority_path)
+        require_runtime_authority_binding(
+            authority,
+            agent_session_id=identity.agent_session_id,
+            research_run_id=identity.research_run_id,
+            run_invocation_id=identity.run_invocation_id,
+            implementation_commit=implementation_commit,
+        )
+        config_path = (
+            Path(repository_root)
+            / "configs"
+            / "research"
+            / "fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json"
+        )
+        if file_sha256(config_path) != authority.deepseek_config_sha256:
+            raise DellSpecialistPaidShadowError(
+                "paid_shadow_deepseek_config_binding_invalid"
+            )
+        model_config = load_deepseek_structured_agent_config(config_path)
+        budget = model_config.token_budget_basis["specialist"]
+        if (
+            model_config.provider != authority.provider
+            or model_config.model != authority.model
+            or budget.max_input_characters
+            != authority.max_input_characters_per_turn
+            or budget.max_output_tokens
+            != authority.max_output_tokens_per_turn
+            or budget.timeout_seconds != authority.timeout_seconds_per_turn
+            or budget.max_transport_attempts
+            != authority.max_transport_attempts_per_turn
+            or budget.retry_policy != authority.retry_policy
+            or budget.truncation_stop_behavior != authority.truncation_behavior
+        ):
+            raise DellSpecialistPaidShadowError(
+                "paid_shadow_model_budget_binding_invalid"
+            )
+        adapter = DeepSeekStructuredAgentAdapter.from_config(
+            config=model_config,
+            api_key=SecretStr(api_key),
+            audit_sink=build_public_model_audit_sink(authority),
+        )
+        with open_dell_specialist_receipted_composition(
+            run_id=identity.research_run_id,
+            run_invocation_id=identity.run_invocation_id,
+            branch_id=authority.branch_id,
+            turn_source="provider_model",
+            model_turn=adapter.specialist_model_turn,
+            max_model_turns=authority.max_model_turns,
+            max_tool_actions=authority.max_tool_actions,
+        ) as composition:
+            if (
+                composition.graph_input.agent_id != authority.node_id
+                or composition.graph_input.task.branch_id
+                != authority.branch_id
+                or composition.graph_input.task.research_as_of
+                != authority.research_as_of
+            ):
+                raise DellSpecialistPaidShadowError(
+                    "paid_shadow_specialist_input_binding_invalid"
+                )
+            require_data_authority_binding(
+                authority,
+                owner_data_gate_decision_digest=(
+                    composition.owner_data_gate_decision_digest
+                ),
+                inventory_snapshot_digest=(
+                    composition.inventory_snapshot_digest
+                ),
+                source_route_catalog_digest=(
+                    composition.source_route_catalog_digest
+                ),
+            )
+            yield composition.graph
+    except (
+        DellSpecialistPaidShadowError,
+        DellSpecialistAgenticCompositionError,
+        DeepSeekStructuredAgentError,
+    ) as exc:
+        raise DellAgentServerEntryError(
+            getattr(exc, "code", str(exc))
+        ) from None
+    except OSError:
+        raise DellAgentServerEntryError(
+            "paid_shadow_dependency_open_failed"
+        ) from None
+
+
+@asynccontextmanager
 async def dell_reference_vertical_graph(
     config: RunnableConfig,
     runtime: ServerRuntime[DellAgentServerRunContext],
@@ -419,9 +598,14 @@ async def dell_reference_vertical_graph(
     or database resources.
     """
 
+    serving_mode = _require_serving_mode()
     execution_runtime = runtime.execution_runtime
     if execution_runtime is None:
-        yield _SCHEMA_ONLY_GRAPH
+        yield (
+            _SCHEMA_ONLY_SPECIALIST_GRAPH
+            if serving_mode == DELL_Q1_PAID_SHADOW_SERVING_MODE
+            else _SCHEMA_ONLY_GRAPH
+        )
         return
 
     execution_profile = _require_execution_profile()
@@ -431,6 +615,14 @@ async def dell_reference_vertical_graph(
         run_context=execution_runtime.context,
     )
     context = DellAgentServerRunContext.model_validate(execution_runtime.context)
+    if serving_mode == DELL_Q1_PAID_SHADOW_SERVING_MODE:
+        async with _open_q1_paid_shadow_graph(
+            identity,
+            context,
+            execution_profile=execution_profile,
+        ) as graph:
+            yield graph
+        return
     async with _open_execution_dependencies(
         identity,
         context,
@@ -445,6 +637,7 @@ async def dell_reference_vertical_graph(
 __all__ = [
     "DELL_AGENT_SERVER_GRAPH_ID",
     "DELL_EXECUTION_PROFILE_ENV",
+    "DELL_SERVING_MODE_ENV",
     "DELL_LANGSMITH_PROJECT",
     "FIN_RUNTIME_POSTGRES_URI_ENV",
     "DellAgentServerEntryError",

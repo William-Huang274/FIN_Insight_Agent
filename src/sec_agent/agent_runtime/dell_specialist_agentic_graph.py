@@ -273,18 +273,26 @@ SpecialistAction = Annotated[
 ]
 
 
+SpecialistModelTurnSource = Literal[
+    "scripted_qualification",
+    "saved_response_replay",
+    "provider_model",
+]
+
+
 class SpecialistModelTurnRecord(_StrictModel):
-    """A scripted qualification turn, explicitly not model-execution evidence."""
+    """One composition-attributed model decision and its optional host receipt."""
 
     schema_version: Literal[
-        "fin_ia_dell_specialist_model_turn_record_v1_0"
-    ] = "fin_ia_dell_specialist_model_turn_record_v1_0"
+        "fin_ia_dell_specialist_model_turn_record_v1_1"
+    ] = "fin_ia_dell_specialist_model_turn_record_v1_1"
     turn_index: int = Field(ge=1, le=24)
-    turn_source: Literal["scripted_qualification"] = "scripted_qualification"
-    model_execution_evidence: Literal[False] = False
+    turn_source: SpecialistModelTurnSource = "scripted_qualification"
+    model_execution_evidence: bool = False
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     action: SpecialistAction
     action_digest: str = Field(pattern=_DIGEST_PATTERN)
+    runtime_receipt: RuntimeReceipt | None = None
     turn_record_digest: str = Field(pattern=_DIGEST_PATTERN)
 
     @model_validator(mode="after")
@@ -294,6 +302,14 @@ class SpecialistModelTurnRecord(_StrictModel):
             raise ValueError("specialist_model_turn_context_mismatch")
         if self.action_digest != action_digest:
             raise ValueError("specialist_model_turn_action_digest_mismatch")
+        if self.turn_source == "scripted_qualification":
+            if self.model_execution_evidence or self.runtime_receipt is not None:
+                raise ValueError("scripted_model_turn_receipt_forbidden")
+        else:
+            if self.runtime_receipt is None:
+                raise ValueError("receipted_model_turn_receipt_required")
+            if self.model_execution_evidence != (self.turn_source == "provider_model"):
+                raise ValueError("model_turn_execution_evidence_invalid")
         unsigned = self.model_dump(mode="json", exclude={"turn_record_digest"})
         if canonical_sha256(unsigned) != self.turn_record_digest:
             raise ValueError("specialist_model_turn_record_digest_mismatch")
@@ -641,6 +657,8 @@ class DellSpecialistAgenticDependencies:
     model_turn: ModelTurnPort
     evidence_tool: SpecialistToolPort
     finance_tool: SpecialistToolPort
+    turn_source: SpecialistModelTurnSource = "scripted_qualification"
+    expected_graph_input_digest: str | None = None
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -719,6 +737,21 @@ def _model_request(
         "task": state["task"],
         "l0_context": state["l0_context"],
         "notebook": notebook.model_dump(mode="json"),
+        "execution_budget": {
+            "max_model_turns": int(state["max_model_turns"]),
+            "used_model_turns": notebook.model_turn_count,
+            "remaining_model_turns": max(
+                int(state["max_model_turns"]) - notebook.model_turn_count,
+                0,
+            ),
+            "max_tool_actions": int(state["max_tool_actions"]),
+            "used_tool_actions": notebook.tool_action_count,
+            "remaining_tool_actions": max(
+                int(state["max_tool_actions"]) - notebook.tool_action_count,
+                0,
+            ),
+            "ceiling_semantics": "hard_anomaly_stop_not_completion_target",
+        },
         "allowed_actions": allowed_actions,
         "privacy_contract": {
             "return_structured_action_only": True,
@@ -734,15 +767,22 @@ def _build_model_turn_record(
     turn_index: int,
     request: Mapping[str, Any],
     action: SpecialistAction,
+    turn_source: SpecialistModelTurnSource,
+    runtime_receipt: RuntimeReceipt | None,
 ) -> SpecialistModelTurnRecord:
     body = {
-        "schema_version": "fin_ia_dell_specialist_model_turn_record_v1_0",
+        "schema_version": "fin_ia_dell_specialist_model_turn_record_v1_1",
         "turn_index": turn_index,
-        "turn_source": "scripted_qualification",
-        "model_execution_evidence": False,
+        "turn_source": turn_source,
+        "model_execution_evidence": turn_source == "provider_model",
         "context_digest": request["context_digest"],
         "action": action.model_dump(mode="json"),
         "action_digest": canonical_sha256(action.model_dump(mode="json")),
+        "runtime_receipt": (
+            runtime_receipt.model_dump(mode="json")
+            if runtime_receipt is not None
+            else None
+        ),
     }
     return _validate_model_json(
         SpecialistModelTurnRecord,
@@ -910,6 +950,14 @@ def build_dell_specialist_agentic_state_graph(
             state,
             code="specialist_agentic_input_invalid",
         )
+        if (
+            dependencies.expected_graph_input_digest is not None
+            and canonical_sha256(validated.model_dump(mode="json"))
+            != dependencies.expected_graph_input_digest
+        ):
+            raise DellSpecialistAgenticGraphError(
+                "specialist_agentic_input_binding_invalid"
+            )
         notebook = _build_notebook(
             run_id=validated.run_id,
             run_invocation_id=validated.run_invocation_id,
@@ -975,7 +1023,45 @@ def build_dell_specialist_agentic_state_graph(
             raise DellSpecialistAgenticGraphError(
                 "specialist_model_turn_failed"
             ) from None
-        action = _validate_action(raw)
+        runtime_receipt: RuntimeReceipt | None = None
+        if dependencies.turn_source == "scripted_qualification":
+            action = _validate_action(raw)
+        else:
+            if not isinstance(raw, Mapping) or set(raw) != {
+                "action",
+                "runtime_receipt",
+            }:
+                raise DellSpecialistAgenticGraphError(
+                    "specialist_model_turn_receipt_envelope_invalid"
+                )
+            action = _validate_action(raw.get("action"))
+            runtime_receipt = _validate_model_json(
+                RuntimeReceipt,
+                raw.get("runtime_receipt"),
+                code="specialist_model_turn_receipt_invalid",
+            )
+            expected_receipt_kind = (
+                "model"
+                if dependencies.turn_source == "provider_model"
+                else "host"
+            )
+            expected_receipt_actor = (
+                request["agent_id"]
+                if dependencies.turn_source == "provider_model"
+                else "dell_specialist_saved_response_replay"
+            )
+            if (
+                runtime_receipt.kind != expected_receipt_kind
+                or runtime_receipt.status != "success"
+                or runtime_receipt.actor != expected_receipt_actor
+                or runtime_receipt.request_digest != canonical_sha256(request)
+                or runtime_receipt.output_digest
+                != canonical_sha256(action.model_dump(mode="json"))
+                or runtime_receipt.transport_attempts != 1
+            ):
+                raise DellSpecialistAgenticGraphError(
+                    "specialist_model_turn_receipt_binding_invalid"
+                )
         if action.context_digest != request["context_digest"]:
             raise DellSpecialistAgenticGraphError(
                 "specialist_model_turn_context_binding_invalid"
@@ -989,6 +1075,8 @@ def build_dell_specialist_agentic_state_graph(
                     turn_index=notebook.model_turn_count + 1,
                     request=request,
                     action=action,
+                    turn_source=dependencies.turn_source,
+                    runtime_receipt=runtime_receipt,
                 ),
             ),
         )
@@ -1420,7 +1508,10 @@ def build_dell_specialist_agentic_state_graph(
             "phase": "specialist_human_review_handoff_emitted",
         }
 
-    graph = StateGraph(DellSpecialistAgenticState)
+    graph = StateGraph(
+        DellSpecialistAgenticState,
+        input_schema=SpecialistAgenticInput,
+    )
     graph.add_node("initialize", initialize)
     graph.add_node("model_decide", model_decide)
     graph.add_node("execute_evidence", execute_evidence)
@@ -1477,6 +1568,7 @@ __all__ = [
     "SpecialistHumanReviewHandoff",
     "SpecialistL0Context",
     "SpecialistModelTurnRecord",
+    "SpecialistModelTurnSource",
     "SpecialistNotebook",
     "SpecialistObservedReference",
     "SpecialistRouteCompletion",

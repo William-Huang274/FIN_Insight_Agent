@@ -7,8 +7,6 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-
-
 pytest.importorskip("mcp", reason="agent-runtime optional dependency")
 
 from sec_agent.agent_runtime.dell_reference_vertical_contracts import (
@@ -22,7 +20,12 @@ from sec_agent.agent_runtime.dell_specialist_agentic_composition import (
     _bound_task_for_action,
     _mcp_port,
     _observation_from_result,
+    open_dell_specialist_receipted_composition,
     open_dell_specialist_scripted_qualification_composition,
+)
+from sec_agent.agent_runtime.deepseek_structured_agents import (
+    DeepSeekStructuredAgentAdapter,
+    load_deepseek_structured_agent_config,
 )
 from sec_agent.agent_runtime.dell_specialist_agentic_graph import (
     RequestEvidenceAction,
@@ -32,6 +35,12 @@ from sec_agent.agent_runtime.dell_specialist_agentic_graph import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+DEEPSEEK_CONFIG_PATH = (
+    ROOT
+    / "configs"
+    / "research"
+    / "fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json"
+)
 RUNTIME_ENVIRONMENT = {
     "FIN_REPO_ROOT": str(ROOT),
     "FINSIGHT_DELL_S1_NODES_PATH": str(
@@ -90,6 +99,8 @@ class _RealMCPFakeModel:
     def __init__(self, *, force_residual_first: bool = False) -> None:
         self.turns = 0
         self.force_residual_first = force_residual_first
+        self.requests: list[dict[str, Any]] = []
+        self.actions: list[dict[str, Any]] = []
 
     @staticmethod
     def _evidence_action(
@@ -144,6 +155,7 @@ class _RealMCPFakeModel:
 
     def __call__(self, request: Mapping[str, Any]) -> dict[str, Any]:
         self.turns += 1
+        self.requests.append(dict(request))
         context_digest = request["context_digest"]
         notebook = SpecialistNotebook.model_validate_json(
             json.dumps(request["notebook"])
@@ -252,6 +264,7 @@ class _RealMCPFakeModel:
                 ],
                 "open_gaps": ["Customer-level mix remains outside this Q1 proof."],
             }
+        self.actions.append(dict(action))
         return action
 
 
@@ -280,10 +293,35 @@ def test_single_specialist_loop_uses_existing_real_mcp_without_model_or_network(
         )
         assert composition.model_execution_receipts_authorized is False
         assert composition.provider_model_calls_authorized is False
+        assert composition.model_execution_receipts_authorized is False
         assert composition.network_calls_authorized is False
         assert composition.paid_calls_authorized is False
         assert composition.live_external_calls_authorized is False
         assert not hasattr(composition, "dependencies")
+        capability_summaries = (
+            composition.graph_input.l0_context.capability_summaries
+        )
+        reviewed_capability = next(
+            row
+            for row in capability_summaries
+            if row.get("capability_ref")
+            == "capability:dell:reviewed-evidence-query"
+        )
+        assert "operating_performance" in reviewed_capability[
+            "allowed_topic_refs"
+        ]
+        finance_capability = next(
+            row
+            for row in capability_summaries
+            if row.get("capability_ref")
+            == "capability:dell:financial-fact-query"
+        )
+        assert "revenue" in {
+            row["metric_id"] for row in finance_capability["metrics"]
+        }
+        assert composition.graph_input.l0_context.skill_summaries[0].get(
+            "method_context"
+        )
         result = composition.graph.invoke(
             composition.graph_input.model_dump(mode="json"),
             {"recursion_limit": 40},
@@ -353,6 +391,77 @@ def test_single_specialist_loop_uses_existing_real_mcp_without_model_or_network(
     assert "Z:/" not in serialized
     assert "D:/" not in serialized
     assert "DEEPSEEK_API_KEY" not in serialized
+
+
+def test_receipted_synthetic_replay_runs_full_real_mcp_loop_without_transport() -> None:
+    _assert_assets()
+
+    class NoTransportModel:
+        def with_structured_output(self, *_args: Any, **_kwargs: Any) -> Any:
+            raise AssertionError("saved replay must not construct model transport")
+
+    no_transport_model = NoTransportModel()
+    events: list[dict[str, Any]] = []
+    adapter = DeepSeekStructuredAgentAdapter(
+        config=load_deepseek_structured_agent_config(DEEPSEEK_CONFIG_PATH),
+        chat_models={
+            "planner": no_transport_model,
+            "specialist": no_transport_model,
+            "counter": no_transport_model,
+            "lead": no_transport_model,
+        },
+        audit_sink=lambda event: events.append(dict(event)),
+    )
+    action_source = _RealMCPFakeModel()
+
+    def replay_turn(request: Mapping[str, Any]) -> dict[str, Any]:
+        action = action_source(request)
+        replay_body = {
+            "schema_version": (
+                "fin_ia_dell_specialist_action_replay_record_v1_0"
+            ),
+            "replay_source": "synthetic_qualification",
+            "request_digest": canonical_sha256(request),
+            "parsed_action": action,
+        }
+        return adapter.replay_specialist_model_turn(
+            request,
+            replay_record={
+                **replay_body,
+                "replay_record_digest": canonical_sha256(replay_body),
+            },
+        )
+
+    with open_dell_specialist_receipted_composition(
+        run_id="test:dell-wave2-receipted-replay",
+        run_invocation_id="test:dell-wave2-receipted-replay:invocation:1",
+        branch_id="Q1_ISSUER_TRUTH",
+        turn_source="saved_response_replay",
+        model_turn=replay_turn,
+        environment=RUNTIME_ENVIRONMENT,
+    ) as composition:
+        assert composition.provider_model_calls_authorized is False
+        assert composition.network_calls_authorized is False
+        assert composition.paid_calls_authorized is False
+        result = composition.graph.invoke(
+            composition.graph_input.model_dump(mode="json"),
+            {"recursion_limit": 40},
+        )
+
+    notebook = SpecialistNotebook.model_validate_json(
+        json.dumps(result["notebook"])
+    )
+    assert result["phase"] == "specialist_submission_accepted"
+    assert notebook.model_turn_count == 3
+    assert all(
+        record.turn_source == "saved_response_replay"
+        and record.model_execution_evidence is False
+        and record.runtime_receipt is not None
+        for record in notebook.model_turn_records
+    )
+    assert len(events) == 6
+    assert all(event["provider_call_attempted"] is False for event in events)
+    assert all("raw_response" not in event for event in events)
 
 
 def test_specialist_observes_compilation_residual_and_repairs_route() -> None:

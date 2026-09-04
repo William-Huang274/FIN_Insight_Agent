@@ -32,6 +32,7 @@ from .dell_specialist_agentic_graph import (
     RequestEvidenceAction,
     RequestFinanceAction,
     SpecialistAgenticInput,
+    SpecialistModelTurnSource,
     SpecialistObservedReference,
     SpecialistRouteCompletion,
     SpecialistToolFailure,
@@ -78,6 +79,45 @@ class DellSpecialistScriptedQualificationComposition:
     network_calls_authorized: Literal[False] = False
     paid_calls_authorized: Literal[False] = False
     live_external_calls_authorized: Literal[False] = False
+
+
+@dataclass(frozen=True)
+class DellSpecialistReceiptedComposition:
+    """One replay or live-provider Specialist loop over the approved MCP plane."""
+
+    graph_input: SpecialistAgenticInput
+    graph: Any
+    owner_data_gate_decision_digest: str
+    inventory_snapshot_digest: str
+    source_route_catalog_digest: str
+    turn_source: Literal["saved_response_replay", "provider_model"]
+    live_external_calls_authorized: Literal[False] = False
+
+    @property
+    def model_execution_receipts_authorized(self) -> bool:
+        return self.turn_source == "provider_model"
+
+    @property
+    def provider_model_calls_authorized(self) -> bool:
+        return self.turn_source == "provider_model"
+
+    @property
+    def network_calls_authorized(self) -> bool:
+        return self.turn_source == "provider_model"
+
+    @property
+    def paid_calls_authorized(self) -> bool:
+        return self.turn_source == "provider_model"
+
+
+@dataclass(frozen=True)
+class _OpenedSpecialistComposition:
+    graph_input: SpecialistAgenticInput
+    graph: Any
+    owner_data_gate_decision_digest: str
+    inventory_snapshot_digest: str
+    source_route_catalog_digest: str
+
 
 def _model_json(model: type[Any], value: Any, *, code: str) -> Any:
     try:
@@ -134,6 +174,8 @@ def _build_graph_input(
     branch_id: str,
     foundation_binding: Any,
     source_route_catalog: Mapping[str, Any],
+    planner_tool_capabilities: Mapping[str, Any],
+    reviewed_topic_refs_by_branch: Mapping[str, tuple[str, ...]],
     owner_data_gate_decision_digest: str,
     inventory_snapshot_digest: str,
     max_model_turns: int,
@@ -164,6 +206,39 @@ def _build_graph_input(
         }
         for route in required_routes
     )
+    finance_capability = planner_tool_capabilities.get("finance")
+    if not isinstance(finance_capability, Mapping):
+        raise DellSpecialistAgenticCompositionError(
+            "specialist_finance_capability_missing"
+        )
+    metric_rows = finance_capability.get("metrics")
+    if not isinstance(metric_rows, list | tuple):
+        raise DellSpecialistAgenticCompositionError(
+            "specialist_finance_metric_catalog_invalid"
+        )
+    dell_metrics = tuple(
+        {
+            key: row.get(key)
+            for key in (
+                "metric_id",
+                "unit_family",
+                "availability",
+                "formula",
+            )
+        }
+        for row in metric_rows
+        if isinstance(row, Mapping)
+        and "DELL" in tuple(row.get("observed_tickers") or ())
+    )
+    if not dell_metrics:
+        raise DellSpecialistAgenticCompositionError(
+            "specialist_dell_finance_metrics_missing"
+        )
+    topic_refs = tuple(reviewed_topic_refs_by_branch.get(branch_id, ()))
+    if not topic_refs:
+        raise DellSpecialistAgenticCompositionError(
+            "specialist_reviewed_topic_catalog_missing"
+        )
     plan_basis = {
         "run_id": run_id,
         "run_invocation_id": run_invocation_id,
@@ -202,6 +277,30 @@ def _build_graph_input(
         "answer_free": True,
         "grants_authority": False,
     }
+    reviewed_capability = {
+        "capability_ref": "capability:dell:reviewed-evidence-query",
+        "assigned_route_obligation_ids": required_route_ids,
+        "allowed_topic_refs": topic_refs,
+        "minimum_authority_tiers": ("reviewed", "primary", "any_reviewed"),
+        "candidate_is_not_evidence": True,
+        "answer_free": True,
+        "grants_authority": False,
+    }
+    finance_summary = {
+        "capability_ref": "capability:dell:financial-fact-query",
+        "supported_ticker": "DELL",
+        "metrics": dell_metrics,
+        "canonical_granularities": finance_capability.get(
+            "canonical_granularities"
+        ),
+        "latest_query_rule": finance_capability.get("latest_query_rule"),
+        "maximum_fiscal_year_count": finance_capability.get(
+            "maximum_fiscal_year_count"
+        ),
+        "known_non_capabilities": finance_capability.get("non_capabilities"),
+        "answer_free": True,
+        "grants_authority": False,
+    }
     return SpecialistAgenticInput(
         run_id=run_id,
         run_invocation_id=run_invocation_id,
@@ -217,15 +316,19 @@ def _build_graph_input(
             "disclosure_runtime_state": (
                 "current_state_authority_unavailable_fail_closed"
             ),
-            "capability_summaries": (l0_body,),
+            "capability_summaries": (
+                l0_body,
+                reviewed_capability,
+                finance_summary,
+            ),
             "skill_summaries": (
                 {
                     "skill_ref": f"skill:dell:{branch_id.lower()}",
                     "purpose": (
-                        "Answer-free branch method pointer only; content "
-                        "disclosure remains unavailable until current-state "
-                        "authority ports are wired."
+                        "Answer-free branch research method supplied for this "
+                        "bounded Specialist shadow."
                     ),
+                    "method_context": method.method_context,
                     "grants_authority": False,
                 },
             ),
@@ -751,7 +854,7 @@ def _mcp_port(
 
 
 @contextmanager
-def open_dell_specialist_scripted_qualification_composition(
+def _open_dell_specialist_composition(
     *,
     run_id: str,
     run_invocation_id: str,
@@ -759,14 +862,9 @@ def open_dell_specialist_scripted_qualification_composition(
     max_model_turns: int = 8,
     max_tool_actions: int = 12,
     environment: Mapping[str, str] | None = None,
-    scripted_model_turn: ModelTurnPort,
-) -> Iterator[DellSpecialistScriptedQualificationComposition]:
-    """Open a scripted, zero-call qualification over the approved local MCP.
-
-    This is deliberately not a production/model composition.  The scripted
-    semantic action port creates no model execution receipt or paid authority.
-    """
-
+    model_turn: ModelTurnPort,
+    turn_source: SpecialistModelTurnSource,
+) -> Iterator[_OpenedSpecialistComposition]:
     try:
         with open_dell_approved_data_composition(
             run_invocation_id=run_invocation_id,
@@ -778,6 +876,12 @@ def open_dell_specialist_scripted_qualification_composition(
                 branch_id=branch_id,
                 foundation_binding=approved.foundation_binding,
                 source_route_catalog=approved.source_route_catalog,
+                planner_tool_capabilities=(
+                    approved.dependencies.planner_tool_capabilities
+                ),
+                reviewed_topic_refs_by_branch=(
+                    approved.reviewed_topic_refs_by_branch
+                ),
                 owner_data_gate_decision_digest=approved.decision_digest,
                 inventory_snapshot_digest=approved.inventory_snapshot_digest,
                 max_model_turns=max_model_turns,
@@ -785,7 +889,7 @@ def open_dell_specialist_scripted_qualification_composition(
             )
             task = graph_input.task
             dependencies = DellSpecialistAgenticDependencies(
-                model_turn=scripted_model_turn,
+                model_turn=model_turn,
                 evidence_tool=_mcp_port(
                     expected_task=task,
                     baseline_source_plan=approved.baseline_source_plan,
@@ -804,8 +908,10 @@ def open_dell_specialist_scripted_qualification_composition(
                     lane="finance",
                     tool=approved.dependencies.finance_tool,
                 ),
+                turn_source=turn_source,
+                expected_graph_input_digest=canonical_sha256(graph_input),
             )
-            yield DellSpecialistScriptedQualificationComposition(
+            yield _OpenedSpecialistComposition(
                 graph_input=graph_input,
                 graph=build_dell_specialist_agentic_state_graph(
                     dependencies=dependencies
@@ -820,8 +926,84 @@ def open_dell_specialist_scripted_qualification_composition(
         raise DellSpecialistAgenticCompositionError(exc.code) from None
 
 
+@contextmanager
+def open_dell_specialist_scripted_qualification_composition(
+    *,
+    run_id: str,
+    run_invocation_id: str,
+    branch_id: str,
+    max_model_turns: int = 8,
+    max_tool_actions: int = 12,
+    environment: Mapping[str, str] | None = None,
+    scripted_model_turn: ModelTurnPort,
+) -> Iterator[DellSpecialistScriptedQualificationComposition]:
+    """Open a scripted, zero-call qualification over the approved local MCP."""
+
+    with _open_dell_specialist_composition(
+        run_id=run_id,
+        run_invocation_id=run_invocation_id,
+        branch_id=branch_id,
+        max_model_turns=max_model_turns,
+        max_tool_actions=max_tool_actions,
+        environment=environment,
+        model_turn=scripted_model_turn,
+        turn_source="scripted_qualification",
+    ) as opened:
+        yield DellSpecialistScriptedQualificationComposition(
+            graph_input=opened.graph_input,
+            graph=opened.graph,
+            owner_data_gate_decision_digest=(
+                opened.owner_data_gate_decision_digest
+            ),
+            inventory_snapshot_digest=opened.inventory_snapshot_digest,
+            source_route_catalog_digest=opened.source_route_catalog_digest,
+        )
+
+
+@contextmanager
+def open_dell_specialist_receipted_composition(
+    *,
+    run_id: str,
+    run_invocation_id: str,
+    branch_id: str,
+    turn_source: Literal["saved_response_replay", "provider_model"],
+    model_turn: ModelTurnPort,
+    max_model_turns: int = 8,
+    max_tool_actions: int = 12,
+    environment: Mapping[str, str] | None = None,
+) -> Iterator[DellSpecialistReceiptedComposition]:
+    """Open the same bounded graph for a trusted replay or provider turn port."""
+
+    if turn_source not in {"saved_response_replay", "provider_model"}:
+        raise DellSpecialistAgenticCompositionError(
+            "specialist_receipted_turn_source_invalid"
+        )
+    with _open_dell_specialist_composition(
+        run_id=run_id,
+        run_invocation_id=run_invocation_id,
+        branch_id=branch_id,
+        max_model_turns=max_model_turns,
+        max_tool_actions=max_tool_actions,
+        environment=environment,
+        model_turn=model_turn,
+        turn_source=turn_source,
+    ) as opened:
+        yield DellSpecialistReceiptedComposition(
+            graph_input=opened.graph_input,
+            graph=opened.graph,
+            owner_data_gate_decision_digest=(
+                opened.owner_data_gate_decision_digest
+            ),
+            inventory_snapshot_digest=opened.inventory_snapshot_digest,
+            source_route_catalog_digest=opened.source_route_catalog_digest,
+            turn_source=turn_source,
+        )
+
+
 __all__ = [
     "DellSpecialistAgenticCompositionError",
+    "DellSpecialistReceiptedComposition",
     "DellSpecialistScriptedQualificationComposition",
+    "open_dell_specialist_receipted_composition",
     "open_dell_specialist_scripted_qualification_composition",
 ]

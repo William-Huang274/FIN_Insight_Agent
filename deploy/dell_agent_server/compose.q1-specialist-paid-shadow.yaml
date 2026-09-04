@@ -1,0 +1,34 @@
+# One-shot Dell Q1 Specialist paid shadow overlay.
+#
+# The base Compose file remains the sole Agent Server/PostgreSQL/Redis stack.
+# Only the API service receives the DeepSeek credential. Docker Desktop owns
+# outbound proxying; no container-level proxy is injected. The Owner authority
+# is read-only; the single fresh attempt directory is the only added writable
+# bind mount.
+services:
+  langgraph-api:
+    environment:
+      FINSIGHT_DELL_EXECUTION_PROFILE: product
+      FINSIGHT_DELL_SERVING_MODE: q1_specialist_paid_shadow_v1
+      FINSIGHT_DELL_PAID_SHADOW_AUTHORITY_PATH: /run/fin-insight/paid-shadow-authority.json
+      FINSIGHT_DELL_IMPLEMENTATION_COMMIT: ${FINSIGHT_DELL_IMPLEMENTATION_COMMIT:?set by the one-shot host runner}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:?set DEEPSEEK_API_KEY in the repository .env}
+    volumes:
+      - type: bind
+        source: ${FINSIGHT_DELL_PAID_SHADOW_AUTHORITY_HOST_PATH:?set by the one-shot host runner}
+        target: /run/fin-insight/paid-shadow-authority.json
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ${FINSIGHT_DELL_PAID_SHADOW_ARTIFACT_HOST_PATH:?set by the one-shot host runner}
+        target: ${FINSIGHT_DELL_PAID_SHADOW_ARTIFACT_CONTAINER_PATH:?set by the one-shot host runner}
+        read_only: false
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ../../scripts/qualification/dell_q1_specialist_paid_shadow
+        target: /opt/fin-insight-qualification/dell-q1-specialist-paid-shadow
+        read_only: true
+        bind:
+          create_host_path: false

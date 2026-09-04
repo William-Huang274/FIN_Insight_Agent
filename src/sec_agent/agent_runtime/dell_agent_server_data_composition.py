@@ -151,6 +151,7 @@ class DellApprovedDataComposition:
     s2_observation_count: int
     external_route_count: int
     local_candidate_count: int
+    reviewed_topic_refs_by_branch: dict[str, tuple[str, ...]]
     model_calls_authorized: bool = False
     network_calls_authorized: bool = False
     paid_calls_authorized: bool = False
@@ -344,6 +345,19 @@ def open_dell_approved_data_composition(
                 s2_observation_count=inventory.s2_observation_count,
                 external_route_count=inventory.external_object_count,
                 local_candidate_count=inventory.local_candidate_count,
+                reviewed_topic_refs_by_branch={
+                    branch_id: tuple(
+                        sorted(
+                            {
+                                topic_ref
+                                for row in reviewed_index.rows
+                                if branch_id in row.coverage_obligation_ids
+                                for topic_ref in row.topic_refs
+                            }
+                        )
+                    )
+                    for branch_id in graph_run.foundation_binding.required_branch_ids
+                },
             )
     except DellApprovedDataCompositionError:
         raise

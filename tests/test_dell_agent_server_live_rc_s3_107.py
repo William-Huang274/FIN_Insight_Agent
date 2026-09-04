@@ -233,6 +233,33 @@ def test_static_preflight_blocks_before_docker_or_attempt(
     assert calls == ["files", "model", "repo", "catalog", "matrix"]
 
 
+def test_compose_prefix_pins_repository_env_file(host: ModuleType) -> None:
+    prefix = host._compose_prefix("finsight-qualification-test")
+
+    env_file_index = prefix.index("--env-file")
+    assert prefix[env_file_index + 1] == str(host.ROOT / ".env")
+
+
+def test_compose_env_generates_stable_distinct_ephemeral_role_passwords(
+    host: ModuleType, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    for name in host.QUALIFICATION_EPHEMERAL_PASSWORD_NAMES:
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setattr(host, "_EPHEMERAL_COMPOSE_SECRETS", None)
+
+    first = host._compose_env(18131)
+    second = host._compose_env(18131)
+    values = [first[name] for name in host.QUALIFICATION_EPHEMERAL_PASSWORD_NAMES]
+
+    assert first["FINSIGHT_AGENT_SERVER_HOST_PORT"] == "18131"
+    assert len(set(values)) == len(values)
+    assert all(value for value in values)
+    assert all(
+        second[name] == first[name]
+        for name in host.QUALIFICATION_EPHEMERAL_PASSWORD_NAMES
+    )
+
+
 def test_catalog_placeholder_is_fail_closed(host: ModuleType, tmp_path: Path) -> None:
     sql = tmp_path / "catalog.sql"
     sql.write_text(host.CATALOG_PLACEHOLDER, encoding="utf-8")

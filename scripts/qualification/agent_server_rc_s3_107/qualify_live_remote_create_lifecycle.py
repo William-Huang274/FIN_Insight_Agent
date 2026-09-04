@@ -21,6 +21,7 @@ import hashlib
 import json
 import os
 import re
+import secrets
 import socket
 import subprocess
 import sys
@@ -47,6 +48,13 @@ OVERLAY_COMPOSE = (
     / "dell_agent_server"
     / "compose.zero-model-rc-s3-107-qualification.yaml"
 )
+QUALIFICATION_ENV_FILE = ROOT / ".env"
+QUALIFICATION_EPHEMERAL_PASSWORD_NAMES = (
+    "FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD",
+    "FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD",
+    "FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD",
+)
+_EPHEMERAL_COMPOSE_SECRETS: dict[str, str] | None = None
 PHASE_SCRIPT_IN_CONTAINER = (
     "/opt/fin-insight-qualification/rc-s3-107/live_killpoint_phase.py"
 )
@@ -1088,6 +1096,8 @@ def _compose_prefix(project: str) -> tuple[str, ...]:
     return (
         "docker",
         "compose",
+        "--env-file",
+        str(QUALIFICATION_ENV_FILE),
         "--project-name",
         project,
         "--file",
@@ -1758,8 +1768,18 @@ def _validate_operator_observation(
 
 
 def _compose_env(port: int) -> dict[str, str]:
+    global _EPHEMERAL_COMPOSE_SECRETS
+
+    if _EPHEMERAL_COMPOSE_SECRETS is None:
+        _EPHEMERAL_COMPOSE_SECRETS = {
+            name: secrets.token_urlsafe(32)
+            for name in QUALIFICATION_EPHEMERAL_PASSWORD_NAMES
+        }
     environment = dict(os.environ)
     environment["FINSIGHT_AGENT_SERVER_HOST_PORT"] = str(port)
+    for name, value in _EPHEMERAL_COMPOSE_SECRETS.items():
+        if not environment.get(name):
+            environment[name] = value
     return environment
 
 

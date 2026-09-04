@@ -89,9 +89,11 @@ an old, partial or silently drifted named volume that skipped
 
 When intentionally reusing a volume, first stop or drain `langgraph-api` so the
 v1.0 writer cannot race the write-incompatible v1.1 migration. The volume must
-contain either the exact frozen v1.0 predecessor or the exact v1.1 catalog. Start
-PostgreSQL alone, then run the reviewed credential bootstrap and digest-pinned
-migrator explicitly:
+contain the exact frozen v1.0 predecessor, the exact known-buggy v1.1
+`31c314f1...` predecessor, or the exact current v1.1 catalog. The known-buggy
+catalog is accepted only so the installer can replace the RECONCILED self-match
+trigger function; readiness never accepts it as healthy. Start PostgreSQL alone,
+then run the reviewed credential bootstrap and digest-pinned migrator explicitly:
 
 ```powershell
 docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml stop langgraph-api
@@ -102,11 +104,13 @@ docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml up -d
 ```
 
 The first `up` may correctly report PostgreSQL as unhealthy until the two
-explicit steps finish. The v1.1 installer has exactly three accepted routes:
-an absent schema runs v1.0 then v1.1 in one transaction; an exact v1.0 catalog
-runs only the reviewed v1.1 migration; and an exact v1.1 catalog is a no-op. It
-refuses every unversioned, partial or drifted schema—including changed
-constraints or function bodies—instead of stamping it as current. Existing v1.0
+explicit steps finish. The v1.1 installer has exactly four accepted routes: an
+absent schema runs v1.0 then v1.1 in one transaction; an exact v1.0 catalog runs
+the reviewed v1.1 migration; the exact known-buggy v1.1 catalog replays 002 in
+one transaction to repair the trigger function without deleting rows; and the
+exact current v1.1 catalog is a no-op. It refuses every other unversioned,
+partial or drifted schema—including changed constraints or function
+bodies—instead of stamping it as current. Existing v1.0 and known-buggy v1.1
 rows remain readable, but after migration every new final server-run binding
 requires the durable PENDING/optional ORPHAN/RECONCILED lifecycle, so old writers
 must not remain in service. Do not replace migration with deletion of the named

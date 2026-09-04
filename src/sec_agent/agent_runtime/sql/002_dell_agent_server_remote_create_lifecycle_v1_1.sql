@@ -1167,6 +1167,7 @@ BEGIN
         FROM fin_runtime.agent_server_run_create_lifecycle AS prior
         WHERE prior.run_invocation_id = NEW.run_invocation_id
           AND prior.lifecycle_state = 'RECONCILED'
+          AND prior.lifecycle_ordinal < NEW.lifecycle_ordinal
     ) THEN
         RAISE EXCEPTION 'fin_runtime_run_create_event_after_reconciled'
             USING ERRCODE = '23514';

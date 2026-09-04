@@ -37,7 +37,7 @@ export PGSSLMODE=disable
 
 fingerprint_sql=/opt/fin-insight/040-fin-runtime-schema-fingerprint.sql
 expected_fingerprint_source_sha256=5de1648a55382aa3acc20297bbdd8a3694a2e0a69ee04814cc6499c0da332a66
-expected_v1_1_catalog_sha256=31c314f1d0d17cd91e252d4733a0eba35ae5725e85e56685a63081ba552f7bad
+expected_v1_1_catalog_sha256=f37dbff53d47dc59bb5390bdcf46a5f51b354ffa61ff5b8c596180d3aa169f7e
 normalized_fingerprint_sql=$(mktemp /tmp/fin-runtime-readiness-v1-1.XXXXXX.sql)
 fingerprint_rows=$(mktemp /tmp/fin-runtime-readiness-v1-1.XXXXXX.rows)
 trap 'rm -f "$normalized_fingerprint_sql" "$fingerprint_rows"' EXIT HUP INT TERM

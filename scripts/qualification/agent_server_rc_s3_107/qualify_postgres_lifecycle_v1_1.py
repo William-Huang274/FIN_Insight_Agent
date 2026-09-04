@@ -1003,6 +1003,118 @@ def _disposition_checks(
     return permissions, negatives, persisted
 
 
+def _positive_control_counts(
+    app_pool: Any,
+    *,
+    research_run_id: str,
+    run_invocation_id: str,
+) -> tuple[int, int, int, int]:
+    """Read the four append-only populations used by exact-bind replay proof."""
+
+    with app_pool.connection() as connection:
+        row = connection.execute(
+            """
+            SELECT
+                (
+                    SELECT COUNT(*)
+                    FROM fin_runtime.research_runs
+                    WHERE research_run_id = %s
+                ),
+                (
+                    SELECT COUNT(*)
+                    FROM fin_runtime.research_run_invocations
+                    WHERE run_invocation_id = %s
+                ),
+                (
+                    SELECT COUNT(*)
+                    FROM fin_runtime.agent_server_run_create_lifecycle
+                    WHERE run_invocation_id = %s
+                ),
+                (
+                    SELECT COUNT(*)
+                    FROM fin_runtime.agent_server_action_attempt_snapshots
+                    WHERE run_invocation_id = %s
+                )
+            """,
+            (
+                research_run_id,
+                run_invocation_id,
+                run_invocation_id,
+                run_invocation_id,
+            ),
+        ).fetchone()
+        connection.rollback()
+    if (
+        row is None
+        or len(row) != 4
+        or any(not isinstance(value, int) or value < 0 for value in row)
+    ):
+        raise QualificationFailure("production_reconciled_count_read_invalid")
+    return tuple(row)
+
+
+def _post_reconciled_orphan_check(
+    app_pool: Any,
+    *,
+    run_invocation_id: str,
+    attempt_id: str,
+) -> dict[str, str]:
+    """Prove the repaired trigger still rejects events after final binding."""
+
+    observation_digest = _digest(
+        attempt_id,
+        "reconciled-control",
+        "post-reconciled-orphan-observation",
+    )
+    event_digest = _digest(
+        attempt_id,
+        "reconciled-control",
+        "post-reconciled-orphan-event",
+    )
+
+    def operation(connection: Any) -> None:
+        connection.execute(
+            """
+            INSERT INTO fin_runtime.agent_server_run_create_lifecycle (
+                run_invocation_id, lifecycle_ordinal, lifecycle_state,
+                research_run_id, agent_session_id, invocation_ordinal,
+                canonical_invocation_kind, server_invocation_kind,
+                server_thread_id, assistant_id, server_assistant_id,
+                execution_profile, session_identity_digest,
+                research_run_identity_digest,
+                run_invocation_identity_digest, launch_request_digest,
+                server_metadata_digest, bound_run_invocation_id,
+                server_run_id, server_run_status, recovery_reason_code,
+                server_observation_digest, final_binding_digest,
+                lifecycle_event_digest
+            )
+            SELECT
+                run_invocation_id, lifecycle_ordinal + 1, 'ORPHAN',
+                research_run_id, agent_session_id, invocation_ordinal,
+                canonical_invocation_kind, server_invocation_kind,
+                server_thread_id, assistant_id, server_assistant_id,
+                execution_profile, session_identity_digest,
+                research_run_identity_digest,
+                run_invocation_identity_digest, launch_request_digest,
+                server_metadata_digest, NULL,
+                server_run_id, server_run_status,
+                'qualification_after_reconciled', %s, NULL, %s
+            FROM fin_runtime.agent_server_run_create_lifecycle
+            WHERE run_invocation_id = %s
+              AND lifecycle_state = 'RECONCILED'
+            """,
+            (observation_digest, event_digest, run_invocation_id),
+        )
+
+    return _expect_rejected(
+        app_pool,
+        "post_reconciled_orphan_rejected",
+        "23514",
+        operation,
+        expected_message="fin_runtime_run_create_event_after_reconciled",
+    )
+
+
 def qualify(attempt_id: str, timeout: int) -> dict[str, Any]:
     root = Path(__file__).resolve().parents[3]
     sys.path.insert(0, str(root / "src"))
@@ -1012,6 +1124,7 @@ def qualify(attempt_id: str, timeout: int) -> dict[str, Any]:
         from sec_agent.agent_runtime.dell_agent_server_identity import (
             PostgresDellAgentServerIdentityRepository,
             PostgresDellAgentServerRecoveryOperatorRepository,
+            persisted_run_binding_digest,
         )
     except Exception:
         raise QualificationFailure("qualification_import_failed") from None
@@ -1119,6 +1232,135 @@ def qualify(attempt_id: str, timeout: int) -> dict[str, Any]:
                 case,
                 attempt_id,
             )
+
+            reconciled_contracts, reconciled_lifecycle = _begin_dispatch(
+                repository,
+                session,
+                attempt_id,
+                "reconciled-control",
+                thread_id,
+                assistant_id,
+            )
+            reconciled_server_run_id = str(uuid4())
+            reconciled_observation_digest = _digest(
+                attempt_id,
+                "reconciled-control",
+                "exact-observation",
+            )
+            reconciled_lifecycle = repository.record_run_create_orphan(
+                run_invocation_id=(
+                    reconciled_contracts.invocation.invocation_id
+                ),
+                pending_event_digest=(
+                    reconciled_lifecycle.pending.lifecycle_event_digest
+                ),
+                recovery_reason_code="exact_server_run_observed",
+                server_observation_digest=reconciled_observation_digest,
+                server_run_id=reconciled_server_run_id,
+                server_run_status="pending",
+            )
+            if (
+                reconciled_lifecycle.state != "ORPHAN"
+                or len(reconciled_lifecycle.orphan_observations) != 1
+                or reconciled_lifecycle.orphan is None
+                or reconciled_lifecycle.orphan.lifecycle_ordinal != 3
+            ):
+                raise QualificationFailure(
+                    "production_reconciled_orphan_control_invalid"
+                )
+
+            reconciled_binding = repository.bind_run_invocation(
+                research_run=reconciled_contracts.run,
+                run_invocation=reconciled_contracts.invocation,
+                server_thread_id=thread_id,
+                server_run_id=reconciled_server_run_id,
+                server_invocation_kind="start",
+                first_server_status="pending",
+                pending_event_digest=(
+                    reconciled_lifecycle.pending.lifecycle_event_digest
+                ),
+                server_observation_digest=reconciled_observation_digest,
+                reconciliation_reason_code="exact_server_run_observed",
+            )
+            reconciled_projection = (
+                repository.get_execution_binding_with_lifecycle(
+                    run_invocation_id=(
+                        reconciled_contracts.invocation.invocation_id
+                    )
+                )
+            )
+            applied_action = repository.get_run_create_action_attempt(
+                run_invocation_id=(
+                    reconciled_contracts.invocation.invocation_id
+                ),
+                action_state="TERMINAL",
+            )
+            if (
+                reconciled_projection is None
+                or reconciled_projection.binding != reconciled_binding
+                or reconciled_projection.lifecycle is None
+                or reconciled_projection.lifecycle.state != "RECONCILED"
+                or reconciled_projection.lifecycle.dispatched is None
+                or len(reconciled_projection.lifecycle.orphan_observations) != 1
+                or reconciled_projection.lifecycle.reconciled is None
+                or reconciled_projection.lifecycle.reconciled.lifecycle_ordinal != 4
+                or reconciled_projection.lifecycle.reconciled.server_run_id
+                != reconciled_server_run_id
+                or reconciled_projection.lifecycle.reconciled.final_binding_digest
+                != persisted_run_binding_digest(reconciled_binding)
+                or applied_action is None
+                or applied_action.state != "TERMINAL"
+                or applied_action.outcome != "APPLIED"
+            ):
+                raise QualificationFailure(
+                    "production_reconciled_binding_control_invalid"
+                )
+
+            counts_before_replay = _positive_control_counts(
+                app_pool,
+                research_run_id=reconciled_contracts.run.run_id,
+                run_invocation_id=(
+                    reconciled_contracts.invocation.invocation_id
+                ),
+            )
+            if counts_before_replay != (1, 1, 4, 3):
+                raise QualificationFailure(
+                    "production_reconciled_population_invalid"
+                )
+            replayed_binding = repository.bind_run_invocation(
+                research_run=reconciled_contracts.run,
+                run_invocation=reconciled_contracts.invocation,
+                server_thread_id=thread_id,
+                server_run_id=reconciled_server_run_id,
+                server_invocation_kind="start",
+                first_server_status="pending",
+                pending_event_digest=(
+                    reconciled_lifecycle.pending.lifecycle_event_digest
+                ),
+                server_observation_digest=reconciled_observation_digest,
+                reconciliation_reason_code="exact_server_run_observed",
+            )
+            counts_after_replay = _positive_control_counts(
+                app_pool,
+                research_run_id=reconciled_contracts.run.run_id,
+                run_invocation_id=(
+                    reconciled_contracts.invocation.invocation_id
+                ),
+            )
+            if (
+                replayed_binding != reconciled_binding
+                or counts_after_replay != counts_before_replay
+            ):
+                raise QualificationFailure(
+                    "production_reconciled_exact_replay_invalid"
+                )
+            post_reconciled_orphan = _post_reconciled_orphan_check(
+                app_pool,
+                run_invocation_id=(
+                    reconciled_contracts.invocation.invocation_id
+                ),
+                attempt_id=attempt_id,
+            )
     except QualificationFailure:
         raise
     except Exception as exc:
@@ -1133,7 +1375,27 @@ def qualify(attempt_id: str, timeout: int) -> dict[str, Any]:
         "target": "prestarted_isolated_postgresql",
         "roles": {"application": APP_ROLE, "operator": OPERATOR_ROLE},
         "production_control": {
-            "lifecycle_states": ["PENDING", "DISPATCHED", "ORPHAN"],
+            "lifecycle_states": [
+                "PENDING",
+                "DISPATCHED",
+                "ORPHAN",
+                "RECONCILED",
+            ],
+            "binding_persisted": True,
+            "applied_action_persisted": True,
+            "final_binding_digest_verified": True,
+            "exact_replay_row_counts": list(counts_after_replay),
+            "exact_replay_no_new_rows": True,
+            "post_reconciled_orphan_rejected": True,
+            "post_reconciled_orphan_sqlstate": (
+                post_reconciled_orphan["sqlstate"]
+            ),
+            "post_reconciled_orphan_guard": post_reconciled_orphan["guard"],
+            "recovery_control_lifecycle_states": [
+                "PENDING",
+                "DISPATCHED",
+                "ORPHAN",
+            ],
             "recovery_case_persisted": True,
             "operator_decision": persisted.decision,
             "explicit_null_continuation_persisted": True,
@@ -1151,6 +1413,13 @@ def qualify(attempt_id: str, timeout: int) -> dict[str, Any]:
             "recovery_case_negative": len(recovery_case),
             "recovery_disposition_negative": len(disposition),
             "permission_negative": len(permissions),
+            "negative_total": (
+                1
+                + len(action)
+                + len(recovery_case)
+                + len(disposition)
+                + len(permissions)
+            ),
         },
         "external_effects": {
             "docker_management_calls": 0,

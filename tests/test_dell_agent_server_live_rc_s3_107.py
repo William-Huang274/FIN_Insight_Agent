@@ -24,6 +24,9 @@ HOST_PATH = (
     / "qualify_live_remote_create_lifecycle.py"
 )
 PHASE_PATH = HOST_PATH.with_name("live_killpoint_phase.py")
+POSTGRES_QUALIFIER_PATH = HOST_PATH.with_name(
+    "qualify_postgres_lifecycle_v1_1.py"
+)
 CLIENT_TEST_SUPPORT_PATH = ROOT / "tests" / "test_dell_agent_server_client.py"
 OVERLAY_PATH = (
     ROOT
@@ -1236,6 +1239,19 @@ def test_harness_has_no_destructive_cleanup_or_retry_fallback() -> None:
         assert fragment not in phase_source.lower()
     assert "for scenario in SCENARIOS" in host_source
     assert "while " not in host_source
+
+
+def test_postgres_qualifier_proves_reconciled_binding_and_exact_replay() -> None:
+    source = POSTGRES_QUALIFIER_PATH.read_text(encoding="utf-8")
+
+    assert source.count("repository.bind_run_invocation(") == 2
+    assert "repository.get_execution_binding_with_lifecycle(" in source
+    assert 'action_state="TERMINAL"' in source
+    assert 'applied_action.outcome != "APPLIED"' in source
+    assert "counts_before_replay != (1, 1, 4, 3)" in source
+    assert "counts_after_replay != counts_before_replay" in source
+    assert "fin_runtime_run_create_event_after_reconciled" in source
+    assert '"negative_total": (' in source
 
 
 def test_contract_only_is_local_and_deterministic(host: ModuleType, capsys: Any) -> None:

@@ -596,7 +596,7 @@ def test_postgres_bootstrap_separates_non_superuser_runtime_roles() -> None:
     assert "set -x" not in lowered
 
 
-def test_v1_1_installer_routes_only_absent_exact_v1_0_or_exact_v1_1() -> None:
+def test_v1_1_installer_routes_only_exact_supported_catalog_states() -> None:
     compose = COMPOSE_PATH.read_text(encoding="utf-8")
     installer = POSTGRES_LIFECYCLE_INIT_PATH.read_text(encoding="utf-8")
     fingerprint_sql = POSTGRES_FINGERPRINT_PATH.read_text(encoding="utf-8")
@@ -623,9 +623,13 @@ def test_v1_1_installer_routes_only_absent_exact_v1_0_or_exact_v1_1() -> None:
         .encode("utf-8")
     ).hexdigest()
     assert lifecycle_source_digest == (
-        "ddfb86ba54fcc6ca53af28fbf379511603863305496cf1690d552a953aee6b13"
+        "9e9f1e324c07bd767f71c8e870d736d44892b7b5614a4e0ffb1d557491218d25"
     )
     assert lifecycle_source_digest in installer
+    assert (
+        "AND prior.lifecycle_ordinal < NEW.lifecycle_ordinal"
+        in REMOTE_CREATE_LIFECYCLE_SQL_PATH.read_text(encoding="utf-8")
+    )
     fingerprint_source_digest = hashlib.sha256(
         fingerprint_sql.replace("\r\n", "\n").encode("utf-8")
     ).hexdigest()
@@ -667,6 +671,7 @@ def test_v1_1_installer_routes_only_absent_exact_v1_0_or_exact_v1_1() -> None:
     assert "migration_mode=install_v1_1" in installer
     assert "migration_mode=already_v1_1" in installer
     assert "migration_mode=migrate_v1_0_to_v1_1" in installer
+    assert "migration_mode=repair_v1_1_reconciled_self_match" in installer
     assert (
         '"$before_catalog_sha256" = "$expected_v1_1_catalog_sha256"'
         in installer
@@ -675,7 +680,14 @@ def test_v1_1_installer_routes_only_absent_exact_v1_0_or_exact_v1_1() -> None:
         '"$before_catalog_sha256" = "$expected_v1_0_catalog_sha256"'
         in installer
     )
-    assert "neither exact v1.0 nor exact v1.1" in installer
+    assert (
+        '"$before_catalog_sha256" = "$expected_buggy_v1_1_catalog_sha256"'
+        in installer
+    )
+    assert (
+        "neither exact v1.0, known buggy v1.1, nor exact current v1.1"
+        in installer
+    )
     assert installer.index("before_state=$(schema_presence)") < installer.index(
         "--single-transaction"
     )
@@ -708,7 +720,7 @@ def test_v1_1_catalog_hash_is_shared_and_placeholder_fails_closed() -> None:
         r"[0-9a-f]{64}", catalog_sha256
     )
     assert catalog_sha256 == (
-        "31c314f1d0d17cd91e252d4733a0eba35ae5725e85e56685a63081ba552f7bad"
+        "f37dbff53d47dc59bb5390bdcf46a5f51b354ffa61ff5b8c596180d3aa169f7e"
     )
     assert 'if ! is_sha256 "$expected_v1_1_catalog_sha256"' in installer
     assert 'is_sha256 "$expected_v1_1_catalog_sha256"' in readiness

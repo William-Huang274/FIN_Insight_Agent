@@ -34,6 +34,7 @@ WITH facts(kind, identity, definition) AS (
     WHERE role.rolname IN (
         'fin_runtime_app',
         'fin_runtime_migrator',
+        'fin_runtime_operator',
         'langgraph_runtime'
     )
 
@@ -58,11 +59,13 @@ WITH facts(kind, identity, definition) AS (
     WHERE granted_role.rolname IN (
         'fin_runtime_app',
         'fin_runtime_migrator',
+        'fin_runtime_operator',
         'langgraph_runtime'
     )
        OR member_role.rolname IN (
         'fin_runtime_app',
         'fin_runtime_migrator',
+        'fin_runtime_operator',
         'langgraph_runtime'
     )
 
@@ -87,6 +90,7 @@ WITH facts(kind, identity, definition) AS (
     WHERE role.rolname IN (
         'fin_runtime_app',
         'fin_runtime_migrator',
+        'fin_runtime_operator',
         'langgraph_runtime'
     )
        OR (
@@ -278,6 +282,9 @@ WITH facts(kind, identity, definition) AS (
             ('fin_runtime_migrator', 'CONNECT'),
             ('fin_runtime_migrator', 'CREATE'),
             ('fin_runtime_migrator', 'TEMPORARY'),
+            ('fin_runtime_operator', 'CONNECT'),
+            ('fin_runtime_operator', 'CREATE'),
+            ('fin_runtime_operator', 'TEMPORARY'),
             ('langgraph_runtime', 'CONNECT'),
             ('langgraph_runtime', 'CREATE'),
             ('langgraph_runtime', 'TEMPORARY')

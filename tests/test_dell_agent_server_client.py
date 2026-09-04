@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Iterator
+from dataclasses import replace
 from datetime import date, datetime, timezone
 from typing import Any
 from uuid import NAMESPACE_URL, uuid5
@@ -17,19 +18,39 @@ from sec_agent.agent_runtime.dell_agent_server_client import (
     DellAgentServerSessionBinding,
 )
 from sec_agent.agent_runtime.dell_agent_server_identity import (
+    DellAgentServerIdentityConflict,
     PersistedAgentSessionBinding,
+    PersistedExecutableRunBinding,
     PersistedResearchRunAggregate,
     PersistedResearchRunIdentity,
+    PersistedRunCreateLifecycle,
+    PersistedRunCreateLifecycleEvent,
+    PersistedRunCreateRegistration,
     PersistedRunInvocationBinding,
     agent_session_identity_digest,
+    persisted_run_binding_digest,
     research_run_identity_digest,
     run_invocation_identity_digest,
 )
+from sec_agent.agent_runtime.dell_agent_server_recovery import (
+    DellAgentServerRecoveryCase,
+    create_interrupted_source_invocation,
+    create_recovery_case,
+    create_recovery_required_research_run,
+    create_run_create_action_ambiguous,
+    create_run_create_action_applied,
+    create_run_create_action_dispatched,
+    create_run_create_action_failed_before_dispatch,
+    create_run_create_action_intent,
+)
 from sec_agent.canonical_runtime.contracts_v1_2 import (
+    ActionAttempt,
     AgentSessionV1_2,
     ResearchRun,
     RunInvocation,
+    RecoveryDisposition,
     create_agent_session_v1_2,
+    create_recovery_disposition,
     create_research_run,
     create_run_invocation,
 )
@@ -104,6 +125,8 @@ class _FakeRuns:
         self.remote_runs: list[dict[str, Any]] = []
         self.raise_before_create = False
         self.raise_after_create = False
+        self.emit_created_header = True
+        self.hidden_list_calls_remaining = 0
         self.stream_parts: list[StreamPart] = [
             StreamPart("metadata", {"run_id": START_RUN_ID}, "100-0"),
             StreamPart("updates", {"plan": {"status": "ready"}}, "101-0"),
@@ -125,6 +148,14 @@ class _FakeRuns:
             result.setdefault("assistant_id", SERVER_ASSISTANT_ID)
             result.setdefault("metadata", dict(kwargs["metadata"]))
             self.remote_runs.append(dict(result))
+            callback = kwargs.get("on_run_created")
+            if self.emit_created_header and callable(callback):
+                callback(
+                    {
+                        "thread_id": result["thread_id"],
+                        "run_id": result["run_id"],
+                    }
+                )
             if self.raise_after_create:
                 raise TimeoutError("simulated response loss")
             return result
@@ -139,6 +170,9 @@ class _FakeRuns:
 
     def list(self, thread_id: str, **kwargs: Any) -> list[dict[str, Any]]:
         self.list_calls.append((thread_id, dict(kwargs)))
+        if self.remote_runs and self.hidden_list_calls_remaining > 0:
+            self.hidden_list_calls_remaining -= 1
+            return []
         offset = kwargs.get("offset", 0)
         limit = kwargs.get("limit", 10)
         rows = [row for row in self.remote_runs if row.get("thread_id") == thread_id]
@@ -187,8 +221,18 @@ class _MemoryIdentityRepository:
         self.sessions: dict[str, PersistedAgentSessionBinding] = {}
         self.runs: dict[str, PersistedResearchRunIdentity] = {}
         self.invocations: dict[str, PersistedRunInvocationBinding] = {}
+        self.run_create_lifecycles: dict[
+            str, PersistedRunCreateLifecycle
+        ] = {}
+        self.action_attempts: dict[str, dict[str, ActionAttempt]] = {}
+        self.recovery_cases: dict[str, DellAgentServerRecoveryCase] = {}
+        self.recovery_dispositions: dict[str, RecoveryDisposition] = {}
         self.session_bind_calls = 0
+        self.begin_run_create_calls = 0
+        self.orphan_record_calls = 0
+        self.dispatch_record_calls = 0
         self.invocation_bind_calls = 0
+        self.fail_next_orphan_record = False
         self.fail_next_invocation_bind = False
 
     def get_agent_session(
@@ -224,6 +268,369 @@ class _MemoryIdentityRepository:
     ) -> PersistedRunInvocationBinding | None:
         return self.invocations.get(run_invocation_id)
 
+    def get_run_create_lifecycle(
+        self,
+        *,
+        run_invocation_id: str,
+    ) -> PersistedRunCreateLifecycle | None:
+        return self.run_create_lifecycles.get(run_invocation_id)
+
+    def get_execution_binding_with_lifecycle(
+        self,
+        *,
+        run_invocation_id: str,
+    ) -> PersistedExecutableRunBinding | None:
+        binding = self.invocations.get(run_invocation_id)
+        if binding is None:
+            return None
+        return PersistedExecutableRunBinding(
+            binding=binding,
+            lifecycle=self.run_create_lifecycles.get(run_invocation_id),
+        )
+
+    def begin_run_create(
+        self,
+        *,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
+        server_thread_id: str,
+        server_invocation_kind: str,
+        server_assistant_id: str,
+        execution_profile: str,
+        launch_request_digest: str,
+        server_metadata_digest: str,
+        assistant_id: str,
+    ) -> PersistedRunCreateRegistration:
+        self.begin_run_create_calls += 1
+        lifecycle = self.run_create_lifecycles.get(
+            run_invocation.invocation_id
+        )
+        ordinal_matches = [
+            item
+            for item in self.run_create_lifecycles.values()
+            if item.pending.research_run_id == research_run.run_id
+            and item.pending.invocation_ordinal == run_invocation.ordinal
+        ]
+        if lifecycle is None and ordinal_matches:
+            raise DellAgentServerIdentityConflict(
+                "run_create_pending_identity_conflict"
+            )
+        if lifecycle is not None:
+            pending = lifecycle.pending
+            session = self.sessions[research_run.session_id]
+            if (
+                pending.research_run_id != research_run.run_id
+                or pending.agent_session_id != research_run.session_id
+                or pending.invocation_ordinal != run_invocation.ordinal
+                or pending.canonical_invocation_kind
+                != run_invocation.invocation_kind
+                or pending.server_invocation_kind != server_invocation_kind
+                or pending.server_thread_id != server_thread_id
+                or pending.assistant_id != assistant_id
+                or pending.server_assistant_id != server_assistant_id
+                or pending.execution_profile != execution_profile
+                or pending.session_identity_digest
+                != session.session_identity_digest
+                or pending.research_run_identity_digest
+                != research_run_identity_digest(research_run)
+                or pending.run_invocation_identity_digest
+                != run_invocation_identity_digest(run_invocation)
+                or pending.launch_request_digest != launch_request_digest
+                or pending.server_metadata_digest != server_metadata_digest
+            ):
+                raise DellAgentServerIdentityConflict(
+                    "run_create_pending_identity_conflict"
+                )
+            return PersistedRunCreateRegistration(
+                lifecycle=lifecycle,
+                created_now=False,
+            )
+
+        session = self.sessions[research_run.session_id]
+        event_digest = client_module.canonical_sha256(
+            {
+                "state": "PENDING",
+                "run_invocation_id": run_invocation.invocation_id,
+                "research_run_id": research_run.run_id,
+                "invocation_ordinal": run_invocation.ordinal,
+                "launch_request_digest": launch_request_digest,
+                "server_metadata_digest": server_metadata_digest,
+            }
+        )
+        pending = PersistedRunCreateLifecycleEvent(
+            run_invocation_id=run_invocation.invocation_id,
+            lifecycle_ordinal=1,
+            lifecycle_state="PENDING",
+            research_run_id=research_run.run_id,
+            agent_session_id=research_run.session_id,
+            invocation_ordinal=run_invocation.ordinal,
+            canonical_invocation_kind=run_invocation.invocation_kind,
+            server_invocation_kind=server_invocation_kind,
+            server_thread_id=server_thread_id,
+            assistant_id=assistant_id,
+            server_assistant_id=server_assistant_id,
+            execution_profile=execution_profile,
+            session_identity_digest=session.session_identity_digest,
+            research_run_identity_digest=research_run_identity_digest(
+                research_run
+            ),
+            run_invocation_identity_digest=run_invocation_identity_digest(
+                run_invocation
+            ),
+            launch_request_digest=launch_request_digest,
+            server_metadata_digest=server_metadata_digest,
+            bound_run_invocation_id=None,
+            server_run_id=None,
+            server_run_status=None,
+            recovery_reason_code=None,
+            server_observation_digest=None,
+            final_binding_digest=None,
+            lifecycle_event_digest=event_digest,
+            recorded_at=NOW,
+        )
+        lifecycle = PersistedRunCreateLifecycle(
+            pending=pending,
+            orphan=None,
+            reconciled=None,
+            dispatched=None,
+            orphan_observations=(),
+        )
+        intent = create_run_create_action_intent(
+            research_run=research_run,
+            source_invocation=run_invocation,
+            launch_request_digest=launch_request_digest,
+        )
+        self.action_attempts[run_invocation.invocation_id] = {
+            "INTENT_COMMITTED": intent
+        }
+        self.run_create_lifecycles[run_invocation.invocation_id] = lifecycle
+        return PersistedRunCreateRegistration(
+            lifecycle=lifecycle,
+            created_now=True,
+        )
+
+    def get_run_create_action_attempt(
+        self,
+        *,
+        run_invocation_id: str,
+        action_state: str | None = None,
+    ) -> ActionAttempt | None:
+        rows = self.action_attempts.get(run_invocation_id, {})
+        if action_state is not None:
+            return rows.get(action_state)
+        for state in ("TERMINAL", "DISPATCHED", "INTENT_COMMITTED"):
+            if state in rows:
+                return rows[state]
+        return None
+
+    def mark_run_create_dispatched(
+        self,
+        *,
+        run_invocation_id: str,
+        pending_event_digest: str,
+    ) -> PersistedRunCreateLifecycle:
+        self.dispatch_record_calls += 1
+        lifecycle = self.run_create_lifecycles[run_invocation_id]
+        if lifecycle.pending.lifecycle_event_digest != pending_event_digest:
+            raise DellAgentServerIdentityConflict(
+                "run_create_pending_digest_conflict"
+            )
+        if "TERMINAL" in self.action_attempts[run_invocation_id]:
+            raise DellAgentServerIdentityConflict(
+                "run_create_action_already_terminal"
+            )
+        if lifecycle.dispatched is not None:
+            return lifecycle
+        pending = lifecycle.pending
+        dispatched = replace(
+            pending,
+            lifecycle_ordinal=2,
+            lifecycle_state="DISPATCHED",
+            lifecycle_event_digest=client_module.canonical_sha256(
+                {
+                    "state": "DISPATCHED",
+                    "pending_event_digest": pending_event_digest,
+                }
+            ),
+        )
+        self.action_attempts[run_invocation_id]["DISPATCHED"] = (
+            create_run_create_action_dispatched(
+                self.action_attempts[run_invocation_id]["INTENT_COMMITTED"]
+            )
+        )
+        lifecycle = PersistedRunCreateLifecycle(
+            pending=pending,
+            orphan=lifecycle.orphan,
+            reconciled=lifecycle.reconciled,
+            dispatched=dispatched,
+            orphan_observations=lifecycle.orphan_observations,
+        )
+        self.run_create_lifecycles[run_invocation_id] = lifecycle
+        return lifecycle
+
+    def mark_run_create_failed_before_dispatch(
+        self,
+        *,
+        run_invocation_id: str,
+        pending_event_digest: str,
+    ) -> ActionAttempt:
+        lifecycle = self.run_create_lifecycles[run_invocation_id]
+        if (
+            lifecycle.pending.lifecycle_event_digest != pending_event_digest
+            or lifecycle.state != "PENDING"
+        ):
+            raise DellAgentServerIdentityConflict(
+                "run_create_before_dispatch_terminal_transition_invalid"
+            )
+        actions = self.action_attempts[run_invocation_id]
+        if "TERMINAL" not in actions:
+            actions["TERMINAL"] = create_run_create_action_failed_before_dispatch(
+                actions["INTENT_COMMITTED"], terminal_at=NOW
+            )
+        return actions["TERMINAL"]
+
+    def record_run_create_orphan(
+        self,
+        *,
+        run_invocation_id: str,
+        pending_event_digest: str,
+        recovery_reason_code: str,
+        server_observation_digest: str,
+        server_run_id: str | None = None,
+        server_run_status: str | None = None,
+    ) -> PersistedRunCreateLifecycle:
+        self.orphan_record_calls += 1
+        if self.fail_next_orphan_record:
+            self.fail_next_orphan_record = False
+            raise RuntimeError("simulated orphan persistence failure")
+        lifecycle = self.run_create_lifecycles[run_invocation_id]
+        pending = lifecycle.pending
+        if pending.lifecycle_event_digest != pending_event_digest:
+            raise DellAgentServerIdentityConflict(
+                "run_create_pending_digest_conflict"
+            )
+        if lifecycle.dispatched is None:
+            raise DellAgentServerIdentityConflict("run_create_dispatched_missing")
+        for orphan in lifecycle.orphan_observations:
+            if orphan.server_observation_digest == server_observation_digest:
+                if (
+                    orphan.server_run_id != server_run_id
+                    or orphan.server_run_status != server_run_status
+                    or orphan.recovery_reason_code != recovery_reason_code
+                ):
+                    raise DellAgentServerIdentityConflict(
+                        "run_create_orphan_observation_conflict"
+                    )
+                return lifecycle
+        event_digest = client_module.canonical_sha256(
+            {
+                "state": "ORPHAN",
+                "pending_event_digest": pending_event_digest,
+                "server_run_id": server_run_id,
+                "server_run_status": server_run_status,
+                "recovery_reason_code": recovery_reason_code,
+                "server_observation_digest": server_observation_digest,
+            }
+        )
+        orphan = PersistedRunCreateLifecycleEvent(
+            run_invocation_id=pending.run_invocation_id,
+            lifecycle_ordinal=3 + len(lifecycle.orphan_observations),
+            lifecycle_state="ORPHAN",
+            research_run_id=pending.research_run_id,
+            agent_session_id=pending.agent_session_id,
+            invocation_ordinal=pending.invocation_ordinal,
+            canonical_invocation_kind=pending.canonical_invocation_kind,
+            server_invocation_kind=pending.server_invocation_kind,
+            server_thread_id=pending.server_thread_id,
+            assistant_id=pending.assistant_id,
+            server_assistant_id=pending.server_assistant_id,
+            execution_profile=pending.execution_profile,
+            session_identity_digest=pending.session_identity_digest,
+            research_run_identity_digest=pending.research_run_identity_digest,
+            run_invocation_identity_digest=(
+                pending.run_invocation_identity_digest
+            ),
+            launch_request_digest=pending.launch_request_digest,
+            server_metadata_digest=pending.server_metadata_digest,
+            bound_run_invocation_id=None,
+            server_run_id=server_run_id,
+            server_run_status=server_run_status,
+            recovery_reason_code=recovery_reason_code,
+            server_observation_digest=server_observation_digest,
+            final_binding_digest=None,
+            lifecycle_event_digest=event_digest,
+            recorded_at=NOW,
+        )
+        lifecycle = PersistedRunCreateLifecycle(
+            pending=pending,
+            orphan=orphan,
+            reconciled=None,
+            dispatched=lifecycle.dispatched,
+            orphan_observations=(*lifecycle.orphan_observations, orphan),
+        )
+        self.run_create_lifecycles[run_invocation_id] = lifecycle
+        return lifecycle
+
+    def mark_run_create_recovery_required(
+        self,
+        *,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
+        pending_event_digest: str,
+        recovery_reason_code: str,
+        server_observation_digest: str,
+        server_run_id: str | None = None,
+        server_run_status: str | None = None,
+    ) -> DellAgentServerRecoveryCase:
+        existing = self.recovery_cases.get(run_invocation.invocation_id)
+        if existing is not None:
+            return existing
+        lifecycle = self.record_run_create_orphan(
+            run_invocation_id=run_invocation.invocation_id,
+            pending_event_digest=pending_event_digest,
+            recovery_reason_code=recovery_reason_code,
+            server_observation_digest=server_observation_digest,
+            server_run_id=server_run_id,
+            server_run_status=server_run_status,
+        )
+        dispatched = self.action_attempts[run_invocation.invocation_id][
+            "DISPATCHED"
+        ]
+        ambiguous = create_run_create_action_ambiguous(
+            dispatched, terminal_at=NOW
+        )
+        self.action_attempts[run_invocation.invocation_id]["TERMINAL"] = ambiguous
+        interrupted = create_interrupted_source_invocation(
+            run_invocation,
+            finished_at=NOW,
+        )
+        recovery_case = create_recovery_case(
+            recovery_run=create_recovery_required_research_run(research_run),
+            source_invocation=interrupted,
+            ambiguous_action=ambiguous,
+            lifecycle_event_digest=lifecycle.orphan.lifecycle_event_digest,
+            recovery_reason_code=recovery_reason_code,
+            server_run_id=server_run_id,
+            server_run_status=server_run_status,
+            opened_at=NOW,
+        )
+        self.recovery_cases[run_invocation.invocation_id] = recovery_case
+        return recovery_case
+
+    def get_run_create_recovery_case(
+        self,
+        *,
+        run_invocation_id: str,
+    ) -> DellAgentServerRecoveryCase | None:
+        return self.recovery_cases.get(run_invocation_id)
+
+    def get_run_create_recovery_disposition(
+        self,
+        *,
+        run_invocation_id: str,
+    ) -> RecoveryDisposition | None:
+        return self.recovery_dispositions.get(run_invocation_id)
+
     def bind_run_invocation(
         self,
         *,
@@ -233,12 +640,48 @@ class _MemoryIdentityRepository:
         server_run_id: str,
         server_invocation_kind: str,
         first_server_status: str,
-        assistant_id: str,
+        pending_event_digest: str | None = None,
+        server_observation_digest: str | None = None,
+        reconciliation_reason_code: str | None = None,
+        assistant_id: str = DELL_AGENT_SERVER_ASSISTANT_ID,
     ) -> PersistedRunInvocationBinding:
         self.invocation_bind_calls += 1
         if self.fail_next_invocation_bind:
             self.fail_next_invocation_bind = False
             raise RuntimeError("simulated bind failure")
+        lifecycle = self.run_create_lifecycles.get(
+            run_invocation.invocation_id
+        )
+        lifecycle_arguments = (
+            pending_event_digest,
+            server_observation_digest,
+            reconciliation_reason_code,
+        )
+        if any(value is not None for value in lifecycle_arguments):
+            if lifecycle is None or any(
+                value is None for value in lifecycle_arguments
+            ):
+                raise DellAgentServerIdentityConflict(
+                    "run_create_pending_missing"
+                )
+            if (
+                lifecycle.pending.lifecycle_event_digest
+                != pending_event_digest
+            ):
+                raise DellAgentServerIdentityConflict(
+                    "run_create_pending_digest_conflict"
+                )
+            if (
+                lifecycle.dispatched is None
+                or any(
+                    item.server_run_id is not None
+                    and item.server_run_id != server_run_id
+                    for item in lifecycle.orphan_observations
+                )
+            ):
+                raise DellAgentServerIdentityConflict(
+                    "run_create_orphan_server_run_conflict"
+                )
         self.runs.setdefault(
             research_run.run_id,
             PersistedResearchRunIdentity(
@@ -266,7 +709,94 @@ class _MemoryIdentityRepository:
             bound_at=NOW,
         )
         self.invocations.setdefault(run_invocation.invocation_id, stored)
-        return self.invocations[run_invocation.invocation_id]
+        persisted = self.invocations[run_invocation.invocation_id]
+        if lifecycle is not None and pending_event_digest is not None:
+            if lifecycle.reconciled is not None:
+                return persisted
+            pending = lifecycle.pending
+            terminal = self.action_attempts[run_invocation.invocation_id].get(
+                "TERMINAL"
+            )
+            if terminal is None:
+                self.action_attempts[run_invocation.invocation_id]["TERMINAL"] = (
+                    create_run_create_action_applied(
+                        self.action_attempts[run_invocation.invocation_id][
+                            "DISPATCHED"
+                        ],
+                        server_run_id=server_run_id,
+                        server_observation_digest=server_observation_digest,
+                        terminal_at=NOW,
+                    )
+                )
+            elif (
+                terminal.outcome != "AMBIGUOUS_AFTER_DISPATCH"
+                or self.recovery_dispositions.get(run_invocation.invocation_id)
+                is None
+                or self.recovery_dispositions[
+                    run_invocation.invocation_id
+                ].decision
+                != "DO_NOT_RETRY"
+            ):
+                raise DellAgentServerIdentityConflict(
+                    "run_create_action_terminal_conflict"
+                )
+            final_digest = persisted_run_binding_digest(persisted)
+            event_digest = client_module.canonical_sha256(
+                {
+                    "state": "RECONCILED",
+                    "pending_event_digest": pending_event_digest,
+                    "server_run_id": server_run_id,
+                    "server_run_status": first_server_status,
+                    "reconciliation_reason_code": (
+                        reconciliation_reason_code
+                    ),
+                    "server_observation_digest": (
+                        server_observation_digest
+                    ),
+                    "final_binding_digest": final_digest,
+                }
+            )
+            reconciled = PersistedRunCreateLifecycleEvent(
+                run_invocation_id=pending.run_invocation_id,
+                lifecycle_ordinal=3 + len(lifecycle.orphan_observations),
+                lifecycle_state="RECONCILED",
+                research_run_id=pending.research_run_id,
+                agent_session_id=pending.agent_session_id,
+                invocation_ordinal=pending.invocation_ordinal,
+                canonical_invocation_kind=pending.canonical_invocation_kind,
+                server_invocation_kind=pending.server_invocation_kind,
+                server_thread_id=pending.server_thread_id,
+                assistant_id=pending.assistant_id,
+                server_assistant_id=pending.server_assistant_id,
+                execution_profile=pending.execution_profile,
+                session_identity_digest=pending.session_identity_digest,
+                research_run_identity_digest=(
+                    pending.research_run_identity_digest
+                ),
+                run_invocation_identity_digest=(
+                    pending.run_invocation_identity_digest
+                ),
+                launch_request_digest=pending.launch_request_digest,
+                server_metadata_digest=pending.server_metadata_digest,
+                bound_run_invocation_id=pending.run_invocation_id,
+                server_run_id=server_run_id,
+                server_run_status=first_server_status,
+                recovery_reason_code=reconciliation_reason_code,
+                server_observation_digest=server_observation_digest,
+                final_binding_digest=final_digest,
+                lifecycle_event_digest=event_digest,
+                recorded_at=NOW,
+            )
+            self.run_create_lifecycles[run_invocation.invocation_id] = (
+                PersistedRunCreateLifecycle(
+                    pending=pending,
+                    orphan=lifecycle.orphan,
+                    reconciled=reconciled,
+                    dispatched=lifecycle.dispatched,
+                    orphan_observations=lifecycle.orphan_observations,
+                )
+            )
+        return persisted
 
     def get_research_run_aggregate(
         self,
@@ -382,6 +912,40 @@ def _run_invocation_contract(
     }
     fields.update(overrides)
     return create_run_invocation(**fields)
+
+
+def _record_memory_recovery_disposition(
+    repository: _MemoryIdentityRepository,
+    *,
+    decision: str,
+    invocation_id: str = "fin-run-invocation-001",
+) -> RecoveryDisposition:
+    case = repository.recovery_cases[invocation_id]
+    disposition = create_recovery_disposition(
+        recovery_disposition_id=f"RECOVERY-DISPOSITION::{invocation_id}",
+        session_id=case.research_run.session_id,
+        run_id=case.research_run.run_id,
+        research_run_digest=case.research_run.run_digest,
+        ambiguous_action_attempt_id=case.ambiguous_action.action_attempt_id,
+        ambiguous_action_attempt_digest=(
+            case.ambiguous_action.action_attempt_digest
+        ),
+        source_run_invocation_id=case.source_invocation.invocation_id,
+        source_run_invocation_digest=case.source_invocation.invocation_digest,
+        investigation_receipt_refs=(
+            f"receipt://operator-investigation/{invocation_id}",
+        ),
+        potentially_duplicate_cost=case.ambiguous_action.potentially_chargeable,
+        decision=decision,
+        decision_authority_ref="authority://fin-runtime-operator/test",
+        next_run_invocation_id=None,
+        next_run_invocation_digest=None,
+        replacement_action_attempt_id=None,
+        replacement_action_attempt_digest=None,
+        created_at=NOW,
+    )
+    repository.recovery_dispositions[invocation_id] = disposition
+    return disposition
 
 
 def _session() -> DellAgentServerSessionBinding:
@@ -599,6 +1163,7 @@ def test_start_run_uses_only_qualified_agent_server_options() -> None:
             "offset": 0,
         }
     ]
+    assert callable(kwargs["on_run_created"])
     assert "langsmith_tracing" not in kwargs
     assert "command" not in kwargs
 
@@ -974,7 +1539,16 @@ def test_run_create_persists_once_and_fresh_client_reads_same_server_run() -> No
     assert len(sdk.runs.create_calls) == 1
 
 
-def test_durable_legacy_v1_0_run_is_read_only_compatible() -> None:
+@pytest.mark.parametrize(
+    "legacy_schema_version",
+    [
+        "fin_ia_dell_agent_server_client_v1_0",
+        "fin_ia_dell_agent_server_client_v1_1",
+    ],
+)
+def test_durable_legacy_final_run_is_read_only_compatible(
+    legacy_schema_version: str,
+) -> None:
     sdk = _FakeSdk()
     repository = _MemoryIdentityRepository()
     client, _ = _client(sdk, repository, prebound_session=True)
@@ -984,13 +1558,19 @@ def test_durable_legacy_v1_0_run_is_read_only_compatible() -> None:
         run_invocation=_run_invocation_contract(),
         graph_input=_graph_input(),
     )
-    sdk.runs.remote_runs[0]["metadata"] = {
-        "fin_client_schema_version": "fin_ia_dell_agent_server_client_v1_0",
-        "agent_session_id": "fin-session-001",
-        "research_run_id": "fin-research-run-001",
-        "run_invocation_id": "fin-run-invocation-001",
-        "invocation_kind": "start",
-    }
+    if legacy_schema_version.endswith("v1_0"):
+        sdk.runs.remote_runs[0]["metadata"] = {
+            "fin_client_schema_version": legacy_schema_version,
+            "agent_session_id": "fin-session-001",
+            "research_run_id": "fin-research-run-001",
+            "run_invocation_id": "fin-run-invocation-001",
+            "invocation_kind": "start",
+        }
+    else:
+        sdk.runs.remote_runs[0]["metadata"] = {
+            **sdk.runs.remote_runs[0]["metadata"],
+            "fin_client_schema_version": legacy_schema_version,
+        }
 
     fresh_client, _ = _client(sdk, repository)
     replay = fresh_client.start_run(
@@ -1005,6 +1585,77 @@ def test_durable_legacy_v1_0_run_is_read_only_compatible() -> None:
 
     assert replay == first
     assert len(sdk.runs.create_calls) == 1
+    assert repository.begin_run_create_calls == 1
+
+
+def test_durable_v1_1_qualification_final_run_is_read_only_compatible() -> None:
+    sdk = _FakeSdk()
+    repository = _MemoryIdentityRepository()
+    repository.bind_agent_session(
+        agent_session=_agent_session_contract(),
+        server_thread_id=THREAD_ID,
+        assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+    )
+    client = DellAgentServerClient(
+        sdk,
+        identity_repository=repository,
+        execution_profile="zero_model_control_plane_v1",
+    )
+    first = client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
+    sdk.runs.remote_runs[0]["metadata"] = {
+        **sdk.runs.remote_runs[0]["metadata"],
+        "fin_client_schema_version": "fin_ia_dell_agent_server_client_v1_1",
+    }
+
+    fresh_client = DellAgentServerClient(
+        sdk,
+        identity_repository=repository,
+        execution_profile="zero_model_control_plane_v1",
+    )
+    replay = fresh_client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
+
+    assert replay == first
+    assert len(sdk.runs.create_calls) == 1
+    assert repository.begin_run_create_calls == 1
+
+
+def test_durable_v1_1_final_run_rejects_changed_digest() -> None:
+    sdk = _FakeSdk()
+    repository = _MemoryIdentityRepository()
+    client, _ = _client(sdk, repository, prebound_session=True)
+    client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
+    sdk.runs.remote_runs[0]["metadata"] = {
+        **sdk.runs.remote_runs[0]["metadata"],
+        "fin_client_schema_version": "fin_ia_dell_agent_server_client_v1_1",
+        "launch_request_digest": "f" * 64,
+    }
+
+    with pytest.raises(DellAgentServerClientError) as conflict:
+        client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert conflict.value.code == "agent_server_run_metadata_mismatch"
+    assert len(sdk.runs.create_calls) == 1
+    assert repository.begin_run_create_calls == 1
 
 
 def test_legacy_v1_0_product_run_cannot_be_relabelled_as_qualification() -> None:
@@ -1045,10 +1696,65 @@ def test_legacy_v1_0_product_run_cannot_be_relabelled_as_qualification() -> None
     assert len(sdk.runs.create_calls) == 1
 
 
-def test_unknown_create_transport_outcome_is_not_retried_inside_one_call() -> None:
+def test_existing_pending_is_reconcile_only_when_remote_scan_recovers() -> None:
+    sdk = _FakeSdk()
+    repository = _MemoryIdentityRepository()
+    client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+    original_list = sdk.runs.list
+
+    def unavailable_list(
+        _thread_id: str,
+        **_kwargs: Any,
+    ) -> list[dict[str, Any]]:
+        raise TimeoutError("simulated list outage before create")
+
+    sdk.runs.list = unavailable_list  # type: ignore[method-assign]
+    with pytest.raises(DellAgentServerClientError) as first_failure:
+        client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+    assert (
+        first_failure.value.code
+        == "agent_server_run_reconciliation_list_failed"
+    )
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "PENDING"
+    assert sdk.runs.create_calls == []
+
+    sdk.runs.list = original_list  # type: ignore[method-assign]
+    fresh_client, _ = _client(sdk, repository)
+    with pytest.raises(DellAgentServerClientError) as retry_failure:
+        fresh_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert (
+        retry_failure.value.code
+        == "agent_server_run_pending_reconciliation_required"
+    )
+    assert sdk.runs.create_calls == []
+
+
+def test_unknown_create_transport_outcome_is_not_retried_across_calls() -> None:
     sdk = _FakeSdk()
     sdk.runs.raise_before_create = True
-    client, _ = _client(sdk, prebound_session=True)
+    repository = _MemoryIdentityRepository()
+    client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
 
     with pytest.raises(DellAgentServerClientError) as failure:
         client.start_run(
@@ -1060,6 +1766,607 @@ def test_unknown_create_transport_outcome_is_not_retried_inside_one_call() -> No
 
     assert failure.value.code == "agent_server_run_start_failed_outcome_unknown"
     assert len(sdk.runs.create_calls) == 1
+    lifecycle = repository.run_create_lifecycles["fin-run-invocation-001"]
+    assert lifecycle.state == "ORPHAN"
+    assert lifecycle.orphan is not None
+    assert lifecycle.orphan.server_run_id is None
+    assert lifecycle.orphan.recovery_reason_code == "remote_create_outcome_unknown"
+
+    sdk.runs.raise_before_create = False
+    fresh_client, _ = _client(sdk, repository)
+    with pytest.raises(DellAgentServerClientError) as replay_failure:
+        fresh_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+    assert (
+        replay_failure.value.code
+        == "agent_server_run_recovery_operator_decision_required"
+    )
+    recovery_case = repository.recovery_cases["fin-run-invocation-001"]
+    assert recovery_case.research_run.status == "RECOVERY_REQUIRED"
+    assert recovery_case.source_invocation.status == "INTERRUPTED"
+    assert recovery_case.ambiguous_action.outcome == "AMBIGUOUS_AFTER_DISPATCH"
+    assert len(sdk.runs.create_calls) == 1
+
+
+def test_owner_abandon_run_closes_replay_without_another_remote_create() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.raise_before_create = True
+    repository = _MemoryIdentityRepository()
+    client, _ = _client(sdk, repository, prebound_session=True)
+
+    with pytest.raises(DellAgentServerClientError):
+        client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+    assert len(sdk.runs.create_calls) == 1
+
+    _record_memory_recovery_disposition(
+        repository,
+        decision="ABANDON_RUN",
+    )
+    sdk.runs.raise_before_create = False
+    with pytest.raises(DellAgentServerClientError) as abandoned:
+        client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert abandoned.value.code == "agent_server_run_recovery_abandoned"
+    assert len(sdk.runs.create_calls) == 1
+    assert repository.invocations == {}
+
+
+def test_header_observed_response_loss_persists_known_orphan() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.raise_after_create = True
+    sdk.runs.hidden_list_calls_remaining = 2
+    repository = _MemoryIdentityRepository()
+    client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+
+    with pytest.raises(DellAgentServerClientError) as failure:
+        client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert failure.value.code == "agent_server_run_start_failed_outcome_unknown"
+    assert len(sdk.runs.create_calls) == 1
+    lifecycle = repository.run_create_lifecycles["fin-run-invocation-001"]
+    assert lifecycle.state == "ORPHAN"
+    assert lifecycle.orphan is not None
+    assert lifecycle.orphan.server_run_id == START_RUN_ID
+    assert lifecycle.orphan.server_run_status is None
+    assert (
+        lifecycle.orphan.recovery_reason_code
+        == "server_content_location_observed"
+    )
+    assert repository.invocations == {}
+
+
+def test_delayed_metadata_only_visibility_requires_owner_before_exact_adoption() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.raise_after_create = True
+    sdk.runs.emit_created_header = False
+    sdk.runs.hidden_list_calls_remaining = 2
+    repository = _MemoryIdentityRepository()
+    first_client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+
+    with pytest.raises(DellAgentServerClientError):
+        first_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+    assert len(sdk.runs.create_calls) == 1
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "ORPHAN"
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].orphan.server_run_id is None
+
+    recovered_client, _ = _client(sdk, repository)
+    with pytest.raises(DellAgentServerClientError) as owner_gate:
+        recovered_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert (
+        owner_gate.value.code
+        == "agent_server_run_recovery_operator_decision_required"
+    )
+    assert repository.invocations == {}
+    exact_observations = [
+        item
+        for item in repository.run_create_lifecycles[
+            "fin-run-invocation-001"
+        ].orphan_observations
+        if item.server_run_id == START_RUN_ID
+        and item.server_run_status == "pending"
+    ]
+    assert len(exact_observations) == 1
+
+    _record_memory_recovery_disposition(
+        repository,
+        decision="DO_NOT_RETRY",
+    )
+    recovered = recovered_client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
+
+    assert recovered == _start_run()
+    assert len(sdk.runs.create_calls) == 1
+    assert repository.begin_run_create_calls == 3
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "RECONCILED"
+    assert sdk.runs.get_calls == [(THREAD_ID, START_RUN_ID)]
+
+
+def test_known_orphan_recovers_by_exact_get_without_list_or_create() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.raise_after_create = True
+    sdk.runs.hidden_list_calls_remaining = 2
+    repository = _MemoryIdentityRepository()
+    first_client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+    with pytest.raises(DellAgentServerClientError):
+        first_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+    list_calls_before_recovery = len(sdk.runs.list_calls)
+    sdk.runs.hidden_list_calls_remaining = 100
+
+    recovered_client, _ = _client(sdk, repository)
+    recovered = recovered_client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
+
+    assert recovered == _start_run()
+    assert sdk.runs.get_calls == [(THREAD_ID, START_RUN_ID)]
+    assert len(sdk.runs.list_calls) == list_calls_before_recovery
+    assert len(sdk.runs.create_calls) == 1
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "RECONCILED"
+
+
+def test_known_orphan_forged_remote_metadata_fails_closed_without_scan() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.raise_after_create = True
+    sdk.runs.hidden_list_calls_remaining = 2
+    repository = _MemoryIdentityRepository()
+    first_client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+    with pytest.raises(DellAgentServerClientError):
+        first_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+    sdk.runs.remote_runs[0]["metadata"] = {
+        **sdk.runs.remote_runs[0]["metadata"],
+        "fin_client_schema_version": "fin_ia_dell_agent_server_client_v1_1",
+    }
+    list_calls_before_recovery = len(sdk.runs.list_calls)
+
+    recovered_client, _ = _client(sdk, repository)
+    with pytest.raises(DellAgentServerClientError) as conflict:
+        recovered_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert conflict.value.code == "agent_server_run_metadata_mismatch"
+    assert sdk.runs.get_calls == [(THREAD_ID, START_RUN_ID)]
+    assert len(sdk.runs.list_calls) == list_calls_before_recovery
+    assert len(sdk.runs.create_calls) == 1
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "ORPHAN"
+
+
+def test_known_orphan_not_found_falls_back_to_exact_list_without_create() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.raise_after_create = True
+    sdk.runs.hidden_list_calls_remaining = 2
+    repository = _MemoryIdentityRepository()
+    first_client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+    with pytest.raises(DellAgentServerClientError):
+        first_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    class _KnownRunNotFound(RuntimeError):
+        status_code = 404
+
+    original_get = sdk.runs.get
+
+    def not_found(_thread_id: str, _run_id: str) -> Any:
+        sdk.runs.get_calls.append((_thread_id, _run_id))
+        raise _KnownRunNotFound("simulated explicit 404")
+
+    sdk.runs.get = not_found  # type: ignore[method-assign]
+    recovered_client, _ = _client(sdk, repository)
+    recovered = recovered_client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
+    sdk.runs.get = original_get  # type: ignore[method-assign]
+
+    assert recovered == _start_run()
+    assert sdk.runs.get_calls == [(THREAD_ID, START_RUN_ID)]
+    assert len(sdk.runs.create_calls) == 1
+
+
+def test_known_orphan_never_adopts_another_same_metadata_run() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.raise_after_create = True
+    sdk.runs.hidden_list_calls_remaining = 2
+    repository = _MemoryIdentityRepository()
+    first_client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+    with pytest.raises(DellAgentServerClientError):
+        first_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    class _KnownRunNotFound(RuntimeError):
+        status_code = 404
+
+    original_get = sdk.runs.get
+
+    def not_found(_thread_id: str, _run_id: str) -> Any:
+        sdk.runs.get_calls.append((_thread_id, _run_id))
+        raise _KnownRunNotFound("simulated explicit 404")
+
+    # Preserve the complete invocation metadata while changing only the
+    # server-owned identity.  A metadata-only recovery would incorrectly bind
+    # this duplicate-looking row to the already known ORPHAN.
+    sdk.runs.remote_runs[0]["run_id"] = "01a065aa-7091-7a93-8153-7956fb32f947"
+    sdk.runs.get = not_found  # type: ignore[method-assign]
+    try:
+        recovered_client, _ = _client(sdk, repository)
+        with pytest.raises(DellAgentServerClientError) as conflict:
+            recovered_client.start_run(
+                session=_session(),
+                research_run=_research_run_contract(),
+                run_invocation=_run_invocation_contract(),
+                graph_input=_graph_input(),
+            )
+    finally:
+        sdk.runs.get = original_get  # type: ignore[method-assign]
+
+    assert (
+        conflict.value.code
+        == "agent_server_run_reconciliation_identity_conflict"
+    )
+    assert sdk.runs.get_calls == [(THREAD_ID, START_RUN_ID)]
+    assert len(sdk.runs.create_calls) == 1
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "ORPHAN"
+
+
+def test_header_observed_run_never_adopts_another_same_metadata_run() -> None:
+    sdk = _FakeSdk()
+    repository = _MemoryIdentityRepository()
+    first_client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+    duplicate_run_id = "01a065aa-7091-7a93-8153-7956fb32f947"
+
+    def response_lost_after_header(
+        thread_id: str,
+        assistant_id: str,
+        **kwargs: Any,
+    ) -> Any:
+        sdk.runs.create_calls.append((thread_id, assistant_id, kwargs))
+        observed = {
+            "thread_id": thread_id,
+            "run_id": START_RUN_ID,
+            "assistant_id": SERVER_ASSISTANT_ID,
+            "status": "pending",
+            "metadata": dict(kwargs["metadata"]),
+        }
+        callback = kwargs["on_run_created"]
+        callback({"thread_id": thread_id, "run_id": START_RUN_ID})
+        sdk.runs.remote_runs = [
+            {**observed, "run_id": duplicate_run_id}
+        ]
+        raise TimeoutError("simulated response loss after durable header")
+
+    sdk.runs.create = response_lost_after_header  # type: ignore[method-assign]
+    with pytest.raises(DellAgentServerClientError) as conflict:
+        first_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert (
+        conflict.value.code
+        == "agent_server_run_reconciliation_identity_conflict"
+    )
+    lifecycle = repository.run_create_lifecycles["fin-run-invocation-001"]
+    assert lifecycle.state == "ORPHAN"
+    assert lifecycle.orphan is not None
+    assert lifecycle.orphan.server_run_id == START_RUN_ID
+    assert len(sdk.runs.create_calls) == 1
+    assert sdk.runs.list_calls
+
+
+def test_terminal_remote_observation_is_durable_before_operator_review() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.emit_created_header = False
+    sdk.runs.raise_after_create = True
+    sdk.runs.create_results[0] = {
+        **sdk.runs.create_results[0],
+        "status": "success",
+    }
+    repository = _MemoryIdentityRepository()
+    client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+
+    with pytest.raises(DellAgentServerClientError) as review:
+        client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert (
+        review.value.code
+        == "agent_server_run_reconciliation_operator_review_required"
+    )
+    lifecycle = repository.run_create_lifecycles["fin-run-invocation-001"]
+    assert lifecycle.state == "ORPHAN"
+    assert lifecycle.orphan is not None
+    assert lifecycle.orphan.server_run_id == START_RUN_ID
+    assert lifecycle.orphan.server_run_status == "success"
+    assert (
+        lifecycle.orphan.recovery_reason_code
+        == "metadata_scan_only_server_run_requires_operator_review"
+    )
+    assert repository.recovery_cases[
+        "fin-run-invocation-001"
+    ].ambiguous_action.outcome == "AMBIGUOUS_AFTER_DISPATCH"
+    assert len(sdk.runs.create_calls) == 1
+
+
+@pytest.mark.parametrize("terminal_status", ["running", "success"])
+def test_direct_create_response_binds_by_exact_identity_regardless_of_status(
+    terminal_status: str,
+) -> None:
+    sdk = _FakeSdk()
+    sdk.runs.create_results[0] = {
+        **sdk.runs.create_results[0],
+        "status": terminal_status,
+    }
+    repository = _MemoryIdentityRepository()
+    client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+
+    bound = client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
+
+    assert bound.server_run_id == START_RUN_ID
+    assert bound.server_status == terminal_status
+    lifecycle = repository.run_create_lifecycles["fin-run-invocation-001"]
+    assert lifecycle.state == "RECONCILED"
+    assert lifecycle.orphan is not None
+    assert lifecycle.orphan.server_run_id == START_RUN_ID
+    assert any(
+        item.server_run_id == START_RUN_ID
+        and item.server_run_status == terminal_status
+        and item.recovery_reason_code == "exact_server_run_observed"
+        for item in lifecycle.orphan_observations
+    )
+    assert repository.action_attempts[
+        "fin-run-invocation-001"
+    ]["TERMINAL"].outcome == "APPLIED"
+    assert len(sdk.runs.create_calls) == 1
+
+
+def test_header_write_failure_leaves_dispatched_and_metadata_scan_needs_owner() -> None:
+    sdk = _FakeSdk()
+    repository = _MemoryIdentityRepository()
+    repository.fail_next_orphan_record = True
+    first_client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+
+    with pytest.raises(DellAgentServerClientError) as failure:
+        first_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert failure.value.code == "fin_identity_repository_write_failed"
+    assert len(sdk.runs.create_calls) == 1
+    assert len(sdk.runs.remote_runs) == 1
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "DISPATCHED"
+
+    recovered_client, _ = _client(sdk, repository)
+    with pytest.raises(DellAgentServerClientError) as owner_gate:
+        recovered_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert (
+        owner_gate.value.code
+        == "agent_server_run_reconciliation_operator_review_required"
+    )
+    assert len(sdk.runs.create_calls) == 1
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "ORPHAN"
+    assert repository.recovery_cases[
+        "fin-run-invocation-001"
+    ].server_run_id == START_RUN_ID
+
+    _record_memory_recovery_disposition(
+        repository,
+        decision="DO_NOT_RETRY",
+    )
+    recovered = recovered_client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
+    assert recovered == _start_run()
+    assert len(sdk.runs.create_calls) == 1
+
+
+def test_pending_replay_rejects_changed_launch_before_remote_calls() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.raise_before_create = True
+    repository = _MemoryIdentityRepository()
+    first_client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+    with pytest.raises(DellAgentServerClientError):
+        first_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+    sdk.runs.raise_before_create = False
+    list_calls_before_conflict = len(sdk.runs.list_calls)
+    changed_input = _graph_input()
+    changed_input["research_question"] = "Changed under one durable invocation"
+
+    with pytest.raises(DellAgentServerClientError) as conflict:
+        first_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=changed_input,
+        )
+
+    assert conflict.value.code == "run_create_pending_identity_conflict"
+    assert len(sdk.runs.create_calls) == 1
+    assert len(sdk.runs.list_calls) == list_calls_before_conflict
+
+
+def test_pending_replay_rejects_changed_profile_before_remote_create() -> None:
+    sdk = _FakeSdk()
+    sdk.runs.raise_before_create = True
+    repository = _MemoryIdentityRepository()
+    product_client, _ = _client(
+        sdk,
+        repository,
+        prebound_session=True,
+    )
+    with pytest.raises(DellAgentServerClientError):
+        product_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+    sdk.runs.raise_before_create = False
+    list_calls_before_conflict = len(sdk.runs.list_calls)
+    qualification_client = DellAgentServerClient(
+        sdk,
+        identity_repository=repository,
+        execution_profile="zero_model_control_plane_v1",
+    )
+
+    with pytest.raises(DellAgentServerClientError) as conflict:
+        qualification_client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert conflict.value.code == "run_create_pending_identity_conflict"
+    assert len(sdk.runs.create_calls) == 1
+    assert len(sdk.runs.list_calls) == list_calls_before_conflict
 
 
 def test_wrong_concrete_assistant_cannot_be_adopted_via_forged_metadata() -> None:
@@ -1127,6 +2434,9 @@ def test_bind_failure_is_reconciled_from_exact_remote_metadata_without_recreate(
     assert len(sdk.runs.create_calls) == 1
     assert len(sdk.runs.remote_runs) == 1
     assert repository.invocations == {}
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "ORPHAN"
 
     recovered_client, _ = _client(sdk, repository)
     recovered = recovered_client.start_run(
@@ -1139,6 +2449,10 @@ def test_bind_failure_is_reconciled_from_exact_remote_metadata_without_recreate(
     assert recovered == _start_run()
     assert len(sdk.runs.create_calls) == 1
     assert repository.invocation_bind_calls == 2
+    assert repository.begin_run_create_calls == 2
+    assert repository.run_create_lifecycles[
+        "fin-run-invocation-001"
+    ].state == "RECONCILED"
 
 
 def test_response_loss_after_remote_commit_reconciles_in_same_client_call() -> None:
@@ -1186,8 +2500,9 @@ def test_bound_invocation_replay_rejects_changed_launch_payload() -> None:
     assert len(sdk.runs.create_calls) == 1
 
 
-def test_multiple_exact_remote_candidates_fail_closed_without_selection() -> None:
+def test_durable_direct_identity_ignores_later_duplicate_metadata_candidate() -> None:
     sdk = _FakeSdk()
+    sdk.runs.emit_created_header = False
     repository = _MemoryIdentityRepository()
     repository.bind_agent_session(
         agent_session=_agent_session_contract(),
@@ -1206,21 +2521,24 @@ def test_multiple_exact_remote_candidates_fail_closed_without_selection() -> Non
     duplicate = dict(sdk.runs.remote_runs[0])
     duplicate["run_id"] = str(uuid5(NAMESPACE_URL, "duplicate-exact-run"))
     sdk.runs.remote_runs.append(duplicate)
+    list_calls_before_replay = len(sdk.runs.list_calls)
 
-    with pytest.raises(DellAgentServerClientError) as ambiguous:
-        client.start_run(
-            session=_session(),
-            research_run=_research_run_contract(),
-            run_invocation=_run_invocation_contract(),
-            graph_input=_graph_input(),
-        )
+    recovered = client.start_run(
+        session=_session(),
+        research_run=_research_run_contract(),
+        run_invocation=_run_invocation_contract(),
+        graph_input=_graph_input(),
+    )
 
-    assert ambiguous.value.code == "agent_server_run_reconciliation_ambiguous"
+    assert recovered.server_run_id == START_RUN_ID
+    assert sdk.runs.get_calls == [(THREAD_ID, START_RUN_ID)]
+    assert len(sdk.runs.list_calls) == list_calls_before_replay
     assert len(sdk.runs.create_calls) == 1
 
 
 def test_remote_same_invocation_with_different_request_digest_blocks_create() -> None:
     sdk = _FakeSdk()
+    sdk.runs.emit_created_header = False
     repository = _MemoryIdentityRepository()
     repository.bind_agent_session(
         agent_session=_agent_session_contract(),
@@ -1249,30 +2567,33 @@ def test_remote_same_invocation_with_different_request_digest_blocks_create() ->
             graph_input=_graph_input(),
         )
 
-    assert (
-        conflict.value.code
-        == "agent_server_run_reconciliation_identity_conflict"
-    )
+    assert conflict.value.code == "agent_server_run_metadata_mismatch"
     assert len(sdk.runs.create_calls) == 1
 
 
 def test_reconciliation_scans_beyond_the_first_hundred_runs() -> None:
     sdk = _FakeSdk()
+    sdk.runs.emit_created_header = False
+    sdk.runs.raise_after_create = True
+    sdk.runs.hidden_list_calls_remaining = 2
     repository = _MemoryIdentityRepository()
     repository.bind_agent_session(
         agent_session=_agent_session_contract(),
         server_thread_id=THREAD_ID,
         assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
     )
-    repository.fail_next_invocation_bind = True
     client, _ = _client(sdk, repository)
-    with pytest.raises(DellAgentServerClientError):
+    with pytest.raises(DellAgentServerClientError) as unknown:
         client.start_run(
             session=_session(),
             research_run=_research_run_contract(),
             run_invocation=_run_invocation_contract(),
             graph_input=_graph_input(),
         )
+    assert unknown.value.code == "agent_server_run_start_failed_outcome_unknown"
+    assert repository.recovery_cases[
+        "fin-run-invocation-001"
+    ].server_run_id is None
     exact = sdk.runs.remote_runs[0]
     unrelated = [
         {
@@ -1285,17 +2606,35 @@ def test_reconciliation_scans_beyond_the_first_hundred_runs() -> None:
         for index in range(100)
     ]
     sdk.runs.remote_runs = [*unrelated, exact]
+    sdk.runs.hidden_list_calls_remaining = 0
 
+    with pytest.raises(DellAgentServerClientError) as owner_gate:
+        client.start_run(
+            session=_session(),
+            research_run=_research_run_contract(),
+            run_invocation=_run_invocation_contract(),
+            graph_input=_graph_input(),
+        )
+
+    assert (
+        owner_gate.value.code
+        == "agent_server_run_recovery_operator_decision_required"
+    )
+    assert len(sdk.runs.create_calls) == 1
+    assert any(call[1]["offset"] == 100 for call in sdk.runs.list_calls)
+
+    _record_memory_recovery_disposition(
+        repository,
+        decision="DO_NOT_RETRY",
+    )
     recovered = client.start_run(
         session=_session(),
         research_run=_research_run_contract(),
         run_invocation=_run_invocation_contract(),
         graph_input=_graph_input(),
     )
-
     assert recovered.server_run_id == START_RUN_ID
     assert len(sdk.runs.create_calls) == 1
-    assert any(call[1]["offset"] == 100 for call in sdk.runs.list_calls)
 
 
 def test_unstable_offset_snapshot_fails_before_remote_create() -> None:

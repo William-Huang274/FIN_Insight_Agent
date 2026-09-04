@@ -7,14 +7,17 @@ opaque server IDs. It deliberately has no direct graph invocation, SQLite
 checkpointer, HTTP server, retry loop, or alternate runtime path.
 
 The Agent Server create and FIN database bind cannot share one transaction.
-Runs therefore carry FIN identity and request digests in server-owned metadata.
-Before creating a run, and after an uncertain create outcome, the client scans
-the one deterministic thread and adopts exactly one matching remote run.  It
-never chooses between duplicates and never retries a remote create internally.
-Agent Server's reject strategy plus a short scheduled-start delay narrows the
-concurrent check/create window while the server-side graph independently
-requires the durable FIN binding before opening data or tool resources.  This
-is bounded reconciliation, not a claim of distributed exactly-once delivery.
+Runs therefore carry FIN identity and request digests in server-owned metadata,
+while FIN records an append-only PENDING/ORPHAN/RECONCILED lifecycle.  Only the
+caller that durably creates PENDING may issue one remote create.  Every replay
+of an existing PENDING or ORPHAN is reconciliation-only.  The official SDK's
+``on_run_created`` callback records a header-observed server run as ORPHAN
+before response decoding, and a complete exact observation atomically creates
+the final binding and RECONCILED event.  The client never chooses between
+duplicates and never retries an unknown remote create.  This path is designed
+to fail closed across crashes; end-to-end crash safety remains pending the
+RC-S3-107 live kill-point qualification and is not a claim of distributed
+exactly-once delivery.
 """
 
 from __future__ import annotations
@@ -26,6 +29,7 @@ from typing import Any, Literal
 from urllib.parse import urlsplit
 from uuid import NAMESPACE_URL, UUID, uuid5
 
+from httpx import RequestError
 from langgraph_sdk import get_sync_client
 from langgraph_sdk.schema import StreamPart, ThreadState
 
@@ -40,6 +44,7 @@ from .dell_agent_server_identity import (
     DellAgentServerIdentityRepository,
     DellAgentServerIdentityStoreError,
     PersistedAgentSessionBinding,
+    PersistedRunCreateLifecycle,
     PersistedRunInvocationBinding,
     agent_session_identity_digest,
     research_run_identity_digest,
@@ -47,6 +52,10 @@ from .dell_agent_server_identity import (
     validate_agent_session,
     validate_research_run,
     validate_run_invocation,
+)
+from .dell_agent_server_recovery import (
+    DellAgentServerRecoveryError,
+    require_runtime_supported_disposition,
 )
 from .dell_reference_vertical_contracts import canonical_sha256
 from .dell_reference_vertical_graph import DellReferenceVerticalGraphInput
@@ -58,10 +67,19 @@ from .dell_zero_model_graph_qualification import (
 )
 
 
-_LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION = (
+_LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION_V1_0 = (
     "fin_ia_dell_agent_server_client_v1_0"
 )
-DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION = "fin_ia_dell_agent_server_client_v1_1"
+_LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION_V1_1 = (
+    "fin_ia_dell_agent_server_client_v1_1"
+)
+_LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSIONS = frozenset(
+    {
+        _LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION_V1_0,
+        _LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION_V1_1,
+    }
+)
+DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION = "fin_ia_dell_agent_server_client_v1_2"
 
 _STREAM_ID_PATTERN = re.compile(r"^(?P<milliseconds>[0-9]+)-(?P<sequence>[0-9]+)$")
 _ALLOWED_STREAM_EVENTS = frozenset({"metadata", "updates", "end"})
@@ -416,16 +434,14 @@ class DellAgentServerClient:
                 "agent_server_session_identity_mismatch"
             )
         returned_metadata = created.get("metadata")
-        legacy_metadata = {
-            **metadata,
-            "fin_client_schema_version": (
-                _LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION
-            ),
-        }
+        legacy_metadata = dict(metadata)
+        legacy_metadata.pop("fin_client_schema_version")
         metadata_matches = isinstance(returned_metadata, Mapping) and (
             _metadata_contains(returned_metadata, metadata)
             or (
                 durable_binding is not None
+                and returned_metadata.get("fin_client_schema_version")
+                in _LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSIONS
                 and _metadata_contains(returned_metadata, legacy_metadata)
             )
         )
@@ -623,9 +639,6 @@ class DellAgentServerClient:
             ),
         }
         legacy_bound_metadata = {
-            "fin_client_schema_version": (
-                _LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION
-            ),
             **context,
             "invocation_kind": invocation_kind,
         }
@@ -659,9 +672,165 @@ class DellAgentServerClient:
                     "fin_start_durable_invocation_conflict"
                 )
 
+        registration = self._identity_write(
+            self._identity_repository.begin_run_create,
+            research_run=research_run,
+            run_invocation=run_invocation,
+            server_thread_id=session.server_thread_id,
+            server_invocation_kind=invocation_kind,
+            server_assistant_id=server_assistant_uuid,
+            execution_profile=self._execution_profile,
+            launch_request_digest=metadata["launch_request_digest"],
+            server_metadata_digest=canonical_sha256(metadata),
+            assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
+        )
+        lifecycle = registration.lifecycle
+        pending_event_digest = lifecycle.pending.lifecycle_event_digest
+        if lifecycle.state == "RECONCILED":
+            # A concurrent caller may have completed the final bind after the
+            # first read but before begin_run_create acquired its FIN lock.
+            concurrently_bound = self._identity_read(
+                self._identity_repository.get_run_invocation,
+                run_invocation_id=invocation_id,
+            )
+            if concurrently_bound is None:
+                raise DellAgentServerClientError(
+                    "fin_run_reconciled_binding_missing"
+                )
+            observed = self._get_bound_server_run(
+                server_thread_id=session.server_thread_id,
+                server_run_id=concurrently_bound.server_run_id,
+                expected_metadata=metadata,
+                legacy_expected_metadata=legacy_bound_metadata,
+                expected_assistant_id=server_assistant_uuid,
+            )
+            return self._run_binding_from_persisted(
+                concurrently_bound,
+                session=session,
+                research_run=research_run,
+                run_invocation=run_invocation,
+                invocation_kind=invocation_kind,
+                observed_server_status=observed["status"],
+            )
+
+        recovery_case = self._identity_read(
+            self._identity_repository.get_run_create_recovery_case,
+            run_invocation_id=invocation_id,
+        )
+        if recovery_case is not None:
+            observations = lifecycle.orphan_observations or (
+                (() if lifecycle.orphan is None else (lifecycle.orphan,))
+            )
+            known_ids = {
+                item.server_run_id
+                for item in observations
+                if item.server_run_id is not None
+            }
+            if len(known_ids) > 1:
+                raise DellAgentServerClientError(
+                    "agent_server_run_recovery_identity_conflict"
+                )
+            known_recovery_run_id = next(iter(known_ids), None)
+            recovered: dict[str, Any] | None
+            if known_recovery_run_id is not None:
+                recovered = self._get_current_server_run_by_id(
+                    server_thread_id=session.server_thread_id,
+                    server_run_id=known_recovery_run_id,
+                    expected_metadata=metadata,
+                    expected_assistant_id=server_assistant_uuid,
+                )
+                if recovered is None:
+                    recovered = self._find_reconcilable_server_run(
+                        server_thread_id=session.server_thread_id,
+                        expected_metadata=metadata,
+                        expected_server_run_id=known_recovery_run_id,
+                    )
+            else:
+                recovered = self._find_reconcilable_server_run(
+                    server_thread_id=session.server_thread_id,
+                    expected_metadata=metadata,
+                )
+            if recovered is not None:
+                recovered_digest = self._server_run_observation_digest(
+                    recovered
+                )
+                already_observed = any(
+                    item.server_observation_digest == recovered_digest
+                    and item.server_run_id == recovered["run_id"]
+                    and item.server_run_status == recovered["status"]
+                    for item in observations
+                )
+                if not already_observed:
+                    lifecycle = self._identity_write(
+                        self._identity_repository.record_run_create_orphan,
+                        run_invocation_id=invocation_id,
+                        pending_event_digest=pending_event_digest,
+                        recovery_reason_code=(
+                            "post_recovery_exact_server_run_observed"
+                        ),
+                        server_observation_digest=recovered_digest,
+                        server_run_id=recovered["run_id"],
+                        server_run_status=recovered["status"],
+                    )
+                known_recovery_run_id = recovered["run_id"]
+            disposition = self._identity_read(
+                self._identity_repository.get_run_create_recovery_disposition,
+                run_invocation_id=invocation_id,
+            )
+            if disposition is None:
+                raise DellAgentServerClientError(
+                    "agent_server_run_recovery_operator_decision_required"
+                )
+            try:
+                decision = require_runtime_supported_disposition(
+                    disposition,
+                    recovery_case=recovery_case,
+                )
+            except DellAgentServerRecoveryError as exc:
+                raise DellAgentServerClientError(exc.code) from None
+            if decision == "ABANDON_RUN":
+                raise DellAgentServerClientError(
+                    "agent_server_run_recovery_abandoned"
+                )
+            if recovered is None or known_recovery_run_id is None:
+                raise DellAgentServerClientError(
+                    "agent_server_run_recovery_exact_server_run_unavailable"
+                )
+            return self._persist_reconciled_run_binding(
+                recovered,
+                research_run=research_run,
+                run_invocation=run_invocation,
+                invocation_kind=invocation_kind,
+                pending_event_digest=pending_event_digest,
+                observation_authority="operator_do_not_retry",
+            )
+
+        known_orphan_run_id = (
+            None
+            if lifecycle.orphan is None
+            else lifecycle.orphan.server_run_id
+        )
+        if known_orphan_run_id is not None:
+            known_orphan = self._get_current_server_run_by_id(
+                server_thread_id=session.server_thread_id,
+                server_run_id=known_orphan_run_id,
+                expected_metadata=metadata,
+                expected_assistant_id=server_assistant_uuid,
+            )
+            if known_orphan is not None:
+                return self._persist_reconciled_run_binding(
+                    known_orphan,
+                    research_run=research_run,
+                    run_invocation=run_invocation,
+                    invocation_kind=invocation_kind,
+                    pending_event_digest=pending_event_digest,
+                    observation_authority="header_exact",
+                )
+
         reconciled = self._find_reconcilable_server_run(
             server_thread_id=session.server_thread_id,
             expected_metadata=metadata,
+            expected_server_run_id=known_orphan_run_id,
         )
         if reconciled is not None:
             return self._persist_reconciled_run_binding(
@@ -669,6 +838,56 @@ class DellAgentServerClient:
                 research_run=research_run,
                 run_invocation=run_invocation,
                 invocation_kind=invocation_kind,
+                pending_event_digest=pending_event_digest,
+                observation_authority=(
+                    "header_exact"
+                    if known_orphan_run_id is not None
+                    else "metadata_scan"
+                ),
+            )
+
+        if not registration.created_now:
+            terminal_action = self._identity_read(
+                self._identity_repository.get_run_create_action_attempt,
+                run_invocation_id=invocation_id,
+                action_state="TERMINAL",
+            )
+            if (
+                terminal_action is not None
+                and terminal_action.outcome == "FAILED_BEFORE_DISPATCH"
+            ):
+                raise DellAgentServerClientError(
+                    "agent_server_run_failed_before_dispatch"
+                )
+            if lifecycle.state in {"DISPATCHED", "ORPHAN"}:
+                # A durable Content-Location/callback observation already
+                # proves the exact remote identity.  Temporary GET/list
+                # invisibility must not downgrade that provenance to a
+                # metadata-only ambiguity case; a later replay may observe
+                # the same exact ID and bind it without another create.
+                if known_orphan_run_id is not None:
+                    raise DellAgentServerClientError(
+                        "agent_server_run_orphan_reconciliation_required"
+                    )
+                self._record_unknown_create_outcome(
+                    lifecycle=lifecycle,
+                    research_run=research_run,
+                    run_invocation=run_invocation,
+                    invocation_id=invocation_id,
+                    invocation_kind=invocation_kind,
+                    server_thread_id=session.server_thread_id,
+                    pending_event_digest=pending_event_digest,
+                    recovery_reason_code=(
+                        "replayed_dispatched_create_outcome_unknown"
+                    ),
+                    server_run_id=known_orphan_run_id,
+                )
+                raise DellAgentServerClientError(
+                    "agent_server_run_recovery_operator_decision_required"
+                )
+            raise DellAgentServerClientError(
+                "agent_server_run_"
+                f"{lifecycle.state.lower()}_reconciliation_required"
             )
 
         kwargs: dict[str, Any] = {
@@ -681,29 +900,96 @@ class DellAgentServerClient:
             "metadata": metadata,
             "after_seconds": _RUN_BINDING_GRACE_SECONDS,
         }
+        header_observed_run_id: str | None = None
+
+        def on_run_created(value: Any) -> None:
+            nonlocal header_observed_run_id
+            header = self._validate_run_created_header(
+                value,
+                expected_thread_id=session.server_thread_id,
+            )
+            self._identity_write(
+                self._identity_repository.record_run_create_orphan,
+                run_invocation_id=invocation_id,
+                pending_event_digest=pending_event_digest,
+                recovery_reason_code="server_content_location_observed",
+                server_observation_digest=canonical_sha256(
+                    {
+                        "observation_kind": "server_content_location",
+                        **header,
+                    }
+                ),
+                server_run_id=header["run_id"],
+                server_run_status=None,
+            )
+            header_observed_run_id = header["run_id"]
+
+        kwargs["on_run_created"] = on_run_created
         if invocation_kind == "start":
             kwargs["input"] = graph_input
             error_code = "agent_server_run_start_failed"
         else:
             kwargs["command"] = {"resume": resume_payload}
             error_code = "agent_server_run_resume_failed"
+        lifecycle = self._identity_write(
+            self._identity_repository.mark_run_create_dispatched,
+            run_invocation_id=invocation_id,
+            pending_event_digest=pending_event_digest,
+        )
         try:
             created = self._sdk.runs.create(
                 session.server_thread_id,
                 DELL_AGENT_SERVER_ASSISTANT_ID,
                 **kwargs,
             )
+        except DellAgentServerClientError:
+            # A validation or FIN persistence failure raised by
+            # on_run_created must remain visible.  The durable row is either
+            # still PENDING or already ORPHAN; neither grants another create.
+            raise
         except Exception:
             try:
                 reconciled = self._find_reconcilable_server_run(
                     server_thread_id=session.server_thread_id,
                     expected_metadata=metadata,
+                    expected_server_run_id=header_observed_run_id,
                 )
-            except DellAgentServerClientError:
+            except DellAgentServerClientError as scan_error:
+                if header_observed_run_id is None:
+                    self._record_unknown_create_outcome(
+                        lifecycle=lifecycle,
+                        research_run=research_run,
+                        run_invocation=run_invocation,
+                        invocation_id=invocation_id,
+                        invocation_kind=invocation_kind,
+                        server_thread_id=session.server_thread_id,
+                        pending_event_digest=pending_event_digest,
+                        recovery_reason_code=(
+                            "remote_create_scan_failed_" + scan_error.code
+                        ),
+                        server_run_id=header_observed_run_id,
+                    )
+                if scan_error.code in {
+                    "agent_server_run_reconciliation_identity_conflict",
+                    "agent_server_run_reconciliation_ambiguous",
+                }:
+                    raise
                 raise DellAgentServerClientError(
                     f"{error_code}_outcome_unknown"
                 ) from None
             if reconciled is None:
+                if header_observed_run_id is None:
+                    self._record_unknown_create_outcome(
+                        lifecycle=lifecycle,
+                        research_run=research_run,
+                        run_invocation=run_invocation,
+                        invocation_id=invocation_id,
+                        invocation_kind=invocation_kind,
+                        server_thread_id=session.server_thread_id,
+                        pending_event_digest=pending_event_digest,
+                        recovery_reason_code="remote_create_outcome_unknown",
+                        server_run_id=header_observed_run_id,
+                    )
                 raise DellAgentServerClientError(
                     f"{error_code}_outcome_unknown"
                 ) from None
@@ -712,8 +998,15 @@ class DellAgentServerClient:
                 research_run=research_run,
                 run_invocation=run_invocation,
                 invocation_kind=invocation_kind,
+                pending_event_digest=pending_event_digest,
+                observation_authority=(
+                    "header_exact"
+                    if header_observed_run_id is not None
+                    else "metadata_scan"
+                ),
             )
 
+        observation_authority = "direct_response"
         try:
             validated_created = self._validate_server_run(
                 created,
@@ -726,8 +1019,22 @@ class DellAgentServerClient:
                 reconciled = self._find_reconcilable_server_run(
                     server_thread_id=session.server_thread_id,
                     expected_metadata=metadata,
+                    expected_server_run_id=header_observed_run_id,
                 )
             except DellAgentServerClientError as scan_error:
+                self._record_unknown_create_outcome(
+                        lifecycle=lifecycle,
+                        research_run=research_run,
+                        run_invocation=run_invocation,
+                        invocation_id=invocation_id,
+                        invocation_kind=invocation_kind,
+                        server_thread_id=session.server_thread_id,
+                        pending_event_digest=pending_event_digest,
+                        recovery_reason_code=(
+                            "remote_response_scan_failed_" + scan_error.code
+                        ),
+                        server_run_id=header_observed_run_id,
+                    )
                 if scan_error.code in {
                     "agent_server_run_reconciliation_identity_conflict",
                     "agent_server_run_reconciliation_ambiguous",
@@ -737,17 +1044,39 @@ class DellAgentServerClient:
                     "agent_server_run_response_invalid_outcome_unknown"
                 ) from None
             if reconciled is None:
+                self._record_unknown_create_outcome(
+                        lifecycle=lifecycle,
+                        research_run=research_run,
+                        run_invocation=run_invocation,
+                        invocation_id=invocation_id,
+                        invocation_kind=invocation_kind,
+                        server_thread_id=session.server_thread_id,
+                        pending_event_digest=pending_event_digest,
+                        recovery_reason_code=(
+                            "remote_create_response_invalid_outcome_unknown"
+                        ),
+                        server_run_id=header_observed_run_id,
+                    )
                 raise DellAgentServerClientError(
                     "agent_server_run_response_invalid_outcome_unknown"
                 ) from None
             validated_created = reconciled
-        return self._persist_run_binding(
+            observation_authority = (
+                "header_exact"
+                if header_observed_run_id is not None
+                else "metadata_scan"
+            )
+        # Authority is determined by identity provenance, not by the remote
+        # run's current status.  A complete direct response, or an exact run
+        # reached from a durably captured callback/header ID, may be bound even
+        # when the remote run has already advanced to running or success.
+        return self._persist_reconciled_run_binding(
+            validated_created,
             research_run=research_run,
             run_invocation=run_invocation,
             invocation_kind=invocation_kind,
-            server_thread_id=validated_created["thread_id"],
-            server_run_id=validated_created["run_id"],
-            server_status=validated_created["status"],
+            pending_event_digest=pending_event_digest,
+            observation_authority=observation_authority,
         )
 
     def _validate_server_run(
@@ -813,6 +1142,88 @@ class DellAgentServerClient:
             "metadata": metadata,
         }
 
+    @staticmethod
+    def _validate_run_created_header(
+        value: Any,
+        *,
+        expected_thread_id: str,
+    ) -> dict[str, str]:
+        """Validate the SDK Content-Location projection before persisting it."""
+
+        if not isinstance(value, Mapping):
+            raise DellAgentServerClientError(
+                "agent_server_run_created_header_invalid"
+            )
+        thread_id = _server_uuid(
+            value.get("thread_id"),
+            code="agent_server_run_created_header_invalid",
+        )
+        if thread_id != expected_thread_id:
+            raise DellAgentServerClientError(
+                "agent_server_run_created_header_thread_mismatch"
+            )
+        return {
+            "thread_id": thread_id,
+            "run_id": _server_uuid(
+                value.get("run_id"),
+                code="agent_server_run_created_header_invalid",
+            ),
+        }
+
+    @staticmethod
+    def _server_run_observation_digest(value: Mapping[str, Any]) -> str:
+        """Digest the exact normalized server observation used for final bind."""
+
+        return canonical_sha256(
+            {
+                "observation_kind": "validated_server_run",
+                "thread_id": value["thread_id"],
+                "run_id": value["run_id"],
+                "assistant_id": value["assistant_id"],
+                "status": value["status"],
+                "metadata": value["metadata"],
+            }
+        )
+
+    def _record_unknown_create_outcome(
+        self,
+        *,
+        lifecycle: PersistedRunCreateLifecycle,
+        research_run: ResearchRun,
+        run_invocation: RunInvocation,
+        invocation_id: str,
+        invocation_kind: Literal["start", "resume"],
+        server_thread_id: str,
+        pending_event_digest: str,
+        recovery_reason_code: str,
+        server_run_id: str | None = None,
+        server_run_status: str | None = None,
+    ) -> None:
+        """Persist an unknown remote outcome without inventing a server ID."""
+
+        if lifecycle.state == "RECONCILED":
+            return
+        self._identity_write(
+            self._identity_repository.mark_run_create_recovery_required,
+            research_run=research_run,
+            run_invocation=run_invocation,
+            pending_event_digest=pending_event_digest,
+            recovery_reason_code=recovery_reason_code,
+            server_observation_digest=canonical_sha256(
+                {
+                    "observation_kind": "remote_create_outcome_unknown",
+                    "run_invocation_id": invocation_id,
+                    "invocation_kind": invocation_kind,
+                    "server_thread_id": server_thread_id,
+                    "server_run_id": server_run_id,
+                    "server_run_status": server_run_status,
+                    "reason_code": recovery_reason_code,
+                }
+            ),
+            server_run_id=server_run_id,
+            server_run_status=server_run_status,
+        )
+
     def _get_bound_server_run(
         self,
         *,
@@ -842,14 +1253,62 @@ class DellAgentServerClient:
         metadata = validated["metadata"]
         if _metadata_contains(metadata, expected_metadata):
             return validated
+        observed_schema_version = metadata.get("fin_client_schema_version")
+        if (
+            observed_schema_version
+            == _LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION_V1_1
+        ):
+            legacy_v1_1_expected = dict(expected_metadata)
+            legacy_v1_1_expected.pop("fin_client_schema_version")
+            if _metadata_contains(metadata, legacy_v1_1_expected):
+                return validated
         if (
             self._execution_profile == PRODUCT_EXECUTION_PROFILE
-            and metadata.get("fin_client_schema_version")
-            == _LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION
+            and observed_schema_version
+            == _LEGACY_DELL_AGENT_SERVER_CLIENT_SCHEMA_VERSION_V1_0
             and _metadata_contains(metadata, legacy_expected_metadata)
         ):
             return validated
         raise DellAgentServerClientError("agent_server_run_metadata_mismatch")
+
+    @staticmethod
+    def _known_orphan_get_allows_list_fallback(error: Exception) -> bool:
+        status_code = getattr(error, "status_code", None)
+        return (
+            status_code == 404
+            or status_code in {502, 503, 504}
+            or isinstance(error, (RequestError, TimeoutError, ConnectionError))
+        )
+
+    def _get_current_server_run_by_id(
+        self,
+        *,
+        server_thread_id: str,
+        server_run_id: str,
+        expected_metadata: Mapping[str, Any],
+        expected_assistant_id: str,
+    ) -> dict[str, Any] | None:
+        """Strictly read a known ORPHAN; only explicit unavailability may scan."""
+
+        try:
+            observed = self._sdk.runs.get(server_thread_id, server_run_id)
+        except Exception as exc:
+            if self._known_orphan_get_allows_list_fallback(exc):
+                return None
+            raise DellAgentServerClientError(
+                "agent_server_known_orphan_read_failed"
+            ) from None
+        validated = self._validate_server_run(
+            observed,
+            expected_thread_id=server_thread_id,
+            expected_metadata=expected_metadata,
+            expected_assistant_id=expected_assistant_id,
+        )
+        if validated["run_id"] != server_run_id:
+            raise DellAgentServerClientError(
+                "agent_server_known_orphan_identity_mismatch"
+            )
+        return validated
 
     def _scan_server_runs_once(
         self,
@@ -962,6 +1421,7 @@ class DellAgentServerClient:
         *,
         server_thread_id: str,
         expected_metadata: Mapping[str, Any],
+        expected_server_run_id: str | None = None,
     ) -> dict[str, Any] | None:
         rows = self._stable_server_run_snapshot(
             server_thread_id=server_thread_id
@@ -985,6 +1445,17 @@ class DellAgentServerClient:
                 metadata.get(key) != expected
                 for key, expected in expected_metadata.items()
             ) or row["assistant_id"] != expected_metadata["server_assistant_uuid"]:
+                raise DellAgentServerClientError(
+                    "agent_server_run_reconciliation_identity_conflict"
+                )
+            if (
+                expected_server_run_id is not None
+                and row["run_id"] != expected_server_run_id
+            ):
+                # Once FIN has durably observed a concrete remote run ID, no
+                # other run may be adopted merely because it carries the same
+                # invocation metadata.  Such a row is evidence of a duplicate
+                # or identity drift and must remain visible as a conflict.
                 raise DellAgentServerClientError(
                     "agent_server_run_reconciliation_identity_conflict"
                 )
@@ -1032,6 +1503,13 @@ class DellAgentServerClient:
         research_run: ResearchRun,
         run_invocation: RunInvocation,
         invocation_kind: Literal["start", "resume"],
+        pending_event_digest: str,
+        observation_authority: Literal[
+            "direct_response",
+            "header_exact",
+            "metadata_scan",
+            "operator_do_not_retry",
+        ],
     ) -> DellAgentServerRunBinding:
         existing = self._identity_read(
             self._identity_repository.get_run_invocation,
@@ -1056,9 +1534,47 @@ class DellAgentServerClient:
                 invocation_kind=invocation_kind,
                 observed_server_status=observed["status"],
             )
-        if observed["status"] in {"running", "success"}:
+        if observation_authority == "metadata_scan":
+            lifecycle = self._identity_read(
+                self._identity_repository.get_run_create_lifecycle,
+                run_invocation_id=run_invocation.invocation_id,
+            )
+            if lifecycle is None:
+                raise DellAgentServerClientError(
+                    "agent_server_run_reconciliation_lifecycle_missing"
+                )
+            self._identity_write(
+                self._identity_repository.mark_run_create_recovery_required,
+                research_run=research_run,
+                run_invocation=run_invocation,
+                pending_event_digest=pending_event_digest,
+                recovery_reason_code=(
+                    "metadata_scan_only_server_run_requires_operator_review"
+                ),
+                server_observation_digest=(
+                    self._server_run_observation_digest(observed)
+                ),
+                server_run_id=observed["run_id"],
+                server_run_status=observed["status"],
+            )
             raise DellAgentServerClientError(
                 "agent_server_run_reconciliation_operator_review_required"
+            )
+        if observation_authority in {"direct_response", "header_exact"}:
+            # Persist the exact observation before attempting the transactional
+            # FIN bind.  If the bind itself fails, a fresh process retains the
+            # direct/header provenance and never has to reinterpret the run as
+            # a metadata-only candidate.
+            self._identity_write(
+                self._identity_repository.record_run_create_orphan,
+                run_invocation_id=run_invocation.invocation_id,
+                pending_event_digest=pending_event_digest,
+                recovery_reason_code="exact_server_run_observed",
+                server_observation_digest=(
+                    self._server_run_observation_digest(observed)
+                ),
+                server_run_id=observed["run_id"],
+                server_run_status=observed["status"],
             )
         return self._persist_run_binding(
             research_run=research_run,
@@ -1067,6 +1583,11 @@ class DellAgentServerClient:
             server_thread_id=observed["thread_id"],
             server_run_id=observed["run_id"],
             server_status=observed["status"],
+            pending_event_digest=pending_event_digest,
+            server_observation_digest=self._server_run_observation_digest(
+                observed
+            ),
+            reconciliation_reason_code="exact_server_run_observed",
         )
 
     def _persist_session_binding(
@@ -1096,6 +1617,9 @@ class DellAgentServerClient:
         server_thread_id: str,
         server_run_id: str,
         server_status: str,
+        pending_event_digest: str,
+        server_observation_digest: str,
+        reconciliation_reason_code: str,
     ) -> DellAgentServerRunBinding:
         persisted = self._identity_write(
             self._identity_repository.bind_run_invocation,
@@ -1105,6 +1629,9 @@ class DellAgentServerClient:
             server_run_id=server_run_id,
             server_invocation_kind=invocation_kind,
             first_server_status=server_status,
+            pending_event_digest=pending_event_digest,
+            server_observation_digest=server_observation_digest,
+            reconciliation_reason_code=reconciliation_reason_code,
             assistant_id=DELL_AGENT_SERVER_ASSISTANT_ID,
         )
         return self._run_binding_from_persisted(

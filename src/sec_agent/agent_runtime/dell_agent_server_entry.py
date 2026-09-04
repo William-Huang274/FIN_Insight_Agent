@@ -30,8 +30,9 @@ from .dell_agent_server_data_composition import (
 from .dell_agent_server_identity import (
     DELL_AGENT_SERVER_ASSISTANT_ID,
     DellAgentServerIdentityStoreError,
-    PersistedRunInvocationBinding,
+    PersistedExecutableRunBinding,
     PostgresDellAgentServerIdentityRepository,
+    persisted_run_binding_digest,
 )
 from .dell_reference_vertical_graph import (
     DellAgentServerRunContext,
@@ -288,7 +289,7 @@ def _bind_dependencies_to_identity(
 
 def _read_durable_run_binding(
     identity: DellAgentServerIdentityBinding,
-) -> PersistedRunInvocationBinding | None:
+) -> PersistedExecutableRunBinding | None:
     """Read FIN-owned identity state without exposing its credential or DSN."""
 
     uri = os.environ.get(FIN_RUNTIME_POSTGRES_URI_ENV, "").strip()
@@ -304,7 +305,7 @@ def _read_durable_run_binding(
                 application_name="fin_dell_agent_server_identity_guard",
             )
         )
-        return repository.get_run_invocation(
+        return repository.get_execution_binding_with_lifecycle(
             run_invocation_id=identity.run_invocation_id
         )
     except DellAgentServerIdentityStoreError as exc:
@@ -319,14 +320,17 @@ def _read_durable_run_binding(
 
 def _require_durable_execution_binding(
     identity: DellAgentServerIdentityBinding,
+    *,
+    execution_profile: DellExecutionProfile,
 ) -> None:
     """Reject an unbound or spoofed server run before opening any data port."""
 
-    persisted = _read_durable_run_binding(identity)
-    if persisted is None:
+    projection = _read_durable_run_binding(identity)
+    if projection is None:
         raise DellAgentServerEntryError(
             "fin_server_run_durable_binding_missing"
         )
+    persisted = projection.binding
     if (
         persisted.agent_session_id != identity.agent_session_id
         or persisted.research_run_id != identity.research_run_id
@@ -338,12 +342,48 @@ def _require_durable_execution_binding(
         raise DellAgentServerEntryError(
             "fin_server_run_durable_binding_conflict"
         )
+    lifecycle = projection.lifecycle
+    if lifecycle is None or lifecycle.reconciled is None:
+        raise DellAgentServerEntryError(
+            "fin_server_run_create_lifecycle_not_reconciled"
+        )
+    reconciled = lifecycle.reconciled
+    if (
+        lifecycle.pending.execution_profile != execution_profile
+        or reconciled.execution_profile != execution_profile
+    ):
+        raise DellAgentServerEntryError(
+            "fin_server_run_execution_profile_conflict"
+        )
+    if (
+        reconciled.run_invocation_id != persisted.run_invocation_id
+        or reconciled.bound_run_invocation_id != persisted.run_invocation_id
+        or reconciled.research_run_id != persisted.research_run_id
+        or reconciled.agent_session_id != persisted.agent_session_id
+        or reconciled.invocation_ordinal != persisted.invocation_ordinal
+        or reconciled.canonical_invocation_kind
+        != persisted.canonical_invocation_kind
+        or reconciled.server_invocation_kind != persisted.server_invocation_kind
+        or reconciled.server_thread_id != persisted.server_thread_id
+        or reconciled.server_run_id != persisted.server_run_id
+        or reconciled.assistant_id != persisted.assistant_id
+        or reconciled.run_invocation_identity_digest
+        != persisted.invocation_identity_digest
+        or reconciled.server_run_status != persisted.first_server_status
+        or reconciled.final_binding_digest
+        != persisted_run_binding_digest(persisted)
+    ):
+        raise DellAgentServerEntryError(
+            "fin_server_run_create_lifecycle_conflict"
+        )
 
 
 @asynccontextmanager
 async def _open_execution_dependencies(
     identity: DellAgentServerIdentityBinding,
     context: DellAgentServerRunContext,
+    *,
+    execution_profile: DellExecutionProfile,
 ) -> AsyncIterator[DellReferenceVerticalDependencies]:
     """Open the exact approved readers and one MCP lifecycle for this run.
 
@@ -353,7 +393,10 @@ async def _open_execution_dependencies(
 
     if identity.research_run_id != context.research_run_id:
         raise DellAgentServerEntryError("fin_research_run_id_mismatch")
-    _require_durable_execution_binding(identity)
+    _require_durable_execution_binding(
+        identity,
+        execution_profile=execution_profile,
+    )
     try:
         with open_dell_approved_data_composition(
             run_invocation_id=identity.run_invocation_id
@@ -388,7 +431,11 @@ async def dell_reference_vertical_graph(
         run_context=execution_runtime.context,
     )
     context = DellAgentServerRunContext.model_validate(execution_runtime.context)
-    async with _open_execution_dependencies(identity, context) as dependencies:
+    async with _open_execution_dependencies(
+        identity,
+        context,
+        execution_profile=execution_profile,
+    ) as dependencies:
         yield _compile_graph(
             _bind_dependencies_to_identity(dependencies, identity),
             execution_profile=execution_profile,

@@ -13,6 +13,13 @@ from typing import Any
 import pytest
 
 from sec_agent.agent_runtime import dell_agent_server_entry as entry
+from sec_agent.agent_runtime.dell_agent_server_identity import (
+    PersistedExecutableRunBinding,
+    PersistedRunCreateLifecycle,
+    PersistedRunCreateLifecycleEvent,
+    PersistedRunInvocationBinding,
+    persisted_run_binding_digest,
+)
 from sec_agent.agent_runtime.dell_reference_vertical_graph import (
     DellAgentServerRunContext,
     DellReferenceVerticalDependencies,
@@ -52,7 +59,7 @@ def _config() -> dict[str, dict[str, str]]:
     }
 
 
-def _persisted_binding(**overrides: Any) -> entry.PersistedRunInvocationBinding:
+def _persisted_binding(**overrides: Any) -> PersistedRunInvocationBinding:
     fields = {
         "run_invocation_id": "fin-run-invocation-001",
         "research_run_id": "fin-research-run-001",
@@ -68,7 +75,70 @@ def _persisted_binding(**overrides: Any) -> entry.PersistedRunInvocationBinding:
         "bound_at": datetime(2026, 9, 4, tzinfo=timezone.utc),
     }
     fields.update(overrides)
-    return entry.PersistedRunInvocationBinding(**fields)
+    return PersistedRunInvocationBinding(**fields)
+
+
+def _persisted_projection(
+    *,
+    state: str = "RECONCILED",
+    binding_overrides: dict[str, Any] | None = None,
+    reconciled_overrides: dict[str, Any] | None = None,
+) -> PersistedExecutableRunBinding:
+    binding = _persisted_binding(**(binding_overrides or {}))
+    common = {
+        "run_invocation_id": binding.run_invocation_id,
+        "research_run_id": binding.research_run_id,
+        "agent_session_id": binding.agent_session_id,
+        "invocation_ordinal": binding.invocation_ordinal,
+        "canonical_invocation_kind": binding.canonical_invocation_kind,
+        "server_invocation_kind": binding.server_invocation_kind,
+        "server_thread_id": binding.server_thread_id,
+        "assistant_id": binding.assistant_id,
+        "server_assistant_id": "019-server-assistant",
+        "execution_profile": "zero_model_control_plane_v1",
+        "session_identity_digest": "b" * 64,
+        "research_run_identity_digest": "c" * 64,
+        "run_invocation_identity_digest": binding.invocation_identity_digest,
+        "launch_request_digest": "d" * 64,
+        "server_metadata_digest": "e" * 64,
+        "recorded_at": datetime(2026, 9, 4, tzinfo=timezone.utc),
+    }
+    pending = PersistedRunCreateLifecycleEvent(
+        **common,
+        lifecycle_ordinal=1,
+        lifecycle_state="PENDING",
+        bound_run_invocation_id=None,
+        server_run_id=None,
+        server_run_status=None,
+        recovery_reason_code=None,
+        server_observation_digest=None,
+        final_binding_digest=None,
+        lifecycle_event_digest="f" * 64,
+    )
+    reconciled = None
+    if state == "RECONCILED":
+        fields = {
+            **common,
+            "lifecycle_ordinal": 2,
+            "lifecycle_state": "RECONCILED",
+            "bound_run_invocation_id": binding.run_invocation_id,
+            "server_run_id": binding.server_run_id,
+            "server_run_status": binding.first_server_status,
+            "recovery_reason_code": "REMOTE_RESPONSE_EXACT",
+            "server_observation_digest": "1" * 64,
+            "final_binding_digest": persisted_run_binding_digest(binding),
+            "lifecycle_event_digest": "2" * 64,
+        }
+        fields.update(reconciled_overrides or {})
+        reconciled = PersistedRunCreateLifecycleEvent(**fields)
+    return PersistedExecutableRunBinding(
+        binding=binding,
+        lifecycle=PersistedRunCreateLifecycle(
+            pending=pending,
+            orphan=None,
+            reconciled=reconciled,
+        ),
+    )
 
 
 def test_root_langgraph_config_exposes_only_the_dell_server_factory() -> None:
@@ -338,7 +408,7 @@ def test_execution_requires_exact_approved_runtime_mount_configuration(
     monkeypatch.setattr(
         entry,
         "_require_durable_execution_binding",
-        lambda _identity: None,
+        lambda _identity, **_kwargs: None,
     )
 
     async def exercise() -> None:
@@ -367,18 +437,69 @@ def test_durable_identity_guard_requires_uri_and_exact_persisted_binding(
     monkeypatch.setattr(
         entry,
         "_read_durable_run_binding",
-        lambda _identity: _persisted_binding(),
+        lambda _identity: _persisted_projection(),
     )
-    entry._require_durable_execution_binding(identity)
+    entry._require_durable_execution_binding(
+        identity,
+        execution_profile="zero_model_control_plane_v1",
+    )
+
+    with pytest.raises(entry.DellAgentServerEntryError) as profile_conflict:
+        entry._require_durable_execution_binding(
+            identity,
+            execution_profile="product",
+        )
+    assert (
+        profile_conflict.value.code
+        == "fin_server_run_execution_profile_conflict"
+    )
 
     monkeypatch.setattr(
         entry,
         "_read_durable_run_binding",
-        lambda _identity: _persisted_binding(server_run_id="another-server-run"),
+        lambda _identity: _persisted_projection(
+            binding_overrides={"server_run_id": "another-server-run"}
+        ),
     )
     with pytest.raises(entry.DellAgentServerEntryError) as conflict:
-        entry._require_durable_execution_binding(identity)
+        entry._require_durable_execution_binding(
+            identity,
+            execution_profile="zero_model_control_plane_v1",
+        )
     assert conflict.value.code == "fin_server_run_durable_binding_conflict"
+
+
+def test_execution_rejects_pending_or_corrupt_reconciled_lifecycle() -> None:
+    identity = entry.bind_agent_server_identity(
+        config=_config(), run_context=_context()
+    )
+
+    original = entry._read_durable_run_binding
+    try:
+        entry._read_durable_run_binding = lambda _identity: _persisted_projection(
+            state="PENDING"
+        )
+        with pytest.raises(entry.DellAgentServerEntryError) as pending:
+            entry._require_durable_execution_binding(
+                identity,
+                execution_profile="zero_model_control_plane_v1",
+            )
+        assert (
+            pending.value.code
+            == "fin_server_run_create_lifecycle_not_reconciled"
+        )
+
+        entry._read_durable_run_binding = lambda _identity: _persisted_projection(
+            reconciled_overrides={"final_binding_digest": "0" * 64}
+        )
+        with pytest.raises(entry.DellAgentServerEntryError) as corrupt:
+            entry._require_durable_execution_binding(
+                identity,
+                execution_profile="zero_model_control_plane_v1",
+            )
+        assert corrupt.value.code == "fin_server_run_create_lifecycle_conflict"
+    finally:
+        entry._read_durable_run_binding = original
 
 
 def test_missing_durable_binding_opens_no_data_or_mcp_resources(
@@ -407,6 +528,7 @@ def test_missing_durable_binding_opens_no_data_or_mcp_resources(
         async with entry._open_execution_dependencies(
             identity,
             DellAgentServerRunContext.model_validate(_context()),
+            execution_profile="zero_model_control_plane_v1",
         ):
             pass
 
@@ -482,8 +604,11 @@ def test_authorized_resources_are_scoped_to_one_factory_lifecycle(
     async def opened(
         identity: entry.DellAgentServerIdentityBinding,
         context: DellAgentServerRunContext,
+        *,
+        execution_profile: str,
     ) -> AsyncIterator[DellReferenceVerticalDependencies]:
         assert identity.research_run_id == context.research_run_id
+        assert execution_profile == "product"
         lifecycle.append("opened")
         try:
             yield dependencies

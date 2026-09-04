@@ -6,7 +6,7 @@ the API container, performs only the approved restart sequence, and never
 removes a container, volume, or prior attempt.
 
 No model credential is passed to Agent Server.  The local PostgreSQL secret is
-used only as key material: three distinct URL-safe role passwords are derived
+used only as key material: four distinct URL-safe role passwords are derived
 in memory with separate labels.  Neither source nor derived values are printed,
 written back to ``.env``, or stored in receipts.
 """
@@ -171,16 +171,23 @@ def _credential_environment() -> dict[str, str]:
     bootstrap = derived("postgres-bootstrap-admin")
     langgraph_password = derived("langgraph-runtime")
     fin_password = derived("fin-runtime")
-    if len({bootstrap, langgraph_password, fin_password}) != 3:
+    operator_password = derived("fin-runtime-operator")
+    if len({bootstrap, langgraph_password, fin_password, operator_password}) != 4:
         raise QualificationError("r8_postgres_passwords_not_distinct")
     if any(
         len(value) < 16
         or any(char not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._~-" for char in value)
-        for value in (bootstrap, langgraph_password, fin_password)
+        for value in (
+            bootstrap,
+            langgraph_password,
+            fin_password,
+            operator_password,
+        )
     ):
         raise QualificationError("r8_postgres_password_contract_invalid")
     child["FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD"] = langgraph_password
     child["FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD"] = fin_password
+    child["FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD"] = operator_password
     child["FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD"] = bootstrap
     child["FINSIGHT_AGENT_SERVER_HOST_PORT"] = str(HOST_PORT)
     return child

@@ -17,11 +17,17 @@ ZERO_MODEL_COMPOSE_OVERRIDE_PATH = (
 DOCKERFILE_PATH = DEPLOY / "Dockerfile"
 DOCKERIGNORE_PATH = DEPLOY / "Dockerfile.dockerignore"
 POSTGRES_INIT_PATH = DEPLOY / "postgres-init" / "010-create-runtime-roles.sh"
-POSTGRES_IDENTITY_INIT_PATH = (
+LEGACY_POSTGRES_IDENTITY_INIT_PATH = (
     DEPLOY / "postgres-init" / "020-install-fin-runtime-identity.sh"
 )
-POSTGRES_READINESS_PATH = (
+POSTGRES_LIFECYCLE_INIT_PATH = (
+    DEPLOY / "postgres-init" / "025-install-fin-runtime-lifecycle-v1-1.sh"
+)
+LEGACY_POSTGRES_READINESS_PATH = (
     DEPLOY / "postgres-init" / "030-runtime-readiness.sh"
+)
+POSTGRES_READINESS_PATH = (
+    DEPLOY / "postgres-init" / "031-runtime-readiness-v1-1.sh"
 )
 POSTGRES_FINGERPRINT_PATH = (
     DEPLOY / "postgres-init" / "040-fin-runtime-schema-fingerprint.sql"
@@ -29,6 +35,13 @@ POSTGRES_FINGERPRINT_PATH = (
 IDENTITY_SQL_PATH = (
     ROOT
     / "src/sec_agent/agent_runtime/sql/001_dell_agent_server_identity_v1_0.sql"
+)
+REMOTE_CREATE_LIFECYCLE_SQL_PATH = (
+    ROOT
+    / "src/sec_agent/agent_runtime/sql/002_dell_agent_server_remote_create_lifecycle_v1_1.sql"
+)
+V1_1_CATALOG_SHA256_PENDING = (
+    "__RC_S3_107_V1_1_CATALOG_SHA256_PENDING_REAL_POSTGRES__"
 )
 
 LANGGRAPH_API_IMAGE = (
@@ -219,6 +232,7 @@ def test_env_and_build_context_cannot_copy_checked_in_secrets() -> None:
     assert "${FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD:?" in raw
     assert "${FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD:?" in raw
     assert "${FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD:?" in raw
+    assert "${FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD:?" in raw
     assert str(postgres["environment"]["POSTGRES_PASSWORD"]).startswith("${")
     assert set(postgres["environment"]) == {
         "POSTGRES_DB",
@@ -226,6 +240,7 @@ def test_env_and_build_context_cannot_copy_checked_in_secrets() -> None:
         "POSTGRES_PASSWORD",
         "FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD",
         "FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD",
+        "FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD",
     }
     assert re.search(r"(?im)^\.env$", (ROOT / ".gitignore").read_text("utf-8"))
     assert re.search(r"(?im)^\.env$", (ROOT / ".dockerignore").read_text("utf-8"))
@@ -303,17 +318,20 @@ def test_only_api_receives_the_six_exact_read_only_data_bindings() -> None:
         },
         {
             "type": "bind",
-            "source": "./postgres-init/020-install-fin-runtime-identity.sh",
+            "source": (
+                "./postgres-init/"
+                "025-install-fin-runtime-lifecycle-v1-1.sh"
+            ),
             "target": (
                 "/docker-entrypoint-initdb.d/"
-                "020-install-fin-runtime-identity.sh"
+                "025-install-fin-runtime-lifecycle-v1-1.sh"
             ),
             "read_only": True,
             "bind": {"create_host_path": False},
         },
         {
             "type": "bind",
-            "source": "./postgres-init/030-runtime-readiness.sh",
+            "source": "./postgres-init/031-runtime-readiness-v1-1.sh",
             "target": "/usr/local/bin/fin-postgres-runtime-readiness",
             "read_only": True,
             "bind": {"create_host_path": False},
@@ -327,6 +345,19 @@ def test_only_api_receives_the_six_exact_read_only_data_bindings() -> None:
             "target": (
                 "/opt/fin-insight/"
                 "001_dell_agent_server_identity_v1_0.sql"
+            ),
+            "read_only": True,
+            "bind": {"create_host_path": False},
+        },
+        {
+            "type": "bind",
+            "source": (
+                "../../src/sec_agent/agent_runtime/sql/"
+                "002_dell_agent_server_remote_create_lifecycle_v1_1.sql"
+            ),
+            "target": (
+                "/opt/fin-insight/"
+                "002_dell_agent_server_remote_create_lifecycle_v1_1.sql"
             ),
             "read_only": True,
             "bind": {"create_host_path": False},
@@ -500,6 +531,11 @@ def test_readme_states_nonproduction_no_auth_boundary_and_no_fallback() -> None:
     assert "config --quiet" in readme
     assert "bootstrap-admin" in readme
     assert "select`/`insert" in readme
+    assert "025-install-fin-runtime-lifecycle-v1-1.sh" in readme
+    assert re.search(r"old writers\s+must not remain in service", readme)
+    stop_command = "stop langgraph-api"
+    migration_command = "025-install-fin-runtime-lifecycle-v1-1.sh"
+    assert readme.index(stop_command) < readme.index(migration_command)
     assert not re.search(
         r"docker compose[^\r\n]*\sconfig\s*(?:\r?\n|$)",
         readme_raw,
@@ -560,13 +596,17 @@ def test_postgres_bootstrap_separates_non_superuser_runtime_roles() -> None:
     assert "set -x" not in lowered
 
 
-def test_fresh_postgres_volume_installs_digest_pinned_identity_schema() -> None:
+def test_v1_1_installer_routes_only_absent_exact_v1_0_or_exact_v1_1() -> None:
     compose = COMPOSE_PATH.read_text(encoding="utf-8")
-    installer = POSTGRES_IDENTITY_INIT_PATH.read_text(encoding="utf-8")
+    installer = POSTGRES_LIFECYCLE_INIT_PATH.read_text(encoding="utf-8")
     fingerprint_sql = POSTGRES_FINGERPRINT_PATH.read_text(encoding="utf-8")
 
-    assert "020-install-fin-runtime-identity.sh" in compose
+    assert "025-install-fin-runtime-lifecycle-v1-1.sh" in compose
+    assert "031-runtime-readiness-v1-1.sh" in compose
+    assert "020-install-fin-runtime-identity.sh" not in compose
+    assert "030-runtime-readiness.sh" not in compose
     assert "001_dell_agent_server_identity_v1_0.sql" in compose
+    assert "002_dell_agent_server_remote_create_lifecycle_v1_1.sql" in compose
     assert "040-fin-runtime-schema-fingerprint.sql" in compose
     assert "--single-transaction" in installer
     assert "sha256sum" in installer
@@ -575,23 +615,33 @@ def test_fresh_postgres_volume_installs_digest_pinned_identity_schema() -> None:
         in installer
     )
     assert IDENTITY_SQL_PATH.is_file()
+    assert REMOTE_CREATE_LIFECYCLE_SQL_PATH.is_file()
     assert POSTGRES_FINGERPRINT_PATH.is_file()
+    lifecycle_source_digest = hashlib.sha256(
+        REMOTE_CREATE_LIFECYCLE_SQL_PATH.read_text(encoding="utf-8")
+        .replace("\r\n", "\n")
+        .encode("utf-8")
+    ).hexdigest()
+    assert lifecycle_source_digest == (
+        "ddfb86ba54fcc6ca53af28fbf379511603863305496cf1690d552a953aee6b13"
+    )
+    assert lifecycle_source_digest in installer
     fingerprint_source_digest = hashlib.sha256(
         fingerprint_sql.replace("\r\n", "\n").encode("utf-8")
     ).hexdigest()
     assert fingerprint_source_digest == (
-        "dec88b731a59d696509c184cf45ea1344d5840d7aa0c07515b3902b3de9ddd00"
+        "5de1648a55382aa3acc20297bbdd8a3694a2e0a69ee04814cc6499c0da332a66"
     )
     assert fingerprint_source_digest in installer
-    assert (
-        "28c2bb8501d78ca3b43e1a490acae050df46b8226d2c2511a34b99a1723ec4a8"
-        in installer
+    v1_0_catalog_sha256 = (
+        "55e3fb20718a060605dd713bea5be7e063bd1afaf7bd460d6041a63eb13a7892"
     )
+    assert v1_0_catalog_sha256 in installer
     for catalog_surface in (
-            "pg_namespace",
-            "pg_roles",
-            "pg_auth_members",
-            "pg_db_role_setting",
+        "pg_namespace",
+        "pg_roles",
+        "pg_auth_members",
+        "pg_db_role_setting",
         "pg_class",
         "pg_attribute",
         "pg_constraint",
@@ -611,15 +661,85 @@ def test_fresh_postgres_volume_installs_digest_pinned_identity_schema() -> None:
         "setconfig",
     ):
         assert role_surface in fingerprint_sql
-    assert "a separately reviewed migration is required" in installer
+    assert fingerprint_sql.count("'fin_runtime_operator'") >= 7
+    for privilege in ("CONNECT", "CREATE", "TEMPORARY"):
+        assert f"('fin_runtime_operator', '{privilege}')" in fingerprint_sql
+    assert "migration_mode=install_v1_1" in installer
+    assert "migration_mode=already_v1_1" in installer
+    assert "migration_mode=migrate_v1_0_to_v1_1" in installer
+    assert (
+        '"$before_catalog_sha256" = "$expected_v1_1_catalog_sha256"'
+        in installer
+    )
+    assert (
+        '"$before_catalog_sha256" = "$expected_v1_0_catalog_sha256"'
+        in installer
+    )
+    assert "neither exact v1.0 nor exact v1.1" in installer
     assert installer.index("before_state=$(schema_presence)") < installer.index(
         "--single-transaction"
     )
     assert "after_catalog_sha256=$(catalog_sha256)" in installer
+    assert (
+        '"$after_catalog_sha256" != "$expected_v1_1_catalog_sha256"'
+        in installer
+    )
+    assert installer.count('--file "$normalized_identity_sql"') == 1
+    assert installer.count('--file "$normalized_lifecycle_sql"') == 2
     assert "obj_description" in fingerprint_sql
 
 
-def test_postgres_readiness_rejects_process_only_or_stale_volume_health() -> None:
+def test_v1_1_catalog_hash_is_shared_and_placeholder_fails_closed() -> None:
+    installer = POSTGRES_LIFECYCLE_INIT_PATH.read_text(encoding="utf-8")
+    readiness = POSTGRES_READINESS_PATH.read_text(encoding="utf-8")
+    readme = (DEPLOY / "README.md").read_text(encoding="utf-8")
+
+    values = []
+    for script in (installer, readiness):
+        match = re.search(
+            r"(?m)^expected_v1_1_catalog_sha256=([^\r\n]+)$",
+            script,
+        )
+        assert match is not None
+        values.append(match.group(1))
+    assert len(set(values)) == 1
+    catalog_sha256 = values[0]
+    assert catalog_sha256 == V1_1_CATALOG_SHA256_PENDING or re.fullmatch(
+        r"[0-9a-f]{64}", catalog_sha256
+    )
+    assert catalog_sha256 == (
+        "31c314f1d0d17cd91e252d4733a0eba35ae5725e85e56685a63081ba552f7bad"
+    )
+    assert 'if ! is_sha256 "$expected_v1_1_catalog_sha256"' in installer
+    assert 'is_sha256 "$expected_v1_1_catalog_sha256"' in readiness
+    if catalog_sha256 == V1_1_CATALOG_SHA256_PENDING:
+        assert V1_1_CATALOG_SHA256_PENDING in readme
+        assert "both paths fail closed" in readme
+    else:
+        assert V1_1_CATALOG_SHA256_PENDING not in readme
+
+
+def test_legacy_v1_0_scripts_remain_unchanged_and_shared_fingerprint_is_pinned() -> None:
+    expected = {
+        LEGACY_POSTGRES_IDENTITY_INIT_PATH: (
+            "b26ab6e893a9852a58d4667614771082fb9325c9211da9d69f72830b5cbdc9dd"
+        ),
+        LEGACY_POSTGRES_READINESS_PATH: (
+            "04851cd742cacad94511ecf09a03c6c4280102b2d28a8c9babd6166d208c018f"
+        ),
+    }
+
+    for path, expected_sha256 in expected.items():
+        assert hashlib.sha256(path.read_bytes()).hexdigest() == expected_sha256
+    normalized_fingerprint = POSTGRES_FINGERPRINT_PATH.read_text(
+        encoding="utf-8"
+    ).replace("\r\n", "\n")
+    assert hashlib.sha256(normalized_fingerprint.encode("utf-8")).hexdigest() == (
+        "5de1648a55382aa3acc20297bbdd8a3694a2e0a69ee04814cc6499c0da332a66"
+    )
+
+
+def test_v1_1_postgres_readiness_rejects_process_only_or_stale_volume_health() -> None:
     script = POSTGRES_READINESS_PATH.read_text(encoding="utf-8")
 
     assert "*[!A-Za-z0-9._~-]*" in script
@@ -639,15 +759,20 @@ def test_postgres_readiness_rejects_process_only_or_stale_volume_health() -> Non
     assert "PGPASSWORD=\"$FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD\"" in script
     assert "040-fin-runtime-schema-fingerprint.sql" in script
     assert (
-        "dec88b731a59d696509c184cf45ea1344d5840d7aa0c07515b3902b3de9ddd00"
+        "5de1648a55382aa3acc20297bbdd8a3694a2e0a69ee04814cc6499c0da332a66"
         in script
     )
+    assert "expected_v1_1_catalog_sha256=" in script
     assert (
-        "28c2bb8501d78ca3b43e1a490acae050df46b8226d2c2511a34b99a1723ec4a8"
-        in script
+        "55e3fb20718a060605dd713bea5be7e063bd1afaf7bd460d6041a63eb13a7892"
+        not in script
     )
     assert '--file "$normalized_fingerprint_sql"' in script
     assert 'actual_catalog_sha256=$(sha256sum "$fingerprint_rows"' in script
+    assert (
+        '[ "$actual_catalog_sha256" = "$expected_v1_1_catalog_sha256" ]'
+        in script
+    )
     assert "pg_isready" not in "\n".join(
         line for line in script.splitlines() if not line.lstrip().startswith("#")
     )

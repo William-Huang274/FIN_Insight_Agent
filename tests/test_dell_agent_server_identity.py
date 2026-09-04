@@ -7,6 +7,7 @@ from typing import Any, Sequence
 
 import pytest
 
+from scripts.research import qualify_dell_agent_server_identity_postgres_v1
 from sec_agent.agent_runtime import dell_agent_server_identity as identity
 from sec_agent.agent_runtime.dell_agent_server_identity import (
     DellAgentServerIdentityConflict,
@@ -14,8 +15,14 @@ from sec_agent.agent_runtime.dell_agent_server_identity import (
     PostgresDellAgentServerIdentityRepository,
     agent_session_identity_digest,
     load_identity_schema_sql,
+    load_remote_create_lifecycle_schema_sql,
+    persisted_run_binding_digest,
     research_run_identity_digest,
     run_invocation_identity_digest,
+)
+from sec_agent.agent_runtime.dell_agent_server_recovery import (
+    create_run_create_action_dispatched,
+    create_run_create_action_intent,
 )
 from sec_agent.canonical_runtime.contracts_v1_2 import (
     AgentSessionV1_2,
@@ -34,6 +41,10 @@ DIGEST_C = "c" * 64
 THREAD_ID = "01a065aa-23ec-72f3-bf4e-09cf92ac08c7"
 START_RUN_ID = "01a065aa-7091-7a93-8153-7956fb32f946"
 RESUME_RUN_ID = "01a065aa-7311-7e62-b147-93aca9a4ee82"
+SERVER_ASSISTANT_ID = "01a065aa-34a7-7c62-a4ef-e8ce75a0ac3f"
+LAUNCH_DIGEST = "d" * 64
+METADATA_DIGEST = "e" * 64
+OBSERVATION_DIGEST = "f" * 64
 
 
 class _Cursor:
@@ -251,6 +262,113 @@ def _invocation_row(
     )
 
 
+def _lifecycle_row(
+    *,
+    session: AgentSessionV1_2 | None = None,
+    run: ResearchRun | None = None,
+    invocation: RunInvocation | None = None,
+    lifecycle_state: str = "PENDING",
+    lifecycle_ordinal: int = 1,
+    server_thread_id: str = THREAD_ID,
+    server_assistant_id: str = SERVER_ASSISTANT_ID,
+    server_run_id: str | None = None,
+    server_run_status: str | None = None,
+    recovery_reason_code: str | None = None,
+    server_observation_digest: str | None = None,
+    final_binding_digest: str | None = None,
+) -> tuple[Any, ...]:
+    session = session or _session()
+    run = run or _run(session)
+    invocation = invocation or _invocation(session, run)
+    server_kind = "start" if invocation.invocation_kind == "START" else "resume"
+    bound_invocation_id = (
+        invocation.invocation_id if lifecycle_state == "RECONCILED" else None
+    )
+    event_digest = identity._run_create_event_digest(
+        run_invocation_id=invocation.invocation_id,
+        lifecycle_ordinal=lifecycle_ordinal,
+        lifecycle_state=lifecycle_state,
+        research_run_id=run.run_id,
+        agent_session_id=session.session_id,
+        invocation_ordinal=invocation.ordinal,
+        canonical_invocation_kind=invocation.invocation_kind,
+        server_invocation_kind=server_kind,
+        server_thread_id=server_thread_id,
+        assistant_id=identity.DELL_AGENT_SERVER_ASSISTANT_ID,
+        server_assistant_id=server_assistant_id,
+        execution_profile="zero_model_control_plane_v1",
+        session_identity_digest=agent_session_identity_digest(session),
+        research_run_identity_digest=research_run_identity_digest(run),
+        run_invocation_identity_digest=run_invocation_identity_digest(invocation),
+        launch_request_digest=LAUNCH_DIGEST,
+        server_metadata_digest=METADATA_DIGEST,
+        bound_run_invocation_id=bound_invocation_id,
+        server_run_id=server_run_id,
+        server_run_status=server_run_status,
+        recovery_reason_code=recovery_reason_code,
+        server_observation_digest=server_observation_digest,
+        final_binding_digest=final_binding_digest,
+    )
+    return (
+        invocation.invocation_id,
+        lifecycle_ordinal,
+        lifecycle_state,
+        run.run_id,
+        session.session_id,
+        invocation.ordinal,
+        invocation.invocation_kind,
+        server_kind,
+        server_thread_id,
+        identity.DELL_AGENT_SERVER_ASSISTANT_ID,
+        server_assistant_id,
+        "zero_model_control_plane_v1",
+        agent_session_identity_digest(session),
+        research_run_identity_digest(run),
+        run_invocation_identity_digest(invocation),
+        LAUNCH_DIGEST,
+        METADATA_DIGEST,
+        bound_invocation_id,
+        server_run_id,
+        server_run_status,
+        recovery_reason_code,
+        server_observation_digest,
+        final_binding_digest,
+        event_digest,
+        NOW,
+    )
+
+
+def _action_rows(
+    *,
+    session: AgentSessionV1_2 | None = None,
+    run: ResearchRun | None = None,
+    invocation: RunInvocation | None = None,
+) -> tuple[tuple[Any, ...], tuple[Any, ...]]:
+    session = session or _session()
+    run = run or _run(session)
+    invocation = invocation or _invocation(session, run)
+    intent = create_run_create_action_intent(
+        research_run=run,
+        source_invocation=invocation,
+        launch_request_digest=LAUNCH_DIGEST,
+    )
+    dispatched = create_run_create_action_dispatched(intent)
+
+    def row(snapshot_ordinal: int, action: Any) -> tuple[Any, ...]:
+        return (
+            invocation.invocation_id,
+            snapshot_ordinal,
+            action.state,
+            action.outcome,
+            action.action_attempt_id,
+            action.action_attempt_digest,
+            action.model_dump(mode="json"),
+            NOW,
+        )
+
+    return row(1, intent), row(2, dispatched)
+
+
 def test_schema_declares_fin_owned_cardinality_and_append_only_boundaries() -> None:
     sql = load_identity_schema_sql()
     lowered = sql.casefold()
@@ -273,6 +391,350 @@ def test_schema_declares_fin_owned_cardinality_and_append_only_boundaries() -> N
     assert "fin_runtime_durable_identity_is_append_only" in lowered
     assert "action_attempt" not in lowered
     assert not identity._TOP_LEVEL_TRANSACTION_CONTROL_RE.search(sql)
+
+
+def test_lifecycle_schema_declares_atomic_append_only_authority() -> None:
+    sql = load_remote_create_lifecycle_schema_sql()
+    lowered = sql.casefold()
+
+    assert "fin_runtime.agent_server_run_create_lifecycle" in lowered
+    assert "pending" in lowered
+    assert "orphan" in lowered
+    assert "reconciled" in lowered
+    assert "research_run_invocations_require_reconciled_create" in lowered
+    assert "agent_server_run_create_lifecycle_require_valid_event" in lowered
+    assert "deferrable initially deferred" in lowered
+    assert "pending.server_assistant_id = new.server_assistant_id" in lowered
+    assert "pending.execution_profile = new.execution_profile" in lowered
+    assert "pending.launch_request_digest = new.launch_request_digest" in lowered
+    assert "fin_runtime_run_create_final_binding_preexists" in lowered
+    assert "bound.research_run_id = new.research_run_id" in lowered
+    assert "bound.invocation_ordinal = new.invocation_ordinal" in lowered
+    assert "lifecycle_state = 'dispatched'" in lowered
+    assert "failed_before_dispatch" in lowered
+    assert "canonical_created_at" in lowered
+    assert "observed.server_run_status = new.server_run_status" in lowered
+    assert "observed.server_observation_digest =" in lowered
+    assert lowered.count(") is true)") >= 3
+    assert "before update or delete" in lowered
+    assert "before truncate" in lowered
+    assert "revoke update, delete, truncate" in lowered
+    assert "schema_version=1.1" in lowered
+    assert not identity._TOP_LEVEL_TRANSACTION_CONTROL_RE.search(sql)
+
+
+def test_begin_run_create_persists_one_pending_and_exact_replay_cannot_create() -> None:
+    session = _session()
+    run = _run(session)
+    invocation = _invocation(session, run)
+    pending_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+    )
+    intent_row, _dispatched_action_row = _action_rows(
+        session=session,
+        run=run,
+        invocation=invocation,
+    )
+    first_connection = _ScriptedConnection(
+        results=[
+            [_session_row(session)],
+            [],
+            [],
+            [],
+            [],
+            [pending_row],
+            [intent_row],
+        ]
+    )
+
+    first = _repository(first_connection).begin_run_create(
+        research_run=run,
+        run_invocation=invocation,
+        server_thread_id=THREAD_ID,
+        server_invocation_kind="start",
+        server_assistant_id=SERVER_ASSISTANT_ID,
+        execution_profile="zero_model_control_plane_v1",
+        launch_request_digest=LAUNCH_DIGEST,
+        server_metadata_digest=METADATA_DIGEST,
+    )
+
+    assert first.created_now is True
+    assert first.lifecycle.state == "PENDING"
+    assert len(first_connection.executed) == 7
+    assert "'pending'" in first_connection.executed[3][0].casefold()
+    assert "'intent_committed'" in first_connection.executed[4][0].casefold()
+
+    replay_connection = _ScriptedConnection(
+        results=[[_session_row(session)], [], [pending_row], [intent_row]]
+    )
+    replay = _repository(replay_connection).begin_run_create(
+        research_run=run,
+        run_invocation=invocation,
+        server_thread_id=THREAD_ID,
+        server_invocation_kind="start",
+        server_assistant_id=SERVER_ASSISTANT_ID,
+        execution_profile="zero_model_control_plane_v1",
+        launch_request_digest=LAUNCH_DIGEST,
+        server_metadata_digest=METADATA_DIGEST,
+    )
+    assert replay.created_now is False
+    assert replay.lifecycle.pending.lifecycle_event_digest == pending_row[23]
+    assert len(replay_connection.executed) == 4
+
+
+def test_begin_run_create_rejects_same_run_ordinal_for_another_invocation() -> None:
+    session = _session()
+    run = _run(session)
+    invocation = _invocation(session, run)
+    other = _invocation(
+        session,
+        run,
+        invocation_id="INVOCATION::DELL::DURABLE-CONFLICT",
+    )
+    other_pending = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=other,
+    )
+    connection = _ScriptedConnection(
+        results=[[_session_row(session)], [], [other_pending]]
+    )
+
+    with pytest.raises(
+        DellAgentServerIdentityConflict,
+        match="run_create_research_run_ordinal_conflict",
+    ):
+        _repository(connection).begin_run_create(
+            research_run=run,
+            run_invocation=invocation,
+            server_thread_id=THREAD_ID,
+            server_invocation_kind="start",
+            server_assistant_id=SERVER_ASSISTANT_ID,
+            execution_profile="zero_model_control_plane_v1",
+            launch_request_digest=LAUNCH_DIGEST,
+            server_metadata_digest=METADATA_DIGEST,
+        )
+    assert connection.transaction_rollbacks == 1
+
+
+def test_orphan_event_is_append_only_and_replay_must_be_exact() -> None:
+    session = _session()
+    run = _run(session)
+    invocation = _invocation(session, run)
+    pending_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+    )
+    dispatched_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+        lifecycle_state="DISPATCHED",
+        lifecycle_ordinal=2,
+    )
+    orphan_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+        lifecycle_state="ORPHAN",
+        lifecycle_ordinal=3,
+        server_run_id=START_RUN_ID,
+        recovery_reason_code="REMOTE_CREATE_HEADER_OBSERVED",
+        server_observation_digest=OBSERVATION_DIGEST,
+    )
+    connection = _ScriptedConnection(
+        results=[
+            [pending_row, dispatched_row],
+            [],
+            [pending_row, dispatched_row],
+            [],
+            [pending_row, dispatched_row, orphan_row],
+        ]
+    )
+    persisted = _repository(connection).record_run_create_orphan(
+        run_invocation_id=invocation.invocation_id,
+        pending_event_digest=pending_row[23],
+        recovery_reason_code="REMOTE_CREATE_HEADER_OBSERVED",
+        server_observation_digest=OBSERVATION_DIGEST,
+        server_run_id=START_RUN_ID,
+    )
+    assert persisted.state == "ORPHAN"
+    assert persisted.orphan is not None
+    assert persisted.orphan.server_run_id == START_RUN_ID
+
+    replay_connection = _ScriptedConnection(
+        results=[
+            [pending_row, dispatched_row, orphan_row],
+            [],
+            [pending_row, dispatched_row, orphan_row],
+        ]
+    )
+    replay = _repository(replay_connection).record_run_create_orphan(
+        run_invocation_id=invocation.invocation_id,
+        pending_event_digest=pending_row[23],
+        recovery_reason_code="REMOTE_CREATE_HEADER_OBSERVED",
+        server_observation_digest=OBSERVATION_DIGEST,
+        server_run_id=START_RUN_ID,
+    )
+    assert replay == persisted
+
+    conflict_connection = _ScriptedConnection(
+        results=[
+            [pending_row, dispatched_row, orphan_row],
+            [],
+            [pending_row, dispatched_row, orphan_row],
+        ]
+    )
+    with pytest.raises(
+        DellAgentServerIdentityConflict,
+        match="run_create_orphan_observation_conflict",
+    ):
+        _repository(conflict_connection).record_run_create_orphan(
+            run_invocation_id=invocation.invocation_id,
+            pending_event_digest=pending_row[23],
+            recovery_reason_code="REMOTE_SCAN_EMPTY",
+            server_observation_digest=OBSERVATION_DIGEST,
+            server_run_id=START_RUN_ID,
+        )
+
+
+def test_lifecycle_projection_rejects_digest_or_identity_drift() -> None:
+    pending_row = _lifecycle_row()
+    corrupt = list(pending_row)
+    corrupt[23] = "0" * 64
+    with pytest.raises(
+        DellAgentServerIdentityStoreError,
+        match="run_create_lifecycle_event_digest_mismatch",
+    ):
+        identity._run_create_lifecycle_from_rows([tuple(corrupt)])
+
+
+def test_execution_projection_reads_final_binding_and_lifecycle_together() -> None:
+    session = _session()
+    run = _run(session)
+    invocation = _invocation(session, run)
+    binding_row = _invocation_row(invocation)
+    pending_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+    )
+    dispatched_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+        lifecycle_state="DISPATCHED",
+        lifecycle_ordinal=2,
+    )
+    reconciled_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+        lifecycle_state="RECONCILED",
+        lifecycle_ordinal=3,
+        server_run_id=START_RUN_ID,
+        server_run_status="pending",
+        recovery_reason_code="REMOTE_RESPONSE_EXACT",
+        server_observation_digest=OBSERVATION_DIGEST,
+        final_binding_digest=persisted_run_binding_digest(
+            identity._invocation_from_row(binding_row)
+        ),
+    )
+    connection = _ScriptedConnection(
+        results=[[binding_row], [pending_row, dispatched_row, reconciled_row]]
+    )
+
+    projection = _repository(
+        connection
+    ).get_execution_binding_with_lifecycle(
+        run_invocation_id=invocation.invocation_id
+    )
+
+    assert projection is not None
+    assert projection.binding.server_run_id == START_RUN_ID
+    assert projection.lifecycle is not None
+    assert projection.lifecycle.state == "RECONCILED"
+    assert len(connection.executed) == 2
+
+
+def test_reconciled_bind_replay_is_exact_and_does_not_append() -> None:
+    session = _session()
+    run = _run(session)
+    invocation = _invocation(session, run)
+    binding_row = _invocation_row(invocation)
+    persisted_binding = identity._invocation_from_row(binding_row)
+    pending_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+    )
+    dispatched_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+        lifecycle_state="DISPATCHED",
+        lifecycle_ordinal=2,
+    )
+    reconciled_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+        lifecycle_state="RECONCILED",
+        lifecycle_ordinal=3,
+        server_run_id=START_RUN_ID,
+        server_run_status="pending",
+        recovery_reason_code="REMOTE_RESPONSE_EXACT",
+        server_observation_digest=OBSERVATION_DIGEST,
+        final_binding_digest=persisted_run_binding_digest(persisted_binding),
+    )
+    exact_connection = _ScriptedConnection(
+        results=[
+            [_session_row(session)],
+            [],
+            [pending_row, dispatched_row, reconciled_row],
+            [binding_row],
+        ]
+    )
+    replay = _repository(exact_connection).bind_run_invocation(
+        research_run=run,
+        run_invocation=invocation,
+        server_thread_id=THREAD_ID,
+        server_run_id=START_RUN_ID,
+        server_invocation_kind="start",
+        first_server_status="pending",
+        pending_event_digest=pending_row[23],
+        server_observation_digest=OBSERVATION_DIGEST,
+        reconciliation_reason_code="REMOTE_RESPONSE_EXACT",
+    )
+    assert replay == persisted_binding
+    assert len(exact_connection.executed) == 4
+
+    conflict_connection = _ScriptedConnection(
+        results=[
+            [_session_row(session)],
+            [],
+            [pending_row, dispatched_row, reconciled_row],
+            [binding_row],
+        ]
+    )
+    with pytest.raises(
+        DellAgentServerIdentityConflict,
+        match="run_create_reconciled_binding_conflict",
+    ):
+        _repository(conflict_connection).bind_run_invocation(
+            research_run=run,
+            run_invocation=invocation,
+            server_thread_id=THREAD_ID,
+            server_run_id=START_RUN_ID,
+            server_invocation_kind="start",
+            first_server_status="pending",
+            pending_event_digest=pending_row[23],
+            server_observation_digest="3" * 64,
+            reconciliation_reason_code="REMOTE_RESPONSE_EXACT",
+        )
 
 
 def test_session_binding_is_parameterized_transactional_and_idempotent() -> None:
@@ -326,15 +788,56 @@ def test_run_binding_is_one_transaction_and_builds_one_to_many_aggregate() -> No
     session = _session()
     run = _run(session)
     invocation = _invocation(session, run)
+    pending_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+    )
+    dispatched_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+        lifecycle_state="DISPATCHED",
+        lifecycle_ordinal=2,
+    )
+    _intent_action_row, dispatched_action_row = _action_rows(
+        session=session,
+        run=run,
+        invocation=invocation,
+    )
+    binding_row = _invocation_row(invocation)
+    final_digest = persisted_run_binding_digest(
+        identity._invocation_from_row(binding_row)
+    )
+    reconciled_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+        lifecycle_state="RECONCILED",
+        lifecycle_ordinal=3,
+        server_run_id=START_RUN_ID,
+        server_run_status="pending",
+        recovery_reason_code="REMOTE_RESPONSE_EXACT",
+        server_observation_digest=OBSERVATION_DIGEST,
+        final_binding_digest=final_digest,
+    )
     connection = _ScriptedConnection(
         results=[
             [_session_row(session)],
+            [],
+            [pending_row, dispatched_row],
+            [],
+            [],
             [],
             [],
             [_run_row(run)],
             [(0, 0)],
             [],
-            [_invocation_row(invocation)],
+            [binding_row],
+            [dispatched_action_row],
+            [],
+            [],
+            [pending_row, dispatched_row, reconciled_row],
         ]
     )
     repository = _repository(connection)
@@ -346,17 +849,22 @@ def test_run_binding_is_one_transaction_and_builds_one_to_many_aggregate() -> No
         server_run_id=START_RUN_ID,
         server_invocation_kind="start",
         first_server_status="pending",
+        pending_event_digest=pending_row[23],
+        server_observation_digest=OBSERVATION_DIGEST,
+        reconciliation_reason_code="REMOTE_RESPONSE_EXACT",
     )
 
     assert persisted.run_invocation_id == invocation.invocation_id
     assert persisted.server_run_id == START_RUN_ID
     assert connection.transaction_entries == 1
     assert connection.transaction_commits == 1
-    assert len(connection.executed) == 7
+    assert len(connection.executed) == 15
     assert "pg_advisory_xact_lock" in connection.executed[1][0].casefold()
     assert "hashtextextended" in connection.executed[1][0].casefold()
-    assert "for update" not in connection.executed[3][0].casefold()
-    assert "max(invocation_ordinal)" in connection.executed[4][0].casefold()
+    assert "pg_advisory_xact_lock" in connection.executed[5][0].casefold()
+    assert "for update" not in connection.executed[7][0].casefold()
+    assert "max(invocation_ordinal)" in connection.executed[8][0].casefold()
+    assert "'reconciled'" in connection.executed[13][0].casefold()
     assert all(
         "fin_runtime." in statement
         or "pg_advisory_xact_lock" in statement.casefold()
@@ -398,9 +906,25 @@ def test_resume_binding_requires_durable_preceding_ordinal() -> None:
     session = _session()
     run = _run(session)
     resume = _invocation(session, run, resume=True)
+    pending_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=resume,
+    )
+    dispatched_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=resume,
+        lifecycle_state="DISPATCHED",
+        lifecycle_ordinal=2,
+    )
     connection = _ScriptedConnection(
         results=[
             [_session_row(session)],
+            [],
+            [pending_row, dispatched_row],
+            [],
+            [],
             [],
             [],
             [_run_row(run)],
@@ -419,13 +943,17 @@ def test_resume_binding_requires_durable_preceding_ordinal() -> None:
             server_run_id=RESUME_RUN_ID,
             server_invocation_kind="resume",
             first_server_status="pending",
+            pending_event_digest=pending_row[23],
+            server_observation_digest=OBSERVATION_DIGEST,
+            reconciliation_reason_code="REMOTE_RESPONSE_EXACT",
         )
 
     assert connection.transaction_rollbacks == 1
-    assert len(connection.executed) == 5
+    assert len(connection.executed) == 9
     assert "pg_advisory_xact_lock" in connection.executed[1][0].casefold()
-    assert "for update" not in connection.executed[3][0].casefold()
-    assert "max(invocation_ordinal)" in connection.executed[4][0].casefold()
+    assert "pg_advisory_xact_lock" in connection.executed[5][0].casefold()
+    assert "for update" not in connection.executed[7][0].casefold()
+    assert "max(invocation_ordinal)" in connection.executed[8][0].casefold()
 
 
 def test_invocation_collision_or_noncontiguous_aggregate_fails_closed() -> None:
@@ -437,9 +965,25 @@ def test_invocation_collision_or_noncontiguous_aggregate_fails_closed() -> None:
         run,
         invocation_id="INVOCATION::DELL::COLLISION",
     )
+    pending_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+    )
+    dispatched_row = _lifecycle_row(
+        session=session,
+        run=run,
+        invocation=invocation,
+        lifecycle_state="DISPATCHED",
+        lifecycle_ordinal=2,
+    )
     connection = _ScriptedConnection(
         results=[
             [_session_row(session)],
+            [],
+            [pending_row, dispatched_row],
+            [],
+            [],
             [],
             [],
             [_run_row(run)],
@@ -463,6 +1007,9 @@ def test_invocation_collision_or_noncontiguous_aggregate_fails_closed() -> None:
             server_run_id=START_RUN_ID,
             server_invocation_kind="start",
             first_server_status="pending",
+            pending_event_digest=pending_row[23],
+            server_observation_digest=OBSERVATION_DIGEST,
+            reconciliation_reason_code="REMOTE_RESPONSE_EXACT",
         )
     assert connection.transaction_rollbacks == 1
 
@@ -549,15 +1096,35 @@ def test_invalid_identity_digest_is_rejected_on_fresh_read() -> None:
         )
 
 
-def test_schema_installer_uses_only_digest_pinned_packaged_sql() -> None:
+def test_schema_sources_are_digest_pinned_but_repository_install_is_retired() -> None:
     connection = _ScriptedConnection()
     repository = _repository(connection)
     sql = load_identity_schema_sql()
+    lifecycle_sql = load_remote_create_lifecycle_schema_sql()
 
     assert sha256(sql.encode("utf-8")).hexdigest() == identity.IDENTITY_SCHEMA_SHA256
-    repository.install_schema()
-    assert connection.executed == [(sql, None)]
-    assert connection.transaction_commits == 1
+    assert (
+        sha256(lifecycle_sql.encode("utf-8")).hexdigest()
+        == identity.REMOTE_CREATE_LIFECYCLE_SCHEMA_SHA256
+    )
+    with pytest.raises(
+        DellAgentServerIdentityStoreError,
+        match="identity_schema_repository_install_unsupported",
+    ):
+        repository.install_schema()
+    assert connection.executed == []
+    assert connection.transaction_commits == 0
+
+
+def test_pre_lifecycle_postgres_qualifier_is_a_typed_tombstone() -> None:
+    with pytest.raises(
+        RuntimeError,
+        match=(
+            qualify_dell_agent_server_identity_postgres_v1
+            .LEGACY_IDENTITY_QUALIFIER_RETIREMENT_CODE
+        ),
+    ):
+        qualify_dell_agent_server_identity_postgres_v1.main()
 
 
 def test_repository_requires_pool_checkout_and_rejects_active_connection() -> None:

@@ -1,8 +1,9 @@
-"""Qualify the Dell Agent Server identity seam against real PostgreSQL.
+"""Retired pre-lifecycle PostgreSQL identity qualifier.
 
-This is a zero-model, zero-network qualification harness.  It exercises only
-the FIN-owned append-only identity schema and emits a secret-free JSON receipt.
-Connection URIs must be injected through the environment and are never echoed.
+This historical entrypoint predates the mandatory PENDING/ORPHAN/RECONCILED
+remote-create lifecycle.  It remains readable as historical implementation
+evidence, but its ``main`` function fails before reading credentials or writing
+PostgreSQL so it cannot be mistaken for the current RC-S3-107 qualification.
 """
 
 from __future__ import annotations
@@ -44,6 +45,10 @@ EXPECTED_TRIGGER_NAMES = {
     "research_run_invocations_reject_mutation",
     "research_run_invocations_reject_truncate",
 }
+
+LEGACY_IDENTITY_QUALIFIER_RETIREMENT_CODE = (
+    "dell_pre_lifecycle_identity_qualifier_retired_rc_s3_107_required"
+)
 
 
 def _required_secret_environment(name: str) -> str:
@@ -269,6 +274,11 @@ def _migrator_trigger_rejection(
 
 
 def main() -> None:
+    raise RuntimeError(LEGACY_IDENTITY_QUALIFIER_RETIREMENT_CODE)
+
+    # Historical implementation below is deliberately unreachable.  Keeping
+    # it in-place preserves the exact old qualification logic for audit while
+    # the typed guard above prevents its direct final-binding writes.
     runtime_uri = _required_secret_environment(RUNTIME_URI_ENV)
     migration_uri = _required_secret_environment(MIGRATION_URI_ENV)
     token = uuid4().hex[:12]

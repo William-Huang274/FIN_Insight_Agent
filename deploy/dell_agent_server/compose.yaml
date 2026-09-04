@@ -19,6 +19,7 @@ services:
       POSTGRES_PASSWORD: ${FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD:?set FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD in the repository .env}
       FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD: ${FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD:?set FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD in the repository .env}
       FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD: ${FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD:?set FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD in the repository .env}
+      FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD: ${FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD:?set FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD in the repository .env}
     command:
       - postgres
       - -c
@@ -32,13 +33,13 @@ services:
         bind:
           create_host_path: false
       - type: bind
-        source: ./postgres-init/020-install-fin-runtime-identity.sh
-        target: /docker-entrypoint-initdb.d/020-install-fin-runtime-identity.sh
+        source: ./postgres-init/025-install-fin-runtime-lifecycle-v1-1.sh
+        target: /docker-entrypoint-initdb.d/025-install-fin-runtime-lifecycle-v1-1.sh
         read_only: true
         bind:
           create_host_path: false
       - type: bind
-        source: ./postgres-init/030-runtime-readiness.sh
+        source: ./postgres-init/031-runtime-readiness-v1-1.sh
         target: /usr/local/bin/fin-postgres-runtime-readiness
         read_only: true
         bind:
@@ -46,6 +47,12 @@ services:
       - type: bind
         source: ../../src/sec_agent/agent_runtime/sql/001_dell_agent_server_identity_v1_0.sql
         target: /opt/fin-insight/001_dell_agent_server_identity_v1_0.sql
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: ../../src/sec_agent/agent_runtime/sql/002_dell_agent_server_remote_create_lifecycle_v1_1.sql
+        target: /opt/fin-insight/002_dell_agent_server_remote_create_lifecycle_v1_1.sql
         read_only: true
         bind:
           create_host_path: false

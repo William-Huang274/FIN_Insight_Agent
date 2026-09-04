@@ -95,6 +95,27 @@ def test_r8_preflight_normalizes_windows_git_path_style(
     assert host_runner._preflight({}) == commit
 
 
+def test_r8_derives_all_four_distinct_postgres_credentials(
+    host_runner: ModuleType,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD", "seed-only-secret")
+    monkeypatch.setenv("LANGSMITH_API_KEY", "trace-only-secret")
+
+    environment = host_runner._credential_environment()
+    password_names = (
+        "FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD",
+        "FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD",
+        "FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD",
+        "FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD",
+    )
+    passwords = tuple(environment[name] for name in password_names)
+
+    assert len(set(passwords)) == 4
+    assert all(len(value) == 64 for value in passwords)
+    assert "seed-only-secret" not in passwords
+
+
 def test_r8_safe_output_rejects_content_and_secret_surfaces(
     live_phase: ModuleType,
     monkeypatch: pytest.MonkeyPatch,

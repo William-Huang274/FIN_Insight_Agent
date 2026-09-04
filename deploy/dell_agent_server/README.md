@@ -18,9 +18,10 @@ The Compose and Dockerfile contain no credential values. Put real values only
 in the repository-root `.env`, which is excluded by both `.gitignore` and the
 Dockerfile-specific deny-by-default build-context allowlist. The image copies
 only `pyproject.toml`, `uv.lock`, `README.md`, Python source files below `src/`,
-the packaged FIN identity SQL, and five exact non-secret control documents: the
-Dell foundation, structured-agent configuration, physical-route candidate,
-Reviewed Evidence enrichment candidate, and separate Owner data decision. The
+the packaged FIN identity and remote-create lifecycle SQL migrations, and five
+exact non-secret control documents: the Dell foundation, structured-agent
+configuration, physical-route candidate, Reviewed Evidence enrichment candidate,
+and separate Owner data decision. The
 allowlist re-excludes `__pycache__` and compiled Python artifacts after
 admitting source directories. It does not copy a whole `src/` or `configs/`
 tree. Local corpus rows, Reviewed Evidence bodies, S2 data, external captures,
@@ -31,13 +32,14 @@ Compose uses `.env` only for explicit variable interpolation. Secret values are
 passed only through the listed Agent Server/PostgreSQL environment fields. The
 six `FINSIGHT_DELL_*_HOST_*` values below are used only as bind-mount sources and
 are not injected into the container environment or receipts. The local file
-must define exactly these four secrets for this stack:
+must define exactly these five secrets for this stack:
 
 ```dotenv
 LANGSMITH_API_KEY=<local secret>
 FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD=<strong URL-safe local secret>
 FINSIGHT_LANGGRAPH_POSTGRES_PASSWORD=<distinct strong URL-safe local secret>
 FINSIGHT_FIN_RUNTIME_POSTGRES_PASSWORD=<distinct strong URL-safe local secret>
+FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD=<fourth distinct strong URL-safe local secret>
 ```
 
 Tracing is fixed to `true`, the LangSmith project is fixed to
@@ -68,38 +70,55 @@ FINSIGHT_DELL_EXTERNAL_PACK_HOST_ROOT=Z:/FIN_Insight_Agent_qualification/dell_re
 approved paid/model gate. The current zero-model Compose service deliberately
 does not inject it into the API container. LangSmith tracing remains mandatory.
 
-Use three distinct URL-safe PostgreSQL passwords. The first is bootstrap-admin
-only, the second belongs to the non-superuser Agent Server role, and the third
+Use four distinct URL-safe PostgreSQL passwords. The first is bootstrap-admin
+only, the second belongs to the non-superuser Agent Server role, the third
 belongs to `fin_runtime_app`, which receives only schema usage plus
-`SELECT`/`INSERT` and sequence access on `fin_runtime`. Never commit `.env`,
+`SELECT`/`INSERT` and sequence access on `fin_runtime`, and the fourth belongs
+to the independent `fin_runtime_operator` recovery authority. Never commit `.env`,
 paste its contents into a receipt, or add a credential value to Compose. The
-role bootstrap script runs only for a fresh PostgreSQL volume. PostgreSQL is
-not considered healthy until all three credentials authenticate over TCP and
-the FIN identity schema matches a digest-pinned, secret-free full catalog
-fingerprint. That fingerprint covers the version comment, roles, relations,
-columns, defaults, constraints, indexes, triggers, function bodies, ownership
-and grants—not just the three table names or six trigger names. This prevents
+role bootstrap script runs automatically only for a fresh PostgreSQL volume;
+reused volumes require the explicit replay below. PostgreSQL is not considered
+healthy until all four PostgreSQL credentials authenticate over TCP and
+the FIN identity and remote-create lifecycle schema matches a digest-pinned,
+secret-free admitted catalog projection fingerprint. That projection covers
+the version comment and the role, relation, column, default, constraint, index,
+trigger, function-body, ownership, and grant surfaces consumed by this seam—not
+every PostgreSQL catalog field. This prevents
 an old, partial or silently drifted named volume that skipped
 `docker-entrypoint-initdb.d` from appearing ready.
 
-When intentionally reusing a volume that is already known to contain this exact
-v1.0 schema, start PostgreSQL alone, then run the reviewed credential bootstrap
-and digest-pinned idempotency verifier explicitly:
+When intentionally reusing a volume, first stop or drain `langgraph-api` so the
+v1.0 writer cannot race the write-incompatible v1.1 migration. The volume must
+contain either the exact frozen v1.0 predecessor or the exact v1.1 catalog. Start
+PostgreSQL alone, then run the reviewed credential bootstrap and digest-pinned
+migrator explicitly:
 
 ```powershell
+docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml stop langgraph-api
 docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml up -d langgraph-postgres
 docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml exec -T langgraph-postgres /bin/sh /docker-entrypoint-initdb.d/010-create-runtime-roles.sh
-docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml exec -T langgraph-postgres /bin/sh /docker-entrypoint-initdb.d/020-install-fin-runtime-identity.sh
+docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml exec -T langgraph-postgres /bin/sh /docker-entrypoint-initdb.d/025-install-fin-runtime-lifecycle-v1-1.sh
 docker compose --env-file .env -f deploy/dell_agent_server/compose.yaml up -d
 ```
 
 The first `up` may correctly report PostgreSQL as unhealthy until the two
-explicit steps finish. The schema installer accepts only an absent schema or a
-catalog fingerprint identical to the frozen v1.0 contract; it refuses
-unversioned, partial or drifted schemas—including changed constraints or
-function bodies—instead of stamping them as current. Such a volume needs a
-separately reviewed migration. Do not replace migration with deletion of the named volume unless
-its contents have been separately audited and deletion has been authorized.
+explicit steps finish. The v1.1 installer has exactly three accepted routes:
+an absent schema runs v1.0 then v1.1 in one transaction; an exact v1.0 catalog
+runs only the reviewed v1.1 migration; and an exact v1.1 catalog is a no-op. It
+refuses every unversioned, partial or drifted schema—including changed
+constraints or function bodies—instead of stamping it as current. Existing v1.0
+rows remain readable, but after migration every new final server-run binding
+requires the durable PENDING/optional ORPHAN/RECONCILED lifecycle, so old writers
+must not remain in service. Do not replace migration with deletion of the named
+volume unless its contents have been separately audited and deletion has been
+authorized.
+
+The checked-in v1.1 installer and readiness script pin the catalog SHA-256
+obtained from the pinned PostgreSQL image after the final 002 migration. The
+v1.0 predecessor hash was independently captured after replaying the current
+role bootstrap, including `fin_runtime_operator`, and before applying 002.
+Both values come from the unchanged secret-free fingerprint query against real
+PostgreSQL; they are not inferred from SQL text.
 The bootstrap rejects short, non-URL-safe or reused passwords before sending
 role DDL; its password-bearing session disables statement and error-parameter
 logging before any secret-bearing SQL is sent.
@@ -153,9 +172,9 @@ LangSmith project. Run it only from a clean commit:
 
 For this fresh disposable qualification project, the runner treats
 `FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD` as local secret material and derives
-three distinct 64-character URL-safe PostgreSQL role passwords in memory. It
+four distinct 64-character URL-safe PostgreSQL role passwords in memory. It
 does not rewrite `.env`, print a value, or persist a value in the attempt
-receipt. Normal manual/product Compose use still requires the three explicit
+receipt. Normal manual/product Compose use still requires the four explicit
 passwords documented above.
 
 The runner is intentionally fail-preserving: it never uses `down -v`, removes a

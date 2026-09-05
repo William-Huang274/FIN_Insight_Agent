@@ -119,7 +119,7 @@ FIN 仅验证任务覆盖、依赖身份、同 case/as-of/批准数据范围以�
 
 ## 动态 Lead → 并行专业研究：实现与付费前资格（2026-09-06）
 
-下一一次执行配置已落盘：`configs/research/evals/fin_ia_0_1_3_s3_dell_lead_two_topic_a1_authority_v1_0.json`，decision digest `d9965ec526e6f203acea6e68c006bc2baf6eb9fc12eed3538a0f3ee67425c417`，implementation `11c52031d700f6ae6856a46768165dd685edea97`，execution=`20260906-dell-lead-two-topic-a1`。数据/canonical session-run-invocation 输入已零模型实际创建通过；新 port18174、10.253.26.0/24 已查未用；正式结果以下次原始 receipt 为准。16轮/24动作是每个专业任务容量，不是全 case 总额；Lead8轮、最多4任务/并行2、每节点500k/32k/480s，真实用量必须按新调用统计，不计复用 A5 的旧调用。
+下一一次执行配置已落盘：`configs/research/evals/fin_ia_0_1_3_s3_dell_lead_two_topic_a1_authority_v1_0.json`，decision digest `d9965ec526e6f203acea6e68c006bc2baf6eb9fc12eed3538a0f3ee67425c417`，implementation `11c52031d700f6ae6856a46768165dd685edea97`，execution=`20260906-dell-lead-two-topic-a1`。数据/canonical session-run-invocation 输入已零模型实际创建通过；runner 派生 port18153、10.253.26.0/24 已查未用；正式结果以下次原始 receipt 为准。16轮/24动作是每个专业任务容量，不是全 case 总额；Lead8轮、最多4任务/并行2、每节点500k/32k/480s，真实用量必须按新调用统计，不计复用 A5 的旧调用。
 
 在 `0d9ccd347bdf25f900766a09481bca10115d5cef` 后实现 `dell_lead_research_graph`。Lead 使用同 SDK 的3个原生规划工具，ResearchTaskSpec 表达任务/依赖；标准 `Send` 执行 ready tasks，ToolNode 给回 schema/依赖/循环/越权错误和真实子任务产物。Lead 可看结果后追加任务，不支持改写/取消已运行任务；最多4任务、并行2，非新通用调度器。Schema/state 读取不开模型/MCP/seed；Agent Server 的既有数据库/Redis/trace 持久化不换。私有 reasoning 各自续传，跨角色只共享工作底稿、显式引用/局限和未完成 Reviewed route，不复制 notebook 计数或权限。
 

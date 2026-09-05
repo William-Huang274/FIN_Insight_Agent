@@ -891,6 +891,54 @@ def test_agentic_real_sdk_wire_uses_object_envelope_without_network(
     assert result["runtime_receipt"]["total_tokens"] == 138
 
 
+@pytest.mark.parametrize("status_code", [402, 429, 503])
+def test_agentic_provider_failure_audit_keeps_http_status_without_error_body(
+    monkeypatch: pytest.MonkeyPatch, status_code: int,
+) -> None:
+    monkeypatch.setenv("LANGSMITH_TRACING", "false")
+    monkeypatch.setenv("LANGCHAIN_TRACING_V2", "false")
+    events: list[dict[str, Any]] = []
+    calls: list[str] = []
+    private_error = "Insufficient Balance; private-provider-body-do-not-publish"
+
+    def respond(request: httpx.Request) -> httpx.Response:
+        calls.append(request.method)
+        return httpx.Response(
+            status_code,
+            json={"error": {"message": private_error, "type": "unknown_error"}},
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+        models = _models()
+        models["specialist"] = adapter_module.ChatDeepSeek(
+            model="deepseek-v4-pro",
+            api_key=SecretStr("dummy-key-no-network-call"),
+            base_url="https://api.deepseek.com",
+            http_client=client,
+            max_retries=0,
+            use_responses_api=False,
+        )
+        adapter = DeepSeekStructuredAgentAdapter(
+            config=_config(), chat_models=models,
+            audit_sink=lambda event: events.append(dict(event)),
+        )
+        with pytest.raises(
+            DeepSeekStructuredAgentError, match="deepseek_specialist_single_call_failed"
+        ):
+            adapter.specialist_model_turn(_agentic_turn_request())
+
+    assert calls == ["POST"]
+    assert [event["event"] for event in events] == ["started", "outcome"]
+    outcome = events[-1]
+    assert outcome["status"] == "provider_call_failed"
+    assert outcome["http_status_code"] == status_code
+    assert outcome["error_message"] == "provider_call_failed"
+    assert outcome["usage_available"] is False
+    encoded = json.dumps(events)
+    assert private_error not in encoded
+    assert "dummy-key-no-network-call" not in encoded
+
+
 def test_agentic_observation_projection_strips_receipt_and_transport_internals() -> None:
     request = _agentic_turn_request()
     request["notebook"]["observations"] = [

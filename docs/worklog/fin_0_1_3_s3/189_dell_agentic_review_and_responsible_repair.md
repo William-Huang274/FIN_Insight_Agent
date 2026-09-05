@@ -119,7 +119,22 @@ FIN 仅验证任务覆盖、依赖身份、同 case/as-of/批准数据范围以�
 
 ## 动态 Lead → 并行专业研究：实现与付费前资格（2026-09-06）
 
-### Lead two-topic A1 实际失败与同层修复（最新）
+### Lead two-topic A2：真实依赖交接与并行研究，因账户余额不足停止（当前）
+
+A2=`20260906-dell-lead-two-topic-a2`，implementation `f2fff90209f64d9fd39ce3fa759f5d1022897e73`、clean pushed launch HEAD `63c95986cf277afa69c509ae442917e1087647c8`；authority digest `523bbf113d68f506387254020820ffa13bcb2db82fe093c249ad10083dc1940f`。project `finsight-dell-q1-paid-523bbf113d68`、port18149、subnet10.253.27.0/24；run/root `01a072f7-b0db-7220-be9d-0e06e64a841b`、thread `dc3a7886-f25b-5080-8e07-7becec352120`。本节取代下面 A2 尚未运行的历史描述。
+
+- **工程实际增量**：Lead 1轮自主选择 `wave3:Q5_SUPPLY_AND_PRICE:supply_constraints` 与 `wave3:Q6_MODEL_COMPUTE_DEMAND:model_compute_demand`，分别承担供给/价格和模型算力需求研究；这次两任务都显式依赖 `wave2:Q1_ISSUER_TRUTH:39c34f8810cd29df5e18`，故已审查 A5 底稿→两个独立 Specialist 的依赖交接真实发生，不再只是零模型 fixture。两个 Specialist 持有各自多轮上下文并行选择资料/工具；未复制上游私有 reasoning 或将上游意见自动升级为证据。
+- **调用事实**：17 started / 17 outcome，15 success + 2 provider failure，无未决 provider 请求。Lead 1次成功，input/output/total=`12278/8412/20690`；Q5 6次成功+1失败，已报告=`351278/32595/383873`；Q6 8次成功+1失败，已报告=`455284/40608/495892`。总已报告=`818840/81615/900455` tokens；两次失败没有 usage，不虚构其用量或实际账单。含失败请求的模型累计951.951276s，并行 container 研究阶段498.625s，构建97.578s。
+- **研究产物与边界**：Q5 原生请求3 Reviewed、8 Source、1 Submit；Q6 1 Reviewed、21 Source、1 Submit，均为请求数而非全部成功的工具动作数。本轮无 Finance 请求，不能声称两个 Specialist 实际新增了 SQL 计算。最后 Q5 草稿21 claims/5389正文字符，Q6 15 claims/4178正文字符；两稿所有 claims 都填了 citation_quotes 且 terminal=`supported`，对比A1漏填有改善，但引句存在不等于引用/语义正确。根终态仍是 failed、phase=`schedule_ready_tasks`、0 collected task_results，无 Lead 收敛、无独立跨主题复核、无完整报告或产品 PASS。
+- **确切停止原因不是网络**：Q5 于2026-09-05T19:15:23.441777Z、Q6 于19:16:48.860111Z报告 `APIStatusError`。LangSmith 两个原始 LLM error spans（`01a07300-82ad-7472-b902-2ef8a7a4bafb`、`01a072ff-350a-7880-8346-d543c126cb3a`）明确为 HTTP402 / `Insufficient Balance`。只读余额接口于 **2026-09-05T19:30:14.290866Z** 返回 HTTP200、`is_available=false`，确认为余额不足（精确余额仅保存在本机诊断文件，不进入 Git）。这是 `.env` 当前 key 对应账户的外部资金阻断，不是 RAG/模型参数错误，也不能按 Owner 此前“额度管够”的假设继续重试。官方语义：[DeepSeek error codes](https://api-docs.deepseek.com/quick_start/error_codes/)。
+- **小修而非新框架**：既有 provider audit 只增添经过整数范围检查的 `http_status_code`，不公开异常正文/密钥/提示词，不自动重试。真实SDK+MockTransport的402/429/503反例先因缺字段失败，修后本文件27项定向测试通过；没有全仓回归或新增付费调用。RC-S3-124的实际工具回放修复仍成立，但“模型接反馈后完成收敛”尚未 live 通过，不因A2账户错误伪关闭。
+- **保存与下一步**：A2 原始 failed receipt、error checkpoint、public audit、私有模型上下文/reasoning 均不改。新增 `provider-balance-blocker.json` 是脱敏只读诊断记录；`q5.unaccepted.agent-original.md` / `q6.unaccepted.agent-original.md` 只增加宿主未验收说明后机械导出原正文，不人工修稿。它们位于 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260906-dell-lead-two-topic-a2/`。17请求已有结果，host driver已结束；不创建A3、不充值、不新发付费调用、不resume旧run。需要Owner给当前key账户充值或在本机换入已有余额的key，恢复后先只读核验余额，再安排同Q5/Q6范围的必要收口与独立复核；不回R14/新规划平台。
+
+活跃子图 `state=null` 的边界继续保留。官方 [LangGraph subgraphs](https://docs.langchain.com/oss/python/langgraph/use-subgraphs) / [subagents](https://docs.langchain.com/oss/python/langchain/multi-agent/subagents) 说明子图发现与调用结构、checkpointer模式有关；当前通过回调动态组合的子图可能不被静态发现，这是待验证的推断，不能由root空值断言“没有checkpoint”，也不能宣称实时子图展开、跨进程resume或HITL已通过。账户恢复前不借此新造状态/持久化协议。
+
+只读 Agent Server runs 确认 A2 原 run=`error` 且没有活跃 research run 后，已停止 A2 的 API/PostgreSQL/Redis 三服务以释放内存；只是 Docker stop，容器、卷、镜像及全部原始证据保留，原 failed receipt 的 cleanup=false 不改。
+
+### Lead two-topic A1 实际失败与同层修复（历史）
 
 修复后的 fresh A2 配置：`fin_ia_0_1_3_s3_dell_lead_two_topic_a2_authority_v1_0.json`，implementation `f2fff90209f64d9fd39ce3fa759f5d1022897e73`，digest `523bbf113d68f506387254020820ffa13bcb2db82fe093c249ad10083dc1940f`；新project `finsight-dell-q1-paid-523bbf113d68`、runner port18149、subnet10.253.27.0/24。仍只Q5/Q6、同A5 seed/数据门/预算，没有继承A1草稿、对话或偷偷重试其provider调用。A1三服务在18个调用均归档后仅stop，旧状态/卷/全部证据保留。最终schema说明后86定向检查通过，不新增通用协议。
 

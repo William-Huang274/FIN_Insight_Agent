@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / A5_Q1_INDEPENDENT_REVIEW_PASS_BOUNDED / LIVE_LEAD_A1_PARALLEL_RESEARCH_FAILED_AT_LOCAL_FEEDBACK / OWNER_AUTONOMOUS_LOCAL_REPAIR / FRESH_LEAD_A2_AND_FULL_PRODUCT_PENDING / NO_THINKING_AB_PASS`
+文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / A5_Q1_INDEPENDENT_REVIEW_PASS_BOUNDED / LIVE_LEAD_A2_DEPENDENT_PARALLEL_RESEARCH_BLOCKED_PROVIDER_BALANCE_402 / OWNER_AUTONOMOUS_LOCAL_REPAIR / NO_A3_OR_FULL_PRODUCT_PASS / NO_THINKING_AB_PASS`
 
 冻结日期：2026-09-03
 
@@ -15,6 +15,8 @@
 2026-09-05 执行更新（取代本文件历史段落中的未执行状态）：R1 模型前绑定故障已修复；R2 唯一运行到达 DeepSeek，但因 Specialist 顶层 union 函数参数不是 object 被 HTTP 400 拒绝。现已采用标准 Pydantic 对象封装 `{"action": <原封闭动作联合>}`；在 provider adapter 解包后，原 graph、MCP、context 和证据校验合同不变。相关 67 项离线测试通过，含真实 SDK + MockTransport 请求/响应；不代表线上接受或研究质量。R2 保持失败、无底稿、无工具动作；新付费执行需新身份/Owner 授权，不重用 R2、不扩写 K0–K6。详细证据见 `docs/worklog/fin_0_1_3_s3/185_dell_q1_paid_shadow_r2_schema_failure_and_object_envelope_fix.md`。
 
 ## 0. 结论先行
+
+2026-09-06 当前结果（取代下方“A2待执行”）：A2真实Lead给Q5/Q6分工，并将两任务依赖到已审查A5底稿；两个独立Specialist并行多轮源阅读。17请求均有终态，15成功/2个HTTP402，已报告900455tokens；LangSmith原始错误为Insufficient Balance，只读余额证实当前key账户is_available=false且余额不足（精确值仅本机保存），非代理。两份原始提交草稿保留但0收集底稿，Lead收敛、跨主题独立审查和完整产品未通过。当前停止新付费调用/无A3，需Owner恢复账户资金；已有反馈修复保持真实工具回放通过而live收敛待验。只增既有audit的安全HTTP状态码记录、27定向测试，不扩工程框架，不以资料引句字段齐全冒充语义PASS。完整事实见S3/189。
 
 2026-09-06 最新：首次真实 Lead two-topic A1已做自主两任务分派和并行多轮研究，18模型/1,047,944tokens；Q6本地引用错误反馈本身超2000字符而崩溃，取消另一worker，整体failed且0已收集底稿。Q5原始25claims/2676字符、Q6原始20claims/3983字符只是未接受草稿。已用真实工具调用零模型重放小修反馈容量和非citable候选视图误冲突；逐字引用和公共缺口权威错误不放松，模型仍须按反馈修自己的缺漏。全部请求已有终态audit，无未决provider请求；下一fresh同scope A2，不重试原run、不复制其草稿为成功。活跃子图state在主GET接口为空，尚不能宣称子图HITL/resume/实时展开已验收。下列“尚未paid”是启动前历史，细节见S3/189。
 

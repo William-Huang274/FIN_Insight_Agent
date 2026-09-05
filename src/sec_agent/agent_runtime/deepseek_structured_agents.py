@@ -1413,6 +1413,7 @@ class DeepSeekStructuredAgentAdapter:
                     envelope = {"raw": raw_message, "parsed": {"action": decision} if valid else None,
                                 "parsing_error": None if valid else ValueError("native_action_tool_calls_invalid")}
             except Exception as exc:
+                http_status_code = getattr(exc, "status_code", None)
                 self._audit(
                     {
                         "schema_version": "fin_ia_model_call_audit_event_v1_0",
@@ -1428,6 +1429,12 @@ class DeepSeekStructuredAgentAdapter:
                             (perf_counter() - started) * 1_000, 3
                         ),
                         "error_type": type(exc).__name__,
+                        "http_status_code": (
+                            http_status_code
+                            if type(http_status_code) is int
+                            and 100 <= http_status_code <= 599
+                            else None
+                        ),
                         "error_message": (
                             str(exc)[:500]
                             if persist_model_payloads

@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 S3/189 当前：**真实 Lead two-topic A2 因 DeepSeek HTTP402 / Insufficient Balance 失败，付费执行已停止，不创建A3。** 只读余额于2026-09-05T19:30:14Z确认当前.env key的is_available=false，余额不足（精确值仅本机保存），不是代理。实际Lead自主分派Q5/Q6并让两任务依赖已审查A5底稿，两个Specialist各自多轮上下文/并行原文研究已发生；17请求全部有outcome（15成功/2失败），已报告900455tokens。Q5最后21claims/5389字符、Q6 15claims/4178字符仅未接受草稿，引用字段已填写但正确性未通过；0收集底稿、无Lead收敛/跨主题审查/报告/HITL产品PASS。A1本地反馈修复的真实工具回放仍通过，live收敛仍待验证。已小修public audit保留安全HTTP状态码，27定向测试通过；无新框架/全仓回归/充值。原A1/A2证据不改，下一需Owner恢复该key账户余额后只读复验再安排同scope后续，不能持续重试402。以下均为历史时点。
+
 2026-09-06 S3/189 最新：首次真实 Lead Q5/Q6 A1已发生自主分工/并行工具循环，18实际模型/1,047,944tokens；两份模型原始草稿（Q5 25claims、Q6 20claims）保存但**没有已验收/收集的专业底稿**。Q6提交反馈超过旧2000字符上限导致本地异常并取消Q5，根因非网络；其搜索候选预览差异又被误判成可引用证据冲突。已在真实Q6工具回放中复现并小修：保留完整错误反馈，非可引用候选视图不毒化证据；真实引用冲突/逐字引句/缺口权威门保留。模型漏填PASSAGE引句与误用bounded_gap仍须自己纠正，未人工代改。原A1failed与全部原文/用量保留，等待同scope fresh A2；当前仍无完整Lead收敛/独立跨主题审查/报告/HITL产品PASS。以下为历史时点。
 
 2026-09-06 S3/189 新增：Lead 动态委派/依赖/Send并行/任务回收已实现并接同 Agent Server 与已有 paid runner，169 定向测试通过（真实 A5 seed、双专业 MCP、后续依赖、SDK mock、只读 schema factory）。尚无 paid Lead 或全主题产品 PASS。Q6 F9 Reviewed 元数据残差与可读 MLCommons 原文不一致已在零模型真实反例中复现并修复：源绑定/逐字引用且显式 open_gaps 的底稿可进入语义审查，未完成 Reviewed route 保留并传给 Lead，不升级Evidence/SQL或假称覆盖。下一 fresh 一次 Lead Q5/Q6 窗口；Q1已审查底稿复用不重写，权限/as-of不扩。停止已结束R11/A1–A5实验服务释放资源，所有旧容器/卷/证据保留。以下为历史时点。

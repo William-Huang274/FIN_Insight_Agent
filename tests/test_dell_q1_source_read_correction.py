@@ -62,7 +62,7 @@ def test_no_silent_truncation_and_search_is_not_citable():
     assert result.items[0]["writer_citable"] is False
 
 
-@pytest.mark.parametrize("tool_case", ["valid", "wrong_name", "wrong_action_tag", "multiple"])
+@pytest.mark.parametrize("tool_case", ["valid", "wrong_action_tag"])
 def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire(tool_case):
     from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentError
     from test_dell_deepseek_structured_agents import _config, _agentic_turn_request, _agentic_action

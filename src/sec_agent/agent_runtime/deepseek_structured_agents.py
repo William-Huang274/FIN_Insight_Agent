@@ -14,9 +14,9 @@ from hashlib import sha256
 from pathlib import Path
 import re
 from time import perf_counter
-from typing import Any, Literal, Protocol, TypeVar, cast, get_args
+from typing import Any, Literal, Protocol, TypeVar, cast
 
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.utils.function_calling import convert_to_openai_tool
 from langchain_deepseek import ChatDeepSeek
 from pydantic import (
@@ -31,7 +31,7 @@ from pydantic import (
 
 from .dell_specialist_agentic_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestHumanReviewAction,
-    RequestSourceAction, SpecialistAction, SubmitWorkpaperAction,
+    RequestSourceAction, SpecialistAction, SpecialistDecision, SubmitWorkpaperAction,
 )
 from .dell_reference_vertical_contracts import (
     BranchWorkpaper,
@@ -151,6 +151,12 @@ class SpecialistActionPayload(_StrictSemanticModel):
     model_config = ConfigDict(strict=True, frozen=True)
 
     action: SpecialistAction
+
+
+class _NativeSpecialistActionPayload(_StrictSemanticModel):
+    """Internal receipt payload; never advertised as an extra provider tool."""
+
+    action: SpecialistDecision
 
 
 class SpecialistActionReplayRecord(_StrictSemanticModel):
@@ -462,8 +468,12 @@ _AGENTIC_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     " Return one object whose sole top-level field is action, containing the next action matching the schema."
 )
 _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
-    " Express every decision using exactly one of the supplied tools. Pass that tool's "
-    "arguments directly, without another action wrapper. To finish, call SubmitWorkpaperAction; "
+    " Express decisions using the supplied tools. Independent read-only requests may "
+    "share one response; all results will be returned by tool_call_id before your next turn. "
+    "Use the same supplied context_digest for every call in that response. Pass each tool's "
+    "arguments directly, without another action wrapper. Wait for results before making dependent requests. "
+    "SubmitWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
+    "To finish, call SubmitWorkpaperAction; "
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
@@ -1174,20 +1184,42 @@ class DeepSeekStructuredAgentAdapter:
         if persistent_history:
             messages[0] = SystemMessage(content=_NATIVE_SPECIALIST_SYSTEM_PROMPT)
         if persistent_history and actor in self._agentic_history:
-            from langchain_core.messages import ToolMessage
             history = self._agentic_history[actor]
             prior_raw = history[-1]
             delta = dict(semantic_input)
             delta["progress"] = {**semantic_input["progress"], "prior_actions": [],
-                                 "observations": semantic_input["progress"]["observations"][-1:]}
+                                 "observations": []}
             # Prior exact messages (including provider reasoning) stay intact;
             # only new tool feedback is added. No raw reasoning enters graph state.
             delta.pop("l0_context", None)
             delta.pop("branch", None)
-            messages = [*history, ToolMessage(
-                content=json.dumps(delta, ensure_ascii=False),
-                tool_call_id=prior_raw.tool_calls[0]["id"],
-            )]
+            results = request_value.get("tool_results", ())
+            if results:
+                if [row.get("tool_call_id") for row in results] != [call["id"] for call in prior_raw.tool_calls]:
+                    raise DeepSeekStructuredAgentError("specialist_tool_result_call_ids_mismatch")
+                replies = []
+                for row in results:
+                    try:
+                        content = json.loads(row["content"])
+                    except json.JSONDecodeError:
+                        content = {"error": row["content"]}
+                    content = _agentic_semantic_value(content)
+                    replies.append(ToolMessage(
+                        content=json.dumps({"result": content, "current_context": delta}, ensure_ascii=False),
+                        tool_call_id=row["tool_call_id"], name=row.get("name"),
+                        status=row.get("status", "success"),
+                    ))
+                messages = [*history, *replies]
+            else:
+                # Legacy/single terminal action feedback (e.g. a rejected workpaper).
+                # A missing batch result is a runtime fault, never silently use call 0.
+                if len(prior_raw.tool_calls) != 1 or prior_raw.tool_calls[0]["name"] not in {
+                    "SubmitWorkpaperAction", "RequestHumanReviewAction",
+                }:
+                    raise DeepSeekStructuredAgentError("specialist_native_tool_results_missing")
+                delta["progress"]["observations"] = semantic_input["progress"]["observations"][-1:]
+                messages = [*history, ToolMessage(content=json.dumps(delta, ensure_ascii=False),
+                    tool_call_id=prior_raw.tool_calls[0]["id"])]
         if persistent_history:
             semantic_json = json.dumps([_audit_value(m) for m in messages], ensure_ascii=False)
         input_characters = len(semantic_json)
@@ -1278,15 +1310,23 @@ class DeepSeekStructuredAgentAdapter:
                 if persistent_history:
                     raw_message = envelope
                     tool_calls = getattr(raw_message, "tool_calls", ())
-                    chosen = _NATIVE_SPECIALIST_TOOLS.get(tool_calls[0].get("name")) if len(tool_calls) == 1 else None
-                    arguments = tool_calls[0].get("args") if chosen else None
-                    valid = (chosen is not None and isinstance(arguments, Mapping)
-                             and arguments.get("action") in get_args(chosen.model_fields["action"].annotation))
-                    envelope = {"raw": raw_message,
-                                # Internal graph union remains unchanged; the SDK
-                                # wire uses ordinary object-root tools, not a union wrapper.
-                                "parsed": {"action": arguments} if valid else None,
-                                "parsing_error": None if valid else ValueError("expected_one_structured_action_tool_call")}
+                    valid = bool(tool_calls) and not getattr(raw_message, "invalid_tool_calls", ())
+                    ids = [call.get("id") for call in tool_calls]
+                    valid = valid and all(isinstance(value, str) and value.strip() for value in ids) and len(ids) == len(set(ids))
+                    decision = {"action": "native_tool_batch", "context_digest": request_value["context_digest"],
+                                "tool_calls": tool_calls}
+                    if len(tool_calls) == 1 and tool_calls[0].get("name") in {
+                        "SubmitWorkpaperAction", "RequestHumanReviewAction",
+                    }:
+                        chosen = _NATIVE_SPECIALIST_TOOLS[tool_calls[0]["name"]]
+                        # Keep the existing terminal validation/route; data batches
+                        # validate each call independently inside the ToolNode bridge.
+                        try:
+                            decision = chosen.model_validate_json(json.dumps(tool_calls[0]["args"])).model_dump(mode="json")
+                        except (ValidationError, TypeError, ValueError):
+                            valid = False
+                    envelope = {"raw": raw_message, "parsed": {"action": decision} if valid else None,
+                                "parsing_error": None if valid else ValueError("native_action_tool_calls_invalid")}
             except Exception as exc:
                 self._audit(
                     {
@@ -1578,7 +1618,7 @@ class DeepSeekStructuredAgentAdapter:
         payload, raw, elapsed_ms = self._invoke(
             role="specialist",
             request=request_value,
-            schema=SpecialistActionPayload,
+            schema=_NativeSpecialistActionPayload if self._config.agentic_message_history else SpecialistActionPayload,
             specialist_mode="agentic_turn",
         )
         action = payload.action.model_dump(mode="json")

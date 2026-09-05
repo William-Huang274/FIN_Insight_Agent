@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-05 S3/188 最新：RC-S3-114 的 native tool batch 已用现有 LangGraph ToolNode/ToolMessage 修补；115 项定向检查通过，包含原样 R6 四调用 + 真实本地 MCP + 下一轮 SDK 四份结果/原 reasoning 的离线回放。R4/R5/R6 仍为原失败，当前没有新真实运行或底稿。Owner 最新明确要求此类本地缺陷自主修复、适度验证并继续，不逐补丁求确认；只有权限/删除/显著费用/产品方向等实质变化才暂停。下一步 fresh enabled 功能运行，沿用既有任务/权限/规模预算；不做 thinking A/B，不扩多 Agent，不无限重试。此条取代下方历史“批次尚未实现/不自动 R7”的当前性。
+
 2026-09-05 17:30 最新：3+1 修补已实现并过 213 项定向检查；R4 disabled 一次真实调用被额外 action 外壳拦住，随后用 SDK 原生五工具替换并过 68 项检查。R5 在固定依赖 wheel 下载 TLS EOF 时模型前失败；Owner 明确新增一次网络重试后 R6 同代码构建成功，thinking 返回四个原参数合法的工具请求（Reviewed、quarter_discrete Finance、instant Finance、源文档目录）及实际 reasoning，但 FIN 的一轮单工具限制拒绝整个批次，数据工具仍为 0、无底稿。两次实际模型调用共 22,349 tokens / 79.137 秒 / LangSmith 估费 USD 0.012522780（非账单）；不是成功 thinking A/B、不是研究 PASS。原 R4/R5/R6 失败及私有 reasoning 保留。下一步只处理 SDK/ToolNode 标准多工具结果回传与计数，不能直接开 multi-agent，也不再自动跑 R7。详见 S3/187；以下逐时点旧状态均为历史。
 
 2026-09-05 16:42 Owner 已明确授权 3+1 修补、有限源文档阅读、私有 provider reasoning 审计以及最多两次 thinking 对照。当前修补实现和 213 项定向检查完成：Reviewed prefilter-before-BM25、S2 period-role 披露/纠错、新 opt-in Q1 F2+S2 来源分工、现有 MCP 的 catalog/outline/search/完整块 read 与 source-bound quote 校验、SDK reasoning/tool-message continuity、cap-drop/no-new-privileges。原数据门/语料/S2/R3 artifact 不写，原 R3 仍 handoff。两次新配置已落地，真实调用尚未开始；完整 multi-agent/研究质量 PASS/实时 web/恢复/前端均未证明。见 S3/187。此条取代下面历史“修补未授权/无 successor 授权”的当前性。

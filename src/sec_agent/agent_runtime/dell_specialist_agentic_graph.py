@@ -2,7 +2,7 @@
 
 The legacy Dell graph pre-fetches tools and calls each Specialist once.  This
 module is the parallel Wave-2 successor: one Specialist may inspect its compact
-context, request one bounded action at a time, observe typed tool feedback, and
+context, request bounded read-only tools, observe typed tool feedback, and
 revise its submission.  It deliberately owns no provider SDK, MCP server,
 database, queue, or checkpointer.  Those are injected composition concerns.
 
@@ -18,7 +18,11 @@ from collections.abc import Callable, Mapping
 from dataclasses import dataclass
 from typing import Annotated, Any, Literal, TypedDict
 
+from langchain_core.messages import AIMessage, ToolMessage
+from langchain_core.runnables import RunnableConfig
+from langchain_core.tools import StructuredTool
 from langgraph.graph import END, START, StateGraph
+from langgraph.prebuilt import ToolNode, ToolRuntime
 from pydantic import (
     BaseModel,
     ConfigDict,
@@ -285,6 +289,33 @@ SpecialistAction = Annotated[
 ]
 
 
+class SpecialistNativeToolCall(_StrictModel):
+    """SDK call identity and unmodified arguments; validated per tool at dispatch."""
+
+    id: str = Field(min_length=1, max_length=240)
+    name: str = Field(min_length=1, max_length=120)
+    args: dict[str, Any]
+    type: Literal["tool_call"] = "tool_call"
+
+
+class SpecialistNativeToolBatch(_StrictModel):
+    """Host-only representation of ONE assistant message, not a provider tool."""
+
+    action: Literal["native_tool_batch"] = "native_tool_batch"
+    context_digest: str = Field(pattern=_DIGEST_PATTERN)
+    tool_calls: tuple[SpecialistNativeToolCall, ...] = Field(min_length=1, max_length=48)
+
+    @model_validator(mode="after")
+    def validate_call_ids(self) -> "SpecialistNativeToolBatch":
+        ids = [call.id for call in self.tool_calls]
+        if len(ids) != len(set(ids)):
+            raise ValueError("specialist_native_tool_call_id_duplicate")
+        return self
+
+
+SpecialistDecision = SpecialistAction | SpecialistNativeToolBatch
+
+
 SpecialistModelTurnSource = Literal[
     "scripted_qualification",
     "saved_response_replay",
@@ -302,7 +333,7 @@ class SpecialistModelTurnRecord(_StrictModel):
     turn_source: SpecialistModelTurnSource = "scripted_qualification"
     model_execution_evidence: bool = False
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
-    action: SpecialistAction
+    action: SpecialistDecision
     action_digest: str = Field(pattern=_DIGEST_PATTERN)
     runtime_receipt: RuntimeReceipt | None = None
     turn_record_digest: str = Field(pattern=_DIGEST_PATTERN)
@@ -657,6 +688,7 @@ class DellSpecialistAgenticState(TypedDict, total=False):
     max_tool_actions: int
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
+    tool_results: list[dict[str, Any]]
     final_submission: dict[str, Any] | None
     human_review_handoff: dict[str, Any] | None
     review_reason: str | None
@@ -678,6 +710,7 @@ class DellSpecialistAgenticDependencies:
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
+_DECISION_ADAPTER = TypeAdapter(SpecialistDecision)
 
 
 def _jsonable(value: Any) -> Any:
@@ -708,6 +741,15 @@ def _validate_action(value: Any) -> SpecialistAction:
         raise DellSpecialistAgenticGraphError(
             "specialist_model_action_invalid"
         ) from None
+
+
+def _validate_decision(value: Any) -> SpecialistDecision:
+    try:
+        return _DECISION_ADAPTER.validate_json(
+            json.dumps(value, ensure_ascii=False, allow_nan=False)
+        )
+    except Exception:
+        raise DellSpecialistAgenticGraphError("specialist_model_action_invalid") from None
 
 
 def _build_notebook(**fields: Any) -> SpecialistNotebook:
@@ -777,6 +819,8 @@ def _model_request(
             "reason_summary_is_decision_rationale_not_chain_of_thought": True,
         },
     }
+    if state.get("tool_results"):
+        body["tool_results"] = state["tool_results"]
     return {**body, "context_digest": canonical_sha256(body)}
 
 
@@ -784,7 +828,7 @@ def _build_model_turn_record(
     *,
     turn_index: int,
     request: Mapping[str, Any],
-    action: SpecialistAction,
+    action: SpecialistDecision,
     turn_source: SpecialistModelTurnSource,
     runtime_receipt: RuntimeReceipt | None,
 ) -> SpecialistModelTurnRecord:
@@ -1033,6 +1077,7 @@ def build_dell_specialist_agentic_state_graph(
             **validated.model_dump(mode="json"),
             "notebook": notebook.model_dump(mode="json"),
             "pending_action": None,
+            "tool_results": [],
             "final_submission": None,
             "human_review_handoff": None,
             "review_reason": None,
@@ -1050,6 +1095,7 @@ def build_dell_specialist_agentic_state_graph(
         )
         if notebook.model_turn_count >= int(state["max_model_turns"]):
             return {
+                "tool_results": [],
                 "pending_action": None,
                 "review_reason": "model_turn_ceiling_reached_no_silent_completion",
                 "review_trigger": "model_turn_ceiling",
@@ -1068,7 +1114,7 @@ def build_dell_specialist_agentic_state_graph(
             ) from None
         runtime_receipt: RuntimeReceipt | None = None
         if dependencies.turn_source == "scripted_qualification":
-            action = _validate_action(raw)
+            action = _validate_decision(raw)
         else:
             if not isinstance(raw, Mapping) or set(raw) != {
                 "action",
@@ -1077,7 +1123,7 @@ def build_dell_specialist_agentic_state_graph(
                 raise DellSpecialistAgenticGraphError(
                     "specialist_model_turn_receipt_envelope_invalid"
                 )
-            action = _validate_action(raw.get("action"))
+            action = _validate_decision(raw.get("action"))
             runtime_receipt = _validate_model_json(
                 RuntimeReceipt,
                 raw.get("runtime_receipt"),
@@ -1123,6 +1169,15 @@ def build_dell_specialist_agentic_state_graph(
                 ),
             ),
         )
+        if isinstance(action, SpecialistNativeToolBatch):
+            return {
+                "notebook": updated.model_dump(mode="json"),
+                "pending_action": action.model_dump(mode="json"),
+                "tool_results": [],
+                "review_reason": None,
+                "review_trigger": None,
+                "phase": "model_action_selected",
+            }
         review_reason = (
             action.blocker_code
             if isinstance(action, RequestHumanReviewAction)
@@ -1139,6 +1194,7 @@ def build_dell_specialist_agentic_state_graph(
                 next_actions=tuple(request["allowed_actions"]),
             )
             return {
+                "tool_results": [],
                 "notebook": _replace_notebook(
                     updated,
                     feedback=(*updated.feedback, feedback),
@@ -1165,6 +1221,7 @@ def build_dell_specialist_agentic_state_graph(
                     ),
                 )
                 return {
+                    "tool_results": [],
                     "notebook": _replace_notebook(
                         updated,
                         feedback=(*updated.feedback, feedback),
@@ -1175,6 +1232,7 @@ def build_dell_specialist_agentic_state_graph(
                     "phase": "typed_feedback_ready",
                 }
         return {
+            "tool_results": [],
             "notebook": updated.model_dump(mode="json"),
             "pending_action": action.model_dump(mode="json"),
             "review_reason": review_reason,
@@ -1188,7 +1246,7 @@ def build_dell_specialist_agentic_state_graph(
             if state.get("phase") == "typed_feedback_ready":
                 return "decide"
             return "human_review"
-        return _validate_action(raw).action
+        return _validate_decision(raw).action
 
     def execute_tool(
         state: DellSpecialistAgenticState,
@@ -1419,6 +1477,86 @@ def build_dell_specialist_agentic_state_graph(
             expected_kind="finance",
         )
 
+    def execute_native_tools(
+        state: DellSpecialistAgenticState,
+        config: RunnableConfig,
+    ) -> DellSpecialistAgenticState:
+        batch = _validate_model_json(
+            SpecialistNativeToolBatch, state["pending_action"],
+            code="specialist_native_tool_batch_invalid",
+        )
+        # ToolNode owns dispatch and call-ID correlation. Its standard executor
+        # is deliberately serial here: existing MCP ports and notebook reduction
+        # share one local snapshot; do not add another queue or scheduler.
+        working: DellSpecialistAgenticState = dict(state)
+        calls = {call.id: call for call in batch.tool_calls}
+        models = {model.__name__: model for model in (
+            RequestEvidenceAction, RequestFinanceAction, RequestSourceAction,
+            SubmitWorkpaperAction, RequestHumanReviewAction,
+        )}
+        terminal_mixed = any(call.name in {"SubmitWorkpaperAction", "RequestHumanReviewAction"}
+                             for call in batch.tool_calls)
+        l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
+        assigned_routes = {row.get("minimum_route_obligation_id")
+                           for row in state["task"].get("evidence_requests", ()) if isinstance(row, Mapping)}
+
+        def run_tool(runtime: ToolRuntime, **_arguments: Any) -> ToolMessage:
+            call = calls[runtime.tool_call_id]
+            before = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
+
+            def reject(code: str, message: str) -> ToolMessage:
+                feedback = _feedback(code, message, owner_layer="runtime",
+                    next_actions=("revise_request", "request_human_review"))
+                working["notebook"] = _replace_notebook(before, feedback=(*before.feedback, feedback)).model_dump(mode="json")
+                return ToolMessage(name=call.name, tool_call_id=call.id, status="error",
+                    content=json.dumps({"observations": [], "feedback": [feedback.model_dump(mode="json")]}, ensure_ascii=False))
+
+            if terminal_mixed:
+                return reject("specialist_terminal_action_must_be_alone",
+                    "No tools in this response were dispatched. Submit or request human review as the sole call, after observing pending data results.")
+            try:
+                # Validate ORIGINAL args, including extras, not a repaired or
+                # runtime-injected version. Unknown names never reach this tool.
+                action = models[call.name].model_validate_json(json.dumps(call.args, ensure_ascii=False, allow_nan=False))
+            except (ValueError, TypeError):
+                return reject("specialist_tool_arguments_invalid",
+                    "Arguments do not match this tool's supplied schema. Correct the action tag, fields and types before retrying.")
+            if action.context_digest != batch.context_digest:
+                return reject("specialist_model_turn_context_binding_invalid",
+                    "Copy the current context_digest exactly; this call was not dispatched.")
+            if isinstance(action, RequestSourceAction) and not l0.source_read_enabled:
+                return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")
+            if isinstance(action, RequestEvidenceAction) and action.minimum_route_obligation_id not in assigned_routes:
+                return reject("specialist_evidence_route_not_assigned", "This evidence route is outside this Specialist task assignment.")
+            kind = "finance" if isinstance(action, RequestFinanceAction) else "evidence"
+            working["pending_action"] = action.model_dump(mode="json")
+            update = execute_tool(working,
+                port=dependencies.finance_tool if kind == "finance" else dependencies.evidence_tool,
+                expected_kind=kind)
+            working.update(update)
+            after = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
+            observations = after.observations[len(before.observations):]
+            feedback = [item.model_dump(mode="json") for item in after.feedback[len(before.feedback):]]
+            if after.status == "human_review_required":
+                feedback.append(_feedback("tool_action_ceiling_reached_no_silent_completion",
+                    "The existing tool-action ceiling is reached; this call was not dispatched. Remaining calls do not receive fabricated results.",
+                    owner_layer="runtime", next_actions=("request_human_review",)).model_dump(mode="json"))
+            content = {"observations": [
+                {key: observation.model_dump(mode="json")[key] for key in (
+                    "kind", "status", "references", "content", "route_completions", "failure")}
+                for observation in observations], "feedback": feedback}
+            failed = not observations or any(row.status in {"denied", "tool_failure"} for row in observations)
+            return ToolMessage(name=call.name, tool_call_id=call.id,
+                status="error" if failed else "success", content=json.dumps(content, ensure_ascii=False))
+
+        node = ToolNode([StructuredTool.from_function(run_tool, name=name,
+            description=f"Dispatch validated {name} through the existing read-only MCP port.",
+            args_schema=model.model_json_schema()) for name, model in models.items()], handle_tool_errors=False)
+        replies = node.invoke([AIMessage(content="", tool_calls=[call.model_dump(mode="json") for call in batch.tool_calls])],
+                              config={**config, "max_concurrency": 1})
+        return {**working, "pending_action": None,
+                "tool_results": [message.model_dump(mode="json") for message in replies]}
+
     def validate_submission(
         state: DellSpecialistAgenticState,
     ) -> DellSpecialistAgenticState:
@@ -1559,6 +1697,7 @@ def build_dell_specialist_agentic_state_graph(
     graph.add_node("model_decide", model_decide)
     graph.add_node("execute_evidence", execute_evidence)
     graph.add_node("execute_finance", execute_finance)
+    graph.add_node("execute_native_tools", execute_native_tools)
     graph.add_node("validate_submission", validate_submission)
     graph.add_node("human_review", human_review)
     graph.add_edge(START, "initialize")
@@ -1567,6 +1706,7 @@ def build_dell_specialist_agentic_state_graph(
         "model_decide",
         route_model_action,
         {
+            "native_tool_batch": "execute_native_tools",
             "request_evidence": "execute_evidence",
             "request_source": "execute_evidence",
             "request_finance": "execute_finance",
@@ -1584,6 +1724,10 @@ def build_dell_specialist_agentic_state_graph(
     graph.add_conditional_edges(
         "execute_finance",
         route_after_tool,
+        {"decide": "model_decide", "human_review": "human_review"},
+    )
+    graph.add_conditional_edges(
+        "execute_native_tools", route_after_tool,
         {"decide": "model_decide", "human_review": "human_review"},
     )
     graph.add_conditional_edges(

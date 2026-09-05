@@ -582,6 +582,7 @@ async def _open_q1_paid_shadow_graph(
             max_model_turns=authority.max_model_turns,
             max_tool_actions=authority.max_tool_actions,
             source_read_enabled=authority.source_read_enabled,
+            live_web_read_enabled=authority.live_external_calls_authorized,
         ) as composition:
             if (
                 composition.graph_input.agent_id != authority.node_id
@@ -638,6 +639,7 @@ async def _open_q1_paid_shadow_graph(
                         model_turn=child_adapter.specialist_model_turn,
                         max_model_turns=authority.max_model_turns, max_tool_actions=authority.max_tool_actions,
                         source_read_enabled=True, research_task=task, dependency_workpapers=dependency_workpapers,
+                        live_web_read_enabled=authority.live_external_calls_authorized,
                     ) as child:
                         return child.graph.invoke(child.graph_input.model_dump(mode="json"),
                             config={**child_config, "recursion_limit": 160})
@@ -673,6 +675,7 @@ async def _open_q1_paid_shadow_graph(
                         max_model_turns=authority.max_model_turns if role == "repair" else scope.max_reviewer_model_turns,
                         max_tool_actions=authority.max_tool_actions if role == "repair" else scope.max_reviewer_tool_actions,
                         source_read_enabled=True, collaboration_context=collaboration,
+                        live_web_read_enabled=authority.live_external_calls_authorized,
                     ) as child:
                         # Native subgraph invocation: Agent Server owns inherited persistence.
                         return child.graph.invoke(child.graph_input.model_dump(mode="json"),

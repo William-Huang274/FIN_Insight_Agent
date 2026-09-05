@@ -1,9 +1,10 @@
-"""Owner-approved, zero-network data composition for the Dell Agent Server.
+"""Owner-approved data composition for the Dell Agent Server.
 
 This module is deliberately only a composition root.  Parsing, retrieval,
 Reviewed Evidence reads, financial-fact queries, source-family compilation and
 MCP transport remain owned by the existing mature adapters.  It does not add a
-second store, scheduler, runtime, retriever or live-web fallback.
+second store, scheduler, runtime or retriever. Default profiles are zero-network;
+explicit live-web profiles use the existing Exa MCP adapter, not a fallback.
 """
 
 from __future__ import annotations
@@ -163,6 +164,7 @@ def open_dell_approved_data_composition(
     run_invocation_id: str,
     environment: Mapping[str, str] | None = None,
     source_read_enabled: bool = False,
+    live_web_read_enabled: bool = False,
 ) -> Iterator[DellApprovedDataComposition]:
     """Open the exact Owner-approved data readers behind one MCP lifecycle."""
 
@@ -296,6 +298,26 @@ def open_dell_approved_data_composition(
             pack=external_pack,
             fallback=_NoLiveExternalCapture(),  # type: ignore[arg-type]
         )
+        source_reader = local_reader.read_source_document if source_read_enabled else None
+        if live_web_read_enabled:
+            if not source_read_enabled:
+                raise DellApprovedDataCompositionError("live_web_requires_source_read_capability")
+            from sec_agent.research_foundation.external_sources import (
+                ExaHostedMCPProvider, ExaHostedMCPPageFetcher, ExternalSourceCapture,
+                PublicURLGuard, StaticHTTPPageFetcher,
+            )
+            from sec_agent.research_foundation.web_source_navigation import WebSourceReader
+            guard = PublicURLGuard()
+            web_reader = WebSourceReader(
+                discovery=ExternalSourceDiscovery(primary=ExaHostedMCPProvider()),
+                capture=ExternalSourceCapture(guard=guard, static_fetcher=StaticHTTPPageFetcher(guard=guard),
+                    hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard, max_characters=50000)))
+
+            async def source_reader(*, request, branch_id, run_scope):
+                if request.source_space == "web":
+                    return await web_reader(request=request, branch_id=branch_id, run_scope=run_scope)
+                return local_reader.read_source_document(request=request, branch_id=branch_id, run_scope=run_scope)
+
         server = build_research_data_mcp_server(
             ResearchDataMCPDependencies(
                 method_reader=DellFoundationMethodReader(foundation),
@@ -305,7 +327,7 @@ def open_dell_approved_data_composition(
                 financial_fact_reader=fact_reader,
                 external_discovery=discovery,
                 external_capture=capture,  # type: ignore[arg-type]
-                source_document_reader=local_reader.read_source_document if source_read_enabled else None,
+                source_document_reader=source_reader,
             )
         )
     except DellApprovedDataCompositionError:
@@ -348,6 +370,7 @@ def open_dell_approved_data_composition(
                 s2_observation_count=inventory.s2_observation_count,
                 external_route_count=inventory.external_object_count,
                 local_candidate_count=inventory.local_candidate_count,
+                network_calls_authorized=live_web_read_enabled,
                 reviewed_topic_refs_by_branch={
                     branch_id: tuple(
                         sorted(

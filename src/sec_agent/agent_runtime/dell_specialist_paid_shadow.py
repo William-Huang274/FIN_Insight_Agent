@@ -134,7 +134,7 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     comparable_run_evidence: str = Field(min_length=20, max_length=2_000)
     reasoning_profile: str = Field(min_length=20, max_length=1_000)
     cost_and_latency_estimate: str = Field(min_length=20, max_length=2_000)
-    live_external_calls_authorized: Literal[False]
+    live_external_calls_authorized: bool
     evidence_admission_authorized: Literal[False]
     s2_write_authorized: Literal[False]
     other_model_nodes_authorized: bool
@@ -153,6 +153,8 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
 
     @model_validator(mode="after")
     def validate_authority(self) -> "DellQ1SpecialistPaidShadowAuthority":
+        if self.live_external_calls_authorized and not self.source_read_enabled:
+            raise ValueError("live_web_requires_source_read_capability")
         is_review = self.workflow == "workpaper_review_repair"
         is_lead = self.workflow == "lead_research_delegation"
         if (is_review != (self.serving_mode == DELL_Q1_REVIEW_SERVING_MODE)

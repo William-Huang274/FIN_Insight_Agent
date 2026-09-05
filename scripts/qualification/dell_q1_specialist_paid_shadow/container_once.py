@@ -112,6 +112,7 @@ def _contracts_and_input(
         max_model_turns=authority.max_model_turns,
         max_tool_actions=authority.max_tool_actions,
         source_read_enabled=authority.source_read_enabled,
+        live_web_read_enabled=authority.live_external_calls_authorized,
     ) as composition:
         require_data_authority_binding(
             authority,

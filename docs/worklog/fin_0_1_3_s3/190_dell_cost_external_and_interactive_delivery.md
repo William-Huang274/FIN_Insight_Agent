@@ -69,3 +69,26 @@ R3已知用量在全部命中/全部未命中两端对应约0.0458–0.3647元�
 结论：**拒绝把大包金融终审直接切到Flash/high。** 便宜单价不保证便宜完成；Flash在这一输入上思考完上限仍无动作。Pro/low能形成有内容的逐项审查，包含Q1/Q2毛利率、现金流、GAAP/非GAAP、来源权威及反证检查，是可继续验证的候选，不是与Pro/high质量等价证明；两者下一步不同，且只一例、旧high并非同期随机对照。保留Flash在小范围资料选择/短任务的后续候选资格，复杂跨材料判断优先Pro；不继续为同一大包无限增加输出上限。接下去以真工具/真任务的总完成成本（含返工）选择profile。
 
 当前产品增量仍为0份完整Dell报告；工程增量是用量可见、薄用途路由和重复context小修；研究资格新增2次真实模型证据，外源/Multi-Agent全覆盖/实时UI仍未完成。
+
+## 第二包：成熟外源已由宿主亲测并接通同一个 MCP 原文工具
+
+采用已有 `ExaHostedMCPProvider` / `ExaHostedMCPPageFetcher`，与官方 [Exa MCP](https://exa.ai/docs/reference/exa-mcp) 的 `web_search_exa` / `web_fetch_exa` 对齐；此次明确走 hosted，不启用 DDGS/浏览器/provider fallback，不引入新爬虫平台。模型未参与以下搜索、选择和检查，不把宿主已知结论偷偷注入模型。
+
+真实宿主证据保存在 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/`：
+
+| artifact目录 | 实测来源与结果 | 不能扩大成什么结论 |
+|---|---|---|
+| `external-live-20260906-a2` | HPE FY26 Q2 官方业绩/电话会/SEC候选；业绩页抓到19,332字符，首次保存窗口18,000明确截断 | 有同行资料，不等于已完成同行研究或与Dell数字直接可比 |
+| `external-live-20260906-a3` | 微软2026-07-29官方业绩页18,098字符，16,000窗口明确截断 | 公司自己说AI需求，不等于独立证明Dell订单 |
+| 同上 | TrendForce研究商城页2,015字符；人工检查确定只售卖报告，不能把店铺价格当SSD价格；另读公开2026-07-03新闻6,970字符 | 公开行业预测不是实际成交价/Dell成本，也没有读到付费报告 |
+| `external-live-mcp-20260906-a1` | **真正经过既有数据composition/ToolLane/MCP `read_source_document`** 搜索并读回HPE全文窗口19,332字符；有MCP chain/URL/精确窗口；0模型调用 | 工具通路PASS，不是模型已会使用/完整研究PASS |
+
+`external-live-20260906-a1` 仅在宿主误写分支别名时建了空目录，参数校验在搜索前拒绝，无模型/外源请求；没有删除该失败痕迹。所有实测as-of仍为2026-09-02；采集日期不替代发布日期。宿主实际读过正文、业务分部行和脚注：HPE并购/GAAP与non-GAAP、微软管理层表述、TrendForce预测与商业预览的含义需要研究Agent判断，不靠一套逐句NLP规则代替。
+
+工程改动：`SourceDocumentRequest` 可显式选择 `source_space=web`，先search获取WEB文档ID，再read按字符窗口/offset阅读；本地默认行为不变。新的薄 `WebSourceReader` 只组合现有搜索/抓取、短生命周期locator cache、统一来源窗口；不是新索引/爬虫/队列/持久化引擎。已披露窗口和capture标识进入正常工具观察；未披露的缓存正文不是持久恢复保证，新生命周期需重搜。模型不能传任意路径/原始URL/私网地址/命令，公网guard仍在；未知ID、跨run/branch读、已知晚于as-of的文章拒绝；未知日期允许看但明确不能据此宣称as-of可用。
+
+兼容边界：原 `CaptureReceipt` 的候选状态和 admission 标记完全不改。新增阅读能力返回既有 `SourceBoundPassage` 合同：writer_citable只表示可对实际看到的文字作逐字引用，**不表示Reviewed Evidence准入、S2 NumericFact、真实性、时间性或全文完整性已验证**。外源来源级别、非S2数字、预测/意见/推断须说明；source quote仍由本地严格校验。只对已亲测TrendForce商城增加“商业预览不是报告”提示，不自动付费或绕过权限。
+
+许可连接到既有paid authority的 `live_external_calls_authorized`；默认/旧文件全部false，新执行才能显式true且必须source_read_enabled。Agent Server普通Specialist、Lead子任务、review子任务都从同一authority向下传，不从模型文本取得权限。旧A1/A2没有被重新开放网络，也未重写旧artifact。旧A5真实seed经定向测试仍可验证（新增默认字段不改变旧动作序列化）。
+
+验证：70项相邻测试通过/11.25s，涵盖新reader、既有外源安全、原文、组合和paid authority；另显式host-only真实MCP网络测试1passed/8.57s；调用方Agent Server/Lead/review/SDK再跑99passed/16.81s。不是全仓回归，也不是170次真实模型调用。下一步完整Dell动态分工和研究收敛；实时UI尚未修改，完整Dell仍未PASS。

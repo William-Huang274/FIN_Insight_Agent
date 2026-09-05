@@ -12,13 +12,14 @@ from hashlib import sha256
 from typing import Any, Literal
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
 from rank_bm25 import BM25Okapi
 from retrieval.text import tokenize
 
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
+    source_space: Literal["local", "web"] = "local"
     operation: Literal["catalog", "outline", "search", "read"]
     document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$")
     node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$")
@@ -29,8 +30,20 @@ class SourceDocumentRequest(BaseModel):
     limit: int = Field(default=8, ge=1, le=20)
     max_characters: int = Field(default=24000, ge=2000, le=80000)
 
+    @model_serializer(mode="wrap")
+    def preserve_legacy_local_request(self, handler):
+        body = handler(self)
+        # Immutable local-source actions predate source_space. Preserve their
+        # serialization so archived action/notebook digests still validate.
+        if "source_space" not in self.model_fields_set:
+            body.pop("source_space", None)
+        return body
+
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if self.source_space == "web" and (self.operation not in {"search", "read"}
+                or self.node_id is not None or self.page_start is not None or self.page_end is not None):
+            raise ValueError("web_supports_search_then_read_document_id_with_character_offset_only")
         if self.operation in {"outline", "read"} and not self.document_id:
             raise ValueError("source_document_id_required_use_catalog_or_search")
         if self.operation == "search" and not tokenize(self.query):
@@ -61,6 +74,8 @@ class SourceDocumentResult(BaseModel):
 def navigate_source_nodes(
     nodes: Sequence[Mapping[str, Any]], request: SourceDocumentRequest, *, snapshot: str,
 ) -> SourceDocumentResult:
+    if request.source_space != "local":
+        raise ValueError("live_web_source_read_not_enabled_use_local_or_request_live_capability")
     rows = list(nodes)
     if request.document_id:
         rows = [r for r in rows if r.get("parent_document_id") == request.document_id]

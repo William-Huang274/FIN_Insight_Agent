@@ -184,8 +184,10 @@ def build_research_data_mcp_server(
         instructions=(
             "Use only the active question branch. Retrieval and captured-source "
             "candidates are not Evidence. Read reviewed Evidence or NumericFacts "
-            "through their ID- and query-based typed tools before citing or "
-            "calculating. Cell-bound tools are legacy compatibility only."
+            "through their typed tools; when source reading is enabled, exact "
+            "SourceBoundPassages can support explicitly non-S2 statements, not "
+            "Evidence admission or authoritative financial numbers. Cell-bound "
+            "tools are legacy compatibility only."
         ),
     )
 
@@ -379,7 +381,7 @@ def build_research_data_mcp_server(
     if dependencies.source_document_reader is not None:
 
         @server.tool(name=READ_SOURCE_DOCUMENT_TOOL, structured_output=True,
-                     description="Read-only case document catalog, outline, search and complete source passages. Server IDs only; no paths, shell or arbitrary network. Read passages are source-bound, not Reviewed Evidence or NumericFacts.")
+                     description="Read sources from runtime-enabled spaces: local case catalog/outline/search/read; web search/read only when explicitly enabled. Read uses returned server document IDs, never paths or shell. Web reads use character offsets, not PDF pages. Search previews are not citations; read passages are source-bound, not Reviewed Evidence or NumericFacts.")
         async def read_source_document(
             request: SourceDocumentRequest, branch_id: str, run_scope: DellResearchRunScope,
         ) -> SourceDocumentResult:

@@ -13,6 +13,8 @@ gated and is not authorized by the data decision.
 from __future__ import annotations
 
 import os
+import json
+from threading import Lock
 from collections.abc import AsyncIterator, Mapping
 from contextlib import asynccontextmanager
 from dataclasses import replace
@@ -57,6 +59,7 @@ from .dell_specialist_paid_shadow import (
     DELL_IMPLEMENTATION_COMMIT_ENV,
     DELL_Q1_PAID_SHADOW_AUTHORITY_ENV,
     DELL_Q1_PAID_SHADOW_SERVING_MODE,
+    DELL_Q1_REVIEW_SERVING_MODE,
     DellSpecialistPaidShadowError,
     build_public_model_audit_sink,
     build_private_model_audit_sink,
@@ -65,6 +68,7 @@ from .dell_specialist_paid_shadow import (
     require_data_authority_binding,
     require_runtime_authority_binding,
 )
+from .dell_workpaper_review_graph import build_dell_workpaper_review_graph
 from .dell_zero_model_graph_qualification import (
     DellExecutionProfile,
     DellZeroModelQualificationError,
@@ -269,11 +273,15 @@ _SCHEMA_ONLY_SPECIALIST_GRAPH = build_dell_specialist_agentic_state_graph(
         turn_source="provider_model",
     )
 ).compile(name=DELL_AGENT_SERVER_GRAPH_ID)
+_SCHEMA_ONLY_REVIEW_GRAPH = build_dell_workpaper_review_graph(
+    expected_input=None, seed_state=None, run_child=_schema_only_unavailable,
+).compile(name=DELL_AGENT_SERVER_GRAPH_ID)
 
 
 def _require_serving_mode() -> Literal[
     "reference_vertical",
     "q1_specialist_paid_shadow_v1",
+    "q1_workpaper_review_repair_v1",
 ]:
     raw = os.environ.get(
         DELL_SERVING_MODE_ENV,
@@ -282,6 +290,7 @@ def _require_serving_mode() -> Literal[
     if raw not in {
         DELL_REFERENCE_VERTICAL_SERVING_MODE,
         DELL_Q1_PAID_SHADOW_SERVING_MODE,
+        DELL_Q1_REVIEW_SERVING_MODE,
     }:
         raise DellAgentServerEntryError("dell_serving_mode_invalid")
     return raw  # type: ignore[return-value]
@@ -500,6 +509,8 @@ async def _open_q1_paid_shadow_graph(
         raise DellAgentServerEntryError("deepseek_api_key_required")
     try:
         authority = load_dell_q1_paid_shadow_authority(authority_path)
+        if authority.serving_mode != _require_serving_mode():
+            raise DellSpecialistPaidShadowError("paid_shadow_serving_mode_authority_mismatch")
         require_runtime_authority_binding(
             authority,
             agent_session_id=identity.agent_session_id,
@@ -535,11 +546,23 @@ async def _open_q1_paid_shadow_graph(
             raise DellSpecialistPaidShadowError(
                 "paid_shadow_model_budget_binding_invalid"
             )
+        public_sink = build_public_model_audit_sink(authority)
+        private_sink = build_private_model_audit_sink(authority)
+        # Serialize append calls within this process only; no distributed lock service.
+        sink_lock = Lock()
+        def locked_sink(sink):
+            if sink is None:
+                return None
+            def write(event):
+                with sink_lock:
+                    sink(event)
+            return write
+        public_sink, private_sink = locked_sink(public_sink), locked_sink(private_sink)
         adapter = DeepSeekStructuredAgentAdapter.from_config(
             config=model_config,
             api_key=SecretStr(api_key),
-            audit_sink=build_public_model_audit_sink(authority),
-            private_audit_sink=build_private_model_audit_sink(authority),
+            audit_sink=public_sink,
+            private_audit_sink=private_sink,
         )
         with open_dell_specialist_receipted_composition(
             run_id=identity.research_run_id,
@@ -573,7 +596,36 @@ async def _open_q1_paid_shadow_graph(
                     composition.source_route_catalog_digest
                 ),
             )
-            yield composition.graph
+            if authority.workflow == "workpaper_review_repair":
+                scope = authority.review_scope
+                seed_path = Path("/run/fin-insight/review-seed.json")
+                if file_sha256(seed_path) != scope.seed_state_sha256:
+                    raise DellSpecialistPaidShadowError("review_seed_file_binding_invalid")
+                seed = json.loads(seed_path.read_text(encoding="utf-8"))
+
+                def run_child(role, collaboration, child_config):
+                    basis = scope.node_budgets[role]
+                    child_model_config = model_config.model_copy(update={
+                        "token_budget_basis": {**model_config.token_budget_basis, "specialist": basis}})
+                    child_adapter = DeepSeekStructuredAgentAdapter.from_config(
+                        config=child_model_config, api_key=SecretStr(api_key),
+                        audit_sink=public_sink, private_audit_sink=private_sink)
+                    with open_dell_specialist_receipted_composition(
+                        run_id=identity.research_run_id, run_invocation_id=identity.run_invocation_id,
+                        branch_id=authority.branch_id, turn_source="provider_model",
+                        model_turn=child_adapter.specialist_model_turn,
+                        max_model_turns=authority.max_model_turns if role == "repair" else scope.max_reviewer_model_turns,
+                        max_tool_actions=authority.max_tool_actions if role == "repair" else scope.max_reviewer_tool_actions,
+                        source_read_enabled=True, collaboration_context=collaboration,
+                    ) as child:
+                        # Native subgraph invocation: Agent Server owns inherited persistence.
+                        return child.graph.invoke(child.graph_input.model_dump(mode="json"),
+                            config={**child_config, "recursion_limit": 128})
+
+                yield build_dell_workpaper_review_graph(expected_input=composition.graph_input,
+                    seed_state=seed, run_child=run_child).compile(name=DELL_AGENT_SERVER_GRAPH_ID)
+            else:
+                yield composition.graph
     except (
         DellSpecialistPaidShadowError,
         DellSpecialistAgenticCompositionError,
@@ -604,6 +656,9 @@ async def dell_reference_vertical_graph(
     serving_mode = _require_serving_mode()
     execution_runtime = runtime.execution_runtime
     if execution_runtime is None:
+        if serving_mode == DELL_Q1_REVIEW_SERVING_MODE:
+            yield _SCHEMA_ONLY_REVIEW_GRAPH
+            return
         yield (
             _SCHEMA_ONLY_SPECIALIST_GRAPH
             if serving_mode == DELL_Q1_PAID_SHADOW_SERVING_MODE
@@ -618,7 +673,7 @@ async def dell_reference_vertical_graph(
         run_context=execution_runtime.context,
     )
     context = DellAgentServerRunContext.model_validate(execution_runtime.context)
-    if serving_mode == DELL_Q1_PAID_SHADOW_SERVING_MODE:
+    if serving_mode in {DELL_Q1_PAID_SHADOW_SERVING_MODE, DELL_Q1_REVIEW_SERVING_MODE}:
         async with _open_q1_paid_shadow_graph(
             identity,
             context,

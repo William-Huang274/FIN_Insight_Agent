@@ -94,6 +94,8 @@ class SpecialistAgenticInput(_StrictModel):
     l0_context: SpecialistL0Context
     max_model_turns: int = Field(default=8, ge=2, le=24)
     max_tool_actions: int = Field(default=12, ge=1, le=48)
+    # Trusted composition-root artifact handoff, never provider-supplied state.
+    collaboration_context: dict[str, Any] | None = None
 
     @model_validator(mode="after")
     def validate_required_routes(self) -> "SpecialistAgenticInput":
@@ -285,12 +287,56 @@ class SubmitWorkpaperAction(_StrictModel):
         return self
 
 
+class WorkpaperReviewFinding(_StrictModel):
+    finding_id: str = Field(min_length=1, max_length=120)
+    severity: Literal["high", "medium", "low"]
+    category: Literal["citation_coverage", "source_entailment", "financial_reasoning",
+                      "counterevidence", "uncertainty", "language", "presentation", "data_or_tool"]
+    target_quote: str = Field(min_length=1, max_length=2000,
+                              description="Exact contiguous text in the reviewed workpaper, including its thesis, mechanism, claims or counterevidence.")
+    affected_claim_ids: tuple[str, ...] = Field(default=(), max_length=24)
+    evidence_refs: tuple[str, ...] = Field(default=(), max_length=24)
+    rationale: str = Field(min_length=1, max_length=4000,
+                           description="Concise auditable explanation with source context, not hidden chain of thought.")
+    required_change: str = Field(min_length=1, max_length=2000)
+    responsible_owner: Literal["author", "data", "tool", "human"]
+
+
+class SubmitReviewAction(_StrictModel):
+    action: Literal["submit_review"]
+    context_digest: str = Field(pattern=_DIGEST_PATTERN)
+    reason_summary: str = Field(min_length=1, max_length=1000)
+    target_submission_digest: str = Field(pattern=_DIGEST_PATTERN)
+    verdict: Literal["repair_required", "no_material_finding"]
+    coverage_notes: str = Field(min_length=1, max_length=6000,
+                                description="Explain which material narrative assertions, source context and counter mechanisms you checked, and limits. No rewrite of the author's report.")
+    findings: tuple[WorkpaperReviewFinding, ...] = Field(default=(), max_length=24)
+
+    @model_validator(mode="after")
+    def validate_review(self) -> "SubmitReviewAction":
+        ids = [row.finding_id for row in self.findings]
+        if len(ids) != len(set(ids)):
+            raise ValueError("review_finding_id_duplicate")
+        material = any(row.severity in {"high", "medium"} for row in self.findings)
+        if (self.verdict == "repair_required") != material:
+            raise ValueError("review_verdict_findings_mismatch")
+        return self
+
+
+SpecialistResearchAction = Annotated[
+    RequestEvidenceAction | RequestSourceAction | RequestFinanceAction
+    | RequestHumanReviewAction | SubmitWorkpaperAction,
+    Field(discriminator="action"),
+]
+
 SpecialistAction = Annotated[
     RequestEvidenceAction
     | RequestSourceAction
     | RequestFinanceAction
     | RequestHumanReviewAction
-    | SubmitWorkpaperAction,
+    | SubmitWorkpaperAction
+    | SubmitReviewAction,
+    # The review terminal is enabled only by a trusted collaboration profile.
     Field(discriminator="action"),
 ]
 
@@ -621,6 +667,22 @@ class SpecialistNotebook(_StrictModel):
         return self
 
 
+class SpecialistCollaborationContext(_StrictModel):
+    mode: Literal["verifier", "counter", "repair"]
+    target_agent_id: str = Field(min_length=1, max_length=240)
+    target_submission: SubmitWorkpaperAction
+    target_notebook: SpecialistNotebook
+    findings: tuple[WorkpaperReviewFinding, ...] = ()
+
+    @model_validator(mode="after")
+    def validate_target_owner(self) -> "SpecialistCollaborationContext":
+        if self.target_agent_id != self.target_notebook.agent_id:
+            raise ValueError("collaboration_target_owner_mismatch")
+        if self.target_notebook.status != "submitted":
+            raise ValueError("collaboration_requires_submitted_target")
+        return self
+
+
 class SpecialistToolRequest(_StrictModel):
     schema_version: Literal[
         "fin_ia_dell_specialist_tool_request_v1_0"
@@ -692,6 +754,7 @@ class DellSpecialistAgenticState(TypedDict, total=False):
     l0_context: dict[str, Any]
     max_model_turns: int
     max_tool_actions: int
+    collaboration_context: dict[str, Any] | None
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
@@ -763,7 +826,9 @@ def _build_notebook(**fields: Any) -> SpecialistNotebook:
         "schema_version": "fin_ia_dell_specialist_notebook_v1_0",
         **fields,
     }
-    return SpecialistNotebook(**body, notebook_digest=canonical_sha256(body))
+    body = _jsonable(body)
+    return SpecialistNotebook.model_validate_json(json.dumps(
+        {**body, "notebook_digest": canonical_sha256(body)}, ensure_ascii=False, allow_nan=False))
 
 
 def _replace_notebook(
@@ -797,6 +862,10 @@ def _model_request(
     ]
     if l0.source_read_enabled:
         allowed_actions.append("request_source")
+    collaboration = state.get("collaboration_context")
+    if collaboration and collaboration["mode"] in {"counter", "verifier"}:
+        allowed_actions.remove("submit_workpaper")
+        allowed_actions.append("submit_review")
     body = {
         "schema_version": SPECIALIST_AGENTIC_GRAPH_SCHEMA_VERSION,
         "agent_id": state["agent_id"],
@@ -827,6 +896,8 @@ def _model_request(
     }
     if state.get("tool_results"):
         body["tool_results"] = state["tool_results"]
+    if collaboration:
+        body["collaboration_context"] = collaboration
     return {**body, "context_digest": canonical_sha256(body)}
 
 
@@ -1031,6 +1102,35 @@ def _submission_errors(
     return tuple(dict.fromkeys(errors))
 
 
+def _review_submission_errors(
+    review: SubmitReviewAction,
+    notebook: SpecialistNotebook,
+    context: Mapping[str, Any] | None,
+) -> tuple[str, ...]:
+    """Identity/ref/anchor checks only; never pretend to evaluate semantics."""
+    if not context or context.get("mode") not in {"verifier", "counter"}:
+        return ("review_role_not_authorized",)
+    target = context["target_submission"]
+    if review.target_submission_digest != canonical_sha256(target):
+        return ("review_target_revision_mismatch",)
+    texts = [str(target[key]) for key in ("thesis", "mechanism", "narrative_markdown")]
+    texts.extend(target.get("counterevidence", ()))
+    texts.extend(target.get("what_would_change", ()))
+    texts.extend(target.get("open_gaps", ()))
+    texts.extend(c["statement"] for c in target.get("claims", ()))
+    claims = {c["claim_id"] for c in target.get("claims", ())}
+    refs = {r.ref_id for obs in notebook.observations for r in obs.references}
+    errors = []
+    for finding in review.findings:
+        if not any(finding.target_quote in text for text in texts):
+            errors.append(f"review_anchor_not_in_target:{finding.finding_id}")
+        if not set(finding.affected_claim_ids).issubset(claims):
+            errors.append(f"review_unknown_target_claim:{finding.finding_id}")
+        if not set(finding.evidence_refs).issubset(refs):
+            errors.append(f"review_unobserved_reference:{finding.finding_id}")
+    return tuple(errors)
+
+
 def build_dell_specialist_agentic_state_graph(
     *,
     dependencies: DellSpecialistAgenticDependencies,
@@ -1053,6 +1153,19 @@ def build_dell_specialist_agentic_state_graph(
             raise DellSpecialistAgenticGraphError(
                 "specialist_agentic_input_binding_invalid"
             )
+        collaboration = None
+        if validated.collaboration_context is not None:
+            collaboration = _validate_model_json(SpecialistCollaborationContext,
+                validated.collaboration_context, code="collaboration_context_invalid")
+            prior = collaboration.target_notebook
+            if (prior.branch_id != validated.task.branch_id
+                or prior.owner_data_gate_decision_digest != validated.l0_context.owner_data_gate_decision_digest
+                or prior.inventory_snapshot_digest != validated.l0_context.inventory_snapshot_digest
+                or prior.source_route_catalog_digest != validated.l0_context.source_route_catalog_digest
+                or set(prior.required_route_obligation_ids) != set(validated.required_route_obligation_ids)):
+                raise DellSpecialistAgenticGraphError("collaboration_data_scope_mismatch")
+            if (collaboration.mode == "repair") != (validated.agent_id == collaboration.target_agent_id):
+                raise DellSpecialistAgenticGraphError("collaboration_role_identity_mismatch")
         notebook = _build_notebook(
             run_id=validated.run_id,
             run_invocation_id=validated.run_invocation_id,
@@ -1074,9 +1187,9 @@ def build_dell_specialist_agentic_state_graph(
             required_route_obligation_ids=(
                 validated.required_route_obligation_ids
             ),
-            satisfied_route_obligation_ids=(),
+            satisfied_route_obligation_ids=(collaboration.target_notebook.satisfied_route_obligation_ids if collaboration else ()),
             model_turn_records=(),
-            observations=(),
+            observations=(tuple(row.model_dump(mode="json") for row in collaboration.target_notebook.observations) if collaboration else ()),
             feedback=(),
             dispatched_action_digests=(),
             status="researching",
@@ -1501,10 +1614,10 @@ def build_dell_specialist_agentic_state_graph(
         calls = {call.id: call for call in batch.tool_calls}
         models = {model.__name__: model for model in (
             RequestEvidenceAction, RequestFinanceAction, RequestSourceAction,
-            SubmitWorkpaperAction, RequestHumanReviewAction,
+            SubmitWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
         terminal_mixed = len(batch.tool_calls) > 1 and any(
-            call.name in {"SubmitWorkpaperAction", "RequestHumanReviewAction"}
+            call.name in {"SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction"}
             for call in batch.tool_calls)
         l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
         assigned_routes = {row.get("minimum_route_obligation_id")
@@ -1543,6 +1656,8 @@ def build_dell_specialist_agentic_state_graph(
             if action.context_digest != batch.context_digest:
                 return reject("specialist_model_turn_context_binding_invalid",
                     "Copy the current context_digest exactly; this call was not dispatched.")
+            if action.action not in _model_request(state=working, notebook=before)["allowed_actions"]:
+                return reject("specialist_action_not_available_in_current_runtime", "This action is not available for your assigned role.")
             if isinstance(action, RequestSourceAction) and not l0.source_read_enabled:
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")
             if isinstance(action, RequestEvidenceAction) and action.minimum_route_obligation_id not in assigned_routes:
@@ -1550,7 +1665,7 @@ def build_dell_specialist_agentic_state_graph(
             working["pending_action"] = action.model_dump(mode="json")
             # Terminal calls are control tools, never data-port calls and never
             # charged as a data action. Reuse the existing acceptance/handoff.
-            if isinstance(action, SubmitWorkpaperAction):
+            if isinstance(action, (SubmitWorkpaperAction, SubmitReviewAction)):
                 working.update(validate_submission(working))
                 after = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
                 accepted = working.get("final_submission") is not None
@@ -1600,11 +1715,14 @@ def build_dell_specialist_agentic_state_graph(
             code="specialist_notebook_invalid",
         )
         action = _validate_action(state.get("pending_action"))
-        if not isinstance(action, SubmitWorkpaperAction):
+        if not isinstance(action, (SubmitWorkpaperAction, SubmitReviewAction)):
             raise DellSpecialistAgenticGraphError(
                 "specialist_submission_action_invalid"
             )
-        errors = _submission_errors(action, notebook)
+        if isinstance(action, SubmitReviewAction):
+            errors = _review_submission_errors(action, notebook, state.get("collaboration_context"))
+        else:
+            errors = _submission_errors(action, notebook)
         if errors:
             feedback = _feedback(
                 "specialist_submission_reference_validation_failed",
@@ -1747,6 +1865,7 @@ def build_dell_specialist_agentic_state_graph(
             "request_source": "execute_evidence",
             "request_finance": "execute_finance",
             "submit_workpaper": "validate_submission",
+            "submit_review": "validate_submission",
             "request_human_review": "human_review",
             "decide": "model_decide",
             "human_review": "human_review",

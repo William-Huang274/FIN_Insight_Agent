@@ -33,6 +33,7 @@ from sec_agent.agent_runtime.dell_specialist_agentic_graph import (
     SpecialistHumanReviewHandoff,
     SpecialistNotebook,
     SubmitWorkpaperAction,
+    SubmitReviewAction,
 )
 from sec_agent.agent_runtime.dell_specialist_paid_shadow import (
     DellQ1SpecialistPaidShadowAuthority,
@@ -192,6 +193,8 @@ def _stream(parts: Iterable[Any]) -> dict[str, Any]:
 
 
 def _terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShadowAuthority) -> dict[str, Any]:
+    if authority.workflow == "workpaper_review_repair":
+        return _review_terminal(raw, authority)
     values = raw.get("values")
     if not isinstance(values, Mapping) or raw.get("interrupts") not in (None, [], ()) or raw.get("next") not in (None, [], ()):
         raise ContainerRunError("paid_shadow_terminal_state_invalid")
@@ -231,6 +234,47 @@ def _terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShadowAutho
         "model_turn_count": notebook.model_turn_count,
         "tool_action_count": notebook.tool_action_count,
     }
+
+
+def _review_terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShadowAuthority) -> dict[str, Any]:
+    values = raw.get("values")
+    if not isinstance(values, Mapping) or values.get("phase") not in {"review_cycle_accepted", "review_cycle_needs_attention"}:
+        raise ContainerRunError("review_cycle_terminal_missing")
+    if values.get("run_id") != authority.research_run_id or values.get("run_invocation_id") != authority.run_invocation_id:
+        raise ContainerRunError("review_cycle_identity_mismatch")
+    reviews, repairs = values.get("review_results", []), values.get("repair_results", [])
+    if len(repairs) > 1 or len(reviews) not in {2, 4}:
+        raise ContainerRunError("review_cycle_topology_invalid")
+    turns, actions, actors = 0, 0, []
+    for row in [*reviews, *repairs]:
+        state = row["agent_state"]
+        notebook = _parse(SpecialistNotebook, state.get("notebook"), "review_notebook_invalid")
+        is_repair = "parent_submission_digest" in row
+        limit = authority.max_model_turns if is_repair else authority.review_scope.max_reviewer_model_turns
+        tool_limit = authority.max_tool_actions if is_repair else authority.review_scope.max_reviewer_tool_actions
+        if (not 1 <= notebook.model_turn_count <= limit or notebook.tool_action_count > tool_limit
+            or notebook.run_id != authority.research_run_id or notebook.run_invocation_id != authority.run_invocation_id
+            or (is_repair and notebook.agent_id != authority.node_id)
+            or (not is_repair and not notebook.agent_id.startswith(row["role"] + ":"))):
+            raise ContainerRunError("review_child_budget_or_identity_invalid")
+        if any(r.turn_source != "provider_model" or r.runtime_receipt is None
+               or r.runtime_receipt.actor != notebook.agent_id or r.runtime_receipt.transport_attempts != 1
+               for r in notebook.model_turn_records):
+            raise ContainerRunError("review_child_model_proof_invalid")
+        if state.get("phase") == "specialist_submission_accepted":
+            _parse(SubmitWorkpaperAction if is_repair else SubmitReviewAction, state["final_submission"], "review_child_terminal_invalid")
+        else:
+            _parse(SpecialistHumanReviewHandoff, state.get("human_review_handoff"), "review_child_handoff_invalid")
+        turns += notebook.model_turn_count
+        actions += notebook.tool_action_count
+        actors.append(notebook.agent_id)
+    _parse(SubmitWorkpaperAction, values["final_submission"], "review_workpaper_missing")
+    return {"status": "pass" if values["phase"] == "review_cycle_accepted" else "bounded_handoff",
+            "phase": values["phase"], "review_stop_reason": values.get("review_stop_reason"),
+            "model_turn_count": turns, "tool_action_count": actions,
+            "reviewer_executions": len(reviews), "author_revisions": len(repairs), "actors": actors,
+            "output_digest": canonical_sha256(values["final_submission"]),
+            "acceptance_scope": "Q1_multi_agent_review_cycle_only_not_full_case_or_human_product_acceptance"}
 
 
 def _audit(authority: DellQ1SpecialistPaidShadowAuthority, turns: int) -> dict[str, Any]:

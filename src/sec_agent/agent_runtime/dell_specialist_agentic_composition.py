@@ -33,6 +33,7 @@ from .dell_specialist_agentic_graph import (
     RequestFinanceAction,
     RequestSourceAction,
     SpecialistAgenticInput,
+    SpecialistCollaborationContext,
     SpecialistModelTurnSource,
     SpecialistObservedReference,
     SpecialistRouteCompletion,
@@ -903,6 +904,7 @@ def _open_dell_specialist_composition(
     model_turn: ModelTurnPort,
     turn_source: SpecialistModelTurnSource,
     source_read_enabled: bool = False,
+    collaboration_context: Mapping[str, Any] | None = None,
 ) -> Iterator[_OpenedSpecialistComposition]:
     try:
         with open_dell_approved_data_composition(
@@ -928,6 +930,19 @@ def _open_dell_specialist_composition(
                 max_tool_actions=max_tool_actions,
                 source_read_enabled=source_read_enabled,
             )
+            if collaboration_context is not None:
+                collaboration = _model_json(SpecialistCollaborationContext, collaboration_context,
+                                            code="specialist_collaboration_context_invalid")
+                prior = collaboration.target_notebook
+                mode = collaboration.mode
+                task_data = graph_input.task.model_dump(mode="json")
+                task_data["revision"] = prior.task_revision + (1 if mode == "repair" else 0)
+                if mode in {"verifier", "counter"}:
+                    task_data["objective"] = f"{mode}: independently review the supplied Q1 workpaper and source context; report material findings, do not write the report."
+                body = graph_input.model_dump(mode="json")
+                body.update(task=task_data, collaboration_context=collaboration.model_dump(mode="json"),
+                            agent_id=collaboration.target_agent_id if mode == "repair" else f"{mode}:{branch_id}:r{prior.task_revision}")
+                graph_input = _model_json(SpecialistAgenticInput, body, code="specialist_collaboration_input_invalid")
             task = graph_input.task
             dependencies = DellSpecialistAgenticDependencies(
                 model_turn=model_turn,
@@ -978,6 +993,7 @@ def open_dell_specialist_scripted_qualification_composition(
     environment: Mapping[str, str] | None = None,
     scripted_model_turn: ModelTurnPort,
     source_read_enabled: bool = False,
+    collaboration_context: Mapping[str, Any] | None = None,
 ) -> Iterator[DellSpecialistScriptedQualificationComposition]:
     """Open a scripted, zero-call qualification over the approved local MCP."""
 
@@ -991,6 +1007,7 @@ def open_dell_specialist_scripted_qualification_composition(
         model_turn=scripted_model_turn,
         turn_source="scripted_qualification",
         source_read_enabled=source_read_enabled,
+        collaboration_context=collaboration_context,
     ) as opened:
         yield DellSpecialistScriptedQualificationComposition(
             graph_input=opened.graph_input,
@@ -1015,6 +1032,7 @@ def open_dell_specialist_receipted_composition(
     max_tool_actions: int = 12,
     environment: Mapping[str, str] | None = None,
     source_read_enabled: bool = False,
+    collaboration_context: Mapping[str, Any] | None = None,
 ) -> Iterator[DellSpecialistReceiptedComposition]:
     """Open the same bounded graph for a trusted replay or provider turn port."""
 
@@ -1032,6 +1050,7 @@ def open_dell_specialist_receipted_composition(
         model_turn=model_turn,
         turn_source=turn_source,
         source_read_enabled=source_read_enabled,
+        collaboration_context=collaboration_context,
     ) as opened:
         yield DellSpecialistReceiptedComposition(
             graph_input=opened.graph_input,

@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-05 S3/189 当前：Owner 已明确要求单 Agent 后自主推进多 Agent/完整产品与普通修复，DeepSeek 额度充足。现有 LangGraph Specialist 循环已加入专用 review terminal 与显式跨 Agent artifact handoff；标准 Send 并行 Counter/Verifier → 最多一次原 Specialist 修订 → 复审。复用唯一 Agent Server/MCP/SDK/LangSmith/runner，无新依赖/通用引擎。代码候选相关 215 项定向检查已通过，另补实际 reviewer MCP catalog 检查；尚未新模型运行。下一步 clean/pushed candidate 后 fresh Q1 review-repair execution，而不是 R12 单 Agent 重跑。输入 R11 原件保持，禁止把此前 Codex 中文复核问题清单作为模型输入；R11 内容未 PASS 和 RC-S3-121 仍 open，完整 Q1–Q9/动态 Lead/前端/HITL/发布未完成。详见 S3/189。以下为历史状态。
+
 2026-09-05 S3/188 最终当前状态：**R11 单 Specialist 运行闭环PASS_BOUNDED，正文语义/引用覆盖复核未PASS。** impl44b6ef7a、authority HEAD0db33dae；7真实模型/8数据动作，模型自主查到既有S2派生指标，字段纠错→原文重读→补交接受。总509224tokens（input454359/output54865）、模型743.482s、工具1.132s，LangSmith估费USD0.076638619，按当前官方费率复算约USD0.158944456，均非账单。原reasoning与全部ToolMessage在实际SDK历史续传。已导出英文原稿/中文复核；发现14→11条claim后PASSAGE引用全去掉但正文相关数字仍在、应付增加被错写成现金占用、重要推断未登记、输出未中文化。不能按内部receipt.pass宣称金融质量/完整multi-agent/发布PASS。**不自动开R12；下一工作包是既定Verifier/Counter语义与正文覆盖复核及责任Agent回派，不再造NLP校验壳。** R8–R10失败保留，R11服务供只读查验；run/root01a0719b-786a-71d3-84d8-f0b1d93fd276，threadf7503a09-1d3d-5e52-863d-6daa6dda9f83，port18147。详见S3/188及RC-S3-121。以下均为历史时点。
 
 2026-09-05 S3/188 R10 最新：真实字段反馈→模型补交纠正成立，6次模型/7数据动作；353417tokens/模型535.095s/工具1.301s/估费USD0.062461998。第二层仍拒绝quote不匹配和未经本地计算的C13；第七轮准备370397chars被本地360000上限拦住，未发送，原失败保留。现已恢复被observed_tickers过滤误隐藏的既有S2派生指标，真实MCP查到带formula_trace的FCF；澄清现有schema/反馈，无第六工具/新计算器/S2写。新配置500000输入chars，其余容量/模型/权限不变；82定向检查通过，下一步fresh R11一次，不resumeR10。详见S3/188；下方逐时点为历史。完整多Agent/金融内容PASS仍未完成。

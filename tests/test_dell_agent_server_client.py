@@ -1234,7 +1234,10 @@ def test_start_specialist_run_reuses_the_same_durable_server_options() -> None:
     assert len(sdk.runs.create_calls) == 1
     _, assistant_id, kwargs = sdk.runs.create_calls[0]
     assert assistant_id == DELL_AGENT_SERVER_ASSISTANT_ID
-    assert kwargs["input"] == graph_input
+    import json
+    from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistAgenticInput
+    assert kwargs["input"] == SpecialistAgenticInput.model_validate_json(
+        json.dumps(graph_input)).model_dump(mode="json")
     assert kwargs["stream_mode"] == ["updates"]
     assert kwargs["stream_resumable"] is True
     assert kwargs["durability"] == "sync"

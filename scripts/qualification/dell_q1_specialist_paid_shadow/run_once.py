@@ -26,6 +26,7 @@ ROOT = Path(__file__).resolve().parents[3]
 BASE_COMPOSE = ROOT / "deploy/dell_agent_server/compose.yaml"
 PAID_OVERLAY = ROOT / "deploy/dell_agent_server/compose.q1-specialist-paid-shadow.yaml"
 NETWORK_OVERLAY = ROOT / "deploy/dell_agent_server/compose.q1-specialist-network.yaml"
+REVIEW_OVERLAY = ROOT / "deploy/dell_agent_server/compose.q1-workpaper-review.yaml"
 DOTENV_FILE = ROOT / ".env"
 DEFAULT_AUTHORITY = ROOT / "configs/research/evals/fin_ia_0_1_3_s3_dell_q1_specialist_paid_shadow_authority_v1_0.json"
 ATTEMPTS_ROOT = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts")
@@ -163,16 +164,25 @@ def _environment(
             "FINSIGHT_DELL_PAID_SHADOW_ARTIFACT_CONTAINER_PATH": authority.artifact_root_container,
         }
     )
+    if authority.review_scope is not None:
+        seed_path = (ATTEMPTS_ROOT / authority.review_scope.seed_state_relative_path).resolve()
+        if not seed_path.is_relative_to(ATTEMPTS_ROOT.resolve()) or not seed_path.is_file():
+            raise HostRunError("review_seed_path_invalid")
+        if file_sha256(seed_path) != authority.review_scope.seed_state_sha256:
+            raise HostRunError("review_seed_digest_invalid")
+        env["FINSIGHT_DELL_REVIEW_SEED_HOST_PATH"] = seed_path.as_posix()
     return env
 
 
-def _compose(project: str, subnet: str | None = None) -> list[str]:
+def _compose(project: str, subnet: str | None = None, *, review: bool = False) -> list[str]:
     command = [
         "docker", "compose", "--project-name", project, "--env-file", str(DOTENV_FILE),
         "-f", str(BASE_COMPOSE), "-f", str(PAID_OVERLAY),
     ]
     if subnet is not None:
         command.extend(["-f", str(NETWORK_OVERLAY)])
+    if review:
+        command.extend(["-f", str(REVIEW_OVERLAY)])
     return command
 
 
@@ -318,7 +328,7 @@ def run_once(authority_path: Path, *, subnet: str | None = None) -> None:
         attempt.parent.mkdir(parents=True, exist_ok=True)
         attempt.mkdir(exist_ok=False)
         attempt_created = True
-        compose = _compose(project, subnet)
+        compose = _compose(project, subnet, review=authority.review_scope is not None)
         observation, _ = _command([*compose, "config", "--quiet"], env, 120)
         commands.append({"step": "compose_config", **observation})
         observation, _ = _command([*compose, "up", "-d", "--build"], env, 1800)
@@ -330,10 +340,13 @@ def run_once(authority_path: Path, *, subnet: str | None = None) -> None:
                 CONTAINER_SCRIPT,
             ],
             env,
-            3600,
+            3600 if authority.review_scope is None else int(
+                2 * authority.review_scope.max_reviewer_model_turns * max(
+                    authority.review_scope.node_budgets[r].timeout_seconds for r in ("verifier", "counter"))
+                + authority.max_model_turns * authority.review_scope.node_budgets["repair"].timeout_seconds + 300),
             json_result=True,
         )
-        commands.append({"step": "single_specialist_run", **observation})
+        commands.append({"step": authority.workflow, **observation})
         if not isinstance(result, Mapping) or result.get("status") not in {
             "pass", "bounded_handoff",
         }:

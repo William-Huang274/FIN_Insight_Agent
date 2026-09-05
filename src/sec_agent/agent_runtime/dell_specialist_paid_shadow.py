@@ -11,9 +11,11 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .dell_reference_vertical_contracts import canonical_sha256
+from .deepseek_structured_agents import TokenBudgetBasis
 
 
 DELL_Q1_PAID_SHADOW_SERVING_MODE = "q1_specialist_paid_shadow_v1"
+DELL_Q1_REVIEW_SERVING_MODE = "q1_workpaper_review_repair_v1"
 DELL_Q1_PAID_SHADOW_AUTHORITY_ENV = "FINSIGHT_DELL_PAID_SHADOW_AUTHORITY_PATH"
 DELL_IMPLEMENTATION_COMMIT_ENV = "FINSIGHT_DELL_IMPLEMENTATION_COMMIT"
 
@@ -38,6 +40,24 @@ class DellSpecialistPaidShadowError(RuntimeError):
         super().__init__(code)
 
 
+class WorkpaperReviewScope(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
+    seed_state_relative_path: str = Field(pattern=r"^[a-z0-9_-]+/specialist-final-state\.private\.json$")
+    seed_state_sha256: str = Field(pattern=_DIGEST_PATTERN)
+    node_budgets: dict[Literal["verifier", "counter", "repair"], TokenBudgetBasis]
+    max_reviewer_model_turns: int = Field(ge=2, le=12)
+    max_reviewer_tool_actions: int = Field(ge=1, le=16)
+    max_author_revisions: Literal[1]
+
+    @model_validator(mode="after")
+    def validate_nodes(self) -> "WorkpaperReviewScope":
+        if set(self.node_budgets) != {"verifier", "counter", "repair"}:
+            raise ValueError("review_node_budget_set_invalid")
+        if any(b.node_role != "specialist" for b in self.node_budgets.values()):
+            raise ValueError("review_nodes_require_existing_agentic_transport")
+        return self
+
+
 class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     """The only checked-in Owner decision consumed by this one shadow."""
 
@@ -60,7 +80,7 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     research_run_id: str = Field(min_length=1, max_length=180)
     run_invocation_id: str = Field(min_length=1, max_length=180)
     graph_id: Literal["dell_reference_vertical"]
-    serving_mode: Literal["q1_specialist_paid_shadow_v1"]
+    serving_mode: Literal["q1_specialist_paid_shadow_v1", "q1_workpaper_review_repair_v1"]
     branch_id: Literal["Q1_ISSUER_TRUTH"]
     node_id: Literal["specialist:Q1_ISSUER_TRUTH"]
     provider: Literal["deepseek"]
@@ -92,7 +112,9 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     live_external_calls_authorized: Literal[False]
     evidence_admission_authorized: Literal[False]
     s2_write_authorized: Literal[False]
-    other_model_nodes_authorized: Literal[False]
+    other_model_nodes_authorized: bool
+    workflow: Literal["single_specialist", "workpaper_review_repair"] = "single_specialist"
+    review_scope: WorkpaperReviewScope | None = None
     artifact_root_container: str = Field(min_length=20, max_length=1_000)
     model_audit_filename: Literal["model-call-events.jsonl"]
     source_read_enabled: bool = False
@@ -105,6 +127,13 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
 
     @model_validator(mode="after")
     def validate_authority(self) -> "DellQ1SpecialistPaidShadowAuthority":
+        is_review = self.workflow == "workpaper_review_repair"
+        if is_review != (self.serving_mode == DELL_Q1_REVIEW_SERVING_MODE):
+            raise ValueError("paid_shadow_workflow_serving_mode_mismatch")
+        if is_review != self.other_model_nodes_authorized or is_review != (self.review_scope is not None):
+            raise ValueError("paid_shadow_review_scope_authority_mismatch")
+        if is_review and not (self.source_read_enabled and self.private_reasoning_audit_authorized):
+            raise ValueError("paid_review_requires_source_context_and_private_audit")
         if len(self.required_outputs) != len(set(self.required_outputs)):
             raise ValueError("paid_shadow_required_output_duplicate")
         if not self.artifact_root_container.startswith(
@@ -116,7 +145,7 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
         unsigned = self.model_dump(mode="json", exclude={"decision_digest"})
         # Old consumed authorities remain readable; their original signed JSON
         # did not have these opt-in fields. Never rewrite those old files.
-        for field in ("source_read_enabled", "private_reasoning_audit_authorized", "deepseek_config_filename"):
+        for field in ("source_read_enabled", "private_reasoning_audit_authorized", "deepseek_config_filename", "workflow", "review_scope"):
             if field not in self.model_fields_set:
                 unsigned.pop(field, None)
         if canonical_sha256(unsigned) != self.decision_digest:

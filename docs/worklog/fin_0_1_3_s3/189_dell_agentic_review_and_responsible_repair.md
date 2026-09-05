@@ -121,6 +121,8 @@ FIN 仅验证任务覆盖、依赖身份、同 case/as-of/批准数据范围以�
 
 ### Lead two-topic A1 实际失败与同层修复（最新）
 
+修复后的 fresh A2 配置：`fin_ia_0_1_3_s3_dell_lead_two_topic_a2_authority_v1_0.json`，implementation `f2fff90209f64d9fd39ce3fa759f5d1022897e73`，digest `523bbf113d68f506387254020820ffa13bcb2db82fe093c249ad10083dc1940f`；新project `finsight-dell-q1-paid-523bbf113d68`、runner port18149、subnet10.253.27.0/24。仍只Q5/Q6、同A5 seed/数据门/预算，没有继承A1草稿、对话或偷偷重试其provider调用。A1三服务在18个调用均归档后仅stop，旧状态/卷/全部证据保留。最终schema说明后86定向检查通过，不新增通用协议。
+
 launch HEAD `fa95d16c8c3d33a32940f2e255c907fcb7e337ff`；project `finsight-dell-q1-paid-d9965ec526e6`、port18153、subnet10.253.26.0/24。run/root `01a072d9-2841-7bb0-8ad0-8c48d6b139fc`、thread `19d3e737-9315-532c-9cf1-3ad1f42ec5f8`。首次真实 Lead1轮自主提出Q5 supply-price-transmission与Q6 model-compute-demand-bridges 两项任务、各自角色/目标/验收标准，均无依赖；两专业Agent并行自主循环。A5作为Lead已知底稿，Lead没有为子任务指定seed依赖，不能虚称实际发生了那条依赖交接。
 
 - 实际18个模型完成响应（Lead1/Q5 7/Q6 10），input/output/total=`948806/99138/1047944`，累计模型1244.302518s。构建101.109s、container研究阶段615.984s；Q5在父图取消后仍完成原在途响应并补写audit，因此不能用父图时长宣称全部模型已于同一时刻完成。最终18started/18outcome，无未决provider调用，原Q5响应未复用/重试。

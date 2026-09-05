@@ -252,3 +252,16 @@ def test_current_preflight_delegates_to_existing_runner_not_historical_fixed_pac
         result = entry._current_agent_server_preflight(decision)
         assert result["status"] == "current_agent_server_execution_contract_pass" and not result["full_product_pass"]
     assert seen == [decision]
+@pytest.mark.parametrize("branches,valid", [(["Q8_COMPETITION_VALUE_POOL"], True),
+                                         (["Q1_ISSUER_TRUTH"], False),
+                                         (["unknown"], False), ([], False)])
+def test_targeted_completion_is_explicit_bounded_and_not_full_case(tmp_path, branches, valid):
+    body = _lead_authority(tmp_path).model_dump(mode="json")
+    body["lead_scope"].update(targeted_completion=True, allowed_branch_ids=branches)
+    body["decision_digest"] = canonical_sha256({k: v for k, v in body.items() if k != "decision_digest"})
+    if valid:
+        parsed = DellQ1SpecialistPaidShadowAuthority.model_validate_json(json.dumps(body))
+        assert parsed.lead_scope.allowed_branch_ids == ("Q8_COMPETITION_VALUE_POOL",)
+    else:
+        with pytest.raises(ValueError):
+            DellQ1SpecialistPaidShadowAuthority.model_validate_json(json.dumps(body))

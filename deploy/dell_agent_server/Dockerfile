@@ -62,5 +62,6 @@ COPY configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_workpaper_capaci
 COPY configs/research/fin_ia_0_1_3_dell_q1_source_read_corrective_context_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 COPY configs/research/fin_ia_0_1_3_dell_full_research_pro_low_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 COPY configs/research/fin_ia_0_1_3_dell_full_research_routed_v1_0.json /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research/fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 
 WORKDIR /deps/FIN_Insight_Agent

@@ -66,6 +66,7 @@ class LeadResearchScope(BaseModel):
     seed_state_relative_path: str = Field(pattern=r"^[a-z0-9_-]+/specialist-final-state\.private\.json$")
     seed_state_sha256: str = Field(pattern=_DIGEST_PATTERN)
     allowed_branch_ids: tuple[str, ...]
+    targeted_completion: bool = False
     node_budgets: dict[Literal["lead", "specialist"], TokenBudgetBasis]
     max_lead_model_turns: int = Field(ge=2, le=12)
     max_tasks: int = Field(ge=2, le=12)
@@ -74,8 +75,10 @@ class LeadResearchScope(BaseModel):
     @model_validator(mode="after")
     def validate_scope(self) -> "LeadResearchScope":
         scope = set(self.allowed_branch_ids)
-        if (len(scope) != len(self.allowed_branch_ids) or scope not in (
-                {"Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"}, set(DELL_FULL_RESEARCH_BRANCHES))):
+        targeted = (self.targeted_completion and bool(scope)
+                    and scope.issubset(set(DELL_FULL_RESEARCH_BRANCHES) - {"Q1_ISSUER_TRUTH"}))
+        if (len(scope) != len(self.allowed_branch_ids) or not (targeted or (not self.targeted_completion and scope in (
+                {"Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"}, set(DELL_FULL_RESEARCH_BRANCHES))))):
             raise ValueError("lead_scope_requires_original_two_topics_or_explicit_full_Dell")
         if len(scope) == 9 and self.max_tasks < 8:
             raise ValueError("full_Dell_requires_capacity_for_eight_new_obligations_plus_Q1_seed")
@@ -123,7 +126,7 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     source_route_catalog_digest: str = Field(pattern=_DIGEST_PATTERN)
     max_model_turns: int = Field(ge=2, le=24)
     max_tool_actions: int = Field(ge=1, le=48)
-    max_input_characters_per_turn: int = Field(ge=10_000, le=500_000)
+    max_input_characters_per_turn: int = Field(ge=10_000, le=1_000_000)
     max_output_tokens_per_turn: int = Field(ge=1_000, le=32_000)
     timeout_seconds_per_turn: float = Field(ge=30, le=600)
     max_transport_attempts_per_turn: Literal[1]
@@ -190,6 +193,8 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
         for field in ("source_read_enabled", "private_reasoning_audit_authorized", "deepseek_config_filename", "workflow", "review_scope", "lead_scope"):
             if field not in self.model_fields_set:
                 unsigned.pop(field, None)
+        if self.lead_scope is not None and "targeted_completion" not in self.lead_scope.model_fields_set:
+            unsigned["lead_scope"].pop("targeted_completion", None)
         if canonical_sha256(unsigned) != self.decision_digest:
             raise ValueError("paid_shadow_decision_digest_mismatch")
         return self

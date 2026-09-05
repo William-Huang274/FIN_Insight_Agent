@@ -123,3 +123,20 @@ R3已知用量在全部命中/全部未命中两端对应约0.0458–0.3647元�
 下一采用配置fin_ia_0_1_3_dell_full_research_routed_v1_0.json：Flash/disabled Lead，Pro/low thinking-enabled Specialists，按可信用途选择既有SDK client、不多调用router；Lead8,000输出可容纳最多12任务的目标/依赖/验收和研究交接（本次2任务只用1,061），专家仍32k/480s/500k输入字符。任务数/覆盖/工具/网页权限不扩；独立财务审查仍需Pro另验。完整研究是该混合配置的首次收敛资格，不是已通过的质量/成本保证。
 
 旧Project OS CLI仅认识历史fixed-pack/R系列decision，不能冒称认识新Agent Server authority。只为现有命令加薄分流：当前schema直接复用现有runner Git/authority校验、现有Pydantic/config绑定与thinking-budget一致性；旧decision继续旧校验，不重签历史失败、不造第二套权威或清除全仓红灯。实际data/MCP/身份preflight仍由Agent Server在模型前做。新authority在实现commit后冻结，随后先跑该CLI和现有runner，失败不越过。
+
+## 全覆盖 A2 已结束：七份新底稿保留，只补 Q8
+
+实现5f398792、authority提交692c952a；execution `20260906-dell-full-research-web-a2`，root run `01a073d0-73d0-7a53-85cc-cd80f85ff455`，thread `d1904951-438d-5f66-b221-69aed21a4631`。真实68次请求均有usage，合计2,999,396 tokens，按模型/当时空闲价估6.625332元，不是账单。Lead Flash7次约0.114303元，其余Pro研究；没有provider传输失败。宿主1935.079s（约32.3分钟，构建90.5s另列）。没有完整研究handoff、独立全案审查或最终报告PASS。
+
+父图收回Q2/Q3/Q4/Q5/Q7/Q9六份。Q8最后534,978审计字符超过本地500k启发式上限，在第十次准备请求前阻断（未发provider）；这不是DeepSeek上下文窗口溢出、余额或网络故障。此前Q8三次内部context哈希错误、一回非法JSON、后续十个引句不匹配导致修订。Q6并行被父图取消，但原生PostgreSQL checkpoint已真实保存 `specialist_submission_accepted`/12claims，按官方JsonPlusSerializer只读导出并通过既有validate_workpaper_state。原父图failure不改，也不把提取底稿说成原父图成功。现在有七份新底稿，加已审Q1，共八个研究面；只缺Q8。Q6/Q8只读导出在 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260906-full-research-a2-recovery/`；没有重启旧任务或改数据库。
+
+内容人工抽看：Q2真实使用了外源客户/媒体，Q4区分部署与未来架构，Q5比较毛利率与经营利润率；但存在因果过强、Q1/Q2时点不齐、部分英文、公司/第三方转述不等于独立客户确认等待复核项。Q5还正确披露电话会源读取故障；不能把本地故障说成公开不披露。原稿和来源保持；这些不是已通过的语义审查。
+
+### 下一最小实施包（先本地反例，再仅Q8真实运行）
+
+1. 内部context绑定从“模型复制64位字符串”移回可信SDK调用上下文；新配置显式启用，旧配置/回放不变。采用[LangChain ToolRuntime的宿主注入原则](https://docs.langchain.com/oss/python/langchain/tools)，provider schema不再要求内部字段，原始返回保持私有审计，FIN仍校验真实call/上下文/权限/数据/引用；模型不能选择别的上下文。
+2. 修提交拒绝反馈的重复源注入：旧原文已经在native历史中，报错时不再额外复制最后一份来源。自己的reasoning、真实工具结果与错误均保留，不做自造摘要或静默截断。
+3. 已知模型预算/供应商失败走现有终止handoff，让LangGraph保存该分支状态、其他独立分支正常结束；意外身份/合同损坏仍抛错。无自动retry/fallback，未完成分支不算覆盖。
+4. 只补Q8的fresh研究任务，已完成七项/Q1不重跑。Q8曾读多公司多期间约291k工具结果字符，534,978是包含自己的思考/两份草稿/SDK元数据的本地计数；为本任务设700k输入字符余量而非再次被任意字符阈值切断，仍32k输出/480s/16模型轮/24工具。此为任务规模修正，不是压缩省token证明；引用错误必须模型自己修，不能弱化validator。预算/新authority在本地反例通过后冻结。
+
+前端等待期间已实际在Z隔离环境安装 `@langchain/react1.0.35` / `@langchain/langgraph-sdk1.10.2` 并测试当前真实Agent Server。新v2 transport两次只握手200、0事件，不能算通过；同官方SDK经典 `threads.joinStream` 两次连回均读到实际specialist/collect/lead/lead_tools事件。采用已测接口，不自造消息总线。UI仍未接入/渲染、未提交或取消任务；正式集成留在研究收口后的下一工作包。

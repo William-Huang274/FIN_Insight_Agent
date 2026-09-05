@@ -231,7 +231,7 @@ class TokenBudgetBasis(_StrictSemanticModel):
         "agentic_message_history_thinking_disabled",
         "agentic_message_history_thinking_enabled",
     ]
-    max_input_characters: int = Field(ge=10_000, le=500_000)
+    max_input_characters: int = Field(ge=10_000, le=1_000_000)
     max_output_tokens: int = Field(ge=1_000, le=32_000)
     timeout_seconds: float = Field(ge=30, le=600)
     max_transport_attempts: Literal[1]
@@ -268,6 +268,9 @@ class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
     strict_provider_schema: Literal[False]
     thinking: Literal["disabled", "enabled"]
     agentic_message_history: bool = False
+    # New native profiles bind execution context on the host, not by asking the
+    # model to copy a hash. Historical model-echo profiles remain replayable.
+    runtime_context_binding: bool = False
     temperature: Literal[0.0]
     max_retries: Literal[0]
     token_budget_basis: dict[NodeRole, TokenBudgetBasis]
@@ -279,6 +282,8 @@ class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
 
     @model_validator(mode="after")
     def validate_node_budgets(self) -> "DeepSeekStructuredAgentConfig":
+        if self.runtime_context_binding and not self.agentic_message_history:
+            raise ValueError("runtime_context_binding_requires_native_history")
         expected = {"planner", "specialist", "counter", "lead"}
         if set(self.token_budget_basis) != expected:
             raise ValueError("deepseek_token_budget_role_set_invalid")
@@ -328,6 +333,27 @@ def _provider_function_schema(
         raise DeepSeekStructuredAgentError("provider_function_parameters_invalid")
     projected["parameters"] = _inline_local_schema_refs(parameters)
     return projected
+
+
+def _native_function_schema(schema: type[BaseModel], *, runtime_context_binding: bool) -> dict[str, Any]:
+    result = _provider_function_schema(schema, strict=False)
+    if runtime_context_binding:
+        parameters = result["parameters"]
+        parameters["properties"].pop("context_digest", None)
+        parameters["required"] = [key for key in parameters.get("required", []) if key != "context_digest"]
+    return result
+
+
+def _bind_native_call_context(call: Mapping[str, Any], context_digest: str) -> dict[str, Any]:
+    """Build a host-bound view, preserving the raw provider message unchanged.
+
+    An unsolicited model context is NOT silently overwritten: existing strict
+    context checks reject a different value. Invalid JSON remains tool feedback.
+    """
+    bound = dict(call)
+    if isinstance(call.get("args"), Mapping):
+        bound["args"] = {"context_digest": context_digest, **call["args"]}
+    return bound
 
 
 def _inline_local_schema_refs(value: Mapping[str, Any]) -> dict[str, Any]:
@@ -1263,6 +1289,7 @@ class DeepSeekStructuredAgentAdapter:
         )
         is_lead = specialist_mode == "agentic_lead"
         persistent_history = specialist_mode in {"agentic_turn", "agentic_lead"} and self._config.agentic_message_history
+        runtime_context_binding = persistent_history and self._config.runtime_context_binding
         if is_lead and not persistent_history:
             raise DeepSeekStructuredAgentError("agentic_lead_requires_native_message_history")
         collaboration_mode = request_value.get("collaboration_context", {}).get("mode")
@@ -1293,6 +1320,18 @@ class DeepSeekStructuredAgentAdapter:
                            "Do not remove citation/claim records while retaining the unsupported statement in prose. "
                            "This is a new revision using artifact handoff, not continuation of the old provider conversation.")
             messages[0] = SystemMessage(content=prompt)
+        if runtime_context_binding:
+            # Only execution binding is host-only; task/claim/source arguments
+            # and every original tool result remain model-owned and validated.
+            semantic_input = {k: v for k, v in semantic_input.items() if k != "context_digest"}
+            messages[0] = SystemMessage(content=messages[0].content.replace(
+                "Copy the supplied context_digest exactly as an opaque binding. ", ""
+            ).replace(
+                "Use the same supplied context_digest for every call in that response. ", ""
+            ).replace("and exact current context_digest", "").replace(
+                "Use the exact current context_digest. ", ""
+            ) + " Execution context is injected by the runtime. Do not supply context_digest in tool arguments.")
+            messages[1] = HumanMessage(content=json.dumps(semantic_input, ensure_ascii=False, separators=(",", ":")))
         if persistent_history and actor in self._agentic_history:
             history = self._agentic_history[actor]
             prior_raw = history[-1]
@@ -1341,7 +1380,8 @@ class DeepSeekStructuredAgentAdapter:
                     "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
                 }:
                     raise DeepSeekStructuredAgentError("specialist_native_tool_results_missing")
-                delta["progress"]["observations"] = semantic_input["progress"]["observations"][-1:]
+                # A rejected terminal creates feedback, not a new source read.
+                # All observations already arrived in exact earlier messages.
                 messages = [*history, ToolMessage(content=json.dumps(delta, ensure_ascii=False),
                     tool_call_id=prior_raw.tool_calls[0]["id"])]
         if persistent_history:
@@ -1429,7 +1469,8 @@ class DeepSeekStructuredAgentAdapter:
                 include_raw=True,
                 strict=self._config.strict_provider_schema,
             ) if not persistent_history else self._chat_models[model_purpose].bind_tools(
-                [_provider_function_schema(model, strict=False) for model in native_tools.values()],
+                [_native_function_schema(model, runtime_context_binding=runtime_context_binding)
+                 for model in native_tools.values()],
                 tool_choice="auto", strict=False,
             )
             try:
@@ -1442,6 +1483,9 @@ class DeepSeekStructuredAgentAdapter:
                     tool_calls = [*getattr(raw_message, "tool_calls", ()), *[
                         {key: call.get(key) for key in ("id", "name", "args", "type")}
                         for call in getattr(raw_message, "invalid_tool_calls", ())]]
+                    if runtime_context_binding:
+                        tool_calls = [_bind_native_call_context(call, request_value["context_digest"])
+                                      for call in tool_calls]
                     valid = bool(tool_calls)
                     ids = [call.get("id") for call in tool_calls]
                     valid = valid and all(isinstance(value, str) and value.strip() for value in ids) and len(ids) == len(set(ids))

@@ -1246,3 +1246,12 @@ def test_financial_fact_request_requires_explicit_period_selection_mode() -> Non
 
     with pytest.raises(ValidationError, match="selection_mode"):
         FinancialFactRequestPayload.model_validate_json(json.dumps(value))
+def test_q8_completion_profile_carries_measured_budget_and_host_context_binding():
+    from pathlib import Path
+    body = (Path(__file__).resolve().parents[1] /
+            "configs/research/fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json").read_text(encoding="utf-8")
+    config = adapter_module.DeepSeekStructuredAgentConfig.model_validate_json(body)
+    assert config.runtime_context_binding is True
+    assert config.token_budget_basis["specialist"].max_input_characters == 700000
+    assert config.profile_for("lead").model == "deepseek-v4-flash"
+    assert config.profile_for("specialist").model == "deepseek-v4-pro"

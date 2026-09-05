@@ -246,7 +246,7 @@ def test_missing_or_misattributed_batch_feedback_stops_before_next_transport(res
         adapter.specialist_model_turn(request)
 
 
-def _terminal_feedback_sdk_graph(*, saved_raw=None):
+def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=False):
     """Offline model responses, actual SDK/ToolNode/history; not paid research."""
     from test_dell_deepseek_structured_agents import _config
     requests, wires, public, ports = [], [], [], _ToolPorts()
@@ -273,6 +273,9 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None):
                 # the unchanged financial acceptance validator.
                 action["claims"][0]["evidence_ids"] = ["E:invented"]
             calls = _batch(request, [action])["tool_calls"]
+        if runtime_context_binding:
+            for call in calls:
+                call["args"].pop("context_digest", None)
         reasoning = (saved_raw["additional_kwargs"]["reasoning_content"]
                      if saved_raw is not None and n == 2 else "Synthetic private reasoning, not evidence.")
         return httpx.Response(200, json={"id": f"offline-terminal-{n}", "object": "chat.completion", "created": 1,
@@ -286,7 +289,8 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None):
         model = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("offline-no-network"),
             http_client=client, max_retries=0, use_responses_api=False, extra_body={"thinking": {"type": "enabled"}})
         adapter = DeepSeekStructuredAgentAdapter(
-            config=_config().model_copy(update={"thinking": "enabled", "agentic_message_history": True}),
+            config=_config().model_copy(update={"thinking": "enabled", "agentic_message_history": True,
+                                               "runtime_context_binding": runtime_context_binding}),
             chat_models={role: model for role in ("planner", "specialist", "counter", "lead")}, audit_sink=public.append)
 
         def model_turn(request):
@@ -316,6 +320,34 @@ def test_terminal_schema_feedback_then_semantic_feedback_then_corrected_submissi
     assert result["phase"] == "specialist_submission_accepted"
     assert (result["notebook"]["model_turn_count"], result["notebook"]["tool_action_count"]) == (4, 2)
     assert result["final_submission"]["claims"][0]["evidence_ids"] == ["E:DELL:Q1"]
+
+
+def test_runtime_context_is_not_a_model_argument_and_quote_guards_still_apply():
+    result, requests, wires = _terminal_feedback_sdk_graph(runtime_context_binding=True)
+    assert result["phase"] == "specialist_submission_accepted" and len(wires) == 4
+    assert "unknown_evidence_id:E:invented" in json.dumps(requests[3]["notebook"]["feedback"])
+    for wire in wires:
+        for tool in wire["tools"]:
+            assert "context_digest" not in tool["function"]["parameters"]["properties"]
+        for message in wire["messages"]:
+            if message["role"] == "assistant":
+                for call in message["tool_calls"]:
+                    assert "context_digest" not in json.loads(call["function"]["arguments"])
+            elif message["role"] in {"user", "tool"}:
+                assert "context_digest" not in json.loads(message["content"])
+    assert result["final_submission"]["context_digest"] == requests[-1]["context_digest"]
+    # Last correction adds only an error/status: the original source messages
+    # (and the model's own reasoning) are still in history, not copied again.
+    assert json.loads(wires[-1]["messages"][-1]["content"])["progress"]["observations"] == []
+    assert any("Synthetic private reasoning" in m.get("reasoning_content", "")
+               for m in wires[-1]["messages"] if m["role"] == "assistant")
+
+
+def test_runtime_binding_does_not_overwrite_an_unsolicited_wrong_context():
+    from sec_agent.agent_runtime.deepseek_structured_agents import _bind_native_call_context
+    raw = {"name": "RequestEvidenceAction", "args": {"context_digest": "a" * 64}}
+    assert _bind_native_call_context(raw, "b" * 64)["args"]["context_digest"] == "a" * 64
+    assert raw == {"name": "RequestEvidenceAction", "args": {"context_digest": "a" * 64}}
 
 
 @pytest.mark.parametrize("terminal", ["submission", "handoff"])

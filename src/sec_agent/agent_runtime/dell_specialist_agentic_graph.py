@@ -753,7 +753,7 @@ class SpecialistHumanReviewHandoff(_StrictModel):
     source_route_catalog_digest: str = Field(pattern=_DIGEST_PATTERN)
     inventory_snapshot_digest: str = Field(pattern=_DIGEST_PATTERN)
     notebook_digest: str = Field(pattern=_DIGEST_PATTERN)
-    trigger: Literal["model_request", "model_turn_ceiling", "tool_action_ceiling"]
+    trigger: Literal["model_request", "model_turn_ceiling", "tool_action_ceiling", "model_execution_failure"]
     reason_code: str = Field(min_length=1, max_length=240)
     continuation_authorized: Literal[False] = False
     required_resume_authority: Literal[
@@ -1288,7 +1288,21 @@ def build_dell_specialist_agentic_state_graph(
         request = _model_request(state=state, notebook=notebook)
         try:
             raw = dependencies.model_turn(request)
-        except Exception:
+        except Exception as exc:
+            # A known failed model operation is a terminal task outcome, not a
+            # reason to cancel unrelated LangGraph Send workers. No retry and
+            # no partial model response is promoted; native state is retained.
+            from .deepseek_structured_agents import DeepSeekStructuredAgentError
+            if isinstance(exc, DeepSeekStructuredAgentError) and str(exc) in {
+                "deepseek_specialist_input_character_limit_exceeded",
+                "deepseek_specialist_single_call_failed",
+                "provider_output_truncated_no_partial_promotion",
+                "model_structured_parse_failed",
+            }:
+                return {"tool_results": [], "pending_action": None,
+                        "review_reason": str(exc), "review_trigger": "model_execution_failure",
+                        "notebook": _replace_notebook(notebook, status="human_review_required").model_dump(mode="json"),
+                        "phase": "human_review_required"}
             raise DellSpecialistAgenticGraphError(
                 "specialist_model_turn_failed"
             ) from None
@@ -1854,6 +1868,7 @@ def build_dell_specialist_agentic_state_graph(
             "model_request",
             "model_turn_ceiling",
             "tool_action_ceiling",
+            "model_execution_failure",
         }:
             raise DellSpecialistAgenticGraphError(
                 "specialist_human_review_trigger_invalid"

@@ -1307,3 +1307,20 @@ def test_graph_topology_is_a_real_cycle_not_a_single_step_wrapper() -> None:
     assert ("execute_evidence", "model_decide") in edges
     assert ("execute_finance", "model_decide") in edges
     assert ("validate_submission", "model_decide") in edges
+@pytest.mark.parametrize("code", ["deepseek_specialist_input_character_limit_exceeded",
+                                "deepseek_specialist_single_call_failed",
+                                "provider_output_truncated_no_partial_promotion"])
+def test_known_model_failure_preserves_notebook_in_terminal_handoff(code):
+    from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentError
+    def failed(_request):
+        raise DeepSeekStructuredAgentError(code)
+    def unused(_request):
+        pytest.fail("No data tool should run after a failed model operation")
+    graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+        model_turn=failed, evidence_tool=unused, finance_tool=unused)).compile()
+    result = graph.invoke(_input())
+    assert result["phase"] == "specialist_human_review_handoff_emitted"
+    assert result["final_submission"] is None
+    assert result["human_review_handoff"]["trigger"] == "model_execution_failure"
+    assert result["human_review_handoff"]["reason_code"] == code
+    assert result["human_review_handoff"]["continuation_authorized"] is False

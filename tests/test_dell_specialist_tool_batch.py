@@ -219,6 +219,8 @@ def test_immutable_r6_response_real_mcp_and_sdk_four_result_continuation(monkeyp
     assert [message["tool_call_id"] for message in replies] == [call["id"] for call in raw["tool_calls"]]
     assert [json.loads(call["function"]["arguments"]) for call in prior["tool_calls"]] == [call["args"] for call in raw["tool_calls"]]
     assert all(len(json.loads(message["content"])["result"]["observations"]) == 1 for message in replies)
+    assert sum("current_context" in json.loads(message["content"]) for message in replies) == 1
+    assert json.loads(replies[-1]["content"])["current_context"]["context_digest"] == requests[-1]["context_digest"]
     items = [item for observation in notebook["observations"] for item in observation["content"]]
     assert any(item.get("result_state") == "numeric_fact" for item in items)
     assert any(item.get("result_state") == "reviewed_evidence" for item in items)

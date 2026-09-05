@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / A5_Q1_INDEPENDENT_REVIEW_PASS_BOUNDED / LIVE_LEAD_A2_DEPENDENT_PARALLEL_RESEARCH_BLOCKED_PROVIDER_BALANCE_402 / OWNER_AUTONOMOUS_LOCAL_REPAIR / NO_A3_OR_FULL_PRODUCT_PASS / NO_THINKING_AB_PASS`
+文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / A5_Q1_REVIEW_PASS_BOUNDED / A2_FAILED_IMMUTABLE / OWNER_FUNDED_AND_APPROVED_COST_EXTERNAL_UI_CORRECTION / FULL_PRODUCT_NOT_PASSED`
 
 冻结日期：2026-09-03
 
@@ -15,6 +15,23 @@
 2026-09-05 执行更新（取代本文件历史段落中的未执行状态）：R1 模型前绑定故障已修复；R2 唯一运行到达 DeepSeek，但因 Specialist 顶层 union 函数参数不是 object 被 HTTP 400 拒绝。现已采用标准 Pydantic 对象封装 `{"action": <原封闭动作联合>}`；在 provider adapter 解包后，原 graph、MCP、context 和证据校验合同不变。相关 67 项离线测试通过，含真实 SDK + MockTransport 请求/响应；不代表线上接受或研究质量。R2 保持失败、无底稿、无工具动作；新付费执行需新身份/Owner 授权，不重用 R2、不扩写 K0–K6。详细证据见 `docs/worklog/fin_0_1_3_s3/185_dell_q1_paid_shadow_r2_schema_failure_and_object_envelope_fix.md`。
 
 ## 0. 结论先行
+
+2026-09-06 最新 Owner 决定优先于下方历史阻断：账户已充值，2026-09-05T20:51:09Z只读复验 `is_available=true`；先完成真实 token 成本审计与有证据的优化，再接通/亲测成熟外源，补真实前端交互，继续完整 Dell Q1–Q9（不是固定九个 Agent），最后才补1–2个跨场景新案例。按下列顺序逐包实施，不同时扩写多套工程，不重跑已接受Q1以假充进度。旧A1/A2仍failed，原始证据不改。明细见 `docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md`。
+
+- [x] 离线复算新 Agentic 86请求的 input/output/cache/reasoning、失败与返工分布；费用标为重算估计，不是账单。
+- [x] 现有 SDK audit补缓存/推理用量；每批工具只注入一次新上下文，既有原文/错误反馈/自己的 reasoning原样保留。
+- [x] 使用既有ChatDeepSeek客户端支持配置化用途路由（Flash/Pro、low/high/max）；旧配置保持Pro，不新增router模型/框架，也不自动让Flash接管所有研究。
+- [ ] 同输入、同工具合同做小额真实模型对照；只据证据选Flash适用面，不能以一次JSON成功称完整任务资格通过。
+- [ ] 复用成熟外源搜索/正文抓取/MCP；宿主先亲测检索、读取、来源及时间边界，再交模型。来源分级允许新闻/帖子/自媒体并披露限制，不强制原文变为金融JSON，不自动晋升S2。
+- [ ] 既有Lead动态任务扩大到实际Q1–Q9义务；优先复用已接受Q1及合法源资料；Counter/责任回派/Verifier/报告连通。
+- [ ] 在同Agent Server/Redis/PostgreSQL/LangSmith上接真实任务创建、实时过程、取消/人工介入、运行后追问；前端展示动作、简明理由和证据，不公开原始私有思维链。
+- [ ] 真实Dell全链与产品验收，按失败修复；随后设计1–2新case覆盖长研究、短任务/问答，分别记录质量、token、成本、延迟，不把长程任务开销说成每次问答开销。
+
+### 2026-09-06 成本优化采用边界
+
+本地记录显示新推理输出和反复资格/审查比缓存历史本身更贵；因此不为“省上下文”先迁移整套runtime。采用现有LangChain/LangGraph的模型配置与消息投影办法；OpenAI Responses compaction是供应商能力，不能假设能直接用于DeepSeek Chat API；DeepSeek官方要求带工具时续传完整reasoning_content，不能删除来规避收费。DeepSeek Harness的摘要/原文落盘可借鉴，但当前官方标注developer preview，不直接取代已测runtime。长任务达到真实上下文压力后再资格验证框架原生摘要；摘要是导航/工作记忆，不替代可引用原文，也不跨Agent传私有reasoning。
+
+配置用途路由由可信图节点的purpose/collaboration mode选择同SDK未绑定客户端，普通specialist、Counter、Verifier、repair可分别配置；能力/工具权限及FIN校验不随便宜模型降低。Counter沿用counter预算，Verifier/repair沿用specialist预算；下一真实执行仍需按任务输入/输出更新TokenBudgetBasis。默认不在同一工具事务中切换模型，不能用provider故障自动切便宜模型。是否把低风险查找/短问答交Flash、复杂因果及终审保留Pro，先做同任务质量与总成本对照（包括返工成本）。
 
 2026-09-06 当前结果（取代下方“A2待执行”）：A2真实Lead给Q5/Q6分工，并将两任务依赖到已审查A5底稿；两个独立Specialist并行多轮源阅读。17请求均有终态，15成功/2个HTTP402，已报告900455tokens；LangSmith原始错误为Insufficient Balance，只读余额证实当前key账户is_available=false且余额不足（精确值仅本机保存），非代理。两份原始提交草稿保留但0收集底稿，Lead收敛、跨主题独立审查和完整产品未通过。当前停止新付费调用/无A3，需Owner恢复账户资金；已有反馈修复保持真实工具回放通过而live收敛待验。只增既有audit的安全HTTP状态码记录、27定向测试，不扩工程框架，不以资料引句字段齐全冒充语义PASS。完整事实见S3/189。
 

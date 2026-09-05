@@ -3,6 +3,7 @@
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 
 - 当前总清单：`00_current_master_checklist.md`
+- Dell成本审计→成熟外源→真实交互（当前顺序交付）：`fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md`
 - Dell Q1 多 Agent 审查与责任回派（当前实施包）：`fin_0_1_3_s3/189_dell_agentic_review_and_responsible_repair.md`
 - Dell 单 Specialist R11 运行闭环通过、内容复核未通过：`fin_0_1_3_s3/188_dell_native_tool_batch_correction.md`
 - Dell Q1 3+1 修正与 R4/R5/R6 实测（多工具批次未接通、无底稿、非 thinking A/B PASS）：`fin_0_1_3_s3/187_dell_q1_source_read_correction_and_thinking_comparison.md`

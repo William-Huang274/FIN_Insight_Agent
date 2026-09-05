@@ -246,12 +246,22 @@ class TokenBudgetBasis(_StrictSemanticModel):
         return self
 
 
+ModelPurpose = Literal["planner", "specialist", "counter", "verifier", "lead", "repair"]
+
+
+class DeepSeekModelProfile(_StrictSemanticModel):
+    model: Literal["deepseek-v4-pro", "deepseek-v4-flash"]
+    reasoning_effort: Literal["low", "high", "max"] = "high"
+
+
 class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
     schema_version: Literal[
         "fin_ia_dell_reference_vertical_deepseek_structured_agents_v1_0"
     ]
     provider: Literal["deepseek"]
-    model: Literal["deepseek-v4-pro"]
+    model: Literal["deepseek-v4-pro", "deepseek-v4-flash"]
+    reasoning_effort: Literal["low", "high", "max"] = "high"
+    model_profiles: dict[ModelPurpose, DeepSeekModelProfile] = Field(default_factory=dict)
     base_url: Literal["https://api.deepseek.com"]
     structured_output_method: Literal["function_calling"]
     strict_provider_schema: Literal[False]
@@ -1050,11 +1060,25 @@ def _usage_audit_fields(raw: Any) -> dict[str, Any]:
             "usage_reported": False,
             "usage_extraction_error": str(exc),
         }
+    metadata = getattr(raw, "usage_metadata", None) or {}
+    response_metadata = getattr(raw, "response_metadata", None) or {}
+    provider_usage = response_metadata.get("token_usage") or {}
+    details: dict[str, int | None] = {}
+    for name, value, ceiling in (
+        ("cache_hit_tokens", provider_usage.get("prompt_cache_hit_tokens",
+            (metadata.get("input_token_details") or {}).get("cache_read")), input_tokens),
+        ("reasoning_tokens", (provider_usage.get("completion_tokens_details") or {}).get(
+            "reasoning_tokens", (metadata.get("output_token_details") or {}).get("reasoning")), output_tokens),
+    ):
+        details[name] = value if type(value) is int and 0 <= value <= ceiling else None
+    hit = details["cache_hit_tokens"]
+    details["cache_miss_tokens"] = input_tokens - hit if hit is not None else None
     return {
         "input_tokens": input_tokens,
         "output_tokens": output_tokens,
         "total_tokens": total_tokens,
         "usage_reported": usage_reported,
+        **details,
     }
 
 
@@ -1131,11 +1155,11 @@ class DeepSeekStructuredAgentAdapter:
         self,
         *,
         config: DeepSeekStructuredAgentConfig,
-        chat_models: Mapping[NodeRole, _StructuredOutputCapable],
+        chat_models: Mapping[ModelPurpose, _StructuredOutputCapable],
         audit_sink: ModelCallAuditSink | None = None,
         private_audit_sink: ModelCallAuditSink | None = None,
     ) -> None:
-        expected = {"planner", "specialist", "counter", "lead"}
+        expected = {"planner", "specialist", "counter", "lead"} | set(config.model_profiles)
         if set(chat_models) != expected:
             raise DeepSeekStructuredAgentError("deepseek_chat_model_role_set_invalid")
         self._config = config
@@ -1159,12 +1183,15 @@ class DeepSeekStructuredAgentAdapter:
         reads an environment variable and never records the credential.
         """
 
-        models: dict[NodeRole, _StructuredOutputCapable] = {}
-        for role in ("planner", "specialist", "counter", "lead"):
+        models: dict[ModelPurpose, _StructuredOutputCapable] = {}
+        for purpose in dict.fromkeys(("planner", "specialist", "counter", "lead", *config.model_profiles)):
+            role = "specialist" if purpose in {"verifier", "repair"} else purpose
             basis = config.token_budget_basis[role]
+            profile = config.model_profiles.get(purpose, DeepSeekModelProfile(
+                model=config.model, reasoning_effort=config.reasoning_effort))
             model_class = ReasoningPreservingChatDeepSeek if config.agentic_message_history else ChatDeepSeek
-            models[role] = model_class(
-                model=config.model,
+            models[purpose] = model_class(
+                model=profile.model,
                 api_key=api_key,
                 base_url=config.base_url,
                 temperature=config.temperature,
@@ -1174,6 +1201,7 @@ class DeepSeekStructuredAgentAdapter:
                 streaming=False,
                 use_responses_api=False,
                 extra_body={"thinking": {"type": config.thinking}},
+                **({"reasoning_effort": profile.reasoning_effort} if config.thinking == "enabled" else {}),
             )
         return cls(config=config, chat_models=models, audit_sink=audit_sink,
                    private_audit_sink=private_audit_sink)
@@ -1233,6 +1261,12 @@ class DeepSeekStructuredAgentAdapter:
         if is_lead and not persistent_history:
             raise DeepSeekStructuredAgentError("agentic_lead_requires_native_message_history")
         collaboration_mode = request_value.get("collaboration_context", {}).get("mode")
+        # Trusted graph purpose selects an ordinary unbound ChatDeepSeek client;
+        # no router LLM, retries, provider fallback or cross-agent history sharing.
+        model_purpose = collaboration_mode if (role == "specialist" and
+            collaboration_mode in self._config.model_profiles) else role
+        model_profile = self._config.model_profiles.get(model_purpose, DeepSeekModelProfile(
+            model=self._config.model, reasoning_effort=self._config.reasoning_effort))
         is_reviewer = collaboration_mode in {"counter", "verifier"}
         native_tools = _NATIVE_REVIEW_TOOLS if is_reviewer else _NATIVE_SPECIALIST_TOOLS
         if is_lead:
@@ -1266,6 +1300,9 @@ class DeepSeekStructuredAgentAdapter:
             delta.pop("l0_context", None)
             delta.pop("branch", None)
             delta.pop("task_context", None)  # Immutable handoff already in the exact first message.
+            initial = next((m for m in history if isinstance(m, HumanMessage)), None)
+            if initial is not None and delta.get("collaboration_context") == json.loads(initial.content).get("collaboration_context"):
+                delta.pop("collaboration_context", None)
             if is_lead:
                 for key in ("research_question", "research_as_of", "branch_catalog", "required_branch_ids",
                             "capabilities", "capacity", "workpapers"):
@@ -1276,14 +1313,19 @@ class DeepSeekStructuredAgentAdapter:
                 if [row.get("tool_call_id") for row in results] != [call["id"] for call in prior_calls]:
                     raise DeepSeekStructuredAgentError("specialist_tool_result_call_ids_mismatch")
                 replies = []
-                for row in results:
+                for index, row in enumerate(results):
                     try:
                         content = json.loads(row["content"])
                     except json.JSONDecodeError:
                         content = {"error": row["content"]}
                     content = content if is_lead else _agentic_semantic_value(content)
+                    reply = {"result": content}
+                    # One batch has one next-turn context, not a copy per result.
+                    # Preserve every source/error and native tool_call_id pairing.
+                    if index == len(results) - 1:
+                        reply["current_context"] = delta
                     replies.append(ToolMessage(
-                        content=json.dumps({"result": content, "current_context": delta}, ensure_ascii=False),
+                        content=json.dumps(reply, ensure_ascii=False, separators=(",", ":")),
                         tool_call_id=row["tool_call_id"], name=row.get("name"),
                         status=row.get("status", "success"),
                     ))
@@ -1302,7 +1344,8 @@ class DeepSeekStructuredAgentAdapter:
             semantic_json = json.dumps([_audit_value(m) for m in messages], ensure_ascii=False)
         input_characters = len(semantic_json)
         input_utf8_bytes = len(semantic_json.encode("utf-8"))
-        basis = self._config.token_budget_basis[role]
+        budget_role = "specialist" if model_purpose in {"verifier", "repair"} else model_purpose
+        basis = self._config.token_budget_basis[budget_role]
         if input_characters > basis.max_input_characters:
             self._audit(
                 {
@@ -1341,7 +1384,9 @@ class DeepSeekStructuredAgentAdapter:
                 "request_digest": request_digest,
                 "semantic_input_digest": semantic_input_digest,
                 "provider": self._config.provider,
-                "model": self._config.model,
+                "model": model_profile.model,
+                "model_purpose": model_purpose,
+                "reasoning_effort": model_profile.reasoning_effort if self._config.thinking == "enabled" else None,
                 "structured_output_method": self._config.structured_output_method,
                 "thinking": self._config.thinking,
                 "input_characters": input_characters,
@@ -1371,7 +1416,7 @@ class DeepSeekStructuredAgentAdapter:
                 ),
                 HumanMessage(content=semantic_json),
             ]
-            runnable = self._chat_models[role].with_structured_output(
+            runnable = self._chat_models[model_purpose].with_structured_output(
                 _provider_function_schema(
                     schema,
                     strict=self._config.strict_provider_schema,
@@ -1379,7 +1424,7 @@ class DeepSeekStructuredAgentAdapter:
                 method=self._config.structured_output_method,
                 include_raw=True,
                 strict=self._config.strict_provider_schema,
-            ) if not persistent_history else self._chat_models[role].bind_tools(
+            ) if not persistent_history else self._chat_models[model_purpose].bind_tools(
                 [_provider_function_schema(model, strict=False) for model in native_tools.values()],
                 tool_choice="auto", strict=False,
             )
@@ -1609,10 +1654,7 @@ class DeepSeekStructuredAgentAdapter:
                 "request_digest": request_digest,
                 "semantic_input_digest": semantic_input_digest,
                 "elapsed_ms": round(elapsed_ms, 3),
-                "input_tokens": usage[0],
-                "output_tokens": usage[1],
-                "total_tokens": usage[2],
-                "usage_reported": usage[3],
+                **_usage_audit_fields(envelope["raw"]),
                 "tool_argument_error_count": len(getattr(envelope["raw"], "invalid_tool_calls", ())),
                 **(
                     {"parsed_payload": parsed.model_dump(mode="json")}

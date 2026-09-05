@@ -568,6 +568,41 @@ def test_factory_uses_four_chatdeepseek_clients_without_env_lookup(monkeypatch) 
         assert isinstance(row["api_key"], SecretStr)
 
 
+def test_profile_routing_uses_existing_sdk_clients_and_explicit_effort(monkeypatch):
+    created = []
+
+    class FakeChatDeepSeek:
+        def __init__(self, **kwargs):
+            created.append(kwargs)
+
+    monkeypatch.setattr(adapter_module, "ReasoningPreservingChatDeepSeek", FakeChatDeepSeek)
+    config = adapter_module.DeepSeekStructuredAgentConfig.model_validate({
+        **_config().model_dump(), "agentic_message_history": True, "thinking": "enabled",
+        "model_profiles": {
+            "specialist": {"model": "deepseek-v4-flash", "reasoning_effort": "high"},
+            "verifier": {"model": "deepseek-v4-pro", "reasoning_effort": "high"},
+            "repair": {"model": "deepseek-v4-pro", "reasoning_effort": "low"},
+        },
+    })
+    adapter = DeepSeekStructuredAgentAdapter.from_config(config=config, api_key=SecretStr("offline"))
+    assert len(created) == 6
+    assert created[1]["model"] == "deepseek-v4-flash"
+    assert created[-1]["reasoning_effort"] == "low"
+    assert all(row["max_retries"] == 0 for row in created)
+    assert adapter._chat_models["specialist"] is not adapter._chat_models["verifier"]
+
+
+def test_non_agentic_profile_selection_matches_public_model_record():
+    config = adapter_module.DeepSeekStructuredAgentConfig.model_validate({**_config().model_dump(),
+        "model_profiles": {"planner": {"model": "deepseek-v4-flash", "reasoning_effort": "low"}}})
+    events, models = [], _models()
+    adapter = DeepSeekStructuredAgentAdapter(config=config, chat_models=models, audit_sink=events.append)
+    adapter.planner(_planner_request())
+    assert events[0]["model"] == "deepseek-v4-flash"
+    assert events[0]["model_purpose"] == "planner"
+    assert models["planner"].calls == 1
+
+
 def test_adapter_maps_semantic_payloads_to_host_bound_graph_contracts() -> None:
     models = _models()
     adapter = DeepSeekStructuredAgentAdapter(config=_config(), chat_models=models)
@@ -1113,6 +1148,25 @@ def test_model_call_audit_records_exact_input_raw_usage_and_parse_failure() -> N
     assert failure_events[1]["output_tokens"] == 37
     assert failure_events[1]["total_tokens"] == 138
     assert failure_events[1]["usage_reported"] is True
+
+
+def test_usage_audit_keeps_cache_and_reasoning_counts_without_private_text():
+    raw = AIMessage(content="private-answer", additional_kwargs={"reasoning_content": "private-reasoning"},
+        usage_metadata={"input_tokens": 1000, "output_tokens": 100, "total_tokens": 1100,
+                        "input_token_details": {"cache_read": 800}, "output_token_details": {"reasoning": 70}})
+    fields = adapter_module._usage_audit_fields(raw)
+    assert fields["cache_hit_tokens"] == 800
+    assert fields["cache_miss_tokens"] == 200
+    assert fields["reasoning_tokens"] == 70
+    assert "private" not in json.dumps(fields)
+    assert adapter_module._usage_audit_fields(AIMessage(content=""))["cache_hit_tokens"] is None
+
+
+@pytest.mark.parametrize("value", [-1, True, "800", 1001])
+def test_invalid_cache_detail_is_unknown_not_a_negative_bill(value):
+    raw = AIMessage(content="", usage_metadata={"input_tokens": 1000, "output_tokens": 100, "total_tokens": 1100},
+                    response_metadata={"token_usage": {"prompt_cache_hit_tokens": value}})
+    assert adapter_module._usage_audit_fields(raw)["cache_miss_tokens"] is None
 
 
 def test_input_character_ceiling_blocks_before_provider_transport() -> None:

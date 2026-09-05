@@ -54,7 +54,7 @@
   "deepseek_config_filename": "fin_ia_0_1_3_dell_q1_source_read_corrective_context_v1_0.json",
   "source_read_enabled": true,
   "private_reasoning_audit_authorized": true,
-  "decision_digest": "9a38358ad01ca9a1216df5b57ef7d49f1c2ed5d235680f9243550fac10748627",
+  "decision_digest": "96acea9e4231762e87cc504b15a6777aa74fd49915d3de5893179d7ca2ff06aa",
   "workflow": "workpaper_review_repair",
   "review_scope": {
     "seed_state_relative_path": "20260905-dell-q1-agentic-review-repair-a1/specialist-final-state.private.json",

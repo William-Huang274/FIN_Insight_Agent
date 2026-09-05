@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / S3_NATIVE_TOOL_BATCH_OFFLINE_115_PASS / R4_R5_R6_FAILURES_IMMUTABLE / OWNER_AUTONOMOUS_LOCAL_REPAIR_AND_BOUNDED_FUNCTIONAL_PROGRESSION / NO_WORKPAPER_OR_THINKING_AB_PASS`
+文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / S3_NATIVE_TOOL_BATCH_LIVE_PROVEN / R9_COMPLETE_WORKPAPER_REJECTED_MISSING_EVIDENCE_IDS / TERMINAL_SCHEMA_FEEDBACK_FIX_OFFLINE_86_PASS / OWNER_AUTONOMOUS_LOCAL_REPAIR / NO_ACCEPTED_WORKPAPER_OR_THINKING_AB_PASS`
 
 冻结日期：2026-09-03
 
@@ -15,6 +15,8 @@
 2026-09-05 执行更新（取代本文件历史段落中的未执行状态）：R1 模型前绑定故障已修复；R2 唯一运行到达 DeepSeek，但因 Specialist 顶层 union 函数参数不是 object 被 HTTP 400 拒绝。现已采用标准 Pydantic 对象封装 `{"action": <原封闭动作联合>}`；在 provider adapter 解包后，原 graph、MCP、context 和证据校验合同不变。相关 67 项离线测试通过，含真实 SDK + MockTransport 请求/响应；不代表线上接受或研究质量。R2 保持失败、无底稿、无工具动作；新付费执行需新身份/Owner 授权，不重用 R2、不扩写 K0–K6。详细证据见 `docs/worklog/fin_0_1_3_s3/185_dell_q1_paid_shadow_r2_schema_failure_and_object_envelope_fix.md`。
 
 ## 0. 结论先行
+
+2026-09-05 S3/188 R9 最新：4次真实模型调用、7个数据动作成功，最后22,218tokens（其中15,719reasoning）自然生成完整函数参数，容量纠正已验证。16条claim中第12/14条附了source quote和非S2说明却缺evidence_ids，严格模型正确拒绝；FIN adapter未把字段错误反馈给模型，是新的具体本地接缝问题，不是信息缺口。修复继续复用ToolNode/Pydantic：完整JSON但字段非法的terminal进入原工具反馈，回传loc/type/msg且不回显原参数/私有reasoning；严格引用/权限/终止独立调用要求不变，terminal不走数据MCP且不计数据动作。86项相邻测试通过，真实R9反例只读回放没有变成研究PASS；接着同预算/权限fresh R10一次，不resume旧失败。详见S3/188和RC-S3-118。
 
 2026-09-05 S3/188 最新真实结论：R7 在默认 Docker 地址池耗尽时模型前停止；可选标准 Compose IPAM 后，R8 三服务健康，五次模型调用中四轮接受并成功执行六个数据动作，全部前轮 reasoning/ToolMessage ID 实际续传，多工具问题已验证修复。最终16k输出预算在10,616 reasoning及未完底稿中耗尽，SubmitWorkpaperAction被截断，未形成研究PASS。新任务规模配置为32k联合输出、360k输入chars、480s，其他任务/模型/12轮11动作/权限均不变；24项相邻检查通过，继续fresh R9，不resume失败R8、不扩新框架。此条取代下方批次“仅离线证明”的当前性；详见S3/188与RC-S3-117。
 

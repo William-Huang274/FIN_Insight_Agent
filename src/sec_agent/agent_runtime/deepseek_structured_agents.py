@@ -1319,12 +1319,14 @@ class DeepSeekStructuredAgentAdapter:
                         "SubmitWorkpaperAction", "RequestHumanReviewAction",
                     }:
                         chosen = _NATIVE_SPECIALIST_TOOLS[tool_calls[0]["name"]]
-                        # Keep the existing terminal validation/route; data batches
-                        # validate each call independently inside the ToolNode bridge.
+                        # Keep the existing route for a valid terminal action.
+                        # A complete JSON call with invalid fields must reach
+                        # ToolNode for model-visible validation feedback, not
+                        # abort the provider turn or silently repair its claims.
                         try:
                             decision = chosen.model_validate_json(json.dumps(tool_calls[0]["args"])).model_dump(mode="json")
                         except (ValidationError, TypeError, ValueError):
-                            valid = False
+                            pass
                     envelope = {"raw": raw_message, "parsed": {"action": decision} if valid else None,
                                 "parsing_error": None if valid else ValueError("native_action_tool_calls_invalid")}
             except Exception as exc:

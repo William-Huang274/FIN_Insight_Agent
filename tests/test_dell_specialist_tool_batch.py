@@ -17,12 +17,13 @@ from sec_agent.agent_runtime.dell_specialist_agentic_graph import (
 from sec_agent.agent_runtime.deepseek_structured_agents import (
     DeepSeekStructuredAgentAdapter, ReasoningPreservingChatDeepSeek,
 )
-from test_dell_specialist_agentic_graph import _input, _evidence_action, _finance_action, _ToolPorts
+from test_dell_specialist_agentic_graph import _input, _evidence_action, _finance_action, _submission, _ToolPorts
 
 
 def _batch(request, actions):
     names = {"request_evidence": "RequestEvidenceAction", "request_finance": "RequestFinanceAction",
-             "request_source": "RequestSourceAction", "request_human_review": "RequestHumanReviewAction"}
+             "request_source": "RequestSourceAction", "request_human_review": "RequestHumanReviewAction",
+             "submit_workpaper": "SubmitWorkpaperAction"}
     return {"action": "native_tool_batch", "context_digest": request["context_digest"], "tool_calls": [
         {"id": f"call-{n}", "name": names[action["action"]], "type": "tool_call",
          "args": {**action, "context_digest": request["context_digest"]}} for n, action in enumerate(actions)]}
@@ -227,3 +228,117 @@ def test_missing_or_misattributed_batch_feedback_stops_before_next_transport(res
         request["tool_results"] = [{"tool_call_id": "wrong", "content": "{}"}]
     with pytest.raises(DeepSeekStructuredAgentError, match="specialist_(native_tool_results_missing|tool_result_call_ids_mismatch)"):
         adapter.specialist_model_turn(request)
+
+
+def _terminal_feedback_sdk_graph(*, saved_raw=None):
+    """Offline model responses, actual SDK/ToolNode/history; not paid research."""
+    from test_dell_deepseek_structured_agents import _config
+    requests, wires, public, ports = [], [], [], _ToolPorts()
+
+    def respond(req):
+        wires.append(json.loads(req.content))
+        request, n = requests[-1], len(wires)
+        if n == 1:
+            calls = _batch(request, [_evidence_action()({}), _finance_action()({})])["tool_calls"]
+        else:
+            action = _submission()(request)
+            if n == 2:
+                if saved_raw is not None:
+                    # Replay exact R9 arguments except the new in-memory context
+                    # binding. No original run/resume or artifact mutation.
+                    action = {**deepcopy(saved_raw["tool_calls"][0]["args"]),
+                              "context_digest": request["context_digest"]}
+                else:
+                    action["claims"][0]["evidence_ids"] = []
+            elif saved_raw is not None:
+                action = _handoff(request)
+            elif n == 3:
+                # Schema now valid, but an invented reference must still fail
+                # the unchanged financial acceptance validator.
+                action["claims"][0]["evidence_ids"] = ["E:invented"]
+            calls = _batch(request, [action])["tool_calls"]
+        reasoning = (saved_raw["additional_kwargs"]["reasoning_content"]
+                     if saved_raw is not None and n == 2 else "Synthetic private reasoning, not evidence.")
+        return httpx.Response(200, json={"id": f"offline-terminal-{n}", "object": "chat.completion", "created": 1,
+            "model": "deepseek-v4-pro", "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
+                "role": "assistant", "content": "", "reasoning_content": reasoning,
+                "tool_calls": [{"id": call["id"], "type": "function", "function": {
+                    "name": call["name"], "arguments": json.dumps(call["args"])}} for call in calls]}}],
+            "usage": {"prompt_tokens": 0, "completion_tokens": 0, "total_tokens": 0}})
+
+    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+        model = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("offline-no-network"),
+            http_client=client, max_retries=0, use_responses_api=False, extra_body={"thinking": {"type": "enabled"}})
+        adapter = DeepSeekStructuredAgentAdapter(
+            config=_config().model_copy(update={"thinking": "enabled", "agentic_message_history": True}),
+            chat_models={role: model for role in ("planner", "specialist", "counter", "lead")}, audit_sink=public.append)
+
+        def model_turn(request):
+            requests.append(request)
+            # Explicit scripted qualification: no mock response is model proof.
+            return adapter.specialist_model_turn(request)["action"]
+
+        graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+            model_turn=model_turn, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile()
+        result = graph.invoke(_input(), config={"recursion_limit": 32})
+    assert len(ports.calls) == 2  # Submissions/feedback never dispatch data tools.
+    assert "reasoning_content" not in json.dumps(result) + json.dumps(public)
+    return result, requests, wires
+
+
+def test_terminal_schema_feedback_then_semantic_feedback_then_corrected_submission():
+    result, requests, wires = _terminal_feedback_sdk_graph()
+    assert len(requests) == 4
+    feedback = json.loads(requests[2]["tool_results"][0]["content"])["feedback"][0]
+    assert feedback["owner_layer"] == "agent"
+    assert '"loc": ["claims", 0]' in feedback["message"]
+    assert "reported_fact_requires_evidence" in feedback["message"]
+    assert '"input"' not in feedback["message"] and '"ctx"' not in feedback["message"]
+    wire_feedback = json.loads(wires[2]["messages"][-1]["content"])["result"]
+    assert wire_feedback["feedback"][0] == feedback
+    assert "unknown_evidence_id:E:invented" in json.dumps(requests[3]["notebook"]["feedback"])
+    assert result["phase"] == "specialist_submission_accepted"
+    assert (result["notebook"]["model_turn_count"], result["notebook"]["tool_action_count"]) == (4, 2)
+    assert result["final_submission"]["claims"][0]["evidence_ids"] == ["E:DELL:Q1"]
+
+
+@pytest.mark.parametrize("terminal", ["submission", "handoff"])
+def test_valid_single_terminal_batch_uses_existing_control_route_not_data_port(terminal):
+    ports, requests = _ToolPorts(), []
+
+    def model(request):
+        requests.append(request)
+        if len(requests) == 1:
+            return _batch(request, [_evidence_action()({}), _finance_action()({})])
+        return _batch(request, [_submission()(request) if terminal == "submission" else _handoff(request)])
+
+    graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile()
+    result = graph.invoke(_input(), config={"recursion_limit": 32})
+    assert len(requests) == 2 and len(ports.calls) == 2
+    assert result["notebook"]["tool_action_count"] == 2
+    if terminal == "submission":
+        assert result["phase"] == "specialist_submission_accepted"
+    else:
+        assert result["human_review_handoff"]["trigger"] == "model_request"
+
+
+@pytest.mark.local_data_integration
+def test_immutable_r9_missing_evidence_ids_reach_model_as_field_errors():
+    audit_path = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/"
+                      "20260905-dell-q1-native-tool-batch-enabled-r9/model-context-reasoning.private.jsonl")
+    if not audit_path.exists():
+        pytest.skip("immutable R9 private counterexample unavailable")
+    original = audit_path.read_bytes()
+    raw = json.loads(original.decode("utf-8").splitlines()[-1])["raw_response"]
+    result, requests, wires = _terminal_feedback_sdk_graph(saved_raw=raw)
+    feedback = requests[2]["tool_results"][0]
+    message = json.loads(feedback["content"])["feedback"][0]["message"]
+    assert feedback["status"] == "error"
+    assert '"loc": ["claims", 11]' in message and '"loc": ["claims", 13]' in message
+    assert message.count("reported_fact_requires_evidence") == 2
+    previous_assistant = [m for m in wires[2]["messages"] if m["role"] == "assistant"][-1]
+    assert previous_assistant["reasoning_content"] == raw["additional_kwargs"]["reasoning_content"]
+    assert result["final_submission"] is None  # Counterexample is NOT repaired research proof.
+    assert result["human_review_handoff"]["trigger"] == "model_request"
+    assert audit_path.read_bytes() == original

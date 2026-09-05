@@ -28,6 +28,7 @@ from pydantic import (
     ConfigDict,
     Field,
     TypeAdapter,
+    ValidationError,
     field_validator,
     model_validator,
 )
@@ -1494,8 +1495,9 @@ def build_dell_specialist_agentic_state_graph(
             RequestEvidenceAction, RequestFinanceAction, RequestSourceAction,
             SubmitWorkpaperAction, RequestHumanReviewAction,
         )}
-        terminal_mixed = any(call.name in {"SubmitWorkpaperAction", "RequestHumanReviewAction"}
-                             for call in batch.tool_calls)
+        terminal_mixed = len(batch.tool_calls) > 1 and any(
+            call.name in {"SubmitWorkpaperAction", "RequestHumanReviewAction"}
+            for call in batch.tool_calls)
         l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
         assigned_routes = {row.get("minimum_route_obligation_id")
                            for row in state["task"].get("evidence_requests", ()) if isinstance(row, Mapping)}
@@ -1504,10 +1506,11 @@ def build_dell_specialist_agentic_state_graph(
             call = calls[runtime.tool_call_id]
             before = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
 
-            def reject(code: str, message: str) -> ToolMessage:
-                feedback = _feedback(code, message, owner_layer="runtime",
+            def reject(code: str, message: str, *, agent_error: bool = False) -> ToolMessage:
+                feedback = _feedback(code, message, owner_layer="agent" if agent_error else "runtime",
                     next_actions=("revise_request", "request_human_review"))
                 working["notebook"] = _replace_notebook(before, feedback=(*before.feedback, feedback)).model_dump(mode="json")
+                working["phase"] = "typed_feedback_ready"
                 return ToolMessage(name=call.name, tool_call_id=call.id, status="error",
                     content=json.dumps({"observations": [], "feedback": [feedback.model_dump(mode="json")]}, ensure_ascii=False))
 
@@ -1518,6 +1521,14 @@ def build_dell_specialist_agentic_state_graph(
                 # Validate ORIGINAL args, including extras, not a repaired or
                 # runtime-injected version. Unknown names never reach this tool.
                 action = models[call.name].model_validate_json(json.dumps(call.args, ensure_ascii=False, allow_nan=False))
+            except ValidationError as exc:
+                # Use Pydantic's field locations and errors, never echo raw
+                # arguments/reasoning. The supplied tool schema stays authoritative.
+                errors = exc.errors(include_input=False, include_context=False, include_url=False)
+                details = json.dumps(errors, ensure_ascii=False)
+                return reject("specialist_tool_arguments_invalid",
+                    "Submission/request was not accepted. Correct these fields against the supplied tool schema and resubmit; "
+                    "do not invent references: " + details[:1800], agent_error=True)
             except (ValueError, TypeError):
                 return reject("specialist_tool_arguments_invalid",
                     "Arguments do not match this tool's supplied schema. Correct the action tag, fields and types before retrying.")
@@ -1528,8 +1539,23 @@ def build_dell_specialist_agentic_state_graph(
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")
             if isinstance(action, RequestEvidenceAction) and action.minimum_route_obligation_id not in assigned_routes:
                 return reject("specialist_evidence_route_not_assigned", "This evidence route is outside this Specialist task assignment.")
-            kind = "finance" if isinstance(action, RequestFinanceAction) else "evidence"
             working["pending_action"] = action.model_dump(mode="json")
+            # Terminal calls are control tools, never data-port calls and never
+            # charged as a data action. Reuse the existing acceptance/handoff.
+            if isinstance(action, SubmitWorkpaperAction):
+                working.update(validate_submission(working))
+                after = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
+                accepted = working.get("final_submission") is not None
+                return ToolMessage(name=call.name, tool_call_id=call.id,
+                    status="success" if accepted else "error", content=json.dumps({
+                        "accepted": accepted, "feedback": [item.model_dump(mode="json")
+                            for item in after.feedback[len(before.feedback):]]}, ensure_ascii=False))
+            if isinstance(action, RequestHumanReviewAction):
+                working.update(review_reason=action.blocker_code, review_trigger="model_request",
+                    phase="human_review_required")
+                return ToolMessage(name=call.name, tool_call_id=call.id,
+                    content=json.dumps({"human_review_required": True}))
+            kind = "finance" if isinstance(action, RequestFinanceAction) else "evidence"
             update = execute_tool(working,
                 port=dependencies.finance_tool if kind == "finance" else dependencies.evidence_tool,
                 expected_kind=kind)
@@ -1605,6 +1631,8 @@ def build_dell_specialist_agentic_state_graph(
         return "end" if state.get("final_submission") is not None else "decide"
 
     def route_after_tool(state: DellSpecialistAgenticState) -> str:
+        if state.get("final_submission") is not None:
+            return "end"
         return (
             "human_review"
             if state.get("phase") == "human_review_required"
@@ -1728,7 +1756,7 @@ def build_dell_specialist_agentic_state_graph(
     )
     graph.add_conditional_edges(
         "execute_native_tools", route_after_tool,
-        {"decide": "model_decide", "human_review": "human_review"},
+        {"decide": "model_decide", "human_review": "human_review", "end": END},
     )
     graph.add_conditional_edges(
         "validate_submission",

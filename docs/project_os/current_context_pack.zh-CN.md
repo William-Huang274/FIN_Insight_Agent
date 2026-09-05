@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-05 S3/188 R9 最新（下方旧状态只作历史）：32k容量已自然生成完整 SubmitWorkpaperAction，4次真实调用/180118tokens/398.896s/估费USD0.051430137，3轮已接受/7次数据动作成功。但两条 reported_fact 已附 citation_quotes、却漏 evidence_ids；Pydantic正确拒绝，FIN adapter错误地把可纠正字段错误当成整次解析失败，故R9仍failed且无已接受底稿。已最小修复为现有ToolNode返回准确字段位置，让模型自行修正；86项定向检查通过，包含真实R9反例、SDK下一轮错误反馈、错误引用仍拒绝、正确补交/独立handoff不调用数据工具。旧R9不改不resume；沿用同模型/预算/权限，下一步fresh R10一次功能验证，不新增协议/多Agent/金融PASS。Owner普通修补自主推进要求已写入协作规范。
+
 2026-09-05 S3/188 R8 最新：批次真实跑通（2+2+1+1 个数据工具动作全部成功）；模型自主读 Reviewed/两类SQL/目录/Dell及NVIDIA原文，第二至第五轮原 reasoning 与全部 ToolMessage ID 实际续传。5次模型共244790tokens/389.057s/LangSmith估费USD0.053608037，第四轮后第五轮的16k联合输出上限被10,616 reasoning与未完正文用尽，在SubmitWorkpaperAction引用清单中途截断；原失败保留，无完整底稿。正在按实际规模将新配置改为32k输出/360k输入chars/480s，模型/12轮11动作/权限不变，继续fresh R9功能验证，不重新扩框架。R9尚未创建；旧R8不可resume。
 
 2026-09-05 S3/188 部署更新：R7 镜像构建成功，但创建运行环境时默认 Docker 地址池耗尽；零模型、零项目容器/卷，failed-receipt 保留。已用可选标准 Compose IPAM/--subnet 做小修补，10 项宿主/预算相关测试通过；Windows 路由和全部 Docker 网络已只读核对，10.253.8.0/24 无冲突。未删除网络或改全局代理/daemon。接着用 fresh R8、相同模型/任务/数据/预算完成尚未发生的真实功能验证；多工具代码的 115 项离线结论不变。

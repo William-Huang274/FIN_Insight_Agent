@@ -1,6 +1,6 @@
 # S3/188 — 原生多工具响应修补与后续功能验证
 
-状态：批次修补及 115 项定向检查通过；下一步 fresh 真实功能运行。R4/R5/R6 失败结论不改，不宣称研究 PASS。
+状态：原生批次已获 R8/R9 真实证明；R9 完整底稿漏两个引用字段而失败，terminal 参数错误反馈已修复并过86项定向检查，下一步fresh R10一次。历次失败不改，尚无被接受的底稿/金融研究PASS。
 
 ## 本轮范围与 Owner 授权
 
@@ -61,3 +61,20 @@ R7 implementation=9541c03ee371577b530c44de3abd81d6c818c934，authority HEAD=6fce
 这属于 Owner 最新授权下基于反例的本地配置修补；接着 fresh R9 做一次功能验证，部署用另一个经核对的私有 /24，既有R8服务可停止减内存但不删除。完整多Agent和正式报告仍未到交付点。
 
 容量配置及相邻的 source-read/预算/launcher 检查：**24 passed in 37.12s**。旧16k配置和原authority保持不变；Dockerfile仅末尾复制新配置，不触发锁依赖层变化。R8结束服务已停止、全部资源保留；新网段10.253.9.0/24未与现有Windows路由及Docker IPAM冲突。
+
+## R9：完整响应后的两个字段遗漏与本地反馈缺陷
+
+- implementation=b6d2f83399dc5f0e32ba68829e5ac34c27c8d381；authority HEAD=e95ea681732b2dc12d68a8ddf6dcf5bb2afbc289；execution=20260905-dell-q1-native-tool-batch-enabled-r9。project=finsight-dell-q1-paid-6b23ca9bc002，port18159，subnet10.253.9.0/24。BuildKit rp75niqdos77b5w30lvofya8x，Compose build/up104.344s；容器内run420.875s。root/run=01a07158-a63f-7b82-8172-412339fddead，thread=9e40ec5f-8dee-566a-9bdd-4a2c1b1509cd。
+- 4次真实模型调用，已接受3轮；工具批次3+2+2，7个数据动作成功。末轮输入200700chars/63646tokens、输出22218tokens（reasoning15719），finish_reason=tool_calls，1个完整SubmitWorkpaperAction、0 invalid_tool_calls。narrative_markdown为3049字符、16条claims；不是再次截断。
+- 总输入148329、输出31789、总计180118tokens；模型累计398.896s；LangSmith root error，4个LLM span实际成功响应，估费USD0.051430137（不是账单）。完整参数不等于已接受研究，宿主仍failed/final_submission=null。
+- 两个Pydantic错误是claims[11]与claims[13]的reported_fact_requires_evidence。具体为C12_Q2_WORKING_CAPITAL、C14_Q2_CASH_FLOW：原文quotation、passage ID键、非S2权威说明均在，但evidence_ids=[]。正确行为是拒绝提交并返给模型改字段，而非直接structured_parse_failed终止。源SQL/RAG结果不能背这个锅。
+- 原failed-receipt、public audit、private reasoning audit不改；失败后用只读HTTP GET保存原始diagnostic-state-after-failure.private.json。另做了仅内存诊断：将那两个已有quote键作为临时evidence_ids后，既有引用验证返回0错误；未写回、未导出为修正稿、未恢复原运行，也不把此人工诊断算模型PASS。自然输出的内容质量仍须单独检查。
+
+### 具体小修正及验证
+
+1. 只在完整原生JSON工具调用的字段验证失败时，保留原call ID和原args，交给已存在的ToolNode；缺/重复ID、无工具调用、半截JSON和finish_reason=length仍不自动修复/晋升。
+2. Pydantic字段错误以现有ToolMessage/feedback返给模型，附loc/type/msg，不带input/context/url，不泄露私有reasoning。不给模型填evidence_ids，不降低SpecialistClaim或来源校验。
+3. 单独terminal调用复用原validate_submission/human-review控制路由，不发送到数据MCP、不计作数据动作；terminal与读工具混批仍全部拒绝。
+4. 四个相邻测试文件 **86 passed in22.53s**，不是全仓检查。实际SDK+MockTransport+ToolNode中，缺引用字段→字段反馈→模型fixture补出错误引用→语义反馈→正确fixture提交；原R9两处错误原样进入模型下一轮wire，私有reasoning仍完整连续，测试以人为handoff结束，不当真实研究证据。另验证独立terminal、权限、原R6多调用回放及现有source/graph/provider回归。
+
+下一步沿用新容量配置、原DeepSeek V4 Pro thinking enabled、12轮/11数据动作、只读来源权限，fresh R10做一次功能验证。R9估费约5美分，预期同规模或增加一次模型修正；不扩模型节点/工具范围、不开新恢复协议、不无限重试。普通实现问题按Owner要求自行修复和适度验证后推进；实质扩权/删除/明显费用或产品目标变化才暂停。

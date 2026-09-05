@@ -78,7 +78,6 @@ def test_workpaper_capacity_profile_uses_measured_thinking_and_output_needs():
 
 @pytest.mark.parametrize("tool_case", ["valid", "wrong_action_tag"])
 def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire(tool_case):
-    from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentError
     from test_dell_deepseek_structured_agents import _config, _agentic_turn_request, _agentic_action
     wires, private, public = [], [], []
     request = _agentic_turn_request()
@@ -111,8 +110,9 @@ def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire(tool_case):
         chat_models={r: model for r in ("planner", "specialist", "counter", "lead")},
         private_audit_sink=private.append, audit_sink=public.append)
     if tool_case != "valid":
-        with pytest.raises(DeepSeekStructuredAgentError):
-            adapter.specialist_model_turn(request)
+        result = adapter.specialist_model_turn(request)
+        assert result["action"]["action"] == "native_tool_batch"
+        assert result["action"]["tool_calls"][0]["args"]["action"] == "request_finance"
         assert len(wires) == 1 and len(private) == 1
         assert "Synthetic private" not in json.dumps(public)
         return

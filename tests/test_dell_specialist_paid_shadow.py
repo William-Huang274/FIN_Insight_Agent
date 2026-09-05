@@ -216,3 +216,39 @@ def test_full_dell_scope_is_explicit_and_old_two_topic_files_do_not_expand(tmp_p
         with pytest.raises(ValidationError): DellQ1SpecialistPaidShadowAuthority.model_validate_json(encoded)
     else:
         assert len(DellQ1SpecialistPaidShadowAuthority.model_validate_json(encoded).lead_scope.allowed_branch_ids) == 9
+
+
+def test_lead_can_use_non_thinking_native_history_without_changing_worker(tmp_path):
+    body = _lead_authority(tmp_path).model_dump(mode="json", exclude={"decision_digest"})
+    body["lead_scope"]["node_budgets"]["lead"]["reasoning_profile"] = "agentic_message_history_thinking_disabled"
+    authority = DellQ1SpecialistPaidShadowAuthority.model_validate_json(json.dumps({**body, "decision_digest": canonical_sha256(body)}))
+    assert authority.lead_scope.node_budgets["specialist"].reasoning_profile == "agentic_message_history_thinking_enabled"
+
+
+@pytest.mark.parametrize("defect", [None, "config_digest", "profile"])
+def test_current_preflight_delegates_to_existing_runner_not_historical_fixed_pack(tmp_path, monkeypatch, defect):
+    from scripts.eval_multi_agent import run_project_os_full_chain_preflight as entry
+    from scripts.qualification.dell_q1_specialist_paid_shadow import run_once
+    from sec_agent.agent_runtime.dell_specialist_paid_shadow import file_sha256
+    config_dir = tmp_path / "configs/research"
+    config_dir.mkdir(parents=True)
+    config = json.loads((Path(__file__).resolve().parents[1] /
+        "configs/research/fin_ia_0_1_3_dell_full_research_routed_v1_0.json").read_text(encoding="utf-8"))
+    path = config_dir / "routed.json"
+    path.write_text(json.dumps(config), encoding="utf-8")
+    body = _lead_authority(tmp_path).model_dump(mode="json", exclude={"decision_digest"})
+    body.update(deepseek_config_filename="routed.json", deepseek_config_sha256=file_sha256(path))
+    body["lead_scope"]["node_budgets"]["lead"]["reasoning_profile"] = "agentic_message_history_thinking_disabled"
+    if defect == "config_digest": body["deepseek_config_sha256"] = "0" * 64
+    if defect == "profile": body["lead_scope"]["node_budgets"]["lead"]["reasoning_profile"] = "agentic_message_history_thinking_enabled"
+    decision = config_dir / "authority.json"
+    decision.write_text(json.dumps({**body, "decision_digest": canonical_sha256(body)}), encoding="utf-8")
+    seen = []
+    monkeypatch.setattr(entry, "ROOT", tmp_path)
+    monkeypatch.setattr(run_once, "_preflight_git", lambda authority, path: seen.append(path) or "offline-head")
+    if defect:
+        with pytest.raises(ValueError): entry._current_agent_server_preflight(decision)
+    else:
+        result = entry._current_agent_server_preflight(decision)
+        assert result["status"] == "current_agent_server_execution_contract_pass" and not result["full_product_pass"]
+    assert seen == [decision]

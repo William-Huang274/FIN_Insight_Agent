@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-05 S3/189 A3启动失败已定位：0模型，旧canonical regex误把当前合法a3当成不存在的历史A03（0原为optional）；Docker三服务healthy，非网络。已按普通缺陷最小修为精确A03及其规范化变体保留，A02只读/权限不变，51相关检查及真实启动input只读复证；A3原失败保存。下一fresh A4沿用A3相同A2seed/真实finding/32k reviewer容量，完成尚未发生的责任修订。此前A2中文revision2/Verifier自主补查成立、Counter截断仍failed，完整Lead/产品未完成。详见S3/189。以下为历史。
+
 2026-09-05 S3/189 A2最新：原作者已根据A1真实findings完成中文revision2（15claims、AP方向/Q2毛利反证修正、多段逐字表格引用真实通过）。Verifier自主1次source search/2模型轮，抓到GAAP数值与非GAAP归因混用和正文核心数字缺locator；Counter输出恰好24k被截断，故A2整体failed，非网络。5次模型/453655tokens，所有旧失败/已完成稿与review均保留；error checkpoint已只读补存，SHAba87de43547e1f212eea217b62986f3ca74d4a4e53784e3a941b95f1e94b4762。已小修先保存state再判terminal，允许显式新attempt使用error checkpoint中的合法兄弟finding修订、最终仍必须两人fresh review；29定向检查通过。下一A3只修这些真实findings并把reviewer容量24k→32k，不新造规则/框架/重做已核实研究，不把未完成Counter当PASS。动态Lead/全Q1–Q9/产品仍未完成。详见S3/189，以下为历史。
 
 2026-09-05 S3/189 最新：**A1 已真实完成并正确 bounded_handoff，尚非内容PASS。** 两名reviewer并行审查→原作者修订→两名fresh reviewer复审，3角色/5Agent invocations/6真实模型调用、499235tokens、0新增数据动作（继承R11已读来源）；图墙钟871.859s，网络正常。首轮引用覆盖finding，第二轮Counter自主发现应付增加误写吸收现金，二者发现毛利率Q1下降被泛化且遗漏Q2回升。未注入Codex已知问题单；作者仍英文且将部分未挂引用断言移入正文，RC-S3-121 open。原件/模型reasoning/trace保存，run01a071f7-b134-71f1-90cb-e15396284922、port18163。已最小修正引文错误到claim/段号、兼容多个独立exact quotes、同图新授权artifact successor直接责任修订（不resume旧run/不重计旧调用）；115相关检查及真实A1反例/rev2 MCP通过。下一步A2由真实A1 finding驱动作者revision2后fresh review；不加新框架或NLP，动态Lead/全Q1–Q9/Workbench/HITL仍未完成。详见S3/189。以下条目为历史。

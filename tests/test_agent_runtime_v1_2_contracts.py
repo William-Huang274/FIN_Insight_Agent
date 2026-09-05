@@ -1606,6 +1606,19 @@ def test_phantom_a03_normalization_cannot_bypass_identity_guard(label: str) -> N
         _session(runtime_policy_ref=f"policy://paid-successor/{label}")
 
 
+def test_new_scoped_review_attempt_a3_is_not_the_reserved_legacy_a03() -> None:
+    session = _session(session_id="session:dell:q1-review-repair:20260905:a3",
+        runtime_policy_ref="authority://decision:dell:q1-agentic-review-repair:20260905:a3")
+    assert session.session_id.endswith(":a3")
+    # It still cannot mutate/re-authorize the reserved legacy A02 identity.
+    mapped = map_legacy_a02_identity(load_legacy_a02_source_bundle(), imported_at=NOW)
+    with pytest.raises(ValidationError, match="read_only_authority_required|reserved"):
+        create_agent_session_v1_2(**{
+            **mapped.agent_session.model_dump(exclude={"schema_version", "session_digest", "authority_refs"}),
+            "authority_refs": ("authority://decision:dell:q1-agentic-review-repair:20260905:a3",),
+        })
+
+
 @pytest.mark.parametrize(
     ("event_type", "identity"),
     [

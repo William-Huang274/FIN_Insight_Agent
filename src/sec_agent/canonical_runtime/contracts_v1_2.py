@@ -191,7 +191,9 @@ def _parse_aware(value: str, code: str) -> datetime:
 
 
 _PHANTOM_A03_LABEL = re.compile(
-    r"(?<![a-z0-9])a(?:[^a-z0-9]*0)?[^a-z0-9]*3(?![a-z0-9])",
+    # The historical reserved label is A03, not every ordinary third attempt
+    # in an unrelated workflow. Identity spelling never grants paid authority.
+    r"(?<![a-z0-9])a[^a-z0-9]*0[^a-z0-9]*3(?![a-z0-9])",
     re.IGNORECASE,
 )
 

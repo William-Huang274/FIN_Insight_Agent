@@ -69,3 +69,9 @@ Verifier**自主新增一次source search、两次模型轮**，定位Q1电话�
 原runner在terminal校验失败之前未导出state，已用只读Agent Server状态补存原错误checkpoint；源文件SHA `ba87de43547e1f212eea217b62986f3ca74d4a4e53784e3a941b95f1e94b4762`，原failed receipt/audit不改。后续小修为先存state再判terminal，防止一个失败子Agent掩盖已完成的兄弟输出。既有导出器提供仅本机/error checkpoint的exclusive-create补存，不成为另一个runtime。
 
 下一A3基于这份真实revision2与Verifier findings，直接责任作者修订后重新由**两个**fresh reviewer审查；不重做R11，不用Codex人工答案修正。读取部分失败制品只在有error checkpoint且有合法已完成review时允许，活跃未完成态不能启动继任；最终放行仍须两角色真实完成。Counter/reviewer容量按已消耗24k并截断的实测调至32k，其余既有任务/工具/权限/预算不变。此是明确根因的一次容量修正，不自动后台无限重跑。语义与正文覆盖尚有待修，RC-S3-121保持open；动态Lead/全产品仍未完成。
+
+### A3 模型前错误与普通修复
+
+A3=`20260905-dell-q1-agentic-review-repair-a3`，implementation96e5e469 / authority HEAD49258f67，port18158。三个服务healthy，但宿主driver在6.547s后模型前failed；provider=0、无Agent Server research run。只读容器重放 `_contracts_and_input` 显示 `canonical_v1_2_phantom_a03_forbidden:session_id`：旧regex把A03中的0写成可选，误杀当前合法新workflow的a3。此非代理、数据、DS额度或模型问题。
+
+最小修复：保留历史A03（含Unicode/分隔符变体）限制，0不再可省略；普通作用域中的第三次attempt不等于不存在的历史A03。全部旧A02只读/身份保留/付费权限隔离仍适用，不靠ID命名获得授权。相关canonical/runner `51 passed in 4.39s`，加真实A3启动输入只读复证（0provider/0writes）。原A3失败不改、不resume。下一fresh A4沿用A3全部内容/容量/seed，实际完成尚未发生的修订与复审；不扩研究或工程范围。

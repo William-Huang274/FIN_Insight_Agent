@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-06 S3/189 A4更新：已产出中文revision3/16claims，双reviewer实际原文读取3次；非法JSON被错误当fatal，父图取消另一reviewer，0份最终review收集，故failed非PASS。SDK invalid_tool_calls现接ToolNode原call ID错误反馈，不手改JSON/观点或丢同批合法read；117定向检查通过，原模型参数/私有reasoning继续保留。下一A5从不可变第三版开始双人fresh review，不再重复作者已完成工作，最终仍需双角色完成并处理重大finding。无新基础框架或权限扩张；完整Lead/产品仍未完成。
+
 2026-09-05 S3/189 A2：中文revision2与多段精确引文纠错成立，Verifier自主补查并给出GAAP/非GAAP因果口径、正文locator两项真实finding；Counter在24k输出截断，整体failed非网络。既有runner先存error state再判terminal，下一新authority消费完成的兄弟finding后责任修订且必须两人fresh review；按实测review输出容量改32k，仍无重试/旧run resume/新runtime。更广动态Lead/产品未完成；29相关检查通过，详见S3/189。
 
 2026-09-05 S3/189 A1 已从实现转为真实证据：6次模型、3角色、5Agent invocation，首轮引用审查→责任修订→复审自主找到AP现金流方向与跨季度毛利反证，正确bounded_handoff，不是金融PASS。下一显式新attempt读取停止的review artifact，直接将实际finding交回原作者并复审；每次仍一次责任修订，不resume/自动重试，不重计旧调用。只补claim级精准引文反馈/独立逐字引用列表/正文不免引注义务，旧共享任务revision对齐Notebook(0..100)，预算由图/authority保留控制。115相关检查含真实失败与rev2 MCP通过；更广动态Lead/专业研究与完整产品仍未完成。详见S3/189；下文“尚未新模型”属历史。

@@ -225,6 +225,25 @@ def test_completed_sibling_findings_survive_error_but_fresh_review_still_require
     assert result["phase"] == "review_cycle_accepted" and len(result["review_results"]) == 2
 
 
+def test_failed_fanout_without_collected_reviews_reuses_author_but_reviews_both_again():
+    state = {"phase": "reviewing", "review_results": [], "review_round": 0, "target_state": _seed()}
+    with pytest.raises(DellWorkpaperReviewError):
+        _review_seed({"values": state, "tasks": []})
+    envelope = {"values": state, "tasks": [{"name": "reviewer", "error": "invalid JSON and sibling cancellation"}]}
+    original, calls = deepcopy(envelope), []
+    def run_child(role, ctx, config):
+        calls.append(role)
+        assert role in {"counter", "verifier"} and not ctx["findings"]
+        return _execute(ctx, _review)
+    expected = SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
+    result = build_dell_workpaper_review_graph(expected_input=expected, seed_state=envelope,
+        run_child=run_child).compile().invoke(expected.model_dump(mode="json"))
+    assert sorted(calls) == ["counter", "verifier"]
+    assert result["phase"] == "review_cycle_accepted" and not result["repair_results"]
+    assert result["target_state"]["final_submission"] == state["target_state"]["final_submission"]
+    assert envelope == original
+
+
 @pytest.mark.local_data_integration
 def test_real_a1_feedback_identifies_only_invalid_claim_quotes_and_preserves_accepted_span():
     from sec_agent.agent_runtime.dell_specialist_agentic_graph import SubmitWorkpaperAction, _submission_errors
@@ -285,13 +304,24 @@ def test_collaboration_rejects_wrong_scope_before_model():
         _execute(ctx, lambda _: pytest.fail("must not call model"))
 
 
-def test_actual_sdk_reviewer_tool_schema_and_actor_history_isolation():
+@pytest.mark.parametrize("defect", ["anchor", "json", pytest.param("a4_json", marks=pytest.mark.local_data_integration)])
+def test_actual_sdk_reviewer_tool_schema_and_actor_history_isolation(defect):
     import httpx
     from pydantic import SecretStr
     from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentAdapter, ReasoningPreservingChatDeepSeek
     from test_dell_deepseek_structured_agents import _config
     wires, private, public = [], [], []
     seed = _seed()
+    saved_arguments = None
+    if defect == "a4_json":
+        path = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/"
+                    "20260905-dell-q1-agentic-review-repair-a4/model-context-reasoning.private.jsonl")
+        if not path.exists():
+            pytest.skip("immutable A4 invalid JSON counterexample unavailable")
+        original = path.read_bytes()
+        saved_arguments = next(row["raw_response"]["invalid_tool_calls"][0]["args"]
+            for row in map(json.loads, original.decode("utf-8").splitlines())
+            if row["raw_response"].get("invalid_tool_calls"))
     def respond(req):
         wire = json.loads(req.content)
         wires.append(wire)
@@ -302,13 +332,16 @@ def test_actual_sdk_reviewer_tool_schema_and_actor_history_isolation():
             last = json.loads(wire["messages"][-1]["content"])
             context = last.get("current_context", last)["context_digest"]
         action = _review({"collaboration_context": collaboration_context(seed, mode), "context_digest": context}, material=True)
-        if len(wire["messages"]) == 2:
+        if len(wire["messages"]) == 2 and defect == "anchor":
             action["findings"][0]["target_quote"] = "invalid first quote to prove real feedback"
+        arguments = json.dumps(action)
+        if len(wire["messages"]) == 2 and defect != "anchor":
+            arguments = saved_arguments or '{"reason_summary":"Bad "embedded quote" here"}'
         return httpx.Response(200, json={"id": f"mock-{len(wires)}", "object": "chat.completion", "created": 1,
             "model": "deepseek-v4-pro", "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
             "role": "assistant", "content": "", "reasoning_content": f"private-{mode}-fixture",
             "tool_calls": [{"id": f"call-{len(wires)}", "type": "function", "function": {
-                "name": "SubmitReviewAction", "arguments": json.dumps(action)}}]}}],
+                "name": "SubmitReviewAction", "arguments": arguments}}]}}],
             "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}})
     model = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("mock-no-network"),
         http_client=httpx.Client(transport=httpx.MockTransport(respond)), max_retries=0, use_responses_api=False,
@@ -324,12 +357,27 @@ def test_actual_sdk_reviewer_tool_schema_and_actor_history_isolation():
             finance_tool=ports.finance, turn_source="provider_model")).compile()
         result = graph.invoke(_child_input(collaboration_context(seed, role)))
         assert result["final_submission"]["action"] == "submit_review"
+        assert not ports.calls and result["notebook"]["tool_action_count"] == 0
     assert len(wires) == 4
     assert all({t["function"]["name"] for t in w["tools"]} == {
         "RequestEvidenceAction", "RequestSourceAction", "RequestFinanceAction", "RequestHumanReviewAction", "SubmitReviewAction"} for w in wires)
     assert len(wires[2]["messages"]) == 2
     assert "private-counter-fixture" in json.dumps(wires[1]) and "private-counter-fixture" not in json.dumps(wires[2:])
     assert "private-" not in json.dumps(public) and "private-verifier-fixture" in json.dumps(private)
+    if defect != "anchor":
+        for wire in (wires[1], wires[3]):
+            failed = next(m for m in wire["messages"] if m["role"] == "assistant")
+            raw_arguments = failed["tool_calls"][0]["function"]["arguments"]
+            with pytest.raises(json.JSONDecodeError) as caught:
+                json.loads(raw_arguments)
+            feedback = json.loads(wire["messages"][-1]["content"])["result"]["feedback"][0]
+            assert feedback["code"] == "specialist_tool_arguments_json_invalid"
+            assert f"column {caught.value.colno}" in feedback["message"]
+            assert wire["messages"][-1]["tool_call_id"] == failed["tool_calls"][0]["id"]
+            assert raw_arguments == (saved_arguments or '{"reason_summary":"Bad "embedded quote" here"}')
+        assert sum(row.get("tool_argument_error_count", 0) for row in public) == 2
+    if saved_arguments is not None:
+        assert path.read_bytes() == original
 
 
 def test_review_authority_requires_explicit_scope_and_three_node_budgets(tmp_path):

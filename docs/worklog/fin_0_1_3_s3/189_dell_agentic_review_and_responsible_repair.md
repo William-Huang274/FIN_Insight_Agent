@@ -75,3 +75,20 @@ Verifier**自主新增一次source search、两次模型轮**，定位Q1电话�
 A3=`20260905-dell-q1-agentic-review-repair-a3`，implementation96e5e469 / authority HEAD49258f67，port18158。三个服务healthy，但宿主driver在6.547s后模型前failed；provider=0、无Agent Server research run。只读容器重放 `_contracts_and_input` 显示 `canonical_v1_2_phantom_a03_forbidden:session_id`：旧regex把A03中的0写成可选，误杀当前合法新workflow的a3。此非代理、数据、DS额度或模型问题。
 
 最小修复：保留历史A03（含Unicode/分隔符变体）限制，0不再可省略；普通作用域中的第三次attempt不等于不存在的历史A03。全部旧A02只读/身份保留/付费权限隔离仍适用，不靠ID命名获得授权。相关canonical/runner `51 passed in 4.39s`，加真实A3启动输入只读复证（0provider/0writes）。原A3失败不改、不resume。下一fresh A4沿用A3全部内容/容量/seed，实际完成尚未发生的修订与复审；不扩研究或工程范围。
+
+## A4：第三版中文稿已保存，审查 JSON 容错缺口（2026-09-06）
+
+A4 implementation `fc0a4b537c51532174ca86ea1abd6361bd93341b`，authority HEAD `e5270951d1827a021fe6ab0a179663c2c3bb73a1`，execution `20260905-dell-q1-agentic-review-repair-a4`。run/root `01a07249-6c78-7ad1-8d1d-64c8dac1601a`，thread `39beb7b5-152d-5625-b5ca-768dd6df22b2`，port18173。构建112.156s、图589.781s；三服务healthy，无网络/代理错误。
+
+- 原作者1轮完成中文revision3，16claims，正文3055字符；已去掉未获引用支持的GAAP毛利率因果断言，并补订单/积压、Q3指引和精确分部值的PASSAGE及逐字引文。它是已通过结构/引用检查的工作稿，不是金融质量或产品PASS。原样导出 `workpaper.agent-original.md`。
+- Verifier自主读1份原文；Counter自主同轮读2份原文，多工具批次确实执行。Counter第2轮提交完整但非法JSON（内部中文引号未转义），SDK `invalid_tool_calls` 已准确记录，finish_reason=tool_calls，不是输出截断。标准parser定位line1/column2998/character2997。
+- FIN adapter却将可纠正参数错误当成fatal模型失败，LangGraph fail-fast取消并行Verifier。Verifier第二次provider响应有usage，但父图未收集其最终review，**0份已收集review**，不能冒充两个审查通过。runner失败为`review_cycle_terminal_missing`；全部失败/私有reasoning/第三版稿仍保存。
+- 真实模型5次（4success+1structured_parse_failed），input/output/total=`401213/76166/477379`tokens，模型累计900.216106s；没有unknown outcome、retry/resume/fallback。新增数据动作3次，非旧观察重复计数。
+
+### 小修与下一真实动作
+
+沿用官方SDK `invalid_tool_calls` 与LangGraph ToolNode/ToolMessage：无效JSON只作为不可执行的关联记录，返回原call ID及准确parser位置，由同一模型纠正后完整补交；不使用json_repair、不改数字/观点、不接受部分JSON。SDK原始回复与reasoning保持原样续传。合法同批read不被丢掉；terminal混批、未知工具、重复/缺失ID、真实截断与引用权限检查仍有效。旧合法action模型序列化不变，不改历史Notebook digest。
+
+现有review seed读取允许已error的fan-out在0份收集review时，仅继承已接受author artifact并从两人fresh review开始；不接受取消或非法JSON中的finding、不重写原件、不重做作者revision3。定向SDK/ToolNode/review三文件`68 passed in 14.39s`，相邻graph/composition/authority/runner四文件`49 passed in 7.76s`（前一命令误写runner测试文件名，0tests，已纠正）。含原A4完整非法参数的离线反例、精确错误回传、下一轮合法补交、跨角色reasoning隔离与无数据副作用。真实A4seed只读验证：revision3/16claims/9observations/0继承findings，SHA `fb89a53387338f9537be1aff0d25fd0afa895ac2c646306c4af236c47e9fc04f`。
+
+下一A5仅对这份稿重新真实审查，必要时最多一次原作者修订和fresh复审；保持32k输出、500k输入chars、480s和现有工具/数据权限。已知JSON失败由正常Agent反馈循环处理，而不是后台重发旧请求。RC-S3-121仍open，动态Lead/全Q1–Q9/Workbench及完整产品仍未完成。本次不创建新框架/runner/依赖，不全仓回归，不删除Docker卷、缓存、数据或旧证据。

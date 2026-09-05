@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 S3/189最新：A4已有中文revision3/16claims，Verifier读1原文、Counter同批读2原文；Counter第2轮非法JSON被FIN adapter当fatal而取消兄弟，整体failed，非网络/截断。5真实模型/477379tokens/3数据动作，0已收集review，不能算PASS。已小修SDK invalid_tool_calls→现有ToolNode精确错误反馈→原模型自纠，原始回复/私有reasoning不改；117定向检查和真实A4反例/seed验证通过。下一fresh A5继承已接受第三版仅从双人审查开始，不重做作者/R11；最多1责任修订后fresh review，权限/32k/500k/480s不变。A4state SHAfb89a53387338f9537be1aff0d25fd0afa895ac2c646306c4af236c47e9fc04f，原失败保留。RC-S3-121/动态Lead/全产品仍未完成，详见S3/189。以下为历史。
+
 2026-09-05 S3/189 A3启动失败已定位：0模型，旧canonical regex误把当前合法a3当成不存在的历史A03（0原为optional）；Docker三服务healthy，非网络。已按普通缺陷最小修为精确A03及其规范化变体保留，A02只读/权限不变，51相关检查及真实启动input只读复证；A3原失败保存。下一fresh A4沿用A3相同A2seed/真实finding/32k reviewer容量，完成尚未发生的责任修订。此前A2中文revision2/Verifier自主补查成立、Counter截断仍failed，完整Lead/产品未完成。详见S3/189。以下为历史。
 
 2026-09-05 S3/189 A2最新：原作者已根据A1真实findings完成中文revision2（15claims、AP方向/Q2毛利反证修正、多段逐字表格引用真实通过）。Verifier自主1次source search/2模型轮，抓到GAAP数值与非GAAP归因混用和正文核心数字缺locator；Counter输出恰好24k被截断，故A2整体failed，非网络。5次模型/453655tokens，所有旧失败/已完成稿与review均保留；error checkpoint已只读补存，SHAba87de43547e1f212eea217b62986f3ca74d4a4e53784e3a941b95f1e94b4762。已小修先保存state再判terminal，允许显式新attempt使用error checkpoint中的合法兄弟finding修订、最终仍必须两人fresh review；29定向检查通过。下一A3只修这些真实findings并把reviewer容量24k→32k，不新造规则/框架/重做已核实研究，不把未完成Counter当PASS。动态Lead/全Q1–Q9/产品仍未完成。详见S3/189，以下为历史。

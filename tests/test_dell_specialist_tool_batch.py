@@ -84,6 +84,7 @@ def test_four_reads_are_one_model_turn_four_actions_with_all_results():
     ("route", "specialist_evidence_route_not_assigned"),
     ("unknown", "not a valid tool"),
     ("duplicate_request", "duplicate_tool_request_blocked_before_dispatch"),
+    ("invalid_json", "specialist_tool_arguments_json_invalid"),
 ])
 def test_one_invalid_call_does_not_discard_three_valid_reads(defect, code):
     def mutate(batch):
@@ -98,6 +99,8 @@ def test_one_invalid_call_does_not_discard_three_valid_reads(defect, code):
             call["args"]["minimum_route_obligation_id"] = "other-branch"
         elif defect == "unknown":
             call["name"] = "UnregisteredTool"
+        elif defect == "invalid_json":
+            call.update(type="invalid_tool_call", args='{"reason_summary":"bad "quote""}')
         else:
             call["name"] = "RequestFinanceAction"
             call["args"] = deepcopy(batch["tool_calls"][1]["args"])

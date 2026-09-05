@@ -105,6 +105,11 @@ def _review_seed(value):
         raise DellWorkpaperReviewError("review_successor_requires_stopped_author_findings")
     target = validate_workpaper_state(state["target_state"])
     rows = [row for row in state["review_results"] if row["round"] == state["review_round"]]
+    if partial_error and not rows:
+        # The accepted author artifact survives a failed review fan-out. A fresh
+        # authorized run starts BOTH reviewers; no cancelled/malformed response
+        # is promoted to a finding and no old conversation is resumed.
+        return target, []
     roles = {r["role"] for r in rows}
     if (not 1 <= len(rows) <= 2 or len(roles) != len(rows) or not roles.issubset({"counter", "verifier"})
         or (not partial_error and len(rows) != 2)):

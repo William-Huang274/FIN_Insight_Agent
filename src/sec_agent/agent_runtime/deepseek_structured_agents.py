@@ -1243,7 +1243,8 @@ class DeepSeekStructuredAgentAdapter:
             delta.pop("branch", None)
             results = request_value.get("tool_results", ())
             if results:
-                if [row.get("tool_call_id") for row in results] != [call["id"] for call in prior_raw.tool_calls]:
+                prior_calls = [*prior_raw.tool_calls, *prior_raw.invalid_tool_calls]
+                if [row.get("tool_call_id") for row in results] != [call["id"] for call in prior_calls]:
                     raise DeepSeekStructuredAgentError("specialist_tool_result_call_ids_mismatch")
                 replies = []
                 for row in results:
@@ -1261,7 +1262,7 @@ class DeepSeekStructuredAgentAdapter:
             else:
                 # Legacy/single terminal action feedback (e.g. a rejected workpaper).
                 # A missing batch result is a runtime fault, never silently use call 0.
-                if len(prior_raw.tool_calls) != 1 or prior_raw.tool_calls[0]["name"] not in {
+                if prior_raw.invalid_tool_calls or len(prior_raw.tool_calls) != 1 or prior_raw.tool_calls[0]["name"] not in {
                     "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
                 }:
                     raise DeepSeekStructuredAgentError("specialist_native_tool_results_missing")
@@ -1357,13 +1358,18 @@ class DeepSeekStructuredAgentAdapter:
                 envelope: Any = runnable.invoke(messages)
                 if persistent_history:
                     raw_message = envelope
-                    tool_calls = getattr(raw_message, "tool_calls", ())
-                    valid = bool(tool_calls) and not getattr(raw_message, "invalid_tool_calls", ())
+                    # LangChain already separates invalid JSON from parsed tool
+                    # calls. Keep it as non-executable, ID-bound feedback work;
+                    # a completed provider response is not a transport failure.
+                    tool_calls = [*getattr(raw_message, "tool_calls", ()), *[
+                        {key: call.get(key) for key in ("id", "name", "args", "type")}
+                        for call in getattr(raw_message, "invalid_tool_calls", ())]]
+                    valid = bool(tool_calls)
                     ids = [call.get("id") for call in tool_calls]
                     valid = valid and all(isinstance(value, str) and value.strip() for value in ids) and len(ids) == len(set(ids))
                     decision = {"action": "native_tool_batch", "context_digest": request_value["context_digest"],
                                 "tool_calls": tool_calls}
-                    if len(tool_calls) == 1 and tool_calls[0].get("name") in {
+                    if len(tool_calls) == 1 and tool_calls[0].get("type") == "tool_call" and tool_calls[0].get("name") in {
                         "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
                     }:
                         chosen = {**_NATIVE_SPECIALIST_TOOLS, **_NATIVE_REVIEW_TOOLS}[tool_calls[0]["name"]]
@@ -1571,6 +1577,7 @@ class DeepSeekStructuredAgentAdapter:
                 "output_tokens": usage[1],
                 "total_tokens": usage[2],
                 "usage_reported": usage[3],
+                "tool_argument_error_count": len(getattr(envelope["raw"], "invalid_tool_calls", ())),
                 **(
                     {"parsed_payload": parsed.model_dump(mode="json")}
                     if persist_model_payloads

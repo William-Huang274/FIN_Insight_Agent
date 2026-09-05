@@ -355,12 +355,23 @@ class SpecialistNativeToolCall(_StrictModel):
     type: Literal["tool_call"] = "tool_call"
 
 
+class SpecialistInvalidToolCall(_StrictModel):
+    """SDK-reported invalid JSON: correlation only, never executable arguments."""
+
+    model_config = ConfigDict(str_strip_whitespace=False)
+
+    id: str = Field(min_length=1, max_length=240)
+    name: str = Field(min_length=1, max_length=120)
+    args: str
+    type: Literal["invalid_tool_call"]
+
+
 class SpecialistNativeToolBatch(_StrictModel):
     """Host-only representation of ONE assistant message, not a provider tool."""
 
     action: Literal["native_tool_batch"] = "native_tool_batch"
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
-    tool_calls: tuple[SpecialistNativeToolCall, ...] = Field(min_length=1, max_length=48)
+    tool_calls: tuple[SpecialistNativeToolCall | SpecialistInvalidToolCall, ...] = Field(min_length=1, max_length=48)
 
     @model_validator(mode="after")
     def validate_call_ids(self) -> "SpecialistNativeToolBatch":
@@ -1650,6 +1661,17 @@ def build_dell_specialist_agentic_state_graph(
             if terminal_mixed:
                 return reject("specialist_terminal_action_must_be_alone",
                     "No tools in this response were dispatched. Submit or request human review as the sole call, after observing pending data results.")
+            if isinstance(call, SpecialistInvalidToolCall):
+                # Do not repair or partially parse a model's assertion. Return
+                # the standard JSON location through its original tool call ID.
+                try:
+                    json.loads(call.args)
+                    detail = "Arguments must be one JSON object matching the supplied schema."
+                except json.JSONDecodeError as exc:
+                    detail = f"{exc.msg}; line {exc.lineno}, column {exc.colno}, character {exc.pos}."
+                return reject("specialist_tool_arguments_json_invalid",
+                    "This call was not dispatched or accepted. Correct the JSON syntax and resubmit the complete arguments; "
+                    "escape quotes inside JSON strings. " + detail, agent_error=True)
             try:
                 # Validate ORIGINAL args, including extras, not a repaired or
                 # runtime-injected version. Unknown names never reach this tool.
@@ -1713,7 +1735,14 @@ def build_dell_specialist_agentic_state_graph(
         node = ToolNode([StructuredTool.from_function(run_tool, name=name,
             description=f"Dispatch validated {name} through the existing read-only MCP port.",
             args_schema=model.model_json_schema()) for name, model in models.items()], handle_tool_errors=False)
-        replies = node.invoke([AIMessage(content="", tool_calls=[call.model_dump(mode="json") for call in batch.tool_calls])],
+        # Invalid calls use an empty dispatch placeholder only to obtain the
+        # ToolNode's normal correlation/runtime injection. run_tool above rejects
+        # them before any domain tool. The original SDK AIMessage is kept intact
+        # by the provider adapter and is what the model sees on its next turn.
+        dispatch_calls = [call.model_dump(mode="json") if isinstance(call, SpecialistNativeToolCall)
+                          else {"id": call.id, "name": call.name, "args": {}, "type": "tool_call"}
+                          for call in batch.tool_calls]
+        replies = node.invoke([AIMessage(content="", tool_calls=dispatch_calls)],
                               config={**config, "max_concurrency": 1})
         return {**working, "pending_action": None,
                 "tool_results": [message.model_dump(mode="json") for message in replies]}

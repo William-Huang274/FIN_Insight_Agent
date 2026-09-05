@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+from ipaddress import ip_network
 from collections.abc import Mapping, Sequence
 from hashlib import sha256
 import json
@@ -24,6 +25,7 @@ from sec_agent.agent_runtime.dell_specialist_paid_shadow import (
 ROOT = Path(__file__).resolve().parents[3]
 BASE_COMPOSE = ROOT / "deploy/dell_agent_server/compose.yaml"
 PAID_OVERLAY = ROOT / "deploy/dell_agent_server/compose.q1-specialist-paid-shadow.yaml"
+NETWORK_OVERLAY = ROOT / "deploy/dell_agent_server/compose.q1-specialist-network.yaml"
 DOTENV_FILE = ROOT / ".env"
 DEFAULT_AUTHORITY = ROOT / "configs/research/evals/fin_ia_0_1_3_s3_dell_q1_specialist_paid_shadow_authority_v1_0.json"
 ATTEMPTS_ROOT = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts")
@@ -164,11 +166,25 @@ def _environment(
     return env
 
 
-def _compose(project: str) -> list[str]:
-    return [
+def _compose(project: str, subnet: str | None = None) -> list[str]:
+    command = [
         "docker", "compose", "--project-name", project, "--env-file", str(DOTENV_FILE),
         "-f", str(BASE_COMPOSE), "-f", str(PAID_OVERLAY),
     ]
+    if subnet is not None:
+        command.extend(["-f", str(NETWORK_OVERLAY)])
+    return command
+
+
+def _private_subnet(value: str) -> str:
+    try:
+        subnet = ip_network(value, strict=True)
+        private_ranges = [ip_network(cidr) for cidr in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16")]
+        if subnet.version != 4 or subnet.prefixlen != 24 or not any(subnet.subnet_of(block) for block in private_ranges):
+            raise ValueError("expected_private_ipv4_24")
+        return str(subnet)
+    except ValueError:
+        raise HostRunError("paid_shadow_subnet_invalid") from None
 
 
 def _containers(project: str, env: Mapping[str, str]) -> list[str]:
@@ -272,13 +288,15 @@ def _wait_healthy(project: str, env: Mapping[str, str]) -> tuple[str, list[str]]
     raise HostRunError("paid_shadow_stack_not_healthy")
 
 
-def run_once(authority_path: Path) -> None:
+def run_once(authority_path: Path, *, subnet: str | None = None) -> None:
     attempt: Path | None = None
     attempt_created = False
     commands: list[dict[str, Any]] = []
     project: str | None = None
     port: int | None = None
     try:
+        if subnet is not None:
+            subnet = _private_subnet(subnet)
         authority_path = authority_path.resolve()
         authority = load_dell_q1_paid_shadow_authority(authority_path)
         if (
@@ -293,12 +311,14 @@ def run_once(authority_path: Path) -> None:
         if attempt.exists() or not _port_free(port):
             raise HostRunError("paid_shadow_attempt_or_port_not_fresh")
         env = _environment(authority, authority_path, attempt, port)
+        if subnet is not None:
+            env["FINSIGHT_DELL_PAID_SHADOW_SUBNET"] = subnet
         if _containers(project, env) or _volume_exists(project, env):
             raise HostRunError("paid_shadow_project_or_volume_not_fresh")
         attempt.parent.mkdir(parents=True, exist_ok=True)
         attempt.mkdir(exist_ok=False)
         attempt_created = True
-        compose = _compose(project)
+        compose = _compose(project, subnet)
         observation, _ = _command([*compose, "config", "--quiet"], env, 120)
         commands.append({"step": "compose_config", **observation})
         observation, _ = _command([*compose, "up", "-d", "--build"], env, 1800)
@@ -355,6 +375,7 @@ def run_once(authority_path: Path) -> None:
                 "file_sha256": file_sha256(authority_path),
             },
             "deployment": {
+                "network_subnet": subnet,
                 "compose_project": project,
                 "host_port": port,
                 "postgres_volume": f"{project}_langgraph-data",
@@ -393,6 +414,7 @@ def run_once(authority_path: Path) -> None:
             "failure_code": str(getattr(exc, "code", "paid_shadow_host_failed")),
             "project": project,
             "port": port,
+            "network_subnet": subnet,
             "commands": commands,
             "container_result": getattr(exc, "parsed", None),
             "no_retry_resume_or_fallback": True,
@@ -411,7 +433,9 @@ def run_once(authority_path: Path) -> None:
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--authority", type=Path, default=DEFAULT_AUTHORITY)
-    run_once(parser.parse_args().authority)
+    parser.add_argument("--subnet", help="Optional, operator-checked unused private IPv4 /24; no global Docker changes.")
+    args = parser.parse_args()
+    run_once(args.authority, subnet=args.subnet)
 
 
 if __name__ == "__main__":

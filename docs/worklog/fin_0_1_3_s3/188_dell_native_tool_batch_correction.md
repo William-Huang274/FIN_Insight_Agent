@@ -32,3 +32,15 @@
 实现只增加宿主内部批次表示及 ToolNode 薄适配，不向模型暴露第六个工具。现有单 terminal/legacy action 路由和 R3 notebook 可读性仍通过。私有 provider 历史仍为本次进程内的 SDK history；没有借此次修改声称生产级 resume 或多 Agent 上下文已完成。
 
 依据：[LangGraph ToolNode/工具执行](https://docs.langchain.com/oss/python/langchain/tools#toolnode)。运行中继续补充真实质量、token、耗时和来源内容检查，不以离线 PASS 替代它们。
+
+## R7 模型前部署失败与最小网络纠正
+
+R7 implementation=9541c03ee371577b530c44de3abd81d6c818c934，authority HEAD=6fce9eec6ddd2f1a7de8ecf67fcf4811679fb0fa。fresh execution=20260905-dell-q1-native-tool-batch-enabled-r7，project=finsight-dell-q1-paid-469df916ca70，port=18178。BuildKit kbll8j7fns3n3w76j3dzpupjc 已成功导出镜像；Compose up 在 183.922 秒返回失败，项目容器/卷未创建，模型调用=0，failed-receipt 原样保留。
+
+网络诊断明确返回 `all predefined address pools have been fully subnetted`；现有 30 个 bridge 网络耗尽默认可用分配池，历史测试网络仍有停止容器引用。这不是本次 wheel TLS 或代理故障。诊断 network create 同样失败，未新增网络。未删除任何网络/容器/卷/镜像；此前仅停止已结束 R6 的三项服务减内存。
+
+采用 Docker Compose 原生可选 IPAM overlay 和 launcher `--subnet`（私有 IPv4 /24），不改全局 daemon、不共享历史网络、不生成网络分配框架。人工只读核对 Windows IPv4 routes 及全部 Docker IPAM 后，10.253.8.0/24 无冲突；新 R8 使用它。CLI 选择写入部署 receipt；默认不传该参数仍沿用既有 Compose 行为。R8 的模型任务、数据、五工具、权限和预算不变，此网络纠正后继续一次尚未发生的真实功能验证，不消耗无限模型重试。
+
+官方依据：[Docker Compose IPAM](https://docs.docker.com/reference/compose-file/networks/#ipam)。
+
+网络/launcher 这次局部修补只重跑相关两文件：**10 passed in 0.51s**，含默认无 overlay、显式私有 /24、拒绝公网/过宽/非网段地址/IPv6；没有重复 115 项、更没有全仓回归。新运行继续走原 start-once runner，未手工复用失败 R7。

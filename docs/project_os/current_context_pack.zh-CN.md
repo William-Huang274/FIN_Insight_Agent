@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-05 S3/188 部署更新：R7 镜像构建成功，但创建运行环境时默认 Docker 地址池耗尽；零模型、零项目容器/卷，failed-receipt 保留。已用可选标准 Compose IPAM/--subnet 做小修补，10 项宿主/预算相关测试通过；Windows 路由和全部 Docker 网络已只读核对，10.253.8.0/24 无冲突。未删除网络或改全局代理/daemon。接着用 fresh R8、相同模型/任务/数据/预算完成尚未发生的真实功能验证；多工具代码的 115 项离线结论不变。
+
 2026-09-05 S3/188 最新：RC-S3-114 的 native tool batch 已用现有 LangGraph ToolNode/ToolMessage 修补；115 项定向检查通过，包含原样 R6 四调用 + 真实本地 MCP + 下一轮 SDK 四份结果/原 reasoning 的离线回放。R4/R5/R6 仍为原失败，当前没有新真实运行或底稿。Owner 最新明确要求此类本地缺陷自主修复、适度验证并继续，不逐补丁求确认；只有权限/删除/显著费用/产品方向等实质变化才暂停。下一步 fresh enabled 功能运行，沿用既有任务/权限/规模预算；不做 thinking A/B，不扩多 Agent，不无限重试。此条取代下方历史“批次尚未实现/不自动 R7”的当前性。
 
 2026-09-05 17:30 最新：3+1 修补已实现并过 213 项定向检查；R4 disabled 一次真实调用被额外 action 外壳拦住，随后用 SDK 原生五工具替换并过 68 项检查。R5 在固定依赖 wheel 下载 TLS EOF 时模型前失败；Owner 明确新增一次网络重试后 R6 同代码构建成功，thinking 返回四个原参数合法的工具请求（Reviewed、quarter_discrete Finance、instant Finance、源文档目录）及实际 reasoning，但 FIN 的一轮单工具限制拒绝整个批次，数据工具仍为 0、无底稿。两次实际模型调用共 22,349 tokens / 79.137 秒 / LangSmith 估费 USD 0.012522780（非账单）；不是成功 thinking A/B、不是研究 PASS。原 R4/R5/R6 失败及私有 reasoning 保留。下一步只处理 SDK/ToolNode 标准多工具结果回传与计数，不能直接开 multi-agent，也不再自动跑 R7。详见 S3/187；以下逐时点旧状态均为历史。

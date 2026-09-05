@@ -1,0 +1,8 @@
+# Optional per-attempt IPAM override when Desktop's default pool is exhausted.
+# Check host routes and existing Docker subnets before choosing this value.
+# This does not share a historical network or change global daemon settings.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${FINSIGHT_DELL_PAID_SHADOW_SUBNET:?supply an unused private IPv4 /24 via --subnet}

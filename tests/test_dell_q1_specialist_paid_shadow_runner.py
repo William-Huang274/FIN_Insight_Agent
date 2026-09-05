@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import ast
+import importlib.util
 from pathlib import Path
 
+import pytest
 import yaml
 
 
@@ -44,3 +46,27 @@ def test_paid_shadow_runner_has_one_start_and_no_resume_cleanup_or_direct_invoke
     combined = host_text + container_text
     assert "docker\", \"down" not in combined
     assert "down\", \"-v" not in combined
+
+
+def _runner_module():
+    spec = importlib.util.spec_from_file_location("q1_host_runner_test", HOST_RUNNER)
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+def test_explicit_subnet_is_optional_compose_ipam_not_a_global_change():
+    module = _runner_module()
+    subnet = module._private_subnet("10.253.8.0/24")
+    assert str(module.NETWORK_OVERLAY) not in module._compose("fixture")
+    assert module._compose("fixture", subnet)[-2:] == ["-f", str(module.NETWORK_OVERLAY)]
+    overlay = yaml.safe_load(module.NETWORK_OVERLAY.read_text(encoding="utf-8"))
+    assert set(overlay) == {"networks"}
+    assert set(overlay["networks"]["default"]) == {"ipam"}
+
+
+@pytest.mark.parametrize("subnet", ["8.8.8.0/24", "10.0.0.0/8", "10.253.8.1/24", "::/0"])
+def test_invalid_operator_subnet_rejected(subnet):
+    module = _runner_module()
+    with pytest.raises(module.HostRunError, match="paid_shadow_subnet_invalid"):
+        module._private_subnet(subnet)

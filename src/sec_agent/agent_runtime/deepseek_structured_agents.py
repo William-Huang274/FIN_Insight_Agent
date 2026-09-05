@@ -14,7 +14,7 @@ from hashlib import sha256
 from pathlib import Path
 import re
 from time import perf_counter
-from typing import Any, Literal, Protocol, TypeVar, cast
+from typing import Any, Literal, Protocol, TypeVar, cast, get_args
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_core.utils.function_calling import convert_to_openai_tool
@@ -29,7 +29,10 @@ from pydantic import (
     model_validator,
 )
 
-from .dell_specialist_agentic_graph import SpecialistAction
+from .dell_specialist_agentic_graph import (
+    RequestEvidenceAction, RequestFinanceAction, RequestHumanReviewAction,
+    RequestSourceAction, SpecialistAction, SubmitWorkpaperAction,
+)
 from .dell_reference_vertical_contracts import (
     BranchWorkpaper,
     CounterDecision,
@@ -429,7 +432,7 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
     ),
 }
 
-_AGENTIC_SPECIALIST_SYSTEM_PROMPT = (
+_SPECIALIST_COMMON_SYSTEM_PROMPT = (
     "You are one autonomous financial-research Specialist operating inside a "
     "bounded tool loop for the supplied DELL branch. Decide only the next action; "
     "do not pretend that a requested tool has already run. Copy the supplied "
@@ -442,8 +445,6 @@ _AGENTIC_SPECIALIST_SYSTEM_PROMPT = (
     "submit an evidence-bound Chinese workpaper, or request human review when the "
     "bounded tools cannot proceed. Treat the disclosed remaining-turn and "
     "remaining-tool counts as hard anomaly ceilings, not completion targets. "
-    "Return one object whose sole top-level field is action, containing the next "
-    "action matching the schema. "
     "reason_summary is a concise decision rationale, never hidden chain-of-thought."
     " When request_source is disclosed, use catalog/search/outline/read to inspect "
     "approved original-context passages; do not keep repeating unproductive searches. "
@@ -456,6 +457,19 @@ _AGENTIC_SPECIALIST_SYSTEM_PROMPT = (
     "Follow the disclosed profile's completion requirements, not legacy route counts. "
     "Do not call an absent query result a public-information gap."
 )
+
+_AGENTIC_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
+    " Return one object whose sole top-level field is action, containing the next action matching the schema."
+)
+_NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
+    " Express every decision using exactly one of the supplied tools. Pass that tool's "
+    "arguments directly, without another action wrapper. To finish, call SubmitWorkpaperAction; "
+    "do not replace the tool call with a plain-text final answer."
+)
+_NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
+    RequestEvidenceAction, RequestFinanceAction, RequestSourceAction,
+    SubmitWorkpaperAction, RequestHumanReviewAction,
+)}
 
 
 def _as_mapping(value: Any, *, label: str) -> dict[str, Any]:
@@ -1158,9 +1172,7 @@ class DeepSeekStructuredAgentAdapter:
         messages = [SystemMessage(content=_AGENTIC_SPECIALIST_SYSTEM_PROMPT if specialist_mode == "agentic_turn" else _SYSTEM_PROMPTS[role]),
                     HumanMessage(content=semantic_json)]
         if persistent_history:
-            messages[0] = SystemMessage(content=_AGENTIC_SPECIALIST_SYSTEM_PROMPT +
-                " Express every decision by calling SpecialistActionPayload exactly once. "
-                "To finish, call it with submit_workpaper; never replace the action tool call with a plain-text final answer.")
+            messages[0] = SystemMessage(content=_NATIVE_SPECIALIST_SYSTEM_PROMPT)
         if persistent_history and actor in self._agentic_history:
             from langchain_core.messages import ToolMessage
             history = self._agentic_history[actor]
@@ -1258,16 +1270,22 @@ class DeepSeekStructuredAgentAdapter:
                 include_raw=True,
                 strict=self._config.strict_provider_schema,
             ) if not persistent_history else self._chat_models[role].bind_tools(
-                [_provider_function_schema(schema, strict=False)], tool_choice="auto", strict=False,
+                [_provider_function_schema(model, strict=False) for model in _NATIVE_SPECIALIST_TOOLS.values()],
+                tool_choice="auto", strict=False,
             )
             try:
                 envelope: Any = runnable.invoke(messages)
                 if persistent_history:
                     raw_message = envelope
                     tool_calls = getattr(raw_message, "tool_calls", ())
-                    valid = len(tool_calls) == 1 and tool_calls[0].get("name") == schema.__name__
+                    chosen = _NATIVE_SPECIALIST_TOOLS.get(tool_calls[0].get("name")) if len(tool_calls) == 1 else None
+                    arguments = tool_calls[0].get("args") if chosen else None
+                    valid = (chosen is not None and isinstance(arguments, Mapping)
+                             and arguments.get("action") in get_args(chosen.model_fields["action"].annotation))
                     envelope = {"raw": raw_message,
-                                "parsed": tool_calls[0]["args"] if valid else None,
+                                # Internal graph union remains unchanged; the SDK
+                                # wire uses ordinary object-root tools, not a union wrapper.
+                                "parsed": {"action": arguments} if valid else None,
                                 "parsing_error": None if valid else ValueError("expected_one_structured_action_tool_call")}
             except Exception as exc:
                 self._audit(

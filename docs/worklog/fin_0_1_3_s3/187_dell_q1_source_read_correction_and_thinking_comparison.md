@@ -37,4 +37,20 @@ Owner 要求先修 3+1，并允许在沙盒内按需读取内外源；引用必�
 
 当前：实现及离线检查完成，真实对照尚未启动。RC-S3-113 的 paid behavior / financial-quality 验证仍待完成；多 Agent、Verifier、前端、HITL、恢复与 RC-S3-107 不在本次完成声明内。
 
+## R4 实际失败与有依据的测试调整（覆盖上段当前性）
+
+- implementation `1d685b0d64ef89d6923756dd3e1577580526d3ac`，authority HEAD `be8c372b...`，execution `20260905-dell-q1-source-read-thinking-disabled-r4`。Docker 三服务 healthy，构建/启动 136.859 秒；无代理/凭据/数据库故障，容器实际 CapDrop=ALL、no-new-privileges=true。
+- 1 次真实 DeepSeek disabled POST 返回成功、8,141 输入 + 463 输出 = **8,604 tokens**，模型 **7.953 秒**。模型提出了有效 Reviewed 检索参数，但以直接工具参数返回，没有再包 `{"action": <参数>}`。宿主因此 `model_structured_payload_invalid`，图停在 model_decide；**0 次实际数据工具动作、0 底稿**。这不是 RAG 或 Agent 研究能力失败，也不是通过。
+- read-only 校验实际返回参数：`RequestEvidenceAction` 原样通过；外加对象层后原 `SpecialistActionPayload` 也通过，无任何内部参数修理。最早可修层是 FIN 对 provider 强加的冗余嵌套封装，不应新增语义宽松 validator。
+- 原失败目录在 Z 盘 `q1_specialist_paid_shadow/attempts/20260905-dell-q1-source-read-thinking-disabled-r4`；失败 receipt、公开用量、私有完整模型响应保留。另新增只读状态捕获 `diagnostic-state-after-failure.private.json`，不 resume 原 run。run/root `01a070ca-62ee-7040-96a1-b7c0e6ba0b25`、thread `e30efa08-61ee-5e58-b918-fe7b62826536`。LangSmith 1 个成功 LLM span、root error，inputs/outputs hidden；估费 **USD 0.003944145**，不是账单。
+- thinking disabled 本次未返回 reasoning_content；私有文件保留其实际消息而不伪造 reasoning。
+
+### 剩余一次额度的调整，已在执行前向 Owner 明确说明
+
+原“同代码两组 thinking 对照”在 R4 格式失败处停止。根据上述精确反例，移除 provider 外层 union 包装，直接使用现有 SDK `bind_tools` 暴露五个独立 object-root 工具；内部图的原五动作 union、参数/权限/来源校验不变，无 JSON 修复猜测、无新 parser/runtime。
+
+修正后 4 个相关测试文件 **68 passed in 12.90s**，包含真实 SDK 两轮 reasoning 连续性、五个 object-root tool schema、错误工具名/动作 tag/多调用拒绝及实际 MCP。不会因此称 R4 成功。
+
+Owner 原先最多两次真实运行的额度剩 1 次，将用于 fresh R5 thinking enabled 功能验证，不自动重跑 R4、不 retry/resume/fallback、不追加第三次。因为工具 wire schema 改变，**R4/R5 不再是严格 thinking A/B，不比较因果优劣**。两次预算上限/任务/数据不变；enabled 仍默认 high。第二次若失败仍保留并停止，若有底稿必须人工核对来源上下文而非只看结构 PASS。
+
 官方依据：[DeepSeek thinking 与工具续接](https://api-docs.deepseek.com/guides/thinking_mode/)、[MCP 工具与结构化响应](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)。两者均由现有 SDK 承载，FIN 仅实现研究来源语义及薄适配。

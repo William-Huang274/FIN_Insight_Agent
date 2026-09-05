@@ -31,7 +31,9 @@
 
 这是一项现有实现的有界修补，不新增 runtime、权限引擎、检索平台或完整 multi-agent 阶段。
 
-当前最小修复代码基线：`0c798101d7a14ff2b228fbc5c52e740ff20e60ae`；R3 authority HEAD=`1b93d9c3f93135631f06df94cb4f759b4c8ba1fd` 已完成一次真实模型验证，研究结果是人工 handoff 而非底稿。下一工作是 S3/186 所列的窄范围数据交付合同纠正；没有 R4 资格。
+2026-09-05 R4 实测补充：disabled 一次真实调用返回 8,604 tokens，但模型直接给出合法工具参数，未包 FIN 额外 action 对象层，因此宿主在第一轮停止。现以 SDK 原生五个独立 object-root 工具替代 provider 外层包装，内部动作合同不变；68 项定向检查通过。已向 Owner 明确将剩余一次额度调整为修正后的 fresh enabled 功能验证，不能再称相同代码 thinking 对照；R4 失败保留、无第三次。详见 S3/187。
+
+以下为 R3 完成时的历史基线，当前授权与状态以上方 S3/187 更新为准：`0c798101d7a14ff2b228fbc5c52e740ff20e60ae`；R3 authority HEAD=`1b93d9c3f93135631f06df94cb4f759b4c8ba1fd` 已完成一次真实模型验证，研究结果是人工 handoff 而非底稿。
 
 本设计把 Dell 单案例纵切从“固定 Planner 一次生成九个任务、宿主预取全部资料、九个一次性 Specialist、一次 Counter、一次 Lead”改成以下目标：
 

@@ -62,7 +62,9 @@ def test_no_silent_truncation_and_search_is_not_citable():
     assert result.items[0]["writer_citable"] is False
 
 
-def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire():
+@pytest.mark.parametrize("tool_case", ["valid", "wrong_name", "wrong_action_tag", "multiple"])
+def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire(tool_case):
+    from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentError
     from test_dell_deepseek_structured_agents import _config, _agentic_turn_request, _agentic_action
     wires, private, public = [], [], []
     request = _agentic_turn_request()
@@ -71,13 +73,19 @@ def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire():
         wire = json.loads(req.content)
         wires.append(wire)
         action = _agentic_action(context_digest=request["context_digest"])
+        if tool_case == "wrong_action_tag":
+            action["action"] = "request_finance"
+        calls = [{"id": f"action-{len(wires)}", "type": "function", "function": {
+            "name": "UnregisteredTool" if tool_case == "wrong_name" else "RequestHumanReviewAction",
+            "arguments": json.dumps(action),
+        }}]
+        if tool_case == "multiple":
+            calls.append({**calls[0], "id": "unexpected-second-call"})
         return httpx.Response(200, json={
             "id": f"mock-{len(wires)}", "object": "chat.completion", "created": 1, "model": "deepseek-v4-pro",
             "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
                 "role": "assistant", "content": "", "reasoning_content": "Synthetic private provider reasoning, not evidence.",
-                "tool_calls": [{"id": f"action-{len(wires)}", "type": "function", "function": {
-                    "name": "SpecialistActionPayload", "arguments": json.dumps({"action": action}),
-                }}],
+                "tool_calls": calls,
             }}], "usage": {"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15},
         })
 
@@ -88,10 +96,18 @@ def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire():
     adapter = DeepSeekStructuredAgentAdapter(config=config,
         chat_models={r: model for r in ("planner", "specialist", "counter", "lead")},
         private_audit_sink=private.append, audit_sink=public.append)
+    if tool_case != "valid":
+        with pytest.raises(DeepSeekStructuredAgentError):
+            adapter.specialist_model_turn(request)
+        assert len(wires) == 1 and len(private) == 1
+        assert "Synthetic private" not in json.dumps(public)
+        return
     adapter.specialist_model_turn(request)
     adapter.specialist_model_turn(request)
     assert len(wires) == 2
     assert all(w["tool_choice"] == "auto" for w in wires)
+    assert all(len(w["tools"]) == 5 for w in wires)
+    assert all(t["function"]["parameters"]["type"] == "object" for t in wires[0]["tools"])
     prior = next(m for m in wires[1]["messages"] if m["role"] == "assistant")
     assert prior["reasoning_content"] == "Synthetic private provider reasoning, not evidence."
     assert wires[1]["messages"][-1]["role"] == "tool"

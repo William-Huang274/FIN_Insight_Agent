@@ -41,7 +41,7 @@
         "quoted original-context citations",
         "counterevidence and limitations"
       ],
-      "schema_burden": "Five actions behind one object-root function; arbitrary prose workpaper plus claim IDs, source IDs, optional exact passage quotes and rationale; up to 12 model decisions, 11 tool actions.",
+      "schema_burden": "Five SDK-native object-root tools, with their direct action arguments and unchanged host validation; arbitrary prose workpaper plus claim IDs, source IDs, exact passage quotes and rationale; up to 12 model decisions, 11 tool actions. This enabled run follows an envelope defect in the disabled run and is a functional qualification, not a controlled thinking comparison.",
       "materiality_quality_risk": "Issuer evidence and finance periods differ. Prioritize S2 for accounting values, disclose source-only orders/backlog/guidance, verify quotation context. Source parsing failures are attributed separately from agent errors, never financial quality PASS.",
       "comparable_run_evidence": "R3 used 6 calls, 73312 input and 2577 output tokens, 43.113 seconds model time, ended without workpaper because of host retrieval and input-contract defects. Source navigation and optional thinking need additional headroom; equal budgets for paired comparison.",
       "reasoning_profile": "agentic_message_history_thinking_enabled",

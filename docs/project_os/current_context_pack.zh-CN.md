@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-05 S3/188 R10 最新：真实字段反馈→模型补交纠正成立，6次模型/7数据动作；353417tokens/模型535.095s/工具1.301s/估费USD0.062461998。第二层仍拒绝quote不匹配和未经本地计算的C13；第七轮准备370397chars被本地360000上限拦住，未发送，原失败保留。现已恢复被observed_tickers过滤误隐藏的既有S2派生指标，真实MCP查到带formula_trace的FCF；澄清现有schema/反馈，无第六工具/新计算器/S2写。新配置500000输入chars，其余容量/模型/权限不变；82定向检查通过，下一步fresh R11一次，不resumeR10。详见S3/188；下方逐时点为历史。完整多Agent/金融内容PASS仍未完成。
+
 2026-09-05 S3/188 R9 最新（下方旧状态只作历史）：32k容量已自然生成完整 SubmitWorkpaperAction，4次真实调用/180118tokens/398.896s/估费USD0.051430137，3轮已接受/7次数据动作成功。但两条 reported_fact 已附 citation_quotes、却漏 evidence_ids；Pydantic正确拒绝，FIN adapter错误地把可纠正字段错误当成整次解析失败，故R9仍failed且无已接受底稿。已最小修复为现有ToolNode返回准确字段位置，让模型自行修正；86项定向检查通过，包含真实R9反例、SDK下一轮错误反馈、错误引用仍拒绝、正确补交/独立handoff不调用数据工具。旧R9不改不resume；沿用同模型/预算/权限，下一步fresh R10一次功能验证，不新增协议/多Agent/金融PASS。Owner普通修补自主推进要求已写入协作规范。
 
 2026-09-05 S3/188 R8 最新：批次真实跑通（2+2+1+1 个数据工具动作全部成功）；模型自主读 Reviewed/两类SQL/目录/Dell及NVIDIA原文，第二至第五轮原 reasoning 与全部 ToolMessage ID 实际续传。5次模型共244790tokens/389.057s/LangSmith估费USD0.053608037，第四轮后第五轮的16k联合输出上限被10,616 reasoning与未完正文用尽，在SubmitWorkpaperAction引用清单中途截断；原失败保留，无完整底稿。正在按实际规模将新配置改为32k输出/360k输入chars/480s，模型/12轮11动作/权限不变，继续fresh R9功能验证，不重新扩框架。R9尚未创建；旧R8不可resume。

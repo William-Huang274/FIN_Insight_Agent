@@ -231,7 +231,8 @@ def _build_graph_input(
         }
         for row in metric_rows
         if isinstance(row, Mapping)
-        and "DELL" in tuple(row.get("observed_tickers") or ())
+        and ("DELL" in tuple(row.get("observed_tickers") or ())
+             or row.get("availability") == "derived_at_query_time")
     )
     if not dell_metrics:
         raise DellSpecialistAgenticCompositionError(
@@ -294,6 +295,15 @@ def _build_graph_input(
         "capability_ref": "capability:dell:financial-fact-query",
         "supported_ticker": "DELL",
         "metrics": dell_metrics,
+        "derived_metric_rule": finance_capability.get("derived_metric_rule"),
+        "calculation_submission_rule": (
+            "Use request_finance for a disclosed derived_at_query_time metric, just as for direct metrics. "
+            "The existing S2 executor checks inputs/period/unit and returns a NumericFact with formula_trace "
+            "or a typed gap. Cite the returned derived fact as numeric_fact and explain its calculated origin "
+            "in authority_note; S2 provenance does not make a measure GAAP or issuer-reported. "
+            "Model-written arithmetic is not a verified calculator result. A generic ad-hoc calculator "
+            "is not exposed in this profile; do not relabel unverified calculations as facts or inference."
+        ),
         "canonical_granularities": finance_capability.get(
             "canonical_granularities"
         ),

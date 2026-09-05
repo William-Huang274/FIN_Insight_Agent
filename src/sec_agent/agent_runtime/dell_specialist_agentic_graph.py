@@ -223,7 +223,12 @@ class SpecialistClaim(_StrictModel):
     fact_ids: tuple[str, ...] = Field(default=(), max_length=48)
     numeric_authority: Literal[
         "authoritative", "non_authoritative", "not_applicable"
-    ] = "not_applicable"
+    ] = Field(default="not_applicable", description=(
+        "Use authoritative only for numeric_fact backed by observed S2 fact_ids (including S2-derived facts); "
+        "use non_authoritative for calculation; use not_applicable for all other kinds. "
+        "For source-reported numbers, describe non-S2/source limitations in authority_note instead. "
+        "This provenance label does not establish GAAP status or semantic correctness."
+    ))
     authority_note: str | None = Field(default=None, min_length=1, max_length=1_000)
     reasoning_summary: str | None = Field(default=None, max_length=4_000)
     citation_quotes: dict[str, str] = Field(default_factory=dict)
@@ -975,7 +980,10 @@ def _submission_errors(
     for claim in submission.claims:
         if claim.kind == "calculation":
             errors.append(
-                f"calculation_requires_canonical_receipt:{claim.claim_id}"
+                f"calculation_requires_canonical_receipt:{claim.claim_id}:"
+                "request_finance_for_a_matching_disclosed_derived_metric_and_cite_the_returned_"
+                "NumericFact_with_formula_trace_and_calculated_origin_note;"
+                "do_not_relabel_unverified_arithmetic_as_fact_or_inference"
             )
         for evidence_id in claim.evidence_ids:
             reference = references.get(evidence_id)

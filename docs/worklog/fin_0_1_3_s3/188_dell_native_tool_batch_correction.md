@@ -1,6 +1,6 @@
 # S3/188 — 原生多工具响应修补与后续功能验证
 
-状态：原生批次已获 R8/R9 真实证明；R9 完整底稿漏两个引用字段而失败，terminal 参数错误反馈已修复并过86项定向检查，下一步fresh R10一次。历次失败不改，尚无被接受的底稿/金融研究PASS。
+状态：R10 已真实证明字段反馈→模型自行修正；随后引用/计算检查仍拒绝，第二次纠错在本地360k字符上限前停止。现有派生财务指标披露和纠错容量已小修，82项相邻检查通过，下一步fresh R11一次。历次失败不改，尚无被接受的底稿/金融研究PASS。
 
 ## 本轮范围与 Owner 授权
 
@@ -78,3 +78,21 @@ R7 implementation=9541c03ee371577b530c44de3abd81d6c818c934，authority HEAD=6fce
 4. 四个相邻测试文件 **86 passed in22.53s**，不是全仓检查。实际SDK+MockTransport+ToolNode中，缺引用字段→字段反馈→模型fixture补出错误引用→语义反馈→正确fixture提交；原R9两处错误原样进入模型下一轮wire，私有reasoning仍完整连续，测试以人为handoff结束，不当真实研究证据。另验证独立terminal、权限、原R6多调用回放及现有source/graph/provider回归。
 
 下一步沿用新容量配置、原DeepSeek V4 Pro thinking enabled、12轮/11数据动作、只读来源权限，fresh R10做一次功能验证。R9估费约5美分，预期同规模或增加一次模型修正；不扩模型节点/工具范围、不开新恢复协议、不无限重试。普通实现问题按Owner要求自行修复和适度验证后推进；实质扩权/删除/明显费用或产品目标变化才暂停。
+
+## R10：真实字段纠错已成立，余下为披露/上下文接缝
+
+implementation=ac4a05232bbb47746bb07436a33513f4ad8d3219，authority HEAD=c928d01e；project=finsight-dell-q1-paid-27a98535f454/port18169/subnet10.253.10.0/24。run/root=01a0717b-e63a-7522-ba55-10507e3343f4，thread=072dd331-df36-50c6-acb7-92b731c928c6。BuildKit rcmzrivwfa0p0tbhf9m59e3vt，Compose build/up253.797s、container run553.625s。三服务healthy，无新网络/代理失败。
+
+6次真实成功模型响应，310392input+43025output=353417tokens，累计535.095s，LangSmith估费USD0.062461998（非账单）。4轮自主选择3+2+1+1，共7个成功数据动作，工具receipt耗时合计1.301s。第五轮完整底稿中部分reported_fact错误使用numeric_authority=non_authoritative；现有Pydantic要求这些kind使用not_applicable并在authority_note说明来源。ToolNode准确返回10个字段位置，**第六轮模型自行修正，字段验证通过**，没有再中止于adapter。
+
+第六轮引用验证仍拒绝：一处quote不是原passage精确子串；C13做了正确的4081−963=3118并绑定S2输入/来源，但未取得本地计算结果。第七轮准备输入370397chars，超过360000本地上限，**未发送第七次模型请求**。保留failed-receipt、审计和只读HTTP导出的diagnostic-state；原R10不resume/不改写。RC-S3-118获得真实闭环验证，但这不是完整研究PASS。
+
+### 最小后续修补：不重造计算器/上下文系统
+
+- 查到现有financial_facts executor和同一个RequestFinanceAction→MCP已支持free_cash_flow、gross_margin、operating_margin。模型能力清单却用observed_tickers过滤，错误排除没有直接存储行的derived_at_query_time指标。现在把这些既有查询能力照实披露，并带原derived_metric_rule；不保证所有期间有结果，仍允许typed gap。
+- 真实只读S2/MCP验证返回Q1 FY2027 FCF=3118000000 USD，附formula_trace、两个输入fact ID、源observations、期间/单位和determinstically-derived来源状态。没有写S2、没有外源补数、没有添加第六工具；数字不是写入模型prompt的答案。
+- 在现有schema字段说明和反馈中解释numeric_authority跨kind用法、如何请求已披露派生指标。只有真正查回的S2派生NumericFact才能按该来源类型引用，并说明计算来源；S2血缘不等于GAAP分类或发行人直接披露。禁止把模型自算结果改名成fact/inference蒙混过关；通用任意公式/非S2计算器仍未接入，不假称已完成。
+- 新配置fin_ia_0_1_3_dell_q1_source_read_corrective_context_v1_0.json只把specialist输入字符上限从360000调为500000，依据R10的370397实际需求和后续纠错余量；32000输出/480s/12轮/11数据动作/同模型thinking/五工具/一次transport不变。不压缩或丢掉原reasoning、历史和资料。[DeepSeek官方模型资料](https://api-docs.deepseek.com/quick_start/pricing/)当前列1M-token上下文；此次撞到的是本地字符限制，不是模型上下文极限。
+- 4文件72 passed in13.50s，现有authority/runner2文件10 passed in0.57s，共82定向检查。历史R6反例测试使用其冻结L0输入（测试内替换current L0构建，不改生产代码/历史文件），保持原参数/context/call ID的精确回放；新披露另做真实MCP专项，不能用current L0假装历史输入。
+
+下一步fresh R11一次同任务功能验证，不重用R10。R9人工内容复核另发现英文草稿未满足中文交付，且误称GAAP free cash flow（原文明确为non-GAAP）；这些是需Verifier/内容复核处理的语义反例，未通过本地引用存在性校验就假称正确，也未把旧答案注入R11。

@@ -76,6 +76,21 @@ def test_workpaper_capacity_profile_uses_measured_thinking_and_output_needs():
     assert "10616" in basis.comparable_run_evidence and "5384" in basis.comparable_run_evidence
 
 
+def test_corrective_context_profile_preserves_history_with_measured_headroom():
+    from pathlib import Path
+    from sec_agent.agent_runtime.deepseek_structured_agents import load_deepseek_structured_agent_config
+    root = Path(__file__).resolve().parents[1] / "configs/research"
+    old = load_deepseek_structured_agent_config(root / "fin_ia_0_1_3_dell_q1_source_read_thinking_workpaper_capacity_v1_0.json")
+    new = load_deepseek_structured_agent_config(root / "fin_ia_0_1_3_dell_q1_source_read_corrective_context_v1_0.json")
+    basis = new.token_budget_basis["specialist"]
+    assert old.token_budget_basis["specialist"].max_input_characters == 360000
+    assert (basis.max_input_characters, basis.max_output_tokens, basis.timeout_seconds) == (500000, 32000, 480)
+    assert new.model == old.model and new.thinking == old.thinking == "enabled"
+    assert "370397" in basis.input_scale and basis.max_transport_attempts == 1
+    assert "not a provider" in basis.input_scale
+    assert "S2 provenance" in SubmitWorkpaperAction.model_json_schema()["$defs"]["SpecialistClaim"]["properties"]["numeric_authority"]["description"] or "provenance label" in SubmitWorkpaperAction.model_json_schema()["$defs"]["SpecialistClaim"]["properties"]["numeric_authority"]["description"]
+
+
 @pytest.mark.parametrize("tool_case", ["valid", "wrong_action_tag"])
 def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire(tool_case):
     from test_dell_deepseek_structured_agents import _config, _agentic_turn_request, _agentic_action

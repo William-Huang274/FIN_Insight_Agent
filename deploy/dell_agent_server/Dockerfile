@@ -57,5 +57,6 @@ RUN uv pip uninstall --system pip setuptools wheel && rm /usr/bin/uv /usr/bin/uv
 # Budget-only successor config is copied after locked dependencies so changing
 # its run capacity does not force another download of the entire runtime.
 COPY configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_workpaper_capacity_v1_0.json /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research/fin_ia_0_1_3_dell_q1_source_read_corrective_context_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 
 WORKDIR /deps/FIN_Insight_Agent

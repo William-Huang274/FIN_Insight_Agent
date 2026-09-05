@@ -95,6 +95,43 @@ def _assert_assets() -> None:
     assert not missing, f"Dell approved data assets missing: {missing}"
 
 
+def test_existing_derived_finance_metrics_are_disclosed_and_real_mcp_returns_formula_trace():
+    _assert_assets()
+    requests = []
+
+    def model(request):
+        requests.append(request)
+        if len(requests) == 1:
+            return {"action": "request_finance", "context_digest": request["context_digest"],
+                "reason_summary": "Offline qualification of existing S2 derived metrics, not model research.",
+                "intent": {"ticker": "DELL", "metric_ids": ["free_cash_flow", "gross_margin", "operating_margin"],
+                    "granularity": "quarter_discrete", "selection_mode": "latest_on_or_before"}}
+        return {"action": "request_human_review", "context_digest": request["context_digest"],
+                "reason_summary": "Offline fixture complete.", "blocker_code": "offline_complete"}
+
+    with open_dell_specialist_scripted_qualification_composition(
+        run_id="test:existing-derived-finance", run_invocation_id="test:existing-derived-finance:1",
+        branch_id="Q1_ISSUER_TRUTH", environment=RUNTIME_ENVIRONMENT, scripted_model_turn=model,
+        source_read_enabled=True) as composition:
+        result = composition.graph.invoke(composition.graph_input.model_dump(mode="json"), config={"recursion_limit": 20})
+    finance = next(row for row in requests[0]["l0_context"]["capability_summaries"]
+                   if row.get("capability_ref") == "capability:dell:financial-fact-query")
+    derived = {row["metric_id"]: row for row in finance["metrics"] if row["availability"] == "derived_at_query_time"}
+    assert set(derived) == {"free_cash_flow", "gross_margin", "operating_margin"}
+    assert all(row["formula"] and not row["observed_period_roles"] for row in derived.values())
+    assert "typed_gap" in finance["derived_metric_rule"] and "does not make" in finance["calculation_submission_rule"]
+    items = result["notebook"]["observations"][0]["content"]
+    facts = [row for row in items if row.get("result_state") == "numeric_fact"]
+    assert {row["metric_id"] for row in facts} == set(derived)
+    fcf = next(row for row in facts if row["metric_id"] == "free_cash_flow" and row["period_end"] == "2026-05-01")
+    assert fcf["value_decimal"] == "3118000000" and fcf["unit"] == "USD"
+    assert fcf["authority_mode"] == "deterministically_derived_numeric_fact"
+    assert fcf["formula_trace"]["input_metrics"] == ["operating_cash_flow", "capital_expenditures"]
+    assert len(fcf["formula_trace"]["input_numeric_fact_ids"]) == 2
+    assert len(fcf["source_observation_ids"]) == 2
+    assert result["notebook"]["tool_action_count"] == 1 and result["final_submission"] is None
+
+
 class _RealMCPFakeModel:
     def __init__(self, *, force_residual_first: bool = False) -> None:
         self.turns = 0

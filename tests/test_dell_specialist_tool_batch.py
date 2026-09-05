@@ -142,7 +142,7 @@ def test_invalid_call_ids_reject_before_dispatch(defect):
 
 
 @pytest.mark.local_data_integration
-def test_immutable_r6_response_real_mcp_and_sdk_four_result_continuation():
+def test_immutable_r6_response_real_mcp_and_sdk_four_result_continuation(monkeypatch):
     from test_dell_deepseek_structured_agents import _config
     from test_dell_specialist_agentic_composition import RUNTIME_ENVIRONMENT, _assert_assets
     from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_receipted_composition
@@ -156,6 +156,17 @@ def test_immutable_r6_response_real_mcp_and_sdk_four_result_continuation():
     old = json.loads(original_bytes[1])["values"]
     raw = audit["raw_response"]
     requests, wires, public = [], [], []
+    # A historical replay uses its historical disclosed capability context,
+    # not a new input digest after current capability disclosure is corrected.
+    import sec_agent.agent_runtime.dell_specialist_agentic_composition as module
+    from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistL0Context
+    build_input = module._build_graph_input
+
+    def historical_input(**kwargs):
+        current = build_input(**kwargs)
+        return current.model_copy(update={"l0_context": SpecialistL0Context.model_validate_json(json.dumps(old["l0_context"]))})
+
+    monkeypatch.setattr(module, "_build_graph_input", historical_input)
 
     def respond(req):
         wires.append(json.loads(req.content))

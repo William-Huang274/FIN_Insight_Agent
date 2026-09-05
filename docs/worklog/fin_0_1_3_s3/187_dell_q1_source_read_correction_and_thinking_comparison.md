@@ -53,4 +53,12 @@ Owner 要求先修 3+1，并允许在沙盒内按需读取内外源；引用必�
 
 Owner 原先最多两次真实运行的额度剩 1 次，将用于 fresh R5 thinking enabled 功能验证，不自动重跑 R4、不 retry/resume/fallback、不追加第三次。因为工具 wire schema 改变，**R4/R5 不再是严格 thinking A/B，不比较因果优劣**。两次预算上限/任务/数据不变；enabled 仍默认 high。第二次若失败仍保留并停止，若有底稿必须人工核对来源上下文而非只看结构 PASS。
 
+## R5 构建失败与 Owner 新增一次重试授权
+
+R5=`20260905-dell-q1-source-read-thinking-enabled-r5` 在 Docker dependency build 阶段失败，未创建 Agent Server run、未调用 DeepSeek、未执行研究工具。固定 `playwright==1.62.0` wheel 从 files.pythonhosted.org 下载时 `tls handshake eof`；Compose build 166.125 秒后失败。原失败目录、receipt 和 BuildKit record `4cxzrgce5nfewc9c5xtzcrp97` 保留。构建工具 uv 的下载重试不是 Agent/model 重试。
+
+随后同一 wheel URL 的宿主 `curl --noproxy '*'` HEAD 与显式 `http://127.0.0.1:6696` 代理 HEAD 均为 HTTP 200；Docker 使用 `http.docker.internal:3128`。这支持网络间歇故障的可能，但不能证明具体是用户代理导致，HEAD 也不证明容器长下载可靠。没有修改代理、证书或版本。
+
+Owner 最新明确说“docker 这个问题应该就是因为梯子或者网络波动，你可以再试一下”。因此追加一次有依据的新启动 R6，取代上段“本轮不追加第三次”的上限：**代码/依赖/任务/数据/预算与 R5 相同**，仅 fresh identity/authority；R5 保持失败，不 resume/覆盖。先成功构建才发生 enabled 模型调用。若再次失败则停，不据此继续无界重试。此追加是 Owner 新授权，不是自动消耗原两次额度。
+
 官方依据：[DeepSeek thinking 与工具续接](https://api-docs.deepseek.com/guides/thinking_mode/)、[MCP 工具与结构化响应](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)。两者均由现有 SDK 承载，FIN 仅实现研究来源语义及薄适配。

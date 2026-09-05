@@ -23,7 +23,6 @@ from pydantic import (
     BaseModel,
     ConfigDict,
     Field,
-    RootModel,
     SecretStr,
     ValidationError,
     field_validator,
@@ -143,10 +142,12 @@ class SpecialistSemanticPayload(_StrictSemanticModel):
     open_gaps: tuple[str, ...] = Field(default=(), max_length=16)
 
 
-class SpecialistActionPayload(RootModel[SpecialistAction]):
-    """Provider envelope for exactly one action in the Specialist inner loop."""
+class SpecialistActionPayload(_StrictSemanticModel):
+    """Object-root tool arguments containing one closed Specialist action."""
 
     model_config = ConfigDict(strict=True, frozen=True)
+
+    action: SpecialistAction
 
 
 class SpecialistActionReplayRecord(_StrictSemanticModel):
@@ -438,7 +439,8 @@ _AGENTIC_SPECIALIST_SYSTEM_PROMPT = (
     "submit an evidence-bound Chinese workpaper, or request human review when the "
     "bounded tools cannot proceed. Treat the disclosed remaining-turn and "
     "remaining-tool counts as hard anomaly ceilings, not completion targets. "
-    "Return only one action matching the schema. "
+    "Return one object whose sole top-level field is action, containing the next "
+    "action matching the schema. "
     "reason_summary is a concise decision rationale, never hidden chain-of-thought."
 )
 
@@ -1472,7 +1474,7 @@ class DeepSeekStructuredAgentAdapter:
             schema=SpecialistActionPayload,
             specialist_mode="agentic_turn",
         )
-        action = payload.root.model_dump(mode="json")
+        action = payload.action.model_dump(mode="json")
         receipt = _receipt(
             role="specialist",
             actor=_required_text(request_value, "agent_id"),
@@ -1522,11 +1524,11 @@ class DeepSeekStructuredAgentAdapter:
             specialist_mode="agentic_turn",
             saved_envelope={
                 "raw": AIMessage(content=""),
-                "parsed": record.parsed_action.model_dump(mode="json"),
+                "parsed": {"action": record.parsed_action.model_dump(mode="json")},
                 "parsing_error": None,
             },
         )
-        action = payload.root.model_dump(mode="json")
+        action = payload.action.model_dump(mode="json")
         receipt = RuntimeReceipt(
             receipt_id=(
                 "host:specialist-replay:"

@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import httpx
 import pytest
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.utils.function_calling import convert_to_openai_tool
@@ -727,7 +728,7 @@ def test_agentic_specialist_turn_uses_sanitized_action_contract_and_receipt() ->
     request = _agentic_turn_request()
     models = _models()
     specialist_model = FakeStructuredModel(
-        _agentic_action(context_digest=request["context_digest"])
+        {"action": _agentic_action(context_digest=request["context_digest"])}
     )
     models["specialist"] = specialist_model
     adapter = DeepSeekStructuredAgentAdapter(
@@ -785,6 +786,109 @@ def test_agentic_specialist_turn_uses_sanitized_action_contract_and_receipt() ->
     assert "notebook_digest" not in model_visible
     assert '"remaining_model_turns":8' in model_visible
     assert '"remaining_tool_actions":12' in model_visible
+
+
+def test_agentic_provider_function_has_object_root_not_union_root() -> None:
+    schema = adapter_module._provider_function_schema(
+        adapter_module.SpecialistActionPayload, strict=False
+    )
+    parameters = schema["parameters"]
+
+    assert parameters.get("type") == "object"
+    assert parameters["required"] == ["action"]
+    assert parameters["additionalProperties"] is False
+    assert set(parameters["properties"]) == {"action"}
+    assert "oneOf" not in parameters and "anyOf" not in parameters
+    assert len(parameters["properties"]["action"]["oneOf"]) == 4
+
+
+def test_agentic_object_envelope_preserves_closed_host_validation() -> None:
+    action = _agentic_action(context_digest=DIGEST_A)
+    valid = adapter_module.SpecialistActionPayload.model_validate_json(
+        json.dumps({"action": action})
+    )
+    assert valid.action.model_dump(mode="json") == action
+    for invalid in (
+        action,
+        {"action": action, "runtime_receipt": {}},
+        {"action": {**action, "action": "request_disclosure"}},
+        {"action": {**action, "context_digest": "invalid"}},
+    ):
+        with pytest.raises(ValidationError):
+            adapter_module.SpecialistActionPayload.model_validate_json(
+                json.dumps(invalid)
+            )
+
+
+def test_agentic_real_sdk_wire_uses_object_envelope_without_network(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("LANGSMITH_TRACING", "false")
+    monkeypatch.setenv("LANGCHAIN_TRACING_V2", "false")
+    request = _agentic_turn_request()
+    action = _agentic_action(context_digest=request["context_digest"])
+    wire_payloads: list[dict[str, Any]] = []
+
+    def respond(wire_request: httpx.Request) -> httpx.Response:
+        payload = json.loads(wire_request.content)
+        wire_payloads.append(payload)
+        function = payload["tools"][0]["function"]
+        assert function["name"] == "SpecialistActionPayload"
+        assert function["parameters"]["type"] == "object"
+        assert function["parameters"]["required"] == ["action"]
+        assert payload["thinking"] == {"type": "disabled"}
+        return httpx.Response(
+            200,
+            json={
+                "id": "offline-specialist-wire-test",
+                "object": "chat.completion",
+                "created": 0,
+                "model": "deepseek-v4-pro",
+                "choices": [{
+                    "index": 0,
+                    "finish_reason": "tool_calls",
+                    "message": {
+                        "role": "assistant",
+                        "content": None,
+                        "tool_calls": [{
+                            "id": "offline-action",
+                            "type": "function",
+                            "function": {
+                                "name": function["name"],
+                                "arguments": json.dumps({"action": action}),
+                            },
+                        }],
+                    },
+                }],
+                "usage": {
+                    "prompt_tokens": 101,
+                    "completion_tokens": 37,
+                    "total_tokens": 138,
+                },
+            },
+        )
+
+    with httpx.Client(transport=httpx.MockTransport(respond)) as client:
+        models = _models()
+        models["specialist"] = adapter_module.ChatDeepSeek(
+            model="deepseek-v4-pro",
+            api_key=SecretStr("dummy-key-no-network-call"),
+            base_url="https://api.deepseek.com",
+            http_client=client,
+            max_retries=0,
+            use_responses_api=False,
+            extra_body={"thinking": {"type": "disabled"}},
+        )
+        adapter = DeepSeekStructuredAgentAdapter(
+            config=_config(), chat_models=models
+        )
+        result = adapter.specialist_model_turn(request)
+
+    assert len(wire_payloads) == 1
+    assert result["action"] == action
+    assert result["runtime_receipt"]["output_digest"] == canonical_sha256(action)
+    assert result["runtime_receipt"]["transport_attempts"] == 1
+    assert result["runtime_receipt"]["total_tokens"] == 138
 
 
 def test_agentic_observation_projection_strips_receipt_and_transport_internals() -> None:

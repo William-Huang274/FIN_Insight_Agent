@@ -21,7 +21,7 @@
 - [x] 离线复算新 Agentic 86请求的 input/output/cache/reasoning、失败与返工分布；费用标为重算估计，不是账单。
 - [x] 现有 SDK audit补缓存/推理用量；每批工具只注入一次新上下文，既有原文/错误反馈/自己的 reasoning原样保留。
 - [x] 使用既有ChatDeepSeek客户端支持配置化用途路由（Flash/Pro、low/high/max）；旧配置保持Pro，不新增router模型/框架，也不自动让Flash接管所有研究。
-- [ ] 同输入、同工具合同做小额真实模型对照；只据证据选Flash适用面，不能以一次JSON成功称完整任务资格通过。
+- [x] 同输入、同工具合同做两次真实model/effort下一步对照：Flash/high 32k思考截断无动作；Pro/low交合法审查，合计估0.747891元。大包终审不转Flash/high；同任务全程路由质量仍未资格通过，详见S3/190。
 - [ ] 复用成熟外源搜索/正文抓取/MCP；宿主先亲测检索、读取、来源及时间边界，再交模型。来源分级允许新闻/帖子/自媒体并披露限制，不强制原文变为金融JSON，不自动晋升S2。
 - [ ] 既有Lead动态任务扩大到实际Q1–Q9义务；优先复用已接受Q1及合法源资料；Counter/责任回派/Verifier/报告连通。
 - [ ] 在同Agent Server/Redis/PostgreSQL/LangSmith上接真实任务创建、实时过程、取消/人工介入、运行后追问；前端展示动作、简明理由和证据，不公开原始私有思维链。

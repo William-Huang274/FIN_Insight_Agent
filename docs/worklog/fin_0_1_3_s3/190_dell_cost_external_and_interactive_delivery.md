@@ -53,3 +53,19 @@ R3已知用量在全部命中/全部未命中两端对应约0.0458–0.3647元�
 下一小额组件对照：从A5 reviewer第一轮的真实输入取样（无自身历史reasoning，含真实待审底稿与原文），保持相同工具schema；各一次Flash/high与Pro/low，对照归档Pro/default-high。这是已知输入的诊断，不是盲评，也不是完整Agent资格。通过现有ChatDeepSeek SDK+LangSmith请求，只观察模型下一步，不执行它提出的工具、不提交研究结果。每个节点TokenBudgetBasis：目的=比较有上下文的金融审查下一步；输入≈6–8万tokens/约19万字符真实源包；输出=合法review或合法工具请求及引用/简明理由；schema负担=现有7类以内原生工具/结构化finding；质量风险=不能漏掉重大财务误用或把可用原文说成缺口；参照=A5已归档4次审查395606tokens；profile=Flash/high或Pro/low；上限32000输出、480s、每profile1请求、不自动retry/resume/fallback，截断/非法参数保持失败；预估约0.5–1.2元合计，保守当前时段上限约1.8元（不含未知provider失败计费）。
 
 先完成这包再接外源，前端/完整Dell/新案例仍未完成，不用本包测试数冒充产品交付。
+
+## 第一包真实对照结果（2026-09-06 05:34–05:40 北京时间）
+
+实现提交 `b4c8c078`，两次均经现有SDK发往DeepSeek，真实LangSmith已查到对应LLM spans；原输入187,815字符，无私有历史reasoning，工具schema相同。输出放在 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/20260906-cost-review-{flash-high,pro-low}-a1/`。`request.json`、`response.private.json`、`outcome.json` 分开保存，旧A5不改，未实际执行模型提出的工具/财务审查准入。
+
+| 对照 | 输入 | 输出（其中reasoning） | 耗时 | 当前价重算 | 结果 |
+|---|---:|---:|---:|---:|---|
+| Flash/high本次 | 66,906 | 32,000（32,000） | 237.435s | 0.244359元 | finish=length，无tool call，失败 |
+| Pro/low本次 | 66,827 | 15,023（13,312） | 166.143s | 0.503532元 | 合法SubmitReviewAction/no_material_finding |
+| Pro/default-high归档首轮 | 66,906 | 19,730（19,435） | 历史异时对照 | 不作配对计费比较 | RequestSourceAction要求看完整Q1电话会 |
+
+本次两者cache_hit均0，输入小差异是provider报告，不擅自修成相同token数。共2请求/180,756tokens，估0.747891元；没有第三次重试。LangSmith IDs：Flash `01a0737e-5413-73c3-b81e-ceac44771da2`；Pro `01a0737f-cae3-7362-9d42-1ffe048aae21`。LangSmith span的success仅指收到供应商响应，Flash项目结果明确为truncated，不能因trace success而伪称成功。
+
+结论：**拒绝把大包金融终审直接切到Flash/high。** 便宜单价不保证便宜完成；Flash在这一输入上思考完上限仍无动作。Pro/low能形成有内容的逐项审查，包含Q1/Q2毛利率、现金流、GAAP/非GAAP、来源权威及反证检查，是可继续验证的候选，不是与Pro/high质量等价证明；两者下一步不同，且只一例、旧high并非同期随机对照。保留Flash在小范围资料选择/短任务的后续候选资格，复杂跨材料判断优先Pro；不继续为同一大包无限增加输出上限。接下去以真工具/真任务的总完成成本（含返工）选择profile。
+
+当前产品增量仍为0份完整Dell报告；工程增量是用量可见、薄用途路由和重复context小修；研究资格新增2次真实模型证据，外源/Multi-Agent全覆盖/实时UI仍未完成。

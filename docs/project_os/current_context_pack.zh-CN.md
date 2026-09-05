@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 S3/190 补充实测（覆盖下段“尚未paid”）：已用相同真实A5审查输入完成2次独立next-action组件对照，共180756tokens/估0.747891CNY：Flash/high 32000输出全是reasoning、finish length、无动作；Pro/low 15023输出含13312reasoning、合法SubmitReview/no_material_finding，但不等于完整审查或与Pro/high等质。LangSmith已实查两个spans；SDK success与任务失败分开。大包终审不直接切Flash，下一成熟外源先宿主实测再接模型；未追加第三次，未运行新完整Dell，详情S3/190。
+
 2026-09-06 S3/190 当前：**Owner已充值并同意完整Dell纠偏；先成本、再成熟外源亲测、再真实交互及全case，新case后置。** 上轮只读余额20:51:09Z available=true，旧A2仍failed。离线审计86请求/83有usage/5,160,061tokens；77有cache明细按当前空闲价估约16.03CNY（非账单），其中缓存输入0.44、新输入6.75、输出8.84；推理约占thinking输出75%，Q1反复审查/修复与失败后重跑不能当每次问答正常成本。已修同批上下文重复注入、公开cache/reasoning用量，并在既有SDK添加Flash/Pro用途profile，104相邻测试通过，不截原文/自己的reasoning、不造新harness。下一两次小额同输入真实review下一步对照，尚未paid、不宣称路由质量或完整Dell通过；随后按源设计§0清单继续，不再局限Q5/Q6为产品完成定义。详见`docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md`。以下全部保留为历史时点，历史“不创建A3/未充值”不是当前禁令。
 
 2026-09-06 S3/189 当前：**真实 Lead two-topic A2 因 DeepSeek HTTP402 / Insufficient Balance 失败，付费执行已停止，不创建A3。** 只读余额于2026-09-05T19:30:14Z确认当前.env key的is_available=false，余额不足（精确值仅本机保存），不是代理。实际Lead自主分派Q5/Q6并让两任务依赖已审查A5底稿，两个Specialist各自多轮上下文/并行原文研究已发生；17请求全部有outcome（15成功/2失败），已报告900455tokens。Q5最后21claims/5389字符、Q6 15claims/4178字符仅未接受草稿，引用字段已填写但正确性未通过；0收集底稿、无Lead收敛/跨主题审查/报告/HITL产品PASS。A1本地反馈修复的真实工具回放仍通过，live收敛仍待验证。已小修public audit保留安全HTTP状态码，27定向测试通过；无新框架/全仓回归/充值。原A1/A2证据不改，下一需Owner恢复该key账户余额后只读复验再安排同scope后续，不能持续重试402。以下均为历史时点。

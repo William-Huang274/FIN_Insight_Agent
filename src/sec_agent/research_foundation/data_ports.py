@@ -19,6 +19,7 @@ from hashlib import sha256
 import json
 from pathlib import Path
 import re
+import sqlite3
 from typing import Any, Literal
 from urllib.parse import urlsplit
 
@@ -671,6 +672,7 @@ class CurrentReviewedEvidenceReader:
         branch_id: str,
         limit: int,
         run_scope: DellResearchRunScope,
+        eligible_evidence_ids: Sequence[str] | None = None,
     ) -> ReviewedEvidenceSearchResult:
         branch_id = _require_branch_in_scope(
             branch_id=branch_id,
@@ -690,7 +692,15 @@ class CurrentReviewedEvidenceReader:
             case_key=self.case_key,
             rows=case.get("evidence_items"),
         )
-        indexed = tuple(sorted(by_id.items()))
+        # FIN computes eligibility before this call. Never truncate a global
+        # ranking and only then apply issuer/period/authority scope.
+        eligible = set(eligible_evidence_ids) if eligible_evidence_ids is not None else None
+        if eligible is not None and not eligible.issubset(by_id):
+            raise DataPortContractError("reviewed_search_unknown_eligible_id")
+        indexed = tuple(sorted(
+            (key, item) for key, item in by_id.items()
+            if eligible is None or key in eligible
+        ))
         corpus = []
         for _, item in indexed:
             source = item["source"]
@@ -714,7 +724,7 @@ class CurrentReviewedEvidenceReader:
         )
         hits: list[ReviewedEvidenceSearchHit] = []
         for row_index, raw_score in ranked:
-            if float(raw_score) <= 0:
+            if not set(tokens).intersection(corpus[row_index]):
                 continue
             evidence_id, item = indexed[row_index]
             source = item["source"]
@@ -850,6 +860,23 @@ class ExistingS2FinancialFactReader:
             if isinstance(typed_gap, Mapping):
                 detail = dict(typed_gap)
                 gap_code = str(detail.pop("gap_code", ""))
+                # Explain a wrong query type, without inventing values or
+                # silently executing a different financial request.
+                with sqlite3.connect(self.sqlite_path.as_uri() + "?mode=ro", uri=True) as db:
+                    roles = tuple(row[0] for row in db.execute(
+                        "SELECT DISTINCT period_role FROM company_fact_observations "
+                        "WHERE ticker=? AND metric_id=? AND substr(accepted_at,1,10)<=? "
+                        "AND period_end<=? ORDER BY period_role",
+                        (query.ticker, metric_id, query.research_as_of.isoformat(),
+                         (query.period_end or query.research_as_of).isoformat()),
+                    ))
+                if roles and query.granularity not in roles:
+                    detail.update({
+                        "requested_granularity": query.granularity,
+                        "available_period_roles": roles,
+                        "suggested_action": "Requery this metric separately using an available period role; instant is a balance at a date, duration is a flow. No value was substituted.",
+                        "public_information_gap_proved": False,
+                    })
                 detail_json = _canonical_json_text(detail)
                 gap_projection = TypedFinancialGap(
                     gap_code=gap_code,
@@ -1169,6 +1196,17 @@ class StructuredLocalKnowledgeReader:
 
     _NODE_KINDS = frozenset({"section", "chunk", "mixed_prose_span", "table"})
     _LEAF_KINDS = frozenset({"chunk", "mixed_prose_span", "table"})
+
+    def read_source_document(self, *, request, branch_id, run_scope):
+        from .source_document_navigation import navigate_source_nodes
+        _require_branch_in_scope(branch_id=branch_id, run_scope=run_scope)
+        if branch_id not in self._allowed_branch_ids:
+            raise DataPortContractError("source_read_branch_not_allowed")
+        cutoff = min(self._research_as_of, run_scope.research_as_of.date())
+        return navigate_source_nodes(
+            [r for r in self._node_index.values() if r["_publication_date"] <= cutoff],
+            request, snapshot=self._path_digest,
+        )
 
     def __init__(
         self,

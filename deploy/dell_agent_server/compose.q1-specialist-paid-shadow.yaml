@@ -7,6 +7,8 @@
 # bind mount.
 services:
   langgraph-api:
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
     environment:
       FINSIGHT_DELL_EXECUTION_PROFILE: product
       FINSIGHT_DELL_SERVING_MODE: q1_specialist_paid_shadow_v1

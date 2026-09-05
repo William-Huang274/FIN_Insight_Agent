@@ -24,6 +24,7 @@ ToolExecutionStatus = Literal["success", "not_applicable", "tool_failure"]
 EvidenceSourceRoute = Literal["reviewed_first", "local_only", "external_required"]
 _RETRIEVAL_SCOPE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{0,119}$")
 ToolResultState = Literal[
+    "source_bound_passage",
     "retrieval_candidate",
     "captured_source_candidate",
     "reviewed_evidence",
@@ -318,6 +319,7 @@ class ToolLaneResult(_StrictFrozenModel):
                 raise ValueError("tool_lane_not_applicable_invalid")
 
         evidence_states = {
+            "source_bound_passage",
             "retrieval_candidate",
             "captured_source_candidate",
             "reviewed_evidence",

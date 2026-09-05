@@ -799,7 +799,7 @@ def test_agentic_provider_function_has_object_root_not_union_root() -> None:
     assert parameters["additionalProperties"] is False
     assert set(parameters["properties"]) == {"action"}
     assert "oneOf" not in parameters and "anyOf" not in parameters
-    assert len(parameters["properties"]["action"]["oneOf"]) == 4
+    assert len(parameters["properties"]["action"]["oneOf"]) == 5
 
 
 def test_agentic_object_envelope_preserves_closed_host_validation() -> None:

@@ -162,6 +162,7 @@ def open_dell_approved_data_composition(
     *,
     run_invocation_id: str,
     environment: Mapping[str, str] | None = None,
+    source_read_enabled: bool = False,
 ) -> Iterator[DellApprovedDataComposition]:
     """Open the exact Owner-approved data readers behind one MCP lifecycle."""
 
@@ -304,6 +305,7 @@ def open_dell_approved_data_composition(
                 financial_fact_reader=fact_reader,
                 external_discovery=discovery,
                 external_capture=capture,  # type: ignore[arg-type]
+                source_document_reader=local_reader.read_source_document if source_read_enabled else None,
             )
         )
     except DellApprovedDataCompositionError:
@@ -317,6 +319,7 @@ def open_dell_approved_data_composition(
         server,
         run_binding=graph_run.mcp_run_binding,
         source_family_compiler=compiler,
+        source_read_enabled=source_read_enabled,
     )
     try:
         with adapter as opened_adapter:

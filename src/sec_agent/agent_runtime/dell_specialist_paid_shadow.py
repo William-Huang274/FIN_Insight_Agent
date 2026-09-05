@@ -71,8 +71,8 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     owner_data_gate_decision_digest: str = Field(pattern=_DIGEST_PATTERN)
     inventory_snapshot_digest: str = Field(pattern=_DIGEST_PATTERN)
     source_route_catalog_digest: str = Field(pattern=_DIGEST_PATTERN)
-    max_model_turns: int = Field(ge=2, le=8)
-    max_tool_actions: int = Field(ge=1, le=12)
+    max_model_turns: int = Field(ge=2, le=24)
+    max_tool_actions: int = Field(ge=1, le=48)
     max_input_characters_per_turn: int = Field(ge=10_000, le=500_000)
     max_output_tokens_per_turn: int = Field(ge=1_000, le=32_000)
     timeout_seconds_per_turn: float = Field(ge=30, le=600)
@@ -95,6 +95,12 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     other_model_nodes_authorized: Literal[False]
     artifact_root_container: str = Field(min_length=20, max_length=1_000)
     model_audit_filename: Literal["model-call-events.jsonl"]
+    source_read_enabled: bool = False
+    private_reasoning_audit_authorized: bool = False
+    deepseek_config_filename: str = Field(
+        default="fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json",
+        pattern=r"^[a-z0-9_]+\.json$",
+    )
     decision_digest: str = Field(pattern=_DIGEST_PATTERN)
 
     @model_validator(mode="after")
@@ -108,6 +114,11 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
         if Path(self.artifact_root_container).name != self.paid_full_chain_execution_id:
             raise ValueError("paid_shadow_artifact_execution_binding_invalid")
         unsigned = self.model_dump(mode="json", exclude={"decision_digest"})
+        # Old consumed authorities remain readable; their original signed JSON
+        # did not have these opt-in fields. Never rewrite those old files.
+        for field in ("source_read_enabled", "private_reasoning_audit_authorized", "deepseek_config_filename"):
+            if field not in self.model_fields_set:
+                unsigned.pop(field, None)
         if canonical_sha256(unsigned) != self.decision_digest:
             raise ValueError("paid_shadow_decision_digest_mismatch")
         return self
@@ -227,6 +238,22 @@ def build_public_model_audit_sink(
                 + "\n"
             )
 
+    return write
+
+
+def build_private_model_audit_sink(authority: DellQ1SpecialistPaidShadowAuthority):
+    if not authority.private_reasoning_audit_authorized:
+        return None
+    path = Path(authority.artifact_root_container) / "model-context-reasoning.private.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("x", encoding="utf-8"):
+        pass
+
+    def write(event: Mapping[str, Any]) -> None:
+        # Payloads come from SDK messages, never environment/clients/credentials.
+        record = {**dict(event), "paid_execution_id": authority.paid_full_chain_execution_id}
+        with path.open("a", encoding="utf-8", newline="\n") as handle:
+            handle.write(json.dumps(record, ensure_ascii=False, allow_nan=False) + "\n")
     return write
 
 

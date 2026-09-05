@@ -31,6 +31,7 @@ from sec_agent.research_foundation.mcp_server import (
     SEARCH_EXTERNAL_SOURCES_TOOL,
     SEARCH_LOCAL_KNOWLEDGE_TOOL,
     SEARCH_REVIEWED_EVIDENCE_TOOL,
+    READ_SOURCE_DOCUMENT_TOOL,
 )
 from sec_agent.research_foundation.data_ports import (
     CompanyFinancialFactQuery,
@@ -235,8 +236,10 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         subject_ticker: str = "DELL",
         default_financial_granularity: str = "quarter_discrete",
         read_timeout_seconds: float = 60.0,
+        source_read_enabled: bool = False,
     ) -> None:
         self._server = server
+        self._source_read_enabled = source_read_enabled
         self._binding = run_binding
         self._source_family_compiler = source_family_compiler
         self._ticker = subject_ticker.strip().upper()
@@ -277,7 +280,8 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                         for tool in listed.tools
                     )
                 )
-                missing = sorted(_TOOLS.difference(row[0] for row in discovered))
+                required = _TOOLS | ({READ_SOURCE_DOCUMENT_TOOL} if self._source_read_enabled else set())
+                missing = sorted(required.difference(row[0] for row in discovered))
                 if missing:
                     raise DellMCPToolAdapterError(
                         f"mcp_required_tools_missing:{','.join(missing)}"
@@ -477,6 +481,29 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         for request_index, raw_request in enumerate(
             lane_task.task.evidence_requests, start=1
         ):
+            if "source_document" in raw_request:
+                if not self._source_read_enabled or set(raw_request) != {"source_document"}:
+                    raise DellMCPToolAdapterError("source_document_read_not_authorized")
+                from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+                selection = SourceDocumentRequest.model_validate(raw_request["source_document"])
+                call = self._call(READ_SOURCE_DOCUMENT_TOOL, {
+                    "request": selection.model_dump(mode="json"),
+                    "branch_id": lane_task.task.branch_id,
+                    "run_scope": scope.model_dump(mode="json"),
+                })
+                calls.append(call)
+                if not call.error and call.content is not None:
+                    from sec_agent.research_foundation.source_document_navigation import SourceDocumentResult
+                    result = SourceDocumentResult.model_validate(call.content)
+                    for row in result.items:
+                        items.append({**row, "mcp_receipt_chain": [call.receipt], "cell_binding_used": False})
+                        states.add(str(row["result_state"]))
+                    items.append({"result_state": "typed_gap", "navigation": {
+                        "next_offset": result.next_offset, "total_matches": result.total_matches,
+                        "notice": result.notice, "public_information_gap_proved": False,
+                    }, "mcp_receipt_chain": [call.receipt]})
+                    states.add("typed_gap")
+                continue
             if "intent" in raw_request or "minimum_route_obligation_id" in raw_request:
                 if self._source_family_compiler is None:
                     raise DellMCPToolAdapterError(
@@ -741,6 +768,7 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
             "branch_id": lane_task.task.branch_id,
             "run_scope": scope.model_dump(mode="json"),
             "limit": target.search_limit,
+            "eligible_evidence_ids": sorted(eligible),
         }
         search = self._call(SEARCH_REVIEWED_EVIDENCE_TOOL, common)
         calls.append(search)

@@ -37,6 +37,7 @@ from .data_ports import (
     ReviewedEvidenceReadResult,
     ReviewedEvidenceSearchResult,
 )
+from .source_document_navigation import SourceDocumentRequest, SourceDocumentResult
 
 
 GET_RESEARCH_METHOD_TOOL = "get_dell_research_method"
@@ -46,6 +47,7 @@ READ_REVIEWED_EVIDENCE_BY_ID_TOOL = "read_reviewed_evidence"
 QUERY_COMPANY_FINANCIAL_FACTS_TOOL = "query_company_financial_facts"
 SEARCH_EXTERNAL_SOURCES_TOOL = "search_external_sources"
 CAPTURE_EXTERNAL_SOURCE_TOOL = "capture_external_source"
+READ_SOURCE_DOCUMENT_TOOL = "read_source_document"
 
 
 class MethodReader(Protocol):
@@ -157,6 +159,7 @@ class ResearchDataMCPDependencies:
     external_capture: ExternalSourceCapture
     legacy_reviewed_evidence_cell_reader: CellReader | None = None
     legacy_numeric_fact_cell_reader: CellReader | None = None
+    source_document_reader: Callable[..., Any] | None = None
 
 
 def build_research_data_mcp_server(
@@ -271,6 +274,7 @@ def build_research_data_mcp_server(
         branch_id: str,
         run_scope: DellResearchRunScope,
         limit: int = 8,
+        eligible_evidence_ids: list[str] | None = None,
     ) -> ReviewedEvidenceSearchResult:
         if not 1 <= limit <= 12:
             raise ValueError("reviewed_evidence_search_limit_invalid")
@@ -286,6 +290,8 @@ def build_research_data_mcp_server(
             branch_id=branch_id.strip(),
             limit=limit,
             run_scope=run_scope,
+            **({"eligible_evidence_ids": tuple(eligible_evidence_ids)}
+               if eligible_evidence_ids is not None else {}),
         )
 
     @server.tool(
@@ -369,6 +375,17 @@ def build_research_data_mcp_server(
             branch_id=branch_id.strip(),
             run_scope=run_scope,
         )
+
+    if dependencies.source_document_reader is not None:
+
+        @server.tool(name=READ_SOURCE_DOCUMENT_TOOL, structured_output=True,
+                     description="Read-only case document catalog, outline, search and complete source passages. Server IDs only; no paths, shell or arbitrary network. Read passages are source-bound, not Reviewed Evidence or NumericFacts.")
+        async def read_source_document(
+            request: SourceDocumentRequest, branch_id: str, run_scope: DellResearchRunScope,
+        ) -> SourceDocumentResult:
+            await _validate_scope(dependencies.method_reader, run_scope=run_scope, branch_id=branch_id)
+            return await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
+                                       request=request, branch_id=branch_id, run_scope=run_scope)
 
     if dependencies.legacy_reviewed_evidence_cell_reader is not None:
 

@@ -16,6 +16,21 @@
 
 ## 0. 结论先行
 
+### 2026-09-05 Owner 最新授权：3+1 小修正与最多两次对照
+
+本段取代历史“数据纠正未授权/不保留任何 provider reasoning”的当前性；旧 R1/R2/R3 artifact 不改。
+
+- Reviewed 先按已批准元数据过滤，再用现有 BM25 排序；不换检索框架。
+- 新的 Q1 source-read profile 将阅读权限与分支相关性分开：只读既有案例文档，目录/搜索/按章节、节点或解析器页范围读取；仅服务端 ID，不接受任意路径、URL、代码或 shell。不把 HTML 的解析页伪装成 PDF 物理页。
+- Q1 验收改为 F2 发行人叙述与 F1/S2 数值分工，允许跨动作累积；不要求一条当前季度 Reviewed 查询同时满足旧年 F1 和当前 F2。所有引用仍必须绑定实际观察。原 Reviewed 数据门/五个排除项不改，新增原文引用是 source-bound、待语义复核，不是 Reviewed Evidence admission 或 NumericFact。
+- SQL metric period roles 从既有库披露；错用粒度时返回可执行纠错，不自动改查询或补数。发布事件期间与指引覆盖期间分别解释，空 period selector 表示在已批准集合内扩大查找。
+- 所有外部/文档内容是非指令数据。只读挂载、无 Docker socket、无模型任意网络/shell、容器 no-new-privileges。先开放冻结内外源文档；实时 web 不因读取本地外源快照而自动开启。
+- 保留可审查的 claim rationale、假设/反证、实际输入及引用上下文。用户许可下，provider 实际返回的 reasoning 单独存私有审计文件；不进公开 trace/前端，不伪造未返回的 reasoning，不把 reasoning 当事实。
+- 测试区分 agent 使用正确、宿主解析/数据错误与研究交付：前者可记 Agent 能力通过，错误底稿不可记金融质量通过。
+- 定向离线检查后最多两次新 execution，对照 thinking disabled/enabled；相同代码/工具/数据/任务/预算，无自动 retry/resume/fallback。遇宿主阻断先停，不为凑两次硬跑；每次新 authority 记录基于 R3 的 TokenBudgetBasis。原始结果全部保留。
+
+这是一项现有实现的有界修补，不新增 runtime、权限引擎、检索平台或完整 multi-agent 阶段。
+
 当前最小修复代码基线：`0c798101d7a14ff2b228fbc5c52e740ff20e60ae`；R3 authority HEAD=`1b93d9c3f93135631f06df94cb4f759b4c8ba1fd` 已完成一次真实模型验证，研究结果是人工 handoff 而非底稿。下一工作是 S3/186 所列的窄范围数据交付合同纠正；没有 R4 资格。
 
 本设计把 Dell 单案例纵切从“固定 Planner 一次生成九个任务、宿主预取全部资料、九个一次性 Specialist、一次 Counter、一次 Lead”改成以下目标：

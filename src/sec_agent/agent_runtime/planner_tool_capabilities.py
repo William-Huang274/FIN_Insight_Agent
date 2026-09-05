@@ -53,6 +53,7 @@ class FinancialMetricCapability(_FrozenCapabilityModel):
     availability: Literal["direct_observation", "derived_at_query_time"]
     formula: str | None = None
     observed_tickers: tuple[str, ...]
+    observed_period_roles: tuple[str, ...] = Field(default=(), exclude_if=lambda value: not value)
 
     @model_validator(mode="after")
     def validate_availability(self) -> "FinancialMetricCapability":
@@ -181,17 +182,19 @@ def derive_planner_tool_capabilities(
 
         observed = connection.execute(
             """
-            SELECT metric_id, ticker
+            SELECT metric_id, ticker, period_role
             FROM company_fact_observations
-            GROUP BY metric_id, ticker
-            ORDER BY metric_id, ticker
+            GROUP BY metric_id, ticker, period_role
+            ORDER BY metric_id, ticker, period_role
             """
         ).fetchall()
         tickers_by_metric: dict[str, list[str]] = {}
+        roles_by_metric: dict[str, set[str]] = {}
         for row in observed:
-            tickers_by_metric.setdefault(str(row["metric_id"]), []).append(
-                str(row["ticker"])
-            )
+            ticker_list = tickers_by_metric.setdefault(str(row["metric_id"]), [])
+            if str(row["ticker"]) not in ticker_list:
+                ticker_list.append(str(row["ticker"]))
+            roles_by_metric.setdefault(str(row["metric_id"]), set()).add(str(row["period_role"]))
         supported_tickers = tuple(
             sorted({ticker for values in tickers_by_metric.values() for ticker in values})
         )
@@ -216,6 +219,7 @@ def derive_planner_tool_capabilities(
                 ),
                 formula=str(row["formula"]) if row["formula"] is not None else None,
                 observed_tickers=tuple(tickers_by_metric.get(str(row["metric_id"]), ())),
+                observed_period_roles=tuple(sorted(roles_by_metric.get(str(row["metric_id"]), ()))),
             )
             for row in metric_rows
         )

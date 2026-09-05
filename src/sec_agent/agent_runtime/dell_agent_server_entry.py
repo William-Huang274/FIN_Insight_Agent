@@ -59,6 +59,7 @@ from .dell_specialist_paid_shadow import (
     DELL_Q1_PAID_SHADOW_SERVING_MODE,
     DellSpecialistPaidShadowError,
     build_public_model_audit_sink,
+    build_private_model_audit_sink,
     file_sha256,
     load_dell_q1_paid_shadow_authority,
     require_data_authority_binding,
@@ -510,7 +511,7 @@ async def _open_q1_paid_shadow_graph(
             Path(repository_root)
             / "configs"
             / "research"
-            / "fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json"
+            / authority.deepseek_config_filename
         )
         if file_sha256(config_path) != authority.deepseek_config_sha256:
             raise DellSpecialistPaidShadowError(
@@ -538,6 +539,7 @@ async def _open_q1_paid_shadow_graph(
             config=model_config,
             api_key=SecretStr(api_key),
             audit_sink=build_public_model_audit_sink(authority),
+            private_audit_sink=build_private_model_audit_sink(authority),
         )
         with open_dell_specialist_receipted_composition(
             run_id=identity.research_run_id,
@@ -547,6 +549,7 @@ async def _open_q1_paid_shadow_graph(
             model_turn=adapter.specialist_model_turn,
             max_model_turns=authority.max_model_turns,
             max_tool_actions=authority.max_tool_actions,
+            source_read_enabled=authority.source_read_enabled,
         ) as composition:
             if (
                 composition.graph_input.agent_id != authority.node_id

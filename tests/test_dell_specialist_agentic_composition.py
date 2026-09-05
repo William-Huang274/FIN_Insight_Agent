@@ -265,6 +265,9 @@ class _RealMCPFakeModel:
                 "open_gaps": ["Customer-level mix remains outside this Q1 proof."],
             }
         self.actions.append(dict(action))
+        for claim in action.get("claims", ()):
+            claim.setdefault("reasoning_summary", None)
+            claim.setdefault("citation_quotes", {})
         return action
 
 

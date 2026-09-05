@@ -108,6 +108,7 @@ def _contracts_and_input(
         model_turn=_never_model,
         max_model_turns=authority.max_model_turns,
         max_tool_actions=authority.max_tool_actions,
+        source_read_enabled=authority.source_read_enabled,
     ) as composition:
         require_data_authority_binding(
             authority,

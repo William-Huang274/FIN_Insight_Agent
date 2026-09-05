@@ -60,6 +60,8 @@ PGVECTOR_IMAGE = (
 CONTROL_FILES = (
     "fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json",
     "fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json",
+    "fin_ia_0_1_3_dell_q1_source_read_thinking_disabled_v1_0.json",
+    "fin_ia_0_1_3_dell_q1_source_read_thinking_enabled_v1_0.json",
     "fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json",
     "fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json",
     "fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json",

@@ -29,6 +29,7 @@ from pydantic import (
 )
 
 from .dell_agentic_contracts import ProviderEvidenceIntent
+from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from .dell_reference_vertical_contracts import (
     BoundBranchTask,
     RuntimeReceipt,
@@ -70,6 +71,7 @@ class SpecialistL0Context(_StrictModel):
     ] = "current_state_authority_unavailable_fail_closed"
     capability_summaries: tuple[dict[str, Any], ...] = Field(min_length=1)
     skill_summaries: tuple[dict[str, Any], ...] = ()
+    source_read_enabled: bool = False
 
 
 class SpecialistAgenticInput(_StrictModel):
@@ -183,6 +185,13 @@ class RequestFinanceAction(_StrictModel):
     intent: SpecialistFinanceIntent
 
 
+class RequestSourceAction(_StrictModel):
+    action: Literal["request_source"]
+    context_digest: str = Field(pattern=_DIGEST_PATTERN)
+    reason_summary: str = Field(min_length=1, max_length=1_000)
+    selection: SourceDocumentRequest
+
+
 class RequestHumanReviewAction(_StrictModel):
     action: Literal["request_human_review"]
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
@@ -211,6 +220,8 @@ class SpecialistClaim(_StrictModel):
         "authoritative", "non_authoritative", "not_applicable"
     ] = "not_applicable"
     authority_note: str | None = Field(default=None, min_length=1, max_length=1_000)
+    reasoning_summary: str | None = Field(default=None, max_length=4_000)
+    citation_quotes: dict[str, str] = Field(default_factory=dict)
 
     @model_validator(mode="after")
     def validate_claim_shape(self) -> "SpecialistClaim":
@@ -266,6 +277,7 @@ class SubmitWorkpaperAction(_StrictModel):
 
 SpecialistAction = Annotated[
     RequestEvidenceAction
+    | RequestSourceAction
     | RequestFinanceAction
     | RequestHumanReviewAction
     | SubmitWorkpaperAction,
@@ -320,6 +332,7 @@ class SpecialistObservedReference(_StrictModel):
     ref_id: str = Field(min_length=1, max_length=500)
     artifact_digest: str = Field(pattern=_DIGEST_PATTERN)
     authority_state: Literal[
+        "source_bound_passage",
         "reviewed_evidence",
         "retrieval_candidate",
         "captured_source_candidate",
@@ -333,7 +346,7 @@ class SpecialistObservedReference(_StrictModel):
 
     @model_validator(mode="after")
     def validate_authority_flags(self) -> "SpecialistObservedReference":
-        if self.writer_citable != (self.authority_state == "reviewed_evidence"):
+        if self.writer_citable != (self.authority_state in {"reviewed_evidence", "source_bound_passage"}):
             raise ValueError("specialist_reference_writer_authority_invalid")
         if self.numeric_fact_authority != (self.authority_state == "numeric_fact"):
             raise ValueError("specialist_reference_numeric_authority_invalid")
@@ -534,6 +547,7 @@ class SpecialistNotebook(_StrictModel):
     feedback: tuple[SpecialistFeedback, ...] = ()
     dispatched_action_digests: tuple[str, ...] = ()
     status: Literal["researching", "submitted", "human_review_required"]
+    source_read_enabled: bool = False
     notebook_digest: str = Field(pattern=_DIGEST_PATTERN)
 
     @model_validator(mode="after")
@@ -563,6 +577,8 @@ class SpecialistNotebook(_StrictModel):
         ):
             raise ValueError("specialist_notebook_model_turn_sequence_invalid")
         unsigned = self.model_dump(mode="json", exclude={"notebook_digest"})
+        if "source_read_enabled" not in self.model_fields_set:
+            unsigned.pop("source_read_enabled", None)
         if canonical_sha256(unsigned) != self.notebook_digest:
             raise ValueError("specialist_notebook_digest_mismatch")
         return self
@@ -731,6 +747,8 @@ def _model_request(
         "submit_workpaper",
         "request_human_review",
     ]
+    if l0.source_read_enabled:
+        allowed_actions.append("request_source")
     body = {
         "schema_version": SPECIALIST_AGENTIC_GRAPH_SCHEMA_VERSION,
         "agent_id": state["agent_id"],
@@ -890,7 +908,23 @@ def _submission_errors(
         set(notebook.required_route_obligation_ids)
         - set(notebook.satisfied_route_obligation_ids)
     )
-    errors.extend(f"required_route_unsatisfied:{route_id}" for route_id in missing_routes)
+    if notebook.source_read_enabled and notebook.branch_id == "Q1_ISSUER_TRUTH":
+        # Owner-approved division of work: issuer narrative and S2 financial
+        # observations can arrive in different actions/periods. Do not claim
+        # that the original all-Reviewed route receipt has been satisfied.
+        items = [item for obs in notebook.observations for item in obs.content]
+        f2_ids = {str(item.get("evidence_id")) for item in items
+                  if item.get("result_state") == "reviewed_evidence"
+                  and item.get("source_family_ref") == "F2_DELL_IR_EARNINGS"}
+        cited_evidence = {ref for c in submission.claims for ref in c.evidence_ids}
+        cited_facts = {ref for c in submission.claims for ref in c.fact_ids}
+        if not f2_ids.intersection(cited_evidence):
+            errors.append("q1_issuer_narrative_source_required")
+        if not any(r.authority_state == "numeric_fact" and ref in cited_facts
+                   for ref, r in references.items()):
+            errors.append("q1_s2_financial_source_required")
+    else:
+        errors.extend(f"required_route_unsatisfied:{route_id}" for route_id in missing_routes)
     if submission.terminal_state == "bounded_gap":
         errors.append("bounded_gap_requires_canonical_gap_eligibility_receipt")
     for claim in submission.claims:
@@ -904,6 +938,14 @@ def _submission_errors(
                 errors.append(f"unknown_evidence_id:{evidence_id}")
             elif not reference.writer_citable:
                 errors.append(f"non_evidence_reference_cited:{evidence_id}")
+            elif reference.authority_state == "source_bound_passage":
+                passages = [item for obs in notebook.observations for item in obs.content
+                            if item.get("passage_id") == evidence_id]
+                quote = claim.citation_quotes.get(evidence_id, "")
+                if not quote.strip() or not any(quote in str(p.get("passage", "")) for p in passages):
+                    errors.append(f"source_quote_not_in_observed_passage:{evidence_id}")
+                if not claim.authority_note:
+                    errors.append(f"source_passage_requires_authority_note:{claim.claim_id}")
         for fact_id in claim.fact_ids:
             reference = references.get(fact_id)
             if reference is None:
@@ -985,6 +1027,7 @@ def build_dell_specialist_agentic_state_graph(
             feedback=(),
             dispatched_action_digests=(),
             status="researching",
+            source_read_enabled=validated.l0_context.source_read_enabled,
         )
         return {
             **validated.model_dump(mode="json"),
@@ -1525,6 +1568,7 @@ def build_dell_specialist_agentic_state_graph(
         route_model_action,
         {
             "request_evidence": "execute_evidence",
+            "request_source": "execute_evidence",
             "request_finance": "execute_finance",
             "submit_workpaper": "validate_submission",
             "request_human_review": "human_review",

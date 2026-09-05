@@ -83,3 +83,5 @@
   - Dell Agent Server Wave 0B 资格测试与 LangSmith 采用裁决（Owner no-fallback；current live baseline=`R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED`）：`fin_0_1_3_s3/181_dell_agent_server_wave0b_qualification_and_langsmith_adoption.md`
   - Dell Wave 2 单 Specialist scripted qualification 与真实本地 MCP 组合：`fin_0_1_3_s3/182_dell_wave2_single_specialist_zero_model_loop_and_real_mcp_composition.md`
   - RC-S3-107 PostgreSQL 通过、live 阻断与 Specialist 主线过渡：`fin_0_1_3_s3/183_rc_s3_107_postgres_pass_live_blocked_and_specialist_transition.md`
+  - Dell Q1 R1 模型前失败与 first-RECONCILED 修复：`fin_0_1_3_s3/184_dell_q1_paid_shadow_r1_pre_model_failure_and_first_reconciled_fix.md`
+  - Dell Q1 R2 schema 失败、Docker 恢复与对象封装修复：`fin_0_1_3_s3/185_dell_q1_paid_shadow_r2_schema_failure_and_object_envelope_fix.md`

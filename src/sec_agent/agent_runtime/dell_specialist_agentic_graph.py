@@ -1064,6 +1064,18 @@ def _submission_errors(
         if not any(r.authority_state == "numeric_fact" and ref in cited_facts
                    for ref, r in references.items()):
             errors.append("q1_s2_financial_source_required")
+    elif notebook.source_read_enabled and missing_routes:
+        # The approved source-read profile permits source-grounded workpapers
+        # for semantic review, not promotion into the Reviewed index. Preserve
+        # the incomplete route ledger; a cited exact passage plus explicit
+        # limitations is a separate admissible research input. Relevance and
+        # completeness remain reviewer judgments, not source-family tag rules.
+        cited = {ref for claim in submission.claims for ref in claim.evidence_ids}
+        if not any(ref in cited and value.authority_state == "source_bound_passage"
+                   and value.writer_citable for ref, value in references.items()):
+            errors.append("source_read_alternative_requires_observed_cited_passage")
+        if not submission.open_gaps:
+            errors.append("incomplete_reviewed_routes_require_explicit_open_gaps")
     else:
         errors.extend(f"required_route_unsatisfied:{route_id}" for route_id in missing_routes)
     if submission.terminal_state == "bounded_gap":

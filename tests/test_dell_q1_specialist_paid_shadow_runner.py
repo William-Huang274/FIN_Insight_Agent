@@ -70,3 +70,34 @@ def test_invalid_operator_subnet_rejected(subnet):
     module = _runner_module()
     with pytest.raises(module.HostRunError, match="paid_shadow_subnet_invalid"):
         module._private_subnet(subnet)
+
+
+def test_lead_uses_same_seed_mount_runner_and_task_based_timeout(tmp_path, monkeypatch):
+    from test_dell_specialist_paid_shadow import _lead_authority
+    authority, module = _lead_authority(tmp_path), _runner_module()
+    monkeypatch.setattr(module, "_dotenv", lambda: {name: "offline-fixture" for name in module._SECRETS})
+    env = module._environment(authority, tmp_path / "authority.json", tmp_path / "attempt", 19999)
+    assert env["FINSIGHT_DELL_SEEDED_SERVING_MODE"] == authority.serving_mode
+    assert env["FINSIGHT_DELL_REVIEW_SEED_HOST_PATH"].endswith(authority.lead_scope.seed_state_relative_path)
+    assert module._execution_timeout(authority) == int(8 * 480 + 4 * authority.max_model_turns * 480 + 300)
+
+
+def test_lead_terminal_counts_only_new_execution_and_cannot_promote_incomplete_work(tmp_path):
+    from test_dell_specialist_paid_shadow import _lead_authority
+    from test_dell_specialist_agentic_graph import _model_turn_receipt
+    spec = importlib.util.spec_from_file_location("q1_container_runner_test", CONTAINER_RUNNER)
+    module = importlib.util.module_from_spec(spec); spec.loader.exec_module(module)
+    authority = _lead_authority(tmp_path)
+    action = {"action": "native_tool_batch", "context_digest": "a" * 64, "tool_calls": []}
+    request = {"agent_id": "lead:research-delegation"}
+    values = {"phase": "research_needs_attention", "run_id": authority.research_run_id,
+        "run_invocation_id": authority.run_invocation_id, "tasks": [], "task_results": [],
+        "lead_turns": [{"action": action, "runtime_receipt": _model_turn_receipt(request, action), "turn_source": "provider_model"}],
+        "lead_handoff": {"context_digest": "a" * 64, "reason_summary": "Offline qualification only.",
+            "disposition": "needs_attention", "synthesis_notes": "No research completed.", "acknowledged_incomplete_task_ids": []}}
+    result = module._terminal({"values": values}, authority)
+    assert result["status"] == "bounded_handoff" and result["model_turn_count"] == 1 and result["tool_action_count"] == 0
+    values["phase"] = "research_ready_for_review"
+    values["lead_handoff"]["disposition"] = "ready_for_review"
+    with pytest.raises(module.ContainerRunError, match="lead_required_workpapers_not_completed"):
+        module._terminal({"values": values}, authority)

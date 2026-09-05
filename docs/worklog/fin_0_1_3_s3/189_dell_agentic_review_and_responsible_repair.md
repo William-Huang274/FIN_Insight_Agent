@@ -107,6 +107,8 @@ RC-S3-121 获得 **Q1 有界关闭**，不是跨主题/全金融文本百分百�
 
 ## 下一实际增量：任务与依赖底稿交接，不新造调度协议
 
+本节的任务交接增量已完成；下方下一节记录随后动态 Lead 实现与真实执行，不将二者混同。
+
 复用既有 `ResearchTaskSpec`、Specialist agentic graph/composition/SDK，在真实 composition 接受语义任务、任务目标/验收要求/角色和已完成依赖底稿。模型首轮看到完整 task_context，后续 SDK 历史不重复注入；任务标识保留为依赖名，宿主 receipt/digest/私有 reasoning 不作为跨 Agent 思考传递。依赖只是未验证研究上下文，新 Agent 引用必须自行读原始来源。
 
 FIN 仅验证任务覆盖、依赖身份、同 case/as-of/批准数据范围以及现有 capability；不授新权限，不继承观察/执行计数。目前一个任务对应一个既有 Q 覆盖项，符合现有 branch-scoped MCP compiler；不伪称多主题任意混合已打通。BoundBranchTask objective 上限对齐已存在 TaskSpec 的4000字符，不截断合法目标。实际 Lead 提案/动态 dispatch/收敛仍待下一步，不将 scripted driver 冒充自主规划。
@@ -114,3 +116,17 @@ FIN 仅验证任务覆盖、依赖身份、同 case/as-of/批准数据范围以�
 真实 A5 底稿→Q5 supply/price 任务→既有 MCP catalog + S2 查询的零模型测试暴露一个老 S2 缺陷：`exact_period_end` 未带 start 时仍应用 open-period 最新财报 cohort，将6月披露的5月期末季度排除。最早错误在 `financial_facts/executor.py`，不是信息缺口/代理。只令 cohort 策略用于 `latest_on_or_before`；精确日期匹配、research_as_of、vintage/conflict、单位/身份校验不放松，旧 SQL 数据不写。两条确定性反例先失败后通过；真实 MCP 收到正确 S2 结果，原 A5 文件不变。
 
 定向验证：S2/任务交接/composition/review/tool-batch 五文件89项，graph/SDK/deployment三文件71项，共 `160 passed`。一次误写 SDK 测试文件名导致0tests，已纠正重跑；没有全仓回归或额外 DS 调用。工程另采用 Docker 官方依赖层缓存顺序，固定依赖先于源码，依赖/镜像基线/安全配置不换；首次缓存建立真实成功，源码实际变更后的第二次构建也成功，third-party install与API restore两层均CACHED，FIN editable安装5.4s。registry metadata/resolve仍各约43s，不能称整体离线构建。镜像 `finsight-dell-runtime:task-handoff-20260906`，manifest-list SHA `5cdfe46e6ac275c8def6a5b92ef079226b2fe0ca7c9a2c3b89bf6cb239f1924e`。无网络/只读/cap-drop/no-new-privileges的临时容器内task handoff与S2导入通过；LangGraph1.2.11/Agent Server0.13.3/LangChain Core1.6.1/MCP2.1.1不变。临时容器自动移除，无用户数据挂载，所有旧服务/卷/镜像不删。参考 https://docs.docker.com/build/cache/optimize/ 。
+
+## 动态 Lead → 并行专业研究：实现与付费前资格（2026-09-06）
+
+在 `0d9ccd347bdf25f900766a09481bca10115d5cef` 后实现 `dell_lead_research_graph`。Lead 使用同 SDK 的3个原生规划工具，ResearchTaskSpec 表达任务/依赖；标准 `Send` 执行 ready tasks，ToolNode 给回 schema/依赖/循环/越权错误和真实子任务产物。Lead 可看结果后追加任务，不支持改写/取消已运行任务；最多4任务、并行2，非新通用调度器。Schema/state 读取不开模型/MCP/seed；Agent Server 的既有数据库/Redis/trace 持久化不换。私有 reasoning 各自续传，跨角色只共享工作底稿、显式引用/局限和未完成 Reviewed route，不复制 notebook 计数或权限。
+
+同 paid authority/runner 小范围扩展 workflow=`lead_research_delegation`，scope 只有 Q5/Q6；Q1 branch/node 字段仅为既有 entry 的身份/数据绑定锚，不额外调用 Q1 作者。已审查 A5 state 只读挂载，SHA `92a578a22d88baa8e9f1cf24ef6ac19369f09f0a76eb9fa3d0c90b970833e104`。沿用 DeepSeek thinking-enabled history profile；scope 内分别记录 Lead/专业研究 TokenBudgetBasis，不另造服务/队列/Transport/fallback。一次 fresh runner 仍须 clean+pushed implementation、独立 project/port/volume、固定调用上限、完整用量和 LangSmith。该窗口不是 Q1–Q9 昂贵完整 full-chain，不能代替其专用 preflight/全模型权威/产品门。
+
+真实数据检查：Q5 一次 Reviewed 查询完成原路由并取到 Dell/NVIDIA 等来源；Q6 查询返回 F9 `reviewed_source_family_residual`，不是网页找不到。实际手读 frozen MLCommons v6.0、Anthropic发布/访问中断段落、NVIDIA当期发布正文，确认模型可读的上下文不仅是检索标题。MLCommons 真实 search→read→逐字引用的零模型反例先在旧 `required_route_unsatisfied` 失败：最早归属提交合同未接 source-read 替代路线，非模型/网络/公众缺口。
+
+修复仅针对已开启 source-read 的非 Q1 底稿：缺 Reviewed completion 时仍须实际源片段引用和 open_gaps，所有 quote/authority/SQL 引用检查保持；未完成 route IDs 不改并由宿主强制传递给 Lead/依赖者。引用存在不能证明研究相关性/完整性，必须后续独立语义审查；目录 source-family tag 不当 coverage/Evidence。Q1 F2+S2 与未开启 source-read 的旧路由门不变。真实反例修后通过，删缺口或伪造原文仍拒绝。未修改 source/index/SQL/admission 数据。
+
+验证：10个相邻测试文件 **169 passed in24.87s**；含2独立 worker 并行 Barrier、随后第3依赖任务、11类非法提案反馈、真实 SDK MockTransport 连续 reasoning/tool IDs、A5→双真实MCP循环、Q6原文替代路线、旧单Agent与review。早期新测试曾因fixture capability名错误、SDK测试路径笔误等失败，已纠正；不把零模型输出当真实研究或付费成功。
+
+本机 C/D/Z free=3.49/25.13/7.56 GiB、free RAM≈0.95 GiB；核实不可变终态后暂停已结束 R11/A1/A2/A3/A4/A5 共18个 FIN 容器，**只 stop，不删容器/卷/镜像/任何证据**，避免旧进程挤占并行运行。当前仍待 fresh Lead 真实执行及产物审查；不回头无限重写 Q1，不扩模型供应商或外网权限。

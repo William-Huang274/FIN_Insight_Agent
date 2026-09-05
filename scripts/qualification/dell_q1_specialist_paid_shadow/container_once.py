@@ -25,7 +25,9 @@ from sec_agent.agent_runtime.dell_agent_server_identity import (
     research_run_identity_digest,
     run_invocation_identity_digest,
 )
-from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_sha256
+from sec_agent.agent_runtime.dell_reference_vertical_contracts import RuntimeReceipt, canonical_sha256
+from sec_agent.agent_runtime.dell_lead_research_graph import SubmitResearchHandoffAction
+from sec_agent.agent_runtime.dell_workpaper_review_graph import validate_workpaper_state
 from sec_agent.agent_runtime.dell_specialist_agentic_composition import (
     open_dell_specialist_receipted_composition,
 )
@@ -193,6 +195,8 @@ def _stream(parts: Iterable[Any]) -> dict[str, Any]:
 
 
 def _terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShadowAuthority) -> dict[str, Any]:
+    if authority.workflow == "lead_research_delegation":
+        return _lead_terminal(raw, authority)
     if authority.workflow == "workpaper_review_repair":
         return _review_terminal(raw, authority)
     values = raw.get("values")
@@ -275,6 +279,73 @@ def _review_terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShad
             "reviewer_executions": len(reviews), "author_revisions": len(repairs), "actors": actors,
             "output_digest": canonical_sha256(values["final_submission"]),
             "acceptance_scope": "Q1_multi_agent_review_cycle_only_not_full_case_or_human_product_acceptance"}
+
+
+def _lead_terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShadowAuthority) -> dict[str, Any]:
+    values, scope = raw.get("values"), authority.lead_scope
+    if (not isinstance(values, Mapping) or raw.get("interrupts") not in (None, [], ())
+            or raw.get("next") not in (None, [], ()) or values.get("phase")
+            not in {"research_ready_for_review", "research_needs_attention"}):
+        raise ContainerRunError("lead_research_terminal_state_invalid")
+    if values.get("run_id") != authority.research_run_id or values.get("run_invocation_id") != authority.run_invocation_id:
+        raise ContainerRunError("lead_research_identity_invalid")
+    lead_turns, tasks, results = values.get("lead_turns", []), values.get("tasks", []), values.get("task_results", [])
+    if not 1 <= len(lead_turns) <= scope.max_lead_model_turns or len(tasks) > scope.max_tasks:
+        raise ContainerRunError("lead_research_capacity_invalid")
+    for turn in lead_turns:
+        receipt = _parse(RuntimeReceipt, turn.get("runtime_receipt"), "lead_model_receipt_invalid")
+        if (turn.get("turn_source") != "provider_model" or receipt.kind != "model" or receipt.status != "success"
+                or receipt.actor != "lead:research-delegation" or receipt.transport_attempts != 1
+                or receipt.output_digest != canonical_sha256(turn["action"])):
+            raise ContainerRunError("lead_model_proof_invalid")
+    registered = {task["task_id"]: task for task in tasks}
+    if len(registered) != len(tasks) or len({row["task_id"] for row in results}) != len(results):
+        raise ContainerRunError("lead_duplicate_task_result")
+    turns, actions, actors, submitted, branches = len(lead_turns), 0, ["lead:research-delegation"], set(), set()
+    for row in results:
+        state = row["agent_state"]
+        notebook = _parse(SpecialistNotebook, state.get("notebook"), "lead_child_notebook_invalid")
+        task = registered.get(row["task_id"])
+        if (task is None or notebook.task_id != task["task_id"]
+                or list(task["coverage_obligation_ids"]) != [notebook.branch_id]
+                or notebook.branch_id not in scope.allowed_branch_ids
+                or notebook.run_id != authority.research_run_id or notebook.run_invocation_id != authority.run_invocation_id
+                or not 1 <= notebook.model_turn_count <= authority.max_model_turns
+                or notebook.tool_action_count > authority.max_tool_actions):
+            raise ContainerRunError("lead_child_identity_scope_or_budget_invalid")
+        if any(r.turn_source != "provider_model" or not r.model_execution_evidence or r.runtime_receipt is None
+               or r.runtime_receipt.kind != "model" or r.runtime_receipt.status != "success"
+               or r.runtime_receipt.actor != notebook.agent_id or r.runtime_receipt.transport_attempts != 1
+               for r in notebook.model_turn_records):
+            raise ContainerRunError("lead_child_model_proof_invalid")
+        if row["status"] == "submitted":
+            validate_workpaper_state(state)
+            submitted.add(row["task_id"])
+            branches.add(notebook.branch_id)
+        elif row["status"] == "needs_attention" and state.get("phase") == "specialist_human_review_handoff_emitted":
+            _parse(SpecialistHumanReviewHandoff, state.get("human_review_handoff"), "lead_child_handoff_invalid")
+        else:
+            raise ContainerRunError("lead_child_outcome_invalid")
+        turns += notebook.model_turn_count
+        actions += notebook.tool_action_count
+        actors.append(notebook.agent_id)
+    ready = values["phase"] == "research_ready_for_review"
+    handoff = values.get("lead_handoff")
+    if handoff is not None:
+        parsed = _parse(SubmitResearchHandoffAction, handoff, "lead_handoff_invalid")
+        if (set(parsed.acknowledged_incomplete_task_ids) != set(registered) - submitted
+                or ready != (parsed.disposition == "ready_for_review")):
+            raise ContainerRunError("lead_handoff_completion_mismatch")
+    elif ready or values.get("stop_reason") != "lead_turn_ceiling":
+        raise ContainerRunError("lead_terminal_handoff_missing")
+    if ready and (set(registered) != submitted or not set(scope.allowed_branch_ids).issubset(branches)):
+        raise ContainerRunError("lead_required_workpapers_not_completed")
+    return {"status": "pass" if ready else "bounded_handoff", "phase": values["phase"],
+            "stop_reason": values.get("stop_reason"), "model_turn_count": turns, "tool_action_count": actions,
+            "lead_model_turn_count": len(lead_turns), "specialist_executions": len(results),
+            "submitted_task_ids": sorted(submitted), "actors": actors,
+            "state_digest": _digest(raw), "output_digest": canonical_sha256(handoff),
+            "acceptance_scope": "Lead_Q5_Q6_delegation_handoff_only_not_independent_review_full_case_or_product_acceptance"}
 
 
 def _audit(authority: DellQ1SpecialistPaidShadowAuthority, turns: int) -> dict[str, Any]:

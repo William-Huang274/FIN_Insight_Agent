@@ -46,7 +46,7 @@ from .dell_reference_vertical_contracts import (
 
 
 NodeRole = Literal["planner", "specialist", "counter", "lead"]
-SpecialistRequestMode = Literal["legacy_workpaper", "agentic_turn"]
+SpecialistRequestMode = Literal["legacy_workpaper", "agentic_turn", "agentic_lead"]
 PayloadT = TypeVar("PayloadT", bound=BaseModel)
 ModelCallAuditSink = Callable[[Mapping[str, Any]], None]
 
@@ -874,6 +874,13 @@ def _project_request(
     *,
     specialist_mode: SpecialistRequestMode = "legacy_workpaper",
 ) -> dict[str, Any]:
+    if role == "lead" and specialist_mode == "agentic_lead":
+        # Already a host-built semantic projection. Keep task IDs as dependency
+        # names; never include SDK reasoning or private source notebooks here.
+        return {key: request[key] for key in (
+            "research_question", "research_as_of", "branch_catalog", "required_branch_ids",
+            "capabilities", "capacity", "workpapers", "tasks", "progress", "context_digest",
+        )}
     if role == "planner":
         catalog = request.get("branch_catalog")
         if not isinstance(catalog, Sequence) or isinstance(catalog, (str, bytes)):
@@ -1190,7 +1197,8 @@ class DeepSeekStructuredAgentAdapter:
         specialist_mode: SpecialistRequestMode = "legacy_workpaper",
         saved_envelope: Mapping[str, Any] | None = None,
     ) -> tuple[PayloadT, Any, float]:
-        if role != "specialist" and specialist_mode != "legacy_workpaper":
+        if ((specialist_mode == "agentic_turn" and role != "specialist")
+                or (specialist_mode == "agentic_lead" and role != "lead")):
             raise DeepSeekStructuredAgentError(
                 "agentic_request_mode_only_valid_for_specialist"
             )
@@ -1220,14 +1228,22 @@ class DeepSeekStructuredAgentAdapter:
             sort_keys=True,
             separators=(",", ":"),
         )
-        persistent_history = specialist_mode == "agentic_turn" and self._config.agentic_message_history
+        is_lead = specialist_mode == "agentic_lead"
+        persistent_history = specialist_mode in {"agentic_turn", "agentic_lead"} and self._config.agentic_message_history
+        if is_lead and not persistent_history:
+            raise DeepSeekStructuredAgentError("agentic_lead_requires_native_message_history")
         collaboration_mode = request_value.get("collaboration_context", {}).get("mode")
         is_reviewer = collaboration_mode in {"counter", "verifier"}
         native_tools = _NATIVE_REVIEW_TOOLS if is_reviewer else _NATIVE_SPECIALIST_TOOLS
+        if is_lead:
+            from .dell_lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
+            native_tools = LEAD_RESEARCH_TOOLS
         messages = [SystemMessage(content=_AGENTIC_SPECIALIST_SYSTEM_PROMPT if specialist_mode == "agentic_turn" else _SYSTEM_PROMPTS[role]),
                     HumanMessage(content=semantic_json)]
         if persistent_history:
             prompt = _NATIVE_REVIEW_SYSTEM_PROMPT if is_reviewer else _NATIVE_SPECIALIST_SYSTEM_PROMPT
+            if is_lead:
+                prompt = LEAD_RESEARCH_SYSTEM_PROMPT
             if collaboration_mode == "repair":
                 prompt += (" You are the original responsible author revising your prior workpaper in response to "
                            "independent review findings. Prior source observations are available, but the reviewer "
@@ -1250,6 +1266,10 @@ class DeepSeekStructuredAgentAdapter:
             delta.pop("l0_context", None)
             delta.pop("branch", None)
             delta.pop("task_context", None)  # Immutable handoff already in the exact first message.
+            if is_lead:
+                for key in ("research_question", "research_as_of", "branch_catalog", "required_branch_ids",
+                            "capabilities", "capacity", "workpapers"):
+                    delta.pop(key, None)  # New worker artifacts arrive once in the tool reply.
             results = request_value.get("tool_results", ())
             if results:
                 prior_calls = [*prior_raw.tool_calls, *prior_raw.invalid_tool_calls]
@@ -1261,7 +1281,7 @@ class DeepSeekStructuredAgentAdapter:
                         content = json.loads(row["content"])
                     except json.JSONDecodeError:
                         content = {"error": row["content"]}
-                    content = _agentic_semantic_value(content)
+                    content = content if is_lead else _agentic_semantic_value(content)
                     replies.append(ToolMessage(
                         content=json.dumps({"result": content, "current_context": delta}, ensure_ascii=False),
                         tool_call_id=row["tool_call_id"], name=row.get("name"),
@@ -1378,7 +1398,7 @@ class DeepSeekStructuredAgentAdapter:
                     valid = valid and all(isinstance(value, str) and value.strip() for value in ids) and len(ids) == len(set(ids))
                     decision = {"action": "native_tool_batch", "context_digest": request_value["context_digest"],
                                 "tool_calls": tool_calls}
-                    if len(tool_calls) == 1 and tool_calls[0].get("type") == "tool_call" and tool_calls[0].get("name") in {
+                    if not is_lead and len(tool_calls) == 1 and tool_calls[0].get("type") == "tool_call" and tool_calls[0].get("name") in {
                         "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
                     }:
                         chosen = {**_NATIVE_SPECIALIST_TOOLS, **_NATIVE_REVIEW_TOOLS}[tool_calls[0]["name"]]
@@ -1708,6 +1728,16 @@ class DeepSeekStructuredAgentAdapter:
         """Execute one live, receipted action decision for the agentic loop."""
 
         return self._specialist_action_turn(request)
+
+    def lead_research_turn(self, request: Mapping[str, Any]) -> dict[str, Any]:
+        """Same native SDK/history/audit transport, with Lead planning tools."""
+        request_value = _as_mapping(request, label="lead_research_request")
+        payload, raw, elapsed_ms = self._invoke(role="lead", request=request_value,
+            schema=_NativeSpecialistActionPayload, specialist_mode="agentic_lead")
+        action = payload.action.model_dump(mode="json")
+        receipt = _receipt(role="lead", actor=_required_text(request_value, "agent_id"),
+            request=request_value, output=action, raw=raw, elapsed_ms=elapsed_ms)
+        return {"action": action, "runtime_receipt": receipt.model_dump(mode="json")}
 
     def replay_specialist_model_turn(
         self,

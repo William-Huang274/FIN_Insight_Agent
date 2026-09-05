@@ -16,6 +16,7 @@ from .deepseek_structured_agents import TokenBudgetBasis
 
 DELL_Q1_PAID_SHADOW_SERVING_MODE = "q1_specialist_paid_shadow_v1"
 DELL_Q1_REVIEW_SERVING_MODE = "q1_workpaper_review_repair_v1"
+DELL_LEAD_RESEARCH_SERVING_MODE = "lead_research_delegation_v1"
 DELL_Q1_PAID_SHADOW_AUTHORITY_ENV = "FINSIGHT_DELL_PAID_SHADOW_AUTHORITY_PATH"
 DELL_IMPLEMENTATION_COMMIT_ENV = "FINSIGHT_DELL_IMPLEMENTATION_COMMIT"
 
@@ -58,6 +59,30 @@ class WorkpaperReviewScope(BaseModel):
         return self
 
 
+class LeadResearchScope(BaseModel):
+    """First two-topic delegation qualification, not full-case publication."""
+    model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
+    seed_state_relative_path: str = Field(pattern=r"^[a-z0-9_-]+/specialist-final-state\.private\.json$")
+    seed_state_sha256: str = Field(pattern=_DIGEST_PATTERN)
+    allowed_branch_ids: tuple[Literal["Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"], ...]
+    node_budgets: dict[Literal["lead", "specialist"], TokenBudgetBasis]
+    max_lead_model_turns: int = Field(ge=2, le=12)
+    max_tasks: int = Field(ge=2, le=4)
+    max_parallel_tasks: Literal[2]
+
+    @model_validator(mode="after")
+    def validate_scope(self) -> "LeadResearchScope":
+        if (len(self.allowed_branch_ids) != 2 or set(self.allowed_branch_ids)
+                != {"Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"}):
+            raise ValueError("lead_requires_both_qualified_research_topics")
+        if set(self.node_budgets) != {"lead", "specialist"} or any(
+            role != basis.node_role or basis.reasoning_profile != "agentic_message_history_thinking_enabled"
+            for role, basis in self.node_budgets.items()
+        ):
+            raise ValueError("lead_node_budget_or_context_profile_invalid")
+        return self
+
+
 class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     """The only checked-in Owner decision consumed by this one shadow."""
 
@@ -80,7 +105,7 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     research_run_id: str = Field(min_length=1, max_length=180)
     run_invocation_id: str = Field(min_length=1, max_length=180)
     graph_id: Literal["dell_reference_vertical"]
-    serving_mode: Literal["q1_specialist_paid_shadow_v1", "q1_workpaper_review_repair_v1"]
+    serving_mode: Literal["q1_specialist_paid_shadow_v1", "q1_workpaper_review_repair_v1", "lead_research_delegation_v1"]
     branch_id: Literal["Q1_ISSUER_TRUTH"]
     node_id: Literal["specialist:Q1_ISSUER_TRUTH"]
     provider: Literal["deepseek"]
@@ -113,8 +138,9 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     evidence_admission_authorized: Literal[False]
     s2_write_authorized: Literal[False]
     other_model_nodes_authorized: bool
-    workflow: Literal["single_specialist", "workpaper_review_repair"] = "single_specialist"
+    workflow: Literal["single_specialist", "workpaper_review_repair", "lead_research_delegation"] = "single_specialist"
     review_scope: WorkpaperReviewScope | None = None
+    lead_scope: LeadResearchScope | None = None
     artifact_root_container: str = Field(min_length=20, max_length=1_000)
     model_audit_filename: Literal["model-call-events.jsonl"]
     source_read_enabled: bool = False
@@ -128,12 +154,21 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     @model_validator(mode="after")
     def validate_authority(self) -> "DellQ1SpecialistPaidShadowAuthority":
         is_review = self.workflow == "workpaper_review_repair"
-        if is_review != (self.serving_mode == DELL_Q1_REVIEW_SERVING_MODE):
+        is_lead = self.workflow == "lead_research_delegation"
+        if (is_review != (self.serving_mode == DELL_Q1_REVIEW_SERVING_MODE)
+                or is_lead != (self.serving_mode == DELL_LEAD_RESEARCH_SERVING_MODE)):
             raise ValueError("paid_shadow_workflow_serving_mode_mismatch")
-        if is_review != self.other_model_nodes_authorized or is_review != (self.review_scope is not None):
+        if ((is_review or is_lead) != self.other_model_nodes_authorized
+                or is_review != (self.review_scope is not None) or is_lead != (self.lead_scope is not None)):
             raise ValueError("paid_shadow_review_scope_authority_mismatch")
-        if is_review and not (self.source_read_enabled and self.private_reasoning_audit_authorized):
+        if (is_review or is_lead) and not (self.source_read_enabled and self.private_reasoning_audit_authorized):
             raise ValueError("paid_review_requires_source_context_and_private_audit")
+        if is_lead:
+            basis = self.lead_scope.node_budgets["specialist"]
+            if (basis.max_input_characters != self.max_input_characters_per_turn
+                    or basis.max_output_tokens != self.max_output_tokens_per_turn
+                    or basis.timeout_seconds != self.timeout_seconds_per_turn):
+                raise ValueError("lead_specialist_budget_must_match_execution_envelope")
         if len(self.required_outputs) != len(set(self.required_outputs)):
             raise ValueError("paid_shadow_required_output_duplicate")
         if not self.artifact_root_container.startswith(
@@ -145,7 +180,7 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
         unsigned = self.model_dump(mode="json", exclude={"decision_digest"})
         # Old consumed authorities remain readable; their original signed JSON
         # did not have these opt-in fields. Never rewrite those old files.
-        for field in ("source_read_enabled", "private_reasoning_audit_authorized", "deepseek_config_filename", "workflow", "review_scope"):
+        for field in ("source_read_enabled", "private_reasoning_audit_authorized", "deepseek_config_filename", "workflow", "review_scope", "lead_scope"):
             if field not in self.model_fields_set:
                 unsigned.pop(field, None)
         if canonical_sha256(unsigned) != self.decision_digest:

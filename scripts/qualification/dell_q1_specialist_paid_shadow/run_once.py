@@ -164,13 +164,15 @@ def _environment(
             "FINSIGHT_DELL_PAID_SHADOW_ARTIFACT_CONTAINER_PATH": authority.artifact_root_container,
         }
     )
-    if authority.review_scope is not None:
-        seed_path = (ATTEMPTS_ROOT / authority.review_scope.seed_state_relative_path).resolve()
+    scope = authority.review_scope or authority.lead_scope
+    if scope is not None:
+        seed_path = (ATTEMPTS_ROOT / scope.seed_state_relative_path).resolve()
         if not seed_path.is_relative_to(ATTEMPTS_ROOT.resolve()) or not seed_path.is_file():
             raise HostRunError("review_seed_path_invalid")
-        if file_sha256(seed_path) != authority.review_scope.seed_state_sha256:
+        if file_sha256(seed_path) != scope.seed_state_sha256:
             raise HostRunError("review_seed_digest_invalid")
         env["FINSIGHT_DELL_REVIEW_SEED_HOST_PATH"] = seed_path.as_posix()
+        env["FINSIGHT_DELL_SEEDED_SERVING_MODE"] = authority.serving_mode
     return env
 
 
@@ -184,6 +186,19 @@ def _compose(project: str, subnet: str | None = None, *, review: bool = False) -
     if review:
         command.extend(["-f", str(REVIEW_OVERLAY)])
     return command
+
+
+def _execution_timeout(authority: DellQ1SpecialistPaidShadowAuthority) -> int:
+    if authority.lead_scope is not None:
+        scope = authority.lead_scope
+        return int(scope.max_lead_model_turns * scope.node_budgets["lead"].timeout_seconds
+                   + scope.max_tasks * authority.max_model_turns * scope.node_budgets["specialist"].timeout_seconds + 300)
+    if authority.review_scope is not None:
+        scope = authority.review_scope
+        return int(2 * scope.max_reviewer_model_turns * max(
+            scope.node_budgets[r].timeout_seconds for r in ("verifier", "counter"))
+            + authority.max_model_turns * scope.node_budgets["repair"].timeout_seconds + 300)
+    return 3600
 
 
 def _private_subnet(value: str) -> str:
@@ -328,7 +343,7 @@ def run_once(authority_path: Path, *, subnet: str | None = None) -> None:
         attempt.parent.mkdir(parents=True, exist_ok=True)
         attempt.mkdir(exist_ok=False)
         attempt_created = True
-        compose = _compose(project, subnet, review=authority.review_scope is not None)
+        compose = _compose(project, subnet, review=(authority.review_scope or authority.lead_scope) is not None)
         observation, _ = _command([*compose, "config", "--quiet"], env, 120)
         commands.append({"step": "compose_config", **observation})
         observation, _ = _command([*compose, "up", "-d", "--build"], env, 1800)
@@ -340,10 +355,7 @@ def run_once(authority_path: Path, *, subnet: str | None = None) -> None:
                 CONTAINER_SCRIPT,
             ],
             env,
-            3600 if authority.review_scope is None else int(
-                2 * authority.review_scope.max_reviewer_model_turns * max(
-                    authority.review_scope.node_budgets[r].timeout_seconds for r in ("verifier", "counter"))
-                + authority.max_model_turns * authority.review_scope.node_budgets["repair"].timeout_seconds + 300),
+            _execution_timeout(authority),
             json_result=True,
         )
         commands.append({"step": authority.workflow, **observation})

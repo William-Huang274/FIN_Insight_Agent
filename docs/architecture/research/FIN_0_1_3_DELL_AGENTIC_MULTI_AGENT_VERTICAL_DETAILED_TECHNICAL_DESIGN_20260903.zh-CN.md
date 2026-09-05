@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / A5_Q1_INDEPENDENT_REVIEW_PASS_BOUNDED / TASK_HANDOFF_REAL_MCP_QUALIFIED / OWNER_AUTONOMOUS_LOCAL_REPAIR / DYNAMIC_LEAD_AND_FULL_PRODUCT_PENDING / NO_THINKING_AB_PASS`
+文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / A5_Q1_INDEPENDENT_REVIEW_PASS_BOUNDED / DYNAMIC_LEAD_LOCAL_AND_SERVER_FACTORY_QUALIFIED / OWNER_AUTONOMOUS_LOCAL_REPAIR / PAID_LEAD_AND_FULL_PRODUCT_PENDING / NO_THINKING_AB_PASS`
 
 冻结日期：2026-09-03
 
@@ -15,6 +15,12 @@
 2026-09-05 执行更新（取代本文件历史段落中的未执行状态）：R1 模型前绑定故障已修复；R2 唯一运行到达 DeepSeek，但因 Specialist 顶层 union 函数参数不是 object 被 HTTP 400 拒绝。现已采用标准 Pydantic 对象封装 `{"action": <原封闭动作联合>}`；在 provider adapter 解包后，原 graph、MCP、context 和证据校验合同不变。相关 67 项离线测试通过，含真实 SDK + MockTransport 请求/响应；不代表线上接受或研究质量。R2 保持失败、无底稿、无工具动作；新付费执行需新身份/Owner 授权，不重用 R2、不扩写 K0–K6。详细证据见 `docs/worklog/fin_0_1_3_s3/185_dell_q1_paid_shadow_r2_schema_failure_and_object_envelope_fix.md`。
 
 ## 0. 结论先行
+
+2026-09-06 当前增量：§6.1 的 Lead 原生工具循环、动态追加任务/依赖、标准 LangGraph Send 并发、既有 Specialist 子图、任务结果回 Lead 已实现；同 Agent Server factory/SDK/一次启动 runner 接入，不另造队列、provider transport、checkpointer 或 scheduler。169 项相邻测试通过，含真实 A5 seed、双 MCP 专业任务、后续依赖任务、模型 SDK MockTransport 与 schema-only 不开资源。尚未执行真实 Lead 付费运行，不能称自主协作已 live 通过。
+
+资料实查发现并修复一个源读取合同不一致：Q5 Reviewed 路径成功，Q6 F9 预审元数据残差存在，而已批准本地 MLCommons/模型发布原文可检索、读取。非 Q1 的 source-read profile 现在允许逐字引句/已观察引用/来源级别校验通过的底稿进入独立语义审查；未完成 Reviewed 路径必须在 open_gaps 披露，并由宿主把原 route ledger 残差传给 Lead/依赖 Agent，绝不伪造 completion、不晋升 Evidence/S2、不认定全主题覆盖或公开缺口。Q1 原有 F2+S2 要求与 source-read 关闭时的原检查不改。真实 MLCommons 测试先重现错误拒绝后通过，假引句/隐去缺口仍拒绝。这是落实 Owner 已批准的源阅读路径，不是以 route tag 或检索次数代替语义审查。
+
+下一一次资格窗口：只给 Lead 供给价格 Q5、模型算力需求 Q6 两个必需研究面和已审查 A5 发行人底稿，最多4个追加任务、并行2个、Lead8轮，每个 Specialist16轮/24数据动作；每节点独立 history，500k 输入字符/32k输出/480s，按 A5/R11 实测给余量，不把全 case 压成13次总调用。调用耗尽、截断或未知结果保留产物并停止，不静默 retry/resume/fallback。两面有底稿只算 ready_for_review，独立复核、其余 Q、最终报告/Workbench/HITL/产品验收仍待后续。
 
 2026-09-06 最新（下列A4/A2等是历史）：A5已真实双Agent审查通过中文revision3/16claims，4模型/395606tokens/1新原文读取，Verifier经历字段错误→自行纠正；无重大finding、不新增作者重写。RC-S3-121仅在Q1有界关闭，非全产品/100%语义正确。下一跨主题交接复用现有ResearchTaskSpec和Agent循环，真实A5底稿→Q5任务→MCP目录/S2已零模型验证；语义任务/依赖底稿进首轮SDK，后续不重复大包，不继承工具观察/计数/权限或私有reasoning。一个Task暂对应一个既有覆盖项，动态Lead规划/调度尚未live，不称完整DAG产品完成。S2 exact期末不再误用open-period最新cohort；同as-of/引用权威不变。160定向检查通过；Docker实际源码变更重建成功、依赖/API层CACHED，无网络只读容器import通过。详见S3/189。
 
@@ -285,6 +291,12 @@ Coverage 之外另有 `MinimumRouteObligation / BaselineSourcePlan`。它逐 Q1�
 ## 6. 动态 DAG 与 Multi-Agent 执行模式
 
 ### 6.1 稳定外层图
+
+2026-09-06 A5 后的下一可执行切片：先接 **Lead 原生工具循环 → ResearchTaskSpec 新任务/依赖 → 标准 LangGraph Send 执行 ready tasks → 实际工具型 Specialist → 结果回 Lead**。Lead 与每个 Specialist 使用独立 SDK 会话，自己的完整模型消息/ToolMessage/reasoning 续传；跨 Agent 仅传已完成底稿与来源线索。首个资格窗口复用 A5 issuer 底稿，对现有供给价格/行业需求两个覆盖面运行，不称完整 Q1–Q9。
+
+- 只支持动态追加任务、继续 ready tasks、请求进入审查或明确人工交接；不在这个小切片实现取消/修改运行中任务及完整 PlanDelta 持久化控制面。已完成任务不可改写；追加任务能改变后续依赖图。每任务暂一覆盖项，沿用已验证 branch compiler，不开放新来源/数据写权限。
+- 标准库拓扑检查与 LangGraph Send/ToolNode 担任依赖/并发/工具错误承载。FIN 只验证现有 TaskSpec、case/as-of/能力范围、完成状态；不新增 scheduler/queue/provider transport。Lead 请求进入下一阶段只是研究交接，不能等于金融审查、报告、人工或产品PASS。
+- 先做循环、缺失依赖、重复任务、越权、假完成、字段/JSON纠错、独立并发和真实 MCP 测试，再以同 Agent Server/一次启动 runner 的显式小范围配置做真实模型资格。模型预算按 A5/R11 的已测输入/输出规模设置，不重跑已经接受的 Q1。
 
 ```text
 bind_case

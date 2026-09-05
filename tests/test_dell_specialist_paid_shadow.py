@@ -159,3 +159,42 @@ def test_public_audit_persists_digests_and_rejects_private_payloads(
         match="paid_shadow_private_model_payload_forbidden",
     ):
         sink({"event": "outcome", "nested": {"raw_response": "private"}})
+
+
+def _lead_authority(tmp_path):
+    root = Path(__file__).resolve().parents[1]
+    a5 = json.loads((root / "configs/research/evals/fin_ia_0_1_3_s3_dell_q1_agentic_review_repair_a5_authority_v1_0.json").read_text(encoding="utf-8"))
+    body = _authority(tmp_path).model_dump(mode="json", exclude={"decision_digest"})
+    for key in ("deepseek_config_filename", "deepseek_config_sha256", "owner_data_gate_decision_digest",
+                "inventory_snapshot_digest", "source_route_catalog_digest", "max_input_characters_per_turn",
+                "max_output_tokens_per_turn", "timeout_seconds_per_turn", "source_read_enabled", "private_reasoning_audit_authorized"):
+        body[key] = a5[key]
+    worker = a5["review_scope"]["node_budgets"]["repair"]
+    body.update(workflow="lead_research_delegation", serving_mode="lead_research_delegation_v1",
+                other_model_nodes_authorized=True, review_scope=None,
+                lead_scope={"seed_state_relative_path": "20260906-dell-q1-agentic-review-repair-a5/specialist-final-state.private.json",
+                    "seed_state_sha256": "92a578a22d88baa8e9f1cf24ef6ac19369f09f0a76eb9fa3d0c90b970833e104",
+                    "allowed_branch_ids": ["Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"],
+                    "node_budgets": {"lead": {**worker, "node_role": "lead"}, "specialist": worker},
+                    "max_lead_model_turns": 8, "max_tasks": 4, "max_parallel_tasks": 2})
+    body["timeout_seconds_per_turn"] = float(body["timeout_seconds_per_turn"])
+    for basis in body["lead_scope"]["node_budgets"].values():
+        basis["timeout_seconds"] = float(basis["timeout_seconds"])
+    return DellQ1SpecialistPaidShadowAuthority.model_validate_json(json.dumps({**body, "decision_digest": canonical_sha256(body)}))
+
+
+@pytest.mark.parametrize("defect", [None, "scope", "mode", "budget", "authority", "history"])
+def test_lead_scope_is_explicit_and_keeps_old_authorities_readable(tmp_path, defect):
+    authority = _lead_authority(tmp_path)
+    body = authority.model_dump(mode="json", exclude={"decision_digest"})
+    if defect == "scope": body["lead_scope"]["allowed_branch_ids"] = ["Q1_ISSUER_TRUTH"]
+    elif defect == "mode": body["serving_mode"] = "q1_workpaper_review_repair_v1"
+    elif defect == "budget": body["lead_scope"]["node_budgets"]["specialist"]["max_output_tokens"] = 16000
+    elif defect == "authority": body["other_model_nodes_authorized"] = False
+    elif defect == "history": body["lead_scope"]["node_budgets"]["lead"]["reasoning_profile"] = "agentic_message_history_thinking_disabled"
+    encoded = json.dumps({**body, "decision_digest": canonical_sha256(body)})
+    if defect:
+        with pytest.raises(ValidationError): DellQ1SpecialistPaidShadowAuthority.model_validate_json(encoded)
+    else:
+        assert DellQ1SpecialistPaidShadowAuthority.model_validate_json(encoded).lead_scope.max_parallel_tasks == 2
+        assert _authority(tmp_path).lead_scope is None

@@ -1,6 +1,6 @@
 # S3/189 Dell 多 Agent 审查与责任回派
 
-状态：A1 bounded_handoff；A2 已产出中文revision2及自主补查finding，但Counter输出截断使整体failed；未产品PASS。起点 863f7ab4（clean/pushed），FIN 0.1.3 / 同一 S3。
+状态（2026-09-06）：A5 已真实达到 Q1 `review_cycle_accepted`，两位独立 reviewer 均 `no_material_finding`；A1–A4 原失败保留。下一跨主题任务交接已本地消费真实 A5 底稿并经实际 MCP 查询通过，尚无自主 Lead/完整产品 PASS。起点 863f7ab4（clean/pushed），FIN 0.1.3 / 同一 S3。
 
 ## Owner 方向与最小真实增量
 
@@ -92,3 +92,25 @@ A4 implementation `fc0a4b537c51532174ca86ea1abd6361bd93341b`，authority HEAD `e
 现有review seed读取允许已error的fan-out在0份收集review时，仅继承已接受author artifact并从两人fresh review开始；不接受取消或非法JSON中的finding、不重写原件、不重做作者revision3。定向SDK/ToolNode/review三文件`68 passed in 14.39s`，相邻graph/composition/authority/runner四文件`49 passed in 7.76s`（前一命令误写runner测试文件名，0tests，已纠正）。含原A4完整非法参数的离线反例、精确错误回传、下一轮合法补交、跨角色reasoning隔离与无数据副作用。真实A4seed只读验证：revision3/16claims/9observations/0继承findings，SHA `fb89a53387338f9537be1aff0d25fd0afa895ac2c646306c4af236c47e9fc04f`。
 
 下一A5仅对这份稿重新真实审查，必要时最多一次原作者修订和fresh复审；保持32k输出、500k输入chars、480s和现有工具/数据权限。已知JSON失败由正常Agent反馈循环处理，而不是后台重发旧请求。RC-S3-121仍open，动态Lead/全Q1–Q9/Workbench及完整产品仍未完成。本次不创建新框架/runner/依赖，不全仓回归，不删除Docker卷、缓存、数据或旧证据。
+
+## A5：Q1 双 Agent 语义复核真实通过（2026-09-06）
+
+implementation `1a4e2d796cd7fa8b08f7c4e5d4cff8af1c668ba4`，authority HEAD `de5099c281a6eb1abd11b60ab9284d0567c48059`；execution `20260906-dell-q1-agentic-review-repair-a5`。run/root `01a07272-f829-7dd3-93d4-c4c27b1c1f1a`，thread `50f9c5c8-cc48-5679-b5a0-3720864accab`，port18168。
+
+- 真实 `review_cycle_accepted`：Counter 1 模型轮、Verifier 3 模型轮，均完成且 `no_material_finding`、findings=[]。直接审查 A4 已接受的中文 revision3/16 claims，无新作者重写，无人工改稿。Verifier 新读 1 原文，Counter 使用继承来源；不能称两人都新增搜索。
+- Verifier 的第二次提交“无重大问题”与 finding 列表矛盾，被本地 `review_verdict_findings_mismatch` 拒绝；下一轮自行将非阻断观察移入 coverage_notes 后提交。原始模型回复/ToolMessage/私有 reasoning 保留。A4 非法 JSON 修复已有真实反例离线证明，但 A5 未再次产生非法 JSON，不能声称该分支已 live 触发。
+- 仍保留两项非阻断意见：部分公司披露同比百分比可补更直接引注；电话会对非 GAAP 毛利率的 AI mix 解释可补入，不能与 GAAP 派生比率混为同一口径。不为这些整洁度问题再开 Q1 无限重写。
+- 实际 4 模型调用，input/output/total=`342778/52828/395606` tokens；模型时长累计684.972930s，并行图墙钟390.312s，Docker build303.187s。不是账单费用或全部产品时延；无 retry/resume/fallback/unknown outcome。
+- 原始产物在 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260906-dell-q1-agentic-review-repair-a5/`：`terminal-receipt.json`、`specialist-final-state.private.json`、原样可读 `workpaper.agent-original.md` / `reviews.agent-original.json`。state SHA `92a578a22d88baa8e9f1cf24ef6ac19369f09f0a76eb9fa3d0c90b970833e104`；底稿 digest `065ab5080e76cf447c041b0b76ac802ff4b4d72d8b5770e7c63cb12dd9481b96`。LangSmith 有该 root 的 runner 记录，本段未另做 SDK 全 span 读回复核。
+
+RC-S3-121 获得 **Q1 有界关闭**，不是跨主题/全金融文本百分百正确性证明。下一主线转动态 Lead/跨主题研究；原 R11/A1/A2/A3/A4 仍为各自原结果，不重写成成功。Q1–Q9、最终报告、人工交互、部署产品验收仍未完成。
+
+## 下一实际增量：任务与依赖底稿交接，不新造调度协议
+
+复用既有 `ResearchTaskSpec`、Specialist agentic graph/composition/SDK，在真实 composition 接受语义任务、任务目标/验收要求/角色和已完成依赖底稿。模型首轮看到完整 task_context，后续 SDK 历史不重复注入；任务标识保留为依赖名，宿主 receipt/digest/私有 reasoning 不作为跨 Agent 思考传递。依赖只是未验证研究上下文，新 Agent 引用必须自行读原始来源。
+
+FIN 仅验证任务覆盖、依赖身份、同 case/as-of/批准数据范围以及现有 capability；不授新权限，不继承观察/执行计数。目前一个任务对应一个既有 Q 覆盖项，符合现有 branch-scoped MCP compiler；不伪称多主题任意混合已打通。BoundBranchTask objective 上限对齐已存在 TaskSpec 的4000字符，不截断合法目标。实际 Lead 提案/动态 dispatch/收敛仍待下一步，不将 scripted driver 冒充自主规划。
+
+真实 A5 底稿→Q5 supply/price 任务→既有 MCP catalog + S2 查询的零模型测试暴露一个老 S2 缺陷：`exact_period_end` 未带 start 时仍应用 open-period 最新财报 cohort，将6月披露的5月期末季度排除。最早错误在 `financial_facts/executor.py`，不是信息缺口/代理。只令 cohort 策略用于 `latest_on_or_before`；精确日期匹配、research_as_of、vintage/conflict、单位/身份校验不放松，旧 SQL 数据不写。两条确定性反例先失败后通过；真实 MCP 收到正确 S2 结果，原 A5 文件不变。
+
+定向验证：S2/任务交接/composition/review/tool-batch 五文件89项，graph/SDK/deployment三文件71项，共 `160 passed`。一次误写 SDK 测试文件名导致0tests，已纠正重跑；没有全仓回归或额外 DS 调用。工程另采用 Docker 官方依赖层缓存顺序，固定依赖先于源码，依赖/镜像基线/安全配置不换；首次缓存建立真实成功，源码实际变更后的第二次构建也成功，third-party install与API restore两层均CACHED，FIN editable安装5.4s。registry metadata/resolve仍各约43s，不能称整体离线构建。镜像 `finsight-dell-runtime:task-handoff-20260906`，manifest-list SHA `5cdfe46e6ac275c8def6a5b92ef079226b2fe0ca7c9a2c3b89bf6cb239f1924e`。无网络/只读/cap-drop/no-new-privileges的临时容器内task handoff与S2导入通过；LangGraph1.2.11/Agent Server0.13.3/LangChain Core1.6.1/MCP2.1.1不变。临时容器自动移除，无用户数据挂载，所有旧服务/卷/镜像不删。参考 https://docs.docker.com/build/cache/optimize/ 。

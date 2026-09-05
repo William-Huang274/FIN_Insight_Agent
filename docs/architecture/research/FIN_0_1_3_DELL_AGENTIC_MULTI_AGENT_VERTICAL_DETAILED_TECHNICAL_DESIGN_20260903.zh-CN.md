@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / R11_SINGLE_SPECIALIST_RUNTIME_PASS_BOUNDED / SEMANTIC_AND_CLAIM_COVERAGE_REVIEW_NOT_PASS / OWNER_AUTONOMOUS_LOCAL_REPAIR / NEXT_VERIFIER_COUNTER_NOT_MORE_RULE_ENGINE / NO_MULTI_AGENT_PRODUCT_OR_THINKING_AB_PASS`
+文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / A5_Q1_INDEPENDENT_REVIEW_PASS_BOUNDED / TASK_HANDOFF_REAL_MCP_QUALIFIED / OWNER_AUTONOMOUS_LOCAL_REPAIR / DYNAMIC_LEAD_AND_FULL_PRODUCT_PENDING / NO_THINKING_AB_PASS`
 
 冻结日期：2026-09-03
 
@@ -15,6 +15,8 @@
 2026-09-05 执行更新（取代本文件历史段落中的未执行状态）：R1 模型前绑定故障已修复；R2 唯一运行到达 DeepSeek，但因 Specialist 顶层 union 函数参数不是 object 被 HTTP 400 拒绝。现已采用标准 Pydantic 对象封装 `{"action": <原封闭动作联合>}`；在 provider adapter 解包后，原 graph、MCP、context 和证据校验合同不变。相关 67 项离线测试通过，含真实 SDK + MockTransport 请求/响应；不代表线上接受或研究质量。R2 保持失败、无底稿、无工具动作；新付费执行需新身份/Owner 授权，不重用 R2、不扩写 K0–K6。详细证据见 `docs/worklog/fin_0_1_3_s3/185_dell_q1_paid_shadow_r2_schema_failure_and_object_envelope_fix.md`。
 
 ## 0. 结论先行
+
+2026-09-06 最新（下列A4/A2等是历史）：A5已真实双Agent审查通过中文revision3/16claims，4模型/395606tokens/1新原文读取，Verifier经历字段错误→自行纠正；无重大finding、不新增作者重写。RC-S3-121仅在Q1有界关闭，非全产品/100%语义正确。下一跨主题交接复用现有ResearchTaskSpec和Agent循环，真实A5底稿→Q5任务→MCP目录/S2已零模型验证；语义任务/依赖底稿进首轮SDK，后续不重复大包，不继承工具观察/计数/权限或私有reasoning。一个Task暂对应一个既有覆盖项，动态Lead规划/调度尚未live，不称完整DAG产品完成。S2 exact期末不再误用open-period最新cohort；同as-of/引用权威不变。160定向检查通过；Docker实际源码变更重建成功、依赖/API层CACHED，无网络只读容器import通过。详见S3/189。
 
 2026-09-06 S3/189 A4更新：已产出中文revision3/16claims，双reviewer实际原文读取3次；非法JSON被错误当fatal，父图取消另一reviewer，0份最终review收集，故failed非PASS。SDK invalid_tool_calls现接ToolNode原call ID错误反馈，不手改JSON/观点或丢同批合法read；117定向检查通过，原模型参数/私有reasoning继续保留。下一A5从不可变第三版开始双人fresh review，不再重复作者已完成工作，最终仍需双角色完成并处理重大finding。无新基础框架或权限扩张；完整Lead/产品仍未完成。
 

@@ -1,11 +1,13 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-09-05
+更新时间：2026-09-06
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-dell-s1-s2-product-bridge`（S0 权威基线仍为远端 `main`）
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
+
+2026-09-06 S3/189 当前：**A5 Q1 review_cycle_accepted**，Counter1轮/Verifier3轮，2份独立no_material_finding、0重大finding；沿用A4中文revision3/16claims、不重写。Verifier真实1原文读取，实际字段反馈→自行纠正也成立；4模型/395606tokens/并行图390.312s。RC-S3-121仅Q1有界关闭，旧失败不改；非阻断引注/非GAAP电话会建议保留，不再Q1无限打磨。已实现既有ResearchTaskSpec→专业Agent目标/验收/依赖底稿交接，实际A5→Q5的MCP目录/S2零模型资格通过；上游观点不是新证据，须自行重读原源，不继承观察/计数/reasoning。顺带修复S2 exact_period_end误套最新filing cohort，旧SQL不写；160定向检查通过。Docker采用标准依赖缓存排序。动态Lead、跨主题真实研究、全Q1–Q9/最终报告/Workbench/HITL/完整产品尚未完成；不是只写新协议。见S3/189。以下均为历史时点。
 
 2026-09-06 S3/189最新：A4已有中文revision3/16claims，Verifier读1原文、Counter同批读2原文；Counter第2轮非法JSON被FIN adapter当fatal而取消兄弟，整体failed，非网络/截断。5真实模型/477379tokens/3数据动作，0已收集review，不能算PASS。已小修SDK invalid_tool_calls→现有ToolNode精确错误反馈→原模型自纠，原始回复/私有reasoning不改；117定向检查和真实A4反例/seed验证通过。下一fresh A5继承已接受第三版仅从双人审查开始，不重做作者/R11；最多1责任修订后fresh review，权限/32k/500k/480s不变。A4state SHAfb89a53387338f9537be1aff0d25fd0afa895ac2c646306c4af236c47e9fc04f，原失败保留。RC-S3-121/动态Lead/全产品仍未完成，详见S3/189。以下为历史。
 

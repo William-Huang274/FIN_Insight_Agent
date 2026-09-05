@@ -848,6 +848,14 @@ def _project_agentic_specialist_request(
         ),
     }
     collaboration = request.get("collaboration_context")
+    if request.get("task_context") is not None:
+        task_context = request["task_context"]
+        projected["task_context"] = _agentic_semantic_value(task_context)
+        # These are semantic dependency names, not host execution identities.
+        projected["task_context"]["assignment"]["task_id"] = task_context["assignment"]["task_id"]
+        for original, view in zip(task_context["dependency_workpapers"],
+                                  projected["task_context"]["dependency_workpapers"], strict=True):
+            view["task_id"] = original["task_id"]
     if collaboration:
         projected["collaboration_context"] = {
             "mode": collaboration["mode"],
@@ -1241,6 +1249,7 @@ class DeepSeekStructuredAgentAdapter:
             # only new tool feedback is added. No raw reasoning enters graph state.
             delta.pop("l0_context", None)
             delta.pop("branch", None)
+            delta.pop("task_context", None)  # Immutable handoff already in the exact first message.
             results = request_value.get("tool_results", ())
             if results:
                 prior_calls = [*prior_raw.tool_calls, *prior_raw.invalid_tool_calls]

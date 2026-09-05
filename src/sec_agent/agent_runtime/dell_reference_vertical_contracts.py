@@ -270,7 +270,7 @@ class BoundBranchTask(_StrictFrozenModel):
     # bounds repairs; an immutable successor must not reset revision to zero.
     revision: int = Field(ge=0, le=100)
     priority: Literal["high", "medium", "low"]
-    objective: str = Field(min_length=1, max_length=2_000)
+    objective: str = Field(min_length=1, max_length=4_000)
     evidence_requests: tuple[dict[str, Any], ...] = Field(min_length=1, max_length=8)
     fact_requests: tuple[dict[str, Any], ...] = Field(default=(), max_length=24)
     research_as_of: str = Field(min_length=1, max_length=80)

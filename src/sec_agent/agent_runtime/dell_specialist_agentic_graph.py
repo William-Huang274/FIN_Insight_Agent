@@ -96,6 +96,7 @@ class SpecialistAgenticInput(_StrictModel):
     max_tool_actions: int = Field(default=12, ge=1, le=48)
     # Trusted composition-root artifact handoff, never provider-supplied state.
     collaboration_context: dict[str, Any] | None = None
+    task_context: dict[str, Any] | None = None
 
     @model_validator(mode="after")
     def validate_required_routes(self) -> "SpecialistAgenticInput":
@@ -771,6 +772,7 @@ class DellSpecialistAgenticState(TypedDict, total=False):
     max_model_turns: int
     max_tool_actions: int
     collaboration_context: dict[str, Any] | None
+    task_context: dict[str, Any] | None
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
@@ -914,6 +916,8 @@ def _model_request(
         body["tool_results"] = state["tool_results"]
     if collaboration:
         body["collaboration_context"] = collaboration
+    if state.get("task_context") is not None:
+        body["task_context"] = state["task_context"]
     return {**body, "context_digest": canonical_sha256(body)}
 
 

@@ -174,6 +174,34 @@ def test_exact_lookup_is_point_in_time_and_preserves_vintages(tmp_path: Path) ->
     assert len(after.facts[0].source_digests) == 2
 
 
+@pytest.mark.parametrize("explicit_null_start", [False, True])
+def test_exact_period_without_start_ignores_unrelated_latest_filing_cohort(
+    tmp_path: Path, explicit_null_start: bool,
+) -> None:
+    metrics = (_metric("revenue"),)
+    rows = (
+        _observation("OBS-Q1", "revenue", "43842000000"),
+        _observation(
+            "OBS-PRIOR-FY", "revenue", "113538000000",
+            accepted_at="2026-03-16T20:00:00+00:00",
+            accession="0001571996-26-000008", period_role="fiscal_year",
+            period_start="2025-02-01", period_end="2026-01-30",
+            fiscal_year=2026, fiscal_period="FY",
+        ),
+    )
+    sqlite_path = tmp_path / "facts.sqlite"
+    write_company_fact_mart(sqlite_path, observations=rows, metrics=metrics, policy=_policy(metrics=metrics))
+    period = {"end_date": "2026-05-01", "selection_mode": "exact_period_end"}
+    if explicit_null_start:
+        period["start_date"] = None
+    lookup = replace(_lookup("revenue"), period=period)
+    result = execute_fact_lookup(sqlite_path, lookup)
+    assert result.status == "resolved"
+    assert [(fact.period_end, fact.value_decimal) for fact in result.facts] == [("2026-05-01", "43842000000")]
+    assert execute_fact_lookup(sqlite_path, replace(lookup, research_as_of="2026-06-01")).status == "typed_gap"
+    assert execute_fact_lookup(sqlite_path, replace(lookup, period={**period, "end_date": "2026-04-30"})).status == "typed_gap"
+
+
 def test_direct_period_selection_exact_does_not_fall_back_but_latest_does(
     tmp_path: Path,
 ) -> None:

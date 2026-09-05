@@ -217,7 +217,11 @@ def _execute_direct(
         resolved.append((key, latest))
     filing_cohorts = (
         _latest_filing_cohorts(connection, lookup)
+        # Exact period selection has already bounded the observations. Applying
+        # the open-period cohort would discard valid filings published after
+        # that period ended; research_as_of, not period_end, bounds disclosure.
         if not lookup.period.get("start_date")
+        and _period_selection_mode(lookup.period) == _PERIOD_SELECTION_LATEST
         else {}
     )
     selected, selected_conflicts = _select_latest_period_roles(

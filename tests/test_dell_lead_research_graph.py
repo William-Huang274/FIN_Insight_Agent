@@ -162,6 +162,52 @@ def test_native_sdk_lead_history_keeps_own_reasoning_and_exact_tool_feedback():
     assert all("semantic_input" not in event and "raw_response" not in event for event in events)
 
 
+def test_full_scope_requires_eight_new_obligations_and_reuses_q1_without_rebilling():
+    from sec_agent.agent_runtime.dell_agentic_contracts import DELL_COVERAGE_OBLIGATION_IDS
+    seed, seen, ran = _seed(), [], []
+    value = SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
+
+    def model(request):
+        seen.append(request)
+        if len(seen) == 1:
+            return _stop(request, ready=True)  # Q1 seed alone cannot close full research.
+        if len(seen) == 2:
+            assert request["tool_results"][0]["status"] == "error"
+            tasks = [_task(str(i), branch, (seed["task"]["task_id"],))
+                     for i, branch in enumerate(DELL_COVERAGE_OBLIGATION_IDS[1:])]
+            return _call(request, "DelegateResearchTasksAction", tasks=tasks)
+        if request["progress"]["ready_task_ids"]:
+            return _call(request, "ContinueResearchTasksAction")
+        return _stop(request, ready=True)
+
+    def worker(task, dependencies, config):
+        ran.append(task["coverage_obligation_ids"][0])
+        assert set(dependencies) == {seed["task"]["task_id"]}
+        return _worker_result(task, seed)
+
+    graph = build_dell_lead_research_graph(expected_input=value, research_question="Full-scope plumbing fixture, not research.",
+        branch_catalog=[{"branch_id": b} for b in DELL_COVERAGE_OBLIGATION_IDS],
+        allowed_branch_ids=DELL_COVERAGE_OBLIGATION_IDS, seed_workpapers={seed["task"]["task_id"]: seed},
+        model_turn=model, run_child=worker, max_tasks=12).compile()
+    result = graph.invoke(value.model_dump(mode="json"), config={"recursion_limit": 64})
+    assert result["phase"] == "research_ready_for_review" and len(result["task_results"]) == 8
+    assert set(ran) == set(DELL_COVERAGE_OBLIGATION_IDS[1:])
+    assert "final_report" not in result
+
+
+@pytest.mark.local_data_integration
+def test_all_nine_existing_branch_methods_can_open_the_same_real_source_tool_composition():
+    from test_dell_specialist_agentic_composition import RUNTIME_ENVIRONMENT, _assert_assets
+    from sec_agent.agent_runtime.dell_agentic_contracts import DELL_COVERAGE_OBLIGATION_IDS
+    from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_scripted_qualification_composition
+    _assert_assets()
+    for branch in DELL_COVERAGE_OBLIGATION_IDS:
+        with open_dell_specialist_scripted_qualification_composition(run_id="full-scope-host-check", run_invocation_id="full-scope-host-check-1",
+            branch_id=branch, environment=RUNTIME_ENVIRONMENT, scripted_model_turn=lambda _: None, source_read_enabled=True) as child:
+            assert child.graph_input.task.branch_id == branch
+            assert child.graph_input.l0_context.source_read_enabled
+
+
 @pytest.mark.local_data_integration
 def test_actual_a5_to_two_delegated_real_mcp_loops_zero_provider():
     from test_dell_specialist_agentic_composition import RUNTIME_ENVIRONMENT, _assert_assets

@@ -92,3 +92,15 @@ R3已知用量在全部命中/全部未命中两端对应约0.0458–0.3647元�
 许可连接到既有paid authority的 `live_external_calls_authorized`；默认/旧文件全部false，新执行才能显式true且必须source_read_enabled。Agent Server普通Specialist、Lead子任务、review子任务都从同一authority向下传，不从模型文本取得权限。旧A1/A2没有被重新开放网络，也未重写旧artifact。旧A5真实seed经定向测试仍可验证（新增默认字段不改变旧动作序列化）。
 
 验证：70项相邻测试通过/11.25s，涵盖新reader、既有外源安全、原文、组合和paid authority；另显式host-only真实MCP网络测试1passed/8.57s；调用方Agent Server/Lead/review/SDK再跑99passed/16.81s。不是全仓回归，也不是170次真实模型调用。下一步完整Dell动态分工和研究收敛；实时UI尚未修改，完整Dell仍未PASS。
+
+## 第三包提前明确：完整覆盖的研究执行，不再用两主题代替完整产品
+
+沿用同一Lead图、Send、Specialist tool loop、SDK、MCP、Agent Server、Postgres/Redis与LangSmith，只将新执行的研究义务扩为既有Q1–Q9。原two-topic authority仍只两项。Q1复用已审A5，其他八项须实际交研究底稿；当前worker task仍一项覆盖义务，Lead可命名不同角色、安排依赖、在看到结果后追加任务，不硬编码九种Agent类。最多12任务（八个新义务+有意义的后续）、并行2、Lead12轮、worker16轮/24工具；数字是异常停止上限，不是必须做满的绩效指标。
+
+本次真实run的完成定义仅是全部覆盖的**research_ready_for_review**，不能因此标金融或完整产品PASS。下一仍必须跨主题Counter/语义Verifier→具体责任修复→综合报告→最终审查→人工产品验收。UI继续接同一Agent Server，不再造队列/消息总线；本包不伪称前端已完成。review prompt从硬编码“只审Q1”改为实际assigned task scope，旧Q1仍不被其他主题要求阻断。
+
+模型配置 `fin_ia_0_1_3_dell_full_research_pro_low_v1_0.json`：复杂研究暂全部Pro/low，自己完整reasoning/history保留；没有router LLM，也不让Flash大包失败后偷偷fallback。Lead500k输入字符/24k联合输出/480s，worker500k/32k/480s，各一次transport、无retry/resume/fallback。依据A2 Lead12,278输入/8,412输出及两位worker的真实规模、Pro/low本次审查诊断给余量；非质量等价证明。counter/planner旧配置不在此研究run执行，独立审查运行前另按实际整包大小选预算。
+
+成本预估是首次全覆盖研究资格而非产品定价：约40–70次请求、约6–12元量级具有较大不确定性（输入缓存、检索次数、思考长度都会变化）；不承诺一次短问答也需这些费用，不把财务缺漏静默删掉来压成本。若连续重复无新增信息、工具/模型截断、宿主错误、余额/未知provider结果，则保留结果并停在责任层，不无限重跑。每次模型请求的实际cache/reasoning/费用素材继续入账。泛用任意公式计算器尚未暴露；可以用已有S2派生指标和带来源的报道值，不能冒充任意算术已被本地验证；后续研究若确需新增计算，处理为具体工具能力问题，不能说成公开信息缺口。
+
+前置检查：78条scope/Lead/entry/review检查通过，新增完整九义务调度测试证明Q1 seed不可假充其他八项、不会重新调用Q1；真实九分支同一数据组合均可打开（另2passed/7.52s）。新paid authority在实现提交后单独创建，不重写旧A1/A2；保持同FIN0.1.3/S3，无formal/发布。

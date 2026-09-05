@@ -339,14 +339,18 @@ def _lead_terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShadow
             raise ContainerRunError("lead_handoff_completion_mismatch")
     elif ready or values.get("stop_reason") != "lead_turn_ceiling":
         raise ContainerRunError("lead_terminal_handoff_missing")
-    if ready and (set(registered) != submitted or not set(scope.allowed_branch_ids).issubset(branches)):
+    # Entry composition independently validates the immutable reviewed Q1 seed;
+    # it is reused research, not a newly executed child or newly billed work.
+    seeded_branches = {"Q1_ISSUER_TRUTH"}
+    if ready and (set(registered) != submitted or not set(scope.allowed_branch_ids).issubset(branches | seeded_branches)):
         raise ContainerRunError("lead_required_workpapers_not_completed")
     return {"status": "pass" if ready else "bounded_handoff", "phase": values["phase"],
             "stop_reason": values.get("stop_reason"), "model_turn_count": turns, "tool_action_count": actions,
             "lead_model_turn_count": len(lead_turns), "specialist_executions": len(results),
             "submitted_task_ids": sorted(submitted), "actors": actors,
             "state_digest": _digest(raw), "output_digest": canonical_sha256(handoff),
-            "acceptance_scope": "Lead_Q5_Q6_delegation_handoff_only_not_independent_review_full_case_or_product_acceptance"}
+            "required_branch_ids": list(scope.allowed_branch_ids), "reused_seed_branch_ids": sorted(seeded_branches),
+            "acceptance_scope": "Lead_research_handoff_only_not_independent_review_final_report_or_product_acceptance"}
 
 
 def _audit(authority: DellQ1SpecialistPaidShadowAuthority, turns: int) -> dict[str, Any]:

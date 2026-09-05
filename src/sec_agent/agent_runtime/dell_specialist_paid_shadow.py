@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .dell_reference_vertical_contracts import canonical_sha256
 from .deepseek_structured_agents import TokenBudgetBasis
+from .dell_agentic_contracts import DELL_COVERAGE_OBLIGATION_IDS as DELL_FULL_RESEARCH_BRANCHES
 
 
 DELL_Q1_PAID_SHADOW_SERVING_MODE = "q1_specialist_paid_shadow_v1"
@@ -60,21 +61,24 @@ class WorkpaperReviewScope(BaseModel):
 
 
 class LeadResearchScope(BaseModel):
-    """First two-topic delegation qualification, not full-case publication."""
+    """Explicit Dell research coverage, still not a publication authority."""
     model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
     seed_state_relative_path: str = Field(pattern=r"^[a-z0-9_-]+/specialist-final-state\.private\.json$")
     seed_state_sha256: str = Field(pattern=_DIGEST_PATTERN)
-    allowed_branch_ids: tuple[Literal["Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"], ...]
+    allowed_branch_ids: tuple[str, ...]
     node_budgets: dict[Literal["lead", "specialist"], TokenBudgetBasis]
     max_lead_model_turns: int = Field(ge=2, le=12)
-    max_tasks: int = Field(ge=2, le=4)
+    max_tasks: int = Field(ge=2, le=12)
     max_parallel_tasks: Literal[2]
 
     @model_validator(mode="after")
     def validate_scope(self) -> "LeadResearchScope":
-        if (len(self.allowed_branch_ids) != 2 or set(self.allowed_branch_ids)
-                != {"Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"}):
-            raise ValueError("lead_requires_both_qualified_research_topics")
+        scope = set(self.allowed_branch_ids)
+        if (len(scope) != len(self.allowed_branch_ids) or scope not in (
+                {"Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"}, set(DELL_FULL_RESEARCH_BRANCHES))):
+            raise ValueError("lead_scope_requires_original_two_topics_or_explicit_full_Dell")
+        if len(scope) == 9 and self.max_tasks < 8:
+            raise ValueError("full_Dell_requires_capacity_for_eight_new_obligations_plus_Q1_seed")
         if set(self.node_budgets) != {"lead", "specialist"} or any(
             role != basis.node_role or basis.reasoning_profile != "agentic_message_history_thinking_enabled"
             for role, basis in self.node_budgets.items()

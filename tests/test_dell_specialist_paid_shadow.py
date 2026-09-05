@@ -198,3 +198,21 @@ def test_lead_scope_is_explicit_and_keeps_old_authorities_readable(tmp_path, def
     else:
         assert DellQ1SpecialistPaidShadowAuthority.model_validate_json(encoded).lead_scope.max_parallel_tasks == 2
         assert _authority(tmp_path).lead_scope is None
+
+
+@pytest.mark.parametrize("defect", [None, "missing", "duplicate", "capacity"])
+def test_full_dell_scope_is_explicit_and_old_two_topic_files_do_not_expand(tmp_path, defect):
+    from sec_agent.agent_runtime.dell_specialist_paid_shadow import DELL_FULL_RESEARCH_BRANCHES
+    old = _lead_authority(tmp_path)
+    assert len(old.lead_scope.allowed_branch_ids) == 2
+    body = old.model_dump(mode="json", exclude={"decision_digest"})
+    body["lead_scope"].update(allowed_branch_ids=list(DELL_FULL_RESEARCH_BRANCHES), max_tasks=12)
+    body["live_external_calls_authorized"] = True
+    if defect == "missing": body["lead_scope"]["allowed_branch_ids"].pop()
+    if defect == "duplicate": body["lead_scope"]["allowed_branch_ids"].append(DELL_FULL_RESEARCH_BRANCHES[0])
+    if defect == "capacity": body["lead_scope"]["max_tasks"] = 4
+    encoded = json.dumps({**body, "decision_digest": canonical_sha256(body)})
+    if defect:
+        with pytest.raises(ValidationError): DellQ1SpecialistPaidShadowAuthority.model_validate_json(encoded)
+    else:
+        assert len(DellQ1SpecialistPaidShadowAuthority.model_validate_json(encoded).lead_scope.allowed_branch_ids) == 9

@@ -7,7 +7,7 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
-2026-09-06 S3/190 最新：成本审计和两次真实Flash/Pro对照已完成；第二包成熟外源也已接通既有MCP原文工具。宿主亲测HPE/微软/TrendForce，明确商业报告预览≠报告、行业预测≠Dell/S2事实；新web reader只做既有Exa与SourceBoundPassage薄适配，默认旧运行禁live，新authority显式开启。70相邻检查+1真实MCP搜索阅读通过（HPE19,332字符，0模型）；旧A5底稿兼容。下一完整Dell动态研究覆盖/收敛，再接真实前端交互；尚无新完整报告或新case，不能把工具PASS当产品PASS。详见S3/190，后文全部为历史时点。
+2026-09-06 S3/190 最新：成本审计和两次真实Flash/Pro对照已完成；成熟外源经既有MCP亲测HPE19,332字符通过，默认旧运行仍禁live。新Lead全Q1–Q9 scope已实现并通过九分支数据组合/完整调度测试；优先复用已审Q1，最多12动态任务/并行2/Lead12轮/worker16轮24工具，使用Pro/low并按实际研究规模保存TokenBudgetBasis。下一创建fresh显式web-enabled full-research authority做一次真实收敛；粗估研究资格6–12元、不包括后续最终审查，不能当短问答定价。Counter/责任回派/Verifier/报告与真实UI尚待连通，无完整Dell/新case PASS。详见S3/190，后文为历史时点。
 
 2026-09-06 S3/190 补充实测（覆盖下段“尚未paid”）：已用相同真实A5审查输入完成2次独立next-action组件对照，共180756tokens/估0.747891CNY：Flash/high 32000输出全是reasoning、finish length、无动作；Pro/low 15023输出含13312reasoning、合法SubmitReview/no_material_finding，但不等于完整审查或与Pro/high等质。LangSmith已实查两个spans；SDK success与任务失败分开。大包终审不直接切Flash，下一成熟外源先宿主实测再接模型；未追加第三次，未运行新完整Dell，详情S3/190。
 

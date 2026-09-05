@@ -23,7 +23,7 @@
 - [x] 使用既有ChatDeepSeek客户端支持配置化用途路由（Flash/Pro、low/high/max）；旧配置保持Pro，不新增router模型/框架，也不自动让Flash接管所有研究。
 - [x] 同输入、同工具合同做两次真实model/effort下一步对照：Flash/high 32k思考截断无动作；Pro/low交合法审查，合计估0.747891元。大包终审不转Flash/high；同任务全程路由质量仍未资格通过，详见S3/190。
 - [x] 复用既有Exa搜索/正文抓取，经同一MCP source-read接通；宿主实际搜索/阅读HPE、微软、TrendForce及商业报告预览边界；70定向测试与1次真实MCP搜索阅读通过。新authority显式开放，旧run不变；模型真实使用尚待下一次执行。新闻/帖子/自媒体允许读并披露限制，不强制原文变金融JSON、不自动晋升S2。
-- [ ] 既有Lead动态任务扩大到实际Q1–Q9义务；优先复用已接受Q1及合法源资料；Counter/责任回派/Verifier/报告连通。
+- [ ] 既有Lead动态任务已实现显式全Q1–Q9 scope和Q1复用，九分支数据组合/完整调度离线通过；下一新执行测试实际研究收敛，尚不能勾完成。之后Counter/责任回派/Verifier/报告连通。
 - [ ] 在同Agent Server/Redis/PostgreSQL/LangSmith上接真实任务创建、实时过程、取消/人工介入、运行后追问；前端展示动作、简明理由和证据，不公开原始私有思维链。
 - [ ] 真实Dell全链与产品验收，按失败修复；随后设计1–2新case覆盖长研究、短任务/问答，分别记录质量、token、成本、延迟，不把长程任务开销说成每次问答开销。
 

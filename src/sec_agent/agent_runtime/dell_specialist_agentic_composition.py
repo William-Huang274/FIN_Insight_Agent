@@ -1010,7 +1010,7 @@ def _open_dell_specialist_composition(
                 task_data = graph_input.task.model_dump(mode="json")
                 task_data["revision"] = prior.task_revision + (1 if mode == "repair" else 0)
                 if mode in {"verifier", "counter"}:
-                    task_data["objective"] = f"{mode}: independently review the supplied Q1 workpaper and source context; report material findings, do not write the report."
+                    task_data["objective"] = f"{mode}: independently review the supplied {branch_id} workpaper and source context; report material findings, do not write the report."
                 body = graph_input.model_dump(mode="json")
                 body.update(task=task_data, collaboration_context=collaboration.model_dump(mode="json"),
                             agent_id=collaboration.target_agent_id if mode == "repair" else f"{mode}:{branch_id}:r{prior.task_revision}")

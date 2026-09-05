@@ -510,7 +510,7 @@ _NATIVE_REVIEW_SYSTEM_PROMPT = (
     "not because a previous schema validator accepted. All reader-facing notes/findings must be in Chinese. "
     "Source-bound passage numbers may be used, but moving them from claims to prose is not a citation repair. "
     "A repair must preserve exact source references wherever material assertions remain, including narrative. "
-    "Review only this Q1 issuer-truth scope; other case obligations are future work, not grounds to block Q1. "
+    "Review the assigned task's coverage and target revision; do not demand unrelated case obligations from a single branch workpaper. "
     "No hidden chain of thought in outputs. No shell, file writes, permission expansion or source promotion."
 )
 

@@ -44,3 +44,20 @@ R7 implementation=9541c03ee371577b530c44de3abd81d6c818c934，authority HEAD=6fce
 官方依据：[Docker Compose IPAM](https://docs.docker.com/reference/compose-file/networks/#ipam)。
 
 网络/launcher 这次局部修补只重跑相关两文件：**10 passed in 0.51s**，含默认无 overlay、显式私有 /24、拒绝公网/过宽/非网段地址/IPv6；没有重复 115 项、更没有全仓回归。新运行继续走原 start-once runner，未手工复用失败 R7。
+
+## R8 真实结果：批次已跑通，最终输出被截断
+
+- implementation c09a478344c696fd16217be29fc763059295419d，authority HEAD d101d6b7；execution=20260905-dell-q1-native-tool-batch-enabled-r8，project=finsight-dell-q1-paid-bbc1c9bd7956，port18145，私有网段10.253.8.0/24。Compose build/up 17.328s（复用镜像层），三服务健康。run/root=01a0713f-7c5d-7763-81da-4ec9d2902056；thread=470365c6-ace3-5c24-8df4-c96944f684ee。
+- 5 次真实 DeepSeek HTTP200，4 轮被 graph 接受，6 个数据动作全部成功：Reviewed、quarter-discrete SQL、instant SQL、目录、Dell EX-99.1 原文、NVIDIA 原文。模型自主采用两个双调用批次和两个单读取调用；源码权限、期间类型和引用权威区分不改。人工查看实际源块，确认返回完整表格上下文和 locator，而非仅看计数。
+- 第二至第五轮的实际 SDK 输入逐轮检查：原 AIMessage reasoning 一致，返回 ToolMessage IDs 分别完整匹配 2、2、1、1 个前轮调用。没有丢工具结果或 reasoning；这些内容仍只在私有审计，不进入公开 trace/graph notebook。
+- 总 input **214,277**、output **30,513**、total **244,790 tokens**；模型累计 **389.057s**。LangSmith root error、五个 LLM span 有真实成功 HTTP 响应，估费 **USD0.053608037**（非账单）。不能将 LLM span success 当整条研究 PASS。
+- 第五轮输入236,988chars/75,198tokens；输出16,000tokens触发 finish_reason=length，其中reasoning10,616，函数输出约5,384。已开始 SubmitWorkpaperAction，包含实质的收入/订单/利润/现金转换交叉分析，但在 citation 清单中途截断，**无完整底稿/无金融质量 PASS**。宿主拒绝半截 JSON 正确；不是应放宽 validator 的问题。
+- 原 failed-receipt.json、模型审计及只读 HTTP GET 原样下载的 diagnostic-state-after-failure.private.json（358132bytes）保留；未 resume、未修补/拼接原输出。
+
+### 输出容量小修正与下一步
+
+采用新配置 fin_ia_0_1_3_dell_q1_source_read_thinking_workpaper_capacity_v1_0.json，旧配置/已消费 authority 不改：联合输出32,000tokens；输入360,000chars；单轮480s。基于10,616实际reasoning+至少5,384未完成正文及实际生成速度，给完整正文/claim ledger和一次纠错留余量；仍是12轮、11数据动作、一次transport、不静默截断、不改模型/任务/权限。不是为了低成本而砍掉必要研究，不新增上下文框架。
+
+这属于 Owner 最新授权下基于反例的本地配置修补；接着 fresh R9 做一次功能验证，部署用另一个经核对的私有 /24，既有R8服务可停止减内存但不删除。完整多Agent和正式报告仍未到交付点。
+
+容量配置及相邻的 source-read/预算/launcher 检查：**24 passed in 37.12s**。旧16k配置和原authority保持不变；Dockerfile仅末尾复制新配置，不触发锁依赖层变化。R8结束服务已停止、全部资源保留；新网段10.253.9.0/24未与现有Windows路由及Docker IPAM冲突。

@@ -62,6 +62,20 @@ def test_no_silent_truncation_and_search_is_not_citable():
     assert result.items[0]["writer_citable"] is False
 
 
+def test_workpaper_capacity_profile_uses_measured_thinking_and_output_needs():
+    from pathlib import Path
+    from sec_agent.agent_runtime.deepseek_structured_agents import load_deepseek_structured_agent_config
+    root = Path(__file__).resolve().parents[1] / "configs/research"
+    old = load_deepseek_structured_agent_config(root / "fin_ia_0_1_3_dell_q1_source_read_thinking_enabled_v1_0.json")
+    new = load_deepseek_structured_agent_config(root / "fin_ia_0_1_3_dell_q1_source_read_thinking_workpaper_capacity_v1_0.json")
+    basis = new.token_budget_basis["specialist"]
+    assert old.token_budget_basis["specialist"].max_output_tokens == 16000
+    assert (basis.max_input_characters, basis.max_output_tokens, basis.timeout_seconds) == (360000, 32000, 480)
+    assert new.model == old.model and new.thinking == "enabled" and new.agentic_message_history
+    assert basis.max_transport_attempts == 1 and basis.truncation_stop_behavior == "fail_closed_no_partial_promotion"
+    assert "10616" in basis.comparable_run_evidence and "5384" in basis.comparable_run_evidence
+
+
 @pytest.mark.parametrize("tool_case", ["valid", "wrong_action_tag"])
 def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire(tool_case):
     from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentError

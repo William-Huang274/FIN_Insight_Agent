@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-05 S3/188 R8 最新：批次真实跑通（2+2+1+1 个数据工具动作全部成功）；模型自主读 Reviewed/两类SQL/目录/Dell及NVIDIA原文，第二至第五轮原 reasoning 与全部 ToolMessage ID 实际续传。5次模型共244790tokens/389.057s/LangSmith估费USD0.053608037，第四轮后第五轮的16k联合输出上限被10,616 reasoning与未完正文用尽，在SubmitWorkpaperAction引用清单中途截断；原失败保留，无完整底稿。正在按实际规模将新配置改为32k输出/360k输入chars/480s，模型/12轮11动作/权限不变，继续fresh R9功能验证，不重新扩框架。R9尚未创建；旧R8不可resume。
+
 2026-09-05 S3/188 部署更新：R7 镜像构建成功，但创建运行环境时默认 Docker 地址池耗尽；零模型、零项目容器/卷，failed-receipt 保留。已用可选标准 Compose IPAM/--subnet 做小修补，10 项宿主/预算相关测试通过；Windows 路由和全部 Docker 网络已只读核对，10.253.8.0/24 无冲突。未删除网络或改全局代理/daemon。接着用 fresh R8、相同模型/任务/数据/预算完成尚未发生的真实功能验证；多工具代码的 115 项离线结论不变。
 
 2026-09-05 S3/188 最新：RC-S3-114 的 native tool batch 已用现有 LangGraph ToolNode/ToolMessage 修补；115 项定向检查通过，包含原样 R6 四调用 + 真实本地 MCP + 下一轮 SDK 四份结果/原 reasoning 的离线回放。R4/R5/R6 仍为原失败，当前没有新真实运行或底稿。Owner 最新明确要求此类本地缺陷自主修复、适度验证并继续，不逐补丁求确认；只有权限/删除/显著费用/产品方向等实质变化才暂停。下一步 fresh enabled 功能运行，沿用既有任务/权限/规模预算；不做 thinking A/B，不扩多 Agent，不无限重试。此条取代下方历史“批次尚未实现/不自动 R7”的当前性。

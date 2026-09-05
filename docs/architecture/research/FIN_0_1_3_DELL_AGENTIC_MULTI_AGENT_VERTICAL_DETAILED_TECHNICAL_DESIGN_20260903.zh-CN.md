@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED / WAVE2_Q1_R2_HTTP400_SCHEMA_FAILURE_PRESERVED / OBJECT_ENVELOPE_REPAIR_OFFLINE_VERIFIED / NEW_PAID_EXECUTION_NOT_AUTHORIZED`
+文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED / WAVE2_Q1_R3_REAL_PROVIDER_LOOP_BOUNDED_HANDOFF_NO_WORKPAPER / DATA_DELIVERY_CONTRACT_CORRECTION_PENDING / NO_R4_AUTHORITY`
 
 冻结日期：2026-09-03
 
@@ -10,11 +10,13 @@
 
 产品版本：`FIN 0.1.3`（本设计不创建新的产品版本、S-stage、R15 或 R16）
 
+2026-09-05 R3 最新执行更新（取代后续历史未执行状态）：Owner 已授权并完成一次 fresh R3。修复后的 Provider object schema 在 6 次真实 DeepSeek 调用中成功；模型自主做了 4 次 Evidence / 1 次 Finance 动作后请求人工处理，终态为 `bounded_handoff`，没有底稿，不是研究 PASS。LangSmith 可查 6 个成功 LLM spans；总 tokens 75,889，模型累计 43.113 s。原始查询只读复算确认全库 top-k 后过滤丢掉已存指引，Q1 任务与订单材料的分支资格/当前季 F1 路径不匹配，余额指标 quarter_discrete 混查又缺可操作的 instant 提示。先纠正这些具体输入/工具合同，不以新 runtime、更多轮数或降低引用校验代替；涉及 Owner 数据门的修改尚未授权，本轮没有实施。R3 consumed、无 retry/resume/fallback、无 R4；见 `docs/worklog/fin_0_1_3_s3/186_dell_q1_paid_shadow_r3_handoff_and_data_delivery_root_cause_audit.md`。
+
 2026-09-05 执行更新（取代本文件历史段落中的未执行状态）：R1 模型前绑定故障已修复；R2 唯一运行到达 DeepSeek，但因 Specialist 顶层 union 函数参数不是 object 被 HTTP 400 拒绝。现已采用标准 Pydantic 对象封装 `{"action": <原封闭动作联合>}`；在 provider adapter 解包后，原 graph、MCP、context 和证据校验合同不变。相关 67 项离线测试通过，含真实 SDK + MockTransport 请求/响应；不代表线上接受或研究质量。R2 保持失败、无底稿、无工具动作；新付费执行需新身份/Owner 授权，不重用 R2、不扩写 K0–K6。详细证据见 `docs/worklog/fin_0_1_3_s3/185_dell_q1_paid_shadow_r2_schema_failure_and_object_envelope_fix.md`。
 
 ## 0. 结论先行
 
-当前最小修复代码基线：`0c798101d7a14ff2b228fbc5c52e740ff20e60ae`；只获离线验证，下一付费资格未授权。
+当前最小修复代码基线：`0c798101d7a14ff2b228fbc5c52e740ff20e60ae`；R3 authority HEAD=`1b93d9c3f93135631f06df94cb4f759b4c8ba1fd` 已完成一次真实模型验证，研究结果是人工 handoff 而非底稿。下一工作是 S3/186 所列的窄范围数据交付合同纠正；没有 R4 资格。
 
 本设计把 Dell 单案例纵切从“固定 Planner 一次生成九个任务、宿主预取全部资料、九个一次性 Specialist、一次 Counter、一次 Lead”改成以下目标：
 

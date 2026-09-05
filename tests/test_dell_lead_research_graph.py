@@ -6,7 +6,7 @@ from threading import Barrier
 
 import httpx
 import pytest
-from pydantic import SecretStr
+from pydantic import SecretStr, ValidationError
 
 from sec_agent.agent_runtime.dell_lead_research_graph import build_dell_lead_research_graph
 from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_sha256
@@ -245,3 +245,60 @@ def test_q6_actual_source_passage_can_reach_review_without_claiming_reviewed_rou
     bad_claim = action.claims[0].model_copy(update={"citation_quotes": {action.claims[0].evidence_ids[0]: "FABRICATED_SOURCE_QUOTE"}})
     assert any("source_quote_not_in_observed_passage" in error for error in _submission_errors(action.model_copy(update={"claims": (bad_claim,)}), notebook))
     assert any("required_route_unsatisfied" in error for error in _submission_errors(action, notebook.model_copy(update={"source_read_enabled": False})))
+
+
+@pytest.mark.local_data_integration
+def test_actual_lead_a1_q6_tool_replay_returns_submission_errors_without_runtime_crash():
+    from test_dell_specialist_agentic_composition import RUNTIME_ENVIRONMENT, _assert_assets
+    from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_scripted_qualification_composition
+    from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistNotebook, SubmitWorkpaperAction, _submission_errors
+    _assert_assets()
+    root = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260906-dell-lead-two-topic-a1")
+    if not (root / "failed-receipt.json").exists(): pytest.skip("actual failed Lead A1 not available")
+    archived = [json.loads(line) for line in (root / "model-context-reasoning.private.jsonl").read_text(encoding="utf-8").splitlines()]
+    turns = [row for row in archived if row["actor"].startswith("specialist:Q6_MODEL_COMPUTE_DEMAND:")]
+    parent = json.loads((root / "specialist-final-state.private.json").read_text(encoding="utf-8"))["values"]
+    assignment = next(task for task in parent["tasks"] if task["coverage_obligation_ids"] == [BRANCHES[1]])
+    seen, submission_errors = [], []
+    def replay(request):
+        seen.append(request)
+        if len(seen) > len(turns):
+            return {"action": "request_human_review", "context_digest": request["context_digest"],
+                    "reason_summary": "Offline replay exhausted; no provider invoked or financial pass.", "blocker_code": "offline_replay_complete"}
+        # Replay keeps exact model arguments and references except the new local
+        # context binding. It never modifies the archived model response.
+        calls = deepcopy(turns[len(seen)-1]["raw_response"]["tool_calls"])
+        for call in calls:
+            call["args"]["context_digest"] = request["context_digest"]
+            if call["name"] == "SubmitWorkpaperAction":
+                try:
+                    action = SubmitWorkpaperAction.model_validate_json(json.dumps(call["args"]))
+                except ValidationError:
+                    continue  # Original bad schema still goes unchanged to ToolNode.
+                notebook = SpecialistNotebook.model_validate_json(json.dumps(request["notebook"]))
+                submission_errors.extend(_submission_errors(action, notebook))
+        return {"action": "native_tool_batch", "context_digest": request["context_digest"], "tool_calls": calls}
+    with open_dell_specialist_scripted_qualification_composition(run_id="lead-a1-q6-local-replay", run_invocation_id="lead-a1-q6-local-replay-1",
+        branch_id=BRANCHES[1], environment=RUNTIME_ENVIRONMENT, scripted_model_turn=replay, source_read_enabled=True,
+        research_task=assignment, dependency_workpapers={}, max_model_turns=16, max_tool_actions=24) as c:
+        result = c.graph.invoke(c.graph_input.model_dump(mode="json"), config={"recursion_limit": 128})
+    assert result["phase"] == "specialist_human_review_handoff_emitted"
+    assert any("source_quote_not_in_observed_passage" in error for error in submission_errors)
+    assert not any("reference_identity_conflict:SOURCELOC::" in error for error in submission_errors), submission_errors
+    assert seen[-1]["notebook"]["feedback"][-1]["code"] == "specialist_submission_reference_validation_failed"
+
+
+def test_full_runtime_feedback_is_preserved_and_citable_identity_conflicts_still_fail():
+    from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistNotebook, SubmitWorkpaperAction, _feedback, _submission_errors
+    message = "; ".join(f"source_quote_not_in_observed_passage:passage{i}:claim=claim{i}" for i in range(100))
+    result = _feedback("submission_rejected", message, owner_layer="agent", next_actions=("correct_claim_ledger",))
+    assert len(message) > 2000 and result.message == message
+    seed = _seed()
+    notebook = SpecialistNotebook.model_validate_json(json.dumps(seed["notebook"]))
+    action = SubmitWorkpaperAction.model_validate_json(json.dumps(seed["final_submission"]))
+    obs = next(obs for obs in notebook.observations if any(ref.writer_citable for ref in obs.references))
+    ref = next(ref for ref in obs.references if ref.writer_citable)
+    conflicting = ref.model_copy(update={"artifact_digest": "f" * 64 if ref.artifact_digest != "f" * 64 else "e" * 64})
+    copied = obs.model_copy(update={"references": (conflicting,)})
+    errors = _submission_errors(action, notebook.model_copy(update={"observations": (*notebook.observations, copied)}))
+    assert f"reference_identity_conflict:{ref.ref_id}" in errors

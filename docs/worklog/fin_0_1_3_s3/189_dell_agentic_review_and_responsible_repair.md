@@ -119,6 +119,18 @@ FIN 仅验证任务覆盖、依赖身份、同 case/as-of/批准数据范围以�
 
 ## 动态 Lead → 并行专业研究：实现与付费前资格（2026-09-06）
 
+### Lead two-topic A1 实际失败与同层修复（最新）
+
+launch HEAD `fa95d16c8c3d33a32940f2e255c907fcb7e337ff`；project `finsight-dell-q1-paid-d9965ec526e6`、port18153、subnet10.253.26.0/24。run/root `01a072d9-2841-7bb0-8ad0-8c48d6b139fc`、thread `19d3e737-9315-532c-9cf1-3ad1f42ec5f8`。首次真实 Lead1轮自主提出Q5 supply-price-transmission与Q6 model-compute-demand-bridges 两项任务、各自角色/目标/验收标准，均无依赖；两专业Agent并行自主循环。A5作为Lead已知底稿，Lead没有为子任务指定seed依赖，不能虚称实际发生了那条依赖交接。
+
+- 实际18个模型完成响应（Lead1/Q5 7/Q6 10），input/output/total=`948806/99138/1047944`，累计模型1244.302518s。构建101.109s、container研究阶段615.984s；Q5在父图取消后仍完成原在途响应并补写audit，因此不能用父图时长宣称全部模型已于同一时刻完成。最终18started/18outcome，无未决provider调用，原Q5响应未复用/重试。
+- Q5原生请求4Reviewed+2Finance+13Source+1Submit；Q6 3Reviewed+17Source+2Submit。这是模型请求计数，非每项均成功的MCP证据。模型自己查HBM/存储价格、液冷、电力、Dell结果、模型/基准/客户资料，使用批量源读取；不是固定单步问答。Q5最后草稿25claims/2676叙事字符，Q6最后20claims/3983字符，均非已验收稿。
+- 失败最早层是 `SpecialistFeedback.message max_length=2000`：Q6产生正确的引用拒绝后，较长错误说明反而使反馈模型验证崩溃；LangGraph superstep随后取消Q5。失败checkpoint根phase=`schedule_ready_tasks`，0 task_results；host错误 `lead_research_terminal_state_invalid` 是后果，非真正根因。Docker三服务healthy，非网络/额度问题。
+- 同一真实回放又确认 SOURCELOC 候选在不同search/catalog视图中的preview差异被当作全底稿的不可变引用冲突。现在只跳过双方都不可引用/非数值权威的retrieval_candidate视图差异；真正Evidence/Passage/NumericFact冲突仍拒绝，原观察/摘要不改。完整runtime错误消息不再设独立2000字符上限；总输入预算和已有字段界限仍限制模型调用，绝不截去错误以过测试。
+- 修后真实Q6重放保留26项真正提交问题：1条无canonical receipt的bounded_gap，25条PASSAGE缺失逐字引句（20个claim均未填citation_quotes），反馈6779字符能回到下一轮，旧版先复现fatal。不是代码替模型写引用。工具schema说明明确ANY PASSAGE引用（含inference/boundary）需要对应引句；bounded_gap与普通open_gaps含义不混淆。不存在Quote匹配放水/公开缺口升级/手工改稿。
+- 87相邻检查通过，含上述真实失败回放、长反馈原样保留、可引用对象真实冲突仍拒绝；后续schema说明仅做相邻复验，不全仓回归。原 `failed-receipt.json`、`specialist-final-state.private.json`、模型audit/reasoning文件留在A1目录；额外机械导出 `q5.unaccepted.agent-original.md`、`q6.unaccepted.agent-original.md`，宿主明确标注未通过，不修改模型正文或旧state。
+- 新组合的root GET state?subgraphs=true看得到两个worker任务但其state=null，故**未证明活跃子图的前端实时展开/独立resume/HITL**。当前修复不借机重造持久化；该产品验收项保留。下一仍是同Q5/Q6 scope fresh A2，一次新启动验证能否将正确反馈交回模型并完成Lead收敛，再做独立跨主题审查。下方为付费前历史。
+
 下一一次执行配置已落盘：`configs/research/evals/fin_ia_0_1_3_s3_dell_lead_two_topic_a1_authority_v1_0.json`，decision digest `d9965ec526e6f203acea6e68c006bc2baf6eb9fc12eed3538a0f3ee67425c417`，implementation `11c52031d700f6ae6856a46768165dd685edea97`，execution=`20260906-dell-lead-two-topic-a1`。数据/canonical session-run-invocation 输入已零模型实际创建通过；runner 派生 port18153、10.253.26.0/24 已查未用；正式结果以下次原始 receipt 为准。16轮/24动作是每个专业任务容量，不是全 case 总额；Lead8轮、最多4任务/并行2、每节点500k/32k/480s，真实用量必须按新调用统计，不计复用 A5 的旧调用。
 
 在 `0d9ccd347bdf25f900766a09481bca10115d5cef` 后实现 `dell_lead_research_graph`。Lead 使用同 SDK 的3个原生规划工具，ResearchTaskSpec 表达任务/依赖；标准 `Send` 执行 ready tasks，ToolNode 给回 schema/依赖/循环/越权错误和真实子任务产物。Lead 可看结果后追加任务，不支持改写/取消已运行任务；最多4任务、并行2，非新通用调度器。Schema/state 读取不开模型/MCP/seed；Agent Server 的既有数据库/Redis/trace 持久化不换。私有 reasoning 各自续传，跨角色只共享工作底稿、显式引用/局限和未完成 Reviewed route，不复制 notebook 计数或权限。

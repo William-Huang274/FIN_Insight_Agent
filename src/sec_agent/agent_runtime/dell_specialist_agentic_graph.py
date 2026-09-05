@@ -235,6 +235,8 @@ class SpecialistClaim(_StrictModel):
     authority_note: str | None = Field(default=None, min_length=1, max_length=1_000)
     reasoning_summary: str | None = Field(default=None, max_length=4_000)
     citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict, description=(
+        "Required for EVERY PASSAGE reference in evidence_ids, including inference and boundary claims: "
+        "citation_quotes[that_exact_PASSAGE_ID] must contain observed source text. An empty map is rejected. "
         "Map each evidence/PASSAGE ID to one exact contiguous source quote or a list of exact "
         "contiguous quotes. For separate table rows use separate list entries, not ellipses, "
         "invented separators or paraphrases. Moving a material assertion into prose does not "
@@ -274,7 +276,13 @@ class SubmitWorkpaperAction(_StrictModel):
     action: Literal["submit_workpaper"]
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     reason_summary: str = Field(min_length=1, max_length=1_000)
-    terminal_state: Literal["supported", "countered", "bounded_gap", "not_material"]
+    terminal_state: Literal["supported", "countered", "bounded_gap", "not_material"] = Field(description=(
+        "Workpaper stance, not independent semantic approval or complete case coverage. "
+        "supported/countered may retain explicit open_gaps. bounded_gap requires a canonical public-gap "
+        "eligibility receipt, unavailable in this profile; do not use it for a missing source, incomplete "
+        "Reviewed metadata or limited search. Describe those in open_gaps, or request human review if "
+        "no grounded workpaper can be produced."
+    ))
     thesis: str = Field(min_length=1, max_length=4_000)
     mechanism: str = Field(min_length=1, max_length=6_000)
     narrative_markdown: str = Field(min_length=1, max_length=30_000)
@@ -613,7 +621,10 @@ class SpecialistToolObservation(_StrictModel):
 
 class SpecialistFeedback(_StrictModel):
     code: str = Field(min_length=1, max_length=240)
-    message: str = Field(min_length=1, max_length=2_000)
+    # Runtime-generated diagnostics may describe many already-bounded claims.
+    # Do not turn a correct rejection into a fatal error merely because its
+    # explanation is long. The provider's total input budget remains enforced.
+    message: str = Field(min_length=1)
     owner_layer: Literal["agent", "runtime", "tool", "data"]
     available_next_actions: tuple[str, ...] = Field(min_length=1, max_length=8)
     public_information_gap_proved: Literal[False] = False
@@ -1042,6 +1053,14 @@ def _submission_errors(
         for reference in observation.references:
             prior = references.get(reference.ref_id)
             if prior is not None and prior != reference:
+                if (prior.authority_state == reference.authority_state == "retrieval_candidate"
+                        and not any((prior.writer_citable, reference.writer_citable,
+                                     prior.numeric_fact_authority, reference.numeric_fact_authority))):
+                    # A source-location candidate may have different previews
+                    # across catalog/outline/search. Neither view is citable;
+                    # its changing preview must not poison unrelated evidence.
+                    # Immutable citable source/fact conflicts still fail below.
+                    continue
                 errors.append(f"reference_identity_conflict:{reference.ref_id}")
                 continue
             references[reference.ref_id] = reference

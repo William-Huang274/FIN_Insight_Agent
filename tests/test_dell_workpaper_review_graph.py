@@ -13,6 +13,7 @@ from sec_agent.agent_runtime.dell_specialist_agentic_graph import (
     _review_submission_errors, build_dell_specialist_agentic_state_graph,
 )
 from sec_agent.agent_runtime.dell_workpaper_review_graph import (
+    DellWorkpaperReviewError, _review_seed,
     build_dell_workpaper_review_graph, collaboration_context, validate_workpaper_state,
 )
 from test_dell_specialist_agentic_graph import (
@@ -150,6 +151,107 @@ def test_failure_or_unresolved_finding_never_becomes_pass(case, reason):
     result = build_dell_workpaper_review_graph(expected_input=expected, seed_state=seed,
         run_child=run_child).compile().invoke(expected.model_dump(mode="json"))
     assert result["phase"] == "review_cycle_needs_attention" and result["review_stop_reason"] == reason
+
+
+def _stopped_review():
+    def run_child(role, ctx, config):
+        return _execute(ctx, (lambda req: {**_submission()(req), "context_digest": req["context_digest"]})
+                        if role == "repair" else (lambda req: _review(req, material=True)))
+    expected = SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
+    return build_dell_workpaper_review_graph(expected_input=expected, seed_state=_seed(),
+        run_child=run_child).compile().invoke(expected.model_dump(mode="json"))
+
+
+def test_stopped_artifact_successor_repairs_first_without_replaying_old_model_calls():
+    stopped = _stopped_review()
+    original, calls = deepcopy(stopped), []
+    def run_child(role, ctx, config):
+        calls.append(role)
+        if role == "repair":
+            assert ctx["target_notebook"]["task_revision"] == 1 and ctx["findings"]
+            model = lambda req: {**_submission()(req), "context_digest": req["context_digest"],
+                                 "narrative_markdown": "第二版，旧审查制品驱动的新调用。"}
+        else:
+            assert ctx["target_notebook"]["task_revision"] == 2 and not ctx["findings"]
+            model = lambda req: _review(req)
+        return _execute(ctx, model)
+    expected = SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
+    result = build_dell_workpaper_review_graph(expected_input=expected, seed_state=stopped,
+        run_child=run_child).compile().invoke(expected.model_dump(mode="json"))
+    assert calls[0] == "repair" and sorted(calls[1:]) == ["counter", "verifier"]
+    assert result["phase"] == "review_cycle_accepted"
+    assert result["target_state"]["task"]["revision"] == 2
+    assert len(result["review_results"]) == 2 and len(result["repair_results"]) == 1
+    assert stopped == original
+
+
+@pytest.mark.parametrize("defect", ["not_stopped", "wrong_target", "wrong_anchor", "wrong_owner", "missing_reviewer"])
+def test_successor_rejects_invalid_or_non_author_handoff_before_model(defect):
+    stopped = _stopped_review()
+    rows = [r for r in stopped["review_results"] if r["round"] == 1]
+    if defect == "not_stopped":
+        stopped["phase"] = "review_cycle_accepted"
+    elif defect == "wrong_target":
+        rows[0]["review"]["target_submission_digest"] = "0" * 64
+    elif defect == "wrong_anchor":
+        rows[0]["review"]["findings"][0]["target_quote"] = "not in the target"
+    elif defect == "wrong_owner":
+        rows[0]["review"]["findings"][0]["responsible_owner"] = "data"
+    else:
+        stopped["review_results"].remove(rows[0])
+    with pytest.raises(DellWorkpaperReviewError):
+        _review_seed(stopped)
+
+
+@pytest.mark.local_data_integration
+def test_real_a1_feedback_identifies_only_invalid_claim_quotes_and_preserves_accepted_span():
+    from sec_agent.agent_runtime.dell_specialist_agentic_graph import SubmitWorkpaperAction, _submission_errors
+    path = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260905-dell-q1-agentic-review-repair-a1/specialist-final-state.private.json")
+    if not path.exists():
+        pytest.skip("immutable A1 artifact unavailable")
+    original = path.read_bytes()
+    state = json.loads(original)["values"]
+    notebook = SpecialistNotebook.model_validate_json(json.dumps(state["repair_results"][0]["agent_state"]["notebook"]))
+    submission = notebook.model_turn_records[0].action
+    assert isinstance(submission, SubmitWorkpaperAction)
+    errors = _submission_errors(submission, notebook)
+    assert len(errors) == 2
+    assert all("claim=C8:" in e or "claim=C9:" in e for e in errors)
+    assert all("claim=C7:" not in e for e in errors)
+    body = submission.model_dump(mode="json")
+    passage_id = next(ref for claim in body["claims"] for ref in claim["evidence_ids"] if ref.startswith("PASSAGE::"))
+    passage = next(item["passage"] for obs in notebook.observations for item in obs.content if item.get("passage_id") == passage_id)
+    # Two unchanged, independently contiguous snippets; this proves reference syntax,
+    # not their entailment of the fixture claims. Semantic review remains separate.
+    for claim in body["claims"]:
+        if passage_id in claim["evidence_ids"]:
+            claim["citation_quotes"][passage_id] = [passage[:80], passage[-80:]]
+    assert not _submission_errors(SubmitWorkpaperAction.model_validate_json(json.dumps(body)), notebook)
+    quoted = next(c for c in body["claims"] if passage_id in c["evidence_ids"])
+    quoted["citation_quotes"][passage_id][1] = "fabricated span"
+    assert "quote_index=1:" in _submission_errors(SubmitWorkpaperAction.model_validate_json(json.dumps(body)), notebook)[0]
+    quoted["citation_quotes"][passage_id] = []
+    assert _submission_errors(SubmitWorkpaperAction.model_validate_json(json.dumps(body)), notebook)
+    seed, pending = _review_seed(state)
+    assert seed["task"]["revision"] == 1 and any(f["category"] == "financial_reasoning" for f in pending)
+    from test_dell_specialist_agentic_composition import RUNTIME_ENVIRONMENT
+    from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_scripted_qualification_composition
+    seen = []
+    def driver(request):
+        seen.append(request)
+        if len(seen) == 1:
+            return {"action": "request_source", "context_digest": request["context_digest"],
+                    "reason_summary": "Actual revision-two source catalog read, no model.", "selection": {"operation": "catalog"}}
+        return {"action": "request_human_review", "context_digest": request["context_digest"],
+                "reason_summary": "End scripted compatibility check, not a research verdict.", "blocker_code": "qualification_done"}
+    with open_dell_specialist_scripted_qualification_composition(run_id="test:a1-successor", run_invocation_id="test:a1-successor:1",
+        branch_id="Q1_ISSUER_TRUTH", environment=RUNTIME_ENVIRONMENT, scripted_model_turn=driver,
+        source_read_enabled=True, collaboration_context=collaboration_context(seed, "repair", pending)) as opened:
+        assert opened.graph_input.task.revision == 2
+        result = opened.graph.invoke(opened.graph_input.model_dump(mode="json"))
+    assert result["notebook"]["tool_action_count"] == 1
+    assert result["notebook"]["observations"][-1]["status"] == "success"
+    assert path.read_bytes() == original
 
 
 def test_collaboration_rejects_wrong_scope_before_model():

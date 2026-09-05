@@ -498,6 +498,8 @@ _NATIVE_REVIEW_SYSTEM_PROMPT = (
     "repair instructions for the earliest responsible owner. Do not rewrite the author's report. Distinguish "
     "material issues from stylistic preferences. Return no_material_finding only after a substantive review, "
     "not because a previous schema validator accepted. All reader-facing notes/findings must be in Chinese. "
+    "Source-bound passage numbers may be used, but moving them from claims to prose is not a citation repair. "
+    "A repair must preserve exact source references wherever material assertions remain, including narrative. "
     "Review only this Q1 issuer-truth scope; other case obligations are future work, not grounds to block Q1. "
     "No hidden chain of thought in outputs. No shell, file writes, permission expansion or source promotion."
 )
@@ -1223,7 +1225,9 @@ class DeepSeekStructuredAgentAdapter:
                            "independent review findings. Prior source observations are available, but the reviewer "
                            "is not a truth oracle: verify each finding against sources, repair valid issues and explain "
                            "evidence-backed disagreement. Preserve substantive analysis, cover material statements "
-                           "in claims with concise rationale, and deliver the revised workpaper in Chinese. "
+                           "in claims with concise rationale, and deliver the revised workpaper in Chinese, "
+                           "including thesis, mechanism, narrative, claims and counterevidence even if the old draft is English. "
+                           "For a PASSAGE with separate relevant rows use a list of individually exact quotes. "
                            "Do not remove citation/claim records while retaining the unsupported statement in prose. "
                            "This is a new revision using artifact handoff, not continuation of the old provider conversation.")
             messages[0] = SystemMessage(content=prompt)

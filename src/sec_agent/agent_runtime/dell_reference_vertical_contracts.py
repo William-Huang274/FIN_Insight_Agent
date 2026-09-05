@@ -266,7 +266,9 @@ class BoundBranchTask(_StrictFrozenModel):
     task_id: str = Field(min_length=1, max_length=240)
     case_id: str = Field(min_length=1, max_length=80)
     branch_id: str = Field(min_length=1, max_length=120)
-    revision: Literal[0, 1]
+    # Artifact revision is not a retry budget. The executing graph/authority
+    # bounds repairs; an immutable successor must not reset revision to zero.
+    revision: int = Field(ge=0, le=100)
     priority: Literal["high", "medium", "low"]
     objective: str = Field(min_length=1, max_length=2_000)
     evidence_requests: tuple[dict[str, Any], ...] = Field(min_length=1, max_length=8)
@@ -288,7 +290,7 @@ class ToolLaneResult(_StrictFrozenModel):
     task_id: str = Field(min_length=1, max_length=240)
     case_id: str = Field(min_length=1, max_length=80)
     branch_id: str = Field(min_length=1, max_length=120)
-    revision: Literal[0, 1]
+    revision: int = Field(ge=0, le=100)
     research_as_of: str = Field(min_length=1, max_length=80)
     snapshot_id: str = Field(min_length=1, max_length=240)
     foundation_digest: Digest = Field(pattern=r"^[0-9a-f]{64}$")

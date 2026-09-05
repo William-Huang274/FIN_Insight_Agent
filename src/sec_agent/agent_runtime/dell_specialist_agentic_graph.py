@@ -233,7 +233,12 @@ class SpecialistClaim(_StrictModel):
     ))
     authority_note: str | None = Field(default=None, min_length=1, max_length=1_000)
     reasoning_summary: str | None = Field(default=None, max_length=4_000)
-    citation_quotes: dict[str, str] = Field(default_factory=dict)
+    citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict, description=(
+        "Map each evidence/PASSAGE ID to one exact contiguous source quote or a list of exact "
+        "contiguous quotes. For separate table rows use separate list entries, not ellipses, "
+        "invented separators or paraphrases. Moving a material assertion into prose does not "
+        "remove its citation obligation."
+    ))
 
     @model_validator(mode="after")
     def validate_claim_shape(self) -> "SpecialistClaim":
@@ -1065,9 +1070,16 @@ def _submission_errors(
             elif reference.authority_state == "source_bound_passage":
                 passages = [item for obs in notebook.observations for item in obs.content
                             if item.get("passage_id") == evidence_id]
-                quote = claim.citation_quotes.get(evidence_id, "")
-                if not quote.strip() or not any(quote in str(p.get("passage", "")) for p in passages):
-                    errors.append(f"source_quote_not_in_observed_passage:{evidence_id}")
+                value = claim.citation_quotes.get(evidence_id, "")
+                quotes = value if isinstance(value, list) else [value]
+                for index, quote in enumerate(quotes or [""]):
+                    if not quote.strip() or not any(quote in str(p.get("passage", "")) for p in passages):
+                        errors.append(
+                            f"source_quote_not_in_observed_passage:{evidence_id}:"
+                            f"claim={claim.claim_id}:quote_index={index}:"
+                            "copy_exact_contiguous_source_text;use_a_list_for_separate_spans;"
+                            "do_not_remove_the_reference_while_retaining_the_assertion_in_prose"
+                        )
                 if not claim.authority_note:
                     errors.append(f"source_passage_requires_authority_note:{claim.claim_id}")
         for fact_id in claim.fact_ids:

@@ -1,6 +1,6 @@
 # S3/188 — 原生多工具响应修补与后续功能验证
 
-状态：R10 已真实证明字段反馈→模型自行修正；随后引用/计算检查仍拒绝，第二次纠错在本地360k字符上限前停止。现有派生财务指标披露和纠错容量已小修，82项相邻检查通过，下一步fresh R11一次。历次失败不改，尚无被接受的底稿/金融研究PASS。
+状态：**R11 单 Specialist 运行闭环 PASS（有界），正文语义/引用覆盖复核未 PASS。** 7真实模型/8数据动作，现有派生指标被模型自主使用，字段反馈与原文复查后补交成功。不能作为完整多Agent/中文报告/金融质量验收；不再自动开R12追求漂亮指标，下一工作包是原设计中的Verifier/Counter语义与覆盖检查。历次失败不改。
 
 ## 本轮范围与 Owner 授权
 
@@ -96,3 +96,40 @@ implementation=ac4a05232bbb47746bb07436a33513f4ad8d3219，authority HEAD=c928d01
 - 4文件72 passed in13.50s，现有authority/runner2文件10 passed in0.57s，共82定向检查。历史R6反例测试使用其冻结L0输入（测试内替换current L0构建，不改生产代码/历史文件），保持原参数/context/call ID的精确回放；新披露另做真实MCP专项，不能用current L0假装历史输入。
 
 下一步fresh R11一次同任务功能验证，不重用R10。R9人工内容复核另发现英文草稿未满足中文交付，且误称GAAP free cash flow（原文明确为non-GAAP）；这些是需Verifier/内容复核处理的语义反例，未通过本地引用存在性校验就假称正确，也未把旧答案注入R11。
+
+## R11 收口：单 Agent 闭环实际通过，但正文不能直接发布
+
+### 运行事实
+
+- implementation=44b6ef7af7dccaad1ea57ef5f801faa7d8124d6c，authority HEAD=0db33daee124c7f8eb424f1ab9059d2fa9a6b212；project=finsight-dell-q1-paid-fcbbce075df1，port18147，subnet10.253.11.0/24。BuildKit vmr866f2l9b7vjca37n1nvicq；Compose build/up256.594s，单次容器执行/验证771.109s。
+- run/root=01a0719b-786a-71d3-84d8-f0b1d93fd276；thread=f7503a09-1d3d-5e52-863d-6daa6dda9f83。[实际LangSmith trace](https://smith.langchain.com/o/a8877d59-9079-4556-a411-bc1a1e2559c6/projects/p/ad1e16df-7ca2-4667-b409-3a72f9de3aaf/trace/01a0719b-786a-71d3-84d8-f0b1d93fd276/run/01a0719b-786a-71d3-84d8-f0b1d93fd276)。公开trace输入/输出隐藏，原reasoning只保留私有审计。
+- 终态specialist_submission_accepted，terminal-receipt.status=pass。receipt digest=d1d577fecea02c10531b05ba5586ba03a0a617456c2cd534d809b4b0e318a402；原始file SHA=0b2eb90d8bf4c22d34fb77137130247f0ccefdae92fd40d84078229cc977b03d。此为**运行及现有结构验证通过**，不是金融语义PASS。
+- 7次真实模型响应/8数据动作。第一轮模型自主选择free_cash_flow、gross_margin、operating_margin，S2实际返回公式、输入fact/source/期口径；没有将已知答案写入prompt。四/五轮提交被字段/quote检查拒绝，六轮主动重新读取原文，七轮补交接受。每次provider transport均一次，无retry/resume/fallback、无新数据/权限/模型节点。
+- 第二至第七轮SDK wire逐轮核对，前轮原reasoning一致、call ID对应完整，ToolMessage数依次4/2/1/1/1/1。模型可接受工具错误并继续，但这不证明生产级durable resume或跨Agent上下文。
+- tokens：input454359（cache_read391168，约86.1%）、output54865（含reasoning35625）、total509224。模型累计743.482s≈12分23秒；数据工具receipt合计1.132s。输入峰值344829chars，本轮未撞新500000上限，不能称其最大容量已经实压证明。
+
+### 成本口径纠正
+
+LangSmith R11估费USD0.076638619，不是账单。按2026-09-05[DeepSeek官方V4 Pro off-peak价格](https://api-docs.deepseek.com/quick_start/pricing/)（cache hit0.022/miss0.66/output1.98 USD每百万tokens）及本次真实usage复算约USD0.158944456，同样不是账单。R8/R9/R10按该费率复算分别0.104005088/0.100571328/0.127373532；原LangSmith数值保留为平台观察，不再把它当精确现行费率。模型思考/完整底稿重复生成是主要耗时，不是检索/SQL；后续优化应基于此事实，不先扩数据基座。
+
+### 可读交付与同作者内容复核
+
+原artifact根目录：Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260905-dell-q1-native-tool-batch-enabled-r11。
+
+- [原始英文底稿](Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260905-dell-q1-native-tool-batch-enabled-r11/specialist-workpaper.original.md)：机械导出3502字符模型正文、thesis/mechanism、11条claim及29个原已引用ID的URL；正文逐字比对一致，没有替模型补引用/改答案，不含原始reasoning。
+- [中文复核记录](Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260905-dell-q1-native-tool-batch-enabled-r11/specialist-workpaper.review.zh-CN.md)：这是同一实施作者的内容抽查，不冒充独立Verifier。
+
+正文已有订单、收入、利润、指引、营运资金和现金转换的实质分析。抽查Q1 FCF31.18亿美元、毛利率17.75%、营业利润率8.34%与实际S2派生结果一致。模型区分了Q1 S2数据与Q2 8-K文字来源，并做实际Q2 SQL探查；不是仅有边界说明，也不是凭空编造这些数字。
+
+但必须保留如下未通过结论：
+
+1. 最初14条claim，最终11条。第五轮C8(backlog)、C11(Q2现金)、C12(Q2余额)有PASSAGE引用；后两条用省略号拼接不连续表格行，精确quote校验正确拒绝。最终PASSAGE引用全部消失，正文仍保留相关数字。C7的Q2订单60.9B/backlog95B并不在其最后引用的两个Reviewed excerpt中（一个是Q1材料，一个是Q2分部摘要）。它们存在于已读原文不代表最终引文绑定合格。
+2. 正文/counter把应付增加和存货/应收增加一概写成吸收现金；这是因果解释错误，应付增加通常是供应商融资，且余额变化不能直接代替现金流量表影响。不能靠资料绑定就判其推断正确。
+3. 最终5个numeric_fact、5个reported_fact、1个boundary，未登记重要因果推断，reasoning_summary均空；虽然私有reasoning完整保留，并不等于每个交付结论都提供了审计解释。
+4. 仍为英文，未满足中文交付；外部跨公司验证只到candidate，不是完整Dell研究链。
+
+RC-S3-121归S3语义Verifier/正文claim覆盖与内容验收，不再把这个问题变成逐句NLP规则工程。下个有价值工作包是按既有多Agent设计，让Verifier/Counter用最终正文、claim、已读原文上下文及简洁判断依据做实质复核，再回派责任Agent；不继续给本轮开R12、改阈值、人工补引文或把内部pass升级为研究/发布PASS。
+
+### 工程收口
+
+此前R8/R9/R10服务已停止，原容器/卷/镜像/失败artifact均保留；R11三服务保持供只读查验，不自动追加模型调用。无磁盘删除、S2写、Evidence admission、外源补源、S2或产品版本推进。本轮结束只同步文档/ledger，不再次全仓回归；最后相关代码为82项定向通过，真实R11通过上述有限运行验证。Owner的普通小修补自主推进规则已持久写入协作政策。

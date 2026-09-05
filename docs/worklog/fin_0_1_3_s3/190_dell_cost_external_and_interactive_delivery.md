@@ -106,3 +106,11 @@ R3已知用量在全部命中/全部未命中两端对应约0.0458–0.3647元�
 前置检查：78条scope/Lead/entry/review检查通过，新增完整九义务调度测试证明Q1 seed不可假充其他八项、不会重新调用Q1；真实九分支同一数据组合均可打开（另2passed/7.52s）。新paid authority在实现提交后单独创建，不重写旧A1/A2；保持同FIN0.1.3/S3，无formal/发布。
 
 实现 `35d68dfb61b4142b680846104f40ca62ea799275`；最后组合130passed/1skipped（显式网络probe）/21.94s。新执行 `20260906-dell-full-research-web-a1`，authority `389f734175250541d48e4123b47aaf9b4eadf8ce76d141a196bde397b255f0a4`，全新Compose project `finsight-dell-q1-paid-389f73417525`、端口18165、拟用已查未占用子网10.253.28.0/24；旧容器/volume/失败证据不删除。本段是启动前记录，不能当执行成功收据。
+
+## 全覆盖研究 A1 真实失败与责任层修正
+
+`20260906-dell-full-research-web-a1` 已终止，非网络/余额故障。Lead第一次请求13,241输入/12,078输出（10,792 reasoning）/132.502s；计划Q2/Q3，但把 `route:Q2_DEMAND_QUALITY:required-reviewed` 一类资料路线ID填入 `coverage_obligation_ids`，本地正确拒绝。第二次25,431输入/24,000输出且全为reasoning/253.214s，finish=length，无修正动作。合计2请求/74,750tokens，缓存25,216/新输入13,456，按空闲价估0.5513874元；0已注册任务、0新Specialist、无底稿/报告PASS。容器运行约401.234s，build约100.906s，不混入模型时间。Agent Server thread `1e4aad37-1135-569a-81c5-fb6c6bf5d9a3`，root `01a073ae-c89b-7b33-aa8d-7fbac3e2cc98`。失败state/私有原始消息/用量均在原attempt目录保留；host session48436已exit1。精确三个实验容器已停止，卷/镜像/证据保留。
+
+核查真实SDK `_get_request_payload` 确认Pro/low参数确实发送且符合DeepSeek官方位置；不能说参数漏传，也不能证明provider内部一定执行了何种计算。最早项目问题是语义编号说明歧义、错误反馈不够可操作；后续失败是长思考用尽输出预算。已补schema/Lead提示区分branch与route，并让拒绝返回合法ID列表；不改写模型参数、不放松范围。既有用途profile可选择thinking开关，自己的原始消息/已返回reasoning仍保留，不换runtime、不加fallback。
+
+下一至多两次小额组件诊断：从本次失败的Lead第二轮真实messages取样，保留其自己的第一轮模型回复/reasoning与实际错误反馈，只使用修正后的当前Lead系统说明；Pro/disabled一次、Flash/disabled一次，工具schema相同。用原 `compare_review_model_once.py --task lead --source-turn 2`，各一个provider请求，不执行所提工具、不启动Specialists、不晋升旧A1。TokenBudgetBasis：purpose=同一Lead修正任务分派；input=约79k原始审计字符/上次25,431输入tokens，当前系统说明小增量；outputs=一个合法规划动作、研究目标/验收/依赖/简明理由而非完整报告；schema=已有三种Lead工具且覆盖ID必须来自已披露Q1–Q9；risk=不能丢研究义务、伪造worker或把路线ID当主题；comparable=刚才2次/74,750tokens/0worker、第二轮24k全思考；profile=原生non-thinking，多轮消息仍保留；max_output=6,000，timeout=480s，每profile1次、retry/resume/fallback均无，截断/非法仍failed。不把6k用于专家报告，当前价保守合计约0.3元量级。先验证下一动作与实际本地范围绑定，成功也只是调度用途资格，不是全任务质量/等价或Dell产品PASS。

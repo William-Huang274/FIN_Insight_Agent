@@ -399,7 +399,10 @@ class ResearchTaskSpec(_StrictFrozenModel):
     owner_role: str = Field(pattern=_REF_PATTERN)
     objective: str = Field(min_length=12, max_length=4_000)
     dependency_ids: tuple[str, ...] = Field(default=(), max_length=64)
-    coverage_obligation_ids: tuple[str, ...] = Field(min_length=1, max_length=32)
+    coverage_obligation_ids: tuple[str, ...] = Field(min_length=1, max_length=32,
+        description="Semantic coverage IDs from the disclosed scope, never physical route IDs. "
+                    "For Dell Lead research use exactly one branch_id from required_branch_ids "
+                    "(e.g. Q2_DEMAND_QUALITY), not route:...:required-reviewed.")
     success_criteria: tuple[str, ...] = Field(min_length=1, max_length=32)
     requested_capability_refs: tuple[str, ...] = Field(min_length=1, max_length=32)
     required_authority_refs: tuple[str, ...] = Field(default=(), max_length=32)

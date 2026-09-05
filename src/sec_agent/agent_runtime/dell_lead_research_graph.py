@@ -62,7 +62,10 @@ LEAD_RESEARCH_SYSTEM_PROMPT = (
     "Use DelegateResearchTasksAction to create semantic ResearchTaskSpecs with your own objectives, "
     "roles, success criteria and dependencies from the disclosed scope. Ready specialists use their "
     "own multi-turn source/finance tool loops; do not dictate physical paths or tool queries for them. "
-    "One task covers one disclosed obligation for this qualification. You may add follow-up tasks "
+    "One task covers one disclosed obligation for this qualification: coverage_obligation_ids must "
+    "contain exactly one branch_id from required_branch_ids (e.g. [\"Q2_DEMAND_QUALITY\"]). "
+    "Do not copy a route:...:required-reviewed identifier from a workpaper into that field. "
+    "You may add follow-up tasks "
     "after observing results, but cannot rewrite completed tasks or grant permissions. Use actual "
     "completed task IDs for dependencies. Existing issuer workpapers need not be recreated. "
     "Issue exactly ONE planning tool per response: put parallel or dependent tasks in its tasks list. "
@@ -259,6 +262,10 @@ def build_dell_lead_research_graph(
                 detail = ({"schema_errors": [{"loc": list(e["loc"]), "type": e["type"], "msg": e["msg"]}
                                              for e in exc.errors(include_url=False, include_input=False)]}
                           if isinstance(exc, ValidationError) else {"error": str(exc)})
+                if str(exc) == "task_requires_one_disclosed_coverage_obligation":
+                    detail.update(field="tasks[].coverage_obligation_ids",
+                                  expected="An array containing exactly one allowed branch ID, not a route ID.",
+                                  allowed_values=list(allowed_branch_ids))
                 return ToolMessage(content=json.dumps(detail, ensure_ascii=False), tool_call_id=call.id, name=call.name, status="error")
 
         tools = [StructuredTool.from_function(invoke_tool, name=name, description=model.__doc__ or name,

@@ -1162,6 +1162,23 @@ def test_usage_audit_keeps_cache_and_reasoning_counts_without_private_text():
     assert adapter_module._usage_audit_fields(AIMessage(content=""))["cache_hit_tokens"] is None
 
 
+def test_purpose_thinking_profile_uses_real_sdk_payload_without_changing_workers():
+    from langchain_core.messages import HumanMessage
+    config = _config().model_copy(update={"thinking": "enabled", "reasoning_effort": "low",
+        "agentic_message_history": True, "model_profiles": {
+            "lead": adapter_module.DeepSeekModelProfile(model="deepseek-v4-flash", thinking="disabled")}})
+    adapter = DeepSeekStructuredAgentAdapter.from_config(config=config, api_key=SecretStr("offline-only"))
+    messages = [HumanMessage(content="Offline wire inspection")]
+    lead = adapter._chat_models["lead"]._get_request_payload(messages)
+    worker = adapter._chat_models["specialist"]._get_request_payload(messages)
+    assert lead["model"] == "deepseek-v4-flash"
+    assert lead["extra_body"] == {"thinking": {"type": "disabled"}}
+    assert "reasoning_effort" not in lead
+    assert worker["model"] == "deepseek-v4-pro" and worker["reasoning_effort"] == "low"
+    assert worker["extra_body"] == {"thinking": {"type": "enabled"}}
+    assert lead["max_tokens"] == config.token_budget_basis["lead"].max_output_tokens
+
+
 @pytest.mark.parametrize("value", [-1, True, "800", 1001])
 def test_invalid_cache_detail_is_unknown_not_a_negative_bill(value):
     raw = AIMessage(content="", usage_metadata={"input_tokens": 1000, "output_tokens": 100, "total_tokens": 1100},

@@ -252,6 +252,7 @@ ModelPurpose = Literal["planner", "specialist", "counter", "verifier", "lead", "
 class DeepSeekModelProfile(_StrictSemanticModel):
     model: Literal["deepseek-v4-pro", "deepseek-v4-flash"]
     reasoning_effort: Literal["low", "high", "max"] = "high"
+    thinking: Literal["disabled", "enabled"] | None = None
 
 
 class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
@@ -270,6 +271,11 @@ class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
     temperature: Literal[0.0]
     max_retries: Literal[0]
     token_budget_basis: dict[NodeRole, TokenBudgetBasis]
+
+    def profile_for(self, purpose: ModelPurpose) -> DeepSeekModelProfile:
+        profile = self.model_profiles.get(purpose, DeepSeekModelProfile(
+            model=self.model, reasoning_effort=self.reasoning_effort))
+        return profile.model_copy(update={"thinking": profile.thinking or self.thinking})
 
     @model_validator(mode="after")
     def validate_node_budgets(self) -> "DeepSeekStructuredAgentConfig":
@@ -1187,8 +1193,7 @@ class DeepSeekStructuredAgentAdapter:
         for purpose in dict.fromkeys(("planner", "specialist", "counter", "lead", *config.model_profiles)):
             role = "specialist" if purpose in {"verifier", "repair"} else purpose
             basis = config.token_budget_basis[role]
-            profile = config.model_profiles.get(purpose, DeepSeekModelProfile(
-                model=config.model, reasoning_effort=config.reasoning_effort))
+            profile = config.profile_for(purpose)
             model_class = ReasoningPreservingChatDeepSeek if config.agentic_message_history else ChatDeepSeek
             models[purpose] = model_class(
                 model=profile.model,
@@ -1200,8 +1205,8 @@ class DeepSeekStructuredAgentAdapter:
                 max_retries=config.max_retries,
                 streaming=False,
                 use_responses_api=False,
-                extra_body={"thinking": {"type": config.thinking}},
-                **({"reasoning_effort": profile.reasoning_effort} if config.thinking == "enabled" else {}),
+                extra_body={"thinking": {"type": profile.thinking}},
+                **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}),
             )
         return cls(config=config, chat_models=models, audit_sink=audit_sink,
                    private_audit_sink=private_audit_sink)
@@ -1265,8 +1270,7 @@ class DeepSeekStructuredAgentAdapter:
         # no router LLM, retries, provider fallback or cross-agent history sharing.
         model_purpose = collaboration_mode if (role == "specialist" and
             collaboration_mode in self._config.model_profiles) else role
-        model_profile = self._config.model_profiles.get(model_purpose, DeepSeekModelProfile(
-            model=self._config.model, reasoning_effort=self._config.reasoning_effort))
+        model_profile = self._config.profile_for(model_purpose)
         is_reviewer = collaboration_mode in {"counter", "verifier"}
         native_tools = _NATIVE_REVIEW_TOOLS if is_reviewer else _NATIVE_SPECIALIST_TOOLS
         if is_lead:
@@ -1386,9 +1390,9 @@ class DeepSeekStructuredAgentAdapter:
                 "provider": self._config.provider,
                 "model": model_profile.model,
                 "model_purpose": model_purpose,
-                "reasoning_effort": model_profile.reasoning_effort if self._config.thinking == "enabled" else None,
+                "reasoning_effort": model_profile.reasoning_effort if model_profile.thinking == "enabled" else None,
                 "structured_output_method": self._config.structured_output_method,
-                "thinking": self._config.thinking,
+                "thinking": model_profile.thinking,
                 "input_characters": input_characters,
                 "input_utf8_bytes": input_utf8_bytes,
                 "max_input_characters": basis.max_input_characters,
@@ -1520,7 +1524,7 @@ class DeepSeekStructuredAgentAdapter:
                 "call_id": call_id, "actor": actor, "request_digest": request_digest,
                 "semantic_input": semantic_input, "messages": [_audit_value(m) for m in messages],
                 "raw_response": _audit_value(envelope.get("raw")),
-                "thinking": self._config.thinking,
+                "thinking": model_profile.thinking,
                 "provider_reasoning_is_untrusted_audit_data_not_evidence": True,
             })
         if getattr(envelope.get("raw"), "response_metadata", {}).get("finish_reason") == "length":

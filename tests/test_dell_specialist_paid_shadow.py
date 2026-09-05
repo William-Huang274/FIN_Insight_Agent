@@ -191,7 +191,7 @@ def test_lead_scope_is_explicit_and_keeps_old_authorities_readable(tmp_path, def
     elif defect == "mode": body["serving_mode"] = "q1_workpaper_review_repair_v1"
     elif defect == "budget": body["lead_scope"]["node_budgets"]["specialist"]["max_output_tokens"] = 16000
     elif defect == "authority": body["other_model_nodes_authorized"] = False
-    elif defect == "history": body["lead_scope"]["node_budgets"]["lead"]["reasoning_profile"] = "agentic_message_history_thinking_disabled"
+    elif defect == "history": body["lead_scope"]["node_budgets"]["lead"]["reasoning_profile"] = "independent_single_turn_thinking_disabled_structured_reasoning"
     encoded = json.dumps({**body, "decision_digest": canonical_sha256(body)})
     if defect:
         with pytest.raises(ValidationError): DellQ1SpecialistPaidShadowAuthority.model_validate_json(encoded)

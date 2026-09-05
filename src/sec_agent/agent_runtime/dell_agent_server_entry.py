@@ -619,8 +619,11 @@ async def _open_q1_paid_shadow_graph(
                 foundation = load_dell_reference_vertical_foundation(foundation_path)
                 if canonical_sha256(foundation) != composition.graph_input.task.foundation_digest:
                     raise DellSpecialistPaidShadowError("lead_foundation_binding_invalid")
-                if not model_config.agentic_message_history or model_config.thinking != "enabled":
+                if not model_config.agentic_message_history:
                     raise DellSpecialistPaidShadowError("lead_requires_independent_agentic_contexts")
+                if any(basis.reasoning_profile != "agentic_message_history_thinking_" +
+                       model_config.profile_for(role).thinking for role, basis in scope.node_budgets.items()):
+                    raise DellSpecialistPaidShadowError("lead_budget_thinking_profile_mismatch")
                 qualified_config = model_config.model_copy(update={"token_budget_basis": {
                     **model_config.token_budget_basis, **scope.node_budgets}})
                 lead_adapter = DeepSeekStructuredAgentAdapter.from_config(

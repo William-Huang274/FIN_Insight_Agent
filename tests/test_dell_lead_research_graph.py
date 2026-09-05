@@ -98,6 +98,10 @@ def test_invalid_lead_action_reaches_next_turn_without_worker_execution(defect):
         seen.append(request)
         if len(seen) > 1:
             assert all(row["status"] == "error" for row in request["tool_results"])
+            if defect == "branch":
+                error = json.loads(request["tool_results"][0]["content"])
+                assert error["allowed_values"] == list(BRANCHES)
+                assert error["field"] == "tasks[].coverage_obligation_ids"
             return _stop(request)
         task = _task()
         tasks = [task]

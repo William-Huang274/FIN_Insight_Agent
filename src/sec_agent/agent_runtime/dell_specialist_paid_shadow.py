@@ -80,7 +80,8 @@ class LeadResearchScope(BaseModel):
         if len(scope) == 9 and self.max_tasks < 8:
             raise ValueError("full_Dell_requires_capacity_for_eight_new_obligations_plus_Q1_seed")
         if set(self.node_budgets) != {"lead", "specialist"} or any(
-            role != basis.node_role or basis.reasoning_profile != "agentic_message_history_thinking_enabled"
+            role != basis.node_role or basis.reasoning_profile not in {
+                "agentic_message_history_thinking_enabled", "agentic_message_history_thinking_disabled"}
             for role, basis in self.node_budgets.items()
         ):
             raise ValueError("lead_node_budget_or_context_profile_invalid")

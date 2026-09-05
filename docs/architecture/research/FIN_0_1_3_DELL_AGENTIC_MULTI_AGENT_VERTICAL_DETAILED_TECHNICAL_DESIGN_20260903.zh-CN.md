@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-06 最新实测反例：full-research-web-a1两次Lead/74,750tokens后failed，第二轮Pro/low24k全thinking、0新worker。输入合同已修主题ID与路线ID歧义，下一先用原SDK做至多两次同错误上下文的Pro/disabled与Flash/disabled调度诊断。独立多轮Agent不等于必须开启thinking；按用途测定，专家资料研究不因Lead试验自动关闭。没有扩大总预算/新框架/假PASS，完整记录与TokenBudgetBasis见S3/190。
+
 2026-09-06 最新 Owner 决定优先于下方历史阻断：账户已充值，2026-09-05T20:51:09Z只读复验 `is_available=true`；先完成真实 token 成本审计与有证据的优化，再接通/亲测成熟外源，补真实前端交互，继续完整 Dell Q1–Q9（不是固定九个 Agent），最后才补1–2个跨场景新案例。按下列顺序逐包实施，不同时扩写多套工程，不重跑已接受Q1以假充进度。旧A1/A2仍failed，原始证据不改。明细见 `docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md`。
 
 - [x] 离线复算新 Agentic 86请求的 input/output/cache/reasoning、失败与返工分布；费用标为重算估计，不是账单。

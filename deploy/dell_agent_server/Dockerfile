@@ -7,18 +7,9 @@ FROM langchain/langgraph-api:0.13.3-py3.13@sha256:ec26d6f6eb7ce3428ca476700f5722
 # developer runtime state must not enter the image or even the build context.
 RUN mkdir -p /deps/FIN_Insight_Agent/configs/research
 COPY pyproject.toml uv.lock README.md /deps/FIN_Insight_Agent/
-COPY src /deps/FIN_Insight_Agent/src
-COPY configs/research/fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_disabled_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_enabled_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json \
-     /deps/FIN_Insight_Agent/configs/research/
-# -- End of minimum local package sources --
 
-# -- Installing all local dependencies --
+# Install locked third-party dependencies BEFORE frequently changed source.
+# Source/config changes must not redownload the entire runtime over the proxy.
 RUN cd /deps/FIN_Insight_Agent \
     && uv export --locked --no-dev --extra agent-runtime --no-emit-project \
         --no-header --no-annotate --format requirements-txt \
@@ -26,8 +17,6 @@ RUN cd /deps/FIN_Insight_Agent \
     && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir \
         -c /api/constraints.txt \
         -r /tmp/finsight-agent-runtime-requirements.txt \
-    && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir \
-        --no-deps -e . \
     && rm -f /tmp/finsight-agent-runtime-requirements.txt
 # -- End of local dependencies install --
 
@@ -39,6 +28,19 @@ RUN mkdir -p /api/langgraph_api /api/langgraph_runtime /api/langgraph_license \
     && touch /api/langgraph_api/__init__.py /api/langgraph_runtime/__init__.py /api/langgraph_license/__init__.py
 RUN PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -e /api
 # -- End of ensuring user deps did not inadvertently overwrite langgraph-api --
+
+COPY src /deps/FIN_Insight_Agent/src
+RUN cd /deps/FIN_Insight_Agent \
+    && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -e .
+COPY configs/research/fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_disabled_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_enabled_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json \
+     configs/research/fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json \
+     /deps/FIN_Insight_Agent/configs/research/
+# -- End of minimum local package sources --
 
 # -- Remove build package managers from the final image --
 RUN pip uninstall -y pip setuptools wheel

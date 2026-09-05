@@ -400,6 +400,9 @@ def test_agent_server_image_uses_a_deny_by_default_minimum_build_context() -> No
         in dockerfile
     )
     assert "COPY src /deps/FIN_Insight_Agent/src" in dockerfile
+    assert dockerfile.index("uv export --locked") < dockerfile.index("COPY src ")
+    assert dockerfile.index("--no-deps -e /api") < dockerfile.index("COPY src ")
+    assert dockerfile.index("COPY src ") < dockerfile.index("--no-deps -e .")
     rules = [
         line.strip()
         for line in dockerignore

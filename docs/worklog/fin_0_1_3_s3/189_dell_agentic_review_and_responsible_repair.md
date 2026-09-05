@@ -119,6 +119,8 @@ FIN 仅验证任务覆盖、依赖身份、同 case/as-of/批准数据范围以�
 
 ## 动态 Lead → 并行专业研究：实现与付费前资格（2026-09-06）
 
+下一一次执行配置已落盘：`configs/research/evals/fin_ia_0_1_3_s3_dell_lead_two_topic_a1_authority_v1_0.json`，decision digest `d9965ec526e6f203acea6e68c006bc2baf6eb9fc12eed3538a0f3ee67425c417`，implementation `11c52031d700f6ae6856a46768165dd685edea97`，execution=`20260906-dell-lead-two-topic-a1`。数据/canonical session-run-invocation 输入已零模型实际创建通过；新 port18174、10.253.26.0/24 已查未用；正式结果以下次原始 receipt 为准。16轮/24动作是每个专业任务容量，不是全 case 总额；Lead8轮、最多4任务/并行2、每节点500k/32k/480s，真实用量必须按新调用统计，不计复用 A5 的旧调用。
+
 在 `0d9ccd347bdf25f900766a09481bca10115d5cef` 后实现 `dell_lead_research_graph`。Lead 使用同 SDK 的3个原生规划工具，ResearchTaskSpec 表达任务/依赖；标准 `Send` 执行 ready tasks，ToolNode 给回 schema/依赖/循环/越权错误和真实子任务产物。Lead 可看结果后追加任务，不支持改写/取消已运行任务；最多4任务、并行2，非新通用调度器。Schema/state 读取不开模型/MCP/seed；Agent Server 的既有数据库/Redis/trace 持久化不换。私有 reasoning 各自续传，跨角色只共享工作底稿、显式引用/局限和未完成 Reviewed route，不复制 notebook 计数或权限。
 
 同 paid authority/runner 小范围扩展 workflow=`lead_research_delegation`，scope 只有 Q5/Q6；Q1 branch/node 字段仅为既有 entry 的身份/数据绑定锚，不额外调用 Q1 作者。已审查 A5 state 只读挂载，SHA `92a578a22d88baa8e9f1cf24ef6ac19369f09f0a76eb9fa3d0c90b970833e104`。沿用 DeepSeek thinking-enabled history profile；scope 内分别记录 Lead/专业研究 TokenBudgetBasis，不另造服务/队列/Transport/fallback。一次 fresh runner 仍须 clean+pushed implementation、独立 project/port/volume、固定调用上限、完整用量和 LangSmith。该窗口不是 Q1–Q9 昂贵完整 full-chain，不能代替其专用 preflight/全模型权威/产品门。

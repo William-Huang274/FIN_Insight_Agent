@@ -203,6 +203,28 @@ def test_successor_rejects_invalid_or_non_author_handoff_before_model(defect):
         _review_seed(stopped)
 
 
+def test_completed_sibling_findings_survive_error_but_fresh_review_still_requires_both_roles():
+    stopped = _stopped_review()
+    stopped["phase"] = "reviewing"
+    stopped["review_stop_reason"] = None
+    stopped["review_results"] = [r for r in stopped["review_results"] if r["round"] == 1 and r["role"] == "verifier"]
+    with pytest.raises(DellWorkpaperReviewError):
+        _review_seed({"values": stopped, "tasks": []})  # active/incomplete is not a stopped artifact
+    envelope = {"values": stopped, "tasks": [{"name": "reviewer", "error": "known completed truncated response"}]}
+    _, findings = _review_seed(envelope)
+    assert findings
+    calls = []
+    def run_child(role, ctx, config):
+        calls.append(role)
+        return _execute(ctx, (lambda req: {**_submission()(req), "context_digest": req["context_digest"]})
+                        if role == "repair" else (lambda req: _review(req)))
+    expected = SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
+    result = build_dell_workpaper_review_graph(expected_input=expected, seed_state=envelope,
+        run_child=run_child).compile().invoke(expected.model_dump(mode="json"))
+    assert calls[0] == "repair" and sorted(calls[1:]) == ["counter", "verifier"]
+    assert result["phase"] == "review_cycle_accepted" and len(result["review_results"]) == 2
+
+
 @pytest.mark.local_data_integration
 def test_real_a1_feedback_identifies_only_invalid_claim_quotes_and_preserves_accepted_span():
     from sec_agent.agent_runtime.dell_specialist_agentic_graph import SubmitWorkpaperAction, _submission_errors

@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-05 S3/189 A2：中文revision2与多段精确引文纠错成立，Verifier自主补查并给出GAAP/非GAAP因果口径、正文locator两项真实finding；Counter在24k输出截断，整体failed非网络。既有runner先存error state再判terminal，下一新authority消费完成的兄弟finding后责任修订且必须两人fresh review；按实测review输出容量改32k，仍无重试/旧run resume/新runtime。更广动态Lead/产品未完成；29相关检查通过，详见S3/189。
+
 2026-09-05 S3/189 A1 已从实现转为真实证据：6次模型、3角色、5Agent invocation，首轮引用审查→责任修订→复审自主找到AP现金流方向与跨季度毛利反证，正确bounded_handoff，不是金融PASS。下一显式新attempt读取停止的review artifact，直接将实际finding交回原作者并复审；每次仍一次责任修订，不resume/自动重试，不重计旧调用。只补claim级精准引文反馈/独立逐字引用列表/正文不免引注义务，旧共享任务revision对齐Notebook(0..100)，预算由图/authority保留控制。115相关检查含真实失败与rev2 MCP通过；更广动态Lead/专业研究与完整产品仍未完成。详见S3/189；下文“尚未新模型”属历史。
 
 2026-09-05 S3/189 最新 Owner 授权与 Wave 3 落地：Owner 要求单 Agent 后继续多 Agent/完整产品，普通实现与网络故障自行修复，DeepSeek 额度充足。下一实际工作包不重跑 R12，而用不可变 R11 底稿/已观察资料，标准 LangGraph Send 并行 Counter/Verifier（独立 agentic tool loop），最多一次原作者责任修订，再独立复审修订稿。复用既有 Agent Server、MCP、ToolNode、SDK 和唯一 runner；为现有 authority 增加显式 workflow/seed/逐节点 TokenBudgetBasis。审查输出 SubmitReviewAction 的 JSON/anchor/ref/目标 revision 做确定性校验，语义由模型审查，不加 NLP 规则。各审查上下文不含 Codex 已知问题清单或私有 provider reasoning，回派带实际补查资料。完整 Q1–Q9、动态 Lead、Workbench/HITL 仍未完成；同一 S3/FIN 0.1.3。详见 S3/189；本段 supersede 后文旧的“其他节点未授权”当前性，仅为本 Q1 有界协作切片授权，非全案例/发布 PASS。

@@ -1,6 +1,6 @@
 # S3/189 Dell 多 Agent 审查与责任回派
 
-状态：A1 已真实执行并 bounded_handoff；金融修订继续，未产品 PASS。起点 863f7ab4（clean/pushed），FIN 0.1.3 / 同一 S3。
+状态：A1 bounded_handoff；A2 已产出中文revision2及自主补查finding，但Counter输出截断使整体failed；未产品PASS。起点 863f7ab4（clean/pushed），FIN 0.1.3 / 同一 S3。
 
 ## Owner 方向与最小真实增量
 
@@ -55,3 +55,17 @@ A1=`20260905-dell-q1-agentic-review-repair-a1`，implementation `ac359ea9ff8622c
 3. 现有同一个图允许**显式新授权attempt**读取已经停止的review artifact，校验最后两份review的目标/引用/原文anchor和author责任，直接将真实未解决finding交回作者，再fresh review；不重新跑旧review、不resume服务器/对话、不复制旧模型计数。每次仍最多一次责任修订；不存在后台无限重试。共享BoundBranchTask/ToolLaneResult的revision改为与Notebook同为0..100，预算仍由图/authority约束，避免第二次合法修订被旧Literal[0,1]拒绝；旧固定workflow不因此自动加轮。
 
 修补后7个相关测试文件 `115 passed in 17.24s`，含A1原件精确复现（C7合法、只有C8/C9应报错）、独立引文列表正反例、stopped artifact→revision2且不重计旧调用、错误目标/anchor/责任拒绝、实际rev2 MCP catalog成功。本次不做全仓回归、不增加依赖/数据权限/框架。下一次A2只修并复审真实A1 findings，保留原失败。更广Lead/并行专业研究/完整Q1–Q9与前端仍在后续既定方向，不能以此小修补宣称已完成。
+
+## A2 实测：中文责任修订成立，审查截断与剩余语义保留
+
+A2 implementation `1539a85624b19f7f2e5ed32ed47f67aca1273b24`，authority HEAD `1e0412d58d017f052aa5d0afda351dfddee6df07`；run/root `01a0721e-1ac0-7c72-a62f-8f70e4e4229f`，thread `432b9e97-0730-53e8-93bd-2ca59966ffe7`，port18154。启动前发现生成JSON的integer/float标准化造成authority digest不匹配，在未启动/零调用时修正；不是模型或网络失败。
+
+作者两轮完成中文revision2：应付现金方向与Q2毛利反证已改；15条claims，C12–C15新增PASSAGE逐行引文，其中C14显式承认余额差是作者简单算术且不是现金流精确归因。第一轮C12–C15引文失败后，第二轮按精确claim/quote反馈使用多个独立原文行成功，不再删掉这四条。新可读产物见A2目录 `workpaper.agent-original.md`，未人工翻译/改数。
+
+Verifier**自主新增一次source search、两次模型轮**，定位Q1电话会候选，指出GAAP17.75%数值与非GAAP18.1%的AI mix归因口径不能混用；同时抓到正文订单/积压、Q3指引、精确分部值仍缺locator。其两项findings真实保留。Counter同次调用input62470/output24000，恰好达到配置上限，`provider_output_truncated`，无有效最终review；不得按另一个reviewer成功冒充两人都通过。A2整体failed，网络和Docker正常。
+
+完整调用事实：5次已发送/收到usage（4success+1truncated），input/output/total=`373817/79838/453655`，累计模型979.620513s，图命令684.078s，构建243.485s。一次资源采样API527.7MiB/Postgres55.76MiB/Redis4.168MiB（不是峰值）。无retry/resume/fallback。
+
+原runner在terminal校验失败之前未导出state，已用只读Agent Server状态补存原错误checkpoint；源文件SHA `ba87de43547e1f212eea217b62986f3ca74d4a4e53784e3a941b95f1e94b4762`，原failed receipt/audit不改。后续小修为先存state再判terminal，防止一个失败子Agent掩盖已完成的兄弟输出。既有导出器提供仅本机/error checkpoint的exclusive-create补存，不成为另一个runtime。
+
+下一A3基于这份真实revision2与Verifier findings，直接责任作者修订后重新由**两个**fresh reviewer审查；不重做R11，不用Codex人工答案修正。读取部分失败制品只在有error checkpoint且有合法已完成review时允许，活跃未完成态不能启动继任；最终放行仍须两角色真实完成。Counter/reviewer容量按已消耗24k并截断的实测调至32k，其余既有任务/工具/权限/预算不变。此是明确根因的一次容量修正，不自动后台无限重跑。语义与正文覆盖尚有待修，RC-S3-121保持open；动态Lead/全产品仍未完成。

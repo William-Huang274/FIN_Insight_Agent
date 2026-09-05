@@ -380,9 +380,11 @@ def main() -> None:
                 )
                 stream = _stream(client.join_updates(run_binding, last_event_id="-1"))
                 state = client.get_state(session_binding)
-        terminal = _terminal(state, authority)
         private_path = Path(authority.artifact_root_container) / "specialist-final-state.private.json"
+        # Keep completed sibling/revision evidence even if another child failed.
+        # Archiving an error checkpoint never changes its acceptance state.
         _write_new(private_path, state)
+        terminal = _terminal(state, authority)
         result = {
             "status": terminal["status"],
             "paid_execution_id": authority.paid_full_chain_execution_id,

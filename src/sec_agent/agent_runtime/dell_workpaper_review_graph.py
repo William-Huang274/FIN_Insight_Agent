@@ -99,12 +99,15 @@ def _review_seed(value):
     state = dict(value.get("values", value))
     if "target_state" not in state:
         return validate_workpaper_state(state), []
-    if (state.get("phase") != "review_cycle_needs_attention"
+    partial_error = state.get("phase") == "reviewing" and any(t.get("error") for t in value.get("tasks", []))
+    if not partial_error and (state.get("phase") != "review_cycle_needs_attention"
         or state.get("review_stop_reason") != "material_findings_remain_after_one_revision"):
         raise DellWorkpaperReviewError("review_successor_requires_stopped_author_findings")
     target = validate_workpaper_state(state["target_state"])
     rows = [row for row in state["review_results"] if row["round"] == state["review_round"]]
-    if len(rows) != 2 or {r["role"] for r in rows} != {"counter", "verifier"}:
+    roles = {r["role"] for r in rows}
+    if (not 1 <= len(rows) <= 2 or len(roles) != len(rows) or not roles.issubset({"counter", "verifier"})
+        or (not partial_error and len(rows) != 2)):
         raise DellWorkpaperReviewError("review_successor_reviews_incomplete")
     findings = []
     for row in rows:

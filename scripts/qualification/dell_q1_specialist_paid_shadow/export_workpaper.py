@@ -2,6 +2,8 @@
 import argparse
 import json
 from pathlib import Path
+import re
+from urllib.request import ProxyHandler, build_opener
 
 
 def render_workpaper(submission):
@@ -23,9 +25,21 @@ def render_workpaper(submission):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("attempt", type=Path)
+    parser.add_argument("--snapshot-url", help="Archive a stopped local Agent Server checkpoint before export.")
     args = parser.parse_args()
     root = args.attempt.resolve(strict=True)
-    data = json.loads((root / "specialist-final-state.private.json").read_text(encoding="utf-8"))
+    state_path = root / "specialist-final-state.private.json"
+    if args.snapshot_url:
+        if not re.fullmatch(r"http://127\.0\.0\.1:\d+/threads/[a-f0-9-]{36}/state", args.snapshot_url):
+            parser.error("snapshot URL must be an explicit local Agent Server thread state")
+        with build_opener(ProxyHandler({})).open(args.snapshot_url, timeout=30) as response:
+            data = json.load(response)
+        if not any(task.get("error") for task in data.get("tasks", [])):
+            parser.error("snapshot recovery is only for an errored checkpoint")
+        with state_path.open("x", encoding="utf-8") as handle:
+            json.dump(data, handle, ensure_ascii=False, indent=2)
+    else:
+        data = json.loads(state_path.read_text(encoding="utf-8"))
     state = data.get("values", data)
     outputs = {"workpaper.agent-original.md": render_workpaper(state["final_submission"])}
     if "review_results" in state:

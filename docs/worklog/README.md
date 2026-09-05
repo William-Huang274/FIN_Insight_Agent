@@ -3,7 +3,7 @@
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 
 - 当前总清单：`00_current_master_checklist.md`
-- Dell Q1 当前小修正与 thinking 对照：`fin_0_1_3_s3/187_dell_q1_source_read_correction_and_thinking_comparison.md`
+- Dell Q1 3+1 修正与 R4/R5/R6 实测（多工具批次未接通、无底稿、非 thinking A/B PASS）：`fin_0_1_3_s3/187_dell_q1_source_read_correction_and_thinking_comparison.md`
 - FIN 0.1.3 S1：`fin_0_1_3_s1/`
   - 当前 S1 证据获取与 Evidence Pack 质量范式：`fin_0_1_3_s1/015_s1_evidence_acquisition_and_pack_quality_paradigm_decision.md`
   - DELL／MU／NVDA 证据获取尸检与跨案业务故障图：`fin_0_1_3_s1/016_s1_three_case_evidence_acquisition_autopsy.md`

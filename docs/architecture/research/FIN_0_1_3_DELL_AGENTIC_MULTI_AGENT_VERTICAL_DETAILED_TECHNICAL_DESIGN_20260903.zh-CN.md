@@ -1,6 +1,6 @@
 # FIN 0.1.3 Dell Agentic Multi-Agent 完整纵切技术详设
 
-文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED / WAVE2_Q1_R3_REAL_PROVIDER_LOOP_BOUNDED_HANDOFF_NO_WORKPAPER / DATA_DELIVERY_CONTRACT_CORRECTION_PENDING / NO_R4_AUTHORITY`
+文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / NO_RUNTIME_FALLBACK / S3_3_PLUS_1_OFFLINE_IMPLEMENTED / R4_ENVELOPE_FAILED / R5_BUILD_TLS_FAILED / OWNER_RETRY_R6_NATIVE_TOOL_BATCH_UNSUPPORTED / NO_WORKPAPER_OR_THINKING_AB_PASS / NO_AUTOMATIC_R7`
 
 冻结日期：2026-09-03
 
@@ -15,6 +15,8 @@
 2026-09-05 执行更新（取代本文件历史段落中的未执行状态）：R1 模型前绑定故障已修复；R2 唯一运行到达 DeepSeek，但因 Specialist 顶层 union 函数参数不是 object 被 HTTP 400 拒绝。现已采用标准 Pydantic 对象封装 `{"action": <原封闭动作联合>}`；在 provider adapter 解包后，原 graph、MCP、context 和证据校验合同不变。相关 67 项离线测试通过，含真实 SDK + MockTransport 请求/响应；不代表线上接受或研究质量。R2 保持失败、无底稿、无工具动作；新付费执行需新身份/Owner 授权，不重用 R2、不扩写 K0–K6。详细证据见 `docs/worklog/fin_0_1_3_s3/185_dell_q1_paid_shadow_r2_schema_failure_and_object_envelope_fix.md`。
 
 ## 0. 结论先行
+
+2026-09-05 当前收口：R4 disabled 实际一调用后因冗余对象外壳失败；已改 SDK 原生五工具并通过 68 项专项检查。R5 无模型、构建下载 TLS 失败；Owner 明确让网络重试后 R6 构建成功，thinking 返回四组合法请求及私有 reasoning，但宿主单动作适配器拒绝多工具批次，工具未执行、无底稿。最早责任层是 FIN 的单工具调用假设，不是公共信息缺口。下一步应使用成熟 SDK/LangGraph ToolNode/ToolMessage 的批次处理模式，保持逐工具权限/来源校验，不继续靠提示词强迫一个调用；该批次适配尚未实现。本轮不再自动启动模型，详细事实与费用见 S3/187。
 
 ### 2026-09-05 Owner 最新授权：3+1 小修正与最多两次对照
 

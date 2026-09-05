@@ -1,6 +1,18 @@
-# Dell Q1：3+1 数据交付小修正与 thinking 对照
+# Dell Q1：3+1 小修正及真实运行结果（thinking 对照未成立）
 
 日期：2026-09-05。起点 `632afb0d4eb0cc02cf206c9776817452718b47ab`，同一 `codex/fin013-dell-s1-s2-product-bridge`。本记录不创建新产品版本，不重跑 R3。
+
+## 当前结论（覆盖下方逐时点记录的当前性）
+
+3+1 修正已实现、213 项相关离线测试通过；R4 真实失败后移除 provider 嵌套外壳、68 项相关检查通过。R5 构建 TLS 失败后，Owner 新授权 R6 同代码再试，构建成功。**R6 thinking 实际返回 reasoning 和四个合法工具请求，但 FIN 单动作适配器拒绝多工具批次，在执行数据工具前停止；没有底稿、没有研究 PASS、没有成功 thinking A/B。** 所有原始失败保留，没有自动继续 R7。
+
+| 启动 | 模式 | 实际模型调用 | 本次实际执行数据工具 | 结果 |
+|---|---|---:|---:|---|
+| R4 | disabled，嵌套 provider 工具外壳 | 1 | 0 | 实际内部参数合法，额外外壳格式失败 |
+| R5 | enabled，SDK 原生五工具 | 0 | 0 | Docker 固定 wheel 下载 TLS EOF |
+| R6（Owner 明确追加） | enabled，与 R5 同代码/数据/预算 | 1 | 0 | 四个合法调用被 FIN 单工具假设拒绝 |
+
+两次实际 provider 调用共 22,349 tokens、79.137 秒模型耗时；LangSmith 合计估费 USD 0.012522780（非账单）。不能从这两个不同代码路径的第一轮样本推断 thinking 整体质量或效费比。
 
 ## Owner 最新授权与边界
 
@@ -60,5 +72,22 @@ R5=`20260905-dell-q1-source-read-thinking-enabled-r5` 在 Docker dependency buil
 随后同一 wheel URL 的宿主 `curl --noproxy '*'` HEAD 与显式 `http://127.0.0.1:6696` 代理 HEAD 均为 HTTP 200；Docker 使用 `http.docker.internal:3128`。这支持网络间歇故障的可能，但不能证明具体是用户代理导致，HEAD 也不证明容器长下载可靠。没有修改代理、证书或版本。
 
 Owner 最新明确说“docker 这个问题应该就是因为梯子或者网络波动，你可以再试一下”。因此追加一次有依据的新启动 R6，取代上段“本轮不追加第三次”的上限：**代码/依赖/任务/数据/预算与 R5 相同**，仅 fresh identity/authority；R5 保持失败，不 resume/覆盖。先成功构建才发生 enabled 模型调用。若再次失败则停，不据此继续无界重试。此追加是 Owner 新授权，不是自动消耗原两次额度。
+
+## R6 实测与最早责任层
+
+- implementation `194385499dc0b0b3aecd38a0eee030210d228fae`（与修复 `580c6718...` 相比只有 R5 authority 文件，无代码变化）；authority HEAD `afd04540...`。执行 `20260905-dell-q1-source-read-thinking-enabled-r6`，project `finsight-dell-q1-paid-8922aa2fba5d`，port 18163。Docker 构建/启动 **195.969 秒**、三服务 healthy；网络错误在这次重试没有重现。
+- run/root `01a070e1-4056-76c3-bae6-39c58bbd6500`，thread `59dbeb7f-7241-5c5c-9925-a9fb92b5a91d`。一次 DeepSeek V4 Pro thinking enabled、高档默认请求 HTTP 200，finish_reason=tool_calls。输入 **7,769**、输出 **5,976**（其中 reasoning **5,023**）、总 **13,745 tokens**，模型 **71.184 秒**；LangSmith 1 成功 LLM span、root error，估费 **USD 0.008578635**，inputs/outputs hidden。
+- 原 SDK 响应中的四个调用为：Reviewed Evidence 检索；7 项 quarter_discrete 收入/利润/现金流；4 项 instant 现金/应收/存货/应付；源文档 catalog。四组参数均原样通过各自 `Request*Action` 的 strict JSON 校验，不需要修改任何参数。这里只证明 schema 合法，不代表已经过工具执行或来源内容验证。
+- FIN adapter 的 `len(tool_calls) == 1` 导致 `structured_parse_failed`，graph 停在 `ready_for_model_decision` / next model_decide；**接受模型轮数=0、实际数据工具=0、底稿=0**。这是调用批次与宿主单动作合同不匹配，不是模型没有规划，也不是 RAG/SQL 内容失败。R4 的 object-root 内层参数问题在 R6 原生工具响应中没有重现，但多工具流转仍不支持。
+- 私有 `model-context-reasoning.private.jsonl` 完整保留实际 provider reasoning（20,801 字符）、请求上下文、四个工具参数；不复制到正文或公开 LangSmith。另保存 `diagnostic-state-after-failure.private.json` 只读失败状态。真实 SDK 的第二轮 reasoning 回传仅有离线 MockTransport 证明，R6 没走到第二轮，不能声称 live continuity PASS。
+- 原 R4/R5/R6 receipt、镜像/容器/卷均不删除、不覆盖。仅已结束 R2/R3/R4 容器在本轮被停止以降资源占用；R6 收口时保留其部署用于只读检查。语料、S2、原数据门及 R1/R2/R3 原证据没有更改。
+
+### 下一步技术决定：不要继续强制“一轮一个工具”
+
+[DeepSeek Chat Completions API](https://api-docs.deepseek.com/api/create-chat-completion/) 的 auto 模式允许一轮一个或多个工具；当前 Chat Completions 文档没有承诺支持关闭并行的开关。不能把 [LangChain 的通用 parallel_tool_calls 选项](https://docs.langchain.com/oss/python/langchain/models) 对部分供应商的支持当作 DeepSeek 保证；Responses API 的并行开关说明也不能直接移植到当前 Chat API。
+
+推荐接现有 LangGraph/SDK 的标准多工具循环（ToolNode/ToolMessage），不另建批次调度框架：一个 assistant 消息可以包含多个独立只读请求；逐个维持原 schema/权限/来源校验，可先串行执行降低本机峰值；为每个 tool_call_id 返回对应 ToolMessage；一模型轮与多个工具动作分开计数；原 reasoning 与该批全部结果一起续给同一 provider。不能丢弃余下请求、只取第一个、伪造 observation、重写已消费 run 的 context_digest，或把同一响应复制成多个模型轮。
+
+这个批次适配是当前明确未完成项，**本记录不宣称已实现，也没有继续运行**。下一次实现应以 R6 原始响应作为固定反例，先过 SDK/工具批次专项测试，再用新身份做功能验收；此时不扩 Lead/Counter/Verifier、不继续 RAG 指标工程、不重写通用 runtime。
 
 官方依据：[DeepSeek thinking 与工具续接](https://api-docs.deepseek.com/guides/thinking_mode/)、[MCP 工具与结构化响应](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)。两者均由现有 SDK 承载，FIN 仅实现研究来源语义及薄适配。

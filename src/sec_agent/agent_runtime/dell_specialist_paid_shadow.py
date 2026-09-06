@@ -19,6 +19,8 @@ DELL_Q1_PAID_SHADOW_SERVING_MODE = "q1_specialist_paid_shadow_v1"
 DELL_Q1_REVIEW_SERVING_MODE = "q1_workpaper_review_repair_v1"
 DELL_LEAD_RESEARCH_SERVING_MODE = "lead_research_delegation_v1"
 DELL_CASE_REVIEW_SERVING_MODE = "case_workpaper_review_v1"
+DELL_CASE_CONVERGENCE_SERVING_MODE = "case_convergence_v1"
+DELL_CASE_REPAIR_PAPERS = ("P01", "P04", "P05", "P06", "P07", "P08")
 DELL_Q1_PAID_SHADOW_AUTHORITY_ENV = "FINSIGHT_DELL_PAID_SHADOW_AUTHORITY_PATH"
 DELL_IMPLEMENTATION_COMMIT_ENV = "FINSIGHT_DELL_IMPLEMENTATION_COMMIT"
 
@@ -107,6 +109,30 @@ class CaseReviewScope(BaseModel):
         return self
 
 
+class CaseNodeLimits(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
+    model_calls: int = Field(ge=2, le=24)
+    tool_calls: int = Field(ge=4, le=64)
+
+
+class CaseConvergenceScope(BaseModel):
+    model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
+    seed_state_host_path: str
+    seed_state_sha256: str = Field(pattern=_DIGEST_PATTERN)
+    repair_paper_ids: tuple[str, ...] = Field(min_length=1, max_length=10)
+    node_budgets: dict[Literal["repair", "writer", "verifier"], TokenBudgetBasis]
+    node_limits: dict[Literal["repair", "writer", "verifier"], CaseNodeLimits]
+
+    @model_validator(mode="after")
+    def validate_nodes(self):
+        if (set(self.node_budgets) != {"repair", "writer", "verifier"}
+                or set(self.node_limits) != set(self.node_budgets)
+                or len(set(self.repair_paper_ids)) != len(self.repair_paper_ids)
+                or set(self.repair_paper_ids) != set(DELL_CASE_REPAIR_PAPERS)):
+            raise ValueError("case_convergence_roles_or_papers_invalid")
+        return self
+
+
 class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     """The only checked-in Owner decision consumed by this one shadow."""
 
@@ -129,7 +155,7 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     research_run_id: str = Field(min_length=1, max_length=180)
     run_invocation_id: str = Field(min_length=1, max_length=180)
     graph_id: Literal["dell_reference_vertical"]
-    serving_mode: Literal["q1_specialist_paid_shadow_v1", "q1_workpaper_review_repair_v1", "lead_research_delegation_v1", "case_workpaper_review_v1"]
+    serving_mode: Literal["q1_specialist_paid_shadow_v1", "q1_workpaper_review_repair_v1", "lead_research_delegation_v1", "case_workpaper_review_v1", "case_convergence_v1"]
     branch_id: Literal["Q1_ISSUER_TRUTH"]
     node_id: Literal["specialist:Q1_ISSUER_TRUTH"]
     provider: Literal["deepseek"]
@@ -162,10 +188,11 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
     evidence_admission_authorized: Literal[False]
     s2_write_authorized: Literal[False]
     other_model_nodes_authorized: bool
-    workflow: Literal["single_specialist", "workpaper_review_repair", "lead_research_delegation", "case_workpaper_review"] = "single_specialist"
+    workflow: Literal["single_specialist", "workpaper_review_repair", "lead_research_delegation", "case_workpaper_review", "case_convergence"] = "single_specialist"
     review_scope: WorkpaperReviewScope | None = None
     lead_scope: LeadResearchScope | None = None
     case_review_scope: CaseReviewScope | None = None
+    case_convergence_scope: CaseConvergenceScope | None = None
     artifact_root_container: str = Field(min_length=20, max_length=1_000)
     model_audit_filename: Literal["model-call-events.jsonl"]
     source_read_enabled: bool = False
@@ -183,15 +210,18 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
         is_review = self.workflow == "workpaper_review_repair"
         is_lead = self.workflow == "lead_research_delegation"
         is_case = self.workflow == "case_workpaper_review"
+        is_convergence = self.workflow == "case_convergence"
         if (is_review != (self.serving_mode == DELL_Q1_REVIEW_SERVING_MODE)
                 or is_lead != (self.serving_mode == DELL_LEAD_RESEARCH_SERVING_MODE)
-                or is_case != (self.serving_mode == DELL_CASE_REVIEW_SERVING_MODE)):
+                or is_case != (self.serving_mode == DELL_CASE_REVIEW_SERVING_MODE)
+                or is_convergence != (self.serving_mode == DELL_CASE_CONVERGENCE_SERVING_MODE)):
             raise ValueError("paid_shadow_workflow_serving_mode_mismatch")
-        if ((is_review or is_lead or is_case) != self.other_model_nodes_authorized
+        if ((is_review or is_lead or is_case or is_convergence) != self.other_model_nodes_authorized
                 or is_review != (self.review_scope is not None) or is_lead != (self.lead_scope is not None)
-                or is_case != (self.case_review_scope is not None)):
+                or is_case != (self.case_review_scope is not None)
+                or is_convergence != (self.case_convergence_scope is not None)):
             raise ValueError("paid_shadow_review_scope_authority_mismatch")
-        if (is_review or is_lead or is_case) and not (self.source_read_enabled and self.private_reasoning_audit_authorized):
+        if (is_review or is_lead or is_case or is_convergence) and not (self.source_read_enabled and self.private_reasoning_audit_authorized):
             raise ValueError("paid_review_requires_source_context_and_private_audit")
         if is_lead:
             basis = self.lead_scope.node_budgets["specialist"]
@@ -210,7 +240,7 @@ class DellQ1SpecialistPaidShadowAuthority(BaseModel):
         unsigned = self.model_dump(mode="json", exclude={"decision_digest"})
         # Old consumed authorities remain readable; their original signed JSON
         # did not have these opt-in fields. Never rewrite those old files.
-        for field in ("source_read_enabled", "private_reasoning_audit_authorized", "deepseek_config_filename", "workflow", "review_scope", "lead_scope", "case_review_scope"):
+        for field in ("source_read_enabled", "private_reasoning_audit_authorized", "deepseek_config_filename", "workflow", "review_scope", "lead_scope", "case_review_scope", "case_convergence_scope"):
             if field not in self.model_fields_set:
                 unsigned.pop(field, None)
         if self.lead_scope is not None and "targeted_completion" not in self.lead_scope.model_fields_set:

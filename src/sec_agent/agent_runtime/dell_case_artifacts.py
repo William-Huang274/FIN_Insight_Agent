@@ -7,6 +7,7 @@ new Evidence admission, new research claims or execution state are created here.
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from collections.abc import Mapping, Sequence
 from typing import Annotated, Any, Literal
 
@@ -98,6 +99,24 @@ class DellCaseArtifacts:
         if source_id not in self._sources:
             raise ValueError("unknown_source_id_read_paper_sources_first")
         return json.loads(json.dumps(self._sources[source_id]))
+
+    def with_revisions(self, revisions):
+        """A new public research view; never overwrite original run artifacts.
+
+        Inputs are validated submissions collected from native author states.
+        Only source observations (not model messages) cross to other agents.
+        """
+        result = deepcopy(self)
+        for paper_id, row in revisions.items():
+            if paper_id not in result._papers or row.get("status") != "revision_submitted":
+                raise ValueError("invalid_paper_revision_view")
+            result._papers[paper_id]["workpaper"] = deepcopy(row["workpaper"])
+            for ref, source in row.get("sources", {}).items():
+                if ref in result._sources and result._sources[ref] != source:
+                    raise ValueError("revision_source_conflict")
+                result._sources[ref] = deepcopy(source)
+                result._papers[paper_id]["sources"][ref] = self._source_summary(ref, source)
+        return result
 
     def read_source(self, source_id, offset=0, max_characters=16000):
         if type(offset) is not int or offset < 0 or type(max_characters) is not int or not 100 <= max_characters <= 50000:

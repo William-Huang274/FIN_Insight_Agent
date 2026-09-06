@@ -164,9 +164,9 @@ def _environment(
             "FINSIGHT_DELL_PAID_SHADOW_ARTIFACT_CONTAINER_PATH": authority.artifact_root_container,
         }
     )
-    scope = authority.review_scope or authority.lead_scope or authority.case_review_scope
+    scope = authority.review_scope or authority.lead_scope or authority.case_review_scope or authority.case_convergence_scope
     if scope is not None:
-        case_scope = authority.case_review_scope
+        case_scope = authority.case_review_scope or authority.case_convergence_scope
         seed_path = Path(case_scope.seed_state_host_path).resolve() if case_scope else (ATTEMPTS_ROOT / scope.seed_state_relative_path).resolve()
         allowed_root = ATTEMPTS_ROOT.parent.parent if case_scope else ATTEMPTS_ROOT
         if not seed_path.is_relative_to(allowed_root.resolve()) or not seed_path.is_file():
@@ -191,6 +191,11 @@ def _compose(project: str, subnet: str | None = None, *, review: bool = False) -
 
 
 def _execution_timeout(authority: DellQ1SpecialistPaidShadowAuthority) -> int:
+    if authority.case_convergence_scope is not None:
+        scope = authority.case_convergence_scope
+        waves = (len(scope.repair_paper_ids) + 1) // 2
+        return int(sum(scope.node_limits[r].model_calls * scope.node_budgets[r].timeout_seconds * n
+            for r, n in (("repair", waves), ("writer", 1), ("verifier", 1))) + 600)
     if authority.case_review_scope is not None:
         scope = authority.case_review_scope
         return int(scope.max_reviewer_model_turns * max(b.timeout_seconds for b in scope.node_budgets.values()) + 600)
@@ -348,7 +353,7 @@ def run_once(authority_path: Path, *, subnet: str | None = None) -> None:
         attempt.parent.mkdir(parents=True, exist_ok=True)
         attempt.mkdir(exist_ok=False)
         attempt_created = True
-        compose = _compose(project, subnet, review=(authority.review_scope or authority.lead_scope or authority.case_review_scope) is not None)
+        compose = _compose(project, subnet, review=(authority.review_scope or authority.lead_scope or authority.case_review_scope or authority.case_convergence_scope) is not None)
         observation, _ = _command([*compose, "config", "--quiet"], env, 120)
         commands.append({"step": "compose_config", **observation})
         observation, _ = _command([*compose, "up", "-d", "--build"], env, 1800)

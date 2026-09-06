@@ -344,11 +344,12 @@ async def open_case_review_composition(*, authority, model_config, api_key, publ
     from .dell_agent_server_data_composition import open_dell_approved_data_composition
     from .dell_specialist_paid_shadow import file_sha256, require_data_authority_binding
     from sec_agent.research_foundation.contracts import load_dell_reference_vertical_foundation
-    scope = authority.case_review_scope
+    scope = authority.case_review_scope or authority.case_convergence_scope
     seed_path = Path("/run/fin-insight/review-seed.json")
     if file_sha256(seed_path) != scope.seed_state_sha256:
         raise ValueError("case_review_seed_binding_invalid")
-    artifacts = DellCaseArtifacts(json.loads(seed_path.read_text(encoding="utf-8"))["papers"])
+    seed = json.loads(seed_path.read_text(encoding="utf-8"))
+    artifacts = DellCaseArtifacts(seed["papers"])
     require_data_authority_binding(authority, owner_data_gate_decision_digest=artifacts.owner_data_gate_decision_digest,
         inventory_snapshot_digest=artifacts.inventory_snapshot_digest, source_route_catalog_digest=artifacts.source_route_catalog_digest)
     if artifacts.research_as_of != authority.research_as_of:
@@ -369,21 +370,47 @@ async def open_case_review_composition(*, authority, model_config, api_key, publ
             if binding.is_error:
                 raise ValueError("case_review_method_binding_failed")
             tools = await case_mcp_tools(client, run_scope=binding.structured_content["run_scope"], method_arguments=method_args)
+            foundation = load_dell_reference_vertical_foundation()
+            if authority.case_convergence_scope is not None:
+                from .dell_case_convergence_agent import build_case_output_agent, build_case_convergence_graph
+                feedback = seed["feedback"]
+                if set(feedback) != set(scope.repair_paper_ids):
+                    raise ValueError("case_convergence_feedback_scope_mismatch")
+                agents = {}
+                roles = {**{f"author_{p}": "repair" for p in scope.repair_paper_ids}, "writer": "writer", "verifier": "verifier"}
+                for actor, role in roles.items():
+                    profile = model_config.profile_for("specialist" if role == "writer" else role)
+                    basis = scope.node_budgets[role]
+                    if basis.reasoning_profile != "agentic_message_history_thinking_" + profile.thinking:
+                        raise ValueError("case_convergence_budget_thinking_mismatch")
+                    model = case_chat_model(profile, basis, model_config, api_key)
+                    pid = actor.removeprefix("author_") if role == "repair" else None
+                    agents[actor] = build_case_output_agent(role=role, model=model, tools=tools, artifacts=artifacts,
+                        feedback=feedback[pid] if pid else None, paper_id=pid, limits=scope.node_limits[role].model_dump(),
+                        audit=CaseModelAudit(actor=actor, profile=profile, basis=basis, public_sink=public_sink, private_sink=private_sink))
+                yield build_case_convergence_graph(agents=agents, artifacts=artifacts,
+                    question=foundation.case_identity.top_level_question_zh, feedback=feedback,
+                    run_id=authority.research_run_id, run_invocation_id=authority.run_invocation_id).compile(
+                        name="dell_reference_vertical").with_config({"recursion_limit": 240})
+                return
             reviewers = {}
             for role in ("counter", "verifier"):
                 profile, basis = model_config.profile_for(role), scope.node_budgets[role]
                 if basis.reasoning_profile != "agentic_message_history_thinking_" + profile.thinking:
                     raise ValueError("case_review_budget_thinking_mismatch")
-                model = ReasoningPreservingChatDeepSeek(model=profile.model, api_key=api_key,
-                    base_url=model_config.base_url, temperature=0, max_tokens=basis.max_output_tokens,
-                    timeout=basis.timeout_seconds, max_retries=0, streaming=False, use_responses_api=False,
-                    extra_body={"thinking": {"type": profile.thinking}},
-                    **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}))
+                model = case_chat_model(profile, basis, model_config, api_key)
                 reviewers[role] = build_case_reviewer(role=role, model=model, tools=tools, artifacts=artifacts,
                     max_model_calls=scope.max_reviewer_model_turns, max_tool_calls=scope.max_reviewer_tool_actions,
                     audit=CaseModelAudit(actor=f"case_{role}", profile=profile, basis=basis,
                         public_sink=public_sink, private_sink=private_sink))
-            foundation = load_dell_reference_vertical_foundation()
             yield build_case_review_graph(reviewers=reviewers, artifacts=artifacts,
                 question=foundation.case_identity.top_level_question_zh, run_id=authority.research_run_id,
                 run_invocation_id=authority.run_invocation_id).compile(name="dell_reference_vertical").with_config({"recursion_limit": 240})
+
+
+def case_chat_model(profile, basis, model_config, api_key):
+    return ReasoningPreservingChatDeepSeek(model=profile.model, api_key=api_key,
+        base_url=model_config.base_url, temperature=0, max_tokens=basis.max_output_tokens,
+        timeout=basis.timeout_seconds, max_retries=0, streaming=False, use_responses_api=False,
+        extra_body={"thinking": {"type": profile.thinking}},
+        **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}))

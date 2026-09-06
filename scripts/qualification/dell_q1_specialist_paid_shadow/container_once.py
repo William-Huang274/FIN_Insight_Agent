@@ -128,7 +128,7 @@ def _contracts_and_input(
     ):
         raise ContainerRunError("paid_shadow_graph_input_mismatch")
     foundation = load_dell_reference_vertical_foundation(FOUNDATION)
-    case_review = authority.case_review_scope is not None
+    case_review = authority.case_review_scope is not None or authority.case_convergence_scope is not None
     objective = foundation.case_identity.top_level_question_zh if case_review else graph_input.task.objective
     objective_scope = "case-review" if case_review else "q1-shadow"
     now = datetime.now(timezone.utc).replace(microsecond=0)
@@ -199,6 +199,27 @@ def _stream(parts: Iterable[Any]) -> dict[str, Any]:
 
 
 def _terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShadowAuthority) -> dict[str, Any]:
+    if authority.case_convergence_scope is not None:
+        from sec_agent.agent_runtime.dell_case_convergence_agent import CaseReport, ReportReview
+        values, scope = raw.get("values", {}), authority.case_convergence_scope
+        if (raw.get("next") or raw.get("interrupts") or values.get("run_id") != authority.research_run_id
+                or values.get("run_invocation_id") != authority.run_invocation_id
+                or values.get("phase") not in {"case_report_needs_revision", "case_report_ready_for_human_review"}
+                or set(values.get("revisions", {})) != set(scope.repair_paper_ids)):
+            raise ContainerRunError("case_convergence_incomplete_or_binding_invalid")
+        _parse(CaseReport, {k: values["report"][k] for k in ("title", "narrative_markdown")}, "case_report_invalid")
+        _parse(ReportReview, values.get("report_review"), "case_report_review_invalid")
+        metrics = values["actor_metrics"]
+        if set(metrics) != {"writer", "verifier", *("author_" + p for p in scope.repair_paper_ids)}:
+            raise ContainerRunError("case_convergence_actor_missing")
+        for actor, row in metrics.items():
+            limit = scope.node_limits["repair" if actor.startswith("author_") else actor]
+            if not 1 <= row.get("model_calls", 0) <= limit.model_calls or row.get("tool_calls", 0) > limit.tool_calls:
+                raise ContainerRunError("case_convergence_actor_budget_invalid")
+        return {"status": "pass", "phase": values["phase"], "state_digest": _digest(raw),
+            "model_turn_count": sum(r["model_calls"] for r in metrics.values()),
+            "tool_action_count": sum(r["tool_calls"] for r in metrics.values()),
+            "acceptance_scope": "report_and_independent_review_handoff_only_not_automatic_product_pass"}
     if authority.case_review_scope is not None:
         from sec_agent.agent_runtime.dell_case_review_agent import CaseReview
         values = raw.get("values", {})

@@ -64,5 +64,6 @@ COPY configs/research/fin_ia_0_1_3_dell_full_research_pro_low_v1_0.json /deps/FI
 COPY configs/research/fin_ia_0_1_3_dell_full_research_routed_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 COPY configs/research/fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 COPY configs/research/fin_ia_0_1_3_dell_case_review_native_v1_0.json /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research/fin_ia_0_1_3_dell_case_convergence_native_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 
 WORKDIR /deps/FIN_Insight_Agent

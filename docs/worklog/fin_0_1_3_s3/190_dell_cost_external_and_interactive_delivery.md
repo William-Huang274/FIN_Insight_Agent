@@ -210,3 +210,11 @@ Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量�
 复用同create_agent/MCP/Agent Server，不复活手工模型循环。只给P01/P04/P05/P06/P07/P08的责任作者其原稿、对应反馈与按需来源；P02/P03/P09/P10不再做研究重跑。作者提交带来源的修改与处理反馈说明，保留原稿和revision；不允许将审查意见当原证据。Writer在修订稿/原源上自由组织中文报告，覆盖九主题并直接回答主问题，重要事实/推理引用可回原片段，非S2数字显著标注但正文不沦为边界说明。Verifier另有独立上下文读报告与资料/修订原因，允许质疑作者和两位前审，不以字段合法充当语义通过。
 
 预算依据：A1两角色14/10轮、8分钟、1.92元；单篇定向修订首屏约4–20k字符，预计每篇3–8轮，保留Pro/low，最多12模型/32工具/500k字符/24k输出/480s；Writer全案约141k字符按需读取，最多16模型/48工具/700k/32k/480s；终审最多16模型/48工具/700k/32k/480s。修订按原生图并行2，不启动新研究Agent；估全收口3–7元，非固定报价或质量保证。任务特定TokenBudgetBasis必须进入实际配置。硬错误先本地测试，模型截断/未知结果停止不重发；不因费用删去主题，不无限终审。若终审仍有重大问题，保留报告草稿并只按责任修复，不能宣称完整casePASS。UI下一工作包，新case仍在Dell通过之后。
+
+### 定向修订/综合报告实际接入（真实运行前）
+
+`dell_case_convergence_agent.py` 在同create_agent/MCP/StateGraph入口新增六份责任修订实例、Writer、Verifier；这是新的公开底稿交接上下文，不冒称resume原作者旧私有思考。静态原生子图两两并行三批，collect只传source-bound amendment与公开处理说明；自己的native messages留独立checkpoint。没有新队列、retry、provider transport或泛化任务协议。新MCP2与框架API已按官方文档和本地库检验。作者可据源反对审查意见，不把host反馈当gold；P08需求proxy与P06地域边界明确标记host-assisted。
+
+原稿不改，新增当前视图合并claim_updates/删去显式旧claim，并同步替换thesis/mechanism/narrative等正文；变化的kind/numeric authority沿用既有SpecialistClaim，引用逐字验证、错误一次返回。新工具观察只传可引用源/数字，不传私有reasoning。Writer只能读当前workpaper入口，避免无意引用被替代的旧正文；报告自由中文，仅强制合法[Pxx:claim_id]引用可解析，不用自然语言模板判断真假。终审输出material或未解问题则留下needs_revision，否则ready_for_human_review，均不自动productPASS。原始bundle新增只读派生 `case-convergence-20260906-a1/convergence-input-a1.private.json`，10稿、6责任主题、host-assisted=true；旧review/失败run不变。
+
+130近邻测试/13.63s；最后六项包含实际A1反馈/旧authority原digest兼容、source权限、未知引句同时退回、六作者→写作→终审、原稿不变/当前引用可解析、private上下文独立、报告仍需修改分支与只读schema入口，6pass/5.44s。一个fixture模型签名不符合异步BaseChatModel调用，已在本地修正，无付費试错。fresh模型运行未启动，报告内容/UI仍待实际证明。

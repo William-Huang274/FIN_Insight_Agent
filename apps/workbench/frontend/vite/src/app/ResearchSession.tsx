@@ -218,9 +218,12 @@ export function ResearchSession() {
     if (!id) return;
     let disposed = false;
     let firstSnapshot = true;
+    let timer: number | undefined;
     const update = async () => {
+      let nextPollMs = 15000;
       try {
         const value = await sessionsApi.state(id);
+        nextPollMs = value.status === "busy" ? 5000 : 15000;
         if (!disposed) {
           setSession(value);
           if (firstSnapshot) {
@@ -230,13 +233,16 @@ export function ResearchSession() {
         }
       } catch (e) {
         if (!disposed) setError((e as Error).message);
+      } finally {
+        // Streaming carries live events; snapshots must not pile up when a
+        // checkpoint read is slow, or poll an idle report at active-run speed.
+        if (!disposed) timer = window.setTimeout(update, nextPollMs);
       }
     };
     update();
-    const timer = window.setInterval(update, 2500);
     return () => {
       disposed = true;
-      clearInterval(timer);
+      window.clearTimeout(timer);
       abort.current?.abort();
       streamKey.current = "";
     };

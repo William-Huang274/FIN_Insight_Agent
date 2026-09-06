@@ -340,3 +340,11 @@ Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量�
 失败问答的交互收口采用[LangGraph原生error_handler](https://docs.langchain.com/oss/python/langgraph/fault-tolerance)和[checkpoint update](https://docs.langchain.com/oss/python/langgraph/use-time-travel)，已安装1.2.11，无依赖升级/新恢复器。已知调用上限/截断只停止本次ask，保留失败审计/旧报告，回原生人工点；报告修订/Verifier异常不借此跳过复核。旧版本已失败ask可在窄BFF/UI选择“返回审阅·不重试”：官方update_state as_node=finish，仅更新公开失败处置，再用零模型run进入human_review；不执行失败模型节点，不覆盖旧checkpoint，不让浏览器传state/节点/模型参数。原生fixture复证8/6次预算中止后新问题有独立上下文，legacy失败checkpoint保持可读。未知异常仍向上传播，未冒称通用故障恢复已完成。
 
 76近邻测试通过/33.01s；TS/Vite build通过（637.50KB JS/191.24KBgzip，既有分包告警未隐藏），不是全仓回归。下一部署后仅原会话零模型返回审阅，再同季度SQL+计算追问一次Flash/disabled，沿用8模型/24工具/350k输入字符/8k输出/240s与现有TokenBudgetBasis；假设工具接通后可直接回答，无预算增加或研究重跑。若再次失败先读实际原因，不自动重发。尚未新paid、取消/中途干预/全案研究入口/Owner验收/新case仍未完成。
+
+### SQL计算线上已通，但交付引用仍归档限定；直接引用本次工具结果
+
+ca813dda已push/部署，同PG/Redis保留。UI“返回审阅·不重试”实际产生run `01a07577-e1ec-7d21-a7ca-65aabd57fdd6`，成功停人工点，0模型audit文件，v3完整不变，旧failed run依然error。随后同问题fresh run `01a07578-83a4-7fb0-be8d-97f5fa486013`，06:47:07.429066Z—06:47:20.392083Z，4Flash调用43760tokens（42430输入/1330输出），估0.024158元。SQL与计算器均成功，直接NUMFACT输入得到0.0833903562793668…比例，约8.34%。提交正文没有旧Pxx:claim引用，工具只回`report_citation_ids_missing_or_unknown:[]`，模型下一轮无工具地说“已提交”；原生agent正常结束但没有被接受的output，父图失败，不能算答案成功。原`public-session-after-quick-answer3-failed.json`保留，估费审计a5_actual共38调用1076553tokens/2.0009581元。
+
+这不是靠自然语言模板判语义，应修现有交付合同：短问答可直接引用本次成功SQL的`[NUMFACT::...]`及计算器`[CALC::...]`，也兼容旧Pxx:claim。薄映射只从native成功ToolMessage.artifact绑定，拒绝模型/用户自述、失败工具、未观察ID；计算引用带实际操作数、表达式、authority_note并保持非权威，BFF/UI从已保存引用投影展开原值/计算依据，无新Evidence/SQL写或来源库。报告长文的现有引用规则不变。
+
+预期拒绝明确说“Answer NOT saved”和合法引用方式；若拒绝后模型只说完成，官方after_model middleware把未保存状态返其自身原生循环，由既有预算止损，不解析修补模型推理/不自建循环。原生error_handler异常时API可能tasks=[]，已用最新native error run的server-owned ask/surface元数据识别可放弃追问，不能用于revise/Verifier/运行中任务。67相邻测试/32.68s与TS/Vite build通过；追加真实SQL→计算→native提交完整零provider测试，26项/13.31s通过。下一仅部署与原会话零模型放弃后一次同问题，模型/profile/8轮预算不变；不重跑研究或整报告。完整Dell仍未验收。

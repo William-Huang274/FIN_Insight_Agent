@@ -54,12 +54,18 @@ def public_state(state):
     return result
 
 
-def can_abandon_question(thread, state):
+def can_abandon_question(thread, state, last_run=None):
     tasks = state.get("tasks") or []
+    # Some native error-handler failures expose no pending tasks in state.
+    # Use the latest server-owned run metadata, never browser-supplied state.
+    missing_task_failure = (not tasks and last_run and last_run.get("status") == "error"
+        and last_run.get("metadata", {}).get("human_action") == "ask"
+        and last_run.get("metadata", {}).get("surface") == SURFACE)
     return (thread.get("status") == "error" and not review_interrupts(state)
         and state.get("values", {}).get("request_action") == "ask"
-        and bool(state.get("values", {}).get("report")) and bool(tasks)
-        and all(t.get("name") in {"writer", "quick_writer"} and t.get("error") for t in tasks))
+        and bool(state.get("values", {}).get("report"))
+        and (missing_task_failure or (bool(tasks)
+            and all(t.get("name") in {"writer", "quick_writer"} and t.get("error") for t in tasks))))
 
 
 class NewSession(BaseModel):
@@ -121,7 +127,7 @@ def build_report_sessions_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         runs = await service.sdk.runs.list(str(thread_id), limit=10)
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
-            **public_state(state), "can_abandon_question": bool(can_abandon_question(thread, state)),
+            **public_state(state), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
             "runs": [{k: r.get(k) for k in ("run_id", "status", "created_at")} for r in runs]}
 
     @router.post("/research-sessions/{thread_id}/abandon-question")
@@ -129,7 +135,8 @@ def build_report_sessions_router(service):
         browser_write(request)
         thread = await service.owned_thread(thread_id)
         state = await service.sdk.threads.get_state(str(thread_id))
-        if not can_abandon_question(thread, state):
+        last_runs = await service.sdk.runs.list(str(thread_id), limit=1)
+        if not can_abandon_question(thread, state, last_runs[0] if last_runs else None):
             raise HTTPException(409, "仅已失败且未交稿的追问可返回原报告；不跳过报告复核或重试运行")
         # Official checkpoint update changes only public request disposition.
         # as_node does NOT execute finish or any model; its only successor is
@@ -172,6 +179,13 @@ def build_report_sessions_router(service):
         available = {s["source_id"] for group in citations for c in group.values() for s in c["sources"]}
         if source_id not in available:
             raise HTTPException(404, "来源未与本会话已提交内容绑定")
+        if source_id.startswith(("NUMFACT::", "CALC::")):
+            source = next(s for group in citations for c in group.values() for s in c["sources"] if s["source_id"] == source_id)
+            if offset < 0:
+                raise HTTPException(422, "来源阅读范围不合法")
+            text = source.get("text", "")
+            return {**deepcopy(source), "text": text[offset:offset + 16000],
+                "next_offset": offset + 16000 if offset + 16000 < len(text) else None}
         try:
             return service.artifacts.with_revisions(values.get("revisions", {})).read_source(source_id, offset, 16000)
         except ValueError:

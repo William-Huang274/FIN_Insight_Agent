@@ -132,6 +132,11 @@ def test_abandonment_cannot_skip_report_verification_or_active_work():
     for change in ({"tasks": [{"name": "verifier", "error": "failure"}]},
                    {"values": {"request_action": "revise", "report": {"title": "new"}}}):
         assert not can_abandon_question({"status": "error"}, {**state, **change})
+    no_tasks = {**state, "tasks": []}
+    assert not can_abandon_question({"status": "error"}, no_tasks)
+    last = {"status": "error", "metadata": {"surface": "dell_report_workbench", "human_action": "ask"}}
+    assert can_abandon_question({"status": "error"}, no_tasks, last)
+    assert not can_abandon_question({"status": "error"}, no_tasks, {**last, "metadata": {"human_action": "revise"}})
 
 
 def test_abandonment_bff_uses_only_native_finish_checkpoint_and_zero_model_start():
@@ -148,8 +153,9 @@ def test_abandonment_bff_uses_only_native_finish_checkpoint_and_zero_model_start
     async def create(*args, **kwargs):
         calls.append(("run", args, kwargs))
         return {"run_id": str(uuid4()), "status": "pending"}
+    async def list_runs(*args, **kwargs): return []
     service = SimpleNamespace(owned_thread=owned, sdk=SimpleNamespace(
-        threads=SimpleNamespace(get_state=get_state, update_state=update_state), runs=SimpleNamespace(create=create)))
+        threads=SimpleNamespace(get_state=get_state, update_state=update_state), runs=SimpleNamespace(create=create, list=list_runs)))
     app = FastAPI()
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
     with TestClient(app) as client:
@@ -160,6 +166,53 @@ def test_abandonment_bff_uses_only_native_finish_checkpoint_and_zero_model_start
     assert calls[0][2] == {"as_node": "finish"}
     assert "report" not in calls[0][1][1] and "report_version" not in calls[0][1][1]
     assert calls[1][2]["checkpoint"] == checkpoint and calls[1][2]["input"] is None
+
+
+def test_rejected_answer_then_plain_completion_returns_to_native_model_for_correction(artifacts):
+    async def run():
+        graph, models, initial, ref = setup_session(artifacts, quick=True)
+        models["quick_writer"].replies = [
+            [call("submit_case_answer", {"answer_markdown": "Source is named but no actual citation ID"}, "rejected")],
+            [],  # Actual failure family: normal final prose after rejected submission.
+            [call("submit_case_answer", {"answer_markdown": f"Corrected source-bound answer [{ref}]"}, "corrected")]]
+        config = {"configurable": {"thread_id": str(uuid4())}}
+        await graph.ainvoke({"open": True}, config)
+        result = await graph.ainvoke(Command(resume={"action": "ask", "message": "Question", "answer_mode": "quick"}), config)
+        assert len(models["quick_writer"].contexts) == 3 and result["__interrupt__"]
+        assert "Answer NOT saved" in str(models["quick_writer"].contexts[1])
+        assert "No source-bound answer was saved" in str(models["quick_writer"].contexts[2])
+        assert result["report"] == initial["report"] and result["conversation"][-1]["content"].startswith("Corrected")
+    asyncio.run(run())
+
+
+def test_short_answer_direct_tool_citations_do_not_accept_model_invented_observations(artifacts):
+    from langchain_core.messages import ToolMessage, AIMessage
+    from sec_agent.agent_runtime.dell_case_convergence_agent import answer_citations
+    fact = {"numeric_fact_id": "NUMFACT::fixture", "numeric_fact_authority": True,
+        "ticker": "TEST", "metric_id": "revenue", "value_decimal": "12", "unit": "USD", "period_end": "2026-05-01"}
+    body = {"authority_state": "s2_numeric_fact_query_result", "results": [{"status": "resolved", "facts": [fact]}]}
+    observed = ToolMessage(content="source text", artifact=body, name="query_company_financial_facts", tool_call_id="q1")
+    prose = "Synthetic fixture, not real company data: 12 USD [NUMFACT::fixture]"
+    bound = answer_citations(prose, artifacts, [observed])
+    assert bound["NUMFACT::fixture"]["sources"][0]["value_decimal"] == "12"
+    for messages in ([], [AIMessage(content=json.dumps(body))], [observed.model_copy(update={"status": "error"})]):
+        with pytest.raises(ValueError, match="not_observed"):
+            answer_citations(prose, artifacts, messages)
+    with pytest.raises(ValueError, match="not_observed"):
+        answer_citations("Fake [NUMFACT::unknown]", artifacts, [observed])
+
+
+def test_direct_answer_source_bff_reads_only_persisted_bound_projection():
+    projection = {"source_id": "NUMFACT::fixture", "value_decimal": "12", "unit": "USD", "numeric_fact_authority": True}
+    async def state(_):
+        return {"values": {"conversation": [{"citations": {"NUMFACT::fixture": {"sources": [projection]}}}]}}
+    app = FastAPI()
+    app.include_router(build_report_sessions_router(SimpleNamespace(state=state)), prefix="/api/v1")
+    with TestClient(app) as client:
+        path = f"/api/v1/research-sessions/{uuid4()}/source"
+        result = client.get(path, params={"source_id": "NUMFACT::fixture"})
+        assert result.status_code == 200 and result.json()["value_decimal"] == "12"
+        assert client.get(path, params={"source_id": "NUMFACT::unknown"}).status_code == 404
 
 
 def test_native_material_finding_remains_at_human_review(artifacts):

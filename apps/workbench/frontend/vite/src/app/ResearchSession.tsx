@@ -63,7 +63,7 @@ function Markdown({
 }) {
   const keys = Object.keys(citations);
   const linked = text.replace(
-    /\[(P\d{2}:[^\[\]\s]+)\]/g,
+    /\[((?:P\d{2}:|NUMFACT::|CALC::)[^\[\]\s]+)\]/g,
     (original, ref: string) =>
       citations[ref]
         ? `[${keys.indexOf(ref) + 1}](#claim:${encodeURIComponent(ref)})`

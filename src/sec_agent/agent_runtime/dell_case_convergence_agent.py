@@ -187,6 +187,7 @@ def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
 
 
 CLAIM_REF = re.compile(r"\[(P\d{2}:[^\[\]\s]+)\]")
+ANSWER_REF = re.compile(r"\[((?:P\d{2}:|NUMFACT::|CALC::)[^\[\]\s]+)\]")
 
 
 def report_citations(report, artifacts):
@@ -203,6 +204,55 @@ def report_citations(report, artifacts):
         for s in claims[ref]["source_ids"]]} for ref in refs}
 
 
+def answer_citations(prose, artifacts, messages):
+    """Project citations from actual native tool artifacts; no new evidence store.
+
+    A short SQL question need not find an older research claim for a fact it has
+    just queried. Only successful tool observations, never AI/user prose, bind
+    direct IDs. The source resolver remains mechanical, not an entailment judge.
+    """
+    refs = list(dict.fromkeys(ANSWER_REF.findall(prose)))
+    if not refs:
+        raise ValueError("answer_has_no_inline_source_reference: cite actual [NUMFACT::id] / [CALC::id] returned by your SQL/calculator tools, or [P01:claim_id] from current claims")
+    direct = {}
+    calculations = []
+    for message in messages:
+        if not isinstance(message, ToolMessage) or message.status != "success" or not isinstance(message.artifact, dict):
+            continue
+        body = message.artifact
+        if message.name == "query_company_financial_facts" and body.get("authority_state") == "s2_numeric_fact_query_result":
+            for row in body.get("results", []):
+                if row.get("status") != "resolved":
+                    continue
+                for fact in row.get("facts", []):
+                    if fact.get("numeric_fact_authority") is True:
+                        ref = fact["numeric_fact_id"]
+                        source = artifacts._source_summary(ref, {**fact, "result_state": "numeric_fact"})
+                        source["source_observation_ids"] = fact.get("source_observation_ids", [])
+                        direct[ref] = {"claim": {"kind": "numeric_fact", "statement":
+                            f"{fact['ticker']} {fact['metric_id']} = {fact['value_decimal']} {fact['unit']}; period end {fact['period_end']}"},
+                            "sources": [source]}
+        elif message.name == "calculate_research_metric" and body.get("arithmetic_verified") is True and body.get("numeric_fact_authority") is False:
+            calculations.append(body)
+    for body in calculations:
+        ref = body["calculation_id"]
+        source = {"source_id": ref, "title": "本地来源绑定计算 · 非发行人直接披露", "numeric_fact_authority": False,
+            "value_decimal": body["value_decimal"], "unit": body["result_unit"], "authority_note": body["authority_note"],
+            "text": json.dumps({k: body[k] for k in ("expression", "operands", "rationale", "authority_note")}, ensure_ascii=False, indent=2)}
+        sources = [source]
+        for operand in body["operands"].values():
+            if source_id := operand.get("source_id"):
+                sources.extend(direct[source_id]["sources"] if source_id in direct else [artifacts.read_source(source_id)])
+        direct[ref] = {"claim": {"kind": "calculation", "statement": f"{body['expression']} = {body['value_decimal']} {body['result_unit']}",
+            "numeric_authority": "non_authoritative", "authority_note": body["authority_note"]}, "sources": sources}
+    paper_refs = [ref for ref in refs if ref.startswith("P")]
+    bound = report_citations(" ".join(f"[{ref}]" for ref in paper_refs), artifacts) if paper_refs else {}
+    missing = [ref for ref in refs if ref not in bound and ref not in direct]
+    if missing:
+        raise ValueError(f"answer_source_ids_not_observed:{missing}: query/read the actual source first; no answer saved")
+    return {ref: bound[ref] if ref in bound else direct[ref] for ref in refs}
+
+
 def output_message(runtime, output=None, error=None):
     return Command(update={**({"output": output} if output is not None else {}), "messages": [ToolMessage(
         tool_call_id=runtime.tool_call_id,
@@ -214,6 +264,16 @@ class StopOnOutput(AgentMiddleware):
     @hook_config(can_jump_to=["end"])
     def before_model(self, state, runtime):
         return {"jump_to": "end"} if state.get("output") else None
+
+
+class AnswerSubmissionFeedback(AgentMiddleware):
+    """The native loop may otherwise END after a rejected tool + plain prose."""
+    @hook_config(can_jump_to=["model"])
+    def after_model(self, state, runtime):
+        message = state["messages"][-1]
+        if (state.get("request_action") == "ask" and not state.get("output") and isinstance(message, AIMessage)
+                and not message.tool_calls and not message.invalid_tool_calls):
+            return {"messages": [HumanMessage(content="No source-bound answer was saved. Plain prose does not complete this tool session. Use submit_case_answer with actual inline [NUMFACT::id], [CALC::id], or [P01:claim_id] references. If a prior submission returned an error, correct it; do not say it succeeded. No need to rewrite the report.")], "jump_to": "model"}
 
 
 CONTEXT_RULES = """You are agentic: plan your own reads, batch independent tools, inspect errors and correct them.
@@ -277,15 +337,15 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_case_answer(answer_markdown: str, runtime: ToolRuntime) -> Command:
-        """Answer the user's question with exact inline [Pxx:claim_id] citations; do not rewrite the report."""
+        """Answer with exact inline [NUMFACT::id] from SQL, [CALC::id] from calculator, or [Pxx:claim_id] from workpapers. The IDs must have been observed. No fixed prose template; do not rewrite the report."""
         if runtime.state.get("request_action") != "ask":
             return output_message(runtime, error="This request asks for a revised report. Use submit_case_report.")
         try:
             if not answer_markdown.strip() or len(answer_markdown) > 80000:
                 raise ValueError("answer_text_empty_or_too_large")
-            citations = report_citations(answer_markdown, artifacts.with_revisions(runtime.state.get("revisions", {})))
+            citations = answer_citations(answer_markdown, artifacts.with_revisions(runtime.state.get("revisions", {})), runtime.state.get("messages", []))
         except ValueError as exc:
-            return output_message(runtime, error=str(exc))
+            return output_message(runtime, error="Answer NOT saved: " + str(exc) + ". Correct the inline citations and resubmit submit_case_answer; no final answer was accepted.")
         return output_message(runtime, {"kind": "answer", "answer_markdown": answer_markdown, "citations": citations})
 
     @tool
@@ -337,12 +397,12 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     if answer_only:
         if not allow_answers:
             raise ValueError("answer_only_requires_interactive_writer")
-        specific = "Answer the actual user question about this existing Dell case in concise Chinese. Plan your own relevant reads; do not reread every paper or reconstruct a whole report. Prefer query_company_financial_facts for financial numbers; inspect the relevant current claim and source for exact paper:claim citations. Include period, unit, source authority and uncertainty where they matter. The current report is available through read_current_report if needed, not presumed evidence. Source-bound answers may still be wrong: do not claim independent verification or product acceptance. If the question exceeds available evidence or needs a new deep study, explain what is unresolved without fabricating it. Submit using submit_case_answer, not a revised report."
+        specific = "Answer the actual user question about this existing Dell case in concise Chinese. Plan your own relevant reads; do not reread every paper or reconstruct a whole report. Prefer query_company_financial_facts for financial numbers. Cite its actual numeric_fact_id inline as [NUMFACT::id], and calculator calculation_id as [CALC::id]; exact [P01:claim_id] citations remain available for existing research. You do not need an old paper to cite a newly queried SQL fact. Include period, unit, source authority and uncertainty where they matter. The current report is available through read_current_report if needed, not presumed evidence. Source-bound answers may still be wrong: do not claim independent verification or product acceptance. If the question exceeds available evidence or needs a new deep study, explain what is unresolved without fabricating it. Submit using submit_case_answer, not a revised report."
         selected = [t for t in selected if t.name not in {"submit_case_answer", "submit_report_edits"}] + [read_current_report]
         submit = submit_case_answer
     return create_agent(model=model, tools=[*selected, submit], state_schema=CaseOutputState,
         system_prompt=CONTEXT_RULES + specific + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
-        middleware=[StopOnOutput(), InvalidToolCallFeedback(), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
+        middleware=[StopOnOutput(), InvalidToolCallFeedback(), *([AnswerSubmissionFeedback()] if allow_answers else []), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
             ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="error"), *([audit] if audit else [])],
         name=f"case_{role}_{paper_id or 'report'}")
 

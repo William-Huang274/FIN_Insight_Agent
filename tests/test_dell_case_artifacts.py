@@ -180,6 +180,33 @@ def test_live_sql_ids_calculate_only_after_observation_in_this_composition(real_
                     assert not result["numeric_fact_authority"] and result["arithmetic_verified"]
                     assert all(v["authority"] == "s2_input" and v["period_end"] == "2026-05-01"
                                for v in result["operands"].values())
+                    from langchain_core.messages import ToolMessage
+                    from sec_agent.agent_runtime.dell_case_convergence_agent import answer_citations
+                    fact_id = facts["revenue"]["numeric_fact_id"]
+                    refs = answer_citations(f"Read [{fact_id}], calculate [{result['calculation_id']}]", artifacts, [
+                        ToolMessage(content="SQL", artifact=query, name="query_company_financial_facts", tool_call_id="query"),
+                        ToolMessage(content="calculation", artifact=result, name="calculate_research_metric", tool_call_id="calc")])
+                    assert refs[fact_id]["sources"][0]["value_decimal"] == "43842000000"
+                    assert refs[result["calculation_id"]]["claim"]["numeric_authority"] == "non_authoritative"
+                    assert len(refs[result["calculation_id"]]["sources"]) == 3
+                    if index == 0:
+                        # Full native query -> calculation -> accepted answer,
+                        # with a scripted model but actual SQL/MCP/tool artifacts.
+                        from langchain_core.messages import HumanMessage
+                        from test_dell_case_convergence_agent import NativeFixtureModel
+                        from test_dell_case_review_agent import call
+                        from sec_agent.agent_runtime.dell_case_review_agent import case_mcp_tools
+                        from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent
+                        model = NativeFixtureModel(marker="host-fixture-only", replies=[
+                            [call("query_company_financial_facts", {"branch_id": branch, **query["query"]}, "query-again")],
+                            [call("calculate_research_metric", {"request": calculation}, "calc-again")],
+                            [call("submit_case_answer", {"answer_markdown": f"Development fixture: source [{fact_id}], computed [{result['calculation_id']}]"}, "answer")]])
+                        native_tools = await case_mcp_tools(client, run_scope=method.structured_content["run_scope"])
+                        agent = build_case_output_agent(role="writer", model=model, tools=native_tools, artifacts=artifacts,
+                            limits={"model_calls": 4, "tool_calls": 8}, allow_answers=True, answer_only=True)
+                        accepted = await agent.ainvoke({"messages": [HumanMessage(content="Host protocol test, not semantic gold")], "request_action": "ask"})
+                        assert accepted["output"]["kind"] == "answer" and len(model.contexts) == 3
+                        assert accepted["output"]["citations"] == refs
                     wrong = deepcopy(calculation)
                     wrong["operands"]["revenue"]["literal"] = "1"
                     rejected = await client.call_tool("calculate_research_metric", {"request": wrong})

@@ -182,15 +182,16 @@ def build_report_sessions_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         last_runs = await service.sdk.runs.list(str(thread_id), limit=1)
         if not can_abandon_question(thread, state, last_runs[0] if last_runs else None):
-            raise HTTPException(409, "仅已失败且未交稿的追问可返回原报告；不跳过报告复核或重试运行")
+            raise HTTPException(409, "仅已停止或失败且未交稿的追问可返回原报告；不跳过报告复核或重试运行")
+        stopped = bool(last_runs and last_runs[0].get("status") == "interrupted")
         # Official checkpoint update changes only public request disposition.
         # as_node does NOT execute finish or any model; its only successor is
         # human_review. The failed run/checkpoint and report remain untouched.
         checkpoint = await service.sdk.threads.update_state(str(thread_id),
-            abandoned_question_update(state["values"], "已放弃这次失败的追问并返回报告审阅。"), as_node="finish")
+            abandoned_question_update(state["values"], "已停止这次追问并返回报告审阅。" if stopped else "已放弃这次失败的追问并返回报告审阅。"), as_node="finish")
         run = await service.sdk.runs.create(str(thread_id), GRAPH, input=None, checkpoint=checkpoint["checkpoint"],
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
-            metadata={"surface": SURFACE, "human_action": "abandon_failed_question", "model_calls_requested": 0})
+            metadata={"surface": SURFACE, "human_action": "return_stopped_question" if stopped else "abandon_failed_question", "model_calls_requested": 0})
         return {"run_id": run["run_id"], "status": run["status"], "model_retry_requested": False}
 
     @router.post("/research-sessions/{thread_id}/actions")

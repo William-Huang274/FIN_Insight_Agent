@@ -6,6 +6,7 @@ export type Event = {
   event: string;
   call_id?: string;
   status?: string;
+  error_type?: string;
   tool?: string;
   model?: string;
   total_tokens?: number;

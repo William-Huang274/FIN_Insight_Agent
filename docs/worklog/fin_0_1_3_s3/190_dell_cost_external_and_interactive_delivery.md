@@ -1,6 +1,6 @@
 # Dell：成本根因、成熟外源与真实交互的顺序交付
 
-> 最新状态：2026-09-06 07:22Z，真实Flash SQL→计算→来源回答完成；每请求用量与来源浏览器复核完成，见文末。完整Dell/Owner验收尚未完成。历史下一步不得用于重启已消耗attempt。
+> 最新状态：2026-09-06 07:30Z，真实Flash SQL→计算→来源回答完成；每请求用量与来源浏览器复核，以及真实运行停止→零模型返回人工点完成，见文末。完整Dell/Owner验收尚未完成。历史下一步不得用于重启已消耗attempt。
 
 日期：2026-09-06。产品FIN0.1.3，同分支/S3，不是新版本。源设计：`docs/architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md` §0最新顺序。起点 `e8aacc02b0c6860ba7fabf2d53a901c09150ae04` clean且与origin一致。
 
@@ -362,3 +362,21 @@ ca813dda已push/部署，同PG/Redis保留。UI“返回审阅·不重试”实�
 实际浏览器依次选择最新3调用/28776、失败8调用/101693、修订10调用/416979均与审计一致；当前载入会话累计41/1105329。点击计算引用看到公式/两项NUMFACT/SEC原链，点SQL源实际显示3656000000 USD，不是fixture或只编译。只重启BFF进程（当前47504/exec87238），未重启API、未新模型调用。报告仍v3/12595字符/69引用、0material/2advisory，未点击Owner接受。
 
 下一是产品连接而非另一次同问题：在现有Agent Server图/原生thread-run-command-stream能力上打通新Dell研究入口和运行中人工控制，先局部验证再有依据的真实运行；保留原研究成果/失败/原生checkpoint。完整新研究→报告→人工验收尚未通过；完成后才新增长研究与短任务/QA的1–2新case。快速Flash与复杂Pro当前是显式任务模式，不宣传自主难度分类或普适两分钱。
+
+### 下一最小真实人工控制资格（运行前）
+
+先验证已存在的停止按钮，不新造调度器：依照[Agent Server原生interrupt策略](https://docs.langchain.com/langsmith/interrupt-concurrent)和[LangGraph持久化人工点](https://docs.langchain.com/oss/python/langgraph/interrupts)，同Dell会话发一条关于报告现金期间一致性的deep ask，首次model started后UI停止。仅一次，不等待产出、不自动重发，报告/研究不改；目的为运行控制而非新增研究答案。沿用host-settings中任务特定Pro/low ask TokenBudgetBasis（当前目录+12595字符报告+公开会话、source-bound简答、700k输入字符/32k输出/480s、16模型/48工具安全上限）；实际期望在首请求中断，先前复杂完整修订10调用不是本测试目标。潜在已发送单请求按实际provider用量计，未返回usage即未知，不能凭取消动作保证免计费或远端立刻停止。若停止后不能回人工点，先读native state/run查具体本地缺口，仅零模型返回审阅，不试探性续跑未知模型。停止旧ask不授权跳过新报告的Verifier或Owner接受。
+
+### 07:30Z 已有停止/返回机制线上成立，无需再建恢复协议
+
+2d8a7850 clean实现下，真实UI启动deep ask run `01a0759e-b26d-7600-9568-b42bfe3caae5`（07:28:49.777352Z），观察到模型started后点击停止，07:29:22.703352Z native run=`interrupted`。浏览器观察/操作间已发生3次完成请求，第4次CancelledError而无usage，并非原计划在第1次请求内及时停止。3次已报告80946输入/969输出/81915tokens，估0.1713225元；第4次用量/费用未知，不能叫0成本或宣称远端instant cancellation。原audit状态provider_failed+CancelledError保留，不改成无故障成功；这是宿主主动中断，不是网络故障。
+
+native thread当时error、next=writer/task.error=true，但原v3正文完整相同、版本3，现有can_abandon_question正确识别。真实UI“返回审阅·不重试”run `01a075a0-31f1-7e71-9909-829c558e1f11`（07:30:27.955687Z）只执行原生人工点，0模型文件，phase=`ready_for_human_review`/can_respond=true；原interrupted run未改、没有新答案、没有重发第4次模型。保存 `public-session-after-cancel-control-a1.json` 和 `public-session-after-cancel-return-a1.json`。LangSmith根closed/error、公开inputs/outputs为空、已报告80946/969与本机一致。已验证的范围为运行中ask停止后保留旧报告及零模型回人工点，不是运行中的新报告/Verifier跳过复核、任意中途同节点改指令或通用崩溃恢复。
+
+只做显示修正：依据原生run interrupted与既有CancelledError字段区分“已停止”与失败，之后返回说明不再叫“失败追问”。不改原日志/旧对话，不新增恢复接口/状态机。27定向测试/24.45s与TS/Vite构建通过（639.28KB/191.89KBgzip）。此轮完整会话离线审计a7_actual共45次请求、44次用量已知、1187244已知tokens/估2.1920766元，另1次未知；44个provider success仍不等于44个成功用户任务。
+
+### 下一产品连接工作，沿用现有模块，不再扩建资格协议
+
+已阅读现有Lead原生图、case review/convergence、report session和部署/BFF；新研究入口应是同Agent Server中的原生父图连接，而不是把旧one-shot authority、每次Compose和手工bundle路径搬到前端。输入只给Dell范围内的用户问题/明确模式，数据快照、as-of、Q1可复用底稿、模型用途/TokenBudgetBasis从服务端配置；浏览器不能提交任意路径/state/预算。原生Lead自主任务与并行Specialist→公开底稿投影→原生Counter/Verifier→有责任的作者修订→Writer/终审→人工点；来源和公开理由可跨Agent，私有上下文不能跨传。中间产物在现有PG子图保存，失败仅停止责任节点/保留已完成工作，不以重跑整案或新自研队列解决。
+
+此连接**尚未实施/paid**，不能因为现有分段案例、报告审阅/停止链已成功而称完整一次性全case通过。首次贯通前只做这些相邻合同/真实MCP/native子图检查；成熟栈已有功能不另造。后续有依据的一次完整Dell真实执行再给出端到端成本和质量，再做1–2新案例；当前不足以宣称任意新研究、任意中途steer或自主难度路由已实现。

@@ -139,7 +139,8 @@ def test_abandonment_cannot_skip_report_verification_or_active_work():
     assert not can_abandon_question({"status": "error"}, no_tasks, {**last, "metadata": {"human_action": "revise"}})
 
 
-def test_abandonment_bff_uses_only_native_finish_checkpoint_and_zero_model_start():
+@pytest.mark.parametrize("run_status", ["error", "interrupted"])
+def test_abandonment_bff_uses_only_native_finish_checkpoint_and_zero_model_start(run_status):
     calls, thread_id = [], str(uuid4())
     state = {"values": {"request_action": "ask", "report": {"title": "original"}, "report_version": 3,
         "report_review": {"findings": [], "unresolved_data_requests": []}},
@@ -153,7 +154,7 @@ def test_abandonment_bff_uses_only_native_finish_checkpoint_and_zero_model_start
     async def create(*args, **kwargs):
         calls.append(("run", args, kwargs))
         return {"run_id": str(uuid4()), "status": "pending"}
-    async def list_runs(*args, **kwargs): return []
+    async def list_runs(*args, **kwargs): return [{"status": run_status}]
     service = SimpleNamespace(owned_thread=owned, sdk=SimpleNamespace(
         threads=SimpleNamespace(get_state=get_state, update_state=update_state), runs=SimpleNamespace(create=create, list=list_runs)))
     app = FastAPI()
@@ -166,6 +167,9 @@ def test_abandonment_bff_uses_only_native_finish_checkpoint_and_zero_model_start
     assert calls[0][2] == {"as_node": "finish"}
     assert "report" not in calls[0][1][1] and "report_version" not in calls[0][1][1]
     assert calls[1][2]["checkpoint"] == checkpoint and calls[1][2]["input"] is None
+    stopped = run_status == "interrupted"
+    assert ("已停止" in calls[0][1][1]["conversation"][0]["content"]) == stopped
+    assert calls[1][2]["metadata"]["human_action"] == ("return_stopped_question" if stopped else "abandon_failed_question")
 
 
 def test_rejected_answer_then_plain_completion_returns_to_native_model_for_correction(artifacts):

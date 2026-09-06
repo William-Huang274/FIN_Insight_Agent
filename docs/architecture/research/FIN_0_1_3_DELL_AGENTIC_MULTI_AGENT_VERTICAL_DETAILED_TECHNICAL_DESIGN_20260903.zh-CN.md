@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-06 07:30Z人工控制补充：真实UI停止deep ask后native run interrupted、原v3保留，现有原生checkpoint返回人工点0模型已通过。3调用有usage/81915tokens/估0.1713225元，另1取消请求无usage，不称免费或远端即时取消。没有新恢复协议，仅UI区分主动停止和异常；此资格不包含停止未审新报告后绕过Verifier，或任意同节点steer/崩溃恢复。下一新研究入口应把既有Lead/并行研究/Counter/责任修订/报告图连接到同Agent Server，不复制旧one-shot治理控制；该连接尚未实现。详S3/190末节。
+
 2026-09-06 07:22Z：Flash短问答完整SQL→计算→直接引用提交已真实通过，3调用/28776tokens/11.40s/估0.019796元；LangSmith与本地用量一致，报告v3不改。沿用原生create_agent/MCP ToolMessage.artifact绑定NUMFACT/CALC，拒绝伪造或未观察ID；不要求为引用新SQL值先写旧底稿。前端已真实显示每次请求及失败的用量，并展开SQL原值、公式与非权威提醒。原两次工具/交付失败、两次零模型返回人工点均保留；不称一般等质降费A/B或平台多案例PASS。下一直接补已有Agent Server图的新研究入口及人工控制，先本地定向验证/必要真实测试，不新造控制面、不再付费重复同短问题。Owner尚未接受报告，完整Dell和新case仍未完成。见S3/190末节。
 
 2026-09-06最新增量：Flash短问答首问真实完成（6调用/85962tokens/估0.042408元）；续问SQL成功但计算器归档ID限制导致8调用失败（101693tokens/估0.0370709元）。同MCP现接已观察SQL NumericFact投影、仍拒绝伪造/跨composition未观察ID，不新增数值权威；工具错误返模型可改。原生error_handler只把已知ask预算/截断交回人工点；旧已失败ask通过窄BFF原生checkpoint update返回审阅，0模型，不重试/跳过报告审查。76近邻与前端build已过，部署实测待做；原v3与失败均保留，不是完整Dell PASS。详S3/190末节。

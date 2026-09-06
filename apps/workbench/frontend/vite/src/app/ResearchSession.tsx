@@ -424,7 +424,9 @@ export function ResearchSession() {
                 )}{" "}
                 {busy
                   ? "Agent 正在执行"
-                  : session.status === "error"
+                  : session.runs?.[0]?.status === "interrupted"
+                    ? "已停止 · 原有结果和记录保留"
+                    : session.status === "error"
                     ? "本次执行失败 · 状态已保留"
                     : phaseName[session.phase || ""] || "正在载入"}
               </span>
@@ -722,7 +724,7 @@ export function ResearchSession() {
                 <label htmlFor="usage-run">查看请求用量</label>
                 <select id="usage-run" value={usageRun?.run_id || ""} onChange={e => setUsageRunId(e.target.value)}>
                   {session?.runs?.map(r => <option key={r.run_id} value={r.run_id}>
-                    {new Date(r.created_at).toLocaleTimeString("zh-CN")} · {r.human_action === "ask" ? (r.answer_mode === "quick" ? "Flash 问答" : "Pro 追问") : r.human_action === "revise" ? "报告修订" : r.human_action === "abandon_failed_question" ? "放弃失败追问" : "载入 / 审阅"} · {r.status}
+                    {new Date(r.created_at).toLocaleTimeString("zh-CN")} · {r.human_action === "ask" ? (r.answer_mode === "quick" ? "Flash 问答" : "Pro 追问") : r.human_action === "revise" ? "报告修订" : r.human_action === "abandon_failed_question" ? "放弃失败追问" : r.human_action === "return_stopped_question" ? "停止后返回审阅" : "载入 / 审阅"} · {r.status === "interrupted" ? "已停止" : r.status}
                   </option>)}
                 </select>
               </div>
@@ -776,6 +778,8 @@ export function ResearchSession() {
                       <small>
                         {e.event === "started"
                           ? "开始"
+                          : e.error_type === "CancelledError"
+                            ? "已中断 · 用量未知"
                           : e.status === "handoff"
                             ? "已交接"
                             : e.status === "success"

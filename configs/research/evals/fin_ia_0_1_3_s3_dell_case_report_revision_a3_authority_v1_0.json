@@ -1,0 +1,150 @@
+{
+  "schema_version": "fin_ia_dell_q1_specialist_paid_shadow_authority_v1_0",
+  "decision_id": "decision:dell:case-convergence:20260906:a3",
+  "decision_status": "authorized_once",
+  "qualification_only": true,
+  "paid_full_chain_execution_id": "20260906-dell-case-report-revision-a3",
+  "agent_session_id": "session:dell:case-convergence:20260906:a3",
+  "fin_thread_id": "thread:dell:case-convergence:20260906:a3",
+  "research_run_id": "run:dell:case-convergence:20260906:a3",
+  "run_invocation_id": "invocation:dell:case-convergence:20260906:a3",
+  "graph_id": "dell_reference_vertical",
+  "serving_mode": "case_convergence_v1",
+  "branch_id": "Q1_ISSUER_TRUTH",
+  "node_id": "specialist:Q1_ISSUER_TRUTH",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "research_as_of": "2026-09-02T00:00:00Z",
+  "implementation_commit": "92061de1cd3d14a2209ad3f94f649949b0f881ae",
+  "deepseek_config_sha256": "9a558d52adcc1e070edc8cff6c4598dc095847d9dd359a735a491247296fdf1f",
+  "owner_data_gate_decision_digest": "739df0f5d2880af8e27a08b5f9e31e10e894f4900fb72681e7b02e065e89b204",
+  "inventory_snapshot_digest": "700956df7a994206dc67bf0eca3ec17cf1a8befaa087fbfc5db5999ece4740e0",
+  "source_route_catalog_digest": "28ce8858f2182e55525c9cb42ae82b63bf3034dc4b1e87209be22e6703382750",
+  "max_model_turns": 16,
+  "max_tool_actions": 48,
+  "max_input_characters_per_turn": 700000,
+  "max_output_tokens_per_turn": 32000,
+  "timeout_seconds_per_turn": 480,
+  "max_transport_attempts_per_turn": 1,
+  "retry_policy": "none",
+  "fallback_policy": "none",
+  "truncation_behavior": "fail_closed_no_partial_promotion",
+  "unknown_outcome_behavior": "stop_and_require_human_review",
+  "node_purpose": "Revise only the Chinese full-case report against independent A2 review and explicitly labeled human feedback, then independently review it. All six accepted author revisions reused with zero new calls. Not automatic product acceptance.",
+  "input_scale_basis": "9300-character prior report, five independent findings, explicitly labeled human review, ten-paper catalog, selected affected workpapers/source windows. No prior private transcript; no research restart.",
+  "required_outputs": [
+    "Six pinned accepted author outputs reused with zero new model/tool calls",
+    "Revised useful Chinese analyst report, source-bound and without internal protocol boilerplate",
+    "Independent report review distinguishing indispensable material evidence from optional future enhancements"
+  ],
+  "schema_burden": "Six native author nodes in pairs, then native Writer/Verifier; each has MCP tools plus a domain submission. Only citation/schema/authority mechanics enforced locally; free report prose judged semantically by the reviewer.",
+  "materiality_quality_risk": "Original reports and review failures remain immutable. Prior reviewers missed orders-vs-usage, so explicit host-assisted feedback is disclosed. Numeric non-S2 remains non-authoritative; no Evidence admission, SQL writes, release or product PASS.",
+  "comparable_run_evidence": "A2 report handoff needs_revision: P07 3calls/82357tokens/.3599397CNY,Writer4/278262/.6749298,Verifier5/449235/.9497559. 12calls809854tokens/1.9846254CNY. Native JSON/quote feedback self-correction observed.32targetedtests and final16report tests passed.",
+  "reasoning_profile": "Two independent Pro/low thinking-enabled native create_agent message loops, each persisted by Agent Server; never transfer private reasoning between them. No model fallback or automatic transport retry.",
+  "cost_and_latency_estimate": "One bounded report-only revision qualification, estimated1–3CNY/5–20minutes, not invoice/guarantee. Writer/Verifier same16model48tool700kchars32kout480s; all authors0calls. No automatic repeat if material failure remains; preserve and diagnose. No SDKretry/fallback.",
+  "live_external_calls_authorized": true,
+  "evidence_admission_authorized": false,
+  "s2_write_authorized": false,
+  "other_model_nodes_authorized": true,
+  "workflow": "case_convergence",
+  "review_scope": null,
+  "lead_scope": null,
+  "case_review_scope": null,
+  "case_convergence_scope": {
+    "seed_state_host_path": "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/case-convergence-20260906-a1/convergence-input-a3.private.json",
+    "seed_state_sha256": "992d693e2b06832084e5f01227fcefbe20c0b4c5930bf1a97893503ff137994d",
+    "repair_paper_ids": [
+      "P01",
+      "P04",
+      "P05",
+      "P06",
+      "P07",
+      "P08"
+    ],
+    "node_budgets": {
+      "repair": {
+        "node_role": "specialist",
+        "node_purpose": "No fresh author generation. Every author output is a host-revalidated pinned native submission reused with zero model/tools through before_model stop.",
+        "input_scale": "One4–20k-character workpaper, exact findings, source catalog; typically3–8turns with on-demand windows.12model/32tool capacity; no sibling notebooks or hidden reasoning.",
+        "required_outputs": [
+          "Updated Chinese thesis/mechanism/narrative",
+          "Only changed source-bound claims and removals",
+          "Disposition of each review finding and unresolved gaps"
+        ],
+        "schema_burden": "Native read-only MCP tools plus one source-bound domain submission. Free Chinese report uses exact paper:claim links, not a fixed prose schema. Local errors returned together.",
+        "materiality_quality_risk": "Do not equate source binding with semantic truth; distinguish period/company/unit, non-S2, demand proxy vs usage, regional aggregate and volume shipment. Report material unresolved issues honestly.",
+        "comparable_run_evidence": "A2 report handoff needs_revision: P07 3calls/82357tokens/.3599397CNY,Writer4/278262/.6749298,Verifier5/449235/.9497559. 12calls809854tokens/1.9846254CNY. Native JSON/quote feedback self-correction observed.32targetedtests and final16report tests passed.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 500000,
+        "max_output_tokens": 24000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      },
+      "writer": {
+        "node_role": "specialist",
+        "node_purpose": "Correct the existing complete report against actual sources and public review feedback; preserve coverage, improve analyst synthesis, not a wholesale research restart.",
+        "input_scale": "9300-character prior report, five independent findings, explicitly labeled human review, ten-paper catalog, selected affected workpapers/source windows. No prior private transcript; no research restart.",
+        "required_outputs": [
+          "Free Chinese report with a clear integrated thesis",
+          "All material reasoning bound inline to current paper:claim IDs",
+          "Evidence authority and remaining meaningful limitations"
+        ],
+        "schema_burden": "Native read-only MCP tools plus one source-bound domain submission. Free Chinese report uses exact paper:claim links, not a fixed prose schema. Local errors returned together.",
+        "materiality_quality_risk": "Do not equate source binding with semantic truth; distinguish period/company/unit, non-S2, demand proxy vs usage, regional aggregate and volume shipment. Report material unresolved issues honestly.",
+        "comparable_run_evidence": "A2 report handoff needs_revision: P07 3calls/82357tokens/.3599397CNY,Writer4/278262/.6749298,Verifier5/449235/.9497559. 12calls809854tokens/1.9846254CNY. Native JSON/quote feedback self-correction observed.32targetedtests and final16report tests passed.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      },
+      "verifier": {
+        "node_role": "specialist",
+        "node_purpose": "Independently verify the final integrated report against revised papers and actual sources; identify material entailment/period/causal errors missed by earlier reviewers.",
+        "input_scale": "One corrected full-case report plus current catalog; independently select supporting papers/original source windows. No Writer private reasoning or human feedback transcript copied.",
+        "required_outputs": [
+          "Chinese independent report assessment",
+          "Exact report-quote anchored material/advisory findings",
+          "Unresolved data or execution requests without fake gap claims"
+        ],
+        "schema_burden": "Native read-only MCP tools plus one source-bound domain submission. Free Chinese report uses exact paper:claim links, not a fixed prose schema. Local errors returned together.",
+        "materiality_quality_risk": "Do not equate source binding with semantic truth; distinguish period/company/unit, non-S2, demand proxy vs usage, regional aggregate and volume shipment. Report material unresolved issues honestly.",
+        "comparable_run_evidence": "A2 report handoff needs_revision: P07 3calls/82357tokens/.3599397CNY,Writer4/278262/.6749298,Verifier5/449235/.9497559. 12calls809854tokens/1.9846254CNY. Native JSON/quote feedback self-correction observed.32targetedtests and final16report tests passed.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "node_limits": {
+      "repair": {
+        "model_calls": 12,
+        "tool_calls": 32
+      },
+      "writer": {
+        "model_calls": 16,
+        "tool_calls": 48
+      },
+      "verifier": {
+        "model_calls": 16,
+        "tool_calls": 48
+      }
+    }
+  },
+  "artifact_root_container": "/run/fin-insight/paid-shadow/20260906-dell-case-report-revision-a3",
+  "model_audit_filename": "model-call-events.jsonl",
+  "source_read_enabled": true,
+  "private_reasoning_audit_authorized": true,
+  "deepseek_config_filename": "fin_ia_0_1_3_dell_case_convergence_native_v1_0.json",
+  "decision_digest": "4079922d1b58449c7988825a22f4db76547770c2487122bdd40204a9b52cd82c"
+}

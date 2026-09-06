@@ -17,7 +17,7 @@ from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableConfig
 from langgraph.config import get_stream_writer
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Send
+from langgraph.types import Command, Send
 
 from .dell_case_convergence_agent import ReportReview, report_model_view, review_responsibility_errors
 
@@ -165,6 +165,15 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 if round_index:
                     body["previous_review"] = deepcopy(state.get("synthesis_review" if role == "research_verifier" else "report_review", {}))
         value["messages"] = [HumanMessage(content=json.dumps(body, ensure_ascii=False))]
+        # An explicitly retried parent can reach a child whose native loop ended
+        # without its required submission. Reopen only that completed child via
+        # the documented Command API; retain its own messages and accepted peers.
+        saved = await agent.aget_state(config)
+        if saved.values.get("messages") and not saved.next and not saved.values.get("output"):
+            value = Command(goto="model", update={"messages": [HumanMessage(content=
+                "The previous attempt ended without an accepted structured submission. It did NOT complete this role. "
+                "Continue from your retained source reads, correct the rejected submission and call your submission tool. "
+                "The host has restarted only this failed role; do not repeat unrelated research.")]})
         result = await agent.ainvoke(value, config)
         if not result.get("output"):
             raise ValueError(f"research_actor_ended_without_submission:{actor}")

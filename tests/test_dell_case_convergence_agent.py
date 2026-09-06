@@ -52,6 +52,25 @@ class NativeFixtureModel(BaseChatModel):
             additional_kwargs={"reasoning_content": self.marker}))])
 
 
+def test_lead_can_submit_source_bound_charts_and_plain_prose_is_not_false_completion(artifacts):
+    async def run():
+        source_id = next(s for s, row in artifacts.read_paper("P01", "sources").items() if row["result_state"] == "numeric_fact")
+        claim_id = artifacts.read_paper("P01")["claims"][0]["claim_id"]
+        report = {"title": "Synthetic Lead chart submission", "narrative_markdown": "Native submission fixture, not a financial judgment. " * 6 + f"[P01:{claim_id}]",
+            "charts": [{"title": "Same-source wiring fixture", "unit": "source units", "interpretation": "Both labels intentionally refer to the same source in this wiring test.",
+                "points": [{"label": label, "source": {"source_id": source_id}} for label in ("A", "B")]}]}
+        model = NativeFixtureModel(marker="lead-private", replies=[[], [call("submit_research_synthesis", {"synthesis": report}, "submit")]])
+        async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
+            agent = build_case_output_agent(role="synthesis", model=model, tools=await case_mcp_tools(client), artifacts=artifacts,
+                limits={"model_calls": 3, "tool_calls": 4})
+            result = await agent.ainvoke({"messages": [{"role": "user", "content": "Submit a cited Lead judgment with useful source-bound charts."}]})
+            assert len(model.contexts) == 2 and "No source-bound output was saved" in str(model.contexts[1])
+            points = result["output"]["charts"][0]["points"]
+            assert points[0]["source_id"] == source_id and points[0]["value"] == points[1]["value"]
+            assert not result["output"]["charts"][0]["numeric_fact_authority"]
+    asyncio.run(run())
+
+
 @pytest.mark.parametrize("material", [False, True])
 @pytest.mark.parametrize("reuse", [False, True, "report"])
 def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifacts, material, reuse):

@@ -7,6 +7,7 @@ from threading import Barrier, Lock
 
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableLambda
+from langchain.agents import create_agent
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 from mcp import Client
@@ -14,7 +15,7 @@ import pytest
 
 from sec_agent.agent_runtime.research_session import build_research_session_graph, current_task_artifacts
 from sec_agent.agent_runtime.research_convergence import build_research_convergence_graph
-from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent
+from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent, CaseOutputState
 from sec_agent.agent_runtime.dell_case_review_agent import build_case_review_graph, build_case_reviewer, case_mcp_tools
 from sec_agent.agent_runtime.dell_lead_research_graph import build_dell_lead_research_graph
 from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistAgenticInput
@@ -41,9 +42,10 @@ def _new_worker_fixture():
     return _run(_ScriptedModel([_evidence_action(), _finance_action(), _submission()]), FullSourceFixturePorts())
 
 
-def _phases(*, material=False, incomplete=False, fail_convergence=False, full_profile=False, fail_one_first=False):
+def _phases(*, material=False, incomplete=False, fail_convergence=False, full_profile=False, fail_one_first=False, fail_synthesis_once=False):
     seen = {"research": 0, "review": 0, "converge": 0, "ask": 0}
     models = {}
+    synthesis_failed = False
     root = Path(__file__).resolve().parents[1]
     case = json.loads((root / "configs/research/cases/dell_growth_quality.json").read_text(encoding="utf-8"))
     profile = json.loads((root / "configs/research/runtime/research_session.json").read_text(encoding="utf-8"))
@@ -144,8 +146,11 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
             review_result = {"summary": "This independent scripted report review tests parent handoff only and cannot establish research quality.",
                             "findings": [], "unresolved_data_requests": []}
             def make_agent(role, current, *, feedback, paper_id, correction_round, revising_report):
+                nonlocal synthesis_failed
                 key = "terminal" if role == "report_verifier" else role
                 if role == "repair":
+                    if fail_synthesis_once:
+                        seen["repair"] = seen.get("repair", 0) + 1
                     revision = revision_fixture(current, paper_id)
                     revision["finding_responses"] = [{"finding_id": f["finding_id"], "disposition": "disagreed_with_sources",
                         "explanation": "Synthetic local plumbing test, not an actual financial correction."} for f in feedback]
@@ -153,10 +158,16 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
                 elif role.endswith("verifier"):
                     reply = call("submit_report_review", {"review": review_result}, "check")
                 elif role == "synthesis":
+                    if fail_synthesis_once and not synthesis_failed:
+                        synthesis_failed = True
+                        # Simulate the old native model loop ending without a
+                        # structured output, including its completed checkpoint.
+                        return create_agent(model=NativeFixtureModel(marker="synthesis-private", replies=[[]]),
+                            tools=[], state_schema=CaseOutputState, name="case_synthesis_report")
                     reply = call("submit_research_synthesis", {"synthesis": report}, "synthesis")
                 else:
                     reply = call("submit_case_report", {"report": report}, "report")
-                models[key] = NativeFixtureModel(marker=key+"-private", replies=[[reply]])
+                models[key] = NativeFixtureModel(marker=key+"-private", replies=[[], [reply]] if fail_synthesis_once and role == "synthesis" else [[reply]])
                 return build_case_output_agent(role="verifier" if role.endswith("verifier") else role,
                     model=models[key], tools=tools, artifacts=current, limits=limits, feedback=feedback, paper_id=paper_id,
                     require_responsibility=role.endswith("verifier"), report_revision=role == "writer" and revising_report)
@@ -245,6 +256,24 @@ def test_failure_keeps_earlier_stage_artifacts_in_native_checkpoint_without_fake
         saved = await graph.aget_state(config)
         assert len(saved.values["case_papers"]) == 2 and saved.values["case_review"]["counter"]["status"] == "review_submitted"
         assert not saved.values.get("report") and seen["converge"] == 1
+    asyncio.run(exercise())
+
+
+def test_native_retry_after_synthesis_failure_does_not_repeat_completed_author_or_research():
+    async def exercise():
+        phases, seen, _ = _phases(material=True, fail_synthesis_once=True)
+        saver = InMemorySaver()
+        config = {"configurable": {"thread_id": "native-synthesis-retry"}, "recursion_limit": 160}
+        graph = build_research_session_graph(**phases).compile(checkpointer=saver)
+        with pytest.raises(ExceptionGroup) as failed:
+            await graph.ainvoke({"question": "Keep accepted author corrections when a later synthesis fails."}, config)
+        assert "research_actor_ended_without_submission:synthesis" in repr(failed.value)
+        assert seen["repair"] == seen["research"] == seen["review"] == 1
+        graph = build_research_session_graph(**phases).compile(checkpointer=saver)
+        result = await graph.ainvoke(None, config)
+        assert result["phase"] == "ready_for_human_review" and result["__interrupt__"]
+        assert seen["repair"] == seen["research"] == seen["review"] == 1
+        assert set(result["revisions"]) == {"P01"}
     asyncio.run(exercise())
 
 

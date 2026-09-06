@@ -156,8 +156,8 @@ def can_abandon_question(thread, state, last_run=None):
 def can_restart_remaining_node(thread, state, last_run, usage):
     tasks = state.get("tasks", [])
     return bool(thread.get("status") == "error" and len(tasks) == 1
-        and tasks[0].get("name") == "remaining_research" and tasks[0].get("error")
-        and last_run and last_run.get("metadata", {}).get("human_action") == "continue_remaining"
+        and tasks[0].get("name") in {"remaining_research", "convergence"} and tasks[0].get("error")
+        and last_run and last_run.get("metadata", {}).get("human_action") in {"research", "continue_remaining"}
         and usage and usage["recorded_requests"] > 0 and not usage["unknown_or_pending_requests"] and not usage["partial_audit"])
 
 
@@ -309,7 +309,7 @@ def build_report_sessions_router(service):
                 _, usage = public_run_usage(service.audit_root, thread_id, last_runs[0]["run_id"])
                 known_failure = can_restart_remaining_node(thread, state, last_runs[0], usage)
         if (graph_for_thread(thread) != RESEARCH_GRAPH or thread.get("status") == "busy"
-                or not public_state(state)["can_continue_remaining"]
+                or not (public_state(state)["can_continue_remaining"] or known_failure)
                 or not (handoff or known_failure)):
             raise HTTPException(409, "仅未完成研究交接或用量已知的接续失败可继续；未知结果不重发，不跳过审查或重跑已交稿")
         invocation = {"input": None} if known_failure else {"command": {"resume": {"action": "continue_remaining"}}}
@@ -375,7 +375,7 @@ def build_report_sessions_router(service):
                 "human_action": run.get("metadata", {}).get("human_action"),
                 "answer_mode": run.get("metadata", {}).get("answer_mode"), "usage": usage})
             public_runs[-1]["cost_estimate"] = public_cost_estimate(events)
-        if thread.get("status") == "error" and projection["can_continue_remaining"]:
+        if thread.get("status") == "error":
             projection["can_continue_remaining"] = can_restart_remaining_node(thread, state, runs[0] if runs else None,
                 public_runs[0]["usage"] if public_runs else None)
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),

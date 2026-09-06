@@ -313,7 +313,7 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
 def output_message(runtime, output=None, error=None):
     return Command(update={**({"output": output} if output is not None else {}), "messages": [ToolMessage(
         tool_call_id=runtime.tool_call_id,
-        content=error if error else "Source/shape checked handoff saved; not a product acceptance verdict.",
+        content=("Submission NOT saved. Correct the error and resubmit the same tool: " + error) if error else "Source/shape checked handoff saved; not a product acceptance verdict.",
         status="error" if error else "success")]})
 
 
@@ -325,12 +325,16 @@ class StopOnOutput(AgentMiddleware):
 
 class AnswerSubmissionFeedback(AgentMiddleware):
     """The native loop may otherwise END after a rejected tool + plain prose."""
+    def __init__(self, submission_tool="submit_case_answer"):
+        self.submission_tool = submission_tool
+
     @hook_config(can_jump_to=["model"])
     def after_model(self, state, runtime):
         message = state["messages"][-1]
-        if (state.get("request_action") == "ask" and not state.get("output") and isinstance(message, AIMessage)
+        if (not state.get("output") and isinstance(message, AIMessage)
                 and not message.tool_calls and not message.invalid_tool_calls):
-            return {"messages": [HumanMessage(content="No source-bound answer was saved. Plain prose does not complete this tool session. Use submit_case_answer with actual inline [NUMFACT::id], [CALC::id], or [P01:claim_id] references. If a prior submission returned an error, correct it; do not say it succeeded. No need to rewrite the report.")], "jump_to": "model"}
+            name = "submit_case_answer" if state.get("request_action") == "ask" else self.submission_tool
+            return {"messages": [HumanMessage(content=f"No source-bound output was saved. Plain prose does not complete this tool session. Use {name} with the required schema and actual source references. If a prior submission returned an error, correct it; do not say it succeeded. Do not repeat unrelated research.")], "jump_to": "model"}
 
 
 CONTEXT_RULES = """You are agentic: plan your own reads, batch independent tools, inspect errors and correct them.
@@ -415,13 +419,15 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     def submit_research_synthesis(synthesis: CaseReport, runtime: ToolRuntime) -> Command:
         """Submit the Lead's source-bound research judgment, not a final report or acceptance. Free prose: weigh evidence/conflicts, explain revision impact and the strongest countercase."""
         try:
-            if synthesis.charts:
-                raise ValueError("synthesis_is_research_judgment_keep_charts_for_final_writer")
-            citations = report_citations(synthesis, artifacts.with_revisions(runtime.state.get("revisions", {})),
+            current = artifacts.with_revisions(runtime.state.get("revisions", {}))
+            citations = report_citations(synthesis, current,
                 runtime.state.get("messages", []), prior_citations=runtime.state.get("synthesis", {}).get("citations", {}))
+            observed = observed_sources(runtime.state.get("messages", []))
+            charts = bind_report_charts(synthesis.charts, lambda ref: observed[ref] if ref in observed else current.source_item(ref))
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
-        return output_message(runtime, {**synthesis.model_dump(mode="json", exclude={"charts"}), "citations": citations})
+        return output_message(runtime, {**synthesis.model_dump(mode="json", exclude={"charts"}), "citations": citations,
+            **({"charts": charts} if charts else {})})
 
     @tool
     def submit_case_answer(answer_markdown: str, runtime: ToolRuntime) -> Command:
@@ -504,7 +510,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         submit = submit_case_answer
     return create_agent(model=model, tools=[*selected, submit], state_schema=CaseOutputState,
         system_prompt=CONTEXT_RULES + specific + METHOD_TOOL_GUIDANCE + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
-        middleware=[StopOnOutput(), InvalidToolCallFeedback(), *([AnswerSubmissionFeedback()] if allow_answers else []), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
+        middleware=[StopOnOutput(), InvalidToolCallFeedback(), AnswerSubmissionFeedback(submit.name), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
             ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="error"), *([audit] if audit else [])],
         name=f"case_{role}_{paper_id or 'report'}")
 

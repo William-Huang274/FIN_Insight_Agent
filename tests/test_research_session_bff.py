@@ -212,15 +212,19 @@ def test_continue_remaining_uses_native_interrupt_and_no_browser_seed_or_checkpo
     asyncio.run(service.http.aclose())
 
 
-def test_known_remaining_failure_restarts_native_pending_node_but_unknown_usage_is_blocked(tmp_path):
+@pytest.mark.parametrize("node", ["remaining_research", "convergence"])
+def test_known_remaining_failure_restarts_native_pending_node_but_unknown_usage_is_blocked(tmp_path, node):
     app, service, calls, thread_id = _app()
     run_id = str(uuid4())
     service.audit_root = tmp_path
     async def thread(_):
         return {"status": "error", "metadata": {"surface": "dell_report_workbench", "graph": RESEARCH_GRAPH}}
     async def state(_):
-        return {"values": {"phase": "research_needs_attention", "case_papers": [{}]},
-                "tasks": [{"name": "remaining_research", "error": "provider_output_truncated_no_partial_promotion"}]}
+        values = {"phase": "research_needs_attention", "case_papers": [{}]}
+        if node == "convergence":
+            values.update(phase="research_writing", case_review={"counter": {"status": "review_submitted"}})
+        return {"values": values,
+                "tasks": [{"name": node, "error": "known_local_submission_failure"}]}
     async def runs(*args, **kwargs):
         return [{"run_id": run_id, "status": "error", "metadata": {"human_action": "continue_remaining"}}]
     service.sdk.threads.get, service.sdk.threads.get_state, service.sdk.runs.list = thread, state, runs

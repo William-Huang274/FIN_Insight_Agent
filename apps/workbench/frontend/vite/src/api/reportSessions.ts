@@ -15,6 +15,7 @@ export type Event = {
   reasoning_tokens?: number;
   elapsed_ms?: number;
   recorded_at?: string;
+  run_id?: string;
 };
 export type Source = {
   source_id: string;
@@ -72,7 +73,9 @@ export type Session = {
     citations?: Record<string, Citation>;
   }[];
   model_events?: Event[];
-  runs?: { run_id: string; status: string; created_at: string }[];
+  runs?: { run_id: string; status: string; created_at: string; human_action?: string; answer_mode?: string;
+    usage?: { recorded_requests: number; reported_requests: number; unknown_or_pending_requests: number;
+      input_tokens: number; output_tokens: number; total_tokens: number; partial_audit: boolean } | null }[];
 };
 
 const base = "/api/v1/research-sessions";

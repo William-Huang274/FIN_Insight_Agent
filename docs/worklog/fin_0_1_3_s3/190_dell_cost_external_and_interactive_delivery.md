@@ -1,6 +1,6 @@
 # Dell：成本根因、成熟外源与真实交互的顺序交付
 
-> 最新状态：2026-09-06 A3已关闭；见文末“A3收口与真实审阅Workbench”。历史下一步不得用于重启已消耗attempt。
+> 最新状态：2026-09-06 07:22Z，真实Flash SQL→计算→来源回答完成；每请求用量与来源浏览器复核完成，见文末。完整Dell/Owner验收尚未完成。历史下一步不得用于重启已消耗attempt。
 
 日期：2026-09-06。产品FIN0.1.3，同分支/S3，不是新版本。源设计：`docs/architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md` §0最新顺序。起点 `e8aacc02b0c6860ba7fabf2d53a901c09150ae04` clean且与origin一致。
 
@@ -348,3 +348,17 @@ ca813dda已push/部署，同PG/Redis保留。UI“返回审阅·不重试”实�
 这不是靠自然语言模板判语义，应修现有交付合同：短问答可直接引用本次成功SQL的`[NUMFACT::...]`及计算器`[CALC::...]`，也兼容旧Pxx:claim。薄映射只从native成功ToolMessage.artifact绑定，拒绝模型/用户自述、失败工具、未观察ID；计算引用带实际操作数、表达式、authority_note并保持非权威，BFF/UI从已保存引用投影展开原值/计算依据，无新Evidence/SQL写或来源库。报告长文的现有引用规则不变。
 
 预期拒绝明确说“Answer NOT saved”和合法引用方式；若拒绝后模型只说完成，官方after_model middleware把未保存状态返其自身原生循环，由既有预算止损，不解析修补模型推理/不自建循环。原生error_handler异常时API可能tasks=[]，已用最新native error run的server-owned ask/surface元数据识别可放弃追问，不能用于revise/Verifier/运行中任务。67相邻测试/32.68s与TS/Vite build通过；追加真实SQL→计算→native提交完整零provider测试，26项/13.31s通过。下一仅部署与原会话零模型放弃后一次同问题，模型/profile/8轮预算不变；不重跑研究或整报告。完整Dell仍未验收。
+
+### 07:04Z SQL→计算→引用短问答真实成功；07:22Z 每请求用量与来源UI复核
+
+91bcc9fc已推送/部署，同PG/Redis未重建。旧failed ask通过真实UI零模型放弃run `01a07587-908b-7370-8ea4-15593ae6649a` 回到人工点，0模型文件、旧失败不变、v3不改。随后仅同问题fresh run `01a07588-b5c7-7380-9366-15fabfc9fbcd`，07:04:48.841323Z—07:05:00.237203Z（11.39588s）完成；不是自动retry/resume，也未增加8轮预算。
+
+实际Flash/disabled 3调用、27904输入/872输出/28776总tokens，cache-hit17920、miss9984，估0.019796元（非账单）。reasoning字段未报告，不能当独立测得0推理。三个工具依次成功：SQL查询Dell FY2027 Q1，计算opinc/rev，提交带直接NUMFACT/CALC的回答。43842000000/3656000000 USD，期间2026-01-31至2026-05-01，利润率0.0833903562793668…≈8.34%；计算结果保持非发行人直接披露、非S2 NumericFact。具体ID与原始未改回答在 `public-session-after-quick-answer4.json`。LangSmith根已只读确认closed、无error、inputs/outputs均空投影，27904/872/28776与本地一致。没有公开私有模型上下文。
+
+全部Workbench调用离线累计审计 `D:/temp/fin_dell_workbench_cost_audit_20260906_a6_actual.json` 为41调用/1105329tokens/估2.0207541元，包含两次复杂修订、首问成功、两次短追问失败和最后成功；不是单次问题成本。此前短问答成功数值来自归档，失败1是计算器ID不通，失败2是新工具结果不能直接引用，不把这些历史改写成成功或网络问题。
+
+本次工程仅薄BFF读取既有公开model-call-events审计以显示原生run用量：失败节点未提交根state仍计入，缺usage为未知，不读private messages/reasoning、不造事件库/账单系统、不替代LangSmith。前端选择单次请求，次级注明当前载入会话累计；计算卡明确非权威，直接SQL源修正空text遮住数值的问题。26定向测试/19.58s、TS/Vite build通过（639.04KB JS/191.80KBgzip，既存分包提示）；首次pytest误写不存在测试文件导致0tests，正确路径测试后通过，不作产品失败。
+
+实际浏览器依次选择最新3调用/28776、失败8调用/101693、修订10调用/416979均与审计一致；当前载入会话累计41/1105329。点击计算引用看到公式/两项NUMFACT/SEC原链，点SQL源实际显示3656000000 USD，不是fixture或只编译。只重启BFF进程（当前47504/exec87238），未重启API、未新模型调用。报告仍v3/12595字符/69引用、0material/2advisory，未点击Owner接受。
+
+下一是产品连接而非另一次同问题：在现有Agent Server图/原生thread-run-command-stream能力上打通新Dell研究入口和运行中人工控制，先局部验证再有依据的真实运行；保留原研究成果/失败/原生checkpoint。完整新研究→报告→人工验收尚未通过；完成后才新增长研究与短任务/QA的1–2新case。快速Flash与复杂Pro当前是显式任务模式，不宣传自主难度分类或普适两分钱。

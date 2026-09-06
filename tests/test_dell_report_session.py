@@ -212,7 +212,28 @@ def test_direct_answer_source_bff_reads_only_persisted_bound_projection():
         path = f"/api/v1/research-sessions/{uuid4()}/source"
         result = client.get(path, params={"source_id": "NUMFACT::fixture"})
         assert result.status_code == 200 and result.json()["value_decimal"] == "12"
+        assert "text" not in result.json()  # do not mask numeric display with empty text
         assert client.get(path, params={"source_id": "NUMFACT::unknown"}).status_code == 404
+
+
+def test_request_usage_includes_failed_nodes_without_private_data_or_fake_zero(tmp_path):
+    from apps.workbench.backend.api.v1.report_sessions import public_run_usage
+    thread, run = str(uuid4()), str(uuid4())
+    assert public_run_usage(tmp_path, thread, run) == ([], None)
+    folder = tmp_path / thread / run
+    folder.mkdir(parents=True)
+    rows = [{"event": "started", "call_id": "known", "actor": "quick_writer", "raw_response": "PRIVATE"},
+        {"event": "outcome", "call_id": "known", "actor": "quick_writer", "status": "success", "input_tokens": 8, "output_tokens": 4, "total_tokens": 12},
+        {"event": "started", "call_id": "unknown", "actor": "quick_writer"},
+        {"event": "outcome", "call_id": "unknown", "actor": "quick_writer", "status": "provider_failed", "total_tokens": None}]
+    (folder / "model-call-events.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + '\n{"partial":', encoding="utf-8")
+    (folder / "model-context-reasoning.private.jsonl").write_text("PRIVATE NOT A PUBLIC AUDIT", encoding="utf-8")
+    events, usage = public_run_usage(tmp_path, thread, run)
+    assert "PRIVATE" not in json.dumps(events) and all(e["run_id"] == run for e in events)
+    assert usage == {"recorded_requests": 2, "reported_requests": 1, "unknown_or_pending_requests": 1,
+        "partial_audit": True, "input_tokens": 8, "output_tokens": 4, "total_tokens": 12}
+    with pytest.raises(ValueError):
+        public_run_usage(tmp_path, "../outside", run)
 
 
 def test_native_material_finding_remains_at_human_review(artifacts):

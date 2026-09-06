@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 import re
 from copy import deepcopy
+from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit
 from uuid import UUID
@@ -26,7 +27,42 @@ GRAPH = "dell_report_session"
 PUBLIC_EVENT_FIELDS = frozenset({"kind", "actor", "event", "status", "call_id", "tool", "recorded_at",
     "model", "thinking", "reasoning_effort", "elapsed_ms", "input_tokens", "output_tokens", "total_tokens",
     "cache_hit_tokens", "cache_miss_tokens", "reasoning_tokens", "usage_reported", "error_type", "http_status_code",
-    "max_output_tokens", "valid_tool_call_count", "invalid_tool_call_count", "success_scope"})
+    "max_output_tokens", "valid_tool_call_count", "invalid_tool_call_count", "success_scope", "run_id"})
+
+
+def public_run_usage(audit_root, thread_id, run_id):
+    """Read the existing public audit sink, including failed native nodes.
+
+    No new store or billing authority; private message/reasoning files are never
+    opened. The directory is host configured, IDs come from owned native runs.
+    """
+    if audit_root is None:
+        return [], None
+    root = Path(audit_root).resolve()
+    path = (root / str(UUID(str(thread_id))) / str(UUID(str(run_id))) / "model-call-events.jsonl").resolve()
+    if not path.is_relative_to(root):
+        raise ValueError("public_audit_path_outside_configured_root")
+    if not path.is_file():
+        return [], None  # unavailable is not a measured zero
+    events, partial = [], False
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            raw = json.loads(line)
+        except json.JSONDecodeError:
+            partial = True  # append in progress/corruption; do not claim complete usage
+            continue
+        if not isinstance(raw, dict):
+            partial = True
+            continue
+        if event := public_event({**raw, "kind": "model", "run_id": str(run_id)}):
+            events.append(event)
+    ids = {e["call_id"] for e in events if e.get("call_id")}
+    outcomes = {e["call_id"]: e for e in events if e.get("call_id") and e.get("event") == "outcome"}
+    totals = {key: sum(e[key] for e in outcomes.values() if isinstance(e.get(key), int))
+              for key in ("input_tokens", "output_tokens", "total_tokens")}
+    return events, {"recorded_requests": len(ids), "reported_requests": sum(isinstance(e.get("total_tokens"), int) for e in outcomes.values()),
+        "unknown_or_pending_requests": sum(not isinstance(outcomes.get(i, {}).get("total_tokens"), int) for i in ids),
+        "partial_audit": partial, **totals}
 
 
 def public_event(value):
@@ -74,7 +110,7 @@ class NewSession(BaseModel):
 
 
 class ReportSessionService:
-    def __init__(self, api_url, artifacts, *, sdk=None):
+    def __init__(self, api_url, artifacts, *, sdk=None, audit_root=None):
         parsed = urlsplit(api_url)
         if parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "localhost", "langgraph-api"} or parsed.username or parsed.query or parsed.fragment:
             raise ValueError("report_session_server_must_be_local")
@@ -82,6 +118,7 @@ class ReportSessionService:
             timeout=httpx.Timeout(300, connect=5))
         self.sdk = sdk or LangGraphClient(self.http)
         self.artifacts = artifacts
+        self.audit_root = audit_root
 
     async def owned_thread(self, thread_id):
         thread = await self.sdk.threads.get(str(thread_id))
@@ -126,9 +163,17 @@ def build_report_sessions_router(service):
         thread = await service.owned_thread(thread_id)
         state = await service.sdk.threads.get_state(str(thread_id))
         runs = await service.sdk.runs.list(str(thread_id), limit=10)
+        projection = public_state(state)
+        public_runs = []
+        for run in runs:
+            events, usage = public_run_usage(service.audit_root, thread_id, run["run_id"])
+            projection["model_events"].extend(events)
+            public_runs.append({**{k: run.get(k) for k in ("run_id", "status", "created_at")},
+                "human_action": run.get("metadata", {}).get("human_action"),
+                "answer_mode": run.get("metadata", {}).get("answer_mode"), "usage": usage})
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
-            **public_state(state), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
-            "runs": [{k: r.get(k) for k in ("run_id", "status", "created_at")} for r in runs]}
+            **projection, "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
+            "runs": public_runs}
 
     @router.post("/research-sessions/{thread_id}/abandon-question")
     async def abandon_question(thread_id: UUID, request: Request):
@@ -183,6 +228,8 @@ def build_report_sessions_router(service):
             source = next(s for group in citations for c in group.values() for s in c["sources"] if s["source_id"] == source_id)
             if offset < 0:
                 raise HTTPException(422, "来源阅读范围不合法")
+            if "text" not in source:
+                return deepcopy(source)
             text = source.get("text", "")
             return {**deepcopy(source), "text": text[offset:offset + 16000],
                 "next_offset": offset + 16000 if offset + 16000 < len(text) else None}

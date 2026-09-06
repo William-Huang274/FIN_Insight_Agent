@@ -411,7 +411,7 @@ def create_report_session_app(frontend_dist_root=None):
     from sec_agent.agent_runtime.dell_report_session import load_session_materials
     settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
     artifacts, _ = load_session_materials(settings)
-    service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts)
+    service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts, audit_root=settings["audit_root"])
     @asynccontextmanager
     async def lifespan(app):
         yield

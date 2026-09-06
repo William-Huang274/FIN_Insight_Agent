@@ -116,6 +116,7 @@ export function ResearchSession() {
   const [text, setText] = useState("");
   const [action, setAction] = useState<"ask" | "revise">("ask");
   const [answerMode, setAnswerMode] = useState<"quick" | "deep">("quick");
+  const [usageRunId, setUsageRunId] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"report" | "conversation">("report");
@@ -143,6 +144,7 @@ export function ResearchSession() {
     refresh().catch((e) => setError(String(e.message)));
   }, [refresh]);
   const choose = (next: string) => {
+    setUsageRunId("");
     setId(next);
     setSession(null);
     setEvents([]);
@@ -201,7 +203,7 @@ export function ResearchSession() {
             part.data &&
             typeof part.data === "object"
           ) {
-            const e = part.data as Event;
+            const e = {...part.data, run_id: activeRun.run_id} as Event;
             setEvents((old) =>
               old.some(
                 (x) =>
@@ -237,7 +239,7 @@ export function ResearchSession() {
   }, [id, activeRun?.run_id, reconnect, refresh]);
   const allEvents = useMemo(() => {
     const map = new Map<string, Event>();
-    for (const e of [...(session?.model_events || []), ...events])
+    for (const e of [...events, ...(session?.model_events || [])])
       map.set(`${e.kind}/${e.actor}/${e.call_id}/${e.event}/${e.recorded_at}`, e);
     return [...map.values()].sort(
       (a, b) => (Date.parse(a.recorded_at || "") || 0) - (Date.parse(b.recorded_at || "") || 0),
@@ -258,6 +260,7 @@ export function ResearchSession() {
     }),
     { tokens: 0, input: 0, output: 0 },
   );
+  const usageRun = session?.runs?.find(r => r.run_id === usageRunId) || session?.runs?.[0];
   const newSession = async () => {
     setSending(true);
     setError("");
@@ -281,6 +284,7 @@ export function ResearchSession() {
     setError("");
     try {
       await sessionsApi.action(id, selectedAction, message, selectedAction === "ask" ? answerMode : "deep");
+      setUsageRunId("");
       setText("");
       setInspector("activity");
       if (selectedAction === "ask") setTab("conversation");
@@ -714,19 +718,29 @@ export function ResearchSession() {
           {inspector === "activity" && (
             <>
               <h3>真实调用，不是模拟进度</h3>
+              <div className="rs-answer-mode">
+                <label htmlFor="usage-run">查看请求用量</label>
+                <select id="usage-run" value={usageRun?.run_id || ""} onChange={e => setUsageRunId(e.target.value)}>
+                  {session?.runs?.map(r => <option key={r.run_id} value={r.run_id}>
+                    {new Date(r.created_at).toLocaleTimeString("zh-CN")} · {r.human_action === "ask" ? (r.answer_mode === "quick" ? "Flash 问答" : "Pro 追问") : r.human_action === "revise" ? "报告修订" : r.human_action === "abandon_failed_question" ? "放弃失败追问" : "载入 / 审阅"} · {r.status}
+                  </option>)}
+                </select>
+              </div>
               <div className="rs-usage">
                 <div>
-                  <small>本会话模型调用</small>
-                  <strong>{models.length}</strong>
+                  <small>所选请求 · 已记录调用</small>
+                  <strong>{usageRun?.usage?.recorded_requests ?? "—"}</strong>
                 </div>
                 <div>
-                  <small>已报告 tokens</small>
-                  <strong>{format(totals.tokens)}</strong>
+                  <small>所选请求 · 已报告 tokens</small>
+                  <strong>{usageRun?.usage ? format(usageRun.usage.total_tokens) : "—"}</strong>
                 </div>
               </div>
               <p className="rs-helper">
-                输入 {format(totals.input)} · 输出 {format(totals.output)}
-                。不含载入前的历史研究费用；失败未知用量不算零。
+                {usageRun?.usage ? <>输入 {format(usageRun.usage.input_tokens)} · 输出 {format(usageRun.usage.output_tokens)} · {usageRun.usage.unknown_or_pending_requests} 次用量待定 / 未知。{usageRun.usage.partial_audit && "审计记录尚不完整。"}</> : "没有本次模型用量记录；载入报告或放弃追问不会发起模型调用。"}
+              </p>
+              <p className="rs-helper">
+                本会话当前载入 {models.length} 次模型记录、{format(totals.tokens)} tokens；含失败任务已知用量，不含载入前研究费用。下方为会话事件历史，不是单次问题的调用数。
               </p>
               <div className="rs-agent-cards">
                 {["writer", "verifier", "quick_writer"].map((role) => (
@@ -791,7 +805,7 @@ export function ResearchSession() {
                 LangSmith + PostgreSQL
                 <br />
                 原生运行 ID{" "}
-                <code>{session?.runs?.[0]?.run_id || "尚未创建"}</code>
+                <code>{usageRun?.run_id || "尚未创建"}</code>
               </div>
             </>
           )}
@@ -817,7 +831,7 @@ export function ResearchSession() {
                     <span className="rs-source-type">
                       {s.numeric_fact_authority
                         ? "结构化数值"
-                        : "披露 / 外部材料"}
+                        : s.source_id.startsWith("CALC::") ? "本地计算 · 非权威" : "披露 / 外部材料"}
                     </span>
                     <h4>
                       {s.title ||
@@ -872,7 +886,7 @@ export function ResearchSession() {
                   <div className="rs-source-window" ref={sourceWindow}>
                     <h4>{source.source_id} · 本地保存的来源窗口</h4>
                     <pre>
-                      {source.text ?? `${source.value_decimal} ${source.unit}`}
+                      {source.text || (source.value_decimal !== undefined ? `${source.value_decimal} ${source.unit}` : "此来源没有可显示的捕获片段。")}
                     </pre>
                     {source.next_offset != null && (
                       <button
@@ -887,8 +901,9 @@ export function ResearchSession() {
                       </button>
                     )}
                     <p>
-                      {source.notice ||
-                        "数值来自结构化事实库，仍需核对期间与指标含义。"}
+                      {source.notice || (source.source_id.startsWith("CALC::")
+                        ? "这是由绑定输入计算的结果，不是发行人直接披露值。公式正确仍不等于财务解释正确。"
+                        : "数值来自结构化事实库，仍需核对期间与指标含义。")}
                     </p>
                   </div>
                 )}

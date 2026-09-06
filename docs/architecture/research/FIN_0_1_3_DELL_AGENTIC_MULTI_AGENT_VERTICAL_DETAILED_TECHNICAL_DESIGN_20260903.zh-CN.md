@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-06 07:22Z：Flash短问答完整SQL→计算→直接引用提交已真实通过，3调用/28776tokens/11.40s/估0.019796元；LangSmith与本地用量一致，报告v3不改。沿用原生create_agent/MCP ToolMessage.artifact绑定NUMFACT/CALC，拒绝伪造或未观察ID；不要求为引用新SQL值先写旧底稿。前端已真实显示每次请求及失败的用量，并展开SQL原值、公式与非权威提醒。原两次工具/交付失败、两次零模型返回人工点均保留；不称一般等质降费A/B或平台多案例PASS。下一直接补已有Agent Server图的新研究入口及人工控制，先本地定向验证/必要真实测试，不新造控制面、不再付费重复同短问题。Owner尚未接受报告，完整Dell和新case仍未完成。见S3/190末节。
+
 2026-09-06最新增量：Flash短问答首问真实完成（6调用/85962tokens/估0.042408元）；续问SQL成功但计算器归档ID限制导致8调用失败（101693tokens/估0.0370709元）。同MCP现接已观察SQL NumericFact投影、仍拒绝伪造/跨composition未观察ID，不新增数值权威；工具错误返模型可改。原生error_handler只把已知ask预算/截断交回人工点；旧已失败ask通过窄BFF原生checkpoint update返回审阅，0模型，不重试/跳过报告审查。76近邻与前端build已过，部署实测待做；原v3与失败均保留，不是完整Dell PASS。详S3/190末节。
 
 2026-09-06 v3实测：同thread局部编辑3轮Writer+7轮Verifier，416979tokens/估0.8325603元，9处修改重放一致；12595字符/69引用，0material/2advisory/0必需补源，停人工点，不能当Owner通过。重启API后同PG恢复人工点并实际续办已证，不是运行中故障恢复。下一同Dell短问答采用原生图显式模式路由：quick→Flash disabled的原生只读agent，deep/旧API→既有Pro Writer，revise→Pro Writer+Verifier。快速入口只带目录/公共对话文本/问题，报告正文按需工具读取；不暴露改报告工具，不带前审或嵌套引用大对象，不新建router模型/循环/队列。任务预算固定在`fin_ia_0_1_3_dell_report_quick_answer_v1_0.json`，40相邻测试与前端build通过，实际低价问答未证明。完整产品/新case仍待验收，详S3/190最新节。

@@ -1100,6 +1100,7 @@ body:has(.rs-shell) {
   color: #6b736e;
 }
 .rs-answer-mode select {
+  max-width: 100%;
   background: #f5f7f3;
   color: #254c3c;
   border: 1px solid #d5ddd5;

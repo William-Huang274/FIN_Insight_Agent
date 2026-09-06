@@ -2,6 +2,13 @@
 
 当前文档按“产品目标、当前技术事实、研究质量、历史证据”分层，避免用数百份过程日志冒充项目结构。
 
+## 当前多 Agent 产品入口（2026-09-07）
+
+- [架构与自研边界](public/architecture.zh-CN.md) / [Architecture](public/architecture.en.md)
+- [部署与测试](public/quickstart.zh-CN.md) / [Quickstart](public/quickstart.en.md)
+- [对外展示范围 / Sharing scope](public/sharing-scope.md)
+- 当前执行权威为[纵切详设§0](architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md)与[当前上下文](project_os/current_context_pack.zh-CN.md)，不是下列历史基线文档的旧状态。S3/190保留运行与失败证据；新全链验收中，不等于发布。
+
 ## 每次恢复先读
 
 1. [当前上下文包](project_os/current_context_pack.zh-CN.md)

@@ -442,3 +442,24 @@ Owner 批准工作包 1–5，增加按需资料/外源、上传文件与图片�
 验证：68 项方法/MCP/专家/审查；39 项新问题/Lead/专家；72 项 artifact/汇稿/session（分组有重叠，不相加）。包括真实只读 SQL→计算器→native scripted Writer 报告→单条引用读取→局部编辑。旧 MCP 固定数量断言因合法新增方法从 9 改 10，其余权限/来源拒绝不弱化。0 新 paid、0 外部研究请求、0 SQL 写、0 原报告覆盖；读取方法不证明充分应用，代码上下文去重不证明等质省费，完整产品未 PASS。
 
 视觉官网确认 https://api-docs.deepseek.com/zh-cn/guides/vision/ 及 2026-08-21 公告：实际独立模型为 `deepseek-v4-flash-vision-exp`（实验版），不是普通 Flash 别名；尚未 paid 测图或开放给 Agent。下一接原生完整父图/新研究入口，再上传解析、图表导出，最后新题目全 Dell；不再逐 Skill 单独买资格运行。
+
+
+### 2026-09-06 12:14Z：新研究父图与责任回流纠偏（本地验证，未部署/paid）
+
+代码提交：`7349a1b32b4ee49b7f931bdf73aecfbf02176b11`。随后 schema-only/BFF 六项定向检查及最终前端 tsc/build 再次通过；与94项有重叠，不相加为独立样本。Git 只含源代码、测试、配置与文档，未包含原始资料、模型私有记录、上传文件、生成前端 dist 或凭据。
+
+Owner 指出“两个专家”与正式执行图不符。核对确认该数是 scripted 接线测试的两个任务与配置并发二，不是正式总量；同时发现审查后 Lead 综合缺失、终审未按责任回流的真实接线缺口。Owner 已批准纠正，上传/视觉/图表导出/完整新 Dell/公开准备等其余工作保持不变。本轮沿原分支继续上一段已说明父图/BFF/前端未提交代码，未丢弃、重命名或覆盖旧研究产物。
+
+实现：
+
+- 新 research_session 父图读取用户当前问题，Lead 从空底稿开始，实际任务生成 Specialist 子图；研究/审查/产物交接及旧审阅入口分开。新 runtime 配置九研究面、最多十二任务、并发二，任务目标/角色/依赖由 Lead 提交；没有九套运行框架。
+- 新 research_convergence 只用原生 StateGraph/Send/已有 create_agent 和 MCP：实际责任作者响应→Lead 综合→独立研究复核→Writer→报告终审。Lead 综合是真实待执行的独立多轮节点，不由 Writer 冒充；输入为当前底稿目录、公开审查/作者响应/Lead 交接，按需读原文，不共享私有消息。Source-bound 自由正文复用已有引用解析，非新增报告模板/语义规则引擎。
+- ReportFinding 在新路径要求 material 的 responsibility 和研究 paper_ids。本地拒绝未知责任稿/缺字段/重复 finding；模型收到原生工具错误后可改正。纯写作回 Writer；研究回指定作者，再 Lead/研究复核/Writer/终审；模型声明需宿主修复的数据工具问题或人工问题保留产物后交接，声明本身仍需人核实。
+- 一次自动纠偏上限：无 finding 不制造修订；再次 material 或未决数据/作者回应停止，不重跑所有主题。原始与各轮公开产物保存在原生 checkpoint/history；回派为新的责任调用、不是复用作者私有历史或宣称恢复其原思维链。旧 standalone convergence 和旧 report-session 兼容入口保留。
+- 新研究会话后续 revise 走同责任图，复用当前稿，不重新执行 Lead 调研或九主题；ask 不研究重跑。未决研究标记不能被问答/普通 finish 清成可接受。无报告的研究失败仍保留底稿/综合/审查在人工点，不伪造报告。
+- BFF 新入口只收 case/question，服务器选择图与预算；禁用或配置错误不退回旧稿。前端以真实任务/角色/责任事件显示，去掉固定 Writer/Verifier/Quick 卡片集合，新增责任和复核状态。现运行8766旧 BFF 新配置接口404，前端在新研究表单明确提示版本未部署、按钮禁用；旧审阅功能不因新配置获取失败弹全局错误。
+- Lead 综合/研究复核分别落任务 TokenBudgetBasis，复杂判断用 Pro/low，不冒用 Flash 调度预算；原10–18元只是尚待重算的计划范围，新 placement 没有 paid 质量/成本证据。
+
+验证：94 passed / 68.61s，命令 .venv/Scripts/python.exe -m pytest tests/test_research_convergence.py tests/test_research_session.py tests/test_research_session_bff.py tests/test_dell_report_session.py tests/test_dell_case_convergence_agent.py tests/test_dell_lead_research_graph.py -q --tb=short。覆盖 actual case/runtime config 的九主题+追加依赖任务共十项，首波 Barrier 验证并发且峰值二，完整 native 父图到人工点、重建 factory 后 ask/revise、两类定向回派、无回派/有数据故障/第二轮仍重大、非法责任字段模型纠正、旧审阅和来源权限。所有模型均测试替身；Review/method 消费走真实本进程 MCP，不是新题目的真实研究或质量证明。前端 tsc 与 Vite build 通过（已有大于500kB bundle提醒仍在，未为此扩建打包工程）。随后 schema-only factory 补齐 research_revision 可见性与新配置错误文案，仅重跑对应近邻检查。
+
+未执行：0新 DeepSeek/外部研究请求，0 SQL写入/数据删除/旧报告覆盖；未重启现有 Agent Server/BFF，未付费跑完整新题目，未做本段浏览器视觉验收。上传/RAG/视觉工具、图表与多格式导出、必要新源/计算接缝仍待原顺序推进；完整图须部署后实际验证，再最终 Dell 内容/费用/交互验收，不能用这94项当产品完成。公开准备仍不是改Git可见性授权，第6包新案例未自动启动。原生模式依据：https://docs.langchain.com/oss/python/langgraph/workflows-agents 和 https://docs.langchain.com/oss/python/langgraph/use-subgraphs 。

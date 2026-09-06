@@ -196,6 +196,11 @@ def build_research_data_mcp_server(
             "tools are legacy compatibility only."
         ),
     )
+    # Source projection of this composition's successful SQL responses only.
+    # No new store/admission: the typed SQL result remains the authority and is
+    # already persisted in the agent's native ToolMessages. Re-query after a new
+    # composition; never accept a model-supplied number as an observed fact.
+    observed_numeric_facts: dict[str, dict[str, Any]] = {}
 
     @server.tool(
         name=GET_RESEARCH_METHOD_TOOL,
@@ -386,13 +391,19 @@ def build_research_data_mcp_server(
                 for e in exc.errors(include_input=False, include_context=False, include_url=False))
             raise ToolError("Financial query validation failed: " + problems
                 + ". Use lowercase metric IDs such as revenue and operating_income; check fiscal-year/date selection. No SQL query was executed.") from None
-        return await _invoke_model(
+        result = await _invoke_model(
             dependencies.financial_fact_reader,
             CompanyFinancialFactQueryResult,
             request=request,
             branch_id=branch_id.strip(),
             run_scope=run_scope,
         )
+        for row in result.results:
+            for fact in row.facts:
+                if fact.numeric_fact_authority:
+                    observed_numeric_facts[fact.numeric_fact_id] = {
+                        **fact.model_dump(mode="json"), "result_state": "numeric_fact"}
+        return result
 
     if dependencies.source_document_reader is not None:
 
@@ -523,7 +534,11 @@ def build_research_data_mcp_server(
 
     if dependencies.case_artifacts is not None:
         from sec_agent.agent_runtime.dell_case_artifacts import register_case_artifact_tools
-        register_case_artifact_tools(server, dependencies.case_artifacts)
+        def calculation_source(source_id):
+            if source_id in observed_numeric_facts:
+                return dict(observed_numeric_facts[source_id])
+            return dependencies.case_artifacts.source_item(source_id)
+        register_case_artifact_tools(server, dependencies.case_artifacts, source_lookup=calculation_source)
     return server
 
 

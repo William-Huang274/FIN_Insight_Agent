@@ -23,6 +23,7 @@ from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langgraph.config import get_stream_writer
 from langgraph.graph import START, END, StateGraph
+from langgraph.errors import NodeError
 from langgraph.types import Command, interrupt
 from langgraph_sdk.runtime import ServerRuntime
 from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
@@ -62,6 +63,16 @@ class SessionState(TypedDict, total=False):
     conversation: Annotated[list[dict], operator.add]
     model_events: Annotated[list[dict], operator.add]
     last_output_kind: str
+
+
+def abandoned_question_update(state, reason):
+    """Abandon only a failed question, never approve or rewrite a report."""
+    if state.get("request_action") != "ask" or not state.get("report"):
+        raise ValueError("only_failed_question_can_return_to_prior_report")
+    review = state["report_review"]
+    material = bool(review.get("unresolved_data_requests")) or any(f["severity"] == "material" for f in review["findings"])
+    return {"last_output_kind": "failed_question", "phase": "needs_revision" if material else "ready_for_human_review",
+        "conversation": [{"role": "system", "content": reason + " 本次没有交出答案；已有报告和失败记录保留。不会自动重试，请按需要提出新的问题。"}]}
 
 
 def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=None, quick_writer=None):
@@ -143,17 +154,35 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
         return {"report_version": state["report_version"] + (state["last_output_kind"] == "report"),
             "phase": "needs_revision" if material else "ready_for_human_review"}
 
+    def question_error(state, error: NodeError):
+        from langchain.agents.middleware.model_call_limit import ModelCallLimitExceededError
+        from langchain.agents.middleware.tool_call_limit import ToolCallLimitExceededError
+        recognized = isinstance(error.error, (ModelCallLimitExceededError, ToolCallLimitExceededError)) or (
+            isinstance(error.error, ValueError) and str(error.error) in {
+                "case_review_input_ceiling_before_transport", "case_review_truncated_no_partial_acceptance"})
+        if state.get("request_action") != "ask" or not recognized:
+            raise error.error
+        update = abandoned_question_update(state, "本次追问触及执行预算或输出截断，已停止。")
+        audit = audits.get(error.node)
+        if audit is not None:
+            update["model_events"] = deepcopy(audit.events)
+            audit.events.clear()
+        get_stream_writer()({"kind": "stage", "actor": error.node, "event": "outcome", "status": "error",
+            "error_type": type(error.error).__name__, "recorded_at": datetime.now(timezone.utc).isoformat()})
+        return Command(update=update, goto="finish")
+
     graph.add_node("initialize", initialize)
     agents = {"writer": writer, "verifier": verifier}
     if quick_writer is not None:
         agents["quick_writer"] = quick_writer
     graph.add_node("human_review", human_review, destinations=(*agents, END))
     for role, agent in agents.items():
-        graph.add_node(role, RunnableLambda(lambda s, r=role: seed(s, r)) | agent | RunnableLambda(lambda s, r=role: collect(s, r)))
+        graph.add_node(role, RunnableLambda(lambda s, r=role: seed(s, r)) | agent | RunnableLambda(lambda s, r=role: collect(s, r)),
+            error_handler=question_error if role != "verifier" else None)
     graph.add_node("finish", finish)
     graph.add_edge(START, "initialize")
     graph.add_edge("initialize", "human_review")
-    graph.add_conditional_edges("writer", lambda s: "finish" if s["last_output_kind"] == "answer" else "verifier")
+    graph.add_conditional_edges("writer", lambda s: "verifier" if s["last_output_kind"] == "report" else "finish")
     graph.add_edge("verifier", "finish")
     if quick_writer is not None:
         graph.add_edge("quick_writer", "finish")

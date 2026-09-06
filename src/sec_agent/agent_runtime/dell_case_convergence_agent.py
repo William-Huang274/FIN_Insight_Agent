@@ -222,7 +222,7 @@ Only your own native messages/private reasoning continue in your loop. Other age
 Do not treat reviewer opinions as evidence or infallible truth. Recheck the original source. Correct or disagree with evidence; record genuine remaining limits without replacing substantive analysis with boilerplate boundaries.
 Every material fact/inference must link to actual sources/claims; exact quotes and authority/schema checks are local, economic entailment remains a reviewer responsibility.
 Issuer prose/media and general calculator results stay non-S2/non-authoritative, even when filed at SEC. Source roles, period/as-of and limits must be visible near their use. New web data requires an observed source ID before use.
-Calculator currently resolves archive Pxx:Sxxx IDs only. Do not disguise sourced numbers as assumptions. Private reasoning is saved privately; output only concise public rationales.
+Calculator resolves archive Pxx:Sxxx IDs and numeric_fact_id from this tool session's successful SQL queries. Do not disguise sourced numbers as assumptions. Private reasoning is saved privately; output only concise public rationales.
 """
 
 

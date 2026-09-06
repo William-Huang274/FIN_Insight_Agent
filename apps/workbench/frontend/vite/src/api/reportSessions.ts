@@ -55,6 +55,7 @@ export type Session = {
   report_version?: number;
   can_respond?: boolean;
   can_accept?: boolean;
+  can_abandon_question?: boolean;
   report?: {
     title: string;
     narrative_markdown: string;
@@ -98,6 +99,8 @@ export const sessionsApi = {
     request<{ run_id: string }>(`${base}/${id}/actions`, { action, message, answer_mode: answerMode }),
   cancel: (id: string, run: string) =>
     request(`${base}/${id}/runs/${run}/cancel`, {}),
+  abandonQuestion: (id: string) =>
+    request<{ run_id: string }>(`${base}/${id}/abandon-question`, {}),
   source: (id: string, source: string, offset = 0) =>
     request<Source>(
       `${base}/${id}/source?source_id=${encodeURIComponent(source)}&offset=${offset}`,

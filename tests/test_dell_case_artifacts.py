@@ -131,3 +131,60 @@ def test_mcp_actual_client_reads_one_source_and_calculates_from_real_s2_fact(rea
             bad = await client.call_tool("read_research_source", {"source_id": "D:/secrets"})
             assert bad.is_error
     asyncio.run(exercise())
+
+
+@pytest.mark.local_data_integration
+def test_live_sql_ids_calculate_only_after_observation_in_this_composition(real_bundle):
+    """Actual read-only Dell mart through MCP, not fabricated NumericFact IDs."""
+    from mcp import Client
+    from test_dell_agent_server_data_composition import DEFAULT_ARTIFACT_ENV
+    from sec_agent.agent_runtime.dell_agent_server_data_composition import (
+        open_dell_approved_data_composition, DELL_APPROVED_RESEARCH_AS_OF, DELL_APPROVED_DATA_SNAPSHOT_ID)
+
+    artifacts = DellCaseArtifacts(real_bundle["papers"])
+    async def exercise():
+        branch = artifacts.catalog()["papers"][0]["branch_id"]
+        calculation = None
+        for index in range(2):
+            attempt = f"host-sql-calculator-binding-{index}"
+            with open_dell_approved_data_composition(run_invocation_id=attempt,
+                    environment=DEFAULT_ARTIFACT_ENV, case_artifacts=artifacts) as composition:
+                async with Client(composition.mcp_server, raise_exceptions=False) as client:
+                    if calculation is not None:
+                        unobserved = await client.call_tool("calculate_research_metric", {"request": calculation})
+                        assert unobserved.is_error and "Re-query SQL" in str(unobserved.content)
+                    method = await client.call_tool("get_dell_research_method", {
+                        "branch_ids": [branch], "research_as_of": DELL_APPROVED_RESEARCH_AS_OF,
+                        "data_snapshot_id": DELL_APPROVED_DATA_SNAPSHOT_ID, "execution_attempt_id": attempt})
+                    assert not method.is_error
+                    queried = await client.call_tool("query_company_financial_facts", {
+                        "branch_id": branch, "run_scope": method.structured_content["run_scope"],
+                        "ticker": "DELL", "metric_ids": ["revenue", "operating_income"],
+                        "research_as_of": "2026-09-02", "granularity": "quarter_discrete",
+                        "selection_mode": "exact_period_end", "period_end": "2026-05-01", "fiscal_years": [2027]})
+                    assert not queried.is_error
+                    query = queried.structured_content
+                    assert query["resolved_metric_count"] == 2
+                    assert query["fact_mart_sha256_before"] == query["fact_mart_sha256_after"]
+                    facts = {r["metric_id"]: r["facts"][0] for r in query["results"]}
+                    assert facts["revenue"]["value_decimal"] == "43842000000"
+                    assert facts["operating_income"]["value_decimal"] == "3656000000"
+                    calculation = {"expression": "operating_income / revenue * 100", "operands": {
+                        k: {"source_id": f["numeric_fact_id"]} for k, f in facts.items()},
+                        "result_unit": "percent", "rationale": "Host development check: same-company, same-quarter GAAP operating income / revenue. Not a model gold test."}
+                    margin = await client.call_tool("calculate_research_metric", {"request": calculation})
+                    assert not margin.is_error, margin.content
+                    result = margin.structured_content
+                    expected = Decimal(3656) / Decimal(43842) * 100
+                    assert abs(Decimal(result["value_decimal"]) - expected) < Decimal("1e-20")
+                    assert not result["numeric_fact_authority"] and result["arithmetic_verified"]
+                    assert all(v["authority"] == "s2_input" and v["period_end"] == "2026-05-01"
+                               for v in result["operands"].values())
+                    wrong = deepcopy(calculation)
+                    wrong["operands"]["revenue"]["literal"] = "1"
+                    rejected = await client.call_tool("calculate_research_metric", {"request": wrong})
+                    assert rejected.is_error and "differs_from_observed_s2_fact" in str(rejected.content)
+                    wrong["operands"]["revenue"] = {"source_id": "NUMFACT::made-up"}
+                    rejected = await client.call_tool("calculate_research_metric", {"request": wrong})
+                    assert rejected.is_error and "Re-query SQL" in str(rejected.content)
+    asyncio.run(exercise())

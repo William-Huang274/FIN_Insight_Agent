@@ -482,7 +482,7 @@ export function ResearchSession() {
                       <span className="rs-message-label">
                         {m.role === "user"
                           ? "你 · 公开反馈"
-                          : "研究 Agent · 来源绑定回答"}
+                          : m.role === "system" ? "运行提示 · 不是模型回答" : "研究 Agent · 来源绑定回答"}
                       </span>
                       <div className="rs-prose">
                         <Markdown
@@ -580,6 +580,18 @@ export function ResearchSession() {
                     }}
                   >
                     <Square size={12} /> 停止
+                  </button>
+                ) : session.can_abandon_question ? (
+                  <button className="rs-stop" disabled={sending} onClick={async () => {
+                    setSending(true);
+                    try {
+                      await sessionsApi.abandonQuestion(id);
+                      setTab("conversation");
+                      setSession(await sessionsApi.state(id));
+                    } catch (e) { setError((e as Error).message); }
+                    finally { setSending(false); }
+                  }}>
+                    返回审阅 · 不重试
                   </button>
                 ) : (
                   <button

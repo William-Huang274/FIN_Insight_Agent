@@ -20,7 +20,8 @@ from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_
 
 class CalculationOperand(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    source_id: str | None = Field(default=None, min_length=1, max_length=500)
+    source_id: str | None = Field(default=None, min_length=1, max_length=500,
+        description="Observed archive Pxx:Sxxx ID, or numeric_fact_id returned by a successful SQL query in this tool session. Never invent IDs. For S2 only source_id is needed; the host reads the number.")
     literal: str | None = Field(default=None, min_length=1, max_length=64,
         description="For a source-reported number, copy its exact numeric literal, including commas. For S2 omit this: host reads value_decimal.")
     quote: str | None = Field(default=None, min_length=1, max_length=4000,
@@ -122,5 +123,9 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
 def register_source_calculator_tool(server, source_lookup):
     @server.tool(name="calculate_research_metric", structured_output=True)
     def calculate(request: SourceBoundCalculation) -> dict[str, Any]:
-        """Evaluate source-bound financial arithmetic. No shell/code or S2 write; output remains non-authoritative."""
-        return calculate_from_sources(request, source_lookup)
+        """Evaluate arithmetic using archive source IDs or numeric_fact_id from this session's successful SQL query. No shell/code or S2 write; output remains non-authoritative."""
+        try:
+            return calculate_from_sources(request, source_lookup)
+        except ValueError as exc:
+            from mcp.server.mcpserver.exceptions import ToolError
+            raise ToolError(str(exc) + ". For S2 use {source_id: observed numeric_fact_id} or an archive Pxx:Sxxx ID from paper sources. Re-query SQL if this tool session has not observed the ID. Do not remove source binding or relabel sourced numbers as assumptions.") from None

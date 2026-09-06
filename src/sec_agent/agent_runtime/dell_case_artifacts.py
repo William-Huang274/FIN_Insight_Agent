@@ -133,10 +133,10 @@ class DellCaseArtifacts:
             "notice": "Exact archived observation window. End of this capture is not proof of full document coverage or truth; no new Evidence admission."}
 
 
-def register_case_artifact_tools(server, artifacts: DellCaseArtifacts):
+def register_case_artifact_tools(server, artifacts: DellCaseArtifacts, *, source_lookup=None):
     """Use the existing official MCP server, not another transport or tool bus."""
     from sec_agent.research_foundation.source_bound_calculator import register_source_calculator_tool
-    register_source_calculator_tool(server, artifacts.source_item)
+    register_source_calculator_tool(server, source_lookup or artifacts.source_item)
 
     @server.tool(name="research_artifact_catalog", structured_output=True)
     def catalog() -> dict[str, Any]:

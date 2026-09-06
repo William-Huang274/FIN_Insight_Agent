@@ -19,7 +19,7 @@ from fastapi.responses import StreamingResponse
 from langgraph_sdk.client import LangGraphClient
 from pydantic import BaseModel, ConfigDict, Field
 
-from sec_agent.agent_runtime.dell_report_session import ReviewAction
+from sec_agent.agent_runtime.dell_report_session import ReviewAction, abandoned_question_update
 
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
@@ -52,6 +52,14 @@ def public_state(state):
     result["can_accept"] = result["can_respond"] and result.get("phase") == "ready_for_human_review"
     # No tasks, raw native messages, private checkpoints or source filesystem paths.
     return result
+
+
+def can_abandon_question(thread, state):
+    tasks = state.get("tasks") or []
+    return (thread.get("status") == "error" and not review_interrupts(state)
+        and state.get("values", {}).get("request_action") == "ask"
+        and bool(state.get("values", {}).get("report")) and bool(tasks)
+        and all(t.get("name") in {"writer", "quick_writer"} and t.get("error") for t in tasks))
 
 
 class NewSession(BaseModel):
@@ -113,7 +121,25 @@ def build_report_sessions_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         runs = await service.sdk.runs.list(str(thread_id), limit=10)
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
-            **public_state(state), "runs": [{k: r.get(k) for k in ("run_id", "status", "created_at")} for r in runs]}
+            **public_state(state), "can_abandon_question": bool(can_abandon_question(thread, state)),
+            "runs": [{k: r.get(k) for k in ("run_id", "status", "created_at")} for r in runs]}
+
+    @router.post("/research-sessions/{thread_id}/abandon-question")
+    async def abandon_question(thread_id: UUID, request: Request):
+        browser_write(request)
+        thread = await service.owned_thread(thread_id)
+        state = await service.sdk.threads.get_state(str(thread_id))
+        if not can_abandon_question(thread, state):
+            raise HTTPException(409, "仅已失败且未交稿的追问可返回原报告；不跳过报告复核或重试运行")
+        # Official checkpoint update changes only public request disposition.
+        # as_node does NOT execute finish or any model; its only successor is
+        # human_review. The failed run/checkpoint and report remain untouched.
+        checkpoint = await service.sdk.threads.update_state(str(thread_id),
+            abandoned_question_update(state["values"], "已放弃这次失败的追问并返回报告审阅。"), as_node="finish")
+        run = await service.sdk.runs.create(str(thread_id), GRAPH, input=None, checkpoint=checkpoint["checkpoint"],
+            stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
+            metadata={"surface": SURFACE, "human_action": "abandon_failed_question", "model_calls_requested": 0})
+        return {"run_id": run["run_id"], "status": run["status"], "model_retry_requested": False}
 
     @router.post("/research-sessions/{thread_id}/actions")
     async def action(thread_id: UUID, body: ReviewAction, request: Request):

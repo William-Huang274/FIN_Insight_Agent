@@ -330,3 +330,13 @@ Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量�
 不能说本次在线SQL成功：模型先后用REVENUE/GAAP_OPERATING_INCOME和REVENUE/OPERATING_INCOME大写字段且猜错财年日期，domain validator拒绝；MCP2把工具函数内未分类ValidationError视为意外异常，只回通用Error executing tool。模型转读当前底稿/存档NumericFact，第一次把source ID当claim ID又被拒绝，后来自修成功；6次provider success不等于0工具错误。宿主随后用真实MCP/真实SQL核对同两项，均resolved且期间/单位/source IDs与答案一致，0写入、0provider；保存`quick-answer-sql-host-check.json`。
 
 根因修补只在既有MCP：metric_ids增加既有小写命名和合法例子的schema说明；构造Query的预期ValidationError转换为MCP2原生ToolError，回field/code与改正提示，不泄露输入/trace/backend，也不自动猜别名或降低约束。依据已安装MCP2.1.1官方exceptions.ToolError语义。22相邻检查通过/8.32s（原错误→具体反馈→合法请求，不是新NLP规则）。下一同Dell追问复核一次，沿用quick预算，不重写报告/新case；保留本次SQL失败而不回写成通过。
+
+### 第二条Flash追问失败：SQL成功，计算器未消费真实NumericFact ID
+
+18ee235d部署后的真实UI追问run `01a0755c-d8eb-7aa1-b581-c034bcbbeda8`（06:16:54Z启动）失败于ModelCallLimitExceededError 8/8；8次Provider成功不等于任务成功。实际99598输入/2095输出，共101693tokens，估0.0370709元。首轮已用合法小写metric与正确FY2027 Q1期间查询，SQL返回43842000000/3656000000 USD和真实NUMFACT ID；还查了未要求的上年季度。计算器只识别归档Pxx:Sxxx，拒绝SQL刚返回的NUMFACT；MCP又隐藏了未分类ValueError，模型改参数/去掉绑定仍失败，未交答案。不是网络、余额或应提高预算的问题。原native failed run、私有模型历史与`public-session-after-quick-answer2-failed.json`保留，v3报告不改。累计工作台a4_actual为34次1032793tokens/估1.9768001元，非单问题成本或账单。
+
+最小修复：在现有MCP composition内投影已返回的typed SQL NumericFacts给既有simpleeval/Decimal计算器；只读数据源决定数值，模型不需要复制literal。新composition须重新查询，伪造ID/数值改写仍拒绝；无新存储/准入/SQL写。预期计算错误使用MCP2 ToolError说明实际原因与绑定方法。真实本地mart→MCP→计算器联测通过，非mock SQL；错误ID、未观察/跨composition ID、错误literal及non-authority输出均覆盖。最初宿主测试把Q1展示名当完整branch ID被拒绝，改用真实catalog ID后通过，不降低数据合同。
+
+失败问答的交互收口采用[LangGraph原生error_handler](https://docs.langchain.com/oss/python/langgraph/fault-tolerance)和[checkpoint update](https://docs.langchain.com/oss/python/langgraph/use-time-travel)，已安装1.2.11，无依赖升级/新恢复器。已知调用上限/截断只停止本次ask，保留失败审计/旧报告，回原生人工点；报告修订/Verifier异常不借此跳过复核。旧版本已失败ask可在窄BFF/UI选择“返回审阅·不重试”：官方update_state as_node=finish，仅更新公开失败处置，再用零模型run进入human_review；不执行失败模型节点，不覆盖旧checkpoint，不让浏览器传state/节点/模型参数。原生fixture复证8/6次预算中止后新问题有独立上下文，legacy失败checkpoint保持可读。未知异常仍向上传播，未冒称通用故障恢复已完成。
+
+76近邻测试通过/33.01s；TS/Vite build通过（637.50KB JS/191.24KBgzip，既有分包告警未隐藏），不是全仓回归。下一部署后仅原会话零模型返回审阅，再同季度SQL+计算追问一次Flash/disabled，沿用8模型/24工具/350k输入字符/8k输出/240s与现有TokenBudgetBasis；假设工具接通后可直接回答，无预算增加或研究重跑。若再次失败先读实际原因，不自动重发。尚未新paid、取消/中途干预/全案研究入口/Owner验收/新case仍未完成。

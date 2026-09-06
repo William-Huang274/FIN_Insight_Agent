@@ -13,8 +13,8 @@ from langgraph.types import Command
 from langchain_core.messages import AIMessage
 
 from sec_agent.agent_runtime.dell_case_convergence_agent import CaseReport, ReportTextEdit, apply_report_edits, report_citations, build_case_output_agent
-from sec_agent.agent_runtime.dell_report_session import build_report_session_graph, load_session_materials, ReviewAction
-from apps.workbench.backend.api.v1.report_sessions import public_state, public_event, build_report_sessions_router
+from sec_agent.agent_runtime.dell_report_session import build_report_session_graph, load_session_materials, ReviewAction, abandoned_question_update
+from apps.workbench.backend.api.v1.report_sessions import public_state, public_event, build_report_sessions_router, can_abandon_question
 from test_dell_case_convergence_agent import NativeFixtureModel
 from test_dell_case_review_agent import artifacts, call
 
@@ -68,6 +68,98 @@ def test_native_open_question_revision_review_and_accept(artifacts):
         assert accepted["phase"] == "human_reviewed_not_released"
         assert not (await graph.aget_state(config)).next
     asyncio.run(run())
+
+
+@pytest.mark.parametrize("quick,limit", [(True, 8), (False, 6)])
+def test_native_question_limit_returns_to_human_without_retry_or_report_mutation(artifacts, quick, limit):
+    async def run():
+        graph, models, initial, ref = setup_session(artifacts, quick=quick)
+        config = {"configurable": {"thread_id": str(uuid4())}}
+        await graph.ainvoke({"open": True}, config)
+        role = "quick_writer" if quick else "writer"
+        models[role].replies = [[call("submit_case_answer", {"answer_markdown": "Missing source citation"}, f"bad-{i}")] for i in range(limit)]
+        failed = await graph.ainvoke(Command(resume={"action": "ask", "message": "A question", "answer_mode": "quick" if quick else "deep"}), config)
+        assert failed["__interrupt__"] and failed["last_output_kind"] == "failed_question"
+        assert failed["report"] == initial["report"] and failed["report_version"] == 1
+        assert failed["conversation"][-1]["role"] == "system" and "没有交出答案" in failed["conversation"][-1]["content"]
+        assert len(models[role].contexts) == limit and not models["verifier"].contexts
+        models[role].replies = [[call("submit_case_answer", {"answer_markdown": f"New valid answer [{ref}]"}, "fresh")]]
+        result = await graph.ainvoke(Command(resume={"action": "ask", "message": "A new question", "answer_mode": "quick" if quick else "deep"}), config)
+        assert result["conversation"][-1]["role"] == "assistant" and len(models[role].contexts) == limit + 1
+        assert len(models[role].contexts[-1]) == 2  # fresh native private history, not old limit state
+    asyncio.run(run())
+
+
+def test_native_failed_question_abandonment_checkpoints_without_model_reexecution(artifacts, monkeypatch):
+    from langchain_core.runnables import RunnableLambda
+    from langgraph.graph import StateGraph
+    async def run():
+        _, _, initial, _ = setup_session(artifacts)
+        calls = []
+        def unexpected(_):
+            calls.append("called")
+            raise RuntimeError("fixture unexpected failure, not a budget error")
+        # Reproduce the existing deployed failure BEFORE error handlers existed.
+        # Only registration changes here; checkpoint/update/resume are real native APIs.
+        original_add_node = StateGraph.add_node
+        def legacy_add_node(self, *args, **kwargs):
+            kwargs.pop("error_handler", None)
+            return original_add_node(self, *args, **kwargs)
+        with monkeypatch.context() as patcher:
+            patcher.setattr(StateGraph, "add_node", legacy_add_node)
+            graph = build_report_session_graph(writer=RunnableLambda(unexpected), verifier=RunnableLambda(unexpected),
+                artifacts=artifacts, initial=initial).compile(checkpointer=InMemorySaver())
+        config = {"configurable": {"thread_id": str(uuid4())}}
+        await graph.ainvoke({"open": True}, config)
+        with pytest.raises(RuntimeError, match="unexpected failure"):
+            await graph.ainvoke(Command(resume={"action": "ask", "message": "Question"}), config)
+        failed = await graph.aget_state(config)
+        assert failed.tasks[0].error and len(calls) == 1
+        updated = await graph.aupdate_state(config, abandoned_question_update(failed.values, "Host abandonment test."), as_node="finish")
+        assert (await graph.aget_state(updated)).next == ("human_review",)
+        result = await graph.ainvoke(None, updated)
+        assert result["__interrupt__"] and result["report"] == initial["report"] and result["report_version"] == 1
+        assert len(calls) == 1  # no replay of the failed model node
+        assert (await graph.aget_state(failed.config)).tasks[0].error  # original failure immutable
+    asyncio.run(run())
+
+
+def test_abandonment_cannot_skip_report_verification_or_active_work():
+    state = {"values": {"request_action": "ask", "report": {"title": "original"}},
+        "tasks": [{"name": "quick_writer", "error": "failure"}]}
+    assert can_abandon_question({"status": "error"}, state)
+    assert not can_abandon_question({"status": "busy"}, state)
+    for change in ({"tasks": [{"name": "verifier", "error": "failure"}]},
+                   {"values": {"request_action": "revise", "report": {"title": "new"}}}):
+        assert not can_abandon_question({"status": "error"}, {**state, **change})
+
+
+def test_abandonment_bff_uses_only_native_finish_checkpoint_and_zero_model_start():
+    calls, thread_id = [], str(uuid4())
+    state = {"values": {"request_action": "ask", "report": {"title": "original"}, "report_version": 3,
+        "report_review": {"findings": [], "unresolved_data_requests": []}},
+        "tasks": [{"name": "quick_writer", "error": "failure"}]}
+    checkpoint = {"thread_id": thread_id, "checkpoint_ns": "", "checkpoint_id": str(uuid4())}
+    async def owned(_): return {"status": "error"}
+    async def get_state(_): return state
+    async def update_state(*args, **kwargs):
+        calls.append(("update", args, kwargs))
+        return {"checkpoint": checkpoint}
+    async def create(*args, **kwargs):
+        calls.append(("run", args, kwargs))
+        return {"run_id": str(uuid4()), "status": "pending"}
+    service = SimpleNamespace(owned_thread=owned, sdk=SimpleNamespace(
+        threads=SimpleNamespace(get_state=get_state, update_state=update_state), runs=SimpleNamespace(create=create)))
+    app = FastAPI()
+    app.include_router(build_report_sessions_router(service), prefix="/api/v1")
+    with TestClient(app) as client:
+        path = f"/api/v1/research-sessions/{thread_id}/abandon-question"
+        assert client.post(path, json={}).status_code == 403 and calls == []
+        result = client.post(path, json={}, headers={"x-workbench-request": "1"})
+        assert result.status_code == 200 and not result.json()["model_retry_requested"]
+    assert calls[0][2] == {"as_node": "finish"}
+    assert "report" not in calls[0][1][1] and "report_version" not in calls[0][1][1]
+    assert calls[1][2]["checkpoint"] == checkpoint and calls[1][2]["input"] is None
 
 
 def test_native_material_finding_remains_at_human_review(artifacts):

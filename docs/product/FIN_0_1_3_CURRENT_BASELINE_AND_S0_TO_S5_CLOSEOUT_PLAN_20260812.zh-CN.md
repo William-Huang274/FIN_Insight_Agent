@@ -1,10 +1,13 @@
 # FIN 0.1.3 当前基线与 S0–S5 收口计划
 
 日期：2026-08-12
-状态：`current_R38_engineering_baseline_clean / DELL_R4_55_Evidence_14_gaps_0_closed_3_narrowed / R17_bounded_two_path_content_pass_but_report_quality_OPEN_P0P1P2P3_0_1_2_1 / report_source_closure_and_integrated_quality_audit_release_blocking / S1_S2_S3_product_publication_release_open`
+历史基线状态：`current_R38_engineering_baseline_clean / DELL_R4_55_Evidence_14_gaps_0_closed_3_narrowed / R17_bounded_two_path_content_pass_but_report_quality_OPEN_P0P1P2P3_0_1_2_1 / report_source_closure_and_integrated_quality_audit_release_blocking / S1_S2_S3_product_publication_release_open`。以下旧阶段/轮次状态不代表 2026-09-06 当前 Dell 分支进度。
+
+2026-09-06 当前 Dell 产品交付补充：已有真实 agentic 多轮研究/审查/写作的分段证据、报告 v3 和可交互审阅/问答工作台；还没有从新问题经前端一次启动完整研究链并获 Owner 验收。下一交付是围绕 Dell 增长质量、利润/现金兑现及未来执行压力，完成“新问题—自主分工研究—来源与计算—交叉审查/修订—可读报告—追问/人工反馈”的完整体验，再补少量新长短场景和真实质量/费用/时延证据。旧稿不作为付费反复润色的前置任务；既有报告、失败和旧产品面保留，不宣称全版本 release。唯一当前 Dell 实施顺序见 [Agentic 完整纵切详设 §0 当前执行计划](../architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md)；原阶段职责仍作为历史输入，不把下方旧“未实现”及旧轮次门覆盖到已迁移原生运行链。
+
 ## 1. 这份文件拥有哪项真值
 
-本文件是 FIN 0.1.3 唯一当前执行计划。它取代两份已经迁入版本归档的旧计划；旧文件只保留决策和失败历史，不再拥有当前进度或下一步权限。
+本文件保留 FIN 0.1.3 基线与阶段责任、历史决策及失败；它取代的两份版本归档文件不再拥有当前进度或下一步权限。当前 Dell 成熟栈纵切的产品增量与执行顺序以上述 2026-09-06 补充、源详设当前节和 Project OS 为准，不能继续仅依下方历史轮次推进。
 
 FIN 0.1.3 的版本目标不变：形成 FIN 0.1 Internal Alpha 的可审计纵向研究闭环。当前仓库重定基只是为后续产品工作建立一条可读、可测、可维护的主线，不等于版本产品收口。
 

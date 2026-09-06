@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 S3/190最新：convergence A1已failed（不是网络），P07原生invalid_tool_calls未返回模型而误结束；19实调/512281tokens/估1.9249047元，LangSmith根已失败闭合。FIN PostgreSQL只读恢复确认P01/P04/P05/P06/P08五份native accepted输出并通过原引用校验；原失败/原稿不变。已用官方after_model middleware补ID配对JSON错误反馈，合法同批工具照常执行；当前目录不再返回旧thesis，复用稿经同before_model stop零新模型调用。下一fresh A2仅P07+Writer+Verifier，预算不扩；完整报告/UI/Dell产品仍未PASS。以下先前“未启动”为历史。
+
 2026-09-06 S3/190最新工程：同native create_agent/MCP/Agent Server已接六稿定向修订→Writer→独立Verifier，130近邻测试与最后6项真实A1反馈/域校验/只读schema通过；原稿不改，Writer读合并后的新视图、自由中文且引用可解析。新派生convergence-input-a1.private.json在Z，仅公开底稿/审查与显式host-assisted补充，不传旧私有reasoning。下一fresh paid convergence，预算/停止线在S3/190；尚未报告内容或UI PASS。
 
 2026-09-06 01:51Z后最新：S3/190全案native审查A1已完成，24实调1567290tokens/估1.9244712元，Counter14/Verifier10、执行473.5s。真实LangSmith闭合；两fresh SDK client可读PG子图各自消息，但不冒称restart/resume/HITL。4material包含1重复：P04交付阶段、P05/P07季度毛利方向；另P01现金流加回/P06GreaterChina边界advisory。人工发现审查仍误把订单当usage，P08需显式host-assisted补充，不能把模型当oracle。最小批量错误反馈/审计兼容修复17测试通过；下一只修P01/P04/P05/P06/P07/P08，再中文报告/终审，原10稿/失败不改，不重跑九主题，不新造runtime。完整报告/UI/Dell产品仍未PASS。详S3/190最新段；以下历史状态非当前阻断。

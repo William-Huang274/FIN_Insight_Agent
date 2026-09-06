@@ -52,8 +52,15 @@ def prepare():
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--accepted-revisions", type=Path, help="Host-revalidated native submissions to reuse without new model calls.")
     args = parser.parse_args()
     result = prepare()
+    if args.accepted_revisions:
+        from sec_agent.agent_runtime.dell_case_convergence_agent import validate_reused_revisions
+        result["accepted_revisions"] = validate_reused_revisions(
+            json.loads(args.accepted_revisions.read_text(encoding="utf-8")), DellCaseArtifacts(result["papers"]), result["feedback"])
+        result["convergence_origins"].append({"path": str(args.accepted_revisions),
+            "sha256": sha256(args.accepted_revisions.read_bytes()).hexdigest()})
     with args.output.open("x", encoding="utf-8") as stream:
         json.dump(result, stream, ensure_ascii=False, indent=2)
     print(json.dumps({"output": str(args.output), "papers": len(result["papers"]),

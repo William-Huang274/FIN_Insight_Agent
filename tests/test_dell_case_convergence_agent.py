@@ -34,6 +34,7 @@ class NativeFixtureModel(BaseChatModel):
     marker: str
     replies: list
     seen: list = []
+    contexts: list = []
 
     @property
     def _llm_type(self):
@@ -44,6 +45,7 @@ class NativeFixtureModel(BaseChatModel):
         return self
 
     def _generate(self, messages, stop=None, run_manager=None, **kwargs):
+        self.contexts.append(messages)
         previous = [m for m in messages if isinstance(m, AIMessage)]
         assert all(m.additional_kwargs.get("reasoning_content") == self.marker for m in previous)
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content="", tool_calls=self.replies[len(previous)],
@@ -51,7 +53,8 @@ class NativeFixtureModel(BaseChatModel):
 
 
 @pytest.mark.parametrize("material", [False, True])
-def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifacts, material):
+@pytest.mark.parametrize("reuse", [False, True])
+def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifacts, material, reuse):
     async def run():
         original = artifacts.read_paper("P01")
         feedback = {p: [{"finding_id": "fixture"}] for p in PAPERS}
@@ -59,17 +62,25 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             tools = await case_mcp_tools(client)
             limits = {"model_calls": 12, "tool_calls": 32}
             agents = {}
+            reused = {}
             for pid in PAPERS:
+                revision = revision_fixture(artifacts, pid)
+                revision["thesis"] = "Synthetic corrected current thesis for fixture paper " + pid
                 model = NativeFixtureModel(marker=pid, replies=[
                     [call("read_research_artifact", {"paper_id": pid}, "read")],
-                    [call("submit_paper_revision", {"revision": revision_fixture(artifacts, pid)}, "submit")]])
+                    [call("submit_paper_revision", {"revision": revision}, "submit")]])
                 agents["author_"+pid] = build_case_output_agent(role="repair", model=model, tools=tools,
                     artifacts=artifacts, feedback=feedback[pid], paper_id=pid, limits=limits)
+                if reuse and pid != "P07":
+                    reused[pid] = {"output": validated_revision(PaperRevision.model_validate(revision), paper_id=pid,
+                        feedback=feedback[pid], artifacts=artifacts, messages=[]), "origin": {
+                        "execution_id": "prior-fixture", "server_thread_id": "old-thread", "checkpoint_ns": "author_"+pid,
+                        "checkpoint_id": "old-checkpoint", "server_run_id": "old-run", "native_submission_revalidated": True}}
             ref = "P01:" + original["claims"][0]["claim_id"]
             prose = ("Synthetic report fixture checks source resolution only, not any financial conclusion. " * 4) + f"[{ref}]"
             report = {"title": "Synthetic convergence report", "narrative_markdown": prose}
             writer = NativeFixtureModel(marker="writer", replies=[
-                [call("read_current_workpaper", {"paper_id": "P99"}, "bad")],
+                [call("read_current_workpaper", {"paper_id": "P99"}, "bad"), call("research_artifact_catalog", {}, "catalog")],
                 [call("read_current_workpaper", {"paper_id": "P01"}, "read")],
                 [call("submit_case_report", {"report": report}, "submit")]])
             agents["writer"] = build_case_output_agent(role="writer", model=writer, tools=tools, artifacts=artifacts, limits=limits)
@@ -82,7 +93,7 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             agents["verifier"] = build_case_output_agent(role="verifier", model=model, tools=tools, artifacts=artifacts, limits=limits)
             saver = InMemorySaver()
             graph = build_case_convergence_graph(agents=agents, artifacts=artifacts, question="fixture only", feedback=feedback,
-                run_id="run", run_invocation_id="invoke").compile(checkpointer=saver)
+                run_id="run", run_invocation_id="invoke", reused_revisions=reused).compile(checkpointer=saver)
             assert len(list(graph.get_subgraphs())) == 8
             state = await graph.ainvoke({"run_id": "run", "run_invocation_id": "invoke"},
                 {"configurable": {"thread_id": "case"}, "recursion_limit": 100})
@@ -92,6 +103,13 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             assert "reasoning_content" not in json.dumps(state)
             assert artifacts.read_paper("P01") == original
             assert all("read_research_artifact" not in names for names in writer.seen)
+            catalog = next(m for m in writer.contexts[1] if isinstance(m, ToolMessage) and m.name == "research_artifact_catalog")
+            assert "Synthetic corrected current thesis for fixture paper P01" in catalog.content
+            for pid in PAPERS:
+                metrics = state["actor_metrics"]["author_"+pid]
+                assert metrics["model_calls"] == (0 if pid in reused else 2)
+                if pid in reused:
+                    assert metrics["tool_calls"] == 0 and metrics["reused_from"] == reused[pid]["origin"]
             checkpoints = list(saver.list(None))
             for actor in agents:
                 rows = [c for c in checkpoints if c.config["configurable"].get("checkpoint_ns", "").startswith(actor+":")]
@@ -101,6 +119,89 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
                 marker = actor.removeprefix("author_")
                 assert all(m.additional_kwargs["reasoning_content"] == marker for m in messages if isinstance(m, AIMessage))
     asyncio.run(run())
+
+
+@pytest.mark.parametrize("mixed", [False, True])
+def test_invalid_json_feedback_native_SDK_preserves_raw_call_and_valid_siblings(artifacts, mixed):
+    import httpx
+    from pydantic import SecretStr
+    from sec_agent.agent_runtime.deepseek_structured_agents import ReasoningPreservingChatDeepSeek
+    revision = revision_fixture(artifacts, "P07")
+    good = json.dumps({"revision": revision})
+    bad = good + "}"  # Same earliest P07 A1 defect: extra JSON data.
+    requests = []
+    def serve(request):
+        body = json.loads(request.content)
+        turn = len(requests)
+        requests.append(body)
+        if turn:
+            prior = next(m for m in body["messages"] if m["role"] == "assistant")
+            assert prior["reasoning_content"] == "private native fixture, not a public rationale"
+            assert next(c for c in prior["tool_calls"] if c["id"] == "invalid-submit")["function"]["arguments"] == bad
+            results = [m for m in body["messages"] if m["role"] == "tool"]
+            assert len(results) == 1 + mixed
+            error = next(m for m in results if m["tool_call_id"] == "invalid-submit")
+            assert "Extra data" in error["content"] and len(error["content"]) < 600
+        calls = [{"id": "invalid-submit" if not turn else "valid-submit", "type": "function",
+            "function": {"name": "submit_paper_revision", "arguments": bad if not turn else good}}]
+        if mixed and not turn:
+            calls.append({"id": "valid-read", "type": "function", "function": {
+                "name": "read_research_artifact", "arguments": json.dumps({"paper_id": "P07"})}})
+        return httpx.Response(200, json={"id": "fixture", "object": "chat.completion", "created": 1,
+            "model": "deepseek-v4-pro", "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
+                "role": "assistant", "content": "", "reasoning_content": "private native fixture, not a public rationale", "tool_calls": calls}}],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 50, "total_tokens": 150}})
+    async def run():
+        async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client, httpx.AsyncClient(transport=httpx.MockTransport(serve)) as http:
+            model = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("fixture-not-secret"),
+                http_async_client=http, max_retries=0, streaming=False)
+            agent = build_case_output_agent(role="repair", model=model, tools=await case_mcp_tools(client),
+                artifacts=artifacts, feedback=[{"finding_id": "fixture"}], paper_id="P07", limits={"model_calls": 2, "tool_calls": 4})
+            result = await agent.ainvoke({"messages": [{"role": "user", "content": "Fixture only"}]})
+            assert result["output"]["paper_id"] == "P07"
+            first = next(m for m in result["messages"] if isinstance(m, AIMessage))
+            assert first.invalid_tool_calls[0]["args"] == bad
+            assert len(requests) == 2
+    asyncio.run(run())
+
+
+def test_real_P07_A1_counterexample_stays_invalid_and_is_pairable():
+    from pathlib import Path
+    from sec_agent.agent_runtime.dell_case_review_agent import InvalidToolCallFeedback
+    path = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260906-dell-case-convergence-a1/model-context-reasoning.private.jsonl")
+    if not path.exists():
+        pytest.skip("private real run fixture not present")
+    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
+    raw = next(r["raw_response"] for r in reversed(rows) if r.get("actor") == "author_P07" and r.get("event") == "response")
+    message = AIMessage.model_validate(raw)
+    result = InvalidToolCallFeedback().after_model({"messages": [message]}, None)
+    assert result["jump_to"] == "model" and len(result["messages"]) == 1
+    assert result["messages"][0].tool_call_id == message.invalid_tool_calls[0]["id"]
+    detail = json.loads(result["messages"][0].content)
+    assert detail["reason"] == "Extra data" and detail["column"] == 10935
+    assert message.tool_calls == []  # Never auto-repair/execute invalid arguments.
+
+
+def test_terminal_reuse_must_equal_the_pinned_seed(tmp_path, monkeypatch):
+    from hashlib import sha256
+    from scripts.qualification.dell_q1_specialist_paid_shadow import container_once as module
+    seed = tmp_path / "seed.json"
+    saved = {"output": {"paper_id": "P01", "status": "revision_submitted"}, "origin": {"execution_id": "prior"}}
+    seed.write_text(json.dumps({"accepted_revisions": {"P01": saved}}), encoding="utf-8")
+    monkeypatch.setattr(module, "Path", lambda value: seed)
+    scope = SimpleNamespace(repair_paper_ids=PAPERS, seed_state_sha256=sha256(seed.read_bytes()).hexdigest(),
+        node_limits={r: SimpleNamespace(model_calls=12, tool_calls=32) for r in ("repair", "writer", "verifier")})
+    authority = SimpleNamespace(case_convergence_scope=scope, research_run_id="run", run_invocation_id="invoke")
+    values = {"run_id": "run", "run_invocation_id": "invoke", "phase": "case_report_ready_for_human_review",
+        "revisions": {p: (saved["output"] if p == "P01" else {}) for p in PAPERS},
+        "report": {"title": "Fixture cited report", "narrative_markdown": "Synthetic report. " * 30},
+        "report_review": {"summary": "Synthetic independent review with sufficient description for the domain schema.", "findings": [], "unresolved_data_requests": []},
+        "actor_metrics": {a: {"model_calls": 1, "tool_calls": 1} for a in ("writer", "verifier", *("author_"+p for p in PAPERS))}}
+    values["actor_metrics"]["author_P01"] = {"model_calls": 0, "tool_calls": 0, "reused_from": saved["origin"]}
+    assert module._terminal({"values": values}, authority)["model_turn_count"] == 7
+    values["revisions"]["P01"] = {"paper_id": "P99"}
+    with pytest.raises(module.ContainerRunError, match="reuse_mismatch"):
+        module._terminal({"values": values}, authority)
 
 
 def test_source_bound_updates_reject_quote_and_authority_errors_together(artifacts):

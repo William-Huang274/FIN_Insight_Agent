@@ -23,7 +23,7 @@ from langgraph.graph import START, END, StateGraph
 from langgraph.types import Command
 from pydantic import BaseModel, ConfigDict, Field
 
-from .dell_case_review_agent import _text_values
+from .dell_case_review_agent import _text_values, InvalidToolCallFeedback
 from .dell_specialist_agentic_graph import SpecialistClaim
 
 
@@ -35,7 +35,8 @@ class CaseClaim(BaseModel):
     materiality: Literal["high", "medium", "low"]
     statement: str = Field(min_length=1, max_length=4000)
     source_ids: list[str] = Field(min_length=1, max_length=48)
-    numeric_authority: Literal["authoritative", "non_authoritative", "not_applicable"]
+    numeric_authority: Literal["authoritative", "non_authoritative", "not_applicable"] = Field(
+        description="Existing FIN kind contract: numeric_fact uses authoritative with S2 facts only; calculation uses non_authoritative with an authority_note; all other kinds use not_applicable. For reported_fact/inference from non-S2 prose, put the non-authoritative source warning in authority_note, not this enum.")
     authority_note: str | None = None
     reasoning_summary: str | None = None
     citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict)
@@ -202,6 +203,11 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     feedback = feedback or []
 
     @tool
+    def research_artifact_catalog(runtime: ToolRuntime) -> dict:
+        """List current paper theses including accepted revisions, not superseded archive theses."""
+        return artifacts.with_revisions(runtime.state.get("revisions", {})).catalog()
+
+    @tool
     def read_current_workpaper(paper_id: str, runtime: ToolRuntime, section: Literal["workpaper", "claims", "sources"] = "workpaper") -> dict:
         """Read the latest case workpaper view including accepted author amendments. Original archives stay immutable."""
         try:
@@ -253,16 +259,16 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     elif role == "writer":
         specific = "Write the final integrated Dell case report in Chinese. Read all ten current workpapers (read_current_workpaper, not superseded archive workpaper text), then selected original sources. Directly answer the full question; lead with a clear judgment, connect demand/architecture/supply/competition to revenue/margin/cash, distinguish evidence from hypothesis and state what would change the view. Aim for useful analyst prose, not a boundary disclaimer dump or pasted ten reports. No valuation/target price or invented metrics. Inline important claims as [P01:C15] using exact current IDs. Review actual sources before citing; retain period/authority distinctions."
         submit = submit_case_report
-        selected = [t for t in tools if t.name not in {"read_research_artifact", "read_research_source"}] + [read_current_workpaper, read_current_source]
+        selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     elif role == "verifier":
         specific = "Independently review the final report and its revised workpapers/source context. Critique conclusion strength, period/company/unit comparability, source attribution and meaningful omissions, not just matching numbers. Orders/revenue/backlog are not observed deployed utilization; one-country bounds do not bound a multi-region aggregate; early shipment is not volume deployment; corporate margins are not complete AI value-pool shares. Do not turn these method warnings into a canned thesis. Check actual context. Findings quote the exact report text. A source link alone does not prove a sentence."
         submit = submit_report_review
-        selected = [t for t in tools if t.name not in {"read_research_artifact", "read_research_source"}] + [read_current_workpaper, read_current_source]
+        selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     else:
         raise ValueError("case_output_role_invalid")
     return create_agent(model=model, tools=[*selected, submit], state_schema=CaseOutputState,
         system_prompt=CONTEXT_RULES + specific + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
-        middleware=[StopOnOutput(), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
+        middleware=[StopOnOutput(), InvalidToolCallFeedback(), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
             ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="error"), *([audit] if audit else [])],
         name=f"case_{role}_{paper_id or 'report'}")
 
@@ -277,7 +283,23 @@ class CaseConvergenceState(TypedDict, total=False):
     phase: str
 
 
-def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_id, run_invocation_id):
+def validate_reused_revisions(reused, artifacts, feedback):
+    """Host-prepared, hash-pinned public submissions; never client-selected state."""
+    if not isinstance(reused, dict) or not set(reused).issubset(feedback):
+        raise ValueError("reused_revision_scope_invalid")
+    for pid, row in reused.items():
+        output, origin = row["output"], row["origin"]
+        if (output.get("paper_id") != pid or output.get("status") != "revision_submitted"
+                or origin.get("native_submission_revalidated") is not True
+                or not all(origin.get(k) for k in ("execution_id", "server_thread_id", "checkpoint_ns", "checkpoint_id", "server_run_id"))
+                or set(r["finding_id"] for r in output["finding_responses"]) != set(f["finding_id"] for f in feedback[pid])):
+            raise ValueError("reused_revision_origin_or_findings_invalid")
+    artifacts.with_revisions({p: row["output"] for p, row in reused.items()})
+    return deepcopy(reused)
+
+
+def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_id, run_invocation_id, reused_revisions=None):
+    reused = validate_reused_revisions(reused_revisions, artifacts, feedback) if reused_revisions else {}
     graph = StateGraph(CaseConvergenceState)
     authors = sorted(feedback)
     for actor, agent in agents.items():
@@ -285,6 +307,11 @@ def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_i
         def seed(state, _actor=actor, _author=is_author):
             if state.get("run_id") != run_id or state.get("run_invocation_id") != run_invocation_id:
                 raise ValueError("case_convergence_run_identity_mismatch")
+            pid = _actor.removeprefix("author_")
+            if _author and pid in reused:
+                # The existing before_model stop hook ends without transport.
+                # No invented prior model messages, cost, or resume claim.
+                return {"output": deepcopy(reused[pid]["output"]), "messages": []}
             body = {"question": question, "research_as_of": artifacts.research_as_of}
             value = {"revisions": state.get("revisions", {}), "report": state.get("report", {})}
             if _author:
@@ -305,6 +332,8 @@ def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_i
                 raise ValueError(f"case_agent_ended_without_submission:{_actor}")
             metrics = {"model_calls": sum(isinstance(m, AIMessage) for m in state["messages"]),
                 "tool_calls": sum(isinstance(m, ToolMessage) for m in state["messages"])}
+            if _author and _actor.removeprefix("author_") in reused:
+                metrics["reused_from"] = reused[_actor.removeprefix("author_")]["origin"]
             result = {"actor_metrics": {_actor: metrics}}
             if _author:
                 result["revisions"] = {_actor.removeprefix("author_"): state["output"]}

@@ -212,7 +212,18 @@ def _terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShadowAutho
         metrics = values["actor_metrics"]
         if set(metrics) != {"writer", "verifier", *("author_" + p for p in scope.repair_paper_ids)}:
             raise ContainerRunError("case_convergence_actor_missing")
+        seed_path = Path("/run/fin-insight/review-seed.json")
+        if sha256(seed_path.read_bytes()).hexdigest() != scope.seed_state_sha256:
+            raise ContainerRunError("case_convergence_seed_changed")
+        reused = json.loads(seed_path.read_text(encoding="utf-8")).get("accepted_revisions", {})
         for actor, row in metrics.items():
+            pid = actor.removeprefix("author_")
+            if actor.startswith("author_") and pid in reused:
+                if (row.get("model_calls") != 0 or row.get("tool_calls") != 0
+                        or row.get("reused_from") != reused[pid]["origin"]
+                        or values["revisions"][pid] != reused[pid]["output"]):
+                    raise ContainerRunError("case_convergence_reuse_mismatch")
+                continue
             limit = scope.node_limits["repair" if actor.startswith("author_") else actor]
             if not 1 <= row.get("model_calls", 0) <= limit.model_calls or row.get("tool_calls", 0) > limit.tool_calls:
                 raise ContainerRunError("case_convergence_actor_budget_invalid")

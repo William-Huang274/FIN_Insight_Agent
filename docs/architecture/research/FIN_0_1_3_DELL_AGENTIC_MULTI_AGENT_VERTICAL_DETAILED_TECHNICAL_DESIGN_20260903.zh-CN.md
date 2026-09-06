@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-06 当前修正：convergence A1因P07 malformed tool JSON的native反馈缺口终止，五份已接受修订从FIN PG保全；512281tokens/估1.9249047元。采用官方middleware纠正invalid_tool_calls路由，不自动修JSON/不换自研循环；新派生输入复用五稿且明确0新模型调用及原checkpoint来源，fresh仅P07作者+Writer+Verifier。Writer/catalog/source视图均包含新修订。旧A1失败不变，无报告或产品PASS；详S3/190最新节。
+
 2026-09-06 工程补充：上述六稿定向修订、当前稿按需读取、自由中文引用报告与独立终审已在原生图实际接线并通过本地测试；仅新增FIN输出/引用薄适配，沿用原Agent Server/once runner，不增执行框架。fresh真实运行、报告内容验收和UI仍未完成。详S3/190“定向修订/综合报告实际接入”。
 
 2026-09-06 最新全案Counter/Verifier原生审查已真实交接：24calls/1567290tokens/约1.9244712元、473.5s。十稿覆盖已发生，不是报告或产品PASS。跨稿毛利时点、架构交付及地域聚合/需求proxy问题进入六稿定向责任修订，随后同native create_agent/MCP图做自由中文综合报告和独立终审；不重做九主题研究。预算、原始结果、前审漏判和native PG/SDK证据见S3/190最新段。按风险一次返回所有本地引句错误，禁止把自然语言格式模板当准确性标准。UI交互/重启续跑/新case尚未完成。

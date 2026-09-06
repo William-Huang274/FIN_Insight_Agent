@@ -226,10 +226,42 @@ class CaseModelAudit(AgentMiddleware):
         truncated = raw.response_metadata.get("finish_reason") == "length"
         self.private_sink({"event": "response", "call_id": call_id, "actor": self.actor, "raw_response": raw.model_dump(mode="json")})
         self.public_sink({**common, "event": "outcome", "status": "truncated" if truncated else "success",
+            "valid_tool_call_count": len(raw.tool_calls), "invalid_tool_call_count": len(raw.invalid_tool_calls),
+            "success_scope": "provider_response_only_not_tool_or_task_acceptance",
             "elapsed_ms": round((perf_counter()-start)*1000, 3), **_usage_audit_fields(raw)})
         if truncated:
             raise ValueError("case_review_truncated_no_partial_acceptance")
         return response
+
+
+class InvalidToolCallFeedback(AgentMiddleware):
+    """Return unparsed calls to their author through native middleware.
+
+    create_agent 1.4 routes only parsed tool_calls (upstream issue #33504).
+    Never repair/execute malformed arguments or copy SDK's full-payload error.
+    Valid siblings still use the normal ToolNode route exactly once.
+    """
+    @hook_config(can_jump_to=["model"])
+    def after_model(self, state, runtime):
+        message = state["messages"][-1]
+        if not isinstance(message, AIMessage) or not message.invalid_tool_calls:
+            return None
+        ids = [c.get("id") for c in [*message.tool_calls, *message.invalid_tool_calls]]
+        if any(not isinstance(i, str) or not i.strip() for i in ids) or len(ids) != len(set(ids)):
+            raise ValueError("invalid_tool_call_unpairable_id")
+        feedback = []
+        for call in message.invalid_tool_calls:
+            detail = {"error": "tool_arguments_invalid_json", "tool": call.get("name"),
+                "action": "Resend this tool call with valid JSON matching its declared schema. Nothing from this invalid call was executed."}
+            try:
+                json.loads(call.get("args"))
+            except json.JSONDecodeError as exc:
+                detail.update(reason=exc.msg, line=exc.lineno, column=exc.colno)
+            except (TypeError, ValueError):
+                detail["reason"] = "Expected a JSON object encoded as a string."
+            feedback.append(ToolMessage(tool_call_id=call["id"], name=call.get("name"), status="error",
+                content=json.dumps(detail, ensure_ascii=False)))
+        return {"messages": feedback, **({"jump_to": "model"} if not message.tool_calls else {})}
 
 
 class StopOnAcceptedReview(AgentMiddleware):
@@ -273,7 +305,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
                 if role == "counter" else "Your role is Verifier: inspect material factual/numeric/citation/period consistency and whether conclusions are warranted by actual sources.")
     return create_agent(model=model, tools=[*tools, submit_case_review], state_schema=CaseReviewerState,
         system_prompt=REVIEW_PROMPT + emphasis + f"\nBudget: up to {max_model_calls} model calls / {max_tool_calls} tools; no retries or silent partial acceptance.",
-        middleware=[StopOnAcceptedReview(), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="error"),
+        middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="error"),
                     ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="error"), *([audit] if audit else [])],
         name=f"case_{role}")
 
@@ -390,7 +422,8 @@ async def open_case_review_composition(*, authority, model_config, api_key, publ
                         audit=CaseModelAudit(actor=actor, profile=profile, basis=basis, public_sink=public_sink, private_sink=private_sink))
                 yield build_case_convergence_graph(agents=agents, artifacts=artifacts,
                     question=foundation.case_identity.top_level_question_zh, feedback=feedback,
-                    run_id=authority.research_run_id, run_invocation_id=authority.run_invocation_id).compile(
+                    run_id=authority.research_run_id, run_invocation_id=authority.run_invocation_id,
+                    reused_revisions=seed.get("accepted_revisions", {})).compile(
                         name="dell_reference_vertical").with_config({"recursion_limit": 240})
                 return
             reviewers = {}

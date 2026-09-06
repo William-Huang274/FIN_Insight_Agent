@@ -217,4 +217,18 @@ Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量�
 
 原稿不改，新增当前视图合并claim_updates/删去显式旧claim，并同步替换thesis/mechanism/narrative等正文；变化的kind/numeric authority沿用既有SpecialistClaim，引用逐字验证、错误一次返回。新工具观察只传可引用源/数字，不传私有reasoning。Writer只能读当前workpaper入口，避免无意引用被替代的旧正文；报告自由中文，仅强制合法[Pxx:claim_id]引用可解析，不用自然语言模板判断真假。终审输出material或未解问题则留下needs_revision，否则ready_for_human_review，均不自动productPASS。原始bundle新增只读派生 `case-convergence-20260906-a1/convergence-input-a1.private.json`，10稿、6责任主题、host-assisted=true；旧review/失败run不变。
 
-130近邻测试/13.63s；最后六项包含实际A1反馈/旧authority原digest兼容、source权限、未知引句同时退回、六作者→写作→终审、原稿不变/当前引用可解析、private上下文独立、报告仍需修改分支与只读schema入口，6pass/5.44s。一个fixture模型签名不符合异步BaseChatModel调用，已在本地修正，无付費试错。fresh模型运行未启动，报告内容/UI仍待实际证明。
+130近邻测试/13.63s；最后六项包含实际A1反馈/旧authority原digest兼容、source权限、未知引句同时退回、六作者→写作→终审、原稿不变/当前引用可解析、private上下文独立、报告仍需修改分支与只读schema入口，6pass/5.44s。一个fixture模型签名不符合异步BaseChatModel调用，已在本地修正，无付費试错。此时fresh模型运行未启动；后续事实见下节。
+
+## Convergence A1 格式反馈失败；保全五份修订后仅补剩余角色
+
+实现c7755cc5/authority a8b76b8b，`20260906-dell-case-convergence-a1`已failed，root `01a0748d-ea18-78a2-bba7-fe72e3b931a1`、thread `b981f76b-cbad-52e6-8804-d1f17b2cc227`。19次实际调用：P01/P04/P05/P06/P07/P08各3/2/5/2/3/4；tokens各84421/44097/144000/37564/83235/118964，合512281（424252输入/88029输出、51598reasoning）。估1.9249047元=0.696078新输入+1.1883915输出+0.0404352缓存输入，非账单；缓存269568、miss154684。执行630.719s/构建106.907s；无provider未知/网络失败。LangSmith根实查失败闭合、total_tokens一致。公开audit的success19仅指provider完成，绝非19个任务成功，后续明确拆出valid/invalid tool count。
+
+根因：P07最后一次返回只有一个`invalid_tool_calls`，工具参数JSON在char10934出现Extra data；`create_agent1.4.0`的普通路由只看tool_calls，故错误结束、collect抛`case_agent_ended_without_submission:author_P07`，Writer/Verifier均未开始。原始参数/私有reasoning/failed-receipt保留，不手修模型JSON来假装提交。此问题有[官方仓库issue33504](https://github.com/langchain-ai/langchain/issues/33504)；使用[官方after_model middleware](https://docs.langchain.com/oss/python/langchain/middleware/custom)返回原call_id的简短解析位置/合法schema指引，invalid-only跳回模型、mixed合法部分仍走原ToolNode。仍受原模型预算控制，非transport retry，不添加新循环/调度器。
+
+父图只有四份结果，但FIN-owned PG内P08已经原生接受；只读导出最新版channel与消息，按原PaperRevision/quote/authority校验重算并与native output相等。P01/P04/P05/P06/P08五份公共修订保存在`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260906-case-convergence-a1-recovery/accepted-revisions.private.json`；没有访问任何Codex live SQLite/JSONL。原A1不resume/重签、卷不删；这里是已完成结果保全，不是运行恢复能力证明。常规API state?subgraphs=true本次pending tasks读回异常仍需单独确认，不能拿前审通过冒称本图也通过。
+
+另两项实际小修：CaseClaim显示既有kind↔numeric_authority合同（非S2 reported_fact需not_applicable并在authority_note注明），不改变领域规则；Writer/Verifier的catalog工具也改当前视图，避免返回被修订的旧thesis。新seed明确保存五份已重验公共输出与origin，复用时native before_model直接结束、0新模型/工具，终态必须等于hash绑定seed；不伪造旧消息或新的作者工作。真实SDK MockTransport验证invalid-only及mixed错误原文/own reasoning续传、合法工具恰一次；实际P07反例仍保持非法；六节点中五复用的流程本地已通过。18相邻测试通过（终态反例补充后待本轮最终数）。
+
+本包最终72项相邻检查/12.56s通过（含新增终态复用与seed不符的拒绝）；无全仓重算。A2派生seed SHA=`d7fe36bbfcbfd54250302f177b846719f0a4734aa787bcc6e9866fc22ea165af`。A1三个精确容器已停止，卷/原失败保留。
+
+下一fresh A2仅P07定向作者与Writer/Verifier付费，五稿不重跑；角色上下文、24k/32k输出和480s、12/16模型预算不增，预计约1–4元/5–20分钟，非报价或质量保证。Writer自由中文整案，终审与宿主人读内容后才决定是否修；本次无最终报告/交互UI/Dell产品PASS，不开始新case。累计审计a5：219次attempt调用/216有usage11208289tokens/210cache可估29.0956714元；另4次目录外诊断仍212237tokens/0.8537535元，旧3未知不可记0。全部是开发/试错/研究累计，不是普通问答费用。

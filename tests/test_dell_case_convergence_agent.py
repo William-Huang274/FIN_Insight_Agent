@@ -53,7 +53,7 @@ class NativeFixtureModel(BaseChatModel):
 
 
 @pytest.mark.parametrize("material", [False, True])
-@pytest.mark.parametrize("reuse", [False, True])
+@pytest.mark.parametrize("reuse", [False, True, "report"])
 def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifacts, material, reuse):
     async def run():
         original = artifacts.read_paper("P01")
@@ -71,7 +71,7 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
                     [call("submit_paper_revision", {"revision": revision}, "submit")]])
                 agents["author_"+pid] = build_case_output_agent(role="repair", model=model, tools=tools,
                     artifacts=artifacts, feedback=feedback[pid], paper_id=pid, limits=limits)
-                if reuse and pid != "P07":
+                if reuse and (pid != "P07" or reuse == "report"):
                     reused[pid] = {"output": validated_revision(PaperRevision.model_validate(revision), paper_id=pid,
                         feedback=feedback[pid], artifacts=artifacts, messages=[]), "origin": {
                         "execution_id": "prior-fixture", "server_thread_id": "old-thread", "checkpoint_ns": "author_"+pid,
@@ -83,7 +83,7 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
                 [call("read_current_workpaper", {"paper_id": "P99"}, "bad"), call("research_artifact_catalog", {}, "catalog")],
                 [call("read_current_workpaper", {"paper_id": "P01"}, "read")],
                 [call("submit_case_report", {"report": report}, "submit")]])
-            agents["writer"] = build_case_output_agent(role="writer", model=writer, tools=tools, artifacts=artifacts, limits=limits)
+            agents["writer"] = build_case_output_agent(role="writer", model=writer, tools=tools, artifacts=artifacts, limits=limits, report_revision=reuse == "report")
             review = {"summary": "Synthetic final review checks graph sequencing and source contracts only, never economic truth.",
                 "findings": ([{"finding_id": "F1", "severity": "material", "report_quote": "Synthetic report fixture",
                     "diagnosis": "Synthetic negative must remain visible as needs revision.",
@@ -93,7 +93,8 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             agents["verifier"] = build_case_output_agent(role="verifier", model=model, tools=tools, artifacts=artifacts, limits=limits)
             saver = InMemorySaver()
             graph = build_case_convergence_graph(agents=agents, artifacts=artifacts, question="fixture only", feedback=feedback,
-                run_id="run", run_invocation_id="invoke", reused_revisions=reused).compile(checkpointer=saver)
+                run_id="run", run_invocation_id="invoke", reused_revisions=reused,
+                report_revision_request={"human_feedback": "unique prior report feedback fixture"} if reuse == "report" else None).compile(checkpointer=saver)
             assert len(list(graph.get_subgraphs())) == 8
             state = await graph.ainvoke({"run_id": "run", "run_invocation_id": "invoke"},
                 {"configurable": {"thread_id": "case"}, "recursion_limit": 100})
@@ -110,6 +111,9 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
                 assert metrics["model_calls"] == (0 if pid in reused else 2)
                 if pid in reused:
                     assert metrics["tool_calls"] == 0 and metrics["reused_from"] == reused[pid]["origin"]
+            if reuse == "report":
+                assert "unique prior report feedback fixture" in writer.contexts[0][1].content
+                assert "unique prior report feedback fixture" not in str(model.contexts)
             checkpoints = list(saver.list(None))
             for actor in agents:
                 rows = [c for c in checkpoints if c.config["configurable"].get("checkpoint_ns", "").startswith(actor+":")]
@@ -261,3 +265,32 @@ def test_actual_review_feedback_and_new_scope_are_bound_without_rewriting_old_au
     scope["repair_paper_ids"] = ["P99"]
     with pytest.raises(ValueError, match="roles_or_papers"):
         CaseConvergenceScope.model_validate_json(json.dumps(scope))
+
+
+def test_real_report_revision_seed_reuses_all_authors_without_private_transcripts():
+    from pathlib import Path
+    from scripts.qualification.dell_q1_specialist_paid_shadow.prepare_case_convergence import prepare_report_revision
+    base = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical")
+    state = base / "q1_specialist_paid_shadow/attempts/20260906-dell-case-convergence-a2/specialist-final-state.private.json"
+    notes = base / "case-convergence-20260906-a1/report-a2-human-review.json"
+    if not state.exists() or not notes.exists():
+        pytest.skip("private report handoff not present")
+    seed = prepare_report_revision(state, notes)
+    assert set(seed["accepted_revisions"]) == set(PAPERS)
+    request = seed["report_revision_request"]
+    assert "citations" not in request["prior_report"]  # No duplicated full evidence package.
+    assert request["human_review"]["origin"].startswith("explicit_host")
+    serialized = json.dumps(seed)
+    assert '"reasoning_content"' not in serialized and '"messages"' not in serialized
+
+
+def test_case_report_export_resolves_all_source_links_without_rewriting_prose():
+    from scripts.qualification.dell_q1_specialist_paid_shadow.export_workpaper import render_case_report
+    state = {"phase": "case_report_needs_revision", "report": {"title": "Fixture report", "narrative_markdown": "Unchanged analyst prose [P01:C1].",
+        "citations": {"P01:C1": {"claim": {"authority_note": "Non-S2 fixture"}, "sources": [
+            {"source_id": "s1", "title": "Source one", "source_url": "https://example.com/a"},
+            {"source_id": "s2", "citation_urls": ["https://example.com/b", "javascript:alert(1)"]}]}}}}
+    rendered = render_case_report(state)
+    assert "Unchanged analyst prose [^s1]." in rendered
+    assert "https://example.com/a" in rendered and "https://example.com/b" in rendered
+    assert "javascript:" not in rendered and "case_report_needs_revision" in rendered

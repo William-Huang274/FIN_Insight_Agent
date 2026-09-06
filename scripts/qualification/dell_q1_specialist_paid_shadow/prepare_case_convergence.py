@@ -49,12 +49,62 @@ def prepare():
         "host_assisted": True, "financial_or_product_pass": False}
 
 
+def prepare_report_revision(state_path, human_review_path):
+    """Reuse completed native outputs; feedback is public, not private history."""
+    from langchain_core.messages import ToolMessage
+    from sec_agent.agent_runtime.dell_case_convergence_agent import (
+        CaseReport, ReportReview, PaperRevision, validated_revision, validate_reused_revisions,
+    )
+    seed = prepare()
+    envelope = json.loads(state_path.read_text(encoding="utf-8"))
+    state = envelope["values"]
+    if state["phase"] not in {"case_report_needs_revision", "case_report_ready_for_human_review"}:
+        raise ValueError("report_revision_requires_finished_report_handoff")
+    report = CaseReport.model_validate({k: state["report"][k] for k in ("title", "narrative_markdown")})
+    review = ReportReview.model_validate(state["report_review"])
+    audit_path = state_path.parent / "model-context-reasoning.private.jsonl"
+    events = [json.loads(line) for line in audit_path.read_text(encoding="utf-8").splitlines()]
+    receipt_path = state_path.parent / "terminal-receipt.json"
+    receipt = json.loads(receipt_path.read_text(encoding="utf-8"))
+    artifacts = DellCaseArtifacts(seed["papers"])
+    saved = {}
+    for pid, output in state["revisions"].items():
+        actor = "author_" + pid
+        origin = state["actor_metrics"][actor].get("reused_from")
+        if not origin:
+            request = next(r for r in reversed(events) if r.get("actor") == actor and r.get("event") == "request")
+            response = next(r for r in reversed(events) if r.get("actor") == actor and r.get("event") == "response")
+            call = next(c for c in response["raw_response"]["tool_calls"] if c["name"] == "submit_paper_revision")
+            observed = [ToolMessage.model_validate(m) for m in request["messages"] if m.get("type") == "tool"]
+            check = validated_revision(PaperRevision.model_validate(call["args"]["revision"]), paper_id=pid,
+                feedback=seed["feedback"][pid], artifacts=artifacts, messages=observed)
+            if check != output:
+                raise ValueError("saved_report_author_submission_mismatch")
+            origin = {"execution_id": state_path.parent.name, "server_thread_id": receipt["identity"]["server_thread_id"],
+                "server_run_id": receipt["identity"]["server_run_id"], "checkpoint_ns": envelope["checkpoint"]["checkpoint_ns"],
+                "checkpoint_id": envelope["checkpoint"]["checkpoint_id"], "state_key": "revisions." + pid,
+                "native_submission_revalidated": True}
+        saved[pid] = {"output": output, "origin": origin}
+    seed["accepted_revisions"] = validate_reused_revisions(saved, artifacts, seed["feedback"])
+    seed["report_revision_request"] = {"prior_report": report.model_dump(mode="json"),
+        "independent_review": review.model_dump(mode="json"),
+        "human_review": json.loads(human_review_path.read_text(encoding="utf-8")),
+        "notice": "Public review feedback is not source truth or blind gold. Recheck sources; preserve original report and failures."}
+    seed["convergence_origins"].extend({"path": str(p), "sha256": sha256(p.read_bytes()).hexdigest()}
+        for p in (state_path, human_review_path))
+    return seed
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--accepted-revisions", type=Path, help="Host-revalidated native submissions to reuse without new model calls.")
+    parser.add_argument("--report-state", type=Path, help="Finished report handoff to revise; reuses every author output.")
+    parser.add_argument("--human-review", type=Path, help="Explicitly labeled public human feedback, not blind gold.")
     args = parser.parse_args()
-    result = prepare()
+    if bool(args.report_state) != bool(args.human_review) or (args.report_state and args.accepted_revisions):
+        parser.error("report-state and human-review must be paired; do not also supply accepted-revisions")
+    result = prepare_report_revision(args.report_state, args.human_review) if args.report_state else prepare()
     if args.accepted_revisions:
         from sec_agent.agent_runtime.dell_case_convergence_agent import validate_reused_revisions
         result["accepted_revisions"] = validate_reused_revisions(

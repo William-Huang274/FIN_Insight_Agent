@@ -419,11 +419,13 @@ async def open_case_review_composition(*, authority, model_config, api_key, publ
                     pid = actor.removeprefix("author_") if role == "repair" else None
                     agents[actor] = build_case_output_agent(role=role, model=model, tools=tools, artifacts=artifacts,
                         feedback=feedback[pid] if pid else None, paper_id=pid, limits=scope.node_limits[role].model_dump(),
+                        report_revision=bool(seed.get("report_revision_request")),
                         audit=CaseModelAudit(actor=actor, profile=profile, basis=basis, public_sink=public_sink, private_sink=private_sink))
                 yield build_case_convergence_graph(agents=agents, artifacts=artifacts,
                     question=foundation.case_identity.top_level_question_zh, feedback=feedback,
                     run_id=authority.research_run_id, run_invocation_id=authority.run_invocation_id,
-                    reused_revisions=seed.get("accepted_revisions", {})).compile(
+                    reused_revisions=seed.get("accepted_revisions", {}),
+                    report_revision_request=seed.get("report_revision_request")).compile(
                         name="dell_reference_vertical").with_config({"recursion_limit": 240})
                 return
             reviewers = {}

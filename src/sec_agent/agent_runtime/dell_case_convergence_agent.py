@@ -74,7 +74,8 @@ class ReportFinding(BaseModel):
     model_config = ConfigDict(extra="forbid")
     finding_id: str
     severity: Literal["material", "advisory"]
-    report_quote: str = Field(min_length=1, max_length=6000)
+    report_quote: str = Field(min_length=1, max_length=6000,
+        description="A short contiguous exact substring of the report Markdown. Preserve literal punctuation/emphasis; do not paraphrase, reconstruct a paragraph, or quote a different workpaper here.")
     diagnosis: str = Field(min_length=20, max_length=6000)
     requested_change: str = Field(min_length=20, max_length=6000)
 
@@ -83,7 +84,8 @@ class ReportReview(BaseModel):
     model_config = ConfigDict(extra="forbid")
     summary: str = Field(min_length=50, max_length=8000)
     findings: list[ReportFinding] = Field(default_factory=list, max_length=40)
-    unresolved_data_requests: list[str] = Field(default_factory=list, max_length=20)
+    unresolved_data_requests: list[str] = Field(default_factory=list, max_length=20,
+        description="Only data still indispensable to a remaining material claim, so the report cannot safely stand without it. Optional future disclosure, future S2 ingestion, or limits already handled by removing/qualifying the claim belong in summary/advisory findings, not this blocking list. Do not require forbidden SQL/Evidence writes.")
 
 
 class CaseOutputState(AgentState):
@@ -199,7 +201,7 @@ Calculator currently resolves archive Pxx:Sxxx IDs only. Do not disguise sourced
 """
 
 
-def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None):
+def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False):
     feedback = feedback or []
 
     @tool
@@ -258,6 +260,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         selected = tools
     elif role == "writer":
         specific = "Write the final integrated Dell case report in Chinese. Read all ten current workpapers (read_current_workpaper, not superseded archive workpaper text), then selected original sources. Directly answer the full question; lead with a clear judgment, connect demand/architecture/supply/competition to revenue/margin/cash, distinguish evidence from hypothesis and state what would change the view. Aim for useful analyst prose, not a boundary disclaimer dump or pasted ten reports. No valuation/target price or invented metrics. Inline important claims as [P01:C15] using exact current IDs. Review actual sources before citing; retain period/authority distinctions."
+        if report_revision:
+            specific = "Revise the supplied full Chinese report against the independent review and explicitly labeled human feedback. Read affected current workpapers and selected original sources as needed; do not restart all research or copy another agent's private context. Preserve the full question's coverage and useful analysis. Reviewers and prior workpapers can be wrong: use source-backed facts, not invalid underlying inference claims, when correcting reasoning. Explain uncertainty naturally beside the claim; keep internal S2/typed_gap/formula IDs and execution receipts in a short technical appendix, not the research headline or repeated boilerplate. No valuation/target price or invented metrics. Use exact current paper:claim IDs, not abbreviations. Submit the revised report, not a reply to reviewers."
         submit = submit_case_report
         selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     elif role == "verifier":
@@ -291,15 +295,18 @@ def validate_reused_revisions(reused, artifacts, feedback):
         output, origin = row["output"], row["origin"]
         if (output.get("paper_id") != pid or output.get("status") != "revision_submitted"
                 or origin.get("native_submission_revalidated") is not True
-                or not all(origin.get(k) for k in ("execution_id", "server_thread_id", "checkpoint_ns", "checkpoint_id", "server_run_id"))
+                or not isinstance(origin.get("checkpoint_ns"), str)
+                or not all(origin.get(k) for k in ("execution_id", "server_thread_id", "checkpoint_id", "server_run_id"))
                 or set(r["finding_id"] for r in output["finding_responses"]) != set(f["finding_id"] for f in feedback[pid])):
             raise ValueError("reused_revision_origin_or_findings_invalid")
     artifacts.with_revisions({p: row["output"] for p, row in reused.items()})
     return deepcopy(reused)
 
 
-def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_id, run_invocation_id, reused_revisions=None):
+def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_id, run_invocation_id, reused_revisions=None, report_revision_request=None):
     reused = validate_reused_revisions(reused_revisions, artifacts, feedback) if reused_revisions else {}
+    if report_revision_request and set(reused) != set(feedback):
+        raise ValueError("report_revision_requires_all_author_outputs_reused")
     graph = StateGraph(CaseConvergenceState)
     authors = sorted(feedback)
     for actor, agent in agents.items():
@@ -323,6 +330,8 @@ def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_i
             else:
                 body.update(catalog=artifacts.with_revisions(value["revisions"]).catalog(),
                     author_responses={p: row["finding_responses"] for p, row in value["revisions"].items()})
+                if _actor == "writer" and report_revision_request:
+                    body["revision_request"] = deepcopy(report_revision_request)
                 if _actor == "verifier":
                     body["report"] = value["report"]
             return {**value, "messages": [HumanMessage(content=json.dumps(body, ensure_ascii=False))]}

@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-06 最新A2报告链真实交接：P07修订→Writer→Verifier共12调用/809854tokens/约1.9846254元，五作者0新调用；最终needs_revision，非产品PASS。下一仅公共报告修订上下文+原生Writer/Verifier，六作者结果全部复用；不重新执行全案研究。明确阻塞资料仅指剩余核心结论不可缺的依据，不把未来SQL接入/可删除定量锚点等可选增强强制成报告完成条件；不弱化来源/数字验证、无S2写。保留原报告、审查、人工意见和正文/来源可读导出。实现/预算/停止线见S3/190最新节。
+
 2026-09-06 当前修正：convergence A1因P07 malformed tool JSON的native反馈缺口终止，五份已接受修订从FIN PG保全；512281tokens/估1.9249047元。采用官方middleware纠正invalid_tool_calls路由，不自动修JSON/不换自研循环；新派生输入复用五稿且明确0新模型调用及原checkpoint来源，fresh仅P07作者+Writer+Verifier。Writer/catalog/source视图均包含新修订。旧A1失败不变，无报告或产品PASS；详S3/190最新节。
 
 2026-09-06 工程补充：上述六稿定向修订、当前稿按需读取、自由中文引用报告与独立终审已在原生图实际接线并通过本地测试；仅新增FIN输出/引用薄适配，沿用原Agent Server/once runner，不增执行框架。fresh真实运行、报告内容验收和UI仍未完成。详S3/190“定向修订/综合报告实际接入”。

@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 S3/190最新：convergence A2已完整运行至`case_report_needs_revision`；12实调809854tokens/估1.9846254元，P07作者3、Writer4、Verifier5，其余五稿0新调用。9300字符/56引用的中文报告与独立审查已落地，不是产品PASS。invalid JSON反馈在Verifier真实触发并自修，RC-S3-130上线验证通过。独立五项advisory/三项补充请求+宿主现金/非GAAP/因果过强及可读性审稿，下一仅Writer+Verifier一次有界修订；六稿全复用，不重研究。32相邻测试通过，新seed保存明确host-assisted公开意见，无私有上下文跨Agent。UI仍待接；API子图状态与stream过滤兼容点未冒称完成。详S3/190最后一节。
+
 2026-09-06 S3/190最新：convergence A1已failed（不是网络），P07原生invalid_tool_calls未返回模型而误结束；19实调/512281tokens/估1.9249047元，LangSmith根已失败闭合。FIN PostgreSQL只读恢复确认P01/P04/P05/P06/P08五份native accepted输出并通过原引用校验；原失败/原稿不变。已用官方after_model middleware补ID配对JSON错误反馈，合法同批工具照常执行；当前目录不再返回旧thesis，复用稿经同before_model stop零新模型调用。下一fresh A2仅P07+Writer+Verifier，预算不扩；完整报告/UI/Dell产品仍未PASS。以下先前“未启动”为历史。
 
 2026-09-06 S3/190最新工程：同native create_agent/MCP/Agent Server已接六稿定向修订→Writer→独立Verifier，130近邻测试与最后6项真实A1反馈/域校验/只读schema通过；原稿不改，Writer读合并后的新视图、自由中文且引用可解析。新派生convergence-input-a1.private.json在Z，仅公开底稿/审查与显式host-assisted补充，不传旧私有reasoning。下一fresh paid convergence，预算/停止线在S3/190；尚未报告内容或UI PASS。

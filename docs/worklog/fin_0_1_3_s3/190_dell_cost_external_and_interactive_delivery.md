@@ -232,3 +232,19 @@ Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量�
 本包最终72项相邻检查/12.56s通过（含新增终态复用与seed不符的拒绝）；无全仓重算。A2派生seed SHA=`d7fe36bbfcbfd54250302f177b846719f0a4734aa787bcc6e9866fc22ea165af`。A1三个精确容器已停止，卷/原失败保留。
 
 下一fresh A2仅P07定向作者与Writer/Verifier付费，五稿不重跑；角色上下文、24k/32k输出和480s、12/16模型预算不增，预计约1–4元/5–20分钟，非报价或质量保证。Writer自由中文整案，终审与宿主人读内容后才决定是否修；本次无最终报告/交互UI/Dell产品PASS，不开始新case。累计审计a5：219次attempt调用/216有usage11208289tokens/210cache可估29.0956714元；另4次目录外诊断仍212237tokens/0.8537535元，旧3未知不可记0。全部是开发/试错/研究累计，不是普通问答费用。
+
+## Convergence A2：完整报告链已跑通，质量仍需一次定向修订
+
+实现19909f08、authority588f71b8；`20260906-dell-case-convergence-a2`真实终态`case_report_needs_revision`，receipt pass仅指报告/独立审查已交接。12调用809854tokens：P07 3/82357/估0.3599397元，Writer4/278262/0.6749298元，Verifier5/449235/0.9497559元，共1.9846254元（非账单）。其余P01/P04/P05/P06/P08原生before_model止步，均0model/0tools并保留旧origin；没有重跑九主题研究。736778input/73076output，532736hit/204042miss，49700reasoning。执行1020.812秒，构建106.469秒另列。root01a074b1-dd8e-7123-b449-038e7d5e06c8、thread41b05be1-a34e-55b8-839a-b1d0238e2bf7；LangSmith正式收据确认闭合绑定。A2三个精确容器已停止、卷/报告保留。累计审计a6已落D:/temp（历史开发总数，不是每题开销）。
+
+本次真实验证两种自修：Writer首稿27个引用ID被其缩写，本地拒绝后自行用完整ID重交；Verifier第三次提交JSON语法坏，在新middleware中收到原call_id反馈而继续，第四次又有三处引句不逐字，收到全部错误后第五次成功交review。共有35工具消息，其中3个local错误反馈；源码没有手改模型内容/放松引句。公开success只代表provider响应，invalid_tool_call_count实际记录1。原A1失败不变。
+
+当前报告9300字符、56处不同claim引用；`report.agent-original.md`及`report-review.agent-original.json`已在A2attempt目录机械导出，只改引用展示为脚注，不改财务正文。Writer实际读了十份当前稿+方法、七份原源。独立Verifier提出五项advisory：企业整体盈利不代表AI价值池份额；Q2毛利反向不能忽略H1累计略降；70%集中度只是第三方转述的分析师情景；AI收入16.1B→16.4B环比近持平被遗漏；原P02把pull-forward从存在成分放大成主要驱动。三个未解请求涉及Q1 backlog51.3B/媒体18.1%的一手确认及未来Q2 SQL升级。它仍漏掉现金加回与真实回款方向、非S2≠non-GAAP、WWC把单一信号当因果证明；宿主已独立读稿记录这些**明确host-assisted**意见，绝不把模型当oracle或盲审gold。
+
+报告仍重复内部typed gap/F_*收据术语、部分覆盖只剩限制清单；下一定向修改应提升读者实际可用性，不能以“数字多、链接都合法”冒称高质量分析。保留全部六份作者结果，原生Writer只收旧报告/独立意见/明确人工意见和目录，按需读受影响稿及原源，不复制私有模型history、不重新读全部研究。Verifier只收新报告和正常当前稿/源入口，不继承Writer私有reasoning。当前稿若有未成立的推断，Writer应依据已验证事实来源改正正文，不把旧inference当事实；原P02/P09底稿的意见保持可见、并非全部底稿金融认证通过。
+
+“未解请求”语义澄清：只把对剩余重大结论不可缺的资料作为阻塞项；未来10-Q接入SQL、已明确标为非S2的披露、已删除/弱化的不可靠数值锚点不应永久阻断报告。仍有必需证据未补足则needs_revision；不自动删除模型输出，不放松source/quote/schema，不授权S2写或Evidence admission。让Verifier把可选增强放summary/advisory。引句schema也提示选短而连续的原始Markdown，不能引用另一份底稿。
+
+这次薄适配32相邻测试/12.04s通过，包括六作者全复用0调用、公开报告反馈仅Writer收到、实际A2 seed校验/无private messages、机械来源链接导出；无全仓回归。A3输入`convergence-input-a3.private.json` SHA992d693e2b06832084e5f01227fcefbe20c0b4c5930bf1a97893503ff137994d。下一只Writer+Verifier各最多16模型/48工具/700k/32k/480s，预算不增；预计新增约1–3元，最多一次有依据报告修订资格，若仍重大失败先归因，不自动无限重跑。目标是可读且实质可靠的Dell报告，随后才真实交互UI和新case。
+
+前端等待时的新实测：官方JS SDK1.10.2 `threads.joinStream` 默认参数两fresh连接均回放本次author_P07事件，explicit streamMode='updates'则0；两种结果在Z lab分别保留。事件只保存节点名/ID，不持久化私有文本。常规state?subgraphs=true这次忙碌中仍next/tasks=[]，与nativePG pending不一致，尚未修；因此没有宣称前端上线、子图实时展示、cancel/HITL/resume完成。不得将这些只读资格检查当产品交互增量。

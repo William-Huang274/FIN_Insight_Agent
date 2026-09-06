@@ -5,7 +5,7 @@ from copy import deepcopy
 from pathlib import Path
 
 from sec_agent.agent_runtime.dell_specialist_paid_shadow import file_sha256
-from sec_agent.agent_runtime.dell_report_session import load_session_materials
+from sec_agent.agent_runtime.dell_report_session import load_quick_answer_config, load_session_materials
 from sec_agent.agent_runtime.deepseek_structured_agents import TokenBudgetBasis
 
 
@@ -33,6 +33,7 @@ def main():
             else ["Independent report assessment", "Exact report quotes for actionable findings", "No private writer reasoning or human feedback injected as verdict"])
         TokenBudgetBasis.model_validate_json(json.dumps(budget))
     load_session_materials(settings)
+    load_quick_answer_config(settings["model_config_path"])
     args.directory.mkdir(parents=True, exist_ok=True)
     # Host and container path mappings only; the old report and once authority are unchanged.
     container = deepcopy(settings)

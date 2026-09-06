@@ -19,7 +19,7 @@ from test_dell_case_convergence_agent import NativeFixtureModel
 from test_dell_case_review_agent import artifacts, call
 
 
-def setup_session(artifacts):
+def setup_session(artifacts, *, quick=False):
     ref = "P01:" + artifacts.read_paper("P01", "claims")[0]["claim_id"]
     report = CaseReport(title="Synthetic report", narrative_markdown="Synthetic source-bound report; not real financial analysis. " * 6 + f"[{ref}]")
     review = {"summary": "Synthetic independent review for native graph qualification only.", "findings": [], "unresolved_data_requests": []}
@@ -27,6 +27,10 @@ def setup_session(artifacts):
     models = {role: NativeFixtureModel(marker=role+"-private", replies=[]) for role in ("writer", "verifier")}
     agents = {role: build_case_output_agent(role=role, model=models[role], tools=[], artifacts=artifacts,
         limits={"model_calls": 6, "tool_calls": 12}, report_revision=True, allow_answers=role == "writer") for role in models}
+    if quick:
+        models["quick_writer"] = NativeFixtureModel(marker="quick-private", replies=[])
+        agents["quick_writer"] = build_case_output_agent(role="writer", model=models["quick_writer"], tools=[], artifacts=artifacts,
+            limits={"model_calls": 8, "tool_calls": 24}, allow_answers=True, answer_only=True)
     graph = build_report_session_graph(**agents, artifacts=artifacts, initial=initial).compile(checkpointer=InMemorySaver())
     return graph, models, initial, ref
 
@@ -103,7 +107,8 @@ def test_deployment_json_budget_and_schema_cache():
 
 
 @pytest.mark.parametrize("body", [{"action": "shell", "message": "x"}, {"action": "ask", "path": "/secrets"},
-    {"action": "revise", "message": "x"*16001}])
+    {"action": "revise", "message": "x"*16001}, {"action": "revise", "answer_mode": "quick"},
+    {"action": "ask", "answer_mode": "custom"}, {"action": "ask", "model": "untrusted"}])
 def test_only_narrow_human_actions_allowed(body):
     with pytest.raises(ValueError):
         ReviewAction.model_validate(body)
@@ -183,3 +188,51 @@ def test_public_tool_events_saved_without_raw_arguments(monkeypatch):
     asyncio.run(audit.awrap_tool_call(SimpleNamespace(tool_call={"id": "c1", "name": "read_current_source", "args": {"private": "PRIVATE"}}), handler))
     assert len(audit.events) == 2 and audit.events == emitted
     assert "PRIVATE" not in json.dumps(audit.events)
+
+
+def test_quick_route_progressive_report_and_private_histories(artifacts):
+    async def run():
+        graph, models, initial, ref = setup_session(artifacts, quick=True)
+        config = {"configurable": {"thread_id": str(uuid4())}}
+        await graph.ainvoke({"open": True}, config)
+        answer = f"Synthetic short answer only. [{ref}]"
+        models["quick_writer"].replies = [
+            [call("read_current_report", {}, "read-report")],
+            [call("submit_case_answer", {"answer_markdown": "Missing citation is rejected"}, "bad")],
+            [call("submit_case_answer", {"answer_markdown": answer}, "answer")]]
+        result = await graph.ainvoke(Command(resume={"action": "ask", "message": "Question", "answer_mode": "quick"}), config)
+        assert result["report"] == initial["report"] and result["report_version"] == 1
+        assert result["conversation"][-1]["content"] == answer
+        assert not models["writer"].contexts and not models["verifier"].contexts
+        first = str(models["quick_writer"].contexts[0])
+        assert initial["report"]["narrative_markdown"] not in first
+        assert "independent_review" not in first and "report_overview" in first
+        assert "Synthetic source-bound report" in str(models["quick_writer"].contexts[1])
+        assert "submit_report_edits" not in models["quick_writer"].seen[0]
+        assert "submit_case_report" not in models["quick_writer"].seen[0]
+        # Explicit deep and legacy requests still select Pro's separate native agent.
+        models["writer"].replies = [[call("submit_case_answer", {"answer_markdown": answer}, "deep")]]
+        result = await graph.ainvoke(Command(resume={"action": "ask", "message": "Explain further"}), config)
+        assert len(models["writer"].contexts) == 1 and len(models["quick_writer"].contexts) == 3
+        seed = json.loads(models["writer"].contexts[0][-1].content)
+        assert all(set(m) == {"role", "content"} for m in seed["public_conversation"])
+        assert "quick-private" not in str(models["writer"].contexts[0])
+        assert result["report_version"] == 1
+    asyncio.run(run())
+
+
+def test_quick_task_profile_reaches_existing_provider_request():
+    from pydantic import SecretStr
+    from langchain_core.messages import HumanMessage
+    from sec_agent.agent_runtime.dell_report_session import load_quick_answer_config
+    from sec_agent.agent_runtime.dell_case_review_agent import case_chat_model
+    from sec_agent.agent_runtime.deepseek_structured_agents import load_deepseek_structured_agent_config
+    path = "configs/research/fin_ia_0_1_3_dell_case_convergence_native_v1_0.json"
+    profile, basis, limits = load_quick_answer_config(path)
+    assert limits == {"model_calls": 8, "tool_calls": 24}
+    model = case_chat_model(profile, basis, load_deepseek_structured_agent_config(path), SecretStr("fixture-not-a-secret"))
+    payload = model._get_request_payload([HumanMessage(content="fixture")])
+    assert payload["model"] == "deepseek-v4-flash"
+    assert payload["extra_body"]["thinking"] == {"type": "disabled"}
+    assert payload.get("max_completion_tokens", payload.get("max_tokens")) == 8000
+    assert "reasoning_effort" not in payload and model.max_retries == 0

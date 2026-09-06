@@ -94,8 +94,8 @@ export const sessionsApi = {
   list: () => request<Session[]>(base),
   create: () => request<{ thread_id: string; run_id: string }>(base, {}),
   state: (id: string) => request<Session>(`${base}/${id}`),
-  action: (id: string, action: string, message: string) =>
-    request<{ run_id: string }>(`${base}/${id}/actions`, { action, message }),
+  action: (id: string, action: string, message: string, answerMode: "quick" | "deep" = "deep") =>
+    request<{ run_id: string }>(`${base}/${id}/actions`, { action, message, answer_mode: answerMode }),
   cancel: (id: string, run: string) =>
     request(`${base}/${id}/runs/${run}/cancel`, {}),
   source: (id: string, source: string, offset = 0) =>

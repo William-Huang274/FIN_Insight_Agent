@@ -306,3 +306,19 @@ Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量�
 依据[Anthropic文本编辑工具的唯一exact str_replace语义](https://platform.claude.com/docs/en/agents-and-tools/tool-use/text-editor-tool)，FIN仅薄接当前报告old_str/new_str：1–24条替换、逐条精确唯一命中、临时字符串全部成功并通过既有CaseReport/引用校验才提交；无任意文件/路径、无模糊修复、无新runtime。旧稿和所有失败保留；JSON/命中错误用同原生ToolMessage返给作者。Writer仍可在确需大改时完整报告，但局部修订优先此工具。独立Verifier获得当前报告、实际文本diff和上轮公共审查，聚焦变更/未闭项且可检查未改上下文，不因“未改”自动判对。35近邻检查/31.59s与前端build通过，含真实native图中命中错误→引用错误→作者自修→Verifier；0新provider。
 
 下一只在相同session发一次具体局部修订意见：H1与Q2现金/相对收入、采购与融资矛盾、AI收入与订单指标性质、基期派生标注、HPE建议是否必要、附录笔误。沿用host-settings内任务预算与Pro low profile，不重研究、不改数据门；假设差分输出/增量审查能减少重复输出和无关原文阅读，费用与质量需实测，不先承诺节省比例。该次结束即停人工点，不自动重写至PASS。完整新研究入口/任意中途干预/取消/服务重启恢复和新case继续待验收。
+
+### 05:39Z 局部修订真实结束：v3待人工审阅，不再自动重写
+
+实现226e8c7b，同thread原生run `01a07533-f6f1-7ff3-8cf5-673b82c4efae`，LangSmith根05:32:21.089976Z—05:39:20.587093Z闭合、error为空、inputs/outputs隐藏；本地/远端用量完全相等。Writer3调用95490tokens、Verifier7调用321489tokens，共10调用416979tokens（381141输入/35838输出，含30786reasoning），估0.8325603元，不是账单。Writer真实提交9处exact edits，本地重放这些修改与v3正文完全相同，旧v2和研究稿未变；0研究作者重跑。两次UI共20调用845138tokens/估1.8973212元。与前次1.0647609元相比下降约22%，但缓存、任务范围和审查行为也不同，不能当因果A/B或一般节省承诺。
+
+报告v3为12595字符/69引用，终审0material/2advisory/0不可缺补源请求，phase=`ready_for_human_review`，仍非Owner人工通过/产品PASS。两条提示为：Q1 FY26 $1882M本有10-Q直接披露，正文误标成只有H1−Q2派生；旧P01:C7 authority_note未与AI收入/订单分类纠正同步。宿主已检查Verifier实际工具返回的Q1原表：AI-optimized servers 16132/1882，非盲信review。也不照抄review把所有运营指标称non-GAAP或把当前8-K写成已审计；现金绝对增长与转化率仍需区别。原始公开状态、报告机械导出在Z `report-workbench-20260906-a1/public-session-after-revision2.json` 和 `report-v3.agent-original.md`。费用明细在D:/temp/fin_dell_workbench_cost_audit_20260906_a2_actual.json。LangSmith新retrieve接口本次诊断因缺project_id未执行查询；使用仍受支持read_run完成只读核对，不增加模型调用。
+
+同PG/Redis的API升级后已实际读回v2人工点，并在同thread继续生成v3；这证明已保存人工边界的重启续办，不等同运行中kill/recovery。前端工具/模型历史合并后按recorded_at排序，构建通过。尚无任意新研究UI、运行中干预/取消实证、完整Dell人工验收；新公司案例仍后置。
+
+### 下一有界工作：同Dell快速问答的任务模式路由
+
+采用既有create_agent与原生StateGraph分支，不新增分类模型/执行循环。UI明确选择快速问答Flash（thinking disabled）或深度追问Pro；旧API默认deep保持兼容，报告修订及Verifier仍Pro。这个阶段只称显式任务模式路由，不称自主难度分类器。快速问答不预塞完整报告/全报告审查，只给当前目录、公开对话与问题；完整报告通过只读工具按需查看，来源/SQL/计算工具保持原权限，私有历史隔离。简单问答不调用全报告Verifier、不得修改报告；实测内容由宿主回源核验。
+
+首次问题预定为Dell FY2027 Q1总收入和经营利润，要求期间、单位与来源，不给答案、不重研究。TokenBudgetBasis：单问题/约10k字符目录、有限公开会话；8模型/24工具、350k输入字符、8k单次输出、240s请求超时，disabled，无transport retry/fallback。允许查当前claim、S2及原源和纠错，不要求耗尽预算。依据前两次复杂修订10调用/约417–428k总tokens，本次只查两个已有财务事实，不应继承整报告反复生成/审查成本；实际是否省钱/正确以新run为准。输出截断/未知结果停止，不为省钱隐瞒研究缺口。近邻测试、真实UI运行、源核验与token统计后再决定扩展；不先做新公司。
+
+实现仅现有native图多一个quick_writer分支与薄只读报告工具，profile/TokenBudgetBasis随源码固定到镜像；旧部署seed/PG/source不变。原生测试实际证明quick调用、报告按需读、非法无引用答复反馈自修、Writer/Verifier零调用、随后deep独立上下文及无嵌套引用历史。40近邻pytest/22.71s、TS/Vite build通过（首次错误cwd未找到tsc属于宿主命令，正确frontend目录重跑通过）；637.15KB JS/191.16KBgzip既存分包提示保留。下一实际UI，不把fixture当金融答案质量。

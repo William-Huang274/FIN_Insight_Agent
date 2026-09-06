@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 05:39Z S3/190：同Workbench第二次真实修订已结束，Writer3+Verifier7=10调用416979tokens/估0.8325603元；9处exact edits重放与报告v3相同，0研究重跑。LangSmith闭合/隐私投影与本机用量核实；12595字符/69引用，0重大/2非阻断意见，native人工点等待Owner，非产品PASS。API重启保留同PG人工点并真实续办v3已验证，非运行中崩溃恢复。下一同Dell快速问答Flash/disabled与深度Pro显式模式路由：既有create_agent/只读MCP，完整报告按需读，不重写/全报告复核；40近邻检查/前端build通过，尚未付费实测。全案新研究UI、运行中干预/取消、完整人工验收及新case仍未完成。
+
 2026-09-06 05:25Z S3/190：真实UI修订run `01a0751c-b4af-75a3-9a29-7d34502249d3` 已完成，Writer4+Verifier6=10调用428159tokens/估1.0647609元；LangSmith根闭合且输入输出隐藏、用量一致。页面真实收到工具/模型/交接事件，报告v2回到native人工interrupt，仍needs_revision（H1现金视角及采购≠融资残留，审查者也有误判）。下一一次局部文本编辑验证：借鉴成熟str_replace模式，不再整篇复制；35近邻检查/前端build通过，尚未新paid。旧成果原样保留；全案新研究入口/运行中干预/人工产品验收/新case仍未完成。
 
 2026-09-06 05:03Z S3/190：真实Workbench零模型开会话已成功，native thread `01a07515-e784-7480-b6b3-eb4105ca127b` 停在人工interrupt；10738字符报告、68引用、4意见和绑定来源上下文实际可读。首次预算JSON读取错误的失败会话保留、0调用；修复已通过31近邻检查，前端build通过。固定Agent Server18165/Workbench8766、同PG/Redis，不每问题新容器。下一仅通过真实UI提交A3具体反馈→Writer/Verifier一轮，预算不扩；未付费验证交互、未人工验收、未完整Dell产品PASS。

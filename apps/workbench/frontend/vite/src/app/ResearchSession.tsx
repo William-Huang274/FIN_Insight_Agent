@@ -34,6 +34,7 @@ const format = (n: number) => new Intl.NumberFormat("zh-CN").format(n);
 const stageName: Record<string, string> = {
   writer: "研究作者",
   verifier: "独立复核",
+  quick_writer: "快速问答 · Flash",
 };
 const phaseName: Record<string, string> = {
   needs_revision: "有问题待修订",
@@ -114,6 +115,7 @@ export function ResearchSession() {
   const [session, setSession] = useState<Session | null>(null);
   const [text, setText] = useState("");
   const [action, setAction] = useState<"ask" | "revise">("ask");
+  const [answerMode, setAnswerMode] = useState<"quick" | "deep">("quick");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"report" | "conversation">("report");
@@ -237,7 +239,9 @@ export function ResearchSession() {
     const map = new Map<string, Event>();
     for (const e of [...(session?.model_events || []), ...events])
       map.set(`${e.kind}/${e.actor}/${e.call_id}/${e.event}/${e.recorded_at}`, e);
-    return [...map.values()];
+    return [...map.values()].sort(
+      (a, b) => (Date.parse(a.recorded_at || "") || 0) - (Date.parse(b.recorded_at || "") || 0),
+    );
   }, [session?.model_events, events]);
   const models = useMemo(() => {
     const map = new Map<string, Event>();
@@ -276,7 +280,7 @@ export function ResearchSession() {
     setSending(true);
     setError("");
     try {
-      await sessionsApi.action(id, selectedAction, message);
+      await sessionsApi.action(id, selectedAction, message, selectedAction === "ask" ? answerMode : "deep");
       setText("");
       setInspector("activity");
       if (selectedAction === "ask") setTab("conversation");
@@ -520,6 +524,18 @@ export function ResearchSession() {
                     : "Writer 修订后交独立 Verifier"}
                 </span>
               </div>
+              {action === "ask" && (
+                <div className="rs-answer-mode">
+                  <label htmlFor="answer-mode">处理模式</label>
+                  <select id="answer-mode" value={answerMode}
+                    disabled={busy || sending}
+                    onChange={(e) => setAnswerMode(e.target.value as "quick" | "deep")}>
+                    <option value="quick">快速问答 · Flash</option>
+                    <option value="deep">深度追问 · Pro</option>
+                  </select>
+                  <small>{answerMode === "quick" ? "查数、出处与简短解释；资料按需读取" : "复杂推断与多来源分析；通常耗时更长"}</small>
+                </div>
+              )}
               <textarea
                 aria-label="问题或修订意见"
                 value={text}
@@ -701,10 +717,10 @@ export function ResearchSession() {
                 。不含载入前的历史研究费用；失败未知用量不算零。
               </p>
               <div className="rs-agent-cards">
-                {["writer", "verifier"].map((role) => (
+                {["writer", "verifier", "quick_writer"].map((role) => (
                   <div key={role}>
                     <span className="rs-agent-avatar">
-                      {role === "writer" ? "W" : "V"}
+                      {role === "writer" ? "W" : role === "verifier" ? "V" : "Q"}
                     </span>
                     <span>
                       {stageName[role]}

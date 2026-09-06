@@ -127,7 +127,7 @@ def build_report_sessions_router(service):
             raise HTTPException(422, "请填写问题或修订意见")
         run = await service.sdk.runs.create(str(thread_id), GRAPH, command={"resume": body.model_dump()},
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
-            metadata={"surface": SURFACE, "human_action": body.action})
+            metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode})
         return {"run_id": run["run_id"], "status": run["status"]}
 
     @router.post("/research-sessions/{thread_id}/runs/{run_id}/cancel")

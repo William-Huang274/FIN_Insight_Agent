@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-06 v3实测：同thread局部编辑3轮Writer+7轮Verifier，416979tokens/估0.8325603元，9处修改重放一致；12595字符/69引用，0material/2advisory/0必需补源，停人工点，不能当Owner通过。重启API后同PG恢复人工点并实际续办已证，不是运行中故障恢复。下一同Dell短问答采用原生图显式模式路由：quick→Flash disabled的原生只读agent，deep/旧API→既有Pro Writer，revise→Pro Writer+Verifier。快速入口只带目录/公共对话文本/问题，报告正文按需工具读取；不暴露改报告工具，不带前审或嵌套引用大对象，不新建router模型/循环/队列。任务预算固定在`fin_ia_0_1_3_dell_report_quick_answer_v1_0.json`，40相邻测试与前端build通过，实际低价问答未证明。完整产品/新case仍待验收，详S3/190最新节。
+
 2026-09-06 05:25Z：UI真实反馈→Writer4轮→Verifier6轮→native人工interrupt已完成，428159tokens/估1.0647609元，报告v2仍需修订。为避免局部纠错每次重写约1万字，引入成熟文本编辑的exact str_replace语义：只编辑当前报告副本、无文件路径权限、无模糊自动修补；全部替换唯一命中及原引用验证通过才原子交新稿，旧版本在PG保留。新稿携公共diff和上一份审查供独立增量复核；原source权限/语义责任不变、不保证未改部分正确。不是调用Claude专有编辑API，而是给DS的薄工具适配。下一同scope一次实测，35相邻检查通过；无自动修到PASS循环。
 
 2026-09-06 05:03Z：有界Workbench已实现并在真实浏览器零模型加载A3报告/68引用/4意见/绑定来源窗口；native thread与人工interrupt真实成立。同Agent Server/PG/Redis驻留；报告仍needs_revision，下一从UI发一次公开定向意见做Writer/Verifier实测，不重跑作者/全研究，不自动循环至PASS。完整产品、运行中steer/cancel/restart与新案例仍未验收。

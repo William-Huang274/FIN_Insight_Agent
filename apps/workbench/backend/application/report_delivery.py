@@ -290,6 +290,7 @@ def export_report(report, format, *, review_status="待人工审阅"):
             figure.legend.font.name, figure.legend.font.size = "Microsoft YaHei", Pt(13)
             figure.value_axis.has_title = True
             figure.value_axis.axis_title.text_frame.text = chart["unit"]
+            figure.value_axis.tick_labels.number_format = "#,##0.##"
             if chart["kind"] == "bar":
                 values = [p["value"] for p in chart["points"]]
                 figure.value_axis.minimum_scale = min(0, min(values) * 1.15)
@@ -299,6 +300,8 @@ def export_report(report, format, *, review_status="待人工审阅"):
                     series.format.fill.fore_color.rgb = RGBColor(*[(24,123,128), (28,54,91), (194,125,62)][index % 3])
                 figure.plots[0].has_data_labels = True
                 figure.plots[0].data_labels.font.size = Pt(13)
+                # Display precision only; preserve the source-backed workbook values.
+                figure.plots[0].data_labels.number_format = "#,##0.##"
         current_title, chunks = "研究结论", []
         def flush():
             if not chunks:

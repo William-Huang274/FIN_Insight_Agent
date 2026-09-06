@@ -38,6 +38,8 @@ def test_four_formats_keep_sources_and_data(format):
             else:
                 assert any("ppt/charts/chart" in name for name in archive.namelist())
                 assert any("ppt/notesSlides/notesSlide" in name for name in archive.namelist())
+                chart_xml = archive.read("ppt/charts/chart1.xml").decode()
+                assert 'formatCode="#,##0.##" sourceLinked="0"' in chart_xml
     assert report == sample()  # exports never mutate the original report
 
 

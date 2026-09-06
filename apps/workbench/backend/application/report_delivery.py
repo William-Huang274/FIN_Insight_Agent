@@ -145,8 +145,6 @@ def export_report(report, format, *, review_status="待人工审阅"):
         story = [Paragraph(escape(title), title_style), Paragraph(escape(review_status), small), Spacer(1, 12)]
         def para(value, style=normal):
             return Paragraph(escape(str(value)).replace("\n", "<br/>"), style)
-        for chart in charts:
-            story.extend([Image(io.BytesIO(chart_png(chart)), width=470, height=225.6), para(chart["interpretation"], small)])
         for kind, value in blocks:
             if kind == "table":
                 width = max(len(row) for row in value)
@@ -158,6 +156,10 @@ def export_report(report, format, *, review_status="待人工审阅"):
                 story.extend([table, Spacer(1, 12)])
             else:
                 story.append(para(value, heading if kind.startswith("h") else normal))
+        if charts:
+            story.append(para("图表与出处", heading))
+        for chart in charts:
+            story.extend([Image(io.BytesIO(chart_png(chart)), width=470, height=225.6), para(chart["interpretation"], small)])
         story.append(para("来源", heading))
         story.extend(para(ref, small) for ref in references)
         output = io.BytesIO()
@@ -193,9 +195,6 @@ def export_report(report, format, *, review_status="待人工审阅"):
         document.styles["Title"].font.size = Pt(22)
         document.add_paragraph(title, "Title")
         document.add_paragraph(review_status)
-        for chart in charts:
-            document.add_picture(io.BytesIO(chart_png(chart)), width=Inches(6.1))
-            document.add_paragraph(chart["interpretation"])
         for kind, value in blocks:
             if kind == "table":
                 width = max(len(row) for row in value)
@@ -222,6 +221,11 @@ def export_report(report, format, *, review_status="待人工审阅"):
                 document.add_paragraph()
             else:
                 document.add_paragraph(value, "Heading " + str(min(3, int(kind[1]))) if kind.startswith("h") else None)
+        if charts:
+            document.add_heading("图表与出处", 1)
+        for chart in charts:
+            document.add_picture(io.BytesIO(chart_png(chart)), width=Inches(6.1))
+            document.add_paragraph(chart["interpretation"])
         document.add_heading("来源", 1)
         for ref in references:
             paragraph = document.add_paragraph(ref)

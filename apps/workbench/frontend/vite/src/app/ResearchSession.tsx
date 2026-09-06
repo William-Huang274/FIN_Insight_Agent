@@ -337,6 +337,8 @@ export function ResearchSession() {
     { tokens: 0, input: 0, output: 0 },
   );
   const usageRun = session?.runs?.find(r => r.run_id === usageRunId) || session?.runs?.[0];
+  const visibleEvents = usageRun ? allEvents.filter(e => e.run_id === usageRun.run_id) : allEvents;
+  const visibleModels = visibleEvents.filter(e => e.kind === "model" && e.event === "outcome");
   const newSession = async (mode: "review" | "research" = "review") => {
     setSending(true);
     setError("");
@@ -563,7 +565,7 @@ export function ResearchSession() {
               </span></div>}
             {(researchTasks.length > 0 || (session.question && !session.report)) && (
               <details className="rs-task-board" open={!session.report}>
-                <summary><Layers size={16} /> 本次研究分工 <span>{researchTasks.length ? `已进入执行 ${researchTasks.length} 个任务` : "任务摘要待同步"} · 并发上限 2</span></summary>
+                <summary><Layers size={16} /> 本次研究分工 <span>{researchTasks.length ? `当前任务视图 ${researchTasks.length} 项` : "任务摘要待同步"} · 并发上限 2</span></summary>
                 {!researchTasks.length && <p>任务摘要尚未同步，请在右侧“运行”查看实际模型调用；这不表示研究尚未开始，也不会因此重新启动任务。</p>}
                 <div className="rs-task-grid">{researchTasks.map((task) => (
                   <div className="rs-task-card" key={task.task_id}>
@@ -617,7 +619,16 @@ export function ResearchSession() {
                     {session.report && <div className="rs-export-actions"><span>导出这版报告</span>
                       {([['md', 'Markdown'], ['pdf', 'PDF'], ['docx', 'Word'], ['pptx', 'PowerPoint']] as const).map(([format, label]) =>
                         <a key={format} href={`/api/v1/research-sessions/${id}/report/export/${format}`} download>{label}</a>)}
+                      {!!session.report.charts?.length && <a href="#report-charts">查看 {session.report.charts.length} 幅图表</a>}
                     </div>}
+                    <Markdown
+                      text={
+                        session.report?.narrative_markdown || (session.is_draft ? "研究尚未启动。这里将在研究完成后显示报告。" : session.status === "error" ? "本次尚未取得报告。请查看运行状态；失败记录与已有研究材料均保留。" : "报告尚未生成；请在研究现场查看真实任务进度。")
+                      }
+                      citations={session.report?.citations}
+                      onCitation={cite}
+                    />
+                    {!!session.report?.charts?.length && <h3 id="report-charts">图表与出处</h3>}
                     {session.report?.charts?.map((chart, index) => <figure className="rs-research-chart" key={`${session.report_version}-${index}`}>
                       <img src={`/api/v1/research-sessions/${id}/report/charts/${index}.png?v=${session.report_version}`} alt={chart.title} />
                       <figcaption>{chart.interpretation}</figcaption>
@@ -626,13 +637,6 @@ export function ResearchSession() {
                           <td>{chartSourceLinks(point.provenance).map((url, n) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">原始来源 {n + 1} </a>)}
                             <details><summary>定位与计算明细</summary><small>{point.source_id}</small><pre>{JSON.stringify(point.provenance, null, 2)}</pre></details></td></tr>)}</tbody></table></details>
                     </figure>)}
-                    <Markdown
-                      text={
-                        session.report?.narrative_markdown || (session.is_draft ? "研究尚未启动。这里将在研究完成后显示报告。" : session.status === "error" ? "本次尚未取得报告。请查看运行状态；失败记录与已有研究材料均保留。" : "报告尚未生成；请在研究现场查看真实任务进度。")
-                      }
-                      citations={session.report?.citations}
-                      onCitation={cite}
-                    />
                   </article>
                 </>
               ) : (
@@ -920,7 +924,7 @@ export function ResearchSession() {
             <>
               <h3>真实调用，不是模拟进度</h3>
               <div className="rs-answer-mode">
-                <label htmlFor="usage-run">查看请求用量</label>
+                <label htmlFor="usage-run">查看请求用量与活动</label>
                 <select id="usage-run" value={usageRun?.run_id || ""} onChange={e => setUsageRunId(e.target.value)}>
                   {session?.runs?.map(r => <option key={r.run_id} value={r.run_id}>
                     {new Date(r.created_at).toLocaleTimeString("zh-CN")} · {r.human_action === "research" ? "完整新研究" : r.human_action === "continue_remaining" ? "接续同任务余下流程" : r.human_action === "ask" ? (r.answer_mode === "quick" ? "Flash 问答" : "Pro 追问") : r.human_action === "revise" ? "报告修订" : r.human_action === "abandon_failed_question" ? "放弃失败追问" : r.human_action === "return_stopped_question" ? "停止后返回审阅" : "载入 / 审阅"} · {r.status === "interrupted" ? "已停止" : r.status}
@@ -943,10 +947,10 @@ export function ResearchSession() {
                 {usageRun?.usage ? <>输入 {format(usageRun.usage.input_tokens)} · 输出 {format(usageRun.usage.output_tokens)} · {usageRun.usage.unknown_or_pending_requests} 次用量待定 / 未知。{usageRun.usage.partial_audit && "审计记录尚不完整。"}</> : "没有本次模型用量记录；载入报告或放弃追问不会发起模型调用。"}
               </p>
               <p className="rs-helper">
-                本会话当前载入 {models.length} 次模型记录、{format(totals.tokens)} tokens；含失败任务已知用量，不含载入前研究费用。下方为会话事件历史，不是单次问题的调用数。
+                本会话当前载入 {models.length} 次模型记录、{format(totals.tokens)} tokens；含失败任务已知用量，不含载入前研究费用。下方仅显示所选请求，最新事件在前；可在上方切换查看历史请求。
               </p>
               <div className="rs-agent-cards">
-                {[...new Set([...models.map(e => e.actor), ...(session?.responsibility_history || []).map(e => e.actor)])].map((role) => (
+                {[...new Set(visibleEvents.filter(e => e.kind === "model").map(e => e.actor))].map((role) => (
                   <div key={role}>
                     <span className="rs-agent-avatar">
                       {role.startsWith("author_") ? "A" : role.charAt(0).toUpperCase()}
@@ -954,7 +958,7 @@ export function ResearchSession() {
                     <span>
                       {actorName(role)}
                       <small>
-                        {models.filter((x) => x.actor === role).length}{" "}
+                        {visibleModels.filter((x) => x.actor === role).length}{" "}
                         次已报告调用
                       </small>
                     </span>
@@ -962,7 +966,7 @@ export function ResearchSession() {
                 ))}
               </div>
               <div className="rs-event-list">
-                {allEvents.map((e, i) => (
+                {[...visibleEvents].reverse().map((e, i) => (
                   <div key={i}>
                     <span
                       className={`rs-event-dot ${e.status === "error" || e.status === "provider_failed" ? "error" : ""}`}
@@ -995,7 +999,7 @@ export function ResearchSession() {
                   </div>
                 ))}
               </div>
-              {!allEvents.length && (
+              {!visibleEvents.length && (
                 <p className="rs-muted">
                   提交追问或修订后，这里展示原生子 Agent
                   的模型与工具事件。已保存用量来自后端，不模拟动画。

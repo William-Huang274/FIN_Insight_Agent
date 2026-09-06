@@ -28,11 +28,13 @@ def test_four_formats_keep_sources_and_data(format):
         reader = PdfReader(io.BytesIO(data))
         text = "".join(page.extract_text() for page in reader.pages)
         assert "企业增长质量" in text and "120" in text
+        assert text.index("研究结论") < text.index("图表与出处")
     else:
         with zipfile.ZipFile(io.BytesIO(data)) as archive:
             if format == "docx":
                 text = archive.read("word/document.xml").decode()
                 assert "财务比较" in text and "<w:tbl>" in text and "https://example.com/financials" in text
+                assert text.index("研究结论") < text.index("<w:drawing>")
             else:
                 assert any("ppt/charts/chart" in name for name in archive.namelist())
                 assert any("ppt/notesSlides/notesSlide" in name for name in archive.namelist())

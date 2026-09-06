@@ -111,6 +111,10 @@ class ReportFinding(BaseModel):
         description="A short contiguous exact substring of the report Markdown. Preserve literal punctuation/emphasis; do not paraphrase, reconstruct a paragraph, or quote a different workpaper here.")
     diagnosis: str = Field(min_length=20, max_length=6000)
     requested_change: str = Field(min_length=20, max_length=6000)
+    responsibility: Literal["writer", "research", "data_tool", "human"] | None = Field(default=None,
+        description="Earliest owner: writer for expression only; research for a workpaper's evidence/inference; data_tool only for an actually observed tool/data defect requiring host repair; human for an unresolved decision. Required for material findings in new research sessions.")
+    paper_ids: list[str] = Field(default_factory=list, max_length=12,
+        description="Exact current catalog paper IDs needing research repair, not every cited paper. Required for research responsibility; empty for writer-only findings.")
 
 
 class ReportReview(BaseModel):
@@ -126,6 +130,26 @@ class CaseOutputState(AgentState):
     revisions: dict[str, Any]
     report: dict[str, Any]
     request_action: str
+    synthesis: dict[str, Any]
+
+
+def review_responsibility_errors(review, artifacts, *, required=False):
+    """Validate declared routing, not the model's economic judgment."""
+    papers = {row["paper_id"] for row in artifacts.catalog()["papers"]}
+    errors = []
+    ids = [f.finding_id for f in review.findings]
+    if len(ids) != len(set(ids)):
+        errors.append("duplicate_finding_id")
+    for finding in review.findings:
+        if required and finding.severity == "material" and finding.responsibility is None:
+            errors.append(f"material_finding_requires_responsibility:{finding.finding_id}")
+        if len(finding.paper_ids) != len(set(finding.paper_ids)) or not set(finding.paper_ids).issubset(papers):
+            errors.append(f"unknown_or_duplicate_responsible_paper:{finding.finding_id}")
+        if finding.responsibility == "research" and not finding.paper_ids:
+            errors.append(f"research_finding_requires_responsible_paper:{finding.finding_id}")
+        if finding.responsibility == "writer" and finding.paper_ids:
+            errors.append(f"writer_only_finding_cannot_repair_papers:{finding.finding_id}")
+    return errors
 
 
 def observed_sources(messages):
@@ -302,7 +326,7 @@ Calculator resolves archive Pxx:Sxxx IDs and numeric_fact_id from this tool sess
 """
 
 
-def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False):
+def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False):
     feedback = feedback or []
 
     @tool
@@ -323,7 +347,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         """Read a report citation (Pxx:claim / NUMFACT:: / CALC::) or current source by ID. The current report's bound citation record is available on demand, not repeated in every model input. Never arbitrary path."""
         if not 0 <= offset or not 100 <= max_characters <= 16000:
             raise ToolException("source_window_invalid")
-        citations = runtime.state.get("report", {}).get("citations", {})
+        citations = {**runtime.state.get("synthesis", {}).get("citations", {}),
+                     **runtime.state.get("report", {}).get("citations", {})}
         if source_id in citations:
             text = json.dumps(citations[source_id], ensure_ascii=False, indent=2)
             end = offset + max_characters
@@ -344,7 +369,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     def submit_paper_revision(revision: PaperRevision, runtime: ToolRuntime) -> Command:
         """Submit only the responsible paper amendment with source-bound changed claims and each finding disposition."""
         try:
-            value = validated_revision(revision, paper_id=paper_id, feedback=feedback, artifacts=artifacts, messages=runtime.state["messages"])
+            value = validated_revision(revision, paper_id=paper_id, feedback=feedback,
+                artifacts=artifacts.with_revisions(runtime.state.get("revisions", {})), messages=runtime.state["messages"])
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
         return output_message(runtime, value)
@@ -356,10 +382,21 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             return output_message(runtime, error="This is a question, not a report-revision request. Use submit_case_answer.")
         try:
             citations = report_citations(report, artifacts.with_revisions(runtime.state.get("revisions", {})),
-                runtime.state.get("messages", []), prior_citations=runtime.state.get("report", {}).get("citations", {}))
+                runtime.state.get("messages", []), prior_citations={**runtime.state.get("synthesis", {}).get("citations", {}),
+                    **runtime.state.get("report", {}).get("citations", {})})
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
         return output_message(runtime, {**report.model_dump(mode="json"), "citations": citations})
+
+    @tool
+    def submit_research_synthesis(synthesis: CaseReport, runtime: ToolRuntime) -> Command:
+        """Submit the Lead's source-bound research judgment, not a final report or acceptance. Free prose: weigh evidence/conflicts, explain revision impact and the strongest countercase."""
+        try:
+            citations = report_citations(synthesis, artifacts.with_revisions(runtime.state.get("revisions", {})),
+                runtime.state.get("messages", []), prior_citations=runtime.state.get("synthesis", {}).get("citations", {}))
+        except ValueError as exc:
+            return output_message(runtime, error=str(exc))
+        return output_message(runtime, {**synthesis.model_dump(mode="json"), "citations": citations})
 
     @tool
     def submit_case_answer(answer_markdown: str, runtime: ToolRuntime) -> Command:
@@ -392,7 +429,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     def submit_report_review(review: ReportReview, runtime: ToolRuntime) -> Command:
         """Submit independent report findings; verify financial meaning, not just citation syntax."""
         report = runtime.state["report"]
-        errors = [f"report_quote_not_exact:{f.finding_id}" for f in review.findings
+        errors = review_responsibility_errors(review, artifacts, required=require_responsibility)
+        errors += [f"report_quote_not_exact:{f.finding_id}" for f in review.findings
                   if not any(f.report_quote in t for t in _text_values({k: report[k] for k in ("title", "narrative_markdown")}))]
         if errors:
             return output_message(runtime, error=json.dumps({"errors": errors}, ensure_ascii=False))
@@ -402,7 +440,11 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     if role == "repair":
         specific = "Revise only your responsible workpaper in Chinese. Use claim_updates for changed/new claims, preserve unaffected claim IDs. Replace the thesis/mechanism/narrative so old errors do not survive in prose; respond to each finding, including explicitly marked human feedback. Do not mechanically accept reviewer causal conclusions."
         submit = submit_paper_revision
-        selected = tools
+        selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
+    elif role == "synthesis":
+        specific = "You are the research Lead returning AFTER independent review and responsible-author responses. Load the lead research method. Form the current source-bound judgment on the user's full question: weigh conflicting evidence, causal mechanisms, growth/profit/cash realization, strongest countercase and conditions that change the view. Use actual current workpapers and sources on demand. Explain how material review/author corrections change or preserve your judgment; do not just count findings, summarize all papers mechanically or become a report stylist. Reviewer opinions and previous synthesis are fallible. This is a concise research brief for independent verification and the Writer, not publication. Do not rerun unaffected research. Submit with submit_research_synthesis; inline actual current source/claim references. No predetermined bullish/bearish answer."
+        submit = submit_research_synthesis
+        selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     elif role == "writer":
         specific = "Write the final integrated research report in Chinese. Use the actual catalog to review the current workpapers needed to cover the question (read_current_workpaper, not superseded archive text); do not assume a fixed paper count. Read relevant original sources and perform supported financial calculations. Directly answer the full question; lead with a clear, conditional judgment, connect demand/architecture/supply/competition to revenue/margin/cash, distinguish evidence from hypothesis and state what would change the view. Check whether disclosed guidance and realized results imply meaningful future execution requirements, and compare cash realization on compatible periods where evidence permits. Do not force an unavailable volume/price decomposition. Use readable comparisons or tables when useful, not a fixed prose template, disclaimer dump or pasted workpapers. No valuation/target price or invented metrics. Inline important claims as [P01:C15] using exact current IDs. Review actual sources before citing; retain period/authority distinctions."
         if report_revision:
@@ -415,6 +457,10 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     else:
         raise ValueError("case_output_role_invalid")
+    if require_responsibility and role == "verifier":
+        specific += "\nThe input review_target distinguishes lead_synthesis from final_report. For a synthesis, review the Lead's research judgment and actual revised papers before writing; for a report, check final expression against that research. Every material finding must declare the earliest responsibility and exact paper_ids for research repairs. Do not call an upstream research error writer-only. data_tool requires an observed data/tool defect after relevant permitted reads/attempts, not an empty search or unsupported public gap. For a source problem the researcher can remedy by permitted supplementary reads, use research. Missing owner/invalid paper IDs are rejected for you to correct. State concise source-backed rationales; no private reasoning in output."
+    if role == "writer":
+        specific += "\nWhen research_synthesis is supplied, it is the Lead's independently reviewed judgment and source-bound rationale. Organize it faithfully with the current papers; do not silently substitute a new unsupported research conclusion. Corrections may recheck original sources. Distinguish remaining findings from stylistic advice."
     if role in {"writer", "verifier"}:
         specific += "\nReport citations may use actual paper:claim IDs, newly observed [NUMFACT::id] SQL facts or [CALC::id] source-bound calculator results. Do not invent an old workpaper claim for new data. Calculations retain non-authoritative status and source operands. For an existing report, use read_current_source with the exact inline citation ID to inspect its bound record on demand; then verify relevant original context."
     if allow_answers:
@@ -462,7 +508,8 @@ def validate_reused_revisions(reused, artifacts, feedback):
     return deepcopy(reused)
 
 
-def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_id, run_invocation_id, reused_revisions=None, report_revision_request=None):
+def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_id, run_invocation_id, reused_revisions=None,
+                                 report_revision_request=None, research_review_context=None):
     reused = validate_reused_revisions(reused_revisions, artifacts, feedback) if reused_revisions else {}
     if report_revision_request and set(reused) != set(feedback):
         raise ValueError("report_revision_requires_all_author_outputs_reused")
@@ -491,6 +538,8 @@ def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_i
                     author_responses={p: row["finding_responses"] for p, row in value["revisions"].items()})
                 if _actor == "writer" and report_revision_request:
                     body["revision_request"] = deepcopy(report_revision_request)
+                if _actor == "writer" and research_review_context:
+                    body["independent_research_review"] = deepcopy(research_review_context)
                 if _actor == "verifier":
                     body["report"] = report_model_view(value["report"])
             return {**value, "messages": [HumanMessage(content=json.dumps(body, ensure_ascii=False))]}

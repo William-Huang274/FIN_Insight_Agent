@@ -70,26 +70,28 @@ def abandoned_question_update(state, reason):
     if state.get("request_action") != "ask" or not state.get("report"):
         raise ValueError("only_failed_question_can_return_to_prior_report")
     review = state["report_review"]
-    material = bool(review.get("unresolved_data_requests")) or any(f["severity"] == "material" for f in review["findings"])
+    material = bool(state.get("research_stop_reason") or review.get("unresolved_data_requests")) or any(f["severity"] == "material" for f in review["findings"])
     return {"last_output_kind": "failed_question", "phase": "needs_revision" if material else "ready_for_human_review",
         "conversation": [{"role": "system", "content": reason + " 本次没有交出答案；已有报告和失败记录保留。不会自动重试，请按需要提出新的问题。"}]}
 
 
-def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=None, quick_writer=None):
+def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=None, quick_writer=None,
+                               state_schema=SessionState, input_schema=SessionInput, start_at_initialize=True, revision_handler=None):
     """One human request, native agentic work, then another real interrupt.
 
     There is no automatic rewrite-until-PASS edge. Report acceptance is a human
     review state only, never release/Evidence/SQL authority.
     """
     audits = audits or {}
-    graph = StateGraph(SessionState, input_schema=SessionInput)
+    graph = StateGraph(state_schema, input_schema=input_schema)
 
     def initialize(state):
         if state.get("initialized"):
             raise ValueError("existing_session_requires_native_interrupt_resume_not_restart")
-        return {"initialized": True, "report": deepcopy(initial["report"]),
-            "report_review": deepcopy(initial["report_review"]), "revisions": deepcopy(initial["revisions"]),
-            "report_version": 1, "phase": "needs_revision", "conversation": [], "model_events": []}
+        material = initial(state) if callable(initial) else initial
+        return {"initialized": True, "report": deepcopy(material["report"]),
+            "report_review": deepcopy(material["report_review"]), "revisions": deepcopy(material["revisions"]),
+            "report_version": 1, "phase": material.get("phase", "needs_revision"), "conversation": [], "model_events": []}
 
     def human_review(state):
         response = interrupt({"kind": "dell_report_review", "report_version": state["report_version"],
@@ -98,12 +100,16 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
         action = ReviewAction.model_validate(response)
         if action.action == "accept":
             review = state["report_review"]
-            if review.get("unresolved_data_requests") or any(f["severity"] == "material" for f in review["findings"]):
+            if (state.get("research_stop_reason") or review.get("unresolved_data_requests") or any(f["severity"] == "material" for f in review["findings"])
+                    or any(r["disposition"] == "unresolved" for v in state.get("revisions", {}).values()
+                           for r in v.get("finding_responses", []))):
                 raise ValueError("material_findings_require_revision_before_acceptance")
             return Command(update={"phase": "human_reviewed_not_released"}, goto=END)
         if not action.message.strip():
             raise ValueError("human_question_or_revision_feedback_required")
         target = "quick_writer" if action.answer_mode == "quick" else "writer"
+        if action.action == "revise" and revision_handler is not None:
+            target = "research_revision"
         if target == "quick_writer" and quick_writer is None:
             raise ValueError("quick_answer_not_configured")
         return Command(update={"request_action": action.action, "message": action.message,
@@ -111,8 +117,11 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
                 "action": action.action, "answer_mode": action.answer_mode}]}, goto=target)
 
     def seed(state, role):
-        view = artifacts.with_revisions(state["revisions"])
-        body = {"research_as_of": artifacts.research_as_of, "catalog": view.catalog()}
+        current_artifacts = artifacts(state) if callable(artifacts) else artifacts
+        view = current_artifacts.with_revisions(state["revisions"])
+        body = {"research_as_of": current_artifacts.research_as_of, "catalog": view.catalog()}
+        if state.get("question"):
+            body["research_question"] = state["question"]
         if role in {"writer", "quick_writer"}:
             # Do not repeat the large citation object: canonical IDs resolve via tools.
             body.update(request_action=state["request_action"], user_message=state["message"],
@@ -131,7 +140,8 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
                     "method": "Incremental review after a complete prior report review: inspect every edit and unresolved finding, and scan unchanged context for contradiction or regression. Prior reviewers can be wrong. Read original sources where needed; do not reread all ten papers by ritual or assume unchanged text is automatically correct."}
         get_stream_writer()({"kind": "stage", "actor": role, "event": "started", "recorded_at": datetime.now(timezone.utc).isoformat()})
         return {"messages": [HumanMessage(content=json.dumps(body, ensure_ascii=False))],
-            "revisions": state["revisions"], "report": state["report"], "request_action": state["request_action"]}
+            "revisions": state["revisions"], "report": state["report"], "request_action": state["request_action"],
+            **({"case_papers": state["case_papers"]} if "case_papers" in state else {})}
 
     def collect(state, role):
         output = state.get("output")
@@ -150,7 +160,10 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
 
     def finish(state):
         review = state["report_review"]
-        material = bool(review.get("unresolved_data_requests")) or any(f["severity"] == "material" for f in review["findings"])
+        material = (bool(state.get("research_stop_reason") or review.get("unresolved_data_requests"))
+            or any(f["severity"] == "material" for f in review["findings"])
+            or any(r["disposition"] == "unresolved" for v in state.get("revisions", {}).values()
+                   for r in v.get("finding_responses", [])))
         return {"report_version": state["report_version"] + (state["last_output_kind"] == "report"),
             "phase": "needs_revision" if material else "ready_for_human_review"}
 
@@ -175,12 +188,16 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
     agents = {"writer": writer, "verifier": verifier}
     if quick_writer is not None:
         agents["quick_writer"] = quick_writer
-    graph.add_node("human_review", human_review, destinations=(*agents, END))
+    graph.add_node("human_review", human_review, destinations=(*agents, *(("research_revision",) if revision_handler is not None else ()), END))
+    if revision_handler is not None:
+        graph.add_node("research_revision", revision_handler)
+        graph.add_edge("research_revision", "human_review")
     for role, agent in agents.items():
         graph.add_node(role, RunnableLambda(lambda s, r=role: seed(s, r)) | agent | RunnableLambda(lambda s, r=role: collect(s, r)),
             error_handler=question_error if role != "verifier" else None)
     graph.add_node("finish", finish)
-    graph.add_edge(START, "initialize")
+    if start_at_initialize:
+        graph.add_edge(START, "initialize")
     graph.add_edge("initialize", "human_review")
     graph.add_conditional_edges("writer", lambda s: "verifier" if s["last_output_kind"] == "report" else "finish")
     graph.add_edge("verifier", "finish")
@@ -199,6 +216,19 @@ def load_quick_answer_config(model_config_path):
     if profile.model != "deepseek-v4-flash" or profile.thinking != "disabled" or basis.reasoning_profile != "agentic_message_history_thinking_disabled":
         raise ValueError("quick_answer_profile_budget_mismatch")
     return profile, basis, settings["limits"]
+
+
+def session_audit_sinks(audit_root):
+    """Reuse the local public/private call files; no new telemetry backend."""
+    audit_root = Path(audit_root)
+    audit_root.mkdir(parents=True, exist_ok=True)
+    lock = Lock()
+    def sink(name):
+        def write(event):
+            with lock, (audit_root / name).open("a", encoding="utf-8") as stream:
+                stream.write(json.dumps(event, ensure_ascii=False) + "\n")
+        return write
+    return sink("model-call-events.jsonl"), sink("model-context-reasoning.private.jsonl")
 
 
 def load_session_materials(settings):
@@ -254,13 +284,7 @@ async def dell_report_session_graph(config: RunnableConfig, runtime: ServerRunti
     model_config = load_deepseek_structured_agent_config(settings["model_config_path"])
     quick_profile, quick_basis, quick_limits = load_quick_answer_config(settings["model_config_path"])
     audit_root = Path(settings["audit_root"]) / thread_id / run_id
-    audit_root.mkdir(parents=True, exist_ok=True)
-    lock = Lock()
-    def sink(name):
-        def write(event):
-            with lock, (audit_root / name).open("a", encoding="utf-8") as stream:
-                stream.write(json.dumps(event, ensure_ascii=False) + "\n")
-        return write
+    public_sink, private_sink = session_audit_sinks(audit_root)
     invocation = "invocation:dell:workbench:" + run_id
     with open_dell_approved_data_composition(run_invocation_id=invocation, source_read_enabled=True,
             live_web_read_enabled=True, case_artifacts=artifacts) as data:
@@ -284,7 +308,7 @@ async def dell_report_session_graph(config: RunnableConfig, runtime: ServerRunti
                 if basis.reasoning_profile != "agentic_message_history_thinking_" + profile.thinking:
                     raise ValueError("session_budget_thinking_mismatch")
                 audits[role] = CaseModelAudit(actor=role, profile=profile, basis=basis,
-                    public_sink=sink("model-call-events.jsonl"), private_sink=sink("model-context-reasoning.private.jsonl"), stream_public=True)
+                    public_sink=public_sink, private_sink=private_sink, stream_public=True)
                 agents[role] = build_case_output_agent(role="writer" if quick else role, model=case_chat_model(profile, basis, model_config, SecretStr(os.environ["DEEPSEEK_API_KEY"])),
                     tools=tools, artifacts=artifacts, limits=quick_limits if quick else settings["node_limits"][role], audit=audits[role],
                     report_revision=True, allow_answers=role != "verifier", answer_only=quick)

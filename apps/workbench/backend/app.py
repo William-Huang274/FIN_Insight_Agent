@@ -411,7 +411,16 @@ def create_report_session_app(frontend_dist_root=None):
     from sec_agent.agent_runtime.dell_report_session import load_session_materials
     settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
     artifacts, _ = load_session_materials(settings)
-    service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts, audit_root=settings["audit_root"])
+    research_profile = None
+    if os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") == "1":
+        from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
+        from sec_agent.agent_runtime.dell_agent_server_data_composition import DELL_APPROVED_RESEARCH_AS_OF
+        runtime_profile, case = load_research_runtime_profile(os.environ["FIN_REPO_ROOT"])
+        research_profile = {"title": case["title"], "default_question": case["question"],
+            "research_as_of": DELL_APPROVED_RESEARCH_AS_OF, "cost_expectation_cny": runtime_profile["cost_expectation_cny"],
+            "notice": "新问题从空底稿研究；复用原始文档/SQL/索引，不载入旧专家答案。日期为已绑定案例时点，不宣称实时全量。"}
+    service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts, audit_root=settings["audit_root"],
+        research_profile=research_profile)
     @asynccontextmanager
     async def lifespan(app):
         yield

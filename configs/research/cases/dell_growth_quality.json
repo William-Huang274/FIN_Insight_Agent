@@ -7,6 +7,17 @@
   "research_methods": ["lead", "finance", "industry_product", "counter", "writer", "verifier"],
   "fresh_research": true,
   "reuse_prior_workpapers": false,
+  "branch_topics": [
+    {"branch_id": "Q1_ISSUER_TRUTH", "objective": "判断收入增长向利润、营运资本和现金的兑现；将已披露指引与已实现业绩联系为后续执行要求，保持口径可比。"},
+    {"branch_id": "Q2_DEMAND_QUALITY", "objective": "判断客户需求的持续性与质量，区分订单、交付、部署和实际使用，并寻找替代解释。"},
+    {"branch_id": "Q3_UNITS_ASP_PVM", "objective": "判断增长中的数量、价格和产品组合机制；资料不足时用可支持的区间或情景，不强拆无法识别的量价。"},
+    {"branch_id": "Q4_ARCHITECTURE_RAMP", "objective": "研究架构更新、量产爬坡和交付节奏如何影响收入确认、产品组合和执行压力。"},
+    {"branch_id": "Q5_SUPPLY_AND_PRICE", "objective": "研究 GPU、内存、存储、网络、电力与冷却的供应和成本变化如何传导到售价、利润及需求。"},
+    {"branch_id": "Q6_MODEL_COMPUTE_DEMAND", "objective": "结合模型和应用发展评估算力需求方向，区分训练与各类推理，寻找能连接到服务器采购的实际证据。"},
+    {"branch_id": "Q7_EXPORT_CONTROL_CHINA", "objective": "评估适用日期内出口管制及区域变化对公司客户、收入和供应链的实际影响，不把他企风险直接当本公司敞口。"},
+    {"branch_id": "Q8_COMPETITION_VALUE_POOL", "objective": "通过可比同业和产业链资料判断竞争差异、议价能力及利润分配机制，不拿不同业务分母硬比较。"},
+    {"branch_id": "Q9_COUNTEREVIDENCE_WWC", "objective": "补查能改变核心判断的真实反证，并提出后续可观察的验证条件；与正式跨稿审查职责区分。"}
+  ],
   "source_policy": "Use task-authorized local documents, SQL, explicit uploads and public web as needed. Context companies are research leads, not a hard company allowlist. Use the server-bound as-of and distinguish later/undated material; do not expose host filesystem, credentials or private-network access.",
   "data_baseline": "Retain the existing approved raw documents, indexes and SQL bindings. This question profile does not rewrite their frozen historical contracts or assert data freshness.",
   "non_goals": ["valuation_or_target_price", "buy_sell_recommendation", "private_data_purchase", "arbitrary_host_file_access", "automatic_publication"]

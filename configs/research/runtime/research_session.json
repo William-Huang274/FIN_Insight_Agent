@@ -1,0 +1,303 @@
+{
+  "version": 1,
+  "model_config": "configs/research/fin_ia_0_1_3_dell_full_research_routed_v1_0.json",
+  "max_tasks": 12,
+  "max_parallel_tasks": 2,
+  "scope": "One fresh Dell development case on the existing as-of data plane; limits are safety ceilings, not target call counts. No old answer seed. New vision/attachment/export tooling requires separate qualification before inclusion.",
+  "cost_expectation_cny": {
+    "rough_low": 10,
+    "rough_high": 18,
+    "kind": "planning_estimate_not_guarantee_or_hard_truncation_rule",
+    "basis": "Prior full research, targeted repair, review and reporting. This remains the original planning range, NOT a measured price for the newly added Lead synthesis/research verification. Re-estimate those additional nodes and any targeted correction before paid full-case launch; report material deviation. Charge vision/upload feature tests separately."
+  },
+  "nodes": {
+    "lead": {
+      "profile": {
+        "model": "deepseek-v4-flash",
+        "thinking": "disabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 12,
+        "tool_calls": 24
+      },
+      "budget": {
+        "node_role": "lead",
+        "node_purpose": "Plan the current user research question into semantic tasks, inspect actual workpapers and delegate purposeful follow-ups; no archived Q1 answer is seeded.",
+        "input_scale": "Current question, compact nine-theme data/method catalog, Lead method, task statuses and actual public workpapers read through native history; no raw corpus or specialist private reasoning.",
+        "required_outputs": [
+          "Dynamic tasks and dependencies",
+          "Source-grounded follow-up decisions",
+          "Review handoff or explicit incomplete work"
+        ],
+        "schema_burden": "Existing native planning tools and semantic task schemas; the host binds context. No full report output.",
+        "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
+        "comparable_run_evidence": "Full research A2 used seven Flash/disabled Lead turns (~0.1143 CNY); full-chain model quality remains to be requalified on the new question.",
+        "reasoning_profile": "agentic_message_history_thinking_disabled",
+        "max_input_characters": 500000,
+        "max_output_tokens": 8000,
+        "timeout_seconds": 240,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "specialist": {
+      "profile": {
+        "model": "deepseek-v4-pro",
+        "thinking": "enabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 24,
+        "tool_calls": 48
+      },
+      "budget": {
+        "node_role": "specialist",
+        "node_purpose": "Research one Lead-assigned aspect of growth quality, profit/cash realization and execution pressure through autonomous local SQL/source/public-web tools; read role methods on demand.",
+        "input_scale": "One current question and assigned objective, compact data/metric metadata, selected dependency workpapers and this agent's native tool history. Read focused source windows before expansion; no cross-agent private history.",
+        "required_outputs": [
+          "Useful Chinese research judgment and mechanism",
+          "Bound source/fact claims and counterevidence",
+          "Actionable uncertainty or explicit incomplete-work handoff"
+        ],
+        "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
+        "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
+        "comparable_run_evidence": "Prior eight-worker full A2: 68 requests/~3.0M tokens/~6.63 CNY including a failed Q8. Q8's 500k-character ceiling blocked otherwise purposeful research; 700k aligns with the qualified native review capacity, not a quality or cost guarantee.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "counter": {
+      "profile": {
+        "model": "deepseek-v4-pro",
+        "thinking": "enabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 24,
+        "tool_calls": 64
+      },
+      "budget": {
+        "node_role": "counter",
+        "node_purpose": "Challenge current-task workpapers and cross-paper mechanisms, seeking the strongest countercase and meaningful omitted analysis. Reviewers remain fallible.",
+        "input_scale": "Actual paper catalog, current question, role method on demand and individually read papers/source windows; no specialist private reasoning or entire original notebooks.",
+        "required_outputs": [
+          "Assessment of every submitted paper",
+          "Material/advisory source-anchored findings",
+          "Specific remaining data requests"
+        ],
+        "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
+        "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
+        "comparable_run_evidence": "Native case review A1 used Counter 14 and Verifier 10 calls, 1.57M combined tokens/~1.92 CNY. Pro/low produced useful tool actions; Flash/high exhausted 32k on a reviewed input.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "verifier": {
+      "profile": {
+        "model": "deepseek-v4-pro",
+        "thinking": "enabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 24,
+        "tool_calls": 64
+      },
+      "budget": {
+        "node_role": "counter",
+        "node_purpose": "Independently inspect material facts, periods, units, citations, causal strength and omitted analyses across this task's actual workpapers.",
+        "input_scale": "Question and current paper catalog; workpapers, exact source context and SQL/calculator results read on demand. No Counter conversation or specialist private reasoning.",
+        "required_outputs": [
+          "Assessment of every submitted paper",
+          "Actionable exact-quote findings",
+          "Unresolved material data needs, not boilerplate"
+        ],
+        "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
+        "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
+        "comparable_run_evidence": "Native whole-case review A1 Verifier took 10 calls. Prior review also made false absence/causality judgments, so valid schema does not establish semantic correctness.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "repair": {
+      "profile": {
+        "model": "deepseek-v4-pro",
+        "thinking": "enabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 16,
+        "tool_calls": 48
+      },
+      "budget": {
+        "node_role": "specialist",
+        "node_purpose": "Address actual material Counter/Verifier findings on one responsible workpaper. Accept or rebut using original sources; preserve unaffected work.",
+        "input_scale": "Responsible paper, its source catalog and actual namespaced findings only; no unrelated authors' private contexts. Tool feedback remains in this role's own history.",
+        "required_outputs": [
+          "Corrected responsible workpaper and changed claims",
+          "Disposition of each material finding",
+          "Source-backed disagreement or explicit unresolved issue"
+        ],
+        "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
+        "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
+        "comparable_run_evidence": "Prior P07 targeted convergence used three author calls; other five completed authors needed no rerun. New parent sends only actual material findings, not a fixed six-author list.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "synthesis": {
+      "profile": {"model": "deepseek-v4-pro", "thinking": "enabled", "reasoning_effort": "low"},
+      "limits": {"model_calls": 16, "tool_calls": 48},
+      "budget": {
+        "node_role": "lead",
+        "node_purpose": "The research Lead weighs current multi-topic findings AFTER review/author responses, integrating financial and industry mechanisms before Writer. Revisit only affected conclusions after a targeted repair.",
+        "input_scale": "Current question, compact paper catalog, public Counter/Verifier findings and author responses; latest workpapers and source windows on demand, not private specialist histories or complete raw notebooks.",
+        "required_outputs": ["Source-bound conditional research synthesis", "Strongest countercase and what changes the view", "Effect of actual review/author amendments on research judgment"],
+        "schema_burden": "Existing free cited prose submission shape, not a new report template; source references resolve locally.",
+        "materiality_quality_risk": "Cross-paper causality and comparability need substantive judgment, not cheap task dispatch or simply accepting reviewer findings. No answer preloading; non-S2 calculations stay non-authoritative.",
+        "comparable_run_evidence": "No matched paid synthesis yet. Prior Pro Writer used four full-report calls and current native reviewers read multi-paper evidence. Sixteen calls/48 tools provide headroom for targeted synthesis, not a measured cost or quality claim. Do not reuse Flash planner's purpose budget for this analytical node.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled", "max_input_characters": 700000, "max_output_tokens": 32000,
+        "timeout_seconds": 480, "max_transport_attempts": 1, "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion", "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "research_verifier": {
+      "profile": {"model": "deepseek-v4-pro", "thinking": "enabled", "reasoning_effort": "low"},
+      "limits": {"model_calls": 16, "tool_calls": 48},
+      "budget": {
+        "node_role": "counter",
+        "node_purpose": "Independently check the Lead synthesis and affected current author amendments before Writer, with explicit earliest-owner findings.",
+        "input_scale": "Source-bound Lead prose, compact current paper catalog and actual author responses; exact sources/current papers on demand, no prior agent private messages.",
+        "required_outputs": ["Independent research assessment", "Material findings with exact quotes and responsible paper IDs", "Indispensable unresolved tool/data/human needs without false public gaps"],
+        "schema_burden": "Existing ReportReview plus small explicit responsibility/paper_ids fields; reject invalid targets without natural-language rules.",
+        "materiality_quality_risk": "A corrected author may still be wrong, and a reviewer may be wrong. Check sources and substantive inference, not cosmetic template conformity. No ritual zero-advisory requirement.",
+        "comparable_run_evidence": "Existing whole-case review needed 24 calls across two reviewers for ten papers; targeted revised-synthesis workload is narrower. This new placement has zero paid results so far; final case must record incremental review cost separately.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled", "max_input_characters": 700000, "max_output_tokens": 32000,
+        "timeout_seconds": 480, "max_transport_attempts": 1, "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion", "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "writer": {
+      "profile": {
+        "model": "deepseek-v4-pro",
+        "thinking": "enabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 20,
+        "tool_calls": 64
+      },
+      "budget": {
+        "node_role": "specialist",
+        "node_purpose": "Answer the user's full research question with an integrated readable Chinese report, backed by current papers, original sources and supported computations; also handle explicit report revisions/deep follow-ups.",
+        "input_scale": "Question, compact actual-paper catalog, public review and author responses; sources/papers read as needed. Prior report prose only for revision, without the large citation object.",
+        "required_outputs": [
+          "Clear conditional thesis and business/financial mechanisms",
+          "Comparable financial analysis and execution requirements when supported",
+          "Inline source/SQL/calculation references and strongest countercase"
+        ],
+        "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
+        "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
+        "comparable_run_evidence": "Existing native Writer used four calls for full reports and three for local edits. Old report quality was constrained by audit-oriented question/omitted analysis; correcting the task and methods is not a promised cost reduction.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "report_verifier": {
+      "profile": {
+        "model": "deepseek-v4-pro",
+        "thinking": "enabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 20,
+        "tool_calls": 64
+      },
+      "budget": {
+        "node_role": "counter",
+        "node_purpose": "Independently inspect the completed report for meaningful factual/financial/inference/citation errors and major omissions, without replacing analysis by boundary boilerplate.",
+        "input_scale": "Current question, report prose and compact paper/revision summaries; source and citation records read on demand. The old 146k-171k character citation seed is excluded, not the underlying evidence.",
+        "required_outputs": [
+          "Exact-report-quote material/advisory findings",
+          "Indispensable unresolved data needs only",
+          "Independent report assessment, not publication approval"
+        ],
+        "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
+        "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
+        "comparable_run_evidence": "Earlier convergence first inputs were 170k/197k chars, mostly duplicated citation objects. Workbench prose-only terminal inputs were 21k/29k on different reports; not a matched A/B or guaranteed savings.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "quick_writer": {
+      "profile": {
+        "model": "deepseek-v4-flash",
+        "thinking": "disabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 10,
+        "tool_calls": 32
+      },
+      "budget": {
+        "node_role": "specialist",
+        "node_purpose": "Answer an explicitly selected short factual follow-up without restarting research or rewriting the report; deep mode remains available.",
+        "input_scale": "Actual question, compact paper catalog and public conversation; full report and original sources/SQL/calculate tools on demand, no nested citation history.",
+        "required_outputs": [
+          "Concise source-bound Chinese answer",
+          "Correct company/period/unit/source authority",
+          "Honest limitation when deeper research is needed"
+        ],
+        "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
+        "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
+        "comparable_run_evidence": "Actual successful SQL/calculator quick follow-up: 3 calls, 28776 tokens, 11.4 s, estimated0.019796 CNY (n=1). This is not a cost promise for long research.",
+        "reasoning_profile": "agentic_message_history_thinking_disabled",
+        "max_input_characters": 350000,
+        "max_output_tokens": 8000,
+        "timeout_seconds": 240,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    }
+  }
+}

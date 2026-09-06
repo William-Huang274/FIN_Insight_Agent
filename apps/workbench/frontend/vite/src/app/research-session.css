@@ -1108,3 +1108,60 @@ body:has(.rs-shell) {
   padding: 5px 8px;
   font: inherit;
 }
+.rs-legacy-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  margin: 0 14px 12px;
+  padding: 8px 2px;
+  border: 0;
+  background: transparent;
+  color: #6b736e;
+  font-size: 11px;
+  cursor: pointer;
+}
+.rs-research-prompt {
+  max-width: 780px;
+  margin: 26px auto 22px;
+  text-align: left;
+}
+.rs-research-prompt label {
+  display: block;
+  margin-bottom: 10px;
+  color: #344b40;
+  font-size: 13px;
+  font-weight: 600;
+}
+.rs-research-prompt textarea {
+  width: 100%;
+  resize: vertical;
+  padding: 17px 19px;
+  border: 1px solid #cbd8ce;
+  border-radius: 12px;
+  background: #fffefa;
+  color: #233c30;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.85;
+  box-sizing: border-box;
+  box-shadow: 0 5px 20px #254c3c05;
+}
+.rs-research-prompt textarea:focus { outline: 2px solid #abc3b2; outline-offset: 3px; }
+.rs-research-prompt > div { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-top: 9px; color: #737e74; font-size: 11px; }
+.rs-task-question { margin: 0 42px 22px; max-width: 950px; color: #556459; font-size: 13px; line-height: 1.85; }
+.rs-task-board { margin: 0 30px 22px; border: 1px solid #dce3dc; border-radius: 12px; background: #f7f9f5; padding: 14px 16px; }
+.rs-task-board summary { display: flex; gap: 8px; align-items: center; cursor: pointer; font-size: 13px; color: #304b3a; }
+.rs-task-board summary span { margin-left: auto; font-size: 11px; color: #7c877c; }
+.rs-task-board > p { color: #788176; font-size: 12px; line-height: 1.7; }
+.rs-task-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(240px, 100%), 1fr)); gap: 12px; margin-top: 14px; }
+.rs-task-card { border: 1px solid #e0e7dc; border-radius: 8px; background: #fffefa; padding: 13px; min-width: 0; }
+.rs-task-card > div { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: #3c5945; }
+.rs-task-card strong { overflow-wrap: anywhere; }
+.rs-task-card > div > span { white-space: nowrap; color: #68866d; }
+.rs-task-card p { font-size: 12px; line-height: 1.75; color: #475749; margin: 10px 0; }
+.rs-task-card small { font-size: 10px; color: #829080; overflow-wrap: anywhere; }
+@media (max-width: 800px) {
+  .rs-task-board { margin: 0 18px 16px; }
+  .rs-task-question { margin: 0 22px 16px; }
+}

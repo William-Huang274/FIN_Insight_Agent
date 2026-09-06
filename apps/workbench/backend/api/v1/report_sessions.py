@@ -24,10 +24,12 @@ from sec_agent.agent_runtime.dell_report_session import ReviewAction, abandoned_
 
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
+RESEARCH_GRAPH = "research_session"
 PUBLIC_EVENT_FIELDS = frozenset({"kind", "actor", "event", "status", "call_id", "tool", "recorded_at",
     "model", "thinking", "reasoning_effort", "elapsed_ms", "input_tokens", "output_tokens", "total_tokens",
     "cache_hit_tokens", "cache_miss_tokens", "reasoning_tokens", "usage_reported", "error_type", "http_status_code",
-    "max_output_tokens", "valid_tool_call_count", "invalid_tool_call_count", "success_scope", "run_id"})
+    "max_output_tokens", "valid_tool_call_count", "invalid_tool_call_count", "success_scope", "run_id",
+    "task_id", "objective", "responsible_author_count", "correction_round", "paper_id"})
 
 
 def public_run_usage(audit_root, thread_id, run_id):
@@ -69,7 +71,12 @@ def public_event(value):
     if not isinstance(value, dict):
         return None
     result = {k: v for k, v in value.items() if k in PUBLIC_EVENT_FIELDS and isinstance(v, (str, int, float, bool, type(None)))}
-    return result if result.get("kind") in {"model", "tool", "stage"} else None
+    if result.get("kind") == "task":
+        result["dependency_ids"] = [v for v in value.get("dependency_ids", []) if isinstance(v, str)][:24]
+    if result.get("actor") == "responsibility_router":
+        result["responsible_paper_ids"] = [v for v in value.get("responsible_paper_ids", [])
+            if isinstance(v, str) and re.fullmatch(r"P\d{2}", v)][:24]
+    return result if result.get("kind") in {"model", "tool", "stage", "task"} else None
 
 
 def review_interrupts(state):
@@ -82,7 +89,18 @@ def review_interrupts(state):
 
 def public_state(state):
     values = state.get("values", {})
-    result = {k: deepcopy(values[k]) for k in ("report", "report_review", "report_version", "phase", "conversation") if k in values}
+    result = {k: deepcopy(values[k]) for k in ("report", "report_review", "report_version", "phase", "conversation",
+        "question", "case_profile", "research_as_of", "snapshot_id", "research_stop_reason") if k in values}
+    outcomes = {row["task_id"]: row["status"] for row in values.get("research_outcomes", [])}
+    result["research_tasks"] = [{**{key: deepcopy(row[key]) for key in ("task_id", "owner_role", "objective", "dependency_ids") if key in row},
+        "status": outcomes.get(row["task_id"], row.get("status", "planned"))} for row in values.get("research_tasks", [])]
+    # Public source-bound deliverables, not private agent message histories.
+    result["research_synthesis"] = {key: deepcopy(values["synthesis"][key]) for key in ("title", "narrative_markdown")
+        if key in values.get("synthesis", {})}
+    if values.get("synthesis_review"):
+        result["synthesis_review"] = deepcopy(values["synthesis_review"])
+    result["responsibility_history"] = [{"actor": row["actor"], "correction_round": row["correction_round"]}
+        for row in values.get("convergence_history", [])]
     result["model_events"] = [p for e in values.get("model_events", []) if (p := public_event({"kind": "model", **e}))]
     result["can_respond"] = bool(review_interrupts(state))
     result["can_accept"] = result["can_respond"] and result.get("phase") == "ready_for_human_review"
@@ -105,12 +123,21 @@ def can_abandon_question(thread, state, last_run=None):
 
 
 class NewSession(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     title: str = Field(default="Dell AI 基础设施 · 全案审阅", min_length=1, max_length=120)
+    mode: Literal["review", "research"] = "review"
+    question: str | None = Field(default=None, min_length=10, max_length=16000)
+
+
+def graph_for_thread(thread):
+    graph = thread.get("metadata", {}).get("graph", GRAPH)
+    if graph not in {GRAPH, RESEARCH_GRAPH}:
+        raise HTTPException(409, "会话的执行入口不受本工作台支持")
+    return graph
 
 
 class ReportSessionService:
-    def __init__(self, api_url, artifacts, *, sdk=None, audit_root=None):
+    def __init__(self, api_url, artifacts, *, sdk=None, audit_root=None, research_profile=None):
         parsed = urlsplit(api_url)
         if parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "localhost", "langgraph-api"} or parsed.username or parsed.query or parsed.fragment:
             raise ValueError("report_session_server_must_be_local")
@@ -119,6 +146,7 @@ class ReportSessionService:
         self.sdk = sdk or LangGraphClient(self.http)
         self.artifacts = artifacts
         self.audit_root = audit_root
+        self.research_profile = deepcopy(research_profile)
 
     async def owned_thread(self, thread_id):
         thread = await self.sdk.threads.get(str(thread_id))
@@ -150,12 +178,28 @@ def build_report_sessions_router(service):
         return [{"thread_id": t["thread_id"], "status": t["status"], "updated_at": t["updated_at"],
             "title": t.get("metadata", {}).get("title", "Dell 研究会话")} for t in threads]
 
+    @router.get("/research-session-config")
+    async def configuration():
+        profile = getattr(service, "research_profile", None)
+        return {"fresh_research_enabled": profile is not None, **(deepcopy(profile) if profile else {})}
+
     @router.post("/research-sessions")
     async def create(body: NewSession, request: Request):
         browser_write(request)
-        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "title": body.title})
-        run = await service.sdk.runs.create(thread["thread_id"], GRAPH, input={"open": True}, stream_mode="custom",
-            stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE})
+        graph, payload = GRAPH, {"open": True}
+        if body.mode == "research":
+            profile = getattr(service, "research_profile", None)
+            if not profile:
+                raise HTTPException(503, "完整新研究入口尚未在本部署启用；不会退回旧报告冒充新研究")
+            from sec_agent.agent_runtime.research_session import ResearchRequest
+            graph = RESEARCH_GRAPH
+            payload = ResearchRequest(question=body.question or profile["default_question"]).model_dump(mode="json")
+        elif body.question is not None:
+            raise HTTPException(422, "研究问题请使用新研究模式；打开旧报告不执行研究")
+        metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode}
+        thread = await service.sdk.threads.create(metadata=metadata)
+        run = await service.sdk.runs.create(thread["thread_id"], graph, input=payload, stream_mode="custom",
+            stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": body.mode})
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"], "status": run["status"]}
 
     @router.get("/research-sessions/{thread_id}")
@@ -189,7 +233,7 @@ def build_report_sessions_router(service):
         # human_review. The failed run/checkpoint and report remain untouched.
         checkpoint = await service.sdk.threads.update_state(str(thread_id),
             abandoned_question_update(state["values"], "已停止这次追问并返回报告审阅。" if stopped else "已放弃这次失败的追问并返回报告审阅。"), as_node="finish")
-        run = await service.sdk.runs.create(str(thread_id), GRAPH, input=None, checkpoint=checkpoint["checkpoint"],
+        run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), input=None, checkpoint=checkpoint["checkpoint"],
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": "return_stopped_question" if stopped else "abandon_failed_question", "model_calls_requested": 0})
         return {"run_id": run["run_id"], "status": run["status"], "model_retry_requested": False}
@@ -204,7 +248,8 @@ def build_report_sessions_router(service):
             raise HTTPException(409, "仍有重大问题，不能标记人工审阅通过")
         if body.action != "accept" and not body.message.strip():
             raise HTTPException(422, "请填写问题或修订意见")
-        run = await service.sdk.runs.create(str(thread_id), GRAPH, command={"resume": body.model_dump()},
+        thread = await service.owned_thread(thread_id)
+        run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), command={"resume": body.model_dump()},
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode})
         return {"run_id": run["run_id"], "status": run["status"]}
@@ -235,7 +280,12 @@ def build_report_sessions_router(service):
             return {**deepcopy(source), "text": text[offset:offset + 16000],
                 "next_offset": offset + 16000 if offset + 16000 < len(text) else None}
         try:
-            return service.artifacts.with_revisions(values.get("revisions", {})).read_source(source_id, offset, 16000)
+            if "case_papers" in values:
+                from sec_agent.agent_runtime.research_session import current_task_artifacts
+                artifacts = current_task_artifacts(values)
+            else:
+                artifacts = service.artifacts
+            return artifacts.with_revisions(values.get("revisions", {})).read_source(source_id, offset, 16000)
         except ValueError:
             raise HTTPException(422, "来源或阅读范围不合法") from None
 

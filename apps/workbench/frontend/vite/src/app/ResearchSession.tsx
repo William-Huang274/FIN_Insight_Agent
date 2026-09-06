@@ -27,20 +27,35 @@ import {
   type Event,
   type Session,
   type Source,
+  type ResearchConfiguration,
 } from "../api/reportSessions";
 import "./research-session.css";
 
 const format = (n: number) => new Intl.NumberFormat("zh-CN").format(n);
 const stageName: Record<string, string> = {
-  writer: "研究作者",
+  lead: "研究负责人",
+  counter: "反证审查",
+  case_review: "跨稿独立审查",
+  convergence: "责任修订与报告交付",
+  report_verifier: "报告终审",
+  synthesis: "Lead · 综合研究判断",
+  research_verifier: "研究判断复核",
+  responsibility_router: "按问题责任回派",
+  writer: "报告写作",
   verifier: "独立复核",
   quick_writer: "快速问答 · Flash",
 };
+const actorName = (actor: string) => stageName[actor] || (actor.startsWith("author_") ? `${actor.slice(7)} · 责任作者修订` : actor);
+const responsibilityName: Record<string, string> = { writer: "报告表达", research: "上游研究", data_tool: "数据 / 工具", human: "人工处理" };
 const phaseName: Record<string, string> = {
   needs_revision: "有问题待修订",
   ready_for_human_review: "等待人工审阅",
   human_reviewed_not_released: "已人工审阅 · 未发布",
   working: "正在研究",
+  research_reviewing: "专家底稿已提交 · 跨稿审查中",
+  research_writing: "整合判断与撰写报告",
+  research_needs_attention: "研究尚未完成 · 需要处理",
+  research_incomplete_acknowledged: "已查看未完成研究",
 };
 function validLink(url?: string) {
   if (!url) return undefined;
@@ -108,6 +123,10 @@ function Markdown({
 }
 
 export function ResearchSession() {
+  const [configuration, setConfiguration] = useState<ResearchConfiguration | null>(null);
+  const [configurationError, setConfigurationError] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [researchQuestion, setResearchQuestion] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [id, setId] = useState(
     new URLSearchParams(window.location.search).get("thread") || "",
@@ -146,8 +165,13 @@ export function ResearchSession() {
   }, []);
   useEffect(() => {
     refresh().catch((e) => setError(String(e.message)));
+    sessionsApi.config().then((value) => {
+      setConfiguration(value);
+      setResearchQuestion((current) => current || value.default_question || "");
+    }).catch((e) => setConfigurationError(`无法读取当前服务的新研究配置：${String(e.message)}。新研究不会启动；请完成后台版本部署后再试。`));
   }, [refresh]);
   const choose = (next: string) => {
+    setCreating(false);
     setUsageRunId("");
     setId(next);
     setSession(null);
@@ -213,6 +237,7 @@ export function ResearchSession() {
                 (x) =>
                   x.kind === e.kind &&
                   x.call_id === e.call_id &&
+                  x.task_id === e.task_id &&
                   x.actor === e.actor &&
                   x.event === e.event &&
                   x.recorded_at === e.recorded_at,
@@ -244,11 +269,19 @@ export function ResearchSession() {
   const allEvents = useMemo(() => {
     const map = new Map<string, Event>();
     for (const e of [...events, ...(session?.model_events || [])])
-      map.set(`${e.kind}/${e.actor}/${e.call_id}/${e.event}/${e.recorded_at}`, e);
+      map.set(`${e.kind}/${e.actor}/${e.call_id}/${e.task_id}/${e.event}/${e.recorded_at}`, e);
     return [...map.values()].sort(
       (a, b) => (Date.parse(a.recorded_at || "") || 0) - (Date.parse(b.recorded_at || "") || 0),
     );
   }, [session?.model_events, events]);
+  const researchTasks = useMemo(() => {
+    const map = new Map((session?.research_tasks || []).map((task) => [task.task_id, task]));
+    for (const e of allEvents) if (e.kind === "task" && e.task_id) {
+      map.set(e.task_id, { task_id: e.task_id, owner_role: e.actor, objective: e.objective || "",
+        dependency_ids: e.dependency_ids || [], status: e.status || e.event });
+    }
+    return [...map.values()];
+  }, [session?.research_tasks, allEvents]);
   const models = useMemo(() => {
     const map = new Map<string, Event>();
     for (const e of allEvents)
@@ -265,12 +298,15 @@ export function ResearchSession() {
     { tokens: 0, input: 0, output: 0 },
   );
   const usageRun = session?.runs?.find(r => r.run_id === usageRunId) || session?.runs?.[0];
-  const newSession = async () => {
+  const newSession = async (mode: "review" | "research" = "review") => {
     setSending(true);
     setError("");
     try {
-      const made = await sessionsApi.create();
+      const made = await sessionsApi.create(mode === "research" ? {
+        mode, title: configuration?.title || "Dell · 新研究任务", question: researchQuestion,
+      } : { mode });
       choose(made.thread_id);
+      if (mode === "research") setInspector("activity");
       await refresh();
     } catch (e) {
       setError((e as Error).message);
@@ -317,8 +353,11 @@ export function ResearchSession() {
             FinSight<span>RESEARCH WORKSPACE</span>
           </strong>
         </a>
-        <button className="rs-new" onClick={newSession} disabled={sending}>
-          <Plus size={16} /> 新建 Dell 审阅会话
+        <button className="rs-new" onClick={() => setCreating(true)} disabled={sending}>
+          <Plus size={16} /> 新建研究任务
+        </button>
+        <button className="rs-legacy-link" onClick={() => newSession("review")} disabled={sending}>
+          <BookOpen size={14} /> 打开已有 Dell 报告审阅
         </button>
         <div className="rs-side-label">
           研究会话{" "}
@@ -366,24 +405,24 @@ export function ResearchSession() {
             <span /> LOCAL PILOT
           </span>
         </header>
-        {!session ? (
+        {!session || creating ? (
           <section className="rs-empty">
             <span className="rs-eyebrow">从一份研究，到一个可追问的判断</span>
             <h1>让结论经得起追问。</h1>
             <p>
-              打开已有的 Dell
-              全案研究，在真实来源与独立审查之间来回验证。修订有记录，问题不隐藏，模型按需要调用工具。
+              提出一个有分量的问题，让研究 Agent 自主拆解、查资料、核算与交叉质疑。
+              当前围绕 Dell 案例运行，原始资料可以复用，旧报告不会被当成新研究答案。
             </p>
             <div className="rs-empty-cards">
               <div>
                 <BookOpen />
-                <h3>读已有研究</h3>
-                <p>载入已保存的报告和证据，不重新跑全案。</p>
+                <h3>自主拆题与研究</h3>
+                <p>Lead 动态分工，专家按需调用内外源工具。</p>
               </div>
               <div>
                 <MessageSquare />
-                <h3>问具体问题</h3>
-                <p>检查口径、解释推断，或提出定向修改。</p>
+                <h3>有依据的判断</h3>
+                <p>把业务机制连到利润和现金，保留真正的反证。</p>
               </div>
               <div>
                 <ShieldCheck />
@@ -391,20 +430,30 @@ export function ResearchSession() {
                 <p>来源绑定不代表结论正确，保留反例与人工判断。</p>
               </div>
             </div>
+            <div className="rs-research-prompt">
+              <label htmlFor="new-research-question">这次你想研究什么？</label>
+              <textarea id="new-research-question" value={researchQuestion} maxLength={16000}
+                onChange={(e) => setResearchQuestion(e.target.value)} rows={7}
+                placeholder="例如：判断 Dell 的增长质量、盈利兑现和未来执行压力，并说明什么证据会改变判断。" />
+              <div><span>案例资料时点：{configuration?.research_as_of?.slice(0, 10) || "待配置"}</span>
+                {configuration?.cost_expectation_cny && <span>完整研究规划估费约 ¥{configuration.cost_expectation_cny.rough_low}–{configuration.cost_expectation_cny.rough_high}，非固定价格</span>}</div>
+            </div>
             <button
               className="rs-primary"
-              disabled={sending || !!id}
-              onClick={newSession}
+              disabled={sending || !configuration?.fresh_research_enabled || researchQuestion.trim().length < 10}
+              onClick={() => newSession("research")}
             >
-              {sending || id ? (
+              {sending ? (
                 <LoaderCircle className="rs-spin" size={16} />
               ) : (
                 <Plus size={16} />
               )}{" "}
-              {id ? "载入会话中" : "开始审阅 Dell 案例"}
+              {sending ? "正在创建任务" : "开始全新研究"}
             </button>
             <small>
-              打开已有报告不调用模型。当前为报告审阅试点，不是任意公司研究入口。
+              {configurationError || (configuration?.fresh_research_enabled
+                ? "开始研究会产生真实模型调用；研究过程中可查看任务和费用、停止执行。打开旧报告则不重新研究。"
+                : "新研究尚未在当前服务启用，不会拿旧稿冒充新结果。已有报告审阅仍可使用。")}
             </small>
           </section>
         ) : (
@@ -412,9 +461,9 @@ export function ResearchSession() {
             <section className="rs-heading">
               <div>
                 <span className="rs-eyebrow">DELL / AI INFRASTRUCTURE</span>
-                <h1>需求如何变成利润与现金？</h1>
+                <h1>{session.question ? "增长，是否正在兑现？" : "需求如何变成利润与现金？"}</h1>
                 <p>
-                  全案研究审阅 <span>·</span> 信息截止 2026-09-02 <span>·</span>{" "}
+                  {session.question ? "新问题 · 完整研究" : "已有报告审阅"} <span>·</span> 信息截止 {session.research_as_of?.slice(0, 10) || "2026-09-02"} <span>·</span>{" "}
                   报告版本 {session.report_version || "—"}
                 </p>
               </div>
@@ -435,6 +484,28 @@ export function ResearchSession() {
                     : phaseName[session.phase || ""] || "正在载入"}
               </span>
             </section>
+            {session.question && <div className="rs-task-question">{session.question}</div>}
+            {session.research_stop_reason && <div className="rs-report-notice">
+              <ShieldCheck size={17} /><span>本次仍有未解决问题，已保留成果，不会自动整案重跑。
+                {session.research_stop_reason === "material_findings_remain_after_targeted_correction" ? "一轮定向修订后，重大问题仍未关闭。" :
+                 session.research_stop_reason === "unresolved_data_or_author_response" ? "数据、工具或责任作者仍有未解决项，请查看审查意见。" : session.research_stop_reason}
+              </span></div>}
+            {(researchTasks.length > 0 || (session.question && !session.report)) && (
+              <details className="rs-task-board" open={!session.report}>
+                <summary><Layers size={16} /> 本次研究分工 <span>{researchTasks.length} 个真实任务</span></summary>
+                {!researchTasks.length && <p>研究负责人正在读取问题并规划任务。这里不会预先填充虚构的 Agent 活动。</p>}
+                <div className="rs-task-grid">{researchTasks.map((task) => (
+                  <div className="rs-task-card" key={task.task_id}>
+                    <div><strong>{task.owner_role || "研究专家"}</strong><span>{
+                      ["submitted", "specialist_submission_accepted"].includes(task.status) ? "已提交底稿" :
+                      task.status === "running" ? "研究中" : task.status === "error" ? "执行失败" : task.status === "needs_attention" ? "待处理" : "等待执行"
+                    }</span></div>
+                    <p>{task.objective}</p>
+                    <small>{task.dependency_ids.length ? `依赖：${task.dependency_ids.join("、")}` : "可独立执行"}</small>
+                  </div>
+                ))}</div>
+              </details>
+            )}
             <div className="rs-tabs">
               <div>
                 <button
@@ -462,7 +533,7 @@ export function ResearchSession() {
                   <div className="rs-report-notice">
                     <ShieldCheck size={17} />
                     <span>
-                      这份报告保留真实待修订状态。引用证明来源可追溯，不替代对财务含义的判断。
+                      {session.report ? "引用可以展开查看依据；报告的实质判断仍需结合来源上下文审阅。" : "研究进行中：底稿、审查与报告会按实际完成情况出现。"}
                     </span>
                   </div>
                   <article className="rs-prose">
@@ -681,6 +752,8 @@ export function ResearchSession() {
                   </summary>
                   <blockquote>{f.report_quote}</blockquote>
                   <p>{f.diagnosis}</p>
+                  {f.responsibility && <p className="rs-helper">责任：{responsibilityName[f.responsibility]}
+                    {!!f.paper_ids?.length && ` · ${f.paper_ids.join("、")}`}</p>}
                   <div className="rs-recommendation">{f.requested_change}</div>
                   <button
                     onClick={() => {
@@ -712,6 +785,15 @@ export function ResearchSession() {
                   )}
                 </details>
               )}
+              {session?.synthesis_review && <details className="rs-review-summary">
+                <summary>Lead 综合判断的独立复核</summary>
+                <p>{session.synthesis_review.summary}</p>
+                {session.synthesis_review.findings.map(f => <div key={f.finding_id}>
+                  <strong>{f.severity === "material" ? "重大" : "建议"} · {responsibilityName[f.responsibility || ""] || "待定位"} {f.paper_ids?.join("、")}</strong>
+                  <p>{f.diagnosis}</p><p>{f.requested_change}</p>
+                </div>)}
+                {session.synthesis_review.unresolved_data_requests.map((item, i) => <p key={i}>{item}</p>)}
+              </details>}
               {session?.can_accept && (
                 <button
                   className="rs-accept"
@@ -750,13 +832,13 @@ export function ResearchSession() {
                 本会话当前载入 {models.length} 次模型记录、{format(totals.tokens)} tokens；含失败任务已知用量，不含载入前研究费用。下方为会话事件历史，不是单次问题的调用数。
               </p>
               <div className="rs-agent-cards">
-                {["writer", "verifier", "quick_writer"].map((role) => (
+                {[...new Set([...models.map(e => e.actor), ...(session?.responsibility_history || []).map(e => e.actor)])].map((role) => (
                   <div key={role}>
                     <span className="rs-agent-avatar">
-                      {role === "writer" ? "W" : role === "verifier" ? "V" : "Q"}
+                      {role.startsWith("author_") ? "A" : role.charAt(0).toUpperCase()}
                     </span>
                     <span>
-                      {stageName[role]}
+                      {actorName(role)}
                       <small>
                         {models.filter((x) => x.actor === role).length}{" "}
                         次已报告调用
@@ -772,7 +854,7 @@ export function ResearchSession() {
                       className={`rs-event-dot ${e.status === "error" || e.status === "provider_failed" ? "error" : ""}`}
                     />
                     <div>
-                      <strong>{stageName[e.actor] || e.actor}</strong>
+                      <strong>{actorName(e.actor)}</strong>
                       <span>
                         {e.kind === "tool"
                           ? e.tool
@@ -792,6 +874,8 @@ export function ResearchSession() {
                               : e.status || e.event}
                         {e.total_tokens !== undefined &&
                           ` · ${format(e.total_tokens)} tokens`}
+                        {e.correction_round !== undefined && ` · ${e.correction_round ? "定向修订轮" : "首次执行"}`}
+                        {!!e.responsible_paper_ids?.length && ` · 回派 ${e.responsible_paper_ids.join("、")}`}
                       </small>
                     </div>
                   </div>

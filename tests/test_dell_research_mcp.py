@@ -368,6 +368,28 @@ def test_mcp_exposes_strong_typed_non_cell_surface_and_scope() -> None:
     asyncio.run(exercise())
 
 
+def test_finance_metric_schema_and_anticipated_validation_feedback() -> None:
+    async def exercise():
+        async with Client(_build_server(), raise_exceptions=False) as client:
+            specs = await client.list_tools()
+            schema = next(t.input_schema for t in specs.tools if t.name == QUERY_COMPANY_FINANCIAL_FACTS_TOOL)
+            assert "lowercase" in schema["properties"]["metric_ids"]["description"]
+            method = await client.call_tool(GET_RESEARCH_METHOD_TOOL, _method_arguments(["Q1_ISSUER_TRUTH"]))
+            args = {"branch_id": "Q1_ISSUER_TRUTH", "run_scope": method.structured_content["run_scope"],
+                "ticker": "DELL", "metric_ids": ["REVENUE", "GAAP_OPERATING_INCOME"],
+                "research_as_of": "2026-09-02", "granularity": "quarter_discrete",
+                "selection_mode": "exact_period_end", "period_end": "2026-05-01"}
+            rejected = await client.call_tool(QUERY_COMPANY_FINANCIAL_FACTS_TOOL, args)
+            error = " ".join(c.text for c in rejected.content if c.type == "text")
+            assert rejected.is_error and "financial_fact_metric_ids_invalid" in error
+            assert "revenue and operating_income" in error and "No SQL query was executed" in error
+            assert "Traceback" not in error and "GAAP_OPERATING_INCOME" not in error
+            corrected = await client.call_tool(QUERY_COMPANY_FINANCIAL_FACTS_TOOL,
+                {**args, "metric_ids": ["revenue", "operating_income"]})
+            assert not corrected.is_error and corrected.structured_content["typed_gap_count"] == 2
+    asyncio.run(exercise())
+
+
 def test_mcp_capture_requires_discovery_receipt_and_preserves_lineage() -> None:
     async def exercise() -> None:
         async with Client(_build_server()) as client:

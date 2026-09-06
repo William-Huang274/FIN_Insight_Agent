@@ -4,9 +4,9 @@ from collections.abc import Awaitable, Callable, Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date, datetime
 import inspect
-from typing import Any, Literal, Protocol, TypeVar
+from typing import Annotated, Any, Literal, Protocol, TypeVar
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, ValidationError
 
 from sec_agent.research.finance_tool_contract import (
     READ_NUMERIC_FACTS_TOOL,
@@ -347,7 +347,8 @@ def build_research_data_mcp_server(
         branch_id: str,
         run_scope: DellResearchRunScope,
         ticker: str,
-        metric_ids: list[str],
+        metric_ids: Annotated[list[str], Field(min_length=1, max_length=12,
+            description="Existing lowercase snake_case S2 metric IDs, e.g. revenue, operating_income (GAAP), net_income, diluted_eps. Not display labels or uppercase formula IDs. Inspect returned periods; a company's fiscal year is not its calendar year.")],
         research_as_of: date,
         granularity: Literal["quarter_discrete", "fiscal_ytd", "fiscal_year", "instant", "quarter", "quarter_and_fiscal_year"],
         selection_mode: Literal[
@@ -364,18 +365,27 @@ def build_research_data_mcp_server(
             run_scope=run_scope,
             branch_id=branch_id,
         )
-        request = CompanyFinancialFactQuery(
-            ticker=ticker,
-            metric_ids=tuple(metric_ids),
-            research_as_of=research_as_of,
-            period_start=period_start,
-            period_end=period_end,
-            fiscal_years=tuple(fiscal_years or ()),
-            selection_mode=selection_mode,
-            granularity=granularity,
-            requested_unit=requested_unit,
-            unit_family=unit_family,
-        )
+        try:
+            request = CompanyFinancialFactQuery(
+                ticker=ticker,
+                metric_ids=tuple(metric_ids),
+                research_as_of=research_as_of,
+                period_start=period_start,
+                period_end=period_end,
+                fiscal_years=tuple(fiscal_years or ()),
+                selection_mode=selection_mode,
+                granularity=granularity,
+                requested_unit=requested_unit,
+                unit_family=unit_family,
+            )
+        except ValidationError as exc:
+            from mcp.server.mcpserver.exceptions import ToolError
+            # MCP2's anticipated ToolError returns actionable field errors.
+            # Do not expose input values, exception context or backend crashes.
+            problems = "; ".join(".".join(map(str, e["loc"])) + ": " + e["msg"]
+                for e in exc.errors(include_input=False, include_context=False, include_url=False))
+            raise ToolError("Financial query validation failed: " + problems
+                + ". Use lowercase metric IDs such as revenue and operating_income; check fiscal-year/date selection. No SQL query was executed.") from None
         return await _invoke_model(
             dependencies.financial_fact_reader,
             CompanyFinancialFactQueryResult,

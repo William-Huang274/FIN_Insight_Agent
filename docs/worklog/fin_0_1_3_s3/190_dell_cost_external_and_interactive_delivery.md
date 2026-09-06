@@ -322,3 +322,11 @@ Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量�
 首次问题预定为Dell FY2027 Q1总收入和经营利润，要求期间、单位与来源，不给答案、不重研究。TokenBudgetBasis：单问题/约10k字符目录、有限公开会话；8模型/24工具、350k输入字符、8k单次输出、240s请求超时，disabled，无transport retry/fallback。允许查当前claim、S2及原源和纠错，不要求耗尽预算。依据前两次复杂修订10调用/约417–428k总tokens，本次只查两个已有财务事实，不应继承整报告反复生成/审查成本；实际是否省钱/正确以新run为准。输出截断/未知结果停止，不为省钱隐瞒研究缺口。近邻测试、真实UI运行、源核验与token统计后再决定扩展；不先做新公司。
 
 实现仅现有native图多一个quick_writer分支与薄只读报告工具，profile/TokenBudgetBasis随源码固定到镜像；旧部署seed/PG/source不变。原生测试实际证明quick调用、报告按需读、非法无引用答复反馈自修、Writer/Verifier零调用、随后deep独立上下文及无嵌套引用历史。40近邻pytest/22.71s、TS/Vite build通过（首次错误cwd未找到tsc属于宿主命令，正确frontend目录重跑通过）；637.15KB JS/191.16KBgzip既存分包提示保留。下一实际UI，不把fixture当金融答案质量。
+
+### 06:04Z 首次Flash快速问答完成；发现并小修SQL参数反馈
+
+33221126已推送/部署，API镜像config89f290d3、容器981ae05d375d，同PG/Redis未重建；新BFF进程42928。UI实际选择quick后提交预定问题，run `01a07551-5129-7b70-9f4e-3d23eb5c62a4`，06:04:18.603020Z—06:04:43.544068Z，约24.94秒。Flash disabled 6次调用85962tokens（83255输入/2707输出、65280cache-hit），估0.042408元；Pro/Verifier/研究作者均0调用，report_version仍3。第一屏19769字符/7190输入tokens，不预塞整报告/前审；最后回答正确绑定P01:C1/C2的S2保存源43842000000/3656000000 USD、FY2027 Q1/2026-01-31至05-01。公开状态保存`public-session-after-quick-answer1.json`，离线累计审计a3_actual为26调用931100tokens/估1.9397292元。thinking disabled未报reasoning明细，不能把unknown字段作为独立零推理计量证明。
+
+不能说本次在线SQL成功：模型先后用REVENUE/GAAP_OPERATING_INCOME和REVENUE/OPERATING_INCOME大写字段且猜错财年日期，domain validator拒绝；MCP2把工具函数内未分类ValidationError视为意外异常，只回通用Error executing tool。模型转读当前底稿/存档NumericFact，第一次把source ID当claim ID又被拒绝，后来自修成功；6次provider success不等于0工具错误。宿主随后用真实MCP/真实SQL核对同两项，均resolved且期间/单位/source IDs与答案一致，0写入、0provider；保存`quick-answer-sql-host-check.json`。
+
+根因修补只在既有MCP：metric_ids增加既有小写命名和合法例子的schema说明；构造Query的预期ValidationError转换为MCP2原生ToolError，回field/code与改正提示，不泄露输入/trace/backend，也不自动猜别名或降低约束。依据已安装MCP2.1.1官方exceptions.ToolError语义。22相邻检查通过/8.32s（原错误→具体反馈→合法请求，不是新NLP规则）。下一同Dell追问复核一次，沿用quick预算，不重写报告/新case；保留本次SQL失败而不回写成通过。

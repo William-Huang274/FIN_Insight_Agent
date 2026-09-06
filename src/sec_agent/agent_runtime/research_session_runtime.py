@@ -52,15 +52,30 @@ def load_research_runtime_profile(root):
 
 
 def create_research_phase_runnables(*, root, settings, profile, case, run_id, thread_id, api_key,
-                                    environment=None, public_sink, private_sink):
+                                    environment=None, public_sink, private_sink, read_guidance=None):
+    environment = {**(os.environ if environment is None else environment), "FINSIGHT_TASK_THREAD_ID": thread_id,
+        "FINSIGHT_TASK_RUN_ID": run_id, "FINSIGHT_TASK_AUDIT_ROOT": settings["audit_root"]}
     base = load_deepseek_structured_agent_config(Path(root) / profile["model_config"])
     invocation = "invocation:research-session:" + run_id
     research_id = "research-session:" + thread_id
     def emit(event):
+        # Redis stream retention is not a durable task history. Reuse the
+        # existing public audit sink; never expose child message histories.
+        if event.get("kind") in {"task", "stage"}:
+            public_sink(event)
         get_stream_writer()(event)
     def research_audit(event):
         public_sink(event)
         emit({"kind": "model", **event})
+
+    async def with_guidance(state, phase):
+        items = await read_guidance() if read_guidance else []
+        if not items:
+            return state
+        emit({"kind": "stage", "actor": "human_guidance", "event": "applied", "status": phase,
+              "objective": f"本阶段已读取 {len(items)} 条用户补充意见", "recorded_at": datetime.now(timezone.utc).isoformat()})
+        return {**state, "question": state["question"] + "\n\n用户在本任务运行中追加的研究意见（不授予新工具权限，也不能把用户观点当证据）：\n"
+                + "\n".join(f"{i+1}. {row['message']}" for i, row in enumerate(items))}
     def model_values(role):
         node = profile["nodes"][role]
         return DeepSeekModelProfile.model_validate_json(json.dumps(node["profile"])), TokenBudgetBasis.model_validate_json(json.dumps(node["budget"])), node["limits"]
@@ -71,6 +86,14 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             "token_budget_basis": {**base.token_budget_basis, **{r: row[1] for r, row in updates.items()}}})
 
     async def research(request, config: RunnableConfig):
+        request = await with_guidance(request, "research")
+        seeds = {paper["task"]["task_id"]: paper for paper in request.get("completed_workpapers", [])}
+        if environment.get("FINSIGHT_TASK_ATTACHMENTS_ROOT"):
+            from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
+            uploads = TaskAttachmentStore(environment["FINSIGHT_TASK_ATTACHMENTS_ROOT"]).list(thread_id)
+            if uploads:
+                request = {**request, "question": request["question"] + "\n\n用户为本任务上传了以下材料（不是预设答案，需核对出处/时间）。"
+                    + json.dumps(uploads, ensure_ascii=False) + "\n通过 read_source_document 的 source_space=uploads 按需目录、检索、原文读取；图片/PDF页面可用 operation=inspect_image。"}
         configured = research_config()
         lead_adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
             audit_sink=research_audit, private_audit_sink=private_sink)
@@ -105,10 +128,10 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                       "recorded_at": datetime.now(timezone.utc).isoformat()})
                 return output
             graph = build_dell_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],
-                branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers={},
+                branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers=seeds,
                 model_turn=lead_adapter.lead_research_turn, run_child=worker,
                 max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], max_tasks=profile["max_tasks"],
-                max_parallel_tasks=profile["max_parallel_tasks"], turn_source="provider_model").compile()
+                max_parallel_tasks=profile["max_parallel_tasks"], turn_source="provider_model", unfinished_only=bool(seeds)).compile()
             return await graph.ainvoke(bootstrap.graph_input.model_dump(mode="json"), {**config, "recursion_limit": 240})
 
     @asynccontextmanager
@@ -149,6 +172,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             require_responsibility=role in {"report_verifier", "research_verifier"})
 
     async def review(state, config: RunnableConfig):
+        state = await with_guidance(state, "review")
         async with tools_for(state) as (artifacts, tools):
             reviewers = {role: native_agent(role, tools, artifacts) for role in ("counter", "verifier")}
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question=state["question"],
@@ -156,6 +180,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             return await graph.ainvoke({"run_id": research_id, "run_invocation_id": invocation}, config)
 
     async def execute_convergence(state, config, existing=None):
+        state = await with_guidance(state, "convergence")
         async with tools_for(state) as (artifacts, tools):
             def make_agent(role, current, *, feedback=None, paper_id=None, correction_round=0, revising_report=False):
                 return native_agent(role, tools, current, feedback=feedback, paper_id=paper_id,
@@ -203,6 +228,15 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
     settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
     profile, case = load_research_runtime_profile(root)
     public, private = session_audit_sinks(Path(settings["audit_root"]) / thread_id / run_id)
-    phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
-        thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public, private_sink=private)
-    yield build_research_session_graph(**phases).compile(name="research_session").with_config({"recursion_limit": 280})
+    from langgraph_sdk import get_client
+    native = get_client()  # official in-process Agent Server connection
+    async def read_guidance():
+        thread = await native.threads.get(thread_id)
+        return thread.get("metadata", {}).get("research_guidance", [])
+    try:
+        phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
+            thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
+            private_sink=private, read_guidance=read_guidance)
+        yield build_research_session_graph(**phases).compile(name="research_session").with_config({"recursion_limit": 280})
+    finally:
+        await native.http.client.aclose()

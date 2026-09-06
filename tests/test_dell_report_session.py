@@ -235,11 +235,15 @@ def test_request_usage_includes_failed_nodes_without_private_data_or_fake_zero(t
     rows = [{"event": "started", "call_id": "known", "actor": "quick_writer", "raw_response": "PRIVATE"},
         {"event": "outcome", "call_id": "known", "actor": "quick_writer", "status": "success", "input_tokens": 8, "output_tokens": 4, "total_tokens": 12},
         {"event": "started", "call_id": "unknown", "actor": "quick_writer"},
-        {"event": "outcome", "call_id": "unknown", "actor": "quick_writer", "status": "provider_failed", "total_tokens": None}]
+        {"event": "outcome", "call_id": "unknown", "actor": "quick_writer", "status": "provider_failed", "total_tokens": None},
+        {"kind": "task", "event": "started", "task_id": "T2", "actor": "finance", "objective": "Compare margins", "dependency_ids": ["T1"], "messages": ["PRIVATE"]},
+        {"kind": "task", "event": "outcome", "task_id": "T2", "status": "specialist_human_review_handoff_emitted"}]
     (folder / "model-call-events.jsonl").write_text("\n".join(json.dumps(r) for r in rows) + '\n{"partial":', encoding="utf-8")
     (folder / "model-context-reasoning.private.jsonl").write_text("PRIVATE NOT A PUBLIC AUDIT", encoding="utf-8")
     events, usage = public_run_usage(tmp_path, thread, run)
     assert "PRIVATE" not in json.dumps(events) and all(e["run_id"] == run for e in events)
+    assert events[-2]["kind"] == "task" and events[-2]["dependency_ids"] == ["T1"]
+    assert events[-1]["status"] == "specialist_human_review_handoff_emitted"
     assert usage == {"recorded_requests": 2, "reported_requests": 1, "unknown_or_pending_requests": 1,
         "partial_audit": True, "input_tokens": 8, "output_tokens": 4, "total_tokens": 12}
     with pytest.raises(ValueError):
@@ -412,3 +416,15 @@ def test_quick_task_profile_reaches_existing_provider_request():
     assert payload["extra_body"]["thinking"] == {"type": "disabled"}
     assert payload.get("max_completion_tokens", payload.get("max_tokens")) == 8000
     assert "reasoning_effort" not in payload and model.max_retries == 0
+def test_archived_locator_addition_does_not_change_existing_evidence_contract():
+    from copy import deepcopy
+    from sec_agent.agent_runtime.dell_report_session import compatible_archived_citations
+    archived = {"P01:C1": {"claim": {"statement": "old claim"}, "sources": [{"source_id": "P01:S001", "text": "unchanged", "value_decimal": "10"}]}}
+    resolved = deepcopy(archived)
+    resolved["P01:C1"]["sources"][0]["source_locator"] = {"page": 1}
+    assert compatible_archived_citations(resolved, archived)
+    resolved["P01:C1"]["sources"][0]["value_decimal"] = "11"
+    assert not compatible_archived_citations(resolved, archived)
+    resolved = deepcopy(archived)
+    resolved["P01:C1"]["claim"]["statement"] = "changed"
+    assert not compatible_archived_citations(resolved, archived)

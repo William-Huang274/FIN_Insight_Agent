@@ -14,10 +14,11 @@ from pathlib import Path
 
 
 PRICE_SOURCE = "https://api-docs.deepseek.com/zh-cn/quick_start/pricing/"
-PRICE_AS_OF = "2026-09-06"
+PRICE_AS_OF = "2026-09-07"
 # CNY per million: cache hit, cache miss, output; peak is twice off-peak.
 OFF_PEAK = {"deepseek-v4-pro": (0.15, 4.5, 13.5),
-            "deepseek-v4-flash": (0.05, 1.5, 4.5)}
+            "deepseek-v4-flash": (0.05, 1.5, 4.5),
+            "deepseek-v4-flash-vision-exp": (0.05, 1.5, 4.5)}
 
 
 def encoded(value):
@@ -106,7 +107,7 @@ def summarize(calls):
 def audit(root):
     calls, not_sent = [], []
     for audit_path in sorted(root.glob("*/model-call-events.jsonl")):
-        events = [e for e in records(audit_path) if e.get("execution_source") != "saved_response_replay"]
+        events = [e for e in records(audit_path) if e.get("call_id") and e.get("execution_source") != "saved_response_replay"]
         starts = {e["call_id"]: e for e in events if e.get("event") == "started"}
         outcomes = {e["call_id"]: e for e in events if e.get("event") == "outcome"}
         if len(starts) != sum(e.get("event") == "started" for e in events):

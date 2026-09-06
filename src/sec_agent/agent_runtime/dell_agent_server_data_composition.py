@@ -321,6 +321,23 @@ def open_dell_approved_data_composition(
                     return await web_reader(request=request, branch_id=branch_id, run_scope=run_scope)
                 return local_reader.read_source_document(request=request, branch_id=branch_id, run_scope=run_scope)
 
+        if source_read_enabled and env.get("FINSIGHT_TASK_THREAD_ID") and env.get("FINSIGHT_TASK_ATTACHMENTS_ROOT"):
+            from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
+            from sec_agent.research_foundation.vision_reader import task_vision_reader
+            from .dell_report_session import session_audit_sinks
+            attachment_store = TaskAttachmentStore(env["FINSIGHT_TASK_ATTACHMENTS_ROOT"])
+            original_source_reader = source_reader
+            vision = None
+            if env.get("FINSIGHT_TASK_VISION_ENABLED") == "1":
+                public_audit, _ = session_audit_sinks(Path(env["FINSIGHT_TASK_AUDIT_ROOT"]) / env["FINSIGHT_TASK_THREAD_ID"] / env["FINSIGHT_TASK_RUN_ID"])
+                vision = task_vision_reader(api_key=env["DEEPSEEK_API_KEY"], public_sink=public_audit)
+            async def source_reader(*, request, branch_id, run_scope):
+                if request.source_space == "uploads":
+                    return await attachment_store.read(thread_id=env["FINSIGHT_TASK_THREAD_ID"], request=request, vision_reader=vision)
+                value = original_source_reader(request=request, branch_id=branch_id, run_scope=run_scope)
+                import inspect
+                return await value if inspect.isawaitable(value) else value
+
         server = build_research_data_mcp_server(
             ResearchDataMCPDependencies(
                 method_reader=DellFoundationMethodReader(foundation),

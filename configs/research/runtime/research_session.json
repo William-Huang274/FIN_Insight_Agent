@@ -5,10 +5,10 @@
   "max_parallel_tasks": 2,
   "scope": "One fresh Dell development case on the existing as-of data plane; limits are safety ceilings, not target call counts. No old answer seed. New vision/attachment/export tooling requires separate qualification before inclusion.",
   "cost_expectation_cny": {
-    "rough_low": 10,
-    "rough_high": 18,
+    "rough_low": 12,
+    "rough_high": 20,
     "kind": "planning_estimate_not_guarantee_or_hard_truncation_rule",
-    "basis": "Prior full research, targeted repair, review and reporting. This remains the original planning range, NOT a measured price for the newly added Lead synthesis/research verification. Re-estimate those additional nodes and any targeted correction before paid full-case launch; report material deviation. Charge vision/upload feature tests separately."
+    "basis": "2026-09-07 qualification estimate: prior eight-worker research ~6.63 CNY, cross-paper review ~1.92, targeted author repair/report ~1.98, plus new Lead synthesis/independent research review ~1-3 based on comparable Pro/low review inputs, and modest task/revision variability. Plan 12-20 CNY for the first fresh complete case; not measured price, no guaranteed savings. This Owner-authorized turn has ~20 CNY; host checks actual audit usage at stage boundaries and warns before spending materially beyond it. Vision probe separately itemized. Do not omit required research or auto-rerun the full case to fit an arbitrary call count."
   },
   "nodes": {
     "lead": {

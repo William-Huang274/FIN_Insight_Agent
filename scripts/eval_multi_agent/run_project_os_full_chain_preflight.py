@@ -61,7 +61,18 @@ def main() -> int:
         if not decision_path.is_relative_to(ROOT):
             raise ValueError("preflight_decision_outside_repository")
         schema = json.loads(decision_path.read_text(encoding="utf-8")).get("schema_version")
-        if schema == "fin_ia_dell_q1_specialist_paid_shadow_authority_v1_0":
+        if decision_path == ROOT / "configs/research/runtime/research_session.json":
+            # Interactive sessions use the approved deployed profile, not a
+            # newly minted once-run authority for every user question.
+            from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
+            profile, case = load_research_runtime_profile(ROOT)
+            result = {"status": "interactive_research_profile_contract_pass", "decision_ref": args.decision,
+                "roles": list(profile["nodes"]), "branch_count": len(case["branch_topics"]),
+                "max_parallel_tasks": profile["max_parallel_tasks"], "max_tasks": profile["max_tasks"],
+                "fresh_no_prior_workpapers": not case["reuse_prior_workpapers"],
+                "model_calls": 0, "full_product_pass": False,
+                "known_boundary": "Profile/schema check only. Agent Server retains existing credential/tracing/data/MCP checks before models. No historical failure is cleared and no new per-request authority is created."}
+        elif schema == "fin_ia_dell_q1_specialist_paid_shadow_authority_v1_0":
             result = _current_agent_server_preflight(decision_path)
         else:
             from sec_agent.project_os_preflight import build_preflight

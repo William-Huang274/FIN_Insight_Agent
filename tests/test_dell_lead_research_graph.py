@@ -117,13 +117,39 @@ def test_fresh_lead_uses_current_question_and_only_lead_role_method_without_old_
     assert len(result["task_results"]) == 1 and len(seen) == 2
 
 
-@pytest.mark.parametrize("defect", ["cycle", "dependency", "duplicate", "capability", "authority", "branch", "status", "schema", "invalid_json", "multiple_mutations", "premature_completion"])
+def test_failed_attempt_kept_but_successful_replacement_can_reach_independent_review():
+    seen, calls = [], []
+    def model(request):
+        seen.append(request)
+        if len(seen) == 1:
+            return _call(request, "DelegateResearchTasksAction", tasks=[_task(), _task("compute", BRANCHES[1])])
+        if len(seen) == 2:
+            return _call(request, "DelegateResearchTasksAction", tasks=[_task("price-replacement")])
+        return _stop(request, incomplete=("task:price",), ready=True)
+    def worker(task, dependencies, config):
+        calls.append(task["task_id"])
+        result = _worker_result(task, _seed())
+        if task["task_id"] == "task:price":
+            result.update(phase="specialist_human_review_handoff_emitted", final_submission=None)
+        return result
+    graph, value = _graph(model, worker)
+    result = graph.invoke(value.model_dump(mode="json"))
+    assert result["phase"] == "research_ready_for_review"
+    outcomes = {row["task_id"]: row["status"] for row in result["task_results"]}
+    assert outcomes == {"task:price": "needs_attention", "task:compute": "submitted", "task:price-replacement": "submitted"}
+    assert result["lead_handoff"]["acknowledged_incomplete_task_ids"] == ["task:price"]
+    assert len(calls) == len(set(calls)) == 3
+
+
+@pytest.mark.parametrize("defect", ["cycle", "dependency", "duplicate", "capability", "authority", "branch", "status", "schema", "invalid_json", "multiple_mutations", "premature_completion", "ack_route"])
 def test_invalid_lead_action_reaches_next_turn_without_worker_execution(defect):
     seen, executions = [], []
     def model(request):
         seen.append(request)
         if len(seen) > 1:
             assert all(row["status"] == "error" for row in request["tool_results"])
+            if defect == "ack_route":
+                assert json.loads(request["tool_results"][0]["content"])["expected_incomplete_task_ids"] == []
             if defect == "branch":
                 error = json.loads(request["tool_results"][0]["content"])
                 assert error["allowed_values"] == list(BRANCHES)
@@ -142,6 +168,7 @@ def test_invalid_lead_action_reaches_next_turn_without_worker_execution(defect):
         elif defect == "status": task["status"] = "completed"
         elif defect == "schema": task["objective"] = ""
         if defect == "premature_completion": return _stop(request, ready=True)
+        if defect == "ack_route": return _stop(request, incomplete=("route:Q6:required-reviewed",), ready=True)
         call = _call(request, "DelegateResearchTasksAction", tasks=tasks)
         if defect == "invalid_json": call["action"]["tool_calls"][0].update(args='{"tasks":', type="invalid_tool_call")
         elif defect == "multiple_mutations":

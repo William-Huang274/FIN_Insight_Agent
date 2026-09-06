@@ -231,6 +231,23 @@ def session_audit_sinks(audit_root):
     return sink("model-call-events.jsonl"), sink("model-context-reasoning.private.jsonl")
 
 
+def compatible_archived_citations(resolved, archived):
+    """Only missing additive locator metadata may differ in pre-migration reports.
+
+    All saved claims, source IDs, text, values, periods and existing locator
+    values still compare exactly. The immutable archived report is not rewritten.
+    """
+    candidate = deepcopy(resolved)
+    additive = {"source_locator", "parser_page_start", "parser_page_end", "page_semantics",
+        "section_path", "document_id", "node_id", "company", "issuer_id", "content_sha256"}
+    for ref, row in candidate.items():
+        old = archived.get(ref, {})
+        for source, saved in zip(row.get("sources", []), old.get("sources", [])):
+            for key in additive - saved.keys():
+                source.pop(key, None)
+    return candidate == archived
+
+
 def load_session_materials(settings):
     from .dell_specialist_paid_shadow import file_sha256
     paths = {key: Path(settings[key + "_path"]) for key in ("bundle", "report")}
@@ -243,7 +260,7 @@ def load_session_materials(settings):
     initial = {k: deepcopy(state[k]) for k in ("report", "report_review", "revisions")}
     view = artifacts.with_revisions(initial["revisions"])
     resolved = report_citations(CaseReport.model_validate({k: initial["report"][k] for k in ("title", "narrative_markdown")}), view)
-    if resolved != initial["report"]["citations"]:
+    if not compatible_archived_citations(resolved, initial["report"]["citations"]):
         raise ValueError("session_report_citation_binding_invalid")
     ReportReview.model_validate(initial["report_review"])
     return artifacts, initial

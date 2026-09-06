@@ -41,7 +41,7 @@ def _new_worker_fixture():
     return _run(_ScriptedModel([_evidence_action(), _finance_action(), _submission()]), FullSourceFixturePorts())
 
 
-def _phases(*, material=False, incomplete=False, fail_convergence=False, full_profile=False):
+def _phases(*, material=False, incomplete=False, fail_convergence=False, full_profile=False, fail_one_first=False):
     seen = {"research": 0, "review": 0, "converge": 0, "ask": 0}
     models = {}
     root = Path(__file__).resolve().parents[1]
@@ -57,20 +57,24 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
         running = 0
         max_running = 0
         delegated = [_task("price", branches[0]), _task("compute", branches[1])]
+        seeds = {paper["task"]["task_id"]: paper for paper in request.get("completed_workpapers", [])}
+        if seeds:
+            assert fail_one_first and set(seeds) == {"task:price"}
+            delegated = [delegated[1]]
         if full_profile:
             delegated += [_task(f"theme{i}", branch, ("task:price",) if i == 2 else ()) for i, branch in enumerate(branches[2:], 2)]
         def lead(payload):
             turns.append(payload)
             assert payload["research_question"] == request["question"]
             if len(turns) == 1:
-                assert not payload["workpapers"]
+                assert len(payload["workpapers"]) == len(seeds)
                 return _call(payload, "DelegateResearchTasksAction", tasks=delegated)
             if full_profile and len(turns) == 2:
                 assert {row["task_id"] for row in payload["workpapers"]} == {"task:price", "task:compute"}
                 return _call(payload, "DelegateResearchTasksAction", tasks=[_task("followup", branches[-1], ("task:price", "task:compute"))])
             if full_profile and len(payload["workpapers"]) < 10:
                 return _call(payload, "ContinueResearchTasksAction")
-            return _stop(payload, ready=not incomplete)
+            return _stop(payload, ready=not incomplete and not (fail_one_first and seen["research"] == 1))
         def worker(task, dependencies, cfg):
             nonlocal running, max_running
             assert set(dependencies) == set(task["dependency_ids"])
@@ -80,12 +84,17 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
             try:
                 if full_profile and task["task_id"] in {"task:price", "task:compute"}:
                     barrier.wait()
-                return _worker_result(task, _new_worker_fixture())
+                result = _worker_result(task, _new_worker_fixture())
+                if fail_one_first and seen["research"] == 1 and task["task_id"] == "task:compute":
+                    result.update(phase="specialist_human_review_handoff_emitted", final_submission=None,
+                                  human_review_handoff={"reason": "synthetic_single_transport_failure"})
+                return result
             finally:
                 with lock:
                     running -= 1
         graph = build_dell_lead_research_graph(expected_input=SpecialistAgenticInput.model_validate_json(json.dumps(_input())),
-            research_question=request["question"], branch_catalog=catalog, allowed_branch_ids=branches, seed_workpapers={},
+            research_question=request["question"], branch_catalog=catalog, allowed_branch_ids=branches, seed_workpapers=seeds,
+            unfinished_only=bool(seeds),
             max_tasks=profile["max_tasks"], max_parallel_tasks=profile["max_parallel_tasks"],
             max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], model_turn=lead, run_child=worker).compile()
         result = await graph.ainvoke(_input(), config)
@@ -236,4 +245,41 @@ def test_failure_keeps_earlier_stage_artifacts_in_native_checkpoint_without_fake
         saved = await graph.aget_state(config)
         assert len(saved.values["case_papers"]) == 2 and saved.values["case_review"]["counter"]["status"] == "review_submitted"
         assert not saved.values.get("report") and seen["converge"] == 1
+    asyncio.run(exercise())
+
+
+@pytest.mark.parametrize("fail_remaining_once", [False, True])
+def test_explicit_native_continuation_only_runs_missing_theme_preserves_original_failure(fail_remaining_once):
+    async def exercise():
+        phases, seen, _ = _phases(fail_one_first=True)
+        saver = InMemorySaver()
+        graph = build_research_session_graph(**phases).compile(checkpointer=saver)
+        config = {"configurable": {"thread_id": "continue-missing", "run_id": "first"}, "recursion_limit": 120}
+        original = await graph.ainvoke({"question": "Complete the case without rerunning a submitted specialist."}, config)
+        assert original["phase"] == "research_needs_attention" and len(original["case_papers"]) == 1
+        assert "continue_remaining" in original["__interrupt__"][0].value["actions"]
+        first_paper = deepcopy(original["case_papers"][0])
+        graph = build_research_session_graph(**phases).compile(checkpointer=saver)
+        next_config = {**config, "configurable": {**config["configurable"], "run_id": "second"}}
+        if fail_remaining_once:
+            async def failed_remaining(request):
+                assert request["completed_workpapers"] == [first_paper]
+                raise ValueError("synthetic_known_continuation_failure")
+            broken = build_research_session_graph(**{**phases, "research": RunnableLambda(failed_remaining)}).compile(checkpointer=saver)
+            with pytest.raises(ValueError, match="synthetic_known_continuation_failure"):
+                await broken.ainvoke(Command(resume={"action": "continue_remaining"}), next_config)
+            saved = await graph.aget_state(next_config)
+            assert saved.tasks[0].name == "remaining_research" and saved.values["case_papers"] == [first_paper]
+            next_config["configurable"]["run_id"] = "third"
+            continued = await graph.ainvoke(None, next_config)  # native retry of the known failed node, no manual state update
+        else:
+            continued = await graph.ainvoke(Command(resume={"action": "continue_remaining"}), next_config)
+        assert continued["case_papers"][0] == first_paper and len(continued["case_papers"]) == 2
+        assert continued["report"] and continued["phase"] == "ready_for_human_review"
+        history = continued["research_attempt_history"]
+        assert history[0]["outcomes"] == original["research_outcomes"]
+        assert history[0]["outcomes"][1]["status"] == "needs_attention"
+        assert history[1]["outcomes"] == [{"task_id": "task:compute", "status": "submitted"}]
+        assert len(continued["research_tasks"]) == 2 and seen == {"research": 2, "review": 1, "converge": 1, "ask": 0}
+        assert len([snap for snap in saver.list(None) if snap.config["configurable"].get("checkpoint_ns") == ""]) > 2
     asyncio.run(exercise())

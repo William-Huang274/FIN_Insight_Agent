@@ -416,7 +416,7 @@ def build_research_data_mcp_server(
     if dependencies.source_document_reader is not None:
 
         @server.tool(name=READ_SOURCE_DOCUMENT_TOOL, structured_output=True,
-                     description="Read sources from runtime-enabled spaces: local case catalog/outline/search/read; web search/read only when explicitly enabled. Read uses returned server document IDs, never paths or shell. Web reads use character offsets, not PDF pages. Search previews are not citations; read passages are source-bound, not Reviewed Evidence or NumericFacts.")
+                     description="Read sources from runtime-enabled spaces: local case catalog/outline/search/read; web search/read; uploads task-only catalog/outline/search/read and inspect_image for uploaded image or PDF page. Inspect_image delegates to a vision model and returns fallible source-linked interpretation, not authoritative facts. Unavailable spaces are rejected. Use returned server document IDs, never paths or shell. Web offsets are characters. Search previews cannot be cited; source passages are not Reviewed Evidence or NumericFacts.")
         async def read_source_document(
             request: SourceDocumentRequest, branch_id: str, run_scope: DellResearchRunScope,
         ) -> SourceDocumentResult:

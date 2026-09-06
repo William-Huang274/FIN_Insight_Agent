@@ -48,6 +48,8 @@ agent-runtime = [
   "psycopg[binary,pool]==3.3.4",
   "sse-starlette==3.3.4",
   "simpleeval==1.0.7",
+  "pillow==12.3.0",
+  "pypdfium2==5.13.0",
 ]
 complex-pdf = [
   "pdfplumber>=0.11.9",
@@ -58,6 +60,16 @@ external-search = [
   "ddgs==9.16.0",
   "trafilatura==2.2.0",
   "tencentcloud-sdk-python>=3.1.162",
+]
+workbench-delivery = [
+    "markdown-it-py>=4",
+    "matplotlib>=3.10",
+    "pdfplumber>=0.11.9",
+    "pillow>=11",
+    "pypdfium2>=5.7.1",
+    "python-docx>=1.2.0",
+    "python-pptx>=1.0.2",
+    "reportlab>=4.4",
 ]
 
 [dependency-groups]

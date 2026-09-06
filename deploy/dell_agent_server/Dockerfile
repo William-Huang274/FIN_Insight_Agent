@@ -6,12 +6,12 @@ FROM langchain/langgraph-api:0.13.3-py3.13@sha256:ec26d6f6eb7ce3428ca476700f5722
 # Never copy the repository wholesale: local data, captures, receipts and
 # developer runtime state must not enter the image or even the build context.
 RUN mkdir -p /deps/FIN_Insight_Agent/configs/research
-COPY pyproject.toml uv.lock README.md /deps/FIN_Insight_Agent/
+COPY pyproject.toml uv.lock /deps/FIN_Insight_Agent/
 
 # Install locked third-party dependencies BEFORE frequently changed source.
 # Source/config changes must not redownload the entire runtime over the proxy.
 RUN cd /deps/FIN_Insight_Agent \
-    && uv export --locked --no-dev --extra agent-runtime --no-emit-project \
+    && uv export --quiet --locked --no-dev --extra agent-runtime --extra external-search --no-emit-project \
         --no-header --no-annotate --format requirements-txt \
         --output-file /tmp/finsight-agent-runtime-requirements.txt \
     && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir \
@@ -30,6 +30,7 @@ RUN PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -
 # -- End of ensuring user deps did not inadvertently overwrite langgraph-api --
 
 COPY src /deps/FIN_Insight_Agent/src
+COPY README.md /deps/FIN_Insight_Agent/
 RUN cd /deps/FIN_Insight_Agent \
     && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -e .
 COPY configs/research/fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json \
@@ -66,5 +67,7 @@ COPY configs/research/fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json /deps/F
 COPY configs/research/fin_ia_0_1_3_dell_case_review_native_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 COPY configs/research/fin_ia_0_1_3_dell_case_convergence_native_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 COPY configs/research/fin_ia_0_1_3_dell_report_quick_answer_v1_0.json /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research/cases/dell_growth_quality.json /deps/FIN_Insight_Agent/configs/research/cases/
+COPY configs/research/runtime/research_session.json /deps/FIN_Insight_Agent/configs/research/runtime/
 
 WORKDIR /deps/FIN_Insight_Agent

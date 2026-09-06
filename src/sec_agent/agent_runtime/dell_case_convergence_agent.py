@@ -65,11 +65,16 @@ class PaperRevision(BaseModel):
     finding_responses: list[FindingResponse] = Field(min_length=1, max_length=20)
 
 
+from sec_agent.research_foundation.report_charts import ReportChart, bind_report_charts
+
+
 class CaseReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
     title: str = Field(min_length=5, max_length=250)
     narrative_markdown: str = Field(min_length=200, max_length=80000,
         description="Free Chinese report, not a fixed template. Bind material statements inline using actual [P01:C15] paper claims, [PASSAGE::id] read-source windows, [NUMFACT::id] SQL facts or [CALC::id] calculator results observed in this task. Sources and authority notes are resolved locally; invented IDs are rejected.")
+    charts: list[ReportChart] = Field(default_factory=list, max_length=5,
+        description="Optional useful evidence charts, preferably 1-3 when data support comparison. Points bind actual source operands or CALC IDs; host reads values. Never invent values or use charts decoratively. Labels/period/unit choices are independently reviewed.")
 
 
 class ReportTextEdit(BaseModel):
@@ -86,7 +91,10 @@ def report_model_view(report):
     Full citation records stay in the report artifact for the UI and source tools.
     This is a projection, not truncation or a second context/memory service.
     """
-    return {key: report[key] for key in ("title", "narrative_markdown")}
+    return {**{key: report[key] for key in ("title", "narrative_markdown")}, **({"charts": [
+        {**{k: c[k] for k in ("title", "kind", "unit", "interpretation")},
+         "points": [{k: p[k] for k in ("label", "series", "value", "source_id")} for p in c["points"]]}
+        for c in report["charts"]]} if report.get("charts") else {})}
 
 
 def apply_report_edits(report, edits):
@@ -393,19 +401,27 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             citations = report_citations(report, artifacts.with_revisions(runtime.state.get("revisions", {})),
                 runtime.state.get("messages", []), prior_citations={**runtime.state.get("synthesis", {}).get("citations", {}),
                     **runtime.state.get("report", {}).get("citations", {})})
+            observed = observed_sources(runtime.state.get("messages", []))
+            current = artifacts.with_revisions(runtime.state.get("revisions", {}))
+            def lookup(ref):
+                return observed[ref] if ref in observed else current.source_item(ref)
+            charts = bind_report_charts(report.charts, lookup)
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
-        return output_message(runtime, {**report.model_dump(mode="json"), "citations": citations})
+        return output_message(runtime, {**report.model_dump(mode="json", exclude={"charts"}), "citations": citations,
+            **({"charts": charts} if charts else {})})
 
     @tool
     def submit_research_synthesis(synthesis: CaseReport, runtime: ToolRuntime) -> Command:
         """Submit the Lead's source-bound research judgment, not a final report or acceptance. Free prose: weigh evidence/conflicts, explain revision impact and the strongest countercase."""
         try:
+            if synthesis.charts:
+                raise ValueError("synthesis_is_research_judgment_keep_charts_for_final_writer")
             citations = report_citations(synthesis, artifacts.with_revisions(runtime.state.get("revisions", {})),
                 runtime.state.get("messages", []), prior_citations=runtime.state.get("synthesis", {}).get("citations", {}))
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
-        return output_message(runtime, {**synthesis.model_dump(mode="json"), "citations": citations})
+        return output_message(runtime, {**synthesis.model_dump(mode="json", exclude={"charts"}), "citations": citations})
 
     @tool
     def submit_case_answer(answer_markdown: str, runtime: ToolRuntime) -> Command:
@@ -431,7 +447,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
                 runtime.state.get("messages", []), prior_citations=runtime.state.get("report", {}).get("citations", {}))
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
-        return output_message(runtime, {**report.model_dump(mode="json"), "citations": citations,
+        return output_message(runtime, {**report.model_dump(mode="json", exclude={"charts"}), "citations": citations,
+            **({"charts": deepcopy(runtime.state["report"]["charts"])} if runtime.state["report"].get("charts") else {}),
             "applied_edits": [edit.model_dump(mode="json") for edit in edits]})
 
     @tool
@@ -440,7 +457,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         report = runtime.state["report"]
         errors = review_responsibility_errors(review, artifacts, required=require_responsibility)
         errors += [f"report_quote_not_exact:{f.finding_id}" for f in review.findings
-                  if not any(f.report_quote in t for t in _text_values({k: report[k] for k in ("title", "narrative_markdown")}))]
+                  if not any(f.report_quote in t for t in _text_values({k: report[k] for k in ("title", "narrative_markdown", "charts") if k in report}))]
         if errors:
             return output_message(runtime, error=json.dumps({"errors": errors}, ensure_ascii=False))
         return output_message(runtime, review.model_dump(mode="json"))
@@ -469,6 +486,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     if require_responsibility and role == "verifier":
         specific += "\nThe input review_target distinguishes lead_synthesis from final_report. For a synthesis, review the Lead's research judgment and actual revised papers before writing; for a report, check final expression against that research. Every material finding must declare the earliest responsibility and exact paper_ids for research repairs. Do not call an upstream research error writer-only. data_tool requires an observed data/tool defect after relevant permitted reads/attempts, not an empty search or unsupported public gap. For a source problem the researcher can remedy by permitted supplementary reads, use research. Missing owner/invalid paper IDs are rejected for you to correct. State concise source-backed rationales; no private reasoning in output."
     if role == "writer":
+        specific += "\nUse the report charts field for 1-3 useful source-bound comparisons when data supports them (cash conversion, achieved vs implied execution, comparable margin/revenue). Points use actual source IDs, exact prose quote/literal where needed, or observed calculator IDs; the host supplies values and renders charts. Do not force incomparable data onto one axis. No arbitrary plotting code. Charts need source/period review just like text."
         specific += "\nWhen research_synthesis is supplied, it is the Lead's independently reviewed judgment and source-bound rationale. Organize it faithfully with the current papers; do not silently substitute a new unsupported research conclusion. Corrections may recheck original sources. Distinguish remaining findings from stylistic advice."
     if role in {"writer", "verifier", "synthesis"}:
         specific += "\nReport citations may use actual paper:claim IDs, newly read [PASSAGE::id] source windows, [NUMFACT::id] SQL facts or [CALC::id] source-bound calculator results. Do not invent an old workpaper claim for new data. Passage numbers and calculations retain non-S2/non-authoritative status with sources and operands. For an existing report, use read_current_source with the exact inline citation ID to inspect its bound record on demand; then verify relevant original context."

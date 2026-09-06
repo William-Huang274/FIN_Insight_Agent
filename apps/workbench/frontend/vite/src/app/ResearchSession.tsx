@@ -44,10 +44,29 @@ const stageName: Record<string, string> = {
   writer: "报告写作",
   verifier: "独立复核",
   quick_writer: "快速问答 · Flash",
+  human_guidance: "用户补充意见",
+  issuer_truth_specialist: "收入、利润与现金",
+  demand_quality_specialist: "客户需求质量",
+  architecture_ramp_specialist: "架构更新与交付",
+  units_asp_pvm_specialist: "数量、价格与产品组合",
+  model_compute_specialist: "模型与算力需求",
+  supply_price_specialist: "供应链与成本传导",
+  competition_specialist: "同行竞争与议价",
+  export_control_specialist: "出口管制与区域风险",
+  counterevidence_specialist: "反证与替代解释",
+  counterevidence_synthesis_specialist: "反证与替代解释",
 };
-const actorName = (actor: string) => stageName[actor] || (actor.startsWith("author_") ? `${actor.slice(7)} · 责任作者修订` : actor);
+const branchName: Record<string, string> = { Q1: "收入、利润与现金", Q2: "客户需求质量", Q3: "量价与产品组合",
+  Q4: "架构更新与交付", Q5: "供应链与成本", Q6: "模型与算力需求", Q7: "出口管制", Q8: "同行竞争", Q9: "反证与替代解释" };
+const actorName = (actor: string) => {
+  if (actor.startsWith("lead:")) return "Lead · 研究任务规划";
+  const branch = actor.match(/^specialist:(Q\d+)_/)?.[1];
+  if (branch && branchName[branch]) return `${branch} · ${branchName[branch]}`;
+  return stageName[actor] || (actor.startsWith("author_") ? `${actor.slice(7)} · 责任作者修订` : actor);
+};
 const responsibilityName: Record<string, string> = { writer: "报告表达", research: "上游研究", data_tool: "数据 / 工具", human: "人工处理" };
 const phaseName: Record<string, string> = {
+  draft: "资料准备中 · 未调用模型",
   needs_revision: "有问题待修订",
   ready_for_human_review: "等待人工审阅",
   human_reviewed_not_released: "已人工审阅 · 未发布",
@@ -65,6 +84,14 @@ function validLink(url?: string) {
   } catch {
     return undefined;
   }
+}
+
+function chartSourceLinks(value: unknown): string[] {
+  if (Array.isArray(value)) return [...new Set(value.flatMap(chartSourceLinks))];
+  if (value && typeof value === "object") return [...new Set(Object.entries(value).flatMap(([key, item]) =>
+    ["source_url", "url"].includes(key) && typeof item === "string" ? (validLink(item) ? [item] : []) :
+    key === "citation_urls" && Array.isArray(item) ? item.filter((url): url is string => typeof url === "string" && !!validLink(url)) : chartSourceLinks(item)))];
+  return [];
 }
 
 function Markdown({
@@ -127,6 +154,8 @@ export function ResearchSession() {
   const [configurationError, setConfigurationError] = useState("");
   const [creating, setCreating] = useState(false);
   const [researchQuestion, setResearchQuestion] = useState("");
+  const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [uploadStatus, setUploadStatus] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [id, setId] = useState(
     new URLSearchParams(window.location.search).get("thread") || "",
@@ -188,10 +217,17 @@ export function ResearchSession() {
   useEffect(() => {
     if (!id) return;
     let disposed = false;
+    let firstSnapshot = true;
     const update = async () => {
       try {
         const value = await sessionsApi.state(id);
-        if (!disposed) setSession(value);
+        if (!disposed) {
+          setSession(value);
+          if (firstSnapshot) {
+            setInspector(value.status === "busy" ? "activity" : "review");
+            firstSnapshot = false;
+          }
+        }
       } catch (e) {
         if (!disposed) setError((e as Error).message);
       }
@@ -280,6 +316,9 @@ export function ResearchSession() {
       map.set(e.task_id, { task_id: e.task_id, owner_role: e.actor, objective: e.objective || "",
         dependency_ids: e.dependency_ids || [], status: e.status || e.event });
     }
+    // Final native outcomes win over a partial retained stream after refresh.
+    for (const task of session?.research_tasks || [])
+      if (!["planned", "ready"].includes(task.status)) map.set(task.task_id, task);
     return [...map.values()];
   }, [session?.research_tasks, allEvents]);
   const models = useMemo(() => {
@@ -303,9 +342,18 @@ export function ResearchSession() {
     setError("");
     try {
       const made = await sessionsApi.create(mode === "research" ? {
-        mode, title: configuration?.title || "Dell · 新研究任务", question: researchQuestion,
+        mode, title: configuration?.title || "Dell · 新研究任务", question: researchQuestion, defer_start: uploadFiles.length > 0,
       } : { mode });
       choose(made.thread_id);
+      if (mode === "research" && uploadFiles.length) {
+        for (const file of uploadFiles) {
+          setUploadStatus(`正在解析 ${file.name}，尚未启动研究模型`);
+          await sessionsApi.upload(made.thread_id, file);
+        }
+        setUploadFiles([]);
+        setUploadStatus("");
+        await sessionsApi.start(made.thread_id);
+      }
       if (mode === "research") setInspector("activity");
       await refresh();
     } catch (e) {
@@ -313,6 +361,7 @@ export function ResearchSession() {
       await refresh().catch(() => {});
     } finally {
       setSending(false);
+      setUploadStatus("");
     }
   };
   const send = async (
@@ -450,6 +499,12 @@ export function ResearchSession() {
               )}{" "}
               {sending ? "正在创建任务" : "开始全新研究"}
             </button>
+            <label className="rs-upload-label">补充本次研究资料（可选）
+              <input type="file" multiple accept=".pdf,.docx,.md,.txt,.csv,.html,.htm,.png,.jpg,.jpeg,.webp"
+                disabled={sending} onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length > 12) { setError("一次最多12份资料，请重新选择；没有静默丢弃文件。"); e.target.value = ""; setUploadFiles([]); } else setUploadFiles(files); }} />
+              <small>PDF、Word、Markdown、文本、CSV、HTML 或图片；每份最多20MiB。仅当前任务可用，不写入共享知识库。图片识别按需调用视觉模型。</small>
+            </label>
+            {uploadFiles.length > 0 && <p>{uploadFiles.map((file) => file.name).join("、")}</p>}
             <small>
               {configurationError || (configuration?.fresh_research_enabled
                 ? "开始研究会产生真实模型调用；研究过程中可查看任务和费用、停止执行。打开旧报告则不重新研究。"
@@ -475,7 +530,7 @@ export function ResearchSession() {
                 ) : (
                   <Circle size={8} />
                 )}{" "}
-                {busy
+                {session.is_draft ? (uploadStatus ? "正在解析资料 · 未调用模型" : "资料准备中 · 未调用模型") : busy
                   ? "Agent 正在执行"
                   : session.runs?.[0]?.status === "interrupted"
                     ? "已停止 · 原有结果和记录保留"
@@ -485,6 +540,22 @@ export function ResearchSession() {
               </span>
             </section>
             {session.question && <div className="rs-task-question">{session.question}</div>}
+            {uploadStatus && <div className="rs-report-notice">{uploadStatus}</div>}
+            {!busy && (session.is_draft || (session.case_profile === "dell_growth_quality" && session.can_respond)) &&
+              <label className="rs-upload-label">补充本任务资料
+                <input type="file" aria-label="补充本任务资料" accept=".pdf,.docx,.md,.txt,.csv,.html,.htm,.png,.jpg,.jpeg,.webp"
+                  disabled={sending} onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return;
+                    setSending(true); setUploadStatus(`正在解析：${file.name}`); try { await sessionsApi.upload(id, file); setSession(await sessionsApi.state(id)); }
+                    catch (err) { setError((err as Error).message); } finally { setSending(false); setUploadStatus(""); e.target.value = ""; }
+                  }} />
+              </label>}
+            {!!session.attachments?.length && <details className="rs-task-board"><summary>本任务资料 · {session.attachments.length} 份</summary>
+              {session.attachments.map((file) => <p key={file.document_id}><a href={`/api/v1/research-sessions/${id}/attachments/${encodeURIComponent(file.document_id)}`}>{file.name}</a>
+                {" · "}{file.sections} 个页面/章节{file.needs_vision ? " · 可按需视觉识别" : " · 已解析，可检索"}</p>)}
+            </details>}
+            {session.is_draft && <div className="rs-report-notice"><span>资料准备任务已保存，尚未调用研究模型。</span>
+              <button disabled={busy} onClick={async () => { setSending(true); try { await sessionsApi.start(id); setSession(await sessionsApi.state(id)); }
+                catch (e) { setError((e as Error).message); } finally { setSending(false); } }}>开始已准备的研究</button></div>}
             {session.research_stop_reason && <div className="rs-report-notice">
               <ShieldCheck size={17} /><span>本次仍有未解决问题，已保留成果，不会自动整案重跑。
                 {session.research_stop_reason === "material_findings_remain_after_targeted_correction" ? "一轮定向修订后，重大问题仍未关闭。" :
@@ -492,18 +563,23 @@ export function ResearchSession() {
               </span></div>}
             {(researchTasks.length > 0 || (session.question && !session.report)) && (
               <details className="rs-task-board" open={!session.report}>
-                <summary><Layers size={16} /> 本次研究分工 <span>{researchTasks.length} 个真实任务</span></summary>
-                {!researchTasks.length && <p>研究负责人正在读取问题并规划任务。这里不会预先填充虚构的 Agent 活动。</p>}
+                <summary><Layers size={16} /> 本次研究分工 <span>{researchTasks.length ? `已进入执行 ${researchTasks.length} 个任务` : "任务摘要待同步"} · 并发上限 2</span></summary>
+                {!researchTasks.length && <p>任务摘要尚未同步，请在右侧“运行”查看实际模型调用；这不表示研究尚未开始，也不会因此重新启动任务。</p>}
                 <div className="rs-task-grid">{researchTasks.map((task) => (
                   <div className="rs-task-card" key={task.task_id}>
-                    <div><strong>{task.owner_role || "研究专家"}</strong><span>{
+                    <div><strong>{actorName(task.owner_role || "研究专家")}</strong><span>{
                       ["submitted", "specialist_submission_accepted"].includes(task.status) ? "已提交底稿" :
-                      task.status === "running" ? "研究中" : task.status === "error" ? "执行失败" : task.status === "needs_attention" ? "待处理" : "等待执行"
+                      task.status === "running" ? "研究中" : task.status === "error" ? "执行失败" :
+                      ["needs_attention", "specialist_human_review_handoff_emitted", "human_review_required"].includes(task.status) ? "未完成 · 待处理" :
+                      ["planned", "ready"].includes(task.status) ? "等待执行" : "状态待核实"
                     }</span></div>
                     <p>{task.objective}</p>
                     <small>{task.dependency_ids.length ? `依赖：${task.dependency_ids.join("、")}` : "可独立执行"}</small>
                   </div>
                 ))}</div>
+                {!!session.research_attempt_history?.length && <details><summary>本任务各次研究尝试（保留未完成记录）</summary>
+                  {session.research_attempt_history.map((attempt, i) => <p key={i}>第 {i + 1} 次 · {attempt.outcomes.filter(t => t.status === "submitted").length} 份新底稿 · {attempt.outcomes.filter(t => t.status !== "submitted").map(t => `${t.task_id} 未完成`).join("、") || "无未完成结果"}</p>)}
+                </details>}
               </details>
             )}
             <div className="rs-tabs">
@@ -533,14 +609,26 @@ export function ResearchSession() {
                   <div className="rs-report-notice">
                     <ShieldCheck size={17} />
                     <span>
-                      {session.report ? "引用可以展开查看依据；报告的实质判断仍需结合来源上下文审阅。" : "研究进行中：底稿、审查与报告会按实际完成情况出现。"}
+                      {session.report ? "引用可以展开查看依据；报告的实质判断仍需结合来源上下文审阅。" : session.is_draft ? "资料上传与解析不启动研究模型。确认材料后点击开始。" : "研究进行中：底稿、审查与报告会按实际完成情况出现。"}
                     </span>
                   </div>
                   <article className="rs-prose">
                     <h2 className="rs-report-title">{session.report?.title}</h2>
+                    {session.report && <div className="rs-export-actions"><span>导出这版报告</span>
+                      {([['md', 'Markdown'], ['pdf', 'PDF'], ['docx', 'Word'], ['pptx', 'PowerPoint']] as const).map(([format, label]) =>
+                        <a key={format} href={`/api/v1/research-sessions/${id}/report/export/${format}`} download>{label}</a>)}
+                    </div>}
+                    {session.report?.charts?.map((chart, index) => <figure className="rs-research-chart" key={`${session.report_version}-${index}`}>
+                      <img src={`/api/v1/research-sessions/${id}/report/charts/${index}.png?v=${session.report_version}`} alt={chart.title} />
+                      <figcaption>{chart.interpretation}</figcaption>
+                      <details><summary>图表数值与来源（{chart.unit}）</summary><table><thead><tr><th>项目</th><th>系列</th><th>数值</th><th>来源</th></tr></thead>
+                        <tbody>{chart.points.map((point, p) => <tr key={p}><td>{point.label}</td><td>{point.series}</td><td>{point.value.toLocaleString()}</td>
+                          <td>{chartSourceLinks(point.provenance).map((url, n) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">原始来源 {n + 1} </a>)}
+                            <details><summary>定位与计算明细</summary><small>{point.source_id}</small><pre>{JSON.stringify(point.provenance, null, 2)}</pre></details></td></tr>)}</tbody></table></details>
+                    </figure>)}
                     <Markdown
                       text={
-                        session.report?.narrative_markdown || (session.status === "error" ? "本次尚未取得报告。请查看运行状态；失败记录与已有研究材料均保留。" : "报告正在载入…")
+                        session.report?.narrative_markdown || (session.is_draft ? "研究尚未启动。这里将在研究完成后显示报告。" : session.status === "error" ? "本次尚未取得报告。请查看运行状态；失败记录与已有研究材料均保留。" : "报告尚未生成；请在研究现场查看真实任务进度。")
                       }
                       citations={session.report?.citations}
                       onCitation={cite}
@@ -641,7 +729,22 @@ export function ResearchSession() {
                   }
                 }}
               />
+              {session.research_guidance?.length ? <details><summary>已保存的运行中意见（{session.research_guidance.length}）</summary>
+                {session.research_guidance.map((g, i) => <p key={i}>{g.message}</p>)}
+                <small>在后续阶段交接时读取。以运行记录中的“用户补充意见”事件确认是否已送达。</small></details> : null}
               <div className="rs-compose-bottom">
+                {!busy && session.can_continue_remaining && <button disabled={sending} onClick={async () => {
+                  setSending(true); try { await sessionsApi.continueRemaining(id); setSession(await sessionsApi.state(id)); }
+                  catch (e) { setError((e as Error).message); } finally { setSending(false); }
+                }}>继续未完成主题 · 保留已交稿</button>}
+                {busy && session.question && <button disabled={sending || !text.trim()} onClick={async () => {
+                  setSending(true); try { await sessionsApi.guidance(id, text); setText(""); setSession(await sessionsApi.state(id)); }
+                  catch (e) { setError((e as Error).message); } finally { setSending(false); }
+                }}>补充意见 · 下阶段读取</button>}
+                {!busy && session.phase === "research_needs_attention" && <button onClick={async () => {
+                  try { await sessionsApi.acknowledgeIncomplete(id); setSession(await sessionsApi.state(id)); }
+                  catch (e) { setError((e as Error).message); }
+                }}>确认已查看 · 不重跑</button>}
                 <small>
                   {session.can_respond
                     ? "模型可按需读取资料 · Ctrl / ⌘ + Enter 发送"
@@ -731,7 +834,7 @@ export function ResearchSession() {
           {inspector === "review" && (
             <>
               <h3>需要核实的判断</h3>
-              {busy && <p>运行中：下方是上一轮已保存的审查，本轮复核尚未完成。</p>}
+              {busy && <p>{session?.report_review ? "运行中：下方是上一轮已保存的审查，本轮复核尚未完成。" : session?.workpaper_reviews?.length ? "底稿审查已提交，下方保留原始发现；责任修订与报告终审仍在继续。" : "研究正在进行，独立审查尚未交稿。可切换到“运行”查看当前活动。"}</p>}
               <p className="rs-helper">
                 这是模型审查意见，不是标准答案。可以展开原文、提出异议，再交给作者处理。
               </p>
@@ -770,7 +873,7 @@ export function ResearchSession() {
               {!findings.length && (
                 <p className="rs-muted">
                   {session
-                    ? "当前没有已提交的审查问题；仍需人工判断。"
+                    ? session.report_review ? "最终报告审查未列出问题；仍需人工判断。" : "最终报告审查尚未提交；已完成的研究阶段审查见下方。"
                     : "打开研究会话后显示真实审查结果。"}
                 </p>
               )}
@@ -794,6 +897,15 @@ export function ResearchSession() {
                 </div>)}
                 {session.synthesis_review.unresolved_data_requests.map((item, i) => <p key={i}>{item}</p>)}
               </details>}
+              {session?.workpaper_reviews?.map(review => <details className="rs-review-summary" key={review.actor}>
+                <summary>{actorName(review.actor)} · 原始底稿审查（{review.findings.length} 条）</summary>
+                <p className="rs-helper">这是研究中途的原始发现，是否已修正以随后综合复核和报告终审为准。</p>
+                <p>{review.summary}</p>
+                {review.findings.map(f => <div key={f.finding_id}>
+                  <strong>{f.paper_id} · {f.severity === "material" ? "重大" : "建议"}</strong>
+                  <blockquote>{f.problematic_quote}</blockquote><p>{f.diagnosis}</p><p>{f.requested_change}</p>
+                </div>)}
+              </details>)}
               {session?.can_accept && (
                 <button
                   className="rs-accept"
@@ -811,11 +923,13 @@ export function ResearchSession() {
                 <label htmlFor="usage-run">查看请求用量</label>
                 <select id="usage-run" value={usageRun?.run_id || ""} onChange={e => setUsageRunId(e.target.value)}>
                   {session?.runs?.map(r => <option key={r.run_id} value={r.run_id}>
-                    {new Date(r.created_at).toLocaleTimeString("zh-CN")} · {r.human_action === "ask" ? (r.answer_mode === "quick" ? "Flash 问答" : "Pro 追问") : r.human_action === "revise" ? "报告修订" : r.human_action === "abandon_failed_question" ? "放弃失败追问" : r.human_action === "return_stopped_question" ? "停止后返回审阅" : "载入 / 审阅"} · {r.status === "interrupted" ? "已停止" : r.status}
+                    {new Date(r.created_at).toLocaleTimeString("zh-CN")} · {r.human_action === "research" ? "完整新研究" : r.human_action === "continue_remaining" ? "接续同任务余下流程" : r.human_action === "ask" ? (r.answer_mode === "quick" ? "Flash 问答" : "Pro 追问") : r.human_action === "revise" ? "报告修订" : r.human_action === "abandon_failed_question" ? "放弃失败追问" : r.human_action === "return_stopped_question" ? "停止后返回审阅" : "载入 / 审阅"} · {r.status === "interrupted" ? "已停止" : r.status}
                   </option>)}
                 </select>
               </div>
               <div className="rs-usage">
+                <div><small>已知部分估费 · 非账单</small><strong>{usageRun?.cost_estimate ? `¥${usageRun.cost_estimate.known_cny.toFixed(3)}` : "—"}</strong>
+                  <small>未计入进行中 / 缺失用量；单价 {usageRun?.cost_estimate?.price_as_of || "待确认"}</small></div>
                 <div>
                   <small>所选请求 · 已记录调用</small>
                   <strong>{usageRun?.usage?.recorded_requests ?? "—"}</strong>

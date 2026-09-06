@@ -419,8 +419,10 @@ def create_report_session_app(frontend_dist_root=None):
         research_profile = {"title": case["title"], "default_question": case["question"],
             "research_as_of": DELL_APPROVED_RESEARCH_AS_OF, "cost_expectation_cny": runtime_profile["cost_expectation_cny"],
             "notice": "新问题从空底稿研究；复用原始文档/SQL/索引，不载入旧专家答案。日期为已绑定案例时点，不宣称实时全量。"}
+    from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
+    attachment_store = TaskAttachmentStore(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).parent / "attachments")
     service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts, audit_root=settings["audit_root"],
-        research_profile=research_profile)
+        research_profile=research_profile, attachment_store=attachment_store)
     @asynccontextmanager
     async def lifespan(app):
         yield

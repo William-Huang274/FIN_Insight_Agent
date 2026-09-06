@@ -1056,6 +1056,14 @@ def _open_dell_specialist_composition(
                 live_web_read_enabled=live_web_read_enabled,
                 research_question=research_question,
             )
+            if environment and environment.get("FINSIGHT_TASK_ATTACHMENTS_ROOT"):
+                body = graph_input.model_dump(mode="json")
+                for capability in body["l0_context"]["capability_summaries"]:
+                    if capability.get("capability_ref") == "capability:dell:source-document-read":
+                        capability["source_spaces"].append("uploads")
+                        capability["actions"].append("inspect_image")
+                        capability["upload_usage"] = "Task-scoped user documents: catalog/search/read with source_space=uploads. For images/scanned pages use inspect_image and a PDF page_start. Vision is fallible, not authoritative SQL. No other task or host file access."
+                graph_input = _model_json(SpecialistAgenticInput, body, code="task_upload_disclosure_invalid")
             if research_task is not None:
                 if collaboration_context is not None:
                     raise DellSpecialistAgenticCompositionError("delegation_and_author_revision_are_separate_operations")

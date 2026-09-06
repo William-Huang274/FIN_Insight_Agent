@@ -9,14 +9,16 @@ from __future__ import annotations
 import json
 import re
 from copy import deepcopy
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Literal
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, unquote, quote
 from uuid import UUID
 
 import httpx
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
+from starlette.concurrency import run_in_threadpool
 from langgraph_sdk.client import LangGraphClient
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -56,7 +58,7 @@ def public_run_usage(audit_root, thread_id, run_id):
         if not isinstance(raw, dict):
             partial = True
             continue
-        if event := public_event({**raw, "kind": "model", "run_id": str(run_id)}):
+        if event := public_event({"kind": "model", **raw, "run_id": str(run_id)}):
             events.append(event)
     ids = {e["call_id"] for e in events if e.get("call_id")}
     outcomes = {e["call_id"]: e for e in events if e.get("call_id") and e.get("event") == "outcome"}
@@ -79,6 +81,23 @@ def public_event(value):
     return result if result.get("kind") in {"model", "tool", "stage", "task"} else None
 
 
+def public_cost_estimate(events):
+    from scripts.qualification.dell_q1_specialist_paid_shadow.audit_token_cost import OFF_PEAK, PRICE_AS_OF, cost_parts, peak_multiplier
+    starts = {e["call_id"]: e for e in events if e.get("call_id") and e.get("event") == "started"}
+    outcomes = {e["call_id"]: e for e in events if e.get("call_id") and e.get("event") == "outcome"}
+    amount, priced = 0.0, 0
+    for call_id, outcome in outcomes.items():
+        start = starts.get(call_id, {})
+        model = start.get("model") or outcome.get("model")
+        counts = [outcome.get(key) for key in ("cache_hit_tokens", "cache_miss_tokens", "output_tokens")]
+        timestamp = start.get("recorded_at") or outcome.get("recorded_at")
+        if model in OFF_PEAK and timestamp and all(type(n) is int and n >= 0 for n in counts):
+            amount += sum(cost_parts(model, *counts, peak_multiplier(timestamp)).values())
+            priced += 1
+    return {"known_cny": round(amount, 6), "priced_requests": priced, "unknown_or_pending_requests": len(set(starts) | set(outcomes)) - priced,
+        "price_as_of": PRICE_AS_OF, "notice": "按已报告用量和公开分时单价估算，不是账单；未知/进行中请求未计入。"}
+
+
 def review_interrupts(state):
     items = list(state.get("interrupts") or [])
     for task in state.get("tasks", []):
@@ -94,11 +113,23 @@ def public_state(state):
     outcomes = {row["task_id"]: row["status"] for row in values.get("research_outcomes", [])}
     result["research_tasks"] = [{**{key: deepcopy(row[key]) for key in ("task_id", "owner_role", "objective", "dependency_ids") if key in row},
         "status": outcomes.get(row["task_id"], row.get("status", "planned"))} for row in values.get("research_tasks", [])]
+    from sec_agent.agent_runtime.research_session import can_continue_remaining_research
+    result["can_continue_remaining"] = can_continue_remaining_research(values)
+    result["research_attempt_history"] = [{key: deepcopy(row[key]) for key in ("run_id", "phase", "outcomes") if key in row}
+        for row in values.get("research_attempt_history", [])]
     # Public source-bound deliverables, not private agent message histories.
     result["research_synthesis"] = {key: deepcopy(values["synthesis"][key]) for key in ("title", "narrative_markdown")
         if key in values.get("synthesis", {})}
     if values.get("synthesis_review"):
         result["synthesis_review"] = deepcopy(values["synthesis_review"])
+    result["workpaper_reviews"] = []
+    for actor in ("counter", "verifier"):
+        review = values.get("case_review", {}).get(actor, {}).get("review")
+        if not review:
+            continue
+        result["workpaper_reviews"].append({"actor": actor, "summary": review["summary"],
+            "findings": [{key: deepcopy(row[key]) for key in ("finding_id", "paper_id", "severity",
+                "problematic_quote", "diagnosis", "requested_change") if key in row} for row in review.get("findings", [])]})
     result["responsibility_history"] = [{"actor": row["actor"], "correction_round": row["correction_round"]}
         for row in values.get("convergence_history", [])]
     result["model_events"] = [p for e in values.get("model_events", []) if (p := public_event({"kind": "model", **e}))]
@@ -122,11 +153,25 @@ def can_abandon_question(thread, state, last_run=None):
             and all(t.get("name") in {"writer", "quick_writer"} and t.get("error") for t in tasks))))
 
 
+def can_restart_remaining_node(thread, state, last_run, usage):
+    tasks = state.get("tasks", [])
+    return bool(thread.get("status") == "error" and len(tasks) == 1
+        and tasks[0].get("name") == "remaining_research" and tasks[0].get("error")
+        and last_run and last_run.get("metadata", {}).get("human_action") == "continue_remaining"
+        and usage and usage["recorded_requests"] > 0 and not usage["unknown_or_pending_requests"] and not usage["partial_audit"])
+
+
 class NewSession(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     title: str = Field(default="Dell AI 基础设施 · 全案审阅", min_length=1, max_length=120)
     mode: Literal["review", "research"] = "review"
     question: str | None = Field(default=None, min_length=10, max_length=16000)
+    defer_start: bool = False
+
+
+class ResearchGuidance(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    message: str = Field(min_length=1, max_length=4000)
 
 
 def graph_for_thread(thread):
@@ -137,7 +182,7 @@ def graph_for_thread(thread):
 
 
 class ReportSessionService:
-    def __init__(self, api_url, artifacts, *, sdk=None, audit_root=None, research_profile=None):
+    def __init__(self, api_url, artifacts, *, sdk=None, audit_root=None, research_profile=None, attachment_store=None):
         parsed = urlsplit(api_url)
         if parsed.scheme != "http" or parsed.hostname not in {"127.0.0.1", "localhost", "langgraph-api"} or parsed.username or parsed.query or parsed.fragment:
             raise ValueError("report_session_server_must_be_local")
@@ -147,6 +192,7 @@ class ReportSessionService:
         self.artifacts = artifacts
         self.audit_root = audit_root
         self.research_profile = deepcopy(research_profile)
+        self.attachment_store = attachment_store
 
     async def owned_thread(self, thread_id):
         thread = await self.sdk.threads.get(str(thread_id))
@@ -196,11 +242,122 @@ def build_report_sessions_router(service):
             payload = ResearchRequest(question=body.question or profile["default_question"]).model_dump(mode="json")
         elif body.question is not None:
             raise HTTPException(422, "研究问题请使用新研究模式；打开旧报告不执行研究")
+        if body.defer_start and body.mode != "research":
+            raise HTTPException(422, "只有新研究支持先上传资料")
         metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode}
+        if body.defer_start:
+            metadata["pending_question"] = payload["question"]
         thread = await service.sdk.threads.create(metadata=metadata)
+        if body.defer_start:
+            return {"thread_id": thread["thread_id"], "run_id": None, "status": "draft"}
         run = await service.sdk.runs.create(thread["thread_id"], graph, input=payload, stream_mode="custom",
             stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": body.mode})
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"], "status": run["status"]}
+
+    @router.post("/research-sessions/{thread_id}/start")
+    async def start_draft(thread_id: UUID, request: Request):
+        browser_write(request)
+        thread = await service.owned_thread(thread_id)
+        question = thread.get("metadata", {}).get("pending_question")
+        if graph_for_thread(thread) != RESEARCH_GRAPH or not service.research_profile or not question:
+            raise HTTPException(409, "这不是待启动的新研究任务")
+        if await service.sdk.runs.list(str(thread_id), limit=1):
+            raise HTTPException(409, "本任务已有启动记录，请查看状态；不会重复启动付费研究")
+        from sec_agent.agent_runtime.research_session import ResearchRequest
+        run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH,
+            input=ResearchRequest(question=question).model_dump(mode="json"), stream_mode="custom", stream_subgraphs=True,
+            stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "research"})
+        return {"thread_id": str(thread_id), "run_id": run["run_id"], "status": run["status"]}
+
+    @router.post("/research-sessions/{thread_id}/guidance")
+    async def guidance(thread_id: UUID, body: ResearchGuidance, request: Request):
+        browser_write(request)
+        thread = await service.owned_thread(thread_id)
+        if graph_for_thread(thread) != RESEARCH_GRAPH or thread.get("status") != "busy":
+            raise HTTPException(409, "此入口仅用于研究运行中的补充意见；结束后请使用追问或修订")
+        metadata = thread.get("metadata", {})
+        items = list(metadata.get("research_guidance", []))
+        if len(items) >= 12:
+            raise HTTPException(409, "本任务已有12条运行中意见，请等待处理后在人工点继续")
+        items.append({"message": body.message, "created_at": datetime.now(timezone.utc).isoformat()})
+        await service.sdk.threads.update(str(thread_id), metadata={"research_guidance": items})
+        return {"recorded": True, "notice": "已保存到原生任务。后续研究/审查/写作阶段交接时读取；不打断正在生成的模型回复，不绕过工具权限。"}
+
+    @router.post("/research-sessions/{thread_id}/acknowledge-incomplete")
+    async def acknowledge_incomplete(thread_id: UUID, request: Request):
+        browser_write(request)
+        thread = await service.owned_thread(thread_id)
+        state = await service.sdk.threads.get_state(str(thread_id))
+        interrupts = [*state.get("interrupts", []), *[i for task in state.get("tasks", []) for i in task.get("interrupts", [])]]
+        if graph_for_thread(thread) != RESEARCH_GRAPH or not any(i.get("value", {}).get("kind") == "research_needs_attention" for i in interrupts):
+            raise HTTPException(409, "当前没有待确认的未完成研究交接")
+        run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH, command={"resume": {"action": "acknowledge"}},
+            multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "acknowledge_incomplete", "model_calls_requested": 0})
+        return {"run_id": run["run_id"], "notice": "只确认已查看；不接受报告、不重跑研究。"}
+
+    @router.post("/research-sessions/{thread_id}/continue-remaining")
+    async def continue_remaining(thread_id: UUID, request: Request):
+        browser_write(request)
+        thread = await service.owned_thread(thread_id)
+        state = await service.sdk.threads.get_state(str(thread_id))
+        interrupts = [*state.get("interrupts", []), *[i for task in state.get("tasks", []) for i in task.get("interrupts", [])]]
+        handoff = any(i.get("value", {}).get("kind") == "research_needs_attention" for i in interrupts)
+        known_failure = False
+        if not handoff and thread.get("status") == "error":
+            last_runs = await service.sdk.runs.list(str(thread_id), limit=1)
+            if last_runs:
+                _, usage = public_run_usage(service.audit_root, thread_id, last_runs[0]["run_id"])
+                known_failure = can_restart_remaining_node(thread, state, last_runs[0], usage)
+        if (graph_for_thread(thread) != RESEARCH_GRAPH or thread.get("status") == "busy"
+                or not public_state(state)["can_continue_remaining"]
+                or not (handoff or known_failure)):
+            raise HTTPException(409, "仅未完成研究交接或用量已知的接续失败可继续；未知结果不重发，不跳过审查或重跑已交稿")
+        invocation = {"input": None} if known_failure else {"command": {"resume": {"action": "continue_remaining"}}}
+        run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH, **invocation,
+            stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
+            metadata={"surface": SURFACE, "human_action": "continue_remaining"})
+        return {"run_id": run["run_id"], "status": run["status"], "notice": "新调用只完成缺项；保留已提交底稿和原失败，不重发旧请求。"}
+
+    def attachments():
+        if service.attachment_store is None:
+            raise HTTPException(503, "本部署尚未配置任务资料存储")
+        return service.attachment_store
+
+    @router.get("/research-sessions/{thread_id}/attachments")
+    async def list_attachments(thread_id: UUID):
+        await service.owned_thread(thread_id)
+        return attachments().list(thread_id)
+
+    @router.post("/research-sessions/{thread_id}/attachments")
+    async def upload(thread_id: UUID, request: Request):
+        browser_write(request)
+        thread = await service.owned_thread(thread_id)
+        if graph_for_thread(thread) != RESEARCH_GRAPH or thread.get("status") == "busy":
+            raise HTTPException(409, "请在新研究开始前或安全人工点上传，不修改运行中资料")
+        from sec_agent.research_foundation.task_attachments import MAX_BYTES
+        body = bytearray()
+        async for chunk in request.stream():
+            body.extend(chunk)
+            if len(body) > MAX_BYTES:
+                raise HTTPException(413, "单文件上限20MiB")
+        filename = unquote(request.headers.get("x-filename", ""))
+        try:
+            return await run_in_threadpool(attachments().add, thread_id, filename, bytes(body))
+        except (ValueError, UnicodeError) as exc:
+            raise HTTPException(422, str(exc)) from None
+        except Exception:
+            raise HTTPException(422, "文件解析失败，未启动模型。请检查文件是否加密、损坏或为不支持的格式。") from None
+
+    @router.get("/research-sessions/{thread_id}/attachments/{document_id}")
+    async def download_attachment(thread_id: UUID, document_id: str):
+        await service.owned_thread(thread_id)
+        try:
+            row = attachments().get(thread_id, document_id)
+        except ValueError:
+            raise HTTPException(404, "本任务没有这份资料") from None
+        return Response(row["body"], media_type="application/octet-stream", headers={
+            "Content-Disposition": "attachment; filename*=UTF-8''" + quote(row["name"], safe=""),
+            "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})
 
     @router.get("/research-sessions/{thread_id}")
     async def snapshot(thread_id: UUID):
@@ -208,6 +365,8 @@ def build_report_sessions_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         runs = await service.sdk.runs.list(str(thread_id), limit=10)
         projection = public_state(state)
+        if not runs and thread.get("metadata", {}).get("pending_question"):
+            projection.update(question=thread["metadata"]["pending_question"], phase="draft", case_profile="dell_growth_quality")
         public_runs = []
         for run in runs:
             events, usage = public_run_usage(service.audit_root, thread_id, run["run_id"])
@@ -215,8 +374,15 @@ def build_report_sessions_router(service):
             public_runs.append({**{k: run.get(k) for k in ("run_id", "status", "created_at")},
                 "human_action": run.get("metadata", {}).get("human_action"),
                 "answer_mode": run.get("metadata", {}).get("answer_mode"), "usage": usage})
+            public_runs[-1]["cost_estimate"] = public_cost_estimate(events)
+        if thread.get("status") == "error" and projection["can_continue_remaining"]:
+            projection["can_continue_remaining"] = can_restart_remaining_node(thread, state, runs[0] if runs else None,
+                public_runs[0]["usage"] if public_runs else None)
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
             **projection, "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
+            "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
+            "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
+            "attachments": service.attachment_store.list(thread_id) if service.attachment_store else [],
             "runs": public_runs}
 
     @router.post("/research-sessions/{thread_id}/abandon-question")
@@ -266,7 +432,7 @@ def build_report_sessions_router(service):
         state = await service.state(thread_id)
         values = state.get("values", {})
         citations = [values.get("report", {}).get("citations", {})]
-        citations += [values.get("research_synthesis", {}).get("citations", {})]
+        citations += [values.get("synthesis", {}).get("citations", {}), values.get("research_synthesis", {}).get("citations", {})]
         citations += [m.get("citations", {}) for m in values.get("conversation", [])]
         available = {s["source_id"] for group in citations for c in group.values() for s in c["sources"]}
         if source_id not in available:
@@ -289,6 +455,27 @@ def build_report_sessions_router(service):
             return artifacts.with_revisions(values.get("revisions", {})).read_source(source_id, offset, 16000)
         except ValueError:
             raise HTTPException(422, "来源或阅读范围不合法") from None
+
+    @router.get("/research-sessions/{thread_id}/report/export/{format}")
+    async def export(thread_id: UUID, format: Literal["md", "pdf", "docx", "pptx"]):
+        state = await service.state(thread_id)
+        report = state.get("values", {}).get("report")
+        if not report:
+            raise HTTPException(409, "报告尚未生成，不能导出空结果")
+        from apps.workbench.backend.application.report_delivery import export_report
+        data, mime = await run_in_threadpool(export_report, report, format,
+            review_status="报告导出快照，请以工作台中当前的人工审阅状态为准")
+        return Response(data, media_type=mime, headers={"Content-Disposition": f'attachment; filename="finsight-research.{format}"',
+            "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})
+
+    @router.get("/research-sessions/{thread_id}/report/charts/{index}.png")
+    async def report_chart(thread_id: UUID, index: int):
+        state = await service.state(thread_id)
+        charts = state.get("values", {}).get("report", {}).get("charts", [])
+        if index < 0 or index >= len(charts):
+            raise HTTPException(404, "报告中没有这个图表")
+        from apps.workbench.backend.application.report_delivery import chart_png
+        return Response(await run_in_threadpool(chart_png, charts[index]), media_type="image/png", headers={"Cache-Control": "no-store"})
 
     # This narrow path matches the official JS SDK's joinStream API. All other
     # generic native endpoints remain unexposed by this BFF.

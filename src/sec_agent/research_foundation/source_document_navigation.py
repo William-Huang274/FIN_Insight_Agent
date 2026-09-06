@@ -19,8 +19,8 @@ from retrieval.text import tokenize
 
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
-    source_space: Literal["local", "web"] = "local"
-    operation: Literal["catalog", "outline", "search", "read"]
+    source_space: Literal["local", "web", "uploads"] = "local"
+    operation: Literal["catalog", "outline", "search", "read", "inspect_image"]
     document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$")
     node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$")
     query: str = Field(default="", max_length=600)
@@ -44,7 +44,9 @@ class SourceDocumentRequest(BaseModel):
         if self.source_space == "web" and (self.operation not in {"search", "read"}
                 or self.node_id is not None or self.page_start is not None or self.page_end is not None):
             raise ValueError("web_supports_search_then_read_document_id_with_character_offset_only")
-        if self.operation in {"outline", "read"} and not self.document_id:
+        if self.operation == "inspect_image" and self.source_space != "uploads":
+            raise ValueError("image_inspection_requires_task_upload")
+        if self.operation in {"outline", "read", "inspect_image"} and not self.document_id:
             raise ValueError("source_document_id_required_use_catalog_or_search")
         if self.operation == "search" and not tokenize(self.query):
             raise ValueError("source_search_query_required")
@@ -72,9 +74,9 @@ class SourceDocumentResult(BaseModel):
 
 
 def navigate_source_nodes(
-    nodes: Sequence[Mapping[str, Any]], request: SourceDocumentRequest, *, snapshot: str,
+    nodes: Sequence[Mapping[str, Any]], request: SourceDocumentRequest, *, snapshot: str, allowed_space: str = "local",
 ) -> SourceDocumentResult:
-    if request.source_space != "local":
+    if request.source_space != allowed_space:
         raise ValueError("live_web_source_read_not_enabled_use_local_or_request_live_capability")
     rows = list(nodes)
     if request.document_id:

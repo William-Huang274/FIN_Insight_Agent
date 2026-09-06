@@ -9,6 +9,7 @@
 !src/**/
 !src/**/*.py
 !src/**/*.sql
+!src/sec_agent/research_foundation/methods/*.md
 # The source allowlist above must never re-admit interpreter/build residue.
 **/__pycache__/**
 **/*.pyc
@@ -26,3 +27,12 @@
 !configs/research/fin_ia_0_1_3_dell_full_research_routed_v1_0.json
 !configs/research/fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json
 !configs/research/fin_ia_0_1_3_dell_report_quick_answer_v1_0.json
+!configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_workpaper_capacity_v1_0.json
+!configs/research/fin_ia_0_1_3_dell_q1_source_read_corrective_context_v1_0.json
+!configs/research/fin_ia_0_1_3_dell_full_research_pro_low_v1_0.json
+!configs/research/fin_ia_0_1_3_dell_case_review_native_v1_0.json
+!configs/research/fin_ia_0_1_3_dell_case_convergence_native_v1_0.json
+!configs/research/cases/
+!configs/research/cases/dell_growth_quality.json
+!configs/research/runtime/
+!configs/research/runtime/research_session.json

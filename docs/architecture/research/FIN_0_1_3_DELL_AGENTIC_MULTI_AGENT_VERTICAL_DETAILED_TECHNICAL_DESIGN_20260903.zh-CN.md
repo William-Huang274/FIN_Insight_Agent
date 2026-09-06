@@ -16,6 +16,10 @@
 
 ## 0. 结论先行
 
+2026-09-06 05:03Z：有界Workbench已实现并在真实浏览器零模型加载A3报告/68引用/4意见/绑定来源窗口；native thread与人工interrupt真实成立。同Agent Server/PG/Redis驻留；报告仍needs_revision，下一从UI发一次公开定向意见做Writer/Verifier实测，不重跑作者/全研究，不自动循环至PASS。完整产品、运行中steer/cancel/restart与新案例仍未验收。
+
+2026-09-06 04:04Z：A3仅Writer/Verifier6实调348262tokens/约0.9575元，仍needs_revision。停止整篇自动重写/审查循环，保留失败和已完成六稿。下一先落真实Workbench审阅闭环，使用同Agent Server的thread/run/stream/interrupt/Command，薄BFF只投影公开数据、原生状态与窄输入，不转发私有messages/reasoning。交互使用原生thread/run作为运行标识，不复制旧once资格runner的容器/审批状态机；既有数据门、只读MCP、模型预算与来源验证不变。仅Dell报告审阅/定向修订先行，不冒称全研究任意任务入口已完成。细节与停止线见S3/190末节。
+
 2026-09-06 最新A2报告链真实交接：P07修订→Writer→Verifier共12调用/809854tokens/约1.9846254元，五作者0新调用；最终needs_revision，非产品PASS。下一仅公共报告修订上下文+原生Writer/Verifier，六作者结果全部复用；不重新执行全案研究。明确阻塞资料仅指剩余核心结论不可缺的依据，不把未来SQL接入/可删除定量锚点等可选增强强制成报告完成条件；不弱化来源/数字验证、无S2写。保留原报告、审查、人工意见和正文/来源可读导出。实现/预算/停止线见S3/190最新节。
 
 2026-09-06 当前修正：convergence A1因P07 malformed tool JSON的native反馈缺口终止，五份已接受修订从FIN PG保全；512281tokens/估1.9249047元。采用官方middleware纠正invalid_tool_calls路由，不自动修JSON/不换自研循环；新派生输入复用五稿且明确0新模型调用及原checkpoint来源，fresh仅P07作者+Writer+Verifier。Writer/catalog/source视图均包含新修订。旧A1失败不变，无报告或产品PASS；详S3/190最新节。

@@ -1,0 +1,36 @@
+# Stable local Dell report-review pilot on the SAME mature Agent Server stack.
+# The original one-shot authorities/runners are not replayed or re-signed.
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 10.253.36.0/24
+
+services:
+  langgraph-api:
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    environment:
+      LANGSERVE_GRAPHS: '{"dell_report_session": {"path": "sec_agent.agent_runtime.dell_report_session:dell_report_session_graph", "description": "Local Dell source-bound report review, not arbitrary research"}}'
+      FINSIGHT_REPORT_SESSION_SETTINGS: /run/fin-insight/session-settings.json
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:?set the repository DeepSeek credential}
+    volumes:
+      - type: bind
+        source: ${FINSIGHT_REPORT_SESSION_SETTINGS_HOST_PATH:?fixed local session settings}
+        target: /run/fin-insight/session-settings.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${FINSIGHT_REPORT_SESSION_BUNDLE_HOST_PATH:?host-pinned public research bundle}
+        target: /run/fin-insight/session-bundle.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${FINSIGHT_REPORT_SESSION_REPORT_HOST_PATH:?host-pinned preserved report state}
+        target: /run/fin-insight/session-report.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${FINSIGHT_REPORT_SESSION_CALLS_HOST_PATH:?private model audit directory}
+        target: /run/fin-insight/session-calls
+        bind: {create_host_path: false}

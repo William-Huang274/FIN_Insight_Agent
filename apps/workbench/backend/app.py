@@ -58,6 +58,9 @@ def create_app(
     product graph.
     """
 
+    if os.environ.get("FINSIGHT_REPORT_SESSION_SETTINGS") and os.environ.get("FINSIGHT_REPORT_SESSION_API_URL"):
+        return create_report_session_app(frontend_dist_root=frontend_dist_root)
+
     if workbench_runtime_mode not in {"current", "fixture"}:
         raise ValueError("workbench_runtime_mode_invalid")
     supplied_retired = sorted(
@@ -397,6 +400,43 @@ def _retired_api_response(*, family: str, replacement: str) -> JSONResponse:
             "product_version": "FIN 0.1.3",
         },
     )
+
+
+def create_report_session_app(frontend_dist_root=None):
+    """Local review deployment of the existing Workbench, not a second runner."""
+    import json
+    from contextlib import asynccontextmanager
+    from fastapi.middleware.trustedhost import TrustedHostMiddleware
+    from .api.v1.report_sessions import ReportSessionService, build_report_sessions_router
+    from sec_agent.agent_runtime.dell_report_session import load_session_materials
+    settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
+    artifacts, _ = load_session_materials(settings)
+    service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts)
+    @asynccontextmanager
+    async def lifespan(app):
+        yield
+        await service.http.aclose()
+    app = FastAPI(title="FinSight Dell Research Session", lifespan=lifespan)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
+    app.include_router(build_report_sessions_router(service), prefix="/api/v1")
+    @app.exception_handler(__import__("httpx").HTTPError)
+    async def upstream_error(request, exc):
+        status = getattr(getattr(exc, "response", None), "status_code", 502)
+        return JSONResponse(status_code=409 if status == 409 else 502,
+            content={"detail": "运行服务暂不可用或请求结果未确定；请刷新会话确认。不会自动重发付费请求。"})
+    dist = Path(frontend_dist_root or FRONTEND_DIST_ROOT)
+    if (dist / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=dist / "assets"), name="session-assets")
+    @app.get("/api/health")
+    def health():
+        return {"service": "finsight-workbench", "mode": "local_dell_report_review", "status": "ok"}
+    @app.get("/", include_in_schema=False)
+    def root():
+        return RedirectResponse("/workspace/session")
+    @app.get("/workspace/session", response_class=HTMLResponse, include_in_schema=False)
+    def session_page():
+        return _frontend_index(dist)
+    return app
 
 
 app = create_app()

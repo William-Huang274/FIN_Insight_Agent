@@ -1,5 +1,7 @@
 # Dell：成本根因、成熟外源与真实交互的顺序交付
 
+> 最新状态：2026-09-06 A3已关闭；见文末“A3收口与真实审阅Workbench”。历史下一步不得用于重启已消耗attempt。
+
 日期：2026-09-06。产品FIN0.1.3，同分支/S3，不是新版本。源设计：`docs/architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md` §0最新顺序。起点 `e8aacc02b0c6860ba7fabf2d53a901c09150ae04` clean且与origin一致。
 
 ## Owner目标与当前范围
@@ -248,3 +250,43 @@ Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量�
 这次薄适配32相邻测试/12.04s通过，包括六作者全复用0调用、公开报告反馈仅Writer收到、实际A2 seed校验/无private messages、机械来源链接导出；无全仓回归。A3输入`convergence-input-a3.private.json` SHA992d693e2b06832084e5f01227fcefbe20c0b4c5930bf1a97893503ff137994d。下一只Writer+Verifier各最多16模型/48工具/700k/32k/480s，预算不增；预计新增约1–3元，最多一次有依据报告修订资格，若仍重大失败先归因，不自动无限重跑。目标是可读且实质可靠的Dell报告，随后才真实交互UI和新case。
 
 前端等待时的新实测：官方JS SDK1.10.2 `threads.joinStream` 默认参数两fresh连接均回放本次author_P07事件，explicit streamMode='updates'则0；两种结果在Z lab分别保留。事件只保存节点名/ID，不持久化私有文本。常规state?subgraphs=true这次忙碌中仍next/tasks=[]，与nativePG pending不一致，尚未修；因此没有宣称前端上线、子图实时展示、cancel/HITL/resume完成。不得将这些只读资格检查当产品交互增量。
+
+## A3收口与真实审阅Workbench（2026-09-06 04:04Z）
+
+实现92061de1、authority bdf894ab，execution `20260906-dell-case-report-revision-a3`，root `01a074d6-1c52-7b81-88df-9f769d9112c2`，thread `7a6e1fe4-add0-5892-962a-86569e7f0bc2`，terminal `case_report_needs_revision`。6次真实调用348262tokens，Writer4/189768、Verifier2/158494；六稿均0新模型/工具。执行383秒、构建99.562秒。按已核价格估0.9575262元（Writer0.455598、Verifier0.5019282），非账单；322830输入含192768cache hit，25432输出含16875reasoning。原稿/审查机械导出在原attempt，原文没有被宿主改写。receipt的pass只表示运行/交接，不是质量PASS。
+
+独立终审提出AI服务器同比减速被误导表述（material）、融资应收加回M/B单位不一致、H100采购跨代/跨期、首套交付的证明强度三项advisory，0不可解决数据请求。宿主直接读稿发现更深的残留：收入环比与积压变化不能单独证明供应约束因果；具名采购承诺不等于已融资；季度毛利上升不能证明“唯一约束”；余额不能直接证明资本效率，年初至今余额变化不能精确归因单季度现金流下降。原P09推断卡仍过强，Writer没有完全执行此前公开反馈。报告可读性仍偏内部边界清单。因此不把引用合法/Verifier赞扬当最终事实，不继续无界整篇重写。
+
+反向核查也纠正了宿主旧意见：P02:S004与P05:S002确为Dell官方托管Q1电话会，原句直接含$51.3B backlog；A3对此一手来源判定正确。不能照搬A2审查“只有第三方”结论。这是原始证据优先于审查者意见的实证。
+
+累计离线审计a7：237请求、234已知usage共12366405tokens，228cache明细可估32.037823元；另4次外部诊断212237tokens/0.8537535元不在attempt目录，3失败未知usage与6旧请求不完整cache不记零。累计开发成本，不是单个正常任务收费。
+
+### 接下来一个可运行产品包，不另开规划工程
+
+- 产品入口先是**现有Dell报告的真实审阅/追问/定向修订**，非重新研究全九主题或已支持任意公司。打开时从A3公开结果和已接受底稿建立新native thread，0模型；UI显示真实未通过状态。
+- 继续采用Agent Server原生PostgreSQL/Redis/thread/run/SSE/interrupt/Command和create_agent；官方子图默认per-invocation私有历史，各模型在本次任务内完整多轮；跨任务只交当前报告、公开反馈和按需资料，不复制私人CoT。底稿/来源不从浏览器接收任意路径。
+- Writer根据用户问题自主工具调用；普通追问可交带引用回答，修订才交新报告并由独立Verifier复核。每轮后停在原生人工审阅，不自动为追求PASS继续耗费。取消走原生run cancel；中途取消不自动重发未知模型调用。实际恢复/重连必须实测后才宣称。
+- 不再将once实验的FIN-to-server双身份和每attempt容器协议搬到交互入口：该本地pilot原生thread/run ID就是产品运行标识；旧资格authority不重用/不改签。固定Dell data gate、只读来源/MCP、模型用途预算、loopback/秘密隔离仍生效。
+- 薄Workbench BFF按白名单输出报告/引用、公共反馈、模型与工具状态/用量；不提供任意Agent Server代理、原始state/messages、SQL或shell。前端用既有React/Vite、官方JS SDK、成熟Markdown渲染；不造消息总线/任务队列/恢复器。会话状态只在原生PG，不在Markdown/新SQLite。
+- 首先0模型真实框架测试和浏览器验证，再以A3精确问题做一次有界真实交互验证；预算不高于A3原Writer/Verifier各16模型/48工具/700k字符/32k输出/480s，约1–3元仅是估计。任务特定预算依据落实际session配置；本段不是已经paid。Flash已实证用于Lead调度，复杂报告不盲目切Flash；普通问答待实测路由。
+- 完成此包后仍需全研究入口、运行中干预/部署韧性及完整Dell人工验收；后续1–2新case仍后置。报告存在重大错误就保留，不能用UI完成掩盖。
+
+官方依据：[原生子图与私有上下文](https://docs.langchain.com/oss/python/langgraph/use-subgraphs)、[interrupt与Command](https://docs.langchain.com/oss/python/langgraph/interrupts)、[公开custom流](https://docs.langchain.com/oss/python/langgraph/streaming)。Z lab `probe-native-public-stream.py` 已零provider产生两条真实native custom子图事件，私有reasoning标记未入流；不是Agent Server浏览器端已验证。
+
+### Workbench有界实现与第一轮零模型实测
+
+实际新增`dell_report_session.py`是native StateGraph组合，不实现模型循环/队列/数据库：宿主固定A3公开成果→原生interrupt→用户ask/revise→已有create_agent Writer（问答不会重写报告）→仅新报告调用独立Verifier→原生interrupt。每次独立子任务保留自己的完整原生消息，跨请求只传公开会话/当前稿；本次最新用户提示不重复注入两份。没有自动“修到PASS”的循环，也没有另跑六作者。复用CaseModelAudit在原生custom通道发公开模型/工具状态，私有原文依然只在私有审计文件与PG。
+
+`report_sessions.py`在既有Workbench后端提供窄thread/run/stream/cancel/来源投影，使用官方PythonSDK与HTTPX关闭本地代理/transport retry；原生PG保存会话，BFF没有自己的运行存储。只接受三种人类动作，不接受预算/graph/path/原始state输入。loopback本地试点、跨站POST拒绝、UI不暴露通用AgentServer路径或私有messages/reasoning。新前端是React/Vite的实际页面`/workspace/session`，官方JS SDK1.10.2读取native事件，react-markdown10.1.0+remark-gfm4.0.1渲染/引用展开；禁raw HTML、自动远程图片与非HTTP(S)外链。尚不声称运行中任意steer、已测试cancel/restart或完整新研究入口。
+
+原生图37相邻测试通过/36.83s（含既有Workbench基线），新增预算JSON反例8测试/7.27s；前端typecheck/build通过。npm发现开发依赖Browserslist两条高危advisory（同一个package），定向update后全依赖audit=0；生产依赖原audit亦=0。锁定SDK/Markdown正式依赖，未引入UI框架迁移或AgentChatUI整站复制。现产物约636KB JS/191KBgzip有分包提示，不隐藏，不因此阻断有界本地功能验证。
+
+本机Cua真实浏览器已打开新布局，未把构建结果当浏览器证据。第一次点击新建实际产生native thread `01a07505-088c-7f63-8897-ad96deee2aee`/run `01a07505-089a-7942-8ccc-180e9ccc0444`，因TokenBudgetBasis strict Python读法不接受JSON list为tuple而error，**0模型**；该失败保留。已改用该模型既有model_validate_json，并在准备阶段提前检查；schema-only图缓存避免每次状态读取重编译。前端补真实error状态，不伪装“载入中”。启动前Docker地址池已用完，经读取全部网络确认10.253.36.0/24未占用后固定给本地pilot，无删除旧网络/卷。
+
+部署配置在Z `report-workbench-20260906-a1`，从A3输入/输出生成host/container路径映射及任务特定预算。服务启动只用标准命令：`python -m scripts.deployment.dell_report_workbench up --settings-directory <Z路径>` 与 `... serve --settings-directory <Z路径>`；helper只装配环境并调用Compose/uvicorn，不创建模型run。固定project `finsight-dell-report-workbench`、Agent Server18165、Workbench8766；同三容器/PG/Redis，不每次问题新建容器。首次重启验证仍待完成，后续真实paid未开始。
+
+### 05:03Z 浏览器真实零模型闭环通过，开始有界交互验证
+
+最新容器镜像config `5125a76f742084fe21e6d3411a74a96f7a65fef17b55fc2125a74609dca4173e` 已实际重建部署。31近邻测试通过/21.76s，前端build通过。浏览器新建thread `01a07515-e784-7480-b6b3-eb4105ca127b` / init run `01a07515-e868-7c20-8c4c-50c21485a417`，真实native run success/thread interrupted，phase needs_revision、can_respond true、can_accept false；报告10738字符/68引用/4审查finding，model_events=0，调用目录无模型文件。引用P01:C7→P01:S006实际展开已保存SEC原文，显示捕获范围与链接，不把不完整capture当全文。浏览器观察发现来源窗口在多卡片末尾不明显，增加React ref滚入可见区，无新组件/状态平台。
+
+下一付费只经此真实UI的revise动作，输入公开A3审查+宿主具名意见（不是隐藏测试/标准答案）；Writer独立核原文，Verifier独立复核新稿，完成即停native人工点，不自动接受。重点是AI同比基数/单位/首套vs规模部署/采购vs融资/库存余额vs现金期间/价值池因果与可读性；不另跑十份研究。沿用配置中已存任务TokenBudgetBasis与Pro low 16模型/48工具/700k输入字符/32k联合输出/480s，不升级权限；成本和产品通过都以实测为准。当前仅零模型浏览器通过，paid交互、重连、取消、完整Dell人工产品验收仍待实证。

@@ -7,6 +7,10 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 05:03Z S3/190：真实Workbench零模型开会话已成功，native thread `01a07515-e784-7480-b6b3-eb4105ca127b` 停在人工interrupt；10738字符报告、68引用、4意见和绑定来源上下文实际可读。首次预算JSON读取错误的失败会话保留、0调用；修复已通过31近邻检查，前端build通过。固定Agent Server18165/Workbench8766、同PG/Redis，不每问题新容器。下一仅通过真实UI提交A3具体反馈→Writer/Verifier一轮，预算不扩；未付费验证交互、未人工验收、未完整Dell产品PASS。
+
+2026-09-06 04:04Z最新S3/190：report-only A3已结束，Writer4/Verifier2共6实调348262tokens/估0.9575262元，执行383s；六作者0新调用。报告仍needs_revision（单位错误、增速叙述、因果过强），不是语义/产品PASS。原文和审查已导出，旧run不改，不立刻再整篇付费重写。下一真实Workbench有界闭环：已有Dell报告/来源/公开调用→用户反馈→同native Writer/Verifier→原生人工审阅；保留模型私有上下文，不新造总线/队列/每提问新容器。后续全案启动/新case仍未完成。以S3/190末节为准。
+
 2026-09-06 S3/190最新：convergence A2已完整运行至`case_report_needs_revision`；12实调809854tokens/估1.9846254元，P07作者3、Writer4、Verifier5，其余五稿0新调用。9300字符/56引用的中文报告与独立审查已落地，不是产品PASS。invalid JSON反馈在Verifier真实触发并自修，RC-S3-130上线验证通过。独立五项advisory/三项补充请求+宿主现金/非GAAP/因果过强及可读性审稿，下一仅Writer+Verifier一次有界修订；六稿全复用，不重研究。32相邻测试通过，新seed保存明确host-assisted公开意见，无私有上下文跨Agent。UI仍待接；API子图状态与stream过滤兼容点未冒称完成。详S3/190最后一节。
 
 2026-09-06 S3/190最新：convergence A1已failed（不是网络），P07原生invalid_tool_calls未返回模型而误结束；19实调/512281tokens/估1.9249047元，LangSmith根已失败闭合。FIN PostgreSQL只读恢复确认P01/P04/P05/P06/P08五份native accepted输出并通过原引用校验；原失败/原稿不变。已用官方after_model middleware补ID配对JSON错误反馈，合法同批工具照常执行；当前目录不再返回旧thesis，复用稿经同before_model stop零新模型调用。下一fresh A2仅P07+Writer+Verifier，预算不扩；完整报告/UI/Dell产品仍未PASS。以下先前“未启动”为历史。

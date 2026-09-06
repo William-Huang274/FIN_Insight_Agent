@@ -192,9 +192,38 @@ async def case_mcp_tools(client, *, run_scope=None, method_arguments=None):
 
 class CaseModelAudit(AgentMiddleware):
     """Existing audit format on the native middleware hook; SDK does transport."""
-    def __init__(self, *, actor, profile, basis: TokenBudgetBasis, public_sink, private_sink):
+    def __init__(self, *, actor, profile, basis: TokenBudgetBasis, public_sink, private_sink, stream_public=False):
         self.actor, self.profile, self.basis = actor, profile, basis
-        self.public_sink, self.private_sink = public_sink, private_sink
+        self.private_sink, self.stream_public = private_sink, stream_public
+        self.events = []
+        def emit(event):
+            public_sink(event)
+            self.events.append(event)
+            if stream_public:
+                from langgraph.config import get_stream_writer
+                get_stream_writer()({"kind": "model", **event})
+        self.public_sink = emit
+
+    async def awrap_tool_call(self, request, handler):
+        if not self.stream_public:
+            return await handler(request)
+        from langgraph.config import get_stream_writer
+        emit = get_stream_writer()
+        event = {"kind": "tool", "actor": self.actor, "call_id": request.tool_call["id"],
+            "tool": request.tool_call["name"], "recorded_at": datetime.now(timezone.utc).isoformat()}
+        # Names/status only: no raw arguments, source bodies or private reasoning.
+        emit({**event, "event": "started"})
+        start = perf_counter()
+        try:
+            result = await handler(request)
+        except BaseException:
+            emit({**event, "event": "outcome", "status": "error"})
+            raise
+        messages = result.update.get("messages", []) if isinstance(result, Command) else [result]
+        emit({**event, "event": "outcome", "status": "error" if any(
+            isinstance(m, ToolMessage) and m.status == "error" for m in messages) else "success",
+            "elapsed_ms": round((perf_counter()-start)*1000, 3)})
+        return result
 
     async def awrap_model_call(self, request, handler):
         messages = ([request.system_message] if request.system_message else []) + list(request.messages)

@@ -58,6 +58,23 @@ def test_detail_unknown_is_not_reported_as_zero():
     assert usage_details({"usage_metadata": {"input_token_details": {"cache_read": True}}}) == (None, None)
 
 
+def test_native_separate_request_and_response_preserve_context_attribution(tmp_path):
+    folder = tmp_path / "native"
+    folder.mkdir()
+    events = [{"event": "started", "call_id": "a", "actor": "case_counter", "model": "deepseek-v4-pro",
+        "recorded_at": "2026-09-06T01:00:00Z"}, {"event": "outcome", "call_id": "a",
+        "status": "success", "usage_reported": True, "input_tokens": 10, "output_tokens": 5, "total_tokens": 15}]
+    private = [{"event": "request", "call_id": "a", "messages": [{"type": "human", "content": "private sentinel"}]},
+        {"event": "response", "call_id": "a", "raw_response": {"usage_metadata": {
+            "input_token_details": {"cache_read": 8}, "output_token_details": {"reasoning": 3}}}}]
+    (folder / "model-call-events.jsonl").write_text("\n".join(map(json.dumps, events)), encoding="utf-8")
+    (folder / "model-context-reasoning.private.jsonl").write_text("\n".join(map(json.dumps, private)), encoding="utf-8")
+    result = audit(tmp_path)
+    assert result["totals"]["message_content_characters"] == len("private sentinel")
+    assert result["totals"]["cache_hit_tokens"] == 8
+    assert "sentinel" not in json.dumps(result)
+
+
 def test_component_sizes_are_characters_not_tokens():
     assert message_components([{"type": "ai", "content": "中文",
         "additional_kwargs": {"reasoning_content": "abc"}, "tool_calls": []}]) == {

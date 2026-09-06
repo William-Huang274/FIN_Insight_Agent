@@ -104,6 +104,25 @@ def test_cannot_claim_all_papers_read_without_observation(artifacts):
         validate_case_review(CaseReview.model_validate(review_fixture(artifacts)), artifacts, [])
 
 
+def test_review_returns_all_independent_quote_errors_at_once(artifacts):
+    data = review_fixture(artifacts)
+    data["findings"] = [{"finding_id": fid, "paper_id": "P01", "severity": "material",
+        "problematic_quote": "SYNTHETIC MISSING QUOTE", "claim_ids": ["nonexistent"],
+        "diagnosis": "Synthetic quote regression, not a financial finding.",
+        "requested_change": "Correct all independent errors together.",
+        "source_checks": [{"source_id": "P01:S001", "quote": "SYNTHETIC WRONG SOURCE QUOTE"},
+                          {"source_id": "P99:S001", "quote": "missing source"}]}
+        for fid in ("F1", "F2")]
+    with pytest.raises(ValueError) as caught:
+        validate_case_review(CaseReview.model_validate(data), artifacts, [])
+    errors = json.loads(str(caught.value))["errors"]
+    assert len(errors) == 9  # read coverage plus four independent errors per finding
+    for fid in ("F1", "F2"):
+        assert f"problematic_quote_not_exact:{fid}" in errors
+        assert f"source_quote_not_exact:{fid}:P01:S001" in errors
+        assert f"unknown_source_id:{fid}:P99:S001" in errors
+
+
 def test_case_schema_factory_is_read_only_and_discovers_both_subgraphs(monkeypatch):
     from types import SimpleNamespace
     import sec_agent.agent_runtime.dell_agent_server_entry as entry

@@ -192,3 +192,21 @@ R3已知用量在全部命中/全部未命中两端对应约0.0458–0.3647元�
 验证：124项相关检查通过/11.75s，最后新增binding/原生schema检查6passed/5.28s。真实MCP2+两位零provider模型的并行多轮测试，10稿读取、错误source反馈、calculator、错误quote→修正均成立；native checkpoint中两份自己的reasoning各自完整、父图无私有messages，get_subgraphs能发现两者。真实ChatDeepSeek SDK+MockTransport双轮验证native function对象schema、10个tool_call_id配对、原reasoning_content原样续传、cache/reasoning/usage公开统计与私有文本分离（这是mock usage，非新增真实花费）。schema/state-read入口不打开资料/模型/credentials。开发失败另有partial coroutine类型注解和Python3.11 TypedDict来源，均在模型前修复；无用paid调试这些问题。
 
 当前是**工程已接入/宿主已消费，DS全案语义尚待下一次fresh执行**。本轮不重跑九主题、不更改任何原稿；全案review出结果后才逐责任修订与中文报告。native模型消息的真实Postgres恢复/前端干预尚未资格证明，不把内存测试称为生产resume能力。
+
+## 全案原生审查 A1 实测完成；仅定向作者修订与报告待做
+
+实现738ff3ff、authority提交c39918a5，execution `20260906-dell-case-native-review-a1`，root `01a07462-90c3-74d2-82ac-54a9ca6fdb1f`，thread `2cb315d3-f50f-5a10-bb2c-abdf6acce4c1`。两位独立native Agent提交中文全案审查，终态 `case_review_ready_for_convergence`。**仅独立审查交接，不是底稿已修、报告或产品PASS。** Counter14次/893103tokens，Verifier10次/674187tokens，合计24实调/1567290tokens/52工具动作（含提交）。实际执行473.5s，构建启动158s另列；模型耗时累加882.01s因并行不能当wall time。LangSmith根已关闭，error=false，实查total_tokens一致。
+
+按已核定当日价格估1.9244712元（非账单）：缓存输入0.2007552、新输入0.6833655、输出1.0403505。1490227输入中1338368为cache hit；77063输出中51177为reasoning。累计attempt目录审计200请求/197有usage/10696008tokens，191项有cache可估27.1707667元；另四次目录外诊断212237tokens/0.8537535元仍须单列，旧三次未知用量不能作0。新审计 `D:/temp/fin_dell_token_cost_audit_20260906_a4.json`；原始证据不改。这是开发/修复/审查累计，不是一次普通问答成本，也无等质对照省费比例。
+
+Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量产未开始误作从未交付；Verifier重复发现P04一条material。计数4含重复，非四类独立错误。P01调整后FCF加回不完整、P06单国<10%不等于Greater China合计<10%为两条advisory。宿主读审查全文再次发现：Verifier竟把订单/收入/backlog称为actual usage，Counter也未严格指出P08这一混淆；模型终审并非oracle。下一把P08与P06的逻辑问题作为**显式host-assisted补充意见**，不得伪称盲审已发现或模型全案无误；Q8全公司毛利不是完整价值池份额、客户首套交付不是规模利用率等同样传给最终写作/核验。
+
+原生state实证：同一真实Agent Server `state?subgraphs=true` 两子图均可读；官方JS SDK1.10.2用两个fresh client重开得到counter/verifier独立PG checkpoint和自己的messages。Z实验 `workbench-stream-sdk-20260906/result-native-case-state.json` 只保存元数据，不导出私有reasoning。旧factory child state400问题在此新原生入口不再复现；这只证明子图持久化状态可读，**不证明进程重启后续跑、HITL或前端实时交互**。本次只订阅父updates，前端需要下一新run通过原生stream_subgraphs得到子节点事件，不新造总线。
+
+本次5次提交退回：Counter3个引句错误依次发现，Verifier1引句+1claim ID。已在同validator最小修为一次返回全部独立错误，不放宽exact quote/ID/读稿覆盖。成本审计兼容native分开的request/response事件，修复之前response覆盖request使字符归因缺失（usage成本本身不受影响）。17定向测试通过/9.27s。旧A1所有失败反馈保持原样，未为这两个小修整案重跑。
+
+### 下一有界实施：六份责任修订 → 中文综合报告 → 终审
+
+复用同create_agent/MCP/Agent Server，不复活手工模型循环。只给P01/P04/P05/P06/P07/P08的责任作者其原稿、对应反馈与按需来源；P02/P03/P09/P10不再做研究重跑。作者提交带来源的修改与处理反馈说明，保留原稿和revision；不允许将审查意见当原证据。Writer在修订稿/原源上自由组织中文报告，覆盖九主题并直接回答主问题，重要事实/推理引用可回原片段，非S2数字显著标注但正文不沦为边界说明。Verifier另有独立上下文读报告与资料/修订原因，允许质疑作者和两位前审，不以字段合法充当语义通过。
+
+预算依据：A1两角色14/10轮、8分钟、1.92元；单篇定向修订首屏约4–20k字符，预计每篇3–8轮，保留Pro/low，最多12模型/32工具/500k字符/24k输出/480s；Writer全案约141k字符按需读取，最多16模型/48工具/700k/32k/480s；终审最多16模型/48工具/700k/32k/480s。修订按原生图并行2，不启动新研究Agent；估全收口3–7元，非固定报价或质量保证。任务特定TokenBudgetBasis必须进入实际配置。硬错误先本地测试，模型截断/未知结果停止不重发；不因费用删去主题，不无限终审。若终审仍有重大问题，保留报告草稿并只按责任修复，不能宣称完整casePASS。UI下一工作包，新case仍在Dell通过之后。

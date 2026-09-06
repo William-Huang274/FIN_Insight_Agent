@@ -86,9 +86,10 @@ def _text_values(value):
 def validate_case_review(review: CaseReview, artifacts: DellCaseArtifacts, messages) -> None:
     """Check actual read coverage, exact IDs/quotes; never grade prose semantics."""
     expected = {p["paper_id"] for p in artifacts.catalog()["papers"]}
+    errors = []
     assessed = [p.paper_id for p in review.assessments]
     if set(assessed) != expected or len(assessed) != len(expected):
-        raise ValueError(f"assess_each_paper_once:{sorted(expected)}")
+        errors.append(f"assess_each_paper_once:{sorted(expected)}")
     read, observed = set(), {}
     for message in messages:
         if not isinstance(message, ToolMessage) or message.status != "success" or not isinstance(message.artifact, dict):
@@ -103,24 +104,35 @@ def validate_case_review(review: CaseReview, artifacts: DellCaseArtifacts, messa
             if ref and passage.get("writer_citable") is True:
                 observed[ref] = passage.get("passage", "")
     if not expected.issubset(read):
-        raise ValueError(f"read_missing_papers_before_review:{sorted(expected-read)}")
+        errors.append(f"read_missing_papers_before_review:{sorted(expected-read)}")
     ids = [f.finding_id for f in review.findings]
     if len(ids) != len(set(ids)):
-        raise ValueError("duplicate_finding_id")
+        errors.append("duplicate_finding_id")
     for finding in review.findings:
+        if finding.paper_id not in expected:
+            errors.append(f"unknown_paper_id:{finding.finding_id}:{finding.paper_id}")
+            continue
         paper = artifacts.read_paper(finding.paper_id)
         if not any(finding.problematic_quote in text for text in _text_values(paper)):
-            raise ValueError(f"problematic_quote_not_exact:{finding.finding_id}")
+            errors.append(f"problematic_quote_not_exact:{finding.finding_id}")
         if not set(finding.claim_ids).issubset({c["claim_id"] for c in paper["claims"]}):
-            raise ValueError(f"unknown_claim_id:{finding.finding_id}")
+            errors.append(f"unknown_claim_id:{finding.finding_id}")
         for check in finding.source_checks:
             if check.source_id in observed:
                 body = observed[check.source_id]
             else:
-                source = artifacts.source_item(check.source_id)
+                try:
+                    source = artifacts.source_item(check.source_id)
+                except ValueError:
+                    errors.append(f"unknown_source_id:{finding.finding_id}:{check.source_id}")
+                    continue
                 body = str(source.get("passage") or source.get("bounded_excerpt") or source.get("value_decimal") or "")
             if check.quote not in body:
-                raise ValueError(f"source_quote_not_exact:{finding.finding_id}:{check.source_id}")
+                errors.append(f"source_quote_not_exact:{finding.finding_id}:{check.source_id}")
+    if errors:
+        # Return all independent local errors at once. Exactness is unchanged;
+        # do not make the model resubmit a whole review to discover each typo.
+        raise ValueError(json.dumps({"errors": errors}, ensure_ascii=False))
 
 
 async def case_mcp_tools(client, *, run_scope=None, method_arguments=None):

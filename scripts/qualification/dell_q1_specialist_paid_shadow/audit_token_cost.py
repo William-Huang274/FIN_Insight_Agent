@@ -113,7 +113,11 @@ def audit(root):
             raise ValueError(f"duplicate_call_id:{audit_path.parent.name}")
         not_sent.extend({"attempt": audit_path.parent.name, "status": e.get("status")}
                         for cid, e in outcomes.items() if cid not in starts)
-        private = {e["call_id"]: e for e in records(audit_path.parent / "model-context-reasoning.private.jsonl")}
+        private = {}
+        for event in records(audit_path.parent / "model-context-reasoning.private.jsonl"):
+            # Native middleware writes request and response separately. Merge
+            # the two by call ID; legacy combined rows remain supported.
+            private.setdefault(event["call_id"], {}).update(event)
         seen = defaultdict(set)
         for cid, start in starts.items():
             outcome = outcomes.get(cid, {})

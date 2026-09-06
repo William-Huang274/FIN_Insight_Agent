@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 05:25Z S3/190：真实UI修订run `01a0751c-b4af-75a3-9a29-7d34502249d3` 已完成，Writer4+Verifier6=10调用428159tokens/估1.0647609元；LangSmith根闭合且输入输出隐藏、用量一致。页面真实收到工具/模型/交接事件，报告v2回到native人工interrupt，仍needs_revision（H1现金视角及采购≠融资残留，审查者也有误判）。下一一次局部文本编辑验证：借鉴成熟str_replace模式，不再整篇复制；35近邻检查/前端build通过，尚未新paid。旧成果原样保留；全案新研究入口/运行中干预/人工产品验收/新case仍未完成。
+
 2026-09-06 05:03Z S3/190：真实Workbench零模型开会话已成功，native thread `01a07515-e784-7480-b6b3-eb4105ca127b` 停在人工interrupt；10738字符报告、68引用、4意见和绑定来源上下文实际可读。首次预算JSON读取错误的失败会话保留、0调用；修复已通过31近邻检查，前端build通过。固定Agent Server18165/Workbench8766、同PG/Redis，不每问题新容器。下一仅通过真实UI提交A3具体反馈→Writer/Verifier一轮，预算不扩；未付费验证交互、未人工验收、未完整Dell产品PASS。
 
 2026-09-06 04:04Z最新S3/190：report-only A3已结束，Writer4/Verifier2共6实调348262tokens/估0.9575262元，执行383s；六作者0新调用。报告仍needs_revision（单位错误、增速叙述、因果过强），不是语义/产品PASS。原文和审查已导出，旧run不改，不立刻再整篇付费重写。下一真实Workbench有界闭环：已有Dell报告/来源/公开调用→用户反馈→同native Writer/Verifier→原生人工审阅；保留模型私有上下文，不新造总线/队列/每提问新容器。后续全案启动/新case仍未完成。以S3/190末节为准。

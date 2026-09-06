@@ -233,13 +233,19 @@ export function ResearchSession() {
       setConnected(false);
     };
   }, [id, activeRun?.run_id, reconnect, refresh]);
-  const models = useMemo(() => {
+  const allEvents = useMemo(() => {
     const map = new Map<string, Event>();
     for (const e of [...(session?.model_events || []), ...events])
+      map.set(`${e.kind}/${e.actor}/${e.call_id}/${e.event}/${e.recorded_at}`, e);
+    return [...map.values()];
+  }, [session?.model_events, events]);
+  const models = useMemo(() => {
+    const map = new Map<string, Event>();
+    for (const e of allEvents)
       if (e.kind === "model" && e.event === "outcome" && e.call_id)
         map.set(e.call_id, e);
     return [...map.values()];
-  }, [session?.model_events, events]);
+  }, [allEvents]);
   const totals = models.reduce(
     (a, e) => ({
       tokens: a.tokens + (e.total_tokens || 0),
@@ -615,6 +621,7 @@ export function ResearchSession() {
           {inspector === "review" && (
             <>
               <h3>需要核实的判断</h3>
+              {busy && <p>运行中：下方是上一轮已保存的审查，本轮复核尚未完成。</p>}
               <p className="rs-helper">
                 这是模型审查意见，不是标准答案。可以展开原文、提出异议，再交给作者处理。
               </p>
@@ -710,7 +717,7 @@ export function ResearchSession() {
                 ))}
               </div>
               <div className="rs-event-list">
-                {events.map((e, i) => (
+                {allEvents.map((e, i) => (
                   <div key={i}>
                     <span
                       className={`rs-event-dot ${e.status === "error" || e.status === "provider_failed" ? "error" : ""}`}
@@ -739,7 +746,7 @@ export function ResearchSession() {
                   </div>
                 ))}
               </div>
-              {!events.length && (
+              {!allEvents.length && (
                 <p className="rs-muted">
                   提交追问或修订后，这里展示原生子 Agent
                   的模型与工具事件。已保存用量来自后端，不模拟动画。

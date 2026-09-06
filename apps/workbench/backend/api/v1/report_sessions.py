@@ -156,7 +156,9 @@ def build_report_sessions_router(service):
     @router.get("/agent/threads/{thread_id}/runs/{run_id}/stream")
     async def stream(thread_id: UUID, run_id: UUID, request: Request):
         await service.owned_thread(thread_id)
-        last_id = request.headers.get("last-event-id")
+        # These runs are created with stream_resumable=True. Replay retained
+        # events on initial attach/refresh; never restart the model run.
+        last_id = request.headers.get("last-event-id") or "0-0"
         if last_id and not re.fullmatch(r"[0-9]+-[0-9]+", last_id):
             raise HTTPException(422, "无效的事件续读位置")
         async def events():

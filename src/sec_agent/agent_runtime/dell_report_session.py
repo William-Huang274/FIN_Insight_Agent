@@ -99,6 +99,10 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
                     "independent_review": state["report_review"], "human_feedback_is_not_evidence": True})
         else:
             body["report"] = {k: state["report"][k] for k in ("title", "narrative_markdown")}
+            if state["report"].get("applied_edits"):
+                body["revision_context"] = {"applied_edits": state["report"]["applied_edits"],
+                    "previous_review": state["report_review"],
+                    "method": "Incremental review after a complete prior report review: inspect every edit and unresolved finding, and scan unchanged context for contradiction or regression. Prior reviewers can be wrong. Read original sources where needed; do not reread all ten papers by ritual or assume unchanged text is automatically correct."}
         get_stream_writer()({"kind": "stage", "actor": role, "event": "started", "recorded_at": datetime.now(timezone.utc).isoformat()})
         return {"messages": [HumanMessage(content=json.dumps(body, ensure_ascii=False))],
             "revisions": state["revisions"], "report": state["report"], "request_action": state["request_action"]}

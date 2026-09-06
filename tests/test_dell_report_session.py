@@ -12,7 +12,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 from langchain_core.messages import AIMessage
 
-from sec_agent.agent_runtime.dell_case_convergence_agent import CaseReport, report_citations, build_case_output_agent
+from sec_agent.agent_runtime.dell_case_convergence_agent import CaseReport, ReportTextEdit, apply_report_edits, report_citations, build_case_output_agent
 from sec_agent.agent_runtime.dell_report_session import build_report_session_graph, load_session_materials, ReviewAction
 from apps.workbench.backend.api.v1.report_sessions import public_state, public_event, build_report_sessions_router
 from test_dell_case_convergence_agent import NativeFixtureModel
@@ -116,3 +116,70 @@ def test_cross_site_and_generic_proxy_rejected_without_sdk_calls():
         assert client.post("/api/v1/research-sessions", json={}).status_code == 403
         assert client.post("/api/v1/research-sessions", json={}, headers={"x-workbench-request": "1", "origin": "https://evil.example"}).status_code == 403
         assert client.get("/api/v1/agent/threads/other/state").status_code == 404
+
+
+def test_report_edit_is_unique_atomic_and_preserves_original(artifacts):
+    _, _, initial, _ = setup_session(artifacts)
+    original = deepcopy(initial["report"])
+    with pytest.raises(ValueError, match="matched_0_times"):
+        apply_report_edits(original, [ReportTextEdit(old_str=original["narrative_markdown"], new_str="replacement"),
+            ReportTextEdit(old_str="absent span", new_str="no")])
+    assert original == initial["report"]
+    with pytest.raises(ValueError, match="matched_6_times"):
+        apply_report_edits(original, [ReportTextEdit(old_str="Synthetic source-bound report", new_str="new")])
+
+
+def test_native_report_edit_errors_corrected_without_full_rewrite(artifacts):
+    async def run():
+        graph, models, initial, ref = setup_session(artifacts)
+        config = {"configurable": {"thread_id": str(uuid4())}}
+        await graph.ainvoke({"open": True}, config)
+        models["writer"].replies = [
+            [call("submit_report_edits", {"edits": [{"old_str": "missing span", "new_str": "new"}]}, "e1")],
+            [call("submit_report_edits", {"edits": [{"old_str": f"[{ref}]", "new_str": "[P99:INVALID]"}]}, "e2")],
+            [call("submit_report_edits", {"edits": [{"old_str": f"[{ref}]", "new_str": f"[{ref}] One focused correction."}]}, "e3")]]
+        models["verifier"].replies = [[call("submit_report_review", {"review": initial["report_review"]}, "v1")]]
+        result = await graph.ainvoke(Command(resume={"action": "revise", "message": "Correct one sentence"}), config)
+        assert result["report"]["narrative_markdown"] == initial["report"]["narrative_markdown"] + " One focused correction."
+        assert result["report_version"] == 2 and len(result["report"]["applied_edits"]) == 1
+        assert len(models["writer"].contexts) == 3
+        assert "no edits were saved" in str(models["writer"].contexts[1])
+        assert "revision_context" in str(models["verifier"].contexts[0])
+        assert initial["report"]["narrative_markdown"].endswith(f"[{ref}]")
+    asyncio.run(run())
+
+
+def test_native_stream_replay_filters_private_data_and_preserves_event_id():
+    calls = []
+    async def owned(thread_id):
+        return {"thread_id": str(thread_id)}
+    async def joined(*args, **kwargs):
+        calls.append(kwargs)
+        yield SimpleNamespace(event="custom|writer:fixture", id="123-0", data={
+            "kind": "tool", "actor": "writer", "tool": "read_current_source", "event": "started", "raw_args": "PRIVATE"})
+        yield SimpleNamespace(event="messages", id="124-0", data={"reasoning_content": "PRIVATE"})
+    app = FastAPI()
+    app.include_router(build_report_sessions_router(SimpleNamespace(owned_thread=owned,
+        sdk=SimpleNamespace(runs=SimpleNamespace(join_stream=joined)))), prefix="/api/v1")
+    path = f"/api/v1/agent/threads/{uuid4()}/runs/{uuid4()}/stream"
+    with TestClient(app) as client:
+        response = client.get(path)
+        assert response.status_code == 200 and "id: 123-0" in response.text
+        assert "PRIVATE" not in response.text and calls == [{"last_event_id": "0-0"}]
+        assert client.get(path, headers={"last-event-id": "123-0"}).status_code == 200
+        assert calls[-1] == {"last_event_id": "123-0"}
+        assert client.get(path, headers={"last-event-id": "invalid"}).status_code == 422
+
+
+def test_public_tool_events_saved_without_raw_arguments(monkeypatch):
+    from langchain_core.messages import ToolMessage
+    from sec_agent.agent_runtime.dell_case_review_agent import CaseModelAudit
+    emitted = []
+    monkeypatch.setattr("langgraph.config.get_stream_writer", lambda: emitted.append)
+    audit = CaseModelAudit.__new__(CaseModelAudit)
+    audit.stream_public, audit.actor, audit.events = True, "writer", []
+    async def handler(request):
+        return ToolMessage(content="PRIVATE", tool_call_id="c1")
+    asyncio.run(audit.awrap_tool_call(SimpleNamespace(tool_call={"id": "c1", "name": "read_current_source", "args": {"private": "PRIVATE"}}), handler))
+    assert len(audit.events) == 2 and audit.events == emitted
+    assert "PRIVATE" not in json.dumps(audit.events)

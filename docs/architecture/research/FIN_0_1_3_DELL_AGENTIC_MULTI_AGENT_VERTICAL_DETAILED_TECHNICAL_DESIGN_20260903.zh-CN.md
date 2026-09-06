@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-06 05:25Z：UI真实反馈→Writer4轮→Verifier6轮→native人工interrupt已完成，428159tokens/估1.0647609元，报告v2仍需修订。为避免局部纠错每次重写约1万字，引入成熟文本编辑的exact str_replace语义：只编辑当前报告副本、无文件路径权限、无模糊自动修补；全部替换唯一命中及原引用验证通过才原子交新稿，旧版本在PG保留。新稿携公共diff和上一份审查供独立增量复核；原source权限/语义责任不变、不保证未改部分正确。不是调用Claude专有编辑API，而是给DS的薄工具适配。下一同scope一次实测，35相邻检查通过；无自动修到PASS循环。
+
 2026-09-06 05:03Z：有界Workbench已实现并在真实浏览器零模型加载A3报告/68引用/4意见/绑定来源窗口；native thread与人工interrupt真实成立。同Agent Server/PG/Redis驻留；报告仍needs_revision，下一从UI发一次公开定向意见做Writer/Verifier实测，不重跑作者/全研究，不自动循环至PASS。完整产品、运行中steer/cancel/restart与新案例仍未验收。
 
 2026-09-06 04:04Z：A3仅Writer/Verifier6实调348262tokens/约0.9575元，仍needs_revision。停止整篇自动重写/审查循环，保留失败和已完成六稿。下一先落真实Workbench审阅闭环，使用同Agent Server的thread/run/stream/interrupt/Command，薄BFF只投影公开数据、原生状态与窄输入，不转发私有messages/reasoning。交互使用原生thread/run作为运行标识，不复制旧once资格runner的容器/审批状态机；既有数据门、只读MCP、模型预算与来源验证不变。仅Dell报告审阅/定向修订先行，不冒称全研究任意任务入口已完成。细节与停止线见S3/190末节。

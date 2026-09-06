@@ -208,7 +208,10 @@ class CaseModelAudit(AgentMiddleware):
         if not self.stream_public:
             return await handler(request)
         from langgraph.config import get_stream_writer
-        emit = get_stream_writer()
+        stream = get_stream_writer()
+        def emit(event):
+            self.events.append(event)
+            stream(event)
         event = {"kind": "tool", "actor": self.actor, "call_id": request.tool_call["id"],
             "tool": request.tool_call["name"], "recorded_at": datetime.now(timezone.utc).isoformat()}
         # Names/status only: no raw arguments, source bodies or private reasoning.

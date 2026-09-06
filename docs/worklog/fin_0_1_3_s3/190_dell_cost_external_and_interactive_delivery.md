@@ -290,3 +290,19 @@ Counter3条material涉及P05/P07的Q1毛利方向与最新Q2对照、P04把量�
 最新容器镜像config `5125a76f742084fe21e6d3411a74a96f7a65fef17b55fc2125a74609dca4173e` 已实际重建部署。31近邻测试通过/21.76s，前端build通过。浏览器新建thread `01a07515-e784-7480-b6b3-eb4105ca127b` / init run `01a07515-e868-7c20-8c4c-50c21485a417`，真实native run success/thread interrupted，phase needs_revision、can_respond true、can_accept false；报告10738字符/68引用/4审查finding，model_events=0，调用目录无模型文件。引用P01:C7→P01:S006实际展开已保存SEC原文，显示捕获范围与链接，不把不完整capture当全文。浏览器观察发现来源窗口在多卡片末尾不明显，增加React ref滚入可见区，无新组件/状态平台。
 
 下一付费只经此真实UI的revise动作，输入公开A3审查+宿主具名意见（不是隐藏测试/标准答案）；Writer独立核原文，Verifier独立复核新稿，完成即停native人工点，不自动接受。重点是AI同比基数/单位/首套vs规模部署/采购vs融资/库存余额vs现金期间/价值池因果与可读性；不另跑十份研究。沿用配置中已存任务TokenBudgetBasis与Pro low 16模型/48工具/700k输入字符/32k联合输出/480s，不升级权限；成本和产品通过都以实测为准。当前仅零模型浏览器通过，paid交互、重连、取消、完整Dell人工产品验收仍待实证。
+
+### 05:25Z 首次真实UI付费修订结束：工程闭环成立，报告仍待修订
+
+实现 `ab3c790636f387755b4c888d07f5c9f7387e0018`；push遇远端ref竞态返回失败，但随后ls-remote精确确认远端已是同一commit，未force push。浏览器在既有thread提交公开反馈，产生native run `01a0751c-b4af-75a3-9a29-7d34502249d3`（05:06:53.938585Z—05:15:39.426097Z），Writer4/157300tokens、Verifier6/270859tokens，共10次428159tokens。0重新研究作者。模型事件原始文件在Z `report-workbench-20260906-a1/calls/<thread>/<run>/`；公开终态另保存 `public-session-after-revision1.json`，原A3与失败初始化不改。LangSmith实查同run根闭合、error=false、inputs/outputs均隐藏，384608输入/43551输出与本地完全一致。
+
+费用按已有价格估 **1.0647609元**：新输入0.433584、输出0.5879385、缓存输入0.0432384；288256 cache-hit tokens，输出含33618 reasoning。成本审计实际路径 `D:/temp/fin_dell_workbench_cost_audit_20260906_a1_actual.json`。第一次给审计器传入父目录层级错误得到0请求，原零结果文件保留但无效，不当作0费用；用thread目录重跑离线审计得到上数，无新模型调用。全案约8m45s是修订+独立全报告复核，不是短问答时延。
+
+实际浏览器已看见逐条模型/工具开始与返回、用量、Writer→Verifier交接。开始阶段等待模型时0条事件曾被怀疑为传输问题；随后真实Cua/原生SDK/HTTP都看到custom|子图事件，未发现须换框架的问题。原生resumable run的Last-Event-ID=0-0实际回放成功；修复BFF初次附加默认从该cursor读取，避免刷新漏掉已发生事件。已完成的公开工具状态同模型记录一起保存在原生PG根state，UI合并去重，不新增事件库，失败/中断未提交部分仍不冒称完整持久化。运行中显示“上一轮审查”以免混淆新稿与旧finding。
+
+报告v2与原生人工点成立（run success/thread interrupted/report needs_revision），不等于质量通过。独立终审1material/4advisory：漏并列H1现金流方向；此外宿主发现情景段仍将采购承诺等同已融资。相反，审查者也有不严谨：H1现金流增长不能直接反证现金转化比率走弱；Q2 $8.208B基期是直接披露，非与Q1同样直减派生；订单/积压不必误贴需GAAP对账的non-GAAP会计指标；HPE低可靠性毛利不能为补表机械加入。以上均为公开开发审稿，不是隐藏gold。
+
+### 有界局部编辑与下一次验证（尚未paid）
+
+依据[Anthropic文本编辑工具的唯一exact str_replace语义](https://platform.claude.com/docs/en/agents-and-tools/tool-use/text-editor-tool)，FIN仅薄接当前报告old_str/new_str：1–24条替换、逐条精确唯一命中、临时字符串全部成功并通过既有CaseReport/引用校验才提交；无任意文件/路径、无模糊修复、无新runtime。旧稿和所有失败保留；JSON/命中错误用同原生ToolMessage返给作者。Writer仍可在确需大改时完整报告，但局部修订优先此工具。独立Verifier获得当前报告、实际文本diff和上轮公共审查，聚焦变更/未闭项且可检查未改上下文，不因“未改”自动判对。35近邻检查/31.59s与前端build通过，含真实native图中命中错误→引用错误→作者自修→Verifier；0新provider。
+
+下一只在相同session发一次具体局部修订意见：H1与Q2现金/相对收入、采购与融资矛盾、AI收入与订单指标性质、基期派生标注、HPE建议是否必要、附录笔误。沿用host-settings内任务预算与Pro low profile，不重研究、不改数据门；假设差分输出/增量审查能减少重复输出和无关原文阅读，费用与质量需实测，不先承诺节省比例。该次结束即停人工点，不自动重写至PASS。完整新研究入口/任意中途干预/取消/服务重启恢复和新case继续待验收。

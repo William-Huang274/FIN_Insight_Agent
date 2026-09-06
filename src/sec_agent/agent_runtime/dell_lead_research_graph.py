@@ -38,9 +38,16 @@ class _LeadAction(BaseModel):
     reason_summary: str = Field(min_length=1, max_length=2000)
 
 
+class DelegatedResearchTask(ResearchTaskSpec):
+    """Only the outputs/states executable by the current research worker."""
+    expected_output_kinds: tuple[Literal["branch_notebook", "narrative_artifact", "claim_ledger"], ...] = Field(min_length=1, max_length=3)
+    status: Literal["planned", "ready"] = "planned"
+    required_authority_refs: tuple[str, ...] = Field(default=(), max_length=0)
+
+
 class DelegateResearchTasksAction(_LeadAction):
     """Add new semantic tasks. Independent ready tasks run concurrently."""
-    tasks: tuple[ResearchTaskSpec, ...] = Field(min_length=1, max_length=16)
+    tasks: tuple[DelegatedResearchTask, ...] = Field(min_length=1, max_length=16)
 
 
 class ContinueResearchTasksAction(_LeadAction):
@@ -60,7 +67,10 @@ LEAD_RESEARCH_TOOLS = {model.__name__: model for model in (
 LEAD_RESEARCH_SYSTEM_PROMPT = (
     "You are the Research Lead. Autonomously plan and reflect on the user's research question. "
     "Use DelegateResearchTasksAction to create semantic ResearchTaskSpecs with your own objectives, "
-    "roles, success criteria and dependencies from the disclosed scope. Ready specialists use their "
+    "roles, success criteria and dependencies from the disclosed scope. Selected specialists receive "
+    "branch-specific tool disclosure; shared capability refs identify interfaces, not Q1-only permission. "
+    "Research workers produce branch_notebook, narrative_artifact and claim_ledger only; independent verifier "
+    "findings belong to downstream review, not a research task output. Ready specialists use their "
     "own multi-turn source/finance tool loops; do not dictate physical paths or tool queries for them. "
     "One task covers one disclosed obligation for this qualification: coverage_obligation_ids must "
     "contain exactly one branch_id from required_branch_ids (e.g. [\"Q2_DEMAND_QUALITY\"]). "
@@ -80,6 +90,21 @@ LEAD_RESEARCH_SYSTEM_PROMPT = (
     "and acknowledge incomplete task IDs. Write research objectives and handoff notes in Chinese. "
     "Use the exact current context_digest. Hidden reasoning is not an artifact or source."
 )
+
+
+def lead_capability_catalog(rows):
+    """Shared interface catalog, not the bootstrap Q1 worker's concrete scope.
+
+    Each child still receives and validates its actual branch-specific data
+    contracts. Do not tell the Lead all workers are restricted to the seed's
+    ticker/topics or inherit its satisfied routes.
+    """
+    keys = {"capability_ref", "actions", "source_spaces", "scope", "numeric_policy",
+            "known_non_capabilities", "candidate_is_not_evidence", "answer_free", "grants_authority"}
+    return [{**{key: value for key, value in row.items() if key in keys},
+             "worker_disclosure": "Actual source/topic/company/metric availability is disclosed to each selected worker; "
+                 "this interface reference does not grant access or promise data exists."}
+            for row in rows if row.get("capability_ref")]
 
 
 class LeadResearchState(TypedDict, total=False):
@@ -174,7 +199,7 @@ def build_dell_lead_research_graph(
             "research_as_of": expected_input.task.research_as_of,
             "branch_catalog": [row for row in branch_catalog if row["branch_id"] in allowed],
             "required_branch_ids": list(allowed_branch_ids),
-            "capabilities": list(expected_input.l0_context.capability_summaries),
+            "capabilities": lead_capability_catalog(expected_input.l0_context.capability_summaries),
             "capacity": {"max_tasks": max_tasks, "max_parallel_tasks": max_parallel_tasks,
                          "max_lead_turns": max_lead_turns},
             "workpapers": [workpaper_view(key, value) for key, value in completed(state).items()],
@@ -262,6 +287,10 @@ def build_dell_lead_research_graph(
                 detail = ({"schema_errors": [{"loc": list(e["loc"]), "type": e["type"], "msg": e["msg"]}
                                              for e in exc.errors(include_url=False, include_input=False)]}
                           if isinstance(exc, ValidationError) else {"error": str(exc)})
+                if str(exc) == "task_status_capability_or_output_not_authorized":
+                    detail.update(allowed_statuses=["planned", "ready"], allowed_capability_refs=sorted(available),
+                                  allowed_output_kinds=["branch_notebook", "narrative_artifact", "claim_ledger"],
+                                  required_authority_refs_must_be_empty=True)
                 if str(exc) == "task_requires_one_disclosed_coverage_obligation":
                     detail.update(field="tasks[].coverage_obligation_ids",
                                   expected="An array containing exactly one allowed branch ID, not a route ID.",

@@ -352,3 +352,32 @@ def test_full_runtime_feedback_is_preserved_and_citable_identity_conflicts_still
     copied = obs.model_copy(update={"references": (conflicting,)})
     errors = _submission_errors(action, notebook.model_copy(update={"observations": (*notebook.observations, copied)}))
     assert f"reference_identity_conflict:{ref.ref_id}" in errors
+def test_provider_task_schema_matches_executable_outputs_and_shared_catalog():
+    from sec_agent.agent_runtime.dell_lead_research_graph import DelegateResearchTasksAction, lead_capability_catalog
+    from sec_agent.agent_runtime.deepseek_structured_agents import _native_function_schema
+    schema = _native_function_schema(DelegateResearchTasksAction, runtime_context_binding=True)
+    task_schema = schema["parameters"]["properties"]["tasks"]["items"]
+    assert task_schema["properties"]["expected_output_kinds"]["items"]["enum"] == [
+        "branch_notebook", "narrative_artifact", "claim_ledger"]
+    assert task_schema["properties"]["status"]["enum"] == ["planned", "ready"]
+    assert "context_digest" not in schema["parameters"]["properties"]
+    view = lead_capability_catalog([{"branch_id": "Q1_ISSUER_TRUTH"},
+        {"capability_ref": "finance", "supported_ticker": "DELL", "metrics": [], "grants_authority": False}])
+    assert len(view) == 1 and view[0]["capability_ref"] == "finance"
+    assert "supported_ticker" not in view[0] and view[0]["grants_authority"] is False
+
+
+@pytest.mark.local_data_integration
+def test_real_q8_rejected_output_is_identified_at_the_exact_field():
+    from sec_agent.agent_runtime.dell_lead_research_graph import DelegateResearchTasksAction
+    path = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/"
+                "20260906-dell-q8-targeted-completion-a1/model-context-reasoning.private.jsonl")
+    if not path.exists():
+        pytest.skip("Q8 archived counterexample unavailable")
+    row = json.loads(path.read_text(encoding="utf-8").splitlines()[0])
+    args = row["raw_response"]["tool_calls"][0]["args"]
+    with pytest.raises(ValidationError) as error:
+        DelegateResearchTasksAction.model_validate_json(json.dumps({**args, "context_digest": "a" * 64}))
+    assert any(e["loc"][:3] == ("tasks", 0, "expected_output_kinds") for e in error.value.errors())
+    # Diagnose a real unsupported enum; do not mutate the archived provider task
+    # or claim the hypothetical corrected task was executed.

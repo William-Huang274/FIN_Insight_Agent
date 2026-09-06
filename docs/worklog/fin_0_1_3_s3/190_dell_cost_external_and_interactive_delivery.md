@@ -140,3 +140,9 @@ R3已知用量在全部命中/全部未命中两端对应约0.0458–0.3647元�
 4. 只补Q8的fresh研究任务，已完成七项/Q1不重跑。Q8曾读多公司多期间约291k工具结果字符，534,978是包含自己的思考/两份草稿/SDK元数据的本地计数；为本任务设700k输入字符余量而非再次被任意字符阈值切断，仍32k输出/480s/16模型轮/24工具。此为任务规模修正，不是压缩省token证明；引用错误必须模型自己修，不能弱化validator。预算/新authority在本地反例通过后冻结。
 
 前端等待期间已实际在Z隔离环境安装 `@langchain/react1.0.35` / `@langchain/langgraph-sdk1.10.2` 并测试当前真实Agent Server。新v2 transport两次只握手200、0事件，不能算通过；同官方SDK经典 `threads.joinStream` 两次连回均读到实际specialist/collect/lead/lead_tools事件。采用已测接口，不自造消息总线。UI仍未接入/渲染、未提交或取消任务；正式集成留在研究收口后的下一工作包。
+
+### Q8 定向 A1：provider schema 暴露了执行器不支持的输出类型
+
+实现a9c4ee81、authority88e46797，`20260906-dell-q8-targeted-completion-a1` 已failed，2次Flash请求33,776tokens/估0.0594796元，0新Specialist。第一轮754输出/8.477s生成有内容的Q8任务，但generic ResearchTaskSpec允许 `verifier_finding`，当前worker只实现三个研究产物，因此正确拒绝却只有含糊错误；第二轮误陷入“为何Q8只有Q1权限”的重复自然语言（不是隐藏thinking），8000输出/61.915s截断。没有通过增加token或掩盖任务错误推进。第一轮也已证实新provider不填写context_digest，宿主正常绑定到真正执行器，说明这次失败与哈希注入无关。
+
+最小修正：provider专用 `DelegatedResearchTask` 继承原领域任务，只缩窄为实际已支持的planned/ready和branch_notebook/narrative_artifact/claim_ledger，不新增研究规则；公共ResearchTaskSpec不动。Lead只看真实存在的shared capability refs和访问边界，不误收Q1 seed专属ticker/topic/route完成标准；每个worker仍从原组合领取真实的分支披露与权限。拒绝信息附真实allowed values。86条相邻测试通过，包含不可变Q8第一轮反例的准确字段失败，不伪称历史任务被修成成功。原失败/成本保留，三容器停止、卷不删；下一同scope fresh Q8 A2、不增加任务、预算、模型或权限。

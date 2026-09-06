@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 更晚S3/190：仅Q8定向A1在Lead阶段failed，2Flash调用33776tokens/估0.0594796元，0新worker；schema允许verifier_finding而worker不支持，含糊错误+Q1标签误导导致第二轮重复文字截断。原生context宿主注入第一轮已实际到达执行器。已用provider专用任务子类缩窄实际输出/状态枚举、Lead公共能力目录去掉误导的seed专属范围（worker真实权限不变）、错误附合法值；86相邻检查通过含真实反例。下一同scope/预算fresh Q8 A2，其他七份+Q1仍保存、不重跑；全案复核/报告/UI仍未完成。详情S3/190，下文为历史时点。
+
 2026-09-06 S3/190当前：full-research-web-a2已failed关闭，68实调/2,999,396tokens/估6.625332元（非账单）；Flash Lead7次约0.114303元，实际八项专业研究发生。父图收六份，Q6原生PostgreSQL checkpoint另已accepted/12claims，已只读导出并通过既有引用校验，故七份新底稿+此前已审Q1保留；只有Q8竞争研究未收口。根因是Q8本地534978字符>500k上限（非provider窗口/网络/余额），加上模型复制内部context哈希与拒绝反馈重复旧来源。已按成熟runtime宿主注入原则补可选native上下文绑定、拒绝只追加反馈、已知模型失败分支终止不取消兄弟；152定向检查通过。下一仅fresh Q8，700k字符按实际规模给修订余量，旧run不resume/重签、其他七项不重跑。全案语义审查/责任修复/报告/真实UI/新case仍未完成；Z lab官方经典threads.joinStream已有真实事件/重连证据，新Reactv2只握手无事件、不宣称前端完成。当前代码/配置与下一门详S3/190；以下均为历史。
 
 2026-09-06 S3/190 最新：full-research-web-a1已failed/关闭，2Lead调用74,750tokens/估0.5513874元、0worker；route主题ID歧义与24k思考截断已定位。字段/合法值反馈已修、既有SDK用途thinking已接入。实际同错误上下文的Pro/disabled与Flash/disabled均正确分派Q2/Q3：9.068s/936输出与5.938s/1,061输出，合计31,481tokens/约0.1058625元，真实LangSmith已核。下一fresh混合配置：Flash非思考Lead8k，Pro/low专家32k，Q1复用/全Q1–Q9/并行2/最多12任务不变；这是首次全研究收敛资格，不是等质/产品PASS。旧失败/原文reasoning/卷保留；CLI只薄接现有Agent Server preflight，不修历史R14门。完整研究、跨主题Counter/责任修复/Verifier/报告/真实UI/新case仍未PASS。详见S3/190，后文为历史时点。

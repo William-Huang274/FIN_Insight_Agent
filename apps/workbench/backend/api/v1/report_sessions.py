@@ -266,11 +266,12 @@ def build_report_sessions_router(service):
         state = await service.state(thread_id)
         values = state.get("values", {})
         citations = [values.get("report", {}).get("citations", {})]
+        citations += [values.get("research_synthesis", {}).get("citations", {})]
         citations += [m.get("citations", {}) for m in values.get("conversation", [])]
         available = {s["source_id"] for group in citations for c in group.values() for s in c["sources"]}
         if source_id not in available:
             raise HTTPException(404, "来源未与本会话已提交内容绑定")
-        if source_id.startswith(("NUMFACT::", "CALC::")):
+        if not re.fullmatch(r"P\d{2}:S\d+", source_id):
             source = next(s for group in citations for c in group.values() for s in c["sources"] if s["source_id"] == source_id)
             if offset < 0:
                 raise HTTPException(422, "来源阅读范围不合法")

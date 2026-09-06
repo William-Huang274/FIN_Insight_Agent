@@ -35,6 +35,7 @@ from pydantic import (
 
 from .dell_agentic_contracts import ProviderEvidenceIntent
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
 from .dell_reference_vertical_contracts import (
     BoundBranchTask,
     RuntimeReceipt,
@@ -149,10 +150,8 @@ class SpecialistFinanceIntent(_StrictModel):
     @field_validator("ticker")
     @classmethod
     def normalize_ticker(cls, value: str) -> str:
-        normalized = value.strip().upper()
-        if normalized != "DELL":
-            raise ValueError("specialist_finance_ticker_out_of_scope")
-        return normalized
+        from sec_agent.research_foundation.data_ports import CompanyFinancialFactQuery
+        return CompanyFinancialFactQuery.normalize_ticker(value)
 
     @model_validator(mode="after")
     def validate_period(self) -> "SpecialistFinanceIntent":
@@ -198,6 +197,13 @@ class RequestSourceAction(_StrictModel):
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     reason_summary: str = Field(min_length=1, max_length=1_000)
     selection: SourceDocumentRequest
+
+
+class RequestCalculationAction(_StrictModel):
+    action: Literal["request_calculation"]
+    context_digest: str = Field(pattern=_DIGEST_PATTERN)
+    reason_summary: str = Field(min_length=1, max_length=1_000)
+    request: SourceBoundCalculation
 
 
 class RequestResearchMethodAction(_StrictModel):
@@ -347,7 +353,7 @@ class SubmitReviewAction(_StrictModel):
 
 
 SpecialistResearchAction = Annotated[
-    RequestEvidenceAction | RequestSourceAction | RequestFinanceAction | RequestResearchMethodAction
+    RequestEvidenceAction | RequestSourceAction | RequestFinanceAction | RequestCalculationAction | RequestResearchMethodAction
     | RequestHumanReviewAction | SubmitWorkpaperAction,
     Field(discriminator="action"),
 ]
@@ -357,6 +363,7 @@ SpecialistAction = Annotated[
     | RequestSourceAction
     | RequestResearchMethodAction
     | RequestFinanceAction
+    | RequestCalculationAction
     | RequestHumanReviewAction
     | SubmitWorkpaperAction
     | SubmitReviewAction,
@@ -904,6 +911,8 @@ def _model_request(
         allowed_actions.append("request_source")
     if any(row.get("capability_ref") == "capability:research:methods" for row in l0.capability_summaries):
         allowed_actions.append("request_method")
+    if any(row.get("capability_ref") == "capability:research:calculator" for row in l0.capability_summaries):
+        allowed_actions.append("request_calculation")
     collaboration = state.get("collaboration_context")
     if collaboration and collaboration["mode"] in {"counter", "verifier"}:
         allowed_actions.remove("submit_workpaper")
@@ -1113,11 +1122,17 @@ def _submission_errors(
     if submission.terminal_state == "bounded_gap":
         errors.append("bounded_gap_requires_canonical_gap_eligibility_receipt")
     for claim in submission.claims:
-        if claim.kind == "calculation":
+        if claim.kind == "calculation" and not any(
+            references.get(ref) and references[ref].authority_state == "non_authoritative_metric"
+            and any(item.get("calculation_id") == ref and item.get("arithmetic_verified") is True
+                    and item.get("numeric_fact_authority") is False
+                    for obs in notebook.observations for item in obs.content)
+            for ref in claim.fact_ids
+        ):
             errors.append(
                 f"calculation_requires_canonical_receipt:{claim.claim_id}:"
-                "request_finance_for_a_matching_disclosed_derived_metric_and_cite_the_returned_"
-                "NumericFact_with_formula_trace_and_calculated_origin_note;"
+                "request_calculation_with_observed_source_operands_and_cite_the_returned_CALC_ID_in_fact_ids;"
+                "or_request_finance_for_a_disclosed_S2_derived_metric_and_use_numeric_fact;"
                 "do_not_relabel_unverified_arithmetic_as_fact_or_inference"
             )
         for evidence_id in claim.evidence_ids:
@@ -1741,7 +1756,7 @@ def build_dell_specialist_agentic_state_graph(
         working: DellSpecialistAgenticState = dict(state)
         calls = {call.id: call for call in batch.tool_calls}
         models = {model.__name__: model for model in (
-            RequestEvidenceAction, RequestFinanceAction, RequestSourceAction, RequestResearchMethodAction,
+            RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
             SubmitWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
         terminal_mixed = len(batch.tool_calls) > 1 and any(
@@ -1821,7 +1836,7 @@ def build_dell_specialist_agentic_state_graph(
                     phase="human_review_required")
                 return ToolMessage(name=call.name, tool_call_id=call.id,
                     content=json.dumps({"human_review_required": True}))
-            kind = "finance" if isinstance(action, RequestFinanceAction) else "evidence"
+            kind = "finance" if isinstance(action, (RequestFinanceAction, RequestCalculationAction)) else "evidence"
             update = execute_tool(working,
                 port=dependencies.finance_tool if kind == "finance" else dependencies.evidence_tool,
                 expected_kind=kind)
@@ -2016,6 +2031,7 @@ def build_dell_specialist_agentic_state_graph(
             "request_evidence": "execute_evidence",
             "request_source": "execute_evidence",
             "request_finance": "execute_finance",
+            "request_calculation": "execute_finance",
             "request_method": "execute_method",
             "submit_workpaper": "validate_submission",
             "submit_review": "validate_submission",
@@ -2060,6 +2076,7 @@ __all__ = [
     "RequestDisclosureAction",
     "RequestEvidenceAction",
     "RequestFinanceAction",
+    "RequestCalculationAction",
     "RequestHumanReviewAction",
     "SpecialistAction",
     "SpecialistAgenticInput",

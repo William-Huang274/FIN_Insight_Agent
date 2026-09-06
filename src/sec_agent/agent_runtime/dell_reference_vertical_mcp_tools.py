@@ -1166,6 +1166,22 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         calls: list[_Call],
     ) -> None:
         for request in lane_task.task.fact_requests:
+            if "calculation" in request:
+                if set(request) != {"calculation"}:
+                    raise DellMCPToolAdapterError("mcp_calculation_request_fields_invalid")
+                from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
+                calculation = SourceBoundCalculation.model_validate(request["calculation"])
+                call = self._call("calculate_research_metric", {"request": calculation.model_dump(mode="json")})
+                calls.append(call)
+                if call.error or call.content is None:
+                    continue
+                result = call.content
+                if (result.get("arithmetic_verified") is not True or result.get("numeric_fact_authority") is not False
+                        or result.get("result_state") != "non_authoritative_metric" or not result.get("calculation_id")):
+                    raise DellMCPToolAdapterError("mcp_calculation_response_invalid")
+                items.append({**result, "fact_id": result["calculation_id"], "mcp_receipt_chain": [call.receipt], "cell_binding_used": False})
+                states.add("deterministic_derived_metric")
+                continue
             self._keys(request, _FACT_KEYS, "mcp_fact_request")
             if "selection_mode" not in request:
                 raise DellMCPToolAdapterError(

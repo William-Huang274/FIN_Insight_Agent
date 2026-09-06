@@ -200,7 +200,12 @@ def build_research_data_mcp_server(
     # No new store/admission: the typed SQL result remains the authority and is
     # already persisted in the agent's native ToolMessages. Re-query after a new
     # composition; never accept a model-supplied number as an observed fact.
-    observed_numeric_facts: dict[str, dict[str, Any]] = {}
+    from .source_bound_calculator import source_items_from_tool, register_source_calculator_tool
+    observed_sources: dict[str, dict[str, Any]] = {}
+
+    def remember_sources(tool_name, result):
+        observed_sources.update(source_items_from_tool(tool_name, result.model_dump(mode="json")))
+        return result
 
     @server.tool(name="get_research_method",
         description="Read answer-free research methods. Omit method_id for the compact catalog; select an ID for its full content. Methods are not evidence or extra permissions.",
@@ -338,13 +343,14 @@ def build_research_data_mcp_server(
             run_scope=run_scope,
             branch_id=branch_id,
         )
-        return await _invoke_model(
+        result = await _invoke_model(
             dependencies.reviewed_evidence_reader,
             ReviewedEvidenceReadResult,
             evidence_ids=tuple(evidence_ids),
             branch_id=branch_id.strip(),
             run_scope=run_scope,
         )
+        return remember_sources(READ_REVIEWED_EVIDENCE_BY_ID_TOOL, result)
 
     @server.tool(
         name=QUERY_COMPANY_FINANCIAL_FACTS_TOOL,
@@ -405,12 +411,7 @@ def build_research_data_mcp_server(
             branch_id=branch_id.strip(),
             run_scope=run_scope,
         )
-        for row in result.results:
-            for fact in row.facts:
-                if fact.numeric_fact_authority:
-                    observed_numeric_facts[fact.numeric_fact_id] = {
-                        **fact.model_dump(mode="json"), "result_state": "numeric_fact"}
-        return result
+        return remember_sources(QUERY_COMPANY_FINANCIAL_FACTS_TOOL, result)
 
     if dependencies.source_document_reader is not None:
 
@@ -420,8 +421,9 @@ def build_research_data_mcp_server(
             request: SourceDocumentRequest, branch_id: str, run_scope: DellResearchRunScope,
         ) -> SourceDocumentResult:
             await _validate_scope(dependencies.method_reader, run_scope=run_scope, branch_id=branch_id)
-            return await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
-                                       request=request, branch_id=branch_id, run_scope=run_scope)
+            result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
+                                         request=request, branch_id=branch_id, run_scope=run_scope)
+            return remember_sources(READ_SOURCE_DOCUMENT_TOOL, result)
 
     if dependencies.legacy_reviewed_evidence_cell_reader is not None:
 
@@ -539,13 +541,18 @@ def build_research_data_mcp_server(
         )
         return await dependencies.external_capture.capture(request)
 
+    def calculation_source(source_id):
+        if source_id in observed_sources:
+            return dict(observed_sources[source_id])
+        if dependencies.case_artifacts is not None:
+            return dependencies.case_artifacts.source_item(source_id)
+        raise ValueError("source_id_not_observed_in_this_tool_session")
+
     if dependencies.case_artifacts is not None:
         from sec_agent.agent_runtime.dell_case_artifacts import register_case_artifact_tools
-        def calculation_source(source_id):
-            if source_id in observed_numeric_facts:
-                return dict(observed_numeric_facts[source_id])
-            return dependencies.case_artifacts.source_item(source_id)
         register_case_artifact_tools(server, dependencies.case_artifacts, source_lookup=calculation_source)
+    else:
+        register_source_calculator_tool(server, calculation_source)
     return server
 
 

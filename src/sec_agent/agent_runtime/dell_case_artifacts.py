@@ -45,14 +45,21 @@ class DellCaseArtifacts:
             sources, aliases = {}, {}
             for observation in paper["notebook"]["observations"]:
                 for item in observation["content"]:
-                    if item.get("result_state") not in {"numeric_fact", "reviewed_evidence", "source_bound_passage"}:
+                    if item.get("result_state") not in {"numeric_fact", "reviewed_evidence", "source_bound_passage", "non_authoritative_metric"}:
                         continue
-                    ref = item.get("passage_id") or item.get("evidence_id") or item.get("numeric_fact_id") or item.get("fact_id")
+                    ref = item.get("passage_id") or item.get("evidence_id") or item.get("numeric_fact_id") or item.get("calculation_id") or item.get("fact_id")
                     if not ref or ref in aliases:
                         continue
                     source_id = f"{paper_id}:S{len(sources)+1:03d}"
                     aliases[ref] = source_id
                     sources[source_id] = dict(item)
+                    self._sources[source_id] = dict(item)
+            for source_id, item in sources.items():
+                if item.get("result_state") == "non_authoritative_metric":
+                    # Original operands/IDs stay intact. Aliases only make their
+                    # existing source windows navigable in the cross-agent view.
+                    item["operand_source_aliases"] = {value["source_id"]: aliases[value["source_id"]]
+                        for value in item.get("operands", {}).values() if value.get("source_id") in aliases}
                     self._sources[source_id] = dict(item)
             # A copy with compact source aliases is a view, never a rewritten original.
             view = json.loads(json.dumps(paper["final_submission"]))
@@ -72,12 +79,16 @@ class DellCaseArtifacts:
 
     @staticmethod
     def _source_summary(source_id, item):
-        return {"source_id": source_id, **{key: item[key] for key in (
+        return {"source_id": source_id, **({"title": "本地来源绑定计算 · 非权威", "unit": item.get("result_unit")}
+                if item.get("result_state") == "non_authoritative_metric" else {}), **{key: item[key] for key in (
             "result_state", "title", "source_url", "citation_urls", "ticker", "metric_id", "value_decimal",
             "unit", "unit_family", "period_start", "period_end", "fiscal_year", "fiscal_period", "authority_mode",
             "publication_date", "publication_date_status", "numeric_fact_authority", "authority_note",
             "source_type", "source_tier", "source_role", "source_reporting_period_end", "numeric_use_boundary",
-            "causal_attribution_authorized", "truncated", "excerpt_truncated", "source_document_completeness_verified") if key in item}}
+            "causal_attribution_authorized", "truncated", "excerpt_truncated", "source_document_completeness_verified",
+            "source_locator", "parser_page_start", "parser_page_end", "page_semantics", "section_path",
+            "document_id", "node_id", "company", "issuer_id", "content_sha256", "calculation_id", "result_unit",
+            "arithmetic_verified", "financial_semantics_verified") if key in item}}
 
     def catalog(self):
         return {"case_id": self.case_id, "research_as_of": self.research_as_of,
@@ -126,11 +137,17 @@ class DellCaseArtifacts:
         if item["result_state"] == "numeric_fact":
             return {**self._source_summary(source_id, item), "formula_trace": item.get("formula_trace"),
                     "source_observation_ids": item.get("source_observation_ids"), "next_offset": None}
-        text = str(item.get("passage") or item.get("bounded_excerpt") or item.get("text") or item.get("content") or "")
+        if item["result_state"] == "non_authoritative_metric":
+            text = json.dumps({k: item[k] for k in ("expression", "operands", "rationale", "authority_note", "operand_source_aliases") if k in item},
+                              ensure_ascii=False, indent=2)
+        else:
+            text = str(item.get("passage") or item.get("bounded_excerpt") or item.get("text") or item.get("content") or "")
         end = min(len(text), offset + max_characters)
         return {**self._source_summary(source_id, item), "text": text[offset:end], "offset": offset,
             "next_offset": end if end < len(text) else None, "captured_characters": len(text),
-            "notice": "Exact archived observation window. End of this capture is not proof of full document coverage or truth; no new Evidence admission."}
+            "notice": ("来源绑定计算，非发行人直接披露或 S2 权威事实。算术验证不证明期间、单位、口径或研究推断正确。"
+                       if item["result_state"] == "non_authoritative_metric" else
+                       "Exact archived observation window. End of this capture is not proof of full document coverage or truth; no new Evidence admission.")}
 
 
 def register_case_artifact_tools(server, artifacts: DellCaseArtifacts, *, source_lookup=None):

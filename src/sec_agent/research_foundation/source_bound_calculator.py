@@ -21,7 +21,7 @@ from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_
 class CalculationOperand(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_id: str | None = Field(default=None, min_length=1, max_length=500,
-        description="Observed archive Pxx:Sxxx ID, or numeric_fact_id returned by a successful SQL query in this tool session. Never invent IDs. For S2 only source_id is needed; the host reads the number.")
+        description="Observed Pxx:Sxxx archive ID, PASSAGE ID from read_source_document, evidence_id from read_reviewed_evidence, or numeric_fact_id from this tool session's successful SQL query. Search previews are not sources. For S2 only source_id is needed; the host reads the number.")
     literal: str | None = Field(default=None, min_length=1, max_length=64,
         description="For a source-reported number, copy its exact numeric literal, including commas. For S2 omit this: host reads value_decimal.")
     quote: str | None = Field(default=None, min_length=1, max_length=4000,
@@ -49,6 +49,26 @@ def _number(literal: str) -> Decimal:
     if not value.is_finite() or abs(value) > Decimal("1e36"):
         raise ValueError("numeric_operand_out_of_range")
     return value
+
+
+def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
+    """Normalize successful MCP data responses, never model text or previews.
+
+    Callers own their native messages/composition lifetime. This is a projection,
+    not another source store or evidence-admission system.
+    """
+    if tool_name == "query_company_financial_facts" and body.get("authority_state") == "s2_numeric_fact_query_result":
+        return {f["numeric_fact_id"]: {**f, "result_state": "numeric_fact"}
+                for row in body.get("results", []) if row.get("status") == "resolved"
+                for f in row.get("facts", []) if f.get("numeric_fact_authority") is True}
+    if tool_name == "read_source_document" and body.get("operation") == "read":
+        return {p["passage_id"]: dict(p) for p in body.get("items", [])
+                if p.get("result_state") == "source_bound_passage" and p.get("writer_citable") is True
+                and p.get("numeric_fact_authority") is False and p.get("passage_id") and p.get("passage")}
+    if tool_name == "read_reviewed_evidence" and body.get("authority_state") == "reviewed_evidence_read":
+        return {p["evidence_id"]: {**p, "result_state": "reviewed_evidence", "numeric_fact_authority": False}
+                for p in body.get("evidence", []) if p.get("writer_citable") is True}
+    return {}
 
 
 def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
@@ -83,6 +103,11 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                     "extraction_meaning_verified": False}
             else:
                 raise ValueError("operand_requires_observed_citable_source_or_s2_fact")
+            binding["source_provenance"] = {key: item[key] for key in (
+                "source_url", "citation_urls", "source_locator", "title", "ticker", "company", "issuer_id",
+                "publication_date", "publication_date_status", "period_start", "period_end", "fiscal_period",
+                "source_reporting_period_end", "unit", "numeric_fact_authority", "authority_note",
+                "source_type", "source_tier", "source_role", "source_observation_ids", "content_sha256") if key in item}
         values[name] = value
         bindings[name] = {**binding, "value_decimal": str(value)}
 
@@ -123,9 +148,9 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
 def register_source_calculator_tool(server, source_lookup):
     @server.tool(name="calculate_research_metric", structured_output=True)
     def calculate(request: SourceBoundCalculation) -> dict[str, Any]:
-        """Evaluate arithmetic using archive source IDs or numeric_fact_id from this session's successful SQL query. No shell/code or S2 write; output remains non-authoritative."""
+        """Evaluate arithmetic using observed archive, read-source PASSAGE, reviewed Evidence or SQL IDs. Search previews cannot be operands. No shell/code or S2 write; output remains non-authoritative."""
         try:
             return calculate_from_sources(request, source_lookup)
         except ValueError as exc:
             from mcp.server.mcpserver.exceptions import ToolError
-            raise ToolError(str(exc) + ". For S2 use {source_id: observed numeric_fact_id} or an archive Pxx:Sxxx ID from paper sources. Re-query SQL if this tool session has not observed the ID. Do not remove source binding or relabel sourced numbers as assumptions.") from None
+            raise ToolError(str(exc) + ". For S2 use {source_id: observed numeric_fact_id}; for prose use an observed PASSAGE/evidence/archive ID plus exact quote and literal. Re-query SQL or read the original passage if this tool session has not observed the ID. Do not remove source binding or relabel sourced numbers as assumptions.") from None

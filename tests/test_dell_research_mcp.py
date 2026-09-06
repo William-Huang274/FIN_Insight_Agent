@@ -100,6 +100,7 @@ def _build_server(
     include_legacy: bool = False,
     financial_status: str = "typed_gap",
     case_artifacts=None,
+    source_document_reader=None,
 ):
     guard = PublicURLGuard(resolver=lambda _host: ("93.184.216.34",))
     discovery = ExternalSourceDiscovery(
@@ -249,6 +250,7 @@ def _build_server(
             external_discovery=discovery,
             external_capture=capture,
             case_artifacts=case_artifacts,
+            source_document_reader=source_document_reader,
             legacy_reviewed_evidence_cell_reader=(
                 legacy_evidence_reader if include_legacy else None
             ),
@@ -274,6 +276,7 @@ def test_mcp_exposes_strong_typed_non_cell_surface_and_scope() -> None:
             listed = await client.list_tools()
             by_name = {tool.name: tool for tool in listed.tools}
             assert set(by_name) == {
+                "calculate_research_metric",
                 "get_research_method",
                 GET_RESEARCH_METHOD_TOOL,
                 SEARCH_LOCAL_KNOWLEDGE_TOOL,
@@ -451,6 +454,6 @@ def test_mcp_registers_cell_tools_only_in_explicit_legacy_profile() -> None:
             names = {tool.name for tool in listed.tools}
             assert READ_REVIEWED_EVIDENCE_TOOL in names
             assert READ_NUMERIC_FACTS_TOOL in names
-            assert len(names) == 10
+            assert len(names) == 11
 
     asyncio.run(exercise())

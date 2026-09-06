@@ -102,3 +102,27 @@ def test_native_parent_schema_needs_no_credentials_or_archived_answer_and_role_b
             assert set(schema["properties"]) == {"case_profile", "question"}
             assert {"research", "case_review", "convergence", "human_review", "research_revision"}.issubset(graph.nodes)
     asyncio.run(exercise())
+
+
+def test_direct_passage_and_calculation_operand_sources_remain_session_bound_and_paginated():
+    app, service, _, thread_id = _app()
+    sources = [{"source_id": "PASSAGE::current", "text": "A" * 17000,
+                "source_url": "https://example.com/current", "numeric_fact_authority": False},
+               {"source_id": "evidence-from-calculator", "text": "Exact reviewed source operand",
+                "source_url": "https://example.com/operand", "numeric_fact_authority": False}]
+    async def state(_):
+        return {"values": {"research_synthesis": {"citations": {"PASSAGE::current": {"sources": [sources[0]]}}},
+            "report": {"citations": {"CALC::current": {"sources": [sources[1]]}}}}}
+    service.sdk.threads.get_state = state
+    with TestClient(app) as client:
+        path = f"/api/v1/research-sessions/{thread_id}/source"
+        result = client.get(path, params={"source_id": "PASSAGE::current"})
+        assert result.status_code == 200 and len(result.json()["text"]) == 16000
+        assert result.json()["next_offset"] == 16000 and not result.json()["numeric_fact_authority"]
+        last = client.get(path, params={"source_id": "PASSAGE::current", "offset": 16000}).json()
+        assert last["text"] == "A" * 1000 and last["next_offset"] is None
+        assert client.get(path, params={"source_id": "evidence-from-calculator"}).status_code == 200
+        assert client.get(path, params={"source_id": "PASSAGE::other-task"}).status_code == 404
+        assert client.get(path, params={"source_id": "D:/private"}).status_code == 404
+        assert client.get(path, params={"source_id": "PASSAGE::current", "offset": -1}).status_code == 422
+    asyncio.run(service.http.aclose())

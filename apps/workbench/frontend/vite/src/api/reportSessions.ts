@@ -33,6 +33,8 @@ export type Source = {
   metric_id?: string;
   period_end?: string;
   numeric_fact_authority?: boolean;
+  result_state?: string;
+  authority_note?: string;
   text?: string;
   value_decimal?: string;
   unit?: string;

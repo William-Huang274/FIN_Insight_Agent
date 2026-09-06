@@ -78,7 +78,7 @@ function Markdown({
 }) {
   const keys = Object.keys(citations);
   const linked = text.replace(
-    /\[((?:P\d{2}:|NUMFACT::|CALC::)[^\[\]\s]+)\]/g,
+    /\[((?:P\d{2}:|PASSAGE::|NUMFACT::|CALC::)[^\[\]\s]+)\]/g,
     (original, ref: string) =>
       citations[ref]
         ? `[${keys.indexOf(ref) + 1}](#claim:${encodeURIComponent(ref)})`
@@ -924,7 +924,8 @@ export function ResearchSession() {
                     <span className="rs-source-type">
                       {s.numeric_fact_authority
                         ? "结构化数值"
-                        : s.source_id.startsWith("CALC::") ? "本地计算 · 非权威" : "披露 / 外部材料"}
+                        : s.source_id.startsWith("CALC::") || s.result_state === "non_authoritative_metric"
+                          ? "本地计算 · 非权威" : "披露 / 外部材料"}
                     </span>
                     <h4>
                       {s.title ||
@@ -994,9 +995,11 @@ export function ResearchSession() {
                       </button>
                     )}
                     <p>
-                      {source.notice || (source.source_id.startsWith("CALC::")
+                      {source.notice || source.authority_note || (source.source_id.startsWith("CALC::") || source.result_state === "non_authoritative_metric"
                         ? "这是由绑定输入计算的结果，不是发行人直接披露值。公式正确仍不等于财务解释正确。"
-                        : "数值来自结构化事实库，仍需核对期间与指标含义。")}
+                        : source.numeric_fact_authority
+                          ? "数值来自结构化事实库，仍需核对期间与指标含义。"
+                          : "这是来源原文片段，不是 S2 结构化财务事实。请结合来源性质、日期及上下文理解。")}
                     </p>
                   </div>
                 )}

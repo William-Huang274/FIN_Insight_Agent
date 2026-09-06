@@ -26,6 +26,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from .dell_case_review_agent import _text_values, InvalidToolCallFeedback
 from .dell_specialist_agentic_graph import SpecialistClaim
 from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
+from sec_agent.research_foundation.source_bound_calculator import source_items_from_tool
 
 
 class CaseClaim(BaseModel):
@@ -68,7 +69,7 @@ class CaseReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
     title: str = Field(min_length=5, max_length=250)
     narrative_markdown: str = Field(min_length=200, max_length=80000,
-        description="Free Chinese report, not a fixed template. Bind material statements inline using actual [P01:C15] paper claims, [NUMFACT::id] SQL facts or [CALC::id] calculator results observed in this task. Sources and authority notes are resolved locally; invented IDs are rejected.")
+        description="Free Chinese report, not a fixed template. Bind material statements inline using actual [P01:C15] paper claims, [PASSAGE::id] read-source windows, [NUMFACT::id] SQL facts or [CALC::id] calculator results observed in this task. Sources and authority notes are resolved locally; invented IDs are rejected.")
 
 
 class ReportTextEdit(BaseModel):
@@ -157,13 +158,19 @@ def observed_sources(messages):
     for message in messages:
         if not isinstance(message, ToolMessage) or message.status != "success" or not isinstance(message.artifact, dict):
             continue
-        for item in message.artifact.get("items", []):
-            if item.get("result_state") == "numeric_fact" or item.get("writer_citable") is True:
-                ref = item.get("numeric_fact_id") or item.get("fact_id") or item.get("passage_id") or item.get("evidence_id")
-                if ref:
-                    if ref in sources and sources[ref] != item:
-                        raise ValueError("new_source_observation_conflict")
-                    sources[ref] = deepcopy(item)
+        current = source_items_from_tool(message.name, message.artifact)
+        if (message.name == "calculate_research_metric" and message.artifact.get("arithmetic_verified") is True
+                and message.artifact.get("numeric_fact_authority") is False):
+            current[message.artifact["calculation_id"]] = message.artifact
+        for ref, item in current.items():
+            if ref in sources and sources[ref] != item:
+                # The same S2 observation can be returned for different queries.
+                before, after = dict(sources[ref]), dict(item)
+                before.pop("fact_request_id", None)
+                after.pop("fact_request_id", None)
+                if before != after:
+                    raise ValueError("new_source_observation_conflict")
+            sources[ref] = deepcopy(item)
     return sources
 
 
@@ -192,7 +199,9 @@ def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
             except ValueError:
                 errors.append(f"unknown_source_id:{claim.claim_id}:{ref}")
                 continue
-            numeric = source.get("result_state") == "numeric_fact"
+            numeric = source.get("result_state") in {"numeric_fact", "non_authoritative_metric"}
+            if claim.kind == "numeric_fact" and (source.get("result_state") != "numeric_fact" or source.get("numeric_fact_authority") is not True):
+                errors.append(f"numeric_fact_requires_s2_source:{claim.claim_id}:{ref}")
             (facts if numeric else evidence).append(ref)
             quotes = claim.citation_quotes.get(ref)
             if not numeric and not quotes:
@@ -203,6 +212,10 @@ def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
                     errors.append(f"source_quote_not_exact:{claim.claim_id}:{ref}")
         if not set(claim.citation_quotes).issubset(claim.source_ids):
             errors.append(f"quote_ref_not_in_source_ids:{claim.claim_id}")
+        if claim.kind == "calculation" and not any(
+                (sources.get(ref) or artifacts.source_item(ref)).get("arithmetic_verified") is True
+                for ref in facts):
+            errors.append(f"calculation_requires_observed_calculator_result:{claim.claim_id}")
         try:
             SpecialistClaim.model_validate_json(json.dumps({**raw, "fact_ids": facts, "evidence_ids": evidence}))
         except ValueError as exc:
@@ -221,7 +234,7 @@ def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
 
 
 CLAIM_REF = re.compile(r"\[(P\d{2}:[^\[\]\s]+)\]")
-ANSWER_REF = re.compile(r"\[((?:P\d{2}:|NUMFACT::|CALC::)[^\[\]\s]+)\]")
+ANSWER_REF = re.compile(r"\[((?:P\d{2}:|PASSAGE::|NUMFACT::|CALC::)[^\[\]\s]+)\]")
 
 
 def report_citations(report, artifacts, messages=None, *, prior_citations=None):
@@ -250,29 +263,25 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
     """
     refs = list(dict.fromkeys(ANSWER_REF.findall(prose)))
     if not refs:
-        raise ValueError("answer_has_no_inline_source_reference: cite actual [NUMFACT::id] / [CALC::id] returned by your SQL/calculator tools, or [P01:claim_id] from current claims")
+        raise ValueError("answer_has_no_inline_source_reference: cite actual [PASSAGE::id] / [NUMFACT::id] / [CALC::id] returned by read/SQL/calculator tools, or [P01:claim_id] from current claims")
     # Prior citations come only from the server's persisted report, never model
     # or caller arguments. A local edit need not re-query unchanged cited facts.
     direct = {ref: deepcopy(value) for ref, value in (prior_citations or {}).items()
-              if ref.startswith(("NUMFACT::", "CALC::"))}
+              if ref.startswith(("PASSAGE::", "NUMFACT::", "CALC::"))}
     calculations = []
-    for message in messages:
-        if not isinstance(message, ToolMessage) or message.status != "success" or not isinstance(message.artifact, dict):
-            continue
-        body = message.artifact
-        if message.name == "query_company_financial_facts" and body.get("authority_state") == "s2_numeric_fact_query_result":
-            for row in body.get("results", []):
-                if row.get("status") != "resolved":
-                    continue
-                for fact in row.get("facts", []):
-                    if fact.get("numeric_fact_authority") is True:
-                        ref = fact["numeric_fact_id"]
-                        source = artifacts._source_summary(ref, {**fact, "result_state": "numeric_fact"})
-                        source["source_observation_ids"] = fact.get("source_observation_ids", [])
-                        direct[ref] = {"claim": {"kind": "numeric_fact", "statement":
-                            f"{fact['ticker']} {fact['metric_id']} = {fact['value_decimal']} {fact['unit']}; period end {fact['period_end']}"},
-                            "sources": [source]}
-        elif message.name == "calculate_research_metric" and body.get("arithmetic_verified") is True and body.get("numeric_fact_authority") is False:
+    for ref, body in observed_sources(messages).items():
+        if body.get("result_state") == "numeric_fact" and body.get("numeric_fact_authority") is True:
+            source = artifacts._source_summary(ref, body)
+            source["source_observation_ids"] = body.get("source_observation_ids", [])
+            direct[ref] = {"claim": {"kind": "numeric_fact", "statement":
+                f"{body['ticker']} {body['metric_id']} = {body['value_decimal']} {body['unit']}; period end {body['period_end']}"},
+                "sources": [source]}
+        elif body.get("writer_citable") is True:
+            source = {**artifacts._source_summary(ref, body),
+                      "text": body.get("passage") or body.get("bounded_excerpt"), "numeric_fact_authority": False}
+            direct[ref] = {"claim": {"kind": "source_passage", "statement": "Observed source window; semantic use must be judged in the report context.",
+                "numeric_authority": "not_applicable"}, "sources": [source]}
+        elif body.get("arithmetic_verified") is True and body.get("numeric_fact_authority") is False:
             calculations.append(body)
     for body in calculations:
         ref = body["calculation_id"]
@@ -285,7 +294,7 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
                 sources.extend(direct[source_id]["sources"] if source_id in direct else [artifacts.read_source(source_id)])
         direct[ref] = {"claim": {"kind": "calculation", "statement": f"{body['expression']} = {body['value_decimal']} {body['result_unit']}",
             "numeric_authority": "non_authoritative", "authority_note": body["authority_note"]}, "sources": sources}
-    paper_refs = [ref for ref in refs if ref.startswith("P")]
+    paper_refs = [ref for ref in refs if CLAIM_REF.fullmatch(f"[{ref}]")]
     bound = report_citations(" ".join(f"[{ref}]" for ref in paper_refs), artifacts) if paper_refs else {}
     missing = [ref for ref in refs if ref not in bound and ref not in direct]
     if missing:
@@ -344,7 +353,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def read_current_source(source_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 16000) -> dict:
-        """Read a report citation (Pxx:claim / NUMFACT:: / CALC::) or current source by ID. The current report's bound citation record is available on demand, not repeated in every model input. Never arbitrary path."""
+        """Read a report citation (Pxx:claim / PASSAGE:: / NUMFACT:: / CALC::) or current source by ID. The current report's bound citation record is available on demand, not repeated in every model input. Never arbitrary path."""
         if not 0 <= offset or not 100 <= max_characters <= 16000:
             raise ToolException("source_window_invalid")
         citations = {**runtime.state.get("synthesis", {}).get("citations", {}),
@@ -400,7 +409,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_case_answer(answer_markdown: str, runtime: ToolRuntime) -> Command:
-        """Answer with exact inline [NUMFACT::id] from SQL, [CALC::id] from calculator, or [Pxx:claim_id] from workpapers. The IDs must have been observed. No fixed prose template; do not rewrite the report."""
+        """Answer with exact inline [PASSAGE::id] from source reads, [NUMFACT::id] from SQL, [CALC::id] from calculator, or [Pxx:claim_id] from workpapers. IDs must have been observed. No fixed prose template; do not rewrite the report."""
         if runtime.state.get("request_action") != "ask":
             return output_message(runtime, error="This request asks for a revised report. Use submit_case_report.")
         try:
@@ -461,8 +470,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         specific += "\nThe input review_target distinguishes lead_synthesis from final_report. For a synthesis, review the Lead's research judgment and actual revised papers before writing; for a report, check final expression against that research. Every material finding must declare the earliest responsibility and exact paper_ids for research repairs. Do not call an upstream research error writer-only. data_tool requires an observed data/tool defect after relevant permitted reads/attempts, not an empty search or unsupported public gap. For a source problem the researcher can remedy by permitted supplementary reads, use research. Missing owner/invalid paper IDs are rejected for you to correct. State concise source-backed rationales; no private reasoning in output."
     if role == "writer":
         specific += "\nWhen research_synthesis is supplied, it is the Lead's independently reviewed judgment and source-bound rationale. Organize it faithfully with the current papers; do not silently substitute a new unsupported research conclusion. Corrections may recheck original sources. Distinguish remaining findings from stylistic advice."
-    if role in {"writer", "verifier"}:
-        specific += "\nReport citations may use actual paper:claim IDs, newly observed [NUMFACT::id] SQL facts or [CALC::id] source-bound calculator results. Do not invent an old workpaper claim for new data. Calculations retain non-authoritative status and source operands. For an existing report, use read_current_source with the exact inline citation ID to inspect its bound record on demand; then verify relevant original context."
+    if role in {"writer", "verifier", "synthesis"}:
+        specific += "\nReport citations may use actual paper:claim IDs, newly read [PASSAGE::id] source windows, [NUMFACT::id] SQL facts or [CALC::id] source-bound calculator results. Do not invent an old workpaper claim for new data. Passage numbers and calculations retain non-S2/non-authoritative status with sources and operands. For an existing report, use read_current_source with the exact inline citation ID to inspect its bound record on demand; then verify relevant original context."
     if allow_answers:
         if role != "writer":
             raise ValueError("only_writer_may_answer_session_questions")

@@ -463,3 +463,27 @@ Owner 指出“两个专家”与正式执行图不符。核对确认该数是 s
 验证：94 passed / 68.61s，命令 .venv/Scripts/python.exe -m pytest tests/test_research_convergence.py tests/test_research_session.py tests/test_research_session_bff.py tests/test_dell_report_session.py tests/test_dell_case_convergence_agent.py tests/test_dell_lead_research_graph.py -q --tb=short。覆盖 actual case/runtime config 的九主题+追加依赖任务共十项，首波 Barrier 验证并发且峰值二，完整 native 父图到人工点、重建 factory 后 ask/revise、两类定向回派、无回派/有数据故障/第二轮仍重大、非法责任字段模型纠正、旧审阅和来源权限。所有模型均测试替身；Review/method 消费走真实本进程 MCP，不是新题目的真实研究或质量证明。前端 tsc 与 Vite build 通过（已有大于500kB bundle提醒仍在，未为此扩建打包工程）。随后 schema-only factory 补齐 research_revision 可见性与新配置错误文案，仅重跑对应近邻检查。
 
 未执行：0新 DeepSeek/外部研究请求，0 SQL写入/数据删除/旧报告覆盖；未重启现有 Agent Server/BFF，未付费跑完整新题目，未做本段浏览器视觉验收。上传/RAG/视觉工具、图表与多格式导出、必要新源/计算接缝仍待原顺序推进；完整图须部署后实际验证，再最终 Dell 内容/费用/交互验收，不能用这94项当产品完成。公开准备仍不是改Git可见性授权，第6包新案例未自动启动。原生模式依据：https://docs.langchain.com/oss/python/langgraph/workflows-agents 和 https://docs.langchain.com/oss/python/langgraph/use-subgraphs 。
+
+### 2026-09-06 12:58Z：新原文、同行SQL与计算结果贯穿研究角色
+
+Owner要求继续，网络故障先对照代理排查。本轮从clean `77c8c2aa` 同分支开始，实际仓库仍为`D:/FIN_Insight_Agent`。不恢复旧任务历史/live数据库；没有网络故障需要归因，也没有以重复付费请求诊断网络。
+
+工程增量（代码与本节同一Git切片）：
+
+- 最早责任层是本地接线：`SpecialistFinanceIntent`仍只允许DELL，且composition声明通用计算器不可用、submission无条件拒绝calculation。改为复用`CompanyFinancialFactQuery`的ticker校验，通过既有finance lane/MCP/ToolNode增加`RequestCalculationAction`；只在当前capability披露后可调。没有新provider传输、运行循环、队列或公式语言，依旧simpleeval+Decimal。
+- MCP现有本组合观察投影从SQL扩展到成功read的PASSAGE/Reviewed，search/catalog预览不登记。原文计算必须精确quote+literal，SQL由本地取value；结果保留输入的URL/locator/公司/日期/单位/权威性。新组合不继承另一Agent的临时观察，跨Agent只传已有底稿与来源，不传私有消息。
+- 普通计算结果以CALC/非权威状态进入专家底稿；`DellCaseArtifacts`增加计算只读投影及operand来源别名，原IDs/输入/公式不改。作者修订可使用本次嵌套SQL、新原文和计算结果；非S2输入不能被修订器标成numeric_fact。
+- Lead综合、Writer、终审及问答共用直接PASSAGE/NUMFACT/CALC引用解析；不再要求新补查的数据先伪装成旧稿claim。当前稿已保存引文可在局部改稿时继承；未观察、错误ToolMessage、伪工具和预览不行。完整来源只在产物和按需读取中，不重新放回每轮大context。
+- BFF按会话已提交来源集合提供新原文/计算操作数与分页；别的任务ID/宿主路径拒绝。前端支持PASSAGE编号，计算别名不再误显示为普通披露，原文也不能显示成“结构化事实库”。这只是代码/构建，未宣称浏览器实测或运行容器已更新。
+
+实际检查与纠正：
+
+- 本地SQL结果清单证明只有DELL/MU/NVDA（不是任意同行全覆盖）。最初测试错误预期HPE有SQL值而失败；查明真实typed gap后改为同时验证NVDA成功与HPE真实缺数，不改数据库或假造HPE值。此缺数不证明公开信息不存在，允许按已开放原文路径研究，后续新题目必要时补S2。
+- 宿主通过`read_source_document`列出20份当前本地材料，并亲读HPE FY2026 Q2 press release第8页及第21页、Dell FY2027 Q2 Exhibit现金流和FCF表。HPE第8页列头/3个月期间、收入/毛利及GAAP margin行可读；真实MCP绑定该页两项数值，经计算器得披露的一位小数，非SQL权威不变。Dell HTML表保留期间/数值列。部分特殊字符出现乱码，未称全PDF/脚注无误；查询数字`1,882`的前列结果是现金流表而不是所求基数，说明仍需模型用章节/邻近原文继续定位，不能把top-k当全部证据。
+- 没有将以上宿主财务数值或结论加入角色方法/模型seed；它们只是已开发case的工具回归，不是盲测gold。
+
+验证：最终195 passed / 57.25s（`test_research_source_calculation`、Specialist graph/composition、case artifacts/review/convergence、MCP、DeepSeek adapter、research session/BFF/convergence、report session共12个文件）。包含实际本进程MCP+只读SQL+native ToolNode→CALC底稿→跨Agent来源视图、实际HPE PDF窗口计算、native scripted Writer→直接来源报告、未观察/错quote/跨组合/跨会话/宿主路径拒绝。模型均替身，无语义质量/等质省费PASS。中间90/92通过，两个失败是旧MCP工具列表；随后192/193通过，失败是旧union数量断言（连上一轮方法也未纳入）。更新为明确合法工具/动作集合，未知动作、disclosure和源绑定检查未放宽。66与43项近邻重验和上述总数有重叠，不加总。最终提示词再向Lead综合披露同一PASSAGE语法，只重验相关convergence，不重跑全仓。
+
+前端tsc/Vite build通过，bundle约645.11KB/193.98KBgzip，保留既有500KB提醒，不为此新开打包优化。差异/候选凭据检查通过；生成dist、原始语料、私有记录不入Git。
+
+产品实际状态：提升的是下一次新研究可用的查询、计算、跨角色来源交接，不是新增一份已完成真实报告。0新DeepSeek、0外部研究请求、0 SQL写入、0资料/报告覆盖或删除；未重启Agent Server/BFF，未做本轮前端视觉/新题目付费验收。上传/RAG/视觉、图表/多格式导出、部署及完整Dell仍待原顺序。已看旧`source_intake`只支持固定官方路线PDF上传，不把它冒充任务级自由上传；下一接任务副本、成熟解析器和现有MCP原文读取，不扩写通用上传/作业平台。

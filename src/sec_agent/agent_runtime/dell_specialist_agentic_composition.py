@@ -31,6 +31,7 @@ from .dell_specialist_agentic_graph import (
     ModelTurnPort,
     RequestEvidenceAction,
     RequestFinanceAction,
+    RequestCalculationAction,
     RequestSourceAction,
     SpecialistAgenticInput,
     SpecialistCollaborationContext,
@@ -302,7 +303,9 @@ def _build_graph_input(
     }
     finance_summary = {
         "capability_ref": "capability:dell:financial-fact-query",
-        "supported_ticker": "DELL",
+        "observed_tickers": sorted({ticker for row in metric_rows if isinstance(row, Mapping)
+                                    for ticker in row.get("observed_tickers", ())}),
+        "ticker_rule": "Query the case issuer or relevant peers by ticker; these observed tickers describe the local mart, not a research allowlist. Missing SQL coverage returns a typed local gap, not public non-disclosure.",
         "metrics": dell_metrics,
         "derived_metric_rule": finance_capability.get("derived_metric_rule"),
         "calculation_submission_rule": (
@@ -310,8 +313,9 @@ def _build_graph_input(
             "The existing S2 executor checks inputs/period/unit and returns a NumericFact with formula_trace "
             "or a typed gap. Cite the returned derived fact as numeric_fact and explain its calculated origin "
             "in authority_note; S2 provenance does not make a measure GAAP or issuer-reported. "
-            "Model-written arithmetic is not a verified calculator result. A generic ad-hoc calculator "
-            "is not exposed in this profile; do not relabel unverified calculations as facts or inference."
+            "For ad-hoc arithmetic use request_calculation with observed source IDs. Cite the returned CALC ID "
+            "in fact_ids as kind=calculation with numeric_authority=non_authoritative and an authority_note. "
+            "Model-written arithmetic alone is not a verified calculator result."
         ),
         "canonical_granularities": finance_capability.get(
             "canonical_granularities"
@@ -344,6 +348,9 @@ def _build_graph_input(
                 l0_body,
                 reviewed_capability,
                 finance_summary,
+                {"capability_ref": "capability:research:calculator", "action": "request_calculation",
+                 "usage": "Uses the existing source-bound simpleeval/Decimal calculator. S2 operands need only an observed numeric_fact_id; prose operands need an observed PASSAGE/evidence ID, exact quote and literal. Explicit scenario assumptions remain assumptions. Search previews are not sources. Check periods, units and business scope; arithmetic verification is not financial validation.",
+                 "answer_free": True, "grants_authority": False},
                 {"capability_ref": "capability:research:methods",
                  "action": "request_method",
                  "usage": "Read the compact catalog with empty method_id; then select lead, finance, industry_product, counter, writer or verifier. Packaged answer-free guidance only, never evidence or file access.",
@@ -536,9 +543,12 @@ def _reference_from_item(item: Mapping[str, Any]) -> SpecialistObservedReference
         ref_id = projection.numeric_fact_id
         artifact_digest = canonical_sha256(projection)
         authority = "numeric_fact"
-    elif state == "deterministic_derived_metric":
+    elif state in {"deterministic_derived_metric", "non_authoritative_metric"}:
+        if state == "non_authoritative_metric" and (item.get("arithmetic_verified") is not True
+                or item.get("numeric_fact_authority") is not False or not item.get("calculation_id")):
+            raise DellSpecialistAgenticCompositionError("specialist_calculation_result_invalid")
         ref_id = str(
-            item.get("fact_id")
+            item.get("calculation_id") or item.get("fact_id")
             or item.get("derived_metric_id")
             or f"metric:{canonical_sha256(item)[:24]}"
         )
@@ -908,12 +918,12 @@ def _bound_task_for_action(
         fact_requests: tuple[dict[str, Any], ...] = ()
     else:
         action = request.action
-        if not isinstance(action, RequestFinanceAction):
+        if not isinstance(action, (RequestFinanceAction, RequestCalculationAction)):
             raise DellSpecialistAgenticCompositionError(
                 "specialist_finance_action_mismatch"
             )
         evidence_requests = task.evidence_requests
-        fact_requests = (action.intent.model_dump(mode="json"),)
+        fact_requests = ({"calculation": action.request.model_dump(mode="json")},) if isinstance(action, RequestCalculationAction) else (action.intent.model_dump(mode="json"),)
     rebound_body = task.model_dump(mode="json")
     rebound_body.update(
         {

@@ -35,6 +35,8 @@
 
 ### 2026-09-06 成本优化采用边界
 
+2026-09-06 本段最新实施补充：全案审查使用 `langchain==1.4.0 create_agent`、原生工具/限次middleware、可发现独立messages子图，接同Agent Server/PG/Redis/LangSmith；只替代新增case reviewer的手工消息循环，不整体重写旧Specialist。官方MCP2 Client继续使用，小型schema适配解决langchain-mcp-adapters0.3.2与MCP2不兼容，不降级/不增FastMCP beta传输。124项近邻与真实本地MCP/SDK mock通过；两位Pro/low、各24模型/64工具/700k字符/32k输出/480s按十稿规模设置，任务BudgetBasis已落配置。全案Counter/Verifier真实消费、责任修订、报告/UI仍未PASS；详细边界及候选拒绝记录在S3/190最新节。不得把十份底稿或工程测试当成全案产品完成。
+
 本地记录显示新推理输出和反复资格/审查比缓存历史本身更贵；因此不为“省上下文”先迁移整套runtime。采用现有LangChain/LangGraph的模型配置与消息投影办法；OpenAI Responses compaction是供应商能力，不能假设能直接用于DeepSeek Chat API；DeepSeek官方要求带工具时续传完整reasoning_content，不能删除来规避收费。DeepSeek Harness的摘要/原文落盘可借鉴，但当前官方标注developer preview，不直接取代已测runtime。长任务达到真实上下文压力后再资格验证框架原生摘要；摘要是导航/工作记忆，不替代可引用原文，也不跨Agent传私有reasoning。
 
 配置用途路由由可信图节点的purpose/collaboration mode选择同SDK未绑定客户端，普通specialist、Counter、Verifier、repair可分别配置；能力/工具权限及FIN校验不随便宜模型降低。Counter沿用counter预算，Verifier/repair沿用specialist预算；下一真实执行仍需按任务输入/输出更新TokenBudgetBasis。默认不在同一工具事务中切换模型，不能用provider故障自动切便宜模型。是否把低风险查找/短问答交Flash、复杂因果及终审保留Pro，先做同任务质量与总成本对照（包括返工成本）。

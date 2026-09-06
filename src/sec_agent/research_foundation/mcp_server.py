@@ -349,14 +349,14 @@ def build_research_data_mcp_server(
         ticker: str,
         metric_ids: list[str],
         research_as_of: date,
-        granularity: str,
+        granularity: Literal["quarter_discrete", "fiscal_ytd", "fiscal_year", "instant", "quarter", "quarter_and_fiscal_year"],
         selection_mode: Literal[
             "exact_period_end", "latest_on_or_before"
         ],
         period_start: date | None = None,
         period_end: date | None = None,
         fiscal_years: list[int] | None = None,
-        requested_unit: str = "reported_source_unit",
+        requested_unit: Literal["reported_source_unit"] = "reported_source_unit",
         unit_family: str | None = None,
     ) -> CompanyFinancialFactQueryResult:
         await _validate_scope(

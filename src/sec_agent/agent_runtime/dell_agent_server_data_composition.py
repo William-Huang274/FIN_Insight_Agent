@@ -153,6 +153,7 @@ class DellApprovedDataComposition:
     external_route_count: int
     local_candidate_count: int
     reviewed_topic_refs_by_branch: dict[str, tuple[str, ...]]
+    mcp_server: Any = None
     model_calls_authorized: bool = False
     network_calls_authorized: bool = False
     paid_calls_authorized: bool = False
@@ -165,6 +166,7 @@ def open_dell_approved_data_composition(
     environment: Mapping[str, str] | None = None,
     source_read_enabled: bool = False,
     live_web_read_enabled: bool = False,
+    case_artifacts: Any = None,
 ) -> Iterator[DellApprovedDataComposition]:
     """Open the exact Owner-approved data readers behind one MCP lifecycle."""
 
@@ -328,6 +330,7 @@ def open_dell_approved_data_composition(
                 external_discovery=discovery,
                 external_capture=capture,  # type: ignore[arg-type]
                 source_document_reader=source_reader,
+                case_artifacts=case_artifacts,
             )
         )
     except DellApprovedDataCompositionError:
@@ -370,6 +373,7 @@ def open_dell_approved_data_composition(
                 s2_observation_count=inventory.s2_observation_count,
                 external_route_count=inventory.external_object_count,
                 local_candidate_count=inventory.local_candidate_count,
+                mcp_server=server,
                 network_calls_authorized=live_web_read_enabled,
                 reviewed_topic_refs_by_branch={
                     branch_id: tuple(

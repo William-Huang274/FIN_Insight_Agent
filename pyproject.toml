@@ -37,6 +37,7 @@ qualification = [
   "psycopg[binary]==3.3.4",
 ]
 agent-runtime = [
+  "langchain==1.4.0",
   "langchain-core==1.6.1",
   "langchain-deepseek==1.1.0",
   "langchain-text-splitters==1.1.2",

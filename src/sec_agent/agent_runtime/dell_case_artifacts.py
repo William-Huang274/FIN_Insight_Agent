@@ -66,6 +66,8 @@ class DellCaseArtifacts:
                 "submission_digest": canonical_sha256(paper["final_submission"]), "workpaper": view,
                 "sources": {key: self._source_summary(key, value) for key, value in sources.items()}}
         self.case_id, self.snapshot_id, self.research_as_of = binding[:3]
+        self.foundation_digest = binding[3]
+        self.owner_data_gate_decision_digest, self.source_route_catalog_digest, self.inventory_snapshot_digest = binding[4:]
 
     @staticmethod
     def _source_summary(source_id, item):

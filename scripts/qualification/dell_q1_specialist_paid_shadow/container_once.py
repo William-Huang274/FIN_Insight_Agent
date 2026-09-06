@@ -128,6 +128,9 @@ def _contracts_and_input(
     ):
         raise ContainerRunError("paid_shadow_graph_input_mismatch")
     foundation = load_dell_reference_vertical_foundation(FOUNDATION)
+    case_review = authority.case_review_scope is not None
+    objective = foundation.case_identity.top_level_question_zh if case_review else graph_input.task.objective
+    objective_scope = "case-review" if case_review else "q1-shadow"
     now = datetime.now(timezone.utc).replace(microsecond=0)
     session = create_agent_session_v1_2(
         session_id=authority.agent_session_id,
@@ -135,9 +138,9 @@ def _contracts_and_input(
         case_id=foundation.case_identity.case_id,
         case_version="FIN_0_1_3",
         as_of_date=date.fromisoformat(authority.research_as_of[:10]),
-        objective_ref=f"objective://dell/q1-shadow/{authority.paid_full_chain_execution_id}",
+        objective_ref=f"objective://dell/{objective_scope}/{authority.paid_full_chain_execution_id}",
         objective_digest=canonical_sha256(
-            {"branch_id": authority.branch_id, "objective": graph_input.task.objective}
+            {"scope": objective_scope, "objective": objective} if case_review else {"branch_id": authority.branch_id, "objective": objective}
         ),
         data_snapshot_ref=f"snapshot://dell/{graph_input.task.snapshot_id}",
         data_snapshot_digest=authority.owner_data_gate_decision_digest,
@@ -196,6 +199,24 @@ def _stream(parts: Iterable[Any]) -> dict[str, Any]:
 
 
 def _terminal(raw: Mapping[str, Any], authority: DellQ1SpecialistPaidShadowAuthority) -> dict[str, Any]:
+    if authority.case_review_scope is not None:
+        from sec_agent.agent_runtime.dell_case_review_agent import CaseReview
+        values = raw.get("values", {})
+        scope = authority.case_review_scope
+        if (raw.get("next") or raw.get("interrupts") or values.get("run_id") != authority.research_run_id
+                or values.get("run_invocation_id") != authority.run_invocation_id
+                or values.get("phase") != "case_review_ready_for_convergence"):
+            raise ContainerRunError("case_review_incomplete_or_binding_invalid")
+        for role in ("counter", "verifier"):
+            result = values[role]
+            _parse(CaseReview, result.get("review"), "case_review_result_invalid")
+            if (result.get("status") != "review_submitted" or not 1 <= result.get("model_calls", 0) <= scope.max_reviewer_model_turns
+                    or result.get("tool_calls", 0) > scope.max_reviewer_tool_actions):
+                raise ContainerRunError("case_review_result_or_budget_invalid")
+        return {"status": "pass", "phase": values["phase"], "model_turn_count": sum(values[r]["model_calls"] for r in ("counter", "verifier")),
+            "tool_action_count": sum(values[r]["tool_calls"] for r in ("counter", "verifier")),
+            "material_finding_count": values["material_finding_count"], "state_digest": _digest(raw),
+            "acceptance_scope": "independent_case_review_handoff_only_not_repaired_report_or_product_pass"}
     if authority.workflow == "lead_research_delegation":
         return _lead_terminal(raw, authority)
     if authority.workflow == "workpaper_review_repair":

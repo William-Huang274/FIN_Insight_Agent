@@ -178,3 +178,17 @@ R3已知用量在全部命中/全部未命中两端对应约0.0458–0.3647元�
 先将上述按需工具接入**现有Agent Server内**的全案审查：同LangGraph/原生ToolNode与消息/checkpoint能力，同DeepSeek SDK和LangSmith，不另造队列、上下文引擎、跨代理私有CoT转发或另一个HTTP服务。Counter/Verifier从目录与各稿结论开始，自主按需读稿、读原文、S2/计算、必要补源；反馈指向paper/claim/原文锚点及责任层。仅有实质问题的作者收到相应反馈和资料，产生新revision，不重跑其他研究、不把预算停止伪称信息不披露。接着综合中文报告与最后审查/人工验收；最终报告的自然语言不靠僵硬全文NLP模板校验。
 
 下一模型预算必须按6.4k目录、141k全部正文和按需来源规模，而不是把2.9M字符一次塞给每个reviewer；参考本次复杂Q8 6/9调用和已知大包Flash失败，复杂语义审查先Pro/low，简单调度仍Flash/disabled，不能假称两者等质。具体node TokenBudgetBasis与一次真实执行范围在代码/近邻检查通过后记录，不复写旧authority。当前本包没有新付费run。真实交互前端仍下一独立包：接同Agent Server的标准thread/run/stream/cancel/HITL，并投影公开决策摘要/工具/来源/usage；不能把私有模型reasoning直接公开，也不能用静态播放冒充可运行。Dell完成前不启动新case。
+
+## 全案原生审查循环实际接入（2026-09-06；真实模型执行前）
+
+采用官方 [LangChain create_agent](https://docs.langchain.com/oss/python/langchain/agents) `1.4.0` / MIT；先Z隔离安装与检查，再正式只新增这一项依赖，既有LangGraph1.2.11/core1.6.1/MCP2.1.1不升级。`langchain-mcp-adapters0.3.2` 的解析器实际拒绝与MCP2.1.1组合（要求MCP>=1.24,<2），因此该候选只留Z实验、不进入正式依赖、不降级MCP。最新 `langchain.mcp` 是依赖FastMCP的beta入口，本次不再迁移传输层。保留已资格通过的官方MCP2 Client，用小型schema→StructuredTool映射；传输、工具循环、错误配对、消息、并行、checkpoint仍由成熟库负责，无新HTTP服务/队列/上下文摘要系统。
+
+`dell_case_review_agent.py` 实际接同Agent Server与原once runner，新增 `case_workpaper_review` 仅执行Counter/Verifier全案独立审查。两者从同一已冻结目录开始、自主读取十份底稿/来源；通过静态可发现的RunnableSequence子图分别保存native messages，不向对方或父图公开私有reasoning。提交工具只校验实际读稿覆盖、paper/claim ID、原文精确quote；语义由模型审查，不将自然语言全文模板化。错误提交留在原生工具循环让模型修正；正常结束却未交review明确为incomplete。原生ModelCallLimit/ToolCallLimit控制有界执行，不写新计数器/重试器；SDK不retry/fallback，截断/未知结果保留审计并停止。
+
+任务预算已在 `fin_ia_0_1_3_dell_case_review_native_v1_0.json` 写入：两位均Pro/low，最多各24次模型/64工具、700k输入字符启发式（包含工具schema，不将仅checkpoint保存的ToolMessage.artifact再算一份模型输入）、32k输出/480s。十次读稿可并行调用，剩余用于抽查原文/数字/计算/反馈修正；不是要求把整案压为13调用。按已有任务规模估本次两位合计约2–5元，实际不确定；运行中查看真实usage/反复行为，不因便宜强切Flash，不自动整案重跑。授权沿用Owner已充值并允许完成全Dell和常规故障自修，不包含公开发布、S2写、Evidence admission。旧authority的Q1字段仍仅引导已有身份入口，新增case scope和真实目标明确为全案；审查角色不得冒充Lead/作者修订/报告交付。
+
+真实本地数据已通过新原生工具投影读到本地文档目录与DELL FY2026 S2 revenue，bundle与当前case/snapshot/foundation/Owner数据门逐项一致。开发实测暴露MCP financial granularity原本只有str、错传annual后仅报opaque error：已将MCP参数改为领域原有六个Literal值并将requested_unit改为既有合法值，让模型直接得到正确schema，不改SQL/值/会计规则。calculator目前明确只解析归档Pxx:Sxxx；新查询S2/新网页仍可读，但尚无自动加入该计算器的原生观察绑定，不用假设绕过，实际需要时作定向适配。
+
+验证：124项相关检查通过/11.75s，最后新增binding/原生schema检查6passed/5.28s。真实MCP2+两位零provider模型的并行多轮测试，10稿读取、错误source反馈、calculator、错误quote→修正均成立；native checkpoint中两份自己的reasoning各自完整、父图无私有messages，get_subgraphs能发现两者。真实ChatDeepSeek SDK+MockTransport双轮验证native function对象schema、10个tool_call_id配对、原reasoning_content原样续传、cache/reasoning/usage公开统计与私有文本分离（这是mock usage，非新增真实花费）。schema/state-read入口不打开资料/模型/credentials。开发失败另有partial coroutine类型注解和Python3.11 TypedDict来源，均在模型前修复；无用paid调试这些问题。
+
+当前是**工程已接入/宿主已消费，DS全案语义尚待下一次fresh执行**。本轮不重跑九主题、不更改任何原稿；全案review出结果后才逐责任修订与中文报告。native模型消息的真实Postgres恢复/前端干预尚未资格证明，不把内存测试称为生产resume能力。

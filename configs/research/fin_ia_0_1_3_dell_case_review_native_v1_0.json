@@ -1,0 +1,114 @@
+{
+  "schema_version": "fin_ia_dell_reference_vertical_deepseek_structured_agents_v1_0",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "base_url": "https://api.deepseek.com",
+  "structured_output_method": "function_calling",
+  "strict_provider_schema": false,
+  "thinking": "enabled",
+  "temperature": 0,
+  "max_retries": 0,
+  "token_budget_basis": {
+    "planner": {
+      "node_role": "planner",
+      "node_purpose": "Turn the frozen DELL question tree and answer-free branch methods into a bounded set of evidence and financial-fact requests without answering the case.",
+      "input_scale": "One research question, one as-of date, and at most 16 compact branch method records; no evidence corpus or prior model conversation.",
+      "required_outputs": [
+        "selected branch tasks",
+        "external or local evidence requests",
+        "typed financial-fact requests"
+      ],
+      "schema_burden": "Up to 16 tasks, each with no more than 8 evidence requests and 24 typed financial-fact requests.",
+      "materiality_quality_risk": "An omitted required branch or vague request can starve every downstream specialist; the graph separately rejects unknown or missing required branches.",
+      "comparable_run_evidence": "No paid run exists for this new vertical; the full nine-branch deterministic fixture serializes to 81,082 characters, so a 120,000-character fail-before-transport ceiling leaves bounded headroom while the first real call remains a qualification attempt.",
+      "reasoning_profile": "independent_single_turn_thinking_disabled_structured_reasoning",
+      "max_input_characters": 120000,
+      "max_output_tokens": 6000,
+      "timeout_seconds": 180,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "specialist": {
+      "node_role": "specialist",
+      "node_purpose": "Independently verify the ten submitted workpapers across all nine Dell research themes; inspect source context, S2 numbers, comparability, causal strength and actionable author corrections without rewriting other agents' original artifacts.",
+      "input_scale": "Start from 6396 catalog characters; all ten workpaper views total141466 characters versus2910278 original notebook characters. Read material sources on demand in16k archived/24k web windows. Own native messages persist;700k approximate request-character ceiling includes tool schemas, excludes non-provider ToolMessage artifacts.",
+      "required_outputs": [
+        "Chinese case review summary",
+        "one substantive assessment per actual read paper",
+        "material or advisory findings anchored to exact paper/claim/source quotes",
+        "unresolved source or execution requests distinguished from public non-disclosure"
+      ],
+      "schema_burden": "Seven discovered read-only MCP tools plus submit_case_review. Runtime injects run scope. Local validation checks paper coverage, existing IDs and exact quotes, not a natural-language report template. Max24 model calls/64 tool actions accommodates ten paper reads, selected source checks, arithmetic and self-correction.",
+      "materiality_quality_risk": "Financial review must inspect issuer/peer/date/period/units/authority and causal inference in context; no source-bound number is promoted to S2, no hidden provider reasoning is transferred to the other reviewer. No-financial-finding is not a product PASS.",
+      "comparable_run_evidence": "Q8 actual two Pro/low researchers needed6/9calls; previous Q1 full review4calls395606tokens. Large-pack Flash/high next-action truncated32000reasoning tokens while Pro/low returned a valid action. Native whole-case tools/independent contexts tested locally with actual papers/S2 and SDK MockTransport; no whole-case paid quality claim yet.",
+      "reasoning_profile": "agentic_message_history_thinking_enabled",
+      "max_input_characters": 700000,
+      "max_output_tokens": 32000,
+      "timeout_seconds": 480,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "counter": {
+      "node_role": "counter",
+      "node_purpose": "Independently challenge the full Dell case thesis, demand/supply/competition mechanisms, material cross-paper contradictions and what-would-change conditions; identify source-linked issues for responsible authors, not a preset answer.",
+      "input_scale": "Start from 6396 catalog characters; all ten workpaper views total141466 characters versus2910278 original notebook characters. Read material sources on demand in16k archived/24k web windows. Own native messages persist;700k approximate request-character ceiling includes tool schemas, excludes non-provider ToolMessage artifacts.",
+      "required_outputs": [
+        "Chinese case review summary",
+        "one substantive assessment per actual read paper",
+        "material or advisory findings anchored to exact paper/claim/source quotes",
+        "unresolved source or execution requests distinguished from public non-disclosure"
+      ],
+      "schema_burden": "Seven discovered read-only MCP tools plus submit_case_review. Runtime injects run scope. Local validation checks paper coverage, existing IDs and exact quotes, not a natural-language report template. Max24 model calls/64 tool actions accommodates ten paper reads, selected source checks, arithmetic and self-correction.",
+      "materiality_quality_risk": "Financial review must inspect issuer/peer/date/period/units/authority and causal inference in context; no source-bound number is promoted to S2, no hidden provider reasoning is transferred to the other reviewer. No-financial-finding is not a product PASS.",
+      "comparable_run_evidence": "Q8 actual two Pro/low researchers needed6/9calls; previous Q1 full review4calls395606tokens. Large-pack Flash/high next-action truncated32000reasoning tokens while Pro/low returned a valid action. Native whole-case tools/independent contexts tested locally with actual papers/S2 and SDK MockTransport; no whole-case paid quality claim yet.",
+      "reasoning_profile": "agentic_message_history_thinking_enabled",
+      "max_input_characters": 700000,
+      "max_output_tokens": 32000,
+      "timeout_seconds": 480,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "lead": {
+      "node_role": "lead",
+      "node_purpose": "Delegate and collect only the missing Q8 competition/value-pool workpaper; reuse already-reviewed Q1 and do not rerun the other accepted topics.",
+      "input_scale": "One disclosed Q8 branch method plus Q1 seed and at most two Q8 tasks. Short independent native Lead history; no other specialist private reasoning.",
+      "required_outputs": [
+        "Q8 task with material research criteria",
+        "Actual Q8 workpaper or explicit attention",
+        "Targeted handoff, not full-case acceptance"
+      ],
+      "schema_burden": "Same three native planning tools;host-injected context;one Q8 obligation,at most two tasks.",
+      "materiality_quality_risk": "Do not equate targeted Q8 readiness with full Dell research convergence, independent review, final report or product PASS.",
+      "comparable_run_evidence": "Full A2 Flash/disabled Lead completed7planning turns atestimated0.114303CNY,delegatedeightrealworkers;failure ownedQ8localcontextbudget. No whole-case rerun.",
+      "reasoning_profile": "agentic_message_history_thinking_disabled",
+      "max_input_characters": 500000,
+      "max_output_tokens": 8000,
+      "timeout_seconds": 480,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    }
+  },
+  "agentic_message_history": true,
+  "reasoning_effort": "low",
+  "model_profiles": {
+    "counter": {
+      "model": "deepseek-v4-pro",
+      "thinking": "enabled",
+      "reasoning_effort": "low"
+    },
+    "verifier": {
+      "model": "deepseek-v4-pro",
+      "thinking": "enabled",
+      "reasoning_effort": "low"
+    }
+  },
+  "runtime_context_binding": true
+}

@@ -61,6 +61,7 @@ from .dell_specialist_paid_shadow import (
     DELL_Q1_PAID_SHADOW_SERVING_MODE,
     DELL_Q1_REVIEW_SERVING_MODE,
     DELL_LEAD_RESEARCH_SERVING_MODE,
+    DELL_CASE_REVIEW_SERVING_MODE,
     DellSpecialistPaidShadowError,
     build_public_model_audit_sink,
     build_private_model_audit_sink,
@@ -71,6 +72,7 @@ from .dell_specialist_paid_shadow import (
 )
 from .dell_workpaper_review_graph import build_dell_workpaper_review_graph
 from .dell_lead_research_graph import build_dell_lead_research_graph
+from .dell_case_review_agent import open_case_review_composition, schema_only_case_review_graph
 from sec_agent.research_foundation.contracts import load_dell_reference_vertical_foundation
 from .dell_zero_model_graph_qualification import (
     DellExecutionProfile,
@@ -283,6 +285,7 @@ _SCHEMA_ONLY_LEAD_GRAPH = build_dell_lead_research_graph(
     expected_input=None, research_question="", branch_catalog=[], allowed_branch_ids=(),
     seed_workpapers={}, model_turn=_schema_only_unavailable, run_child=_schema_only_unavailable,
 ).compile(name=DELL_AGENT_SERVER_GRAPH_ID)
+_SCHEMA_ONLY_CASE_REVIEW_GRAPH = schema_only_case_review_graph()
 
 
 def _require_serving_mode() -> Literal[
@@ -290,6 +293,7 @@ def _require_serving_mode() -> Literal[
     "q1_specialist_paid_shadow_v1",
     "q1_workpaper_review_repair_v1",
     "lead_research_delegation_v1",
+    "case_workpaper_review_v1",
 ]:
     raw = os.environ.get(
         DELL_SERVING_MODE_ENV,
@@ -300,6 +304,7 @@ def _require_serving_mode() -> Literal[
         DELL_Q1_PAID_SHADOW_SERVING_MODE,
         DELL_Q1_REVIEW_SERVING_MODE,
         DELL_LEAD_RESEARCH_SERVING_MODE,
+        DELL_CASE_REVIEW_SERVING_MODE,
     }:
         raise DellAgentServerEntryError("dell_serving_mode_invalid")
     return raw  # type: ignore[return-value]
@@ -567,6 +572,11 @@ async def _open_q1_paid_shadow_graph(
                     sink(event)
             return write
         public_sink, private_sink = locked_sink(public_sink), locked_sink(private_sink)
+        if authority.workflow == "case_workpaper_review":
+            async with open_case_review_composition(authority=authority, model_config=model_config,
+                    api_key=SecretStr(api_key), public_sink=public_sink, private_sink=private_sink) as graph:
+                yield graph
+            return
         adapter = DeepSeekStructuredAgentAdapter.from_config(
             config=model_config,
             api_key=SecretStr(api_key),
@@ -718,6 +728,9 @@ async def dell_reference_vertical_graph(
     serving_mode = _require_serving_mode()
     execution_runtime = runtime.execution_runtime
     if execution_runtime is None:
+        if serving_mode == DELL_CASE_REVIEW_SERVING_MODE:
+            yield _SCHEMA_ONLY_CASE_REVIEW_GRAPH
+            return
         if serving_mode == DELL_LEAD_RESEARCH_SERVING_MODE:
             yield _SCHEMA_ONLY_LEAD_GRAPH
             return
@@ -738,7 +751,7 @@ async def dell_reference_vertical_graph(
         run_context=execution_runtime.context,
     )
     context = DellAgentServerRunContext.model_validate(execution_runtime.context)
-    if serving_mode in {DELL_Q1_PAID_SHADOW_SERVING_MODE, DELL_Q1_REVIEW_SERVING_MODE, DELL_LEAD_RESEARCH_SERVING_MODE}:
+    if serving_mode in {DELL_Q1_PAID_SHADOW_SERVING_MODE, DELL_Q1_REVIEW_SERVING_MODE, DELL_LEAD_RESEARCH_SERVING_MODE, DELL_CASE_REVIEW_SERVING_MODE}:
         async with _open_q1_paid_shadow_graph(
             identity,
             context,

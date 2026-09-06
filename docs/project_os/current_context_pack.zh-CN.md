@@ -7,6 +7,8 @@ G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 
 ## 一句话状态
 
+2026-09-06 01:33Z 当前S3/190新增全案审查实际接线：langchain1.4.0 create_agent + 官方MCP2 Client薄schema映射，Counter/Verifier原生独立消息子图，同Agent Server/PG/Redis/LangSmith/once runner。124近邻与真实本地MCP/S2/SDK mock通过，未发生新paid；下一fresh case_review原生双审查，复用10稿不重跑研究。两位Pro/low各24模型/64工具/700k字符/32k输出/480s，预算依据已落配置。MCP-adapters0.3.2因MCP<2约束未采用。来源计算器仍归档源限定；作者修订/报告/UI/真实native恢复未完成。以下状态为此前时点。
+
 2026-09-06 当前以S3/190最后三节为准：Q8定向A2已 `research_ready_for_review`，18实调/860735tokens/约1.9786851元，仅研究交接PASS；两个专家补稿成功。现在10份底稿/9主题/112claims均保留（含旧full-A2失败父图中的7份与已审Q1），不是全案质量/报告/UI PASS。已人工发现Q6订单≠实际使用、Q7单国≠大中华区合计、Q8毛利率≠完整价值池等语义审查项。已修长网页50k捕获限制并真实MCP读到原FR规则50k后24k；新live-web模型视图不再误用历史两搜索上限。新增成熟simpleeval/Decimal来源绑定计算与研究包按需MCP四工具，原2.91M字符观察包→6.4k目录+按需正文/源窗口（仅字符组织证据，非已省费比例）；近邻/真实MCP测试，尚未由DS/Agent Server全案审查消费。下一接现有Agent Server的全案Counter/Verifier→责任修订→中文报告→真实前端，不再整案重跑、不新造runtime。session98928已结束、精确3容器停止、卷/失败证据保留。以下均历史时点，不据其“下一门”重复请求旧授权。
 
 2026-09-06 更晚S3/190：仅Q8定向A1在Lead阶段failed，2Flash调用33776tokens/估0.0594796元，0新worker；schema允许verifier_finding而worker不支持，含糊错误+Q1标签误导导致第二轮重复文字截断。原生context宿主注入第一轮已实际到达执行器。已用provider专用任务子类缩窄实际输出/状态枚举、Lead公共能力目录去掉误导的seed专属范围（worker真实权限不变）、错误附合法值；86相邻检查通过含真实反例。下一同scope/预算fresh Q8 A2，其他七份+Q1仍保存、不重跑；全案复核/报告/UI仍未完成。详情S3/190，下文为历史时点。

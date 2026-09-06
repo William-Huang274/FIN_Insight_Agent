@@ -129,6 +129,10 @@ export function ResearchSession() {
   } | null>(null);
   const [source, setSource] = useState<Source | null>(null);
   const sourceWindow = useRef<HTMLDivElement>(null);
+  const conversationEnd = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (tab === "conversation") conversationEnd.current?.scrollIntoView({ block: "end" });
+  }, [id, tab, session?.conversation?.length]);
   useEffect(() => {
     sourceWindow.current?.scrollIntoView({ block: "nearest" });
   }, [source]);
@@ -505,6 +509,7 @@ export function ResearchSession() {
                       正在按需读取材料与工具反馈。可在右侧查看真实运行事件。
                     </div>
                   )}
+                  <div ref={conversationEnd} />
                 </div>
               )}
             </div>

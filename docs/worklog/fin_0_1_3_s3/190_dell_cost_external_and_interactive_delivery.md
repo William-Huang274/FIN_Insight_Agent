@@ -380,3 +380,5 @@ native thread当时error、next=writer/task.error=true，但原v3正文完整相
 已阅读现有Lead原生图、case review/convergence、report session和部署/BFF；新研究入口应是同Agent Server中的原生父图连接，而不是把旧one-shot authority、每次Compose和手工bundle路径搬到前端。输入只给Dell范围内的用户问题/明确模式，数据快照、as-of、Q1可复用底稿、模型用途/TokenBudgetBasis从服务端配置；浏览器不能提交任意路径/state/预算。原生Lead自主任务与并行Specialist→公开底稿投影→原生Counter/Verifier→有责任的作者修订→Writer/终审→人工点；来源和公开理由可跨Agent，私有上下文不能跨传。中间产物在现有PG子图保存，失败仅停止责任节点/保留已完成工作，不以重跑整案或新自研队列解决。
 
 此连接**尚未实施/paid**，不能因为现有分段案例、报告审阅/停止链已成功而称完整一次性全case通过。首次贯通前只做这些相邻合同/真实MCP/native子图检查；成熟栈已有功能不另造。后续有依据的一次完整Dell真实执行再给出端到端成本和质量，再做1–2新案例；当前不足以宣称任意新研究、任意中途steer或自主难度路由已实现。
+
+最终浏览器视觉检查另发现打开对话停在最旧反馈；只加React ref在切入对话/新消息时定位末尾，不在每次状态轮询强制滚动，旧消息仍能正常阅读。TS/Vite构建通过（639.43KB/191.95KBgzip），实际截图确认已定位最近消息；纯UI小修未重跑后端或付费。当前BFF42132/exec4796，API/PG/Redis保持不动。

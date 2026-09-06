@@ -75,6 +75,26 @@ def test_followup_uses_owned_session_graph_not_legacy_constant(graph_id):
     asyncio.run(service.http.aclose())
 
 
+def test_chart_only_sources_are_readable_only_inside_their_own_session():
+    app, service, calls, thread_id = _app()
+    ref = "PASSAGE::WEB::chart-only"
+    async def state(_):
+        return {"values": {"report": {"charts": [{"title": "Observed chart", "points": [
+            {"source_id": ref, "label": "Current quarter", "series": "Revenue", "value": 10,
+             "provenance": {"source_id": ref, "quote": "Revenue was 10 million", "literal": "10",
+                "value_decimal": "10", "source_provenance": {"title": "Issuer disclosure", "source_url": "https://example.com/issuer",
+                    "numeric_fact_authority": False}}}]}]}}}
+    service.sdk.threads.get_state = state
+    with TestClient(app) as client:
+        response = client.get(f"/api/v1/research-sessions/{thread_id}/source", params={"source_id": ref})
+        assert response.status_code == 200
+        assert "Revenue was 10 million" in response.json()["text"]
+        assert response.json()["source_url"] == "https://example.com/issuer"
+        assert response.json()["numeric_fact_authority"] is False
+        assert client.get(f"/api/v1/research-sessions/{thread_id}/source", params={"source_id": "PASSAGE::WEB::not-in-this-task"}).status_code == 404
+    asyncio.run(service.http.aclose())
+
+
 def test_public_task_projection_has_real_objective_and_dependencies_not_private_history():
     event = public_event({"kind": "task", "task_id": "T2", "actor": "finance", "event": "started", "objective": "Compare margins",
         "dependency_ids": ["T1"], "messages": [{"secret": "no"}], "reasoning_content": "private", "path": "D:/private"})

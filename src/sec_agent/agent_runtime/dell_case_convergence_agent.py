@@ -65,7 +65,7 @@ class PaperRevision(BaseModel):
     finding_responses: list[FindingResponse] = Field(min_length=1, max_length=20)
 
 
-from sec_agent.research_foundation.report_charts import ReportChart, bind_report_charts
+from sec_agent.research_foundation.report_charts import ReportChart, bind_report_charts, chart_source_records
 
 
 class CaseReport(BaseModel):
@@ -117,7 +117,7 @@ class ReportFinding(BaseModel):
     finding_id: str
     severity: Literal["material", "advisory"]
     report_quote: str = Field(min_length=1, max_length=6000,
-        description="A short contiguous exact substring of the report Markdown. Preserve literal punctuation/emphasis; do not paraphrase, reconstruct a paragraph, or quote a different workpaper here.")
+        description="A short contiguous exact substring of the report Markdown or its displayed chart JSON (title/point/source_id). Preserve literal punctuation/emphasis; do not paraphrase or quote a different workpaper here.")
     diagnosis: str = Field(min_length=20, max_length=6000)
     requested_change: str = Field(min_length=20, max_length=6000)
     responsibility: Literal["writer", "research", "data_tool", "human"] | None = Field(default=None,
@@ -376,6 +376,13 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             return {"citation_id": source_id, "text": text[offset:end], "offset": offset,
                     "next_offset": end if end < len(text) else None, "total_characters": len(text),
                     "usage": "Persisted source/claim binding; mechanical resolution is not semantic verification. Read the original source context as needed."}
+        chart_sources = {**chart_source_records(runtime.state.get("synthesis", {})),
+                         **chart_source_records(runtime.state.get("report", {}))}
+        if source_id in chart_sources:
+            source = chart_sources[source_id]
+            text, end = source["text"], offset + max_characters
+            return {**source, "text": text[offset:end], "offset": offset,
+                    "next_offset": end if end < len(text) else None, "total_characters": len(text)}
         try:
             return artifacts.with_revisions(runtime.state.get("revisions", {})).read_source(source_id, offset, max_characters)
         except ValueError as exc:
@@ -462,8 +469,10 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         """Submit independent report findings; verify financial meaning, not just citation syntax."""
         report = runtime.state["report"]
         errors = review_responsibility_errors(review, artifacts, required=require_responsibility)
+        reviewable = _text_values({k: report[k] for k in ("title", "narrative_markdown", "charts") if k in report})
+        reviewable = [*reviewable, json.dumps(report_model_view(report), ensure_ascii=False)]
         errors += [f"report_quote_not_exact:{f.finding_id}" for f in review.findings
-                  if not any(f.report_quote in t for t in _text_values({k: report[k] for k in ("title", "narrative_markdown", "charts") if k in report}))]
+                  if not any(f.report_quote in t for t in reviewable)]
         if errors:
             return output_message(runtime, error=json.dumps({"errors": errors}, ensure_ascii=False))
         return output_message(runtime, review.model_dump(mode="json"))

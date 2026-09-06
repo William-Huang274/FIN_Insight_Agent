@@ -71,6 +71,29 @@ def test_lead_can_submit_source_bound_charts_and_plain_prose_is_not_false_comple
     asyncio.run(run())
 
 
+def test_native_reviewer_can_read_and_quote_persisted_chart_only_source(artifacts):
+    async def run():
+        ref = "PASSAGE::WEB::saved-chart-window"
+        report = {"title": "Synthetic chart review", "narrative_markdown": "Review the actual chart, not an invented source. " * 6,
+            "charts": [{"title": "Synthetic chart title", "kind": "bar", "unit": "million", "interpretation": "Synthetic observation, not a real research finding.",
+                "points": [{"source_id": ref, "label": "A", "series": "R", "value": 10,
+                    "provenance": {"quote": "Revenue was 10 million", "value_decimal": "10", "source_provenance": {"source_url": "https://example.com/source", "numeric_fact_authority": False}}}]}]}
+        review = {"summary": "Synthetic reviewer checks the source bound to the saved chart without repeating an external source fetch.",
+            "findings": [{"finding_id": "chart", "severity": "advisory", "report_quote": f'"source_id": "{ref}"',
+                "diagnosis": "The chart uses the saved quote correctly; this is a synthetic review-location qualification.",
+                "requested_change": "Keep the quote and source visible when the chart point is inspected.", "responsibility": "writer", "paper_ids": []}]}
+        model = NativeFixtureModel(marker="chart-review", replies=[
+            [call("read_current_source", {"source_id": ref}, "read-chart")],
+            [call("submit_report_review", {"review": review}, "review-chart")]])
+        agent = build_case_output_agent(role="verifier", model=model, tools=[], artifacts=artifacts,
+            limits={"model_calls": 3, "tool_calls": 4}, require_responsibility=True)
+        result = await agent.ainvoke({"report": report, "messages": [{"role": "user", "content": "Review the chart and its source."}]})
+        reads = [m for m in result["messages"] if isinstance(m, ToolMessage) and m.name == "read_current_source"]
+        assert "Revenue was 10 million" in reads[0].content
+        assert result["output"]["findings"][0]["finding_id"] == "chart"
+    asyncio.run(run())
+
+
 @pytest.mark.parametrize("material", [False, True])
 @pytest.mark.parametrize("reuse", [False, True, "report"])
 def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifacts, material, reuse):

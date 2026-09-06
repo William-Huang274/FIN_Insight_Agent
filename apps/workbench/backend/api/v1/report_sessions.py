@@ -435,6 +435,16 @@ def build_report_sessions_router(service):
         citations += [values.get("synthesis", {}).get("citations", {}), values.get("research_synthesis", {}).get("citations", {})]
         citations += [m.get("citations", {}) for m in values.get("conversation", [])]
         available = {s["source_id"] for group in citations for c in group.values() for s in c["sources"]}
+        from sec_agent.research_foundation.report_charts import chart_source_records
+        chart_sources = {**chart_source_records(values.get("synthesis", {})),
+                         **chart_source_records(values.get("report", {}))}
+        if source_id not in available and source_id in chart_sources:
+            if offset < 0:
+                raise HTTPException(422, "来源阅读范围不合法")
+            source = chart_sources[source_id]
+            text = source["text"]
+            return {**source, "text": text[offset:offset + 16000],
+                    "next_offset": offset + 16000 if offset + 16000 < len(text) else None}
         if source_id not in available:
             raise HTTPException(404, "来源未与本会话已提交内容绑定")
         if not re.fullmatch(r"P\d{2}:S\d+", source_id):

@@ -160,6 +160,9 @@ class ResearchDataMCPDependencies:
     legacy_reviewed_evidence_cell_reader: CellReader | None = None
     legacy_numeric_fact_cell_reader: CellReader | None = None
     source_document_reader: Callable[..., Any] | None = None
+    # Only a trusted review/report composition supplies a frozen case bundle.
+    # Existing single-branch servers do not acquire cross-paper tools by default.
+    case_artifacts: Any | None = None
 
 
 def build_research_data_mcp_server(
@@ -182,7 +185,10 @@ def build_research_data_mcp_server(
         title="FIN Insight Research Data",
         version="0.1.0",
         instructions=(
-            "Use only the active question branch. Retrieval and captured-source "
+            ("Read only the injected case's submitted workpapers with the case artifact tools; those tools allow "
+             "cross-paper review within this case. Other data tools still require their bound branch and run scope. "
+             if dependencies.case_artifacts is not None else "Use only the active question branch. ") +
+            "Retrieval and captured-source "
             "candidates are not Evidence. Read reviewed Evidence or NumericFacts "
             "through their typed tools; when source reading is enabled, exact "
             "SourceBoundPassages can support explicitly non-S2 statements, not "
@@ -505,6 +511,9 @@ def build_research_data_mcp_server(
         )
         return await dependencies.external_capture.capture(request)
 
+    if dependencies.case_artifacts is not None:
+        from sec_agent.agent_runtime.dell_case_artifacts import register_case_artifact_tools
+        register_case_artifact_tools(server, dependencies.case_artifacts)
     return server
 
 

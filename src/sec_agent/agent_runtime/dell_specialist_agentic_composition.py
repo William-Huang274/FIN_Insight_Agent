@@ -359,7 +359,17 @@ def _build_graph_input(
                         "Answer-free branch research method supplied for this "
                         "bounded Specialist shadow."
                     ),
-                    "method_context": method.method_context,
+                    # Historical research methodology is still bound to its original
+                    # foundation. Its old workflow counters are not the active native
+                    # loop's execution policy (notably the old two-search ceiling).
+                    "method_context": ({
+                        **{key: value for key, value in method.method_context.items() if key != "scope_ceiling"},
+                        "execution_budget_notice": "The current graph supplies max_model_turns and max_tool_actions. "
+                            "Within those disclosed limits, use as many purposeful source searches/reads as the task needs. "
+                            "The historical workflow's two-search ceiling does not govern this live-web agentic profile. "
+                            "A budget stop or tool limitation is not proof of public non-disclosure. "
+                            "All source/date/read-only permissions and financial methodology remain in effect.",
+                    } if live_web_read_enabled else method.method_context),
                     "grants_authority": False,
                 },
             ),

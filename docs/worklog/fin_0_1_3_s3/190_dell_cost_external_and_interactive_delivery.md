@@ -146,3 +146,35 @@ R3已知用量在全部命中/全部未命中两端对应约0.0458–0.3647元�
 实现a9c4ee81、authority88e46797，`20260906-dell-q8-targeted-completion-a1` 已failed，2次Flash请求33,776tokens/估0.0594796元，0新Specialist。第一轮754输出/8.477s生成有内容的Q8任务，但generic ResearchTaskSpec允许 `verifier_finding`，当前worker只实现三个研究产物，因此正确拒绝却只有含糊错误；第二轮误陷入“为何Q8只有Q1权限”的重复自然语言（不是隐藏thinking），8000输出/61.915s截断。没有通过增加token或掩盖任务错误推进。第一轮也已证实新provider不填写context_digest，宿主正常绑定到真正执行器，说明这次失败与哈希注入无关。
 
 最小修正：provider专用 `DelegatedResearchTask` 继承原领域任务，只缩窄为实际已支持的planned/ready和branch_notebook/narrative_artifact/claim_ledger，不新增研究规则；公共ResearchTaskSpec不动。Lead只看真实存在的shared capability refs和访问边界，不误收Q1 seed专属ticker/topic/route完成标准；每个worker仍从原组合领取真实的分支披露与权限。拒绝信息附真实allowed values。86条相邻测试通过，包含不可变Q8第一轮反例的准确字段失败，不伪称历史任务被修成成功。原失败/成本保留，三容器停止、卷不删；下一同scope fresh Q8 A2、不增加任务、预算、模型或权限。
+
+## Q8 定向 A2 收口：九个主题均有底稿，不是完整 Dell PASS
+
+`20260906-dell-q8-targeted-completion-a2`，实现 `cff85e2850ab563c4c1da8517887f5eddbdd83c1`、authority提交 `2c8fc7e3aa599b6bc1b0b230edd6995f3c3061ef`，真实终态 `research_ready_for_review`。Lead自主分为同行价值捕获、可比性/架构与营运资本反证两个独立任务；不是固定两种类，也不是两位独立终审。两份底稿分别提交，引用失败有正常反馈和模型修订；没有重新调用已保存的其他七主题/Q1。父图成功范围仅Q8研究交接。
+
+| 本次实际 actor | 请求 | tokens | 当前价格估算 CNY |
+|---|---:|---:|---:|
+| Flash/disabled Lead | 3 | 72,393 | 0.0720837 |
+| Pro/low 同行价值捕获 | 6 | 235,202 | 0.7668216 |
+| Pro/low 可比性与反证 | 9 | 553,140 | 1.1397798 |
+| 合计 | 18 | 860,735 | 1.9786851 |
+
+18次均有usage；758,270输入/102,465输出。宿主执行808.547秒（并行模型累计1,181.082秒，不能当墙钟），构建98.359秒另列。Agent Server thread `1e5bb09b-98db-5fdb-85e8-b90c2d68d027`，root/LangSmith `01a0740f-fa63-7383-93f4-1f2989962163`，project `finsight-dell-q1-paid-cc5167c4feec`、loopback18144。terminal-receipt和private state在原attempt目录，session98928已exit0。三个精确容器已停止，卷/镜像/源结果均保留。较早full-A2和Q8-A1的失败仍是失败，没有改成PASS。
+
+累计审计更新 `D:/temp/fin_dell_token_cost_audit_20260906_a3.json`：attempt目录176个实际请求，173个有usage共9,128,718tokens；167个有cache细项的估价25.2462955元，另外6个旧请求缺cache拆分、3个provider失败缺usage，不记0费用。另有4次独立用途诊断212,237tokens/0.8537535元，不在attempt目录；合起来180次实际请求/9,340,955已报告tokens（仍有3次未知）。这些包含历史试错、审查返工、不同配置对照，不是“一次正常提问”的价格，更不是DeepSeek账单。新增Q8这次的1.98元也不能充作全Dell最终成本，尚未做全案审查/报告。
+
+## 人工看稿后的实际问题：先承认语义缺陷，不用来源格式PASS替代质量
+
+已看十份原稿中的实质结论（不改写原稿、不把人工看法作为盲测gold）：Q6把orders/backlog称为“实际使用量”，并从管理层/供应商表述推出效率提升“不降低”单位需求，证据强度过头；Q7从“单个外国国家<10%”推“大中华区合计<10%”不成立，且把已找到新闻稿/旧规则当当前法律状态的把握不足；Q8以不同业务组合毛利率直接定位整个价值池、只比较应付分别大于存货/应收就宣称融资效率优势，也需要财务方法复核。还有各主题财年/季度不齐、未搜完与不披露混淆、Q3/Q4英文的问题。Q9是反证主题研究，并非独立Counter。下一审查必须主动检查这些类别；不能只查112条claim是否能复制引文，也不能偷偷把人工答案注入独立reviewer再宣称其自行发现。
+
+## 最小工具修正与全案按需上下文（不新建执行框架）
+
+1. **长文阅读**：原WebSourceReader只抓50,000字符却允许请求更大offset，越界抛MCP异常。现仍用同一[Exa MCP web_fetch](https://github.com/exa-labs/exa-mcp-server/blob/main/src/tools/webFetch.ts)，host抓取上限200,000，模型默认24,000/上限80,000窗口不扩大，越界返回实际captured-text边界和可操作说明，不声称全文完整/公开不披露。真实宿主同MCP搜索并读原Q7 Federal Register `2023-23055`，成功读取offset50,000之后24,000字符；证据 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/external-long-source-mcp-20260906-a1/`，0模型。这只证明长文工具已可用，不证明旧规则当前有效或全文已完整抓取。
+2. **旧两次搜索限制**：新live-web native profile的模型method视图去掉历史workflow `scope_ceiling`，明确使用当前图实际max_model_turns/max_tool_actions。研究方法、公开来源/时间/只读权限不变；原foundation及历史digest不改。旧Q7/Q8的“两轮用尽”是真实历史受限，不能继续作为新review/修订的硬上限，也不是公开信息缺口。
+3. **计算采用成熟组件**：[simpleeval](https://github.com/danthedeckie/simpleeval) `1.0.7` / MIT / 无额外运行依赖，已在Z隔离安装和本项目agent-runtime extra固定、uv.lock仅新增该包。标准库Decimal作34位十进制运算，simpleeval解析/求值，仅配置算术节点/四则和有界输入；不实现新表达式引擎。S2变量从已观察NumericFact直接读本地值；非S2变量必须有原文逐字quote及其中的数字literal；无来源变量必须标假设。返回公式、输入、结果、假设、来源与权威提醒。运算正确不等于单位/期间/提取含义/经济因果已验证；一律不升级S2、不改数据库。经真实官方MCP client复算同期间Dell FY2026 gross_profit/revenue*100，与既有S2派生gross_margin精确一致；包括错误S2值、伪引文、数字子串、缺来源/假设、未知源、代码/属性/函数/幂/移位/分号/除零等反例。没有声称DS已调用此新工具。
+4. **研究包不是新lineage库**：`collect_research_bundle.py`只读四个明确源artifact，保留原phase/来源文件路径和一次性digest，不改旧run、不复制私有模型messages/reasoning到其他Agent。所得十份底稿/九主题/112claims/179个paper内来源（非去重独立信源数），在 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/case-convergence-20260906-a1/`。原底稿/工具观察合计2,910,278字符；模型目录6,396字符，全部底稿正文视图141,466字符，来源按ID/窗口再读。**这是信息组织规模测量，不是已节省相同比例tokens/费用的因果证明**。官方MCP服务器新增可选host注入的catalog/read-paper/read-source/calculate四工具，旧单分支server默认不获得跨稿权限；精确引用/未完成路线/非S2权威边界保留。工具已经代码集成并经实际MCP client测试，尚未接到下一Agent Server模型图，前端也尚未使用。
+
+### 下一工作包的实施边界
+
+先将上述按需工具接入**现有Agent Server内**的全案审查：同LangGraph/原生ToolNode与消息/checkpoint能力，同DeepSeek SDK和LangSmith，不另造队列、上下文引擎、跨代理私有CoT转发或另一个HTTP服务。Counter/Verifier从目录与各稿结论开始，自主按需读稿、读原文、S2/计算、必要补源；反馈指向paper/claim/原文锚点及责任层。仅有实质问题的作者收到相应反馈和资料，产生新revision，不重跑其他研究、不把预算停止伪称信息不披露。接着综合中文报告与最后审查/人工验收；最终报告的自然语言不靠僵硬全文NLP模板校验。
+
+下一模型预算必须按6.4k目录、141k全部正文和按需来源规模，而不是把2.9M字符一次塞给每个reviewer；参考本次复杂Q8 6/9调用和已知大包Flash失败，复杂语义审查先Pro/low，简单调度仍Flash/disabled，不能假称两者等质。具体node TokenBudgetBasis与一次真实执行范围在代码/近邻检查通过后记录，不复写旧authority。当前本包没有新付费run。真实交互前端仍下一独立包：接同Agent Server的标准thread/run/stream/cancel/HITL，并投影公开决策摘要/工具/来源/usage；不能把私有模型reasoning直接公开，也不能用静态播放冒充可运行。Dell完成前不启动新case。

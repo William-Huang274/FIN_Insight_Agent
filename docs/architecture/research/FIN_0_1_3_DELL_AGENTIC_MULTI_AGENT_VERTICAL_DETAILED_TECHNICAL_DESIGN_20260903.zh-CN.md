@@ -16,6 +16,8 @@
 
 ## 0. 结论先行
 
+2026-09-06 最新：Q8定向A2两专家已完成研究交接，18实调860735tokens/约1.9786851元；保留十份底稿覆盖九主题，完整产品仍未PASS。全案按需MCP研究包与simpleeval/Decimal计算已本地接入和真实client测试，长FR源50k后窗口已亲测可读，旧两搜索workflow约束不再冒充native预算。下一在同Agent Server内做跨主题审查与责任修订/中文报告，不把2.91M字符源观察全塞给每位Agent；具体实施边界与已知语义错误见 `docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md` 最新段。DS消费新工具/全案审查/前端仍待实证，本段不宣称它们完成。
+
 2026-09-06 最新实测覆盖下段“待诊断”：调度对照已完成，混合Flash Lead/Pro研究的全覆盖A2已实际68请求/2999396tokens，估6.625332元。七份新底稿+已审Q1保存；Q8本地字符阈值阻断导致父图failed，不是假PASS。Q6原生持久化底稿已只读导出而未重做模型。152相邻测试已验证宿主绑定内部context、提交错误只追加反馈、已知模型失败局部终止；仅Q8 fresh定向补齐，不全案重跑。Q2外源实用已发生。详S3/190最新段；下一仍是跨主题独立审查/责任修复/综合报告和真实UI，不是新规划协议。
 
 2026-09-06 最新实测反例：full-research-web-a1两次Lead/74,750tokens后failed，第二轮Pro/low24k全thinking、0新worker。输入合同已修主题ID与路线ID歧义，下一先用原SDK做至多两次同错误上下文的Pro/disabled与Flash/disabled调度诊断。独立多轮Agent不等于必须开启thinking；按用途测定，专家资料研究不因Lead试验自动关闭。没有扩大总预算/新框架/假PASS，完整记录与TokenBudgetBasis见S3/190。

@@ -61,7 +61,7 @@ class WebSourceReader:
             result = await self.capture.capture(ExternalCaptureRequest(
                 discovery_receipt=discovery, candidate_id=candidate.candidate_id,
                 branch_id=branch_id, run_scope=run_scope, render_policy="hosted",
-                max_characters=50000, timeout_seconds=30))
+                max_characters=200000, timeout_seconds=30))
             if result.status != "captured":
                 return SourceDocumentResult(operation="read", items=(), next_offset=None, total_matches=0,
                     source_snapshot_sha256=result.receipt_digest,
@@ -70,7 +70,12 @@ class WebSourceReader:
         end = min(len(result.text), request.offset + request.max_characters)
         passage = result.text[request.offset:end]
         if not passage:
-            raise ValueError("web_source_offset_out_of_range")
+            return SourceDocumentResult(operation="read", items=(), next_offset=None, total_matches=0,
+                source_snapshot_sha256=result.receipt_digest,
+                notice=f"Captured text ends at character {len(result.text)}; requested offset {request.offset}. "
+                    f"Host capture truncated={result.truncated}. This is the captured-text boundary, NOT verified "
+                    "document completeness or public non-disclosure. Read an earlier offset or search for the relevant "
+                    "section/alternate public source; do not repeat an out-of-range offset.")
         digest = sha256(passage.encode("utf-8")).hexdigest()
         url = result.final_url
         if not url:
@@ -93,6 +98,8 @@ class WebSourceReader:
             "writer_citable": True, "numeric_fact_authority": False,
             "truncated": end < len(result.text) or result.truncated,
             "source_document_completeness_verified": False,
+            "captured_characters": len(result.text),
+            "host_capture_truncated": result.truncated,
             "authority_note": "Exact fetched public-source window, not Reviewed Evidence or S2 NumericFact. "
                 "Cite what this URL actually says, assess publisher/reliability/date and distinguish reported fact, forecast, opinion and inference. "
                 "Search dates are not independently verified; capture date is not publication date. Linked reports/PDFs are not implicitly read. "

@@ -61,8 +61,31 @@ def test_web_search_read_paginate_preserve_exact_source_without_numeric_promotio
     assert next_page.items[0]["passage"] == text[2000:4000]
     assert len(fetcher.calls) == 1
     assert next_page.source_snapshot_sha256 == read.source_snapshot_sha256
-    with pytest.raises(ValueError, match="offset_out_of_range"):
-        _call(reader, "read", document_id=doc_id, offset=len(text))
+    exhausted = _call(reader, "read", document_id=doc_id, offset=len(text))
+    assert not exhausted.items and exhausted.next_offset is None
+    assert "NOT verified" in exhausted.notice and "public non-disclosure" in exhausted.notice
+
+
+def test_long_public_source_remains_readable_after_old_50000_capture_boundary():
+    text = "First part.\n" * 5000 + "A later material source section.\n" * 1000
+    reader, fetcher, _ = _reader(text=text)
+    doc_id = _call(reader, "search", query="long rule").items[0]["document_id"]
+    read = _call(reader, "read", document_id=doc_id, offset=60000, max_characters=24000)
+    assert read.items[0]["passage"] == text[60000:84000]
+    assert read.next_offset == 84000 and len(fetcher.calls) == 1
+    assert not read.items[0]["source_document_completeness_verified"]
+
+
+def test_real_capture_limit_is_disclosed_without_unbounded_fetch_or_silent_complete():
+    reader, fetcher, _ = _reader(text="Long source text. " * 20000)
+    doc_id = _call(reader, "search", query="long source").items[0]["document_id"]
+    page = _call(reader, "read", document_id=doc_id, offset=190000, max_characters=24000)
+    assert len(page.items[0]["passage"]) == 10000
+    assert page.items[0]["captured_characters"] == 200000
+    assert page.items[0]["host_capture_truncated"] and page.items[0]["truncated"]
+    assert page.next_offset is None and len(fetcher.calls) == 1
+    end = _call(reader, "read", document_id=doc_id, offset=200000)
+    assert "Host capture truncated=True" in end.notice and not end.items
 
 
 def test_commercial_landing_page_is_explicitly_not_the_paid_report():
@@ -204,3 +227,49 @@ def test_live_exa_mcp_search_and_source_read():
         assert row["mcp_receipt_chain"] and row["source_url"].startswith("https://www.hpe.com/")
         print(json.dumps({"status": "pass", "url": row["source_url"], "characters": len(row["passage"]),
                           "model_calls": 0, "mcp_source_receipts": len(row["mcp_receipt_chain"])}))
+
+
+@pytest.mark.skipif(not os.environ.get("FINSIGHT_LIVE_LONG_WEB_PROBE_OUTPUT"), reason="explicit host-only long-source network probe")
+def test_live_original_q7_federal_register_source_after_50000():
+    from test_dell_agent_server_data_composition import DEFAULT_ARTIFACT_ENV, _execute_evidence
+    from sec_agent.agent_runtime.dell_agent_server_data_composition import open_dell_approved_data_composition
+    output = Path(os.environ["FINSIGHT_LIVE_LONG_WEB_PROBE_OUTPUT"])
+    output.mkdir(parents=True, exist_ok=False)
+
+    def save(name, value):
+        with (output / name).open("x", encoding="utf-8") as handle:
+            json.dump(value, handle, ensure_ascii=False, indent=2)
+
+    # A known source from the immutable Q7 workpaper, not a search for its answer.
+    request = {"source_document": {"source_space": "web", "operation": "search",
+        "query": "site:federalregister.gov/documents/2023/10/25/2023-23055 Implementation Additional Export Controls", "limit": 5}}
+    save("request.json", {"request": request, "model_calls": 0, "purpose": "Host long-source transport qualification, no legal-currentness claim"})
+    with open_dell_approved_data_composition(run_invocation_id=output.name, environment=DEFAULT_ARTIFACT_ENV,
+                                            source_read_enabled=True, live_web_read_enabled=True) as composition:
+        search = _execute_evidence(composition, label="long-web-search", request=request)
+        save("search.json", search.model_dump(mode="json"))
+        candidate = next(row for row in search.items if "federalregister.gov/documents/2023/10/25/2023-23055/" in row.get("source_url", ""))
+        read = _execute_evidence(composition, label="long-web-read", request={"source_document": {
+            "source_space": "web", "operation": "read", "document_id": candidate["document_id"], "offset": 50000, "max_characters": 24000}})
+        save("read.json", read.model_dump(mode="json"))
+        assert read.status == "success"
+        row = next(row for row in read.items if row.get("result_state") == "source_bound_passage")
+        assert len(row["passage"]) > 500 and row["source_locator"]["character_start"] == 50000
+        assert row["mcp_receipt_chain"] and not row["numeric_fact_authority"]
+        save("summary.json", {"status": "long_source_read_pass", "characters": len(row["passage"]),
+            "captured_characters": row["captured_characters"], "url": row["source_url"], "model_calls": 0,
+            "source_document_completeness_verified": False, "current_legal_effect_verified": False})
+
+
+def test_live_web_method_uses_current_agent_budget_without_changing_frozen_method():
+    from test_dell_specialist_agentic_composition import RUNTIME_ENVIRONMENT
+    from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_receipted_composition
+    with open_dell_specialist_receipted_composition(run_id="scope-disclosure-only", run_invocation_id="scope-disclosure-only",
+            branch_id=BRANCH, environment=RUNTIME_ENVIRONMENT, turn_source="provider_model",
+            model_turn=lambda request: pytest.fail("no model invocation allowed"), source_read_enabled=True,
+            live_web_read_enabled=True, max_tool_actions=24) as composition:
+        method = composition.graph_input.l0_context.skill_summaries[0]["method_context"]
+        assert "scope_ceiling" not in method
+        assert "two-search ceiling does not govern" in method["execution_budget_notice"]
+        assert method["formulas"] and method["freshness_contract"]
+        assert composition.graph_input.max_tool_actions == 24

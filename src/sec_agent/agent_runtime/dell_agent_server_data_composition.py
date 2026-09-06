@@ -311,7 +311,7 @@ def open_dell_approved_data_composition(
             web_reader = WebSourceReader(
                 discovery=ExternalSourceDiscovery(primary=ExaHostedMCPProvider()),
                 capture=ExternalSourceCapture(guard=guard, static_fetcher=StaticHTTPPageFetcher(guard=guard),
-                    hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard, max_characters=50000)))
+                    hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard, max_characters=200000)))
 
             async def source_reader(*, request, branch_id, run_scope):
                 if request.source_space == "web":

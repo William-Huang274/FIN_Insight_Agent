@@ -497,7 +497,7 @@ class ExternalCaptureRequest(BaseModel):
     candidate_id: str = Field(min_length=1, max_length=128)
     branch_id: str = Field(min_length=1, max_length=96)
     run_scope: DellResearchRunScope
-    max_characters: int = Field(default=12_000, ge=500, le=50_000)
+    max_characters: int = Field(default=12_000, ge=500, le=200_000)
     render_policy: Literal["auto", "static", "hosted", "browser"] = "auto"
     minimum_useful_characters: int = Field(default=200, ge=1, le=2_000)
     timeout_seconds: float = Field(default=20.0, ge=1.0, le=60.0)

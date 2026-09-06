@@ -30,10 +30,11 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .deepseek_structured_agents import TokenBudgetBasis, ReasoningPreservingChatDeepSeek, _usage_audit_fields
 from .dell_case_artifacts import DellCaseArtifacts
+from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
 
 
 CASE_TOOLS = frozenset({"research_artifact_catalog", "read_research_artifact", "read_research_source",
-    "calculate_research_metric", "read_source_document", "query_company_financial_facts", "get_dell_research_method"})
+    "calculate_research_metric", "read_source_document", "query_company_financial_facts", "get_dell_research_method", "get_research_method"})
 
 
 class ReviewSourceCheck(BaseModel):
@@ -336,7 +337,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     emphasis = ("Your role is Counter: challenge the thesis, demand/competition/supply mechanisms and cross-paper contradictions."
                 if role == "counter" else "Your role is Verifier: inspect material factual/numeric/citation/period consistency and whether conclusions are warranted by actual sources.")
     return create_agent(model=model, tools=[*tools, submit_case_review], state_schema=CaseReviewerState,
-        system_prompt=REVIEW_PROMPT + emphasis + f"\nBudget: up to {max_model_calls} model calls / {max_tool_calls} tools; no retries or silent partial acceptance.",
+        system_prompt=REVIEW_PROMPT + emphasis + METHOD_TOOL_GUIDANCE + f"\nBudget: up to {max_model_calls} model calls / {max_tool_calls} tools; no retries or silent partial acceptance.",
         middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="error"),
                     ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="error"), *([audit] if audit else [])],
         name=f"case_{role}")

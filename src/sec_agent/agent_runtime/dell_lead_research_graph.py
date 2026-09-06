@@ -26,6 +26,7 @@ from .dell_specialist_agentic_graph import (
     SpecialistAgenticInput, SpecialistInvalidToolCall, SpecialistNativeToolBatch,
 )
 from .dell_workpaper_review_graph import validate_workpaper_state
+from sec_agent.research_foundation.research_methods import get_research_method
 
 
 class LeadResearchError(ValueError):
@@ -196,6 +197,7 @@ def build_dell_lead_research_graph(
             return {"phase": "research_needs_attention", "stop_reason": "lead_turn_ceiling"}
         request = {
             "agent_id": "lead:research-delegation", "research_question": research_question,
+            "role_method": get_research_method("lead"),
             "research_as_of": expected_input.task.research_as_of,
             "branch_catalog": [row for row in branch_catalog if row["branch_id"] in allowed],
             "required_branch_ids": list(allowed_branch_ids),

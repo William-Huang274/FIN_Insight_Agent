@@ -174,7 +174,7 @@ def test_actual_case_data_plane_with_native_MCP_tool_projection(artifacts):
                 binding = await client.call_tool("get_dell_research_method", {"branch_ids": branches, **args})
                 assert not binding.is_error
                 tools = {t.name: t for t in await case_mcp_tools(client, run_scope=binding.structured_content["run_scope"], method_arguments=args)}
-                assert len(tools) == 7
+                assert len(tools) == 8
                 method = await tools["get_dell_research_method"].ainvoke(call("get_dell_research_method", {"branch_ids": branches}, "method"))
                 assert "scope_ceiling" not in method.artifact and "execution_budget_notice" in method.artifact
                 catalog = await tools["read_source_document"].ainvoke(call("read_source_document", {

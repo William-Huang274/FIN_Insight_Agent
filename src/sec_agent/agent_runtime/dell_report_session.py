@@ -30,7 +30,7 @@ from pydantic import BaseModel, ConfigDict, Field, SecretStr, model_validator
 
 from .deepseek_structured_agents import DeepSeekModelProfile, TokenBudgetBasis, load_deepseek_structured_agent_config
 from .dell_case_artifacts import DellCaseArtifacts
-from .dell_case_convergence_agent import build_case_output_agent, report_citations, CaseReport, ReportReview
+from .dell_case_convergence_agent import build_case_output_agent, report_citations, report_model_view, CaseReport, ReportReview
 from .dell_case_review_agent import CaseModelAudit, case_chat_model, case_mcp_tools
 
 
@@ -121,10 +121,10 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
                 body["report_overview"] = {"title": state["report"]["title"], "version": state["report_version"],
                     "read_on_demand": "read_current_report for the complete current prose; use relevant sources for facts."}
             else:
-                body["revision_request"] = {"prior_report": {k: state["report"][k] for k in ("title", "narrative_markdown")},
+                body["revision_request"] = {"prior_report": report_model_view(state["report"]),
                     "independent_review": state["report_review"], "human_feedback_is_not_evidence": True}
         else:
-            body["report"] = {k: state["report"][k] for k in ("title", "narrative_markdown")}
+            body["report"] = report_model_view(state["report"])
             if state["report"].get("applied_edits"):
                 body["revision_context"] = {"applied_edits": state["report"]["applied_edits"],
                     "previous_review": state["report_review"],

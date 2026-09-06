@@ -200,6 +200,15 @@ class RequestSourceAction(_StrictModel):
     selection: SourceDocumentRequest
 
 
+class RequestResearchMethodAction(_StrictModel):
+    """Read a role method through the existing MCP service, not arbitrary files."""
+    action: Literal["request_method"]
+    context_digest: str = Field(pattern=_DIGEST_PATTERN)
+    reason_summary: str = Field(min_length=1, max_length=1_000)
+    method_id: str = Field(default="", max_length=64,
+        description="Empty for catalog, or a method_id from that catalog. This does not enable the unavailable general disclosure service.")
+
+
 class RequestHumanReviewAction(_StrictModel):
     action: Literal["request_human_review"]
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
@@ -338,7 +347,7 @@ class SubmitReviewAction(_StrictModel):
 
 
 SpecialistResearchAction = Annotated[
-    RequestEvidenceAction | RequestSourceAction | RequestFinanceAction
+    RequestEvidenceAction | RequestSourceAction | RequestFinanceAction | RequestResearchMethodAction
     | RequestHumanReviewAction | SubmitWorkpaperAction,
     Field(discriminator="action"),
 ]
@@ -346,6 +355,7 @@ SpecialistResearchAction = Annotated[
 SpecialistAction = Annotated[
     RequestEvidenceAction
     | RequestSourceAction
+    | RequestResearchMethodAction
     | RequestFinanceAction
     | RequestHumanReviewAction
     | SubmitWorkpaperAction
@@ -805,6 +815,7 @@ class DellSpecialistAgenticDependencies:
     finance_tool: SpecialistToolPort
     turn_source: SpecialistModelTurnSource = "scripted_qualification"
     expected_graph_input_digest: str | None = None
+    method_reader: Callable[[str], Mapping[str, Any]] | None = None
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -891,6 +902,8 @@ def _model_request(
     ]
     if l0.source_read_enabled:
         allowed_actions.append("request_source")
+    if any(row.get("capability_ref") == "capability:research:methods" for row in l0.capability_summaries):
+        allowed_actions.append("request_method")
     collaboration = state.get("collaboration_context")
     if collaboration and collaboration["mode"] in {"counter", "verifier"}:
         allowed_actions.remove("submit_workpaper")
@@ -1671,6 +1684,49 @@ def build_dell_specialist_agentic_state_graph(
             expected_kind="finance",
         )
 
+    def execute_method(state, tool_call_id=None):
+        """One existing MCP method read, with normal tool feedback and counting.
+
+        Methods are not data observations, citations, or permission receipts.
+        The native ToolMessage retains the content for this agent's own context.
+        """
+        notebook = _validate_model_json(SpecialistNotebook, state["notebook"], code="specialist_notebook_invalid")
+        action = _validate_action(state["pending_action"])
+        digest = _semantic_action_digest(action)
+        message_id = tool_call_id or "method:" + digest[:24]
+
+        def result(body, *, error=False, updated=notebook, review=False):
+            message = ToolMessage(name="RequestResearchMethodAction", tool_call_id=message_id,
+                status="error" if error else "success",
+                content=json.dumps(body.get("method", body), ensure_ascii=False), artifact=body)
+            update = {"notebook": updated.model_dump(mode="json"), "pending_action": None,
+                "tool_results": [message.model_dump(mode="json")],
+                "phase": "human_review_required" if review else "typed_feedback_ready"}
+            if review:
+                update.update(review_reason="tool_action_ceiling_reached_no_silent_completion", review_trigger="tool_action_ceiling")
+            return update, message
+
+        if dependencies.method_reader is None:
+            return result({"error": "method_reader_unavailable", "method_access_grants_no_general_disclosure": True}, error=True)
+        if notebook.tool_action_count >= state["max_tool_actions"]:
+            return result({"error": "tool_action_ceiling_reached_no_silent_completion"}, error=True,
+                updated=_replace_notebook(notebook, status="human_review_required"), review=True)
+        if digest in notebook.dispatched_action_digests:
+            return result({"error": "method_already_read", "next_action": "Use its earlier ToolMessage, or select a different method."}, error=True)
+        updated = _replace_notebook(notebook, tool_action_count=notebook.tool_action_count + 1,
+            dispatched_action_digests=(*notebook.dispatched_action_digests, digest))
+        try:
+            body = dependencies.method_reader(action.method_id)
+            method = body["method"]
+            if method.get("answer_free") is not True or (
+                action.method_id and (method.get("method_id") != action.method_id or method.get("grants_authority") is not False)
+            ):
+                raise ValueError("invalid_method_projection")
+        except Exception:
+            return result({"error": "method_read_failed", "next_action": "Select an ID from the method catalog; paths are not allowed."},
+                error=True, updated=updated)
+        return result(body, updated=updated)
+
     def execute_native_tools(
         state: DellSpecialistAgenticState,
         config: RunnableConfig,
@@ -1685,7 +1741,7 @@ def build_dell_specialist_agentic_state_graph(
         working: DellSpecialistAgenticState = dict(state)
         calls = {call.id: call for call in batch.tool_calls}
         models = {model.__name__: model for model in (
-            RequestEvidenceAction, RequestFinanceAction, RequestSourceAction,
+            RequestEvidenceAction, RequestFinanceAction, RequestSourceAction, RequestResearchMethodAction,
             SubmitWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
         terminal_mixed = len(batch.tool_calls) > 1 and any(
@@ -1746,6 +1802,10 @@ def build_dell_specialist_agentic_state_graph(
             if isinstance(action, RequestEvidenceAction) and action.minimum_route_obligation_id not in assigned_routes:
                 return reject("specialist_evidence_route_not_assigned", "This evidence route is outside this Specialist task assignment.")
             working["pending_action"] = action.model_dump(mode="json")
+            if isinstance(action, RequestResearchMethodAction):
+                update, message = execute_method(working, tool_call_id=call.id)
+                working.update(update)
+                return message
             # Terminal calls are control tools, never data-port calls and never
             # charged as a data action. Reuse the existing acceptance/handoff.
             if isinstance(action, (SubmitWorkpaperAction, SubmitReviewAction)):
@@ -1942,6 +2002,7 @@ def build_dell_specialist_agentic_state_graph(
     graph.add_node("model_decide", model_decide)
     graph.add_node("execute_evidence", execute_evidence)
     graph.add_node("execute_finance", execute_finance)
+    graph.add_node("execute_method", lambda state: execute_method(state)[0])
     graph.add_node("execute_native_tools", execute_native_tools)
     graph.add_node("validate_submission", validate_submission)
     graph.add_node("human_review", human_review)
@@ -1955,6 +2016,7 @@ def build_dell_specialist_agentic_state_graph(
             "request_evidence": "execute_evidence",
             "request_source": "execute_evidence",
             "request_finance": "execute_finance",
+            "request_method": "execute_method",
             "submit_workpaper": "validate_submission",
             "submit_review": "validate_submission",
             "request_human_review": "human_review",
@@ -1970,6 +2032,10 @@ def build_dell_specialist_agentic_state_graph(
     graph.add_conditional_edges(
         "execute_finance",
         route_after_tool,
+        {"decide": "model_decide", "human_review": "human_review"},
+    )
+    graph.add_conditional_edges(
+        "execute_method", route_after_tool,
         {"decide": "model_decide", "human_review": "human_review"},
     )
     graph.add_conditional_edges(

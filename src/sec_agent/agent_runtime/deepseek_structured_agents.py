@@ -31,7 +31,7 @@ from pydantic import (
 
 from .dell_specialist_agentic_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestHumanReviewAction,
-    RequestSourceAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, SubmitReviewAction,
+    RequestSourceAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, SubmitReviewAction,
 )
 from .dell_reference_vertical_contracts import (
     BranchWorkpaper,
@@ -519,7 +519,7 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
-    RequestEvidenceAction, RequestFinanceAction, RequestSourceAction,
+    RequestEvidenceAction, RequestFinanceAction, RequestSourceAction, RequestResearchMethodAction,
     SubmitWorkpaperAction, RequestHumanReviewAction,
 )}
 _NATIVE_REVIEW_TOOLS = {**{key: value for key, value in _NATIVE_SPECIALIST_TOOLS.items()

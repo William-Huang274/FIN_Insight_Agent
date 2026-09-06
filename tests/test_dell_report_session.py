@@ -204,6 +204,12 @@ def test_short_answer_direct_tool_citations_do_not_accept_model_invented_observa
             answer_citations(prose, artifacts, messages)
     with pytest.raises(ValueError, match="not_observed"):
         answer_citations("Fake [NUMFACT::unknown]", artifacts, [observed])
+    assert report_citations(prose, artifacts, [observed]) == bound
+    with pytest.raises(ValueError, match="not_observed"):
+        report_citations(prose, artifacts, [])
+    assert report_citations(prose, artifacts, [], prior_citations=bound) == bound
+    with pytest.raises(ValueError, match="not_observed"):
+        report_citations("Fake [NUMFACT::unknown]", artifacts, [], prior_citations=bound)
 
 
 def test_direct_answer_source_bff_reads_only_persisted_bound_projection():

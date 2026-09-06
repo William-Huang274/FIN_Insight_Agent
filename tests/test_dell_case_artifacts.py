@@ -207,6 +207,29 @@ def test_live_sql_ids_calculate_only_after_observation_in_this_composition(real_
                         accepted = await agent.ainvoke({"messages": [HumanMessage(content="Host protocol test, not semantic gold")], "request_action": "ask"})
                         assert accepted["output"]["kind"] == "answer" and len(model.contexts) == 3
                         assert accepted["output"]["citations"] == refs
+                        # The report uses the same observed IDs, not an invented
+                        # old workpaper claim. SQL/calculation stay real/read-only.
+                        report = {"title": "Host integration fixture, not a research result",
+                            "narrative_markdown": ("This is a mechanical source-binding development fixture, not a financial conclusion. " * 4)
+                                + f"Source [{fact_id}], computed [{result['calculation_id']}]."}
+                        writer = NativeFixtureModel(marker="report-fixture", replies=[
+                            [call("query_company_financial_facts", {"branch_id": branch, **query["query"]}, "report-query")],
+                            [call("calculate_research_metric", {"request": calculation}, "report-calc")],
+                            [call("submit_case_report", {"report": report}, "report-submit")]])
+                        writer_graph = build_case_output_agent(role="writer", model=writer, tools=native_tools,
+                            artifacts=artifacts, limits={"model_calls": 4, "tool_calls": 8})
+                        written = await writer_graph.ainvoke({"messages": [HumanMessage(content="Host report citation qualification only")]})
+                        assert written["output"]["citations"] == refs
+                        editor = NativeFixtureModel(marker="edit-fixture", replies=[
+                            [call("read_current_source", {"source_id": result["calculation_id"]}, "read-citation")],
+                            [call("submit_report_edits", {"edits": [{"old_str": "Source [", "new_str": "Unchanged cited source ["}]}, "edit")]])
+                        edit_graph = build_case_output_agent(role="writer", model=editor, tools=native_tools,
+                            artifacts=artifacts, limits={"model_calls": 3, "tool_calls": 6}, allow_answers=True)
+                        edited = await edit_graph.ainvoke({"messages": [HumanMessage(content="Change only the fixture wording")],
+                            "report": written["output"], "request_action": "revise"})
+                        assert edited["output"]["citations"] == refs
+                        assert "operating_income / revenue * 100" in str(editor.contexts[1])
+                        assert "arithmetic" not in edited["output"]["narrative_markdown"].lower()
                     wrong = deepcopy(calculation)
                     wrong["operands"]["revenue"]["literal"] = "1"
                     rejected = await client.call_tool("calculate_research_metric", {"request": wrong})

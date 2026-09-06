@@ -80,7 +80,8 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             prose = ("Synthetic report fixture checks source resolution only, not any financial conclusion. " * 4) + f"[{ref}]"
             report = {"title": "Synthetic convergence report", "narrative_markdown": prose}
             writer = NativeFixtureModel(marker="writer", replies=[
-                [call("read_current_workpaper", {"paper_id": "P99"}, "bad"), call("research_artifact_catalog", {}, "catalog")],
+                [call("read_current_workpaper", {"paper_id": "P99"}, "bad"), call("research_artifact_catalog", {}, "catalog"),
+                 call("get_research_method", {"method_id": "writer"}, "method")],
                 [call("read_current_workpaper", {"paper_id": "P01"}, "read")],
                 [call("submit_case_report", {"report": report}, "submit")]])
             agents["writer"] = build_case_output_agent(role="writer", model=writer, tools=tools, artifacts=artifacts, limits=limits, report_revision=reuse == "report")
@@ -101,11 +102,17 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             assert len(state["revisions"]) == 6
             assert state["phase"] == ("case_report_needs_revision" if material else "case_report_ready_for_human_review")
             assert ref in state["report"]["citations"]
+            verifier_input = json.loads(model.contexts[0][1].content)
+            assert verifier_input["report"] == report
+            assert "citations" not in verifier_input["report"]
             assert "reasoning_content" not in json.dumps(state)
             assert artifacts.read_paper("P01") == original
             assert all("read_research_artifact" not in names for names in writer.seen)
             catalog = next(m for m in writer.contexts[1] if isinstance(m, ToolMessage) and m.name == "research_artifact_catalog")
             assert "Synthetic corrected current thesis for fixture paper P01" in catalog.content
+            method = next(m for m in writer.contexts[1] if isinstance(m, ToolMessage) and m.name == "get_research_method")
+            assert method.artifact["method_id"] == "writer" and "局部编辑" in method.artifact["content"]
+            assert "get_research_method" in writer.contexts[0][0].content
             for pid in PAPERS:
                 metrics = state["actor_metrics"]["author_"+pid]
                 assert metrics["model_calls"] == (0 if pid in reused else 2)
@@ -294,3 +301,38 @@ def test_case_report_export_resolves_all_source_links_without_rewriting_prose():
     assert "Unchanged analyst prose [^s1]." in rendered
     assert "https://example.com/a" in rendered and "https://example.com/b" in rendered
     assert "javascript:" not in rendered and "case_report_needs_revision" in rendered
+
+
+@pytest.mark.parametrize("author_count", [0, 1, 3])
+def test_dynamic_author_counts_preserve_report_artifacts_without_model_context_duplication(artifacts, author_count):
+    from langchain_core.runnables import RunnableLambda
+
+    captured = {}
+    selected = PAPERS[:author_count]
+    report = {"title": "Dynamic graph fixture", "narrative_markdown": "Synthetic prose only. " * 20,
+              "citations": {"fixture": {"text": "large-source-marker " * 10000}}}
+    review = {"summary": "Synthetic graph sequencing only; not a financial review.", "findings": [], "unresolved_data_requests": []}
+
+    def actor_result(state, actor):
+        captured[actor] = json.loads(state["messages"][0].content)
+        if actor.startswith("author_"):
+            output = {"paper_id": actor.removeprefix("author_"), "finding_responses": []}
+        else:
+            output = report if actor == "writer" else review
+        return {**state, "output": output}
+
+    # Empty amendments suffice for this graph-only fixture; actual financial
+    # submission validation is exercised by the native-agent tests above.
+    view = SimpleNamespace(research_as_of=artifacts.research_as_of,
+        read_paper=artifacts.read_paper,
+        with_revisions=lambda revisions: SimpleNamespace(catalog=artifacts.catalog))
+    actors = [*("author_" + pid for pid in selected), "writer", "verifier"]
+    agents = {name: RunnableLambda(lambda state, name=name: actor_result(state, name)) for name in actors}
+    graph = build_case_convergence_graph(agents=agents, artifacts=view, question="Fresh question fixture",
+        feedback={pid: [] for pid in selected}, run_id="dynamic", run_invocation_id="fresh").compile()
+    result = graph.invoke({"run_id": "dynamic", "run_invocation_id": "fresh"})
+    assert result["phase"] == "case_report_ready_for_human_review"
+    assert set(result.get("revisions", {})) == set(selected)
+    assert result["report"] == report
+    assert captured["verifier"]["report"] == {key: report[key] for key in ("title", "narrative_markdown")}
+    assert "large-source-marker" not in json.dumps(captured)

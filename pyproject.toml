@@ -84,6 +84,7 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 "sec_agent.agent_runtime" = ["sql/*.sql"]
+"sec_agent.research_foundation" = ["methods/*.md"]
 
 [tool.pytest.ini_options]
 pythonpath = [".", "src"]

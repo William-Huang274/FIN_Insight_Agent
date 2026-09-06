@@ -157,6 +157,7 @@ class DellApprovedDataComposition:
     model_calls_authorized: bool = False
     network_calls_authorized: bool = False
     paid_calls_authorized: bool = False
+    method_reader: Any = None
 
 
 @contextmanager
@@ -374,6 +375,7 @@ def open_dell_approved_data_composition(
                 external_route_count=inventory.external_object_count,
                 local_candidate_count=inventory.local_candidate_count,
                 mcp_server=server,
+                method_reader=opened_adapter.read_research_method,
                 network_calls_authorized=live_web_read_enabled,
                 reviewed_topic_refs_by_branch={
                     branch_id: tuple(

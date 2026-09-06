@@ -91,6 +91,32 @@ def test_lead_parallel_workers_then_dynamic_dependent_task_without_rewriting_see
     assert "final_submission" not in result  # Handoff is not a financial report.
 
 
+def test_fresh_lead_uses_current_question_and_only_lead_role_method_without_old_workpapers():
+    value = SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
+    question = "根据现有及按需补查的资料判断增长质量、盈利兑现与执行压力。"
+    seen = []
+
+    def model(request):
+        seen.append(request)
+        assert request["research_question"] == question
+        assert request["role_method"]["method_id"] == "lead"
+        assert request["role_method"]["answer_free"]
+        assert "content" in request["role_method"]
+        if len(seen) == 1:
+            assert not request["workpapers"]
+            return _call(request, "DelegateResearchTasksAction", tasks=[_task()])
+        return _stop(request, ready=True)
+
+    graph = build_dell_lead_research_graph(
+        expected_input=value, research_question=question, branch_catalog=CATALOG,
+        allowed_branch_ids=(BRANCHES[0],), seed_workpapers={}, model_turn=model,
+        run_child=lambda task, dependencies, config: _worker_result(task, _seed()),
+    ).compile()
+    result = graph.invoke(value.model_dump(mode="json"))
+    assert result["phase"] == "research_ready_for_review"
+    assert len(result["task_results"]) == 1 and len(seen) == 2
+
+
 @pytest.mark.parametrize("defect", ["cycle", "dependency", "duplicate", "capability", "authority", "branch", "status", "schema", "invalid_json", "multiple_mutations", "premature_completion"])
 def test_invalid_lead_action_reaches_next_turn_without_worker_execution(defect):
     seen, executions = [], []

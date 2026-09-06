@@ -1258,6 +1258,13 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
                 else:
                     raise DellMCPToolAdapterError("mcp_financial_status_invalid")
 
+    def read_research_method(self, method_id: str = "") -> dict[str, Any]:
+        """Read a packaged method through the already-open official MCP client."""
+        call = self._call("get_research_method", {"method_id": method_id})
+        if call.error or not isinstance(call.content, Mapping):
+            raise ValueError("research_method_MCP_read_failed: select a method ID from the catalog")
+        return {"method": dict(call.content), "mcp_receipt": dict(call.receipt)}
+
     def _call(self, name: str, arguments: Mapping[str, Any]) -> _Call:
         if self._portal is None or self._client is None or self._discovery_digest is None:
             raise DellMCPToolAdapterError("mcp_adapter_not_open")

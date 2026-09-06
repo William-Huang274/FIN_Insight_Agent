@@ -202,6 +202,13 @@ def build_research_data_mcp_server(
     # composition; never accept a model-supplied number as an observed fact.
     observed_numeric_facts: dict[str, dict[str, Any]] = {}
 
+    @server.tool(name="get_research_method",
+        description="Read answer-free research methods. Omit method_id for the compact catalog; select an ID for its full content. Methods are not evidence or extra permissions.",
+        structured_output=True)
+    def read_role_method(method_id: str = "") -> dict[str, Any]:
+        from .research_methods import get_research_method
+        return get_research_method(method_id)
+
     @server.tool(
         name=GET_RESEARCH_METHOD_TOOL,
         description=(

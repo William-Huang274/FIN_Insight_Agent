@@ -1,0 +1,13 @@
+{
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "profile_version": 1,
+  "subject_ticker": "DELL",
+  "title": "Dell：增长质量、盈利兑现与执行压力",
+  "question": "截至本案例约定的研究时点，评估 Dell AI 基础设施业务所推动的增长质量，以及这种增长向利润和现金流兑现的程度。结合客户需求、竞争格局、产品架构与供应条件，分析未来几个季度完成公司经营目标所面临的执行压力。给出明确但有条件的核心判断、关键依据、最强反证，以及哪些后续变化会使你调整判断。必要时自主补查已开放的内外源资料。区分已披露事实、计算结果、研究推断和情景假设。",
+  "research_methods": ["lead", "finance", "industry_product", "counter", "writer", "verifier"],
+  "fresh_research": true,
+  "reuse_prior_workpapers": false,
+  "source_policy": "Use task-authorized local documents, SQL, explicit uploads and public web as needed. Context companies are research leads, not a hard company allowlist. Use the server-bound as-of and distinguish later/undated material; do not expose host filesystem, credentials or private-network access.",
+  "data_baseline": "Retain the existing approved raw documents, indexes and SQL bindings. This question profile does not rewrite their frozen historical contracts or assert data freshness.",
+  "non_goals": ["valuation_or_target_price", "buy_sell_recommendation", "private_data_purchase", "arbitrary_host_file_access", "automatic_publication"]
+}

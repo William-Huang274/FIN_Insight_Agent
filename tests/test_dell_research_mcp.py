@@ -274,6 +274,7 @@ def test_mcp_exposes_strong_typed_non_cell_surface_and_scope() -> None:
             listed = await client.list_tools()
             by_name = {tool.name: tool for tool in listed.tools}
             assert set(by_name) == {
+                "get_research_method",
                 GET_RESEARCH_METHOD_TOOL,
                 SEARCH_LOCAL_KNOWLEDGE_TOOL,
                 SEARCH_REVIEWED_EVIDENCE_TOOL,
@@ -450,6 +451,6 @@ def test_mcp_registers_cell_tools_only_in_explicit_legacy_profile() -> None:
             names = {tool.name for tool in listed.tools}
             assert READ_REVIEWED_EVIDENCE_TOOL in names
             assert READ_NUMERIC_FACTS_TOOL in names
-            assert len(names) == 9
+            assert len(names) == 10
 
     asyncio.run(exercise())

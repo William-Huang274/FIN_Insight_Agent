@@ -108,6 +108,26 @@ def test_summary_failure_has_no_native_automatic_retry():
     asyncio.run(run())
 
 
+def test_exhausted_summary_allowance_preserves_continuation_without_another_summary():
+    async def run():
+        calls, rows = [], history()
+        middleware = policy(calls)
+        middleware.max_summaries = 1
+        state = {"messages": rows, **await middleware.abefore_model({"messages": rows}, None)}
+        for i in range(4):
+            state["messages"].extend([
+                AIMessage(content="", id=f"new-ai-{i}", tool_calls=[{
+                    "id": f"new-read-{i}", "name": "read_current_source", "args": {"source_id": f"CALC::{i}"}, "type": "tool_call"}]),
+                ToolMessage(content="Newly reread source; preserve qualifiers. " * 250,
+                    tool_call_id=f"new-read-{i}", id=f"new-tool-{i}", name="read_current_source")])
+        original, projected = deepcopy(state), middleware.projected_messages(state)
+        assert middleware.native._should_summarize(projected[1:], middleware.native.token_counter(projected[1:]))
+        assert await middleware.abefore_model(state, None) is None
+        assert len(calls) == 1 and state == original
+        assert middleware.projected_messages(state) == projected and projected[-8:] == rows[-8:]
+    asyncio.run(run())
+
+
 def test_old_citation_window_is_rereadable_but_not_invented_as_executable_calc():
     body = {"citation_id": "CALC::old-text-only", "text": "Legacy citation text, not full operands.",
         "offset": 0, "total_characters": 38, "next_offset": None}

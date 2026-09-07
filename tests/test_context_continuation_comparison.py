@@ -13,7 +13,7 @@ def test_fresh_postfix_rejects_closed_batch_before_read_or_transport(tmp_path, r
         asyncio.run(run(tmp_path, tmp_path, True, remaining, flash, postfix_summary=True))
 
 
-@pytest.mark.parametrize("overrides", [{"calls": 5}, {"spent": 5.0}, {"unknown": True}])
+@pytest.mark.parametrize("overrides", [{"calls": 5}, {"spent": 5.0}, {"unknown": True}, {"budget_cny": 0.01}])
 def test_postfix_call_cost_and_unknown_limits_stop_before_transport(overrides):
     profile, basis, _, _ = settings(Path(__file__).resolve().parents[1], postfix=True)
     model = SimpleNamespace(_get_request_payload=lambda *a, **k: {"messages": [], "tools": []})

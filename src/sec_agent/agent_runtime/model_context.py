@@ -107,7 +107,10 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             # just to summarize the same cached note while retaining that batch.
             return None
         if previous.get("count", 0) >= self.max_summaries:
-            raise ValueError("request_summary_call_limit_before_transport")
+            # This caps paid summarizer calls, not the research task. Keep the
+            # last projection and every subsequent message; the ordinary model
+            # input/cost/call ceilings still stop an oversized continuation.
+            return None
         update = await self.native.abefore_model({"messages": working}, runtime)
         if not update:
             return None

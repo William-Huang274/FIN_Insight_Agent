@@ -87,7 +87,7 @@ class BoundedAudit(CaseModelAudit):
         # Byte upper bound is conservative, not claimed tokenizer equivalence.
         miss_price, output_price = (3, 9) if self.profile.model == "deepseek-v4-flash" else (9, 27)
         reserve = (byte_bound * miss_price + self.basis.max_output_tokens * output_price) / 1e6
-        if self.shared["unknown"] or self.shared["calls"] >= self.shared.get("max_calls", 8) or self.shared["spent"] + reserve > 5:
+        if self.shared["unknown"] or self.shared["calls"] >= self.shared.get("max_calls", 8) or self.shared["spent"] + reserve > self.shared.get("budget_cny", 5):
             raise ValueError("context_batch_reserve_or_call_limit_before_transport")
         self.shared["calls"] += 1
         return await super().awrap_model_call(request, handler)
@@ -109,20 +109,22 @@ def settings(root, *, flash=False, summary=False, postfix=False):
     if postfix:
         basis = basis.model_copy(update={
             "input_scale": "Same archived 40-message synthesis history, fresh summary plus repaired original-observation reread only. Original input about 200k tokens; prior summarized main input 73990/46553. Retain original task, recent tool pairs and host evidence. No baseline, standalone editing or short-Flash arm.",
-            "comparable_run_evidence": "Prior A3: one Flash summary and two Pro calls, 205315 tokens, estimated CNY1.4707206; model requested four historical CALCs but the local resolver failed. Patched four-record reread and actual saved-summary/native-tool replay passed offline. Fresh ceiling CNY5 and five calls: one summary plus up to four continuation rounds for read/answer/actionable feedback; no transport retry or fallback.",
+            "comparable_run_evidence": "Prior repaired continuation: 4 calls/263171 tokens/CNY1.710333, numeric retention but citation semantics failed. Native citation/artifact repair passed 112 checks and exact rejected-answer replay. Step-one A1: 2 calls/152178 tokens/CNY0.4491102, then an erroneous summary-quota hard stop; fixed to retain current summary and every later message under ordinary input/call/cost ceilings. Fresh attempt allows one summary and up to four continuation rounds; execution budget may be lowered to retain the parent work-package ceiling. No transport retry/fallback or baseline rerun.",
             "required_outputs": (("Working summary preserving original task, exact IDs, source/period/authority distinctions, failures and next reads; never Evidence",) if summary else
                 ("Retained CALC ID, formula, result, unit, operands, sources and periods with valid citations", "Distinguish arithmetic verified from financial semantics not verified and non-S2 authority", "Identify the latest unresolved synthesis submission error without inventing its root cause; use existing read tools when needed")),
             "reasoning_profile": "nonthinking_summary" if summary else "thinking_enabled_reasoning_effort_low_with_12000_output_including_reasoning"})
     return profile, basis, config, case
 
 
-async def run(root, out, execute, remaining_from=None, flash_after=None, *, postfix_summary=False):
+async def run(root, out, execute, remaining_from=None, flash_after=None, *, postfix_summary=False, budget_cny=5.0):
     if postfix_summary and (remaining_from or flash_after):
         raise ValueError("fresh_postfix_cannot_reuse_closed_batch_authority")
+    if not 0 < budget_cny <= 5:
+        raise ValueError("context_budget_must_be_positive_and_no_more_than_five")
     prepared = json.loads((out / "input.private.json").read_text(encoding="utf-8"))
     snapshot, raw_history = prepared["snapshot"], prepared["history"]
     artifacts = DellCaseArtifacts(snapshot["state"]["case_papers"])
-    env, shared = {**host_data_environment(), "FIN_REPO_ROOT": str(root)}, {"spent": 0.0, "unknown": False, "calls": 0}
+    env, shared = {**host_data_environment(), "FIN_REPO_ROOT": str(root)}, {"spent": 0.0, "unknown": False, "calls": 0, "budget_cny": budget_cny}
     variants = ("summary_and_edit",) if postfix_summary else VARIANTS
     summary_policy = {**SUMMARY, "max_summaries": 1} if postfix_summary else SUMMARY
     limits = {"model_calls": 4, "tool_calls": 12} if postfix_summary else {"model_calls": 2, "tool_calls": 8}
@@ -145,7 +147,7 @@ async def run(root, out, execute, remaining_from=None, flash_after=None, *, post
     if execute:
         write_new(out / "execution.json", {"started_at": datetime.now(timezone.utc).isoformat(),
             "owner_approval": ("Owner explicitly authorized real model calls for repaired long-history continuation on 2026-09-07; agent bounded this fresh slice to CNY5/five calls" if postfix_summary else "Owner explicitly approved this new batch, <=CNY5, <=8 model calls including summary"),
-            "budget_cny": 5, "max_calls": shared.get("max_calls", 8), "no_retry_resume_or_promotion": True,
+            "budget_cny": budget_cny, "max_calls": shared.get("max_calls", 8), "no_retry_resume_or_promotion": True,
             "variants": variants, "agent_limits": limits,
             "remaining_from": str(remaining_from) if remaining_from else None,
             "flash_after": str(flash_after) if flash_after else None,
@@ -254,6 +256,7 @@ def main():
     parser.add_argument("--history", type=Path)
     parser.add_argument("--snapshot", type=Path)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--budget-cny", type=float, default=5.0, help="Lower the existing five-CNY ceiling for a fresh attempt within an authorized work package.")
     parser.add_argument("--remaining-from", type=Path)
     parser.add_argument("--flash-after", type=Path, help="Only the already-approved, unstarted Flash branch; add all prior calls/fees.")
     parser.add_argument("--postfix-summary-from", type=Path, help="Fresh repaired-summary-only qualification; copy this prior attempt's input, never its spent-call authority.")
@@ -267,13 +270,13 @@ def main():
             args.output.mkdir(parents=True, exist_ok=False)
             write_new(args.output / "input.private.json", json.loads((args.postfix_summary_from / "input.private.json").read_text(encoding="utf-8")))
             with tracing_context(enabled=False):
-                asyncio.run(run(root, args.output, False, postfix_summary=True))
+                asyncio.run(run(root, args.output, False, postfix_summary=True, budget_cny=args.budget_cny))
             return
         if args.remaining_from:
             args.output.mkdir(parents=True, exist_ok=True)
             write_new(args.output / "input.private.json", json.loads((args.remaining_from / "input.private.json").read_text(encoding="utf-8")))
             with tracing_context(enabled=False):
-                asyncio.run(run(root, args.output, False, args.remaining_from, args.flash_after))
+                asyncio.run(run(root, args.output, False, args.remaining_from, args.flash_after, budget_cny=args.budget_cny))
             return
         rows = [json.loads(l) for l in args.history.open(encoding="utf-8")]
         record = next(r for r in rows if r.get("call_id") == HISTORY_CALL and r.get("messages"))
@@ -285,7 +288,7 @@ def main():
             "short_context": {"calculation": calc, "last_error": error}, "expected_answer": expected,
             "snapshot": json.loads(args.snapshot.read_text(encoding="utf-8"))})
         with tracing_context(enabled=False):
-            asyncio.run(run(root, args.output, False))
+            asyncio.run(run(root, args.output, False, budget_cny=args.budget_cny))
         return
     prep = json.loads((args.output / "preparation.json").read_text(encoding="utf-8"))
     if (len(prep["variants"]) != (1 if args.postfix_summary_from or args.flash_after else 2 if args.remaining_from else 4)
@@ -296,7 +299,7 @@ def main():
     project = ls.read_project(project_name="fin-insight-dell-reference-vertical")
     with tracing_context(enabled=True, project_name=project.name, client=ls):
         try:
-            asyncio.run(run(root, args.output, True, args.remaining_from, args.flash_after, postfix_summary=bool(args.postfix_summary_from)))
+            asyncio.run(run(root, args.output, True, args.remaining_from, args.flash_after, postfix_summary=bool(args.postfix_summary_from), budget_cny=args.budget_cny))
         finally:
             from langchain_core.tracers.langchain import wait_for_all_tracers
             wait_for_all_tracers()

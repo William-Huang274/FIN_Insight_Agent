@@ -57,6 +57,8 @@ configs/retrieval/fin_ia_0_1_3_s1c_qwen_embedding_cache_successor_result_v1_3.js
 configs/retrieval/fin_ia_0_1_3_s1c_ranking_comparison_result_v1_1.json text eol=crlf
 configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_0.json text eol=crlf
 configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json text eol=crlf
+configs/retrieval/fin_ia_0_1_3_s1c_financial_role_eval_set_v1_1.json text eol=crlf
+configs/retrieval/fin_ia_0_1_3_s1c_object_role_review_set_v1_0.json text eol=crlf
 configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json text eol=crlf
 configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_1.json text eol=crlf
 configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_6.json text eol=crlf

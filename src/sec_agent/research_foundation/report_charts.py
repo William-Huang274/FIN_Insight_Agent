@@ -50,6 +50,38 @@ def bind_report_charts(charts, source_lookup):
     return bound
 
 
+def chart_submission_view(chart):
+    """Recover the existing input schema from host-bound output, not new values."""
+    return {**{k: chart[k] for k in ("title", "kind", "unit", "interpretation")},
+        "scale_divisor": chart.get("scale_divisor", 1),
+        "points": [{"label": p["label"], "series": p.get("series", ""),
+            "source": {"source_id": p["source_id"], **{k: p.get("provenance", {})[k]
+                for k in ("literal", "quote") if k in p.get("provenance", {})}}} for p in chart["points"]]}
+
+
+def chart_calculation_sources(*reports):
+    """Reuse immutable arithmetic already bound by the host in this session.
+
+    These are server artifacts, never caller-supplied model chart values. Keep
+    the original operands and non-authoritative status; no new source admission.
+    """
+    sources = {}
+    for report in reports:
+        for chart in report.get("charts", []):
+            for point in chart.get("points", []):
+                calculation = point.get("provenance", {}).get("calculation")
+                if calculation is None:
+                    continue
+                ref = point["source_id"]
+                if (calculation.get("calculation_id") != ref or calculation.get("result_state") != "non_authoritative_metric"
+                        or calculation.get("arithmetic_verified") is not True or calculation.get("numeric_fact_authority") is not False):
+                    raise ValueError("saved_chart_calculation_binding_invalid:" + ref)
+                if ref in sources and sources[ref] != calculation:
+                    raise ValueError("saved_chart_calculation_conflict:" + ref)
+                sources[ref] = deepcopy(calculation)
+    return sources
+
+
 def chart_source_records(report):
     """Project saved chart operands for inspection, not new source admission."""
     grouped = {}

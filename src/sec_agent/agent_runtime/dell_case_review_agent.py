@@ -242,10 +242,13 @@ class CaseModelAudit(AgentMiddleware):
             "role": "specialist", "actor": self.actor, "model_purpose": self.actor,
             "provider": "deepseek", "model": self.profile.model, "thinking": self.profile.thinking,
             "reasoning_effort": self.profile.reasoning_effort if self.profile.thinking == "enabled" else None,
-            "input_characters": size, "transport_attempt_limit": 1, "provider_call_attempted": True,
+            "input_characters": size,
+            "input_character_basis": "unprojected_messages_and_tool_schemas_not_provider_tokens",
+            "transport_attempt_limit": 1, "provider_call_attempted": True,
             "execution_source": "provider_model", "recorded_at": datetime.now(timezone.utc).isoformat()}
         self.public_sink({**common, "event": "started", "max_output_tokens": self.basis.max_output_tokens})
-        self.private_sink({"event": "request", "call_id": call_id, "actor": self.actor, "messages": serialized})
+        self.private_sink({"event": "request", "call_id": call_id, "actor": self.actor, "messages": serialized,
+            "messages_basis": "original_history_before_sdk_request_projection"})
         start = perf_counter()
         try:
             response = await handler(request)
@@ -475,9 +478,11 @@ async def open_case_review_composition(*, authority, model_config, api_key, publ
                 run_invocation_id=authority.run_invocation_id).compile(name="dell_reference_vertical").with_config({"recursion_limit": 240})
 
 
-def case_chat_model(profile, basis, model_config, api_key):
+def case_chat_model(profile, basis, model_config, api_key, *, context_editing=None):
     return ReasoningPreservingChatDeepSeek(model=profile.model, api_key=api_key,
         base_url=model_config.base_url, temperature=0, max_tokens=basis.max_output_tokens,
         timeout=basis.timeout_seconds, max_retries=0, streaming=False, use_responses_api=False,
         extra_body={"thinking": {"type": profile.thinking}},
+        **({"tool_context_trigger_tokens": context_editing["trigger_tokens"],
+            "tool_context_keep": context_editing["keep"]} if context_editing else {}),
         **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}))

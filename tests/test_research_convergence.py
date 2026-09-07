@@ -36,7 +36,7 @@ def independent_review(findings=()):
             "findings": list(findings), "unresolved_data_requests": []}
 
 
-async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None):
+async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False):
     artifacts = artifact_fixture()
     sequence, contexts = [], {}
     async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
@@ -55,6 +55,9 @@ async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=Fals
                 owner = research_owner if role == "research_verifier" else terminal_owner
                 findings = [finding(owner)] if owner and (repeat or correction_round == 0) else []
                 replies = [[call("submit_report_review", {"review": independent_review(findings)}, "verify")]]
+            elif role == "writer" and revising_report and local_writer_edits:
+                replies = [[call("submit_report_edits", {"edits": [
+                    {"old_str": f"[{ref}]", "new_str": f"Locally revised wording [{ref}]"}]}, "local-edit")]]
             else:
                 method = "lead" if role == "synthesis" else "writer"
                 submission = "submit_research_synthesis" if role == "synthesis" else "submit_case_report"
@@ -99,6 +102,18 @@ def test_writer_only_feedback_does_not_rerun_authors_lead_or_research_review():
     assert [s[0] for s in sequence] == ["synthesis", "research_verifier", "writer", "report_verifier", "writer", "report_verifier"]
     assert result["phase"] == "case_report_ready_for_human_review" and result["correction_round"] == 1
     assert len([r for r in result["artifact_history"] if r["actor"] == "writer"]) == 2
+
+
+def test_native_parent_writer_revision_uses_edits_not_full_report_or_research_rerun():
+    result, sequence, models = asyncio.run(exercise_case(terminal_owner="writer", local_writer_edits=True))
+    assert [s[0] for s in sequence] == ["synthesis", "research_verifier", "writer", "report_verifier", "writer", "report_verifier"]
+    reports = [r["output"] for r in result["artifact_history"] if r["actor"] == "writer"]
+    edit = reports[1]["applied_edits"][0]
+    assert reports[1]["narrative_markdown"] == reports[0]["narrative_markdown"].replace(edit["old_str"], edit["new_str"], 1)
+    assert reports[1]["citations"] == reports[0]["citations"]
+    writer = models[("writer", None, 1)]
+    assert len(writer.contexts) == 1 and "submit_report_edits" in writer.seen[0]
+    assert result["phase"] == "case_report_ready_for_human_review"
 
 
 def test_research_finding_returns_only_responsible_paper_then_lead_and_both_reviews():

@@ -1171,10 +1171,15 @@ class ReasoningPreservingChatDeepSeek(ChatDeepSeek):
     on tool-call continuations. Copy the provider-returned field verbatim.
     """
 
+    tool_context_trigger_tokens: int | None = Field(default=None, ge=1, exclude=True)
+    tool_context_keep: int = Field(default=6, ge=1, le=64, exclude=True)
+
     def _get_request_payload(self, input_, *, stop=None, **kwargs):
-        payload = super()._get_request_payload(input_, stop=stop, **kwargs)
+        from .model_context import project_tool_history
         originals = self._convert_input(input_).to_messages()
-        for original, encoded in zip(originals, payload["messages"], strict=True):
+        projected = project_tool_history(originals, trigger_tokens=self.tool_context_trigger_tokens, keep=self.tool_context_keep)
+        payload = super()._get_request_payload(projected, stop=stop, **kwargs)
+        for original, encoded in zip(projected, payload["messages"], strict=True):
             if isinstance(original, AIMessage) and "reasoning_content" in original.additional_kwargs:
                 encoded["reasoning_content"] = original.additional_kwargs["reasoning_content"]
         return payload
@@ -1208,6 +1213,7 @@ class DeepSeekStructuredAgentAdapter:
         api_key: SecretStr,
         audit_sink: ModelCallAuditSink | None = None,
         private_audit_sink: ModelCallAuditSink | None = None,
+        context_editing: Mapping[str, int] | None = None,
     ) -> "DeepSeekStructuredAgentAdapter":
         """Construct four independently budgeted ChatDeepSeek clients.
 
@@ -1216,6 +1222,8 @@ class DeepSeekStructuredAgentAdapter:
         """
 
         models: dict[ModelPurpose, _StructuredOutputCapable] = {}
+        if context_editing and not config.agentic_message_history:
+            raise ValueError("tool_context_editing_requires_native_message_history")
         for purpose in dict.fromkeys(("planner", "specialist", "counter", "lead", *config.model_profiles)):
             role = "specialist" if purpose in {"verifier", "repair"} else purpose
             basis = config.token_budget_basis[role]
@@ -1232,6 +1240,8 @@ class DeepSeekStructuredAgentAdapter:
                 streaming=False,
                 use_responses_api=False,
                 extra_body={"thinking": {"type": profile.thinking}},
+                **({"tool_context_trigger_tokens": context_editing["trigger_tokens"],
+                    "tool_context_keep": context_editing["keep"]} if context_editing else {}),
                 **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}),
             )
         return cls(config=config, chat_models=models, audit_sink=audit_sink,
@@ -1403,6 +1413,7 @@ class DeepSeekStructuredAgentAdapter:
                     "request_digest": request_digest,
                     "semantic_input_digest": semantic_input_digest,
                     "input_characters": input_characters,
+                    "input_character_basis": "unprojected_semantic_input_or_history_not_provider_tokens",
                     "input_utf8_bytes": input_utf8_bytes,
                     "max_input_characters": basis.max_input_characters,
                     "provider_call_attempted": False,
@@ -1434,6 +1445,7 @@ class DeepSeekStructuredAgentAdapter:
                 "structured_output_method": self._config.structured_output_method,
                 "thinking": model_profile.thinking,
                 "input_characters": input_characters,
+                "input_character_basis": "unprojected_semantic_input_or_history_not_provider_tokens",
                 "input_utf8_bytes": input_utf8_bytes,
                 "max_input_characters": basis.max_input_characters,
                 "max_output_tokens": basis.max_output_tokens,
@@ -1567,6 +1579,7 @@ class DeepSeekStructuredAgentAdapter:
             self._private_audit_sink({
                 "call_id": call_id, "actor": actor, "request_digest": request_digest,
                 "semantic_input": semantic_input, "messages": [_audit_value(m) for m in messages],
+                "messages_basis": "original_history_before_sdk_request_projection",
                 "raw_response": _audit_value(envelope.get("raw")),
                 "thinking": model_profile.thinking,
                 "provider_reasoning_is_untrusted_audit_data_not_evidence": True,

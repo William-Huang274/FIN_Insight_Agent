@@ -184,7 +184,8 @@ def test_rejected_answer_then_plain_completion_returns_to_native_model_for_corre
         result = await graph.ainvoke(Command(resume={"action": "ask", "message": "Question", "answer_mode": "quick"}), config)
         assert len(models["quick_writer"].contexts) == 3 and result["__interrupt__"]
         assert "Answer NOT saved" in str(models["quick_writer"].contexts[1])
-        assert "No source-bound answer was saved" in str(models["quick_writer"].contexts[2])
+        correction = models["quick_writer"].contexts[2][-1].content
+        assert "No source-bound output was saved" in correction and "Use submit_case_answer" in correction
         assert result["report"] == initial["report"] and result["conversation"][-1]["content"].startswith("Corrected")
     asyncio.run(run())
 

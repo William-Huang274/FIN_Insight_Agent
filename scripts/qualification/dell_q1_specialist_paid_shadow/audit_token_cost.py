@@ -171,17 +171,56 @@ def audit(root):
         grouped[key] = {name: summarize(rows) for name, rows in groups.items()}
     return {"price_source": PRICE_SOURCE, "price_as_of": PRICE_AS_OF,
             "cost_is_invoice": False, "missing_usage_is_not_zero": True,
-            "component_unit": "characters; excludes provider tool schemas and serialization overhead; not token attribution",
+            "component_unit": "archived history characters before SDK request projection; excludes provider tool schemas and serialization overhead; not effective wire size or token attribution",
             "attribution": "post-hoc descriptive; replay/context/failure categories are not independent causal shares",
             "totals": summarize(calls), "not_sent_outcomes": not_sent, "groups": grouped, "calls": calls}
+
+
+def audit_context_projection(root, *, trigger_tokens=50000, keep=6):
+    """Measure already-observed development histories, never replay the model."""
+    from langchain_core.messages import messages_from_dict
+    from pydantic import SecretStr
+    from sec_agent.agent_runtime.deepseek_structured_agents import ReasoningPreservingChatDeepSeek
+    baseline = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("offline-no-provider"), use_responses_api=False)
+    candidate = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("offline-no-provider"),
+        use_responses_api=False, tool_context_trigger_tokens=trigger_tokens, tool_context_keep=keep)
+    rows = []
+    for path in sorted(root.glob("*/model-context-reasoning.private.jsonl")):
+        with path.open(encoding="utf-8-sig") as stream:
+            for line in stream:
+                record = json.loads(line)
+                if record.get("event") == "response" or not record.get("messages"):
+                    continue
+                messages = messages_from_dict([{"type": m["type"], "data": m} for m in record["messages"]])
+                original = encoded([m.model_dump(mode="json") for m in messages])
+                before = baseline._get_request_payload(messages)["messages"]
+                after = candidate._get_request_payload(messages)["messages"]
+                if (original != encoded([m.model_dump(mode="json") for m in messages]) or len(before) != len(after)
+                        or [m for m in before if m["role"] != "tool"] != [m for m in after if m["role"] != "tool"]
+                        or [m["tool_call_id"] for m in before if m["role"] == "tool"] != [m["tool_call_id"] for m in after if m["role"] == "tool"]):
+                    raise ValueError("context_projection_mutated_history_reasoning_or_tool_pairing")
+                rows.append({"attempt": path.parent.name, "call_id": record["call_id"], "actor": record.get("actor", "unknown"),
+                    "wire_message_characters_before": len(encoded(before)), "wire_message_characters_after": len(encoded(after)),
+                    "changed_tool_results": sum(a != b for a, b in zip(before, after))})
+    totals = {"requests": len(rows), "requests_with_cleared_results": sum(r["changed_tool_results"] > 0 for r in rows)}
+    for key in ("wire_message_characters_before", "wire_message_characters_after", "changed_tool_results"):
+        totals[key] = sum(r[key] for r in rows)
+    return {"mode": "offline_historical_request_projection", "trigger_tokens_approximate": trigger_tokens, "keep": keep,
+        "component_unit": "serialized SDK message characters including preserved reasoning; tool schemas excluded and unchanged",
+        "quality_or_paid_cost_improvement_proven": False, "new_provider_calls": 0,
+        "history_reasoning_tool_pairing_unchanged": True, "totals": totals, "calls": rows}
 
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--attempt-root", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--context-projection", action="store_true",
+                        help="Offline request-only native tool-edit measurement; no provider or quality claims")
+    parser.add_argument("--trigger-tokens", type=int, default=50000)
+    parser.add_argument("--keep-tool-results", type=int, default=6)
     args = parser.parse_args()
-    result = audit(args.attempt_root)
+    result = audit_context_projection(args.attempt_root, trigger_tokens=args.trigger_tokens, keep=args.keep_tool_results) if args.context_projection else audit(args.attempt_root)
     with args.output.open("x", encoding="utf-8") as stream:
         json.dump(result, stream, ensure_ascii=False, indent=2)
     print(json.dumps(result["totals"], ensure_ascii=False, indent=2))

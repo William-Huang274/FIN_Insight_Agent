@@ -38,6 +38,11 @@ def load_research_runtime_profile(root):
     required = {"lead", "specialist", "counter", "verifier", "repair", "synthesis", "research_verifier", "writer", "report_verifier", "quick_writer"}
     if set(profile["nodes"]) != required:
         raise ValueError("research_session_node_configuration_incomplete")
+    editing = profile.get("context_editing")
+    if editing is not None and (set(editing) != {"trigger_tokens", "keep"}
+            or type(editing["trigger_tokens"]) is not int or editing["trigger_tokens"] < 1
+            or type(editing["keep"]) is not int or not 1 <= editing["keep"] <= 64):
+        raise ValueError("research_session_context_editing_configuration_invalid")
     for role, node in profile["nodes"].items():
         model = DeepSeekModelProfile.model_validate_json(json.dumps(node["profile"]))
         budget = TokenBudgetBasis.model_validate_json(json.dumps(node["budget"]))
@@ -96,7 +101,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     + json.dumps(uploads, ensure_ascii=False) + "\n通过 read_source_document 的 source_space=uploads 按需目录、检索、原文读取；图片/PDF页面可用 operation=inspect_image。"}
         configured = research_config()
         lead_adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
-            audit_sink=research_audit, private_audit_sink=private_sink)
+            audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"))
         specialist_limits = profile["nodes"]["specialist"]["limits"]
         branches = case["branch_topics"]
         first_branch = branches[0]["branch_id"]
@@ -112,7 +117,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 emit({**task_event, "event": "started", "status": "running"})
                 # A fresh provider history and read-only MCP lifecycle per child.
                 adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
-                    audit_sink=research_audit, private_audit_sink=private_sink)
+                    audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"))
                 try:
                     with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                             branch_id=task["coverage_obligation_ids"][0], turn_source="provider_model", model_turn=adapter.specialist_model_turn,
@@ -160,7 +165,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         model_profile, basis, limits = model_values(role)
         audit = CaseModelAudit(actor=("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True)
-        model = case_chat_model(model_profile, basis, base, api_key)
+        model = case_chat_model(model_profile, basis, base, api_key, context_editing=profile.get("context_editing"))
         if role in {"counter", "verifier"}:
             return build_case_reviewer(role=role, model=model, tools=tools, artifacts=artifacts,
                 max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit)

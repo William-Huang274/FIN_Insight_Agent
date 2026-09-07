@@ -12,7 +12,7 @@ import pytest
 
 from sec_agent.agent_runtime.dell_case_convergence_agent import (
     CaseReport, PaperRevision, build_case_output_agent, build_case_convergence_graph,
-    report_citations, validated_revision,
+    report_citations, report_model_view, validated_revision,
 )
 from sec_agent.agent_runtime.dell_case_review_agent import case_mcp_tools
 from test_dell_case_review_agent import artifacts, call
@@ -50,6 +50,71 @@ class NativeFixtureModel(BaseChatModel):
         assert all(m.additional_kwargs.get("reasoning_content") == self.marker for m in previous)
         return ChatResult(generations=[ChatGeneration(message=AIMessage(content="", tool_calls=self.replies[len(previous)],
             additional_kwargs={"reasoning_content": self.marker}))])
+
+
+def saved_calculation_chart(artifacts):
+    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources
+    from sec_agent.research_foundation.report_charts import ReportChart, bind_report_charts
+    source_id = next(s for s, row in artifacts.read_paper("P01", "sources").items() if row["result_state"] == "numeric_fact")
+    calculation = calculate_from_sources(SourceBoundCalculation(expression="v / 2", operands={"v": {"source_id": source_id}},
+        result_unit="USD", rationale="Synthetic wiring calculation, not financial analysis"), artifacts.source_item)
+    chart = ReportChart(title="Saved calculation fixture", unit="USD thousands", scale_divisor=1000,
+        interpretation="Two labels share one source to exercise persisted arithmetic without external calls.",
+        points=[{"label": label, "source": {"source_id": calculation["calculation_id"]}} for label in ("A", "B")])
+    bound = bind_report_charts([chart], lambda ref: calculation)
+    claim_id = artifacts.read_paper("P01")["claims"][0]["claim_id"]
+    report = {"title": "Saved synthesis fixture", "narrative_markdown": "Synthetic source-bound research fixture, not a financial conclusion. " * 4 + f"[P01:{claim_id}]",
+              "charts": bound, "citations": {}}
+    return report, chart, calculation
+
+
+def test_chart_model_projection_can_be_reused_without_value_or_scale_schema_guessing(artifacts):
+    from sec_agent.research_foundation.report_charts import ReportChart
+    report, chart, _ = saved_calculation_chart(artifacts)
+    original = deepcopy(report)
+    view = report_model_view(report)
+    assert ReportChart.model_validate(view["charts"][0]) == chart
+    assert view["chart_display_values"][0]["points"][0]["value"] == report["charts"][0]["points"][0]["value"]
+    assert report == original and "citations" not in view
+
+
+@pytest.mark.parametrize("role", ["writer", "synthesis"])
+def test_native_next_role_can_reuse_server_saved_calculation_chart(artifacts, role):
+    async def run():
+        report, chart, _ = saved_calculation_chart(artifacts)
+        original = deepcopy(report)
+        submission = {"title": report["title"], "narrative_markdown": report["narrative_markdown"], "charts": [chart.model_dump(mode="json")]}
+        name, arg = ("submit_case_report", "report") if role == "writer" else ("submit_research_synthesis", "synthesis")
+        model = NativeFixtureModel(marker="saved-source", replies=[[call(name, {arg: submission}, "reuse")]])
+        agent = build_case_output_agent(role=role, model=model, tools=[], artifacts=artifacts, limits={"model_calls": 2, "tool_calls": 3})
+        result = await agent.ainvoke({"synthesis": report, "messages": [{"role": "user", "content": "Reuse the supplied chart bindings, not arbitrary model numbers."}]})
+        assert result["output"]["charts"] == report["charts"] and report == original
+        assert len(model.contexts) == 1
+    asyncio.run(run())
+
+
+def test_unknown_source_error_identifies_exact_id_and_existing_read_tools(artifacts):
+    with pytest.raises(ValueError) as caught:
+        artifacts.source_item("CALC::not-observed")
+    assert "CALC::not-observed" in str(caught.value)
+    assert "read_current_source" in str(caught.value) and "sources" in str(caught.value)
+
+
+def test_saved_chart_calculation_reuse_rejects_wrong_identity_authority_and_conflicts(artifacts):
+    from sec_agent.research_foundation.report_charts import chart_calculation_sources
+    report, _, calculation = saved_calculation_chart(artifacts)
+    for change in ({"calculation_id": "CALC::invented"}, {"arithmetic_verified": False}, {"numeric_fact_authority": True}):
+        damaged = deepcopy(report)
+        damaged["charts"][0]["points"][0]["provenance"]["calculation"].update(change)
+        with pytest.raises(ValueError, match="saved_chart_calculation_binding_invalid"):
+            chart_calculation_sources(damaged)
+    changed = deepcopy(report)
+    changed["charts"][0]["points"][0]["provenance"]["calculation"]["value_decimal"] = "999999"
+    with pytest.raises(ValueError, match="saved_chart_calculation_conflict"):
+        chart_calculation_sources(report, changed)
+    sources = chart_calculation_sources(report)
+    sources[calculation["calculation_id"]]["value_decimal"] = "0"
+    assert report["charts"][0]["points"][0]["provenance"]["calculation"] == calculation
 
 
 def test_lead_can_submit_source_bound_charts_and_plain_prose_is_not_false_completion(artifacts):

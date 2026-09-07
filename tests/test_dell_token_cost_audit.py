@@ -3,7 +3,7 @@ import json
 import pytest
 
 from scripts.qualification.dell_q1_specialist_paid_shadow.audit_token_cost import (
-    audit, cost_parts, message_components, peak_multiplier, usage_details,
+    audit, audit_context_projection, cost_parts, message_components, peak_multiplier, usage_details,
 )
 
 
@@ -81,3 +81,29 @@ def test_component_sizes_are_characters_not_tokens():
     assert message_components([{"type": "ai", "content": "中文",
         "additional_kwargs": {"reasoning_content": "abc"}, "tool_calls": []}]) == {
             "ai_content": 2, "ai_reasoning": 3, "ai_tool_calls": 2}
+
+
+def test_historical_projection_is_offline_non_mutating_and_never_discloses_text(tmp_path, monkeypatch):
+    from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+    from sec_agent.agent_runtime.deepseek_structured_agents import ReasoningPreservingChatDeepSeek
+    monkeypatch.setattr(ReasoningPreservingChatDeepSeek, "_generate", lambda *a, **kw: pytest.fail("offline audit called provider"))
+    folder = tmp_path / "attempt"
+    folder.mkdir()
+    messages = [HumanMessage(content="private question sentinel")]
+    for i in range(3):
+        messages += [AIMessage(content="", additional_kwargs={"reasoning_content": "private reasoning sentinel"}, tool_calls=[
+            {"name": "read_source_document", "args": {"source_id": str(i)}, "id": str(i), "type": "tool_call"}]),
+            ToolMessage(content="private source sentinel " * 500, name="read_source_document", tool_call_id=str(i),
+                artifact={"text": "private artifact sentinel"})]
+    record = {"event": "request", "call_id": "fixture", "actor": "writer",
+              "messages": [m.model_dump(mode="json") for m in messages]}
+    path = folder / "model-context-reasoning.private.jsonl"
+    path.write_text(json.dumps(record) + "\n" + json.dumps({"event": "response", "call_id": "fixture"}), encoding="utf-8")
+    original = path.read_bytes()
+    report = audit_context_projection(tmp_path, trigger_tokens=1, keep=1)
+    assert report["totals"]["requests"] == report["totals"]["requests_with_cleared_results"] == 1
+    assert report["totals"]["wire_message_characters_after"] < report["totals"]["wire_message_characters_before"]
+    assert report["totals"]["changed_tool_results"] == 2
+    assert report["history_reasoning_tool_pairing_unchanged"] and report["new_provider_calls"] == 0
+    assert report["quality_or_paid_cost_improvement_proven"] is False
+    assert path.read_bytes() == original and "sentinel" not in json.dumps(report)

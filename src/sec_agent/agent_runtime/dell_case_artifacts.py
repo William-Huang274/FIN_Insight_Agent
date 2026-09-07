@@ -108,7 +108,8 @@ class DellCaseArtifacts:
 
     def source_item(self, source_id):
         if source_id not in self._sources:
-            raise ValueError("unknown_source_id_read_paper_sources_first")
+            raise ValueError("unknown_source_id_read_paper_sources_first: " + json.dumps(source_id, ensure_ascii=False)
+                + "; inspect the current paper sources catalog for exact IDs, or read_current_source for a saved report/chart binding. Do not invent an alias.")
         return json.loads(json.dumps(self._sources[source_id]))
 
     def with_revisions(self, revisions):

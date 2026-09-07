@@ -231,5 +231,7 @@ def test_real_DeepSeek_SDK_native_requests_usage_and_reasoning_preservation(arti
     asyncio.run(exercise())
     assert len(request_rows) == 2 and len(public) == 4 and len(private) == 4
     assert sum(r.get("total_tokens", 0) for r in public) == 300
+    assert all(r["input_character_basis"] == "unprojected_messages_and_tool_schemas_not_provider_tokens" for r in public)
+    assert all(r["messages_basis"] == "original_history_before_sdk_request_projection" for r in private if r["event"] == "request")
     assert [r["cache_hit_tokens"] for r in public if r["event"] == "outcome"] == [40, 40]
     assert "private fixture" not in json.dumps(public) and "private fixture" in json.dumps(private)

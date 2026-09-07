@@ -1,0 +1,110 @@
+{
+  "schema_version": "fin_ia_s1c_runtime_query_atom_v2_adjudication_v1_1",
+  "status": "codex_reviewed_business_semantic_label_successor_not_owner_acceptance",
+  "recorded_at": "2026-08-17",
+  "policy": {
+    "adjudication_authority": "codex_business_semantic_development_review",
+    "owner_acceptance": false,
+    "replace_only_materially_changed_object_relations": true,
+    "unchanged_relations_follow_parent_bound_surface_containment": true,
+    "require_target_identity_rotation": false,
+    "allow_stable_compiled_id_only_when_present_in_target_population": true,
+    "source_match_is_not_evidence_object_match": true,
+    "development_label_correction_is_not_retrieval_tuning": true
+  },
+  "replacements": [
+    {
+      "atom_id": "S1C_ATOM_02_DELL_REPORTED_RESULTS",
+      "business_reason_zh": "已报告结果与管理层未来指引必须分开。当前季度业绩和已经实现的 AI 订单及收入属于正样本；FY27 AI 服务器收入预期属于管理层指引，只保留为待审对象。",
+      "labels": {
+        "positive_object_keys": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::03"
+        ],
+        "hard_negative_object_keys": [
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0001::PART_01_OF_01::claim::01"
+        ],
+        "unjudged_object_keys": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::04"
+        ],
+        "expected_roles_by_object_key": {
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::02": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::03": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::04": [
+            "direct_demand_signal",
+            "management_guidance"
+          ],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0001::PART_01_OF_01::claim::01": [
+            "generic_or_boilerplate"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_04_DELL_UPSTREAM_MU",
+      "business_reason_zh": "原正样本只是指向投资者材料的导航句，不能证明 HBM4 出货。改为同一份当前官方披露中明确说明 HBM4 已为主要客户平台高量出货、并向多个终端客户发送认证样品的直接句。",
+      "labels": {
+        "positive_object_keys": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03::claim::03"
+        ],
+        "hard_negative_object_keys": [],
+        "unjudged_object_keys": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::04",
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::05"
+        ],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03::claim::03": [
+            "direct_supply_capacity_signal",
+            "observed_operating_result",
+            "relationship_context"
+          ],
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::04": [
+            "direct_demand_signal",
+            "management_guidance",
+            "relationship_context"
+          ],
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::05": [
+            "management_guidance",
+            "relationship_context"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_17_NVDA_UPSTREAM_MU",
+      "business_reason_zh": "NVDA 上游 HBM4 查询与 DELL 上游查询共享同一条 Micron 直接出货事实；原导航句不具备证据资格。",
+      "labels": {
+        "positive_object_keys": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03::claim::03"
+        ],
+        "hard_negative_object_keys": [],
+        "unjudged_object_keys": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::04",
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::05"
+        ],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03::claim::03": [
+            "direct_supply_capacity_signal",
+            "observed_operating_result",
+            "relationship_context"
+          ],
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::04": [
+            "direct_demand_signal",
+            "management_guidance",
+            "relationship_context"
+          ],
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::05": [
+            "management_guidance",
+            "relationship_context"
+          ]
+        }
+      }
+    }
+  ]
+}

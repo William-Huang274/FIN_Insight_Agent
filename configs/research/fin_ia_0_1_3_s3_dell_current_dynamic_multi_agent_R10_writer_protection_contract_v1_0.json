@@ -1,0 +1,98 @@
+{
+  "assessment_status": "R10_contract_pass_all_seven_material_findings_closed_independent_L1_L2_pass_writer_zero_call_gate_eligible",
+  "assessment_writer_requirements": [
+    "Preserve the exact same-quarter-versus-cohort boundary: USD 24.4B orders and USD 16.1B recognized revenue are parallel signals, not a proven same-order conversion.",
+    "Preserve the USD 1.253B value only as a three-line balance-sheet working-capital proxy change; prohibit exact cash absorption and AI attribution.",
+    "Rewrite slower guided growth as reducing the probability of further expense leverage, not making leverage narrowing arithmetically necessary.",
+    "Omit unnormalized NVDA and MU absolute inventory balances unless a typed cross-company mechanism and comparable scale are provided.",
+    "Preserve all issuer/source ownership, product-versus-company, pull-forward, typed-gap and not_inferable boundaries already accepted."
+  ],
+  "conditional_rules": [
+    {
+      "forbidden_model_text_fragments": [
+        "同季订单已转化",
+        "同季订单已经转化",
+        "已完成转化",
+        "same quarter orders converted",
+        "same-quarter orders converted",
+        "conversion occurred"
+      ],
+      "required_gap_refs": [],
+      "required_model_text_fragments_any": [
+        "并列",
+        "平行",
+        "同一订单",
+        "同批订单",
+        "cohort",
+        "parallel"
+      ],
+      "rule_id": "same_quarter_signals_not_cohort_conversion",
+      "source_claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E",
+      "trigger_authority_refs_all": [
+        "NUM::437B42CE857F1F0E",
+        "NUM::00D69747B4DDA649"
+      ]
+    },
+    {
+      "forbidden_model_text_fragments": [
+        "精确现金吸收",
+        "实测现金吸收",
+        "人工智能归因",
+        "归因于人工智能",
+        "exact cash absorption",
+        "measured cash absorption",
+        "attributable to artificial intelligence",
+        "attributed to artificial intelligence"
+      ],
+      "required_gap_refs": [
+        "GAP::EF4839B4BF55ADD0"
+      ],
+      "required_model_text_fragments_any": [
+        "代理",
+        "proxy"
+      ],
+      "rule_id": "cash_three_line_proxy_not_cash_or_AI_attribution",
+      "trigger_source_claim_refs_any": [
+        "WPCLAIM::05DBE34A9E501DA6588A"
+      ]
+    }
+  ],
+  "forbidden_authority_refs": [
+    "NUM::5EF59EBA7D876FB8",
+    "NUM::8E720DA4B13E2279"
+  ],
+  "forbidden_claim_refs": [
+    "WPCLAIM::0CB4E0D7B8247BBC94E6"
+  ],
+  "global_forbidden_model_text_fragments": [
+    "算术必然",
+    "必然收窄",
+    "必定收窄",
+    "arithmetic necessity",
+    "must narrow",
+    "necessarily narrow",
+    "inevitably narrow"
+  ],
+  "harness_authored_business_conclusion": false,
+  "independent_post_writer_L1_L2_and_eight_dimension_review_required": true,
+  "material_issue_ids": [
+    "RC-S3-074-expense-bridge-contribution-share-misstated",
+    "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion",
+    "RC-S3-076-balance-sheet-stock-delta-promoted-to-cash-absorption",
+    "RC-S3-077-cross-company-customer-structure-inferred-from-NVDA",
+    "RC-S3-078-NVDA-export-control-risk-promoted-to-DELL-exposure",
+    "RC-S3-079-company-gross-margin-used-as-necessary-test-of-product-pricing-power",
+    "RC-S3-080-demand-context-promoted-to-definite-pull-forward-and-digestion"
+  ],
+  "protection_digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_writer_protection_v1_0",
+  "spelled_out_numeric_or_ordinal_model_surface_forbidden": true,
+  "writer_rules": [
+    "Use the same-quarter order and revenue authorities only as parallel signals unless an explicit cohort relation exists.",
+    "Treat the three-line working-capital calculation only as a balance-sheet proxy and retain the product-attribution gap.",
+    "State slower-growth expense leverage conditionally or omit it; never call narrowing an arithmetic necessity.",
+    "The two unnormalized upstream inventory balance claims and their numeric authorities are unavailable to Writer.",
+    "Preserve issuer ownership, company-versus-product, possible pull-forward, typed-gap and not-inferable boundaries.",
+    "Do not spell out numeric or ordinal values in model text; all exact numeric and temporal surfaces must come from typed deterministic presentation authority."
+  ]
+}

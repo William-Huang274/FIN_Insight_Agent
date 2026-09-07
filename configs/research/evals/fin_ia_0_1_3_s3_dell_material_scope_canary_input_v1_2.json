@@ -1,0 +1,567 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "candidate_or_reference_inputs_read": false,
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "qrel_or_hidden_inputs_read": false,
+    "s1_qualification_claimed": false
+  },
+  "case_key": "DELL",
+  "evidence_requests": [
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::fb06661b946711fc3b334146",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "demand",
+      "forbidden_proxy": [
+        "unbound industry demand",
+        "wrong entity relationship",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "backlog",
+        "orders",
+        "customer_count",
+        "shipments"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "AI server order growth",
+        "backlog composition",
+        "customer concentration"
+      ],
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "requested_facet_ids": [
+        "orders_and_backlog"
+      ],
+      "requester_role": "demand_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return candidates, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::eb2e808dd2e48b4fe7474223",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "demand",
+      "forbidden_proxy": [
+        "unbound industry demand",
+        "wrong entity relationship",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "backlog",
+        "orders",
+        "shipments"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "order-to-shipment conversion",
+        "channel inventory risk",
+        "demand durability"
+      ],
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "requested_facet_ids": [
+        "conversion_and_durability"
+      ],
+      "requester_role": "demand_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return candidates, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::e17c40f93e25438950673210",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "operating_performance",
+      "forbidden_proxy": [
+        "unbound industry demand",
+        "wrong entity relationship",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "revenue",
+        "operating_income",
+        "net_income",
+        "diluted_eps",
+        "gross_margin",
+        "operating_margin"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "AI server revenue contribution",
+        "segment profitability",
+        "EPS impact"
+      ],
+      "request_id": "REQ::e17c40f93e25438950673210",
+      "requested_facet_ids": [
+        "reported_results"
+      ],
+      "requester_role": "financial_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return candidates, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::081c06389f9dcb8487886b57",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "operating_performance",
+      "forbidden_proxy": [
+        "unbound industry demand",
+        "wrong entity relationship",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "gross_profit",
+        "operating_income",
+        "operating_margin",
+        "gross_margin"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "incremental margin on AI servers",
+        "operating leverage"
+      ],
+      "request_id": "REQ::081c06389f9dcb8487886b57",
+      "requested_facet_ids": [
+        "margin_and_incremental_profit"
+      ],
+      "requester_role": "value_capture_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return candidates, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::273bf40c53d28f49de438b41",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "operating_performance",
+      "forbidden_proxy": [
+        "unbound industry demand",
+        "wrong entity relationship",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "operating_cash_flow",
+        "free_cash_flow",
+        "capital_expenditures"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "cash conversion of AI revenue",
+        "capex for AI capacity"
+      ],
+      "request_id": "REQ::273bf40c53d28f49de438b41",
+      "requested_facet_ids": [
+        "cash_generation"
+      ],
+      "requester_role": "cash_conversion_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return candidates, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::c21c10d6e8f13263cf69ffa5",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "operating_performance",
+      "forbidden_proxy": [
+        "unbound industry demand",
+        "wrong entity relationship",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "inventory",
+        "accounts_receivable",
+        "accounts_payable"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "AI component inventory buildup",
+        "receivable risk from AI customers"
+      ],
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "requested_facet_ids": [
+        "working_capital_risk"
+      ],
+      "requester_role": "cash_conversion_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return candidates, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::07e898259cfe6b2e12d7f82c",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "risk_policy",
+      "forbidden_proxy": [
+        "unbound industry demand",
+        "wrong entity relationship",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "inventory"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "management caution on AI demand",
+        "inventory write-down risk"
+      ],
+      "request_id": "REQ::07e898259cfe6b2e12d7f82c",
+      "requested_facet_ids": [
+        "issuer_counterevidence"
+      ],
+      "requester_role": "counterevidence_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return candidates, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "DELL"
+      ],
+      "unit": "reported_source_unit"
+    },
+    {
+      "acceptable_proxy": false,
+      "acceptable_sources": [
+        "10-K",
+        "10-Q",
+        "8-K"
+      ],
+      "case_key": "DELL",
+      "cell_id": "CELL::39d61ebcc0dad17a756c1cac",
+      "clarification_policy": "return_typed_gap",
+      "evidence_domain": "risk_policy",
+      "forbidden_proxy": [
+        "unbound industry demand",
+        "wrong entity relationship",
+        "future publication",
+        "unbound model knowledge"
+      ],
+      "granularity": "quarter_and_fiscal_year",
+      "metric_intents": [
+        "inventory"
+      ],
+      "period": {
+        "end_date": "2026-08-06",
+        "fiscal_years": [
+          2026,
+          2027
+        ],
+        "start_date": "2025-02-01"
+      },
+      "product_intents": [
+        "supplier constraints on GPUs",
+        "hyperscaler capex slowdown"
+      ],
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "requested_facet_ids": [
+        "upstream_or_demand_counterevidence"
+      ],
+      "requester_role": "counterevidence_specialist",
+      "research_as_of": "2026-08-06",
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "stop_condition": "return candidates, typed facts, or typed gaps",
+      "subject_ticker": "DELL",
+      "target_entities": [
+        "NVDA",
+        "MU",
+        "TSM",
+        "MSFT"
+      ],
+      "unit": "reported_source_unit"
+    }
+  ],
+  "known_boundary": "This input freezes only the request-visible natural material-scope node. Product candidate diagnostics are retained for audit but are not included in the two model-visible messages.",
+  "model_visible_messages": [
+    {
+      "content": "You are a financial-research material-scope planner. Return one exact JSON object matching the supplied contract. You may only select indices and enums shown in the request. Every product intent must be classified. Every required material role must be covered. Use the exact top-level key request_scopes (plural), exact field names and exact enum values; never paraphrase them. Do not write analysis, citations, candidate identities, URLs or markdown.",
+      "role": "system"
+    },
+    {
+      "content": "{\"authority\": {\"candidate_is_not_evidence\": true, \"candidate_qrel_reference_or_url_visible\": false, \"harness_owns_identity_dates_sources_roles_ids_and_capacity\": true, \"model_selects_request_visible_indices_only\": true, \"numeric_authority\": false}, \"output_contract\": {\"cross_field_rules\": [\"Use the exact key request_scopes (plural), never request_scope.\", \"Return every required request_id exactly once and no other request_id.\", \"Classify every product_intent_index exactly once; preserve any non-null fixed_disposition.\", \"Use the request's exact facet_id and only its required_material_roles.\", \"All index arrays must be sorted, unique and within that request's visible indices.\", \"Only hard_material_axis product indices may appear in requirement atoms.\", \"For each role with bind_requested_metrics=true, collectively cover every metric index; otherwise metric_intent_indices must be empty.\", \"For each role with bind_hard_product_intents=true, collectively cover every hard_material_axis product index; otherwise product_intent_indices must be empty.\", \"period_mode any requires coverage_mode collective_axes.\", \"period_mode all_periods_same_basis requires at least two fiscal years, coverage_mode single_binding, exactly one metric index and at most one product index.\", \"Do not paraphrase field names or enum values and do not add any field.\"], \"enum_semantics\": {\"all_periods_same_basis\": \"Require the same metric across all listed fiscal years; use coverage_mode single_binding with exactly one metric index and at most one product index per atom.\", \"any\": \"No same-basis multi-period bundle is required; use coverage_mode collective_axes.\", \"collective_axes\": \"Several candidates may collectively cover the selected axes.\", \"contextual_retrieval_only\": \"The intent may guide retrieval context but must not be required as an explicit Evidence binding.\", \"hard_material_axis\": \"The Evidence must explicitly bind this product intent; only indices with this disposition may appear in material atoms.\", \"single_binding\": \"One correlated metric/product binding defines the temporal group.\", \"temporal_directive\": \"Use only when deterministic_temporal_directive is true.\"}, \"json_schema\": {\"additionalProperties\": false, \"properties\": {\"request_scopes\": {\"items\": {\"additionalProperties\": false, \"properties\": {\"product_intent_dispositions\": {\"items\": {\"additionalProperties\": false, \"properties\": {\"disposition\": {\"enum\": [\"hard_material_axis\", \"contextual_retrieval_only\", \"temporal_directive\"]}, \"product_intent_index\": {\"minimum\": 0, \"type\": \"integer\"}}, \"required\": [\"product_intent_index\", \"disposition\"], \"type\": \"object\"}, \"type\": \"array\"}, \"request_id\": {\"enum\": [\"REQ::fb06661b946711fc3b334146\", \"REQ::eb2e808dd2e48b4fe7474223\", \"REQ::e17c40f93e25438950673210\", \"REQ::081c06389f9dcb8487886b57\", \"REQ::273bf40c53d28f49de438b41\", \"REQ::c21c10d6e8f13263cf69ffa5\", \"REQ::07e898259cfe6b2e12d7f82c\", \"REQ::39d61ebcc0dad17a756c1cac\"]}, \"requirement_atoms\": {\"items\": {\"additionalProperties\": false, \"properties\": {\"coverage_mode\": {\"enum\": [\"single_binding\", \"collective_axes\"]}, \"facet_id\": {\"enum\": [\"cash_generation\", \"conversion_and_durability\", \"issuer_counterevidence\", \"margin_and_incremental_profit\", \"orders_and_backlog\", \"reported_results\", \"upstream_or_demand_counterevidence\", \"working_capital_risk\"]}, \"metric_intent_indices\": {\"items\": {\"minimum\": 0, \"type\": \"integer\"}, \"type\": \"array\"}, \"period_mode\": {\"enum\": [\"any\", \"all_periods_same_basis\"]}, \"product_intent_indices\": {\"items\": {\"minimum\": 0, \"type\": \"integer\"}, \"type\": \"array\"}, \"role\": {\"enum\": [\"bridge\", \"context\", \"counter\", \"direct\"]}}, \"required\": [\"facet_id\", \"role\", \"metric_intent_indices\", \"product_intent_indices\", \"period_mode\", \"coverage_mode\"], \"type\": \"object\"}, \"maxItems\": 24, \"minItems\": 1, \"type\": \"array\"}}, \"required\": [\"request_id\", \"product_intent_dispositions\", \"requirement_atoms\"], \"type\": \"object\"}, \"maxItems\": 8, \"minItems\": 8, \"type\": \"array\"}, \"research_plan_digest\": {\"const\": \"a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80\"}, \"schema_version\": {\"const\": \"fin_ia_research_material_scope_atoms_v1_0\"}}, \"required\": [\"schema_version\", \"research_plan_digest\", \"request_scopes\"], \"type\": \"object\"}, \"maximum_scope_atoms_per_request\": 24, \"research_plan_digest\": \"a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80\", \"schema_version\": \"fin_ia_research_material_scope_atoms_v1_0\", \"top_level_fields_exact\": [\"schema_version\", \"research_plan_digest\", \"request_scopes\"]}, \"purpose\": \"Classify request-visible intent surfaces and select bounded material scope atoms. Do not invent aliases, facts, entities, sources, URLs, candidate IDs, object IDs, qrels or reference identities.\", \"requests\": [{\"facet_id\": \"orders_and_backlog\", \"fiscal_years\": [2026, 2027], \"metric_intents\": [{\"index\": 0, \"value\": \"backlog\"}, {\"index\": 1, \"value\": \"orders\"}, {\"index\": 2, \"value\": \"customer_count\"}, {\"index\": 3, \"value\": \"shipments\"}], \"product_intents\": [{\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 0, \"value\": \"AI server order growth\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 1, \"value\": \"backlog composition\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 2, \"value\": \"customer concentration\"}], \"request_id\": \"REQ::fb06661b946711fc3b334146\", \"required_material_roles\": [\"direct\", \"counter\"], \"role_axis_contract\": {\"counter\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": false}, \"direct\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": true}}}, {\"facet_id\": \"conversion_and_durability\", \"fiscal_years\": [2026, 2027], \"metric_intents\": [{\"index\": 0, \"value\": \"backlog\"}, {\"index\": 1, \"value\": \"orders\"}, {\"index\": 2, \"value\": \"shipments\"}], \"product_intents\": [{\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 0, \"value\": \"order-to-shipment conversion\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 1, \"value\": \"channel inventory risk\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 2, \"value\": \"demand durability\"}], \"request_id\": \"REQ::eb2e808dd2e48b4fe7474223\", \"required_material_roles\": [\"direct\", \"counter\"], \"role_axis_contract\": {\"counter\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": false}, \"direct\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": true}}}, {\"facet_id\": \"reported_results\", \"fiscal_years\": [2026, 2027], \"metric_intents\": [{\"index\": 0, \"value\": \"revenue\"}, {\"index\": 1, \"value\": \"operating_income\"}, {\"index\": 2, \"value\": \"net_income\"}, {\"index\": 3, \"value\": \"diluted_eps\"}, {\"index\": 4, \"value\": \"gross_margin\"}, {\"index\": 5, \"value\": \"operating_margin\"}], \"product_intents\": [{\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 0, \"value\": \"AI server revenue contribution\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 1, \"value\": \"segment profitability\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 2, \"value\": \"EPS impact\"}], \"request_id\": \"REQ::e17c40f93e25438950673210\", \"required_material_roles\": [\"direct\"], \"role_axis_contract\": {\"direct\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": true}}}, {\"facet_id\": \"margin_and_incremental_profit\", \"fiscal_years\": [2026, 2027], \"metric_intents\": [{\"index\": 0, \"value\": \"gross_profit\"}, {\"index\": 1, \"value\": \"operating_income\"}, {\"index\": 2, \"value\": \"operating_margin\"}, {\"index\": 3, \"value\": \"gross_margin\"}], \"product_intents\": [{\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 0, \"value\": \"incremental margin on AI servers\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 1, \"value\": \"operating leverage\"}], \"request_id\": \"REQ::081c06389f9dcb8487886b57\", \"required_material_roles\": [\"bridge\"], \"role_axis_contract\": {\"bridge\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": true}}}, {\"facet_id\": \"cash_generation\", \"fiscal_years\": [2026, 2027], \"metric_intents\": [{\"index\": 0, \"value\": \"operating_cash_flow\"}, {\"index\": 1, \"value\": \"free_cash_flow\"}, {\"index\": 2, \"value\": \"capital_expenditures\"}], \"product_intents\": [{\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 0, \"value\": \"cash conversion of AI revenue\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 1, \"value\": \"capex for AI capacity\"}], \"request_id\": \"REQ::273bf40c53d28f49de438b41\", \"required_material_roles\": [\"bridge\"], \"role_axis_contract\": {\"bridge\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": true}}}, {\"facet_id\": \"working_capital_risk\", \"fiscal_years\": [2026, 2027], \"metric_intents\": [{\"index\": 0, \"value\": \"inventory\"}, {\"index\": 1, \"value\": \"accounts_receivable\"}, {\"index\": 2, \"value\": \"accounts_payable\"}], \"product_intents\": [{\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 0, \"value\": \"AI component inventory buildup\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 1, \"value\": \"receivable risk from AI customers\"}], \"request_id\": \"REQ::c21c10d6e8f13263cf69ffa5\", \"required_material_roles\": [\"bridge\", \"counter\"], \"role_axis_contract\": {\"bridge\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": true}, \"counter\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": false}}}, {\"facet_id\": \"issuer_counterevidence\", \"fiscal_years\": [2026, 2027], \"metric_intents\": [{\"index\": 0, \"value\": \"inventory\"}], \"product_intents\": [{\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 0, \"value\": \"management caution on AI demand\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 1, \"value\": \"inventory write-down risk\"}], \"request_id\": \"REQ::07e898259cfe6b2e12d7f82c\", \"required_material_roles\": [\"counter\"], \"role_axis_contract\": {\"counter\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": false}}}, {\"facet_id\": \"upstream_or_demand_counterevidence\", \"fiscal_years\": [2026, 2027], \"metric_intents\": [{\"index\": 0, \"value\": \"inventory\"}], \"product_intents\": [{\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 0, \"value\": \"supplier constraints on GPUs\"}, {\"deterministic_temporal_directive\": false, \"fixed_disposition\": null, \"index\": 1, \"value\": \"hyperscaler capex slowdown\"}], \"request_id\": \"REQ::39d61ebcc0dad17a756c1cac\", \"required_material_roles\": [\"counter\", \"context\"], \"role_axis_contract\": {\"context\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": false}, \"counter\": {\"bind_hard_product_intents\": true, \"bind_requested_metrics\": false}}}], \"research_plan_digest\": \"a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80\", \"token_budget_basis\": {\"comparable_run_evidence\": \"The zero-call four-case replay found MU 4/4 and NVDA 6/6 scope-ready, but COST 3/5 and DELL 3/3 composite requests require explicit natural scope before product use; aggregate runtime-scope readiness is COST 2/5 and DELL 0/3.\", \"input_scale\": \"At most twelve compiled EvidenceRequests; each exposes one facet, up to six metric intents, up to four product intents, required material roles and requested fiscal years.\", \"materiality_and_quality_risk\": \"A long research topic can otherwise be mistaken for one literal product, silently discarded as context, or expanded into invented aliases that make material coverage appear complete.\", \"node_purpose\": \"Resolve only the material-scope ambiguity that deterministic request compilation cannot classify, without performing retrieval or research judgment.\", \"reasoning_profile\": \"Bounded classification and decomposition; no candidate review, source search, financial fact inference or report writing.\", \"required_outputs\": [\"one disposition for every request-visible product intent\", \"complete coverage of every required material role\", \"bounded request-visible metric and hard-product index combinations\", \"explicit temporal and collective coverage modes\"], \"schema_burden\": \"Exact JSON with request IDs, integer indices and closed enums only; the Harness derives identity, dates, sources, requirement IDs, target entities and capacity.\", \"stop_and_truncation\": \"Fail closed on missing request, product disposition, required role, metric coverage, hard-product coverage, invalid temporal pairing or output truncation; never infer omitted atoms locally.\"}}",
+      "role": "user"
+    }
+  ],
+  "model_visible_messages_digest": "78cca94ed3b3555e8960f5231b1436a0cb8c45e656d41918eae8dbaeb52946c5",
+  "prepared_from_commit": "e8d25979dd1d3a2bfb9b36aa910a36774369777f",
+  "product_diagnostic": {
+    "deferred_atom_count": 2,
+    "evidence_request_count": 8,
+    "hybrid_selected_candidate_count": 128,
+    "local_embedding_inference_batches": 1,
+    "material_scope_ready_request_count": 0,
+    "material_scope_required_request_count": 8,
+    "model_calls": 0,
+    "network_calls": 0,
+    "nonempty_lane_count": 8,
+    "numeric_fact_count": 58,
+    "proposed_atom_count": 10,
+    "request_diagnostics": [
+      {
+        "hard_reserved_material_candidate_count": 0,
+        "hybrid_selected_candidate_count": 16,
+        "material_review_order_candidate_count": 8,
+        "material_scope_ready": false,
+        "material_set_complete": false,
+        "request_id": "REQ::fb06661b946711fc3b334146"
+      },
+      {
+        "hard_reserved_material_candidate_count": 0,
+        "hybrid_selected_candidate_count": 16,
+        "material_review_order_candidate_count": 11,
+        "material_scope_ready": false,
+        "material_set_complete": false,
+        "request_id": "REQ::eb2e808dd2e48b4fe7474223"
+      },
+      {
+        "hard_reserved_material_candidate_count": 0,
+        "hybrid_selected_candidate_count": 16,
+        "material_review_order_candidate_count": 16,
+        "material_scope_ready": false,
+        "material_set_complete": false,
+        "request_id": "REQ::e17c40f93e25438950673210"
+      },
+      {
+        "hard_reserved_material_candidate_count": 0,
+        "hybrid_selected_candidate_count": 16,
+        "material_review_order_candidate_count": 16,
+        "material_scope_ready": false,
+        "material_set_complete": false,
+        "request_id": "REQ::081c06389f9dcb8487886b57"
+      },
+      {
+        "hard_reserved_material_candidate_count": 0,
+        "hybrid_selected_candidate_count": 16,
+        "material_review_order_candidate_count": 16,
+        "material_scope_ready": false,
+        "material_set_complete": false,
+        "request_id": "REQ::273bf40c53d28f49de438b41"
+      },
+      {
+        "hard_reserved_material_candidate_count": 0,
+        "hybrid_selected_candidate_count": 16,
+        "material_review_order_candidate_count": 16,
+        "material_scope_ready": false,
+        "material_set_complete": false,
+        "request_id": "REQ::c21c10d6e8f13263cf69ffa5"
+      },
+      {
+        "hard_reserved_material_candidate_count": 0,
+        "hybrid_selected_candidate_count": 16,
+        "material_review_order_candidate_count": 12,
+        "material_scope_ready": false,
+        "material_set_complete": false,
+        "request_id": "REQ::07e898259cfe6b2e12d7f82c"
+      },
+      {
+        "hard_reserved_material_candidate_count": 0,
+        "hybrid_selected_candidate_count": 16,
+        "material_review_order_candidate_count": 16,
+        "material_scope_ready": false,
+        "material_set_complete": false,
+        "request_id": "REQ::39d61ebcc0dad17a756c1cac"
+      }
+    ],
+    "selected_atom_count": 8,
+    "typed_fact_gap_count": 9,
+    "typed_fact_request_count": 28,
+    "typed_fact_resolved_count": 19
+  },
+  "product_projection_digest": "23976ea570962aca3f4681a396e77660a819d558f0dea2df881a21a9eeb29b61",
+  "recorded_at": "2026-08-18T07:31:36+00:00",
+  "required_request_ids": [
+    "REQ::fb06661b946711fc3b334146",
+    "REQ::eb2e808dd2e48b4fe7474223",
+    "REQ::e17c40f93e25438950673210",
+    "REQ::081c06389f9dcb8487886b57",
+    "REQ::273bf40c53d28f49de438b41",
+    "REQ::c21c10d6e8f13263cf69ffa5",
+    "REQ::07e898259cfe6b2e12d7f82c",
+    "REQ::39d61ebcc0dad17a756c1cac"
+  ],
+  "research_plan_digest": "a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80",
+  "result_digest": "4b1d17b091e51eb74ee8cb3f46fa3352efa45de63d445203a2ea99ac6dd99f54",
+  "schema_version": "fin_ia_s3_material_scope_canary_input_v1_0",
+  "source_bindings": {
+    "hybrid_candidate_runtime": {
+      "ref": "src/retrieval/hybrid_candidate_runtime.py",
+      "sha256": "8de8a1a976a63e64d356ec8b4632dab671c2c5c6a869377647bae1b8bf36e523"
+    },
+    "intent_ontology": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+      "sha256": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242"
+    },
+    "kernel": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
+      "sha256": "faf85fb3b3074b979acf0b12e5e20dba934d94380383c5241164e2f4c899f1d2"
+    },
+    "material_runtime_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_0.json",
+      "sha256": "3f22aca6d3a7b18a9f096da24b9741573556c473ac9e782b83ee40a8b106e160"
+    },
+    "material_scope_implementation": {
+      "ref": "src/sec_agent/research/material_scope.py",
+      "sha256": "3aed8d8fdc12fd159e4472d4ca2d5c673e09af5e37c1fd0654ce1cd7892c7c54"
+    },
+    "material_scope_policy": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_material_scope_policy_v1_0.json",
+      "sha256": "ba495c3ee9954b752b0aff0e8ccd4c74ca8e9bfb644a3d8ce4fdb6da4defcf1c"
+    },
+    "objective": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+      "sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548"
+    },
+    "planner_atoms": {
+      "ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+      "sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d"
+    },
+    "runtime_registry": {
+      "ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+      "sha256": "d8adfb2e364972eecc8ee1fa5290dbb4a04f8d5babfc16d0f9af12a633e74aa9"
+    },
+    "workbench_service": {
+      "ref": "apps/workbench/backend/application/research_retrieval_service.py",
+      "sha256": "e9955378002b0aa77b49332a23df16d09d63116b014de9f702c39b71561e7592"
+    }
+  },
+  "status": "zero_call_current_product_material_scope_input_ready"
+}

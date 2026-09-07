@@ -1,0 +1,104 @@
+{
+  "authority": {
+    "candidate_is_evidence": false,
+    "hidden_split_execution_authorized": false,
+    "numeric_fact_authority": false,
+    "valid_temporal_execution_authorized": false
+  },
+  "bound_inputs": {
+    "compiled_objects": {
+      "object_count": 10618,
+      "purpose": "fixed candidate corpus; Candidate is not Evidence",
+      "ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_compiled_objects/live-r1/objects.jsonl",
+      "sha256": "adf1da6a85d3d0bf34f2752521ffbf6e6813313238b1c9c7ca2fb8ddb2f4449c"
+    },
+    "compiled_objects_result": {
+      "purpose": "compiled qualification object snapshot",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_compiled_objects_result_v1_0.json",
+      "sha256": "7d38fdaf0535a94953d70a27dca8cdf6075db5b77be243780f21a3deb0948f6f"
+    },
+    "evaluator_references_result": {
+      "purpose": "physically separate evaluator references",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_references_result_v1_0.json",
+      "sha256": "5981e0d58c617b51d7fae424e7f5d48e27af4cb45963fd12b865b34ecae8c485"
+    },
+    "overlay": {
+      "purpose": "frozen learned retrieval and token budget policy",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_overlay_v1_0.json",
+      "sha256": "38cafea92c71a4c4edd91e95083514f3ba33f04cebd6c4c7d7c44b36f9cb3f67"
+    },
+    "program_manifest": {
+      "purpose": "active split-safe inputs and evaluator references",
+      "ref": "eval_sets/fin_0_1_3_s1/program_manifest_v1_0.json",
+      "sha256": "392d114d5710121af335b7ed44ff3d0c20dd8797bad3e8010bc0f791deb1fe23"
+    },
+    "runtime_inputs_result": {
+      "purpose": "label-free qualification runtime inputs",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_inputs_result_v1_0.json",
+      "sha256": "95bdc4c6f9b16f7d8ae66d99018a8d8939c00e1ebbb9ee66b020d619b6b3c72e"
+    }
+  },
+  "cuda_execution_receipt": {
+    "compute_capability": [
+      8,
+      9
+    ],
+    "cpu_fallback_allowed": false,
+    "cuda_runtime_version": "12.6",
+    "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "embedding_precision": "fp16",
+    "execution_device": "cuda:0",
+    "failure_policy": "fail_closed_before_model_load",
+    "fp16_smoke_device": "cuda:0",
+    "fp16_smoke_dtype": "float16",
+    "fp16_smoke_value": 11.0,
+    "purpose": "S1 VS5 learned embedding and reranking preflight",
+    "reranker_precision": "fp16",
+    "torch_version": "2.10.0+cu126",
+    "total_memory_bytes": 8585216000
+  },
+  "execution_contract": {
+    "cpu_allowed_work": [
+      "bm25",
+      "tokenization",
+      "sql",
+      "hard_filters",
+      "ledger",
+      "deterministic_orchestration"
+    ],
+    "cpu_vector_fallback_allowed": false,
+    "embedding_device": "cuda",
+    "embedding_precision": "fp16",
+    "failure_policy": "fail_closed_before_learned_execution",
+    "models_loaded_during_preflight": false,
+    "reranker_device": "cuda",
+    "reranker_precision": "fp16",
+    "vectors_computed_during_preflight": false
+  },
+  "models": {
+    "bge_embedding": {
+      "local_directory_name": "BAAI__bge-m3",
+      "model_digest": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5",
+      "model_name": "BAAI/bge-m3"
+    },
+    "bge_reranker": {
+      "local_directory_name": "modelscope_BAAI__bge-reranker-v2-m3",
+      "model_digest": "80b469d6bddb1e240987d002aae27658be43f83ec3dbbe3ee94ecb4b9301b994",
+      "model_name": "BAAI/bge-reranker-v2-m3"
+    },
+    "qwen_embedding": {
+      "local_directory_name": "Qwen__Qwen3-Embedding-0.6B",
+      "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+      "model_name": "Qwen/Qwen3-Embedding-0.6B"
+    },
+    "qwen_reranker": {
+      "local_directory_name": "Qwen__Qwen3-Reranker-0.6B",
+      "model_digest": "9fa9d067824c3aae0aeee7a773cbb42fac95a06c981ab72e075294bb10845ad2",
+      "model_name": "Qwen/Qwen3-Reranker-0.6B"
+    }
+  },
+  "program_id": "FIN-0.1.3-S1-VS5-QUALIFICATION",
+  "recorded_at": "2026-08-18",
+  "schema_version": "fin_ia_s1_vs5_cuda_preflight_result_v1_0",
+  "status": "cuda_fp16_eligible_not_execution_authority"
+}

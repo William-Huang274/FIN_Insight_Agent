@@ -1,0 +1,71 @@
+{
+  "authority_ref": "configs/retrieval/fin_ia_0_1_3_s1_current_pack_set_promotion_authority_v2_0.json",
+  "before_after": {
+    "DELL": {
+      "evidence_items": [
+        22,
+        29
+      ],
+      "readiness_state": "blocked_by_evidence_admission",
+      "residual_gaps": [
+        14,
+        14
+      ]
+    },
+    "MU": {
+      "evidence_items": [
+        11,
+        14
+      ],
+      "readiness_state": "blocked_by_candidate_coverage",
+      "residual_gaps": [
+        15,
+        15
+      ]
+    },
+    "NVDA": {
+      "evidence_items": [
+        19,
+        25
+      ],
+      "readiness_state": "blocked_by_candidate_coverage",
+      "residual_gaps": [
+        13,
+        13
+      ]
+    }
+  },
+  "composed_anchor_catalog_digest": "b5203d1742a358cb74423a2206d78cc29d212d3a43781d67198b7724f06aa6de",
+  "composed_result_digest": "ae3e5ab8d5fea3fa7404221926186309c93d570684f511371e837968f6dc7de0",
+  "composed_workspace_payload_digest": "7702cf007d1ae84f2765974a23e5aaf8c4d9c0cabf73f057ca3c43703c8ec82d",
+  "execution": {
+    "model_calls": 0,
+    "network_calls": 0,
+    "private_object_copy_performed": false,
+    "provider_calls": 0,
+    "raw_source_published": false,
+    "retries": 0
+  },
+  "recorded_at": "2026-08-19",
+  "remaining_boundaries": {
+    "S1_product_acceptance": false,
+    "S3_execution_authorized": false,
+    "complete_research_or_release_claimed": false,
+    "external_blind_qualification_complete": false,
+    "qualified_human_review_complete": false
+  },
+  "replacement_case_keys": [
+    "DELL",
+    "MU",
+    "NVDA"
+  ],
+  "result_digest": "c2b963955ed064755c106dec0762f8a3379e4c0aac96761650ab491f214a4043",
+  "result_id": "FIN-0.1.3-S1-CURRENT-PACK-SET-PROMOTION-RESULT-R1",
+  "retained_case_keys": [
+    "ORCL",
+    "ASML",
+    "ANET"
+  ],
+  "schema_version": "fin_ia_current_evidence_pack_set_promotion_result_v2_0",
+  "status": "three_case_current_pack_set_promoted"
+}

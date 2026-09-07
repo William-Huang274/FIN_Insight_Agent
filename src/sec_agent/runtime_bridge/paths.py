@@ -16,6 +16,7 @@ class RuntimePathRegistry:
     object_store_root: Path
     reviewed_evidence_root: Path
     workbench_private_root: Path
+    company_financial_fact_mart_path: Path
     milvus_mode: str
     milvus_note: str
     milvus_db_path: Path | None = None
@@ -34,6 +35,9 @@ class RuntimePathRegistry:
             "object_store_root": str(self.object_store_root),
             "reviewed_evidence_root": str(self.reviewed_evidence_root),
             "workbench_private_root": str(self.workbench_private_root),
+            "company_financial_fact_mart_path": str(
+                self.company_financial_fact_mart_path
+            ),
             "milvus_mode": self.milvus_mode,
             "milvus_note": self.milvus_note,
             "milvus_config_path": str(self.milvus_config_path) if self.milvus_config_path else "",
@@ -62,6 +66,13 @@ def resolve_runtime_paths(repo_root: str | Path | None = None) -> RuntimePathReg
         or primary / "workbench_private"
     ).resolve()
     workbench_private = Path(os.environ.get("FINSIGHT_WORKBENCH_PRIVATE_ROOT") or primary / "workbench_private").resolve()
+    company_financial_fact_mart_path = Path(
+        os.environ.get("FINSIGHT_COMPANY_FINANCIAL_FACT_MART_PATH")
+        or workbench_private
+        / "fin_0_1_3_s2_company_financial_fact_mart"
+        / "v1"
+        / "company_financial_facts.sqlite"
+    ).resolve()
     milvus_mode = (
         os.environ.get("FINSIGHT_MILVUS_MODE")
         or str(milvus_config.get("mode") or milvus_config.get("status") or "")
@@ -99,6 +110,7 @@ def resolve_runtime_paths(repo_root: str | Path | None = None) -> RuntimePathReg
         object_store_root=object_store,
         reviewed_evidence_root=reviewed_evidence,
         workbench_private_root=workbench_private,
+        company_financial_fact_mart_path=company_financial_fact_mart_path,
         milvus_mode=milvus_mode,
         milvus_note=milvus_note,
         milvus_db_path=milvus_db_path,

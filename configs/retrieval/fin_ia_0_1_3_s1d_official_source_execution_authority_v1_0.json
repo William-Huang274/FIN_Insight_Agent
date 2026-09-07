@@ -1,0 +1,50 @@
+{
+  "schema_version": "fin_ia_s1d_official_source_execution_authority_v1_0",
+  "authority_id": "FIN-0.1.3-S1D-DELL-TSM-OFFICIAL-SOURCE-FRESH-LIVE-AUTHORITY-R1",
+  "recorded_at": "2026-08-13",
+  "status": "fresh_bounded_official_source_execution_authorized",
+  "owner_basis": "Owner approved the sequence S1-C then bounded S1-D then return to the saved S3 plan, without per-step approval.",
+  "clean_implementation": {
+    "git_commit": "739852fdde0f74a051a1dabd1bff5eafacd98829",
+    "branch": "codex/fin013-s1-retrieval-vertical-slice",
+    "remote_pushed": true,
+    "working_tree_required_clean_before_execution": true
+  },
+  "bound_inputs": {
+    "business_disposition_ref": "configs/retrieval/fin_ia_0_1_3_s1c_business_residual_disposition_v1_0.json",
+    "business_disposition_sha256": "cd694889a6e1de24226d252c0b7c6cfa0cee9ce0095a076ec2f41a9cbdeff7c8",
+    "capture_plan_ref": "configs/retrieval/fin_ia_0_1_3_s1d_official_source_capture_plan_v1_1.json",
+    "capture_plan_sha256": "4c12b874940218a40a0459cbedc4636e3cccd34090e9912f0bc3158eafd39eee"
+  },
+  "zero_network_proof": {
+    "command": "python -m pytest tests/test_official_source_capture.py tests/test_s1c_business_residual_disposition.py -q",
+    "passed_tests": 9,
+    "result": "passed",
+    "proved": [
+      "legacy_contract_cannot_silently_enable_new_transport",
+      "https_and_host_allowlist_fail_closed",
+      "request_capture_precedes_response_or_failure_capture",
+      "sensitive_headers_are_not_persisted",
+      "attempt_id_is_immutable",
+      "only_dell_and_tsm_official_pdf_routes_are_in_scope"
+    ]
+  },
+  "execution_budget": {
+    "attempt_id": "live-r1",
+    "source_routes": 2,
+    "network_attempts_maximum": 2,
+    "retries": 0,
+    "model_calls": 0,
+    "broad_web_search_calls": 0,
+    "credentials": "forbidden",
+    "capture_before_parse": true
+  },
+  "success_condition": "Both allowlisted official PDF bodies are immutably captured with matching content type and body digest.",
+  "failure_disposition": "Preserve typed per-route transport or content failure and stop before parsing; do not automatically retry or add another provider.",
+  "downstream_authority": {
+    "parse_captured_pdf": false,
+    "mutate_active_object_store": false,
+    "promote_candidate_to_evidence": false,
+    "rerun_s3_model": false
+  }
+}

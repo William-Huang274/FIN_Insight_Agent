@@ -1,0 +1,2916 @@
+{
+  "attempt_id": "dell-rsq-03b-internal-chain-r2",
+  "authority": {
+    "03B_internal_chain_execution_consumed": true,
+    "03C_external_capture_authorized": false,
+    "03D_4B_embedding_authorized": false,
+    "03D_reranker_authorized": false,
+    "G3_pass": false,
+    "S1_pass": false,
+    "candidate_decision_authorized": false,
+    "evidence_promotion_authorized": false,
+    "product_acceptance": false,
+    "proved_information_boundary_authorized": false,
+    "publication": false,
+    "release_ready": false,
+    "report_quality_pass": false
+  },
+  "case_key": "DELL",
+  "execution_projection_digest": "fd898b7766fc57edd0c57dfe816da17414432e5bcca9368baca3591fb42bb79a",
+  "execution_summary": {
+    "compiled_lane_count": 5,
+    "generation_model_calls": 0,
+    "hybrid_selected_candidate_count": 80,
+    "hybrid_union_candidate_count": 339,
+    "local_embedding_inference_batches": 1,
+    "material_scope_ready_request_count": 5,
+    "material_scope_required_request_count": 0,
+    "material_set_complete_request_count": 5,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_fact_count": 11,
+    "request_count": 5,
+    "snapshot_nonempty_lane_count": 5,
+    "typed_fact_conflict_count": 0,
+    "typed_fact_gap_count": 26,
+    "typed_fact_resolved_count": 4
+  },
+  "input_bindings": {
+    "compiled_objects": {
+      "ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v8/objects.jsonl",
+      "sha256": "6c6fc8aae3fb3e04ab6f78e82749cb5a2d83716f551f2e5736ece75005b45386"
+    },
+    "dell_product_readiness": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_7.json",
+      "result_digest": "bd6d652cc4b9551fc3d046724702d57b62beb56bfd76f6131c4513a4c805e40f",
+      "sha256": "67a65f8efbde97bef20e2cc2ff8439e30eb3fac4ddeb2680c369d67f1361b19b"
+    },
+    "execution_program": {
+      "program_id": "FIN-0.1.3-S1-DELL-PROPOSITION-COVERAGE-R4-PDF-RECALL",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_3.json",
+      "sha256": "48a3c43e57685f39bb3b0658b5f74978981efaaa83df7ba8e3b0e91c4c4da67d"
+    },
+    "predecessor_failure_receipt": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_r1_failure_receipt_v1_0.json",
+      "result_digest": "71dabc969173c575c6a32c25ba9fe93c459cd8ada685654ece38d5b3e94ffdf9",
+      "sha256": "63bbc2b2b8a0cbc83926845e32be7afe8e7aa04ca24e877f1f5830404874a432"
+    },
+    "predecessor_policy": {
+      "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R1",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_0.json",
+      "sha256": "9e17ddd70dab63d8f4775cb0a6b86cd5dc1f69067fa59f4b65a69fe01ff09d4d"
+    },
+    "residual_program": {
+      "program_digest": "ed6f11a8fe091d84362d2df041d5ea0bffa50a5c781274f60eaf9e73d6919d50",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_1.json",
+      "sha256": "581c290df98b75fb06fb86842532cdc2c719d235b2aa6524f89f99a534780f64"
+    },
+    "runtime_binding_receipt": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_14.json",
+      "result_digest": "3c3ff77a69107669736c8a265fda5cecacba496c93a2965149e520aeb1d0f241",
+      "sha256": "6cd117423f1ef2037720ab5399f95d074056c1ebde636050d02436fa20aee435"
+    },
+    "runtime_registry": {
+      "ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+      "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R38",
+      "resource_canonical_digest": "671d0bfef84e6aa5cf885317e6d38bdcbd3ad1b44848c289994c86d9d6ed5f6b",
+      "sha256": "48daa2b736bd63047e67ab13a273844d391a8709ca142f781e2c7ee4f736a261"
+    },
+    "source_records": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v5/records.jsonl",
+      "sha256": "d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45"
+    },
+    "successor_policy": {
+      "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R2",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_1.json",
+      "result_digest": "a7d03aec8ae95d102b81892427d96751bcd4b3da8ab751c312f342adf22ef6c5",
+      "sha256": "2f9a89361a904f74090dd8884989311d3782484588b1e67bac053eb0c416ad93"
+    }
+  },
+  "known_boundary": "This receipt compares six unoverlapped report-material targets with the exact R38 local source/object/index/SQL and BM25 plus Qwen-0.6B plus typed-graph candidate chain. Lexical semantic gates are a deterministic candidate-ceiling diagnostic, not CandidateDecision, Evidence, NumericFact, a proved public-information boundary, report quality, or execution authority for 03C/03D. The three admission-held targets were not executed.",
+  "prepared_from_commit": "53ea34a1cef5a28c640693fadd15876e877aa4f5",
+  "private_result_digest": "eaa604adeb882cee4f5f0b5022704d39710d96c073b351231561b928d57d65df",
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r2/full_result.json",
+  "private_result_sha256": "40bbccbac7958cfd762bf0d86fc7715c3aa97c282a9e5c1d85bac01f16e56e53",
+  "recorded_at": "2026-08-25T12:47:13+00:00",
+  "result_digest": "6c8159ede51ec8a53e61b42f86143e888ad27a9f9b876490a1ee176448132496",
+  "runtime_registry": {
+    "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R38",
+    "resource_canonical_digest": "671d0bfef84e6aa5cf885317e6d38bdcbd3ad1b44848c289994c86d9d6ed5f6b"
+  },
+  "schema_version": "fin_ia_dell_report_internal_chain_ceiling_public_result_v1_0",
+  "status": "dell_03B_internal_chain_candidate_ceiling_executed",
+  "summary": {
+    "4B_embedding_calls": 0,
+    "candidate_promotions": 0,
+    "candidate_union_occurrence_count": 795,
+    "complete_target_corpus_match_count": 0,
+    "complete_target_final_match_count": 0,
+    "complete_target_union_match_count": 0,
+    "embedding_challenger_eligible_target_count": 0,
+    "evidence_promotions": 0,
+    "external_capture_calls": 0,
+    "external_route_required_target_count": 6,
+    "gap_closures": 0,
+    "generation_model_calls": 0,
+    "held_target_execution_count": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "request_count": 5,
+    "reranker_calls": 0,
+    "reranker_challenger_eligible_target_count": 0,
+    "target_count": 6
+  },
+  "target_results": [
+    {
+      "candidate_ceiling": {
+        "best_complete_target_final_rank": null,
+        "candidate_decision_state": "candidate_not_evidence_unadjudicated",
+        "candidate_union_count": 96,
+        "complete_target_in_candidate_union_count": 0,
+        "complete_target_in_final_review": false,
+        "complete_target_in_final_review_count": 0,
+        "complete_target_in_pool": false,
+        "complete_target_in_source_object_corpus_count": 0,
+        "complete_target_useful_at_k": false,
+        "corpus_classification_counts": {
+          "not_target_semantic_equivalent": 34114,
+          "partial_context_only": 84
+        },
+        "corpus_scan_digest": "878573df625e0736bed07954a6ecda99d3effa0eb8649dad61358ac443809f6f",
+        "earliest_observed_limitation": "local_source_object_corpus_missing_complete_target",
+        "final_review_count": 16,
+        "partial_context_in_candidate_union_count": 6,
+        "partial_context_in_final_review_count": 3,
+        "partial_context_in_source_object_corpus_count": 84,
+        "public_information_gap_eligible": false,
+        "reranker_useful_at_k": 10
+      },
+      "downstream_disposition": {
+        "03C_external_route_required_for_complete_target": true,
+        "03D_4B_embedding_recall_challenger_eligible": false,
+        "03D_same_pool_reranker_challenger_eligible": false,
+        "authority_granted_by_this_result": false,
+        "mandatory_external_route_contract_ids_if_authorized": [
+          "DELL-RSQ-03A-TARGET-ASP::official_issuer_regulator",
+          "DELL-RSQ-03A-TARGET-ASP::product_procurement_deployment"
+        ]
+      },
+      "local_chain": {
+        "all_matched_sources_exist": true,
+        "candidate_route_occurrences": {
+          "bm25_lexical": 46,
+          "qwen3_embedding_0_6b_dense": 53
+        },
+        "compiled_object_population": 34198,
+        "embedding_index_object_population": 34198,
+        "query_execution_projection_digests": [
+          "309950c5e367e3e427c2d5ad68ea0631f12e2fd6a3d6cf89e066f248a298ad52"
+        ],
+        "route_execution_state_counts": {
+          "executed": 2,
+          "not_executed_route_unavailable": 2
+        },
+        "source_record_population": 1888,
+        "typed_fact_sibling": {
+          "conflict_count": 0,
+          "gap_count": 5,
+          "resolved_count": 1
+        }
+      },
+      "pack_gap_id": "dell-gap-pricing-asp",
+      "public_top_semantic_matches": [
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": 1,
+            "minimum_raw_union_rank": 4,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "selected_for_material_review",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": 1,
+                  "financial_rank": 1,
+                  "raw_union_rank": 4,
+                  "review_priority_rank": 1
+                },
+                "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 1,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::70ee55ac9f5f798f92dbcc1d",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [
+            "traditional servers and networking"
+          ],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "average selling price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Income and Other Taxes",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": 3,
+            "minimum_raw_union_rank": 10,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "selected_for_material_review",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": 3,
+                  "financial_rank": 9,
+                  "raw_union_rank": 10,
+                  "review_priority_rank": 3
+                },
+                "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 2,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::e671b2ddf3afe4a842edc0af",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "average selling price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Income and Other Taxes",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": 21,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "selected_for_material_review",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": null,
+                  "financial_rank": 2,
+                  "raw_union_rank": 21,
+                  "review_priority_rank": 4
+                },
+                "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 7,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::eba6074deba346c5b9424f43",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "average selling price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Income and Other Taxes",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": 23,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "excluded_by_material_requirement_alignment",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": null,
+                  "financial_rank": 23,
+                  "raw_union_rank": 23,
+                  "review_priority_rank": 24
+                },
+                "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 9,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::002d990cfc83de48c857696a",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "average selling price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Income and Other Taxes",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": 32,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "selected_for_material_review",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": null,
+                  "financial_rank": 3,
+                  "raw_union_rank": 32,
+                  "review_priority_rank": 6
+                },
+                "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 13,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::d2e39b6c6cc9127f8ef458f7",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "average selling price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Income and Other Taxes",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": 9,
+            "minimum_raw_union_rank": 53,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "selected_for_material_review",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": 9,
+                  "financial_rank": 4,
+                  "raw_union_rank": 53,
+                  "review_priority_rank": 11
+                },
+                "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 24,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::f4058d435dc860cbee2bcde8",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "DELL_2026_10Q_ITEM2_BLOCK_0013_PART_02_OF_02"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "average selling price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-10-31",
+          "publication_date": "2025-12-09",
+          "section": "Item 2. Management's Discussion and Analysis",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0013_PART_02_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Income and Other Taxes",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::05786db23014bf75c37c5528",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MSFT_2026_10Q_ITEM2_BLOCK_0009_CHUNK_0001"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "quoted price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-03-31",
+          "publication_date": "2026-04-29",
+          "section": "Item 2. Management's Discussion and Analysis",
+          "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0009_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "LIQUIDITY AND CAPITAL RESOURCES",
+          "ticker": "MSFT"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::0933d6260613da890026686a",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-06-30",
+          "publication_date": "2025-07-30",
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "source_record_id": "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "NOTE 7 — BUSINESS COMBINATIONS",
+          "ticker": "MSFT"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::0b5de99e2c6b90ada75e7efc",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MSFT_2025_10K_ITEM8_BLOCK_0021_CHUNK_0001"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "price per"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-06-30",
+          "publication_date": "2025-07-30",
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "source_record_id": "MSFT_2025_10K_ITEM8_BLOCK_0021_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "NOTE 17 — EMPLOYEE STOCK AND SAVINGS PLANS",
+          "ticker": "MSFT"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::143a5778c1c67bf895699e69",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0023::PART_01_OF_01"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0023::PART_01_OF_01",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Our material capital commitments include the following",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::14608369c6e88dcd9879f699",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-06-30",
+          "publication_date": "2025-07-30",
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "source_record_id": "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "NOTE 7 — BUSINESS COMBINATIONS",
+          "ticker": "MSFT"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::148f70816df6d74a7aa3e4ba",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-06-30",
+          "publication_date": "2025-07-30",
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "source_record_id": "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "NOTE 7 — BUSINESS COMBINATIONS",
+          "ticker": "MSFT"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::159ef5aa45e67c38a6b88c9a",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "DELL_2026_10Q_ITEM1_BLOCK_0010_CHUNK_0001"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "quoted price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-10-31",
+          "publication_date": "2025-12-09",
+          "section": "Item 1. Financial Statements",
+          "source_record_id": "DELL_2026_10Q_ITEM1_BLOCK_0010_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "FAIR VALUE MEASUREMENTS",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::26107a82bf12b06ab489eade",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-06-30",
+          "publication_date": "2025-07-30",
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "source_record_id": "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "NOTE 7 — BUSINESS COMBINATIONS",
+          "ticker": "MSFT"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::2b5bc3e4e8575f59b2dec18a",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-06-30",
+          "publication_date": "2025-07-30",
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "source_record_id": "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "NOTE 7 — BUSINESS COMBINATIONS",
+          "ticker": "MSFT"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::2c0503a48c099949c97dae3a",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-06-30",
+          "publication_date": "2025-07-30",
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "source_record_id": "MSFT_2025_10K_ITEM8_BLOCK_0011_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "NOTE 7 — BUSINESS COMBINATIONS",
+          "ticker": "MSFT"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::2fe403b81acc0e0b5ed242e1",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "DELL_2025_10K_ITEM8_BLOCK_0004_PART_04_OF_05"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-01-31",
+          "publication_date": "2025-03-25",
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "source_record_id": "DELL_2025_10K_ITEM8_BLOCK_0004_PART_04_OF_05",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Cash flows from derivative instruments are presented in the same category on the Consolidated Statements of Cash Flows as the cash flows from the underlying hedged items.",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::3813d1bcb8ad227ce4b19ec1",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0023::PART_01_OF_01"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0023::PART_01_OF_01",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Our material capital commitments include the following",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::384766432f141c2854f0bd63",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "DELL_2025_10K_ITEM7_BLOCK_0019_PART_02_OF_03"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "average selling price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-01-31",
+          "publication_date": "2025-03-25",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "DELL_2025_10K_ITEM7_BLOCK_0019_PART_02_OF_03",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Income and Other Taxes",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::3bc7dd3461f17eec3a04e6a9",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_8::BLOCK_0017::PART_02_OF_02"
+          ],
+          "match_detail": {
+            "price_surface": {
+              "regexes": [],
+              "terms": [
+                "purchase price"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "price_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 8. Financial Statements and Supplementary Data",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_8::BLOCK_0017::PART_02_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "NOTE 14 —",
+          "ticker": "DELL"
+        }
+      ],
+      "request_ids": [
+        "REQ::DELL::PRICE_CONFIGURATION::V1"
+      ],
+      "target_id": "DELL-RSQ-03A-TARGET-ASP",
+      "target_proposition": "A period-defined Dell AI-server selling price or a bounded configuration-price estimate with a valid denominator."
+    },
+    {
+      "candidate_ceiling": {
+        "best_complete_target_final_rank": null,
+        "candidate_decision_state": "candidate_not_evidence_unadjudicated",
+        "candidate_union_count": 170,
+        "complete_target_in_candidate_union_count": 0,
+        "complete_target_in_final_review": false,
+        "complete_target_in_final_review_count": 0,
+        "complete_target_in_pool": false,
+        "complete_target_in_source_object_corpus_count": 0,
+        "complete_target_useful_at_k": false,
+        "corpus_classification_counts": {
+          "not_target_semantic_equivalent": 34196,
+          "partial_context_only": 2
+        },
+        "corpus_scan_digest": "5e88eb8584b6a04d7aca24160ff824dcaddc24ab0200bd84deb3e95d3071d5e8",
+        "earliest_observed_limitation": "local_source_object_corpus_missing_complete_target",
+        "final_review_count": 29,
+        "partial_context_in_candidate_union_count": 0,
+        "partial_context_in_final_review_count": 0,
+        "partial_context_in_source_object_corpus_count": 2,
+        "public_information_gap_eligible": false,
+        "reranker_useful_at_k": 10
+      },
+      "downstream_disposition": {
+        "03C_external_route_required_for_complete_target": true,
+        "03D_4B_embedding_recall_challenger_eligible": false,
+        "03D_same_pool_reranker_challenger_eligible": false,
+        "authority_granted_by_this_result": false,
+        "mandatory_external_route_contract_ids_if_authorized": [
+          "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE::named_supplier",
+          "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE::official_issuer_regulator"
+        ]
+      },
+      "local_chain": {
+        "all_matched_sources_exist": true,
+        "candidate_route_occurrences": {
+          "bm25_lexical": 106,
+          "qwen3_embedding_0_6b_dense": 108,
+          "typed_relationship_graph": 6
+        },
+        "compiled_object_population": 34198,
+        "embedding_index_object_population": 34198,
+        "query_execution_projection_digests": [
+          "d1428bbe6d18b1516d2be868d5c8b8a1e85d77b6c5746773c12d47fed718a9d9",
+          "8c2a6bb417030c0f8ab03e79a193b85c3c9e6c42d5ab9db650632cb8a625db7f"
+        ],
+        "route_execution_state_counts": {
+          "executed": 6,
+          "not_executed_route_unavailable": 4
+        },
+        "source_record_population": 1888,
+        "typed_fact_sibling": {
+          "conflict_count": 0,
+          "gap_count": 15,
+          "resolved_count": 3
+        }
+      },
+      "pack_gap_id": "dell-gap-capacity-release-timing",
+      "public_top_semantic_matches": [
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::035e06c2771bf028c02512e2",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0010::PART_01_OF_01"
+          ],
+          "match_detail": {
+            "capacity_event": {
+              "regexes": [],
+              "terms": [
+                "production capacity"
+              ]
+            },
+            "release_timing": {
+              "regexes": [],
+              "terms": [
+                "second half"
+              ]
+            },
+            "relevant_supply": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "capacity_event",
+            "release_timing",
+            "relevant_supply"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-05-28",
+          "publication_date": "2026-06-25",
+          "section": "Item 2. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0010::PART_01_OF_01",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Japan",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::cb106dec5f59c35455420184",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2026_10Q_ITEM2_BLOCK_0009_CHUNK_0001"
+          ],
+          "match_detail": {
+            "capacity_event": {
+              "regexes": [],
+              "terms": [
+                "production capacity"
+              ]
+            },
+            "release_timing": {
+              "regexes": [],
+              "terms": [
+                "second half"
+              ]
+            },
+            "relevant_supply": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "capacity_event",
+            "release_timing",
+            "relevant_supply"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-02-26",
+          "publication_date": "2026-03-19",
+          "section": "Item 2. Management's Discussion and Analysis",
+          "source_record_id": "MU_2026_10Q_ITEM2_BLOCK_0009_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Japan",
+          "ticker": "MU"
+        }
+      ],
+      "request_ids": [
+        "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1"
+      ],
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE",
+      "target_proposition": "When relevant accelerator, packaging and server-system capacity becomes usable and whether any of it is verifiably allocated or deliverable to Dell."
+    },
+    {
+      "candidate_ceiling": {
+        "best_complete_target_final_rank": null,
+        "candidate_decision_state": "candidate_not_evidence_unadjudicated",
+        "candidate_union_count": 96,
+        "complete_target_in_candidate_union_count": 0,
+        "complete_target_in_final_review": false,
+        "complete_target_in_final_review_count": 0,
+        "complete_target_in_pool": false,
+        "complete_target_in_source_object_corpus_count": 0,
+        "complete_target_useful_at_k": false,
+        "corpus_classification_counts": {
+          "not_target_semantic_equivalent": 34195,
+          "partial_context_only": 3
+        },
+        "corpus_scan_digest": "34132476c1c052937dec272d2cf46fd15db0d693bdc1453f76614d9b83baecde",
+        "earliest_observed_limitation": "local_source_object_corpus_missing_complete_target",
+        "final_review_count": 16,
+        "partial_context_in_candidate_union_count": 0,
+        "partial_context_in_final_review_count": 0,
+        "partial_context_in_source_object_corpus_count": 3,
+        "public_information_gap_eligible": false,
+        "reranker_useful_at_k": 10
+      },
+      "downstream_disposition": {
+        "03C_external_route_required_for_complete_target": true,
+        "03D_4B_embedding_recall_challenger_eligible": false,
+        "03D_same_pool_reranker_challenger_eligible": false,
+        "authority_granted_by_this_result": false,
+        "mandatory_external_route_contract_ids_if_authorized": [
+          "DELL-RSQ-03A-TARGET-CAPACITY-UTILIZATION-YIELD::industry_primary",
+          "DELL-RSQ-03A-TARGET-CAPACITY-UTILIZATION-YIELD::named_supplier",
+          "DELL-RSQ-03A-TARGET-CAPACITY-UTILIZATION-YIELD::official_issuer_regulator"
+        ]
+      },
+      "local_chain": {
+        "all_matched_sources_exist": true,
+        "candidate_route_occurrences": {
+          "bm25_lexical": 58,
+          "qwen3_embedding_0_6b_dense": 60,
+          "typed_relationship_graph": 5
+        },
+        "compiled_object_population": 34198,
+        "embedding_index_object_population": 34198,
+        "query_execution_projection_digests": [
+          "8c2a6bb417030c0f8ab03e79a193b85c3c9e6c42d5ab9db650632cb8a625db7f"
+        ],
+        "route_execution_state_counts": {
+          "executed": 3,
+          "not_executed_route_unavailable": 2
+        },
+        "source_record_population": 1888,
+        "typed_fact_sibling": {
+          "conflict_count": 0,
+          "gap_count": 13,
+          "resolved_count": 3
+        }
+      },
+      "pack_gap_id": "dell-gap-capacity-utilization-yield",
+      "public_top_semantic_matches": [
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::012f62b1d28ac42c1460bc70",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [
+            "(?:may|could|might)\\s+.*(?:yield|utilization)"
+          ],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2026_10Q_ITEM1A_BLOCK_0003_CHUNK_0001"
+          ],
+          "match_detail": {
+            "observed_yield_or_utilization": {
+              "regexes": [],
+              "terms": [
+                "manufacturing yield"
+              ]
+            },
+            "relevant_supply": {
+              "regexes": [],
+              "terms": [
+                "advanced packaging"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "observed_yield_or_utilization",
+            "relevant_supply"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-02-26",
+          "publication_date": "2026-03-19",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "MU_2026_10Q_ITEM1A_BLOCK_0003_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Our gross margins may be adversely affected by a range of factors.",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::5266040a722df0c33a58787a",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [
+            "(?:may|could|might)\\s+.*(?:yield|utilization)"
+          ],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2025_10K_ITEM1A_BLOCK_0003_CHUNK_0001"
+          ],
+          "match_detail": {
+            "observed_yield_or_utilization": {
+              "regexes": [],
+              "terms": [
+                "manufacturing yield"
+              ]
+            },
+            "relevant_supply": {
+              "regexes": [],
+              "terms": [
+                "advanced packaging"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "observed_yield_or_utilization",
+            "relevant_supply"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-08-28",
+          "publication_date": "2025-10-03",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "MU_2025_10K_ITEM1A_BLOCK_0003_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Our gross margins may be adversely affected by a range of factors.",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::d375fd9f3820acd792351703",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [
+            "(?:may|could|might)\\s+.*(?:yield|utilization)"
+          ],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0003::PART_01_OF_01"
+          ],
+          "match_detail": {
+            "observed_yield_or_utilization": {
+              "regexes": [],
+              "terms": [
+                "manufacturing yield"
+              ]
+            },
+            "relevant_supply": {
+              "regexes": [],
+              "terms": [
+                "advanced packaging"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "observed_yield_or_utilization",
+            "relevant_supply"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-05-28",
+          "publication_date": "2026-06-25",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0003::PART_01_OF_01",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Our gross margins may be adversely affected by a range of factors.",
+          "ticker": "MU"
+        }
+      ],
+      "request_ids": [
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1"
+      ],
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-UTILIZATION-YIELD",
+      "target_proposition": "Observed utilization or yield for the relevant accelerator, memory or advanced-packaging supply chain in the report period."
+    },
+    {
+      "candidate_ceiling": {
+        "best_complete_target_final_rank": null,
+        "candidate_decision_state": "candidate_not_evidence_unadjudicated",
+        "candidate_union_count": 170,
+        "complete_target_in_candidate_union_count": 0,
+        "complete_target_in_final_review": false,
+        "complete_target_in_final_review_count": 0,
+        "complete_target_in_pool": false,
+        "complete_target_in_source_object_corpus_count": 0,
+        "complete_target_useful_at_k": false,
+        "corpus_classification_counts": {
+          "not_target_semantic_equivalent": 34183,
+          "partial_context_only": 15
+        },
+        "corpus_scan_digest": "545da01cfc5a94bfb13e2845118837a8de33278b6a0c85e1bb3a056a4f069c1d",
+        "earliest_observed_limitation": "local_source_object_corpus_missing_complete_target",
+        "final_review_count": 29,
+        "partial_context_in_candidate_union_count": 4,
+        "partial_context_in_final_review_count": 2,
+        "partial_context_in_source_object_corpus_count": 15,
+        "public_information_gap_eligible": false,
+        "reranker_useful_at_k": 10
+      },
+      "downstream_disposition": {
+        "03C_external_route_required_for_complete_target": true,
+        "03D_4B_embedding_recall_challenger_eligible": false,
+        "03D_same_pool_reranker_challenger_eligible": false,
+        "authority_granted_by_this_result": false,
+        "mandatory_external_route_contract_ids_if_authorized": [
+          "DELL-RSQ-03A-TARGET-HBM-SUPPLY::industry_primary",
+          "DELL-RSQ-03A-TARGET-HBM-SUPPLY::named_supplier",
+          "DELL-RSQ-03A-TARGET-HBM-SUPPLY::official_issuer_regulator"
+        ]
+      },
+      "local_chain": {
+        "all_matched_sources_exist": true,
+        "candidate_route_occurrences": {
+          "bm25_lexical": 106,
+          "qwen3_embedding_0_6b_dense": 108,
+          "typed_relationship_graph": 6
+        },
+        "compiled_object_population": 34198,
+        "embedding_index_object_population": 34198,
+        "query_execution_projection_digests": [
+          "d1428bbe6d18b1516d2be868d5c8b8a1e85d77b6c5746773c12d47fed718a9d9",
+          "8c2a6bb417030c0f8ab03e79a193b85c3c9e6c42d5ab9db650632cb8a625db7f"
+        ],
+        "route_execution_state_counts": {
+          "executed": 6,
+          "not_executed_route_unavailable": 4
+        },
+        "source_record_population": 1888,
+        "typed_fact_sibling": {
+          "conflict_count": 0,
+          "gap_count": 15,
+          "resolved_count": 3
+        }
+      },
+      "pack_gap_id": "dell-gap-hbm-supply",
+      "public_top_semantic_matches": [
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": 2,
+            "minimum_raw_union_rank": 3,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "selected_for_material_review",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": 2,
+                  "financial_rank": 13,
+                  "raw_union_rank": 3,
+                  "review_priority_rank": 2
+                },
+                "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+                "route_membership": [
+                  "bm25_lexical",
+                  "qwen3_embedding_0_6b_dense"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 1,
+                  "qwen3_embedding_0_6b_dense": 4,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::463373544df2b91bcf2b7ac3",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2026_10Q_ITEM1A_BLOCK_0006_CHUNK_0001"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-02-26",
+          "publication_date": "2026-03-19",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "MU_2026_10Q_ITEM1A_BLOCK_0006_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Our future success depends on our ability to develop, produce, and supply new and competitive memory and storage technologies and products in a dynamic market environment.",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": 1,
+            "minimum_raw_union_rank": 11,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "selected_for_material_review",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": 1,
+                  "financial_rank": 1,
+                  "raw_union_rank": 11,
+                  "review_priority_rank": 1
+                },
+                "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+                "route_membership": [
+                  "bm25_lexical",
+                  "qwen3_embedding_0_6b_dense"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 2,
+                  "qwen3_embedding_0_6b_dense": 55,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::4113595bbddedf191029ba24",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0010::PART_01_OF_01"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            },
+            "time_surface": {
+              "regexes": [
+                "(?:q[1-4]|quarter|half|calendar|fiscal)\\s*(?:of\\s*)?20(?:25|26|27)"
+              ],
+              "terms": [
+                "calendar 2027",
+                "first half"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state",
+            "time_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-05-28",
+          "publication_date": "2026-06-25",
+          "section": "Item 2. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0010::PART_01_OF_01",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Japan",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": 23,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "eligible_not_selected",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": null,
+                  "financial_rank": 2,
+                  "raw_union_rank": 23,
+                  "review_priority_rank": 17
+                },
+                "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+                "route_membership": [
+                  "bm25_lexical",
+                  "qwen3_embedding_0_6b_dense"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 3,
+                  "qwen3_embedding_0_6b_dense": 61,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::f56560c97e0c50b5136a20e5",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2026_10Q_ITEM2_BLOCK_0009_CHUNK_0001"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            },
+            "time_surface": {
+              "regexes": [
+                "(?:q[1-4]|quarter|half|calendar|fiscal)\\s*(?:of\\s*)?20(?:25|26|27)"
+              ],
+              "terms": [
+                "calendar 2027"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state",
+            "time_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-02-26",
+          "publication_date": "2026-03-19",
+          "section": "Item 2. Management's Discussion and Analysis",
+          "source_record_id": "MU_2026_10Q_ITEM2_BLOCK_0009_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Japan",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": 31,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "eligible_not_selected",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": null,
+                  "financial_rank": 4,
+                  "raw_union_rank": 31,
+                  "review_priority_rank": 18
+                },
+                "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+                "route_membership": [
+                  "bm25_lexical",
+                  "qwen3_embedding_0_6b_dense"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 11,
+                  "qwen3_embedding_0_6b_dense": 5,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::d5b8fada2b8960683ecd1afd",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0007::PART_01_OF_02"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-05-28",
+          "publication_date": "2026-06-25",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Our future success depends on our ability to develop, produce, and supply new and competitive memory and storage technologies and products in a dynamic market environment.",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::035e06c2771bf028c02512e2",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0010::PART_01_OF_01"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            },
+            "time_surface": {
+              "regexes": [],
+              "terms": [
+                "second half"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state",
+            "time_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-05-28",
+          "publication_date": "2026-06-25",
+          "section": "Item 2. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0010::PART_01_OF_01",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Japan",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::12a8a32bad7ed499638175f6",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-08-28",
+          "publication_date": "2025-10-03",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "MU_2025_10K_ITEM7_BLOCK_0002_PART_01_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Total Revenue",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::19dd9b91bbdc18a6e7ef97dc",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_02"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            },
+            "time_surface": {
+              "regexes": [
+                "(?:q[1-4]|quarter|half|calendar|fiscal)\\s*(?:of\\s*)?20(?:25|26|27)"
+              ],
+              "terms": [
+                "calendar 2027"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state",
+            "time_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-08-28",
+          "publication_date": "2025-10-03",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "MU_2025_10K_ITEM7_BLOCK_0005_PART_02_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Other",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::20bbea54bc30d5634a436b75",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2025_10K_ITEM1A_BLOCK_0006_CHUNK_0001"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "yield"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-08-28",
+          "publication_date": "2025-10-03",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "MU_2025_10K_ITEM1A_BLOCK_0006_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Our future success depends on our ability to develop and produce new and competitive memory and storage technologies and products.",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::49f86857aa8510d7d164985a",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2025_10K_ITEM1_BLOCK_0007_PART_04_OF_04"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-08-28",
+          "publication_date": "2025-10-03",
+          "section": "Item 1. Business",
+          "source_record_id": "MU_2025_10K_ITEM1_BLOCK_0007_PART_04_OF_04",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Marketing and Customers",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::9afe19e04c8f30d3cad624dd",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2026_10Q_ITEM1A_BLOCK_0006_CHUNK_0001"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "yield"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-02-26",
+          "publication_date": "2026-03-19",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "MU_2026_10Q_ITEM1A_BLOCK_0006_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Our future success depends on our ability to develop, produce, and supply new and competitive memory and storage technologies and products in a dynamic market environment.",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::a59e9073c34f6585b2a4051c",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2025_10K_ITEM1_BLOCK_0006_PART_01_OF_02"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-08-28",
+          "publication_date": "2025-10-03",
+          "section": "Item 1. Business",
+          "source_record_id": "MU_2025_10K_ITEM1_BLOCK_0006_PART_01_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Cloud Memory Business Unit (“CMBU”)",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::bbe786a4c79083a0dc2464e8",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0007::PART_01_OF_02"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "yield"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-05-28",
+          "publication_date": "2026-06-25",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Our future success depends on our ability to develop, produce, and supply new and competitive memory and storage technologies and products in a dynamic market environment.",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::cb106dec5f59c35455420184",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2026_10Q_ITEM2_BLOCK_0009_CHUNK_0001"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            },
+            "time_surface": {
+              "regexes": [],
+              "terms": [
+                "second half"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state",
+            "time_surface"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-02-26",
+          "publication_date": "2026-03-19",
+          "section": "Item 2. Management's Discussion and Analysis",
+          "source_record_id": "MU_2026_10Q_ITEM2_BLOCK_0009_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Japan",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::d43b69260409ec698a829d3b",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-08-28",
+          "publication_date": "2025-10-03",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "MU_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Taiwan",
+          "ticker": "MU"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::e08b10bee6611a0be210f4fb",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "MU_2025_10K_ITEM1A_BLOCK_0006_CHUNK_0001"
+          ],
+          "match_detail": {
+            "hbm_subject": {
+              "regexes": [],
+              "terms": [
+                "hbm"
+              ]
+            },
+            "supply_state": {
+              "regexes": [],
+              "terms": [
+                "capacity"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "hbm_subject",
+            "supply_state"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-08-28",
+          "publication_date": "2025-10-03",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "MU_2025_10K_ITEM1A_BLOCK_0006_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Our future success depends on our ability to develop and produce new and competitive memory and storage technologies and products.",
+          "ticker": "MU"
+        }
+      ],
+      "request_ids": [
+        "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1"
+      ],
+      "target_id": "DELL-RSQ-03A-TARGET-HBM-SUPPLY",
+      "target_proposition": "HBM availability, capacity, yield or tightness relevant to Dell AI-server configurations and delivery."
+    },
+    {
+      "candidate_ceiling": {
+        "best_complete_target_final_rank": null,
+        "candidate_decision_state": "candidate_not_evidence_unadjudicated",
+        "candidate_union_count": 167,
+        "complete_target_in_candidate_union_count": 0,
+        "complete_target_in_final_review": false,
+        "complete_target_in_final_review_count": 0,
+        "complete_target_in_pool": false,
+        "complete_target_in_source_object_corpus_count": 0,
+        "complete_target_useful_at_k": false,
+        "corpus_classification_counts": {
+          "not_target_semantic_equivalent": 34191,
+          "partial_context_only": 7
+        },
+        "corpus_scan_digest": "d97a3579b8889dc47294a2faeca47164c9b395670fd1f551a6b92306800edbc0",
+        "earliest_observed_limitation": "local_source_object_corpus_missing_complete_target",
+        "final_review_count": 28,
+        "partial_context_in_candidate_union_count": 2,
+        "partial_context_in_final_review_count": 0,
+        "partial_context_in_source_object_corpus_count": 7,
+        "public_information_gap_eligible": false,
+        "reranker_useful_at_k": 10
+      },
+      "downstream_disposition": {
+        "03C_external_route_required_for_complete_target": true,
+        "03D_4B_embedding_recall_challenger_eligible": false,
+        "03D_same_pool_reranker_challenger_eligible": false,
+        "authority_granted_by_this_result": false,
+        "mandatory_external_route_contract_ids_if_authorized": [
+          "DELL-RSQ-03A-TARGET-SUPPLIER-READTHROUGH::named_supplier",
+          "DELL-RSQ-03A-TARGET-SUPPLIER-READTHROUGH::official_issuer_regulator"
+        ]
+      },
+      "local_chain": {
+        "all_matched_sources_exist": true,
+        "candidate_route_occurrences": {
+          "bm25_lexical": 118,
+          "qwen3_embedding_0_6b_dense": 119,
+          "typed_relationship_graph": 15
+        },
+        "compiled_object_population": 34198,
+        "embedding_index_object_population": 34198,
+        "query_execution_projection_digests": [
+          "8c2a6bb417030c0f8ab03e79a193b85c3c9e6c42d5ab9db650632cb8a625db7f",
+          "19921929ff9e97f3cb18246e424cb6214d9bcd2ea54a58ae7480dbb475318908"
+        ],
+        "route_execution_state_counts": {
+          "executed": 6,
+          "not_executed_route_unavailable": 4
+        },
+        "source_record_population": 1888,
+        "typed_fact_sibling": {
+          "conflict_count": 0,
+          "gap_count": 13,
+          "resolved_count": 3
+        }
+      },
+      "pack_gap_id": "dell-gap-supplier-capacity-readthrough",
+      "public_top_semantic_matches": [
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": 60,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "excluded_by_material_requirement_alignment",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": null,
+                  "financial_rank": 28,
+                  "raw_union_rank": 60,
+                  "review_priority_rank": 30
+                },
+                "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 7,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::5b9c1f75ff7fa43b793d6a77",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02"
+          ],
+          "match_detail": {
+            "named_supplier": {
+              "regexes": [],
+              "terms": [
+                "nvidia"
+              ]
+            },
+            "relationship_allocation_delivery": {
+              "regexes": [],
+              "terms": [
+                "partnership"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "named_supplier",
+            "relationship_allocation_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-04-26",
+          "publication_date": "2026-05-20",
+          "section": "Exhibit 99.1 Earnings Release",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02",
+          "source_tier": "company_authored_unaudited_sec_filing",
+          "source_type": "8-K",
+          "subsection": "NVIDIA’s outlook for the second quarter of fiscal 2027 is as follows",
+          "ticker": "NVDA"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": 88,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "excluded_by_material_requirement_alignment",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": null,
+                  "financial_rank": 29,
+                  "raw_union_rank": 88,
+                  "review_priority_rank": 31
+                },
+                "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 26,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::6f01993fc8677c5234ba651f",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02"
+          ],
+          "match_detail": {
+            "named_supplier": {
+              "regexes": [],
+              "terms": [
+                "nvidia"
+              ]
+            },
+            "relationship_allocation_delivery": {
+              "regexes": [],
+              "terms": [
+                "partnership",
+                "collaboration"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "named_supplier",
+            "relationship_allocation_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-04-26",
+          "publication_date": "2026-05-20",
+          "section": "Exhibit 99.1 Earnings Release",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02",
+          "source_tier": "company_authored_unaudited_sec_filing",
+          "source_type": "8-K",
+          "subsection": "NVIDIA’s outlook for the second quarter of fiscal 2027 is as follows",
+          "ticker": "NVDA"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::2b765de480efa3b5a207898a",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0003::PART_01_OF_09"
+          ],
+          "match_detail": {
+            "named_supplier": {
+              "regexes": [],
+              "terms": [
+                "nvidia"
+              ]
+            },
+            "relationship_allocation_delivery": {
+              "regexes": [],
+              "terms": [
+                "partnership"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "named_supplier",
+            "relationship_allocation_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-04-26",
+          "publication_date": "2026-05-20",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0003::PART_01_OF_09",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "We are subject to complex laws, rules, regulations, and political and other actions, including restrictions on the export of our products, which may adversely impact our business.",
+          "ticker": "NVDA"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::5752b5f621b5e1121ca148d7",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02"
+          ],
+          "match_detail": {
+            "named_supplier": {
+              "regexes": [],
+              "terms": [
+                "nvidia"
+              ]
+            },
+            "relationship_allocation_delivery": {
+              "regexes": [],
+              "terms": [
+                "collaboration"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "named_supplier",
+            "relationship_allocation_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-04-26",
+          "publication_date": "2026-05-20",
+          "section": "Exhibit 99.1 Earnings Release",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02",
+          "source_tier": "company_authored_unaudited_sec_filing",
+          "source_type": "8-K",
+          "subsection": "NVIDIA’s outlook for the second quarter of fiscal 2027 is as follows",
+          "ticker": "NVDA"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::9eddbc2c1594e5f5bb1d1f9a",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_01_OF_03"
+          ],
+          "match_detail": {
+            "named_supplier": {
+              "regexes": [],
+              "terms": [
+                "nvidia"
+              ]
+            },
+            "relationship_allocation_delivery": {
+              "regexes": [],
+              "terms": [
+                "partnership"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "named_supplier",
+            "relationship_allocation_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-01-26",
+          "publication_date": "2025-02-26",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "NVDA_2025_10K_ITEM1A_BLOCK_0012_PART_01_OF_03",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "We are subject to complex laws, rules, regulations, and political and other actions, including restrictions on the export of our products, which may adversely impact our business.",
+          "ticker": "NVDA"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::d06b161f48280b870fc0841b",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_01_OF_07"
+          ],
+          "match_detail": {
+            "named_supplier": {
+              "regexes": [],
+              "terms": [
+                "nvidia"
+              ]
+            },
+            "relationship_allocation_delivery": {
+              "regexes": [],
+              "terms": [
+                "partnership"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "named_supplier",
+            "relationship_allocation_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-10-26",
+          "publication_date": "2025-11-19",
+          "section": "Item 1A. Risk Factors",
+          "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_01_OF_07",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "We are subject to complex laws, rules, regulations, and political and other actions, including restrictions on the export of our products, which may adversely impact our business.",
+          "ticker": "NVDA"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::fa647128470d3c2ec8920f15",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02"
+          ],
+          "match_detail": {
+            "named_supplier": {
+              "regexes": [],
+              "terms": [
+                "nvidia"
+              ]
+            },
+            "relationship_allocation_delivery": {
+              "regexes": [],
+              "terms": [
+                "partnered with"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "named_supplier",
+            "relationship_allocation_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-04-26",
+          "publication_date": "2026-05-20",
+          "section": "Exhibit 99.1 Earnings Release",
+          "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02",
+          "source_tier": "company_authored_unaudited_sec_filing",
+          "source_type": "8-K",
+          "subsection": "NVIDIA’s outlook for the second quarter of fiscal 2027 is as follows",
+          "ticker": "NVDA"
+        }
+      ],
+      "request_ids": [
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+        "REQ::DELL::SUPPLY_RELATIONSHIP::V1"
+      ],
+      "target_id": "DELL-RSQ-03A-TARGET-SUPPLIER-READTHROUGH",
+      "target_proposition": "A verifiable relationship, allocation or delivery bridge from named supplier capacity to Dell AI-server availability."
+    },
+    {
+      "candidate_ceiling": {
+        "best_complete_target_final_rank": null,
+        "candidate_decision_state": "candidate_not_evidence_unadjudicated",
+        "candidate_union_count": 96,
+        "complete_target_in_candidate_union_count": 0,
+        "complete_target_in_final_review": false,
+        "complete_target_in_final_review_count": 0,
+        "complete_target_in_pool": false,
+        "complete_target_in_source_object_corpus_count": 0,
+        "complete_target_useful_at_k": false,
+        "corpus_classification_counts": {
+          "not_target_semantic_equivalent": 34195,
+          "partial_context_only": 3
+        },
+        "corpus_scan_digest": "da48575e7c8de62cbfe2be5c33f6001602a00f808b46edc6813b37c6aba94886",
+        "earliest_observed_limitation": "local_source_object_corpus_missing_complete_target",
+        "final_review_count": 16,
+        "partial_context_in_candidate_union_count": 2,
+        "partial_context_in_final_review_count": 1,
+        "partial_context_in_source_object_corpus_count": 3,
+        "public_information_gap_eligible": false,
+        "reranker_useful_at_k": 10
+      },
+      "downstream_disposition": {
+        "03C_external_route_required_for_complete_target": true,
+        "03D_4B_embedding_recall_challenger_eligible": false,
+        "03D_same_pool_reranker_challenger_eligible": false,
+        "authority_granted_by_this_result": false,
+        "mandatory_external_route_contract_ids_if_authorized": [
+          "DELL-RSQ-03A-TARGET-UNITS::industry_primary",
+          "DELL-RSQ-03A-TARGET-UNITS::official_issuer_regulator"
+        ]
+      },
+      "local_chain": {
+        "all_matched_sources_exist": true,
+        "candidate_route_occurrences": {
+          "bm25_lexical": 48,
+          "qwen3_embedding_0_6b_dense": 50,
+          "typed_relationship_graph": 1
+        },
+        "compiled_object_population": 34198,
+        "embedding_index_object_population": 34198,
+        "query_execution_projection_digests": [
+          "e0a5ec91ccb2025eedf07266284cfd39af2279c10f0818a82cb115aabc41423a"
+        ],
+        "route_execution_state_counts": {
+          "executed": 3,
+          "not_executed_route_unavailable": 2
+        },
+        "source_record_population": 1888,
+        "typed_fact_sibling": {
+          "conflict_count": 0,
+          "gap_count": 6,
+          "resolved_count": 0
+        }
+      },
+      "pack_gap_id": "dell-gap-pricing-units",
+      "public_top_semantic_matches": [
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": 11,
+            "minimum_raw_union_rank": 44,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "selected_for_material_review",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": 11,
+                  "financial_rank": 7,
+                  "raw_union_rank": 44,
+                  "review_priority_rank": 12
+                },
+                "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 20,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::cab0157a96093a0ab3acafdf",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "DELL_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001"
+          ],
+          "match_detail": {
+            "dell_ai_server": {
+              "regexes": [],
+              "terms": [
+                "ai-optimized server"
+              ]
+            },
+            "shipment_or_delivery": {
+              "regexes": [],
+              "terms": [
+                "shipments"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "dell_ai_server",
+            "shipment_or_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2025-10-31",
+          "publication_date": "2025-12-09",
+          "section": "Item 2. Management's Discussion and Analysis",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-Q",
+          "subsection": "Demand of AI-optimized solutions",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": 83,
+            "request_traces": [
+              {
+                "candidate_not_evidence": true,
+                "evidence_promoted": false,
+                "material_alignment_state": "eligible_not_selected",
+                "numeric_authority": false,
+                "rank_trace": {
+                  "final_output_rank": null,
+                  "financial_rank": 6,
+                  "raw_union_rank": 83,
+                  "review_priority_rank": 17
+                },
+                "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+                "route_membership": [
+                  "bm25_lexical"
+                ],
+                "route_ranks": {
+                  "bm25_lexical": 40,
+                  "qwen3_embedding_0_6b_dense": null,
+                  "typed_relationship_graph": null
+                }
+              }
+            ]
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::4185fe68e899043acdd5c477",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02"
+          ],
+          "match_detail": {
+            "dell_ai_server": {
+              "regexes": [],
+              "terms": [
+                "ai-optimized server"
+              ]
+            },
+            "shipment_or_delivery": {
+              "regexes": [],
+              "terms": [
+                "shipments"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "dell_ai_server",
+            "shipment_or_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 1. Business",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Research and Development",
+          "ticker": "DELL"
+        },
+        {
+          "candidate_not_evidence": true,
+          "candidate_trace": {
+            "minimum_final_output_rank": null,
+            "minimum_raw_union_rank": null,
+            "request_traces": []
+          },
+          "classification": "partial_context_only",
+          "compiled_object_id": "COBJ::d89b8b8250a65cb22b4c0450",
+          "evidence_promoted": false,
+          "forbidden_complete_regexes_matched": [],
+          "forbidden_complete_terms_matched": [],
+          "lineage_source_record_ids": [
+            "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0004::PART_01_OF_01"
+          ],
+          "match_detail": {
+            "dell_ai_server": {
+              "regexes": [],
+              "terms": [
+                "ai-optimized server"
+              ]
+            },
+            "shipment_or_delivery": {
+              "regexes": [],
+              "terms": [
+                "shipments"
+              ]
+            }
+          },
+          "matched_group_ids": [
+            "dell_ai_server",
+            "shipment_or_delivery"
+          ],
+          "numeric_authority": false,
+          "period_end": "2026-01-30",
+          "publication_date": "2026-03-16",
+          "section": "Item 7. Management's Discussion and Analysis",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0004::PART_01_OF_01",
+          "source_tier": "primary_sec_filing",
+          "source_type": "10-K",
+          "subsection": "Demand for AI-optimized servers",
+          "ticker": "DELL"
+        }
+      ],
+      "request_ids": [
+        "REQ::DELL::UNIT_VOLUME::V1"
+      ],
+      "target_id": "DELL-RSQ-03A-TARGET-UNITS",
+      "target_proposition": "Dell AI-server shipments or a compatible equivalent-unit denominator for the report period."
+    }
+  ]
+}

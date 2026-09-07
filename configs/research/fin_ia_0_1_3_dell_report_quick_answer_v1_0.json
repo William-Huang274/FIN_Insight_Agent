@@ -1,0 +1,25 @@
+{
+  "model_profile": {
+    "model": "deepseek-v4-flash",
+    "reasoning_effort": "low",
+    "thinking": "disabled"
+  },
+  "limits": {"model_calls": 8, "tool_calls": 24},
+  "token_budget_basis": {
+    "node_role": "specialist",
+    "node_purpose": "Answer one explicitly selected quick factual question about the existing Dell case. Plan relevant reads and correct tool errors; do not rewrite the report or restart research.",
+    "input_scale": "Compact ten-paper catalog (about 10k characters), the actual question and public conversation text without nested citation payloads. Full current report, relevant claims, SQL facts and original sources are available on demand; no other agent private messages.",
+    "required_outputs": ["Concise Chinese answer with exact current paper:claim citations", "Correct company, period, unit, provenance and uncertainty; no report mutation"],
+    "schema_burden": "Existing native read-only MCP tools and one cited-answer submission; no full report or review JSON. Allow local error feedback and multiple reads.",
+    "materiality_quality_risk": "S2 preferred for financial facts; old paper/source binding alone does not prove interpretation. No hidden downgrade of complex analysis: UI keeps deep Pro mode. Review simple answer against real sources before claiming qualification.",
+    "comparable_run_evidence": "Workbench report revisions used 10 calls/428159 tokens and 10 calls/416979 tokens; those require full writing/review and are not a short-QA baseline. First qualification asks two existing Q1 financial facts, with 8 model/24 tool ceilings for source/SQL reads and corrections; not a forced one-shot or cost guarantee.",
+    "reasoning_profile": "agentic_message_history_thinking_disabled",
+    "max_input_characters": 350000,
+    "max_output_tokens": 8000,
+    "timeout_seconds": 240,
+    "max_transport_attempts": 1,
+    "retry_policy": "none",
+    "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+    "input_ceiling_behavior": "fail_before_transport"
+  }
+}

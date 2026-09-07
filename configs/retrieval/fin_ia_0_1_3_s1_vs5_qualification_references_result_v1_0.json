@@ -1,0 +1,60 @@
+{
+  "authority": {
+    "candidate_is_evidence": false,
+    "numeric_fact_authority": false,
+    "owner_or_qualified_human_review_pending": true,
+    "qualification_execution_authorized": false,
+    "runtime_visible": false
+  },
+  "bound_inputs": {
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_compiled_objects/live-r1/objects.jsonl",
+    "compiled_objects_sha256": "adf1da6a85d3d0bf34f2752521ffbf6e6813313238b1c9c7ca2fb8ddb2f4449c",
+    "preregistration_ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+    "preregistration_sha256": "e16db48de84e6cb0e5c586032e4bff446307d2dbdad898999de8a935b7124749",
+    "review_decisions_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_source_review_v1_0.json",
+    "review_decisions_sha256": "0a11154283a4ef5070984295037a84e6b10097c2f6cbb9c85be7ab5fa6d6ec83",
+    "runtime_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_inputs_result_v1_0.json",
+    "runtime_result_sha256": "95bdc4c6f9b16f7d8ae66d99018a8d8939c00e1ebbb9ee66b020d619b6b3c72e"
+  },
+  "outputs": [
+    {
+      "bytes": 60564,
+      "example_count": 15,
+      "ref": "eval_sets/fin_0_1_3_s1/references/holdout_heterogeneous/vs5_qualification_references_v1_0.jsonl",
+      "sha256": "321e72b2fb5b23b965e9c2c82b7520012ba0486db8de8b93d997b632aac255ab",
+      "split": "holdout_heterogeneous"
+    },
+    {
+      "bytes": 33070,
+      "example_count": 10,
+      "ref": "eval_sets/fin_0_1_3_s1/references/test_frozen/vs5_qualification_references_v1_0.jsonl",
+      "sha256": "667977a8dffff6855383667040f737468e6402c172bdb780368974b4f121e5d0",
+      "split": "test_frozen"
+    },
+    {
+      "bytes": 17841,
+      "example_count": 5,
+      "ref": "eval_sets/fin_0_1_3_s1/references/valid_temporal/vs5_qualification_references_v1_0.jsonl",
+      "sha256": "d05533ae284103aae6ab187660cd9459059ec126e6f6bcc436fecbc48c3fc0fb",
+      "split": "valid_temporal"
+    }
+  ],
+  "recorded_at": "2026-08-18",
+  "schema_version": "fin_ia_s1_vs5_qualification_references_result_v1_0",
+  "status": "source_bound_evaluator_references_materialized_owner_review_pending",
+  "summary": {
+    "coverage_finding_counts": {
+      "parser_object_failure": 4,
+      "source_plan_coverage_failure": 4,
+      "source_review_complete": 21,
+      "source_review_partial": 1
+    },
+    "example_count": 30,
+    "learned_vector_calls": 0,
+    "missing_required_facet_count": 9,
+    "missing_required_role_count": 9,
+    "model_calls": 0,
+    "network_calls": 0,
+    "positive_binding_count": 130
+  }
+}

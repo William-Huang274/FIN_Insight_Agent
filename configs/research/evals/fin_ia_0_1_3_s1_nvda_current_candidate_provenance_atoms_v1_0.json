@@ -1,0 +1,66 @@
+{
+  "schema_version": "fin_ia_research_planner_atoms_v1_0",
+  "objective_id": "ROC::5d921131b2cd1563cf2f54b4",
+  "atoms": [
+    {
+      "facet_id": "orders_and_backlog",
+      "metric_ids": ["orders", "backlog", "shipments"],
+      "product_intents": ["data center platform", "accelerator demand and supply constraint read-through", "customer commitment and purchase structure"],
+      "target_entity": "NVDA"
+    },
+    {
+      "facet_id": "conversion_and_durability",
+      "metric_ids": ["orders", "shipments"],
+      "product_intents": ["data center platform", "AI infrastructure deployment and usage", "customer commitment and purchase structure"],
+      "target_entity": "NVDA"
+    },
+    {
+      "facet_id": "reported_results",
+      "metric_ids": ["revenue", "operating_income", "net_income", "gross_margin"],
+      "product_intents": ["data center platform"],
+      "target_entity": "NVDA"
+    },
+    {
+      "facet_id": "guidance_and_outlook",
+      "metric_ids": ["gross_margin", "operating_margin"],
+      "product_intents": ["data center platform", "GPU supply capacity and transition risk"],
+      "target_entity": "NVDA"
+    },
+    {
+      "facet_id": "margin_and_incremental_profit",
+      "metric_ids": ["gross_margin", "operating_income", "operating_margin"],
+      "product_intents": ["data center platform"],
+      "target_entity": "NVDA"
+    },
+    {
+      "facet_id": "subject_execution",
+      "metric_ids": ["capacity", "yield", "shipments"],
+      "product_intents": ["GPU supply capacity and transition risk", "advanced packaging and CoWoS capacity", "HBM and data center business"],
+      "target_entity": "NVDA"
+    },
+    {
+      "facet_id": "upstream_capacity_context",
+      "metric_ids": ["capacity", "yield", "shipments"],
+      "product_intents": ["advanced packaging and CoWoS capacity", "HBM and data center business"],
+      "target_entity": "NVDA"
+    },
+    {
+      "facet_id": "issuer_counterevidence",
+      "metric_ids": ["inventory"],
+      "product_intents": ["data center platform", "GPU supply capacity and transition risk"],
+      "target_entity": "NVDA"
+    },
+    {
+      "facet_id": "upstream_or_demand_counterevidence",
+      "metric_ids": ["inventory"],
+      "product_intents": ["accelerator demand and supply constraint read-through", "advanced packaging and CoWoS capacity", "HBM and data center business"],
+      "target_entity": "NVDA"
+    },
+    {
+      "facet_id": "issuer_policy_exposure",
+      "metric_ids": [],
+      "product_intents": ["data center platform", "GPU supply capacity and transition risk"],
+      "target_entity": "NVDA"
+    }
+  ]
+}

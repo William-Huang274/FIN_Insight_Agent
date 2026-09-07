@@ -1,0 +1,342 @@
+{
+  "$defs": {
+    "ArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "artifact_type": {
+          "enum": [
+            "source_route_decision",
+            "raw_source_capture",
+            "parsed_document",
+            "financial_evidence_object",
+            "object_manifest",
+            "index_snapshot",
+            "s2_sibling_binding",
+            "evidence_request",
+            "query_facet_plan",
+            "candidate_set",
+            "candidate_ranking",
+            "candidate_decision",
+            "evidence_coverage_state",
+            "evidence_pack_readiness",
+            "workbench_projection",
+            "frozen_consumer_probe"
+          ],
+          "title": "Artifact Type",
+          "type": "string"
+        },
+        "artifact_version": {
+          "title": "Artifact Version",
+          "type": "string"
+        },
+        "payload_sha256": {
+          "title": "Payload Sha256",
+          "type": "string"
+        },
+        "relation": {
+          "enum": [
+            "derived_from",
+            "bound_to",
+            "consumes",
+            "projects"
+          ],
+          "title": "Relation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_type",
+        "artifact_id",
+        "artifact_version",
+        "payload_sha256",
+        "relation"
+      ],
+      "title": "ArtifactRef",
+      "type": "object"
+    },
+    "ArtifactScope": {
+      "additionalProperties": false,
+      "properties": {
+        "binding_state": {
+          "enum": [
+            "source_only",
+            "case_bound",
+            "case_and_source_bound",
+            "aggregate"
+          ],
+          "title": "Binding State",
+          "type": "string"
+        },
+        "case_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Case Key"
+        },
+        "discussed_entity_tickers": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Discussed Entity Tickers",
+          "type": "array"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceLocatorBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "reporting_period": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ReportingPeriodBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "research_as_of": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Research As Of"
+        },
+        "source_owner_ticker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Owner Ticker"
+        },
+        "subject_ticker": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subject Ticker"
+        }
+      },
+      "required": [
+        "binding_state"
+      ],
+      "title": "ArtifactScope",
+      "type": "object"
+    },
+    "ReportingPeriodBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "end_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Date"
+        },
+        "fiscal_period": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fiscal Period"
+        },
+        "fiscal_year": {
+          "anyOf": [
+            {
+              "maximum": 2200,
+              "minimum": 1900,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fiscal Year"
+        },
+        "start_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start Date"
+        }
+      },
+      "title": "ReportingPeriodBinding",
+      "type": "object"
+    },
+    "SourceLocatorBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "locator_type": {
+          "enum": [
+            "url",
+            "page",
+            "page_bbox",
+            "section",
+            "xpath",
+            "char_span",
+            "table_cell",
+            "sql_row",
+            "object_id"
+          ],
+          "title": "Locator Type",
+          "type": "string"
+        },
+        "locator_value": {
+          "maxLength": 2048,
+          "minLength": 1,
+          "title": "Locator Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "locator_type",
+        "locator_value"
+      ],
+      "title": "SourceLocatorBinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "artifact_id": {
+      "title": "Artifact Id",
+      "type": "string"
+    },
+    "artifact_type": {
+      "enum": [
+        "source_route_decision",
+        "raw_source_capture",
+        "parsed_document",
+        "financial_evidence_object",
+        "object_manifest",
+        "index_snapshot",
+        "s2_sibling_binding",
+        "evidence_request",
+        "query_facet_plan",
+        "candidate_set",
+        "candidate_ranking",
+        "candidate_decision",
+        "evidence_coverage_state",
+        "evidence_pack_readiness",
+        "workbench_projection",
+        "frozen_consumer_probe"
+      ],
+      "title": "Artifact Type",
+      "type": "string"
+    },
+    "artifact_version": {
+      "title": "Artifact Version",
+      "type": "string"
+    },
+    "lifecycle_state": {
+      "enum": [
+        "materialized",
+        "rejected",
+        "typed_gap"
+      ],
+      "title": "Lifecycle State",
+      "type": "string"
+    },
+    "lineage_digest": {
+      "title": "Lineage Digest",
+      "type": "string"
+    },
+    "parent_refs": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ArtifactRef"
+      },
+      "title": "Parent Refs",
+      "type": "array"
+    },
+    "payload_ref": {
+      "title": "Payload Ref",
+      "type": "string"
+    },
+    "payload_schema_version": {
+      "title": "Payload Schema Version",
+      "type": "string"
+    },
+    "payload_sha256": {
+      "title": "Payload Sha256",
+      "type": "string"
+    },
+    "producer_id": {
+      "title": "Producer Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "fin_ia_s1_artifact_envelope_v1_0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "scope": {
+      "$ref": "#/$defs/ArtifactScope"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "artifact_id",
+    "artifact_version",
+    "producer_id",
+    "payload_schema_version",
+    "payload_ref",
+    "payload_sha256",
+    "lifecycle_state",
+    "scope",
+    "lineage_digest"
+  ],
+  "title": "ArtifactEnvelope",
+  "type": "object"
+}

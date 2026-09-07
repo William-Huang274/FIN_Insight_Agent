@@ -1,0 +1,87 @@
+{
+  "schema_version": "fin_ia_s1c_object_role_business_assessment_v1_0",
+  "status": "object_contract_accepted_for_development_query_and_projection_repair_required",
+  "recorded_at": "2026-08-12",
+  "scope": "FIN_0_1_3_S1C_OBJECT_ROLE_DISPOSITION",
+  "bound_result": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1c_object_role_shadow_result_v1_0.json",
+    "result_digest": "4b6ff6e734f4b410dc6713e39c759aec06f81118a33a17f4ac86cee0c0f27c3e"
+  },
+  "accepted_contract_findings": [
+    {
+      "finding": "model_visible_object_and_human_labels_must_remain_separate",
+      "business_meaning_zh": "模型只能看到源绑定 claim、表格或父级元数据；角色、正负例和人工解释只能在评分后接入。"
+    },
+    {
+      "finding": "parent_context_qualifies_but_does_not_prove",
+      "business_meaning_zh": "父文档可确认公司、日期、表单和章节，不能因同一父文档出现相关词就把所有子段当作证据。"
+    },
+    {
+      "finding": "ranking_relevance_is_weaker_than_evidence_support",
+      "business_meaning_zh": "一个段落可以值得检索员查看，却仍不足以直接支持某个 Evidence Slot；TSMC 2nm 爬坡段就是当前例子。"
+    }
+  ],
+  "business_failures": [
+    {
+      "qrel_id": "s1c_qrel_04",
+      "observed_failure_zh": "查询 Micron 供给执行时，Cross-Encoder 把只含业务单元收入/毛利的旧季度表排在 HBM4 已高量出货 claim 前。两者分数都很低且只差 0.008，说明模型并未真正理解‘结果表’与‘供给执行’的区别。",
+      "root_cause": "supply_query_semantics_and_role_discrimination_both_weak",
+      "owning_stage": "S1-C"
+    },
+    {
+      "qrel_id": "s1c_qrel_10",
+      "observed_failure_zh": "查询 Micron 财务桥接时，模型把泛化国际经营风险长段排在绑定采购量和客户存款 claim 前，因为旧 query 同时混入监管、风险、库存、承诺和营运资金。",
+      "root_cause": "legacy_mixed_slot_combines_regulatory_counterevidence_and_financial_reconciliation",
+      "owning_stage": "S1-C query decomposition"
+    },
+    {
+      "qrel_id": "s1c_qrel_15",
+      "observed_failure_zh": "查询 NVIDIA 当期结果时，泛化风险提示开场排在收入、利润表和 MD&A 汇总表前；旧 query 尾部要求 counterevidence，诱导模型偏向风险语言。",
+      "root_cause": "reported_results_and_counterevidence_share_one_query",
+      "owning_stage": "S1-C query decomposition"
+    },
+    {
+      "qrel_id": "s1c_qrel_16",
+      "observed_failure_zh": "查询 NVIDIA 财务桥接时，供给风险 claim 排在现金流表前；旧 slot 把监管/风险与财务对账合在一起，表格又缺少明确的 metric-coordinate 语义投影。",
+      "root_cause": "mixed_slot_plus_table_semantic_projection_gap",
+      "owning_stage": "S1-C object compiler and query decomposition"
+    },
+    {
+      "qrel_ids": [
+        "s1c_qrel_06",
+        "s1c_qrel_12",
+        "s1c_qrel_18"
+      ],
+      "observed_failure_zh": "当前 TSMC 正例只披露领先制程需求和 2nm 爬坡，没有 qrel 所要求的 CoWoS/先进封装产能、良率或客户分配。它可作相关背景，但不是该槽位直接证据。",
+      "root_cause": "real_advanced_packaging_source_semantic_gap",
+      "owning_stage": "S1-D targeted source supplementation"
+    }
+  ],
+  "decision": {
+    "fine_tune_cross_encoder_now": false,
+    "reason_not_to_fine_tune_zh": "对象修正后 pairwise 仍只有 0.50，但错误集中在混合 query、表格语义投影和真实资料缺口；用 35 个开发关系微调会把错误合同学进模型。",
+    "train_independent_role_classifier_now": false,
+    "reason_not_to_train_role_classifier_zh": "现有 24 个对象、35 个关系不足以训练，且三案 Evidence Pack 仍有 45 个 source segment 没有 claim/metric 精确绑定。",
+    "enter_s1d_now": false,
+    "reason_not_to_enter_s1d_wholesale_zh": "只有 TSMC 先进封装是已确认的真实补源缺口；其余主要错误仍属于 S1-C 查询和对象合同，不能用更多网页掩盖。",
+    "next_item": "S1-C query-family decomposition and deterministic object-view compiler successor",
+    "next_item_scope": [
+      "把 reported results、guidance、counterevidence、cash conversion、regulatory exposure 拆成独立 query family",
+      "为客户/生态方需求新增投入、部署和订单 read-through facet，但不做主体归因",
+      "将表格投影为表头、期间、单位、metric row 和父级章节，而不是只喂整张表字符串",
+      "将 source segment 编译成源绑定 claim/table/context；无法绑定的保留 typed gap",
+      "复用相同固定 Cross-Encoder 重新 shadow，不改模型、不训练",
+      "只有查询与对象修复后仍稳定存在角色错误，才扩展到至少 200 个关系、6 个开发案例并评估独立角色分类器",
+      "TSMC CoWoS/先进封装缺口随后单独进入 S1-D 定向补源"
+    ]
+  },
+  "authority": {
+    "object_contract_is_development_baseline": true,
+    "object_review_is_owner_accepted": false,
+    "candidate_is_not_evidence": true,
+    "model_training_authorized": false,
+    "runtime_promotion_authorized": false,
+    "s1d_execution_authorized": false,
+    "s1_complete_claimed": false
+  }
+}

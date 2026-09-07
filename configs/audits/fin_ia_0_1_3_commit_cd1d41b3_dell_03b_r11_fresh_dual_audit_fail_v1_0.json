@@ -1,0 +1,261 @@
+{
+  "schema_version": "fin_ia_dell_03B_R11_fresh_dual_audit_fail_v1_0",
+  "status": "fresh_author_separated_readonly_dual_audit_complete_engineering_fail_report_quality_fail_gate_open",
+  "audit_id": "FIN-0.1.3-S1-DELL-03B-R11-FRESH-DUAL-AUDIT",
+  "recorded_at": "2026-08-27T22:40:41+08:00",
+  "audit_manifest": {
+    "ref": "configs/audits/fin_ia_0_1_3_commit_cd1d41b3_dell_03b_r11_fixed_dual_audit_manifest_v1_0.json",
+    "sha256": "3e98714e7d5fc1729fb7dcf11b0aa5cabc1870c813d6b0fd35fc3a348e76277d",
+    "result_digest": "496305e09e734ac7124477e500c4ba9ef56c1ee43fc460efb3caaa7468e09df4",
+    "verified_hashes": 34,
+    "engineering_hashes": 20,
+    "R17_hashes": 14,
+    "nested_digest_and_artifact_bindings_verified": 17
+  },
+  "git_identity": {
+    "branch": "codex/fin013-dell-s1-s2-product-bridge",
+    "implementation_commit": "23014238f8a0cb03968daefe23de7de71c48e2e9",
+    "implementation_tree": "a909ff19ee11e911f2e6094a52e90f9e92e26089",
+    "authority_commit": "9522cceea210c026b77289cf9b0bc4fd23fd6226",
+    "authority_tree": "f269b808b25dbb25aaba5d1d3681a68ecfeba965",
+    "reviewed_result_commit": "cd1d41b3a1f8db52cd80a29417d2fca512a483df",
+    "reviewed_result_tree": "d344c6e173ad417eb7de8a6a0363322db3510f59",
+    "fixed_manifest_commit": "e1cc7aaa7ff820a79803a7a930e21862ad607d8f",
+    "implementation_to_authority_to_result_to_manifest_linear": true,
+    "changed_path_populations_match_manifest": true,
+    "audit_start_and_finish_clean": true,
+    "HEAD_unchanged_by_reviewer": true
+  },
+  "reviewer_execution": {
+    "fresh_fork_none_author_separated": true,
+    "read_only": true,
+    "writes": 0,
+    "commits": 0,
+    "pushes": 0,
+    "formal_attempts": 0,
+    "pytest_runs": 0,
+    "network_provider_model_external_embedding_4B_reranker_calls": 0,
+    "direct_in_memory_semantic_probes_after_concrete_suspicion": true
+  },
+  "identity_execution_and_privacy": {
+    "verdict": "PASS_BOUNDED",
+    "manifest_hashes": "34_of_34",
+    "policy_bound_inputs": "14_of_14",
+    "policy_implementation_bindings": "33_of_33",
+    "attempt_directory_population": [
+      "attempt_consumption_receipt.json",
+      "raw_execution_capture.json",
+      "full_result.json"
+    ],
+    "terminal_failure_receipt_absent": true,
+    "exclusive_attempt_raw_first_and_atomic_private_public": true,
+    "canonical_raw_execution_bytes": 1527387,
+    "canonical_raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+    "request_union_final_contract": "5_requests_each_96_union_16_final",
+    "aggregate_unique_union": 338,
+    "aggregate_final": 80,
+    "target_union_occurrences": 794,
+    "local_0_6B_embedding_batches": 1,
+    "forbidden_execution_counters_zero": true,
+    "public_scalar_tree_and_threat_first_privacy_probes": "PASS_BOUNDED",
+    "actual_complete_source_family_mapping": "3_of_3_supplier_complete_families_bound_and_6_of_6_target_checks_pass",
+    "current_target_counts": {
+      "ASP_source_compiled_union_final": "0_0_0_0",
+      "capacity_release": "0_0_0_0",
+      "capacity_utilization_yield": "0_0_0_0",
+      "HBM_supply": "0_0_0_0",
+      "supplier_source_compiled_union_final_and_rank": "3_3_2_1_rank2",
+      "units": "0_0_0_0"
+    },
+    "transformation_bindings": {
+      "total": 1614,
+      "accepted": 1284,
+      "failed": 330,
+      "unbound_source_families_partial_only": 385,
+      "failed_complete": 0,
+      "unbound_complete": 0,
+      "compiled_complete_without_source_antecedent": 0
+    }
+  },
+  "R11_material_findings": [
+    {
+      "finding_id": "R11-P1-ROUTE-STATE-ERASURE-ASP",
+      "severity": "P1",
+      "owner_stage": "S1_03B_downstream_route_projection_and_authority_binding",
+      "code_refs": [
+        "src/retrieval/dell_report_internal_chain_ceiling_r11.py:980-991",
+        "src/retrieval/dell_report_internal_chain_ceiling_r11.py:1108-1109",
+        "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r11.py:657-669"
+      ],
+      "artifact_refs": [
+        "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v2_0.json:211-223",
+        "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_1.json:155-156",
+        "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_1.json:426-453"
+      ],
+      "reproduction": "ASP has 03C_external_route_required_for_complete_bounded_target=true and a nonempty 03C scope, but mandatory_external_route_contract_ids_if_authorized is empty.",
+      "root_cause": "R11 inherits route IDs only from the immediate predecessor disposition. A temporary external_required=false state clears the IDs and a later false-to-true transition cannot reconstruct them because the immutable residual route registry is not a bound input.",
+      "impact": "The summary declares five external-required targets while exact contract-ID enumeration can execute only four; the ASP ladder can be silently omitted from the R11 authority bundle.",
+      "required_fix": "Use the immutable residual route program or a constant route registry as source of truth, preserve route identity across inactive states, require external_required implies nonempty resolvable external IDs, compare IDs in author replay, and freeze a true-false-true transition regression."
+    },
+    {
+      "finding_id": "R11-P2-CLAUSE-OWNERSHIP-OPEN-VOCAB-AND-CASE-DEPENDENCE",
+      "severity": "P2",
+      "owner_stage": "S1_03B_predicate_frame_clause_ownership",
+      "code_refs": [
+        "src/retrieval/dell_report_predicate_frames_r11.py:427-441",
+        "src/retrieval/dell_report_predicate_frames_r11.py:621-641",
+        "src/retrieval/dell_report_predicate_frames_r11.py:695-720",
+        "src/retrieval/dell_report_predicate_frames_r11.py:804-844",
+        "src/retrieval/dell_report_predicate_frames_r11.py:2236-2295"
+      ],
+      "false_merge_reproductions": [
+        "Dell quoted support for USD 150 and eBay Systems wugged PowerEdge XE9680 hardware for USD 15.",
+        "Dell quoted support for USD 150 and vanadium labs zorps PowerEdge XE9680 hardware for USD 15.",
+        "Dell quoted support for USD 150 and rose systems offered PowerEdge XE9680 hardware for USD 15."
+      ],
+      "false_split_reproduction": "NVIDIA provides GPUs and in the following quarter ships them to Dell.",
+      "root_cause": "Unknown-owner barriers require title case, predicate-token collision filtering is case-dependent, and fronted adjunct handling is a closed phrase list. Unproved material right clauses can therefore merge into the left actor or valid shared-subject continuations can be split.",
+      "impact": "Third-party price roles can be attributed to Dell while valid supplier delivery relations can be lost; ClauseOwnershipDecision v2 is not an open-vocabulary structural proof.",
+      "required_fix": "Fail closed on any material right surface unless shared-subject ownership is structurally proved, remove capitalization dependence, protect predicate-name collisions case-insensitively, and parse adjunct structure rather than enumerate phrases."
+    },
+    {
+      "finding_id": "R11-P2-PRICE-INTERVENING-NOMINAL-HEAD",
+      "severity": "P2",
+      "owner_stage": "S1_03B_ASP_argument_relation_and_governing_head",
+      "code_refs": [
+        "src/retrieval/dell_report_predicate_frames_r11.py:1635-1677",
+        "src/retrieval/dell_report_predicate_frames_r11.py:1687-1706"
+      ],
+      "reproductions": [
+        "Dell quoted a maintenance service for PowerEdge XE9680 hardware at USD 15.",
+        "Dell quoted a delivery service for PowerEdge XE9680 hardware at USD 15.",
+        "Dell quoted lease financing for PowerEdge XE9680 hardware at USD 15.",
+        "Dell quoted support services for PowerEdge XE9680 hardware at USD 15.",
+        "Dell quoted contract for PowerEdge XE9680 hardware at USD 15."
+      ],
+      "root_cause": "The nearest hardware-to-price connector is selected before competing governing nominal heads in the same argument group are evaluated. Product bridging proves proximity but does not prove hardware is the priced head.",
+      "impact": "Maintenance, delivery, lease, financing, support or contract charges can be promoted as Dell hardware ASP.",
+      "required_fix": "Establish the governing nominal head for the argument group and fail closed when a non-hardware service, financing or contract head governs the product phrase, even if hardware is adjacent to an explicit price connector."
+    },
+    {
+      "finding_id": "R11-P2-TRANSFORMATION-CONNECTOR-PROOF-REBIND",
+      "severity": "P2",
+      "owner_stage": "S1_03B_source_to_compiled_proof_aware_transformation",
+      "code_refs": [
+        "src/retrieval/dell_report_frame_transformation_r11.py:309-339",
+        "src/retrieval/dell_report_frame_transformation_r11.py:418-439",
+        "src/retrieval/dell_report_predicate_frames_r11.py:2005-2019"
+      ],
+      "reproduction": {
+        "source": "Dell offered PowerEdge XE9680 hardware for USD 15.",
+        "compiled": "Dell offered PowerEdge XE9680 hardware at USD 15.",
+        "observed": "binding_accepted=true and semantic_signature_equal=true despite representation_digest_equal=false, changed connector spans and different proof digests, with no loss/addition/ambiguity flag"
+      },
+      "root_cause": "Transformation mappings retain connector spans and proof digests but acceptance does not compare them; the semantic relation body excludes connector identity and proof provenance.",
+      "impact": "A connector or relation-proof rebind can pass a contract described as proof-aware and lossless. Current complete-family coverage remains 100 percent only for the observed corpus and does not establish general transformation correctness.",
+      "required_fix": "Compare connector lexical class, proof digest and validated span mapping explicitly; a proof rebind or representation mismatch must either be a proved normalization or fail with a typed flag."
+    }
+  ],
+  "R11_engineering_verdict": {
+    "verdict": "FAIL_MATERIAL_FINDINGS_PRESERVED_SAME_STAGE_SUCCESSOR_REQUIRED",
+    "new_severity_counts": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 3,
+      "P3": 0
+    },
+    "identity_execution_privacy": "PASS_BOUNDED",
+    "R11_executed": true,
+    "R11_author_integrity": true,
+    "R11_independent": false,
+    "03B_independent": false,
+    "bounded_passes_do_not_offset_material_contract_findings": true
+  },
+  "R17_report_quality": {
+    "bundle_unchanged": true,
+    "verdict": "FAIL_GATE_OPEN_NOT_ASSESSABLE",
+    "carried_severity_counts": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 2,
+      "P3": 1
+    },
+    "reader_projection": {
+      "reader_report_chars": 21118,
+      "sources_markers": 25,
+      "EV_occurrences": 59,
+      "unique_EV_ids": 18,
+      "reader_visible_URLs": 0,
+      "citation_or_source_appendix_present": false
+    },
+    "claim_source_binding": {
+      "catalog_EV_resolution": "18_of_18",
+      "exact_EV_to_passage_title_issuer_date_period_locator_URL": "0_of_18",
+      "semantic_support": "NOT_ASSESSABLE"
+    },
+    "crosswalk": {
+      "pack_gaps": 14,
+      "dynamic_unit_gaps": 9,
+      "writer_groups": 4,
+      "writer_gap_refs": 10,
+      "S2_bridge_gaps": 4,
+      "bound_or_consumed_by_R17": false
+    },
+    "what_would_change": {
+      "items": 6,
+      "fully_operational_items": 0,
+      "method_parameters": 2,
+      "frozen_parameters": 0,
+      "pending_parameters": 2
+    },
+    "repetition": {
+      "frozen_evaluator_metric": "72_Facts_36_unique",
+      "independent_narrow_recount": "71_Facts_32_unique",
+      "exact_normalization_procedure": "NOT_ASSESSABLE",
+      "material_repetition_remains": true
+    },
+    "formal_8D": {
+      "status": "NOT_ASSESSABLE",
+      "score": null
+    }
+  },
+  "qualified_human": {
+    "accepted": false,
+    "requests": 8,
+    "items": 18,
+    "human_required_items": 16,
+    "decisions": 0
+  },
+  "combined_severity_counts": {
+    "P0": 0,
+    "P1": 2,
+    "P2": 5,
+    "P3": 1
+  },
+  "authority": {
+    "same_stage_non_overwriting_R12_plan_and_repair": true,
+    "new_R12_policy_authority_attempt_and_fresh_audit_only_after_author_gates": true,
+    "03C_external": false,
+    "03D_4B_embedding": false,
+    "03D_reranker": false,
+    "CandidateDecision": false,
+    "Evidence_or_NumericFact_promotion": false,
+    "Pack_or_Readiness": false,
+    "S2": false,
+    "S3_or_report_successor": false,
+    "qualified_human_product_publication_or_release": false
+  },
+  "explicit_unassessed_items": [
+    "five_external_source_ladders_execution_exhaustion_and_capture_quality",
+    "genuine_public_information_gap",
+    "changed_pool_4B_embedding_recall_usefulness",
+    "reranker_usefulness",
+    "general_language_recall_precision_outside_audited_families",
+    "R17_exact_claim_to_passage_semantic_support",
+    "R17_formal_8D_score",
+    "qualified_human_decisions",
+    "S1_S2_S3_product_publication_and_release_readiness"
+  ],
+  "known_boundary": "R11 remains immutable evidence of a valid exact execution and bounded current-corpus observations, but one P1 route-authority failure and three P2 semantic/provenance failures prevent independent 03B qualification. R17 remains separately unqualified. The next legal stage is only a non-overwriting same-stage R12 repair and fresh audit; no external or downstream authority exists.",
+  "result_digest": "810d77215350f9bd42ce14a8ec6337958c394ea1435bceb21be5e16a36d3f7fd"
+}

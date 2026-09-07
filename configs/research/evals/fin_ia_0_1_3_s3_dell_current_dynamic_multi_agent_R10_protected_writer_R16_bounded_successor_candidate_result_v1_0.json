@@ -1,0 +1,60 @@
+{
+  "acceptance": {
+    "S3_pass": false,
+    "independent_post_writer_review_pass": false,
+    "local_protected_contract_pass": true,
+    "product_acceptance": false,
+    "publication": false,
+    "qualified_human_review_pass": false,
+    "release_ready": false
+  },
+  "candidate_draft_digest": "3a410c0d1be4e6c3c54143ea6dcb08fe5698a294fde84de93b0b2491b9251283",
+  "case_key": "DELL",
+  "contract_finding_receipt_digest": "8916192dc00411d2e0dc86cac651e37818d3934bdb412f86fd5496bde35e371d",
+  "decision_digest": "802bdd58198b71f5c89cf8d12b5e712a185dc7194965f5f1c02ae688470c13aa",
+  "decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R16_bounded_successor_scope_decision_v1_0.json",
+  "decision_sha256": "cbce03f6f39ce2dbd7f84a5b289d975c75aae59e167d12cccf125d06ebc069bd",
+  "edit_receipt": {
+    "candidate_text_projection_digest": "874c7ddf68a55f2935355d0cc0453a6eb609d30cc0fda95c3ad9f5efa8133c2b",
+    "changed_model_text_paths": [
+      "sections[1].clauses[0].model_text",
+      "sections[3].clauses[0].model_text",
+      "sections[4].clauses[4].model_text",
+      "sections[5].clauses[1].model_text",
+      "sections[5].clauses[5].model_text",
+      "what_would_change[1].model_text",
+      "what_would_change[5].model_text"
+    ],
+    "edit_receipt_digest": "f957bf4b2aea28c5cc512e32c27ab7297542d521237352b6cf5bbee28f61d1b2",
+    "reference_projection_digest": "05ac970eedf7bc1f3f23f195be3872054e16cefd39f431349e82e811339321cc",
+    "reference_projection_unchanged": true,
+    "remaining_gaps_unchanged": true,
+    "source_text_projection_digest": "e9d586c8ddb4bf41533ad92360103881b62fcea5d341508c538057cef0e8a6d6",
+    "topology_unchanged": true
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 0,
+    "provider_calls": 0
+  },
+  "known_boundary": "R16 is a zero-provider Codex-authored bounded successor to an immutable independently failed R15. It is not its own independent or qualified-human review and grants no S3, product, publication, or release authority.",
+  "local_validation": {
+    "hard_finding_count": 0,
+    "protected_contract_pass": true,
+    "quality_finding_count": 0,
+    "surface_finding_count": 0
+  },
+  "private_full_result_digest": "7fa183beb676f796471d252c4e2c1471168f5d514ddfba2312cd93806922ffb2",
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-bounded-successor-r16/full_result.json",
+  "private_full_result_sha256": "d099e26e942cc2c3c1dde972b02edf8f069ec47134680ed52ddbde89c2fa3896",
+  "recorded_at": "2026-08-24T12:10:47+08:00",
+  "rendered_report_digest": "079793f194175d29872c3f88183d27a5ca0256bb69e1811b233dfded6893d705",
+  "result_digest": "39bc326c959c5eac0c79b8d03f96b6eba3b54665d1af2a0e75016e97e9ff51cf",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_BOUNDED_SUCCESSOR_R16",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_R16_bounded_successor_public_result_v1_0",
+  "source_R15_independent_review_status": "independent_post_writer_review_failed_material_finding",
+  "source_R15_result_digest": "e0f76545375b477bc035869c25b87193fd831d63e9a73c9de95071a58680f4f8",
+  "status": "R16_local_bounded_candidate_independent_review_pending"
+}

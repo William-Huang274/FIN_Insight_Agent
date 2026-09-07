@@ -1,0 +1,6 @@
+storage:
+  postgres:
+    postgres_url:
+      env: DAGSTER_POSTGRES_URL
+telemetry:
+  enabled: false

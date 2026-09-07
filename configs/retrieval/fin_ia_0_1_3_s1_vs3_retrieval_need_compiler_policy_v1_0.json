@@ -1,0 +1,36 @@
+{
+  "schema_version": "fin_ia_s1_vs3_retrieval_need_compiler_policy_v1_0",
+  "status": "pre_registered_provider_neutral_development_policy",
+  "recorded_at": "2026-08-17",
+  "maximum_needs_per_lane": 10,
+  "maximum_exact_phrase_needs": 2,
+  "authority": {
+    "provider_neutral": true,
+    "labels_joined_after_candidate_generation": true,
+    "hard_constraints_inherited_not_generated": true,
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "generation_model_calls": 0
+  },
+  "facet_role_cues": {
+    "orders_and_backlog": {"lexical": ["orders", "bookings", "backlog"], "semantic": "direct reported orders, bookings or backlog"},
+    "conversion_and_durability": {"lexical": ["shipments", "revenue conversion", "cancellation", "digestion"], "semantic": "direct conversion, shipment durability or cancellation evidence"},
+    "downstream_demand_context": {"lexical": ["demand", "deployment", "usage", "revenue growth"], "semantic": "bounded downstream demand read-through, not attributed purchasing"},
+    "reported_results": {"lexical": ["reported results", "revenue", "operating income", "gross margin"], "semantic": "observed current-period operating result, distinct from guidance"},
+    "guidance_and_outlook": {"lexical": ["guidance", "outlook", "expect", "forecast"], "semantic": "management guidance or forward outlook, distinct from reported result"},
+    "pricing_and_mix": {"lexical": ["pricing", "average selling price", "product mix"], "semantic": "direct pricing, ASP or product-mix mechanism"},
+    "margin_and_incremental_profit": {"lexical": ["gross margin", "operating margin", "incremental profit", "cost"], "semantic": "direct margin or incremental-profit mechanism with stated limits"},
+    "cash_generation": {"lexical": ["operating cash flow", "free cash flow", "cash conversion"], "semantic": "reported cash generation or conversion evidence"},
+    "working_capital_risk": {"lexical": ["working capital", "inventory", "receivables", "payment terms"], "semantic": "working-capital mechanism or risk"},
+    "subject_execution": {"lexical": ["capacity", "supply", "components", "lead time", "shipments"], "semantic": "issuer-direct execution, component or delivery constraint"},
+    "upstream_capacity_context": {"lexical": ["capacity", "yield", "allocation", "shipments", "supply"], "semantic": "bounded upstream capacity, yield or allocation read-through"},
+    "subject_relationship_disclosure": {"lexical": ["customer", "supplier", "commitment", "concentration", "deposit"], "semantic": "issuer-direct customer, supplier, commitment or concentration relationship"},
+    "counterparty_direct_mention": {"lexical": ["customer", "supplier", "partnership", "orders", "platform"], "semantic": "counterparty-direct named economic relationship"},
+    "issuer_counterevidence": {"lexical": ["risk", "constraint", "cancellation", "inventory", "concentration"], "semantic": "issuer-direct fact that weakens, limits or reverses the thesis"},
+    "upstream_or_demand_counterevidence": {"lexical": ["risk", "competition", "mismatch", "substitution", "inventory correction"], "semantic": "upstream or downstream fact that weakens the thesis"},
+    "issuer_policy_exposure": {"lexical": ["export controls", "regulation", "license", "tariffs", "compliance"], "semantic": "issuer-direct regulatory, export or compliance exposure"},
+    "capital_allocation": {"lexical": ["share repurchases", "dividends", "capital return", "net debt"], "semantic": "reported capital allocation or net-debt action"},
+    "point_in_time_valuation": {"lexical": ["market price", "valuation", "shares outstanding", "earnings per share"], "semantic": "point-in-time market and denominator input; narrative retrieval is not numeric authority"}
+  },
+  "known_boundary": "This compiler decomposes one already-approved EvidenceRequest. User-question understanding belongs to S3 and NumericFact authority belongs to S2."
+}

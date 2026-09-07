@@ -275,29 +275,150 @@ def find_sec_filing_sections(
 ) -> list[SecFilingSection]:
     normalized_form = str(form_type or "").upper().strip()
     if normalized_form == "10-Q":
-        return find_10q_sections(
+        sections = find_10q_sections(
             text=text,
             output_items=output_items,
             min_section_chars=min_section_chars,
         )
-    if normalized_form == "20-F":
-        return find_20f_sections(
+    elif normalized_form == "20-F":
+        sections = find_20f_sections(
             text=text,
             output_items=output_items if output_items is not None else DEFAULT_20F_OUTPUT_ITEMS,
             min_section_chars=min_section_chars,
         )
-    if normalized_form == "40-F":
-        return find_40f_sections(
+    elif normalized_form == "40-F":
+        sections = find_40f_sections(
             text=text,
             output_items=output_items if output_items is not None else DEFAULT_40F_OUTPUT_ITEMS,
             min_section_chars=min_section_chars,
         )
-    return find_10k_sections(
+    else:
+        sections = find_10k_sections(
+            text=text,
+            output_items=output_items if output_items is not None else DEFAULT_OUTPUT_ITEMS,
+            min_start_span_chars=min_start_span_chars,
+            min_section_chars=min_section_chars,
+        )
+    if sections or normalized_form not in {"10-K", "10-Q"}:
+        return sections
+    return _find_inline_uppercase_sec_sections(
         text=text,
-        output_items=output_items if output_items is not None else DEFAULT_OUTPUT_ITEMS,
-        min_start_span_chars=min_start_span_chars,
+        form_type=normalized_form,
+        output_items=output_items,
         min_section_chars=min_section_chars,
     )
+
+
+def _find_inline_uppercase_sec_sections(
+    *,
+    text: str,
+    form_type: str,
+    output_items: Iterable[str] | None,
+    min_section_chars: int,
+) -> list[SecFilingSection]:
+    """Recover filings whose extractor flattened page headings into body lines.
+
+    Some SEC inline-XBRL documents preserve the authoritative headings as
+    uppercase text embedded after ``Table of Contents`` rather than as separate
+    lines.  The normal line-oriented detector intentionally remains primary;
+    this bounded fallback runs only when it found no usable sections.
+    """
+
+    if form_type == "10-Q":
+        definitions = (
+            ("1", "FINANCIAL STATEMENTS", "Item 1. Financial Statements", "1"),
+            ("2", "MANAGEMENT", "Item 2. Management's Discussion and Analysis", "2"),
+            (
+                "3",
+                "QUANTITATIVE AND QUALITATIVE DISCLOSURES ABOUT MARKET RISK",
+                "Item 3. Quantitative and Qualitative Disclosures About Market Risk",
+                "3",
+            ),
+            ("4", "CONTROLS AND PROCEDURES", "Item 4. Controls and Procedures", "4"),
+            ("1", "LEGAL PROCEEDINGS", "Item 1. Legal Proceedings", None),
+            ("1A", "RISK FACTORS", "Item 1A. Risk Factors", "1A"),
+            (
+                "2",
+                "UNREGISTERED SALES OF EQUITY SECURITIES",
+                "Item 2. Unregistered Sales of Equity Securities",
+                None,
+            ),
+            ("3", "DEFAULTS UPON SENIOR SECURITIES", "Item 3. Defaults", None),
+            ("4", "MINE SAFETY DISCLOSURES", "Item 4. Mine Safety", None),
+            ("5", "OTHER INFORMATION", "Item 5. Other Information", None),
+            ("6", "EXHIBITS", "Item 6. Exhibits", None),
+        )
+        selected_items = _normalize_item_filter(
+            output_items if output_items is not None else DEFAULT_10Q_OUTPUT_ITEMS
+        )
+    else:
+        definitions = (
+            ("1", "BUSINESS", SECTION_DEFINITION_BY_ITEM["1"].canonical_title, "1"),
+            ("1A", "RISK FACTORS", SECTION_DEFINITION_BY_ITEM["1A"].canonical_title, "1A"),
+            ("1B", "UNRESOLVED STAFF COMMENTS", "Item 1B. Unresolved Staff Comments", None),
+            ("1C", "CYBERSECURITY", "Item 1C. Cybersecurity", None),
+            ("2", "PROPERTIES", "Item 2. Properties", None),
+            ("3", "LEGAL PROCEEDINGS", "Item 3. Legal Proceedings", None),
+            ("4", "MINE SAFETY DISCLOSURES", "Item 4. Mine Safety Disclosures", None),
+            ("5", "MARKET FOR REGISTRANT", "Item 5. Market for Common Equity", None),
+            ("6", "RESERVED", "Item 6. Reserved", None),
+            ("7", "MANAGEMENT", SECTION_DEFINITION_BY_ITEM["7"].canonical_title, "7"),
+            (
+                "7A",
+                "QUANTITATIVE AND QUALITATIVE DISCLOSURES ABOUT MARKET RISK",
+                SECTION_DEFINITION_BY_ITEM["7A"].canonical_title,
+                "7A",
+            ),
+            ("8", "FINANCIAL STATEMENTS", SECTION_DEFINITION_BY_ITEM["8"].canonical_title, "8"),
+            ("9", "CHANGES IN AND DISAGREEMENTS", "Item 9. Changes and Disagreements", None),
+            ("9A", "CONTROLS AND PROCEDURES", "Item 9A. Controls and Procedures", None),
+            ("9B", "OTHER INFORMATION", "Item 9B. Other Information", None),
+            ("9C", "DISCLOSURE REGARDING FOREIGN", "Item 9C. Foreign Jurisdictions", None),
+            ("10", "DIRECTORS", "Item 10. Directors", None),
+            ("11", "EXECUTIVE COMPENSATION", "Item 11. Executive Compensation", None),
+            ("12", "SECURITY OWNERSHIP", "Item 12. Security Ownership", None),
+            ("13", "CERTAIN RELATIONSHIPS", "Item 13. Certain Relationships", None),
+            ("14", "PRINCIPAL ACCOUNTANT", "Item 14. Principal Accountant", None),
+            ("15", "EXHIBITS", "Item 15. Exhibits", None),
+        )
+        selected_items = _normalize_item_filter(
+            output_items if output_items is not None else DEFAULT_OUTPUT_ITEMS
+        )
+
+    boundaries: list[tuple[str | None, str, int]] = []
+    cursor = 0
+    for match_code, title_anchor, canonical_title, emitted_item_code in definitions:
+        pattern = re.compile(
+            rf"ITEM\s+{re.escape(match_code)}\s*[^A-Za-z0-9]{{0,8}}\s*"
+            rf"{re.escape(title_anchor)}"
+        )
+        match = pattern.search(text, cursor)
+        if match is None:
+            continue
+        boundaries.append((emitted_item_code, canonical_title, match.start()))
+        cursor = match.end()
+
+    sections: list[SecFilingSection] = []
+    for index, (item_code, canonical_title, start) in enumerate(boundaries):
+        end = boundaries[index + 1][2] if index + 1 < len(boundaries) else len(text)
+        section_text = text[start:end].strip()
+        if (
+            item_code is None
+            or selected_items is not None
+            and item_code not in selected_items
+            or len(section_text) < min_section_chars
+        ):
+            continue
+        sections.append(
+            SecFilingSection(
+                item_code=item_code,
+                section=canonical_title,
+                char_start=start,
+                char_end=end,
+                text=section_text,
+            )
+        )
+    return sections
 
 
 def find_10q_sections(

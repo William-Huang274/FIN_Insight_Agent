@@ -1,0 +1,35 @@
+{
+  "schema_version": "fin_ia_official_source_capture_plan_v1_0",
+  "status": "official_source_capture_plan",
+  "recorded_at": "2026-08-22",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "predecessor_attempt_ids": [
+    "FIN_0_1_3_S1_DELL_FREE_PUBLIC_CONTEXT_R1_20260822",
+    "FIN_0_1_3_S1_DELL_FREE_PUBLIC_CONTEXT_R2_20260822"
+  ],
+  "purpose": "Use HPE's SEC-filed Q2 FY26 10-Q as an equivalent competitor-primary route after the newsroom host failed under both requests and curl transports.",
+  "policy": {
+    "capture_before_parse": true,
+    "https_only": true,
+    "credentials_forbidden": true,
+    "post_as_of_rejected": true,
+    "source_strength_and_claim_use_required": true,
+    "discovery_result_is_not_evidence": true
+  },
+  "sources": [
+    {
+      "route_id": "DELL_CONTEXT_HPE_Q2_FY26_SEC_10Q",
+      "case_key": "DELL",
+      "url": "https://www.sec.gov/Archives/edgar/data/1645590/000164559026000055/hpe-20260430.htm",
+      "allowed_hosts": ["www.sec.gov"],
+      "expected_content_types": ["text/html"],
+      "byte_ceiling": 5000000,
+      "timeout_seconds": 45,
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "source_role": "competitor_primary_context",
+      "expected_publication_date": "2026-06-02"
+    }
+  ]
+}

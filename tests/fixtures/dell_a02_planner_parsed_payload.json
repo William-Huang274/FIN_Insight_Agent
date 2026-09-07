@@ -1,0 +1,449 @@
+{
+  "schema_version": "fin_ia_dell_a02_planner_parsed_payload_fixture_v1_0",
+  "paid_full_chain_execution_id": "20260902-dell-reference-vertical-structured-a02",
+  "source_attempt_state": "start_failed",
+  "authority_mode": "immutable_audit_only",
+  "resume_allowed": false,
+  "successor_authorized": false,
+  "source_artifact_ref": "qualification://dell-reference-vertical/A02/planner-outcome",
+  "source_artifact_sha256": "234b64c3b03b39d8b76f7277dfdb4f64c2686802df5dc5c254304523d71e10d7",
+  "parsed_payload_sha256": "bdeec49fb9bf75aa8101ce9ccc928d45c4f7d80b8b8378fe2a411339aa99c0fd",
+  "extraction_policy": "parsed_payload_only_raw_response_omitted",
+  "parsed_payload": {
+    "tasks": [
+      {
+        "branch_id": "Q1_ISSUER_TRUTH",
+        "evidence_requests": [
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "DELL"
+            ],
+            "limit": 6,
+            "purpose": "Issuer narrative and company-defined metrics for Q2 event evidence and guidance definitions",
+            "query": "Dell Technologies FY2027 Q2 earnings release financial tables revenue operating income gross profit net income diluted EPS cash flow from operations capital expenditures AI server orders backlog guidance",
+            "retrieval_lanes": [
+              "prose_leaf",
+              "table_leaf"
+            ],
+            "route_ids": [
+              "F2_DELL_IR_EARNINGS"
+            ],
+            "source_roles": [
+              "issuer_narrative_and_company_defined_metrics"
+            ],
+            "source_route": "reviewed_first"
+          },
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "DELL"
+            ],
+            "limit": 6,
+            "purpose": "Prepared remarks and performance review for orders, backlog, guidance and cash narrative",
+            "query": "Dell Technologies FY2027 Q2 prepared remarks performance review AI infrastructure orders backlog revenue guidance working capital cash flow",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F2_DELL_IR_EARNINGS"
+            ],
+            "source_roles": [
+              "issuer_narrative_and_company_defined_metrics"
+            ],
+            "source_route": "reviewed_first"
+          }
+        ],
+        "fact_requests": [
+          {
+            "granularity": "quarter_discrete",
+            "metric_ids": [
+              "revenue",
+              "gross_profit",
+              "operating_income",
+              "net_income",
+              "diluted_eps",
+              "operating_cash_flow",
+              "capital_expenditures",
+              "accounts_receivable",
+              "inventory",
+              "accounts_payable",
+              "cash_and_equivalents"
+            ],
+            "period_end": "2026-05-01",
+            "requested_unit": "reported_source_unit",
+            "selection_mode": "exact_period_end",
+            "ticker": "DELL"
+          },
+          {
+            "granularity": "quarter_discrete",
+            "metric_ids": [
+              "revenue",
+              "gross_profit",
+              "operating_income",
+              "net_income",
+              "diluted_eps",
+              "operating_cash_flow",
+              "capital_expenditures",
+              "accounts_receivable",
+              "inventory",
+              "accounts_payable",
+              "cash_and_equivalents"
+            ],
+            "period_end": "2026-01-30",
+            "requested_unit": "reported_source_unit",
+            "selection_mode": "exact_period_end",
+            "ticker": "DELL"
+          }
+        ],
+        "objective": "Reconcile DELL fiscal identity, metric definitions, orders, revenue, backlog, guidance, profit, working capital and cash for FY2027 Q1/Q2."
+      },
+      {
+        "branch_id": "Q2_DEMAND_QUALITY",
+        "evidence_requests": [
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "DELL"
+            ],
+            "limit": 6,
+            "purpose": "Issuer narrative on named deployments and demand quality",
+            "query": "Dell Technologies AI server orders backlog customer deployments named hyperscaler enterprise demand durable demand pre-buy double-order",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F2_DELL_IR_EARNINGS"
+            ],
+            "source_roles": [
+              "issuer_narrative_and_company_defined_metrics"
+            ],
+            "source_route": "reviewed_first"
+          },
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "MSFT",
+              "META",
+              "AMZN",
+              "GOOGL"
+            ],
+            "limit": 6,
+            "purpose": "Customer-side capex and named Dell relationship corroboration",
+            "query": "hyperscaler capex capacity deployment Microsoft Meta Amazon Google Alphabet AI infrastructure Dell named relationship",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F4_CUSTOMER_CAPEX_DEPLOYMENT"
+            ],
+            "source_roles": [
+              "industry_demand_context_or_named_customer_relationship"
+            ],
+            "source_route": "reviewed_first"
+          }
+        ],
+        "objective": "Separate named deployments, customer cohorts and durable demand from generic capex, pre-buy, double-order and backlog timing."
+      },
+      {
+        "branch_id": "Q3_UNITS_ASP_PVM",
+        "evidence_requests": [
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "DELL"
+            ],
+            "limit": 6,
+            "purpose": "Issuer disclosure of units, ASP or PVM; otherwise establish null gap",
+            "query": "Dell Technologies AI server units average selling price price volume mix GPU server configuration revenue recognition",
+            "retrieval_lanes": [
+              "prose_leaf",
+              "table_leaf"
+            ],
+            "route_ids": [
+              "F2_DELL_IR_EARNINGS"
+            ],
+            "source_roles": [
+              "issuer_narrative_and_company_defined_metrics"
+            ],
+            "source_route": "reviewed_first"
+          },
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "DELL"
+            ],
+            "limit": 6,
+            "purpose": "Product configuration and integration state for bounded price/unit observations",
+            "query": "Dell PowerEdge AI server SKU configuration GPU networking storage cooling availability firmware",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F3_DELL_PRODUCT_SUPPORT"
+            ],
+            "source_roles": [
+              "product_configuration_and_integration_state"
+            ],
+            "source_route": "reviewed_first"
+          }
+        ],
+        "objective": "Determine whether units, price and mix can be supported as reported values, bounded observations, scenarios or null gaps."
+      },
+      {
+        "branch_id": "Q4_ARCHITECTURE_RAMP",
+        "evidence_requests": [
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "DELL"
+            ],
+            "limit": 6,
+            "purpose": "Dell product support and newsroom architecture ramp state",
+            "query": "Dell PowerEdge AI server platform announcement qualification firmware readiness production shipment deployment NVIDIA AMD Intel",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F3_DELL_PRODUCT_SUPPORT"
+            ],
+            "source_roles": [
+              "product_configuration_and_integration_state"
+            ],
+            "source_route": "reviewed_first"
+          },
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "NVDA",
+              "AMD",
+              "INTC"
+            ],
+            "limit": 6,
+            "purpose": "Platform supplier state for architecture ramp corroboration",
+            "query": "NVIDIA AMD Intel GPU CPU architecture production shipment OEM compatibility data center supply",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F6_COMPUTE_PLATFORM_SUPPLIERS"
+            ],
+            "source_roles": [
+              "platform_and_supplier_state"
+            ],
+            "source_route": "reviewed_first"
+          }
+        ],
+        "objective": "Track each platform through announcement, qualification, firmware readiness, production, shipment, deployment and revenue recognition."
+      },
+      {
+        "branch_id": "Q5_SUPPLY_AND_PRICE",
+        "evidence_requests": [
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "MU",
+              "TSM",
+              "AVGO",
+              "SK_HYNIX"
+            ],
+            "limit": 6,
+            "purpose": "Memory, foundry, networking and storage supply and price direction",
+            "query": "HBM server DRAM NAND eSSD packaging GPU networking liquid cooling power supply constraint price direction",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F7_MEMORY_FOUNDRY_NETWORK_STORAGE"
+            ],
+            "source_roles": [
+              "supplier_reported_direction_and_capacity_state"
+            ],
+            "source_route": "reviewed_first"
+          },
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "DELL"
+            ],
+            "limit": 6,
+            "purpose": "Issuer narrative on supply constraints and cost pass-through",
+            "query": "Dell Technologies supply constraint component cost GPU memory networking margin impact AI server",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F2_DELL_IR_EARNINGS"
+            ],
+            "source_roles": [
+              "issuer_narrative_and_company_defined_metrics"
+            ],
+            "source_route": "reviewed_first"
+          }
+        ],
+        "objective": "Separate HBM, server DRAM, NAND/eSSD, packaging, GPU, networking, liquid cooling and power constraints and their direction of transmission."
+      },
+      {
+        "branch_id": "Q6_MODEL_COMPUTE_DEMAND",
+        "evidence_requests": [
+          {
+            "capture_limit": 2,
+            "limit": 6,
+            "purpose": "Workload and benchmark context distinguishing training vs inference demand",
+            "query": "model training inference test-time compute agentic workload benchmark MLCommons OpenAI Anthropic compute demand",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F9_MODEL_COMPUTE_AND_BENCHMARKS"
+            ],
+            "source_roles": [
+              "workload_and_benchmark_context"
+            ],
+            "source_route": "reviewed_first"
+          },
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "MSFT",
+              "META",
+              "AMZN",
+              "GOOGL"
+            ],
+            "limit": 6,
+            "purpose": "Customer capex and deployment bridge to systems demand",
+            "query": "hyperscaler AI compute capacity deployment training inference capex Microsoft Meta Amazon Google",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F4_CUSTOMER_CAPEX_DEPLOYMENT"
+            ],
+            "source_roles": [
+              "industry_demand_context_or_named_customer_relationship"
+            ],
+            "source_route": "reviewed_first"
+          }
+        ],
+        "objective": "Distinguish training, batch inference, low-latency inference and agentic test-time compute and connect only observable demand bridges to systems."
+      },
+      {
+        "branch_id": "Q7_EXPORT_CONTROL_CHINA",
+        "evidence_requests": [
+          {
+            "capture_limit": 2,
+            "limit": 6,
+            "purpose": "Regulatory text and effective state for current export control rule",
+            "query": "US export control advanced computing AI chips China rule effective date controlled performance destination end-user BIS Federal Register eCFR",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F10_EXPORT_CONTROL_AND_POLICY"
+            ],
+            "source_roles": [
+              "regulatory_text_and_effective_state"
+            ],
+            "source_route": "reviewed_first"
+          },
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "DELL"
+            ],
+            "limit": 6,
+            "purpose": "Issuer geographic revenue and export control exposure disclosure",
+            "query": "Dell Technologies Greater China revenue export control exposure geographic segment disclosure",
+            "retrieval_lanes": [
+              "prose_leaf",
+              "table_leaf"
+            ],
+            "route_ids": [
+              "F1_SEC_ISSUER_FACTS"
+            ],
+            "source_roles": [
+              "issuer_numeric_and_filing_identity"
+            ],
+            "source_route": "reviewed_first"
+          }
+        ],
+        "objective": "Bind the current rule version, effective date, controlled performance, destination and end-user conditions while separating revenue, supply-chain and customer exposure."
+      },
+      {
+        "branch_id": "Q8_COMPETITION_VALUE_POOL",
+        "evidence_requests": [
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "HPE",
+              "SMCI"
+            ],
+            "limit": 6,
+            "purpose": "Peer OEM demand definitions, margins and working-capital counterevidence",
+            "query": "HPE Supermicro Lenovo AI server orders backlog revenue margin working capital architecture timing",
+            "retrieval_lanes": [
+              "prose_leaf",
+              "table_leaf"
+            ],
+            "route_ids": [
+              "F8_OEM_COMPETITION"
+            ],
+            "source_roles": [
+              "peer_context_and_counterevidence"
+            ],
+            "source_route": "reviewed_first"
+          },
+          {
+            "capture_limit": 2,
+            "issuer_ids": [
+              "NVDA",
+              "AMD",
+              "INTC",
+              "MU",
+              "TSM",
+              "AVGO"
+            ],
+            "limit": 6,
+            "purpose": "Value capture across compute, memory, network and storage layers",
+            "query": "NVIDIA AMD Intel Micron TSMC Broadcom SK Hynix data center revenue margin value capture compute memory network storage",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F6_COMPUTE_PLATFORM_SUPPLIERS",
+              "F7_MEMORY_FOUNDRY_NETWORK_STORAGE"
+            ],
+            "source_roles": [
+              "platform_and_supplier_state",
+              "supplier_reported_direction_and_capacity_state"
+            ],
+            "source_route": "reviewed_first"
+          }
+        ],
+        "objective": "Compare only reconciled peer definitions and locate publicly observable value capture across OEM, compute, memory, network and storage layers."
+      },
+      {
+        "branch_id": "Q9_COUNTEREVIDENCE_WWC",
+        "evidence_requests": [
+          {
+            "capture_limit": 2,
+            "limit": 6,
+            "purpose": "Independent counterevidence and contradiction discovery",
+            "query": "Dell AI server demand slowdown order cancellation backlog risk competition supply glut margin pressure counterargument",
+            "retrieval_lanes": [
+              "prose_leaf"
+            ],
+            "route_ids": [
+              "F12_INDEPENDENT_COUNTEREVIDENCE"
+            ],
+            "source_roles": [
+              "candidate_or_independent_context_not_numeric_authority"
+            ],
+            "source_route": "external_required"
+          }
+        ],
+        "objective": "Test every material thesis against a source-bound counterclaim and a monitorable what-would-change condition."
+      }
+    ]
+  }
+}

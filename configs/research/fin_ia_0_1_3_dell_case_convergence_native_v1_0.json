@@ -1,0 +1,112 @@
+{
+  "schema_version": "fin_ia_dell_reference_vertical_deepseek_structured_agents_v1_0",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "base_url": "https://api.deepseek.com",
+  "structured_output_method": "function_calling",
+  "strict_provider_schema": false,
+  "thinking": "enabled",
+  "temperature": 0,
+  "max_retries": 0,
+  "token_budget_basis": {
+    "planner": {
+      "node_role": "planner",
+      "node_purpose": "Unused compatibility configuration; this bounded convergence does not run a planner or Lead model.",
+      "input_scale": "One research question, one as-of date, and at most 16 compact branch method records; no evidence corpus or prior model conversation.",
+      "required_outputs": [
+        "selected branch tasks",
+        "external or local evidence requests",
+        "typed financial-fact requests"
+      ],
+      "schema_burden": "Up to 16 tasks, each with no more than 8 evidence requests and 24 typed financial-fact requests.",
+      "materiality_quality_risk": "An omitted required branch or vague request can starve every downstream specialist; the graph separately rejects unknown or missing required branches.",
+      "comparable_run_evidence": "No paid run exists for this new vertical; the full nine-branch deterministic fixture serializes to 81,082 characters, so a 120,000-character fail-before-transport ceiling leaves bounded headroom while the first real call remains a qualification attempt.",
+      "reasoning_profile": "independent_single_turn_thinking_disabled_structured_reasoning",
+      "max_input_characters": 120000,
+      "max_output_tokens": 6000,
+      "timeout_seconds": 180,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "specialist": {
+      "input_scale": "Ten preserved workpapers over nine Dell themes,141466 view characters, six targeted revisions. Read current papers and exact source windows on demand; never import2.91M notebook characters or another agent's private reasoning.",
+      "schema_burden": "Native read-only MCP tools plus one source-bound domain submission. Free Chinese report uses exact paper:claim links, not a fixed prose schema. Local errors returned together.",
+      "materiality_quality_risk": "Do not equate source binding with semantic truth; distinguish period/company/unit, non-S2, demand proxy vs usage, regional aggregate and volume shipment. Report material unresolved issues honestly.",
+      "comparable_run_evidence": "A1 case Counter14/Verifier10calls,total1567290tokens/1.9244712CNY/473.5swall. It found genuine issues but missed demand-vs-usage; explicit host feedback added, no blind evaluation claim. Preserve original papers.",
+      "reasoning_profile": "agentic_message_history_thinking_enabled",
+      "max_input_characters": 700000,
+      "max_output_tokens": 32000,
+      "timeout_seconds": 480,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport",
+      "node_role": "specialist",
+      "node_purpose": "Write a coherent Chinese report answering the complete Dell research question from current revised papers and reread sources, not ten pasted papers or a disclaimer-only answer.",
+      "required_outputs": [
+        "Free Chinese report with a clear integrated thesis",
+        "All material reasoning bound inline to current paper:claim IDs",
+        "Evidence authority and remaining meaningful limitations"
+      ]
+    },
+    "counter": {
+      "input_scale": "Ten preserved workpapers over nine Dell themes,141466 view characters, six targeted revisions. Read current papers and exact source windows on demand; never import2.91M notebook characters or another agent's private reasoning.",
+      "schema_burden": "Native read-only MCP tools plus one source-bound domain submission. Free Chinese report uses exact paper:claim links, not a fixed prose schema. Local errors returned together.",
+      "materiality_quality_risk": "Do not equate source binding with semantic truth; distinguish period/company/unit, non-S2, demand proxy vs usage, regional aggregate and volume shipment. Report material unresolved issues honestly.",
+      "comparable_run_evidence": "A1 case Counter14/Verifier10calls,total1567290tokens/1.9244712CNY/473.5swall. It found genuine issues but missed demand-vs-usage; explicit host feedback added, no blind evaluation claim. Preserve original papers.",
+      "reasoning_profile": "agentic_message_history_thinking_enabled",
+      "max_input_characters": 700000,
+      "max_output_tokens": 32000,
+      "timeout_seconds": 480,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport",
+      "node_role": "counter",
+      "node_purpose": "Unused compatibility configuration in this convergence graph; no additional Counter model execution authorized.",
+      "required_outputs": [
+        "Chinese independent report assessment",
+        "Exact report-quote anchored material/advisory findings",
+        "Unresolved data or execution requests without fake gap claims"
+      ]
+    },
+    "lead": {
+      "node_role": "lead",
+      "node_purpose": "Unused compatibility configuration; this bounded convergence does not run a planner or Lead model.",
+      "input_scale": "One disclosed Q8 branch method plus Q1 seed and at most two Q8 tasks. Short independent native Lead history; no other specialist private reasoning.",
+      "required_outputs": [
+        "Q8 task with material research criteria",
+        "Actual Q8 workpaper or explicit attention",
+        "Targeted handoff, not full-case acceptance"
+      ],
+      "schema_burden": "Same three native planning tools;host-injected context;one Q8 obligation,at most two tasks.",
+      "materiality_quality_risk": "Do not equate targeted Q8 readiness with full Dell research convergence, independent review, final report or product PASS.",
+      "comparable_run_evidence": "Full A2 Flash/disabled Lead completed7planning turns atestimated0.114303CNY,delegatedeightrealworkers;failure ownedQ8localcontextbudget. No whole-case rerun.",
+      "reasoning_profile": "agentic_message_history_thinking_disabled",
+      "max_input_characters": 500000,
+      "max_output_tokens": 8000,
+      "timeout_seconds": 480,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    }
+  },
+  "agentic_message_history": true,
+  "reasoning_effort": "low",
+  "model_profiles": {
+    "repair": {
+      "model": "deepseek-v4-pro",
+      "thinking": "enabled",
+      "reasoning_effort": "low"
+    },
+    "verifier": {
+      "model": "deepseek-v4-pro",
+      "thinking": "enabled",
+      "reasoning_effort": "low"
+    }
+  },
+  "runtime_context_binding": true
+}

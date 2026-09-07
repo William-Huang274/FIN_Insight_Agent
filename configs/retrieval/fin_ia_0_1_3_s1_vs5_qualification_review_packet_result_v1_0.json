@@ -1,0 +1,34 @@
+{
+  "authority": {
+    "final_gold": false,
+    "qualification_execution_authorized": false,
+    "runtime_visible": false
+  },
+  "bound_inputs": {
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_compiled_objects/live-r1/objects.jsonl",
+    "compiled_objects_sha256": "adf1da6a85d3d0bf34f2752521ffbf6e6813313238b1c9c7ca2fb8ddb2f4449c",
+    "overlay_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_overlay_v1_0.json",
+    "overlay_sha256": "38cafea92c71a4c4edd91e95083514f3ba33f04cebd6c4c7d7c44b36f9cb3f67",
+    "preregistration_ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+    "preregistration_sha256": "e16db48de84e6cb0e5c586032e4bff446307d2dbdad898999de8a935b7124749",
+    "runtime_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_runtime_inputs_result_v1_0.json",
+    "runtime_result_sha256": "95bdc4c6f9b16f7d8ae66d99018a8d8939c00e1ebbb9ee66b020d619b6b3c72e"
+  },
+  "private_output": {
+    "bytes": 1428886,
+    "ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_review/v1_0/review_packet.jsonl",
+    "sha256": "367f75706569f0cc93b5996b2f504e2fba0bdd3fff3ef411fc1927d21023b5ff"
+  },
+  "recorded_at": "2026-08-18",
+  "schema_version": "fin_ia_s1_vs5_qualification_review_packet_result_v1_0",
+  "status": "evaluator_only_source_review_packet_materialized_not_gold",
+  "summary": {
+    "example_count": 30,
+    "learned_vector_calls": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "per_example_limit": 60,
+    "references_created": 0,
+    "review_candidate_count": 1476
+  }
+}

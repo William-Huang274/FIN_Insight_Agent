@@ -1,0 +1,103 @@
+{
+  "schema_version": "fin_ia_dell_reference_vertical_deepseek_structured_agents_v1_0",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "base_url": "https://api.deepseek.com",
+  "structured_output_method": "function_calling",
+  "strict_provider_schema": false,
+  "thinking": "enabled",
+  "temperature": 0,
+  "max_retries": 0,
+  "token_budget_basis": {
+    "planner": {
+      "node_role": "planner",
+      "node_purpose": "Turn the frozen DELL question tree and answer-free branch methods into a bounded set of evidence and financial-fact requests without answering the case.",
+      "input_scale": "One research question, one as-of date, and at most 16 compact branch method records; no evidence corpus or prior model conversation.",
+      "required_outputs": [
+        "selected branch tasks",
+        "external or local evidence requests",
+        "typed financial-fact requests"
+      ],
+      "schema_burden": "Up to 16 tasks, each with no more than 8 evidence requests and 24 typed financial-fact requests.",
+      "materiality_quality_risk": "An omitted required branch or vague request can starve every downstream specialist; the graph separately rejects unknown or missing required branches.",
+      "comparable_run_evidence": "No paid run exists for this new vertical; the full nine-branch deterministic fixture serializes to 81,082 characters, so a 120,000-character fail-before-transport ceiling leaves bounded headroom while the first real call remains a qualification attempt.",
+      "reasoning_profile": "independent_single_turn_thinking_disabled_structured_reasoning",
+      "max_input_characters": 120000,
+      "max_output_tokens": 6000,
+      "timeout_seconds": 180,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "specialist": {
+      "node_role": "specialist",
+      "node_purpose": "One Lead-delegated Dell research obligation, using the existing autonomous Specialist loop, local sources, S2 and explicitly enabled public web. Produce a useful Chinese source-grounded workpaper, not a final verified product.",
+      "input_scale": "One bounded task and selected dependency workpapers; sources are read on demand, preferably focused windows before expansion. A2 two-topic work took 17 requests/900455 tokens and reached unaccepted drafts. Retain original sources, own reasoning and errors; 500000 host characters provides measured correction headroom, not a provider context window.",
+      "required_outputs": [
+        "task-specific source-backed analysis",
+        "exact citations and source limitations",
+        "material counterevidence and uncertainty",
+        "relevant S2 facts or explicit non-S2 number provenance",
+        "valid workpaper or actionable human handoff"
+      ],
+      "schema_burden": "Same five native tools, source_space adds local/web selection. Focus the workpaper on material claims rather than restating every source; exact quotations remain required. Generic ad-hoc calculations are not yet exposed; use existing S2 derived metrics or distinguish reported observations without inventing calculated facts.",
+      "materiality_quality_risk": "Peers, forecasts, architecture stages, policy dates and supply constraints must not be relabeled Dell realized financial results. Source reading permits non-S2 statements with disclosure, not admission or temporal verification. Missing observations are not proved public-information gaps.",
+      "comparable_run_evidence": "A2 produced source-rich but unaccepted Q5/Q6 drafts before HTTP402. Cost audit found repeated review/reasoning costly. Same archived review input: Pro/low gave valid next action at 15023 output tokens; Flash/high exhausted32000 with no action. This supports a Pro/low full-task qualification, not a claim of equal quality. Local full-scope and web MCP checks precede this run.",
+      "reasoning_profile": "agentic_message_history_thinking_enabled",
+      "max_input_characters": 500000,
+      "max_output_tokens": 32000,
+      "timeout_seconds": 480,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "counter": {
+      "node_role": "counter",
+      "node_purpose": "Stress-test the complete first-pass workpaper set and optionally request one material, targeted branch rework.",
+      "input_scale": "At most 16 compact branch workpapers from one case and no prior provider conversation or hidden reasoning history.",
+      "required_outputs": [
+        "strongest counter-thesis",
+        "material challenges",
+        "what-would-change conditions",
+        "zero or one targeted reroute request"
+      ],
+      "schema_burden": "One counter decision with up to 12 challenges and a single optional reroute containing bounded Evidence and Finance requests.",
+      "materiality_quality_risk": "An indiscriminate reroute creates cost and latency without improving the case; graph topology permits only one branch and one rework round.",
+      "comparable_run_evidence": "Deterministic fixtures prove the one-reroute topology and host challenge binding; no paid counter-node qualification exists yet.",
+      "reasoning_profile": "independent_single_turn_thinking_disabled_structured_reasoning",
+      "max_input_characters": 160000,
+      "max_output_tokens": 6000,
+      "timeout_seconds": 180,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "lead": {
+      "node_role": "lead",
+      "node_purpose": "Autonomously allocate the complete Dell Q1-Q9 research coverage, reuse accepted Q1, inspect actual worker workpapers and plan targeted follow-ups before a review handoff. Does not write or approve the final report.",
+      "input_scale": "One complete Dell question, nine compact method records and reviewed Q1 seed; up to twelve dynamic task results accumulate over own native history. Workpapers not whole source corpora cross this boundary.500000 characters supports larger full-case collection while preserving tool feedback.",
+      "required_outputs": [
+        "dynamic semantic tasks and dependencies",
+        "purposeful parallel research batches",
+        "reflection on actual workpapers and missing coverage",
+        "handoff for independent review or actionable attention"
+      ],
+      "schema_burden": "Existing three native planning tools and ResearchTaskSpec, one obligation per current worker task. Parallelism is two, not nine fixed named agents. Avoid recreating already accepted issuer research.",
+      "materiality_quality_risk": "All nine obligations must be represented before ready_for_review; task completion alone is not semantic, final-report, UI or product acceptance. Do not hide incomplete source routes or spend calls solely to fill a round count.",
+      "comparable_run_evidence": "A2 Lead first action used12278 input/8412 output tokens for two tasks under Pro/default-high. Full scope can have eight new primary tasks plus focused follow-ups.24000 combined output tokens accommodates larger planning and reasoning. Pro/low has one real review next-action diagnostic, full Lead quality remains to be tested.",
+      "reasoning_profile": "agentic_message_history_thinking_enabled",
+      "max_input_characters": 500000,
+      "max_output_tokens": 24000,
+      "timeout_seconds": 480,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    }
+  },
+  "agentic_message_history": true,
+  "reasoning_effort": "low"
+}

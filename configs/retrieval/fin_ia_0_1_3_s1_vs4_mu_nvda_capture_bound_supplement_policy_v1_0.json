@@ -1,0 +1,531 @@
+{
+  "schema_version": "fin_ia_s1_vs4_case_supplement_policy_v1_0",
+  "status": "pre_registered_mu_nvda_capture_bound_precision_successor",
+  "recorded_at": "2026-08-18",
+  "bound_inputs": {
+    "current_pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_2.json",
+    "current_pack_result_sha256": "387d2a24e1edc2e39c6537bd985f4a9177b826e316694e0cefb9d41a33352c53",
+    "current_pack_result_digest": "46a102aee335dba05d4eda6623c4ca3aa9427b758c52f6a99973568c916243cb",
+    "projection_config_ref": "configs/runtime/fin_ia_0_1_3_current_research_evidence_pack_projection_v1_0.json",
+    "projection_config_sha256": "d4fde7d4cf4b1d688656f06888edd2cae0588aa1a8abba06744d514e3e33a537",
+    "current_anchor_catalog_ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_1.json",
+    "current_anchor_catalog_sha256": "5e64f3128f1baa697f9003f5a455590a57b60ad50d0ebc296ca936fde15e45ad",
+    "current_workspace_catalog_ref": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_2.json",
+    "current_workspace_catalog_sha256": "8cf4be4d997e65cebac255cfddd0f2349ab62a6399f5d1b8093c26096b849ca0",
+    "legacy_dell_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_vertical_result_v1_0.json",
+    "legacy_dell_summary_sha256": "9dad1e8c115230583d7e9a02df547df6b258d479288a538da6d2e2a14fb74032",
+    "candidate_ranking_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking_result_v1_7.json",
+    "candidate_ranking_summary_sha256": "f8a68b6cdbb57b88c564693d6010e3fae6f4273fcc6da167c533f92b5f4ed17f",
+    "candidate_ranking_full_ref": "data/workbench_private/fin_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking/v1_7/full_result_8b48b41306f68cd70ccc5ae4d1dbf6e359b854f9720c9127fd37f10f01935ff7.json",
+    "candidate_ranking_full_sha256": "8e2e8bac84a47270216a1f5dd5cd0fcf3c953eb7e8ff79d4595c6a9e58a758c9",
+    "candidate_ranking_result_digest": "8b48b41306f68cd70ccc5ae4d1dbf6e359b854f9720c9127fd37f10f01935ff7",
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "compiled_objects_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "source_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v2/records.jsonl",
+    "source_records_sha256": "de3e7e7f3c5aa8ed117a58e2721a424355c37d7477b87060bfa8b8b9e18f7ab2",
+    "parent_documents_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v2/documents.jsonl",
+    "parent_documents_sha256": "f24d72cd6a659a43eb183c21b353f07a2598ba8973fed1a5edd1d6698f25ff3b"
+  },
+  "authority": {
+    "reviews_joined_after_cuda_candidate_generation_and_model_scoring": true,
+    "cuda_only_learned_execution": true,
+    "cpu_fallback_allowed": false,
+    "candidate_is_not_evidence": true,
+    "capture_first": true,
+    "numeric_authority": false,
+    "causal_attribution_authorized": false,
+    "network_calls_authorized": 0,
+    "generation_model_calls_authorized": 0,
+    "training_steps_authorized": 0,
+    "complete_s1_qualified": false
+  },
+  "legacy_capture_attestations": {
+    "CURRENT_DOC::MSFT::10_Q::0001193125_26_191507": {
+      "schema_version": "fin_ia_legacy_local_capture_attestation_v1_0",
+      "status": "legacy_local_source_capture_attested",
+      "parent_document_id": "CURRENT_DOC::MSFT::10_Q::0001193125_26_191507",
+      "parent_document_digest": "f4854e367befc9cdcb75888a1f095288acec4fcd3b33a2a91ca9d6c84b8a61a8",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+      "capture_ref": "data/raw_private/sec/2026/mega-cap_software_cloud/MSFT/10-Q.html",
+      "capture_sha256": "1664a9e56bbc4851e09484663c87fb7968ebb051d5b4227ec4a351cd42f50527",
+      "capture_format": "html",
+      "extraction_method": "stdlib_htmlparser_visible_text_v1"
+    },
+    "CURRENT_DOC::MU::8_K::0000723125_26_000004": {
+      "schema_version": "fin_ia_legacy_local_capture_attestation_v1_0",
+      "status": "legacy_local_source_capture_attested",
+      "parent_document_id": "CURRENT_DOC::MU::8_K::0000723125_26_000004",
+      "parent_document_digest": "ec07400a75cbcc4ddffcd24fb916168f9d31a54497e34613bc4577fe1e8635e4",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000004/a2026q2ex991-pressrelease.htm",
+      "capture_ref": "data/raw_private/sec_8k_earnings/2026/memory_semiconductor/MU/000072312526000004/a2026q2ex991-pressrelease.htm",
+      "capture_sha256": "a8d61db3e99546f3aa570a8cbe33a6c78f214cef1ed23cc5c26183eb19ea1dc4",
+      "capture_format": "html",
+      "extraction_method": "stdlib_htmlparser_visible_text_v1"
+    },
+    "CURRENT_DOC::NVDA::8_K::0001045810_26_000051": {
+      "schema_version": "fin_ia_legacy_local_capture_attestation_v1_0",
+      "status": "legacy_local_source_capture_attested",
+      "parent_document_id": "CURRENT_DOC::NVDA::8_K::0001045810_26_000051",
+      "parent_document_digest": "18f92cd70b679ef09b2fe49b83133ddd4e0349b48b47b5081c63e66c471a28fc",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm",
+      "capture_ref": "data/raw_private/sec_8k_earnings/2026/ai_gpu_semiconductor/NVDA/000104581026000051/q1fy27pr.htm",
+      "capture_sha256": "2b8c5d2415d33c852365a335eedb0deac8423820bd2724a988f133e110583b39",
+      "capture_format": "html",
+      "extraction_method": "stdlib_htmlparser_visible_text_v1"
+    }
+  },
+  "object_spec_library": {
+    "COBJ::c649445947ddfb68fa3cb1fb": {
+      "business_meaning_zh": "Microsoft 披露持续投入 AI 基础设施并伴随 AI 产品使用增长，说明下游部署仍在消耗资本与算力资源。",
+      "claim_boundary_zh": "只作为下游需求背景；不证明研究主体获得了 Microsoft 的订单、份额或收入。",
+      "relationship_directions": ["evidence_owner_own_demand_or_investment", "consumer_case_ecosystem_readthrough_only"]
+    },
+    "COBJ::32e86517a12652405137a787": {
+      "business_meaning_zh": "Microsoft 当前季度成本上升包含为客户需求与 AI 使用而进行的基础设施投入。",
+      "claim_boundary_zh": "不把 Microsoft 的投入金额或利润变化归属于研究主体，也不等同其订单量。",
+      "relationship_directions": ["evidence_owner_own_demand_or_investment", "consumer_case_ecosystem_readthrough_only"]
+    },
+    "COBJ::0d0917c0dd2f8846d85842fb": {
+      "business_meaning_zh": "Microsoft 当前季度成本上升明确受到支持客户需求的 AI 基础设施投资驱动。",
+      "claim_boundary_zh": "仅证明下游投资活动；不证明供应商分配、产品映射或研究主体收入贡献。",
+      "relationship_directions": ["evidence_owner_own_demand_or_investment", "consumer_case_ecosystem_readthrough_only"]
+    },
+    "COBJ::f9c13c79a8c50dd1eeb57394": {
+      "business_meaning_zh": "Micron 披露 HBM4 已向领先客户平台大批量出货，并向多个终端客户提供认证样品。",
+      "claim_boundary_zh": "未披露领先客户身份、各客户出货量、收入贡献或与 NVIDIA 的直接绑定。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::85f4f169d8566e7c4e5209b4": {
+      "business_meaning_zh": "Micron 的战略客户协议采用 take-or-pay，并对多年合同期内的特定数量形成约束。",
+      "claim_boundary_zh": "未披露客户身份、数量、产品组合或 backlog；不能把合同承诺直接当收入。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::c27b82b71738dcf287ac514f": {
+      "business_meaning_zh": "Micron 披露已签战略客户协议对应现金押金和相关财务承诺。",
+      "claim_boundary_zh": "精确金额只能由 S2 NumericFact 绑定引用；该披露不等同订单量、收入或利润。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::4113595bbddedf191029ba24": {
+      "business_meaning_zh": "Micron 已启动新加坡 HBM 先进封装设施，计划自 2027 年上半年开始扩充先进封装能力。",
+      "claim_boundary_zh": "项目计划不等同当前可用产能；未披露规模、良率、客户分配或爬坡完成度。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::8ce9daeffe417c82615e9857": {
+      "business_meaning_zh": "Micron 披露 HBM 相比传统 DRAM 需要更多晶圆和洁净室空间，说明供给扩张具有更高资源强度。",
+      "claim_boundary_zh": "这是制造机制，不提供当前利用率、良率、位元产出或客户可用分配。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::bbe786a4c79083a0dc2464e8": {
+      "business_meaning_zh": "Micron 将多层 HBM 的良率、质量、堆叠和先进封装列为实际技术壁垒。",
+      "claim_boundary_zh": "风险与壁垒披露不证明当前已经发生重大良率损失，也未量化缺口。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::285b39bddd1212c5c28d8ad5": {
+      "business_meaning_zh": "Micron 明确提示大客户关系变化或数据中心需求下降会损害业务。",
+      "claim_boundary_zh": "不证明风险已经发生，也未披露客户集中度或收入敏感度。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::d00bda426ae5573aea76b94f": {
+      "business_meaning_zh": "Micron 说明客户数据中心建设受能源、水、资本和审批等资源约束，延迟可能影响未来业绩。",
+      "claim_boundary_zh": "属于需求兑现反方，不量化受影响项目、时间或收入。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::d5b8fada2b8960683ecd1afd": {
+      "business_meaning_zh": "Micron 指出 HBM 需求走弱后产能可能回流传统 DRAM，从而形成显著供给增加。",
+      "claim_boundary_zh": "这是周期反转机制，不证明当前 HBM 需求已经走弱或供给已回流。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::b040d306c476a706260935e5": {
+      "business_meaning_zh": "NVIDIA 当前季度公司及数据中心业务继续高速增长，并明确给出产品与网络方案需求背景。",
+      "claim_boundary_zh": "数值权威和同比计算归 S2；叙事不能把全部增长单因归因于某一产品或客户。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::0065ea7ccdb7dc162734bf2f": {
+      "business_meaning_zh": "NVIDIA 持续向现有及新增供应商扩大供应与产能采购，以支持需求预测和产品复杂度。",
+      "claim_boundary_zh": "未披露供应商、产品级分配、可用产能、良率或释放时点。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::105491ae67a1a5e0c775beb2": {
+      "business_meaning_zh": "NVIDIA 为锁定未来供应支付溢价、押金并承担长期产能承诺，这些安排已提高产品成本。",
+      "claim_boundary_zh": "未披露供应商、金额和产品归属；不能据此计算利润桥或确定未来可用产能。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::446f4a4bcb2e34a40fd756f6": {
+      "business_meaning_zh": "NVIDIA 已签订预付制造和产能协议以支持当前及未来产品。",
+      "claim_boundary_zh": "合同存在不等于产能已释放、符合良率或分配给特定产品。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::fd70285573b56aa0930a9188": {
+      "business_meaning_zh": "NVIDIA 披露半导体短缺或供应能力受限时，部分供应的交期可能延长。",
+      "claim_boundary_zh": "风险披露不证明当前每一产品均延期，也没有量化交期或缺口。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::db735740b6438e6ce6dd3d13": {
+      "business_meaning_zh": "NVIDIA 指出长制造周期、供应不确定与需求预测偏差会造成供需错配。",
+      "claim_boundary_zh": "未披露当前错配规模、产品层分布或已实现损失。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::8274b77a68bad84f7820827c": {
+      "business_meaning_zh": "NVIDIA 明确提示高估需求、客户取消或延后订单会造成库存和采购承诺难以及时收缩。",
+      "claim_boundary_zh": "不证明取消已经发生，也未披露取消率、客户集中度或损失金额。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::6bad3b80a28f25e2d0cb3f9a": {
+      "business_meaning_zh": "当库存或供应与产能承诺超过需求时，NVIDIA 可能确认存货准备或减值。",
+      "claim_boundary_zh": "仅证明下行机制；未证明当前已有由 AI 产品造成的具体减值。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::9b7f2b4641672046d1bcff73": {
+      "business_meaning_zh": "NVIDIA 披露新架构和复杂系统上线已造成、未来也可能造成生产延迟和供需管理挑战。",
+      "claim_boundary_zh": "未披露受影响产品、延期时长或收入金额。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::a12318a5213895b69196e5ab": {
+      "business_meaning_zh": "NVIDIA 客户和合作伙伴的数据中心建设需要可用场地、能源与资本，短缺会影响未来业绩。",
+      "claim_boundary_zh": "不证明某一客户项目已经延期，也未量化需求兑现影响。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::72c46d22715a76a9e0da2233": {
+      "business_meaning_zh": "NVIDIA 披露截至 FY2027 第一季度末，公司实际上已无法参与中国数据中心计算市场竞争。",
+      "claim_boundary_zh": "只证明市场准入与竞争风险；不外推未披露收入或利润损失。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::d7e1d18e750e4343728bc382": {
+      "business_meaning_zh": "NVIDIA 说明数据中心 GPU 出口限制还可能削弱相关网络产品需求。",
+      "claim_boundary_zh": "属于政策传导风险，未量化网络产品订单、收入或概率。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::ef41f60d880ab175d43e2963": {
+      "business_meaning_zh": "NVIDIA 披露自然灾害、疫情等其他供应约束也可能造成交期延长。",
+      "claim_boundary_zh": "是补充性供应风险，不证明当前已经发生特定事件或延期。",
+      "relationship_directions": ["subject_self_disclosure"]
+    },
+    "COBJ::bb4b07ecca957f89a598fc06": {
+      "business_meaning_zh": "TSMC 管理层确认封装产能非常紧张，并已限制客户增长。",
+      "claim_boundary_zh": "只作为行业上游约束；不证明研究主体的供应商身份、分配量或释放时点。",
+      "relationship_directions": ["evidence_owner_own_supply_capacity_or_constraint", "consumer_case_ecosystem_readthrough_only"]
+    },
+    "COBJ::07ef64bd2d61623d1f4d9262": {
+      "business_meaning_zh": "TSMC 管理层说明扩产中仍需针对瓶颈设备追加投入。",
+      "claim_boundary_zh": "不说明瓶颈与研究主体产品或订单的直接对应关系。",
+      "relationship_directions": ["evidence_owner_own_supply_capacity_or_constraint", "consumer_case_ecosystem_readthrough_only"]
+    },
+    "COBJ::dbe25978af4e48df2d32a099": {
+      "business_meaning_zh": "TSMC 管理层说明测试设备短缺，需要在测试与封装等环节增加资本开支。",
+      "claim_boundary_zh": "仅证明后端环节约束；不证明研究主体的可用分配或解除时间。",
+      "relationship_directions": ["evidence_owner_own_supply_capacity_or_constraint", "consumer_case_ecosystem_readthrough_only"]
+    }
+  },
+  "cases": {
+    "MU": {
+      "policy_id": "FIN-0.1.3-S1-VS4-MU-CAPTURE-BOUND-SUPPLEMENT-V1.0",
+      "slice_id": "FIN-0.1.3-S1-VS4-MU-COVERAGE-DRIVEN-SUPPLEMENT-V1.0",
+      "research_as_of": "2026-08-06",
+      "predecessor_pack_sha256": "93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371",
+      "predecessor_pack_payload_digest": "1c2b787a955bb145fef6acd4e1ebf70566f472259006c06891b3fd9dde0f2964",
+      "retire_all_predecessor_evidence": true,
+      "retirement_reason": "现有 16 项全部为宽 source segment、跨案例宽上下文或不能独立承担命题的旧 claim；原始 capture 保留，只退休 Evidence 权限。",
+      "atom_ids": [
+        "S1_VS4_MU_DOWNSTREAM_MSFT",
+        "S1_VS4_MU_HBM_COMMITMENTS",
+        "S1_VS4_MU_HBM_SUPPLY_EXECUTION",
+        "S1_VS4_MU_ISSUER_COUNTER"
+      ],
+      "promotion_object_ids": [
+        "COBJ::c649445947ddfb68fa3cb1fb",
+        "COBJ::32e86517a12652405137a787",
+        "COBJ::0d0917c0dd2f8846d85842fb",
+        "COBJ::f9c13c79a8c50dd1eeb57394",
+        "COBJ::85f4f169d8566e7c4e5209b4",
+        "COBJ::c27b82b71738dcf287ac514f",
+        "COBJ::4113595bbddedf191029ba24",
+        "COBJ::8ce9daeffe417c82615e9857",
+        "COBJ::bbe786a4c79083a0dc2464e8",
+        "COBJ::285b39bddd1212c5c28d8ad5",
+        "COBJ::d00bda426ae5573aea76b94f"
+      ],
+      "materialize_hard_negative_object_ids": [],
+      "coverage_statements": {
+        "S1_VS4_MU_DOWNSTREAM_MSFT": {
+          "relationship_direction": "evidence_owner_own_demand_or_investment",
+          "coverage_state": "downstream_ai_investment_context_established_subject_attribution_gap_preserved",
+          "known": ["Microsoft 当前披露显示 AI 基础设施投入和使用仍在增长。"],
+          "unknown": ["Microsoft 对 Micron 的 HBM 订单量、份额与收入贡献未被证明。"]
+        },
+        "S1_VS4_MU_HBM_COMMITMENTS": {
+          "relationship_direction": "subject_self_disclosure",
+          "coverage_state": "binding_commitment_structure_established_volume_and_customer_split_gap_remains",
+          "known": ["Micron 披露 take-or-pay 特定数量承诺、HBM4 大批量出货和客户财务承诺。"],
+          "unknown": ["客户身份、具体数量、产品拆分、backlog 与收入转换尚未披露。"]
+        },
+        "S1_VS4_MU_HBM_SUPPLY_EXECUTION": {
+          "relationship_direction": "subject_self_disclosure",
+          "coverage_state": "packaging_timing_and_resource_intensity_established_yield_and_usable_capacity_gap_remains",
+          "known": ["Micron 披露先进封装扩产时点、HBM 更高资源强度及良率封装壁垒。"],
+          "unknown": ["当前可用产能、利用率、良率、客户分配及爬坡进度未披露。"]
+        },
+        "S1_VS4_MU_ISSUER_COUNTER": {
+          "relationship_direction": "subject_self_disclosure",
+          "coverage_state": "issuer_demand_and_cycle_counterevidence_established_magnitude_gap_remains",
+          "known": ["客户集中和数据中心资源约束均有发行人直接风险披露。"],
+          "unknown": ["发生概率、客户敏感度和财务影响未量化。"]
+        }
+      },
+      "gap_updates": [
+        {
+          "gap_id": "mu-gap-order-volume",
+          "action": "narrow",
+          "classification": "issuer_commitment_structure_disclosed_volume_and_customer_split_not_disclosed",
+          "replacement": {
+            "gap_id": "mu-gap-order-volume",
+            "gap_code": "specific_volume_and_customer_split_not_disclosed",
+            "slot_id": "demand_volume_quality",
+            "facet_id": "order_backlog_rpo_or_volume",
+            "business_reason_zh": "Micron 已披露 take-or-pay 特定数量承诺、HBM4 大批量出货和客户财务承诺，但未披露客户身份、具体数量、产品拆分、backlog 或 RPO。",
+            "supplement_direction_zh": "正式研究可使用承诺结构与出货状态，不得编造客户或订单量。",
+            "attempted_lane_ids": ["S1_VS4_MU_HBM_COMMITMENTS"]
+          },
+          "route_checks": {
+            "current_object_store_checked": true,
+            "cuda_candidate_generation_and_ranking_executed": true,
+            "issuer_capture_verified": true,
+            "commercial_or_private_data_may_exist": true
+          },
+          "known_boundary": "这是发行人数量与客户拆分披露边界，不等于所有商业估计或私有渠道数据不存在。"
+        },
+        {
+          "gap_id": "mu-gap-advanced-packaging",
+          "action": "narrow",
+          "classification": "facility_and_timing_disclosed_usable_capacity_not_disclosed",
+          "replacement": {
+            "gap_id": "mu-gap-advanced-packaging",
+            "gap_code": "usable_capacity_yield_and_allocation_not_disclosed",
+            "slot_id": "capacity_inputs_execution",
+            "facet_id": "advanced_packaging_capacity",
+            "business_reason_zh": "Micron 已披露新加坡 HBM 先进封装设施及 2027 年上半年开始扩充能力的计划，但未披露规模、良率、可用产能或客户分配。",
+            "supplement_direction_zh": "使用设施和时间表时必须保留计划、爬坡、良率和分配边界。",
+            "attempted_lane_ids": ["S1_VS4_MU_HBM_SUPPLY_EXECUTION"]
+          },
+          "route_checks": {
+            "current_object_store_checked": true,
+            "cuda_candidate_generation_and_ranking_executed": true,
+            "issuer_capture_verified": true,
+            "commercial_or_private_data_may_exist": true
+          },
+          "known_boundary": "公开披露证明扩产计划，不证明当前可用产能。"
+        }
+      ],
+      "gap_additions": [
+        {
+          "classification": "owned_s2_product_value_bridge_pending",
+          "gap": {
+            "gap_id": "mu-gap-product-value-capture-bridge",
+            "gap_code": "formula_input_missing",
+            "slot_id": "pricing_mix_value_capture",
+            "facet_id": "price_volume_mix_bridge",
+            "business_reason_zh": "本轮精确 S1 claim 可以证明 HBM 出货、合同和供给机制，但不能把这些叙事直接换算成 Micron 的价格、数量、组合或增量利润桥。",
+            "supplement_direction_zh": "由 S2 绑定同口径 NumericFact 和确定性公式；若发行人未披露产品级输入，继续保留有界缺口。",
+            "attempted_lane_ids": ["S1_VS4_MU_HBM_COMMITMENTS"]
+          },
+          "route_checks": {
+            "current_object_store_checked": true,
+            "current_capture_bound_claims_checked": true,
+            "s2_numeric_bridge_required": true,
+            "external_public_information_absence_claimed": false
+          },
+          "known_boundary": "这是 S1→S2 交接缺口，不是公开信息不存在，也不授权由叙事推导数值或利润归因。"
+        },
+        {
+          "classification": "owned_s2_product_cash_conversion_bridge_pending",
+          "gap": {
+            "gap_id": "mu-gap-product-cash-conversion-bridge",
+            "gap_code": "formula_input_missing",
+            "slot_id": "cash_conversion_balance_sheet",
+            "facet_id": "capex_to_free_cash_flow",
+            "business_reason_zh": "本轮精确 S1 claim 没有建立 HBM 扩产、营运资金、资本开支与自由现金流之间的同口径公司桥。",
+            "supplement_direction_zh": "由 S2 提供资本开支、经营现金流和必要期间关系；缺少产品归因时只能保留公司层有界判断。",
+            "attempted_lane_ids": ["S1_VS4_MU_HBM_SUPPLY_EXECUTION"]
+          },
+          "route_checks": {
+            "current_object_store_checked": true,
+            "current_capture_bound_claims_checked": true,
+            "s2_numeric_bridge_required": true,
+            "external_public_information_absence_claimed": false
+          },
+          "known_boundary": "这是 S1→S2 交接缺口，不证明私有产品现金流数据不存在，也不授权模型自行计算。"
+        }
+      ],
+      "business_findings": [
+        "Micron 的需求证据已从泛化 AI 叙事收敛为 HBM4 实际出货、take-or-pay 数量承诺和客户财务承诺。",
+        "供应证据已能区分设施时间表、资源强度和良率封装壁垒，但仍不能冒充当前可用产能。",
+        "客户集中与数据中心资源约束构成具体反方，而不是通用风险模板；周期回流 claim 未被本次请求取回，未越权加入。",
+        "旧 16 项 Evidence 权限全部退休并由 11 条精确 claim 继任；原始 capture 未删除。",
+        "精确替换后价值获取与现金转换不再继承旧宽片段权威，新增两条 S1→S2 typed handoff gap，避免下游研究单元出现无 Evidence 也无 gap 的静默空白。"
+      ],
+      "successor_known_boundary": "MU 的 HBM 出货、合同结构、封装扩产方向和发行人反方已由精确 capture-bound claim 支持；客户身份、订单量、可用产能、良率与分配仍未被证明。Candidate 不等于 Evidence，本包不授予 NumericFact 或因果归因权限。"
+    },
+    "NVDA": {
+      "policy_id": "FIN-0.1.3-S1-VS4-NVDA-CAPTURE-BOUND-SUPPLEMENT-V1.0",
+      "slice_id": "FIN-0.1.3-S1-VS4-NVDA-COVERAGE-DRIVEN-SUPPLEMENT-V1.0",
+      "research_as_of": "2026-08-06",
+      "predecessor_pack_sha256": "03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4",
+      "predecessor_pack_payload_digest": "9372a57bb60bbb573a8b53fd7dda2a45d70caaf89298456982714ea84ecaf066",
+      "retire_all_predecessor_evidence": true,
+      "retirement_reason": "现有 14 项全部为宽 source segment、联系人/安全港污染或无法独立承担命题的旧 claim；原始 capture 保留，只退休 Evidence 权限。",
+      "atom_ids": [
+        "S1_VS4_NVDA_DOWNSTREAM_MSFT",
+        "S1_VS4_NVDA_REPORTED_RESULTS",
+        "S1_VS4_NVDA_SUPPLY_EXECUTION",
+        "S1_VS4_NVDA_ISSUER_COUNTER",
+        "S1_VS4_NVDA_UPSTREAM_MU",
+        "S1_VS4_NVDA_UPSTREAM_TSM"
+      ],
+      "promotion_object_ids": [
+        "COBJ::c649445947ddfb68fa3cb1fb",
+        "COBJ::32e86517a12652405137a787",
+        "COBJ::0d0917c0dd2f8846d85842fb",
+        "COBJ::b040d306c476a706260935e5",
+        "COBJ::0065ea7ccdb7dc162734bf2f",
+        "COBJ::105491ae67a1a5e0c775beb2",
+        "COBJ::446f4a4bcb2e34a40fd756f6",
+        "COBJ::fd70285573b56aa0930a9188",
+        "COBJ::db735740b6438e6ce6dd3d13",
+        "COBJ::6bad3b80a28f25e2d0cb3f9a",
+        "COBJ::a12318a5213895b69196e5ab",
+        "COBJ::72c46d22715a76a9e0da2233",
+        "COBJ::d7e1d18e750e4343728bc382",
+        "COBJ::ef41f60d880ab175d43e2963",
+        "COBJ::f9c13c79a8c50dd1eeb57394",
+        "COBJ::8ce9daeffe417c82615e9857",
+        "COBJ::bbe786a4c79083a0dc2464e8",
+        "COBJ::bb4b07ecca957f89a598fc06",
+        "COBJ::dbe25978af4e48df2d32a099"
+      ],
+      "materialize_hard_negative_object_ids": [
+        "COBJ::fb5256da9e0d1792bd8a5c41",
+        "COBJ::e76fccb687af63f01005e69c"
+      ],
+      "promotion_spec_overrides": {
+        "COBJ::f9c13c79a8c50dd1eeb57394": {
+          "relationship_directions": ["evidence_owner_own_supply_capacity_or_constraint", "consumer_case_ecosystem_readthrough_only"]
+        },
+        "COBJ::8ce9daeffe417c82615e9857": {
+          "relationship_directions": ["evidence_owner_own_supply_capacity_or_constraint", "consumer_case_ecosystem_readthrough_only"]
+        },
+        "COBJ::bbe786a4c79083a0dc2464e8": {
+          "relationship_directions": ["evidence_owner_own_supply_capacity_or_constraint", "consumer_case_ecosystem_readthrough_only"]
+        }
+      },
+      "coverage_statements": {
+        "S1_VS4_NVDA_DOWNSTREAM_MSFT": {
+          "relationship_direction": "evidence_owner_own_demand_or_investment",
+          "coverage_state": "downstream_ai_investment_context_established_subject_order_attribution_gap_preserved",
+          "known": ["Microsoft 当前 AI 基础设施投资和使用需求仍在增长。"],
+          "unknown": ["Microsoft 对 NVIDIA 的订单、产品份额和收入贡献未被证明。"]
+        },
+        "S1_VS4_NVDA_REPORTED_RESULTS": {
+          "relationship_direction": "subject_self_disclosure",
+          "coverage_state": "current_operating_result_claim_established_numeric_program_remains_s2_owned",
+          "known": ["NVIDIA 当前季度公司与数据中心业务保持高增长。"],
+          "unknown": ["精确数值、同比关系和归因桥必须由 S2 另行绑定。"]
+        },
+        "S1_VS4_NVDA_SUPPLY_EXECUTION": {
+          "relationship_direction": "subject_self_disclosure",
+          "coverage_state": "supply_commitments_and_execution_risks_established_allocation_and_yield_gap_remains",
+          "known": ["NVIDIA 扩大供应采购并承担长期产能承诺，同时面临交期、生产和供需错配风险。"],
+          "unknown": ["供应商、产品级分配、可用产能、良率和释放时点未披露。"]
+        },
+        "S1_VS4_NVDA_ISSUER_COUNTER": {
+          "relationship_direction": "subject_self_disclosure",
+          "coverage_state": "issuer_demand_supply_policy_counterevidence_established_magnitude_gap_remains",
+          "known": ["承诺过量、数据中心资源、供应交期和出口限制均有发行人直接披露。"],
+          "unknown": ["各风险概率、客户分布和财务影响未量化。"]
+        },
+        "S1_VS4_NVDA_UPSTREAM_MU": {
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "coverage_state": "hbm_ecosystem_execution_context_established_nvda_allocation_gap_preserved",
+          "known": ["Micron 披露 HBM4 出货、资源强度和良率封装壁垒。"],
+          "unknown": ["这些披露与 NVIDIA 的供应商身份、分配和产品映射未被证明。"]
+        },
+        "S1_VS4_NVDA_UPSTREAM_TSM": {
+          "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+          "coverage_state": "advanced_packaging_constraint_context_established_nvda_allocation_gap_preserved",
+          "known": ["TSMC 管理层确认封装产能和测试设备约束。"],
+          "unknown": ["NVIDIA 的具体分配、产品映射和约束解除时间未被证明。"]
+        }
+      },
+      "gap_updates": [
+        {
+          "gap_id": "nvda-gap-advanced-packaging",
+          "action": "narrow",
+          "classification": "industry_packaging_constraint_disclosed_subject_allocation_not_disclosed",
+          "replacement": {
+            "gap_id": "nvda-gap-advanced-packaging",
+            "gap_code": "subject_packaging_allocation_and_release_not_disclosed",
+            "slot_id": "capacity_inputs_execution",
+            "facet_id": "advanced_packaging_capacity",
+            "business_reason_zh": "TSMC 已披露封装产能紧张、瓶颈工具和测试设备短缺，但未证明 NVIDIA 的具体分配、产品映射或释放时点。",
+            "supplement_direction_zh": "正式研究只能将其作为行业上游约束背景。",
+            "attempted_lane_ids": ["S1_VS4_NVDA_UPSTREAM_TSM"]
+          },
+          "route_checks": {
+            "current_object_store_checked": true,
+            "cuda_candidate_generation_and_ranking_executed": true,
+            "official_management_capture_verified": true,
+            "commercial_or_private_data_may_exist": true
+          },
+          "known_boundary": "行业级封装约束已证明，NVIDIA 特定分配仍是关系与商业数据边界。"
+        },
+        {
+          "gap_id": "nvda-gap-capacity-release",
+          "action": "narrow",
+          "classification": "issuer_commitments_disclosed_supplier_release_not_disclosed",
+          "replacement": {
+            "gap_id": "nvda-gap-capacity-release",
+            "gap_code": "supplier_product_allocation_yield_and_release_not_disclosed",
+            "slot_id": "capacity_inputs_execution",
+            "facet_id": "capacity_release_timing",
+            "business_reason_zh": "NVIDIA 已披露供应采购、预付协议和长期产能承诺，且 TSMC 披露行业级约束；但供应商、产品级分配、良率和释放时点未披露。",
+            "supplement_direction_zh": "可使用承诺和风险机制，不得把合同存在等同已释放可用产能。",
+            "attempted_lane_ids": ["S1_VS4_NVDA_SUPPLY_EXECUTION", "S1_VS4_NVDA_UPSTREAM_TSM"]
+          },
+          "route_checks": {
+            "current_object_store_checked": true,
+            "cuda_candidate_generation_and_ranking_executed": true,
+            "issuer_and_upstream_captures_verified": true,
+            "commercial_or_private_data_may_exist": true
+          },
+          "known_boundary": "合同结构与行业瓶颈已证明，主体特定可用分配仍未证明。"
+        },
+        {
+          "gap_id": "nvda-gap-order-volume",
+          "action": "narrow",
+          "classification": "reported_outcome_and_downstream_investment_disclosed_order_volume_not_disclosed",
+          "replacement": {
+            "gap_id": "nvda-gap-order-volume",
+            "gap_code": "orders_backlog_rpo_and_customer_split_not_disclosed",
+            "slot_id": "demand_volume_quality",
+            "facet_id": "order_backlog_rpo_or_volume",
+            "business_reason_zh": "NVIDIA 已披露当前业务结果，Microsoft 也披露 AI 基础设施投入；但 NVIDIA 未披露订单、backlog、RPO 或客户拆分。",
+            "supplement_direction_zh": "用已实现结果和下游投资作为边界证据，不得反推未披露订单量。",
+            "attempted_lane_ids": ["S1_VS4_NVDA_REPORTED_RESULTS", "S1_VS4_NVDA_DOWNSTREAM_MSFT"]
+          },
+          "route_checks": {
+            "current_object_store_checked": true,
+            "cuda_candidate_generation_and_ranking_executed": true,
+            "issuer_and_downstream_captures_verified": true,
+            "commercial_or_private_data_may_exist": true
+          },
+          "known_boundary": "公开结果与下游投资可见，但订单、客户和份额仍是发行人/商业数据边界。"
+        }
+      ],
+      "business_findings": [
+        "NVIDIA 当前结果、供应承诺和执行风险已由精确发行人 claim 支持，不再依赖整页 10-Q 或安全港文本。",
+        "承诺过量、资源约束、交期和中国市场政策风险形成了多条具体反方链；未被本次请求取回的取消与生产延迟 claim 未越权加入。",
+        "Micron 与 TSMC 只能提供 HBM 和先进封装生态背景，不能被冒充为 NVIDIA 的供应商分配。",
+        "旧 14 项 Evidence 权限全部退休并由 19 条精确 claim 继任；原始 capture 未删除。"
+      ],
+      "successor_known_boundary": "NVDA 当前经营结果、供应承诺、执行反方、政策反方和生态上游约束已由精确 capture-bound claim 支持；订单、客户拆分、供应商分配、可用产能、良率和释放时点仍未被证明。Candidate 不等于 Evidence，本包不授予 NumericFact 或因果归因权限。"
+    }
+  }
+}

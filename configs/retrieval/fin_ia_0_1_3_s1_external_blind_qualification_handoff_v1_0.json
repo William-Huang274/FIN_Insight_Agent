@@ -1,0 +1,85 @@
+{
+  "schema_version": "fin_ia_s1_external_blind_qualification_handoff_v1_0",
+  "handoff_id": "FIN-0.1.3-S1-EXTERNAL-BLIND-HANDOFF-V1.0",
+  "status": "ready_for_external_case_assignment_labels_absent",
+  "recorded_at": "2026-08-19T15:00:00+08:00",
+  "purpose_zh": "由当前仓库与实现上下文之外的合格评审者选择至少六个新案例并保管答案；实现方只在候选冻结后取得标签与评分回执。",
+  "separation_of_duties": {
+    "external_curator": [
+      "选择未在当前开发、回归、聊天和工作日志中披露的案例",
+      "在 Git 仓库之外保存命题、来源答案、hard negatives 与评分",
+      "候选冻结前不向实现方暴露标签、目标 URL 或正例对象"
+    ],
+    "execution_operator": [
+      "只接收合法的公司身份、截至日期、研究问题和允许来源范围",
+      "冻结 source/object/query/candidate/Evidence-admission 输出并记录实现 commit",
+      "冻结前不得读取外部标签存储"
+    ],
+    "qualified_reviewer": [
+      "在候选冻结后按同一 S1 评测程序评分",
+      "逐条记录业务失败示例，而不是只交汇总数字",
+      "签发 digest-bound external qualification receipt"
+    ]
+  },
+  "case_design_contract": {
+    "minimum_case_count": 6,
+    "forbidden_observed_cases": [
+      "DELL",
+      "MU",
+      "NVDA",
+      "COST",
+      "JPM",
+      "CAT",
+      "NVO",
+      "SHEL",
+      "0700.HK"
+    ],
+    "required_dimensions": [
+      "cross_company",
+      "cross_industry",
+      "cross_reporting_regime",
+      "cross_evidence_form",
+      "temporal_and_hard_negative",
+      "cross_failure_owner"
+    ],
+    "anti_shortcut_rules": [
+      "不得把六个同产业同披露形态的相似案例冒充泛化测试",
+      "不得在仓库中登记最终案例、正例 URL、对象 ID 或标签",
+      "不得由当前实现上下文同时担任案例选择、执行和最终评分三种角色"
+    ]
+  },
+  "candidate_freeze_contract": {
+    "required_artifacts": [
+      "source_asset_and_capture_ledger",
+      "object_snapshot_digest",
+      "query_plan_digest",
+      "candidate_decision_ledger_digest",
+      "evidence_admission_state_digest",
+      "gap_eligibility_receipts",
+      "implementation_commit"
+    ],
+    "labels_visible_before_freeze": false,
+    "candidate_is_not_evidence": true,
+    "public_gap_requires_gap_eligibility_receipt": true
+  },
+  "required_hard_gates": [
+    "candidate_freeze_precedes_label_access",
+    "wrong_company_period_unit_promotion_zero",
+    "candidate_auto_promotion_zero",
+    "local_or_tool_failure_mislabeled_public_gap_zero",
+    "unreceipted_material_candidate_zero"
+  ],
+  "current_state": {
+    "external_cases_assigned": false,
+    "external_labels_received": false,
+    "candidate_freeze_created": false,
+    "external_receipt_received": false,
+    "S1_qualified_stable": false
+  },
+  "authority": {
+    "codex_may_self_certify_blind": false,
+    "disclosed_regression_cases_may_claim_blind": false,
+    "handoff_is_qualification": false,
+    "release_authority": false
+  }
+}

@@ -1,0 +1,183 @@
+{
+  "schema_version": "fin_ia_s1_artifact_spine_policy_v1_0",
+  "status": "canonical_control_plane_contract",
+  "policy_id": "FIN-0.1.3-S1-CANONICAL-ARTIFACT-SPINE",
+  "policy_version": "v1.0",
+  "principles": {
+    "control_plane_not_single_physical_pipeline": true,
+    "parallel_data_planes_preserved": true,
+    "payloads_content_addressed": true,
+    "identity_period_locator_and_lineage_fail_closed": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority_remains_s2": true,
+    "workbench_is_permanent_consumer": true,
+    "attempt_specific_runner_is_not_product_consumer": true,
+    "artifact_contract_change_requires_migration_or_rebuild": true,
+    "artifact_contract_change_requires_rollback_entry": true
+  },
+  "artifact_types": [
+    {
+      "artifact_type": "source_route_decision",
+      "responsibility_axis": "S1-A",
+      "data_plane": "control",
+      "root_allowed": true,
+      "required_parent_types_all": [],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "raw_source_capture",
+      "responsibility_axis": "S1-A",
+      "data_plane": "source",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "source_route_decision"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "parsed_document",
+      "responsibility_axis": "S1-B",
+      "data_plane": "document",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "raw_source_capture"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "financial_evidence_object",
+      "responsibility_axis": "S1-C",
+      "data_plane": "object",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "parsed_document"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "object_manifest",
+      "responsibility_axis": "S1-D",
+      "data_plane": "index",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "financial_evidence_object"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "index_snapshot",
+      "responsibility_axis": "S1-D",
+      "data_plane": "index",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "object_manifest"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "s2_sibling_binding",
+      "responsibility_axis": "S1-D",
+      "data_plane": "index",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "object_manifest"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "evidence_request",
+      "responsibility_axis": "S1-E",
+      "data_plane": "query",
+      "root_allowed": true,
+      "required_parent_types_all": [],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "query_facet_plan",
+      "responsibility_axis": "S1-E",
+      "data_plane": "query",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "evidence_request"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "candidate_set",
+      "responsibility_axis": "S1-F",
+      "data_plane": "candidate",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "query_facet_plan"
+      ],
+      "required_parent_type_groups_any": [
+        [
+          "index_snapshot",
+          "raw_source_capture",
+          "s2_sibling_binding"
+        ]
+      ]
+    },
+    {
+      "artifact_type": "candidate_ranking",
+      "responsibility_axis": "S1-G",
+      "data_plane": "candidate",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "candidate_set"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "candidate_decision",
+      "responsibility_axis": "S1-H",
+      "data_plane": "evidence",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "candidate_ranking"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "evidence_coverage_state",
+      "responsibility_axis": "S1-I",
+      "data_plane": "evidence",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "evidence_request",
+        "candidate_decision"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "evidence_pack_readiness",
+      "responsibility_axis": "S1-I",
+      "data_plane": "evidence",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "evidence_coverage_state"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "workbench_projection",
+      "responsibility_axis": "S1-J",
+      "data_plane": "product",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "evidence_pack_readiness"
+      ],
+      "required_parent_type_groups_any": []
+    },
+    {
+      "artifact_type": "frozen_consumer_probe",
+      "responsibility_axis": "S1-J",
+      "data_plane": "product",
+      "root_allowed": false,
+      "required_parent_types_all": [
+        "evidence_pack_readiness"
+      ],
+      "required_parent_type_groups_any": []
+    }
+  ]
+}

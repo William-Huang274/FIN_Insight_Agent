@@ -1,0 +1,100 @@
+{
+  "schema_version": "fin_ia_clean_independent_commit_audit_pass_v1_0",
+  "audit_id": "fin-0.1.3-commit-f8cc99b5-final-clean-independent-audit-r1",
+  "recorded_at": "2026-08-24T14:49:27+08:00",
+  "status": "passed_no_findings",
+  "audited_commit": "f8cc99b57e6173d14f9ee9920948ec6e1f431aa6",
+  "audited_tree": "e7000e73e5f0bc472837a4108c72666fac24f865",
+  "parent_commit": "1243b3cc2e1e1c17a46437195c24ab076d3b4365",
+  "reviewer_provenance": {
+    "reviewer_task": "/root/final_clean_successor_audit",
+    "fresh_context": true,
+    "author_separated_from_commit_author": true,
+    "read_only": true,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "restricted_COST_hidden_frozen_holdout_qrel_read": false,
+    "ignored_private_candidate_read": true,
+    "authorized_private_reads_only": [
+      "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-bounded-successor-r16/full_result.json",
+      "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-reversal-gate-r17/full_result.json"
+    ],
+    "repository_mutation": false,
+    "worktree_postflight_clean": true,
+    "qualified_human": false
+  },
+  "bound_git_blobs": {
+    "src/financial_facts/executor.py": "cf9089113e6c5db2c4e7d42521f03bb8e22135bd",
+    "src/retrieval/model_identity.py": "b1134d72dab63f826936ea41e47b78dadca36a77",
+    "tests/test_s2_company_financial_fact_mart.py": "ef97f976784bb139568ed90187d8d040ea6dbf5d",
+    "tests/test_s3_R17_reversal_gate_successor.py": "eb3689754ee546dfb0d40b3b279acbb479a2ad0f"
+  },
+  "bound_artifact_sha256": {
+    "configs/financial_facts/fin_ia_0_1_3_s2_mu_physical_period_identity_successor_result_v1_5.json": "2b4e1b2dd739a730cc1f4f806d34bd0f7491fec610bb0d672fdce78fca28d12f",
+    "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_preflight_result_v1_3.json": "0fba62a38d17603fcde92be288b6530d9182e7dfe8b6024d2bea4f720dc892ae",
+    "configs/research/evals/fin_ia_0_1_3_s3_R16_editorial_provenance_correction_v1_0.json": "3f057947c6aa7d82067eb379900fb5aa340985dab977a7743c160a8641696294",
+    "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R17_reversal_gate_successor_candidate_result_v1_0.json": "65aa45f10638a1210ca0b4428f1c9ca9e658ea1006dcfb2baffbb08d90ed06cb"
+  },
+  "private_content_bindings": {
+    "R16_private_sha256": "d099e26e942cc2c3c1dde972b02edf8f069ec47134680ed52ddbde89c2fa3896",
+    "R16_private_digest": "7fa183beb676f796471d252c4e2c1471168f5d514ddfba2312cd93806922ffb2",
+    "R17_private_sha256": "433b2c486f8753d4f0b2468aa66f21c0ef2ff0e4bcc7d9347233e239b30ec0e8",
+    "R17_private_digest": "3be5a5453c8cf18cf5a14f7b7de7535b8d8c64367275e2f509dc0849db587743"
+  },
+  "finding_counts": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": 0
+  },
+  "findings": [],
+  "verification": {
+    "independent_targeted_tests": "44 passed, 2 skipped",
+    "independent_targeted_skip_basis": "two actual Windows symlink creation tests lacked WinError 1314 privilege; deterministic component-walk coverage passed",
+    "primary_full_repository_gate": "1221 passed, 2 skipped, 2 existing SWIG warnings",
+    "primary_clean_checkout_without_ignored_private_gate": "44 passed, 5 skipped",
+    "git_diff_check": true,
+    "project_os_append_only": true,
+    "capability_ledger_rows_before_this_receipt": 287,
+    "root_cause_ledger_rows_before_this_receipt": 566
+  },
+  "positive_controls": {
+    "S2_explicit_requested_comparable_conflict_propagates": true,
+    "S2_automatic_prior_year_same_period_conflict_propagates": true,
+    "S2_derived_conflict_is_not_downgraded_to_gap": true,
+    "S2_irrelevant_period_role_isolated": true,
+    "S2_v1_5_checks_11_of_11_and_zero_calls": true,
+    "S1_every_locator_component_link_or_reparse_fail_closed": true,
+    "S1_only_verified_canonical_path_passed_onward": true,
+    "S1_resource_block_artifacts_absent_and_zero_calls": true,
+    "R17_clean_checkout_private_prerequisite_guard_pass": true,
+    "R16_editorial_author_provenance_correction_pass": true,
+    "R16_failure_preserved": true,
+    "R17_private_hash_and_self_digest_pass": true,
+    "R17_only_two_allowed_model_text_paths_changed": true,
+    "R17_references_gaps_topology_and_737_numeric_tokens_preserved": true,
+    "R17_material_AI_linked_persistent_threshold_breach_conjunction_pass": true,
+    "R17_one_off_and_below_threshold_negative_semantics_pass": true
+  },
+  "remaining_capability_gaps": {
+    "S1": "approved revision, acquisition receipt, 24GB-class host, 4B execution and quality, runtime promotion and full S1 qualification remain absent",
+    "S2": "ASP, units, PVM, product profit bridge and full S2 qualification remain absent",
+    "S3": "qualified-human review and full S3 acceptance remain absent",
+    "product": "product acceptance, publication and release remain false"
+  },
+  "acceptance": {
+    "audited_commit_successor_pass": true,
+    "S1_audit_finding_successor_engineering_pass": true,
+    "S1_stage_pass": false,
+    "S2_audit_finding_successor_executor_pass": true,
+    "S2_stage_pass": false,
+    "R17_fresh_independent_post_writer_content_pass": true,
+    "qualified_human_review_pass": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "receipt_digest": "275d81bb9d1b3c11f5e93b846b5359f6404957347ddea0b2e34e6ceb6fc5c71a"
+}

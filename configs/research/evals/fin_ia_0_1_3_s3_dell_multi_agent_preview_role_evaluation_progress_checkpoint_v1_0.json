@@ -1,0 +1,143 @@
+{
+  "case_key": "DELL",
+  "checkpoint_digest": "569c641b395adf29375abf59b2302ed2f733f4788f850edfdc0dbaa5ecb202ae",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "new_model_calls": 0,
+    "new_network_calls": 0
+  },
+  "completed_agent_ids": [
+    "AGENT::DEMAND_QUALITY"
+  ],
+  "context_digests": {
+    "AGENT::DEMAND_QUALITY": "1ddcce797a2fac8566024a3c2dd1ea1eb31c837637a3352bb7dac6d37f1f0e6b"
+  },
+  "evaluator_analysis_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_evaluation_low_profile_v1_0.json",
+  "evaluator_analysis_profile_sha256": "32aadb1985110e66c00ef571999008a040c380fc31cd3365f41049b82cbf73fe",
+  "pending_agent_ids": [
+    "AGENT::OPERATING_PERFORMANCE",
+    "AGENT::VALUE_CAPTURE",
+    "AGENT::CASH_CONVERSION",
+    "AGENT::SUPPLY_RELATIONSHIP",
+    "AGENT::COUNTEREVIDENCE"
+  ],
+  "resume_policy": {
+    "completed_role_evaluation_rerun_forbidden": true,
+    "new_fact_or_authority_forbidden": true,
+    "research_inputs_unchanged": true,
+    "resume_starts_at_first_pending_role": true
+  },
+  "reused_role_evaluation_count": 1,
+  "schema_version": "fin_ia_multi_agent_role_evaluation_progress_checkpoint_v1_0",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_live_authority_v1_0.json",
+  "source_authority_sha256": "8689c2497f1c7847f255b14497c5325b66a33b26a493e1b87ecd9e9b769f2831",
+  "source_failure_code": "model_gateway_reasoning_budget_exhausted",
+  "source_public_result_digest": "c325b4af6759f6bf94a5a5b8565be167d0f82a5f8c9529f60293aa563584f11f",
+  "source_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_live_result_v1_0.json",
+  "source_public_result_sha256": "e511585aee5f4682a7fe67580a1e973734c3e6132d141fb77fb94e8782330e3d",
+  "source_receipts": {
+    "AGENT::DEMAND_QUALITY": {
+      "analysis": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01",
+        "finish_reason": "stop",
+        "phase": "analysis",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "945f88e900fbc8d516e582feb1efab70083c7f4b0d7ac4a54ec00199a9eaef72",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/provider_response.json",
+        "response_digest": "2e54206e5ec00081e72e0586bd525e2401a7d8a54f2e9434222a523e7e84804f",
+        "usage": {
+          "completion_tokens": 7141,
+          "completion_tokens_details": {
+            "reasoning_tokens": 6434
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 5379,
+          "prompt_tokens": 5379,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 12520
+        }
+      },
+      "context_digest": "1ddcce797a2fac8566024a3c2dd1ea1eb31c837637a3352bb7dac6d37f1f0e6b",
+      "node_id": "EVAL::ROLE::DEMAND_QUALITY::CONTENT_AUDIT_R1",
+      "submission": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01",
+        "finish_reason": "tool_calls",
+        "phase": "submission",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "023634aef45a28babf202aeb6a30535c675398d65ac5081037d2d28845d9b037",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/provider_response.json",
+        "response_digest": "d3d1cc5e3b2650775d8733f14aa9929dd1ba3dd55f90a2cfd2a7ed82bc888778",
+        "usage": {
+          "completion_tokens": 561,
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 1781,
+          "prompt_tokens": 1781,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 2342
+        }
+      },
+      "validated_payload_digest": "9b62ee7ad30e3a0a9f129e248c9f0ffa50c5e3d2173375106e53f0cb89dba9a4",
+      "workpaper_digest": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
+    }
+  },
+  "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821",
+  "source_terminal_result_digest": "776590aebfae93d968b1f49a348f1208eb2d88f7770cb4ca3fee280fb15201b7",
+  "source_terminal_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821/terminal_failure.json",
+  "source_terminal_result_sha256": "28d1ee443a8a2933831544e7a4058b4d122f15e8554ad01a8c69baf3b9906f05",
+  "status": "completed_role_evaluation_prefix_valid_for_exact_resume",
+  "validated_role_evaluations": {
+    "AGENT::DEMAND_QUALITY": {
+      "cross_role_conflicts": [],
+      "evaluation_digest": "69f5020e636fdbb13b7f976cde972bd227cff615aacedff596962bf484b37222",
+      "findings": [
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::2A7103750D79EEDC"
+          ],
+          "explanation": "Workpaper wording asserts a cancellable cushion exists ('\u53ef\u53d6\u6d88\u90e8\u5206\u5728\u62ab\u9732\u7a97\u5916', '\u771f\u5b9e\u53ef\u53d6\u6d88\u57ab\u5c42\u4e0d\u53ef\u89c1'), but the authority only states backlog comprises company-designated non-cancelable unfilled manufacturing orders and does not state cancellable orders exist.",
+          "failure_owner": "model_judgment",
+          "finding_code": "EV::2A7103750D79EEDC",
+          "permitted_repair": "Reword to 'non-designated orders are not included in backlog; no cancellable balance is disclosed.'",
+          "severity": "L3",
+          "target_agent_id": "AGENT::DEMAND_QUALITY"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::041AEF89A154F4FC"
+          ],
+          "explanation": "Mechanism/thesis list frames '\u6e20\u9053\u51cf\u5355\u4f20\u5bfc' as an active factor, but the evidence is a conditional risk disclosure and the workpaper's own sourced claim confirms it does not prove occurrence.",
+          "failure_owner": "model_judgment",
+          "finding_code": "EV::041AEF89A154F4FC",
+          "permitted_repair": "Reframe as 'conditional channel-order-reduction risk' rather than an active reduction mechanism.",
+          "severity": "L3",
+          "target_agent_id": "AGENT::DEMAND_QUALITY"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::69BFE78D21687E82"
+          ],
+          "explanation": "The characterization 'graph edge only gives range not facts' is not present in the supplied catalog boundary, adding an unsupported extra characterization that does not alter the conclusion.",
+          "failure_owner": "model_judgment",
+          "finding_code": "EV::69BFE78D21687E82",
+          "permitted_repair": "Remove or replace the unsupported characterization with wording supported by the catalog boundary.",
+          "severity": "L4",
+          "target_agent_id": "AGENT::DEMAND_QUALITY"
+        }
+      ],
+      "report_may_proceed": true,
+      "schema_version": "fin_ia_multi_agent_evaluation_v1_0"
+    }
+  },
+  "workpaper_digests": {
+    "AGENT::DEMAND_QUALITY": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
+  }
+}

@@ -1,0 +1,2295 @@
+{
+  "schema_version": "fin_ia_s1_vs2_complex_pdf_vertical_result_v1_0",
+  "status": "vs2_complex_pdf_vertical_integrated",
+  "recorded_at": "2026-08-17",
+  "slice_id": "FIN-0.1.3-S1-VS2-COMPLEX-PDF-IFX-V1.0",
+  "scope": {
+    "development_case_id": "S1-VS2-IFX-2025-ANNUAL-REPORT",
+    "usage_role": "train_internal_development_only_not_product_case",
+    "source_shapes": [
+      "official_native_layout_annual_report",
+      "complex_multi_header_table",
+      "financial_table_footnote",
+      "revision_or_restatement_context",
+      "cross_page_table_continuation",
+      "rasterized_official_page_ocr_mutation"
+    ],
+    "network_calls": 0,
+    "model_calls": 0,
+    "paid_calls": 0,
+    "index_rebuilds": 0,
+    "new_product_evidence_promotions": 0
+  },
+  "payloads": {
+    "source_routes": {
+      "IFX_2025_ANNUAL_REPORT_COMPLEX_LAYOUT": {
+        "source_id": "IFX_2025_ANNUAL_REPORT_COMPLEX_LAYOUT",
+        "input_kind": "parsed_complex_pdf_layout_document",
+        "source_url": "https://www.infineon.com/assets/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+        "route_id": "GLOBALDISC::IFX_DE::EU_REGULATED_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+        "expected_sha256": "4da7852d5e554c6cb4813e3bf0e19530e7b32b1ad7501bec0ca4d90a36451687",
+        "required": true
+      }
+    },
+    "financial_objects": {
+      "IFX_2025_ANNUAL_REPORT_COMPLEX_LAYOUT": {
+        "source_id": "IFX_2025_ANNUAL_REPORT_COMPLEX_LAYOUT",
+        "document_parents_added": 1,
+        "retrieval_children_added": 67,
+        "invalid_records_excluded": 0,
+        "source_sha256": "4da7852d5e554c6cb4813e3bf0e19530e7b32b1ad7501bec0ca4d90a36451687"
+      }
+    },
+    "evidence_request": {
+      "schema_version": "fin_ia_evidence_request_v1_0",
+      "request_id": "REQ-IFX-VS2-COMPLEX-RESULTS-001",
+      "cell_id": "IFX-VS2-COMPLEX-RESULTS-CELL-001",
+      "requester_role": "operating_performance_specialist",
+      "evidence_domain": "operating_performance",
+      "case_key": "IFX.DE",
+      "subject_ticker": "IFX.DE",
+      "research_as_of": "2025-12-01",
+      "target_entities": [
+        "IFX.DE"
+      ],
+      "requested_facet_ids": [
+        "reported_results"
+      ],
+      "metric_intents": [
+        "segment result",
+        "operating profit",
+        "year over year change"
+      ],
+      "product_intents": [
+        "segment structure change"
+      ],
+      "period": {
+        "start_date": "2024-10-01",
+        "end_date": "2025-09-30",
+        "fiscal_years": [
+          2025
+        ]
+      },
+      "granularity": "fiscal_year_and_segment",
+      "unit": "EUR_millions_reported_source_unit",
+      "acceptable_sources": [
+        "ANNUAL_REPORT"
+      ],
+      "acceptable_proxy": false,
+      "forbidden_proxy": [
+        "OCR text treated as reviewed Evidence",
+        "table row treated as NumericFact before S2 adjudication",
+        "previous-year comparatives used without restatement context"
+      ],
+      "stop_condition": "Determine what the official FY2025 annual report says about segment results and preserve reclassification, table, footnote and cross-page lineage without granting premature numeric authority.",
+      "clarification_policy": "return_typed_gap"
+    },
+    "query_facet_plan": {
+      "schema_version": "fin_ia_typed_query_facet_plan_v1_0",
+      "case_key": "IFX.DE",
+      "subject_ticker": "IFX.DE",
+      "subject_legal_name": "Infineon Technologies AG",
+      "research_as_of": "2025-12-01",
+      "industry_pack_id": "power_semiconductor_development",
+      "lanes": [
+        {
+          "lane_id": "ifx.de__operating_performance__reported_results__lexical_v1",
+          "slot_id": "operating_performance",
+          "facet_id": "reported_results",
+          "business_question_zh": "最新收入、增长与经营利润表现如何？",
+          "execution_mode": "local_lexical_candidate_generation",
+          "subject_ticker": "IFX.DE",
+          "evidence_owner_tickers": [
+            "IFX.DE"
+          ],
+          "relationship_constraints": [
+            "subject_self_disclosure"
+          ],
+          "publication_date_lte": "2025-12-01",
+          "source_types": [
+            "ANNUAL_REPORT"
+          ],
+          "required_source_roles": [
+            "issuer_disclosure"
+          ],
+          "exact_queries": [
+            "\"Infineon Technologies\" \"revenue\"",
+            "\"Infineon Technologies\" \"operating income\"",
+            "\"Infineon\" \"revenue\"",
+            "\"Infineon\" \"operating income\""
+          ],
+          "lexical_query": "revenue growth operating income segment results year over year power semiconductor segment result operating profit comparative figures adjusted year over year change segment structure change",
+          "lexical_tokens": [
+            "revenue",
+            "growth",
+            "operating",
+            "income",
+            "segment",
+            "results",
+            "year",
+            "over",
+            "power",
+            "semiconductor",
+            "result",
+            "profit",
+            "comparative",
+            "figures",
+            "adjusted",
+            "change",
+            "structure"
+          ],
+          "owner_queries": [
+            {
+              "evidence_owner_ticker": "IFX.DE",
+              "relationship_direction": "subject_self_disclosure",
+              "lexical_query": "revenue growth operating income segment results year over year power semiconductor segment result operating profit comparative figures adjusted year over year change segment structure change",
+              "lexical_tokens": [
+                "revenue",
+                "growth",
+                "operating",
+                "income",
+                "segment",
+                "results",
+                "year",
+                "over",
+                "power",
+                "semiconductor",
+                "result",
+                "profit",
+                "comparative",
+                "figures",
+                "adjusted",
+                "change",
+                "structure"
+              ],
+              "anchor_token_groups": [
+                [
+                  "revenue"
+                ],
+                [
+                  "operating",
+                  "income"
+                ],
+                [
+                  "segment",
+                  "result"
+                ],
+                [
+                  "operating",
+                  "profit"
+                ],
+                [
+                  "comparative",
+                  "figures",
+                  "adjusted"
+                ]
+              ]
+            }
+          ],
+          "semantic_query": "截至 2025-12-01，回答“最新收入、增长与经营利润表现如何？”。研究主体是 Infineon Technologies AG；允许使用的披露主体为Infineon Technologies AG，但必须区分主体自述、上下游背景和直接关系证据。 本次类型化请求限定的指标／产品意图为：segment result、operating profit、year over year change、segment structure change；这些意图只能扩展语义和词法召回，不能改变身份、期间、来源、关系或事实权威。",
+          "graph_constraints": [
+            "evidence_owner=IFX.DE",
+            "relationship=subject_self_disclosure"
+          ],
+          "forbidden_expansions": [
+            "unrelated issuer",
+            "future publication",
+            "non-operating anecdote"
+          ],
+          "candidate_budget": 20
+        }
+      ],
+      "plan_digest": "ed6b599ddcd3b35a44606d8a520a58b94ef5a8d3240944ae0029d8f3ebfa63df"
+    },
+    "candidate_set": {
+      "candidate_state": "candidate_not_evidence",
+      "request_id": "REQ-IFX-VS2-COMPLEX-RESULTS-001",
+      "source_record_ids": [
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_013",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_010",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_008",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_012",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_009",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005"
+      ]
+    },
+    "candidate_ranking": {
+      "ranking_contract": "current_typed_financial_candidate_order",
+      "candidate_state": "candidate_not_evidence",
+      "rows": [
+        {
+          "rank": 1,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "score": 21.833798
+        },
+        {
+          "rank": 2,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::CONTEXT",
+          "score": 13.412371
+        },
+        {
+          "rank": 3,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01",
+          "score": 10.921945
+        },
+        {
+          "rank": 4,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::CONTEXT",
+          "score": 10.595174
+        },
+        {
+          "rank": 5,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "score": 9.938613
+        },
+        {
+          "rank": 6,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_013",
+          "score": 7.97233
+        },
+        {
+          "rank": 7,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+          "score": 7.716144
+        },
+        {
+          "rank": 8,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_010",
+          "score": 5.462266
+        },
+        {
+          "rank": 9,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_008",
+          "score": 5.429461
+        },
+        {
+          "rank": 10,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+          "score": 5.204357
+        },
+        {
+          "rank": 11,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_012",
+          "score": 5.07147
+        },
+        {
+          "rank": 12,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "score": 5.009455
+        },
+        {
+          "rank": 13,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_009",
+          "score": 4.667153
+        },
+        {
+          "rank": 14,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+          "score": 3.92702
+        },
+        {
+          "rank": 15,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01",
+          "score": 3.883895
+        },
+        {
+          "rank": 16,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+          "score": 3.655576
+        },
+        {
+          "rank": 17,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+          "score": 3.655576
+        },
+        {
+          "rank": 18,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+          "score": 3.377162
+        },
+        {
+          "rank": 19,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+          "score": 3.360219
+        },
+        {
+          "rank": 20,
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+          "score": 3.360219
+        }
+      ]
+    },
+    "candidate_decision_ledger": {
+      "schema_version": "fin_ia_s1_candidate_decision_ledger_v1_0",
+      "status": "persistent_candidate_decisions_materialized",
+      "recorded_at": "2026-08-17",
+      "case_key": "IFX.DE",
+      "research_as_of": "2025-12-01",
+      "request_id": "REQ-IFX-VS2-COMPLEX-RESULTS-001",
+      "request_digest": "d419bef7ae133afda634eb04fe91e664f29d19a86646ebfde79ad148b9614de9",
+      "request_slot_ids": [
+        "operating_performance"
+      ],
+      "candidate_count": 20,
+      "decision_counts": {
+        "accepted": 1,
+        "rejected": 0,
+        "unjudged": 0,
+        "needs_review": 19
+      },
+      "accepted_evidence_item_digests": [
+        "c2cdcc7492afee85b04e096e6faa0368afd291abd164aee3472ea1777552cdb2"
+      ],
+      "decisions": [
+        {
+          "candidate_ref": "CAND::50DD9D4D28E315A846937644",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "rank": 1,
+          "score": 21.833798,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "accepted",
+          "reason_codes": [
+            "exact_reviewed_pack_lineage_match",
+            "case_owner_source_period_slot_gate_passed"
+          ],
+          "decision_authority": "capture_bound_reviewed_evidence_gate_reused",
+          "accepted_evidence_item_digests": [
+            "c2cdcc7492afee85b04e096e6faa0368afd291abd164aee3472ea1777552cdb2"
+          ],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "ffef780c0e167fad92b0fe2bf3b74313c43e500c10d6c262a2018cf5bd159857"
+        },
+        {
+          "candidate_ref": "CAND::2A34EC8989000BDB937942F0",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::CONTEXT",
+          "rank": 2,
+          "score": 13.412371,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "fd27d75b1e819c54d20ca35b1eacd72d8293b77bdabe954b19db511765105806"
+        },
+        {
+          "candidate_ref": "CAND::22A09CD117A4689B59F3E128",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01",
+          "rank": 3,
+          "score": 10.921945,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "40d6cab3f30df155a9be74b1e27ee33cc8fcaa601b80234bd67409d5b39bd2f7"
+        },
+        {
+          "candidate_ref": "CAND::A6E729E3D60DEAC84D0B5D5D",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::CONTEXT",
+          "rank": 4,
+          "score": 10.595174,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "0632d84df2fc38a9a0217c93b0d546918a90058e85ae76ce8d1234c6fa87b9a7"
+        },
+        {
+          "candidate_ref": "CAND::529AF8623EB0E12063F5B9EB",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "rank": 5,
+          "score": 9.938613,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "f6a4a69e5e42a1990377e8a0934f003a17a4415e041f4c76324d19c3a903c1cd"
+        },
+        {
+          "candidate_ref": "CAND::0EE3C0FC4E0F90CA493A72A0",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_013",
+          "rank": 6,
+          "score": 7.97233,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "9f7d72b2acfb1d3a73dfcf511276ca8b3f3f1874bd9bcbc3fd4c61c7038ee364"
+        },
+        {
+          "candidate_ref": "CAND::95DCD5D6A93840F32C15988E",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+          "rank": 7,
+          "score": 7.716144,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "b8a5a213d61c8303c14efcffe30ef0d1ea7e9b08aa2daa0282c29731723d02e8"
+        },
+        {
+          "candidate_ref": "CAND::5E3B1A3C10D07F9302FB4AEE",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_010",
+          "rank": 8,
+          "score": 5.462266,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "904405cb752afdbd7172c7e6110680b9b3ba61b0902c95289157e62182282793"
+        },
+        {
+          "candidate_ref": "CAND::36F44554C9C2ECF9B024FC12",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_008",
+          "rank": 9,
+          "score": 5.429461,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "561a54cc5d354a67783ea1d896d5ff04ce7c0561b6ad39ee5d992123e773e3a2"
+        },
+        {
+          "candidate_ref": "CAND::050092C25AF5A10C5AEED4C6",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+          "rank": 10,
+          "score": 5.204357,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "e44549297421686ca100a1188e309df107ee41dcfc7975f6fe9c9f9c95b7c1ea"
+        },
+        {
+          "candidate_ref": "CAND::AF7216BD2C2B3C938E00FD1A",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_012",
+          "rank": 11,
+          "score": 5.07147,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "cd80146d337aaea9d128421007c9d57d4ebc634e49d64f31b97cf893043d3078"
+        },
+        {
+          "candidate_ref": "CAND::AFF29424D81D67C075CD0D80",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "rank": 12,
+          "score": 5.009455,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "25f539f50612b84c444f022edce765c1a877d0114ba83ec812e2fc8a254d942b"
+        },
+        {
+          "candidate_ref": "CAND::DB708B3BAC66D83BF04D5CA2",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_009",
+          "rank": 13,
+          "score": 4.667153,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "e4a73bb2f08d431970496470030a6112e53473ebb964816375caa1defc61415a"
+        },
+        {
+          "candidate_ref": "CAND::4131D971AD227E459FA098FC",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+          "rank": 14,
+          "score": 3.92702,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "5f29ba24aa08bf47e5dff836c0a6ccd51251d9dd54c9dc84acb712feefd7957d"
+        },
+        {
+          "candidate_ref": "CAND::B24278E43BFD7749369D7E14",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01",
+          "rank": 15,
+          "score": 3.883895,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "492fe86ea71a89a25d1cfa02ac3127a2877aff7c521d68e1db4217d11be044ed"
+        },
+        {
+          "candidate_ref": "CAND::4DF2D10480F738049C1CEA6C",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+          "rank": 16,
+          "score": 3.655576,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "b9d33555ca693fdce2a641e3576b6861642fbebd14b15f5dce8be1810a42effc"
+        },
+        {
+          "candidate_ref": "CAND::349753F220174B68C7A8A4D3",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+          "rank": 17,
+          "score": 3.655576,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "d10567f1e0c00126d015b2f51ef16ac91912f75eccb29f06e1eabf7ca45b3223"
+        },
+        {
+          "candidate_ref": "CAND::4FB2965278EF34B8621CFCB1",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+          "rank": 18,
+          "score": 3.377162,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "25cc9af7fc701ea94c019b00ae16b7b0ef32419a6476d7b25a7d3bbcd7fbd504"
+        },
+        {
+          "candidate_ref": "CAND::282AB96233AC06BC386B61EE",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+          "rank": 19,
+          "score": 3.360219,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "fc5e48965e608e1c65c2726a3b06ae42ec6a63991be38d7593f7f2d251b35fae"
+        },
+        {
+          "candidate_ref": "CAND::F7451869ABCD266E3AA526CD",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+          "rank": 20,
+          "score": 3.360219,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "6a20083e8a2d5a0628007486777821151cc755c2be0c2f66b015021c292720aa"
+        }
+      ],
+      "authority": {
+        "candidate_is_not_evidence": true,
+        "rank_never_grants_evidence_authority": true,
+        "reviewed_binding_or_separate_capture_gate_required": true,
+        "numeric_authority_remains_s2": true
+      },
+      "candidate_decision_ledger_digest": "3bb5d16320db215e4e7b502781ae89ace372156fee210357c41c7e4bd532ffba"
+    },
+    "evidence_coverage_state": {
+      "schema_version": "fin_ia_s1_vs2_complex_pdf_coverage_v1_0",
+      "status": "complex_document_proposition_coverage_materialized",
+      "recorded_at": "2026-08-17",
+      "case_key": "IFX.DE",
+      "research_as_of": "2025-12-01",
+      "proposition_id": "PROP::D419BEF7AE133AFDA634EB04",
+      "research_question": "Determine what the official FY2025 annual report says about segment results and preserve reclassification, table, footnote and cross-page lineage without granting premature numeric authority.",
+      "request_id": "REQ-IFX-VS2-COMPLEX-RESULTS-001",
+      "slot_ids": [
+        "operating_performance"
+      ],
+      "coverage_state": "bounded_complex_document_evidence_with_typed_parser_and_s2_boundaries",
+      "accepted_evidence_item_digests": [
+        "c2cdcc7492afee85b04e096e6faa0368afd291abd164aee3472ea1777552cdb2"
+      ],
+      "reviewed_evidence_not_recalled_digests": [
+        "ae73ea4319e9bb58b3e359c0050d4e20af8b8ce095fc4ea7e445be238cb59fc4",
+        "df36967afb6b78f1a10daca7912c841dbb92e198c20cc8e785616d8a33097f86",
+        "edc44c41bcc67ea3313a319d3a187015e7780171f0187d4c6bd5e0f8e9c0a650"
+      ],
+      "candidate_decision_counts": {
+        "accepted": 1,
+        "rejected": 0,
+        "unjudged": 0,
+        "needs_review": 19
+      },
+      "gap_eligibility_receipts": [
+        {
+          "gap_id": "GAP-IFX-VS2-REAL-SCANNED-SOURCE",
+          "owning_stage": "S1-B",
+          "classification": "evaluation_corpus_shape_not_yet_observed",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "official_document_available": true,
+            "native_layout_path_executed": true,
+            "ocr_mutation_path_executed": true,
+            "real_scanned_financial_document_enrolled": false
+          },
+          "disposition": "retain_as_heterogeneity_qualification_boundary",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "80ac3c54e9e46a4f1591bb52064a0d37d0ed2995259232e1cb2bcd654674d2df"
+        },
+        {
+          "gap_id": "GAP-IFX-VS2-S2-NUMERIC-ADJUDICATION",
+          "owning_stage": "S2",
+          "classification": "source_visible_numbers_without_numeric_authority",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "page_and_bbox_locator_present": true,
+            "table_rows_materialized": true,
+            "S2_source_bound_adjudication_executed": false
+          },
+          "disposition": "route_to_S2_sibling_without_silent_promotion",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "983f785e7381da5d66faaeb579e8b4d8ba3b3d1a658185a8d0d722bce2efc528"
+        }
+      ],
+      "quality_receipt_digest": "5ed09c65addb34801d710d1eca3ac125bff27c1ee73f92f7703ec70ab8aca37f",
+      "known": [
+        "Official FY2025 pages preserve segment structure, table, footnote and cross-page candidates.",
+        "Candidate ranking does not grant Evidence or NumericFact authority."
+      ],
+      "unknown": [
+        "Behavior on a naturally scanned financial filing remains unqualified.",
+        "Material table values have not completed S2 numeric adjudication."
+      ],
+      "why_unknown": [
+        "The development corpus contains a rasterized official-page mutation, not a naturally scanned filing.",
+        "VS2 deliberately stops before NumericFact promotion and emits an S2 sibling binding."
+      ],
+      "coverage_state_digest": "3023127d92e9182dbf8f850ff05e23f1033fe16a3274a2345ea06adeb8609932"
+    },
+    "evidence_pack_readiness": {
+      "schema_version": "fin_ia_s1_vs2_complex_pdf_readiness_v1_0",
+      "status": "complex_pdf_vertical_readiness_materialized",
+      "recorded_at": "2026-08-17",
+      "case_key": "IFX.DE",
+      "research_as_of": "2025-12-01",
+      "proposition_id": "PROP::D419BEF7AE133AFDA634EB04",
+      "readiness_state": "ready_for_complex_pdf_bounded_research_not_numeric_conclusion",
+      "pack_binding": {
+        "case_key": "IFX.DE",
+        "artifact_digest": "3f7319dfed9e61f29d4ad5744a2014e33744100a0a13febfdfe5009d1de84228",
+        "pack_payload_digest": "dc2e33727d806f10844cde669454e39c15eb2b4d704e7b3386f6bb8a4ab40bab"
+      },
+      "checks": {
+        "all_retrieved_candidates_have_persistent_decisions": true,
+        "reviewed_layout_evidence_recalled": true,
+        "ocr_mutation_does_not_auto_promote": true,
+        "material_numbers_routed_to_S2_sibling": true,
+        "real_scanned_source_qualified": false,
+        "complete_product_conclusion_ready": false,
+        "S1_qualified_stable": false
+      },
+      "accepted_evidence_count": 1,
+      "unresolved_gap_count": 2,
+      "known_boundary": "VS2 integrates one train-internal complex official PDF through the same spine and Workbench consumer. It does not enroll IFX as a product case, qualify naturally scanned filings, grant NumericFact authority or close S1.",
+      "readiness_digest": "13aac3a74a5005d2506286ac55aa00a6ee4032df52a31a330e4b03c2f1437a6f"
+    },
+    "workbench_projection": {
+      "schema_version": "fin_ia_s1_vs2_complex_pdf_workbench_v1_0",
+      "status": "complex_document_quality_and_lineage_ready",
+      "recorded_at": "2026-08-17",
+      "display_scope": "operations_train_internal_source_quality",
+      "product_case_enrollment": false,
+      "source": {
+        "ticker": "IFX.DE",
+        "issuer_name": "Infineon Technologies AG",
+        "document_type": "ANNUAL_REPORT",
+        "title": "Annual Report 2025 with the Group Consolidated Financial Statements (IFRS)",
+        "publication_date": "2025-11-28",
+        "page_count": 192,
+        "selected_page_numbers": [
+          164,
+          166,
+          167
+        ]
+      },
+      "document_quality": {
+        "status": "selected_pages_parsed_candidate_quality_ready",
+        "complete_document_page_count_verified": true,
+        "extraction_modes": {
+          "native_pdf_layout": 3
+        },
+        "page_statuses": {
+          "usable_native_layout_candidate": 3
+        },
+        "table_region_count": 5,
+        "footnote_count": 1,
+        "low_confidence_material_token_count": 0,
+        "forced_ocr_pages": []
+      },
+      "financial_objects": {
+        "object_count": 67,
+        "object_type_counts": {
+          "cross_page_table_continuation_candidate": 1,
+          "financial_table_footnote": 1,
+          "financial_table_metric_row": 56,
+          "financial_table_region": 5,
+          "pdf_page_context": 3,
+          "revision_or_restatement_context": 1
+        },
+        "cross_page_relation_count": 1,
+        "numeric_fact_authority_granted": false
+      },
+      "candidate_decision_summary": {
+        "accepted": 1,
+        "rejected": 0,
+        "unjudged": 0,
+        "needs_review": 19
+      },
+      "coverage_summary": {
+        "coverage_state": "bounded_complex_document_evidence_with_typed_parser_and_s2_boundaries",
+        "accepted_evidence_count": 1,
+        "reviewed_not_recalled_count": 3,
+        "typed_boundary_count": 2,
+        "true_public_information_gap_count": 0
+      },
+      "pack_binding": {
+        "case_key": "IFX.DE",
+        "artifact_digest": "3f7319dfed9e61f29d4ad5744a2014e33744100a0a13febfdfe5009d1de84228",
+        "pack_payload_digest": "dc2e33727d806f10844cde669454e39c15eb2b4d704e7b3386f6bb8a4ab40bab"
+      },
+      "hard_boundaries": {
+        "candidate_is_not_evidence": true,
+        "rank_never_grants_evidence_authority": true,
+        "ocr_never_grants_evidence_authority": true,
+        "S2_numeric_adjudication_required": true,
+        "IFX_is_not_a_current_product_case": true,
+        "S1_qualified_stable": false
+      },
+      "workbench_projection_digest": "810eb778ea53ac044611b22039f4541763d0aa173adf9ee0c4a87c1184ffbd5a"
+    },
+    "frozen_consumer_probe": {
+      "schema_version": "fin_ia_s1_vs2_frozen_consumer_probe_v1_0",
+      "status": "complex_document_workbench_projection_bound",
+      "case_key": "IFX.DE",
+      "readiness_digest": "13aac3a74a5005d2506286ac55aa00a6ee4032df52a31a330e4b03c2f1437a6f",
+      "workbench_projection_digest": "810eb778ea53ac044611b22039f4541763d0aa173adf9ee0c4a87c1184ffbd5a",
+      "same_canonical_spine": true,
+      "product_case_enrollment": false,
+      "frozen_consumer_probe_digest": "6aee47e9846933f86ff9f1c5ee3cda3394c08c8c516263206e610c936d4fc7e7"
+    },
+    "s2_sibling_binding": {
+      "schema_version": "fin_ia_s1_vs2_s2_sibling_binding_v1_0",
+      "status": "candidate_rows_bound_numeric_adjudication_pending",
+      "source_owner_ticker": "IFX.DE",
+      "document_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266",
+      "material_row_object_count": 56,
+      "numeric_fact_authority_granted": false,
+      "disposition": "S2_source_bound_numeric_adjudication_required"
+    },
+    "source_spec": {
+      "schema_version": "fin_ia_s1_vs2_complex_pdf_source_spec_v1_0",
+      "status": "train_internal_complex_document_development_source",
+      "case_id": "S1-VS2-IFX-2025-ANNUAL-REPORT",
+      "ticker": "IFX.DE",
+      "company": "Infineon Technologies AG",
+      "source_type": "ANNUAL_REPORT",
+      "source_tier": "primary_company_disclosure",
+      "period_end": "2025-09-30",
+      "publication_date": "2025-11-28",
+      "fiscal_year": 2025,
+      "research_as_of": "2025-12-01",
+      "source_url": "https://www.infineon.com/assets/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+      "license_scope": "public_official_source_research_use",
+      "selected_page_numbers": [
+        164,
+        166,
+        167
+      ],
+      "forced_ocr_mutation_page_numbers": [
+        166
+      ],
+      "product_case_enrollment": false,
+      "qualification_boundary": "Official native-layout PDF plus rasterized-page OCR mutation; a naturally scanned financial filing remains required for final heterogeneous qualification."
+    },
+    "native_layout_public_projection": {
+      "schema_version": "fin_ia_parsed_pdf_layout_document_v2_0",
+      "parser_adapter": "pdfplumber_layout_plus_rapidocr_v2",
+      "capture_id": "DOWNLOAD::GLOBALDISC::IFX_DE::EU_REGULATED_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "route_id": "GLOBALDISC::IFX_DE::EU_REGULATED_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "source_owner_ticker": "IFX.DE",
+      "issuer_name": "Infineon Technologies AG",
+      "document_type": "ANNUAL_REPORT",
+      "title": "Annual Report 2025 with the Group Consolidated Financial Statements (IFRS)",
+      "publication_date": "2025-11-28",
+      "source_url": "https://www.infineon.com/assets/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+      "raw_object_sha256": "4da7852d5e554c6cb4813e3bf0e19530e7b32b1ad7501bec0ca4d90a36451687",
+      "raw_object_bytes": 5028776,
+      "page_count": 192,
+      "selected_page_numbers": [
+        164,
+        166,
+        167
+      ],
+      "source_text_digest": "8acad2b29b7bb1e54877723c52b01a2ff89ffb093e91ba78fb7f0c45e87cdf07",
+      "quality_receipt": {
+        "schema_version": "fin_ia_pdf_layout_quality_receipt_v1_0",
+        "status": "selected_pages_parsed_candidate_quality_ready",
+        "complete_document_page_count_verified": true,
+        "complete_document_page_count": 192,
+        "selected_page_count": 3,
+        "extraction_modes": {
+          "native_pdf_layout": 3
+        },
+        "page_statuses": {
+          "usable_native_layout_candidate": 3
+        },
+        "table_region_count": 5,
+        "footnote_count": 1,
+        "low_confidence_material_token_count": 0,
+        "forced_ocr_pages": [],
+        "accepted_evidence_authority_granted": false,
+        "numeric_fact_authority_granted": false,
+        "known_boundary": "Parser quality is a candidate-stage receipt. Native or OCR text, table rows and footnotes require object binding and Evidence review; material numbers require an independent S2 sibling adjudication.",
+        "quality_digest": "5ed09c65addb34801d710d1eca3ac125bff27c1ee73f92f7703ec70ab8aca37f"
+      },
+      "promotion_status": "parsed_layout_candidates_only_not_evidence"
+    },
+    "ocr_mutation_public_projection": {
+      "schema_version": "fin_ia_parsed_pdf_layout_document_v2_0",
+      "parser_adapter": "pdfplumber_layout_plus_rapidocr_v2",
+      "capture_id": "DOWNLOAD::GLOBALDISC::IFX_DE::EU_REGULATED_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "route_id": "GLOBALDISC::IFX_DE::EU_REGULATED_ANNUAL_REPORT::2025::ANNUAL_REPORT",
+      "source_owner_ticker": "IFX.DE",
+      "issuer_name": "Infineon Technologies AG",
+      "document_type": "ANNUAL_REPORT",
+      "title": "Annual Report 2025 with the Group Consolidated Financial Statements (IFRS)",
+      "publication_date": "2025-11-28",
+      "source_url": "https://www.infineon.com/assets/row/public/documents/corporate/investors/annual-reports/2025/2025-annual-report-v01-00-en.pdf",
+      "raw_object_sha256": "4da7852d5e554c6cb4813e3bf0e19530e7b32b1ad7501bec0ca4d90a36451687",
+      "raw_object_bytes": 5028776,
+      "page_count": 192,
+      "selected_page_numbers": [
+        166
+      ],
+      "source_text_digest": "5124e840c2e085cdcd9eabc6471e608fc6d5784b5ac3158f8589e95937ddd684",
+      "quality_receipt": {
+        "schema_version": "fin_ia_pdf_layout_quality_receipt_v1_0",
+        "status": "selected_pages_parsed_candidate_quality_ready",
+        "complete_document_page_count_verified": true,
+        "complete_document_page_count": 192,
+        "selected_page_count": 1,
+        "extraction_modes": {
+          "ocr_forced_evaluation_mutation": 1
+        },
+        "page_statuses": {
+          "ocr_candidate_needs_review": 1
+        },
+        "table_region_count": 3,
+        "footnote_count": 1,
+        "low_confidence_material_token_count": 0,
+        "forced_ocr_pages": [
+          166
+        ],
+        "accepted_evidence_authority_granted": false,
+        "numeric_fact_authority_granted": false,
+        "known_boundary": "Parser quality is a candidate-stage receipt. Native or OCR text, table rows and footnotes require object binding and Evidence review; material numbers require an independent S2 sibling adjudication.",
+        "quality_digest": "5e00788ec8a4490d9d175769f094126cf9e3f1f8f1a431700ef84d57a17ad396"
+      },
+      "promotion_status": "parsed_layout_candidates_only_not_evidence"
+    },
+    "object_set": {
+      "schema_version": "fin_ia_pdf_layout_object_set_v1_0",
+      "status": "complex_pdf_candidate_objects_materialized",
+      "document_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266",
+      "source_owner_ticker": "IFX.DE",
+      "source_type": "ANNUAL_REPORT",
+      "selected_page_numbers": [
+        164,
+        166,
+        167
+      ],
+      "object_count": 67,
+      "object_type_counts": {
+        "cross_page_table_continuation_candidate": 1,
+        "financial_table_footnote": 1,
+        "financial_table_metric_row": 56,
+        "financial_table_region": 5,
+        "pdf_page_context": 3,
+        "revision_or_restatement_context": 1
+      },
+      "cross_page_relation_count": 1,
+      "candidate_is_not_evidence": true,
+      "numeric_fact_authority_granted": false,
+      "object_ids": [
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_008",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_009",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_010",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_011",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_008",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_010",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_011",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_012",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_013",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_008",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_009",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_011",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_012",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_013",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_014",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_015",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_016",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_017",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_018",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_019",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::CROSS_PAGE_RELATION_01"
+      ],
+      "object_set_digest": "5ff59182a823f085c52e7c6b65bd73e38853faffa241d02053c68c298838c270"
+    },
+    "index_snapshot": {
+      "schema_version": "fin_ia_s1_vs2_complex_pdf_index_snapshot_v1_0",
+      "status": "immutable_train_internal_object_snapshot",
+      "document_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266",
+      "object_set_digest": "5ff59182a823f085c52e7c6b65bd73e38853faffa241d02053c68c298838c270",
+      "object_count": 67,
+      "object_ids": [
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_008",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_009",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_010",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_011",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_02::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_008",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_010",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_011",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_012",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_013",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_008",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_009",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_011",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_012",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_013",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_014",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_015",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_016",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_017",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_018",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_02::ROW_019",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::CROSS_PAGE_RELATION_01"
+      ],
+      "candidate_is_not_evidence": true,
+      "snapshot_digest": "7c6206f8b876d9be3ad02db343ce127499dccefe56d642af3c097621ab2c09bd"
+    }
+  },
+  "evaluation": {
+    "candidate_decision_ledger": {
+      "schema_version": "fin_ia_s1_candidate_decision_ledger_v1_0",
+      "status": "persistent_candidate_decisions_materialized",
+      "recorded_at": "2026-08-17",
+      "case_key": "IFX.DE",
+      "research_as_of": "2025-12-01",
+      "request_id": "REQ-IFX-VS2-COMPLEX-RESULTS-001",
+      "request_digest": "d419bef7ae133afda634eb04fe91e664f29d19a86646ebfde79ad148b9614de9",
+      "request_slot_ids": [
+        "operating_performance"
+      ],
+      "candidate_count": 20,
+      "decision_counts": {
+        "accepted": 1,
+        "rejected": 0,
+        "unjudged": 0,
+        "needs_review": 19
+      },
+      "accepted_evidence_item_digests": [
+        "c2cdcc7492afee85b04e096e6faa0368afd291abd164aee3472ea1777552cdb2"
+      ],
+      "decisions": [
+        {
+          "candidate_ref": "CAND::50DD9D4D28E315A846937644",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "rank": 1,
+          "score": 21.833798,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "accepted",
+          "reason_codes": [
+            "exact_reviewed_pack_lineage_match",
+            "case_owner_source_period_slot_gate_passed"
+          ],
+          "decision_authority": "capture_bound_reviewed_evidence_gate_reused",
+          "accepted_evidence_item_digests": [
+            "c2cdcc7492afee85b04e096e6faa0368afd291abd164aee3472ea1777552cdb2"
+          ],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "ffef780c0e167fad92b0fe2bf3b74313c43e500c10d6c262a2018cf5bd159857"
+        },
+        {
+          "candidate_ref": "CAND::2A34EC8989000BDB937942F0",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::CONTEXT",
+          "rank": 2,
+          "score": 13.412371,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "fd27d75b1e819c54d20ca35b1eacd72d8293b77bdabe954b19db511765105806"
+        },
+        {
+          "candidate_ref": "CAND::22A09CD117A4689B59F3E128",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01",
+          "rank": 3,
+          "score": 10.921945,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "40d6cab3f30df155a9be74b1e27ee33cc8fcaa601b80234bd67409d5b39bd2f7"
+        },
+        {
+          "candidate_ref": "CAND::A6E729E3D60DEAC84D0B5D5D",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::CONTEXT",
+          "rank": 4,
+          "score": 10.595174,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "0632d84df2fc38a9a0217c93b0d546918a90058e85ae76ce8d1234c6fa87b9a7"
+        },
+        {
+          "candidate_ref": "CAND::529AF8623EB0E12063F5B9EB",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "rank": 5,
+          "score": 9.938613,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "f6a4a69e5e42a1990377e8a0934f003a17a4415e041f4c76324d19c3a903c1cd"
+        },
+        {
+          "candidate_ref": "CAND::0EE3C0FC4E0F90CA493A72A0",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_013",
+          "rank": 6,
+          "score": 7.97233,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "9f7d72b2acfb1d3a73dfcf511276ca8b3f3f1874bd9bcbc3fd4c61c7038ee364"
+        },
+        {
+          "candidate_ref": "CAND::95DCD5D6A93840F32C15988E",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+          "rank": 7,
+          "score": 7.716144,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "b8a5a213d61c8303c14efcffe30ef0d1ea7e9b08aa2daa0282c29731723d02e8"
+        },
+        {
+          "candidate_ref": "CAND::5E3B1A3C10D07F9302FB4AEE",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_010",
+          "rank": 8,
+          "score": 5.462266,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "904405cb752afdbd7172c7e6110680b9b3ba61b0902c95289157e62182282793"
+        },
+        {
+          "candidate_ref": "CAND::36F44554C9C2ECF9B024FC12",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_008",
+          "rank": 9,
+          "score": 5.429461,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "561a54cc5d354a67783ea1d896d5ff04ce7c0561b6ad39ee5d992123e773e3a2"
+        },
+        {
+          "candidate_ref": "CAND::050092C25AF5A10C5AEED4C6",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+          "rank": 10,
+          "score": 5.204357,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "e44549297421686ca100a1188e309df107ee41dcfc7975f6fe9c9f9c95b7c1ea"
+        },
+        {
+          "candidate_ref": "CAND::AF7216BD2C2B3C938E00FD1A",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_012",
+          "rank": 11,
+          "score": 5.07147,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "cd80146d337aaea9d128421007c9d57d4ebc634e49d64f31b97cf893043d3078"
+        },
+        {
+          "candidate_ref": "CAND::AFF29424D81D67C075CD0D80",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "rank": 12,
+          "score": 5.009455,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "25f539f50612b84c444f022edce765c1a877d0114ba83ec812e2fc8a254d942b"
+        },
+        {
+          "candidate_ref": "CAND::DB708B3BAC66D83BF04D5CA2",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01::ROW_009",
+          "rank": 13,
+          "score": 4.667153,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "e4a73bb2f08d431970496470030a6112e53473ebb964816375caa1defc61415a"
+        },
+        {
+          "candidate_ref": "CAND::4131D971AD227E459FA098FC",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+          "rank": 14,
+          "score": 3.92702,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "5f29ba24aa08bf47e5dff836c0a6ccd51251d9dd54c9dc84acb712feefd7957d"
+        },
+        {
+          "candidate_ref": "CAND::B24278E43BFD7749369D7E14",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_01",
+          "rank": 15,
+          "score": 3.883895,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "492fe86ea71a89a25d1cfa02ac3127a2877aff7c521d68e1db4217d11be044ed"
+        },
+        {
+          "candidate_ref": "CAND::4DF2D10480F738049C1CEA6C",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+          "rank": 16,
+          "score": 3.655576,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "b9d33555ca693fdce2a641e3576b6861642fbebd14b15f5dce8be1810a42effc"
+        },
+        {
+          "candidate_ref": "CAND::349753F220174B68C7A8A4D3",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+          "rank": 17,
+          "score": 3.655576,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "d10567f1e0c00126d015b2f51ef16ac91912f75eccb29f06e1eabf7ca45b3223"
+        },
+        {
+          "candidate_ref": "CAND::4FB2965278EF34B8621CFCB1",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+          "rank": 18,
+          "score": 3.377162,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "25cc9af7fc701ea94c019b00ae16b7b0ef32419a6476d7b25a7d3bbcd7fbd504"
+        },
+        {
+          "candidate_ref": "CAND::282AB96233AC06BC386B61EE",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+          "rank": 19,
+          "score": 3.360219,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "fc5e48965e608e1c65c2726a3b06ae42ec6a63991be38d7593f7f2d251b35fae"
+        },
+        {
+          "candidate_ref": "CAND::F7451869ABCD266E3AA526CD",
+          "source_record_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+          "rank": 20,
+          "score": 3.360219,
+          "evidence_owner_ticker": "IFX.DE",
+          "source_type": "ANNUAL_REPORT",
+          "publication_date": "2025-11-28",
+          "decision_state": "needs_review",
+          "reason_codes": [
+            "candidate_not_present_in_reviewed_pack"
+          ],
+          "decision_authority": "candidate_only_no_evidence_authority",
+          "accepted_evidence_item_digests": [],
+          "model_decision_used": false,
+          "candidate_text_promoted": false,
+          "decision_digest": "6a20083e8a2d5a0628007486777821151cc755c2be0c2f66b015021c292720aa"
+        }
+      ],
+      "authority": {
+        "candidate_is_not_evidence": true,
+        "rank_never_grants_evidence_authority": true,
+        "reviewed_binding_or_separate_capture_gate_required": true,
+        "numeric_authority_remains_s2": true
+      },
+      "candidate_decision_ledger_digest": "3bb5d16320db215e4e7b502781ae89ace372156fee210357c41c7e4bd532ffba"
+    },
+    "coverage": {
+      "schema_version": "fin_ia_s1_vs2_complex_pdf_coverage_v1_0",
+      "status": "complex_document_proposition_coverage_materialized",
+      "recorded_at": "2026-08-17",
+      "case_key": "IFX.DE",
+      "research_as_of": "2025-12-01",
+      "proposition_id": "PROP::D419BEF7AE133AFDA634EB04",
+      "research_question": "Determine what the official FY2025 annual report says about segment results and preserve reclassification, table, footnote and cross-page lineage without granting premature numeric authority.",
+      "request_id": "REQ-IFX-VS2-COMPLEX-RESULTS-001",
+      "slot_ids": [
+        "operating_performance"
+      ],
+      "coverage_state": "bounded_complex_document_evidence_with_typed_parser_and_s2_boundaries",
+      "accepted_evidence_item_digests": [
+        "c2cdcc7492afee85b04e096e6faa0368afd291abd164aee3472ea1777552cdb2"
+      ],
+      "reviewed_evidence_not_recalled_digests": [
+        "ae73ea4319e9bb58b3e359c0050d4e20af8b8ce095fc4ea7e445be238cb59fc4",
+        "df36967afb6b78f1a10daca7912c841dbb92e198c20cc8e785616d8a33097f86",
+        "edc44c41bcc67ea3313a319d3a187015e7780171f0187d4c6bd5e0f8e9c0a650"
+      ],
+      "candidate_decision_counts": {
+        "accepted": 1,
+        "rejected": 0,
+        "unjudged": 0,
+        "needs_review": 19
+      },
+      "gap_eligibility_receipts": [
+        {
+          "gap_id": "GAP-IFX-VS2-REAL-SCANNED-SOURCE",
+          "owning_stage": "S1-B",
+          "classification": "evaluation_corpus_shape_not_yet_observed",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "official_document_available": true,
+            "native_layout_path_executed": true,
+            "ocr_mutation_path_executed": true,
+            "real_scanned_financial_document_enrolled": false
+          },
+          "disposition": "retain_as_heterogeneity_qualification_boundary",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "80ac3c54e9e46a4f1591bb52064a0d37d0ed2995259232e1cb2bcd654674d2df"
+        },
+        {
+          "gap_id": "GAP-IFX-VS2-S2-NUMERIC-ADJUDICATION",
+          "owning_stage": "S2",
+          "classification": "source_visible_numbers_without_numeric_authority",
+          "eligible_as_true_public_information_gap": false,
+          "checks": {
+            "page_and_bbox_locator_present": true,
+            "table_rows_materialized": true,
+            "S2_source_bound_adjudication_executed": false
+          },
+          "disposition": "route_to_S2_sibling_without_silent_promotion",
+          "last_checked_at": "2026-08-17",
+          "receipt_digest": "983f785e7381da5d66faaeb579e8b4d8ba3b3d1a658185a8d0d722bce2efc528"
+        }
+      ],
+      "quality_receipt_digest": "5ed09c65addb34801d710d1eca3ac125bff27c1ee73f92f7703ec70ab8aca37f",
+      "known": [
+        "Official FY2025 pages preserve segment structure, table, footnote and cross-page candidates.",
+        "Candidate ranking does not grant Evidence or NumericFact authority."
+      ],
+      "unknown": [
+        "Behavior on a naturally scanned financial filing remains unqualified.",
+        "Material table values have not completed S2 numeric adjudication."
+      ],
+      "why_unknown": [
+        "The development corpus contains a rasterized official-page mutation, not a naturally scanned filing.",
+        "VS2 deliberately stops before NumericFact promotion and emits an S2 sibling binding."
+      ],
+      "coverage_state_digest": "3023127d92e9182dbf8f850ff05e23f1033fe16a3274a2345ea06adeb8609932"
+    },
+    "readiness": {
+      "schema_version": "fin_ia_s1_vs2_complex_pdf_readiness_v1_0",
+      "status": "complex_pdf_vertical_readiness_materialized",
+      "recorded_at": "2026-08-17",
+      "case_key": "IFX.DE",
+      "research_as_of": "2025-12-01",
+      "proposition_id": "PROP::D419BEF7AE133AFDA634EB04",
+      "readiness_state": "ready_for_complex_pdf_bounded_research_not_numeric_conclusion",
+      "pack_binding": {
+        "case_key": "IFX.DE",
+        "artifact_digest": "3f7319dfed9e61f29d4ad5744a2014e33744100a0a13febfdfe5009d1de84228",
+        "pack_payload_digest": "dc2e33727d806f10844cde669454e39c15eb2b4d704e7b3386f6bb8a4ab40bab"
+      },
+      "checks": {
+        "all_retrieved_candidates_have_persistent_decisions": true,
+        "reviewed_layout_evidence_recalled": true,
+        "ocr_mutation_does_not_auto_promote": true,
+        "material_numbers_routed_to_S2_sibling": true,
+        "real_scanned_source_qualified": false,
+        "complete_product_conclusion_ready": false,
+        "S1_qualified_stable": false
+      },
+      "accepted_evidence_count": 1,
+      "unresolved_gap_count": 2,
+      "known_boundary": "VS2 integrates one train-internal complex official PDF through the same spine and Workbench consumer. It does not enroll IFX as a product case, qualify naturally scanned filings, grant NumericFact authority or close S1.",
+      "readiness_digest": "13aac3a74a5005d2506286ac55aa00a6ee4032df52a31a330e4b03c2f1437a6f"
+    },
+    "workbench_projection": {
+      "schema_version": "fin_ia_s1_vs2_complex_pdf_workbench_v1_0",
+      "status": "complex_document_quality_and_lineage_ready",
+      "recorded_at": "2026-08-17",
+      "display_scope": "operations_train_internal_source_quality",
+      "product_case_enrollment": false,
+      "source": {
+        "ticker": "IFX.DE",
+        "issuer_name": "Infineon Technologies AG",
+        "document_type": "ANNUAL_REPORT",
+        "title": "Annual Report 2025 with the Group Consolidated Financial Statements (IFRS)",
+        "publication_date": "2025-11-28",
+        "page_count": 192,
+        "selected_page_numbers": [
+          164,
+          166,
+          167
+        ]
+      },
+      "document_quality": {
+        "status": "selected_pages_parsed_candidate_quality_ready",
+        "complete_document_page_count_verified": true,
+        "extraction_modes": {
+          "native_pdf_layout": 3
+        },
+        "page_statuses": {
+          "usable_native_layout_candidate": 3
+        },
+        "table_region_count": 5,
+        "footnote_count": 1,
+        "low_confidence_material_token_count": 0,
+        "forced_ocr_pages": []
+      },
+      "financial_objects": {
+        "object_count": 67,
+        "object_type_counts": {
+          "cross_page_table_continuation_candidate": 1,
+          "financial_table_footnote": 1,
+          "financial_table_metric_row": 56,
+          "financial_table_region": 5,
+          "pdf_page_context": 3,
+          "revision_or_restatement_context": 1
+        },
+        "cross_page_relation_count": 1,
+        "numeric_fact_authority_granted": false
+      },
+      "candidate_decision_summary": {
+        "accepted": 1,
+        "rejected": 0,
+        "unjudged": 0,
+        "needs_review": 19
+      },
+      "coverage_summary": {
+        "coverage_state": "bounded_complex_document_evidence_with_typed_parser_and_s2_boundaries",
+        "accepted_evidence_count": 1,
+        "reviewed_not_recalled_count": 3,
+        "typed_boundary_count": 2,
+        "true_public_information_gap_count": 0
+      },
+      "pack_binding": {
+        "case_key": "IFX.DE",
+        "artifact_digest": "3f7319dfed9e61f29d4ad5744a2014e33744100a0a13febfdfe5009d1de84228",
+        "pack_payload_digest": "dc2e33727d806f10844cde669454e39c15eb2b4d704e7b3386f6bb8a4ab40bab"
+      },
+      "hard_boundaries": {
+        "candidate_is_not_evidence": true,
+        "rank_never_grants_evidence_authority": true,
+        "ocr_never_grants_evidence_authority": true,
+        "S2_numeric_adjudication_required": true,
+        "IFX_is_not_a_current_product_case": true,
+        "S1_qualified_stable": false
+      },
+      "workbench_projection_digest": "810eb778ea53ac044611b22039f4541763d0aa173adf9ee0c4a87c1184ffbd5a"
+    },
+    "reviewed_target_count": 4,
+    "reviewed_target_recalled_and_accepted_count": 1,
+    "reviewed_target_not_recalled_count": 3,
+    "labels_joined_after_candidate_generation": true
+  },
+  "business_result": {
+    "parser_preserved_revision_context": true,
+    "parser_preserved_complex_table_regions": true,
+    "parser_preserved_financial_footnote": true,
+    "parser_preserved_cross_page_continuation": true,
+    "ocr_mutation_preserved_all_material_gold_anchors": true,
+    "current_retrieval_recalled_all_reviewed_complex_objects": false,
+    "current_retrieval_failure_zh": "4 个经复核复杂文档目标只有 1 个进入当前前 20 候选；重述说明被召回，但分部结果总计行、脚注和跨页续表未进入。对象没有丢失，最早未闭合层已从 S1-B/C 转移到 VS3 的排序与金融角色判断。"
+  },
+  "envelopes": [
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "source_route_decision",
+      "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::fb495d270dbe6d811f6c1b45",
+      "artifact_version": "v1.0",
+      "producer_id": "current_source_object_manifest_adapter",
+      "payload_schema_version": "fin_ia_vs1_source_route_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/source_routes/IFX_2025_ANNUAL_REPORT_COMPLEX_LAYOUT",
+      "payload_sha256": "5c87467b2333ba0be0d2bfb6c174d24e3301772c6d5284f655cf7550ccbd4ccd",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": "IFX.DE",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "raw_source_capture",
+      "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::69fab27a727683b66adc986d",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_capture_first_source_adapter",
+      "payload_schema_version": "fin_agent_global_public_disclosure_download_metadata_v0.1",
+      "payload_ref": "data/raw_private/global_public_disclosures/eu_regulated/IFX_DE/2025/ANNUAL_REPORT/2025-annual-report-v01-00-en.pdf",
+      "payload_sha256": "4da7852d5e554c6cb4813e3bf0e19530e7b32b1ad7501bec0ca4d90a36451687",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": "IFX.DE",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "source_route_decision",
+          "artifact_id": "FIN-S1::SOURCE_ROUTE_DECISION::fb495d270dbe6d811f6c1b45",
+          "artifact_version": "v1.0",
+          "payload_sha256": "5c87467b2333ba0be0d2bfb6c174d24e3301772c6d5284f655cf7550ccbd4ccd",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "03436ddd7113be8d936a12e61cad23a43abafbc37f994319798a57f86dd1f08f"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "parsed_document",
+      "artifact_id": "FIN-S1::PARSED_DOCUMENT::a9c25f832c01146ae4ca3b13",
+      "artifact_version": "v1.0",
+      "producer_id": "existing_parser_thin_adapter",
+      "payload_schema_version": "fin_ia_parsed_pdf_layout_document_v2_0",
+      "payload_ref": "data/workbench_private/s1_vs2_complex_pdf/v1/parsed_native_layout.json",
+      "payload_sha256": "cb3269fa6429299a5bd05a1c651b8e4f79851594dbdff1cd9b76f9210181109b",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": "IFX.DE",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "raw_source_capture",
+          "artifact_id": "FIN-S1::RAW_SOURCE_CAPTURE::69fab27a727683b66adc986d",
+          "artifact_version": "v1.0",
+          "payload_sha256": "4da7852d5e554c6cb4813e3bf0e19530e7b32b1ad7501bec0ca4d90a36451687",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "df47aa246561fbeb6d18ef4f29f002b249a000e9317b60dd025113d6e18dbb63"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "financial_evidence_object",
+      "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::9c18c46a220c960653283712",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_vs1_financial_object_receipt_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/financial_objects/IFX_2025_ANNUAL_REPORT_COMPLEX_LAYOUT",
+      "payload_sha256": "7481fd6446b52f4e41384dd05a7d134141f87a2f5a56020490a9ec1b1e8e3697",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_and_source_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": "IFX.DE",
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "parsed_document",
+          "artifact_id": "FIN-S1::PARSED_DOCUMENT::a9c25f832c01146ae4ca3b13",
+          "artifact_version": "v1.0",
+          "payload_sha256": "cb3269fa6429299a5bd05a1c651b8e4f79851594dbdff1cd9b76f9210181109b",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "9c7eec1784acd36b53389a1797ef34b510913322ca68511be1fd528193ede20b"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "object_manifest",
+      "artifact_id": "FIN-S1::OBJECT_MANIFEST::d76b6d1e6312b9f1627ae022",
+      "artifact_version": "v1.0",
+      "producer_id": "current_financial_object_store_adapter",
+      "payload_schema_version": "fin_ia_s1_vs2_complex_pdf_object_manifest_v1_0",
+      "payload_ref": "data/workbench_private/s1_vs2_complex_pdf/v1/object_set.json",
+      "payload_sha256": "f8b9b83c46c2bae2809f7b00d5b82da051d2181ca31978e258f8d77aaf7ec168",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "financial_evidence_object",
+          "artifact_id": "FIN-S1::FINANCIAL_EVIDENCE_OBJECT::9c18c46a220c960653283712",
+          "artifact_version": "v1.0",
+          "payload_sha256": "7481fd6446b52f4e41384dd05a7d134141f87a2f5a56020490a9ec1b1e8e3697",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "4e6dc8f668fb0f7eb49c5a84bc59636e8c42680c32ebd6188b8c510c5c89c519"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "index_snapshot",
+      "artifact_id": "FIN-S1::INDEX_SNAPSHOT::fdbb97d449be18a3bce0b820",
+      "artifact_version": "v1.0",
+      "producer_id": "current_retrieval_snapshot_adapter",
+      "payload_schema_version": "fin_ia_current_retrieval_snapshot_v1_0",
+      "payload_ref": "data/workbench_private/s1_vs2_complex_pdf/v1/index_snapshot.json",
+      "payload_sha256": "c2b0d14e07cb7a5a82ee62d4fbb6f3552368ab0515c8c34b9fa36479fa398305",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "object_manifest",
+          "artifact_id": "FIN-S1::OBJECT_MANIFEST::d76b6d1e6312b9f1627ae022",
+          "artifact_version": "v1.0",
+          "payload_sha256": "f8b9b83c46c2bae2809f7b00d5b82da051d2181ca31978e258f8d77aaf7ec168",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "37ba6391a14cbd4df48a275fbae8396e3a9eabc0fd5b256e3dfe8a233d052279"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "evidence_request",
+      "artifact_id": "FIN-S1::EVIDENCE_REQUEST::5d195381630322e91e2c6c0e",
+      "artifact_version": "v1.0",
+      "producer_id": "research_retrieval_service",
+      "payload_schema_version": "fin_ia_evidence_request_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/evidence_request",
+      "payload_sha256": "d419bef7ae133afda634eb04fe91e664f29d19a86646ebfde79ad148b9614de9",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [],
+      "lineage_digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "query_facet_plan",
+      "artifact_id": "FIN-S1::QUERY_FACET_PLAN::e8ea263f62d4e552adf9541d",
+      "artifact_version": "v1.0",
+      "producer_id": "query_facet_plan_compiler",
+      "payload_schema_version": "fin_ia_typed_query_facet_plan_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/query_facet_plan",
+      "payload_sha256": "79a5a2632fa41f7b2abe5781eccf6a4e56ab7e548249a6b232cb69c2483a9ce3",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_request",
+          "artifact_id": "FIN-S1::EVIDENCE_REQUEST::5d195381630322e91e2c6c0e",
+          "artifact_version": "v1.0",
+          "payload_sha256": "d419bef7ae133afda634eb04fe91e664f29d19a86646ebfde79ad148b9614de9",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "5800344ca23be6f810a38fc928e8d389cb6fb1efffbc31595b6add96ff6fc3e9"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "candidate_set",
+      "artifact_id": "FIN-S1::CANDIDATE_SET::42bed469160376962715196e",
+      "artifact_version": "v1.0",
+      "producer_id": "research_retrieval_service",
+      "payload_schema_version": "fin_ia_vs1_candidate_set_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/candidate_set",
+      "payload_sha256": "ac23b4f0603f43a62ca050558f66b2413125e5055f271fcf5cdd9769d3563b22",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "query_facet_plan",
+          "artifact_id": "FIN-S1::QUERY_FACET_PLAN::e8ea263f62d4e552adf9541d",
+          "artifact_version": "v1.0",
+          "payload_sha256": "79a5a2632fa41f7b2abe5781eccf6a4e56ab7e548249a6b232cb69c2483a9ce3",
+          "relation": "derived_from"
+        },
+        {
+          "artifact_type": "index_snapshot",
+          "artifact_id": "FIN-S1::INDEX_SNAPSHOT::fdbb97d449be18a3bce0b820",
+          "artifact_version": "v1.0",
+          "payload_sha256": "c2b0d14e07cb7a5a82ee62d4fbb6f3552368ab0515c8c34b9fa36479fa398305",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "a8f0f89496e10202b38ac413a8b6dab3ff049acf90c5d7b197a964402ce567de"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "candidate_ranking",
+      "artifact_id": "FIN-S1::CANDIDATE_RANKING::53372e11174528ad6d914844",
+      "artifact_version": "v1.0",
+      "producer_id": "financial_candidate_ranking_adapter",
+      "payload_schema_version": "fin_ia_vs1_candidate_ranking_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/candidate_ranking",
+      "payload_sha256": "210acb185266158cafaf2d8728cb25b62303b755829d010648e54bad34339c49",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "candidate_set",
+          "artifact_id": "FIN-S1::CANDIDATE_SET::42bed469160376962715196e",
+          "artifact_version": "v1.0",
+          "payload_sha256": "ac23b4f0603f43a62ca050558f66b2413125e5055f271fcf5cdd9769d3563b22",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "010a7691f27c8c123b15281eef98247a91fa200c7fe272a60bde9046402ac4bc"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "candidate_decision",
+      "artifact_id": "FIN-S1::CANDIDATE_DECISION::9db9922bf3e168540bd98658",
+      "artifact_version": "v1.0",
+      "producer_id": "s1_candidate_decision_ledger",
+      "payload_schema_version": "fin_ia_s1_candidate_decision_ledger_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/candidate_decision_ledger",
+      "payload_sha256": "6de65b617c3acf21187be4623c1f4361ced09c81b92143b18253e7ef7f6bc489",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "candidate_ranking",
+          "artifact_id": "FIN-S1::CANDIDATE_RANKING::53372e11174528ad6d914844",
+          "artifact_version": "v1.0",
+          "payload_sha256": "210acb185266158cafaf2d8728cb25b62303b755829d010648e54bad34339c49",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "8491349ebc286f61d2e0d344ff0f996aaa7267e9281e701e4658339342c2466b"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "evidence_coverage_state",
+      "artifact_id": "FIN-S1::EVIDENCE_COVERAGE_STATE::086939dffe835f44669ea37c",
+      "artifact_version": "v1.0",
+      "producer_id": "s1_evidence_coverage_compiler",
+      "payload_schema_version": "fin_ia_s1_evidence_coverage_state_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/evidence_coverage_state",
+      "payload_sha256": "51b87a49d749dcc7da809d42246470235adf6ddc45c67ad9828d2416d2da2f21",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_request",
+          "artifact_id": "FIN-S1::EVIDENCE_REQUEST::5d195381630322e91e2c6c0e",
+          "artifact_version": "v1.0",
+          "payload_sha256": "d419bef7ae133afda634eb04fe91e664f29d19a86646ebfde79ad148b9614de9",
+          "relation": "consumes"
+        },
+        {
+          "artifact_type": "candidate_decision",
+          "artifact_id": "FIN-S1::CANDIDATE_DECISION::9db9922bf3e168540bd98658",
+          "artifact_version": "v1.0",
+          "payload_sha256": "6de65b617c3acf21187be4623c1f4361ced09c81b92143b18253e7ef7f6bc489",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "a329b014d6659425150926054d4d8c31006395f93dbb8173e38dbfe3fe954f9f"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "evidence_pack_readiness",
+      "artifact_id": "FIN-S1::EVIDENCE_PACK_READINESS::67d3b52464d25c54bd264f74",
+      "artifact_version": "v1.0",
+      "producer_id": "s1_evidence_pack_readiness_compiler",
+      "payload_schema_version": "fin_ia_s1_evidence_pack_readiness_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/evidence_pack_readiness",
+      "payload_sha256": "840b22f1a5c6ec5f9204953f1c2622d1f7bf47652d561c83cf72416eb4488364",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_coverage_state",
+          "artifact_id": "FIN-S1::EVIDENCE_COVERAGE_STATE::086939dffe835f44669ea37c",
+          "artifact_version": "v1.0",
+          "payload_sha256": "51b87a49d749dcc7da809d42246470235adf6ddc45c67ad9828d2416d2da2f21",
+          "relation": "derived_from"
+        }
+      ],
+      "lineage_digest": "491cc21591993418c54fa0bb6a1db3b993db0cac20d78497ff1eb583fc12a51d"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "workbench_projection",
+      "artifact_id": "FIN-S1::WORKBENCH_PROJECTION::b138656fbda30153e471097c",
+      "artifact_version": "v1.0",
+      "producer_id": "research_workbench_vs1_projection",
+      "payload_schema_version": "fin_ia_s1_workbench_lineage_projection_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/workbench_projection",
+      "payload_sha256": "803501d7a4a65d70dc7d5fd2c63d6bd6e969d1896da037d486b8ce41249df211",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_pack_readiness",
+          "artifact_id": "FIN-S1::EVIDENCE_PACK_READINESS::67d3b52464d25c54bd264f74",
+          "artifact_version": "v1.0",
+          "payload_sha256": "840b22f1a5c6ec5f9204953f1c2622d1f7bf47652d561c83cf72416eb4488364",
+          "relation": "projects"
+        }
+      ],
+      "lineage_digest": "e5f33442c2111556cec06a395712d118c62df2d7f58e9d84d3d384e54d9c047a"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "frozen_consumer_probe",
+      "artifact_id": "FIN-S1::FROZEN_CONSUMER_PROBE::3f251270fc0cf6c7c789d1fc",
+      "artifact_version": "v1.0",
+      "producer_id": "vs1_frozen_consumer_probe",
+      "payload_schema_version": "fin_ia_s1_frozen_consumer_probe_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/frozen_consumer_probe",
+      "payload_sha256": "742d3d5267198693513ee6783da6a111157e565e657e8321d94f186f8854de4b",
+      "lifecycle_state": "materialized",
+      "scope": {
+        "binding_state": "case_bound",
+        "case_key": "IFX.DE",
+        "subject_ticker": "IFX.DE",
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "evidence_pack_readiness",
+          "artifact_id": "FIN-S1::EVIDENCE_PACK_READINESS::67d3b52464d25c54bd264f74",
+          "artifact_version": "v1.0",
+          "payload_sha256": "840b22f1a5c6ec5f9204953f1c2622d1f7bf47652d561c83cf72416eb4488364",
+          "relation": "consumes"
+        }
+      ],
+      "lineage_digest": "7686205f942f1f3563fe5da08a66ee4e28492f67c07d0637b680660b6bd8206a"
+    },
+    {
+      "schema_version": "fin_ia_s1_artifact_envelope_v1_0",
+      "artifact_type": "s2_sibling_binding",
+      "artifact_id": "FIN-S1::S2_SIBLING_BINDING::52678fbd2e0dd1ffb8eecb97",
+      "artifact_version": "v1.0",
+      "producer_id": "s1_vs2_complex_pdf_object_compiler",
+      "payload_schema_version": "fin_ia_s1_vs2_s2_sibling_binding_v1_0",
+      "payload_ref": "application.result.current_s1_vs2_complex_pdf_vertical#/payloads/s2_sibling_binding",
+      "payload_sha256": "ba2cd8c5c570daa554f8a8ee1da96699895883434c4ce3a061e100e1a16de497",
+      "lifecycle_state": "typed_gap",
+      "scope": {
+        "binding_state": "aggregate",
+        "case_key": null,
+        "subject_ticker": null,
+        "source_owner_ticker": null,
+        "discussed_entity_tickers": [],
+        "research_as_of": "2025-12-01",
+        "reporting_period": null,
+        "locator": null
+      },
+      "parent_refs": [
+        {
+          "artifact_type": "object_manifest",
+          "artifact_id": "FIN-S1::OBJECT_MANIFEST::d76b6d1e6312b9f1627ae022",
+          "artifact_version": "v1.0",
+          "payload_sha256": "f8b9b83c46c2bae2809f7b00d5b82da051d2181ca31978e258f8d77aaf7ec168",
+          "relation": "bound_to"
+        }
+      ],
+      "lineage_digest": "a8ed7d1f01dd2fef0d4f2c7c58ec239b9055960c0c01d65be6afcfeb7854432d"
+    }
+  ],
+  "stage_acceptance": {
+    "component_engineering_pass": true,
+    "vertical_slice_integrated": true,
+    "real_scanned_source_qualified": false,
+    "S1_qualified_stable": false,
+    "complete_product_chain_authorized": false
+  },
+  "known_boundary": "VS2 carries one real complex official annual report and one rasterized official-page OCR mutation through the shared spine to CandidateDecision, Coverage and Operations Workbench. IFX is not a product case. The result does not qualify naturally scanned sources, NumericFact, VS3 ranking, S1 or the complete financial-research product chain.",
+  "result_digest": "c40f0f438b3533354a8f844748c6faf870ffa9658700485ad9f96f9c28ddcf43"
+}

@@ -1,0 +1,61 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs4_mu_nvda_full_union_financial_shortlist_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS4-MU-NVDA-SUPPLEMENT-CANDIDATE-PROBE-V1.6",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_candidate_ranking_policy_v1_5.json",
+  "parent_policy_sha256_lf": "b202cba79550786b1ad2ecd570069d1c5eb9b14b580fb54f190f4eb885dd814c",
+  "candidate_contract_overrides": {
+    "reranker_pool_limit": 128,
+    "reranker_pool_covers_full_candidate_union": true,
+    "final_candidate_surface": "financial_evidence_shortlist_v1",
+    "general_cross_encoder_is_one_signal_not_final_financial_authority": true
+  },
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "the immutable v1.5 result proved complete first-stage proposition recall but showed four reviewed supply/counterevidence claims at union ranks 100 through 128 outside the 96-object Cross-Encoder pool",
+      "the same result showed general Cross-Encoders demoting several exact current claims from union ranks 1 through 6 to ranks 14 through 44 despite perfect eligible Evidence Role classification",
+      "the local CUDA cost of scoring the complete 128-object union is bounded while dropping the final quarter of a multi-need union creates a material research-quality risk",
+      "the final candidate surface now combines typed intent, Evidence Role, source and period binding, directness, route provenance and Cross-Encoder ranks; no single semantic model receives Evidence authority"
+    ],
+    "not_changed": [
+      "object snapshot, query atoms, qrels, first-stage union size, embedding routes, Cross-Encoder models and Evidence authority",
+      "no model training, network call, label injection, company-specific ranking branch or numeric authority",
+      "all v1.0 through v1.5 attempts remain immutable"
+    ],
+    "required_cache_root": ".codex_runtime/fin_0_1_3_s1_vs3_candidate_ranking",
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "training_steps_authorized": 0
+  },
+  "token_budget_basis_overrides": {
+    "bge_reranker": {
+      "node_purpose": "Score every candidate in each ten-proposition MU/NVDA union as a CUDA shadow signal before deterministic financial shortlisting.",
+      "input_scale": "At most 5,504 query-candidate pairs: the complete 128-candidate union against all 43 bounded RetrievalNeeds; cached pairs are reused by exact manifest identity.",
+      "required_outputs": [
+        "one finite score per candidate-need pair",
+        "complete-union ranked IDs",
+        "pair-manifest and CUDA device receipts"
+      ],
+      "schema_burden": "flat FP16 score vectors plus deterministic candidate/need identity manifest",
+      "materiality_and_quality_risk": "The prior 96-object cap excluded reviewed supply bottleneck and issuer counterevidence at union ranks 100-128. Full-union scoring prevents a speed-oriented cap from silently turning reachable evidence into a gap, while BGE remains a shadow and cannot grant Evidence authority.",
+      "comparable_run_evidence": "v1.5 used the same model and cached object/query identities; expanding from 96 to 128 candidates adds at most one third more local pair scores and no object-vector rebuild.",
+      "reasoning_profile": "local Cross-Encoder on CUDA FP16; deterministic financial shortlist remains downstream",
+      "stop_and_truncation": "maximum 1024 tokens per pair, batch 2, exact score-count and CUDA receipt required; fail closed with no CPU or network fallback"
+    },
+    "qwen_reranker": {
+      "node_purpose": "Score every candidate in the complete MU/NVDA unions as the provisional semantic winner while leaving final financial ordering to the deterministic shortlist.",
+      "input_scale": "At most 5,504 query-candidate pairs: the complete 128-candidate union against all 43 bounded RetrievalNeeds; cached pairs are reused by exact manifest identity.",
+      "required_outputs": [
+        "one finite score per candidate-need pair",
+        "complete-union ranked IDs",
+        "pair-manifest and CUDA device receipts"
+      ],
+      "schema_burden": "flat FP16 score vectors plus deterministic candidate/need identity manifest",
+      "materiality_and_quality_risk": "Qwen improved several semantic rankings but demoted exact current claims when used alone. It therefore supplies one relevance signal; issuer, period, source, role and directness remain explicit downstream constraints.",
+      "comparable_run_evidence": "v1.5 localized exact reviewed evidence outside the 96-object pool and showed the need for full-union coverage plus financial shortlisting.",
+      "reasoning_profile": "local Cross-Encoder on CUDA FP16; no generative reasoning and no Evidence authority",
+      "stop_and_truncation": "maximum 1024 tokens per pair, batch 2, exact score-count and CUDA receipt required; fail closed with no CPU or network fallback"
+    }
+  }
+}

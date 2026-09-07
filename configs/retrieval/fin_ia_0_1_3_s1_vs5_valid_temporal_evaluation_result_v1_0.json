@@ -1,0 +1,396 @@
+{
+  "aggregate_metrics": {
+    "all_positive_object_recall_at_20": 0.6,
+    "example_count": 5,
+    "material_facet_coverage_at_20": 0.642857,
+    "positive_objects_at_20": 12,
+    "positive_objects_expected": 20,
+    "proposition_any_hit_at_20": 0.8,
+    "required_role_coverage_at_20": 0.642857
+  },
+  "attempt_id": "FIN-0.1.3-S1-VS5-VALID-TEMPORAL-EVALUATION-R1",
+  "authority": {
+    "candidate_is_evidence": false,
+    "holdout_heterogeneous_authorized": false,
+    "numeric_fact_authority": false,
+    "owner_gold_scored": false,
+    "provisional_reference_scored": true,
+    "public_information_gap_declared": false,
+    "s1_qualified": false,
+    "test_frozen_authorized": false
+  },
+  "case_keys": [
+    "COST"
+  ],
+  "disposition": "candidate_ranking_metrics_failed_root_cause_review_required",
+  "failure_owner_counts": {
+    "financial_shortlist_or_fusion_ranking": 6,
+    "retrieved_in_review_window": 12,
+    "typed_recall_or_reranker_pool_cutoff": 2
+  },
+  "hard_gates": {
+    "candidate_ranking_metric_gate_pass": false,
+    "deterministic_replay_stable": true,
+    "downstream_evidence_pack_readiness_pass": false,
+    "false_public_gap_count": 0,
+    "hard_negative_false_accept_count": 0,
+    "natural_scanned_official_source_gate_pass": false,
+    "reference_owner_or_qualified_human_review_complete": false,
+    "s1_qualified": false,
+    "wrong_case_period_unit_promotion_count": 0
+  },
+  "metric_pass": {
+    "all_positive_object_recall_at_20": false,
+    "material_facet_coverage_at_20": false,
+    "proposition_any_hit_at_20": false,
+    "required_role_coverage_at_20": false
+  },
+  "propositions": [
+    {
+      "business_assessment_zh": "COST_COMPARABLE_SALES_DEMAND（同店销售与流量、客单价、电商和汽油价格分别说明什么需求变化？）：缺少替代解释、直接证据、数值桥；缺少数值桥接、背景/替代解释、直接支持角色；未进入前 20 的材料包括：同店销售、流量与客单价的直接经营披露。；汽油价格与销量对同店销售表面的替代解释。；购物频次和客单价对需求变化的机制拆分。；同店销售口径定义，防止把汽油和汇率影响误作核心需求。。这会使报告无法把购物频次、客单价和新店贡献与汽油价格、汇率等口径影响分开，容易把表面同店增速误写成核心需求改善。",
+      "candidate_is_not_evidence": true,
+      "example_id": "VS5::COST::COST_COMPARABLE_SALES_DEMAND",
+      "metrics": {
+        "any_hit_at_20": false,
+        "covered_required_facets_at_20": [],
+        "covered_required_roles_at_20": [],
+        "material_facet_coverage_at_20": 0.0,
+        "missing_required_facets_at_20": [
+          "alternative_explanation",
+          "direct_support",
+          "numeric_bridge"
+        ],
+        "missing_required_roles_at_20": [
+          "bridge",
+          "context",
+          "direct"
+        ],
+        "positive_object_recall_at_20": 0.0,
+        "positive_objects_at_20": 0,
+        "positive_objects_expected": 4,
+        "required_facets": [
+          "alternative_explanation",
+          "direct_support",
+          "numeric_bridge"
+        ],
+        "required_role_coverage_at_20": 0.0,
+        "required_roles": [
+          "bridge",
+          "context",
+          "direct"
+        ]
+      },
+      "missed_material_positives": [
+        {
+          "compiled_object_id": "COBJ::de46a9f08b10b72af3565aec",
+          "failure_owner": "financial_shortlist_or_fusion_ranking",
+          "final_rank": 45,
+          "fiscal_year": 2025,
+          "object_kind": "claim",
+          "reranker_pool_present": true,
+          "review_note_zh": "同店销售、流量与客单价的直接经营披露。",
+          "stage_ranks": {
+            "bge_reranker_top20": null,
+            "candidate_review_top20": null,
+            "candidate_union_top20": null,
+            "qwen_reranker_top20": null,
+            "role_guarded_top20": null
+          }
+        },
+        {
+          "compiled_object_id": "COBJ::e94907e84bb5ad085b278a77",
+          "failure_owner": "financial_shortlist_or_fusion_ranking",
+          "final_rank": 33,
+          "fiscal_year": 2025,
+          "object_kind": "claim",
+          "reranker_pool_present": true,
+          "review_note_zh": "汽油价格与销量对同店销售表面的替代解释。",
+          "stage_ranks": {
+            "bge_reranker_top20": null,
+            "candidate_review_top20": null,
+            "candidate_union_top20": null,
+            "qwen_reranker_top20": 20,
+            "role_guarded_top20": null
+          }
+        },
+        {
+          "compiled_object_id": "COBJ::55310e159614e4148b1b3d45",
+          "failure_owner": "financial_shortlist_or_fusion_ranking",
+          "final_rank": 44,
+          "fiscal_year": 2024,
+          "object_kind": "claim",
+          "reranker_pool_present": true,
+          "review_note_zh": "购物频次和客单价对需求变化的机制拆分。",
+          "stage_ranks": {
+            "bge_reranker_top20": null,
+            "candidate_review_top20": null,
+            "candidate_union_top20": 4,
+            "qwen_reranker_top20": null,
+            "role_guarded_top20": null
+          }
+        },
+        {
+          "compiled_object_id": "COBJ::19c6e815ef836356e3adb7ec",
+          "failure_owner": "financial_shortlist_or_fusion_ranking",
+          "final_rank": 37,
+          "fiscal_year": 2024,
+          "object_kind": "claim",
+          "reranker_pool_present": true,
+          "review_note_zh": "同店销售口径定义，防止把汽油和汇率影响误作核心需求。",
+          "stage_ranks": {
+            "bge_reranker_top20": null,
+            "candidate_review_top20": null,
+            "candidate_union_top20": null,
+            "qwen_reranker_top20": null,
+            "role_guarded_top20": null
+          }
+        }
+      ],
+      "numeric_fact_authority": false,
+      "proposition_id": "COST_COMPARABLE_SALES_DEMAND",
+      "question_zh": "同店销售与流量、客单价、电商和汽油价格分别说明什么需求变化？"
+    },
+    {
+      "business_assessment_zh": "COST_MARGIN_PRESSURES（商品成本、工资、收缩损耗和汽油业务对毛利率的正反影响是什么？）：缺少反方证据；缺少反方角色；未进入前 20 的材料包括：库存、缺货或损耗等可削弱利润率判断的风险。。这会使报告无法同时权衡商品成本、工资、汽油组合和损耗，容易把毛利率变化错误归因给单一因素。",
+      "candidate_is_not_evidence": true,
+      "example_id": "VS5::COST::COST_MARGIN_PRESSURES",
+      "metrics": {
+        "any_hit_at_20": true,
+        "covered_required_facets_at_20": [
+          "alternative_explanation",
+          "direct_support"
+        ],
+        "covered_required_roles_at_20": [
+          "context",
+          "direct"
+        ],
+        "material_facet_coverage_at_20": 0.666667,
+        "missing_required_facets_at_20": [
+          "counterevidence"
+        ],
+        "missing_required_roles_at_20": [
+          "counter"
+        ],
+        "positive_object_recall_at_20": 0.75,
+        "positive_objects_at_20": 3,
+        "positive_objects_expected": 4,
+        "required_facets": [
+          "alternative_explanation",
+          "counterevidence",
+          "direct_support"
+        ],
+        "required_role_coverage_at_20": 0.666667,
+        "required_roles": [
+          "context",
+          "counter",
+          "direct"
+        ]
+      },
+      "missed_material_positives": [
+        {
+          "compiled_object_id": "COBJ::00f62b113d8d33388b5f94dd",
+          "failure_owner": "financial_shortlist_or_fusion_ranking",
+          "final_rank": 58,
+          "fiscal_year": 2025,
+          "object_kind": "claim",
+          "reranker_pool_present": true,
+          "review_note_zh": "库存、缺货或损耗等可削弱利润率判断的风险。",
+          "stage_ranks": {
+            "bge_reranker_top20": null,
+            "candidate_review_top20": null,
+            "candidate_union_top20": null,
+            "qwen_reranker_top20": null,
+            "role_guarded_top20": null
+          }
+        }
+      ],
+      "numeric_fact_authority": false,
+      "proposition_id": "COST_MARGIN_PRESSURES",
+      "question_zh": "商品成本、工资、收缩损耗和汽油业务对毛利率的正反影响是什么？"
+    },
+    {
+      "business_assessment_zh": "“会员费、续费率与会员结构如何影响 Costco 的收入质量和利润获取？”所需的已审材料均进入前 20 候选；这只证明候选可供复核，不等于已经成为 Evidence 或最终研究结论。",
+      "candidate_is_not_evidence": true,
+      "example_id": "VS5::COST::COST_MEMBERSHIP_VALUE_CAPTURE",
+      "metrics": {
+        "any_hit_at_20": true,
+        "covered_required_facets_at_20": [
+          "counterevidence",
+          "direct_support",
+          "numeric_bridge"
+        ],
+        "covered_required_roles_at_20": [
+          "bridge",
+          "counter",
+          "direct"
+        ],
+        "material_facet_coverage_at_20": 1.0,
+        "missing_required_facets_at_20": [],
+        "missing_required_roles_at_20": [],
+        "positive_object_recall_at_20": 1.0,
+        "positive_objects_at_20": 3,
+        "positive_objects_expected": 3,
+        "required_facets": [
+          "counterevidence",
+          "direct_support",
+          "numeric_bridge"
+        ],
+        "required_role_coverage_at_20": 1.0,
+        "required_roles": [
+          "bridge",
+          "counter",
+          "direct"
+        ]
+      },
+      "missed_material_positives": [],
+      "numeric_fact_authority": false,
+      "proposition_id": "COST_MEMBERSHIP_VALUE_CAPTURE",
+      "question_zh": "会员费、续费率与会员结构如何影响 Costco 的收入质量和利润获取？"
+    },
+    {
+      "business_assessment_zh": "COST_TEMPORAL_CHANGE（FY2024 到 FY2025 的经营变化是否保持同一公司、同一口径和正确期间？）：缺少直接证据；缺少直接支持角色；未进入前 20 的材料包括：FY2024 会员经营基线。；FY2025 同公司会员经营结果。；FY2025 现金流结果，与上一期形成同公司比较。。这会使报告无法证明 FY2024 与 FY2025 使用同公司、同口径和正确期间，任何同比、扩张或压缩叙事都可能失真。",
+      "candidate_is_not_evidence": true,
+      "example_id": "VS5::COST::COST_TEMPORAL_CHANGE",
+      "metrics": {
+        "any_hit_at_20": true,
+        "covered_required_facets_at_20": [
+          "counterevidence",
+          "numeric_bridge"
+        ],
+        "covered_required_roles_at_20": [
+          "bridge",
+          "counter"
+        ],
+        "material_facet_coverage_at_20": 0.666667,
+        "missing_required_facets_at_20": [
+          "direct_support"
+        ],
+        "missing_required_roles_at_20": [
+          "direct"
+        ],
+        "positive_object_recall_at_20": 0.4,
+        "positive_objects_at_20": 2,
+        "positive_objects_expected": 5,
+        "required_facets": [
+          "counterevidence",
+          "direct_support",
+          "numeric_bridge"
+        ],
+        "required_role_coverage_at_20": 0.666667,
+        "required_roles": [
+          "bridge",
+          "counter",
+          "direct"
+        ]
+      },
+      "missed_material_positives": [
+        {
+          "compiled_object_id": "COBJ::d180352c88efef3312c4594f",
+          "failure_owner": "typed_recall_or_reranker_pool_cutoff",
+          "final_rank": null,
+          "fiscal_year": 2024,
+          "object_kind": "claim",
+          "reranker_pool_present": false,
+          "review_note_zh": "FY2024 会员经营基线。",
+          "stage_ranks": {
+            "bge_reranker_top20": null,
+            "candidate_review_top20": null,
+            "candidate_union_top20": null,
+            "qwen_reranker_top20": null,
+            "role_guarded_top20": null
+          }
+        },
+        {
+          "compiled_object_id": "COBJ::781a3d0018dd2a6e4b385a68",
+          "failure_owner": "typed_recall_or_reranker_pool_cutoff",
+          "final_rank": null,
+          "fiscal_year": 2025,
+          "object_kind": "claim",
+          "reranker_pool_present": false,
+          "review_note_zh": "FY2025 同公司会员经营结果。",
+          "stage_ranks": {
+            "bge_reranker_top20": null,
+            "candidate_review_top20": null,
+            "candidate_union_top20": null,
+            "qwen_reranker_top20": null,
+            "role_guarded_top20": null
+          }
+        },
+        {
+          "compiled_object_id": "COBJ::a4f308875452d74388815918",
+          "failure_owner": "financial_shortlist_or_fusion_ranking",
+          "final_rank": 30,
+          "fiscal_year": 2025,
+          "object_kind": "claim",
+          "reranker_pool_present": true,
+          "review_note_zh": "FY2025 现金流结果，与上一期形成同公司比较。",
+          "stage_ranks": {
+            "bge_reranker_top20": null,
+            "candidate_review_top20": null,
+            "candidate_union_top20": null,
+            "qwen_reranker_top20": null,
+            "role_guarded_top20": null
+          }
+        }
+      ],
+      "numeric_fact_authority": false,
+      "proposition_id": "COST_TEMPORAL_CHANGE",
+      "question_zh": "FY2024 到 FY2025 的经营变化是否保持同一公司、同一口径和正确期间？"
+    },
+    {
+      "business_assessment_zh": "“库存、应付账款与经营现金流如何反映 Costco 的现金转换？”所需的已审材料均进入前 20 候选；这只证明候选可供复核，不等于已经成为 Evidence 或最终研究结论。",
+      "candidate_is_not_evidence": true,
+      "example_id": "VS5::COST::COST_WORKING_CAPITAL",
+      "metrics": {
+        "any_hit_at_20": true,
+        "covered_required_facets_at_20": [
+          "direct_support",
+          "numeric_bridge"
+        ],
+        "covered_required_roles_at_20": [
+          "bridge",
+          "direct"
+        ],
+        "material_facet_coverage_at_20": 1.0,
+        "missing_required_facets_at_20": [],
+        "missing_required_roles_at_20": [],
+        "positive_object_recall_at_20": 1.0,
+        "positive_objects_at_20": 4,
+        "positive_objects_expected": 4,
+        "required_facets": [
+          "direct_support",
+          "numeric_bridge"
+        ],
+        "required_role_coverage_at_20": 1.0,
+        "required_roles": [
+          "bridge",
+          "direct"
+        ]
+      },
+      "missed_material_positives": [],
+      "numeric_fact_authority": false,
+      "proposition_id": "COST_WORKING_CAPITAL",
+      "question_zh": "库存、应付账款与经营现金流如何反映 Costco 的现金转换？"
+    }
+  ],
+  "raw_output_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_evaluations/valid-temporal-eval-r1/raw.json",
+  "raw_output_sha256": "a71a568262b53271bedada8025416b0c23db0b4ce8f337f9d89750b978c56b9e",
+  "raw_result_digest": "b042b5ce325e34829c147a229dd17cfc7bf67fcacf48819610a66305903968ad",
+  "recorded_at": "2026-08-18",
+  "schema_version": "fin_ia_s1_vs5_valid_temporal_evaluation_result_v1_0",
+  "split": "valid_temporal",
+  "stage_positive_object_recall_at_20": {
+    "bge_reranker_top20": 0.15,
+    "candidate_review_top20": 0.6,
+    "candidate_union_top20": 0.5,
+    "qwen_reranker_top20": 0.35,
+    "role_guarded_top20": 0.3
+  },
+  "status": "valid_temporal_provisional_evaluation_complete",
+  "thresholds": {
+    "all_positive_object_recall_at_20": 0.9,
+    "material_facet_coverage_at_20": 0.85,
+    "proposition_any_hit_at_20": 1.0,
+    "required_role_coverage_at_20": 1.0
+  }
+}

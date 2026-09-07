@@ -1,0 +1,266 @@
+{
+  "acceptance": {
+    "absolute_content_quality_pending": false,
+    "all_five_cell_judgments_contract_valid": false,
+    "cross_cell_synthesis_contract_valid": false,
+    "current_S1_S2_EvidenceResponse_executed": true,
+    "current_S1_S2_reused_not_rerun": true,
+    "financial_L1_assessment_pending": false,
+    "five_cell_report_compiled": false,
+    "heterogeneous_generalization": false,
+    "natural_planner_executed": true,
+    "natural_planner_reused_not_rerun": true,
+    "paired_gain_pending": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false,
+    "s3_product_acceptance": false,
+    "workbench_publication": false
+  },
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "0ce654d39a37a618810e20f0ff91c65ff63414ebccbbc117b680b5dccf50d208",
+  "case_key": "DELL",
+  "cell_workpaper_digest": "",
+  "cells": [
+    {
+      "analysis": {
+        "finish_reason": "stop",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-DEMAND-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "ad0ce0c186b3a45ef670033d320f9394d0c632568c20aed34cd719b3498332bb",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-DEMAND-ANALYSIS-01/provider_response.json",
+        "response_digest": "575f8a387be278c3671a2e240c30d0670c0114c3e57470ce31db501adc8f621e",
+        "usage": {
+          "completion_tokens": 5465,
+          "completion_tokens_details": {
+            "reasoning_tokens": 4520
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 5089,
+          "prompt_tokens": 5089,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 10554
+        }
+      },
+      "analysis_messages_digest": "42feee467da8febac51ace6a13741c4f31c086e9d5b01844bac877de2a341569",
+      "cell_id": "CELL::demand_quality",
+      "failure_capture_ref": "",
+      "failure_code": "",
+      "failure_phase": "",
+      "submission": {
+        "finish_reason": "tool_calls",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-DEMAND-SUBMISSION-01/model_visible_request.json",
+        "request_digest": "72c59ffa3f5bfffffc2540351363642f30a55dc9cbe58f6607f98526e0965e96",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-DEMAND-SUBMISSION-01/provider_response.json",
+        "response_digest": "61f712ac7b9fe6e11c868cfd475200347f6a3ff1c7909f70d1487278cceb631a",
+        "usage": {
+          "completion_tokens": 717,
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 7147,
+          "prompt_tokens": 7147,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 7864
+        }
+      },
+      "submission_messages_digest": "a9fb98626e7aa8f91057ab21929c8145e2c71627acd52dbdd043307ce24c11c9",
+      "tool_schema_digest": "ffe20bc685120c4e452b1f49c5c4d774232cb7bb164c5684344980f13f6d2845",
+      "validated_cell_digest": "64b5e294735939840bd27af15ab4a4f07c87b390d3e89f3d9dd17282b095da6d"
+    },
+    {
+      "analysis": {
+        "finish_reason": "stop",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-OPERATING-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "a51ef3ef6a226bcc11094db1c378426c7816b7f50f888fe686d73190d6dbcbcc",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-OPERATING-ANALYSIS-01/provider_response.json",
+        "response_digest": "c74e9d603e6e12ccd5f475d52675c99f23bb2fb4bd9e6b98a5f69514220065e2",
+        "usage": {
+          "completion_tokens": 7045,
+          "completion_tokens_details": {
+            "reasoning_tokens": 6004
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 6188,
+          "prompt_tokens": 6188,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 13233
+        }
+      },
+      "analysis_messages_digest": "aa3c995a4f1d4a90dc1e7a6e206c0d193dadc1a2b05bb1e95e72afaeb35cf313",
+      "cell_id": "CELL::operating_performance",
+      "failure_capture_ref": "",
+      "failure_code": "",
+      "failure_phase": "",
+      "submission": {
+        "finish_reason": "tool_calls",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-OPERATING-SUBMISSION-01/model_visible_request.json",
+        "request_digest": "2ba3f4cda861ca840f07046fc442f63ba686b3d1c1cbc56e888a782ae4cf61f2",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-OPERATING-SUBMISSION-01/provider_response.json",
+        "response_digest": "523f4fe1bd1b9bfa74239b8897384aa2e66189b2b7baebeb2bb58f98304d3931",
+        "usage": {
+          "completion_tokens": 864,
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 8686,
+          "prompt_tokens": 8686,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 9550
+        }
+      },
+      "submission_messages_digest": "7e922fcea6ab4c3c05ccc9b327ea57adb0866c2c0e6a17674f1e39f1656c7ffb",
+      "tool_schema_digest": "dec558873b14b9c694ccb6ba3a53f8923159800d57696bbae82364f44385bc5a",
+      "validated_cell_digest": "90249c624da8aefe1fae91f3f9d025503899d3b7beaf34642b0a1aa8a323c139"
+    },
+    {
+      "analysis": {},
+      "analysis_messages_digest": "2f14550509007cc45f73f00abb0493772badc94f01b213f69ca102e73712cf61",
+      "cell_id": "CELL::value_capture",
+      "failure_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-VALUE-ANALYSIS-01/provider_response.json",
+      "failure_code": "model_gateway_reasoning_budget_exhausted",
+      "failure_phase": "provider_transport_or_response",
+      "submission": {},
+      "submission_messages_digest": "",
+      "tool_schema_digest": "",
+      "validated_cell_digest": ""
+    },
+    {
+      "analysis": {
+        "finish_reason": "length",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-CASH-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "a7762173e60be3eb1d455a46cc4e328df8fe1bcdddd845ee2288e75a5ab35341",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-CASH-ANALYSIS-01/provider_response.json",
+        "response_digest": "f94efc3abeae0257502558d93ccbb3ecf4109a73a200895006f22af10886658f",
+        "usage": {
+          "completion_tokens": 8000,
+          "completion_tokens_details": {
+            "reasoning_tokens": 7286
+          },
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 5740,
+          "prompt_tokens": 5996,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 13996
+        }
+      },
+      "analysis_messages_digest": "85864ec398e29608459dbba386c54ee943c6ecca75e57d0802dbbff3dfcbbdab",
+      "cell_id": "CELL::cash_conversion",
+      "failure_capture_ref": "",
+      "failure_code": "five_cell_live_cell_analysis_length_stop",
+      "failure_phase": "cell_live_orchestration",
+      "submission": {},
+      "submission_messages_digest": "",
+      "tool_schema_digest": "",
+      "validated_cell_digest": ""
+    },
+    {
+      "analysis": {},
+      "analysis_messages_digest": "fba9da4f459787b9bb49046ef405f729694bdba723dc21bae8f61a40e1d9e69d",
+      "cell_id": "CELL::counterevidence",
+      "failure_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/FIVE-CELL-R2-COUNTER-ANALYSIS-01/provider_response.json",
+      "failure_code": "model_gateway_reasoning_budget_exhausted",
+      "failure_phase": "provider_transport_or_response",
+      "submission": {},
+      "submission_messages_digest": "",
+      "tool_schema_digest": "",
+      "validated_cell_digest": ""
+    }
+  ],
+  "dynamic_research_input_digest": "5a99ba2297a6d36c92c5b292341ea1b1599b7d852ffc7616ab75728ff8d2505c",
+  "evidence_response_set_digest": "c17993e22091ecf5cb30725a860894469df3cf72e1cac30db820f0d78a9f79df",
+  "evidence_response_summary": {
+    "accepted_reviewed_evidence_count": 8,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_promotions": 0,
+    "rejected_reviewed_binding_count": 5,
+    "request_count": 8,
+    "requests_with_accepted_evidence": 6,
+    "typed_gap_count": 10,
+    "unreviewed_candidate_count": 105
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "cell_analysis_calls_attempted": 3,
+    "cell_judgments_accepted": 2,
+    "cell_submission_calls_attempted": 2,
+    "current_S1_S2_executed": false,
+    "current_S1_S2_reused": true,
+    "external_source_network_calls": 0,
+    "fallbacks": 0,
+    "maximum_model_calls": 12,
+    "model_calls_attempted": 7,
+    "planner_calls_completed": 0,
+    "planner_calls_reused": 1,
+    "product_publication": false,
+    "protocol_switches": 0,
+    "retries": 0,
+    "synthesis_analysis_attempted": 0,
+    "synthesis_submission_attempted": 0
+  },
+  "implementation_commit": "283660db01aa0588ee581363cc5b3d6f69c75127",
+  "known_boundary": "This exact-once successor authority reuses the immutable successful R1 planner and current S1/S2 prefix and permits only five cell analyses, five strict submissions and two synthesis nodes. It forbids prefix reruns, new Evidence, positive product-profit attribution without an authoritative bridge, retries, fallbacks, external-source network, publication, heterogeneous generalization, S3 acceptance and release claims.",
+  "objective_id": "ROC::c1440c206aad66f719ee1c1e",
+  "orchestration_failure": {
+    "failure_capture_ref": "",
+    "failure_code": "",
+    "failure_phase": ""
+  },
+  "planner": {
+    "deferred_atom_count": 2,
+    "plan_digest": "f964f9fe814e1ea5d50c5286fb57b3cb00144514c2ee47cc9c770b7d662debaf",
+    "proposed_atom_count": 10,
+    "provider_step": {
+      "finish_reason": "stop",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R1/FIVE-CELL-R1-PLANNER-01/model_visible_request.json",
+      "request_digest": "a9c08008154626ee5a27df369581c22b4b69a57643f84091a16d34d551167e24",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R1/FIVE-CELL-R1-PLANNER-01/provider_response.json",
+      "response_digest": "a49019b8512004cb8b48f1ec96e0abb3a7fc3f31099ce31f25a9ab951096e318",
+      "usage": {
+        "completion_tokens": 6103,
+        "completion_tokens_details": {
+          "reasoning_tokens": 5033
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1302,
+        "prompt_tokens": 1302,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 7405
+      }
+    },
+    "reused_from_predecessor": true,
+    "selected_atom_count": 8
+  },
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R2/full_result.json",
+  "private_full_result_sha256": "a751b1e43a8f9377274f278d04599f5d838cf43864160053f47cfeae676a1635",
+  "recorded_at": "2026-08-16T19:20:03+00:00",
+  "report_digest": "",
+  "required_cell_ids": [
+    "CELL::demand_quality",
+    "CELL::operating_performance",
+    "CELL::value_capture",
+    "CELL::cash_conversion",
+    "CELL::counterevidence"
+  ],
+  "result_digest": "fdaf4368359ca581fd27600b40a2d1581334df2948cc1452e41b29847cac25bc",
+  "schema_version": "fin_ia_s3_dynamic_five_cell_successor_live_result_v1_0",
+  "status": "terminal_failed_or_partial_no_retry",
+  "synthesis": {
+    "analysis": {},
+    "analysis_messages_digest": "",
+    "failure_capture_ref": "",
+    "failure_code": "five_cell_synthesis_requires_all_cells",
+    "failure_phase": "not_attempted",
+    "submission": {},
+    "submission_messages_digest": "",
+    "tool_schema_digest": "",
+    "validated_synthesis_digest": ""
+  }
+}

@@ -20,13 +20,18 @@ import {
   ResearchCaseList,
   ResearchCaseSummary,
   ResearchEvidenceView,
+  ResearchRetrievalView,
+  S1CanonicalSpineView,
+  S1ProductReadinessView,
   ResearchWorkspaceApiClient,
+  ActionableResearchStateView,
+  QuantitativeAuthorityView,
 } from "../api/researchWorkspace";
 import "./research-workspace.css";
 
 type WorkspaceRoute =
   | { kind: "cases" }
-  | { kind: "case"; caseId: string; surface: "overview" | "evidence" };
+  | { kind: "case"; caseId: string; surface: "overview" | "evidence" | "retrieval" };
 
 type LoadState<T> =
   | { kind: "loading" }
@@ -160,9 +165,9 @@ function ResearchCaseWorkspace({
 }: {
   route: Extract<WorkspaceRoute, { kind: "case" }>;
   onBack: () => void;
-  onSurface: (surface: "overview" | "evidence") => void;
+  onSurface: (surface: "overview" | "evidence" | "retrieval") => void;
 }) {
-  const [state, setState] = useState<LoadState<{ detail: ResearchCaseDetail; evidence: ResearchEvidenceView }>>({ kind: "loading" });
+  const [state, setState] = useState<LoadState<{ detail: ResearchCaseDetail; evidence: ResearchEvidenceView; retrieval: ResearchRetrievalView }>>({ kind: "loading" });
 
   useEffect(() => {
     const controller = new AbortController();
@@ -170,8 +175,9 @@ function ResearchCaseWorkspace({
     Promise.all([
       api.getCase(route.caseId, controller.signal),
       api.getEvidence(route.caseId, controller.signal),
+      api.getRetrieval(route.caseId.replace(/^case_/, "").replace(/_current$/, "").toUpperCase(), controller.signal),
     ])
-      .then(([detail, evidence]) => setState({ kind: "ready", value: { detail, evidence } }))
+      .then(([detail, evidence, retrieval]) => setState({ kind: "ready", value: { detail, evidence, retrieval } }))
       .catch((error: Error) => {
         if (error.name !== "AbortError") setState({ kind: "error", message: error.message });
       });
@@ -181,7 +187,7 @@ function ResearchCaseWorkspace({
   if (state.kind === "loading") return <main className="research-workspace__page"><Loading label="正在核验案例身份、内容摘要与来源…" /></main>;
   if (state.kind === "error") return <main className="research-workspace__page"><Failure message={state.message} /></main>;
 
-  const { detail, evidence } = state.value;
+  const { detail, evidence, retrieval } = state.value;
   return (
     <main className="research-workspace__page">
       <button className="research-workspace__back" type="button" onClick={onBack}><ArrowLeft size={16} /> 返回案例列表</button>
@@ -204,11 +210,151 @@ function ResearchCaseWorkspace({
         <button className={route.surface === "evidence" ? "is-active" : ""} type="button" onClick={() => onSurface("evidence")}>
           <FileSearch size={16} /> 证据与缺口
         </button>
+        <button className={route.surface === "retrieval" ? "is-active" : ""} type="button" onClick={() => onSurface("retrieval")}>
+          <Database size={16} /> 检索候选
+        </button>
       </nav>
 
-      {route.surface === "overview" ? <CaseOverview detail={detail} evidence={evidence} /> : <EvidenceSurface evidence={evidence} />}
+      {route.surface === "overview" ? <CaseOverview detail={detail} evidence={evidence} /> : null}
+      {route.surface === "evidence" ? <EvidenceSurface evidence={evidence} /> : null}
+      {route.surface === "retrieval" ? <RetrievalSurface retrieval={retrieval} /> : null}
       <Boundary text={detail.known_boundary} />
     </main>
+  );
+}
+
+function RetrievalSurface({ retrieval }: { retrieval: ResearchRetrievalView }) {
+  const missing = Object.entries(retrieval.summary.slots_missing_required_source_roles);
+  return (
+    <>
+      <CanonicalSpinePanel spine={retrieval.canonical_spine ?? null} />
+      <section className="research-workspace__overview-grid">
+        <article className="research-workspace__panel">
+          <h2>当前候选检索</h2>
+          <div className="research-workspace__metrics is-large">
+            <Metric value={retrieval.summary.slot_count} label="Evidence Slots" />
+            <Metric value={retrieval.summary.nonempty_lane_count} label="有结果 Facets" />
+            <Metric value={retrieval.summary.unique_candidates} label="候选对象" />
+          </div>
+          <p>这些是待审候选，不是 Evidence。系统已先按披露主体、关系角色和截至日过滤，再执行本地词法检索。</p>
+        </article>
+        <article className="research-workspace__panel">
+          <h2>语料与真实缺口</h2>
+          <p>{retrieval.source_gap_summary.interpretation_zh}</p>
+          <div className="research-workspace__retrieval-gap-metrics">
+            <span>当前对象缺失 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_missing_from_current_corpus}</b></span>
+            <span>排名前可用 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_eligible_before_scoring}</b></span>
+            <span>当前召回 <b>{retrieval.source_gap_summary.reviewed_label_occurrences_matched_after_scoring}</b></span>
+          </div>
+          {missing.map(([facet, roles]) => <div className="research-workspace__missing-role" key={facet}><strong>{facet}</strong><span>缺 {roles.join("、")}</span></div>)}
+        </article>
+      </section>
+      {retrieval.ranking_comparison ? <RankingComparisonPanel comparison={retrieval.ranking_comparison} /> : null}
+      <section className="research-workspace__panel">
+        <div className="research-workspace__section-title"><h2>查询 Facets 与候选</h2><span>{retrieval.summary.lane_count} 条独立查询 lane</span></div>
+        <div className="research-workspace__retrieval-lanes">
+          {retrieval.lanes.map((lane) => (
+            <article className="research-workspace__retrieval-lane" key={lane.lane_id}>
+              <header><div><span>{lane.slot_id}</span><h3>{lane.business_question_zh}</h3></div><code>{lane.facet_id}</code></header>
+              <p className="research-workspace__retrieval-scope">披露主体：{lane.evidence_owner_tickers.join(" / ")} · 截至 {lane.publication_date_lte}</p>
+              <div className="research-workspace__candidate-list">
+                {lane.candidates.slice(0, 3).map((candidate) => (
+                  <div className="research-workspace__candidate" key={candidate.source_record_id}>
+                    <div><strong>{candidate.evidence_owner_ticker} · {candidate.subsection || candidate.source_type}</strong><span>{candidate.publication_date} · {candidate.source_role}</span></div>
+                    <p>{candidate.excerpt}</p>
+                    <small>{candidate.business_boundary_zh}</small>
+                  </div>
+                ))}
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+      <Boundary text={retrieval.known_boundary} />
+    </>
+  );
+}
+
+const rankingRouteLabels: Record<string, string> = {
+  sparse_bm25: "BM25 关键词",
+  dense_bge_m3: "BGE-M3 语义",
+  fusion_rrf_1_1: "1:1 RRF 融合",
+  typed_financial_rerank: "金融角色重排",
+};
+
+const decisionStateLabels: Record<S1CanonicalSpineView["decision_rows"][number]["decision_state"], string> = {
+  accepted: "已接受",
+  rejected: "已拒绝",
+  unjudged: "未裁决",
+  needs_review: "待复核",
+};
+
+const decisionReasonLabels: Record<string, string> = {
+  exact_reviewed_pack_lineage_match: "与已审 Pack 谱系完全一致",
+  case_owner_source_period_slot_gate_passed: "公司、来源、期间与槽位校验通过",
+  candidate_not_present_in_reviewed_pack: "尚未进入已审 Pack",
+};
+
+const productReadinessLabels: Record<string, string> = {
+  ready_for_current_scope: "当前范围可用",
+  partial_with_material_gaps: "材料仍有缺口",
+  blocked_by_candidate_coverage: "候选覆盖不足",
+  blocked_by_evidence_admission: "候选待证据准入",
+  blocked_by_local_data_materialization: "本地解析或对象化阻断",
+  blocked_by_numeric_or_bridge_authority: "等待 S2 数值或桥接",
+  blocked_by_retrieval_quality: "检索或排序质量阻断",
+  blocked_by_source_access: "官方来源访问阻断",
+  candidate_audit_only_explicit_scope_pending: "等待 S3 明确研究范围",
+};
+
+const candidateReviewIssueLabels: Record<string, string> = {
+  existing_reviewed_evidence_reuse: "已与现有审定 Evidence 精确绑定",
+  new_candidate_evidence_adjudication: "新候选尚待 Evidence Gate 审定",
+  reviewed_pack_exact_object_binding: "来源已审，但当前对象尚未精确绑定",
+  reviewed_pack_slot_facet_binding: "对象与当前命题槽位绑定待确认",
+  reviewed_pack_hard_boundary_mismatch: "公司、期间或来源硬边界不一致",
+  request_material_binding: "候选与当前研究命题的材料绑定待确认",
+  manual_candidate_review_required: "需要人工判断候选能证明什么",
+};
+
+function RankingComparisonPanel({ comparison }: { comparison: NonNullable<ResearchRetrievalView["ranking_comparison"]> }) {
+  return (
+    <section className="research-workspace__panel">
+      <div className="research-workspace__section-title">
+        <h2>同对象排名对照</h2>
+        <span>{comparison.same_object_population_count.toLocaleString("zh-CN")} 个冻结 child · 候选仍不是 Evidence</span>
+      </div>
+      <div className="research-workspace__ranking-routes">
+        {Object.entries(comparison.route_summaries).map(([routeId, summary]) => (
+          <article key={routeId}>
+            <strong>{rankingRouteLabels[routeId] ?? routeId}</strong>
+            <b>{Math.round(summary.recall_at_10_mapped_targets * 100)}%</b>
+            <span>映射目标进入前 10 · MRR {summary.mrr_mapped_targets.toFixed(3)}</span>
+            <small>{summary.mapped_current_target_count} 条可映射，{summary.typed_target_gap_count} 条目标缺口</small>
+          </article>
+        ))}
+      </div>
+      <p className="research-workspace__ranking-note">这组数字只比较同一批对象如何排序；不代表候选内容已通过证据门，也不会把评测答案暴露给产品候选。</p>
+      <div className="research-workspace__ranking-queries">
+        {comparison.queries.slice(0, 3).map((query) => (
+          <article key={query.query_id}>
+            <header><strong>{query.evidence_owner_ticker}</strong><span>{query.evidence_slot_id}</span></header>
+            <div>
+              {Object.entries(query.routes).map(([routeId, route]) => {
+                const candidate = route.candidates[0];
+                return (
+                  <section key={routeId}>
+                    <small>{rankingRouteLabels[routeId] ?? routeId}</small>
+                    {candidate ? <><b>{candidate.subsection || candidate.section || candidate.source_type}</b><p>{candidate.excerpt}</p></> : <p>无候选</p>}
+                  </section>
+                );
+              })}
+            </div>
+          </article>
+        ))}
+      </div>
+      <Boundary text={comparison.known_boundary} />
+    </section>
   );
 }
 
@@ -254,17 +400,178 @@ function CaseOverview({ detail, evidence }: { detail: ResearchCaseDetail; eviden
 
 function EvidenceSurface({ evidence }: { evidence: ResearchEvidenceView }) {
   return (
-    <section className="research-workspace__evidence-columns">
-      <div className="research-workspace__panel">
-        <div className="research-workspace__section-title"><h2>已审 Evidence</h2><span>{evidence.evidence_items.length} 条</span></div>
-        <div className="research-workspace__evidence-list">
-          {evidence.evidence_items.map((item) => <EvidenceCard key={item.evidence_item_digest} item={item} />)}
+    <>
+      <ProductReadinessPanel readiness={evidence.product_readiness ?? null} />
+      <ActionableResearchPanel
+        state={evidence.actionable_research_state ?? null}
+        quantitative={evidence.quantitative_authority ?? null}
+      />
+      <CanonicalSpinePanel spine={evidence.canonical_spine ?? null} />
+      <section className="research-workspace__evidence-columns">
+        <div className="research-workspace__panel">
+          <div className="research-workspace__section-title"><h2>已审 Evidence</h2><span>{evidence.evidence_items.length} 条</span></div>
+          <div className="research-workspace__evidence-list">
+            {evidence.evidence_items.map((item) => <EvidenceCard key={item.evidence_item_digest} item={item} />)}
+          </div>
         </div>
+        <aside className="research-workspace__panel research-workspace__gap-panel">
+          <div className="research-workspace__section-title"><h2>Residual Gaps</h2><span>{evidence.residual_gaps.length} 条</span></div>
+          <GapList gaps={evidence.residual_gaps} />
+        </aside>
+      </section>
+    </>
+  );
+}
+
+function ActionableResearchPanel({
+  state,
+  quantitative,
+}: {
+  state: ActionableResearchStateView | null;
+  quantitative: QuantitativeAuthorityView | null;
+}) {
+  if (!state || !quantitative) return null;
+  const stageCounts = state.research_actions.reduce<Record<string, number>>((counts, action) => {
+    counts[action.owner_stage] = (counts[action.owner_stage] ?? 0) + 1;
+    return counts;
+  }, {});
+  return (
+    <section className="research-workspace__panel research-workspace__actionable-research">
+      <div className="research-workspace__section-title">
+        <h2>可执行研究状态</h2>
+        <span>{state.stop_decision.decision === "continue" ? "仍需继续研究" : state.stop_decision.decision}</span>
       </div>
-      <aside className="research-workspace__panel research-workspace__gap-panel">
-        <div className="research-workspace__section-title"><h2>Residual Gaps</h2><span>{evidence.residual_gaps.length} 条</span></div>
-        <GapList gaps={evidence.residual_gaps} />
-      </aside>
+      <div className="research-workspace__metrics is-large">
+        <Metric value={quantitative.summary.reported_fact_count} label="披露事实" />
+        <Metric value={quantitative.summary.deterministic_derived_metric_count} label="公式派生" />
+        <Metric value={state.summary.research_action_count} label="待执行动作" warn />
+        <Metric value={state.summary.feedback_receipt_count} label="反馈回执" warn />
+      </div>
+      <p className="research-workspace__actionable-note">
+        当前缺口不会直接变成免责声明：系统已把它们分配到 S1 数据/检索、S2 数值或 S3 研究方法。公开信息真空授权为 {state.summary.public_information_gap_authorized_count}；在免费可达路线耗尽前，不能把“没找到”写成“资料不存在”。
+      </p>
+      <div className="research-workspace__actionable-meta">
+        <span>动作归属：{Object.entries(stageCounts).map(([stage, count]) => `${stage} ${count}`).join(" · ")}</span>
+        <span>当前来源 {state.source_portfolio_snapshot.current_source_count} · 权利维度 {state.source_portfolio_snapshot.rights_axes.join(" / ")}</span>
+        <span>下一自然节点容量依据 ≥ {state.next_natural_node_token_budget_basis.capacity_basis.minimum_visible_output_tokens.toLocaleString("zh-CN")} tokens；尚未签发调用权限</span>
+      </div>
+      <div className="research-workspace__actionable-list">
+        {state.research_actions.slice(0, 8).map((action) => (
+          <article key={action.action_id}>
+            <header><strong>{action.owner_stage} · {action.tool_or_gate}</strong><span>{action.action_type}</span></header>
+            <p>{action.objective_zh}</p>
+            <small>{action.execution_state}</small>
+          </article>
+        ))}
+      </div>
+      <div className="research-workspace__canonical-bindings">
+        <DigestRow label="Action state" value={state.actionable_state_digest} />
+        <DigestRow label="Quantitative authority" value={quantitative.quantitative_authority_digest} />
+        <DigestRow label="Token budget basis" value={state.next_natural_node_token_budget_basis.basis_id} />
+      </div>
+    </section>
+  );
+}
+
+function ProductReadinessPanel({ readiness }: { readiness: S1ProductReadinessView | null }) {
+  if (!readiness) return null;
+  const readyCount = readiness.request_state_counts.ready_for_current_scope ?? 0;
+  const coverageBlocked = readiness.request_state_counts.blocked_by_candidate_coverage ?? 0;
+  const admissionBlocked = readiness.request_state_counts.blocked_by_evidence_admission ?? 0;
+  return (
+    <section className="research-workspace__panel research-workspace__product-readiness">
+      <div className="research-workspace__section-title">
+        <h2>当前 S1 产品就绪诊断</h2>
+        <span>{productReadinessLabels[readiness.readiness_state] ?? readiness.readiness_state}</span>
+      </div>
+      <div className="research-workspace__metrics is-large">
+        <Metric value={readyCount} label="当前范围可用" />
+        <Metric value={coverageBlocked} label="候选覆盖阻断" warn />
+        <Metric value={admissionBlocked} label="待 Evidence 准入" warn />
+        <Metric value={readiness.candidate_review_packet_summary.human_review_required_count} label="对象级待复核" warn />
+      </div>
+      <p className="research-workspace__product-readiness-note">
+        这里把“本地没找到候选”“候选已找到但尚未成为 Evidence”“等待 S2 数值”和“等待 S3 明确研究范围”分开显示。下方原文只来自摘要绑定的内部审阅包；不会暴露原始捕获或本地路径，也不会因展示而自动成为 Evidence。
+      </p>
+      <div className="research-workspace__product-readiness-grid">
+        {readiness.requests.map((request) => (
+          <article key={request.request_id} className={`is-${request.readiness_state}`}>
+            <header>
+              <strong>{request.business_question_zh}</strong>
+              <span>{productReadinessLabels[request.readiness_state] ?? request.readiness_state}</span>
+            </header>
+            <p>{request.slot_id} / {request.facet_id}</p>
+            <div>
+              <small>命题 {request.requirement_count} · 覆盖阻断 {request.requirement_state_counts.blocked_by_candidate_coverage ?? 0} · 待准入 {request.requirement_state_counts.blocked_by_evidence_admission ?? 0}</small>
+              <small>候选：接受 {request.candidate_decision_counts.accepted} · 待复核 {request.candidate_decision_counts.needs_human_review} · 拒绝 {request.candidate_decision_counts.rejected}</small>
+              <small>数值口径：{request.numeric_authority_state.state}（{request.numeric_authority_state.resolved_count}/{request.numeric_authority_state.request_count} 已解析）</small>
+              {request.unexecuted_or_unavailable_routes.length ? <small>尚未执行路线：{request.unexecuted_or_unavailable_routes.join("、")}</small> : null}
+            </div>
+            {request.candidate_review_items.length ? (
+              <details className="research-workspace__candidate-review">
+                <summary>查看 {request.candidate_review_items.length} 条对象级候选</summary>
+                <div>
+                  {request.candidate_review_items.map((item) => (
+                    <section key={item.review_item_ref} className="research-workspace__candidate-review-card">
+                      <header>
+                        <strong>{item.source.source_type} · {item.source.publication_date}</strong>
+                        <span>{item.human_review_required ? "待人工准入" : "已审证据复用"}</span>
+                      </header>
+                      <p>{item.source.bounded_excerpt}</p>
+                      <small>证据角色：{item.advisory_evidence_role.labels.join("、") || "尚未分类"}</small>
+                      <small>当前问题：{item.issue_classes.map((issue) => candidateReviewIssueLabels[issue] ?? issue).join("；")}</small>
+                      <footer>
+                        <code title={item.source_lineage_digest}>{shortDigest(item.source_lineage_digest)}</code>
+                        {item.source.source_url ? <a href={item.source.source_url} target="_blank" rel="noreferrer">官方来源 <ExternalLink size={11} /></a> : null}
+                      </footer>
+                    </section>
+                  ))}
+                </div>
+              </details>
+            ) : null}
+          </article>
+        ))}
+      </div>
+      <div className="research-workspace__canonical-bindings">
+        <DigestRow label="Readiness result" value={readiness.result_digest} />
+        <DigestRow label="Review packet" value={readiness.candidate_review_packet_summary.review_packet_digest} />
+        <DigestRow label="Prepared commit" value={readiness.prepared_from_commit} />
+      </div>
+    </section>
+  );
+}
+
+function CanonicalSpinePanel({ spine }: { spine: S1CanonicalSpineView | null }) {
+  if (!spine) return null;
+  return (
+    <section className="research-workspace__panel research-workspace__canonical-spine">
+      <div className="research-workspace__section-title">
+        <h2>S1 命题级证据账本</h2>
+        <span>可用于有边界研究，尚不足以形成完整结论</span>
+      </div>
+      <div className="research-workspace__metrics is-large">
+        <Metric value={spine.coverage_summary.current_exact_reviewed_evidence_count ?? spine.coverage_summary.accepted_evidence_count} label="当前精确绑定 Evidence" />
+        <Metric value={spine.candidate_decision_summary.needs_review} label="候选待复核" warn />
+        <Metric value={spine.coverage_summary.reviewed_not_recalled_count ?? "未复证"} label="既有证据未召回" warn />
+        <Metric value={spine.coverage_summary.unresolved_gap_count} label="尚未补证缺口" warn />
+      </div>
+      <p className="research-workspace__canonical-note">
+        当前 {spine.coverage_summary.unresolved_gap_count} 个缺口尚未完成官方或外源补证，因此不能宣称“公开资料不存在”；本轮可认定的公开信息真空为 {spine.coverage_summary.true_public_information_gap_count}。
+      </p>
+      <div className="research-workspace__decision-ledger">
+        {spine.decision_rows.map((row) => (
+          <article key={row.decision_digest} className={`is-${row.decision_state}`}>
+            <header><strong>#{row.rank} · {row.source_type}</strong><span>{decisionStateLabels[row.decision_state]}</span></header>
+            <p>{row.source_record_id}</p>
+            <small>{row.reason_codes.map((code) => decisionReasonLabels[code] ?? code).join(" · ")}</small>
+          </article>
+        ))}
+      </div>
+      <div className="research-workspace__canonical-bindings">
+        <DigestRow label="Evidence artifact" value={spine.pack_binding.artifact_digest} />
+        <DigestRow label="Pack payload" value={spine.pack_binding.pack_payload_digest} />
+        <DigestRow label="Workbench projection" value={spine.workbench_projection_digest} />
+      </div>
     </section>
   );
 }
@@ -305,7 +612,7 @@ function GapList({ gaps }: { gaps: ResearchEvidenceView["residual_gaps"] }) {
   );
 }
 
-function Metric({ value, label, warn = false }: { value: number; label: string; warn?: boolean }) {
+function Metric({ value, label, warn = false }: { value: number | string; label: string; warn?: boolean }) {
   return <div className={warn ? "research-workspace__metric is-warn" : "research-workspace__metric"}><strong>{value}</strong><span>{label}</span></div>;
 }
 
@@ -330,12 +637,12 @@ function shortDigest(value: string): string {
 }
 
 function decodeRoute(pathname: string): WorkspaceRoute {
-  const match = /^\/workspace\/cases\/([^/]+)(?:\/(overview|evidence))?\/?$/.exec(pathname);
+  const match = /^\/workspace\/cases\/([^/]+)(?:\/(overview|evidence|retrieval))?\/?$/.exec(pathname);
   if (!match) return { kind: "cases" };
   return {
     kind: "case",
     caseId: decodeURIComponent(match[1]),
-    surface: match[2] === "evidence" ? "evidence" : "overview",
+    surface: match[2] === "evidence" || match[2] === "retrieval" ? match[2] : "overview",
   };
 }
 

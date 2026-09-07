@@ -1,0 +1,117 @@
+{
+  "schema_version": "fin_ia_dell_bounded_candidate_judge_config_v1_0",
+  "status": "bounded_engineering_candidate_only",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "source_attempt": {
+    "root": "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/rag_mature_stack/retrieval_qualification/dell_rag_full_stack_preview_attempt_20260902_03",
+    "expected_attempt_mode": "engineering_preview",
+    "expected_formal_eligible": false,
+    "manifest": {
+      "relative_path": "manifest.json",
+      "sha256": "c55dcffaaff825f066304f3d33f8bf2653f7edfff946377c16d78e7a23ef7bc4"
+    },
+    "route_results": {
+      "relative_path": "route_results.jsonl",
+      "sha256": "0fc493c17c2f83b7ba2a6e2f6d27fb162d9999df06da19e43d6b838b5c6a92c1"
+    },
+    "retrieval_nodes": {
+      "relative_path": "retrieval_nodes.jsonl",
+      "sha256": "f7fbf9f43a68933bad52146c3a8aa3c9a1b52bba81e4e804c2b05a0aff9d0817"
+    },
+    "retrieval_route": "bm25",
+    "top_k": 6
+  },
+  "queries": [
+    {
+      "query_id": "DELL-RAG-L23",
+      "question_zh": "NVIDIA FY2027 第二季度数据中心收入是多少，环比和同比增速分别是多少？",
+      "retrieval_query_en": "NVIDIA fiscal 2027 Q2 data center revenue sequential year over year growth",
+      "issuer_ids": [
+        "NVIDIA"
+      ],
+      "fiscal_periods": [
+        "FY2027_Q2"
+      ],
+      "source_roles": [
+        "supplier_management_disclosure"
+      ],
+      "route_ids": [
+        "nvidia_fy2027_q2_release"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "data_center_revenue",
+          "description": "Actual fiscal-quarter Data Center revenue"
+        },
+        {
+          "requirement_id": "sequential_growth",
+          "description": "Actual Data Center revenue growth versus the previous quarter"
+        },
+        {
+          "requirement_id": "year_over_year_growth",
+          "description": "Actual Data Center revenue growth versus the same quarter a year earlier"
+        }
+      ]
+    },
+    {
+      "query_id": "DELL-RAG-L26",
+      "question_zh": "Micron FY2026 第三季度的营收和 GAAP 毛利率是多少？",
+      "retrieval_query_en": "Micron fiscal 2026 third quarter revenue GAAP gross margin percentage",
+      "issuer_ids": [
+        "MICRON"
+      ],
+      "fiscal_periods": [
+        "FY2026_Q3"
+      ],
+      "source_roles": [
+        "supplier_management_disclosure"
+      ],
+      "route_ids": [
+        "micron_fy2026_q3_release"
+      ],
+      "requirements": [
+        {
+          "requirement_id": "revenue",
+          "description": "Actual fiscal-quarter revenue"
+        },
+        {
+          "requirement_id": "gaap_gross_margin",
+          "description": "Actual fiscal-quarter GAAP gross margin percentage"
+        }
+      ]
+    }
+  ],
+  "token_budget_basis": {
+    "node_role": "retrieval_candidate_judge",
+    "node_purpose": "Select the smallest sufficient local Candidate set for two frozen retrieval questions without answering them or promoting Evidence.",
+    "input_scale": "Two queries and exactly six metadata-scoped BM25 candidates per query; measured source projection is approximately 24404 characters before the system instruction.",
+    "required_outputs": [
+      "exactly one judgment per query",
+      "exactly six candidate assessments per query",
+      "zero to two selected node IDs per query",
+      "complete requirement-to-candidate coverage or abstention",
+      "bounded confidence and rationale"
+    ],
+    "schema_burden": "Two judgments, twelve enumerated candidate assessments, and dynamic query, candidate, and requirement identity bindings validated by the host.",
+    "materiality_quality_risk": "The judge may confuse actual results with outlook, adjacent periods, or partial metric coverage; output therefore remains Candidate-only and fails closed on any contract drift.",
+    "comparable_run_evidence": "Manual content inspection established that both six-candidate pools contain direct support while also containing partial and outlook distractors; no prior paid candidate-judge run exists.",
+    "reasoning_profile": "single_turn_thinking_disabled_structured_candidate_selection",
+    "max_input_characters": 40000,
+    "max_output_tokens": 2000,
+    "timeout_seconds": 120,
+    "max_transport_attempts": 1,
+    "retry_policy": "none",
+    "truncation_stop_behavior": "fail_closed_no_partial_selection",
+    "input_ceiling_behavior": "fail_before_transport"
+  },
+  "authority": {
+    "provider_attempt_ceiling": 1,
+    "retry_count": 0,
+    "fallback_model_allowed": false,
+    "external_knowledge_allowed": false,
+    "candidate_only": true,
+    "evidence_promotion_authorized": false,
+    "formal_qualification_claimed": false,
+    "source_attempt_mutation_authorized": false
+  }
+}

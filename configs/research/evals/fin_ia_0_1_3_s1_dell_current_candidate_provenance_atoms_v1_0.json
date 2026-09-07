@@ -1,0 +1,66 @@
+{
+  "schema_version": "fin_ia_research_planner_atoms_v1_0",
+  "objective_id": "ROC::c5023a44800a7b8ad60ebaf5",
+  "atoms": [
+    {
+      "facet_id": "orders_and_backlog",
+      "metric_ids": ["backlog", "orders", "customer_count", "shipments"],
+      "product_intents": ["AI server order growth", "backlog composition", "customer concentration"],
+      "target_entity": "DELL"
+    },
+    {
+      "facet_id": "conversion_and_durability",
+      "metric_ids": ["backlog", "orders", "shipments"],
+      "product_intents": ["order-to-shipment conversion", "channel inventory risk", "demand durability"],
+      "target_entity": "DELL"
+    },
+    {
+      "facet_id": "reported_results",
+      "metric_ids": ["revenue", "operating_income", "net_income", "diluted_eps", "gross_margin", "operating_margin"],
+      "product_intents": ["AI server revenue contribution", "segment profitability", "EPS impact"],
+      "target_entity": "DELL"
+    },
+    {
+      "facet_id": "guidance_and_outlook",
+      "metric_ids": ["gross_margin", "operating_margin"],
+      "product_intents": ["AI server margin guidance", "supply constraints outlook"],
+      "target_entity": "DELL"
+    },
+    {
+      "facet_id": "pricing_and_mix",
+      "metric_ids": ["average_selling_price", "revenue", "gross_margin"],
+      "product_intents": ["AI server ASP trends", "product mix shift"],
+      "target_entity": "DELL"
+    },
+    {
+      "facet_id": "margin_and_incremental_profit",
+      "metric_ids": ["gross_profit", "operating_income", "operating_margin", "gross_margin"],
+      "product_intents": ["incremental margin on AI servers", "operating leverage"],
+      "target_entity": "DELL"
+    },
+    {
+      "facet_id": "cash_generation",
+      "metric_ids": ["operating_cash_flow", "free_cash_flow", "capital_expenditures"],
+      "product_intents": ["cash conversion of AI revenue", "capex for AI capacity"],
+      "target_entity": "DELL"
+    },
+    {
+      "facet_id": "working_capital_risk",
+      "metric_ids": ["inventory", "accounts_receivable", "accounts_payable"],
+      "product_intents": ["AI component inventory buildup", "receivable risk from AI customers"],
+      "target_entity": "DELL"
+    },
+    {
+      "facet_id": "issuer_counterevidence",
+      "metric_ids": ["inventory"],
+      "product_intents": ["management caution on AI demand", "inventory write-down risk"],
+      "target_entity": "DELL"
+    },
+    {
+      "facet_id": "upstream_or_demand_counterevidence",
+      "metric_ids": ["inventory"],
+      "product_intents": ["supplier constraints on GPUs", "hyperscaler capex slowdown"],
+      "target_entity": "DELL"
+    }
+  ]
+}

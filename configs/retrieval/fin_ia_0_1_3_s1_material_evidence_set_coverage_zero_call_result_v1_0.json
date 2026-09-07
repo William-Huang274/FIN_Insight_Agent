@@ -1,0 +1,68 @@
+{
+  "schema_version": "fin_ia_s1_material_evidence_set_coverage_zero_call_result_v1_0",
+  "status": "contract_translated_and_development_fixture_proven_runtime_integration_pending",
+  "recorded_at": "2026-08-18",
+  "scope": "request_bound_material_evidence_groups_same_basis_temporal_bundle_and_post_freeze_exact_object_diagnostic",
+  "bound_artifacts": [
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_material_evidence_set_coverage_policy_v1_0.json",
+      "sha256": "8acd3a7cc19514438797818ddc88faf1d8ec25342059d66cdc660723ead60a51"
+    },
+    {
+      "path": "src/retrieval/evidence_set_coverage.py",
+      "sha256": "c5de0548eff0f1e65f9606362fef41f7c1519d23a7b809d9a1a0cb05d15ba6d5"
+    },
+    {
+      "path": "tests/fixtures/retrieval/fin_ia_s1_material_evidence_set_four_case_development_matrix_v1_0.json",
+      "sha256": "bc05e917358729eebd71d50ceb135c44b258ce2d63f5e9be4f41d89aa8d5e97b"
+    },
+    {
+      "path": "tests/test_s1_material_evidence_set_coverage.py",
+      "sha256": "54836fcd39641a938d6201ed657a647abcb88d30565ca5acef2ffc77425c1858"
+    }
+  ],
+  "development_replay": {
+    "cases": ["DELL", "MU", "NVDA", "COST"],
+    "requirement_group_count": 10,
+    "met_requirement_group_count": 10,
+    "case_specific_core_branches": 0,
+    "cross_case_candidate_selected": 0,
+    "same_basis_temporal_years_preserved": [2024, 2025],
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false
+  },
+  "mutation_coverage": [
+    "metric_outside_request",
+    "gold_identity_field_leak",
+    "worst_case_temporal_capacity_overflow",
+    "same_basis_mismatch",
+    "missing_temporal_period",
+    "wrong_case_candidate",
+    "candidate_permutation",
+    "equivalent_object_group_satisfaction",
+    "unique_object_group_failure",
+    "reference_requirement_mismatch",
+    "plan_digest_tamper",
+    "selection_digest_tamper"
+  ],
+  "verification": {
+    "contract_tests": "13 passed",
+    "adjacent_VS5_tests": "34 passed",
+    "full_repository": "646 passed",
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "learned_vector_calls": 0,
+    "hidden_reference_reads": 0,
+    "evidence_promotions": 0
+  },
+  "not_proven": [
+    "current_candidate_metadata_to_material_group_adapter",
+    "natural_ResearchBlueprint_to_material_requirements",
+    "COST_reference_consistency_adjudication",
+    "new_unseen_temporal_valid_case",
+    "replacement_blind_reference",
+    "S1_qualified_stable"
+  ],
+  "next_gate": "qualified_human_COST_reference_consistency_review_then_new_unseen_temporal_preregistration_without_labels",
+  "known_boundary": "The four-case matrix is synthetic development regression, not a replay of hidden labels or proof that the current Runtime already consumes the contract. Historical COST R1/R2 remain failed and COST R3 remains forbidden."
+}

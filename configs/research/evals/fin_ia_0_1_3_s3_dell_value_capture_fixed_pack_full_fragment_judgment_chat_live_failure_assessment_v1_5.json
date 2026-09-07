@@ -1,0 +1,47 @@
+{
+  "schema_version": "fin_ia_s3_full_fragment_judgment_live_failure_assessment_v1_5",
+  "status": "terminal_provider_capacity_failure_contract_submission_thinking_profile_semantic_mismatch_successor_required",
+  "recorded_at": "2026-08-16T15:18:00+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_5.json",
+  "authority_sha256": "5ed17d687a2469aaa0eea836c27d3b5249ddd46515825aaade4f5a99b5b2ae88",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_5.json",
+  "result_sha256": "2feb55c28e6b8fa89f3f21a78a41181bae88a38dda6acc7e4bfbebc06d55f454",
+  "result_digest": "4b590ebc21fce90ef60e5aaf2f40ea36e1a61761827fc60b7e3020403904a317",
+  "failure_phase": "provider_transport_or_response",
+  "failure_code": "model_gateway_reasoning_budget_exhausted",
+  "failure_fragment_tool": "submit_research_counterargument_and_wwc",
+  "execution": {
+    "model_calls_attempted": 6,
+    "tool_calls_accepted": 2,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "protocol_switches": 0
+  },
+  "root_cause": {
+    "owner_layer": "S3_replaceable_DeepSeek_contract_submission_profile",
+    "deepseek_financial_reasoning_failure": false,
+    "transport_failure": false,
+    "financial_L1_observed": false,
+    "response_evidence": "The sixth response was HTTP 200, complete JSON, finish_reason length, zero visible content, zero Tool Call, completion_tokens 2000 and reasoning_tokens 2000.",
+    "profile_semantic_mismatch": "The node was described as low-thinking contract submission, but its profile explicitly enabled thinking. DeepSeek GA maps low and medium reasoning_effort to high while thinking is enabled, so low did not cap or disable reasoning.",
+    "safe_fix_boundary": "Use a new provider-only non-thinking contract-submission profile with thinking disabled and no reasoning_effort. Reuse the five immutable successful calls and execute only one fresh counter/WWC submission; do not rerun successful nodes or raise the financial contract budget."
+  },
+  "business_content_observation": {
+    "thesis": "The accepted thesis keeps AI-server profitability at management-reported product scope and selects only the source-bound product target.",
+    "mechanism": "The accepted mechanism explicitly states that a reviewable product-to-segment or product-to-company profit bridge has not been established and forbids product attribution.",
+    "counter_analysis": "The completed visible analysis selects the typed product-profit bridge gap, treats same-basis company gross-margin contraction only as a counter observation, keeps alternative mix and business-driver explanations, and asks for official future evidence rather than inventing a product bridge.",
+    "formal_content_acceptance": false
+  },
+  "disposition": {
+    "immutable_R6_preserved": true,
+    "same_attempt_retry_forbidden": true,
+    "successful_first_five_calls_must_not_be_rerun": true,
+    "manual_tool_payload_construction_forbidden": true,
+    "repair_scope": "provider_only_non_thinking_contract_submission_profile_and_exact_once_failed_node_successor",
+    "saved_R6_fragments_and_counter_analysis_replay_required": true,
+    "one_fresh_submission_successor_required": true,
+    "dynamic_truth_spine_remains_blocked": true
+  },
+  "known_boundary": "R6 contains five successful natural nodes, two accepted fragments and a complete visible counter/WWC analysis, but no counter/WWC Tool Call or terminal Judgment. It cannot be promoted until a separately authorized failed-node successor completes the same contract."
+}

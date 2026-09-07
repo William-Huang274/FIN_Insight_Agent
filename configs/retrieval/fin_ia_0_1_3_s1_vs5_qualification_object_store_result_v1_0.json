@@ -1,0 +1,181 @@
+{
+  "schema_version": "fin_ia_qualification_financial_object_store_result_v1_0",
+  "status": "s1_qualification_financial_object_store_ready_candidates_only",
+  "recorded_at": "2026-08-18",
+  "manifest_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_source_object_manifest_v1_0.json",
+  "manifest_digest": "cd59cc392c40f10e8066eb3105423f04b78d8a2f2248a2385bc534f94db13336",
+  "source_results": [
+    {
+      "source_id": "COST_FY2024_10K",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_source_capture/live-r1/objects/raw/d1/10/d110fa3bc2dd0d08f7471e3071dc78283b9479c605169214168c51a232d745d2.json",
+      "source_sha256": "d110fa3bc2dd0d08f7471e3071dc78283b9479c605169214168c51a232d745d2",
+      "document_parents_added": 1,
+      "retrieval_children_added": 70,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "COST_FY2025_10K",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_source_capture/live-r1/objects/raw/48/5f/485f5608ff08ffefc5b60dc117ca674fbc68e8624f20973ac4c331b77194721b.json",
+      "source_sha256": "485f5608ff08ffefc5b60dc117ca674fbc68e8624f20973ac4c331b77194721b",
+      "document_parents_added": 1,
+      "retrieval_children_added": 69,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "JPM_FY2025_10K",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_source_capture/live-r1/objects/raw/eb/7c/eb7c7484a408afbabf40428de42f8479abb50bfa438fbf48bdd6902672af52ce.json",
+      "source_sha256": "eb7c7484a408afbabf40428de42f8479abb50bfa438fbf48bdd6902672af52ce",
+      "document_parents_added": 1,
+      "retrieval_children_added": 88,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "CAT_FY2025_10K",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_source_capture/live-r1/objects/raw/4a/6a/4a6adb628ebaf91e17f2989cd4cddb0f4ac8311d2529ceac6e54dbe297db939b.json",
+      "source_sha256": "4a6adb628ebaf91e17f2989cd4cddb0f4ac8311d2529ceac6e54dbe297db939b",
+      "document_parents_added": 1,
+      "retrieval_children_added": 137,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "NVO_FY2025_20F",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_source_capture/live-r1/objects/raw/db/e2/dbe2e9f8606161c9d1e59970e7dcf63de320f93c6ce19eca43148e518e2b4353.json",
+      "source_sha256": "dbe2e9f8606161c9d1e59970e7dcf63de320f93c6ce19eca43148e518e2b4353",
+      "document_parents_added": 1,
+      "retrieval_children_added": 52,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "SHEL_FY2025_20F",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_source_capture/live-r1/objects/raw/e9/97/e997a0af63923aa19171a269ee39b5716ba7451753020c6211a2964f2d45336f.json",
+      "source_sha256": "e997a0af63923aa19171a269ee39b5716ba7451753020c6211a2964f2d45336f",
+      "document_parents_added": 1,
+      "retrieval_children_added": 531,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "TENCENT_FY2025_OFFICIAL_ANNUAL_REPORT",
+      "input_kind": "parsed_pdf_layout_document",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_vs5_tencent_pdf_layout/live-r1/parsed_layout.json",
+      "source_sha256": "d5a3c9983f25513f795b3c483871e85291504cd554c81f98d82330f6f4593582",
+      "document_parents_added": 1,
+      "retrieval_children_added": 1264,
+      "invalid_records_excluded": 0
+    }
+  ],
+  "object_store": {
+    "document_parents": 7,
+    "retrieval_children": 2211,
+    "children_from_immutable_current_capture": 2211,
+    "children_by_ticker": {
+      "0700.HK": 1264,
+      "CAT": 137,
+      "COST": 139,
+      "JPM": 88,
+      "NVO": 52,
+      "SHEL": 531
+    },
+    "children_by_source_type": {
+      "10-K": 364,
+      "20-F": 583,
+      "ANNUAL_REPORT": 1264
+    },
+    "table_children": 630,
+    "unbalanced_table_children": 0,
+    "max_retrieval_child_characters": 10311,
+    "oversized_non_table_children": [],
+    "oversized_table_children": [],
+    "market_snapshots_missing_valuation_fields": []
+  },
+  "case_readiness": {
+    "0700.HK": {
+      "issuer_retrieval_children": 1264,
+      "latest_issuer_publication_date": "2026-04-09",
+      "point_in_time_market_children": 0,
+      "market_as_of_dates": []
+    },
+    "CAT": {
+      "issuer_retrieval_children": 137,
+      "latest_issuer_publication_date": "2026-02-13",
+      "point_in_time_market_children": 0,
+      "market_as_of_dates": []
+    },
+    "COST": {
+      "issuer_retrieval_children": 139,
+      "latest_issuer_publication_date": "2025-10-08",
+      "point_in_time_market_children": 0,
+      "market_as_of_dates": []
+    },
+    "JPM": {
+      "issuer_retrieval_children": 88,
+      "latest_issuer_publication_date": "2026-02-13",
+      "point_in_time_market_children": 0,
+      "market_as_of_dates": []
+    },
+    "NVO": {
+      "issuer_retrieval_children": 52,
+      "latest_issuer_publication_date": "2026-02-04",
+      "point_in_time_market_children": 0,
+      "market_as_of_dates": []
+    },
+    "SHEL": {
+      "issuer_retrieval_children": 531,
+      "latest_issuer_publication_date": "2026-03-12",
+      "point_in_time_market_children": 0,
+      "market_as_of_dates": []
+    }
+  },
+  "duplicate_children_identical": 0,
+  "invalid_records_excluded": 0,
+  "legacy_alias_crosswalk": {
+    "aliases_seen": 0,
+    "aliases_mapped": 0,
+    "required_aliases": 0,
+    "missing_required_aliases": [],
+    "mappings": []
+  },
+  "typed_gaps": [
+    {
+      "gap_id": "vs5_natural_scanned_official_source_not_observed",
+      "status": "source_morphology_not_present_in_captured_set",
+      "owner_stage": "S1",
+      "detail": "The Tencent official annual report contains 282 usable native-layout pages and no naturally scanned material page; raster mutation is forbidden as qualification evidence."
+    }
+  ],
+  "acceptance": {
+    "source_digests_verified": true,
+    "parent_child_lineage_complete": true,
+    "parsed_current_sources_capture_bound": true,
+    "table_boundaries_balanced": true,
+    "retrieval_children_bounded": true,
+    "case_issuer_children_present": true,
+    "case_market_role_present": false,
+    "three_case_issuer_children_present": true,
+    "three_case_market_role_present": false,
+    "required_qrel_aliases_mapped": true,
+    "candidate_state": "candidate_not_evidence",
+    "model_calls": 0,
+    "network_calls": 0,
+    "dense_calls": 0,
+    "rerank_calls": 0,
+    "complete_s1_claimed": false,
+    "valuation_ready": false,
+    "acceptance_profile": "qualification_candidate",
+    "profile_ready": true
+  },
+  "known_boundary": "This qualification object store compiles only digest-bound official source captures and parsed official documents into candidate parents and children. It does not grant Evidence, NumericFact, hidden-label, retrieval-quality or S1 qualification authority.",
+  "result_digest": "67520e0c676b795b08a8339f2e6d15f7342c31b6bc22bc765324d5d8092e3514"
+}

@@ -1,0 +1,27 @@
+{
+  "schema_version": "fin_ia_s1_runtime_promotion_failure_assessment_v1_0",
+  "attempt_id": "s1-r37-material-policy-promotion-r1-20260824T194800Z",
+  "status": "terminal_failed_deterministic_preflight",
+  "recorded_at": "2026-08-25T03:48:00+08:00",
+  "prepared_from_commit": "1c6b53d7",
+  "failed_stage": "S1_retrieval_need_policy_validation",
+  "failure": {
+    "root_error": "retrieval_need_intent_ontology_missing",
+    "cause": "The first R37 promotion preflight validated the successor retrieval-need policy without passing the current intent ontology. No successor output had been written when the fail-closed validator stopped the run."
+  },
+  "resolution": {
+    "new_attempt_required": true,
+    "root_cause_fix": "Bind the current financial intent ontology v1.4 into the policy validator.",
+    "successful_successor_attempt": "s1-r37-material-policy-promotion-r2",
+    "outputs_overwritten": false
+  },
+  "authority": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "paid_tool_calls": 0,
+    "runtime_registry_mutated": false,
+    "candidate_auto_promotion": 0,
+    "public_information_gap_authorized_count": 0
+  },
+  "result_digest": "e93feb1a96ca36daad3a68fe1e9d7b0d4f770a256fd3833921154e0f965c1423"
+}

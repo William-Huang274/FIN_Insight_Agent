@@ -1,0 +1,522 @@
+{
+  "schema_version": "fin_ia_dell_03B_R8_fixed_dual_audit_manifest_v1_0",
+  "status": "fixed_hash_bound_bundle_ready_for_fresh_author_separated_readonly_audit",
+  "audit_id": "FIN-0.1.3-S1-DELL-03B-R8-FRESH-DUAL-AUDIT",
+  "recorded_at": "2026-08-27",
+  "git_identity": {
+    "branch": "codex/fin013-dell-s1-s2-product-bridge",
+    "implementation_commit": "a9403e327e2de740015d63223ee6fbeace0f93a6",
+    "implementation_tree": "3aa2cf8ee5102b81bdfb9151d35c14c68f8bb267",
+    "implementation_parent": "4ece36656929859d9eec86a8eb57580b18d079be",
+    "implementation_changed_paths": [
+      "docs/project_os/capability_status_ledger.jsonl",
+      "docs/project_os/current_context_pack.zh-CN.md",
+      "docs/project_os/root_cause_issue_ledger.jsonl",
+      "docs/worklog/fin_0_1_3_s1/101_dell_03b_R8_author_implementation_and_zero_call_preview.md",
+      "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r8.py",
+      "src/retrieval/dell_report_internal_chain_ceiling_r8.py",
+      "src/retrieval/dell_report_predicate_frames_r8.py",
+      "src/retrieval/dell_report_public_validation_r8.py",
+      "tests/test_dell_report_predicate_frames_r8.py"
+    ],
+    "authority_commit": "f4c3c629c789fa8d61deda2f4375eb887f5f8ce4",
+    "authority_tree": "d55e3ac61a412e6aab184b5d6ca7b3e4442e9829",
+    "authority_parent": "a9403e327e2de740015d63223ee6fbeace0f93a6",
+    "authority_changed_paths": [
+      "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_7.json"
+    ],
+    "reviewed_result_commit": "aa58a503d5d1416ff2d778808875667b904e6ce4",
+    "reviewed_result_tree": "7e3ce76c83231d8da5c726669adda7b24d6b5246",
+    "reviewed_result_parent": "f4c3c629c789fa8d61deda2f4375eb887f5f8ce4",
+    "reviewed_result_changed_paths": [
+      "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_7.json",
+      "docs/project_os/capability_status_ledger.jsonl",
+      "docs/project_os/current_context_pack.zh-CN.md",
+      "docs/project_os/root_cause_issue_ledger.jsonl",
+      "docs/worklog/fin_0_1_3_s1/102_dell_03b_R8_exact_execution_and_author_integrity.md",
+      "reports/model_runs/FIN_0_1_3_S1_DELL_03B_INTERNAL_CHAIN_CEILING_R8_20260827.md"
+    ]
+  },
+  "engineering_bundle": {
+    "R7_fresh_audit": {
+      "ref": "configs/audits/fin_ia_0_1_3_commit_22c85026_dell_03b_r7_fresh_dual_audit_fail_v1_0.json",
+      "sha256": "d8532fa54974555a30b2d08d3f50cc1d30389d1312b804ea450c95a60776c147",
+      "byte_size": 18481,
+      "purpose": "Immutable predecessor findings and R17 open baseline",
+      "required": true,
+      "declared_digests": {
+        "result_digest": "904637666c90ce9c65a45ef741ac7669b19bd118c1797de6ebffa5d601844abb"
+      }
+    },
+    "R8_plan": {
+      "ref": "docs/worklog/fin_0_1_3_s1/100_dell_03b_R8_program_level_execution_plan.md",
+      "sha256": "9422f85ba1b78981e2a998850a8487fd46a3dc97fa84f46e3940048f0538e175",
+      "byte_size": 29969,
+      "purpose": "Approved ticket, quality, stop and audit contract",
+      "required": true
+    },
+    "R8_implementation_record": {
+      "ref": "docs/worklog/fin_0_1_3_s1/101_dell_03b_R8_author_implementation_and_zero_call_preview.md",
+      "sha256": "07bf8ff896c2298a9b03e110ae509217deb21dcb4fb4a7f9ef7c3e9226cc2483",
+      "byte_size": 8342,
+      "purpose": "Author implementation, preview and freeze receipts",
+      "required": true
+    },
+    "R8_result_record": {
+      "ref": "docs/worklog/fin_0_1_3_s1/102_dell_03b_R8_exact_execution_and_author_integrity.md",
+      "sha256": "d4e9cc6185c94c056319a8f15201596000e2a957e5f0a0a063ac716d8108d4dc",
+      "byte_size": 6835,
+      "purpose": "Formal execution and exact replay receipts",
+      "required": true
+    },
+    "risk_tiered_test_policy": {
+      "ref": "docs/project_os/risk_tiered_test_evidence_policy.zh-CN.md",
+      "sha256": "c0c2ec548a99e51c7f6f52bc0fc827f0abd7e1f36e48d5423b6ff0e009b70771",
+      "byte_size": 6934,
+      "purpose": "T0-T4 reuse and fail-up rules",
+      "required": true
+    },
+    "R8_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_7.json",
+      "sha256": "7c3cbeb550531b6a8fe89e362d7f4c9687aeb6d4b057776778ac880b59e929f4",
+      "byte_size": 25447,
+      "purpose": "Exact authority, 34 inputs, 21 implementation bindings and TokenBudgetBasis",
+      "required": true,
+      "declared_digests": {
+        "result_digest": "ee6616d7c0db30608f91cea80c6412bb69dae19a0e9babc80576b9a2aa96ae63"
+      }
+    },
+    "R8_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_7.json",
+      "sha256": "8a11168e9366462928d4741abb1e87cfabc2597d4e1a6603c66b3710835dd022",
+      "byte_size": 67812,
+      "purpose": "Canonical public result",
+      "required": true,
+      "declared_digests": {
+        "result_digest": "1b6c04aadd61ec1253ab27062b3dd8a7b3251e6b7f3fb20ef3918e390aa5e83d"
+      }
+    },
+    "R8_private": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r8/full_result.json",
+      "sha256": "17041e294d89ed281f9c54bd666cd0a071a13056bffa6a91306fca136cface4f",
+      "byte_size": 25416683,
+      "purpose": "Canonical private result",
+      "required": true,
+      "declared_digests": {
+        "result_digest": "290c8390f3b043409b79833b00ef9a3388c56368c19a1eb901bded7598b037b2"
+      }
+    },
+    "R8_attempt_receipt": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r8/attempt_consumption_receipt.json",
+      "sha256": "cace31eca24984dcb927131876b3d449b406a7f5280cae2a6ce9f93e89248217",
+      "byte_size": 1018,
+      "purpose": "Exclusive exact-once receipt",
+      "required": true,
+      "declared_digests": {
+        "result_digest": "695f50f516efb621fd27883d099d188026a04bf55430722caa4c830943bd21fa"
+      }
+    },
+    "R8_raw_capture": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r8/raw_execution_capture.json",
+      "sha256": "d71cd93eedf7226b2e80d82ba53c6d43f7db2c79e19bee8df703e12910cfbd83",
+      "byte_size": 2557659,
+      "purpose": "Raw execution preserved before compilation",
+      "required": true,
+      "declared_digests": {
+        "result_digest": "6da7eed0dedfe854023b27088532293af1dea253733aab343c78c7352c75ba4c"
+      }
+    },
+    "R8_model_run": {
+      "ref": "reports/model_runs/FIN_0_1_3_S1_DELL_03B_INTERNAL_CHAIN_CEILING_R8_20260827.md",
+      "sha256": "ca1ca01e8bc33cb2309d4a73790fff7f06e1d2d18159f57760963dca7c9e73cf",
+      "byte_size": 4653,
+      "purpose": "Human-readable run boundary",
+      "required": true
+    },
+    "R8_frames": {
+      "ref": "src/retrieval/dell_report_predicate_frames_r8.py",
+      "sha256": "f3392d178423264f7620acbee0d71e3c00ab82d224580d272e118096ab0d4753",
+      "byte_size": 47544,
+      "purpose": "PredicateFrame and RoleBinding semantics",
+      "required": true
+    },
+    "R8_public_validator": {
+      "ref": "src/retrieval/dell_report_public_validation_r8.py",
+      "sha256": "3d8421d19839ca37320065ae4d5bc8cecad41ca204cf5d692dc770f3ab3a90ca",
+      "byte_size": 9901,
+      "purpose": "Threat-first scalar validation",
+      "required": true
+    },
+    "R8_compiler": {
+      "ref": "src/retrieval/dell_report_internal_chain_ceiling_r8.py",
+      "sha256": "eb6da17ea5f1e67c0505d6412bcafbb23729e5bd524ff3eee27b3e0834bb8680",
+      "byte_size": 55578,
+      "purpose": "Predecessor, classifier, coverage, route and projection contracts",
+      "required": true
+    },
+    "R8_runner": {
+      "ref": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r8.py",
+      "sha256": "f56a956eae7095626b69ee794bf4b9f801d5fc4abfcf27364d56c03478ae3f03",
+      "byte_size": 31624,
+      "purpose": "Git/exact-once/raw/failure/atomic runner",
+      "required": true
+    },
+    "R8_tests": {
+      "ref": "tests/test_dell_report_predicate_frames_r8.py",
+      "sha256": "5a44371b88804d27042e0295af8de9ff2704e71f54ded5c799c4322d84d9ae9f",
+      "byte_size": 43389,
+      "purpose": "Frozen attack, positive, runner and policy contracts",
+      "required": true
+    }
+  },
+  "author_test_and_execution_receipts": {
+    "T0": {
+      "compileall": "pass",
+      "pyflakes_R8_files": "pass",
+      "diff_check": "pass",
+      "config_JSON": [
+        1154,
+        "pass"
+      ],
+      "Project_OS_JSONL": [
+        8,
+        1307,
+        "pass"
+      ],
+      "full_secret_scan": [
+        8163,
+        0
+      ],
+      "final_changed_path_secret_scan": [
+        6,
+        0
+      ],
+      "active_baseline": {
+        "python": 213,
+        "frontend": 8,
+        "detectors": 5,
+        "resources": 28,
+        "failures": 0
+      }
+    },
+    "T1_direct": {
+      "command": "python -m pytest -q tests/test_dell_report_predicate_frames_r8.py --durations=10",
+      "freeze_result": "97 passed in 7.71s",
+      "post_result": "97 passed in 20.02s"
+    },
+    "T2_adjacent": {
+      "scope": "R7 151 plus R8 97 explicit tests",
+      "result": "248 passed in 16.83s"
+    },
+    "T3_subsystem": {
+      "scope": "Project OS plus S1 foundation",
+      "result": "93 passed in 40.75s"
+    },
+    "T4_single_freeze": {
+      "command": "python -m pytest -q --durations=50",
+      "result": "1823 passed, 2 skipped, 2 existing SWIG warnings in 508.75s",
+      "reuse_valid": true,
+      "reviewer_must_not_repeat": true,
+      "slowest_four_seconds": [
+        89.77,
+        61.36,
+        55.74,
+        53.59
+      ]
+    },
+    "zero_call_preview": {
+      "source_records": 1888,
+      "compiled_objects": 34199,
+      "seconds": 35.276,
+      "digest": "fb41f0f51d44ffc7cab3b1b0b8b167665ee8d6d28a73bb76c3ea366edf5bc58f",
+      "all_layer_crosswalk_empty": true,
+      "local_repair": 0,
+      "external": 4,
+      "4B": 0,
+      "reranker": 0
+    },
+    "formal_execution": {
+      "requests": 5,
+      "local_0_6B_batches": 1,
+      "union": 338,
+      "final": 80,
+      "forbidden_counters_zero": true,
+      "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+      "terminal_failure_receipt_absent": true
+    },
+    "exact_replay": {
+      "seconds": 42.489,
+      "source_records": 1888,
+      "compiled_objects": 34199,
+      "private_dict_and_bytes_equal": true,
+      "public_dict_and_bytes_equal": true
+    }
+  },
+  "R17_report_quality_bundle": {
+    "R17_report_bytes": {
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-reversal-gate-r17/full_result.json",
+      "sha256": "433b2c486f8753d4f0b2468aa66f21c0ef2ff0e4bcc7d9347233e239b30ec0e8",
+      "byte_size": 133379,
+      "purpose": "Actual candidate/trusted/rendered report bytes and 39 rendering receipts",
+      "required": true,
+      "declared_digests": {
+        "full_result_digest": "3be5a5453c8cf18cf5a14f7b7de7535b8d8c64367275e2f509dc0849db587743"
+      }
+    },
+    "R17_authority_catalog": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_authority_catalog_v1_0.json",
+      "sha256": "fe33215f8d46a5fa9db422d8192ba3c18daf29563a7941ba6fe16808ce07a84b",
+      "byte_size": 95210,
+      "purpose": "Claims, evidence, numeric and presentation authority",
+      "required": true,
+      "declared_digests": {
+        "authority_catalog_digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765"
+      }
+    },
+    "R17_gap_crosswalk_14_9_4_10": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_2.json",
+      "sha256": "990972fc1acb62696f0bebbc12713e100597271ec562424296cf8d220ff577f5",
+      "byte_size": 36049,
+      "purpose": "Reader/model gap, numeric, S2 and boundary crosswalk",
+      "required": true,
+      "declared_digests": {
+        "result_digest": "afc37e760cd88c107365e727d10b53694b299f93c4245cf90110775ec22676e2",
+        "crosswalk_content_digest": "f2ab679522d15ba9fe22e3f17b0010a032a4fb142fa918b56b5d344c47b8afc2"
+      }
+    },
+    "R17_method_register": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_research_method_parameter_register_v1_0.json",
+      "sha256": "db1d799552a9809d2f5a749a7a140be06088ff8d867745342b2f2ce67b3dde77",
+      "byte_size": 2278,
+      "purpose": "Research method and parameter boundaries",
+      "required": true
+    },
+    "R17_formal_protocol": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_evaluation_protocol_v1_0.json",
+      "sha256": "fe5b5f28554a6d2c930984359f2feb92248e976f1025db4af9f5c9ba555255ac",
+      "byte_size": 6143,
+      "purpose": "Formal eight-dimension and prerequisite contract",
+      "required": true,
+      "declared_digests": {
+        "protocol_digest": "5e377dc03044112b3b3187b8936f218d533a1c0d33e634f3416222ae6afba1a1"
+      }
+    },
+    "R17_human_packet": {
+      "ref": "data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r2/full_result.json",
+      "sha256": "9679d9e73668f12fb3e306eb3f5e73723e65a5a97247f74607374367668bcf11",
+      "byte_size": 100708,
+      "purpose": "02B qualified-human decision packet",
+      "required": true,
+      "declared_digests": {
+        "full_result_digest": "a90ed777fe85956889976aea2baa50d3b2f84f7a058e21e3eacde3f5b1f6c4fd"
+      }
+    },
+    "R17_prior_independent_review": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_R17_fresh_independent_review_pass_v1_0.json",
+      "sha256": "e75731284f078e36e41ba16509c516039976a3feff4f2be96a6c9b03ed9fdb55",
+      "byte_size": 4125,
+      "purpose": "Prior narrower R17 review; evidence only, not current quality authority",
+      "required": true,
+      "declared_digests": {
+        "receipt_digest": "8ef9d01f99e15dad95d62c59c0624aa6897d2339a8b96021e5542edca5359cde"
+      }
+    },
+    "R17_quality_baseline_manifest": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_program_baseline_manifest_v1_0.json",
+      "sha256": "4bf0fa0e07d27fd3edcbaaea4a8b3002cfe4c0e227b8214c217666350ad4edc0",
+      "byte_size": 10758,
+      "purpose": "Frozen R17 quality baseline",
+      "required": true
+    },
+    "R17_quality_baseline_verification": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_baseline_verification_v1_1.json",
+      "sha256": "7cdbda5829eefb613cb653548bf14c9a35ed5d40a9527d956d904814f2cb15e7",
+      "byte_size": 9184,
+      "purpose": "Baseline verification and known missing surfaces",
+      "required": true
+    },
+    "current_evidence_pack_projection": {
+      "ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_6.json",
+      "sha256": "b3289bdf91ae2654f4a5a37aecf603a444581a7969d9e866146feeb1efbcfa14",
+      "byte_size": 7721,
+      "purpose": "Current pack lineage and DELL 55/14 counts",
+      "required": true,
+      "declared_digests": {
+        "result_digest": "e66941c5a55cb4759a759966927f2fe67c586968599b3302df7d3009f7acc373"
+      }
+    },
+    "DELL_source_passage_locator_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+      "sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+      "byte_size": 278645,
+      "purpose": "55 evidence/source materials with source_text and source_url for semantic-support attempts",
+      "required": true,
+      "declared_digests": {
+        "pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98"
+      }
+    },
+    "R17_source_bound_numeric_review": {
+      "ref": "configs/research/fin_ia_0_1_3_s2_dell_current_dynamic_multi_agent_R10_source_bound_numeric_review_v1_0.json",
+      "sha256": "98ae821c156f96939a635efb4e5ca5f15c14b89120b95371ac99ccc3feb85930",
+      "byte_size": 10135,
+      "purpose": "Numeric facts, relations, formulas and use boundaries",
+      "required": true
+    },
+    "R17_author_provenance_worklog": {
+      "ref": "docs/worklog/fin_0_1_3_s3/168_R17_clean_checkout_and_author_provenance_successor.md",
+      "sha256": "fa0c77910822873d8235a87c86c13cae70ec5ecdb3cec5b719d5226ce4e43756",
+      "byte_size": 2434,
+      "purpose": "R17 lineage and author claims",
+      "required": true
+    },
+    "R17_prior_audit_worklog": {
+      "ref": "docs/worklog/fin_0_1_3_s3/169_final_clean_successor_audit_and_R17_fresh_independent_pass.md",
+      "sha256": "2dcd7aca834574a7cd174681ca9fd83f657cb3532593d712a5e34c66a5882824",
+      "byte_size": 2789,
+      "purpose": "Prior audit scope and limitations",
+      "required": true
+    }
+  },
+  "audit_phases": [
+    {
+      "phase": "A_integrity_and_route",
+      "required_checks": [
+        "verify every manifest SHA and declared digest before interpretation",
+        "verify implementation-authority-result parent/tree/changed paths",
+        "verify policy 34 inputs and 21 implementation bindings",
+        "verify receipt/raw/private/public self-digests and links",
+        "independently reproject public or mark exact reason not assessed",
+        "verify 5 requests one 0.6B batch exact 96/16 and every forbidden counter zero"
+      ],
+      "checkpoint_required": true
+    },
+    {
+      "phase": "B_predicate_frame_semantics",
+      "required_checks": [
+        "inspect all 63 inherited negative cases and eight fresh cross-frame/scope attacks",
+        "verify exact normalized-document frame and role slices",
+        "verify compound subjects are preserved but independent events split",
+        "verify full polarity modality status report-owner trailing modifier and revocation scope",
+        "probe only targeted mutations if a concrete uncovered family is suspected"
+      ],
+      "checkpoint_required": true
+    },
+    {
+      "phase": "C_anchor_recall_and_public_privacy",
+      "required_checks": [
+        "verify support150 versus hardware15 frame-role locality and multi-value ambiguity",
+        "verify six fresh positive controls plus selected R7 positives",
+        "verify source compiled union final share one classifier and current crosswalk",
+        "verify Unicode fixed-point threat checks precede all field grammar",
+        "verify high-entropy identifier deep encoded locator and inherited public attacks plus valid controls"
+      ],
+      "checkpoint_required": true
+    },
+    {
+      "phase": "D_R17_report_quality",
+      "required_checks": [
+        "treat R17_private.rendered_report as actual reader report bytes",
+        "count reader-visible citations URLs and source appendix; internal IDs alone do not count",
+        "test whether the later 14/9/4/10 crosswalk is actually consumed by R17 bytes",
+        "audit all six what-would-change items for observable trigger direction horizon source and decision implication",
+        "measure factual density and repeated facts or WWC",
+        "map material claims to exact source passage and source_url using the bound DELL pack; absent one-to-one EV mapping is NOT_ASSESSABLE",
+        "recompute material numeric relations and check product-versus-segment/company boundaries",
+        "report 02B human decisions and formal-8D prerequisite validity"
+      ],
+      "checkpoint_required": true
+    }
+  ],
+  "auditor_contract": {
+    "fresh_context": "fork_none_no_author_working_memory",
+    "author_separated": true,
+    "read_only": true,
+    "writes_authorized": false,
+    "network_authorized": false,
+    "model_or_provider_calls_authorized": false,
+    "embedding_4B_reranker_external_authorized": false,
+    "full_pytest_authorized": false,
+    "allowed_commands": [
+      "read exact bound files",
+      "git show/diff/cat-file/hash-object/rev-parse",
+      "sha256 and JSON self-digest checks",
+      "existing R8 targeted tests or a narrowly scoped ephemeral in-memory mutation only on concrete suspicion"
+    ],
+    "forbidden_behavior": [
+      "recursive repository-history survey",
+      "editing or formatting files",
+      "repeating full pytest",
+      "running formal attempt",
+      "using missing evidence as a pass",
+      "combining R8 and R17 finding counts"
+    ],
+    "scope_expansion_rule": "Stop and report proposed exact extra path plus material suspicion before reading outside fixed bundle.",
+    "missing_evidence_rule": "Return NOT_ASSESSABLE with exact missing binding; do not search broadly to repair the author bundle.",
+    "output_required": [
+      "phase verdicts",
+      "R8 P0/P1/P2/P3 counts",
+      "R17 P0/P1/P2/P3 counts separately",
+      "each finding with path/field or line, evidence, impact, reproducible targeted check and owning stage",
+      "explicit 03B independent-pass recommendation",
+      "explicit R17 report-quality and product/publication recommendation",
+      "unassessed items and exact missing evidence"
+    ]
+  },
+  "frozen_expected_observations_not_golden": {
+    "ASP": [
+      1,
+      1,
+      1,
+      1,
+      2
+    ],
+    "supplier": [
+      3,
+      3,
+      2,
+      1,
+      2
+    ],
+    "capacity_release": [
+      0,
+      0,
+      0,
+      0,
+      null
+    ],
+    "yield_utilization": [
+      0,
+      0,
+      0,
+      0,
+      null
+    ],
+    "HBM": [
+      0,
+      0,
+      0,
+      0,
+      null
+    ],
+    "units": [
+      0,
+      0,
+      0,
+      0,
+      null
+    ],
+    "coverage_gaps": 0,
+    "local_repair": 0,
+    "external": 4,
+    "4B": 0,
+    "reranker": 0
+  },
+  "known_boundaries": [
+    "Author receipts are assertions to verify, not independent proof.",
+    "R8 success cannot auto-pass R17 or close four external targets.",
+    "R17 prior independent pass used a narrower contract and is not controlling under the current source/report-quality protocol.",
+    "The bound DELL pack exposes passages and URLs, but EV-to-source one-to-one mapping must be proven; otherwise semantic source support is NOT_ASSESSABLE.",
+    "Qualified-human decisions remain a separate non-agent gate."
+  ],
+  "result_digest": "024d0dc0ade945ac4df7f0bb08d5d2229fc585c697f3c6a2f87985482d46491f"
+}

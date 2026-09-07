@@ -1,0 +1,121 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_typed_metric_and_product_intent_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-TYPED-INTENT-CANDIDATE-RANKING-V1.4",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_0.json",
+  "parent_policy_sha256_lf": "951a91d3cb2c4f492a4d434171d226c084f3c3b4df45db9e38671b0ac37024f2",
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_4.json",
+    "query_atom_eval_sha256_lf": "c118025358d7b423a77ef515d15a9e5eeea1f6c8edd58090c6943132f02d9cdc",
+    "retrieval_need_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_retrieval_need_compiler_policy_v1_1.json",
+    "retrieval_need_policy_sha256_lf": "e98f38c31a6e579b41004d3cad21d1ea2d81159a4d47083a9a9245cd7071f95e",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_0.json",
+    "financial_intent_ontology_sha256_lf": "1a1cc94d10b13107e9b7e6c4c474b2206e49312e870d780f20e425e71b2bbcc0"
+  },
+  "candidate_contract_overrides": {
+    "rank_authority_object_kinds": ["claim", "metric_row"],
+    "bounded_parent_context_attached_only_after_child_selection": true,
+    "typed_metric_row_exact_route": true,
+    "typed_metric_alias_route": true,
+    "typed_metric_alias_route_uses_request_metric_intent_only": true,
+    "typed_metric_alias_route_prefers_direct_label_match_then_latest_eligible_publication": true,
+    "typed_metric_product_alias_groups_require_one_match_per_group": true,
+    "unrequested_metric_cues_suppressed_when_proxy_forbidden": true,
+    "industry_extensions_are_versioned_ontology_data_not_core_branches": true,
+    "metric_row_role_surface_excludes_identity_and_table_title_metadata": true,
+    "judged_role_metrics_cover_all_registered_positive_and_hard_negative_labels": true,
+    "candidate_pool_role_metrics_reported_separately": true,
+    "rerank_each_candidate_against_all_needs": true,
+    "each_reranker_selects_its_own_best_need": true,
+    "persist_full_reranker_order_and_best_need": true,
+    "typed_route_proof_expectations": [
+      {
+        "atom_id": "S1C_ATOM_02_DELL_REPORTED_RESULTS",
+        "route_id": "typed_intent_alias_groups",
+        "must_recall_object_ids": ["COBJ::67d2965825d6516f6f10b7a7"],
+        "maximum_rank": 24,
+        "business_meaning": "DELL AI-server revenue must enter the candidate pool from request metric and product intent, not from a qrel or answer URL."
+      },
+      {
+        "atom_id": "S1C_ATOM_16_NVDA_CASH_GENERATION",
+        "route_id": "typed_metric_row_exact",
+        "must_recall_object_ids": ["COBJ::b218c5e03a722fedcb751f1a"],
+        "maximum_rank": 1,
+        "business_meaning": "The exact operating-cash-flow row must outrank lease payments, free-cash-flow and financing rows when proxies are forbidden."
+      },
+      {
+        "atom_id": "S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+        "route_id": "typed_intent_alias_groups",
+        "must_recall_any_object_ids": [
+          "COBJ::0065ea7ccdb7dc162734bf2f",
+          "COBJ::446f4a4bcb2e34a40fd756f6",
+          "COBJ::c258cca96ef18c3120039390",
+          "COBJ::d95b81acddfe94fb88448a55"
+        ],
+        "must_exclude_object_ids": [
+          "COBJ::9d1465a3c3ef6fbe7cc56d9a",
+          "COBJ::490edbee47ec81685b83b9fd"
+        ],
+        "maximum_rank": 24,
+        "business_meaning": "Manufacturing supply and capacity must be distinguishable from commercial-paper or market-capacity homonyms."
+      }
+    ]
+  },
+  "decision_gate_overrides": {
+    "positive_target_in_head_minimum_rate": 0.8,
+    "judged_positive_role_compatible_minimum_rate": 0.8,
+    "judged_hard_negative_suppression_minimum_rate": 1.0
+  },
+  "token_budget_basis_overrides": {
+    "bge_reranker": {
+      "node_purpose": "Re-score the bounded candidate union after typed metric and product alias routes change which objects are naturally recalled.",
+      "input_scale": "Eighteen atoms, no more than ten needs per atom and ninety-six candidates per atom; every candidate is scored against every bounded need.",
+      "required_outputs": ["one finite score per candidate-need pair", "best need identity per candidate", "complete candidate ordering"],
+      "schema_burden": "flat pair scores plus deterministic all-need aggregation and typed-route receipts",
+      "materiality_and_quality_risk": "without exact operating-cash-flow and product-domain aliases, a semantic reranker receives the wrong candidate set and cannot recover missing evidence",
+      "comparable_run_evidence": "the frozen v1.3 union missed DELL AI-server reported results, ranked NVDA operating cash flow at 38 and placed capacity homonyms in the head",
+      "reasoning_profile": "local cross-encoder scoring; no generation, network access or training",
+      "stop_and_truncation": "maximum 1024 tokens per pair, batch 2, bounded need/candidate matrix, fail on score-count or identity drift"
+    },
+    "qwen_reranker": {
+      "node_purpose": "Independently test whether typed candidate recall improves Qwen head ordering without making the reranker a financial authority.",
+      "input_scale": "Same bounded candidate-need matrix as BGE over eighteen development atoms.",
+      "required_outputs": ["one finite score per candidate-need pair", "best need identity per candidate", "complete candidate ordering"],
+      "schema_burden": "instruction-aware local scoring followed by deterministic aggregation",
+      "materiality_and_quality_risk": "generic relevance can still prefer a semantically related wrong metric; final intent and Evidence gates remain independent",
+      "comparable_run_evidence": "v1.3 all-need reranking did not improve head quality because the earliest failure was typed intent recall and discrimination",
+      "reasoning_profile": "local reranker shadow; no generation, network access or training",
+      "stop_and_truncation": "maximum 1024 tokens per pair, batch 2, bounded need/candidate matrix, fail on score-count or identity drift"
+    }
+  },
+  "authority_overrides": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_requires_result": true,
+    "hidden_qualification_authorized": false,
+    "s1_complete_claimed": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false
+  },
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "the label-only replay improved observed useful@10 from 6/15 to 13/15 but exposed 38 confirmed hard negatives in the first ten",
+      "DELL reported AI-server results were absent from the frozen union, so no reranker or Evidence evaluator could recover them",
+      "NVDA operating cash flow was present only at rank 38 because operating-lease and free-cash-flow rows shared generic cash terminology",
+      "capacity terms crossed manufacturing supply, cloud leases, commercial paper and market-risk domains",
+      "all three failures share one provider-neutral typed-intent boundary rather than three case-specific phrase patches"
+    ],
+    "not_changed": [
+      "compiled object population",
+      "kernel and hard identity-period-source constraints",
+      "local embedding and reranker model identities",
+      "candidate and Evidence authority boundaries"
+    ],
+    "labels_joined_after_candidate_generation_and_all_model_scoring": true,
+    "no_gold_identity_or_answer_url_in_query": true,
+    "v1_0_through_v1_3_results_remain_immutable": true,
+    "single_pre_registered_typed_intent_attempt_before_disposition": true
+  }
+}

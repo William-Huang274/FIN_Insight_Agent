@@ -1,0 +1,142 @@
+{
+  "schema_version": "fin_ia_s1_external_source_candidate_review_plan_v1_0",
+  "status": "approved_internal_engineering_candidate_review",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-DIRECT-SOURCE-CANDIDATE-REVIEW-V1.0",
+  "ladder_terminal_ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_capture/fin013-dell-direct-r1-20260824-ca4adff7/terminal_result.json",
+  "ladder_terminal_sha256": "47725c2ebcab297fe1a31c3665da27f790ff484164f07ebfed17a111fc724a61",
+  "ladder_terminal_result_digest": "6a522682d9e10ceadf1687d0032e6482ee999828b5b0866d19258df2dba661cd",
+  "source_use_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_source_strength_and_claim_use_policy_v1_0.json",
+  "source_use_policy_sha256": "d55b813321210a2de33312a900912bf925649ece003d70608066c26d05bb8283",
+  "original_proposal_dispositions": [
+    {
+      "candidate_proposal_digest": "af51b97caa4bfe7a87ede5426e285ed6ae10c2f442f8a6c32d0eb5e85feb1ecd",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "pt-dell-2025-bundled-recommended-price",
+      "reason_zh": "自动摘录过长；改用同一 immutable PDF 中 2025-03-12 Dell 推荐价、硬件及服务边界的精确子串。"
+    },
+    {
+      "candidate_proposal_digest": "910f207bc7775da8639752b4001e49cf0d2247de7b635eb6d2918ad00784f29b",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "pt-dell-two-xe9680-h100-configuration",
+      "reason_zh": "改用同一 capture 中两台 XE9680 的处理器、内存、存储和 H100 GPU 组件精确子串，避免把使用时长段落当成配置证据。"
+    },
+    {
+      "candidate_proposal_digest": "a7385bb77386dbbde9bbecf9f515348559b85255ef7a27e1249953564c1168b8",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "mississippi-jsu-four-xe9680-systems",
+      "reason_zh": "自动摘录混入前一合同；改用 JSU 四套系统及 Dell XE9680/H100 配置的连续原文。"
+    },
+    {
+      "candidate_proposal_digest": "420ed8c5eb6836ea480761b78caed74893db1b8dde1c739e56b7c4ac73c6b6f8",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "mississippi-jsu-bundled-contract-value",
+      "reason_zh": "自动候选误选 Epic 合同；改用同一采购 capture 下一页的四套系统、安装培训、五年支持与总合同额。"
+    },
+    {
+      "candidate_proposal_digest": "13ff3f95eecb190c1b94a95c960e0a972be67b935288010118b67279892eb0e9",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "可保留全球 AI server 2026 增长预测作为 locator-level 观察，但本 terminal 内没有第二个独立行业来源满足 analyst context 的 promotion 门；不得据此形成 Dell 台数或份额 Evidence。"
+    },
+    {
+      "candidate_proposal_digest": "376e95794b6e8749e9a6fcea10182a5a8cfe314a6260b0c51885b14de796d0b2",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "该段主要讨论 Dell PC、AI server orders 与 backlog，既不是单位销量，也没有可验证的 Dell shipment share。"
+    },
+    {
+      "candidate_proposal_digest": "12eb20841f319f8f56c87ce7e74ca00fecb8cee1ef54961a7201466a195d992c",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "nvidia-dell-blackwell-current-partnership-and-shipping",
+      "reason_zh": "用同一 NVIDIA 官方 capture 的连续原文同时保留当前合作、GB200 规模出货、单周 GPU shipping scale 与六周部署案例，并明确不推断私有配额。"
+    },
+    {
+      "candidate_proposal_digest": "5735f2545a880bc0e94eaeadf1d04a261119a6979bde188e96e3149e6739f174",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与已选择的同一 NVIDIA segment 高度重叠；避免同一来源被重复计作合作与交付两份独立 Evidence。"
+    }
+  ],
+  "reviewed_candidate_specs": [
+    {
+      "review_candidate_key": "pt-dell-2025-bundled-recommended-price",
+      "source_id": "PUBLIC::DELL-EXT::329F1654BF36A1B63B37",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "For the Dell AI Factory on-premises solution, we received a quote the using the Dell recommended price. On March 12, 2025, Dell quoted $757,231 as the purchase price for the hardware. The quote included 5-year ProSupport and Next Business Day Onsite Service for the servers and switches and ProDeploy Plus for the servers. Dell defines recommended price as a price that serves as a starting point for potential buyers. It represents the cost immediately accessible to companies, even if they are not existing customers, and essentially functions as a suggested retail price for their products.",
+      "origin_candidate_proposal_digests": [
+        "af51b97caa4bfe7a87ede5426e285ed6ae10c2f442f8a6c32d0eb5e85feb1ecd"
+      ],
+      "claim_use": "bounded_target_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [
+        "PUBLIC::DELL-EXT::B6A8601D8D3E8A4243BA"
+      ],
+      "business_reason_zh": "形成一个 2025 年可观察的 Dell 推荐价样本；它包含两台 XE9680、交换机及多年支持/部署，不能除以服务器数量后称为单机成交 ASP，也不是 Dell 公司 ASP。"
+    },
+    {
+      "review_candidate_key": "pt-dell-two-xe9680-h100-configuration",
+      "source_id": "PUBLIC::DELL-EXT::329F1654BF36A1B63B37",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "The two PowerEdge XE9680 GPU worker nodes each have two 48-core Intel Xeon Platinum 8468 processors, 1,024GB memory, 44.8 TB of raw capacity storage, and an NVIDIA HGX H100 8-GPU assembly.",
+      "origin_candidate_proposal_digests": [
+        "910f207bc7775da8639752b4001e49cf0d2247de7b635eb6d2918ad00784f29b"
+      ],
+      "claim_use": "bounded_target_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [
+        "PUBLIC::DELL-EXT::B6A8601D8D3E8A4243BA"
+      ],
+      "business_reason_zh": "建立同一公开 quote 对应的可观察硬件组合，使价格样本和配置边界可复核；不代表 Dell 所有 AI server 配置。"
+    },
+    {
+      "review_candidate_key": "mississippi-jsu-four-xe9680-systems",
+      "source_id": "PUBLIC::DELL-EXT::B6A8601D8D3E8A4243BA",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "Jackson State University (“JSU”) requests approval to enter into an agreement with Teklinks, Inc. dba CSpire Business (“Cspire”) for the purchase of four (4) high performance computer systems for the purpose of research and teaching utilizing Artificial Intelligence and Machine Learning. Contractor’s Legal Name: TEKLINKS, INC. DBA C SPIRE BUSINESS History of Contract: This is a new agree ment. Specific Type of Contract: Purchase agreement. Purpose: The purpose of this agreement is to purchase four (4) fully integrated computer systems that will be designed and produced according to university specifications. The unique systems will feature Dell’s PowerEdge XE9680 technology utilizing the latest Intel Xeon Platinum 8468 processors, NVIDIA HGX H100 GPUs, Dell’s Advanced Cluster Engine management software and other high-level components.",
+      "origin_candidate_proposal_digests": [
+        "a7385bb77386dbbde9bbecf9f515348559b85255ef7a27e1249953564c1168b8"
+      ],
+      "claim_use": "bounded_market_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "提供一个政府公开采购中的四套 XE9680/H100 系统观测；它只证明该交易数量，不证明 Dell 当期公司出货量或市场份额。"
+    },
+    {
+      "review_candidate_key": "mississippi-jsu-bundled-contract-value",
+      "source_id": "PUBLIC::DELL-EXT::B6A8601D8D3E8A4243BA",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "Scope of Work: CSpire will provide (4) high performance computer systems, installation, training, and a five (5) year maintenance and support. Term of Contract: The agreement is for the immediate one-time purchase and installation of the equipment. However, under the included Maintenance and Support plan, JSU shall receive training and support services for the period of five (5) years from the date the equipment is installed. Contract Amount: The total contract cost for the purchase of the equipment, delivery, installation, training and the five (5) year maintenance and support services plan is $2,278,577.28.",
+      "origin_candidate_proposal_digests": [
+        "420ed8c5eb6836ea480761b78caed74893db1b8dde1c739e56b7c4ac73c6b6f8"
+      ],
+      "claim_use": "bounded_market_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "将四套系统与交付、安装、培训及五年支持的总合同值绑定，作为有界交易样本；禁止把总额直接当作四台裸机价格或 Dell ASP。"
+    },
+    {
+      "review_candidate_key": "nvidia-dell-blackwell-current-partnership-and-shipping",
+      "source_id": "PUBLIC::DELL-EXT::2184F13EB685F627C757",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "Dell Technologies is a leader in this renaissance. Dell and NVIDIA have partnered for decades and continue to push the pace of innovation . In its last earnings call, Dell projected that its AI server business will grow at least $15 billion this year.\n\n“We’re on a mission to bring AI to millions of customers around the world,” said Michael Dell, chairman and chief executive officer, Dell Technologies, in a recent announcement at Dell Technologies World. “With the Dell AI Factory with NVIDIA, enterprises can manage the entire AI lifecycle across use cases, from training to deployment, at any scale.”\n\nThe latest Dell AI servers, powered by NVIDIA Blackwell, offer up to 50x more AI reasoning inference output and 5x improvement in throughput compared with the Hopper platform. Customers use them to generate tokens for new AI applications that will help solve some of the world’s biggest challenges, from disease prevention to advanced manufacturing.\n\nDell servers with NVIDIA GB200 are shipping at scale for a variety of customers, such as CoreWeave’s new NVIDIA GB200 NVL72 system. One of Dell’s U.S. factories can ship thousands of NVIDIA Blackwell GPUs to customers in a week. It’s why they were chosen by one of their largest customers to deploy 100,000 NVIDIA GPUs in just six weeks.",
+      "origin_candidate_proposal_digests": [
+        "12eb20841f319f8f56c87ce7e74ca00fecb8cee1ef54961a7201466a195d992c"
+      ],
+      "claim_use": "speaker_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "建立截至 2025-05-27 的 NVIDIA→Dell 当前合作、产品和公开 shipping scale；它证明公开交付能力与案例，不证明 Dell 从 NVIDIA 获得的私有 allocation、采购合同或公司 server units。"
+    }
+  ],
+  "plan_digest": "95118f1e62ff56ec12c1f513c774737846e597d1b0644563b0a037a21be535a9"
+}

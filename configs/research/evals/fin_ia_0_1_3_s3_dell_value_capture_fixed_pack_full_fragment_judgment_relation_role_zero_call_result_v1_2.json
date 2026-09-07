@@ -1,0 +1,86 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_full_fragment_judgment_relation_role_zero_call_result_v1_2",
+  "status": "zero_call_relation_support_and_fragment_local_disposition_pass",
+  "recorded_at": "2026-08-16T05:08:00+08:00",
+  "implementation_commit": "90ff0846576daab3281d2235fc46b2d0fe127e44",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "relation_policy_ref": "configs/research/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_surface_authority_v1_2.json",
+  "relation_policy_sha256": "54e5a8c58db9b59ee7bc9c20a9f9f2ca826f4dbe75854f39a5ed29c472a6f8ea",
+  "replay_fixture_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_full_fragment_chat_r2_submitted_fragments_v1_0.json",
+  "replay_fixture_sha256": "74dcbd9264e3fe9789d7f4828711d44e582d258d95ddd3a08cb7a3418407601a",
+  "runner_ref": "scripts/research/run_s3_current_research_consumer_canary.py",
+  "runner_sha256": "f5edab97e27dce9b9faff18eec7e22b26e71200bf11aad7140117bd56f4c9de1",
+  "loop_implementation_ref": "src/sec_agent/research/bounded_finance_loop.py",
+  "loop_implementation_sha256": "dfc0f6352998df9a643db5265ee293dde47374fb926cf066ae2113992bcae41b",
+  "immutable_predecessor": {
+    "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_1.json",
+    "result_sha256": "4b176444ff751b453646f969b9279cc5c9e98311c02d7b238580a0f7d4746fdb",
+    "result_digest": "e636dc644dd0f9acfbbdeae03e6476b37ab272e376c79a4b42a6500d0ed2eacf",
+    "assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_failure_assessment_v1_1.json",
+    "assessment_sha256": "57d798ba444c2fa525516ba01ca48e974ecd007e47efca1a8bef79e0187cba1a",
+    "reuse_in_full_judgment_authorized": false
+  },
+  "research_input_digest": "f6359b3a9684f78a0b5b7bdb688e6d847069c7bc029572f164dcb390a61f9854",
+  "initial_fragment_context_digest": "bf083d60c2f0b7ef8fc695ca527d253c9f2fc318c245c172d7b9183d7bde7c2a",
+  "fragment_context_digests": {
+    "submit_research_thesis": "bf083d60c2f0b7ef8fc695ca527d253c9f2fc318c245c172d7b9183d7bde7c2a",
+    "submit_research_mechanism": "de8e4a3f2344f387cb30ee67fac71b29b977121eb67cb88bf44aa350db59ecc0",
+    "submit_research_counterargument_and_wwc": "b3919e730d080cb5c4667c69a356f1cccfa61def43b9a3fcdc72158790cfb391"
+  },
+  "fragment_tool_schema_digests": {
+    "submit_research_thesis": "111927bbde52ae2722cf209dffef6dd1e4fff6135922c7c65f9b98c4880c8cb4",
+    "submit_research_mechanism": "a33c61230da1af1e6fd1c1d7e7b8e90b7a54ec8bf4c02671f80862525b1d0857",
+    "submit_research_counterargument_and_wwc": "b67a4c3ea337e7816a25bd331b3e5972982da43250a28b46707dd5971358181d"
+  },
+  "relation_role_contract": {
+    "old_policy_saved_R2_mechanism_failure": "finance_loop_micro_required_authority_missing",
+    "saved_R2_thesis_replay_pass": true,
+    "saved_R2_mechanism_replay_pass": true,
+    "saved_R2_context_role_preserved": true,
+    "multi_driver_required_support_refs": [
+      "EV::0063F22F643B94ED"
+    ],
+    "context_only_required_support_mutation_failure": "finance_loop_micro_required_authority_missing",
+    "context_promoted_to_support_by_harness": false,
+    "fragment_status_copied_from_thesis": false
+  },
+  "surface_contract": {
+    "final_deliverable_QF_surface_preserved": true,
+    "model_owned_atom_value_surface_forbidden": true
+  },
+  "terminal_compilation": {
+    "judgment_digest": "1a7df7348a56139241b7ba441d18ce78f01410dfa2e92cb1dab57ce984793ecb",
+    "judgment_status": "bounded_support",
+    "inference_authority": "bounded_inference",
+    "claim_scope": "multi_scope",
+    "financial_scope": "multi_scope_financial",
+    "causal_bridge_authority": "multi_driver_context_only",
+    "harness_generated_research_judgment": false
+  },
+  "fresh_process_count": 2,
+  "fresh_process_results_byte_equivalent": true,
+  "verification": {
+    "focused_tests": 62,
+    "full_repository_tests": 334,
+    "python_compileall_pass": true,
+    "active_python_files": 127,
+    "active_frontend_files": 8,
+    "active_runtime_resources": 10,
+    "forbidden_references": 0,
+    "secret_scan_files": 6637,
+    "secret_scan_findings": 0
+  },
+  "execution": {
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "next_authorized_scope": "one_clean_synced_exact_once_DELL_value_capture_full_three_fragment_analysis_submission_Chat_R3",
+  "known_boundary": "This proves deterministic relation support roles, saved R2 fragment replay, conservative terminal aggregation and unchanged value-surface rendering only. It does not prove a natural complete Judgment, dynamic Agentic Research, five units, generalization, S3 acceptance or release.",
+  "result_digest": "c4060585176f0765b181dbf80b58d5205a9a1e52f443dce4532fed1efdb950a5"
+}

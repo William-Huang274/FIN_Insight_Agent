@@ -1,0 +1,375 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "capture_first": true,
+    "causal_attribution_authorized": false,
+    "complete_s1_qualified": false,
+    "cuda_vector_execution_inherited_from_bound_ranking": true,
+    "development_case_only": true,
+    "generation_model_calls": 0,
+    "hard_negative_promoted": false,
+    "hidden_qualification_authorized": false,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "positive_relation_joined_after_ranking": true,
+    "s1_complete_claimed": false
+  },
+  "bound_inputs": {
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "compiled_objects_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "parent_documents_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v2/documents.jsonl",
+    "parent_documents_sha256": "f24d72cd6a659a43eb183c21b353f07a2598ba8973fed1a5edd1d6698f25ff3b",
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_capture_bound_supplement_policy_v1_0.json",
+    "policy_sha256_lf": "a4687b6216b669dc6100ce2b49213c34b0085585a2ba276123591b1262c80362",
+    "predecessor_pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a",
+    "predecessor_pack_ref": "data/workbench_private/fin_0_1_3_s1d_dell_official_pdf_successor/zero-call-r1/objects/fin-0.1.3/s1d-dell-official-pdf-successor/dell/v1/8c/24/8c245932331bc63e4349ad91735c10a854a0b74db73a460a31b52df2e1dba4d9.json",
+    "predecessor_pack_sha256": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+    "ranking_full_ref": "data/workbench_private/fin_0_1_3_s1_vs4_dell_supplement_candidate_ranking/v1_3/full_result_e315e8460282130604d7cec5511b094d340afe67b2abc163a177149c5539d9a9.json",
+    "ranking_full_sha256": "28ee0be0942a20ba19b263c6c2f843d9dda3ea2ec9c59d83f8a01cbb63c8190c",
+    "ranking_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_candidate_ranking_result_v1_3.json",
+    "ranking_summary_sha256_lf": "4ad4b577227cabeda7185d72a4a83d9011feb95ace18e9a830799382243f9918",
+    "source_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v2/records.jsonl",
+    "source_records_sha256": "de3e7e7f3c5aa8ed117a58e2721a424355c37d7477b87060bfa8b8b9e18f7ab2"
+  },
+  "business_findings": [
+    "Dell 自身已明确披露 AI 动态提高库存、应收和应付；旧系统把这一事实误留在营运资金 gap 外。",
+    "Dell 的风险披露已能直接反驳“强订单必然高质量兑现”：大单会占用营运资金，并暴露于定价、延迟、取消和过时库存风险。",
+    "TSMC 管理层确认封装产能紧张、瓶颈工具和测试设备短缺；这能支持行业供给反方，但不能证明 Dell 的分配量或释放时点。",
+    "三条旧宽 chunk/整页证据被五条精确 claim 继任，分析师提问和同页无关句不再获得管理层事实权限。",
+    "营运资金缺口只被窄化为产品级金额和归属桥未披露，未被静默删除或冒充所有公开信息均不存在。"
+  ],
+  "coverage_delta": {
+    "added_capture_bound_claim_count": 5,
+    "candidate_text_promoted_count": 0,
+    "closed_gap_count": 0,
+    "narrowed_gap_count": 1,
+    "numeric_authority_granted_count": 0,
+    "predecessor_evidence_count": 20,
+    "predecessor_gap_count": 14,
+    "retired_broad_or_legacy_evidence_count": 3,
+    "successor_evidence_count": 22,
+    "successor_gap_count": 14
+  },
+  "decision": {
+    "complete_s1_qualified": false,
+    "next_owning_work": "Run equivalent natural Coverage-driven paths for MU and NVDA, then execute VS5 composite qualification.",
+    "numeric_fact_authorized": false,
+    "runtime_route_promotion_authorized": false,
+    "successor_pack_authorized": true,
+    "vs4_dell_status": "bounded_capture_bound_supplement_ready"
+  },
+  "gate_results": {
+    "all_positive_objects_bound_to_successor_evidence": true,
+    "all_reviewed_objects_capture_bound": true,
+    "broad_or_legacy_evidence_replaced": true,
+    "candidate_generation_and_role_gate_passed": true,
+    "hard_negative_false_accept_count": 0,
+    "vs4_dell_vertical_integrated": true,
+    "working_capital_gap_narrowed_not_closed": true
+  },
+  "proposition_rows": [
+    {
+      "accepted_compiled_object_ids": [
+        "COBJ::aea5eaba375b4db7737004fd"
+      ],
+      "accepted_evidence_item_digests": [
+        "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"
+      ],
+      "atom_id": "S1_VS4_DELL_ISSUER_COUNTER",
+      "candidate_decision_counts": {
+        "accepted": 1,
+        "needs_review": 119,
+        "rejected": 8,
+        "unjudged": 0
+      },
+      "candidate_text_promoted": false,
+      "coverage_state": "issuer_counterevidence_established",
+      "facet_id": "issuer_counterevidence",
+      "hard_negative_accepted_object_ids": [],
+      "hard_negative_reviewed_object_count": 2,
+      "known": [
+        "强订单可能伴随竞争定价、营运资金占用、订单取消和库存风险。"
+      ],
+      "numeric_authority": false,
+      "positive_accepted_object_count": 1,
+      "positive_reviewed_object_count": 1,
+      "proposition_id": "PROP::60726E275CE69A62C60A881B",
+      "proposition_ready": true,
+      "slot_id": "counterevidence_and_what_would_change",
+      "unknown": [
+        "风险发生概率和已实现损失金额未披露。"
+      ]
+    },
+    {
+      "accepted_compiled_object_ids": [
+        "COBJ::07ef64bd2d61623d1f4d9262",
+        "COBJ::bb4b07ecca957f89a598fc06",
+        "COBJ::dbe25978af4e48df2d32a099"
+      ],
+      "accepted_evidence_item_digests": [
+        "c658e8fc4d456bb686913934d49e302a48bfa6bd87380c9760f39a47c3c18a8a",
+        "f18d8863b320f5424e37d2f6313e453498bac85dbb53e2675e88d9641c2c1afe",
+        "f1d99400c1e8471b1343272abafb3f7eb573a8d55c8f4d2326a1d9298cd97041"
+      ],
+      "atom_id": "S1_VS4_DELL_UPSTREAM_COUNTER",
+      "candidate_decision_counts": {
+        "accepted": 3,
+        "needs_review": 81,
+        "rejected": 13,
+        "unjudged": 0
+      },
+      "candidate_text_promoted": false,
+      "coverage_state": "ecosystem_supply_counterevidence_established_subject_allocation_gap_remains",
+      "facet_id": "upstream_capacity_context",
+      "hard_negative_accepted_object_ids": [],
+      "hard_negative_reviewed_object_count": 3,
+      "known": [
+        "TSMC 管理层确认封装产能紧张、瓶颈工具和测试设备短缺。"
+      ],
+      "numeric_authority": false,
+      "positive_accepted_object_count": 3,
+      "positive_reviewed_object_count": 3,
+      "proposition_id": "PROP::2199CB753579717CF6062695",
+      "proposition_ready": true,
+      "slot_id": "capacity_inputs_execution",
+      "unknown": [
+        "这些行业约束与 Dell 的具体分配、产品映射和释放时点未被证明。"
+      ]
+    },
+    {
+      "accepted_compiled_object_ids": [
+        "COBJ::a3e407a65271add35e65e6b8",
+        "COBJ::aea5eaba375b4db7737004fd"
+      ],
+      "accepted_evidence_item_digests": [
+        "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6",
+        "e406cfab513c214ccdbc5ada82db3e4b5a0641e1561f2d46daf639f67e2e01ed"
+      ],
+      "atom_id": "S1_VS4_DELL_WORKING_CAPITAL",
+      "candidate_decision_counts": {
+        "accepted": 2,
+        "needs_review": 121,
+        "rejected": 5,
+        "unjudged": 0
+      },
+      "candidate_text_promoted": false,
+      "coverage_state": "qualitative_mechanism_and_direction_established_quantification_gap_remains",
+      "facet_id": "working_capital_risk",
+      "hard_negative_accepted_object_ids": [],
+      "hard_negative_reviewed_object_count": 2,
+      "known": [
+        "Dell 披露 AI 动态提高库存、应收和应付。",
+        "Dell 披露大额 AI 订单会占用更多营运资金并带来取消、延迟和过时库存风险。"
+      ],
+      "numeric_authority": false,
+      "positive_accepted_object_count": 2,
+      "positive_reviewed_object_count": 2,
+      "proposition_id": "PROP::C0949797198C8F5B3A3B3980",
+      "proposition_ready": true,
+      "slot_id": "cash_conversion_balance_sheet",
+      "unknown": [
+        "AI 产品级营运资金金额、周转天数桥和各科目具体增量仍未披露。"
+      ]
+    }
+  ],
+  "recorded_at": "2026-08-18",
+  "result_digest": "7d751f28234f35c0404cf1939fd7e44fe615d1a42081ac0e62bc6d629f1f9e50",
+  "schema_version": "fin_ia_s1_vs4_dell_supplement_vertical_summary_v1_0",
+  "slice_id": "FIN-0.1.3-S1-VS4-DELL-COVERAGE-DRIVEN-SUPPLEMENT-V1.0",
+  "status": "vs4_dell_capture_bound_supplement_vertical_materialized",
+  "storage": {
+    "full_result_digest": "7d751f28234f35c0404cf1939fd7e44fe615d1a42081ac0e62bc6d629f1f9e50",
+    "full_result_ref": "data/workbench_private/fin_0_1_3_s1_vs4_dell_supplement_vertical/v1_0/full_result_7d751f28234f35c0404cf1939fd7e44fe615d1a42081ac0e62bc6d629f1f9e50.json",
+    "full_result_sha256": "1ab96778cdcf44e796b618441e79888e63a4b2ecf7f786e7ede4ac6e3baec5b0",
+    "successor_pack_payload_digest": "c61ea7a02634ec21944ec6edc9b127c474e3474116dfe501932455664fc3dc23",
+    "successor_pack_ref": "data/workbench_private/fin_0_1_3_s1_vs4_dell_supplement_vertical/v1_0/packs/dell/c61ea7a02634ec21944ec6edc9b127c474e3474116dfe501932455664fc3dc23.json",
+    "successor_pack_sha256": "5b60f38cfbf455dda1fc91126122d025ea08b8ac5c52a26453002df60b15e68c"
+  },
+  "workbench_projection": {
+    "authority": {
+      "candidate_is_not_evidence": true,
+      "capture_first": true,
+      "causal_attribution_authorized": false,
+      "generation_model_calls": 0,
+      "hard_negative_promoted": false,
+      "network_calls": 0,
+      "numeric_authority": false,
+      "positive_relation_joined_after_ranking": true,
+      "s1_complete_claimed": false
+    },
+    "case_key": "DELL",
+    "coverage_delta": {
+      "added_capture_bound_claim_count": 5,
+      "candidate_text_promoted_count": 0,
+      "closed_gap_count": 0,
+      "narrowed_gap_count": 1,
+      "numeric_authority_granted_count": 0,
+      "predecessor_evidence_count": 20,
+      "predecessor_gap_count": 14,
+      "retired_broad_or_legacy_evidence_count": 3,
+      "successor_evidence_count": 22,
+      "successor_gap_count": 14
+    },
+    "gap_receipts": [
+      {
+        "action": "narrow",
+        "after": {
+          "attempted_lane_ids": [
+            "S1_VS4_DELL_WORKING_CAPITAL",
+            "S1_VS4_DELL_ISSUER_COUNTER"
+          ],
+          "business_reason_zh": "Dell 已披露 AI 动态提高库存、应收和应付，并说明大单会占用营运资金；但未披露 AI 产品级金额、周转天数桥或各科目由 AI 导致的具体增量。",
+          "facet_id": "ai_working_capital_absorption",
+          "gap_code": "magnitude_and_product_attribution_not_disclosed",
+          "gap_id": "dell-gap-ai-working-capital",
+          "slot_id": "cash_conversion_balance_sheet",
+          "supplement_direction_zh": "正式研究可使用方向和机制；如需量化归属，只接受 Dell 后续披露或独立受控估算，并明确标注为估算。"
+        },
+        "before": {
+          "attempted_lane_ids": [
+            "dell_cash_balance_parent",
+            "dell_cash_flow_parent",
+            "dell_cash_capex_parent",
+            "dell_counter_concentration_parent"
+          ],
+          "business_reason_zh": "总表能看到应收、库存、应付和经营现金流，但不能把变动量化归因到 AI 大单。",
+          "facet_id": "ai_working_capital_absorption",
+          "gap_code": "metric_not_disclosed",
+          "gap_id": "dell-gap-ai-working-capital",
+          "slot_id": "cash_conversion_balance_sheet",
+          "supplement_direction_zh": "需要管理层营运资金解释或保持产品归属缺口。"
+        },
+        "classification": "authoritative_issuer_quantification_not_disclosed",
+        "eligible_as_blanket_public_information_absence": false,
+        "gap_id": "dell-gap-ai-working-capital",
+        "known_boundary": "这是权威发行人量化披露缺口，不等于所有公开评论、商业估计或私有渠道数据均不存在。",
+        "receipt_digest": "8386c8d21046dd6cfcc69152a08438df8c485463da54ff17fedd2c84d1d31e9e",
+        "route_checks": {
+          "commercial_estimate_or_private_data_may_exist": true,
+          "evidence_role_and_speaker_authority_checked": true,
+          "external_route_required_for_issuer_fact_authority": false,
+          "financial_reranking_executed": true,
+          "local_current_object_store_checked": true,
+          "official_issuer_capture_verified": true,
+          "request_scoped_candidate_generation_executed": true
+        },
+        "schema_version": "fin_ia_s1_gap_eligibility_receipt_v1_0"
+      }
+    ],
+    "projection_digest": "ee11dfee0ec3ce26dfec96ab23927892a6bb8530977612c6bca612e0c01d3cee",
+    "propositions": [
+      {
+        "accepted_compiled_object_ids": [
+          "COBJ::aea5eaba375b4db7737004fd"
+        ],
+        "accepted_evidence_item_digests": [
+          "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6"
+        ],
+        "atom_id": "S1_VS4_DELL_ISSUER_COUNTER",
+        "candidate_decision_counts": {
+          "accepted": 1,
+          "needs_review": 119,
+          "rejected": 8,
+          "unjudged": 0
+        },
+        "candidate_text_promoted": false,
+        "coverage_state": "issuer_counterevidence_established",
+        "facet_id": "issuer_counterevidence",
+        "hard_negative_accepted_object_ids": [],
+        "hard_negative_reviewed_object_count": 2,
+        "known": [
+          "强订单可能伴随竞争定价、营运资金占用、订单取消和库存风险。"
+        ],
+        "numeric_authority": false,
+        "positive_accepted_object_count": 1,
+        "positive_reviewed_object_count": 1,
+        "proposition_id": "PROP::60726E275CE69A62C60A881B",
+        "proposition_ready": true,
+        "slot_id": "counterevidence_and_what_would_change",
+        "unknown": [
+          "风险发生概率和已实现损失金额未披露。"
+        ]
+      },
+      {
+        "accepted_compiled_object_ids": [
+          "COBJ::07ef64bd2d61623d1f4d9262",
+          "COBJ::bb4b07ecca957f89a598fc06",
+          "COBJ::dbe25978af4e48df2d32a099"
+        ],
+        "accepted_evidence_item_digests": [
+          "c658e8fc4d456bb686913934d49e302a48bfa6bd87380c9760f39a47c3c18a8a",
+          "f18d8863b320f5424e37d2f6313e453498bac85dbb53e2675e88d9641c2c1afe",
+          "f1d99400c1e8471b1343272abafb3f7eb573a8d55c8f4d2326a1d9298cd97041"
+        ],
+        "atom_id": "S1_VS4_DELL_UPSTREAM_COUNTER",
+        "candidate_decision_counts": {
+          "accepted": 3,
+          "needs_review": 81,
+          "rejected": 13,
+          "unjudged": 0
+        },
+        "candidate_text_promoted": false,
+        "coverage_state": "ecosystem_supply_counterevidence_established_subject_allocation_gap_remains",
+        "facet_id": "upstream_capacity_context",
+        "hard_negative_accepted_object_ids": [],
+        "hard_negative_reviewed_object_count": 3,
+        "known": [
+          "TSMC 管理层确认封装产能紧张、瓶颈工具和测试设备短缺。"
+        ],
+        "numeric_authority": false,
+        "positive_accepted_object_count": 3,
+        "positive_reviewed_object_count": 3,
+        "proposition_id": "PROP::2199CB753579717CF6062695",
+        "proposition_ready": true,
+        "slot_id": "capacity_inputs_execution",
+        "unknown": [
+          "这些行业约束与 Dell 的具体分配、产品映射和释放时点未被证明。"
+        ]
+      },
+      {
+        "accepted_compiled_object_ids": [
+          "COBJ::a3e407a65271add35e65e6b8",
+          "COBJ::aea5eaba375b4db7737004fd"
+        ],
+        "accepted_evidence_item_digests": [
+          "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6",
+          "e406cfab513c214ccdbc5ada82db3e4b5a0641e1561f2d46daf639f67e2e01ed"
+        ],
+        "atom_id": "S1_VS4_DELL_WORKING_CAPITAL",
+        "candidate_decision_counts": {
+          "accepted": 2,
+          "needs_review": 121,
+          "rejected": 5,
+          "unjudged": 0
+        },
+        "candidate_text_promoted": false,
+        "coverage_state": "qualitative_mechanism_and_direction_established_quantification_gap_remains",
+        "facet_id": "working_capital_risk",
+        "hard_negative_accepted_object_ids": [],
+        "hard_negative_reviewed_object_count": 2,
+        "known": [
+          "Dell 披露 AI 动态提高库存、应收和应付。",
+          "Dell 披露大额 AI 订单会占用更多营运资金并带来取消、延迟和过时库存风险。"
+        ],
+        "numeric_authority": false,
+        "positive_accepted_object_count": 2,
+        "positive_reviewed_object_count": 2,
+        "proposition_id": "PROP::C0949797198C8F5B3A3B3980",
+        "proposition_ready": true,
+        "slot_id": "cash_conversion_balance_sheet",
+        "unknown": [
+          "AI 产品级营运资金金额、周转天数桥和各科目具体增量仍未披露。"
+        ]
+      }
+    ],
+    "readiness": {
+      "bounded_dell_supplement_ready": true,
+      "complete_research_ready": false,
+      "complete_s1_ready": false,
+      "numeric_fact_ready": false
+    },
+    "research_as_of": "2026-08-06",
+    "schema_version": "fin_ia_s1_supplement_workbench_projection_v1_0",
+    "status": "s1_supplement_vertical_ready"
+  }
+}

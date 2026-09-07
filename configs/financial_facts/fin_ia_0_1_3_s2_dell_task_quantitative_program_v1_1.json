@@ -1,0 +1,256 @@
+{
+  "schema_version": "fin_ia_s2_task_quantitative_program_v1_0",
+  "status": "approved_zero_call_task_quantitative_program",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "evidence_pack_binding": {
+    "case_key": "DELL",
+    "pack_ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+    "pack_sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+    "pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98"
+  },
+  "source_route_replay_binding": {
+    "full_result_ref": "data/workbench_private/fin_0_1_3_s1_source_route_truth_replay/dell-r1/full_result.json",
+    "full_result_sha256": "9c8c457e6001b8159bd7bce84f12b6fca72a529759e3f9ced67c18dcdfdeed0c",
+    "result_digest": "ec597ce1af6b924d34e9a9a8a5d1feee1da66d067a96967374352c069539e1fe"
+  },
+  "evidence_supports": [
+    {
+      "support_id": "SUPPORT::TRENDFORCE-2025-AI-SERVER-SHIPMENT-SCENARIOS",
+      "target_id": "EXTEV::0D41E6668218984B3A53",
+      "evidence_item_digest": "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6",
+      "expected_claim_use": "industry_exact_fact",
+      "expected_source_tier": "official_market_or_industry_primary",
+      "expected_publication_date": "2025-02-12",
+      "required_source_text_terms": [
+        "projected to grow by nearly 28% year-over-year",
+        "growth of AI server shipments to slow to 20-25%",
+        "The most optimistic scenario"
+      ]
+    }
+  ],
+  "research_estimates": [
+    {
+      "estimate_key": "global_ai_server_shipment_growth_2025_base",
+      "metric_id": "global_ai_server_shipment_growth",
+      "period_label": "calendar_year_2025_base_case",
+      "unit": "percent_year_over_year_growth",
+      "lower_bound": "27",
+      "central_value": "27.5",
+      "upper_bound": "28",
+      "method": "bounded_interpretation_of_nearly_28_percent_industry_forecast",
+      "assumption_refs": [
+        "ASSUMPTION::NEARLY-28-MEANS-27-TO-28-PERCENT"
+      ],
+      "support_ids": [
+        "SUPPORT::TRENDFORCE-2025-AI-SERVER-SHIPMENT-SCENARIOS"
+      ],
+      "eligible_slot_ids": [
+        "demand_volume_quality",
+        "pricing_mix_value_capture"
+      ],
+      "authored_by": "HARNESS::S2-BOUNDED-SCENARIO-COMPILER",
+      "confidence": "medium",
+      "target_company_direct_metric": false,
+      "claim_boundary_zh": "这是 TrendForce 全球 AI 服务器出货预测中‘接近 28%’的本地区间化表达，不是 Dell 销量、收入、份额、ASP 或已实现增长。"
+    },
+    {
+      "estimate_key": "global_ai_server_shipment_growth_2025_downside",
+      "metric_id": "global_ai_server_shipment_growth",
+      "period_label": "calendar_year_2025_downside_case",
+      "unit": "percent_year_over_year_growth",
+      "lower_bound": "20",
+      "central_value": "22.5",
+      "upper_bound": "25",
+      "method": "midpoint_of_published_industry_downside_range",
+      "assumption_refs": [
+        "ASSUMPTION::DOWNSIDE-MIDPOINT-OF-20-TO-25-PERCENT"
+      ],
+      "support_ids": [
+        "SUPPORT::TRENDFORCE-2025-AI-SERVER-SHIPMENT-SCENARIOS"
+      ],
+      "eligible_slot_ids": [
+        "demand_volume_quality",
+        "pricing_mix_value_capture"
+      ],
+      "authored_by": "HARNESS::S2-BOUNDED-SCENARIO-COMPILER",
+      "confidence": "medium",
+      "target_company_direct_metric": false,
+      "claim_boundary_zh": "20%–25% 是行业下行情景，不是 Dell 的台数、份额、收入或 PVM 结论；22.5% 只是可复算中点。"
+    }
+  ],
+  "scenarios": [
+    {
+      "scenario_key": "global_ai_server_shipment_2025_base",
+      "scenario_name": "2025 global AI server shipment base case",
+      "scenario_type": "base",
+      "time_horizon": "calendar_year_2025",
+      "assumption_refs": [
+        "ASSUMPTION::SUPPLY-CHAIN-OUTLOOK-REMAINS-STABLE"
+      ],
+      "output_estimate_keys": [
+        "global_ai_server_shipment_growth_2025_base"
+      ],
+      "eligible_slot_ids": [
+        "demand_volume_quality",
+        "pricing_mix_value_capture"
+      ],
+      "authored_by": "HARNESS::S2-BOUNDED-SCENARIO-COMPILER",
+      "target_company_direct_metric": false,
+      "claim_boundary_zh": "基准情景只描述全球行业量的外部边界，不能直接推出 Dell 的销量、收入、利润或供应分配。"
+    },
+    {
+      "scenario_key": "global_ai_server_shipment_2025_downside",
+      "scenario_name": "2025 global AI server shipment downside case",
+      "scenario_type": "downside",
+      "time_horizon": "calendar_year_2025",
+      "assumption_refs": [
+        "ASSUMPTION::GB200-GB300-RACK-SCALING-CHALLENGES",
+        "ASSUMPTION::TIGHTER-US-AI-CHIP-EXPORT-RULES",
+        "ASSUMPTION::CUSTOMER-SOLUTION-MIX-SHIFT"
+      ],
+      "output_estimate_keys": [
+        "global_ai_server_shipment_growth_2025_downside"
+      ],
+      "eligible_slot_ids": [
+        "demand_volume_quality",
+        "pricing_mix_value_capture"
+      ],
+      "authored_by": "HARNESS::S2-BOUNDED-SCENARIO-COMPILER",
+      "target_company_direct_metric": false,
+      "claim_boundary_zh": "下行情景用于压力测试需求和供给机制，不是 Dell 业绩预测，也不能关闭 Dell ASP、台数、PVM 或供应商配额缺口。"
+    }
+  ],
+  "typed_gap_dispositions": [
+    {
+      "gap_id": "dell-gap-capacity-release-timing",
+      "owning_stage": "S1",
+      "disposition": "retain_source_or_commercial_boundary",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "当前双边公开合作与案例交付能力已经可见，但没有 Dell 私有供应释放日期、配额或可用数量；继续保留来源或商业边界。"
+    },
+    {
+      "gap_id": "dell-gap-hbm-supply",
+      "owning_stage": "S1",
+      "disposition": "retain_source_or_commercial_boundary",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "上游 HBM 供给信息可作为行业背景，但没有 Dell 层面的数量、分配或可用时点。"
+    },
+    {
+      "gap_id": "dell-gap-capacity-utilization-yield",
+      "owning_stage": "S1",
+      "disposition": "retain_source_or_commercial_boundary",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "免费公开资料尚未形成可绑定到 Dell 的良率或利用率证据。"
+    },
+    {
+      "gap_id": "dell-gap-price-in-boundary",
+      "owning_stage": "S1_S2_boundary",
+      "disposition": "await_market_PIT_input",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "价格输入需要可追溯的时点数据或配置报价，不能由行业增速代替。"
+    },
+    {
+      "gap_id": "dell-gap-scenario-sensitivity",
+      "owning_stage": "S2",
+      "disposition": "bounded_scenario_added_direct_gap_retained",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "行业量基准与下行情景已进入有界 scenario，但它们不是 Dell 敏感性结论；直接缺口继续保留。"
+    },
+    {
+      "gap_id": "dell-gap-valuation-basis",
+      "owning_stage": "S1_S2_boundary",
+      "disposition": "await_market_PIT_input",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "估值基准需要截至日行情与一致口径分母，当前行业资料不具备该权威。"
+    },
+    {
+      "gap_id": "dell-gap-ai-working-capital",
+      "owning_stage": "S1_S2_boundary",
+      "disposition": "retain_numeric_input_gap",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "公司整体营运资金事实存在，但 AI 订单独立的回款、库存和预付款没有可核验输入。"
+    },
+    {
+      "gap_id": "dell-gap-invalidation-threshold",
+      "owning_stage": "S3",
+      "disposition": "defer_threshold_authorship_to_S3",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "失效阈值属于研究判断设计；S2 只提供事实、区间和公式输入。"
+    },
+    {
+      "gap_id": "dell-gap-observable-quarterly-threshold",
+      "owning_stage": "S3",
+      "disposition": "defer_threshold_authorship_to_S3",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "可观察季度阈值需要研究 Agent 基于已绑定事实提出并接受后续验证。"
+    },
+    {
+      "gap_id": "dell-gap-demand-pull-forward-digestion",
+      "owning_stage": "S1",
+      "disposition": "retain_source_or_commercial_boundary",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "行业需求仍强不等于 Dell 不存在提前拉货或消化期，需客户或公司时序证据。"
+    },
+    {
+      "gap_id": "dell-gap-pricing-asp",
+      "owning_stage": "S1_S2_boundary",
+      "disposition": "retain_numeric_input_gap",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "R4 已加入一条 Dell 推荐捆绑报价和一条含交付、培训及五年服务的公共采购合同；它们缩窄价格观察面，但不是裸机成交 ASP 或 Dell 公司级 ASP，禁止相除或外推。"
+    },
+    {
+      "gap_id": "dell-gap-price-volume-mix-bridge",
+      "owning_stage": "S2",
+      "disposition": "bounded_scenario_added_direct_gap_retained",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "产品收入、行业销量情景和有界报价／采购样本可以进入 bridge surface，但 Dell 的可比 ASP、公司 units 与配置权重仍缺失，PVM 数值分解继续为空。"
+    },
+    {
+      "gap_id": "dell-gap-pricing-units",
+      "owning_stage": "S1_S2_boundary",
+      "disposition": "bounded_scenario_added_direct_gap_retained",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "R4 有单一高校项目四套 XE9680 系统的公开观察，但它不是 Dell 公司出货、订单或份额；行业增速也不能转换为 Dell 台数。"
+    },
+    {
+      "gap_id": "dell-gap-supplier-capacity-readthrough",
+      "owning_stage": "S1",
+      "disposition": "retain_source_or_commercial_boundary",
+      "closed": false,
+      "public_information_gap_authority": false,
+      "reason_zh": "Dell 与 NVIDIA 双向官方材料已证明当前合作、公开产品可用和案例级 shipping execution；仍不证明私有 allocation、合同、良率或 Dell 公司可用数量。"
+    }
+  ],
+  "task_readiness": {
+    "cell_id": "value_capture",
+    "minimum_reported_fact_count": 38,
+    "minimum_deterministic_derived_metric_count": 27,
+    "required_estimate_keys": [
+      "global_ai_server_shipment_growth_2025_base",
+      "global_ai_server_shipment_growth_2025_downside"
+    ],
+    "required_scenario_keys": [
+      "global_ai_server_shipment_2025_base",
+      "global_ai_server_shipment_2025_downside"
+    ],
+    "required_slot_ids": [
+      "demand_volume_quality",
+      "pricing_mix_value_capture"
+    ]
+  },
+  "known_boundary": "This zero-call successor rebinds the S2 task program to the 55-item DELL R4 Pack and carries its narrowed price, unit and current-relationship evidence into explicit gap dispositions. Industry ranges and public quote/procurement samples remain estimates or bounded observations; all fourteen Pack gaps stay open. The program does not infer target-company ASP, units, PVM, allocation or product profit and does not qualify S1, S2, S3, the full DELL case, Writer, Workbench or release."
+}

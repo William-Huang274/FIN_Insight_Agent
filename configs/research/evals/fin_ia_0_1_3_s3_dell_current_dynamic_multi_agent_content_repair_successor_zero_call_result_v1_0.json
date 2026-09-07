@@ -1,0 +1,44 @@
+{
+  "attempt_id": "FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-CONTENT-REPAIR-SUCCESSOR-ZERO-R7",
+  "checks": {
+    "R6_public_private_failure_and_authority_bound": true,
+    "R6_zero_provider_attempts_preserved": true,
+    "empty_optional_manifest_routes_to_fresh_provider": true,
+    "exact_five_repair_targets_preserved": true,
+    "first_role_provider_frontier_exact": true,
+    "lead_provider_frontier_accepts_empty_manifest": true,
+    "twelve_call_budget_unchanged": true,
+    "zero_model_provider_network_retrieval_calls": true
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retrieval_calls": 0
+  },
+  "failed_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_authority_v1_0.json",
+  "failed_authority_sha256": "2c60533874286d0e452a1c44a6934ed17356dd9f18b5bd7e5ea9bc2445d077bc",
+  "failed_private_full_result_digest": "68185e184998670b6641333de539b2928af9a7d5521cb5a21ad3225a4fda9283",
+  "failed_private_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-repair-live-r6-20260823T234000Z/full_result.json",
+  "failed_private_sha256": "fe59565a55f5792b38c9614712db0bcbfb50f69a913ca0154813415d69e93d39",
+  "failed_public_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_result_v1_0.json",
+  "failed_public_result_digest": "be2ff2b3e998ff48cc372343c30f85dff00fbd7434de67d033c873bfb7acff41",
+  "failed_public_sha256": "1211b30ff7be29f6306013d4a1cebfd07181378d74d94733f0705b663479e1cf",
+  "first_role_provider_frontier": "FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-CONTENT-REPAIR-SUCCESSOR-ZERO-R7-ROLE-FRONTIER-cash-conversion-repair-r1-draft",
+  "lead_provider_frontier": "FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-CONTENT-REPAIR-SUCCESSOR-ZERO-R7-LEAD-FRONTIER-lead-r1-draft",
+  "next_exact_frontier": "fresh_five_role_repair_then_one_lead_round",
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-repair-successor-zero-r7-20260823T235000Z/zero_call_full_result.json",
+  "private_result_sha256": "ec2999d5965f11b47c0183a0fc8b47495f439264d4fd705f9e4e78e0386b49ef",
+  "recorded_at": "2026-08-23T15:42:02+00:00",
+  "repair_targets": [
+    "AGENT::CASH_CONVERSION",
+    "AGENT::COUNTEREVIDENCE",
+    "AGENT::DEMAND_QUALITY",
+    "AGENT::OPERATING_PERFORMANCE",
+    "AGENT::VALUE_CAPTURE"
+  ],
+  "result_digest": "5d22eb36976f9c7602a5e527b2a21adc3c5df83803a2d891c52022625431e275",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_content_repair_successor_zero_call_v1_0",
+  "status": "content_repair_successor_zero_call_proven"
+}

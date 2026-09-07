@@ -1,0 +1,31 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_stratified_typed_route_union_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-CANDIDATE-RANKING-V1.7-STRATIFIED-UNION",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_6.json",
+  "parent_policy_sha256_lf": "88d45ba1bef48448be85bc015c64eebf8b69b32da7cc82006a8e157b6f00c704",
+  "candidate_contract_overrides": {
+    "candidate_union_route_minimum_per_need": {
+      "typed_intent_alias_groups": 3,
+      "typed_metric_row_exact": 3
+    },
+    "route_floor_is_label_blind_recall_protection": true,
+    "route_floor_is_not_evidence_or_final_rank_authority": true
+  },
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "v1.6 naturally proved that cross-route RRF can crowd a top-three typed-intent result out of a finite 128-object union",
+      "the failure occurred before reranking and is a candidate-union recall defect, not an embedding or qrel defect",
+      "a bounded per-need floor preserves high-precision typed metric/product lanes without target IDs, case branches or a larger union budget"
+    ],
+    "not_changed": [
+      "ontology v1.2, object population, qrels and model identities",
+      "128-object union budget and all-needs CUDA reranking",
+      "candidate, Evidence and NumericFact authority boundaries"
+    ],
+    "v1_6_result_remains_immutable": true,
+    "labels_joined_after_candidate_generation_and_all_model_scoring": true,
+    "no_gold_identity_or_answer_url_in_query": true
+  }
+}

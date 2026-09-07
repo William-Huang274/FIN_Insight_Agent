@@ -1,0 +1,99 @@
+{
+  "schema_version": "fin_ia_s1_material_scope_product_replay_assessment_v1_1",
+  "status": "candidate_review_semantics_closed_integrated_evidence_numeric_readiness_open",
+  "recorded_at": "2026-08-18T16:21:37+08:00",
+  "case_key": "DELL",
+  "prepared_from_commit": "1adee2154f05652ec0f2dc0d00bf170680cb8ad5",
+  "bound_result": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_material_scope_product_replay_result_v1_1.json",
+    "sha256": "4950d41a117a420cdf5119158de478b2625c2381a87b4c2b93d2fada16f68fa9"
+  },
+  "private_full_result": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_material_scope_product_replay/dell-r3-v2/full_result.json",
+    "sha256": "43c6ec6699509f8d7e5aa55214e9ab85a3bab2f2f5634d24d6f51f1afe55697c",
+    "access": "restricted_candidate_audit_only"
+  },
+  "execution_facts": {
+    "status": "completed_scope_ready_material_sets_incomplete",
+    "material_scope_ready_requests": 8,
+    "material_set_complete_requests": 3,
+    "requirement_groups": 12,
+    "met_requirements": 7,
+    "unmet_requirements": 5,
+    "selected_candidates": 128,
+    "numeric_facts": 58,
+    "typed_fact_resolved": 19,
+    "typed_fact_gaps": 9,
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "local_embedding_batches": 1,
+    "cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "embedding_precision": "float16",
+    "cpu_vector_fallbacks": 0
+  },
+  "rc_s1_029_disposition": {
+    "status": "closed_for_candidate_review_only",
+    "before": "zero of twelve natural material requirements could reserve candidates because exact request-visible natural axes were retained only as contextual review needs",
+    "after": "seven of twelve requirements now form bounded candidate-review bundles while every row remains abstain, candidate-not-Evidence, and without numeric authority",
+    "safety_invariants": [
+      "collective candidate coverage requires every selected metric term and every selected natural product term",
+      "single-binding temporal requirements still require canonical correlated bindings",
+      "wrong-role and adjacent natural phrases cannot satisfy the requested requirement",
+      "candidate review coverage does not authorize Evidence, NumericFact, causal attribution, citation, or publication"
+    ]
+  },
+  "business_findings": [
+    {
+      "facet_id": "orders_and_backlog",
+      "candidate_review_result": "counter requirement met; direct requirement lacks customer_count while Dell AI-server demand, backlog, orders, and shipment-timing claims are review-visible",
+      "s2_result": "backlog, orders, customer_count, and shipments remain typed metric gaps in the current company fact mart",
+      "disposition": "retain qualitative candidate review; do not invent a precise customer count or treat the remaining metric surface as a public-information gap"
+    },
+    {
+      "facet_id": "reported_results_margin_cash_working_capital",
+      "candidate_review_result": "narrative bundles miss some metric terms such as net income, operating margin, capex, inventory, and accounts payable",
+      "s2_result": "the authoritative company fact mart already resolves all requested reported-results, margin, cash-generation, and working-capital metric axes",
+      "disposition": "integrated Pack Readiness must consume S2 NumericFacts rather than demand redundant narrative metric coverage from S1"
+    },
+    {
+      "facet_id": "upstream_or_demand_counterevidence",
+      "candidate_review_result": "Micron memory-supply, Microsoft AI-infrastructure-cost, and NVIDIA inventory/export-control objects enter bounded review",
+      "s2_result": "not applicable",
+      "disposition": "these adjacent disclosures cannot automatically prove Dell GPU supply constraints or hyperscaler capex slowdown; requirement-bound CandidateDecision and Evidence Gate remain mandatory"
+    }
+  ],
+  "earliest_open_root_cause": {
+    "issue_id": "RC-S1-030-candidate-review-and-integrated-pack-readiness-conflated",
+    "layer": "S1 CandidateDecision and Evidence Gate plus S2-integrated Pack Readiness",
+    "symptom": "candidate material completeness currently treats narrative metric bindings as necessary even where S2 already supplies authoritative NumericFacts, while candidate review matches are not yet adjudicated as accepted, rejected, unjudged, or needs-review Evidence",
+    "not_caused_by": [
+      "DeepSeek material-scope contract",
+      "CUDA availability",
+      "candidate pool emptiness",
+      "network transport",
+      "public-information non-disclosure"
+    ]
+  },
+  "selected_disposition": {
+    "candidate_decision": "bind each natural material requirement to an explicit accepted, rejected, unjudged, or needs-review decision; retrieval-need alignment alone cannot accept Evidence",
+    "numeric_readiness": "satisfy metric axes only with S2 NumericFact or a proved typed gap; narrative candidates never gain numeric authority",
+    "pack_readiness": "a request is ready only when required natural claims have accepted Evidence or an honest review/gap state and required metric axes have NumericFact or a proved typed gap",
+    "existing_pack_reuse": "reuse current reviewed Evidence only through exact source/object and slot/facet/period bindings; source-level resemblance is insufficient"
+  },
+  "next_allowed_scope": [
+    "zero-call audit of the current DELL reviewed Evidence Pack against the twelve natural requirements",
+    "provider-neutral requirement-bound CandidateDecision contract",
+    "S2-integrated Pack Readiness aggregation",
+    "DELL replay and false-promotion mutation without new model or network calls"
+  ],
+  "still_blocked": [
+    "automatic Evidence promotion from candidate review coverage",
+    "using narrative candidates as NumericFact",
+    "declaring unresolved candidate review a public-information gap",
+    "S1 qualification",
+    "full-chain S3 acceptance",
+    "publication",
+    "release"
+  ],
+  "known_boundary": "This assessment closes only the candidate-review visibility seam. Three complete candidate material sets do not equal three accepted Evidence sets, and five incomplete candidate sets do not prove five retrieval gaps. Final readiness must combine reviewed Evidence with S2 NumericFact under requirement-bound decisions."
+}

@@ -1,0 +1,70 @@
+{
+  "schema_version": "fin_ia_s1_vs5_candidate_execution_authority_v1_0",
+  "status": "authorized_exact_once_valid_temporal",
+  "recorded_at": "2026-08-18",
+  "attempt_id": "FIN-0.1.3-S1-VS5-VALID-TEMPORAL-CANDIDATE-R1",
+  "split": "valid_temporal",
+  "max_executions": 1,
+  "cpu_vector_fallback_allowed": false,
+  "design_baseline_commit": "c80e478af8aebe8f21fea71955cfa99bd5809cf2",
+  "design_branch": "codex/fin013-s1-retrieval-vertical-slice",
+  "authority_commit_scope": "this_authority_file_only_after_design_baseline",
+  "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_candidate_execution_policy_v1_0.json",
+  "policy_sha256": "3ef075dce44d5a28a3722d175c5c772ce5af54a2bfc263ff13c80a701a9e7b19",
+  "raw_output_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_candidates/valid-temporal-r1/raw.json",
+  "public_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_candidate_execution_result_v1_0.json",
+  "maximum_reranker_pairs_per_model": 1440,
+  "execution_contract": {
+    "case_key": "COST",
+    "example_count": 5,
+    "input_role": "runtime_visible_label_free",
+    "evaluator_reference_visible": false,
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "training_steps": 0,
+    "retry_allowed": false,
+    "fallback_allowed": false,
+    "embedding_device": "cuda:0",
+    "embedding_precision": "fp16",
+    "dense_similarity_device": "cuda:0",
+    "learned_sparse_similarity_device": "cuda:0",
+    "multi_vector_similarity_device": "cuda:0",
+    "reranker_device": "cuda:0",
+    "reranker_precision": "fp16",
+    "cpu_vector_fallback_allowed": false,
+    "cpu_allowed_work": [
+      "bm25",
+      "sql",
+      "tokenization",
+      "hard_filters",
+      "ledger",
+      "json",
+      "deterministic_sorting_and_orchestration"
+    ],
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "stop_on_existing_output": true,
+    "stop_on_git_or_digest_drift": true,
+    "stop_on_cuda_or_fp16_drift": true,
+    "stop_on_pair_budget_exceeded": true
+  },
+  "token_budget_basis": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_candidate_execution_policy_v1_0.json#/token_budget_basis",
+    "valid_temporal_maximum_reranker_pairs_per_model": 1440,
+    "quality_basis_zh": "5 个命题全部执行，最多 96 个候选、每候选最多 3 个实际召回 need；不以费用或延迟删命题、删 facet、抽样对象或降低候选面。"
+  },
+  "post_execution_authority": {
+    "candidate_output_must_be_frozen_before_evaluation": true,
+    "separate_evaluator_may_load_reference_after_freeze": true,
+    "evidence_promotion_authorized": false,
+    "numeric_fact_authority": false,
+    "test_frozen_authorized": false,
+    "heterogeneous_holdout_authorized": false,
+    "s1_qualified": false
+  },
+  "authorization_basis": [
+    "Owner authorized continuous VS1-to-VS5 execution unless a material stop condition occurs.",
+    "Owner explicitly required vector calculation to run on CUDA rather than CPU.",
+    "Design baseline passed 617 repository tests, active-baseline validation, compileall and a 7103-file secret scan before this authority was issued."
+  ]
+}

@@ -5,6 +5,7 @@ import {
   CircleStop,
   Database,
   ExternalLink,
+  FileSearch,
   FlaskConical,
   LoaderCircle,
   Play,
@@ -16,13 +17,19 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import {
+  ComplexDocumentQuality,
   EvalCatalogItem,
   OperationsApiClient,
+  RetrievalQuality,
+  SupplementQuality,
   RunJob,
+  SourceIntakeAttempt,
+  SourceIntakeRoute,
   StoredProfile,
   StoredSourceBundle,
   SystemStatus,
 } from "../api/operations";
+import { SourceIntakePanel } from "./SourceIntakePanel";
 import "./operations-console.css";
 
 type Snapshot = {
@@ -31,6 +38,11 @@ type Snapshot = {
   bundles: StoredSourceBundle[];
   runs: RunJob[];
   evals: EvalCatalogItem[];
+  sourceRoutes: SourceIntakeRoute[];
+  sourceAttempts: SourceIntakeAttempt[];
+  complexDocumentQuality: ComplexDocumentQuality;
+  retrievalQuality: RetrievalQuality;
+  supplementQuality: SupplementQuality;
 };
 
 type ViewState =
@@ -47,9 +59,9 @@ export function OperationsConsole() {
 
   const refresh = useCallback(() => {
     setState({ kind: "loading" });
-    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals()])
-      .then(([status, profiles, bundles, runs, evals]) => {
-        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals } });
+    Promise.all([api.status(), api.profiles(), api.sourceBundles(), api.runs(), api.evals(), api.sourceIntakeRoutes(), api.sourceIntakeAttempts(), api.complexDocumentQuality(), api.retrievalQuality(), api.supplementQuality()])
+      .then(([status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality, retrievalQuality, supplementQuality]) => {
+        setState({ kind: "ready", snapshot: { status, profiles, bundles, runs, evals, sourceRoutes, sourceAttempts, complexDocumentQuality, retrievalQuality, supplementQuality } });
       })
       .catch((error: Error) => setState({ kind: "error", message: error.message }));
   }, []);
@@ -82,6 +94,32 @@ export function OperationsConsole() {
     }
   };
 
+  const uploadSource = async (routeId: string, file: File) => {
+    setAction("source-upload");
+    setActionError(null);
+    try {
+      await api.uploadSource(routeId, file);
+      refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setAction(null);
+    }
+  };
+
+  const acquireSourceAutomatically = async (routeId: string) => {
+    setAction("source-automatic");
+    setActionError(null);
+    try {
+      await api.acquireSourceAutomatically(routeId);
+      refresh();
+    } catch (error) {
+      setActionError(error instanceof Error ? error.message : String(error));
+    } finally {
+      setAction(null);
+    }
+  };
+
   return (
     <div className="operations-console">
       <header className="operations-console__topbar">
@@ -105,13 +143,13 @@ export function OperationsConsole() {
         {actionError ? <div className="operations-console__error"><ShieldAlert size={17} />{actionError}</div> : null}
         {state.kind === "loading" ? <div className="operations-console__loading"><LoaderCircle className="is-spinning" /><span>正在读取当前运行状态…</span></div> : null}
         {state.kind === "error" ? <div className="operations-console__error"><ShieldAlert size={17} />{state.message}</div> : null}
-        {state.kind === "ready" ? <OperationsSnapshot snapshot={state.snapshot} action={action} onCancel={cancel} /> : null}
+        {state.kind === "ready" ? <OperationsSnapshot snapshot={state.snapshot} action={action} onCancel={cancel} onUploadSource={uploadSource} onAutomaticSource={acquireSourceAutomatically} /> : null}
       </main>
     </div>
   );
 }
 
-function OperationsSnapshot({ snapshot, action, onCancel }: { snapshot: Snapshot; action: string | null; onCancel: (jobId: string) => void }) {
+function OperationsSnapshot({ snapshot, action, onCancel, onUploadSource, onAutomaticSource }: { snapshot: Snapshot; action: string | null; onCancel: (jobId: string) => void; onUploadSource: (routeId: string, file: File) => Promise<void>; onAutomaticSource: (routeId: string) => Promise<void> }) {
   const activeRuns = useMemo(() => snapshot.runs.filter((run) => ["queued", "running", "cancelling"].includes(run.status)), [snapshot.runs]);
   return (
     <>
@@ -122,6 +160,10 @@ function OperationsSnapshot({ snapshot, action, onCancel }: { snapshot: Snapshot
         <StatusCard icon={Boxes} label="活动作业" value={String(activeRuns.length)} ok={activeRuns.length === 0} />
         <StatusCard icon={FlaskConical} label="Eval runners" value={String(snapshot.evals.length)} ok />
       </section>
+
+      <ComplexDocumentQualityPanel value={snapshot.complexDocumentQuality} />
+      <RetrievalQualityPanel value={snapshot.retrievalQuality} />
+      <SupplementQualityPanel value={snapshot.supplementQuality} />
 
       <section className="operations-console__columns">
         <article className="operations-console__panel is-wide">
@@ -141,6 +183,8 @@ function OperationsSnapshot({ snapshot, action, onCancel }: { snapshot: Snapshot
         </article>
       </section>
 
+      <SourceIntakePanel routes={snapshot.sourceRoutes} attempts={snapshot.sourceAttempts} action={action} onUpload={onUploadSource} onAutomatic={onAutomaticSource} />
+
       <section className="operations-console__columns">
         <article className="operations-console__panel">
           <div className="operations-console__panel-title"><h2>运行 Profiles</h2><span>{snapshot.profiles.length}</span></div>
@@ -156,6 +200,143 @@ function OperationsSnapshot({ snapshot, action, onCancel }: { snapshot: Snapshot
         </article>
       </section>
     </>
+  );
+}
+
+function ComplexDocumentQualityPanel({ value }: { value: ComplexDocumentQuality }) {
+  const counts = value.candidate_decision_summary;
+  const businessFailure = String(value.business_result.current_retrieval_failure_zh ?? "");
+  return (
+    <section className="operations-console__panel operations-console__document-quality">
+      <div className="operations-console__panel-title">
+        <h2><FileSearch size={18} />复杂文档纵切</h2>
+        <span>VS2 · 开发样本，不是产品案例</span>
+      </div>
+      <div className="operations-console__document-summary">
+        <div>
+          <p>官方来源</p>
+          <strong>{value.source.issuer_name}</strong>
+          <small>{value.source.document_type} · {value.source.publication_date} · 全文 {value.source.page_count} 页</small>
+        </div>
+        <div>
+          <p>解析对象</p>
+          <strong>{value.financial_objects.object_count}</strong>
+          <small>{value.document_quality.table_region_count} 个表格 · {value.document_quality.footnote_count} 个脚注 · {value.financial_objects.cross_page_relation_count} 个跨页关系</small>
+        </div>
+        <div>
+          <p>候选决策</p>
+          <strong>{counts.accepted ?? 0} accepted / {counts.needs_review ?? 0} review</strong>
+          <small>{value.coverage_summary.reviewed_not_recalled_count} 个经复核复杂对象未召回</small>
+        </div>
+        <div>
+          <p>权威边界</p>
+          <strong>Evidence / NumericFact 分离</strong>
+          <small>真实扫描件资格：未关闭 · S1：未通过</small>
+        </div>
+      </div>
+      <p className="operations-console__document-finding">{businessFailure}</p>
+      <div className="operations-console__document-meta">
+        <span>选页 {value.source.selected_page_numbers.join(" / ")}</span>
+        <span>OCR mutation {value.document_quality.forced_ocr_pages.join(" / ")}</span>
+        <code>{value.result_digest.slice(0, 12)}…{value.result_digest.slice(-8)}</code>
+      </div>
+    </section>
+  );
+}
+
+function RetrievalQualityPanel({ value }: { value: RetrievalQuality }) {
+  const summary = value.summary;
+  const stage = summary.vs3_vertical_slice_integrated ? "纵切已集成" : "门禁未通过";
+  return (
+    <section className="operations-console__panel operations-console__document-quality">
+      <div className="operations-console__panel-title">
+        <h2><FileSearch size={18} />检索与金融排序纵切</h2>
+        <span>VS3 · 开发资格，不是 S1 发布资格</span>
+      </div>
+      <div className="operations-console__document-summary">
+        <div>
+          <p>有限候选池</p>
+          <strong>{summary.combined_union_positive_atom_count} / {summary.positive_atom_count}</strong>
+          <small>已知正例进入候选池；完整 CandidateDecision 仍保留</small>
+        </div>
+        <div>
+          <p>金融审阅前十</p>
+          <strong>{summary.financial_shortlist_positive_top10_count} / {summary.positive_atom_count}</strong>
+          <small>确认 hard negative：{summary.financial_shortlist_hard_negative_top10_count}</small>
+        </div>
+        <div>
+          <p>跨纵切回归</p>
+          <strong>VS1 {summary.vs1_reviewed_objects_in_candidate_pool} / VS2 {summary.vs2_reviewed_objects_in_candidate_pool}</strong>
+          <small>数字原生与复杂文档共同消费同一候选合同</small>
+        </div>
+        <div>
+          <p>阶段结论</p>
+          <strong>{stage}</strong>
+          <small>Candidate ≠ Evidence · NumericFact 权威未授予 · S1 未通过</small>
+        </div>
+      </div>
+      <p className="operations-console__document-finding">{value.business_findings[0] ?? "暂无业务结论"}</p>
+      <div className="operations-console__document-meta">
+        <span>{summary.accepted_object_count} 个已绑定对象</span>
+        <span>{summary.needs_review_candidate_count} 个候选待审，不等于缺口</span>
+        <code>{value.result_digest.slice(0, 12)}…{value.result_digest.slice(-8)}</code>
+      </div>
+    </section>
+  );
+}
+
+function SupplementQualityPanel({ value }: { value: SupplementQuality }) {
+  return (
+    <section className="operations-console__panel operations-console__document-quality">
+      <div className="operations-console__panel-title">
+        <h2><FileSearch size={18} />命题补证与缺口窄化</h2>
+        <span>VS4 · DELL/MU/NVDA 开发纵切，不是 S1 发布资格</span>
+      </div>
+      {value.case_summaries.map((caseSummary) => {
+        const delta = caseSummary.coverage_delta;
+        const readyCount = caseSummary.proposition_rows.filter((row) => row.proposition_ready).length;
+        const falseAccepts = caseSummary.proposition_rows.reduce(
+          (total, row) => total + row.hard_negative_accepted_object_ids.length,
+          0,
+        );
+        return (
+          <div key={caseSummary.case_key}>
+            <div className="operations-console__document-summary">
+              <div>
+                <p>{caseSummary.case_key} · 证据继任</p>
+                <strong>{delta.retired_broad_or_legacy_evidence_count} 退役 / {delta.added_capture_bound_claim_count} 新增</strong>
+                <small>宽 chunk 与整页材料替换为精确 capture-bound claim</small>
+              </div>
+              <div>
+                <p>命题覆盖</p>
+                <strong>{readyCount} / {caseSummary.proposition_rows.length}</strong>
+                <small>每个命题仍保留已知、未知与来源边界</small>
+              </div>
+              <div>
+                <p>错误晋升</p>
+                <strong>{falseAccepts}</strong>
+                <small>候选文本和 hard negative 不得自动获得 Evidence 权限</small>
+              </div>
+              <div>
+                <p>缺口处置</p>
+                <strong>
+                  {delta.narrowed_gap_count} 窄化 / {delta.added_gap_count ?? 0} 新增 / {delta.closed_gap_count} 关闭
+                </strong>
+                <small>新增缺口可表示 S1→S2 的明确交接，不冒充公开信息不存在</small>
+              </div>
+            </div>
+            <p className="operations-console__document-finding">
+              {caseSummary.business_findings[0] ?? "暂无业务结论"}
+            </p>
+            <div className="operations-console__document-meta">
+              <span>{caseSummary.case_key} Successor Evidence {delta.successor_evidence_count}</span>
+              <span>S1 仍未通过 · NumericFact 未授权</span>
+              <code>{caseSummary.result_digest.slice(0, 12)}…{caseSummary.result_digest.slice(-8)}</code>
+            </div>
+          </div>
+        );
+      })}
+    </section>
   );
 }
 

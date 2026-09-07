@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_source_intake_policy_v1_0",
+  "policy_id": "FIN-0.1.3-S1D-SOURCE-INTAKE-POLICY-V1.0",
+  "status": "active_bounded_source_intake_policy",
+  "recorded_at": "2026-08-13",
+  "policy": {
+    "private_capture_first": true,
+    "https_only": true,
+    "route_bound_urls_only": true,
+    "credentials_forbidden": true,
+    "raw_source_not_evidence": true,
+    "automatic_retry_count": 0,
+    "operator_upload_uses_same_intake": true
+  },
+  "routes": [
+    {
+      "route_id": "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT",
+      "case_key": "DELL",
+      "issuer_name": "Dell Technologies Inc.",
+      "document_type": "earnings_call_transcript",
+      "title": "Dell Technologies Fiscal Year 2027 First Quarter Results Transcript",
+      "publication_date": "2026-05-28",
+      "discovery_url": "https://investors.delltechnologies.com/events/event-details/dell-technologies-fiscal-year-2027-first-quarter-results",
+      "source_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "allowed_hosts": [
+        "investors.delltechnologies.com"
+      ],
+      "expected_content_types": [
+        "application/pdf"
+      ],
+      "byte_ceiling": 4000000,
+      "operator_upload_enabled": true,
+      "automatic_adapter": {
+        "enabled": true,
+        "adapter_id": "official_http_capture_v1",
+        "transport": "requests",
+        "timeout_seconds": 45,
+        "max_retries": 0
+      }
+    },
+    {
+      "route_id": "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT",
+      "case_key": "TSM",
+      "issuer_name": "Taiwan Semiconductor Manufacturing Company Limited",
+      "document_type": "earnings_call_transcript",
+      "title": "TSMC Q2 2026 Earnings Call Transcript",
+      "publication_date": "2026-07-16",
+      "discovery_url": "https://investor.tsmc.com/english/quarterly-results/2026/q2",
+      "source_url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-07/547d1696765e05ce3adb81c108ce1c8c1682b80c/TSMC%202Q26%20Transcript.pdf",
+      "allowed_hosts": [
+        "investor.tsmc.com"
+      ],
+      "expected_content_types": [
+        "application/pdf"
+      ],
+      "byte_ceiling": 5000000,
+      "operator_upload_enabled": true,
+      "automatic_adapter": {
+        "enabled": true,
+        "adapter_id": "official_http_capture_v1",
+        "transport": "requests",
+        "timeout_seconds": 45,
+        "max_retries": 0
+      }
+    }
+  ]
+}

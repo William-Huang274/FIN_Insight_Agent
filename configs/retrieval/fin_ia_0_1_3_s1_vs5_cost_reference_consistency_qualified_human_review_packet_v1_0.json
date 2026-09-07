@@ -1,0 +1,101 @@
+{
+  "schema_version": "fin_ia_s1_vs5_cost_reference_consistency_qualified_human_review_packet_v1_0",
+  "packet_id": "FIN-0.1.3-S1-VS5-COST-REFERENCE-CONSISTENCY-REVIEW-PACKET-20260818",
+  "recorded_at": "2026-08-18",
+  "status": "qualified_human_decision_pending",
+  "scope": "future_reference_scope_only_historical_R1_R2_immutable",
+  "case_key": "COST",
+  "example_id": "VS5::COST::COST_TEMPORAL_CHANGE",
+  "bound_artifacts": [
+    {
+      "path": "eval_sets/fin_0_1_3_s1/inputs/valid_temporal/vs5_qualification_inputs_v1_1.jsonl",
+      "sha256": "0448a22f3fe8f741fc2a8103f9e62f71f56661879abdfe4d5ed98817096f6f3f"
+    },
+    {
+      "path": "eval_sets/fin_0_1_3_s1/references/valid_temporal/vs5_qualification_references_v1_0.jsonl",
+      "sha256": "d05533ae284103aae6ab187660cd9459059ec126e6f6bcc436fecbc48c3fc0fb"
+    },
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_result_v1_1.json",
+      "sha256": "005d1b5b248e10d6563d663ed95b4b210f1b181dd4b89b8abf1f839a08b8fef4"
+    }
+  ],
+  "frozen_request": {
+    "request_id": "ER::VS5::COST::COST_TEMPORAL_CHANGE",
+    "question_zh": "FY2024 到 FY2025 的经营变化是否保持同一公司、同一口径和正确期间？",
+    "metric_intents": [
+      "revenue",
+      "gross margin",
+      "operating cash flow"
+    ],
+    "product_intents": [
+      "FY2024 FY2025 comparison"
+    ],
+    "requested_facet_ids": [
+      "reported_results",
+      "margin_and_incremental_profit",
+      "working_capital_risk"
+    ],
+    "fiscal_years": [
+      2024,
+      2025
+    ]
+  },
+  "provisional_reference": {
+    "positive_object_count": 5,
+    "in_scope_cash_flow_or_same_basis_objects": [
+      "COBJ::2c65bb6ba6864706a20ecaba",
+      "COBJ::a4f308875452d74388815918",
+      "COBJ::50d7e5ccce3fb3ee2079d331"
+    ],
+    "disputed_membership_objects": [
+      {
+        "compiled_object_id": "COBJ::d180352c88efef3312c4594f",
+        "fiscal_year": 2024,
+        "review_note_zh": "FY2024 会员经营基线。",
+        "scope_issue": "membership_operating_result_is_not_named_by_the_frozen_temporal_request"
+      },
+      {
+        "compiled_object_id": "COBJ::781a3d0018dd2a6e4b385a68",
+        "fiscal_year": 2025,
+        "review_note_zh": "FY2025 同公司会员经营结果。",
+        "scope_issue": "membership_operating_result_is_not_named_by_the_frozen_temporal_request"
+      }
+    ]
+  },
+  "decision_options": [
+    {
+      "option_id": "A_expand_future_request_before_reference_freeze",
+      "decision": "Future temporal questions may require membership operating comparison only after the EvidenceRequest explicitly adds membership fee revenue, renewal rate, Executive membership, and their material facets.",
+      "impact": "The two membership objects may be eligible in a future reference, but the old frozen request and COST R1/R2 remain unchanged and failed."
+    },
+    {
+      "option_id": "B_align_future_reference_to_frozen_request",
+      "decision": "Future reference groups for this request shape remain limited to revenue, gross margin, operating cash flow, and their same-basis temporal material groups.",
+      "impact": "The two membership objects are excluded from future references of this request shape. Historical COST R2 would still not pass; the non-authoritative diagnostic becomes 15/18=0.833333, below 0.90."
+    }
+  ],
+  "assistant_non_authoritative_recommendation": {
+    "option_id": "B_align_future_reference_to_frozen_request",
+    "reason_zh": "评分参考应服从候选生成前冻结的请求。若业务确实需要会员经营比较，应在未来问题中先显式授权，而不是事后把它补进 reference。"
+  },
+  "invariants": {
+    "historical_R1_status": "failed_immutable",
+    "historical_R2_status": "failed_immutable",
+    "COST_R3_allowed": false,
+    "candidate_is_evidence": false,
+    "numeric_fact_authority": false,
+    "decision_recalculates_historical_score": false,
+    "decision_authorizes_hidden_execution": false,
+    "decision_authorizes_S1_acceptance": false
+  },
+  "review_completion": {
+    "reviewer_name_or_id": null,
+    "reviewer_qualification_basis": null,
+    "selected_option_id": null,
+    "decision_reason": null,
+    "reviewed_at": null,
+    "signature_or_external_receipt_ref": null
+  },
+  "known_boundary": "This packet presents a bounded future-scope choice. It is not a human decision, does not mutate the provisional reference, does not create replacement blind labels, and cannot authorize a new temporal execution by itself."
+}

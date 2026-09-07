@@ -1,0 +1,646 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_policy_v1_3",
+  "status": "provider_neutral_reviewed_evidence_numeric_relation_and_context_consumer",
+  "reviewed_source_policy": {
+    "allowed_source_types": [
+      "10-K",
+      "10-Q",
+      "8-K",
+      "20-F",
+      "40-F",
+      "6-K",
+      "EARNINGS_CALL_TRANSCRIPT",
+      "PUBLIC_WEB"
+    ],
+    "allowed_source_tiers": [
+      "primary_sec_filing",
+      "company_authored_unaudited_sec_filing",
+      "official_hosted_management_call_transcript",
+      "issuer_regulator_or_government_primary",
+      "named_counterparty_or_standards_primary",
+      "official_market_or_industry_primary",
+      "trusted_media_industry_association_or_public_analyst_context"
+    ],
+    "earnings_call_transcript_constraints": {
+      "required_source_tier": "official_hosted_management_call_transcript",
+      "reviewed_pack_only": true,
+      "open_retrieval_source_type_expansion": false,
+      "automatic_numeric_fact_promotion": false
+    },
+    "public_web_constraints": {
+      "reviewed_pack_only": true,
+      "direct_evidence_requires_issuer_regulator_or_government_primary": true,
+      "non_issuer_sources_are_bounded_context_only": true,
+      "automatic_numeric_fact_promotion": false,
+      "target_company_causal_authority": false
+    }
+  },
+  "cell_contracts": [
+    {
+      "cell_id": "CELL::demand_quality",
+      "title_zh": "需求真实性与持续性",
+      "primary_slot_id": "demand_volume_quality",
+      "supplemental_context_slot_ids": [],
+      "maximum_evidence_items": 8,
+      "maximum_numeric_facts": 4,
+      "numeric_capacity_contract": {
+        "mode": "static_upper_bound"
+      }
+    },
+    {
+      "cell_id": "CELL::operating_performance",
+      "title_zh": "经营表现与增量规模",
+      "primary_slot_id": "operating_performance",
+      "supplemental_context_slot_ids": [],
+      "maximum_evidence_items": 8,
+      "maximum_numeric_facts": 12,
+      "numeric_capacity_contract": {
+        "mode": "static_upper_bound"
+      }
+    },
+    {
+      "cell_id": "CELL::value_capture",
+      "title_zh": "价值与利润获取",
+      "primary_slot_id": "pricing_mix_value_capture",
+      "supplemental_context_slot_ids": [],
+      "maximum_evidence_items": 8,
+      "maximum_numeric_facts": 10,
+      "numeric_capacity_contract": {
+        "mode": "metric_period_bundle",
+        "allowed_metric_ids": [
+          "revenue",
+          "gross_profit",
+          "gross_margin",
+          "operating_income",
+          "operating_margin"
+        ],
+        "maximum_periods_per_metric": 2,
+        "same_cadence_pair_atomic": true,
+        "subject_ticker_only": true
+      }
+    },
+    {
+      "cell_id": "CELL::cash_conversion",
+      "title_zh": "现金转换与资产负债表",
+      "primary_slot_id": "cash_conversion_balance_sheet",
+      "supplemental_context_slot_ids": [],
+      "maximum_evidence_items": 8,
+      "maximum_numeric_facts": 10,
+      "numeric_capacity_contract": {
+        "mode": "static_upper_bound"
+      }
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "title_zh": "反方证据与判断改变条件",
+      "primary_slot_id": "counterevidence_and_what_would_change",
+      "supplemental_context_slot_ids": [
+        "capacity_inputs_execution"
+      ],
+      "maximum_evidence_items": 12,
+      "maximum_numeric_facts": 6,
+      "numeric_capacity_contract": {
+        "mode": "static_upper_bound"
+      }
+    }
+  ],
+  "numeric_fact_selection": {
+    "strategy": "latest_period_and_same_basis_comparable_per_metric",
+    "maximum_non_instant_periods_per_metric": 2,
+    "deduplicate_request_identity": true,
+    "preserve_source_request_and_period_role_lineage": true,
+    "same_fiscal_period_comparison_required_for_year_over_year_language": true
+  },
+  "research_context_contract": {
+    "role_method_packs": [
+      {
+        "pack_id": "ROLE_METHOD::DEMAND_QUALITY::V1",
+        "cell_id": "CELL::demand_quality",
+        "role_id": "demand_quality_analyst",
+        "minimum_consumed_method_steps": 4,
+        "method_steps": [
+          {
+            "method_step_ref": "METHOD::DQ::SIGNAL_LADDER",
+            "instruction_zh": "区分订单、积压、出货、收入、部署和终端消耗；较早或较弱的需求信号不能自动证明持续转化。"
+          },
+          {
+            "method_step_ref": "METHOD::DQ::OWNER_AND_DIRECTION",
+            "instruction_zh": "先确认谁披露、在谈谁以及关系方向；客户或生态方材料只能提供有界 read-through，不能冒充本案公司自述。"
+          },
+          {
+            "method_step_ref": "METHOD::DQ::DURABILITY_TEST",
+            "instruction_zh": "同时检查提前采购、消化、取消、集中度、部署节奏和转化缺口；单期高增长或管理层乐观表述不足以证明耐久需求。"
+          },
+          {
+            "method_step_ref": "METHOD::DQ::PERIOD_AND_CONVERSION_BASIS",
+            "instruction_zh": "趋势和转化判断必须保持同一指标、期间角色和可比口径；没有同口径关系时只陈述当前信号。"
+          },
+          {
+            "method_step_ref": "METHOD::DQ::MATERIAL_GAP_AND_WWC",
+            "instruction_zh": "只追问会改变需求判断的订单、积压转化、部署或消化证据，并把判断改变条件写成可观察的后续披露。"
+          }
+        ]
+      },
+      {
+        "pack_id": "ROLE_METHOD::OPERATING_PERFORMANCE::V1",
+        "cell_id": "CELL::operating_performance",
+        "role_id": "operating_performance_analyst",
+        "minimum_consumed_method_steps": 4,
+        "method_steps": [
+          {
+            "method_step_ref": "METHOD::OP::SCOPE_AND_BASIS",
+            "instruction_zh": "先区分公司、分部和产品口径，以及季度、累计和财年口径；只有同指标、同单位、同期间角色的关系卡可支持比较。"
+          },
+          {
+            "method_step_ref": "METHOD::OP::ACTUAL_VS_GUIDANCE",
+            "instruction_zh": "把已实现经营结果、管理层指引和长期目标分开，不能用未来目标改写当前实际表现。"
+          },
+          {
+            "method_step_ref": "METHOD::OP::GROWTH_QUALITY",
+            "instruction_zh": "同时检查收入规模、利润率、经营利润和业务组合；增长与利润同时变化只证明共现，不能自动归因于单一产品或驱动。"
+          },
+          {
+            "method_step_ref": "METHOD::OP::MIX_AND_ONE_OFF",
+            "instruction_zh": "保留产品组合、季节性、一次性项目、会计口径和其他业务贡献等替代解释。"
+          },
+          {
+            "method_step_ref": "METHOD::OP::MATERIAL_GAP_AND_WWC",
+            "instruction_zh": "只为会改变经营质量判断的分部或产品桥、利润率口径和后续指引提交补证，并给出可复核的改变条件。"
+          }
+        ]
+      },
+      {
+        "pack_id": "ROLE_METHOD::VALUE_CAPTURE::V1",
+        "cell_id": "CELL::value_capture",
+        "role_id": "fundamental_value_capture_analyst",
+        "minimum_consumed_method_steps": 4,
+        "method_steps": [
+          {
+            "method_step_ref": "METHOD::VC::PERIOD_BASIS",
+            "instruction_zh": "只有同一指标、单位、期间角色和同一财季的关系卡才能支持同比、扩张或压缩判断。"
+          },
+          {
+            "method_step_ref": "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+            "instruction_zh": "先区分产品收入、分部利润和公司利润，再判断产品增长是否有直接证据桥接到利润获取。"
+          },
+          {
+            "method_step_ref": "METHOD::VC::CAUSAL_BOUNDARY",
+            "instruction_zh": "同时发生的收入和利润变化不是因果归因；缺少产品级利润、价格数量组合或成本桥时只能做有界推断。"
+          },
+          {
+            "method_step_ref": "METHOD::VC::COUNTERREAD",
+            "instruction_zh": "保留最强替代解释，包括低毛利硬件组合、提前采购、分部内其他业务和未经审计的管理层口径。"
+          },
+          {
+            "method_step_ref": "METHOD::VC::MATERIAL_GAP_ROUTE",
+            "instruction_zh": "只为会改变判断且存在可执行来源路线的缺口提交补证；商业数据或行业数据路线不可用时保持 typed gap。"
+          },
+          {
+            "method_step_ref": "METHOD::VC::WHAT_WOULD_CHANGE",
+            "instruction_zh": "判断改变条件必须是可观察、可复核且与当前证据缺口直接相关的变量。"
+          }
+        ]
+      },
+      {
+        "pack_id": "ROLE_METHOD::CASH_CONVERSION::V1",
+        "cell_id": "CELL::cash_conversion",
+        "role_id": "cash_conversion_balance_sheet_analyst",
+        "minimum_consumed_method_steps": 4,
+        "method_steps": [
+          {
+            "method_step_ref": "METHOD::CC::CASH_BRIDGE",
+            "instruction_zh": "按同一期间把净利润、经营现金流、资本开支和自由现金流分开，再判断利润是否真正转化为现金。"
+          },
+          {
+            "method_step_ref": "METHOD::CC::WORKING_CAPITAL_BASIS",
+            "instruction_zh": "存货、应收、应付等时点余额只能描述资产负债表状态；没有流量桥和同口径期间时不能直接断言现金原因。"
+          },
+          {
+            "method_step_ref": "METHOD::CC::PRODUCT_ATTRIBUTION_BOUNDARY",
+            "instruction_zh": "公司现金流、营运资金和采购承诺不能自动归因于 AI、某产品或某客户；缺少产品级桥时保持公司口径。"
+          },
+          {
+            "method_step_ref": "METHOD::CC::LIQUIDITY_AND_COMMITMENTS",
+            "instruction_zh": "区分经营现金生成、资本投入、采购承诺、融资与流动性；承诺或余额上升本身不等于已发生现金流。"
+          },
+          {
+            "method_step_ref": "METHOD::CC::MATERIAL_GAP_AND_WWC",
+            "instruction_zh": "优先追问会改变现金转换判断的营运资金桥、资本开支和产品归因证据，并把改变条件绑定到后续可观察指标。"
+          }
+        ]
+      },
+      {
+        "pack_id": "ROLE_METHOD::COUNTEREVIDENCE::V1",
+        "cell_id": "CELL::counterevidence",
+        "role_id": "risk_counterevidence_analyst",
+        "minimum_consumed_method_steps": 4,
+        "method_steps": [
+          {
+            "method_step_ref": "METHOD::CE::THESIS_STRESS_TEST",
+            "instruction_zh": "先识别前四个研究单元最强的实际判断，再优先寻找足以削弱、反转或限制这些判断的材料，而不是罗列通用风险。"
+          },
+          {
+            "method_step_ref": "METHOD::CE::DIRECTNESS_AND_OWNER",
+            "instruction_zh": "区分本案直接反证、相关方 read-through、背景风险和纯证据缺口；供应商或客户材料不能冒充本案事实。"
+          },
+          {
+            "method_step_ref": "METHOD::CE::CONSTRAINT_NOT_RESOLUTION",
+            "instruction_zh": "供应扩张、需求增长或风险披露只约束判断；没有分配、时点、良率或本案传导证据时不能宣称瓶颈已经缓解或风险已经实现。"
+          },
+          {
+            "method_step_ref": "METHOD::CE::CONFLICT_DISCIPLINE",
+            "instruction_zh": "直接冲突不得平均化或选择更乐观的一边；保留来源、期间和作用域差异，并说明冲突如何限制结论。"
+          },
+          {
+            "method_step_ref": "METHOD::CE::MATERIAL_WWC",
+            "instruction_zh": "只保留最重要且可观察的判断改变条件；无法取得权威来源或阈值不可观察时必须保持 typed gap。"
+          }
+        ]
+      }
+    ],
+    "evidence_request_source_classes": [
+      {
+        "source_class": "official_company_disclosure",
+        "allowed_gap_codes": [
+          "metric_not_disclosed",
+          "formula_input_missing",
+          "relationship_allocation_unproven"
+        ],
+        "availability_signal": "current_narrative_object_store",
+        "executable_route_ids": [
+          "bm25_lexical"
+        ],
+        "intent_mode": "product_intent_required_metric_context_optional",
+        "allowed_source_types": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "forbidden_intent_terms": [
+          "industry data",
+          "third-party data",
+          "commercial data",
+          "行业数据",
+          "第三方数据",
+          "商业数据"
+        ]
+      },
+      {
+        "source_class": "typed_company_financial_fact",
+        "allowed_gap_codes": [
+          "metric_not_disclosed",
+          "formula_input_missing"
+        ],
+        "availability_signal": "company_financial_fact_mart",
+        "executable_route_ids": [
+          "typed_exact_fact_lookup"
+        ],
+        "intent_mode": "metric_intent_required_product_intent_forbidden",
+        "allowed_source_types": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "forbidden_intent_terms": []
+      },
+      {
+        "source_class": "point_in_time_market",
+        "allowed_gap_codes": [
+          "market_data_gap"
+        ],
+        "availability_signal": "market_snapshot_fact_mart",
+        "executable_route_ids": [
+          "typed_exact_fact_lookup"
+        ],
+        "intent_mode": "metric_intent_required_product_intent_forbidden",
+        "allowed_source_types": [
+          "MARKET_SNAPSHOT"
+        ],
+        "forbidden_intent_terms": []
+      },
+      {
+        "source_class": "commercial_or_industry_data",
+        "allowed_gap_codes": [
+          "commercial_data_gap",
+          "metric_not_disclosed"
+        ],
+        "availability_signal": "commercial_data_provider",
+        "executable_route_ids": [
+          "external_broad_search"
+        ],
+        "intent_mode": "product_intent_required_metric_context_optional",
+        "allowed_source_types": [
+          "INDUSTRY_DATA"
+        ],
+        "forbidden_intent_terms": []
+      }
+    ],
+    "gap_facet_query_bindings": [
+      {
+        "gap_facet_id": "pull_forward_or_digestion",
+        "requested_query_facet_ids": [
+          "conversion_and_durability"
+        ],
+        "typed_metric_ids": [
+          "orders",
+          "backlog",
+          "shipments"
+        ]
+      },
+      {
+        "gap_facet_id": "order_backlog_rpo_or_volume",
+        "requested_query_facet_ids": [
+          "orders_and_backlog"
+        ],
+        "typed_metric_ids": [
+          "orders",
+          "backlog",
+          "shipments"
+        ]
+      },
+      {
+        "gap_facet_id": "accelerated_compute_or_ai_infrastructure_revenue",
+        "requested_query_facet_ids": [
+          "reported_results"
+        ],
+        "typed_metric_ids": [
+          "revenue"
+        ]
+      },
+      {
+        "gap_facet_id": "volume_or_units",
+        "requested_query_facet_ids": [
+          "pricing_and_mix"
+        ],
+        "typed_metric_ids": [
+          "shipments"
+        ]
+      },
+      {
+        "gap_facet_id": "price_or_asp",
+        "requested_query_facet_ids": [
+          "pricing_and_mix"
+        ],
+        "typed_metric_ids": [
+          "average_selling_price"
+        ]
+      },
+      {
+        "gap_facet_id": "price_volume_mix_bridge",
+        "requested_query_facet_ids": [
+          "pricing_and_mix"
+        ],
+        "typed_metric_ids": [
+          "average_selling_price",
+          "shipments"
+        ]
+      },
+      {
+        "gap_facet_id": "ai_working_capital_absorption",
+        "requested_query_facet_ids": [
+          "working_capital_risk"
+        ],
+        "typed_metric_ids": [
+          "inventory",
+          "accounts_receivable",
+          "accounts_payable",
+          "operating_cash_flow"
+        ]
+      },
+      {
+        "gap_facet_id": "capacity_release_timing",
+        "requested_query_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "typed_metric_ids": [
+          "capacity",
+          "capital_expenditures"
+        ]
+      },
+      {
+        "gap_facet_id": "advanced_packaging_capacity",
+        "requested_query_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "typed_metric_ids": [
+          "capacity",
+          "capital_expenditures"
+        ]
+      },
+      {
+        "gap_facet_id": "foundry_or_component_dependency",
+        "requested_query_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "typed_metric_ids": [
+          "capacity"
+        ]
+      },
+      {
+        "gap_facet_id": "supplier_commitment_or_dependency",
+        "requested_query_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "typed_metric_ids": [
+          "capacity"
+        ]
+      },
+      {
+        "gap_facet_id": "utilization_or_yield",
+        "requested_query_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "typed_metric_ids": [
+          "capacity",
+          "yield"
+        ]
+      },
+      {
+        "gap_facet_id": "high_bandwidth_memory_supply",
+        "requested_query_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "typed_metric_ids": [
+          "capacity"
+        ]
+      },
+      {
+        "gap_facet_id": "yield_or_die_size",
+        "requested_query_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "typed_metric_ids": [
+          "yield"
+        ]
+      },
+      {
+        "gap_facet_id": "capex_to_free_cash_flow",
+        "requested_query_facet_ids": [
+          "cash_generation"
+        ],
+        "typed_metric_ids": [
+          "capital_expenditures",
+          "operating_cash_flow",
+          "free_cash_flow"
+        ]
+      },
+      {
+        "gap_facet_id": "price_in_boundary",
+        "requested_query_facet_ids": [
+          "point_in_time_valuation"
+        ],
+        "typed_metric_ids": [
+          "market_price"
+        ]
+      },
+      {
+        "gap_facet_id": "valuation_basis",
+        "requested_query_facet_ids": [
+          "point_in_time_valuation"
+        ],
+        "typed_metric_ids": [
+          "market_price",
+          "diluted_eps"
+        ]
+      },
+      {
+        "gap_facet_id": "scenario_or_sensitivity",
+        "requested_query_facet_ids": [
+          "point_in_time_valuation"
+        ],
+        "typed_metric_ids": [
+          "market_price",
+          "diluted_eps"
+        ]
+      },
+      {
+        "gap_facet_id": "supplier_capacity_readthrough",
+        "requested_query_facet_ids": [
+          "counterparty_direct_mention"
+        ],
+        "typed_metric_ids": [
+          "capacity"
+        ]
+      },
+      {
+        "gap_facet_id": "observable_invalidation_threshold",
+        "requested_query_facet_ids": [
+          "issuer_counterevidence"
+        ],
+        "typed_metric_ids": []
+      },
+      {
+        "gap_facet_id": "observable_quarterly_threshold",
+        "requested_query_facet_ids": [
+          "issuer_counterevidence"
+        ],
+        "typed_metric_ids": []
+      }
+    ],
+    "non_retrieval_gap_codes": [
+      "threshold_not_observable"
+    ],
+    "graph_context": {
+      "current_case_and_current_governed_objects_only": true,
+      "archived_graph_rows_forbidden": true,
+      "maximum_nodes_per_cell": 12,
+      "maximum_edges_per_cell": 16,
+      "minimum_consumed_graph_edges_when_available": 1,
+      "scope_edges_do_not_grant_fact_authority": true
+    },
+    "receipts": {
+      "selection_required": true,
+      "compression_required": true,
+      "injection_required": true,
+      "model_consumption_refs_required": true
+    }
+  },
+  "model_input_contract": {
+    "maximum_user_message_chars": 80000,
+    "maximum_evidence_excerpt_chars": 1600,
+    "internal_ids_digests_request_lineage_and_citation_urls_hidden": true,
+    "exact_source_visible_facts_and_numeric_values_preserved": true
+  },
+  "model_output_contract": {
+    "payload_schema_version": "fin_ia_current_research_judgment_payload_v1_2",
+    "model_owned_top_level_fields": [
+      "cells"
+    ],
+    "model_owned_cell_fields": [
+      "cell_id",
+      "judgment_status",
+      "confidence_basis",
+      "inference_authority",
+      "evidence_uses",
+      "numeric_refs",
+      "numeric_relation_refs",
+      "method_step_refs",
+      "graph_edge_refs",
+      "thesis_atom",
+      "mechanism_atom",
+      "counterargument_atom",
+      "what_would_change"
+    ],
+    "harness_injected_envelope_fields": [
+      "schema_version",
+      "research_input_digest"
+    ],
+    "harness_injected_cell_fields": [
+      "remaining_gap_refs",
+      "context_consumption_receipt"
+    ],
+    "allowed_judgment_statuses": [
+      "supported",
+      "bounded_support",
+      "mixed",
+      "insufficient_evidence"
+    ],
+    "allowed_confidence_bases": [
+      "direct_source_and_numeric",
+      "direct_source_only",
+      "bounded_context_only",
+      "mixed_source_strength",
+      "gap_dominated"
+    ],
+    "allowed_evidence_use_roles": [
+      "support",
+      "limit",
+      "context"
+    ],
+    "allowed_inference_authorities": [
+      "directly_supported",
+      "bounded_inference",
+      "not_inferable"
+    ],
+    "allowed_wwc_directions": [
+      "increase",
+      "decrease",
+      "persist",
+      "reverse",
+      "resolve_gap"
+    ],
+    "maximum_atom_chars": 480,
+    "maximum_wwc_observable_chars": 240,
+    "maximum_wwc_horizon_chars": 120,
+    "maximum_wwc_evidence_route_chars": 180,
+    "digits_currency_units_dates_and_citations_forbidden_in_model_prose": true,
+    "structured_refs_required": true
+  },
+  "authority": {
+    "model_sees_source_visible_facts_and_authoritative_numeric_facts": true,
+    "model_owns_judgment_mechanism_counterargument_and_wwc": true,
+    "harness_owns_identity_period_unit_exact_numeric_surface_and_citations": true,
+    "harness_may_not_invent_research_judgment": true,
+    "candidates_and_rejected_items_forbidden": true,
+    "residual_gaps_remain_visible": true,
+    "source_policy_domains_remain_separate": true,
+    "qualified_human_review_required": true,
+    "model_must_cite_injected_method_and_graph_context_when_available": true
+  }
+}

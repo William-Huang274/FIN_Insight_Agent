@@ -1,0 +1,54 @@
+{
+  "schema_version": "fin_ia_multi_agent_downstream_repair_progress_checkpoint_v1_0",
+  "status": "completed_repairs_and_active_analysis_fragment_bound_for_downstream_resume",
+  "case_key": "DELL",
+  "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R10_20260820",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_9.json",
+  "source_authority_sha256": "522b845c2b9d41dca303e67bc51866b87730c66cf3e49f4abf6a80bc7608fbf1",
+  "source_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_9.json",
+  "source_public_result_sha256": "e6abe4fef86927f2abe0e9e6921302246ad9908ea4de4e8ea2263f1a4b1dc074",
+  "source_public_result_digest": "8f6df9504f56dde9e032c1cf447670827f08d8747b4cca96a9d2eea2deb4161c",
+  "source_terminal_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_r10_20260820/terminal_failure.json",
+  "source_terminal_result_sha256": "0546e7b0dab0d1d2f20730c7cc87ca3d65a449a71e59086d244155a4abd80f14",
+  "source_terminal_result_digest": "c2cb441f3bed5d540e7c0148c46938c7ee76dea1608df65c455c7128a0ac423b",
+  "lead_coordination_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R10_lead_coordination_checkpoint_v1_0.json",
+  "lead_coordination_checkpoint_sha256": "f0731ce0989628c3129055b04bc39fcbebfcb0d595caa1099150522bce4e805a",
+  "lead_coordination_checkpoint_digest": "a55fb5bdbffaff934536dc08c4bf08f3b184934e855387e093273ae280ad14a2",
+  "accepted_challenge_ids": [
+    "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+    "CHALLENGE::803238978B747FEED1CE12C9",
+    "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
+  ],
+  "completed_challenge_repairs": [
+    {
+      "challenge_id": "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+      "target_agent_id": "AGENT::DEMAND_QUALITY",
+      "node_id": "AGENT::DEMAND_QUALITY::COUNTER_REPAIR",
+      "workpaper_digest": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
+    }
+  ],
+  "pending_challenge_ids": [
+    "CHALLENGE::803238978B747FEED1CE12C9",
+    "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
+  ],
+  "active_analysis_fragment_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R11_cash_repair_analysis_fragment_checkpoint_v1_0.json",
+  "active_analysis_fragment_checkpoint_sha256": "31337bc1c3f88ce4eeceb98adb2c0ab849dd6914cf9c66b090871cd4f447e1fb",
+  "active_analysis_fragment_checkpoint_digest": "4de41c6334bea4c012234cd7dd55ecc2afad86696fc9d3427ebdbc7241f94b93",
+  "resume_policy": {
+    "maximum_analysis_continuation_calls": 1,
+    "completed_repair_reruns_forbidden": true,
+    "lead_coordination_rerun_forbidden": true,
+    "workpaper_reruns_forbidden": true,
+    "continue_from_active_fragment_only": true,
+    "new_fact_or_authority_forbidden": true
+  },
+  "claims": {
+    "new_model_calls": 0,
+    "new_network_calls": 0,
+    "candidate_promotions": 0,
+    "S1_pass": false,
+    "S3_pass": false
+  },
+  "recorded_at": "2026-08-20T13:02:00+08:00",
+  "checkpoint_digest": "ec3c5c2cd87db834c33d5bd40a5be23f4b3f11b4651ef11806bc1a059bf75166"
+}

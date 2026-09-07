@@ -1,0 +1,659 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "exact_reviewed_content_slice_required": true,
+    "model_calls_authorized": false,
+    "network_calls_authorized": false,
+    "numeric_authority_remains_s2": true
+  },
+  "checks": {
+    "all_requests_have_candidates": true,
+    "all_requests_reselect_reviewed_evidence": true,
+    "all_reviewed_target_owners_reached": true,
+    "candidate_never_grants_evidence_or_numeric_authority": true,
+    "candidate_owner_scope_exact": true,
+    "cuda_fp16_only": true,
+    "exact_content_digest_required": true,
+    "no_new_evidence_promotion": true,
+    "zero_network_and_generation_calls": true
+  },
+  "inputs": {
+    "evidence_pack_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r3-capture-replay/successor/pack.json",
+    "fact_mart_ref": "data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_facts.sqlite",
+    "hybrid_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_5.json",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_4.json",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_4.json",
+    "snapshot_ref": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_2.json",
+    "truth_policy_ref": "configs/research/fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_1.json"
+  },
+  "known_boundary": "This proof executes typed requests through the successor local BM25 plus CUDA Qwen candidate runtime and exact reviewed-Pack reselection. It does not test natural DeepSeek planning, external network acquisition, new Evidence admission, research judgment, writing or product acceptance.",
+  "mutation": {
+    "accepted_reviewed_evidence_count": 0,
+    "name": "remove_public_content_slice_digest",
+    "needs_human_review_count": 4,
+    "reasons": [
+      "public_candidate_source_content_digest_missing"
+    ]
+  },
+  "recorded_at": "2026-08-23",
+  "request_results": [
+    {
+      "accepted_reviewed_evidence_count": 1,
+      "every_reviewed_target_owner_reached": true,
+      "facet_id": "pricing_and_mix",
+      "needs_human_review_count": 0,
+      "request_id": "REQ::DELL::SUBJECT-CONFIGURATION::ZERO-CALL",
+      "reviewed_target_hits_by_owner": {
+        "DELL": [
+          "PUBLIC::DELL-EXT::27864DA671E92BAB944E::f5fcad556d5ab3cd9937de3e2aabe523445e2c9260ead3e43ac2c0bf90022f07"
+        ]
+      },
+      "selected_candidate_count": 4,
+      "selected_owner_counts": {
+        "DELL": 4
+      },
+      "selected_source_count": 2,
+      "target_entities": [
+        "DELL"
+      ],
+      "top_candidates": [
+        {
+          "object_kind": "claim",
+          "owner": "DELL",
+          "rank": 1,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "5cb93915875db51befb6503147c323e35f1ad9095ba31a84181c4427bab7663c",
+          "source_record_id": "PUBLIC::DELL-EXT::D16CACF50B768E445DEB::SLICE::5CB93915875DB51BEFB6",
+          "text": "CUSTOMER STORIES GenAI improves productivity and patient outcomes “GenAI and AI offer a tremendous opportunity to help us take better care of our patients and give time back to care providers.” Dr. Mozziyar Etemadi, Clinical Director of Adv"
+        },
+        {
+          "object_kind": "claim",
+          "owner": "DELL",
+          "rank": 2,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "f5fcad556d5ab3cd9937de3e2aabe523445e2c9260ead3e43ac2c0bf90022f07",
+          "source_record_id": "PUBLIC::DELL-EXT::27864DA671E92BAB944E::SLICE::F5FCAD556D5AB3CD9937",
+          "text": "Simplified and streamlined deployment. With Dell’s expertise in L11 factory integration and L12 solution testing and deployment, organizations can experience a simplified and streamlined deployment process. Dell offers both integrated racks"
+        },
+        {
+          "object_kind": "bounded_parent_context",
+          "owner": "DELL",
+          "rank": 3,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "5cb93915875db51befb6503147c323e35f1ad9095ba31a84181c4427bab7663c",
+          "source_record_id": "PUBLIC::DELL-EXT::D16CACF50B768E445DEB::SLICE::5CB93915875DB51BEFB6",
+          "text": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: PUBLIC_WEB\nsource_tier: issuer_regulator_or_government_primary\npublication_date: 2026-02-13\nsection: Reviewed public source\nsubsection: Dell Technologies Inc."
+        },
+        {
+          "object_kind": "bounded_parent_context",
+          "owner": "DELL",
+          "rank": 4,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "f5fcad556d5ab3cd9937de3e2aabe523445e2c9260ead3e43ac2c0bf90022f07",
+          "source_record_id": "PUBLIC::DELL-EXT::27864DA671E92BAB944E::SLICE::F5FCAD556D5AB3CD9937",
+          "text": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: PUBLIC_WEB\nsource_tier: issuer_regulator_or_government_primary\npublication_date: 2024-08-21\nsection: Reviewed public source\nsubsection: Dell Technologies Inc."
+        }
+      ],
+      "typed_gap_codes": [
+        "request_scoped_candidate_gap",
+        "request_scoped_source_role_gap"
+      ]
+    },
+    {
+      "accepted_reviewed_evidence_count": 1,
+      "every_reviewed_target_owner_reached": true,
+      "facet_id": "conversion_and_durability",
+      "needs_human_review_count": 0,
+      "request_id": "REQ::DELL::CUSTOMER-DEPLOYMENT::ZERO-CALL",
+      "reviewed_target_hits_by_owner": {
+        "DELL": [
+          "PUBLIC::DELL-EXT::D16CACF50B768E445DEB::5cb93915875db51befb6503147c323e35f1ad9095ba31a84181c4427bab7663c"
+        ]
+      },
+      "selected_candidate_count": 4,
+      "selected_owner_counts": {
+        "DELL": 4
+      },
+      "selected_source_count": 2,
+      "target_entities": [
+        "DELL"
+      ],
+      "top_candidates": [
+        {
+          "object_kind": "claim",
+          "owner": "DELL",
+          "rank": 1,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "5cb93915875db51befb6503147c323e35f1ad9095ba31a84181c4427bab7663c",
+          "source_record_id": "PUBLIC::DELL-EXT::D16CACF50B768E445DEB::SLICE::5CB93915875DB51BEFB6",
+          "text": "CUSTOMER STORIES GenAI improves productivity and patient outcomes “GenAI and AI offer a tremendous opportunity to help us take better care of our patients and give time back to care providers.” Dr. Mozziyar Etemadi, Clinical Director of Adv"
+        },
+        {
+          "object_kind": "claim",
+          "owner": "DELL",
+          "rank": 2,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "f5fcad556d5ab3cd9937de3e2aabe523445e2c9260ead3e43ac2c0bf90022f07",
+          "source_record_id": "PUBLIC::DELL-EXT::27864DA671E92BAB944E::SLICE::F5FCAD556D5AB3CD9937",
+          "text": "Simplified and streamlined deployment. With Dell’s expertise in L11 factory integration and L12 solution testing and deployment, organizations can experience a simplified and streamlined deployment process. Dell offers both integrated racks"
+        },
+        {
+          "object_kind": "bounded_parent_context",
+          "owner": "DELL",
+          "rank": 3,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "5cb93915875db51befb6503147c323e35f1ad9095ba31a84181c4427bab7663c",
+          "source_record_id": "PUBLIC::DELL-EXT::D16CACF50B768E445DEB::SLICE::5CB93915875DB51BEFB6",
+          "text": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: PUBLIC_WEB\nsource_tier: issuer_regulator_or_government_primary\npublication_date: 2026-02-13\nsection: Reviewed public source\nsubsection: Dell Technologies Inc."
+        },
+        {
+          "object_kind": "bounded_parent_context",
+          "owner": "DELL",
+          "rank": 4,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "f5fcad556d5ab3cd9937de3e2aabe523445e2c9260ead3e43ac2c0bf90022f07",
+          "source_record_id": "PUBLIC::DELL-EXT::27864DA671E92BAB944E::SLICE::F5FCAD556D5AB3CD9937",
+          "text": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: PUBLIC_WEB\nsource_tier: issuer_regulator_or_government_primary\npublication_date: 2024-08-21\nsection: Reviewed public source\nsubsection: Dell Technologies Inc."
+        }
+      ],
+      "typed_gap_codes": [
+        "request_scoped_candidate_gap",
+        "request_scoped_source_role_gap"
+      ]
+    },
+    {
+      "accepted_reviewed_evidence_count": 3,
+      "every_reviewed_target_owner_reached": true,
+      "facet_id": "industry_demand_context",
+      "needs_human_review_count": 0,
+      "request_id": "REQ::DELL::INDUSTRY-DEMAND::ZERO-CALL",
+      "reviewed_target_hits_by_owner": {
+        "ORG::05BF3EEF551722C8": [
+          "PUBLIC::DELL-EXT::994E5EC6E65A944CC4B2::1a4fb15286ae73dede6a0f37620ac0fec1e5ed83133a83b6ba6e01877426ab02",
+          "PUBLIC::DELL-EXT::E6565EB1ADB8A9D888B0::3220354f75553241a958fb9f38f2ac8d39d0cccb251d5528f52716f4f152f705",
+          "PUBLIC::DELL-EXT::E6565EB1ADB8A9D888B0::c26c6a45bce326dde6e282e1513cdccfde4ed897bdbf0de090a3af11d3c35ee1"
+        ]
+      },
+      "selected_candidate_count": 6,
+      "selected_owner_counts": {
+        "ORG::05BF3EEF551722C8": 6
+      },
+      "selected_source_count": 3,
+      "target_entities": [
+        "ORG::05BF3EEF551722C8"
+      ],
+      "top_candidates": [
+        {
+          "object_kind": "claim",
+          "owner": "ORG::05BF3EEF551722C8",
+          "rank": 1,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "1a4fb15286ae73dede6a0f37620ac0fec1e5ed83133a83b6ba6e01877426ab02",
+          "source_record_id": "PUBLIC::DELL-EXT::994E5EC6E65A944CC4B2::SLICE::1A4FB15286AE73DEDE6A",
+          "text": "Organizations increased spending on compute and storage hardware infrastructure for AI deployments by 166% year-over-year in the second quarter of 2025, reaching $82."
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::05BF3EEF551722C8",
+          "rank": 2,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "1a4fb15286ae73dede6a0f37620ac0fec1e5ed83133a83b6ba6e01877426ab02",
+          "source_record_id": "PUBLIC::DELL-EXT::994E5EC6E65A944CC4B2::SLICE::1A4FB15286AE73DEDE6A",
+          "text": "The AI infrastructure market has consistently sustained high double-digit growth for a few years, driven primarily by investment in servers for AI deployments."
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::05BF3EEF551722C8",
+          "rank": 3,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "3220354f75553241a958fb9f38f2ac8d39d0cccb251d5528f52716f4f152f705",
+          "source_record_id": "PUBLIC::DELL-EXT::E6565EB1ADB8A9D888B0::SLICE::3220354F75553241A958",
+          "text": "Accelerated compute remains the structural backbone, alongside a growing non-GPU AI-centric layer. Server spending represented 97.6% of total AI infrastructure value in Q1 2026, and within that, a growing share of AI-centric demand is landi"
+        },
+        {
+          "object_kind": "bounded_parent_context",
+          "owner": "ORG::05BF3EEF551722C8",
+          "rank": 4,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "c26c6a45bce326dde6e282e1513cdccfde4ed897bdbf0de090a3af11d3c35ee1",
+          "source_record_id": "PUBLIC::DELL-EXT::E6565EB1ADB8A9D888B0::SLICE::C26C6A45BCE326DDE6E2",
+          "text": "ticker: ORG::05BF3EEF551722C8\ncompany: International Data Corporation\nsource_type: PUBLIC_WEB\nsource_tier: official_market_or_industry_primary\npublication_date: 2026-07-21\nsection: Reviewed public source\nsubsection: International Data Corpo"
+        }
+      ],
+      "typed_gap_codes": [
+        "request_scoped_candidate_gap",
+        "request_scoped_source_role_gap"
+      ]
+    },
+    {
+      "accepted_reviewed_evidence_count": 4,
+      "every_reviewed_target_owner_reached": true,
+      "facet_id": "industry_pricing_mix_context",
+      "needs_human_review_count": 0,
+      "request_id": "REQ::DELL::INDUSTRY-PVM::ZERO-CALL",
+      "reviewed_target_hits_by_owner": {
+        "ORG::13AAFF874F67F30C": [
+          "PUBLIC::DELL-EXT::5119B3A844B5141C6BC0::3a6e64c5dfb197bbc87ecbac346d4e9f79b573571a701b0842def28f3a4c8bbb",
+          "PUBLIC::DELL-EXT::5B5813808F5A1F5DB246::e40ebbf6e3213334f02dded3575c1f91990e1acc07740af88c8a357c25bb47a8",
+          "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC::62151df3871a8ad5a4d8881674173cf7453f85c6ccd455a58846fb00896650ce",
+          "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC::8261689cfe83fb4889ed6c55dd7fbef5df2a2c882c0c60e872e80ba01d294b0a"
+        ]
+      },
+      "selected_candidate_count": 14,
+      "selected_owner_counts": {
+        "ORG::13AAFF874F67F30C": 14
+      },
+      "selected_source_count": 7,
+      "target_entities": [
+        "ORG::13AAFF874F67F30C"
+      ],
+      "top_candidates": [
+        {
+          "object_kind": "claim",
+          "owner": "ORG::13AAFF874F67F30C",
+          "rank": 1,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "f2f47ecd4d5552fc5ffc99646e0a173a9768ca0181593bd5b1eb8c1144e4bfa2",
+          "source_record_id": "PUBLIC::DELL-EXT::AF72C71D3B4A92ECCA7E::SLICE::F2F47ECD4D5552FC5FFC",
+          "text": "On the front-end, 3nm advanced process capacity—currently dominated by TSMC—has become even more constrained, turning into a scarce resource fiercely contested by global tech giants. TrendForce notes that the resource competition triggered "
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::13AAFF874F67F30C",
+          "rank": 2,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "3a6e64c5dfb197bbc87ecbac346d4e9f79b573571a701b0842def28f3a4c8bbb",
+          "source_record_id": "PUBLIC::DELL-EXT::5119B3A844B5141C6BC0::SLICE::3A6E64C5DFB197BBC87E",
+          "text": "Currently, the supply chain outlook for shipments of AI servers remains stable. Under this scenario, global shipments of AI servers in 2025 are projected to grow by nearly 28% year-over-year. However, if GB200/GB300 rack shipments face scal"
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::13AAFF874F67F30C",
+          "rank": 3,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "e40ebbf6e3213334f02dded3575c1f91990e1acc07740af88c8a357c25bb47a8",
+          "source_record_id": "PUBLIC::DELL-EXT::5B5813808F5A1F5DB246::SLICE::E40EBBF6E3213334F02D",
+          "text": "Looking at shipments of AI servers, the primary growth driver has been the expanding demand for systems running on Hopper chips from customers, including server OEMs and CSPs based in the US and China."
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::13AAFF874F67F30C",
+          "rank": 4,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "62151df3871a8ad5a4d8881674173cf7453f85c6ccd455a58846fb00896650ce",
+          "source_record_id": "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC::SLICE::62151DF3871A8AD5A4D8",
+          "text": "In the 2026 AI server market, shipment growth will mainly come from North American CSPs, government sovereign cloud projects, and the increasing development of in-house ASICs and edge AI inference solutions by large CSPs. GPUs will remain t"
+        }
+      ],
+      "typed_gap_codes": [
+        "request_scoped_candidate_gap",
+        "request_scoped_source_role_gap"
+      ]
+    },
+    {
+      "accepted_reviewed_evidence_count": 1,
+      "every_reviewed_target_owner_reached": true,
+      "facet_id": "channel_configuration_context",
+      "needs_human_review_count": 0,
+      "request_id": "REQ::DELL::CHANNEL-CONFIGURATION::ZERO-CALL",
+      "reviewed_target_hits_by_owner": {
+        "ORG::397A7B207441AF01": [
+          "PUBLIC::DELL-EXT::F92EE1D68F1969247C69::b3c1c67b94e864e245ca80cc559b6400a154115a1e76e228c0c6bff42e1fc3a2"
+        ]
+      },
+      "selected_candidate_count": 2,
+      "selected_owner_counts": {
+        "ORG::397A7B207441AF01": 2
+      },
+      "selected_source_count": 1,
+      "target_entities": [
+        "ORG::397A7B207441AF01"
+      ],
+      "top_candidates": [
+        {
+          "object_kind": "claim",
+          "owner": "ORG::397A7B207441AF01",
+          "rank": 1,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "b3c1c67b94e864e245ca80cc559b6400a154115a1e76e228c0c6bff42e1fc3a2",
+          "source_record_id": "PUBLIC::DELL-EXT::F92EE1D68F1969247C69::SLICE::B3C1C67B94E864E245CA",
+          "text": "The Dell PowerEdge XE9680 offered here is a 6U enterprise AI server configured with 8× NVIDIA H200 141GB SXM GPUs, dual Intel Xeon Platinum 8462Y+, and 2TB DDR5 memory. This is a fixed, validated configuration available as a refurbished, fu"
+        },
+        {
+          "object_kind": "bounded_parent_context",
+          "owner": "ORG::397A7B207441AF01",
+          "rank": 2,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "b3c1c67b94e864e245ca80cc559b6400a154115a1e76e228c0c6bff42e1fc3a2",
+          "source_record_id": "PUBLIC::DELL-EXT::F92EE1D68F1969247C69::SLICE::B3C1C67B94E864E245CA",
+          "text": "ticker: ORG::397A7B207441AF01\ncompany: Server Parts Europe\nsource_type: PUBLIC_WEB\nsource_tier: named_counterparty_or_standards_primary\npublication_date: 2026-03-09\nsection: Reviewed public source\nsubsection: Server Parts Europe"
+        }
+      ],
+      "typed_gap_codes": [
+        "request_scoped_candidate_gap",
+        "request_scoped_source_role_gap"
+      ]
+    },
+    {
+      "accepted_reviewed_evidence_count": 3,
+      "every_reviewed_target_owner_reached": true,
+      "facet_id": "trusted_value_pool_context",
+      "needs_human_review_count": 0,
+      "request_id": "REQ::DELL::VALUE-POOL::ZERO-CALL",
+      "reviewed_target_hits_by_owner": {
+        "ORG::1663EE18A9AFB7C9": [
+          "PUBLIC::DELL-EXT::386573F0F307ED62756A::c62773668f5463cb00c29df65d8229181591a05d58159da1cba3d463717a6538",
+          "PUBLIC::DELL-EXT::969E64FF00BED8028287::5bd4e857614387c0a0ab266e215a6b37fb3a1bbee7f50b0fab23eb1a1c992394"
+        ],
+        "ORG::8FDBEED39DAE342A": [
+          "PUBLIC::DELL-EXT::AE1FA8596571EE7867A7::b301d0b034bf1df82768240de0a167c8c1b0030d37aabed9124bca7cfe7023c2"
+        ]
+      },
+      "selected_candidate_count": 6,
+      "selected_owner_counts": {
+        "ORG::1663EE18A9AFB7C9": 4,
+        "ORG::8FDBEED39DAE342A": 2
+      },
+      "selected_source_count": 3,
+      "target_entities": [
+        "ORG::1663EE18A9AFB7C9",
+        "ORG::8FDBEED39DAE342A"
+      ],
+      "top_candidates": [
+        {
+          "object_kind": "claim",
+          "owner": "ORG::1663EE18A9AFB7C9",
+          "rank": 1,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "c62773668f5463cb00c29df65d8229181591a05d58159da1cba3d463717a6538",
+          "source_record_id": "PUBLIC::DELL-EXT::386573F0F307ED62756A::SLICE::C62773668F5463CB00C2",
+          "text": "But there’s a quieter story beneath the revenue growth: Dell’s gross margin dropped by 26% since the company first reported AI optimized server revenue at the end of February 2025, even as AI now brings in 10 times the consumer revenue of l"
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::1663EE18A9AFB7C9",
+          "rank": 2,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "5bd4e857614387c0a0ab266e215a6b37fb3a1bbee7f50b0fab23eb1a1c992394",
+          "source_record_id": "PUBLIC::DELL-EXT::969E64FF00BED8028287::SLICE::5BD4E857614387C0A0AB",
+          "text": "On the question of AI server profitability, a topic that has made some investors nervous, Kennedy was unfazed. Dell targets mid-single-digit operating margins on its AI infrastructure business, a figure it has maintained consistently. “Mid-"
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::8FDBEED39DAE342A",
+          "rank": 3,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "b301d0b034bf1df82768240de0a167c8c1b0030d37aabed9124bca7cfe7023c2",
+          "source_record_id": "PUBLIC::DELL-EXT::AE1FA8596571EE7867A7::SLICE::B301D0B034BF1DF82768",
+          "text": "For the first two years of the GenAI boom, the hyperscalers and major cloud builders soaked up nearly all of the datacenter GPUs that Nvidia could build, and even if Nvidia wanted large enterprises to adopt its technology, there was not eno"
+        },
+        {
+          "object_kind": "bounded_parent_context",
+          "owner": "ORG::1663EE18A9AFB7C9",
+          "rank": 4,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "c62773668f5463cb00c29df65d8229181591a05d58159da1cba3d463717a6538",
+          "source_record_id": "PUBLIC::DELL-EXT::386573F0F307ED62756A::SLICE::C62773668F5463CB00C2",
+          "text": "ticker: ORG::1663EE18A9AFB7C9\ncompany: Fortune\nsource_type: PUBLIC_WEB\nsource_tier: trusted_media_industry_association_or_public_analyst_context\npublication_date: 2026-06-30\nsection: Reviewed public source\nsubsection: Fortune"
+        }
+      ],
+      "typed_gap_codes": [
+        "request_scoped_candidate_gap",
+        "request_scoped_source_role_gap"
+      ]
+    },
+    {
+      "accepted_reviewed_evidence_count": 1,
+      "every_reviewed_target_owner_reached": true,
+      "facet_id": "industry_supply_context",
+      "needs_human_review_count": 0,
+      "request_id": "REQ::DELL::INDUSTRY-SUPPLY::ZERO-CALL",
+      "reviewed_target_hits_by_owner": {
+        "ORG::13AAFF874F67F30C": [
+          "PUBLIC::DELL-EXT::AF72C71D3B4A92ECCA7E::f2f47ecd4d5552fc5ffc99646e0a173a9768ca0181593bd5b1eb8c1144e4bfa2"
+        ]
+      },
+      "selected_candidate_count": 14,
+      "selected_owner_counts": {
+        "ORG::13AAFF874F67F30C": 14
+      },
+      "selected_source_count": 7,
+      "target_entities": [
+        "ORG::13AAFF874F67F30C"
+      ],
+      "top_candidates": [
+        {
+          "object_kind": "claim",
+          "owner": "ORG::13AAFF874F67F30C",
+          "rank": 1,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "f2f47ecd4d5552fc5ffc99646e0a173a9768ca0181593bd5b1eb8c1144e4bfa2",
+          "source_record_id": "PUBLIC::DELL-EXT::AF72C71D3B4A92ECCA7E::SLICE::F2F47ECD4D5552FC5FFC",
+          "text": "On the front-end, 3nm advanced process capacity—currently dominated by TSMC—has become even more constrained, turning into a scarce resource fiercely contested by global tech giants. TrendForce notes that the resource competition triggered "
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::13AAFF874F67F30C",
+          "rank": 2,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "8261689cfe83fb4889ed6c55dd7fbef5df2a2c882c0c60e872e80ba01d294b0a",
+          "source_record_id": "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC::SLICE::8261689CFE83FB4889ED",
+          "text": "ASIC-based AI servers are projected to account for nearly 28% of shipments, reaching a multi-year peak North American CSPs' continued investments in AI infrastructure are expected to increase global AI server shipments by more than 28% YoY "
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::13AAFF874F67F30C",
+          "rank": 3,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "3a6e64c5dfb197bbc87ecbac346d4e9f79b573571a701b0842def28f3a4c8bbb",
+          "source_record_id": "PUBLIC::DELL-EXT::5119B3A844B5141C6BC0::SLICE::3A6E64C5DFB197BBC87E",
+          "text": "Currently, the supply chain outlook for shipments of AI servers remains stable. Under this scenario, global shipments of AI servers in 2025 are projected to grow by nearly 28% year-over-year. However, if GB200/GB300 rack shipments face scal"
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::13AAFF874F67F30C",
+          "rank": 4,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "e40ebbf6e3213334f02dded3575c1f91990e1acc07740af88c8a357c25bb47a8",
+          "source_record_id": "PUBLIC::DELL-EXT::5B5813808F5A1F5DB246::SLICE::E40EBBF6E3213334F02D",
+          "text": "Looking at shipments of AI servers, the primary growth driver has been the expanding demand for systems running on Hopper chips from customers, including server OEMs and CSPs based in the US and China."
+        }
+      ],
+      "typed_gap_codes": [
+        "request_scoped_candidate_gap",
+        "request_scoped_source_role_gap"
+      ]
+    },
+    {
+      "accepted_reviewed_evidence_count": 3,
+      "every_reviewed_target_owner_reached": true,
+      "facet_id": "trusted_or_industry_counterevidence",
+      "needs_human_review_count": 0,
+      "request_id": "REQ::DELL::EXTERNAL-COUNTEREVIDENCE::ZERO-CALL",
+      "reviewed_target_hits_by_owner": {
+        "ORG::13AAFF874F67F30C": [
+          "PUBLIC::DELL-EXT::6D523C85E214E7A4E90B::281ad4c844369657a30e2b954812540eadb43478c3390dadd8a3ab937579f8dd"
+        ],
+        "ORG::1663EE18A9AFB7C9": [
+          "PUBLIC::DELL-EXT::386573F0F307ED62756A::c62773668f5463cb00c29df65d8229181591a05d58159da1cba3d463717a6538"
+        ],
+        "ORG::8FDBEED39DAE342A": [
+          "PUBLIC::DELL-EXT::AE1FA8596571EE7867A7::b301d0b034bf1df82768240de0a167c8c1b0030d37aabed9124bca7cfe7023c2"
+        ]
+      },
+      "selected_candidate_count": 16,
+      "selected_owner_counts": {
+        "ORG::13AAFF874F67F30C": 10,
+        "ORG::1663EE18A9AFB7C9": 4,
+        "ORG::8FDBEED39DAE342A": 2
+      },
+      "selected_source_count": 10,
+      "target_entities": [
+        "ORG::13AAFF874F67F30C",
+        "ORG::1663EE18A9AFB7C9",
+        "ORG::8FDBEED39DAE342A"
+      ],
+      "top_candidates": [
+        {
+          "object_kind": "claim",
+          "owner": "ORG::1663EE18A9AFB7C9",
+          "rank": 1,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "c62773668f5463cb00c29df65d8229181591a05d58159da1cba3d463717a6538",
+          "source_record_id": "PUBLIC::DELL-EXT::386573F0F307ED62756A::SLICE::C62773668F5463CB00C2",
+          "text": "But there’s a quieter story beneath the revenue growth: Dell’s gross margin dropped by 26% since the company first reported AI optimized server revenue at the end of February 2025, even as AI now brings in 10 times the consumer revenue of l"
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::13AAFF874F67F30C",
+          "rank": 2,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "f2f47ecd4d5552fc5ffc99646e0a173a9768ca0181593bd5b1eb8c1144e4bfa2",
+          "source_record_id": "PUBLIC::DELL-EXT::AF72C71D3B4A92ECCA7E::SLICE::F2F47ECD4D5552FC5FFC",
+          "text": "On the front-end, 3nm advanced process capacity—currently dominated by TSMC—has become even more constrained, turning into a scarce resource fiercely contested by global tech giants. TrendForce notes that the resource competition triggered "
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::1663EE18A9AFB7C9",
+          "rank": 3,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "5bd4e857614387c0a0ab266e215a6b37fb3a1bbee7f50b0fab23eb1a1c992394",
+          "source_record_id": "PUBLIC::DELL-EXT::969E64FF00BED8028287::SLICE::5BD4E857614387C0A0AB",
+          "text": "On the question of AI server profitability, a topic that has made some investors nervous, Kennedy was unfazed. Dell targets mid-single-digit operating margins on its AI infrastructure business, a figure it has maintained consistently. “Mid-"
+        },
+        {
+          "object_kind": "claim",
+          "owner": "ORG::8FDBEED39DAE342A",
+          "rank": 4,
+          "route_membership": [
+            "bm25_lexical",
+            "qwen3_embedding_0_6b_dense"
+          ],
+          "source_content_digest": "b301d0b034bf1df82768240de0a167c8c1b0030d37aabed9124bca7cfe7023c2",
+          "source_record_id": "PUBLIC::DELL-EXT::AE1FA8596571EE7867A7::SLICE::B301D0B034BF1DF82768",
+          "text": "For the first two years of the GenAI boom, the hyperscalers and major cloud builders soaked up nearly all of the datacenter GPUs that Nvidia could build, and even if Nvidia wanted large enterprises to adopt its technology, there was not eno"
+        }
+      ],
+      "typed_gap_codes": [
+        "request_scoped_candidate_gap",
+        "request_scoped_source_role_gap"
+      ]
+    }
+  ],
+  "result_digest": "2585073d79b13f7fcd5d17cf22e3312e5c52edd26a90eb68c76a658a413ef09a",
+  "runtime": {
+    "accepted_reviewed_evidence_count": 15,
+    "cuda_receipt": {
+      "compute_capability": [
+        8,
+        9
+      ],
+      "cpu_fallback_allowed": false,
+      "cuda_runtime_version": "12.6",
+      "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "embedding_precision": "fp16",
+      "execution_device": "cuda:0",
+      "failure_policy": "fail_closed_before_model_load",
+      "fp16_smoke_device": "cuda:0",
+      "fp16_smoke_dtype": "float16",
+      "fp16_smoke_value": 11.0,
+      "purpose": "DELL dynamic public candidate retrieval zero-call proof",
+      "reranker_precision": "fp16",
+      "torch_version": "2.10.0+cu126",
+      "total_memory_bytes": 8585216000
+    },
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "request_count": 8,
+    "selected_candidate_count": 66
+  },
+  "schema_version": "fin_ia_s1_s3_dell_dynamic_public_reachability_zero_call_result_v1_0",
+  "status": "pass"
+}

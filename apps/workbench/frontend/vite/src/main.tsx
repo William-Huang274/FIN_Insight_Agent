@@ -3,6 +3,7 @@ import { createRoot } from "react-dom/client";
 
 import { ResearchWorkspace } from "./app/ResearchWorkspace";
 import { OperationsConsole } from "./operations/OperationsConsole";
+import { ResearchSession } from "./app/ResearchSession";
 
 
 function canonicalEntry(pathname: string): "/workspace" | "/operations" {
@@ -35,7 +36,7 @@ if (!root) throw new Error("workbench_root_missing");
 const entry = canonicalEntry(window.location.pathname);
 createRoot(root).render(
   <React.StrictMode>
-    {entry === "/operations" ? (
+    {window.location.pathname === "/workspace/session" ? <ResearchSession /> : entry === "/operations" ? (
       <OperationsConsole />
     ) : (
       <ResearchWorkspace />

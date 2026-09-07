@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_s3_cell_scoped_claim_contract_zero_call_result_v1_0",
+  "status": "formal_zero_call_engineering_pass_fresh_live_scope_decision_pending",
+  "recorded_at": "2026-08-17T09:38:00+08:00",
+  "case_key": "DELL",
+  "failed_predecessor_run_id": "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5",
+  "failed_predecessor_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_claim_surface_successor_chat_live_result_v1_0.json",
+  "failed_predecessor_result_digest": "e8e13386afa560175b3d590940b35bc609ddde1538fa9f018dc79d5acb20b4fc",
+  "source_bindings": {
+    "current_consumer_ref": "src/sec_agent/research/current_consumer.py",
+    "current_consumer_sha256": "4a7b5fe1542a1a5ed91bef302b6e53d7fb420bff2fb040f514d33536b0792514",
+    "bounded_finance_loop_ref": "src/sec_agent/research/bounded_finance_loop.py",
+    "bounded_finance_loop_sha256": "86671c875e2ccb3dc14803ff420234e11e8813204f2e1c6f730825757ed26d03",
+    "five_cell_runner_ref": "scripts/research/run_s3_dynamic_five_cell_live.py",
+    "five_cell_runner_sha256": "d859996dda2e467076db192633cc34f515810ae4897ac6f7ac502c7c8ccf71c9",
+    "claim_surface_tests_ref": "tests/test_s3_dynamic_claim_surface_successor.py",
+    "claim_surface_tests_sha256": "ba72ce85b34c283a059d6decba6e474494054def05e252607f44f7e0f2e2193a",
+    "five_cell_runner_tests_ref": "tests/test_s3_dynamic_five_cell_live.py",
+    "five_cell_runner_tests_sha256": "3180bf004ca5d24b1eca84fc2786c1b2eeb9c81c1b04f6091df94eb39a1b014b"
+  },
+  "contract_proof": {
+    "claim_authority_qualified_cell_ids": [
+      "CELL::value_capture"
+    ],
+    "claim_surface_qualified_cell_ids": [
+      "CELL::value_capture"
+    ],
+    "nonqualified_tool_fields_omitted": [
+      "claim_scope",
+      "financial_scope",
+      "causal_bridge_authority",
+      "claim_relations",
+      "qualitative_fact_refs"
+    ],
+    "nonqualified_messages_omit_claim_contracts_and_relation_aliases": true,
+    "qualified_value_tool_preserves_claim_fields_and_relation_aliases": true,
+    "mixed_scope_monolithic_submission_rejected": true,
+    "value_only_fields_in_demand_payload_rejected": true,
+    "value_relation_alias_in_demand_payload_rejected": true,
+    "unexpected_project_exception_materializes_terminal_result": true,
+    "completed_capture_refs_preserved_before_terminal_failure": true,
+    "local_full_financial_validation_remains_authoritative": true,
+    "harness_generated_research_judgment": false
+  },
+  "verification": {
+    "targeted_suite_first_fresh_process": "138 passed",
+    "targeted_suite_second_fresh_process": "138 passed",
+    "full_repository_suite": "468 passed",
+    "python_compileall": "pass",
+    "active_baseline": {
+      "python_files": 135,
+      "frontend_files": 8,
+      "runtime_resources": 11,
+      "forbidden_references": 0,
+      "status": "pass"
+    },
+    "secret_scan": {
+      "files_scanned": 6821,
+      "findings": 0,
+      "status": "pass"
+    },
+    "model_calls": 0,
+    "provider_calls": 0,
+    "external_network_calls": 0,
+    "candidate_promotions": 0
+  },
+  "acceptance": {
+    "R5_failure_preserved": true,
+    "cell_scoped_contract_engineering": true,
+    "terminal_materialization_engineering": true,
+    "fresh_scope_decision_required": true,
+    "fresh_authority_required": true,
+    "R6_live_authorized_by_this_result": false,
+    "DELL_five_cell_L1": false,
+    "DELL_five_cell_content_quality": false,
+    "heterogeneous_generalization": false,
+    "S3_product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "known_boundary": "This result proves only provider-neutral per-cell ClaimAuthority and ClaimRelation projection, fail-closed validation and typed unexpected-exception terminal materialization. It does not prove DeepSeek natural research content, permit reuse of R5 attempt IDs, authorize a new paid run without a separate clean scope decision and authority, close the missing product-profit bridge, or approve DELL five-cell, generalization, S3, publication or release.",
+  "result_digest": "4537d7e1aac656efaab991748ff40a411ea57e7612aea461c5e9d81e3eb1bf24"
+}

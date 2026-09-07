@@ -1,0 +1,65 @@
+{
+  "schema_version": "fin_ia_s3_failed_fragment_submission_successor_live_failure_assessment_v1_0",
+  "status": "natural_counter_tool_accepted_terminal_true_positive_causal_overreach_repair_feedback_required",
+  "recorded_at": "2026-08-16T16:16:14.0649003+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_failed_counter_submission_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "20122affcbd60f311bcccd1f667033a8e48a2ad311075f628ae50d403ab3c00b",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_failed_counter_submission_successor_chat_live_result_v1_0.json",
+  "result_sha256": "072e630392552c614cb7c632d822f6b3934ae081b313ecce4a2114af9d7307d1",
+  "result_digest": "4a036d98f892016952df642c89583cfb1e8dbb0d8acde4dd9657b7d5672b629f",
+  "failure_phase": "local_terminal_judgment_validation",
+  "failure_code": "claim_surface_narrative_relation_conflict",
+  "execution": {
+    "fresh_model_calls_attempted": 1,
+    "successful_predecessor_model_calls_reused": 5,
+    "logical_chain_model_calls": 6,
+    "fresh_tool_calls_accepted": 1,
+    "fragments_locally_accepted": 3,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "protocol_switches": 0
+  },
+  "provider_profile_result": {
+    "non_thinking_profile_effective": true,
+    "finish_reason": "tool_calls",
+    "tool_call_count": 1,
+    "completion_tokens": 540,
+    "visible_chars": 0,
+    "prior_reasoning_budget_exhaustion_recurred": false,
+    "rc_s3_022_provider_profile_root_cause_closed_by_live_evidence": true
+  },
+  "root_cause": {
+    "owner_layer": "S3_model_owned_financial_claim_surface_and_bounded_validation_repair_loop",
+    "transport_failure": false,
+    "provider_contract_submission_failure": false,
+    "local_validator_false_positive": false,
+    "financial_L1_observed": true,
+    "model_content_failure": "The submitted counterargument selected PROFIT_BRIDGE_GAP and not_inferable, but then stated that company-margin decline was driven by low-margin AI-server mix, other segment mix or one-off factors. The available Evidence Pack does not establish any of those drivers.",
+    "validator_evidence": "The clause-scoped guard matched a real positive causal clause containing the AI-server subject, gross-margin outcome and the verb '驱动', with no negation or explicit unsupported qualifier in that clause.",
+    "runtime_gap": "The exact-once successor correctly failed closed but terminal validation feedback was not yet returned to the model as a bounded repairable Tool result, so a correctable model claim could only terminate the attempt.",
+    "safe_fix_boundary": "Do not weaken the causal guard and do not edit the model text locally. Add one provider-neutral bounded fragment repair turn that replays the rejected Tool Call, returns the typed validation code and rule, allows only the same current contract, and then revalidates the entire terminal Judgment."
+  },
+  "business_content_observation": {
+    "preserved_strengths": [
+      "The fragment retained the typed product-to-company profit bridge gap.",
+      "It used the same-basis company gross-margin relation as a counter observation and kept a future official-source route.",
+      "It concluded that coexistence of product target attainment and company margin decline does not confirm profit conversion."
+    ],
+    "material_L1_failure": "The strongest-alternative sentence converted unverified possibilities into asserted causal drivers, contradicting both the selected relation and the available evidence authority.",
+    "formal_fixed_pack_layer_one_acceptance": false
+  },
+  "disposition": {
+    "immutable_R7_preserved": true,
+    "same_attempt_retry_forbidden": true,
+    "successful_predecessor_nodes_must_not_be_rerun": true,
+    "rejected_fragment_must_not_be_promoted": true,
+    "manual_text_rewrite_forbidden": true,
+    "causal_guard_relaxation_forbidden": true,
+    "repair_scope": "one_provider_neutral_machine_readable_validation_feedback_and_same_fragment_resubmission",
+    "zero_call_replay_and_mutation_required": true,
+    "one_fresh_repair_submission_may_be_considered_after_clean_proof": true,
+    "dynamic_truth_spine_remains_blocked": true
+  },
+  "known_boundary": "R7 proves that DeepSeek non-thinking Tool submission works and that the local financial L1 guard catches a real causal overclaim. It does not establish a terminal fixed-Pack Judgment, content acceptance, dynamic Agentic Research, five-cell execution, heterogeneous generalization or S3 acceptance."
+}

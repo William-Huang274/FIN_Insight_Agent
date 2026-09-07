@@ -1,0 +1,101 @@
+{
+  "acceptance": {
+    "absolute_content_quality_pending": false,
+    "all_five_cell_judgments_contract_valid": false,
+    "cross_cell_synthesis_contract_valid": false,
+    "current_S1_S2_EvidenceResponse_executed": false,
+    "financial_L1_assessment_pending": false,
+    "five_cell_report_compiled": false,
+    "heterogeneous_generalization": false,
+    "natural_planner_executed": true,
+    "paired_gain_pending": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false,
+    "s3_product_acceptance": false,
+    "workbench_publication": false
+  },
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_chat_live_authority_v1_0.json",
+  "authority_sha256": "2bccbdf9ca1e43184d380f2ea5fae74b919313ea7df69616679191936a0cd796",
+  "case_key": "DELL",
+  "cell_workpaper_digest": "",
+  "cells": [],
+  "dynamic_research_input_digest": "",
+  "evidence_response_set_digest": "",
+  "evidence_response_summary": {},
+  "execution": {
+    "candidate_promotions": 0,
+    "cell_analysis_calls_attempted": 0,
+    "cell_judgments_accepted": 0,
+    "cell_submission_calls_attempted": 0,
+    "current_S1_S2_executed": true,
+    "external_source_network_calls": 0,
+    "fallbacks": 0,
+    "maximum_model_calls": 13,
+    "model_calls_attempted": 1,
+    "planner_calls_completed": 1,
+    "product_publication": false,
+    "protocol_switches": 0,
+    "retries": 0,
+    "synthesis_analysis_attempted": 0,
+    "synthesis_submission_attempted": 0
+  },
+  "implementation_commit": "24e67cb135a2374fda036c472bdaa6c9590669f0",
+  "known_boundary": "This exact-once authority permits only one natural DELL dynamic five-cell Chat run. It requires fresh planning and current S1/S2, continues later cells after an isolated failure, synthesizes only after five valid Judgments, and forbids unreviewed promotion, positive product-profit attribution without an authoritative bridge, retries, fallbacks, external-source network, publication, heterogeneous generalization, S3 acceptance and release claims.",
+  "objective_id": "ROC::c1440c206aad66f719ee1c1e",
+  "orchestration_failure": {
+    "failure_capture_ref": "",
+    "failure_code": "research_consumer_cell_capacity_exceeded",
+    "failure_phase": "five_cell_deliverable_validation"
+  },
+  "planner": {
+    "deferred_atom_count": 2,
+    "plan_digest": "f964f9fe814e1ea5d50c5286fb57b3cb00144514c2ee47cc9c770b7d662debaf",
+    "proposed_atom_count": 10,
+    "provider_step": {
+      "finish_reason": "stop",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R1/FIVE-CELL-R1-PLANNER-01/model_visible_request.json",
+      "request_digest": "a9c08008154626ee5a27df369581c22b4b69a57643f84091a16d34d551167e24",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R1/FIVE-CELL-R1-PLANNER-01/provider_response.json",
+      "response_digest": "a49019b8512004cb8b48f1ec96e0abb3a7fc3f31099ce31f25a9ab951096e318",
+      "usage": {
+        "completion_tokens": 6103,
+        "completion_tokens_details": {
+          "reasoning_tokens": 5033
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1302,
+        "prompt_tokens": 1302,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 7405
+      }
+    },
+    "selected_atom_count": 8
+  },
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R1/full_result.json",
+  "private_full_result_sha256": "fb8867a30e1a2399677a323322eaab80e21a69c477128751098fea47421d64b1",
+  "recorded_at": "2026-08-16T18:02:06+00:00",
+  "report_digest": "",
+  "required_cell_ids": [
+    "CELL::demand_quality",
+    "CELL::operating_performance",
+    "CELL::value_capture",
+    "CELL::cash_conversion",
+    "CELL::counterevidence"
+  ],
+  "result_digest": "96b3fc98d4c7cf8c3b103bfe5384781b1523fd563cf27af3c1f0318ad8575708",
+  "schema_version": "fin_ia_s3_dynamic_five_cell_live_result_v1_0",
+  "status": "terminal_failed_or_partial_no_retry",
+  "synthesis": {
+    "analysis": {},
+    "analysis_messages_digest": "",
+    "failure_capture_ref": "",
+    "failure_code": "five_cell_synthesis_requires_all_cells",
+    "failure_phase": "not_attempted",
+    "submission": {},
+    "submission_messages_digest": "",
+    "tool_schema_digest": "",
+    "validated_synthesis_digest": ""
+  }
+}

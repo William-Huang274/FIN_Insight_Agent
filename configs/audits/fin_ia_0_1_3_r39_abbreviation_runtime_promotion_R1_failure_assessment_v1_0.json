@@ -1,0 +1,32 @@
+{
+  "schema_version": "fin_ia_runtime_promotion_failure_assessment_v1_0",
+  "attempt_id": "r39-abbreviation-runtime-promotion-r1-20260826T0052+0800",
+  "status": "failed_before_output_materialization_successor_required",
+  "recorded_at": "2026-08-26T00:52:00+08:00",
+  "stage": "successor_policy_registry_binding",
+  "error_type": "FileNotFoundError",
+  "error": "registry resource validation attempted to read the not-yet-published v1_9 hybrid policy",
+  "earliest_faulty_artifact": "scripts/data_retrieval/promote_s1_abbreviation_claim_repair_to_current_runtime.py",
+  "root_cause": "the promotion script called the fail-closed registry binding helper before publishing the immutable hybrid and binding successor policy files that the helper deliberately re-reads for canonical-digest validation",
+  "required_fix": "publish the two new successor policy files before in-memory registry binding, keep the shared current registry untouched until the binding receipt validates, and execute a new R2 promotion attempt",
+  "outputs_created": [],
+  "valid_preexisting_inputs": [
+    "configs/retrieval/fin_ia_0_1_3_s1_abbreviation_claim_repair_successor_result_v1_0.json",
+    "configs/retrieval/fin_ia_0_1_3_s1c_qwen_embedding_cache_successor_result_v1_3.json",
+    "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v9/objects.jsonl",
+    "data/workbench_private/fin_0_1_3_s1c_hybrid_candidate_runtime/model_cache_v9/qwen3_embedding_0_6b_v1/manifest.json"
+  ],
+  "authority": {
+    "predecessor_registry_mutated": false,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0,
+    "numeric_authority_changes": 0,
+    "model_calls_in_promotion": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "S1_qualified": false,
+    "release": false
+  },
+  "known_boundary": "The R39 append-only object and embedding successor artifacts were successfully materialized before this promotion attempt and remain valid immutable inputs. R1 created no hybrid policy, binding policy, receipt or current registry mutation and cannot be reclassified as a successful promotion.",
+  "result_digest": "a622b1156bd120bd56f40db98cf4153e5628426cdda14d445f8a140afc028d07"
+}

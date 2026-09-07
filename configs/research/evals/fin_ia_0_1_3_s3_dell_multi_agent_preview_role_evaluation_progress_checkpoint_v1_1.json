@@ -1,0 +1,575 @@
+{
+  "case_key": "DELL",
+  "checkpoint_digest": "258bc3b8fa3a8fc6d27bb6b21de71073b78533f9a313af70c3406c1ae0f82469",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "new_model_calls": 0,
+    "new_network_calls": 0
+  },
+  "completed_agent_ids": [
+    "AGENT::DEMAND_QUALITY",
+    "AGENT::OPERATING_PERFORMANCE",
+    "AGENT::VALUE_CAPTURE",
+    "AGENT::CASH_CONVERSION",
+    "AGENT::SUPPLY_RELATIONSHIP",
+    "AGENT::COUNTEREVIDENCE"
+  ],
+  "context_digests": {
+    "AGENT::CASH_CONVERSION": "5194472682d12d58a66533cb0d0fc6f3206d2acc185d280692f56578b2d37d5f",
+    "AGENT::COUNTEREVIDENCE": "28f9796670f2602d1f6adb1f645ce803feeb189e93877f601cf11059ed551c84",
+    "AGENT::DEMAND_QUALITY": "1ddcce797a2fac8566024a3c2dd1ea1eb31c837637a3352bb7dac6d37f1f0e6b",
+    "AGENT::OPERATING_PERFORMANCE": "1b0440a8da35c70529980130d7c7b44899dc976236ffa0326cf59fb071ea1a43",
+    "AGENT::SUPPLY_RELATIONSHIP": "1a5b991f590664079eecea8376e65f0995cf845214c3ce001b73f0c1369f04b4",
+    "AGENT::VALUE_CAPTURE": "74df1c16d157f55b70b599254ace681b48091e27c26579c5fb4ba272649a407a"
+  },
+  "evaluator_analysis_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_evaluation_nonthinking_profile_v1_0.json",
+  "evaluator_analysis_profile_sha256": "de013316c255864af2e1631dcb75d40b9aabe70a691e9c02092978c546d6a4f4",
+  "evaluator_profile_lineage": {
+    "AGENT::CASH_CONVERSION": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_evaluation_nonthinking_profile_v1_0.json",
+      "sha256": "de013316c255864af2e1631dcb75d40b9aabe70a691e9c02092978c546d6a4f4"
+    },
+    "AGENT::COUNTEREVIDENCE": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_evaluation_nonthinking_profile_v1_0.json",
+      "sha256": "de013316c255864af2e1631dcb75d40b9aabe70a691e9c02092978c546d6a4f4"
+    },
+    "AGENT::DEMAND_QUALITY": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_evaluation_low_profile_v1_0.json",
+      "sha256": "32aadb1985110e66c00ef571999008a040c380fc31cd3365f41049b82cbf73fe"
+    },
+    "AGENT::OPERATING_PERFORMANCE": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_evaluation_nonthinking_profile_v1_0.json",
+      "sha256": "de013316c255864af2e1631dcb75d40b9aabe70a691e9c02092978c546d6a4f4"
+    },
+    "AGENT::SUPPLY_RELATIONSHIP": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_evaluation_nonthinking_profile_v1_0.json",
+      "sha256": "de013316c255864af2e1631dcb75d40b9aabe70a691e9c02092978c546d6a4f4"
+    },
+    "AGENT::VALUE_CAPTURE": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_role_evaluation_nonthinking_profile_v1_0.json",
+      "sha256": "de013316c255864af2e1631dcb75d40b9aabe70a691e9c02092978c546d6a4f4"
+    }
+  },
+  "incremental_terminal_agent_ids": [
+    "AGENT::OPERATING_PERFORMANCE",
+    "AGENT::VALUE_CAPTURE",
+    "AGENT::CASH_CONVERSION",
+    "AGENT::SUPPLY_RELATIONSHIP"
+  ],
+  "pending_agent_ids": [],
+  "predecessor_checkpoint_digest": "569c641b395adf29375abf59b2302ed2f733f4788f850edfdc0dbaa5ecb202ae",
+  "predecessor_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_role_evaluation_progress_checkpoint_v1_0.json",
+  "predecessor_checkpoint_sha256": "657b7d713dced02e4737fad7251aec0c2c76112235d6d19d95ee48e48f767fff",
+  "resume_policy": {
+    "completed_role_evaluation_rerun_forbidden": true,
+    "new_fact_or_authority_forbidden": true,
+    "research_inputs_unchanged": true,
+    "resume_starts_at_cross_role_evaluation": true
+  },
+  "reused_role_evaluation_count": 6,
+  "schema_version": "fin_ia_multi_agent_role_evaluation_progress_checkpoint_v1_1",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_live_authority_v1_0.json",
+  "source_authority_sha256": "ee06706ddd5eaf9a1036027c0cb2f1cc42f643a1245bd0d5884afebb67aff9c6",
+  "source_failure_code": "multi_agent_finding_ref_out_of_scope",
+  "source_public_result_digest": "195d43442e743a1d4e49ac2933371f83638920b5e2820e0823c3d9251ebe9382",
+  "source_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_live_result_v1_0.json",
+  "source_public_result_sha256": "e75437331d74c98bf43948a4628ab54271dde6fa4ed9f4fa452f5b833e60f590",
+  "source_receipts": {
+    "AGENT::CASH_CONVERSION": {
+      "analysis": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-CASH_CONVERSION-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01",
+        "finish_reason": "stop",
+        "phase": "analysis",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-CASH_CONVERSION-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "6c6fb83400a5c0c15901e082d600609ae588e44aef29ed0c49e6a0841bf073c2",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-CASH_CONVERSION-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/provider_response.json",
+        "response_digest": "a6a5e23eb69704d43870af26e268fa74d8c30743e18030c40a1a17f982d1c55a",
+        "usage": {
+          "completion_tokens": 3313,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 5104,
+          "prompt_tokens": 5616,
+          "prompt_tokens_details": {
+            "cached_tokens": 512
+          },
+          "total_tokens": 8929
+        }
+      },
+      "context_digest": "5194472682d12d58a66533cb0d0fc6f3206d2acc185d280692f56578b2d37d5f",
+      "node_id": "EVAL::ROLE::CASH_CONVERSION::CONTENT_AUDIT_R1",
+      "submission": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-CASH_CONVERSION-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01",
+        "finish_reason": "tool_calls",
+        "phase": "submission",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-CASH_CONVERSION-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "f1b322039d3d156d6ecfaef1302b0fa209919a8a1da307fb75de541fab70ec92",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-CASH_CONVERSION-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/provider_response.json",
+        "response_digest": "57ad7160d99fd715ce0d4432057c28abe911963edca0f41a34b77ed6e1a5df40",
+        "usage": {
+          "completion_tokens": 877,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 3964,
+          "prompt_tokens": 4476,
+          "prompt_tokens_details": {
+            "cached_tokens": 512
+          },
+          "total_tokens": 5353
+        }
+      },
+      "validated_payload_digest": "3ab839b2a2e727063558df074a61dbeb5487cf13f590effe297ee1bc6207a23e",
+      "workpaper_digest": "1f5d07a2617a303002da12fa1e8bcebbed30e8d8105ba1d4e89c13fff665109e"
+    },
+    "AGENT::COUNTEREVIDENCE": {
+      "analysis": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-COUNTEREVIDENCE-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01",
+        "finish_reason": "stop",
+        "phase": "analysis",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-COUNTEREVIDENCE-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "7048c879cf94c8bc882738a36faf0fb0c2dbf74f0e76687721ce1f28d54c89e3",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-COUNTEREVIDENCE-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/provider_response.json",
+        "response_digest": "a46d01991a8bfb5c6c107de999b3ab12775ef80c558ac52e6232c513604dd68d",
+        "usage": {
+          "completion_tokens": 1734,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 3175,
+          "prompt_tokens": 3687,
+          "prompt_tokens_details": {
+            "cached_tokens": 512
+          },
+          "total_tokens": 5421
+        }
+      },
+      "context_digest": "28f9796670f2602d1f6adb1f645ce803feeb189e93877f601cf11059ed551c84",
+      "node_id": "EVAL::ROLE::COUNTEREVIDENCE::CONTENT_AUDIT_R1",
+      "submission": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-COUNTEREVIDENCE-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01",
+        "finish_reason": "tool_calls",
+        "phase": "submission",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-COUNTEREVIDENCE-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "82ca95f1e7ca6c05e08af4566c91f57a413512e85fcbb772d17d5a119cd2873c",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-COUNTEREVIDENCE-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/provider_response.json",
+        "response_digest": "60fec3021d0b11634de6029e583025785daaa6f4c0f6c5491155a6d844a793b5",
+        "usage": {
+          "completion_tokens": 1038,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 2316,
+          "prompt_tokens": 2828,
+          "prompt_tokens_details": {
+            "cached_tokens": 512
+          },
+          "total_tokens": 3866
+        }
+      },
+      "submission_replay_result_digest": "457bdca71c8657022edfd31fc65ceea5c2a1b8b8e0dcddbb533e9240deb51e80",
+      "validated_payload_digest": "405a8b9b50bb60adf63d1e0a2dc9312c073e3a7eb21d0195884b5f244a3337b3",
+      "workpaper_digest": "963c0ab1bdae056f3051e99543c0a0a48a2c5005c70d415e3f0923ec9f069a56"
+    },
+    "AGENT::DEMAND_QUALITY": {
+      "analysis": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01",
+        "finish_reason": "stop",
+        "phase": "analysis",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "945f88e900fbc8d516e582feb1efab70083c7f4b0d7ac4a54ec00199a9eaef72",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/provider_response.json",
+        "response_digest": "2e54206e5ec00081e72e0586bd525e2401a7d8a54f2e9434222a523e7e84804f",
+        "usage": {
+          "completion_tokens": 7141,
+          "completion_tokens_details": {
+            "reasoning_tokens": 6434
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 5379,
+          "prompt_tokens": 5379,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 12520
+        }
+      },
+      "context_digest": "1ddcce797a2fac8566024a3c2dd1ea1eb31c837637a3352bb7dac6d37f1f0e6b",
+      "node_id": "EVAL::ROLE::DEMAND_QUALITY::CONTENT_AUDIT_R1",
+      "submission": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01",
+        "finish_reason": "tool_calls",
+        "phase": "submission",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "023634aef45a28babf202aeb6a30535c675398d65ac5081037d2d28845d9b037",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_evaluator_profile_separated_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_EVALUATOR_PROFILE_SEPARATED_20260821-EVAL-ROLE-DEMAND_QUALITY-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/provider_response.json",
+        "response_digest": "d3d1cc5e3b2650775d8733f14aa9929dd1ba3dd55f90a2cfd2a7ed82bc888778",
+        "usage": {
+          "completion_tokens": 561,
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 1781,
+          "prompt_tokens": 1781,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 2342
+        }
+      },
+      "validated_payload_digest": "9b62ee7ad30e3a0a9f129e248c9f0ffa50c5e3d2173375106e53f0cb89dba9a4",
+      "workpaper_digest": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
+    },
+    "AGENT::OPERATING_PERFORMANCE": {
+      "analysis": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-OPERATING_PERFORMANCE-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01",
+        "finish_reason": "stop",
+        "phase": "analysis",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-OPERATING_PERFORMANCE-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "3ce43702e357ed86fedaae76cf6d46e86a41b6d1b6fef9e3893e66d272ed14bf",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-OPERATING_PERFORMANCE-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/provider_response.json",
+        "response_digest": "4bcc61e4bf141316aa14568b20c3b6d0916e06d16824a21a34206dbc9f38365f",
+        "usage": {
+          "completion_tokens": 4226,
+          "prompt_cache_hit_tokens": 6016,
+          "prompt_cache_miss_tokens": 45,
+          "prompt_tokens": 6061,
+          "prompt_tokens_details": {
+            "cached_tokens": 6016
+          },
+          "total_tokens": 10287
+        }
+      },
+      "context_digest": "1b0440a8da35c70529980130d7c7b44899dc976236ffa0326cf59fb071ea1a43",
+      "node_id": "EVAL::ROLE::OPERATING_PERFORMANCE::CONTENT_AUDIT_R1",
+      "submission": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-OPERATING_PERFORMANCE-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01",
+        "finish_reason": "tool_calls",
+        "phase": "submission",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-OPERATING_PERFORMANCE-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "1bc80bcff8d43902fc21df29914c7d62005e8ba857dfdd8f8ecf9ebf6748ea2a",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-OPERATING_PERFORMANCE-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/provider_response.json",
+        "response_digest": "388cfa3828c275ca9d585727981ce3adb0999dfeea864a6101cf512a95aff818",
+        "usage": {
+          "completion_tokens": 110,
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 5495,
+          "prompt_tokens": 5495,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 5605
+        }
+      },
+      "validated_payload_digest": "abbc9d9efba4e563be85ea95be933b4c7651ad3b803b1c72625c1fea553be460",
+      "workpaper_digest": "9975b7bb5a8f8ff216d48e61b0157a3ccd6d21bab6c8d9a619a6be1c9b8112cb"
+    },
+    "AGENT::SUPPLY_RELATIONSHIP": {
+      "analysis": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-SUPPLY_RELATIONSHIP-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01",
+        "finish_reason": "stop",
+        "phase": "analysis",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-SUPPLY_RELATIONSHIP-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "7cddba05899c6dc0eeb1e44da4aa83c6aedce10e9463c3a6f63de018cbd5dabe",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-SUPPLY_RELATIONSHIP-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/provider_response.json",
+        "response_digest": "bf734c8cd2dfc4189b244ba96b847471216663e0d00bb83693bb56d5f53b6341",
+        "usage": {
+          "completion_tokens": 1521,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 5319,
+          "prompt_tokens": 5831,
+          "prompt_tokens_details": {
+            "cached_tokens": 512
+          },
+          "total_tokens": 7352
+        }
+      },
+      "context_digest": "1a5b991f590664079eecea8376e65f0995cf845214c3ce001b73f0c1369f04b4",
+      "node_id": "EVAL::ROLE::SUPPLY_RELATIONSHIP::CONTENT_AUDIT_R1",
+      "submission": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-SUPPLY_RELATIONSHIP-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01",
+        "finish_reason": "tool_calls",
+        "phase": "submission",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-SUPPLY_RELATIONSHIP-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "e69951c687f73ade90d7512fab5f57a57e721caf6b1b3ec36f289d281e9d8101",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-SUPPLY_RELATIONSHIP-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/provider_response.json",
+        "response_digest": "cfe964376874430b0d6307eace9f27a2cf4d7a97b46565cd4d4ea9e88b9f6c06",
+        "usage": {
+          "completion_tokens": 110,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 2103,
+          "prompt_tokens": 2615,
+          "prompt_tokens_details": {
+            "cached_tokens": 512
+          },
+          "total_tokens": 2725
+        }
+      },
+      "validated_payload_digest": "abbc9d9efba4e563be85ea95be933b4c7651ad3b803b1c72625c1fea553be460",
+      "workpaper_digest": "51ec20b18f4cf29efc6680ee26e10e9732f83086c9d58d70a3ce1340d2eb1135"
+    },
+    "AGENT::VALUE_CAPTURE": {
+      "analysis": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-VALUE_CAPTURE-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01",
+        "finish_reason": "stop",
+        "phase": "analysis",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-VALUE_CAPTURE-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "ab071da52adcb038bbffaab6daff26c2eaab4301913d37c6f64b987ba0977b06",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-VALUE_CAPTURE-CONTENT_AUDIT_R1-ANALYSIS-ATTEMPT-01/provider_response.json",
+        "response_digest": "7d711f1c2b8e29941b80d35a36db8d0a006b9cc72cc2ccac1a04a7a195bbd5c3",
+        "usage": {
+          "completion_tokens": 2986,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 5953,
+          "prompt_tokens": 6465,
+          "prompt_tokens_details": {
+            "cached_tokens": 512
+          },
+          "total_tokens": 9451
+        }
+      },
+      "context_digest": "74df1c16d157f55b70b599254ace681b48091e27c26579c5fb4ba272649a407a",
+      "node_id": "EVAL::ROLE::VALUE_CAPTURE::CONTENT_AUDIT_R1",
+      "submission": {
+        "attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-VALUE_CAPTURE-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01",
+        "finish_reason": "tool_calls",
+        "phase": "submission",
+        "request_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-VALUE_CAPTURE-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/model_visible_request.json",
+        "request_digest": "c4c45e060454a778115f0fdf9dace7f0fe1a8e33d585f31dabedc963aec562de",
+        "response_capture_ref": "D:/FIN_Insight_Agent/data/captures/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821-EVAL-ROLE-VALUE_CAPTURE-CONTENT_AUDIT_R1-SUBMISSION-ATTEMPT-01/provider_response.json",
+        "response_digest": "d492d988ea2351a53b9855ae7d2870ab70cda9d1bb3d602a6e20f3b2e52b5dc5",
+        "usage": {
+          "completion_tokens": 741,
+          "prompt_cache_hit_tokens": 512,
+          "prompt_cache_miss_tokens": 3669,
+          "prompt_tokens": 4181,
+          "prompt_tokens_details": {
+            "cached_tokens": 512
+          },
+          "total_tokens": 4922
+        }
+      },
+      "validated_payload_digest": "e3c63ed32c292a3a7cb5b629fb5bfcba7e3efe75df73f64f4f91974e35ec8bfd",
+      "workpaper_digest": "e1687019c04aced719e19cea623699e5065b400eb039921b1a8606e5ff0ef942"
+    }
+  },
+  "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_ROLE_EVALUATION_CHECKPOINTED_20260821",
+  "source_terminal_result_digest": "75d90c69323a5fc16b6fe948983ae01517361cccdcdea9eaf537c72933f2a89e",
+  "source_terminal_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_role_evaluation_checkpointed_20260821/terminal_failure.json",
+  "source_terminal_result_sha256": "1a8377ea98fa313e796904b56e1d995d5ec27d68e6d0434b0e4450327d0e47d0",
+  "status": "all_role_evaluations_valid_for_cross_role_resume",
+  "submission_replay_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_counter_submission_contract_replay_v1_0.json",
+  "submission_replay_result_digest": "457bdca71c8657022edfd31fc65ceea5c2a1b8b8e0dcddbb533e9240deb51e80",
+  "submission_replay_sha256": "e26600112ff2e634b9cb3efc64a10cc43eab85fe6a362e51fd0ca7243471b07f",
+  "validated_role_evaluations": {
+    "AGENT::CASH_CONVERSION": {
+      "cross_role_conflicts": [],
+      "evaluation_digest": "9d54cb989c00bbb8cff50d713de3e2aa022c783c7610d0ce528c589597e1b73f",
+      "findings": [
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::C5DB890B773C6892"
+          ],
+          "explanation": "Sourced claim presents Q1 FY27 net income $3,438M vs Q1 FY26 $965M and reconciling adjustments $643M vs $1,831M as sourced_fact anchored to EV::C5DB890B773C6892, but no numeric refs are attached and the supplied numeric_fact_catalog contains no matching net income or reconciling-adjustment entries. These exact values cannot be verified against the supplied numeric authority. Not treated as fabrication; unresolved numeric-ref resolution requiring either attachment of missing refs or relabeling as source-visible non-covered numeric status.",
+          "failure_owner": "data_infrastructure_or_tool",
+          "finding_code": "NUM_REF_UNRESOLVED_NET_INCOME_AND_RECON",
+          "permitted_repair": "Attach the matching numeric fact refs for net income and reconciling adjustments, or relabel those clauses as source-visible balances with explicit non-covered numeric status.",
+          "severity": "L1",
+          "target_agent_id": "AGENT::CASH_CONVERSION"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::07899638B93E4E3A"
+          ],
+          "explanation": "Sourced claim presents adjusted (non-GAAP) FCF $3,165M vs $2,232M after financing-receivable and operating-lease adjustments as sourced_fact anchored to EV::07899638B93E4E3A. No numeric refs are attached and the supplied numeric_fact_catalog only includes standard FCF (OCF minus capex), not this adjusted FCF. Exact value cannot be verified against supplied numeric authority. Not treated as fabrication.",
+          "failure_owner": "data_infrastructure_or_tool",
+          "finding_code": "NUM_REF_UNRESOLVED_ADJ_FCF",
+          "permitted_repair": "Attach the missing numeric fact ref for the adjusted FCF values, or relabel the clause as source-visible with explicit non-covered numeric status.",
+          "severity": "L1",
+          "target_agent_id": "AGENT::CASH_CONVERSION"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::CAD2B8E9B11D864E",
+            "NUM::9DDEDDD584B02E09"
+          ],
+          "explanation": "Sourced claim lists AR net $25,854M vs $17,585M, inventory $15,052M vs $10,437M, cash and equivalents $11,578M vs $11,528M, short-term financing receivables $8,237M vs $8,458M, and long-term financing receivables $5,713M vs $5,822M, but only NUM::9DDEDDD584B02E09 (accounts_payable) is attached. The supplied numeric_fact_catalog contains no explicit numeric refs for these AR/inventory/cash/financing-receivable values. Not treated as fabrication; source-visibility not determinable from supplied task_context.",
+          "failure_owner": "data_infrastructure_or_tool",
+          "finding_code": "NUM_REF_UNRESOLVED_BALANCES",
+          "permitted_repair": "Attach matching numeric refs for the AR, inventory, cash, and financing-receivable balances, or relabel those clauses as source-visible balances with explicit non-covered numeric status.",
+          "severity": "L1",
+          "target_agent_id": "AGENT::CASH_CONVERSION"
+        }
+      ],
+      "report_may_proceed": true,
+      "schema_version": "fin_ia_multi_agent_evaluation_v1_0"
+    },
+    "AGENT::COUNTEREVIDENCE": {
+      "cross_role_conflicts": [],
+      "evaluation_digest": "767b0a12c31609927bd91b4427eed1146bc6c4f0c7d55f620afd8aeb95adaad7",
+      "findings": [
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::32A6B092D3316769",
+            "EV::ADBB7A86C8E7D99D",
+            "EV::A74F01276941482E",
+            "EV::BA594865DB45F850",
+            "EV::D86534E903882A43"
+          ],
+          "explanation": "The thesis is properly delimited: it does not assert adverse effects have occurred, that demand is collapsing, or that NVIDIA risk transfers to Dell in any quantified way. All four mechanisms (demand-quality EV::32A6B092D3316769, working-capital EV::ADBB7A86C8E7D99D, upstream policy EV::A74F01276941482E/EV::BA594865DB45F850, concentration read-through EV::D86534E903882A43) map to visible authority and are stated as direction/possibility, not realized quantified loss. Sourced claims are tagged sourced_fact and the threshold-absence claim is tagged not_inferable, keeping known facts separate from hypotheses.",
+          "failure_owner": "model_judgment",
+          "finding_code": "CE_THESIS_SCOPE_OK",
+          "permitted_repair": "No repair required; preserve thesis delimitation and mechanism-to-authority mapping.",
+          "severity": "L4",
+          "target_agent_id": "AGENT::COUNTEREVIDENCE"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::734A9C177164E08E",
+            "EV::D86534E903882A43"
+          ],
+          "explanation": "Counterarguments are material and correctly bounded. The Q1 FY27 figures ($43.8B revenue +88% y/y, diluted EPS $5.24 +282%, operating cash flow $4.1B) are direct source-visible quotes from EV::734A9C177164E08E and carry the correct company-authored-unaudited caution. The diversification point from EV::D86534E903882A43 is properly weakened by noting NVIDIA data does not prove Dell's own demand base is broad.",
+          "failure_owner": "model_judgment",
+          "finding_code": "CE_COUNTERARGUMENT_BOUNDED",
+          "permitted_repair": "No repair required; retain counterargument strength and source-type cautions.",
+          "severity": "L4",
+          "target_agent_id": "AGENT::COUNTEREVIDENCE"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "GAP::04EDD7700A1409F8",
+            "GAP::B070D38D076F342B"
+          ],
+          "explanation": "Absence language is limited to invalidation thresholds, matching typed gaps GAP::04EDD7700A1409F8 and GAP::B070D38D076F342B (threshold_not_observable). The workpaper does not claim absence of orders, revenue, profit, cash-flow, export-control, or concentration data; coexisting evidence is preserved and remaining_gap_refs lists only the two typed gaps. The omitted_unreferenced_authority rule is respected and unreferenced_case_authority_deliberately_omitted is acknowledged.",
+          "failure_owner": "harness_control",
+          "finding_code": "CE_GAP_ABSENCE_NARROW",
+          "permitted_repair": "No repair required; keep gap-bound absence language narrower than the typed boundary.",
+          "severity": "L4",
+          "target_agent_id": "AGENT::COUNTEREVIDENCE"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "GAP::04EDD7700A1409F8",
+            "GAP::B070D38D076F342B"
+          ],
+          "explanation": "Five what-would-change conditions are mechanism-aligned and observable, respecting the frozen threshold gaps without asserting an exact numeric invalidation threshold. Condition 5 correctly reinforces that other speakers' statements cannot perform the Dell-specific role. No new authority is introduced.",
+          "failure_owner": "model_judgment",
+          "finding_code": "CE_WWC_OBSERVABLE",
+          "permitted_repair": "No repair required; retain observable, case-consistent conditions.",
+          "severity": "L4",
+          "target_agent_id": "AGENT::COUNTEREVIDENCE"
+        }
+      ],
+      "report_may_proceed": true,
+      "schema_version": "fin_ia_multi_agent_evaluation_v1_0"
+    },
+    "AGENT::DEMAND_QUALITY": {
+      "cross_role_conflicts": [],
+      "evaluation_digest": "69f5020e636fdbb13b7f976cde972bd227cff615aacedff596962bf484b37222",
+      "findings": [
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::2A7103750D79EEDC"
+          ],
+          "explanation": "Workpaper wording asserts a cancellable cushion exists ('\u53ef\u53d6\u6d88\u90e8\u5206\u5728\u62ab\u9732\u7a97\u5916', '\u771f\u5b9e\u53ef\u53d6\u6d88\u57ab\u5c42\u4e0d\u53ef\u89c1'), but the authority only states backlog comprises company-designated non-cancelable unfilled manufacturing orders and does not state cancellable orders exist.",
+          "failure_owner": "model_judgment",
+          "finding_code": "EV::2A7103750D79EEDC",
+          "permitted_repair": "Reword to 'non-designated orders are not included in backlog; no cancellable balance is disclosed.'",
+          "severity": "L3",
+          "target_agent_id": "AGENT::DEMAND_QUALITY"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::041AEF89A154F4FC"
+          ],
+          "explanation": "Mechanism/thesis list frames '\u6e20\u9053\u51cf\u5355\u4f20\u5bfc' as an active factor, but the evidence is a conditional risk disclosure and the workpaper's own sourced claim confirms it does not prove occurrence.",
+          "failure_owner": "model_judgment",
+          "finding_code": "EV::041AEF89A154F4FC",
+          "permitted_repair": "Reframe as 'conditional channel-order-reduction risk' rather than an active reduction mechanism.",
+          "severity": "L3",
+          "target_agent_id": "AGENT::DEMAND_QUALITY"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::69BFE78D21687E82"
+          ],
+          "explanation": "The characterization 'graph edge only gives range not facts' is not present in the supplied catalog boundary, adding an unsupported extra characterization that does not alter the conclusion.",
+          "failure_owner": "model_judgment",
+          "finding_code": "EV::69BFE78D21687E82",
+          "permitted_repair": "Remove or replace the unsupported characterization with wording supported by the catalog boundary.",
+          "severity": "L4",
+          "target_agent_id": "AGENT::DEMAND_QUALITY"
+        }
+      ],
+      "report_may_proceed": true,
+      "schema_version": "fin_ia_multi_agent_evaluation_v1_0"
+    },
+    "AGENT::OPERATING_PERFORMANCE": {
+      "cross_role_conflicts": [],
+      "evaluation_digest": "3899d3c077a8e8c6004a7493ed11b512440fc56c1f80462d27f7304f8975d119",
+      "findings": [],
+      "report_may_proceed": true,
+      "schema_version": "fin_ia_multi_agent_evaluation_v1_0"
+    },
+    "AGENT::SUPPLY_RELATIONSHIP": {
+      "cross_role_conflicts": [],
+      "evaluation_digest": "3899d3c077a8e8c6004a7493ed11b512440fc56c1f80462d27f7304f8975d119",
+      "findings": [],
+      "report_may_proceed": true,
+      "schema_version": "fin_ia_multi_agent_evaluation_v1_0"
+    },
+    "AGENT::VALUE_CAPTURE": {
+      "cross_role_conflicts": [],
+      "evaluation_digest": "39d5bec223183180a7e84a29140f152cbf8b62bd3f8463a7cf372076dc2e2a7f",
+      "findings": [
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::7F4D7E6762C21D83"
+          ],
+          "explanation": "The mechanism states 'the AI-attributable slice remains unbounded in both directions' while the thesis states 'AI-specific profit capture is bounded, not sized.' The typed gap catalog authorizes absence of decomposition inputs (ASP, units, PVM), not an unbounded value-capture direction. AI revenue is contained within ISG, which reports revenue and operating profit (EV::7F4D7E6762C21D83), so 'unbounded in both directions' overshoots the gap boundary and erases the containment fact the workpaper itself states. Recommend replacing with 'unsized at the AI-attributable level.'",
+          "failure_owner": "model_judgment",
+          "finding_code": "J-1",
+          "permitted_repair": "Replace 'unbounded in both directions' with 'unsized at the AI-attributable level' or equivalent, preserving the segment-containment boundary.",
+          "severity": "L2",
+          "target_agent_id": "AGENT::VALUE_CAPTURE"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [],
+          "explanation": "Gap-bound absence language overshoots the typed boundary: 'unbounded in both directions' goes beyond the decomposition gaps (price_or_asp, volume_or_units, price_volume_mix_bridge). No separate overclaim found in the sourcing of the three gap refs; the repeated 'no ASP/units/PVM' language matches the typed gaps correctly.",
+          "failure_owner": "model_judgment",
+          "finding_code": "J-2",
+          "permitted_repair": "Normalize gap-bound absence language to decomposition scope only; remove implication of unbounded value-capture direction.",
+          "severity": "L2",
+          "target_agent_id": "AGENT::VALUE_CAPTURE"
+        },
+        {
+          "blocks_report": false,
+          "evidence_refs": [
+            "EV::7F4D7E6762C21D83"
+          ],
+          "explanation": "sourced_claims[0] attributes '$60B FY27 AI-server revenue guide, +144% y/y' to EV::7F4D7E6762C21D83, but the supplied catalog excerpt for that ref authorizes only the segment-containment boundary and does not restate the $60B or +144% values. Given the digest states all_workpaper_refs_resolved=true, this is flagged as unconfirmable source linkage rather than fabrication, pending task-owner verification.",
+          "failure_owner": "data_infrastructure_or_tool",
+          "finding_code": "G-1",
+          "permitted_repair": "Confirm the ref linkage for the $60B and +144% y/y figures, or separate them from the segment-containment boundary claim.",
+          "severity": "L3",
+          "target_agent_id": "AGENT::VALUE_CAPTURE"
+        }
+      ],
+      "report_may_proceed": true,
+      "schema_version": "fin_ia_multi_agent_evaluation_v1_0"
+    }
+  },
+  "workpaper_digests": {
+    "AGENT::CASH_CONVERSION": "1f5d07a2617a303002da12fa1e8bcebbed30e8d8105ba1d4e89c13fff665109e",
+    "AGENT::COUNTEREVIDENCE": "963c0ab1bdae056f3051e99543c0a0a48a2c5005c70d415e3f0923ec9f069a56",
+    "AGENT::DEMAND_QUALITY": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0",
+    "AGENT::OPERATING_PERFORMANCE": "9975b7bb5a8f8ff216d48e61b0157a3ccd6d21bab6c8d9a619a6be1c9b8112cb",
+    "AGENT::SUPPLY_RELATIONSHIP": "51ec20b18f4cf29efc6680ee26e10e9732f83086c9d58d70a3ce1340d2eb1135",
+    "AGENT::VALUE_CAPTURE": "e1687019c04aced719e19cea623699e5065b400eb039921b1a8606e5ff0ef942"
+  }
+}

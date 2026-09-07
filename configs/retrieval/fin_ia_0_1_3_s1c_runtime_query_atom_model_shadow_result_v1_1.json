@@ -1,0 +1,4375 @@
+{
+  "schema_version": "fin_ia_s1c_runtime_query_atom_model_shadow_summary_v1_1",
+  "status": "runtime_query_atom_model_shadow_complete_no_runtime_promotion",
+  "recorded_at": "2026-08-13",
+  "experiment_id": "FIN-0.1.3-S1C-RUNTIME-QUERY-ATOM-EMBEDDING-RERANKER-ROLE-SHADOW-R2",
+  "storage": {
+    "full_result_ref": "data/workbench_private/fin_0_1_3_s1c_runtime_query_atom_model_shadow/v1_1/full_result_06f957a6ba60292436da2784b7e1901c74401adbede80fa5c6ad8508fb20badd.json",
+    "full_result_sha256": "0e1960eb0bd3ad1c49bd20e95d772b813d824c4dac1e095a6ced53f4a8b4c6aa",
+    "full_result_digest": "06f957a6ba60292436da2784b7e1901c74401adbede80fa5c6ad8508fb20badd",
+    "tracked_summary_excludes_candidate_union_ids_and_role_rows": true
+  },
+  "bound_inputs": {
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_runtime_query_atom_model_shadow_policy_v1_1.json",
+    "policy_sha256_lf": "106abf702786a0d43b3100939a8d090de3f47f3b481589c9de556764422272e0",
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1c_runtime_query_atom_eval_v1_0.json",
+    "query_atom_eval_sha256_lf": "15894e94ec8447e2eecfeab2ecca08d5dc84fd78bf64835f7d5d887c4d279e5f",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_1.json",
+    "kernel_sha256_lf": "6f456246130ab0ea6f3b3d31ae009d0bb3d51ee18c93645ff39a5330cd375564",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_1.json",
+    "route_policy_sha256_lf": "be4ee9efe54f588b4c887f58d9c450942c031c16c268f1a1470d58f9f5b5dfd7",
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1/objects.jsonl",
+    "compiled_objects_sha256": "bd725bfe8b34c765c1d25155acedf4d0094712896c7d9344bf63899c691a9bc7"
+  },
+  "execution": {
+    "model_identities": {
+      "bge_embedding": {
+        "model_name": "BAAI/bge-m3",
+        "directory_name": "BAAI__bge-m3",
+        "files": [
+          {
+            "name": "config.json",
+            "bytes": 687,
+            "sha256": "26159e7ad065073448460117eb24b7a4572f6f4e78eadff65dc0a11c052449fa"
+          },
+          {
+            "name": "pytorch_model.bin",
+            "bytes": 2271145830,
+            "sha256": "b5e0ce3470abf5ef3831aa1bd5553b486803e83251590ab7ff35a117cf6aad38"
+          },
+          {
+            "name": "tokenizer.json",
+            "bytes": 17098108,
+            "sha256": "21106b6d7dab2952c1d496fb21d5dc9db75c28ed361a05f5020bbba27810dd08"
+          },
+          {
+            "name": "tokenizer_config.json",
+            "bytes": 444,
+            "sha256": "a62b2b6784f990259fddef5f16388693a8043be4f69179e6a5257eeb3f9abac4"
+          },
+          {
+            "name": "sentencepiece.bpe.model",
+            "bytes": 5069051,
+            "sha256": "cfc8146abe2a0488e9e2a0c56de7952f7c11ab059eca145a0a727afce0db2865"
+          }
+        ],
+        "model_digest": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5"
+      },
+      "qwen_embedding": {
+        "model_name": "Qwen/Qwen3-Embedding-0.6B",
+        "directory_name": "Qwen__Qwen3-Embedding-0.6B",
+        "files": [
+          {
+            "name": "config.json",
+            "bytes": 727,
+            "sha256": "b5bf1f51fc45be473a54718cef92448d90a1be001bf9b9a44b8c7f10a19feaa9"
+          },
+          {
+            "name": "model.safetensors",
+            "bytes": 1191586416,
+            "sha256": "0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd"
+          },
+          {
+            "name": "tokenizer.json",
+            "bytes": 11423705,
+            "sha256": "def76fb086971c7867b829c23a26261e38d9d74e02139253b38aeb9df8b4b50a"
+          },
+          {
+            "name": "tokenizer_config.json",
+            "bytes": 9706,
+            "sha256": "253153d0738ceb4c668d2eff957714dd2bea0b56de772a9fdccd96cbf517e6a0"
+          }
+        ],
+        "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c"
+      },
+      "bge_reranker": {
+        "model_id": "BAAI/bge-reranker-v2-m3",
+        "local_directory_name": "BAAI__bge-reranker-v2-m3",
+        "files": [
+          {
+            "name": "config.json",
+            "bytes": 795,
+            "sha256": "13dcd6c31d9fec9d1d8e158702072f62d7fa7d312a64b9fe057bec9a08cfe41a"
+          },
+          {
+            "name": "model.safetensors",
+            "bytes": 2271071852,
+            "sha256": "d9e3e081faff1eefb84019509b2f5558fd74c1a05a2c7db22f74174fcedb5286"
+          }
+        ],
+        "model_digest": "f477a931c26459852ea2e3070b48a3f977fd81d4e767b097fc8eeb1292c297b0"
+      },
+      "qwen_reranker": {
+        "model_id": "Qwen/Qwen3-Reranker-0.6B",
+        "local_directory_name": "Qwen__Qwen3-Reranker-0.6B",
+        "files": [
+          {
+            "name": "config.json",
+            "bytes": 727,
+            "sha256": "d479c427a9ca5295218063d4f9aca4f297ab4ac27487cca7af42c84643d51ef0"
+          },
+          {
+            "name": "model.safetensors",
+            "bytes": 1191588280,
+            "sha256": "27cd75a405b9c1b46b59abfd88aaa209e6fed2a1972cde9b70e7659537c5e65b"
+          }
+        ],
+        "model_digest": "9fa9d067824c3aae0aeee7a773cbb42fac95a06c981ab72e075294bb10845ad2"
+      }
+    },
+    "bge_embedding_cache": {
+      "build_seconds": 193.253,
+      "dense_dtype": "float16",
+      "dense_sha256": "6ceb47a8405fd97a8795e4ffae1a3ec531acd3e905d0eb0da9536ef982cd5923",
+      "embedding_dimensions": 1024,
+      "learned_sparse_dtype": "float32",
+      "maximum_sequence_length": 512,
+      "model_digest": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5",
+      "object_count": 20340,
+      "object_identity_digest": "8234d34cebd3decd61fd5e0d5ddfe7f45b407f05b716f5077faba3d49c970c44",
+      "object_sha256": "bd725bfe8b34c765c1d25155acedf4d0094712896c7d9344bf63899c691a9bc7",
+      "schema_version": "fin_ia_s1c_bge_m3_compiled_object_cache_v1_0",
+      "sparse_nonzero_count": 1025288,
+      "sparse_sha256": "ef7a9611c37d85cd99ee0f360c0bce371b68b72d51548373610bfe3f90b1c4cc",
+      "sparse_vocabulary_size": 250002,
+      "cache_hit": true
+    },
+    "qwen_embedding_cache": {
+      "build_seconds": 375.992,
+      "dense_dtype": "float16",
+      "dense_sha256": "616ec6da9093c2aefccb1eac0177ca3d4342e05b0a283799d708d5a04229c73e",
+      "embedding_dimensions": 1024,
+      "maximum_sequence_length": 512,
+      "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+      "object_count": 20340,
+      "object_identity_digest": "8234d34cebd3decd61fd5e0d5ddfe7f45b407f05b716f5077faba3d49c970c44",
+      "object_sha256": "bd725bfe8b34c765c1d25155acedf4d0094712896c7d9344bf63899c691a9bc7",
+      "schema_version": "fin_ia_s1c_qwen3_embedding_compiled_object_cache_v1_0",
+      "cache_hit": true
+    },
+    "bge_query_embedding_seconds": 1.434,
+    "qwen_query_embedding_seconds": 0.627,
+    "bge_reranker_seconds": 16.414,
+    "qwen_reranker_seconds": 59.768,
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "training_steps": 0,
+    "labels_joined_after_candidate_generation_and_scoring": true,
+    "same_candidate_union_for_both_rerankers": true,
+    "natural_candidate_union_unchanged_by_diagnostic_labels": true,
+    "controlled_diagnostic_pool_enabled": true
+  },
+  "summary": {
+    "atom_count": 18,
+    "case_count": 3,
+    "gap_atom_count": 3,
+    "rerankers": {
+      "bge_reranker_v2_m3": {
+        "atom_count": 18,
+        "positive_target_in_top_k_count": 0,
+        "positive_target_available_count": 15,
+        "pairwise_wins": 0,
+        "pairwise_comparisons": 0,
+        "eligible_pairwise_atom_count": 0,
+        "pairwise_accuracy": null
+      },
+      "qwen3_reranker_0_6b": {
+        "atom_count": 18,
+        "positive_target_in_top_k_count": 7,
+        "positive_target_available_count": 15,
+        "pairwise_wins": 0,
+        "pairwise_comparisons": 0,
+        "eligible_pairwise_atom_count": 0,
+        "pairwise_accuracy": null
+      }
+    },
+    "evidence_role": {
+      "positive_count": 10,
+      "hard_negative_count": 4,
+      "positive_compatible_rate": 0.6,
+      "hard_negative_suppressed_or_abstained_rate": 0.25,
+      "multilabel_true_positive": 14,
+      "multilabel_false_positive": 4,
+      "multilabel_false_negative": 17,
+      "multilabel_micro_precision": 0.777778,
+      "multilabel_micro_recall": 0.451613,
+      "multilabel_micro_f1": 0.571429
+    },
+    "first_stage": {
+      "bge_m3_dense": {
+        "positive_target_available_count": 15,
+        "positive_target_in_ranking_count": 1,
+        "positive_target_in_top_k_count": 0
+      },
+      "bm25_lexical": {
+        "positive_target_available_count": 15,
+        "positive_target_in_ranking_count": 6,
+        "positive_target_in_top_k_count": 5
+      },
+      "qwen3_embedding_0_6b_dense": {
+        "positive_target_available_count": 15,
+        "positive_target_in_ranking_count": 9,
+        "positive_target_in_top_k_count": 8
+      }
+    },
+    "controlled_rerankers": {
+      "bge_reranker_v2_m3": {
+        "atom_count": 18,
+        "positive_target_in_top_k_count": 0,
+        "positive_target_available_count": 15,
+        "pairwise_wins": 8,
+        "pairwise_comparisons": 16,
+        "eligible_pairwise_atom_count": 15,
+        "pairwise_accuracy": 0.5
+      },
+      "qwen3_reranker_0_6b": {
+        "atom_count": 18,
+        "positive_target_in_top_k_count": 8,
+        "positive_target_available_count": 15,
+        "pairwise_wins": 12,
+        "pairwise_comparisons": 16,
+        "eligible_pairwise_atom_count": 15,
+        "pairwise_accuracy": 0.75
+      }
+    },
+    "controlled_evidence_role": {
+      "positive_count": 16,
+      "hard_negative_count": 18,
+      "positive_compatible_rate": 0.625,
+      "hard_negative_suppressed_or_abstained_rate": 0.833333,
+      "multilabel_true_positive": 32,
+      "multilabel_false_positive": 4,
+      "multilabel_false_negative": 42,
+      "multilabel_micro_precision": 0.888889,
+      "multilabel_micro_recall": 0.432432,
+      "multilabel_micro_f1": 0.581818
+    },
+    "label_eligibility": {
+      "label_count": 37,
+      "eligible_count": 37,
+      "excluded_count": 0,
+      "exclusion_reason_counts": {}
+    },
+    "positive_target_in_shared_union_rate": 0.666667
+  },
+  "atoms": [
+    {
+      "atom_id": "S1C_ATOM_01_DELL_DOWNSTREAM_MSFT",
+      "case_key": "DELL",
+      "slot_id": "demand_volume_quality",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "MSFT",
+      "relationship_direction": "customer_or_ecosystem_to_subject",
+      "eligible_object_count": 2175,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 2,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::5dd25001190d679dd3151f3a",
+            "COBJ::ee936e565aa07136fa6ad3c2",
+            "COBJ::f9e08c1c2d9c6dcabb5d858b",
+            "COBJ::f96b8fb975655c2506fae6b4",
+            "COBJ::5de970b070541dcb1637f4f6",
+            "COBJ::cd55fadd4c64a52f92ed58bf",
+            "COBJ::cfb77fb8cd6b9f1cf500e9d3",
+            "COBJ::59f2e59647cb391bb37008b6",
+            "COBJ::3fcd27ac49268d2f5b233a85",
+            "COBJ::a98c70758dbd58a353a3b9a5"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::43438d632779008a2f537844",
+            "COBJ::f555d11eeca9c797c56ee39f",
+            "COBJ::d42812fa74996b3913d321fb",
+            "COBJ::7f62c674f4545844f9778713",
+            "COBJ::eb3e1f77be8ae6ca57fe48c3",
+            "COBJ::0db70176b4ef2e4e87647ab2",
+            "COBJ::90c1fe62c7f4943937a387a8",
+            "COBJ::0aa058b875b3e8c012e21fea",
+            "COBJ::902d9711473668d36cb296cf",
+            "COBJ::4a02f896dce5c91c55226ef5"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 1,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::ee936e565aa07136fa6ad3c2",
+            "COBJ::f9e08c1c2d9c6dcabb5d858b",
+            "COBJ::5dd25001190d679dd3151f3a",
+            "COBJ::7b8b1a643052c53e51e4fbab",
+            "COBJ::cd55fadd4c64a52f92ed58bf",
+            "COBJ::47bc0965a4cf634cb956c672",
+            "COBJ::56099668dbb2962c65d461a9",
+            "COBJ::5de970b070541dcb1637f4f6",
+            "COBJ::2e33dbcb3cfe5d37123be844",
+            "COBJ::389f18202ed275bb2606de66"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::ee936e565aa07136fa6ad3c2"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 71,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::d24aafe7e6445f45cd487540",
+            "COBJ::d4f7e852e77b25bdafeb2253",
+            "COBJ::9efeab39f3726bba3ee1045c",
+            "COBJ::0db70176b4ef2e4e87647ab2",
+            "COBJ::7f62c674f4545844f9778713",
+            "COBJ::e8ba701ac10a2b954fb48405",
+            "COBJ::eb3e1f77be8ae6ca57fe48c3",
+            "COBJ::9320221372c5a10d8413180c",
+            "COBJ::2682248bad7c9356025bb184",
+            "COBJ::90c1fe62c7f4943937a387a8"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 7,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::1a84599463e6bf7681afc89a",
+            "COBJ::1230e63e5ae400f041b6e8e3",
+            "COBJ::5dd25001190d679dd3151f3a",
+            "COBJ::f96b8fb975655c2506fae6b4",
+            "COBJ::a98c70758dbd58a353a3b9a5",
+            "COBJ::f9e08c1c2d9c6dcabb5d858b",
+            "COBJ::ee936e565aa07136fa6ad3c2",
+            "COBJ::9e0cdcb725513a5af02622f2",
+            "COBJ::27e35f262ed2818332d27573",
+            "COBJ::5de970b070541dcb1637f4f6"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 0.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.5,
+        "multilabel_micro_f1": 0.666667
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::ee936e565aa07136fa6ad3c2",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::5d4863574fd88759f0524130",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::5d4863574fd88759f0524130"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 72,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::d24aafe7e6445f45cd487540",
+              "COBJ::d4f7e852e77b25bdafeb2253",
+              "COBJ::9efeab39f3726bba3ee1045c",
+              "COBJ::0db70176b4ef2e4e87647ab2",
+              "COBJ::7f62c674f4545844f9778713",
+              "COBJ::e8ba701ac10a2b954fb48405",
+              "COBJ::eb3e1f77be8ae6ca57fe48c3",
+              "COBJ::9320221372c5a10d8413180c",
+              "COBJ::2682248bad7c9356025bb184",
+              "COBJ::90c1fe62c7f4943937a387a8"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 7,
+            "positive_target_in_top_k": true,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::1a84599463e6bf7681afc89a",
+              "COBJ::1230e63e5ae400f041b6e8e3",
+              "COBJ::5dd25001190d679dd3151f3a",
+              "COBJ::f96b8fb975655c2506fae6b4",
+              "COBJ::a98c70758dbd58a353a3b9a5",
+              "COBJ::f9e08c1c2d9c6dcabb5d858b",
+              "COBJ::ee936e565aa07136fa6ad3c2",
+              "COBJ::9e0cdcb725513a5af02622f2",
+              "COBJ::27e35f262ed2818332d27573",
+              "COBJ::5de970b070541dcb1637f4f6"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 0.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 1,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.333333,
+          "multilabel_micro_f1": 0.5
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_02_DELL_REPORTED_RESULTS",
+      "case_key": "DELL",
+      "slot_id": "operating_performance",
+      "facet_id": "reported_results",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "subject_self_disclosure",
+      "eligible_object_count": 4600,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::4dde53e747e6f981738715d5",
+            "COBJ::84a2747ba96602ad14a1c89a",
+            "COBJ::2f0a3d5c744625cd658b41c8",
+            "COBJ::9c3dd76443d22f9c31d47fa0",
+            "COBJ::231da12efbec9bb39caf4242",
+            "COBJ::406e1f0b4dd18d381d0a3224",
+            "COBJ::20c756fa414b7aeac3a4b8c9",
+            "COBJ::ef2970065a5730d67ef26393",
+            "COBJ::d54d4519c618c8fea40e02c5",
+            "COBJ::2099f7e6c4caddfb9bef9400"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::ef2970065a5730d67ef26393",
+            "COBJ::3c4b5bea0668bb3f0169f9e5",
+            "COBJ::e703f2fc9818d8c89abd074c",
+            "COBJ::1da46d91085899e5c4cb03a1",
+            "COBJ::50f74b3cc9c6ede3f249c762",
+            "COBJ::231da12efbec9bb39caf4242",
+            "COBJ::cd4d4f1f74f6aa22520587de",
+            "COBJ::f130af1c5b56a7943e3b1907",
+            "COBJ::631f337148322a693db11b08",
+            "COBJ::a2b178991e20d2e5abe312b6"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::0c95b86b957e5f21da55394a",
+            "COBJ::823b886dccf076967bf3be39",
+            "COBJ::0a31938777cbc3f1ed5469fe",
+            "COBJ::b3ecb3718068fc0343070957",
+            "COBJ::e2918ec8a10ce4b69b1b541f",
+            "COBJ::728c32c921eb3af652813bf5",
+            "COBJ::0487aa38e3c7037fc2ba850e",
+            "COBJ::17ea20a6feb603fbee0a5247",
+            "COBJ::77bb920e25275615973641ee",
+            "COBJ::3847987bf424a324a8c5a5ca"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": false,
+          "positive_ids_in_pool": [],
+          "hard_negative_ids_in_pool": [
+            "COBJ::c0e96b23990cb74e4bb061af"
+          ],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::b3ecb3718068fc0343070957",
+            "COBJ::fb16627bfb664286a4d004fc",
+            "COBJ::b202c9cfefdfd9ded05cd556",
+            "COBJ::2248595c95fa0f48ff978530",
+            "COBJ::6d417d6a65a9a3909c36fca0",
+            "COBJ::23e31f19b54fd004657e9f4b",
+            "COBJ::ef2970065a5730d67ef26393",
+            "COBJ::0b61c6fea98b4eec41350408",
+            "COBJ::0a31938777cbc3f1ed5469fe",
+            "COBJ::1ddad4fdf9e76871d44a133e"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::2f0a3d5c744625cd658b41c8",
+            "COBJ::d0dcb669fd1d021e4da9af09",
+            "COBJ::9c3dd76443d22f9c31d47fa0",
+            "COBJ::4dde53e747e6f981738715d5",
+            "COBJ::9ef4805295998b59758054da",
+            "COBJ::ef2970065a5730d67ef26393",
+            "COBJ::e2918ec8a10ce4b69b1b541f",
+            "COBJ::231da12efbec9bb39caf4242",
+            "COBJ::0c95b86b957e5f21da55394a",
+            "COBJ::1d1ce3f119dbfd29acfb026d"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": 1.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 0,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 1.0,
+        "multilabel_micro_f1": 1.0
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::2f995dd5ec07b38bf0ae0ee6",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::c0e96b23990cb74e4bb061af",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::2f995dd5ec07b38bf0ae0ee6"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 84,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::b3ecb3718068fc0343070957",
+              "COBJ::fb16627bfb664286a4d004fc",
+              "COBJ::b202c9cfefdfd9ded05cd556",
+              "COBJ::2248595c95fa0f48ff978530",
+              "COBJ::6d417d6a65a9a3909c36fca0",
+              "COBJ::23e31f19b54fd004657e9f4b",
+              "COBJ::ef2970065a5730d67ef26393",
+              "COBJ::0b61c6fea98b4eec41350408",
+              "COBJ::0a31938777cbc3f1ed5469fe",
+              "COBJ::1ddad4fdf9e76871d44a133e"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 2,
+            "positive_target_in_top_k": true,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::2f0a3d5c744625cd658b41c8",
+              "COBJ::2f995dd5ec07b38bf0ae0ee6",
+              "COBJ::d0dcb669fd1d021e4da9af09",
+              "COBJ::9c3dd76443d22f9c31d47fa0",
+              "COBJ::4dde53e747e6f981738715d5",
+              "COBJ::9ef4805295998b59758054da",
+              "COBJ::ef2970065a5730d67ef26393",
+              "COBJ::e2918ec8a10ce4b69b1b541f",
+              "COBJ::231da12efbec9bb39caf4242",
+              "COBJ::0c95b86b957e5f21da55394a"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 1.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 3,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 1,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.75,
+          "multilabel_micro_f1": 0.857143
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_03_DELL_COUNTEREVIDENCE",
+      "case_key": "DELL",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "issuer_counterevidence",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "subject_self_disclosure",
+      "eligible_object_count": 2469,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::30df8bb1f708d7101bae32d8",
+            "COBJ::722973c5f49beead16d269ea",
+            "COBJ::84a2747ba96602ad14a1c89a",
+            "COBJ::1f4024ed01fe4af89c00ff8c",
+            "COBJ::cb8183b3c21262b278b607ee",
+            "COBJ::f3ba43fc1e7b9c05f794f4da",
+            "COBJ::ace1883f4919a583e5d81019",
+            "COBJ::7f669c10f88d2ac020eecd15",
+            "COBJ::2f995dd5ec07b38bf0ae0ee6",
+            "COBJ::e42999fe7daa418cbb773678"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::c3545af2e73163b80204720f",
+            "COBJ::ef8c3c52504bde2339a52fb6",
+            "COBJ::b50047838dc08ded222c9a2d",
+            "COBJ::e247b3f029847562ffa075ee",
+            "COBJ::b6d78bf4949e27a7d3c18b5c",
+            "COBJ::dff1344880ad31f14fc76c51",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::964bce09cf266385a9e5599c",
+            "COBJ::f2e510a8aac75f77ca430b20",
+            "COBJ::cc3452872405044769ff4ede"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::b50047838dc08ded222c9a2d",
+            "COBJ::c3545af2e73163b80204720f",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::e247b3f029847562ffa075ee",
+            "COBJ::5ac586b06b922e2b2ea31b7f",
+            "COBJ::ef8c3c52504bde2339a52fb6",
+            "COBJ::7530ad1de241440a56061ee4",
+            "COBJ::05ab6740456d15e736a08b6e",
+            "COBJ::9ab405642c09f6f18a5be227",
+            "COBJ::2f995dd5ec07b38bf0ae0ee6"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": false,
+          "positive_ids_in_pool": [],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::c0e96b23990cb74e4bb061af",
+            "COBJ::6df4973c9b3ff685991d8b41",
+            "COBJ::f0dbdf4be030aa364feaf1e7",
+            "COBJ::f5359dfcfdf9102814dbd18d",
+            "COBJ::0d3b35632c85813fde2fad62",
+            "COBJ::b6d78bf4949e27a7d3c18b5c",
+            "COBJ::f406de63bd4ab78464b2cf94",
+            "COBJ::6cb1135fe3eb8a7aa8b9967f",
+            "COBJ::93e0dbf5e39408e297ed46fa",
+            "COBJ::dff1344880ad31f14fc76c51"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::c3545af2e73163b80204720f",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::b50047838dc08ded222c9a2d",
+            "COBJ::2f995dd5ec07b38bf0ae0ee6",
+            "COBJ::ace1883f4919a583e5d81019",
+            "COBJ::ef8c3c52504bde2339a52fb6",
+            "COBJ::4b23f4e47a75e7682f85524f",
+            "COBJ::7f669c10f88d2ac020eecd15",
+            "COBJ::4b993365002b41024e7b3492",
+            "COBJ::93e0dbf5e39408e297ed46fa"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 0,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 0,
+        "multilabel_micro_precision": null,
+        "multilabel_micro_recall": null,
+        "multilabel_micro_f1": null
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::ae4acac52afd5e993274550e",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::1b079a8beea186639ea0237f",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::ae4acac52afd5e993274550e",
+          "COBJ::1b079a8beea186639ea0237f"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 76,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::c0e96b23990cb74e4bb061af",
+              "COBJ::6df4973c9b3ff685991d8b41",
+              "COBJ::f0dbdf4be030aa364feaf1e7",
+              "COBJ::f5359dfcfdf9102814dbd18d",
+              "COBJ::0d3b35632c85813fde2fad62",
+              "COBJ::b6d78bf4949e27a7d3c18b5c",
+              "COBJ::f406de63bd4ab78464b2cf94",
+              "COBJ::6cb1135fe3eb8a7aa8b9967f",
+              "COBJ::93e0dbf5e39408e297ed46fa",
+              "COBJ::dff1344880ad31f14fc76c51"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 96,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::c3545af2e73163b80204720f",
+              "COBJ::440b862fae4dc6b1d07cfae1",
+              "COBJ::b50047838dc08ded222c9a2d",
+              "COBJ::2f995dd5ec07b38bf0ae0ee6",
+              "COBJ::ace1883f4919a583e5d81019",
+              "COBJ::ef8c3c52504bde2339a52fb6",
+              "COBJ::4b23f4e47a75e7682f85524f",
+              "COBJ::7f669c10f88d2ac020eecd15",
+              "COBJ::4b993365002b41024e7b3492",
+              "COBJ::93e0dbf5e39408e297ed46fa"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 0.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 1,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 3,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.25,
+          "multilabel_micro_f1": 0.4
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_04_DELL_UPSTREAM_MU",
+      "case_key": "DELL",
+      "slot_id": "capacity_inputs_execution",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "supplier_to_subject",
+      "eligible_object_count": 2746,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::13b81437e3ea0b2395b98ace",
+            "COBJ::41d604fd0b6e67438d648f69",
+            "COBJ::2252ba71f738ac87d6058c5b",
+            "COBJ::32f1191bca64e685338b1577",
+            "COBJ::cf4d4ef7c8d4884769a0cd4b",
+            "COBJ::4401e287d7aa09a80f635432",
+            "COBJ::1fa0d939206f7e3a3cd5930a",
+            "COBJ::beb8c74714293b6a60d5bf60",
+            "COBJ::70484c732e418c870e1ab330",
+            "COBJ::8477b406e1b94a62874881a4"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::4694928810dcee8bf6712f22",
+            "COBJ::fcb89235d735bfdd68caac07",
+            "COBJ::531939d061094bc666288122",
+            "COBJ::b73215728741b3459a5da3e9",
+            "COBJ::81a0876153f5741708253646",
+            "COBJ::1ba75bacef891b4e81c606e7",
+            "COBJ::b02f30e887c699c1500de323",
+            "COBJ::eac9f3148ea9aa3d4a69ff01",
+            "COBJ::7dc1149804823edce709cf13",
+            "COBJ::c7736abe220f905bf8492da6"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 1,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::76b2fbd302ab348bb30d8674",
+            "COBJ::2251aa42e41d0504663f1cc3",
+            "COBJ::81a0876153f5741708253646",
+            "COBJ::87681fa71f3d699e90a55927",
+            "COBJ::27373396ebc52d837a0058a5",
+            "COBJ::56264d86afc95ccfffa38e4a",
+            "COBJ::8477b406e1b94a62874881a4",
+            "COBJ::447b2ad2f01f8f570559a39f",
+            "COBJ::1f883a7179adbecbc8ca5cac",
+            "COBJ::af085d062a7951c1d9236a32"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::76b2fbd302ab348bb30d8674"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 51,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::2251aa42e41d0504663f1cc3",
+            "COBJ::b02f30e887c699c1500de323",
+            "COBJ::4b935cb734ef10790e4455fe",
+            "COBJ::3961a520c86ada6ad3b588b8",
+            "COBJ::b73215728741b3459a5da3e9",
+            "COBJ::5e5e264584fe117de6d6f72e",
+            "COBJ::5380fd4f955900da00eed76b",
+            "COBJ::0323bdd23dabdc4a211071a4",
+            "COBJ::e5c5e926fcd392c6b6cebe98",
+            "COBJ::2b4e096ee5d59f27940a72e7"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 10,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::07aa4f98cab654a06e8950f0",
+            "COBJ::e5d3709970b9449fb7714d14",
+            "COBJ::5e5e264584fe117de6d6f72e",
+            "COBJ::2251aa42e41d0504663f1cc3",
+            "COBJ::55e230fc6b0b583ca2b0f480",
+            "COBJ::e482b07662cc3549a0f84e12",
+            "COBJ::984ef1da7ef7de25b3b66ee8",
+            "COBJ::beb8c74714293b6a60d5bf60",
+            "COBJ::56264d86afc95ccfffa38e4a",
+            "COBJ::76b2fbd302ab348bb30d8674"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.666667,
+        "multilabel_micro_f1": 0.8
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::76b2fbd302ab348bb30d8674",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::6aa0368b8983dafa67bafacf",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::6aa0368b8983dafa67bafacf"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 51,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::2251aa42e41d0504663f1cc3",
+              "COBJ::b02f30e887c699c1500de323",
+              "COBJ::4b935cb734ef10790e4455fe",
+              "COBJ::3961a520c86ada6ad3b588b8",
+              "COBJ::b73215728741b3459a5da3e9",
+              "COBJ::5e5e264584fe117de6d6f72e",
+              "COBJ::5380fd4f955900da00eed76b",
+              "COBJ::0323bdd23dabdc4a211071a4",
+              "COBJ::e5c5e926fcd392c6b6cebe98",
+              "COBJ::2b4e096ee5d59f27940a72e7"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 10,
+            "positive_target_in_top_k": true,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::07aa4f98cab654a06e8950f0",
+              "COBJ::e5d3709970b9449fb7714d14",
+              "COBJ::5e5e264584fe117de6d6f72e",
+              "COBJ::2251aa42e41d0504663f1cc3",
+              "COBJ::55e230fc6b0b583ca2b0f480",
+              "COBJ::e482b07662cc3549a0f84e12",
+              "COBJ::984ef1da7ef7de25b3b66ee8",
+              "COBJ::beb8c74714293b6a60d5bf60",
+              "COBJ::56264d86afc95ccfffa38e4a",
+              "COBJ::76b2fbd302ab348bb30d8674"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 1.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 4,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 3,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.571429,
+          "multilabel_micro_f1": 0.727273
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+      "case_key": "DELL",
+      "slot_id": "capacity_inputs_execution",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "supplier_to_subject",
+      "eligible_object_count": 1941,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::8d7587809daab26ef457e743",
+            "COBJ::e4249b66315e6c991a226f3b",
+            "COBJ::5d50f18e8655e40b3aeaae57",
+            "COBJ::6fcf33415f030b83f0a8791b",
+            "COBJ::71fe0a1250fa6eacb5d62e83",
+            "COBJ::8d534b7af2c53dbd013357e3",
+            "COBJ::c465dd950b8792ba71e3e15b",
+            "COBJ::f53bd4426aabd8e45e5a2f36",
+            "COBJ::184129a226a9895a6553da5f",
+            "COBJ::191bbddd9d3c7a71e4157841"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::fbc1332aafc34258ac8bfe65",
+            "COBJ::8a068ffbb04fe33485960d1b",
+            "COBJ::e01075902a2013e468cb8187",
+            "COBJ::9a35010190f9d6be2642e853",
+            "COBJ::e8af0e5b63f7380f5563cc9b",
+            "COBJ::281ed1f17a635bd544c33e75",
+            "COBJ::9ca06536b516b35188e279db",
+            "COBJ::4d9391687ca98c3cbb3ffa65",
+            "COBJ::e1ca8fc22eeb6582262db78f",
+            "COBJ::d1f144dc17431fd485819eec"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::fb276b797ebbf72a8c03d512",
+            "COBJ::bc5996e9441a8c1fb6305d6f",
+            "COBJ::2c52a80f572d86848f2c3695",
+            "COBJ::281ed1f17a635bd544c33e75",
+            "COBJ::67ace157cc65310e17e92b1b",
+            "COBJ::b3c24d8a0a4bbbef59535741",
+            "COBJ::d1f144dc17431fd485819eec",
+            "COBJ::899e0fb2be4fbc888a92a457",
+            "COBJ::dd20a52eb8b5b968537c077e",
+            "COBJ::c28c133901aab4b17d67c719"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": false,
+          "positive_ids_in_pool": [],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::899e0fb2be4fbc888a92a457",
+            "COBJ::244a9bd50e78733b961c742f",
+            "COBJ::e8af0e5b63f7380f5563cc9b",
+            "COBJ::0db383aae3c42ce263596b3c",
+            "COBJ::27f24a7015fde960762605a3",
+            "COBJ::67ace157cc65310e17e92b1b",
+            "COBJ::4d9391687ca98c3cbb3ffa65",
+            "COBJ::0b799a3043d9805c2bc68856",
+            "COBJ::d18a59564cf8fd944c3de665",
+            "COBJ::2beba1f45dfed964dc115d93"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::7eae27677cbaf0f337b8f77e",
+            "COBJ::c28c133901aab4b17d67c719",
+            "COBJ::899e0fb2be4fbc888a92a457",
+            "COBJ::0b799a3043d9805c2bc68856",
+            "COBJ::bd0968be90d0c5ebc48a9c44",
+            "COBJ::dd20a52eb8b5b968537c077e",
+            "COBJ::2ea1b4e125c2492be44e5482",
+            "COBJ::2c339bd1b7838ed5fe58a020",
+            "COBJ::d1f144dc17431fd485819eec",
+            "COBJ::fbc1332aafc34258ac8bfe65"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 0,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 0,
+        "multilabel_micro_precision": null,
+        "multilabel_micro_recall": null,
+        "multilabel_micro_f1": null
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::26e78d0deac7e51903369c0e",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::5233d284ff92225d3b1b2a79",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::26e78d0deac7e51903369c0e",
+          "COBJ::5233d284ff92225d3b1b2a79"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 71,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::899e0fb2be4fbc888a92a457",
+              "COBJ::244a9bd50e78733b961c742f",
+              "COBJ::e8af0e5b63f7380f5563cc9b",
+              "COBJ::0db383aae3c42ce263596b3c",
+              "COBJ::27f24a7015fde960762605a3",
+              "COBJ::67ace157cc65310e17e92b1b",
+              "COBJ::4d9391687ca98c3cbb3ffa65",
+              "COBJ::0b799a3043d9805c2bc68856",
+              "COBJ::d18a59564cf8fd944c3de665",
+              "COBJ::2beba1f45dfed964dc115d93"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 65,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::7eae27677cbaf0f337b8f77e",
+              "COBJ::c28c133901aab4b17d67c719",
+              "COBJ::899e0fb2be4fbc888a92a457",
+              "COBJ::0b799a3043d9805c2bc68856",
+              "COBJ::bd0968be90d0c5ebc48a9c44",
+              "COBJ::dd20a52eb8b5b968537c077e",
+              "COBJ::2ea1b4e125c2492be44e5482",
+              "COBJ::2c339bd1b7838ed5fe58a020",
+              "COBJ::d1f144dc17431fd485819eec",
+              "COBJ::5233d284ff92225d3b1b2a79"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 1.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 2,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 3,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.4,
+          "multilabel_micro_f1": 0.571429
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_06_DELL_UPSTREAM_TSM_GAP",
+      "case_key": "DELL",
+      "slot_id": "capacity_inputs_execution",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "TSM",
+      "relationship_direction": "upstream_supplier_to_subject",
+      "eligible_object_count": 18,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::cb1369529fb8c7ca09fd1cc0",
+            "COBJ::cf21cbd37cdce76320159b04",
+            "COBJ::f03c4d8d916f7c1a0cc2b2bf",
+            "COBJ::26302eb8db13bbca669e76e4",
+            "COBJ::26fd798c5f42cd3c867b9263",
+            "COBJ::9c65bb0c2ed848db4de8df14",
+            "COBJ::b14af913ba0d0225871da868",
+            "COBJ::ddd317f58c132cee377405b5",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::0bb980a958ddc4bc517f2057"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::e358cd0fc57260e27e781d15",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::ddd317f58c132cee377405b5"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::ddd317f58c132cee377405b5",
+            "COBJ::cb1369529fb8c7ca09fd1cc0",
+            "COBJ::cf21cbd37cdce76320159b04",
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::64953c6632229f8fa4f25314"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 18,
+          "positive_target_available": false,
+          "positive_target_in_pool": false,
+          "positive_ids_in_pool": [],
+          "hard_negative_ids_in_pool": [
+            "COBJ::890b3038d022948939bd108d"
+          ],
+          "unjudged_ids_in_pool": [
+            "COBJ::ddd317f58c132cee377405b5"
+          ]
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::f03c4d8d916f7c1a0cc2b2bf",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::e358cd0fc57260e27e781d15"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::cb1369529fb8c7ca09fd1cc0",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::e358cd0fc57260e27e781d15"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": 0.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 5,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.166667,
+        "multilabel_micro_f1": 0.25
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::890b3038d022948939bd108d",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::ddd317f58c132cee377405b5",
+          "judgement": "unjudged",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": false,
+            "positive_target_in_ranking": false,
+            "positive_target_rank": null,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 0,
+            "top_ids": [
+              "COBJ::0bb980a958ddc4bc517f2057",
+              "COBJ::18277ccaa0b756310646cfa4",
+              "COBJ::64953c6632229f8fa4f25314",
+              "COBJ::c1989ddd15cb48eed52129a2",
+              "COBJ::7c86764d40ee6488eaa02492",
+              "COBJ::3e585904467f82a5beb33020",
+              "COBJ::08ad38199d93c496d0e28605",
+              "COBJ::f03c4d8d916f7c1a0cc2b2bf",
+              "COBJ::890b3038d022948939bd108d",
+              "COBJ::e358cd0fc57260e27e781d15"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": false,
+            "positive_target_in_ranking": false,
+            "positive_target_rank": null,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 0,
+            "top_ids": [
+              "COBJ::18277ccaa0b756310646cfa4",
+              "COBJ::0bb980a958ddc4bc517f2057",
+              "COBJ::cb1369529fb8c7ca09fd1cc0",
+              "COBJ::7c86764d40ee6488eaa02492",
+              "COBJ::08ad38199d93c496d0e28605",
+              "COBJ::890b3038d022948939bd108d",
+              "COBJ::64953c6632229f8fa4f25314",
+              "COBJ::c1989ddd15cb48eed52129a2",
+              "COBJ::3e585904467f82a5beb33020",
+              "COBJ::e358cd0fc57260e27e781d15"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 0,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": null,
+          "hard_negative_suppressed_or_abstained_rate": 0.0,
+          "multilabel_true_positive": 0,
+          "multilabel_false_positive": 1,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 0.0,
+          "multilabel_micro_recall": 0.0,
+          "multilabel_micro_f1": null
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_07_MU_DOWNSTREAM_DELL",
+      "case_key": "MU",
+      "slot_id": "demand_volume_quality",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "customer_or_demand_signal_to_subject",
+      "eligible_object_count": 4600,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 3,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::ace1883f4919a583e5d81019",
+            "COBJ::4b993365002b41024e7b3492",
+            "COBJ::2f995dd5ec07b38bf0ae0ee6",
+            "COBJ::b7531c7d90948aed82e5a038",
+            "COBJ::1f4024ed01fe4af89c00ff8c",
+            "COBJ::cb8183b3c21262b278b607ee",
+            "COBJ::f3ba43fc1e7b9c05f794f4da",
+            "COBJ::8d5bc8fea50c34e235ff517c",
+            "COBJ::30555c9672aa84c2b2d1638d",
+            "COBJ::dc0b9cead1a4c47720bd028e"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::ef8c3c52504bde2339a52fb6",
+            "COBJ::c3545af2e73163b80204720f",
+            "COBJ::e247b3f029847562ffa075ee",
+            "COBJ::b50047838dc08ded222c9a2d",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::854fd8ab4fc354876ddd75c1",
+            "COBJ::43eb9500f20f7cf9f76f0d5f",
+            "COBJ::e49e3fed787c249bca652fd6",
+            "COBJ::cc2984ce8ae1e9e2fc0a848a",
+            "COBJ::efcc1e283b2901599fd66f5f"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 2,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::b50047838dc08ded222c9a2d",
+            "COBJ::2f995dd5ec07b38bf0ae0ee6",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::e247b3f029847562ffa075ee",
+            "COBJ::4dde53e747e6f981738715d5",
+            "COBJ::c3545af2e73163b80204720f",
+            "COBJ::4b993365002b41024e7b3492",
+            "COBJ::231da12efbec9bb39caf4242",
+            "COBJ::ace1883f4919a583e5d81019",
+            "COBJ::8d5bc8fea50c34e235ff517c"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::2f995dd5ec07b38bf0ae0ee6"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 53,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::c3545af2e73163b80204720f",
+            "COBJ::ef8c3c52504bde2339a52fb6",
+            "COBJ::6df4973c9b3ff685991d8b41",
+            "COBJ::f0dbdf4be030aa364feaf1e7",
+            "COBJ::f5359dfcfdf9102814dbd18d",
+            "COBJ::c0e96b23990cb74e4bb061af",
+            "COBJ::0ac4026d40db92006e7d07be",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::b7531c7d90948aed82e5a038",
+            "COBJ::ef2970065a5730d67ef26393"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 4,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::b50047838dc08ded222c9a2d",
+            "COBJ::4dde53e747e6f981738715d5",
+            "COBJ::8d5bc8fea50c34e235ff517c",
+            "COBJ::2f995dd5ec07b38bf0ae0ee6",
+            "COBJ::4b993365002b41024e7b3492",
+            "COBJ::ace1883f4919a583e5d81019",
+            "COBJ::9ef4805295998b59758054da",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::6cb1135fe3eb8a7aa8b9967f",
+            "COBJ::231da12efbec9bb39caf4242"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.666667,
+        "multilabel_micro_f1": 0.8
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::2f995dd5ec07b38bf0ae0ee6",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::1b079a8beea186639ea0237f",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::1b079a8beea186639ea0237f"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 53,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::c3545af2e73163b80204720f",
+              "COBJ::ef8c3c52504bde2339a52fb6",
+              "COBJ::6df4973c9b3ff685991d8b41",
+              "COBJ::f0dbdf4be030aa364feaf1e7",
+              "COBJ::f5359dfcfdf9102814dbd18d",
+              "COBJ::c0e96b23990cb74e4bb061af",
+              "COBJ::0ac4026d40db92006e7d07be",
+              "COBJ::440b862fae4dc6b1d07cfae1",
+              "COBJ::b7531c7d90948aed82e5a038",
+              "COBJ::ef2970065a5730d67ef26393"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 4,
+            "positive_target_in_top_k": true,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::b50047838dc08ded222c9a2d",
+              "COBJ::4dde53e747e6f981738715d5",
+              "COBJ::8d5bc8fea50c34e235ff517c",
+              "COBJ::2f995dd5ec07b38bf0ae0ee6",
+              "COBJ::4b993365002b41024e7b3492",
+              "COBJ::ace1883f4919a583e5d81019",
+              "COBJ::9ef4805295998b59758054da",
+              "COBJ::440b862fae4dc6b1d07cfae1",
+              "COBJ::6cb1135fe3eb8a7aa8b9967f",
+              "COBJ::231da12efbec9bb39caf4242"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 1.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 3,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.6,
+          "multilabel_micro_f1": 0.75
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_08_MU_DOWNSTREAM_MSFT",
+      "case_key": "MU",
+      "slot_id": "demand_volume_quality",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "MSFT",
+      "relationship_direction": "end_demand_context",
+      "eligible_object_count": 2175,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 3,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::5dd25001190d679dd3151f3a",
+            "COBJ::f96b8fb975655c2506fae6b4",
+            "COBJ::ee936e565aa07136fa6ad3c2",
+            "COBJ::f9e08c1c2d9c6dcabb5d858b",
+            "COBJ::5de970b070541dcb1637f4f6",
+            "COBJ::cd55fadd4c64a52f92ed58bf",
+            "COBJ::cfb77fb8cd6b9f1cf500e9d3",
+            "COBJ::59f2e59647cb391bb37008b6",
+            "COBJ::a98c70758dbd58a353a3b9a5",
+            "COBJ::27e35f262ed2818332d27573"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::43438d632779008a2f537844",
+            "COBJ::f555d11eeca9c797c56ee39f",
+            "COBJ::d42812fa74996b3913d321fb",
+            "COBJ::4a02f896dce5c91c55226ef5",
+            "COBJ::67f9d207b4a778f490711a73",
+            "COBJ::07ad70ae4bc20ff2ef274acb",
+            "COBJ::a430d96b062143beae5ff91b",
+            "COBJ::939a8d65e05ed7a93339b679",
+            "COBJ::b9da69ae81bc16f15ad31dd6",
+            "COBJ::e68ac1e5eedc59c03fbd2cda"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 1,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::ee936e565aa07136fa6ad3c2",
+            "COBJ::f9e08c1c2d9c6dcabb5d858b",
+            "COBJ::30b9a4abe62cc1d410c8596b",
+            "COBJ::a98c70758dbd58a353a3b9a5",
+            "COBJ::27e35f262ed2818332d27573",
+            "COBJ::cd55fadd4c64a52f92ed58bf",
+            "COBJ::5de970b070541dcb1637f4f6",
+            "COBJ::2e33dbcb3cfe5d37123be844",
+            "COBJ::389f18202ed275bb2606de66",
+            "COBJ::6645c26f31c9fd881490cd87"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::ee936e565aa07136fa6ad3c2"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 66,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::550fa36b1d1b8552ffa7bd7d",
+            "COBJ::7f62c674f4545844f9778713",
+            "COBJ::eb3e1f77be8ae6ca57fe48c3",
+            "COBJ::687c6b531d0791bfc05fdf6e",
+            "COBJ::43438d632779008a2f537844",
+            "COBJ::f555d11eeca9c797c56ee39f",
+            "COBJ::13e3532d968154cdfc1941ac",
+            "COBJ::2ea52560c059ffbcfa56a2dd",
+            "COBJ::048fa29a7972e3fb11069c6e",
+            "COBJ::3fcd27ac49268d2f5b233a85"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 8,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::1230e63e5ae400f041b6e8e3",
+            "COBJ::1a84599463e6bf7681afc89a",
+            "COBJ::5dd25001190d679dd3151f3a",
+            "COBJ::a98c70758dbd58a353a3b9a5",
+            "COBJ::f96b8fb975655c2506fae6b4",
+            "COBJ::27e35f262ed2818332d27573",
+            "COBJ::f9e08c1c2d9c6dcabb5d858b",
+            "COBJ::ee936e565aa07136fa6ad3c2",
+            "COBJ::2ea52560c059ffbcfa56a2dd",
+            "COBJ::5de970b070541dcb1637f4f6"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 0.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.5,
+        "multilabel_micro_f1": 0.666667
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::ee936e565aa07136fa6ad3c2",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::5d4863574fd88759f0524130",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::5d4863574fd88759f0524130"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 67,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::550fa36b1d1b8552ffa7bd7d",
+              "COBJ::7f62c674f4545844f9778713",
+              "COBJ::eb3e1f77be8ae6ca57fe48c3",
+              "COBJ::687c6b531d0791bfc05fdf6e",
+              "COBJ::43438d632779008a2f537844",
+              "COBJ::f555d11eeca9c797c56ee39f",
+              "COBJ::13e3532d968154cdfc1941ac",
+              "COBJ::2ea52560c059ffbcfa56a2dd",
+              "COBJ::048fa29a7972e3fb11069c6e",
+              "COBJ::3fcd27ac49268d2f5b233a85"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 8,
+            "positive_target_in_top_k": true,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::1230e63e5ae400f041b6e8e3",
+              "COBJ::1a84599463e6bf7681afc89a",
+              "COBJ::5dd25001190d679dd3151f3a",
+              "COBJ::a98c70758dbd58a353a3b9a5",
+              "COBJ::f96b8fb975655c2506fae6b4",
+              "COBJ::27e35f262ed2818332d27573",
+              "COBJ::f9e08c1c2d9c6dcabb5d858b",
+              "COBJ::ee936e565aa07136fa6ad3c2",
+              "COBJ::2ea52560c059ffbcfa56a2dd",
+              "COBJ::5de970b070541dcb1637f4f6"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 0.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 1,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.333333,
+          "multilabel_micro_f1": 0.5
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_09_MU_REPORTED_RESULTS",
+      "case_key": "MU",
+      "slot_id": "operating_performance",
+      "facet_id": "reported_results",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "subject_self_disclosure",
+      "eligible_object_count": 2746,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::0de21c426914821261c0308b",
+            "COBJ::cf3ee417762c882c352eff78",
+            "COBJ::2163361c8f36051f28ee91fd",
+            "COBJ::6f16dd4062ff4b45efbf16cf",
+            "COBJ::afd490e11944d51da44d4a19",
+            "COBJ::2252ba71f738ac87d6058c5b",
+            "COBJ::41d604fd0b6e67438d648f69",
+            "COBJ::6d0db51c8f30c10660035f17",
+            "COBJ::4401e287d7aa09a80f635432",
+            "COBJ::c419bc912398fd6e7a0151e7"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::2c56360e95a6976fcec6db44",
+            "COBJ::638aa3c61ff28567c08da144",
+            "COBJ::2ab1c2a2a01f93c1b5decc46",
+            "COBJ::626d1c8a5554e74005e3d146",
+            "COBJ::645e07373a8b03a55d43ef69",
+            "COBJ::d924e3d37f2d42c835db4daa",
+            "COBJ::69d9cf1dcd61c5051a00b886",
+            "COBJ::c5c38b59d634297636d39272",
+            "COBJ::baf306010d34fe3a6cb341e5",
+            "COBJ::665d8af19dc02fb3d944331e"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::977281a740db00770dbd6e71",
+            "COBJ::4d7fada318c382b3bbfa2d14",
+            "COBJ::e97a964e20ca93667a6d80df",
+            "COBJ::97939f91dc5e89a66e47a64f",
+            "COBJ::641136c05ef943624f934b31",
+            "COBJ::c504282cf9ba570480493017",
+            "COBJ::fd7633b93025396bb78d0bad",
+            "COBJ::db067ef45b29b93fc84966db",
+            "COBJ::faf43d29420238bdb57fba51",
+            "COBJ::6b99c010dafbce3f97f7ab46"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": false,
+          "positive_ids_in_pool": [],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::d88003e5c4b08fa7c90c36c0",
+            "COBJ::2c56360e95a6976fcec6db44",
+            "COBJ::8fa6bd70ac666b69c5203f01",
+            "COBJ::bf341437c2dc90b19acca02a",
+            "COBJ::97939f91dc5e89a66e47a64f",
+            "COBJ::faf43d29420238bdb57fba51",
+            "COBJ::626d1c8a5554e74005e3d146",
+            "COBJ::6b99c010dafbce3f97f7ab46",
+            "COBJ::1ba48b6fdb1d75fad756bcc6",
+            "COBJ::c5c38b59d634297636d39272"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::a1b7a5adcac58ecc61a2d8b8",
+            "COBJ::2938f77094d913d063ce25df",
+            "COBJ::a0a50e0d3b6e188318be4a9b",
+            "COBJ::5f275cfa0808a4c60a5b3cba",
+            "COBJ::6b99c010dafbce3f97f7ab46",
+            "COBJ::b7216c68f68ac9eaad541486",
+            "COBJ::58b58400565d78b767eb324a",
+            "COBJ::2ab1c2a2a01f93c1b5decc46",
+            "COBJ::79855af0e3f94a8a812c26c5",
+            "COBJ::d924e3d37f2d42c835db4daa"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 0,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 0,
+        "multilabel_micro_precision": null,
+        "multilabel_micro_recall": null,
+        "multilabel_micro_f1": null
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::6aa0368b8983dafa67bafacf",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::03f646657b8ae8fd278291f4",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::6aa0368b8983dafa67bafacf",
+          "COBJ::03f646657b8ae8fd278291f4"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 70,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::d88003e5c4b08fa7c90c36c0",
+              "COBJ::2c56360e95a6976fcec6db44",
+              "COBJ::8fa6bd70ac666b69c5203f01",
+              "COBJ::bf341437c2dc90b19acca02a",
+              "COBJ::97939f91dc5e89a66e47a64f",
+              "COBJ::faf43d29420238bdb57fba51",
+              "COBJ::626d1c8a5554e74005e3d146",
+              "COBJ::6b99c010dafbce3f97f7ab46",
+              "COBJ::1ba48b6fdb1d75fad756bcc6",
+              "COBJ::c5c38b59d634297636d39272"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 70,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::a1b7a5adcac58ecc61a2d8b8",
+              "COBJ::2938f77094d913d063ce25df",
+              "COBJ::a0a50e0d3b6e188318be4a9b",
+              "COBJ::5f275cfa0808a4c60a5b3cba",
+              "COBJ::6b99c010dafbce3f97f7ab46",
+              "COBJ::b7216c68f68ac9eaad541486",
+              "COBJ::58b58400565d78b767eb324a",
+              "COBJ::2ab1c2a2a01f93c1b5decc46",
+              "COBJ::79855af0e3f94a8a812c26c5",
+              "COBJ::d924e3d37f2d42c835db4daa"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 1.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 2,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 3,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.4,
+          "multilabel_micro_f1": 0.571429
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_10_MU_RELATIONSHIP",
+      "case_key": "MU",
+      "slot_id": "relationship_attribution",
+      "facet_id": "subject_relationship_disclosure",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "subject_self_disclosure",
+      "eligible_object_count": 1876,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 11,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::2163361c8f36051f28ee91fd",
+            "COBJ::6f16dd4062ff4b45efbf16cf",
+            "COBJ::afd490e11944d51da44d4a19",
+            "COBJ::cf3ee417762c882c352eff78",
+            "COBJ::6b63fe27cbf8f8c917466649",
+            "COBJ::734b67fe1d40701236d66964",
+            "COBJ::4c1a65212d1d77d06a5a3978",
+            "COBJ::058a101a22b5a8760fca2eef",
+            "COBJ::5673384b343b4dd3fc4f36cd",
+            "COBJ::75dda031c86a7fd28ef88f99"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::531939d061094bc666288122",
+            "COBJ::4b935cb734ef10790e4455fe",
+            "COBJ::e5c5e926fcd392c6b6cebe98",
+            "COBJ::a4b19ddb10197b8b50217e61",
+            "COBJ::ed007fd2e18ecd33b22ffbf6",
+            "COBJ::81a74b8fecd49309d9f36fb3",
+            "COBJ::3961a520c86ada6ad3b588b8",
+            "COBJ::b73215728741b3459a5da3e9",
+            "COBJ::a7eee693f1952d8c2f52b494",
+            "COBJ::413d44686cdb725171f1e7dc"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::d179298a0a55cb133af57af9",
+            "COBJ::641136c05ef943624f934b31",
+            "COBJ::bd5cc2c2b3e562a53aef9625",
+            "COBJ::7601c950b148c0bf308e2b3b",
+            "COBJ::f46e0aab1834af53650674ec",
+            "COBJ::5380fd4f955900da00eed76b",
+            "COBJ::b67a820b8039222803f9bed5",
+            "COBJ::0e582e74fc25b1610fdd7590",
+            "COBJ::4d2243daa6d5cdf165ecf7d2",
+            "COBJ::95833cc51a77b45df2552f61"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::82faefe1b7a00f7e975c5d66"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 68,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::d179298a0a55cb133af57af9",
+            "COBJ::fb8040aa34d2f5bb19e25d0a",
+            "COBJ::7601c950b148c0bf308e2b3b",
+            "COBJ::d8dcbcb84186a0c92d461d71",
+            "COBJ::34947eaf9cf586054e58b4f6",
+            "COBJ::d3debcc3d73ad4c9fc40d5f3",
+            "COBJ::6f1dddd93bb5b2ca107214e0",
+            "COBJ::4b935cb734ef10790e4455fe",
+            "COBJ::4e03e9a02e457178a8861ccc",
+            "COBJ::a11fe278b081a01eaf058a2e"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 58,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::9ea6d6a87b4c00a5f71002b0",
+            "COBJ::95e5b4d85fe15306bd52ee79",
+            "COBJ::a784091427b2aa084b9a3217",
+            "COBJ::e0d7a651ff3d1ce238433e31",
+            "COBJ::1856316732b65b2aff4218c6",
+            "COBJ::2fa5c5006cf672d9a11c3bac",
+            "COBJ::b67a820b8039222803f9bed5",
+            "COBJ::f46e0aab1834af53650674ec",
+            "COBJ::4d2243daa6d5cdf165ecf7d2",
+            "COBJ::9f9767a1784c47e06264c738"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 0.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 0,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 2,
+        "multilabel_micro_precision": 0.0,
+        "multilabel_micro_recall": 0.0,
+        "multilabel_micro_f1": null
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::82faefe1b7a00f7e975c5d66",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::03f646657b8ae8fd278291f4",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::03f646657b8ae8fd278291f4"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 68,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::d179298a0a55cb133af57af9",
+              "COBJ::fb8040aa34d2f5bb19e25d0a",
+              "COBJ::7601c950b148c0bf308e2b3b",
+              "COBJ::d8dcbcb84186a0c92d461d71",
+              "COBJ::34947eaf9cf586054e58b4f6",
+              "COBJ::d3debcc3d73ad4c9fc40d5f3",
+              "COBJ::6f1dddd93bb5b2ca107214e0",
+              "COBJ::4b935cb734ef10790e4455fe",
+              "COBJ::4e03e9a02e457178a8861ccc",
+              "COBJ::a11fe278b081a01eaf058a2e"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 58,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::9ea6d6a87b4c00a5f71002b0",
+              "COBJ::95e5b4d85fe15306bd52ee79",
+              "COBJ::a784091427b2aa084b9a3217",
+              "COBJ::e0d7a651ff3d1ce238433e31",
+              "COBJ::1856316732b65b2aff4218c6",
+              "COBJ::2fa5c5006cf672d9a11c3bac",
+              "COBJ::b67a820b8039222803f9bed5",
+              "COBJ::f46e0aab1834af53650674ec",
+              "COBJ::4d2243daa6d5cdf165ecf7d2",
+              "COBJ::9f9767a1784c47e06264c738"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 0.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 1,
+          "multilabel_false_positive": 1,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 0.5,
+          "multilabel_micro_recall": 0.333333,
+          "multilabel_micro_f1": 0.4
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_11_MU_DOWNSTREAM_NVDA",
+      "case_key": "MU",
+      "slot_id": "demand_volume_quality",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "customer_or_demand_signal_to_subject",
+      "eligible_object_count": 1941,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::e2e0c371b38db16297c99991",
+            "COBJ::2d110d054bbebc242a4107bc",
+            "COBJ::fa92d957a9c2efc76fa3fe6f",
+            "COBJ::3829691c51ebd82b08d7ab2c",
+            "COBJ::a1c2181f01f1e6a42e6e8a0f",
+            "COBJ::e297293b284d407673cfe55c",
+            "COBJ::3e8464c12b823218121e9356",
+            "COBJ::46dfa019ac0a76fbcb7c7dfa",
+            "COBJ::cb80f3d1a37bf2057c78f7d8",
+            "COBJ::4ed4b4ed12156f359ab2b983"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::dadcc4759c07fffd546ca736",
+            "COBJ::738cc50b5c3547879f749f44",
+            "COBJ::281ed1f17a635bd544c33e75",
+            "COBJ::d9fe0b369de547dc199f383a",
+            "COBJ::5ac9d09d8fdc3b494c97832f",
+            "COBJ::a718ce769543c3eb6455a7d6",
+            "COBJ::e8af0e5b63f7380f5563cc9b",
+            "COBJ::cc710fba0d4c9add3c406d9a",
+            "COBJ::be2cb1b5777093d36e0d4a06",
+            "COBJ::8cc830c29910458169dd212f"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::d9fe0b369de547dc199f383a",
+            "COBJ::24158a4c1e77764e37ce77a0",
+            "COBJ::db1c217cd814ab4dcb7ba52b",
+            "COBJ::cc710fba0d4c9add3c406d9a",
+            "COBJ::51c2da7f5e03f16ea38f4d5e",
+            "COBJ::1ef323125a2447f9ea989004",
+            "COBJ::58d3f9cc6334da8d4b775b50",
+            "COBJ::707b1223336d4b10511ed990",
+            "COBJ::738cc50b5c3547879f749f44",
+            "COBJ::455915b89f2d4d4cdcadb59d"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": false,
+          "positive_ids_in_pool": [],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::738cc50b5c3547879f749f44",
+            "COBJ::1ef323125a2447f9ea989004",
+            "COBJ::dadcc4759c07fffd546ca736",
+            "COBJ::0c537d0078cce54798cd78ac",
+            "COBJ::b2514e0172dd7778613b4ee8",
+            "COBJ::d9fe0b369de547dc199f383a",
+            "COBJ::5ac9d09d8fdc3b494c97832f",
+            "COBJ::5e70236d8693ada1bf60d160",
+            "COBJ::e8af0e5b63f7380f5563cc9b",
+            "COBJ::db1c217cd814ab4dcb7ba52b"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::0c537d0078cce54798cd78ac",
+            "COBJ::d9fe0b369de547dc199f383a",
+            "COBJ::d1f144dc17431fd485819eec",
+            "COBJ::cb3b40fe96decb4e947220a6",
+            "COBJ::db1c217cd814ab4dcb7ba52b",
+            "COBJ::658256e8e837ba9361248190",
+            "COBJ::31600edb38edcc184db17024",
+            "COBJ::41a695628356b2c58dd49266",
+            "COBJ::58d3f9cc6334da8d4b775b50",
+            "COBJ::707b1223336d4b10511ed990"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 0,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 0,
+        "multilabel_micro_precision": null,
+        "multilabel_micro_recall": null,
+        "multilabel_micro_f1": null
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::26e78d0deac7e51903369c0e",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::5233d284ff92225d3b1b2a79",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::26e78d0deac7e51903369c0e",
+          "COBJ::5233d284ff92225d3b1b2a79"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 90,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::738cc50b5c3547879f749f44",
+              "COBJ::1ef323125a2447f9ea989004",
+              "COBJ::dadcc4759c07fffd546ca736",
+              "COBJ::0c537d0078cce54798cd78ac",
+              "COBJ::b2514e0172dd7778613b4ee8",
+              "COBJ::d9fe0b369de547dc199f383a",
+              "COBJ::5ac9d09d8fdc3b494c97832f",
+              "COBJ::5e70236d8693ada1bf60d160",
+              "COBJ::e8af0e5b63f7380f5563cc9b",
+              "COBJ::db1c217cd814ab4dcb7ba52b"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 94,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::0c537d0078cce54798cd78ac",
+              "COBJ::d9fe0b369de547dc199f383a",
+              "COBJ::d1f144dc17431fd485819eec",
+              "COBJ::cb3b40fe96decb4e947220a6",
+              "COBJ::db1c217cd814ab4dcb7ba52b",
+              "COBJ::658256e8e837ba9361248190",
+              "COBJ::31600edb38edcc184db17024",
+              "COBJ::41a695628356b2c58dd49266",
+              "COBJ::58d3f9cc6334da8d4b775b50",
+              "COBJ::707b1223336d4b10511ed990"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 0.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 2,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 3,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.4,
+          "multilabel_micro_f1": 0.571429
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_12_MU_UPSTREAM_TSM_GAP",
+      "case_key": "MU",
+      "slot_id": "capacity_inputs_execution",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "TSM",
+      "relationship_direction": "upstream_foundry_context",
+      "eligible_object_count": 18,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::cf21cbd37cdce76320159b04",
+            "COBJ::cb1369529fb8c7ca09fd1cc0",
+            "COBJ::f03c4d8d916f7c1a0cc2b2bf",
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::e358cd0fc57260e27e781d15",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::0bb980a958ddc4bc517f2057"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::e358cd0fc57260e27e781d15",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::ddd317f58c132cee377405b5"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::ddd317f58c132cee377405b5",
+            "COBJ::cb1369529fb8c7ca09fd1cc0",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::cf21cbd37cdce76320159b04",
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::f03c4d8d916f7c1a0cc2b2bf"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 18,
+          "positive_target_available": false,
+          "positive_target_in_pool": false,
+          "positive_ids_in_pool": [],
+          "hard_negative_ids_in_pool": [
+            "COBJ::890b3038d022948939bd108d"
+          ],
+          "unjudged_ids_in_pool": [
+            "COBJ::ddd317f58c132cee377405b5"
+          ]
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::e358cd0fc57260e27e781d15",
+            "COBJ::f03c4d8d916f7c1a0cc2b2bf"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::cb1369529fb8c7ca09fd1cc0",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::e358cd0fc57260e27e781d15"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": 0.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 5,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.166667,
+        "multilabel_micro_f1": 0.25
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::890b3038d022948939bd108d",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::ddd317f58c132cee377405b5",
+          "judgement": "unjudged",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": false,
+            "positive_target_in_ranking": false,
+            "positive_target_rank": null,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 0,
+            "top_ids": [
+              "COBJ::0bb980a958ddc4bc517f2057",
+              "COBJ::18277ccaa0b756310646cfa4",
+              "COBJ::64953c6632229f8fa4f25314",
+              "COBJ::c1989ddd15cb48eed52129a2",
+              "COBJ::7c86764d40ee6488eaa02492",
+              "COBJ::08ad38199d93c496d0e28605",
+              "COBJ::3e585904467f82a5beb33020",
+              "COBJ::890b3038d022948939bd108d",
+              "COBJ::e358cd0fc57260e27e781d15",
+              "COBJ::f03c4d8d916f7c1a0cc2b2bf"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": false,
+            "positive_target_in_ranking": false,
+            "positive_target_rank": null,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 0,
+            "top_ids": [
+              "COBJ::18277ccaa0b756310646cfa4",
+              "COBJ::0bb980a958ddc4bc517f2057",
+              "COBJ::cb1369529fb8c7ca09fd1cc0",
+              "COBJ::08ad38199d93c496d0e28605",
+              "COBJ::7c86764d40ee6488eaa02492",
+              "COBJ::c1989ddd15cb48eed52129a2",
+              "COBJ::890b3038d022948939bd108d",
+              "COBJ::64953c6632229f8fa4f25314",
+              "COBJ::3e585904467f82a5beb33020",
+              "COBJ::e358cd0fc57260e27e781d15"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 0,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": null,
+          "hard_negative_suppressed_or_abstained_rate": 0.0,
+          "multilabel_true_positive": 0,
+          "multilabel_false_positive": 1,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 0.0,
+          "multilabel_micro_recall": 0.0,
+          "multilabel_micro_f1": null
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_13_NVDA_DOWNSTREAM_DELL",
+      "case_key": "NVDA",
+      "slot_id": "demand_volume_quality",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "customer_to_subject",
+      "eligible_object_count": 4600,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 7,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::30555c9672aa84c2b2d1638d",
+            "COBJ::dc0b9cead1a4c47720bd028e",
+            "COBJ::ace1883f4919a583e5d81019",
+            "COBJ::1f4024ed01fe4af89c00ff8c",
+            "COBJ::cb8183b3c21262b278b607ee",
+            "COBJ::f3ba43fc1e7b9c05f794f4da",
+            "COBJ::2f995dd5ec07b38bf0ae0ee6",
+            "COBJ::8d5bc8fea50c34e235ff517c",
+            "COBJ::b7531c7d90948aed82e5a038",
+            "COBJ::4b993365002b41024e7b3492"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::ef8c3c52504bde2339a52fb6",
+            "COBJ::c3545af2e73163b80204720f",
+            "COBJ::b50047838dc08ded222c9a2d",
+            "COBJ::e247b3f029847562ffa075ee",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::854fd8ab4fc354876ddd75c1",
+            "COBJ::43eb9500f20f7cf9f76f0d5f",
+            "COBJ::edc79ab6e1d951451f434c22",
+            "COBJ::e49e3fed787c249bca652fd6",
+            "COBJ::cc2984ce8ae1e9e2fc0a848a"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 1,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::2f995dd5ec07b38bf0ae0ee6",
+            "COBJ::b50047838dc08ded222c9a2d",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::4dde53e747e6f981738715d5",
+            "COBJ::4b993365002b41024e7b3492",
+            "COBJ::ace1883f4919a583e5d81019",
+            "COBJ::8d5bc8fea50c34e235ff517c",
+            "COBJ::c632cfcd2304cedc43640da6",
+            "COBJ::231da12efbec9bb39caf4242",
+            "COBJ::c3545af2e73163b80204720f"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::2f995dd5ec07b38bf0ae0ee6"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 30,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::6df4973c9b3ff685991d8b41",
+            "COBJ::f0dbdf4be030aa364feaf1e7",
+            "COBJ::f5359dfcfdf9102814dbd18d",
+            "COBJ::0d3b35632c85813fde2fad62",
+            "COBJ::c0e96b23990cb74e4bb061af",
+            "COBJ::4dde53e747e6f981738715d5",
+            "COBJ::c3545af2e73163b80204720f",
+            "COBJ::9ef4805295998b59758054da",
+            "COBJ::ef2970065a5730d67ef26393",
+            "COBJ::cba00473605e6cdab2db8f10"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 2,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::4dde53e747e6f981738715d5",
+            "COBJ::2f995dd5ec07b38bf0ae0ee6",
+            "COBJ::8d5bc8fea50c34e235ff517c",
+            "COBJ::4b993365002b41024e7b3492",
+            "COBJ::b50047838dc08ded222c9a2d",
+            "COBJ::ace1883f4919a583e5d81019",
+            "COBJ::440b862fae4dc6b1d07cfae1",
+            "COBJ::9ef4805295998b59758054da",
+            "COBJ::d0dcb669fd1d021e4da9af09",
+            "COBJ::7f669c10f88d2ac020eecd15"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.666667,
+        "multilabel_micro_f1": 0.8
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::2f995dd5ec07b38bf0ae0ee6",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::1b079a8beea186639ea0237f",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::1b079a8beea186639ea0237f"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 30,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::6df4973c9b3ff685991d8b41",
+              "COBJ::f0dbdf4be030aa364feaf1e7",
+              "COBJ::f5359dfcfdf9102814dbd18d",
+              "COBJ::0d3b35632c85813fde2fad62",
+              "COBJ::c0e96b23990cb74e4bb061af",
+              "COBJ::4dde53e747e6f981738715d5",
+              "COBJ::c3545af2e73163b80204720f",
+              "COBJ::9ef4805295998b59758054da",
+              "COBJ::ef2970065a5730d67ef26393",
+              "COBJ::cba00473605e6cdab2db8f10"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 2,
+            "positive_target_in_top_k": true,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::4dde53e747e6f981738715d5",
+              "COBJ::2f995dd5ec07b38bf0ae0ee6",
+              "COBJ::8d5bc8fea50c34e235ff517c",
+              "COBJ::4b993365002b41024e7b3492",
+              "COBJ::b50047838dc08ded222c9a2d",
+              "COBJ::ace1883f4919a583e5d81019",
+              "COBJ::440b862fae4dc6b1d07cfae1",
+              "COBJ::9ef4805295998b59758054da",
+              "COBJ::d0dcb669fd1d021e4da9af09",
+              "COBJ::7f669c10f88d2ac020eecd15"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 1.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 3,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.6,
+          "multilabel_micro_f1": 0.75
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_14_NVDA_DOWNSTREAM_MSFT",
+      "case_key": "NVDA",
+      "slot_id": "demand_volume_quality",
+      "facet_id": "downstream_demand_context",
+      "evidence_owner_ticker": "MSFT",
+      "relationship_direction": "customer_or_ecosystem_to_subject",
+      "eligible_object_count": 2175,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 3,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::5dd25001190d679dd3151f3a",
+            "COBJ::f96b8fb975655c2506fae6b4",
+            "COBJ::ee936e565aa07136fa6ad3c2",
+            "COBJ::5de970b070541dcb1637f4f6",
+            "COBJ::cd55fadd4c64a52f92ed58bf",
+            "COBJ::f9e08c1c2d9c6dcabb5d858b",
+            "COBJ::cfb77fb8cd6b9f1cf500e9d3",
+            "COBJ::59f2e59647cb391bb37008b6",
+            "COBJ::42e03c462a79731db6b49658",
+            "COBJ::c75ec9e0397121f6a120d9ac"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::43438d632779008a2f537844",
+            "COBJ::f555d11eeca9c797c56ee39f",
+            "COBJ::d42812fa74996b3913d321fb",
+            "COBJ::0aa058b875b3e8c012e21fea",
+            "COBJ::902d9711473668d36cb296cf",
+            "COBJ::eb3e1f77be8ae6ca57fe48c3",
+            "COBJ::7f62c674f4545844f9778713",
+            "COBJ::4a02f896dce5c91c55226ef5",
+            "COBJ::0db70176b4ef2e4e87647ab2",
+            "COBJ::67f9d207b4a778f490711a73"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 2,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::5dd25001190d679dd3151f3a",
+            "COBJ::ee936e565aa07136fa6ad3c2",
+            "COBJ::f9e08c1c2d9c6dcabb5d858b",
+            "COBJ::f96b8fb975655c2506fae6b4",
+            "COBJ::9e0cdcb725513a5af02622f2",
+            "COBJ::7b8b1a643052c53e51e4fbab",
+            "COBJ::cd55fadd4c64a52f92ed58bf",
+            "COBJ::5de970b070541dcb1637f4f6",
+            "COBJ::47bc0965a4cf634cb956c672",
+            "COBJ::56099668dbb2962c65d461a9"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::ee936e565aa07136fa6ad3c2"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 63,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::f555d11eeca9c797c56ee39f",
+            "COBJ::d4f7e852e77b25bdafeb2253",
+            "COBJ::0db70176b4ef2e4e87647ab2",
+            "COBJ::9efeab39f3726bba3ee1045c",
+            "COBJ::90c1fe62c7f4943937a387a8",
+            "COBJ::eb3e1f77be8ae6ca57fe48c3",
+            "COBJ::43438d632779008a2f537844",
+            "COBJ::d24aafe7e6445f45cd487540",
+            "COBJ::7f62c674f4545844f9778713",
+            "COBJ::e8ba701ac10a2b954fb48405"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 8,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::1a84599463e6bf7681afc89a",
+            "COBJ::1230e63e5ae400f041b6e8e3",
+            "COBJ::5dd25001190d679dd3151f3a",
+            "COBJ::f96b8fb975655c2506fae6b4",
+            "COBJ::a98c70758dbd58a353a3b9a5",
+            "COBJ::27e35f262ed2818332d27573",
+            "COBJ::9e0cdcb725513a5af02622f2",
+            "COBJ::ee936e565aa07136fa6ad3c2",
+            "COBJ::f9e08c1c2d9c6dcabb5d858b",
+            "COBJ::5de970b070541dcb1637f4f6"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 0.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.5,
+        "multilabel_micro_f1": 0.666667
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::ee936e565aa07136fa6ad3c2",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::5d4863574fd88759f0524130",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::5d4863574fd88759f0524130"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 64,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::f555d11eeca9c797c56ee39f",
+              "COBJ::d4f7e852e77b25bdafeb2253",
+              "COBJ::0db70176b4ef2e4e87647ab2",
+              "COBJ::9efeab39f3726bba3ee1045c",
+              "COBJ::90c1fe62c7f4943937a387a8",
+              "COBJ::eb3e1f77be8ae6ca57fe48c3",
+              "COBJ::43438d632779008a2f537844",
+              "COBJ::d24aafe7e6445f45cd487540",
+              "COBJ::7f62c674f4545844f9778713",
+              "COBJ::e8ba701ac10a2b954fb48405"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 8,
+            "positive_target_in_top_k": true,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::1a84599463e6bf7681afc89a",
+              "COBJ::1230e63e5ae400f041b6e8e3",
+              "COBJ::5dd25001190d679dd3151f3a",
+              "COBJ::f96b8fb975655c2506fae6b4",
+              "COBJ::a98c70758dbd58a353a3b9a5",
+              "COBJ::27e35f262ed2818332d27573",
+              "COBJ::9e0cdcb725513a5af02622f2",
+              "COBJ::ee936e565aa07136fa6ad3c2",
+              "COBJ::f9e08c1c2d9c6dcabb5d858b",
+              "COBJ::5de970b070541dcb1637f4f6"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 0.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 1,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.333333,
+          "multilabel_micro_f1": 0.5
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_15_NVDA_REPORTED_RESULTS",
+      "case_key": "NVDA",
+      "slot_id": "operating_performance",
+      "facet_id": "reported_results",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "subject_self_disclosure",
+      "eligible_object_count": 1941,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::e2e0c371b38db16297c99991",
+            "COBJ::648a36937cd5f61df0269914",
+            "COBJ::d9e8bdfc79b3205e11f0490f",
+            "COBJ::c6348dc8a00be9531393b364",
+            "COBJ::37e19fc6dfff0ff48f86124a",
+            "COBJ::30675021647027fc312be82c",
+            "COBJ::284e791c56c8dfd2e00822ba",
+            "COBJ::296b4d80eb2b1ea85abfa378",
+            "COBJ::14c5c3f57f08b37df5732250",
+            "COBJ::64df932765cd21b75ce24386"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 60,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::a718ce769543c3eb6455a7d6",
+            "COBJ::e1ca8fc22eeb6582262db78f",
+            "COBJ::ff133e393bff4b64889a1e77",
+            "COBJ::8da3f8755d2cdc904b1f9c86",
+            "COBJ::e8af0e5b63f7380f5563cc9b",
+            "COBJ::1ef323125a2447f9ea989004",
+            "COBJ::c3b84ce34133d3e85a498b6f",
+            "COBJ::df4368584899fcf03514c582",
+            "COBJ::244a9bd50e78733b961c742f",
+            "COBJ::2e8ca4c1720afe3b84d180f1"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 15,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::adb05ab6b264be0d287a45b2",
+            "COBJ::bf90919442fa147109e6dbd2",
+            "COBJ::7eff823097850ddb0026e55a",
+            "COBJ::bbdfd3575724b11bbc4cd5b1",
+            "COBJ::a6e7e2d68028f57304283b9f",
+            "COBJ::b32c8fd789795e34a840995b",
+            "COBJ::93b601b278844bbd4db94c94",
+            "COBJ::61925c5d0a605a4ccf44329c",
+            "COBJ::d3ccea7ada32cc940c8b80b3",
+            "COBJ::651036532eec81ed0376ea26"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::5233d284ff92225d3b1b2a79"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 31,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::dd49dcef7689e0ac899f900c",
+            "COBJ::8ab4bea8dff023862b0b801d",
+            "COBJ::740cbe64d9a4b9cdc62bfb36",
+            "COBJ::43e19284644cd01329ba2ebc",
+            "COBJ::adb05ab6b264be0d287a45b2",
+            "COBJ::f5078ef1fd92ac988e3263bd",
+            "COBJ::d3ccea7ada32cc940c8b80b3",
+            "COBJ::b2514e0172dd7778613b4ee8",
+            "COBJ::a59cf9a2243d859d295d1eba",
+            "COBJ::8a63a5c9faa6040848839a17"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 22,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::8eeb1856636519eaf5e83203",
+            "COBJ::d3ccea7ada32cc940c8b80b3",
+            "COBJ::4ed4b4ed12156f359ab2b983",
+            "COBJ::e1ca8fc22eeb6582262db78f",
+            "COBJ::bea3d3041e598f8ce912387f",
+            "COBJ::648a36937cd5f61df0269914",
+            "COBJ::adb05ab6b264be0d287a45b2",
+            "COBJ::d9e8bdfc79b3205e11f0490f",
+            "COBJ::e2e0c371b38db16297c99991",
+            "COBJ::a718ce769543c3eb6455a7d6"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.5,
+        "multilabel_micro_f1": 0.666667
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::f6561bd43e766a935e028622",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::5233d284ff92225d3b1b2a79",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::cca33a7fa4527f3d1cbccd2c",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::f6561bd43e766a935e028622",
+          "COBJ::cca33a7fa4527f3d1cbccd2c"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 31,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 2,
+            "top_ids": [
+              "COBJ::dd49dcef7689e0ac899f900c",
+              "COBJ::8ab4bea8dff023862b0b801d",
+              "COBJ::740cbe64d9a4b9cdc62bfb36",
+              "COBJ::43e19284644cd01329ba2ebc",
+              "COBJ::adb05ab6b264be0d287a45b2",
+              "COBJ::f5078ef1fd92ac988e3263bd",
+              "COBJ::d3ccea7ada32cc940c8b80b3",
+              "COBJ::b2514e0172dd7778613b4ee8",
+              "COBJ::a59cf9a2243d859d295d1eba",
+              "COBJ::8a63a5c9faa6040848839a17"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 22,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 2,
+            "top_ids": [
+              "COBJ::8eeb1856636519eaf5e83203",
+              "COBJ::d3ccea7ada32cc940c8b80b3",
+              "COBJ::4ed4b4ed12156f359ab2b983",
+              "COBJ::e1ca8fc22eeb6582262db78f",
+              "COBJ::bea3d3041e598f8ce912387f",
+              "COBJ::648a36937cd5f61df0269914",
+              "COBJ::adb05ab6b264be0d287a45b2",
+              "COBJ::d9e8bdfc79b3205e11f0490f",
+              "COBJ::e2e0c371b38db16297c99991",
+              "COBJ::a718ce769543c3eb6455a7d6"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 2,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 1.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 2,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.5,
+          "multilabel_micro_f1": 0.666667
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_16_NVDA_CASH_GENERATION",
+      "case_key": "NVDA",
+      "slot_id": "cash_conversion_balance_sheet",
+      "facet_id": "cash_generation",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "subject_self_disclosure",
+      "eligible_object_count": 1941,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::c48922c41d4e1a45d7d0d672",
+            "COBJ::d2dfd88de881945fb920ad89",
+            "COBJ::9a3bd4c58d8a13e9e19368c3",
+            "COBJ::661913331c43cd3c17186773",
+            "COBJ::a81d23775dfc5eeed35767c5",
+            "COBJ::f478859116e2cd342d690acb",
+            "COBJ::67e4e1ecb9ab8be62327c0cc",
+            "COBJ::b62f2f65b958aa3ac340fc2b",
+            "COBJ::ca4ac94e0672501d5fd47310",
+            "COBJ::8a42d8123cb97b32be825df4"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::7b3eddeff74b776e20d57895",
+            "COBJ::afd848c425e1afb28e6d92ec",
+            "COBJ::2aaa2350c93c43cd7c6fc933",
+            "COBJ::e3e608dacfc1f6b3cae8ee5d",
+            "COBJ::6e3af622bced49d0d00a452a",
+            "COBJ::c8c83da6c7ab8c6772af45d6",
+            "COBJ::bb540347cbdd4bbea7748178",
+            "COBJ::9ef5c4a317fa3523e79bc531",
+            "COBJ::c154f392ea925aff220d8431",
+            "COBJ::ff133e393bff4b64889a1e77"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 8,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::d2dfd88de881945fb920ad89",
+            "COBJ::591b7e8e233c3f72d87646f8",
+            "COBJ::ced1930a9b22dcdfe33feac3",
+            "COBJ::6db55e5d71193dbbf975d2e2",
+            "COBJ::af1836fb54666b6569f3804d",
+            "COBJ::486857efc88e6199c88120b1",
+            "COBJ::4a0faf9b16a60b07fa0feac2",
+            "COBJ::b218c5e03a722fedcb751f1a",
+            "COBJ::7db26e31f3a55e9d7e7ea7bb",
+            "COBJ::c8c83da6c7ab8c6772af45d6"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::b218c5e03a722fedcb751f1a"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 20,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::c48922c41d4e1a45d7d0d672",
+            "COBJ::6ee65fdcbbf9509f06395245",
+            "COBJ::ced1930a9b22dcdfe33feac3",
+            "COBJ::9a3bd4c58d8a13e9e19368c3",
+            "COBJ::d2dfd88de881945fb920ad89",
+            "COBJ::93afca649c1f2a7066f27cdc",
+            "COBJ::c057178bdb972052d9735b9b",
+            "COBJ::4a0faf9b16a60b07fa0feac2",
+            "COBJ::080508685cfbaf9cc1c33ad8",
+            "COBJ::e6ecc5c9158a3b1a9ed290bf"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 19,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::bd517ab16406e0d53be4b6dd",
+            "COBJ::f478859116e2cd342d690acb",
+            "COBJ::0326228c4fbe5488f6a09408",
+            "COBJ::4a0faf9b16a60b07fa0feac2",
+            "COBJ::338d33fa56b478d19b40cdda",
+            "COBJ::af1836fb54666b6569f3804d",
+            "COBJ::b1e820ab8fe8df3933881829",
+            "COBJ::5b469d55d4bf04367420d953",
+            "COBJ::e6ecc5c9158a3b1a9ed290bf",
+            "COBJ::2ae05d937c80385607a8d95c"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.5,
+        "multilabel_micro_f1": 0.666667
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::b218c5e03a722fedcb751f1a",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::26e78d0deac7e51903369c0e",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::26e78d0deac7e51903369c0e"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 20,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::c48922c41d4e1a45d7d0d672",
+              "COBJ::6ee65fdcbbf9509f06395245",
+              "COBJ::ced1930a9b22dcdfe33feac3",
+              "COBJ::9a3bd4c58d8a13e9e19368c3",
+              "COBJ::d2dfd88de881945fb920ad89",
+              "COBJ::93afca649c1f2a7066f27cdc",
+              "COBJ::c057178bdb972052d9735b9b",
+              "COBJ::4a0faf9b16a60b07fa0feac2",
+              "COBJ::080508685cfbaf9cc1c33ad8",
+              "COBJ::e6ecc5c9158a3b1a9ed290bf"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 19,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::bd517ab16406e0d53be4b6dd",
+              "COBJ::f478859116e2cd342d690acb",
+              "COBJ::0326228c4fbe5488f6a09408",
+              "COBJ::4a0faf9b16a60b07fa0feac2",
+              "COBJ::338d33fa56b478d19b40cdda",
+              "COBJ::af1836fb54666b6569f3804d",
+              "COBJ::b1e820ab8fe8df3933881829",
+              "COBJ::5b469d55d4bf04367420d953",
+              "COBJ::e6ecc5c9158a3b1a9ed290bf",
+              "COBJ::2ae05d937c80385607a8d95c"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 1.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 2,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 3,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.4,
+          "multilabel_micro_f1": 0.571429
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_17_NVDA_UPSTREAM_MU",
+      "case_key": "NVDA",
+      "slot_id": "capacity_inputs_execution",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "supplier_to_subject",
+      "eligible_object_count": 2746,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::13b81437e3ea0b2395b98ace",
+            "COBJ::32f1191bca64e685338b1577",
+            "COBJ::beb8c74714293b6a60d5bf60",
+            "COBJ::1fa0d939206f7e3a3cd5930a",
+            "COBJ::4e5911e7d0a6abf1e9f5a05f",
+            "COBJ::cf3ee417762c882c352eff78",
+            "COBJ::2163361c8f36051f28ee91fd",
+            "COBJ::6f16dd4062ff4b45efbf16cf",
+            "COBJ::afd490e11944d51da44d4a19",
+            "COBJ::87681fa71f3d699e90a55927"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::81a0876153f5741708253646",
+            "COBJ::531939d061094bc666288122",
+            "COBJ::4694928810dcee8bf6712f22",
+            "COBJ::fcb89235d735bfdd68caac07",
+            "COBJ::b73215728741b3459a5da3e9",
+            "COBJ::1ba75bacef891b4e81c606e7",
+            "COBJ::e5c5e926fcd392c6b6cebe98",
+            "COBJ::af085d062a7951c1d9236a32",
+            "COBJ::b02f30e887c699c1500de323",
+            "COBJ::54711008ea1ecec313a034e1"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 1,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::76b2fbd302ab348bb30d8674",
+            "COBJ::87681fa71f3d699e90a55927",
+            "COBJ::af085d062a7951c1d9236a32",
+            "COBJ::2251aa42e41d0504663f1cc3",
+            "COBJ::4e61e3d9985f2dfab9d16f0a",
+            "COBJ::1fa0d939206f7e3a3cd5930a",
+            "COBJ::32f1191bca64e685338b1577",
+            "COBJ::27373396ebc52d837a0058a5",
+            "COBJ::1f359e6016a17807f86d90e8",
+            "COBJ::bd5cc2c2b3e562a53aef9625"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 96,
+          "positive_target_available": true,
+          "positive_target_in_pool": true,
+          "positive_ids_in_pool": [
+            "COBJ::76b2fbd302ab348bb30d8674"
+          ],
+          "hard_negative_ids_in_pool": [],
+          "unjudged_ids_in_pool": []
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 72,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::90509b13fd6094ec507d0b27",
+            "COBJ::c140df2ed994f27f09826fa0",
+            "COBJ::acd394cb6a408e5d2ca48f4e",
+            "COBJ::64bc4d4d81899322950aa812",
+            "COBJ::2251aa42e41d0504663f1cc3",
+            "COBJ::1f359e6016a17807f86d90e8",
+            "COBJ::f8ac440ec6cc75399feb0954",
+            "COBJ::54711008ea1ecec313a034e1",
+            "COBJ::456adf18ba8931958328fd9e",
+            "COBJ::29b6ffa9dfe0f68a8b106143"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": true,
+          "positive_target_in_ranking": true,
+          "positive_target_rank": 3,
+          "positive_target_in_top_k": true,
+          "hard_negative_in_ranking_count": 0,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::2251aa42e41d0504663f1cc3",
+            "COBJ::beb8c74714293b6a60d5bf60",
+            "COBJ::76b2fbd302ab348bb30d8674",
+            "COBJ::13b81437e3ea0b2395b98ace",
+            "COBJ::81a0876153f5741708253646",
+            "COBJ::5380fd4f955900da00eed76b",
+            "COBJ::1f883a7179adbecbc8ca5cac",
+            "COBJ::2b4e096ee5d59f27940a72e7",
+            "COBJ::447b2ad2f01f8f570559a39f",
+            "COBJ::cb2c44f4fa82a3cdd2ffcb03"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 1,
+        "hard_negative_count": 0,
+        "positive_compatible_rate": 1.0,
+        "hard_negative_suppressed_or_abstained_rate": null,
+        "multilabel_true_positive": 2,
+        "multilabel_false_positive": 0,
+        "multilabel_false_negative": 1,
+        "multilabel_micro_precision": 1.0,
+        "multilabel_micro_recall": 0.666667,
+        "multilabel_micro_f1": 0.8
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::76b2fbd302ab348bb30d8674",
+          "judgement": "positive",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::6aa0368b8983dafa67bafacf",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [
+          "COBJ::6aa0368b8983dafa67bafacf"
+        ],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 72,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::90509b13fd6094ec507d0b27",
+              "COBJ::c140df2ed994f27f09826fa0",
+              "COBJ::acd394cb6a408e5d2ca48f4e",
+              "COBJ::64bc4d4d81899322950aa812",
+              "COBJ::2251aa42e41d0504663f1cc3",
+              "COBJ::1f359e6016a17807f86d90e8",
+              "COBJ::f8ac440ec6cc75399feb0954",
+              "COBJ::54711008ea1ecec313a034e1",
+              "COBJ::456adf18ba8931958328fd9e",
+              "COBJ::29b6ffa9dfe0f68a8b106143"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": true,
+            "positive_target_in_ranking": true,
+            "positive_target_rank": 3,
+            "positive_target_in_top_k": true,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 1,
+            "pairwise_comparisons": 1,
+            "top_ids": [
+              "COBJ::2251aa42e41d0504663f1cc3",
+              "COBJ::beb8c74714293b6a60d5bf60",
+              "COBJ::76b2fbd302ab348bb30d8674",
+              "COBJ::13b81437e3ea0b2395b98ace",
+              "COBJ::81a0876153f5741708253646",
+              "COBJ::5380fd4f955900da00eed76b",
+              "COBJ::1f883a7179adbecbc8ca5cac",
+              "COBJ::2b4e096ee5d59f27940a72e7",
+              "COBJ::447b2ad2f01f8f570559a39f",
+              "COBJ::cb2c44f4fa82a3cdd2ffcb03"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 1,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": 1.0,
+          "hard_negative_suppressed_or_abstained_rate": 1.0,
+          "multilabel_true_positive": 4,
+          "multilabel_false_positive": 0,
+          "multilabel_false_negative": 3,
+          "multilabel_micro_precision": 1.0,
+          "multilabel_micro_recall": 0.571429,
+          "multilabel_micro_f1": 0.727273
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    },
+    {
+      "atom_id": "S1C_ATOM_18_NVDA_UPSTREAM_TSM_GAP",
+      "case_key": "NVDA",
+      "slot_id": "capacity_inputs_execution",
+      "facet_id": "upstream_capacity_context",
+      "evidence_owner_ticker": "TSM",
+      "relationship_direction": "supplier_to_subject",
+      "eligible_object_count": 18,
+      "first_stage": {
+        "bm25_lexical": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::cb1369529fb8c7ca09fd1cc0",
+            "COBJ::cf21cbd37cdce76320159b04",
+            "COBJ::f03c4d8d916f7c1a0cc2b2bf",
+            "COBJ::26302eb8db13bbca669e76e4",
+            "COBJ::26fd798c5f42cd3c867b9263",
+            "COBJ::9c65bb0c2ed848db4de8df14",
+            "COBJ::b14af913ba0d0225871da868",
+            "COBJ::ddd317f58c132cee377405b5",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::0bb980a958ddc4bc517f2057"
+          ]
+        },
+        "bge_m3_dense": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::e358cd0fc57260e27e781d15",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::ddd317f58c132cee377405b5"
+          ]
+        },
+        "qwen3_embedding_0_6b_dense": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::cf21cbd37cdce76320159b04",
+            "COBJ::ddd317f58c132cee377405b5",
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::cb1369529fb8c7ca09fd1cc0",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::7c86764d40ee6488eaa02492"
+          ]
+        },
+        "shared_candidate_union": {
+          "candidate_count": 18,
+          "positive_target_available": false,
+          "positive_target_in_pool": false,
+          "positive_ids_in_pool": [],
+          "hard_negative_ids_in_pool": [
+            "COBJ::890b3038d022948939bd108d"
+          ],
+          "unjudged_ids_in_pool": [
+            "COBJ::ddd317f58c132cee377405b5"
+          ]
+        }
+      },
+      "rerankers": {
+        "bge_reranker_v2_m3": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::e358cd0fc57260e27e781d15",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::f03c4d8d916f7c1a0cc2b2bf"
+          ]
+        },
+        "qwen3_reranker_0_6b": {
+          "positive_target_available": false,
+          "positive_target_in_ranking": false,
+          "positive_target_rank": null,
+          "positive_target_in_top_k": false,
+          "hard_negative_in_ranking_count": 1,
+          "pairwise_wins": 0,
+          "pairwise_comparisons": 0,
+          "top_ids": [
+            "COBJ::18277ccaa0b756310646cfa4",
+            "COBJ::0bb980a958ddc4bc517f2057",
+            "COBJ::08ad38199d93c496d0e28605",
+            "COBJ::cb1369529fb8c7ca09fd1cc0",
+            "COBJ::7c86764d40ee6488eaa02492",
+            "COBJ::890b3038d022948939bd108d",
+            "COBJ::64953c6632229f8fa4f25314",
+            "COBJ::c1989ddd15cb48eed52129a2",
+            "COBJ::3e585904467f82a5beb33020",
+            "COBJ::e358cd0fc57260e27e781d15"
+          ]
+        }
+      },
+      "evidence_role_metrics": {
+        "positive_count": 0,
+        "hard_negative_count": 1,
+        "positive_compatible_rate": null,
+        "hard_negative_suppressed_or_abstained_rate": 0.0,
+        "multilabel_true_positive": 1,
+        "multilabel_false_positive": 1,
+        "multilabel_false_negative": 5,
+        "multilabel_micro_precision": 0.5,
+        "multilabel_micro_recall": 0.166667,
+        "multilabel_micro_f1": 0.25
+      },
+      "label_eligibility": [
+        {
+          "compiled_object_id": "COBJ::890b3038d022948939bd108d",
+          "judgement": "hard_negative",
+          "eligible": true,
+          "exclusion_reason": null
+        },
+        {
+          "compiled_object_id": "COBJ::ddd317f58c132cee377405b5",
+          "judgement": "unjudged",
+          "eligible": true,
+          "exclusion_reason": null
+        }
+      ],
+      "diagnostic_judged_pool": {
+        "pool_contract": "natural_candidate_union_plus_eligible_pre_registered_positive_and_hard_negative_labels",
+        "injected_label_ids": [],
+        "runtime_candidate_pool_unchanged": true,
+        "candidate_not_evidence": true,
+        "numeric_authority": false,
+        "rerankers": {
+          "bge_reranker_v2_m3": {
+            "positive_target_available": false,
+            "positive_target_in_ranking": false,
+            "positive_target_rank": null,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 0,
+            "top_ids": [
+              "COBJ::0bb980a958ddc4bc517f2057",
+              "COBJ::18277ccaa0b756310646cfa4",
+              "COBJ::64953c6632229f8fa4f25314",
+              "COBJ::c1989ddd15cb48eed52129a2",
+              "COBJ::7c86764d40ee6488eaa02492",
+              "COBJ::3e585904467f82a5beb33020",
+              "COBJ::08ad38199d93c496d0e28605",
+              "COBJ::e358cd0fc57260e27e781d15",
+              "COBJ::890b3038d022948939bd108d",
+              "COBJ::f03c4d8d916f7c1a0cc2b2bf"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          },
+          "qwen3_reranker_0_6b": {
+            "positive_target_available": false,
+            "positive_target_in_ranking": false,
+            "positive_target_rank": null,
+            "positive_target_in_top_k": false,
+            "hard_negative_in_ranking_count": 1,
+            "pairwise_wins": 0,
+            "pairwise_comparisons": 0,
+            "top_ids": [
+              "COBJ::18277ccaa0b756310646cfa4",
+              "COBJ::0bb980a958ddc4bc517f2057",
+              "COBJ::08ad38199d93c496d0e28605",
+              "COBJ::cb1369529fb8c7ca09fd1cc0",
+              "COBJ::7c86764d40ee6488eaa02492",
+              "COBJ::890b3038d022948939bd108d",
+              "COBJ::64953c6632229f8fa4f25314",
+              "COBJ::c1989ddd15cb48eed52129a2",
+              "COBJ::3e585904467f82a5beb33020",
+              "COBJ::e358cd0fc57260e27e781d15"
+            ],
+            "pool_type": "diagnostic_judged_pool_not_runtime_candidate",
+            "candidate_not_evidence": true,
+            "numeric_authority": false
+          }
+        },
+        "evidence_role_metrics": {
+          "positive_count": 0,
+          "hard_negative_count": 1,
+          "positive_compatible_rate": null,
+          "hard_negative_suppressed_or_abstained_rate": 0.0,
+          "multilabel_true_positive": 0,
+          "multilabel_false_positive": 1,
+          "multilabel_false_negative": 2,
+          "multilabel_micro_precision": 0.0,
+          "multilabel_micro_recall": 0.0,
+          "multilabel_micro_f1": null
+        }
+      },
+      "candidate_not_evidence": true,
+      "numeric_authority": false
+    }
+  ],
+  "decision": {
+    "candidate_union_credible": false,
+    "reranker_credible": {
+      "bge_reranker_v2_m3": false,
+      "qwen3_reranker_0_6b": true
+    },
+    "evidence_role_credible": false,
+    "fine_tuning_eligible": false,
+    "fine_tuning_authorized": false,
+    "runtime_promotion_authorized": false,
+    "provisional_first_stage_route": "qwen3_embedding_0_6b_dense",
+    "provisional_reranker_route": "qwen3_reranker_0_6b",
+    "database_lane": {
+      "company_financial_fact_mart_built": false,
+      "owning_stage": "S2",
+      "status": "typed_fact_store_unavailable",
+      "hard_gate_before_dell_vertical_slice": true,
+      "ranking_model_granted_numeric_authority": false
+    }
+  },
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_authorized": false,
+    "s1_complete_claimed": false,
+    "s2_database_gate_required_before_vertical_slice": true
+  },
+  "result_digest": "59c35ce368e4357686b46991240de063b11ad991602cd15e56ed880c92f8013b"
+}

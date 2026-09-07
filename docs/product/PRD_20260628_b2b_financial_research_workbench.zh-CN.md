@@ -13,6 +13,39 @@
 
 | 日期 | 修改内容 |
 | --- | --- |
+| 2026-08-21 | 分层 Evaluator 的第一个 Demand 单角色 live 已产生基本完整且大体合格的可见审查，但 `high / 12,000` repair profile 把 11,289 completion token 用于 reasoning，最终在 LOW advisory 的最后一句截断。产品责任据此再拆一层：只读内容评审、原角色研究修订和严格结构交卷是三类不同认知任务，必须有独立 TokenBudgetBasis 与可替换 Provider profile；不能把“更高 reasoning”默认用于所有节点，也不能因评审截断继续删金融权威或提高全局上限。核心 finding／责任路由合同保持 provider-neutral；本轮 `low` Evaluator profile 只是 DeepSeek GA 待实测候选，失败时进入模型／profile 职责决策，不固化为核心 Runtime 分支。Demand 仅是同一完整 Preview 的首节点 canary，通过后继续其余角色，不另造单案 runner。 |
+| 2026-08-20 | 通用 successor 自然完成 Supply repair 后，独立 Evaluator 因重复读取六份完整底稿、完整全案 truth catalog 与多套 visibility，在 31,732 prompt token 下把 16,000 completion 全耗于 reasoning，0 可见输出。产品责任据此明确：完整权威包由本地 L1 检查身份、期间、引用、数字、关系端点与 case-level absence；模型 Evaluator 只检查判断、机制、反方、WWC 与跨角色一致性，不能充当第七个研究员。评审视图必须由工作底稿实际使用的 ref 反向投影 Evidence／NumericFact／NumericRelation／typed gap，引用不全时 fail closed，未引用材料省略不等于不存在。真实 capture 回放从 116,494 bytes 降至 86,109 bytes，并完整保留 28／19／9／11 个权威对象；该结果只授权一次 Evaluator successor，不代表完整报告、S1／S3、泛化或发布通过。 |
+| 2026-08-20 | R14 证明局部 Agent repair 不能机械继承完整全案目录与 Lead 长叙事。模型拥有 10 条本角色 Evidence 和 4 个 typed gap，却因 91,182 字符上下文与 max thinking 将 12,000 completion token 全部用于 reasoning、产生 0 可见输出。产品必须为 repair 编译“角色级最小完整上下文”：保留本角色事实、gap、prior workpaper、challenge／feedback、权限和必要跨角色 bridge；无关目录只作 digest-bound omission，省略绝不等于不存在。Provider 档位必须按任务隔离，不能通过提高全局 token 上限掩盖 context selection 缺陷。完成节点必须按原上下文精确复用，只有 pending 节点获得 fresh analysis。多代 attempt-specific authority 分支不是长期产品能力，后续须收敛为通用 successor authority compiler。 |
+| 2026-08-20 | R13 证明 Provider profile 的名字不能替代真实运行语义。DeepSeek V4 Pro 的 `reasoning_effort=low` 仍按高思考执行，Cash continuation 的 4,000 completion token 中 3,705 被 reasoning 消耗，只留下 1,249 字符可见续写并再次截断。产品必须把“形成研究分析”和“基于已完成分析补齐字段／交卷”分成不同档位；后者可显式禁用 thinking，但不得改证据、观点或由 Harness 代写。TokenBudgetBasis 必须记录实际 thinking 状态和 reasoning／visible-output 消耗，不能只抄 profile 名。 |
+| 2026-08-20 | R12 证明“恢复已完成节点”不能只恢复业务 payload 后在新 run 中重编上下文。FeedbackReceipt 含 session／time／challenge 等身份，重编会产生另一份合法但不同的 context，并使原 workpaper digest 正确失配。产品恢复单位必须同时绑定已验证 payload、原模型可见 context 和 request／capture／attempt lineage；完成节点不得获得新 FeedbackReceipt 或重新执行，只有 pending 节点进入当前 run。R12 保持 immutable failure；该规范先做 exact capture replay 和 mutation，再以 fresh authority 复验。 |
+| 2026-08-20 | R5 自然 continuation 暴露 partial-field 与 missing-field 不能共用同一完成标记：模型要原地续完被截断半句时，不应被要求先插入该字段的新标题；真正缺失的后续字段仍必须有精确标题和终态回执。Harness 必须区分“续写当前字段”和“新增缺失字段”，否则会把业务上完整的多轮恢复误判为失败。R5 仍保持 failed；修复须先用 immutable capture 零调用回放，再从严格 submission 续跑，不允许重做已完成分析或追认历史结果。 |
+| 2026-08-20 | R4 Multi-Agent Preview 证明：即使分析／交卷已分离，长分析仍可能在形成大量有效内容后截断；把整个节点作废或简单扩大上限都不是合格 Agent 行为。产品 Runtime 必须能把可见分析片段保存为无业务权限的 digest-bound checkpoint，向同一 Agent 返回已完成／缺失章节的 FeedbackReceipt，并以一次有界 continuation 只补缺失内容；合并后仍须经过原严格提交合同。该能力当前只完成零调用工程门，不等于通用上下文压缩、自然反思、S1／S3 或完整 Multi-Agent 报告通过。 |
+| 2026-08-19 | 完成 FIN 0.1.3 Agent Runtime／反思／上下文连续性全链审计。当前真实能力更正为“固定研究 workflow＋片段级 typed repair＋节点 successor”，尚无通用 AgentSession、失败反馈驱动重规划、动态 Skill／Graph 消费、跨 Agent 反思或长上下文 checkpoint／resume。产品责任拆为基础设施／工具、Harness、Agent 工作模式和 Skill×Graph 交叉层；S1/S2 必须先通过无生成式 AI 的人工可操作基线，不能让模型弥补底层检索故障。冻结 AgentSession、FeedbackReceipt、PlanDelta、GraphDelta、ContextCheckpoint、StopDecision 六合同；该合同只记架构冻结，Runtime、S3 和 release 均未通过。 |
+| 2026-08-18 | S1 VS3 已在同一 33,085 对象快照和同一 canonical spine 上贯穿多路线候选、CUDA-only Embedding／Reranker、金融 intent／Evidence Role、CandidateDecision、Coverage 与 Operations Workbench。最终有界候选池召回 15/15 个开发正例且顺序扰动稳定率为 1.0；金融审阅前十覆盖 15/15，确认 hard negative 为 0；VS1 两个历史对象继续可追溯，VS2 四个复杂文档目标均进入最终审阅面。1,912 个候选全部有 accepted／rejected／unjudged／needs-review 决策，未因排名、开发 qrel 或模型分数自动晋升 Evidence／NumericFact。R17 新增 `/api/operations/s1/retrieval-quality` 真实消费者。该结果只记 `VS3_vertical_slice_integrated` 并授权 VS4 有界补证；不授予单一检索模型、Runtime Evidence promotion、微调、S1 或完整产品链资格。 |
+| 2026-08-17 | S1 VS2 已用 IFX 2025 官方年报开发样本贯穿复杂 PDF→表格／脚注／跨页关系→CandidateDecision→Coverage→Operations Workbench：解析保留 5 个复杂表区、1 个脚注、1 个重述上下文、1 个真实跨页关系和 56 个 metric-row；官方页 OCR mutation 保留预注册 material anchors，但不能冒充自然扫描资料资格。4 个经复核复杂目标只有重述上下文进入前 20，分部总计行、脚注和跨页续表仍未进入，故最早未闭合责任转到 VS3 排序／金融证据角色，而非继续扩写 parser。产品审计合同同时补充：任何 envelope 的本地 `payload_ref` 必须真实可解引用且 digest 与被引用 payload 完全一致；UI 能显示 sibling projection 不得掩盖悬空 lineage。旧 R14／R15 结果保持不可变，当前 R16 以 successor 修复。VS2 只记 `vertical_slice_integrated`，不授予 IFX 产品案例、NumericFact、自然扫描、S1 或完整产品链资格。 |
+| 2026-08-17 | S1 VS1 已把当前 DELL 数字原生 SEC／官方 transcript 从 source/capture/parse/object/index 贯穿到 EvidenceRequest、CandidateRanking、持久 CandidateDecision、命题级 Coverage、task-relative Pack readiness 与 Workbench。产品面必须同时显示 accepted、needs-review、reviewed-not-recalled 和 GapEligibilityReceipt；候选排名不授予 Evidence 权限，未执行 official／external supplement 不得表述为“公开资料不存在”。VS1 只允许标记 `vertical_slice_integrated`；OCR／复杂表格、多路线排序资格、第二轮补证、隐藏留出和 `S1_qualified_stable` 仍开放。 |
+| 2026-08-17 | Owner 指出 S1-A–S1-J 若按十个独立小项目顺序收口，会在数据版本、接口与金融语义上形成新的集成债。S1-A–S1-J 因此只作为责任与故障定位坐标；实际交付必须按纵向 release slice 组织，每个切片从真实／冻结 source 或 Evidence Need 出发，复用同一 canonical artifact spine，贯穿 parse／object／index／query／CandidateSet／CandidateRanking／CandidateDecision／Coverage／Pack，并由当前 Workbench 与冻结下游 probe 消费。局部通过只记 `component_engineering_pass`，只有当前主线端到端回放通过才记 `vertical_slice_integrated`；S1 仍须最终达到 `S1_qualified_stable`。 |
+| 2026-08-17 | Owner 更正 S1 完成定义：CoverageState／候选账本／binding／动态晋升只是第一修复切片，S1 最终必须交付 source capture、HTML／PDF／OCR／表格清洗、chunk／金融对象化、存储／索引、QueryFacetPlan、召回、语义重排、金融精排／Evidence Role、Evidence Gate、补证／gap 与 replay 的完整标准范式、当前主线实现和独立资格报告。DELL／MU／NVDA 只作开发／回归，已观察案例不作隐藏测试；须以预注册异质留出和独立 S1 硬门／性能门证明稳定后，才允许产品资格完整真实链。 |
+| 2026-08-17 | Case Truth natural R3 证明模型能识别部分真实 false absence 与 cross-cell scope，但“直接从 flat/grouped alias 列表选编号”不足以稳定区分 AI revenue／order conversion、segment performance／profit bridge 等相邻金融语义；现有三态也不能表达“事实材料存在、但某个因果解释仍未排除”。产品合同因此要求将命题抽取／命题类型与 alias resolution 分责，并为 unresolved causal hypothesis 提供不与事实 presence 冲突的语义；或由单独资格化 verifier／qualified human 承担该门。R3 保持失败，不因内存去重或部分命中而追认为通过，且在项目级处置前不得继续剩余单元或修复报告。 |
+| 2026-08-17 | Case Truth claim-polarity formal R4 已完成 capture replay、三案例／留出、跨公司 context、真实 cross-cell scope 与容量 mutation，正式状态只记为 provider-neutral engineering pass。旧 R2 的过长草稿和 supporting-fact overmapping 会在新调用前 fail closed；R7 的三条 false absence 与合法利润桥 typed gap 仍被保留。产品验收仍要求一次 fresh 两单元自然消费证明，且通过后才允许修复受影响 Judgment／Synthesis；零调用 proof 不得冒充自然语义质量、报告修复或 S3 通过。 |
+| 2026-08-17 | Case Truth 两单元 natural R2 纠正了一个产品合同歧义：模型必须提交“原文声称什么”的 claim polarity，不能提交或复制 Harness 的 authoritative truth state；跨公司资料可被研究单元看见但只能标为 context，不能被误写成当前公司事实或“本单元不可见”。每个 claim slice 应获得 current-cell eligible、case-only outside-cell 与 typed absence 分层 alias view，只映射原文直接 proposition，不枚举所有支撑数字／关系。Harness 继续对 false absence、无权缺失、跨单元引用、跨案污染和合法 typed gap 做最终裁决。R2 的截断与 14 条 mixed finding 保持失败证据；新合同须先过 capture replay、三案／留出和容量 mutation，再允许一次 fresh 两单元自然复验。 |
+| 2026-08-17 | Case Truth natural R1 证明一次性要求模型读取全案 truth view、分析 15 个 surface 并严格交卷会耗尽推理预算。产品合同据此明确：模型语义分析与严格提交是两个责任节点；按研究单元提供最小 claim slice；Harness 用完整本地权威包做最终校验并聚合 parent-bound receipts。Provider wire schema 兼容投影不得替代 canonical 金融合同或本地 Validator。正式零调用 R3 已证明五单元 `15/15` surface 的完整覆盖与漏项／重复 fail-closed；这仍不等于自然语义质量、R7 修复或产品验收。 |
+| 2026-08-17 | DELL R7 首次以 3 次 successor 调用完整物化五单元 workpaper、synthesis 与内部报告；身份、期间、数值、引用和 AI 产品到公司利润／现金的因果边界通过，但 Operating／Counterevidence 把 Evidence 已披露的 AI server revenue、AI orders／backlog 写成缺失，Synthesis 又将错误缺失升级为 conflict，故结果保持 contract pass／L1-L2 fail。产品合同新增 case-level fact presence、cell-local visibility 与 typed absence 三态；只有 Harness 可从 reviewed catalog＋typed gap 签发全案缺失，综合 conflict premise 必须与全案 truth packet 一致。禁止短语正则和手工改报告；DELL 修复验收前不进入 MU/NVDA 泛化或 Workbench publication。 |
+| 2026-08-16 | 动态 DELL 单单元已自然完成 planner、当前 S1/S2 与三片段 Judgment，但 R3 把不同报告期的公司毛利率关系和服务器组合材料写成“同期”，独立 L1 拒绝。新增 TemporalAuthority：NumericRelation 只授权自身比较，跨 Evidence／NumericRelation 的同期叙事必须绑定 source-bound QualitativeFact 的精确期间端点；无绑定时只能写为明确的历史背景。真实失败保持不通过，零调用证明后最多一次同片段 repair，禁止重跑规划、检索、数值和前序片段。 |
+| 2026-08-16 | 动态单元交卷新增 request-scoped 消费要求：每个研究单元只能使用本轮相关 EvidenceResponse 实际返回的已审 Evidence，不能从案例级 Pack、其他请求或陈旧 GraphContext 借权；thesis 若因证据不足而 abstain，后续机制或反方不得把终态升级。formal v1.2 已证明三片段、终态和 deliverable 在证据不足时仍可完整、安全物化，但因使用 controlled fragments 且 0 模型调用，仍不计自然 Judgment 或 Agentic Research。 |
+| 2026-08-16 | 动态 Research Truth Spine 的 Judgment 入口补齐 provider-neutral ClaimRelation 投影：模型只能看到本轮 EvidenceResponse／NumericFact／gap 仍然具备的关系，固定 Pack 中依赖未取回 transcript 的产品目标与多因素关系会被删除。若本轮没有任何正向 thesis 权限，只允许既有 `bridge_unavailable` 关系以 `not_inferable + insufficient_evidence` 提交明确 abstain；不得借“证据不足”通道生成有限支持或正向因果结论。formal successor 只证明动态三片段交卷结构可执行，仍不计自然 planner、Agentic Research 或 S3 产品通过。 |
+| 2026-08-16 | S1→S3 动态 Truth Spine 完成首轮真实零调用工程纵切：EvidenceRequest 进入当前 S1/S2 后，只能按 case／owner／source／as-of／period／slot／lineage 重选当前 reviewed Pack 中已有 Evidence；未审候选统一返回 needs-human-review，排名、模型判断或 reranker 不得授予 Evidence 权威。DELL 8 个请求中 5 个取回 6 条既有 Evidence，112 个未审候选未晋升并保留 12 个 gap；MU、NVDA 单请求均为 0 条 exact reviewed match。该结果关闭 proposal-only 控制面缺口，但不计 Agentic Research，并暴露 reviewed Pack 与检索对象库／来源路由漂移：Dell transcript 已审却无法动态发现。下一步先做 clean proof，再执行自然 DELL 单单元；S1 同步缺口保留最早责任层，不得以 S3 静默预喂规避。 |
+| 2026-08-16 | FIN 0.1.3 S3 FAS-R1 证明：片段专属最小权威上下文＋高推理分析／低推理严格交卷可让 DELL `value_capture` 单 thesis 自然通过 L1，并消除旧 AI 产品→分部／公司利润越界；该结果不等于完整 Judgment 或 Agentic Research。Owner 授权连续完成其余片段、完整 fixed Pack、动态 Truth Spine、DELL 五单元及跨案例验收。普通 live failure 不再自动暂停，但必须保留 immutable attempt、在最早责任层修复并以新 authority 续跑。跨案例泛化必须预注册异质案例、逐案硬门和正式报告，禁止以相似案例或平均分冒充泛化。 |
+| 2026-08-16 | S3 片段执行进一步明确“分析可看值、交卷只选 ref、Harness 在 atom 外渲染值”：这一职责必须由同一 provider-neutral surface contract 编译到 fragment context、Tool Schema、submission prompt、Validator 与 Renderer；禁止分析层允许引用、提交层却只写“不得新增数字”而隐藏 verbal band 也会失败。验收必须同时证明旧失败 replay 仍拒绝、合规 atom 不含值、最终报告仍保留 QF／NumericFact surface，不能靠删数字通过。 |
+| 2026-08-14 | FIN 0.1.3 S3 第一层失败后新增 Claim Surface successor：来源允许引用的管理层 qualitative band 必须先编译成 source-bound QF，并由 Harness 确定性展示 surface／qualifier，禁止转为单点或 audited NumericFact；thesis、mechanism、counterargument 各自提交结构化 subject、outcome、relation、attribution 和 scope。旧关键词因果门降为纵深防御，不能继续承担关系证明。旧 live 不追认，formal zero-call proof 前不授权 replacement live 或动态第二层。 |
+| 2026-08-14 | FIN 0.1.3 S3 验收正式拆成三层：fixed reviewed Pack 只隔离模型分析能力，不计作 Agentic Research；单单元动态纵切必须让模型自行提出 EvidenceRequest、真实调用 S1/S2、接收 EvidenceResponse 并继续／停止；完整动态案例还须五单元综合和报告验收。Owner 当前只批准第一层。第一层新增 provider-neutral `claim_scope + financial_scope + causal_bridge_authority`，但模型仍拥有研究叙事，本地不得代写结论。第一层通过也不得自动放行动态纵切或五单元。技术边界见 `docs/architecture/research/FIN_0_1_3_S3_FIXED_PACK_CLAIM_AUTHORITY_LAYER_20260814.zh-CN.md`。 |
+| 2026-08-14 | FIN 0.1.3 S1→S3 全链审计纠正“只修 S3 因果门即可继续”的局部判断。当前已证明 EvidenceRequest→S1 candidate、S2 CompanyFact/NumericRelation、fixed reviewed Pack→S3 单元 Judgment 各自可运行，但动态补证仍只记录 proposal、不会在同一循环执行检索/Evidence Gate/回流；S2 对订单、积压、销量、ASP、PVM、产品利润桥和估值尚无同等级 typed authority；S3 也尚无 claim scope／causal bridge 强制门。产品下一决策必须把 `candidate→EvidenceResponse→operating metric/bridge→claim authority` 作为同一有界真值纵切，不能只靠更多来源、调 embedding 或重复 live。完整审计见 `docs/worklog/fin_0_1_3_s3/019_s1_to_s3_full_chain_and_experiment_audit.md`。 |
+| 2026-08-14 | FIN 0.1.3 S3 Chat／Responses 同输入 paired 证明两种协议均可完成 DELL 单单元五步工具循环，但协议通过不等于金融内容通过。两路均使用 FY2027 Q1 与 FY2026 全年 NumericFact 生成同比／扩张／压缩关系，原始表格虽含上年同期数据，最终 Judgment 却没有 same-cadence relation、公式与 lineage，故 L1 不通过；另发现 gap 建议行业数据而 compiled request 只允许 SEC form，source class 未进入 model-visible Tool Contract。产品合同新增：比较性语言必须绑定同指标、同单位、同 cadence 的确定性 relation；EvidenceRequest 必须显式选择当前可执行的 source class。Chat 暂保留主传输，Responses 只作已跑通 candidate，五单元不放行。 |
+| 2026-08-14 | FIN 0.1.3 S3 标准四工具 R2 证明：模型已能在同一 cell 真实读取 reviewed Evidence 与 NumericFact，并针对 AI server 出货/算力规模提出用于区分量增与价增的 material gap 补证；但项目 Tool Schema 未公开 EvidenceRequest 的长度/数量边界，也未表达 facet→query family→metric 依赖，导致 Schema-valid／local-invalid。产品要求据此补充：Prompt/Tool Schema、Validator、fake 与 route 必须由同一 provider-neutral 合同编译；跨 family 需求由本地拆成兼容请求；proposal-only 的本地格式/路由拒绝可返回 typed rejected-not-executed 并保留 gap，但身份、Evidence/NumericFact 权威、Judgment、引用和跨 case/cell 错误继续 hard fail。R2 不重试、不追认；第三次 single-cell 与五单元未授权。 |
+| 2026-08-13 | FIN 0.1.3 S1-D 完成 Dell/TSM 有界官方补源与当前 Pack 提升：Dell 14 页 Q1 FY2027 官方托管 transcript 经既有绑定 route 人工入库，复用共用 parser/object/Evidence Gate 接受 3 条 issuer-direct Evidence；TSM 保留 2 条 bounded ecosystem Evidence。当前 DELL 为 20 Evidence／14 gaps，MU/NVDA 未变；只关闭 AI server margin gap，pull-forward、ASP/PVM、供应分配、容量时点和估值继续显式。Runtime Registry R11 支持按案例 digest-bound 私有对象根，避免复制整套 Pack。`core_research_ready=true` 只授权进入下一段零调用 S3 consumer 工程，不等于 S1、报告或 release 通过。 |
+| 2026-08-13 | FIN 0.1.3 S1-D 新增有界官方来源入库：自动获取和操作员上传预登记官方 PDF 共用不可变 raw CAS、route 身份、日期、摘要和 PDF 验收，Workbench Operations 可查看 attempt，但任何成功对象仍是 `source_only_not_evidence`。该入口不是 FIN 0.5 通用 Data Room：不接受任意 URL、私有材料、截图或文本，也不提前引入 ACL/OCR/机构文件管理。真实自动 R1 的 Dell/TSM 两条请求均在 HTTP status 前失败，且两域 Fake-IP 均经 `okz` TUN；因此当前保留 typed gap，优先使用绑定 route 的人工官方 PDF 上传，自动路径只有在用户可见的 DIRECT/TUN A/B 后才可重试。 |
+| 2026-08-13 | DELL 受控 S1/S2/S3 零调用纵切已接通：5 个 EvidenceRequest 同时得到 Qwen＋BM25 叙事候选和 S2 SQL/PIT 事实，7/7 typed request 返回 21 个 NumericFact、0 gap/conflict。该结果把数据库从“不能遗忘的规划项”提升为不可被 embedding、reranker 或模型替代的运行时数值权威；同时暴露 80 个候选仍有旧期、表格和角色噪声。下一门只允许一次 planner-atoms canary，不允许模型拥有身份、日期、来源、预算或数值写入权，也不因此宣称 S1/S2/S3 产品通过。 |
+| 2026-08-12 | FIN 0.1.3 S1-B 将历史 candidate store 重定基为 28 个父文档／1,805 个可检索金融子对象；NVDA 当前 10-Q、三案 PIT market role 与 Workbench 候选链已接入。实测证明 source coverage 与 ranking quality 必须分账：current-object missing=0，但 reviewed target 入池仅 DELL/MU/NVDA=`6/3/4`，并有风险段冒充现金、旧期压新期、主题共现冒充关系。Dell/Micron 官方 PDF 已确认存在但当前产品 transport 未捕获，和 TSM 先进封装、新鲜估值一起转 S1-D；当前下一阶段是冻结同一对象做 S1-C sparse/dense/rerank 对照，而非继续堆来源。 |
 | 2026-08-12 | FIN 0.1.3 仓库重定基把当前可交付产品收敛为 DELL／MU／NVDA 三案只读 reviewed Evidence Workspace，并把旧并行产品面、attempt runner 与流水账迁入不可执行版本归档。实测三案只有 SEC 来源且 structured numeric=0，故新基线只通过身份、摘要、来源和 gap 可审阅性，不代表多源检索、NumericFact、动态 Agentic Research 或完整研报通过。当前执行权转入 `FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`；仓库基线合并不等于 FIN 0.1.3 产品收口。 |
 | 2026-08-11 | S3 动态研究 successor 已完成零调用工程连接：三案由开放问题编译为 38 个有决策角色的 cell，按 material typed gap 生成 5 个有界 EvidenceRequest，新证据只触发受影响 cell 重裁决；数值 WWC 无权威绑定时必须显式不可操作化。真实 DELL same-input 审计显示 Agent 把 42 个原始散点压缩为 30 个，但仍有 2 个摘要过载点、1 处跨章节重复、决策密度不足及历史数值 L1 失败。因此产品验收继续要求“更短且更有判断”与事实权威同时成立；本轮只记 engineering pass，不代表自然 planner、修复后报告、八维评分、paired／人工／Owner 或 release 通过。 |
 | 2026-08-11 | S2 单节点 DeepSeek Pro canary 的业务判断、4 个 NUM ref、反方和边界均正确，formal failure 仅来自 `surpassing` 未逐字等于 `surpassed`。产品门据此纠正：whole-string 英语词形不再作为金融 L1；模型选择 Evidence／NUM 与研究判断，本地只渲染受保护数字片段。兼容层必须先把 relation 编译为 typed direction，并对否定、低于阈值、错实体／期间／单位 fail closed；禁止 DeepSeek 专用白名单、模糊同义放行或 Harness 代写整段报告。历史 terminal 保持 failed，零调用 successor 通过也不自动关闭 S2。 |
@@ -596,6 +629,14 @@ Evidence Workbench 必须综合 25 文档中的完整研究信息范围，而不
 - 手动降权、标记无效、要求补查；
 - 对 gap 分类：retrievable gap、public-source boundary、commercial gap、not material、forbidden claim；
 - 生成 evidence appendix。
+
+研究上下文的产品边界：
+
+- `RoleMethodPack` 只说明某个研究单元应如何分析、检查机制、反方和 WWC，不能成为 Evidence、NumericFact 或 citation；
+- `GraphPack`／`GraphContextPack` 只提供实体、产品、客户、供应商和作用关系的导航、范围与待证假设；只有带当前 as-of、来源 authority 并经过 Evidence Gate 的边／事实才能进入底稿；
+- 任何注入模型的 method／graph pack 必须版本化、内容寻址、可重建，并记录选择、压缩、注入和消费 receipt；
+- Agent 宿主可以替换，但同一研究任务在不同宿主上必须消费同一 pack digest；通用 Agent Harness 不拥有 FIN 的身份、期间、NumericFact、Evidence、引用或晋升权威；
+- 缺失或不可执行的 graph route 必须显示 typed gap，不得把归档图数据或 Prompt 中的关系描述伪装成当前图谱能力。
 
 ### 6.5 Workpaper Builder
 
@@ -2248,6 +2289,8 @@ FIN 0.1.3 对 18 行 accepted qrels 的全文复核确认：`18/18` 仍是有效
 
 模型可提出查询原子和后续追问 facet，但本地 compiler 继续持有身份、期间、关系方向、来源权威、预算和 Evidence promotion。检索、parser、Provider 和向量库通过稳定插件接口接入；更换模型、Provider 或索引实现不得改变金融内核。模型能力增强时可以扩大 AutonomyGrant，不能删除引用、事实权威、PIT、冲突、gap 和审阅骨架。
 
+2026-08-12 Owner 冻结查询入口的阶段边界：当前 DELL／MU／NVDA 固定 9 Slot／17 facet 查询包只用于隔离检索器、排序器和 Evidence evaluator 的部件基线，不得冒充自然语言查询理解已经完成。S1 负责消费类型化 `EvidenceRequest`，按请求选择必要 facet，并确定性编译为 `QueryFacetPlan` 和实际检索 route；S3 负责把用户问题编译成 `Research Objective / DecisionSurface`、生成 `EvidenceRequest`，并根据 residual gap 动态追问；S4 负责真实任务输入、澄清、计划查看和人工修改界面。模型只能提出未受信任的意图／查询原子，本地 compiler 继续绑定身份、截至日、关系、来源、禁止扩展和预算。只有 `用户问题 → 类型化研究意图 → EvidenceRequest → QueryFacetPlan → 候选／gap` 的当前 Runtime 集成通过，才能声称真实查询入口成立。
+
 FIN 0.1.3 的采用顺序固定为：先冻结上述合同；再做 DELL 完整纵切；MU／NVDA 必须在核心文件字节不变的情况下只改行业／案例配置完成迁移；随后用一个美国非半导体、一个 non-US 20-F／6-K、一个披露稀疏 archetype 做留出验证。留出案例的真实身份和答案在其 proof 前不得写进核心合同。只有迁移和留出测试通过后，才允许根据已证明的对象形状重建 sparse／dense。
 
 本合同不把 `capital_allocation_and_valuation` 提前变成 FIN 0.1.3 的新增硬门。该 Slot 已进入通用库，但仍按本 PRD 16.2 的版本边界保持 optional；本轮 DELL／MU／NVDA 的必需门聚焦事实、经济机制、归因、现金转换、监管、反证、typed gap 和可追溯性。
@@ -2501,3 +2544,480 @@ live 控制面已达到 working-tree engineering pass：scope 已独立注册，
 同时，三案 source domain 均只有 `www.sec.gov`，structured numeric items 均为 `0`，估值、情景敏感性和商业分配仍是 typed gap。该实证把后续责任重新落回：S1 解决来源/检索与 residual-gap 补源，S2 解决权威 NumericFact/PIT 编译，S3 解决动态规划和研究内容质量，S4 才把通过的研究结果接入 review/repair 产品闭环，S5 执行 release。不得在当前 Workspace 用通用摘要或 UI 文案代替这些能力。
 
 仓库重定基完成的产品意义是：后续每项能力只有一条活动实现和一个真实消费者，可以被一致测试与替换。它不降低 FIN 0.1 的研究质量门，也不把未完成能力后移出版本；唯一当前顺序见 `docs/product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md`。
+
+### 16.23 S1-B 当前对象层与排序层必须分账（2026-08-12）
+
+当前 S1-B 已将官方 raw capture、父文档、section/block/table child、PIT market role 和查询候选连接为一条活动链。对象层工程门要求原始响应先保存、父子 lineage 可追溯、SEC Item 与表边界不破坏、child 容量有上限、旧 qrel 只能通过 evaluation alias 重定基；通过这些门不代表候选已经适合研究。
+
+三案实测中 current-object missing 已为 0，但 DELL/MU/NVDA reviewed target 进入候选池仅 `6/3/4`。新增 NVDA 当前 10-Q 反而使旧 qrel top-k 从 6 降到 4，因为新鲜风险对象与需求/关系问题竞争；DELL cash slot 首位是 AI 需求风险，MU cash slot 首位是 non-GAAP 对账，关系槽仍常把主题共现当成经济关系。产品因此规定：
+
+1. S1-C 的 sparse、dense、rerank 必须消费同一父子对象与同一评测标签，不得各自重切语料。
+2. 排名验收必须报告具体业务错因，包括错实体、错期间、错证据角色、主题共现、风险段冒充现金和通用股价风险冒充估值，不能只报 recall/NDCG。
+3. source coverage 通过后不得继续靠增加网页修排名；dense/rerank 只有在提高 required-slot target-in-pool 且不扩大污染时才可进入 Runtime。
+4. 候选仍不是 Evidence。只有 Evidence Gate、引用边界和 residual-gap evaluator 完成后，S1-D 才能定向补源并复编译 Evidence Pack。
+
+Dell Q1 FY2027 transcript 与 Micron Q3 FY2026 prepared remarks 已由官方 IR 证明存在，但当前产品 transport 的有界 R1–R4 未取得原始 PDF；产品表面必须显示 transport gap，不能用搜索摘要代替正文。TSM 当前 6-K 只是财务业绩，不等于先进封装产能/良率/分配证据。PIT market snapshot 早于 research as-of 且缺估值字段，因此也不能冒充 valuation-ready。
+
+### 16.24 同对象排名比较、语义近邻污染与 qrel successor 门（2026-08-12）
+
+S1-C 已把当前 `1,805` 个金融 child、身份／期间／来源硬过滤和 18 条 Owner relevance qrels 冻结为同一比较面。候选必须先生成，之后才能连接 gold label；WorkBench 投影禁止携带 target ID、命中状态或标准答案 URL。四路结果为 BM25=`14/17`、BGE-M3=`12/17`、固定 1:1 RRF=`13/17`、确定性金融规则重排=`13/17` mapped Recall@10。BM25 因召回最高继续作为候选默认，但该结论不授予 Evidence 权限。
+
+Dense 的实质问题不是“向量不能工作”，而是金融证据角色不足：它会把 NVDA 保修／诉讼文字当供给约束，把 Dell 资本回报当客户需求，把 Microsoft 云产品定义或安全风险当实际部署需求。Fusion 虽提高平均首个相关结果位置，却漏掉更多有效目标；确定性规则能压低部分噪声但没有超过 BM25，并且不得冒充 neural cross-encoder。产品采用路线必须同时改善逐条业务错误与目标召回，不能因单一 MRR/NDCG 指标上涨而晋升。
+
+评测合同自身也必须被审计。首轮三条 TSM qrel 因旧 source-tier allowlist 不认识当前 `primary_global_public_disclosure` 而在排序前失去候选；修复为通用官方来源 tier 等价后才恢复。这类合同漂移不得算作模型失败。另有四条 qrel 需要 Owner review：两条 NVDA supply 目标以联系人／安全港为主体；一条 NVDA results 需要允许当前 10-Q 更精确替代目标；一条旧 metric-table identity 在当前 store 中缺失。实现者只能提出 successor，不得静默重写已接受标签或回填更漂亮的分数。
+
+因此 S1-C 可记为工程比较完成，但 S1 仍未通过。Owner 确认受影响标签并进行缓存复跑后，S1-D 才按 residual gaps 定向补 Dell／Micron PDF、TSM 先进封装和新鲜估值；不得为了排名分数继续盲目扩源或调权重。完整技术记录见 `docs/architecture/retrieval/FIN_0_1_3_S1C_SAME_OBJECT_RANKING_COMPARISON_20260812.zh-CN.md`。
+
+### 16.25 请求级检索入口、Cross-Encoder 与 Evidence Role 分层验收（2026-08-12）
+
+固定 9 Slot／17 facet 查询包继续作为检索部件回归，但 S1 当前 Runtime 必须消费严格 `EvidenceRequest`，只编译请求明确选择的 facet、target entities、source types 和 reporting period。跨案例实体、错截至日、未知 facet、未获准来源和 route case mismatch 必须 fail closed。该接口只返回 candidate／typed gap，不把用户自然语言解释成研究计划，也不晋升 Evidence；前者归 S3，真实输入与澄清归 S4。
+
+排序、角色判断和 Evidence 晋升必须继续分层。FIN 0.1.3 本轮现成 `BAAI/bge-reranker-v2-m3` shadow 在 18 条修正后 qrels 上 Recall@10=`17/18`，与 BM25 相同，MRR=`0.608480` 高于 BM25=`0.559392`；它能将 NVDA 经营现金流从第 12 提至第 1，但也把 DELL 直接 AI 需求风险从第 1 降到第 19。任何 aggregate 增益都不能覆盖这种逐问题角色反转，故 Cross-Encoder 只能保留为候选 shadow，分数不授予 Evidence 权限。
+
+Evidence Role 必须是多标签且允许 abstain，但“规则命中更少错误”不等于合格门禁。本轮规则角色门把三案 top3 显式 incompatible 从 27 降为 3，同时把 Recall@10 从 `17/18` 降为 `13/18`；ORCL／ASML／ANET 留出正例 compatibility 仅 `23.2558%`、abstain `69.7674%`。典型失败是 customer commitments、毛利表和客户预付款因表达形态不同而被 abstain／判错。因此规则角色标签禁止上线。
+
+评测标签同样必须有角色语义。不同 slot 没绑定同一对象，只能是 `unjudged`，不能机械当 hard negative；同一对象可以同时支持现金、关系、需求或反方。训练前的数据合同至少要区分 claim、metric/table、parent context，多标签角色、事实状态、直接性与明确无关；留出公司不得参与调参。当前 18 条 qrel 只足以资格判断，不足以微调 embedding、Cross-Encoder 或角色分类器。只有扩展并复核数据合同后仍出现稳定可重复的金融角色错误，才允许单独做训练决策。
+
+### 16.26 对象级 Evidence Role、标签隔离与 query family 先决条件（2026-08-12）
+
+对象级角色合同必须把“模型可见对象”和“人工评测标签”物理分开。模型可见面只允许包含源绑定 claim、完整表格边界或父文档元数据及其 digest；role、fact state、directness、background、positive／hard negative／unjudged 和人工理由只能在候选生成或评分完成后连接。父级上下文只负责确认公司、表单、期间和章节，永远不能单独成为 positive Evidence。reviewer 的 `business_meaning` 不能反向伪装成来源原文。
+
+本轮 DELL／MU／NVDA 开发复核形成 24 个对象、35 个 query-object 关系：13 个 claim、6 个 metric table、3 个 parent context、1 个混合长段和 1 个空表／导航对象；17 positive、12 explicit hard negative、6 unjudged。ORCL／ASML／ANET 保持完全留出。三案现有 Pack 的 45 个 Evidence item 仍是 source segment，虽保留来源 digest、角色边界和可引用权，但没有 claim text 或 structured metric 的精确表面，因此不得直接用于角色训练；后续对象编译器必须从原始 child 生成源绑定 claim／table／context，无法绑定时返回 typed gap。
+
+固定 `bge-reranker-v2-m3` 在这批精确对象上的结果反而证明“切得更小”不是充分条件：12 个正负 pair 中仅 6 个正例得分更高，10 个可比较问题 top1 正确率为 60%。Micron 财务桥接被泛化国际风险压过，NVIDIA 当期结果被风险提示开场压过，NVIDIA 现金流被供给风险压过；原因是旧 qrel 把 reported results、guidance、counterevidence、regulatory risk 和 financial reconciliation 混入同一 query。旧规则角色层的多标签 F1 也只有 0.507936，既漏财务表格，也把错误风险段判为 compatible。
+
+因此产品顺序冻结为：先在 S1-C 将 reported results、guidance、counterevidence、cash conversion 和 regulatory exposure 拆成独立 query family；为客户／生态方需求增加投入、部署和订单 read-through facet；表格模型面必须包含表头、期间、单位、metric row 与父章节，而不是整表字符串。修复后仍复用同一固定模型做 shadow，不训练、不晋升。只有至少 200 个源绑定关系、6 个开发案例且独立留出不参与调参后，才允许讨论 Cross-Encoder 微调或独立多标签角色分类器。当前 TSMC 目标只证明 2nm 需求／爬坡，不含 CoWoS／先进封装产能、良率或分配；该项是明确属于 S1-D 的定向补源缺口，但不得用 broad search 掩盖其余 S1-C 合同错误。
+
+### 16.27 公司财务事实数据库、披露批次与 S1/S2/S3 纵切门（2026-08-13）
+
+数据库精确查询不是检索模型选型结束后的附属工程。只要研究问题涉及收入、利润、现金流、资本开支、资产负债表余额或派生比率，S1 必须把意图编译为 typed fact request，S2 必须从 source-bound、point-in-time 的公司财务事实 mart 返回 `NumericFact／typed gap／typed conflict`；embedding、reranker、PDF 表格片段和 Writer 均不得替代这一权威路线。
+
+当前三案 CompanyFacts＋Submissions 零网络构建已形成 1,319 条已接纳 observation，并保存 ticker／CIK、metric／taxonomy concept、Decimal value、unit、period start/end、instant／quarter-discrete／fiscal-YTD／fiscal-year、accession、filed/accepted-at、source capture digest、citation 和 supersession。旧“一 ticker／metric 只留一行”与 fact/signal/context 混表明确禁止复用。所谓保存全部 vintage，只指全部已绑定 filing identity 和 accepted-at 的 vintage；无法绑定的历史行必须 fail closed，不得猜测披露时点。
+
+产品验收新增 disclosure-cohort 约束：开放式当前期间查询必须从同一最新 10-Q 取得 quarter/YTD/instant，并单独取得最近 10-K；不能把最新 Q1 与旧 Q3 YTD 拼成一个当前结果。实现初版曾自然出现该错误，现已通过同 accession 选择和 mutation 修复。当前最近财年 9/9、当前 interim 15/15 精确查询通过，但这只构成 S2 engineering pass。mart 尚未进入研究 Runtime，Workbench reviewed Pack 也不会因数据库文件存在而自动获得 structured numeric。
+
+下一产品门是 DELL S1/S2/S3 纵切：S3 从真实研究目标生成 EvidenceRequest，S1 同时执行叙事候选路线与 typed fact route，S2 返回带期间、单位、PIT 和 lineage 的 NumericFact，S3 再完成判断和引用。只有该纵切证明数字被真实消费、错期和缺失可靠显露，S2 才能从数据库工程能力前进到产品集成能力；S1 排名仍需由 Evidence Pack 实用性而不是离线分数验收。
+
+### 16.28 受控纵切、自然 Planner Canary 与数据库长期边界（2026-08-13）
+
+当前 DELL 零生成调用纵切已把一个研究目标编译为 5 个 EvidenceRequest。S1 的 Qwen＋BM25 路线形成 80 个候选；S2 的 7 个 typed fact request 全部 resolved，共返回 21 个带公司、期间、单位、申报批次、PIT、引用和公式 lineage 的 NumericFact。该纵切还修复了 8-K filing/current-report 日期与 issuer reporting period 混用：时间投影统一后，20,340 个对象中 713 个时间元数据得到校正，只有 16 个模型文本需要重编码。旧投影和旧 shadow 继续保留为失败/历史证据。
+
+该结果只证明“给定合格 atoms 时，S1 候选与 S2 数值事实可以共同运行”。它没有证明自然用户问题能被正确规划，也没有把 80 个候选晋升为 Evidence。候选中仍存在年度 10-K 压当前 8-K、表格行压机制解释和语义相近但证据角色错误。因此不能把整池直接喂给 Writer，也不能用 aggregate ranking 分数关闭 S1。
+
+下一自然模型门限定为一次 planner-atoms canary。模型只可返回 `facet_id、target_entity、canonical metric_id、product_intent`；公司身份、截至日、来源类型、期间、预算、request/cell ID、lineage 和数字写入权由 Harness 绑定。输出必须 exact JSON parse 并通过同一语义编译器；失败保存原始 capture 后终止，禁止逐字段补丁、retry 或扩大 prompt。成功只允许执行确定性 S1/S2 successor，不能自动生成完整报告。
+
+R1 已按该边界 exact-once 执行：自然输出 exact JSON、DELL 身份、5/5 required slot、10/10 合法 facet 与所有 canonical metric/family 均正确，但返回 10 个 atoms，超过本次 `maximum_atoms=8`，因此在检索和数据库 successor 前 terminal failed。该结果既不能被手工删成 8 条追认，也不能简单记成“模型无研究能力”：十条路径覆盖需求、订单转化、业绩、指引、价格组合、增量利润、现金、营运资本及两类反方，具有实质性。产品合同必须进一步把 `proposal ceiling` 与本地 `execution budget` 分开；预算调度可以由确定性 scheduler 处理，但身份、日期、来源、外部调用和 NumericFact 权威仍保持硬失败。完成零调用 replay/mutation 前不签发 R2。
+
+数据库是长期金融控制面而不是当前模型能力的临时拐杖。更强模型可以改善查询拆分、候选选择和研究综合，但不得替代 source-bound NumericFact、PIT、期间/单位、冲突检测、披露 vintage 和公式 trace。结构化财务表优先规范化进入 S2 mart；PDF/HTML 表格、dense 命中和模型读到的数字只能作为定位/语境，未经 S2 编译不拥有最终数值权威。S2 产品关闭仍需自然规划后的真实研究消费、三案依赖回归和用户表面引用证明。
+
+### 16.29 Reviewed Evidence＋NumericFact 研究消费者与模型/Harness 权限（2026-08-13）
+
+严格重定基后，活动树必须拥有一个版本中立的 S3 consumer；不能依赖归档九调用 runner 或为每个 attempt 复制 Prompt、Validator、Renderer 与结果物化代码。当前 consumer 的唯一输入是 digest-bound reviewed Evidence Pack、其 residual gaps、保存 Planner atoms 的受控执行以及 S2 NumericFact。retrieval candidate、rejected Evidence 和未绑定 transcript 数字不得进入可写事实面。
+
+模型必须看见来源原文中的精确事实和 S2 权威数值，才能完成真正的金融分析；但模型输出只拥有判断状态、置信基础、支持/反方/数值/gap ref 选择、机制、最强反方和 what-would-change 原子。Harness 负责公司身份、日期、期间、单位、精确数字、公式、引用、cell 归属和最终结构，且不得替模型生成结论。由此既避免“模型看不到数字导致报告变空”，也避免“模型自由重写数字导致真实性失控”。
+
+request 数量不得被误当作独立证据数量。同一个 S2 事实因多个 request 或 period-role 暴露时，S3 必须按公司、指标、数值、期间、单位和来源权威合并，request/period-role 只保留为 lineage。模型输入容量也不得靠不断抬高字符上限解决：必须优先删除内部 ID、digest、request lineage 和 citation URL，合并重复事实，并在保留来源原文、claim boundary 与精确 NumericFact 的前提下选择与当前 cell 相关的信息。
+
+当前 DELL 零调用 R1 已将 45 个 request-level NumericFact 合并为 35 个经济事实，再选择 25 个模型可见事实；20 条 reviewed Evidence 中 19 条与五个研究单元相关，14 个 gaps 中 10 个可见。fake 输出能编译结构化底稿/报告 preview，未知引用、跨 cell 数值、自由数字叙事和缺 cell 均 fail closed。该结果只关闭 consumer engineering gap，不证明自然模型质量，也不允许发布 fake 报告。
+
+下一自然门只能在干净远端提交上执行一次 DeepSeek Pro 综合 canary：不重跑 Planner、不联网、不重新检索、不 retry、不 fallback、不自动发布 Workbench。成功后仍需 L1 与绝对内容质量审阅；失败必须保存 capture 并在 S3 做一次结构处置，禁止恢复逐字段 live 修补循环。
+
+### 16.30 单一金融工具合同与可替换 Agent 协议（2026-08-14）
+
+金融 Tool Schema、运行时 validator、fake provider 和修复提示必须从同一份 provider-neutral 合同编译，禁止分别手写并依靠 live 运行发现漂移。合同必须按当前 Case、研究单元、visible gap、Evidence Slot、facet、关系方向、target entity、route family 和 metric route 只暴露本次合法动作；数组数量、文本长度和唯一性等本地限制若会拒绝模型输出，也必须在模型可见 Schema 中表达。可安全更正的 proposal 格式错误应返回 `rejected_not_executed`，保持 gap 开放且不触发检索、Evidence 晋升或 NumericFact 写入；身份、跨案例、引用、最终 Judgment 和真实性错误继续 fail closed。
+
+金融控制面不得绑定某一种 Provider 协议。核心 Runtime 只认 canonical message、tool definition、tool call、tool result 和 receipt；Chat Completions、Responses API 与 Anthropic Messages 只作为外层 transport profile。Provider 支持新的协议不代表产品质量自动提升，也不授权同时维护多条主链。当前 Chat Completions 是 control，Responses 是候选，Anthropic 仅做 schema/transcript shadow；后两者只有通过独立 continuation、capture 和内容质量资格验证后才能改变主次关系。
+
+Responses 的无状态历史重建、Anthropic 的 content block 结构、Chat thinking continuity 都属于传输责任。Provider 私有推理只可在同一运行的内存中继续，不能写入 capture、Artifact 或公开结果；模型可见请求、最终 assistant 输出、usage、finish state、tool calls 和失败阶段必须完整留存。Provider 可能静默忽略的 `max_tool_calls`、`parallel_tool_calls` 等参数不得伪装成控制权，本地 step、tool、proposal、retry 和 no-progress 预算始终具有最终权威。
+
+协议资格验证固定采用“同一 DELL 单研究单元、同一 Evidence Pack、同一 NumericFact、同一 Tool Contract”的 paired canary。先比较合同通过、跨单元污染、gap 冒充事实、数字/引用/身份越界、经济机制、反方和 WWC；单单元通过仍不能直接授权五单元、完整八维报告、Workbench 发布或 S3 acceptance。若 Responses 只改变 wire 形态而不改善稳定性或研究内容，产品保留 Chat 主链，不为协议新颖性增加维护成本。
+
+paired R1 进一步确立两条产品硬约束。第一，模型选择了若干真实 NumericFact 不等于比较关系已经受权威保护；“同比、环比、扩张、压缩、高于、低于”必须绑定同指标、同单位、同 cadence 的 comparator 与确定性 relation trace。若当前输入只有 Q1 和全年，系统必须拒绝把二者渲染成趋势。第二，EvidenceRequest 的 source class 不是隐藏的本地派生字段；gap 提示、objective allowed source、Tool Schema 和实际 adapter route 必须一致。若模型需要行业数据而当前只具备 SEC route，系统应返回 `rejected_not_executed` 并保留 gap，不得记录一个语义上不可执行的“成功请求”。
+
+当前真实结果只把 Responses 晋升为 `live-compatible shadow/candidate`。它与 Chat 同为 5 step／6 receipts，却约多耗 36% token、慢 58%，且没有通过 L1 或形成确定内容优势。因此 Chat 暂保留主传输，Anthropic 继续 shadow；修复 numeric relation 与 source route 后最多先做一条 Chat 单单元复验，不能再以协议对照为由扩大付费运行。
+
+### 16.31 S1→S3 研究真值链必须连续验收（2026-08-14）
+
+最新全链审计确认，分阶段工程通过不能相乘成产品通过。当前 `EvidenceRequest → QueryFacetPlan → BM25/Qwen candidate` 已运行，S2 CompanyFact mart 与同口径 NumericRelation 已被 DELL 单单元消费，Research Context Closure 也已证明 `value_capture` RoleMethodPack 与当前 GraphContextPack 的真实注入和引用；但三段之间仍有以下产品断点：
+
+1. S3 的 `submit_evidence_request` 当前只保存 proposal，不执行 S1 检索、解析、Evidence Gate 或局部重裁决。fixed reviewed Pack canary 只能验证研究消费，不能宣称动态 Agentic Research。
+2. S2 目前主要覆盖收入、利润、现金、资产负债表和派生比率。订单、积压、客户数、销量、ASP、PVM、产品利润线、产品到分部／公司的财务桥和 PIT 估值必须形成 source-bound typed operating metric／bridge 状态或明确 gap；不得因为这些数字出现在法说文本中就让模型、retriever 或 renderer 获得数值与因果权威。
+3. S3 必须把 `claim_scope`、`financial_scope`、`causal_bridge_authority` 和 abstain／bounded wording 编译成 provider-neutral 判断合同。RoleMethodPack 是方法，GraphContextPack 是作用域和机制上下文；二者都不能替代 Evidence、NumericFact、NumericRelation 或 product-to-financial bridge。
+
+因此下一产品决策应以一条有界的 Research Truth Spine 为单位，同时验证：真实 EvidenceRequest 是否返回 accepted／rejected／typed gap／needs-human-review；研究所需 operating metric 和 bridge 是否有权威；模型最终 claim 是否处在被证据允许的范围。只有同一 DELL cell 的三段闭合并用保存失败输出完成零调用负向回放后，才值得新增自然模型证明。通过单 cell 后再扩五单元，通过 DELL 后再用 MU／NVDA 与独立留出案例验证泛化。只修 S3 拒绝器、只增加网页、只调 embedding／reranker 或直接跑五单元都不能关闭该产品门。
+
+### 16.32 来源绑定定性数值与逐原子 Claim Relation（2026-08-15）
+
+DELL fixed-Pack Chat 的首个失败表明，来源允许引用某个定性数值区间，不等于模型可以把该区间继续写在自由叙事里。若通用数字门全面禁止，合法管理层目标没有输出通道；若把“中个位数”加入白名单，同一短语又会脱离公司、期间、指标、来源和 qualifier 被任意复用。因此产品新增 `SourceBoundQualitativeFact`：
+
+1. 每个 QF 必须绑定 case、cell、subject、metric、qualitative band、unit、fiscal period、source Evidence ref、Evidence／source-text digest、原始 surface、canonical display surface、authority mode 和 qualifier。
+2. QF 可以表达 management target／qualitative band，但不得伪装成 audited NumericFact，不得被转成单点、区间端点或公式 operand。模型只选择 QF ref；Harness 只确定性展示 source-bound surface 和 qualifier。
+3. 原始 Evidence、QF 与 NumericFact 是三种不同权威：Evidence 证明来源说了什么，QF 允许展示经过审阅的定性数值表面，NumericFact 才拥有精确值、期间、单位和公式权威。
+
+单个 cell-level scope 标签也不足以约束一段完整输出。thesis、mechanism 和 counterargument 往往分别表达管理层陈述、因果机制与反方比较；用一个关系覆盖三段，会让其中两段逃离合同。因此每个 narrative atom 必须各自选择结构化 `subject、outcome、relation、attribution basis、claim scope、financial scope、causal bridge authority`，并绑定所需 Evidence、QF、NumericRelation 和 gap。模型仍拥有文字与关系选择；Harness 只校验组合、渲染 fact surface 和保存 receipt，不代写研究结论。
+
+关键词扫描保留为纵深防御，只用于发现叙事与所选关系的明显冲突，不能再作为关系正确性的主要证明。验收必须回放旧失败 payload：旧 schema 不得静默晋升；只补字段仍应被自由定性数字门拒绝；迁移 QF 后若 mechanism 仍选择不存在的强因果桥，也必须拒绝。修正版 fixture 通过只构成零调用工程门；自然 replacement live、fixed-Pack 第一层 acceptance、动态单单元纵切和五单元研究都需要各自独立授权与内容验收。
+
+片段化执行时，analysis draft 可以读取并讨论 source-visible value；submission atom 不得复制 digit、单位、日期、ref、URL 或 verbal numeric band，只能选择 NUM/QF ref 并用“其所述目标”等无值文字表达判断。Harness 在 atom 外确定性渲染 selected surface 与 qualifier。Context、Tool Schema、Prompt、Validator 和 Renderer 必须从同一 surface contract 得到这一规则；若只在本地 Validator 隐藏禁止项，属于项目合同缺陷。通过标准必须同时包含：旧失败不可 salvage、合规 atom 无自由值、最终成品仍显示受保护值。
+
+正式 clean/synced R3 已于 2026-08-15 通过上述工程门：QF 未生成单点，三个叙事原子各有独立结构关系，旧失败三层 replay、非法关系、缺指定权威、叙事冲突、source digest 漂移和跨案例污染均 fail closed；fake loop 为 2 step／3 tool call／0 EvidenceRequest，外部与模型调用均为 0。该结果只关闭合同工程缺口，不得写成 DeepSeek 自然质量通过或 fixed-Pack 第一层 acceptance。
+
+### 16.33 连续 S3 执行与异质泛化报告门（2026-08-16）
+
+FAS-R1 已用同一 DELL fixed Pack 证明：分析与严格结构提交可以分工，但模型仍拥有观点和文字，本地只投影片段所需的全部合法权威、校验所选关系并绑定 lineage。该模式当前只资格化 `value_capture.thesis`；mechanism、counterargument／WWC 和完整 Judgment 必须沿同一 provider-neutral 编译源扩展，不能各自复制 Prompt、Validator、fake 或 runner。
+
+Owner 授权 S3 在不改变产品范围、数据采购、模型主路线、S4 publication 或 S5 release 的前提下连续执行。连续执行不等于放宽审计：
+
+1. 每个业务／合同失败保留原始请求、最终 assistant 输出、usage、finish reason、capture、terminal result 和 attempt identity；修复最早责任层后必须签发新 attempt／authority，不得在同一 attempt 隐式 retry 或追认旧失败。
+2. 连通性失败必须先区分本机代理／TUN、DNS、TLS、HTTP transport、`IncompleteRead` 和远端业务响应；只允许有界恢复，不能把网络失败计入模型内容质量，也不能因一次断连复制临时 runner。
+3. 完整 fixed-Pack Judgment 通过后才可进入动态 Research Truth Spine；动态单单元通过后才可进入 DELL 五单元；DELL 通过后才可进入跨案例产品泛化。fixed Pack 始终只是模型分析单元测试，不得标为 Agentic Research。
+
+跨案例泛化必须在读取本轮结果前预注册并生成正式报告，至少满足以下产品合同：
+
+1. **案例分账**：DELL／MU／NVDA 属于已开发案例；ORCL／ASML／ANET 若曾用于设计或观察，只能作为 validation；HPQ／AVGO／INTC 等 test-precut 只有在冻结输入、来源与评分规则且未用于调参时才可作为测试。最终报告必须明确哪些案例真正不可见，不能事后挑表现好的样本。
+2. **异质性**：案例组合覆盖不同产业与商业模式、issuer／customer／supplier／ecosystem 关系、10-K／10-Q／8-K／6-K／IR PDF／transcript／表格等来源形态、充足证据与真实 typed gap、当期／同比／PIT 期间、直接事实／bounded read-through／因果桥／反方与 WWC。不得只选择与 DELL 同产业、同来源、同问题结构的案例。
+3. **逐案硬门**：身份、截至日、期间、来源、引用、精确数值、跨案例污染和 gap 冒充事实必须逐案为零 L1 违规；平均 Recall、平均质量分或成本优势不能抵消任一案例的 L1 失败。
+4. **链路评测**：逐案报告用户问题→Research Objective→EvidenceRequest→S1 route／候选→EvidenceDecision／EvidenceResponse→S2 NumericFact／bridge／gap→受影响单元重裁决→五单元综合→报告的实际流转；同时记录 target-in-pool、required-slot coverage、Evidence 晋升精度／abstain、route contribution、动态补证有效性、无进展停止、成本和延迟。
+5. **内容评测**：除事实硬门外，按问题定义、证据使用、机制解释、数值与财务桥、反方／WWC、决策密度、表达与边界、用户可用性八维做绝对评分；再做同输入 paired gain 与 qualified-human 内容验收。报告必须给出具体业务错误和最早责任层，而不是只列数字。
+6. **防止适配测试集**：开发、validation、test-precut 和真正 holdout 的数据、qrels、Prompt、模型 profile 与阈值变更都必须有 lineage；看过测试输出后对核心合同做的任何修改会使该案例降级为 development／validation，并需要新的未见案例复证。
+
+泛化门的目标不是证明一个模型在几个样例上“能跑通”，而是判断同一金融控制面在换公司、行业、来源和证据条件后，是否仍能诚实地找到资料、保留缺口、形成受权威约束的判断并交付有研究价值的报告。
+
+### 16.34 关系证据角色与片段终局分层（2026-08-16）
+
+一条研究关系所需的 Evidence 必须区分直接支持、上下文和反证，不能继续用同一个 mandatory list 混装。模型把一份宽泛披露标为 context 并不等于少引用；若产品把它强制改成 support，反而会夸大证据能够证明的内容。因此：
+
+1. 每个 Claim Relation 必须显式列出 `required_support_refs`；只有这些材料缺失时关系本身才不得成立。其他已审 Evidence 可作为 context／counterevidence，但 Harness 不得替模型晋升角色。
+2. 只引用 context、没有 required support 的判断继续硬失败；正确保留 context 的判断不得因为“没有把背景说成支持”而失败。
+3. thesis、mechanism、counterargument／WWC 各自使用本片段 relation 的 inference authority。单片段 Validator 不负责提前决定完整 Judgment 的全局状态。
+4. 完整 Judgment 的 status、claim scope、financial scope 和 causal bridge authority，由 canonical terminal compiler 在全部片段通过后按最保守权限汇总；任何更强片段都不能覆盖更弱边界。
+5. relation card、model-visible role contract、Tool Schema、Validator、fake/replay 和 terminal compiler 必须从同一 provider-neutral 合同演化，禁止为单个 Provider 或 attempt 增加例外。
+
+FFJ-R2 是该要求的自然反例：DeepSeek 正确选择法说为 support、8-K 为 context，并否定产品到分部／公司利润桥；旧合同仍将它拒绝。v1.2 已用保存输出 replay、context-only 负向 mutation、完整 fake Judgment 和两个 fresh process 关闭该项目缺陷，但不追认 R2 为完整通过。只有 fresh natural FFJ-R3 的三片段 Judgment 同时通过 L1 和内容质量，fixed-Pack 第一层才可关闭；动态 Research Truth Spine、五单元与异质泛化仍需独立产品证明。
+
+### 16.35 claim-local Evidence 权限与 typed boundary（2026-08-16）
+
+FFJ-R3 进一步证明，“每份来源在整份报告中只有一个 Evidence role”不符合真实研究：同一份法说可以直接支持管理层目标，也可以只是另一个机制 claim 的上下文。Evidence 权限必须是 claim-local；终局 report summary 只做可读汇总，不得让某个 claim 从其他片段借到 support。每个 claim 仍需独立满足 required support，只有 context 时不能被全局标签洗白。
+
+跨层因果边界也不只来自一份被标成 `limit` 的网页。经过 Case、cell、期间、主体、关系和 lineage 绑定的 `bridge_not_established`／typed gap，以及同主体同口径的 NumericRelation counter observation，均可成为 typed boundary。它们只能限制或否定因果桥，不能升级为产品利润支持，也不能替代 required Evidence。
+
+FFJ-R3 的三个模型片段已经自然形成且没有观察到新的金融 L1，但旧终局对象合同拒绝了它；历史结果不得追认为成功。provider-neutral v1.4 必须证明：逐 claim role 保留、summary 非授权、typed boundary 生效、全局 support laundering 与删除 boundary 均 fail closed、模型叙事不由 Harness 改写。通过只构成 engineering pass；仍需 fresh natural FFJ-R4 的完整 Judgment、L1、内容质量和后续动态研究验收。此前 16.34 中“fresh FFJ-R3 才可关闭”的执行编号由本条 successor 更新为 FFJ-R4，不改变三层验收或通过标准。
+
+### 16.36 防御性因果文本门必须识别命题与极性（2026-08-16）
+
+结构化 ClaimRelation 是因果权限的主要合同，文本 guard 只负责捕捉“所选关系与实际叙事明显矛盾”的残余风险。它不得只做全文关键词共现。至少必须满足：
+
+1. subject、financial outcome 和 causal term 属于同一可解释分句，不能从几句不同的边界说明中拼出一个不存在的正向命题；
+2. 单字 CJK 子串没有独立因果权威，尤其“使”不得在“服务器”中误命中；
+3. “不能据此、不可推断、尚未建立、缺乏支持、无法归因”及等价英文否定，必须阻止该 causal surface 被解释为正向断言；
+4. 明确写出的中英文跨层正向因果仍硬失败，不能因为新增否定识别而放宽；
+5. 保存的 natural payload、正向／否定／引号命题 mutation、终局 deliverable 和两个 fresh process 必须共同复证。
+
+FFJ-R4 的三个 fragment 均自然完成，内容明确否定产品到公司利润桥，却因旧全文关键词规则失败。该结果保持不可变，不得删词 salvage；successor 关闭工程缺陷后仍需 fresh FFJ-R5 的自然完整 Judgment、L1 与内容门。
+
+### 16.37 跨材料“同期”必须有显式 TemporalRelation（2026-08-16）
+
+Evidence 和 NumericRelation 各自有日期，不代表模型可以自行把它们连接为同期。动态研究中，任何“同期、同时、同季、concurrently”等把产品／来源陈述与财务结果连接起来的叙事，必须选择当前输入中显式编译的 cross-item temporal binding。该 binding 至少绑定来源 Evidence、source-bound QualitativeFact、NumericRelation、期间端点和 lineage。
+
+NumericRelation 只授权它自己的同口径 current／comparison 比较；Evidence 日期本身不能授权跨对象同期。不同报告期的材料可作为明确标注的历史背景，但必须同时说明同期性未证明。无绑定的跨对象同期叙事属于金融事实 L1 硬失败，不得降级为写作分，也不得由 Harness 删除词语后 salvage。
+
+DELL dynamic R3 是自然反例：公司毛利率比较属于 Q1 FY2027／Q1 FY2026，服务器组合材料属于 Q3 FY2026，模型仍写成“同期”。该 attempt 保持 contract pass／L1 fail。provider-neutral TemporalAuthority 完成真实输出回放和 mutation 后，只允许一次同片段模型 repair；不得重跑规划、检索、数值、前序片段或增加 Evidence。
+
+### 16.38 通用研究内核、动态研究蓝图与多形态交付（2026-08-17）
+
+DELL 五单元证明了当前 Runtime 已能把 reviewed Evidence、NumericFact、方法、图上下文和 typed gap 组织为 Judgment、综合与内部报告，但它只是 `DELL AI infrastructure blueprint`，不能继续被当作所有公司、行业、Topic 和用户问题的固定目录。产品的稳定骨架应当是研究推理对象，而不是章节数量：Research Objective、Case／as-of、待判断命题、Evidence／NumericFact、Judgment、机制、反方与替代解释、跨命题依赖／冲突、material gap、What-Would-Change 和 lineage。
+
+在该稳定内核之上，产品后续应增加两层可变结构：
+
+1. `ResearchBlueprint` 根据用户问题、公司类型、行业方法、决策场景和资料状态选择 1–N 个 Research Cell，并保存选择理由、重要性、依赖、Evidence Need、完成／部分完成／不适用条件。DELL 当前五单元迁移为兼容蓝图，不删除历史 R7，也不晋升为通用模板。
+2. `DeliveryPlan` 把同一份已验收研究内核投影为短答、长答或正式研报。短答只展示直接结论、决定性证据、机制、关键保留和引用；长答可展开多个 Judgment 与综合；正式研报采用稳定外壳和动态正文模块。不同投影不得重新发明事实或产生互相冲突的核心判断。
+
+行业 Pack 只能提供候选模块、方法和指标，不得携带案例答案或强制固定目录。模型可以提出研究模块和叙事，Harness 负责身份、期间、来源、数字、依赖、权限、lineage 和确定性渲染，不代写研究判断。最终泛化验收按用户问题覆盖、证据质量、机制、反方、WWC 和决策价值评估，不按是否复制 DELL 五章评估。
+
+本项当前状态为 `product_decision_recorded／runtime_not_implemented`。在 S1 证据获取与 Pack 充分性产品门完成前，不进入 Generic Cell Runtime、Answer Projector 或 Memo Compiler 代码迁移；否则只会把不充分材料包装进更复杂结构。
+
+### 16.39 S1 必须形成“证据获取—反驳—补证—充分性验收”闭环（2026-08-17）
+
+此前 S1 已分别证明对象构建、BM25／dense／reranker 对照、请求编译、Source Intake、官方 PDF 入库和 reviewed Pack 同步，但这些局部结果不能共同推出“模型拿到了足以完成研究的材料”。当前最早产品缺口不是再换一个 Embedding 或再抓几篇网页，而是缺少一份 task-relative 的 Evidence Need、Evidence Coverage 和 Pack Readiness 合同：系统不能稳定说明某个研究命题已经有哪些直接证据、反方证据、数值桥、独立 read-through，仍缺什么，以及下一次检索为什么值得执行。
+
+S1 的正式产品链因此冻结为：
+
+`EvidenceRequest → QueryFacetPlan → 多路线候选 → capture／对象解析 → 排序与 Evidence Role → EvidenceDecision → EvidenceCoverageState → material residual gap／counter-hypothesis → 定向补证 → EvidencePackReadiness`
+
+产品要求如下：
+
+1. S3 负责提出研究命题、Evidence Need 和 material gap；S1 负责把请求转成可审计的证据响应，不负责生成最终研究结论。
+2. 模型可提出查询原子、替代解释、反方方向和第二轮补证需求；本地编译器继续绑定公司身份、截至日、期间、关系方向、来源类别、禁止代理、预算和停止条件。候选不得由模型自行晋升为 Evidence。
+3. 内源检索、SQL／NumericFact、官方来源和 broad external search 是并列路线。外源只补当前 Pack 的 material residual gap，不按网页数量或来源数量凑齐形式指标。
+4. 每个关键命题必须分别记录直接支持、限制／反方、替代解释、必要数值桥和 typed gap。相关事实存在但因果桥未建立，必须表达为 `causal_hypothesis_unresolved`，不能写成事实不存在。
+5. 补证循环每轮必须说明关闭了哪个 material gap、增加了什么新信息、是否改变 CoverageState；连续无实质增量时停止。成本、延迟和调用次数是约束，不是研究完整性的替代指标。
+6. Pack Ready 是相对于当前问题和交付深度的状态，而不是“该公司资料已全部找全”。允许 `ready_for_current_scope`、`partial_with_material_gaps`、`blocked_by_source_access`、`blocked_by_retrieval_quality` 和 `blocked_by_evidence_admission` 等明确结果。
+7. S1 验收不能只报 Recall、MRR、useful@10 或抓取成功率；必须同时报告候选覆盖上限、业务错因、来源权威与新鲜度、Evidence 晋升精度、反方覆盖、数值／因果桥覆盖、material gap 关闭率、外源边际信息增量和最终决策可用覆盖。
+
+该调整不把 R7 的错误全部归因于 S1。R7 错误否认模型已经看见的 AI revenue、orders 和 backlog，仍属于 S3 语义判断／真值对账缺陷；S1 资料不足主要解释报告议题覆盖、信息密度、利润桥、供应分配、估值和反方深度不足。两个 failure domain 必须分别修复和评分，不能互相代偿。
+
+下一步只允许文档与只读审计：先用 DELL／MU／NVDA 既有 request、candidate、Evidence、gap 和报告 artifacts 生成业务级 Evidence Acquisition 尸检与跨案 failure atlas，再决定 S1 最早责任层的实现包。完成 S1 Pack Readiness 产品门后，才恢复 16.38 的动态研究结构代码迁移与后续 S3 泛化。
+
+### 16.40 S1 gap 必须举证，模型节点预算必须有任务依据（2026-08-17）
+
+三案尸检表明，当前“没有 Evidence”至少可能来自三种完全不同的业务状态：资料已在本地但 capture／解析／chunk／对象／索引／SQL／绑定链丢失；资料可由内外源取得但 query、route、网络、排序、Evidence Gate 或模型工具执行没有把它带到当前命题；公开免费资料确实没有披露。产品不得再用一个通用 `gap` 覆盖三者。
+
+S1 必须为每个 material proposition 建立 `FailureProvenanceRecord`，按以下顺序归责：
+
+1. **本地数据面**：检查 source registry、capture、parent／claim／table／context、sparse／dense index、SQL mart、身份／期间／单位和 slot／facet／objective binding。材料已经存在但这些环节失败时，属于 S1／S2 owned failure。
+2. **检索与执行面**：检查 QueryFacetPlan、应执行路线、工具调用、网络／parser、candidate 入池与排名、EvidenceDecision，以及模型是否发起必要第二轮。资料可搜到但链路未执行或未呈现时，属于 query／retrieval／tool／Agent failure。
+3. **信息边界**：只有前两层留下完整凭证且未发现权威材料后，才允许 `public_information_not_disclosed` 或 `commercial_or_private_data_required`。临时不可达、尚未检索、预算不足均不是“信息不存在”。
+
+每个候选必须进入 accepted／rejected／unjudged／needs-human-review 账本；每个真实 gap 必须带 `GapEligibilityReceipt`，说明本地查询、官方／外源路线、候选决策、可达性、最后检查时间及为何不是项目故障。数字和商业桥继续由 S2 权威，文本检索没有资格自行宣布数值不存在。
+
+Owner 接受的第一个实现包限定为：命题级 CoverageState → 完整候选决策账 → reviewed Evidence 绑定修复 → capture-bound 受控晋升 → DELL 营运资金／发行人反方／上游反方第二轮补证 → MU／NVDA 自然问题等价动态链。它不授权全面重建向量库、微调 Embedding／reranker、无界 broad search 或模型 full-chain。
+
+从本条生效起，每个自然模型节点和 paid authority 必须保存 `TokenBudgetBasis`：节点任务、输入规模、必交付项、schema 负担、materiality／质量风险、历史同类 usage、reasoning profile、安全余量和截断／停止语义。成本与延迟是二级约束，不能成为静默删掉研究命题、候选、反方或必答项的理由。容量不足必须确定性分批、typed deferral 或返回 `budget_insufficient_for_required_scope`；分析与严格交卷分别估算。预算通过不等于事实 L1、内容质量或产品验收通过。
+
+### 16.41 S1 完成定义是全链标准范式与独立资格，不是三个案例跑通（2026-08-17）
+
+Owner 更正 S1 的最终完成定义：DELL、MU、NVDA 以及后续留出案例是用来暴露和验证 S1 链路表现的测试样本，不是 S1 本身的交付物。某几个案例得到可用 Evidence Pack，不能替代一套可迁移、可维护、可独立验收的数据与检索标准范式。
+
+S1 结束时必须同时交付并证明以下完整能力面：
+
+1. **来源捕获与身份**：官方、内源和外源资料先 capture-first 留存，绑定公司、披露方、文档类型、发布日期、报告期、截至日、语言、格式、来源权限和不可变摘要；下载或来源失败必须 typed。
+2. **解析与数据清洗**：HTML、PDF、扫描 PDF、表格、feed 和重定向均有明确解析路线；OCR 必须保留页码、坐标、置信度和原文回指，数字、单位、期间、表头、脚注及阅读顺序不能静默损坏；低质量结果必须 abstain／人工复核，而不是伪装成可检索正文。
+3. **chunk 与金融对象化**：定义 parent／section／claim／table／metric-row／context 等对象边界、重叠与父子上下文策略，保留引用锚点、表格语义、发行人／被谈及实体、期间和 lineage；不得只按固定字符数切块，也不得让安全港、导航、联系人和重复页稳定压过实质披露。
+4. **存储与索引**：对象、sparse、dense／multi-vector、关系图和 S2 SQL／NumericFact sibling 路线有版本、摘要、覆盖清单和可重建入口；索引缺失、缓存漂移、错期或错单位必须与真实资料缺失分开。
+5. **请求理解与路由**：`EvidenceRequest → QueryFacetPlan` 必须保留主体、披露方、关系方向、期间、产品／指标、Evidence Role、来源类型、语言和禁止扩展；内源、官方、外源、图与 SQL 路线按任务需要选择，不能永远运行固定查询包。
+6. **召回、重排与金融精排**：第一阶段以高召回生成可解释候选；第二阶段在同一候选池做语义重排；第三阶段按身份、期间、来源权威、直接性、Evidence Role、关系方向、对象质量和当前 Evidence Need 做金融精排／准入。相关性模型只能提供信号，不能单独授予 Evidence 权威。
+7. **Evidence 决策与补证**：所有候选进入决策账，形成 proposition-level CoverageState、GapEligibilityReceipt、反方／替代解释和有界第二轮补证，最终输出 task-relative EvidencePackReadiness 与可审计停止理由。
+8. **可观测、回放与运维**：每层都能回答输入、输出、拒绝原因、版本、耗时、资源、失败位置和下游影响；确定性部分可回放，非确定性模型／Provider 路线有冻结输入、预算依据和结果账本。
+
+S1 必须在现有项目 L0–L5、Financial Truth、Evidence Authority、对抗测试和内容质量上游 ceiling 约束之上，另设独立 S1 资格标准。独立标准至少覆盖：来源／capture 完整性、OCR／parser 准确性、chunk／对象质量、查询与路由正确性、candidate ceiling、召回、重排、金融精排与 abstain、Evidence 晋升、命题覆盖、第二轮信息增量、gap 资格、跨案例污染、回放稳定性、延迟／资源和泛化。身份、期间、单位、引用、跨案例和错误 Evidence 晋升等硬门不得由平均分补偿。
+
+案例使用分为三类：DELL／MU／NVDA 是开发与业务回归样本；ORCL／ASML／ANET 等已观察案例只能继续做回归；最终资格必须使用在看见结果前冻结、覆盖不同行业、来源形态、语言、资料充分度、关系方向和故障类型的新留出案例。阈值、gold／negative 标签、split 和报告模板必须在读取最终结果前预注册，不能在同一 test 上调参后继续声称独立通过。
+
+当前 16.40 的 CoverageState／candidate 账本／binding／capture-bound promotion 包仍然有效，但它只是 S1 标准范式的第一实现切片，不再被解释为 S1 最终验收的全部范围。只有全链范式、独立 S1 评测、异质留出泛化和稳定复证全部通过后，才允许执行用于产品资格的完整真实链路：用户问题 → S3 Research Objective／EvidenceRequest → S1 动态检索与补证 → S2 NumericFact／bridge → S3 判断与报告 → S4 Workbench。此前的模型或节点 canary 只能标记为诊断／单元验证，不能冒充完整产品测试。
+
+S1-A–S1-J 是同一条产品链上的责任坐标，不是十个可以各自完成、最后再一次性拼装的子产品。实施必须采用纵向 release slice：每个切片从一份真实或冻结的 source／Evidence Need 开始，沿同一份 canonical artifact spine 经过 source capture、parse、object、index、query、CandidateSet、CandidateRanking、CandidateDecision、CoverageState 和 Evidence Pack，最后被当前 Workbench 及冻结的 S2／S3 consumer probe 实际读取。未修改的责任层可以复用当前 accepted 实现，但必须参与回放，不能因“本轮没改”而从集成证明中消失。spine 只统一身份、期间、locator、版本、digest、lineage、决策状态和消费者绑定；正文／表格、SQL NumericFact、Graph、official／external route 仍是并行 data plane，不得为了“统一”而把所有资料塞入同一种 chunk 或向量索引。
+
+每个切片至少同时满足三类门：所改责任层的局部 gold／mutation；与上下游相邻合同的版本、identity、period、digest 和 lineage 兼容；从当前 raw source／Evidence Need 到 Pack／Workbench 的端到端业务回放。局部测试通过只允许标记 `component_engineering_pass`；只有完整纵切通过才允许标记 `vertical_slice_integrated`；只有所有必要纵切、独立 frozen test、异质留出和稳定性同时通过，才能标记 `S1_qualified_stable`。不得再使用 `S1-A done`、`OCR done` 或 `reranker done` 等表述代替产品链状态。
+
+任何 parser、chunk、对象 schema、index、query、ranker 或 Evidence evaluator 变更都必须声明受影响 artifact version、重建／迁移范围、旧新兼容与回滚入口，并至少重跑一条真实纵切。不得由 reranker 掩盖 parser／chunk 缺陷，也不得让上游局部改善在下游 Evidence Role、Coverage 或 Workbench 中丢失；集成问题必须在每个 release slice 内暴露，而不是留到 S1 最终合并。
+
+S1 独立评测权威见 `docs/eval/FIN_0_1_3_S1_INDEPENDENT_DATA_RETRIEVAL_AND_EVIDENCE_READINESS_EVALUATION_STANDARD_20260817.zh-CN.md`；技术范式继续以 `docs/architecture/retrieval/FIN_0_1_3_S1_EVIDENCE_ACQUISITION_AND_PACK_QUALITY_PARADIGM_20260817.zh-CN.md` 为当前源。
+
+### 16.42 S1 候选覆盖必须区分 any-hit 与 all-positive，learned retrieval 只允许 CUDA（2026-08-18）
+
+DELL／MU／NVDA 三案 VS4 已证明同一 provider-neutral 合同可以把 residual proposition 贯穿到 query、CUDA candidate、Evidence Role、capture-bound decision、successor Pack、Coverage delta 和 Workbench；它们仍是开发／业务回归案例，不是最终资格集。当前三案 successor 分别为 DELL `22 Evidence / 14 gaps`、MU `11 / 15`、NVDA `19 / 13`，Candidate 自动晋升、NumericFact 新授权和 hard-negative false accept 均为 0。该结果只授权 `three_case_VS4_vertical_slice_integrated`，不授权 `S1_qualified_stable`。
+
+本轮同时暴露出一个会误导产品判断的评测差异：10/10 命题有至少一条有效目标进入前十，只能记为 `proposition_any_hit_at_10`；它不代表同一命题的所有 material facet、直接支持、反方、数值桥和独立 read-through 均已进入候选池。当前仍有 4 个 reviewed positive 未进入 candidate union。S1 资格评测因此必须同时保存并报告：
+
+1. proposition any-hit；
+2. all-positive object recall；
+3. material-facet coverage；
+4. required direct／counter／bridge role coverage；
+5. 未召回对象的最早责任层与对最终研究结论的影响。
+
+任何一项平均分不得掩盖身份、期间、来源、Evidence 晋升或关键 material facet 的硬失败。候选覆盖不足必须留在 S1-G／S1-J，不得由 S3 Writer 用更保守的措辞伪装为资料充分。
+
+learned Embedding、dense／multi-vector 和 Cross-Encoder／reranker 的正式构建、对照与资格运行必须绑定具体 CUDA device receipt，并使用项目声明的 FP16／受控精度。CUDA 不可用、模型权重或缓存身份漂移时必须在模型加载或结果晋升前 fail closed；严禁静默回退 CPU 后把延迟、批大小、数值精度或排序行为不同的结果与 CUDA 基线混为一谈。CPU 仍可承担 BM25、分词、SQL、身份／期间／来源硬过滤、账本和确定性短名单／上下文视图编排，因为这些不是 learned vector execution。该资源规则服务于结果可比性和开发效率，不改变 Candidate≠Evidence、NumericFact 独立权威或 VS5 独立留出门。
+
+### 16.43 VS5 资格人口必须在结果可见前冻结（2026-08-18）
+
+当前 VS5 已以机器可校验预注册固定 6 个未观察案例：COST 用于 FY2024／FY2025 跨期验证；JPM／CAT 用于 frozen test；NVO／SHEL／腾讯用于外国发行人、IFRS、医药／能源／互联网、20-F、非 SEC CJK PDF 与自然扫描边界的异质留出。DELL／MU／NVDA／ORCL／ASML／ANET／IFX.DE 明确不得进入隐藏资格。
+
+资格评测不能只看命题是否命中一条材料。它必须分别计算 proposition any-hit、all-positive object recall、material-facet coverage 与 required direct／counter／bridge／context role coverage，并把 parser、object、index、query、route、ranking、Evidence admission 与真实资料边界分别归责。跨案／错期／错单位晋升、hard-negative false accept 和 false public gap 是不可补偿硬门。
+
+valid temporal 最多两次，只用于配置选择；test frozen 与 heterogeneous holdout 各只有一次正式执行。正式 hidden outcome 可见后，不允许调阈值、换路线或修 case patch 后沿用该次通过结论。腾讯官方 PDF 若不包含自然扫描的实质页，必须保留自然扫描资格失败；人工栅格化只能作为 OCR mutation，不能冒充真实来源形态。
+
+预注册资产只冻结测试设计，不等于资格执行。只有官方来源 capture、runtime input／evaluator reference 物理分离、clean commit／模型／CUDA／cache digest 冻结以及同一 canonical spine 的完整输出都成立，才能将 qualification catalog 激活并执行。
+
+### 16.44 正式审阅面按请求所需的材料组组装，而不是只截取单对象前 K（2026-08-18）
+
+COST valid-temporal R2 证明，命题 any-hit、material facet 和 required role 达标仍不等于研究资料充分：三条对研究有用的对象恰好排在第 21，另两条 reference 对象又不在已冻结 EvidenceRequest 的 metric 范围内。产品因此必须把“请求要回答什么”“需要哪些材料角色”“具体由哪一个对象证明”分开治理。
+
+1. S3／ResearchBlueprint 在检索前提出 label-free `MaterialEvidenceRequirementPlan`，只允许使用本次请求已经公开的 case、实体、metric、product、facet、role 和 period；禁止出现 candidate／object／qrel、答案 URL 或事后 reference 身份。
+2. S1 的正式审阅面先为 direct、counter、bridge、context 和同口径 temporal bundle 保留有界容量，再按原排名补满。跨期组必须锁定同一实体、metric、product、basis 和全部请求年份；容量按最坏情况下每年一个对象预留，不能假定一定存在一张多期表。
+3. 错公司候选不能进入本案审阅面；错期或错 basis 候选不能满足 material group。被保留仍只是 Candidate，不获得 Evidence 或 NumericFact 权威。
+4. evaluator-only reference 必须绑定运行前 plan digest，并与其 requirement IDs 完全一致。可预先声明多个等价对象集合；组级覆盖决定资料是否完整，exact-object recall 只用于诊断 parser／recall／ranking 退化。若某对象确属不可替代，reference 只列该对象即可形成硬门。
+5. 参考与请求不一致必须由 qualified human 裁决，不能据结果偷改 EvidenceRequest 或删标；历史 COST R1／R2 保持失败，禁止 R3。
+
+当前只完成 provider-neutral 合同、摘要绑定和 DELL／MU／NVDA／COST 四种业务形态的 synthetic development fixture。自然 ResearchBlueprint 编译、当前 candidate metadata adapter、真实纵切、replacement blind reference 和新 unseen temporal valid 均未完成，因此不改变 `S1_qualified_stable=false`。
+
+### 16.45 材料集合完整、研究范围完整与 Evidence Pack 就绪必须分开验收（2026-08-18）
+
+当前真实纵切回放进一步证明，“按材料角色找齐候选”仍不是“研究范围已经被正确理解”，更不是“Evidence Pack 已经可以交给研究 Agent”。产品必须保留三层独立状态：
+
+1. `material_set_complete`：在本次已声明的 facet／role／metric／product／entity／period 范围内，正式审阅面已经保留 direct、counter、bridge、context 或同口径跨期材料。此层仍是 Candidate 权限。
+2. `runtime_scope_ready`：ResearchBlueprint 已把用户研究主题拆成可执行、可审计的材料范围；没有把“AI 服务器客户集中、竞争定价、取消与库存风险”这类完整研究题目误当成一个产品名，也没有用本地本体猜测新行业主题的硬边界。
+3. `evidence_pack_ready`：前两层通过后，候选还必须经过 EvidenceDecision／Evidence Gate、来源与期间绑定、S2 NumericFact／NumericRelation、CoverageState 和 gap 资格，才能成为下游研究可用资料。前两层任何通过都不得自动授予 Evidence 或数值权威。
+
+ResearchBlueprint 对新公司、新行业和复合主题必须能够显式声明 material requirements。确定性 fallback 只允许处理已定义的稳定金融 facet、角色、指标及已归类的硬产品概念；无法分类的主题可以继续参与检索和上下文召回，但必须留下 `explicit_blueprint_required_for_full_product_scope`，不得为了让合同变绿而静默变成产品身份或被删除。
+
+材料组装顺序也属于产品语义：先在完整候选池中保护稀缺的 direct／counter／bridge／context 和跨期 bundle，再形成有限审阅窗；不得先截普通 top-K，再声称后续材料组不存在。一个数值表与另一段机制解释可以共同覆盖同一非跨期材料组；反方／背景材料不必冒充主指标数值证据。跨期同口径比较仍必须由一个相关绑定或同 `same_basis_key` 的逐期 bundle 满足，最终 NumericRelation 权威继续属于 S2。
+
+当前零模型、零网络回放覆盖 COST 5 个、DELL 3 个、MU 4 个、NVDA 6 个真实请求，共 40 个材料 requirement 均能由同一 v1.1 合同保留，且排列回放稳定。MU 4／4、NVDA 6／6 请求达到 `runtime_scope_ready`；COST 只有 2／5、DELL 0／3 达到该状态，其余请求明确要求自然 ResearchBlueprint。该结果只关闭 current candidate metadata adapter 与材料选择顺序的工程纵切，不关闭 qualified-human COST reference、replacement blind qualification、Evidence 晋升、S1 资格或完整真实产品链。
+
+### 16.46 Agent Runtime、反思循环与上下文连续性是产品能力，不是调用次数（2026-08-19）
+
+FIN 的目标不是把一次 Prompt 拆成更多 Provider 调用，也不是让 Harness 替模型完成研究，而是让受控 Agent 在新证据、新失败和新冲突出现后能够改变下一步研究动作。当前 Planner→S1/S2→五研究单元→Synthesis→报告→Verifier 仍以固定拓扑为主；片段被拒绝后的一次 typed repair 只证明局部纠错，不能称为通用反思或完整 Agentic Research。
+
+产品正式区分四个责任平面：
+
+1. **基础设施／工具平面**：来源、capture、OCR／parser、清洗、金融对象、SQL、query、召回、重排和 Evidence Role。它必须先通过人工／fixture typed request 的无生成式 AI 基线；人按合格请求都找不到的资料属于数据或工具 failure，不能归罪模型，也不能登记公开信息 gap。
+2. **Harness 控制平面**：身份、期间、单位、来源、引用、Evidence／NumericFact／Gap 权限、合同、预算、exact-once、失败路由、事件日志和停止校验。Harness 不得代写观点或静默修改模型结论。
+3. **Agent 工作模式平面**：目标理解、假设／反方、EvidenceRequest、充分性反思、计划变更、Judgment、跨单元综合和 WWC。模型可以提出研究增量，但不能创造金融事实权限。
+4. **Skill×Graph 交叉平面**：RoleMethodPack 与图关系既要由 Harness 按角色、目标、gap 和决策面动态选择、版本化与留痕，也要被 Agent 实际消费来调整研究。禁止把全部 Pack 和整图固定塞给每个节点；Skill 不是事实，Graph hypothesis 也不是 Evidence。
+
+FIN 0.1.3 冻结以下运行对象：
+
+- `AgentSession`：绑定 Case／as-of、Objective、当前 Plan、事件历史和 checkpoint；
+- `FeedbackReceipt`：把 failure class、最早责任层、可见解释、允许动作和禁止误读送达责任 Agent；
+- `PlanDelta`：在当前 plan digest 上提出新增、修改、延期或取消研究动作；
+- `GraphDelta`：提出 run-local hypothesis／关系的新增、更正或撤回，只有绑定 reviewed Evidence 后才能晋升 source-bound edge；
+- `ContextCheckpoint`：事件历史的可验证压缩投影，用于暂停、上下文压缩和恢复；
+- `StopDecision`：明确区分充分完成、真实信息边界、预算耗尽、无进展、工具故障、合同失败和人工升级。
+
+不是所有组件都应同等 Agent 化。Planner／Research Lead、Specialist 和 Lead 需要有界 `observe→plan→act→evaluate→reflect→replan/stop`；S1/S2 默认是可靠工具；Writer 只在缺少支持时发起受控请求，不默认自由搜索；Verifier 只签发结构化 finding 并退回最早责任节点，不能自己修改研报。
+
+当 Writer 已提交完整报告合同但只在少数引用绑定上失败时，产品不得默认重跑完整报告，也不得让 Harness 代替模型选择真实引用。Verifier 必须输出路径级 finding（失败字段、越界引用、允许引用、不可变来源角色和 digest）；只有全部 hard finding 都属于引用集合时，才可由新的有界 Agent 节点提交一次 reference-only patch。该节点不能改正文、角色、拓扑、Evidence 或 NumericFact，且修补后必须重新经过完整 L1 与内容质量验收。建议字数／叙事密度属于质量层，只有超过安全容量或损害可执行合同时才成为 hard failure。
+
+DELL natural reference-patch 已验证该产品语义：第一份 patch 把 immutable digest 的两个字符抄反，Harness 在任何报告 mutation 前拒绝；第二份只修改五个已授权引用集合并通过完整重验。最终模型正文保持 numeric-free，所有金额、百分比、期间、指导、关系与引用由内容寻址 authority 确定性渲染，独立 L1 通过。八维内容为 `28/32`，叙事密度、内部 ID 引用面和未冻结 WWC 阈值保留为质量／产品呈现问题，未重新否定整条研究链。该结果证明的是当前 DELL 有界报告，不得外推为动态检索、跨案例泛化、qualified-human、S3 或发布通过。
+
+Exact-once 以一个 Provider attempt 或工具执行请求为单位。失败 attempt 永久保留；Agent 收到新的 typed feedback 后发起的新步骤拥有新输入和新 attempt ID，不属于覆盖旧失败的 retry。每个模型／付费节点继续强制 `TokenBudgetBasis`，成本与速度不能单独决定研究范围。
+
+长任务不能依赖无限聊天历史。产品必须把任务状态、证据记忆、append-only 事件、节点工作视图、原始 capture 和 checkpoint 分开；压缩／恢复测试必须证明 Case、期间、反方、material gap、未解决 feedback 和 Evidence refs 不会丢失或跨案污染。
+
+阶段归属修订为：S0 承担 Session／event／checkpoint／resume 基础；S1 承担无 AI 可资格化的检索工具及 typed tool feedback；S2 承担事实、可比关系、conflict 和 typed gap；S3 承担反思、PlanDelta／GraphDelta、多 Agent 协调和内容质量；S4 承担用户计划审阅、人工干预、暂停恢复与交付；S5 承担长任务 replay、停止行为、泛化 eval 与 release。
+
+该项当前已从 `architecture_contract_frozen` 进入 `zero_call_runtime_foundation_engineering_pass`：append-only `SessionEvent`、checkpoint／resume、六合同 validator 与 S1／S2／Verifier `FeedbackReceipt` 编译已实现并完成回放／mutation，但自然 `observe→reflect→replan→stop` live 、动态 Skill／Graph 消费、S3 及发布均未授权。它不取消 S1 当前优先级：S1 必须先达到 `S1_qualified_stable`，否则更复杂的 Agent loop 只会反复调用一个未经资格的检索栈。完整技术审计见 `docs/architecture/research/FIN_0_1_3_AGENT_RUNTIME_REFLECTION_CONTEXT_CONTINUITY_AUDIT_20260819.zh-CN.md`。
+
+### 16.47 S1 人工可操作资格、来源资产对账与外部盲测是三个不同的门（2026-08-19）
+
+S1 的“无 AI 基线”不能只指代码可运行。一名合格操作者必须能从业务问题出发，逐请求看到当前有什么、在哪一层丢失、哪些候选待准入、下一个合法动作是什么，而不需要阅读内部 runner 或猜测状态码。当前 DELL／MU／NVDA 24 个开发请求已通过该工程预检，但这不是 S1 资格。
+
+在任何 source route dispatch 之前，系统必须先对账当前对象快照中已有的官方资产。“候选不足”不等于“需要重新下载”。当前对账更正了 7 个表面上的 source-pending 请求：MU／NVDA 当期 10-K／10-Q／8-K 以及必要关联方披露已在本地权威快照中，真实最早责任是对象化、query／recall、ranking 或 Evidence Role，而不是网络或免费信息边界。当前需新增官方资产的请求为 0，public-information gap 资格仍为 0。
+
+Evidence admission 必须绑定 `Case + EvidenceRequest + material requirement + candidate + source lineage + decision`。当前已编译 16 个请求、22 条具体候选—命题绑定的私有审阅包；它们仍必须由 qualified human 作 `accept / reject / needs-review`。实现者、排名或语义相似度不能代签 Evidence 权威。
+
+replacement blind qualification 是独立外部门：至少 6 个未披露案例，覆盖跨公司、行业、披露制度、证据形态、时间／hard negative 和失败责任层。答案必须在 Git 外、candidate freeze 之后才对执行方可见；当前 Codex 不得自选案例、自建答案再自我评分。因此当前状态只是 `human_operability_engineering_ready / qualified_human_admission_pending / external_blind_pending / S1_qualified_stable=false`。
+
+### 16.48 长分析恢复必须区分完整字段、部分字段与缺失字段（2026-08-20）
+
+长任务 checkpoint 不能只记录“这一节点成功或失败”。每个模型输出字段必须拥有 `completed / partial / missing` 之一的可验证状态。`partial` 表示模型已开始该字段但在内容中途截断；恢复时应让同一 Agent 原地补完，不得为了机械解析强迫它重写整段或重复标题。`missing` 表示字段完全未开始，恢复时仍须使用精确字段标题并按合同顺序生成。首版只允许一个 partial 字段，避免无法证明的多位置拼接。
+
+Harness 必须保存原片段、续写、各自 capture／digest、完成字段集合、精确完成回执和合并后内容摘要。只有语义完整且通过原 submission 合同的结果才能成为正式 Agent 输出；checkpoint、分析草稿和 continuation 永远不能自动晋升为 Evidence、NumericFact、Judgment 或报告。已完成分析应通过内容寻址的 completion checkpoint 复用，禁止因下游结构化交卷失败而重新付费生成同一研究分析。
+
+该机制属于 S0 Agent Runtime 与 S3 工作模式的交叉能力，不是 DeepSeek 专用 Prompt 补丁。它只解决长节点的可恢复性与合同一致性，不证明资料充分、研究内容优质、跨 Agent 上下文压缩、S1／S3 资格或发布能力。
+
+### 16.49 完成节点必须恢复原模型上下文，不得在新运行中近似重编（2026-08-20）
+
+一个已完成 Agent 节点的正式状态不只是结构化业务 payload。它至少由三部分共同构成：已验证 payload、生成该 payload 时的完整模型可见 context、以及 request／capture／attempt／checkpoint lineage。FeedbackReceipt、RoleMethodPack／GraphContextPack 选择、prior workpaper、Case／as-of 和权限都可能改变 context digest；只要其中任一项变化，就不能把旧 payload 当作同一节点结果直接复用。
+
+恢复时必须从不可变 model-visible request capture 取得原 context，并验证 capture 类型、无凭据标记、run／attempt identity、request digest、消息角色、Agent、challenge、prior artifact 和 context digest。完成节点不得签发新 FeedbackReceipt、不得获得新 TokenBudgetBasis、不得重新调用模型；新 run 只能为仍 pending 的节点建立 session。若确需用新 context 重新判断，必须显式创建新的 repair／re-adjudication 节点，不能冒充 checkpoint replay。
+
+该要求同时防止两种错误：一是把新上下文下的旧答案误当成仍有效，二是因为 Harness 自己重编了上下文而错误否定原有效答案。它属于 provider-neutral Agent Runtime，不是 DeepSeek 适配特例；通过 capture replay 只证明恢复完整性，不证明研究内容、S1／S3 或发布质量。
+
+### 16.50 深度研究分析与 checkpoint 补齐必须使用不同 Provider 档位（2026-08-20）
+
+模型节点的 `TokenBudgetBasis` 不能把 `low`、`medium` 等配置标签当成供应商真实执行语义。Provider adapter 必须按当前官方语义和真实 usage 记录 thinking 是否启用、reasoning token、可见输出 token／字符、finish reason，以及两者是否共同占用 completion ceiling。若供应商把多个 effort label 映射到同一思考强度，产品必须如实记录，不能用标签制造虚假的预算差异。
+
+FIN 正式区分两类节点：
+
+1. **研究分析节点**负责阅读证据、形成机制、反方、信息边界与 What-Would-Change；应按任务重要性获得有依据的 thinking 档位和 token 上限。
+2. **checkpoint 补齐／合同映射节点**只在原分析已形成且内容寻址的前提下，完成 checkpoint 明确列出的缺失字段或把完整草稿映射为严格 Tool Call。它可以显式 `thinking=disabled`，但不得改变研究输入、重做已完成分析、引入新观点或获得 Evidence／NumericFact 权威。
+
+一次 continuation 因 profile 语义错误而截断时，必须保留失败 capture，先做零调用处置，再用新 attempt／authority 进行至多一次 profile replacement。若 replacement 仍不能完成同一 Cash continuation，不得继续为该节点增加第三种 DeepSeek 专用续写策略；应停止并升级为模型职责或控制面处置。Profile adapter 的失败不能冒充 S1 资料不足、Agent 角色无效或研究内容失败。
+
+### 16.51 报告边界必须按最早责任层处置，来源质量按“来源强度 × 主张用途”管理（2026-08-22）
+
+研报中的“无法推断”“资料不足”和“仍待披露”不是同一种状态。产品必须先形成 `ReportBoundaryDisposition`，再允许 Writer 生成客户可见的边界说明：
+
+1. `operations_only_omit_from_customer_report`：本地对象、索引、SQL、Evidence admission、状态同步、工具执行或 Agent 停止错误，只进入运行视图；
+2. `resolve_before_customer_report`：权威已更新但 workpaper 过期、研究者阈值未设置等可在当前项目内解决的事项，必须退回责任节点；
+3. `concise_current_run_uncertainty`：当前运行尚未完成补证或只能使用公开代理时，可以保留一句对判断真正重要的限制，但不得冒充永久不披露；
+4. `concise_proved_information_boundary`：只有公开来源路线终结、失败与未执行路线均已排除，并取得 non-disclosure 或 licensed/private boundary 回执后，才可称为真实信息边界。
+
+任何 Evidence、NumericFact、NumericRelation、Graph edge 或 RoleMethodPack 的**语义变化**都必须使受影响 workpaper 的 context digest 失效，系统只重裁决受影响研究单元。若后续变化只是为 workpaper 已见、已分析的同一事实补齐正式引用或数值权威，则不得机械重跑 Agent；应确定性刷新 claim support，并使旧 evaluator finding 失效。两种情况都不能把过期边界交给 Writer，也不能用最终 renderer 掩盖上游状态漂移。研究者自己应设定的 thesis 失效阈值、监控阈值和风险容忍度属于 S3 Research Method，不属于 S1 source gap。
+
+同一材料边界只在统一 Boundary Register 中完整说明一次。执行摘要应给出结论、主要驱动和至多一个综合不确定性；正文分析不确定性对判断的影响；WWC 给出可观察的改变条件；confidence 解释来源组合与置信度，不重复 gap 清单。边界密度属于内容质量 finding，除非出现事实矛盾或超过安全容量，否则 Harness 不得自动删改模型观点。
+
+S1 不再采用“official-only”作为所有研究内容的统一准入规则。来源控制改为“来源强度 × 允许主张用途”：
+
+- 发行人、监管和政府 primary 可支持目标公司精确事实与 NumericFact；
+- 明名客户、供应商、标准组织及官方行业来源可支持其自身事实、关系背景、行业事实和 speaker-attributed mechanism，但没有明确关系边时不能生成目标公司精确分配或财务事实；
+- 可信媒体、行业协会和公开 analyst context 可用于机制、竞争、反方和交叉验证，重要材料推断至少需要独立来源 corroboration，且不得单源晋升目标公司 exact fact；
+- Search、RSS、GDELT、Common Crawl 等 discovery 结果只能定位原始资料，snippet、排序和转载本身不能成为 Evidence；
+- licensed／user-entitled 数据必须绑定许可、PIT、保留与再分发权限。
+
+重复使用且已通过 capture、parser、日期、主体、speaker、关系方向和许可审查的免费公开源，可以内化为版本化 source/context object；外部补源调度同时读取 `candidate_coverage_state` 与 `research_sufficiency_state`。本地候选数量完整不等于研究材料充分，material research gap 仍应触发有界外部补源。
+
+当前 DELL 候选报告的 8 组边界经逐项审计后，4 组属于运行／状态同步／研究方法，4 组属于尚未穷尽补源的 current-run uncertainty，0 组具备真实公开信息边界权威。历史报告保持不可变；下一轮必须先修内部状态和 gap ontology，再运行免费公开源定向补证，最后只让受影响研究单元动态重裁决。完整审计见 `docs/architecture/retrieval/FIN_0_1_3_DELL_REPORT_BOUNDARY_DENSITY_AND_SOURCE_SUFFICIENCY_AUDIT_20260822.zh-CN.md`。
+
+### 16.52 不确定性必须转化为研究动作，并贯穿数据、反思与预算控制（2026-08-22）
+
+产品不能再把每个未解决事项直接写成一段“无法推断”。每个 material uncertainty 必须先编译为 `ActionableUncertainty`，再绑定至少一个 `ResearchAction`。两者必须说明：当前已知什么、缺少什么、最早责任层、责任平面、可执行动作、允许使用的工具或人工入口、成功标准、停止条件以及当前是否具备真实公开信息边界权威。基础设施／工具、Harness 控制面和 Agent 工作模式必须分账；候选待准入、路线未执行、数值桥未闭合和研究者阈值未设定，不能混称为来源不存在。
+
+当前运行链采用以下统一语义：
+
+1. S1 将 `candidate coverage`、`Evidence admission`、`source supplement` 与真正 `public-information boundary` 分开；Search／RSS 仅作 discovery locator，不能静默晋升 Evidence。
+2. 来源资产同时记录 `discovery / internal analysis / citation / redistribution` 四项权利。能读取或能引用不代表可以全文再分发；licensed／user-entitled 来源必须绑定 entitlement。
+3. S2 将 `reported_fact / deterministic_derived_metric / research_estimate / scenario` 分开。只有 source-bound reported fact 获得 NumericFact authority；确定性公式保留输入 refs 与公式但不冒充披露事实；estimate／scenario 必须保留假设和独立身份。
+4. S1／S2／S3／Verifier 的 typed failure 先形成 `FeedbackReceipt`。Agent 只有在 feedback 真实改变 `PlanDelta` 后才可继续；没有新增已审关系证据时，GraphDelta 必须明确保持 no-mutation，而不是为了表现“反思”擅自扩图。
+5. `AgentSession / SessionEvent / ContextCheckpoint / resume / StopDecision` 共同保存开放不确定性、未解决 feedback 和待执行 action。存在 material action 时只能诚实 `continue`；工具失败、预算不足或当前回合未执行不能被改写成研究充分或公开信息 gap。
+6. S3 的每个研究单元只接收与本单元相关的 Evidence、数值类型、Action、Feedback、计划、停止和来源权利视图。Action 是下一步工作，不是 Evidence，也不能由 Writer 描述成已经完成的补证。
+7. 每个自然模型节点或付费节点继续强制 `TokenBudgetBasis`，但预算依据改为当前输入规模、必须覆盖的 uncertainty／action／feedback、schema 负担、materiality 风险、可比运行和停止／截断语义。成本与延迟仅为二级约束；若预算不足，必须分批或 typed defer，不得静默删除必需研究工作。
+
+当前 DELL／MU／NVDA 三案例已经使用**当前 Runtime registry、当前 reviewed Evidence Pack 和当前私有 candidate replay**完成零模型真实数据接线。分别得到 `29／14／25` 条 reviewed Evidence、`38／16／19` 条 reported facts、`27／13／15` 条 deterministic derived metrics，以及 `21／22／19` 个逐项 ResearchAction；三案共 `0` 个 public-information gap 获得授权。DELL 五个研究单元已分别编译出模型可见的 current control context，Workbench 也读取同一 producer，而不是使用演示 fixture。
+
+上述结果只证明 1–7 的数据、合同、Runtime、S3 消费缝和产品可见面已经连通，并通过零调用评测；它**不**证明自然 Agent 会正确反思、执行第二轮补证或产出更好报告。`S1_qualified_stable=false`、`S3 accepted=false`、release=false 继续保持。下一门是单独签发的 DELL 动态多 Agent 纵切，不能把本节的零调用结果追认为 Agentic Research 或产品验收。
+
+### 16.53 产品目标是可验证边界内的主动研究协助，不是合规免责声明生成器（2026-08-22）
+
+FIN 的客户价值不再定义为“找到权威事实；找不到就声明无法推断；最后输出一份不出错的报告”。正式产品循环必须是：理解用户真正要做的决策，主动搜索和筛选，形成初步判断，识别薄弱环节，改写查询、切换来源、深入原文、寻找反方或调用 S2 建立可复算区间；直到形成可用结论，或证明当前权限和可访问信息确实触及边界。剩余边界必须转成下一步建议、监控指标、所需授权或人类行动，而不是在核心结论、正文、gap 和 confidence 中重复免责。
+
+“用尽信息”不等于无限搜索互联网。每个重要命题至少按以下路线留下执行或不适用回执：
+
+1. 内部 SQL、NumericFact、金融对象、原始文件；
+2. 内部全文、BM25／dense、关系图和对象上下文；
+3. 公司、监管、客户、供应商的官方材料；
+4. 行业机构、协会、市场跟踪与标准组织；
+5. 可信媒体、公开 analyst context、公共采购、渠道报价、客户部署和产品目录；
+6. 对冲突命题主动搜索反方证据；
+7. 没有精确数字时，判断能否用已审输入建立可复算区间、情景和敏感性；
+8. 只有在本地故障、未执行路线、预算不足、准入待决和替代路线均被排除后，才登记真实公开信息边界或 licensed／private boundary。
+
+来源结果不再只有“能引用／不能用”两种状态。同一材料可以分别是：目标公司或信息披露方的权威事实、支持产业机制和反方的可信上下文、S2 区间估算输入、指向原始材料的 locator，或受许可限制只能内部分析的来源。来源强度、允许主张用途和 `discovery / internal analysis / citation / redistribution` 四项权利继续分离；这既允许产品合理利用免费公开信息，也不让弱来源冒充目标公司精确事实。
+
+DELL 的价格、销量、配置、价格—数量—组合桥、客户部署、供应释放、OEM／芯片厂价值分配和反方材料只是当前验收样例，不是核心代码里的 ticker 特例。产品应以通用命题、实体、关系方向、期间、来源角色、估算方法和 Evidence Slot 编译这些研究任务。精确良率、专属配额和合同条款若免费公开资料确实不存在，可以成为 true typed gap；但必须只完整说明一次，并明确什么资料或授权能改变判断。
+
+### 16.54 动态 ResearchBlueprint 与反思循环必须真实调用 S1／S2（2026-08-22）
+
+正式 Agentic Research 的最小闭环为：
+
+1. Research Lead 将用户问题拆成命题、假设、决策面和动态 `ResearchBlueprint`；
+2. 各研究 Agent 通过 typed tools 调用 S1 内源／外源路线，而不是只消费预装 fixed Pack；
+3. S1 返回 Evidence、CandidateDecision、路线执行真相、拒绝原因和可行动 Feedback；
+4. Agent 形成初步判断后反思缺口、冲突、可估算性和反方充分性，并产生受验证的 `PlanDelta`；
+5. Agent 可以改写查询、换来源、深入原文、请求其他 Agent、调用 S2 建立公式／区间／情景，或申请人类材料和权限；
+6. 只有在取得信息增量、收窄判断或形成合格 StopDecision 后才回到 Lead 综合；Lead 可以再次派工；
+7. 最终产物同时给出结论、依据、估算、风险、What-Would-Change 和行动建议。
+
+基础设施／工具、Harness 与 Agent 工作模式必须继续分账。查询、抓取、解析、对象化、SQL、召回、排序和 Evidence Gate 在合格人工请求下也必须工作；Harness 负责身份、期间、单位、来源权利、事实权限、预算、事件、反馈和停止，不替模型写观点；Agent 负责研究目标、假设、工具选择、反思、修订和综合。Skill／Graph 由 Harness 根据角色、Objective、gap 和当前计划动态选择最小 Pack；它们指导研究但没有事实权威，Agent 提出的 GraphDelta 只有在 source-bound 关系通过审查后才能晋升稳定图。
+
+当前 1–7 已完成的是上述循环的控制面与 current-data 消费缝，不是循环本身。DELL current mainline 仍是 29 条 Evidence／14 个 residual gaps；16 个 S1 Action、3 个 S2 Action 和 2 个 S3 Action 尚未由自然 Agent 完成。四个 capture-bound 公共来源形成了 36 条 Evidence 的独立 successor，但只补充行业背景和反方机制，既未关闭 14 个 gap，也未晋升当前 Runtime mainline。由此，`step_8_bounded_natural_multi_agent_vertical_slice` 只能作为历史结果中当时的建议，不再是当前直接执行权限。
+
+更正后的执行门为：先以重要命题冻结 CoverageState；执行 AI-free 内源路线和定向外源来源阶梯；完成 CandidateDecision／Evidence Gate 并把 accepted Evidence 物化到 current mainline；重新编译受影响 S2 数值兄弟；达到相对于当前任务的 `EvidencePackReadiness` 后，才运行一个只给用户问题、身份、截至日期和工具权限的 DELL 动态单元。该单元证明真实二轮查询、反馈消费和停止后，再扩展为动态多单元／多 Agent 案例。S1 不需要在 Agent 启动前关闭所有未来问题，但工具资格、seed Evidence 和失败可行动性必须先成立。
+
+### 16.55 Writer 是双语研究表达与可视化 Agent，不是固定模板填充器（2026-08-22）
+
+Writer 的正式输入必须包含 `DeliverableBrief`：受众、语言、交付形态、深度、决策目标、篇幅依据和已批准 Research Kernel。它应支持短问答、Quick Take、公司更新、IC memo、内部深度底稿和正式研报；同一事实底座可以伸缩，但不得把 DELL 五单元或任何固定目录冒充通用结构。正式报告采用稳定外壳与动态正文：执行视图、关键数字、动态研究章节、图表／表格、反方与风险、行动／WWC、来源附录按任务选择和排序。
+
+双语写作不得由机械翻译替代。`BilingualStylePack` 至少分别规定中文自然投研行文与英文 thesis-led 行文的术语、句法、段落节奏、例子和反例，并通过跨语言事实一致性校验。边界说明应优先转成“当前可支持的判断＋影响＋下一动作”；核心结论至多保留一个综合不确定性，不重复 gap inventory。
+
+图表使用 `VisualRequest`：Writer 选择需要解释的视觉意图，例如趋势、价格—数量—组合瀑布、业务组合、情景／敏感性、产业关系、时间线或命题—证据矩阵；S2／Graph 提供已验证的数值和关系 refs，确定性 renderer 生成 SVG／PNG／HTML／Word／PDF／PPT 可用对象，Verifier 检查数据、单位、期间、来源、图例和正文一致性。Writer 不自行发明数字，也不自由检索；研究材料不足时必须把 blocker／ResearchAction 退回 Lead，而不是用模板化免责声明填满版面。
+
+当前 Writer 已证明 protected report 的 L1 财务控制面和一次 reference patch，但尚未实现上述 `DeliverableBrief / BilingualStylePack / VisualRequest / DocumentModel` 产品能力。它们属于批准规划的后续第 9–10 项，必须在 S1 资料充分性和动态研究循环得到真实证明后实施；不能用现有 1–7 工程闭环追认。
+
+### 16.56 S1 Readiness 只验收可观察输入，派生结论必须显式交接 S2／S3（2026-08-23）
+
+`EvidencePackReadiness` 不得要求来源直接提供本应由研究系统生成的产物。S1 的 hard material axes 只能是可观察、可捕获、可审阅的来源输入，例如公司／行业销量、价格和配置、客户部署、供应关系、产能、利润与成本代理以及当前反方信号。销量区间、PVM、价值池敏感性等可复算产物属于 S2；结论失效阈值与 What-Would-Change 属于 S3。所有跨阶段产物必须通过版本化 handoff 声明其输入、输出和 typed-gap 行为。
+
+以 `boundary` 命名的产品意图不能替代材料覆盖。关系边界应改写为可观察的“谁披露谁、谁向谁供应或部署、何时、何种来源”；真正没有被证明的关系在 Evidence Gate 后保持 typed gap。非时间型 NumericFact request 可以为 S1 提供检索上下文，但 S2 typed gap 不自动判定 S1 缺源；typed conflict 仍硬阻断。该边界防止系统以免责声明填满 Evidence Pack，也防止 S1 为了通过而伪造 S2／S3 研究产物。

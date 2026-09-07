@@ -1,0 +1,94 @@
+{
+  "cells": [
+    {
+      "cell_id": "CELL::value_capture",
+      "judgment_status": "bounded_support",
+      "confidence_basis": "mixed_source_strength",
+      "inference_authority": "bounded_inference",
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "multi_driver_context_only",
+      "claim_relations": [
+        {
+          "atom_field": "thesis_atom",
+          "claim_subject": "ai_server_product",
+          "claim_outcome": "product_operating_income_rate_target",
+          "claim_relation": "management_reported_in_line_with_target",
+          "attribution_basis": "issuer_management_assertion",
+          "claim_scope": "product",
+          "financial_scope": "product_financial",
+          "causal_bridge_authority": "management_assertion_only"
+        },
+        {
+          "atom_field": "mechanism_atom",
+          "claim_subject": "ai_server_product",
+          "claim_outcome": "company_or_segment_profit_bridge",
+          "claim_relation": "bridge_not_established",
+          "attribution_basis": "typed_bridge_gap",
+          "claim_scope": "multi_scope",
+          "financial_scope": "multi_scope_financial",
+          "causal_bridge_authority": "bridge_unavailable"
+        },
+        {
+          "atom_field": "counterargument_atom",
+          "claim_subject": "dell_company",
+          "claim_outcome": "company_gross_margin",
+          "claim_relation": "same_scope_numeric_observation",
+          "attribution_basis": "authoritative_same_basis_numeric_relation",
+          "claim_scope": "company",
+          "financial_scope": "company_financial",
+          "causal_bridge_authority": "same_scope_observation_only"
+        }
+      ],
+      "qualitative_fact_refs": [
+        "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+      ],
+      "evidence_uses": [
+        {
+          "evidence_ref": "EV::0063F22F643B94ED",
+          "use_role": "support"
+        },
+        {
+          "evidence_ref": "EV::5388E016C17032C1",
+          "use_role": "limit"
+        },
+        {
+          "evidence_ref": "EV::38BBF02CB241E81D",
+          "use_role": "limit"
+        },
+        {
+          "evidence_ref": "EV::7F4D7E6762C21D83",
+          "use_role": "context"
+        }
+      ],
+      "numeric_refs": [
+        "NUM::33642A79CE277E0B",
+        "NUM::AB89B02ADCCB77E0"
+      ],
+      "numeric_relation_refs": [
+        "REL::B60164179DFFDF5A"
+      ],
+      "method_step_refs": [
+        "METHOD::VC::PERIOD_BASIS",
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD",
+        "METHOD::VC::MATERIAL_GAP_ROUTE",
+        "METHOD::VC::WHAT_WOULD_CHANGE"
+      ],
+      "graph_edge_refs": [
+        "GRAPH::2B17375548682087"
+      ],
+      "thesis_atom": "管理层将人工智能服务器当季盈利水平表述为符合所选经营利润率目标；该表述未经独立审计，也不能替代产品级价格、数量和成本桥。",
+      "mechanism_atom": "当前材料只支持管理层对产品盈利水平的有界表述；供给约束与价格纪律是经营背景，现有证据不能把产品收入直接分配为分部或公司利润。",
+      "counterargument_atom": "公司整体毛利率受到业务组合压力，且缺少产品级单位、售价和成本桥，因此产品盈利质量与公司利润变化仍不能直接互相归因。",
+      "what_would_change": {
+        "observable": "人工智能服务器独立经营利润率以及平均售价与出货单位的产品级披露",
+        "direction": "resolve_gap",
+        "time_horizon": "未来数个季度的定期披露",
+        "evidence_route": "后续定期申报或业绩电话会议中的产品级盈利与价格数量桥披露",
+        "threshold_numeric_ref": null
+      }
+    }
+  ]
+}

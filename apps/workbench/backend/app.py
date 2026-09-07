@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 import shutil
-from typing import Any, Literal
+from typing import Any, Literal, Mapping
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,14 +11,22 @@ from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from sec_agent.runtime_bridge.paths import RuntimePathRegistry, resolve_runtime_paths
+from sec_agent.agent_runtime.runtime_foundation import (
+    DellRuntimeFoundation,
+    RuntimeFoundationError,
+)
 from sec_agent.workbench.api_contracts import install_api_contracts
 from sec_agent.workbench.store import WorkbenchStore, default_store_path
 
 from .api.operations import build_operations_router
+from .api.source_intake import build_source_intake_router
 from .api.v1.research_evidence_packs import build_research_evidence_pack_router
+from .api.v1.research_retrieval import build_research_retrieval_router
 from .api.v1.research_workspace import build_research_workspace_router
 from .application.research_evidence_pack_service import ResearchEvidencePackService
+from .application.research_retrieval_service import ResearchRetrievalService
 from .application.research_workspace_service import ResearchWorkspaceService
+from .application.source_intake_service import SourceIntakeService
 
 
 APP_ROOT = Path(__file__).resolve().parents[1]
@@ -36,6 +44,8 @@ def create_app(
     store_path: str | Path | None = None,
     current_research_evidence_pack_service: ResearchEvidencePackService | None = None,
     research_workspace_service: ResearchWorkspaceService | None = None,
+    research_retrieval_service: ResearchRetrievalService | None = None,
+    source_intake_service: SourceIntakeService | None = None,
     workbench_runtime_mode: Literal["current", "fixture"] = "current",
     frontend_dist_root: str | Path | None = None,
     **retired_product_services: object,
@@ -47,6 +57,9 @@ def create_app(
     retired injection fails explicitly instead of silently rebuilding the old
     product graph.
     """
+
+    if os.environ.get("FINSIGHT_REPORT_SESSION_API_URL"):
+        return create_report_session_app(frontend_dist_root=frontend_dist_root)
 
     if workbench_runtime_mode not in {"current", "fixture"}:
         raise ValueError("workbench_runtime_mode_invalid")
@@ -79,6 +92,28 @@ def create_app(
         workspace = ResearchWorkspaceService.from_runtime_paths(
             CODE_ROOT, evidence_packs
         )
+    retrieval = research_retrieval_service
+    if retrieval is None and current_research_evidence_pack_service is None:
+        retrieval = ResearchRetrievalService.from_runtime_paths(
+            CODE_ROOT,
+            runtime_paths=runtime_paths,
+        )
+    source_intake = source_intake_service or SourceIntakeService.from_runtime_paths(
+        CODE_ROOT,
+        runtime_paths,
+    )
+    runtime_state_root = Path(
+        os.environ.get(
+            "FINSIGHT_AGENT_RUNTIME_STATE_ROOT",
+            CODE_ROOT / ".codex_runtime",
+        )
+    ).resolve()
+    dell_runtime_foundation = DellRuntimeFoundation.from_environment(
+        os.environ,
+        default_state_root=runtime_state_root,
+    )
+    if dell_runtime_foundation.profile == "postgres_pilot":
+        raise RuntimeFoundationError("postgres_pilot_runtime_not_composed")
 
     app = FastAPI(
         title="FinSight Research Workbench API",
@@ -92,6 +127,9 @@ def create_app(
     app.state.primary_product_route = "/workspace"
     app.state.operator_route = "/operations"
     app.state.retired_product_runtime_loaded = False
+    app.state.dell_runtime_foundation = (
+        dell_runtime_foundation.public_projection()
+    )
     install_api_contracts(app)
     app.add_middleware(
         CORSMiddleware,
@@ -108,7 +146,10 @@ def create_app(
         app.include_router(
             build_research_workspace_router(workspace), prefix="/api/v1"
         )
-
+    if retrieval is not None:
+        app.include_router(
+            build_research_retrieval_router(retrieval), prefix="/api/v1"
+        )
     def system_status() -> dict[str, Any]:
         return _system_status(
             store=store,
@@ -116,6 +157,9 @@ def create_app(
             evidence_packs=evidence_packs,
             fixture_mode=workbench_runtime_mode == "fixture",
             frontend_dist_root=resolved_frontend_dist_root,
+            dell_runtime_foundation=(
+                dell_runtime_foundation.public_projection()
+            ),
         )
 
     app.include_router(
@@ -124,6 +168,10 @@ def create_app(
             repository_root=CODE_ROOT,
             system_status=system_status,
         ),
+        prefix="/api",
+    )
+    app.include_router(
+        build_source_intake_router(source_intake),
         prefix="/api",
     )
 
@@ -252,6 +300,7 @@ def _system_status(
     evidence_packs: ResearchEvidencePackService,
     fixture_mode: bool,
     frontend_dist_root: Path,
+    dell_runtime_foundation: Mapping[str, object],
 ) -> dict[str, Any]:
     store_health = store.inspect_health()
     product_readiness = _evidence_pack_readiness(
@@ -264,6 +313,9 @@ def _system_status(
         "reviewed_evidence": _path_status(runtime_paths.reviewed_evidence_root),
         "workbench_state": _path_status(runtime_paths.workbench_private_root),
         "object_store": _path_status(runtime_paths.object_store_root),
+        "company_financial_fact_mart": _path_status(
+            runtime_paths.company_financial_fact_mart_path
+        ),
         "frontend_dist": _path_status(frontend_dist_root),
     }
     checks = {
@@ -296,6 +348,7 @@ def _system_status(
             "operator_route": "/operations",
             "retired_product_runtime_loaded": False,
             "readiness": product_readiness,
+            "dell_reference_vertical": dict(dell_runtime_foundation),
         },
     }
 
@@ -347,6 +400,58 @@ def _retired_api_response(*, family: str, replacement: str) -> JSONResponse:
             "product_version": "FIN 0.1.3",
         },
     )
+
+
+def create_report_session_app(frontend_dist_root=None):
+    """Local review deployment of the existing Workbench, not a second runner."""
+    import json
+    from contextlib import asynccontextmanager
+    from fastapi.middleware.trustedhost import TrustedHostMiddleware
+    from .api.v1.report_sessions import ReportSessionService, build_report_sessions_router
+    from sec_agent.agent_runtime.dell_report_session import load_session_materials
+    settings_path = os.environ.get("FINSIGHT_REPORT_SESSION_SETTINGS")
+    settings = json.loads(Path(settings_path).read_text(encoding="utf-8")) if settings_path else {}
+    state_root = Path(os.environ.get("FINSIGHT_LOCAL_STATE_ROOT", CODE_ROOT / ".finsight"))
+    artifacts = None
+    if settings.get("bundle_path") or settings.get("report_path"):
+        artifacts, _ = load_session_materials(settings)
+    research_profile = None
+    if os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") == "1":
+        from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
+        from sec_agent.agent_runtime.dell_agent_server_data_composition import DELL_APPROVED_RESEARCH_AS_OF
+        runtime_profile, case = load_research_runtime_profile(os.environ.get("FIN_REPO_ROOT", CODE_ROOT))
+        research_profile = {"title": case["title"], "default_question": case["question"],
+            "research_as_of": DELL_APPROVED_RESEARCH_AS_OF, "cost_expectation_cny": runtime_profile["cost_expectation_cny"],
+            "notice": "新问题从空底稿研究；复用原始文档/SQL/索引，不载入旧专家答案。日期为已绑定案例时点，不宣称实时全量。"}
+    from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
+    attachment_store = TaskAttachmentStore((Path(settings_path).parent if settings_path else state_root) / "attachments")
+    service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts, audit_root=settings.get("audit_root", str(state_root / "calls")),
+        research_profile=research_profile, attachment_store=attachment_store)
+    @asynccontextmanager
+    async def lifespan(app):
+        yield
+        await service.http.aclose()
+    app = FastAPI(title="FinSight Research Session", version="0.1.3", lifespan=lifespan)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
+    app.include_router(build_report_sessions_router(service), prefix="/api/v1")
+    @app.exception_handler(__import__("httpx").HTTPError)
+    async def upstream_error(request, exc):
+        status = getattr(getattr(exc, "response", None), "status_code", 502)
+        return JSONResponse(status_code=409 if status == 409 else 502,
+            content={"detail": "运行服务暂不可用或请求结果未确定；请刷新会话确认。不会自动重发付费请求。"})
+    dist = Path(frontend_dist_root or FRONTEND_DIST_ROOT)
+    if (dist / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=dist / "assets"), name="session-assets")
+    @app.get("/api/health")
+    def health():
+        return {"service": "finsight-workbench", "mode": "research_session", "status": "ok", "legacy_report_loaded": artifacts is not None}
+    @app.get("/", include_in_schema=False)
+    def root():
+        return RedirectResponse("/workspace/session")
+    @app.get("/workspace/session", response_class=HTMLResponse, include_in_schema=False)
+    def session_page():
+        return _frontend_index(dist)
+    return app
 
 
 app = create_app()

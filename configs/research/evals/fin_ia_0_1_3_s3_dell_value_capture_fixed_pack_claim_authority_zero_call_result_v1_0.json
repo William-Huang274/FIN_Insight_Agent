@@ -1,0 +1,53 @@
+{
+  "schema_version": "fin_ia_fixed_pack_claim_authority_zero_call_result_v1_0",
+  "status": "engineering_pass_zero_call_fixed_pack_claim_authority",
+  "recorded_at": "2026-08-14",
+  "result_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-AUTHORITY-ZERO-CALL-R1",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_zero_call_authority_v1_0.json",
+  "authority_sha256": "6cfce79ce980f16fdc48265483c289d9c56f3a4b4e0ef460432606cec86366d3",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-claim-authority-zero-call-r1/full_result_c759438160f7f7092602b9cbc267c92e1300c4ecc4a31a3d9e52e5376d627ebb.json",
+  "full_result_sha256": "c5e60b0c587525e1c8a114edb3fa3011fd1596e08388a6ac2f7efa18328125f9",
+  "normalized_proof": {
+    "base_research_input_digest": "7977dfcc4bba9b5341fa6e1de310c6fe53bf5284155e4fd125fe774cfd68a56b",
+    "research_input_digest": "bbe4d3864cce41751019cc10c88784faaf37d45dcc019be7b2035fbc79ad179a",
+    "finance_loop_messages_digest": "0b1b98242d652b0bf976c45a70e555d037d640c99ed538a45f8d22f64fbe4c18",
+    "standard_tool_schema_digest": "e4606f62c5c8dc71fefc905392f03a5bf67e3c940d142a25bda4b9f516cf94a7",
+    "deliverable_digest": "e50bd06ad475d3debe0316011b9f464148a25c42141085b9481e45b86cae2848",
+    "saved_r2_negative_replay_code": "claim_authority_cross_scope_causal_language_unbound",
+    "mutation_failure_codes": [
+      "claim_authority_output_enum_invalid",
+      "claim_authority_scope_combination_invalid",
+      "claim_authority_cross_scope_causal_language_unbound"
+    ],
+    "fixed_pack_unit_test_only": true,
+    "dynamic_retrieval_executed": false,
+    "agentic_research_claimed": false,
+    "maximum_model_steps": 3,
+    "maximum_evidence_requests": 0,
+    "fake_loop_steps": 2,
+    "fake_loop_tool_calls": 3,
+    "fake_loop_evidence_requests": 0,
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0,
+    "retries": 0,
+    "deterministic_recompile_equal": true
+  },
+  "acceptance": {
+    "base_v1_2_input_immutable": true,
+    "model_still_owns_narrative_judgment": true,
+    "claim_and_financial_scope_machine_visible": true,
+    "unavailable_direct_bridge_not_exposed": true,
+    "saved_r2_overclaim_rejected": true,
+    "bounded_informative_judgment_passes": true,
+    "zero_request_fixed_pack_loop_passes": true,
+    "natural_model_quality_proven": false,
+    "agentic_research_proven": false,
+    "second_layer_authorized": false,
+    "s3_product_acceptance": false
+  },
+  "next_decision": "Run at most one new DELL value_capture fixed-pack Chat canary only after a separate exact-once execution authority binds this proof. Return L1, content and paired results before any dynamic Layer Two.",
+  "known_boundary": "This is Layer One only. It reuses the immutable DELL value_capture fixed reviewed Pack and performs zero dynamic retrieval, model, provider, embedding, retry or publication. It proves the local claim-authority contract and saved-R2 negative replay, not natural model quality, Agentic Research, a five-cell report, S3 acceptance or release. A passing result may support a separate exact-once authority for one fixed-pack Chat canary, which must return to Owner before Layer Two.",
+  "result_digest": "7d4c78089f1ab473f4199f7eb046993d433ff891340d1b7c94e378d36d3b388d"
+}

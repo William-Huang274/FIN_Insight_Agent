@@ -1,62 +1,396 @@
 {
-  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
-  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R2",
-  "status": "tracked_typed_runtime_resource_authority",
+  "detector_python_refs": [
+    "apps/workbench/backend/api/operations.py",
+    "apps/workbench/backend/application/research_evidence_pack_service.py",
+    "apps/workbench/backend/application/research_retrieval_service.py",
+    "apps/workbench/backend/application/research_workspace_service.py",
+    "apps/workbench/backend/application/source_intake_service.py"
+  ],
   "policy": {
-    "registry_is_source_of_truth": true,
-    "static_scanner_is_detector_only": true,
     "direct_unregistered_runtime_read_fails_closed": true,
+    "ignored_untracked_codex_runtime_and_git_forbidden": true,
     "missing_unknown_duplicate_or_digest_drift_fails_closed": true,
     "permutation_or_cross_version_fails_closed": true,
-    "ignored_untracked_codex_runtime_and_git_forbidden": true,
+    "registry_is_source_of_truth": true,
+    "static_scanner_is_detector_only": true,
     "traversal_and_symlink_escape_forbidden": true
   },
-  "detector_python_refs": [
-    "apps/workbench/backend/application/research_evidence_pack_service.py",
-    "apps/workbench/backend/application/research_workspace_service.py"
-  ],
-  "resource_count": 3,
-  "resource_bytes": 11331,
-  "resource_canonical_digest": "6375a8925a919e183cbf0003e29733a59cb23f344dfdc2bb1770c8c406bc5e23",
+  "registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R39",
+  "resource_bytes": 3601924,
+  "resource_canonical_digest": "cd1b8a9b5cc36896223bade055d5f8ca99c19d2dfd673065a1a82421f87f41ac",
+  "resource_count": 28,
   "resources": [
     {
-      "resource_id": "application.config.current_research_evidence_pack_projection",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_research_evidence_pack_projection_v1_0.json",
-      "sha256": "165d301730f6af4d2fde724308fcdf13ded96ff694846c480da042665ecff890",
-      "bytes": 1183,
+      "bytes": 22052,
+      "classification": "provider_neutral_financial_intent_ontology",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_4.json",
+      "required": true,
+      "resource_id": "application.config.current_financial_intent_ontology",
+      "sha256": "e05115b15b111a1d0179027f74276b3d5f6c20352e2ae33f1431fa82df5a1941",
+      "source_owner": "retrieval.material_evidence_runtime"
+    },
+    {
+      "bytes": 41543,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_5.json",
+      "required": true,
+      "resource_id": "application.config.current_financial_research_kernel",
+      "sha256": "4b42a4942a5026719263e1bdd86c66bc3f602e79d422dcd0c8f5cc07ecfe753c",
+      "source_owner": "src.retrieval.contracts.load_financial_research_kernel"
+    },
+    {
+      "bytes": 3175,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_hybrid_candidate_runtime_policy_v1_9.json",
+      "required": true,
+      "resource_id": "application.config.current_hybrid_candidate_runtime_policy",
+      "sha256": "6857a41fea14cd3ffd0e9e524a11d06955287a6bd28f37e63e9d1eb102df53ac",
+      "source_owner": "retrieval.hybrid_candidate_runtime.LocalQwenHybridCandidateRuntime.from_policy"
+    },
+    {
+      "bytes": 6363,
+      "classification": "provider_neutral_product_material_candidate_reservation_policy",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_2.json",
+      "required": true,
+      "resource_id": "application.config.current_product_material_evidence_runtime_policy",
+      "sha256": "cd59c195d334606d2110ca926117efdf8903d3e87dcac87682fb165b99fa8e13",
+      "source_owner": "retrieval.material_evidence_runtime.compile_material_requirement_plan_from_runtime_input"
+    },
+    {
+      "bytes": 17023,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_6.json",
+      "required": true,
+      "resource_id": "application.config.current_query_object_fact_route_policy",
+      "sha256": "e056f715fae2b99b5f2845393ea25aa5a6ffaffe12413141225d749dbc0ceac0",
+      "source_owner": "src.retrieval.route_compiler.load_query_object_fact_route_policy"
+    },
+    {
+      "bytes": 1411,
       "classification": "application_runtime_config",
       "consumer_ids": [
         "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_research_evidence_pack_projection_v1_0.json",
       "required": true,
+      "resource_id": "application.config.current_research_evidence_pack_projection",
+      "sha256": "d4fde7d4cf4b1d688656f06888edd2cae0588aa1a8abba06744d514e3e33a537",
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
     },
     {
-      "resource_id": "application.config.current_research_workspace_catalog",
-      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_0.json",
-      "sha256": "4302202cd309bf1df0caa6e5c5555d90be24e12848d7cf2744ad04c6b0c4a86f",
-      "bytes": 3699,
+      "bytes": 2704,
+      "classification": "provider_neutral_request_visible_material_scope_policy",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "repo_relative_path": "configs/research/fin_ia_0_1_3_s3_material_scope_policy_v1_0.json",
+      "required": true,
+      "resource_id": "application.config.current_research_material_scope_policy",
+      "sha256": "ba495c3ee9954b752b0aff0e8ccd4c74ca8e9bfb644a3d8ce4fdb6da4defcf1c",
+      "source_owner": "sec_agent.research.material_scope.compile_research_material_scope"
+    },
+    {
+      "bytes": 3921,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/research/fin_ia_0_1_3_s3_research_planning_policy_v1_1.json",
+      "required": true,
+      "resource_id": "application.config.current_research_planning_policy",
+      "sha256": "e16119cf2b04f82d993c8ac9e465f161084fc01921c403dd88a62661dec236c4",
+      "source_owner": "sec_agent.research.planning.load_research_planning_policy"
+    },
+    {
+      "bytes": 3672,
       "classification": "application_runtime_config",
       "consumer_ids": [
         "apps.workbench.research_workspace_service.ResearchWorkspaceService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_research_workspace_catalog_v1_6.json",
       "required": true,
+      "resource_id": "application.config.current_research_workspace_catalog",
+      "sha256": "bfd2082028b1b47363a8ab5059e87fddeed6287a0938a03a106ec20fc46cc656",
       "source_owner": "apps.workbench.backend.application.research_workspace_service"
     },
     {
-      "resource_id": "application.result.current_research_local_evidence_packs",
-      "repo_relative_path": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json",
-      "sha256": "1da1d1e21d7b3b3211bb0008b5ac00c8b9bca8c2af17712354095ab4708117a0",
-      "bytes": 6449,
+      "bytes": 7056,
+      "classification": "provider_neutral_retrieval_need_compiler_policy",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "lazy_first_controlled_research_plan",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_3.json",
+      "required": true,
+      "resource_id": "application.config.current_retrieval_need_policy",
+      "sha256": "3ecdc22afd6319a7452c41a7be8adad92b3367594d52d9d2f5efdc3bdc85bd42",
+      "source_owner": "retrieval.retrieval_need.compile_retrieval_needs"
+    },
+    {
+      "bytes": 5229,
+      "classification": "provider_neutral_s1_canonical_artifact_spine_policy",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths",
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths",
+        "scripts.data_retrieval.materialize_s1_vertical_slices.compile_vs2_result",
+        "scripts.data_retrieval.materialize_s1_vs1_vertical_slice.compile_result"
+      ],
+      "load_phase": "workbench_startup",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_canonical_artifact_spine_policy_v1_0.json",
+      "required": true,
+      "resource_id": "application.config.current_s1_artifact_spine_policy",
+      "sha256": "fa44e61da4a11ceded587d483d348149e701488950513b42c2fa7ba41b0aad4d",
+      "source_owner": "S1_canonical_artifact_spine_program"
+    },
+    {
+      "bytes": 1648,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_product_readiness_catalog_v1_1.json",
+      "required": true,
+      "resource_id": "application.config.current_s1_product_readiness_catalog",
+      "sha256": "78e6a7c7dd250b5e827a11adf8a5f23098c1369bb655c81b813a4c906ab6cee4",
+      "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
+    },
+    {
+      "bytes": 5534,
+      "classification": "provider_neutral_current_s1_runtime_binding_policy",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_current_product_runtime_binding_policy_v1_14.json",
+      "required": true,
+      "resource_id": "application.config.current_s1_runtime_binding_policy",
+      "sha256": "e95f934a6ca31a70a098e170f83da13be2056ff7268d659207066c4c1f6bffd8",
+      "source_owner": "retrieval.current_runtime_binding.load_current_s1_runtime_binding_policy"
+    },
+    {
+      "bytes": 7806,
+      "classification": "provider_neutral_s1_source_route_portfolio",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_source_route_portfolio_policy_v1_1.json",
+      "required": true,
+      "resource_id": "application.config.current_s1_source_route_portfolio",
+      "sha256": "203ea36c4a377a0101c3ef359f47ce601b944b3d4e53db5a6cb310edd07cfefe",
+      "source_owner": "retrieval.source_route_dispatch.load_source_route_portfolio_policy"
+    },
+    {
+      "bytes": 6167,
+      "classification": "provider_neutral_source_strength_claim_use_and_rights_policy",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_source_strength_and_claim_use_policy_v1_0.json",
+      "required": true,
+      "resource_id": "application.config.current_s1_source_use_policy",
+      "sha256": "d55b813321210a2de33312a900912bf925649ece003d70608066c26d05bb8283",
+      "source_owner": "retrieval.source_use_policy.SourceUsePolicy.from_mapping"
+    },
+    {
+      "bytes": 2449,
+      "classification": "application_runtime_config",
+      "consumer_ids": [
+        "apps.workbench.source_intake_service.SourceIntakeService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_policy_v1_0.json",
+      "required": true,
+      "resource_id": "application.config.current_source_intake_policy",
+      "sha256": "c6f53b23386a4b2ec34d77b7740789840013f41657d548ea4917c73188184fd9",
+      "source_owner": "ingestion.source_intake.SourceIntakePolicy.from_path"
+    },
+    {
+      "bytes": 7721,
       "classification": "digest_bound_read_only_product_result",
       "consumer_ids": [
         "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
       ],
       "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_6.json",
       "required": true,
+      "resource_id": "application.result.current_research_local_evidence_packs",
+      "sha256": "b3289bdf91ae2654f4a5a37aecf603a444581a7969d9e866146feeb1efbcfa14",
       "source_owner": "apps.workbench.backend.application.research_evidence_pack_service"
+    },
+    {
+      "bytes": 2840414,
+      "classification": "digest_bound_read_only_retrieval_candidate_result",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_4.json",
+      "required": true,
+      "resource_id": "application.result.current_research_retrieval_snapshot",
+      "sha256": "dcdfe40e50c4adc3eae555fa45458ccd8cf911a550f11b94a0bac0c1617c90f0",
+      "source_owner": "apps.workbench.backend.application.research_retrieval_service"
+    },
+    {
+      "bytes": 93574,
+      "classification": "digest_bound_read_only_product_result",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_7.json",
+      "required": true,
+      "resource_id": "application.result.current_reviewed_claim_anchors",
+      "sha256": "8fab8f9f2050b0a2af134d0b126fdddf590dc9b787a09368e4754c1a5e574f15",
+      "source_owner": "sec_agent.research.reviewed_evidence_anchor.load_reviewed_evidence_anchor_catalog"
+    },
+    {
+      "bytes": 17130,
+      "classification": "digest_bound_read_only_s1_product_readiness_result",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_7.json",
+      "required": true,
+      "resource_id": "application.result.current_s1_dell_product_readiness",
+      "sha256": "67a65f8efbde97bef20e2cc2ff8439e30eb3fac4ddeb2680c369d67f1361b19b",
+      "source_owner": "retrieval.product_pack_readiness.compile_product_pack_readiness"
+    },
+    {
+      "bytes": 17782,
+      "classification": "digest_bound_read_only_s1_product_readiness_result",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_mu_current_product_readiness_result_v1_6.json",
+      "required": true,
+      "resource_id": "application.result.current_s1_mu_product_readiness",
+      "sha256": "19b0868508de8e260f55b4f9ec6e905fb8477dc9f0770fdfca7fcf5a407f478b",
+      "source_owner": "retrieval.product_pack_readiness.compile_product_pack_readiness"
+    },
+    {
+      "bytes": 17894,
+      "classification": "digest_bound_read_only_s1_product_readiness_result",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_nvda_current_product_readiness_result_v1_6.json",
+      "required": true,
+      "resource_id": "application.result.current_s1_nvda_product_readiness",
+      "sha256": "8b04313117b21bd2d98ef8a35cee5728f176c920a5353a6d0abc76872c034233",
+      "source_owner": "retrieval.product_pack_readiness.compile_product_pack_readiness"
+    },
+    {
+      "bytes": 13298,
+      "classification": "digest_bound_current_s1_runtime_binding_receipt",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_15.json",
+      "required": true,
+      "resource_id": "application.result.current_s1_runtime_binding_receipt",
+      "sha256": "f581f3aff02aaf5e34455f3020578c4fb40b83a9d47e6fe097767dff171fc3ae",
+      "source_owner": "retrieval.current_runtime_binding.validate_current_s1_runtime_binding_receipt"
+    },
+    {
+      "bytes": 169451,
+      "classification": "digest_bound_read_only_s1_vertical_slice_result",
+      "consumer_ids": [
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths",
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "workbench_startup",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+      "required": true,
+      "resource_id": "application.result.current_s1_vs1_vertical_slice",
+      "sha256": "1f29b58b5b51a39c5a5eb5a7bd5892c47fe71830d1da97d587a0b34b2e646861",
+      "source_owner": "S1_canonical_vertical_slice_program"
+    },
+    {
+      "bytes": 108508,
+      "classification": "digest_bound_read_only_s1_complex_document_vertical_result",
+      "consumer_ids": [
+        "apps.workbench.backend.api.operations.get_s1_complex_document_quality"
+      ],
+      "load_phase": "operations_request",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+      "required": true,
+      "resource_id": "application.result.current_s1_vs2_complex_pdf_vertical",
+      "sha256": "fce09702cab81a6f2922fb996bee17ec3201bd03a9bd86edffd3c2d66090d57a",
+      "source_owner": "S1_canonical_vertical_slice_program"
+    },
+    {
+      "bytes": 22251,
+      "classification": "digest_bound_read_only_s1_retrieval_vertical_result",
+      "consumer_ids": [
+        "apps.workbench.backend.api.operations.get_s1_retrieval_quality"
+      ],
+      "load_phase": "operations_request",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_vs3_product_gate_result_v1_2.json",
+      "required": true,
+      "resource_id": "application.result.current_s1_vs3_retrieval_vertical",
+      "sha256": "37c9543a6bdf67397e96c4c69b394dae5fb6733502cc852636bef2656a1920db",
+      "source_owner": "S1_canonical_vertical_slice_program"
+    },
+    {
+      "bytes": 78277,
+      "classification": "digest_bound_read_only_s1_case_supplement_summary_set",
+      "consumer_ids": [
+        "apps.workbench.backend.api.operations.get_s1_supplement_quality",
+        "apps.workbench.research_evidence_pack_service.ResearchEvidencePackService.from_runtime_paths",
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization_and_operations_request",
+      "repo_relative_path": "configs/retrieval/fin_ia_0_1_3_s1_vs4_case_supplement_vertical_result_v1_0.json",
+      "required": true,
+      "resource_id": "application.result.current_s1_vs4_supplement_vertical",
+      "sha256": "c2afef03f88805d4e0f70b3be6454dcf8eab6b7e388d80ba173245ff8932ec4a",
+      "source_owner": "S1_canonical_vertical_slice_program"
+    },
+    {
+      "bytes": 77871,
+      "classification": "digest_bound_read_only_ranking_candidate_projection",
+      "consumer_ids": [
+        "apps.workbench.research_retrieval_service.ResearchRetrievalService.from_runtime_paths"
+      ],
+      "load_phase": "application_service_initialization",
+      "repo_relative_path": "configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json",
+      "required": true,
+      "resource_id": "application.result.current_s1c_ranking_comparison_projection",
+      "sha256": "5b8fb8d7d58f9e28b51950df9cca9c9cb2e0fca32150f26d9499e41c369d4114",
+      "source_owner": "apps.workbench.backend.application.research_retrieval_service"
     }
-  ]
+  ],
+  "schema_version": "fin_ia_0_1_3_runtime_resource_registry_v1_0",
+  "status": "tracked_typed_runtime_resource_authority"
 }

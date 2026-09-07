@@ -1,0 +1,1086 @@
+{
+  "schema_version": "fin_ia_s1c_planner_residual_gap_audit_summary_v1_0",
+  "status": "completed_requires_business_residual_gap_adjudication",
+  "recorded_at": "2026-08-13",
+  "audit_id": "FIN-0.1.3-S1C-DELL-SAVED-PLANNER-RESIDUAL-GAP-AUDIT-R1",
+  "authority_ref": "configs/retrieval/fin_ia_0_1_3_s1c_planner_residual_gap_audit_authority_v1_0.json",
+  "authority_sha256": "c3ab829d380012027c387eea02ea255ec54a2e00b9187241de1240bff25888be",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1c_planner_residual_gap_audit/v1/full_result_63f23a6a4d8b17333d8c180f5c14f84753bf64da979fe9abe85a2b0cd3be6c74.json",
+  "full_result_sha256": "951c1cde4d554fcf647719a2215c46b8d8b30c5aa5791541802e8ba70d2fb790",
+  "runtime_summary": {
+    "proposed_atom_count": 10,
+    "selected_atom_count": 8,
+    "deferred_atom_count": 2,
+    "execution_request_budget": 8,
+    "evidence_request_count": 8,
+    "required_slot_count": 5,
+    "compiled_lane_count": 8,
+    "nonempty_lane_count": 8,
+    "unique_narrative_candidates": 22,
+    "typed_fact_request_count": 28,
+    "typed_fact_resolved_count": 19,
+    "typed_fact_gap_count": 9,
+    "typed_fact_conflict_count": 0,
+    "numeric_fact_count": 45,
+    "hybrid_candidate_runtime": "bm25_plus_qwen_local_embedding",
+    "hybrid_selected_candidate_count": 128,
+    "local_embedding_inference_batches": 1,
+    "network_calls": 0,
+    "model_calls": 0,
+    "generation_model_calls": 0
+  },
+  "selection": {
+    "strategy": "required_slot_first_then_provider_neutral_facet_priority",
+    "proposal_ceiling": 12,
+    "proposed_atom_count": 10,
+    "execution_request_budget": 8,
+    "selected_atom_count": 8,
+    "deferred_atom_count": 2,
+    "required_slot_ids_preserved": [
+      "demand_volume_quality",
+      "operating_performance",
+      "pricing_mix_value_capture",
+      "cash_conversion_balance_sheet",
+      "counterevidence_and_what_would_change"
+    ],
+    "selection_policy_digest": "a845a14f9ccec59a395fb36fdc635ee3630071284b44519f73829991e403f808"
+  },
+  "selected_facets": [
+    "orders_and_backlog",
+    "conversion_and_durability",
+    "reported_results",
+    "margin_and_incremental_profit",
+    "cash_generation",
+    "working_capital_risk",
+    "issuer_counterevidence",
+    "upstream_or_demand_counterevidence"
+  ],
+  "deferred_atoms": [
+    {
+      "atom": {
+        "facet_id": "guidance_and_outlook",
+        "target_entity": "DELL",
+        "metric_ids": [
+          "gross_margin",
+          "operating_margin"
+        ],
+        "product_intents": [
+          "AI server margin guidance",
+          "supply constraints outlook"
+        ]
+      },
+      "slot_id": "operating_performance",
+      "execution_priority": 14,
+      "reason": "execution_budget_exhausted_after_required_slot_and_provider_neutral_facet_priority_selection"
+    },
+    {
+      "atom": {
+        "facet_id": "pricing_and_mix",
+        "target_entity": "DELL",
+        "metric_ids": [
+          "average_selling_price",
+          "revenue",
+          "gross_margin"
+        ],
+        "product_intents": [
+          "AI server ASP trends",
+          "product mix shift"
+        ]
+      },
+      "slot_id": "pricing_mix_value_capture",
+      "execution_priority": 15,
+      "reason": "execution_budget_exhausted_after_required_slot_and_provider_neutral_facet_priority_selection"
+    }
+  ],
+  "request_observations": [
+    {
+      "request_id": "REQ::fb06661b946711fc3b334146",
+      "slot_id": "demand_volume_quality",
+      "facet_id": "orders_and_backlog",
+      "target_entity": "DELL",
+      "metric_intents": [
+        "backlog",
+        "orders",
+        "customer_count",
+        "shipments"
+      ],
+      "product_intents": [
+        "AI server order growth",
+        "backlog composition",
+        "customer concentration"
+      ],
+      "snapshot_candidate_count": 3,
+      "hybrid_candidate_count": 16,
+      "missing_required_source_roles": [],
+      "typed_fact_statuses": [
+        {
+          "metric_id": "backlog",
+          "status": "typed_gap",
+          "fact_count": 0,
+          "typed_gap": {
+            "gap_code": "metric_not_in_company_fact_mart"
+          }
+        },
+        {
+          "metric_id": "orders",
+          "status": "typed_gap",
+          "fact_count": 0,
+          "typed_gap": {
+            "gap_code": "metric_not_in_company_fact_mart"
+          }
+        },
+        {
+          "metric_id": "customer_count",
+          "status": "typed_gap",
+          "fact_count": 0,
+          "typed_gap": {
+            "gap_code": "metric_not_in_company_fact_mart"
+          }
+        },
+        {
+          "metric_id": "shipments",
+          "status": "typed_gap",
+          "fact_count": 0,
+          "typed_gap": {
+            "gap_code": "metric_not_in_company_fact_mart"
+          }
+        }
+      ],
+      "typed_gaps": [
+        {
+          "gap_code": "metric_not_in_company_fact_mart",
+          "fact_request_id": "TFR::de922fd97d94ae022079be61",
+          "metric_id": "backlog",
+          "target_entity": "DELL",
+          "owning_stage": "S2",
+          "disposition": "return_typed_gap"
+        },
+        {
+          "gap_code": "metric_not_in_company_fact_mart",
+          "fact_request_id": "TFR::2ba59be7b14f92f5b775bc16",
+          "metric_id": "orders",
+          "target_entity": "DELL",
+          "owning_stage": "S2",
+          "disposition": "return_typed_gap"
+        },
+        {
+          "gap_code": "metric_not_in_company_fact_mart",
+          "fact_request_id": "TFR::08e3cd1274c0f6c184b272ce",
+          "metric_id": "customer_count",
+          "target_entity": "DELL",
+          "owning_stage": "S2",
+          "disposition": "return_typed_gap"
+        },
+        {
+          "gap_code": "metric_not_in_company_fact_mart",
+          "fact_request_id": "TFR::2de7a712774d10e722e45026",
+          "metric_id": "shipments",
+          "target_entity": "DELL",
+          "owning_stage": "S2",
+          "disposition": "return_typed_gap"
+        }
+      ],
+      "top_hybrid_candidates": [
+        {
+          "compiled_object_id": "COBJ::aafce97cf51f9188eeb70596",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_8::BLOCK_0007::PART_02_OF_05",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 1
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2026-03-16\nSection: Item 8. Financial Statements and Supplementary Data\nTable: NOTE 5 —\nHeader: January 30, 2026 | January 31, 2025 || (in millions)\nRow: Past Due 31 — 90 Days | 195 | 201"
+        },
+        {
+          "compiled_object_id": "COBJ::e932ce71a68ca50cf8d6669d",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001",
+          "ticker": "DELL",
+          "publication_date": "2025-12-09",
+          "source_type": "10-Q",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 1,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "Our ISG business continued to benefit from significant increased demand for AI-optimized solutions as customers continue to adopt and further integrate AI, which resulted in significant backlog levels that remained elevated as we exited the quarter. Given the scale of the AI opportunities, the varying stages of customer readiness, and the frequency of compon"
+        },
+        {
+          "compiled_object_id": "COBJ::5c5b5be4d386e6296cb669aa",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0004::PART_01_OF_01",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 2,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "Our ISG business continued to benefit from significant increased demand for our AI-optimized servers offerings as customers continue to adopt and further integrate AI, resulting in a substantial increase in backlog as we exited the year. Given the scale of the AI opportunities, the varying stages of customer readiness, and the frequency of component part upd"
+        },
+        {
+          "compiled_object_id": "COBJ::737ee72028a41dd4f03761a5",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_8::BLOCK_0007::PART_02_OF_05",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 2
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2026-03-16\nSection: Item 8. Financial Statements and Supplementary Data\nTable: NOTE 5 —\nHeader: January 30, 2026 | January 31, 2025 || (in millions)\nRow: Past Due > 90 Days | 115 | 219"
+        },
+        {
+          "compiled_object_id": "COBJ::a646cc188e27abaefc85163e",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 3,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "Product backlog represents the value of unfulfilled manufacturing orders and is included as a component of remaining performance obligations to the extent we determine that the manufacturing orders are non-cancelable. Our world-class supply chain operates at significant scale and provides us with the ability to remain agile in a variety of environments. Whil"
+        }
+      ],
+      "candidate_state": "candidate_not_evidence"
+    },
+    {
+      "request_id": "REQ::eb2e808dd2e48b4fe7474223",
+      "slot_id": "demand_volume_quality",
+      "facet_id": "conversion_and_durability",
+      "target_entity": "DELL",
+      "metric_intents": [
+        "backlog",
+        "orders",
+        "shipments"
+      ],
+      "product_intents": [
+        "order-to-shipment conversion",
+        "channel inventory risk",
+        "demand durability"
+      ],
+      "snapshot_candidate_count": 4,
+      "hybrid_candidate_count": 16,
+      "missing_required_source_roles": [],
+      "typed_fact_statuses": [
+        {
+          "metric_id": "backlog",
+          "status": "typed_gap",
+          "fact_count": 0,
+          "typed_gap": {
+            "gap_code": "metric_not_in_company_fact_mart"
+          }
+        },
+        {
+          "metric_id": "orders",
+          "status": "typed_gap",
+          "fact_count": 0,
+          "typed_gap": {
+            "gap_code": "metric_not_in_company_fact_mart"
+          }
+        },
+        {
+          "metric_id": "shipments",
+          "status": "typed_gap",
+          "fact_count": 0,
+          "typed_gap": {
+            "gap_code": "metric_not_in_company_fact_mart"
+          }
+        }
+      ],
+      "typed_gaps": [
+        {
+          "gap_code": "metric_not_in_company_fact_mart",
+          "fact_request_id": "TFR::39f723045bacfc55ed9a550f",
+          "metric_id": "backlog",
+          "target_entity": "DELL",
+          "owning_stage": "S2",
+          "disposition": "return_typed_gap"
+        },
+        {
+          "gap_code": "metric_not_in_company_fact_mart",
+          "fact_request_id": "TFR::959ce3f18d5ab1e95fb63d5e",
+          "metric_id": "orders",
+          "target_entity": "DELL",
+          "owning_stage": "S2",
+          "disposition": "return_typed_gap"
+        },
+        {
+          "gap_code": "metric_not_in_company_fact_mart",
+          "fact_request_id": "TFR::c9da0b879b33d6f60726b159",
+          "metric_id": "shipments",
+          "target_entity": "DELL",
+          "owning_stage": "S2",
+          "disposition": "return_typed_gap"
+        }
+      ],
+      "top_hybrid_candidates": [
+        {
+          "compiled_object_id": "COBJ::0b5736264353771e2d2a6090",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0011::PART_01_OF_01",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "bounded_parent_context",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 1
+          },
+          "text_excerpt": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: 10-K\nsource_tier: primary_sec_filing\npublication_date: 2026-03-16\nperiod_end: 2026-01-30\nfiscal_year: 2026\nsection: Item 1A. Risk Factors\nsubsection: We may lose revenue opportunities and experience gross margin pressure if sales channel participants fail to perform as expected."
+        },
+        {
+          "compiled_object_id": "COBJ::e932ce71a68ca50cf8d6669d",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001",
+          "ticker": "DELL",
+          "publication_date": "2025-12-09",
+          "source_type": "10-Q",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 1,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "Our ISG business continued to benefit from significant increased demand for AI-optimized solutions as customers continue to adopt and further integrate AI, which resulted in significant backlog levels that remained elevated as we exited the quarter. Given the scale of the AI opportunities, the varying stages of customer readiness, and the frequency of compon"
+        },
+        {
+          "compiled_object_id": "COBJ::5c5b5be4d386e6296cb669aa",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0004::PART_01_OF_01",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 2,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "Our ISG business continued to benefit from significant increased demand for our AI-optimized servers offerings as customers continue to adopt and further integrate AI, resulting in a substantial increase in backlog as we exited the year. Given the scale of the AI opportunities, the varying stages of customer readiness, and the frequency of component part upd"
+        },
+        {
+          "compiled_object_id": "COBJ::cba00473605e6cdab2db8f10",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_8::BLOCK_0023::PART_02_OF_03",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 2
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2026-03-16\nSection: Item 8. Financial Statements and Supplementary Data\nTable: NOTE 20 —\nHeader: Fiscal Year Ended || January 30, 2026 | January 31, 2025 || (in millions)\nRow: Invoices confirmed | 6,052 | 5,191"
+        },
+        {
+          "compiled_object_id": "COBJ::a646cc188e27abaefc85163e",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 3,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "Product backlog represents the value of unfulfilled manufacturing orders and is included as a component of remaining performance obligations to the extent we determine that the manufacturing orders are non-cancelable. Our world-class supply chain operates at significant scale and provides us with the ability to remain agile in a variety of environments. Whil"
+        }
+      ],
+      "candidate_state": "candidate_not_evidence"
+    },
+    {
+      "request_id": "REQ::e17c40f93e25438950673210",
+      "slot_id": "operating_performance",
+      "facet_id": "reported_results",
+      "target_entity": "DELL",
+      "metric_intents": [
+        "revenue",
+        "operating_income",
+        "net_income",
+        "diluted_eps",
+        "gross_margin",
+        "operating_margin"
+      ],
+      "product_intents": [
+        "AI server revenue contribution",
+        "segment profitability",
+        "EPS impact"
+      ],
+      "snapshot_candidate_count": 4,
+      "hybrid_candidate_count": 16,
+      "missing_required_source_roles": [],
+      "typed_fact_statuses": [
+        {
+          "metric_id": "revenue",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "operating_income",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "net_income",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "diluted_eps",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "gross_margin",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "operating_margin",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        }
+      ],
+      "typed_gaps": [],
+      "top_hybrid_candidates": [
+        {
+          "compiled_object_id": "COBJ::b3ecb3718068fc0343070957",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0014::PART_01_OF_03",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": 44,
+            "qwen3_embedding_0_6b_dense": 1
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2026-03-16\nSection: Item 7. Management's Discussion and Analysis\nTable: RESULTS OF OPERATIONS\nHeader: Fiscal Year Ended || January 30, 2026 | January 31, 2025 | February 2, 2024 || Dollars | % of Net Revenue | % Change | Dollars | % of Net Revenue | % Change | Dollars | % of Net Revenue || (in mil"
+        },
+        {
+          "compiled_object_id": "COBJ::1d1ce3f119dbfd29acfb026d",
+          "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0008::CHUNK_0001",
+          "ticker": "DELL",
+          "publication_date": "2026-05-28",
+          "source_type": "8-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": 1,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 8-K published 2026-05-28\nSection: Exhibit 99.1 Earnings Release\nTable: DELL TECHNOLOGIES INC.\nHeader: Three Months Ended || May 1, 2026 | May 2, 2025 | Change || Infrastructure Solutions Group (ISG): || Net revenue:\nRow context: Operating income:\nRow: % of total reportable segment operating income | 72 | % | 60 "
+        },
+        {
+          "compiled_object_id": "COBJ::98b445b4a0a086849e4082d3",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0007::PART_01_OF_01",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "bounded_parent_context",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 2
+          },
+          "text_excerpt": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: 10-K\nsource_tier: primary_sec_filing\npublication_date: 2026-03-16\nperiod_end: 2026-01-30\nfiscal_year: 2026\nsection: Item 7. Management's Discussion and Analysis\nsubsection: Revenue"
+        },
+        {
+          "compiled_object_id": "COBJ::b6c78712a6ab54ce005f9c4b",
+          "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0008::CHUNK_0001",
+          "ticker": "DELL",
+          "publication_date": "2026-05-28",
+          "source_type": "8-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": 2,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 8-K published 2026-05-28\nSection: Exhibit 99.1 Earnings Release\nTable: DELL TECHNOLOGIES INC.\nHeader: Three Months Ended || May 1, 2026 | May 2, 2025 | Change || Infrastructure Solutions Group (ISG): || Net revenue:\nRow context: Operating income:\nRow: % of total reportable segment operating income | 28 | % | 40 "
+        },
+        {
+          "compiled_object_id": "COBJ::0a31938777cbc3f1ed5469fe",
+          "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0005::CHUNK_0001",
+          "ticker": "DELL",
+          "publication_date": "2026-05-28",
+          "source_type": "8-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 3
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 8-K published 2026-05-28\nSection: Exhibit 99.1 Earnings Release\nTable: DELL TECHNOLOGIES INC.\nHeader: Three Months Ended || May 1, 2026 | May 2, 2025 | Change || Net revenue:\nRow context: Operating expenses:\nRow: Operating income | 3,656 | 1,165 | 214%"
+        }
+      ],
+      "candidate_state": "candidate_not_evidence"
+    },
+    {
+      "request_id": "REQ::081c06389f9dcb8487886b57",
+      "slot_id": "pricing_mix_value_capture",
+      "facet_id": "margin_and_incremental_profit",
+      "target_entity": "DELL",
+      "metric_intents": [
+        "gross_profit",
+        "operating_income",
+        "operating_margin",
+        "gross_margin"
+      ],
+      "product_intents": [
+        "incremental margin on AI servers",
+        "operating leverage"
+      ],
+      "snapshot_candidate_count": 6,
+      "hybrid_candidate_count": 16,
+      "missing_required_source_roles": [],
+      "typed_fact_statuses": [
+        {
+          "metric_id": "gross_profit",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "operating_income",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "operating_margin",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "gross_margin",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        }
+      ],
+      "typed_gaps": [],
+      "top_hybrid_candidates": [
+        {
+          "compiled_object_id": "COBJ::07d4cbf6be446c6897bae26a",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0008::PART_01_OF_01",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "bounded_parent_context",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 1
+          },
+          "text_excerpt": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: 10-K\nsource_tier: primary_sec_filing\npublication_date: 2026-03-16\nperiod_end: 2026-01-30\nfiscal_year: 2026\nsection: Item 7. Management's Discussion and Analysis\nsubsection: Gross margin"
+        },
+        {
+          "compiled_object_id": "COBJ::dd980f729920f24fc85b8d1b",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0020::PART_02_OF_02",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 1,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "During Fiscal 2026, ISG operating income as a percentage of net revenue decreased 110 basis points to 11.7%, due to a decline in gross margin rate that outpaced the decline in operating expense rate. Gross margin rate decreased primarily as the result of a shift in mix towards our AI-optimized servers offerings. Operating expense rate declined primarily due "
+        },
+        {
+          "compiled_object_id": "COBJ::b3ecb3718068fc0343070957",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0014::PART_01_OF_03",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": 46,
+            "qwen3_embedding_0_6b_dense": 2
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2026-03-16\nSection: Item 7. Management's Discussion and Analysis\nTable: RESULTS OF OPERATIONS\nHeader: Fiscal Year Ended || January 30, 2026 | January 31, 2025 | February 2, 2024 || Dollars | % of Net Revenue | % Change | Dollars | % of Net Revenue | % Change | Dollars | % of Net Revenue || (in mil"
+        },
+        {
+          "compiled_object_id": "COBJ::119cd32baca43808e4861eec",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0013_PART_02_OF_02",
+          "ticker": "DELL",
+          "publication_date": "2025-12-09",
+          "source_type": "10-Q",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 2,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "During the third quarter and first nine months of Fiscal 2026, ISG operating income as a percentage of net revenue decreased 90 basis points to 12.4% and 70 basis points to 10.2%, respectively, due to a decline in gross margin rate that outpaced the decline in operating expense rate. Gross margin rate decreased primarily as the result of a shift in mix towar"
+        },
+        {
+          "compiled_object_id": "COBJ::0fec27f30af2699d11ac98c6",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0014::PART_01_OF_03",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": 50,
+            "qwen3_embedding_0_6b_dense": 3
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2026-03-16\nSection: Item 7. Management's Discussion and Analysis\nTable: RESULTS OF OPERATIONS\nHeader: Fiscal Year Ended || January 30, 2026 | January 31, 2025 | February 2, 2024 || Dollars | % of Net Revenue | % Change | Dollars | % of Net Revenue | % Change | Dollars | % of Net Revenue || (in mil"
+        }
+      ],
+      "candidate_state": "candidate_not_evidence"
+    },
+    {
+      "request_id": "REQ::273bf40c53d28f49de438b41",
+      "slot_id": "cash_conversion_balance_sheet",
+      "facet_id": "cash_generation",
+      "target_entity": "DELL",
+      "metric_intents": [
+        "operating_cash_flow",
+        "free_cash_flow",
+        "capital_expenditures"
+      ],
+      "product_intents": [
+        "cash conversion of AI revenue",
+        "capex for AI capacity"
+      ],
+      "snapshot_candidate_count": 5,
+      "hybrid_candidate_count": 16,
+      "missing_required_source_roles": [],
+      "typed_fact_statuses": [
+        {
+          "metric_id": "operating_cash_flow",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "free_cash_flow",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "capital_expenditures",
+          "status": "resolved",
+          "fact_count": 3,
+          "typed_gap": null
+        }
+      ],
+      "typed_gaps": [],
+      "top_hybrid_candidates": [
+        {
+          "compiled_object_id": "COBJ::e81c3483acfc56a44a95fd04",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0014::PART_01_OF_03",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": 34,
+            "qwen3_embedding_0_6b_dense": 1
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2026-03-16\nSection: Item 7. Management's Discussion and Analysis\nTable: RESULTS OF OPERATIONS\nHeader: Fiscal Year Ended || January 30, 2026 | January 31, 2025 | February 2, 2024 || Dollars | % of Net Revenue | % Change | Dollars | % of Net Revenue | % Change | Dollars | % of Net Revenue || (in mil"
+        },
+        {
+          "compiled_object_id": "COBJ::08439a34faa6ef68eff6c6e7",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0013::PART_03_OF_04",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 1,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "In addition to the above measures, we use free cash flow and adjusted free cash flow as non-GAAP liquidity measures to evaluate our performance. As presented in the following table, we define free cash flow as cash flow from operations after excluding capital expenditures and capitalized software development costs, net. To measure adjusted free cash flow, we"
+        },
+        {
+          "compiled_object_id": "COBJ::460dc514e4c09cc2d0c3844c",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0013::PART_04_OF_04",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 2,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "The following table presents a reconciliation of free cash flow and adjusted free cash flow to cash flow from operations for the periods indicated:"
+        },
+        {
+          "compiled_object_id": "COBJ::9bfc20ab9b1f9a72e67ee7df",
+          "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0014::CHUNK_0001",
+          "ticker": "DELL",
+          "publication_date": "2026-05-28",
+          "source_type": "8-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 2
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 8-K published 2026-05-28\nSection: Exhibit 99.1 Earnings Release\nTable: DELL TECHNOLOGIES INC.\nHeader: Three Months Ended || May 1, 2026 | May 2, 2025 | Change\nRow: Cash flow from operations | $ | 4,081 | $ | 2,796 | 46 | %"
+        },
+        {
+          "compiled_object_id": "COBJ::c4498d0205b404277aa7543c",
+          "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0014::CHUNK_0001",
+          "ticker": "DELL",
+          "publication_date": "2026-05-28",
+          "source_type": "8-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": 33,
+            "qwen3_embedding_0_6b_dense": 3
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 8-K published 2026-05-28\nSection: Exhibit 99.1 Earnings Release\nTable: DELL TECHNOLOGIES INC.\nHeader: Three Months Ended || May 1, 2026 | May 2, 2025 | Change\nRow context: Non-GAAP adjustments:\nRow: Free cash flow | $ | 3,118 | $ | 2,228 | 40 | %"
+        }
+      ],
+      "candidate_state": "candidate_not_evidence"
+    },
+    {
+      "request_id": "REQ::c21c10d6e8f13263cf69ffa5",
+      "slot_id": "cash_conversion_balance_sheet",
+      "facet_id": "working_capital_risk",
+      "target_entity": "DELL",
+      "metric_intents": [
+        "inventory",
+        "accounts_receivable",
+        "accounts_payable"
+      ],
+      "product_intents": [
+        "AI component inventory buildup",
+        "receivable risk from AI customers"
+      ],
+      "snapshot_candidate_count": 5,
+      "hybrid_candidate_count": 16,
+      "missing_required_source_roles": [],
+      "typed_fact_statuses": [
+        {
+          "metric_id": "inventory",
+          "status": "resolved",
+          "fact_count": 1,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "accounts_receivable",
+          "status": "resolved",
+          "fact_count": 1,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "accounts_payable",
+          "status": "resolved",
+          "fact_count": 1,
+          "typed_gap": null
+        }
+      ],
+      "typed_gaps": [],
+      "top_hybrid_candidates": [
+        {
+          "compiled_object_id": "COBJ::081c534d405c167398f3d961",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0022::PART_02_OF_03",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 1,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "— Cash provided by operating activities was $11.2 billion during Fiscal 2026 and was driven by net revenue growth, profitability, and working capital dynamics, partially offset by higher financing receivables. Financing receivables and working capital were primarily affected by increased demand for our AI-optimized servers offerings. During Fiscal 2025, cash"
+        },
+        {
+          "compiled_object_id": "COBJ::5055290dd6ceace642da2953",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_8::BLOCK_0007::PART_03_OF_05",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 1
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2026-03-16\nSection: Item 8. Financial Statements and Supplementary Data\nTable: NOTE 5 —\nHeader: January 30, 2026 || (in millions)\nRow: Total customer receivables, gross | $ | 14,295"
+        },
+        {
+          "compiled_object_id": "COBJ::7c331cba9e0af63ade258876",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0015_PART_02_OF_04",
+          "ticker": "DELL",
+          "publication_date": "2025-12-09",
+          "source_type": "10-Q",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 2,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "— Cash provided by operating activities was $6.5 billion during the first nine months of Fiscal 2026 and was driven by net revenue growth and profitability, partially offset by higher financing receivables and working capital levels, both of which were primarily impacted by increased demand for our AI-optimized server offerings. During the first nine months "
+        },
+        {
+          "compiled_object_id": "COBJ::bc4612f019d95348f56746b3",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0001::PART_01_OF_01",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "bounded_parent_context",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 2
+          },
+          "text_excerpt": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: 10-K\nsource_tier: primary_sec_filing\npublication_date: 2026-03-16\nperiod_end: 2026-01-30\nfiscal_year: 2026\nsection: Item 1A. Risk Factors\nsubsection: Item 1A. Risk Factors"
+        },
+        {
+          "compiled_object_id": "COBJ::caa00da3d0a450efd95d8c69",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_8::BLOCK_0007::PART_01_OF_05",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "metric_row",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 3
+          },
+          "text_excerpt": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2026-03-16\nSection: Item 8. Financial Statements and Supplementary Data\nTable: NOTE 5 —\nHeader: January 30, 2026 | January 31, 2025 || (in millions) || Financing receivables, net:\nRow context: Financing receivables, net:\nRow: Customer receivables, gross (a) | $ | 14,295 | $ | 11,216"
+        }
+      ],
+      "candidate_state": "candidate_not_evidence"
+    },
+    {
+      "request_id": "REQ::07e898259cfe6b2e12d7f82c",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "issuer_counterevidence",
+      "target_entity": "DELL",
+      "metric_intents": [
+        "inventory"
+      ],
+      "product_intents": [
+        "management caution on AI demand",
+        "inventory write-down risk"
+      ],
+      "snapshot_candidate_count": 3,
+      "hybrid_candidate_count": 16,
+      "missing_required_source_roles": [],
+      "typed_fact_statuses": [
+        {
+          "metric_id": "inventory",
+          "status": "resolved",
+          "fact_count": 1,
+          "typed_gap": null
+        }
+      ],
+      "typed_gaps": [],
+      "top_hybrid_candidates": [
+        {
+          "compiled_object_id": "COBJ::66412edb2417e4d245f849c8",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 1,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "Larger orders may also require greater commitments of working capital, such as for purchases of key components, which could adversely affect our cash flow and expose us to the risk of holding excess and obsolete inventory due to delays or cancellations."
+        },
+        {
+          "compiled_object_id": "COBJ::bc4612f019d95348f56746b3",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0001::PART_01_OF_01",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "bounded_parent_context",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 1
+          },
+          "text_excerpt": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: 10-K\nsource_tier: primary_sec_filing\npublication_date: 2026-03-16\nperiod_end: 2026-01-30\nfiscal_year: 2026\nsection: Item 1A. Risk Factors\nsubsection: Item 1A. Risk Factors"
+        },
+        {
+          "compiled_object_id": "COBJ::e0697f73e518bd7ebe405627",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "bounded_parent_context",
+          "route_ranks": {
+            "bm25_lexical": 21,
+            "qwen3_embedding_0_6b_dense": 2
+          },
+          "text_excerpt": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: 10-K\nsource_tier: primary_sec_filing\npublication_date: 2026-03-16\nperiod_end: 2026-01-30\nfiscal_year: 2026\nsection: Item 1A. Risk Factors\nsubsection: The nature of the demand for AI solutions may have adverse effects on our operating performance."
+        },
+        {
+          "compiled_object_id": "COBJ::7c331cba9e0af63ade258876",
+          "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0015_PART_02_OF_04",
+          "ticker": "DELL",
+          "publication_date": "2025-12-09",
+          "source_type": "10-Q",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 2,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "— Cash provided by operating activities was $6.5 billion during the first nine months of Fiscal 2026 and was driven by net revenue growth and profitability, partially offset by higher financing receivables and working capital levels, both of which were primarily impacted by increased demand for our AI-optimized server offerings. During the first nine months "
+        },
+        {
+          "compiled_object_id": "COBJ::081c534d405c167398f3d961",
+          "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0022::PART_02_OF_03",
+          "ticker": "DELL",
+          "publication_date": "2026-03-16",
+          "source_type": "10-K",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 3,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "— Cash provided by operating activities was $11.2 billion during Fiscal 2026 and was driven by net revenue growth, profitability, and working capital dynamics, partially offset by higher financing receivables. Financing receivables and working capital were primarily affected by increased demand for our AI-optimized servers offerings. During Fiscal 2025, cash"
+        }
+      ],
+      "candidate_state": "candidate_not_evidence"
+    },
+    {
+      "request_id": "REQ::39d61ebcc0dad17a756c1cac",
+      "slot_id": "counterevidence_and_what_would_change",
+      "facet_id": "upstream_or_demand_counterevidence",
+      "target_entity": "NVDA",
+      "metric_intents": [
+        "inventory"
+      ],
+      "product_intents": [
+        "supplier constraints on GPUs",
+        "hyperscaler capex slowdown"
+      ],
+      "snapshot_candidate_count": 1,
+      "hybrid_candidate_count": 16,
+      "missing_required_source_roles": [],
+      "typed_fact_statuses": [
+        {
+          "metric_id": "inventory",
+          "status": "resolved",
+          "fact_count": 1,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "inventory",
+          "status": "resolved",
+          "fact_count": 1,
+          "typed_gap": null
+        },
+        {
+          "metric_id": "inventory",
+          "status": "typed_gap",
+          "fact_count": 0,
+          "typed_gap": {
+            "gap_code": "typed_fact_not_found_for_as_of_and_period"
+          }
+        },
+        {
+          "metric_id": "inventory",
+          "status": "typed_gap",
+          "fact_count": 0,
+          "typed_gap": {
+            "gap_code": "typed_fact_not_found_for_as_of_and_period"
+          }
+        }
+      ],
+      "typed_gaps": [
+        {
+          "gap_code": "typed_fact_not_found_for_as_of_and_period",
+          "fact_request_id": "TFR::ba65eab7ce56cb17cfd505b6",
+          "metric_id": "inventory",
+          "target_entity": "TSM",
+          "owning_stage": "S2",
+          "disposition": "return_typed_gap"
+        },
+        {
+          "gap_code": "typed_fact_not_found_for_as_of_and_period",
+          "fact_request_id": "TFR::d80aaa496d9d08d7b3e27992",
+          "metric_id": "inventory",
+          "target_entity": "MSFT",
+          "owning_stage": "S2",
+          "disposition": "return_typed_gap"
+        }
+      ],
+      "top_hybrid_candidates": [
+        {
+          "compiled_object_id": "COBJ::2ef5f49b7bb9f89fb0537378",
+          "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_01_OF_03",
+          "ticker": "NVDA",
+          "publication_date": "2025-11-19",
+          "source_type": "10-Q",
+          "object_kind": "bounded_parent_context",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 1
+          },
+          "text_excerpt": "ticker: NVDA\ncompany: NVIDIA CORP\nsource_type: 10-Q\nsource_tier: primary_sec_filing\npublication_date: 2025-11-19\nperiod_end: 2025-10-26\nfiscal_year: 2026\nsection: Item 1A. Risk Factors\nsubsection: Item 1A. Risk Factors"
+        },
+        {
+          "compiled_object_id": "COBJ::9a623b1778d2de1491beb720",
+          "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04",
+          "ticker": "NVDA",
+          "publication_date": "2026-05-20",
+          "source_type": "10-Q",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 1,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "We have incurred and may in the future incur inventory provisions or impairments if our inventory or supply or capacity commitments exceed demand for our products or demand declines."
+        },
+        {
+          "compiled_object_id": "COBJ::053423a9d3bd64ff791499f7",
+          "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0006::PART_01_OF_02",
+          "ticker": "NVDA",
+          "publication_date": "2026-05-20",
+          "source_type": "10-Q",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": 2,
+            "qwen3_embedding_0_6b_dense": null
+          },
+          "text_excerpt": "(1) Other segment items primarily include product costs and inventory provisions, compensation and benefits excluding stock-based compensation expense, computing infrastructure expenses, and engineering development costs."
+        },
+        {
+          "compiled_object_id": "COBJ::562fb7da39cb5209bbf25ed2",
+          "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0001::PART_01_OF_01",
+          "ticker": "NVDA",
+          "publication_date": "2026-05-20",
+          "source_type": "10-Q",
+          "object_kind": "bounded_parent_context",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 2
+          },
+          "text_excerpt": "ticker: NVDA\ncompany: NVIDIA Corporation\nsource_type: 10-Q\nsource_tier: primary_sec_filing\npublication_date: 2026-05-20\nperiod_end: 2026-04-26\nfiscal_year: 2027\nsection: Item 1A. Risk Factors\nsubsection: Item 1A. Risk Factors"
+        },
+        {
+          "compiled_object_id": "COBJ::5d90ff4c1abda7fddbf62f4f",
+          "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0003::PART_02_OF_09",
+          "ticker": "NVDA",
+          "publication_date": "2026-05-20",
+          "source_type": "10-Q",
+          "object_kind": "claim",
+          "route_ranks": {
+            "bm25_lexical": null,
+            "qwen3_embedding_0_6b_dense": 3
+          },
+          "text_excerpt": "Export controls and other restrictions targeting GPUs and semiconductors associated with AI, which have been imposed and are likely to be more restrictive, would further limit our ability to export our technology, products, or services, creating a competitive disadvantage for us and negatively impacting our business and financial results."
+        }
+      ],
+      "candidate_state": "candidate_not_evidence"
+    }
+  ],
+  "decision": "Do not tune another ranker or enter broad source acquisition. Adjudicate each request as candidate-selection error, S2 typed-fact gap, true S1-D source gap, or supported before any source call.",
+  "authority": {
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "local_embedding_inference_authorized": true,
+    "candidate_is_not_evidence": true,
+    "numeric_authority_remains_s2": true,
+    "runtime_promotion_authorized": false,
+    "s1d_source_execution_authorized": false,
+    "s1_or_s3_complete_claimed": false
+  },
+  "result_digest": "63f23a6a4d8b17333d8c180f5c14f84753bf64da979fe9abe85a2b0cd3be6c74"
+}

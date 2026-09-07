@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_s3_material_scope_canary_failure_assessment_v1_1",
+  "assessment_id": "FIN-0.1.3-S3-DELL-MATERIAL-SCOPE-R2-FAILURE-ASSESSMENT",
+  "status": "R2_preserved_visible_contract_vocabulary_omission_successor_required",
+  "recorded_at": "2026-08-18T15:18:56+08:00",
+  "case_key": "DELL",
+  "cell_id": "MATERIAL_SCOPE",
+  "immutable_attempt": {
+    "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_material_scope_canary_live_result_v1_1.json",
+    "result_sha256": "21324c3ce8abe2748605d30856f43701bfd100887dc3326b6d231f1ee0461b5d",
+    "result_digest": "13a15230798d3680e84ad2bc9a8268ad53faed0cf1942b696aa053937025daf4",
+    "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_material_scope_canary/FIN013-S3-DELL-MATERIAL-SCOPE-NONTHINKING-SUCCESSOR/R2/model_visible_request.json",
+    "request_capture_sha256": "2019c1679f50289a15a58801e9bdcb14f9ed138c800e0c3401a174858be74e3d",
+    "request_digest": "bcb01117161ab74e06cf40b53640c10e4c9f80f36f4169d3a810c0f26fcc401f",
+    "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_material_scope_canary/FIN013-S3-DELL-MATERIAL-SCOPE-NONTHINKING-SUCCESSOR/R2/provider_response.json",
+    "response_capture_sha256": "1b6b0134e3f87407b13f4a4d800e878805d938c86d9d6fae0d223e44e66bd99c",
+    "response_digest": "cf7f600518eb319b99c311b553f75148b8006f8eaad666c22389b0a209d5fc3c"
+  },
+  "observed": {
+    "http_status": 200,
+    "response_body_complete": true,
+    "prompt_tokens": 2689,
+    "completion_tokens": 1842,
+    "reasoning_tokens": 0,
+    "visible_content_characters": 6444,
+    "finish_reason": "stop",
+    "request_scope_rows_produced": 8,
+    "product_dispositions_produced": 19,
+    "requirement_atoms_produced": 12,
+    "top_level_keys_produced": ["request_scope"],
+    "invented_dispositions": ["direct"],
+    "invented_period_modes": ["span_2026_2027"],
+    "invented_coverage_modes": [
+      "all_products_all_metrics",
+      "all_products_no_metric_binding"
+    ],
+    "transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "candidate_or_reference_inputs_read": false,
+    "product_publication": false
+  },
+  "root_cause": {
+    "earliest_responsible_layer": "provider_neutral_material_scope_model_visible_contract_compiler",
+    "classification": "validator_prompt_closed_vocabulary_and_top_level_shape_drift",
+    "finding": "The model-visible output contract listed field names but omitted the exact top-level field set, all allowed disposition, period and coverage enum values, and the cross-field binding rules already enforced by the validator. The model returned all eight request rows, nineteen dispositions and twelve atoms, but necessarily invented intuitive field and enum names that the unchanged validator rejected.",
+    "excluded_causes": [
+      "network_or_transport_disconnect",
+      "partial_HTTP_response",
+      "reasoning_budget_exhaustion",
+      "S1_candidate_retrieval_or_ranking_failure",
+      "candidate_qrel_reference_or_hidden_contamination",
+      "public_information_gap",
+      "insufficient_visible_output_budget"
+    ]
+  },
+  "disposition": {
+    "R2_retry_authorized": false,
+    "R2_result_mutation_authorized": false,
+    "token_ceiling_increase_authorized": false,
+    "request_microbatching_authorized_now": false,
+    "provider_profile_change_authorized_now": false,
+    "required_fix": "Compile the exact top-level shape, closed enums and cross-field rules from the same policy and validator vocabulary into every model-visible request. Add schema-drift, legacy R2 rejection and multi-case zero-call regression. Generate a new clean-commit-bound input because the model-visible messages digest must change.",
+    "next_live_boundary": "At most one separately signed R3 after the provider-neutral contract repair, fresh input, immutable R1/R2 binding, clean synced preflight and exact-once authority."
+  },
+  "known_boundary": "R2 proves that the non-thinking provider profile can return a complete visible bounded payload, but its invalid vocabulary prevents scope-content qualification. It does not authorize product replay, Evidence admission, Pack Readiness, S1 qualification, publication or release."
+}

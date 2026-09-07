@@ -1,0 +1,85 @@
+{
+  "authority_digest": "e682b1c8250b4ab627ec09583e9bbcec68d507e7bd2a229b6c26768762512cc7",
+  "authority_statement": "Authorize exactly one fresh Writer-only terminal remapping logical node with at most two bounded contract attempts. Reuse the immutable completed report and typed authority only. Authorize zero analysis, continuation, upstream Agent, repair, Evaluator, retrieval, network or Candidate-promotion calls. The Harness deterministically renders all protected numeric, temporal, identity and citation surfaces.",
+  "authorized_at": "2026-08-21T10:31:17.056085+00:00",
+  "bound_inputs": {
+    "predecessor_content_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_content_assessment_v1_0.json",
+      "sha256": "217e45076a27ea1b0b91e2e51a3886a34532d53d291baefb9288e28669e18b81"
+    },
+    "predecessor_private_full_result": {
+      "digest": "bd1c658adeeb3171506ab004605ec48a1ba7431b58ab380fabad625db98537dd",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+      "sha256": "6f31245ab52cf34cc45cfd5ffd82bd359a769ea9dd2f2eedf746c67d115e514a"
+    },
+    "report_authority_catalog": {
+      "digest": "db4cd0930c29e78f21d10df4b09ddc4bb69004665e3aca929608d66d6c9242df",
+      "digest_field": "authority_catalog_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json",
+      "sha256": "853a2271a58126c9dd1e9b72ad8cef862e9cb15e75f22d0d42bc936fa6c71285"
+    },
+    "report_surface_zero_call_proof": {
+      "digest": "09c4d60bc3ee8c5b34518485567ce54092e4122f6bbd46f505168f0dc8cb0958",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_report_surface_authority_zero_call_result_v1_1.json",
+      "sha256": "c242c22f43594f8bc8326de3ba29a5e5405d50d78ebd41d1400db285bdb27093"
+    },
+    "writer_submission_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_report_protected_remap_non_thinking_profile_v1_0.json",
+      "sha256": "942a7243d6f3074c5e5e0c7445bcf114cc504ea0149680970e3c5ba0b941158c"
+    }
+  },
+  "execution_limits": {
+    "candidate_promotions": 0,
+    "external_source_network_calls": 0,
+    "maximum_contract_attempts": 2,
+    "maximum_new_analysis_calls": 0,
+    "maximum_new_logical_model_nodes": 1,
+    "maximum_new_writer_continuations": 0,
+    "reused_completed_challenge_repair_count": 3,
+    "reused_cross_role_evaluation_count": 1,
+    "reused_lead_coordination_count": 1,
+    "reused_lead_plan_count": 1,
+    "reused_legacy_report_count": 1,
+    "reused_role_evaluation_count": 6,
+    "reused_specialist_plan_count": 6,
+    "reused_workpaper_count": 6
+  },
+  "implementation_commit": "a7be53cc90ff7f1d1084ff0b4d8887ee284b9b17",
+  "outputs": {
+    "capture_root_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_protected_report_remap_20260821",
+    "private_output_root_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_protected_report_remap_20260821",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_live_result_v1_0.json",
+    "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PROTECTED_REPORT_REMAP_20260821"
+  },
+  "project_os_preflight": {
+    "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_project_os_preflight_v1_0.json",
+    "sha256": "11e2c1c8fbd82079455d333d6e0ddc16116bf9d7cbae5f9044e81c2d7fc0b9bf"
+  },
+  "run_scope_id": "one_fresh_Writer_only_terminal_remapping_logical_node_with_separate_attempt_budget",
+  "schema_version": "fin_ia_s3_multi_agent_report_protected_remap_live_authority_v1_0",
+  "scope_decision": {
+    "decision_digest": "bea7bfb290142f4acc702a48d210ef27f03fd9d3edb37c5aef5d87a81828e789",
+    "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_scope_decision_v1_0.json",
+    "sha256": "5c623ffc6f57d5d44877735483efd9dd74b7e49307dea234554891b666062fc1"
+  },
+  "status": "approved_for_one_writer_only_protected_report_terminal_remap",
+  "token_budget_basis": {
+    "authority_catalog_characters": 70310,
+    "comparable_run_evidence": "prior_writer_report_required_two_bounded_contract_attempts",
+    "cost_and_latency_are_secondary_constraints": true,
+    "materiality_quality_risk": "high",
+    "maximum_contract_attempts": 2,
+    "maximum_output_tokens": 7000,
+    "node_id": "AGENT::WRITER::PROTECTED_REPORT_REMAP",
+    "purpose": "terminal_contract_remap_without_new_research",
+    "reasoning_profile": "thinking_disabled",
+    "required_gap_count": 6,
+    "required_section_count": 6,
+    "required_wwc_count": 8,
+    "schema_burden": "nested_six_section_protected_tool_with_claim_scoped_refs",
+    "source_report_characters": 14469,
+    "stop_behavior": "stop_after_first_valid_contract_or_terminal_after_second_rejection"
+  }
+}

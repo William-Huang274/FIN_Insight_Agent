@@ -1,0 +1,80 @@
+{
+  "acceptance": {
+    "L1_assessment_pending": false,
+    "S3_pass": false,
+    "dynamic_single_unit_contract_pass": false,
+    "eight_dimension_content_assessment_pending": false,
+    "multi_agent_execution": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_live_authority_v1_0.json",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "current_S1_S2_executed": false,
+    "initial_evidence_prefeed": false,
+    "model_changed_plan": false,
+    "model_consumed_feedback_and_submitted_reflection": false,
+    "model_generated_specialist_judgment": false,
+    "model_selected_initial_research_actions": false,
+    "multi_agent_execution": false,
+    "natural_dynamic_research_executed": false,
+    "product_acceptance": false,
+    "release_ready": false,
+    "single_unit_only": true
+  },
+  "coverage_state": {},
+  "execution": {
+    "candidate_promotions": 0,
+    "cuda_receipt": {
+      "compute_capability": [
+        8,
+        9
+      ],
+      "cpu_fallback_allowed": false,
+      "cuda_runtime_version": "12.6",
+      "device_name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+      "embedding_precision": "fp16",
+      "execution_device": "cuda:0",
+      "failure_policy": "fail_closed_before_model_load",
+      "fp16_smoke_device": "cuda:0",
+      "fp16_smoke_dtype": "float16",
+      "fp16_smoke_value": 11.0,
+      "purpose": "DELL current dynamic single-unit natural live",
+      "reranker_precision": "fp16",
+      "torch_version": "2.10.0+cu126",
+      "total_memory_bytes": 8585216000
+    },
+    "external_source_network_calls": 0,
+    "fallbacks": 0,
+    "maximum_provider_calls": 4,
+    "provider_calls_attempted": 1,
+    "request_ids_executed": [],
+    "retries": 0,
+    "retrieval_rounds_executed": 0,
+    "unique_request_ids_executed": 0
+  },
+  "failure": {
+    "capture_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r1-20260823t0046z/captures/dell-current-dynamic-single-unit-r1-20260823t0046z/dell-current-dynamic-single-unit-r1-request-planning/provider_response.json",
+    "code": "model_gateway_http_error:400",
+    "phase": "provider_transport_or_response"
+  },
+  "implementation_commit": "925b2cfa356fe20eca15a54395fbc91d9af65a1e",
+  "known_boundary": "This authority permits exactly one DELL current dynamic value-capture single-unit run after a clean decision-bound Project OS preflight. It permits the model to select at most twelve current S1/S2 requests across two rounds, consume only reviewed Evidence and typed quantitative or gap results, reflect on actionable feedback, and submit one specialist workpaper. It forbids retries, external-source network acquisition, candidate promotion, public-gap self-authorization, multi-agent execution, S1 or S3 acceptance, Workbench publication and release.",
+  "model": "deepseek-v4-pro",
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r1-20260823t0046z/full_result.json",
+  "private_full_result_sha256": "01922c3d06a9cfde6e30055cc329d0776177729a419ff30b79a3a81e65356d73",
+  "provider_steps": [],
+  "recorded_at": "2026-08-23T00:51:25+00:00",
+  "reflections": [],
+  "result_digest": "74bcf954d73d3140c0295ed2b285264ffc58490bcff4074f23c0b84b813159e7",
+  "round_summaries": [],
+  "schema_version": "fin_ia_s3_current_dynamic_single_unit_live_result_v1_0",
+  "selections": [],
+  "status": "terminal_failed_no_retry",
+  "stop_decision": {},
+  "workpaper": {}
+}

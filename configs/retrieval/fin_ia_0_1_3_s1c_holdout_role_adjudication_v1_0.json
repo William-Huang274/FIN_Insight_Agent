@@ -1,0 +1,192 @@
+{
+  "schema_version": "fin_ia_s1c_holdout_role_adjudication_v1_0",
+  "status": "codex_supervised_shadow_labels_pending_owner",
+  "recorded_at": "2026-08-12",
+  "scope": "ORCL_ASML_ANET_FINANCIAL_EVIDENCE_ROLE_CONTRAST",
+  "bound_inputs": {
+    "pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json",
+    "pack_result_sha256": "1da1d1e21d7b3b3211bb0008b5ac00c8b9bca8c2af17712354095ab4708117a0",
+    "pack_result_digest": "52cd20faabe60591dca408a3c571ea1835b8e8ac635402b3d47c681b5cdc56da"
+  },
+  "label_policy": {
+    "positive_authority": "previous_reviewed_pack_slot_binding",
+    "negative_authority": "explicit_same_case_business_role_contrast_reviewed_by_codex",
+    "absence_of_slot_binding_is_negative": false,
+    "unlisted_documents_are_unjudged": true,
+    "candidate_generation_may_not_read_this_file": true,
+    "runtime_or_training_authority": false
+  },
+  "queries": {
+    "holdout__orcl__capacity_inputs_execution": [
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_072413BD",
+        "reason_code": "income_tax_cash_payment_does_not_show_capacity_or_execution"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_7634E977",
+        "reason_code": "aggregate_operating_margin_does_not_show_capacity_or_execution"
+      }
+    ],
+    "holdout__orcl__cash_conversion_balance_sheet": [
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_01E1EDB8",
+        "reason_code": "booking_seasonality_claim_does_not_quantify_cash_conversion"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_02852A56",
+        "reason_code": "generic_ai_product_risk_does_not_show_balance_sheet_or_cash_flow"
+      }
+    ],
+    "holdout__orcl__counterevidence_and_what_would_change": [
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0B7FA057",
+        "reason_code": "total_revenue_result_alone_is_not_counterevidence_or_change_condition"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0F9EABA5",
+        "reason_code": "operating_cash_flow_result_alone_is_not_counterevidence_or_change_condition"
+      }
+    ],
+    "holdout__orcl__demand_volume_quality": [
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_072413BD",
+        "reason_code": "cash_tax_payment_does_not_show_demand_volume_or_quality"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0C3F0B88",
+        "reason_code": "opening_cash_balance_does_not_show_demand_volume_or_quality"
+      }
+    ],
+    "holdout__orcl__operating_performance": [
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_CLAIM_01E1EDB8",
+        "reason_code": "booking_timing_risk_is_not_a_reported_operating_result"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_2716E677",
+        "reason_code": "building_gross_cost_is_not_period_operating_performance"
+      }
+    ],
+    "holdout__orcl__pricing_mix_value_capture": [
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0C3F0B88",
+        "reason_code": "opening_cash_balance_does_not_show_pricing_mix_or_value_capture"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_2716E677",
+        "reason_code": "building_gross_cost_does_not_show_pricing_mix_or_value_capture"
+      }
+    ],
+    "holdout__orcl__relationship_attribution": [
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_0B7FA057",
+        "reason_code": "aggregate_revenue_does_not_identify_a_customer_supplier_or_partner_relationship"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ORCL::10-K::2026-05-31::6cd094af28aa1609_METRIC_TABLE_7634E977",
+        "reason_code": "aggregate_operating_margin_does_not_identify_a_relationship_counterparty"
+      }
+    ],
+    "holdout__asml__cash_conversion_balance_sheet": [
+      {
+        "document_id": "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_CLAIM_50B6502D",
+        "reason_code": "customer_commitment_claim_does_not_show_cash_conversion_or_balance_sheet"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_56938B50",
+        "reason_code": "system_units_sold_does_not_show_cash_conversion_or_balance_sheet"
+      }
+    ],
+    "holdout__asml__demand_volume_quality": [
+      {
+        "document_id": "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_579B3604",
+        "reason_code": "cash_balance_does_not_show_demand_volume_or_commitment_quality"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_DDBFED7F",
+        "reason_code": "net_income_does_not_directly_show_demand_volume_or_commitment_quality"
+      }
+    ],
+    "holdout__asml__operating_performance": [
+      {
+        "document_id": "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_579B3604",
+        "reason_code": "cash_balance_is_not_a_period_operating_result"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_E2741493",
+        "reason_code": "used_system_unit_count_alone_is_not_overall_operating_performance"
+      }
+    ],
+    "holdout__asml__pricing_mix_value_capture": [
+      {
+        "document_id": "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_METRIC_TABLE_579B3604",
+        "reason_code": "cash_balance_does_not_show_pricing_mix_or_value_capture"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ASML::6-K::2026-06-28::71232ad9d36778a8_CLAIM_08336098",
+        "reason_code": "industry_demand_statement_does_not_show_pricing_mix_or_profit_capture"
+      }
+    ],
+    "holdout__anet__cash_conversion_balance_sheet": [
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_029CBC47",
+        "reason_code": "long_sales_cycle_claim_does_not_measure_cash_conversion_or_balance_sheet"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_01F1B2F2",
+        "reason_code": "trade_policy_risk_does_not_measure_cash_conversion_or_balance_sheet"
+      }
+    ],
+    "holdout__anet__counterevidence_and_what_would_change": [
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_2F69C942",
+        "reason_code": "operating_cash_flow_result_alone_is_not_counterevidence_or_change_condition"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_3D33B6BF",
+        "reason_code": "gross_margin_result_alone_is_not_counterevidence_or_change_condition"
+      }
+    ],
+    "holdout__anet__demand_volume_quality": [
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_2F69C942",
+        "reason_code": "operating_cash_flow_does_not_directly_show_demand_volume_or_quality"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_3D33B6BF",
+        "reason_code": "gross_margin_does_not_directly_show_demand_volume_or_quality"
+      }
+    ],
+    "holdout__anet__operating_performance": [
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_01F1B2F2",
+        "reason_code": "trade_policy_risk_is_not_a_reported_operating_result"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_029CBC47",
+        "reason_code": "sales_cycle_description_is_not_a_reported_operating_result"
+      }
+    ],
+    "holdout__anet__pricing_mix_value_capture": [
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_2F69C942",
+        "reason_code": "operating_cash_flow_does_not_show_pricing_mix_or_unit_value_capture"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_CLAIM_029CBC47",
+        "reason_code": "sales_cycle_description_does_not_show_pricing_mix_or_profit_capture"
+      }
+    ],
+    "holdout__anet__regulatory_policy_exposure": [
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_2F69C942",
+        "reason_code": "operating_cash_flow_does_not_describe_regulatory_or_policy_exposure"
+      },
+      {
+        "document_id": "CURRENT_SOURCE::ANET::10-Q::2026-06-30::ef779da6a72b571c_METRIC_TABLE_3D33B6BF",
+        "reason_code": "gross_margin_does_not_describe_regulatory_or_policy_exposure"
+      }
+    ]
+  },
+  "known_boundary": "These labels are a bounded business-role shadow adjudication, not Owner acceptance, Evidence promotion or training authority. Unlisted same-case documents remain unjudged because cross-slot absence is not proof of irrelevance."
+}

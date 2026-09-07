@@ -1,0 +1,107 @@
+{
+  "attempt_id": "dell-dynamic-single-unit-zero-call-r8-20260823t2130z",
+  "authority": {
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "natural_agent_reflection_quality_proven": false,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "release": false
+  },
+  "checks": {
+    "all_mutations_fail_closed_or_stable": true,
+    "all_seven_proposition_groups_covered": true,
+    "all_twelve_requests_executed_once": true,
+    "candidate_never_promoted": true,
+    "checkpoint_resume_preserves_state": true,
+    "cuda_fp16_required": true,
+    "first_feedback_changed_plan": true,
+    "graph_delta_hypothesis_only": true,
+    "initial_message_contains_only_question_identity_as_of_and_capabilities": true,
+    "round_replay_deterministic": true,
+    "second_round_differs_from_first": true,
+    "two_real_current_runtime_rounds_executed": true,
+    "workpaper_contract_compiles_from_dynamic_state": true
+  },
+  "current_runtime_binding": {
+    "evidence_pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+    "reviewed_evidence_count": 48,
+    "task_readiness_result_digest": "224937d91f08259e5180d15dedf1f59ae04eaf6a32ba3d9439b431f35cd789ce",
+    "task_readiness_status": "ready_for_bounded_dynamic_single_unit_with_actionable_gaps"
+  },
+  "execution_summary": {
+    "accepted_reviewed_evidence_count": 15,
+    "cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "cuda_embedding_precision": "fp16",
+    "cuda_execution_device": "cuda:0",
+    "cuda_reranker_precision": "fp16",
+    "executed_request_count": 12,
+    "feedback_receipt_count": 20,
+    "final_stop_decision": "stop_sufficient",
+    "graph_hypothesis_count": 2,
+    "numeric_fact_count": 17,
+    "open_gap_count": 9,
+    "plan_delta_count": 2,
+    "retrieval_round_count": 2,
+    "session_event_count": 19
+  },
+  "known_boundary": "This proves the current R32 S1/S2 runtime, reviewed-Evidence gate, typed feedback, plan/graph deltas, checkpoint/resume and final workpaper contract in a two-round deterministic loop. The request and reflection payloads are zero-model fixtures; natural DeepSeek planning, reflection and content quality require a separately signed exact-once live run.",
+  "mutation_checks": {
+    "cross_case_request_fails_closed": true,
+    "cross_case_resume_fails_closed": true,
+    "date_mutation_fails_closed": true,
+    "premature_stop_sufficient_fails_closed": true,
+    "repeated_request_fails_closed": true,
+    "request_catalog_permutation_stable": true
+  },
+  "policy_binding": {
+    "policy_digest": "38b8f6070a5f06626accb5d61d407ebeafe15f16595b60b5c3684c05b9ee644e",
+    "ref": "configs/research/fin_ia_0_1_3_s3_dell_dynamic_single_unit_loop_policy_v1_0.json",
+    "sha256": "71cad6a5f158960c0970b6e1864c7bcc6cd94f2d627b1aff59922e9de92884b7"
+  },
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_dynamic_single_unit_zero_call/dell-dynamic-single-unit-zero-call-r8-20260823t2130z/full_result.json",
+  "private_result_sha256": "4372140b65aa3168d3b16c761a3c4c152cdf6704b9d2c93fba4c13eea6468857",
+  "recorded_at": "2026-08-22T23:53:14+00:00",
+  "result_digest": "522d5bf183db4d5de77f58b09307b07b369b4feeb6353563ac221123893914ad",
+  "round_summaries": [
+    {
+      "candidate_promotion_count": 0,
+      "numeric_fact_count": 11,
+      "numeric_relation_count": 5,
+      "request_ids": [
+        "REQ::DELL::PRICE_CONFIGURATION::V1",
+        "REQ::DELL::PVM_BRIDGE::V1",
+        "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+        "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+        "REQ::DELL::VALUE_POOL_MARGIN::V1",
+        "REQ::DELL::COUNTER_ISSUER::V1"
+      ],
+      "residual_gap_count": 9,
+      "reviewed_evidence_count": 12,
+      "round_id": "ROUND::1",
+      "round_response_digest": "b00fe120524d593b76b647d5ef3a90cf66af2ec3da0bfd31d8fab5f20a12a711"
+    },
+    {
+      "candidate_promotion_count": 0,
+      "numeric_fact_count": 6,
+      "numeric_relation_count": 1,
+      "request_ids": [
+        "REQ::DELL::UNIT_VOLUME::V1",
+        "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+        "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+        "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+        "REQ::DELL::COUNTER_ECOSYSTEM::V1"
+      ],
+      "residual_gap_count": 6,
+      "reviewed_evidence_count": 9,
+      "round_id": "ROUND::2",
+      "round_response_digest": "fb4926dd95a994c5504a95fb705e2ede758c4d36ecdfd70c42271b5e98f91658"
+    }
+  ],
+  "schema_version": "fin_ia_s3_dynamic_single_unit_zero_call_result_v1_0",
+  "status": "current_dynamic_single_unit_zero_call_proven"
+}

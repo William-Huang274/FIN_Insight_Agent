@@ -1,0 +1,84 @@
+{
+  "schema_version": "fin_ia_s1c_ranking_comparison_policy_v1_0",
+  "status": "frozen_same_object_same_label_ranking_comparison",
+  "recorded_at": "2026-08-12",
+  "inputs": {
+    "current_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v1/records.jsonl",
+    "current_records_sha256": "484a18a2d7c5e2b8ab42eea97d8c68bbad37cfb49fe1a2c943d64d1381ad4382",
+    "current_object_result_ref": "configs/runtime/fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_0.json",
+    "current_object_result_sha256": "397ab64a110140a6bee96e4f7845d4864b73c5f9369de121519ad0b3304f249a",
+    "source_qrels_ref": "archive/versions/pre_fin_0_1_3/unpromoted_active_tree/configs/releases/fin_ia_0_1_3_s1_internal_qrels_review_packet_v1_3.json",
+    "source_qrels_sha256": "f78c0e4da5f0167d8e9f80cab20b4095135502b8f468a830c115f9226700e49d",
+    "source_owner_acceptance_ref": "archive/versions/pre_fin_0_1_3/unpromoted_active_tree/configs/releases/fin_ia_0_1_3_s1_internal_qrels_owner_acceptance_v1_0.json",
+    "source_owner_acceptance_sha256": "2e6076fe5a06a5039760f0bc9ff48906d59e7cc08aa2a9bae27f127fa31c6de8",
+    "source_query_contract_ref": "archive/versions/pre_fin_0_1_3/unpromoted_active_tree/configs/releases/fin_ia_0_1_3_s1_internal_query_facet_integration_zero_call_proof_v1_2.json",
+    "source_query_contract_sha256": "d8d7b3784ece0f83d270380623088c58304653fffdcf7471f9aaed503aadbc23"
+  },
+  "evaluation": {
+    "qrel_count": 18,
+    "top_k": 10,
+    "candidate_pool": 24,
+    "candidate_generation_precedes_label_join": true,
+    "target_ids_forbidden_from_query_text": true,
+    "candidate_is_not_evidence": true,
+    "same_current_record_population_for_all_routes": true,
+    "new_source_acquisition_forbidden": true,
+    "model_or_provider_calls": 0,
+    "rrf_weights": {
+      "sparse": 1,
+      "dense": 1
+    },
+    "rrf_k": 60
+  },
+  "source_tier_equivalence": {
+    "official_filing_or_company_disclosure": [
+      "primary_sec_filing",
+      "company_authored_unaudited_sec_filing",
+      "primary_global_public_disclosure"
+    ],
+    "reason": "The current provider-neutral object contract classifies non-US 6-K/20-F company disclosures as primary_global_public_disclosure; the retired query contract predates that taxonomy and must not silently exclude official non-US objects."
+  },
+  "routes": [
+    {
+      "route_id": "sparse_bm25",
+      "kind": "lexical_bm25",
+      "adoption_state": "current_baseline"
+    },
+    {
+      "route_id": "dense_bge_m3",
+      "kind": "local_bi_encoder_dense",
+      "model_locator": "operator_supplied_local_path",
+      "model_name": "BAAI/bge-m3",
+      "embedding_dimensions": 1024,
+      "maximum_sequence_length": 2048,
+      "adoption_state": "shadow_evaluation_only"
+    },
+    {
+      "route_id": "fusion_rrf_1_1",
+      "kind": "fixed_reciprocal_rank_fusion",
+      "adoption_state": "shadow_evaluation_only"
+    },
+    {
+      "route_id": "typed_financial_rerank",
+      "kind": "deterministic_contract_aware_rerank_not_neural_cross_encoder",
+      "adoption_state": "shadow_evaluation_only"
+    }
+  ],
+  "business_error_taxonomy": [
+    "wrong_evidence_owner",
+    "wrong_or_missing_period",
+    "topic_co_mention_without_demand_mechanism",
+    "topic_co_mention_without_supply_mechanism",
+    "risk_disclosure_substituted_for_results",
+    "risk_disclosure_substituted_for_financial_mechanism",
+    "generic_company_text_substituted_for_results"
+  ],
+  "stop_rules": {
+    "gold_target_leak": "hard_fail",
+    "wrong_owner_or_future_date": "hard_fail",
+    "dense_or_fusion_recall_regression": "do_not_adopt_route",
+    "new_source_gap": "transfer_to_s1d_without_source_expansion_in_s1c",
+    "neural_reranker_unavailable": "report_honestly_and_do_not_mislabel_rule_rerank"
+  },
+  "known_boundary": "S1-C compares ranking routes over the frozen 1,805-child S1-B object store and the previously Owner-accepted 18 relevance qrels. Owner acceptance applies to relevance labels only. Requalified current child identity remains evaluation-only; candidates are not Evidence; this policy neither closes S1 nor authorizes DeepSeek, network access, source expansion, Evidence promotion or release."
+}

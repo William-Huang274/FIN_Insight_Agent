@@ -1,0 +1,54 @@
+{
+  "schema_version": "fin_ia_s1_vs3_financial_shortlist_policy_v1_1",
+  "status": "pre_registered_final_stratified_candidate_and_role_replay_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-FINANCIAL-SHORTLIST-V1.8-STABLE-UNION",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_financial_shortlist_policy_v1_7.json",
+  "parent_policy_sha256_lf": "a0a54c549b42820b16c0a7b24f3000899c5f8bd9a5bae967839446747a56ab58",
+  "bound_input_overrides": {
+    "ranking_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_result_v1_8.json",
+    "ranking_summary_sha256_lf": "fd9d4117378b75ab4838fe663466d526a30e6309f9a587ec9a89b8494be498d4",
+    "role_replay_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_evidence_role_replay_result_v1_4.json",
+    "role_replay_result_sha256_lf": "7bb9d2c501cbc0d0057a519f1fa09404007844281bfa7f639b4cab7f993f6081",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+    "financial_intent_ontology_sha256_lf": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242",
+    "shortlist_implementation_ref": "src/retrieval/financial_evidence_shortlist.py",
+    "shortlist_implementation_sha256_lf": "b586c9975c449a1d4b7f4b2d110a5ab42d4dfc36bdf1437a9f4afd17441b9f6e",
+    "materializer_implementation_ref": "scripts/data_retrieval/materialize_s1_vs3_financial_shortlist.py",
+    "materializer_implementation_sha256_lf": "87b083b7b9cb5afed62b72ef05e04640734d9a0094e91c2246f844f109cb6e76"
+  },
+  "successor_basis": {
+    "why_successor_is_required": [
+      "v1.8 is the first stable finite candidate union that preserves bounded typed-route coverage under route-order reversal",
+      "the evidence-role replay is rebound to the exact v1.8 candidate population",
+      "ontology v1.2 adds provider-neutral operating-margin and price-volume-mix concepts while keeping generic mix candidate-only"
+    ],
+    "not_changed": [
+      "33,085-object population and immutable development qrels",
+      "identity, period, source and relationship hard filters",
+      "candidate versus Evidence and NumericFact authority",
+      "quality thresholds"
+    ],
+    "prohibited": [
+      "case-specific object identity branches",
+      "qrel or answer URL use during ranking",
+      "candidate deletion or automatic Evidence promotion",
+      "model training, network access or owner acceptance"
+    ]
+  },
+  "token_budget_basis": {
+    "node_purpose": "Produce the finance-aware review head over every candidate preserved by the final stable VS3 candidate union.",
+    "input_scale": "Eighteen development atoms and the complete persistent candidate unions over the same 33,085-object population.",
+    "required_outputs": [
+      "complete stable candidate ordering",
+      "selected RetrievalNeed and financial-role receipts per candidate",
+      "positive and confirmed hard-negative head metrics",
+      "finite review queues without candidate loss"
+    ],
+    "schema_burden": "zero-call typed feature compilation and deterministic tuple ordering over digest-bound inputs",
+    "materiality_and_quality_risk": "semantic proximity can place safe-harbor, wrong product, wrong period or incomplete fragments above evidence-bearing objects",
+    "comparable_run_evidence": "the preceding shortlist reached all known positives with zero confirmed hard negatives; v1.8 changes the finite candidate union and requires exact requalification",
+    "reasoning_profile": "deterministic financial evaluator over CUDA-produced but non-authoritative model scores",
+    "stop_and_truncation": "rank every candidate before projecting twelve review rows; fail on any digest, identity, lineage or score-shape drift"
+  }
+}

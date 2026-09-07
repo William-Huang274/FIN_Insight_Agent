@@ -1,0 +1,381 @@
+{
+  "case_key": "DELL",
+  "checkpoint_digest": "598dcc2ed18fbc36c6105dfb21a8b0110afb97da863abebb8bc7fd0233baffca",
+  "final_evaluation": {
+    "cross_role_conflicts": [
+      "XR-C1: no active conflict; conflation risk between Q1 FY27 gross-margin decline and 2025-10-31 AI-mix dilution. VALUE_CAPTURE limits the mechanism to 2025-10-31; OPERATING_PERFORMANCE reports Q1 FY27 decline without AI attribution. Avoid restating the earlier mechanism as Q1 FY27 causal fact.",
+      "XR-C2: no active conflict; keep 'unbounded' language out of synthesis. Replace with 'unsized at the AI-attributable level' since AI-server revenue is contained within ISG revenue and ISG operating profit. Carried repair, not a new conflict.",
+      "XR-C3: no active conflict; backlog non-cancelable filter language. Do not treat cancellable backlog as fact; the authority only states the backlog definition excludes items not designated non-cancelable. '渠道减单传导' should remain conditional risk, not an active mechanism."
+    ],
+    "evaluation_digest": "a86a94dd01d9fc6a1178c0dbbd39e5348c7c0462e884c0e63e211035c34a29c9",
+    "findings": [
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::C5DB890B773C6892"
+        ],
+        "explanation": "Sourced claim presents Q1 FY27 net income $3,438M vs Q1 FY26 $965M and reconciling adjustments $643M vs $1,831M as sourced_fact anchored to EV::C5DB890B773C6892, but no numeric refs are attached and the supplied numeric_fact_catalog contains no matching net income or reconciling-adjustment entries. These exact values cannot be verified against the supplied numeric authority. Not treated as fabrication; unresolved numeric-ref resolution requiring either attachment of missing refs or relabeling as source-visible non-covered numeric status.",
+        "failure_owner": "data_infrastructure_or_tool",
+        "finding_code": "NUM_REF_UNRESOLVED_NET_INCOME_AND_RECON",
+        "permitted_repair": "Attach the matching numeric fact refs for net income and reconciling adjustments, or relabel those clauses as source-visible balances with explicit non-covered numeric status.",
+        "severity": "L1",
+        "target_agent_id": "AGENT::CASH_CONVERSION"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::07899638B93E4E3A"
+        ],
+        "explanation": "Sourced claim presents adjusted (non-GAAP) FCF $3,165M vs $2,232M after financing-receivable and operating-lease adjustments as sourced_fact anchored to EV::07899638B93E4E3A. No numeric refs are attached and the supplied numeric_fact_catalog only includes standard FCF (OCF minus capex), not this adjusted FCF. Exact value cannot be verified against supplied numeric authority. Not treated as fabrication.",
+        "failure_owner": "data_infrastructure_or_tool",
+        "finding_code": "NUM_REF_UNRESOLVED_ADJ_FCF",
+        "permitted_repair": "Attach the missing numeric fact ref for the adjusted FCF values, or relabel the clause as source-visible with explicit non-covered numeric status.",
+        "severity": "L1",
+        "target_agent_id": "AGENT::CASH_CONVERSION"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::CAD2B8E9B11D864E",
+          "NUM::9DDEDDD584B02E09"
+        ],
+        "explanation": "Sourced claim lists AR net $25,854M vs $17,585M, inventory $15,052M vs $10,437M, cash and equivalents $11,578M vs $11,528M, short-term financing receivables $8,237M vs $8,458M, and long-term financing receivables $5,713M vs $5,822M, but only NUM::9DDEDDD584B02E09 (accounts_payable) is attached. The supplied numeric_fact_catalog contains no explicit numeric refs for these AR/inventory/cash/financing-receivable values. Not treated as fabrication; source-visibility not determinable from supplied task_context.",
+        "failure_owner": "data_infrastructure_or_tool",
+        "finding_code": "NUM_REF_UNRESOLVED_BALANCES",
+        "permitted_repair": "Attach matching numeric refs for the AR, inventory, cash, and financing-receivable balances, or relabel those clauses as source-visible balances with explicit non-covered numeric status.",
+        "severity": "L1",
+        "target_agent_id": "AGENT::CASH_CONVERSION"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::32A6B092D3316769",
+          "EV::ADBB7A86C8E7D99D",
+          "EV::A74F01276941482E",
+          "EV::BA594865DB45F850",
+          "EV::D86534E903882A43"
+        ],
+        "explanation": "The thesis is properly delimited: it does not assert adverse effects have occurred, that demand is collapsing, or that NVIDIA risk transfers to Dell in any quantified way. All four mechanisms (demand-quality EV::32A6B092D3316769, working-capital EV::ADBB7A86C8E7D99D, upstream policy EV::A74F01276941482E/EV::BA594865DB45F850, concentration read-through EV::D86534E903882A43) map to visible authority and are stated as direction/possibility, not realized quantified loss. Sourced claims are tagged sourced_fact and the threshold-absence claim is tagged not_inferable, keeping known facts separate from hypotheses.",
+        "failure_owner": "model_judgment",
+        "finding_code": "CE_THESIS_SCOPE_OK",
+        "permitted_repair": "No repair required; preserve thesis delimitation and mechanism-to-authority mapping.",
+        "severity": "L4",
+        "target_agent_id": "AGENT::COUNTEREVIDENCE"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::734A9C177164E08E",
+          "EV::D86534E903882A43"
+        ],
+        "explanation": "Counterarguments are material and correctly bounded. The Q1 FY27 figures ($43.8B revenue +88% y/y, diluted EPS $5.24 +282%, operating cash flow $4.1B) are direct source-visible quotes from EV::734A9C177164E08E and carry the correct company-authored-unaudited caution. The diversification point from EV::D86534E903882A43 is properly weakened by noting NVIDIA data does not prove Dell's own demand base is broad.",
+        "failure_owner": "model_judgment",
+        "finding_code": "CE_COUNTERARGUMENT_BOUNDED",
+        "permitted_repair": "No repair required; retain counterargument strength and source-type cautions.",
+        "severity": "L4",
+        "target_agent_id": "AGENT::COUNTEREVIDENCE"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::04EDD7700A1409F8",
+          "GAP::B070D38D076F342B"
+        ],
+        "explanation": "Absence language is limited to invalidation thresholds, matching typed gaps GAP::04EDD7700A1409F8 and GAP::B070D38D076F342B (threshold_not_observable). The workpaper does not claim absence of orders, revenue, profit, cash-flow, export-control, or concentration data; coexisting evidence is preserved and remaining_gap_refs lists only the two typed gaps. The omitted_unreferenced_authority rule is respected and unreferenced_case_authority_deliberately_omitted is acknowledged.",
+        "failure_owner": "harness_control",
+        "finding_code": "CE_GAP_ABSENCE_NARROW",
+        "permitted_repair": "No repair required; keep gap-bound absence language narrower than the typed boundary.",
+        "severity": "L4",
+        "target_agent_id": "AGENT::COUNTEREVIDENCE"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::04EDD7700A1409F8",
+          "GAP::B070D38D076F342B"
+        ],
+        "explanation": "Five what-would-change conditions are mechanism-aligned and observable, respecting the frozen threshold gaps without asserting an exact numeric invalidation threshold. Condition 5 correctly reinforces that other speakers' statements cannot perform the Dell-specific role. No new authority is introduced.",
+        "failure_owner": "model_judgment",
+        "finding_code": "CE_WWC_OBSERVABLE",
+        "permitted_repair": "No repair required; retain observable, case-consistent conditions.",
+        "severity": "L4",
+        "target_agent_id": "AGENT::COUNTEREVIDENCE"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::2A7103750D79EEDC"
+        ],
+        "explanation": "Workpaper wording asserts a cancellable cushion exists ('可取消部分在披露窗外', '真实可取消垫层不可见'), but the authority only states backlog comprises company-designated non-cancelable unfilled manufacturing orders and does not state cancellable orders exist.",
+        "failure_owner": "model_judgment",
+        "finding_code": "EV::2A7103750D79EEDC",
+        "permitted_repair": "Reword to 'non-designated orders are not included in backlog; no cancellable balance is disclosed.'",
+        "severity": "L3",
+        "target_agent_id": "AGENT::DEMAND_QUALITY"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::041AEF89A154F4FC"
+        ],
+        "explanation": "Mechanism/thesis list frames '渠道减单传导' as an active factor, but the evidence is a conditional risk disclosure and the workpaper's own sourced claim confirms it does not prove occurrence.",
+        "failure_owner": "model_judgment",
+        "finding_code": "EV::041AEF89A154F4FC",
+        "permitted_repair": "Reframe as 'conditional channel-order-reduction risk' rather than an active reduction mechanism.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::DEMAND_QUALITY"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::69BFE78D21687E82"
+        ],
+        "explanation": "The characterization 'graph edge only gives range not facts' is not present in the supplied catalog boundary, adding an unsupported extra characterization that does not alter the conclusion.",
+        "failure_owner": "model_judgment",
+        "finding_code": "EV::69BFE78D21687E82",
+        "permitted_repair": "Remove or replace the unsupported characterization with wording supported by the catalog boundary.",
+        "severity": "L4",
+        "target_agent_id": "AGENT::DEMAND_QUALITY"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::7F4D7E6762C21D83"
+        ],
+        "explanation": "The mechanism states 'the AI-attributable slice remains unbounded in both directions' while the thesis states 'AI-specific profit capture is bounded, not sized.' The typed gap catalog authorizes absence of decomposition inputs (ASP, units, PVM), not an unbounded value-capture direction. AI revenue is contained within ISG, which reports revenue and operating profit (EV::7F4D7E6762C21D83), so 'unbounded in both directions' overshoots the gap boundary and erases the containment fact the workpaper itself states. Recommend replacing with 'unsized at the AI-attributable level.'",
+        "failure_owner": "model_judgment",
+        "finding_code": "J-1",
+        "permitted_repair": "Replace 'unbounded in both directions' with 'unsized at the AI-attributable level' or equivalent, preserving the segment-containment boundary.",
+        "severity": "L2",
+        "target_agent_id": "AGENT::VALUE_CAPTURE"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [],
+        "explanation": "Gap-bound absence language overshoots the typed boundary: 'unbounded in both directions' goes beyond the decomposition gaps (price_or_asp, volume_or_units, price_volume_mix_bridge). No separate overclaim found in the sourcing of the three gap refs; the repeated 'no ASP/units/PVM' language matches the typed gaps correctly.",
+        "failure_owner": "model_judgment",
+        "finding_code": "J-2",
+        "permitted_repair": "Normalize gap-bound absence language to decomposition scope only; remove implication of unbounded value-capture direction.",
+        "severity": "L2",
+        "target_agent_id": "AGENT::VALUE_CAPTURE"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::7F4D7E6762C21D83"
+        ],
+        "explanation": "sourced_claims[0] attributes '$60B FY27 AI-server revenue guide, +144% y/y' to EV::7F4D7E6762C21D83, but the supplied catalog excerpt for that ref authorizes only the segment-containment boundary and does not restate the $60B or +144% values. Given the digest states all_workpaper_refs_resolved=true, this is flagged as unconfirmable source linkage rather than fabrication, pending task-owner verification.",
+        "failure_owner": "data_infrastructure_or_tool",
+        "finding_code": "G-1",
+        "permitted_repair": "Confirm the ref linkage for the $60B and +144% y/y figures, or separate them from the segment-containment boundary claim.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::VALUE_CAPTURE"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::EF4839B4BF55ADD0",
+          "EV::2A7103750D79EEDC"
+        ],
+        "explanation": "Consolidated OCF and FCF growth are company-scope facts only, not AI-attributable cash. CASH_CONVERSION keeps AI-order-to-cash unbridged; DEMAND_QUALITY anchors only $16.1B as the realized same-quarter conversion while orders ($24.4B) and backlog ($51.3B) remain unfulfilled; VALUE_CAPTURE limits AI profit attribution to segment containment. No contradiction; each role preserves the same information boundary.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-1",
+        "permitted_repair": "Preserve the distinction between company-level realized results and AI-specific cash/profit conversion; do not bridge order-to-cash or order-to-profit using hidden assumptions.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::CASH_CONVERSION"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::07899638B93E4E3A"
+        ],
+        "explanation": "VALUE_CAPTURE limits issuer-attributed AI-mix dilution to 2025-10-31; OPERATING_PERFORMANCE records Q1 FY27 gross-margin compression of −3.37pp without AI attribution. Both treat Q1 FY27 operating-margin expansion as consistent with operating leverage, not proved AI margin superiority. No double counting of margin drivers.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-2",
+        "permitted_repair": "Keep the 2025-10-31 mix mechanism and the Q1 FY27 margin decline attribution-scoped separately in synthesis.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::VALUE_CAPTURE"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::0DF1791C33619F02",
+          "GAP::AD8E45538482CAB2",
+          "GAP::FF2E3CECAE969E84",
+          "GAP::C2EC64A79D8F5481"
+        ],
+        "explanation": "Upstream NVIDIA/TSMC/Micron statements are treated consistently as speaker-attributed read-throughs, never Dell allocation facts. COUNTEREVIDENCE similarly limits NVIDIA concentration and export-control language to upstream read-throughs; Dell's 'demand exceeds supply' statement remains the only Dell-specific source. No role converts upstream commentary into Dell-specific delivery relief, profit or cash conversion.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-3",
+        "permitted_repair": "Maintain the speaker-attribution wall; do not double count an upstream statement as both corroboration and risk unless explicitly framed as an alternative reading.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::SUPPLY_RELATIONSHIP"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::00730082A5C08C4C"
+        ],
+        "explanation": "DEMAND_QUALITY treats $24.4B AI orders and $51.3B backlog as pre-acceptance commitments with only $16.1B revenue as the realized anchor. OPERATING_PERFORMANCE records order and recognized revenue disclosure without treating backlog as shipped revenue; CASH_CONVERSION separates orders from shipped revenue and realized cash. No role uses backlog size as a realized cash or profit input.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-4",
+        "permitted_repair": "Do not add backlog to any financial metric in cross-role synthesis.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::DEMAND_QUALITY"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::04EDD7700A1409F8",
+          "GAP::B070D38D076F342B"
+        ],
+        "explanation": "Multiple roles share the monitoring set {AI orders, recognized revenue, ISG profit, OCF}. COUNTEREVIDENCE records absence of frozen thresholds as GAP::04EDD7700A1409F8 and GAP::B070D38D076F342B; SUPPLY_RELATIONSHIP notes thresholds are not frozen; OPERATING_PERFORMANCE states no invalidation threshold is defined. Treated consistently as a gap, not absence.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-5",
+        "permitted_repair": "Do not invent a de facto invalidation threshold in synthesis.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::COUNTEREVIDENCE"
+      }
+    ],
+    "report_may_proceed": true,
+    "schema_version": "fin_ia_multi_agent_evaluation_v1_0"
+  },
+  "final_evaluation_digest": "a86a94dd01d9fc6a1178c0dbbd39e5348c7c0462e884c0e63e211035c34a29c9",
+  "model_evaluation": {
+    "cross_role_conflicts": [
+      "XR-C1: no active conflict; conflation risk between Q1 FY27 gross-margin decline and 2025-10-31 AI-mix dilution. VALUE_CAPTURE limits the mechanism to 2025-10-31; OPERATING_PERFORMANCE reports Q1 FY27 decline without AI attribution. Avoid restating the earlier mechanism as Q1 FY27 causal fact.",
+      "XR-C2: no active conflict; keep 'unbounded' language out of synthesis. Replace with 'unsized at the AI-attributable level' since AI-server revenue is contained within ISG revenue and ISG operating profit. Carried repair, not a new conflict.",
+      "XR-C3: no active conflict; backlog non-cancelable filter language. Do not treat cancellable backlog as fact; the authority only states the backlog definition excludes items not designated non-cancelable. '渠道减单传导' should remain conditional risk, not an active mechanism."
+    ],
+    "evaluation_digest": "d5c6c19ba1f6ae0771232f874e7783d329e2bc1cb0de8bbad15158af7c8e6248",
+    "findings": [
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::EF4839B4BF55ADD0",
+          "EV::2A7103750D79EEDC"
+        ],
+        "explanation": "Consolidated OCF and FCF growth are company-scope facts only, not AI-attributable cash. CASH_CONVERSION keeps AI-order-to-cash unbridged; DEMAND_QUALITY anchors only $16.1B as the realized same-quarter conversion while orders ($24.4B) and backlog ($51.3B) remain unfulfilled; VALUE_CAPTURE limits AI profit attribution to segment containment. No contradiction; each role preserves the same information boundary.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-1",
+        "permitted_repair": "Preserve the distinction between company-level realized results and AI-specific cash/profit conversion; do not bridge order-to-cash or order-to-profit using hidden assumptions.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::CASH_CONVERSION"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "EV::07899638B93E4E3A"
+        ],
+        "explanation": "VALUE_CAPTURE limits issuer-attributed AI-mix dilution to 2025-10-31; OPERATING_PERFORMANCE records Q1 FY27 gross-margin compression of −3.37pp without AI attribution. Both treat Q1 FY27 operating-margin expansion as consistent with operating leverage, not proved AI margin superiority. No double counting of margin drivers.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-2",
+        "permitted_repair": "Keep the 2025-10-31 mix mechanism and the Q1 FY27 margin decline attribution-scoped separately in synthesis.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::VALUE_CAPTURE"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::0DF1791C33619F02",
+          "GAP::AD8E45538482CAB2",
+          "GAP::FF2E3CECAE969E84",
+          "GAP::C2EC64A79D8F5481"
+        ],
+        "explanation": "Upstream NVIDIA/TSMC/Micron statements are treated consistently as speaker-attributed read-throughs, never Dell allocation facts. COUNTEREVIDENCE similarly limits NVIDIA concentration and export-control language to upstream read-throughs; Dell's 'demand exceeds supply' statement remains the only Dell-specific source. No role converts upstream commentary into Dell-specific delivery relief, profit or cash conversion.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-3",
+        "permitted_repair": "Maintain the speaker-attribution wall; do not double count an upstream statement as both corroboration and risk unless explicitly framed as an alternative reading.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::SUPPLY_RELATIONSHIP"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::00730082A5C08C4C"
+        ],
+        "explanation": "DEMAND_QUALITY treats $24.4B AI orders and $51.3B backlog as pre-acceptance commitments with only $16.1B revenue as the realized anchor. OPERATING_PERFORMANCE records order and recognized revenue disclosure without treating backlog as shipped revenue; CASH_CONVERSION separates orders from shipped revenue and realized cash. No role uses backlog size as a realized cash or profit input.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-4",
+        "permitted_repair": "Do not add backlog to any financial metric in cross-role synthesis.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::DEMAND_QUALITY"
+      },
+      {
+        "blocks_report": false,
+        "evidence_refs": [
+          "GAP::04EDD7700A1409F8",
+          "GAP::B070D38D076F342B"
+        ],
+        "explanation": "Multiple roles share the monitoring set {AI orders, recognized revenue, ISG profit, OCF}. COUNTEREVIDENCE records absence of frozen thresholds as GAP::04EDD7700A1409F8 and GAP::B070D38D076F342B; SUPPLY_RELATIONSHIP notes thresholds are not frozen; OPERATING_PERFORMANCE states no invalidation threshold is defined. Treated consistently as a gap, not absence.",
+        "failure_owner": "agent_orchestration_and_role_design",
+        "finding_code": "XR-5",
+        "permitted_repair": "Do not invent a de facto invalidation threshold in synthesis.",
+        "severity": "L3",
+        "target_agent_id": "AGENT::COUNTEREVIDENCE"
+      }
+    ],
+    "report_may_proceed": true,
+    "schema_version": "fin_ia_multi_agent_evaluation_v1_0"
+  },
+  "model_evaluation_digest": "d5c6c19ba1f6ae0771232f874e7783d329e2bc1cb0de8bbad15158af7c8e6248",
+  "node_id": "EVAL::CROSS_ROLE::CONSISTENCY_AUDIT_R1",
+  "recorded_at": "2026-08-21T05:21:32+00:00",
+  "request_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_cross_role_onward_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821-EVAL-CROSS_ROLE-CONSISTENCY_AUDIT_R1-SUBMISSION-ATTEMPT-01/model_visible_request.json",
+  "request_capture_sha256": "379e7a02cf3f14c185c0cc18f19f3b05816036336b905255af7185b981327253",
+  "request_digest": "7fafc0d5c6ad9d5896c658d83513c0a40bdc76460fe911c471401d67515fd86b",
+  "response_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_cross_role_onward_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821-EVAL-CROSS_ROLE-CONSISTENCY_AUDIT_R1-SUBMISSION-ATTEMPT-01/provider_response.json",
+  "response_capture_sha256": "bddcb52ad1278dbc051851fcbd4ba3c71187fc9f025b51cc269b24f99ab04253",
+  "response_digest": "b96ad97f7af982c814cbc3ac03f917ef5d6d9c3bda23ef2894e324800dddc9de",
+  "resume_policy": {
+    "cross_role_evaluation_rerun_forbidden": true,
+    "new_fact_or_authority_forbidden": true,
+    "product_publication_authorized": false,
+    "role_evaluation_rerun_forbidden": true,
+    "writer_checkpoint_resume_only": true
+  },
+  "role_evaluation_checkpoint_digest": "258bc3b8fa3a8fc6d27bb6b21de71073b78533f9a313af70c3406c1ae0f82469",
+  "role_evaluation_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_role_evaluation_progress_checkpoint_v1_1.json",
+  "role_evaluation_checkpoint_sha256": "cfc4060971943e0c11f4459098e95b1c7659afac13f6deb6c188527c2853c016",
+  "schema_version": "fin_ia_multi_agent_cross_role_evaluation_checkpoint_v1_0",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_cross_role_onward_live_authority_v1_0.json",
+  "source_authority_sha256": "f93425b64c960456fad1aa08bc61c632f3f32ee070775d653263c8c0d6cf47f5",
+  "source_public_result_digest": "5fce7d5a432367567ee7f169d18a3d22be756d627ab52966deda993a3a90345f",
+  "source_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_cross_role_onward_live_result_v1_0.json",
+  "source_public_result_sha256": "9b54d3becb8b70873bd373ac2f7fb04841814a2ce9185ca6987050f9659e1f2a",
+  "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821",
+  "source_terminal_result_digest": "1218de13b0c05ad1d0bb94f8cd1ef19f536d358e3001f2f2fccdd599d4dcdbff",
+  "source_terminal_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_cross_role_onward_20260821/terminal_failure.json",
+  "source_terminal_result_sha256": "50a7ad634f384a0408a441184460b4d390ad72a212e787a6a99c3ca3b1b4fc16",
+  "status": "cross_role_evaluation_valid_for_writer_resume",
+  "usage": {
+    "analysis": {
+      "completion_tokens": 3165,
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 16769,
+      "prompt_tokens": 16769,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 19934
+    },
+    "submission": {
+      "completion_tokens": 1361,
+      "prompt_cache_hit_tokens": 0,
+      "prompt_cache_miss_tokens": 5249,
+      "prompt_tokens": 5249,
+      "prompt_tokens_details": {
+        "cached_tokens": 0
+      },
+      "total_tokens": 6610
+    }
+  },
+  "workpaper_digests": {
+    "AGENT::CASH_CONVERSION": "1f5d07a2617a303002da12fa1e8bcebbed30e8d8105ba1d4e89c13fff665109e",
+    "AGENT::COUNTEREVIDENCE": "963c0ab1bdae056f3051e99543c0a0a48a2c5005c70d415e3f0923ec9f069a56",
+    "AGENT::DEMAND_QUALITY": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0",
+    "AGENT::OPERATING_PERFORMANCE": "9975b7bb5a8f8ff216d48e61b0157a3ccd6d21bab6c8d9a619a6be1c9b8112cb",
+    "AGENT::SUPPLY_RELATIONSHIP": "51ec20b18f4cf29efc6680ee26e10e9732f83086c9d58d70a3ce1340d2eb1135",
+    "AGENT::VALUE_CAPTURE": "e1687019c04aced719e19cea623699e5065b400eb039921b1a8606e5ff0ef942"
+  }
+}

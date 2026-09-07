@@ -1,0 +1,35 @@
+{
+  "schema_version": "fin_ia_s3_material_scope_contract_repair_successor_policy_v1_0",
+  "status": "provider_neutral_model_visible_contract_repair_successor_control",
+  "predecessor_failure_code": "research_material_scope_output_fields_invalid",
+  "contract_repair": {
+    "exact_top_level_shape_compiled": true,
+    "closed_enums_compiled_from_material_scope_policy": true,
+    "cross_field_rules_compiled_from_validator_contract": true,
+    "legacy_R2_vocabulary_rejected": true,
+    "local_model_output_rewrite": false,
+    "request_microbatching": false
+  },
+  "maximum_model_calls": 1,
+  "maximum_transport_attempts": 1,
+  "maximum_completion_tokens": 8000,
+  "thinking_mode": "disabled",
+  "reasoning_effort_omitted": true,
+  "token_budget_basis": {
+    "node_purpose": "Submit one contract-valid material-scope classification after exposing the exact provider-neutral validator vocabulary and cross-field rules omitted from R2.",
+    "input_scale": "Eight EvidenceRequests, nineteen product intents, twelve required role surfaces, one compact JSON Schema and eleven binding rules; no candidate, Evidence, source, qrel, reference or hidden content.",
+    "required_outputs": [
+      "the exact three-field top-level object",
+      "all eight request IDs exactly once",
+      "one closed-enum disposition for every product intent",
+      "complete required role, metric and hard-product coverage",
+      "only policy-listed period and coverage modes"
+    ],
+    "schema_burden": "The model-visible JSON Schema uses additionalProperties=false, exact constants, closed enums and bounded arrays. The unchanged local compiler performs request-specific index, role, temporal and coverage validation.",
+    "materiality_and_quality_risk": "Missing or paraphrased fields can silently drop material research surfaces; local rewriting would conceal model failure and corrupt audit lineage.",
+    "comparable_run_evidence": "R2 with thinking disabled returned all eight request rows, nineteen dispositions and twelve atoms in 1842 completion tokens, but the prior prompt omitted the accepted vocabulary and exact top-level shape. The visible payload occupied 6444 characters, so 8000 completion tokens remains ample without increasing cost or truncation risk.",
+    "reasoning_profile": "Direct bounded classification and exact contract submission with thinking disabled; no research judgment, retrieval, source selection, numeric inference or report writing.",
+    "stop_and_truncation": "Any non-stop finish, missing request, non-policy enum, index or binding violation terminates without retry, local rewrite, token increase, microbatch fallback or product replay."
+  },
+  "known_boundary": "This repair changes only the provider-neutral model-visible contract compiled from existing policy and validator semantics. It does not alter the research question, candidate set, Evidence authority, NumericFact authority, provider profile, product state or S1 acceptance threshold."
+}

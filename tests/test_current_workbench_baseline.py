@@ -74,12 +74,64 @@ def test_operations_surface_reads_version_neutral_store_and_runtime(tmp_path: Pa
     assert payload["product_runtime"]["operator_route"] == "/operations"
     assert payload["product_runtime"]["retired_product_runtime_loaded"] is False
     assert payload["product_runtime"]["readiness"]["status"] == "fixture_injected"
+    assert payload["product_runtime"]["dell_reference_vertical"] == {
+        "schema_version": "fin_ia_dell_runtime_foundation_v1",
+        "profile": "disabled",
+        "checkpoint_backend": "none",
+        "durable_cross_process_resume": False,
+        "product_pilot_eligible": False,
+        "outer_lifecycle_owner": "dagster",
+        "inner_agent_state_owner": "langgraph",
+        "financial_fact_authority": "existing_s2_read_only_port",
+        "custom_scheduler_or_retry_engine": False,
+        "dsn_exposed": False,
+    }
+    assert client.post("/api/v1/anchor-demo/dell/runs", json={}).status_code == 404
     assert client.get("/api/operations/profiles").json() == {"profiles": []}
     assert client.get("/api/operations/source-bundles").json() == {"bundles": []}
     assert client.get("/api/operations/runs").json() == {"runs": []}
     evals = client.get("/api/operations/evals")
     assert evals.status_code == 200
     assert isinstance(evals.json()["evals"], list)
+    document_quality = client.get("/api/operations/s1/complex-document-quality")
+    assert document_quality.status_code == 200
+    quality_payload = document_quality.json()
+    assert quality_payload["product_case_enrollment"] is False
+    assert quality_payload["document_quality"]["table_region_count"] == 5
+    assert quality_payload["financial_objects"]["cross_page_relation_count"] == 1
+    assert quality_payload["coverage_summary"]["true_public_information_gap_count"] == 0
+    retrieval_quality = client.get("/api/operations/s1/retrieval-quality")
+    assert retrieval_quality.status_code == 200
+    retrieval_payload = retrieval_quality.json()
+    assert retrieval_payload["summary"]["vs3_vertical_slice_integrated"] is True
+    assert retrieval_payload["summary"]["combined_union_positive_atom_count"] == 15
+    assert retrieval_payload["summary"]["financial_shortlist_positive_top10_count"] == 15
+    assert retrieval_payload["summary"]["financial_shortlist_hard_negative_top10_count"] == 0
+    assert retrieval_payload["authority"]["candidate_is_not_evidence"] is True
+    assert retrieval_payload["authority"]["s1_qualified_stable"] is False
+    supplement_quality = client.get("/api/operations/s1/supplement-quality")
+    assert supplement_quality.status_code == 200
+    supplement_payload = supplement_quality.json()
+    case_summaries = {
+        row["case_key"]: row for row in supplement_payload["case_summaries"]
+    }
+    assert tuple(case_summaries) == ("DELL", "MU", "NVDA")
+    expected = {
+        "DELL": {"retired": 3, "added": 5, "narrowed": 1, "new_gap": 0, "gaps": 14},
+        "MU": {"retired": 16, "added": 11, "narrowed": 2, "new_gap": 2, "gaps": 15},
+        "NVDA": {"retired": 14, "added": 19, "narrowed": 3, "new_gap": 0, "gaps": 13},
+    }
+    for case_key, values in expected.items():
+        row = case_summaries[case_key]
+        delta = row["coverage_delta"]
+        assert delta["retired_broad_or_legacy_evidence_count"] == values["retired"]
+        assert delta["added_capture_bound_claim_count"] == values["added"]
+        assert delta["narrowed_gap_count"] == values["narrowed"]
+        assert delta.get("added_gap_count", 0) == values["new_gap"]
+        assert delta["closed_gap_count"] == 0
+        assert delta["successor_gap_count"] == values["gaps"]
+        assert all(item["proposition_ready"] for item in row["proposition_rows"])
+        assert row["authority"]["complete_s1_qualified"] is False
 
 
 def test_operations_runs_real_smoke_and_current_baseline_eval(tmp_path: Path) -> None:
@@ -158,7 +210,9 @@ def test_frontend_composition_root_has_no_old_product_consumer() -> None:
 
 
 def _wait_for_terminal(client: TestClient, job_id: str) -> str:
-    for _ in range(100):
+    # The active import-graph eval grows with admitted current modules; keep the
+    # product test bounded without assuming it always finishes in five seconds.
+    for _ in range(300):
         status = client.get(f"/api/operations/runs/{job_id}/status")
         assert status.status_code == 200
         payload = status.json()

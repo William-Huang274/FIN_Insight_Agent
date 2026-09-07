@@ -1,0 +1,86 @@
+{
+  "schema_version": "fin_ia_s3_saved_full_fragment_submission_fixture_v1_0",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_3.json",
+  "source_authority_sha256": "02f21ca3882dad061c3cddf541e9467ad7ed3f87b71e32995526d3f9d155c89d",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_3.json",
+  "source_result_sha256": "0bb9f6cbc88094ba64fb46824cb2e55fcbd2e0e57c616abd770d3b9d9f61049c",
+  "fragments": {
+    "submit_research_thesis": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::PRODUCT_TARGET",
+      "evidence_uses": [
+        {"evidence_ref": "EV::0063F22F643B94ED", "use_role": "support"},
+        {"evidence_ref": "EV::38BBF02CB241E81D", "use_role": "context"},
+        {"evidence_ref": "EV::5388E016C17032C1", "use_role": "context"},
+        {"evidence_ref": "EV::7F4D7E6762C21D83", "use_role": "context"}
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": ["QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"],
+      "method_step_refs": [
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD",
+        "METHOD::VC::MATERIAL_GAP_ROUTE",
+        "METHOD::VC::PERIOD_BASIS",
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::WHAT_WOULD_CHANGE"
+      ],
+      "graph_edge_refs": ["GRAPH::2B17375548682087"],
+      "judgment_status": "bounded_support",
+      "confidence_basis": "direct_source_only",
+      "inference_authority": "bounded_inference",
+      "claim_scope": "product",
+      "financial_scope": "product_financial",
+      "causal_bridge_authority": "management_assertion_only",
+      "thesis_atom": "管理层表示 AI 服务器产品的盈利水平符合其所述经营利润率目标；该表述属管理层自述，未经独立审计，不能据此推断经审计的产品利润率，也不能建立产品到分部或公司利润的分配桥。"
+    },
+    "submit_research_mechanism": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+      "evidence_uses": [
+        {"evidence_ref": "EV::0063F22F643B94ED", "use_role": "context"}
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": ["QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"],
+      "method_step_refs": [
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD",
+        "METHOD::VC::MATERIAL_GAP_ROUTE",
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::WHAT_WOULD_CHANGE"
+      ],
+      "graph_edge_refs": ["GRAPH::2B17375548682087"],
+      "inference_authority": "bounded_inference",
+      "mechanism_atom": "管理层关于 AI 服务器产品盈利符合其所述目标的表述属自述口径，未经独立审计，不能据此建立产品到分部或公司利润的财务桥；产品级价格、量与配置拆分的缺失使产品盈利如何转化为分部或公司利润不可推断。"
+    },
+    "submit_research_counterargument_and_wwc": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::COMPANY_MARGIN_OBSERVATION",
+      "evidence_uses": [
+        {"evidence_ref": "EV::0063F22F643B94ED", "use_role": "context"}
+      ],
+      "numeric_refs": ["NUM::33642A79CE277E0B", "NUM::AB89B02ADCCB77E0"],
+      "numeric_relation_refs": ["REL::B60164179DFFDF5A"],
+      "qualitative_fact_refs": ["QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"],
+      "method_step_refs": [
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD",
+        "METHOD::VC::MATERIAL_GAP_ROUTE",
+        "METHOD::VC::PERIOD_BASIS",
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::WHAT_WOULD_CHANGE"
+      ],
+      "graph_edge_refs": ["GRAPH::2B17375548682087"],
+      "inference_authority": "bounded_inference",
+      "counterargument_atom": "管理层称 AI 服务器产品盈利符合其所述经营利润率目标，但公司整体毛利率的同口径季度变化呈收缩方向，并未显示同向改善，因此“新增收入转化为公司利润”的命题缺乏公司级毛利率同向改善的支持；公司毛利率收缩可能由低毛利硬件组合、传统业务价格与成本、其他分部组合或一次性项目等多项因素共同驱动，无法据此归因于单一产品，产品到分部或公司利润的桥仍未建立。",
+      "what_would_change": {
+        "observable": "公司整体毛利率的同口径季度同比变化",
+        "direction": "reverse",
+        "time_horizon": "下一个同口径财务报告期",
+        "evidence_route": "下一期公司财务报告中的同口径毛利率关系，并尽可能补充产品价格、销量或经审计的分部利润桥",
+        "threshold_numeric_ref": "NUM::AB89B02ADCCB77E0"
+      }
+    }
+  }
+}

@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_official_source_capture_plan_v1_0",
+  "status": "official_source_capture_plan",
+  "recorded_at": "2026-08-22",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "purpose": "Capture a bounded pre-as-of free-public context set for demand, competition and supply without treating context as Dell-specific fact authority.",
+  "policy": {
+    "capture_before_parse": true,
+    "https_only": true,
+    "credentials_forbidden": true,
+    "post_as_of_rejected": true,
+    "source_strength_and_claim_use_required": true,
+    "discovery_result_is_not_evidence": true
+  },
+  "sources": [
+    {
+      "route_id": "DELL_CONTEXT_HPE_Q2_FY26_RESULTS",
+      "case_key": "DELL",
+      "url": "https://www.hpe.com/us/en/newsroom/press-release/2026/06/hpe-reports-fiscal-2026-second-quarter-results.html",
+      "allowed_hosts": ["www.hpe.com"],
+      "expected_content_types": ["text/html"],
+      "byte_ceiling": 5000000,
+      "timeout_seconds": 30,
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "source_role": "competitor_primary_context",
+      "expected_publication_date": "2026-06-01"
+    },
+    {
+      "route_id": "DELL_CONTEXT_IDC_SERVER_MARKET",
+      "case_key": "DELL",
+      "url": "https://www.idc.com/promo/servers/",
+      "allowed_hosts": ["www.idc.com"],
+      "expected_content_types": ["text/html"],
+      "byte_ceiling": 5000000,
+      "timeout_seconds": 30,
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "source_role": "industry_primary_context",
+      "expected_publication_date": "2026-07-01"
+    },
+    {
+      "route_id": "DELL_CONTEXT_MICROSOFT_FY26_Q3",
+      "case_key": "DELL",
+      "url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q3",
+      "allowed_hosts": ["www.microsoft.com"],
+      "expected_content_types": ["text/html"],
+      "byte_ceiling": 8000000,
+      "timeout_seconds": 30,
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "source_role": "customer_demand_primary_context",
+      "expected_publication_date": "2026-04-29"
+    },
+    {
+      "route_id": "DELL_CONTEXT_TRENDFORCE_SERVER_SUPPLY",
+      "case_key": "DELL",
+      "url": "https://www.trendforce.com/presscenter/news/20260415-13013.html",
+      "allowed_hosts": ["www.trendforce.com"],
+      "expected_content_types": ["text/html"],
+      "byte_ceiling": 5000000,
+      "timeout_seconds": 30,
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "source_role": "industry_supply_primary_context",
+      "expected_publication_date": "2026-04-15"
+    },
+    {
+      "route_id": "DELL_CONTEXT_TSMC_Q2_2026",
+      "case_key": "DELL",
+      "url": "https://investor.tsmc.com/english/quarterly-results/2026/q2",
+      "allowed_hosts": ["investor.tsmc.com"],
+      "expected_content_types": ["text/html"],
+      "byte_ceiling": 5000000,
+      "timeout_seconds": 30,
+      "transport": "requests",
+      "max_transport_retries": 0,
+      "source_role": "supplier_primary_context",
+      "expected_publication_date": "2026-07-16"
+    }
+  ]
+}

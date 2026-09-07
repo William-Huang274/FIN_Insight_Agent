@@ -1,0 +1,98 @@
+{
+  "schema_version": "fin_ia_s1_material_evidence_set_four_case_development_matrix_v1_0",
+  "status": "development_fixture_not_qualification_gold",
+  "cases": [
+    {
+      "case_key": "DELL",
+      "evidence_request": {
+        "request_id": "ER::DELL::DEMAND_SUPPLY",
+        "case_key": "DELL",
+        "target_entities": ["DELL", "TSM"],
+        "metric_intents": ["ai_server_demand", "advanced_packaging_capacity"],
+        "product_intents": ["ai_servers", "ai_accelerator_supply"],
+        "requested_facet_ids": ["downstream_demand_context", "issuer_counterevidence", "upstream_capacity_context"],
+        "period": {"fiscal_years": [2027]}
+      },
+      "material_requirements": [
+        {"requirement_id": "DELL::DIRECT", "facet_id": "downstream_demand_context", "role": "direct", "metric_ids": ["ai_server_demand"], "product_ids": ["ai_servers"], "target_entities": ["DELL"], "period_mode": "single_period", "fiscal_years": [2027], "minimum_candidates": 1, "priority": 1},
+        {"requirement_id": "DELL::COUNTER", "facet_id": "issuer_counterevidence", "role": "counter", "metric_ids": ["ai_server_demand"], "product_ids": ["ai_servers"], "target_entities": ["DELL"], "period_mode": "any", "fiscal_years": [], "minimum_candidates": 1, "priority": 2},
+        {"requirement_id": "DELL::UPSTREAM", "facet_id": "upstream_capacity_context", "role": "bridge", "metric_ids": ["advanced_packaging_capacity"], "product_ids": ["ai_accelerator_supply"], "target_entities": ["TSM"], "period_mode": "any", "fiscal_years": [], "minimum_candidates": 1, "priority": 3}
+      ],
+      "candidates": [
+        {"compiled_object_id": "DELL::NOISE", "base_rank": 1, "score": 0.99, "case_key": "DELL", "target_entities": ["DELL"], "facet_ids": ["downstream_demand_context"], "roles": ["context"], "metric_ids": ["ai_server_demand"], "product_ids": ["ai_servers"], "fiscal_years": [2027], "same_basis_key": ""},
+        {"compiled_object_id": "DELL::DIRECT", "base_rank": 21, "score": 0.70, "case_key": "DELL", "target_entities": ["DELL"], "facet_ids": ["downstream_demand_context"], "roles": ["direct"], "metric_ids": ["ai_server_demand"], "product_ids": ["ai_servers"], "fiscal_years": [2027], "same_basis_key": ""},
+        {"compiled_object_id": "DELL::COUNTER", "base_rank": 22, "score": 0.69, "case_key": "DELL", "target_entities": ["DELL"], "facet_ids": ["issuer_counterevidence"], "roles": ["counter"], "metric_ids": ["ai_server_demand"], "product_ids": ["ai_servers"], "fiscal_years": [2027], "same_basis_key": ""},
+        {"compiled_object_id": "DELL::TSM_BRIDGE", "base_rank": 23, "score": 0.68, "case_key": "DELL", "target_entities": ["TSM"], "facet_ids": ["upstream_capacity_context"], "roles": ["bridge"], "metric_ids": ["advanced_packaging_capacity"], "product_ids": ["ai_accelerator_supply"], "fiscal_years": [2027], "same_basis_key": ""},
+        {"compiled_object_id": "MU::CROSS_CASE", "base_rank": 2, "score": 0.98, "case_key": "MU", "target_entities": ["MU"], "facet_ids": ["downstream_demand_context"], "roles": ["direct"], "metric_ids": ["ai_server_demand"], "product_ids": ["ai_servers"], "fiscal_years": [2027], "same_basis_key": ""}
+      ],
+      "expected_reserved_prefix": ["DELL::DIRECT", "DELL::COUNTER", "DELL::TSM_BRIDGE"]
+    },
+    {
+      "case_key": "MU",
+      "evidence_request": {
+        "request_id": "ER::MU::CYCLE_CASH",
+        "case_key": "MU",
+        "target_entities": ["MU"],
+        "metric_intents": ["data_center_revenue", "inventory_correction", "operating_cash_flow"],
+        "product_intents": ["data_center", "issuer_total"],
+        "requested_facet_ids": ["reported_results", "issuer_counterevidence", "cash_generation"],
+        "period": {"fiscal_years": [2025]}
+      },
+      "material_requirements": [
+        {"requirement_id": "MU::DIRECT", "facet_id": "reported_results", "role": "direct", "metric_ids": ["data_center_revenue"], "product_ids": ["data_center"], "target_entities": ["MU"], "period_mode": "single_period", "fiscal_years": [2025], "minimum_candidates": 1, "priority": 1},
+        {"requirement_id": "MU::COUNTER", "facet_id": "issuer_counterevidence", "role": "counter", "metric_ids": ["inventory_correction"], "product_ids": ["data_center"], "target_entities": ["MU"], "period_mode": "any", "fiscal_years": [], "minimum_candidates": 1, "priority": 2},
+        {"requirement_id": "MU::CASH_BRIDGE", "facet_id": "cash_generation", "role": "bridge", "metric_ids": ["operating_cash_flow"], "product_ids": ["issuer_total"], "target_entities": ["MU"], "period_mode": "single_period", "fiscal_years": [2025], "minimum_candidates": 1, "priority": 3}
+      ],
+      "candidates": [
+        {"compiled_object_id": "MU::DIRECT", "base_rank": 20, "score": 0.70, "case_key": "MU", "target_entities": ["MU"], "facet_ids": ["reported_results"], "roles": ["direct"], "metric_ids": ["data_center_revenue"], "product_ids": ["data_center"], "fiscal_years": [2025], "same_basis_key": ""},
+        {"compiled_object_id": "MU::COUNTER", "base_rank": 21, "score": 0.69, "case_key": "MU", "target_entities": ["MU"], "facet_ids": ["issuer_counterevidence"], "roles": ["counter"], "metric_ids": ["inventory_correction"], "product_ids": ["data_center"], "fiscal_years": [2024], "same_basis_key": ""},
+        {"compiled_object_id": "MU::CASH", "base_rank": 22, "score": 0.68, "case_key": "MU", "target_entities": ["MU"], "facet_ids": ["cash_generation"], "roles": ["bridge"], "metric_ids": ["operating_cash_flow"], "product_ids": ["issuer_total"], "fiscal_years": [2025], "same_basis_key": ""}
+      ],
+      "expected_reserved_prefix": ["MU::DIRECT", "MU::COUNTER", "MU::CASH"]
+    },
+    {
+      "case_key": "NVDA",
+      "evidence_request": {
+        "request_id": "ER::NVDA::DEMAND_BOTTLENECK",
+        "case_key": "NVDA",
+        "target_entities": ["NVDA", "TSM"],
+        "metric_intents": ["ai_infrastructure_demand", "customer_concentration", "advanced_packaging_capacity"],
+        "product_intents": ["data_center", "ai_accelerator_supply"],
+        "requested_facet_ids": ["downstream_demand_context", "issuer_counterevidence", "upstream_capacity_context"],
+        "period": {"fiscal_years": [2025]}
+      },
+      "material_requirements": [
+        {"requirement_id": "NVDA::DIRECT", "facet_id": "downstream_demand_context", "role": "direct", "metric_ids": ["ai_infrastructure_demand"], "product_ids": ["data_center"], "target_entities": ["NVDA"], "period_mode": "single_period", "fiscal_years": [2025], "minimum_candidates": 1, "priority": 1},
+        {"requirement_id": "NVDA::COUNTER", "facet_id": "issuer_counterevidence", "role": "counter", "metric_ids": ["customer_concentration"], "product_ids": ["data_center"], "target_entities": ["NVDA"], "period_mode": "any", "fiscal_years": [], "minimum_candidates": 1, "priority": 2},
+        {"requirement_id": "NVDA::UPSTREAM", "facet_id": "upstream_capacity_context", "role": "context", "metric_ids": ["advanced_packaging_capacity"], "product_ids": ["ai_accelerator_supply"], "target_entities": ["TSM"], "period_mode": "any", "fiscal_years": [], "minimum_candidates": 1, "priority": 3}
+      ],
+      "candidates": [
+        {"compiled_object_id": "NVDA::DIRECT", "base_rank": 19, "score": 0.72, "case_key": "NVDA", "target_entities": ["NVDA"], "facet_ids": ["downstream_demand_context"], "roles": ["direct"], "metric_ids": ["ai_infrastructure_demand"], "product_ids": ["data_center"], "fiscal_years": [2025], "same_basis_key": ""},
+        {"compiled_object_id": "NVDA::COUNTER", "base_rank": 20, "score": 0.71, "case_key": "NVDA", "target_entities": ["NVDA"], "facet_ids": ["issuer_counterevidence"], "roles": ["counter"], "metric_ids": ["customer_concentration"], "product_ids": ["data_center"], "fiscal_years": [2025], "same_basis_key": ""},
+        {"compiled_object_id": "NVDA::TSM_CONTEXT", "base_rank": 21, "score": 0.70, "case_key": "NVDA", "target_entities": ["TSM"], "facet_ids": ["upstream_capacity_context"], "roles": ["context"], "metric_ids": ["advanced_packaging_capacity"], "product_ids": ["ai_accelerator_supply"], "fiscal_years": [2025], "same_basis_key": ""}
+      ],
+      "expected_reserved_prefix": ["NVDA::DIRECT", "NVDA::COUNTER", "NVDA::TSM_CONTEXT"]
+    },
+    {
+      "case_key": "COST",
+      "evidence_request": {
+        "request_id": "ER::COST::TEMPORAL",
+        "case_key": "COST",
+        "target_entities": ["COST"],
+        "metric_intents": ["operating_cash_flow"],
+        "product_intents": ["issuer_total"],
+        "requested_facet_ids": ["working_capital_risk"],
+        "period": {"fiscal_years": [2024, 2025]}
+      },
+      "material_requirements": [
+        {"requirement_id": "COST::TEMPORAL", "facet_id": "working_capital_risk", "role": "bridge", "metric_ids": ["operating_cash_flow"], "product_ids": ["issuer_total"], "target_entities": ["COST"], "period_mode": "all_periods_same_basis", "fiscal_years": [2024, 2025], "minimum_candidates": 1, "priority": 1}
+      ],
+      "candidates": [
+        {"compiled_object_id": "COST::OCF_2024", "base_rank": 21, "score": 0.70, "case_key": "COST", "target_entities": ["COST"], "facet_ids": ["working_capital_risk"], "roles": ["bridge"], "metric_ids": ["operating_cash_flow"], "product_ids": ["issuer_total"], "fiscal_years": [2024], "same_basis_key": "OCF::ANNUAL::USD"},
+        {"compiled_object_id": "COST::OCF_2025", "base_rank": 22, "score": 0.69, "case_key": "COST", "target_entities": ["COST"], "facet_ids": ["working_capital_risk"], "roles": ["bridge"], "metric_ids": ["operating_cash_flow"], "product_ids": ["issuer_total"], "fiscal_years": [2025], "same_basis_key": "OCF::ANNUAL::USD"}
+      ],
+      "expected_reserved_prefix": ["COST::OCF_2024", "COST::OCF_2025"]
+    }
+  ],
+  "known_boundary": "All rows are synthetic development fixtures that test business shapes and contract isolation. They are not Evidence, NumericFact, qrels, hidden labels or qualification results."
+}

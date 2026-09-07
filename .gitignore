@@ -73,6 +73,9 @@ __pycache__/
 .ruff_cache/
 .ipynb_checkpoints/
 .venv/
+build/
+*.egg-info/
+.secrets/
 venv/
 node_modules/
 dist/
@@ -93,6 +96,11 @@ docs/interview/
 **/.codex_runtime/
 /output/
 
+# LangGraph dev-only in-memory persistence; product state belongs to Agent Server.
+/.langgraph_api/
+/.finsight/
+
 # Capture-first provider diagnostics: preserve raw responses locally for audit,
 # but commit only redacted assessments, digests, and bounded worklogs.
 /artifacts/runtime/
+/data/captures/

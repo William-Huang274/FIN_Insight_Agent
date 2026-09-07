@@ -1,0 +1,155 @@
+{
+  "schema_version": "fin_ia_s1c_ranking_business_assessment_v1_0",
+  "assessment_id": "FIN-0.1.3-S1C-SAME-OBJECT-RANKING-BUSINESS-ASSESSMENT-R1",
+  "recorded_at": "2026-08-12",
+  "status": "engineering_comparison_complete_owner_qrel_review_pending",
+  "scope": {
+    "cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "frozen_current_object_count": 1805,
+    "owner_accepted_relevance_qrel_count": 18,
+    "current_mapped_target_count": 17,
+    "typed_target_gap_count": 1,
+    "same_object_population_for_all_routes": true,
+    "same_requalified_labels_for_all_routes": true,
+    "model_calls": 0,
+    "network_calls": 0,
+    "source_expansion": false,
+    "candidate_state": "candidate_not_evidence"
+  },
+  "bound_inputs": {
+    "qrel_manifest_ref": "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_0.json",
+    "qrel_manifest_digest": "637091c326f3c0468ecd7cc9870265f843c2dfbb1a16647106e9467112d0a7f1",
+    "ranking_result_ref": "configs/retrieval/fin_ia_0_1_3_s1c_ranking_comparison_result_v1_0.json",
+    "ranking_result_digest": "db7fbea1ad095585346bcaddcb67c41346d6fda32898fa541341a7357ee235d9",
+    "object_store_result_ref": "configs/runtime/fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_0.json"
+  },
+  "route_assessment": {
+    "sparse_bm25": {
+      "mapped_target_recall_at_10": 0.823529,
+      "all_qrel_recall_at_10": 0.777778,
+      "mapped_target_mrr": 0.508964,
+      "decision": "retain_as_current_default",
+      "business_reason_zh": "在同一批金融对象和同一套标签上召回最高；仍会把风险段落或主题共现误当成结果、供给证据，因此只是候选生成器，不是 Evidence Gate。"
+    },
+    "dense_bge_m3": {
+      "mapped_target_recall_at_10": 0.705882,
+      "all_qrel_recall_at_10": 0.666667,
+      "mapped_target_mrr": 0.490196,
+      "decision": "shadow_only_not_promoted",
+      "business_reason_zh": "语义召回能找到部分词面不同的材料，但更容易把同公司、同季度、同主题的泛化段落误当成需求或供给机制，当前单独使用会降低研究精度。"
+    },
+    "fusion_rrf_1_1": {
+      "mapped_target_recall_at_10": 0.764706,
+      "all_qrel_recall_at_10": 0.722222,
+      "mapped_target_mrr": 0.549673,
+      "decision": "shadow_only_not_promoted",
+      "business_reason_zh": "首条相关结果的平均位置有所改善，但漏掉的有效目标多于 BM25；不能仅凭 MRR 提升替换默认路线。"
+    },
+    "typed_financial_rerank": {
+      "mapped_target_recall_at_10": 0.764706,
+      "all_qrel_recall_at_10": 0.722222,
+      "mapped_target_mrr": 0.449755,
+      "decision": "deterministic_shadow_only_not_neural_cross_encoder",
+      "business_reason_zh": "确定性金融规则能压低部分明显噪声，但未超过 BM25；它不是神经 reranker，不能对外宣称已经验证了 cross-encoder。"
+    },
+    "neural_cross_encoder": {
+      "decision": "not_executed_local_model_unavailable",
+      "business_reason_zh": "本地没有已资格判断的 cross-encoder；S1-C 不为跑指标临时联网下载或引入新 Provider。"
+    }
+  },
+  "business_error_examples": [
+    {
+      "case_key": "NVDA",
+      "route": "dense_bge_m3",
+      "slot": "supply_chain_capacity_and_counterevidence",
+      "observed_zh": "把 Deferred Revenue 小节中的保修、税务、赔偿和诉讼片段排到前列。",
+      "why_wrong_zh": "它们与未来义务、风险等词语语义接近，但没有说明产能、良率、爬坡或供给约束，不能回答供应链问题。"
+    },
+    {
+      "case_key": "MU",
+      "route": "dense_bge_m3",
+      "slot": "customer_demand_and_deployment_validation",
+      "observed_zh": "把 Dell 的资本回报和一般性指引段落排到客户需求材料前面。",
+      "why_wrong_zh": "段落包含投资、增长和指引等相近概念，却没有证明客户正在部署、下单或形成可持续需求。"
+    },
+    {
+      "case_key": "DELL",
+      "route": "dense_bge_m3",
+      "slot": "customer_demand_and_deployment_validation",
+      "observed_zh": "把 Microsoft 的 Intelligent Cloud 产品定义和安全港风险文字召回为需求证据。",
+      "why_wrong_zh": "云和 AI 共现不等于实际资本开支、部署节奏或采购需求。"
+    },
+    {
+      "case_key": "MU",
+      "route": "fusion_rrf_1_1",
+      "slot": "regulatory_risk_and_financial_reconciliation",
+      "observed_zh": "把中国市场供给过剩风险排进库存、营运资金和现金机制问题的前列。",
+      "why_wrong_zh": "风险披露可以作为反方背景，但不能替代当期库存、现金流或营运资金的财务桥接。"
+    },
+    {
+      "case_key": "NVDA",
+      "route": "sparse_bm25",
+      "slot": "issuer_results_and_management_commentary",
+      "observed_zh": "风险因素中关于采购承诺和产能的文字排在当期业绩结果前面。",
+      "why_wrong_zh": "关键词匹配正确但证据角色错误；风险情景不能替代已经发生的当期经营结果。"
+    }
+  ],
+  "contract_drift_disposition": {
+    "finding": "The legacy qrel source-tier allowlist did not include current primary_global_public_disclosure objects, so three TSM 6-K labels initially had an empty eligible population.",
+    "root_cause_owner": "S1_retrieval_contract_taxonomy",
+    "fix": "Provider-neutral official-source tier equivalence was added to the S1-C policy and qrel materializer, then the immutable comparison was regenerated.",
+    "business_effect_zh": "修复后，三个 TSM 标签均能召回当前 6-K；这证明最初的空结果是新旧来源分类漂移，不是排序模型本身失败。"
+  },
+  "owner_qrel_review_packet": {
+    "authority_state": "owner_review_required_no_label_changed_by_implementation",
+    "proposals": [
+      {
+        "qrel_ids": [
+          "s1c_qrel_05",
+          "s1c_qrel_11"
+        ],
+        "current_target": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+        "problem_zh": "当前目标以投资者关系联系人和安全港声明为主体，只在尾部泛化提到供需，作为供给/产能标准答案精度过低。",
+        "proposed_successor_targets": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04"
+        ],
+        "proposal_reason_zh": "该 10-Q 子对象直接披露增加产能采购、预付制造/产能协议、生产爬坡、质量和供需错配风险。"
+      },
+      {
+        "qrel_ids": [
+          "s1c_qrel_15"
+        ],
+        "current_target": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+        "problem_zh": "现有目标仍有效，但当前对象库还存在更精确的 10-Q 当期报表和 MD&A 结果对象；只允许单一目标会把更好答案误判为失败。",
+        "proposed_additional_targets": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_02_OF_02"
+        ]
+      },
+      {
+        "qrel_ids": [
+          "s1c_qrel_16"
+        ],
+        "current_target": "NVDA_2027_10Q_ITEM1_BLOCK_0001_PART_02_OF_03_METRIC_TABLE_3C6CA96D",
+        "problem_zh": "旧 metric-table 身份未进入当前对象库，当前按 typed target gap 保留。",
+        "proposed_successor_targets": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04"
+        ],
+        "proposal_reason_zh": "当前 10-Q 财务报表对象包含当期利润表、资产负债表及库存等可核对数字；是否完全覆盖旧标签语义仍需 Owner 确认。"
+      }
+    ]
+  },
+  "decision": {
+    "default_candidate_route": "sparse_bm25",
+    "route_promotion": false,
+    "s1c_engineering_state": "comparison_complete",
+    "s1_complete": false,
+    "product_acceptance": false,
+    "next_gate": "Owner reviews the four affected qrels; accepted successor labels are rematerialized and the cached same-object comparison is rerun before S1-D residual-gap/source work."
+  },
+  "known_boundary": "This assessment evaluates candidate ranking on one frozen current object population. It neither promotes candidates to Evidence nor proves source coverage, numerical authority, Agentic Research, report quality, or product release readiness."
+}

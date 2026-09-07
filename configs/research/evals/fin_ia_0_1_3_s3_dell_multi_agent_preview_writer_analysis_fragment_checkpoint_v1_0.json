@@ -1,0 +1,71 @@
+{
+  "case_key": "DELL",
+  "checkpoint_digest": "4370fab1fcac3af7bc90617103018011836de97ea914ec75af438c01a66022eb",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "new_model_calls": 0,
+    "new_network_calls": 0
+  },
+  "completed_required_outputs": [
+    "report_title",
+    "executive_thesis"
+  ],
+  "continuation_policy": {
+    "complete_merged_draft_required_before_submission": true,
+    "continue_missing_content_only": true,
+    "maximum_continuation_calls": 1,
+    "new_fact_or_authority_forbidden": true,
+    "partial_draft_business_promotion": false,
+    "repeat_completed_sections_forbidden": true
+  },
+  "finish_reason": "length",
+  "missing_required_outputs": [
+    "remaining_gaps",
+    "what_would_change",
+    "confidence_statement"
+  ],
+  "node_id": "AGENT::WRITER::REPORT_DRAFT",
+  "partial_draft_character_count": 2328,
+  "partial_draft_digest": "8060d852b9a35eb3ad150331c45c40ac342bb85e85fb561425ea6f82bd0ebb5c",
+  "partial_required_outputs": [
+    "sections"
+  ],
+  "recorded_at": "2026-08-21T05:21:32+00:00",
+  "request_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_cross_role_onward_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821-AGENT-WRITER-REPORT_DRAFT-ANALYSIS-ATTEMPT-01/model_visible_request.json",
+  "request_capture_sha256": "1195e0642025226e9b890cd4b185c0dd7b04ac90bccd9d9cd286892e48f88b0f",
+  "request_digest": "95b086b1c114ed6dfda8252d43b793c36d2c696385b95ba28f4b9669cdb35087",
+  "required_outputs": [
+    "report_title",
+    "executive_thesis",
+    "sections",
+    "remaining_gaps",
+    "what_would_change",
+    "confidence_statement"
+  ],
+  "response_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_cross_role_onward_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821-AGENT-WRITER-REPORT_DRAFT-ANALYSIS-ATTEMPT-01/provider_response.json",
+  "response_capture_sha256": "9abfe7b2e5a154a918fd0a631d10aa24020adfb3a6aec22565bdf3237484ceba",
+  "response_digest": "887780434ba233f0db4e2df191d8d40b614bb978cb8b51efbcddadeed052566b",
+  "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821",
+  "schema_version": "fin_ia_multi_agent_analysis_fragment_checkpoint_v1_0",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_cross_role_onward_live_authority_v1_0.json",
+  "source_authority_sha256": "f93425b64c960456fad1aa08bc61c632f3f32ee070775d653263c8c0d6cf47f5",
+  "source_public_result_digest": "5fce7d5a432367567ee7f169d18a3d22be756d627ab52966deda993a3a90345f",
+  "source_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_cross_role_onward_live_result_v1_0.json",
+  "source_public_result_sha256": "9b54d3becb8b70873bd373ac2f7fb04841814a2ce9185ca6987050f9659e1f2a",
+  "status": "length_truncated_visible_analysis_bound_for_one_continuation",
+  "usage": {
+    "completion_tokens": 16000,
+    "completion_tokens_details": {
+      "reasoning_tokens": 15436
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 19482,
+    "prompt_tokens": 19482,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 35482
+  }
+}

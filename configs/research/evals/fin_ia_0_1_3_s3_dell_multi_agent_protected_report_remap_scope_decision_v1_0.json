@@ -1,0 +1,124 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_report_protected_remap_scope_decision_v1_0",
+  "status": "protected_report_zero_call_pass_one_writer_remap_node_authorized",
+  "case_key": "DELL",
+  "cell_id": "ALL",
+  "run_scope_id": "one_fresh_Writer_only_terminal_remapping_logical_node_with_separate_attempt_budget",
+  "evidence_mode": "immutable_completed_report_plus_typed_authority_no_new_research",
+  "next_authorized_scope": "one_writer_terminal_protected_contract_remap",
+  "replacement_is_new_logical_node_not_retry": true,
+  "chat_live_authorized": true,
+  "credential_presence_required": true,
+  "immutable_source_report_required": true,
+  "protected_surface_contract_required": true,
+  "deterministic_renderer_required": true,
+  "separate_logical_node_and_contract_attempt_counts_required": true,
+  "upstream_agent_rerun_authorized": false,
+  "writer_research_analysis_authorized": false,
+  "new_evidence_or_numeric_fact_authorized": false,
+  "external_source_network_authorized": false,
+  "candidate_promotion_authorized": false,
+  "responses_live_authorized": false,
+  "anthropic_live_authorized": false,
+  "S1_acceptance_authorized": false,
+  "S3_acceptance_authorized": false,
+  "generalization_claim_authorized": false,
+  "qualified_human_acceptance_authorized": false,
+  "product_publication_authorized": false,
+  "release_authorized": false,
+  "bound_inputs": {
+    "predecessor_live_authority": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_live_authority_v1_0.json",
+      "sha256": "1e040e097c73307e05b3ce062229c3521720896d344559de3194ee896d23cd09"
+    },
+    "predecessor_public_result": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_live_result_v1_0.json",
+      "sha256": "2d753b19e169ef20c14a78e6651aa198f3638f152255154f543bdfbae7e0dac2",
+      "digest_field": "result_digest",
+      "digest": "785b7591bc5afb8b18d7fef8b3145ee733e1699627ae73fd85a7002103a4f27a"
+    },
+    "predecessor_content_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_content_assessment_v1_0.json",
+      "sha256": "217e45076a27ea1b0b91e2e51a3886a34532d53d291baefb9288e28669e18b81"
+    },
+    "predecessor_private_full_result": {
+      "ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+      "sha256": "6f31245ab52cf34cc45cfd5ffd82bd359a769ea9dd2f2eedf746c67d115e514a",
+      "digest_field": "full_result_digest",
+      "digest": "bd1c658adeeb3171506ab004605ec48a1ba7431b58ab380fabad625db98537dd"
+    },
+    "report_surface_zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_report_surface_authority_zero_call_result_v1_1.json",
+      "sha256": "c242c22f43594f8bc8326de3ba29a5e5405d50d78ebd41d1400db285bdb27093",
+      "digest_field": "result_digest",
+      "digest": "09c4d60bc3ee8c5b34518485567ce54092e4122f6bbd46f505168f0dc8cb0958"
+    },
+    "report_authority_catalog": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json",
+      "sha256": "853a2271a58126c9dd1e9b72ad8cef862e9cb15e75f22d0d42bc936fa6c71285",
+      "digest_field": "authority_catalog_digest",
+      "digest": "db4cd0930c29e78f21d10df4b09ddc4bb69004665e3aca929608d66d6c9242df"
+    },
+    "source_bound_numeric_review": {
+      "ref": "configs/research/fin_ia_0_1_3_s2_dell_multi_agent_source_bound_numeric_review_v1_0.json",
+      "sha256": "32da9dc428d1d507b3852f5b116fe4341ea971d5f6439d2daa0e3b4930f303d2"
+    },
+    "writer_submission_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_report_protected_remap_non_thinking_profile_v1_0.json",
+      "sha256": "942a7243d6f3074c5e5e0c7445bcf114cc504ea0149680970e3c5ba0b941158c"
+    }
+  },
+  "implementation_bindings": [
+    {
+      "ref": "src/sec_agent/research/multi_agent_report_authority.py",
+      "sha256": "3fabb19cf3ed3b660ad775a42003f5f4ac370f8ac0f5b76fab375119c94a9f40"
+    },
+    {
+      "ref": "src/sec_agent/research/multi_agent_report_remap.py",
+      "sha256": "060f3f12c732825187a50941a5ca9be87982727fb52649f77b7edd7a806dd400"
+    },
+    {
+      "ref": "src/sec_agent/project_os_preflight.py",
+      "sha256": "454f01c660c380fc3c957c846ade72ae9483136597708534d97886ad1cb78d9d"
+    },
+    {
+      "ref": "scripts/research/run_s3_multi_agent_report_remap_live.py",
+      "sha256": "b751f4563bf4bda46f36900970eaee01623dd3bcdb813ad7e1daadd0a66ad86f"
+    }
+  ],
+  "execution_limits": {
+    "reused_specialist_plan_count": 6,
+    "reused_lead_plan_count": 1,
+    "reused_workpaper_count": 6,
+    "reused_lead_coordination_count": 1,
+    "reused_completed_challenge_repair_count": 3,
+    "reused_role_evaluation_count": 6,
+    "reused_cross_role_evaluation_count": 1,
+    "reused_legacy_report_count": 1,
+    "maximum_new_logical_model_nodes": 1,
+    "maximum_contract_attempts": 2,
+    "maximum_new_analysis_calls": 0,
+    "maximum_new_writer_continuations": 0,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0
+  },
+  "token_budget_basis": {
+    "node_id": "AGENT::WRITER::PROTECTED_REPORT_REMAP",
+    "purpose": "terminal_contract_remap_without_new_research",
+    "source_report_characters": 14469,
+    "authority_catalog_characters": 70310,
+    "required_section_count": 6,
+    "required_gap_count": 6,
+    "required_wwc_count": 8,
+    "schema_burden": "nested_six_section_protected_tool_with_claim_scoped_refs",
+    "materiality_quality_risk": "high",
+    "comparable_run_evidence": "prior_writer_report_required_two_bounded_contract_attempts",
+    "reasoning_profile": "thinking_disabled",
+    "maximum_output_tokens": 7000,
+    "maximum_contract_attempts": 2,
+    "cost_and_latency_are_secondary_constraints": true,
+    "stop_behavior": "stop_after_first_valid_contract_or_terminal_after_second_rejection"
+  },
+  "authority_statement": "Authorize one fresh Writer-only terminal remapping logical node and at most two bounded contract attempts. Preserve all upstream research and the immutable failed report. Permit no new analysis, continuation, Evidence, NumericFact, network, Candidate promotion or product acceptance.",
+  "decision_digest": "bea7bfb290142f4acc702a48d210ef27f03fd9d3edb37c5aef5d87a81828e789"
+}

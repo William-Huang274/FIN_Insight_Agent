@@ -1,0 +1,110 @@
+{
+  "authority_digest": "f08c659d76817379e184b2104f53ef5e7976ba487e27e0fb6d9b38a88134291c",
+  "authority_statement": "Authorize exactly one fresh Writer-only reference-patch logical node with at most two bounded contract attempts over the second complete v1.1 payload. Permit only the five path-scoped reference bindings; report text and source-agent identities are immutable. Authorize zero analysis, continuation, upstream Agent, repair, Evaluator, retrieval, network or Candidate-promotion calls. The Harness validates and renders every protected surface.",
+  "authorized_at": "2026-08-21T13:58:11.185874+00:00",
+  "bound_inputs": {
+    "failed_replacement_remap_live_authority": {
+      "digest": "639d745c559918166052af6c9c2ac3e6f3dcd61174caf066a42d890ec9abce00",
+      "digest_field": "authority_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_live_authority_v1_1.json",
+      "sha256": "fd66863be6f7d59a9ef2fdfe5b5c9a774ab82348996b6c0813be3eb85cd728a3"
+    },
+    "failed_replacement_remap_private_terminal_result": {
+      "digest": "6896062b0d9616f83fd65749a22f9a92587e3b62aabff981d74fe620e1808609",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_protected_report_remap_replacement_20260821/terminal_failure.json",
+      "sha256": "a36292ebbb8e033c6c30f59dec37716b07ac160fcb982c461290bc09dd106e0d"
+    },
+    "failed_replacement_remap_public_result": {
+      "digest": "0ec3996b09e3e8aafb8d6847dd02c1041e97c65334000c5d08a14013a7766694",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_live_result_v1_1.json",
+      "sha256": "36fb8792974b55fd045229c11a80fa6c24b6bbe9a61b9eb463d175bd0fbd53b0"
+    },
+    "predecessor_content_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_content_assessment_v1_0.json",
+      "sha256": "217e45076a27ea1b0b91e2e51a3886a34532d53d291baefb9288e28669e18b81"
+    },
+    "predecessor_private_full_result": {
+      "digest": "bd1c658adeeb3171506ab004605ec48a1ba7431b58ab380fabad625db98537dd",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_submission_successor_20260821/full_result.json",
+      "sha256": "6f31245ab52cf34cc45cfd5ffd82bd359a769ea9dd2f2eedf746c67d115e514a"
+    },
+    "report_authority_catalog": {
+      "digest": "db4cd0930c29e78f21d10df4b09ddc4bb69004665e3aca929608d66d6c9242df",
+      "digest_field": "authority_catalog_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_multi_agent_report_authority_catalog_v1_1.json",
+      "sha256": "853a2271a58126c9dd1e9b72ad8cef862e9cb15e75f22d0d42bc936fa6c71285"
+    },
+    "report_reference_patch_zero_call_proof": {
+      "digest": "11a0f5bbf227328dda6d31687d9b691145bec4eb90419ccf31bfeab2e7a6f09f",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_report_reference_patch_zero_call_result_v1_0.json",
+      "sha256": "1223fa76d2805e3bb6948581b8fc6455bb74b95aa1ee54049bc561e55a98d5d6"
+    },
+    "report_surface_zero_call_proof": {
+      "digest": "09c4d60bc3ee8c5b34518485567ce54092e4122f6bbd46f505168f0dc8cb0958",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_report_surface_authority_zero_call_result_v1_1.json",
+      "sha256": "c242c22f43594f8bc8326de3ba29a5e5405d50d78ebd41d1400db285bdb27093"
+    },
+    "writer_submission_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_report_reference_patch_non_thinking_profile_v1_2.json",
+      "sha256": "8c5daf2809158b25363214c01468fabcf9c7a9862e307c1a033328030898e201"
+    }
+  },
+  "execution_limits": {
+    "candidate_promotions": 0,
+    "external_source_network_calls": 0,
+    "maximum_contract_attempts": 2,
+    "maximum_new_analysis_calls": 0,
+    "maximum_new_logical_model_nodes": 1,
+    "maximum_new_writer_continuations": 0,
+    "maximum_reference_patch_targets": 5,
+    "reused_completed_challenge_repair_count": 3,
+    "reused_cross_role_evaluation_count": 1,
+    "reused_lead_coordination_count": 1,
+    "reused_lead_plan_count": 1,
+    "reused_legacy_report_count": 1,
+    "reused_role_evaluation_count": 6,
+    "reused_specialist_plan_count": 6,
+    "reused_workpaper_count": 6
+  },
+  "implementation_commit": "b2d8b6670f0966eb5491712900262695e3db70cb",
+  "outputs": {
+    "capture_root_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_20260821",
+    "private_output_root_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_20260821",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_live_result_v1_0.json",
+    "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PROTECTED_REPORT_REFERENCE_PATCH_20260821"
+  },
+  "project_os_preflight": {
+    "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_reference_patch_project_os_preflight_v1_0.json",
+    "sha256": "c1aacbc29a9303e80a84797e1c1561ede4623f935d770623ec167aed2e59ff1c"
+  },
+  "run_scope_id": "one_fresh_Writer_only_reference_patch_logical_node_after_preserved_complete_contract_failure",
+  "schema_version": "fin_ia_s3_multi_agent_report_protected_remap_live_authority_v1_1",
+  "scope_decision": {
+    "decision_digest": "7f946d2a5ab7e0d8eeb244bcfa691cf95700284a8235cfae0023fae3179ae43e",
+    "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_protected_report_remap_scope_decision_v1_2.json",
+    "sha256": "a49e96cac14ecb22859e1f3dcd3fc2b29154ec003ee39a8e9278155ec31ce7f9"
+  },
+  "status": "approved_for_one_writer_only_protected_report_reference_patch",
+  "token_budget_basis": {
+    "base_payload_characters": 19442,
+    "comparable_run_evidence": "v1_1_two_complete_contracts_repeated_five_reference_failures_after_generic_feedback",
+    "cost_and_latency_are_secondary_constraints": true,
+    "materiality_quality_risk": "high",
+    "maximum_contract_attempts": 2,
+    "maximum_output_tokens": 4000,
+    "model_visible_message_characters": 15475,
+    "node_id": "AGENT::WRITER::PROTECTED_REPORT_REFERENCE_PATCH",
+    "purpose": "path_scoped_reference_binding_correction_without_report_rewrite",
+    "reasoning_profile": "thinking_disabled",
+    "required_patch_target_count": 5,
+    "schema_burden": "five_path_reference_only_tool_with_immutable_model_text_and_agents",
+    "stop_behavior": "stop_after_first_valid_patch_or_terminal_after_second_rejection",
+    "tool_schema_characters": 4995,
+    "user_message_characters": 15261
+  }
+}

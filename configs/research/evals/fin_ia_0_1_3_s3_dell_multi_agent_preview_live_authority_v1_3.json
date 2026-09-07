@@ -1,0 +1,76 @@
+{
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_live_authority_v1_3",
+  "status": "approved_for_one_R3_plan_checkpoint_analysis_submission_successor_after_project_os_preflight",
+  "authorized_at": "2026-08-20T02:01:54+08:00",
+  "implementation_commit": "1c3a26a6feb14bdca873f7ca440799521a8f8762",
+  "bound_inputs": {
+    "project_os_scope_decision": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_scope_decision_v1_2.json",
+      "sha256": "239450d131705a56e1ec5c411add9ec5936a139316e039a5b43e6ed8ef8d0e51"
+    },
+    "topology": {
+      "ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
+      "sha256": "1c2065c2e585984b8b4ef485c587a1d20425122d0fe625cb7c7d6f0c290d4c85"
+    },
+    "objective": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json",
+      "sha256": "3772ead9ccbb7861013825d9d1e96e30588af33879725173f3791c140ea981d9"
+    },
+    "zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_preview_zero_call_result_v1_2.json",
+      "sha256": "aae7214b118e12f4c438b4fa0234140042c3736d301c32faace0d35fe69bf7ac"
+    },
+    "successor_zero_call_proof": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R4_plan_successor_zero_call_result_v1_0.json",
+      "sha256": "39e9fdd815dd9df3982edf7c9efbcbdc94f872c2ff3d65d4d562c7caece408bf"
+    },
+    "planning_overlay": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_multi_agent_preview_planning_overlay_v1_0.json",
+      "sha256": "1d2fb589c1623e2650f55cd53dcdddf9d3a8df442c6fcb792f06b1f69d7e5757"
+    },
+    "analysis_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+      "sha256": "dbc14dbcc186b81f24a5b048056e663649614cd62bef1aceb98b9873189603a1"
+    },
+    "submission_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_profile_v1_0.json",
+      "sha256": "2c4a67a985e9f8773f56df0a232de49cab0810504eca816e100c2cc4e9622468"
+    },
+    "historical_five_cell_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_R7_content_assessment_v1_0.json",
+      "sha256": "63f02be58c23706454ed7db3e59c45ed8a0633d1ac498a42ffe55224f37cc676"
+    },
+    "predecessor_authority": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_2.json",
+      "sha256": "232cf268236663ae7631871d270e56ad898b1360de47a370d493f1638b05b902"
+    },
+    "predecessor_result": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_2.json",
+      "sha256": "f75dc7905465c08a3632c085b9245a6af1241caa4c86f727aade23cd1e392c22"
+    },
+    "predecessor_plan_checkpoint": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json",
+      "sha256": "b8857eabe863ff7b259bf883ef4b6c79f8fcbc61a295940610b0a6d85aedd7e9"
+    }
+  },
+  "execution_limits": {
+    "maximum_new_model_nodes": 16,
+    "maximum_analysis_calls_per_node": 1,
+    "maximum_submission_attempts_per_node": 2,
+    "reused_specialist_plan_count": 6,
+    "maximum_counter_challenge_repairs": 3,
+    "maximum_evaluator_repairs": 2,
+    "maximum_evaluation_rounds": 2,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0,
+    "product_publication": false,
+    "qualified_human_acceptance": false
+  },
+  "outputs": {
+    "run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R4_20260820",
+    "capture_root_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r4_20260820",
+    "private_output_root_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_r4_20260820",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_3.json"
+  },
+  "authority_statement": "Execute one fresh R4 DELL Multi-Agent Preview successor from the immutable R3 six-plan checkpoint. Reuse all successful Specialist plans without rerun; every new node must separate visible analysis from non-thinking strict submission and preserve task-specific TokenBudgetBasis. The provider-neutral planning overlay may admit thirteen current proposals to a twelve-request selector with one deferred receipt, but research inputs, execution budget, network, candidate, acceptance, publication and release authority remain unchanged."
+}

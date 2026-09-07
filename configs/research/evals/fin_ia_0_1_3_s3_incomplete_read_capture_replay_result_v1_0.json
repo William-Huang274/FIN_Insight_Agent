@@ -1,0 +1,100 @@
+{
+  "schema_version": "fin_ia_s3_incomplete_read_capture_replay_result_v1_0",
+  "status": "zero_call_incomplete_read_capture_replay_pass",
+  "recorded_at": "2026-08-14T14:21:15+08:00",
+  "result_id": "FIN-0.1.3-S3-INCOMPLETE-READ-CAPTURE-REPLAY-R1",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_incomplete_read_capture_replay_authority_v1_0.json",
+  "authority_sha256": "3222298053663b0e594aa095e1fabfa251569030a6e899286e0af6b64f8c8afd",
+  "implementation_commit": "a957887846fb723585b62ff9b4622659799d6d77",
+  "immutable_predecessor_audit": {
+    "r1_public_status": "terminal_failed_no_retry",
+    "r1_public_failure_code": "model_gateway_transport_error",
+    "r1_public_result_sha256": "3012d15cf2ece9e34cf40333c0cfef1a6e350bfe001b3fac7797abb59be31712",
+    "r1_content_assessment_sha256": "ba95ede4c2e74aeb1c923babc9f0d91dad40b22679dce9524dac601a22365955",
+    "r1_step2_request_capture_sha256": "49601fe41d9a1be02d97d74962302a1019412e855a0838b34622d3c9d6c58884",
+    "r1_failed_response_capture_sha256": "6f7c34172f7021da4b5552e24d4d1876a67f9680d28bfd58f5fcb1ba06c998b5",
+    "r1_failed_response_capture_observed": {
+      "status_code": 0,
+      "transport_error": "IncompleteRead",
+      "response_body": {},
+      "partial_bytes_preserved": false
+    },
+    "historical_partial_recoverable": false,
+    "historical_run_rewritten_or_reclassified": false
+  },
+  "normalized_proof": {
+    "provider_neutral_shared_terminal_capture_path": true,
+    "ordinary_chat_and_tool_calls_both_covered": true,
+    "typed_incomplete_read_failure_code": "model_gateway_incomplete_read",
+    "valid_json_partial_mutation": {
+      "transport_attempts": 1,
+      "retries": 0,
+      "status_and_safe_headers_preserved": true,
+      "received_expected_and_declared_lengths_preserved": true,
+      "raw_response_sha256_preserved": true,
+      "private_reasoning_redacted": true,
+      "response_body_complete": false,
+      "eligible_for_contract_parse": false,
+      "eligible_for_business_promotion": false
+    },
+    "malformed_partial_mutation": {
+      "transport_attempts": 1,
+      "retries": 0,
+      "received_and_expected_lengths_preserved": true,
+      "raw_response_sha256_preserved": true,
+      "partial_plaintext_persisted": false,
+      "private_reasoning_leaked": false,
+      "response_body_parse_status": "unsafe_unparsed_redacted",
+      "eligible_for_contract_parse": false,
+      "eligible_for_business_promotion": false
+    },
+    "targeted_fresh_processes": [
+      {
+        "process": 1,
+        "passed": 10,
+        "failed": 0
+      },
+      {
+        "process": 2,
+        "passed": 10,
+        "failed": 0
+      }
+    ],
+    "full_repository_tests": {
+      "passed": 280,
+      "failed": 0
+    },
+    "compileall_pass": true,
+    "active_baseline": {
+      "status": "pass",
+      "python_files": 123,
+      "frontend_files": 8,
+      "runtime_resources": 10,
+      "failures": 0,
+      "forbidden_references": 0
+    },
+    "secret_scan": {
+      "status": "pass",
+      "files_scanned": 6549,
+      "findings": 0
+    },
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "product_publication": false
+  },
+  "disposition": {
+    "RC-S3-012_structural_capture_gap": "closed_by_shared_successor_and_zero_call_replay",
+    "stream_cut_origin": "undetermined_provider_proxy_or_network_hop",
+    "replacement_chat_automatically_authorized": false,
+    "replacement_chat_eligible_for_fresh_scope_decision": true,
+    "five_cell_live_authorized": false,
+    "responses_live_authorized": false,
+    "anthropic_live_authorized": false
+  },
+  "known_boundary": "This zero-call result proves future IncompleteRead observability, privacy-safe retention and fail-closed promotion behavior. It cannot reconstruct the original R1 partial bytes, identify which network hop closed R1, prove DeepSeek content quality or authorize a live/model/product action.",
+  "result_digest": "0fa1ffc9bb3ca114baeaf3c36792994b3f199a7f422def11bb125945355966c1"
+}

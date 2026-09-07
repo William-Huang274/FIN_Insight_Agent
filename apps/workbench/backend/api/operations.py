@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from copy import deepcopy
 from pathlib import Path
 import time
 from typing import Any, Callable
@@ -42,9 +43,19 @@ from sec_agent.workbench.store import (
     TraceInspectionReport,
     WorkbenchStore,
 )
+from sec_agent.runtime_resource_registry import read_registered_runtime_json
 
 
 ACTIVE_BASELINE_EVAL_ID = "active_baseline_import_graph"
+CURRENT_S1_VS2_COMPLEX_PDF_RESOURCE_ID = (
+    "application.result.current_s1_vs2_complex_pdf_vertical"
+)
+CURRENT_S1_VS3_RETRIEVAL_RESOURCE_ID = (
+    "application.result.current_s1_vs3_retrieval_vertical"
+)
+CURRENT_S1_VS4_SUPPLEMENT_RESOURCE_ID = (
+    "application.result.current_s1_vs4_supplement_vertical"
+)
 
 
 class ImportEnvRequest(BaseModel):
@@ -135,6 +146,125 @@ def build_operations_router(
     @router.get("/status", operation_id="getOperationsStatus")
     def get_status() -> dict[str, Any]:
         return system_status()
+
+    @router.get(
+        "/s1/complex-document-quality",
+        operation_id="getS1ComplexDocumentQuality",
+    )
+    def get_s1_complex_document_quality() -> dict[str, Any]:
+        result = read_registered_runtime_json(
+            root, CURRENT_S1_VS2_COMPLEX_PDF_RESOURCE_ID
+        )
+        evaluation = result.get("evaluation") or {}
+        projection = evaluation.get("workbench_projection") or {}
+        return {
+            **dict(projection),
+            "result_digest": result.get("result_digest"),
+            "stage_acceptance": deepcopy(result.get("stage_acceptance") or {}),
+            "business_result": deepcopy(result.get("business_result") or {}),
+        }
+
+    @router.get(
+        "/s1/retrieval-quality",
+        operation_id="getS1RetrievalQuality",
+    )
+    def get_s1_retrieval_quality() -> dict[str, Any]:
+        result = read_registered_runtime_json(
+            root, CURRENT_S1_VS3_RETRIEVAL_RESOURCE_ID
+        )
+        return {
+            "schema_version": result.get("schema_version"),
+            "status": result.get("status"),
+            "slice_id": result.get("slice_id"),
+            "summary": deepcopy(result.get("summary") or {}),
+            "gate_results": deepcopy(result.get("gate_results") or {}),
+            "atom_summaries": deepcopy(result.get("atom_summaries") or []),
+            "decision": deepcopy(result.get("decision") or {}),
+            "business_findings": deepcopy(result.get("business_findings") or []),
+            "authority": deepcopy(result.get("authority") or {}),
+            "result_digest": result.get("result_digest"),
+        }
+
+    @router.get(
+        "/s1/supplement-quality",
+        operation_id="getS1SupplementQuality",
+    )
+    def get_s1_supplement_quality() -> dict[str, Any]:
+        result = read_registered_runtime_json(
+            root, CURRENT_S1_VS4_SUPPLEMENT_RESOURCE_ID
+        )
+        raw_case_summaries = result.get("case_summaries")
+        if isinstance(raw_case_summaries, dict):
+            ordered_keys = [
+                key
+                for key in ("DELL", "MU", "NVDA")
+                if key in raw_case_summaries
+            ] + sorted(
+                key
+                for key in raw_case_summaries
+                if key not in {"DELL", "MU", "NVDA"}
+            )
+            case_summaries = []
+            for case_key in ordered_keys:
+                summary = dict(raw_case_summaries[case_key])
+                projection = dict(summary.get("workbench_projection") or {})
+                case_summaries.append(
+                    {
+                        "case_key": case_key,
+                        "slice_id": summary.get("slice_id"),
+                        "coverage_delta": deepcopy(
+                            summary.get("coverage_delta") or {}
+                        ),
+                        "proposition_rows": deepcopy(
+                            summary.get("proposition_rows")
+                            or projection.get("propositions")
+                            or []
+                        ),
+                        "gate_results": deepcopy(
+                            summary.get("gate_results") or {}
+                        ),
+                        "decision": deepcopy(summary.get("decision") or {}),
+                        "business_findings": deepcopy(
+                            summary.get("business_findings") or []
+                        ),
+                        "authority": deepcopy(summary.get("authority") or {}),
+                        "result_digest": summary.get("result_digest"),
+                    }
+                )
+            return {
+                "schema_version": result.get("schema_version"),
+                "status": result.get("status"),
+                "case_summaries": case_summaries,
+                "decision": deepcopy(result.get("decision") or {}),
+                "summary_set_digest": result.get("summary_set_digest"),
+            }
+        return {
+            "schema_version": result.get("schema_version"),
+            "status": result.get("status"),
+            "case_summaries": [
+                {
+                    "case_key": "DELL",
+                    "slice_id": result.get("slice_id"),
+                    "coverage_delta": deepcopy(
+                        result.get("coverage_delta") or {}
+                    ),
+                    "proposition_rows": deepcopy(
+                        result.get("proposition_rows") or []
+                    ),
+                    "gate_results": deepcopy(
+                        result.get("gate_results") or {}
+                    ),
+                    "decision": deepcopy(result.get("decision") or {}),
+                    "business_findings": deepcopy(
+                        result.get("business_findings") or []
+                    ),
+                    "authority": deepcopy(result.get("authority") or {}),
+                    "result_digest": result.get("result_digest"),
+                }
+            ],
+            "decision": deepcopy(result.get("decision") or {}),
+            "summary_set_digest": result.get("result_digest"),
+        }
 
     @router.post("/profiles/import-env")
     def import_env(payload: ImportEnvRequest) -> WorkbenchProfile:

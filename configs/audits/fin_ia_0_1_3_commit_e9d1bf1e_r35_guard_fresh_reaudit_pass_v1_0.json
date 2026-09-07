@@ -1,0 +1,118 @@
+{
+  "schema_version": "fin_ia_independent_readonly_audit_result_v1_0",
+  "audit_id": "AUDIT::FIN-0.1.3::E9D1BF1E::R35-GUARD::R2",
+  "status": "pass_with_nonmaterial_current_state_documentation_successor",
+  "recorded_at": "2026-08-25T07:52:04+08:00",
+  "reviewed_identity": {
+    "commit": "e9d1bf1e8bf9305bf6ee38fd7b3073c4e97dc42f",
+    "tree": "13013e48a0dc73501f866aab131b7d97bf29d41f",
+    "parent": "d63e7966df280ced80b56569a7cb44420f6de6d2",
+    "merge_base": "d63e7966df280ced80b56569a7cb44420f6de6d2",
+    "long_term_base": "f8cc99b57e6173d14f9ee9920948ec6e1f431aa6",
+    "worktree_clean": true,
+    "index_clean": true,
+    "untracked_empty": true,
+    "remote_push_verified": false
+  },
+  "reviewer": {
+    "task": "/root/r35_guard_fresh_reaudit",
+    "fresh_context_fork": "none",
+    "author_separated": true,
+    "read_only": true,
+    "repository_writes": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "paid_calls": 0,
+    "credential_reads": 0
+  },
+  "predecessor_failure_receipt": {
+    "ref": "configs/audits/fin_ia_0_1_3_commit_d63e7966_r38_integrated_readonly_audit_failure_v1_0.json",
+    "git_blob": "05719932fca2aec3f0d79ab71953982d25a4fbbf",
+    "raw_sha256": "535d37f8f94de194e727860c85a4e8c5e4f25ef58cdb5b1334e2dc0c327f1b38",
+    "result_digest": "7189f504060333d8595d516fed314e1f624edc1b7e37741e3410c7230958abf2",
+    "independently_recomputed": true,
+    "predecessor_severity_counts": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 1,
+      "P3": 1
+    }
+  },
+  "severity_counts": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": 1
+  },
+  "material_finding_closure": {
+    "finding_id": "P2-R35-PROMOTION-REPLAY-CAN-ROLL-BACK-CURRENT",
+    "status": "closed",
+    "implementation_ref": "scripts/data_retrieval/promote_s1_reviewed_public_pdf_to_current_runtime.py",
+    "test_ref": "tests/test_s1_reviewed_public_pdf_runtime_successor.py",
+    "checks": {
+      "exact_R34_registry_required_before_build_or_write": true,
+      "five_versioned_final_outputs_must_be_absent": true,
+      "five_versioned_temporary_outputs_must_be_absent": true,
+      "current_R38_main_rejected_before_build_or_write": true,
+      "current_R38_write_event_count": 0,
+      "exact_R34_and_fresh_outputs_enters_original_logic": true,
+      "shared_helpers_used_by_R36_R37_R38_unchanged": true,
+      "runner_authority_sha_binding_found": false,
+      "predecessor_implementation_preserved_by_git_blob": true
+    },
+    "known_boundary": "The guard follows the same serial exact-once threat model as R36-R38. Check-then-act is not a cross-process transaction; a partial first attempt leaves versioned outputs that block replay and require a new successor rather than silent overwrite."
+  },
+  "nonmaterial_findings": [
+    {
+      "finding_id": "P3-CURRENT-STATE-DID-NOT-YET-RECORD-1284-AND-FRESH-PASS",
+      "severity": "P3",
+      "status": "documentation_successor_required",
+      "evidence": "The reviewed e9d1bf1e commit still described the full gate as pending and did not durably record the author's 1284-pass run or this fresh audit result.",
+      "required_fix": "Append the author-run gate and audit result without reclassifying the d63e failure."
+    }
+  ],
+  "unchanged_cross_stage_surfaces": {
+    "R38_registry_source_object_and_dense_cache": true,
+    "R17_writer_artifacts": true,
+    "quantized_4b_metrics": true,
+    "S2_product_bridge": true,
+    "evidence_role_v2_frozen_blob": true,
+    "financial_evidence_shortlist_v2_frozen_blob": true
+  },
+  "author_reported_engineering_gate": {
+    "full_repository": {
+      "passed": 1284,
+      "skipped": 2,
+      "warnings": 2,
+      "exit_code": 0,
+      "reviewer_reran": false
+    },
+    "active_baseline": {
+      "python": 213,
+      "frontend": 8,
+      "detectors": 5,
+      "resources": 28,
+      "forbidden": 0
+    },
+    "secret_scan_files": 8045,
+    "secret_scan_findings": 0
+  },
+  "authority": {
+    "material_findings_open": 0,
+    "audit_pass": true,
+    "qualified_human": false,
+    "S1_qualified": false,
+    "S2_qualified": false,
+    "S3_accepted": false,
+    "product_accepted": false,
+    "publication": false,
+    "release": false
+  },
+  "verification_boundaries": [
+    "The reviewer did not rerun pytest or the full engineering gate under the strict read-only constraint.",
+    "The reviewer did not fetch or push; remote GitHub transport remains unverified.",
+    "The reviewer did not access external sources, providers, models, paid tools or credentials."
+  ],
+  "result_digest": "ece3f878602c7db4cd867c0ecaf34aebfa71f0fe49d4f4bc8325864ee3e01cae"
+}

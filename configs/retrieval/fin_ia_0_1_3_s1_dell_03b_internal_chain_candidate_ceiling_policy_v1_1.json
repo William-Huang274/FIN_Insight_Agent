@@ -1,0 +1,95 @@
+{
+  "schema_version": "fin_ia_dell_report_internal_chain_ceiling_policy_v1_1",
+  "status": "scoped_internal_chain_successor_execution_authorized_after_R1_terminal_failure",
+  "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R2",
+  "attempt_id": "dell-rsq-03b-internal-chain-r2",
+  "recorded_at": "2026-08-25",
+  "decision_target": "Repeat the exact immutable 03B R1 five-request and six-target current-R38 internal-chain ceiling diagnostic with a fresh local Qwen-0.6B query batch after repairing only the source-store identity projection. Do not reuse R1 scores, broaden the target set, acquire sources, run 4B or rerank, promote evidence, or close a gap.",
+  "owner_basis": "The Owner authorized implementation of the integrated DELL S1/S2 plan. R1 reached the current runtime and consumed its one local query batch, then failed before result compilation because the runner required object-layer source_record_id on canonical source-store rows that use evidence_id. This successor preserves R1 and grants one new, identically bounded R2 attempt only.",
+  "predecessor": {
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_0.json",
+    "policy_sha256": "9e17ddd70dab63d8f4775cb0a6b86cd5dc1f69067fa59f4b65a69fe01ff09d4d",
+    "policy_canonical_digest": "eb8b3f8b7ff40bb66a7e63317bd264b342bd11385833294640d7e483fc230f14",
+    "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R1",
+    "attempt_id": "dell-rsq-03b-internal-chain-r1",
+    "failure_receipt_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_r1_failure_receipt_v1_0.json",
+    "failure_receipt_sha256": "63bbc2b2b8a0cbc83926845e32be7afe8e7aa04ca24e877f1f5830404874a432",
+    "failure_receipt_result_digest": "71dabc969173c575c6a32c25ba9fe93c459cd8ada685654ece38d5b3e94ffdf9"
+  },
+  "inherited_without_change": [
+    "six_unoverlapped_targets_and_three_held_targets",
+    "five_exact_request_payloads",
+    "target_semantic_contracts_and_date_ticker_bounds",
+    "full_R38_source_object_index_SQL_population",
+    "BM25_Qwen0_6B_typed_graph_candidate_chain",
+    "candidate_union_96_final_review_16_and_useful_at_10",
+    "4B_reranker_and_03C_eligibility_rules",
+    "zero_network_provider_generation_external_4B_reranker_promotion_and_gap_closure",
+    "candidate_not_evidence_and_no_downstream_acceptance"
+  ],
+  "only_successor_changes": {
+    "source_store_identity_field": "evidence_id",
+    "compiled_object_identity_projection_field": "source_record_id",
+    "source_store_source_record_id_alias_accepted": false,
+    "source_population_requires_nonblank_unique_evidence_ids": true,
+    "source_and_compiled_lineage_populations_require_exact_set_equality": true,
+    "R1_query_scores_or_partial_state_reused": false,
+    "R1_result_relabelled_as_success": false,
+    "fresh_R2_query_embedding_batch_required": true
+  },
+  "execution_budget": {
+    "request_count": 5,
+    "local_embedding_inference_batches_maximum": 1,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "generation_model_calls": 0,
+    "external_capture_calls": 0,
+    "4B_embedding_calls": 0,
+    "reranker_calls": 0,
+    "retries": 0,
+    "current_runtime_mutations": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0,
+    "gap_closures": 0
+  },
+  "TokenBudgetBasis": {
+    "node_purpose": "Encode the same five frozen DELL 03B request queries once with the bound local Qwen3-Embedding-0.6B and complete the candidate-ceiling result that R1 could not compile after its source-store identity seam failed.",
+    "input_scale": "Five request queries against the same 34,198 digest-bound R38 compiled objects and 1,888 canonical source records; the document embedding cache is reused and one fresh query-embedding batch is permitted because no R1 result or scores are reusable.",
+    "required_outputs": "Per target source/object/index/SQL truth, exact corpus/union/useful-at-10/final semantic counts and rank traces, source-to-compiled-lineage set equality, earliest loss, and separate 4B/reranker/03C eligibility without Evidence promotion.",
+    "schema_burden": "Bind immutable R1 policy and terminal failure receipt, 03A R2, the observable-input request program, R38 registry and receipt, canonical evidence_id population, all compiled lineage identities, candidate seeds, route traces and non-overwriting private/public result digests.",
+    "materiality_quality_risk": "A broad topic match can still falsely imply Dell AI-server ASP, physical units, observed yield, HBM availability or supplier-to-Dell allocation; fixing the identity seam must not weaken the conjunctive target gates or turn candidate matches into report evidence.",
+    "comparable_run_evidence": "R1 proved the exact five-request runtime entry and consumed one query batch but produced no scores or result artifact reusable by R2. The earlier R30 12-of-12 candidate-level result remains insufficient for exact report-target sufficiency.",
+    "reasoning_profile": "Non-generative local embedding only; deterministic lexical semantic-gate replay performs the target diagnostic. The successor change is a source identity contract repair, not a new classifier or retrieval strategy.",
+    "stop_and_truncation": "Stop on dirty or unsynced Git state, predecessor/failure/implementation/input SHA or digest drift, any source row without a canonical nonblank unique evidence_id, any source_record_id alias, source-to-compiled-lineage set mismatch, held-target execution, more than five requests or one embedding batch, output collision, network/provider/generation/external/4B/reranker activity, mutation, promotion or gap closure. Union remains 96, final review 16 and useful cutoff 10 per request."
+  },
+  "implementation_bindings": [
+    {
+      "path": "src/retrieval/dell_report_internal_chain_ceiling.py",
+      "sha256": "1b8e9087ffc203f6363cf2011fa520f710cc04018e74805fb7403f6115ffc63a",
+      "purpose": "R1 contract plus fail-closed R2 successor lineage and exact source-to-compiled-lineage population validation"
+    },
+    {
+      "path": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling.py",
+      "sha256": "6077b0368cf95944ab61c6b0b1498264d70d77efea42aae05225350b496fd897",
+      "purpose": "canonical evidence_id reader, clean-synced successor gate and non-overwriting R2 materialization"
+    }
+  ],
+  "authority": {
+    "03B_internal_chain_execution_authorized": true,
+    "current_0_6B_query_embedding_authorized": true,
+    "network_authorized": false,
+    "external_capture_authorized": false,
+    "4B_embedding_authorized": false,
+    "reranker_authorized": false,
+    "candidate_decision_authorized": false,
+    "evidence_promotion_authorized": false,
+    "gap_closure_authorized": false,
+    "public_information_boundary_authorized": false,
+    "G3_authorized": false,
+    "S1_authorized": false,
+    "report_quality_authorized": false,
+    "product_publication_or_release_authorized": false
+  },
+  "known_boundary": "R2 repairs one project-owned source identity seam and repeats the same local read-only candidate-ceiling diagnostic. Even a successful R2 cannot issue 02B human decisions, acquire sources, run 4B or a reranker, promote Candidate or Evidence, create NumericFact, prove a public-information boundary, close a prior-report gap, or pass S1/S2/S3/report/product/publication/release.",
+  "result_digest": "a7d03aec8ae95d102b81892427d96751bcd4b3da8ab751c312f342adf22ef6c5"
+}

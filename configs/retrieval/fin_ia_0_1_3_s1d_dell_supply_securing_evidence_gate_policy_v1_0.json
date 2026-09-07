@@ -1,0 +1,50 @@
+{
+  "schema_version": "fin_ia_official_pdf_evidence_gate_policy_v1_0",
+  "policy_id": "FIN-0.1.3-S1D-DELL-Q1-FY2027-SUPPLY-SECURING-EVIDENCE-GATE-V1.0",
+  "status": "active_bounded_official_pdf_evidence_gate",
+  "recorded_at": "2026-08-13",
+  "route_id": "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT",
+  "consumer_case_key": "DELL",
+  "evidence_owner_ticker": "DELL",
+  "allowed_page_numbers": [3],
+  "max_accepted_pages": 1,
+  "max_excerpt_characters": 1350,
+  "required_anchor_groups": [
+    {
+      "group_id": "memory_uncertainty",
+      "any_literals": ["memory uncertainty"]
+    },
+    {
+      "group_id": "proactive_supply_securing",
+      "any_literals": ["proactively secure access to infrastructure"]
+    },
+    {
+      "group_id": "pricing_margin_discipline",
+      "any_literals": ["pricing and margin discipline"]
+    }
+  ],
+  "slot_bindings": [
+    {
+      "slot_id": "demand_volume_quality",
+      "facet_ids": ["pull_forward_or_digestion", "supply_securing_behavior"],
+      "qualification_id": "dell-q1-fy2027-proactive-supply-securing",
+      "business_meaning_zh": "Dell 明确说明内存不确定性促使客户提前锁定传统与 AI 基础设施，说明订单时点受到保供行为影响。",
+      "claim_boundary_zh": "该证据只证明存在 buy-ahead 动机，没有量化提前采购规模、订单取消率或后续消化速度，因此 pull-forward gap 继续保留。"
+    },
+    {
+      "slot_id": "pricing_mix_value_capture",
+      "facet_ids": ["pricing_discipline"],
+      "qualification_id": "dell-q1-fy2027-pricing-margin-discipline",
+      "business_meaning_zh": "Dell 把供给不确定性与价格、利润纪律放在同一经营解释中。",
+      "claim_boundary_zh": "没有披露 AI 服务器 ASP、出货单位或可复算的 price-volume-mix bridge。"
+    }
+  ],
+  "relationship_directions": ["subject_self_disclosure"],
+  "disposition": "accepted_direct_source_evidence",
+  "evidence_role": "issuer_direct_source",
+  "numeric_use_boundary": "该片段只授权定性引用客户保供行为与价格利润纪律，不授权生成 ASP、采购价格、单位数或精确 pull-forward 比例。",
+  "gap_ids_satisfied": [],
+  "license_scope": "official_hosted_third_party_transcript_private_research_use",
+  "redistributable": false,
+  "causal_attribution_authorized": false
+}

@@ -1,0 +1,120 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_cell_failed_counter_successor_content_assessment_v1_0",
+  "status": "dynamic_single_cell_contract_pass_L1_fail_temporal_relation_overreach_repair_required",
+  "recorded_at": "2026-08-16T21:02:39+08:00",
+  "assessment_kind": "independent_codex_post_run_dynamic_single_cell_complete_three_fragment_assessment",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_counter_successor_chat_live_authority_v1_2.json",
+  "source_authority_sha256": "dda817519cbd86b231ccbf68c081f7a9af6f681aa18c25ff983bbef92a7394af",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_counter_successor_chat_live_result_v1_2.json",
+  "source_result_sha256": "0aae62a61397c0fdffd17890d00f53af21fdaf4f4e951f3ab07b17af5ed993de",
+  "source_result_digest": "eb86bb30d2eb3b2e7d7509a3e549b4329988afa483994c7353820d3f5e9b4e5b",
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_single_cell/FIN013-S3-DELL-DYNAMIC-VC-COUNTER-SUCCESSOR-R3/full_result.json",
+  "private_full_result_sha256": "38ab889f018ee0e1c2661a18e1df7948293738445c6a569ed53e7bfa32324e6e",
+  "private_full_result_digest": "2759ff7f3e2db29f93fda281e6b346556ed6cb897da5690ca3a7e6d58bd3c647",
+  "predecessor_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_result_v1_0.json",
+  "predecessor_result_digest": "b573f049af0f2c4e3ed407791bd10d8912afd7463ca037d208d8a631932dde44",
+  "implementation_commit": "2ceba610f825d70517fbf3ef5262da4e87a6ba94",
+  "execution_observation": {
+    "natural_planner_completed": true,
+    "planner_proposed_atoms": 10,
+    "planner_selected_atoms": 8,
+    "planner_deferred_atoms": 2,
+    "current_S1_S2_executed_once": true,
+    "accepted_reviewed_evidence_across_plan": 6,
+    "typed_gaps_across_plan": 10,
+    "unreviewed_candidates_not_promoted": 108,
+    "candidate_promotions": 0,
+    "fresh_successor_model_calls": 2,
+    "successful_predecessor_model_nodes_reused": 5,
+    "logical_completed_chain_model_nodes": 7,
+    "paid_model_calls_across_failed_and_successor_attempts": 8,
+    "total_fragments_accepted": 3,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_source_network_calls": 0,
+    "protocol_switches": 0,
+    "product_publication": false
+  },
+  "l1_financial_truth": {
+    "gate_status": "fail_temporal_relation_not_source_bound",
+    "checks": {
+      "case_and_cell_identity_correct": true,
+      "reviewed_evidence_only": true,
+      "cross_case_evidence_count": 0,
+      "numeric_refs_valid": 2,
+      "same_basis_numeric_relation_refs_valid": 1,
+      "unsupported_numeric_surface_count": 0,
+      "gap_closed_without_new_evidence": 0,
+      "product_to_segment_or_company_profit_attribution_count": 0,
+      "positive_unproven_AI_profit_driver_count": 0,
+      "candidate_promoted_without_review_count": 0,
+      "narrative_temporal_relation_overreach_count": 1,
+      "harness_generated_research_judgment": false
+    },
+    "blocking_finding": {
+      "code": "counterargument_unbound_same_period_link",
+      "model_surface_zh": "公司层面毛利率在同一财季出现同口径下降，同期其自述的优化服务器占比上升并压低毛利率",
+      "numeric_relation_period": "Q1 FY2027 versus Q1 FY2026, period ends 2026-05-01 and 2025-05-02",
+      "qualitative_evidence_period": "Dell Q3 FY2026 10-Q, period end 2025-10-31",
+      "why_invalid_zh": "两项材料各自有来源，但没有任何已编译 TemporalRelation 授权模型把它们写成同期事实。",
+      "impact_zh": "该句会让读者误以为产品 mix 解释与本次同比毛利率观察来自同一财季，因此不能通过金融事实 L1。"
+    },
+    "non_blocking_positive_observations": [
+      "最终状态诚实保持 insufficient_evidence / not_inferable / bridge_unavailable。",
+      "模型没有把 AI 服务器收入直接升级为分部或公司利润，也没有把产品写成亏损事实。",
+      "同财季毛利率同比关系本身由 S2 确定性 NumericRelation 支持。"
+    ]
+  },
+  "content_quality": {
+    "formal_eight_dimension_score": null,
+    "formal_score_reason": "L1 未通过时不出具内容质量通过分；而且本次仅是一个动态研究单元，Q5 跨单元综合与 Q8 完整研报交付均不适用。",
+    "diagnostic_only_score": null,
+    "diagnostic_observation": "thesis 和 mechanism 保守且问题相关，counter/WWC 也提出了产品价格、出货量和利润桥路线，但时间关系越界是硬失败，不能用其余内容分数抵消。",
+    "dimensions_not_formally_scored": [
+      "Q1_company_and_question_specificity",
+      "Q2_evidence_to_conclusion_argument",
+      "Q3_financial_and_numeric_interpretation",
+      "Q4_causal_mechanism_and_industry_logic",
+      "Q5_cross_cell_synthesis",
+      "Q6_counterthesis_risk_and_gap_discipline",
+      "Q7_what_would_change_and_action_value",
+      "Q8_senior_delivery_usability"
+    ]
+  },
+  "root_cause": {
+    "issue_id": "RC-S3-028-dynamic-narrative-temporal-relation-unbound",
+    "owning_layer": "S3 dynamic ClaimRelation / fragment context / terminal validation",
+    "earliest_faulty_artifact": "dynamic fragment projection exposes individually dated Evidence and a same-basis NumericRelation but does not compile an explicit cross-item TemporalRelation or forbid the model from inventing one in narrative text",
+    "not_caused_by": [
+      "wrong company retrieval",
+      "wrong numeric calculation",
+      "network or provider transport",
+      "candidate promotion",
+      "DeepSeek tool-call contract adherence"
+    ],
+    "required_structural_fix": "compile temporal authority separately from evidence and numeric authority; a model may describe same-period or concurrent movement only by selecting an explicit compiled TemporalRelation. Evidence from another reporting period must be labeled historical_context and cannot be narrated as contemporaneous.",
+    "anti_patch_boundary": "Do not merely add one more prompt sentence or silently delete the word 同期. Preserve this attempt and add provider-neutral replay and mutation coverage for Chinese and English temporal linkage."
+  },
+  "disposition": {
+    "preserve_current_live_result": true,
+    "dynamic_single_cell_contract_pass": true,
+    "dynamic_single_cell_L1_pass": false,
+    "dynamic_single_cell_content_pass": false,
+    "close_RC_S3_025_after_natural_successor_convergence": true,
+    "open_RC_S3_028": true,
+    "rerun_planner": false,
+    "rerun_current_S1_S2": false,
+    "rerun_thesis_or_mechanism": false,
+    "new_evidence": false,
+    "maximum_future_model_calls_after_zero_call_proof": 1,
+    "future_call_scope": "one non-thinking same-fragment temporal repair submission using the already completed counter analysis and the same evidence authority",
+    "five_cell_execution_authorized": false,
+    "heterogeneous_generalization_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false
+  },
+  "next_decision_boundary": "Implement and prove provider-neutral temporal authority at the S3 fragment boundary, replay the immutable R3 output as a true-positive rejection, and allow at most one same-fragment model repair. Only an L1-valid repaired dynamic single-cell result can close this gate; high-quality five-cell work remains additionally blocked by RC-S1-019 source/index synchronization."
+}

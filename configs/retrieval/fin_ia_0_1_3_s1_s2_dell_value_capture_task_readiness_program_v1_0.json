@@ -1,0 +1,397 @@
+{
+  "schema_version": "fin_ia_s1_s2_task_pack_readiness_materialization_program_v1_0",
+  "status": "approved_zero_call_task_pack_readiness_materialization",
+  "case_key": "DELL",
+  "input_bindings": {
+    "product_replay": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_proposition_coverage/dell-proposition-internal-r3/internal_runtime_result.json",
+      "sha256": "70a152426bec39fc34f76418ec4b26b3ec1468025d47537daa11d9a176f00319"
+    },
+    "evidence_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r3-capture-replay/successor/pack.json",
+      "sha256": "80c19b7fba1363558483d7ad8af31297c9c94156645f34c594540d477d249177"
+    },
+    "predecessor_review_plan": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_natural_requirement_evidence_review_v1_1.json",
+      "sha256": "425c89dc2df5b9b9f89bb2b478069cbc415ff7f0c590a4c14556f9e2086a12e4"
+    },
+    "predecessor_polarity_plan": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_natural_requirement_polarity_review_v1_2.json",
+      "sha256": "ccd8bd1744c7fa47d72cf7b6dcbf50c80ee48aaa4f498a588da5ba02f4860024"
+    },
+    "anchor_catalog": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_5.json",
+      "sha256": "93928924566185eb8ec0ef3e362177e2cfb85f9c5449402711dddb79911252bb"
+    },
+    "task_quantitative_public_result": {
+      "ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_task_quantitative_program_result_v1_0.json",
+      "sha256": "0135977ea645ee548109043775f94c7058c7d9b16cb9502212ec0b9f7ecfa2d1",
+      "result_digest": "8031335f656b3dd4598ecac7cfe7ff1f8e957606c308c35c4a23187cd6f3a9f6"
+    }
+  },
+  "review_successor_program": {
+    "schema_version": "fin_ia_s1_requirement_review_successor_program_v1_0",
+    "status": "approved_zero_call_review_successor",
+    "case_key": "DELL",
+    "predecessor_bindings": {
+      "pack_payload_digest": "82ea1defba982308afb8af94cce85ce4e00167ded17602199e90f01215d06129",
+      "review_plan_digest": "9a1acfb3145806f41e4637b423a773652978b023fb8105765bd52b833886e14c",
+      "polarity_plan_digest": "bf10dbe0e4b2b39b7609bd229d874e179250e907bf07879352deafec12dc62a1"
+    },
+    "target_pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+    "review_schema_version": "fin_ia_s1_natural_requirement_evidence_review_v1_2",
+    "polarity_schema_version": "fin_ia_s1_natural_requirement_polarity_review_v1_3",
+    "expected_new_evidence_item_digests": [
+      "60fbf79244728c3d975c4ac50ceb74b1b907f120e147444b133b2e9a364d08bb",
+      "d7c8de3c524043378a879e3a71f11d0e638d6adeacc607bf508112be2aec4cc4",
+      "3a9fef07622a9dec3005c91cfd60083291fcec012eb95fe152ba87417ed2cf6a",
+      "2319834419674058b5a5efd958cfe7f54fb172796d9279a9b7827f787662bca3",
+      "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6"
+    ],
+    "review_updates": [
+      {
+        "requirement_id": "MER::b7b216504cfbbd943afc",
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6",
+            "required_slot_id": "demand_volume_quality",
+            "required_facet_ids": [
+              "industry_ai_server_volume_scenario"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::f43c3f3856fdcdf0daca",
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6",
+            "required_slot_id": "demand_volume_quality",
+            "required_facet_ids": [
+              "bear_base_bull_triggers"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "d7c8de3c524043378a879e3a71f11d0e638d6adeacc607bf508112be2aec4cc4",
+            "required_slot_id": "counterevidence_and_what_would_change",
+            "required_facet_ids": [
+              "industry_high_base_slowdown",
+              "demand_digestion_counterevidence"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::6262229be06b84b274fd",
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6",
+            "required_slot_id": "pricing_mix_value_capture",
+            "required_facet_ids": [
+              "industry_volume_sensitivity_input"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::343a2a9d537121cf476d",
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6",
+            "required_slot_id": "pricing_mix_value_capture",
+            "required_facet_ids": [
+              "industry_volume_sensitivity_input"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "d7c8de3c524043378a879e3a71f11d0e638d6adeacc607bf508112be2aec4cc4",
+            "required_slot_id": "counterevidence_and_what_would_change",
+            "required_facet_ids": [
+              "industry_high_base_slowdown"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::b11707a6ac5f12db3f5f",
+        "set_fields": {
+          "decision_state": "accepted_bounded",
+          "supported_product_ids": [
+            "Dell supplier dependency or allocation disclosure",
+            "GPU supply release",
+            "HBM availability",
+            "advanced packaging capacity"
+          ],
+          "unsupported_product_ids": [],
+          "decision_reason_zh": "Dell 来源依赖、HBM/先进封装约束，以及 NVIDIA 官方的 Blackwell 售罄和 Blackwell Ultra 爬坡共同形成上游供给状态视图。",
+          "claim_boundary_zh": "该视图只能说明供应商层面的紧张与爬坡并存，不提供 Dell 专属配额、到货日期、良率或可用数量。"
+        },
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "60fbf79244728c3d975c4ac50ceb74b1b907f120e147444b133b2e9a364d08bb",
+            "required_slot_id": "capacity_inputs_execution",
+            "required_facet_ids": [
+              "gpu_demand_supply_tightness",
+              "upstream_capacity_context"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "3a9fef07622a9dec3005c91cfd60083291fcec012eb95fe152ba87417ed2cf6a",
+            "required_slot_id": "capacity_inputs_execution",
+            "required_facet_ids": [
+              "gpu_production_ramp",
+              "upstream_capacity_context"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::ca8dca19d882f7dc9789",
+        "set_fields": {
+          "decision_state": "accepted_bounded",
+          "supported_product_ids": [
+            "Dell supplier dependency or allocation disclosure",
+            "GPU supply release",
+            "HBM availability",
+            "advanced packaging capacity"
+          ],
+          "unsupported_product_ids": [],
+          "decision_reason_zh": "供应商售罄、产品爬坡、HBM 与先进封装短缺同时存在，足以支持供给反方与缓解路径的边界分析。",
+          "claim_boundary_zh": "供应商层面的 sold-out 与 ramp 不能证明 Dell 已得到更多 allocation，也不能给出 Dell 到货时点。"
+        },
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "60fbf79244728c3d975c4ac50ceb74b1b907f120e147444b133b2e9a364d08bb",
+            "required_slot_id": "capacity_inputs_execution",
+            "required_facet_ids": [
+              "gpu_demand_supply_tightness"
+            ],
+            "require_exact_anchor": true
+          },
+          {
+            "evidence_item_digest": "3a9fef07622a9dec3005c91cfd60083291fcec012eb95fe152ba87417ed2cf6a",
+            "required_slot_id": "capacity_inputs_execution",
+            "required_facet_ids": [
+              "gpu_production_ramp"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::ec78906c154821fb49f7",
+        "set_fields": {
+          "decision_state": "partial",
+          "supported_product_ids": [
+            "supplier names Dell"
+          ],
+          "unsupported_product_ids": [
+            "Dell names supplier",
+            "delivery or allocation relationship"
+          ],
+          "decision_reason_zh": "NVIDIA 官方 2023 年材料点名 Dell 为 L40S 服务器制造商并给出公开可用时点，建立历史产品关系；当前双边分配仍不可见。",
+          "claim_boundary_zh": "历史 L40S 关系不证明当前 Blackwell/HBM 配额、合同条款、交付状态，也不替代 Dell 自身点名供应商。"
+        },
+        "append_evidence_bindings": [
+          {
+            "evidence_item_digest": "2319834419674058b5a5efd958cfe7f54fb172796d9279a9b7827f787662bca3",
+            "required_slot_id": "relationship_attribution",
+            "required_facet_ids": [
+              "supplier_names_dell",
+              "public_product_availability_timing"
+            ],
+            "require_exact_anchor": true
+          }
+        ]
+      }
+    ],
+    "polarity_updates": [
+      {
+        "requirement_id": "MER::b7b216504cfbbd943afc",
+        "axis_updates": [
+          {
+            "product_id": "industry AI server shipment volume",
+            "add_evidence_item_digests": [
+              "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6"
+            ],
+            "set_fields": {
+              "decision_reason_zh": "TrendForce 资料给出行业 AI 服务器出货增长、基准与下行情景。",
+              "claim_boundary_zh": "行业数值和情景只可用于外部量边界，不能反推 Dell 台数或份额。"
+            }
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::f43c3f3856fdcdf0daca",
+        "axis_updates": [
+          {
+            "product_id": "industry AI server shipment volume",
+            "add_evidence_item_digests": [
+              "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6",
+              "d7c8de3c524043378a879e3a71f11d0e638d6adeacc607bf508112be2aec4cc4"
+            ],
+            "set_fields": {
+              "evidence_polarity": "mixed",
+              "decision_reason_zh": "行业量仍增长，但高基数、架构迁移和配置变化可能降低增速或改变数量口径。",
+              "claim_boundary_zh": "行业正反情景不能证明 Dell 同步增长或给出 Dell unit share。"
+            }
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::6262229be06b84b274fd",
+        "axis_updates": [
+          {
+            "product_id": "industry AI server shipment and ASP",
+            "add_evidence_item_digests": [
+              "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6"
+            ],
+            "set_fields": {
+              "decision_reason_zh": "行业资料同时提供 ASP/配置背景和 2025 出货基准、下行情景，可作为 PVM 外部输入。",
+              "claim_boundary_zh": "这些输入不是 Dell ASP、台数或已披露 PVM。"
+            }
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::343a2a9d537121cf476d",
+        "axis_updates": [
+          {
+            "product_id": "industry AI server shipment and ASP",
+            "add_evidence_item_digests": [
+              "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6",
+              "d7c8de3c524043378a879e3a71f11d0e638d6adeacc607bf508112be2aec4cc4"
+            ],
+            "set_fields": {
+              "evidence_polarity": "mixed",
+              "decision_reason_zh": "行业量基准与下行情景、高基数放缓和既有 ASP 背景共同形成双向 PVM 输入。",
+              "claim_boundary_zh": "只允许用于区间和敏感性，不得生成伪精确 Dell 量价桥。"
+            }
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::b11707a6ac5f12db3f5f",
+        "axis_updates": [
+          {
+            "product_id": "GPU supply release",
+            "add_evidence_item_digests": [
+              "60fbf79244728c3d975c4ac50ceb74b1b907f120e147444b133b2e9a364d08bb",
+              "3a9fef07622a9dec3005c91cfd60083291fcec012eb95fe152ba87417ed2cf6a"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "mixed",
+              "decision_reason_zh": "NVIDIA 官方同时披露 Blackwell 售罄和 Blackwell Ultra 全速爬坡，说明紧张与扩产并存。",
+              "claim_boundary_zh": "只能描述供应商层面的状态，不是 Dell 配额或释放日期。",
+              "scope_boundary_codes": [
+                "supplier_ramp_and_tightness_without_target_allocation"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::ca8dca19d882f7dc9789",
+        "axis_updates": [
+          {
+            "product_id": "GPU supply release",
+            "add_evidence_item_digests": [
+              "60fbf79244728c3d975c4ac50ceb74b1b907f120e147444b133b2e9a364d08bb",
+              "3a9fef07622a9dec3005c91cfd60083291fcec012eb95fe152ba87417ed2cf6a"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "mixed",
+              "decision_reason_zh": "售罄反驳供给已完全宽松，爬坡则给出潜在缓解路径。",
+              "claim_boundary_zh": "两者都不能给出 Dell 何时、获得多少供应。",
+              "scope_boundary_codes": [
+                "supplier_ramp_and_tightness_without_target_allocation"
+              ]
+            }
+          }
+        ]
+      },
+      {
+        "requirement_id": "MER::ec78906c154821fb49f7",
+        "axis_updates": [
+          {
+            "product_id": "supplier names Dell",
+            "add_evidence_item_digests": [
+              "2319834419674058b5a5efd958cfe7f54fb172796d9279a9b7827f787662bca3"
+            ],
+            "set_fields": {
+              "coverage_state": "addressed",
+              "evidence_polarity": "supports",
+              "decision_reason_zh": "NVIDIA 官方历史材料直接点名 Dell 为 L40S 服务器制造商。",
+              "claim_boundary_zh": "该关系是历史产品可用关系，不是当前 Blackwell/HBM 分配或交付关系。",
+              "scope_boundary_codes": [
+                "historical_supplier_named_oem_only"
+              ]
+            }
+          }
+        ]
+      }
+    ],
+    "known_boundary": "This successor maps only the five already reviewed and current-Pack-promoted Evidence items. It may narrow industry volume, upstream state and one historical relationship axis, but cannot create Dell price, unit, current allocation, profit causality, NumericFact or public-information-gap authority."
+  },
+  "task_readiness_program": {
+    "schema_version": "fin_ia_s1_s2_task_pack_readiness_v1_0",
+    "status": "approved_zero_call_task_pack_readiness",
+    "case_key": "DELL",
+    "cell_id": "value_capture",
+    "required_research_consumable_request_ids": [
+      "REQ::DELL::PVM_BRIDGE::V1",
+      "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "REQ::DELL::COUNTER_ISSUER::V1",
+      "REQ::DELL::COUNTER_ECOSYSTEM::V1"
+    ],
+    "actionable_gap_requests": [
+      {
+        "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+        "required_open_gap_ids": [
+          "dell-gap-pricing-asp"
+        ],
+        "next_action": "search_public_configuration_price_and_procurement_ranges_or_retain_typed_gap"
+      },
+      {
+        "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+        "required_open_gap_ids": [
+          "dell-gap-pricing-units"
+        ],
+        "next_action": "seek_Dell_unit_or_share_proxy_then_use_industry_scenario_only_as_external_bound"
+      },
+      {
+        "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+        "required_open_gap_ids": [
+          "dell-gap-supplier-capacity-readthrough"
+        ],
+        "next_action": "seek_current_bilateral_delivery_or_allocation_evidence_without_upgrading_historical_relationship"
+      }
+    ],
+    "expected_integrated_summary": {
+      "requirement_count": 20,
+      "fully_satisfied_requirement_count": 5,
+      "research_consumable_requirement_count": 15,
+      "request_count": 12,
+      "ready_request_count": 1,
+      "research_consumable_request_count": 9
+    },
+    "expected_open_gap_count": 14,
+    "expected_evidence_count": 48,
+    "task_known_boundary": "This is task-relative readiness for one DELL value_capture dynamic unit. Three requests intentionally remain actionable rather than ready; the agent must use tools, reflect on receipts and preserve typed gaps. This does not qualify S1, S2, S3, the full DELL case, multi-agent research or release."
+  }
+}

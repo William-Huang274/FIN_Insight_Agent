@@ -1,0 +1,458 @@
+{
+  "schema_version": "fin_ia_s1_external_source_evidence_adjudication_plan_v1_0",
+  "status": "approved_internal_engineering_evidence_gate",
+  "recorded_at": "2026-08-22",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-EXTERNAL-EVIDENCE-ADJUDICATION-V1.0",
+  "compiled_result_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r2/candidate_review_result.json",
+  "compiled_result_sha256": "095e7b771b18f16319009ca0469cce1f171ac6ff54398c6e0a7f631cadd8b084",
+  "compiled_result_digest": "8541710db4ac2fbdc37dfb6dca038b2546a24599f426a3e2e8950d64f44685d5",
+  "predecessor_pack_ref": "data/workbench_private/fin_0_1_3_s1_product_evidence_successor/dell-r2/pack.json",
+  "predecessor_pack_sha256": "a4d569ad0e6e9acf9b0ca666f1ff83f0f04be24d1162792e4efe1a4fa4fc4746",
+  "predecessor_pack_payload_digest": "c2fd2bba785e13f0fa9545a6a4668b80a1432c65d4dfd42d17a73b4e3eb91472",
+  "qualified_human_review": false,
+  "S1_qualification_authorized": false,
+  "product_publication_authorized": false,
+  "gap_ids_satisfied": [],
+  "decisions": [
+    {
+      "candidate_id": "PUBCAND::008BE68B1F0AEAC7FD03",
+      "candidate_digest": "dba316183554919fe3563279eb61d25f985d5fb35b58e26050f40cf041f290c0",
+      "source_object_digest": "0945541c2195bee75d1db789cfce3202b88d0e2234c056c7687662e5185d8dfe",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "product_configuration",
+            "deployment_integration"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PRICE-CONFIGURATION"
+          ],
+          "business_meaning_zh": "Dell 官方说明 PowerEdge XE 加速服务器可以集成为含计算、网络、供电和散热的机架，并进行工厂及部署测试。",
+          "claim_boundary_zh": "只能证明 Dell 公开提供的产品和交付方式，不能证明成交价格、销量、配置占比或利润。"
+        }
+      ],
+      "numeric_use_boundary_zh": "片段中的层级编号和产品描述不是价格、销量或财务指标，禁止作为 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-price-volume-mix-bridge"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::0F3A5365E7DE0F0CD35C",
+      "candidate_digest": "2e735c9976f9bdc651b6b65edcbb8a03ff481239b40b623f6b0f30c5901953f6",
+      "source_object_digest": "451d369078c10d81f8021e615e667d641208a5ed0e853aeea2c9b892f7e09f00",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "channel_configuration_sample",
+            "gpu_memory_cpu_mix"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PRICE-CONFIGURATION"
+          ],
+          "business_meaning_zh": "渠道页面提供一套实际挂牌的翻新 XE9680 H200 固定配置样本，可帮助研究配置组合的可观察范围。",
+          "claim_boundary_zh": "这是单一渠道翻新样本，不是 Dell 官方标准配置、销量权重、当前新机成交价格或全部市场组合。"
+        }
+      ],
+      "numeric_use_boundary_zh": "GPU、内存和 CPU 数量只描述该渠道样本配置；不得聚合为 Dell 总量、平均配置或 ASP。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-price-volume-mix-bridge"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::195417C4D0F93CB26E7D",
+      "candidate_digest": "55eeeb334e90d407dfb98abb79a0ec2abf647520f29b2c002d3a3ef46122665b",
+      "source_object_digest": "cf75ed66fc1c95c597700cfbbeac1763d235ef238b7180ee3266c58ed9eb3c82",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "industry_value_growth",
+            "industry_asp_mix",
+            "industry_unit_growth"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PVM-BRIDGE",
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "TrendForce 同时给出 AI 服务器行业价值、出货增速和较高 ASP 的预测，可作为 Dell PVM 区间估计的外部锚点。",
+          "claim_boundary_zh": "行业预测不能直接变成 Dell 的价格、台数、产品 mix 或收入桥。"
+        },
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "industry_ai_server_shipments"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "行业出货增速可作为 Dell 销量情景的上层市场边界。",
+          "claim_boundary_zh": "不能据此计算 Dell 份额或实际出货量。"
+        }
+      ],
+      "numeric_use_boundary_zh": "所有数值必须标注为 TrendForce 的行业估计或预测及对应年份，不得标注为 Dell reported 或 exact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-price-volume-mix-bridge",
+        "dell-gap-pricing-asp",
+        "dell-gap-pricing-units"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::3B88EF7FF9BA5C992441",
+      "candidate_digest": "6ba557a73866c40212c308ec2463cb9559c94e65e35c3e8bfbce6a01dca1cf4e",
+      "source_object_digest": "6c43093dcba1ce3c9bac25651409274da1fea935e05eb9d14718b7418cac2911",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "management_margin_target",
+            "solution_stack_value_pool"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-VALUE-POOL"
+          ],
+          "business_meaning_zh": "媒体引述 Dell CFO 的 AI 基础设施利润率目标，并描述服务器、存储、网络和服务的价值栈。",
+          "claim_boundary_zh": "该引述是二手来源；不能替代 Dell 财报，也不能证明目标已经实现或各组成部分利润。"
+        }
+      ],
+      "numeric_use_boundary_zh": "利润率目标和业务规模只能按 Fortune 引述口径使用，不得标记为已实现的公司 exact 结果。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::495CDCEA7651EB506158",
+      "candidate_digest": "8d0fd22138de86fb7ee40e9693cf0cc8e6a01ad59bba9d826243f53f0504c3d2",
+      "source_object_digest": "fca26741d83501a4470fe846689cf4ec8ff3e3b75dbedd65efde8e62acc06eb2",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "gpu_asic_platform_mix",
+            "configuration_mix"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PVM-BRIDGE"
+          ],
+          "business_meaning_zh": "TrendForce 的 GPU、ASIC 和平台占比预测可用于构造行业配置 mix 情景。",
+          "claim_boundary_zh": "不得映射为 Dell 实际产品 mix、客户 mix 或配置销量。"
+        }
+      ],
+      "numeric_use_boundary_zh": "占比数值只能作为 2026 年行业预测输入，必须与 Dell reported 数值隔离。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-price-volume-mix-bridge"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::4B1C9B3CE107AED06D0F",
+      "candidate_digest": "3f0a4d6a8718367cdff0f62deb696971d4122a67989bc6bbe07e77aab07196bd",
+      "source_object_digest": "7524b3b4cb8272ca704eac4abdaef8831bae16c4e2c65893fe736206a1b0c936",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "structural_industry_demand",
+            "buyer_commitment_cycle"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-CUSTOMER-DEMAND"
+          ],
+          "business_meaning_zh": "IDC 将 Q1 2026 AI 基础设施投入描述为多年资本承诺周期，可作为需求持续性的行业基准。",
+          "claim_boundary_zh": "不能证明 Dell 的具体订单、客户预算、取消率或交付转化。"
+        }
+      ],
+      "numeric_use_boundary_zh": "市场规模预测必须按 IDC 预测及年份标注，不可作为 Dell 收入或 backlog。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-demand-pull-forward-digestion"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::D5F0487290FF71691874",
+      "candidate_digest": "ff11ebb69a5fe14a986d0bc0f6e9bea39f51e99528baa2edcd46fb90dc59f545",
+      "source_object_digest": "3261809460dc3adad4b2b0f2e726ad65724a9840b0ddc49dd15ce2dbef5e67c3",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "oem_value_pool",
+            "margin_dollar_vs_margin_rate"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-VALUE-POOL"
+          ],
+          "business_meaning_zh": "The Next Platform 提出 OEM 可能增加利润额但利润率仍承压的机制，用于检验 Dell 是否真正捕获价值。",
+          "claim_boundary_zh": "这是媒体机制判断，不是 Dell 精确利润、HBM 分配或未来盈利承诺。"
+        },
+        {
+          "slot_id": "counterevidence_and_what_would_change",
+          "facet_ids": [
+            "margin_pressure_counterevidence",
+            "supplier_value_capture"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-COUNTEREVIDENCE",
+            "DELL-PROP-VALUE-POOL"
+          ],
+          "business_meaning_zh": "用于反驳收入增长必然带来高质量利润的单向叙事。",
+          "claim_boundary_zh": "必须与 Dell 原始业绩数字和其他独立来源并列，不得单独决定结论。"
+        }
+      ],
+      "numeric_use_boundary_zh": "媒体中的规模或利润描述只可作为线索和机制上下文，不能晋升为公司精确 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-hbm-supply",
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::67B2DB053EF02636F792",
+      "candidate_digest": "2b9ec5d727e303bea1c7120ecb5eaa616575ae11a0253b78454fe7ab467e8c45",
+      "source_object_digest": "7524b3b4cb8272ca704eac4abdaef8831bae16c4e2c65893fe736206a1b0c936",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "compute_storage_composition",
+            "deferred_storage_refresh",
+            "non_gpu_ai_demand"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-CUSTOMER-DEMAND"
+          ],
+          "business_meaning_zh": "IDC 区分加速计算、非 GPU AI 层和延后存储更新，有助于避免把全部 AI 基础设施需求等同于 GPU 服务器。",
+          "claim_boundary_zh": "该行业构成不能证明 Dell 的存储、服务器或服务收入组合。"
+        }
+      ],
+      "numeric_use_boundary_zh": "行业构成比例只能按 IDC 统计口径使用，不得映射为 Dell 产品收入占比。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::8A314F6D1E1509F21997",
+      "candidate_digest": "e3473223ba634b8b123d709b3f342c7a5e1eb4140e86750b0f9ea2fcf391a6db",
+      "source_object_digest": "9010409253ef5e1000eaee4c2f9765f9d6d3fbd3b5af4c3419b7d775806f2fa8",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "industry_server_unit_forecast",
+            "industry_ai_server_unit_forecast"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-UNIT-VOLUME"
+          ],
+          "business_meaning_zh": "全球服务器与 AI 服务器出货增速可为 Dell 销量区间提供市场总量边界。",
+          "claim_boundary_zh": "没有 Dell 份额或公司出货口径，不能反推出 Dell 台数。"
+        }
+      ],
+      "numeric_use_boundary_zh": "数值必须标注为 2026 年全球行业预测，不可作为 Dell reported unit volume。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-pricing-units"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::95E6EDF712CEC68C9898",
+      "candidate_digest": "4ede1c1bb3051573d342fea2143d4278c5372d336be58e18041d9572a22ca5c7",
+      "source_object_digest": "fca26741d83501a4470fe846689cf4ec8ff3e3b75dbedd65efde8e62acc06eb2",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "training_to_inference_mix",
+            "general_purpose_server_readthrough"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-PVM-BRIDGE"
+          ],
+          "business_meaning_zh": "训练向推理迁移和通用服务器协同增长为产品配置与组合变化提供行业机制。",
+          "claim_boundary_zh": "不能证明 Dell 本期 mix、ASP、销量或收入增量来自该机制。"
+        }
+      ],
+      "numeric_use_boundary_zh": "出货增速只作为行业预测输入，不得与 Dell 财务结果直接相乘形成权威事实。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-price-volume-mix-bridge"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::9DDBBC1AE0156A5F4E4B",
+      "candidate_digest": "aca511ba7ad50556083e6c198012332b0ae630c6d1711788aa5c54e6c324e6cc",
+      "source_object_digest": "74e72ceda3626142cd418044e1c3c7907cb0f60334d53226126752c2f9a2b4dc",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "named_customer_case",
+            "customer_deployment_use_case"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-CUSTOMER-DEMAND"
+          ],
+          "business_meaning_zh": "Dell 官方客户案例证明 Northwestern Medicine 与 Dell 的 GenAI 合作和使用场景。",
+          "claim_boundary_zh": "客户案例不披露服务器型号、数量、价格、合同规模或 Dell 财务贡献。"
+        },
+        {
+          "slot_id": "relationship_attribution",
+          "facet_ids": [
+            "issuer_named_customer_relationship"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-CUSTOMER-DEMAND"
+          ],
+          "business_meaning_zh": "Dell 自身披露建立了 Dell 与命名客户的关系边。",
+          "claim_boundary_zh": "只建立公开合作关系，不推断排他性、采购金额或收入归属。"
+        }
+      ],
+      "numeric_use_boundary_zh": "该片段没有可用于 Dell 财务归因的精确数值。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::A15F2EB248B4147F195A",
+      "candidate_digest": "980cf7d5f9078c52e5dd722275c2b1e3a3891a55b9fb12ce90c233f839f00040",
+      "source_object_digest": "90498db4a5a9a7680543aeeb295e9275bbbc1d912830bea7edbe149963c6d576",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "pricing_mix_value_capture",
+          "facet_ids": [
+            "gross_margin_pressure",
+            "ai_server_mix"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-VALUE-POOL"
+          ],
+          "business_meaning_zh": "Fortune 报道把 AI 服务器收入扩张与 Dell 毛利压力并列，提供价值获取反方。",
+          "claim_boundary_zh": "报道中的并列关系不是因果证明，必须回到 Dell 原始报表核对毛利和业务口径。"
+        },
+        {
+          "slot_id": "counterevidence_and_what_would_change",
+          "facet_ids": [
+            "margin_quality_counterevidence"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-COUNTEREVIDENCE",
+            "DELL-PROP-VALUE-POOL"
+          ],
+          "business_meaning_zh": "用于挑战 AI 收入增长等同于利润质量改善的假设。",
+          "claim_boundary_zh": "只能触发核验和反方分析，不直接决定 Dell 利润归因。"
+        }
+      ],
+      "numeric_use_boundary_zh": "媒体转述数值不得晋升为 Dell exact NumericFact；精确值必须绑定公司原始披露。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::B616BEB087C2736DA549",
+      "candidate_digest": "1c2d3534515b5bd6683bd9d78ead1cbb84173b7041914b5e66c0c5fd2e9bfbcb",
+      "source_object_digest": "87ffc24e4708831c85475c058dce579e6552e4e4cd9dd4c0165e6fb6d58e93c5",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "demand_volume_quality",
+          "facet_ids": [
+            "industry_market_spending",
+            "accelerated_server_share",
+            "buyer_pipeline_revision"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-CUSTOMER-DEMAND"
+          ],
+          "business_meaning_zh": "IDC 的 2025 市场跟踪提供 AI 基础设施支出、加速服务器占比和需求修订的行业基准。",
+          "claim_boundary_zh": "不能将行业支出增速、份额或管线直接归属给 Dell。"
+        }
+      ],
+      "numeric_use_boundary_zh": "全部数值必须保留 IDC 的统计期间和预测身份，不得作为 Dell reported revenue、orders 或 units。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-demand-pull-forward-digestion"
+      ],
+      "gap_ids_satisfied": []
+    },
+    {
+      "candidate_id": "PUBCAND::DDF87FD4D1B319FC2A93",
+      "candidate_digest": "1d07ef3a011981fbc019d8a9cf7243b61697a2deabece9c651e90357d639e48f",
+      "source_object_digest": "bf3c74fba001d797fd266a87cb4b3158f991df7d05ebf03c7fd9d5cb3217c220",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "action": "accept_as_evidence",
+      "slot_bindings": [
+        {
+          "slot_id": "capacity_inputs_execution",
+          "facet_ids": [
+            "advanced_process_capacity",
+            "advanced_packaging_capacity",
+            "hbm_supply_constraint"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-SUPPLY-CHAIN"
+          ],
+          "business_meaning_zh": "TrendForce 描述先进制程、CoWoS、HBM 等 AI 供应链约束，可形成产业链紧张度旁证。",
+          "claim_boundary_zh": "不能证明 Dell 获得的分配量、供应释放日期、利用率、良率或专属改善。"
+        },
+        {
+          "slot_id": "relationship_attribution",
+          "facet_ids": [
+            "industry_supply_readthrough"
+          ],
+          "requirement_ids": [
+            "DELL-PROP-SUPPLY-CHAIN"
+          ],
+          "business_meaning_zh": "行业供应约束可作为 Dell 上游风险方向的一致性旁证。",
+          "claim_boundary_zh": "没有 Dell 特定关系边或分配证据，只能标注为行业 read-through。"
+        }
+      ],
+      "numeric_use_boundary_zh": "不得将行业产能或紧张度描述转换为 Dell 的供应数量、良率或交付时间 NumericFact。",
+      "causal_attribution_authorized": false,
+      "gap_ids_narrowed": [
+        "dell-gap-hbm-supply",
+        "dell-gap-supplier-capacity-readthrough"
+      ],
+      "gap_ids_satisfied": []
+    }
+  ],
+  "plan_digest": "363d3e8a435412835ecd11498e6fdaf539e4f59c9153ae8ea55ad2fba1c9f53c"
+}

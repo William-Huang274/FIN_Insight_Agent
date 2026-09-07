@@ -1,0 +1,143 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_policy_v1_1",
+  "status": "provider_neutral_reviewed_evidence_and_numeric_fact_consumer",
+  "reviewed_source_policy": {
+    "allowed_source_types": [
+      "10-K",
+      "10-Q",
+      "8-K",
+      "20-F",
+      "40-F",
+      "6-K",
+      "EARNINGS_CALL_TRANSCRIPT"
+    ],
+    "allowed_source_tiers": [
+      "primary_sec_filing",
+      "company_authored_unaudited_sec_filing",
+      "official_hosted_management_call_transcript"
+    ],
+    "earnings_call_transcript_constraints": {
+      "required_source_tier": "official_hosted_management_call_transcript",
+      "reviewed_pack_only": true,
+      "open_retrieval_source_type_expansion": false,
+      "automatic_numeric_fact_promotion": false
+    }
+  },
+  "cell_contracts": [
+    {
+      "cell_id": "CELL::demand_quality",
+      "title_zh": "需求真实性与持续性",
+      "primary_slot_id": "demand_volume_quality",
+      "supplemental_context_slot_ids": [],
+      "maximum_evidence_items": 8,
+      "maximum_numeric_facts": 4
+    },
+    {
+      "cell_id": "CELL::operating_performance",
+      "title_zh": "经营表现与增量规模",
+      "primary_slot_id": "operating_performance",
+      "supplemental_context_slot_ids": [],
+      "maximum_evidence_items": 8,
+      "maximum_numeric_facts": 12
+    },
+    {
+      "cell_id": "CELL::value_capture",
+      "title_zh": "价值与利润获取",
+      "primary_slot_id": "pricing_mix_value_capture",
+      "supplemental_context_slot_ids": [],
+      "maximum_evidence_items": 8,
+      "maximum_numeric_facts": 8
+    },
+    {
+      "cell_id": "CELL::cash_conversion",
+      "title_zh": "现金转换与资产负债表",
+      "primary_slot_id": "cash_conversion_balance_sheet",
+      "supplemental_context_slot_ids": [],
+      "maximum_evidence_items": 8,
+      "maximum_numeric_facts": 10
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "title_zh": "反方证据与判断改变条件",
+      "primary_slot_id": "counterevidence_and_what_would_change",
+      "supplemental_context_slot_ids": ["capacity_inputs_execution"],
+      "maximum_evidence_items": 12,
+      "maximum_numeric_facts": 6
+    }
+  ],
+  "numeric_fact_selection": {
+    "strategy": "latest_quarter_latest_fiscal_year_and_latest_instant_per_metric",
+    "maximum_non_instant_periods_per_metric": 2,
+    "deduplicate_request_identity": true,
+    "preserve_source_request_and_period_role_lineage": true
+  },
+  "model_input_contract": {
+    "maximum_user_message_chars": 50000,
+    "maximum_evidence_excerpt_chars": 800,
+    "internal_ids_digests_request_lineage_and_citation_urls_hidden": true,
+    "exact_source_visible_facts_and_numeric_values_preserved": true
+  },
+  "model_output_contract": {
+    "payload_schema_version": "fin_ia_current_research_judgment_payload_v1_1",
+    "model_owned_top_level_fields": ["cells"],
+    "model_owned_cell_fields": [
+      "cell_id",
+      "judgment_status",
+      "confidence_basis",
+      "inference_authority",
+      "evidence_uses",
+      "numeric_refs",
+      "thesis_atom",
+      "mechanism_atom",
+      "counterargument_atom",
+      "what_would_change"
+    ],
+    "harness_injected_envelope_fields": [
+      "schema_version",
+      "research_input_digest"
+    ],
+    "harness_injected_cell_fields": ["remaining_gap_refs"],
+    "allowed_judgment_statuses": [
+      "supported",
+      "bounded_support",
+      "mixed",
+      "insufficient_evidence"
+    ],
+    "allowed_confidence_bases": [
+      "direct_source_and_numeric",
+      "direct_source_only",
+      "bounded_context_only",
+      "mixed_source_strength",
+      "gap_dominated"
+    ],
+    "allowed_evidence_use_roles": ["support", "limit", "context"],
+    "allowed_inference_authorities": [
+      "directly_supported",
+      "bounded_inference",
+      "not_inferable"
+    ],
+    "allowed_wwc_directions": [
+      "increase",
+      "decrease",
+      "persist",
+      "reverse",
+      "resolve_gap"
+    ],
+    "maximum_atom_chars": 480,
+    "maximum_wwc_observable_chars": 240,
+    "maximum_wwc_horizon_chars": 120,
+    "maximum_wwc_evidence_route_chars": 180,
+    "digits_currency_units_dates_and_citations_forbidden_in_model_prose": true,
+    "structured_refs_required": true
+  },
+  "authority": {
+    "model_sees_source_visible_facts_and_authoritative_numeric_facts": true,
+    "model_owns_judgment_mechanism_counterargument_and_wwc": true,
+    "harness_owns_identity_period_unit_exact_numeric_surface_and_citations": true,
+    "harness_may_not_invent_research_judgment": true,
+    "candidates_and_rejected_items_forbidden": true,
+    "residual_gaps_remain_visible": true,
+    "source_policy_domains_remain_separate": true,
+    "qualified_human_review_required": true
+  }
+}

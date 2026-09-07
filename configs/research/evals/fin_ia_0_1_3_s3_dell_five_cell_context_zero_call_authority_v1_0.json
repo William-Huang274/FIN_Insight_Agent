@@ -1,0 +1,62 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_zero_call_authority_v1_2",
+  "authority_id": "FIN-0.1.3-S3-DELL-FIVE-CELL-CONTEXT-ZERO-CALL-AUTHORITY-V1.0",
+  "status": "fresh_zero_network_zero_model_current_consumer_proof_authorized",
+  "issued_at": "2026-08-17T00:34:37+08:00",
+  "run_id": "FIN013-S3-DELL-FIVE-CELL-CONTEXT-ZERO-CALL-R1",
+  "attempt_id": "ATTEMPT-01",
+  "clean_implementation": {
+    "implementation_commit": "47566c8eedfa784960dee37aeade0f5c6c40b8cc",
+    "head_must_equal_implementation_commit": true,
+    "upstream_must_equal_implementation_commit": true,
+    "tracked_worktree_must_be_clean": true,
+    "only_authority_may_be_untracked": true
+  },
+  "bound_inputs": {
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_3.json",
+    "consumer_policy_sha256": "c48eb3a035d9600fe5948d7439f0c964eb5d083c2c6f5ed89f3ff750cef7e05e",
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+    "objective_sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548",
+    "planner_atoms_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+    "planner_atoms_sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d",
+    "fake_output_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_current_research_consumer_fake_payload_v1_3.json",
+    "fake_output_sha256": "5271f82cf6c21cf65a3e74202db27802694fe32d8b7d386e155c9cf9b60b3f53",
+    "current_evidence_pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+    "current_evidence_pack_result_sha256": "e902eb8c6873caa6b139d2aa8b6261556392eaa0346a0f67d63597955199df10",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "043e9d6645b284fdb0e078d22cb06f9b7cb0904ed48f67668536c2e45c0beead",
+    "runner_ref": "scripts/research/run_s3_current_research_consumer_zero_call.py",
+    "runner_sha256": "517b5d123da03be14ddf46f9cea6fd2c06c7f3509fe3b7ca8e4a07b2e86e9712",
+    "failed_r1_payload_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_consumer_canary_r1_failed_payload.json",
+    "failed_r1_payload_sha256": "1aa73f781ba865d118feafde16b112e34ebe47752ae37acb73c7a541d5a352f6",
+    "failed_r1_audit_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_canary_r1_content_audit_v1_0.json",
+    "failed_r1_audit_sha256": "06d7fd4052e2ef629b65d9aac45635fb552a4af4296d252e2b3db7762282d404"
+  },
+  "execution_budget": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0,
+    "retries": 0,
+    "current_product_pointer_mutation": "forbidden",
+    "fake_deliverable_publication": "forbidden"
+  },
+  "required_assertions": [
+    "head_and_upstream_equal_bound_implementation_commit",
+    "only_this_fresh_authority_is_untracked_before_execution",
+    "historical_v1_2_policy_and_results_remain_immutable",
+    "five_current_cells_each_receive_one_case_neutral_role_method_pack",
+    "each_cell_graph_context_is_compiled_from_current_case_and_current_governed_objects",
+    "archived_skill_and_graph_rows_are_not_loaded",
+    "full_five_cell_model_view_remains_within_compiled_capacity",
+    "five_cell_fake_judgment_consumes_method_and_graph_refs_without_harness_authorship",
+    "method_shortfall_cross_cell_method_and_cross_case_graph_mutations_fail_closed",
+    "immutable_historical_R1_remains_rejected_and_unpublished"
+  ],
+  "output_contract": {
+    "private_output_root_ref": "data/workbench_private/fin_0_1_3_s3_five_cell_context/zero-call-r1",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_five_cell_context_zero_call_result_v1_0.json",
+    "result_id": "FIN-0.1.3-S3-DELL-FIVE-CELL-CONTEXT-ZERO-CALL-R1"
+  },
+  "known_boundary": "This authority proves the provider-neutral five-cell RoleMethodPack and current GraphContextPack successor on the current DELL reviewed input with deterministic fake judgments only. It does not authorize a model call, prove natural five-cell research quality, prove cross-cell synthesis, publish to Workbench, close S3 or approve release."
+}

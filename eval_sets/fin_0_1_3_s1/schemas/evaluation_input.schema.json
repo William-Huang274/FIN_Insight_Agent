@@ -1,0 +1,106 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "case_role": {
+      "enum": [
+        "development",
+        "regression",
+        "temporal_validation",
+        "frozen_test",
+        "heterogeneous_holdout"
+      ],
+      "title": "Case Role",
+      "type": "string"
+    },
+    "evaluation_unit": {
+      "enum": [
+        "artifact_contract",
+        "seam",
+        "candidate_quality",
+        "evidence_admission",
+        "coverage_or_gap",
+        "consumer_projection",
+        "mutation"
+      ],
+      "title": "Evaluation Unit",
+      "type": "string"
+    },
+    "example_id": {
+      "title": "Example Id",
+      "type": "string"
+    },
+    "responsibility_axes": {
+      "items": {
+        "enum": [
+          "S1-A",
+          "S1-B",
+          "S1-C",
+          "S1-D",
+          "S1-E",
+          "S1-F",
+          "S1-G",
+          "S1-H",
+          "S1-I",
+          "S1-J"
+        ],
+        "type": "string"
+      },
+      "title": "Responsibility Axes",
+      "type": "array"
+    },
+    "runtime_input": {
+      "additionalProperties": true,
+      "title": "Runtime Input",
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "fin_ia_s1_evaluation_input_v1_0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_fixture_refs": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Source Fixture Refs",
+      "type": "array"
+    },
+    "split": {
+      "enum": [
+        "train_internal",
+        "valid_temporal",
+        "test_frozen",
+        "holdout_heterogeneous"
+      ],
+      "title": "Split",
+      "type": "string"
+    },
+    "vertical_slices": {
+      "items": {
+        "enum": [
+          "VS1",
+          "VS2",
+          "VS3",
+          "VS4",
+          "VS5"
+        ],
+        "type": "string"
+      },
+      "title": "Vertical Slices",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "example_id",
+    "split",
+    "responsibility_axes",
+    "vertical_slices",
+    "evaluation_unit",
+    "case_role",
+    "source_fixture_refs",
+    "runtime_input"
+  ],
+  "title": "EvaluationInput",
+  "type": "object"
+}

@@ -1,0 +1,82 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs4_dell_three_proposition_candidate_probe",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS4-DELL-SUPPLEMENT-CANDIDATE-PROBE-V1.0",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_8.json",
+  "parent_policy_sha256_lf": "1d567e938eb688a3f2a997373b9d2a37fa77bebc172fed5b1e175bf34bf9cf72",
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "VS3 integrated the multi-route candidate and decision spine and explicitly authorized one bounded VS4 supplement probe",
+      "the working-capital proposition was not part of the VS3 atom matrix while issuer and upstream propositions remained unbound to the current reviewed Pack",
+      "the three atoms test distinct business failure classes without changing the canonical object snapshot or ranking implementation"
+    ],
+    "not_changed": [
+      "33085-object snapshot, financial intent ontology, embedding and reranker models, hard filters and route floors",
+      "Candidate, Evidence and NumericFact authority boundaries",
+      "DELL, MU, NVDA and holdout qualification status"
+    ],
+    "labels_joined_after_candidate_generation": true,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false
+  },
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_query_atoms_v1_0.json",
+    "query_atom_eval_sha256_lf": "db62a62ebbbd760c5d0bf0334df789053cb5cdd51071232a9af7505d46f50efc"
+  },
+  "token_budget_basis_overrides": {
+    "bge_embedding": {
+      "node_purpose": "Reuse the canonical learned-sparse and multi-vector object cache and encode only the bounded DELL working-capital, issuer-counter and TSM upstream-counter needs.",
+      "input_scale": "33085 cached objects plus the retrieval needs compiled from exactly three pre-registered atoms; no document re-encoding unless immutable cache identity fails.",
+      "required_outputs": [
+        "dense query vectors",
+        "learned-sparse query vectors",
+        "bounded multi-vector scores"
+      ],
+      "schema_burden": "numeric arrays and immutable cache receipts only",
+      "materiality_and_quality_risk": "truncation may hide the precise working-capital or packaging-bottleneck sentence; 512 tokens covers each bounded need and compiled object surface.",
+      "comparable_run_evidence": "VS3 encoded 18 atoms against the same 33085-object cache and retained all 15 development positives in the bounded union.",
+      "reasoning_profile": "local retrieval encoder on CUDA; no generative reasoning",
+      "stop_and_truncation": "maximum 512 tokens, batch 4, fail on object/cache/model identity drift, no CPU or network fallback"
+    },
+    "qwen_embedding": {
+      "node_purpose": "Provide the same provider-neutral semantic challenger for the three bounded VS4 propositions on the unchanged canonical object snapshot.",
+      "input_scale": "33085 cached objects plus the retrieval needs compiled from exactly three pre-registered atoms.",
+      "required_outputs": [
+        "normalized dense query vectors",
+        "immutable cache identity receipt"
+      ],
+      "schema_burden": "numeric arrays only",
+      "materiality_and_quality_risk": "semantic similarity can confuse lease-cancellation language or analyst questions with true counterevidence, so labels and Evidence Role remain post-ranking checks.",
+      "comparable_run_evidence": "VS3 showed semantic routes add candidate recall but cannot independently grant head quality or Evidence authority.",
+      "reasoning_profile": "local retrieval encoder on CUDA; no generative reasoning",
+      "stop_and_truncation": "maximum 512 tokens, batch 8, fail on identity drift, no CPU or network fallback"
+    },
+    "bge_reranker": {
+      "node_purpose": "Score the shared bounded candidate pool for three business propositions without altering candidate membership.",
+      "input_scale": "at most 288 query-candidate pairs across three atoms after need-level candidate fusion.",
+      "required_outputs": [
+        "one finite score per pair",
+        "pair-order invariant ranking"
+      ],
+      "schema_burden": "flat score vector",
+      "materiality_and_quality_risk": "a semantic reranker may promote wrong evidence roles; analyst questions and lease language are explicit hard negatives.",
+      "comparable_run_evidence": "VS3 proved the same scorer and CUDA transport but retained it as one input rather than Evidence authority.",
+      "reasoning_profile": "local cross-encoder on CUDA",
+      "stop_and_truncation": "maximum 1024 tokens, batch 2, exact score-count match required, no CPU fallback"
+    },
+    "qwen_reranker": {
+      "node_purpose": "Independently score the same three bounded candidate pools for direct answerability and correct financial role.",
+      "input_scale": "at most 288 query-candidate pairs across three atoms.",
+      "required_outputs": [
+        "one finite score per pair",
+        "same-pool ranked IDs"
+      ],
+      "schema_burden": "flat score vector",
+      "materiality_and_quality_risk": "instruction following cannot override issuer, period, relationship direction or the Dell-specific allocation boundary.",
+      "comparable_run_evidence": "VS3 showed Qwen head improvements on some atoms but did not authorize standalone promotion.",
+      "reasoning_profile": "local cross-encoder on CUDA",
+      "stop_and_truncation": "maximum 1024 tokens, batch 2, exact score-count match required, no CPU fallback"
+    }
+  }
+}

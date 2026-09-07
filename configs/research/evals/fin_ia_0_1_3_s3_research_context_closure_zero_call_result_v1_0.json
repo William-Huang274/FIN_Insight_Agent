@@ -1,0 +1,29 @@
+{
+  "schema_version": "fin_ia_bounded_finance_loop_zero_call_result_v1_0",
+  "status": "terminal_failed_pre_provider_loop_policy_scope_mismatch",
+  "recorded_at": "2026-08-14T13:06:26+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_research_context_closure_zero_call_authority_v1_0.json",
+  "authority_sha256": "fb184e917fbf51eaef1591086fb9d2100564b39d396b2dcb18360e13b9937fb6",
+  "implementation_commit": "93d58d10a693d0c7550571f44ec4d08a3b32b44d",
+  "run_id": "FIN013-S3-RESEARCH-CONTEXT-CLOSURE-ZERO-CALL-R1",
+  "attempt_id": "ATTEMPT-01",
+  "failure_phase": "zero_call_fake_matrix_single_cell_safe_parallel_read",
+  "failure_code": "finance_loop_parallel_tool_calls_exceeded",
+  "root_cause": "The authority bound legacy loop policy v1.0 with maximum_parallel_tool_calls=1 while the current provider-neutral loop requires the already-qualified same-cell Evidence plus NumericFact read pair allowed by policy v1.1.",
+  "execution": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0,
+    "retries": 0,
+    "product_publication": false
+  },
+  "successful_prefix": {
+    "authority_and_all_bound_input_digests_validated": true,
+    "head_and_upstream_equal_bound_commit": true,
+    "model_or_provider_execution_started": false
+  },
+  "disposition": "Preserve R1 immutable. Issue a new ATTEMPT-02 authority only after binding loop policy v1.1; do not alter or relabel this result.",
+  "known_boundary": "This is an authority-input qualification failure, not a failure of the new relation, source-route, RoleMethodPack, GraphContextPack, DeepSeek model or provider transport.",
+  "result_digest": "0ca1e2e7d62ffc0d4c97a1f5bea088797c580afec2d2df9cd42f879f0b0cbea8"
+}

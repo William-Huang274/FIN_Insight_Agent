@@ -1,0 +1,158 @@
+{
+  "schema_version": "fin_ia_s3_research_context_chat_single_cell_assessment_v1_1",
+  "status": "transport_and_relation_pass_causal_attribution_fail_five_cell_blocked",
+  "recorded_at": "2026-08-14T14:55:00+08:00",
+  "assessment_kind": "independent_codex_post_run_single_cell_assessment",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_research_context_chat_live_authority_v1_1.json",
+  "source_authority_sha256": "c71217bfa1ff523bf8fea6055a4696e0b9d2fc7bc212a6e26d465558d39c9ceb",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_research_context_chat_live_result_v1_1.json",
+  "source_result_sha256": "87e64e313f2429e2ba86330d49045765a37cf06123d3444eb4a506c6662e64ea",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/research-context-chat-r2-value-capture/full_result.json",
+  "full_result_sha256": "e0d36f693cea7879f915c1ec774c41c455498c66577102a67ba879980cf685dc",
+  "implementation_commit": "8ce05106a8e2ea2c9b3f6ac3593bf4cc8c96b40d",
+  "research_input_digest": "7977dfcc4bba9b5341fa6e1de310c6fe53bf5284155e4fd125fe774cfd68a56b",
+  "execution_observation": {
+    "status": "completed_all_required_cells",
+    "model_calls_attempted": 5,
+    "maximum_model_calls": 6,
+    "accepted_tool_receipts": 6,
+    "tool_counts": {
+      "read_reviewed_evidence_for_cell": 1,
+      "read_numeric_facts_for_cell": 1,
+      "submit_evidence_request": 3,
+      "submit_research_judgment": 1
+    },
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "product_publication": false,
+    "private_reasoning_persisted": false
+  },
+  "capture_first_transport_audit": {
+    "provider_response_capture_count": 5,
+    "http_200_complete_response_count": 5,
+    "response_body_complete_true_count": 5,
+    "eligible_for_contract_parse_true_count": 5,
+    "raw_response_sha256_present_count": 5,
+    "incomplete_read_count": 0,
+    "retry_count": 0,
+    "private_reasoning_field_redaction_count": 5,
+    "unredacted_private_reasoning_findings": 0,
+    "business_promotion_from_raw_capture_count": 0,
+    "disposition": "The replacement naturally completed through the same shared capture-first transport that was proven by the zero-call replay. No IncompleteRead occurred, and every complete response retained status, safe metadata and raw identity before local contract parsing. Raw provider captures themselves remained ineligible for business promotion."
+  },
+  "l1_financial_truth": {
+    "gate_status": "fail_causal_attribution_unbound",
+    "checks": {
+      "case_identity_correct": true,
+      "cross_cell_or_cross_case_refs": 0,
+      "reviewed_evidence_only": true,
+      "numeric_fact_refs_valid": 8,
+      "same_basis_relation_refs_valid": 4,
+      "relation_endpoint_numeric_refs_complete": true,
+      "wrong_period_comparison_findings": 0,
+      "gap_closed_without_new_evidence": 0,
+      "causal_attribution_boundary_pass": false
+    },
+    "passed_delta_vs_paired_r1": [
+      "The current and prior Q1 gross profit, operating income, gross margin and operating margin comparisons are now bound to four typed same-cadence relations and all eight endpoint NumericFacts.",
+      "The model consumed all six value-capture method steps, one current-case graph edge and the exact relation references instead of inventing comparison direction from arbitrary periods.",
+      "All three product-level gaps remained open and none of the three EvidenceRequests executed retrieval or promoted a candidate to Evidence or NumericFact."
+    ],
+    "material_failure": "The final thesis upgrades a multi-driver company and segment result into a product-level statement that Dell is converting the AI-server surge into profit. The selected sources support AI-server growth, management's mid-single-digit product profitability target, gross-margin mix pressure and company or segment profit improvement, but they do not isolate the AI-server contribution from storage profitability, traditional-server margins, services, pricing, configuration mix or other company drivers.",
+    "additional_unbound_mechanism": "The mechanism states that a large share of operating costs is semi-fixed and does not grow in proportion to revenue. That is economically plausible, but no selected Evidence, NumericFact, typed relation or current graph edge establishes this cost-behavior claim for Dell in the assessed period."
+  },
+  "l2_evidence_and_gap_authority": {
+    "gate_status": "pass",
+    "reviewed_evidence_refs": 4,
+    "numeric_refs": 8,
+    "numeric_relation_refs": 4,
+    "method_step_refs": 6,
+    "graph_edge_refs": 1,
+    "proposal_only_evidence_requests": 3,
+    "retrieval_executed": 0,
+    "candidate_promoted_to_evidence": 0,
+    "numeric_fact_created": 0,
+    "remaining_typed_gaps": 3,
+    "finding": "The request sequence is materially better than paired R1: ASP uses the typed fact route, while price-volume-mix and unit volume use the current official-company narrative route. The model did not treat queued requests as returned evidence."
+  },
+  "content_quality": {
+    "formal_eight_dimension_score": null,
+    "formal_score_reason": "FIN 0.1.3 requires the financial-truth and causal-attribution gate to pass before a formal Q1-Q8 report score. This is also a single-cell workpaper preview, so Q5 cross-cell synthesis and Q8 senior delivery are not applicable.",
+    "diagnostic_only_applicable_score": 18,
+    "diagnostic_only_applicable_maximum": 24,
+    "node_quality_scores": {
+      "Q1_company_and_question_specificity": {
+        "score": 4,
+        "reason": "The output is specific to Dell AI servers, value capture, margin mix and the missing product-level profit bridge."
+      },
+      "Q2_evidence_to_conclusion_argument": {
+        "score": 3,
+        "reason": "Four reviewed issuer sources are separated into support, limit and context, but the thesis still reaches beyond what the multi-driver evidence can attribute to AI servers."
+      },
+      "Q3_financial_and_numeric_interpretation": {
+        "score": 3,
+        "reason": "All four same-quarter relations and eight NumericFact endpoints are used correctly; the remaining weakness is the jump from company or segment relations to a product-level profit conclusion."
+      },
+      "Q4_causal_mechanism_and_industry_logic": {
+        "score": 1,
+        "reason": "The low-margin volume plus semi-fixed-cost mechanism is coherent but not sufficiently source-bound, and it overstates AI-server causality within a multi-driver company result."
+      },
+      "Q5_cross_cell_synthesis": {
+        "score": null,
+        "reason": "Not applicable to the pre-registered single-cell replacement."
+      },
+      "Q6_counterthesis_risk_and_gap_discipline": {
+        "score": 4,
+        "reason": "The counterargument explicitly preserves the unaudited product target, missing product profit line, ASP, units and price-volume-mix bridge, plus memory pull-forward and services risk."
+      },
+      "Q7_what_would_change_and_action_value": {
+        "score": 3,
+        "reason": "The observable, two-quarter horizon and official evidence route are actionable; it does not yet state a precise thesis-state transition and correctly avoids inventing an unsupported numeric threshold."
+      },
+      "Q8_senior_delivery_usability": {
+        "score": null,
+        "reason": "Not applicable until verifier-bound five-cell workpaper and report artifacts exist."
+      }
+    }
+  },
+  "paired_baseline_disposition": {
+    "baseline_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_chat_responses_paired_content_assessment_v1_0.json",
+    "old_chat_diagnostic_score": 17,
+    "old_responses_diagnostic_score": 18,
+    "replacement_chat_diagnostic_score": 18,
+    "material_gains": [
+      "same-cadence numeric relation lineage now passes",
+      "source requests now match current executable route classes",
+      "RoleMethodPack and GraphContextPack consumption is proven by refs and receipts",
+      "the counterargument and residual-gap handling are more complete"
+    ],
+    "remaining_blocker": "The gain in quantitative lineage and research-context consumption did not eliminate product-level causal overstatement, so content superiority sufficient for five-cell expansion is not established."
+  },
+  "root_cause_disposition": {
+    "incomplete_read_capture_gap": "closed_by_formal_zero_call_replay_and_naturally_not_reproduced_in_R2",
+    "provider_or_proxy_stream_cut_origin": "undetermined_historical_R1_partial_irrecoverable",
+    "model_instruction_following": "passed_tool_sequence_and_reference_contract_but_failed_semantic_causal_boundary",
+    "project_control_gap": "The local validator proves identity, refs, periods, relations, pack consumption and gap authority, but it does not yet require a typed product-to-profit bridge or force an abstaining thesis when selected evidence is multi-driver.",
+    "disposition": "Do not rerun another paid single-cell attempt. First make the causal-claim scope and product-to-financial bridge authority explicit and replay this saved Judgment as a zero-call negative case."
+  },
+  "acceptance": {
+    "incomplete_read_zero_call_replay": true,
+    "replacement_live_transport": true,
+    "standard_tool_transport_and_local_contract": true,
+    "same_basis_numeric_relation": true,
+    "evidence_request_route_alignment": true,
+    "role_method_and_current_graph_consumption": true,
+    "single_cell_l1_financial_truth": false,
+    "single_cell_content_quality_improved_enough_for_expansion": false,
+    "five_cell_live_authorized": false,
+    "other_role_method_pack_migration_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false
+  },
+  "next_decision_boundary": "Return the real result to Owner. No automatic third Chat, five-cell run or additional RoleMethodPack migration is authorized. The next bounded package, if approved, should be a zero-model causal-claim-scope and typed product-to-profit bridge gate using the saved R2 Judgment as a negative replay case."
+}

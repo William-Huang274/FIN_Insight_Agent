@@ -1,0 +1,248 @@
+# 当前主清单
+
+## 2026-09-02 DELL 单案例完整纵切
+
+- [x] 停止继续 R14／MinerU 扩张，冻结一个 DELL 最终产品形态演示范围
+- [x] 本地 Knowledge：18 份官方正文、597 个 candidate record，禁止自动晋升 Evidence
+- [x] Reviewed Evidence：base 55＋FY27 Q2 overlay 6＝61；current Q2 文字 Evidence 与 S2 NumericFact 分权
+- [x] S2：11 ticker、4,586 observations、12 direct＋3 derived metric，只读 mart SHA 绑定
+- [x] MCP 数据工具：Knowledge／Evidence／Finance／外源发现与抓取统一协议，failure receipt 和 partial-not-promoted 完整
+- [x] LangGraph 真实多 Agent：动态 Planner、Evidence/Finance 并行、9 Specialist、Counter、最多一次定向回派、Lead、HITL、resume/render
+- [x] 输入／调用／并发／外源 aggregate budget、model journal、citation index、Git/source binding、S2 TOCTOU 和 terminal repair 工程门
+- [x] focused offline gate：67 passed，0 模型／0 网络调用
+- [x] 新纵切与 Workbench 相邻回归：175 passed；secret scan 8,386 files／0 findings
+- [ ] clean commit、push，并在 exact clean commit 上重跑 zero-call preflight
+- [ ] 唯一真实 attempt `20260902-dell-reference-vertical-q1-a01` 运行到 HITL 后停止
+- [ ] 人工逐 claim/source/numeric、9 workpapers、counter/reroute、token/latency/receipt 内容验收
+- [ ] 只有人工审计通过后，Owner 才决定同一 commit 上 approve/resume 和公开展示
+
+Source of truth：`docs/worklog/fin_0_1_3_s3/175_dell_reference_vertical_data_runtime_foundation_and_live_gate.md`
+
+## 2026-08-30 成熟栈优先纠偏与 Steps 1–3
+
+- [x] Owner 明确否决继续扩写自研 Phase 0–7 plan-execution protocol；旧约 570 KB 计划原位标记 `SUPERSEDED / AUDIT-ONLY / NO EXECUTION AUTHORITY`，历史内容和 R14 证据不删除。
+- [x] 根 `AGENTS.md` 和 Project OS 已写入成熟栈优先、工程/运行时/FIN domain 三层分责、复杂度预算、docs-only 连续工作止损和按风险分级控制。
+- [x] 新 ADR 与 bounded execution baseline 已建立；不再创建自定义 ticket/epoch/CAS/receipt runtime。
+- [x] 在 Z 盘隔离环境安装并固定 277-package lock；用真实 FIN fact-mart 代码路径上的同一确定性 DELL-shaped PIT fixture 真跑 Dagster/Prefect retry、MLflow readback、OTel、OpenLineage 与 DVC round-trip。它不是现场 SEC 来源/金融真值资格；Dagster=`primary candidate`，Prefect=`challenger`；PostgreSQL 因 Docker Desktop startup 被环境阻断，不是假 PASS。
+- [x] 复核 S1–S5 Build/Adopt/Hold/Retire，并在产品审计第 12 节冻结模块级 `retain/wrap/replace/regression/retire` 迁移矩阵；LangGraph 不再预设为全局控制面。
+- [x] Temporal 因无 durable-long-running 触发继续 HOLD；DVC 仅大型资产 conditional adopt；MLflow 因漏洞/PostgreSQL blocker 只作 qualification backend。没有为了“栈完整”全量部署。
+- [x] R14 保持 `7e25cad9...` 和 `239/277` 冻结；未创建 R15/R16、未 formal、未自动 Evidence/S2/report/release，未修改 `D:\FIN_Insight_Agent\data\indexes`。
+- [x] Owner 已授权的 bounded nonproduction engineering 已签发：`pyproject.toml + uv.lock`单一依赖源（157 lock records）；fresh exact-clean `43bd6344` PostgreSQL 16.15 transaction/UNIQUE/advisory lock/restart/host-roundtrip dump-restore与Dagster PostgreSQL storage通过；真实DELL/MU/NVDA S2 fact-mart为1,319 observations、24/24 qrels，legacy／Dagster／tracked完整semantic projection exact。final qualification attempt=`20260831T145529Z-eef901a4`、result SHA=`9c65ca53...5ffb2`。这只签bounded engineering，不签image supply、production或产品能力。
+- [x] thin Dagster adapter只编排现有 CLI，legacy入口与 rollback保留、删除量0；LangGraph因本纵切面无 checkpoint/HITL/Agent graph需求而继续 HOLD。
+- [x] 同阶段producer/harness修正已冻结为`43bd6344`；最终control-plane真实只读job successor通过（attempt=`20260831T155249Z-65000a8b...`、summary SHA=`e6b7308c...c3bbb`），Workbench runtime contract通过；前端固定Node/Playwright环境完成typecheck/build与完整`3/3` E2E；全仓union profile=`2671 passed, 5 skipped`。所有中途失败保持不可变，详见S1/131。
+- [x] 两个exact image的Syft/Grype/native审计和artifact manifest已完成，但结论为`image_supply_gate=BLOCKED / production_pass=false`：每张镜像保留236 raw findings（7 Critical／31 High），29 generic项尚无VEX，control-plane的15个`psycopg2-binary`原生文件为扫描盲区。扫描“完成”不得改写成供应链“通过”。
+- [x] S5 image/native supply remediation 的 exact-clean 非生产资格已完成：`e965f235` 两张 exact image 重建复扫；system-linked libpq native closure 19/19 dpkg-owned；OpenVEX exact allowlist 与 raw 守恒；fresh PostgreSQL/Dagster、exact control-plane 真实 job、exact Workbench DELL/MU/NVDA readiness、全仓 `2671 passed, 5 skipped` 与两路独立复核通过。统一 summary SHA=`80f5121d...943b`，详见 S1/132。
+- [x] Owner 已选择冻结 S5 bounded nonproduction 证据并进入下一个已批准能力面：S1 成熟数据面资格化（S1/133）。当前 pgvector/Qwen/dense union 只有 dirty bounded development evidence；Arelle=`HOLD_SOURCE_CAPTURE_PACKAGE`，Docling 环境/模型已冻结但 conversion attempt=0，RRF final order=`HOLD_QUALITY`。四个 qualification runner 是合计 4,445 行的 lab harness，禁止进入产品 runtime；必须先 clean replay、真实 Docling／旧 parser 对照与薄 adapter 复核，才可讨论迁移或 legacy retirement。production image/native supply 原阻断、current S2 authority、EIA key轮换、R14与全部下游权限均未被本选择解除。
+- [x] S1资格实现已clean commit并推送为`dd84b0dd`；首次clean Docling preflight=`20260901T042108Z-preflight1`完整验证Git/runtime/model/input身份后，因宿主可用内存`2.435715 GiB < 3.0 GiB`在模型加载前返回`HOLD_RESOURCE`。这不是parser失败；conversion仍为0，禁止降低安全线或杀用户进程。当前并行合法动作只剩本地完整DELL accession/DTS搜索和旧PDF parser基线审计，内存门通过后才以新attempt运行DELL 9页控制case。
+- [x] 自然内存恢复后，strict-JSON v1.1修正已在clean pushed `aabbcba1`上以全新Docling attempt=`20260901T050341Z-run2-strict`重跑成功；资格包`CLEAN_BOUND`、component execution=`PASS`，9页/15表/1,048 cells与pypdf、pdfplumber基线均已保存。作者分离输出审计仍发现4个金融语义P1问题簇，故raw direct consumption=`HOLD_QUALITY`，只允许JSON-first fail-closed薄adapter shadow；当前adoption/mainline/Evidence/product/legacy retirement均false。下一动作不是修表自研，而是用冻结反例证明薄层能拒绝异常，再做不同发行人case；特例复杂度越界即转成熟challenger。
+- [x] fail-closed Docling薄adapter已以clean pushed `389545a9`实现并完成DELL双验证attempt=`20260901T061520Z-shadow1`：官方Docling模型接受原始JSON；FIN层对118个source leaves产出112个candidate、隔离9项并记录23 findings／24 unresolved relations，table10、`-%`、脚注和跨页反例均未修复或自动绑定，8项authority全部false。作者分离代码复核为`0/0/0/1`、落盘证据复核为`0/0/0/0`。这只签一个born-digital DELL case的fail-closed shadow，不签adoption、mainline或金融语义通过。
+- [x] 第二发行人Tencent 282页真实PDF已完成官方Docling模型与FIN边界双审计：Docling组件和官方schema通过，但人工复核发现wide statement行标签/短语错配与CJK mojibake；一次通用NodeItem/orig/overlap修正后又暴露既存`(s)`脚注误判导致finding/relationship ID重复，v1.1在`docling_shadow_finding_id_duplicate`明确fail closed。停止继续扩写Docling detector，状态为`HOLD_ADAPTER_INTEGRITY / HOLD_QUALITY`，没有正式Tencent shadow pass、adoption或产品接线；安全通用修正已clean pushed为`67a21962`。
+- [x] MinerU 3.4.5 exact native-Windows `mineru[vlm]` Transformers环境与HF exact VLM snapshot已经真实落到Z盘：83/83 locked distributions、binary-only audit、CUDA/ABI/import/backend smoke通过；13 files／2,328,028,720 bytes逐项SHA复算通过，weight=`abf8681c...a5f0`、manifest=`84ac49fd...141d`。pipeline因`PDF-Extract-Kit-1.0`许可冲突继续`HOLD_LICENSE`；环境/model supply通过不等于parser/adoption/生产通过。
+- [ ] 下一合法活动是等待宿主资源自然满足冻结双门后，用新immutable attempt运行同一Tencent物理页130的单页、单并发MinerU smoke。首次preflight=`20260901T102240Z-preflight1`三次free RAM仅4.224/4.205/4.201 GiB、free VRAM均6,964 MiB，低于10 GiB/7,680 MiB，已在模型加载和文档推理前正确`HOLD_RESOURCE`、输出0。不得降门、杀Owner进程、换模型/页/backend、在同一attempt重试或删除`data/indexes`。
+- [x] 历史前置审计（已由上一条的`pypdf1`、`pdfplumber2`和`run2-strict`取代其待办部分）：DELL 2023 accession目录仅有主HTML+metadata，完整DTS/company linkbases/accession archive与EFM/taxonomy profile均不存在，Arelle继续`HOLD_SOURCE_CAPTURE_PACKAGE`；当时DELL FY26同一9页PDF尚无既存legacy artifact，并据此选择复用现有`official_pdf.py`与`pdf_layout.py`而不另造harness。两项基线现均已真实运行，不能再把pdfplumber依赖写成当前未就绪。
+
+- [x] S0 权威干净基线
+- [x] S1-A 类型化本地检索纵切接入 Workbench
+- [x] S1-B current official source/object 重建（工程通过，typed gaps 转交 S1-C/S1-D）
+- [x] S1-C sparse/dense/fusion/规则重排同对象工程对照（BM25 保留默认，其他路线未晋升）
+- [x] S1-C Owner qrel successor 决策与缓存复跑（05/11 替换、15 保留并扩展、16 当前现金流对象；18/18 mapped）
+- [x] S1 请求入口工程闭环（EvidenceRequest 按需选 facet 并进入当前 Runtime；自然语言理解仍归 S3、交互仍归 S4）
+- [x] S1-C 现成 Cross-Encoder／Evidence Role shadow 资格判断（两者均不晋升；角色规则留出泛化不足，禁止上线）
+- [x] S1-C 金融角色数据合同 successor（24 object／35 relation；claim/table/parent 分离；Codex 开发复核；留出未调参）
+- [x] S1-C 检索栈与数据库通道治理（SQL/typed exact lookup 为必选路线；多 retriever/reranker 对照和微调止损门冻结）
+- [x] S1-C 新 test-precut 预注册（HPQ／AVGO／INTC；ORCL／ASML／ANET 仅作已观察 validation）
+- [x] S1-C1 query family、确定性对象视图与 typed fact route compiler（11 family／17 facet；20,340 去重候选；空表与业务单元行组修复；数据库缺口显式归 S2；不训练）
+- [x] S1-C 同语料 multi-retriever、同候选 Cross-Encoder 和 Evidence Role 对照（工程 shadow 完成，无产品路线或 Evidence 权限晋升）
+  - [x] BM25／BGE-M3 同 20,340 对象对照与业务审计（候选并集 18/18 source hit；精确对象仅 6/14；无路线晋升）
+  - [x] Qwen Embedding（本地合格资产完成 shadow；8/15，provisional，不单独晋升）
+  - [x] 同候选 BGE／Qwen Reranker 与独立 Evidence Role＋abstain（Qwen reranker 仅 shadow；Role F1=0.5818，拒绝上线）
+- [x] S1-C 保存 Planner 10 atoms 产品输入审计（10→8+2；8 request／128 candidates／19 resolved／9 typed gap／45 NumericFacts；逐 facet 归责完成）
+- [x] S1-D 本轮有界 residual-gap 补源与 DELL Evidence Pack 复编译（TSM 2 条 bounded Evidence；Dell 官方 transcript 3 条 direct Evidence；当前 DELL 20 Evidence／14 gaps；MU/NVDA 不变；S1 总产品门仍开）
+- [x] S1 全链标准范式与独立评测完成定义（source/capture→OCR/parser/cleaning→chunk/object→index→query/recall/rerank/fine-rank→Evidence/Coverage/gap；文档冻结，Runtime 未完成）
+- [x] S1 canonical artifact spine、A–J 责任覆盖矩阵、真实消费者、artifact 迁移／回滚和 split-safe gold program（VS1 Runtime R14 已消费；valid／test／holdout 仍按计划预留）
+- [x] S1 VS1 数字原生官方资料→CandidateDecision→Coverage→Pack→Workbench 纵切（DELL pricing/mix：2 accepted／4 needs-review／2 reviewed-not-recalled／3 supplement-unexecuted；仅 `vertical_slice_integrated`，不等于 S1 资格）
+- [x] S1 VS2 复杂 PDF／OCR mutation／跨页表格／脚注／修订重述→Decision／Coverage／Workbench 纵切（IFX 开发样本：67 个金融对象；4 个 reviewed 目标仅 1 个进入前 20；自然扫描和 NumericFact 未资格化；R16 修复全部 inline payload ref 可解引用）
+- [x] S1 VS3 同一 CandidateSet 的 BM25／BGE／Qwen／typed route 候选、CUDA-only semantic rerank、finance-aware Evidence evaluator 与头部稳定资格（15/15 入池；顺序稳定率 1.0；v1.6/v1.7 失败保留）
+- [x] S1 VS3 多路线 recall／rerank／金融精排→CandidateDecision／Coverage／Workbench 纵切（金融前十 15/15、0 confirmed hard negative；VS1 2/2 可追溯、VS2 4/4 最终审阅面；R17；不等于 S1 资格）
+- [x] S1 VS4 Coverage 驱动第二轮补证纵切
+  - [x] DELL 三命题自然路径、capture-bound successor 与当前 `/workspace`／Operations 双消费者整合（20→22 Evidence；退役 3、精确新增 5；14 gaps 中窄化 1、关闭 0；R18；不等于 S1 资格）
+  - [x] MU／NVDA 等价自然 Coverage→query→candidate→decision→capture→Pack→Workbench 路径（三案 R19 同一 registry／consumer；不等于 S1 资格）
+- [ ] S1 VS5 frozen test／新异质留出／稳定性资格；达到 `S1_qualified_stable` 前不得执行产品资格完整真实链
+  - [x] 6 个未观察案例／7 份官方来源／30 命题预注册，来源 capture、腾讯全页 layout、10,618 对象与 5／10／15 split-safe Runtime input
+  - [x] evaluator-only source review/reference（130 positive candidates；JPM 4 个 parser/object failure；4 个 source-plan coverage failure；人工最终复核待完成）
+  - [x] CUDA＋FP16 fail-closed 预检（RTX 4060 Laptop，四模型 digest 绑定，0 完整模型加载／0 qualification vector execution）
+  - [x] request-bound Material Evidence Set v1.1、current candidate metadata adapter 与四案真实候选零调用回放（18 requests／40 requirements；材料组全保留；候选仍非 Evidence）
+  - [ ] 自然 ResearchBlueprint material scope、COST qualified-human reference 决策与 replacement blind qualification
+  - [ ] valid temporal 资格运行、reference review 与一次性 frozen／heterogeneous 执行
+- [ ] S1 人工可操作、Evidence admission 与 replacement blind 收口
+  - [x] 24 请求 AI-free 人工可操作预检、当前官方资产对账和业务可读处置
+  - [x] 16 请求／22 requirement 的 digest-bound 私有 qualified-human admission 包
+  - [x] 至少 6 个外部新案例的 Git 外 blind handoff／receipt 合同
+  - [ ] qualified-human 逐条 admission receipt 与 current readiness 重物化
+  - [ ] 外部隔离 case／label 分配、candidate freeze 和 blind qualification receipt
+- [x] 当前 Pack registry-atomic 提升（R11；按案例私有对象根；0 复制／0 网络／0 模型；Workbench 三案真实挂载复验通过）
+- [ ] S1 请求级来源路线执行真相与公开 gap 资格
+  - [x] provider-neutral Source Route Portfolio、Workbench Runtime、ProductReadiness 合同与三案 zero-call replay 工程门
+  - [x] 干净提交上的三案 immutable successor、ProductReadiness 重物化与 Registry R28／Runtime Binding v1.5 晋升
+  - [x] 先对账当前 source／object snapshot：原 MU 4／NVDA 3 个 source-pending 请求已证明官方资产存在，新增获取需求为 0
+  - [ ] 修复这 7 个请求的 object／query／recall／ranking／Evidence Role 最早覆盖损失；仍不得冒充公开信息 gap
+- [x] S2 当前公司财务事实 mart、typed exact lookup、NumericFact / PIT / 单位期间与引用回归（engineering pass）
+- [x] S2 request-scoped Runtime 接入（真实 DELL 6/6 resolved；S3／前端消费未完成）
+- [x] DELL S1/S2/S3 零调用工程纵切（受控 S3 Objective／EvidenceRequest、Qwen＋BM25 联合候选、S2 7/7 resolved／21 NumericFacts）
+- [x] DELL 自然 planner canary R1（exact-once terminal：业务维度全覆盖，但 10 atoms 超过 8 条执行上限；无 retry）
+- [x] S3 proposal ceiling／execution budget 分层零调用处置（10 proposals 全校验，稳定选择 8、延期 2；R1 不重跑）
+- [x] S3 当前基线 research consumer 零调用工程纵切：Evidence Pack＋NumericFact → 判断原子／底稿／报告 preview（45 request-level facts → 35 semantic unique → 25 visible；fake/mutation 通过）
+- [x] S3 当前 consumer clean R2（HEAD/upstream 绑定，复现同一 input/deliverable digest）
+- [x] S3 DELL 自然综合 canary R1（HTTP/exact JSON/5 cells；合同与内容双重失败，0 retry）
+- [x] S3 consumer v1.1 envelope／枚举／cell-scoped Evidence／推论权限结构处置
+  - [x] provider-neutral 合同、immutable R1 replay、fake/mutation working-tree implementation
+  - [x] 全仓回归、clean remote commit 与独立 zero-call proof
+- [x] DeepSeek V4 Pro GA profile 与四工具最小研究循环资格验证（传输、fixed-Pack Judgment 与 bounded repair 已证明；不等于动态研究）
+  - [x] JSON control 单节点 v1.1 合同/L1/L2 与适用内容门通过；strict Beta 传输未资格化并停放
+  - [x] 标准 Tool Calls R1 执行并保留：模型正确并行请求 Evidence/NumericFact，项目 wire `index` 与单工具策略不兼容，0 retry
+  - [x] 只读并行兼容 successor、clean zero-call R3 与一个 replacement single-cell R2（两类 read 成功；proposal 合同编译失败，0 retry）
+  - [x] 统一 Tool Schema／Validator／route／fake／repair feedback 编译源；绑定 `17bb0c5a...` 的 formal R2 replay 与三案 identity mutation 通过，0 provider
+  - [x] Chat control／Responses candidate／Anthropic shadow 的 provider-neutral canonical transport projection；Anthropic live 代码级禁止
+  - [x] DELL `value_capture` Chat/Responses paired single-cell exact-live：两路均 5 step／6 receipts、合同通过、0 retry；Responses live continuation 已观察
+  - [x] paired 内容审计与协议处置：两路均因 comparable-period relation 无确定性 lineage 未过 L1；source class 与可执行 route 仍漂移；Chat 保留 provisional primary，Responses 保留 shadow/candidate
+  - [x] comparable-period Numeric relation＋EvidenceRequest source-route 与 Research Context Closure；fixed-Pack 后续实证已取代早期单节点复验
+- [x] S3 fixed-Pack 第一层自然 Judgment、一次 typed repair、独立 L1 与适用内容质量（21/24；只算模型分析单元测试）
+- [x] FIN 0.1.3 Agent Runtime／反思／上下文连续性全链只读审计与六合同冻结（区分基础设施／Harness／Agent／Skill×Graph；0 模型／网络；不等于 Runtime 实现）
+- [x] S0 AgentSession／SessionEvent／FeedbackReceipt／PlanDelta／GraphDelta／ContextCheckpoint／StopDecision 零调用 Runtime、checkpoint／resume／compaction mutation 工程基础（不等于自然反思 live）
+- [x] S1／S2／Verifier typed failure → earliest-owner FeedbackReceipt 编译与 31 条零调用回放
+- [ ] S3 Skill／Graph 动态最小选择、注入／消费 receipt 与 FeedbackReceipt 驱动的有界 replan／stop 循环
+- [ ] S1→S3 动态 Research Truth Spine（EvidenceRequest→S1/S2→EvidenceResponse）
+  - [x] provider-neutral EvidenceResponse、reviewed-only 重选、动态 claim authority、三案 identity/mutation 零调用工程纵切
+  - [x] 动态 ClaimRelation 投影与 gap-only thesis abstain（三片段结构零调用 successor；0 candidate promotion）
+  - [x] 动态 request-scoped micro-Judgment、终态与 deliverable 零调用闭环（跨请求借权、陈旧 graph minimum、全局／局部 status 混用已关闭；controlled fragments 非产品 Judgment）
+  - [x] 共用动态投影与稳定单单元 live runner（自然 planner＋当前 S1/S2＋三片段交卷；379 tests；真实 live 待执行）
+  - [ ] 自然 planner→真实 S1/S2→动态 Judgment；不得把工程证明或 controlled atoms 计作 Agentic Research
+    - [x] 动态 R1 已完成自然 planner、当前 S1/S2、thesis 和 mechanism；counter/WWC 分析 7,999 reasoning tokens 后无可见输出，R1 原子失败并保留
+    - [x] 只复用成功前缀的 counter/WWC 分析＋交卷 successor；R3 自然完成三片段与终态，未重跑前五个成功节点
+    - [x] RC-S3-028 时间关系工程修复：TemporalAuthority、真实 R3 replay、三案 mutation、一次性 repair compiler 与正式 zero-call decision gate 通过
+    - [x] RC-S3-028 唯一 live 关闭：一次 counter 同片段非思考交卷完成，独立 L1 与适用内容质量通过
+  - [x] S1 reviewed Pack↔当前检索对象库／来源路由同步（Dell／TSMC transcript 已进入 current object store；MU／NVDA 等价自然动态链与 S1 总产品门仍开）
+- [x] DELL `value_capture` 单单元动态 Agentic Research（自然 planner→当前 S1/S2→三片段→一次有界 repair；L1 与适用内容质量 21/24）
+- [ ] DELL 六 Specialist 动态多 Agent、底稿与报告验收
+  - [x] R5 六份 Specialist workpaper 与两轮 Lead 结构合同完成
+  - [x] 独立 L1／L2 识别并冻结 7 项金融语义错误，Writer 未解冻
+  - [x] R7 保存 6 次 HTTP-200 调用、2 份完整返修与 1 份 Demand 自然草稿；失败 strict submission 未晋升
+  - [x] R8 五节点复用、七节点剩余拓扑、typed feedback 与完整零网络假 Provider seam 工程门
+  - [x] clean／synced commit、repository-aware preflight 与 fresh R8 authority
+  - [x] 唯一 R8 live：1 次 HTTP-200 Demand submission 后重复 R7 mapper 失败，0 retry，Operating／Value／Lead 未调用
+  - [x] R8 immutable failure assessment、digest-bound authority ceiling、零调用 replay、六节点假 Provider seam 与全仓工程门
+  - [x] clean／synced R9 preflight 与 fresh 六调用 authority
+  - [x] 唯一 R9 live：6/6 HTTP-200、0 retry，Operating／Value／Lead 合同完成，Writer 未调用
+  - [x] R9 独立复评：原七项 6/7 关闭；Demand 跨角色同季→cohort 转化残留，L1 fail，Lead adjudication fail
+  - [x] R9-bound Demand＋Lead 四节点 successor：feedback-history roll-forward、零调用证明、fake seam 与 Project OS decision
+  - [x] R10 全仓工程门：定向 115、全仓 1155、compileall／pyflakes／active baseline／JSON／JSONL／secret scan／diff check
+  - [x] R10 clean／synced engineering commit、repository-aware preflight 与 fresh 四调用 authority
+  - [x] R10 authority 提交／推送后的 clean 复验与唯一 live：4/4 HTTP-200、0 retry，Writer 未调用
+  - [x] 七项 finding 的独立 L1／L2 与 workpaper 内容复评：7/7 关闭，26/28，Writer 零调用工程门 eligible
+  - [x] capture-bound protected Writer 零调用 successor：R10 lineage、typed authority、material／L3 protections、完整 fake seam 与 Project OS decision
+  - [x] protected Writer 完整工程门：全仓 1169、active baseline、变更集 pyflakes、JSON／JSONL、secret scan 与 diff check
+  - [ ] protected Writer clean engineering commit／push 与 repository-aware preflight
+  - [ ] protected Writer fresh authority、authority-only commit／push 与唯一 live
+  - [ ] 最终报告独立 L1／L2、八维质量与 S3 内容验收
+- [ ] MU／NVDA 同核心迁移与三案例 S1–S3 内容质量验收
+- [ ] S4 审阅修复产品闭环
+- [ ] S5 FIN 0.1.3 release decision
+
+## 2026-09-01 S5 image/native supply remediation
+
+- [x] S1/131 的 236 raw finding 与 `psycopg2-binary` 原生盲区按最早责任层冻结；R14 和全部研究/产品权限保持不变
+- [x] 官方 Python 3.11.16 trixie base 更新 dirty build：util-linux fixed cohort 真实进入 runtime
+- [x] `psycopg2-binary 2.9.12` 官方 sdist + Debian `libpq5 17.11` 系统链接 dirty runtime probe；vendored native/build tooling absent
+- [x] dirty Syft/Grype：Workbench `236→166`；control-plane `236→191`，新增 25 项为新可见 Kerberos/LDAP 闭包
+- [x] vexctl v0.4.4 自审失败并拒绝门禁；采用 OpenVEX 标准＋Grype，不自研 suppression engine
+- [x] fresh 独立 Docker/evidence review：代码 `P0/P1/P2/P3=0/0/0/0`，资格层 3 个 P2 保留，允许 nonproduction candidate commit
+- [ ] exact clean candidate commit/push 与 linux/amd64 两镜像无缓存复建
+- [ ] exact image ID runtime probe、三格式 SBOM、raw Grype 和 source-bound OpenVEX 双结果
+- [ ] fresh PostgreSQL/Dagster vertical、control-plane 真实只读 source job、Workbench smoke 与独立 closeout review
+- [ ] image/native production gate；7 Critical/其余 High/Python/glibc/perl、license/legal、Debian long-term reproducibility 未闭合前保持 false
+
+## 2026-08-22 产品／检索／Writer 再对齐后的当前门
+
+- [x] Actionable Uncertainty 1–7 current-data 工程闭环（来源权利、定量类型、Feedback／Plan／checkpoint／stop、S3 consumer、Workbench；0 natural model／network／paid）
+- [x] 四来源 exact capture-bound public-context 纵切（IDC／Microsoft／TrendForce／HPE；独立 successor `36 Evidence / 14 gaps`，不等于 current mainline 或外源资格）
+- [ ] DELL 命题级 `CoverageState` 与 AI-free 内源执行
+  - [ ] 价格／配置、销量／份额代理、PVM、客户部署、供应释放、价值池、反方与 WWC
+  - [ ] SQL／NumericFact／对象／原文／BM25／dense／graph 路线逐项 receipt
+  - [ ] 内部存在但漏召回、排序挤出、对象／parser、admission 与真正信息边界分账
+- [ ] DELL 外源来源阶梯与 Evidence 晋升
+  - [ ] 发行人／监管／客户／供应商官方材料
+  - [ ] 行业机构／协会／市场跟踪／标准材料
+  - [ ] 产品目录／公共采购／渠道报价／客户部署／可信媒体／公开 analyst／反方查询
+  - [ ] CandidateDecision／Evidence Gate／current Pack mainline promotion
+- [ ] S2 受影响重编译：derived／estimate／scenario／typed gap 与 Proposition Coverage／EvidencePackReadiness
+- [ ] 单独权限下的 DELL 动态单单元：只给用户问题、Case、as-of 与 typed tools；真实二轮 EvidenceRequest／Feedback／PlanDelta／StopDecision
+- [ ] DELL 动态多单元／多 Agent 研究与完整报告
+- [ ] Writer 产品能力：DeliverableBrief、BilingualStylePack、VisualRequest、DocumentModel
+- [ ] MU／NVDA／异质留出、qualified-human、S3／S4／S5 验收
+
+## 2026-08-25 上一版研报信源闭环与研报质量审计强制门
+
+- [x] Owner 明确纠正：R38 工程信源同步通过不等于上一版研报信源缺口全部解决；研报质量必须进入独立／综合审计
+- [x] 已向作者分离的只读审计 Agent 下达新增范围：逐 Claim 信源、14/9/4 gap 映射、定量桥、反方／WWC、可读引用和八维内容质量
+- [x] 当前 R17 只读质量基线完成：`P0/P1/P2/P3=0/1/2/1`，engineering PASS_BOUNDED，report OPEN/NOT_ASSESSABLE，qualified-human false
+- [x] program-level 执行计划完成：七个交付 epic 加一个治理前置，共 34 张 ticket；每票同时具备工程/Evidence、模型节点输出和最终研报质量门、输入输出、测试、停止条件与责任阶段
+  - source-of-truth：`docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md`
+  - [x] R1 作者实现／物化：`DELL-RSQ-00A/00B/00C` baseline、质量协议和权限模板；8 个未来调用节点全部 `not_authorized`
+- [x] R1 `DELL-RSQ-01A/01B/01C` 作者实现／物化：R17 四组 remaining gaps 到 current `55 Evidence / 14 gaps`、R38 9 gaps、Writer 4 groups／10 refs 和 S2 4 bridge gaps 的机器可读映射
+  - [x] 三投影共用 content digest `10fefe2f...54d17`；5 个 not-selected、4 个 not-writer-referenced 和独立 product-profit gap 均显式
+  - [x] 17 个 crosswalk／mutation tests；连同 S2/R17 相邻合同为 `28 passed`；0 model/provider/network/embedding/reranker/promotion/closure
+  - [x] fresh author-separated R1 review：`FAIL，P0/P1/P2/P3=1/2/1/0`；baseline/Git、质量协议、投影和状态轴均有 material finding，R1 不可追认为 PASS
+  - [x] R2 作者工程修复：实际 12-count 复算、Git bytes/clean-filter/commit:path 三重绑定、完整 8D/P1/reason-ref 冻结、确定性三投影、technical/unit 正交轴；`25 + adjacent = 36 passed`，全仓 `1309 passed, 2 skipped, 2 warnings`
+  - [x] clean `324bf2bc...` 后 exclusive-create R2 private/public v1.1；content digest `f2ab6795...8afc2`，不得覆盖 R1
+  - [x] 第二名 fresh author-separated reviewer 审计 immutable R2：`FAIL，P0/P1/P2/P3=0/0/1/0`；当前 nested packet 确为 18/16，但 R2 实际重算函数删除底层 item 后仍错误返回 summary 18/16，`G1=false`
+  - [x] R3 作者工程修复：append-only verification v1.1 绑定 R1/R2 failure；逐 request 重数 nested items/human flags/issue classes，校验 request 集合、小计、唯一 ref/digest 和三层自摘要；定向 `29`、相邻 `40`、全仓 `1313 passed, 2 skipped, 2 warnings`
+  - [x] clean `883b0e46...`／tree `4f158ecf...` 后 exclusive-create R3 private/public v1.2；content digest `f2ab6795...8afc2`，public/private digest `afc37e76...76e2`／`c31a51cf...49b9`，exact recompile 通过
+  - [x] 第三名 fresh author-separated reviewer 审计 immutable `7ba8bb2a...` R3：新 findings `0/0/0/0`；engineering `PASS_BOUNDED`、crosswalk content `PASS_BOUNDED_CONTENT_ONLY`、report `OPEN_NOT_ASSESSABLE`、qualified-human false；只签 bounded `G1=PASS`
+  - [x] append-only G1 收据：`configs/audits/fin_ia_0_1_3_commit_7ba8bb2a_dell_rsq_r3_fresh_final_audit_pass_v1_0.json`，digest `4f28008e...42dd4`
+- [x] `DELL-RSQ-02A` clean `29b4fc2e...` 后已物化：纠正为“8 请求／16 项全量 human decision set＋4 blocked 请求／8 项 blocker subset”；packet digest `6bcee241...cec7`，public/private exact recompile 与无 excerpt/URL 泄漏检查通过；人工决定仍为 0
+- [ ] `DELL-RSQ-02B` qualified human 对全部 16 项签发 accept/rebind/accept-new/reject/defer；候选不得自动晋升 Evidence，4 个 blocked 请求只含其中 8 项
+- [x] `DELL-RSQ-03A` clean `f66f07d7...` 后已物化：program digest `eccc6dfb...8ad8`；14 Pack gap＋独立产品利润 gap 全量分区，9 个补源 target／7 层路线／63 contracts；旧 22 fresh query 先复核、禁止原样重跑；3 项 admission-held，0 次调用，G3 仍 false
+- [ ] 执行获准且不与 admission 重叠的 03B 内部链与 03C 真实 residual 外源梯子，并为每项形成 closed／narrowed／route-exhausted／proved-boundary receipt
+  - [x] 03B R9-00～R9-06 作者实现与 zero-call preview：typed frame/scope/argument anchor、source→compiled transformation、exact-once runner；T1/T2/T3=`56/153/93`，1,888/34,199 preview=`39.649437s`，完整计数/排名不变，complete transformation=`6/6`
+  - [x] R9 implementation/policy/formal/exact replay 完成；fresh 作者分离审计冻结两个 P2，R9 engineering FAIL、R17 仍 `FAIL_GATE_OPEN_NOT_ASSESSABLE`
+  - [x] R10 作者实现与 immutable-R9-raw preview：开放词结构边界、同组 product↔price relational completion/transformation；T1/T2/T3=`66/122/93`，supplier 不变，generic-hardware ASP false complete `1/1/1/1→0/0/0/0`
+  - [x] R10 focused implementation `70015d11...`、v1.9 policy-only authority `d3ab2456...`、唯一 fresh 0.6B formal 与 exact replay 完成：338 union/80 final，supplier `3/3/2/1 rank2`、ASP `0/0/0/0`、forbidden=0
+  - [x] R10 immutable result/fixed manifest 与 fresh 双审计完成：identity/route `PASS_BOUNDED`，engineering `FAIL 0/0/2/0`；fronted-adjunct/predicate-collision boundary 与 co-presence price attachment 两个P2
+  - [x] R11 program-level plan冻结：ClauseOwnershipDecision v2、PriceAttachmentProof v1、proof-aware transformation、风险分层门、唯一formal与fresh双审计
+  - [x] R11作者实现与immutable-R10-raw零调用preview通过：T1/T2/T3=`93/159/152`；完整六target count/family/rank与下游处置不变，complete transformation=`6/6`，partial proof-schema delta逐family留痕
+  - [x] R11 implementation `23014238...`、v2.0 policy-only authority `9522ccee...`、唯一fresh 0.6B formal与exact replay完成：338 union/80 final，supplier=`3/3/2/1 rank2`、其余五项=`0/0/0/0`、forbidden=0
+  - [x] R11 result/manifest 与 fresh 双审计已冻结：identity/execution/privacy `PASS_BOUNDED`，engineering `FAIL 0/1/3/0`；route state-erasure、clause ownership、governing nominal head 与 transformation proof rebind 阻断 03B
+  - [x] non-overwriting R12 program-level plan冻结：route恒常identity、结构化clause ownership、governing price head、connector proof identity、zero-model exact successor与工程/模型/研报三层验收
+  - [x] R12四项R11根因＋四项冻结前完整性边界修复、分层测试、immutable-R11-raw zero-call preview、唯一 exact attempt/replay完成；新增调用全为0
+  - [x] R12 reviewed-result `057eb98e...` 与 fixed manifest `3db8e535...` 已冻结；fresh双审计确认stored result `PASS_BOUNDED`，但engineering `FAIL 0/1/2/0`，另有manifest envelope P2，R17仍`FAIL 0/1/2/1`
+  - [x] R12 failure与non-overwriting R13 program-level plan已固化：authoritative summary reconciliation、event-local predicate roles、participial/relative governing head、case-correct manifest与工程/模型/研报三层标准
+  - [x] R13 authoritative persisted reconciliation、ownerless unseen event barrier、participial/relative governing head与R12直系raw lineage已实现；T1/T2/T3=`162/292/140`，最终immutable-R12-raw preview=`25.315615s`，complete count/family/rank/route不变
+  - [x] R13 implementation=`11caf389...`、policy-only authority=`492218a9...`、唯一zero-new-call formal与exact replay完成；persisted summary 6/6重算、public rebuild exact、supplier=`3/3/2/1 rank2`、其余五项=`0/0/0/0`
+  - [x] R13 reviewed-result=`07909cc1...`与case-correct manifest=`8dd03fa9...`已冻结；fresh split双审计确认current artifact `PASS_NARROW`，但general engineering `FAIL 0/1/2/0`：缺独立population anchor、flat event role union与connector-enumerated price head；R17继续`FAIL_GATE 0/1/2/1`
+  - [x] R14初版program plan已接受fresh fork-none只读审计并冻结失败：`PLAN_FAIL 0/3/2/1`；authority freeze、可执行grammar、machine mutation/lifecycle、vector encoding、crash-atomic transaction和conditional 4B门不足，未开始实现
+  - [x] R14 revision 1已补`I→B→A→P`、StructuralProofGrammar＋六target topology、frozen mutation denominator、pre/post audit与lifecycle receipt、唯一2-bit vector/error合同、Windows transaction和per-node TokenBudgetBasis；当前仍只是作者修订
+  - [x] revision 1 exact pushed `46cccb10` fresh只读re-review=`PLAN_FAIL 0/1/0/0`：其余初审finding均关闭，只剩pre-formal FAIL状态冲突与首个I未绑定exact plan PASS receipt
+  - [x] R14 revision 2 exact candidate=`ade8ebde...65e`唯一化`candidate C→PASS receipt G→first I.parent=G`；第三名fresh只读review=`PLAN_PASS 0/0/0/0`，canonical payload=`fe052ea1...aeed`，由本治理G物化且plan blob保持`14d9d9a...1b4ae`
+  - [x] R14 implementation 已冻结于 `7e25cad9...`；唯一 corpus parity preview 为 `27,026` cases、`239` failures（event semantics=`228`、assertion semantics=`11`），因此 implementation 尚未通过
+  - [x] R14 I2 owner-visible failure freeze 已完成 append-only 治理纠正：v1.0 exact `8544c7ee...` fresh review=`FAIL 0/0/2/0`；v1.1 exact `8e7e7693...` 冻结 `239 cases / 277 events / 246+9+5+17 / 2 roots`，fresh re-audit=`I2_GOVERNANCE_PASS 0/0/0/0`
+  - [ ] Owner 另行决定是否授权同一 R14 revised implementation；I2 PASS 本身不授权改代码，决定前保持 `7e25cad9...` 冻结且不创建 R15/R16
+  - [ ] 获授权后才可在同一 R14 修复 `R14-02` 两个 producer 根因，并以 `27,026/27,026` zero failure、`277/277` frozen mismatch eliminated、zero new code、原门不弱化及 fresh pre-formal P0/P1/P2=`0/0/0` 验收
+  - [ ] R14 post-formal independent pass 后执行五条 external-required target：原四条 residual 加 bounded Dell AI server configuration/bundle price；上一版研报信源仍未补齐
+- [ ] 重编 DELL Pack／Readiness 与 S2 units/share、ASP/mix、PVM、产品利润和营运资金归因；无权威时保持 null/gap
+- [ ] 仅在 readiness 通过后运行受影响 DELL 动态单元，并证明新资料改变／收窄判断或形成合法停止
+- [ ] 生成不覆盖 R17 的 Writer successor，提供读者可读 citation/source appendix；内部 EV/GAP ID 仅作 lineage
+- [ ] 作者分离审计分别签发 engineering/evidence verdict 与 report/research-quality verdict；不得以 0 engineering finding 代替报告验收
+- [ ] qualified-human 完成八维内容与最终交付使用价值验收
+- [ ] 上述门完成前，S1／S2／S3、产品、publication 和 release 保持 false
+  - [x] 第一轮 02A/03A fresh author-separated 双审计已封存失败：`P0/P1/P2/P3=1/2/1/0`；通过边界仅为当前摘要/数量/exact recompile/zero-call/G1，不能进入 02B 或 03B
+  - [x] 02A successor 作者实现：复数 8 requests／18 nested items／16 human items、逐 request/item identity 与 public/private summary；逐项重做 16 个 claim-use，清除 period/basis/owner/role 错配和 citation padding
+  - [x] 03A successor 作者实现：冻结 exact target↔gap↔prior proposition↔held overlap；递归零权限；重验 predecessor self-digest／22-query；阻断 scheme URL 与裸域名泄漏，并精确消费 02A item map
+  - [x] successor 作者工程门：定向 48、相邻 101、全仓 `1361 passed, 2 skipped, 2 warnings`，active baseline／JSON／JSONL／secret／frozen SHA 全通过
+  - [x] 02A R2 non-overwriting public/private 物化与 exact recompile；8/18/16、4/8、建议 5/10/1、decision 0/16，public 无 excerpt/URL
+  - [x] 03A R2 non-overwriting 物化与 exact recompile；14+1 gaps、9/6/3 targets、7 routes／63 contracts、prior 50/22、URL-like 0、G3=false
+  - [x] 新的 fresh engineering＋report-source/claim-use 双审计已对 immutable `33a93e7c...` 完成：`P0/P1/P2/P3=0/0/0/0`；两项 preparation verdict 均 bounded PASS，新报告质量仍 `OPEN_NOT_ASSESSABLE`
+  - [x] append-only 审计回执已记录：`configs/audits/fin_ia_0_1_3_commit_33a93e7c_dell_02a_03a_r2_fresh_dual_audit_pass_v1_0.json`，digest `4dd0343c...daf9`
+  - [ ] `DELL-RSQ-02B` 现为下一 qualified-human review 门；当前仍为 0/16 decision，审计 Agent 未代签
+  - [ ] 真实 residual 内/外源执行与上一版研报信源补齐仍未开始，不能把 route program 当作已补源
+  - [ ] R17 citation P1、WWC P2、formal Q1–Q8、新 Writer/report 和 reader-readable appendix 仍待后续报告门
+  - [ ] S1／S2／S3、report quality、product、publication、release 全部保持 false

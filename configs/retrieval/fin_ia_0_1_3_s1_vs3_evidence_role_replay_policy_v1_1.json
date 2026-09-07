@@ -1,0 +1,73 @@
+{
+  "schema_version": "fin_ia_s1_vs3_evidence_role_replay_policy_v1_1",
+  "status": "pre_registered_zero_call_composite_financial_evidence_replay",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-COMPOSITE-EVIDENCE-REPLAY-V1.1",
+  "bound_inputs": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_5.json",
+    "query_atom_eval_sha256_lf": "d27ed716815c5ad567f8f2faf61b5c4574fe1c63d3a8a621428b9738881089f7",
+    "ranking_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_result_v1_4.json",
+    "ranking_summary_sha256_lf": "a3ff3c50ae2e713417fb6aa37fcf97d3cbe0ebf19168e4106af4a6c2f4f66ff4",
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "compiled_objects_sha256_lf": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "kernel_sha256_lf": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_0.json",
+    "financial_intent_ontology_sha256_lf": "1a1cc94d10b13107e9b7e6c4c474b2206e49312e870d780f20e425e71b2bbcc0",
+    "evidence_role_implementation_ref": "src/retrieval/evidence_role.py",
+    "evidence_role_implementation_sha256_lf": "d106ab091d904d04ec2be15cd5eb1ea34d5270f076e072ac07450fff47c0c472",
+    "financial_intent_implementation_ref": "src/retrieval/financial_intent.py",
+    "financial_intent_implementation_sha256_lf": "8588460bf5442179c94fc4d16efdd419a2c1295ce77b527aaa8ea497e9cadcf8"
+  },
+  "decision_gates": {
+    "judged_positive_role_compatible_minimum_rate": 0.8,
+    "judged_hard_negative_suppression_minimum_rate": 1.0
+  },
+  "change_scope": {
+    "changed": [
+      "safe-harbor boilerplate overrides keyword role hits",
+      "anaphoric period-change fragments require parent context",
+      "narrative claims bind their earliest explicit metric as the primary metric",
+      "financial intent and Evidence Role are combined with abstention"
+    ],
+    "not_changed": [
+      "query requests",
+      "compiled object population",
+      "v1.4 candidate unions and all model scores",
+      "hard identity, period and source filters",
+      "Evidence promotion authority"
+    ],
+    "prohibited": [
+      "per-object allowlists in evaluators",
+      "qrel lookup during evaluation",
+      "new model scoring",
+      "runtime promotion from this replay"
+    ]
+  },
+  "token_budget_basis": {
+    "node_purpose": "Replay object-level financial intent, evidence role and abstention over all reviewed development relations.",
+    "input_scale": "Sixty-two positive and sixty-eight hard-negative relations across eighteen atoms; candidate membership is read from the frozen v1.4 ranking.",
+    "required_outputs": [
+      "separate role and intent receipts",
+      "composite compatibility per relation",
+      "positive compatibility and hard-negative suppression",
+      "candidate-pool-specific metrics"
+    ],
+    "schema_burden": "deterministic typed JSON over immutable objects and qrels",
+    "materiality_and_quality_risk": "keyword-rich safe harbors, wrong primary metrics and incomplete fragments can otherwise become apparently relevant research evidence",
+    "comparable_run_evidence": "v1.4 role-only evaluation accepted every positive but suppressed only 28.125 percent of hard negatives",
+    "reasoning_profile": "zero-call deterministic composite evaluator",
+    "stop_and_truncation": "evaluate every reviewed relation; fail on digest, object or ranking drift; no sampling"
+  },
+  "authority": {
+    "development_labels_only": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "runtime_promotion_authorized": false,
+    "fine_tuning_authorized": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "owner_acceptance": false,
+    "s1_complete_claimed": false
+  }
+}

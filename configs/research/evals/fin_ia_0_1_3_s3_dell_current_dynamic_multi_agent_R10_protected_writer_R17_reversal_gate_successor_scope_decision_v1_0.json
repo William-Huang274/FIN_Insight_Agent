@@ -1,0 +1,106 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_R17_reversal_gate_successor_scope_decision_v1_0",
+  "status": "approved_owner_bounded_zero_provider_reversal_gate_successor",
+  "recorded_at": "2026-08-24",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_REVERSAL_GATE_R17",
+  "case_key": "DELL",
+  "user_authorization_basis": "User authorized migration and continuation after independent audit and requested clean post-completion review.",
+  "source_bindings": {
+    "R16_public_candidate": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R16_bounded_successor_candidate_result_v1_0.json",
+      "sha256": "76a983306432b5044d2935fdf14d37fe90cdbf858d324de7a998ee56ee972947",
+      "digest_field": "result_digest",
+      "digest": "39bc326c959c5eac0c79b8d03f96b6eba3b54665d1af2a0e75016e97e9ff51cf"
+    },
+    "R16_private_full_result": {
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-bounded-successor-r16/full_result.json",
+      "sha256": "d099e26e942cc2c3c1dde972b02edf8f069ec47134680ed52ddbde89c2fa3896",
+      "digest_field": "full_result_digest",
+      "digest": "7fa183beb676f796471d252c4e2c1471168f5d514ddfba2312cd93806922ffb2"
+    },
+    "R16_fresh_independent_review": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_R16_fresh_independent_review_failure_v1_0.json",
+      "sha256": "cd1f7fee2e26dd4ecd5157d67c904a6681e49b600d2517ab7c186bce502de421"
+    },
+    "R10_authority_catalog": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_authority_catalog_v1_0.json",
+      "sha256": "fe33215f8d46a5fa9db422d8192ba3c18daf29563a7941ba6fe16808ce07a84b",
+      "digest_field": "authority_catalog_digest",
+      "digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765"
+    },
+    "R10_protection_contract": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_writer_protection_contract_v1_0.json",
+      "sha256": "e17b9526aa97951eb1b3ff2c026e3d38b51d4d78de447087e8907a06e46d247c",
+      "digest_field": "protection_digest",
+      "digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62"
+    }
+  },
+  "implementation_bindings": [
+    {
+      "ref": "scripts/research/materialize_s3_R17_reversal_gate_successor.py",
+      "sha256": "9a84773f1a62f831e7d2d35ee108ac8bea42a4a71e099edfcc9857ac52519bad"
+    },
+    {
+      "ref": "scripts/research/materialize_s3_R16_bounded_writer_successor.py",
+      "sha256": "fd7e58c40166d540426f9a59072a41bbcd5a3cf1c77db5afd8e5aa009d69e7ba"
+    },
+    {
+      "ref": "src/sec_agent/research/current_dynamic_writer.py",
+      "sha256": "d844a15787bdf1c39d4f3f7f0304f0fb9e7595ff0a2f904ac443f5c9706b0bfc"
+    },
+    {
+      "ref": "src/sec_agent/research/multi_agent_report_authority.py",
+      "sha256": "90ef0391134bec2c075e264b072e4be4d00af898718c94e8322c19515ccab015"
+    }
+  ],
+  "change_boundary": {
+    "allowed_changed_model_text_paths": [
+      "sections[5].clauses[5].model_text",
+      "what_would_change[5].model_text"
+    ],
+    "required_semantics": "material AND AI-linked AND persistent AND evaluated as breaching a predeclared threshold",
+    "one_off_threshold_breach_is_insufficient": true,
+    "persistent_below_threshold_evidence_is_insufficient": true,
+    "reference_changes_allowed": false,
+    "remaining_gap_changes_allowed": false,
+    "new_evidence_numeric_fact_relation_or_gap_authority_allowed": false,
+    "topology_changes_allowed": false
+  },
+  "finding_provenance_correction": {
+    "R17_paths_are_fresh_independent_R16_findings": true,
+    "R16_inventory_and_helps_distinguish_paths_were_owner_authored_editorial_corrections": true,
+    "those_three_paths_were_not_listed_in_R15_independent_review_receipt": true
+  },
+  "execution_budget": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 0,
+    "candidate_promotions": 0
+  },
+  "token_budget_basis": {
+    "node_purpose": "No model node is created; deterministic text substitution repairs one fresh independent material logic finding across two corresponding report surfaces.",
+    "input_scale": "One immutable R16 candidate, one fresh independent failure receipt, and two protected-authority contracts.",
+    "required_outputs": "One private full result, one public receipt, exact two-path edit inventory, conjunctive-gate proof, contract audit, trusted report, and deterministic rendering.",
+    "schema_burden": "Bind all source and implementation hashes, preserve topology and every reference/gap inventory, and record zero-call execution.",
+    "materiality_quality_risk": "OR semantics could let a one-off event or persistent sub-threshold evidence reverse the thesis.",
+    "comparable_run_evidence": "R16 local protected-contract pass plus its failed clean independent content review.",
+    "reasoning_profile": "deterministic_no_model_successor",
+    "stop_and_truncation": "Fail closed on source or implementation drift, unauthorized path/reference changes, non-conjunctive semantics, contract findings, topology drift, or pre-existing output."
+  },
+  "output_contract": {
+    "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-reversal-gate-r17/full_result.json",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R17_reversal_gate_successor_candidate_result_v1_0.json",
+    "overwrite_existing_output_allowed": false
+  },
+  "acceptance_boundary": {
+    "local_protected_contract_pass_can_be_recomputed": true,
+    "fresh_independent_post_writer_review_pass": false,
+    "qualified_human_review_pass": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "decision_digest": "f2c82e588ec4e7537865355462845bc4d52692044d3203b4badcb4c793f7fe75"
+}

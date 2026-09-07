@@ -1,0 +1,124 @@
+{
+  "schema_version": "fin_ia_s1_human_operability_and_blind_gate_program_v1_0",
+  "program_id": "FIN-0.1.3-S1-HUMAN-OPERABILITY-AND-BLIND-GATE",
+  "status": "active_preflight_external_authority_pending",
+  "recorded_at": "2026-08-19T00:00:00+08:00",
+  "purpose": "Prove that a human can operate and diagnose S1 without a generation model, then keep qualified-human Evidence admission and replacement blind qualification as explicit external gates.",
+  "evaluation_program": {
+    "ref": "eval_sets/fin_0_1_3_s1/program_manifest_v1_0.json",
+    "sha256": "392d114d5710121af335b7ed44ff3d0c20dd8797bad3e8010bc0f791deb1fe23"
+  },
+  "development_case_readiness": [
+    {
+      "case_key": "DELL",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_5.json",
+      "sha256": "4bb1024652b6a3178b3e7971910e5ac652f2586dce6a8bf5bc1202f0edd2f79f"
+    },
+    {
+      "case_key": "MU",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_mu_current_product_readiness_result_v1_6.json",
+      "sha256": "19b0868508de8e260f55b4f9ec6e905fb8477dc9f0770fdfca7fcf5a407f478b"
+    },
+    {
+      "case_key": "NVDA",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_nvda_current_product_readiness_result_v1_6.json",
+      "sha256": "8b04313117b21bd2d98ef8a35cee5728f176c920a5353a6d0abc76872c034233"
+    }
+  ],
+  "known_disclosed_regression_assets": {
+    "source_review_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_source_review_v1_0.json",
+    "source_review_sha256": "0a11154283a4ef5070984295037a84e6b10097c2f6cbb9c85be7ab5fa6d6ec83",
+    "case_keys": ["COST", "JPM", "CAT", "NVO", "SHEL", "0700.HK"],
+    "allowed_use": "development_regression_and_failure_ownership_only",
+    "forbidden_use": "replacement_blind_or_generalization_qualification"
+  },
+  "human_operability_contract": {
+    "generation_model_calls_allowed": false,
+    "human_must_be_able_to_supply_typed_evidence_request": true,
+    "required_visible_states": [
+      "source_transport_failure",
+      "parser_or_object_failure",
+      "index_or_query_failure",
+      "candidate_not_recalled",
+      "candidate_not_admitted",
+      "route_not_executed",
+      "public_information_boundary"
+    ],
+    "each_failure_requires_business_question_and_permitted_action": true,
+    "candidate_is_not_evidence": true,
+    "text_candidate_is_not_numeric_fact": true,
+    "unexecuted_route_is_not_public_information_boundary": true
+  },
+  "external_authority_gates": {
+    "qualified_human_evidence_admission": {
+      "state": "pending",
+      "required_receipt_fields": [
+        "reviewer_id",
+        "reviewer_qualification_basis",
+        "case_key",
+        "request_id",
+        "requirement_id",
+        "candidate_or_evidence_ref",
+        "candidate_admission_item_digest",
+        "source_lineage_digest",
+        "decision",
+        "source_period_role_and_proposition_binding",
+        "decision_reason",
+        "reviewed_at",
+        "receipt_digest"
+      ]
+    },
+    "replacement_blind_qualification": {
+      "state": "pending_external",
+      "minimum_case_count": 6,
+      "labels_must_remain_outside_git": true,
+      "implementation_must_not_read_labels_before_candidate_freeze": true,
+      "observed_or_disclosed_cases_forbidden": ["DELL", "MU", "NVDA", "COST", "JPM", "CAT", "NVO", "SHEL", "0700.HK"],
+      "required_case_design_dimensions": [
+        "cross_company",
+        "cross_industry",
+        "cross_reporting_regime",
+        "cross_evidence_form",
+        "temporal_and_hard_negative",
+        "cross_failure_owner"
+      ],
+      "required_hard_gates": [
+        "candidate_freeze_precedes_label_access",
+        "wrong_company_period_unit_promotion_zero",
+        "candidate_auto_promotion_zero",
+        "local_or_tool_failure_mislabeled_public_gap_zero",
+        "unreceipted_material_candidate_zero"
+      ],
+      "required_receipt_fields": [
+        "external_program_id",
+        "case_keys",
+        "evaluation_program_digest",
+        "candidate_freeze_ref",
+        "candidate_freeze_digest",
+        "implementation_commit",
+        "reviewer_id",
+        "reviewer_qualification_basis",
+        "label_store_ref",
+        "label_store_digest",
+        "label_store_outside_repo",
+        "label_store_git_tracked",
+        "runtime_read_reference_before_candidate_freeze",
+        "case_overlap_check",
+        "case_design_coverage",
+        "hard_gate_results",
+        "aggregate_metric_results",
+        "business_failure_examples",
+        "reviewed_at",
+        "receipt_digest"
+      ]
+    }
+  },
+  "authority": {
+    "development_cases_are_not_blind": true,
+    "codex_is_not_replacement_blind_adjudicator": true,
+    "preflight_may_not_promote_evidence": true,
+    "preflight_may_not_declare_public_gap": true,
+    "S1_qualified_stable": false,
+    "release_authority": false
+  }
+}

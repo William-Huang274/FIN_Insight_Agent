@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_s3_bounded_finance_loop_live_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "recorded_at": "2026-08-14T05:42:37+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_research_context_chat_live_authority_v1_0.json",
+  "authority_sha256": "3049d6a35ffb8691e64dea51b357140d3e1f2293200096d04b97e9bf69ca7bd5",
+  "implementation_commit": "25f1d4f568809de488363b5eba9e10503db53751",
+  "case_key": "DELL",
+  "required_cell_ids": [
+    "CELL::value_capture"
+  ],
+  "research_input_digest": "7977dfcc4bba9b5341fa6e1de310c6fe53bf5284155e4fd125fe774cfd68a56b",
+  "execution": {
+    "model_calls_attempted": 2,
+    "maximum_model_calls": 6,
+    "retries": 0,
+    "fallbacks": 0,
+    "planner_calls": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "tool_choice_sent": false,
+    "product_publication": false
+  },
+  "provider_steps": [
+    {
+      "step_index": 1,
+      "finish_reason": "tool_calls",
+      "tool_names": [
+        "read_reviewed_evidence_for_cell",
+        "read_numeric_facts_for_cell"
+      ],
+      "usage": {
+        "prompt_tokens": 5813,
+        "completion_tokens": 172,
+        "total_tokens": 5985,
+        "prompt_tokens_details": {
+          "cached_tokens": 384
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 75
+        },
+        "prompt_cache_hit_tokens": 384,
+        "prompt_cache_miss_tokens": 5429
+      },
+      "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_research_context_chat_revalidation/FIN013-S3-DELL-VALUE-CAPTURE-RESEARCH-CONTEXT-CHAT-R1/STEP-01-ATTEMPT-01/model_visible_request.json",
+      "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_research_context_chat_revalidation/FIN013-S3-DELL-VALUE-CAPTURE-RESEARCH-CONTEXT-CHAT-R1/STEP-01-ATTEMPT-01/provider_response.json",
+      "request_digest": "2db094036f4fe29be22f09bb666de87836541a4c943530edf409ddd3db71a841",
+      "response_digest": "97e8a816a9925bae40acfeb4b3e4d2d91965b8f6408b1b34c5bdebe1d1eea535",
+      "reasoning_content_persisted": false
+    }
+  ],
+  "accepted_receipt_count": 2,
+  "accepted_receipt_refs": [
+    "data/workbench_private/fin_0_1_3_s3_current_research_consumer/research-context-chat-r1-value-capture/receipt-01-step-01.json",
+    "data/workbench_private/fin_0_1_3_s3_current_research_consumer/research-context-chat-r1-value-capture/receipt-02-step-01.json"
+  ],
+  "tool_counts": {},
+  "deliverable_digest": "",
+  "failure_phase": "provider_transport_or_response",
+  "failure_code": "model_gateway_transport_error",
+  "failure_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_research_context_chat_revalidation/FIN013-S3-DELL-VALUE-CAPTURE-RESEARCH-CONTEXT-CHAT-R1/STEP-02-ATTEMPT-01/provider_response.json",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/research-context-chat-r1-value-capture/full_result.json",
+  "full_result_sha256": "2090fb4ad83f96fac185cb407c4dead2c09b12fb27555010eeab720081bedf46",
+  "acceptance": {
+    "standard_tool_transport_and_local_contract_pass": false,
+    "required_evidence_and_numeric_reads_enforced": true,
+    "content_assessment_pending": false,
+    "five_cell_live_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false
+  },
+  "known_boundary": "This is the only authorized Chat revalidation for DELL value_capture after Research Context Closure R4. It permits at most six exact-once model steps, one mandatory Evidence plus NumericFact read pair, up to three proposal-only executable EvidenceRequests, and one locally validated Judgment. It permits zero retry, fallback, external retrieval, embedding, product publication, Responses, five-cell execution or other RoleMethodPack migration. Completion or failure must be assessed for L1 and content quality and returned to Owner before any next scope decision.",
+  "result_digest": "ba9ef94230416355e64d4b99a44dfa65e372f6928ea415105c1ac4e8e6ef937f"
+}

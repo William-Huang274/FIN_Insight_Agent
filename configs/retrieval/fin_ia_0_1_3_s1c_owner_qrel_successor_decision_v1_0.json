@@ -1,0 +1,68 @@
+{
+  "schema_version": "fin_ia_s1c_owner_qrel_successor_decision_v1_0",
+  "decision_id": "FIN-0.1.3-S1C-OWNER-QREL-SUCCESSOR-DECISION-20260812",
+  "recorded_at": "2026-08-12",
+  "status": "owner_accepted_ranking_evaluation_successors_only",
+  "authority": {
+    "basis": "Owner authorized execution of S1-C steps 1-6 after reviewing the four successor recommendations.",
+    "scope": "ranking_relevance_evaluation_only",
+    "candidate_is_not_evidence": true,
+    "evidence_promotion_authorized": false,
+    "historical_qrels_mutated": false
+  },
+  "bound_inputs": {
+    "base_qrel_ref": "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_0.json",
+    "base_qrel_sha256": "a6333b7afa36aef3b69c0bc53c4d9649415f0b2577e1a5ada7aad74f9e3d1acf",
+    "current_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v1/records.jsonl",
+    "current_records_sha256": "484a18a2d7c5e2b8ab42eea97d8c68bbad37cfb49fe1a2c943d64d1381ad4382"
+  },
+  "decisions": [
+    {
+      "qrel_ids": [
+        "s1c_qrel_05",
+        "s1c_qrel_11"
+      ],
+      "operation": "replace_targets",
+      "accepted_target_current_source_record_ids": [
+        "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04"
+      ],
+      "reason_zh": "旧目标主体是联系人和安全港；当前 10-Q 对象直接披露产能采购、预付产能协议、生产爬坡、质量问题以及供需错配风险，符合供给与反证角色。"
+    },
+    {
+      "qrel_ids": [
+        "s1c_qrel_15"
+      ],
+      "operation": "retain_and_add_targets",
+      "accepted_target_current_source_record_ids": [
+        "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04",
+        "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_02_OF_02"
+      ],
+      "reason_zh": "保留有效的 8-K 结果对象，并把当前 10-Q 财务报表与当期 MD&A 结果对象加入等价相关目标，避免把更精确答案误判为失败。"
+    },
+    {
+      "qrel_ids": [
+        "s1c_qrel_16"
+      ],
+      "operation": "replace_targets",
+      "accepted_target_current_source_record_ids": [
+        "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_02_OF_04",
+        "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_03_OF_04"
+      ],
+      "reason_zh": "旧 metric-table 的具体语义是经营现金流 50,344 及其营运资本桥接；当前 PART_02 与重叠的 PART_03 均包含同一现金流表。PART_01 只有利润表和资产负债表，不能作为该旧标签的完整继任。"
+    }
+  ],
+  "acceptance": {
+    "affected_qrel_ids": [
+      "s1c_qrel_05",
+      "s1c_qrel_11",
+      "s1c_qrel_15",
+      "s1c_qrel_16"
+    ],
+    "all_targets_must_exist_in_bound_current_records": true,
+    "target_ticker_must_match_evidence_owner": true,
+    "target_publication_date_must_not_exceed_qrel_as_of": true,
+    "unaffected_qrels_must_remain_byte_semantically_equal": true,
+    "gold_identity_must_remain_evaluation_only": true
+  },
+  "known_boundary": "This decision corrects evaluation labels only. It does not promote any candidate to Evidence, improve the retrieval route by itself, close S1, or authorize model training."
+}

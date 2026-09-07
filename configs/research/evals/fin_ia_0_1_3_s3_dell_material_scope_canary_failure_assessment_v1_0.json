@@ -1,0 +1,57 @@
+{
+  "schema_version": "fin_ia_s3_material_scope_canary_failure_assessment_v1_0",
+  "assessment_id": "FIN-0.1.3-S3-DELL-MATERIAL-SCOPE-R1-FAILURE-ASSESSMENT",
+  "status": "R1_preserved_provider_profile_reasoning_budget_mismatch_successor_required",
+  "recorded_at": "2026-08-18T14:59:58+08:00",
+  "case_key": "DELL",
+  "cell_id": "MATERIAL_SCOPE",
+  "immutable_predecessor": {
+    "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_material_scope_canary_live_result_v1_0.json",
+    "result_sha256": "16a12ee344a6604a31626a49a7401f4a75bc56ae62bf3866ad5a0bb791c66c5a",
+    "result_digest": "986b6572a0d67e0dcd94bf73a62e52481172e9fcd8a6fc409b1694b6dacf2c75",
+    "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_material_scope_canary/FIN013-S3-DELL-MATERIAL-SCOPE-CANARY/R1/model_visible_request.json",
+    "request_capture_sha256": "be97ba399afe8123abe18d99951267034df947bf774c070800b793be0113dca1",
+    "request_digest": "3b01d0b40827d5246a5953bce3785a6d3a810133ddf70bedcfb91f2bb7f1f334",
+    "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_material_scope_canary/FIN013-S3-DELL-MATERIAL-SCOPE-CANARY/R1/provider_response.json",
+    "response_capture_sha256": "c2b85a8ad9731e17a7b8655daa53d2334644ef53fdcce3b087ae6203c59d3b29",
+    "raw_response_sha256": "3b16caf616512ea9b68863ac7c0a5c905f4d9853fd6fd6e5de5d01722f53333b",
+    "response_digest": "9106069d60b72490591018b5d5a2949389bda82fb2debb8299e0a4b0402b3caf"
+  },
+  "observed": {
+    "http_status": 200,
+    "response_body_complete": true,
+    "response_body_bytes": 55212,
+    "prompt_tokens": 2781,
+    "completion_tokens": 12000,
+    "reasoning_tokens": 12000,
+    "visible_content_characters": 0,
+    "finish_reason": "length",
+    "transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "candidate_or_reference_inputs_read": false,
+    "product_publication": false
+  },
+  "root_cause": {
+    "earliest_responsible_layer": "replaceable_DeepSeek_material_scope_provider_profile",
+    "classification": "reasoning_profile_and_contract_submission_mismatch",
+    "finding": "The request was a bounded request-visible classification and decomposition task, but the provider profile enabled max thinking. DeepSeek consumed the entire 12000-token completion ceiling as private reasoning and produced no visible JSON.",
+    "excluded_causes": [
+      "network_or_transport_disconnect",
+      "partial_HTTP_response",
+      "S1_retrieval_or_ranking_failure",
+      "candidate_qrel_reference_or_hidden_contamination",
+      "scope_contract_validation_failure",
+      "public_information_gap"
+    ]
+  },
+  "disposition": {
+    "R1_retry_authorized": false,
+    "R1_result_mutation_authorized": false,
+    "token_ceiling_increase_authorized": false,
+    "request_microbatching_authorized_now": false,
+    "successor_design": "Reuse the exact v1_1 input, model-visible messages and provider-neutral scope contract. Change only the provider submission profile to thinking disabled, omit reasoning_effort, and reserve an output budget justified by the closed JSON surface. Preserve exact-once, capture-first and all S1 boundaries. Only consider request microbatching if that successor still cannot submit a valid complete payload.",
+    "terminal_summary_telemetry_fix_required": true
+  },
+  "known_boundary": "No material-scope output exists, so R1 provides no evidence about scope completeness or financial classification quality. It does not authorize product replay, Evidence admission, Pack Readiness, S1 qualification, full-chain testing, publication or release."
+}

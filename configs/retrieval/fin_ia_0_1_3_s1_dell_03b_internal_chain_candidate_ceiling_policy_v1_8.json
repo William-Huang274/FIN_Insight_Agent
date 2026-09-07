@@ -1,0 +1,182 @@
+{
+  "schema_version": "fin_ia_dell_report_internal_chain_ceiling_policy_v1_8",
+  "status": "same_stage_R9_execution_authorized_after_fresh_R8_audit_failure",
+  "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R9",
+  "attempt_id": "dell-rsq-03b-internal-chain-r9",
+  "recorded_at": "2026-08-27",
+  "decision_target": "Run one exact local-only R9 successor for the five frozen DELL 03B requests after fresh R8 audit proved punctuation-sensitive frame splitting, incomplete frame-local semantic state, price-to-product argument locality failures and missing source-to-compiled frame transformation provenance. Execute one fresh local 0.6B query-embedding batch, then compile punctuation-independent typed frames, explicit ScopeEdges, argument-group anchors and lossless FrameTransformationBindings. Do not acquire sources, invoke 4B or reranker, promote Candidate/Evidence/NumericFact, close gaps, alter R17, or authorize downstream work.",
+  "owner_basis": "The Owner approved the integrated sequence, required unresolved prior-report source gaps and report quality to remain explicit, retained a mixed 0.6B/4B plus conditional reranker design for later real candidate pools, and requested a clean author-separated engineering and report-quality audit. Immutable R8 passed integrity and its actual route but fresh audit found three P2 frame/scope/anchor findings and left transformation provenance not assessable. R9 implementation commit 3b608ca63631f7c6783443eeb55cae85d111c6b1 passed 56 direct, 153 R8+R9 adjacent and 93 Project-OS/S1-foundation tests, static/active/JSONL/secret gates, and a zero-call 1,888-source/34,199-object preview in 39.649437 seconds. This policy authorizes only one fresh local 0.6B batch before independent dual audit.",
+  "execution_contract": {
+    "request_count": 5,
+    "local_embedding_inference_batches": 1,
+    "candidate_union_count_per_request": 96,
+    "final_review_count_per_request": 16,
+    "raw_union_rank_permutation_start": 1,
+    "raw_union_rank_permutation_end": 96,
+    "final_output_rank_permutation_start": 1,
+    "final_output_rank_permutation_end": 16,
+    "network_calls": 0,
+    "model_calls": 0,
+    "generation_model_calls": 0,
+    "provider_calls": 0,
+    "external_capture_calls": 0,
+    "4B_embedding_calls": 0,
+    "reranker_calls": 0,
+    "retries": 0,
+    "current_mutations": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0,
+    "gap_closures": 0
+  },
+  "semantic_contract": {
+    "canonical_source_family_mode": "page_parent_and_slice_family_with_raw_occurrence_positions",
+    "adjacency_order_mode": "raw_sentence_occurrence_before_dedup_then_absolute_position",
+    "maximum_adjacent_source_or_object_units": 1,
+    "selected_pool_adjacency_mode": "absolute_corpus_positions_not_selected_only_positions",
+    "proposition_mode": "one_complete_equals_one_typed_proposition_no_cross_clause_or_sentence_group_union",
+    "supplier_role": "one_proposition_supplier_Dell_direction_and_status",
+    "yield_role": "one_proposition_observed_measure_process_and_period",
+    "units_role": "one_proposition_Dell_shipper_physical_quantity_and_period",
+    "ASP_role": "affirmative_bounded_configuration_or_bundle_price_not_company_realized_ASP",
+    "material_coverage_mode": "semantic_signature_and_lossless_frame_transformation_binding_v1",
+    "coverage_count_mode": "canonical_claim_and_raw_source_occurrence_both_reported",
+    "reranker_useful_at_k": 10,
+    "candidate_not_evidence": true,
+    "public_projection_mode": "recursive_explicit_allowlist_plus_unicode_fixed_point_threat_first_field_validation",
+    "predicate_frame_mode": "punctuation_independent_typed_scope_argument_group_frame_v5",
+    "scope_mode": "frame_local_assertion_owner_actuality_lifecycle_and_scope_edge_v1"
+  },
+  "output_contract": {
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_8.json",
+    "private_result_ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r9/full_result.json",
+    "public_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_8.json",
+    "attempt_consumption_receipt_ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r9/attempt_consumption_receipt.json",
+    "raw_execution_capture_ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r9/raw_execution_capture.json",
+    "terminal_failure_receipt_ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r9/terminal_failure_receipt.json",
+    "alternate_output_paths_authorized": false,
+    "private_public_same_path_authorized": false,
+    "exclusive_create_required": true,
+    "atomic_pair_with_rollback_required": true,
+    "same_attempt_retry_authorized": false,
+    "minimum_free_bytes_before_attempt": 536870912
+  },
+  "bound_inputs": {
+    "R8_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_7.json",
+      "sha256": "7c3cbeb550531b6a8fe89e362d7f4c9687aeb6d4b057776778ac880b59e929f4",
+      "result_digest": "ee6616d7c0db30608f91cea80c6412bb69dae19a0e9babc80576b9a2aa96ae63"
+    },
+    "R8_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_7.json",
+      "sha256": "8a11168e9366462928d4741abb1e87cfabc2597d4e1a6603c66b3710835dd022",
+      "result_digest": "1b6c04aadd61ec1253ab27062b3dd8a7b3251e6b7f3fb20ef3918e390aa5e83d"
+    },
+    "R8_private": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r8/full_result.json",
+      "sha256": "17041e294d89ed281f9c54bd666cd0a071a13056bffa6a91306fca136cface4f",
+      "result_digest": "290c8390f3b043409b79833b00ef9a3388c56368c19a1eb901bded7598b037b2"
+    },
+    "R8_attempt_receipt": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r8/attempt_consumption_receipt.json",
+      "sha256": "cace31eca24984dcb927131876b3d449b406a7f5280cae2a6ce9f93e89248217",
+      "result_digest": "695f50f516efb621fd27883d099d188026a04bf55430722caa4c830943bd21fa"
+    },
+    "R8_fresh_audit": {
+      "ref": "configs/audits/fin_ia_0_1_3_commit_aa58a503_dell_03b_r8_fresh_split_dual_audit_fail_v1_0.json",
+      "sha256": "14745de67c075f74bdf9ef1bfc3e70247b61ae2418fc7d79b7b8d61b00cd7ce4",
+      "result_digest": "d8f2176e3f0972976ed601c5f0d261617e372df2c3a8de88097f18ed3e5cb612"
+    },
+    "R17_report_audit": {
+      "ref": "configs/audits/fin_ia_0_1_3_commit_aa58a503_dell_03b_r8_fresh_split_dual_audit_fail_v1_0.json",
+      "sha256": "14745de67c075f74bdf9ef1bfc3e70247b61ae2418fc7d79b7b8d61b00cd7ce4",
+      "result_digest": "d8f2176e3f0972976ed601c5f0d261617e372df2c3a8de88097f18ed3e5cb612"
+    },
+    "R17_report_bundle_carry_forward": {
+      "ref": "configs/audits/fin_ia_0_1_3_commit_aa58a503_dell_03b_r8_fixed_dual_audit_manifest_v1_0.json",
+      "sha256": "a4cdc3162f90153f82d3d1e3295bfce59ec00a52ddc7eb420fc2be2b249598bd",
+      "result_digest": "024d0dc0ade945ac4df7f0bb08d5d2229fc585c697f3c6a2f87985482d46491f"
+    },
+    "source_records": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v5/records.jsonl",
+      "sha256": "d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45"
+    },
+    "compiled_objects": {
+      "ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v9/objects.jsonl",
+      "sha256": "1c3e48486f933d23306dbabacb1641e26cb9bbc5b474da932d602752dff3fa92"
+    },
+    "execution_program": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_3.json",
+      "sha256": "48a3c43e57685f39bb3b0658b5f74978981efaaa83df7ba8e3b0e91c4c4da67d"
+    },
+    "runtime_registry": {
+      "ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+      "sha256": "1cf5a8bce28ffaa8a9ae399b8a79e3aa36af39e937906ecb7ef4fcd8faa219ef"
+    },
+    "runtime_binding_receipt": {
+      "ref": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_15.json",
+      "sha256": "f581f3aff02aaf5e34455f3020578c4fb40b83a9d47e6fe097767dff171fc3ae",
+      "result_digest": "b90155d8d81ce15997c1b1e68f791554bb1a2152394a72d3296a532570a10551"
+    }
+  },
+  "execution_identity": {
+    "branch": "codex/fin013-dell-s1-s2-product-bridge",
+    "implementation_commit": "3b608ca63631f7c6783443eeb55cae85d111c6b1",
+    "implementation_tree": "8d2c65f1288e9b6d6068f38527a57e40c025d7c3",
+    "authority_commit_changed_paths": [
+      "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_8.json"
+    ],
+    "authority_commit_parent_must_equal_implementation_commit": true,
+    "HEAD_must_equal_upstream": true
+  },
+  "implementation_bindings": [
+    {"path": "apps/workbench/backend/application/research_retrieval_service.py", "sha256": "7cc48987af4ceeba1be3bc470de7e6757623996de276b913340db464257877e7", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "scripts/data_retrieval/materialize_s1_abbreviation_claim_repair_successor.py", "sha256": "94d9292d1f2433fef8a559b68698f7b4a70c77d46177f8f738cafda372005955", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "scripts/data_retrieval/promote_s1_abbreviation_claim_repair_to_current_runtime.py", "sha256": "3e44db7d2c456b492c550c2124945a7777147a8dd9f74cc3c84f66489386c79f", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r4.py", "sha256": "b24a5b531b874f26b6c0d14df89cb6a8c18c86bccecfd5f474c80fdb99a2799b", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r5.py", "sha256": "9d0088e512d27ae6a011fb5506f0721329ebbea961b6d1bf2368143be2eb8295", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r6.py", "sha256": "592c157b09b330ad52ee2e07e3d704d79a88a7e1345ae8b7ecb867add29ddbde", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r7.py", "sha256": "142e25d02c282dbf1696efceb589bd713cc42897625b5ffd8e67e0ed7bd8d283", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r8.py", "sha256": "f56a956eae7095626b69ee794bf4b9f801d5fc4abfcf27364d56c03478ae3f03", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r9.py", "sha256": "efa3c1cef7acbba103942c121573a1dc801de7f73817881ad53859dfdf8e6542", "purpose": "R9 preview/formal/replay exact-once runner with raw-first capture and atomic pair publication"},
+    {"path": "src/retrieval/dell_report_frame_transformation_r9.py", "sha256": "5d9dca03e0b0a44f389ad90474e29b9213302b832dcc768ebd56acdc960f23de", "purpose": "R9 lossless source-to-compiled frame and role transformation provenance"},
+    {"path": "src/retrieval/dell_report_internal_chain_ceiling.py", "sha256": "1b8e9087ffc203f6363cf2011fa520f710cc04018e74805fb7403f6115ffc63a", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/dell_report_internal_chain_ceiling_r3.py", "sha256": "8dd413af78a96780563a5429a539e4d7de74b5483552e080a0060f3ec65cc9b0", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/dell_report_internal_chain_ceiling_r4.py", "sha256": "38d6ec6ca770b45b5123a2f36ef244014b1d3c5c6549455ea0ddc45819cc845b", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/dell_report_internal_chain_ceiling_r5.py", "sha256": "aa3ec13ddb1762d90e81a013e6ea0e3a43a214ee395ef826b5444d640a8620aa", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/dell_report_internal_chain_ceiling_r6.py", "sha256": "348abb3b0c2a4726565f47dbaf05ccabd33c7f927e744e42415fc002c8801a15", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/dell_report_internal_chain_ceiling_r7.py", "sha256": "e864a2bb447b1f3f081530529882afa1927b6a961f8cf87ba9689f7b3e7d8f36", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/dell_report_internal_chain_ceiling_r8.py", "sha256": "eb6da17ea5f1e67c0505d6412bcafbb23729e5bd524ff3eee27b3e0834bb8680", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/dell_report_internal_chain_ceiling_r9.py", "sha256": "a98e0b841fcf95d8f94a7e64b8aba5e005c435633287f26fb39cf133e2d6f261", "purpose": "R9 predecessor/audit validator, six-target compiler, route disposition and private/public projection"},
+    {"path": "src/retrieval/dell_report_predicate_frames_r8.py", "sha256": "f3392d178423264f7620acbee0d71e3c00ab82d224580d272e118096ab0d4753", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/dell_report_predicate_frames_r9.py", "sha256": "72e5b0d46e6fd6bbd8b2240fcdf37a34b75f91d814060001ce80c3e76160205f", "purpose": "R9 punctuation-independent predicate frames, typed scope state, ScopeEdge and argument-group anchors"},
+    {"path": "src/retrieval/dell_report_proposition_semantics_r7.py", "sha256": "7ca7b0f3eb0cd94687178b64118795bbeeebd4937d94fd887a2f9bf9d69315a9", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/dell_report_public_validation_r8.py", "sha256": "3d8421d19839ca37320065ae4d5bc8cecad41ca204cf5d692dc770f3ab3a90ca", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/object_view_compiler.py", "sha256": "043cbf8e4b3cca29c3000ac586347103528a39d7c3b8ecdfc23bd3736c7d8482", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/object_view_compiler_v2.py", "sha256": "8d94cea029a17c490c8977dbeff1171b161b052530185b57c42b05e679f47815", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"},
+    {"path": "src/retrieval/route_compiler.py", "sha256": "06cb6d6ee13e5936d67499e4f537a30ba4bf6037d290c5b88afd464fed0d2a02", "purpose": "Inherited immutable implementation required by the R8 execution and projection chain"}
+  ],
+  "TokenBudgetBasis": {
+    "node_purpose": "Execute the five frozen DELL report-gap requests once through the current R39 local retrieval runtime and compile an auditable R9 typed-frame and transformation-provenance candidate ceiling that directly addresses the fresh R8 findings without broadening source, ranking, Evidence, S2 or report authority.",
+    "input_scale": "Five unique requests; one local Qwen3-Embedding-0.6B query batch; each request must expose exactly 96 unique union and 16 unique final-review candidates over 1,888 source records and 34,199 compiled objects. Deterministic R9 classifies six targets and binds every complete source frame to a semantic-equivalent compiled frame.",
+    "required_outputs": "Exclusive attempt receipt and raw execution capture; immutable typed PredicateFrames, FrameBoundaryDecisions, ScopeEdges and ArgumentGroupBindings; per-role lossless FrameTransformationBindings; per-target source/compiled/union/final counts and ranks; partial diagnostics and external/4B/reranker eligibility; digest-bound private/public results; and a redacted terminal-failure receipt on any post-consumption failure, with every downstream authority false.",
+    "schema_burden": "Bind 12 immutable inputs including R8 policy/public/private/receipt, fresh R8 failure, R17 report failure and exact 14-file carry-forward bundle; bind implementation commit/tree and 25 implementation hashes; enforce policy-only parent/path, canonical exclusive outputs, minimum disk, exact-once 5x96-to-16 ranks, raw-first capture, atomic pair rollback, zero-authority counters, exact replay/reprojection and threat-first public schemas.",
+    "materiality_quality_risk": "A false complete can union unpunctuated independent events, treat revoked/discontinued/exploratory/analyst-attributed assertions as actual direct facts, bind support or freight price to hardware, or call representation drift semantic evidence loss. Any such error corrupts residual-source, 4B/reranker, Evidence, S2 and later report decisions. Separately, forgetting the unchanged R17 failure would hide missing reader citations, source appendix, crosswalk, WWC and human acceptance.",
+    "comparable_run_evidence": "Immutable R8 used the same five-request 96-to-16 chain and one local 0.6B batch but fresh review found three P2 findings. R9 author gates passed 56 direct tests, 153 R8+R9 adjacent tests and 93 Project-OS/S1-foundation tests. Active baseline remained 213 Python/8 frontend/5 detectors/28 resources/0 forbidden; eight Project OS JSONLs parsed 1,319 rows; the 8,179-file secret scan had zero findings. The zero-call preview took 39.649437 seconds, preserved ASP 1/1/1/1 rank2, supplier 3/3/2/1 rank2 and four zero residual targets, and passed complete transformation coverage for all six targets.",
+    "reasoning_profile": "Non-generative deterministic typed-frame and provenance compilation plus one local CUDA/FP16 Qwen3-Embedding-0.6B query batch. Embedding supplies ranking only; R9 semantic admission is deterministic. No 4B embedding, reranker, generation model, Provider, external capture or network call is authorized; later mixed-model and reranker eligibility is measured only on a real changed candidate pool.",
+    "stop_and_truncation": "Fail before consumption on disk, Git, exact parent/path, sync, predecessor/audit/R17 bundle, binding, runtime, input, collision, policy digest or public-schema drift. After exclusive receipt creation never retry the same attempt; persist raw execution immediately after the model returns and write only a redacted terminal failure receipt on later failure. Fail on anything other than five requests, one local batch, exact 96 and 16 unique ranks per request, or zero forbidden counters. Never truncate a target, complete transformation, partial diagnostic, route, privacy or integrity output."
+  },
+  "authority": {
+    "03B_internal_chain_execution_authorized": true,
+    "current_0_6B_query_embedding_authorized": true,
+    "network_authorized": false,
+    "external_capture_authorized": false,
+    "4B_embedding_authorized": false,
+    "reranker_authorized": false,
+    "candidate_decision_authorized": false,
+    "evidence_promotion_authorized": false,
+    "gap_closure_authorized": false,
+    "public_information_boundary_authorized": false
+  },
+  "known_boundary": "R9 is a bounded S1 candidate-chain semantic and transformation-provenance qualification attempt, not source capture/admission, 4B/reranker execution, CandidateDecision, Evidence/NumericFact promotion, gap closure, S1/S2/S3 acceptance, report acceptance, publication, release or qualified-human approval. Four residual targets still require separately authorized external ladders. Current 4B and same-pool reranker eligibility are zero; the mixed 0.6B/4B and reranker design remains conditional on a real changed candidate pool. A fresh author-separated read-only reviewer must audit immutable R9 engineering and separately carry forward or reassess the exact 14-file R17 reader-citation, source-appendix, 14/9/4/10 crosswalk, six-WWC, density, source-locator and formal-quality failure before any downstream authority.",
+  "result_digest": "ab50a554fcf65a6c996141016700b47d93fb964b32faf28986fe0a9abdbf1e79"
+}

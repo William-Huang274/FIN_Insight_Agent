@@ -1,0 +1,163 @@
+# S3/189 Dell 多 Agent 审查与责任回派
+
+状态（2026-09-06）：A5 已真实达到 Q1 `review_cycle_accepted`，两位独立 reviewer 均 `no_material_finding`；A1–A4 原失败保留。下一跨主题任务交接已本地消费真实 A5 底稿并经实际 MCP 查询通过，尚无自主 Lead/完整产品 PASS。起点 863f7ab4（clean/pushed），FIN 0.1.3 / 同一 S3。
+
+## Owner 方向与最小真实增量
+
+2026-09-05 Owner 明确授权：单 Agent 跑通后继续多 Agent、完整产品，普通实现/网络问题自行修复后继续，DeepSeek 额度充足。安全/金融事实标准不放松，不无限重试或提权。
+
+本包直接落实现有详设 Wave 3 / §§6、10、11：将 R11 原底稿和实际观察作为不可变输入，两个独立、可自主查询的 Counter / Verifier 子 Agent 并行审查；finding 回到原 Specialist 的新 revision，自主补查/修订，再复审。此包不是 R12 单 Agent 重跑，也不是 Q1–Q9 全产品 PASS。
+
+## 实施边界（先冻结，允许据真实证据修正）
+
+- 复用同一个 LangGraph Specialist tool loop、ToolNode、MCP、SDK、Agent Server/PostgreSQL/Redis/LangSmith。外层使用标准 StateGraph/Send；不添加依赖、scheduler、queue、rule engine 或第二种 runtime。
+- 审查角色以专门 SubmitReviewAction 返回 finding；确定性层只核对 JSON、目标 revision、原文 anchor、已观察引用与责任身份。语义/完整性/因果判断交给模型，不将本作者 R11 中文复核注入模型。
+- 审查可读取原 Agent 的完整已观察 source context、底稿/claim 和简短依据；不能读私有 provider reasoning。各子 Agent 的 SDK 对话隔离，同一子调用保留自身原 reasoning/tool messages。跨 Agent 移交显式 artifact，不冒充 durable conversation resume。
+- 原失败及 R11 文件不修改；新修订单独保存，引用权限仍是 Reviewed / S2 / 已读 PASSAGE；不新增网络入口、Evidence admission、S2 写或发布权限。
+- 首个可执行切片只审查 Q1；最多一次责任修订和一次复审，两 reviewer 每次最多 6 模型轮/8 数据动作，原作者修订最多 12 轮/16 动作。这是异常停止上限，不要求用满。每节点记录实测依据的 TokenBudgetBasis；失败不能被吞掉成为 no-material finding。
+- 真实执行仍走现有一次启动 runner 和服务器身份绑定。允许在现有 authority 增加显式 workflow/seed/node budget 字段，不新建另一套执行协议。输入 seed 只读绑定文件 SHA；所有输出在新 attempt。
+- 定向检查：真实 R11 移交不改原件、不同 reviewer 上下文隔离、审查权限/引用/target 绑定、finding→责任修订→复审、任一失败不能 aggregate PASS、旧单 Agent 回归。通过后实际 DeepSeek 调用并读原稿，不以测试数代替内容验收。
+
+## 后续方向
+
+本闭环有真实结果后继续既定动态 Lead / 并行专业 Agent / Q1–Q9 覆盖与报告，再到 Workbench/HITL/运行后交互。避免回到单个语义问题无限修补；仅将经源上下文证明的根因回归，不能把 reviewer 自评等同最终人工产品验收。
+
+## 成熟参考
+
+- https://docs.langchain.com/oss/python/langgraph/workflows-agents （orchestrator-worker / evaluator-optimizer）
+- https://docs.langchain.com/oss/python/langgraph/use-subgraphs （子图隔离与父级持久化）
+- https://docs.langchain.com/oss/python/langchain/tools （ToolNode）
+
+## 代码候选验证
+
+实际接入 `dell_workpaper_review_graph.py`（标准 Send/StateGraph evaluator-optimizer）、既有 Specialist graph/composition/DeepSeek adapter 的 review terminal 和 artifact handoff、既有 Agent Server 入口与一次启动 runner 的显式 review workflow。原单 Agent 五工具不变；reviewer 五工具仅以 SubmitReviewAction 替换 SubmitWorkpaperAction。没有新依赖或另一套 runner。源 seed 单文件只读挂载，逐 reviewer/repair 节点有独立 TokenBudgetBasis 和 SDK 会话；原 provider reasoning 仅续传本角色且保留在私有审计。
+
+最终相关 11 文件测试：`215 passed in 16.28s`。包含真实 R11 原件不变/完整 observations 移交、实际 reviewer MCP catalog 返回、实际 SDK 模拟 transport 的 review 工具 schema、同角色 reasoning 续传/跨角色隔离、finding 精确目标/引用/anchor、并行 barrier、责任作者修订和二次复审，以及失败不得变 PASS。纯离线测试发现的 JSON tuple 序列化、LangGraph reducer 初始空列表、审查不应增加作者 revision 的边界均在付费前修正。Client 测试改为比较 Pydantic 显式默认值归一化，未更改 client 行为；legacy 单动作五选一 schema 保持。
+
+2026-09-05 22:13 本地 Docker R11 三服务 healthy；磁盘 C/D/Z free=3.46/25.14/14.16 GiB。本包未删文件/改代理。当前未执行新模型；R11 的 runtime bounded PASS / 内容未 PASS 保持。此为 Q1 有界协作 qualification，不是昂贵完整 Q1–Q9 full-chain；后者仍须其专用全链 preflight/节点授权和产品门，不能用本包替代。
+
+## A1 真实结果与按责任修订（2026-09-05）
+
+A1=`20260905-dell-q1-agentic-review-repair-a1`，implementation `ac359ea9ff8622c40fd416e3e8f78fcfa73f53e9`、authority HEAD `1ba8a114f9e143c40df80fc6dece9d1abc3ba9f5`。run/root `01a071f7-b134-71f1-90cb-e15396284922`，server thread `5da962c1-5f7e-5bef-81fd-c712f040cc26`，port18163。唯一入口正常完成，无网络/代理问题、无 retry/resume/fallback。
+
+- 工程增量真实成立：两个 reviewer 并行 → 原作者两轮修订（第一次被准确的原文匹配拒绝、第二次收下）→ 两个 fresh reviewer 复审；三种角色、五次独立 Agent invocation、六次真实模型调用。继承已读材料后本轮**新增数据工具动作=0**，不能宣称 reviewers 主动做了外源搜索；现有自主工具权与实际零模型 MCP 资格证明分开。
+- 模型 input/output/total=`400636/98599/499235`tokens；累计模型1278.190391s（并行累计，不是墙钟），图命令871.859s，Docker构建159.234s。token/耗时是实测，本文未伪造实际账单。
+- 第一轮抓到 C7 Q2订单/积压、C8 Q3指引和C9精确分部值的引用覆盖缺口。原作者第一份修订的 C7 原文引文正确，C8/C9却重排表格、用省略号拼接，原严格substring检查正确拒绝；旧反馈只给同一个PASSAGE ID且去重，未告诉模型是哪条claim失败。作者随后把对应断言移到正文逃避引用，仍英文。
+- 复审真实发现比第一轮更深的问题：Counter 找到应付账款增加被写成吸收现金的方向错误；Counter/Verifier均发现将Q1毛利率下降泛化为整体趋势，遗漏Q2毛利率回升反证。未把Codex事先问题清单注入模型。模型 finding 是审计输入而非真理：仍需区分余额变化与现金流表桥接，不能凭余额差精确归因OCF。
+- 终态 `review_cycle_needs_attention / material_findings_remain_after_one_revision`，正确 bounded_handoff，未假PASS。RC-S3-121仍open；本轮证明多Agent能指出语义问题和停止，并未完成其修复，更非完整Dell产品。
+
+不可变源在 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260905-dell-q1-agentic-review-repair-a1/`：terminal receipt SHA `7745f1b374861a83394415dc40d022cbf49efc191b0e647a60ae7f46d14366ee`；state SHA `2c35ffc6bda74df19050df9a21812efa78a4135a463339f7d211225b8a50e5ce`。`workpaper.agent-original.md` / `reviews.agent-original.json` 为机械原文导出，未人工改写/翻译成模型成果。私有rawreasoning不在这些导出中。
+
+### 有证据的小修补与下一次 A2
+
+1. `citation_quotes` 兼容旧字符串，同时允许独立逐字引文列表；每段仍严格匹配原文。错误精确到claim ID/quote index；不接受拼接、伪引文，也不放松自然语言事实标准。
+2. 明确正文仍保留的材料性断言不能通过移出claim来免除引用义务；修订需中文化整个工作底稿，而非只翻译review备注。语义继续由模型审查，不加NLP规则。
+3. 现有同一个图允许**显式新授权attempt**读取已经停止的review artifact，校验最后两份review的目标/引用/原文anchor和author责任，直接将真实未解决finding交回作者，再fresh review；不重新跑旧review、不resume服务器/对话、不复制旧模型计数。每次仍最多一次责任修订；不存在后台无限重试。共享BoundBranchTask/ToolLaneResult的revision改为与Notebook同为0..100，预算仍由图/authority约束，避免第二次合法修订被旧Literal[0,1]拒绝；旧固定workflow不因此自动加轮。
+
+修补后7个相关测试文件 `115 passed in 17.24s`，含A1原件精确复现（C7合法、只有C8/C9应报错）、独立引文列表正反例、stopped artifact→revision2且不重计旧调用、错误目标/anchor/责任拒绝、实际rev2 MCP catalog成功。本次不做全仓回归、不增加依赖/数据权限/框架。下一次A2只修并复审真实A1 findings，保留原失败。更广Lead/并行专业研究/完整Q1–Q9与前端仍在后续既定方向，不能以此小修补宣称已完成。
+
+## A2 实测：中文责任修订成立，审查截断与剩余语义保留
+
+A2 implementation `1539a85624b19f7f2e5ed32ed47f67aca1273b24`，authority HEAD `1e0412d58d017f052aa5d0afda351dfddee6df07`；run/root `01a0721e-1ac0-7c72-a62f-8f70e4e4229f`，thread `432b9e97-0730-53e8-93bd-2ca59966ffe7`，port18154。启动前发现生成JSON的integer/float标准化造成authority digest不匹配，在未启动/零调用时修正；不是模型或网络失败。
+
+作者两轮完成中文revision2：应付现金方向与Q2毛利反证已改；15条claims，C12–C15新增PASSAGE逐行引文，其中C14显式承认余额差是作者简单算术且不是现金流精确归因。第一轮C12–C15引文失败后，第二轮按精确claim/quote反馈使用多个独立原文行成功，不再删掉这四条。新可读产物见A2目录 `workpaper.agent-original.md`，未人工翻译/改数。
+
+Verifier**自主新增一次source search、两次模型轮**，定位Q1电话会候选，指出GAAP17.75%数值与非GAAP18.1%的AI mix归因口径不能混用；同时抓到正文订单/积压、Q3指引、精确分部值仍缺locator。其两项findings真实保留。Counter同次调用input62470/output24000，恰好达到配置上限，`provider_output_truncated`，无有效最终review；不得按另一个reviewer成功冒充两人都通过。A2整体failed，网络和Docker正常。
+
+完整调用事实：5次已发送/收到usage（4success+1truncated），input/output/total=`373817/79838/453655`，累计模型979.620513s，图命令684.078s，构建243.485s。一次资源采样API527.7MiB/Postgres55.76MiB/Redis4.168MiB（不是峰值）。无retry/resume/fallback。
+
+原runner在terminal校验失败之前未导出state，已用只读Agent Server状态补存原错误checkpoint；源文件SHA `ba87de43547e1f212eea217b62986f3ca74d4a4e53784e3a941b95f1e94b4762`，原failed receipt/audit不改。后续小修为先存state再判terminal，防止一个失败子Agent掩盖已完成的兄弟输出。既有导出器提供仅本机/error checkpoint的exclusive-create补存，不成为另一个runtime。
+
+下一A3基于这份真实revision2与Verifier findings，直接责任作者修订后重新由**两个**fresh reviewer审查；不重做R11，不用Codex人工答案修正。读取部分失败制品只在有error checkpoint且有合法已完成review时允许，活跃未完成态不能启动继任；最终放行仍须两角色真实完成。Counter/reviewer容量按已消耗24k并截断的实测调至32k，其余既有任务/工具/权限/预算不变。此是明确根因的一次容量修正，不自动后台无限重跑。语义与正文覆盖尚有待修，RC-S3-121保持open；动态Lead/全产品仍未完成。
+
+### A3 模型前错误与普通修复
+
+A3=`20260905-dell-q1-agentic-review-repair-a3`，implementation96e5e469 / authority HEAD49258f67，port18158。三个服务healthy，但宿主driver在6.547s后模型前failed；provider=0、无Agent Server research run。只读容器重放 `_contracts_and_input` 显示 `canonical_v1_2_phantom_a03_forbidden:session_id`：旧regex把A03中的0写成可选，误杀当前合法新workflow的a3。此非代理、数据、DS额度或模型问题。
+
+最小修复：保留历史A03（含Unicode/分隔符变体）限制，0不再可省略；普通作用域中的第三次attempt不等于不存在的历史A03。全部旧A02只读/身份保留/付费权限隔离仍适用，不靠ID命名获得授权。相关canonical/runner `51 passed in 4.39s`，加真实A3启动输入只读复证（0provider/0writes）。原A3失败不改、不resume。下一fresh A4沿用A3全部内容/容量/seed，实际完成尚未发生的修订与复审；不扩研究或工程范围。
+
+## A4：第三版中文稿已保存，审查 JSON 容错缺口（2026-09-06）
+
+A4 implementation `fc0a4b537c51532174ca86ea1abd6361bd93341b`，authority HEAD `e5270951d1827a021fe6ab0a179663c2c3bb73a1`，execution `20260905-dell-q1-agentic-review-repair-a4`。run/root `01a07249-6c78-7ad1-8d1d-64c8dac1601a`，thread `39beb7b5-152d-5625-b5ca-768dd6df22b2`，port18173。构建112.156s、图589.781s；三服务healthy，无网络/代理错误。
+
+- 原作者1轮完成中文revision3，16claims，正文3055字符；已去掉未获引用支持的GAAP毛利率因果断言，并补订单/积压、Q3指引和精确分部值的PASSAGE及逐字引文。它是已通过结构/引用检查的工作稿，不是金融质量或产品PASS。原样导出 `workpaper.agent-original.md`。
+- Verifier自主读1份原文；Counter自主同轮读2份原文，多工具批次确实执行。Counter第2轮提交完整但非法JSON（内部中文引号未转义），SDK `invalid_tool_calls` 已准确记录，finish_reason=tool_calls，不是输出截断。标准parser定位line1/column2998/character2997。
+- FIN adapter却将可纠正参数错误当成fatal模型失败，LangGraph fail-fast取消并行Verifier。Verifier第二次provider响应有usage，但父图未收集其最终review，**0份已收集review**，不能冒充两个审查通过。runner失败为`review_cycle_terminal_missing`；全部失败/私有reasoning/第三版稿仍保存。
+- 真实模型5次（4success+1structured_parse_failed），input/output/total=`401213/76166/477379`tokens，模型累计900.216106s；没有unknown outcome、retry/resume/fallback。新增数据动作3次，非旧观察重复计数。
+
+### 小修与下一真实动作
+
+沿用官方SDK `invalid_tool_calls` 与LangGraph ToolNode/ToolMessage：无效JSON只作为不可执行的关联记录，返回原call ID及准确parser位置，由同一模型纠正后完整补交；不使用json_repair、不改数字/观点、不接受部分JSON。SDK原始回复与reasoning保持原样续传。合法同批read不被丢掉；terminal混批、未知工具、重复/缺失ID、真实截断与引用权限检查仍有效。旧合法action模型序列化不变，不改历史Notebook digest。
+
+现有review seed读取允许已error的fan-out在0份收集review时，仅继承已接受author artifact并从两人fresh review开始；不接受取消或非法JSON中的finding、不重写原件、不重做作者revision3。定向SDK/ToolNode/review三文件`68 passed in 14.39s`，相邻graph/composition/authority/runner四文件`49 passed in 7.76s`（前一命令误写runner测试文件名，0tests，已纠正）。含原A4完整非法参数的离线反例、精确错误回传、下一轮合法补交、跨角色reasoning隔离与无数据副作用。真实A4seed只读验证：revision3/16claims/9observations/0继承findings，SHA `fb89a53387338f9537be1aff0d25fd0afa895ac2c646306c4af236c47e9fc04f`。
+
+下一A5仅对这份稿重新真实审查，必要时最多一次原作者修订和fresh复审；保持32k输出、500k输入chars、480s和现有工具/数据权限。已知JSON失败由正常Agent反馈循环处理，而不是后台重发旧请求。RC-S3-121仍open，动态Lead/全Q1–Q9/Workbench及完整产品仍未完成。本次不创建新框架/runner/依赖，不全仓回归，不删除Docker卷、缓存、数据或旧证据。
+
+## A5：Q1 双 Agent 语义复核真实通过（2026-09-06）
+
+implementation `1a4e2d796cd7fa8b08f7c4e5d4cff8af1c668ba4`，authority HEAD `de5099c281a6eb1abd11b60ab9284d0567c48059`；execution `20260906-dell-q1-agentic-review-repair-a5`。run/root `01a07272-f829-7dd3-93d4-c4c27b1c1f1a`，thread `50f9c5c8-cc48-5679-b5a0-3720864accab`，port18168。
+
+- 真实 `review_cycle_accepted`：Counter 1 模型轮、Verifier 3 模型轮，均完成且 `no_material_finding`、findings=[]。直接审查 A4 已接受的中文 revision3/16 claims，无新作者重写，无人工改稿。Verifier 新读 1 原文，Counter 使用继承来源；不能称两人都新增搜索。
+- Verifier 的第二次提交“无重大问题”与 finding 列表矛盾，被本地 `review_verdict_findings_mismatch` 拒绝；下一轮自行将非阻断观察移入 coverage_notes 后提交。原始模型回复/ToolMessage/私有 reasoning 保留。A4 非法 JSON 修复已有真实反例离线证明，但 A5 未再次产生非法 JSON，不能声称该分支已 live 触发。
+- 仍保留两项非阻断意见：部分公司披露同比百分比可补更直接引注；电话会对非 GAAP 毛利率的 AI mix 解释可补入，不能与 GAAP 派生比率混为同一口径。不为这些整洁度问题再开 Q1 无限重写。
+- 实际 4 模型调用，input/output/total=`342778/52828/395606` tokens；模型时长累计684.972930s，并行图墙钟390.312s，Docker build303.187s。不是账单费用或全部产品时延；无 retry/resume/fallback/unknown outcome。
+- 原始产物在 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260906-dell-q1-agentic-review-repair-a5/`：`terminal-receipt.json`、`specialist-final-state.private.json`、原样可读 `workpaper.agent-original.md` / `reviews.agent-original.json`。state SHA `92a578a22d88baa8e9f1cf24ef6ac19369f09f0a76eb9fa3d0c90b970833e104`；底稿 digest `065ab5080e76cf447c041b0b76ac802ff4b4d72d8b5770e7c63cb12dd9481b96`。LangSmith 有该 root 的 runner 记录，本段未另做 SDK 全 span 读回复核。
+
+RC-S3-121 获得 **Q1 有界关闭**，不是跨主题/全金融文本百分百正确性证明。下一主线转动态 Lead/跨主题研究；原 R11/A1/A2/A3/A4 仍为各自原结果，不重写成成功。Q1–Q9、最终报告、人工交互、部署产品验收仍未完成。
+
+## 下一实际增量：任务与依赖底稿交接，不新造调度协议
+
+本节的任务交接增量已完成；下方下一节记录随后动态 Lead 实现与真实执行，不将二者混同。
+
+复用既有 `ResearchTaskSpec`、Specialist agentic graph/composition/SDK，在真实 composition 接受语义任务、任务目标/验收要求/角色和已完成依赖底稿。模型首轮看到完整 task_context，后续 SDK 历史不重复注入；任务标识保留为依赖名，宿主 receipt/digest/私有 reasoning 不作为跨 Agent 思考传递。依赖只是未验证研究上下文，新 Agent 引用必须自行读原始来源。
+
+FIN 仅验证任务覆盖、依赖身份、同 case/as-of/批准数据范围以及现有 capability；不授新权限，不继承观察/执行计数。目前一个任务对应一个既有 Q 覆盖项，符合现有 branch-scoped MCP compiler；不伪称多主题任意混合已打通。BoundBranchTask objective 上限对齐已存在 TaskSpec 的4000字符，不截断合法目标。实际 Lead 提案/动态 dispatch/收敛仍待下一步，不将 scripted driver 冒充自主规划。
+
+真实 A5 底稿→Q5 supply/price 任务→既有 MCP catalog + S2 查询的零模型测试暴露一个老 S2 缺陷：`exact_period_end` 未带 start 时仍应用 open-period 最新财报 cohort，将6月披露的5月期末季度排除。最早错误在 `financial_facts/executor.py`，不是信息缺口/代理。只令 cohort 策略用于 `latest_on_or_before`；精确日期匹配、research_as_of、vintage/conflict、单位/身份校验不放松，旧 SQL 数据不写。两条确定性反例先失败后通过；真实 MCP 收到正确 S2 结果，原 A5 文件不变。
+
+定向验证：S2/任务交接/composition/review/tool-batch 五文件89项，graph/SDK/deployment三文件71项，共 `160 passed`。一次误写 SDK 测试文件名导致0tests，已纠正重跑；没有全仓回归或额外 DS 调用。工程另采用 Docker 官方依赖层缓存顺序，固定依赖先于源码，依赖/镜像基线/安全配置不换；首次缓存建立真实成功，源码实际变更后的第二次构建也成功，third-party install与API restore两层均CACHED，FIN editable安装5.4s。registry metadata/resolve仍各约43s，不能称整体离线构建。镜像 `finsight-dell-runtime:task-handoff-20260906`，manifest-list SHA `5cdfe46e6ac275c8def6a5b92ef079226b2fe0ca7c9a2c3b89bf6cb239f1924e`。无网络/只读/cap-drop/no-new-privileges的临时容器内task handoff与S2导入通过；LangGraph1.2.11/Agent Server0.13.3/LangChain Core1.6.1/MCP2.1.1不变。临时容器自动移除，无用户数据挂载，所有旧服务/卷/镜像不删。参考 https://docs.docker.com/build/cache/optimize/ 。
+
+## 动态 Lead → 并行专业研究：实现与付费前资格（2026-09-06）
+
+### Lead two-topic A2：真实依赖交接与并行研究，因账户余额不足停止（当前）
+
+A2=`20260906-dell-lead-two-topic-a2`，implementation `f2fff90209f64d9fd39ce3fa759f5d1022897e73`、clean pushed launch HEAD `63c95986cf277afa69c509ae442917e1087647c8`；authority digest `523bbf113d68f506387254020820ffa13bcb2db82fe093c249ad10083dc1940f`。project `finsight-dell-q1-paid-523bbf113d68`、port18149、subnet10.253.27.0/24；run/root `01a072f7-b0db-7220-be9d-0e06e64a841b`、thread `dc3a7886-f25b-5080-8e07-7becec352120`。本节取代下面 A2 尚未运行的历史描述。
+
+- **工程实际增量**：Lead 1轮自主选择 `wave3:Q5_SUPPLY_AND_PRICE:supply_constraints` 与 `wave3:Q6_MODEL_COMPUTE_DEMAND:model_compute_demand`，分别承担供给/价格和模型算力需求研究；这次两任务都显式依赖 `wave2:Q1_ISSUER_TRUTH:39c34f8810cd29df5e18`，故已审查 A5 底稿→两个独立 Specialist 的依赖交接真实发生，不再只是零模型 fixture。两个 Specialist 持有各自多轮上下文并行选择资料/工具；未复制上游私有 reasoning 或将上游意见自动升级为证据。
+- **调用事实**：17 started / 17 outcome，15 success + 2 provider failure，无未决 provider 请求。Lead 1次成功，input/output/total=`12278/8412/20690`；Q5 6次成功+1失败，已报告=`351278/32595/383873`；Q6 8次成功+1失败，已报告=`455284/40608/495892`。总已报告=`818840/81615/900455` tokens；两次失败没有 usage，不虚构其用量或实际账单。含失败请求的模型累计951.951276s，并行 container 研究阶段498.625s，构建97.578s。
+- **研究产物与边界**：Q5 原生请求3 Reviewed、8 Source、1 Submit；Q6 1 Reviewed、21 Source、1 Submit，均为请求数而非全部成功的工具动作数。本轮无 Finance 请求，不能声称两个 Specialist 实际新增了 SQL 计算。最后 Q5 草稿21 claims/5389正文字符，Q6 15 claims/4178正文字符；两稿所有 claims 都填了 citation_quotes 且 terminal=`supported`，对比A1漏填有改善，但引句存在不等于引用/语义正确。根终态仍是 failed、phase=`schedule_ready_tasks`、0 collected task_results，无 Lead 收敛、无独立跨主题复核、无完整报告或产品 PASS。
+- **确切停止原因不是网络**：Q5 于2026-09-05T19:15:23.441777Z、Q6 于19:16:48.860111Z报告 `APIStatusError`。LangSmith 两个原始 LLM error spans（`01a07300-82ad-7472-b902-2ef8a7a4bafb`、`01a072ff-350a-7880-8346-d543c126cb3a`）明确为 HTTP402 / `Insufficient Balance`。只读余额接口于 **2026-09-05T19:30:14.290866Z** 返回 HTTP200、`is_available=false`，确认为余额不足（精确余额仅保存在本机诊断文件，不进入 Git）。这是 `.env` 当前 key 对应账户的外部资金阻断，不是 RAG/模型参数错误，也不能按 Owner 此前“额度管够”的假设继续重试。官方语义：[DeepSeek error codes](https://api-docs.deepseek.com/quick_start/error_codes/)。
+- **小修而非新框架**：既有 provider audit 只增添经过整数范围检查的 `http_status_code`，不公开异常正文/密钥/提示词，不自动重试。真实SDK+MockTransport的402/429/503反例先因缺字段失败，修后本文件27项定向测试通过；没有全仓回归或新增付费调用。RC-S3-124的实际工具回放修复仍成立，但“模型接反馈后完成收敛”尚未 live 通过，不因A2账户错误伪关闭。
+- **保存与下一步**：A2 原始 failed receipt、error checkpoint、public audit、私有模型上下文/reasoning 均不改。新增 `provider-balance-blocker.json` 是脱敏只读诊断记录；`q5.unaccepted.agent-original.md` / `q6.unaccepted.agent-original.md` 只增加宿主未验收说明后机械导出原正文，不人工修稿。它们位于 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260906-dell-lead-two-topic-a2/`。17请求已有结果，host driver已结束；不创建A3、不充值、不新发付费调用、不resume旧run。需要Owner给当前key账户充值或在本机换入已有余额的key，恢复后先只读核验余额，再安排同Q5/Q6范围的必要收口与独立复核；不回R14/新规划平台。
+
+活跃子图 `state=null` 的边界继续保留。官方 [LangGraph subgraphs](https://docs.langchain.com/oss/python/langgraph/use-subgraphs) / [subagents](https://docs.langchain.com/oss/python/langchain/multi-agent/subagents) 说明子图发现与调用结构、checkpointer模式有关；当前通过回调动态组合的子图可能不被静态发现，这是待验证的推断，不能由root空值断言“没有checkpoint”，也不能宣称实时子图展开、跨进程resume或HITL已通过。账户恢复前不借此新造状态/持久化协议。
+
+只读 Agent Server runs 确认 A2 原 run=`error` 且没有活跃 research run 后，已停止 A2 的 API/PostgreSQL/Redis 三服务以释放内存；只是 Docker stop，容器、卷、镜像及全部原始证据保留，原 failed receipt 的 cleanup=false 不改。
+
+### Lead two-topic A1 实际失败与同层修复（历史）
+
+修复后的 fresh A2 配置：`fin_ia_0_1_3_s3_dell_lead_two_topic_a2_authority_v1_0.json`，implementation `f2fff90209f64d9fd39ce3fa759f5d1022897e73`，digest `523bbf113d68f506387254020820ffa13bcb2db82fe093c249ad10083dc1940f`；新project `finsight-dell-q1-paid-523bbf113d68`、runner port18149、subnet10.253.27.0/24。仍只Q5/Q6、同A5 seed/数据门/预算，没有继承A1草稿、对话或偷偷重试其provider调用。A1三服务在18个调用均归档后仅stop，旧状态/卷/全部证据保留。最终schema说明后86定向检查通过，不新增通用协议。
+
+launch HEAD `fa95d16c8c3d33a32940f2e255c907fcb7e337ff`；project `finsight-dell-q1-paid-d9965ec526e6`、port18153、subnet10.253.26.0/24。run/root `01a072d9-2841-7bb0-8ad0-8c48d6b139fc`、thread `19d3e737-9315-532c-9cf1-3ad1f42ec5f8`。首次真实 Lead1轮自主提出Q5 supply-price-transmission与Q6 model-compute-demand-bridges 两项任务、各自角色/目标/验收标准，均无依赖；两专业Agent并行自主循环。A5作为Lead已知底稿，Lead没有为子任务指定seed依赖，不能虚称实际发生了那条依赖交接。
+
+- 实际18个模型完成响应（Lead1/Q5 7/Q6 10），input/output/total=`948806/99138/1047944`，累计模型1244.302518s。构建101.109s、container研究阶段615.984s；Q5在父图取消后仍完成原在途响应并补写audit，因此不能用父图时长宣称全部模型已于同一时刻完成。最终18started/18outcome，无未决provider调用，原Q5响应未复用/重试。
+- Q5原生请求4Reviewed+2Finance+13Source+1Submit；Q6 3Reviewed+17Source+2Submit。这是模型请求计数，非每项均成功的MCP证据。模型自己查HBM/存储价格、液冷、电力、Dell结果、模型/基准/客户资料，使用批量源读取；不是固定单步问答。Q5最后草稿25claims/2676叙事字符，Q6最后20claims/3983字符，均非已验收稿。
+- 失败最早层是 `SpecialistFeedback.message max_length=2000`：Q6产生正确的引用拒绝后，较长错误说明反而使反馈模型验证崩溃；LangGraph superstep随后取消Q5。失败checkpoint根phase=`schedule_ready_tasks`，0 task_results；host错误 `lead_research_terminal_state_invalid` 是后果，非真正根因。Docker三服务healthy，非网络/额度问题。
+- 同一真实回放又确认 SOURCELOC 候选在不同search/catalog视图中的preview差异被当作全底稿的不可变引用冲突。现在只跳过双方都不可引用/非数值权威的retrieval_candidate视图差异；真正Evidence/Passage/NumericFact冲突仍拒绝，原观察/摘要不改。完整runtime错误消息不再设独立2000字符上限；总输入预算和已有字段界限仍限制模型调用，绝不截去错误以过测试。
+- 修后真实Q6重放保留26项真正提交问题：1条无canonical receipt的bounded_gap，25条PASSAGE缺失逐字引句（20个claim均未填citation_quotes），反馈6779字符能回到下一轮，旧版先复现fatal。不是代码替模型写引用。工具schema说明明确ANY PASSAGE引用（含inference/boundary）需要对应引句；bounded_gap与普通open_gaps含义不混淆。不存在Quote匹配放水/公开缺口升级/手工改稿。
+- 87相邻检查通过，含上述真实失败回放、长反馈原样保留、可引用对象真实冲突仍拒绝；后续schema说明仅做相邻复验，不全仓回归。原 `failed-receipt.json`、`specialist-final-state.private.json`、模型audit/reasoning文件留在A1目录；额外机械导出 `q5.unaccepted.agent-original.md`、`q6.unaccepted.agent-original.md`，宿主明确标注未通过，不修改模型正文或旧state。
+- 新组合的root GET state?subgraphs=true看得到两个worker任务但其state=null，故**未证明活跃子图的前端实时展开/独立resume/HITL**。当前修复不借机重造持久化；该产品验收项保留。下一仍是同Q5/Q6 scope fresh A2，一次新启动验证能否将正确反馈交回模型并完成Lead收敛，再做独立跨主题审查。下方为付费前历史。
+
+下一一次执行配置已落盘：`configs/research/evals/fin_ia_0_1_3_s3_dell_lead_two_topic_a1_authority_v1_0.json`，decision digest `d9965ec526e6f203acea6e68c006bc2baf6eb9fc12eed3538a0f3ee67425c417`，implementation `11c52031d700f6ae6856a46768165dd685edea97`，execution=`20260906-dell-lead-two-topic-a1`。数据/canonical session-run-invocation 输入已零模型实际创建通过；runner 派生 port18153、10.253.26.0/24 已查未用；正式结果以下次原始 receipt 为准。16轮/24动作是每个专业任务容量，不是全 case 总额；Lead8轮、最多4任务/并行2、每节点500k/32k/480s，真实用量必须按新调用统计，不计复用 A5 的旧调用。
+
+在 `0d9ccd347bdf25f900766a09481bca10115d5cef` 后实现 `dell_lead_research_graph`。Lead 使用同 SDK 的3个原生规划工具，ResearchTaskSpec 表达任务/依赖；标准 `Send` 执行 ready tasks，ToolNode 给回 schema/依赖/循环/越权错误和真实子任务产物。Lead 可看结果后追加任务，不支持改写/取消已运行任务；最多4任务、并行2，非新通用调度器。Schema/state 读取不开模型/MCP/seed；Agent Server 的既有数据库/Redis/trace 持久化不换。私有 reasoning 各自续传，跨角色只共享工作底稿、显式引用/局限和未完成 Reviewed route，不复制 notebook 计数或权限。
+
+同 paid authority/runner 小范围扩展 workflow=`lead_research_delegation`，scope 只有 Q5/Q6；Q1 branch/node 字段仅为既有 entry 的身份/数据绑定锚，不额外调用 Q1 作者。已审查 A5 state 只读挂载，SHA `92a578a22d88baa8e9f1cf24ef6ac19369f09f0a76eb9fa3d0c90b970833e104`。沿用 DeepSeek thinking-enabled history profile；scope 内分别记录 Lead/专业研究 TokenBudgetBasis，不另造服务/队列/Transport/fallback。一次 fresh runner 仍须 clean+pushed implementation、独立 project/port/volume、固定调用上限、完整用量和 LangSmith。该窗口不是 Q1–Q9 昂贵完整 full-chain，不能代替其专用 preflight/全模型权威/产品门。
+
+真实数据检查：Q5 一次 Reviewed 查询完成原路由并取到 Dell/NVIDIA 等来源；Q6 查询返回 F9 `reviewed_source_family_residual`，不是网页找不到。实际手读 frozen MLCommons v6.0、Anthropic发布/访问中断段落、NVIDIA当期发布正文，确认模型可读的上下文不仅是检索标题。MLCommons 真实 search→read→逐字引用的零模型反例先在旧 `required_route_unsatisfied` 失败：最早归属提交合同未接 source-read 替代路线，非模型/网络/公众缺口。
+
+修复仅针对已开启 source-read 的非 Q1 底稿：缺 Reviewed completion 时仍须实际源片段引用和 open_gaps，所有 quote/authority/SQL 引用检查保持；未完成 route IDs 不改并由宿主强制传递给 Lead/依赖者。引用存在不能证明研究相关性/完整性，必须后续独立语义审查；目录 source-family tag 不当 coverage/Evidence。Q1 F2+S2 与未开启 source-read 的旧路由门不变。真实反例修后通过，删缺口或伪造原文仍拒绝。未修改 source/index/SQL/admission 数据。
+
+验证：10个相邻测试文件 **169 passed in24.87s**；含2独立 worker 并行 Barrier、随后第3依赖任务、11类非法提案反馈、真实 SDK MockTransport 连续 reasoning/tool IDs、A5→双真实MCP循环、Q6原文替代路线、旧单Agent与review。早期新测试曾因fixture capability名错误、SDK测试路径笔误等失败，已纠正；不把零模型输出当真实研究或付费成功。
+
+本机 C/D/Z free=3.49/25.13/7.56 GiB、free RAM≈0.95 GiB；核实不可变终态后暂停已结束 R11/A1/A2/A3/A4/A5 共18个 FIN 容器，**只 stop，不删容器/卷/镜像/任何证据**，避免旧进程挤占并行运行。当前仍待 fresh Lead 真实执行及产物审查；不回头无限重写 Q1，不扩模型供应商或外网权限。

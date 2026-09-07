@@ -1,0 +1,427 @@
+{
+  "schema_version": "fin_ia_dell_external_exact_url_qualification_config_v1_0",
+  "status": "frozen_zero_model_exact_url_qualification",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "research_as_of": "2026-09-02T00:00:00Z",
+  "data_snapshot_id": "dell_external_official_exact_url_set_20260902_v1_4",
+  "transport": "exa_hosted_web_fetch",
+  "capture_authority": "qualification_only",
+  "production_status": "HOLD",
+  "candidate_is_not_evidence": true,
+  "model_calls_authorized": false,
+  "fail_fast": true,
+  "routes": [
+    {
+      "route_id": "E05_DELL_Q2_FY27_SEC_EXHIBIT",
+      "branch_id": "Q1_ISSUER_TRUTH",
+      "official_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000039/exhibit991earnings8kq2fy27.htm",
+      "source_identity": {
+        "publisher": "Dell Technologies Inc. / U.S. Securities and Exchange Commission",
+        "document_title": "Dell Technologies Fiscal 2027 Second Quarter Earnings Exhibit",
+        "source_period": "FY2027 Q2",
+        "official_domain": "www.sec.gov"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Dell Technologies"]
+        },
+        {
+          "group_id": "document_period",
+          "any_of": ["fiscal 2027 second quarter", "second quarter of fiscal 2027", "FY27 Q2"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "ai_server_orders",
+          "any_of": ["$60.9 billion", "$60.9B"]
+        },
+        {
+          "group_id": "ai_server_revenue",
+          "any_of": ["$16.4 billion", "$16.4B"]
+        },
+        {
+          "group_id": "ai_server_backlog",
+          "any_of": ["$95 billion", "$95.0 billion", "$95B"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    },
+    {
+      "route_id": "E06_DELL_VOLTA_133MW_DEPLOYMENT",
+      "branch_id": "Q2_DEMAND_QUALITY",
+      "official_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~~usa~2026~08~volta-selects-dell-technologies-to-help-build-next-generation-ai-factories.htm",
+      "source_identity": {
+        "publisher": "Dell Technologies Inc.",
+        "document_title": "Volta Selects Dell Technologies to Help Build Next-Generation AI Factories",
+        "source_period": "2026-08-04",
+        "official_domain": "www.dell.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Dell Technologies"]
+        },
+        {
+          "group_id": "named_customer",
+          "any_of": ["Volta"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "initial_capacity",
+          "any_of": ["133 MW", "133MW"]
+        },
+        {
+          "group_id": "dell_system",
+          "any_of": ["PowerEdge XE9812", "XE9812"]
+        },
+        {
+          "group_id": "planned_capacity",
+          "any_of": ["1 GW", "1GW", "one gigawatt"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 30000
+    },
+    {
+      "route_id": "E07_DELL_AI_FACTORY_AVAILABILITY",
+      "branch_id": "Q3_UNITS_ASP_PVM",
+      "official_url": "https://investors.delltechnologies.com/news-releases/news-release-details/dell-ai-factory-nvidia-delivers-proven-path-enterprise-ai-roi",
+      "source_identity": {
+        "publisher": "Dell Technologies Inc.",
+        "document_title": "Dell AI Factory with NVIDIA Delivers Proven Path to Enterprise AI ROI",
+        "source_period": "2026-03-16",
+        "official_domain": "investors.delltechnologies.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Dell Technologies"]
+        },
+        {
+          "group_id": "document_title",
+          "any_of": ["Dell AI Factory with NVIDIA", "Dell AI Factory"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "product_family",
+          "any_of": ["PowerEdge", "Dell PowerEdge"]
+        },
+        {
+          "group_id": "availability_language",
+          "any_of": ["available", "availability"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 40000
+    },
+    {
+      "route_id": "E08_NVIDIA_VERA_RUBIN_PRODUCTION",
+      "branch_id": "Q4_ARCHITECTURE_RAMP",
+      "official_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Vera-Rubin-Ramps-Into-Full-Production-to-Power-Agentic-AI-Factories-Worldwide/default.aspx",
+      "source_identity": {
+        "publisher": "NVIDIA Corporation",
+        "document_title": "NVIDIA Vera Rubin Ramps Into Full Production to Power Agentic AI Factories Worldwide",
+        "source_period": "2026-05-31",
+        "official_domain": "investor.nvidia.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["NVIDIA"]
+        },
+        {
+          "group_id": "architecture",
+          "any_of": ["Vera Rubin", "Rubin"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "production_stage",
+          "any_of": ["full production", "ramped into full production", "ramps into full production"]
+        },
+        {
+          "group_id": "agentic_ai_factories",
+          "any_of": ["agentic AI factories", "AI factories"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 35000
+    },
+    {
+      "route_id": "E09_BIS_CHINA_LICENSE_POLICY",
+      "branch_id": "Q7_EXPORT_CONTROL_CHINA",
+      "official_url": "https://media.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china",
+      "source_identity": {
+        "publisher": "U.S. Department of Commerce Bureau of Industry and Security",
+        "document_title": "Department of Commerce Revises License Review Policy for Semiconductors Exported to China",
+        "source_period": "2026-01-13",
+        "official_domain": "media.bis.gov"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Bureau of Industry and Security", "U.S. Department of Commerce"]
+        },
+        {
+          "group_id": "destination",
+          "any_of": ["China", "People's Republic of China"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "policy_action",
+          "any_of": ["license review policy", "license applications"]
+        },
+        {
+          "group_id": "covered_products",
+          "any_of": ["semiconductors", "advanced computing chips"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 30000
+    },
+    {
+      "route_id": "E10_HPE_Q2_FY26_TRANSCRIPT",
+      "branch_id": "Q8_COMPETITION_VALUE_POOL",
+      "official_url": "https://investors.hpe.com/~/media/Files/H/HP-Enterprise-IR/documents/q2-2026/q2-2026-transcript.pdf",
+      "source_identity": {
+        "publisher": "Hewlett Packard Enterprise Company",
+        "document_title": "HPE Fiscal 2026 Second Quarter Earnings Conference Call Transcript",
+        "source_period": "FY2026 Q2",
+        "official_domain": "investors.hpe.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Hewlett Packard Enterprise", "HPE"]
+        },
+        {
+          "group_id": "document_period",
+          "any_of": ["second quarter fiscal 2026", "Q2 2026", "fiscal 2026 second quarter"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "ai_systems",
+          "any_of": ["AI systems", "AI system"]
+        },
+        {
+          "group_id": "margin_or_backlog",
+          "any_of": ["gross margin", "backlog"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    },
+    {
+      "route_id": "E11_SMCI_Q4_FY26_RESULTS",
+      "branch_id": "Q9_COUNTEREVIDENCE_WWC",
+      "official_url": "https://ir.supermicro.com/news/news-details/2026/Supermicro-Announces-Fourth-Quarter-and-Full-Fiscal-Year-2026-Financial-Results/default.aspx",
+      "source_identity": {
+        "publisher": "Super Micro Computer, Inc.",
+        "document_title": "Supermicro Announces Fourth Quarter and Full Fiscal Year 2026 Financial Results",
+        "source_period": "FY2026 Q4 and full year",
+        "official_domain": "ir.supermicro.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Supermicro", "Super Micro Computer"]
+        },
+        {
+          "group_id": "document_period",
+          "any_of": ["fourth quarter", "Q4 fiscal year 2026", "fiscal year 2026"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "preliminary_status",
+          "any_of": ["preliminary", "unaudited"]
+        },
+        {
+          "group_id": "financial_surface",
+          "any_of": ["gross margin", "net sales"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 35000
+    },
+    {
+      "route_id": "E12_ECFR_ADVANCED_COMPUTING_RULE",
+      "branch_id": "Q7_EXPORT_CONTROL_CHINA",
+      "official_url": "https://www.ecfr.gov/current/title-15/subtitle-B/chapter-VII/subchapter-C/part-742/section-742.6",
+      "source_identity": {
+        "publisher": "Electronic Code of Federal Regulations",
+        "document_title": "15 CFR 742.6 Regional Stability",
+        "source_period": "living text captured 2026-09-02; page current through 2026-08-27",
+        "official_domain": "www.ecfr.gov"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher_or_code",
+          "any_of": ["eCFR", "Electronic Code of Federal Regulations", "15 CFR"]
+        },
+        {
+          "group_id": "section_identity",
+          "any_of": ["742.6", "Regional Stability"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "advanced_computing_threshold",
+          "any_of": ["less than 21,000"]
+        },
+        {
+          "group_id": "memory_threshold_or_review",
+          "any_of": ["total DRAM bandwidth", "case-by-case license review policy", "case-by-case"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    },
+    {
+      "route_id": "E13_WDC_Q4_FY26_RESULTS",
+      "branch_id": "Q5_SUPPLY_AND_PRICE",
+      "official_url": "https://investor.wdc.com/node/28586",
+      "source_identity": {
+        "publisher": "Western Digital Corporation",
+        "document_title": "Western Digital Fiscal Fourth Quarter and Fiscal Year 2026 Results",
+        "source_period": "FY2026 Q4 and full year",
+        "official_domain": "investor.wdc.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Western Digital"]
+        },
+        {
+          "group_id": "document_period",
+          "any_of": ["fourth quarter", "fiscal year 2026", "fiscal 2026"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "storage_demand",
+          "any_of": ["growing storage demand", "storage demand"]
+        },
+        {
+          "group_id": "supplier_margin_surface",
+          "any_of": ["gross margin of 54.1%", "GAAP gross margin of 54.1%", "54.1%"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 35000
+    },
+    {
+      "route_id": "E01_OPENAI_GPT56_COMPUTE",
+      "branch_id": "Q6_MODEL_COMPUTE_DEMAND",
+      "official_url": "https://openai.com/index/gpt-5-6/",
+      "source_identity": {
+        "publisher": "OpenAI",
+        "document_title": "GPT-5.6: Frontier intelligence that scales with your ambition",
+        "source_period": "2026-07-09",
+        "official_domain": "openai.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["OpenAI"]
+        },
+        {
+          "group_id": "document_title",
+          "any_of": ["GPT-5.6"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "internal_research_compute_growth",
+          "any_of": ["100-fold", "100x", "100×"]
+        },
+        {
+          "group_id": "agentic_token_growth",
+          "any_of": ["22-fold", "22x", "22×"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    },
+    {
+      "route_id": "E02_TSMC_2Q26_TRANSCRIPT",
+      "branch_id": "Q5_SUPPLY_AND_PRICE",
+      "official_url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-08/3e494f0c14dd0890f897aa044415e21d93486cc4/TSMC%202Q26%20Transcript.pdf",
+      "source_identity": {
+        "publisher": "Taiwan Semiconductor Manufacturing Company Limited",
+        "document_title": "TSMC 2Q26 Transcript",
+        "source_period": "2026 Q2",
+        "official_domain": "investor.tsmc.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["TSMC", "Taiwan Semiconductor Manufacturing Company"]
+        },
+        {
+          "group_id": "document_period",
+          "any_of": ["2Q26", "second quarter 2026"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "advanced_packaging",
+          "any_of": ["CoWoS"]
+        },
+        {
+          "group_id": "capex_range",
+          "any_of": ["USD60 billion and USD64 billion", "60 billion and 64 billion", "$60 billion to $64 billion", "$60 billion and $64 billion"]
+        },
+        {
+          "group_id": "fab_buildout",
+          "any_of": ["13 new fabs", "thirteen new fabs", "13 leading-edge and advanced packaging fabs"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    },
+    {
+      "route_id": "E03_MICRON_Q3_FY26_PREPARED_REMARKS",
+      "branch_id": "Q5_SUPPLY_AND_PRICE",
+      "official_url": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+      "source_identity": {
+        "publisher": "Micron Technology, Inc.",
+        "document_title": "Q3 FY26 Prepared Remarks",
+        "source_period": "FY2026 Q3",
+        "official_domain": "s25.q4cdn.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Micron"]
+        },
+        {
+          "group_id": "document_period",
+          "any_of": ["Q3 FY26", "third quarter fiscal 2026", "fiscal third-quarter (Q3) 2026"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "strategic_customer_agreements",
+          "any_of": ["16 strategic customer agreements", "16 SCAs"]
+        },
+        {
+          "group_id": "hbm4_ramp",
+          "any_of": ["HBM4"]
+        },
+        {
+          "group_id": "supply_tightness_horizon",
+          "any_of": ["beyond calendar 2027", "beyond 2027"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    }
+  ]
+}

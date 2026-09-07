@@ -1,0 +1,295 @@
+{
+  "schema_version": "fin_ia_dell_report_evidence_admission_program_v1_0",
+  "program_id": "FIN-0.1.3-S1-DELL-RSQ-02A",
+  "status": "approved_zero_call_packet_freeze_program",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "scope_reconciliation": {
+    "material_problem": "The frozen phrase '4 requests / 16 human items' conflates two different sets in ProductReadiness v1.7.",
+    "full_decision_set": "All 16 human-required items across all 8 requests require qualified-human decisions for G2.",
+    "readiness_blocker_subset": "The 4 blocked_by_evidence_admission requests contain 8 of those 16 items.",
+    "immutable_execution_program_rewritten": false,
+    "false_interpretation_forbidden": "The four blocked requests do not contain four items each."
+  },
+  "expected_scope": {
+    "request_count": 8,
+    "candidate_review_item_count": 18,
+    "all_human_required_item_count": 16,
+    "blocked_request_count": 4,
+    "blocked_request_human_item_count": 8
+  },
+  "readiness_blocker_request_ids": [
+    "REQ::e17c40f93e25438950673210",
+    "REQ::081c06389f9dcb8487886b57",
+    "REQ::273bf40c53d28f49de438b41",
+    "REQ::c21c10d6e8f13263cf69ffa5"
+  ],
+  "input_bindings": {
+    "G1_independent_audit": {
+      "ref": "configs/audits/fin_ia_0_1_3_commit_7ba8bb2a_dell_rsq_r3_fresh_final_audit_pass_v1_0.json",
+      "sha256": "9429d75f101097da5e48815e8a0fab8ffb8966a38c4f5dd499eb5df1c4b27189",
+      "digest_field": "result_digest",
+      "digest": "4f28008ea1a15a9813ec0ac22ec5e8219519de9c3195cf6b6928d0c6c1542dd4"
+    },
+    "G1_crosswalk_public": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_2.json",
+      "sha256": "990972fc1acb62696f0bebbc12713e100597271ec562424296cf8d220ff577f5",
+      "digest_field": "result_digest",
+      "digest": "afc37e760cd88c107365e727d10b53694b299f93c4245cf90110775ec22676e2"
+    },
+    "current_readiness_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_7.json",
+      "sha256": "67a65f8efbde97bef20e2cc2ff8439e30eb3fac4ddeb2680c369d67f1361b19b",
+      "digest_field": "result_digest",
+      "digest": "bd6d652cc4b9551fc3d046724702d57b62beb56bfd76f6131c4513a4c805e40f"
+    },
+    "current_readiness_private": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_current_product_readiness/dell-r9/full_result.json",
+      "sha256": "c6af46811dd9f85487eface3c2e49aaafd22a4b7b2c7fa2960b75c9670b0db42",
+      "digest_field": "result_digest",
+      "digest": "2f09b9832d09ce1600f5ef403499e25fbb83ab5cf40079681be42aaa2e2c7665"
+    },
+    "R17_private_report": {
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-reversal-gate-r17/full_result.json",
+      "sha256": "433b2c486f8753d4f0b2468aa66f21c0ef2ff0e4bcc7d9347233e239b30ec0e8",
+      "digest_field": "full_result_digest",
+      "digest": "3be5a5453c8cf18cf5a14f7b7de7535b8d8c64367275e2f509dc0849db587743"
+    },
+    "immutable_execution_program": {
+      "ref": "docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md",
+      "sha256": "5bbb52691fd183bae5c61c6d6dd1b119544e76ffa2625a42dcb1297bd1ae4f0d"
+    }
+  },
+  "engineering_quality_requirements": {
+    "identity_sealed": true,
+    "predecessor_item_self_digest_recomputed": true,
+    "global_review_ref_and_digest_uniqueness": true,
+    "private_excerpt_public_projection_forbidden": true,
+    "dirty_worktree_and_output_collision_fail_closed": true
+  },
+  "model_quality_requirements": {
+    "embedding_and_rank_trace_advisory_only": true,
+    "model_or_harness_may_issue_admission_decision": false,
+    "rank_or_embedding_score_may_be_admission_reason": false,
+    "candidate_is_not_evidence": true
+  },
+  "report_quality_requirements": {
+    "every_item_has_material_R17_claim_use": true,
+    "citation_padding_forbidden": true,
+    "cross_company_context_cannot_be_target_fact": true,
+    "period_and_entity_boundaries_must_survive_admission": true,
+    "no_acceptance_without_reader_citation_right": true
+  },
+  "item_claim_use_policies": [
+    {
+      "review_item_ref": "CANDOBJ::0381BE87C0EE31414BA6EA4E",
+      "review_item_digest": "0bd1c306dbd895bfc7eac7bfe1a457c986e9ce18b5771e6ae48bb416a7110f22",
+      "proposed_report_effect": "limit_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::BD2D18FD0931E6E3E68E",
+        "WPCLAIM::653D7E95ECA46E262391",
+        "WPCLAIM::DFDFF241544B90012DA1"
+      ],
+      "alignment_hypothesis": "Dell's own non-linearity disclosure may limit claims that backlog or current orders imply a smooth shipment and revenue conversion path.",
+      "forbidden_inference": "Do not infer cancellation rate, backlog aging, delivery cohort conversion, or causal demand weakness from non-linearity alone."
+    },
+    {
+      "review_item_ref": "CANDOBJ::D7A996F5F40E35C760851932",
+      "review_item_digest": "b594920f4f80823c725aa0cdb99e15df69d28ac6c7278650ebe134c525c626a4",
+      "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+      "report_claim_refs": [
+        "WPCLAIM::BD2D18FD0931E6E3E68E",
+        "WPCLAIM::653D7E95ECA46E262391"
+      ],
+      "alignment_hypothesis": "The excerpt describes Dell procurement purchase orders and may provide supply-continuity context only if the reviewer can bind it to the research requirement.",
+      "forbidden_inference": "Do not equate Dell supplier purchase-order fulfillment within 30 days with customer AI-server order conversion or backlog aging."
+    },
+    {
+      "review_item_ref": "CANDOBJ::040A820BE15FD0CEAF83C0AD",
+      "review_item_digest": "ebc02f66b559e1631f29488e3a5e237da4939fba2ef3a28309c4764678ee2feb",
+      "proposed_report_effect": "limit_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::BD2D18FD0931E6E3E68E",
+        "WPCLAIM::653D7E95ECA46E262391",
+        "WPCLAIM::B1BDD811CE1DF55EE55E",
+        "WPCLAIM::E3BFD59CC60F05B1BD7C",
+        "WPCLAIM::FC2C8B1EA97D7EF82311"
+      ],
+      "alignment_hypothesis": "Issuer-owned working-capital and cancellation risk can qualify the durability and order-to-cash narrative.",
+      "forbidden_inference": "Risk-factor language is not evidence of a realized cancellation, impairment, loss, or quantified current-period cash absorption."
+    },
+    {
+      "review_item_ref": "CANDOBJ::E9A0B4076252D3978B8DAB73",
+      "review_item_digest": "5a83aa396988f3d2a14f2a1ef3e7d3fa80c12bce6e69f61d1f027a7cd11f1688",
+      "proposed_report_effect": "support_and_limit_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::BD2D18FD0931E6E3E68E",
+        "WPCLAIM::653D7E95ECA46E262391",
+        "WPCLAIM::DFDFF241544B90012DA1"
+      ],
+      "alignment_hypothesis": "Issuer disclosure supports observed AI-server backlog growth while preserving a separate need to test conversion durability.",
+      "forbidden_inference": "Backlog growth does not establish non-cancelability, delivery timing, customer breadth, recognized revenue, or durable end demand."
+    },
+    {
+      "review_item_ref": "CANDOBJ::E591113506AF79306D11D8AD",
+      "review_item_digest": "3674c9ed006637a3771df271f067358530f50e00fc34af67a5a293a809e0b0a2",
+      "proposed_report_effect": "support_and_limit_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::75D965BE6E71E9B90737",
+        "WPCLAIM::5D9F46AE15F105A4B50D",
+        "WPCLAIM::A3326287D929BC21E958",
+        "WPCLAIM::2339C903BA4B36F0C033"
+      ],
+      "alignment_hypothesis": "Dell's mix explanation can support the direction of gross-margin pressure and limit a product pricing-power inference.",
+      "forbidden_inference": "Do not turn a consolidated or segment mix explanation into AI-server ASP, unit, product profit, or price-volume-mix attribution."
+    },
+    {
+      "review_item_ref": "CANDOBJ::8EDA130D7FDA0F0B66BA53B5",
+      "review_item_digest": "ae21569fc5bd4876aa286f45f4a37465293497bd30dffedda98bc27b515f5f3c",
+      "proposed_report_effect": "support_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::0E1B77AE079F812F2C65",
+        "WPCLAIM::75D965BE6E71E9B90737",
+        "WPCLAIM::5D9F46AE15F105A4B50D"
+      ],
+      "alignment_hypothesis": "The annual segment operating-income table may support a same-definition historical result surface after exact row and period verification.",
+      "forbidden_inference": "Do not mix annual and quarterly periods or treat reportable-segment operating income as AI-server product profit."
+    },
+    {
+      "review_item_ref": "CANDOBJ::51BFECDF1794E6CE42A7B2CE",
+      "review_item_digest": "09cddcda4bfdd2c53889d6b9cea118818b665f11483f47582849e406c3260e69",
+      "proposed_report_effect": "support_and_limit_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::0E1B77AE079F812F2C65",
+        "WPCLAIM::75D965BE6E71E9B90737",
+        "WPCLAIM::5D9F46AE15F105A4B50D",
+        "WPCLAIM::2ED97A04C2264BA689D4"
+      ],
+      "alignment_hypothesis": "The consolidated-results table may support reproducible company-level revenue and margin facts while preserving the product-attribution boundary.",
+      "forbidden_inference": "Company results and reportable-segment results are not audited AI-server revenue, margin, incremental profit, or product profit."
+    },
+    {
+      "review_item_ref": "CANDOBJ::C20F9F784D691747A36DADC3",
+      "review_item_digest": "85c4d56d66c0c5e5f44f1444380a866ce96f9f26550312b9d40a6a9d0a067df6",
+      "proposed_report_effect": "support_and_limit_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::75D965BE6E71E9B90737",
+        "WPCLAIM::5D9F46AE15F105A4B50D",
+        "WPCLAIM::2339C903BA4B36F0C033"
+      ],
+      "alignment_hypothesis": "The gross-margin reconciliation can support the direction and definition of company-level margin change.",
+      "forbidden_inference": "A company gross-margin row cannot identify AI-server price, volume, mix weights, product margin, or value-pool capture."
+    },
+    {
+      "review_item_ref": "CANDOBJ::6E0870ECD8935A2BE7A6110F",
+      "review_item_digest": "e2d5cf130dcacf1dac526c0b44846178797978a965d4bb01c997c3262348df89",
+      "proposed_report_effect": "limit_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::B9FB00649A060D443976",
+        "WPCLAIM::E4FC61636C07C7CFA7D7"
+      ],
+      "alignment_hypothesis": "The issuer's non-GAAP definition boundary can prevent free cash flow from being presented as a GAAP line or product cash result.",
+      "forbidden_inference": "Do not treat the definition statement alone as a numeric free-cash-flow observation or AI cash conversion."
+    },
+    {
+      "review_item_ref": "CANDOBJ::E56F86F06307372B2F18FA97",
+      "review_item_digest": "8fa6a5bea5271cf7827728c61d5915a000ac54c84d90e825fcaadf10d3b467ef",
+      "proposed_report_effect": "support_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::1075BD357D0BD279E58F",
+        "WPCLAIM::B9FB00649A060D443976",
+        "WPCLAIM::E4FC61636C07C7CFA7D7"
+      ],
+      "alignment_hypothesis": "The exact cash-flow statement surface may support reproducible company-level cash facts after row, sign, unit, and period validation.",
+      "forbidden_inference": "Do not use a financing-cash-flow row, consolidated cash fact, or annual period as product-level operating cash conversion."
+    },
+    {
+      "review_item_ref": "CANDOBJ::27FD9953E64ED8DF1F3B2428",
+      "review_item_digest": "a2364d9afdff35d1c050708366560561cf11f9bd4bf77c485589bbe5bf4c4dd7",
+      "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+      "report_claim_refs": [
+        "WPCLAIM::05DBE34A9E501DA6588A",
+        "WPCLAIM::2B4F6A85A1B574D20ED2",
+        "WPCLAIM::86BBF5595F64AAC5A325"
+      ],
+      "alignment_hypothesis": "The allowance methodology may provide credit-risk context only if the exact receivables requirement and report use are demonstrated.",
+      "forbidden_inference": "An expected-credit-loss policy is not a measured deterioration, AI attribution, working-capital absorption, or product cash loss."
+    },
+    {
+      "review_item_ref": "CANDOBJ::9A29D551F01388C5C785FF82",
+      "review_item_digest": "5a368493e2e560911847346d3c724773af7601f3735040a03feb07f3d8433763",
+      "proposed_report_effect": "support_and_limit_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::05DBE34A9E501DA6588A",
+        "WPCLAIM::2B4F6A85A1B574D20ED2",
+        "WPCLAIM::86BBF5595F64AAC5A325"
+      ],
+      "alignment_hypothesis": "The cash-flow working-capital row may support a company-level measured movement and help separate it from a balance-sheet proxy.",
+      "forbidden_inference": "Do not attribute the accounts-receivable cash-flow movement to AI servers or infer the complete working-capital bridge from one row."
+    },
+    {
+      "review_item_ref": "CANDOBJ::0B13DC6BFDAF674340B451BC",
+      "review_item_digest": "b813c1005b5854dc1422dcdc1ceef128403320ef0fea5539272761cb6a2b06cd",
+      "proposed_report_effect": "limit_if_admitted",
+      "report_claim_refs": [
+        "WPCLAIM::B1BDD811CE1DF55EE55E",
+        "WPCLAIM::E3BFD59CC60F05B1BD7C",
+        "WPCLAIM::FC2C8B1EA97D7EF82311",
+        "WPCLAIM::72BFBAD47FC79A3722E7"
+      ],
+      "alignment_hypothesis": "Issuer-owned working-capital, cancellation, and obsolescence risks can qualify the order, customer-concentration, and cash narrative.",
+      "forbidden_inference": "Do not present a disclosed risk as a realized event, current-period loss, cancellation rate, or quantified concentration."
+    },
+    {
+      "review_item_ref": "CANDOBJ::884E327B61E2F4DCB0788D95",
+      "review_item_digest": "5e5a3316586074463b1b35322a22980a1cfcf58c5879e650acbde88e33319b48",
+      "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+      "report_claim_refs": [
+        "WPCLAIM::B1BDD811CE1DF55EE55E",
+        "WPCLAIM::E3BFD59CC60F05B1BD7C",
+        "WPCLAIM::375C5BCE78D89B22A295"
+      ],
+      "alignment_hypothesis": "General issuer execution, inventory-management, and demand-forecasting risk may be retained only if it materially sharpens the report's counter-thesis.",
+      "forbidden_inference": "Generic strategy language cannot prove AI-server inventory impairment, cancellation, realized loss, or a breached invalidation threshold."
+    },
+    {
+      "review_item_ref": "CANDOBJ::D7769F8FD29DE6807D0B57F6",
+      "review_item_digest": "6f5e8565ef221147685cd6b6bd9d715a75ffb45a053726e3b0bab3f017c7396a",
+      "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+      "report_claim_refs": [
+        "WPCLAIM::8B09D8AAC24EE52BD74B",
+        "WPCLAIM::62D1CEB2B807786057DB",
+        "WPCLAIM::F2E9BB4B2AF8901A7146",
+        "WPCLAIM::7A84BEB46A4E45FE3DBD"
+      ],
+      "alignment_hypothesis": "A named customer's component-shortage and inventory-risk disclosure may define bounded industry counter-context if a Dell relationship bridge is separately evidenced.",
+      "forbidden_inference": "Microsoft-owned facts are not Dell demand, Dell inventory, Dell allocation, or proof of counterparty overlap."
+    },
+    {
+      "review_item_ref": "CANDOBJ::C250AD7345231BD7C1DF0CBB",
+      "review_item_digest": "f25a6f642033764f55d601441f0468a3e47a8ece8ab7b3f69042a748fb495293",
+      "proposed_report_effect": "context_only_or_reject_if_no_material_use",
+      "report_claim_refs": [
+        "WPCLAIM::8B09D8AAC24EE52BD74B",
+        "WPCLAIM::62D1CEB2B807786057DB"
+      ],
+      "alignment_hypothesis": "A named supplier's single-source equipment dependency may define bounded upstream risk context only if its relevance to Dell supply is evidenced.",
+      "forbidden_inference": "Micron-owned equipment dependency is not Dell-specific HBM availability, yield, allocation, delivery, or realized supply disruption."
+    }
+  ],
+  "authority": {
+    "packet_freeze_authorized": true,
+    "qualified_human_decision_authorized_for_codex": false,
+    "candidate_promotion_authorized": false,
+    "evidence_promotion_authorized": false,
+    "gap_closure_authorized": false,
+    "network_calls_authorized": false,
+    "provider_calls_authorized": false,
+    "model_calls_authorized": false,
+    "embedding_calls_authorized": false,
+    "reranker_calls_authorized": false,
+    "dynamic_agent_authorized": false,
+    "writer_authorized": false
+  },
+  "program_digest": "60fd30e57fa588837fd72025aa74ca96e96e5f468e5649fb18c211df08b0776b"
+}

@@ -1,0 +1,64 @@
+{
+  "schema_version": "fin_ia_s3_case_truth_reconciliation_live_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "run_id": "FIN013-S3-CASE-TRUTH-SEMANTIC-CANARY-R1",
+  "recorded_at": "2026-08-17T12:27:14.6985622+08:00",
+  "implementation_commit": "2f86056b02572894fdb4c5bdc8dee49d4981f7a3",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_chat_live_authority_v1_0.json",
+  "authority_sha256": "766c023f003261c1de91f77f3981acdd0ca4d6e7e15b57c1c98bb267e83d7dd2",
+  "private_result_ref": "data/workbench_private/s3_case_truth_reconciliation/FIN013-S3-CASE-TRUTH-SEMANTIC-CANARY-R1/full_result.json",
+  "private_result_sha256": "ffdf9619839724bc69863be50cebc6aae249439b2dce67f670f825038b772de0",
+  "provider": {
+    "provider_id": "deepseek",
+    "model": "deepseek-v4-pro",
+    "finish_reason": "",
+    "usage": {},
+    "request_capture_ref": "",
+    "response_capture_ref": "",
+    "private_reasoning_persisted": false
+  },
+  "contract": {
+    "case_truth_packet_digest": "6d25591ef73087a24efc74a1dff124f13ae3db9fc92701909c956e22c132432e",
+    "claim_document_digest": "83fcc205c8bc7cd9b88d573c55daecbbddf990f631053de0fbc2606e6607096c",
+    "claim_surface_count": 15,
+    "tool_projection_digest": "f050371028daf98e1db3bc09d8b9dea3261a7cf1c5483203c2681349823bd89c",
+    "finance_contract_weakened": false,
+    "local_reconciliation_status": "",
+    "local_finding_codes": []
+  },
+  "pre_registered_target_assessment": {},
+  "failure": {
+    "phase": "provider_transport_or_response",
+    "code": "model_gateway_reasoning_budget_exhausted",
+    "capture_ref": "data/captures/provider_calls/FIN013-S3-CASE-TRUTH-SEMANTIC-CANARY-R1/CASE-TRUTH-SEMANTIC-CANARY-01/provider_response.json"
+  },
+  "execution": {
+    "model_calls_attempted": 1,
+    "provider_calls_attempted": 1,
+    "transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "protocol_switches": 0,
+    "network_source_calls": 0,
+    "embedding_calls": 0,
+    "candidate_promotions": 0,
+    "research_rewrites": 0,
+    "report_generations": 0,
+    "product_publication": false
+  },
+  "acceptance": {
+    "provider_call_completed": false,
+    "strict_tool_call_parsed": false,
+    "local_exhaustive_validation_completed": false,
+    "automatic_critical_targets_pass": false,
+    "semantic_content_assessment_complete": false,
+    "natural_semantic_extraction_accepted": false,
+    "r7_repaired": false,
+    "dell_five_cell_accepted": false,
+    "generalization_accepted": false,
+    "s3_accepted": false,
+    "release_ready": false
+  },
+  "known_boundary": "This one-call canary only tests natural semantic classification of the immutable R7 cell claim surfaces. Even automatic critical-target success requires a separate full-surface content assessment. It does not rewrite R7, generate a report, authorize an affected-node successor, prove DELL or cross-case quality, publish to Workbench, accept S3 or release.",
+  "result_digest": "c94b8156d13f3131a5488bd385f2cf79ec8677727dc45332afcf69f36ad54942"
+}

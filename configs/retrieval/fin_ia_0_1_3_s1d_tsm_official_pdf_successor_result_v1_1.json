@@ -1,0 +1,68 @@
+{
+  "authority_ref": "configs/retrieval/fin_ia_0_1_3_s1d_tsm_official_pdf_successor_execution_authority_v1_1.json",
+  "evidence_gate": {
+    "accepted_items": 2,
+    "accepted_page_numbers": [
+      10,
+      20
+    ],
+    "causal_attribution_authorized": false,
+    "facet_id": "advanced_packaging_capacity",
+    "gap_closed": "dell-gap-advanced-packaging",
+    "numeric_authority_granted": false,
+    "result_digest": "5cd39f95d0dff6da754db72439b6d0b6db62c18782454a3211ddfc9859f16b12",
+    "slot_id": "capacity_inputs_execution"
+  },
+  "execution": {
+    "model_calls": 0,
+    "network_calls": 0,
+    "raw_source_published": false,
+    "retries": 0
+  },
+  "recorded_at": "2026-08-13",
+  "remaining_boundaries": {
+    "S1_product_acceptance": false,
+    "S3_execution_authorized": false,
+    "capacity_release_timing_proven": false,
+    "complete_research_or_release_claimed": false,
+    "core_research_ready": false,
+    "dell_specific_tsm_allocation_proven": false,
+    "dell_transcript_transport_gap": true
+  },
+  "result_digest": "5b4a7e12745383389cbd3088df9fa3409e2383b34773efc4c03c138f6c94430d",
+  "result_id": "FIN-0.1.3-S1D-TSM-OFFICIAL-PDF-SUCCESSOR-ZERO-CALL-R2-RESULT",
+  "s2_dependency_regression": {
+    "numeric_fact_authority_changed": false,
+    "observations": 1319,
+    "result_digest": "e5c88e6368f062c19b206baa588ec4e40e19f9481281b79737679f1146c0a8fb",
+    "sqlite_sha256": "d05b0cc8e08d063a252d3032db13f6840abe0048200f3696b3ffccaa9d93c585",
+    "status": "unchanged_pass",
+    "transcript_numeric_authority": false
+  },
+  "schema_version": "fin_ia_s1d_official_pdf_successor_result_v1_0",
+  "source": {
+    "consumer_case_key": "DELL",
+    "evidence_owner_ticker": "TSM",
+    "nonempty_page_count": 22,
+    "page_count": 22,
+    "parsed_document_sha256": "675c9fabb42f569dbafc35d3cd74630ec285d2f8e3a10f1f742b275aeab88e45",
+    "promotion_status": "two_page_bounded_context_evidence_accepted",
+    "raw_pdf_sha256": "3e21fe2dc69a4b95ebaf3e2e9a037ff5d704c5729e1eb7eff1554d03bdfea453",
+    "route_id": "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT"
+  },
+  "status": "tsm_official_pdf_successor_candidate_ready_current_pointer_unchanged",
+  "successor_pack": {
+    "artifact_sha256": "2475a9bbd67f712e2198c38247347ad87d2cfad4fde4164895a9b1d819f47c08",
+    "current_product_pointer_mutated": false,
+    "evidence_before_after": [
+      15,
+      17
+    ],
+    "gaps_before_after": [
+      16,
+      15
+    ],
+    "pack_payload_digest": "4dd4f77b9bf7972cabf44992259bdd0e0da5730fa80a57f96735754c12c2be58",
+    "private_object_key": "objects/fin-0.1.3/s1d-tsm-official-pdf-successor/dell/v1/27/f3/27f3040a228d3eb83f68a1fdc8cf5014480175b5b57f5af7cb10e889d7884dd7.json"
+  }
+}

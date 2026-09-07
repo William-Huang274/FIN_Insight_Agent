@@ -1,0 +1,22 @@
+{
+  "schema_version": "fin_ia_s3_full_fragment_surface_contract_zero_call_stub_v1_1",
+  "status": "zero_call_full_fragment_sequence_and_terminal_judgment_pass_predecessor_not_reusable",
+  "fresh_process": {
+    "byte_equivalent": true
+  },
+  "immutable_predecessor": {
+    "reuse_in_full_judgment_authorized": false
+  },
+  "full_fake_sequence": {
+    "terminal_judgment": {
+      "harness_generated_research_judgment": false
+    }
+  },
+  "surface_contract": {
+    "saved_R1_replay_failure": "finance_loop_micro_narrative_invalid",
+    "final_deliverable_QF_surface_preserved": true
+  },
+  "execution": {
+    "model_calls": 0
+  }
+}

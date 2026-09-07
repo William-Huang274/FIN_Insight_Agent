@@ -1,0 +1,259 @@
+{
+  "schema_version": "fin_ia_fixed_pack_micro_judgment_zero_call_result_v1_0",
+  "status": "zero_call_micro_judgment_fresh_process_proof_pass",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_wwc_route_identifier_zero_call_authority_v1_6.json",
+  "authority_sha256": "6219dfce2c10c3dd9e22cd1a35024cc36ceff0c61f1b5c9fad2b975a319cbb3c",
+  "normalized_proof": {
+    "research_input_digest": "783de9eafec8bef8b14c8a5761bf7ce42a52b31ff7e68ea1505b264d4ea7d274",
+    "terminal_result_digest": "8a0ec20021f026afb7f06270fd17bcc45a7d8014a7b12553d6d288a62a0e8795",
+    "step_count": 4,
+    "tool_call_count": 5,
+    "tool_counts": {
+      "read_reviewed_evidence_for_cell": 1,
+      "read_numeric_facts_for_cell": 1,
+      "submit_research_thesis": 1,
+      "submit_research_mechanism": 1,
+      "submit_research_counterargument_and_wwc": 1
+    },
+    "ordered_model_owned_phases": [
+      "submit_research_thesis",
+      "submit_research_mechanism",
+      "submit_research_counterargument_and_wwc"
+    ],
+    "observed_steps": [
+      {
+        "step_index": 1,
+        "active_tool_names": [
+          "read_reviewed_evidence_for_cell",
+          "read_numeric_facts_for_cell"
+        ],
+        "model_visible_message_chars": 4849,
+        "active_tool_schema_chars": 663
+      },
+      {
+        "step_index": 2,
+        "active_tool_names": [
+          "submit_research_thesis"
+        ],
+        "model_visible_message_chars": 25760,
+        "active_tool_schema_chars": 3816
+      },
+      {
+        "step_index": 3,
+        "active_tool_names": [
+          "submit_research_mechanism"
+        ],
+        "model_visible_message_chars": 27631,
+        "active_tool_schema_chars": 3123
+      },
+      {
+        "step_index": 4,
+        "active_tool_names": [
+          "submit_research_counterargument_and_wwc"
+        ],
+        "model_visible_message_chars": 28623,
+        "active_tool_schema_chars": 4137
+      }
+    ],
+    "prior_monolithic_judgment_schema_chars": 4847,
+    "largest_micro_judgment_schema_chars": 4137,
+    "largest_micro_to_prior_monolithic_ratio": 0.853518,
+    "model_authored_narratives_preserved_exactly": true,
+    "harness_generated_missing_claim_or_fragment": false,
+    "private_reasoning_persisted": false,
+    "node_profiles": {
+      "mandatory_read_pair": {
+        "reasoning_effort": "low",
+        "max_tokens": 2000
+      },
+      "micro_judgment": {
+        "reasoning_effort": "high",
+        "max_tokens": 8000
+      }
+    },
+    "mutation_failure_codes": {
+      "wrong_fragment_order": "finance_loop_micro_judgment_order_invalid",
+      "duplicate_fragment": "finance_loop_tool_budget_exceeded",
+      "missing_fragment": "finance_loop_step_without_tool_call",
+      "missing_required_authority": "finance_loop_micro_required_authority_missing",
+      "unknown_or_cross_case_alias": "finance_loop_micro_relation_alias_invalid",
+      "claim_local_required_support_not_borrowed": "finance_loop_micro_required_authority_missing",
+      "causal_overreach": "finance_loop_judgment_invalid:claim_surface_narrative_relation_conflict",
+      "tool_schema_mutation": "finance_loop_tool_definition_contract_drift"
+    },
+    "cross_case_policy_rejection_codes": {
+      "MU": "claim_authority_base_input_not_qualified",
+      "NVDA": "claim_authority_base_input_not_qualified"
+    },
+    "prior_capacity_failure_immutable": true,
+    "saved_r3_claim_local_boundary_replay": {
+      "predecessor_result_digest": "7610cf69cae966d534bc1433c3e57092133cbd4dc97b749fdbcf0d6300b12575",
+      "predecessor_failure_code": "finance_loop_micro_evidence_role_conflict",
+      "submitted_fragment_fixture_sha256": "988edd4889712f20014f2a0bdbf1efeedbe0e71ce7633888a4e6d3f22112b6d5",
+      "accepted_fragment_digests": {
+        "submit_research_thesis": "2948aadddf3bf3d92eb0057fb00a50803a3a37b41e49a7f936f637bb7757d9f1",
+        "submit_research_mechanism": "befc9a4f62b91d9287cde06a248a779ddf9998330fd296ee125587eac3832be0",
+        "submit_research_counterargument_and_wwc": "ffd4cbe3dca693b4f94ca8cfe6e1c0814e8c6b41bb0685fc04e373984730d668"
+      },
+      "terminal_judgment_digest": "ea8ddcf97e68e9b9385dbb265cfdd31b7d10820cc4af8248548f4e0cb533113c",
+      "deliverable_digest": "b97b4209c356a0eaa1dce84b0c690c98545e3d07eb93613826a0ef2782dba787",
+      "judgment_status": "bounded_support",
+      "inference_authority": "bounded_inference",
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "multi_driver_context_only",
+      "claim_local_roles_preserved": true,
+      "report_level_summary_deterministic": true,
+      "boundary_authority_sources": [
+        "typed_bridge_gap_relation",
+        "typed_same_scope_counter_relation"
+      ],
+      "model_narratives_preserved_exactly": true,
+      "harness_generated_research_judgment": false,
+      "mutation_failure_codes": {
+        "global_support_laundering": "claim_surface_required_authority_missing",
+        "typed_boundary_removed": "claim_authority_multi_driver_boundary_missing"
+      }
+    },
+    "saved_r4_causal_polarity_replay": {
+      "predecessor_result_digest": "53abb84e1f6ff982ce4c51024457ee8e331af169e318278f9e5bb704e6da49e7",
+      "predecessor_failure_code": "claim_surface_narrative_relation_conflict",
+      "submitted_fragment_fixture_sha256": "4087070c7aeb6226d1bb71b008a49d4da105c3c6d7d7978cf569d31b5832b95e",
+      "accepted_fragment_digests": {
+        "submit_research_thesis": "5ddabf88443a92a9f4c67279b6481c17d3c25f79c96483603ad27517840bbb61",
+        "submit_research_mechanism": "505d2637d8046c188f4795b90d0d766b8e33dfd2274babda4319fb4627b2978a",
+        "submit_research_counterargument_and_wwc": "82fd927ed4ccfebf13981880d18638e5d35d95c82c3f79b2e21fee767ae4be30"
+      },
+      "terminal_judgment_digest": "3a6214e3dbcb0637dd21a2d436ed72b9455d4c12b148b3768b7f16f5aa3b3b36",
+      "deliverable_digest": "d3ea0ee15f9e478c9826b47626d485b51fb66295a1cdfff02fec4acf1c6bc7cd",
+      "judgment_status": "bounded_support",
+      "inference_authority": "bounded_inference",
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "multi_driver_context_only",
+      "clause_scoped_guard": true,
+      "negated_or_unsupported_causal_surface_pass": true,
+      "single_character_cjk_substring_not_authoritative": true,
+      "positive_cross_scope_causal_surface_fail_closed": true,
+      "boundary_authority_sources": [
+        "typed_bridge_gap_relation",
+        "typed_same_scope_counter_relation"
+      ],
+      "model_narratives_preserved_exactly": true,
+      "harness_generated_research_judgment": false,
+      "mutation_failure_codes": {
+        "positive_cross_scope_causal_zh": "claim_surface_narrative_relation_conflict",
+        "positive_cross_scope_causal_en": "claim_surface_narrative_relation_conflict"
+      }
+    },
+    "saved_r5_wwc_route_identifier_replay": {
+      "predecessor_result_digest": "b7bf4277ef32baec56226b4e49c578349e3b9eb3921379af9088ba87c266cdc4",
+      "predecessor_failure_code": "research_consumer_wwc_evidence_route_invalid",
+      "submitted_fragment_fixture_sha256": "5f6043194680f767ed88a22c0ecfcbd99ce3769550781cb2cb23f6ad1125a89c",
+      "accepted_fragment_digests": {
+        "submit_research_thesis": "68e21f3a65a0c6f9b9c5fc589327da5defb9972b176ca9893f03e2315cbc6db2",
+        "submit_research_mechanism": "69113d604f78b09d7b1ab3a08762907ba30402e994250203a591e02d9d541356",
+        "submit_research_counterargument_and_wwc": "6a128b082156f38eef51f53d4bbff1eabe22b568fc78dc20c283d9260e3ca2c9"
+      },
+      "terminal_judgment_digest": "b8f09b70c95417c09588cdb09ea0535bea33efb238702c1ab41dc94607f94b80",
+      "deliverable_digest": "0993061bf295c83053779e1e3f78518cc047a1bb811cd637cf78f0eb63f106cf",
+      "judgment_status": "bounded_support",
+      "inference_authority": "bounded_inference",
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "multi_driver_context_only",
+      "qualified_document_identifier": "10-Q",
+      "qualified_route_preserved_exactly": true,
+      "field_scoped_numeric_surface_guard": true,
+      "unregistered_numeric_surface_fail_closed": true,
+      "boundary_authority_sources": [
+        "typed_bridge_gap_relation",
+        "typed_same_scope_counter_relation"
+      ],
+      "model_narratives_preserved_exactly": true,
+      "harness_generated_research_judgment": false,
+      "mutation_failure_codes": {
+        "percentage_after_qualified_identifier": "research_consumer_wwc_evidence_route_invalid",
+        "year_after_qualified_identifier": "research_consumer_wwc_evidence_route_invalid",
+        "unknown_digit_identifier": "research_consumer_wwc_evidence_route_invalid",
+        "url_with_qualified_identifier": "research_consumer_wwc_evidence_route_invalid",
+        "document_identifier_in_narrative": "research_consumer_thesis_atom_invalid"
+      }
+    },
+    "three_case_context_digest": "325e81023a6b348de30adcc0a0ac58229016fe226e9d728c2125def3c67ee212",
+    "three_case_context_all_pass": true,
+    "three_case_identity_pollution_count": 0,
+    "three_case_graph_context_pollution_count": 0,
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0,
+    "retries": 0
+  },
+  "fresh_process_count": 2,
+  "fresh_process_results_byte_equivalent": true,
+  "three_case_context_qualification": {
+    "cases": {
+      "DELL": {
+        "subject_ticker": "DELL",
+        "research_input_digest": "64704949f378aeecc01b86105d29ab50e1a1881cdc3569f91c49a3ffd1385ee3",
+        "reviewed_evidence_count": 19,
+        "numeric_fact_count": 25,
+        "same_basis_relation_count": 10,
+        "route_catalog_digest": "6df4c5f7dc4e978a36ede64534c0a46cd4ce2e350e0abae01c4482f4f0effda7",
+        "context_receipt_digest": "baf0e5a28f048d71de63b47d2ad1e344e373517806be2af711db1ad605563449",
+        "value_role_method_pack_digest": "818e68c99c32d761310baac1b392ffaa6b7d153a65af6b346543d2dd7cfe0ea8",
+        "value_graph_context_digest": "85f2c52db5650da0d47c3c9f99b37cc87fda9cf50f8587b79cce3a6d1771acde",
+        "full_fake_result_digest": "500f31b4359cb7290b8cc51fc609f718312b40997214c674440d4439ecce4dc5",
+        "full_fake_tool_calls": 15
+      },
+      "MU": {
+        "subject_ticker": "MU",
+        "research_input_digest": "dea783e85255f4313fc418b93cf6a75796d1e201fd51339320fc43c7feec513a",
+        "reviewed_evidence_count": 14,
+        "numeric_fact_count": 14,
+        "same_basis_relation_count": 0,
+        "route_catalog_digest": "979bbca19e9c2ab6830c0c2762c5beb019a975121328af1f154e8ab843de8141",
+        "context_receipt_digest": "fcbb05d04ba3f3a1e9fc8b8444189c41ad3175ae9f8503eb3c2e7611827dd25d",
+        "value_role_method_pack_digest": "818e68c99c32d761310baac1b392ffaa6b7d153a65af6b346543d2dd7cfe0ea8",
+        "value_graph_context_digest": "800abc8b97fb3b35e499e174e801600716dcbcdd95becddddc17c95546107718",
+        "full_fake_result_digest": "4c9453c4534f88e5aee5f0d2c9ca1f8dcd90208956ba5551d1bab962e1c8012c",
+        "full_fake_tool_calls": 15
+      },
+      "NVDA": {
+        "subject_ticker": "NVDA",
+        "research_input_digest": "8be19506b71f935674cfc11f0d138481cb4efc53a5fefc626bba6fc3b7f54f92",
+        "reviewed_evidence_count": 13,
+        "numeric_fact_count": 15,
+        "same_basis_relation_count": 0,
+        "route_catalog_digest": "f8b5c414a0845bbf1268b8692bc2b04fe6852276899a2ac7646ba2aca1e34d5e",
+        "context_receipt_digest": "c504af902521d49acbdff78c24f3131338bea64135d84a63f170dbe964e0448e",
+        "value_role_method_pack_digest": "818e68c99c32d761310baac1b392ffaa6b7d153a65af6b346543d2dd7cfe0ea8",
+        "value_graph_context_digest": "3b1e1aa22ebd1c070527cfb276eb7a8f7045277ddc885cabfe381dc10f72a92c",
+        "full_fake_result_digest": "a00f8fbe80b0227d2659a014e879cabec6baab53fe009c75e38dda9fcdcc3f42",
+        "full_fake_tool_calls": 15
+      }
+    },
+    "case_identity_pollution_count": 0,
+    "graph_context_pollution_count": 0,
+    "archived_skill_or_graph_rows_loaded": 0,
+    "unavailable_route_exposed_count": 0,
+    "all_three_full_fake_pass": true
+  },
+  "acceptance": {
+    "same_r2_research_input_bound": true,
+    "model_owned_fragment_order_enforced": true,
+    "harness_narrative_invention_forbidden": true,
+    "each_judgment_schema_smaller_than_r2_monolith": true,
+    "mutation_and_cross_case_fail_closed": true,
+    "three_case_existing_runtime_unchanged": true,
+    "saved_r3_terminal_replay_pass": true,
+    "saved_r5_terminal_replay_pass": true,
+    "natural_model_submission_proven": false,
+    "fixed_pack_layer_one_accepted": false,
+    "dynamic_agentic_research_authorized": false,
+    "s3_product_acceptance": false
+  },
+  "known_boundary": "This zero-network zero-model proof reuses the immutable DELL R2 research input and proves only the provider-neutral micro-judgment contract, node profile bindings, deterministic terminal compilation, mutation closure and three-case non-regression. When an R3 replay fixture is bound, it also proves unchanged model submissions preserve claim-local Evidence roles and typed boundary authority through the final deliverable. It does not prove DeepSeek will naturally submit any fragment, does not accept fixed-Pack Layer One and does not authorize dynamic Agentic Research or product publication.",
+  "result_digest": "d7667e8467c1195f2b80ba1bc73bec1527348dc86dbc7397f0be860e020b526f"
+}

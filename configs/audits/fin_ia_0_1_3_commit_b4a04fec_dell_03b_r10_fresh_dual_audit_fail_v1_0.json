@@ -1,0 +1,235 @@
+{
+  "schema_version": "fin_ia_dell_03B_R10_fresh_dual_audit_fail_v1_0",
+  "status": "fresh_author_separated_readonly_dual_audit_complete_engineering_fail_report_quality_fail_gate_open",
+  "audit_id": "FIN-0.1.3-S1-DELL-03B-R10-FRESH-DUAL-AUDIT",
+  "recorded_at": "2026-08-27T17:24:23+08:00",
+  "audit_manifest": {
+    "ref": "configs/audits/fin_ia_0_1_3_commit_b4a04fec_dell_03b_r10_fixed_dual_audit_manifest_v1_0.json",
+    "sha256": "618df627dc1134ee4b049ce744fb9801571f55a404cfc650b712b520d3ef3fc7",
+    "result_digest": "37ec7a1794138bb9fcbb8270f3a8e43acb16f349389e588b06eb82c5ea233377",
+    "verified_hashes": 34,
+    "engineering_hashes": 20,
+    "R17_hashes": 14
+  },
+  "git_identity": {
+    "branch": "codex/fin013-dell-s1-s2-product-bridge",
+    "reviewed_result_commit": "b4a04fec04e890d5226e22ab6aaa010180799562",
+    "reviewed_result_tree": "0fd87bf9d4d091c21d6f8c49bbe42397b533f1ca",
+    "fixed_manifest_commit": "06604f58e13d811a401fae064a83951e189074f3",
+    "fixed_manifest_tree": "cfa9adc39173736f11fd18198d839a9ca470bd84",
+    "audit_start_and_finish_clean": true,
+    "HEAD_equal_upstream": true
+  },
+  "reviewer_execution": {
+    "fresh_fork_none_author_separated": true,
+    "read_only": true,
+    "writes": 0,
+    "commits": 0,
+    "pushes": 0,
+    "formal_attempts": 0,
+    "model_provider_network_external_embedding_4B_reranker_calls": 0,
+    "targeted_pytest_runs": 0,
+    "full_repository_pytest_runs": 0
+  },
+  "phase_A_identity_integrity_and_route": {
+    "verdict": "PASS_BOUNDED",
+    "manifest_hashes": "34_of_34",
+    "policy_self_digest": true,
+    "policy_bound_inputs": "14_of_14",
+    "policy_implementation_hashes": "29_of_29",
+    "attempt_directory_population": [
+      "attempt_consumption_receipt.json",
+      "raw_execution_capture.json",
+      "full_result.json"
+    ],
+    "terminal_failure_receipt_absent": true,
+    "receipt_raw_private_public_self_digests_and_links": true,
+    "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+    "saved_formal_private_dict_and_canonical_bytes_equal": true,
+    "private_result_digest": "46517a69424ca64d592fa9ef8d2787192b153957bb550f2840c02e3b93b954c2",
+    "request_union_final_contract": "5_requests_each_96_union_16_final",
+    "aggregate_union_final": [
+      338,
+      80
+    ],
+    "local_0_6B_batches": 1,
+    "forbidden_execution_counters_zero": true
+  },
+  "R10_bounded_passes": {
+    "R9_Acme_and_Supermicro_attacks_closed": true,
+    "ordinary_unseen_single_and_multiword_right_owners_split": true,
+    "predicate_offset_zero_true_shared_subject_pass": true,
+    "compound_and_shared_subject_controls_pass": true,
+    "bare_later_continuation_pass": true,
+    "generic_hardware_cross_group_multi_product_multi_relation_fail_closed": true,
+    "relation_loss_addition_and_changed_price_mismatch_fail_closed": true,
+    "actual_target_counts": {
+      "ASP_source_compiled_union_final": "0_0_0_0",
+      "capacity_release": "0_0_0_0",
+      "capacity_utilization_yield": "0_0_0_0",
+      "HBM_supply": "0_0_0_0",
+      "supplier_source_compiled_union_final_and_rank": "3_3_2_1_rank2",
+      "units": "0_0_0_0"
+    },
+    "complete_transformation_coverage": "6_of_6",
+    "failed_complete_binding": 0,
+    "unbound_complete_source_family": 0,
+    "compiled_complete_without_source_antecedent": 0,
+    "public_attacks_rejected": "14_of_14",
+    "public_valid_controls_accepted": "3_of_3",
+    "downstream_authority": false
+  },
+  "R10_material_findings": [
+    {
+      "finding_id": "R10-P2-STRUCTURAL-CLAUSE-OWNERSHIP-NOT-OPEN-VOCABULARY",
+      "severity": "P2",
+      "owner_stage": "S1_03B_predicate_frame_boundary",
+      "code_refs": [
+        "src/retrieval/dell_report_predicate_frames_r10.py:356",
+        "src/retrieval/dell_report_predicate_frames_r10.py:374",
+        "src/retrieval/dell_report_predicate_frames_r10.py:460-484",
+        "src/retrieval/dell_report_predicate_frames_r10.py:499-517"
+      ],
+      "root_cause": "Boundary ownership is inferred from the prefix before the first finite predicate-hint match. A structural adjunct prefix is therefore promoted to an owner, while an unseen owner whose first token collides with the predicate lexicon or whose verb is outside it can erase the explicit-owner proof.",
+      "false_split_reproductions": [
+        "NVIDIA provides GPUs and in Q2 ships them to Dell.",
+        "NVIDIA provides GPUs and later in Q2 ships them to Dell.",
+        "NVIDIA provides GPUs and under the agreement ships them to Dell."
+      ],
+      "false_split_observed": "The right adjunct is recorded as owner, two partial frames are produced, and an otherwise complete supplier relation is lost.",
+      "false_merge_reproduction": "Dell quoted support for USD 150 and Rose Systems offered PowerEdge XE9680 hardware for USD 15.",
+      "false_merge_observed": "Rose is matched as predicate rose at offset zero, decision=no_split, and Dell quotation roles are falsely combined with the independent right product-price event into complete ASP.",
+      "unseen_predicate_reproduction": "An independent explicit right-owner event using predicate cost also returns no_split and can complete through cross-event union.",
+      "required_fix": "Replace first-hint-prefix ownership with a conservative clause-ownership proof that separately proves shared-subject continuation and explicit owner, strips structural fronted adjuncts, handles predicate-token collisions and unseen verbs, and isolates ambiguous coordinations so roles can never union across them."
+    },
+    {
+      "finding_id": "R10-P2-PRICE-RELATION-CO-PRESENCE-FALLBACK",
+      "severity": "P2",
+      "owner_stage": "S1_03B_ASP_argument_relation_and_transformation",
+      "code_refs": [
+        "src/retrieval/dell_report_predicate_frames_r10.py:1204-1212",
+        "src/retrieval/dell_report_predicate_frames_r10.py:1242-1304",
+        "src/retrieval/dell_report_predicate_frames_r10.py:1456-1474",
+        "src/retrieval/dell_report_predicate_frames_r10.py:1601",
+        "src/retrieval/dell_report_frame_transformation_r10.py:148-168"
+      ],
+      "root_cause": "When no explicit attachment pattern is found, single_typed_object_in_argument_group converts mere co-presence of one recognized hardware object and a price into hardware_product_price. Closed non-hardware term exclusions do not prove the price is attached to the product.",
+      "reproductions": [
+        "Dell offered PowerEdge XE9680 hardware under a global contract amount of USD 15.",
+        "Dell offered PowerEdge XE9680 hardware with maintenance costing USD 15.",
+        "Dell offered PowerEdge XE9680 hardware with a delivery fee of USD 15.",
+        "Dell offered PowerEdge XE9680 hardware under a lease payment of USD 15."
+      ],
+      "observed": "Each package accepts a hardware_product_price relation; the false relation enters the semantic signature and FrameTransformation mapping.",
+      "contrast": "Exact service freight and financing lexical controls fail closed, proving the relation depends on a closed exclusion vocabulary rather than affirmative attachment evidence.",
+      "required_fix": "Delete co-presence fallback. Require an explicit span-local attachment proof whose priced object span contains the unique specific product and hardware object, preserve attachment provenance in semantic signatures and transformations, and treat any unproved or competing nominal price head as partial."
+    }
+  ],
+  "R10_engineering_verdict": {
+    "verdict": "FAIL",
+    "new_severity_counts": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 2,
+      "P3": 0
+    },
+    "identity_integrity_and_actual_route": "PASS_BOUNDED",
+    "R10_executed": true,
+    "R10_author_integrity": true,
+    "R10_independent": false,
+    "03B_independent": false,
+    "bounded_passes_do_not_offset_material_semantic_findings": true
+  },
+  "R17_report_quality": {
+    "bundle_unchanged_from_R9_audit": true,
+    "verdict": "FAIL_GATE_OPEN_NOT_ASSESSABLE",
+    "carried_severity_counts": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 2,
+      "P3": 1
+    },
+    "reader_projection": {
+      "reader_parts": 39,
+      "sources_markers": 25,
+      "EV_occurrences": 59,
+      "unique_EV_ids": 18,
+      "reader_visible_URLs": 0,
+      "citation_or_source_appendix_present": false
+    },
+    "claim_source_binding": {
+      "report_EV_with_exact_passage_title_issuer_date_period_locator_and_stable_URL": "0_of_18",
+      "source_pack_passages_and_absolute_URLs": "55_of_55",
+      "report_EV_to_source_pack_source_id_intersection": "0_of_18",
+      "semantic_support": "NOT_ASSESSABLE"
+    },
+    "crosswalk": {
+      "pack_gaps": 14,
+      "dynamic_gaps": 9,
+      "writer_groups": 4,
+      "writer_refs": 10,
+      "S2_gaps": 4,
+      "result_or_content_digest_bound_in_R17": false,
+      "absent_facets": [
+        "price_in",
+        "scenario_and_sensitivity",
+        "supplier_capacity_readthrough",
+        "valuation_basis"
+      ]
+    },
+    "WWC": {
+      "items": 6,
+      "fully_operational_items": 0,
+      "required_fields": [
+        "trigger",
+        "direction",
+        "horizon",
+        "threshold",
+        "observable",
+        "owner",
+        "response_route"
+      ],
+      "method_register_frozen": 0,
+      "method_register_pending": 2
+    },
+    "repetition": {
+      "predecessor_frozen_method": "72_Facts_36_unique",
+      "fresh_simple_semicolon_recount": "71_Facts_32_unique",
+      "material_repetition_remains": true
+    },
+    "formal_8D": {
+      "status": "NOT_ASSESSABLE",
+      "score": null
+    }
+  },
+  "qualified_human": {
+    "accepted": false,
+    "requests": 8,
+    "items": 18,
+    "human_required_items": 16,
+    "decisions": 0
+  },
+  "authority": {
+    "same_stage_non_overwriting_R11_plan_and_repair": true,
+    "new_R11_attempt_requires_new_frozen_implementation_and_policy": true,
+    "03C_external": false,
+    "03D_4B_embedding": false,
+    "03D_reranker": false,
+    "CandidateDecision": false,
+    "Evidence_or_NumericFact_promotion": false,
+    "Pack_or_Readiness": false,
+    "S2": false,
+    "S3_or_report_successor": false,
+    "qualified_human_product_publication_or_release": false
+  },
+  "explicit_unassessed_items": [
+    "general_language_recall_and_precision_outside_the_audited_attack_families",
+    "exact_R17_claim_to_passage_semantic_support",
+    "formal_8D_score",
+    "five_external_source_ladders",
+    "changed_pool_4B_and_reranker",
+    "Evidence_Pack_Readiness_S2_S3_report_product_publication_release"
+  ],
+  "known_boundary": "R10 integrity and actual-route observations remain immutable bounded evidence. The two P2 findings prevent independent 03B qualification. R17 remains unchanged and unqualified. The next stage is only a non-overwriting same-stage R11 owner/continuation and affirmative relation-attachment repair; no external or downstream authority exists.",
+  "result_digest": "9b7750390f6d65077ea18418969051d57d117ff6c2a46f3adf715fa2dd44fb26"
+}

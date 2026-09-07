@@ -1,0 +1,33 @@
+{
+  "schema_version": "fin_ia_bounded_finance_loop_zero_call_result_v1_0",
+  "status": "terminal_failed_zero_call_result_projection",
+  "recorded_at": "2026-08-14T13:11:51+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_research_context_closure_zero_call_authority_v1_1.json",
+  "authority_sha256": "2b28829da71313cf80176b25c136acc369a23c1b90feec94a00d6acb3f402dd6",
+  "implementation_commit": "dacd90b40baefecf89f4938b48033adf6317a445",
+  "run_id": "FIN013-S3-RESEARCH-CONTEXT-CLOSURE-ZERO-CALL-R2",
+  "attempt_id": "ATTEMPT-02",
+  "failure_phase": "three_case_context_summary_projection",
+  "failure_code": "AttributeError_BoundedFinanceLoopResult_has_no_attribute_result_digest",
+  "root_cause": "The three-case proof completed the DELL full-fake loop but the proof runner read result_digest as an object attribute instead of from the canonical as_dict projection.",
+  "execution": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0,
+    "retries": 0,
+    "product_publication": false
+  },
+  "successful_prefix": {
+    "authority_and_all_bound_input_digests_validated": true,
+    "single_cell_fake_steps": 3,
+    "single_cell_fake_tool_calls": 4,
+    "five_cell_fake_steps": 10,
+    "five_cell_fake_tool_calls": 15,
+    "dell_three_case_full_fake_tool_calls": 15,
+    "model_or_provider_execution_started": false
+  },
+  "disposition": "Preserve R2 immutable. Use result.as_dict()[result_digest], directly exercise the complete local proof functions, then issue a fresh ATTEMPT-03 authority after clean push.",
+  "known_boundary": "This is a proof-result projection defect after deterministic fake execution, not a finance relation, source-route, RoleMethodPack, GraphContextPack, DeepSeek model or provider transport failure.",
+  "result_digest": "2335dbaaa231ab84949c26e6dd42f66b022c140b3ac2d32faa7f5ddf26cfc546"
+}

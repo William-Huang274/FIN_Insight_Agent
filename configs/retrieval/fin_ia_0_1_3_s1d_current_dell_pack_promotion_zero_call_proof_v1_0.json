@@ -1,0 +1,40 @@
+{
+  "schema_version": "fin_ia_current_evidence_pack_promotion_zero_call_proof_v1_0",
+  "proof_id": "FIN-0.1.3-S1D-CURRENT-DELL-PACK-PROMOTION-ZERO-CALL-PROOF-V1.0",
+  "recorded_at": "2026-08-13",
+  "status": "pass",
+  "scope": "Promote the already reviewed DELL official-transcript successor into the current three-case Workbench composition without copying private objects or changing MU/NVDA.",
+  "implementation_commit": "0910a55d1d92b7a4cf1cbd94cb514a888a450095",
+  "tests": {
+    "command": "python -m pytest tests/test_current_evidence_pack_promotion_runner.py tests/contract/test_fin_0_1_3_workbench_current_research_evidence_pack_projection.py tests/test_current_product_readiness.py tests/test_current_runtime_registry.py -q",
+    "passed": 17,
+    "failed": 0,
+    "result": "pass"
+  },
+  "positive_results": [
+    "DELL can resolve from a digest-bound per-case private root while MU and NVDA continue using the default immutable root.",
+    "Current composition recomputes DELL summary counts from the reviewed Pack instead of trusting manually entered counts.",
+    "Workspace DELL artifact and Pack payload bindings update together while MU/NVDA bindings remain unchanged.",
+    "The Runtime Registry replacement is assembled only after the new current result and Workspace payloads are rendered and digest-bound."
+  ],
+  "mutation_results": [
+    "successor_digest_drift_rejected",
+    "budget_expansion_rejected",
+    "private_root_escape_rejected",
+    "retained_case_partition_drift_rejected",
+    "artifact_identity_drift_rejected",
+    "successor_count_drift_rejected"
+  ],
+  "current_pointer_mutated": false,
+  "private_object_copy_performed": false,
+  "raw_source_published": false,
+  "model_calls": 0,
+  "provider_calls": 0,
+  "network_calls": 0,
+  "boundaries": {
+    "core_research_ready_after_authorized_promotion": true,
+    "S1_product_acceptance": false,
+    "S3_execution_authorized": false,
+    "complete_research_or_release_claimed": false
+  }
+}

@@ -1,0 +1,98 @@
+{
+  "accepted_challenge_ids": [
+    "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+    "CHALLENGE::803238978B747FEED1CE12C9",
+    "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
+  ],
+  "case_key": "DELL",
+  "challenge_catalog_digest": "ca272ff65755835692a4f68d9f86c6828e7778010c074b5f1a88a3b675a6db37",
+  "challenge_ids": [
+    "CHALLENGE::B1FC30D87F6DB63FDB91003C",
+    "CHALLENGE::82D71DECBB7899CD9505CFBB",
+    "CHALLENGE::803238978B747FEED1CE12C9",
+    "CHALLENGE::71AAF31E7FBD5A99163BBE8D"
+  ],
+  "checkpoint_digest": "a55fb5bdbffaff934536dc08c4bf08f3b184934e855387e093273ae280ad14a2",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "new_model_calls": 0,
+    "new_network_calls": 0
+  },
+  "completed_agent_ids": [
+    "AGENT::DEMAND_QUALITY",
+    "AGENT::OPERATING_PERFORMANCE",
+    "AGENT::VALUE_CAPTURE",
+    "AGENT::CASH_CONVERSION",
+    "AGENT::SUPPLY_RELATIONSHIP",
+    "AGENT::COUNTEREVIDENCE"
+  ],
+  "coordination_decision_digest": "f740e43570e1632d26970fbcc617bb4807deb70ae104405fc3e8f509e3f470b8",
+  "deferred_challenge_ids": [
+    "CHALLENGE::82D71DECBB7899CD9505CFBB"
+  ],
+  "predecessor_workpaper_checkpoint_digest": "a378d83e364911a79a7cc123df5f3977f489a367071565cca9f3050ee37b7b36",
+  "predecessor_workpaper_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R8_five_workpaper_checkpoint_v1_0.json",
+  "predecessor_workpaper_checkpoint_sha256": "5e745e1fb02af74bf732157368e05d9f2735fa053aabac29ba716c8118fe739f",
+  "resume_policy": {
+    "completed_workpaper_rerun_forbidden": true,
+    "downstream_starts_at_accepted_challenge_repairs": true,
+    "lead_coordination_rerun_forbidden": true,
+    "new_fact_or_authority_forbidden": true,
+    "research_inputs_unchanged": true
+  },
+  "reused_workpaper_count": 6,
+  "schema_version": "fin_ia_multi_agent_lead_coordination_checkpoint_v1_0",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_8.json",
+  "source_authority_sha256": "560ca2f5f9351a650ebc51ca15e63aa5dc7ce0816e379c465de7c1b82c9f8cb1",
+  "source_failure_code": "multi_agent_lead_coordination_identity_invalid",
+  "source_public_result_digest": "e35e06452ddcc0207a849509145d06e9c54f98e9255c0670638c6801458690b5",
+  "source_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_8.json",
+  "source_public_result_sha256": "029045770a8e899e6549cb822b7ffee999529c522e7ca70f27ad8a0654967f11",
+  "source_receipts": {
+    "counter_workpaper": {
+      "attempt_ids": [
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820-AGENT-COUNTEREVIDENCE-WORKPAPER_R1-ANALYSIS-CONTINUATION-ATTEMPT-01",
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820-AGENT-COUNTEREVIDENCE-WORKPAPER_R1-SUBMISSION-ATTEMPT-01"
+      ],
+      "node_id": "AGENT::COUNTEREVIDENCE::WORKPAPER_R1",
+      "request_digests": [
+        "6bfb99f19937483e8068cabece7f0177b2800593391e5c86508807c2c706a2a0",
+        "2ae3d467a3ecaf5efd25838b987111e7adc910549865caff76e0080d2d389e3c"
+      ],
+      "response_digests": [
+        "cfe78e083011d849692623cec24a8db0f35148e378123a10b7a2fc3095a293a7",
+        "bddfca0a4bd082c147c42944c37d0829699e8bda0bdcc7df9d70c8b789956718"
+      ],
+      "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820",
+      "validated_payload_digest": "963c0ab1bdae056f3051e99543c0a0a48a2c5005c70d415e3f0923ec9f069a56"
+    },
+    "lead_coordination": {
+      "accepted_attempt_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820-AGENT-RESEARCH_LEAD-COORDINATION_R1-SUBMISSION-ATTEMPT-02",
+      "coordination_decision_digest": "f740e43570e1632d26970fbcc617bb4807deb70ae104405fc3e8f509e3f470b8",
+      "node_id": "AGENT::RESEARCH_LEAD::COORDINATION_R1",
+      "request_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r9_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820-AGENT-RESEARCH_LEAD-COORDINATION_R1-SUBMISSION-ATTEMPT-02/model_visible_request.json",
+      "request_capture_sha256": "62d08dd963972a7107f82a9f5dd800a547ec0b71c30c187fa83b1defaad5713b",
+      "request_digest": "ed660b51f458008aa84e61d67d13cae203e6f4588e3e0d5c6632e016ea1b2f9f",
+      "response_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r9_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820-AGENT-RESEARCH_LEAD-COORDINATION_R1-SUBMISSION-ATTEMPT-02/provider_response.json",
+      "response_capture_sha256": "c99f0afcad17fa42df46caeb809b0fbf5ddf84f5681448544b385a8a4ae7bf9f",
+      "response_digest": "52489914d335d62c1d70f17b09894ed2228a8df1caf620205ee7cc96706f8714",
+      "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820",
+      "tool_name": "submit_lead_coordination_decision"
+    }
+  },
+  "source_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R9_20260820",
+  "source_terminal_result_digest": "a96df8d4316fa7657d68252d2bce6bd176f01fbdc9f3897eb252d51318ff378c",
+  "source_terminal_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_r9_20260820/terminal_failure.json",
+  "source_terminal_result_sha256": "7d11095280c5290c31df8cdf08ad87eedba3fb35fabc20b8bf38d65415e98623",
+  "status": "six_workpapers_and_R9_lead_coordination_valid_for_downstream_resume",
+  "workpaper_digests": {
+    "AGENT::CASH_CONVERSION": "3dea72961edaafec0c1d056d157c9fd86526739026fca54e9aeee2a2fe0ffb2a",
+    "AGENT::COUNTEREVIDENCE": "963c0ab1bdae056f3051e99543c0a0a48a2c5005c70d415e3f0923ec9f069a56",
+    "AGENT::DEMAND_QUALITY": "f3c17bfb0b30991a4c6d5a5b72b88d7068380a638c7e641958b44a93a472fe0a",
+    "AGENT::OPERATING_PERFORMANCE": "9975b7bb5a8f8ff216d48e61b0157a3ccd6d21bab6c8d9a619a6be1c9b8112cb",
+    "AGENT::SUPPLY_RELATIONSHIP": "7b896715c03471e6f356bf569dc9881882157836f69b8bf870908204fac8459b",
+    "AGENT::VALUE_CAPTURE": "e1687019c04aced719e19cea623699e5065b400eb039921b1a8606e5ff0ef942"
+  }
+}

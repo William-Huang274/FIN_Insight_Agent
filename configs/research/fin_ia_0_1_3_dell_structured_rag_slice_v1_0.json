@@ -1,0 +1,100 @@
+{
+  "schema_version": "fin_ia_dell_structured_rag_slice_plan_v1_0",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "status": "bounded_case_slice_not_product_wide_corpus",
+  "scope": {
+    "input_attempt_count": 2,
+    "maximum_declared_sources": 30,
+    "maximum_parsed_sources": 24,
+    "external_search_content_is_not_local_substitute": true,
+    "failed_capture_is_not_public_information_gap": true
+  },
+  "parser_profiles": {
+    "defaults": {
+      "html": "trafilatura_xml",
+      "pdf": "pypdf_pages"
+    },
+    "route_overrides": {
+      "dell_fy2026_10k_narrative": "sec2md_10k",
+      "dell_fy2027_q1_release": "sec2md_exhibit",
+      "dell_fy2027_q1_10q_narrative": "sec2md_10q",
+      "dell_fy2027_q2_sec_exhibit_99_1": "sec2md_exhibit",
+      "meta_2026_q2_sec_exhibit_99_1": "sec2md_exhibit"
+    }
+  },
+  "source_metadata": {
+    "dell_fy2026_10k_narrative": {"issuer_id": "DELL", "ticker": "DELL", "company": "Dell Technologies Inc.", "fiscal_period": "FY2026", "period_end": "2026-01-30"},
+    "dell_fy2027_q1_release": {"issuer_id": "DELL", "ticker": "DELL", "company": "Dell Technologies Inc.", "fiscal_period": "FY2027_Q1", "period_end": "2026-05-01"},
+    "dell_fy2027_q1_performance_review": {"issuer_id": "DELL", "ticker": "DELL", "company": "Dell Technologies Inc.", "fiscal_period": "FY2027_Q1", "period_end": "2026-05-01"},
+    "dell_fy2027_q1_transcript": {"issuer_id": "DELL", "ticker": "DELL", "company": "Dell Technologies Inc.", "fiscal_period": "FY2027_Q1", "period_end": "2026-05-01"},
+    "dell_fy2027_q1_10q_narrative": {"issuer_id": "DELL", "ticker": "DELL", "company": "Dell Technologies Inc.", "fiscal_period": "FY2027_Q1", "period_end": "2026-05-01"},
+    "dell_mistral_named_deployment": {"issuer_id": "DELL", "ticker": "DELL", "company": "Dell Technologies Inc.", "fiscal_period": "", "period_end": ""},
+    "dell_nxtgen_named_deployment": {"issuer_id": "DELL", "ticker": "DELL", "company": "Dell Technologies Inc.", "fiscal_period": "", "period_end": ""},
+    "microsoft_fy2026_q4_call": {"issuer_id": "MICROSOFT", "ticker": "MSFT", "company": "Microsoft Corporation", "fiscal_period": "FY2026_Q4", "period_end": "2026-06-30"},
+    "amazon_2026_q2_release": {"issuer_id": "AMAZON", "ticker": "AMZN", "company": "Amazon.com, Inc.", "fiscal_period": "CY2026_Q2", "period_end": "2026-06-30"},
+    "nvidia_fy2027_q2_release": {"issuer_id": "NVIDIA", "ticker": "NVDA", "company": "NVIDIA Corporation", "fiscal_period": "FY2027_Q2", "period_end": ""},
+    "nvidia_gb300_blackwell_ultra": {"issuer_id": "NVIDIA", "ticker": "NVDA", "company": "NVIDIA Corporation", "fiscal_period": "", "period_end": ""},
+    "nvidia_vera_rubin_production": {"issuer_id": "NVIDIA", "ticker": "NVDA", "company": "NVIDIA Corporation", "fiscal_period": "", "period_end": ""},
+    "micron_fy2026_q3_release": {"issuer_id": "MICRON", "ticker": "MU", "company": "Micron Technology, Inc.", "fiscal_period": "FY2026_Q3", "period_end": ""},
+    "micron_fy2026_q3_remarks": {"issuer_id": "MICRON", "ticker": "MU", "company": "Micron Technology, Inc.", "fiscal_period": "FY2026_Q3", "period_end": ""},
+    "tsmc_2026_q2_transcript": {"issuer_id": "TSMC", "ticker": "TSM", "company": "Taiwan Semiconductor Manufacturing Company Limited", "fiscal_period": "CY2026_Q2", "period_end": "2026-06-30"},
+    "mlcommons_inference_6_0": {"issuer_id": "MLCOMMONS", "ticker": "", "company": "MLCommons", "fiscal_period": "", "period_end": ""},
+    "openai_gpt_5_6": {"issuer_id": "OPENAI", "ticker": "", "company": "OpenAI", "fiscal_period": "", "period_end": ""},
+    "anthropic_fable_5": {"issuer_id": "ANTHROPIC", "ticker": "", "company": "Anthropic", "fiscal_period": "", "period_end": ""},
+    "bis_2026_china_semiconductor_policy": {"issuer_id": "US_BIS", "ticker": "", "company": "U.S. Bureau of Industry and Security", "fiscal_period": "", "period_end": ""},
+    "dell_fy2027_q2_sec_exhibit_99_1": {"issuer_id": "DELL", "ticker": "DELL", "company": "Dell Technologies Inc.", "fiscal_period": "FY2027_Q2", "period_end": "2026-07-31"},
+    "hpe_fy2026_q2_earnings_transcript": {"issuer_id": "HPE", "ticker": "HPE", "company": "Hewlett Packard Enterprise Company", "fiscal_period": "FY2026_Q2", "period_end": ""},
+    "meta_2026_q2_sec_exhibit_99_1": {"issuer_id": "META", "ticker": "META", "company": "Meta Platforms, Inc.", "fiscal_period": "CY2026_Q2", "period_end": "2026-06-30"},
+    "meta_2026_q2_earnings_call_transcript": {"issuer_id": "META", "ticker": "META", "company": "Meta Platforms, Inc.", "fiscal_period": "CY2026_Q2", "period_end": "2026-06-30"},
+    "hpe_fy2026_q2_earnings_press_release": {"issuer_id": "HPE", "ticker": "HPE", "company": "Hewlett Packard Enterprise Company", "fiscal_period": "FY2026_Q2", "period_end": ""}
+  },
+  "generic_chunking": {
+    "implementation": "haystack_document_splitter",
+    "split_by": "word",
+    "split_length": 350,
+    "split_overlap": 50,
+    "split_threshold": 80
+  },
+  "sec_chunking": {
+    "implementation": "sec2md_chunk_section_or_pages",
+    "chunk_size_tokens": 512,
+    "chunk_overlap_tokens": 64,
+    "maximum_table_tokens": 2048
+  },
+  "supplemental_local_sources": [
+    {
+      "route_id": "dell_fy2027_q1_release",
+      "reason": "The current live fetch timed out, but the exact official SEC Exhibit 99.1 body already exists in the repository-local content-addressed intake.",
+      "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+      "expected_capture_sha256": "b1c0489c19450c63d568402aa2069c9706e230ba9456f01b7ea2093fa0c7816b",
+      "parser_profile": "sec2md_exhibit",
+      "numeric_authority": false,
+      "candidate_is_not_evidence": true
+    },
+    {
+      "route_id": "dell_fy2027_q1_transcript",
+      "reason": "The current live fetch timed out, but an earlier immutable official-hosted PDF capture and parsed intake already exist locally and are content-addressed.",
+      "source_url": "https://investors.delltechnologies.com/static-files/b63ffff9-b729-403b-a231-c6af05667759",
+      "expected_capture_sha256": "2e2a251d50608284f6e3ca91e1d71cd39152a214e4bafd8b66cdd240d90fc5c2",
+      "expected_parent_schema": "fin_ia_financial_retrieval_object_v1_0",
+      "parser_profile": "pypdf_pages",
+      "numeric_authority": false,
+      "candidate_is_not_evidence": true
+    }
+  ],
+  "authority": {
+    "retrieval_candidates_only": true,
+    "automatic_evidence_promotion": false,
+    "numeric_fact_authority": false,
+    "model_calls": 0,
+    "network_calls": 0
+  },
+  "acceptance": {
+    "every_parsed_document_has_sections_blocks_and_chunks": true,
+    "sec_10k_and_10q_have_item_structure": true,
+    "tables_preserve_content_and_element_locator": true,
+    "images_preserve_reference_when_parser_exposes_one": true,
+    "all_output_rows_bind_raw_body_sha256": true,
+    "manual_document_and_chunk_review_required_before_retrieval_promotion": true
+  }
+}

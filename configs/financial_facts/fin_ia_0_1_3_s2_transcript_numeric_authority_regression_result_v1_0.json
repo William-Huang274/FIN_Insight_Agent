@@ -1,0 +1,83 @@
+{
+  "schema_version": "fin_ia_s2_transcript_numeric_authority_regression_result_v1_0",
+  "status": "s2_transcript_numeric_authority_and_same_cadence_regression_pass",
+  "recorded_at": "2026-08-16",
+  "implementation_commit": "9f0767141de309bd469f30e73cb282068f514179",
+  "scope": {
+    "cases": ["DELL", "MU", "NVDA"],
+    "research_as_of": "2026-08-06",
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "new_evidence_promotions": 0
+  },
+  "immutable_attempts": {
+    "r1": {
+      "status": "s2_company_financial_fact_mart_failed",
+      "private_result_ref": "data/workbench_private/fin_0_1_3_s2_transcript_authority_regression/zero-call-r1/result.json",
+      "result_digest": "03521783fe28bd0a4afabe78db10a69f49443318b8f0db233d4bdbeb6e930dd5",
+      "database_sha256": "d05b0cc8e08d063a252d3032db13f6840abe0048200f3696b3ffccaa9d93c585",
+      "failure_code": "open_period_does_not_mix_stale_ytd_with_latest_q1_false",
+      "disposition": "preserved_not_relabelled_as_success"
+    },
+    "r2": {
+      "status": "s2_company_financial_fact_mart_engineering_pass",
+      "private_result_ref": "data/workbench_private/fin_0_1_3_s2_transcript_authority_regression/zero-call-r2/result.json",
+      "result_digest": "c0d2f62c51d501dbc5d9fe99f8ca2cd8ab2277fc879d750e0bde2c7ca9d8d299",
+      "database_sha256": "d05b0cc8e08d063a252d3032db13f6840abe0048200f3696b3ffccaa9d93c585"
+    },
+    "formal_r3": {
+      "status": "s2_company_financial_fact_mart_engineering_pass",
+      "private_result_ref": "data/workbench_private/fin_0_1_3_s2_transcript_authority_regression/formal-r3/result.json",
+      "result_digest": "8a3d1a9611b805b75842d595d8a52b2b6898431c1048a7ef103e4990b6bd5b55",
+      "database_sha256": "d05b0cc8e08d063a252d3032db13f6840abe0048200f3696b3ffccaa9d93c585",
+      "normalized_semantic_digest": "49e099857228c68f960b9369e31968b2494f50b88f8ab7fd8800c060db3f1924"
+    }
+  },
+  "diagnosis": {
+    "database_bytes_changed_between_r1_and_r2": false,
+    "financial_values_changed_between_r1_and_r2": false,
+    "root_cause": "the_historical_build_evaluator_forbade_the_prior_year_same_quarter_even_after_S2_had_correctly_added_same_10Q_comparable_period_support_for_S3_year_over_year_relations",
+    "owned_by": "S2_acceptance_evaluator",
+    "not_caused_by": [
+      "earnings_call_transcript_numeric_contamination",
+      "DeepSeek",
+      "S1_candidate_ranking",
+      "SEC_CompanyFacts_drift",
+      "database_rebuild_nondeterminism"
+    ]
+  },
+  "numeric_authority": {
+    "allowed_forms": ["10-K", "10-Q"],
+    "source_bindings": [
+      "digest_bound_SEC_CompanyFacts",
+      "digest_bound_SEC_Submissions"
+    ],
+    "current_transcript_objects_exist_in_S1": true,
+    "transcript_source_is_bound_into_S2_mart": false,
+    "candidate_or_metric_row_grants_numeric_authority": false,
+    "company_fact_observations": 1319,
+    "forms_in_private_mart": {"10-K": 311, "10-Q": 1008},
+    "non_SEC_citations": 0
+  },
+  "same_cadence_behavior": {
+    "current_quarter": "DELL_FY2027_Q1",
+    "comparable_quarter": "DELL_FY2026_Q1_from_the_same_current_10Q_filing_cohort",
+    "latest_fiscal_year": "DELL_FY2026",
+    "stale_Q3_YTD_included": false,
+    "why_required": "S3_may_use_year_over_year_language_only_when_both_same_basis_quarter_endpoints_are_authoritative"
+  },
+  "acceptance": {
+    "latest_fiscal_year_qrels": "9/9",
+    "current_interim_qrels": "15/15",
+    "all_mutations_pass": true,
+    "tracked_result_ref": "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json",
+    "tracked_result_digest": "0c25c917f08e4e14b30d481d0dbb2724b951797c052e52b0ff940b2971f595a1",
+    "formal_and_tracked_normalized_semantics_equal": true,
+    "full_tests": "394 passed",
+    "active_baseline": "131_python_8_frontend_10_resources_0_forbidden",
+    "secret_scan": "6747_files_0_findings"
+  },
+  "known_boundary": "This closes only the S2 transcript numeric-authority and same-cadence regression needed before the DELL five-cell case. It does not create product-level operating metrics, a product-to-company profit bridge, PIT valuation, five-cell content, S3 acceptance, publication or release.",
+  "result_digest": "c19a5f684435dee53b8e3d2831ca5b1bd230fca1e876d0ec6e0473e620d647aa"
+}

@@ -1,0 +1,87 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_R15_independent_review_v1_0",
+  "status": "independent_post_writer_review_failed_material_finding",
+  "recorded_at": "2026-08-24",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_INDEPENDENT_TAKEOVER_R15",
+  "case_key": "DELL",
+  "review": {
+    "review_mode": "clean_subagent_read_only_independent_post_commit_content_audit",
+    "reviewer_separate_from_candidate_author": true,
+    "reviewer_wrote_or_modified_files": false,
+    "qualified_human_review": false,
+    "network_provider_and_model_calls": 0
+  },
+  "source_candidate": {
+    "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_independent_takeover_candidate_result_v1_0.json",
+    "sha256": "c8b07af55aa0780a3c9b3e5a563ee9b092b20d4795129f4cdbe32386dc6826cb",
+    "result_digest": "e0f76545375b477bc035869c25b87193fd831d63e9a73c9de95071a58680f4f8"
+  },
+  "source_private_full_result": {
+    "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-independent-takeover-r15/full_result.json",
+    "sha256": "7c1597e23914c47b460347ea4bb505e7e69575b1e392afb37cc215af57008082",
+    "full_result_digest": "50ebe3dbb7cedcbc6e466c8fd264bafc558ab9ed24190782b6ed06a469bdfe23"
+  },
+  "material_finding": {
+    "classification": "P1_material",
+    "code": "thesis_reversal_and_cash_bridge_conditions_lack_materiality_product_attribution_and_reconciliation",
+    "field_paths": [
+      "what_would_change[5].model_text",
+      "rendered_report.what_would_change[5]",
+      "remaining_gaps"
+    ],
+    "evidence": [
+      "The reversal condition does not require the observed event to be material, attributable to the AI product, persistent, or evaluated against a frozen threshold.",
+      "The candidate itself preserves missing product-level working-capital attribution and magnitude and says balance-sheet stock movement is not a reconciled cash-flow bridge."
+    ],
+    "impact": "A small or non-AI event could reverse the core demand-quality view by the literal rule, while product-level working-capital stock evidence could be treated as closing cash conversion without a reconciled cash-flow bridge.",
+    "required_correction": [
+      "Require a material, AI-linked, persistent observation evaluated under a predeclared threshold before reversing the demand-quality view.",
+      "Keep product margin, working-capital attribution, and reconciled cash-flow conversion as separate evidence gates."
+    ]
+  },
+  "nonmaterial_findings": [
+    {
+      "classification": "P2_financial_expression",
+      "field_path": "rendered_report",
+      "code": "revenue_and_profit_co_growth_worded_as_conversion",
+      "disposition": "Use co-movement language; do not imply a proved AI order/revenue cohort-to-profit conversion."
+    },
+    {
+      "classification": "P2_financial_expression",
+      "field_path": "rendered_report",
+      "code": "derived_fcf_described_as_company_reported_fact",
+      "disposition": "Label FCF as the deterministic non-GAAP OCF-minus-capex derivation, not a GAAP line item."
+    },
+    {
+      "classification": "P3_usability",
+      "code": "duplicate_what_would_change_and_internal_reference_density",
+      "disposition": "Retain for a later editorial pass; it does not change the material gate decision."
+    }
+  ],
+  "positive_verification": {
+    "source_hashes_and_digests_match": true,
+    "protected_numeric_surfaces_recomputed_without_mismatch": true,
+    "company_product_and_cross_company_boundaries_are_generally_preserved": true,
+    "candidate_self_identified_as_not_independent_not_human_not_S3_not_release": true
+  },
+  "acceptance": {
+    "local_protected_contract_pass": true,
+    "independent_post_writer_review_pass": false,
+    "final_report_content_quality_pass": false,
+    "qualified_human_review_pass": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "scope_decision": {
+    "R15_is_immutable": true,
+    "R16_authorized_by_this_review_receipt": false,
+    "owner_must_decide_whether_to_open_a_bounded_successor": true
+  },
+  "calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0
+  }
+}

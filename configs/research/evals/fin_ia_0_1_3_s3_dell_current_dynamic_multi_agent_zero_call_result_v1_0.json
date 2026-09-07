@@ -1,0 +1,259 @@
+{
+  "attempt_id": "dell-current-dynamic-multi-agent-zero-call-r3-20260823T120000Z",
+  "authority": {
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "natural_lead_coordination_proven": false,
+    "natural_specialist_planning_or_judgment_proven": false,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "publication": false,
+    "release": false
+  },
+  "checks": {
+    "all_mutations_fail_closed": true,
+    "all_role_contracts_pass": true,
+    "candidate_promotion_zero": true,
+    "cuda_fp16_only": true,
+    "explicit_material_scope_used_for_every_batch": true,
+    "lead_has_separate_session_and_only_coordination_authority": true,
+    "six_independent_specialist_sessions": true,
+    "six_validated_workpapers_in_topology_order": true,
+    "thirteen_role_owned_requests_executed_once": true,
+    "zero_model_network_and_paid_calls": true
+  },
+  "current_runtime_binding": {
+    "accepted_evidence_item_count": 48,
+    "evidence_pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+    "task_quantitative_result_digest": "8031335f656b3dd4598ecac7cfe7ff1f8e957606c308c35c4a23187cd6f3a9f6"
+  },
+  "execution_summary": {
+    "compiled_facet_count": 13,
+    "cross_role_challenge_count": 1,
+    "cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "cuda_execution_device": "cuda:0",
+    "executed_request_count": 13,
+    "feedback_receipt_count": 16,
+    "lead_session_count": 1,
+    "local_embedding_inference_batches": 12,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "retrieval_round_count": 12,
+    "specialist_session_count": 6,
+    "specialist_workpaper_count": 6,
+    "unique_numeric_fact_count": 22,
+    "unique_remaining_gap_count": 10,
+    "unique_reviewed_evidence_count": 21
+  },
+  "known_boundary": "This executes all thirteen role-owned DELL EvidenceRequests through the mounted current S1/S2 runtime in six independent specialist sessions, binds complete feedback, compiles role-local workpapers and routes one Lead challenge. Request choices, reflections, workpapers and Lead decisions are zero-model fixtures. Natural DeepSeek multi-agent research quality requires a separately signed exact-once live.",
+  "lead_summary": {
+    "accepted_challenge_ids": [
+      "CHALLENGE::3C1F63B3EEC538AE5CD2800C"
+    ],
+    "challenge_ids": [
+      "CHALLENGE::3C1F63B3EEC538AE5CD2800C"
+    ],
+    "coordination_digest": "b0277184eaf13e386a3a12c50b423dd4b71dbdb49971c5baab68d76a8a58666c",
+    "deferred_challenge_ids": [],
+    "next_state": "continue_local_repairs"
+  },
+  "mutation_checks": {
+    "cross_role_request_fails_closed": true,
+    "cross_session_resume_fails_closed": true,
+    "graph_fact_authority_expansion_fails_closed": true,
+    "ignored_feedback_fails_closed": true,
+    "lead_fact_authoring_fails_closed": true,
+    "premature_stop_fails_closed": true
+  },
+  "policy_binding": {
+    "policy_digest": "7f0bab5b7250ad7e5c4bfcc74bcfc1f2bfc926f1ba85c41e3cf6a547a3b1e8f7",
+    "ref": "configs/research/fin_ia_0_1_3_s3_current_dynamic_multi_agent_loop_policy_v1_0.json",
+    "sha256": "0a983acdbccc3fca61c42db562d7235414c6879d639d321165cea4497f71fcaf"
+  },
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-zero-call-r3-20260823T120000Z/zero_call_full_result.json",
+  "private_result_sha256": "5447a6b5235039d89a1005e4b03fbccb058fc54e2a1a51939fac71a5ffba5be7",
+  "recorded_at": "2026-08-23T08:15:05+00:00",
+  "result_digest": "11f26b4d83777100b474389768c28f021389016383d649e23d2e1d6b9221b0ac",
+  "role_summaries": [
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "facet_ids": [
+        "orders_and_backlog",
+        "conversion_and_durability"
+      ],
+      "feedback_receipt_count": 2,
+      "final_stop_decision": "stop_no_progress",
+      "numeric_fact_refs": [],
+      "remaining_gap_refs": [
+        "GAP::00730082A5C08C4C"
+      ],
+      "request_count": 2,
+      "retrieval_round_count": 2,
+      "reviewed_evidence_refs": [
+        "EV::041AEF89A154F4FC",
+        "EV::2A7103750D79EEDC",
+        "EV::38BBF02CB241E81D",
+        "EV::468CA2DB8E860671",
+        "EV::734A9C177164E08E",
+        "EV::9006E2D4E0F61CCF",
+        "EV::ABAB2A6B49DD71A9",
+        "EV::ADBB7A86C8E7D99D",
+        "EV::D4B096474D6E9422"
+      ],
+      "session_id": "SESSION::38F71314B17A5DC52C7C2EB6",
+      "workpaper_digest": "d7c8eee6c10be6ddfb817d65f70e228944a39c6ba074004d28a7a756da27dfad"
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "facet_ids": [
+        "reported_results",
+        "guidance_and_outlook"
+      ],
+      "feedback_receipt_count": 3,
+      "final_stop_decision": "stop_no_progress",
+      "numeric_fact_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::AB89B02ADCCB77E0"
+      ],
+      "remaining_gap_refs": [],
+      "request_count": 2,
+      "retrieval_round_count": 2,
+      "reviewed_evidence_refs": [
+        "EV::734A9C177164E08E",
+        "EV::7F4D7E6762C21D83"
+      ],
+      "session_id": "SESSION::32702091EA3F16F840A3EB83",
+      "workpaper_digest": "0eba8a2d234d1a7b2b8c0ac62dc2a35d97e7bed745f2bc71f8ebe05d5ae99e4d"
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "facet_ids": [
+        "margin_and_incremental_profit",
+        "pricing_and_mix"
+      ],
+      "feedback_receipt_count": 2,
+      "final_stop_decision": "stop_no_progress",
+      "numeric_fact_refs": [
+        "NUM::1BB4D30C6329CD27",
+        "NUM::33642A79CE277E0B",
+        "NUM::55D71667B5DA8AF0",
+        "NUM::62D92399E571BF05",
+        "NUM::AB89B02ADCCB77E0",
+        "NUM::ADC81E7A547FAB94",
+        "NUM::BA153FB9939D66DF",
+        "NUM::D0EA6489B2C138EE",
+        "NUM::D3FE6492EE9F1082",
+        "NUM::F8C8EB238E997BA2"
+      ],
+      "remaining_gap_refs": [
+        "GAP::14D67654F535F105",
+        "GAP::34844D3F9935C0F5",
+        "GAP::52DCB2B65532C103"
+      ],
+      "request_count": 2,
+      "retrieval_round_count": 2,
+      "reviewed_evidence_refs": [
+        "EV::0063F22F643B94ED",
+        "EV::5388E016C17032C1",
+        "EV::7F4D7E6762C21D83"
+      ],
+      "session_id": "SESSION::75505615B150F6C49ECDA149",
+      "workpaper_digest": "f168f5c652fc65162f1c05e8935ecee6d258f0c408b315d9a08644037d189ffe"
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "facet_ids": [
+        "cash_generation",
+        "working_capital_risk"
+      ],
+      "feedback_receipt_count": 2,
+      "final_stop_decision": "stop_no_progress",
+      "numeric_fact_refs": [
+        "NUM::0E289449BE9085EE",
+        "NUM::16A411DA0FC0209E",
+        "NUM::465E4DEF9C78ECA6",
+        "NUM::48BC29582646E193",
+        "NUM::9DDEDDD584B02E09",
+        "NUM::9F0CC9FBFC741998",
+        "NUM::BFE46716CAB4A99E",
+        "NUM::D2AED1236BCDEE6B",
+        "NUM::E50422C6AABE25A8",
+        "NUM::F0945BCA2DE9CE3B"
+      ],
+      "remaining_gap_refs": [
+        "GAP::EF4839B4BF55ADD0"
+      ],
+      "request_count": 2,
+      "retrieval_round_count": 2,
+      "reviewed_evidence_refs": [
+        "EV::07899638B93E4E3A",
+        "EV::A7BD099BA46F320B",
+        "EV::ADBB7A86C8E7D99D",
+        "EV::C5DB890B773C6892",
+        "EV::CAD2B8E9B11D864E"
+      ],
+      "session_id": "SESSION::DC9730128CABBCD272CB2286",
+      "workpaper_digest": "6985824730a5ab79029c8bb5247b2a3f372caaf08e0991977add2287232a85b4"
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "facet_ids": [
+        "upstream_capacity_context",
+        "counterparty_direct_mention",
+        "subject_relationship_disclosure"
+      ],
+      "feedback_receipt_count": 5,
+      "final_stop_decision": "stop_no_progress",
+      "numeric_fact_refs": [],
+      "remaining_gap_refs": [
+        "GAP::AD8E45538482CAB2",
+        "GAP::C2EC64A79D8F5481",
+        "GAP::FF2E3CECAE969E84"
+      ],
+      "request_count": 3,
+      "retrieval_round_count": 2,
+      "reviewed_evidence_refs": [
+        "EV::4E05729492683532"
+      ],
+      "session_id": "SESSION::316AADE116DB9935C7AE1F02",
+      "workpaper_digest": "04e309d3a2741086ff26a2a97beea73ccd44e291c285895092a271a4aa801762"
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "facet_ids": [
+        "issuer_counterevidence",
+        "upstream_or_demand_counterevidence"
+      ],
+      "feedback_receipt_count": 2,
+      "final_stop_decision": "stop_no_progress",
+      "numeric_fact_refs": [
+        "NUM::0E289449BE9085EE",
+        "NUM::5EF59EBA7D876FB8",
+        "NUM::8E720DA4B13E2279"
+      ],
+      "remaining_gap_refs": [
+        "GAP::04EDD7700A1409F8",
+        "GAP::B070D38D076F342B"
+      ],
+      "request_count": 2,
+      "retrieval_round_count": 2,
+      "reviewed_evidence_refs": [
+        "EV::32A6B092D3316769",
+        "EV::A74F01276941482E",
+        "EV::ADBB7A86C8E7D99D",
+        "EV::BA594865DB45F850",
+        "EV::D86534E903882A43"
+      ],
+      "session_id": "SESSION::D3D2FE8BB6365526CE415643",
+      "workpaper_digest": "0de0612d9333c4f7f88dd2053863e70349cb2a462f86d7dcbf07854e27ca8000"
+    }
+  ],
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_zero_call_result_v1_0",
+  "status": "current_dynamic_multi_agent_zero_call_proven"
+}

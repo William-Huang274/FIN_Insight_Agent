@@ -1,0 +1,96 @@
+{
+  "schema_version": "fin_ia_s1_material_scope_product_replay_assessment_v1_0",
+  "status": "collective_compiler_closed_candidate_review_binding_open",
+  "recorded_at": "2026-08-18T16:04:30+08:00",
+  "case_key": "DELL",
+  "prepared_from_commit": "9cfd7f33fde6dd04e54f710e6e5ccfc5ca15dc3c",
+  "bound_result": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_material_scope_product_replay_result_v1_0.json",
+    "sha256": "33e5e01294a486695fe8d9937867aa0f314ea30ea976970441bdea6ed1596f54"
+  },
+  "private_full_result": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_material_scope_product_replay/dell-r3-v1/full_result.json",
+    "sha256": "f13221eabfddb8284f82ea0000d2800c84815980489f35a3fee46af57a9712c9",
+    "access": "restricted_candidate_audit_only"
+  },
+  "execution_facts": {
+    "status": "completed_scope_ready_material_sets_incomplete",
+    "material_scope_ready_requests": 8,
+    "material_set_complete_requests": 0,
+    "requirement_groups": 12,
+    "met_requirements": 0,
+    "unmet_requirements": 12,
+    "selected_candidates": 128,
+    "numeric_facts": 58,
+    "typed_fact_resolved": 19,
+    "typed_fact_gaps": 9,
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "local_embedding_batches": 1,
+    "cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "embedding_precision": "float16",
+    "cpu_vector_fallbacks": 0
+  },
+  "rc_s1_028_disposition": {
+    "status": "closed_by_zero_call_collective_axis_compiler_repair",
+    "before": "12 atoms expanded into 73 singleton groups with aggregate reserved capacity 132",
+    "after": "12 atoms compile into 12 correlated requirement groups with per-request capacities 3,3,2,2,2,3,1,2",
+    "preserved": [
+      "immutable R3 payload",
+      "review_k 16",
+      "candidate identities",
+      "temporal single-binding atomicity",
+      "zero model and zero network replay"
+    ]
+  },
+  "earliest_open_root_cause": {
+    "issue_id": "RC-S1-029-natural-hard-scope-axis-not-visible-to-candidate-review-binding",
+    "layer": "S1 request-bound candidate review binding",
+    "symptom": "the R3 scope marks nineteen natural product intents as hard axes while candidate metadata retains the same exact request intents only as contextual_or_unclassified_need_product_intents; the collective selector reads only canonical product_ids and therefore excludes all natural product-axis coverage",
+    "not_caused_by": [
+      "DeepSeek contract compliance",
+      "network transport",
+      "CUDA availability",
+      "candidate pool emptiness",
+      "public information non-disclosure"
+    ]
+  },
+  "business_examples": [
+    {
+      "facet_id": "orders_and_backlog",
+      "expected_review_reason": "Dell 10-K states that increasing AI-optimized-server demand drove backlog growth and explains non-linear demand-to-shipment timing",
+      "current_failure": "the candidate has direct role and backlog/orders/shipments bindings but the natural AI-server and backlog-composition phrases are stored only as unclassified context, so no requirement receipt can reserve it"
+    },
+    {
+      "facet_id": "reported_results",
+      "expected_review_reason": "Dell earnings-release tables cover reported revenue, income, EPS and margins and should enter review for the reported-results requirement",
+      "current_failure": "generic reported metrics are present but the natural AI-revenue-contribution, segment-profitability and EPS-impact axes are not candidate-review-visible"
+    },
+    {
+      "facet_id": "upstream_or_demand_counterevidence",
+      "expected_review_reason": "adjacent Micron and other upstream claims may be worth review but cannot automatically prove GPU supply constraints or hyperscaler capex slowdown",
+      "current_failure": "blindly promoting every retrieval-need phrase would create false semantic coverage, demonstrating that candidate reservation and Evidence acceptance require separate states"
+    }
+  ],
+  "selected_disposition": {
+    "candidate_review_semantics": "for collective_axes only, an exact request-visible natural intent retained on a compatible facet and role may contribute to a bounded review bundle, but remains abstain and candidate-not-Evidence",
+    "evidence_semantics": "CandidateDecision and Evidence Gate must separately decide whether the actual candidate text supports each requirement; retrieval-need alignment alone cannot accept Evidence or NumericFact",
+    "temporal_semantics": "single_binding and all-period same-basis requirements continue to require canonical correlated bindings",
+    "gap_semantics": "an unmet or rejected candidate requirement is not a public-information gap until local objects, routes, execution, ranking and review receipts have been exhausted"
+  },
+  "next_allowed_scope": [
+    "zero-call collective candidate-review contribution repair",
+    "DELL MU NVDA and temporal regression with false-promotion mutations",
+    "same immutable R3 payload replay",
+    "requirement-bound CandidateDecision and Evidence Gate inspection"
+  ],
+  "still_blocked": [
+    "automatic Evidence promotion from retrieval-need alignment",
+    "declaring any current unmet requirement a public-information gap",
+    "S1 qualification",
+    "full-chain S3 acceptance",
+    "publication",
+    "release"
+  ],
+  "known_boundary": "This assessment qualifies only the zero-call DELL candidate-review seam. It does not score Evidence quality, accept any candidate, close Pack Readiness, qualify S1, or authorize reuse of frozen or hidden references."
+}

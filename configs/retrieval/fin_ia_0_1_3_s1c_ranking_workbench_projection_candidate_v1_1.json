@@ -1,0 +1,1234 @@
+{
+  "schema_version": "fin_ia_s1c_ranking_workbench_projection_v1_0",
+  "candidate_state": "candidate_not_evidence",
+  "same_object_population_count": 1805,
+  "route_summaries": {
+    "sparse_bm25": {
+      "qrel_count": 18,
+      "mapped_current_target_count": 18,
+      "typed_target_gap_count": 0,
+      "recall_at_10_all_qrels": 0.944444,
+      "recall_at_10_mapped_targets": 0.944444,
+      "mrr_mapped_targets": 0.559392,
+      "automatic_business_error_counts_in_top3": {
+        "risk_disclosure_substituted_for_results": 2,
+        "topic_co_mention_without_supply_mechanism": 3
+      }
+    },
+    "dense_bge_m3": {
+      "qrel_count": 18,
+      "mapped_current_target_count": 18,
+      "typed_target_gap_count": 0,
+      "recall_at_10_all_qrels": 0.777778,
+      "recall_at_10_mapped_targets": 0.777778,
+      "mrr_mapped_targets": 0.490741,
+      "automatic_business_error_counts_in_top3": {
+        "generic_company_text_substituted_for_results": 1,
+        "topic_co_mention_without_demand_mechanism": 6,
+        "topic_co_mention_without_supply_mechanism": 10
+      }
+    },
+    "fusion_rrf_1_1": {
+      "qrel_count": 18,
+      "mapped_current_target_count": 18,
+      "typed_target_gap_count": 0,
+      "recall_at_10_all_qrels": 0.888889,
+      "recall_at_10_mapped_targets": 0.888889,
+      "mrr_mapped_targets": 0.580817,
+      "automatic_business_error_counts_in_top3": {
+        "generic_company_text_substituted_for_results": 1,
+        "risk_disclosure_substituted_for_financial_mechanism": 1,
+        "topic_co_mention_without_demand_mechanism": 1,
+        "topic_co_mention_without_supply_mechanism": 3
+      }
+    },
+    "typed_financial_rerank": {
+      "qrel_count": 18,
+      "mapped_current_target_count": 18,
+      "typed_target_gap_count": 0,
+      "recall_at_10_all_qrels": 0.888889,
+      "recall_at_10_mapped_targets": 0.888889,
+      "mrr_mapped_targets": 0.567626,
+      "automatic_business_error_counts_in_top3": {
+        "generic_company_text_substituted_for_results": 1,
+        "topic_co_mention_without_supply_mechanism": 3
+      }
+    }
+  },
+  "cases": [
+    {
+      "case_key": "DELL",
+      "queries": [
+        {
+          "query_id": "s1c_dell_query_01",
+          "evidence_slot_id": "customer_demand_and_deployment_validation",
+          "evidence_owner_ticker": "MSFT",
+          "routes": {
+            "sparse_bm25": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Productivity and Business Processes and Intelligent Cloud",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 42.71945725,
+                  "matched_terms": [
+                    "ai",
+                    "azure",
+                    "capacity",
+                    "cloud",
+                    "customer",
+                    "demand",
+                    "infrastructure",
+                    "microsoft"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "• Microsoft 365 Consumer products and cloud services revenue increased $1.4 billion or 27%. Microsoft 365 Consumer cloud revenue grew 29% driven by growth in revenue per user and continued growth in Microsoft 365 Consumer subscribers. • LinkedIn revenue increased $1.4 billion or 11% with growth across all lines of business. • Dynamics products and cloud services revenue increased $941 million or 17% driven by growth in Dynamics 365. Dynamics 365 revenue grew 20% with growth across all workloads. Operating income increased $11.2 billion or 22%. • Cost of revenue increased $1.6 billion or 10% driven by investments in AI infrastructure to support Microsoft 365 Copilot seat and usage growth. • G"
+                }
+              ]
+            },
+            "dense_bge_m3": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0002_CHUNK_0001",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "OVERVIEW",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 0.64395869,
+                  "matched_terms": [],
+                  "business_role_reasons": [],
+                  "excerpt": "OVERVIEW Microsoft is a technology company committed to making digital technology and artificial intelligence (“AI”) available broadly and doing so responsibly, with a mission to empower every person and every organization on the planet to achieve more. We create platforms and tools, powered by AI, that deliver innovative solutions that meet the evolving needs of our customers. We generate revenue by offering a wide range of cloud-based solutions, content, and other services to people and businesses; licensing and supporting an array of software products; delivering relevant online advertising to a global audience; and designing and selling devices. Our most significant expenses are related "
+                }
+              ]
+            },
+            "fusion_rrf_1_1": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Productivity and Business Processes and Intelligent Cloud",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 0.03252247,
+                  "matched_terms": [
+                    "ai",
+                    "azure",
+                    "capacity",
+                    "cloud",
+                    "customer",
+                    "demand",
+                    "infrastructure",
+                    "microsoft"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "• Microsoft 365 Consumer products and cloud services revenue increased $1.4 billion or 27%. Microsoft 365 Consumer cloud revenue grew 29% driven by growth in revenue per user and continued growth in Microsoft 365 Consumer subscribers. • LinkedIn revenue increased $1.4 billion or 11% with growth across all lines of business. • Dynamics products and cloud services revenue increased $941 million or 17% driven by growth in Dynamics 365. Dynamics 365 revenue grew 20% with growth across all workloads. Operating income increased $11.2 billion or 22%. • Cost of revenue increased $1.6 billion or 10% driven by investments in AI infrastructure to support Microsoft 365 Copilot seat and usage growth. • G"
+                }
+              ]
+            },
+            "typed_financial_rerank": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Productivity and Business Processes and Intelligent Cloud",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 0.04652247,
+                  "matched_terms": [
+                    "ai",
+                    "azure",
+                    "capacity",
+                    "cloud",
+                    "customer",
+                    "demand",
+                    "infrastructure",
+                    "microsoft"
+                  ],
+                  "business_role_reasons": [
+                    "slot_mechanism_hits=2",
+                    "management_or_results_heading",
+                    "reporting_period_match"
+                  ],
+                  "excerpt": "• Microsoft 365 Consumer products and cloud services revenue increased $1.4 billion or 27%. Microsoft 365 Consumer cloud revenue grew 29% driven by growth in revenue per user and continued growth in Microsoft 365 Consumer subscribers. • LinkedIn revenue increased $1.4 billion or 11% with growth across all lines of business. • Dynamics products and cloud services revenue increased $941 million or 17% driven by growth in Dynamics 365. Dynamics 365 revenue grew 20% with growth across all workloads. Operating income increased $11.2 billion or 22%. • Cost of revenue increased $1.6 billion or 10% driven by investments in AI infrastructure to support Microsoft 365 Copilot seat and usage growth. • G"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "query_id": "s1c_dell_query_02",
+          "evidence_slot_id": "issuer_results_and_management_commentary",
+          "evidence_owner_ticker": "DELL",
+          "routes": {
+            "sparse_bm25": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 55.74014419,
+                  "matched_terms": [
+                    "ai",
+                    "dell",
+                    "earnings",
+                    "financial",
+                    "orders",
+                    "q1",
+                    "release",
+                    "revenue",
+                    "server",
+                    "technologies"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            },
+            "dense_bge_m3": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 0.75133073,
+                  "matched_terms": [],
+                  "business_role_reasons": [],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            },
+            "fusion_rrf_1_1": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 0.03278689,
+                  "matched_terms": [
+                    "ai",
+                    "dell",
+                    "earnings",
+                    "financial",
+                    "orders",
+                    "q1",
+                    "release",
+                    "revenue",
+                    "server",
+                    "technologies"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            },
+            "typed_financial_rerank": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 0.05178689,
+                  "matched_terms": [
+                    "ai",
+                    "dell",
+                    "earnings",
+                    "financial",
+                    "orders",
+                    "q1",
+                    "release",
+                    "revenue",
+                    "server",
+                    "technologies"
+                  ],
+                  "business_role_reasons": [
+                    "slot_mechanism_hits=5",
+                    "reporting_period_match"
+                  ],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "query_id": "s1c_dell_query_03",
+          "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+          "evidence_owner_ticker": "DELL",
+          "routes": {
+            "sparse_bm25": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "10-K",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-03-16",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-01-30",
+                  "section": "Item 1A. Risk Factors",
+                  "subsection": "The nature of the demand for AI solutions may have adverse effects on our operating performance.",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+                  "score": 34.09543004,
+                  "matched_terms": [
+                    "ai",
+                    "capital",
+                    "commitments",
+                    "dell",
+                    "financial",
+                    "inventory",
+                    "orders",
+                    "risks",
+                    "technologies",
+                    "working"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "The nature of the demand for AI solutions may have adverse effects on our operating performance. While we expect the buyer base for our AI solutions to continue to expand, to date our AI solutions have been purchased primarily by a small number of larger customers and cloud service providers. If we are not successful in continuing to expand sales to a broader base of customers, our ability to maintain growth in this area may be limited. Sales of AI to large customers may also cause fluctuations in our results of operations, as such large orders may occur in some periods and not others and are generally subject to intense competition and pricing pressure, which can have an impact on our gross"
+                }
+              ]
+            },
+            "dense_bge_m3": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0002_CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2025-12-09",
+                  "fiscal_year": 2026,
+                  "period_end": "2025-10-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Company Overview",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199625000127/dell-20251031.htm",
+                  "score": 0.69891441,
+                  "matched_terms": [],
+                  "business_role_reasons": [],
+                  "excerpt": "Company Overview Dell Technologies is a leader in the global technology industry focused on providing broad and innovative technology solutions for the data and artificial intelligence (“AI”) era. We build and offer solutions ranging from client devices and peripherals to infrastructure solutions across servers, networking, and storage to meet the evolving needs of our customers and drive better business outcomes. With our extensive portfolio and our commitment to innovation, we offer secure, integrated solutions that extend from the edge to the core to the cloud, and we are at the forefront of AI, software-defined, and cloud native infrastructure solutions. Our vision is to become the most "
+                }
+              ]
+            },
+            "fusion_rrf_1_1": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0002_CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2025-12-09",
+                  "fiscal_year": 2026,
+                  "period_end": "2025-10-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Company Overview",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199625000127/dell-20251031.htm",
+                  "score": 0.02955134,
+                  "matched_terms": [
+                    "ai",
+                    "dell",
+                    "financial",
+                    "purchase",
+                    "revenue",
+                    "server",
+                    "technologies"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "Company Overview Dell Technologies is a leader in the global technology industry focused on providing broad and innovative technology solutions for the data and artificial intelligence (“AI”) era. We build and offer solutions ranging from client devices and peripherals to infrastructure solutions across servers, networking, and storage to meet the evolving needs of our customers and drive better business outcomes. With our extensive portfolio and our commitment to innovation, we offer secure, integrated solutions that extend from the edge to the core to the cloud, and we are at the forefront of AI, software-defined, and cloud native infrastructure solutions. Our vision is to become the most "
+                }
+              ]
+            },
+            "typed_financial_rerank": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_03_OF_05",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2025-12-09",
+                  "fiscal_year": 2026,
+                  "period_end": "2025-10-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "RESULTS OF OPERATIONS",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199625000127/dell-20251031.htm",
+                  "score": 0.04475694,
+                  "matched_terms": [
+                    "ai",
+                    "capital",
+                    "dell",
+                    "financial",
+                    "inventory",
+                    "revenue",
+                    "server",
+                    "technologies",
+                    "working"
+                  ],
+                  "business_role_reasons": [
+                    "slot_mechanism_hits=3",
+                    "management_or_results_heading",
+                    "reporting_period_match"
+                  ],
+                  "excerpt": "Non-GAAP product gross margin, non-GAAP services gross margin, non-GAAP gross margin, non-GAAP operating expenses, non-GAAP operating income, non-GAAP net income, non-GAAP earnings per share attributable to Dell Technologies - diluted, free cash flow, and adjusted free cash flow are not measurements of financial performance prepared in accordance with GAAP. See “Non‑GAAP Financial Measures” for additional information about these non-GAAP financial measures, including our reasons for including these measures, material limitations with respect to the usefulness of the measures, and a reconciliation of each non-GAAP financial measure to the most directly comparable GAAP financial measure. 61 Ta"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "case_key": "MU",
+      "queries": [
+        {
+          "query_id": "s1c_mu_query_01",
+          "evidence_slot_id": "customer_demand_and_deployment_validation",
+          "evidence_owner_ticker": "DELL",
+          "routes": {
+            "sparse_bm25": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 50.20143341,
+                  "matched_terms": [
+                    "ai",
+                    "dell",
+                    "demand",
+                    "earnings",
+                    "infrastructure",
+                    "orders",
+                    "q1",
+                    "server",
+                    "technologies"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            },
+            "dense_bge_m3": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 0.67213845,
+                  "matched_terms": [],
+                  "business_role_reasons": [],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            },
+            "fusion_rrf_1_1": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 0.03278689,
+                  "matched_terms": [
+                    "ai",
+                    "dell",
+                    "demand",
+                    "earnings",
+                    "infrastructure",
+                    "orders",
+                    "q1",
+                    "server",
+                    "technologies"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            },
+            "typed_financial_rerank": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0002::PART_01_OF_02",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "10-K",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-03-16",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-01-30",
+                  "section": "Item 7. Management's Discussion and Analysis",
+                  "subsection": "Company Overview",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+                  "score": 0.04313851,
+                  "matched_terms": [
+                    "ai",
+                    "cloud",
+                    "dell",
+                    "deployment",
+                    "infrastructure",
+                    "technologies",
+                    "technology"
+                  ],
+                  "business_role_reasons": [
+                    "slot_mechanism_hits=2",
+                    "management_or_results_heading",
+                    "reporting_period_match"
+                  ],
+                  "excerpt": "Company Overview Dell Technologies is a leader in the global technology industry focused on providing broad and innovative technology solutions for the data and artificial intelligence (“AI”) era. We build and offer solutions ranging from client devices and peripherals to infrastructure solutions across servers, networking, and storage to meet the evolving needs of our customers and drive better business outcomes. With our extensive portfolio and our commitment to innovation, we offer secure, integrated solutions that extend from the edge to the core to the cloud, and we are at the forefront of AI, software-defined, and cloud native infrastructure solutions. Our vision is to become the most "
+                }
+              ]
+            }
+          }
+        },
+        {
+          "query_id": "s1c_mu_query_02",
+          "evidence_slot_id": "customer_demand_and_deployment_validation",
+          "evidence_owner_ticker": "MSFT",
+          "routes": {
+            "sparse_bm25": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Productivity and Business Processes and Intelligent Cloud",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 42.71945725,
+                  "matched_terms": [
+                    "ai",
+                    "azure",
+                    "capacity",
+                    "cloud",
+                    "customer",
+                    "demand",
+                    "infrastructure",
+                    "microsoft"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "• Microsoft 365 Consumer products and cloud services revenue increased $1.4 billion or 27%. Microsoft 365 Consumer cloud revenue grew 29% driven by growth in revenue per user and continued growth in Microsoft 365 Consumer subscribers. • LinkedIn revenue increased $1.4 billion or 11% with growth across all lines of business. • Dynamics products and cloud services revenue increased $941 million or 17% driven by growth in Dynamics 365. Dynamics 365 revenue grew 20% with growth across all workloads. Operating income increased $11.2 billion or 22%. • Cost of revenue increased $1.6 billion or 10% driven by investments in AI infrastructure to support Microsoft 365 Copilot seat and usage growth. • G"
+                }
+              ]
+            },
+            "dense_bge_m3": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0002_CHUNK_0001",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "OVERVIEW",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 0.63740742,
+                  "matched_terms": [],
+                  "business_role_reasons": [],
+                  "excerpt": "OVERVIEW Microsoft is a technology company committed to making digital technology and artificial intelligence (“AI”) available broadly and doing so responsibly, with a mission to empower every person and every organization on the planet to achieve more. We create platforms and tools, powered by AI, that deliver innovative solutions that meet the evolving needs of our customers. We generate revenue by offering a wide range of cloud-based solutions, content, and other services to people and businesses; licensing and supporting an array of software products; delivering relevant online advertising to a global audience; and designing and selling devices. Our most significant expenses are related "
+                }
+              ]
+            },
+            "fusion_rrf_1_1": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0002_CHUNK_0001",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "OVERVIEW",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 0.03177806,
+                  "matched_terms": [
+                    "ai",
+                    "azure",
+                    "capacity",
+                    "cloud",
+                    "customer",
+                    "demand",
+                    "infrastructure",
+                    "microsoft",
+                    "technology"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "OVERVIEW Microsoft is a technology company committed to making digital technology and artificial intelligence (“AI”) available broadly and doing so responsibly, with a mission to empower every person and every organization on the planet to achieve more. We create platforms and tools, powered by AI, that deliver innovative solutions that meet the evolving needs of our customers. We generate revenue by offering a wide range of cloud-based solutions, content, and other services to people and businesses; licensing and supporting an array of software products; delivering relevant online advertising to a global audience; and designing and selling devices. Our most significant expenses are related "
+                }
+              ]
+            },
+            "typed_financial_rerank": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0002_CHUNK_0001",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "OVERVIEW",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 0.04577806,
+                  "matched_terms": [
+                    "ai",
+                    "azure",
+                    "capacity",
+                    "cloud",
+                    "customer",
+                    "demand",
+                    "infrastructure",
+                    "microsoft",
+                    "technology"
+                  ],
+                  "business_role_reasons": [
+                    "slot_mechanism_hits=2",
+                    "management_or_results_heading",
+                    "reporting_period_match"
+                  ],
+                  "excerpt": "OVERVIEW Microsoft is a technology company committed to making digital technology and artificial intelligence (“AI”) available broadly and doing so responsibly, with a mission to empower every person and every organization on the planet to achieve more. We create platforms and tools, powered by AI, that deliver innovative solutions that meet the evolving needs of our customers. We generate revenue by offering a wide range of cloud-based solutions, content, and other services to people and businesses; licensing and supporting an array of software products; delivering relevant online advertising to a global audience; and designing and selling devices. Our most significant expenses are related "
+                }
+              ]
+            }
+          }
+        },
+        {
+          "query_id": "s1c_mu_query_03",
+          "evidence_slot_id": "issuer_results_and_management_commentary",
+          "evidence_owner_ticker": "MU",
+          "routes": {
+            "sparse_bm25": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+                  "evidence_owner_ticker": "MU",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-03-18",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-18",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "SECOND QUARTER OF FISCAL 2026",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000004/a2026q2ex991-pressrelease.htm",
+                  "score": 39.27871879,
+                  "matched_terms": [
+                    "call",
+                    "earnings",
+                    "financial",
+                    "gross",
+                    "margin",
+                    "memory",
+                    "micron",
+                    "release",
+                    "revenue",
+                    "risks",
+                    "technology"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "[TABLE_START id=3 rows=18] Quarterly Business Unit Financial Results FQ2-26 | FQ1-26 | FQ2-25 Cloud Memory Business Unit Revenue | $ | 7,749 | $ | 5,284 | $ | 2,947 Gross margin | 74 | % | 66 | % | 55 | % Operating margin | 66 | % | 55 | % | 45 | % Core Data Center Business Unit Revenue | $ | 5,687 | $ | 2,379 | $ | 1,830 Gross margin | 74 | % | 51 | % | 47 | % Operating margin | 67 | % | 37 | % | 33 | % Mobile and Client Business Unit Revenue | $ | 7,711 | $ | 4,255 | $ | 2,236 Gross margin | 79 | % | 54 | % | 15 | % Operating margin | 76 | % | 47 | % | 1 | % Automotive and Embedded Business Unit Revenue | $ | 2,708 | $ | 1,720 | $ | 1,034 Gross margin | 68 | % | 45 | % | 21 | % Operating m"
+                }
+              ]
+            },
+            "dense_bge_m3": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03",
+                  "evidence_owner_ticker": "MU",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-06-24",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-06-24",
+                  "section": "8-K current official disclosure",
+                  "subsection": "THIRD QUARTER OF FISCAL 2026",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+                  "score": 0.66256547,
+                  "matched_terms": [],
+                  "business_role_reasons": [],
+                  "excerpt": "THIRD QUARTER OF FISCAL 2026 Micron executes transformational Strategic Customer Agreements BOISE, Idaho, June 24, 2026 – Micron Technology, Inc. (Nasdaq: MU) today announced results for its third quarter of fiscal 2026, which ended May 28, 2026. Fiscal Q3 2026 highlights • Revenue of $41.46 billion versus $23.86 billion for the prior quarter and $9.30 billion for the same period last year • GAAP net income of $28.24 billion, or $24.67 per diluted share • Non-GAAP net income of $28.86 billion, or $25.11 per diluted share • Operating cash flow of $25.39 billion versus $11.90 billion for the prior quarter and $4.61 billion for the same period last year “Micron’s record fiscal Q3 financial resu"
+                }
+              ]
+            },
+            "fusion_rrf_1_1": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+                  "evidence_owner_ticker": "MU",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-03-18",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-18",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "SECOND QUARTER OF FISCAL 2026",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000004/a2026q2ex991-pressrelease.htm",
+                  "score": 0.03252247,
+                  "matched_terms": [
+                    "call",
+                    "earnings",
+                    "financial",
+                    "gross",
+                    "margin",
+                    "memory",
+                    "micron",
+                    "release",
+                    "revenue",
+                    "risks",
+                    "technology"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "[TABLE_START id=3 rows=18] Quarterly Business Unit Financial Results FQ2-26 | FQ1-26 | FQ2-25 Cloud Memory Business Unit Revenue | $ | 7,749 | $ | 5,284 | $ | 2,947 Gross margin | 74 | % | 66 | % | 55 | % Operating margin | 66 | % | 55 | % | 45 | % Core Data Center Business Unit Revenue | $ | 5,687 | $ | 2,379 | $ | 1,830 Gross margin | 74 | % | 51 | % | 47 | % Operating margin | 67 | % | 37 | % | 33 | % Mobile and Client Business Unit Revenue | $ | 7,711 | $ | 4,255 | $ | 2,236 Gross margin | 79 | % | 54 | % | 15 | % Operating margin | 76 | % | 47 | % | 1 | % Automotive and Embedded Business Unit Revenue | $ | 2,708 | $ | 1,720 | $ | 1,034 Gross margin | 68 | % | 45 | % | 21 | % Operating m"
+                }
+              ]
+            },
+            "typed_financial_rerank": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+                  "evidence_owner_ticker": "MU",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-03-18",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-18",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "SECOND QUARTER OF FISCAL 2026",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000004/a2026q2ex991-pressrelease.htm",
+                  "score": 0.05152247,
+                  "matched_terms": [
+                    "call",
+                    "earnings",
+                    "financial",
+                    "gross",
+                    "margin",
+                    "memory",
+                    "micron",
+                    "release",
+                    "revenue",
+                    "risks",
+                    "technology"
+                  ],
+                  "business_role_reasons": [
+                    "slot_mechanism_hits=5",
+                    "reporting_period_match"
+                  ],
+                  "excerpt": "[TABLE_START id=3 rows=18] Quarterly Business Unit Financial Results FQ2-26 | FQ1-26 | FQ2-25 Cloud Memory Business Unit Revenue | $ | 7,749 | $ | 5,284 | $ | 2,947 Gross margin | 74 | % | 66 | % | 55 | % Operating margin | 66 | % | 55 | % | 45 | % Core Data Center Business Unit Revenue | $ | 5,687 | $ | 2,379 | $ | 1,830 Gross margin | 74 | % | 51 | % | 47 | % Operating margin | 67 | % | 37 | % | 33 | % Mobile and Client Business Unit Revenue | $ | 7,711 | $ | 4,255 | $ | 2,236 Gross margin | 79 | % | 54 | % | 15 | % Operating margin | 76 | % | 47 | % | 1 | % Automotive and Embedded Business Unit Revenue | $ | 2,708 | $ | 1,720 | $ | 1,034 Gross margin | 68 | % | 45 | % | 21 | % Operating m"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "case_key": "NVDA",
+      "queries": [
+        {
+          "query_id": "s1c_nvda_query_01",
+          "evidence_slot_id": "customer_demand_and_deployment_validation",
+          "evidence_owner_ticker": "DELL",
+          "routes": {
+            "sparse_bm25": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 50.20143341,
+                  "matched_terms": [
+                    "ai",
+                    "dell",
+                    "demand",
+                    "earnings",
+                    "infrastructure",
+                    "orders",
+                    "q1",
+                    "server",
+                    "technologies"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            },
+            "dense_bge_m3": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 0.68113118,
+                  "matched_terms": [],
+                  "business_role_reasons": [],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            },
+            "fusion_rrf_1_1": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 0.03278689,
+                  "matched_terms": [
+                    "ai",
+                    "dell",
+                    "demand",
+                    "earnings",
+                    "infrastructure",
+                    "orders",
+                    "q1",
+                    "server",
+                    "technologies"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            },
+            "typed_financial_rerank": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+                  "evidence_owner_ticker": "DELL",
+                  "source_type": "8-K",
+                  "source_tier": "company_authored_unaudited_sec_filing",
+                  "publication_date": "2026-05-28",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-05-28",
+                  "section": "Exhibit 99.1 Earnings Release",
+                  "subsection": "EX-99.1",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000021/exhibit991earnings8kq1fy27.htm",
+                  "score": 0.04278689,
+                  "matched_terms": [
+                    "ai",
+                    "dell",
+                    "demand",
+                    "earnings",
+                    "infrastructure",
+                    "orders",
+                    "q1",
+                    "server",
+                    "technologies"
+                  ],
+                  "business_role_reasons": [
+                    "slot_mechanism_hits=2",
+                    "reporting_period_match"
+                  ],
+                  "excerpt": "EX-99.1 2 exhibit991earnings8kq1fy27.htm EX-99.1 Document Exhibit 99.1 Dell Technologies Delivers First Quarter Fiscal 2027 Financial Results ROUND ROCK, Texas — May 28, 2026 — Dell Technologies (NYSE: DELL) announces financial results for its fiscal 2027 first quarter and provides guidance for its fiscal 2027 second quarter and full year. First-Quarter Summary • Record revenue of $43.8 billion, up 88% year over year • Record diluted earnings per share (EPS) of $5.24, up 282% year over year, and record non-GAAP diluted EPS of $4.86, up 214% • Record first-quarter cash flow from operations of $4.1 billion “Our record Q1 performance reflects strong in-quarter demand, as well as our pace of inn"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "query_id": "s1c_nvda_query_02",
+          "evidence_slot_id": "customer_demand_and_deployment_validation",
+          "evidence_owner_ticker": "MSFT",
+          "routes": {
+            "sparse_bm25": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Productivity and Business Processes and Intelligent Cloud",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 42.71945725,
+                  "matched_terms": [
+                    "ai",
+                    "azure",
+                    "capacity",
+                    "cloud",
+                    "customer",
+                    "demand",
+                    "infrastructure",
+                    "microsoft"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "• Microsoft 365 Consumer products and cloud services revenue increased $1.4 billion or 27%. Microsoft 365 Consumer cloud revenue grew 29% driven by growth in revenue per user and continued growth in Microsoft 365 Consumer subscribers. • LinkedIn revenue increased $1.4 billion or 11% with growth across all lines of business. • Dynamics products and cloud services revenue increased $941 million or 17% driven by growth in Dynamics 365. Dynamics 365 revenue grew 20% with growth across all workloads. Operating income increased $11.2 billion or 22%. • Cost of revenue increased $1.6 billion or 10% driven by investments in AI infrastructure to support Microsoft 365 Copilot seat and usage growth. • G"
+                }
+              ]
+            },
+            "dense_bge_m3": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0002_CHUNK_0001",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "OVERVIEW",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 0.63340205,
+                  "matched_terms": [],
+                  "business_role_reasons": [],
+                  "excerpt": "OVERVIEW Microsoft is a technology company committed to making digital technology and artificial intelligence (“AI”) available broadly and doing so responsibly, with a mission to empower every person and every organization on the planet to achieve more. We create platforms and tools, powered by AI, that deliver innovative solutions that meet the evolving needs of our customers. We generate revenue by offering a wide range of cloud-based solutions, content, and other services to people and businesses; licensing and supporting an array of software products; delivering relevant online advertising to a global audience; and designing and selling devices. Our most significant expenses are related "
+                }
+              ]
+            },
+            "fusion_rrf_1_1": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0002_CHUNK_0001",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "OVERVIEW",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 0.03154496,
+                  "matched_terms": [
+                    "ai",
+                    "azure",
+                    "capacity",
+                    "cloud",
+                    "customer",
+                    "demand",
+                    "infrastructure",
+                    "microsoft"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "OVERVIEW Microsoft is a technology company committed to making digital technology and artificial intelligence (“AI”) available broadly and doing so responsibly, with a mission to empower every person and every organization on the planet to achieve more. We create platforms and tools, powered by AI, that deliver innovative solutions that meet the evolving needs of our customers. We generate revenue by offering a wide range of cloud-based solutions, content, and other services to people and businesses; licensing and supporting an array of software products; delivering relevant online advertising to a global audience; and designing and selling devices. Our most significant expenses are related "
+                }
+              ]
+            },
+            "typed_financial_rerank": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0002_CHUNK_0001",
+                  "evidence_owner_ticker": "MSFT",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-04-29",
+                  "fiscal_year": 2026,
+                  "period_end": "2026-03-31",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "OVERVIEW",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/789019/000119312526191507/msft-20260331.htm",
+                  "score": 0.04554496,
+                  "matched_terms": [
+                    "ai",
+                    "azure",
+                    "capacity",
+                    "cloud",
+                    "customer",
+                    "demand",
+                    "infrastructure",
+                    "microsoft"
+                  ],
+                  "business_role_reasons": [
+                    "slot_mechanism_hits=2",
+                    "management_or_results_heading",
+                    "reporting_period_match"
+                  ],
+                  "excerpt": "OVERVIEW Microsoft is a technology company committed to making digital technology and artificial intelligence (“AI”) available broadly and doing so responsibly, with a mission to empower every person and every organization on the planet to achieve more. We create platforms and tools, powered by AI, that deliver innovative solutions that meet the evolving needs of our customers. We generate revenue by offering a wide range of cloud-based solutions, content, and other services to people and businesses; licensing and supporting an array of software products; delivering relevant online advertising to a global audience; and designing and selling devices. Our most significant expenses are related "
+                }
+              ]
+            }
+          }
+        },
+        {
+          "query_id": "s1c_nvda_query_03",
+          "evidence_slot_id": "issuer_results_and_management_commentary",
+          "evidence_owner_ticker": "NVDA",
+          "routes": {
+            "sparse_bm25": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04",
+                  "evidence_owner_ticker": "NVDA",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-05-20",
+                  "fiscal_year": 2027,
+                  "period_end": "2026-04-26",
+                  "section": "Item 1A. Risk Factors",
+                  "subsection": "Competition could adversely impact our market share and financial results.",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm",
+                  "score": 29.13784145,
+                  "matched_terms": [
+                    "blackwell",
+                    "financial",
+                    "gross",
+                    "mix",
+                    "production",
+                    "ramp",
+                    "revenue",
+                    "supply",
+                    "volume"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "We continue to increase our supply and capacity purchases with existing and new suppliers to support our demand projections and increasing complexity of our data center products. We have also entered and may continue to enter into prepaid manufacturing and capacity agreements to supply both current and future products. The increased purchase volumes and integration of new suppliers and contract manufacturers into our supply chain creates more complexity in managing multiple suppliers with variations in production planning, execution and logistics. Our expanding product portfolio and varying component compatibility and quality may lead to increased inventory levels. We have incurred and may i"
+                }
+              ]
+            },
+            "dense_bge_m3": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02",
+                  "evidence_owner_ticker": "NVDA",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-05-20",
+                  "fiscal_year": 2027,
+                  "period_end": "2026-04-26",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Recent Developments, Future Objectives and Challenges",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm",
+                  "score": 0.67713445,
+                  "matched_terms": [],
+                  "business_role_reasons": [],
+                  "excerpt": "Recent Developments, Future Objectives and Challenges Revenue growth in the first quarter was driven by data center products for accelerated computing and AI solutions. Blackwell continued to account for the majority of our system shipments. The availability of data centers, energy, and capital to support the buildout of NVIDIA AI infrastructure by our customers and partners is crucial, and any shortage of these or other necessary resources could impact our future revenue and financial performance. Expanding energy capacity to meet demand is a complex, multi-year process that involves significant regulatory, technical, and construction challenges. In addition, access to capital can be partic"
+                }
+              ]
+            },
+            "fusion_rrf_1_1": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02",
+                  "evidence_owner_ticker": "NVDA",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-05-20",
+                  "fiscal_year": 2027,
+                  "period_end": "2026-04-26",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Recent Developments, Future Objectives and Challenges",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm",
+                  "score": 0.03201844,
+                  "matched_terms": [
+                    "blackwell",
+                    "financial",
+                    "gross",
+                    "margin",
+                    "nvidia",
+                    "production",
+                    "revenue",
+                    "risks",
+                    "supply"
+                  ],
+                  "business_role_reasons": [],
+                  "excerpt": "Recent Developments, Future Objectives and Challenges Revenue growth in the first quarter was driven by data center products for accelerated computing and AI solutions. Blackwell continued to account for the majority of our system shipments. The availability of data centers, energy, and capital to support the buildout of NVIDIA AI infrastructure by our customers and partners is crucial, and any shortage of these or other necessary resources could impact our future revenue and financial performance. Expanding energy capacity to meet demand is a complex, multi-year process that involves significant regulatory, technical, and construction challenges. In addition, access to capital can be partic"
+                }
+              ]
+            },
+            "typed_financial_rerank": {
+              "candidates": [
+                {
+                  "candidate_state": "candidate_not_evidence",
+                  "rank": 1,
+                  "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02",
+                  "evidence_owner_ticker": "NVDA",
+                  "source_type": "10-Q",
+                  "source_tier": "primary_sec_filing",
+                  "publication_date": "2026-05-20",
+                  "fiscal_year": 2027,
+                  "period_end": "2026-04-26",
+                  "section": "Item 2. Management's Discussion and Analysis",
+                  "subsection": "Recent Developments, Future Objectives and Challenges",
+                  "source_url": "https://www.sec.gov/Archives/edgar/data/1045810/000104581026000052/nvda-20260426.htm",
+                  "score": 0.04901844,
+                  "matched_terms": [
+                    "blackwell",
+                    "financial",
+                    "gross",
+                    "margin",
+                    "nvidia",
+                    "production",
+                    "revenue",
+                    "risks",
+                    "supply"
+                  ],
+                  "business_role_reasons": [
+                    "slot_mechanism_hits=3",
+                    "management_or_results_heading",
+                    "reporting_period_match"
+                  ],
+                  "excerpt": "Recent Developments, Future Objectives and Challenges Revenue growth in the first quarter was driven by data center products for accelerated computing and AI solutions. Blackwell continued to account for the majority of our system shipments. The availability of data centers, energy, and capital to support the buildout of NVIDIA AI infrastructure by our customers and partners is crucial, and any shortage of these or other necessary resources could impact our future revenue and financial performance. Expanding energy capacity to meet demand is a complex, multi-year process that involves significant regulatory, technical, and construction challenges. In addition, access to capital can be partic"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "known_boundary": "This is a bounded sanitized ranking diagnostic showing three queries per case and one candidate per route over frozen candidates. It contains no qrel target identity, does not promote Evidence and does not establish S1 or product acceptance.",
+  "projection_digest": "78e9096b9a25116587cedaa402dbb1ff9a8754495aa10a5def807bfec847276f"
+}

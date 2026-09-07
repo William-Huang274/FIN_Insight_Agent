@@ -6,14 +6,45 @@ from collections import deque
 import json
 from pathlib import Path
 import re
+import sys
 from typing import Iterable
 
 
 ROOT = Path(__file__).resolve().parents[2]
-PYTHON_ENTRYPOINTS = (
+ACTIVE_PYTHON_ROOTS = (
+    "apps",
+    "scripts",
+    "src",
+)
+_BASE_PYTHON_ENTRYPOINTS = (
     "apps/workbench/backend/app.py",
     "scripts/data_retrieval/build_bm25_index.py",
+    "scripts/data_retrieval/build_current_compiled_object_views.py",
+    "scripts/data_retrieval/build_current_financial_object_store.py",
+    "scripts/data_retrieval/build_current_retrieval_snapshot.py",
     "scripts/data_retrieval/build_evidence_store.py",
+    "scripts/data_retrieval/build_s2_company_financial_fact_mart.py",
+    "scripts/data_retrieval/capture_s1b_official_sources.py",
+    "scripts/data_retrieval/run_s1d_source_intake.py",
+    "scripts/data_retrieval/run_s1d_official_pdf_successor.py",
+    "scripts/data_retrieval/run_dell_proposition_coverage_internal.py",
+    "scripts/data_retrieval/run_dell_external_source_ladder.py",
+    "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
+    "scripts/data_retrieval/materialize_s1_current_product_readiness.py",
+    "scripts/data_retrieval/materialize_s1_source_route_truth_successor.py",
+    "scripts/data_retrieval/materialize_s1_human_evidence_admission_packet.py",
+    "scripts/data_retrieval/materialize_s1c_financial_role_eval_set.py",
+    "scripts/data_retrieval/materialize_s1c_object_role_review_set.py",
+    "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",
+    "scripts/data_retrieval/materialize_s1_vs4_case_supplement_vertical.py",
+    "scripts/data_retrieval/materialize_s1_vs4_dell_supplement_vertical.py",
+    "scripts/data_retrieval/run_s1_candidate_ranking.py",
+    "scripts/data_retrieval/run_s1_human_operability_preflight.py",
+    "scripts/data_retrieval/run_s1c_compiled_object_retriever_comparison.py",
+    "scripts/data_retrieval/run_s1c_cross_encoder_role_shadow.py",
+    "scripts/data_retrieval/run_s1c_object_role_shadow.py",
+    "scripts/data_retrieval/run_s1c_ranking_comparison.py",
+    "scripts/data_retrieval/validate_s1_program_foundation.py",
     "scripts/data_sec/build_sec_8k_earnings_chunks.py",
     "scripts/data_sec/build_sec_8k_earnings_manifest.py",
     "scripts/data_sec/build_sec_chunks.py",
@@ -26,6 +57,7 @@ PYTHON_ENTRYPOINTS = (
     "scripts/engineering/accept_current_three_case_product.py",
     "scripts/engineering/check_repository_secrets.py",
     "scripts/engineering/verify_active_baseline.py",
+    "scripts/eval_multi_agent/run_project_os_full_chain_preflight.py",
     "scripts/industry/10_download_industry_source_snapshot.py",
     "scripts/market/06_download_yahoo_chart_snapshot.py",
     "scripts/market/07_enrich_market_snapshot_valuation_fmp.py",
@@ -36,6 +68,45 @@ PYTHON_ENTRYPOINTS = (
     "scripts/market/30_compute_market_analytics.py",
     "scripts/market/40_build_market_evidence_pack.py",
     "scripts/market/50_validate_market_snapshot.py",
+    "scripts/research/run_s3_current_research_consumer_zero_call.py",
+    "scripts/research/run_s3_current_research_consumer_canary.py",
+    "scripts/research/run_s3_material_scope_canary.py",
+    "scripts/research/run_s3_bounded_finance_loop_zero_call.py",
+    "scripts/research/run_s3_dynamic_truth_spine_zero_call.py",
+    "scripts/research/run_s3_current_dynamic_single_unit_zero_call.py",
+    "scripts/research/run_s3_current_dynamic_single_unit_live.py",
+    "scripts/research/run_s3_feedback_driven_workpaper_repair.py",
+    "scripts/research/run_s3_current_dynamic_multi_agent.py",
+    "scripts/research/run_s3_dynamic_five_cell_live.py",
+    "scripts/research/run_s3_case_truth_reconciliation_zero_call.py",
+    "scripts/research/run_s3_case_truth_reconciliation_live.py",
+    "scripts/research/run_s3_tool_contract_transport_zero_call.py",
+    "scripts/research/run_s3_transport_paired_canary.py",
+    "scripts/research/run_agent_runtime_feedback_zero_call_proof.py",
+    "scripts/research/materialize_s1_s3_actionable_research_three_case.py",
+    "scripts/research/run_s3_multi_agent_report_remap_live.py",
+)
+
+
+def _workbench_data_build_entrypoints() -> tuple[str, ...]:
+    """Treat every maintained Operations data-build step as active code.
+
+    These scripts are launched from catalog data rather than imported, so an
+    ordinary AST import closure cannot discover them.  Keeping the catalog as
+    the source of truth prevents a UI-reachable build from being audited as an
+    orphan or omitted from old-reference checks.
+    """
+
+    source_root = str((ROOT / "src").resolve())
+    if source_root not in sys.path:
+        sys.path.insert(0, source_root)
+    from sec_agent.workbench.data_build import data_build_catalog
+
+    return tuple(sorted({step.script for step in data_build_catalog()}))
+
+
+PYTHON_ENTRYPOINTS = tuple(
+    dict.fromkeys((*_BASE_PYTHON_ENTRYPOINTS, *_workbench_data_build_entrypoints()))
 )
 FRONTEND_ENTRYPOINTS = (
     "apps/workbench/frontend/vite/src/main.tsx",
@@ -65,20 +136,25 @@ def _relative(path: Path) -> str:
 def _active_python_modules() -> tuple[dict[str, Path], dict[Path, str]]:
     by_module: dict[str, Path] = {}
     by_path: dict[Path, str] = {}
-    for path in ROOT.rglob("*.py"):
-        relative = _relative(path)
-        if relative.startswith(("archive/", ".codex_runtime/", ".git/")):
-            continue
-        if relative.startswith("src/"):
-            parts = list(path.relative_to(ROOT / "src").with_suffix("").parts)
-        else:
-            parts = list(path.relative_to(ROOT).with_suffix("").parts)
-        if parts[-1] == "__init__":
-            parts.pop()
-        module = ".".join(parts)
-        if module:
-            by_module[module] = path.resolve()
-            by_path[path.resolve()] = module
+    # The active baseline is intentionally limited to maintained code roots.
+    # Scanning ROOT first and filtering afterwards still traverses the immutable
+    # archive and made the Workbench eval depend on historical repository size.
+    for root_ref in ACTIVE_PYTHON_ROOTS:
+        active_root = ROOT / root_ref
+        if not active_root.is_dir():
+            raise RuntimeError(f"active_baseline_code_root_missing:{root_ref}")
+        for path in active_root.rglob("*.py"):
+            relative = _relative(path)
+            if relative.startswith("src/"):
+                parts = list(path.relative_to(ROOT / "src").with_suffix("").parts)
+            else:
+                parts = list(path.relative_to(ROOT).with_suffix("").parts)
+            if parts[-1] == "__init__":
+                parts.pop()
+            module = ".".join(parts)
+            if module:
+                by_module[module] = path.resolve()
+                by_path[path.resolve()] = module
     return by_module, by_path
 
 

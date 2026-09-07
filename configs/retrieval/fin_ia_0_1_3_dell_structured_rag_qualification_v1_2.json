@@ -1,0 +1,140 @@
+{
+  "schema_version": "fin_ia_dell_structured_rag_qualification_policy_v1_0",
+  "status": "frozen_bounded_dell_reference_vertical_qualification_input",
+  "purpose": "Qualify one bounded Dell reference-vertical RAG corpus before MCP and multi-agent integration. This policy does not grant Evidence or NumericFact authority.",
+  "qrels": {
+    "sha256": "15d5e9b97741b9b6f8b2857393e5b9838ae5dba18d9ce1b2137c7530cf0e7b08",
+    "query_count": 33,
+    "local_query_count": 29,
+    "external_diagnostic_query_count": 4
+  },
+  "execution": {
+    "full_route_set": ["bm25", "dense", "hybrid", "reranker"],
+    "engineering_preview_route_subsets_allowed": true,
+    "dirty_tree_result_must_be_labeled_preview": true,
+    "formal_promotion_from_dirty_tree": false,
+    "rank_bm25_runtime_overlay": {
+      "path": "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/rag_mature_stack/runtime_overlays/rank_bm25_0_2_2/rank_bm25.py",
+      "sha256": "2f28cc795415c01e9f3db5a8ed019774f9cba747b272c9c304271589b8081ac6",
+      "bytes": 9439,
+      "source_distribution": "rank-bm25==0.2.2"
+    }
+  },
+  "corpus": {
+    "attempt_id": "dell_structured_corpus_attempt_20260902_12",
+    "attempt_root": "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/rag_mature_stack/structured_corpus/dell_structured_corpus_attempt_20260902_12",
+    "artifacts": {
+      "documents.jsonl": "18d6c6a01256c08f63f7b07d0804a780ea1a31ec59bb8872cfeff2c6251fd776",
+      "sections.jsonl": "a34b65271a7d583583cd7604bcb450fbe51111d5a63cd9c5e74d862a0a9bb0f3",
+      "blocks.jsonl": "a67b3e06476265de639ddea3273c07fa73b114b3ffc7c2443dc396f4279582b9",
+      "chunks.jsonl": "172589d166fad9ac787bbb6817fc551a5dbf6091b0e4fe6f2c71689bed04f928",
+      "result.json": "38c378cb3b7bfc2740f77a3fb082e75c1e5e9c781b7e2e7a3918ef817d2be3c8"
+    }
+  },
+  "candidate_policy": {
+    "parent_lane": "every structured section",
+    "prose_leaf_lane": "For contains_table=false chunks, use the ordinary chunk when visible text remains. For contains_table=true chunks, use only exact producer retrieval_spans whose span_kind is neither table nor image, and derive one deterministic mixed_prose leaf for each contiguous run bounded by table or image spans.",
+    "mixed_prose_derivation": "Mixed prose content must be reconstructed only from exact producer retrieval_spans already bounded by the source chunk; it must never expand from a partial chunk span back to a complete source block. Deterministic identity and deduplication use content plus document/section lineage and preserve every contributing source chunk/span receipt.",
+    "table_leaf_lane": "every atomic structured block where block_kind is table; each table remains an independent table leaf and table content, cells and block identity must never be duplicated into mixed prose",
+    "image_lane": "catalog only; excluded until a research-material image asset is captured, hashed and manually qualified",
+    "expected_candidate_counts": {
+      "parent": 135,
+      "prose_leaf": 656,
+      "mixed_prose_leaf": 206,
+      "table_leaf": 234,
+      "retrieval_leaf_total": 890,
+      "image_catalog_excluded": 23
+    },
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "citation_eligible": false
+  },
+  "retrieval": {
+    "metadata_prefilter": {
+      "scope_source": "qrels.queries[].retrieval_scope",
+      "allowed_answer_free_fields": ["issuer_ids", "fiscal_periods", "source_roles"],
+      "local_query_behavior": "Before BM25, dense candidate scoring, hybrid fusion and reranker pair construction, reduce the candidate universe only by the typed retrieval_scope intersection.",
+      "intersection_semantics": "OR within each non-empty allowed field and AND across non-empty allowed fields; an empty allowed field is unconstrained.",
+      "answer_or_judgment_fields_forbidden": true,
+      "gold_or_judgment_node_ids_used_for_prefilter": false,
+      "external_diagnostic_query_behavior": "Bypass every local retrieval_scope filter and rank the full local candidate universe only to measure wrong-local-substitution risk; a local similarity result is not an external-route hit."
+    },
+    "bm25": {
+      "implementation": "rank_bm25.BM25Okapi",
+      "tokenizer": "lowercase Unicode word and financial-symbol tokenizer v1",
+      "full_ranking_receipt": true
+    },
+    "dense": {
+      "implementation": "sentence-transformers",
+      "model_id": "Qwen/Qwen3-Embedding-0.6B",
+      "model_dir": "D:/hf_models/Qwen__Qwen3-Embedding-0.6B",
+      "maximum_sequence_length": 1024,
+      "batch_size": 4,
+      "parent_projection": "Embed retrieval leaves only; rank parent sections by the maximum cosine score of their child leaves, preserving parent-child lineage without truncating whole sections.",
+      "query_instruction": "Instruct: Given a source-bound financial research request, retrieve passages or tables that directly address the requested evidence facet while preserving issuer, period, source role and relationship direction.\nQuery:",
+      "token_budget_basis": {
+        "node_purpose": "Embed the frozen Dell retrieval candidates and 33 frozen development queries for local semantic candidate ranking; no generation or evidence promotion.",
+        "input_scale": "890 expected retrieval leaves = 656 prose leaves (including 206 deterministic mixed-prose span leaves) + 234 table leaves, and 33 queries; 135 parent sections are projected from child scores rather than embedded whole. Actual token and truncation counts must be receipted.",
+        "required_output": "One normalized 1024-dimensional vector per candidate and query plus full rankings.",
+        "schema_burden": "Dense float matrix, model identity, serialization digest, token counts, truncation counts and CUDA receipt.",
+        "materiality_quality_risk": "1,024-token truncation can hide table rows or late-chunk evidence; dense is a challenger and must not displace stronger lexical recall without human review.",
+        "comparable_run_evidence": "The 0.6B model passed a one-machine qualification smoke on the local RTX 4060; malformed-prompt attempt is preserved and excluded from selection.",
+        "reasoning_profile": "Non-generative normalized embedding inference using the official Qwen query serialization.",
+        "stop_truncation_behavior": "Hard truncate leaves at 1,024 tokens as a measured bounded preview; record every truncated node/query and do not interpret a truncation-driven miss as missing source data. Long atomic tables remain available to BM25 and parent/locator delivery."
+      }
+    },
+    "hybrid": {
+      "implementation": "weighted reciprocal rank fusion",
+      "rrf_constant": 60,
+      "bm25_weight": 3.0,
+      "dense_weight": 1.0,
+      "source_depth": 100,
+      "weight_selection_basis": "Bounded development-set correction after official Qwen query formatting: lexical retrieval was materially stronger on exact issuer, fiscal-period and accounting-table language; dense remains a challenger signal. This is not a blind-holdout or general-product claim."
+    },
+    "reranker": {
+      "implementation": "Qwen3 official yes/no causal-LM scoring surface",
+      "model_id": "Qwen/Qwen3-Reranker-0.6B",
+      "model_dir": "D:/hf_models/Qwen__Qwen3-Reranker-0.6B",
+      "maximum_sequence_length": 2048,
+      "batch_size": 2,
+      "candidate_depth": 32,
+      "instruction": "Judge whether the source-bound financial passage or table materially satisfies the research request. Prefer the exact company, metric, period, relationship direction and source role; reject topic-only co-mentions and issuer or period mismatches.",
+      "token_budget_basis": {
+        "node_purpose": "Rerank the top 32 BM25-heavy hybrid candidates for each of 33 frozen queries with the official Qwen3 yes/no scoring surface.",
+        "input_scale": "Up to 1,056 query-candidate pairs; actual pair, batch, token and truncation counts must be receipted.",
+        "required_output": "One finite relevance logit difference per pair and a deterministic reordered candidate list.",
+        "schema_burden": "Full pair count, candidate depth, model identity, input token/truncation counts, finite-score check and CUDA receipt.",
+        "materiality_quality_risk": "Issuer, fiscal-period and table-role near misses are common; reranking cannot recover a candidate absent from the hybrid top 32.",
+        "comparable_run_evidence": "A real single-pair local smoke completed on the RTX 4060 at approximately 1.24 GB peak allocated memory before the full preview.",
+        "reasoning_profile": "Non-generative causal-LM yes/no relevance scoring; no free-form answer generation.",
+        "stop_truncation_behavior": "Hard truncate formatted pairs to the 2,048-token budget; record truncation count, fail on non-finite or missing scores, and never silently lower candidate depth after failure."
+      }
+    },
+    "delivery": {
+      "top_k": 10,
+      "transcript_neighbor_chunk_radius": 1,
+      "neighbor_expansion_contract": "Within the same route_id, order candidate anchors by (page_start, section_chunk_index) and include at most the immediately preceding and following candidate (anchor ±1); never expand to every candidate on the page.",
+      "neighbor_expansion_changes_ranking": false
+    }
+  },
+  "evaluation": {
+    "cutoffs": [5, 10, 20],
+    "manual_review_required": true,
+    "manual_review_scope": "top 10 for every local and external diagnostic query, including every miss, hard-negative appearance, all critical queries, raw source file/chunk/table/locator inspection, prose/table/image lane and issuer/fiscal-period/source-role misclassification checks, and local-substitution risk for external-only facets; score anchor relevance separately from delivered-context answerability so correct neighbor-expanded context cannot turn an incorrect anchor into a retrieval hit",
+    "provisional_acceptance": {
+      "critical_query_missing_at_20": 0,
+      "critical_required_facet_missing_after_delivery_expansion_at_20": 0,
+      "local_answerable_hit_rate_at_10_minimum": 0.9,
+      "hard_negative_rank_1_material_errors": 0,
+      "critical_acceptable_precedence_failure_count": 0,
+      "automatic_promotion": false
+    }
+  },
+  "authority": {
+    "generation_model_calls_authorized": false,
+    "paid_calls_authorized": false,
+    "deepseek_calls_authorized": false,
+    "mcp_promotion_authorized": false,
+    "s2_numeric_fact_mutation_authorized": false
+  }
+}

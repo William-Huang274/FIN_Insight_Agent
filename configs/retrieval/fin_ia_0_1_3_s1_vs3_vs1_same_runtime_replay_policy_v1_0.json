@@ -1,0 +1,49 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs1_same_runtime_replay",
+  "recorded_at": "2026-08-17",
+  "experiment_id": "FIN-0.1.3-S1-VS3-VS1-SAME-RUNTIME-REPLAY-V1.0",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_0.json",
+  "parent_policy_sha256_lf": "951a91d3cb2c4f492a4d434171d226c084f3c3b4df45db9e38671b0ac37024f2",
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_vs1_same_runtime_query_atom_eval_v1_0.json",
+    "query_atom_eval_sha256_lf": "0cfe4a0f9908224cd374620b7b3a97e5bbd07e5962de831cdf7b72027526e3fa"
+  },
+  "candidate_contract_overrides": {
+    "rank_authority_object_kinds": [
+      "claim",
+      "metric_row"
+    ],
+    "bounded_parent_context_attached_only_after_child_selection": true,
+    "typed_metric_row_exact_route": true,
+    "metric_row_exact_route_uses_request_metric_intent_only": true,
+    "metric_row_exact_route_prefers_direct_label_match_then_latest_eligible_publication": true
+  },
+  "authority_overrides": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_requires_result": true,
+    "hidden_qualification_authorized": false,
+    "s1_complete_claimed": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false
+  },
+  "successor_basis": {
+    "why_replay_is_required": [
+      "The main eighteen-atom development set does not contain the VS1 pricing-and-mix request.",
+      "Object identity mapping alone does not prove that the reviewed VS1 evidence remains retrievable under the VS3 runtime.",
+      "The same runtime, object population, route ceilings and local models must be exercised on the exact reviewed VS1 request before route promotion can be considered."
+    ],
+    "not_changed": [
+      "compiled object population",
+      "kernel and hard identity-period-source constraints",
+      "local model identities and token budgets",
+      "candidate and reranker limits",
+      "reviewed VS1 positive identities"
+    ],
+    "labels_joined_after_candidate_generation": true,
+    "no_gold_identity_or_answer_url_in_query": true,
+    "development_replay_not_product_acceptance": true
+  }
+}

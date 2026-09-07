@@ -1,0 +1,97 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs4_mu_nvda_natural_coverage_candidate_probe",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS4-MU-NVDA-SUPPLEMENT-CANDIDATE-PROBE-V1.0",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_candidate_ranking_policy_v1_3.json",
+  "parent_policy_sha256_lf": "e68a377ce46581c12e5aeaf8519d1276c8786ab800b997cfa32c5c66795547ea",
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "DELL VS4 proved the shared candidate, capture and Evidence Role path but did not prove equivalent natural propositions for MU or NVDA",
+      "the current MU and NVDA Packs contain broad source segments and oversized pseudo-claims that hide usable exact current claims already present in the canonical object store",
+      "this attempt asks ten business propositions spanning downstream demand, issuer results, customer commitments, supply execution and counterevidence without changing the object snapshot or joining labels before scoring"
+    ],
+    "not_changed": [
+      "33085-object canonical snapshot, current Case identities, research as-of, financial intent ontology and hard filters",
+      "BGE-M3 and Qwen embedding models, BGE and Qwen rerankers, candidate limits and Evidence authority boundaries",
+      "DELL VS4 result and all earlier attempts remain immutable",
+      "ORCL, ASML and ANET remain unavailable for tuning and reserved for later qualification design"
+    ],
+    "labels_joined_after_candidate_generation": true,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "training_steps_authorized": 0
+  },
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_query_atoms_v1_0.json",
+    "query_atom_eval_sha256_lf": "5705c6a2109cd8d548a8f92d37a9895fe2da1f939c86cddc92c6f473c5a8baca"
+  },
+  "token_budget_basis_overrides": {
+    "bge_embedding": {
+      "node_purpose": "Encode the ten natural MU/NVDA proposition requests while reusing the immutable BGE-M3 object cache.",
+      "input_scale": "33085 cached compiled objects plus retrieval needs from ten pre-registered atoms across MU and NVDA; no document re-encoding unless cache identity fails.",
+      "required_outputs": [
+        "dense query vectors",
+        "learned-sparse query vectors",
+        "bounded multi-vector scores",
+        "concrete CUDA device receipt"
+      ],
+      "schema_burden": "numeric arrays, cache identity and hardware receipt only",
+      "materiality_and_quality_risk": "truncation can hide shipment, contract, capacity, customer-concentration or counterevidence qualifiers; 512 tokens covers each atomic need and exact claim surface.",
+      "comparable_run_evidence": "DELL VS4 encoded three natural propositions on the same immutable object cache and recovered every pre-registered positive into the candidate union.",
+      "reasoning_profile": "local retrieval encoder on CUDA FP16; no generative reasoning",
+      "stop_and_truncation": "maximum 512 tokens, batch 4, fail on CUDA, model, object or cache identity drift; no CPU or network fallback"
+    },
+    "qwen_embedding": {
+      "node_purpose": "Provide a provider-neutral semantic challenger for the same ten MU/NVDA propositions on the unchanged object snapshot.",
+      "input_scale": "33085 cached compiled objects plus retrieval needs from ten pre-registered atoms.",
+      "required_outputs": [
+        "normalized dense query vectors",
+        "immutable cache identity",
+        "concrete CUDA device receipt"
+      ],
+      "schema_burden": "numeric arrays, cache identity and hardware receipt only",
+      "materiality_and_quality_risk": "semantic similarity may confuse safe-harbor, contact, metric or cross-company text with usable financial Evidence; hard negatives and the Evidence Role gate remain independent.",
+      "comparable_run_evidence": "DELL VS4 and VS3 showed Qwen can add candidate recall but cannot independently grant Evidence authority.",
+      "reasoning_profile": "local retrieval encoder on CUDA FP16; no generative reasoning",
+      "stop_and_truncation": "maximum 512 tokens, batch 8, fail on CUDA or identity drift; no CPU or network fallback"
+    },
+    "bge_reranker": {
+      "node_purpose": "Score the shared bounded candidate pools for ten business propositions without changing membership or Evidence authority.",
+      "input_scale": "at most 5120 query-candidate pairs across ten atoms before cache reuse.",
+      "required_outputs": [
+        "one finite score per pair",
+        "pair-order invariant ranking",
+        "concrete CUDA device receipt"
+      ],
+      "schema_burden": "flat score vectors plus deterministic pair manifest",
+      "materiality_and_quality_risk": "a semantic reranker can promote wrong speaker, period or evidence role; explicit safe-harbor, contact and unrelated-financial hard negatives test this boundary.",
+      "comparable_run_evidence": "DELL VS4 proved transport and full hard-negative suppression under the same scorer, while retaining Evidence Role as a separate gate.",
+      "reasoning_profile": "local Cross-Encoder on CUDA FP16",
+      "stop_and_truncation": "maximum 1024 tokens, batch 2, exact score-count match and CUDA required; no CPU fallback"
+    },
+    "qwen_reranker": {
+      "node_purpose": "Independently score the same ten candidate pools for direct answerability and financial relevance.",
+      "input_scale": "at most 5120 query-candidate pairs across ten atoms before cache reuse.",
+      "required_outputs": [
+        "one finite score per pair",
+        "same-pool ranked IDs",
+        "concrete CUDA device receipt"
+      ],
+      "schema_burden": "flat score vectors plus deterministic pair manifest",
+      "materiality_and_quality_risk": "instruction following must not override issuer, period, source, relationship direction or ecosystem attribution boundaries.",
+      "comparable_run_evidence": "DELL VS4 showed Qwen head quality is useful as one signal but not sufficient for Evidence promotion.",
+      "reasoning_profile": "local Cross-Encoder on CUDA FP16",
+      "stop_and_truncation": "maximum 1024 tokens, batch 2, exact score-count match and CUDA required; no CPU fallback"
+    }
+  },
+  "authority_overrides": {
+    "development_case_only": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "runtime_route_promotion_authorized": false,
+    "s1_complete_claimed": false,
+    "cuda_required": true,
+    "cpu_vector_or_reranker_fallback_authorized": false
+  }
+}

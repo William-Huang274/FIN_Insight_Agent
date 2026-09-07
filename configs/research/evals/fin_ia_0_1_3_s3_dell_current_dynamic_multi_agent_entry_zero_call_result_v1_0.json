@@ -1,0 +1,157 @@
+{
+  "authority": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "product_pointer_mutations": 0
+  },
+  "case_key": "DELL",
+  "checks": {
+    "all_six_specialist_roles_have_current_authority": true,
+    "capacity_selection_changes_no_pack_authority": true,
+    "current_pack_materializes_without_graph_capacity_failure": true,
+    "graph_selection_is_permutation_stable": true,
+    "role_graph_projection_adds_no_authority": true,
+    "role_graphs_contain_no_outside_evidence_refs": true,
+    "supply_and_counterevidence_graph_authority_is_separated": true
+  },
+  "controlled_s1_s2_summary": {
+    "evidence_request_count": 12,
+    "local_embedding_inference_batch_count": 1,
+    "nonempty_lane_count": 11,
+    "retrieval_lane_count": 12,
+    "selected_hybrid_candidate_count": 192,
+    "typed_fact_gap_count": 25,
+    "typed_fact_resolved_count": 25,
+    "unique_narrative_candidate_count": 29,
+    "visible_numeric_fact_count": 85
+  },
+  "execution": {
+    "embedding_executor": "qwen3_embedding_0_6b_dense_cuda_fp16",
+    "embedding_policy": "cuda_only",
+    "mode": "current_runtime_zero_model_local_materialization",
+    "retry_count": 0
+  },
+  "engineering_verification": {
+    "active_baseline": {
+      "forbidden_reference_count": 0,
+      "frontend_file_count": 8,
+      "python_file_count": 207,
+      "runtime_detector_count": 5,
+      "runtime_resource_count": 28
+    },
+    "compileall_passed": true,
+    "full_test_count": 1107,
+    "full_test_warning_count": 2,
+    "secret_scan_file_count": 7732,
+    "secret_scan_finding_count": 0,
+    "targeted_test_count": 124
+  },
+  "input_bindings": [
+    {
+      "ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
+      "sha256": "1c2065c2e585984b8b4ef485c587a1d20425122d0fe625cb7c7d6f0c290d4c85"
+    },
+    {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_objective_v1_0.json",
+      "sha256": "3772ead9ccbb7861013825d9d1e96e30588af33879725173f3791c140ea981d9"
+    },
+    {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json",
+      "sha256": "b8857eabe863ff7b259bf883ef4b6c79f8fcbc61a295940610b0a6d85aedd7e9"
+    },
+    {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R6_lead_plan_checkpoint_v1_0.json",
+      "sha256": "05b8de7ba9089e79ece49181435191813025203bffd9e67bddf057e5214b8167"
+    },
+    {
+      "ref": "configs/research/fin_ia_0_1_3_s3_multi_agent_preview_consumer_overlay_v1_2.json",
+      "sha256": "43ca4cab32e92aed4b4c902e07dd536096b6c6aa847ccee3725d510422aec020"
+    }
+  ],
+  "known_boundary": "This proves current S1/S2 materialization, bounded graph selection and six specialist authority isolation only. It does not prove that specialists dynamically choose tools, consume FeedbackReceipt, change plans, produce accepted workpapers, coordinate through a Lead, or generate an accepted report.",
+  "research_input_digest": "ab777786431e89d21329d09f7a4870a1e31dd2e6a64d6dd83e04f7b4a9bf8247",
+  "role_readiness": [
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "cell_id": "CELL::demand_quality",
+      "graph_digest": "d0746924535aa019147b287bc199d04a0c874bfb472d9fec60e9bc16a76a049c",
+      "graph_edge_count": 9,
+      "graph_node_count": 4,
+      "graph_outside_evidence_ref_count": 0,
+      "reviewed_evidence_count": 17,
+      "tool_receipt_count": 2,
+      "typed_gap_count": 1,
+      "visible_numeric_fact_count": 0,
+      "visible_numeric_relation_count": 0
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "cell_id": "CELL::operating_performance",
+      "graph_digest": "97bcf5b58b74e8e7f03a9e6265175b57733dd5a7c9da8ebbedff4b9eabb4f005",
+      "graph_edge_count": 1,
+      "graph_node_count": 1,
+      "graph_outside_evidence_ref_count": 0,
+      "reviewed_evidence_count": 2,
+      "tool_receipt_count": 2,
+      "typed_gap_count": 0,
+      "visible_numeric_fact_count": 12,
+      "visible_numeric_relation_count": 6
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "cell_id": "CELL::value_capture",
+      "graph_digest": "3cea7cd7245f7211b761babe459061292453d22ef6c9ca2c303e8dcbfd4efdee",
+      "graph_edge_count": 12,
+      "graph_node_count": 5,
+      "graph_outside_evidence_ref_count": 0,
+      "reviewed_evidence_count": 13,
+      "tool_receipt_count": 2,
+      "typed_gap_count": 3,
+      "visible_numeric_fact_count": 10,
+      "visible_numeric_relation_count": 5
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "cell_id": "CELL::cash_conversion",
+      "graph_digest": "e2c3253a18a2d40dd458ae2bdb543c4508d7f68591bb222d32a9b7ac40f27967",
+      "graph_edge_count": 1,
+      "graph_node_count": 1,
+      "graph_outside_evidence_ref_count": 0,
+      "reviewed_evidence_count": 5,
+      "tool_receipt_count": 2,
+      "typed_gap_count": 1,
+      "visible_numeric_fact_count": 10,
+      "visible_numeric_relation_count": 3
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "cell_id": "CELL::counterevidence",
+      "graph_digest": "5bd17008bfdb32180b22e4687c4a1b1bb0f320180efdb76191573f21b48bcdcd",
+      "graph_edge_count": 10,
+      "graph_node_count": 6,
+      "graph_outside_evidence_ref_count": 0,
+      "reviewed_evidence_count": 12,
+      "tool_receipt_count": 3,
+      "typed_gap_count": 4,
+      "visible_numeric_fact_count": 0,
+      "visible_numeric_relation_count": 0
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "cell_id": "CELL::counterevidence",
+      "graph_digest": "1acb00eb429356f5def5fb9d42228d8e695dec0f84a3e2b9f8cf04d6022987b0",
+      "graph_edge_count": 10,
+      "graph_node_count": 5,
+      "graph_outside_evidence_ref_count": 0,
+      "reviewed_evidence_count": 10,
+      "tool_receipt_count": 1,
+      "typed_gap_count": 2,
+      "visible_numeric_fact_count": 1,
+      "visible_numeric_relation_count": 0
+    }
+  ],
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_entry_zero_call_result_v1_0",
+  "status": "current_six_role_materialization_and_graph_authority_isolation_proven",
+  "result_digest": "097d3844215ebe9a2d708ddaee0e48919dc8d6ad4caebae296cf4165a1773959"
+}

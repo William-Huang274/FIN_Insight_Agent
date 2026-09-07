@@ -1,0 +1,138 @@
+{
+  "schema_version": "fin_ia_bounded_finance_loop_zero_call_result_v1_0",
+  "status": "zero_call_engineering_and_fresh_process_proof_pass",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_research_context_closure_zero_call_authority_v1_2.json",
+  "authority_sha256": "10a3569d1efcc6fcf5cae2b0a9d36f83840f6484b6c819847bfb7a0f2448b8c9",
+  "normalized_proof": {
+    "research_input_digest": "7977dfcc4bba9b5341fa6e1de310c6fe53bf5284155e4fd125fe774cfd68a56b",
+    "single_cell_result_digest": "aea7d7316067cd03151bb6f2e07cafb6c8efb88ad6609dd89759251bce34c716",
+    "five_cell_result_digest": "dbddfca9c9c1e52c5432cb3d3c02d3786afb9a3be631c5d44045eb0975a2e43a",
+    "single_cell_steps": 3,
+    "five_cell_steps": 10,
+    "single_cell_tool_calls": 4,
+    "five_cell_tool_calls": 15,
+    "safe_parallel_read_pair_pass": true,
+    "single_cell_initial_message_chars": 9190,
+    "strict_tool_schema_digest": "a63bbcabd648e6a231fd03e7d7e2c78a485862b08569de732f3f2eb062f11fcf",
+    "standard_tool_schema_digest": "b920ce0c3229b86a4dc7bd29e88a2ccf2ee2ef7736f36e606de125c5cfc9edd1",
+    "single_standard_tool_schema_digest": "e436355ecfccb4eab71151a78bf49f9d89c920c323b619dfb5381e65a2ce9ad2",
+    "single_cell_maximum_steps": 6,
+    "standard_profile_max_tokens": 5000,
+    "mutation_failure_codes": [
+      "finance_loop_tool_budget_exceeded",
+      "finance_loop_tool_unknown",
+      "finance_loop_judgment_cell_invalid_or_duplicate",
+      "finance_loop_required_cell_reads_incomplete",
+      "finance_loop_parallel_tool_set_invalid",
+      "finance_loop_parallel_tool_set_invalid"
+    ],
+    "three_case_context_digest": "431b0d126ea7d3ad43ea1ddd0b1b5357345b1185720c26575cf8f6432a80ac73",
+    "three_case_context_all_pass": true,
+    "three_case_identity_pollution_count": 0,
+    "three_case_graph_context_pollution_count": 0,
+    "three_case_archived_context_rows_loaded": 0,
+    "three_case_unavailable_route_exposed_count": 0,
+    "prior_paired_content_replay_digest": "b065051a076e2e7146702fde9c311ab8f44060680c438026965a88d0b417a7ea",
+    "prior_paired_content_rejected_by_current_contract": true,
+    "wire_tool_call_index_stripped": true,
+    "wire_replay_source_digest": "portable_fixture",
+    "normalized_tool_names": [
+      "read_reviewed_evidence_for_cell",
+      "read_numeric_facts_for_cell"
+    ],
+    "wire_mutation_failure_codes": [
+      "model_gateway_tool_call_index_invalid",
+      "model_gateway_tool_call_index_invalid",
+      "model_gateway_tool_call_index_invalid"
+    ],
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0
+  },
+  "fresh_process_count": 2,
+  "fresh_process_results_byte_equivalent": true,
+  "single_cell_proposal_boundary": {
+    "gap_status": "open",
+    "retrieval_executed": false,
+    "candidate_promoted_to_evidence": false
+  },
+  "three_case_context_qualification": {
+    "cases": {
+      "DELL": {
+        "subject_ticker": "DELL",
+        "research_input_digest": "64704949f378aeecc01b86105d29ab50e1a1881cdc3569f91c49a3ffd1385ee3",
+        "reviewed_evidence_count": 19,
+        "numeric_fact_count": 25,
+        "same_basis_relation_count": 10,
+        "route_catalog_digest": "6df4c5f7dc4e978a36ede64534c0a46cd4ce2e350e0abae01c4482f4f0effda7",
+        "context_receipt_digest": "baf0e5a28f048d71de63b47d2ad1e344e373517806be2af711db1ad605563449",
+        "value_role_method_pack_digest": "818e68c99c32d761310baac1b392ffaa6b7d153a65af6b346543d2dd7cfe0ea8",
+        "value_graph_context_digest": "85f2c52db5650da0d47c3c9f99b37cc87fda9cf50f8587b79cce3a6d1771acde",
+        "full_fake_result_digest": "8f7f877c118fb9026a3fdfdf06f9c1d738b378d16f57690da771480c9417485a",
+        "full_fake_tool_calls": 15
+      },
+      "MU": {
+        "subject_ticker": "MU",
+        "research_input_digest": "dea783e85255f4313fc418b93cf6a75796d1e201fd51339320fc43c7feec513a",
+        "reviewed_evidence_count": 14,
+        "numeric_fact_count": 14,
+        "same_basis_relation_count": 0,
+        "route_catalog_digest": "979bbca19e9c2ab6830c0c2762c5beb019a975121328af1f154e8ab843de8141",
+        "context_receipt_digest": "fcbb05d04ba3f3a1e9fc8b8444189c41ad3175ae9f8503eb3c2e7611827dd25d",
+        "value_role_method_pack_digest": "818e68c99c32d761310baac1b392ffaa6b7d153a65af6b346543d2dd7cfe0ea8",
+        "value_graph_context_digest": "800abc8b97fb3b35e499e174e801600716dcbcdd95becddddc17c95546107718",
+        "full_fake_result_digest": "afed0c47fe14a51878aec0b545d57856ae7b3223a85a5d91117cc83965cf9a6e",
+        "full_fake_tool_calls": 15
+      },
+      "NVDA": {
+        "subject_ticker": "NVDA",
+        "research_input_digest": "8be19506b71f935674cfc11f0d138481cb4efc53a5fefc626bba6fc3b7f54f92",
+        "reviewed_evidence_count": 13,
+        "numeric_fact_count": 15,
+        "same_basis_relation_count": 0,
+        "route_catalog_digest": "f8b5c414a0845bbf1268b8692bc2b04fe6852276899a2ac7646ba2aca1e34d5e",
+        "context_receipt_digest": "c504af902521d49acbdff78c24f3131338bea64135d84a63f170dbe964e0448e",
+        "value_role_method_pack_digest": "818e68c99c32d761310baac1b392ffaa6b7d153a65af6b346543d2dd7cfe0ea8",
+        "value_graph_context_digest": "3b1e1aa22ebd1c070527cfb276eb7a8f7045277ddc885cabfe381dc10f72a92c",
+        "full_fake_result_digest": "0b3a8320ac43326f5b5c74e58e2c74ab05cb2e298a3a9cf1048f5f8fb2108629",
+        "full_fake_tool_calls": 15
+      }
+    },
+    "case_identity_pollution_count": 0,
+    "graph_context_pollution_count": 0,
+    "archived_skill_or_graph_rows_loaded": 0,
+    "unavailable_route_exposed_count": 0,
+    "all_three_full_fake_pass": true
+  },
+  "immutable_paired_r1_content_replay": {
+    "prior_full_result_digest": "c0b7e0f384d0e92a3f17f0b1bb3722091f64fc9e59a1f31d31e3d79a2c561395",
+    "lanes": {
+      "chat_control": {
+        "old_loop_result_digest": "d489fa62693196f1babe76787fbcc8366cddf3a7cd37ba3c1458f7d672eb9197",
+        "rejected_by_current_contract": true,
+        "failure_code": "research_consumer_output_cell_fields_invalid"
+      },
+      "responses_candidate": {
+        "old_loop_result_digest": "13afa71f55b74bbfed96253f4070d71bc257a77397a0c05d8cc7070b0c1495b0",
+        "rejected_by_current_contract": true,
+        "failure_code": "research_consumer_output_cell_fields_invalid"
+      }
+    },
+    "old_failed_content_was_not_silently_promoted": true,
+    "replay_digest": "b065051a076e2e7146702fde9c311ab8f44060680c438026965a88d0b417a7ea"
+  },
+  "profile_qualification": {
+    "standard_ga_endpoint": "https://api.deepseek.com",
+    "standard_ga_max_tokens": 5000,
+    "strict_beta_endpoint": "https://api.deepseek.com/beta",
+    "thinking": {
+      "type": "enabled"
+    },
+    "reasoning_effort": "max",
+    "ineffective_sampling_parameters_present": [],
+    "strict_tool_live_provider_qualified": false
+  },
+  "known_boundary": "This proves provider-neutral loop behavior, local finance authority, DeepSeek GA profile shape, strict schema shape, no-progress stopping and fresh-process determinism only. It performs no provider call, does not prove natural judgment quality and does not authorize a live canary.",
+  "result_digest": "29056fc77ecd40c1d677185316525cb7b6567c79b37875565fbfcf79deb735e4"
+}

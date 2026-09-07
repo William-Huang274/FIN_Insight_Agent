@@ -1,0 +1,107 @@
+{
+  "case_key": "DELL",
+  "checkpoint_digest": "bcbfef2f5b6ba5c70fb11141dacdaf38ff9f3b8de451b792209d520cdcd53e42",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "new_model_calls": 0,
+    "new_network_calls": 0
+  },
+  "completed_outputs": [
+    "report_title",
+    "executive_thesis",
+    "sections",
+    "remaining_gaps",
+    "what_would_change",
+    "confidence_statement"
+  ],
+  "completion_receipt": "COMPLETED_OUTPUTS::sections|remaining_gaps|what_would_change|confidence_statement",
+  "continuation_completed_outputs": [
+    "sections",
+    "remaining_gaps",
+    "what_would_change",
+    "confidence_statement"
+  ],
+  "continuation_draft_character_count": 10693,
+  "continuation_draft_digest": "dec79b0c94865845d3ce7f1e66c5afa23e59332c0fb7b29b826ba3f0b3890dc2",
+  "continuation_messages_digest": "aacf399d8389bdb26cc93f08386642c18383d431031cd2625eecaa06f72b55c9",
+  "continuation_request_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_successor_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_WRITER_TERMINAL_SUCCESSOR_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_WRITER_TERMINAL_SUCCESSOR_20260821-AGENT-WRITER-REPORT_DRAFT-ANALYSIS-CONTINUATION-ATTEMPT-01/model_visible_request.json",
+  "continuation_request_capture_sha256": "8e6a07bbd1184ce0bf6073ee3cf6a2847a92aea5b0c09dea560c6f9a8e9aa365",
+  "continuation_request_digest": "ea6dc2d0c220716282c6e1a18cd797515808433e9c9e3e29be97c42fcc05eb1d",
+  "continuation_response_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_writer_terminal_successor_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_WRITER_TERMINAL_SUCCESSOR_20260821/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_WRITER_TERMINAL_SUCCESSOR_20260821-AGENT-WRITER-REPORT_DRAFT-ANALYSIS-CONTINUATION-ATTEMPT-01/provider_response.json",
+  "continuation_response_capture_sha256": "6de167553f7678e41055362b6e058be58fe71e545ab476e44f9552e137041f3e",
+  "continuation_response_digest": "6132949d4cf90794aaf69ff28ea1c075bbbf461a761c0497b523dc1f5417dd74",
+  "finish_reason": "stop",
+  "fragment_checkpoint_digest": "4370fab1fcac3af7bc90617103018011836de97ea914ec75af438c01a66022eb",
+  "fragment_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_analysis_fragment_checkpoint_v1_0.json",
+  "fragment_checkpoint_sha256": "e79b8ab5cba156100d20b03d944d68f85db6cc1f128955aa82f6894c41ce83bf",
+  "merged_analysis_draft_character_count": 13026,
+  "merged_analysis_draft_digest": "3c468012973900e796469220adcc506aa51c91c4469b3cddbdb5b866315e1028",
+  "node_id": "AGENT::WRITER::REPORT_DRAFT",
+  "recorded_at": "2026-08-21T06:48:41+00:00",
+  "required_outputs": [
+    "report_title",
+    "executive_thesis",
+    "sections",
+    "remaining_gaps",
+    "what_would_change",
+    "confidence_statement"
+  ],
+  "schema_version": "fin_ia_multi_agent_analysis_completion_checkpoint_v1_0",
+  "source_analysis_token_budget_basis": {
+    "comparable_run_evidence": [
+      "DELL dynamic five-cell R7 content assessment",
+      "DELL multi-agent zero-call preview v1.2",
+      "DELL hierarchical Demand audit high-reasoning length failure 2026-08-21",
+      "DELL fragment analysis/submission FAS-R1",
+      "DELL multi-agent preview R3 Lead capacity failure"
+    ],
+    "cost_and_latency_are_secondary_constraints": true,
+    "input_scale": {
+      "authority_reference_count": 231,
+      "model_visible_characters": 72446
+    },
+    "materiality_and_quality_risk": "writer synthesis can reintroduce a false fact or erase material counterevidence",
+    "node_id": "AGENT::WRITER::REPORT_DRAFT::ANALYSIS_CONTINUATION",
+    "node_purpose": "把已验收的多角色底稿编成可伸缩研报，不增加事实、数字、引用或因果关系。 本阶段只续写 checkpoint 标明的未完成内容，不重做已完成分析、不提交合同、不晋升业务事实。",
+    "output_token_ceiling": 12000,
+    "reasoning_profile": "deepseek-v4-pro thinking=disabled visible analysis_continuation",
+    "required_outputs": [
+      "visible_analysis_continuation",
+      "sections",
+      "remaining_gaps",
+      "what_would_change",
+      "confidence_statement"
+    ],
+    "schema_burden": "analysis-only projection; no tool or JSON submission",
+    "schema_version": "fin_ia_token_budget_basis_v1_0",
+    "stop_and_truncation_behavior": "require one non-empty continuation and finish_reason=stop; merge with the immutable partial draft; no second continuation or restart",
+    "token_budget_basis_digest": "e6c1284163d82a02644720918c7d3ff0e6006d26a7bf21ca1dacaf427677831a"
+  },
+  "source_continuation_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_successor_live_authority_v1_0.json",
+  "source_continuation_authority_sha256": "8e84f22c69d3c97a7bae6db2d088a2f8d6d27fd24923a27a6262b42c62e43cc3",
+  "source_continuation_result_digest": "1e61535bf73b45988d5720030d47b190057a88f254a13801932a9800715df312",
+  "source_continuation_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_writer_terminal_successor_live_result_v1_0.json",
+  "source_continuation_result_sha256": "10de45981425f3da50db88af02e5aed1de96a132f4b1ecd7cddd3d515db2e6e1",
+  "source_continuation_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_WRITER_TERMINAL_SUCCESSOR_20260821",
+  "source_fragment_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_CROSS_ROLE_ONWARD_20260821",
+  "status": "visible_analysis_fragments_complete_bound_for_submission",
+  "submission_policy": {
+    "analysis_rerun_forbidden": true,
+    "continuation_rerun_forbidden": true,
+    "merged_draft_business_promotion": false,
+    "new_fact_or_authority_forbidden": true,
+    "strict_submission_required": true
+  },
+  "usage": {
+    "completion_tokens": 2822,
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 20261,
+    "prompt_tokens": 20261,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 23083
+  }
+}

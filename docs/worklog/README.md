@@ -1,0 +1,92 @@
+# FIN Insight 当前工作记录
+
+本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
+
+- 当前总清单：`00_current_master_checklist.md`
+- Dell原五项＋新增需求剩余交付（成本/上下文优先、报告/前端/上传/公开准备及秋招咨询）：`fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md`
+- Dell Q1 多 Agent 审查与责任回派（当前实施包）：`fin_0_1_3_s3/189_dell_agentic_review_and_responsible_repair.md`
+- Dell 单 Specialist R11 运行闭环通过、内容复核未通过：`fin_0_1_3_s3/188_dell_native_tool_batch_correction.md`
+- Dell Q1 3+1 修正与 R4/R5/R6 实测（多工具批次未接通、无底稿、非 thinking A/B PASS）：`fin_0_1_3_s3/187_dell_q1_source_read_correction_and_thinking_comparison.md`
+- FIN 0.1.3 S1：`fin_0_1_3_s1/`
+  - 当前 S1 证据获取与 Evidence Pack 质量范式：`fin_0_1_3_s1/015_s1_evidence_acquisition_and_pack_quality_paradigm_decision.md`
+  - DELL／MU／NVDA 证据获取尸检与跨案业务故障图：`fin_0_1_3_s1/016_s1_three_case_evidence_acquisition_autopsy.md`
+  - S1 故障归责、gap 资格与 Token 预算治理：`fin_0_1_3_s1/017_s1_failure_provenance_gap_eligibility_and_token_budget_governance.md`
+  - S1 全链标准范式与独立评测完成定义更正：`fin_0_1_3_s1/018_s1_full_stack_standard_paradigm_and_independent_evaluation_correction.md`
+  - S1 责任分层、纵向 release slice 与持续集成更正：`fin_0_1_3_s1/019_s1_vertical_release_slice_and_continuous_integration_correction.md`
+  - VS5 request-bound 材料组与同口径跨期合同：`fin_0_1_3_s1/036_s1_vs5_request_bound_material_evidence_set_contract.md`
+  - VS5 COST request／reference 一致性人工复核包：`fin_0_1_3_s1/037_s1_vs5_cost_reference_consistency_qualified_human_review_packet.md`
+  - VS5 Material Evidence Runtime v1.1 与四案真实回放：`fin_0_1_3_s1/038_s1_vs5_material_evidence_runtime_v11_four_case_replay.md`
+  - S1 retrieval-context 容量一致性根因修复：`fin_0_1_3_s1/049_s1_retrieval_context_capacity_consistency_repair.md`
+  - 命题绑定 Evidence successor 与三案晋升：`fin_0_1_3_s1/050_s1_proposition_bound_evidence_successor_and_three_case_promotion.md`
+  - current Pack consumer lineage 统一：`fin_0_1_3_s1/051_s1_current_pack_consumer_lineage_unification.md`
+  - source-route truth 与 gap eligibility Runtime：`fin_0_1_3_s1/052_s1_source_route_truth_and_gap_eligibility_runtime.md`
+  - 三案 source-route truth successor：`fin_0_1_3_s1/053_s1_source_route_truth_three_case_current_successor.md`
+  - 人工可操作、来源对账、Evidence admission 与 blind gate：`fin_0_1_3_s1/054_s1_human_operability_source_asset_reconciliation_admission_and_blind_gate.md`
+  - 产品／内外源／Agent／Writer 历史再对齐与执行门更正：`fin_0_1_3_s1/055_product_retrieval_agent_writer_history_alignment_and_gate_correction.md`
+  - DELL not-ready 补源与关系路线修复程序：`fin_0_1_3_s1/078_dell_not_ready_source_and_relationship_route_program.md`
+  - DELL 03B R9 program-level 执行计划：`fin_0_1_3_s1/104_dell_03b_R9_program_level_execution_plan.md`
+  - DELL 03B R9 作者实现与零调用预演：`fin_0_1_3_s1/105_dell_03b_R9_author_implementation_and_zero_call_preview.md`
+  - DELL 03B R9 唯一执行、连接重置根因与作者完整性复证：`fin_0_1_3_s1/106_dell_03b_R9_exact_execution_network_root_cause_and_author_integrity.md`
+  - DELL 03B R9 fresh 双审计失败与 R10 要求：`fin_0_1_3_s1/107_dell_03b_R9_fresh_dual_audit_failure_and_R10_requirement.md`
+  - DELL 03B R10 program-level 执行计划：`fin_0_1_3_s1/108_dell_03b_R10_program_level_execution_plan.md`
+  - DELL 03B R10 作者实现与零调用预演：`fin_0_1_3_s1/109_dell_03b_R10_author_implementation_and_zero_call_preview.md`
+  - DELL 03B R10 唯一执行与作者完整性复证：`fin_0_1_3_s1/110_dell_03b_R10_exact_execution_and_author_integrity.md`
+  - DELL 03B R10 fresh 双审计失败与 R11 要求：`fin_0_1_3_s1/111_dell_03b_R10_fresh_dual_audit_failure_and_R11_requirement.md`
+  - DELL 03B R11 program-level 执行计划：`fin_0_1_3_s1/112_dell_03b_R11_program_level_execution_plan.md`
+  - DELL 03B R11 作者实现与零调用预演：`fin_0_1_3_s1/113_dell_03b_R11_author_implementation_and_zero_call_preview.md`
+  - DELL 03B R11 唯一执行与作者完整性复证：`fin_0_1_3_s1/114_dell_03b_R11_exact_execution_and_author_integrity.md`
+  - DELL 03B R11 fresh 双审计失败与 R12 要求：`fin_0_1_3_s1/115_dell_03b_R11_fresh_dual_audit_failure_and_R12_requirement.md`
+  - DELL 03B R12 program-level 执行计划：`fin_0_1_3_s1/116_dell_03b_R12_program_level_execution_plan.md`
+  - DELL 03B R12 作者实现、连接重置闭环与零调用预演：`fin_0_1_3_s1/117_dell_03b_R12_author_implementation_and_zero_call_preview.md`
+  - DELL 03B R12 唯一零调用执行与作者完整性复证：`fin_0_1_3_s1/118_dell_03b_R12_exact_execution_and_author_integrity.md`
+  - DELL 03B R12 fresh 双审计失败与 R13 要求：`fin_0_1_3_s1/119_dell_03b_R12_fresh_dual_audit_failure_and_R13_requirement.md`
+  - DELL 03B R13 program-level 执行计划：`fin_0_1_3_s1/120_dell_03b_R13_program_level_execution_plan.md`
+  - DELL 03B R13 作者实现、R12直系谱系修正与零调用预演：`fin_0_1_3_s1/121_dell_03b_R13_author_implementation_and_zero_call_preview.md`
+  - DELL 03B R13 唯一零调用执行与作者完整性复证：`fin_0_1_3_s1/122_dell_03b_R13_exact_execution_and_author_integrity.md`
+  - DELL 03B R13 fresh 双审计失败与 R14 架构要求：`fin_0_1_3_s1/123_dell_03b_R13_fresh_dual_audit_failure_and_R14_architecture_requirement.md`
+  - DELL 03B R14 program-level 架构执行计划：`fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md`
+  - DELL 03B R14 program plan fresh 审计失败与修订门：`fin_0_1_3_s1/125_dell_03b_R14_program_plan_fresh_audit_failure_and_revision_gate.md`
+  - DELL 03B R14 revision 1 fresh plan 审计失败与 lifecycle bootstrap 修正：`fin_0_1_3_s1/126_dell_03b_R14_revision1_fresh_plan_audit_failure_and_lifecycle_bootstrap_fix.md`
+  - DELL 03B R14 revision 2 fresh plan review PASS 与实现入口：`fin_0_1_3_s1/127_dell_03b_R14_revision2_fresh_plan_review_pass_and_implementation_gate.md`
+  - DELL 03B R14 I2 corpus parity 治理纠正与 fresh re-audit PASS：`fin_0_1_3_s1/128_dell_03b_R14_I2_corpus_parity_governance_correction_and_reaudit_pass.md`
+  - 全产品能力审计与成熟技术栈决策包：`fin_0_1_3_s1/129_product_capability_audit_and_mature_stack_decision_packet.md`
+  - 成熟栈优先纠偏、旧自研协议收口与 Steps 1–3 启动：`fin_0_1_3_s1/130_mature_stack_first_rebase_and_steps_1_to_3_start.md`
+  - 产品能力全面审计与成熟技术栈决策包：`fin_0_1_3_s1/129_product_capability_audit_and_mature_stack_decision_packet.md`
+- FIN 0.1.3 S2：`fin_0_1_3_s2/`
+- FIN 0.1.3 S3 与跨阶段纵切：`fin_0_1_3_s3/`
+  - 当前连续执行授权：`fin_0_1_3_s3/021_owner_authorized_layer_one_to_three_case_execution_program.md`
+  - fixed-Pack Claim Surface Chat R1 容量失败与结构性 successor：`fin_0_1_3_s3/022_fixed_pack_claim_surface_chat_r1_capacity_failure_and_successor.md`
+  - 当前片段上下文与分析／交卷分离实验：`fin_0_1_3_s3/026_fragment_context_and_analysis_submission_experiment.md`
+  - 当前连续执行与异质泛化评测治理：`fin_0_1_3_s3/027_continuous_execution_and_heterogeneous_generalization_evaluation_governance.md`
+  - 当前五单元 R3 node successor 工程门：`fin_0_1_3_s3/063_dynamic_five_cell_R3_node_successor_engineering.md`
+  - 当前五单元 R3 node successor 正式门：`fin_0_1_3_s3/064_dynamic_five_cell_R3_node_successor_formal_gate.md`
+  - 当前五单元 R4 strict 非遵循与金融权威失败：`fin_0_1_3_s3/065_dynamic_five_cell_R4_strict_nonconformance_and_financial_authority_failure.md`
+  - Agent Runtime／反思／上下文连续性全链审计：`fin_0_1_3_s3/079_agent_runtime_reflection_context_continuity_full_chain_audit.md`
+  - 报告边界密度与来源充分性审计：`fin_0_1_3_s3/117_report_boundary_density_and_source_sufficiency_audit.md`
+  - Actionable Uncertainty、当前数据 Runtime 与 S3 消费：`fin_0_1_3_s3/118_actionable_uncertainty_current_data_runtime_and_s3_consumption.md`
+  - 历史 checkpoint capture-bound 上下文回放：`fin_0_1_3_s3/119_historical_checkpoint_capture_bound_context_replay.md`
+  - R5 多 Agent 完成、独立语义失败与 R6 内容返修门：`fin_0_1_3_s3/146_R5_multi_agent_completion_semantic_assessment_and_R6_content_repair_zero_call.md`
+  - R6 零调用终止与 R7 successor 门：`fin_0_1_3_s3/148_R6_optional_resume_manifest_failure_and_R7_successor_zero_call.md`
+  - R7 内容返修 live authority：`fin_0_1_3_s3/149_R7_multi_agent_content_repair_live_authority.md`
+  - R7 部分返修与 R8 精确 submission-resume 门：`fin_0_1_3_s3/150_R7_partial_content_repair_and_R8_submission_resume_gate.md`
+  - R8 接管审计与完整执行接缝门：`fin_0_1_3_s3/151_R8_takeover_audit_and_full_seam_gate.md`
+  - R8 submission-resume live authority：`fin_0_1_3_s3/152_R8_submission_resume_live_authority.md`
+  - R8 重复 mapper 失败与 R9 authority-ceiling 工程门：`fin_0_1_3_s3/153_R8_repeat_mapper_failure_and_R9_authority_ceiling_gate.md`
+  - R9 authority-ceiling resume live authority：`fin_0_1_3_s3/154_R9_authority_ceiling_resume_live_authority.md`
+  - R9 合同成功与跨角色 L1 失败：`fin_0_1_3_s3/155_R9_contract_success_and_cross_role_L1_failure.md`
+  - R10 R9-bound Demand＋Lead 零调用 successor 门：`fin_0_1_3_s3/156_R10_R9_bound_Demand_Lead_zero_call_gate.md`
+  - R10 Demand＋Lead exact-once live authority：`fin_0_1_3_s3/157_R10_Demand_Lead_exact_once_live_authority.md`
+  - R10 四节点成功、独立 L1／L2 通过与 protected Writer 边界：`fin_0_1_3_s3/158_R10_contract_success_independent_pass_and_protected_writer_boundary.md`
+  - 上一版研报信源闭环与研报质量审计强制门：`fin_0_1_3_s3/172_report_source_closure_and_quality_audit_gate_plan.md`
+  - Dell 新纵切数据与 Runtime 地基：`fin_0_1_3_s3/175_dell_reference_vertical_data_runtime_foundation_and_live_gate.md`
+  - Dell 外源可达性与 exact-URL 候选门：`fin_0_1_3_s3/176_dell_reference_vertical_external_source_reachability_gate.md`
+  - Dell RAG 成熟栈资格化与人工复核：`fin_0_1_3_s3/177_dell_reference_vertical_rag_mature_stack_qualification_and_human_review.md`
+  - Dell A02 不可变 Planner 合同失败与 successor 停止门：`fin_0_1_3_s3/178_dell_reference_vertical_A02_immutable_planner_contract_failure.md`
+  - Dell Agentic 完整纵切技术详设冻结与零模型实现入口：`fin_0_1_3_s3/179_dell_agentic_vertical_design_and_progressive_disclosure_foundation.md`
+  - Dell Agentic Wave 0A 零模型合同与 A02 精确身份边界：`fin_0_1_3_s3/180_dell_agentic_vertical_wave0a_zero_model_contracts_and_identity_boundary.md`
+  - Dell Agent Server Wave 0B 资格测试与 LangSmith 采用裁决（Owner no-fallback；current live baseline=`R8_ZERO_MODEL_LIVE_CONTROL_PLANE_PASS_BOUNDED`）：`fin_0_1_3_s3/181_dell_agent_server_wave0b_qualification_and_langsmith_adoption.md`
+  - Dell Wave 2 单 Specialist scripted qualification 与真实本地 MCP 组合：`fin_0_1_3_s3/182_dell_wave2_single_specialist_zero_model_loop_and_real_mcp_composition.md`
+  - RC-S3-107 PostgreSQL 通过、live 阻断与 Specialist 主线过渡：`fin_0_1_3_s3/183_rc_s3_107_postgres_pass_live_blocked_and_specialist_transition.md`
+  - Dell Q1 R1 模型前失败与 first-RECONCILED 修复：`fin_0_1_3_s3/184_dell_q1_paid_shadow_r1_pre_model_failure_and_first_reconciled_fix.md`
+  - Dell Q1 R2 schema 失败、Docker 恢复与对象封装修复：`fin_0_1_3_s3/185_dell_q1_paid_shadow_r2_schema_failure_and_object_envelope_fix.md`
+  - Dell Q1 R3 真实工具循环、人工 handoff 与数据交付根因审计：`fin_0_1_3_s3/186_dell_q1_paid_shadow_r3_handoff_and_data_delivery_root_cause_audit.md`

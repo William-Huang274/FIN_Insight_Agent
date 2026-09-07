@@ -1,0 +1,173 @@
+{
+  "schema_version": "fin_ia_dell_03B_R14_lifecycle_transition_table_v1_0",
+  "lifecycle_id": "FIN-0.1.3-S1-DELL-03B-R14-LIFECYCLE-V1",
+  "initial_state": "PLAN_CANDIDATE_FROZEN",
+  "states": [
+    "PLAN_CANDIDATE_FROZEN",
+    "PLAN_REVIEW_PENDING",
+    "PLAN_REVIEW_FAIL_REVISION_REQUIRED",
+    "PLAN_FROZEN",
+    "IMPLEMENTATION_FROZEN",
+    "BUNDLE_FROZEN",
+    "PREFORMAL_REVIEW_PENDING",
+    "PREFORMAL_FAIL_REVISION_REQUIRED",
+    "PREFORMAL_PASS",
+    "POLICY_BOUND",
+    "ATTEMPT_CONSUMED",
+    "FORMAL_TERMINAL_PASS",
+    "POSTFORMAL_REVIEW_PENDING",
+    "POSTFORMAL_PASS",
+    "R14_STOP_OWNER_DECISION_REQUIRED"
+  ],
+  "transitions": [
+    {
+      "from": "PLAN_CANDIDATE_FROZEN",
+      "event": "BEGIN_EXACT_PLAN_REVIEW",
+      "to": "PLAN_REVIEW_PENDING",
+      "attempt_consumed": false
+    },
+    {
+      "from": "PLAN_REVIEW_PENDING",
+      "event": "PLAN_REVIEW_FAIL",
+      "to": "PLAN_REVIEW_FAIL_REVISION_REQUIRED",
+      "attempt_consumed": false
+    },
+    {
+      "from": "PLAN_REVIEW_FAIL_REVISION_REQUIRED",
+      "event": "FREEZE_NEW_PLAN_CANDIDATE",
+      "to": "PLAN_CANDIDATE_FROZEN",
+      "attempt_consumed": false
+    },
+    {
+      "from": "PLAN_REVIEW_PENDING",
+      "event": "PLAN_REVIEW_PASS_AND_G_VALIDATED",
+      "to": "PLAN_FROZEN",
+      "attempt_consumed": false
+    },
+    {
+      "from": "PLAN_FROZEN",
+      "event": "FREEZE_IMPLEMENTATION_WITH_PARENT_G",
+      "to": "IMPLEMENTATION_FROZEN",
+      "attempt_consumed": false
+    },
+    {
+      "from": "IMPLEMENTATION_FROZEN",
+      "event": "FREEZE_PREFORMAL_BUNDLE",
+      "to": "BUNDLE_FROZEN",
+      "attempt_consumed": false
+    },
+    {
+      "from": "BUNDLE_FROZEN",
+      "event": "BEGIN_PREFORMAL_REVIEW",
+      "to": "PREFORMAL_REVIEW_PENDING",
+      "attempt_consumed": false
+    },
+    {
+      "from": "PREFORMAL_REVIEW_PENDING",
+      "event": "PREFORMAL_REVIEW_FAIL",
+      "to": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "attempt_consumed": false
+    },
+    {
+      "from": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "event": "FREEZE_SAME_R14_REVISED_IMPLEMENTATION",
+      "to": "IMPLEMENTATION_FROZEN",
+      "attempt_consumed": false
+    },
+    {
+      "from": "PREFORMAL_REVIEW_PENDING",
+      "event": "PREFORMAL_REVIEW_PASS",
+      "to": "PREFORMAL_PASS",
+      "attempt_consumed": false
+    },
+    {
+      "from": "PREFORMAL_PASS",
+      "event": "BIND_POLICY_ONLY_AUTHORITY",
+      "to": "POLICY_BOUND",
+      "attempt_consumed": false
+    },
+    {
+      "from": "POLICY_BOUND",
+      "event": "EXCLUSIVE_ATTEMPT_RESERVATION_CREATED",
+      "to": "ATTEMPT_CONSUMED",
+      "attempt_consumed": true
+    },
+    {
+      "from": "ATTEMPT_CONSUMED",
+      "event": "FORMAL_TERMINAL_PASS",
+      "to": "FORMAL_TERMINAL_PASS",
+      "attempt_consumed": true
+    },
+    {
+      "from": "ATTEMPT_CONSUMED",
+      "event": "FORMAL_MATERIAL_FAIL",
+      "to": "R14_STOP_OWNER_DECISION_REQUIRED",
+      "attempt_consumed": true
+    },
+    {
+      "from": "FORMAL_TERMINAL_PASS",
+      "event": "BEGIN_POSTFORMAL_REVIEW",
+      "to": "POSTFORMAL_REVIEW_PENDING",
+      "attempt_consumed": true
+    },
+    {
+      "from": "POSTFORMAL_REVIEW_PENDING",
+      "event": "POSTFORMAL_REVIEW_PASS",
+      "to": "POSTFORMAL_PASS",
+      "attempt_consumed": true
+    },
+    {
+      "from": "POSTFORMAL_REVIEW_PENDING",
+      "event": "POSTFORMAL_MATERIAL_FAIL",
+      "to": "R14_STOP_OWNER_DECISION_REQUIRED",
+      "attempt_consumed": true
+    }
+  ],
+  "state_authority": {
+    "PLAN_REVIEW_FAIL_REVISION_REQUIRED": {
+      "allowed": [
+        "new_candidate_plan_only"
+      ],
+      "forbidden": [
+        "implementation",
+        "policy",
+        "attempt",
+        "downstream"
+      ],
+      "owner_decision_required": false
+    },
+    "PREFORMAL_FAIL_REVISION_REQUIRED": {
+      "allowed": [
+        "same_R14_revised_I_B_A_only"
+      ],
+      "forbidden": [
+        "policy",
+        "attempt",
+        "R15",
+        "03C",
+        "downstream"
+      ],
+      "owner_decision_required": false
+    },
+    "R14_STOP_OWNER_DECISION_REQUIRED": {
+      "allowed": [
+        "owner_decision_receipt_for_same_R14_parser_or_IR_change",
+        "owner_decision_receipt_for_permanent_partial_plus_human",
+        "owner_decision_receipt_for_03B_termination"
+      ],
+      "forbidden": [
+        "attempt_id_reuse",
+        "R15",
+        "03C",
+        "downstream_without_owner_decision"
+      ],
+      "owner_decision_required": true
+    }
+  },
+  "policy_bound_recoverable_preflight_drift": {
+    "allowed_state": "POLICY_BOUND",
+    "allowed_action": "wait_for_condition_recovery_without_new_policy_or_attempt",
+    "attempt_consumed": false
+  },
+  "result_digest": "7b471f46fefe07e1d2352df305c8b42d8077e1a0ca1b36c1dd5caa71cccacb0a"
+}

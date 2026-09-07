@@ -1,0 +1,25 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs4_dell_route_corrected_candidate_probe_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS4-DELL-SUPPLEMENT-CANDIDATE-PROBE-V1.1",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_candidate_ranking_policy_v1_0.json",
+  "parent_policy_sha256_lf": "bfa136425345be329991ea736c12e336e4e581c88514e4d1e567e12431ae4cfd",
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "v1.0 failed before embedding because the upstream counter proposition requested an official transcript through a facet whose source contract excludes transcripts",
+      "the corrected successor separates source discovery from proposition use: upstream_capacity_context retrieves the TSMC transcript while Coverage and Evidence Gate retain the Dell-specific counterevidence boundary"
+    ],
+    "not_changed": [
+      "working-capital and issuer-counter requests and labels",
+      "canonical object snapshot, models, budgets, hard filters, ranking and Evidence authority",
+      "failed v1.0 attempt and its failure receipt"
+    ],
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false
+  },
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_query_atoms_v1_1.json",
+    "query_atom_eval_sha256_lf": "3763cc85c9f79e6517c86b44c78aa327e3f434676b93d31454aecbb442c599d1"
+  }
+}

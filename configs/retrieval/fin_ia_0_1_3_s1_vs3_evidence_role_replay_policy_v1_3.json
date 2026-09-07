@@ -1,0 +1,30 @@
+{
+  "schema_version": "fin_ia_s1_vs3_evidence_role_replay_policy_v1_2",
+  "status": "pre_registered_shared_composite_compiler_replay_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-COMPOSITE-EVIDENCE-REPLAY-V1.3-SHARED-COMPILER",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_evidence_role_replay_policy_v1_2.json",
+  "parent_policy_sha256_lf": "f85cf947239c5b33426f9d00d74316dfc61e084f66fbf0b03239679398ddf5d4",
+  "bound_input_overrides": {
+    "financial_intent_implementation_ref": "src/retrieval/financial_intent.py",
+    "financial_intent_implementation_sha256_lf": "ae37884621028604041e7cefb38d6ba8c820c9db51dc2ab0ee025c2408807b7b",
+    "replay_implementation_ref": "scripts/data_retrieval/replay_s1_vs3_evidence_role.py",
+    "replay_implementation_sha256_lf": "2595163c6a1a4c8e8bef83a602ed5a06db0cf9b57e172b2e762d068a8d52eb49"
+  },
+  "change_scope": {
+    "changed": [
+      "composite compatibility is compiled by one shared function consumed by both replay and shortlist Runtime"
+    ],
+    "not_changed": [
+      "query requests, reviewed relations and ontology",
+      "compiled object population",
+      "v1.4 candidate unions and all model scores",
+      "decision thresholds and Evidence authority"
+    ],
+    "prohibited": [
+      "result-driven threshold change",
+      "new model scoring",
+      "runtime promotion from this replay"
+    ]
+  }
+}

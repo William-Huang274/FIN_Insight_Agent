@@ -1,0 +1,376 @@
+{
+  "schema_version": "fin_ia_s1b_current_financial_object_store_result_v1_0",
+  "status": "s1b_current_financial_object_store_ready_with_typed_gaps",
+  "recorded_at": "2026-08-12",
+  "manifest_ref": "configs/retrieval/fin_ia_0_1_3_s1b_current_source_object_manifest_v1_0.json",
+  "manifest_digest": "35c728856f35f9fe2a4031709b8fefd5e4b9c60d52f58e5ea2d7e932c2416455",
+  "source_results": [
+    {
+      "source_id": "historical_sec_semantic_children",
+      "input_kind": "legacy_candidate_jsonl",
+      "status": "source_compiled",
+      "source_ref": "data/indexes/bm25/sector_depth_full238_us_v0_3_mixed_with_8k_fy2023_2027/records.jsonl",
+      "source_sha256": "64b838f96f33d332c2f9a77517ad24fc190e4d5caf31da76928f8f3880255ed9",
+      "document_parents_added": 20,
+      "retrieval_children_added": 1512,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "dell_fy2026_10k_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/22/71/2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388.json",
+      "source_sha256": "2271d2e40d8870b0c24f68a2997c1bff85e5767a90eda1838616db4a1a752388",
+      "document_parents_added": 1,
+      "retrieval_children_added": 153,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "mu_q3_fy2026_earnings_release_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/23/c9/23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846.json",
+      "source_sha256": "23c93f32dfd68b1277acefd926ab563b1b69a66692cd3dd1ae72a2544a58a846",
+      "document_parents_added": 1,
+      "retrieval_children_added": 10,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "mu_q3_fy2026_10q_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_internal_mu_10q_acquisition/live-r1/objects/fin-0.1.3/s1-internal-mu-10q-successor/raw/90/79/90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d.json",
+      "source_sha256": "90791fa1385b259434ca8125ef7dfb461a36086790f84a230d803548fd77b25d",
+      "document_parents_added": 1,
+      "retrieval_children_added": 82,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "nvda_q1_fy2027_10q_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1b_official_source_capture/live-r4/objects/raw/3c/bc/3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e.json",
+      "source_sha256": "3cbc2afd6cfb533956be1694d75b395466417d9f243ca6cd46e84513c166f94e",
+      "document_parents_added": 1,
+      "retrieval_children_added": 43,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "tsm_q2_2026_6k_release_raw_capture",
+      "input_kind": "raw_sec_html_capture",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_internal_current_source_acquisition/live-r1/objects/fin-0.1.3/s1-internal-current-source-acquisition/raw/5a/9e/5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64.json",
+      "source_sha256": "5a9e840b74b7b5f9803475574e09534c1f8773053a22e4fe68cf231f2f21ef64",
+      "document_parents_added": 1,
+      "retrieval_children_added": 2,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "three_case_pit_market_snapshot_20260624",
+      "input_kind": "market_evidence_jsonl",
+      "status": "source_compiled",
+      "source_ref": "data/processed_private/market/evidence_packs/20260624_market_yahoo_chart_603_3m_v1_3m_market_evidence.jsonl",
+      "source_sha256": "db26ced97aadc0fc5d21b1bf331f01253315b147f43ea6573815fabfbe23c7f6",
+      "document_parents_added": 3,
+      "retrieval_children_added": 3,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "retired_supplemental_chunk_aliases_v2",
+      "input_kind": "legacy_qrel_alias_jsonl",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v2/corpus/supplemental_evidence.jsonl",
+      "source_sha256": "cbe392ac80671e955fd42b93c5a43564973d82c38bea62081e14fad57b59b1df",
+      "document_parents_added": 0,
+      "retrieval_children_added": 0,
+      "invalid_records_excluded": 0
+    },
+    {
+      "source_id": "retired_mu_10q_chunk_aliases_v3",
+      "input_kind": "legacy_qrel_alias_jsonl",
+      "status": "source_compiled",
+      "source_ref": "data/workbench_private/fin_0_1_3_s1_internal_supplemental_assets/v3_mu_10q/corpus/supplemental_evidence.jsonl",
+      "source_sha256": "ea79c90aca8ae84e6a8c1ee457aa86ca1de40f86bf13a33cc02201fb08813dc5",
+      "document_parents_added": 0,
+      "retrieval_children_added": 0,
+      "invalid_records_excluded": 0
+    }
+  ],
+  "object_store": {
+    "document_parents": 28,
+    "retrieval_children": 1805,
+    "children_from_immutable_current_capture": 290,
+    "children_by_ticker": {
+      "DELL": 666,
+      "MSFT": 440,
+      "MU": 436,
+      "NVDA": 261,
+      "TSM": 2
+    },
+    "children_by_source_type": {
+      "10-K": 1334,
+      "10-Q": 414,
+      "6-K": 2,
+      "8-K": 52,
+      "MARKET_SNAPSHOT": 3
+    },
+    "table_children": 627,
+    "unbalanced_table_children": 0,
+    "max_retrieval_child_characters": 8449,
+    "oversized_non_table_children": [],
+    "oversized_table_children": [],
+    "market_snapshots_missing_valuation_fields": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ]
+  },
+  "case_readiness": {
+    "DELL": {
+      "issuer_retrieval_children": 665,
+      "latest_issuer_publication_date": "2026-05-28",
+      "point_in_time_market_children": 1,
+      "market_as_of_dates": [
+        "2026-06-24"
+      ]
+    },
+    "MU": {
+      "issuer_retrieval_children": 435,
+      "latest_issuer_publication_date": "2026-06-25",
+      "point_in_time_market_children": 1,
+      "market_as_of_dates": [
+        "2026-06-24"
+      ]
+    },
+    "NVDA": {
+      "issuer_retrieval_children": 260,
+      "latest_issuer_publication_date": "2026-05-20",
+      "point_in_time_market_children": 1,
+      "market_as_of_dates": [
+        "2026-06-24"
+      ]
+    }
+  },
+  "duplicate_children_identical": 0,
+  "invalid_records_excluded": 0,
+  "legacy_alias_crosswalk": {
+    "aliases_seen": 410,
+    "aliases_mapped": 342,
+    "required_aliases": 16,
+    "missing_required_aliases": [],
+    "mappings": [
+      {
+        "legacy_source_record_id": "SUPP::DELL::000157199626000008::CHUNK_0037",
+        "ticker": "DELL",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+        "status": "alias_mapped",
+        "coverage": 0.833846,
+        "current_source_record_ids": [
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::DELL::000157199626000008::CHUNK_0059",
+        "ticker": "DELL",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000008/dell-20260130.htm",
+        "status": "alias_mapped",
+        "coverage": 1.0,
+        "current_source_record_ids": [
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000013::CHUNK_0001",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+        "status": "alias_mapped",
+        "coverage": 0.912429,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+        "status": "alias_mapped",
+        "coverage": 0.786127,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000013::CHUNK_0003",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+        "status": "alias_mapped",
+        "coverage": 1.0,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000013::CHUNK_0006",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000013/a2026q3ex991-pressrelease.htm",
+        "status": "alias_mapped",
+        "coverage": 0.911051,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0004::PART_01_OF_01",
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0005::PART_01_OF_01"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+        "ticker": "TSM",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/1046179/000104617926000451/a2q26e_withguidancexfinal.htm",
+        "status": "alias_mapped",
+        "coverage": 0.916914,
+        "current_source_record_ids": [
+          "CURRENT_DOC::TSM::6_K::0001046179_26_000451::ITEM_CURRENT_REPORT::BLOCK_0001::PART_01_OF_01"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000015::CHUNK_0040",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "status": "alias_mapped",
+        "coverage": 0.815642,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1::BLOCK_0009::PART_01_OF_02"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000015::CHUNK_0045",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "status": "alias_mapped",
+        "coverage": 1.0,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0005::PART_01_OF_02"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000015::CHUNK_0046",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "status": "alias_mapped",
+        "coverage": 0.856383,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0005::PART_01_OF_02"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000015::CHUNK_0047",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "status": "alias_mapped",
+        "coverage": 1.0,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0006::PART_01_OF_02"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000015::CHUNK_0053",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "status": "alias_mapped",
+        "coverage": 1.0,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0009::PART_01_OF_02"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000015::CHUNK_0056",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "status": "alias_mapped",
+        "coverage": 1.0,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0010::PART_01_OF_01"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000015::CHUNK_0064",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "status": "alias_mapped",
+        "coverage": 0.796825,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0003::PART_01_OF_01"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000015::CHUNK_0086",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "status": "alias_mapped",
+        "coverage": 1.0,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0012::PART_01_OF_02"
+        ]
+      },
+      {
+        "legacy_source_record_id": "SUPP::MU::000072312526000015::CHUNK_0106",
+        "ticker": "MU",
+        "source_url": "https://www.sec.gov/Archives/edgar/data/723125/000072312526000015/mu-20260528.htm",
+        "status": "alias_mapped",
+        "coverage": 1.0,
+        "current_source_record_ids": [
+          "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0024::PART_01_OF_02"
+        ]
+      }
+    ]
+  },
+  "typed_gaps": [
+    {
+      "gap_id": "dell_q1_fy2027_transcript_product_transport_gap",
+      "owner_stage": "S1",
+      "blocking_scope": "S1D_external_supplementation_not_S1B_source_object_build",
+      "business_effect_zh": "Dell 官方 IR 已确认 Q1 FY2027 transcript 存在，但当前产品 transport 在有界 R1-R4 中超时；不能用网页摘要代替原文。"
+    },
+    {
+      "gap_id": "mu_q3_fy2026_prepared_remarks_product_transport_gap",
+      "owner_stage": "S1",
+      "blocking_scope": "S1D_external_supplementation_not_S1B_source_object_build",
+      "business_effect_zh": "Micron 官方 IR 已确认 Q3 FY2026 prepared remarks 存在，但当前产品 transport 在有界 R1-R4 中超时；当前对象库只保留已捕获的 8-K 与 10-Q。"
+    },
+    {
+      "gap_id": "tsm_advanced_packaging_current_source_not_captured",
+      "owner_stage": "S1",
+      "blocking_scope": "S1D_supply_evidence_supplementation",
+      "business_effect_zh": "现有 TSM Q2 6-K 是财务业绩披露，不等同于先进封装产能、良率或客户分配证据；供应链判断仍需定向补源。"
+    },
+    {
+      "gap_id": "three_case_market_snapshot_stale_to_2026_08_06",
+      "owner_stage": "S1",
+      "blocking_scope": "point_in_time_valuation_freshness",
+      "business_effect_zh": "本地行情截至 2026-06-24，早于研究截至日 2026-08-06；只能证明 PIT 行情对象链存在，不能完成正式估值。"
+    },
+    {
+      "gap_id": "three_case_market_valuation_fields_missing",
+      "owner_stage": "S1_S2_boundary",
+      "blocking_scope": "valuation_ready",
+      "business_effect_zh": "现有行情对象只有价格与收益率，缺市值、企业价值和估值倍数；不得把 market snapshot 误写成估值结论。"
+    }
+  ],
+  "acceptance": {
+    "source_digests_verified": true,
+    "parent_child_lineage_complete": true,
+    "parsed_current_sources_capture_bound": true,
+    "table_boundaries_balanced": true,
+    "retrieval_children_bounded": true,
+    "three_case_issuer_children_present": true,
+    "three_case_market_role_present": true,
+    "required_qrel_aliases_mapped": true,
+    "candidate_state": "candidate_not_evidence",
+    "model_calls": 0,
+    "network_calls": 0,
+    "dense_calls": 0,
+    "rerank_calls": 0,
+    "complete_s1_claimed": false,
+    "valuation_ready": false
+  },
+  "known_boundary": "This S1-B result compiles current official disclosures, inherited semantic children and point-in-time market snapshots into one parent-child object store. It does not promote candidates to Evidence, does not supply missing Dell prepared remarks, and does not claim valuation readiness from a price-only stale snapshot.",
+  "result_digest": "92d32e12197db5bd0a064c56e0fbd997aa79d84bf90adee36aedb12961e72123"
+}

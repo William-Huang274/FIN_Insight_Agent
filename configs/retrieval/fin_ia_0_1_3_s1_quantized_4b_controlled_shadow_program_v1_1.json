@@ -1,0 +1,84 @@
+{
+  "schema_version": "fin_ia_s1_quantized_4b_controlled_shadow_program_v1_1",
+  "status": "preregistered_r1_log_proof_successor_ready_after_clean_commit",
+  "recorded_at": "2026-08-25",
+  "program_id": "FIN-0.1.3-S1-QUANTIZED-4B-CONTROLLED-SHADOW-R2",
+  "attempt_id": "controlled-shadow-r2",
+  "decision_target": "Repeat the immutable R1 controlled shadow without reusing partial scores, changing the eval, changing quality gates, or broadening authority. Repair only the layer-offload proof visibility and the observed embedding n_batch setting.",
+  "predecessor_program_ref": "configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_program_v1_0.json",
+  "predecessor_program_sha256": "08d5d334c99469c38397e6c915a2ff09edb179044aaa86346fefc44a5d5e6f0c",
+  "predecessor_program_result_digest": "58fb88666784c2c71fb5c0cdd95ef2df0c8e63535877abe9c57359109b157681",
+  "predecessor_failure_ref": "configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_result_v1_0.json",
+  "predecessor_failure_sha256": "110d2f12ad3a0ae8205ad7f69fbebb4617479abe48c47179e8b7e7357421f8d8",
+  "predecessor_failure_result_digest": "80f2ed2727e2ca187dcc9614d27f3880022baf5c3b23f7e4542c34dd0e4eeeaf",
+  "only_successor_changes": {
+    "llama_log_verbosity": 4,
+    "llama_batch_size": 512,
+    "reason": "R1 completed both embedding scorers but default verbosity 3 did not expose the layer-offload proof line; the server also observed and applied n_batch 512 for embedding mode."
+  },
+  "inherited_without_change": [
+    "decision_target_semantics",
+    "acquisition_result_and_artifact_identities",
+    "18_query_86_occurrence_DELL_MU_NVDA_eval",
+    "split_and_leakage_policy",
+    "0_6B_baseline_models_and_tokenizer_bindings",
+    "instructions_and_official_reranker_prompt",
+    "2560_input_token_and_4096_context_limits",
+    "one_model_at_a_time_and_no_CPU_fallback",
+    "four_model_node_TokenBudgetBasis",
+    "embedding_and_reranker_quality_gates",
+    "community_reranker_quant_boundary",
+    "no_runtime_no_S1_no_source_gap_authority"
+  ],
+  "forbidden_successor_reuse": {
+    "R1_baseline_embedding_scores_reused": false,
+    "R1_challenger_embedding_scores_reused": false,
+    "R1_private_partial_state_loaded": false,
+    "R1_result_relabelled_as_success": false
+  },
+  "bound_inputs": [
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_program_v1_0.json",
+      "sha256": "08d5d334c99469c38397e6c915a2ff09edb179044aaa86346fefc44a5d5e6f0c",
+      "purpose": "complete inherited frozen R1 protocol"
+    },
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_controlled_shadow_result_v1_0.json",
+      "sha256": "110d2f12ad3a0ae8205ad7f69fbebb4617479abe48c47179e8b7e7357421f8d8",
+      "purpose": "immutable R1 full-offload-proof failure"
+    },
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_shadow_acquisition_result_v1_0.json",
+      "sha256": "6e611032d597bbf93138be3c831417807c668ddc28f16685b6752d5a5c1a1135",
+      "purpose": "unchanged successful acquisition identity"
+    },
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_large_model_dev_only_role_eval_v1_0.json",
+      "sha256": "6c305dfb2ca999b087b0ee59479ac50b002b315501bfcb6c130cd3cf285966bc",
+      "purpose": "unchanged controlled eval projection"
+    }
+  ],
+  "implementation_bindings": [
+    {
+      "path": "src/retrieval/quantized_shadow.py",
+      "sha256": "ef68aac4c500e9959a518cdf9ce2be77f0ed5f7497499d5fc21332fb28577f1d",
+      "purpose": "unchanged identity, prompt, raw yes-no, metric and decision compiler"
+    },
+    {
+      "path": "scripts/data_retrieval/run_s1_quantized_4b_controlled_shadow.py",
+      "sha256": "0aa17b7cb1ec41ab0030aec2f66e4b57db3d550934dca7180c5040e1d60f88cf",
+      "purpose": "R2 successor loader that can only apply the two registered proof changes"
+    }
+  ],
+  "authority": {
+    "controlled_shadow_R2_execution_authorized": true,
+    "runtime_promotion_authorized": false,
+    "S1_qualification_authorized": false,
+    "natural_candidate_recall_proved": false,
+    "source_gap_closure_authorized": false,
+    "evidence_or_numeric_authority_granted": false,
+    "publication_or_release_authorized": false
+  },
+  "known_boundary": "R2 repairs only an observability failure. It remains the same labeled fixed-pool composite comparison and cannot prove inner or outer retrieval completeness, natural recall, official full-precision 4B reranker behavior, S1 qualification, source-gap closure, or runtime promotion.",
+  "result_digest": "f3f760565efa585c6caefe927380e9eae0167f9bc680d0d2d75dc22992cfa5e4"
+}

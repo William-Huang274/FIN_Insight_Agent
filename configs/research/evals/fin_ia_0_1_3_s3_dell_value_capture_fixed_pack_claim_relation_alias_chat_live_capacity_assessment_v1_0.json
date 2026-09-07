@@ -1,0 +1,98 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_claim_relation_alias_chat_capacity_assessment_v1_0",
+  "assessment_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-RELATION-ALIAS-CHAT-R2-CAPACITY-ASSESSMENT",
+  "status": "terminal_capacity_failure_preserved_monolithic_judgment_successor_required",
+  "recorded_at": "2026-08-15T22:41:31+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_relation_alias_chat_live_authority_v1_0.json",
+  "authority_sha256": "10489b77e4a50edac60d861cb1e5672149089f29bc8d11f2f19b04133e81ecc2",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_relation_alias_chat_live_result_v1_0.json",
+  "result_sha256": "ca53152c16f95572daf2ce1a67a4ba593720d65a472e7e1406dadb9b8b812f2d",
+  "result_digest": "fa06fce4f646d0c8d06c6261d12572bd53ad925b9a3d05130dcc2f54c05614a1",
+  "observed": {
+    "model_calls_attempted": 2,
+    "successful_read_step": 1,
+    "accepted_read_receipts": 2,
+    "judgment_materialized": false,
+    "retries": 0,
+    "fallbacks": 0,
+    "step_two_http_status": 200,
+    "step_two_response_body_complete": true,
+    "step_two_response_body_parse_status": "json",
+    "step_two_received_body_bytes": 74391,
+    "step_two_finish_reason": "length",
+    "step_two_prompt_tokens": 8997,
+    "step_two_completion_tokens": 16000,
+    "step_two_reasoning_tokens": 16000,
+    "step_two_visible_content_chars": 0,
+    "step_two_tool_calls": 0,
+    "step_two_request_json_chars": 31032,
+    "step_two_content_chars": 23120,
+    "step_two_tool_schema_chars": 5835,
+    "private_reasoning_fields_redacted": 1,
+    "failure_code": "model_gateway_reasoning_budget_exhausted"
+  },
+  "comparison_to_predecessor": {
+    "predecessor_prompt_tokens": 18902,
+    "current_prompt_tokens": 8997,
+    "prompt_ratio": 0.475982,
+    "predecessor_reasoning_tokens": 16000,
+    "current_reasoning_tokens": 16000,
+    "input_compaction_material": true,
+    "input_compaction_sufficient_for_natural_submission": false
+  },
+  "capture_binding": {
+    "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_claim_relation_alias_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-RELATION-ALIAS-CHAT-R2/STEP-02-ATTEMPT-01/provider_response.json",
+    "response_capture_sha256": "c1e250e7fbd91a653072451b926b0a77bdf67f699e63c2de1daf7675e12f1cf7",
+    "raw_response_sha256": "1aa48b626a566c8ad01ed9d97f2c4de785aacc420dcd111f6b4e401309e945b6",
+    "response_digest": "d4166ccdb1cb64c1b1f76080d0c31e389d14c7289618a16d286b803ebba38667",
+    "credential_or_authorization_captured": false,
+    "private_reasoning_persisted": false
+  },
+  "root_cause": {
+    "earliest_owner": "S3_judgment_node_decomposition_and_cognitive_budget_projection",
+    "classification": "monolithic_final_judgment_interacting_with_provider_max_reasoning_nonconvergence",
+    "confirmed": [
+      "provider_transport_completed_with_HTTP_200_and_parseable_full_body",
+      "mandatory_Evidence_and_NumericFact_reads_completed",
+      "prompt_was_reduced_by_more_than_half_without_changing_Evidence_or_provider_profile",
+      "all_16000_completion_tokens_were_reasoning_tokens_with_zero_visible_submission"
+    ],
+    "not_supported": [
+      "network_truncation",
+      "credential_or_quota_failure",
+      "UTF8_input_corruption",
+      "Evidence_or_NumericFact_reader_failure",
+      "ClaimRelation_validator_failure",
+      "content_quality_pass_or_fail"
+    ],
+    "material_contributors": [
+      "one_tool_call_still_requires_cell_disposition_three_relation_aliases_multiple_reference_sets_three_narrative_atoms_and_what_would_change",
+      "one_global_thinking_max_profile_is_used for both research judgment and contract submission",
+      "the_runtime_treats_the_entire_cell_judgment_as_one_model_cognitive_unit"
+    ]
+  },
+  "bounded_successor": {
+    "provider_neutral_micro_judgment_contract": true,
+    "model_authors_each_thesis_mechanism_counterargument_and_what_would_change_decision": true,
+    "harness_only_validates_expands_aliases_and_compiles_terminal_deliverable": true,
+    "node_complexity_specific_reasoning_profile": true,
+    "same_reviewed_Evidence_and_fact_authority": true,
+    "three_case_fake_replay_and_mutation_before_live": true,
+    "automatic_retry_authorized": false,
+    "responses_or_anthropic_protocol_switch_authorized": false
+  },
+  "acceptance": {
+    "transport_capture_complete": true,
+    "mandatory_reads_pass": true,
+    "compact_alias_projection_proven_useful": true,
+    "natural_judgment_contract_pass": false,
+    "L1_assessable": false,
+    "content_quality_assessable": false,
+    "fixed_pack_layer_one_accepted": false,
+    "dynamic_layer_two_authorized": false,
+    "five_cell_live_authorized": false
+  },
+  "known_boundary": "The compact alias successor cut the step-two prompt from 18902 to 8997 tokens, so the prior density fix was real, but DeepSeek still consumed the complete 16000-token max-thinking budget without a visible judgment. The failed R2 is immutable and is not a retry candidate. The next engineering action is one provider-neutral micro-judgment and node-budget package, not another field trim, token-limit increase, protocol switch or automatic live rerun."
+}

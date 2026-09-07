@@ -1,0 +1,123 @@
+{
+  "schema_version": "fin_ia_s1c_business_residual_disposition_v1_0",
+  "decision_id": "FIN-0.1.3-S1C-DELL-SAVED-PLANNER-BUSINESS-RESIDUAL-DISPOSITION-R1",
+  "recorded_at": "2026-08-13",
+  "status": "s1c_engineering_slice_closed_s1_product_gate_open",
+  "scope": {
+    "case_key": "DELL",
+    "saved_planner_proposals": 10,
+    "selected_execution_requests": 8,
+    "deferred_requests": 2,
+    "model_rerun": false,
+    "network_calls": 0,
+    "candidate_is_not_evidence": true,
+    "numeric_authority_remains_s2": true
+  },
+  "bound_result": {
+    "summary_ref": "configs/retrieval/fin_ia_0_1_3_s1c_planner_residual_gap_audit_result_v1_1.json",
+    "summary_result_digest": "225db59d7b5ca7b073aa881109d751e87bc7aea011aa8d7345fd1f21d8d6e15f",
+    "full_result_ref": "data/workbench_private/fin_0_1_3_s1c_planner_residual_gap_audit/v1/full_result_225db59d7b5ca7b073aa881109d751e87bc7aea011aa8d7345fd1f21d8d6e15f.json",
+    "full_result_sha256": "7b5b819d4d3d6af645151ad7d6457787fc77a2f9ad3260409966b28529300e04"
+  },
+  "route_disposition": {
+    "current_candidate_generator": "bm25_plus_qwen_local_embedding_owner_balanced_successor",
+    "promotion_state": "isolated_successor_not_active_registry",
+    "structural_financial_ranker": "rejected_shadow_regressed_positive_recall_and_mrr",
+    "qwen_cross_encoder_safety_ranker": "rejected_shadow_did_not_improve_recall_and_reduced_mrr",
+    "facet_evidence_role": "advisory_only_not_hard_gate",
+    "reason_zh": "候选覆盖已经足以审计真实研究请求，但新排序器和角色规则尚未同时提升相关性与业务角色精度；不得为了看起来更先进而替换当前候选生成路线。"
+  },
+  "request_dispositions": [
+    {
+      "facet_id": "orders_and_backlog",
+      "primary_owner_stage": "S1_C_candidate_selection",
+      "secondary_owner_stage": "S2_nonstandard_operating_fact_mart",
+      "source_state": "current_official_source_present",
+      "anchor_candidate_id": "COBJ::1eb880d7f05bf23dfac9caed",
+      "anchor_rank": 7,
+      "business_observation_zh": "Dell Q1 FY2027 已披露 AI 订单 244 亿美元、AI 服务器收入 161 亿美元并把 FY2027 AI 服务器收入目标提高到 600 亿美元，但该直接材料只排第 7；前列被逾期应收账款表格占据。",
+      "disposition_zh": "不补同类网页。保留为 S1-C 排序/角色残差；backlog、orders、customer_count、shipments 的精确结构化查询由 S2 返回 typed gap，后续纳入非标准经营指标事实表。"
+    },
+    {
+      "facet_id": "conversion_and_durability",
+      "primary_owner_stage": "S1_D_bounded_official_source_supplement",
+      "secondary_owner_stage": "S2_nonstandard_operating_fact_mart",
+      "source_state": "qualitative_support_present_incremental_transcript_needed",
+      "business_observation_zh": "现有文件能说明客户采用、采购时点波动和 backlog 定义，但不能充分解释 244 亿美元订单如何转成 161 亿美元收入、积压消化节奏和取消风险。",
+      "disposition_zh": "只补 Dell Q1 FY2027 官方法说会 transcript；订单、积压和出货量仍由 S2 显式保留 typed gap，不从文本猜数。"
+    },
+    {
+      "facet_id": "reported_results",
+      "primary_owner_stage": "S1_C_candidate_selection",
+      "secondary_owner_stage": null,
+      "source_state": "supported_current_official_source",
+      "business_observation_zh": "Q1 FY2027 当期 8-K 数值对象位于候选第 2、4、5，六项请求数值均由 S2 解析；但 FY2026 年报材料仍经常排在首位。",
+      "disposition_zh": "不补源；保留当期优先排序残差，不能把年度材料当成当季结果。"
+    },
+    {
+      "facet_id": "margin_and_incremental_profit",
+      "primary_owner_stage": "S1_D_bounded_official_source_supplement",
+      "secondary_owner_stage": null,
+      "source_state": "annual_mechanism_supported_current_quarter_commentary_incremental",
+      "anchor_candidate_id": "COBJ::dd980f729920f24fc85b8d1b",
+      "anchor_rank": 2,
+      "business_observation_zh": "FY2026 年报已直接说明 AI 服务器组合使 ISG 毛利率承压、经营利润率下降 110 个基点至 11.7%；当前季度数值齐全，但缺管理层对 Q1 增量利润和组合变化的解释。",
+      "disposition_zh": "与 conversion 共用同一份 Dell 官方 transcript，不单独扩大来源范围。"
+    },
+    {
+      "facet_id": "cash_generation",
+      "primary_owner_stage": "S1_C_candidate_selection",
+      "secondary_owner_stage": null,
+      "source_state": "supported_current_official_source",
+      "business_observation_zh": "Q1 FY2027 经营现金流 40.81 亿美元、自由现金流 31.18 亿美元均已存在且由 S2 解析，但前列仍有泛化表格导语。",
+      "disposition_zh": "不补源；只保留候选排序与对象角色残差。"
+    },
+    {
+      "facet_id": "working_capital_risk",
+      "primary_owner_stage": "S1_C_candidate_selection",
+      "secondary_owner_stage": null,
+      "source_state": "supported_current_official_source",
+      "anchor_candidate_id": "COBJ::66412edb2417e4d245f849c8",
+      "business_observation_zh": "Dell 已直接披露大额 AI 订单需要更多关键组件和营运资金，并带来延期或取消导致的过剩、陈旧库存风险；库存、应收和应付均已解析。",
+      "disposition_zh": "不补源；该材料应由后续 Evidence evaluator 正确晋升，而不是继续调 embedding。"
+    },
+    {
+      "facet_id": "issuer_counterevidence",
+      "primary_owner_stage": "S1_C_evidence_role_and_gate",
+      "secondary_owner_stage": null,
+      "source_state": "supported_current_official_source",
+      "anchor_candidate_id": "COBJ::66412edb2417e4d245f849c8",
+      "business_observation_zh": "发行人自己的风险披露已经给出订单扩大、营运资金占用、延期和取消的反方机制。",
+      "disposition_zh": "不补源；角色判断目前仍会对部分真实反方证据 abstain，因此只能作为 advisory finding，不能做硬过滤。"
+    },
+    {
+      "facet_id": "upstream_or_demand_counterevidence",
+      "primary_owner_stage": "S1_D_bounded_official_source_supplement",
+      "secondary_owner_stage": "S1_C_multi_owner_candidate_balance",
+      "source_state": "three_owners_supported_tsm_advanced_packaging_gap",
+      "business_observation_zh": "NVDA 有产能承诺超过需求的反方，MU 有 AI 内存需求快于供给及分配风险，MSFT 有 AI 基础设施投资需求；现有 TSM Q2 6-K 只有业绩与泛化封装描述，不能证明 CoWoS 产能、瓶颈或分配。",
+      "disposition_zh": "只补截至 2026-08-06 可得的 TSM 官方 Q2 2026 法说会 transcript；保持每个相关 owner 至少 2 个候选，不能让 NVDA 再次吃光跨公司预算。"
+    }
+  ],
+  "s1d_authorized_scope": {
+    "official_documents": [
+      "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT",
+      "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT"
+    ],
+    "micron_prepared_remarks_deferred": true,
+    "valuation_deferred": true,
+    "broad_web_search_forbidden": true,
+    "equivalent_official_route_required": true,
+    "capture_before_parse_required": true,
+    "fresh_network_authority_required": true
+  },
+  "gate_decision": {
+    "s1c_engineering_slice": "closed_with_recorded_role_and_ranking_residuals",
+    "s1_product_gate": "open",
+    "s1d_next": true,
+    "s2_regression_required_after_new_evidence": true,
+    "s3_planner_rerun_authorized": false,
+    "s3_saved_atoms_reuse_required": true
+  },
+  "known_boundary": "This disposition proves that the saved S3 planner requests can be compiled into an auditable S1/S2 product input and assigns each observed defect to its earliest responsible stage. It does not promote candidates to Evidence, close the S1 product gate, or claim report quality."
+}

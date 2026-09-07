@@ -1,0 +1,105 @@
+{
+  "case_key": "DELL",
+  "checkpoint_digest": "9a60c0f0bf198480087ab9199711b4cc1441931ed922facdbf7637c310bd6baa",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "new_model_calls": 0,
+    "new_network_calls": 0
+  },
+  "completed_outputs": [
+    "accepted_agent_ids",
+    "accepted_facets",
+    "coordination_questions",
+    "expected_information_boundaries",
+    "stop_conditions"
+  ],
+  "completion_receipt": "COMPLETED_OUTPUTS::coordination_questions|expected_information_boundaries|stop_conditions",
+  "continuation_completed_outputs": [
+    "coordination_questions",
+    "expected_information_boundaries",
+    "stop_conditions"
+  ],
+  "continuation_draft_character_count": 5003,
+  "continuation_draft_digest": "81adaef75ac5773647f17872df582a135f727763e6abf18e65791bf7dd9b01b4",
+  "continuation_messages_digest": "94e2c9ae7901bce4185c25941e68c198190a0c2da2a99a3b1b41a51d4d27a514",
+  "continuation_request_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r5_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R5_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R5_20260820-AGENT-RESEARCH_LEAD-LEAD_PLAN-ANALYSIS-CONTINUATION-ATTEMPT-01/model_visible_request.json",
+  "continuation_request_capture_sha256": "05a0b92f9af3732ae4277e2b35095b666899a95fb4c848eb2feeca5e5026cfc1",
+  "continuation_request_digest": "f61f1283f907fa19f9540ccd0dcf5b83f48f77c28d941d62937ae5614a9ba8d1",
+  "continuation_response_capture_ref": "data/captures/fin_0_1_3_s3_dell_multi_agent_preview_r5_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R5_20260820/FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R5_20260820-AGENT-RESEARCH_LEAD-LEAD_PLAN-ANALYSIS-CONTINUATION-ATTEMPT-01/provider_response.json",
+  "continuation_response_capture_sha256": "0d9dd381f0fc986013847b363fcfd249b5dc89568f43b088c3aaa0bc7d4e627c",
+  "continuation_response_digest": "b5eb9fbbd1f7415f755820362f183ad85050afa7988edf82a8a43fb957294c3f",
+  "finish_reason": "stop",
+  "fragment_checkpoint_digest": "6044dc6fbc76f9107864f7e68271c60e449c86e14b99fcc050c4beeec9285a70",
+  "fragment_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R4_lead_analysis_checkpoint_v1_0.json",
+  "fragment_checkpoint_sha256": "ae97121a18afaa97f13956076030f8b4262060b96aae7261370f31714785a2bb",
+  "merged_analysis_draft_character_count": 14937,
+  "merged_analysis_draft_digest": "637fd12cd29d8e0b48c79bbd74ee0ac308a468b0d0b32f132636772a1e5da49f",
+  "node_id": "AGENT::RESEARCH_LEAD::LEAD_PLAN",
+  "recorded_at": "2026-08-19T20:03:45+00:00",
+  "required_outputs": [
+    "accepted_agent_ids",
+    "accepted_facets",
+    "coordination_questions",
+    "expected_information_boundaries",
+    "stop_conditions"
+  ],
+  "schema_version": "fin_ia_multi_agent_analysis_completion_checkpoint_v1_0",
+  "source_analysis_token_budget_basis": {
+    "comparable_run_evidence": [
+      "DELL dynamic five-cell R7 content assessment",
+      "DELL multi-agent zero-call preview v1.2",
+      "DELL fragment analysis/submission FAS-R1",
+      "DELL multi-agent preview R3 Lead capacity failure"
+    ],
+    "cost_and_latency_are_secondary_constraints": true,
+    "input_scale": {
+      "authority_reference_count": 1,
+      "model_visible_characters": 11583
+    },
+    "materiality_and_quality_risk": "dropping a role or Evidence Slot would create a structurally incomplete preview",
+    "node_id": "AGENT::RESEARCH_LEAD::LEAD_PLAN::ANALYSIS_CONTINUATION",
+    "node_purpose": "汇总六个独立角色意见，覆盖全部研究面并冻结协调问题和终止条件。 本阶段只续写 checkpoint 标明的未完成内容，不重做已完成分析、不提交合同、不晋升业务事实。",
+    "output_token_ceiling": 4000,
+    "reasoning_profile": "deepseek-v4-pro thinking=low visible analysis_continuation",
+    "required_outputs": [
+      "visible_analysis_continuation",
+      "coordination_questions",
+      "expected_information_boundaries",
+      "stop_conditions"
+    ],
+    "schema_burden": "analysis-only projection; no tool or JSON submission",
+    "schema_version": "fin_ia_token_budget_basis_v1_0",
+    "stop_and_truncation_behavior": "require one non-empty continuation and finish_reason=stop; merge with the immutable partial draft; no second continuation or restart",
+    "token_budget_basis_digest": "0fdf2e58fe93165636ba8e4a51f313b89f7764dfa9727d812b56f77768b91f75"
+  },
+  "source_continuation_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_4.json",
+  "source_continuation_authority_sha256": "c90ce15b959c279c64fdd780e88a3f45d44cf2a17e3297df3e9b715aa9731f05",
+  "source_continuation_result_digest": "1e96f65eef04da0b8ffa8c9cd78379d149b4f1c82c1c83d4999ff76153c588e6",
+  "source_continuation_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_4.json",
+  "source_continuation_result_sha256": "391ad82660e11f04fd20133d78d31c5e4093f3bdfac38ea964a3166909059c24",
+  "source_continuation_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R5_20260820",
+  "source_fragment_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R4_20260820",
+  "status": "visible_analysis_fragments_complete_bound_for_submission",
+  "submission_policy": {
+    "analysis_rerun_forbidden": true,
+    "continuation_rerun_forbidden": true,
+    "merged_draft_business_promotion": false,
+    "new_fact_or_authority_forbidden": true,
+    "strict_submission_required": true
+  },
+  "usage": {
+    "completion_tokens": 1106,
+    "completion_tokens_details": {
+      "reasoning_tokens": 39
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 3063,
+    "prompt_tokens": 3063,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "total_tokens": 4169
+  }
+}

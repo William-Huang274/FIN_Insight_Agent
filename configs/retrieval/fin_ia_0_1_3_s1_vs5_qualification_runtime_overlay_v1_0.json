@@ -1,0 +1,261 @@
+{
+  "schema_version": "fin_ia_s1_vs5_qualification_runtime_overlay_v1_0",
+  "status": "frozen_before_candidate_execution",
+  "recorded_at": "2026-08-18",
+  "program_id": "FIN-0.1.3-S1-VS5-QUALIFICATION",
+  "bound_inputs": {
+    "preregistration_ref": "eval_sets/fin_0_1_3_s1/qualification_preregistration_v1_0.json",
+    "preregistration_sha256": "e16db48de84e6cb0e5c586032e4bff446307d2dbdad898999de8a935b7124749",
+    "base_kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "base_kernel_sha256": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json",
+    "route_policy_sha256": "6404fdd9035b0c3428b73ddde125c57b8328e7862a35d4566bca9739cf99365a",
+    "compiled_objects_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_compiled_objects_result_v1_0.json",
+    "compiled_objects_result_sha256": "7d38fdaf0535a94953d70a27dca8cdf6075db5b77be243780f21a3deb0948f6f",
+    "candidate_ranking_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_8.json",
+    "candidate_ranking_policy_sha256": "1d567e938eb688a3f2a997373b9d2a37fa77bebc172fed5b1e175bf34bf9cf72",
+    "retrieval_need_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_retrieval_need_compiler_policy_v1_1.json",
+    "retrieval_need_policy_sha256": "e98f38c31a6e579b41004d3cad21d1ea2d81159a4d47083a9a9245cd7071f95e",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+    "financial_intent_ontology_sha256": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242"
+  },
+  "source_type_extensions": [
+    {
+      "source_type": "ANNUAL_REPORT",
+      "semantic_class": "official_annual_disclosure",
+      "preserve_original_source_identity": true,
+      "candidate_authority_only": true,
+      "rationale_zh": "腾讯官方年报是发行人年度披露，但不得伪装为 10-K 或 20-F；仅扩展可检索来源类型，不改变来源身份。"
+    }
+  ],
+  "industry_packs": [
+    {
+      "pack_id": "membership_retail",
+      "lexical_terms": ["membership warehouse", "comparable sales", "renewal rate", "traffic", "merchandise costs"],
+      "slot_terms": {
+        "demand_volume_quality": ["comparable sales", "traffic", "average ticket", "e-commerce"],
+        "pricing_mix_value_capture": ["membership fees", "renewal rate", "gross margin", "merchandise costs"],
+        "cash_conversion_balance_sheet": ["merchandise inventories", "accounts payable", "operating cash flow"],
+        "counterevidence_and_what_would_change": ["gasoline price", "shrink", "wages", "inflation"]
+      }
+    },
+    {
+      "pack_id": "diversified_banking",
+      "lexical_terms": ["net interest income", "deposits", "credit costs", "CET1", "investment banking fees"],
+      "slot_terms": {
+        "operating_performance": ["net interest income", "markets revenue", "investment banking fees", "asset management"],
+        "cash_conversion_balance_sheet": ["deposits", "loans", "allowance for credit losses", "net charge-offs"],
+        "capital_allocation_and_valuation": ["CET1", "risk-weighted assets", "liquidity", "capital return"],
+        "counterevidence_and_what_would_change": ["credit deterioration", "regulatory capital", "deposit repricing", "macroeconomic outlook"]
+      }
+    },
+    {
+      "pack_id": "industrial_machinery",
+      "lexical_terms": ["dealer inventory", "end-user demand", "price realization", "backlog", "manufacturing costs"],
+      "slot_terms": {
+        "demand_volume_quality": ["dealer inventory", "end-user demand", "retail sales", "backlog"],
+        "pricing_mix_value_capture": ["price realization", "sales volume", "product mix", "manufacturing costs"],
+        "capacity_inputs_execution": ["backlog", "supply constraints", "production capacity", "deliveries"],
+        "cash_conversion_balance_sheet": ["inventory", "receivables", "capital expenditures", "free cash flow"],
+        "counterevidence_and_what_would_change": ["construction cycle", "mining cycle", "regional demand", "dealer inventory"]
+      }
+    },
+    {
+      "pack_id": "biopharma",
+      "lexical_terms": ["GLP-1", "obesity care", "diabetes care", "fill-finish", "clinical competition"],
+      "slot_terms": {
+        "demand_volume_quality": ["GLP-1 volume", "channel dynamics", "geographic sales", "patient demand"],
+        "pricing_mix_value_capture": ["product mix", "pricing", "gross margin", "currency impact"],
+        "capacity_inputs_execution": ["fill-finish capacity", "manufacturing expansion", "supply constraints"],
+        "regulatory_policy_exposure": ["clinical trial", "regulatory approval", "compounded drugs"],
+        "counterevidence_and_what_would_change": ["competition", "clinical risk", "pricing pressure", "compounding"]
+      }
+    },
+    {
+      "pack_id": "integrated_energy",
+      "lexical_terms": ["upstream production", "realized prices", "LNG volumes", "free cash flow", "energy transition"],
+      "slot_terms": {
+        "operating_performance": ["production volumes", "realized prices", "LNG sales", "refining margins"],
+        "pricing_mix_value_capture": ["LNG trading", "commodity prices", "upstream earnings", "integrated gas"],
+        "cash_conversion_balance_sheet": ["cash flow from operations", "capital expenditure", "free cash flow", "dividends"],
+        "capital_allocation_and_valuation": ["share buybacks", "dividends", "capital expenditure", "net debt"],
+        "counterevidence_and_what_would_change": ["commodity price", "impairment", "refining margin", "transition risk"]
+      }
+    },
+    {
+      "pack_id": "internet_platform",
+      "lexical_terms": ["games", "online advertising", "fintech", "cloud", "AI capital expenditure", "游戏", "广告", "金融科技", "云"],
+      "slot_terms": {
+        "demand_volume_quality": ["game users", "advertising impressions", "commercialisation", "游戏流水", "广告收入"],
+        "operating_performance": ["value-added services", "marketing services", "fintech and business services", "增值服务", "营销服务"],
+        "pricing_mix_value_capture": ["gross margin", "high margin revenue", "cost discipline", "毛利率", "收入组合"],
+        "capacity_inputs_execution": ["AI infrastructure", "cloud capacity", "capital expenditure", "人工智能", "资本开支"],
+        "regulatory_policy_exposure": ["regulation", "content risk", "minor protection", "监管", "内容风险"],
+        "capital_allocation_and_valuation": ["share repurchases", "investment portfolio", "股本回购", "投资组合"]
+      }
+    }
+  ],
+  "case_profiles": [
+    {
+      "case_key": "COST",
+      "subject": {"ticker": "COST", "legal_name": "Costco Wholesale Corporation", "aliases": ["Costco", "Costco Wholesale"]},
+      "research_as_of": "2026-08-18",
+      "industry_pack_id": "membership_retail",
+      "related_entities": [],
+      "slot_terms": {
+        "demand_volume_quality": ["comparable sales excluding gasoline and foreign exchange", "shopping frequency", "average transaction"],
+        "pricing_mix_value_capture": ["membership fee revenue", "renewal rate", "Executive members"],
+        "cash_conversion_balance_sheet": ["merchandise inventories", "accounts payable", "net cash provided by operating activities"]
+      }
+    },
+    {
+      "case_key": "JPM",
+      "subject": {"ticker": "JPM", "legal_name": "JPMorgan Chase & Co.", "aliases": ["JPMorgan Chase", "JPMorgan", "JPMC"]},
+      "research_as_of": "2026-08-18",
+      "industry_pack_id": "diversified_banking",
+      "related_entities": [],
+      "slot_terms": {
+        "operating_performance": ["net interest income excluding Markets", "Corporate and Investment Bank", "Asset and Wealth Management"],
+        "cash_conversion_balance_sheet": ["net charge-offs", "allowance for credit losses", "nonaccrual loans"],
+        "capital_allocation_and_valuation": ["standardized CET1 capital ratio", "risk-weighted assets", "liquidity resources"]
+      }
+    },
+    {
+      "case_key": "CAT",
+      "subject": {"ticker": "CAT", "legal_name": "Caterpillar Inc.", "aliases": ["Caterpillar", "CAT"]},
+      "research_as_of": "2026-08-18",
+      "industry_pack_id": "industrial_machinery",
+      "related_entities": [],
+      "slot_terms": {
+        "demand_volume_quality": ["dealer inventory", "sales to users", "order backlog"],
+        "pricing_mix_value_capture": ["price realization", "sales volume", "manufacturing costs"],
+        "capacity_inputs_execution": ["order backlog", "supply chain constraints", "production"]
+      }
+    },
+    {
+      "case_key": "NVO",
+      "subject": {"ticker": "NVO", "legal_name": "Novo Nordisk A/S", "aliases": ["Novo Nordisk", "Novo"]},
+      "research_as_of": "2026-08-18",
+      "industry_pack_id": "biopharma",
+      "related_entities": [],
+      "slot_terms": {
+        "demand_volume_quality": ["GLP-1", "obesity care sales", "diabetes care sales"],
+        "capacity_inputs_execution": ["fill-finish", "manufacturing capacity", "supply constraints"],
+        "counterevidence_and_what_would_change": ["competition", "clinical development", "compounded GLP-1"]
+      }
+    },
+    {
+      "case_key": "SHEL",
+      "subject": {"ticker": "SHEL", "legal_name": "Shell plc", "aliases": ["Shell", "Royal Dutch Shell"]},
+      "research_as_of": "2026-08-18",
+      "industry_pack_id": "integrated_energy",
+      "related_entities": [],
+      "slot_terms": {
+        "operating_performance": ["upstream production", "realised oil and gas prices", "LNG liquefaction volumes"],
+        "cash_conversion_balance_sheet": ["cash flow from operating activities", "capital expenditure", "free cash flow"],
+        "capital_allocation_and_valuation": ["share buybacks", "dividends", "net debt"]
+      }
+    },
+    {
+      "case_key": "0700.HK",
+      "subject": {"ticker": "0700.HK", "legal_name": "Tencent Holdings Limited", "aliases": ["Tencent", "Tencent Holdings", "腾讯", "騰訊"]},
+      "research_as_of": "2026-08-18",
+      "industry_pack_id": "internet_platform",
+      "related_entities": [],
+      "slot_terms": {
+        "demand_volume_quality": ["domestic games", "international games", "marketing services", "本土市场游戏", "国际市场游戏"],
+        "operating_performance": ["fintech and business services", "cloud services", "金融科技及企业服务"],
+        "capacity_inputs_execution": ["AI infrastructure", "capital expenditure", "GPU", "人工智能基础设施", "资本开支"]
+      }
+    }
+  ],
+  "proposition_routes": [
+    {"case_key": "COST", "proposition_id": "COST_MEMBERSHIP_VALUE_CAPTURE", "evidence_domain": "operating_performance", "requested_facet_ids": ["pricing_and_mix", "margin_and_incremental_profit", "issuer_counterevidence"], "metric_intents": ["revenue", "operating income"], "product_intents": ["membership fee revenue", "renewal rate", "Executive membership"]},
+    {"case_key": "COST", "proposition_id": "COST_COMPARABLE_SALES_DEMAND", "evidence_domain": "demand", "requested_facet_ids": ["reported_results", "conversion_and_durability", "issuer_counterevidence"], "metric_intents": ["revenue"], "product_intents": ["comparable sales", "traffic", "average ticket", "e-commerce", "gasoline prices"]},
+    {"case_key": "COST", "proposition_id": "COST_MARGIN_PRESSURES", "evidence_domain": "operating_performance", "requested_facet_ids": ["margin_and_incremental_profit", "issuer_counterevidence"], "metric_intents": ["gross margin", "operating income"], "product_intents": ["merchandise costs", "wages", "shrink", "gasoline business"]},
+    {"case_key": "COST", "proposition_id": "COST_WORKING_CAPITAL", "evidence_domain": "operating_performance", "requested_facet_ids": ["cash_generation", "working_capital_risk"], "metric_intents": ["operating cash flow", "inventory", "accounts payable"], "product_intents": ["cash conversion"]},
+    {"case_key": "COST", "proposition_id": "COST_TEMPORAL_CHANGE", "evidence_domain": "operating_performance", "requested_facet_ids": ["reported_results", "margin_and_incremental_profit", "working_capital_risk"], "metric_intents": ["revenue", "gross margin", "operating cash flow"], "product_intents": ["FY2024 FY2025 comparison"], "fiscal_years": [2024, 2025]},
+
+    {"case_key": "JPM", "proposition_id": "JPM_NET_INTEREST_INCOME", "evidence_domain": "operating_performance", "requested_facet_ids": ["reported_results", "issuer_counterevidence"], "metric_intents": ["revenue"], "product_intents": ["net interest income", "deposit repricing", "loan growth", "deposit mix"]},
+    {"case_key": "JPM", "proposition_id": "JPM_CREDIT_QUALITY", "evidence_domain": "risk_policy", "requested_facet_ids": ["reported_results", "issuer_counterevidence", "working_capital_risk"], "metric_intents": ["net income"], "product_intents": ["net charge-offs", "provision for credit losses", "delinquencies", "allowance for credit losses"]},
+    {"case_key": "JPM", "proposition_id": "JPM_CAPITAL_LIQUIDITY", "evidence_domain": "valuation", "requested_facet_ids": ["capital_allocation", "issuer_counterevidence"], "metric_intents": ["shares outstanding"], "product_intents": ["CET1 capital ratio", "liquidity resources", "risk-weighted assets", "capital distributions"]},
+    {"case_key": "JPM", "proposition_id": "JPM_FEE_AND_MARKETS_MIX", "evidence_domain": "operating_performance", "requested_facet_ids": ["reported_results", "pricing_and_mix"], "metric_intents": ["revenue", "operating income"], "product_intents": ["investment banking fees", "markets revenue", "asset management fees", "revenue mix"]},
+    {"case_key": "JPM", "proposition_id": "JPM_COUNTEREVIDENCE", "evidence_domain": "risk_policy", "requested_facet_ids": ["issuer_counterevidence", "issuer_policy_exposure"], "metric_intents": [], "product_intents": ["macroeconomic risk", "regulatory capital", "asset quality", "credit deterioration"]},
+
+    {"case_key": "CAT", "proposition_id": "CAT_END_USER_DEMAND", "evidence_domain": "demand", "requested_facet_ids": ["orders_and_backlog", "conversion_and_durability", "issuer_counterevidence"], "metric_intents": ["orders", "backlog"], "product_intents": ["end-user demand", "dealer inventory", "retail sales"]},
+    {"case_key": "CAT", "proposition_id": "CAT_PRICE_COST", "evidence_domain": "operating_performance", "requested_facet_ids": ["pricing_and_mix", "margin_and_incremental_profit"], "metric_intents": ["revenue", "operating margin"], "product_intents": ["price realization", "sales volume", "product mix", "manufacturing costs"]},
+    {"case_key": "CAT", "proposition_id": "CAT_BACKLOG_CAPACITY", "evidence_domain": "supply", "requested_facet_ids": ["orders_and_backlog", "subject_execution", "issuer_counterevidence"], "metric_intents": ["backlog", "capacity"], "product_intents": ["order backlog", "supply constraints", "future deliveries"]},
+    {"case_key": "CAT", "proposition_id": "CAT_CASH_CONVERSION", "evidence_domain": "operating_performance", "requested_facet_ids": ["cash_generation", "working_capital_risk"], "metric_intents": ["operating cash flow", "capital expenditures", "inventory", "accounts receivable", "accounts payable"], "product_intents": ["free cash flow", "cash conversion"]},
+    {"case_key": "CAT", "proposition_id": "CAT_CYCLE_COUNTEREVIDENCE", "evidence_domain": "risk_policy", "requested_facet_ids": ["issuer_counterevidence"], "metric_intents": [], "product_intents": ["industry cycle", "regional demand", "construction activity", "mining activity", "dealer inventory"]},
+
+    {"case_key": "NVO", "proposition_id": "NVO_GLP1_DEMAND", "evidence_domain": "demand", "requested_facet_ids": ["reported_results", "conversion_and_durability", "issuer_counterevidence"], "metric_intents": ["revenue"], "product_intents": ["GLP-1 volume", "obesity care", "diabetes care", "channel dynamics", "geographic mix"]},
+    {"case_key": "NVO", "proposition_id": "NVO_SUPPLY_CAPACITY", "evidence_domain": "supply", "requested_facet_ids": ["subject_execution", "issuer_counterevidence"], "metric_intents": ["capacity"], "product_intents": ["fill-finish", "manufacturing capacity", "supply constraints", "deliverable volume"]},
+    {"case_key": "NVO", "proposition_id": "NVO_PRICE_MIX_MARGIN", "evidence_domain": "operating_performance", "requested_facet_ids": ["pricing_and_mix", "margin_and_incremental_profit"], "metric_intents": ["revenue", "gross margin", "operating margin"], "product_intents": ["pricing", "product mix", "geographic mix", "currency impact"]},
+    {"case_key": "NVO", "proposition_id": "NVO_COMPETITION_RISK", "evidence_domain": "risk_policy", "requested_facet_ids": ["issuer_counterevidence", "issuer_policy_exposure"], "metric_intents": [], "product_intents": ["competition", "clinical risk", "regulatory risk", "compounded GLP-1"]},
+    {"case_key": "NVO", "proposition_id": "NVO_CASH_AND_REINVESTMENT", "evidence_domain": "valuation", "requested_facet_ids": ["cash_generation", "capital_allocation", "issuer_counterevidence"], "metric_intents": ["operating cash flow", "capital expenditures", "shares outstanding"], "product_intents": ["research and development", "acquisitions", "cash returns"]},
+
+    {"case_key": "SHEL", "proposition_id": "SHEL_UPSTREAM_PRICE_VOLUME", "evidence_domain": "operating_performance", "requested_facet_ids": ["reported_results", "pricing_and_mix"], "metric_intents": ["revenue", "operating income"], "product_intents": ["upstream production", "realized prices", "operational availability"]},
+    {"case_key": "SHEL", "proposition_id": "SHEL_LNG_VALUE_CAPTURE", "evidence_domain": "operating_performance", "requested_facet_ids": ["reported_results", "pricing_and_mix", "issuer_counterevidence"], "metric_intents": ["revenue", "operating income"], "product_intents": ["LNG trading", "LNG sales volumes", "LNG prices", "integrated gas"]},
+    {"case_key": "SHEL", "proposition_id": "SHEL_CAPEX_CASH_RETURNS", "evidence_domain": "valuation", "requested_facet_ids": ["cash_generation", "capital_allocation", "issuer_counterevidence"], "metric_intents": ["operating cash flow", "capital expenditures", "total debt", "shares outstanding"], "product_intents": ["free cash flow", "dividends", "share buybacks"]},
+    {"case_key": "SHEL", "proposition_id": "SHEL_COMMODITY_COUNTEREVIDENCE", "evidence_domain": "risk_policy", "requested_facet_ids": ["issuer_counterevidence", "pricing_and_mix"], "metric_intents": ["operating income"], "product_intents": ["oil price", "gas price", "refining margin", "impairment"]},
+    {"case_key": "SHEL", "proposition_id": "SHEL_TRANSITION_EXECUTION", "evidence_domain": "risk_policy", "requested_facet_ids": ["capital_allocation", "subject_execution", "issuer_counterevidence"], "metric_intents": ["capital expenditures"], "product_intents": ["low-carbon investment", "energy transition", "traditional energy returns", "execution trade-off"]},
+
+    {"case_key": "0700.HK", "proposition_id": "TENCENT_GAMES_ADS_DEMAND", "evidence_domain": "demand", "requested_facet_ids": ["reported_results", "conversion_and_durability", "issuer_counterevidence"], "metric_intents": ["revenue"], "product_intents": ["games users", "game revenue", "advertising impressions", "marketing services", "游戏", "广告"]},
+    {"case_key": "0700.HK", "proposition_id": "TENCENT_FINTECH_CLOUD", "evidence_domain": "operating_performance", "requested_facet_ids": ["reported_results", "pricing_and_mix"], "metric_intents": ["revenue", "operating income"], "product_intents": ["fintech and business services", "cloud services", "payment activities", "金融科技", "云服务", "支付"]},
+    {"case_key": "0700.HK", "proposition_id": "TENCENT_MARGIN_MIX", "evidence_domain": "operating_performance", "requested_facet_ids": ["margin_and_incremental_profit", "issuer_counterevidence"], "metric_intents": ["gross margin", "operating margin"], "product_intents": ["high margin revenue mix", "cost discipline", "investment spending", "毛利率", "成本纪律"]},
+    {"case_key": "0700.HK", "proposition_id": "TENCENT_AI_CAPEX", "evidence_domain": "supply", "requested_facet_ids": ["subject_execution", "capital_allocation", "issuer_counterevidence"], "metric_intents": ["capital expenditures", "capacity"], "product_intents": ["AI infrastructure", "cloud capacity", "future monetisation", "人工智能基础设施", "资本开支"]},
+    {"case_key": "0700.HK", "proposition_id": "TENCENT_REGULATION_CASH_RETURN", "evidence_domain": "risk_policy", "requested_facet_ids": ["issuer_policy_exposure", "capital_allocation", "issuer_counterevidence"], "metric_intents": ["shares outstanding"], "product_intents": ["regulation", "content risk", "investment portfolio", "share repurchases", "监管", "内容风险", "股本回购"]}
+  ],
+  "token_budget_basis": {
+    "bge_embedding": {
+      "node_purpose": "为 10618 个资格金融对象生成 dense、learned-sparse 与 multi-vector 候选信号。",
+      "input_scale": "10618 个对象一次性编码，30 个命题按实际 facet 生成有界查询；不得漏对象。",
+      "required_outputs": ["FP16 dense vectors", "learned sparse vectors", "bounded multi-vector scores"],
+      "schema_burden": "数值数组和内容寻址缓存清单，无生成式输出。",
+      "materiality_and_quality_risk": "512 token 截断若遗漏证据句会造成假 gap；对象 renderer 已限制为 2400 字符。",
+      "comparable_run_evidence": "VS3 曾在 RTX 4060 Laptop 上完成 33085 对象 BGE CUDA 缓存，本轮对象数约为其 32%。",
+      "reasoning_profile": "local retrieval encoder; CUDA FP16 only",
+      "stop_and_truncation": "max 512 tokens, batch 4, CUDA/cache/object identity 任一漂移即失败，不允许 CPU fallback。"
+    },
+    "qwen_embedding": {
+      "node_purpose": "在同一对象和查询上提供独立 semantic challenger。",
+      "input_scale": "10618 个对象一次性编码，查询与 BGE 完全同源。",
+      "required_outputs": ["FP16 normalized dense vectors", "immutable cache manifest"],
+      "schema_burden": "数值数组，无生成式输出。",
+      "materiality_and_quality_risk": "语义模型可能把主题相近但证据角色错误的段落推到头部，不能单独授予 Evidence。",
+      "comparable_run_evidence": "VS3 已证明 Qwen 可补充部分候选但头部噪声较高，因此继续作为 challenger。",
+      "reasoning_profile": "local retrieval encoder; CUDA FP16 only",
+      "stop_and_truncation": "max 512 tokens, batch 8, CUDA/cache/object identity 任一漂移即失败，不允许 CPU fallback。"
+    },
+    "bge_reranker": {
+      "node_purpose": "对每个命题有界候选池做同池重排，不改变召回成员。",
+      "input_scale": "每命题最多 96 个候选，30 命题最多 2880 个 query-document 对。",
+      "required_outputs": ["one finite score per pair", "pair-order stable ranking"],
+      "schema_burden": "扁平分数向量。",
+      "materiality_and_quality_risk": "相关性不能覆盖错公司、错期间、错证据角色硬门。",
+      "comparable_run_evidence": "VS3 中 BGE reranker 只作为 shadow，不能独立晋升候选。",
+      "reasoning_profile": "local cross-encoder; CUDA FP16 only",
+      "stop_and_truncation": "max 1024 tokens, batch 2, 分数数量必须精确匹配，不允许 CPU fallback。"
+    },
+    "qwen_reranker": {
+      "node_purpose": "在相同候选池上提供带金融相关性指令的独立重排信号。",
+      "input_scale": "每命题最多 96 个候选，30 命题最多 2880 个 query-document 对。",
+      "required_outputs": ["one finite score per pair", "same-pool ranked IDs"],
+      "schema_burden": "yes/no logit 差值。",
+      "materiality_and_quality_risk": "指令相关性仍可能混淆事实、风险和背景，Evidence Role 与硬过滤保持独立。",
+      "comparable_run_evidence": "VS3 中 Qwen 召回部分正例较好但不具 Evidence 权威。",
+      "reasoning_profile": "local causal reranker; CUDA FP16 only",
+      "stop_and_truncation": "max 1024 tokens, batch 2, 分数数量必须精确匹配，不允许 CPU fallback。"
+    }
+  },
+  "authority": {
+    "provider_neutral": true,
+    "runtime_inputs_exclude_references": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "generation_model_calls": 0,
+    "learned_vector_device": "cuda",
+    "learned_vector_precision": "fp16",
+    "cpu_vector_fallback_allowed": false
+  }
+}

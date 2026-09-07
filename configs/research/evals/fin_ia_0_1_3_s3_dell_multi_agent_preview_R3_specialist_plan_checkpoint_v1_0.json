@@ -1,0 +1,399 @@
+{
+  "case_key": "DELL",
+  "checkpoint_authority": "Validated plan payloads may resume at Research Lead only; they are not Evidence, NumericFact, research conclusions or stage acceptance.",
+  "checkpoint_digest": "0ab73362d5ccd05d6096c86bc8a0d91f86b1674aac0df30eb5647d8b85e5fac8",
+  "new_candidate_promotions": 0,
+  "new_model_calls": 0,
+  "new_network_calls": 0,
+  "plan_attempt_receipts": [
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "attempt_ids": [
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820-AGENT-DEMAND_QUALITY-PLAN-ATTEMPT-01"
+      ],
+      "node_id": "AGENT::DEMAND_QUALITY::PLAN",
+      "request_digests": [
+        "936d2cd96760b65edd8e5cfb3f275c84aec0b37580fab028c79377b3468648db"
+      ],
+      "response_digests": [
+        "d712ef153ed6ed4ad06afa2c011de295242d66e43d3e1999af2d5546dd0e3738"
+      ],
+      "validated_payload_digest": "0ccb79b1f012408e9bee4fae7b1e24af9ea4641fbb9fd976b5a58f45f636c4c8"
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "attempt_ids": [
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820-AGENT-OPERATING_PERFORMANCE-PLAN-ATTEMPT-01",
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820-AGENT-OPERATING_PERFORMANCE-PLAN-ATTEMPT-02"
+      ],
+      "node_id": "AGENT::OPERATING_PERFORMANCE::PLAN",
+      "request_digests": [
+        "195c80e1799b3e442b15ffcb3dd0022740b09010e0afd3e528284a585af7a1af",
+        "48bbaa305b98cb192bf34e3d5c668bc717f51b4afb0eff961251bb0fc886f926"
+      ],
+      "response_digests": [
+        "460ec97802feda491a1d6afe889896e126f8582ddad7980394e3240868e2717b",
+        "46f871ebf796085b37e574953adf07b21076502f5599173e7c69ccd6662d6ca5"
+      ],
+      "validated_payload_digest": "d92ec49ba16c92145571ba4c5a376ddb70e018f664fd03eb3e7367e58bb485d8"
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "attempt_ids": [
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820-AGENT-VALUE_CAPTURE-PLAN-ATTEMPT-01",
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820-AGENT-VALUE_CAPTURE-PLAN-ATTEMPT-02"
+      ],
+      "node_id": "AGENT::VALUE_CAPTURE::PLAN",
+      "request_digests": [
+        "78583d024074e08cf6c174e152ec48adc2f79cd920cffc55789dfe7818d75aa8",
+        "e97de2e747dfe33b13a0cee27905b4dfda20ed0505825adfab84160984cf554e"
+      ],
+      "response_digests": [
+        "d0af97967356a282fc0ecdf6c66f01bb2eb9524acd5d3c2903a63e545878b10e",
+        "def95a2b0f32cf63fda1655e70443175b944dae970e743592fabc10a2daa84ed"
+      ],
+      "validated_payload_digest": "27e9e84aee5371b1a2693d8f0fce937dcdf40fd44d4dac9dc771cb2897cbdc93"
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "attempt_ids": [
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820-AGENT-CASH_CONVERSION-PLAN-ATTEMPT-01"
+      ],
+      "node_id": "AGENT::CASH_CONVERSION::PLAN",
+      "request_digests": [
+        "ea8d4bbcca08e8ac13d2e872e34e1ce1f8bf7fa5ace62c072295d17b55917993"
+      ],
+      "response_digests": [
+        "0bc03d09edae8f09d8a57ea325b5ac191ca8e405cd99d74d2dcddab12392cc4b"
+      ],
+      "validated_payload_digest": "fc3fd0026d87ecc05fe349c851ea6644f6e1554d6babed4317afe7ba4ac6c41d"
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "attempt_ids": [
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820-AGENT-SUPPLY_RELATIONSHIP-PLAN-ATTEMPT-01",
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820-AGENT-SUPPLY_RELATIONSHIP-PLAN-ATTEMPT-02"
+      ],
+      "node_id": "AGENT::SUPPLY_RELATIONSHIP::PLAN",
+      "request_digests": [
+        "1dca0e13c2ca14fa913dde2abcaf5db6b8cd6d8c0e23f8cce3431cfeb0bfaa3c",
+        "8335cfc0f3f5982ab9643a8d829f856cd82c3a404563ba84f1defb2ccfc664d8"
+      ],
+      "response_digests": [
+        "fb32757d5c27b6fa3a87c74639c785d9808ba2809918c573eff78a3f029dafce",
+        "4f9d4faa1b088641ad8a56ffab0bcadc1266e45a344c5e6583a40ae0f798999f"
+      ],
+      "validated_payload_digest": "3a99b455109afff9dda244c0bea96eedd4203fe5b194c59efce850af5809a81c"
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "attempt_ids": [
+        "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820-AGENT-COUNTEREVIDENCE-PLAN-ATTEMPT-01"
+      ],
+      "node_id": "AGENT::COUNTEREVIDENCE::PLAN",
+      "request_digests": [
+        "f115c47905019ab4b45fc610076beea14a0a24290a2deeb99aacb8ad579c0caf"
+      ],
+      "response_digests": [
+        "bbfec761c7595e4eb2b1a0f1a90495db3232a57231f7a2018c145a9715ca3e68"
+      ],
+      "validated_payload_digest": "c29192ddf2328b650821c5de50a863090dcbbb4b5926c63b26b474b9ccbb129c"
+    }
+  ],
+  "predecessor_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_2.json",
+  "predecessor_authority_sha256": "232cf268236663ae7631871d270e56ad898b1360de47a370d493f1638b05b902",
+  "predecessor_full_result_digest": "1b39551317c2cc283fbff74c2b4c7df08256478f2cc2d76360f14f81766375e3",
+  "predecessor_result_digest": "25a840a083849694b0f22e8cfd3cffbfe7d443e0e3994ad5a1a49baa47e0917a",
+  "predecessor_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_2.json",
+  "predecessor_result_sha256": "f75dc7905465c08a3632c085b9245a6af1241caa4c86f727aade23cd1e392c22",
+  "predecessor_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R3_20260820",
+  "reused_specialist_plan_count": 6,
+  "schema_version": "fin_ia_multi_agent_specialist_plan_checkpoint_v1_0",
+  "specialist_plans": [
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "dependencies": [
+        "S1 reviewed Evidence",
+        "S2 NumericFact",
+        "case fact presence",
+        "relationship graph context"
+      ],
+      "failure_risks": [
+        "官方可能只披露 AI 订单/backlog 总金额，而不披露 backlog 账龄、客户构成、取消/推迟条款，需求质量关键变量无法直接观测（属数据基础设施缺口，非代理错误）。",
+        "把 backlog 增长误读为终端需求增长，忽视 pull-forward 与渠道囤货对当期数字的放大，导致需求强度被高估（模型判断风险）。",
+        "用收入或出货额直接代理订单或终端消耗，混同口径，使转化持续性的结论失真（模型判断风险）。",
+        "在缺少取消/推迟序列与终端消耗数据时做过强推断，或把'本单元未加载'误判为'真实未披露'，未先核对 case fact presence（harness/目录误用风险）。",
+        "最强反方证据（客户融资依赖、供给瓶颈引发重复下单）缺少直接披露，只能依赖间接信号，可能低估判断的反转条件。"
+      ],
+      "hypotheses": [
+        "Dell 的 AI 服务器 backlog 主要由与真实终端部署对应的、有约束力的订单构成，取消与推迟风险有限，backlog 增长可外推为后续收入。",
+        "AI 订单向收入的转化快且稳定，但向利润与经营现金流的转化显著弱于收入（低毛利、营运资金占用高），可持续性取决于定价权与关键组件供给。",
+        "存在显著提前采购：客户为规避 GPU 短缺或涨价而提前下单，当前 backlog 高估未来终端需求，后续增速与转化率会回落。",
+        "需求集中在少数超大客户（hyperscaler/Neocloud）且部分依赖外部融资，客户集中度与融资脆弱性构成需求质量的主要风险点，个别客户取消或推迟即可能翻转判断。"
+      ],
+      "mandate_interpretation": "在 DELL 案中，我的职责是检验 AI 基础设施需求的真实性与可持续性，而非估值或盈利结论。核心是把五个口径拆开：订单、backlog、收入、出货与终端消耗，并检验提前采购（pull-forward）、取消、推迟（pushout）以及 AI 订单向收入/利润/现金转化的持续性。本意见只是需求质量面的研究计划：提出可检验假设、需要采集的原子事实、依赖与失败风险；不写结论、不引用未经验证的来源或数字。",
+      "plan_opinion_digest": "90ca3a5f822950287597c74225a3870df4e3efc72e9b23f52b79d68ea4a3b2db",
+      "requested_atoms": [
+        {
+          "facet_id": "orders_and_backlog",
+          "product_intents": [
+            "AI 服务器订单与 backlog 金额、口径、环比/同比增长的官方披露数值（区分订单额与 backlog 额）",
+            "backlog 的客户构成、集中度、账龄/承诺期限，以及是否存在取消、推迟条款或已发生的取消案例",
+            "backlog 与终端部署/消耗之间的对应证据：是否包含渠道囤货、融资型采购或与真实工作负载脱节的订单"
+          ]
+        },
+        {
+          "facet_id": "conversion_and_durability",
+          "product_intents": [
+            "AI 订单/backlog 向收入、毛利、经营现金流转化的比率与时间序列，及收入与出货的差额证据",
+            "提前采购、双重下单、客户融资依赖或供给瓶颈造成的订单水分可观察信号",
+            "转化持续性的关键驱动：组件供给节奏、定价权、客户资本开支计划与实际部署进度的偏差证据"
+          ]
+        }
+      ],
+      "schema_version": "fin_ia_specialist_plan_opinion_v1_0",
+      "stop_condition": "当 S2 数值事实已返回，且 case fact presence 已确认取消/推迟、backlog 账龄与终端消耗等关键变量属于真实未披露（而非本单元未加载），或已取得能区分订单、backlog、收入、出货与终端消耗口径的证据并完成最强反方的可观察判断改变条件核对后，停止本计划意见并转入证据请求与判断阶段。"
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "dependencies": [
+        "S1 reviewed Evidence",
+        "S1 official source route",
+        "S2 NumericFact",
+        "case fact presence",
+        "relationship graph context",
+        "another specialist workpaper"
+      ],
+      "failure_risks": [
+        "Source route is incomplete so the product-to-segment realized numeric bridge stays unavailable, which is a data or tool gap, not a negative finding.",
+        "Valid numeric facts exist but are hidden or wrongly rejected by the harness, so missing figures get misread as absence.",
+        "Visible evidence is misinterpreted as case-level absence instead of cell-local non-visibility.",
+        "A needed tool is not called or its feedback is ignored, producing silent coverage gaps.",
+        "Guidance and demand commentary are conflated with realized results, overstating profit conversion."
+      ],
+      "hypotheses": [
+        "Company-level AI infrastructure revenue growth is reported as real but mix shift dilutes margin, so a like-for-like view requires segment and product decomposition.",
+        "Guidance and order or backlog commentary signal management confidence in sustained demand, but must be checked separately from recognized revenue and cannot stand alone as proof of profit conversion.",
+        "Operating profit sustainability depends on scope: company-level margin may mask divergence between infrastructure and traditional segments.",
+        "Supplier and customer relationship signals appear only indirectly in results and outlook, so the strongest bear case must be tested against realized numbers rather than assumed."
+      ],
+      "mandate_interpretation": "Own only the reported_results and guidance_and_outlook facets for the DELL case. Verify like-for-like changes in revenue, growth, margins and operating profit; separate company, segment and product scope. Judge only visibility inside this cell and never convert cell-local invisibility into a claim that the case lacks the data.",
+      "plan_opinion_digest": "3d85d82ff0ff71522cf0b6851cb6a5d93f91617308cc86e15c57b3d869e7a05b",
+      "requested_atoms": [
+        {
+          "facet_id": "reported_results",
+          "product_intents": [
+            "like-for-like revenue and growth by company, segment and product scope",
+            "operating margin trend and operating profit bridge with mix effect",
+            "segment-level results that reconcile to company totals"
+          ]
+        },
+        {
+          "facet_id": "guidance_and_outlook",
+          "product_intents": [
+            "forward revenue, margin and operating profit expectations by scope",
+            "order, backlog or demand commentary that indicates conversion timing",
+            "mix and supply expectations affecting future profitability"
+          ]
+        }
+      ],
+      "schema_version": "fin_ia_specialist_plan_opinion_v1_0",
+      "stop_condition": "Stop when reported results and guidance are checked at company, segment and product scope, any unreconciled gap is classified through case fact presence, and no statement converts cell-local invisibility into a claim of case-level non-disclosure."
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "dependencies": [
+        "S1 reviewed Evidence",
+        "S1 official source route",
+        "S2 NumericFact",
+        "case fact presence"
+      ],
+      "failure_risks": [
+        "Treating management AI margin commentary or targets as audited AI profit contribution",
+        "Attributing a company-level margin or profit change to AI without a product to segment to company bridge",
+        "Ignoring that AI server mix can dilute margin even when revenue grows fast",
+        "Using segment definitions that changed over periods and breaking same-basis comparability",
+        "Conflating orders or backlog with shipped revenue and realized cash",
+        "Claiming pricing power without evidence of cost pass-through against concentrated suppliers"
+      ],
+      "hypotheses": [
+        "AI server revenue may carry below-corporate-average margin because of high memory and accelerator content, so revenue growth alone cannot prove profit growth.",
+        "Reported company-level gross margin expansion could be driven by AI-enabled PC mix, pricing discipline, or services rather than by AI server hardware.",
+        "AI backlog and order figures are unaudited future indicators, so shipped revenue, price-volume-mix and cost pass-through must be shown before any profit or cash claim.",
+        "Supplier concentration in GPUs and HBM could let upstream capture value, compressing DELL incremental margin even when demand is real.",
+        "Working capital tied to AI build-to-order inventory could make cash conversion diverge from recognized margin, weakening free cash flow quality."
+      ],
+      "mandate_interpretation": "As the value and profit capture specialist, I must assess whether DELL AI infrastructure demand converts into sustainable margin and cash, not merely revenue. I own margin and incremental profit plus pricing and mix. I must demand a causal bridge from AI product to ISG/CSG segment and then to consolidated DELL profit and cash. I must not upgrade management margin targets or coincident company-level profit moves into AI profit attribution. My findings stay within reviewed evidence and structured financial facts; audited AI product profit contribution is a known gap.",
+      "plan_opinion_digest": "6b2bd12763aee9d601866ad45422da40ea7bbb70241fcdd33faffda6ddfb17d5",
+      "requested_atoms": [
+        {
+          "facet_id": "margin_and_incremental_profit",
+          "product_intents": [
+            "AI-optimized server versus non-AI server operating margin trend on a same-basis comparison within ISG",
+            "incremental profit per dollar of AI server revenue and any disclosed backlog to shipped revenue conversion",
+            "management segment margin guidance separated from any audited product profit contribution"
+          ]
+        },
+        {
+          "facet_id": "pricing_and_mix",
+          "product_intents": [
+            "AI versus non-AI server average selling price and volume mix shift bridge across periods",
+            "component cost pass-through, pricing power and memory or GPU content effects on blended margin",
+            "mix shift between AI-enabled PCs, commercial PCs and services as a margin driver"
+          ]
+        }
+      ],
+      "schema_version": "fin_ia_specialist_plan_opinion_v1_0",
+      "stop_condition": "Stop when a product-to-segment-to-company margin and cash bridge for AI demand is either established from reviewed evidence and structured facts, or shown to be unprovable because of genuine non-disclosure of audited product-level profit contribution."
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "dependencies": [
+        "S1 reviewed Evidence",
+        "S1 official source route",
+        "S2 NumericFact",
+        "case fact presence",
+        "relationship graph context",
+        "another specialist workpaper"
+      ],
+      "failure_risks": [
+        "AI 专属现金流归因在披露中不存在，数值工具会返回空结果，需提前用 case fact presence 区分'本单元未加载'与'真实未披露'，否则我会把合并现金误当 AI 现金贡献",
+        "数值事实工具可能缺最新季度或口径不一致（如 FCF 是否扣 DFS 融资净变动），混用不可比期间会导致现金转化趋势判断失真",
+        "DFS 融资应收、证券化与应付账款扩张对现金的影响容易被重复计算或误读为经营改善，属于可见证据误读风险",
+        "上游付款条件可能仅有定性披露，无法数值化分解'应付驱动现金'的占比，只能以定性加代理指标表述",
+        "全案其他单元可能已存在本单元未加载的营运资金事实，我若在核验 case fact presence 之前断言'未披露'，会把存在的证据错误排除",
+        "证据请求对风险披露可能超时或返回空，我不能因此在停证条件中编造事实，必须以受限代理判断收口"
+      ],
+      "hypotheses": [
+        "AI 订单放大会先造成营运资金压力：GPU/组件预购存货与大型云厂商应收款上升，使经营现金流滞后于收入增长，短期 OCF/FCF 被暂时压制",
+        "合并现金表现可能被供应商付款条件（应付账款扩张）与 DFS 融资应收/证券化美化，头条现金流数字高估了 AI 硬件本身的现金创造能力",
+        "AI 服务器因 GPU 大额过手成本而现金利润率结构性偏低，可持续自由现金流取决于服务、存储、融资等附加业务的带动而非裸硬件放量",
+        "存在'需求真实但现金弱'场景：订单积压增长而现金循环周期拉长，应收信用风险向少数 AI 客户集中",
+        "反方证据路径：若出现递延收入/客户预付款上升与 OCF 强劲并存，可能说明需求拉动伴随预付，现金流质量高于预期；但若现金主要靠应付驱动，则供给正常化后会逆转"
+      ],
+      "mandate_interpretation": "我的职责聚焦于问题中的现金转化部分：检验 AI 基础设施订单/收入是否能转化为可持续经营现金流与自由现金流，营运资金（应收、存货、应付、信用风险）是否随 AI 业务占比上升而恶化，并严格区分合并现金表现与 AI 产品现金贡献。由于 source_readiness 明确标注缺少 AI-specific cash attribution，本单元必须把\"合并现金表现\"与\"AI 产品现金贡献\"拆开处理：能用数值验证的用数值，无法归因的标记为 typed gap 并用代理指标（存货/应收结构、递延收入、DFS 融资应收、管理层披露）给出受限判断，不虚构归因。",
+      "plan_opinion_digest": "2f1ae496c5310887aaee929f3b99e51640e0200c03d40caa5cfd5dc6cef44267",
+      "requested_atoms": [
+        {
+          "facet_id": "cash_generation",
+          "product_intents": [
+            "获取最近若干可比期间的合并经营现金流、自由现金流、资本开支及同比/环比变化数值",
+            "获取 DFS（Dell Financial Services）融资应收、证券化或出售应收对经营现金流的影响及相关披露",
+            "获取管理层对 AI 服务器积压订单转化为收入/现金的节奏及利润率可持续性的表述",
+            "确认是否存在 AI 产品层级的现金流归因披露；若不存在则建立 typed gap 结论并指定代理指标"
+          ]
+        },
+        {
+          "facet_id": "working_capital_risk",
+          "product_intents": [
+            "获取最近若干期间的应收账款、存货、应付账款及 DSO/DIO/DPO 或现金转换周期数值",
+            "获取 AI 相关存货（GPU/服务器组件）预购、供应约束及存货风险的定性披露",
+            "获取客户集中度、主要 AI 客户信用风险、坏账准备及账期变化的披露",
+            "获取上游供给方（GPU/组件供应商）付款条件、供应关系及其对现金影响的披露"
+          ]
+        }
+      ],
+      "schema_version": "fin_ia_specialist_plan_opinion_v1_0",
+      "stop_condition": "当取得至少两个可比期间的合并 OCF/FCF、资本开支与关键营运资金科目（应收/存货/应付）数值，并对 AI 现金流归因完成存在性结论（typed gap 或可用的代理指标），且已与客户/供应商关系上下文交叉核验后，停止取证并转入判断。若核心数值属于真实未披露，则以代理指标给出受限判断并明确不确定性边界，不得虚构数据。"
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "dependencies": [
+        "S1 reviewed Evidence",
+        "S1 official source route",
+        "S2 NumericFact",
+        "case fact presence",
+        "relationship graph context"
+      ],
+      "failure_risks": [
+        "Treating TSM, MU or NVDA statements as Dell facts, which inflates confidence in Dell-specific capacity relief.",
+        "Reading one layer of capacity expansion as full-chain release while ignoring packaging, HBM and system-integration steps.",
+        "Model memory supplying allocation or yield numbers absent from reviewed Evidence, violating the graph evidence boundary.",
+        "Missing counter-evidence about customer readiness or absorption that would reverse the demand-sustainability read.",
+        "Leaving Dell-specific allocation, timing, yield and utilization gaps unrequested because they are mistaken for background instead of material gaps."
+      ],
+      "hypotheses": [
+        "Dell's AI server demand and margin/cash trajectory remain gated by layered upstream constraints (HBM allocation, advanced packaging, system integration), so a single-layer capacity expansion cannot by itself prove end-to-end constraint release for Dell's delivery timing.",
+        "Counterparty disclosures (TSM, MU, NVDA) mainly speak to industry-wide capacity and their own customers; they are at best bounded read-through and cannot evidence Dell-specific allocation, timing, yield or utilization.",
+        "The strongest counter-evidence likely sits in customer readiness, absorption and Dell-specific allocation gaps rather than in generic demand commentary; absent Dell-specific disclosures, the sustainability of profit and cash cannot be confirmed.",
+        "Relationship-graph context may help locate who discloses about whom, but any added or revised edge must carry reviewed Evidence and cannot rest on model memory."
+      ],
+      "mandate_interpretation": "As the supply-relationship analyst for the DELL counter-evidence cell, I assess upstream supply capacity, counterparty direct mentions, and Dell's own relationship disclosures only through reviewed Evidence. I must attribute every disclosure to its speaker (TSM, MU, NVDA, Dell) and never convert a counterparty claim into a Dell fact. My scope covers wafer, advanced packaging, HBM, system integration, customer readiness and delivery as a layered constraint chain, plus the strongest counter-evidence against demand sustainability and profit/cash conversion.",
+      "plan_opinion_digest": "eacd037417e90322372057a64f7d0bb83e3e9515923844562bf772cfa5fefc9c",
+      "requested_atoms": [
+        {
+          "facet_id": "upstream_capacity_context",
+          "product_intents": [
+            "TSM, MU or NVDA disclosed capacity, packaging or HBM plans dated and scoped to specific product generations, including any utilization or yield figures.",
+            "Any industry-level constraint change that materially alters the read-through to Dell delivery timing.",
+            "Counter-evidence that upstream capacity is absorbing slower than supply growth, weakening the demand-sustainability link."
+          ]
+        },
+        {
+          "facet_id": "counterparty_direct_mention",
+          "product_intents": [
+            "Counterparty filings that directly name Dell as customer, partner or allocation recipient, with exact quoted scope and date.",
+            "Counterparty statements that disclaim or qualify Dell-specific allocation, timing or guidance."
+          ]
+        },
+        {
+          "facet_id": "subject_relationship_disclosure",
+          "product_intents": [
+            "Dell's own commentary on supply availability, customer readiness, delivery timing, margin and cash conversion.",
+            "Dell disclosures that qualify, limit or contradict the sustainability of AI infrastructure demand."
+          ]
+        }
+      ],
+      "schema_version": "fin_ia_specialist_plan_opinion_v1_0",
+      "stop_condition": "Stop and report a bounded read-through when only counterparty or industry capacity evidence exists without Dell-specific allocation, timing, yield or utilization. Further work resumes only if new reviewed Evidence directly binds supply capacity to Dell's delivery, profit or cash conversion, or a counterparty directly names Dell."
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "dependencies": [
+        "S1 reviewed Evidence",
+        "S2 NumericFact",
+        "S1 official source route",
+        "case fact presence",
+        "another specialist workpaper"
+      ],
+      "failure_risks": [
+        "公司口径对订单可取消条款与客户集中度披露不足，反方假设只能停留在命题层面而无法与已审证据锚定。",
+        "营运资本与分部利润的 NumericFact 缺失或被错误归类，使'利润与现金背离'命题无法用结构化事实检验。",
+        "将结构性数据缺失（无独立行业需求序列、无渠道库存数据）误读为反方有利，从而输出不可判定的结论。",
+        "挑战对象仅依据正面报告、未加载反方证据，导致发出的挑战无命题指向或无人可回应。",
+        "过度以先验反方立场解读中性数据，把竞争性定价或正常库存周期曲解为需求虚假。",
+        "未区分'未在本单元加载'与'真实未披露'，把可见性缺口错当证据缺口并虚构事实。"
+      ],
+      "hypotheses": [
+        "AI 服务器订单主要是超大规模客户的提前下单与容量囤积，而非可重复的终端需求；订单可取消，积压订单不足以证明需求可持续。",
+        "AI 服务器占比上升拉低 ISG 利润率：高价值 GPU/网络组件挤压毛利、竞争性定价侵蚀溢价，收入高增长与分部利润改善脱钩。",
+        "营运资本（库存与应收）随 AI 服务器放量急剧膨胀，现金转化滞后于收入；在供给松动或代际切换时存在减值与回款风险。",
+        "上游 GPU 分配约束制造了虚假稀缺与虚假积压；一旦英伟达供给松动或 Hopper→Blackwell 切换，渠道库存与在手订单面临取消或减值。",
+        "需求集中于少数超大规模客户，单一客户资本开支下调、自研替代或租约/融资安排变化即可使订单与收入显著回落；传统企业服务器需求走弱可能被 AI 增长掩盖。"
+      ],
+      "mandate_interpretation": "作为独立反方研究员，我的职责不是另写主判断，而是针对\"Dell 的 AI 基础设施需求真实且可持续、并能转化为可持续利润与现金\"这一结论，系统构造可证伪的反方命题：检查替代解释（订单前置与囤货、上游供给约束制造的虚假稀缺）、缺失桥（订单→收入→利润→现金之间的转化缺口）与不可观察变量（订单可取消性、客户集中度、渠道库存），并把每个反方命题绑定到已审证据或结构化财务事实上，向主判断角色发出有命题指向的挑战。",
+      "plan_opinion_digest": "ccba0229b5c69c0726ddfc175c355f1593ca239b80837f13e69caa725cfdd3aa",
+      "requested_atoms": [
+        {
+          "facet_id": "issuer_counterevidence",
+          "product_intents": [
+            "Dell 风险因素中关于订单可取消性、客户集中度、组件成本与利润率压力的原文",
+            "ISG 分部利润率、营运资本与经营现金流之间背离的证据",
+            "管理层关于订单提前性、供给约束与积压订单质量的表述"
+          ]
+        },
+        {
+          "facet_id": "upstream_or_demand_counterevidence",
+          "product_intents": [
+            "英伟达与供应链的 GPU 分配、代际切换及由此产生的库存减值/订单取消风险证据",
+            "超大规模客户资本开支指引、租约/融资安排及自研替代的反方信号",
+            "第三方渠道库存、订单取消与独立行业需求序列同公司口径的差异"
+          ]
+        }
+      ],
+      "schema_version": "fin_ia_specialist_plan_opinion_v1_0",
+      "stop_condition": "当至少一条反方假设能够基于已审证据与 NumericFact 获得明确证实或证伪，且已向主判断角色发出至少一次有命题指向的挑战并得到回应，同时案情事实目录确认无新增可检证据时，本单元停止。"
+    }
+  ],
+  "status": "six_R3_specialist_plans_valid_for_Lead_successor_resume"
+}

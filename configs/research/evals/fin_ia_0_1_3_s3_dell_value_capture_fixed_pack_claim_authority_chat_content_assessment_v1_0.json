@@ -1,0 +1,116 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_claim_authority_chat_single_cell_assessment_v1_0",
+  "status": "terminal_contract_failed_raw_content_materially_improved_layer_two_blocked",
+  "recorded_at": "2026-08-14T17:40:00+08:00",
+  "assessment_kind": "independent_codex_post_run_layer_one_fixed_pack_assessment",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_chat_live_authority_v1_0.json",
+  "source_authority_sha256": "78dee3f0e190c48225671a6596d6db3c279183f9002794a24521eea062d5aad5",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_chat_live_result_v1_0.json",
+  "source_result_sha256": "4d7fc21f58d1c255a5708a8a6075da0ebaf070dd748ac6e9b2a077a01f3771dd",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-claim-authority-chat-r1-value-capture/full_result.json",
+  "full_result_sha256": "f32e16650125fe24ec836c40c932f1174f4b57dcacabbbfe36a00104116d6588",
+  "implementation_commit": "ef81ce55559f2cfab0d0a3ebc178c138fe402eb0",
+  "research_input_digest": "bbe4d3864cce41751019cc10c88784faaf37d45dcc019be7b2035fbc79ad179a",
+  "execution_observation": {
+    "status": "terminal_failed_no_retry",
+    "model_calls_attempted": 2,
+    "maximum_model_calls": 3,
+    "accepted_tool_receipts": 2,
+    "tool_sequence": [
+      "parallel_read_reviewed_evidence_and_numeric_facts",
+      "submit_research_judgment"
+    ],
+    "evidence_requests": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "product_publication": false,
+    "private_reasoning_persisted": false
+  },
+  "formal_contract_result": {
+    "gate_status": "fail",
+    "failure_phase": "local_finance_loop_validation",
+    "failure_code": "finance_loop_judgment_invalid:research_consumer_thesis_atom_invalid",
+    "earliest_trigger": "The thesis repeated the source-authorized qualitative range 中个位数. The legacy generic narrative validator classifies the Chinese verbal range as a forbidden numeric surface before the claim-authority validator runs.",
+    "source_contract_conflict": "Reviewed Evidence EV::0063F22F643B94ED explicitly authorizes quoting management's mid-single-digit range, while the model output contract exposes no typed range or target alias and forbids the only natural-language representation. The correct material fact therefore has no legal output path.",
+    "provider_nonconformance_component": "DeepSeek did not follow the prose instruction to avoid digits or verbal numeric surfaces, but it copied a material range that the same model view explicitly marked as quotable. The primary repair belongs to the project contract, not to another prompt-only retry.",
+    "no_retry_disposition": true
+  },
+  "zero_call_postmortem": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "normalized_raw_replay": "research_consumer_thesis_atom_invalid",
+    "same_output_with_only_the_verbal_range_removed": "passes_current_local_validator",
+    "promotion_of_modified_output": false,
+    "meaning": "This isolates the terminal contract failure to the missing source-bound numeric-range representation. The modified replay is diagnostic only and cannot retroactively turn the failed live output into an accepted Judgment."
+  },
+  "raw_business_content_l1": {
+    "formal_gate_status": "not_passed_because_no_contract_valid_judgment_exists",
+    "diagnostic_causal_boundary": "materially_improved_and_no_longer_attributes_company_or_segment_profit_improvement_to_AI_servers",
+    "claim_scope_selected": "product",
+    "financial_scope_selected": "product_financial",
+    "causal_bridge_authority_selected": "management_assertion_only",
+    "material_improvements": [
+      "The thesis explicitly labels the AI-server profitability statement as management-provided and unaudited.",
+      "The output states that the current Pack does not provide a reproducible product price-volume-cost bridge.",
+      "The old semi-fixed-cost and company operating-leverage mechanism is absent.",
+      "Unit, ASP and price-volume-mix gaps remain open rather than being treated as returned evidence."
+    ],
+    "remaining_precision_risks": [
+      "The counterargument says 单位利润低于存量业务组合 although the reviewed evidence directly establishes gross-margin mix pressure, not profit per shipped unit.",
+      "The mechanism uses 使 and 贡献 wording. It is scoped to management's product-level assertion, but a future contract should encode the claim relation structurally instead of relying on a finite keyword list."
+    ]
+  },
+  "content_quality": {
+    "formal_eight_dimension_score": null,
+    "formal_score_reason": "No contract-valid Judgment or deliverable was produced, and this is a single-cell fixed-Pack unit test rather than a five-cell report.",
+    "diagnostic_only_applicable_score": 21,
+    "diagnostic_only_applicable_maximum": 24,
+    "node_quality_scores": {
+      "Q1_company_and_question_specificity": {"score": 4, "reason": "Specific to Dell AI-server profitability, price and margin discipline, mix pressure and the missing product bridge."},
+      "Q2_evidence_to_conclusion_argument": {"score": 4, "reason": "Separates one management support source, two limiting sources and one context source, and states the central evidence boundary."},
+      "Q3_financial_and_numeric_interpretation": {"score": 3, "reason": "Uses the same-quarter gross-margin relation in the correct direction, but the valid management target has no typed display alias and therefore breaks the output contract."},
+      "Q4_causal_mechanism_and_industry_logic": {"score": 3, "reason": "Removes the unsupported company operating-leverage story and stays at product-level management assertion, but still needs more precise gross-margin versus unit-profit wording."},
+      "Q5_cross_cell_synthesis": {"score": null, "reason": "Not applicable to Layer One single-cell fixed-Pack testing."},
+      "Q6_counterthesis_risk_and_gap_discipline": {"score": 4, "reason": "Preserves mix pressure, possible demand pull-forward, missing product metrics and the need for future verification."},
+      "Q7_what_would_change_and_action_value": {"score": 3, "reason": "Asks for product operating margin, ASP and unit disclosure on an official route, but does not define a typed thesis-state transition."},
+      "Q8_senior_delivery_usability": {"score": null, "reason": "No verifier-bound report artifact exists."}
+    }
+  },
+  "paired_to_immutable_r2": {
+    "r2_diagnostic_score": 18,
+    "current_raw_diagnostic_score": 21,
+    "content_direction": "material_improvement_not_formal_acceptance",
+    "gains": [
+      "company and segment profit are no longer attributed to AI servers",
+      "unsupported semi-fixed cost behavior is removed",
+      "management assertion and reproducible bridge are explicitly separated",
+      "the answer remains informative instead of collapsing to generic insufficiency"
+    ],
+    "why_no_winner_is_declared": "R2 was contract-valid but failed causal L1; the current output is semantically safer but contract-invalid. A failed output cannot be promoted or declared the accepted paired winner."
+  },
+  "root_cause_disposition": {
+    "deepseek_analysis_capability": "The natural output demonstrates materially better scope discipline under the new authority card, but still missed a transport-facing prose restriction.",
+    "project_contract_gap": "Reviewed-source qualitative numeric ranges and management targets have no typed alias or deterministic renderer path, while all narrative numeric surfaces are banned.",
+    "validator_design_boundary": "Lexical causal guards are not a sufficiently general financial claim model; future validation should bind subject, outcome, relation, attribution basis and scope as structured claim atoms.",
+    "recommended_next_scope": "Do not begin dynamic Layer Two yet. First make a bounded Layer-One disposition: add a source-bound qualitative range or management-target fact alias, and define structured claim relation fields without taking narrative authorship away from the model. Prove by zero-call replay before deciding whether any replacement live is worth its cost."
+  },
+  "acceptance": {
+    "formal_zero_call_claim_authority_proof": true,
+    "live_transport_complete": true,
+    "required_fixed_pack_reads_complete": true,
+    "natural_claim_scope_improved": true,
+    "formal_contract_valid": false,
+    "formal_single_cell_l1_pass": false,
+    "fixed_pack_layer_one_accepted": false,
+    "dynamic_layer_two_authorized": false,
+    "five_cell_live_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false
+  },
+  "stop_boundary": "Preserve this exact live result and return it to Owner. Do not patch and rerun, start dynamic Layer Two, execute five cells or publish a product result without a new decision."
+}

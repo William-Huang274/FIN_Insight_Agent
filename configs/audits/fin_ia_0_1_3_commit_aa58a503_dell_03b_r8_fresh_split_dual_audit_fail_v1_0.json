@@ -1,0 +1,361 @@
+{
+  "schema_version": "fin_ia_independent_readonly_audit_result_v1_0",
+  "status": "fail_material_predicate_frame_scope_anchor_and_report_quality_findings_same_stage_R9_required",
+  "audit_id": "FIN-0.1.3-S1-DELL-03B-R8-FRESH-SPLIT-DUAL-AUDIT",
+  "recorded_at": "2026-08-27T07:11:24+08:00",
+  "audited_result_commit": "aa58a503d5d1416ff2d778808875667b904e6ce4",
+  "audited_result_tree": "7e3ce76c83231d8da5c726669adda7b24d6b5246",
+  "authority_commit": "f4c3c629c789fa8d61deda2f4375eb887f5f8ce4",
+  "authority_tree": "d55e3ac61a412e6aab184b5d6ca7b3e4442e9829",
+  "implementation_commit": "a9403e327e2de740015d63223ee6fbeace0f93a6",
+  "implementation_tree": "3aa2cf8ee5102b81bdfb9151d35c14c68f8bb267",
+  "audit_manifest_commit": "4db3c4bf74e5075201997ed61340aa8f4bef67a3",
+  "audit_manifest_tree": "88a6848acb92a9fb16d65450839d17f36636b9b7",
+  "audit_manifest": {
+    "ref": "configs/audits/fin_ia_0_1_3_commit_aa58a503_dell_03b_r8_fixed_dual_audit_manifest_v1_0.json",
+    "sha256": "a4cdc3162f90153f82d3d1e3295bfce59ec00a52ddc7eb420fc2be2b249598bd",
+    "result_digest": "024d0dc0ade945ac4df7f0bb08d5d2229fc585c697f3c6a2f87985482d46491f"
+  },
+  "auditor_contract": {
+    "fresh_fork_none_author_separated": true,
+    "split_engineering_and_report_reviewers": true,
+    "read_only": true,
+    "writes_commits_pushes": 0,
+    "network_provider_generation_external_embedding_4B_reranker_paid_calls": 0,
+    "formal_attempts": 0,
+    "full_repository_pytest_runs": 0,
+    "targeted_pytest_runs": 0,
+    "scope": "immutable_R8_integrity_route_predicate_frame_scope_anchor_recall_public_privacy_and_immutable_R17_reader_report_quality",
+    "missing_evidence_is_not_assessable_not_pass": true
+  },
+  "reviewed_artifacts": {
+    "R8_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_7.json",
+      "sha256": "7c3cbeb550531b6a8fe89e362d7f4c9687aeb6d4b057776778ac880b59e929f4",
+      "result_digest": "ee6616d7c0db30608f91cea80c6412bb69dae19a0e9babc80576b9a2aa96ae63"
+    },
+    "R8_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v1_7.json",
+      "sha256": "8a11168e9366462928d4741abb1e87cfabc2597d4e1a6603c66b3710835dd022",
+      "result_digest": "1b6c04aadd61ec1253ab27062b3dd8a7b3251e6b7f3fb20ef3918e390aa5e83d"
+    },
+    "R8_private": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r8/full_result.json",
+      "sha256": "17041e294d89ed281f9c54bd666cd0a071a13056bffa6a91306fca136cface4f",
+      "result_digest": "290c8390f3b043409b79833b00ef9a3388c56368c19a1eb901bded7598b037b2"
+    },
+    "R8_attempt_receipt": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r8/attempt_consumption_receipt.json",
+      "sha256": "cace31eca24984dcb927131876b3d449b406a7f5280cae2a6ce9f93e89248217",
+      "result_digest": "695f50f516efb621fd27883d099d188026a04bf55430722caa4c830943bd21fa"
+    },
+    "R8_raw_capture": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r8/raw_execution_capture.json",
+      "sha256": "d71cd93eedf7226b2e80d82ba53c6d43f7db2c79e19bee8df703e12910cfbd83",
+      "result_digest": "6da7eed0dedfe854023b27088532293af1dea253733aab343c78c7352c75ba4c"
+    },
+    "R8_frames": {
+      "ref": "src/retrieval/dell_report_predicate_frames_r8.py",
+      "sha256": "f3392d178423264f7620acbee0d71e3c00ab82d224580d272e118096ab0d4753"
+    },
+    "R8_public_validator": {
+      "ref": "src/retrieval/dell_report_public_validation_r8.py",
+      "sha256": "3d8421d19839ca37320065ae4d5bc8cecad41ca204cf5d692dc770f3ab3a90ca"
+    },
+    "R8_compiler": {
+      "ref": "src/retrieval/dell_report_internal_chain_ceiling_r8.py",
+      "sha256": "eb6da17ea5f1e67c0505d6412bcafbb23729e5bd524ff3eee27b3e0834bb8680"
+    },
+    "R8_runner": {
+      "ref": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r8.py",
+      "sha256": "f56a956eae7095626b69ee794bf4b9f801d5fc4abfcf27364d56c03478ae3f03"
+    },
+    "R8_tests": {
+      "ref": "tests/test_dell_report_predicate_frames_r8.py",
+      "sha256": "5a44371b88804d27042e0295af8de9ff2704e71f54ded5c799c4322d84d9ae9f"
+    },
+    "R17_private": {
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-reversal-gate-r17/full_result.json",
+      "sha256": "433b2c486f8753d4f0b2468aa66f21c0ef2ff0e4bcc7d9347233e239b30ec0e8",
+      "full_result_digest": "3be5a5453c8cf18cf5a14f7b7de7535b8d8c64367275e2f509dc0849db587743"
+    },
+    "R17_authority_catalog": {
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_authority_catalog_v1_0.json",
+      "sha256": "fe33215f8d46a5fa9db422d8192ba3c18daf29563a7941ba6fe16808ce07a84b",
+      "authority_catalog_digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765"
+    },
+    "R17_crosswalk": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_2.json",
+      "sha256": "990972fc1acb62696f0bebbc12713e100597271ec562424296cf8d220ff577f5",
+      "result_digest": "afc37e760cd88c107365e727d10b53694b299f93c4245cf90110775ec22676e2",
+      "crosswalk_content_digest": "f2ab679522d15ba9fe22e3f17b0010a032a4fb142fa918b56b5d344c47b8afc2"
+    },
+    "DELL_source_passage_locator_pack": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+      "sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+      "pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98"
+    },
+    "R17_human_packet": {
+      "ref": "data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r2/full_result.json",
+      "sha256": "9679d9e73668f12fb3e306eb3f5e73723e65a5a97247f74607374367668bcf11",
+      "full_result_digest": "a90ed777fe85956889976aea2baa50d3b2f84f7a058e21e3eacde3f5b1f6c4fd"
+    }
+  },
+  "verified_identity_integrity_and_route": {
+    "phase_A_verdict": "PASS_BOUNDED",
+    "engineering_bundle_hashes": "15_of_15",
+    "R17_bundle_hashes": "14_of_14",
+    "bound_inputs": "34_of_34",
+    "implementation_bindings": "21_of_21",
+    "implementation_authority_result_parent_tree_changed_paths_exact": true,
+    "policy_receipt_raw_private_public_self_digests_and_links": true,
+    "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+    "exact_public_reprojection_dict_and_canonical_bytes": true,
+    "attempt_directory_exact_population": [
+      "attempt_consumption_receipt.json",
+      "raw_execution_capture.json",
+      "full_result.json"
+    ],
+    "terminal_failure_receipt_absent": true,
+    "request_count": 5,
+    "local_0_6B_embedding_batches": 1,
+    "aggregate_union_final": [
+      338,
+      80
+    ],
+    "each_request_union_final_unique_rank_exact": [
+      96,
+      16
+    ],
+    "network_model_generation_provider_external_4B_reranker_retry_mutation_candidate_evidence_promotion_gap_closure": 0,
+    "targets": {
+      "ASP": {
+        "source_compiled_union_final": [1, 1, 1, 1],
+        "rank": 2
+      },
+      "supplier": {
+        "source_compiled_union_final": [3, 3, 2, 1],
+        "rank": 2
+      },
+      "capacity_release": {
+        "source_compiled_union_final": [0, 0, 0, 0],
+        "external": true
+      },
+      "capacity_yield": {
+        "source_compiled_union_final": [0, 0, 0, 0],
+        "external": true
+      },
+      "HBM": {
+        "source_compiled_union_final": [0, 0, 0, 0],
+        "external": true
+      },
+      "units": {
+        "source_compiled_union_final": [0, 0, 0, 0],
+        "external": true
+      }
+    },
+    "coverage_gaps": 0,
+    "local_repair": 0,
+    "external_required": 4,
+    "4B_eligible": 0,
+    "reranker_eligible": 0
+  },
+  "R8_frozen_surface_results": {
+    "inherited_R7_negatives_false_complete": "0_of_63",
+    "fresh_R8_negatives_false_complete": "0_of_8",
+    "fresh_positive_controls_complete": "6_of_6",
+    "selected_R7_positive_controls_complete": "11_of_11",
+    "frozen_support150_hardware15_attack": "pass_bound_15",
+    "public_attacks_rejected": "15_of_15",
+    "public_valid_controls_accepted": "3_of_3",
+    "actual_four_layer_family_crosswalk_add_remove": 0,
+    "public_privacy_verdict": "PASS_BOUNDED"
+  },
+  "R8_material_findings": [
+    {
+      "finding_id": "R8-P2-1-unpunctuated-coordinator-cross-event-role-union",
+      "severity": "P2",
+      "status": "confirmed_reproducible",
+      "owning_stage": "S1_predicate_frame_compiler",
+      "path_lines": "src/retrieval/dell_report_predicate_frames_r8.py:106-109,325-374",
+      "primary_input": "Dell shipped marketing materials and NVIDIA delivered four PowerEdge XE9680 AI servers in Q1 2026.",
+      "observed": "one_frame_complete_actor_and_predicate_from_Dell_marketing_event_quantity_product_period_from_NVIDIA_server_event",
+      "expected": "two_predicate_frames_and_partial_target",
+      "same_family_inputs": [
+        "Dell received financing and GPU capacity was allocated in Q1 2026.",
+        "HBM supply was available to HP and Dell announced earnings in Q1 2026."
+      ],
+      "root_cause": "coordinator_boundary_grammar_requires_punctuation_then_role_extractors_scan_the_unsplit_record",
+      "minimum_fix": "predicate_aware_coordination_split_without_relying_on_comma_and_frame_local_role_extraction"
+    },
+    {
+      "finding_id": "R8-P2-2-epistemic-reporting-and-revocation-grammar-incomplete",
+      "severity": "P2",
+      "status": "confirmed_reproducible",
+      "owning_stage": "S1_predicate_frame_semantic_scope",
+      "path_lines": "src/retrieval/dell_report_predicate_frames_r8.py:131-169,343-385,535-692",
+      "inputs": [
+        "Dell and NVIDIA partnered for delivery; this partnership was later suspended.",
+        "Dell discontinued its partnership with NVIDIA for delivery.",
+        "Dell is exploring a partnership with NVIDIA for delivery.",
+        "According to an analyst, Dell partnered with NVIDIA for delivery."
+      ],
+      "observed": "complete_affirmative_actual_active_direct_assertion",
+      "expected": "partial_with_typed_revoked_speculative_or_reported_scope",
+      "root_cause": "demonstrative_coreference_exploring_or_considering_and_leading_attribution_are_absent_from_scope_contract",
+      "minimum_fix": "frame_local_semantic_state_machine_covering_demonstrative_revocation_speculation_and_leading_reporting_owner"
+    },
+    {
+      "finding_id": "R8-P2-3-price-product-anchor-locality-bypass",
+      "severity": "P2",
+      "status": "confirmed_reproducible",
+      "owning_stage": "S1_anchor_compiler",
+      "path_lines": "src/retrieval/dell_report_predicate_frames_r8.py:851-879",
+      "inputs": [
+        "Dell quoted support for USD 150 and PowerEdge XE9680 hardware for USD 15.",
+        "Dell quoted a support package for USD 150 for PowerEdge XE9680 hardware."
+      ],
+      "observed": "complete_hardware_price_currency_usd_150",
+      "expected": "bind_15_to_hardware_or_return_typed_ambiguity_or_partial_and_never_promote_support_only_price",
+      "root_cause": "multi_price_right_lexical_heuristic_and_no_single_price_role_locality",
+      "minimum_fix": "price_argument_span_must_bind_to_hardware_object_with_competing_value_ambiguity_and_support_role_exclusion"
+    }
+  ],
+  "R8_unassessed_items": [
+    {
+      "item": "source_to_compiled_accepted_frame_digest_transformation_binding",
+      "status": "NOT_ASSESSABLE",
+      "reason": "actual_source_and_compiled_complete_rows_have_different_frame_digests_but_the_bounded_audit_was_stopped_before_text_and_transform_binding_could_distinguish_legitimate_representation_change_from_a_provenance_gap"
+    },
+    {
+      "item": "synonym_recall_outside_six_fresh_and_eleven_selected_positive_controls",
+      "status": "NOT_ASSESSABLE",
+      "reason": "bounded_controls_do_not_authorize_general_recall_extrapolation"
+    }
+  ],
+  "R17_report_quality": {
+    "verdict": "FAIL_GATE_OPEN_NOT_ASSESSABLE",
+    "actual_reader_report_characters": 21118,
+    "sources_markers": 25,
+    "EV_occurrences_unique": [59, 18],
+    "reader_URLs": 0,
+    "source_or_citation_appendix": false,
+    "authority_catalog_EV_resolution": "18_of_18",
+    "local_source_pack": {
+      "source_text_nonempty": "55_of_55",
+      "text_digest_match": "55_of_55",
+      "absolute_HTTP_URL_valid": "55_of_55",
+      "Evidence_to_material_ref_unique": "55_of_55"
+    },
+    "claim_EV_to_source_passage_URL_semantic_support": "NOT_ASSESSABLE_zero_of_18_report_EV_exactly_bound_to_pack_and_catalog_rows_lack_locator_fields",
+    "crosswalk": {
+      "pack_dynamic_writer_groups_writer_refs_S2": [14, 9, 4, 10, 4],
+      "digest_bound_or_consumed_by_R17": false,
+      "omitted_facets": [
+        "price_in_boundary",
+        "scenario_or_sensitivity",
+        "supplier_capacity_readthrough",
+        "valuation_basis"
+      ]
+    },
+    "what_would_change": {
+      "items": 6,
+      "operational": 0,
+      "rendering_receipts_with_EV_or_GAP": 0,
+      "method_parameters_frozen_pending": [0, 2]
+    },
+    "numeric_formula_verdict": "PASS",
+    "company_segment_product_boundary": "PASS_BOUNDED",
+    "strongest_counter_thesis": "PASS_BOUNDED",
+    "facts_occurrences_unique": [72, 36],
+    "qualified_human_packet": {
+      "requests": 8,
+      "items": 18,
+      "human_required": 16,
+      "decisions": 0
+    },
+    "formal_8D": "NOT_ASSESSABLE_score_null"
+  },
+  "R17_material_findings": [
+    {
+      "finding_id": "R17-P1-reader-citations-not-independently-verifiable",
+      "severity": "P1",
+      "status": "open_reproduced",
+      "owning_stage": "S1_to_S3_claim_source_contract_and_R17_citation_renderer",
+      "evidence": "internal_EV_resolve_but_reader_URL_and_appendix_zero_and_EV_to_pack_passage_URL_binding_absent",
+      "impact": "material_claims_cannot_be_independently_verified_and_semantic_support_is_NOT_ASSESSABLE"
+    },
+    {
+      "finding_id": "R17-P2-report-pack-dynamic-14-9-4-10-crosswalk-missing",
+      "severity": "P2",
+      "status": "open_reproduced",
+      "owning_stage": "S3_report_successor",
+      "evidence": "R17_has_four_groups_and_ten_GAP_refs_but_no_crosswalk_digest_or_full_fourteen_boundary_register",
+      "impact": "reader_cannot_distinguish_writer_selection_from_all_open_research_boundaries"
+    },
+    {
+      "finding_id": "R17-P2-what-would-change-not-operational",
+      "severity": "P2",
+      "status": "open_reproduced",
+      "owning_stage": "S3_research_lead_method_parameter_register_then_writer",
+      "evidence": "zero_of_six_items_operational_zero_source_receipts_and_two_thresholds_pending",
+      "impact": "no_repeatable_monitoring_or_thesis_reversal_contract"
+    },
+    {
+      "finding_id": "R17-P3-repetition-and-facts-density",
+      "severity": "P3",
+      "status": "open_reproduced",
+      "owning_stage": "S3_writer_editorial_renderer",
+      "evidence": "seventy_two_fact_items_normalize_to_thirty_six_unique_and_WWC_is_rendered_twice",
+      "impact": "core_judgments_are_obscured_and_reader_scan_efficiency_is_reduced"
+    }
+  ],
+  "audit_efficiency": {
+    "full_repository_avoided": true,
+    "targeted_pytest_avoided": true,
+    "material_local_defects_proven_with_fixed_files_and_in_memory_checks": true,
+    "initial_combined_auditor_interrupted_for_checkpoint_stall": true,
+    "replacement_split_auditors": 2,
+    "engineering_C_phase_interrupted_after_checkpoint_stall": true,
+    "post_interrupt_commands_or_reads": 0,
+    "supervisor_rule": "phase_checkpoint_or_interrupt_then_report_completed_evidence_and_mark_remaining_NOT_ASSESSABLE",
+    "future_correction": "separate_integrity_semantics_and_report_quality_bundles_with_positive_command_and_wall_budgets_and_no_mandatory_history_chase_beyond_AGENTS_required_documents"
+  },
+  "verdicts": {
+    "overall": "FAIL",
+    "R8_integrity": "PASS_BOUNDED",
+    "R8_actual_route": "PASS_BOUNDED_FOR_ACTUAL_IMMUTABLE_EXECUTION",
+    "R8_public_privacy": "PASS_BOUNDED",
+    "R8_predicate_frame_scope_anchor": "FAIL",
+    "R8_fresh_qualification": false,
+    "03B_independent_pass": false,
+    "new_R8_P0_P1_P2_P3": [0, 0, 3, 0],
+    "R17_report_quality": "FAIL_GATE_OPEN_NOT_ASSESSABLE",
+    "R17_open_P0_P1_P2_P3": [0, 1, 2, 1],
+    "combined_P0_P1_P2_P3": [0, 1, 5, 1],
+    "qualified_human_acceptance": false
+  },
+  "authority": {
+    "R8_retry_or_overwrite": false,
+    "R9_same_stage_successor_plan_and_implementation": true,
+    "03B_independent_pass": false,
+    "03C_external_capture_authorized": false,
+    "03D_4B_embedding_authorized": false,
+    "03D_reranker_authorized": false,
+    "candidate_decision_authorized": false,
+    "evidence_promotion_authorized": false,
+    "numeric_fact_promotion_authorized": false,
+    "gap_closure_authorized": false,
+    "Pack_Readiness_recompile_authorized": false,
+    "S1_pass": false,
+    "S2_pass": false,
+    "R17_successor_now_authorized": false,
+    "S3_report_quality_pass": false,
+    "qualified_human_acceptance": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release": false
+  },
+  "known_boundary": "R8 identity, actual immutable route, bounded positive controls and public threat validation pass, but punctuation-sensitive frame splitting, incomplete epistemic and revocation scope, and price-to-product locality make general 03B qualification false. The four residual source routes remain unexecuted. The bound DELL source pack has 55 valid passages and URLs, yet R17 has no one-to-one EV-to-passage locator binding or reader appendix, does not consume the 14/9/4/10 crosswalk, has zero operational WWC items and zero qualified-human decisions. R9 must remain in S1; neither R8 integrity nor R17 numeric correctness authorizes external capture, 4B, reranker, Evidence, S2, report successor or product release.",
+  "result_digest": "d8f2176e3f0972976ed601c5f0d261617e372df2c3a8de88097f18ed3e5cb612"
+}

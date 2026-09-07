@@ -1,0 +1,30 @@
+{
+  "schema_version": "fin_ia_dynamic_truth_spine_policy_v1_1",
+  "status": "provider_neutral_dynamic_reviewed_evidence_reselection",
+  "allowed_decision_states": [
+    "accepted",
+    "rejected",
+    "typed_gap",
+    "needs_human_review"
+  ],
+  "reviewed_evidence_matching": {
+    "exact_case_identity_required": true,
+    "writer_citable_required": true,
+    "exact_candidate_lineage_required": true,
+    "request_slot_binding_required": true,
+    "request_owner_required": true,
+    "request_source_type_required": true,
+    "as_of_and_period_required": true,
+    "rank_never_grants_authority": true,
+    "advisory_role_never_grants_authority": true,
+    "candidate_route_merge": "hybrid_plus_immutable_snapshot_union"
+  },
+  "authority": {
+    "candidate_is_never_evidence": true,
+    "already_reviewed_evidence_may_be_reselected": true,
+    "new_evidence_promotion_requires_separate_gate": true,
+    "numeric_authority_remains_s2": true,
+    "model_may_not_promote_or_bind_evidence": true
+  },
+  "known_boundary": "This successor only unions independently reached immutable snapshot and hybrid candidates before matching them to the already-reviewed Pack. The union remains candidate-only, grants no Evidence or numeric authority, and does not change the immutable v1.0 historical replay contract."
+}

@@ -1,0 +1,97 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_final_ontology_and_complex_context_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-CANDIDATE-RANKING-V1.5-FINAL-ONTOLOGY-CONTEXT",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_0.json",
+  "parent_policy_sha256_lf": "951a91d3cb2c4f492a4d434171d226c084f3c3b4df45db9e38671b0ac37024f2",
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_5.json",
+    "query_atom_eval_sha256_lf": "d27ed716815c5ad567f8f2faf61b5c4574fe1c63d3a8a621428b9738881089f7",
+    "retrieval_need_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_retrieval_need_compiler_policy_v1_1.json",
+    "retrieval_need_policy_sha256_lf": "e98f38c31a6e579b41004d3cad21d1ea2d81159a4d47083a9a9245cd7071f95e",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_1.json",
+    "financial_intent_ontology_sha256_lf": "c8627c945c7b6808a15856c5aa7be5f8a40b2aec14f258f07f439eb9edcd932d"
+  },
+  "candidate_contract_overrides": {
+    "rank_authority_object_kinds": ["claim", "metric_row"],
+    "bounded_parent_context_attached_only_after_child_selection": true,
+    "typed_metric_row_exact_route": true,
+    "typed_metric_alias_route": true,
+    "typed_metric_alias_route_uses_request_metric_intent_only": true,
+    "typed_metric_alias_route_prefers_direct_label_match_then_latest_eligible_publication": true,
+    "typed_metric_product_alias_groups_require_one_match_per_group": true,
+    "product_proxy_terms_support_recall_but_not_final_compatibility": true,
+    "unrequested_metric_cues_suppressed_when_proxy_forbidden": true,
+    "industry_extensions_are_versioned_ontology_data_not_core_branches": true,
+    "metric_row_role_surface_excludes_identity_and_table_title_metadata": true,
+    "rerank_each_candidate_against_all_needs": true,
+    "each_reranker_selects_its_own_best_need": true,
+    "persist_full_reranker_order_and_best_need": true,
+    "financial_shortlist_runs_after_candidate_union": true,
+    "complex_document_context_expands_only_after_shortlist_selection": true,
+    "context_expansion_never_grants_evidence_or_numeric_authority": true
+  },
+  "decision_gate_overrides": {
+    "positive_target_in_head_minimum_rate": 0.8,
+    "judged_positive_role_compatible_minimum_rate": 0.8,
+    "judged_hard_negative_suppression_minimum_rate": 1.0,
+    "vs2_complex_target_in_review_window_minimum": 4
+  },
+  "token_budget_basis_overrides": {
+    "bge_reranker": {
+      "node_purpose": "Score every bounded candidate against every compiled RetrievalNeed so one preselected need cannot bias complex financial requests.",
+      "input_scale": "Eighteen development atoms plus one 67-object complex-document replay; at most ten needs and ninety-six candidates per atom.",
+      "required_outputs": [
+        "one finite score per candidate-need pair",
+        "best need identity per candidate",
+        "complete bounded candidate ordering"
+      ],
+      "schema_burden": "pair-score matrix, stable candidate and need identities, cache digest and complete ordering",
+      "materiality_and_quality_risk": "a single wrong need can rank generic metrics, product catalogs or detached table context above evidence-bearing objects",
+      "comparable_run_evidence": "v1.4 generic rerankers reached only 2/15 and 4/15 top-ten positives while typed recall and finance-aware shortlist reached 15/15",
+      "reasoning_profile": "local cross-encoder scoring without generation, network or training",
+      "stop_and_truncation": "1024 tokens per pair, batch 2, finite matrix and fail closed on score or identity drift"
+    },
+    "qwen_reranker": {
+      "node_purpose": "Provide an independent local relevance signal over the same all-needs pair matrix without owning financial truth.",
+      "input_scale": "The same bounded candidate-need matrices as BGE, including the 67-object VS2 replay.",
+      "required_outputs": [
+        "one finite score per candidate-need pair",
+        "best need identity per candidate",
+        "complete bounded candidate ordering"
+      ],
+      "schema_burden": "instruction-aware pair scores plus deterministic aggregation and cache receipt",
+      "materiality_and_quality_risk": "semantic similarity may prefer a generic risk paragraph or detached row; Evidence Role and typed intent remain separate hard inputs",
+      "comparable_run_evidence": "Qwen found several VS2 structural targets but generic ranking alone did not retain their footnote and restatement context",
+      "reasoning_profile": "local reranker shadow without generation, network or training",
+      "stop_and_truncation": "1024 tokens per pair, batch 2, finite matrix and fail closed on score or identity drift"
+    }
+  },
+  "authority_overrides": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_requires_result": true,
+    "hidden_qualification_authorized": false,
+    "s1_complete_claimed": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false
+  },
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "the final v1.1 ontology separates HBM and data-center proxy terms from direct evidence",
+      "the reviewed MU qrel successor corrects incomplete reported-results labels without affecting label-blind scoring",
+      "VS2 requires the same all-needs scorer plus post-selection bounded context rather than ranking footnotes as standalone evidence"
+    ],
+    "not_changed": [
+      "compiled object population and model identities",
+      "hard identity, period, source and relationship filters",
+      "candidate and Evidence authority boundaries"
+    ],
+    "labels_joined_after_candidate_generation_and_all_model_scoring": true,
+    "no_gold_identity_or_answer_url_in_query": true,
+    "v1_0_through_v1_4_results_remain_immutable": true,
+    "single_final_ontology_attempt_before_VS3_disposition": true
+  }
+}

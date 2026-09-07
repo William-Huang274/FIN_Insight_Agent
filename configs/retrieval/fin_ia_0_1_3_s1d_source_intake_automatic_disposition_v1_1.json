@@ -1,0 +1,38 @@
+{
+  "schema_version": "fin_ia_s1d_source_intake_automatic_disposition_v1_0",
+  "disposition_id": "FIN-0.1.3-S1D-SOURCE-INTAKE-TUN-OFF-LIVE-R2-DISPOSITION",
+  "recorded_at": "2026-08-13",
+  "status": "tsm_capture_ready_for_offline_parse_dell_transport_gap_preserved",
+  "result_ref": "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_automatic_result_v1_1.json",
+  "result_sha256": "a58debd14c90e67a2145b2aabcd8f54985e38c24bf4b0a709d97409a812a7e00",
+  "confirmed_facts": [
+    "The user disabled transparent TUN before the bounded R2 execution.",
+    "Both official hostnames resolved to public IPv4 addresses and Windows routed both through WLAN rather than the prior okz Meta Tunnel interface.",
+    "The execution-time network snapshot reported an enabled localhost Windows user proxy and environment proxy configuration; therefore the historical DIRECT result label means TUN-off public-DNS/WLAN path, not a proxy-free naked connection.",
+    "The TSM route returned HTTP 200 and a 22-page PDF whose 1450799 raw bytes were stored in the private immutable CAS with SHA256 3e21fe2dc69a4b95ebaf3e2e9a037ff5d704c5729e1eb7eff1554d03bdfea453.",
+    "The Dell route still ended in official_source_transport_read_timeout before any HTTP status or response body was captured.",
+    "Exactly two network attempts, zero retry, zero model call, zero broad-search call, zero parse and zero Evidence promotion occurred."
+  ],
+  "supported_inference": [
+    "The prior transparent TUN/Fake-IP path was materially associated with the TSM transport failure because the same bound official URL became capturable after the user-visible path change.",
+    "Disabling TUN is not a sufficient Dell fix because the Dell route still timed out on the changed path.",
+    "The R2 comparison does not isolate TUN from the localhost explicit proxy as a single causal variable; it proves a usable changed application path for TSM, not a universal direct-origin transport guarantee."
+  ],
+  "product_disposition": {
+    "tsm_official_transcript": "captured_source_only_ready_for_zero_network_parse",
+    "dell_official_transcript": "typed_transport_gap_no_retry",
+    "captured_source_is_evidence": false,
+    "source_object_compilation_authorized": false,
+    "evidence_promotion_authorized": false,
+    "evidence_pack_recompile_authorized": false,
+    "S1_product_acceptance": false,
+    "S3_research_or_report_execution": false
+  },
+  "next_allowed_actions": [
+    "Bind a new zero-network parser authority to the immutable TSM attempt manifest and raw SHA256.",
+    "Parse page-bounded text, bind issuer, publication date, source URL and license boundary, then compile candidate financial objects through the shared runtime.",
+    "Run an explicit Evidence Gate for the upstream_or_demand_counterevidence facet; preserve TSM as the evidence owner and DELL only as the consuming case.",
+    "Recompile only the affected DELL Evidence Pack addendum and keep core_research_ready false while the Dell transcript remains missing.",
+    "Do not retry Dell automatically; operator upload remains the next bounded source route."
+  ]
+}

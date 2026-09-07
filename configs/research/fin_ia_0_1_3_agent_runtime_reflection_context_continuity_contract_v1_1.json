@@ -1,0 +1,103 @@
+{
+  "schema_version": "fin_ia_agent_runtime_reflection_context_continuity_contract_v1_1",
+  "product_version": "FIN_0_1_3",
+  "status": "zero_call_runtime_successor_contract",
+  "recorded_at": "2026-08-19T00:00:00+08:00",
+  "base_contract": {
+    "ref": "configs/research/fin_ia_0_1_3_agent_runtime_reflection_context_continuity_contract_v1_0.json",
+    "schema_version": "fin_ia_agent_runtime_reflection_context_continuity_contract_v1_0",
+    "compatibility": "all_six_artifact_contracts_and_responsibility_planes_inherited_without_reclassification"
+  },
+  "purpose": "Close the missing append-only event envelope and make checkpoint/resume mechanically verifiable while preserving the six frozen runtime artifact contracts.",
+  "session_event_envelope": {
+    "schema_version": "fin_ia_agent_session_event_v1_0",
+    "required_fields": [
+      "schema_version",
+      "event_id",
+      "session_id",
+      "sequence",
+      "event_type",
+      "actor_id",
+      "attempt_id",
+      "input_refs",
+      "output_refs",
+      "feedback_refs",
+      "prior_event_digest",
+      "occurred_at",
+      "event_digest"
+    ],
+    "allowed_event_types": [
+      "session_created",
+      "plan_bound",
+      "tool_execution_requested",
+      "tool_execution_completed",
+      "tool_execution_failed",
+      "provider_attempt_requested",
+      "provider_attempt_completed",
+      "provider_attempt_failed",
+      "feedback_issued",
+      "plan_delta_submitted",
+      "plan_delta_accepted",
+      "plan_delta_rejected",
+      "graph_delta_submitted",
+      "graph_delta_accepted",
+      "graph_delta_rejected",
+      "checkpoint_created",
+      "stop_decided",
+      "session_resumed"
+    ],
+    "invariants": [
+      "sequence_starts_at_one_and_is_contiguous",
+      "every_event_binds_the_previous_event_digest",
+      "event_digest_excludes_only_the_event_digest_field",
+      "one_terminal_event_per_provider_or_tool_attempt",
+      "failed_attempts_remain_immutable",
+      "new_feedback_step_uses_a_new_attempt_id"
+    ]
+  },
+  "context_checkpoint_extension": {
+    "required_fields": [
+      "case_id",
+      "case_version",
+      "as_of_date",
+      "active_plan_ref",
+      "last_event_digest",
+      "authority_refs",
+      "counterevidence_refs",
+      "open_question_refs"
+    ],
+    "invariants": [
+      "checkpoint_case_period_and_plan_match_the_agent_session",
+      "checkpoint_digest_covers_base_and_extension_fields",
+      "resume_rejects_missing_authority_open_gap_feedback_counterevidence_or_open_question_refs",
+      "resume_rejects_event_reordering_digest_mutation_and_cross_case_binding"
+    ]
+  },
+  "resume_receipt": {
+    "schema_version": "fin_ia_agent_session_resume_receipt_v1_0",
+    "required_fields": [
+      "schema_version",
+      "session_id",
+      "checkpoint_id",
+      "checkpoint_digest",
+      "replayed_through_sequence",
+      "last_event_digest",
+      "case_id",
+      "case_version",
+      "as_of_date",
+      "active_plan_ref",
+      "preserved_state_counts",
+      "status",
+      "resumed_at",
+      "resume_receipt_digest"
+    ]
+  },
+  "authority": {
+    "generation_model_calls": 0,
+    "paid_tool_calls": 0,
+    "natural_reflection_live_authorized": false,
+    "S1_qualification_claimed": false,
+    "S3_acceptance_claimed": false,
+    "release_claimed": false
+  }
+}

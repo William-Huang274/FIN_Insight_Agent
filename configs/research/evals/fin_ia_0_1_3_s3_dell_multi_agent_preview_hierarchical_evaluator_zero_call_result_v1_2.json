@@ -1,0 +1,106 @@
+{
+  "cross_role_view_receipt": {
+    "cross_role_view_digest": "5de26ffd828a88942296275b3f5714aff313e5f61c5b7ec570e19f8c2d77969b",
+    "input_characters": 45252,
+    "referenced_authority_included": false,
+    "role_count": 6
+  },
+  "evaluation_strategy": "local_L1_six_role_content_audits_cross_role_consistency_v1",
+  "fake_execution_receipt": {
+    "conditional_writer_count": 1,
+    "maximum_authorized_model_nodes": 12,
+    "maximum_two_repair_path_node_count": 12,
+    "pass_without_repair_node_count": 7,
+    "third_repair_path_node_count": 14,
+    "unaffected_role_reevaluation_count": 0
+  },
+  "frontier_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_compiled_successor_frontier_v1_4.json",
+  "frontier_result_digest": "f221af52b79e52c23ea12843ea44cdc09d5b300637dea0847571b1e8fe009fb2",
+  "frontier_sha256": "6d5bcbad038453d55ddd43ee917acc976c0befa56c42ebdcabf7ca91b816be98",
+  "known_boundary": "Capture replay and deterministic fakes prove context selection, lineage, mutation closure and node budgets; they do not prove natural evaluator judgment, Writer quality, S3 or release.",
+  "local_case_absence_blocking_finding_count": 0,
+  "local_retrieval_materialization_replayed": true,
+  "mutation_checks": {
+    "completed_role_evaluation_rerun_is_forbidden": true,
+    "frontier_budget_mutation_fails_closed": true,
+    "missing_role_fails_closed": true,
+    "unaffected_role_reevaluation_is_forbidden": true,
+    "unresolved_authority_ref_fails_closed": true,
+    "workpaper_permutation_is_stable": true,
+    "wrong_role_target_fails_closed": true
+  },
+  "network_calls": 0,
+  "paid_tool_calls": 0,
+  "provider_model_calls": 0,
+  "result_digest": "74ba9fda3fc613bb788cbcce1cd16b5218099a6d477956206f9e32a8c825e313",
+  "role_view_receipts": [
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "content_view_digest": "50cd38ff047d9dc28bc51eaa78938607432d72dd49054f8d5a31bbfd9edba095",
+      "context_digest": "5194472682d12d58a66533cb0d0fc6f3206d2acc185d280692f56578b2d37d5f",
+      "evidence_ref_count": 5,
+      "input_characters": 16611,
+      "numeric_ref_count": 7,
+      "numeric_relation_ref_count": 3,
+      "typed_gap_ref_count": 1,
+      "workpaper_digest": "1f5d07a2617a303002da12fa1e8bcebbed30e8d8105ba1d4e89c13fff665109e"
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "content_view_digest": "2f24527e347e18d022705aea359886b1e923ba5e5dbf16f3c1e0361d64903e5c",
+      "context_digest": "28f9796670f2602d1f6adb1f645ce803feeb189e93877f601cf11059ed551c84",
+      "evidence_ref_count": 6,
+      "input_characters": 11274,
+      "numeric_ref_count": 0,
+      "numeric_relation_ref_count": 0,
+      "typed_gap_ref_count": 2,
+      "workpaper_digest": "963c0ab1bdae056f3051e99543c0a0a48a2c5005c70d415e3f0923ec9f069a56"
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "content_view_digest": "e09b194354c6a456a48ad360dae81bb0d924616128ecb337f6b139eaf269f4c3",
+      "context_digest": "1ddcce797a2fac8566024a3c2dd1ea1eb31c837637a3352bb7dac6d37f1f0e6b",
+      "evidence_ref_count": 10,
+      "input_characters": 12066,
+      "numeric_ref_count": 0,
+      "numeric_relation_ref_count": 0,
+      "typed_gap_ref_count": 1,
+      "workpaper_digest": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0"
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "content_view_digest": "296b77a8c9269c4389f16de7b9d7831894fea6c7852ffc06285d50fd53f5890c",
+      "context_digest": "1b0440a8da35c70529980130d7c7b44899dc976236ffa0326cf59fb071ea1a43",
+      "evidence_ref_count": 2,
+      "input_characters": 16546,
+      "numeric_ref_count": 12,
+      "numeric_relation_ref_count": 6,
+      "typed_gap_ref_count": 0,
+      "workpaper_digest": "9975b7bb5a8f8ff216d48e61b0157a3ccd6d21bab6c8d9a619a6be1c9b8112cb"
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "content_view_digest": "f80bc3ab80e3c82a4e2c73cf40dc7cdc410109a80dc3af18dcf8f4fa724f7cde",
+      "context_digest": "1a5b991f590664079eecea8376e65f0995cf845214c3ce001b73f0c1369f04b4",
+      "evidence_ref_count": 10,
+      "input_characters": 17621,
+      "numeric_ref_count": 0,
+      "numeric_relation_ref_count": 0,
+      "typed_gap_ref_count": 4,
+      "workpaper_digest": "51ec20b18f4cf29efc6680ee26e10e9732f83086c9d58d70a3ce1340d2eb1135"
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "content_view_digest": "30b6c8ac97d674670aff089c5d3be036f67301d67b6050349466c222455b6090",
+      "context_digest": "74df1c16d157f55b70b599254ace681b48091e27c26579c5fb4ba272649a407a",
+      "evidence_ref_count": 4,
+      "input_characters": 18365,
+      "numeric_ref_count": 10,
+      "numeric_relation_ref_count": 5,
+      "typed_gap_ref_count": 3,
+      "workpaper_digest": "e1687019c04aced719e19cea623699e5065b400eb039921b1a8606e5ff0ef942"
+    }
+  ],
+  "schema_version": "fin_ia_s3_hierarchical_evaluator_zero_call_proof_v1_0",
+  "status": "hierarchical_evaluator_capture_replay_fake_mutation_zero_call_pass"
+}

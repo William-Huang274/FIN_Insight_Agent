@@ -1,0 +1,123 @@
+{
+  "schema_version": "fin_ia_s1c_compiled_object_retriever_comparison_policy_v1_0",
+  "status": "preregistered_no_route_promotion_or_fine_tuning_authority",
+  "recorded_at": "2026-08-12",
+  "scope": "Compare provider-neutral retrieval routes over the same compiled financial object population before any reranker or Evidence Role adoption decision.",
+  "bound_inputs": {
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v1/objects.jsonl",
+    "compiled_objects_sha256": "bd725bfe8b34c765c1d25155acedf4d0094712896c7d9344bf63899c691a9bc7",
+    "compiled_object_result_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_0.json",
+    "compiled_object_result_sha256": "16a5f30c43e7c17f7d21eeb1af93f82a478d8d805b654dc8da5e0c484555b239",
+    "query_route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_0.json",
+    "query_route_policy_sha256": "ccd4775435c3d3ef82073d37b8df37abbe7c04e28f8340d0a4fd0f04809c8439",
+    "source_level_qrels_ref": "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json",
+    "source_level_qrels_sha256": "f7d47a9da22efd3ec8a5a29c1b511886a996bae33ea5522ac5587572332b8a1c",
+    "object_role_review_ref": "configs/retrieval/fin_ia_0_1_3_s1c_object_role_review_set_v1_0.json",
+    "object_role_review_sha256": "12ca54b230ea70ba7c9d71cbe84ba910ed0cb7c931c30a9f9a2c7baaee9408c2",
+    "six_case_role_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1c_financial_role_eval_set_v1_1.json",
+    "six_case_role_eval_sha256": "743da18b31708b2c0bec0d55870d7b0628fa61abfd46b6bcbe68e8eec02fdcb7"
+  },
+  "query_contract": {
+    "runtime_authority": "EvidenceRequest_to_QueryFacetPlan_to_query_family_siblings_v1",
+    "benchmark_compatibility": "The frozen 18 qrels remain source-level comparators only; their mixed legacy wording is not the product runtime contract.",
+    "lexical_text_source": "sparse_query_texts",
+    "semantic_text_source": "semantic_query_texts",
+    "hard_filters": [
+      "evidence_owner_ticker",
+      "publication_date_lte",
+      "reporting_fiscal_years",
+      "form_types",
+      "source_tiers"
+    ],
+    "target_ids_forbidden_from_query_text_or_scoring": true,
+    "labels_joined_after_candidate_generation": true
+  },
+  "evaluation_levels": {
+    "source_record_target": "A hit means at least one returned compiled object carries lineage to an accepted target source record. This proves document discovery, not correct evidence selection.",
+    "reviewed_object_target": "Only exact or bounded same-source claim/context successors may be scored as object targets. Legacy whole-table labels are not silently projected onto individual metric rows.",
+    "six_case_pairwise": "ORCL, ASML and ANET remain observed validation pairs and are forbidden from tuning. They do not become full-corpus retrieval proof until their objects are rebuilt in the current compiler.",
+    "evidence_authority": "No ranking hit is Evidence and no table-row hit is NumericFact."
+  },
+  "budgets": {
+    "top_k": 10,
+    "per_route_candidate_pool": 64,
+    "multi_vector_union_maximum": 256,
+    "maximum_sequence_length": 512,
+    "embedding_batch_size": 16,
+    "minimum_free_disk_bytes_before_new_model_download": 2147483648,
+    "maximum_persistent_cache_bytes": 1073741824
+  },
+  "routes": [
+    {
+      "route_id": "bm25_lexical",
+      "kind": "full_eligible_object_lexical_retrieval",
+      "model": null,
+      "state": "current_baseline"
+    },
+    {
+      "route_id": "bge_m3_dense",
+      "kind": "full_eligible_object_dense_retrieval",
+      "model": "BAAI/bge-m3",
+      "query_instruction": null,
+      "state": "shadow"
+    },
+    {
+      "route_id": "bge_m3_learned_sparse",
+      "kind": "full_eligible_object_learned_sparse_retrieval",
+      "model": "BAAI/bge-m3",
+      "query_instruction": null,
+      "state": "shadow"
+    },
+    {
+      "route_id": "bge_m3_multi_vector_refinement",
+      "kind": "candidate_union_multi_vector_refinement_not_full_corpus",
+      "model": "BAAI/bge-m3",
+      "query_instruction": null,
+      "state": "shadow"
+    },
+    {
+      "route_id": "qwen3_embedding_0_6b_dense",
+      "kind": "full_eligible_object_dense_retrieval",
+      "model": "Qwen/Qwen3-Embedding-0.6B",
+      "query_instruction": "Given a financial research question, retrieve source-bound passages or table rows that directly answer the requested evidence role while respecting company, period and relationship direction.",
+      "state": "shadow"
+    }
+  ],
+  "split_policy": {
+    "development_cases": ["DELL", "MU", "NVDA"],
+    "observed_validation_cases_forbidden_from_tuning": ["ORCL", "ASML", "ANET"],
+    "pristine_test_precut_forbidden_until_provisional_route_frozen": ["HPQ", "AVGO", "INTC"]
+  },
+  "database_lane": {
+    "required_runtime_state_during_comparison": "typed_fact_store_unavailable",
+    "owning_stage": "S2",
+    "ranking_models_may_locate_numeric_disclosure": true,
+    "ranking_models_may_grant_numeric_authority": false,
+    "company_financial_fact_mart_required_for_vertical_slice": true
+  },
+  "decision_rules": {
+    "route_winner_requires": [
+      "no wrong-company or future-period hard-filter breach",
+      "source-record target recall does not hide reviewed-object regression",
+      "business-role errors are inspected in plain language",
+      "observed validation does not show material reversal",
+      "latency, GPU memory and persistent cache stay within the declared budget"
+    ],
+    "fine_tuning_default": "forbidden_pending_stable_cross_case_error_pattern",
+    "route_promotion_default": false,
+    "multi_vector_out_of_union": "report candidate-generation miss; do not score it as a multi-vector model miss",
+    "whole_table_label_projection": "forbidden"
+  },
+  "authority": {
+    "local_embedding_execution_authorized": true,
+    "model_download_authorized_by_user": true,
+    "generation_model_calls_authorized": false,
+    "network_source_calls_authorized": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_authorized": false,
+    "evidence_promotion_authorized": false,
+    "numeric_fact_authority": false,
+    "s1_complete_claimed": false
+  },
+  "known_boundary": "This comparison can select a provisional retriever and shadow challenger. It cannot close S1, build the S2 fact mart, prove dynamic Agentic Research, or establish report quality."
+}

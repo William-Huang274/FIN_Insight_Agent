@@ -1,0 +1,103 @@
+{
+  "schema_version": "fin_ia_financial_intent_ontology_v1_2",
+  "status": "provider_neutral_financial_core_with_margin_bridge_and_official_call_surfaces",
+  "recorded_at": "2026-08-18",
+  "parent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_1.json",
+  "parent_change_summary": "Add provider-neutral operating-margin and price-volume-mix bridge concepts and singular AI-server language observed in first-party disclosures; a match remains a candidate signal and never grants Evidence, NumericFact or causal authority.",
+  "metric_concepts": {
+    "revenue": {"aliases": ["revenue", "net revenue", "total net revenue", "sales"]},
+    "operating_income": {"aliases": ["operating income", "income from operations", "operating profit"]},
+    "operating_margin": {"aliases": ["operating margin", "operating profit margin", "operating income rate", "non-GAAP operating income rate"]},
+    "price_volume_mix_bridge": {"aliases": ["price-volume-mix bridge", "price volume mix bridge", "pricing and mix bridge"]},
+    "operating_cash_flow": {"aliases": ["operating cash flow", "cash flow from operations", "cash flows from operations", "net cash provided by operating activities", "net cash from operating activities"]},
+    "operating_lease_cash_payment": {"aliases": ["operating cash flow used for operating leases", "cash paid for operating leases"]},
+    "free_cash_flow": {"aliases": ["free cash flow"]},
+    "gross_margin": {"aliases": ["gross margin", "gross margin percentage", "gross profit"]},
+    "net_income": {"aliases": ["net income", "net earnings"]},
+    "capital_expenditure": {"aliases": ["capital expenditures", "capital expenditure", "purchases of property and equipment"]}
+  },
+  "product_concepts": {
+    "ai_optimized_servers": {
+      "aliases": ["AI-optimized servers", "AI optimized servers", "AI-optimized server", "AI optimized server", "AI server", "AI servers"],
+      "supporting_terms": ["AI orders", "accelerated computing server"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    },
+    "gpu_supply_capacity_transition": {
+      "aliases": ["GPU supply capacity and transition risk", "GPU supply", "accelerator supply"],
+      "supporting_terms": ["supply and capacity purchases", "prepaid manufacturing and capacity agreements", "prepaid supply and capacity agreements", "inventory and capacity purchase commitments", "non-cancellable inventory orders", "secure future supply and capacity", "production transitions", "managing supply and demand", "supply constraints", "advanced packaging", "CoWoS", "HBM", "wafer", "component availability", "product yields"],
+      "proxy_terms": ["capacity", "supply"],
+      "excluded_terms": ["commercial paper program", "yield curve", "cloud capacity agreement", "cloud service capacity", "data center cloud capacity", "research and development since our inception"]
+    },
+    "data_center_platform": {
+      "aliases": ["data center platform", "Data Center", "accelerated computing", "Blackwell", "NVLink", "InfiniBand", "Spectrum-X"],
+      "supporting_terms": ["compute and networking"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    },
+    "ai_infrastructure_deployment_usage": {
+      "aliases": ["AI infrastructure deployment and usage", "AI infrastructure", "AI product usage", "Copilot usage"],
+      "supporting_terms": ["growing customer demand", "deployment", "usage growth"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    },
+    "ai_server_demand_constraints": {
+      "aliases": ["AI server demand durability and component constraints", "AI server", "AI-optimized solutions"],
+      "supporting_terms": ["large customers", "pricing pressure", "supply constraints", "working capital", "key components", "excess and obsolete inventory"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    },
+    "ai_server_orders_backlog": {
+      "aliases": ["AI server orders and backlog", "AI server orders", "AI orders", "AI server backlog"],
+      "supporting_terms": ["booked", "backlog", "orders"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    },
+    "accelerator_demand_supply_readthrough": {
+      "aliases": ["accelerator demand and supply constraint read-through", "accelerated computing", "Data Center", "Blackwell", "NVLink", "InfiniBand", "Spectrum-X"],
+      "supporting_terms": ["customer demand", "supply and demand", "supply availability", "production transitions"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    },
+    "advanced_packaging_cowos": {
+      "aliases": ["advanced packaging and CoWoS capacity", "advanced packaging and foundry capacity", "advanced packaging", "CoWoS"],
+      "supporting_terms": ["foundry capacity", "packaging capacity", "production capacity"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    },
+    "hbm_data_center": {
+      "aliases": ["HBM and data center business", "HBM", "high bandwidth memory", "data center"],
+      "supporting_terms": [],
+      "proxy_terms": ["DRAM", "accelerator"],
+      "excluded_terms": []
+    },
+    "hbm4_shipment_capacity": {
+      "aliases": ["HBM4 shipment and capacity", "HBM4", "high-volume shipments"],
+      "supporting_terms": ["qualification samples", "advanced packaging capacity"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    },
+    "customer_commitment_purchase_structure": {
+      "aliases": ["customer commitment and purchase structure", "customer agreement", "purchase commitment", "binding commitment"],
+      "supporting_terms": ["specific volumes", "cash deposits", "contract terms", "concentration"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    },
+    "cash_conversion": {
+      "aliases": ["cash conversion"],
+      "supporting_terms": ["operating cash flow", "net cash provided by operating activities", "working capital"],
+      "proxy_terms": [],
+      "excluded_terms": []
+    }
+  },
+  "authority": {
+    "provider_neutral": true,
+    "unknown_intent_abstains": true,
+    "ontology_match_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "industry_extensions_are_versioned_data_not_core_branches": true,
+    "proxy_term_never_implies_compatibility_when_direct_alias_is_absent": true,
+    "product_scope_match_never_grants_product_profit_or_causal_authority": true,
+    "generic_mix_never_satisfies_price_volume_mix_bridge": true
+  }
+}

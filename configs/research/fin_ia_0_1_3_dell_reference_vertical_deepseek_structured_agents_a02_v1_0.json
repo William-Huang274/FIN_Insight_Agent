@@ -1,0 +1,103 @@
+{
+  "schema_version": "fin_ia_dell_reference_vertical_deepseek_structured_agents_v1_0",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "base_url": "https://api.deepseek.com",
+  "structured_output_method": "function_calling",
+  "strict_provider_schema": false,
+  "thinking": "disabled",
+  "temperature": 0.0,
+  "max_retries": 0,
+  "token_budget_basis": {
+    "planner": {
+      "node_role": "planner",
+      "node_purpose": "Turn the frozen DELL question tree and answer-free branch methods into a bounded set of evidence and financial-fact requests without answering the case.",
+      "input_scale": "One research question, one as-of date, and at most 16 compact branch method records; no evidence corpus or prior model conversation.",
+      "required_outputs": [
+        "selected branch tasks",
+        "external or local evidence requests",
+        "typed financial-fact requests"
+      ],
+      "schema_burden": "Up to 16 tasks, each with no more than 8 evidence requests and 24 typed financial-fact requests.",
+      "materiality_quality_risk": "An omitted required branch or vague request can starve every downstream specialist; the graph separately rejects unknown or missing required branches.",
+      "comparable_run_evidence": "q1-A01 returned HTTP 200 with semantically usable planner content and measured 21,465 input tokens, 2,076 output tokens, and 23,541 total tokens; the provider content succeeded, but the local PydanticToolsParser rejected valid JSON arrays after the response. This comparable shows that the existing 120,000-character input ceiling and 6,000-token output budget were not the failure cause and must not be tightened for A02.",
+      "reasoning_profile": "independent_single_turn_thinking_disabled_structured_reasoning",
+      "max_input_characters": 120000,
+      "max_output_tokens": 6000,
+      "timeout_seconds": 180,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "specialist": {
+      "node_role": "specialist",
+      "node_purpose": "Produce one source-linked branch workpaper from the answer-free method plus typed Evidence and Finance results, including counterevidence and what-would-change conditions.",
+      "input_scale": "One branch only, at most 8 evidence request/result groups, at most 24 fact request/result groups, and at most one prior workpaper plus one targeted counter challenge on turn two.",
+      "required_outputs": [
+        "terminal research state",
+        "thesis and mechanism",
+        "counterevidence",
+        "what-would-change conditions",
+        "source evidence and fact ID references",
+        "open typed gaps"
+      ],
+      "schema_burden": "A detailed workpaper with up to 4000 thesis characters, 6000 mechanism characters, 32 Evidence IDs, 48 Fact IDs and bounded diagnostic lists.",
+      "materiality_quality_risk": "The specialist must not promote retrieval candidates, fabricate IDs, or turn tool failure into a public-information gap; host validation enforces available IDs and bindings.",
+      "comparable_run_evidence": "Existing deterministic two-turn graph fixtures prove isolated context and one targeted rework; no paid DELL structured-agent artifact exists yet.",
+      "reasoning_profile": "independent_single_turn_thinking_disabled_structured_reasoning",
+      "max_input_characters": 160000,
+      "max_output_tokens": 10000,
+      "timeout_seconds": 240,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "counter": {
+      "node_role": "counter",
+      "node_purpose": "Stress-test the complete first-pass workpaper set and optionally request one material, targeted branch rework.",
+      "input_scale": "At most 16 compact branch workpapers from one case and no prior provider conversation or hidden reasoning history.",
+      "required_outputs": [
+        "strongest counter-thesis",
+        "material challenges",
+        "what-would-change conditions",
+        "zero or one targeted reroute request"
+      ],
+      "schema_burden": "One counter decision with up to 12 challenges and a single optional reroute containing bounded Evidence and Finance requests.",
+      "materiality_quality_risk": "An indiscriminate reroute creates cost and latency without improving the case; graph topology permits only one branch and one rework round.",
+      "comparable_run_evidence": "Deterministic fixtures prove the one-reroute topology and host challenge binding; no paid counter-node qualification exists yet.",
+      "reasoning_profile": "independent_single_turn_thinking_disabled_structured_reasoning",
+      "max_input_characters": 160000,
+      "max_output_tokens": 6000,
+      "timeout_seconds": 180,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    },
+    "lead": {
+      "node_role": "lead",
+      "node_purpose": "Synthesize all effective DELL branch workpapers and the explicit countercase into a source-linked executive conclusion without hiding uncertainty.",
+      "input_scale": "At most 16 effective branch workpapers plus one counter decision from a single case; no raw corpus and no cross-request provider history.",
+      "required_outputs": [
+        "calibrated verdict and confidence",
+        "headline and executive summary",
+        "one conclusion for every active branch",
+        "explicit counter-thesis response",
+        "preserved Evidence and Fact ID references"
+      ],
+      "schema_burden": "A full executive synthesis with an 8000-character summary, a required conclusion per branch, and bounded source-reference sets.",
+      "materiality_quality_risk": "This node is the user-visible analytical synthesis; generic prose, missing branches, invented references, or concealed counterevidence would invalidate the demonstration.",
+      "comparable_run_evidence": "The graph verifier proves complete branch coverage and reference containment on fake outputs; real product quality remains unproved until a paid qualification artifact and human review.",
+      "reasoning_profile": "independent_single_turn_thinking_disabled_structured_reasoning",
+      "max_input_characters": 180000,
+      "max_output_tokens": 12000,
+      "timeout_seconds": 300,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    }
+  }
+}

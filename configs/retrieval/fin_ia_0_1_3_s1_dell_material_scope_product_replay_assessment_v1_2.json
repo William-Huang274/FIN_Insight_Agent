@@ -1,0 +1,126 @@
+{
+  "schema_version": "fin_ia_s1_material_scope_product_replay_assessment_v1_2",
+  "status": "candidate_ceiling_real_product_replay_proven_product_decision_and_source_sufficiency_open",
+  "recorded_at": "2026-08-18T18:45:00+08:00",
+  "case_key": "DELL",
+  "prepared_from_commit": "37d6968831ca09ab19d5472edf61a4700269c1d3",
+  "bound_result": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_material_scope_product_replay_result_v1_2.json",
+    "sha256": "226eca002ef81acfd93054d3ce01e4bc4d977756376c4d3d4d5fd5a6074ae45b"
+  },
+  "private_full_result": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_material_scope_product_replay/dell-r3-v3/full_result.json",
+    "sha256": "396f789555171725a58356fdeea8570b8d8f8b70ce56097ae4e08bbb89e1114c",
+    "access": "restricted_candidate_audit_only"
+  },
+  "integrity": {
+    "public_full_result_sha256_matches_private_file": true,
+    "public_result_digest": "e5f1f341c42886a0d140dab7ee4f480c9f67b3704dd265b49e9d41cca835b5ba",
+    "product_projection_digest": "acd9727c166aff38391dde351f56fd2b89819cc6a8369068787e46b6e811e770",
+    "research_plan_digest": "a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80",
+    "scope_compilation_digest": "0ae0d3f74a5c8630047e7c2fd6b655490c3a74e9fd04efddfe9e8e2f4208f356"
+  },
+  "execution_facts": {
+    "status": "completed_scope_ready_material_sets_incomplete",
+    "material_scope_ready_requests": 8,
+    "material_set_complete_requests": 3,
+    "requirement_groups": 12,
+    "requirements_without_observed_loss_through_review": 7,
+    "requirements_incomplete_at_or_before_candidate_union": 5,
+    "requirements_lost_after_complete_union": 0,
+    "requests_reaching_bm25_first_stage_limit": 8,
+    "requests_reaching_qwen_first_stage_limit": 8,
+    "requests_reaching_candidate_union_limit": 8,
+    "candidate_union_count_per_request": 96,
+    "final_review_count_per_request": 16,
+    "selected_candidates": 128,
+    "numeric_facts": 58,
+    "typed_fact_resolved": 19,
+    "typed_fact_gaps": 9,
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "local_embedding_batches": 1,
+    "cuda_device": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "embedding_precision": "float16",
+    "cpu_vector_fallbacks": 0,
+    "financial_ranking_executed": false,
+    "evidence_role_evaluator_executed": false,
+    "public_information_gap_declarations": 0
+  },
+  "business_findings": [
+    {
+      "facet_id": "orders_and_backlog",
+      "observed_material": "Dell 10-Q and 10-K candidates directly describe stronger AI-optimized demand, elevated backlog, customer readiness variation, and shipment timing variability.",
+      "unresolved_business_question": "The direct requirement also asks for precise order, backlog composition, shipment, and customer-count surfaces; the current S2 mart retains these as typed metric gaps and the bounded candidate union did not contain a complete direct bundle.",
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "disposition": "retain qualitative demand and backlog Evidence for review; do not infer a precise customer count or call the missing quantitative surface a public-information gap"
+    },
+    {
+      "facet_id": "reported_results",
+      "observed_material": "Dell filings contain ISG revenue and operating-income tables plus narrative that AI-optimized servers drove ISG growth.",
+      "unresolved_business_question": "No single reviewed narrative bundle proves AI-server revenue contribution, segment profitability, and EPS impact together. S2 already resolves the authoritative company and segment metrics, but causal product attribution remains separate.",
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "disposition": "combine accepted narrative Evidence with S2 NumericFacts in Pack Readiness; do not demand duplicate narrative numbers and do not attribute total EPS change to AI servers"
+    },
+    {
+      "facet_id": "margin_and_incremental_profit",
+      "observed_material": "Dell filings show AI-optimized servers driving ISG revenue and contain ISG margin and operating-income disclosures.",
+      "unresolved_business_question": "The materials do not directly disclose incremental AI-server margin or isolate AI-server operating leverage from product mix and other ISG businesses.",
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "disposition": "permit a bounded mixed-factor judgment only after EvidenceDecision; preserve incremental AI margin as an unresolved bridge rather than treating total ISG margin as the answer"
+    },
+    {
+      "facet_id": "cash_generation",
+      "observed_material": "Dell publishes operating cash flow and free-cash-flow information and separately describes AI demand and customer payment-term risks.",
+      "unresolved_business_question": "The current material does not directly bridge AI-server revenue to cash conversion or isolate AI-capacity capital expenditure.",
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "disposition": "retain company cash metrics as NumericFacts and keep the AI-specific cash-conversion bridge bounded or unresolved"
+    },
+    {
+      "facet_id": "working_capital_risk",
+      "observed_material": "Dell risk factors discuss concentration among larger AI customers, longer payment terms, component commitments, and inventory exposure; company working-capital metrics exist in S2.",
+      "unresolved_business_question": "The current material does not directly quantify receivables or inventory attributable to AI customers and AI components.",
+      "earliest_observed_limitation": "at_or_before_candidate_union",
+      "disposition": "use the risk disclosure as counterevidence and S2 for company totals, while refusing AI-specific allocation without an accepted bridge"
+    },
+    {
+      "facet_id": "conversion_and_durability_issuer_and_upstream_counterevidence",
+      "observed_material": "All five requirements across these three facets remain visible through final candidate review.",
+      "unresolved_business_question": "Candidate visibility still does not establish truth polarity, Dell-specific causality, or class-wide hyperscaler coverage. The upstream request contains only one hyperscaler representative and therefore remains bounded by RC-S3-045.",
+      "earliest_observed_limitation": "none_observed_through_candidate_review",
+      "disposition": "send only to requirement-bound EvidenceDecision; do not auto-promote adjacent MU, NVDA, TSM, or MSFT disclosures into Dell facts"
+    }
+  ],
+  "root_cause_disposition": {
+    "rc_s1_035": "candidate_ceiling_and_earliest_observable_loss_product_receipt_proven_on_real_DELL_CUDA_replay",
+    "what_is_closed": [
+      "direct snapshot-only execution can no longer masquerade as Hybrid retrieval",
+      "bounded-union incompleteness is separated from post-union review cuts",
+      "all eight DELL requests expose their actual first-stage and union ceilings",
+      "no incomplete requirement can become a public-information gap from candidate counts alone"
+    ],
+    "what_is_not_closed": [
+      "whether a missing proposition was never disclosed by reachable sources",
+      "whether a relevant source was captured but lost in OCR, parsing, objectization, or index construction",
+      "whether candidates below the 64-per-route or 96-union ceilings would satisfy the requirement",
+      "financial fine-ranking and Evidence Role evaluation in the current product runtime",
+      "product EvidenceDecision, GapEligibilityReceipt, and PackReadiness production",
+      "MU, NVDA, heterogeneous holdout, qualified-human, blind, and S1 stable qualification"
+    ]
+  },
+  "next_allowed_scope": [
+    "compile equivalent current request sets for MU and NVDA without reading gold, qrels, or hidden labels",
+    "run bounded zero-model CUDA FP16 provenance replay for MU and NVDA on the same registered runtime",
+    "use the three-case evidence to define the product EvidenceDecision, GapEligibilityReceipt, and PackReadiness producer",
+    "keep financial ranking and Evidence Role execution truth explicit rather than silently treating BM25 plus Qwen as the completed S1 stack"
+  ],
+  "still_blocked": [
+    "public-information gap declaration from candidate absence or incompleteness",
+    "automatic candidate-to-Evidence promotion",
+    "S1 qualified stable",
+    "dynamic S3 full-chain acceptance",
+    "publication",
+    "release"
+  ],
+  "known_boundary": "This replay proves current DELL candidate-ceiling observability, not source completeness or research sufficiency. All eight candidate unions hit their configured limit, so five incomplete requirements remain owned pipeline findings until source, parse, object, route, ranking, EvidenceDecision, and external-route receipts are adjudicated."
+}

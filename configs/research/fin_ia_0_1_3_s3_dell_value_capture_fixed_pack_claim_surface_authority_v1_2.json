@@ -1,0 +1,246 @@
+{
+  "schema_version": "fin_ia_claim_surface_authority_policy_v1_1",
+  "status": "provider_neutral_fixed_pack_claim_relation_alias_authority",
+  "qualified_scope": {
+    "case_key": "DELL",
+    "cell_id": "CELL::value_capture",
+    "base_claim_authority_input_digest": "bbe4d3864cce41751019cc10c88784faaf37d45dcc019be7b2035fbc79ad179a",
+    "base_claim_authority_judgment_schema_version": "fin_ia_current_research_judgment_payload_v1_3"
+  },
+  "allowed_claim_subjects": [
+    "ai_server_product",
+    "dell_company",
+    "ai_server_and_company_context"
+  ],
+  "allowed_claim_outcomes": [
+    "product_operating_income_rate_target",
+    "company_gross_margin",
+    "company_or_segment_profit_bridge"
+  ],
+  "allowed_claim_relations": [
+    "management_reported_in_line_with_target",
+    "same_scope_numeric_observation",
+    "multi_driver_context_without_product_allocation",
+    "bridge_not_established"
+  ],
+  "allowed_attribution_bases": [
+    "issuer_management_assertion",
+    "authoritative_same_basis_numeric_relation",
+    "reviewed_multi_driver_context",
+    "typed_bridge_gap"
+  ],
+  "source_bound_qualitative_facts": [
+    {
+      "qualitative_fact_ref": "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1",
+      "fact_kind": "management_target",
+      "case_key": "DELL",
+      "cell_id": "CELL::value_capture",
+      "subject": "ai_server_product",
+      "metric_id": "operating_income_rate",
+      "qualitative_band": "mid_single_digit",
+      "unit": "percentage_rate",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_end": "2026-05-01",
+      "authority_mode": "issuer_management_assertion",
+      "source_evidence_ref": "EV::0063F22F643B94ED",
+      "source_evidence_item_digest": "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1",
+      "source_text_digest": "106e3ced4229ac07ef31aeffd5931e91a854b64021ce9f7b29f77a2def499ccb",
+      "source_surface": "mid-single-digit operating income rate target",
+      "display_surface_zh": "中个位数经营利润率目标",
+      "qualifier_zh": "管理层目标；未经独立审计；不得转换为单点数值或产品到分部／公司的利润桥",
+      "point_estimate_forbidden": true,
+      "audited_numeric_fact": false
+    }
+  ],
+  "allowed_structured_claim_combinations": [
+    {
+      "claim_relation_ref": "CR::DELL::PRODUCT_TARGET",
+      "model_description_zh": "仅表达管理层称产品盈利水平符合其目标；目标未经独立审计",
+      "claim_subject": "ai_server_product",
+      "claim_outcome": "product_operating_income_rate_target",
+      "claim_relation": "management_reported_in_line_with_target",
+      "attribution_basis": "issuer_management_assertion",
+      "claim_scope": "product",
+      "financial_scope": "product_financial",
+      "causal_bridge_authority": "management_assertion_only",
+      "allowed_atom_fields": [
+        "thesis_atom",
+        "mechanism_atom"
+      ],
+      "required_qualitative_fact_refs": [
+        "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+      ],
+      "required_evidence_refs": [
+        "EV::0063F22F643B94ED"
+      ],
+      "required_numeric_relation_refs": [],
+      "required_gap_refs": [],
+      "allowed_inference_authorities": [
+        "directly_supported",
+        "bounded_inference"
+      ],
+      "allowed_judgment_statuses": [
+        "supported",
+        "bounded_support",
+        "mixed"
+      ]
+    },
+    {
+      "claim_relation_ref": "CR::DELL::COMPANY_MARGIN_OBSERVATION",
+      "model_description_zh": "仅陈述公司毛利率的同口径数字变化；不解释为产品驱动",
+      "claim_subject": "dell_company",
+      "claim_outcome": "company_gross_margin",
+      "claim_relation": "same_scope_numeric_observation",
+      "attribution_basis": "authoritative_same_basis_numeric_relation",
+      "claim_scope": "company",
+      "financial_scope": "company_financial",
+      "causal_bridge_authority": "same_scope_observation_only",
+      "allowed_atom_fields": [
+        "mechanism_atom",
+        "counterargument_atom"
+      ],
+      "required_qualitative_fact_refs": [],
+      "required_evidence_refs": [],
+      "required_numeric_relation_refs": [
+        "REL::B60164179DFFDF5A"
+      ],
+      "required_gap_refs": [],
+      "allowed_inference_authorities": [
+        "directly_supported",
+        "bounded_inference"
+      ],
+      "allowed_judgment_statuses": [
+        "supported",
+        "bounded_support",
+        "mixed"
+      ]
+    },
+    {
+      "claim_relation_ref": "CR::DELL::MULTI_DRIVER_CONTEXT",
+      "model_description_zh": "法说支持多因素背景；宽泛 8-K 只可作上下文，不得冒充产品利润支持",
+      "claim_subject": "ai_server_and_company_context",
+      "claim_outcome": "company_or_segment_profit_bridge",
+      "claim_relation": "multi_driver_context_without_product_allocation",
+      "attribution_basis": "reviewed_multi_driver_context",
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "multi_driver_context_only",
+      "allowed_atom_fields": [
+        "thesis_atom",
+        "mechanism_atom",
+        "counterargument_atom"
+      ],
+      "required_qualitative_fact_refs": [],
+      "required_evidence_refs": [
+        "EV::0063F22F643B94ED"
+      ],
+      "required_numeric_relation_refs": [],
+      "required_gap_refs": [],
+      "allowed_inference_authorities": [
+        "bounded_inference"
+      ],
+      "allowed_judgment_statuses": [
+        "bounded_support",
+        "mixed"
+      ]
+    },
+    {
+      "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+      "model_description_zh": "明确产品到分部或公司的利润桥尚未建立，并保留相关证据缺口",
+      "claim_subject": "ai_server_product",
+      "claim_outcome": "company_or_segment_profit_bridge",
+      "claim_relation": "bridge_not_established",
+      "attribution_basis": "typed_bridge_gap",
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "bridge_unavailable",
+      "allowed_atom_fields": [
+        "mechanism_atom",
+        "counterargument_atom"
+      ],
+      "required_qualitative_fact_refs": [],
+      "required_evidence_refs": [],
+      "required_numeric_relation_refs": [],
+      "required_gap_refs": [
+        "GAP::14D67654F535F105",
+        "GAP::34844D3F9935C0F5",
+        "GAP::52DCB2B65532C103"
+      ],
+      "allowed_inference_authorities": [
+        "bounded_inference",
+        "not_inferable"
+      ],
+      "allowed_judgment_statuses": [
+        "bounded_support",
+        "mixed",
+        "insufficient_evidence"
+      ]
+    }
+  ],
+  "narrative_conflict_guard": {
+    "subject_terms": [
+      "ai server",
+      "ai-optimized server",
+      "ai 服务器",
+      "ai服务器",
+      "人工智能服务器"
+    ],
+    "financial_outcome_terms": [
+      "profit",
+      "operating income",
+      "margin",
+      "unit economics",
+      "利润",
+      "经营收益",
+      "经营利润",
+      "毛利",
+      "单位利润"
+    ],
+    "direct_causal_terms": [
+      "cause",
+      "drive",
+      "contribute",
+      "convert",
+      "translate",
+      "result in",
+      "operating leverage",
+      "scale effect",
+      "使",
+      "导致",
+      "驱动",
+      "贡献",
+      "转化",
+      "带来",
+      "支撑",
+      "归因",
+      "经营杠杆",
+      "规模效应"
+    ],
+    "management_attribution_terms": [
+      "management",
+      "company stated",
+      "company reported",
+      "管理层",
+      "公司表示",
+      "公司披露"
+    ],
+    "relations_requiring_attribution_for_direct_causal_surface": [
+      "management_reported_in_line_with_target"
+    ],
+    "relations_forbidding_direct_causal_surface": [
+      "multi_driver_context_without_product_allocation",
+      "bridge_not_established"
+    ]
+  },
+  "authority": {
+    "model_selects_structured_claim_relation": true,
+    "model_selects_only_source_bound_qualitative_fact_refs": true,
+    "model_owns_narrative_judgment": true,
+    "harness_renders_selected_fact_surface_without_point_estimate": true,
+    "harness_may_validate_but_not_invent_claim_relation": true,
+    "legacy_lexical_guard_is_defense_in_depth_only": true,
+    "fixed_pack_test_is_not_agentic_research": true,
+    "qualified_human_content_review_required": true
+  }
+}

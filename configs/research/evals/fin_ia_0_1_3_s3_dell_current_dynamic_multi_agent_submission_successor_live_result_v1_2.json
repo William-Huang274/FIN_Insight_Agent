@@ -1,0 +1,62 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_submission_successor_live_v1_0",
+  "status": "terminal_partial_provider_reasoning_budget_exhausted_preserved",
+  "recorded_at": "2026-08-23T12:11:00+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_submission_successor_live_authority_v1_2.json",
+  "implementation_commit": "d49b4711c0096009d6203437e07d14208d5d9c11",
+  "case_key": "DELL",
+  "model": "deepseek-v4-pro",
+  "frontier": "cash_conversion_workpaper_analysis_reasoning_budget_exhausted",
+  "failure": {
+    "phase": "cash_conversion_workpaper_analysis",
+    "code": "model_gateway_reasoning_budget_exhausted",
+    "capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_current_dynamic_multi_agent_submission_successor_live_r3/FIN013-S3-DELL-CURRENT-DYNAMIC-MULTI-AGENT-SUBMISSION-SUCCESSOR-LIVE-R3/FIN013-S3-DELL-MULTI-SUBMISSION-S3-cash-conversion-workpaper-draft/provider_response.json",
+    "status_code": 200,
+    "finish_reason": "length",
+    "prompt_tokens": 11027,
+    "completion_tokens": 16000,
+    "reasoning_tokens": 16000
+  },
+  "execution": {
+    "new_provider_calls_attempted": 9,
+    "new_provider_http_200": 9,
+    "reusable_completed_captures": 8,
+    "specialist_sessions_completed": 3,
+    "completed_agent_ids": [
+      "AGENT::DEMAND_QUALITY",
+      "AGENT::OPERATING_PERFORMANCE",
+      "AGENT::VALUE_CAPTURE"
+    ],
+    "partial_agent_id": "AGENT::CASH_CONVERSION",
+    "partial_agent_completed_frontier": "reflection_r1_submission",
+    "new_retrieval_rounds": 0,
+    "new_request_ids": [],
+    "lead_rounds_executed": 0,
+    "role_repairs_executed": 0,
+    "external_source_network_calls": 0,
+    "candidate_promotions": 0,
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "claims": {
+    "R1_predecessor_changed": false,
+    "three_specialist_workpapers_reconstructable": true,
+    "cash_reflection_reconstructable": true,
+    "failed_cash_draft_reusable": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "acceptance": {
+    "dynamic_multi_agent_contract_pass": false,
+    "L1_assessment_pending": false,
+    "eight_dimension_content_assessment_pending": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "release_ready": false
+  },
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-submission-successor-live-r3-20260823T200000Z/full_result.json",
+  "private_full_result_sha256": "cd587515fb0af6238a7cf13586121b1adca66708bc6e686a21fd094b9fa74e11",
+  "known_boundary": "R3 proves that Demand, Operating and Value can complete natural workpapers through the capture-bound successor. Cash exhausted the authorized 16000 generated-token budget entirely in reasoning and produced no submission draft. The eight reusable captures require zero-call requalification before a later successor may resume from Cash; no completed specialist may be repeated and no content or S3 acceptance claim is authorized.",
+  "result_digest": "b9ba2714d8e3300447305ed28a3d00e95f5fc9a2158bf3b1ef0d27ffafddedb1"
+}

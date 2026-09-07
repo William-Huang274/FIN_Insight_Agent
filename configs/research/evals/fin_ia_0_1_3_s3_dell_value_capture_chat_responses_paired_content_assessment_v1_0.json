@@ -1,0 +1,152 @@
+{
+  "schema_version": "fin_ia_s3_chat_responses_single_cell_content_assessment_v1_0",
+  "status": "both_transports_contract_pass_financial_truth_trace_fail_five_cell_blocked",
+  "recorded_at": "2026-08-14T10:56:41+08:00",
+  "assessment_kind": "independent_codex_pre_human_single_cell_assessment",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_chat_responses_paired_authority_v1_0.json",
+  "source_authority_sha256": "7c08ee965b73edc62035341af394fd0ef43c4a01a77f7be8abea26e3657f0483",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_chat_responses_paired_result_v1_0.json",
+  "source_result_sha256": "eb8bf28d86a848c072f397e74456e48837454da1108e2cb34af6be7a7f93e008",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/chat-responses-paired-r1/full_result.json",
+  "full_result_sha256": "e00b799de7a55a86c68ce1f3993309e9d9544ae611a1c561f4b08ad4fbb9d473",
+  "implementation_commit": "aafd8be3788a653020a86513c9cfc776e8ffae7b",
+  "research_input_digest": "6505a58e68811e59e3471378bc0cf16174abef3021c3ae9900e46d5e99189b4c",
+  "paired_execution": {
+    "same_research_input": true,
+    "same_finance_tool_contract": true,
+    "total_provider_calls": 10,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "product_publication": false,
+    "private_reasoning_capture_audit": {
+      "capture_json_files": 20,
+      "reasoning_bearing_blocks": 15,
+      "fully_redacted_blocks": 15,
+      "unredacted_private_reasoning_findings": 0
+    }
+  },
+  "shared_business_result": {
+    "contract_status": "pass",
+    "agent_loop_shape": "five_provider_steps_six_tool_receipts",
+    "completed_actions": [
+      "read_current_cell_reviewed_evidence",
+      "read_current_cell_numeric_facts",
+      "record_three_open_gap_evidence_requests_without_execution",
+      "submit_one_locally_valid_value_capture_judgment"
+    ],
+    "material_research_value": [
+      "both_lanes_identified_ASP_unit_volume_and_price_volume_mix_as_the_missing_profit_bridge",
+      "both_lanes_kept_the_three_gaps_open_and_did_not_promote_requests_to_Evidence_or_NumericFact",
+      "both_lanes_used_company_specific_Dell_AI_server_ISG_margin_and_mix_evidence"
+    ]
+  },
+  "shared_hard_findings": [
+    {
+      "issue_id": "RC-S2-003-comparable-period-numeric-relation-not-bound",
+      "layer": "S2_comparable_period_numeric_authority_and_S3_projection",
+      "status": "open_blocks_five_cell",
+      "finding": "Both judgments make a material direction or trend claim about company operating or gross margin, but the selected NumericFacts bind current Q1 FY2027 against FY2026 full year rather than a same-cadence prior quarter. The reviewed source excerpt contains prior-quarter figures, so the business direction may be true, but the submitted relation has no deterministic comparable-period formula trace. Current validation proves referenced facts exist; it does not prove the narrative relation used compatible periods.",
+      "required_disposition": "Expose prior comparable-quarter NumericFacts or a deterministic same-cadence relation fact, require a typed relation/direction binding for comparative language, and reject Q1-versus-FY trend narration before rendering."
+    },
+    {
+      "issue_id": "RC-S3-008-evidence-request-source-route-not-model-visible",
+      "layer": "S3_EvidenceRequest_source_class_and_executable_route_contract",
+      "status": "open_blocks_five_cell",
+      "finding": "The visible gap explicitly suggests company presentations or industry shipment data, and Chat requested industry AI-server shipment data. The locally compiled request silently restricts acceptable sources to 10-K, 10-Q and 8-K. The proposal is field-valid but cannot execute the research route it describes; source class is neither model-selectable nor validated by the unified Tool Contract.",
+      "required_disposition": "Compile allowed source classes and route availability into each EvidenceRequest branch, keep visible supplement directions consistent with those routes, and return typed rejected-not-executed when the requested source class is unavailable."
+    }
+  ],
+  "lanes": [
+    {
+      "lane": "chat_control",
+      "wire_api": "openai_compatible_chat_completions",
+      "transport_status": "pass",
+      "tool_contract_status": "pass",
+      "model_calls": 5,
+      "elapsed_seconds": 168.981,
+      "input_or_prompt_tokens": 64743,
+      "output_or_completion_tokens": 10142,
+      "reasoning_tokens": 8800,
+      "total_tokens": 74885,
+      "l1_financial_truth": {
+        "status": "fail_relation_lineage_unbound",
+        "material_findings": [
+          "total_company_operating_margin_rose_year_over_year_is_not_bound_to_a_same_quarter_numeric_relation",
+          "gross_margin_compression_is_not_bound_to_a_declared_comparable_period_relation"
+        ]
+      },
+      "l2_evidence_authority": {
+        "status": "judgment_refs_pass_proposal_route_contract_fail",
+        "reviewed_evidence_refs": 4,
+        "numeric_refs": 5,
+        "gap_closed_without_evidence": 0,
+        "rejected_or_candidate_items_used_as_facts": 0
+      },
+      "content_findings": [
+        "The thesis is Dell-specific and usefully separates product profitability guidance from an audited product margin bridge.",
+        "The mechanism adds supply allocation as a profit-conversion driver without a selected Evidence binding and is therefore stronger than the demonstrated chain.",
+        "The counterargument correctly preserves ASP, unit-volume and price-volume-mix uncertainty."
+      ],
+      "formal_rubric_score": null,
+      "formal_rubric_reason": "FIN 0.1.3 requires L1 and L2 to pass before Q1-Q8 scoring; this lane fails the comparable-period relation trace precondition.",
+      "diagnostic_only_applicable_score": 17,
+      "diagnostic_only_applicable_maximum": 24
+    },
+    {
+      "lane": "responses_candidate",
+      "wire_api": "openai_responses",
+      "transport_status": "pass",
+      "tool_contract_status": "pass",
+      "model_calls": 5,
+      "elapsed_seconds": 267.202,
+      "input_or_prompt_tokens": 84911,
+      "output_or_completion_tokens": 17265,
+      "reasoning_tokens": 15806,
+      "total_tokens": 102176,
+      "l1_financial_truth": {
+        "status": "fail_relation_lineage_and_causal_attribution_unbound",
+        "material_findings": [
+          "company_wide_operating_margin_is_expanding_is_not_bound_to_a_same_cadence_numeric_relation",
+          "genuine_operating_leverage_from_the_AI_server_cycle_overattributes_a_multi_driver_company_and_segment_result_to_AI"
+        ]
+      },
+      "l2_evidence_authority": {
+        "status": "judgment_refs_pass_proposal_route_contract_fail",
+        "reviewed_evidence_refs": 4,
+        "numeric_refs": 6,
+        "gap_closed_without_evidence": 0,
+        "rejected_or_candidate_items_used_as_facts": 0
+      },
+      "content_findings": [
+        "The mechanism and strongest counterargument are somewhat more explicit than Chat about storage, pricing, configuration mix, services and one-time alternatives.",
+        "The final AI-cycle attribution is materially stronger than the available product-level profit bridge permits.",
+        "The WWC is observable but uses a current-quarter gross-margin threshold without a comparison relation or a thesis-state transition rule."
+      ],
+      "formal_rubric_score": null,
+      "formal_rubric_reason": "FIN 0.1.3 requires L1 and L2 to pass before Q1-Q8 scoring; this lane fails relation lineage and causal-attribution preconditions.",
+      "diagnostic_only_applicable_score": 18,
+      "diagnostic_only_applicable_maximum": 24
+    }
+  ],
+  "paired_disposition": {
+    "responses_live_compatibility": "qualified_for_shadow_continuation_only",
+    "responses_content_superiority": "not_established",
+    "chat_control": "retain_as_provisional_primary_transport",
+    "anthropic_messages": "remain_schema_and_transcript_shadow_live_forbidden",
+    "operational_comparison": {
+      "responses_total_token_multiple_vs_chat": 1.364,
+      "responses_elapsed_time_multiple_vs_chat": 1.581
+    },
+    "decision_basis": "Responses completed the same real tool loop and showed slightly richer mechanism/counterargument language, but it shared the hard relation and route defects, added a stronger AI causal overclaim, consumed more tokens and took longer. Protocol novelty alone does not justify a primary-lane change."
+  },
+  "next_authorized_scope": "one_zero_call_comparable_period_relation_and_EvidenceRequest_source_route_contract_package_with_replay_mutation_and_three_case_fake_proof_then_at_most_one_Chat_single_cell_revalidation_after_a_new_authority",
+  "five_cell_live_authorized": false,
+  "qualified_human_acceptance": false,
+  "s3_product_acceptance": false,
+  "release_ready": false,
+  "known_boundary": "This assessment qualifies both wire transports as able to complete the same single-cell loop, but it does not accept either financial judgment, score a final eight-dimension report, authorize a five-cell live, qualify Anthropic live, or establish S3 or release acceptance."
+}

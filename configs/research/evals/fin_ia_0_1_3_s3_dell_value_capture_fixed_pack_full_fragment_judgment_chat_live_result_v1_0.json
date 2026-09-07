@@ -1,0 +1,97 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_full_fragment_judgment_live_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "recorded_at": "2026-08-15T20:00:32+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_0.json",
+  "authority_sha256": "5201a5185f55aff3078a9e02ec2a1cc82c1ff676c142a590b55072022e30c915",
+  "implementation_commit": "f2924eb3e8cbfbbcf39864d76e60443df4aa37ad",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "ordered_fragment_tools": [
+    "submit_research_thesis",
+    "submit_research_mechanism",
+    "submit_research_counterargument_and_wwc"
+  ],
+  "research_input_digest": "783de9eafec8bef8b14c8a5761bf7ce42a52b31ff7e68ea1505b264d4ea7d274",
+  "fragment_steps": [
+    {
+      "fragment_tool": "submit_research_thesis",
+      "fragment_context_digest": "0e9c8db642337229da4474d7858d2f0b0394b0b4b79d09ffd2438adb0465be90",
+      "analysis_messages_digest": "66e9e59ba7259bffdf44002a29a2031d2a3a439cca42d9b325195067547ee0f3",
+      "submission_messages_digest": "af8e20739dc39357bf25179958de33b89d174009e26af0a79d136451117ffecb",
+      "analysis": {
+        "attempted": true,
+        "finish_reason": "stop",
+        "visible_chars": 1068,
+        "content_digest": "bc40157f962611674df7c382057b249466ae14c0d53ae6c3f85c96e987aff916",
+        "usage": {
+          "prompt_tokens": 2619,
+          "completion_tokens": 2885,
+          "total_tokens": 5504,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 2322
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 2619
+        },
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-VC-FULL-FRAGMENT-CHAT-FFJ-R1/FFJ-R1-THESIS-ANALYSIS/model_visible_request.json",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-VC-FULL-FRAGMENT-CHAT-FFJ-R1/FFJ-R1-THESIS-ANALYSIS/provider_response.json"
+      },
+      "submission": {
+        "attempted": true,
+        "finish_reason": "tool_calls",
+        "tool_call_count": 1,
+        "usage": {
+          "prompt_tokens": 4449,
+          "completion_tokens": 1166,
+          "total_tokens": 5615,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "completion_tokens_details": {
+            "reasoning_tokens": 676
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 4449
+        },
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-VC-FULL-FRAGMENT-CHAT-FFJ-R1/FFJ-R1-THESIS-SUBMISSION/model_visible_request.json",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-VC-FULL-FRAGMENT-CHAT-FFJ-R1/FFJ-R1-THESIS-SUBMISSION/provider_response.json"
+      },
+      "validated_fragment_digest": ""
+    }
+  ],
+  "judgment_output_digest": "",
+  "deliverable_digest": "",
+  "failure_phase": "local_finance_fragment_or_terminal_validation",
+  "failure_code": "finance_loop_micro_narrative_invalid",
+  "failure_fragment_tool": "submit_research_thesis",
+  "failure_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-VC-FULL-FRAGMENT-CHAT-FFJ-R1/FFJ-R1-THESIS-SUBMISSION/provider_response.json",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-full-fragment-judgment-chat-ffj-r1/full_result.json",
+  "full_result_sha256": "2333811b3f0ed6a6fc2872e336924e3183094bb43741665cb4afab68dabd6c8c",
+  "execution": {
+    "model_calls_attempted": 2,
+    "maximum_model_calls": 6,
+    "tool_calls_accepted": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "protocol_switches": 0,
+    "product_publication": false
+  },
+  "acceptance": {
+    "full_three_fragment_contract_pass": false,
+    "terminal_judgment_contract_pass": false,
+    "content_assessment_pending": false,
+    "fixed_pack_layer_one_acceptance": false,
+    "dynamic_agentic_research_acceptance": false,
+    "five_cell_live_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false
+  },
+  "known_boundary": "This authority permits one exact-once DELL value_capture fixed-Pack full three-fragment Chat Judgment. It forbids retry, dynamic retrieval, EvidenceRequest execution, protocol switching, five-cell execution, publication and release.",
+  "result_digest": "6e78298e5f300e89e7cf3c8c7f05299b5a0da7dad3f1b336bc33068709edd04e"
+}

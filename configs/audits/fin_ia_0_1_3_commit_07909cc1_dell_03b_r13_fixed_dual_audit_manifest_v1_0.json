@@ -1,0 +1,634 @@
+{
+  "schema_version": "fin_ia_dell_03B_R13_case_correct_fixed_dual_audit_manifest_v1_0",
+  "status": "case_correct_hash_bound_bundle_ready_for_fresh_author_separated_readonly_audit",
+  "audit_id": "FIN-0.1.3-S1-DELL-03B-R13-FRESH-DUAL-AUDIT",
+  "recorded_at": "2026-08-28T07:19:54+08:00",
+  "git_identity": {
+    "branch": "codex/fin013-dell-s1-s2-product-bridge",
+    "implementation_commit": "11caf389fdea3c96554dd4176c571c1bf12e14be",
+    "implementation_tree": "382f02cae8c0b6545bdfa7d08a00c3e79c5700c9",
+    "implementation_parent": "3db8e535d68a6857ce066a28b5ef5a540eb66195",
+    "implementation_changed_paths": [
+      "configs/audits/fin_ia_0_1_3_commit_057eb98e_dell_03b_r12_fresh_dual_audit_fail_v1_0.json",
+      "docs/project_os/capability_status_ledger.jsonl",
+      "docs/project_os/current_context_pack.zh-CN.md",
+      "docs/project_os/root_cause_issue_ledger.jsonl",
+      "docs/worklog/00_current_master_checklist.md",
+      "docs/worklog/README.md",
+      "docs/worklog/fin_0_1_3_s1/119_dell_03b_R12_fresh_dual_audit_failure_and_R13_requirement.md",
+      "docs/worklog/fin_0_1_3_s1/120_dell_03b_R13_program_level_execution_plan.md",
+      "docs/worklog/fin_0_1_3_s1/121_dell_03b_R13_author_implementation_and_zero_call_preview.md",
+      "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r13.py",
+      "src/retrieval/dell_report_frame_transformation_r13.py",
+      "src/retrieval/dell_report_internal_chain_ceiling_r13.py",
+      "src/retrieval/dell_report_predicate_frames_r13.py",
+      "tests/test_dell_report_frame_transformation_r13.py",
+      "tests/test_dell_report_internal_chain_ceiling_r13.py",
+      "tests/test_dell_report_predicate_frames_r13.py"
+    ],
+    "authority_commit": "492218a9237678f2d2cf63b6a77f1249dc9f1f55",
+    "authority_tree": "54e598569bf9d3aec1a5104f6c6669ea26669f60",
+    "authority_parent": "11caf389fdea3c96554dd4176c571c1bf12e14be",
+    "authority_changed_paths": [
+      "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v2_2.json"
+    ],
+    "reviewed_result_commit": "07909cc1bff82b3b34191bd6873980954c92733f",
+    "reviewed_result_tree": "bd41fd2c321a77a7eed20713f65fd124c7f3ea16",
+    "reviewed_result_parent": "492218a9237678f2d2cf63b6a77f1249dc9f1f55",
+    "reviewed_result_changed_paths": [
+      "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v2_2.json",
+      "docs/project_os/capability_status_ledger.jsonl",
+      "docs/project_os/current_context_pack.zh-CN.md",
+      "docs/project_os/root_cause_issue_ledger.jsonl",
+      "docs/worklog/00_current_master_checklist.md",
+      "docs/worklog/README.md",
+      "docs/worklog/fin_0_1_3_s1/122_dell_03b_R13_exact_execution_and_author_integrity.md",
+      "reports/model_runs/FIN_0_1_3_S1_DELL_03B_INTERNAL_CHAIN_CEILING_R13_20260828.md"
+    ]
+  },
+  "case_sensitive_path_integrity": {
+    "source": "git_diff_tree_NUL_delimited_UTF8_without_case_normalization",
+    "casefold_applied_to_display_paths": false,
+    "implementation_path_count": 16,
+    "authority_path_count": 1,
+    "reviewed_result_path_count": 8,
+    "all_paths_exact_members_of_commit_tree": true,
+    "mixed_case_sentinels": [
+      "docs/project_os/current_context_pack.zh-CN.md",
+      "docs/worklog/README.md",
+      "docs/worklog/fin_0_1_3_s1/121_dell_03b_R13_author_implementation_and_zero_call_preview.md",
+      "reports/model_runs/FIN_0_1_3_S1_DELL_03B_INTERNAL_CHAIN_CEILING_R13_20260828.md"
+    ],
+    "R12_known_case_mismatch_count_carried_as_negative_evidence": 7
+  },
+  "reviewer_contract": {
+    "fresh_fork_none_author_separated": true,
+    "read_only": true,
+    "writes_commits_pushes": 0,
+    "formal_attempts": 0,
+    "network_provider_generation_external_embedding_4B_reranker_calls": 0,
+    "full_repository_pytest_runs": 0,
+    "targeted_pytest_default": "forbidden",
+    "targeted_pytest_exception": "at_most_one_R13_direct_in_memory_probe_only_after_a_concrete_material_suspicion_is_stated",
+    "missing_evidence_means": "NOT_ASSESSABLE_not_PASS",
+    "required_split_verdicts": [
+      "R13_engineering_identity_raw_persisted_reconciliation_and_privacy",
+      "R13_event_ownership_governing_price_head_and_transformation_quality",
+      "R17_reader_source_and_report_content_quality_carry_forward",
+      "qualified_human_acceptance"
+    ],
+    "checkpoint_rule": "report_each_phase_conclusion_or_mark_unfinished_items_NOT_ASSESSABLE_do_not_chase_recursive_history"
+  },
+  "engineering_bundle": [
+    {
+      "id": "R12_fresh_failure",
+      "ref": "configs/audits/fin_ia_0_1_3_commit_057eb98e_dell_03b_r12_fresh_dual_audit_fail_v1_0.json",
+      "sha256": "452cd28a5fe61f9367dc90255671eacbd79f2d90210c7192c33eb863e546cbe8",
+      "byte_size": 14601,
+      "purpose": "Exact R12 P1/P2 implementation findings, seven-path case-folded envelope finding and unchanged R17 failure that R13 must close or carry",
+      "declared_digests": {
+        "result_digest": "d8bc52045773ca5c1f31d148b9a097da8f193410ddac3799284f854c5b75af9e",
+        "audit_id": "FIN-0.1.3-S1-DELL-03B-R12-FRESH-DUAL-AUDIT"
+      }
+    },
+    {
+      "id": "R12_fixed_manifest",
+      "ref": "configs/audits/fin_ia_0_1_3_commit_057eb98e_dell_03b_r12_fixed_dual_audit_manifest_v1_0.json",
+      "sha256": "6d0df0dfba99354877b406275b7107be3ff36644d44c7fac53a32ed1e912c3fd",
+      "byte_size": 30989,
+      "purpose": "Immutable R12 hash bundle whose case-folded path strings are explicit negative evidence for the R13 manifest successor",
+      "declared_digests": {
+        "result_digest": "25b4c7e6333f41431f7cd71f714f10ea8b5a00f40b36aa337f4eb55c29a1ebac",
+        "audit_id": "FIN-0.1.3-S1-DELL-03B-R12-FRESH-DUAL-AUDIT"
+      }
+    },
+    {
+      "id": "R13_plan",
+      "ref": "docs/worklog/fin_0_1_3_s1/120_dell_03b_R13_program_level_execution_plan.md",
+      "sha256": "466c681c9d5445850c906271f01218afbf3917ec2a2a7351fa97fc139a7aaa24",
+      "byte_size": 24156,
+      "purpose": "R13 requirements, dependencies, engineering/model/report standards, acceptance tests and stop conditions"
+    },
+    {
+      "id": "R13_implementation_record",
+      "ref": "docs/worklog/fin_0_1_3_s1/121_dell_03b_R13_author_implementation_and_zero_call_preview.md",
+      "sha256": "92512c19a3435acb15294c9b4cbf3959b1b16fee2123b6c340e55276e44d0888",
+      "byte_size": 10195,
+      "purpose": "Author implementation, rejected overbroad trial, direct-R12 lineage, full-corpus preview and layered gates"
+    },
+    {
+      "id": "R13_result_record",
+      "ref": "docs/worklog/fin_0_1_3_s1/122_dell_03b_R13_exact_execution_and_author_integrity.md",
+      "sha256": "55ce81edd51ad714000137865bd8515d6d8a74fc470c1cebfdb5e9f727108b5a",
+      "byte_size": 8959,
+      "purpose": "Formal zero-call execution, persisted reconciliation, artifact integrity, replay, transport and downstream boundary"
+    },
+    {
+      "id": "risk_tiered_test_policy",
+      "ref": "docs/project_os/risk_tiered_test_evidence_policy.zh-CN.md",
+      "sha256": "c0c2ec548a99e51c7f6f52bc0fc827f0abd7e1f36e48d5423b6ff0e009b70771",
+      "byte_size": 6934,
+      "purpose": "Risk-tiered verification and full-pytest escalation contract"
+    },
+    {
+      "id": "R13_policy",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v2_2.json",
+      "sha256": "ae519358edd9892abcfe05ae8486e59e9b6d571433b9d5f86273e3723175b0cb",
+      "byte_size": 24520,
+      "purpose": "Exact-once authority, 15 immutable inputs, 41 implementation hashes and zero-model TokenBudgetBasis",
+      "declared_digests": {
+        "result_digest": "cc84d3af62baccb71cb9a21422c11021c97e13ea1ed6e5e58c2879ad36a61427",
+        "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R13",
+        "attempt_id": "dell-rsq-03b-internal-chain-r13"
+      }
+    },
+    {
+      "id": "R13_public",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v2_2.json",
+      "sha256": "b841be686e52c3927accfe60186ea4584f4c1d61c2ef83fc3ee2455137546d63",
+      "byte_size": 63755,
+      "purpose": "Threat-first public projection with route identities, persisted-summary seal and private-result linkage",
+      "declared_digests": {
+        "result_digest": "d186be686d9293d4ebbb8e6d698cd223429ba65433df0a89f44f7b32224dbe8d",
+        "policy_digest": "cc84d3af62baccb71cb9a21422c11021c97e13ea1ed6e5e58c2879ad36a61427",
+        "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+        "private_result_digest": "0d58e3ead80227df34c111b25882d8a055a47b4515d0eb9e1c24aea2ac68a055",
+        "attempt_id": "dell-rsq-03b-internal-chain-r13"
+      }
+    },
+    {
+      "id": "R13_private",
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r13/full_result.json",
+      "sha256": "9502e4988116253253c9b64c10416dcf08d9fdee2e646a32c426ac65e090e94c",
+      "byte_size": 58032303,
+      "purpose": "Canonical private result with persisted packages, transformation rows, reconciliation summaries and route registry",
+      "declared_digests": {
+        "result_digest": "0d58e3ead80227df34c111b25882d8a055a47b4515d0eb9e1c24aea2ac68a055",
+        "policy_digest": "cc84d3af62baccb71cb9a21422c11021c97e13ea1ed6e5e58c2879ad36a61427",
+        "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+        "attempt_id": "dell-rsq-03b-internal-chain-r13"
+      }
+    },
+    {
+      "id": "R13_attempt_receipt",
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r13/attempt_consumption_receipt.json",
+      "sha256": "536a06f9d9cb4cc39fe5a8a5c3884317246a56500740b5d79771b7557a87b3ab",
+      "byte_size": 1020,
+      "purpose": "Exclusive attempt-consumption and exact implementation/authority Git identity",
+      "declared_digests": {
+        "result_digest": "19d10cb17c748fbd8e69481706695520db24fd48d737592c6c05dfc05bcab346",
+        "policy_digest": "cc84d3af62baccb71cb9a21422c11021c97e13ea1ed6e5e58c2879ad36a61427",
+        "attempt_id": "dell-rsq-03b-internal-chain-r13"
+      }
+    },
+    {
+      "id": "R13_raw_reuse_capture",
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r13/raw_execution_capture.json",
+      "sha256": "5c9cece69e9fc5ab82aec790b4517a667ea6f8cb96ed05e2c80c9237e45674d8",
+      "byte_size": 2559585,
+      "purpose": "Persisted immutable-R12-raw reuse successor and zero-new-call equivalence proof",
+      "declared_digests": {
+        "result_digest": "45bc59c65ea95bb3358ad9ba108d730a224d8380d92f0e0f32381700185034a6",
+        "policy_digest": "cc84d3af62baccb71cb9a21422c11021c97e13ea1ed6e5e58c2879ad36a61427",
+        "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+        "attempt_id": "dell-rsq-03b-internal-chain-r13"
+      }
+    },
+    {
+      "id": "R13_model_run",
+      "ref": "reports/model_runs/FIN_0_1_3_S1_DELL_03B_INTERNAL_CHAIN_CEILING_R13_20260828.md",
+      "sha256": "cb4f4addb7b21a59f94deb18f4d4708ad0c69ebf602a5da8dfbf6c7be7e7f3e4",
+      "byte_size": 4426,
+      "purpose": "Zero-model execution, result and experiment-governance record"
+    },
+    {
+      "id": "R13_frames",
+      "ref": "src/retrieval/dell_report_predicate_frames_r13.py",
+      "sha256": "1a35586e62610f9370323aa9b4caa598a4f045619194fd6fd8fb9d4d0fe68f58",
+      "byte_size": 118545,
+      "purpose": "Event-local structural ownership v4, ownerless unseen-head barrier and governing price-head frame v9"
+    },
+    {
+      "id": "R13_transformation",
+      "ref": "src/retrieval/dell_report_frame_transformation_r13.py",
+      "sha256": "2f669c820e3612107646770a731c7741720441cda7d67bfe8211c9b96edff192",
+      "byte_size": 31124,
+      "purpose": "Lossless transformation v5 with head, connector, clause and role proof preservation"
+    },
+    {
+      "id": "R13_compiler",
+      "ref": "src/retrieval/dell_report_internal_chain_ceiling_r13.py",
+      "sha256": "984ce2107b9303e72f8a1bc876cd22dfc3518a09b3863b1b5a6f2803e67735a4",
+      "byte_size": 81369,
+      "purpose": "R12 predecessor validator, persisted whole-summary derivation and private/public projection seal"
+    },
+    {
+      "id": "R8_public_validator_reused",
+      "ref": "src/retrieval/dell_report_public_validation_r8.py",
+      "sha256": "3d8421d19839ca37320065ae4d5bc8cecad41ca204cf5d692dc770f3ab3a90ca",
+      "byte_size": 9901,
+      "purpose": "Inherited recursive threat-first public scalar validator"
+    },
+    {
+      "id": "R13_runner",
+      "ref": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling_r13.py",
+      "sha256": "afc19651cac3b75ee8f33b7ee762780166392ac618f78604aafe707b989098e7",
+      "byte_size": 46462,
+      "purpose": "Zero-new-call preview/formal/replay, R12 raw reread, exact-once and atomic publication runner"
+    },
+    {
+      "id": "R13_frame_tests",
+      "ref": "tests/test_dell_report_predicate_frames_r13.py",
+      "sha256": "4377a0dba06bf8c711cdd0b4cc1ff01102495223da54ea9bab82e9aa98b00c9a",
+      "byte_size": 35472,
+      "purpose": "Ownerless unseen-event, participial/relative head and positive-control adversarial tests"
+    },
+    {
+      "id": "R13_transformation_tests",
+      "ref": "tests/test_dell_report_frame_transformation_r13.py",
+      "sha256": "b812b02311b2a495190e7ed6549835fd3ec0998632828182571dd72618fd9714",
+      "byte_size": 19457,
+      "purpose": "Head/connector/clause/role proof preservation and mutation tests"
+    },
+    {
+      "id": "R13_integration_tests",
+      "ref": "tests/test_dell_report_internal_chain_ceiling_r13.py",
+      "sha256": "4b594075b4eab94915799f78bbc7320b609b27baee5e9ced1afeb7c9a01a0d58",
+      "byte_size": 36191,
+      "purpose": "Policy/input drift, whole-summary mutation, projection, exact-once and failure-contract tests"
+    },
+    {
+      "id": "residual_route_program",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_1.json",
+      "sha256": "581c290df98b75fb06fb86842532cdc2c719d235b2aa6524f89f99a534780f64",
+      "byte_size": 159810,
+      "purpose": "Frozen 03A-R2 constant route identity source for all six targets",
+      "declared_digests": {
+        "program_id": "FIN-0.1.3-S1-DELL-RSQ-03A-R2",
+        "program_digest": "ed6f11a8fe091d84362d2df041d5ea0bffa50a5c781274f60eaf9e73d6919d50",
+        "policy_digest": "cb0b4d610315028b39fc86dda5eeeeabb3d671fe716fbcfcdf2ca7b1e91fd819"
+      }
+    },
+    {
+      "id": "R12_policy",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v2_1.json",
+      "sha256": "5ed3b60ef0154a9a835175b75396b7496e7e18daaba80f0ef39a9a380c075656",
+      "byte_size": 23674,
+      "purpose": "Immutable direct predecessor authority bound by R13",
+      "declared_digests": {
+        "result_digest": "4dfae14f69bfa2c2e62bdec64239456f0813931d5b947254c7dedde9c2d79440",
+        "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R12",
+        "attempt_id": "dell-rsq-03b-internal-chain-r12"
+      }
+    },
+    {
+      "id": "R12_public",
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_result_v2_1.json",
+      "sha256": "25e873a7dc5e791c84e1dba61abe6353263d88f1bd1ca928f61671202e1fa3bb",
+      "byte_size": 63692,
+      "purpose": "Immutable direct predecessor public result bound by R13",
+      "declared_digests": {
+        "result_digest": "7302201a8a24e7ac0bf96f5c6e1b7bf8718de24958adfb39b9ed21220b607fdc",
+        "policy_digest": "4dfae14f69bfa2c2e62bdec64239456f0813931d5b947254c7dedde9c2d79440",
+        "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+        "private_result_digest": "5b4786548c9a50d413fa82c104f87e032f72177f2a12767c8db9d53cda90c1cd",
+        "attempt_id": "dell-rsq-03b-internal-chain-r12"
+      }
+    },
+    {
+      "id": "R12_private",
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r12/full_result.json",
+      "sha256": "489c87dc4f4418270c785fb9062654412d0b1cd494cc155d107c0761aa9cac56",
+      "byte_size": 58313054,
+      "purpose": "Immutable direct predecessor private result and candidate-generation input bindings",
+      "declared_digests": {
+        "result_digest": "5b4786548c9a50d413fa82c104f87e032f72177f2a12767c8db9d53cda90c1cd",
+        "policy_digest": "4dfae14f69bfa2c2e62bdec64239456f0813931d5b947254c7dedde9c2d79440",
+        "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+        "attempt_id": "dell-rsq-03b-internal-chain-r12"
+      }
+    },
+    {
+      "id": "R12_attempt_receipt",
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r12/attempt_consumption_receipt.json",
+      "sha256": "5e0bfa6bb943b8db25b6b67ac678410ab20f21bdeb6997577be76ae4c84bf186",
+      "byte_size": 1020,
+      "purpose": "Immutable direct predecessor exact-once receipt",
+      "declared_digests": {
+        "result_digest": "d1c738a1d73969958e71b2b2b3bd6c7772e393b2f38a3ba49b60917964d3f81a",
+        "policy_digest": "4dfae14f69bfa2c2e62bdec64239456f0813931d5b947254c7dedde9c2d79440",
+        "attempt_id": "dell-rsq-03b-internal-chain-r12"
+      }
+    },
+    {
+      "id": "R12_raw_capture",
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling/dell-rsq-03b-internal-chain-r12/raw_execution_capture.json",
+      "sha256": "7b8410d853bfd8a81cdc27f60e1ce73d943b9912699be538a090d835b1b1ebd3",
+      "byte_size": 2559514,
+      "purpose": "Exact direct predecessor raw successor reused by R13",
+      "declared_digests": {
+        "result_digest": "eb4c50e8bc043cecad9d97961d3606ab8ac1d7fa931937a4072e96b2a90f57e5",
+        "policy_digest": "4dfae14f69bfa2c2e62bdec64239456f0813931d5b947254c7dedde9c2d79440",
+        "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+        "attempt_id": "dell-rsq-03b-internal-chain-r12"
+      }
+    }
+  ],
+  "R17_report_quality_bundle": [
+    {
+      "id": "R17_report_bytes",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-reversal-gate-r17/full_result.json",
+      "sha256": "433b2c486f8753d4f0b2468aa66f21c0ef2ff0e4bcc7d9347233e239b30ec0e8",
+      "byte_size": 133379,
+      "purpose": "Actual rendered reader report and rendering receipts"
+    },
+    {
+      "id": "R17_authority_catalog",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_authority_catalog_v1_0.json",
+      "sha256": "fe33215f8d46a5fa9db422d8192ba3c18daf29563a7941ba6fe16808ce07a84b",
+      "byte_size": 95210,
+      "purpose": "Claim, Evidence, NumericFact and presentation authority"
+    },
+    {
+      "id": "R17_gap_crosswalk_14_9_4_10",
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_2.json",
+      "sha256": "990972fc1acb62696f0bebbc12713e100597271ec562424296cf8d220ff577f5",
+      "byte_size": 36049,
+      "purpose": "Pack/dynamic/writer/S2 boundary crosswalk"
+    },
+    {
+      "id": "R17_method_register",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_research_method_parameter_register_v1_0.json",
+      "sha256": "db1d799552a9809d2f5a749a7a140be06088ff8d867745342b2f2ce67b3dde77",
+      "byte_size": 2278,
+      "purpose": "WWC method parameters and pending thresholds"
+    },
+    {
+      "id": "R17_formal_protocol",
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_evaluation_protocol_v1_0.json",
+      "sha256": "fe5b5f28554a6d2c930984359f2feb92248e976f1025db4af9f5c9ba555255ac",
+      "byte_size": 6143,
+      "purpose": "Eight-dimension and prerequisite contract"
+    },
+    {
+      "id": "R17_human_packet",
+      "ref": "data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r2/full_result.json",
+      "sha256": "9679d9e73668f12fb3e306eb3f5e73723e65a5a97247f74607374367668bcf11",
+      "byte_size": 100708,
+      "purpose": "8 requests, 18 items, 16 human-required decisions"
+    },
+    {
+      "id": "R17_prior_independent_review",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_R17_fresh_independent_review_pass_v1_0.json",
+      "sha256": "e75731284f078e36e41ba16509c516039976a3feff4f2be96a6c9b03ed9fdb55",
+      "byte_size": 4125,
+      "purpose": "Prior narrower review; not current report-quality authority"
+    },
+    {
+      "id": "R17_quality_baseline_manifest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_program_baseline_manifest_v1_0.json",
+      "sha256": "4bf0fa0e07d27fd3edcbaaea4a8b3002cfe4c0e227b8214c217666350ad4edc0",
+      "byte_size": 10758,
+      "purpose": "Frozen R17 report-quality baseline"
+    },
+    {
+      "id": "R17_quality_baseline_verification",
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_baseline_verification_v1_1.json",
+      "sha256": "7cdbda5829eefb613cb653548bf14c9a35ed5d40a9527d956d904814f2cb15e7",
+      "byte_size": 9184,
+      "purpose": "Known reader-facing missing surfaces"
+    },
+    {
+      "id": "current_evidence_pack_projection",
+      "ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_6.json",
+      "sha256": "b3289bdf91ae2654f4a5a37aecf603a444581a7969d9e866146feeb1efbcfa14",
+      "byte_size": 7721,
+      "purpose": "Current DELL 55 Evidence / 14 gaps lineage"
+    },
+    {
+      "id": "DELL_source_passage_locator_pack",
+      "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+      "sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+      "byte_size": 278645,
+      "purpose": "55 passages and source URLs for exact support checks"
+    },
+    {
+      "id": "R17_source_bound_numeric_review",
+      "ref": "configs/research/fin_ia_0_1_3_s2_dell_current_dynamic_multi_agent_R10_source_bound_numeric_review_v1_0.json",
+      "sha256": "98ae821c156f96939a635efb4e5ca5f15c14b89120b95371ac99ccc3feb85930",
+      "byte_size": 10135,
+      "purpose": "Numeric formulas and use boundaries"
+    },
+    {
+      "id": "R17_author_provenance_worklog",
+      "ref": "docs/worklog/fin_0_1_3_s3/168_R17_clean_checkout_and_author_provenance_successor.md",
+      "sha256": "fa0c77910822873d8235a87c86c13cae70ec5ecdb3cec5b719d5226ce4e43756",
+      "byte_size": 2434,
+      "purpose": "R17 lineage and author claims"
+    },
+    {
+      "id": "R17_prior_audit_worklog",
+      "ref": "docs/worklog/fin_0_1_3_s3/169_final_clean_successor_audit_and_R17_fresh_independent_pass.md",
+      "sha256": "2dcd7aca834574a7cd174681ca9fd83f657cb3532593d712a5e34c66a5882824",
+      "byte_size": 2789,
+      "purpose": "Prior audit scope and limitations"
+    }
+  ],
+  "author_test_and_execution_receipts": {
+    "T1_R13_direct": {
+      "freeze": "162 passed in 56.25s",
+      "post_result": "162 passed in 56.52s"
+    },
+    "T2_R12_R13_adjacent": "292 passed in 79.74s",
+    "T3_Project_OS_and_base_R3_foundation": "140 passed in 15.11s",
+    "post_result_Project_OS": "82 passed in 10.42s",
+    "T4": {
+      "run_for_R13": false,
+      "trigger": false,
+      "reason": "R13 implementation is isolated and result phase changed only public result and governance records; active shared runtime consumers dependencies and pytest configuration are unchanged"
+    },
+    "static_and_governance": {
+      "py_compile_pyflakes_import_isolation": "pass",
+      "active_baseline": [
+        213,
+        8,
+        5,
+        28,
+        0
+      ],
+      "Project_OS_JSONL": [
+        8,
+        1389,
+        "pass"
+      ],
+      "repository_secret_scan": [
+        8247,
+        0
+      ],
+      "diff_check": "pass"
+    },
+    "zero_call_preview": {
+      "final_seconds": 25.315615,
+      "sources": 1888,
+      "objects": 34199,
+      "union_occurrences": 794,
+      "digest": "5cd4fe82a987f571cf8844649faa1579c73a86b69d82a6c2f176951c17ed523e",
+      "transformation_total_accepted_failed": [
+        1596,
+        1273,
+        323
+      ],
+      "complete_transformation_coverage": "6_of_6",
+      "supplier_source_compiled_union_final_rank": "3_3_2_1_rank2",
+      "other_five_source_compiled_union_final": "0_0_0_0",
+      "external_required": 5,
+      "ASP_active_exact_route_IDs": 2,
+      "new_calls": 0
+    },
+    "formal_execution": {
+      "requests": 5,
+      "saved_R12_raw_reuse_count": 1,
+      "canonical_R11_raw_local_embedding_batches": 1,
+      "upstream_R12_new_local_embedding_batches": 0,
+      "R13_new_local_embedding_batches": 0,
+      "aggregate_union": 338,
+      "aggregate_final": 80,
+      "transformation_total_accepted_failed": [
+        1596,
+        1273,
+        323
+      ],
+      "authoritative_persisted_summary_reconciliation": "6_of_6_exact",
+      "public_projector_rebuild": "complete_dict_exact",
+      "complete_transformation_coverage": "6_of_6",
+      "failed_complete_unbound_complete_compiled_complete_without_source_proof_rebind": [
+        0,
+        0,
+        0,
+        0
+      ],
+      "unbound_partial": 379,
+      "actual_target_counts": {
+        "ASP": "0_0_0_0",
+        "capacity_release": "0_0_0_0",
+        "capacity_utilization_yield": "0_0_0_0",
+        "HBM_supply": "0_0_0_0",
+        "supplier": "3_3_2_1_rank2",
+        "units": "0_0_0_0"
+      },
+      "external_required": 5,
+      "ASP_active_exact_route_IDs": [
+        "DELL-RSQ-03A-TARGET-ASP::official_issuer_regulator",
+        "DELL-RSQ-03A-TARGET-ASP::product_procurement_deployment"
+      ],
+      "forbidden_counters_zero": true,
+      "terminal_failure_receipt_absent": true
+    },
+    "exact_saved_formal_replay": {
+      "private_dict_and_bytes_equal": true,
+      "private_result_digest": "0d58e3ead80227df34c111b25882d8a055a47b4515d0eb9e1c24aea2ac68a055"
+    },
+    "case_correct_manifest_generation": {
+      "NUL_delimited_case_preserving_git_paths": true,
+      "casefold_applied_to_paths": false,
+      "exact_changed_path_counts": [
+        16,
+        1,
+        8
+      ],
+      "mixed_case_sentinels_exact": true
+    }
+  },
+  "audit_phases": [
+    {
+      "phase": "A_manifest_identity_exact_once_R12_raw_reuse_and_public_privacy",
+      "required_checks": [
+        "verify all 40 manifest SHA byte-size and declared-digest bindings before interpretation",
+        "verify case-sensitive implementation authority and reviewed-result parent tree and exact changed paths from Git raw bytes",
+        "verify policy 15 bound inputs 41 implementation hashes and task-specific zero-model TokenBudgetBasis",
+        "verify attempt directory exact population terminal failure absence receipt raw private public self-digests and canonical links",
+        "verify R13 raw successor exactly binds R12 capture is persisted before compile and reread before private/public generation",
+        "verify all R13 new model embedding provider network external 4B reranker retry mutation promotion and closure counters are zero",
+        "verify saved-formal private dictionary and bytes equality without rerunning formal",
+        "attack public projection for private fields unknown keys Unicode controls and resigned persisted-summary drift"
+      ],
+      "checkpoint_required": true
+    },
+    {
+      "phase": "B_authoritative_persisted_reconciliation",
+      "required_checks": [
+        "derive every target summary only from persisted source compiled coverage and validated binding rows",
+        "verify exact package populations and set digests binding population and digest unbound failed governing-head clause-decision and coverage fields",
+        "mutate every material summary field and at least one persisted row with a recomputed private self-digest and require public projection rejection",
+        "verify all six frozen private summaries and public projections reconcile without trusting author-recorded aggregate counts",
+        "distinguish a correct current stored result from general fail-closed capability and seek a new bypass"
+      ],
+      "checkpoint_required": true
+    },
+    {
+      "phase": "C_event_local_ownerless_unknown_head_participial_price_head_and_transformation",
+      "required_checks": [
+        "probe ownerless unseen finite and participial event heads across case punctuation adverb and auxiliary variants",
+        "preserve product-list quantity modifier and legitimate shared-subject positive controls without closed entity or verb allowlists",
+        "probe service delivery financing lease support contract and nonce heads under for-of-on and participial-relative complements",
+        "preserve direct product price purchase configuration and legitimate bundle-price controls only with unique span-local attachment",
+        "mutate governing head connector clause owner product price and role spans and require typed loss ambiguity or proof-rebind failure",
+        "seek new general counterexamples rather than approving only frozen author tests"
+      ],
+      "checkpoint_required": true
+    },
+    {
+      "phase": "D_current_corpus_counts_routes_recall_and_boundary",
+      "required_checks": [
+        "verify 1596 total 1273 accepted 323 failed 379 unbound partial and six-of-six complete coverage from immutable private rows",
+        "verify failed-complete unbound-complete compiled-complete-without-source and proof-rebind counts are all zero",
+        "verify supplier 3/3/2/1 rank2 other five 0/0/0/0 and explain the five-binding supplier partial reduction",
+        "verify no candidate-generation input raw rank complete family route or downstream disposition changed from R12",
+        "verify five exact active external route sets including two ASP IDs and no fabricated current-pool 4B or reranker eligibility",
+        "distinguish local missing complete bounded package from proved public non-disclosure"
+      ],
+      "checkpoint_required": true
+    },
+    {
+      "phase": "E_R17_reader_source_and_report_content_quality_required_carry_forward",
+      "required_checks": [
+        "treat R17 private rendered report as the actual reader deliverable and verify all 14 files remain hash-identical",
+        "count reader-visible citations stable URLs and source appendix; internal EV IDs do not substitute",
+        "verify each material claim to exact passage title issuer date period locator URL and claim-use authority",
+        "verify full crosswalk consumption including price-in sensitivity supplier capacity units ASP mix PVM profit and working-capital boundaries",
+        "verify every operational WWC has trigger direction horizon threshold observable owner and response route",
+        "audit quantitative bridge completeness causal boundaries counterevidence scenario discipline contradiction handling repetition density and bilingual reader usability",
+        "apply formal eight-dimension prerequisites and report the qualified-human zero-of-sixteen boundary separately"
+      ],
+      "checkpoint_required": true
+    },
+    {
+      "phase": "F_split_verdicts_and_next_authority",
+      "required_checks": [
+        "report fresh R13 P0 P1 P2 P3 counts separately from carried R17 counts",
+        "do not call R17 changed fixed or passed because R13 did not modify any of its 14 files",
+        "engineering PASS must not imply report quality Evidence S1 S2 S3 product publication or release PASS",
+        "any material R13 finding returns to the same 03B stage without overwriting R13",
+        "only a clean R13 engineering PASS may authorize the five exact residual external source ladders",
+        "qualified-human acceptance remains false regardless of agent findings"
+      ],
+      "checkpoint_required": true
+    }
+  ],
+  "expected_output": {
+    "format": "concise_evidence_backed_readonly_audit_report_returned_to_supervisor_no_file_writes",
+    "required_fields": [
+      "verified_manifest_hash_count",
+      "case_sensitive_changed_path_contract_boolean",
+      "R13_new_findings_with_P0_P1_P2_P3_and_exact_path_or_artifact_evidence",
+      "R13_engineering_verdict",
+      "R13_03B_independent_pass_boolean",
+      "R17_report_source_and_content_quality_verdict_with_carried_P0_P1_P2_P3",
+      "qualified_human_acceptance_boolean",
+      "explicit_unassessed_items",
+      "next_authorized_stage"
+    ]
+  },
+  "known_boundary": "R13 formal and exact replay prove an author-integrity zero-new-call candidate-chain result, not independent 03B qualification. Five targets still require exact external source ladders before any changed-pool 0.6B/4B or reranker experiment. The R17 report bundle remains byte-identical to the known FAIL_GATE_OPEN_NOT_ASSESSABLE baseline: reader citations, exact claim-source locators, full crosswalk, operational WWC, quantitative bridge, density, formal 8D and 16 qualified-human decisions remain open. Engineering zero findings cannot authorize report quality, S1, S2, S3, product, publication or release.",
+  "result_digest": "008942c97a76c94257361f440ed64f77aaaa79c93eee7564116d3a2841af51b4"
+}

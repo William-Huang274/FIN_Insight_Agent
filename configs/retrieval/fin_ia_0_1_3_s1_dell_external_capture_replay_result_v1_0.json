@@ -1,0 +1,48 @@
+{
+  "authority": {
+    "candidate_decision_complete": false,
+    "capture_replay_only": true,
+    "dynamic_single_unit_authorized": false,
+    "evidence_pack_readiness_authorized": false,
+    "evidence_promotion_authorized": false,
+    "public_information_gap_authorized": false
+  },
+  "candidate_proposal_count_by_proposition": {
+    "DELL-PROP-CUSTOMER-DEMAND": 3,
+    "DELL-PROP-PRICE-CONFIGURATION": 1,
+    "DELL-PROP-PVM-BRIDGE": 5,
+    "DELL-PROP-SUPPLY-CHAIN": 11,
+    "DELL-PROP-UNIT-VOLUME": 2,
+    "DELL-PROP-VALUE-POOL": 2
+  },
+  "case_key": "DELL",
+  "changed_route_count": 15,
+  "known_boundary": "The replay recompiled immutable captured originals under the current date, article-body and query-facet implementation. Recovered source objects and proposals remain candidates until CandidateDecision and Evidence Gate; unresolved routes are not public-information gaps.",
+  "observed_counts": {
+    "candidate_evidence_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "retry_count": 0
+  },
+  "original_summary": {
+    "candidate_proposal_count": 24,
+    "captured_count": 49,
+    "original_route_count": 60,
+    "parse_rejected_count": 1,
+    "publication_date_unresolved_count": 22,
+    "source_object_count": 26
+  },
+  "predecessor_binding": {
+    "private_result_digest": "e82a00116f78079866e5d3e381f0c325110c407a312f08d246e299e91c308361",
+    "private_result_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_ladder/dell-external-residual-r3/terminal_result.json",
+    "private_result_sha256": "09c07053f5d925885df442da67b4755c25d8561cfec6dd834fe2ab0333cc70fc"
+  },
+  "prepared_from_commit": "999798efec36ecd57087595f7c26c1ff3ee1d678",
+  "private_execution_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_ladder/dell-external-residual-r3-capture-replay-r1/terminal_result.json",
+  "private_execution_sha256": "bdbde35c0edc1ca7f4b651b8fa17c998d78642776b7d3877c89493e7218985b7",
+  "recorded_at": "2026-08-22T18:17:31+00:00",
+  "result_digest": "20968c76c9fb314d1aeb066036b7722bd0bb159caaf68b455d14fd97109bc57c",
+  "schema_version": "fin_ia_s1_dell_external_capture_replay_result_v1_0",
+  "status": "dell_external_capture_replay_complete_candidate_decision_pending"
+}

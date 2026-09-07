@@ -1,0 +1,330 @@
+{
+  "schema_version": "fin_ia_s1_external_source_candidate_review_plan_v1_0",
+  "status": "approved_internal_engineering_candidate_review",
+  "recorded_at": "2026-08-22",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "plan_id": "FIN-0.1.3-S1-DELL-EXTERNAL-CANDIDATE-REVIEW-V1.0",
+  "ladder_terminal_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_ladder/dell-external-ladder-r2/terminal_result.json",
+  "ladder_terminal_sha256": "f55e4b2b4809915def180a2491180f39a6e7a140b3c915ee45d32dbb17b0a252",
+  "ladder_terminal_result_digest": "355777afa546b5ddfd46777af573f43c6292ae7752e0f312a678a41981c70b04",
+  "source_use_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_source_strength_and_claim_use_policy_v1_0.json",
+  "source_use_policy_sha256": "d55b813321210a2de33312a900912bf925649ece003d70608066c26d05bb8283",
+  "original_proposal_dispositions": [
+    {
+      "candidate_proposal_digest": "067c7bdd2b6da555c05d2cc7e76f8d9752139f9eafc968c810d922a0f9abfd94",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "idc-q1-2026-structural-ai-demand",
+      "reason_zh": "保留 IDC 对 AI 基础设施支出已进入多年资本投入周期的行业判断；只作为行业需求背景，不外推为 Dell 订单、收入或销量。"
+    },
+    {
+      "candidate_proposal_digest": "0808d2722c54634241e5f316b5d1ffd0847ccfad44963647ed17fc0b8e000ddc",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "idc-q1-2026-compute-storage-composition",
+      "reason_zh": "保留 IDC 对服务器、非 GPU 层和延后存储更新的行业构成描述；不把行业份额解释为 Dell 产品组合。"
+    },
+    {
+      "candidate_proposal_digest": "cf4476dcae2175f2ade83045899c4a00fa0b8fa4da0a6c7ab66d5297853094c6",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "idc-2025-ai-infrastructure-market",
+      "reason_zh": "保留 IDC 对 2025 年 AI 基础设施市场规模、加速服务器占比和需求修订的原始预测口径。"
+    },
+    {
+      "candidate_proposal_digest": "0fc45b5bf5103426b5d5f8a20733fbcc8ae849d5b4a28c4ccffb6deafe98a28c",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "内容讨论 Microsoft 电信 Agent 商店，与 Dell AI 服务器需求、配置、销量和价值获取没有可验证关系。"
+    },
+    {
+      "candidate_proposal_digest": "4ad39924b4103425ba443e0b4a59f052a1bcbed68dad72e82e51c1fc95e6f186",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "内容讨论 Azure Local 与 AT&T 边缘环境，未建立 Microsoft/AT&T 到 Dell 研究主体的关系边。"
+    },
+    {
+      "candidate_proposal_digest": "402a313b96b413a32b632aa653018fa86711228d0386624ec921e1cfdb5886de",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "dell-irss-configuration-and-deployment",
+      "reason_zh": "原自动摘录以营销叙事为主；替换为同一 Dell capture 中关于 PowerEdge XE 集成机架、工厂测试和部署方式的具体原文。"
+    },
+    {
+      "candidate_proposal_digest": "2434403d70db3ddc9a7f52028d07463b4448d9cea560dee5fa09ed46ac8f973f",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "trendforce-2024-2025-ai-server-value-and-units",
+      "reason_zh": "保留 TrendForce 对 AI 服务器行业价值、出货增速与较高 ASP 的预测，作为 PVM 区间输入而非 Dell 精确量价。"
+    },
+    {
+      "candidate_proposal_digest": "63389449d7b525126a91af072447638cc52da084cb187ddab6a02168239b9e16",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与已保留的同一 TrendForce 来源高度重复；Blackwell 时点内容由其他更窄候选覆盖，避免同源重复抬高证据密度。"
+    },
+    {
+      "candidate_proposal_digest": "5eebdc1d820f64a7f4242e178bd84ec91ef9b1599ee367c94d934abe0f1c06da",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "trendforce-2026-inference-demand-and-mix",
+      "reason_zh": "保留 2026 年推理需求、通用服务器协同增长和训练向推理迁移的行业预测。"
+    },
+    {
+      "candidate_proposal_digest": "784524c36edec3d24200304e39b828ab4c20a9b180182b4e0b7e7c91747ed9bf",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "trendforce-2026-gpu-asic-platform-mix",
+      "reason_zh": "保留 GPU、ASIC 与平台组合预测，用于配置组合与行业结构讨论，不映射为 Dell 实际销量。"
+    },
+    {
+      "candidate_proposal_digest": "8a1970b9a82ca4b4ab09f52c699bfa0bbf5cba14f0c28737ac33cdc8d33bd628",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "trendforce-upstream-capacity-constraints",
+      "reason_zh": "保留先进制程、CoWoS、HBM 等供应约束的行业链旁证；不得据此声称 Dell 已获得特定配额。"
+    },
+    {
+      "candidate_proposal_digest": "2e37f2cc2b8b6aee9a6d4e1ea54dd37f6e3b765b5cfb75e78b75d82c518040c2",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与同源供应链约束候选重复，新增 OSAT 句子不足以形成 Dell 关系证据。"
+    },
+    {
+      "candidate_proposal_digest": "61c6d979040ee3cf34f99e6739e6948efc15c510b23200de5fa6d50a0e9ebde4",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "fortune-dell-ai-margin-target-and-stack",
+      "reason_zh": "保留 Fortune 对 Dell CFO 的引述和端到端 AI 基础设施栈描述；作为有出处的目标公司上下文，并由独立媒体机制材料交叉支持。"
+    },
+    {
+      "candidate_proposal_digest": "0fe88ad21ef6698d31e1f62c5a445d130437c2dffeb6116dcf7ad9a671ffd0bf",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "fortune-dell-ai-margin-counterevidence",
+      "reason_zh": "保留 AI 服务器收入增长与毛利压力并存的反方材料；不把二手报道中的相关性升级为 AI 导致利润变化的因果结论。"
+    },
+    {
+      "candidate_proposal_digest": "7cae500ecd281a04748e7b3c9ee5c18d15aa7ea0a6bfc930baef59680c7ee5da",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "仅为标题和文章导语，缺少比已保留 Fortune 片段更具体的可裁决内容。"
+    },
+    {
+      "candidate_proposal_digest": "7d1c9cd19bed204f7d2eb9491398ddeacd952258ead7679ae95f7d5cc759c734",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与已保留的 TrendForce GPU/ASIC 组合候选重复，不能重复计作销量证据。"
+    },
+    {
+      "candidate_proposal_digest": "14333a15e00695e9c753facea76000fa37ca72b19316af3de2bb5d54813cc15b",
+      "action": "accept_as_reviewed_candidate",
+      "review_candidate_key": "trendforce-2026-server-unit-forecast",
+      "reason_zh": "保留全球服务器及 AI 服务器出货增速预测，作为行业单位量基准，不冒充 Dell 销量。"
+    },
+    {
+      "candidate_proposal_digest": "c876f70cd7a9f5128949609d45f7b524e80e972fbd2e54c22110564a0865281b",
+      "action": "replace_with_capture_bound_reviewed_candidate",
+      "review_candidate_key": "nextplatform-oem-value-pool-mechanism",
+      "reason_zh": "保留 OEM 在 HBM 约束缓解后获得更多机会、但价值获取仍受压的机制假设；与 Fortune 反方材料交叉使用。"
+    },
+    {
+      "candidate_proposal_digest": "8b9773978f559ece31cd8ee973a2e9c0aab7dd2db33fc02de9749cda1b7351b7",
+      "action": "reject_duplicate_or_out_of_scope",
+      "reason_zh": "与同源已保留的 OEM 价值池机制片段重复，不重复晋升。"
+    }
+  ],
+  "reviewed_candidate_specs": [
+    {
+      "review_candidate_key": "dell-irss-configuration-and-deployment",
+      "source_id": "PUBLIC::DELL-EXT::27864DA671E92BAB944E",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "Simplified and streamlined deployment. With Dell’s expertise in L11 factory integration and L12 solution testing and deployment, organizations can experience a simplified and streamlined deployment process. Dell offers both integrated racks of PowerEdge XE accelerated servers based on proven designs and solutions tailored to your specifications, optimal performance and seamless deployment, reducing complexity and time required for setup. Dell fully tests these integrated racks of servers, power management, cooling and networking on the factory floor and upon deployment to ensure your organization stays one step ahead of the competition.",
+      "origin_candidate_proposal_digests": [
+        "402a313b96b413a32b632aa653018fa86711228d0386624ec921e1cfdb5886de"
+      ],
+      "claim_use": "target_company_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于确认 Dell 公开提供的配置和集成交付方式；不证明价格、销量、客户采用率或利润。"
+    },
+    {
+      "review_candidate_key": "dell-northwestern-customer-case",
+      "source_id": "PUBLIC::DELL-EXT::D16CACF50B768E445DEB",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "CUSTOMER STORIES GenAI improves productivity and patient outcomes “GenAI and AI offer a tremendous opportunity to help us take better care of our patients and give time back to care providers.” Dr. Mozziyar Etemadi, Clinical Director of Advanced Technologies, Northwestern Medicine How Northwestern Medicine Leveraged Dell Technologies",
+      "origin_candidate_proposal_digests": [],
+      "supplemental_reason_zh": "自动候选没有选择这一条 Dell 官方客户案例，但 capture 已存在且能补足命名客户采用场景。",
+      "claim_use": "target_company_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于证明 Dell 官方披露的 Northwestern Medicine 客户案例；不证明服务器数量、价格或财务贡献。"
+    },
+    {
+      "review_candidate_key": "fortune-dell-ai-margin-counterevidence",
+      "source_id": "PUBLIC::DELL-EXT::386573F0F307ED62756A",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "0fe88ad21ef6698d31e1f62c5a445d130437c2dffeb6116dcf7ad9a671ffd0bf"
+      ],
+      "claim_use": "bounded_target_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [
+        "PUBLIC::DELL-EXT::AE1FA8596571EE7867A7"
+      ],
+      "business_reason_zh": "用于形成收入增长与毛利压力并存的反方视图；必须保留媒体归因和非因果边界。"
+    },
+    {
+      "review_candidate_key": "fortune-dell-ai-margin-target-and-stack",
+      "source_id": "PUBLIC::DELL-EXT::969E64FF00BED8028287",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "61c6d979040ee3cf34f99e6739e6948efc15c510b23200de5fa6d50a0e9ebde4"
+      ],
+      "claim_use": "bounded_target_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [
+        "PUBLIC::DELL-EXT::AE1FA8596571EE7867A7"
+      ],
+      "business_reason_zh": "用于呈现 Dell CFO 对 AI 基础设施利润率目标和价值栈的公开表述；二手来源不得替代原始财务事实。"
+    },
+    {
+      "review_candidate_key": "idc-2025-ai-infrastructure-market",
+      "source_id": "PUBLIC::DELL-EXT::994E5EC6E65A944CC4B2",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "NEEDHAM, Mass., October 28, 2025 – The global Artificial Intelligence (AI) infrastructure market is on track for unprecedented growth, poised to reach $758 billion USD in spending by 2029, according to the latest findings from the International Data Corporation ( IDC ) Worldwide Quarterly Artificial Intelligence Infrastructure Tracker . Organizations increased spending on compute and storage hardware infrastructure for AI deployments by 166% year-over-year in the second quarter of 2025, reaching $82.0 billion. The AI infrastructure market has consistently sustained high double-digit growth for a few years, driven primarily by investment in servers for AI deployments. Infrastructure deployed in cloud and shared environments accounts for 84.1% of the total spending in AI in 2Q25, with hyperscalers, cloud service providers and digital service providers as the largest contributors to AI spending (86.7%) in the quarter. In 2Q25, servers accounted for 98% of the total AI Centric spending, growing 173.2% compared to the same period last year. Servers with an embedded accelerator are the preferred infrastructure for AI platforms, accounting for 91.8% of the total server AI infrastructure spending—growing 207.3% in the second quarter of the year 2025. IDC projects that accelerated servers will exceed 95% of the server AI infrastructure spending by 2029, growing at a 42% 5-year CAGR.",
+      "origin_candidate_proposal_digests": [
+        "cf4476dcae2175f2ade83045899c4a00fa0b8fa4da0a6c7ab66d5297853094c6"
+      ],
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于提供截至 2025 年披露的 AI 基础设施市场预测、加速服务器占比和需求修订基准。"
+    },
+    {
+      "review_candidate_key": "idc-q1-2026-compute-storage-composition",
+      "source_id": "PUBLIC::DELL-EXT::E6565EB1ADB8A9D888B0",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "0808d2722c54634241e5f316b5d1ffd0847ccfad44963647ed17fc0b8e000ddc"
+      ],
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于区分 AI 基础设施中的服务器、非 GPU 层与延后存储更新，不映射为 Dell 份额。"
+    },
+    {
+      "review_candidate_key": "idc-q1-2026-structural-ai-demand",
+      "source_id": "PUBLIC::DELL-EXT::E6565EB1ADB8A9D888B0",
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "067c7bdd2b6da555c05d2cc7e76f8d9752139f9eafc968c810d922a0f9abfd94"
+      ],
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于提供行业需求持续性和采购主体的外部基准；不直接证明 Dell 订单转化。"
+    },
+    {
+      "review_candidate_key": "nextplatform-oem-value-pool-mechanism",
+      "source_id": "PUBLIC::DELL-EXT::AE1FA8596571EE7867A7",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "For the first two years of the GenAI boom, the hyperscalers and major cloud builders soaked up nearly all of the datacenter GPUs that Nvidia could build, and even if Nvidia wanted large enterprises to adopt its technology, there was not enough HBM memory in the world for them to do so. HBM memory supplies are still smaller than demand, but have expanded significantly enough that, after many years of waiting for their turn, the OEMs are finally getting their turn at making some of the most complex and expensive machinery that the world has ever seen and not really profiting as much as they might hope given their efforts. Dell is doing better than all of its OEM peers in this regard, and is adding incremental margin dollars to the business even as its operating profit margin as a share of revenue is dropping.",
+      "origin_candidate_proposal_digests": [
+        "c876f70cd7a9f5128949609d45f7b524e80e972fbd2e54c22110564a0865281b"
+      ],
+      "claim_use": "mechanism_hypothesis",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [
+        "PUBLIC::DELL-EXT::386573F0F307ED62756A"
+      ],
+      "business_reason_zh": "用于提出 OEM 价值获取受 GPU/HBM 与竞争结构约束的可检验机制，不作为 Dell 精确利润事实。"
+    },
+    {
+      "review_candidate_key": "serverparts-xe9680-h200-configuration",
+      "source_id": "PUBLIC::DELL-EXT::F92EE1D68F1969247C69",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "excerpt_source_kind": "source_segment_substring",
+      "excerpt": "The Dell PowerEdge XE9680 offered here is a 6U enterprise AI server configured with 8× NVIDIA H200 141GB SXM GPUs, dual Intel Xeon Platinum 8462Y+, and 2TB DDR5 memory. This is a fixed, validated configuration available as a refurbished, fully tested, deployment-ready system.",
+      "origin_candidate_proposal_digests": [],
+      "supplemental_reason_zh": "自动候选未选择该渠道固定配置；它能验证一种市场上实际出现的配置，但不是 Dell 官方标准配置或成交价。",
+      "claim_use": "bounded_target_context",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于建立配置组合的可观察样本；必须标注翻新渠道、固定配置和非官方价格口径。"
+    },
+    {
+      "review_candidate_key": "trendforce-2024-2025-ai-server-value-and-units",
+      "source_id": "PUBLIC::DELL-EXT::5B5813808F5A1F5DB246",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "2434403d70db3ddc9a7f52028d07463b4448d9cea560dee5fa09ed46ac8f973f"
+      ],
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于建立行业价值、单位量和较高 ASP 的联合基准，为 PVM 情景提供外部锚点。"
+    },
+    {
+      "review_candidate_key": "trendforce-2026-gpu-asic-platform-mix",
+      "source_id": "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "784524c36edec3d24200304e39b828ab4c20a9b180182b4e0b7e7c91747ed9bf"
+      ],
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于刻画 GPU、ASIC 和平台组合变化；只作为行业 mix 预测，不作为 Dell 配置占比。"
+    },
+    {
+      "review_candidate_key": "trendforce-2026-inference-demand-and-mix",
+      "source_id": "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC",
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "5eebdc1d820f64a7f4242e178bd84ec91ef9b1599ee367c94d934abe0f1c06da"
+      ],
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于解释训练向推理迁移及通用服务器协同需求，为配置和产品 mix 判断提供背景。"
+    },
+    {
+      "review_candidate_key": "trendforce-2026-server-unit-forecast",
+      "source_id": "PUBLIC::DELL-EXT::84FD23E65363A195C4C6",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "14333a15e00695e9c753facea76000fa37ca72b19316af3de2bb5d54813cc15b"
+      ],
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于提供全球服务器和 AI 服务器单位量增长预测，帮助构建而非冒充 Dell 销量区间。"
+    },
+    {
+      "review_candidate_key": "trendforce-upstream-capacity-constraints",
+      "source_id": "PUBLIC::DELL-EXT::AF72C71D3B4A92ECCA7E",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "excerpt_source_kind": "original_proposal",
+      "origin_candidate_proposal_digests": [
+        "8a1970b9a82ca4b4ab09f52c699bfa0bbf5cba14f0c28737ac33cdc8d33bd628"
+      ],
+      "claim_use": "industry_exact_fact",
+      "speaker_bound": true,
+      "subject_bound": true,
+      "corroborating_source_ids": [],
+      "business_reason_zh": "用于描述先进制程、CoWoS 和 HBM 的行业供应约束；不能证明 Dell 专属分配、良率或释放日期。"
+    }
+  ],
+  "plan_digest": "8ea79e452b4e97843e650e9ac53bc74bbd84d49706a91adbde62ddf53bc1422b"
+}

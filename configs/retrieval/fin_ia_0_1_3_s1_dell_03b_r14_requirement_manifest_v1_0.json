@@ -1,0 +1,448 @@
+{
+  "schema_version": "fin_ia_dell_03B_R14_requirement_manifest_v1_0",
+  "requirement_manifest_id": "FIN-0.1.3-S1-DELL-03B-R14-REQUIREMENT-MANIFEST-V1",
+  "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R14",
+  "stage": "S1_03B_internal_chain_engineering_general_contract",
+  "product_version": "FIN_0_1_3",
+  "authority": {
+    "R14_implementation_and_T0_T1_T2_after_PLAN_FROZEN": true,
+    "model_provider_network_external_embedding_4B_reranker_calls": 0,
+    "policy": false,
+    "formal_attempt": false,
+    "03C_external_routes": false,
+    "Evidence_Pack_Readiness": false,
+    "S2_S3_Writer_report": false,
+    "qualified_human": false,
+    "product_publication_release": false
+  },
+  "plan_frozen_governance": {
+    "candidate_commit": "ade8ebde4e6bca04de290eec6f8e46b55daee65e",
+    "candidate_tree": "16d80bd61e9ce89dc7afde05bce9af1a418a6913",
+    "candidate_parent": "d71b8932585e538bd104fdf3a279db3db32077a5",
+    "plan_path": "docs/worklog/fin_0_1_3_s1/124_dell_03b_R14_program_level_architecture_execution_plan.md",
+    "plan_blob": "14d9d9a215cb8ecddfec9ea6c260409d9541b4ae",
+    "plan_sha256": "5b39ac6ccd788bda5e1de12e40e5f60573e29bbd07a9030bb82234806a9009a2",
+    "plan_bytes": 69820,
+    "review_payload_sha256": "fe052ea196bcc36abc89850063dc5dbb7f8e1f73ec3c4894335f05dafdd4aeed",
+    "review_payload_bytes": 1490,
+    "review_findings": {
+      "P0": 0,
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    },
+    "governance_commit": "50fc4a706f00f40d831ec9624d33889180e1baa0",
+    "governance_tree": "6b4392697409499acb77811ba3c988cca0879f96",
+    "governance_parent": "ade8ebde4e6bca04de290eec6f8e46b55daee65e",
+    "plan_audit_receipt_ref": "configs/audits/fin_ia_0_1_3_commit_ade8ebde_dell_03b_r14_revision2_fresh_plan_audit_pass_v1_0.json",
+    "plan_audit_receipt_result_digest": "934629aaf47817fa8adc126da58542793a88c2ec293a92c62d0b9b030a8c6100",
+    "post_commit_PLAN_FROZEN_validation": "PASS"
+  },
+  "r13_frozen_predecessor": {
+    "implementation": "11caf389fdea3c96554dd4176c571c1bf12e14be",
+    "policy_authority": "492218a9237678f2d2cf63b6a77f1249dc9f1f55",
+    "reviewed_result": "07909cc1bff82b3b34191bd6873980954c92733f",
+    "fixed_manifest_commit": "8dd03fa9b55477e08b3b14608e26359fa08b72a7",
+    "attempt_id": "dell-rsq-03b-internal-chain-r13",
+    "raw_execution_sha256": "0e9e4456ba75ecd07bc2e3bd6d5deddafc1972ba19700b029b2e6793e99f7458",
+    "fresh_audit_ref": "configs/audits/fin_ia_0_1_3_commit_07909cc1_dell_03b_r13_fresh_dual_audit_fail_v1_0.json",
+    "fresh_audit_sha256": "7d2e1be2f7ac44e9915a047807462958109a6ba58c0d2ff1c18500eedc804086",
+    "fresh_audit_result_digest": "0ec9245eaa0229f7da9257bb261029fb95b6a760e268e9d9439106e501aad128",
+    "fixed_audit_manifest_ref": "configs/audits/fin_ia_0_1_3_commit_07909cc1_dell_03b_r13_fixed_dual_audit_manifest_v1_0.json",
+    "fixed_audit_manifest_sha256": "db34c3457c932b72b87814262a70abcf6fa2740def7b2040b366be05bcc9b388",
+    "fixed_audit_manifest_result_digest": "008942c97a76c94257361f440ed64f77aaaa79c93eee7564116d3a2841af51b4",
+    "current_artifact_verdict": "PASS_NARROW",
+    "general_engineering_verdict": "FAIL"
+  },
+  "immutable_inputs": {
+    "source_records": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v5/records.jsonl",
+      "sha256": "d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45",
+      "count": 1888
+    },
+    "compiled_objects": {
+      "ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v9/objects.jsonl",
+      "sha256": "1c3e48486f933d23306dbabacb1641e26cb9bbc5b474da932d602752dff3fa92",
+      "count": 34199
+    },
+    "canonical_source_family_count": 1862,
+    "target_count": 6,
+    "source_logical_decision_count": 11328,
+    "compiled_logical_decision_count": 205194,
+    "total_logical_decision_count": 216522,
+    "source_position_mode": "raw_occurrence_before_deduplication"
+  },
+  "contract_bindings": [
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_r14_structural_proof_grammar_v1_0.json",
+      "sha256": "179192586cc6b388bd0e77cb66745cd3e88817fed783fd4d6978b4c955ac8b40",
+      "result_digest": "628f12fcf3df3be2dd922230ef152d5f2b67b30994a403df01425d5d13edf8a8"
+    },
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_r14_target_topology_contract_v1_0.json",
+      "sha256": "700e80db2c6fb691a2098484e3149fcfb0e3bdb88b6362e570017a0d7f718ef1",
+      "result_digest": "2bd2fa194b6789ff1b37aeae15c98e02ad1d24bcfc6fc79d434912eaee33e483"
+    },
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_r14_lifecycle_transition_table_v1_0.json",
+      "sha256": "33b1c4acf9f651bcd6d43d797f87a926fd06380910b38b73fb9b5435ba795fcf",
+      "result_digest": "7b471f46fefe07e1d2352df305c8b42d8077e1a0ca1b36c1dd5caa71cccacb0a"
+    }
+  ],
+  "finding_registry": [
+    {
+      "finding_id": "R13-P1-INDEPENDENT-INPUT-POPULATION-BIJECTION",
+      "severity": "P1",
+      "owner_stage": "R14-01_and_R14-06",
+      "invariant": "every_raw_source_or_compiled_object_cross_target_key_has_exactly_one_independently_rebuildable_decision_cell",
+      "oracle": "producer_rebuilder_and_reviewer_third_path_roots_equal_then_vector_detail_bijection",
+      "critical_mutation_families": [
+        "population",
+        "authority",
+        "encoding_error"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_policy_attempt_03C_Evidence_and_all_later_stages"
+    },
+    {
+      "finding_id": "R13-P2-FLAT-FRAME-CROSS-EVENT-ROLE-UNION",
+      "severity": "P2",
+      "owner_stage": "R14-02_and_R14-04",
+      "invariant": "one_complete_decision_consumes_only_roles_owned_by_one_event_or_an_explicit_target_bridge",
+      "oracle": "StructuralProofGrammar_EventArgumentGraph_TargetTopology_and_nonce_event_holdout",
+      "critical_mutation_families": [
+        "event",
+        "transformation",
+        "positive_protection"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_semantic_claim_authority_and_Evidence_admission"
+    },
+    {
+      "finding_id": "R13-P2-CONNECTOR-ENUMERATED-GOVERNING-PRICE-HEAD",
+      "severity": "P2",
+      "owner_stage": "R14-03_and_R14-04",
+      "invariant": "ASP_complete_requires_one_positive_unique_priced_hardware_path_and_is_invariant_to_structure_equivalent_nonce_head_or_link_substitution",
+      "oracle": "PriceAttachmentGraph_positive_topologies_G90_conflict_and_nonce_head_link_holdout",
+      "critical_mutation_families": [
+        "price",
+        "transformation",
+        "positive_protection"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_configuration_price_candidate_and_future_ASP_mix_interpretation"
+    },
+    {
+      "finding_id": "R14-P1-TYPED-ATTRIBUTION-SCOPE",
+      "severity": "P1",
+      "owner_stage": "R14-02_and_R14-04",
+      "invariant": "nonissuer_attribution_fronted_trailed_quoted_or_reporting_clause_cannot_become_issuer_direct_fact_without_typed_adoption_proof",
+      "oracle": "typed_attribution_edges_validator_recomputation_and_fresh_owner_scope_holdout",
+      "critical_mutation_families": [
+        "event",
+        "positive_protection"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_assertion_authority_and_Evidence_admission"
+    },
+    {
+      "finding_id": "R14-P1-EXECUTABLE-FORBIDDEN-INFERENCE",
+      "severity": "P1",
+      "owner_stage": "R14-02_and_R14-04",
+      "invariant": "every_target_forbidden_inference_is_a_machine_consumed_typed_conflict_not_unexecuted_prose",
+      "oracle": "six_target_positive_negative_topology_controls_and_compiler_conflict_receipts",
+      "critical_mutation_families": [
+        "event",
+        "price",
+        "positive_protection"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_complete_candidate_semantics_for_all_six_targets"
+    },
+    {
+      "finding_id": "R14-P1-SIX-TARGET-CONTROL-DENOMINATOR",
+      "severity": "P1",
+      "owner_stage": "R14-05",
+      "invariant": "every_positive_family_fingerprint_and_material_forbidden_inference_for_all_six_targets_is_frozen_in_the_property_and_mutation_denominator",
+      "oracle": "manifest_case_id_exact_property_receipt_and_operator_specific_damage_receipt",
+      "critical_mutation_families": [
+        "event",
+        "price",
+        "positive_protection"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_claimed_general_contract_coverage"
+    },
+    {
+      "finding_id": "R14-P1-REAL-MUTATION-EXECUTION",
+      "severity": "P1",
+      "owner_stage": "R14-05",
+      "invariant": "each_frozen_mutant_executes_its_exact_operator_and_variant_in_an_independent_process_and_baseline_green_never_means_killed",
+      "oracle": "before_after_digest_bound_subprocess_observation_with_first_rejecting_layer",
+      "critical_mutation_families": [
+        "population",
+        "authority",
+        "event",
+        "price",
+        "transformation",
+        "encoding_error",
+        "transaction",
+        "privacy_route",
+        "positive_protection"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_mutation_coverage_and_prefreeze_authority"
+    },
+    {
+      "finding_id": "R14-P1-COMMITTED-FORMAL-EXACT-REPLAY",
+      "severity": "P1",
+      "owner_stage": "R14-06_and_R14-07",
+      "invariant": "exact_replay_compares_one_independent_recomputation_against_the_committed_attempt_private_public_and_sidecar_bytes_not_two_current_runs",
+      "oracle": "committed_transaction_manifest_marker_policy_authority_and_per_path_size_sha_semantic_root_comparator",
+      "critical_mutation_families": [
+        "authority",
+        "transaction",
+        "privacy_route"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_formal_replay_and_postformal_identity"
+    },
+    {
+      "finding_id": "R14-P1-AUDIT-POLICY-PATH-IMMUTABILITY",
+      "severity": "P1",
+      "owner_stage": "R14-07",
+      "invariant": "A_and_P_use_fixed_nonoverlapping_exact_paths_and_every_later_tree_preserves_all_I_and_B_blobs",
+      "oracle": "G_I_B_A_P_changed_path_and_blob_identity_recomputation",
+      "critical_mutation_families": [
+        "authority",
+        "transaction"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_audit_and_policy_nonreplaceability"
+    },
+    {
+      "finding_id": "R14-P1-PARENT-DOCUMENT-MEMBERSHIP-RECEIPT",
+      "severity": "P1",
+      "owner_stage": "R14-01_and_R14-06",
+      "invariant": "cross_family_lineage_requires_one_independently_rebuilt_parent_document_identity_and_complete_source_membership_receipt",
+      "oracle": "producer_rebuilder_equal_parent_receipt_root_and_reused_parent_label_negative_control",
+      "critical_mutation_families": [
+        "population",
+        "transformation"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_cross_family_lineage_authority"
+    },
+    {
+      "finding_id": "R14-P2-COMPILER-CANDIDATE-PAIR-COMPLEXITY",
+      "severity": "P2",
+      "owner_stage": "R14-04_and_R14-05",
+      "invariant": "two_event_targets_enumerate_only_proved_allowed_bridges_and_role_evidence_is_indexed_without_candidate_cartesian_edge_rescans",
+      "oracle": "80_320_event_compiler_absolute_and_relative_scaling_gate",
+      "critical_mutation_families": [
+        "event",
+        "positive_protection"
+      ],
+      "stop_state": "PREFORMAL_FAIL_REVISION_REQUIRED",
+      "downstream_impact": "blocks_full_corpus_runtime_acceptance"
+    }
+  ],
+  "evidence_separation_contract": {
+    "schema_version": "fin_ia_dell_03B_R14_I_B_A_evidence_separation_v1_0",
+    "implementation_I_allowed_content": [
+      "machine_requirements",
+      "contracts",
+      "implementation",
+      "tests"
+    ],
+    "implementation_I_forbidden_content": [
+      "preview_or_test_runtime_receipt",
+      "author_claimed_closure",
+      "independent_audit_receipt",
+      "formal_policy_or_attempt_artifact"
+    ],
+    "proof_B_required_content": [
+      "post_freeze_layered_test_receipts",
+      "post_freeze_zero_call_full_corpus_preview",
+      "property_and_mutation_receipts",
+      "resource_and_durability_receipts"
+    ],
+    "audit_A_required_content": [
+      "fresh_no_fork_read_only_verdict",
+      "exact_I_and_B_identity",
+      "frozen_problem_set_regression_and_nonce_holdout",
+      "P0_P1_P2_counts"
+    ],
+    "failure_evidence_residency": "append_only_Project_OS_or_A_FAIL_not_mutable_I",
+    "single_batch_stop_rule": "new_material_finding_outside_frozen_root_families_stops_for_owner_decision",
+    "automatic_R15_authorized": false
+  },
+  "positive_controls": [
+    "supplier_Dell_and_NVIDIA_partnered",
+    "supplier_NVIDIA_and_Dell_partnering_to_deliver",
+    "supplier_Dell_server_with_NVIDIA_component_shipping",
+    "supplier_Dell_partner_ecosystem_including_NVIDIA",
+    "ASP_Dell_offered_PowerEdge_at_currency_price",
+    "ASP_explicit_price_of_Dell_configuration_is_currency_amount",
+    "ASP_product_priced_at_currency_amount",
+    "ASP_all_hardware_bounded_bundle_total",
+    "capacity_upstream_capacity_allocated_to_Dell_with_period",
+    "yield_issuer_reported_utilization_measure_with_period",
+    "HBM_upstream_supply_to_Dell_with_period",
+    "units_Dell_shipped_number_of_servers_with_period",
+    "event_object_list_without_new_predicate",
+    "shared_subject_actor_only_between_coordinated_events"
+  ],
+  "critical_operator_families": {
+    "population": [
+      "delete_cell",
+      "duplicate_cell",
+      "move_cell",
+      "resign_all_derived_surfaces",
+      "replace_manifest_index_or_input_digest"
+    ],
+    "authority": [
+      "replace_B_commitment",
+      "change_I_B_A_P_parent_or_path",
+      "feed_preview_vector_into_formal_compiler"
+    ],
+    "event": [
+      "copy_material_role_across_shared_subject",
+      "different_owner_or_period",
+      "known_to_nonce_predicate",
+      "object_list_to_event"
+    ],
+    "price": [
+      "known_to_nonce_higher_head_or_link",
+      "direct_product_to_service_contract",
+      "multi_head_or_multi_price",
+      "path_rebind"
+    ],
+    "transformation": [
+      "event_node_role_period_head_or_path_add_delete_rebind",
+      "common_mode_wrong_graph"
+    ],
+    "encoding_error": [
+      "bit_flip",
+      "nonzero_padding",
+      "wrong_endian",
+      "orphan_or_N_detail",
+      "C_null_topology",
+      "valid_ambiguity_to_E"
+    ],
+    "transaction": [
+      "kill_at_each_write_flush_manifest_marker_rename_boundary",
+      "collision",
+      "partial_staging"
+    ],
+    "privacy_route": [
+      "inject_private_ID_text_or_locator",
+      "route_omission_or_rebind"
+    ],
+    "positive_protection": [
+      "direct_price_structure_damage",
+      "object_list_structure_damage",
+      "supplier_family_structure_damage",
+      "irrelevant_surface_substitution"
+    ]
+  },
+  "r17_report_quality_carry_forward": {
+    "verdict": "FAIL_GATE_OPEN_NOT_ASSESSABLE",
+    "findings": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 2,
+      "P3": 1
+    },
+    "reader_citation_binding": "0_of_18",
+    "crosswalk": "14_pack_9_route_4_writer_10_refs_4_S2_unconsumed",
+    "WWC": "0_of_6",
+    "Facts_total_unique": "72_of_36",
+    "S2_bridge": "units_share_to_ASP_mix_to_PVM_to_product_profit_to_working_capital_incomplete",
+    "qualified_human": "0_of_16",
+    "R14_effect": "carry_forward_only_no_report_authority"
+  },
+  "TokenBudgetBasis": [
+    {
+      "node": "R14_population_manifest",
+      "purpose": "classifier_independent_expected_keyset_and_roots",
+      "input_scale": "1888_sources_34199_objects_6_targets",
+      "required_outputs": "private_manifest_and_public_safe_commitment",
+      "schema_burden": "canonical_entries_occurrences_cross_product_and_self_digest",
+      "materiality_quality_risk": "silent_drop_or_self_proving_population_is_P1",
+      "comparable_run_evidence": "R13_full_corpus_1888_34199",
+      "reasoning_profile": "deterministic_zero_model",
+      "stop_truncation_behavior": "no_truncation_terminal_fail_on_missing_duplicate_or_drift",
+      "model_provider_calls": 0
+    },
+    {
+      "node": "R14_structural_parser_and_target_compiler",
+      "purpose": "event_local_and_price_path_proof_for_six_targets",
+      "input_scale": "216522_logical_decisions_with_graph_reuse_per_text",
+      "required_outputs": "typed_graphs_decisions_and_sparse_details",
+      "schema_burden": "rule_premises_nodes_edges_topology_ambiguity_and_digests",
+      "materiality_quality_risk": "false_complete_misattribution_blocks_research_authority",
+      "comparable_run_evidence": "R13_preview_25_to_30_seconds_without_R14_graph",
+      "reasoning_profile": "deterministic_conservative_zero_model",
+      "stop_truncation_behavior": "unsupported_or_ambiguous_to_P_uncaught_exception_terminal_fail",
+      "model_provider_calls": 0
+    },
+    {
+      "node": "R14_transformation_and_decision_vector",
+      "purpose": "preservation_bijection_and_compact_full_population_receipts",
+      "input_scale": "source_and_compiled_graphs_plus_216522_cells",
+      "required_outputs": "mapping_findings_vector_roots_detail_roots_and_counts",
+      "schema_burden": "node_edge_mapping_2bit_encoding_independent_decode_and_domain_hash",
+      "materiality_quality_risk": "loss_rebind_or_resigned_vector_can_falsify_coverage",
+      "comparable_run_evidence": "R13_1596_transformations_and_58MB_private_result",
+      "reasoning_profile": "deterministic_zero_model",
+      "stop_truncation_behavior": "no_sampling_no_missing_cells_terminal_fail_on_bijection_error",
+      "model_provider_calls": 0
+    },
+    {
+      "node": "R14_projector_transaction_and_runner",
+      "purpose": "privacy_safe_projection_exact_commitment_compare_and_crash_atomic_visibility",
+      "input_scale": "all_vectors_details_graph_sidecars_and_formal_bundle",
+      "required_outputs": "bounded_public_projection_transaction_manifest_marker_and_replay",
+      "schema_burden": "pathset_size_SHA_roots_lifecycle_disk_and_failure_receipts",
+      "materiality_quality_risk": "partial_visibility_private_leak_or_attempt_reuse",
+      "comparable_run_evidence": "R13_58MB_private_pairwise_publish_not_crash_atomic",
+      "reasoning_profile": "deterministic_zero_model",
+      "stop_truncation_behavior": "fail_closed_before_attempt_when_capability_or_disk_gate_fails",
+      "model_provider_calls": 0
+    }
+  ],
+  "implementation_changed_path_allowlist": [
+    "configs/retrieval/*r14*requirement*.json",
+    "configs/retrieval/*r14*grammar*.json",
+    "configs/retrieval/*r14*topology*.json",
+    "configs/retrieval/*r14*lifecycle*.json",
+    "src/retrieval/*r14*.py",
+    "scripts/data_retrieval/*r14*.py",
+    "tests/*r14*.py"
+  ],
+  "forbidden_in_implementation_commit": [
+    "preview_artifact",
+    "policy",
+    "attempt_receipt",
+    "raw_capture",
+    "private_result",
+    "public_result",
+    "model_or_external_call_authority",
+    "Evidence_or_downstream_promotion"
+  ],
+  "hard_stops": [
+    "input_or_R13_immutable_drift",
+    "manifest_vector_detail_not_bijective",
+    "cross_event_material_union_complete",
+    "nonce_head_or_link_changes_price_verdict",
+    "topology_rebind_not_typed_failure",
+    "critical_mutant_survives_or_is_unexecuted_excluded",
+    "positive_family_degrades_without_graph_explanation",
+    "unexplained_count_family_rank_or_route_delta",
+    "preformal_material_finding",
+    "Git_policy_attempt_transaction_replay_or_disk_not_exact",
+    "new_material_finding_outside_frozen_root_families"
+  ],
+  "result_digest": "d0c41fc55bc866b99f05749999359d3db8961e538f66d08615876f76a4a3ff5c"
+}

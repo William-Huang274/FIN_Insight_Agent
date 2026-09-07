@@ -1,0 +1,125 @@
+{
+  "bindings": {
+    "R4_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_3.json",
+    "R4_authority_sha256": "430811031e514dee93533f2b971093f46837ca8d639ff8403770b50c76856705",
+    "R4_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_3.json",
+    "R4_public_result_sha256": "ca9d126934ce8bdf559080dd447c2f5632f0c9a020d6fdb3d884b6621d247487",
+    "analysis_checkpoint_digest": "6044dc6fbc76f9107864f7e68271c60e449c86e14b99fcc050c4beeec9285a70",
+    "analysis_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R4_lead_analysis_checkpoint_v1_0.json",
+    "continuation_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_analysis_continuation_low_profile_v1_0.json",
+    "continuation_profile_sha256": "75f93b642f005d43896ebdefe19cc29b069a019d1933a57df6961672ecb7fe96",
+    "specialist_plan_checkpoint_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_R3_specialist_plan_checkpoint_v1_0.json",
+    "specialist_plan_checkpoint_sha256": "b8857eabe863ff7b259bf883ef4b6c79f8fcbc61a295940610b0a6d85aedd7e9",
+    "topology_ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
+    "topology_sha256": "1c2065c2e585984b8b4ef485c587a1d20425122d0fe625cb7c7d6f0c290d4c85"
+  },
+  "case_key": "DELL",
+  "checkpoint_projection": {
+    "completed_required_outputs": [
+      "accepted_agent_ids",
+      "accepted_facets"
+    ],
+    "maximum_continuation_calls": 1,
+    "missing_required_outputs": [
+      "expected_information_boundaries",
+      "stop_conditions"
+    ],
+    "partial_draft_character_count": 9932,
+    "partial_draft_content_persisted_in_public_artifact": false,
+    "partial_required_outputs": [
+      "coordination_questions"
+    ]
+  },
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "specialist_plan_reruns": 0,
+    "true_multi_agent_live_completed": false
+  },
+  "generated_at": "2026-08-19T18:44:22+00:00",
+  "negative_mutations": {
+    "checkpoint_digest_mutation_rejected": true,
+    "continuation_messages_require_all_remaining_outputs": true,
+    "public_checkpoint_excludes_partial_draft": true,
+    "semantic_incompletion_continuation_call_count": 1,
+    "semantic_incompletion_rejected_before_submission": true
+  },
+  "result_digest": "45609d5eb8a6e836ecef63925e58a08efa400a282240556f8d2769b26239d491",
+  "runtime_projection": {
+    "analysis_token_budget_basis": {
+      "comparable_run_evidence": [
+        "DELL multi-agent preview R4 length failure",
+        "DELL fragment analysis/submission FAS-R1",
+        "DELL multi-agent preview R3 Lead capacity failure"
+      ],
+      "cost_and_latency_are_secondary_constraints": true,
+      "input_scale": {
+        "authority_reference_count": 1,
+        "model_visible_characters": 11583
+      },
+      "materiality_and_quality_risk": "incomplete Lead coordination would corrupt all downstream workpapers",
+      "node_id": "AGENT::RESEARCH_LEAD::LEAD_PLAN::ANALYSIS_CONTINUATION",
+      "node_purpose": "只续写 R4 被截断的 Lead 分析并映射既有 Lead 合同。 本阶段只续写 checkpoint 标明的未完成内容，不重做已完成分析、不提交合同、不晋升业务事实。",
+      "output_token_ceiling": 4000,
+      "reasoning_profile": "deepseek-v4-pro thinking=low visible analysis_continuation",
+      "required_outputs": [
+        "visible_analysis_continuation",
+        "coordination_questions",
+        "expected_information_boundaries",
+        "stop_conditions"
+      ],
+      "schema_burden": "analysis-only projection; no tool or JSON submission",
+      "schema_version": "fin_ia_token_budget_basis_v1_0",
+      "stop_and_truncation_behavior": "require one non-empty continuation and finish_reason=stop; merge with the immutable partial draft; no second continuation or restart",
+      "token_budget_basis_digest": "b6ddd630091979d70d143b9dd80443a4ed7a61911f9c66c0859b0716d68c1d0b"
+    },
+    "attempt_phases": [
+      "analysis_continuation",
+      "submission"
+    ],
+    "checkpoint_event_present": true,
+    "continuation_calls": 1,
+    "continuation_prompt_character_count": 11816,
+    "feedback_event_present": true,
+    "feedback_receipt_count": 1,
+    "merged_draft_reached_submission": true,
+    "original_full_context_resent": false,
+    "resume_event_present": true,
+    "submission_calls": 1,
+    "submission_prompt_character_count": 11579,
+    "submission_token_budget_basis": {
+      "comparable_run_evidence": [
+        "DELL multi-agent preview R4 length failure",
+        "DELL fragment analysis/submission FAS-R1"
+      ],
+      "cost_and_latency_are_secondary_constraints": true,
+      "input_scale": {
+        "authority_reference_count": 0,
+        "model_visible_characters": 13498
+      },
+      "materiality_and_quality_risk": "incomplete Lead coordination would corrupt all downstream workpapers",
+      "node_id": "AGENT::RESEARCH_LEAD::LEAD_PLAN::SUBMISSION",
+      "node_purpose": "只续写 R4 被截断的 Lead 分析并映射既有 Lead 合同。 本阶段只把已形成草稿映射到唯一严格合同，不重新研究。",
+      "output_token_ceiling": 2000,
+      "reasoning_profile": "deepseek-v4-pro non-thinking strict contract mapper",
+      "required_outputs": [
+        "accepted_agent_ids",
+        "accepted_facets",
+        "coordination_questions",
+        "expected_information_boundaries",
+        "stop_conditions"
+      ],
+      "schema_burden": "existing strict Lead plan tool contract",
+      "schema_version": "fin_ia_token_budget_basis_v1_0",
+      "stop_and_truncation_behavior": "require exactly one named tool call and full local contract; preserve failure; at most one separately identified submission successor",
+      "token_budget_basis_digest": "9bed071e3b00b392760d10a59459636ffab7160e9f1e9eef3818d0535c8e2ddb"
+    },
+    "validated_lead_plan": true
+  },
+  "schema_version": "fin_ia_s3_dell_multi_agent_preview_R5_analysis_successor_zero_call_result_v1_0",
+  "status": "R4_visible_analysis_checkpoint_successor_zero_call_pass"
+}

@@ -1,0 +1,103 @@
+{
+  "schema_version": "fin_ia_s3_full_fragment_submitted_fragment_replay_v1_0",
+  "source_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_authority_v1_2.json",
+  "source_authority_sha256": "b36ae143a96e9f072d8a26d127fa045daf98a4f1983a04c959ef931650debddf",
+  "source_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_2.json",
+  "source_result_sha256": "870bb589ee1b367f82e9d85af540af26cb21b664d5b6548a4d66690a1957658d",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "fragments": {
+    "submit_research_thesis": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::PRODUCT_TARGET",
+      "evidence_uses": [
+        {
+          "evidence_ref": "EV::0063F22F643B94ED",
+          "use_role": "support"
+        }
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": [
+        "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+      ],
+      "method_step_refs": [
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::COUNTERREAD"
+      ],
+      "graph_edge_refs": [
+        "GRAPH::2B17375548682087"
+      ],
+      "judgment_status": "supported",
+      "confidence_basis": "direct_source_only",
+      "inference_authority": "directly_supported",
+      "claim_scope": "product",
+      "financial_scope": "product_financial",
+      "causal_bridge_authority": "management_assertion_only",
+      "thesis_atom": "管理层称其 AI 服务器产品盈利水平符合其所述目标。"
+    },
+    "submit_research_mechanism": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::PROFIT_BRIDGE_GAP",
+      "evidence_uses": [
+        {
+          "evidence_ref": "EV::0063F22F643B94ED",
+          "use_role": "context"
+        }
+      ],
+      "numeric_refs": [],
+      "numeric_relation_refs": [],
+      "qualitative_fact_refs": [
+        "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+      ],
+      "method_step_refs": [
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::PRODUCT_FINANCIAL_BRIDGE",
+        "METHOD::VC::MATERIAL_GAP_ROUTE",
+        "METHOD::VC::COUNTERREAD"
+      ],
+      "graph_edge_refs": [
+        "GRAPH::2B17375548682087"
+      ],
+      "inference_authority": "not_inferable",
+      "mechanism_atom": "管理层称其 AI 服务器产品盈利水平符合其所述目标，但这一自述未提供从产品到分部或公司利润的可复算桥；因此该产品表现尚不能作为公司盈利获取的机制，需待产品级量价配置桥补证后方可成立。"
+    },
+    "submit_research_counterargument_and_wwc": {
+      "cell_id": "CELL::value_capture",
+      "claim_relation_ref": "CR::DELL::COMPANY_MARGIN_OBSERVATION",
+      "evidence_uses": [],
+      "numeric_refs": [
+        "NUM::33642A79CE277E0B",
+        "NUM::AB89B02ADCCB77E0"
+      ],
+      "numeric_relation_refs": [
+        "REL::B60164179DFFDF5A"
+      ],
+      "qualitative_fact_refs": [
+        "QF::DELL::AI_SERVER_OPERATING_INCOME_RATE_TARGET::FY2027Q1"
+      ],
+      "method_step_refs": [
+        "METHOD::VC::PERIOD_BASIS",
+        "METHOD::VC::CAUSAL_BOUNDARY",
+        "METHOD::VC::COUNTERREAD",
+        "METHOD::VC::WHAT_WOULD_CHANGE"
+      ],
+      "graph_edge_refs": [
+        "GRAPH::2B17375548682087"
+      ],
+      "inference_authority": "bounded_inference",
+      "counterargument_atom": "管理层称其 AI 服务器产品盈利水平符合其所述目标，但公司整体毛利率在同口径同比观察中呈下降方向，显示新增收入尚未在公司层面呈现价值捕获改善；这一观察仅属公司层面，不能归因于该产品，也不能将管理层自述升级为产品到公司的利润桥。",
+      "what_would_change": {
+        "observable": "公司同口径毛利率同比变化方向",
+        "direction": "increase",
+        "time_horizon": "后续披露季度或下一次管理层披露",
+        "evidence_route": "公司分部或产品级财务披露、产品单价、出货量及价格-量-配置桥；若商业或产业数据不可得则保持类型化缺口",
+        "threshold_numeric_ref": ""
+      }
+    }
+  },
+  "reasoning_content_persisted": false,
+  "business_promotion_authorized": false,
+  "known_boundary": "This fixture preserves only the three model-visible R3 submitted Tool Call arguments needed for deterministic replay. It contains no private reasoning and is not Evidence or an accepted Judgment."
+}

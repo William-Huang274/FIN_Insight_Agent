@@ -1,0 +1,65 @@
+{
+  "schema_version": "fin_ia_s3_standard_tool_loop_live_disposition_v1_0",
+  "status": "terminal_failed_project_wire_and_safe_parallel_read_compatibility",
+  "recorded_at": "2026-08-14T01:09:00+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "run_id": "FIN013-S3-DELL-VALUE-CAPTURE-STANDARD-TOOL-LOOP-R1",
+  "implementation_commit": "2aab623d6ff35f899002b1871b4b2fbc10fc2115",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_standard_tool_loop_live_authority_v1_0.json",
+  "authority_sha256": "f1b3e6561499e49ae90d5c954e28849c777d67c49a25622983b92d1489c087e5",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_standard_tool_loop_live_result_v1_0.json",
+  "result_sha256": "7534c731ce2ecc2b41203573ab8bbff2b3467b71a735a9b7a6f59ff0b9ee1e6b",
+  "observed_provider_step": {
+    "status_code": 200,
+    "finish_reason": "tool_calls",
+    "prompt_tokens": 2257,
+    "completion_tokens": 128,
+    "reasoning_tokens": 15,
+    "tool_call_count": 2,
+    "tool_names": [
+      "read_reviewed_evidence_for_cell",
+      "read_numeric_facts_for_cell"
+    ],
+    "tool_arguments": {"cell_id": "CELL::value_capture"},
+    "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_standard_tool_loop/FIN013-S3-DELL-VALUE-CAPTURE-STANDARD-TOOL-LOOP-R1/STEP-01-ATTEMPT-01/model_visible_request.json",
+    "request_capture_sha256": "9f012819837d269d19d8bb596fe3b9f8266473e46e72d774be0bcbc825ac061c",
+    "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_standard_tool_loop/FIN013-S3-DELL-VALUE-CAPTURE-STANDARD-TOOL-LOOP-R1/STEP-01-ATTEMPT-01/provider_response.json",
+    "response_capture_sha256": "203eefade9db9e340cd9e14557d4f84b15602775ae6f3cd2990b9b62fd287bd3"
+  },
+  "root_cause": {
+    "owner": "project_provider_transport_normalizer_and_bounded_loop_policy",
+    "earliest_faulty_artifacts": [
+      "src/sec_agent/providers/chat_completions.py::_normalize_tool_call",
+      "src/sec_agent/research/bounded_finance_loop.py::run_bounded_finance_loop"
+    ],
+    "confirmed_findings": [
+      "The provider returned an HTTP 200 standard tool_calls response with an optional non-negative wire index on each tool call.",
+      "The transport normalizer rejected the otherwise valid tool-call objects because it required an exact three-field shape and did not tolerate the wire index.",
+      "The bounded loop policy and executor only allowed one tool call per assistant turn even though the model requested the two independent mandatory read-only tools together.",
+      "The public terminal did not retain the response capture reference because the normalization exception was raised before a step result was materialized."
+    ],
+    "model_behavior_disposition": "aligned_with_business_instruction_and_authority_for_the_observed_step",
+    "not_yet_observed": [
+      "tool_result_continuation_transport",
+      "EvidenceRequest_behavior",
+      "standard_tool_final_Judgment_contract",
+      "standard_tool_node_content_quality"
+    ]
+  },
+  "replacement_boundary": {
+    "tolerate_only_a_valid_non_negative_integer_wire_index_and_strip_it_from_the_provider_neutral_shape": true,
+    "allow_only_the_exact_reviewed_Evidence_plus_NumericFact_read_pair_in_one_assistant_step": true,
+    "parallel_EvidenceRequest_or_Judgment_forbidden": true,
+    "duplicate_parallel_read_forbidden": true,
+    "successful_prefix_and_response_capture_ref_must_materialize": true,
+    "zero_call_replay_and_mutation_required_before_replacement_live": true,
+    "replacement_single_cell_live_allowed_after_clean_proof": true,
+    "maximum_replacement_model_calls": 6,
+    "retries": 0,
+    "fallbacks": 0,
+    "five_cell_live_authorized": false,
+    "automatic_third_single_cell_live_forbidden": true
+  },
+  "known_boundary": "R1 is immutable and produced no accepted tool receipt or Judgment. It demonstrates one project-owned wire/policy incompatibility and one correctly chosen model action; it does not qualify continuation transport, standard-tool content, five-cell research, S3 acceptance or release."
+}

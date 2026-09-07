@@ -1,0 +1,226 @@
+{
+  "R10_L3_writer_requirement_dispositions": {
+    "cash_proxy_directional_and_no_AI_attribution": "pass",
+    "slower_growth_probability_not_arithmetic_necessity": "pass",
+    "unnormalized_NVDA_and_MU_inventory_balances_omitted": "pass"
+  },
+  "R14_reference_finding_dispositions": [
+    {
+      "disposition": "Operating_claim_replaced_by_semantically_matching_Cash_claim_and_cross_scope_Evidence_NUM_removed",
+      "field_path": "sections[3].clauses[0]",
+      "status": "pass"
+    },
+    {
+      "disposition": "unselected_operating_cash_flow_authority_removed_from_working_capital_proxy_clause",
+      "field_path": "sections[3].clauses[1]",
+      "status": "pass"
+    },
+    {
+      "disposition": "redundant_cross_agent_Operating_claim_removed_Demand_claim_preserved",
+      "field_path": "what_would_change[0]",
+      "status": "pass"
+    },
+    {
+      "disposition": "unknown_0A332_ref_corrected_to_catalog_A332_ref_with_exact_price_volume_mix_boundary",
+      "field_path": "what_would_change[2]",
+      "status": "pass"
+    }
+  ],
+  "acceptance": {
+    "S3_pass": false,
+    "author_diagnostic_quality_pass": true,
+    "author_self_L1_pass": true,
+    "author_self_L2_pass": true,
+    "candidate_ready_for_independent_review": true,
+    "final_report_content_quality_pass": false,
+    "independent_eight_dimension_quality_pass": false,
+    "independent_post_writer_L1_L2_pass": false,
+    "local_candidate_materialized": true,
+    "local_protected_contract_pass": true,
+    "product_acceptance": false,
+    "publication": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false
+  },
+  "assessment_digest": "cdde944b89e4169b7dac6b9fb15ab099b7930d9ad6f001ff0a9eb1a5fd64ebd0",
+  "assessment_kind": "same_Codex_author_zero_model_post_writer_self_audit_not_independent_or_qualified_human",
+  "candidate_draft_digest": "dcb6e6d052c8349468c40bde534ea64bd8d82f93847bb2493eafe7036969a49d",
+  "case_key": "DELL",
+  "contract_finding_receipt_digest": "57971ee70eede0c721534f7493f933dabeab7c7e0d81ffbaf2ab02511137dc2b",
+  "diagnostic_eight_dimension_quality": {
+    "diagnostic_disposition": "author_self_audit_pass_for_independent_review_with_nonblocking_editorial_debt",
+    "diagnostic_maximum": 32,
+    "diagnostic_score": 27,
+    "dimensions": [
+      {
+        "dimension": "Q1_problem_definition_and_company_specificity",
+        "reason": "Dell-specific order-to-profit-to-cash question and product-versus-company boundary are explicit.",
+        "score": 4
+      },
+      {
+        "dimension": "Q2_evidence_use_and_traceability",
+        "reason": "Every substantive clause is claim-scoped and the protected renderer binds material surfaces to typed authority.",
+        "score": 4
+      },
+      {
+        "dimension": "Q3_causal_mechanism_and_industry_logic",
+        "reason": "Demand, expense leverage, product economics, cash proxy, supply and cross-company mechanisms remain bounded.",
+        "score": 4
+      },
+      {
+        "dimension": "Q4_numeric_and_financial_bridge",
+        "reason": "The signed margin bridge and company cash facts are same-basis while unavailable product bridges remain unavailable.",
+        "score": 4
+      },
+      {
+        "dimension": "Q5_counterargument_and_what_would_change",
+        "reason": "Material counterconditions are present, but formal invalidation thresholds remain research-method choices.",
+        "score": 3
+      },
+      {
+        "dimension": "Q6_decision_density",
+        "reason": "Core thesis is concise, but rendered authority blocks and duplicated future-evidence surfaces add avoidable density.",
+        "score": 3
+      },
+      {
+        "dimension": "Q7_expression_and_boundary_discipline",
+        "reason": "Boundary language is strong; one resolves wording is too definitive for an observational discriminator.",
+        "score": 3
+      },
+      {
+        "dimension": "Q8_user_and_senior_reviewer_usability",
+        "reason": "The internal report is auditable, but duplicate sections and internal EV/GAP citations keep it below a finished senior deliverable.",
+        "score": 2
+      }
+    ],
+    "formal_score": null,
+    "formal_score_reason": "The candidate author and this assessor are the same Codex, so a formal independent acceptance score is not allowed."
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 0,
+    "provider_calls": 0
+  },
+  "hard_gate_self_assessment": {
+    "R10_conditional_protection": "pass_same_quarter_parallel_cohort_and_cash_proxy_rules",
+    "R14_four_reference_findings": "pass_exact_substitution_removal_and_catalog_typo_correction",
+    "causal_temporal_and_cross_company_boundary": "pass_in_author_self_audit",
+    "financial_and_numeric_interpretation": "pass_in_author_self_audit",
+    "identity_and_case_binding": "pass_DELL_R10_R14_R15_exact_bindings",
+    "original_seven_material_findings": "pass_in_author_self_audit",
+    "overall_author_self_L1_L2": "pass_not_independent",
+    "protected_numeric_surface": "pass_zero_findings_and_deterministic_rendering",
+    "reference_existence_and_scope": "pass_local_contract_zero_hard_findings"
+  },
+  "independence_limit": {
+    "candidate_author_and_assessor_are_the_same_Codex": true,
+    "formal_acceptance_score_allowed": false,
+    "independent_post_writer_review_claim_allowed": false,
+    "qualified_human_claim_allowed": false
+  },
+  "known_boundary": "R15 is now a locally valid and author-self-audited candidate. The same author cannot close independent post-Writer, qualified-human, S3, product, publication, or release gates.",
+  "material_residual_findings_in_author_self_audit": [],
+  "next_scope": "review_by_an_agent_or_human_separate_from_the_current_Codex_author_then_decide_whether_nonblocking_editorial_repairs_are_worth_a_new_attempt",
+  "nonblocking_editorial_findings": [
+    {
+      "field_paths": [
+        "sections[5]",
+        "what_would_change"
+      ],
+      "finding": "The report carries a full What-would-change section and a top-level What-would-change list with substantially duplicated content.",
+      "impact": "Reduces senior-reader density but does not change research authority or financial truth.",
+      "level": "L3_usability",
+      "recommended_followup": "Choose one human-facing surface during independent review or later presentation editing."
+    },
+    {
+      "field_paths": [
+        "executive_thesis[0]",
+        "confidence"
+      ],
+      "finding": "Model prose is within recommended limits, but deterministic Facts blocks still render more authority items than a senior summary needs.",
+      "impact": "Traceability is strong but the opening remains visually dense.",
+      "level": "L3_decision_density",
+      "recommended_followup": "Prune authority_refs to the minimum decision-bearing set without changing claims."
+    },
+    {
+      "field_paths": [
+        "sections[5].clauses[1]"
+      ],
+      "finding": "The phrase resolves the competing explanations is stronger than the evidence warrants because post-normalization order behavior would help distinguish rather than uniquely identify causes.",
+      "impact": "Non-material because the same clause keeps both outcomes conditional and the gap remains open.",
+      "level": "L3_causal_expression",
+      "recommended_followup": "Prefer would help distinguish in any later editorial revision."
+    },
+    {
+      "field_paths": [
+        "rendered_report"
+      ],
+      "finding": "EV and GAP identifiers are internal traceability surfaces rather than human-facing citations.",
+      "impact": "Suitable for internal audit but not a finished Workbench publication surface.",
+      "level": "L3_presentation",
+      "recommended_followup": "Map internal refs to human citation labels only after independent and qualified-human review."
+    }
+  ],
+  "original_material_finding_dispositions": [
+    {
+      "evidence": "expense_ratio_compression_is_the_only_positive_signed_bridge_component_without_unsupported_share_percentage",
+      "issue_id": "RC-S3-074-expense-bridge-contribution-share-misstated",
+      "status": "pass"
+    },
+    {
+      "evidence": "executive_and_demand_clauses_explicitly_call_orders_revenue_and_backlog_parallel_signals_without_cohort_linkage",
+      "issue_id": "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion",
+      "status": "pass"
+    },
+    {
+      "evidence": "cash_section_keeps_the_three_line_measure_as_a_balance_sheet_proxy_not_measured_absorption_or_AI_attribution",
+      "issue_id": "RC-S3-076-balance-sheet-stock-delta-promoted-to-cash-absorption",
+      "status": "pass"
+    },
+    {
+      "evidence": "Dell_and_supplier_customer_concentration_remain_separate_without_a_counterparty_overlap_map",
+      "issue_id": "RC-S3-077-cross-company-customer-structure-inferred-from-NVDA",
+      "status": "pass"
+    },
+    {
+      "evidence": "supplier_export_controls_remain_a_bounded_upstream_scenario_not_proven_Dell_exposure",
+      "issue_id": "RC-S3-078-NVDA-export-control-risk-promoted-to-DELL-exposure",
+      "status": "pass"
+    },
+    {
+      "evidence": "company_gross_margin_is_explicitly_non_identifying_in_both_directions",
+      "issue_id": "RC-S3-079-company-gross-margin-used-as-necessary-test-of-product-pricing-power",
+      "status": "pass"
+    },
+    {
+      "evidence": "pull_forward_and_digestion_remain_possible_unmeasured_competing_explanations",
+      "issue_id": "RC-S3-080-demand-context-promoted-to-definite-pull-forward-and-digestion",
+      "status": "pass"
+    }
+  ],
+  "recorded_at": "2026-08-24T07:10:20+08:00",
+  "rendered_report_digest": "6d15b3d244593e718560ce4e3a0078f320caa7d1c7121fb0c556745408ef1a10",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_INDEPENDENT_TAKEOVER_R15",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_R15_author_self_audit_v1_0",
+  "source_candidate_result": {
+    "digest": "e0f76545375b477bc035869c25b87193fd831d63e9a73c9de95071a58680f4f8",
+    "digest_field": "result_digest",
+    "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_independent_takeover_candidate_result_v1_0.json",
+    "sha256": "c8b07af55aa0780a3c9b3e5a563ee9b092b20d4795129f4cdbe32386dc6826cb"
+  },
+  "source_decision": {
+    "digest": "66d71ebf861630b570c00e3f4c255b9bb72e26a34f2cb0a07568099479bca803",
+    "digest_field": "decision_digest",
+    "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_independent_takeover_scope_decision_v1_0.json",
+    "sha256": "07647bdb9ded6290e7b882632cbc051a3673031bb5e2d79bc797d9b86499d08c"
+  },
+  "source_private_full_result": {
+    "digest": "50ebe3dbb7cedcbc6e466c8fd264bafc558ab9ed24190782b6ed06a469bdfe23",
+    "digest_field": "full_result_digest",
+    "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-independent-takeover-r15/full_result.json",
+    "sha256": "7c1597e23914c47b460347ea4bb505e7e69575b1e392afb37cc215af57008082"
+  },
+  "status": "R15_local_candidate_author_self_audit_pass_with_nonblocking_editorial_findings_independent_review_pending"
+}

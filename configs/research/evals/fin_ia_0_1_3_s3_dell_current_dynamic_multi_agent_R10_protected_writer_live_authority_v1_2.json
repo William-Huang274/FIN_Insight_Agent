@@ -1,0 +1,185 @@
+{
+  "authority_boundary": {
+    "S3_product_publication_and_release_authorized": false,
+    "maximum_two_writer_submission_attempts": true,
+    "new_S1_S2_retrieval_source_or_candidate_calls": 0,
+    "one_writer_analysis_call": true,
+    "transport_retries": 0,
+    "upstream_agent_calls": 0,
+    "writer_result_requires_independent_post_run_assessment": true
+  },
+  "authority_digest": "c3fd89ea8790d8430bb2f022b20e6c1aaa645c2916e5f82056f46110226a17f2",
+  "bound_inputs": {
+    "R10_assessment": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_R10_content_assessment_v1_0.json",
+      "sha256": "a5186450f3eaf743825f22f116a5558e5f74c573e86d10ac0572cb0e8448026d"
+    },
+    "R10_authority": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_authority_v1_4.json",
+      "sha256": "614f4ed7cb52e713bae59a64ad41747ed98ddc6a8f0f41a691e4923df0cb1ea0"
+    },
+    "R10_private_full_result": {
+      "digest": "cab0b654f3ff2f99193d299e7c6cc345049d36a087a0e95557120dff1036e900",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-reassessment-resume-live-r10-20260823T194751Z/full_result.json",
+      "sha256": "0b2545f4f688193132dbfa24abb3f0d020499a606503340a36ac9ed28f9e37a8"
+    },
+    "R10_public_result": {
+      "digest": "83dc3d600ce9d123a073af30fe8646b7bd740b24869c9218d04113557d186112",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_content_repair_live_result_v1_4.json",
+      "sha256": "8b09565fa3db768a6e93df2416b84b9873e16cbb5717d6d747cf1d33f9a6ef0a"
+    },
+    "R5_private_full_result": {
+      "digest": "78bc144bf6af67e8b5daf3f930cca090ad7d4271e2c4ac55a5c7df17ec9822da",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-submission-repair-resume-live-r5-20260823T220000Z/full_result.json",
+      "sha256": "e0fa6de910aa1645ea221127ce32be0d09b22713078105645c87d148957300ea"
+    },
+    "R9_private_full_result": {
+      "digest": "497865ee3d387e81101beedbdd931d9dab68812b2595a1c7e3f36add8bc13084",
+      "digest_field": "full_result_digest",
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-repair-live-r9-20260823T185102Z/full_result.json",
+      "sha256": "fc294c2d48f8e04728e203b2ab6faa0084b382d6cee9049cbde9969e3b5ab070"
+    },
+    "analysis_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_writer_visible_analysis_non_thinking_profile_v1_0.json",
+      "sha256": "f93029addf1eb4ff1d60d59cd7ea93949a5af5984e2c07f335af931a596ff809"
+    },
+    "source_bound_program": {
+      "digest": "b0a653cdb03da83a5741922e48b4634ddc54ba94aa81a69d498881dd28ed53f3",
+      "digest_field": "program_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s2_dell_current_dynamic_multi_agent_R10_source_bound_numeric_program_v1_0.json",
+      "sha256": "62901487dbce9ce6f832d6d001fd416e142038ffd2d1fa24565e0127dd97d508"
+    },
+    "source_bound_review": {
+      "digest": "2b6a5608411ecd9a766480164f325eccddd3b90eddb571e91ab77179df9c50ff",
+      "digest_field": "review_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s2_dell_current_dynamic_multi_agent_R10_source_bound_numeric_review_v1_0.json",
+      "sha256": "98ae821c156f96939a635efb4e5ca5f15c14b89120b95371ac99ccc3feb85930"
+    },
+    "submission_profile": {
+      "ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_report_protected_remap_non_thinking_profile_v1_1.json",
+      "sha256": "24ab4579badd7520469aaa37d1b5530f611c9e53526d2d296d27ee4402bc9b80"
+    },
+    "writer_authority_catalog": {
+      "digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765",
+      "digest_field": "authority_catalog_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_authority_catalog_v1_0.json",
+      "sha256": "fe33215f8d46a5fa9db422d8192ba3c18daf29563a7941ba6fe16808ce07a84b"
+    },
+    "writer_protection_contract": {
+      "digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62",
+      "digest_field": "protection_digest",
+      "ref": "configs/research/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_writer_protection_contract_v1_0.json",
+      "sha256": "e17b9526aa97951eb1b3ff2c026e3d38b51d4d78de447087e8907a06e46d247c"
+    },
+    "zero_call_result": {
+      "digest": "f8104031b43788b20c0270898533e5d72319bad9055fa5800f628577a86e099f",
+      "digest_field": "result_digest",
+      "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_zero_call_result_v1_2.json",
+      "sha256": "a7a124e1a96473820cd54561495bbe31aebd3950bc331a078bd3ea0ad38dfc35"
+    }
+  },
+  "case_key": "DELL",
+  "decision": {
+    "digest": "c35098886a2076d4f2d59ea5528583e91bb07d630bd314a7d63c6c9061e625c2",
+    "digest_field": "decision_digest",
+    "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_scope_decision_v1_2.json",
+    "sha256": "1b255b7fa9cc9b29918c5467214a78d1da87c370d1ac3ef90510130a3000e9b8"
+  },
+  "execution_budget": {
+    "candidate_promotions": 0,
+    "current_product_pointer_mutations": 0,
+    "fallbacks": 0,
+    "maximum_external_source_network_calls": 0,
+    "maximum_new_model_calls": 3,
+    "maximum_new_retrieval_rounds": 0,
+    "maximum_new_s1_s2_requests": 0,
+    "maximum_new_transport_attempts": 3,
+    "maximum_new_writer_logical_nodes": 1,
+    "maximum_writer_submission_attempts": 2,
+    "retries": 0,
+    "writer_analysis_calls": 1
+  },
+  "implementation_bindings": [
+    {
+      "ref": "src/sec_agent/research/current_dynamic_writer.py",
+      "sha256": "d7d798f4c419cd0d090302be6ea20e9e7087667ad34add253b14761024c5d2fb"
+    },
+    {
+      "ref": "src/sec_agent/research/multi_agent_report_authority.py",
+      "sha256": "90ef0391134bec2c075e264b072e4be4d00af898718c94e8322c19515ccab015"
+    },
+    {
+      "ref": "src/sec_agent/research/source_bound_numeric_authority.py",
+      "sha256": "67d226a1e864a727aabb05d2cdb52fecb0893c41efd30fdfa707976637dcdc59"
+    },
+    {
+      "ref": "src/sec_agent/project_os_preflight.py",
+      "sha256": "dc7c860bac2ae732b69f39e07d9334bdb10171508cbb5bc3a609b0940556e15c"
+    },
+    {
+      "ref": "scripts/research/run_s3_current_dynamic_writer_zero_call.py",
+      "sha256": "57cbca6fac64ca162dde2a3ed36c2779602c68ef664d48fe931bcc90ba2039ca"
+    },
+    {
+      "ref": "scripts/research/run_s3_current_dynamic_writer_live.py",
+      "sha256": "92cba3c02cf60aa8cd24b4abed28ae059a9be65c3a0a556d5f2e27bd1ffc25ee"
+    }
+  ],
+  "implementation_commit": "e9d030f5e82844ff97d5114acdb58796c9a16049",
+  "output_contract": {
+    "capture_root_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_dell_R10_protected_writer_live_r13",
+    "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-live-r13/full_result.json",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_live_result_v1_2.json"
+  },
+  "project_os_preflight": {
+    "ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_project_os_preflight_v1_2.json",
+    "sha256": "e785185f1f6d9397e2df0a29bd455f892a90be8af149ef0ea93009f8834379ad"
+  },
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R13",
+  "run_scope_id": "one_capture_bound_R10_protected_writer_analysis_and_submission",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_live_authority_v1_0",
+  "signed_at": "2026-08-24T05:57:21+08:00",
+  "status": "signed_exact_run_DELL_R10_protected_writer",
+  "token_budget_basis": {
+    "writer_analysis": {
+      "comparable_run_evidence": "R12 used 16000 of 16000 completion tokens as hidden reasoning with zero visible content; prior protected Writer and evaluator successors completed visible bounded work under explicit non-thinking profiles.",
+      "input_scale": "R12 measured 46369 prompt tokens: 109924 user-message characters, six workpapers, 56 claims, 38 typed presentations, and 10 typed gaps.",
+      "materiality_quality_risk": "High: synthesis can reintroduce cohort, cash, source-owner, product-attribution, pull-forward, or leverage overstatement.",
+      "maximum_calls": 1,
+      "maximum_completion_tokens": 16000,
+      "node_purpose": "Produce a visible, content-complete synthesis plan over the six R10 workpapers while preserving every material and L3 report boundary.",
+      "reasoning_profile": "deepseek-v4-pro thinking disabled visible planning",
+      "required_outputs": [
+        "thesis_and_section_plan",
+        "claim_evidence_authority_map",
+        "material_boundary_checklist",
+        "counterthesis_gap_and_what_would_change_plan"
+      ],
+      "schema_burden": "The node returns a prose planning memo, not the nested tool contract; the unchanged strict submission node performs the protected schema mapping.",
+      "stop_and_truncation_behavior": "A length finish, empty visible memo, transport failure, or incomplete response is terminal for this authority; no continuation or silent retry is permitted."
+    },
+    "writer_submission": {
+      "comparable_run_evidence": "Prior protected remap completed around six thousand output tokens; twelve thousand prevents truncating required sections.",
+      "input_scale": "At least 110230 source characters plus the completed analysis and a nested protected tool schema of 25714 characters.",
+      "materiality_quality_risk": "High: a structurally fluent report is invalid if any R10 protection or reference scope is violated.",
+      "maximum_calls": 2,
+      "maximum_completion_tokens": 12000,
+      "node_purpose": "Submit one complete protected report draft using only the typed R10 Writer authority projection.",
+      "reasoning_profile": "deepseek-v4-pro thinking disabled strict tool",
+      "required_outputs": [
+        "report_topic",
+        "executive_thesis",
+        "four_to_ten_sections",
+        "remaining_gaps",
+        "what_would_change",
+        "confidence",
+        "claim_evidence_authority_and_gap_refs"
+      ],
+      "schema_burden": "Nested numeric-free clauses with claim-scoped Evidence, typed presentation authority, gaps, and deterministic render receipts.",
+      "stop_and_truncation_behavior": "Stop after the first valid contract. One precise all-finding feedback attempt is allowed; a second rejection or length finish is terminal and preserves the failed run."
+    }
+  }
+}

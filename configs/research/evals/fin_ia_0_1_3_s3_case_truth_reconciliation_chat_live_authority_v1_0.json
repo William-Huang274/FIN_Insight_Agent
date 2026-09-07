@@ -1,0 +1,72 @@
+{
+  "schema_version": "fin_ia_s3_case_truth_reconciliation_live_authority_v1_0",
+  "status": "signed_exact_once_R7_case_truth_semantic_canary",
+  "signed_at": "2026-08-17T12:27:14.6985622+08:00",
+  "authority_id": "FIN-0.1.3-S3-R7-CASE-TRUTH-SEMANTIC-CANARY-CHAT-LIVE-AUTHORITY-V1.0",
+  "case_key": "DELL",
+  "clean_implementation": {
+    "implementation_commit": "2f86056b02572894fdb4c5bdc8dee49d4981f7a3",
+    "head_must_equal_implementation_commit": true,
+    "upstream_must_equal_implementation_commit": true,
+    "tracked_worktree_must_be_clean": true,
+    "only_authority_may_be_untracked": true
+  },
+  "execution_budget": {
+    "maximum_model_calls": 1,
+    "maximum_provider_calls": 1,
+    "maximum_transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "protocol_switches": 0,
+    "network_source_calls": 0,
+    "embedding_calls": 0,
+    "candidate_promotions": 0,
+    "research_rewrites": 0,
+    "report_generations": 0,
+    "product_publication": "forbidden"
+  },
+  "bound_inputs": {
+    "r7_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_value_submission_repair_successor_chat_live_result_v1_0.json",
+    "r7_public_result_sha256": "8bc9ad425858cdedba23f276ea8ae6382637cef9f26def656dd577ef99ae5ed8",
+    "r7_private_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R7/full_result.json",
+    "r7_private_result_sha256": "6b462933d6ed0dae92aa83e6a59b0b5d01ee42166b8c32c1f8dff979afa0b3b5",
+    "zero_call_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_zero_call_result_v1_0.json",
+    "zero_call_result_sha256": "ff7488fbac219896dc0b86ff0b7e5f4fde408bf47dc5790ab0f7d701cdbc4859",
+    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_semantic_reconciliation_low_strict_beta_profile_v1_0.json",
+    "provider_profile_sha256": "8fa5fd114349ce65d90fec96cf8ca3a0134265e2f1a78e267df0fbdeba2425dd",
+    "expected_case_truth_packet_digest": "6d25591ef73087a24efc74a1dff124f13ae3db9fc92701909c956e22c132432e",
+    "expected_claim_document_digest": "83fcc205c8bc7cd9b88d573c55daecbbddf990f631053de0fbc2606e6607096c"
+  },
+  "pre_registered_targets": {
+    "required_surface_count": 15,
+    "required_false_absence_detections": [
+      {
+        "claim_surface_id": "CELL::operating_performance::thesis_atom",
+        "truth_alias": "TRUTH::FACET::operating_performance::accelerated_compute_or_ai_infrastructure_revenue"
+      },
+      {
+        "claim_surface_id": "CELL::counterevidence::thesis_atom",
+        "truth_alias": "TRUTH::FACET::demand_volume_quality::ai_orders"
+      },
+      {
+        "claim_surface_id": "CELL::counterevidence::thesis_atom",
+        "truth_alias": "TRUTH::FACET::demand_volume_quality::ai_backlog"
+      }
+    ],
+    "required_legitimate_absence": {
+      "claim_surface_id": "CELL::counterevidence::thesis_atom",
+      "truth_alias": "TRUTH::BRIDGE::CR::GENERIC::PROFIT_BRIDGE_GAP"
+    },
+    "semantic_assessment_after_run_required": true,
+    "automatic_targets_do_not_equal_final_acceptance": true
+  },
+  "output_contract": {
+    "capture_root_ref": "data/captures/provider_calls",
+    "private_output_ref": "data/workbench_private/s3_case_truth_reconciliation/FIN013-S3-CASE-TRUTH-SEMANTIC-CANARY-R1/full_result.json",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_chat_live_result_v1_0.json",
+    "run_id": "FIN013-S3-CASE-TRUTH-SEMANTIC-CANARY-R1",
+    "attempt_id": "CASE-TRUTH-SEMANTIC-CANARY-01",
+    "product_publication": "forbidden"
+  },
+  "known_boundary": "This authority permits exactly one low-thinking DeepSeek strict semantic classification of the immutable R7 fifteen cell claim surfaces. It forbids research rewriting, report generation, source retrieval, embedding, retries, fallback, protocol switching, affected-node repair, publication, generalization, S3 acceptance and release. Automatic critical-target success still requires a separate full-surface semantic content assessment."
+}

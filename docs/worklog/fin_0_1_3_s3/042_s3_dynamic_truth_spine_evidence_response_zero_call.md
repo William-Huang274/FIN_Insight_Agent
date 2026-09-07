@@ -1,0 +1,97 @@
+# 042 S3 动态 Truth Spine：EvidenceResponse 零调用工程纵切
+
+日期：2026-08-16  
+状态：engineering pass；自然动态研究未执行
+
+## 为什么做
+
+此前模型可以提出补证需求，S1 也能给出候选，S2 也能返回公司财务事实，但三者没有在同一次研究循环里闭合。`submit_evidence_request` 实际只保存 proposal，候选不会形成可审计的 EvidenceResponse，更不能回流到当前研究单元。
+
+本轮只补这条控制面，不扩来源、不调用模型，也不把普通候选自动升级成 Evidence。
+
+## 实现边界
+
+- EvidenceRequest 真正执行当前 S1 hybrid route 与 S2 mart。
+- 只有已经存在于当前 immutable reviewed Pack、且通过 case、owner、source type、as-of／period、Evidence Slot 和精确 lineage 复核的对象，才可返回 `accepted`。
+- 新候选即使排名靠前、文本相关或 advisory role 正确，也只能是 `needs_human_review`。
+- 动态模型视图只包含 accepted Evidence refs、NumericFact／relation、typed gap 和 receipt；不包含未审候选原文。
+- 动态 Claim Authority 只能删除本轮没有取回的权限，不能创造新的数字、引用、身份、日期或因果桥。
+- 请求执行 gap 与 reviewed Pack gap 不互相改名；二者 facet taxonomy 不同。
+
+## 三案真实结果
+
+### DELL
+
+- 执行 8 个真实 EvidenceRequest。
+- 5 个请求取回 reviewed Evidence，共 6 条唯一 Evidence。
+- 3 个已审绑定因 Evidence Slot 不属于当前请求而被拒绝。
+- 112 个未审候选全部留在候选层，0 自动晋升。
+- 保留 12 个 typed gap。
+- 当前可诚实支持的 claim authority 收窄为：`bridge_unavailable`、`multi_driver_context_only`、`same_scope_observation_only`。
+
+具体业务上：订单／积压、需求持续性、已报告结果和现金流能取回 SEC Evidence；利润单元只取回一条 10-Q 公司层观察；营运资金、issuer counterevidence 和 upstream counterevidence 没有取回已审材料。模型此时不能获得“产品利润桥已经成立”的权限。
+
+### MU 与 NVDA
+
+两案各执行一个 margin/value-capture 请求，各得到 16 个当前候选，但没有候选能与当前 reviewed Pack 做 exact lineage join：MU 为 0 accepted；NVDA 另有 1 条已审对象因 slot 不匹配被拒绝，仍为 0 accepted。两案均只形成 typed gap，未编译动态研究输入。
+
+## Mutation 与审计
+
+- 候选顺序变化不改变 accepted Evidence。
+- 给未审候选注入看似权威的文字，不会改变任何 authority。
+- 跨案例候选 fail closed。
+- reviewed Pack digest 漂移 fail closed。
+- 0 model、0 provider、0 external network、0 candidate promotion。
+
+私有 working-tree 工程结果 digest：`93cc10355b98e164eddf879a5d27bd028e8fb73995d1b1e72c477649fb36bacc`。
+
+干净实现提交 `b731f4e7410516d5d616aa87173cc05f8568715e` 已推送；同一稳定 runner 随后生成公开 formal result `configs/research/evals/fin_ia_0_1_3_s3_dynamic_truth_spine_zero_call_result_v1_0.json`，result digest=`6e13f6873f5f6e83c8b2773c429fd01472fcbf938d157eb6b4ba3e75fbf5baab`。提交前全仓 `373 passed`，compileall、active baseline `129 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 和 secret scan `6,700 files / 0 finding` 通过。
+
+本记录里的“零调用”特指 0 次生成式 DeepSeek／Provider 调用和 0 次外部网络请求；当前 S1 hybrid route 实际执行了本地 Qwen embedding。不得把它解释成 0 embedding inference。
+
+## 新暴露的最早责任层问题
+
+Dell Q1 FY2027 官方 transcript 已经进入 reviewed Pack，但当前 S1 candidate object/index 没有该对象，source whitelist 也没有 `EARNINGS_CALL_TRANSCRIPT`。因此 fixed-Pack 测试能看见法说，动态检索却看不见。MU、NVDA 的 0/16 也说明 reviewed Pack 与当前候选对象之间还没有稳定同步合同。
+
+这不是 DeepSeek 问题，也不能靠 S3 把 transcript 静默预喂给模型解决。它归 S1 source/index synchronization，唯一编号更正为 `RC-S1-019`（早先 `RC-S1-015` 已用于 reranker 评测问题）。它不阻断一次诚实的 DELL SEC-only 动态实验，但阻断三案例 S1 产品通过和高质量动态报告。
+
+## 动态 ClaimRelation successor
+
+首轮 EvidenceResponse proof 只能编译到动态 Claim Authority，尚不能直接复用 fixed-Pack 已验证的 thesis／mechanism／counterargument 三片段交卷。若此时直接 live，只能退回旧的单次长 JSON，等于绕过已经证明的片段合同。
+
+successor 在 provider-neutral Runtime 中加入动态 ClaimRelation 投影：
+
+- 本轮未取回 transcript 后，`PRODUCT_TARGET` 与 `MULTI_DRIVER_CONTEXT` 被删除；
+- 仍有同口径 NumericRelation 时，保留 `COMPANY_MARGIN_OBSERVATION`；
+- 三个 typed bridge gap 完整存在时，保留 `PROFIT_BRIDGE_GAP`；
+- 因没有正向 thesis 权限，gap relation 只允许以 `not_inferable / insufficient_evidence` 承担 thesis，不允许 `bounded_support`；
+- 三个片段均有合法提交出口，0 candidate promotion，且固定 Pack 旧合同回归不变。
+
+实现提交 `5db21089f074c3314fbd7f41dfc77963dcea767b`。formal successor 为 `configs/research/evals/fin_ia_0_1_3_s3_dynamic_truth_spine_zero_call_result_v1_1.json`，result digest=`1082988fd41b1a58d992e76238f005a9dfdb73ac8d5b026e2f539576c042df08`。最终全仓 `374 passed`，compileall、active baseline `129 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 和 secret scan `6,702 files / 0 finding` 通过。它仍使用 controlled atoms 与本地 Qwen embedding，只证明动态交卷结构，不证明自然 planner、自然 Judgment 或 Agentic Research。
+
+## 动态 micro-Judgment 终态工程闭环
+
+第二个 successor 把动态关系面真正接回 fixed-Pack 已验证的三片段 Tool Contract、终态 Judgment 和 deliverable compiler，但没有复用 fixed-Pack 的默认权限：
+
+- 动态模式必须显式选择独立 policy；fixed／dynamic 标志半切换会 fail closed；
+- 每个研究单元只保留本轮相关 EvidenceResponse 实际返回的 reviewed Evidence，禁止从同一案例的其他请求借 Evidence；
+- GraphContext edge 只有在其全部 Evidence refs 都属于本轮 request-scoped 集合时才能保留；没有合法 edge 时，最低图边要求确定性收窄为 0；
+- thesis、mechanism、counterargument／WWC 使用各自关系的局部推论权限；终态才做最保守聚合；
+- thesis 若为 `not_inferable / insufficient_evidence`，后续片段不得将终态升级为 bounded 或 supported。
+
+实现过程中依次暴露并关闭了三个项目集成问题，而非 DeepSeek 问题：
+
+1. 动态输入最初仍被 fixed-Pack-only policy 拒绝，说明“关系已投影”与“完整交卷合同可消费动态输入”尚未真正连接；
+2. 单元上下文会从案例级 allowed Evidence 与旧 graph minimum 借到其他请求的权威，可能让未被本轮 EvidenceResponse 返回的资料进入 Judgment；
+3. thesis 的聚合 `insufficient_evidence` 被错误提前套给 mechanism／counter relation，导致合法的公司同口径观察被拒绝。
+
+最终 formal v1.2 绑定实现提交 `66920fdbfabeccd14f05f0fc8a102165e7e341e8`，结果为 `configs/research/evals/fin_ia_0_1_3_s3_dynamic_truth_spine_zero_call_result_v1_2.json`，result digest=`13409368c69c6dadd8ced2b29e43de08e7ea4c2ec73f19f13a28f82845deaa0d`。DELL 的三个 controlled fragment、终态 Judgment 和 deliverable 均可物化，终态为 `insufficient_evidence / not_inferable / bridge_unavailable`；5 个 Tool Schema、6 个 mutation 全部通过。三案仍为 0 model／0 provider／0 network，candidate promotion=0。全仓为 `376 passed`，compileall、active baseline `129 Python / 8 frontend / 10 Runtime resources / 0 forbidden reference` 和 secret scan `6,704 files / 0 finding` 通过。
+
+controlled fragment 明确不是产品 Judgment。该证明只说明动态证据不足时系统能安全、完整地交卷，不说明 DeepSeek 会自然规划、自然选择证据或写出合格判断。
+
+## 下一步
+
+1. 登记并推送 formal v1.2，在 clean/synced HEAD 上签发 fresh authority。
+2. 只给自然 DELL `value_capture` planner 用户问题、公司身份、as-of 和工具权限，让其提出 EvidenceRequest。
+3. 真实执行 S1/S2、返回 EvidenceResponse，并在当前有限权威下完成一次自然动态 Judgment。
+4. 保留 S1 transcript/index 同步缺口；根据自然纵切结果决定在进入五单元前的最小同步修复，不把缺口偷塞进 S3。

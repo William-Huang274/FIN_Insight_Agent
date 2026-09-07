@@ -1,0 +1,34 @@
+{
+  "schema_version": "fin_ia_s1d_source_intake_automatic_disposition_v1_0",
+  "disposition_id": "FIN-0.1.3-S1D-SOURCE-INTAKE-AUTOMATIC-LIVE-R1-DISPOSITION",
+  "recorded_at": "2026-08-13",
+  "status": "automatic_path_blocked_tun_involvement_confirmed_causal_subtype_unresolved_manual_upload_ready",
+  "result_ref": "configs/retrieval/fin_ia_0_1_3_s1d_source_intake_automatic_result_v1_0.json",
+  "result_sha256": "470dcd33dfee0b0b524b50c5a574cd1032d70203f6c521ec44c11d52de550417",
+  "confirmed_facts": [
+    "The provider-neutral source-intake contract, automatic driver, operator-upload driver, private immutable CAS, PDF validation and Workbench consumer passed deterministic and browser tests.",
+    "The Dell route made one request and terminated with official_source_transport_timeout before any HTTP status or PDF body was captured.",
+    "The TSM route made one request and terminated with a generic requests transport exception before any HTTP status or PDF body was captured.",
+    "Both official hostnames resolved to 198.18.0.0/15 benchmark Fake-IP addresses and Windows routed both through the active okz Meta Tunnel interface.",
+    "No HTTP_PROXY, HTTPS_PROXY, ALL_PROXY, Windows user proxy or PAC configuration was active, so the application traffic depended on transparent TUN interception rather than an explicit application proxy.",
+    "No retry, model call, broad-search call, parse, object-store mutation or Evidence promotion occurred."
+  ],
+  "supported_inference": "The local transparent TUN path is materially involved in both failures and rotating requests, curl or Edge is not an independent network-path test.",
+  "not_yet_proven": [
+    "whether the TUN userspace DNS/connection mapping itself failed",
+    "whether the selected proxy exit was refused or stalled by the official origin or its WAF",
+    "whether an explicit per-domain DIRECT rule would succeed from the same workstation"
+  ],
+  "product_disposition": {
+    "automatic_source_route": "blocked_no_automatic_retry",
+    "operator_official_pdf_upload": "engineering_ready_recommended_fastest_unblock",
+    "S1_product_acceptance": false,
+    "S3_research_or_report_execution": false,
+    "typed_gaps_preserved": true
+  },
+  "next_allowed_actions": [
+    "Upload the policy-bound official PDF through the Workbench Operations source-intake panel; the file remains source-only until parse and Evidence Gate.",
+    "If automatic acquisition must be restored, run one user-visible same-URL A/B with a per-domain DIRECT rule or TUN temporarily disabled under a new authority; do not let project code alter proxy settings.",
+    "After a valid PDF is captured, parse it, bind issuer/date/document identity, compile financial objects, run Evidence Gate, rebuild the Evidence Pack and execute the limited S2 dependency regression before S3."
+  ]
+}

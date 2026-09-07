@@ -1,0 +1,2146 @@
+{
+  "schema_version": "fin_ia_dell_reviewed_evidence_enrichment_v1_0",
+  "status": "owner_review_candidate_answer_free_not_execution_authority",
+  "recorded_at": "2026-09-03T11:30:00+08:00",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "case_key": "DELL",
+  "research_as_of": "2026-09-02",
+  "purpose": "Normalize answer-free Reviewed Evidence metadata into provenance-family, topic-selector, route-relation, subject and authority candidates without reading or inferring from source/claim text or retrieval queries.",
+  "authority": {
+    "answer_free": true,
+    "owner_review_required": true,
+    "owner_review_receipt": null,
+    "execution_authority": false,
+    "executable_reviewed_evidence_index_authorized": false,
+    "model_or_provider_calls_authorized": false,
+    "network_calls_authorized": false,
+    "evidence_admission_authority": false,
+    "numeric_fact_authority": false,
+    "research_answer_fields_forbidden": true,
+    "text_or_query_inference_forbidden": true,
+    "physical_catalog_candidate_cannot_self_authorize": true
+  },
+  "digest_contract": {
+    "algorithm": "sha256",
+    "canonicalization": "utf8_json_ensure_ascii_false_sort_keys_true_separators_comma_colon",
+    "self_digest_field": "enrichment_digest",
+    "self_digest_field_excluded_from_digest": true
+  },
+  "input_bindings": {
+    "base_pack": {
+      "ref": "D:/FIN_Insight_Agent/data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+      "sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+      "payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98",
+      "expected_item_count": 55
+    },
+    "overlay_projection": {
+      "ref": "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/evidence_overlay/attempts/20260902T051005+0800-dell-fy27q2-sec-ex99-review-a01/reviewed-evidence-case-projection.json",
+      "sha256": "1479e49f0cde7166fe6474a74b666dfb646b31a5291f1317689aaa6bc8391eb9",
+      "projection_digest": "ecee0e2f0d3d602b10093f67861100504e5ba264b47d5d2019e23bd82fa1aff5",
+      "expected_item_count": 6
+    },
+    "composite": {
+      "digest_basis": "canonical_evidence_item_digest_union_v1",
+      "composite_digest": "188f0eda28a025d6ae13cf9327187d9edf2fc1a83d4920cc3af20ce6646e12a6",
+      "legacy_active_projection_digest": "c91d5c588f2ed2142c0bb7f079614f758cb8a92fc9149126d418cdbbafa87e7d",
+      "expected_item_count": 61
+    },
+    "physical_catalog": {
+      "ref": "D:/FIN_Insight_Agent/configs/research/fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json",
+      "sha256": "5e5c57ec952e44da4e319a19ccd128ed58b6fd1442696b203c2f39c30cf0c74b",
+      "catalog_digest": "5aa9d723bbfd86aa7eacec9e9c64f03378aaea43e79d62e6ee8e2f9d4d985cfa",
+      "required_status": "owner_review_candidate_answer_free_not_execution_authority",
+      "execution_authority": false
+    }
+  },
+  "classification_contract": {
+    "key_field": "evidence_item_digest",
+    "metadata_only_fields": [
+      "evidence_owner_id",
+      "source_type",
+      "source_tier",
+      "source_material_ref",
+      "source_record_id",
+      "target_id",
+      "topic_refs",
+      "relationship_directions",
+      "publication_date",
+      "source_reporting_period_end"
+    ],
+    "forbidden_inference_inputs": [
+      "claim_or_source_text",
+      "retrieval_query",
+      "expected_answer",
+      "numeric_value"
+    ],
+    "mechanical_rule_basis": "explicit owner/source-type allowlist",
+    "f12_rule_candidate_domains": [
+      "fortune.com",
+      "www.idc.com",
+      "www.nextplatform.com",
+      "www.trendforce.com"
+    ],
+    "ambiguous_item_digests": [
+      "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a",
+      "3b054965c17526b1a94c279f7502344468179b740134041829d36d7eae4f5299",
+      "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f",
+      "b9e41b6799ac41ee3440bdfe2124e27f8e4092b6398b10d894c61a9c8e854d21",
+      "d0b73d9640d6d9f267d3c8eb8475a14b431f5de32933dce1d2b0bf5dac6d6473"
+    ],
+    "topic_branch_mapping_source": "physical_catalog.reviewed_topic_branch_mapping",
+    "topic_mapping_is_selector_only": true,
+    "route_relation_does_not_prove_claim_relevance": true,
+    "entity_alias_registry_source": "physical_catalog.entity_aliases",
+    "entity_aliases_are_reviewed_selector_refs": true,
+    "canonical_domain_match_required": true,
+    "owner_review_domain_conflicts": [
+      {
+        "evidence_item_digest": "30a99d1a9de9a6dd7b30e20c2223e6e73d0c75096d039b2e5e8fba6e1972c261",
+        "raw_evidence_owner_id": "MU",
+        "canonical_evidence_owner_id": "MICRON",
+        "observed_domain": "www.sec.gov",
+        "approved_canonical_domains": [
+          "investors.micron.com",
+          "s25.q4cdn.com"
+        ],
+        "state": "unresolved_alias_domain_conflict_owner_review_required",
+        "execution_authority": false
+      }
+    ]
+  },
+  "expected_counts": {
+    "composite_item_count": 61,
+    "mechanical_mapping_count": 43,
+    "f12_rule_candidate_count": 13,
+    "item_level_ambiguity_count": 5,
+    "entity_domain_conflict_count": 1
+  },
+  "item_enrichments": {
+    "024224e83105ed3cd13e5b4a1e6b68a39c541c044b1f4d2875c7d146ea34f721": {
+      "origin": "base",
+      "source_material_ref": "source_material_ae628b0760b1b05ef42fe7b8",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0006::CHUNK_0001",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0006::CHUNK_0001",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "cash_conversion_balance_sheet"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "1ac25ac9a698b936b8a648c369ccac2941597d7510da2863b1c00ea208fbbef6": {
+      "origin": "base",
+      "source_material_ref": "source_material_5a200a1d3c480c1fc37c46aa",
+      "source_record_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+      "target_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+      "evidence_owner_id": "TSM",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution"
+      ],
+      "coverage_obligation_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "CY2026_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F7_MEMORY_FOUNDRY_NETWORK_STORAGE",
+      "candidate_source_family_refs": [
+        "F7_MEMORY_FOUNDRY_NETWORK_STORAGE"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q5_SUPPLY_AND_PRICE"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "supplier_reported_direction_and_capacity_state"
+      ]
+    },
+    "1c73d00cf86b8dc40ce60e6f7dec980cca729fa7bf4de543b0a23094732bd54f": {
+      "origin": "base",
+      "source_material_ref": "source_material_dfc40ab3ef4d29e96c0dee6f",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_02_OF_02",
+      "target_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_02_OF_02::CLAIM::1F528F190B04",
+      "evidence_owner_id": "NVDA",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "counterevidence_and_what_would_change"
+      ],
+      "coverage_obligation_ids": [
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "candidate_source_family_refs": [
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "platform_and_supplier_state"
+      ]
+    },
+    "2319834419674058b5a5efd958cfe7f54fb172796d9279a9b7827f787662bca3": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_b811513f096f4785202168f3",
+      "source_record_id": "PUBLIC::DELL-EXT::C52D1C2DAE6F4F5A8D09",
+      "target_id": "EXTEV::FCDA2127C4DE2D2FE47A",
+      "evidence_owner_id": "NVDA",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "relationship_attribution"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "candidate_source_family_refs": [
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "platform_and_supplier_state"
+      ]
+    },
+    "2dcdc6d95ba36cf5f19b9f2ead9424e081fd187b75db14211e57369a643a155b": {
+      "origin": "base",
+      "source_material_ref": "source_material_b476c3e0f4490b0b7660fc49",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capital_allocation_and_valuation",
+        "counterevidence_and_what_would_change",
+        "demand_volume_quality",
+        "operating_performance",
+        "relationship_attribution"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND",
+        "Q8_COMPETITION_VALUE_POOL",
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q5_SUPPLY_AND_PRICE"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "30a99d1a9de9a6dd7b30e20c2223e6e73d0c75096d039b2e5e8fba6e1972c261": {
+      "origin": "base",
+      "source_material_ref": "source_material_a153d52be5a07659e3075872",
+      "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0003",
+      "target_id": "SUPP::MU::000072312526000013::CHUNK_0003",
+      "evidence_owner_id": "MU",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution"
+      ],
+      "coverage_obligation_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2026_Q3"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F7_MEMORY_FOUNDRY_NETWORK_STORAGE",
+      "candidate_source_family_refs": [
+        "F7_MEMORY_FOUNDRY_NETWORK_STORAGE"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q5_SUPPLY_AND_PRICE"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "supplier_reported_direction_and_capacity_state"
+      ]
+    },
+    "33752ad978b124de113ebe3a5088bee6cc8741fe402351ece34bc82f7520536e": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_11dd92d0d8daff1ad2e52127",
+      "source_record_id": "PUBLIC::DELL-EXT::E6565EB1ADB8A9D888B0",
+      "target_id": "EXTEV::6AF5B7AAC6E0975DEC26",
+      "evidence_owner_id": "ORG::05BF3EEF551722C8",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "33c0f9af6b184fc3e02d9ce60ea5a4c5ad389f91b2631a4a5b5bab233ccea5b6": {
+      "origin": "base",
+      "source_material_ref": "source_material_3585eb79bdf8eb70c45b78a9",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0011::PART_01_OF_01",
+      "target_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0011::PART_01_OF_01::CLAIM::B9940CD57529",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2026"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_55c164b0329172198456f848",
+      "source_record_id": "PUBLIC::DELL-EXT::329F1654BF36A1B63B37",
+      "target_id": "EXTEV::6853D25430B2922CBDDE",
+      "evidence_owner_id": "ORG::E1BF978301A42974",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "item_level_family_ambiguity_owner_review_required",
+      "source_family_ref": null,
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE",
+        "F3_DELL_PRODUCT_SUPPORT",
+        "F5_PUBLIC_PROCUREMENT"
+      ],
+      "route_relation": "unresolved",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": null,
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority",
+        "product_configuration_and_integration_state",
+        "transaction_observation_not_company_total"
+      ]
+    },
+    "3610185a120188dcb02376a61871fff20281aa80da84339ea5e76da6c4f57310": {
+      "origin": "base",
+      "source_material_ref": "source_material_238177cb64395cb034d81d3c",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+      "target_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02::CLAIM::E039B3586B5E",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "counterevidence_and_what_would_change"
+      ],
+      "coverage_obligation_ids": [
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [
+        "FY2026"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "3a9fef07622a9dec3005c91cfd60083291fcec012eb95fe152ba87417ed2cf6a": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_2c5d9d50a006ea7267987c2f",
+      "source_record_id": "PUBLIC::DELL-EXT::61CDF35DB7513A49372A",
+      "target_id": "EXTEV::A33349401E6B3081247A",
+      "evidence_owner_id": "NVDA",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution"
+      ],
+      "coverage_obligation_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "candidate_source_family_refs": [
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "platform_and_supplier_state"
+      ]
+    },
+    "3b054965c17526b1a94c279f7502344468179b740134041829d36d7eae4f5299": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_46c2cf0cf3066608636034e1",
+      "source_record_id": "PUBLIC::DELL-EXT::F92EE1D68F1969247C69",
+      "target_id": "EXTEV::9FA423A82E0E74DA5037",
+      "evidence_owner_id": "ORG::397A7B207441AF01",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "item_level_family_ambiguity_owner_review_required",
+      "source_family_ref": null,
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE",
+        "F3_DELL_PRODUCT_SUPPORT",
+        "F5_PUBLIC_PROCUREMENT"
+      ],
+      "route_relation": "unresolved",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": null,
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority",
+        "product_configuration_and_integration_state",
+        "transaction_observation_not_company_total"
+      ]
+    },
+    "3d587ea3fc5796810b049409816308f729da70a0b737b6f711d792fe92a80b2e": {
+      "origin": "overlay",
+      "source_material_ref": "source_material_b34c6fb8f0bbeec4c27229e7",
+      "source_record_id": "SEC::DELL::0001571996-26-000039::EXHIBIT991EARNINGS8KQ2FY27.HTM::PROP::FY27_GUIDANCE",
+      "target_id": "DELL_FY27_UPDATED_GUIDANCE",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "management_outlook"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q2_DEMAND_QUALITY"
+      ],
+      "period_refs": [
+        "FY2027_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q2_DEMAND_QUALITY"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "44d1cf57421bacc087f1f88133d88b31e3e09c5189541d6bd832663efd7524d0": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_6ac2142e62c9de3d8884a680",
+      "source_record_id": "PUBLIC::DELL-EXT::5B5813808F5A1F5DB246",
+      "target_id": "EXTEV::6948041D023BD689E04D",
+      "evidence_owner_id": "ORG::13AAFF874F67F30C",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality",
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "49d4484833075d9f60044a889ba79ec250392f5fb05c248a8b49ed7152bc20b4": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_052958ae41c90bfda0644d2b",
+      "source_record_id": "PUBLIC::DELL-EXT::D16CACF50B768E445DEB",
+      "target_id": "EXTEV::227FF1623D40FE536298",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality",
+        "relationship_attribution"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F3_DELL_PRODUCT_SUPPORT",
+      "candidate_source_family_refs": [
+        "F3_DELL_PRODUCT_SUPPORT"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q4_ARCHITECTURE_RAMP"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "product_configuration_and_integration_state"
+      ]
+    },
+    "4d8ba7a500fa4bc6a43cc0cdfa5102e9899cdb5b0e1a6c1e2af1cb3da3cdbd36": {
+      "origin": "base",
+      "source_material_ref": "source_material_cd85b218b0a957ff588d1927",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "operating_performance",
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q3_UNITS_ASP_PVM"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "5177949adb6f1877362bc84a21d7d8872e8ac2038d71b54f26fd2c08bb51aedf": {
+      "origin": "base",
+      "source_material_ref": "source_material_f377820d87e8beba3b128f35",
+      "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_04_OF_07",
+      "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_04_OF_07_CLAIM_D4FE9E73",
+      "evidence_owner_id": "NVDA",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "counterevidence_and_what_would_change",
+        "regulatory_policy_exposure"
+      ],
+      "coverage_obligation_ids": [
+        "Q7_EXPORT_CONTROL_CHINA",
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [
+        "FY2026_Q3"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "candidate_source_family_refs": [
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q7_EXPORT_CONTROL_CHINA"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "platform_and_supplier_state"
+      ]
+    },
+    "5aff07f2b1031571eba4fe36e797075db2b59e9bb7ef79d8b549020f46cd9e92": {
+      "origin": "base",
+      "source_material_ref": "source_material_2b3853fb67e0be4edb13152d",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02",
+      "target_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02::CLAIM::F79E765753F3",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2026"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "5cf08752a6c491a2cf952f7cf4e68dc12681c9d3fc66761cf7bade4c8c6f655f": {
+      "origin": "base",
+      "source_material_ref": "source_material_9acaad9d0f0709e4f065ab8d",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0014::CHUNK_0001",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0014::CHUNK_0001",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "cash_conversion_balance_sheet"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "60fbf79244728c3d975c4ac50ceb74b1b907f120e147444b133b2e9a364d08bb": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_4c5688e27eb4814fb425f38b",
+      "source_record_id": "PUBLIC::DELL-EXT::406EF0361C607E4A632D",
+      "target_id": "EXTEV::25FD2DBD7FB7A76533D5",
+      "evidence_owner_id": "NVDA",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution",
+        "counterevidence_and_what_would_change"
+      ],
+      "coverage_obligation_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND",
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "candidate_source_family_refs": [
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "platform_and_supplier_state"
+      ]
+    },
+    "634ea66c659a2fba273b1477181239b267ada36f9f23a125ae5263711288a74b": {
+      "origin": "base",
+      "source_material_ref": "source_material_73aa40d18ef2834d1cf54c8a",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0007::CHUNK_0001",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0007::CHUNK_0001",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "cash_conversion_balance_sheet"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "64962ffafede52b5f618c532cd7116b462782e6b0b19637d61d5b2f474e0e4f0": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_a7ec15d4d1c0a28940352c65",
+      "source_record_id": "PUBLIC::DELL-EXT::84FD23E65363A195C4C6",
+      "target_id": "EXTEV::17DD62A9F38610E9D684",
+      "evidence_owner_id": "ORG::13AAFF874F67F30C",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "6510fd72a7c6a071848f4a12986fd9e95d925d33cb547483f0c82fa02c389fa1": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_b43b55dc4d97ef1f95c4af6a",
+      "source_record_id": "PUBLIC::DELL-EXT::E6565EB1ADB8A9D888B0",
+      "target_id": "EXTEV::20A7FAC0684DD44D39FC",
+      "evidence_owner_id": "ORG::05BF3EEF551722C8",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "68d6caead022e00844ef33189907e46cd3546b7018e098cff5bafe8cf97d1eb5": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_448d2352797e12691f570cc4",
+      "source_record_id": "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC",
+      "target_id": "EXTEV::927C4584290AF3DD2ECA",
+      "evidence_owner_id": "ORG::13AAFF874F67F30C",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "6fd51da3884fd539ce87e01000ae14deb49475f9f7d2f6c736e5904ad490089f": {
+      "origin": "overlay",
+      "source_material_ref": "source_material_603180c5bcfe8068fb83bcc1",
+      "source_record_id": "SEC::DELL::0001571996-26-000039::EXHIBIT991EARNINGS8KQ2FY27.HTM::PROP::CSG_SEGMENT",
+      "target_id": "DELL_Q2FY27_CSG_REVENUE_MIX",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "operating_performance"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [
+        "FY2027_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "7304ae15ab5660573cc4d85536cc7720b701cf242b240c87ebf6dc297811ff7b": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_459a3d8c15b409570890211f",
+      "source_record_id": "PUBLIC::DELL-EXT::2184F13EB685F627C757",
+      "target_id": "EXTEV::2DEA13A6A24E9491E300",
+      "evidence_owner_id": "NVDA",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "relationship_attribution"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "candidate_source_family_refs": [
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "platform_and_supplier_state"
+      ]
+    },
+    "7bbdc8b2799c12c824268c2f9f9ef45ff506587cebec3815b8f42f6fdbb03de6": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_1ccdcc84c6c40b6bbcd755cc",
+      "source_record_id": "PUBLIC::DELL-EXT::5119B3A844B5141C6BC0",
+      "target_id": "EXTEV::0D41E6668218984B3A53",
+      "evidence_owner_id": "ORG::13AAFF874F67F30C",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality",
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "7eeb3b3b847732fe61e60eff3e7d9af7a18428f0eb7cc942ccba334046ec8a22": {
+      "origin": "base",
+      "source_material_ref": "source_material_c4e05a2fc6ca745f58084bcf",
+      "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "target_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6",
+      "evidence_owner_id": "MSFT",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality",
+        "relationship_attribution"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2026_Q3"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F4_CUSTOMER_CAPEX_DEPLOYMENT",
+      "candidate_source_family_refs": [
+        "F4_CUSTOMER_CAPEX_DEPLOYMENT"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "industry_demand_context_or_named_customer_relationship"
+      ]
+    },
+    "7f2b9ca12aea63dcdba77f8fed257b31c9f8d6c8457d04352147ce990d55cb7a": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_b13cbb0f1132e51203433827",
+      "source_record_id": "PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6",
+      "target_id": "EXTEV::1FA819B9E85C27EFCF8F",
+      "evidence_owner_id": "ORG::88D1082A31CB2777",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F5_PUBLIC_PROCUREMENT",
+      "candidate_source_family_refs": [
+        "F5_PUBLIC_PROCUREMENT"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "transaction_observation_not_company_total"
+      ]
+    },
+    "802b4425203bd0e58b5afe545e4f55734eb17ca8f9b5e1c0bc7293e90b0b2ff0": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_1d84518063aa25b1fcb67ffa",
+      "source_record_id": "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC",
+      "target_id": "EXTEV::EB4155663E048CE27907",
+      "evidence_owner_id": "ORG::13AAFF874F67F30C",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_515b930b6a1ce43afea350e8",
+      "source_record_id": "PUBLIC::DELL-EXT::329F1654BF36A1B63B37",
+      "target_id": "EXTEV::A42D799F558FC8AE4B81",
+      "evidence_owner_id": "ORG::E1BF978301A42974",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "item_level_family_ambiguity_owner_review_required",
+      "source_family_ref": null,
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE",
+        "F3_DELL_PRODUCT_SUPPORT",
+        "F5_PUBLIC_PROCUREMENT"
+      ],
+      "route_relation": "unresolved",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": null,
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority",
+        "product_configuration_and_integration_state",
+        "transaction_observation_not_company_total"
+      ]
+    },
+    "9781bac4d80cf528b768529ebf2a4764ce1eb5eb08348965ad52ad2193e760a1": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_a688c05f1426a9648ad22eca",
+      "source_record_id": "PUBLIC::DELL-EXT::27864DA671E92BAB944E",
+      "target_id": "EXTEV::536692C8860A60EF0B80",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F3_DELL_PRODUCT_SUPPORT",
+      "candidate_source_family_refs": [
+        "F3_DELL_PRODUCT_SUPPORT"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q3_UNITS_ASP_PVM"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "product_configuration_and_integration_state"
+      ]
+    },
+    "9b05477354785b107d379ae69551304da3d09bcd5ceb56979d4fe621589a26a5": {
+      "origin": "base",
+      "source_material_ref": "source_material_ffdbfdf055973e3a9c6f3f97",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+      "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572",
+      "evidence_owner_id": "NVDA",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution"
+      ],
+      "coverage_obligation_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "candidate_source_family_refs": [
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "platform_and_supplier_state"
+      ]
+    },
+    "a2fbead343c088251ebc1255fd460711f296809abe0db659c6fdefd365a29093": {
+      "origin": "base",
+      "source_material_ref": "source_material_e4865acdff23445a25085160",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02",
+      "target_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02::CLAIM::0D3285619254",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2026"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "a35dc0a2d0492238478869c5af6f41d7114d96ef2dba0502291b0b96c031e2b1": {
+      "origin": "base",
+      "source_material_ref": "source_material_9ba6ea00e4ed9deb198330cc",
+      "source_record_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_003",
+      "target_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_003::CLAIM::9BA6EA00E4ED",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution",
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q5_SUPPLY_AND_PRICE"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "a5abaee8fc183fca506fadb5897e65c8b0efc1ae44bf89e2aa2233a40e06fb86": {
+      "origin": "overlay",
+      "source_material_ref": "source_material_14a36a38b4b5e1cdf6ccfdcb",
+      "source_record_id": "SEC::DELL::0001571996-26-000039::EXHIBIT991EARNINGS8KQ2FY27.HTM::PROP::ISG_SEGMENT",
+      "target_id": "DELL_Q2FY27_ISG_REVENUE_MIX_OPERATING_INCOME",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "operating_performance"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [
+        "FY2027_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6": {
+      "origin": "base",
+      "source_material_ref": "source_material_e5c7bff7d265bac1c48b8850",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+      "target_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02::CLAIM::C448EE0299BD",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "cash_conversion_balance_sheet",
+        "counterevidence_and_what_would_change",
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND",
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [
+        "FY2026"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1": {
+      "origin": "base",
+      "source_material_ref": "source_material_9e2c74445e9ecf30a2318c0e",
+      "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05",
+      "target_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05_CLAIM_CA0D3EC4",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [
+        "FY2026_Q3"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "b212292033ca19185d7bb860ebf70dfe99034e32af8fd17a57ec338734159e29": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_ed08b5203e82bb026a8243dc",
+      "source_record_id": "PUBLIC::DELL-EXT::AF72C71D3B4A92ECCA7E",
+      "target_id": "EXTEV::EBFBCBBF7D1A5BEE3839",
+      "evidence_owner_id": "ORG::13AAFF874F67F30C",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution",
+        "relationship_attribution"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_940826b8c0390d3251d6cc14",
+      "source_record_id": "PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6",
+      "target_id": "EXTEV::FC03781907530AD27EB6",
+      "evidence_owner_id": "ORG::88D1082A31CB2777",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality",
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F5_PUBLIC_PROCUREMENT",
+      "candidate_source_family_refs": [
+        "F5_PUBLIC_PROCUREMENT"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "transaction_observation_not_company_total"
+      ]
+    },
+    "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1": {
+      "origin": "base",
+      "source_material_ref": "source_material_106e3ced4229ac07ef31aeff",
+      "source_record_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004",
+      "target_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004::CLAIM::106E3CED4229",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q3_UNITS_ASP_PVM"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "b9e41b6799ac41ee3440bdfe2124e27f8e4092b6398b10d894c61a9c8e854d21": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_1919f367aaf9e8a552d7236f",
+      "source_record_id": "PUBLIC::DELL-EXT::518D98AA635617191E58",
+      "target_id": "EXTEV::31D6F3D9E4C32A846E34",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "relationship_attribution"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "item_level_family_ambiguity_owner_review_required",
+      "source_family_ref": null,
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS",
+        "F3_DELL_PRODUCT_SUPPORT",
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "unresolved",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": null,
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics",
+        "platform_and_supplier_state",
+        "product_configuration_and_integration_state"
+      ]
+    },
+    "bcb7ba6a7ca507f8f3cecf44a5b77164c82852518a62768739e14f7fc52b4183": {
+      "origin": "base",
+      "source_material_ref": "source_material_8e6715f12aea129df3f96c67",
+      "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001",
+      "target_id": "DELL_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001_CLAIM_C85237AB",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2026_Q3"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "c658e8fc4d456bb686913934d49e302a48bfa6bd87380c9760f39a47c3c18a8a": {
+      "origin": "base",
+      "source_material_ref": "source_material_757a81c73a56da74cb171377",
+      "source_record_id": "CURRENT_DOC::TSM::EARNINGS_CALL_TRANSCRIPT::FD1E9D9F5068C82A2227::PAGE_020",
+      "target_id": "CURRENT_DOC::TSM::EARNINGS_CALL_TRANSCRIPT::FD1E9D9F5068C82A2227::PAGE_020::CLAIM::6EB5C7A0BDF7",
+      "evidence_owner_id": "TSM",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution"
+      ],
+      "coverage_obligation_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "CY2026_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F7_MEMORY_FOUNDRY_NETWORK_STORAGE",
+      "candidate_source_family_refs": [
+        "F7_MEMORY_FOUNDRY_NETWORK_STORAGE"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q5_SUPPLY_AND_PRICE"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "supplier_reported_direction_and_capacity_state"
+      ]
+    },
+    "c7b7425c2fa43dd832a18d7d3ffc842500dc3b85b03c61599acd103d17ef35b5": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_fdda19280ad50516af236ec5",
+      "source_record_id": "PUBLIC::DELL-EXT::AE1FA8596571EE7867A7",
+      "target_id": "EXTEV::A6AC806E963B861C7DEC",
+      "evidence_owner_id": "ORG::8FDBEED39DAE342A",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "counterevidence_and_what_would_change",
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL",
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "cc71bf54fbbbd52b48f651bd0d8ab0892cd5e60d720902cd1502b42303fa7c04": {
+      "origin": "base",
+      "source_material_ref": "source_material_c29ab488a4a74fbc829bb4a5",
+      "source_record_id": "SUPP::DELL::000157199626000008::CHUNK_0037",
+      "target_id": "SUPP::DELL::000157199626000008::CHUNK_0037",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution"
+      ],
+      "coverage_obligation_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2026"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "d0b73d9640d6d9f267d3c8eb8475a14b431f5de32933dce1d2b0bf5dac6d6473": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_aab0b71697249beeb2fae22e",
+      "source_record_id": "PUBLIC::DELL-EXT::518D98AA635617191E58",
+      "target_id": "EXTEV::9C9443C9ECD1AF7DC29B",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "relationship_attribution"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "item_level_family_ambiguity_owner_review_required",
+      "source_family_ref": null,
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS",
+        "F3_DELL_PRODUCT_SUPPORT",
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "unresolved",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": null,
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics",
+        "platform_and_supplier_state",
+        "product_configuration_and_integration_state"
+      ]
+    },
+    "d7c8de3c524043378a879e3a71f11d0e638d6adeacc607bf508112be2aec4cc4": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_ad7b7841891d8b2da0273a08",
+      "source_record_id": "PUBLIC::DELL-EXT::6D523C85E214E7A4E90B",
+      "target_id": "EXTEV::EE067699816FEB3928A1",
+      "evidence_owner_id": "ORG::13AAFF874F67F30C",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "counterevidence_and_what_would_change"
+      ],
+      "coverage_obligation_ids": [
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "d7d6d306d8eea620cfb1d7ed68c552d35d69db8ea35b22c6df28bd1d7be8a427": {
+      "origin": "base",
+      "source_material_ref": "source_material_ba808eff2eb5838ec311bd70",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0003::PART_06_OF_09",
+      "target_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0003::PART_06_OF_09::CLAIM::149D366D355D",
+      "evidence_owner_id": "NVDA",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "counterevidence_and_what_would_change"
+      ],
+      "coverage_obligation_ids": [
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "candidate_source_family_refs": [
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "platform_and_supplier_state"
+      ]
+    },
+    "dad905c16180b56029f884cc2728c565867a11ab11fe4d4f5893a76183a5c642": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_89a8eed1aadbe0d4e44a248f",
+      "source_record_id": "PUBLIC::DELL-EXT::969E64FF00BED8028287",
+      "target_id": "EXTEV::8D16106237234D339E3B",
+      "evidence_owner_id": "ORG::1663EE18A9AFB7C9",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "dc17d8e8532294533d9d9e1bf981694c4a3290874dd51a2869e17639d521d7b1": {
+      "origin": "overlay",
+      "source_material_ref": "source_material_89b727134db48cea84e113de",
+      "source_record_id": "SEC::DELL::0001571996-26-000039::EXHIBIT991EARNINGS8KQ2FY27.HTM::PROP::CURRENT_EVENT",
+      "target_id": "DELL_Q2FY27_EVENT_AND_REPORTING_SCOPE",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "operating_performance"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [
+        "FY2027_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "df8403b5692d28dfcdb7eb90e37b2831ac7848f40cd66accaece671569856e85": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_29534847c2ceb0d050c44e19",
+      "source_record_id": "PUBLIC::DELL-EXT::386573F0F307ED62756A",
+      "target_id": "EXTEV::7DA51C1B8AC054C53474",
+      "evidence_owner_id": "ORG::1663EE18A9AFB7C9",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "counterevidence_and_what_would_change",
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q3_UNITS_ASP_PVM",
+        "Q8_COMPETITION_VALUE_POOL",
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q9_COUNTEREVIDENCE_WWC"
+      ],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    },
+    "e406cfab513c214ccdbc5ada82db3e4b5a0641e1561f2d46daf639f67e2e01ed": {
+      "origin": "base",
+      "source_material_ref": "source_material_138e80a3b649de4d277cc594",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0015::PART_01_OF_01",
+      "target_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0015::PART_01_OF_01::CLAIM::8A70BCEDE0CE",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "cash_conversion_balance_sheet"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "period_refs": [
+        "FY2026"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "e56d04955adef83b83bbbfda0bb36ed3967f869d34f9473849777a52d40f5305": {
+      "origin": "base",
+      "source_material_ref": "source_material_13e051cfba20ea450890394b",
+      "source_record_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_003",
+      "target_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_003::CLAIM::13E051CFBA20",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality",
+        "pricing_mix_value_capture"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [
+        "FY2027_Q1"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "ec9862cef0139409582a1521bc92d91f11a651278e2a99bc7a223d3d737fa414": {
+      "origin": "base",
+      "source_material_ref": "source_material_b459712467eca12b233268ee",
+      "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07",
+      "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07_CLAIM_E759C368",
+      "evidence_owner_id": "NVDA",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "regulatory_policy_exposure"
+      ],
+      "coverage_obligation_ids": [
+        "Q7_EXPORT_CONTROL_CHINA"
+      ],
+      "period_refs": [
+        "FY2026_Q3"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "candidate_source_family_refs": [
+        "F6_COMPUTE_PLATFORM_SUPPLIERS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q7_EXPORT_CONTROL_CHINA"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "platform_and_supplier_state"
+      ]
+    },
+    "ee56307f03b3dae5aeadcf43529eca3139bb556cda578d6f7fc3dd7e0b48d909": {
+      "origin": "overlay",
+      "source_material_ref": "source_material_0ad33272282677da6527b6bc",
+      "source_record_id": "SEC::DELL::0001571996-26-000039::EXHIBIT991EARNINGS8KQ2FY27.HTM::PROP::AI_ORDER_REVENUE_BACKLOG",
+      "target_id": "DELL_Q2FY27_AI_SERVER_ORDER_REVENUE_BACKLOG",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2027_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "f103d0f730e0d58f4832def40d4e856659b0071c55084b2d0835ae54799403b4": {
+      "origin": "base",
+      "source_material_ref": "source_material_56c89c00e60d63b194c0e14a",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02",
+      "target_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0003::PART_02_OF_02::CLAIM::5F91CBC63350",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "FY2026"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F1_SEC_ISSUER_FACTS",
+      "candidate_source_family_refs": [
+        "F1_SEC_ISSUER_FACTS"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_numeric_and_filing_identity"
+      ]
+    },
+    "f18d8863b320f5424e37d2f6313e453498bac85dbb53e2675e88d9641c2c1afe": {
+      "origin": "base",
+      "source_material_ref": "source_material_55a95e43e4c922188d04a040",
+      "source_record_id": "CURRENT_DOC::TSM::EARNINGS_CALL_TRANSCRIPT::FD1E9D9F5068C82A2227::PAGE_020",
+      "target_id": "CURRENT_DOC::TSM::EARNINGS_CALL_TRANSCRIPT::FD1E9D9F5068C82A2227::PAGE_020::CLAIM::AB694F72DAF2",
+      "evidence_owner_id": "TSM",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution"
+      ],
+      "coverage_obligation_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "CY2026_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F7_MEMORY_FOUNDRY_NETWORK_STORAGE",
+      "candidate_source_family_refs": [
+        "F7_MEMORY_FOUNDRY_NETWORK_STORAGE"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q5_SUPPLY_AND_PRICE"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "supplier_reported_direction_and_capacity_state"
+      ]
+    },
+    "f1d99400c1e8471b1343272abafb3f7eb573a8d55c8f4d2326a1d9298cd97041": {
+      "origin": "base",
+      "source_material_ref": "source_material_10d58a3715cbec4d8fbb9932",
+      "source_record_id": "CURRENT_DOC::TSM::EARNINGS_CALL_TRANSCRIPT::FD1E9D9F5068C82A2227::PAGE_010",
+      "target_id": "CURRENT_DOC::TSM::EARNINGS_CALL_TRANSCRIPT::FD1E9D9F5068C82A2227::PAGE_010::CLAIM::DFFC25BED3B5",
+      "evidence_owner_id": "TSM",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "capacity_inputs_execution"
+      ],
+      "coverage_obligation_ids": [
+        "Q4_ARCHITECTURE_RAMP",
+        "Q5_SUPPLY_AND_PRICE",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [
+        "CY2026_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F7_MEMORY_FOUNDRY_NETWORK_STORAGE",
+      "candidate_source_family_refs": [
+        "F7_MEMORY_FOUNDRY_NETWORK_STORAGE"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q5_SUPPLY_AND_PRICE"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "supplier_reported_direction_and_capacity_state"
+      ]
+    },
+    "f35abd7881365074e96e62ce73e6ba0702b19ea74b2ea4b634a0f0e89fa15279": {
+      "origin": "overlay",
+      "source_material_ref": "source_material_98530f81cee5a46189b92db1",
+      "source_record_id": "SEC::DELL::0001571996-26-000039::EXHIBIT991EARNINGS8KQ2FY27.HTM::PROP::COMPANY_SUMMARY",
+      "target_id": "DELL_Q2FY27_COMPANY_REVENUE_EPS_CFO",
+      "evidence_owner_id": "DELL",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "operating_performance"
+      ],
+      "coverage_obligation_ids": [
+        "Q1_ISSUER_TRUTH",
+        "Q8_COMPETITION_VALUE_POOL"
+      ],
+      "period_refs": [
+        "FY2027_Q2"
+      ],
+      "provenance_mapping_state": "mechanical_metadata_mapping",
+      "source_family_ref": "F2_DELL_IR_EARNINGS",
+      "candidate_source_family_refs": [
+        "F2_DELL_IR_EARNINGS"
+      ],
+      "route_relation": "minimum_route_eligible",
+      "proposed_minimum_route_eligible_branch_ids": [
+        "Q1_ISSUER_TRUTH"
+      ],
+      "authority_tier_candidate": "primary",
+      "authority_scope_refs": [
+        "issuer_narrative_and_company_defined_metrics"
+      ]
+    },
+    "f78a81e3a2486126f5961f2446b348e7eeecb5eec84b00ecd3d3726b85ea3e66": {
+      "origin": "base",
+      "source_material_ref": "source_material_external_df75e9e1ca7c3a47dab21ce0",
+      "source_record_id": "PUBLIC::DELL-EXT::994E5EC6E65A944CC4B2",
+      "target_id": "EXTEV::5BB03A2575CD0E5A0CE1",
+      "evidence_owner_id": "ORG::05BF3EEF551722C8",
+      "research_subject_ids": [
+        "DELL"
+      ],
+      "topic_refs": [
+        "demand_volume_quality"
+      ],
+      "coverage_obligation_ids": [
+        "Q2_DEMAND_QUALITY",
+        "Q3_UNITS_ASP_PVM",
+        "Q6_MODEL_COMPUTE_DEMAND"
+      ],
+      "period_refs": [],
+      "provenance_mapping_state": "f12_independent_source_rule_candidate_owner_review_required",
+      "source_family_ref": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "candidate_source_family_refs": [
+        "F12_INDEPENDENT_COUNTEREVIDENCE"
+      ],
+      "route_relation": "supplemental_only",
+      "proposed_minimum_route_eligible_branch_ids": [],
+      "authority_tier_candidate": "reviewed",
+      "authority_scope_refs": [
+        "candidate_or_independent_context_not_numeric_authority"
+      ]
+    }
+  },
+  "enrichment_digest": "365a65744a58d03092dd16aedffcc0e78df9a20a8ed63c546529afa1a04e78e3"
+}

@@ -1,0 +1,520 @@
+{
+  "schema_version": "fin_ia_dell_source_family_physical_route_catalog_v1_0",
+  "status": "owner_review_candidate_answer_free_not_execution_authority",
+  "recorded_at": "2026-09-03T10:31:00+08:00",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "case_key": "DELL",
+  "research_as_of": "2026-09-02T00:00:00Z",
+  "purpose": "Bind reviewed semantic source families and branch eligibility to the exact current local and external physical route inventory without carrying source text, research answers, or numeric facts.",
+  "authority": {
+    "answer_free": true,
+    "owner_review_required": true,
+    "execution_authority": false,
+    "model_or_provider_calls_authorized": false,
+    "network_calls_authorized": false,
+    "candidate_is_not_evidence": true,
+    "route_registration_is_not_branch_coverage": true,
+    "route_registration_is_not_source_family_satisfaction": true,
+    "reviewed_topic_mapping_is_selector_metadata_only": true,
+    "numeric_fact_authority": false,
+    "evidence_admission_authority": false,
+    "public_gap_authority": false
+  },
+  "digest_contract": {
+    "algorithm": "sha256",
+    "canonicalization": "utf8_json_ensure_ascii_false_sort_keys_true_separators_comma_colon",
+    "self_digest_field": "catalog_digest",
+    "self_digest_field_excluded_from_digest": true
+  },
+  "input_bindings": {
+    "foundation": {
+      "ref": "configs/research/fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json",
+      "sha256": "bf214a085916c296428f51e77c8518f2905b5d451290535fea54040fb2d96d47",
+      "schema_version": "fin_ia_dell_reference_vertical_foundation_v1_0",
+      "expected_question_branch_count": 9,
+      "expected_source_family_count": 11
+    },
+    "structured_local_nodes": {
+      "ref": "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/rag_mature_stack/retrieval_qualification/dell_rag_full_stack_preview_attempt_20260902_03/retrieval_nodes.jsonl",
+      "sha256": "f7fbf9f43a68933bad52146c3a8aa3c9a1b52bba81e4e804c2b05a0aff9d0817",
+      "schema_version": "fin_ia_dell_structured_rag_node_v1_0",
+      "attempt_id": "dell_rag_full_stack_preview_attempt_20260902_03",
+      "expected_physical_node_count": 1025,
+      "expected_searchable_leaf_count": 890,
+      "expected_parent_section_count": 135,
+      "expected_route_count": 20,
+      "authority_state": "engineering_preview_retrieval_candidate_only"
+    },
+    "external_candidate_manifest": {
+      "ref": "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/external_exact_url_qualification/dell_external_exact_url_zero_model_20260902_r12/manifest.json",
+      "sha256": "db7eae9aaa8108faadbe7ff07404dd25414e0191b7f62af0c7a42b85a0938b94",
+      "schema_version": "fin_ia_dell_external_exact_url_qualification_manifest_v1_0",
+      "manifest_digest": "c12d47a7a6dc9c6b5a4134c70e9916753e25d00ca494ee117e8147511f7a79df",
+      "attempt_id": "dell_external_exact_url_zero_model_20260902_r12",
+      "expected_route_count": 12,
+      "authority_state": "captured_external_candidate_only"
+    },
+    "reviewed_evidence_topic_inventory": {
+      "base_pack_ref": "D:/FIN_Insight_Agent/data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+      "base_pack_sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+      "base_pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98",
+      "base_item_count": 55,
+      "overlay_ref": "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/evidence_overlay/attempts/20260902T051005+0800-dell-fy27q2-sec-ex99-review-a01/reviewed-evidence-case-projection.json",
+      "overlay_sha256": "1479e49f0cde7166fe6474a74b666dfb646b31a5291f1317689aaa6bc8391eb9",
+      "overlay_projection_digest": "ecee0e2f0d3d602b10093f67861100504e5ba264b47d5d2019e23bd82fa1aff5",
+      "overlay_item_count": 6,
+      "composite_projection_digest": "c91d5c588f2ed2142c0bb7f079614f758cb8a92fc9149126d418cdbbafa87e7d",
+      "composite_item_count": 61,
+      "topic_namespace": "reviewed_evidence.slot_bindings.slot_id"
+    }
+  },
+  "catalog_contract": {
+    "branch_ids_are_explicit_per_route": true,
+    "branch_ids_must_not_be_derived_only_from_foundation_family_membership": true,
+    "local_selector_identity_fields": ["route_id", "canonical_issuer_id", "source_role", "fiscal_periods"],
+    "external_selector_identity_fields": ["route_id", "canonical_issuer_id", "canonical_domain", "official_url"],
+    "domain_is_not_a_unique_entity_key": true,
+    "empty_fiscal_periods_means_not_period_bound": true,
+    "all_branch_and_family_mappings_are_eligibility_only": true,
+    "full_corpus_selector_forbidden": true,
+    "content_or_excerpt_fields_forbidden": true,
+    "numeric_value_fields_forbidden": true
+  },
+  "catalog_counts": {
+    "local_route_count": 20,
+    "external_route_count": 12,
+    "total_route_count": 32,
+    "local_physical_node_count": 1025,
+    "local_searchable_leaf_count": 890,
+    "reviewed_topic_count": 10,
+    "entity_alias_record_count": 22
+  },
+  "local_routes": [
+    {
+      "route_id": "amazon_2026_q2_release",
+      "canonical_issuer_id": "AMAZON",
+      "canonical_domain": "ir.aboutamazon.com",
+      "source_role": "hyperscaler_demand_primary",
+      "source_family_refs": ["F4_CUSTOMER_CAPEX_DEPLOYMENT"],
+      "branch_ids": ["Q2_DEMAND_QUALITY", "Q6_MODEL_COMPUTE_DEMAND"],
+      "document_kind": "html",
+      "fiscal_periods": ["CY2026_Q2"],
+      "physical_node_count": 21,
+      "searchable_leaf_count": 20
+    },
+    {
+      "route_id": "anthropic_fable_5",
+      "canonical_issuer_id": "ANTHROPIC",
+      "canonical_domain": "www.anthropic.com",
+      "source_role": "model_provider_primary",
+      "source_family_refs": ["F9_MODEL_COMPUTE_AND_BENCHMARKS"],
+      "branch_ids": ["Q6_MODEL_COMPUTE_DEMAND"],
+      "document_kind": "html",
+      "fiscal_periods": [],
+      "physical_node_count": 25,
+      "searchable_leaf_count": 15
+    },
+    {
+      "route_id": "bis_2026_china_semiconductor_policy",
+      "canonical_issuer_id": "US_BIS",
+      "canonical_domain": "media.bis.gov",
+      "source_role": "regulator_primary",
+      "source_family_refs": ["F10_EXPORT_CONTROL_AND_POLICY"],
+      "branch_ids": ["Q7_EXPORT_CONTROL_CHINA"],
+      "document_kind": "pdf",
+      "fiscal_periods": [],
+      "physical_node_count": 2,
+      "searchable_leaf_count": 1
+    },
+    {
+      "route_id": "dell_fy2026_10k_narrative",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "www.sec.gov",
+      "source_role": "issuer_filing_narrative",
+      "source_family_refs": ["F1_SEC_ISSUER_FACTS"],
+      "branch_ids": ["Q1_ISSUER_TRUTH", "Q7_EXPORT_CONTROL_CHINA"],
+      "document_kind": "html",
+      "fiscal_periods": ["FY2026"],
+      "physical_node_count": 377,
+      "searchable_leaf_count": 354
+    },
+    {
+      "route_id": "dell_fy2027_q1_10q_narrative",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "www.sec.gov",
+      "source_role": "issuer_filing_narrative",
+      "source_family_refs": ["F1_SEC_ISSUER_FACTS"],
+      "branch_ids": ["Q1_ISSUER_TRUTH", "Q7_EXPORT_CONTROL_CHINA"],
+      "document_kind": "html",
+      "fiscal_periods": ["FY2027_Q1"],
+      "physical_node_count": 197,
+      "searchable_leaf_count": 188
+    },
+    {
+      "route_id": "dell_fy2027_q1_release",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "www.sec.gov",
+      "source_role": "issuer_management_disclosure",
+      "source_family_refs": ["F2_DELL_IR_EARNINGS"],
+      "branch_ids": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM", "Q5_SUPPLY_AND_PRICE"],
+      "document_kind": "html",
+      "fiscal_periods": ["FY2027_Q1"],
+      "physical_node_count": 32,
+      "searchable_leaf_count": 31
+    },
+    {
+      "route_id": "dell_fy2027_q1_transcript",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "investors.delltechnologies.com",
+      "source_role": "issuer_management_disclosure",
+      "source_family_refs": ["F2_DELL_IR_EARNINGS"],
+      "branch_ids": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM", "Q5_SUPPLY_AND_PRICE"],
+      "document_kind": "pdf",
+      "fiscal_periods": ["FY2027_Q1"],
+      "physical_node_count": 50,
+      "searchable_leaf_count": 36
+    },
+    {
+      "route_id": "dell_fy2027_q2_sec_exhibit_99_1",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "www.sec.gov",
+      "source_role": "issuer_management_disclosure",
+      "source_family_refs": ["F2_DELL_IR_EARNINGS"],
+      "branch_ids": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM", "Q5_SUPPLY_AND_PRICE"],
+      "document_kind": "html",
+      "fiscal_periods": ["FY2027_Q2"],
+      "physical_node_count": 33,
+      "searchable_leaf_count": 32
+    },
+    {
+      "route_id": "dell_mistral_named_deployment",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "www.dell.com",
+      "source_role": "named_deployment_primary",
+      "source_family_refs": ["F3_DELL_PRODUCT_SUPPORT"],
+      "branch_ids": ["Q4_ARCHITECTURE_RAMP"],
+      "document_kind": "html",
+      "fiscal_periods": [],
+      "physical_node_count": 5,
+      "searchable_leaf_count": 3
+    },
+    {
+      "route_id": "dell_nxtgen_named_deployment",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "www.dell.com",
+      "source_role": "named_deployment_primary",
+      "source_family_refs": ["F3_DELL_PRODUCT_SUPPORT"],
+      "branch_ids": ["Q4_ARCHITECTURE_RAMP"],
+      "document_kind": "html",
+      "fiscal_periods": [],
+      "physical_node_count": 6,
+      "searchable_leaf_count": 4
+    },
+    {
+      "route_id": "hpe_fy2026_q2_earnings_press_release",
+      "canonical_issuer_id": "HPE",
+      "canonical_domain": "investors.hpe.com",
+      "source_role": "peer_financial_disclosure",
+      "source_family_refs": ["F8_OEM_COMPETITION"],
+      "branch_ids": ["Q8_COMPETITION_VALUE_POOL"],
+      "document_kind": "pdf",
+      "fiscal_periods": ["FY2026_Q2"],
+      "physical_node_count": 57,
+      "searchable_leaf_count": 34
+    },
+    {
+      "route_id": "hpe_fy2026_q2_earnings_transcript",
+      "canonical_issuer_id": "HPE",
+      "canonical_domain": "investors.hpe.com",
+      "source_role": "peer_management_disclosure",
+      "source_family_refs": ["F8_OEM_COMPETITION"],
+      "branch_ids": ["Q8_COMPETITION_VALUE_POOL"],
+      "document_kind": "pdf",
+      "fiscal_periods": ["FY2026_Q2"],
+      "physical_node_count": 53,
+      "searchable_leaf_count": 35
+    },
+    {
+      "route_id": "meta_2026_q2_earnings_call_transcript",
+      "canonical_issuer_id": "META",
+      "canonical_domain": "s21.q4cdn.com",
+      "source_role": "hyperscaler_demand_primary",
+      "source_family_refs": ["F4_CUSTOMER_CAPEX_DEPLOYMENT"],
+      "branch_ids": ["Q2_DEMAND_QUALITY", "Q6_MODEL_COMPUTE_DEMAND"],
+      "document_kind": "pdf",
+      "fiscal_periods": ["CY2026_Q2"],
+      "physical_node_count": 62,
+      "searchable_leaf_count": 41
+    },
+    {
+      "route_id": "meta_2026_q2_sec_exhibit_99_1",
+      "canonical_issuer_id": "META",
+      "canonical_domain": "www.sec.gov",
+      "source_role": "hyperscaler_demand_primary",
+      "source_family_refs": ["F4_CUSTOMER_CAPEX_DEPLOYMENT"],
+      "branch_ids": ["Q2_DEMAND_QUALITY", "Q6_MODEL_COMPUTE_DEMAND"],
+      "document_kind": "html",
+      "fiscal_periods": ["CY2026_Q2"],
+      "physical_node_count": 14,
+      "searchable_leaf_count": 13
+    },
+    {
+      "route_id": "micron_fy2026_q3_release",
+      "canonical_issuer_id": "MICRON",
+      "canonical_domain": "investors.micron.com",
+      "source_role": "supplier_management_disclosure",
+      "source_family_refs": ["F7_MEMORY_FOUNDRY_NETWORK_STORAGE"],
+      "branch_ids": ["Q5_SUPPLY_AND_PRICE", "Q8_COMPETITION_VALUE_POOL"],
+      "document_kind": "html",
+      "fiscal_periods": ["FY2026_Q3"],
+      "physical_node_count": 24,
+      "searchable_leaf_count": 23
+    },
+    {
+      "route_id": "microsoft_fy2026_q4_call",
+      "canonical_issuer_id": "MICROSOFT",
+      "canonical_domain": "www.microsoft.com",
+      "source_role": "hyperscaler_demand_primary",
+      "source_family_refs": ["F4_CUSTOMER_CAPEX_DEPLOYMENT"],
+      "branch_ids": ["Q2_DEMAND_QUALITY", "Q6_MODEL_COMPUTE_DEMAND"],
+      "document_kind": "html",
+      "fiscal_periods": ["FY2026_Q4"],
+      "physical_node_count": 32,
+      "searchable_leaf_count": 31
+    },
+    {
+      "route_id": "mlcommons_inference_6_0",
+      "canonical_issuer_id": "MLCOMMONS",
+      "canonical_domain": "mlcommons.org",
+      "source_role": "industry_benchmark_primary",
+      "source_family_refs": ["F9_MODEL_COMPUTE_AND_BENCHMARKS"],
+      "branch_ids": ["Q6_MODEL_COMPUTE_DEMAND"],
+      "document_kind": "html",
+      "fiscal_periods": [],
+      "physical_node_count": 5,
+      "searchable_leaf_count": 4
+    },
+    {
+      "route_id": "nvidia_fy2027_q2_release",
+      "canonical_issuer_id": "NVIDIA",
+      "canonical_domain": "investor.nvidia.com",
+      "source_role": "supplier_management_disclosure",
+      "source_family_refs": ["F6_COMPUTE_PLATFORM_SUPPLIERS"],
+      "branch_ids": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND", "Q7_EXPORT_CONTROL_CHINA", "Q8_COMPETITION_VALUE_POOL"],
+      "document_kind": "html",
+      "fiscal_periods": ["FY2027_Q2"],
+      "physical_node_count": 18,
+      "searchable_leaf_count": 16
+    },
+    {
+      "route_id": "nvidia_gb300_blackwell_ultra",
+      "canonical_issuer_id": "NVIDIA",
+      "canonical_domain": "nvidianews.nvidia.com",
+      "source_role": "supplier_platform_primary",
+      "source_family_refs": ["F6_COMPUTE_PLATFORM_SUPPLIERS"],
+      "branch_ids": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND", "Q7_EXPORT_CONTROL_CHINA", "Q8_COMPETITION_VALUE_POOL"],
+      "document_kind": "html",
+      "fiscal_periods": [],
+      "physical_node_count": 4,
+      "searchable_leaf_count": 3
+    },
+    {
+      "route_id": "nvidia_vera_rubin_production",
+      "canonical_issuer_id": "NVIDIA",
+      "canonical_domain": "investor.nvidia.com",
+      "source_role": "supplier_platform_primary",
+      "source_family_refs": ["F6_COMPUTE_PLATFORM_SUPPLIERS"],
+      "branch_ids": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND", "Q7_EXPORT_CONTROL_CHINA", "Q8_COMPETITION_VALUE_POOL"],
+      "document_kind": "html",
+      "fiscal_periods": [],
+      "physical_node_count": 8,
+      "searchable_leaf_count": 6
+    }
+  ],
+  "external_routes": [
+    {
+      "route_id": "E01_OPENAI_GPT56_COMPUTE",
+      "canonical_issuer_id": "OPENAI",
+      "canonical_domain": "openai.com",
+      "source_role": "model_provider_primary",
+      "source_family_refs": ["F9_MODEL_COMPUTE_AND_BENCHMARKS"],
+      "branch_ids": ["Q6_MODEL_COMPUTE_DEMAND"],
+      "official_url": "https://openai.com/index/gpt-5-6/",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E02_TSMC_2Q26_TRANSCRIPT",
+      "canonical_issuer_id": "TSMC",
+      "canonical_domain": "investor.tsmc.com",
+      "source_role": "supplier_management_disclosure",
+      "source_family_refs": ["F7_MEMORY_FOUNDRY_NETWORK_STORAGE"],
+      "branch_ids": ["Q5_SUPPLY_AND_PRICE"],
+      "official_url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-08/3e494f0c14dd0890f897aa044415e21d93486cc4/TSMC%202Q26%20Transcript.pdf",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E03_MICRON_Q3_FY26_PREPARED_REMARKS",
+      "canonical_issuer_id": "MICRON",
+      "canonical_domain": "s25.q4cdn.com",
+      "source_role": "supplier_management_disclosure",
+      "source_family_refs": ["F7_MEMORY_FOUNDRY_NETWORK_STORAGE"],
+      "branch_ids": ["Q5_SUPPLY_AND_PRICE"],
+      "official_url": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E05_DELL_Q2_FY27_SEC_EXHIBIT",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "www.sec.gov",
+      "source_role": "issuer_management_disclosure",
+      "source_family_refs": ["F2_DELL_IR_EARNINGS"],
+      "branch_ids": ["Q1_ISSUER_TRUTH"],
+      "official_url": "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000039/exhibit991earnings8kq2fy27.htm",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E06_DELL_VOLTA_133MW_DEPLOYMENT",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "www.dell.com",
+      "source_role": "named_deployment_primary",
+      "source_family_refs": ["F4_CUSTOMER_CAPEX_DEPLOYMENT"],
+      "branch_ids": ["Q2_DEMAND_QUALITY"],
+      "official_url": "https://www.dell.com/en-us/dt/corporate/newsroom/announcements/detailpage.press-releases~~usa~2026~08~volta-selects-dell-technologies-to-help-build-next-generation-ai-factories.htm",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E07_DELL_AI_FACTORY_AVAILABILITY",
+      "canonical_issuer_id": "DELL",
+      "canonical_domain": "investors.delltechnologies.com",
+      "source_role": "issuer_product_disclosure",
+      "source_family_refs": ["F3_DELL_PRODUCT_SUPPORT"],
+      "branch_ids": ["Q3_UNITS_ASP_PVM"],
+      "official_url": "https://investors.delltechnologies.com/news-releases/news-release-details/dell-ai-factory-nvidia-delivers-proven-path-enterprise-ai-roi",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E08_NVIDIA_VERA_RUBIN_PRODUCTION",
+      "canonical_issuer_id": "NVIDIA",
+      "canonical_domain": "investor.nvidia.com",
+      "source_role": "supplier_platform_primary",
+      "source_family_refs": ["F6_COMPUTE_PLATFORM_SUPPLIERS"],
+      "branch_ids": ["Q4_ARCHITECTURE_RAMP"],
+      "official_url": "https://investor.nvidia.com/news/press-release-details/2026/NVIDIA-Vera-Rubin-Ramps-Into-Full-Production-to-Power-Agentic-AI-Factories-Worldwide/default.aspx",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E09_BIS_CHINA_LICENSE_POLICY",
+      "canonical_issuer_id": "US_BIS",
+      "canonical_domain": "media.bis.gov",
+      "source_role": "regulator_primary",
+      "source_family_refs": ["F10_EXPORT_CONTROL_AND_POLICY"],
+      "branch_ids": ["Q7_EXPORT_CONTROL_CHINA"],
+      "official_url": "https://media.bis.gov/press-release/department-commerce-revises-license-review-policy-semiconductors-exported-china",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E10_HPE_Q2_FY26_TRANSCRIPT",
+      "canonical_issuer_id": "HPE",
+      "canonical_domain": "investors.hpe.com",
+      "source_role": "peer_management_disclosure",
+      "source_family_refs": ["F8_OEM_COMPETITION"],
+      "branch_ids": ["Q8_COMPETITION_VALUE_POOL"],
+      "official_url": "https://investors.hpe.com/~/media/Files/H/HP-Enterprise-IR/documents/q2-2026/q2-2026-transcript.pdf",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E11_SMCI_Q4_FY26_RESULTS",
+      "canonical_issuer_id": "SMCI",
+      "canonical_domain": "ir.supermicro.com",
+      "source_role": "peer_financial_disclosure",
+      "source_family_refs": ["F8_OEM_COMPETITION"],
+      "branch_ids": ["Q9_COUNTEREVIDENCE_WWC"],
+      "official_url": "https://ir.supermicro.com/news/news-details/2026/Supermicro-Announces-Fourth-Quarter-and-Full-Fiscal-Year-2026-Financial-Results/default.aspx",
+      "foundation_required_family_match": false
+    },
+    {
+      "route_id": "E12_ECFR_ADVANCED_COMPUTING_RULE",
+      "canonical_issuer_id": "US_ECFR",
+      "canonical_domain": "www.ecfr.gov",
+      "source_role": "regulator_primary",
+      "source_family_refs": ["F10_EXPORT_CONTROL_AND_POLICY"],
+      "branch_ids": ["Q7_EXPORT_CONTROL_CHINA"],
+      "official_url": "https://www.ecfr.gov/current/title-15/subtitle-B/chapter-VII/subchapter-C/part-742/section-742.6",
+      "foundation_required_family_match": true
+    },
+    {
+      "route_id": "E13_WDC_Q4_FY26_RESULTS",
+      "canonical_issuer_id": "WDC",
+      "canonical_domain": "investor.wdc.com",
+      "source_role": "supplier_management_disclosure",
+      "source_family_refs": ["F7_MEMORY_FOUNDRY_NETWORK_STORAGE"],
+      "branch_ids": ["Q5_SUPPLY_AND_PRICE"],
+      "official_url": "https://investor.wdc.com/node/28586",
+      "foundation_required_family_match": true
+    }
+  ],
+  "reviewed_topic_branch_mapping": [
+    {"topic_id": "capacity_inputs_execution", "branch_ids": ["Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"], "reviewed_item_count": 11},
+    {"topic_id": "capital_allocation_and_valuation", "branch_ids": ["Q1_ISSUER_TRUTH"], "reviewed_item_count": 1, "prohibited_uses": ["valuation_or_target_price"]},
+    {"topic_id": "cash_conversion_balance_sheet", "branch_ids": ["Q1_ISSUER_TRUTH"], "reviewed_item_count": 5},
+    {"topic_id": "counterevidence_and_what_would_change", "branch_ids": ["Q9_COUNTEREVIDENCE_WWC"], "reviewed_item_count": 10},
+    {"topic_id": "demand_volume_quality", "branch_ids": ["Q2_DEMAND_QUALITY", "Q3_UNITS_ASP_PVM", "Q6_MODEL_COMPUTE_DEMAND"], "reviewed_item_count": 20},
+    {"topic_id": "management_outlook", "branch_ids": ["Q1_ISSUER_TRUTH", "Q2_DEMAND_QUALITY"], "reviewed_item_count": 1},
+    {"topic_id": "operating_performance", "branch_ids": ["Q1_ISSUER_TRUTH", "Q8_COMPETITION_VALUE_POOL"], "reviewed_item_count": 6},
+    {"topic_id": "pricing_mix_value_capture", "branch_ids": ["Q3_UNITS_ASP_PVM", "Q8_COMPETITION_VALUE_POOL"], "reviewed_item_count": 16},
+    {"topic_id": "regulatory_policy_exposure", "branch_ids": ["Q7_EXPORT_CONTROL_CHINA"], "reviewed_item_count": 2},
+    {"topic_id": "relationship_attribution", "branch_ids": ["Q2_DEMAND_QUALITY", "Q4_ARCHITECTURE_RAMP", "Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND"], "reviewed_item_count": 8}
+  ],
+  "entity_aliases": [
+    {"canonical_entity_id": "DELL", "entity_kind": "issuer", "aliases": ["DELL", "Dell", "Dell Technologies", "Dell Technologies Inc."], "canonical_domains": ["www.sec.gov", "investors.delltechnologies.com", "www.dell.com"]},
+    {"canonical_entity_id": "AMAZON", "entity_kind": "issuer", "aliases": ["AMAZON", "AMZN", "Amazon", "Amazon.com, Inc."], "canonical_domains": ["ir.aboutamazon.com"]},
+    {"canonical_entity_id": "ANTHROPIC", "entity_kind": "model_provider", "aliases": ["ANTHROPIC", "Anthropic"], "canonical_domains": ["www.anthropic.com"]},
+    {"canonical_entity_id": "HPE", "entity_kind": "issuer", "aliases": ["HPE", "Hewlett Packard Enterprise", "Hewlett Packard Enterprise Company"], "canonical_domains": ["investors.hpe.com"]},
+    {"canonical_entity_id": "META", "entity_kind": "issuer", "aliases": ["META", "Meta", "Meta Platforms", "Meta Platforms, Inc."], "canonical_domains": ["www.sec.gov", "s21.q4cdn.com"]},
+    {"canonical_entity_id": "MICRON", "entity_kind": "issuer", "aliases": ["MICRON", "MU", "Micron", "Micron Technology", "Micron Technology, Inc."], "canonical_domains": ["investors.micron.com", "s25.q4cdn.com"]},
+    {"canonical_entity_id": "MICROSOFT", "entity_kind": "issuer", "aliases": ["MICROSOFT", "MSFT", "Microsoft", "Microsoft Corporation"], "canonical_domains": ["www.microsoft.com", "www.sec.gov"]},
+    {"canonical_entity_id": "MLCOMMONS", "entity_kind": "industry_benchmark_body", "aliases": ["MLCOMMONS", "MLCommons", "MLCommons Association"], "canonical_domains": ["mlcommons.org"]},
+    {"canonical_entity_id": "NVIDIA", "entity_kind": "issuer", "aliases": ["NVIDIA", "NVDA", "Nvidia", "NVIDIA Corporation", "NVIDIA Investor Relations", "NVIDIA Newsroom"], "canonical_domains": ["investor.nvidia.com", "nvidianews.nvidia.com", "blogs.nvidia.com", "www.sec.gov"]},
+    {"canonical_entity_id": "US_BIS", "entity_kind": "regulator", "aliases": ["US_BIS", "BIS", "U.S. Bureau of Industry and Security", "U.S. Department of Commerce Bureau of Industry and Security"], "canonical_domains": ["media.bis.gov"]},
+    {"canonical_entity_id": "US_ECFR", "entity_kind": "regulatory_publication", "aliases": ["US_ECFR", "eCFR", "Electronic Code of Federal Regulations"], "canonical_domains": ["www.ecfr.gov"]},
+    {"canonical_entity_id": "OPENAI", "entity_kind": "model_provider", "aliases": ["OPENAI", "OpenAI"], "canonical_domains": ["openai.com"]},
+    {"canonical_entity_id": "TSMC", "entity_kind": "issuer", "aliases": ["TSMC", "TSM", "Taiwan Semiconductor Manufacturing Company", "Taiwan Semiconductor Manufacturing Company Limited"], "canonical_domains": ["investor.tsmc.com", "www.sec.gov"]},
+    {"canonical_entity_id": "SMCI", "entity_kind": "issuer", "aliases": ["SMCI", "Supermicro", "Super Micro Computer", "Super Micro Computer, Inc."], "canonical_domains": ["ir.supermicro.com"]},
+    {"canonical_entity_id": "WDC", "entity_kind": "issuer", "aliases": ["WDC", "Western Digital", "Western Digital Corporation"], "canonical_domains": ["investor.wdc.com"]},
+    {"canonical_entity_id": "ORG::1663EE18A9AFB7C9", "entity_kind": "reviewed_source_organization", "aliases": ["Fortune"], "canonical_domains": ["fortune.com"]},
+    {"canonical_entity_id": "ORG::05BF3EEF551722C8", "entity_kind": "reviewed_source_organization", "aliases": ["IDC", "International Data Corporation"], "canonical_domains": ["www.idc.com"]},
+    {"canonical_entity_id": "ORG::88D1082A31CB2777", "entity_kind": "reviewed_source_organization", "aliases": ["Mississippi Institutions of Higher Learning"], "canonical_domains": ["www.mississippi.edu"]},
+    {"canonical_entity_id": "ORG::E1BF978301A42974", "entity_kind": "reviewed_source_organization", "aliases": ["Principled Technologies", "Principled Technologies, Inc."], "canonical_domains": ["www.principledtechnologies.com"]},
+    {"canonical_entity_id": "ORG::397A7B207441AF01", "entity_kind": "reviewed_source_organization", "aliases": ["Server Parts Europe"], "canonical_domains": ["www.server-parts.eu"]},
+    {"canonical_entity_id": "ORG::8FDBEED39DAE342A", "entity_kind": "reviewed_source_organization", "aliases": ["The Next Platform"], "canonical_domains": ["www.nextplatform.com"]},
+    {"canonical_entity_id": "ORG::13AAFF874F67F30C", "entity_kind": "reviewed_source_organization", "aliases": ["TrendForce"], "canonical_domains": ["www.trendforce.com"]}
+  ],
+  "owner_review_items": [
+    {
+      "review_id": "OR-001-Q9-FAMILY-MISMATCH",
+      "state": "open",
+      "route_id": "E11_SMCI_Q4_FY26_RESULTS",
+      "issue": "The immutable r12 manifest registers this official peer result to Q9, but foundation Q9 requires F12 independent reporting while the source identity fits F8 OEM competition. The catalog preserves F8 and does not relabel the source as independent reporting.",
+      "required_owner_decision": "Either accept a documented Q9 supplemental F8 route while retaining an unmet F12 obligation, or bind a genuine F12 route in a successor catalog."
+    },
+    {
+      "review_id": "OR-002-Q3-F3-LOCAL-ZERO",
+      "state": "intentional_current_inventory_boundary",
+      "issue": "The two current local F3 named-deployment routes are explicitly eligible for Q4 only. Q3 therefore has zero local F3 searchable leaves; E07 remains an external candidate for Q3.",
+      "required_owner_decision": "Confirm that the compiler must preserve this typed local insufficiency instead of broadening F3 routes by family membership."
+    },
+    {
+      "review_id": "OR-003-F4-Q4-LOCAL-ZERO",
+      "state": "intentional_current_inventory_boundary",
+      "issue": "Current local F4 hyperscaler disclosures are generic demand context and are eligible for Q2 and Q6, not Q4 architecture-ramp attribution.",
+      "required_owner_decision": "Confirm that Q4 must use named deployment or platform routes rather than generic hyperscaler disclosures."
+    },
+    {
+      "review_id": "OR-004-TOPIC-MAPPING-PRECEDENCE",
+      "state": "owner_review_candidate",
+      "issue": "Reviewed topic-to-branch rows are many-to-many selector metadata. They must not suppress Reviewed Evidence when a local physical route selector is also present, and they do not prove claim relevance or branch coverage.",
+      "required_owner_decision": "Approve the ten topic mappings as selector eligibility only before runtime consumption."
+    }
+  ],
+  "catalog_digest": "5aa9d723bbfd86aa7eacec9e9c64f03378aaea43e79d62e6ee8e2f9d4d985cfa"
+}

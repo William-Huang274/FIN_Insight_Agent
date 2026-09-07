@@ -18,6 +18,7 @@ PORTABLE_ARCHIVE_PATH_LIMIT = 180
 VERSION_ROOTS = (
     "fin_0_1_1",
     "fin_0_1_2",
+    "fin_0_1_3",
     "fin_0_1_3_prebaseline",
     "pre_fin_0_1_3",
 )

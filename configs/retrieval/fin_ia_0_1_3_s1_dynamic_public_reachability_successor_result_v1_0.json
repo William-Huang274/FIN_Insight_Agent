@@ -1,0 +1,97 @@
+{
+  "acceptance": {
+    "all_public_page_and_slice_lineage_internalized": true,
+    "all_reviewed_public_sources_indexed": true,
+    "base_objects_retained_exactly": true,
+    "external_owner_identity_preserved": true,
+    "kernel_and_route_contracts_load": true
+  },
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "exact_lineage_join_required_for_evidence_reselection": true,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "reviewed_relevance_labels_copied_into_candidate_index": false
+  },
+  "inputs": {
+    "base_kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "base_kernel_sha256": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+    "base_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v5/objects.jsonl",
+    "base_objects_sha256": "125f0f129f1d94ed80708c6f0f214e49e1df21e41b902700469360528e6cd0b6",
+    "base_route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json",
+    "base_route_policy_sha256": "6404fdd9035b0c3428b73ddde125c57b8328e7862a35d4566bca9739cf99365a",
+    "base_source_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v2/records.jsonl",
+    "base_source_records_sha256": "de3e7e7f3c5aa8ed117a58e2721a424355c37d7477b87060bfa8b8b9e18f7ab2",
+    "evidence_pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+    "evidence_pack_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_evidence/dell-r3-capture-replay/successor/pack.json",
+    "evidence_pack_sha256": "80c19b7fba1363558483d7ad8af31297c9c94156645f34c594540d477d249177",
+    "records": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v3/records.jsonl",
+      "sha256": "ef84d03f4480ed668b344d12376e8af27a0b5efcb9e0fc13ccf273ab5a2a92bb"
+    }
+  },
+  "known_boundary": "This successor makes already-reviewed, capture-bound PUBLIC_WEB source materials reachable as label-free S1 candidates. It does not promote new Evidence, grant numeric authority, prove ranking quality or authorize a natural model run. Authority is recovered only by exact lineage join against the immutable reviewed Pack.",
+  "object_compilation_summary": {
+    "compiled_object_count": 34166,
+    "compiled_object_kind_counts": {
+      "bounded_parent_context": 1225,
+      "claim": 24409,
+      "metric_row": 8532
+    },
+    "source_record_count": 1877
+  },
+  "output_binding": {
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v6/diagnostics.jsonl",
+    "diagnostics_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v6/objects.jsonl",
+    "objects_sha256": "494c35fe657f3df80f7878c6ec64cadd154871c9310859d418fd323767c50e8c"
+  },
+  "outputs": {
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v6/diagnostics.jsonl",
+    "diagnostics_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_4.json",
+    "kernel_sha256": "13d9c142c44166cddcb34e647b68b6b6f02d73296cf65d40bb8989eb1505e2a0",
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v6/objects.jsonl",
+    "objects_sha256": "494c35fe657f3df80f7878c6ec64cadd154871c9310859d418fd323767c50e8c",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_4.json",
+    "route_policy_sha256": "ce7db58eafdc04f4a43e93f2fba524bf3674b19d520c50d78ef261a2b610e224",
+    "source_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v3/records.jsonl",
+    "source_records_sha256": "ef84d03f4480ed668b344d12376e8af27a0b5efcb9e0fc13ccf273ab5a2a92bb"
+  },
+  "recorded_at": "2026-08-23",
+  "result_digest": "ae343f6c0f4437861bf65d7b6b504db675cc1ab4249c2c74a3f1fa03763b3041",
+  "schema_version": "fin_ia_s1_dynamic_public_reachability_successor_result_v1_0",
+  "status": "reviewed_public_sources_compiled_into_current_candidate_successor",
+  "summary": {
+    "base_object_count": 34117,
+    "base_source_record_count": 1841,
+    "public_canonical_source_record_count": 36,
+    "public_facet_count": 7,
+    "public_object_count": 49,
+    "public_related_entity_count": 5,
+    "public_source_count": 17,
+    "public_source_ids": [
+      "PUBLIC::DELL-EXT::27864DA671E92BAB944E",
+      "PUBLIC::DELL-EXT::386573F0F307ED62756A",
+      "PUBLIC::DELL-EXT::406EF0361C607E4A632D",
+      "PUBLIC::DELL-EXT::5119B3A844B5141C6BC0",
+      "PUBLIC::DELL-EXT::5B5813808F5A1F5DB246",
+      "PUBLIC::DELL-EXT::5CED0F055EAEC158C1CC",
+      "PUBLIC::DELL-EXT::61CDF35DB7513A49372A",
+      "PUBLIC::DELL-EXT::6D523C85E214E7A4E90B",
+      "PUBLIC::DELL-EXT::84FD23E65363A195C4C6",
+      "PUBLIC::DELL-EXT::969E64FF00BED8028287",
+      "PUBLIC::DELL-EXT::994E5EC6E65A944CC4B2",
+      "PUBLIC::DELL-EXT::AE1FA8596571EE7867A7",
+      "PUBLIC::DELL-EXT::AF72C71D3B4A92ECCA7E",
+      "PUBLIC::DELL-EXT::C52D1C2DAE6F4F5A8D09",
+      "PUBLIC::DELL-EXT::D16CACF50B768E445DEB",
+      "PUBLIC::DELL-EXT::E6565EB1ADB8A9D888B0",
+      "PUBLIC::DELL-EXT::F92EE1D68F1969247C69"
+    ],
+    "public_source_slice_count": 19,
+    "successor_object_count": 34166,
+    "successor_source_record_count": 1877
+  }
+}

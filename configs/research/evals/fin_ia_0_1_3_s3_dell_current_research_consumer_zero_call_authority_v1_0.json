@@ -1,0 +1,49 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_zero_call_authority_v1_0",
+  "authority_id": "FIN-0.1.3-S3-DELL-CURRENT-RESEARCH-CONSUMER-ZERO-CALL-AUTHORITY-V1.0",
+  "status": "fresh_zero_network_zero_model_current_consumer_proof_authorized",
+  "issued_at": "2026-08-13T00:00:00+08:00",
+  "run_id": "FIN013-S3-DELL-CURRENT-CONSUMER-ZERO-CALL-R1",
+  "attempt_id": "ATTEMPT-01",
+  "bound_inputs": {
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_0.json",
+    "consumer_policy_sha256": "6830d5c03158c6b6d2b1e4f3f5080926462d99a7bd4cfec93ce63880ac575065",
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+    "objective_sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548",
+    "planner_atoms_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+    "planner_atoms_sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d",
+    "fake_output_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_current_research_consumer_fake_output_v1_0.json",
+    "fake_output_sha256": "007d22c1f0e9c33621f994bde2e7b4f14bb77241743b6a113fb5af65a7c2d766",
+    "current_evidence_pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+    "current_evidence_pack_result_sha256": "e902eb8c6873caa6b139d2aa8b6261556392eaa0346a0f67d63597955199df10",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "bfbe6f11368bb4130c8b0f6594baa65c254a61bcc863ee4922c0a2ca5047f252",
+    "runner_ref": "scripts/research/run_s3_current_research_consumer_zero_call.py",
+    "runner_sha256": "bafc63a324db3745e48b221739fb8f5ecbd6bc4868c2a80103090e1c170d88cd"
+  },
+  "execution_budget": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0,
+    "retries": 0,
+    "current_product_pointer_mutation": "forbidden",
+    "fake_deliverable_publication": "forbidden"
+  },
+  "required_assertions": [
+    "current_dell_pack_digest_and_case_identity_bound",
+    "saved_planner_r1_replayed_without_model_call",
+    "reviewed_transcript_consumed_without_open_retrieval_expansion",
+    "request_level_numeric_duplicates_deduplicated",
+    "latest_quarter_fiscal_year_and_instant_numeric_selection_applied",
+    "rejected_items_and_candidates_absent_from_model_input",
+    "unknown_cross_cell_numeric_and_free_number_mutations_fail_closed",
+    "structured_workpaper_preview_preserves_model_and_harness_authority_boundary"
+  ],
+  "output_contract": {
+    "private_output_root_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/zero-call-r1",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_zero_call_result_v1_0.json",
+    "result_id": "FIN-0.1.3-S3-DELL-CURRENT-RESEARCH-CONSUMER-ZERO-CALL-R1"
+  },
+  "known_boundary": "This authority proves the current provider-neutral S3 consumer with a fake judgment output only. It does not prove DeepSeek contract following, natural research quality, Workbench product acceptance, S3 completion or release readiness."
+}

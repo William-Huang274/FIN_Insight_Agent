@@ -1,0 +1,175 @@
+{
+  "schema_version": "fin_ia_claim_authority_policy_v1_0",
+  "status": "provider_neutral_fixed_pack_claim_authority",
+  "qualified_scope": {
+    "case_key": "DELL",
+    "cell_id": "CELL::value_capture",
+    "base_research_input_digest": "7977dfcc4bba9b5341fa6e1de310c6fe53bf5284155e4fd125fe774cfd68a56b",
+    "base_judgment_schema_version": "fin_ia_current_research_judgment_payload_v1_2"
+  },
+  "allowed_claim_scopes": [
+    "product",
+    "segment",
+    "company",
+    "multi_scope"
+  ],
+  "allowed_financial_scopes": [
+    "non_financial",
+    "product_financial",
+    "segment_financial",
+    "company_financial",
+    "multi_scope_financial"
+  ],
+  "allowed_causal_bridge_authorities": [
+    "same_scope_observation_only",
+    "management_assertion_only",
+    "multi_driver_context_only",
+    "bridge_unavailable"
+  ],
+  "allowed_combinations": [
+    {
+      "claim_scope": "company",
+      "financial_scope": "company_financial",
+      "causal_bridge_authority": "same_scope_observation_only",
+      "allowed_inference_authorities": [
+        "directly_supported",
+        "bounded_inference"
+      ],
+      "allowed_judgment_statuses": [
+        "supported",
+        "bounded_support",
+        "mixed"
+      ]
+    },
+    {
+      "claim_scope": "product",
+      "financial_scope": "product_financial",
+      "causal_bridge_authority": "management_assertion_only",
+      "allowed_inference_authorities": [
+        "directly_supported",
+        "bounded_inference"
+      ],
+      "allowed_judgment_statuses": [
+        "supported",
+        "bounded_support",
+        "mixed"
+      ]
+    },
+    {
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "management_assertion_only",
+      "allowed_inference_authorities": [
+        "directly_supported",
+        "bounded_inference"
+      ],
+      "allowed_judgment_statuses": [
+        "supported",
+        "bounded_support",
+        "mixed"
+      ]
+    },
+    {
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "multi_driver_context_only",
+      "allowed_inference_authorities": [
+        "bounded_inference"
+      ],
+      "allowed_judgment_statuses": [
+        "bounded_support",
+        "mixed"
+      ]
+    },
+    {
+      "claim_scope": "multi_scope",
+      "financial_scope": "multi_scope_financial",
+      "causal_bridge_authority": "bridge_unavailable",
+      "allowed_inference_authorities": [
+        "not_inferable"
+      ],
+      "allowed_judgment_statuses": [
+        "insufficient_evidence"
+      ]
+    }
+  ],
+  "evidence_bindings": {
+    "management_assertion_evidence_refs": [
+      "EV::0063F22F643B94ED",
+      "EV::5388E016C17032C1"
+    ],
+    "multi_driver_context_evidence_refs": [
+      "EV::0063F22F643B94ED",
+      "EV::7F4D7E6762C21D83"
+    ],
+    "limiting_evidence_refs": [
+      "EV::38BBF02CB241E81D",
+      "EV::5388E016C17032C1",
+      "EV::7F4D7E6762C21D83"
+    ]
+  },
+  "bridge_gap_refs": [
+    "GAP::14D67654F535F105",
+    "GAP::34844D3F9935C0F5",
+    "GAP::52DCB2B65532C103"
+  ],
+  "cross_scope_language_guard": {
+    "subject_terms": [
+      "ai server",
+      "ai-optimized server",
+      "product",
+      "ai服务器",
+      "产品"
+    ],
+    "financial_outcome_terms": [
+      "profit",
+      "operating income",
+      "margin",
+      "cash",
+      "利润",
+      "经营收益",
+      "经营利润",
+      "毛利",
+      "现金"
+    ],
+    "causal_terms": [
+      "convert",
+      "translate",
+      "drive",
+      "lift",
+      "cause",
+      "contribute",
+      "attribute",
+      "operating leverage",
+      "scale effect",
+      "semi-fixed",
+      "转化",
+      "驱动",
+      "带来",
+      "归因",
+      "经营杠杆",
+      "规模效应",
+      "半固定"
+    ],
+    "management_attribution_terms": [
+      "management",
+      "company stated",
+      "company reported",
+      "dell stated",
+      "dell reported",
+      "管理层",
+      "公司表示",
+      "公司披露",
+      "戴尔表示",
+      "戴尔披露"
+    ]
+  },
+  "authority": {
+    "model_owns_narrative_judgment": true,
+    "model_must_declare_claim_and_financial_scope": true,
+    "model_must_select_only_compiled_bridge_authority": true,
+    "harness_may_validate_but_not_invent_causal_claim": true,
+    "fixed_pack_test_is_not_agentic_research": true,
+    "qualified_human_content_review_required": true
+  }
+}

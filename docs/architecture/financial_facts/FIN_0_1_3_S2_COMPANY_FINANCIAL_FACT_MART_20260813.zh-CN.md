@@ -1,0 +1,149 @@
+# FIN 0.1.3 S2 公司财务事实 Mart 与 PIT 精确查询
+
+日期：2026-08-13
+状态：`controlled_vertical_engineering_pass / natural_planner_research_and_UI_consumption_pending / S2_product_not_closed`
+
+## 1. 为什么数据库是纵切前硬门
+
+文本检索可以找到财报中的数字，但“找到一行数字”不等于取得金融事实权威。最终可交付数值还必须回答：哪个公司、哪个指标、哪个期间、何时公开、研究截至日当时是否可知、单位是什么、来自哪次申报、是否被后续申报修订。Embedding、reranker、PDF 表格片段或 Writer 都不能替代这些约束。
+
+因此当前链路固定为：S1 把数值意图编译成 `TypedFactRequest`；S2 公司财务事实 mart 执行精确查询，并且只返回 `NumericFact`、`typed_gap` 或 `typed_conflict`；S3 只能分析或引用已授权的 `NumericFact`。叙事检索与 SQL/PIT 精确查询是并列路线，不是二选一。
+
+## 2. 本轮替换的旧设计
+
+旧 SQL 诊断只做到年度 `9/9`，current-quarter 为 `0/6`；旧表还会把一个 ticker／metric 压成一行，无法保存披露 vintage，并把 fact、signal、context 混在一起。该路线没有迁入当前实现。
+
+新 mart 从三案 2026-08-06 已保存的 SEC CompanyFacts 与 Submissions capture 零网络构建：
+
+```mermaid
+flowchart LR
+    A["SEC CompanyFacts capture"] --> C["source/capture digest 校验"]
+    B["SEC Submissions capture"] --> C
+    C --> D["company + accession + accepted-at 绑定"]
+    D --> E["期间角色编译: instant / quarter / YTD / FY"]
+    E --> F["all admitted vintages SQLite mart"]
+    G["S1 TypedFactRequest"] --> H["PIT / identity / period / unit 查询"]
+    F --> H
+    H --> I["NumericFact | typed_gap | typed_conflict"]
+```
+
+“保存全部 vintage”严格指保存全部**已被当前 capture 绑定到 filing identity 的 vintage**。无法取得 `accepted_at` 或 accession 绑定的旧 CompanyFacts 行不会被猜测接纳；它们形成可审计的 source coverage 边界。
+
+## 3. 当前事实模型
+
+每条 `company_fact_observation` 至少保存：
+
+- 公司身份：ticker、CIK、legal name；
+- 指标身份：标准 metric、taxonomy、concept 与 concept priority；
+- 数值身份：Decimal 文本、unit、unit family；
+- 时间身份：period start/end、duration、instant／quarter-discrete／fiscal-YTD／fiscal-year、FY/FP；
+- 披露时点：form、accession、filed-at、accepted-at、primary document；
+- 血缘：CompanyFacts/Submissions ref、digest、capture time、citation URL；
+- vintage：旧观测保留，并用 supersession 关系标记当前替代项。
+
+当前直接指标共 12 类：收入、毛利、营业利润、净利润、稀释 EPS、经营现金流、资本开支、存货、应收、应付、现金及等价物、流通股数。毛利率、营业利润率和自由现金流由同期间、同 accession 的输入事实确定性计算，并保存 formula trace；不允许模型自由算术。
+
+## 4. 期间与 PIT 规则
+
+1. `research_as_of` 之前尚未 accepted 的 filing 一律不可见。
+2. 明确历史期间请求，在当时可用的 vintage 中选择最新披露。
+3. 开放式“当前季度＋最近财年”查询把 interim/instant 锁定在同一最新 10-Q accession，并单独选择最近 10-K；不能从不同 10-Q 拼出一个看似更完整的当前季度。
+4. duration 事实严格区分 quarter-discrete 与 fiscal-YTD。Micron FY2026 Q3 的九个月 OCF 不得冒充单季度 OCF。
+5. 同一最新 vintage 出现相同事实身份但数值冲突时返回 `typed_conflict`，不能任选一个。
+6. 不支持的指标、缺失期间、错公司、错单位族均返回 typed gap，不从 narrative candidate 猜值。
+
+实现时自然发现并修复了一项真实业务缺陷：第一版开放期间选择器按 period role 各自取最新，曾把 DELL/NVDA 最新 Q1 与上一财年的 Q3 YTD 混在一起。现在它按 disclosure cohort 选取，同一“当前季度”不会跨申报拼接。
+
+## 5. 零网络工程结果
+
+- SQLite：`data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_facts.sqlite`（private、不可提交）；
+- 1,319 条 source-bound observation：DELL 390、MU 463、NVDA 466；
+- period role：instant 386、fiscal year 217、quarter-discrete 406、fiscal-YTD 310；
+- 591 条 superseded observation 仍被保留；
+- 24/24 精确 qrel：最近财年 9/9，当前 interim 15/15；
+- mutation 全通过：未来 filing 隔离、YTD/季度不混淆、跨案拒绝、同期间公式 trace、当前 disclosure cohort 不串期；
+- 0 网络、0 模型调用。
+
+DELL FY2027 Q1 例子：收入 `43,842,000,000 USD`、毛利 `7,782,000,000 USD`、经营现金流 `4,081,000,000 USD`、资本开支 `963,000,000 USD`；由同一 accession 确定性得到自由现金流 `3,118,000,000 USD` 和带输入 lineage 的毛利率。
+
+机器结果见 `configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_0.json`，当前 result digest 为 `e5c88e63...c0a8fb`。
+
+## 6. 当前明确边界
+
+- 这是 S2 数据库、查询执行器与 request-scoped backend 的 engineering pass，不是 S2 产品关闭。
+- mart 已通过显式 Runtime path 挂入当前 Research Retrieval Service；它没有进入 Git 或 Runtime Resource Registry，也不与可写 Operations SQLite 混用。
+- 当前消费者仍是工程侧提供受控 EvidenceRequest 的 backend API。S3 自然问题规划、报告综合和前端展示尚未消费，因此还没有证明用户可感知的数值能力。
+- 当前只覆盖三个案例和已绑定的近年 SEC 10-K/10-Q；缺少历史 filing identity 的旧行不接纳。
+- `total_debt` 尚未进入当前标准指标；DELL 当前 capture 没有可接纳 shares outstanding，MU 没有可接纳 accounts payable，均保留 typed gap。
+- 市场价格、估值和行业数据属于独立 PIT market/industry mart，不混进公司报表事实表。
+- metric-row、PDF 表格候选和 embedding 命中仍不拥有 NumericFact 权威。
+
+## 7. 当前 Runtime 消费证明
+
+真实 DELL request-scoped 诊断同时请求 `reported_results`、`cash_generation` 与 6 个标准指标：revenue、gross_margin、operating_income、operating_cash_flow、capital_expenditures、free_cash_flow。结果为：
+
+- narrative lanes 2/2 非空、9 个去重候选；
+- typed fact requests 6/6 store-ready、6/6 resolved、0 gap、0 conflict；
+- FY2027 Q1 revenue=`43,842,000,000 USD`、operating cash flow=`4,081,000,000 USD`、capital expenditures=`963,000,000 USD`；
+- 同一 accession 的确定性公式返回 free cash flow=`3,118,000,000 USD`，并保留输入 NumericFact ID、source digest 和 citation URL；
+- 0 网络、0 模型调用。
+
+该证明使用标准 metric ID。自然语言中的“资本开支／capital expenditure”等表达必须由 S3 规范成受控 ID `capital_expenditures`；S2 不以模糊词形扩大事实查询权限。未知指标继续 fail closed，而不是逐词增加数据库分支。
+
+在后续 DELL 受控 S1/S2/S3 纵切中，同一产品服务进一步执行 5 个 EvidenceRequest 下的 7 个 typed fact request：7/7 resolved、0 gap、0 conflict，共物化 21 个 source-bound NumericFact。除上述收入、现金流、资本开支和自由现金流外，还覆盖营业利润、毛利、毛利率及最近财年 sibling，并继续保留 accession、accepted-at、期间、单位、citation、capture digest 与公式输入 lineage。该结果证明数据库已进入当前纵切，而不是留在离线构建脚本中；但 atoms 仍是受控输入，所以不等于自然用户问题或报告已消费。
+
+## 8. 下一门
+
+零调用纵切的工程部分已经完成。下一门是唯一一次最小自然 planner canary：模型只能选择 canonical facet、目标实体、metric ID 和产品意图；S2 仍独立执行 typed request。Canary 通过后，也必须继续验证 S3 是否在研究判断和引用中真实使用这些 NumericFact，并执行三案依赖回归；否则不能把当前 private mart 宣称为完整用户能力。未来更强 embedding、reranker 或生成模型可以减少检索和规划拐杖，但不能取消公司财务事实库、PIT、期间、单位、冲突和 lineage 这条金融控制面。
+
+## 9. 2026-08-16 transcript 与同口径比较 successor
+
+S1 将 Dell／TSMC 法说接回 current retrieval 后，S2 做了独立非回归。结果确认 current mart 的唯一来源仍是 digest-bound SEC CompanyFacts 与 Submissions，允许表单仅为 10-K／10-Q；S1 transcript、PDF metric row 和候选文本均不进入 S2 observation，也不获得 NumericFact 权威。
+
+第一次重建 R1 虽然得到与现有库完全相同的 SQLite SHA 和 24/24 qrel，却被旧 mutation 判失败。根因不是数据变化，而是历史检查仍禁止上年同期 Q1；当前 executor 为了给 S3 提供合法同比，已经正确保留当前 10-Q 中的本期 Q1 与上年同期 Q1。successor 将门改为“保留同口径对比端点，同时禁止旧 Q3 YTD 混入”。
+
+旧 v1.0 result 保持不可变；v1.1 仍被 current runtime binding 按文件 SHA 与其历史 claimed digest 绑定，但 2026-08-31 的 exact-clean 资格运行证明它的 `result_digest=0c25c917...95a1` 不能从最终持久化对象重新计算，正常 canonical 值为 `e3f955dc...05fd`。根因是底层 materialization result 已含一个 `result_digest`，外层 builder 把该字段带入摘要 preimage 后又用同名外层字段覆盖，导致参与计算的内层值在落盘对象中消失。当前 v1.1 不改写、不宣称 self-integrity PASS，也没有获得创建或迁移 S2 authority successor 的权限。
+
+producer 已改为先验证并移除内层摘要，再生成可复算的外层摘要；builder CLI 与 Workbench 的默认输出改到 `data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_fact_mart_result.json`。v1.0 与 current-bound v1.1 都受代码保护，不能作为新 build 的输出目标。Z 盘 fresh rebuild 仍为 1,319 observations、9/9 最新财年、15/15 current interim、24/24 qrels，完整语义投影与 v1.1 exact，fresh result 自摘要有效。formal regression 仍见 `configs/financial_facts/fin_ia_0_1_3_s2_transcript_numeric_authority_regression_result_v1_0.json`；该回归的历史 identity 不因本次 shadow qualification 被重写。
+
+该 successor 不关闭 `RC-S2-004`：产品收入、ASP、PVM、出货量、产品利润与公司／分部利润桥仍可能公开不可得。S2 不会为填满五单元而从法说叙事抽取一个伪 NumericFact。
+
+## 10. 2026-08-24 MU 期间身份 supersession 的 PIT 消费
+
+MU current replay 暴露了一个独立于数值冲突的期间身份错误：截至 2025-02-27 的真实 FY2025 Q2 历史比较列曾在后续 Q3 filing 中携带 `fp=Q3`，与截至 2025-05-29 的真实 Q3 同时进入 comparable selection。Mart 已保存同物理区间的 `superseded_by_observation_id`，但 executor 没有按 `research_as_of` 消费它，因而正确 fail-closed 为两个 FY2025 Q3。
+
+查询 successor 只在更晚 successor 已于研究截至日前 accepted 时排除旧投影；successor 尚未公开的历史查询仍保留旧 vintage。严格使用 `successor.accepted_at > current.accepted_at`，所以同一披露时点的多 concept 数值分歧不会被隐藏，原 `typed_conflict` 门继续有效。
+
+原失败 replay 保持不可变；本轮只重算原 MU `net_income` 请求，没有重建 1,319-row mart。successor 返回 FY2026 Q3 `2026-02-27→05-28`、FY2025 Q3 `2025-02-28→05-29` 和最近财年事实，共 3 个 source-bound NumericFact，0 model／Provider／network。机器凭据为 `configs/financial_facts/fin_ia_0_1_3_s2_mu_period_identity_successor_result_v1_0.json`。
+
+这关闭 `RC-S2-006` 的假期间碰撞，不关闭 `RC-S2-004`、S2 产品桥或阶段资格。
+
+## 11. 2026-08-24 independent audit：final successor pointer 不是期间身份权威
+
+§10 的特定 MU current request 结果可以保留，但其通用算法与 RC-S2-006 closure 必须撤回。独立审计发现 `_apply_current_supersession` 将同 physical group 的所有旧行直接指向全局最后一行；这既不是 PIT chain，最后 filing copy 的 `fy/fp` 也可能只是该文档 focus 对历史 comparable 的投影。真实 mart 的 419 个 multi-vintage groups 中，90 组超过两个 vintages、最大 6，78 组出现多个 fiscal labels，43 组 latest 与 earliest label 不同。
+
+MU `net_income / 2022-09-02→2022-12-01 / quarter_discrete / USD` 的六个 filings 在 FY2023/Q1、FY2022/Q2、FY2022/Q3 间振荡。§10 executor 在 intermediate as-of 形成假冲突，并在最终 as-of 把最后 FY2022/Q3 copy 错当物理期间真相。因此只把 pointer 改成 immediate chain 仍然错误。
+
+successor 将 fiscal identity 与 numeric vintage 分离：同物理期间的 10-Q 在 45 天内、10-K 在 90 天内 accepted 时，contemporaneous filing context 才可冻结 fiscal identity；后续 row 只有保留同一 label 才能更新 numeric vintage。不存在及时来源时，全部 labels 必须一致；否则返回 `typed_fact_physical_period_identity_ambiguous`。requested fiscal-year filtering 在 identity admission 后执行，同一 accepted time 的数值冲突继续 fail closed。executor 不再把 mart pointer 用作 period authority。
+
+真实回放中，六个 historical as-of 全部稳定为 FY2023/Q1，最终错误 copy 从未被选；原 MU current request 的三条 source-bound facts、exact periods、values、accessions、observation IDs 与 authority inventory 均保持一致。旧 result、独立失败和新 `physical_period_identity_successor_result_v1_1` 均保留。
+
+因此 RC-S2-006 的历史“PIT 通用关闭”记录无效；新 RC-S2-010 只关闭 final-pointer authority 根因。当前 bound mart timestamps 全为 UTC、pointer scope invariant 当前无违规；offset canonicalization 与 deprecated pointer 的未来误用仍作为 generic hardening 开放。RC-S2-004、产品桥、S2 qualification 和 release 不变。
+
+## 12. fresh audit 更正：无及时来源不是身份，derived conflict 不能降级（2026-08-24）
+
+§11 中“没有 timely origin 时，只要全部 labels 一致即可接纳”的 fallback 已撤回。对真实 mart 的 728 个 physical groups 复核发现，40 组没有及时 origin，34 组只有一个一致 label，其中 19 组出现 `quarter_discrete/fiscal_ytd` 与 `FY` 等明显 role／label 不一致。晚期非权威 copies 的一致，只能说明它们互相重复，不能证明 contemporaneous fiscal identity。
+
+当前 executor 采用更严格边界：同 physical key 必须由 10-Q 45 天或 10-K 90 天窗口内的及时来源唯一给出 fiscal identity；无 timely origin 一律 typed fail closed，即使晚期 labels 全部一致。later filing 只在 canonical label 下更新 numeric vintage。requested granularity 在 candidate SQL 中先过滤 period role，防止无关 annual／instant 行制造 quarter identity conflict。
+
+fresh reviewer 还发现 derived formula 会把 direct input 的 `typed_conflict` 降为 `derived_formula_input_missing` gap。successor 现在传播 authoritative conflict，并保留 input side、metric、request ID、conflict code 与 nested conflicts；只有 conflict-free 的真实缺失输入才能形成 gap。这使“数据互相矛盾”和“公开信息缺失”继续是两个不同状态。
+
+不可变 attempt 链为：v1.2 业务检查为真但 receipt shape 自审失败；v1.3 修复自审并证明 strict origin；v1.4 在 fresh finding 后新增 derived-conflict 与 unrelated-role probes。v1.4 对原 MU 三事实、六个 FY2023/Q1 as-of、DELL no-origin counterexample、728-group population、derived conflict 与 irrelevant-role 共八项检查全部为 true，calls=`0/0/0`。这只关闭 executor 身份／冲突边界，不重建 mart，也不提供 ASP、units、PVM、产品利润桥或 S2 产品资格。
+
+## 13. clean audit 更正：requested/comparable conflict 必须跨 latest selection 传播（2026-08-24）
+
+§12 的单 group no-origin 与 derived-conflict 检查仍成立，但 v1.4 的 generic closure 被 clean audit 推翻。组合场景中，current Q1 有及时来源而 prior-year Q1 只有晚期 copy；identity producer 正确生成旧期 conflict，但其 fiscal identity 只在 nested candidates。selector 只无条件处理最新 `period_end`，自动 comparable 又查顶层 year/period，故旧期 conflict 可消失，顶层只返回 current fact 的 `resolved`。
+
+v1.5 为 conflict 增加 single-label、candidate years、完整 nested identities 与 explicit-request match。显式 fiscal-year request 命中的 conflict 在 latest-role selection 前传播；无显式年份时，以 current fiscal year - 1 和同 fiscal period 在 nested identities 中选择 automatic comparable conflict。Identity conflict 只要包含当前 filing accession 即属于当前 cohort，不要求全部历史 copies 来自同一 accession。任何上述 direct conflict 在 derived formula 中继续保持 conflict。
+
+新回归覆盖 explicit `[2026, 2027]`、automatic comparable 与 derived 三条路径；旧期 `2025-05-02` 均 fail closed。v1.5 同时重放原 MU 三事实、六 as-of、no-origin、728-group inventory 和 v1.4 probes，11/11 checks true，calls=`0/0/0`。这关闭 `RC-S2-017` 的路由根因，不扩张 mart 或产品金融桥能力。

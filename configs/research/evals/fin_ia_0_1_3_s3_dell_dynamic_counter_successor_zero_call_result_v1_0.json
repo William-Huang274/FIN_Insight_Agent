@@ -1,0 +1,78 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_cell_failed_counter_successor_zero_call_result_v1_0",
+  "status": "zero_call_failed_counter_successor_engineering_pass",
+  "recorded_at": "2026-08-16T20:31:00+08:00",
+  "implementation_commit": "1fbda9889eed9c83acaf2731af9ec5e078cd7dff",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "failed_fragment_tool": "submit_research_counterargument_and_wwc",
+  "predecessor": {
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_result_v1_0.json",
+    "public_result_sha256": "81db265e960716469eb98fdba7eec93a78923605a683d3757ccf695f43b1298c",
+    "public_result_digest": "b573f049af0f2c4e3ed407791bd10d8912afd7463ca037d208d8a631932dde44",
+    "private_result_ref": "data/workbench_private/s3_dynamic_single_cell/FIN013-S3-DELL-DYNAMIC-VC-R1/full_result.json",
+    "private_result_sha256": "72717af8f6b004e5a9b39090bd7a227d663c16dae6eac2a106e6dd7ff6dfd254",
+    "private_result_digest": "0ac6fd6a20080641ff2d5f49245ce7a1b1c3ed9dda174ea0bf732de0a269d4bd",
+    "failure_assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_failure_assessment_v1_0.json",
+    "failure_assessment_sha256": "32c583b13377186a4d9605567298ed8111c51b10f1b3786c6fe93907935927e5"
+  },
+  "bound_implementation": {
+    "runner_ref": "scripts/research/run_s3_dynamic_single_cell_live.py",
+    "runner_sha256": "ab0eebfbcde44f7d3b8a61daf3858dacabf1638faba2058bd4a64cc97920981c",
+    "analysis_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+    "analysis_profile_sha256": "dbc14dbcc186b81f24a5b048056e663649614cd62bef1aceb98b9873189603a1",
+    "submission_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_profile_v1_0.json",
+    "submission_profile_sha256": "2c4a67a985e9f8773f56df0a232de49cab0810504eca816e100c2cc4e9622468"
+  },
+  "replay_observation": {
+    "surface_input_digest": "3d1247e1105a0a5569ff5f3ae1e2db62c405d362cad81f819eec6c5386d23329",
+    "accepted_fragment_tools": [
+      "submit_research_mechanism",
+      "submit_research_thesis"
+    ],
+    "successful_predecessor_model_nodes_reused": 5,
+    "failed_fragment_context_digest": "c87824cec2863f4e4e7d2b31ff205a5ed5bfa3f3d9e843b03a4c281e93122ae6",
+    "failed_fragment_analysis_messages_digest": "c2c3062ddd0227eba5bcdf7fc263769bd619d363defe71a57dfe46f0df679c2b",
+    "failed_fragment_analysis_message_count": 2,
+    "failed_analysis_step_absent": true,
+    "failed_submission_step_absent": true,
+    "failed_validated_fragment_absent": true
+  },
+  "mutation_verification": {
+    "context_or_message_digest_drift": "fail_closed_dynamic_successor_failed_fragment_replay_drift",
+    "missing_successful_prefix_fragment": "fail_closed_dynamic_successor_predecessor_prefix_invalid",
+    "preexisting_counter_fragment": "fail_closed_dynamic_successor_predecessor_prefix_invalid"
+  },
+  "execution_budget": {
+    "successful_predecessor_model_nodes_reused": 5,
+    "maximum_fresh_model_calls": 2,
+    "maximum_counter_analysis_calls": 1,
+    "maximum_counter_submission_calls": 1,
+    "maximum_analysis_completion_tokens": 16000,
+    "maximum_submission_completion_tokens": 2000,
+    "maximum_evidence_requests": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_source_network_calls": 0
+  },
+  "observed_calls": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "embedding_calls": 0
+  },
+  "acceptance": {
+    "immutable_successful_prefix_reused": true,
+    "failed_counter_context_recompiled_exactly": true,
+    "failed_counter_messages_recompiled_exactly": true,
+    "analysis_profile_max_thinking_16000_bound": true,
+    "submission_profile_non_thinking_2000_bound": true,
+    "new_evidence_or_candidate_promotion": false,
+    "natural_successor_executed": false,
+    "dynamic_single_cell_contract_pass": false,
+    "five_cell_execution": false,
+    "s3_product_acceptance": false
+  },
+  "known_boundary": "This zero-call proof establishes exact immutable-prefix reuse and failed-node-only replay. It does not prove DeepSeek convergence, the counter/WWC content, a complete dynamic single-cell Judgment, five-cell research, generalization, S3 acceptance, publication or release.",
+  "result_digest": "73f8c87746e0309564ec79b8e7247775ac2ae9d8473cfab8bd293fb00d7e9b41"
+}

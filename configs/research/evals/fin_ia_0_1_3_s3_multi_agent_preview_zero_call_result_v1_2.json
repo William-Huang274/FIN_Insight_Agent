@@ -1,0 +1,459 @@
+{
+  "accepted_facet_count": 12,
+  "activated_true_agent_ids": [
+    "AGENT::RESEARCH_LEAD",
+    "AGENT::DEMAND_QUALITY",
+    "AGENT::OPERATING_PERFORMANCE",
+    "AGENT::VALUE_CAPTURE",
+    "AGENT::CASH_CONVERSION",
+    "AGENT::SUPPLY_RELATIONSHIP",
+    "AGENT::COUNTEREVIDENCE",
+    "AGENT::WRITER"
+  ],
+  "blocking_empty_role_ids": [],
+  "case_key": "DELL",
+  "claims": {
+    "S1_pass": false,
+    "S3_pass": false,
+    "current_product_pointer_mutations": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "release_ready": false,
+    "true_multi_agent_live_proven": false
+  },
+  "compiled_evidence_request_count": 12,
+  "controlled_plan_summary": {
+    "compiled_lane_count": 12,
+    "deferred_atom_count": 0,
+    "evidence_request_count": 12,
+    "execution_request_budget": 12,
+    "generation_model_calls": 0,
+    "hybrid_candidate_runtime": "bm25_plus_qwen_local_embedding",
+    "hybrid_selected_candidate_count": 192,
+    "local_embedding_inference_batches": 1,
+    "material_scope_ready_request_count": 0,
+    "material_scope_required_request_count": 12,
+    "material_set_complete_request_count": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "nonempty_lane_count": 11,
+    "numeric_fact_count": 85,
+    "proposed_atom_count": 12,
+    "required_slot_count": 7,
+    "selected_atom_count": 12,
+    "typed_fact_conflict_count": 0,
+    "typed_fact_gap_count": 15,
+    "typed_fact_request_count": 40,
+    "typed_fact_resolved_count": 25,
+    "unique_narrative_candidates": 29
+  },
+  "dynamic_evidence_response_summary": {
+    "accepted_evidence_count": 16,
+    "candidate_promotions": 0,
+    "case_truth_packet_digest": "53dd419f01e97d0255954d57cdfa0c162ad86195927e8d5823c58daeb762386d",
+    "research_input_digest": "c4488d3cb1112541647a80fa83a800ba2ac4b6c2fbd2463d6e3d8e66c0087ee0"
+  },
+  "failure_owner_contract": {
+    "empty_local_candidate_pool": "data_infrastructure_or_tool",
+    "evidence_visible_but_judgment_wrong": "model_judgment",
+    "reviewed_evidence_exists_but_role_projection_empty": "harness_control",
+    "scoring_or_false_positive": "evaluator",
+    "tool_not_executed_or_feedback_not_routed": "agent_orchestration_and_role_design"
+  },
+  "generated_at": "2026-08-19T10:17:48+00:00",
+  "independent_specialist_opinion_count": 6,
+  "predecessor_result": {
+    "path": "configs/research/evals/fin_ia_0_1_3_s3_multi_agent_preview_zero_call_result_v1_1.json",
+    "result_digest": "99be080fd7075a1cd2469eb8ebbc5102cf1fb515dd36e686e93d53c9d1748c8b",
+    "status": "zero_call_data_or_projection_blocker_present"
+  },
+  "request_business_results": [
+    {
+      "facet_ids": [
+        "orders_and_backlog"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 5,
+      "request_id": "REQ::faa9f4322d3fa7cdba75de73",
+      "requester_role": "demand_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 3,
+      "typed_fact_resolved_count": 0
+    },
+    {
+      "facet_ids": [
+        "conversion_and_durability"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 5,
+      "request_id": "REQ::0c10ac895c2b07472d09598b",
+      "requester_role": "demand_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 3,
+      "typed_fact_resolved_count": 0
+    },
+    {
+      "facet_ids": [
+        "reported_results"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 4,
+      "request_id": "REQ::8a68fccd6a88feb1cce89f8c",
+      "requester_role": "financial_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 0,
+      "typed_fact_resolved_count": 6
+    },
+    {
+      "facet_ids": [
+        "guidance_and_outlook"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 7,
+      "request_id": "REQ::4ea3fa096fb2a4f07728e3df",
+      "requester_role": "financial_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 0,
+      "typed_fact_resolved_count": 2
+    },
+    {
+      "facet_ids": [
+        "margin_and_incremental_profit"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 6,
+      "request_id": "REQ::bc9441fb432203547241d84a",
+      "requester_role": "value_capture_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 0,
+      "typed_fact_resolved_count": 5
+    },
+    {
+      "facet_ids": [
+        "pricing_and_mix"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 4,
+      "request_id": "REQ::7d7050331d331b8183639ce1",
+      "requester_role": "value_capture_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 1,
+      "typed_fact_resolved_count": 3
+    },
+    {
+      "facet_ids": [
+        "cash_generation"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 5,
+      "request_id": "REQ::3d42ef9b2acf328bfc25efde",
+      "requester_role": "cash_conversion_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 0,
+      "typed_fact_resolved_count": 4
+    },
+    {
+      "facet_ids": [
+        "working_capital_risk"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 5,
+      "request_id": "REQ::4ad3aaa3b063ae79c0e40388",
+      "requester_role": "cash_conversion_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 0,
+      "typed_fact_resolved_count": 4
+    },
+    {
+      "facet_ids": [
+        "upstream_capacity_context"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 2,
+      "request_id": "REQ::4636e6a0420eda2950596229",
+      "requester_role": "supply_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "NVDA",
+        "MU",
+        "TSM",
+        "MSFT"
+      ],
+      "typed_fact_gap_count": 8,
+      "typed_fact_resolved_count": 0
+    },
+    {
+      "facet_ids": [
+        "subject_relationship_disclosure"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 2,
+      "request_id": "REQ::acb69124585f1178bf7217da",
+      "requester_role": "relationship_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 0,
+      "typed_fact_resolved_count": 0
+    },
+    {
+      "facet_ids": [
+        "counterparty_direct_mention"
+      ],
+      "failure_owner_if_empty": "S1_local_object_query_retrieval_or_ranking",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 0,
+      "request_id": "REQ::90d69d46af3b241d45b46722",
+      "requester_role": "relationship_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "NVDA",
+        "MU",
+        "TSM",
+        "MSFT"
+      ],
+      "typed_fact_gap_count": 0,
+      "typed_fact_resolved_count": 0
+    },
+    {
+      "facet_ids": [
+        "issuer_counterevidence"
+      ],
+      "failure_owner_if_empty": "none",
+      "hybrid_selected_count": 16,
+      "narrative_candidate_count": 3,
+      "request_id": "REQ::8537f9878719232222965903",
+      "requester_role": "counterevidence_specialist",
+      "source_route_state": "source_route_truth_compiled_public_gap_not_inferred",
+      "target_entities": [
+        "DELL"
+      ],
+      "typed_fact_gap_count": 0,
+      "typed_fact_resolved_count": 1
+    }
+  ],
+  "request_evidence_response_results": [
+    {
+      "accepted_reviewed_evidence_count": 7,
+      "candidate_count": 21,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 1,
+      "request_id": "REQ::faa9f4322d3fa7cdba75de73",
+      "typed_gap_count": 3,
+      "unreviewed_candidate_count": 12
+    },
+    {
+      "accepted_reviewed_evidence_count": 8,
+      "candidate_count": 21,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 1,
+      "request_id": "REQ::0c10ac895c2b07472d09598b",
+      "typed_gap_count": 3,
+      "unreviewed_candidate_count": 11
+    },
+    {
+      "accepted_reviewed_evidence_count": 0,
+      "candidate_count": 20,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 0,
+      "request_id": "REQ::8a68fccd6a88feb1cce89f8c",
+      "typed_gap_count": 1,
+      "unreviewed_candidate_count": 20
+    },
+    {
+      "accepted_reviewed_evidence_count": 2,
+      "candidate_count": 23,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 2,
+      "request_id": "REQ::4ea3fa096fb2a4f07728e3df",
+      "typed_gap_count": 0,
+      "unreviewed_candidate_count": 18
+    },
+    {
+      "accepted_reviewed_evidence_count": 2,
+      "candidate_count": 22,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 1,
+      "request_id": "REQ::bc9441fb432203547241d84a",
+      "typed_gap_count": 0,
+      "unreviewed_candidate_count": 19
+    },
+    {
+      "accepted_reviewed_evidence_count": 2,
+      "candidate_count": 20,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 0,
+      "request_id": "REQ::7d7050331d331b8183639ce1",
+      "typed_gap_count": 1,
+      "unreviewed_candidate_count": 16
+    },
+    {
+      "accepted_reviewed_evidence_count": 1,
+      "candidate_count": 21,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 3,
+      "request_id": "REQ::3d42ef9b2acf328bfc25efde",
+      "typed_gap_count": 0,
+      "unreviewed_candidate_count": 18
+    },
+    {
+      "accepted_reviewed_evidence_count": 4,
+      "candidate_count": 21,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 1,
+      "request_id": "REQ::4ad3aaa3b063ae79c0e40388",
+      "typed_gap_count": 0,
+      "unreviewed_candidate_count": 14
+    },
+    {
+      "accepted_reviewed_evidence_count": 0,
+      "candidate_count": 18,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 0,
+      "request_id": "REQ::4636e6a0420eda2950596229",
+      "typed_gap_count": 9,
+      "unreviewed_candidate_count": 18
+    },
+    {
+      "accepted_reviewed_evidence_count": 0,
+      "candidate_count": 18,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 6,
+      "request_id": "REQ::acb69124585f1178bf7217da",
+      "typed_gap_count": 1,
+      "unreviewed_candidate_count": 14
+    },
+    {
+      "accepted_reviewed_evidence_count": 0,
+      "candidate_count": 16,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 0,
+      "request_id": "REQ::90d69d46af3b241d45b46722",
+      "typed_gap_count": 3,
+      "unreviewed_candidate_count": 16
+    },
+    {
+      "accepted_reviewed_evidence_count": 2,
+      "candidate_count": 19,
+      "candidate_route": "hybrid_plus_immutable_snapshot_union",
+      "rejected_reviewed_binding_count": 1,
+      "request_id": "REQ::8537f9878719232222965903",
+      "typed_gap_count": 0,
+      "unreviewed_candidate_count": 15
+    }
+  ],
+  "research_as_of": "2026-08-06",
+  "result_digest": "f4d3f2c2cbf152a4879371369cf2a84f93b230a2db01247dda58dcc63e4447b6",
+  "role_readiness": [
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "context_digest": "c4f7d3b6655d57a4034a967261c99e5787cdb63fff7eaaa138c1957fc5127f64",
+      "numeric_facts_visible": 0,
+      "numeric_relations_visible": 0,
+      "reviewed_evidence_visible": 10,
+      "role_slot_ids": [
+        "demand_volume_quality"
+      ],
+      "typed_gaps_visible": 1
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "context_digest": "b93cdae3ff7585cb86214424f4175e5b7720e5d36e7db095b34ddd9492858437",
+      "numeric_facts_visible": 12,
+      "numeric_relations_visible": 6,
+      "reviewed_evidence_visible": 2,
+      "role_slot_ids": [
+        "operating_performance"
+      ],
+      "typed_gaps_visible": 0
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "context_digest": "11371d7c734f3f379c5f0523ed7cf3a78a50bb69e0475b1d37ec9c6db7e0baa4",
+      "numeric_facts_visible": 10,
+      "numeric_relations_visible": 5,
+      "reviewed_evidence_visible": 4,
+      "role_slot_ids": [
+        "pricing_mix_value_capture"
+      ],
+      "typed_gaps_visible": 3
+    },
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "context_digest": "a60832ba93a5a4385987d157ca6d0cbe153e63bfad03165372888fc2d259c185",
+      "numeric_facts_visible": 10,
+      "numeric_relations_visible": 3,
+      "reviewed_evidence_visible": 5,
+      "role_slot_ids": [
+        "cash_conversion_balance_sheet"
+      ],
+      "typed_gaps_visible": 1
+    },
+    {
+      "agent_id": "AGENT::SUPPLY_RELATIONSHIP",
+      "context_digest": "11fc79f0f4a001cc4450ab976b9373ba6d39138c63bd7d4dace3695cf4e3308f",
+      "numeric_facts_visible": 0,
+      "numeric_relations_visible": 0,
+      "reviewed_evidence_visible": 10,
+      "role_slot_ids": [
+        "capacity_inputs_execution",
+        "relationship_attribution"
+      ],
+      "typed_gaps_visible": 4
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "context_digest": "ac10689aa80e9676b0ffee357cd3a8a673edb76f0f14a067ff4e2fecdfb6cc6f",
+      "numeric_facts_visible": 1,
+      "numeric_relations_visible": 0,
+      "reviewed_evidence_visible": 6,
+      "role_slot_ids": [
+        "counterevidence_and_what_would_change"
+      ],
+      "typed_gaps_visible": 2
+    }
+  ],
+  "schema_version": "fin_ia_s3_multi_agent_preview_zero_call_result_v1_2",
+  "status": "zero_call_topology_and_current_tool_spine_pass",
+  "successor_change": {
+    "disposition": "separate_exact_reviewed_evidence_reader_from_dynamic_candidate_retrieval_and_attach_both_receipts",
+    "owning_layer": "harness_control",
+    "root_cause": "dynamic_candidate_reselection_was_incorrectly_used_as_the_only_reader_for_already_reviewed_evidence"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_s1_vs5_qualification_source_capture_public_result_v1_0",
+  "status": "all_preregistered_official_source_targets_captured_once",
+  "program_id": "FIN-0.1.3-S1-VS5-QUALIFICATION",
+  "recorded_at": "2026-08-18",
+  "attempt_id": "live-r1",
+  "capture_plan_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_qualification_source_capture_plan_v1_0.json",
+  "capture_plan_sha256": "f7f2386038dd5276cff3b647116fceb24f4b68e3cfd2238a4a71761064097898",
+  "private_capture_result_sha256": "4f5e5a603835aad5d7e5f7a821f57f08d8835324a673081935653ca95a519fb2",
+  "source_routes_executed": 7,
+  "network_attempts": 7,
+  "model_calls": 0,
+  "sources": [
+    {
+      "route_id": "COST_FY2024_10K",
+      "status": "captured",
+      "content_type": "text/html",
+      "body_bytes": 1497890,
+      "body_sha256": "02f59d813caef1917d773104629133fd7a7414759a5ea8a9c6918e070c970638",
+      "transport_attempts": 1
+    },
+    {
+      "route_id": "COST_FY2025_10K",
+      "status": "captured",
+      "content_type": "text/html",
+      "body_bytes": 1438962,
+      "body_sha256": "2cf71f4336c8f36b008a584403551d95ab3b7e4addc9179a99b62029810f7c9a",
+      "transport_attempts": 1
+    },
+    {
+      "route_id": "JPM_FY2025_10K",
+      "status": "captured",
+      "content_type": "text/html",
+      "body_bytes": 12927325,
+      "body_sha256": "4d9febdbc2038dcdca8726053286df4cbbfd48885051cbd781efcc3becb66a23",
+      "transport_attempts": 1
+    },
+    {
+      "route_id": "CAT_FY2025_10K",
+      "status": "captured",
+      "content_type": "text/html",
+      "body_bytes": 6100469,
+      "body_sha256": "090ce2bd6d7dd1e85d4397ab152d3c3c3fb059fd4af0eb9aa979c1eb2ff92f15",
+      "transport_attempts": 1
+    },
+    {
+      "route_id": "NVO_FY2025_20F",
+      "status": "captured",
+      "content_type": "text/html",
+      "body_bytes": 1425751,
+      "body_sha256": "bc3b95895aa5c5ce37bbeb9b511ab60f9bfa5b9c072bbb24e58c0b093f92edd9",
+      "transport_attempts": 1
+    },
+    {
+      "route_id": "SHEL_FY2025_20F",
+      "status": "captured",
+      "content_type": "text/html",
+      "body_bytes": 10268427,
+      "body_sha256": "964866953ee25cc6827fa10d16ed9b2a395170e173e6258957b139d05eb79a99",
+      "transport_attempts": 1
+    },
+    {
+      "route_id": "TENCENT_FY2025_OFFICIAL_ANNUAL_REPORT",
+      "status": "captured",
+      "content_type": "application/pdf",
+      "body_bytes": 3999857,
+      "body_sha256": "2a7547168077c3d9994af673125e77612e8656bc0f17ad189371d7e4088f4e98",
+      "transport_attempts": 1
+    }
+  ],
+  "capture_before_parse": true,
+  "source_bodies_are_evidence": false,
+  "qualification_execution_started": false
+}

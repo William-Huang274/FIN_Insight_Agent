@@ -33,3 +33,7 @@ reports/quality/
 reports/query_contracts/
 reports/verifier/
 reports/retrieval_eval/
+.venv/
+build/
+*.egg-info/
+.secrets/

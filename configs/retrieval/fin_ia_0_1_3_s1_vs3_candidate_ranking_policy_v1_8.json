@@ -1,0 +1,18 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_matching_stratified_stability_probe_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-CANDIDATE-RANKING-V1.8-MATCHED-STABILITY",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_7.json",
+  "parent_policy_sha256_lf": "d04de4491c24e3d25b0038606beae8164421cbafbcbb173facf49f7552ddfaa9",
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "v1.7 generated the correct stratified candidate union but its permutation probe accidentally compared that union with the obsolete unstratified RRF function",
+      "the reported 0.722222 stability rate was therefore a probe-contract mismatch rather than observed ranking nondeterminism",
+      "the successor runs the exact same stratified function for forward and reversed need order and reuses immutable CUDA score caches"
+    ],
+    "not_changed": ["candidate union, ontology, models, qrels and budgets", "all stored v1.7 model scores", "candidate, Evidence and NumericFact authority boundaries"],
+    "v1_7_result_remains_immutable": true,
+    "no_threshold_or_business_label_changed": true
+  }
+}

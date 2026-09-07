@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_s3_bounded_finance_loop_live_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "recorded_at": "2026-08-15T14:36:08+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_relation_alias_chat_live_authority_v1_0.json",
+  "authority_sha256": "10489b77e4a50edac60d861cb1e5672149089f29bc8d11f2f19b04133e81ecc2",
+  "implementation_commit": "442e505be02f23f02aecb1ce0cc1ac6eda8ae2e1",
+  "case_key": "DELL",
+  "required_cell_ids": [
+    "CELL::value_capture"
+  ],
+  "research_input_digest": "783de9eafec8bef8b14c8a5761bf7ce42a52b31ff7e68ea1505b264d4ea7d274",
+  "execution": {
+    "model_calls_attempted": 2,
+    "maximum_model_calls": 3,
+    "retries": 0,
+    "fallbacks": 0,
+    "planner_calls": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "tool_choice_sent": false,
+    "product_publication": false
+  },
+  "provider_steps": [
+    {
+      "step_index": 1,
+      "finish_reason": "tool_calls",
+      "tool_names": [
+        "read_reviewed_evidence_for_cell",
+        "read_numeric_facts_for_cell"
+      ],
+      "usage": {
+        "prompt_tokens": 3192,
+        "completion_tokens": 126,
+        "total_tokens": 3318,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 29
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 3192
+      },
+      "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_claim_relation_alias_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-RELATION-ALIAS-CHAT-R2/STEP-01-ATTEMPT-01/model_visible_request.json",
+      "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_claim_relation_alias_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-RELATION-ALIAS-CHAT-R2/STEP-01-ATTEMPT-01/provider_response.json",
+      "request_digest": "446357e945f9db077f4d68c48d771774fa3dab44c38f0a8da0cd32d91acc7a92",
+      "response_digest": "78af77fc73435407132ce79d5feb63236204e28ceab85dc15e508e86f7b91acd",
+      "reasoning_content_persisted": false
+    }
+  ],
+  "accepted_receipt_count": 2,
+  "accepted_receipt_refs": [
+    "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-claim-relation-alias-chat-r2-value-capture/receipt-01-step-01.json",
+    "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-claim-relation-alias-chat-r2-value-capture/receipt-02-step-01.json"
+  ],
+  "tool_counts": {},
+  "deliverable_digest": "",
+  "failure_phase": "provider_transport_or_response",
+  "failure_code": "model_gateway_reasoning_budget_exhausted",
+  "failure_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_claim_relation_alias_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-RELATION-ALIAS-CHAT-R2/STEP-02-ATTEMPT-01/provider_response.json",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-claim-relation-alias-chat-r2-value-capture/full_result.json",
+  "full_result_sha256": "45558201dfdd2b76802a1cc8dee7512c646aec78ef5da0ee2ac58e049b63dd80",
+  "acceptance": {
+    "standard_tool_transport_and_local_contract_pass": false,
+    "required_evidence_and_numeric_reads_enforced": true,
+    "content_assessment_pending": false,
+    "five_cell_live_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false
+  },
+  "known_boundary": "This authority permits exactly one new DeepSeek Chat fixed-Pack DELL value_capture ClaimRelation-alias successor on the clean synced implementation commit. It binds the immutable predecessor reasoning-budget failure, keeps the same reviewed Evidence Pack, provider profile and 16000-token limit, exposes compact relation aliases to the model while retaining full private lineage, and permits at most three exact-once model steps with zero EvidenceRequest, retrieval, embedding, retry, fallback or publication. The run remains a model-analysis unit test and does not claim dynamic Agentic Research, five-cell acceptance, S3 product acceptance or release.",
+  "result_digest": "fa06fce4f646d0c8d06c6261d12572bd53ad925b9a3d05130dcc2f54c05614a1"
+}

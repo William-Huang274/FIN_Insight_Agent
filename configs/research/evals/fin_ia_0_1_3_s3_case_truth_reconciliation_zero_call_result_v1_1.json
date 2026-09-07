@@ -1,0 +1,45 @@
+{
+  "schema_version": "fin_ia_s3_case_truth_reconciliation_zero_call_result_v1_1",
+  "status": "zero_call_case_truth_reconciliation_engineering_failed",
+  "run_id": "FIN013-S3-CASE-TRUTH-RECONCILIATION-R2",
+  "recorded_at": "2026-08-17T12:42:26.0256723+08:00",
+  "implementation_commit": "d8a3820a4075d5f581b1057dc87a1f349dfd149a",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_case_truth_reconciliation_zero_call_authority_v1_1.json",
+  "authority_sha256": "4aae82f3422cba875636fe1062d8ac315b9d0b840882ffee20f8afad40032ca0",
+  "failure": {
+    "phase": "zero_call_deepseek_strict_projection_assertion",
+    "code": "case_truth_proof_runner_projection_contract_mismatch",
+    "raw_exception_class": "KeyError",
+    "raw_exception_detail": "minItems",
+    "provider_or_model_contacted": false,
+    "private_success_result_emitted": false
+  },
+  "root_cause": {
+    "canonical_local_tool_retains_exact_surface_count": true,
+    "provider_wire_projection_may_remove_unsupported_array_keywords": true,
+    "local_validator_remains_final_for_exact_surface_coverage": true,
+    "finance_contract_was_not_weakened": true,
+    "required_fix": "Inspect exact item count on the canonical tool, inspect provider compatibility on the wire projection, and never treat the two representations as the same assertion surface."
+  },
+  "execution": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "embedding_calls": 0,
+    "retries": 0,
+    "candidate_promotions": 0,
+    "business_report_publications": 0
+  },
+  "acceptance": {
+    "split_reconciliation_engineering_proven": false,
+    "natural_semantic_extraction_proven": false,
+    "r7_judgments_repaired": false,
+    "dell_five_cell_content_accepted": false,
+    "generalization_accepted": false,
+    "s3_accepted": false,
+    "release_ready": false
+  },
+  "next_decision": "Preserve R2, fix the proof runner in the same S3 layer, re-run repository regression, bind a new clean implementation commit, and use a fresh R3 zero-call authority. No model canary or research repair is authorized by this failed proof.",
+  "known_boundary": "This is a proof-runner assertion failure before any model, provider, network, embedding, research rewrite, report generation, or publication. It is not evidence that the canonical Case Truth financial contract or DeepSeek strict transport failed.",
+  "result_digest": "9d40b05bc8b5ad18f5b8630b37edb0df1fe075c9ddefa4dc5b7d88060e728ff3"
+}

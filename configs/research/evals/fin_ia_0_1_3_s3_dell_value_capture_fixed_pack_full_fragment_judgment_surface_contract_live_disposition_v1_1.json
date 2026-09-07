@@ -1,0 +1,45 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_full_fragment_judgment_surface_contract_live_disposition_v1_1",
+  "decision_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-FULL-FRAGMENT-JUDGMENT-SURFACE-CONTRACT-LIVE-DISPOSITION-V1.1",
+  "status": "approved_fresh_full_three_fragment_analysis_submission_Chat_live",
+  "recorded_at": "2026-08-16T04:18:00+08:00",
+  "implementation_commit": "9e1c80b6da0916d34a68e610cdcc84141c55d7f4",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "surface_contract_v1_1_required": true,
+  "prior_failed_attempt_reused": false,
+  "reason_for_new_attempt": "FFJ-R1 is an immutable complete-transport contract failure caused by the fragment projection omitting the QF select-then-render surface rule. R2 must use the provider-neutral v1.1 projection and new identities.",
+  "ordered_fragment_tools": [
+    "submit_research_thesis",
+    "submit_research_mechanism",
+    "submit_research_counterargument_and_wwc"
+  ],
+  "execution_budget": {
+    "maximum_model_calls": 6,
+    "maximum_transport_attempts": 6,
+    "maximum_tool_calls": 3,
+    "maximum_evidence_requests": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "planner_calls": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "protocol_switches": 0,
+    "current_product_pointer_mutations": 0
+  },
+  "execution_rules": [
+    "Each analysis node may discuss source-visible values, while each submitted narrative atom must select NUM/QF refs and omit value surfaces.",
+    "The Harness renders selected NUM/QF surfaces outside model-owned atoms and must not delete value information from the deliverable.",
+    "Each fragment receives only its compiled context and already accepted predecessor fragments.",
+    "A failed fragment preserves captures and ends that attempt; any continuation requires a new authority and new identities.",
+    "The terminal Judgment must pass L1 and independent content assessment before dynamic Agentic Research begins."
+  ],
+  "immutable_failed_predecessor_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_full_fragment_judgment_chat_live_result_v1_0.json",
+  "protocol": "deepseek_chat_completions_primary",
+  "dynamic_agentic_research_authorized": false,
+  "five_cell_live_authorized": false,
+  "product_publication_authorized": false,
+  "qualified_human_acceptance": false,
+  "decision_digest": "4812f104cf25004d67cb2f3bf9c7520a8c96e21baa7280a706a70411a9eccf3a",
+  "known_boundary": "This decision authorizes one new DELL value_capture fixed-Pack R2 only. It is not dynamic Agentic Research, a five-cell report, cross-case generalization, S3 acceptance or release."
+}

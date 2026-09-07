@@ -1,0 +1,637 @@
+{
+  "authority_boundary": {
+    "claim_and_agent_scope_verified": true,
+    "guidance_or_approximation_becomes_exact_fact": false,
+    "model_calls": 0,
+    "network_calls": 0,
+    "point_estimate_forbidden_for_bounded_presentations": true,
+    "raw_source_presence_bypasses_admission": false,
+    "source_span_and_normalized_value_verified": true
+  },
+  "base_authority_catalog_digest": "80b16b0b142aa84e88ca4a8ad9f99c68a3155e3ff6c2f8ebc81ce333ebca1e60",
+  "bounded_presentation_additions": [
+    {
+      "authority_kind": "bounded_source_presentation",
+      "authority_ref": "PRES::1BF25CBC9F2BBB72",
+      "claim_boundary": "Forward guidance is not a realized result, product profit, cash conversion, or standalone margin.",
+      "fact_status": "company_guidance",
+      "fiscal_period": "FY",
+      "fiscal_year": 2027,
+      "normalized_values": [
+        "60000000000"
+      ],
+      "period_end": null,
+      "period_role": "forward_guidance",
+      "period_start": null,
+      "point_estimate_forbidden": true,
+      "qualifier": "company guidance stated as roughly",
+      "semantic_metric_key": "ai_server_revenue_guidance",
+      "source_evidence_ref": "EV::7F4D7E6762C21D83",
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::7F4D7E6762C21D83",
+        "publication_date": "2026-05-28",
+        "source_quote": "Full-year AI-Optimized Servers revenue expected to be roughly $60 billion",
+        "source_quote_digest": "e269ac17155b7f079c27172a9284ae78710d70840d8199626258986acb4d0d7f",
+        "source_quote_end": 658,
+        "source_quote_start": 585,
+        "source_reporting_period_end": "2026-05-28",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_type": "8-K",
+        "value_spans": [
+          {
+            "excerpt_end": 658,
+            "excerpt_start": 647,
+            "source_value_surface": "$60 billion"
+          }
+        ]
+      },
+      "ticker": "DELL",
+      "unit": "USD",
+      "value_kind": "approximate"
+    },
+    {
+      "authority_kind": "bounded_source_presentation",
+      "authority_ref": "PRES::265181C995279FAE",
+      "claim_boundary": "This is an NVIDIA upstream concentration read-through and does not establish Dell customer concentration or demand allocation.",
+      "fact_status": "reported_approximation",
+      "fiscal_period": "Q1",
+      "fiscal_year": 2027,
+      "normalized_values": [
+        "50"
+      ],
+      "period_end": "2026-04-26",
+      "period_role": "quarter_discrete",
+      "period_start": "2026-01-26",
+      "point_estimate_forbidden": true,
+      "qualifier": "issuer-reported approximation",
+      "semantic_metric_key": "hyperscaler_share_of_data_center_revenue",
+      "source_evidence_ref": "EV::D86534E903882A43",
+      "source_receipt": {
+        "evidence_owner_ticker": "NVDA",
+        "evidence_ref": "EV::D86534E903882A43",
+        "publication_date": "2026-05-20",
+        "source_quote": "Hyperscaler revenue increased sequentially and remained at approximately 50% of Data Center revenue",
+        "source_quote_digest": "67c0bc7ea92912c588ea5af85be6afda43802a0284dcc78633024ca36cd99d2c",
+        "source_quote_end": 99,
+        "source_quote_start": 0,
+        "source_reporting_period_end": "2026-04-26",
+        "source_tier": "primary_sec_filing",
+        "source_type": "10-Q",
+        "value_spans": [
+          {
+            "excerpt_end": 76,
+            "excerpt_start": 73,
+            "source_value_surface": "50%"
+          }
+        ]
+      },
+      "ticker": "NVDA",
+      "unit": "percent",
+      "value_kind": "approximate"
+    },
+    {
+      "authority_kind": "bounded_source_presentation",
+      "authority_ref": "PRES::5342E5064E92AFD4",
+      "claim_boundary": "Forward guidance is not a realized result and the range midpoint is not an actual fact.",
+      "fact_status": "company_guidance",
+      "fiscal_period": "Q2",
+      "fiscal_year": 2027,
+      "normalized_values": [
+        "44000000000",
+        "45000000000"
+      ],
+      "period_end": null,
+      "period_role": "forward_guidance",
+      "period_start": null,
+      "point_estimate_forbidden": true,
+      "qualifier": "company guidance range",
+      "semantic_metric_key": "revenue_guidance",
+      "source_evidence_ref": "EV::7F4D7E6762C21D83",
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::7F4D7E6762C21D83",
+        "publication_date": "2026-05-28",
+        "source_quote": "Second-quarter FY27 revenue expected between $44.0 billion and $45.0 billion",
+        "source_quote_digest": "037b77d9785604ccd8606656359745ab3b100777ad84004e0406d87c41132241",
+        "source_quote_end": 230,
+        "source_quote_start": 154,
+        "source_reporting_period_end": "2026-05-28",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_type": "8-K",
+        "value_spans": [
+          {
+            "excerpt_end": 212,
+            "excerpt_start": 199,
+            "source_value_surface": "$44.0 billion"
+          },
+          {
+            "excerpt_end": 230,
+            "excerpt_start": 217,
+            "source_value_surface": "$45.0 billion"
+          }
+        ]
+      },
+      "ticker": "DELL",
+      "unit": "USD",
+      "value_kind": "closed_range"
+    },
+    {
+      "authority_kind": "bounded_source_presentation",
+      "authority_ref": "PRES::ADCD1ABD8032868F",
+      "claim_boundary": "The threshold does not reveal concentration, revenue mix, order size, retention, or cancellation behavior.",
+      "fact_status": "management_threshold",
+      "fiscal_period": "Q1",
+      "fiscal_year": 2027,
+      "normalized_values": [
+        "5000"
+      ],
+      "period_end": "2026-05-01",
+      "period_role": "instant",
+      "period_start": null,
+      "point_estimate_forbidden": true,
+      "qualifier": "management threshold",
+      "semantic_metric_key": "ai_customer_count",
+      "source_evidence_ref": "EV::9006E2D4E0F61CCF",
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::9006E2D4E0F61CCF",
+        "publication_date": "2026-05-28",
+        "source_quote": "Our customer count surpassed 5,000",
+        "source_quote_digest": "98f2e874a1340666a83e4f66b7817869ecdf42aaf788e26abf75db97ee8fdec5",
+        "source_quote_end": 457,
+        "source_quote_start": 423,
+        "source_reporting_period_end": "2026-05-01",
+        "source_tier": "official_hosted_management_call_transcript",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "value_spans": [
+          {
+            "excerpt_end": 457,
+            "excerpt_start": 452,
+            "source_value_surface": "5,000"
+          }
+        ]
+      },
+      "ticker": "DELL",
+      "unit": "count",
+      "value_kind": "greater_than"
+    }
+  ],
+  "case_identity": {
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "subject_legal_name": "Dell Technologies Inc.",
+    "subject_ticker": "DELL"
+  },
+  "claim_authority_additions": [
+    {
+      "authority_refs": [
+        "PRES::1BF25CBC9F2BBB72"
+      ],
+      "claim_ref": "WPCLAIM::32A530B75A1BF63D4CDC"
+    },
+    {
+      "authority_refs": [
+        "PRES::1BF25CBC9F2BBB72",
+        "PRES::5342E5064E92AFD4"
+      ],
+      "claim_ref": "WPCLAIM::371A4BE3C0DA1E69045C"
+    },
+    {
+      "authority_refs": [
+        "PRES::5342E5064E92AFD4"
+      ],
+      "claim_ref": "WPCLAIM::486A528C3931F97EDC7B"
+    },
+    {
+      "authority_refs": [
+        "NUM::00D69747B4DDA649",
+        "NUM::437B42CE857F1F0E",
+        "NUM::4ED76683F363AE66",
+        "PRES::ADCD1ABD8032868F"
+      ],
+      "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E"
+    },
+    {
+      "authority_refs": [
+        "TEMP::D255757DD75AC219"
+      ],
+      "claim_ref": "WPCLAIM::D804D4251D16896F29D7"
+    },
+    {
+      "authority_refs": [
+        "PRES::265181C995279FAE"
+      ],
+      "claim_ref": "WPCLAIM::F2E9BB4B2AF8901A7146"
+    }
+  ],
+  "coverage_receipt": {
+    "admitted_bounded_presentation_count": 4,
+    "admitted_exact_or_existing_numeric_count": 3,
+    "claim_with_added_authority_count": 6,
+    "decision_count": 8,
+    "nonadmitted_decision_count": 0,
+    "numeric_or_bounded_decision_count": 7,
+    "temporal_authority_count": 1,
+    "temporal_decision_count": 1
+  },
+  "decision_receipts": [
+    {
+      "authority_ref": "NUM::4ED76683F363AE66",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E"
+        }
+      ],
+      "decision": "admit_exact_numeric_fact",
+      "decision_id": "dell_demand_ai_backlog_actual",
+      "fact_status": "management_reported_actual",
+      "semantic_metric_key": "ai_backlog",
+      "source_presence_alone_granted_authority": false,
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::9006E2D4E0F61CCF",
+        "publication_date": "2026-05-28",
+        "source_quote": "record $51.3 billion of AI backlog",
+        "source_quote_digest": "9f15e1e4008248cd24eb05f472869827f01ae03b1475acebc2b2a8fd77ca4853",
+        "source_quote_end": 158,
+        "source_quote_start": 124,
+        "source_reporting_period_end": "2026-05-01",
+        "source_tier": "official_hosted_management_call_transcript",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "value_spans": [
+          {
+            "excerpt_end": 144,
+            "excerpt_start": 131,
+            "source_value_surface": "$51.3 billion"
+          }
+        ]
+      },
+      "surface_value_validation_pass": true,
+      "value_kind": "exact_scalar"
+    },
+    {
+      "authority_ref": "NUM::437B42CE857F1F0E",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E"
+        }
+      ],
+      "decision": "admit_exact_numeric_fact",
+      "decision_id": "dell_demand_ai_orders_actual",
+      "fact_status": "management_reported_actual",
+      "semantic_metric_key": "ai_orders",
+      "source_presence_alone_granted_authority": false,
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::9006E2D4E0F61CCF",
+        "publication_date": "2026-05-28",
+        "source_quote": "booked $24.4 billion in AI orders",
+        "source_quote_digest": "7ad8ba269ad616d38e13c21d35d6886dd450a2cc76c7f6d32c170501abb0fda4",
+        "source_quote_end": 43,
+        "source_quote_start": 10,
+        "source_reporting_period_end": "2026-05-01",
+        "source_tier": "official_hosted_management_call_transcript",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "value_spans": [
+          {
+            "excerpt_end": 30,
+            "excerpt_start": 17,
+            "source_value_surface": "$24.4 billion"
+          }
+        ]
+      },
+      "surface_value_validation_pass": true,
+      "value_kind": "exact_scalar"
+    },
+    {
+      "authority_ref": "NUM::00D69747B4DDA649",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E"
+        }
+      ],
+      "decision": "admit_exact_numeric_fact",
+      "decision_id": "dell_demand_ai_server_revenue_actual",
+      "fact_status": "management_reported_actual",
+      "semantic_metric_key": "ai_server_revenue",
+      "source_presence_alone_granted_authority": false,
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::9006E2D4E0F61CCF",
+        "publication_date": "2026-05-28",
+        "source_quote": "recognized $16.1 billion of AI server revenue",
+        "source_quote_digest": "38628bee0bd73cf5d1aa7f8a55171926b00a67265929a378238315486d96205e",
+        "source_quote_end": 93,
+        "source_quote_start": 48,
+        "source_reporting_period_end": "2026-05-01",
+        "source_tier": "official_hosted_management_call_transcript",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "value_spans": [
+          {
+            "excerpt_end": 72,
+            "excerpt_start": 59,
+            "source_value_surface": "$16.1 billion"
+          }
+        ]
+      },
+      "surface_value_validation_pass": true,
+      "value_kind": "exact_scalar"
+    },
+    {
+      "authority_ref": "PRES::ADCD1ABD8032868F",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::DEMAND_QUALITY",
+          "claim_ref": "WPCLAIM::BD2D18FD0931E6E3E68E"
+        }
+      ],
+      "decision": "admit_bounded_presentation",
+      "decision_id": "dell_demand_customer_count_threshold",
+      "fact_status": "management_threshold",
+      "semantic_metric_key": "ai_customer_count",
+      "source_presence_alone_granted_authority": false,
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::9006E2D4E0F61CCF",
+        "publication_date": "2026-05-28",
+        "source_quote": "Our customer count surpassed 5,000",
+        "source_quote_digest": "98f2e874a1340666a83e4f66b7817869ecdf42aaf788e26abf75db97ee8fdec5",
+        "source_quote_end": 457,
+        "source_quote_start": 423,
+        "source_reporting_period_end": "2026-05-01",
+        "source_tier": "official_hosted_management_call_transcript",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "value_spans": [
+          {
+            "excerpt_end": 457,
+            "excerpt_start": 452,
+            "source_value_surface": "5,000"
+          }
+        ]
+      },
+      "surface_value_validation_pass": true,
+      "value_kind": "greater_than"
+    },
+    {
+      "authority_ref": "PRES::1BF25CBC9F2BBB72",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::OPERATING_PERFORMANCE",
+          "claim_ref": "WPCLAIM::32A530B75A1BF63D4CDC"
+        },
+        {
+          "agent_id": "AGENT::VALUE_CAPTURE",
+          "claim_ref": "WPCLAIM::371A4BE3C0DA1E69045C"
+        }
+      ],
+      "decision": "admit_bounded_presentation",
+      "decision_id": "dell_guidance_ai_server_revenue_approximation",
+      "fact_status": "company_guidance",
+      "semantic_metric_key": "ai_server_revenue_guidance",
+      "source_presence_alone_granted_authority": false,
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::7F4D7E6762C21D83",
+        "publication_date": "2026-05-28",
+        "source_quote": "Full-year AI-Optimized Servers revenue expected to be roughly $60 billion",
+        "source_quote_digest": "e269ac17155b7f079c27172a9284ae78710d70840d8199626258986acb4d0d7f",
+        "source_quote_end": 658,
+        "source_quote_start": 585,
+        "source_reporting_period_end": "2026-05-28",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_type": "8-K",
+        "value_spans": [
+          {
+            "excerpt_end": 658,
+            "excerpt_start": 647,
+            "source_value_surface": "$60 billion"
+          }
+        ]
+      },
+      "surface_value_validation_pass": true,
+      "value_kind": "approximate"
+    },
+    {
+      "authority_ref": "PRES::5342E5064E92AFD4",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::OPERATING_PERFORMANCE",
+          "claim_ref": "WPCLAIM::486A528C3931F97EDC7B"
+        },
+        {
+          "agent_id": "AGENT::VALUE_CAPTURE",
+          "claim_ref": "WPCLAIM::371A4BE3C0DA1E69045C"
+        }
+      ],
+      "decision": "admit_bounded_presentation",
+      "decision_id": "dell_guidance_q2_revenue_range",
+      "fact_status": "company_guidance",
+      "semantic_metric_key": "revenue_guidance",
+      "source_presence_alone_granted_authority": false,
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::7F4D7E6762C21D83",
+        "publication_date": "2026-05-28",
+        "source_quote": "Second-quarter FY27 revenue expected between $44.0 billion and $45.0 billion",
+        "source_quote_digest": "037b77d9785604ccd8606656359745ab3b100777ad84004e0406d87c41132241",
+        "source_quote_end": 230,
+        "source_quote_start": 154,
+        "source_reporting_period_end": "2026-05-28",
+        "source_tier": "company_authored_unaudited_sec_filing",
+        "source_type": "8-K",
+        "value_spans": [
+          {
+            "excerpt_end": 212,
+            "excerpt_start": 199,
+            "source_value_surface": "$44.0 billion"
+          },
+          {
+            "excerpt_end": 230,
+            "excerpt_start": 217,
+            "source_value_surface": "$45.0 billion"
+          }
+        ]
+      },
+      "surface_value_validation_pass": true,
+      "value_kind": "closed_range"
+    },
+    {
+      "authority_ref": "TEMP::D255757DD75AC219",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::VALUE_CAPTURE",
+          "claim_ref": "WPCLAIM::D804D4251D16896F29D7"
+        }
+      ],
+      "date": "2025-10-31",
+      "decision": "admit_source_reporting_period_end",
+      "decision_id": "dell_value_capture_mix_period_end",
+      "evidence_metadata_automatically_promoted": false,
+      "evidence_ref": "EV::5388E016C17032C1",
+      "reason_code": "period_specific_margin_mix_statement_must_not_be_restated_as_current_quarter_causality"
+    },
+    {
+      "authority_ref": "PRES::265181C995279FAE",
+      "claim_bindings": [
+        {
+          "agent_id": "AGENT::COUNTEREVIDENCE",
+          "claim_ref": "WPCLAIM::F2E9BB4B2AF8901A7146"
+        }
+      ],
+      "decision": "admit_bounded_presentation",
+      "decision_id": "nvda_counterevidence_hyperscaler_share_approximation",
+      "fact_status": "reported_approximation",
+      "semantic_metric_key": "hyperscaler_share_of_data_center_revenue",
+      "source_presence_alone_granted_authority": false,
+      "source_receipt": {
+        "evidence_owner_ticker": "NVDA",
+        "evidence_ref": "EV::D86534E903882A43",
+        "publication_date": "2026-05-20",
+        "source_quote": "Hyperscaler revenue increased sequentially and remained at approximately 50% of Data Center revenue",
+        "source_quote_digest": "67c0bc7ea92912c588ea5af85be6afda43802a0284dcc78633024ca36cd99d2c",
+        "source_quote_end": 99,
+        "source_quote_start": 0,
+        "source_reporting_period_end": "2026-04-26",
+        "source_tier": "primary_sec_filing",
+        "source_type": "10-Q",
+        "value_spans": [
+          {
+            "excerpt_end": 76,
+            "excerpt_start": 73,
+            "source_value_surface": "50%"
+          }
+        ]
+      },
+      "surface_value_validation_pass": true,
+      "value_kind": "approximate"
+    }
+  ],
+  "numeric_fact_additions": [
+    {
+      "authority_mode": "source_bound_management_reported_actual_numeric_fact",
+      "claim_boundary": "Recognized product revenue does not establish standalone product profit, cash conversion, or a cross-period order conversion rate.",
+      "fact_status": "management_reported_actual",
+      "fiscal_period": "Q1",
+      "fiscal_year": 2027,
+      "formula_trace": null,
+      "metric_id": "ai_server_revenue",
+      "numeric_ref": "NUM::00D69747B4DDA649",
+      "period_end": "2026-05-01",
+      "period_role": "quarter_discrete",
+      "period_start": "2026-01-31",
+      "qualifier": "management-reported recognized revenue",
+      "source_evidence_ref": "EV::9006E2D4E0F61CCF",
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::9006E2D4E0F61CCF",
+        "publication_date": "2026-05-28",
+        "source_quote": "recognized $16.1 billion of AI server revenue",
+        "source_quote_digest": "38628bee0bd73cf5d1aa7f8a55171926b00a67265929a378238315486d96205e",
+        "source_quote_end": 93,
+        "source_quote_start": 48,
+        "source_reporting_period_end": "2026-05-01",
+        "source_tier": "official_hosted_management_call_transcript",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "value_spans": [
+          {
+            "excerpt_end": 72,
+            "excerpt_start": 59,
+            "source_value_surface": "$16.1 billion"
+          }
+        ]
+      },
+      "ticker": "DELL",
+      "unit": "USD",
+      "value_decimal": "16100000000"
+    },
+    {
+      "authority_mode": "source_bound_management_reported_actual_numeric_fact",
+      "claim_boundary": "Management-reported orders are not recognized revenue, cash collection, audited backlog conversion, or cancellation evidence.",
+      "fact_status": "management_reported_actual",
+      "fiscal_period": "Q1",
+      "fiscal_year": 2027,
+      "formula_trace": null,
+      "metric_id": "ai_orders",
+      "numeric_ref": "NUM::437B42CE857F1F0E",
+      "period_end": "2026-05-01",
+      "period_role": "quarter_discrete",
+      "period_start": "2026-01-31",
+      "qualifier": "management-reported booked orders",
+      "source_evidence_ref": "EV::9006E2D4E0F61CCF",
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::9006E2D4E0F61CCF",
+        "publication_date": "2026-05-28",
+        "source_quote": "booked $24.4 billion in AI orders",
+        "source_quote_digest": "7ad8ba269ad616d38e13c21d35d6886dd450a2cc76c7f6d32c170501abb0fda4",
+        "source_quote_end": 43,
+        "source_quote_start": 10,
+        "source_reporting_period_end": "2026-05-01",
+        "source_tier": "official_hosted_management_call_transcript",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "value_spans": [
+          {
+            "excerpt_end": 30,
+            "excerpt_start": 17,
+            "source_value_surface": "$24.4 billion"
+          }
+        ]
+      },
+      "ticker": "DELL",
+      "unit": "USD",
+      "value_decimal": "24400000000"
+    },
+    {
+      "authority_mode": "source_bound_management_reported_actual_numeric_fact",
+      "claim_boundary": "The management-defined backlog is not recognized revenue, cash, total cancellable demand, or proof of conversion cadence.",
+      "fact_status": "management_reported_actual",
+      "fiscal_period": "Q1",
+      "fiscal_year": 2027,
+      "formula_trace": null,
+      "metric_id": "ai_backlog",
+      "numeric_ref": "NUM::4ED76683F363AE66",
+      "period_end": "2026-05-01",
+      "period_role": "instant",
+      "period_start": null,
+      "qualifier": "management-reported record backlog",
+      "source_evidence_ref": "EV::9006E2D4E0F61CCF",
+      "source_receipt": {
+        "evidence_owner_ticker": "DELL",
+        "evidence_ref": "EV::9006E2D4E0F61CCF",
+        "publication_date": "2026-05-28",
+        "source_quote": "record $51.3 billion of AI backlog",
+        "source_quote_digest": "9f15e1e4008248cd24eb05f472869827f01ae03b1475acebc2b2a8fd77ca4853",
+        "source_quote_end": 158,
+        "source_quote_start": 124,
+        "source_reporting_period_end": "2026-05-01",
+        "source_tier": "official_hosted_management_call_transcript",
+        "source_type": "EARNINGS_CALL_TRANSCRIPT",
+        "value_spans": [
+          {
+            "excerpt_end": 144,
+            "excerpt_start": 131,
+            "source_value_surface": "$51.3 billion"
+          }
+        ]
+      },
+      "ticker": "DELL",
+      "unit": "USD",
+      "value_decimal": "51300000000"
+    }
+  ],
+  "program_digest": "b0a653cdb03da83a5741922e48b4634ddc54ba94aa81a69d498881dd28ed53f3",
+  "schema_version": "fin_ia_source_bound_numeric_authority_program_v1_0",
+  "temporal_authority_additions": [
+    {
+      "authority_kind": "source_temporal_authority",
+      "authority_ref": "TEMP::D255757DD75AC219",
+      "date": "2025-10-31",
+      "source_evidence_ref": "EV::5388E016C17032C1",
+      "temporal_kind": "source_reporting_period_end"
+    }
+  ]
+}

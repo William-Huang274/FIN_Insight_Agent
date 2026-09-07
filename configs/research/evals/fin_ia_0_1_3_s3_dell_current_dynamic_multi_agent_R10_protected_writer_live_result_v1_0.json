@@ -1,0 +1,53 @@
+{
+  "acceptance": {
+    "S3_pass": false,
+    "eight_dimension_quality_pass": false,
+    "independent_post_writer_L1_L2_pass": false,
+    "product_acceptance": false,
+    "protected_contract_pass": false,
+    "publication": false,
+    "release_ready": false,
+    "writer_protection_contract_pass": false
+  },
+  "authority_digest": "20b6be993ed21160c9169351a2f7eebf27c89a2d8ddbba012149cb99f56c9c16",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_live_authority_v1_0.json",
+  "authority_sha256": "3b0fd694202fece9be4c045488aa706effa5345d30a6fe5e05f32dafbb6999a3",
+  "capture_manifest": [],
+  "case_key": "DELL",
+  "execution": {
+    "candidate_promotions": 0,
+    "external_source_network_calls": 0,
+    "fallbacks": 0,
+    "maximum_new_provider_calls": 3,
+    "new_S1_S2_requests": 0,
+    "new_provider_calls_attempted": 0,
+    "new_provider_http_200": 0,
+    "new_retrieval_rounds": 0,
+    "retries": 0,
+    "upstream_agent_calls": 0,
+    "writer_analysis_calls": 0,
+    "writer_submission_attempts": 0
+  },
+  "failure": {
+    "code": "current_dynamic_writer_live_implementation_binding_json_misparse",
+    "exception_capture_ref": "",
+    "failure_preserved_without_retry": true,
+    "phase": "binding",
+    "provider_failure": false
+  },
+  "implementation_commit": "06813c3b4dc1f76af953d826e1d3792aab441327",
+  "known_boundary": "This exact R11 Writer authority ended in a preserved terminal failure. No retry, fallback, upstream Agent, S1/S2, retrieval, source-network, promotion, product acceptance, publication or release action followed. Any successor requires a root-cause audit, a new zero-call proof and a fresh authority with a new output identity.",
+  "private_full_result_digest": "faab9cbae04723be9801c199ab143f2ccba72659674bcf84e1a3897b9cf510f4",
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-live-r11/full_result.json",
+  "private_full_result_sha256": "f9b6d247ac5411dfdb06eadaf441de800c5848b527149232699d756012609673",
+  "recorded_at": "2026-08-24T05:16:57+08:00",
+  "result_digest": "ef9974590df7475b9a98c33158f1db7ef8a88602005be849ff341ec35818c39a",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_LIVE_R11",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_public_result_v1_0",
+  "status": "terminal_protected_writer_failure_preserved",
+  "usage": {
+    "completion_tokens": 0,
+    "prompt_tokens": 0,
+    "reasoning_tokens": 0
+  }
+}

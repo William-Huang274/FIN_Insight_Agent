@@ -1,0 +1,24 @@
+{
+  "attempt_id": "dell-r34-public-document-consumer-zero-call-r3-20260824T180006Z",
+  "authority": {
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "failed_attempt_relabelled": false,
+    "generation_model_calls": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "release": false
+  },
+  "failed_checks": [
+    "reviewed_public_pdf_reaches_workpaper_under_successor_policy"
+  ],
+  "failed_mutation_checks": [],
+  "known_boundary": "This immutable attempt failed its local control gate and grants no S1, S2, S3, product, publication or release authority.",
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_dynamic_single_unit_zero_call/dell-r34-public-document-consumer-zero-call-r3-20260824T180006Z/full_result.json",
+  "private_result_sha256": "ac0fc2e8e23b5176f93dab43c01480e9eea804231101689be309b2066c879d5f",
+  "recorded_at": "2026-08-24T18:00:07+00:00",
+  "result_digest": "69f9a8b99c780a85a9f3b730d2774d1137654b8bec20f944bbf9983f5727307a",
+  "schema_version": "fin_ia_s3_dynamic_single_unit_zero_call_failure_result_v1_0",
+  "status": "terminal_failed_current_dynamic_single_unit_zero_call_gate"
+}

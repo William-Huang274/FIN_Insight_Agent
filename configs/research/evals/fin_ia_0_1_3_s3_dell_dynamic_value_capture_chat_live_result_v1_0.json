@@ -1,0 +1,195 @@
+{
+  "acceptance": {
+    "L1_content_assessment_pending": false,
+    "current_S1_S2_EvidenceResponse_executed": true,
+    "five_cell_execution": false,
+    "heterogeneous_generalization": false,
+    "natural_dynamic_judgment_executed": false,
+    "natural_planner_executed": true,
+    "qualified_human_acceptance": false,
+    "release_ready": false,
+    "s3_product_acceptance": false,
+    "single_cell_contract_pass": false,
+    "workbench_publication": false
+  },
+  "allowed_claim_relation_refs": [
+    "CR::DELL::COMPANY_MARGIN_OBSERVATION",
+    "CR::DELL::PROFIT_BRIDGE_GAP"
+  ],
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_authority_v1_0.json",
+  "authority_sha256": "8cf61ecdeb5cc83ea5cf0fd8a43219cd31b5da0887fcf8fede9f9049b827f3df",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "claim_surface_input_digest": "3d1247e1105a0a5569ff5f3ae1e2db62c405d362cad81f819eec6c5386d23329",
+  "deliverable_digest": "",
+  "dynamic_research_input_digest": "a3934b6b301b24e3271039a26533f3e564c147974acac7938533036c11072496",
+  "evidence_response_set_digest": "65eeef7523f840c0b2d2bc338231b9355e3457481a8b1d86dcd241a89055c98d",
+  "evidence_response_summary": {
+    "accepted_reviewed_evidence_count": 6,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_promotions": 0,
+    "rejected_reviewed_binding_count": 5,
+    "request_count": 8,
+    "requests_with_accepted_evidence": 6,
+    "typed_gap_count": 10,
+    "unreviewed_candidate_count": 108
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "current_S1_S2_executed": true,
+    "external_source_network_calls": 0,
+    "fallbacks": 0,
+    "fragment_tool_calls_accepted": 2,
+    "maximum_model_calls": 7,
+    "model_calls_attempted": 6,
+    "planner_calls_completed": 1,
+    "product_publication": false,
+    "protocol_switches": 0,
+    "retries": 0
+  },
+  "failure_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-COUNTER-WWC-ANALYSIS-01/provider_response.json",
+  "failure_code": "model_gateway_generation_budget_exhausted",
+  "failure_fragment_tool": "submit_research_counterargument_and_wwc",
+  "failure_phase": "provider_transport_or_response",
+  "fragment_steps": [
+    {
+      "analysis": {
+        "finish_reason": "stop",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-THESIS-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "004e47e167f224a2512f10dd2a697f93bb2424df9e7d0bb7f0a0009657322c0e",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-THESIS-ANALYSIS-01/provider_response.json",
+        "response_digest": "3464d43ccafb977c08b6bf42d8c14605c0c7cacc92de3a1fa805744f4b7c0322",
+        "usage": {
+          "completion_tokens": 2833,
+          "completion_tokens_details": {
+            "reasoning_tokens": 2365
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 3128,
+          "prompt_tokens": 3128,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 5961
+        }
+      },
+      "analysis_messages_digest": "9bd54a4b7bcae445103a49c19cb9ca2d10c79e808b532e5c9a89b234f4133c37",
+      "fragment_context_digest": "06b7bed6f1d3460b41bc668470818cb824f6d955f7d7cf715585e2d63757682e",
+      "fragment_tool": "submit_research_thesis",
+      "submission": {
+        "finish_reason": "tool_calls",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-THESIS-SUBMISSION-01/model_visible_request.json",
+        "request_digest": "73dde902e2029e8d89d091c93f3fe2e344de660e02b0d3e1f2e4adcbc6854a25",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-THESIS-SUBMISSION-01/provider_response.json",
+        "response_digest": "3ad6b639aef869aff0b78853054fc17a4e2d2479c4512580a9a4cfd130ffb88a",
+        "usage": {
+          "completion_tokens": 535,
+          "prompt_cache_hit_tokens": 256,
+          "prompt_cache_miss_tokens": 4702,
+          "prompt_tokens": 4958,
+          "prompt_tokens_details": {
+            "cached_tokens": 256
+          },
+          "total_tokens": 5493
+        }
+      },
+      "submission_messages_digest": "f43ebc3e3ddc4f077afb9e6e3e882d1bf012638d844ed6d99a806149b4700d10",
+      "validated_fragment_digest": "b1da1817bc11a368df9a847823797fc9fa90795283bbbfcc9bff61a385108057"
+    },
+    {
+      "analysis": {
+        "finish_reason": "stop",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-MECHANISM-ANALYSIS-01/model_visible_request.json",
+        "request_digest": "5f56f7086d5e2bc96108a51c4c48946466304962393c9d3cc0c7e79b3d91b67e",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-MECHANISM-ANALYSIS-01/provider_response.json",
+        "response_digest": "22465c186a2c2fbfe2bdabb96f723b8668cbeb9055944b25dba7951ef6911cb6",
+        "usage": {
+          "completion_tokens": 4181,
+          "completion_tokens_details": {
+            "reasoning_tokens": 3849
+          },
+          "prompt_cache_hit_tokens": 0,
+          "prompt_cache_miss_tokens": 4399,
+          "prompt_tokens": 4399,
+          "prompt_tokens_details": {
+            "cached_tokens": 0
+          },
+          "total_tokens": 8580
+        }
+      },
+      "analysis_messages_digest": "3d56562123922c13ad2f7af68e4bd1866b89a8056ac71302cd1e9f7febdd8d82",
+      "fragment_context_digest": "c724a60a547848ba725992f77637230dbda1d31a5f905a43a4d556659035771e",
+      "fragment_tool": "submit_research_mechanism",
+      "submission": {
+        "finish_reason": "tool_calls",
+        "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-MECHANISM-SUBMISSION-01/model_visible_request.json",
+        "request_digest": "324cfc87a5b664f02a2e5a408d2275c7d8cb700baa58e252aea0fb3b97d5fa85",
+        "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-MECHANISM-SUBMISSION-01/provider_response.json",
+        "response_digest": "3d48c857c996d563c511b495ddc90c7e883b92ba7130dc3728653da18f467acc",
+        "usage": {
+          "completion_tokens": 419,
+          "prompt_cache_hit_tokens": 384,
+          "prompt_cache_miss_tokens": 5482,
+          "prompt_tokens": 5866,
+          "prompt_tokens_details": {
+            "cached_tokens": 384
+          },
+          "total_tokens": 6285
+        }
+      },
+      "submission_messages_digest": "c66dedf66a85449e96f3976e2214d98d0c6bb836a135d6bc27a59f7aaf5daaa4",
+      "validated_fragment_digest": "af6480dd1b5479aec5e7c094db994555b8c7dda2444c0499a27236d07e6c6bcb"
+    },
+    {
+      "analysis": {},
+      "analysis_messages_digest": "c2c3062ddd0227eba5bcdf7fc263769bd619d363defe71a57dfe46f0df679c2b",
+      "fragment_context_digest": "c87824cec2863f4e4e7d2b31ff205a5ed5bfa3f3d9e843b03a4c281e93122ae6",
+      "fragment_tool": "submit_research_counterargument_and_wwc",
+      "submission": {},
+      "submission_messages_digest": "",
+      "validated_fragment_digest": ""
+    }
+  ],
+  "implementation_commit": "ba02a24b3d01bdb70898e8ca09e442c50a09562f",
+  "known_boundary": "This exact-once authority permits only one natural DELL SEC-only dynamic value_capture run. It forbids transcript prefeed, unreviewed candidate promotion, retries, fallbacks, external-source network calls, five-cell execution, Workbench publication, S3 acceptance and release claims.",
+  "objective_id": "ROC::c5023a44800a7b8ad60ebaf5",
+  "planner": {
+    "deferred_atom_count": 2,
+    "plan_digest": "64d316f929b37e9e3d06b679afbade4bfea5b3d990e6c0444ddf4e1ceb336f5f",
+    "proposed_atom_count": 10,
+    "provider_step": {
+      "finish_reason": "stop",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-PLANNER-01/model_visible_request.json",
+      "request_digest": "4b171d14c1c9a0fef11dd22e62dd7385e11377a2f284fbbef98e4816e8b3bc68",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-VC-R1/DYNAMIC-VC-R1-PLANNER-01/provider_response.json",
+      "response_digest": "3b0ce181b5c0f56de2c2d6da44819f2cc8e5b7d4a34e3b4834abc61dcd11c833",
+      "usage": {
+        "completion_tokens": 8579,
+        "completion_tokens_details": {
+          "reasoning_tokens": 7358
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1302,
+        "prompt_tokens": 1302,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "total_tokens": 9881
+      }
+    },
+    "selected_atom_count": 8
+  },
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_single_cell/FIN013-S3-DELL-DYNAMIC-VC-R1/full_result.json",
+  "private_full_result_sha256": "72717af8f6b004e5a9b39090bd7a227d663c16dae6eac2a106e6dd7ff6dfd254",
+  "recorded_at": "2026-08-16T11:47:46+00:00",
+  "result_digest": "b573f049af0f2c4e3ed407791bd10d8912afd7463ca037d208d8a631932dde44",
+  "schema_version": "fin_ia_s3_dynamic_single_cell_live_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "terminal_disposition": {
+    "causal_bridge_authority": "",
+    "inference_authority": "",
+    "judgment_status": ""
+  },
+  "terminal_judgment_digest": ""
+}

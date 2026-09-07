@@ -1,0 +1,273 @@
+{
+  "schema_version": "fin_ia_independent_readonly_audit_result_v1_0",
+  "audit_id": "AUDIT::FIN-0.1.3::33A93E7C::DELL-RSQ-02A-03A::R2",
+  "status": "pass_bounded_02A_03A_R2_preparation_report_quality_open",
+  "recorded_at": "2026-08-25T18:00:53+08:00",
+  "reviewed_identity": {
+    "commit": "33a93e7c2916d4f7c0c0ae7f5b96fd79c5a0a94d",
+    "tree": "6169fc66fa453e85bd20641ddeaf8c6ad1f7e151",
+    "parent": "75d99f8d208282d5d050002bd210454103e46a1d",
+    "implementation_commit": "8dbdb96356875ba99f0dff829ba49f01e31e3d84",
+    "implementation_tree": "c3d658e5e1bee3b259c36e3d2a5bf54f71dfb5b2",
+    "start_HEAD_equals_end_HEAD": true,
+    "start_tree_equals_end_tree": true,
+    "start_index_stream_equals_end_index_stream": true,
+    "start_worktree_diff_equals_end_worktree_diff": true,
+    "start_cached_diff_equals_end_cached_diff": true,
+    "start_untracked_stream_equals_end_untracked_stream": true,
+    "index_stream_sha256": "a2472b67919b35642e07dfdbec44df770d22b25b",
+    "empty_diff_stream_sha256": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+    "local_ahead_count": 7,
+    "local_behind_count": 0,
+    "start_worktree_clean": true,
+    "end_worktree_clean": true,
+    "start_index_clean": true,
+    "end_index_clean": true,
+    "untracked_empty": true
+  },
+  "reviewer": {
+    "task": "/root/dell_02a_03a_r2_fresh_dual_audit",
+    "fresh_context_fork": "none",
+    "author_separated": true,
+    "read_only": true,
+    "repository_writes": 0,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "embedding_calls": 0,
+    "reranker_calls": 0,
+    "paid_calls": 0,
+    "qualified_human_authority": false,
+    "qualified_human_decisions_issued": 0,
+    "audit_receipt_created_by_reviewer": false
+  },
+  "immutable_program": {
+    "ref": "docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md",
+    "sha256": "5bbb52691fd183bae5c61c6d6dd1b119544e76ffa2625a42dcb1297bd1ae4f0d",
+    "exact_match": true
+  },
+  "predecessor_failure_preservation": {
+    "R1_failure_receipt_ref": "configs/audits/fin_ia_0_1_3_commit_581c1d6e_dell_02a_03a_fresh_audit_fail_v1_0.json",
+    "R1_failure_receipt_sha256": "892e11be5ac74ae1191e19a6012a41b6f44cb66103836e3a4d10e7edd03260e4",
+    "R1_failure_receipt_digest": "061cd35cbf624e8a7f84b379466396e0870f122799627107afc6ae9541d4a3ea",
+    "R1_severity_counts": {
+      "P0": 1,
+      "P1": 2,
+      "P2": 1,
+      "P3": 0
+    },
+    "R1_artifacts_overwritten": false
+  },
+  "reviewed_artifacts": {
+    "02A_program": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_evidence_admission_program_v1_1.json",
+      "sha256": "57cac4279186a66ef6c83afd48437c583ea8d61d4b6864be7c5541c5283381c8",
+      "program_digest": "0b34d8f68115b1c43af6a9a77af7dba7db883d59ffb2f9d45a59d8c00eafb267"
+    },
+    "02A_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_evidence_admission_manifest_v1_1.json",
+      "sha256": "5064dbbc964b4062ec40d29e3258a3effce1ca130df1527bcec85f9ba2954e1f",
+      "result_digest": "0b74f9698326a4649c3970d5097a65eb0ed3d30bdb8eb7235b0fa5b161f6ab68"
+    },
+    "02A_private": {
+      "ref": "data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r2/full_result.json",
+      "sha256": "9679d9e73668f12fb3e306eb3f5e73723e65a5a97247f74607374367668bcf11",
+      "full_result_digest": "a90ed777fe85956889976aea2baa50d3b2f84f7a058e21e3eacde3f5b1f6c4fd",
+      "admission_packet_digest": "6ea77971bdb039008df6ebb74294fb5d17cef2d55bc8d3867b78104c53b2882f"
+    },
+    "03A_policy": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_policy_v1_1.json",
+      "sha256": "ce02b647753bb4fb0d02dcf913396b70ae3e7080c2de5ae966f46dfce2d92130",
+      "policy_digest": "cb0b4d610315028b39fc86dda5eeeeabb3d671fe716fbcfcdf2ca7b1e91fd819"
+    },
+    "03A_program": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_1.json",
+      "sha256": "581c290df98b75fb06fb86842532cdc2c719d235b2aa6524f89f99a534780f64",
+      "program_digest": "ed6f11a8fe091d84362d2df041d5ea0bffa50a5c781274f60eaf9e73d6919d50"
+    },
+    "exact_02A_public_private_object_and_byte_recompile": true,
+    "exact_03A_object_and_byte_recompile": true,
+    "all_tracked_inputs_match_prepared_and_target_commits": true,
+    "all_private_raw_sha_and_self_digests_match": true
+  },
+  "baseline_actual_recount": {
+    "product_readiness_requests": 8,
+    "candidate_review_items": 18,
+    "human_required_items": 16,
+    "blocked_requests": 4,
+    "partial_requests": 3,
+    "ready_requests": 1,
+    "blocked_request_human_items": 8,
+    "predecessor_review_packet_digest": "b586c09fc66051afbb434ffe5e357e1b7dbdd4827dc22464381dfb425bc2db32",
+    "predecessor_inventory_digest": "4137a3be5f6269133fefd0f90e61091f139d71e281861409d105bb4e619a8da3",
+    "all_item_request_packet_digests_valid": true,
+    "public_private_summary_match": true,
+    "qualified_human_decisions": 0
+  },
+  "claim_use_quality_assessment": {
+    "all_sixteen_manually_reviewed": true,
+    "bounded_possible_use_refs": [
+      "CANDOBJ::0381BE87C0EE31414BA6EA4E",
+      "CANDOBJ::E9A0B4076252D3978B8DAB73",
+      "CANDOBJ::E591113506AF79306D11D8AD",
+      "CANDOBJ::6E0870ECD8935A2BE7A6110F",
+      "CANDOBJ::0B13DC6BFDAF674340B451BC"
+    ],
+    "reject_no_current_material_use_refs": [
+      "CANDOBJ::D7A996F5F40E35C760851932",
+      "CANDOBJ::8EDA130D7FDA0F0B66BA53B5",
+      "CANDOBJ::51BFECDF1794E6CE42A7B2CE",
+      "CANDOBJ::C20F9F784D691747A36DADC3",
+      "CANDOBJ::E56F86F06307372B2F18FA97",
+      "CANDOBJ::27FD9953E64ED8DF1F3B2428",
+      "CANDOBJ::9A29D551F01388C5C785FF82",
+      "CANDOBJ::884E327B61E2F4DCB0788D95",
+      "CANDOBJ::D7769F8FD29DE6807D0B57F6",
+      "CANDOBJ::C250AD7345231BD7C1DF0CBB"
+    ],
+    "exact_duplicate_rebind": {
+      "review_item_ref": "CANDOBJ::040A820BE15FD0CEAF83C0AD",
+      "canonical_review_item_ref": "CANDOBJ::0B13DC6BFDAF674340B451BC",
+      "source_identity_digest": "4abf39992cf1adae1eb5f171d470460695339502020932f088b89b5eb9a79005"
+    },
+    "recommendation_counts": {
+      "bounded_possible_use": 5,
+      "reject_no_current_material_use": 10,
+      "exact_duplicate_rebind": 1
+    },
+    "reject_and_duplicate_claim_and_surface_empty": true,
+    "all_R17_surface_paths_and_claim_membership_valid": true,
+    "residual_period_basis_owner_role_mismatch_found": false,
+    "residual_citation_padding_found": false,
+    "author_recommendations_are_human_decisions": false
+  },
+  "residual_route_and_prior_recount": {
+    "pack_gaps": 14,
+    "independent_product_profit_gap": 1,
+    "pack_gap_acquisition_targets": 8,
+    "total_targets": 9,
+    "currently_unoverlapped_targets": 6,
+    "exact_held_target_ids": [
+      "DELL-RSQ-03A-TARGET-DEMAND-DURABILITY",
+      "DELL-RSQ-03A-TARGET-PRODUCT-PROFIT",
+      "DELL-RSQ-03A-TARGET-WORKING-CAPITAL"
+    ],
+    "non_acquisition_pack_dispositions": 6,
+    "route_families": 7,
+    "route_contracts": 63,
+    "all_route_and_target_digests_valid": true,
+    "exact_target_gap_prior_overlap_map_valid": true,
+    "prior_total_queries": 50,
+    "prior_replayed_queries": 28,
+    "prior_fresh_queries": 22,
+    "fresh_query_units_by_proposition": {
+      "DELL-PROP-PRICE-CONFIGURATION": 6,
+      "DELL-PROP-UNIT-VOLUME": 6,
+      "DELL-PROP-SUPPLY-CHAIN": 10
+    },
+    "prior_aggregate_query_capture_object_proposal_counts": [
+      50,
+      49,
+      15,
+      15
+    ]
+  },
+  "adversarial_probes": {
+    "synchronized_nonhuman_delete_rejected": true,
+    "synchronized_nonhuman_identity_mutation_rejected": true,
+    "ninth_zero_human_request_rejected": true,
+    "human_flag_mutation_rejected": true,
+    "held_identity_move_rejected": true,
+    "pack_gap_swap_rejected": true,
+    "resigned_admission_request_swap_rejected": true,
+    "resigned_admission_claim_use_swap_rejected": true,
+    "prior_query_count_99_stale_rejected": true,
+    "prior_query_count_99_resigned_rejected": true,
+    "prior_query_count_99_rebound_rejected": true,
+    "nested_current_authority_true_rejected": true,
+    "embedding_and_reranker_authority_true_rejected": true,
+    "admission_stage_authority_true_rejected": true,
+    "scheme_www_bare_domain_site_qrel_and_answer_locator_rejected": true,
+    "dirty_worktree_and_output_collision_rejected_read_only": true
+  },
+  "model_and_execution_boundary": {
+    "BM25_and_Qwen3_embedding_0_6B_baseline_retained": true,
+    "four_bit_4B_embedding_shadow_retained": true,
+    "four_bit_4B_reranker_retained": true,
+    "candidate_ceiling_before_reranker": true,
+    "all_TokenBudgetBasis_complete": true,
+    "all_current_model_and_execution_authority_false": true,
+    "network_provider_model_embedding_reranker_calls": [
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "captures_candidate_promotions_evidence_promotions_gap_closures": [
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "tests": {
+    "targeted_passed": 46,
+    "targeted_failed": 0,
+    "targeted_deselected_filesystem_tests": 2,
+    "adjacent_passed": 43,
+    "adjacent_failed": 0,
+    "adjacent_deselected_filesystem_tests": 1,
+    "total_passed": 89,
+    "cache_disabled": true,
+    "bytecode_disabled": true,
+    "equivalent_collision_probes_rejected_without_writes": true
+  },
+  "material_findings": [],
+  "severity_counts": {
+    "P0": 0,
+    "P1": 0,
+    "P2": 0,
+    "P3": 0
+  },
+  "verdicts": {
+    "engineering_and_evidence_pipeline_verdict": "PASS_BOUNDED_02A_03A_R2_PREPARATION",
+    "report_source_and_claim_use_preparation_verdict": "PASS_BOUNDED_PREPARATION_ONLY",
+    "new_report_research_quality_verdict": "OPEN_NOT_ASSESSABLE",
+    "qualified_human_product_verdict": "NOT_ISSUED",
+    "G2_pass": false,
+    "G3_pass": false
+  },
+  "open_report_and_source_quality_items": [
+    "qualified-human decisions for all sixteen admission items",
+    "real internal and residual external source execution",
+    "R17 reader-citation P1",
+    "R17 working-capital operationality P2",
+    "formal Q1-Q8 scoring",
+    "Pack Readiness and S2 bridge recompilation",
+    "reader-readable citation and source appendix",
+    "non-overwriting Writer successor",
+    "qualified-human product acceptance"
+  ],
+  "authority": {
+    "material_findings_open_against_R2_preparation": 0,
+    "DELL_RSQ_02B_entered": false,
+    "qualified_human_decision_count": 0,
+    "03B_internal_chain_execution_authorized": false,
+    "03C_external_capture_execution_authorized": false,
+    "03D_embedding_challenger_authorized": false,
+    "03D_reranker_authorized": false,
+    "G2_pass": false,
+    "G3_pass": false,
+    "S1_pass": false,
+    "S2_pass": false,
+    "S3_pass": false,
+    "report_quality_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "next_legal_action": "The bounded R2 preparation may enter qualified-human 02B review for all sixteen items. Separate scoped authority preparation may begin for the six unoverlapped 03B internal-chain targets, but this audit grants no execution authority. The three held targets remain blocked on 02B. No later source, Evidence, G2/G3, S1/S2/S3, report, product, publication, or release gate is entered by this receipt.",
+  "known_boundary": "This receipt signs only the immutable bounded 02A/03A R2 preparation and its report-source claim-use mapping. It does not issue any of the sixteen human decisions, execute or acquire a source, close a prior-report source gap, prove a public-information boundary, recompile S2, create or assess a new report, accept the product, publish, or release.",
+  "result_digest": "4dd0343c2fac51aa69978ce54e2f990ee0b3f41db57a89d2cd3de443fa58daf9"
+}

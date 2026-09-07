@@ -1,0 +1,59 @@
+{
+  "schema_version": "fin_ia_query_atom_label_adjudication_v1_0",
+  "status": "development_qrel_successor_reviewed_not_product_acceptance",
+  "recorded_at": "2026-08-18",
+  "parent_query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_query_atoms_v1_1.json",
+  "parent_query_atom_eval_sha256_lf": "f61abe5c6cd556e5cbe94d20ee8f1299bc4766dcc878f3dcd06c09d7fecf0a8f",
+  "review_basis": {
+    "trigger": "The label-blind v1.6 financial shortlist ranked current NVIDIA issuer-authored counterevidence ahead of the four originally registered positives, exposing incomplete qrels rather than a retrieval miss.",
+    "business_review": [
+      "A current fiscal-2027 NVIDIA 10-Q claim states that long-term supply and capacity commitments have increased product costs.",
+      "A current fiscal-2027 NVIDIA 10-Q claim states that NVIDIA was effectively foreclosed from China's data-center compute market.",
+      "A current fiscal-2027 NVIDIA 10-Q claim states that GPU export controls can reduce demand for related networking products.",
+      "A current fiscal-2027 NVIDIA 10-Q claim states that supply constraints can extend lead times."
+    ],
+    "why_relevant": "Each claim directly narrows an issuer-counterevidence proposition through cost, addressable-market, demand or execution risk. None is a model inference or a numerical fact projection.",
+    "duplicate_policy": "Only the current fiscal-2027 object for each reviewed theme is added. Older repeated formulations remain unjudged and do not become hard negatives merely because they are redundant.",
+    "labels_joined_after_candidate_generation_and_all_model_scoring": true,
+    "no_query_or_ranking_rule_changed_for_this_adjudication": true
+  },
+  "authority": {
+    "adjudication_authority": "codex_business_semantic_development_review",
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "causal_authority": false,
+    "owner_acceptance": false,
+    "runtime_promotion_authorized": false
+  },
+  "adjudications": [
+    {
+      "atom_id": "S1_VS4_NVDA_ISSUER_COUNTER",
+      "add_positive_object_ids": [
+        "COBJ::105491ae67a1a5e0c775beb2",
+        "COBJ::72c46d22715a76a9e0da2233",
+        "COBJ::d7e1d18e750e4343728bc382",
+        "COBJ::ef41f60d880ab175d43e2963"
+      ],
+      "expected_roles_by_object_id": {
+        "COBJ::105491ae67a1a5e0c775beb2": [
+          "supply_risk_or_counterevidence",
+          "capacity_commitment_cost"
+        ],
+        "COBJ::72c46d22715a76a9e0da2233": [
+          "regulatory_or_policy_exposure",
+          "demand_risk_or_counterevidence"
+        ],
+        "COBJ::d7e1d18e750e4343728bc382": [
+          "regulatory_or_policy_exposure",
+          "demand_risk_or_counterevidence"
+        ],
+        "COBJ::ef41f60d880ab175d43e2963": [
+          "supply_risk_or_counterevidence",
+          "lead_time_risk"
+        ]
+      },
+      "source_scope": "NVIDIA fiscal-2027 Form 10-Q published 2026-05-20",
+      "decision": "add_as_reviewed_positive_for_development_evaluation_only"
+    }
+  ]
+}

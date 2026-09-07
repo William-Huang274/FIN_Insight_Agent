@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_fixed_pack_claim_authority_zero_call_authority_v1_0",
+  "authority_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-AUTHORITY-ZERO-CALL-V1.0",
+  "status": "fresh_zero_network_zero_model_current_consumer_proof_authorized",
+  "issued_at": "2026-08-14T18:10:00+08:00",
+  "clean_implementation": {
+    "implementation_commit": "a3923d8ab829b2857503ba5951d3d080bec09517",
+    "head_must_equal_implementation_commit": true,
+    "upstream_must_equal_implementation_commit": true,
+    "tracked_worktree_must_be_clean": true,
+    "only_authority_may_be_untracked": true
+  },
+  "bound_inputs": {
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_2.json",
+    "consumer_policy_sha256": "88b9649fc628034ab986900988788753aafed8f6fdde1cd19b6ef5c19f8fca16",
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+    "objective_sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548",
+    "planner_atoms_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+    "planner_atoms_sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d",
+    "current_evidence_pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+    "current_evidence_pack_result_sha256": "e902eb8c6873caa6b139d2aa8b6261556392eaa0346a0f67d63597955199df10",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "bfbe6f11368bb4130c8b0f6594baa65c254a61bcc863ee4922c0a2ca5047f252",
+    "runner_ref": "scripts/research/run_s3_current_research_consumer_zero_call.py",
+    "runner_sha256": "79c23bb8ef900adc34304da16cf4a3c6759d5ac080bf93759a4f003624c4dbd7",
+    "claim_authority_policy_ref": "configs/research/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_v1_0.json",
+    "claim_authority_policy_sha256": "ee46046e71bd6aac4961c11c6fe74d62f75a61cf7fb2c1fb39f4f17dc339dea4",
+    "prior_r2_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/research-context-chat-r2-value-capture/full_result.json",
+    "prior_r2_full_result_sha256": "e0d36f693cea7879f915c1ec774c41c455498c66577102a67ba879980cf685dc",
+    "prior_r2_content_assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_research_context_chat_content_assessment_v1_1.json",
+    "prior_r2_content_assessment_sha256": "64a6b75d55aab3820ca6cadfb8b28ce29b8c7eeaa11512a3073ed3a1a71d3663",
+    "loop_policy_ref": "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json",
+    "loop_policy_sha256": "16688fa7ffa9dd98eaf0a3d0e2e687fc8cfa86fd30e3f647931d1581e0d0f5e4",
+    "claim_authority_fake_output_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_fake_payload_v1_0.json",
+    "claim_authority_fake_output_sha256": "02fb6a03b0da6833d85a20a2d4ce4683235463044db746811e12288c624ca41f",
+    "current_consumer_implementation_ref": "src/sec_agent/research/current_consumer.py",
+    "current_consumer_implementation_sha256": "7ee92877cbe224a1433fedd6ea3ccfc725bfa7ef74f096f49bdd41fcbb73111f",
+    "claim_authority_implementation_ref": "src/sec_agent/research/claim_authority.py",
+    "claim_authority_implementation_sha256": "bfa9434a714611b46ecc15c8ba61277cf73d5d3eaf7f72627be1480f4953155b",
+    "bounded_loop_implementation_ref": "src/sec_agent/research/bounded_finance_loop.py",
+    "bounded_loop_implementation_sha256": "443b5c3e7e737c1fd3794d7b7a48019919e1bd6d29e2fd9dbe5da08660195789"
+  },
+  "execution_budget": {
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0,
+    "retries": 0,
+    "current_product_pointer_mutation": "forbidden",
+    "fake_deliverable_publication": "forbidden"
+  },
+  "required_assertions": [
+    "head_and_upstream_equal_bound_implementation_commit",
+    "historical_v1_2_input_and_R2_result_remain_immutable",
+    "saved_R2_overclaim_is_rejected_by_the_successor",
+    "bounded_informative_judgment_remains_model_authored_and_passes",
+    "direct_bridge_wrong_scope_and_causal_surface_mutations_fail_closed",
+    "fixed_pack_loop_uses_one_parallel_read_pair_one_judgment_and_zero_EvidenceRequests",
+    "zero_network_model_provider_embedding_retry_and_publication"
+  ],
+  "output_contract": {
+    "private_output_root_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-claim-authority-zero-call-r1",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_zero_call_result_v1_0.json",
+    "result_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-AUTHORITY-ZERO-CALL-R1"
+  },
+  "known_boundary": "This is Layer One only. It reuses the immutable DELL value_capture fixed reviewed Pack and performs zero dynamic retrieval, model, provider, embedding, retry or publication. It proves the local claim-authority contract and saved-R2 negative replay, not natural model quality, Agentic Research, a five-cell report, S3 acceptance or release. A passing result may support a separate exact-once authority for one fixed-pack Chat canary, which must return to Owner before Layer Two."
+}

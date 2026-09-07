@@ -1,0 +1,64 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_canary_authority_v1_0",
+  "authority_id": "FIN-0.1.3-S3-DELL-CURRENT-RESEARCH-CONSUMER-CANARY-AUTHORITY-V1.0",
+  "status": "signed_exact_once_research_synthesis_authority",
+  "issued_at": "2026-08-13T23:59:00+08:00",
+  "authority_basis": "owner_authorized_continuation_after_official_Dell_transcript_intake_and_clean_zero_call_reproof",
+  "implementation_commit": "e470022e26c6c61d6e6525627b68b7a6f5a459b4",
+  "case_key": "DELL",
+  "bound_inputs": {
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_0.json",
+    "consumer_policy_sha256": "6830d5c03158c6b6d2b1e4f3f5080926462d99a7bd4cfec93ce63880ac575065",
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+    "objective_sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548",
+    "planner_atoms_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+    "planner_atoms_sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d",
+    "current_evidence_pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+    "current_evidence_pack_result_sha256": "e902eb8c6873caa6b139d2aa8b6261556392eaa0346a0f67d63597955199df10",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "bfbe6f11368bb4130c8b0f6594baa65c254a61bcc863ee4922c0a2ca5047f252",
+    "clean_zero_call_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_zero_call_result_v1_1.json",
+    "clean_zero_call_result_sha256": "aaeeb20d9fa005ffbfd74a26ed2a6fdbaa9016faf8f1a36cc78dee11703c5da1",
+    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_pro_research_consumer_canary_profile_v1_0.json",
+    "provider_profile_sha256": "c6f08bed944cd16c2952133b36138c6589c8315a7423e2f359d4d56df4d8207b",
+    "runner_ref": "scripts/research/run_s3_current_research_consumer_canary.py",
+    "runner_sha256": "538109893c1150279e2c92b3b1752730624669773b66d96355366d9dcc2992f3",
+    "model_visible_messages_sha256": "a27765f8b1f52d84e0930ccb071104d20bed9448f255ca0810764a6077f496df"
+  },
+  "budget": {
+    "model_calls": 1,
+    "transport_attempts": 1,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "planner_calls": 0,
+    "current_product_pointer_mutations": 0
+  },
+  "pass_conditions": [
+    "provider_response_is_exact_JSON",
+    "research_input_digest_matches_clean_R2",
+    "all_five_cells_are_present_exactly_once",
+    "all_structured_refs_belong_to_their_cell",
+    "model_prose_contains_no_free_exact_numeric_date_unit_currency_or_citation_surface",
+    "judgment_mechanism_counterargument_and_WWC_remain_model_authored",
+    "structured_deliverable_compiles_without_harness_generated_conclusion"
+  ],
+  "stop_conditions": [
+    "transport_or_provider_failure",
+    "non_JSON_or_extra_prose",
+    "schema_semantic_identity_or_ref_boundary_failure",
+    "finish_reason_other_than_stop",
+    "any_budget_or_product_publication_expansion"
+  ],
+  "failure_policy": "preserve_request_response_capture_and_terminal_result_without_retry_fallback_field_patch_or_automatic_R2",
+  "output_contract": {
+    "capture_root_ref": ".codex_runtime/model_runs/fin_0_1_3_s3/dell_current_research_consumer",
+    "private_output_root_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/canary-r1",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_research_consumer_canary_result_v1_0.json",
+    "result_id": "FIN-0.1.3-S3-DELL-CURRENT-RESEARCH-CONSUMER-CANARY-R1",
+    "run_id": "FIN013-S3-DELL-CURRENT-CONSUMER-CANARY-R1",
+    "attempt_id": "ATTEMPT-01",
+    "product_publication": "forbidden"
+  },
+  "known_boundary": "This authority tests only one natural DeepSeek synthesis node against the current fixed Dell Evidence Pack and NumericFacts. Contract success still requires L1 and content-quality review and does not prove dynamic three-case Agentic Research, Workbench publication, S3 acceptance or release readiness."
+}

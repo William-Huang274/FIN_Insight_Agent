@@ -1,0 +1,429 @@
+{
+  "schema_version": "fin_ia_s2_product_value_bridge_program_v1_0",
+  "status": "approved_zero_call_product_value_bridge",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "evidence_pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98",
+  "task_quantitative_projection_digest": "8bcf479a2116880aecac23c9b292bdbda7686d95c1e4a0aa218fe48bf1cf7539",
+  "evidence_pack_binding": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+    "sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1"
+  },
+  "task_quantitative_result_binding": {
+    "ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_task_quantitative_program_result_v1_1.json",
+    "sha256": "792c0c87f7b2b508e123c9a9780be7bc6909d4cc83b80f86c920d913721dd95d",
+    "result_digest": "7c2d0019f1b50aa6e41cc5d8ab5e9046eefbb4ea068dbeb88ff28bce74074e2e"
+  },
+  "evidence_supports": [
+    {
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "evidence_item_digest": "4d8ba7a500fa4bc6a43cc0cdfa5102e9899cdb5b0e1a6c1e2af1cb3da3cdbd36",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+      "required_slot_id": "pricing_mix_value_capture",
+      "required_facet_ids": [
+        "profit_capture_bridge"
+      ],
+      "required_source_text_terms": [
+        "AI-optimized servers | $ | 16,132 | $ | 1,882 | 757%",
+        "Total ISG net revenue | $ | 29,009 | $ | 10,317 | 181%",
+        "ISG operating income | $ | 3,055 | $ | 998 | 206%",
+        "% of ISG net revenue | 10.5 | % | 9.7 | %"
+      ]
+    },
+    {
+      "support_id": "SUPPORT::DELL-Q1-FY27-AI-PROFITABILITY-TARGET",
+      "evidence_item_digest": "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1",
+      "target_id": "CURRENT_DOC::DELL::EARNINGS_CALL_TRANSCRIPT::0D030B0885B1F6EEB005::PAGE_004::CLAIM::106E3CED4229",
+      "required_slot_id": "pricing_mix_value_capture",
+      "required_facet_ids": [
+        "ai_system_margin",
+        "ai_server_profitability_target"
+      ],
+      "required_source_text_terms": [
+        "AI server profitability was in line with our mid- single-digit operating income rate target."
+      ]
+    },
+    {
+      "support_id": "SUPPORT::DELL-AI-MIX-MARGIN-PRESSURE",
+      "evidence_item_digest": "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1",
+      "target_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05_CLAIM_CA0D3EC4",
+      "required_slot_id": "pricing_mix_value_capture",
+      "required_facet_ids": [
+        "mix_or_product_attribution",
+        "margin_or_unit_economics"
+      ],
+      "required_source_text_terms": [
+        "The decreases in gross margin percentage and non-GAAP gross margin percentage were primarily driven by a shift in mix towards our AI-optimized server offerings."
+      ]
+    },
+    {
+      "support_id": "SUPPORT::DELL-PUBLIC-RECOMMENDED-BUNDLE-QUOTE",
+      "evidence_item_digest": "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f",
+      "target_id": "EXTEV::A42D799F558FC8AE4B81",
+      "required_slot_id": "pricing_mix_value_capture",
+      "required_facet_ids": [
+        "observable_bundled_price_range",
+        "recommended_price_boundary"
+      ],
+      "required_source_text_terms": [
+        "Dell quoted $757,231 as the purchase price for the hardware."
+      ]
+    },
+    {
+      "support_id": "SUPPORT::DELL-PUBLIC-PROCUREMENT-PRICE",
+      "evidence_item_digest": "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f",
+      "target_id": "EXTEV::FC03781907530AD27EB6",
+      "required_slot_id": "pricing_mix_value_capture",
+      "required_facet_ids": [
+        "bounded_public_procurement_contract_value",
+        "bundled_service_boundary"
+      ],
+      "required_source_text_terms": [
+        "The total contract cost for the purchase of the equipment, delivery, installation, training and the five (5) year maintenance and support services plan is $2,278,577.28."
+      ]
+    },
+    {
+      "support_id": "SUPPORT::DELL-PUBLIC-PROCUREMENT-UNITS",
+      "evidence_item_digest": "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f",
+      "target_id": "EXTEV::FC03781907530AD27EB6",
+      "required_slot_id": "demand_volume_quality",
+      "required_facet_ids": [
+        "bounded_public_procurement_unit_observation"
+      ],
+      "required_source_text_terms": [
+        "CSpire will provide (4) high performance computer systems, installation, training, and a five (5) year maintenance and support."
+      ]
+    }
+  ],
+  "source_numeric_observations": [
+    {
+      "observation_id": "dell_ai_server_revenue_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "ai_optimized_server_revenue",
+      "value_decimal": "16132",
+      "value_surface": "16,132",
+      "unit": "USD_million",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_product_revenue",
+      "source_text_term": "AI-optimized servers | $ | 16,132 | $ | 1,882 | 757%",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_ai_server_revenue_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "ai_optimized_server_revenue",
+      "value_decimal": "1882",
+      "value_surface": "1,882",
+      "unit": "USD_million",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_product_revenue",
+      "source_text_term": "AI-optimized servers | $ | 16,132 | $ | 1,882 | 757%",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_revenue_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_revenue",
+      "value_decimal": "29009",
+      "value_surface": "29,009",
+      "unit": "USD_million",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_segment_revenue",
+      "source_text_term": "Total ISG net revenue | $ | 29,009 | $ | 10,317 | 181%",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_revenue_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_revenue",
+      "value_decimal": "10317",
+      "value_surface": "10,317",
+      "unit": "USD_million",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_segment_revenue",
+      "source_text_term": "Total ISG net revenue | $ | 29,009 | $ | 10,317 | 181%",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_company_revenue_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "company_revenue",
+      "value_decimal": "43842",
+      "value_surface": "43,842",
+      "unit": "USD_million",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_total_revenue_surface",
+      "source_text_term": "Net revenue | $ | 43,842 | $ | 23,378 | 88%",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_company_revenue_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "company_revenue",
+      "value_decimal": "23378",
+      "value_surface": "23,378",
+      "unit": "USD_million",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_total_revenue_surface",
+      "source_text_term": "Net revenue | $ | 43,842 | $ | 23,378 | 88%",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_operating_income_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_operating_income",
+      "value_decimal": "3055",
+      "value_surface": "3,055",
+      "unit": "USD_million",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_segment_operating_income",
+      "source_text_term": "ISG operating income | $ | 3,055 | $ | 998 | 206%",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_operating_income_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_operating_income",
+      "value_decimal": "998",
+      "value_surface": "998",
+      "unit": "USD_million",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_segment_operating_income",
+      "source_text_term": "ISG operating income | $ | 3,055 | $ | 998 | 206%",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_operating_margin_q1_fy27",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_operating_margin",
+      "value_decimal": "10.5",
+      "value_surface": "10.5",
+      "unit": "percent",
+      "period_label": "FY2027_Q1",
+      "observation_scope": "target_company_segment_operating_margin",
+      "source_text_term": "% of ISG net revenue | 10.5 | % | 9.7 | %",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_isg_operating_margin_q1_fy26",
+      "support_id": "SUPPORT::DELL-Q1-FY27-PRODUCT-SEGMENT-TABLE",
+      "metric_id": "isg_operating_margin",
+      "value_decimal": "9.7",
+      "value_surface": "9.7",
+      "unit": "percent",
+      "period_label": "FY2026_Q1",
+      "observation_scope": "target_company_segment_operating_margin",
+      "source_text_term": "% of ISG net revenue | 10.5 | % | 9.7 | %",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_public_recommended_bundle_price_sample",
+      "support_id": "SUPPORT::DELL-PUBLIC-RECOMMENDED-BUNDLE-QUOTE",
+      "metric_id": "public_recommended_bundle_price",
+      "value_decimal": "757231",
+      "value_surface": "$757,231",
+      "unit": "USD_bundled_recommended_quote",
+      "period_label": "quote_observed_2025_03_12",
+      "observation_scope": "bounded_configuration_and_service_bundle",
+      "source_text_term": "Dell quoted $757,231 as the purchase price for the hardware.",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_public_procurement_contract_value_sample",
+      "support_id": "SUPPORT::DELL-PUBLIC-PROCUREMENT-PRICE",
+      "metric_id": "public_procurement_contract_value",
+      "value_decimal": "2278577.28",
+      "value_surface": "$2,278,577.28",
+      "unit": "USD_bundled_procurement_contract",
+      "period_label": "board_book_2025_02_20",
+      "observation_scope": "single_public_project_with_delivery_training_and_five_year_support",
+      "source_text_term": "The total contract cost for the purchase of the equipment, delivery, installation, training and the five (5) year maintenance and support services plan is $2,278,577.28.",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    },
+    {
+      "observation_id": "dell_public_procurement_system_count_sample",
+      "support_id": "SUPPORT::DELL-PUBLIC-PROCUREMENT-UNITS",
+      "metric_id": "public_procurement_system_count",
+      "value_decimal": "4",
+      "value_surface": "4",
+      "unit": "systems_single_public_project",
+      "period_label": "board_book_2025_02_20",
+      "observation_scope": "single_public_project_not_company_shipments",
+      "source_text_term": "CSpire will provide (4) high performance computer systems, installation, training, and a five (5) year maintenance and support.",
+      "numeric_fact_authority": false,
+      "target_company_aggregate_authority": false
+    }
+  ],
+  "required_source_observation_ids": [
+    "dell_ai_server_revenue_q1_fy27",
+    "dell_ai_server_revenue_q1_fy26",
+    "dell_isg_revenue_q1_fy27",
+    "dell_isg_revenue_q1_fy26",
+    "dell_company_revenue_q1_fy27",
+    "dell_company_revenue_q1_fy26",
+    "dell_isg_operating_income_q1_fy27",
+    "dell_isg_operating_income_q1_fy26",
+    "dell_isg_operating_margin_q1_fy27",
+    "dell_isg_operating_margin_q1_fy26",
+    "dell_public_recommended_bundle_price_sample",
+    "dell_public_procurement_contract_value_sample",
+    "dell_public_procurement_system_count_sample"
+  ],
+  "qualitative_observations": [
+    {
+      "observation_id": "dell_management_ai_server_profitability_target",
+      "support_id": "SUPPORT::DELL-Q1-FY27-AI-PROFITABILITY-TARGET",
+      "observation_role": "management_target_not_realized_product_margin",
+      "source_text_term": "AI server profitability was in line with our mid- single-digit operating income rate target."
+    },
+    {
+      "observation_id": "dell_ai_mix_margin_pressure",
+      "support_id": "SUPPORT::DELL-AI-MIX-MARGIN-PRESSURE",
+      "observation_role": "issuer_directional_mix_attribution_without_product_margin",
+      "source_text_term": "The decreases in gross margin percentage and non-GAAP gross margin percentage were primarily driven by a shift in mix towards our AI-optimized server offerings."
+    }
+  ],
+  "company_context_selectors": [
+    {
+      "selector_id": "company_revenue_q1_fy27",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "revenue",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_revenue_q1_fy26",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "revenue",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_gross_profit_q1_fy27",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "gross_profit",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_gross_profit_q1_fy26",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "gross_profit",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_operating_income_q1_fy27",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "operating_income",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_operating_income_q1_fy26",
+      "quantitative_kind": "reported_fact",
+      "metric_id": "operating_income",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_gross_margin_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "gross_margin",
+      "derived_metric_id": "gross_margin",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_gross_margin_q1_fy26",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "gross_margin",
+      "derived_metric_id": "gross_margin",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_operating_margin_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "operating_margin",
+      "derived_metric_id": "operating_margin",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_operating_margin_q1_fy26",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "operating_margin",
+      "derived_metric_id": "operating_margin",
+      "fiscal_year": 2026,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_revenue_yoy_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "revenue",
+      "derived_metric_id": "revenue_year_over_year_growth",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_gross_profit_yoy_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "gross_profit",
+      "derived_metric_id": "gross_profit_year_over_year_growth",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    },
+    {
+      "selector_id": "company_operating_income_yoy_q1_fy27",
+      "quantitative_kind": "deterministic_derived_metric",
+      "metric_id": "operating_income",
+      "derived_metric_id": "operating_income_year_over_year_growth",
+      "fiscal_year": 2027,
+      "fiscal_period": "Q1",
+      "period_role": "quarter_discrete"
+    }
+  ],
+  "required_industry_estimate_keys": [
+    "global_ai_server_shipment_growth_2025_base",
+    "global_ai_server_shipment_growth_2025_downside"
+  ],
+  "required_pack_gap_ids": [
+    "dell-gap-pricing-asp",
+    "dell-gap-pricing-units",
+    "dell-gap-price-volume-mix-bridge"
+  ],
+  "product_profit_bridge_gap": {
+    "gap_id": "dell-gap-product-profit-attribution",
+    "owning_stage": "S2",
+    "gap_code": "product_cost_and_opex_allocation_not_disclosed",
+    "reason_zh": "AI server 收入与 ISG 收入／经营利润可以同表观察，但没有 AI server 产品成本、已实现产品毛利、经营费用分配或经审计产品经营利润；管理层目标带不能替代这些输入。",
+    "closed": false,
+    "public_information_gap_authority": false
+  },
+  "known_boundary": "This zero-call bridge compiles source-visible DELL product, segment and company revenue surfaces, deterministic revenue-share and segment-margin ratios, company NumericFact context, bounded price/unit observations and industry scenarios. It intentionally leaves target-company PVM and product-profit values null while ASP, units, mix weights, product costs and operating-expense allocation are missing. It creates no NumericFact, does not divide bundled contracts into ASP, does not multiply management targets into product profit, and does not qualify S2, S3 or the product."
+}

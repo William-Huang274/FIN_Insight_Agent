@@ -1,0 +1,153 @@
+{
+  "schema_version": "fin_ia_s1c_runtime_query_atom_v2_adjudication_v1_0",
+  "status": "codex_reviewed_business_semantic_successor_overlay_not_owner_acceptance",
+  "recorded_at": "2026-08-13",
+  "policy": {
+    "adjudication_authority": "codex_business_semantic_audit",
+    "owner_acceptance": false,
+    "replace_only_materially_wrong_object_relations": true,
+    "unchanged_relations_follow_stable_object_key": true,
+    "require_target_identity_rotation": false,
+    "allow_stable_compiled_id_only_when_present_in_target_population": true,
+    "source_match_is_not_evidence_object_match": true
+  },
+  "replacements": [
+    {
+      "atom_id": "S1C_ATOM_04_DELL_UPSTREAM_MU",
+      "business_reason_zh": "HBM4 已进入主要客户平台的批量出货可作为有边界的供给上下文；泛化的管理层投资表述语义相关但不足以作为硬负例，改为未裁决。",
+      "labels": {
+        "positive_object_keys": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03::claim::02"
+        ],
+        "hard_negative_object_keys": [],
+        "unjudged_object_keys": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::04"
+        ],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03::claim::02": [
+            "direct_supply_capacity_signal",
+            "observed_operating_result",
+            "relationship_context"
+          ],
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::04": [
+            "direct_demand_signal",
+            "management_guidance",
+            "observed_operating_result",
+            "relationship_context"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+      "business_reason_zh": "旧正例只是正确 10-Q 中被错误切断的半句话。改用同一当前文件内明确描述扩张采购、预付产能协议及供需错配风险的完整 claim；收入表继续作为角色错误负例。",
+      "labels": {
+        "positive_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::01",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::02",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::05",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::12"
+        ],
+        "hard_negative_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::06",
+          {
+            "object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04::table::8",
+            "object_kind": "metric_row",
+            "metric_row_label": "Revenue"
+          }
+        ],
+        "unjudged_object_keys": [],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::01": [
+            "direct_supply_capacity_signal",
+            "demand_risk_or_counterevidence"
+          ],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::02": [
+            "direct_supply_capacity_signal",
+            "supply_risk_or_counterevidence"
+          ],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::05": [
+            "demand_risk_or_counterevidence",
+            "supply_risk_or_counterevidence"
+          ],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::12": [
+            "demand_risk_or_counterevidence",
+            "supply_risk_or_counterevidence"
+          ],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::06": [
+            "generic_or_boilerplate"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_11_MU_DOWNSTREAM_NVDA",
+      "business_reason_zh": "旧正例同样是被切断的半句话。下游需求读穿应由 NVIDIA 对需求预测、产能承诺超过需求及供需管理波动的完整披露支撑；单独的预付产能协议只保留为未裁决上下文。",
+      "labels": {
+        "positive_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::01",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::05",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::12"
+        ],
+        "hard_negative_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::06",
+          {
+            "object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04::table::8",
+            "object_kind": "metric_row",
+            "metric_row_label": "Revenue"
+          }
+        ],
+        "unjudged_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::02"
+        ],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::01": [
+            "direct_supply_capacity_signal",
+            "demand_risk_or_counterevidence"
+          ],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::05": [
+            "demand_risk_or_counterevidence",
+            "supply_risk_or_counterevidence"
+          ],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::12": [
+            "demand_risk_or_counterevidence",
+            "supply_risk_or_counterevidence"
+          ],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::06": [
+            "generic_or_boilerplate"
+          ],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::02": [
+            "direct_supply_capacity_signal",
+            "supply_risk_or_counterevidence"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_17_NVDA_UPSTREAM_MU",
+      "business_reason_zh": "HBM4 对主要客户平台的批量出货是有边界的供给信号；管理层泛化投资表述不是可靠硬负例，改为未裁决。",
+      "labels": {
+        "positive_object_keys": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03::claim::02"
+        ],
+        "hard_negative_object_keys": [],
+        "unjudged_object_keys": [
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::04"
+        ],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03::claim::02": [
+            "direct_supply_capacity_signal",
+            "observed_operating_result",
+            "relationship_context"
+          ],
+          "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03::claim::04": [
+            "direct_demand_signal",
+            "management_guidance",
+            "observed_operating_result",
+            "relationship_context"
+          ]
+        }
+      }
+    }
+  ]
+}

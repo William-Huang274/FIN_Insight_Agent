@@ -1,0 +1,1206 @@
+{
+  "schema_version": "fin_ia_s1_natural_requirement_evidence_review_v1_1",
+  "status": "provisional_project_audit_successor_pending_owner_or_qualified_human_review",
+  "recorded_at": "2026-08-23T00:00:00+08:00",
+  "case_key": "DELL",
+  "research_plan_digest": "92563b281438079cc039bff593eab84524e468ba409c22ffd15e92b87edd72be",
+  "scope_compilation_digest": "df5451b07023540b4df8b230174629d7362cbb0eaa3e36e3b20728f273edba66",
+  "evidence_pack_payload_digest": "82ea1defba982308afb8af94cce85ce4e00167ded17602199e90f01215d06129",
+  "review_authority": {
+    "authority_mode": "provisional_project_audit_of_already_reviewed_pack_items",
+    "candidate_text_may_be_promoted": false,
+    "new_evidence_may_be_created": false,
+    "numeric_authority_may_be_granted": false,
+    "public_information_gap_may_be_declared": false,
+    "owner_or_qualified_human_acceptance_claimed": false,
+    "allowed_consumer": "development_replay_and_product_boundary_audit_only"
+  },
+  "requirement_reviews": [
+    {
+      "requirement_id": "MER::6fa3c163925322baf3cf",
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "facet_id": "pricing_and_mix",
+      "role": "direct",
+      "decision_state": "partial",
+      "supported_product_ids": [
+        "AI server configuration tiers",
+        "GPU HBM networking and storage configuration mix"
+      ],
+      "unsupported_product_ids": [
+        "AI server observable price range"
+      ],
+      "evidence_bindings": [
+        {
+        "evidence_item_digest": "9781bac4d80cf528b768529ebf2a4764ce1eb5eb08348965ad52ad2193e760a1",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "product_configuration"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "3b054965c17526b1a94c279f7502344468179b740134041829d36d7eae4f5299",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "channel_configuration_sample",
+            "gpu_memory_cpu_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "802b4425203bd0e58b5afe545e4f55734eb17ca8f9b5e1c0bc7293e90b0b2ff0",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gpu_asic_platform_mix",
+            "configuration_mix"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "Dell 官方产品页、一个可追溯渠道配置样本和行业平台组合资料能够描述配置层级与 GPU/内存/网络/存储组合，但没有可验证的 Dell 当前成交或报价区间。",
+      "claim_boundary_zh": "不得把单一翻新机配置、行业平台占比或产品目录推断为 Dell 平均售价或正式价格区间。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::9cd50ca8d91504f3269e",
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "facet_id": "pricing_and_mix",
+      "role": "context",
+      "decision_state": "partial",
+      "supported_product_ids": [
+        "AI server configuration tiers",
+        "GPU HBM networking and storage configuration mix"
+      ],
+      "unsupported_product_ids": [
+        "AI server observable price range"
+      ],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "9781bac4d80cf528b768529ebf2a4764ce1eb5eb08348965ad52ad2193e760a1",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "product_configuration",
+            "deployment_integration"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "3b054965c17526b1a94c279f7502344468179b740134041829d36d7eae4f5299",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "channel_configuration_sample",
+            "gpu_memory_cpu_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "802b4425203bd0e58b5afe545e4f55734eb17ca8f9b5e1c0bc7293e90b0b2ff0",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gpu_asic_platform_mix",
+            "configuration_mix"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "公开资料足以形成配置和平台组合背景，但仍没有稳定、可复核的价格观察面。",
+      "claim_boundary_zh": "配置复杂度可以解释潜在价格差异，不能替代价格证据。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::b7b216504cfbbd943afc",
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "facet_id": "orders_and_backlog",
+      "role": "direct",
+      "decision_state": "partial",
+      "supported_product_ids": [
+        "industry AI server shipment volume"
+      ],
+      "unsupported_product_ids": [
+        "AI server units shipped",
+        "Dell shipment share proxy"
+      ],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "44d1cf57421bacc087f1f88133d88b31e3e09c5189541d6bd832663efd7524d0",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "industry_ai_server_shipments"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "64962ffafede52b5f618c532cd7116b462782e6b0b19637d61d5b2f474e0e4f0",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "industry_ai_server_unit_forecast"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "TrendForce 给出行业 AI 服务器出货增长，但 Dell 未披露销量，当前资料也没有能可靠换算 Dell 份额的同口径代理。",
+      "claim_boundary_zh": "订单额、收入额和 backlog 均不能被本地除以假设 ASP 后冒充已观察到的 Dell 销量。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::f43c3f3856fdcdf0daca",
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "facet_id": "orders_and_backlog",
+      "role": "counter",
+      "decision_state": "partial",
+      "supported_product_ids": [
+        "industry AI server shipment volume"
+      ],
+      "unsupported_product_ids": [
+        "AI server units shipped",
+        "Dell shipment share proxy"
+      ],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "64962ffafede52b5f618c532cd7116b462782e6b0b19637d61d5b2f474e0e4f0",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "industry_ai_server_unit_forecast"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "68d6caead022e00844ef33189907e46cd3546b7018e098cff5bafe8cf97d1eb5",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "training_to_inference_mix",
+            "general_purpose_server_readthrough"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "行业出货增长与训练、推理、通用服务器组合变化提供了行业量的反方和口径背景，但仍不能回答 Dell 自身台数或份额。",
+      "claim_boundary_zh": "行业增长不能证明 Dell 同步增长，组合迁移也不能反推出 Dell 台数。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::6262229be06b84b274fd",
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "facet_id": "pricing_and_mix",
+      "role": "direct",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "configuration intensity inputs",
+        "industry AI server shipment and ASP",
+        "reported AI server revenue and mix"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "2dcdc6d95ba36cf5f19b9f2ead9424e081fd187b75db14211e57369a643a155b",
+          "required_slot_id": "operating_performance",
+          "required_facet_ids": [
+            "accelerated_compute_or_ai_infrastructure_revenue"
+          ],
+          "require_exact_anchor": false
+        },
+        {
+          "evidence_item_digest": "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "mix_or_product_attribution",
+            "margin_or_unit_economics"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "9781bac4d80cf528b768529ebf2a4764ce1eb5eb08348965ad52ad2193e760a1",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "product_configuration"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "3b054965c17526b1a94c279f7502344468179b740134041829d36d7eae4f5299",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gpu_memory_cpu_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "44d1cf57421bacc087f1f88133d88b31e3e09c5189541d6bd832663efd7524d0",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "industry_asp_mix",
+            "industry_unit_growth"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "64962ffafede52b5f618c532cd7116b462782e6b0b19637d61d5b2f474e0e4f0",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "industry_ai_server_unit_forecast"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "802b4425203bd0e58b5afe545e4f55734eb17ca8f9b5e1c0bc7293e90b0b2ff0",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gpu_asic_platform_mix",
+            "configuration_mix"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "现有资料同时覆盖 Dell 报告的 AI 服务器收入/组合、行业出货与 ASP 方向以及配置强度输入，可供 S2 构造有界 PVM 情景。",
+      "claim_boundary_zh": "这些是 PVM 输入，不是已披露的 Dell 价格、销量或完整 PVM 分解；最终区间必须由 S2 确定性计算并展示假设。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::343a2a9d537121cf476d",
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "facet_id": "pricing_and_mix",
+      "role": "context",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "configuration intensity inputs",
+        "industry AI server shipment and ASP",
+        "reported AI server revenue and mix"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "2dcdc6d95ba36cf5f19b9f2ead9424e081fd187b75db14211e57369a643a155b",
+          "required_slot_id": "operating_performance",
+          "required_facet_ids": [
+            "accelerated_compute_or_ai_infrastructure_revenue"
+          ],
+          "require_exact_anchor": false
+        },
+        {
+          "evidence_item_digest": "9781bac4d80cf528b768529ebf2a4764ce1eb5eb08348965ad52ad2193e760a1",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "product_configuration"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "3b054965c17526b1a94c279f7502344468179b740134041829d36d7eae4f5299",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gpu_memory_cpu_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "44d1cf57421bacc087f1f88133d88b31e3e09c5189541d6bd832663efd7524d0",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "industry_asp_mix",
+            "industry_unit_growth"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "64962ffafede52b5f618c532cd7116b462782e6b0b19637d61d5b2f474e0e4f0",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "industry_ai_server_unit_forecast"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "802b4425203bd0e58b5afe545e4f55734eb17ca8f9b5e1c0bc7293e90b0b2ff0",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "configuration_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "68d6caead022e00844ef33189907e46cd3546b7018e098cff5bafe8cf97d1eb5",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "training_to_inference_mix",
+            "general_purpose_server_readthrough"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "公司收入、行业 ASP/出货以及训练到推理的配置迁移共同构成 PVM 背景。",
+      "claim_boundary_zh": "背景资料只允许产生区间和敏感性，不允许产生伪精确 Dell ASP 或销量。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::fe8198d1f35660b52fc6",
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "facet_id": "conversion_and_durability",
+      "role": "direct",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "AI order conversion",
+        "backlog durability",
+        "customer concentration",
+        "pull-forward risk"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "2dcdc6d95ba36cf5f19b9f2ead9424e081fd187b75db14211e57369a643a155b",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "order_conversion",
+            "ai_infrastructure_orders_or_backlog"
+          ],
+          "require_exact_anchor": false
+        },
+        {
+          "evidence_item_digest": "bcb7ba6a7ca507f8f3cecf44a5b77164c82852518a62768739e14f7fc52b4183",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "durability_or_pull_forward"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a35dc0a2d0492238478869c5af6f41d7114d96ef2dba0502291b0b96c031e2b1",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "ai_orders",
+            "ai_backlog",
+            "demand_exceeds_supply",
+            "customer_breadth"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "e56d04955adef83b83bbbfda0bb36ed3967f869d34f9473849777a52d40f5305",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "pull_forward_or_digestion",
+            "supply_securing_behavior"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "conversion_and_durability",
+            "customer_breadth_or_concentration"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "5aff07f2b1031571eba4fe36e797075db2b59e9bb7ef79d8b549020f46cd9e92",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "conversion_and_durability"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a2fbead343c088251ebc1255fd460711f296809abe0db659c6fdefd365a29093",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "orders_and_backlog"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "发行人资料同时给出订单、收入、backlog、客户广度、非线性转换和提前锁定供给信号，能够判断需求强度与耐久性的正反两面。",
+      "claim_boundary_zh": "订单额与当季收入不是同一批次的 cohort conversion；backlog 定义也不等于全部可取消性、账龄和客户构成已知。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::c1ca1d3778bf29a6f3e0",
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "facet_id": "conversion_and_durability",
+      "role": "counter",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "AI order conversion",
+        "backlog durability",
+        "customer concentration",
+        "pull-forward risk"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "e56d04955adef83b83bbbfda0bb36ed3967f869d34f9473849777a52d40f5305",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "pull_forward_or_digestion",
+            "supply_securing_behavior"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "conversion_and_durability",
+            "customer_breadth_or_concentration"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "5aff07f2b1031571eba4fe36e797075db2b59e9bb7ef79d8b549020f46cd9e92",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "conversion_and_durability"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a2fbead343c088251ebc1255fd460711f296809abe0db659c6fdefd365a29093",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "orders_and_backlog"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "33c0f9af6b184fc3e02d9ce60ea5a4c5ad389f91b2631a4a5b5bab233ccea5b6",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "conversion_and_durability"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "提前采购、订单跨期、取消/延迟、客户集中与渠道缩单风险均已进入反方资料。",
+      "claim_boundary_zh": "风险披露是机制与停止条件，不证明风险已经发生，也不能抹去当前订单和收入事实。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::d6f443b55a298805bd58",
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "facet_id": "downstream_demand_context",
+      "role": "context",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "customer AI infrastructure deployment",
+        "customer budget durability",
+        "named Dell customer or deployment relationship"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "7eeb3b3b847732fe61e60eff3e7d9af7a18428f0eb7cc942ccba334046ec8a22",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "deployment_or_utilization"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "6510fd72a7c6a071848f4a12986fd9e95d925d33cb547483f0c82fa02c389fa1",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "structural_industry_demand",
+            "buyer_commitment_cycle"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "49d4484833075d9f60044a889ba79ec250392f5fb05c248a8b49ed7152bc20b4",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "named_customer_case",
+            "customer_deployment_use_case"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "49d4484833075d9f60044a889ba79ec250392f5fb05c248a8b49ed7152bc20b4",
+          "required_slot_id": "relationship_attribution",
+          "required_facet_ids": [
+            "issuer_named_customer_relationship"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "f78a81e3a2486126f5961f2446b348e7eeecb5eec84b00ecd3d3726b85ea3e66",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "industry_market_spending",
+            "buyer_pipeline_revision"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "行业买方投资、部署活动及 Dell 官方 Northwestern 客户案例共同证明客户侧部署确实存在，并给出预算持续性的行业背景。",
+      "claim_boundary_zh": "一个命名客户案例和行业支出不能代表 Dell 全部客户，也不能量化 Dell 客户预算留存率。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::d618dc668cc85a91d6b7",
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "facet_id": "downstream_demand_context",
+      "role": "counter",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "customer AI infrastructure deployment",
+        "customer budget durability",
+        "named Dell customer or deployment relationship"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "7eeb3b3b847732fe61e60eff3e7d9af7a18428f0eb7cc942ccba334046ec8a22",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "deployment_or_utilization"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "33c0f9af6b184fc3e02d9ce60ea5a4c5ad389f91b2631a4a5b5bab233ccea5b6",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "conversion_and_durability"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "49d4484833075d9f60044a889ba79ec250392f5fb05c248a8b49ed7152bc20b4",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "named_customer_case",
+            "customer_deployment_use_case"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "49d4484833075d9f60044a889ba79ec250392f5fb05c248a8b49ed7152bc20b4",
+          "required_slot_id": "relationship_attribution",
+          "required_facet_ids": [
+            "issuer_named_customer_relationship"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "客户部署与命名关系有实例，同时渠道缩单和需求不确定性构成预算耐久性的反方。",
+      "claim_boundary_zh": "单一成功案例不能推演总体采用率；渠道风险也不证明 Dell AI 客户预算已经下滑。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::7ab378f99df9e6271146",
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "facet_id": "subject_execution",
+      "role": "direct",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "AI server delivery cadence",
+        "component constraint",
+        "inventory and fulfillment execution"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "024224e83105ed3cd13e5b4a1e6b68a39c541c044b1f4d2875c7d146ea34f721",
+          "required_slot_id": "cash_conversion_balance_sheet",
+          "required_facet_ids": [
+            "inventory",
+            "receivables_payables_or_obligations"
+          ],
+          "require_exact_anchor": false
+        },
+        {
+          "evidence_item_digest": "cc71bf54fbbbd52b48f651bd0d8ab0892cd5e60d720902cd1502b42303fa7c04",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "capacity_or_supply",
+            "bottleneck_or_lead_time",
+            "supplier_commitment_or_dependency"
+          ],
+          "require_exact_anchor": false
+        },
+        {
+          "evidence_item_digest": "a35dc0a2d0492238478869c5af6f41d7114d96ef2dba0502291b0b96c031e2b1",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "memory_primary_constraint"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "e406cfab513c214ccdbc5ada82db3e4b5a0641e1561f2d46daf639f67e2e01ed",
+          "required_slot_id": "cash_conversion_balance_sheet",
+          "required_facet_ids": [
+            "working_capital_risk",
+            "ai_working_capital_absorption"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a2fbead343c088251ebc1255fd460711f296809abe0db659c6fdefd365a29093",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "orders_and_backlog"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "Dell 自身披露涵盖交付非线性、内存约束、有限来源依赖、库存和营运资金吸收，足以描述公司侧执行链。",
+      "claim_boundary_zh": "这些资料不能量化逐周交付节奏、良率、供应商分配或具体释放日期。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::1a7032562101f8a69c12",
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "facet_id": "subject_execution",
+      "role": "counter",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "AI server delivery cadence",
+        "component constraint",
+        "inventory and fulfillment execution"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "cc71bf54fbbbd52b48f651bd0d8ab0892cd5e60d720902cd1502b42303fa7c04",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "capacity_or_supply",
+            "bottleneck_or_lead_time",
+            "supplier_commitment_or_dependency"
+          ],
+          "require_exact_anchor": false
+        },
+        {
+          "evidence_item_digest": "a35dc0a2d0492238478869c5af6f41d7114d96ef2dba0502291b0b96c031e2b1",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "memory_primary_constraint"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6",
+          "required_slot_id": "cash_conversion_balance_sheet",
+          "required_facet_ids": [
+            "working_capital_risk"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a2fbead343c088251ebc1255fd460711f296809abe0db659c6fdefd365a29093",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "orders_and_backlog"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "交付跨期、关键部件约束和大单占用营运资金/过时库存风险均已覆盖。",
+      "claim_boundary_zh": "风险机制不等于当前交付失败；仍缺少按产品和供应商拆分的执行数据。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::b11707a6ac5f12db3f5f",
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "facet_id": "upstream_capacity_context",
+      "role": "context",
+      "decision_state": "partial",
+      "supported_product_ids": [
+        "Dell supplier dependency or allocation disclosure",
+        "HBM availability",
+        "advanced packaging capacity"
+      ],
+      "unsupported_product_ids": [
+        "GPU supply release"
+      ],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "cc71bf54fbbbd52b48f651bd0d8ab0892cd5e60d720902cd1502b42303fa7c04",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "supplier_commitment_or_dependency"
+          ],
+          "require_exact_anchor": false
+        },
+        {
+          "evidence_item_digest": "f1d99400c1e8471b1343272abafb3f7eb573a8d55c8f4d2326a1d9298cd97041",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "upstream_capacity_context",
+            "advanced_packaging_capacity"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "c658e8fc4d456bb686913934d49e302a48bfa6bd87380c9760f39a47c3c18a8a",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "upstream_capacity_context"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "b212292033ca19185d7bb860ebf70dfe99034e32af8fd17a57ec338734159e29",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "advanced_packaging_capacity",
+            "hbm_supply_constraint"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "Dell 的有限来源依赖、行业 HBM 紧张和 TSMC/行业先进封装约束已有资料，但没有可绑定的 GPU 供给释放时间或 Dell 配额。",
+      "claim_boundary_zh": "上游公司自身产能和行业短缺只能作为生态链旁证，不能转写为 Dell 已获得的 GPU 数量或释放日期。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::ca8dca19d882f7dc9789",
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "facet_id": "upstream_capacity_context",
+      "role": "counter",
+      "decision_state": "partial",
+      "supported_product_ids": [
+        "Dell supplier dependency or allocation disclosure",
+        "HBM availability",
+        "advanced packaging capacity"
+      ],
+      "unsupported_product_ids": [
+        "GPU supply release"
+      ],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "cc71bf54fbbbd52b48f651bd0d8ab0892cd5e60d720902cd1502b42303fa7c04",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "supplier_commitment_or_dependency"
+          ],
+          "require_exact_anchor": false
+        },
+        {
+          "evidence_item_digest": "f1d99400c1e8471b1343272abafb3f7eb573a8d55c8f4d2326a1d9298cd97041",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "advanced_packaging_capacity"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "c658e8fc4d456bb686913934d49e302a48bfa6bd87380c9760f39a47c3c18a8a",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "upstream_capacity_context"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "b212292033ca19185d7bb860ebf70dfe99034e32af8fd17a57ec338734159e29",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "advanced_process_capacity",
+            "advanced_packaging_capacity",
+            "hbm_supply_constraint"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "有限来源依赖、HBM 与先进封装短缺构成强反方，但 GPU 供应释放是否改善仍没有直接可验证资料。",
+      "claim_boundary_zh": "产能扩建或供应链控制表述不等于 Dell 的实际 allocation、良率或到货时点。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::ec78906c154821fb49f7",
+      "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+      "facet_id": "counterparty_direct_mention",
+      "role": "context",
+      "decision_state": "needs_review",
+      "supported_product_ids": [],
+      "unsupported_product_ids": [
+        "Dell names supplier",
+        "delivery or allocation relationship",
+        "supplier names Dell"
+      ],
+      "evidence_bindings": [],
+      "decision_reason_zh": "当前 Pack 没有 Dell 官方点名供应商、供应商官方点名 Dell，或可验证的交付/分配关系证据。第三方配置样本和产业链旁证不足以晋升这些关系。",
+      "claim_boundary_zh": "不得把 NVIDIA 配置、行业 HBM/CoWoS 约束或媒体叙事冒充双方官方关系和分配事实。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::b704cc5d21d70d06af1a",
+      "request_id": "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "facet_id": "margin_and_incremental_profit",
+      "role": "bridge",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "AI server OEM gross profit and margin",
+        "AI server incremental margin inputs",
+        "supplier component value proxy"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "af11bf4358e167dbf7f1105d981a56a6b568dc92362b2753e2278aaa901294b1",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "mix_or_product_attribution",
+            "margin_or_unit_economics"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "b8880e2b4c9fe482e2721a00b636ed8cf689f9b0a3ba67a661085a1eacfd11e1",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "ai_system_margin",
+            "ai_server_profitability_target"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "3b054965c17526b1a94c279f7502344468179b740134041829d36d7eae4f5299",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gpu_memory_cpu_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "dad905c16180b56029f884cc2728c565867a11ab11fe4d4f5893a76183a5c642",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "management_margin_target",
+            "solution_stack_value_pool"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "df8403b5692d28dfcdb7eb90e37b2831ac7848f40cd66accaece671569856e85",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gross_margin_pressure",
+            "ai_server_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "c7b7425c2fa43dd832a18d7d3ffc842500dc3b85b03c61599acd103d17ef35b5",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "oem_value_pool",
+            "margin_dollar_vs_margin_rate"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "b212292033ca19185d7bb860ebf70dfe99034e32af8fd17a57ec338734159e29",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "advanced_packaging_capacity",
+            "hbm_supply_constraint"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "Dell 发行人披露和可信外部背景共同覆盖 AI 服务器利润率、公司组合/毛利变化以及供应商组件价值代理，可供 S2 建立价值池情景。",
+      "claim_boundary_zh": "不能把公司或 ISG 利润改善全部归因于 AI，也不能把媒体机制判断写成供应商精确价值分配。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::b6eb0f0deae6c6fe721c",
+      "request_id": "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "facet_id": "counterparty_direct_mention",
+      "role": "context",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "Dell supplier attribution or relationship",
+        "GPU HBM packaging and OEM value pool inputs",
+        "supplier economics"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "3b054965c17526b1a94c279f7502344468179b740134041829d36d7eae4f5299",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gpu_memory_cpu_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "dad905c16180b56029f884cc2728c565867a11ab11fe4d4f5893a76183a5c642",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "solution_stack_value_pool"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "c7b7425c2fa43dd832a18d7d3ffc842500dc3b85b03c61599acd103d17ef35b5",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "oem_value_pool",
+            "margin_dollar_vs_margin_rate"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "c7b7425c2fa43dd832a18d7d3ffc842500dc3b85b03c61599acd103d17ef35b5",
+          "required_slot_id": "counterevidence_and_what_would_change",
+          "required_facet_ids": [
+            "supplier_value_capture"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "b212292033ca19185d7bb860ebf70dfe99034e32af8fd17a57ec338734159e29",
+          "required_slot_id": "relationship_attribution",
+          "required_facet_ids": [
+            "industry_supply_readthrough"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "配置样本、管理层媒体引述和产业分析能够建立 NVIDIA/GPU/HBM/封装/OEM 价值池的机制背景，并提供有限的 Dell 供应商归属线索。",
+      "claim_boundary_zh": "这里的关系与供应商经济性主要是第三方背景，不构成 Dell 精确 BOM、合同条款或供应商利润分配事实。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::4e416ae88fc7670873e2",
+      "request_id": "REQ::DELL::COUNTER_ISSUER::V1",
+      "facet_id": "issuer_counterevidence",
+      "role": "counter",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "AI demand digestion signals",
+        "AI margin dilution signals",
+        "AI working-capital pressure"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "e56d04955adef83b83bbbfda0bb36ed3967f869d34f9473849777a52d40f5305",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "pull_forward_or_digestion"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "e406cfab513c214ccdbc5ada82db3e4b5a0641e1561f2d46daf639f67e2e01ed",
+          "required_slot_id": "cash_conversion_balance_sheet",
+          "required_facet_ids": [
+            "working_capital_risk",
+            "ai_working_capital_absorption"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a8056d9ea1f1ea609ac7b23ec9a51d0ff37ea5bd81b6e33d207c9bcd0f2903d6",
+          "required_slot_id": "counterevidence_and_what_would_change",
+          "required_facet_ids": [
+            "issuer_counterevidence",
+            "strongest_counterevidence"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "a2fbead343c088251ebc1255fd460711f296809abe0db659c6fdefd365a29093",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "orders_and_backlog"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "3610185a120188dcb02376a61871fff20281aa80da84339ea5e76da6c4f57310",
+          "required_slot_id": "counterevidence_and_what_would_change",
+          "required_facet_ids": [
+            "issuer_counterevidence"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "df8403b5692d28dfcdb7eb90e37b2831ac7848f40cd66accaece671569856e85",
+          "required_slot_id": "counterevidence_and_what_would_change",
+          "required_facet_ids": [
+            "margin_quality_counterevidence"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "提前锁货/消化、毛利稀释和 AI 大单营运资金压力均已有发行人或可信反方资料。",
+      "claim_boundary_zh": "风险信号不能写成已经发生的需求崩塌；媒体毛利判断必须与 Dell 披露分开呈现。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::d0c577cba6d9f5f9b872",
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "facet_id": "upstream_or_demand_counterevidence",
+      "role": "counter",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "GPU HBM packaging constraint",
+        "architecture transition",
+        "customer capex slowdown",
+        "supply release or easing evidence"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "f1d99400c1e8471b1343272abafb3f7eb573a8d55c8f4d2326a1d9298cd97041",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "advanced_packaging_capacity"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "c658e8fc4d456bb686913934d49e302a48bfa6bd87380c9760f39a47c3c18a8a",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "upstream_capacity_context"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "802b4425203bd0e58b5afe545e4f55734eb17ca8f9b5e1c0bc7293e90b0b2ff0",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gpu_asic_platform_mix",
+            "configuration_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "6510fd72a7c6a071848f4a12986fd9e95d925d33cb547483f0c82fa02c389fa1",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "structural_industry_demand",
+            "buyer_commitment_cycle"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "68d6caead022e00844ef33189907e46cd3546b7018e098cff5bafe8cf97d1eb5",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "training_to_inference_mix",
+            "general_purpose_server_readthrough"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "f78a81e3a2486126f5961f2446b348e7eeecb5eec84b00ecd3d3726b85ea3e66",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "industry_market_spending",
+            "buyer_pipeline_revision"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "c7b7425c2fa43dd832a18d7d3ffc842500dc3b85b03c61599acd103d17ef35b5",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "oem_value_pool"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "b212292033ca19185d7bb860ebf70dfe99034e32af8fd17a57ec338734159e29",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "advanced_process_capacity",
+            "advanced_packaging_capacity",
+            "hbm_supply_constraint"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "GPU/HBM/封装约束、GPU 到 ASIC 与训练到推理迁移、客户支出趋势以及 HBM/封装扩产与仍然短缺的混合状态均有可引用资料。",
+      "claim_boundary_zh": "持续行业支出反驳了“已普遍放缓”，但不能证明 Dell 客户不会调整预算；扩产也不能换算为 Dell 获配时间。",
+      "review_authority": "provisional_project_audit"
+    },
+    {
+      "requirement_id": "MER::5757bbe2f95de3a98774",
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "facet_id": "upstream_or_demand_counterevidence",
+      "role": "context",
+      "decision_state": "accepted_bounded",
+      "supported_product_ids": [
+        "GPU HBM packaging constraint",
+        "architecture transition",
+        "customer capex slowdown",
+        "supply release or easing evidence"
+      ],
+      "unsupported_product_ids": [],
+      "evidence_bindings": [
+        {
+          "evidence_item_digest": "f1d99400c1e8471b1343272abafb3f7eb573a8d55c8f4d2326a1d9298cd97041",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "upstream_capacity_context",
+            "advanced_packaging_capacity"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "802b4425203bd0e58b5afe545e4f55734eb17ca8f9b5e1c0bc7293e90b0b2ff0",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "gpu_asic_platform_mix",
+            "configuration_mix"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "6510fd72a7c6a071848f4a12986fd9e95d925d33cb547483f0c82fa02c389fa1",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "structural_industry_demand",
+            "buyer_commitment_cycle"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "68d6caead022e00844ef33189907e46cd3546b7018e098cff5bafe8cf97d1eb5",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "training_to_inference_mix",
+            "general_purpose_server_readthrough"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "f78a81e3a2486126f5961f2446b348e7eeecb5eec84b00ecd3d3726b85ea3e66",
+          "required_slot_id": "demand_volume_quality",
+          "required_facet_ids": [
+            "industry_market_spending",
+            "buyer_pipeline_revision"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "c7b7425c2fa43dd832a18d7d3ffc842500dc3b85b03c61599acd103d17ef35b5",
+          "required_slot_id": "pricing_mix_value_capture",
+          "required_facet_ids": [
+            "oem_value_pool"
+          ],
+          "require_exact_anchor": true
+        },
+        {
+          "evidence_item_digest": "b212292033ca19185d7bb860ebf70dfe99034e32af8fd17a57ec338734159e29",
+          "required_slot_id": "capacity_inputs_execution",
+          "required_facet_ids": [
+            "advanced_packaging_capacity",
+            "hbm_supply_constraint"
+          ],
+          "require_exact_anchor": true
+        }
+      ],
+      "decision_reason_zh": "生态链资料为供应约束、架构迁移、客户支出和供给缓解提供了完整的背景面。",
+      "claim_boundary_zh": "生态链背景不能自动归因到 Dell，也不能替代 Dell/供应商双边关系证据。",
+      "review_authority": "provisional_project_audit"
+    }
+  ],
+  "known_boundary": "This successor maps only already accepted DELL Evidence items to the immutable twenty observable-input MaterialRequirements. It intentionally leaves price, Dell unit/share, GPU release timing and direct supplier-relationship axes unresolved where the reviewed Pack lacks evidence. It is not Owner or qualified-human acceptance and grants no candidate, NumericFact, public-gap, S1, model-run or publication authority."
+}

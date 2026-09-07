@@ -1,0 +1,335 @@
+{
+  "schema_version": "fin_ia_agent_runtime_reflection_context_continuity_contract_v1_0",
+  "product_version": "FIN_0_1_3",
+  "status": "architecture_contract_frozen_runtime_not_implemented",
+  "frozen_at": "2026-08-19T00:00:00+08:00",
+  "authority": "owner_approved_full_chain_audit",
+  "purpose": "Define one provider-neutral, event-sourced and bounded reflective research runtime without transferring financial truth authority from FIN to a model or framework.",
+  "responsibility_planes": {
+    "infrastructure_and_tool_plane": {
+      "owns": [
+        "source_capture_and_transport",
+        "ocr_parser_and_cleaning",
+        "financial_object_compilation",
+        "sql_numeric_fact_and_point_in_time_routes",
+        "query_compilation",
+        "candidate_recall_rerank_and_evidence_role_scoring",
+        "artifact_storage_and_lineage"
+      ],
+      "qualification_rule": "must_pass_without_generation_model_using_human_or_fixture_authored_typed_requests",
+      "forbidden_misclassification": "a_failure_here_must_not_be_recorded_as_model_failure_or_public_information_gap"
+    },
+    "harness_control_plane": {
+      "owns": [
+        "identity_period_unit_source_and_lineage_validation",
+        "evidence_numeric_fact_and_gap_authority",
+        "tool_contract_compilation",
+        "budget_and_exact_once_enforcement",
+        "feedback_routing",
+        "event_log_checkpoint_resume_and_stop_validation",
+        "skill_and_graph_selection_policy_validation"
+      ],
+      "forbidden_behavior": [
+        "author_research_conclusions",
+        "silently_rewrite_model_judgment",
+        "promote_ranked_candidate_to_evidence_without_gate",
+        "convert_unexecuted_route_to_public_gap"
+      ]
+    },
+    "agent_work_mode_plane": {
+      "owns": [
+        "research_objective_interpretation",
+        "hypothesis_and_counter_hypothesis_formation",
+        "evidence_request_proposal",
+        "evidence_sufficiency_reflection",
+        "plan_revision",
+        "research_judgment",
+        "cross_cell_synthesis",
+        "what_would_change"
+      ],
+      "authority_limit": "may_propose_and_reason_but_cannot_create_evidence_numeric_fact_identity_period_citation_or_gap_authority"
+    },
+    "skill_graph_overlap_plane": {
+      "owns": [
+        "role_method_guidance",
+        "research_navigation",
+        "mechanism_hypotheses",
+        "dynamic_scope_expansion_and_correction_proposals"
+      ],
+      "selection_rule": "select_by_role_objective_decision_surface_gap_and_current_plan_not_by_mechanical_all_pack_injection",
+      "authority_limit": "skill_and_graph_are_not_evidence_numeric_fact_or_citation_authority"
+    }
+  },
+  "workflow_classes": {
+    "fixed_workflow": {
+      "definition": "a_predeclared_node_sequence_whose_topology_does_not_change_from_observed_results",
+      "current_examples": [
+        "planner_to_S1_S2_to_five_cells_to_synthesis_to_report",
+        "deterministic_workpaper_and_report_compilation"
+      ],
+      "may_be_called_agentic_research": false
+    },
+    "local_repair": {
+      "definition": "a_rejected_output_receives_typed_feedback_and_may_resubmit_the_same_bounded_deliverable_once_without_changing_the_research_plan",
+      "current_examples": [
+        "micro_fragment_validation_repair_successor",
+        "five_cell_submission_repair"
+      ],
+      "may_be_called_general_reflection": false
+    },
+    "bounded_autonomous_loop": {
+      "definition": "observe_plan_act_evaluate_reflect_replan_or_stop_with_durable_state_and_validated_deltas",
+      "required_cycle": [
+        "observe_current_session_state",
+        "propose_or_revise_plan",
+        "execute_authorized_tools",
+        "evaluate_evidence_and_contract_feedback",
+        "emit_reflection_and_deltas",
+        "continue_pause_escalate_or_stop"
+      ],
+      "current_implementation": false
+    }
+  },
+  "artifact_contracts": {
+    "AgentSession": {
+      "required_fields": [
+        "session_id",
+        "run_id",
+        "case_id",
+        "case_version",
+        "as_of_date",
+        "objective_ref",
+        "active_plan_ref",
+        "event_log_ref",
+        "current_checkpoint_ref",
+        "status",
+        "created_at",
+        "updated_at"
+      ],
+      "invariants": [
+        "append_only_event_history",
+        "one_current_plan_digest",
+        "resume_rebuilds_state_from_events_and_checkpoint",
+        "raw_captures_remain_outside_model_prompt"
+      ]
+    },
+    "FeedbackReceipt": {
+      "required_fields": [
+        "feedback_id",
+        "session_id",
+        "source_node_id",
+        "target_node_id",
+        "failure_class",
+        "failure_code",
+        "owning_plane",
+        "owning_stage",
+        "artifact_refs",
+        "model_visible_summary",
+        "permitted_next_actions",
+        "forbidden_interpretations",
+        "created_at"
+      ],
+      "invariants": [
+        "failure_is_routed_to_earliest_owning_layer",
+        "model_visible_summary_contains_no_untrusted_promotion",
+        "public_gap_requires_GapEligibilityReceipt"
+      ]
+    },
+    "PlanDelta": {
+      "required_fields": [
+        "plan_delta_id",
+        "session_id",
+        "base_plan_digest",
+        "proposed_by_agent_id",
+        "reason_feedback_refs",
+        "add_actions",
+        "modify_actions",
+        "defer_actions",
+        "cancel_actions",
+        "expected_information_gain",
+        "budget_impact",
+        "validation_status"
+      ],
+      "invariants": [
+        "cannot_expand_case_identity_as_of_date_or_authorized_data_scope",
+        "cannot_name_hidden_reference_or_answer_object",
+        "accepted_delta_creates_a_new_plan_digest",
+        "rejected_delta_remains_immutable_evidence"
+      ]
+    },
+    "GraphDelta": {
+      "required_fields": [
+        "graph_delta_id",
+        "session_id",
+        "base_graph_digest",
+        "proposed_by_agent_id",
+        "edge_additions",
+        "edge_corrections",
+        "edge_retractions",
+        "supporting_evidence_refs",
+        "hypothesis_only_edges",
+        "validation_status"
+      ],
+      "invariants": [
+        "stable_ontology_is_not_mutated_by_a_run",
+        "source_bound_edges_require_reviewed_Evidence",
+        "hypothesis_edges_are_never_rendered_as_fact",
+        "identity_period_direction_and_lineage_are_validated_locally"
+      ]
+    },
+    "ContextCheckpoint": {
+      "required_fields": [
+        "checkpoint_id",
+        "session_id",
+        "event_sequence",
+        "objective_digest",
+        "plan_digest",
+        "research_graph_digest",
+        "accepted_evidence_refs",
+        "numeric_fact_refs",
+        "open_gap_refs",
+        "unresolved_feedback_refs",
+        "agent_local_state_refs",
+        "compression_policy_version",
+        "checkpoint_digest"
+      ],
+      "invariants": [
+        "checkpoint_is_a_projection_not_a_rewrite_of_history",
+        "resume_preserves_case_identity_period_and_authority_refs",
+        "compaction_cannot_drop_material_open_questions_or_counterevidence",
+        "checkpoint_mutation_and_resume_replay_are_tested"
+      ]
+    },
+    "StopDecision": {
+      "required_fields": [
+        "stop_decision_id",
+        "session_id",
+        "decided_by_agent_id",
+        "decision",
+        "reason_codes",
+        "coverage_state_refs",
+        "unresolved_feedback_refs",
+        "remaining_gap_refs",
+        "budget_state",
+        "quality_risk",
+        "harness_validation_status"
+      ],
+      "allowed_decisions": [
+        "continue",
+        "pause_for_tool_recovery",
+        "escalate_to_human",
+        "stop_sufficient",
+        "stop_information_boundary",
+        "stop_budget_exhausted",
+        "stop_no_progress",
+        "stop_contract_failure"
+      ],
+      "invariants": [
+        "model_cannot_self_authorize_public_gap",
+        "stop_sufficient_requires_material_proposition_coverage",
+        "budget_exhaustion_cannot_be_relabelled_as_research_completion"
+      ]
+    }
+  },
+  "feedback_routing": [
+    {
+      "failure_family": "source_transport_parser_ocr_cleaning_object_index_sql_query_recall_rerank",
+      "owner": "infrastructure_and_tool_plane",
+      "model_action": "may_wait_choose_an_already_qualified_alternative_route_or_narrow_request_but_may_not_declare_gap"
+    },
+    {
+      "failure_family": "identity_period_unit_source_lineage_evidence_gate_contract_budget",
+      "owner": "harness_control_plane",
+      "model_action": "may_submit_a_bounded_correction_or_plan_delta_within_authorized_scope"
+    },
+    {
+      "failure_family": "weak_hypothesis_wrong_search_direction_unresolved_counterevidence_causal_overreach",
+      "owner": "agent_work_mode_plane",
+      "model_action": "must_reflect_and_may_change_the_research_plan"
+    },
+    {
+      "failure_family": "wrong_skill_or_graph_scope_stale_method_pack_unsupported_graph_edge",
+      "owner": "skill_graph_overlap_plane",
+      "model_action": "request_a_different_scoped_pack_or_propose_a_validated_graph_delta"
+    }
+  ],
+  "skill_and_graph_loading": {
+    "role_method_pack_flow": [
+      "discover_pack_metadata",
+      "select_minimum_relevant_packs",
+      "load_full_selected_pack_body",
+      "project_to_agent_and_objective_scope",
+      "record_selection_and_injection_receipt",
+      "record_consumption_or_non_consumption_receipt"
+    ],
+    "graph_layers": [
+      "stable_financial_ontology_and_industry_pack",
+      "run_local_research_graph",
+      "source_bound_evidence_graph"
+    ],
+    "forbidden": [
+      "inject_all_role_packs_into_every_agent",
+      "treat_graph_edge_as_evidence_without_source_binding",
+      "allow_model_to_mutate_stable_ontology_during_a_run",
+      "hide_skill_or_graph_selection_from_replay"
+    ]
+  },
+  "role_autonomy": {
+    "planner_or_research_lead": "bounded_autonomous_loop_required",
+    "specialist_research_cell": "bounded_autonomous_loop_required_with_cell_local_scope",
+    "lead_synthesis": "cross_cell_reflection_and_feedback_routing_required",
+    "writer": "deterministic_or_bounded_composition_with_missing_support_request_only_no_default_free_search",
+    "verifier": "structured_findings_only_route_to_owning_node_never_rewrite_research",
+    "S1_and_S2": "typed_tools_not_autonomous_agents_by_default"
+  },
+  "exact_once_semantics": {
+    "unit": "provider_attempt_or_tool_execution_request",
+    "rule": "a_new_model_step_after_new_typed_feedback_is_a_new_authorized_step_not_a_retry_of_the_failed_attempt",
+    "failed_attempts": "immutable_and_never_relabelled_as_success",
+    "automatic_retry": "forbidden_unless_transport_policy_explicitly_authorizes_same_request_retry"
+  },
+  "token_budget_basis": {
+    "required_for": "every_model_node_or_paid_tool_authority",
+    "required_fields": [
+      "node_purpose",
+      "input_scale",
+      "required_outputs",
+      "schema_burden",
+      "materiality_and_quality_risk",
+      "comparable_run_evidence",
+      "reasoning_profile",
+      "stop_or_truncation_behavior"
+    ],
+    "forbidden_basis": "cost_or_latency_alone"
+  },
+  "stage_ownership": {
+    "S0": "session_event_log_checkpoint_resume_compaction_and_provider_neutral_runtime_foundation",
+    "S1": "AI_free_human_operable_data_source_retrieval_ranking_evidence_candidate_and_feedback_rich_tool_contracts",
+    "S2": "numeric_fact_comparable_relation_conflict_and_typed_gap_tool_contracts",
+    "S3": "planner_specialist_lead_reflection_plan_delta_graph_delta_coordination_and_research_quality",
+    "S4": "user_plan_review_feedback_gap_intervention_resume_and_delivery_experience",
+    "S5": "long_running_replay_resume_stop_eval_observability_and_release_qualification"
+  },
+  "current_implementation_truth": {
+    "fixed_workflow": true,
+    "bounded_provider_tool_loop": true,
+    "single_fragment_typed_repair": true,
+    "immutable_node_successor_resume": true,
+    "generalized_agent_session": false,
+    "feedback_can_change_research_plan": false,
+    "run_local_graph_delta": false,
+    "dynamic_skill_selection_and_consumption_receipt": false,
+    "durable_context_checkpoint_and_compaction": false,
+    "cross_agent_reflection_loop": false
+  },
+  "acceptance_gates": [
+    "S1_human_operability_passes_without_generation_model",
+    "every_failure_is_assigned_to_one_earliest_responsibility_plane",
+    "feedback_changes_plan_only_when_a_validated_PlanDelta_is_accepted",
+    "skill_and_graph_selection_is_minimal_dynamic_and_replayable",
+    "context_compaction_and_resume_preserve_material_open_state",
+    "stop_decisions_do_not_confuse_budget_tool_failure_or_unsearched_routes_with_information_boundary",
+    "DELL_single_cell_dynamic_loop_then_five_cells_then_MU_NVDA_and_heterogeneous_holdouts",
+    "L1_and_content_quality_both_pass_before_S4_product_acceptance"
+  ]
+}

@@ -1,0 +1,496 @@
+{
+  "schema_version": "fin_ia_s1_vs5_qualification_preregistration_v1_0",
+  "status": "frozen_before_source_outcome_inspection",
+  "program_id": "FIN-0.1.3-S1-VS5-QUALIFICATION",
+  "recorded_at": "2026-08-18",
+  "design_baseline_commit": "001ae8e640405451d1bc623534c86f4971ad4bb7",
+  "observed_case_keys": [
+    "DELL",
+    "MU",
+    "NVDA",
+    "ORCL",
+    "ASML",
+    "ANET",
+    "IFX.DE"
+  ],
+  "bound_configuration": [
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_canonical_artifact_spine_policy_v1_0.json",
+      "sha256": "fa44e61da4a11ceded587d483d348149e701488950513b42c2fa7ba41b0aad4d",
+      "purpose": "canonical source-to-consumer artifact and lineage contract"
+    },
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+      "sha256": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+      "purpose": "provider-neutral financial slot and plugin boundary"
+    },
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_retrieval_stack_governance_v1_0.json",
+      "sha256": "2fe739bb94bab77409f7ea84fb5dd127af4d1a3dc092865d0e891f8d8a2cd7d2",
+      "purpose": "retrieval stack authority and non-promotion boundary"
+    },
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_8.json",
+      "sha256": "1d567e938eb688a3f2a997373b9d2a37fa77bebc172fed5b1e175bf34bf9cf72",
+      "purpose": "frozen multi-route candidate ranking policy"
+    },
+    {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_financial_shortlist_policy_v1_8.json",
+      "sha256": "a9269af8eeb1859bf574cc35123d2a1ec52011a12e487db54c6e19bc0a02fe57",
+      "purpose": "frozen deterministic financial review-head policy"
+    },
+    {
+      "ref": "src/retrieval/financial_objects.py",
+      "sha256": "6ed87f968929f3047673c9c76877a08e1f254152049b50f84cadbb68a135a924",
+      "purpose": "source-to-parent-child financial object compiler"
+    },
+    {
+      "ref": "src/retrieval/object_view_compiler.py",
+      "sha256": "043cbf8e4b3cca29c3000ac586347103528a39d7c3b8ecdfc23bd3736c7d8482",
+      "purpose": "claim table and bounded-context object views"
+    },
+    {
+      "ref": "src/retrieval/financial_intent.py",
+      "sha256": "07fd827c9857c8d70050ee0670fa263d26647c117b39f29f60b88a262d89cacd",
+      "purpose": "typed query and evidence-need compiler"
+    },
+    {
+      "ref": "src/retrieval/financial_evidence_shortlist.py",
+      "sha256": "b586c9975c449a1d4b7f4b2d110a5ab42d4dfc36bdf1437a9f4afd17441b9f6e",
+      "purpose": "finance-aware candidate shortlisting"
+    },
+    {
+      "ref": "src/retrieval/evidence_role.py",
+      "sha256": "9819d21765c18ebfeda7bee9df8baa71189ee6c5952a6254d2e6b03d37039cde",
+      "purpose": "Evidence Role compatibility and abstain contract"
+    },
+    {
+      "ref": "src/retrieval/candidate_decision.py",
+      "sha256": "1bb385b86bb07d9686b7ccc260f9290b7b8b2d967347c06c0bb2c2892b6de88c",
+      "purpose": "candidate decision and authority boundary"
+    },
+    {
+      "ref": "scripts/data_retrieval/run_s1_candidate_ranking.py",
+      "sha256": "1f1988c0af2ef953e2486a9a91d52cacc04ae3bdd328e732cf084a3987f1a233",
+      "purpose": "CUDA-only learned retrieval execution entry"
+    }
+  ],
+  "execution_policy": {
+    "labels_physically_separate_from_runtime_inputs": true,
+    "observed_cases_forbidden_from_qualification": true,
+    "learned_vector_device_required": "cuda",
+    "learned_vector_precision": "fp16",
+    "cpu_vector_fallback_allowed": false,
+    "cpu_allowed_work": [
+      "bm25",
+      "tokenization",
+      "sql",
+      "hard_filters",
+      "ledger",
+      "deterministic_orchestration"
+    ],
+    "generative_model_calls_allowed": false,
+    "valid_temporal_max_executions": 2,
+    "test_frozen_max_executions": 1,
+    "holdout_heterogeneous_max_executions": 1,
+    "threshold_or_route_tuning_after_hidden_execution_allowed": false
+  },
+  "metric_contract": {
+    "candidate_review_k": 20,
+    "proposition_any_hit_minimum": 1.0,
+    "all_positive_object_recall_minimum": 0.9,
+    "material_facet_coverage_minimum": 0.85,
+    "required_role_coverage_minimum": 1.0,
+    "hard_negative_false_accept_maximum": 0,
+    "wrong_case_period_unit_promotion_maximum": 0,
+    "false_public_gap_maximum": 0,
+    "replay_stability_minimum": 1.0,
+    "material_ocr_anchor_recall_minimum": 1.0,
+    "natural_scanned_official_source_required": true,
+    "downstream_evidence_pack_readiness_required": true,
+    "averages_cannot_compensate_hard_gates": true
+  },
+  "cases": [
+    {
+      "case_key": "COST",
+      "legal_name": "Costco Wholesale Corporation",
+      "split": "valid_temporal",
+      "case_role": "temporal_validation",
+      "industry_group": "membership_retail",
+      "jurisdiction": "US",
+      "accounting_basis": "US_GAAP",
+      "source_targets": [
+        {
+          "target_id": "COST_FY2024_10K",
+          "route_family": "sec_filing",
+          "form_type": "10-K",
+          "fiscal_year": 2024,
+          "period_label": "FY2024",
+          "source_format": "sec_inline_xbrl_html",
+          "languages": ["en"],
+          "required": true,
+          "max_network_attempts": 2
+        },
+        {
+          "target_id": "COST_FY2025_10K",
+          "route_family": "sec_filing",
+          "form_type": "10-K",
+          "fiscal_year": 2025,
+          "period_label": "FY2025",
+          "source_format": "sec_inline_xbrl_html",
+          "languages": ["en"],
+          "required": true,
+          "max_network_attempts": 2
+        }
+      ],
+      "propositions": [
+        {
+          "proposition_id": "COST_MEMBERSHIP_VALUE_CAPTURE",
+          "question_zh": "会员费、续费率与会员结构如何影响 Costco 的收入质量和利润获取？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "COST_COMPARABLE_SALES_DEMAND",
+          "question_zh": "同店销售与流量、客单价、电商和汽油价格分别说明什么需求变化？",
+          "required_facets": ["direct_support", "alternative_explanation", "numeric_bridge"],
+          "required_roles": ["direct", "bridge", "context"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "COST_MARGIN_PRESSURES",
+          "question_zh": "商品成本、工资、收缩损耗和汽油业务对毛利率的正反影响是什么？",
+          "required_facets": ["direct_support", "counterevidence", "alternative_explanation"],
+          "required_roles": ["direct", "counter", "context"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "COST_WORKING_CAPITAL",
+          "question_zh": "库存、应付账款与经营现金流如何反映 Costco 的现金转换？",
+          "required_facets": ["direct_support", "numeric_bridge"],
+          "required_roles": ["direct", "bridge"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "COST_TEMPORAL_CHANGE",
+          "question_zh": "FY2024 到 FY2025 的经营变化是否保持同一公司、同一口径和正确期间？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["en"]
+        }
+      ]
+    },
+    {
+      "case_key": "JPM",
+      "legal_name": "JPMorgan Chase & Co.",
+      "split": "test_frozen",
+      "case_role": "frozen_test",
+      "industry_group": "diversified_banking",
+      "jurisdiction": "US",
+      "accounting_basis": "US_GAAP",
+      "source_targets": [
+        {
+          "target_id": "JPM_FY2025_10K",
+          "route_family": "sec_filing",
+          "form_type": "10-K",
+          "fiscal_year": 2025,
+          "period_label": "FY2025",
+          "source_format": "sec_inline_xbrl_html",
+          "languages": ["en"],
+          "required": true,
+          "max_network_attempts": 2
+        }
+      ],
+      "propositions": [
+        {
+          "proposition_id": "JPM_NET_INTEREST_INCOME",
+          "question_zh": "存贷款结构、利率和存款重定价如何共同影响净利息收入？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "JPM_CREDIT_QUALITY",
+          "question_zh": "净核销、拨备、逾期和储备变化反映了怎样的信用风险？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "JPM_CAPITAL_LIQUIDITY",
+          "question_zh": "资本充足率、流动性与风险加权资产怎样限制或支持资本回报？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "JPM_FEE_AND_MARKETS_MIX",
+          "question_zh": "投行、市场和资产管理收入的组合如何影响盈利质量？",
+          "required_facets": ["direct_support", "alternative_explanation", "numeric_bridge"],
+          "required_roles": ["direct", "bridge", "context"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "JPM_COUNTEREVIDENCE",
+          "question_zh": "哪些宏观、监管或资产质量证据会推翻当前盈利判断？",
+          "required_facets": ["counterevidence", "alternative_explanation"],
+          "required_roles": ["counter", "context"],
+          "query_languages": ["en"]
+        }
+      ]
+    },
+    {
+      "case_key": "CAT",
+      "legal_name": "Caterpillar Inc.",
+      "split": "test_frozen",
+      "case_role": "frozen_test",
+      "industry_group": "industrial_machinery",
+      "jurisdiction": "US",
+      "accounting_basis": "US_GAAP",
+      "source_targets": [
+        {
+          "target_id": "CAT_FY2025_10K",
+          "route_family": "sec_filing",
+          "form_type": "10-K",
+          "fiscal_year": 2025,
+          "period_label": "FY2025",
+          "source_format": "sec_inline_xbrl_html",
+          "languages": ["en"],
+          "required": true,
+          "max_network_attempts": 2
+        }
+      ],
+      "propositions": [
+        {
+          "proposition_id": "CAT_END_USER_DEMAND",
+          "question_zh": "终端用户需求与经销商库存变化应如何区分？",
+          "required_facets": ["direct_support", "counterevidence", "independent_readthrough"],
+          "required_roles": ["direct", "counter", "context"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "CAT_PRICE_COST",
+          "question_zh": "价格实现、销量、产品组合与制造成本怎样共同影响利润率？",
+          "required_facets": ["direct_support", "alternative_explanation", "numeric_bridge"],
+          "required_roles": ["direct", "bridge", "context"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "CAT_BACKLOG_CAPACITY",
+          "question_zh": "积压订单、供应约束与产能执行对未来交付意味着什么？",
+          "required_facets": ["direct_support", "counterevidence"],
+          "required_roles": ["direct", "counter"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "CAT_CASH_CONVERSION",
+          "question_zh": "库存、应收应付与资本开支怎样影响自由现金流？",
+          "required_facets": ["direct_support", "numeric_bridge"],
+          "required_roles": ["direct", "bridge"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "CAT_CYCLE_COUNTEREVIDENCE",
+          "question_zh": "哪些行业周期和地区证据可能反驳需求持续性判断？",
+          "required_facets": ["counterevidence", "independent_readthrough"],
+          "required_roles": ["counter", "context"],
+          "query_languages": ["en"]
+        }
+      ]
+    },
+    {
+      "case_key": "NVO",
+      "legal_name": "Novo Nordisk A/S",
+      "split": "holdout_heterogeneous",
+      "case_role": "heterogeneous_holdout",
+      "industry_group": "biopharma",
+      "jurisdiction": "Denmark",
+      "accounting_basis": "IFRS",
+      "source_targets": [
+        {
+          "target_id": "NVO_FY2025_20F",
+          "route_family": "sec_filing",
+          "form_type": "20-F",
+          "fiscal_year": 2025,
+          "period_label": "FY2025",
+          "source_format": "sec_inline_xbrl_html",
+          "languages": ["en"],
+          "required": true,
+          "max_network_attempts": 2
+        }
+      ],
+      "propositions": [
+        {
+          "proposition_id": "NVO_GLP1_DEMAND",
+          "question_zh": "GLP-1 产品的量、渠道和地区结构如何体现需求质量？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "NVO_SUPPLY_CAPACITY",
+          "question_zh": "产能扩张、灌装与供应限制如何影响可交付销量？",
+          "required_facets": ["direct_support", "counterevidence"],
+          "required_roles": ["direct", "counter"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "NVO_PRICE_MIX_MARGIN",
+          "question_zh": "价格、产品组合、地域与汇率如何共同影响利润率？",
+          "required_facets": ["direct_support", "alternative_explanation", "numeric_bridge"],
+          "required_roles": ["direct", "bridge", "context"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "NVO_COMPETITION_RISK",
+          "question_zh": "竞争、临床、监管和复配药风险如何限制增长判断？",
+          "required_facets": ["counterevidence", "alternative_explanation"],
+          "required_roles": ["counter", "context"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "NVO_CASH_AND_REINVESTMENT",
+          "question_zh": "研发、资本开支、收购与现金回报之间如何平衡？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["en"]
+        }
+      ]
+    },
+    {
+      "case_key": "SHEL",
+      "legal_name": "Shell plc",
+      "split": "holdout_heterogeneous",
+      "case_role": "heterogeneous_holdout",
+      "industry_group": "integrated_energy",
+      "jurisdiction": "United Kingdom",
+      "accounting_basis": "IFRS",
+      "source_targets": [
+        {
+          "target_id": "SHEL_FY2025_20F",
+          "route_family": "sec_filing",
+          "form_type": "20-F",
+          "fiscal_year": 2025,
+          "period_label": "FY2025",
+          "source_format": "sec_inline_xbrl_html",
+          "languages": ["en"],
+          "required": true,
+          "max_network_attempts": 2
+        }
+      ],
+      "propositions": [
+        {
+          "proposition_id": "SHEL_UPSTREAM_PRICE_VOLUME",
+          "question_zh": "产量、实现价格与运营可用率如何影响上游业绩？",
+          "required_facets": ["direct_support", "alternative_explanation", "numeric_bridge"],
+          "required_roles": ["direct", "bridge", "context"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "SHEL_LNG_VALUE_CAPTURE",
+          "question_zh": "LNG 交易、销量和价格环境如何影响价值获取？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "SHEL_CAPEX_CASH_RETURNS",
+          "question_zh": "资本开支、自由现金流、分红与回购之间如何约束？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "SHEL_COMMODITY_COUNTEREVIDENCE",
+          "question_zh": "油气价格、炼化利润和减值风险怎样形成反方证据？",
+          "required_facets": ["counterevidence", "alternative_explanation"],
+          "required_roles": ["counter", "context"],
+          "query_languages": ["en"]
+        },
+        {
+          "proposition_id": "SHEL_TRANSITION_EXECUTION",
+          "question_zh": "低碳投资与传统能源回报之间有哪些可验证的执行权衡？",
+          "required_facets": ["direct_support", "counterevidence", "independent_readthrough"],
+          "required_roles": ["direct", "counter", "context"],
+          "query_languages": ["en"]
+        }
+      ]
+    },
+    {
+      "case_key": "0700.HK",
+      "legal_name": "Tencent Holdings Limited",
+      "split": "holdout_heterogeneous",
+      "case_role": "heterogeneous_holdout",
+      "industry_group": "internet_platform",
+      "jurisdiction": "Hong Kong SAR",
+      "accounting_basis": "IFRS",
+      "source_targets": [
+        {
+          "target_id": "TENCENT_FY2025_OFFICIAL_ANNUAL_REPORT",
+          "route_family": "official_ir_pdf",
+          "form_type": "ANNUAL_REPORT",
+          "fiscal_year": 2025,
+          "period_label": "FY2025",
+          "source_format": "official_pdf_format_to_be_adjudicated",
+          "languages": ["zh-Hans", "zh-Hant", "en"],
+          "required": true,
+          "max_network_attempts": 2
+        }
+      ],
+      "propositions": [
+        {
+          "proposition_id": "TENCENT_GAMES_ADS_DEMAND",
+          "question_zh": "游戏与广告的用户、流量、商业化和地域结构如何体现需求质量？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["zh-Hans", "zh-Hant", "en"]
+        },
+        {
+          "proposition_id": "TENCENT_FINTECH_CLOUD",
+          "question_zh": "金融科技与企业服务的收入质量、云业务和支付活动如何变化？",
+          "required_facets": ["direct_support", "alternative_explanation", "numeric_bridge"],
+          "required_roles": ["direct", "bridge", "context"],
+          "query_languages": ["zh-Hans", "zh-Hant", "en"]
+        },
+        {
+          "proposition_id": "TENCENT_MARGIN_MIX",
+          "question_zh": "高毛利业务组合、成本纪律与投入变化怎样共同影响利润率？",
+          "required_facets": ["direct_support", "counterevidence", "numeric_bridge"],
+          "required_roles": ["direct", "counter", "bridge"],
+          "query_languages": ["zh-Hans", "zh-Hant", "en"]
+        },
+        {
+          "proposition_id": "TENCENT_AI_CAPEX",
+          "question_zh": "AI 与云基础设施投入如何影响资本开支、产能和未来变现？",
+          "required_facets": ["direct_support", "counterevidence", "independent_readthrough"],
+          "required_roles": ["direct", "counter", "context"],
+          "query_languages": ["zh-Hans", "zh-Hant", "en"]
+        },
+        {
+          "proposition_id": "TENCENT_REGULATION_CASH_RETURN",
+          "question_zh": "监管、内容风险、投资组合与回购怎样改变股东回报判断？",
+          "required_facets": ["counterevidence", "alternative_explanation", "numeric_bridge"],
+          "required_roles": ["counter", "bridge", "context"],
+          "query_languages": ["zh-Hans", "zh-Hant", "en"]
+        }
+      ]
+    }
+  ],
+  "source_morphology_requirements": [
+    "US issuer SEC inline-XBRL HTML",
+    "banking statement and regulatory-capital tables",
+    "industrial issuer narrative plus segment tables",
+    "foreign private issuer 20-F under IFRS",
+    "official non-SEC CJK annual-report PDF",
+    "at least one naturally scanned official material page; rasterized mutation alone cannot satisfy this gate",
+    "cross-period same-issuer identity and period isolation"
+  ],
+  "known_pre_execution_boundaries_zh": [
+    "本预注册只冻结案例、问题、来源形态、执行次数和验收门；尚未读取新案例检索结果或建立 gold。",
+    "若腾讯 FY2025 官方 PDF 不包含自然扫描的实质页面，不得用人工栅格化页面冒充自然扫描资格，相关硬门保持失败。",
+    "任何来源不可达、解析失败、索引漏入、查询未执行或候选未召回都必须按最早责任层记录，不得直接写成公开资料不存在。",
+    "valid temporal 最多两次，只可用于配置选择；test frozen 与 heterogeneous holdout 各只允许一次正式执行，执行后不得调阈值或换路线后沿用通过结论。",
+    "向量与重排推理只允许 CUDA FP16；CUDA 不可用时资格运行失败，CPU 不得接管 learned vector work。"
+  ]
+}

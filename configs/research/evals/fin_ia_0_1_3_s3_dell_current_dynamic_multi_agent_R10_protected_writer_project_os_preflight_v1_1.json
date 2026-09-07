@@ -1,0 +1,115 @@
+{
+  "case_key": "DELL",
+  "cell_id": "MULTI_AGENT::DELL::R10_PROTECTED_WRITER",
+  "checks": {
+    "immutable_clean_proof_and_failure_bindings_valid": true,
+    "project_os_documents_available_and_parseable": true,
+    "provider_credential_present_value_unread": true,
+    "provider_profile_and_recent_complete_capture_valid": true,
+    "real_evidence_mode": "immutable_R10_workpapers_typed_authority_zero_new_evidence",
+    "repository_clean_and_synced": true,
+    "root_cause_scope_allowed": true,
+    "token_and_call_budget_bounded": true
+  },
+  "credential_value_persisted": false,
+  "decision_projection": {
+    "R10_assessment_status": "R10_contract_pass_all_seven_material_findings_closed_independent_L1_L2_pass_writer_zero_call_gate_eligible",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "clean_proof_status": "R10_bound_protected_writer_zero_call_proven",
+    "current_dynamic_multi_agent_protected_writer": true,
+    "execution_limits": {
+      "candidate_promotions": 0,
+      "current_product_pointer_mutations": 0,
+      "fallbacks": 0,
+      "maximum_external_source_network_calls": 0,
+      "maximum_new_model_calls": 3,
+      "maximum_new_retrieval_rounds": 0,
+      "maximum_new_s1_s2_requests": 0,
+      "maximum_new_transport_attempts": 3,
+      "maximum_new_writer_logical_nodes": 1,
+      "maximum_writer_submission_attempts": 2,
+      "retries": 0,
+      "writer_analysis_calls": 1
+    },
+    "node_profiles": {
+      "writer_analysis": {
+        "comparable_run_evidence": "R10 Demand and Lead analysis completed within the max-reasoning profile; prior Writer synthesis required explicit boundary review.",
+        "input_scale": "110230 model-visible characters, six workpapers, 56 claims, 38 typed presentations.",
+        "materiality_quality_risk": "High: synthesis can reintroduce cohort, cash, source-owner, product-attribution, pull-forward, or leverage overstatement.",
+        "maximum_calls": 1,
+        "maximum_completion_tokens": 16000,
+        "node_purpose": "Synthesize six R10 workpapers into a protected report plan while preserving all material and L3 boundaries.",
+        "reasoning_profile": "deepseek-v4-pro thinking enabled max",
+        "required_outputs": [
+          "thesis_and_section_plan",
+          "claim_evidence_authority_map",
+          "material_boundary_checklist",
+          "counterthesis_gap_and_what_would_change_plan"
+        ],
+        "schema_burden": "Analysis prepares a nested protected report but does not submit the final tool contract.",
+        "stop_and_truncation_behavior": "A length or empty-content finish is terminal for this authority; no silent continuation or submission is permitted."
+      },
+      "writer_submission": {
+        "comparable_run_evidence": "Prior protected remap completed around six thousand output tokens; twelve thousand prevents truncating required sections.",
+        "input_scale": "At least 110230 source characters plus the completed analysis and a nested protected tool schema of 25714 characters.",
+        "materiality_quality_risk": "High: a structurally fluent report is invalid if any R10 protection or reference scope is violated.",
+        "maximum_calls": 2,
+        "maximum_completion_tokens": 12000,
+        "node_purpose": "Submit one complete protected report draft using only the typed R10 Writer authority projection.",
+        "reasoning_profile": "deepseek-v4-pro thinking disabled strict tool",
+        "required_outputs": [
+          "report_topic",
+          "executive_thesis",
+          "four_to_ten_sections",
+          "remaining_gaps",
+          "what_would_change",
+          "confidence",
+          "claim_evidence_authority_and_gap_refs"
+        ],
+        "schema_burden": "Nested numeric-free clauses with claim-scoped Evidence, typed presentation authority, gaps, and deterministic render receipts.",
+        "stop_and_truncation_behavior": "Stop after the first valid contract. One precise all-finding feedback attempt is allowed; a second rejection or length finish is terminal and preserves the failed run."
+      }
+    },
+    "provider_id": "deepseek",
+    "provider_model": "deepseek-v4-pro",
+    "recent_provider_steps": 4,
+    "run_scope_id": "one_capture_bound_R10_protected_writer_analysis_and_submission",
+    "writer_authority_catalog_digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765",
+    "writer_protection_digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62"
+  },
+  "decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_scope_decision_v1_1.json",
+  "decision_sha256": "6c206c5b61afbedce2b503a3266fa5fed6015d222a5840be13cf715513fa4c2b",
+  "known_boundary": "This current-baseline preflight preserves immutable R10 with six independently accepted workpapers, one accepted Lead recheck and all seven original material findings closed. It authorizes one fresh protected Writer logical node: exactly one thinking analysis call and at most two non-thinking strict submission attempts, with the second submission allowed only after precise local contract feedback. It reuses only R10 workpapers and typed report authority, omits unnormalized upstream inventory values, and enforces the same-quarter cohort, three-line cash proxy and conditional expense-leverage protections. It permits zero upstream Agent, S1/S2, retrieval, external source, retry, fallback, Candidate promotion or product-pointer action. A locally valid rendered candidate still requires an independent post-Writer L1/L2 and eight-dimension assessment and does not authorize S3 acceptance, product acceptance, heterogeneous generalization, publication or release.",
+  "model_calls": 0,
+  "network_calls": 0,
+  "project_os_document_digests": {
+    "docs/project_os/capability_status_ledger.jsonl": "523cc7f1c117eeb7b6f22e5d4997a0d8dc1397e709d2de68285c9148d9a3d9eb",
+    "docs/project_os/current_context_pack.zh-CN.md": "d4f1e3b0638fce980cfbf667da25b96ac584bf0f010a0245ace7dece01d8479f",
+    "docs/project_os/full_chain_preflight_checklist.json": "361aca870094aaa80c3a1f7873be7c0c514e9bb9c1982dca951532bb20e62f0f",
+    "docs/project_os/full_chain_run_policy.zh-CN.md": "efed0a4e5ee542c96db8ac359793340d5cb9e05cd7bbbb0415ababce6dfb5f3d",
+    "docs/project_os/root_cause_issue_ledger.jsonl": "44c731694e3bcb30d4ca55e97f2e951f0acfbb749c6dd52c9e97b399118a4d8d",
+    "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md": "f772faf528f0015a7d06d8117bb6a555629efb076045b9b82041a67cdeeb8ccf"
+  },
+  "provider_calls": 0,
+  "recorded_at": "2026-08-23T21:31:21.741140+00:00",
+  "repository": {
+    "clean": true,
+    "head": "da9408da242ad8ac1ea8bad7ec54e67a7a6c39b2",
+    "synced": true,
+    "upstream": "da9408da242ad8ac1ea8bad7ec54e67a7a6c39b2"
+  },
+  "run_scope_id": "one_capture_bound_R10_protected_writer_analysis_and_submission",
+  "schema_version": "fin_ia_current_decision_bound_project_os_preflight_v1_0",
+  "scope_projection": {
+    "blocking_issue_ids": [],
+    "closed_precondition_issue_ids": [
+      "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
+    ],
+    "explicit_allow_issue_ids": [
+      "RC-S3-088-R10-workpapers-pass-but-protected-Writer-report-not-yet-generated",
+      "RC-S3-089-R11-protected-writer-implementation-binding-misparsed-as-JSON"
+    ],
+    "out_of_scope_full_chain_blocker_count": 54
+  },
+  "status": "pass_current_decision_bound_preflight"
+}

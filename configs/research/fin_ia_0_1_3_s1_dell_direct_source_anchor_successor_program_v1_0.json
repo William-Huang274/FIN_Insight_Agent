@@ -1,0 +1,61 @@
+{
+  "schema_version": "fin_ia_reviewed_anchor_catalog_successor_program_v1_0",
+  "status": "approved_zero_call_reviewed_anchor_catalog_successor",
+  "case_key": "DELL",
+  "predecessor_catalog_binding": {
+    "ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_5.json",
+    "sha256": "93928924566185eb8ec0ef3e362177e2cfb85f9c5449402711dddb79911252bb",
+    "catalog_digest": "d99cbc44dc24eced44aae127b3c111eea58796f8f2299ef8b1f5ae7a55748958"
+  },
+  "target_pack_binding": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+    "artifact_digest": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+    "pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98"
+  },
+  "expected_removed_evidence_item_digests": [],
+  "new_anchor_decisions": [
+    {
+      "evidence_item_digest": "80363b20916fa87a2ce1a4445797d70cd3ef478a604c700edc4c48cd7d65aa9f",
+      "target_id": "EXTEV::A42D799F558FC8AE4B81",
+      "source_record_id": "PUBLIC::DELL-EXT::329F1654BF36A1B63B37",
+      "anchor_text": "For the Dell AI Factory on-premises solution, we received a quote the using the Dell recommended price. On March 12, 2025, Dell quoted $757,231 as the purchase price for the hardware. The quote included 5-year ProSupport and Next Business Day Onsite Service for the servers and switches and ProDeploy Plus for the servers. Dell defines recommended price as a price that serves as a starting point for potential buyers. It represents the cost immediately accessible to companies, even if they are not existing customers, and essentially functions as a suggested retail price for their products."
+    },
+    {
+      "evidence_item_digest": "35cac7ce4798806923fb460db40089602b0489efb832cb4f35e9b5be27f4188a",
+      "target_id": "EXTEV::6853D25430B2922CBDDE",
+      "source_record_id": "PUBLIC::DELL-EXT::329F1654BF36A1B63B37",
+      "anchor_text": "The two PowerEdge XE9680 GPU worker nodes each have two 48-core Intel Xeon Platinum 8468 processors, 1,024GB memory, 44.8 TB of raw capacity storage, and an NVIDIA HGX H100 8-GPU assembly."
+    },
+    {
+      "evidence_item_digest": "7304ae15ab5660573cc4d85536cc7720b701cf242b240c87ebf6dc297811ff7b",
+      "target_id": "EXTEV::2DEA13A6A24E9491E300",
+      "source_record_id": "PUBLIC::DELL-EXT::2184F13EB685F627C757",
+      "anchor_text": "Dell servers with NVIDIA GB200 are shipping at scale for a variety of customers, such as CoreWeave’s new NVIDIA GB200 NVL72 system. One of Dell’s U.S. factories can ship thousands of NVIDIA Blackwell GPUs to customers in a week. It’s why they were chosen by one of their largest customers to deploy 100,000 NVIDIA GPUs in just six weeks."
+    },
+    {
+      "evidence_item_digest": "b9e41b6799ac41ee3440bdfe2124e27f8e4092b6398b10d894c61a9c8e854d21",
+      "target_id": "EXTEV::31D6F3D9E4C32A846E34",
+      "source_record_id": "PUBLIC::DELL-EXT::518D98AA635617191E58",
+      "anchor_text": "Dell celebrates one-year anniversary of the Dell AI Factory with NVIDIA, helping over 2,000 customers from startups to enterprises to hyperscalers develop AI factories Dell Technologies announces broad adoption of the latest NVIDIA innovations, including the NVIDIA Blackwell Ultra platform and NVIDIA AI Data Platform across the industry’s first and only end-to-end enterprise AI solution 1"
+    },
+    {
+      "evidence_item_digest": "d0b73d9640d6d9f267d3c8eb8475a14b431f5de32933dce1d2b0bf5dac6d6473",
+      "target_id": "EXTEV::9C9443C9ECD1AF7DC29B",
+      "source_record_id": "PUBLIC::DELL-EXT::518D98AA635617191E58",
+      "anchor_text": "Jensen Huang, Founder and Chief Executive Officer, NVIDIA, states, “Every industry is racing to build AI factories to produce intelligence. NVIDIA and Dell are partnering to deliver the industry’s broadest, end-to-end AI infrastructure, giving enterprises everything they need to develop, deploy and scale AI. From deskside workstations to data center-scale AI factories, this platform will power the next wave of AI-driven breakthroughs.” Read what customers are saying about Dell AI Factory here. Availability Dell Pro Max desktops and laptops will be available beginning March 2025 with more releasing in the coming months."
+    },
+    {
+      "evidence_item_digest": "b5eb3cd09074b56852917aa14219bcba4696dfe909d172b555140f6fa3a8491f",
+      "target_id": "EXTEV::FC03781907530AD27EB6",
+      "source_record_id": "PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6",
+      "anchor_text": "Scope of Work: CSpire will provide (4) high performance computer systems, installation, training, and a five (5) year maintenance and support. Term of Contract: The agreement is for the immediate one-time purchase and installation of the equipment. However, under the included Maintenance and Support plan, JSU shall receive training and support services for the period of five (5) years from the date the equipment is installed. Contract Amount: The total contract cost for the purchase of the equipment, delivery, installation, training and the five (5) year maintenance and support services plan is $2,278,577.28."
+    },
+    {
+      "evidence_item_digest": "7f2b9ca12aea63dcdba77f8fed257b31c9f8d6c8457d04352147ce990d55cb7a",
+      "target_id": "EXTEV::1FA819B9E85C27EFCF8F",
+      "source_record_id": "PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6",
+      "anchor_text": "Purpose: The purpose of this agreement is to purchase four (4) fully integrated computer systems that will be designed and produced according to university specifications. The unique systems will feature Dell’s PowerEdge XE9680 technology utilizing the latest Intel Xeon Platinum 8468 processors, NVIDIA HGX H100 GPUs, Dell’s Advanced Cluster Engine management software and other high-level components."
+    }
+  ],
+  "known_boundary": "This successor adds exact source-visible anchors only for the seven already reviewed DELL direct-source claims entering the R4 Pack. It removes no predecessor anchor, creates no Evidence or NumericFact, grants no causal or qualified-human authority, and does not by itself promote the R4 Pack to current runtime or qualify S1."
+}

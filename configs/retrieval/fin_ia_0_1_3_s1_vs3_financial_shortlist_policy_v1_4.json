@@ -1,0 +1,38 @@
+{
+  "schema_version": "fin_ia_s1_vs3_financial_shortlist_policy_v1_1",
+  "status": "pre_registered_shared_composite_first_sort_key_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-FINANCIAL-SHORTLIST-V1.4-COMPOSITE-FIRST",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_financial_shortlist_policy_v1_3.json",
+  "parent_policy_sha256_lf": "264a993992179d77ef7a881b5118bbb1349ff58202a213916754f7059fc68558",
+  "bound_input_overrides": {
+    "role_replay_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_evidence_role_replay_result_v1_3.json",
+    "role_replay_result_sha256_lf": "7859efa3f039265926c1d1efdb42e39733204c314f473a7b01d20134677c8d68",
+    "shortlist_implementation_ref": "src/retrieval/financial_evidence_shortlist.py",
+    "shortlist_implementation_sha256_lf": "6e30e6c3731beca5cb4ce560cf4c7b3f73fc78086500a32959f49912fb8b0877",
+    "materializer_implementation_ref": "scripts/data_retrieval/materialize_s1_vs3_financial_shortlist.py",
+    "materializer_implementation_sha256_lf": "5d9c1c2df2b52ceafc9fa94153970f3e2a8fa53f7f408dfb9119978d19f74b9b"
+  },
+  "successor_basis": {
+    "why_successor_is_required": [
+      "v1.3 found all fifteen positive atoms in the first ten but retained one product-catalog hard negative",
+      "the catalog matched metric and product words yet had an incompatible Evidence Role",
+      "the independently qualified composite decision must be the first ordering key rather than separate lexicographic intent and role keys"
+    ],
+    "not_changed": [
+      "qrels and ontology",
+      "compiled objects and v1.4 candidate unions",
+      "all embedding and reranker scores",
+      "decision gates and authority"
+    ],
+    "changed_only": [
+      "one shared composite compatibility result precedes its intent and role components in shortlist ordering"
+    ],
+    "prohibited": [
+      "object identity rules",
+      "new model scoring",
+      "candidate deletion",
+      "Evidence promotion"
+    ]
+  }
+}

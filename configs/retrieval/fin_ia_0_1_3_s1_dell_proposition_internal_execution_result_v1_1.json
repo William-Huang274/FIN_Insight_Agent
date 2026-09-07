@@ -1,0 +1,867 @@
+{
+  "authority": {
+    "candidate_decision_complete": false,
+    "dynamic_single_unit_authorized": false,
+    "evidence_pack_readiness_authorized": false,
+    "evidence_promotion_authorized": false,
+    "numeric_authority_granted_by_text_retrieval": false,
+    "public_information_gap_authorized": false
+  },
+  "case_key": "DELL",
+  "known_boundary": "This result proves only the AI-free internal S1/S2 route execution for the seven DELL proposition families. Ranked rows remain candidates. External source exhaustion, CandidateDecision, Evidence Gate, current Pack promotion, S2 successor compilation and dynamic research remain separate successor gates.",
+  "prepared_from_commit": "67270106116d65e6d1a2680fedca30fbbdb4cbed",
+  "private_execution_ref": "data/workbench_private/fin_0_1_3_s1_dell_proposition_coverage/dell-proposition-internal-r2/internal_runtime_result.json",
+  "private_execution_sha256": "47fddda1da381e8d0249477f42fbf4f63c89df2b438f0b655fb9713670d63974",
+  "program_id": "FIN-0.1.3-S1-DELL-PROPOSITION-COVERAGE-R1",
+  "propositions": [
+    {
+      "business_question_zh": "戴尔 AI 服务器的可观察价格区间、配置层级与组合变化是什么？",
+      "internal_coverage_state": "material_candidate_complete",
+      "material_scope_ready_request_count": 1,
+      "material_set_complete_request_count": 1,
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "request_ids": [
+        "REQ::DELL::PRICE_CONFIGURATION::V1"
+      ],
+      "selected_candidate_count": 16,
+      "source_supplement_required_request_count": 0,
+      "typed_fact_gap_count": 1,
+      "typed_fact_resolved_count": 1
+    },
+    {
+      "business_question_zh": "在没有公司直接披露销量时，销量、出货和份额可以如何形成可复算区间？",
+      "internal_coverage_state": "material_candidate_complete",
+      "material_scope_ready_request_count": 1,
+      "material_set_complete_request_count": 1,
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "request_ids": [
+        "REQ::DELL::UNIT_VOLUME::V1"
+      ],
+      "selected_candidate_count": 16,
+      "source_supplement_required_request_count": 0,
+      "typed_fact_gap_count": 3,
+      "typed_fact_resolved_count": 0
+    },
+    {
+      "business_question_zh": "收入变化中价格、数量和配置组合分别可能贡献多少？",
+      "internal_coverage_state": "material_candidate_complete",
+      "material_scope_ready_request_count": 1,
+      "material_set_complete_request_count": 1,
+      "proposition_id": "DELL-PROP-PVM-BRIDGE",
+      "request_ids": [
+        "REQ::DELL::PVM_BRIDGE::V1"
+      ],
+      "selected_candidate_count": 16,
+      "source_supplement_required_request_count": 0,
+      "typed_fact_gap_count": 1,
+      "typed_fact_resolved_count": 1
+    },
+    {
+      "business_question_zh": "AI 需求来自哪些客户、部署与预算信号，持续性和提前采购风险如何？",
+      "internal_coverage_state": "material_candidate_complete",
+      "material_scope_ready_request_count": 2,
+      "material_set_complete_request_count": 2,
+      "proposition_id": "DELL-PROP-CUSTOMER-DEMAND",
+      "request_ids": [
+        "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+        "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1"
+      ],
+      "selected_candidate_count": 32,
+      "source_supplement_required_request_count": 0,
+      "typed_fact_gap_count": 5,
+      "typed_fact_resolved_count": 0
+    },
+    {
+      "business_question_zh": "GPU、HBM、先进封装、网络和存储供给如何约束戴尔的交付节奏？",
+      "internal_coverage_state": "material_candidate_complete",
+      "material_scope_ready_request_count": 3,
+      "material_set_complete_request_count": 3,
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "request_ids": [
+        "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+        "REQ::DELL::SUPPLY_RELATIONSHIP::V1"
+      ],
+      "selected_candidate_count": 48,
+      "source_supplement_required_request_count": 0,
+      "typed_fact_gap_count": 12,
+      "typed_fact_resolved_count": 2
+    },
+    {
+      "business_question_zh": "AI 服务器价值池如何在 Dell、GPU、HBM、网络与其他供应商之间分配？",
+      "internal_coverage_state": "external_or_review_successor_required",
+      "material_scope_ready_request_count": 2,
+      "material_set_complete_request_count": 1,
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "request_ids": [
+        "REQ::DELL::VALUE_POOL_MARGIN::V1",
+        "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1"
+      ],
+      "selected_candidate_count": 32,
+      "source_supplement_required_request_count": 1,
+      "typed_fact_gap_count": 0,
+      "typed_fact_resolved_count": 5
+    },
+    {
+      "business_question_zh": "哪些发行人、客户、供应商和行业证据会削弱当前判断，什么变化会使结论失效？",
+      "internal_coverage_state": "material_candidate_complete",
+      "material_scope_ready_request_count": 2,
+      "material_set_complete_request_count": 2,
+      "proposition_id": "DELL-PROP-COUNTEREVIDENCE-WWC",
+      "request_ids": [
+        "REQ::DELL::COUNTER_ISSUER::V1",
+        "REQ::DELL::COUNTER_ECOSYSTEM::V1"
+      ],
+      "selected_candidate_count": 32,
+      "source_supplement_required_request_count": 0,
+      "typed_fact_gap_count": 2,
+      "typed_fact_resolved_count": 3
+    }
+  ],
+  "recorded_at": "2026-08-22T16:07:41+00:00",
+  "requests": [
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::PRICE_CONFIGURATION",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 4940,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 9,
+        "selected_both_routes": 0,
+        "selected_candidate_count_by_owner": {
+          "DELL": 16
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 7,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 2
+      },
+      "material_requirements": {
+        "complete_count": 2,
+        "requirement_count": 2,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::PRICE_CONFIGURATION::V1",
+      "requested_facet_ids": [
+        "pricing_and_mix"
+      ],
+      "s2": {
+        "resolved_count": 1,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 1
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 5
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "DELL"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::UNIT_VOLUME",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 4940,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 15,
+        "selected_both_routes": 1,
+        "selected_candidate_count_by_owner": {
+          "DELL": 16
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 0,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 3
+      },
+      "material_requirements": {
+        "complete_count": 2,
+        "requirement_count": 2,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::UNIT_VOLUME::V1",
+      "requested_facet_ids": [
+        "orders_and_backlog"
+      ],
+      "s2": {
+        "resolved_count": 0,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 3
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 5
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "DELL"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::PVM_BRIDGE",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 4940,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 9,
+        "selected_both_routes": 0,
+        "selected_candidate_count_by_owner": {
+          "DELL": 16
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 7,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 2
+      },
+      "material_requirements": {
+        "complete_count": 2,
+        "requirement_count": 2,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::PVM_BRIDGE::V1",
+      "requested_facet_ids": [
+        "pricing_and_mix"
+      ],
+      "s2": {
+        "resolved_count": 1,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 1
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 5
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "DELL"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::CUSTOMER_DEMAND",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 4940,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 13,
+        "selected_both_routes": 1,
+        "selected_candidate_count_by_owner": {
+          "DELL": 16
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 2,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 3
+      },
+      "material_requirements": {
+        "complete_count": 2,
+        "requirement_count": 2,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "requested_facet_ids": [
+        "conversion_and_durability"
+      ],
+      "s2": {
+        "resolved_count": 0,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 4
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 5
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "DELL"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::CUSTOMER_DEMAND",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 1518,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 8,
+        "selected_both_routes": 5,
+        "selected_candidate_count_by_owner": {
+          "MSFT": 16
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 3,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 3
+      },
+      "material_requirements": {
+        "complete_count": 2,
+        "requirement_count": 2,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1",
+      "requested_facet_ids": [
+        "downstream_demand_context"
+      ],
+      "s2": {
+        "resolved_count": 0,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 1
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 5
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "MSFT"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::SUPPLY_CHAIN",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 4940,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 13,
+        "selected_both_routes": 1,
+        "selected_candidate_count_by_owner": {
+          "DELL": 16
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 2,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 3
+      },
+      "material_requirements": {
+        "complete_count": 2,
+        "requirement_count": 2,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "requested_facet_ids": [
+        "subject_execution"
+      ],
+      "s2": {
+        "resolved_count": 0,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 2
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 5
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "DELL"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::SUPPLY_CHAIN",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 5102,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 7,
+        "selected_both_routes": 6,
+        "selected_candidate_count_by_owner": {
+          "MU": 12,
+          "NVDA": 2,
+          "TSM": 2
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 3,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 3
+      },
+      "material_requirements": {
+        "complete_count": 2,
+        "requirement_count": 2,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "requested_facet_ids": [
+        "upstream_capacity_context"
+      ],
+      "s2": {
+        "resolved_count": 2,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 10
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 3,
+          "not_required_local_candidate_set_complete": 15
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "NVDA",
+        "MU",
+        "TSM"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::SUPPLY_CHAIN",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 6082,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 8,
+        "selected_both_routes": 8,
+        "selected_candidate_count_by_owner": {
+          "DELL": 7,
+          "MU": 5,
+          "NVDA": 2,
+          "TSM": 2
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 0,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 3
+      },
+      "material_requirements": {
+        "complete_count": 1,
+        "requirement_count": 1,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::SUPPLY_RELATIONSHIP::V1",
+      "requested_facet_ids": [
+        "counterparty_direct_mention"
+      ],
+      "s2": {
+        "resolved_count": 0,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 0
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 4,
+          "not_required_local_candidate_set_complete": 8
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "DELL",
+        "NVDA",
+        "MU",
+        "TSM"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::VALUE_POOL",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 4940,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 10,
+        "selected_both_routes": 0,
+        "selected_candidate_count_by_owner": {
+          "DELL": 16
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 6,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 2
+      },
+      "material_requirements": {
+        "complete_count": 1,
+        "requirement_count": 1,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "requested_facet_ids": [
+        "margin_and_incremental_profit"
+      ],
+      "s2": {
+        "resolved_count": 5,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 5
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "DELL"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "at_or_before_candidate_union",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::VALUE_POOL",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 6082,
+        "material_scope_ready": true,
+        "material_set_complete": false,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 14,
+        "selected_both_routes": 2,
+        "selected_candidate_count_by_owner": {
+          "DELL": 10,
+          "MU": 2,
+          "NVDA": 2,
+          "TSM": 2
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 0,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 3
+      },
+      "material_requirements": {
+        "complete_count": 0,
+        "requirement_count": 1,
+        "unmet_requirement_ids": [
+          "MER::0dbff8b6f45e9faceeff"
+        ]
+      },
+      "request_id": "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1",
+      "requested_facet_ids": [
+        "counterparty_direct_mention"
+      ],
+      "s2": {
+        "resolved_count": 0,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 0
+      },
+      "source_route": {
+        "candidate_coverage_state": "incomplete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "available_not_executed": 4,
+          "executed_local_snapshot": 4,
+          "not_executed_diagnostic_only": 4
+        },
+        "supplement_route_required": true
+      },
+      "target_entities": [
+        "DELL",
+        "NVDA",
+        "MU",
+        "TSM"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::COUNTEREVIDENCE",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 2971,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 15,
+        "selected_both_routes": 0,
+        "selected_candidate_count_by_owner": {
+          "DELL": 16
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 1,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 3
+      },
+      "material_requirements": {
+        "complete_count": 1,
+        "requirement_count": 1,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::COUNTER_ISSUER::V1",
+      "requested_facet_ids": [
+        "issuer_counterevidence"
+      ],
+      "s2": {
+        "resolved_count": 1,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 0
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 1,
+          "not_required_local_candidate_set_complete": 2
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "DELL"
+      ]
+    },
+    {
+      "candidate_ceiling": {
+        "earliest_observed_limitation": "none_observed_through_candidate_review",
+        "public_information_gap_eligible": false
+      },
+      "cell_id": "CELL::DELL::COUNTEREVIDENCE",
+      "hybrid_candidate_runtime": {
+        "bm25_first_stage_count": 64,
+        "eligible_object_count": 4143,
+        "material_scope_ready": true,
+        "material_set_complete": true,
+        "owner_floor_unmet": [],
+        "qwen_first_stage_count": 64,
+        "selected_bm25_only": 7,
+        "selected_both_routes": 4,
+        "selected_candidate_count_by_owner": {
+          "MSFT": 2,
+          "MU": 6,
+          "NVDA": 6,
+          "TSM": 2
+        },
+        "selected_count": 16,
+        "selected_qwen_only": 5,
+        "union_count_before_source_quota": 96
+      },
+      "local_route_execution_state_counts": {
+        "executed": 2,
+        "not_executed_route_unavailable": 3
+      },
+      "material_requirements": {
+        "complete_count": 2,
+        "requirement_count": 2,
+        "unmet_requirement_ids": []
+      },
+      "request_id": "REQ::DELL::COUNTER_ECOSYSTEM::V1",
+      "requested_facet_ids": [
+        "upstream_or_demand_counterevidence"
+      ],
+      "s2": {
+        "resolved_count": 2,
+        "typed_conflict_count": 0,
+        "typed_gap_count": 2
+      },
+      "snapshot": {
+        "compiled_lane_count": 1,
+        "nonempty_lane_count": 1
+      },
+      "source_route": {
+        "candidate_coverage_state": "complete",
+        "official_or_external_supplement_route_exhausted": false,
+        "public_information_gap_eligible": false,
+        "route_execution_state_counts": {
+          "executed_local_snapshot": 4,
+          "not_required_local_candidate_set_complete": 8
+        },
+        "supplement_route_required": false
+      },
+      "target_entities": [
+        "NVDA",
+        "MU",
+        "TSM",
+        "MSFT"
+      ]
+    }
+  ],
+  "research_as_of": "2026-08-06",
+  "result_digest": "740690483e770581082317656db5177073bb1ca5f61d057c5f42a03948941e9e",
+  "schema_version": "fin_ia_s1_dell_proposition_internal_execution_result_v1_0",
+  "status": "dell_proposition_ai_free_internal_execution_materialized",
+  "summary": {
+    "compiled_lane_count": 12,
+    "generation_model_calls": 0,
+    "hybrid_selected_candidate_count": 192,
+    "hybrid_union_candidate_count": 739,
+    "local_embedding_inference_batches": 1,
+    "material_scope_ready_request_count": 12,
+    "material_scope_required_request_count": 0,
+    "material_set_complete_request_count": 11,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_fact_count": 34,
+    "request_count": 12,
+    "snapshot_nonempty_lane_count": 10,
+    "typed_fact_conflict_count": 0,
+    "typed_fact_gap_count": 24,
+    "typed_fact_resolved_count": 12
+  }
+}

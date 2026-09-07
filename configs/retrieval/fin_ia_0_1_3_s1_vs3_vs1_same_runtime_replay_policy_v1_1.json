@@ -1,0 +1,99 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs1_final_ontology_and_all_need_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-VS1-SAME-RUNTIME-REPLAY-V1.1",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_0.json",
+  "parent_policy_sha256_lf": "951a91d3cb2c4f492a4d434171d226c084f3c3b4df45db9e38671b0ac37024f2",
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_vs1_same_runtime_query_atom_eval_v1_0.json",
+    "query_atom_eval_sha256_lf": "0cfe4a0f9908224cd374620b7b3a97e5bbd07e5962de831cdf7b72027526e3fa",
+    "retrieval_need_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_retrieval_need_compiler_policy_v1_1.json",
+    "retrieval_need_policy_sha256_lf": "e98f38c31a6e579b41004d3cad21d1ea2d81159a4d47083a9a9245cd7071f95e",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_1.json",
+    "financial_intent_ontology_sha256_lf": "c8627c945c7b6808a15856c5aa7be5f8a40b2aec14f258f07f439eb9edcd932d"
+  },
+  "candidate_contract_overrides": {
+    "rank_authority_object_kinds": [
+      "claim",
+      "metric_row"
+    ],
+    "bounded_parent_context_attached_only_after_child_selection": true,
+    "typed_metric_row_exact_route": true,
+    "typed_metric_alias_route": true,
+    "typed_metric_alias_route_uses_request_metric_intent_only": true,
+    "typed_metric_alias_route_prefers_direct_label_match_then_latest_eligible_publication": true,
+    "typed_metric_product_alias_groups_require_one_match_per_group": true,
+    "product_proxy_terms_support_recall_but_not_final_compatibility": true,
+    "unrequested_metric_cues_suppressed_when_proxy_forbidden": true,
+    "industry_extensions_are_versioned_ontology_data_not_core_branches": true,
+    "metric_row_role_surface_excludes_identity_and_table_title_metadata": true,
+    "rerank_each_candidate_against_all_needs": true,
+    "each_reranker_selects_its_own_best_need": true,
+    "persist_full_reranker_order_and_best_need": true,
+    "financial_shortlist_runs_after_candidate_union": true,
+    "complex_document_context_expands_only_after_shortlist_selection": true,
+    "context_expansion_never_grants_evidence_or_numeric_authority": true
+  },
+  "decision_gate_overrides": {
+    "positive_target_in_head_minimum_rate": 0.8,
+    "judged_positive_role_compatible_minimum_rate": 0.8,
+    "judged_hard_negative_suppression_minimum_rate": 1.0
+  },
+  "token_budget_basis_overrides": {
+    "bge_reranker": {
+      "node_purpose": "Score each VS1 pricing-and-mix candidate against every bounded RetrievalNeed so one generic need cannot suppress a partial but material disclosure.",
+      "input_scale": "One reviewed DELL request, ten bounded needs and at most ninety-six candidates.",
+      "required_outputs": [
+        "one finite score per candidate-need pair",
+        "best need identity per candidate",
+        "complete bounded candidate ordering"
+      ],
+      "schema_burden": "pair-score matrix, stable candidate and need identities, cache digest and complete ordering",
+      "materiality_and_quality_risk": "a generic margin or AI term can outrank the actual reviewed pricing-and-mix disclosure when needs are collapsed",
+      "comparable_run_evidence": "VS1 v1.0 found both reviewed objects in the union but only one entered a generic reranker top ten",
+      "reasoning_profile": "local CUDA cross-encoder scoring without generation, network or training",
+      "stop_and_truncation": "1024 tokens per pair, batch 2, finite matrix and fail closed on score or identity drift"
+    },
+    "qwen_reranker": {
+      "node_purpose": "Provide the same all-needs independent relevance signal for the exact VS1 business request.",
+      "input_scale": "The same one-request candidate-need matrix as BGE.",
+      "required_outputs": [
+        "one finite score per candidate-need pair",
+        "best need identity per candidate",
+        "complete bounded candidate ordering"
+      ],
+      "schema_burden": "instruction-aware pair scores plus deterministic aggregation and cache receipt",
+      "materiality_and_quality_risk": "semantic relevance alone may confuse segment result, product profit and unresolved bridge evidence",
+      "comparable_run_evidence": "VS1 v1.0 Qwen surfaced one reviewed object while the role-guarded route suppressed it",
+      "reasoning_profile": "local CUDA reranker shadow without generation, network or training",
+      "stop_and_truncation": "1024 tokens per pair, batch 2, finite matrix and fail closed on score or identity drift"
+    }
+  },
+  "authority_overrides": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_requires_result": true,
+    "hidden_qualification_authorized": false,
+    "s1_complete_claimed": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false
+  },
+  "successor_basis": {
+    "why_replay_is_required": [
+      "VS1 must consume the same final intent ontology, all-needs scoring and financial shortlist semantics as the main three-case and VS2 paths.",
+      "The previous VS1 replay only proved candidate-pool recall under the pre-ontology runtime.",
+      "Both reviewed DELL objects must remain reachable without target IDs or answer URLs in the query."
+    ],
+    "not_changed": [
+      "compiled object population and reviewed VS1 target identities",
+      "hard identity, period, source and relationship filters",
+      "candidate and Evidence authority boundaries"
+    ],
+    "labels_joined_after_candidate_generation_and_all_model_scoring": true,
+    "no_gold_identity_or_answer_url_in_query": true,
+    "v1_0_result_remains_immutable": true,
+    "development_replay_not_product_acceptance": true
+  }
+}

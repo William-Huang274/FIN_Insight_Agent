@@ -1,0 +1,77 @@
+{
+  "acceptance": {
+    "base_objects_retained_exactly": true,
+    "base_source_records_retained_exactly": true,
+    "external_owner_identity_preserved": true,
+    "missing_reviewed_public_web_page_and_slice_internalized": true,
+    "missing_reviewed_public_web_source_indexed": true
+  },
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "exact_lineage_join_required_for_evidence_reselection": true,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "public_relationship_does_not_prove_private_allocation": true,
+    "reviewed_relevance_labels_copied_into_candidate_index": false
+  },
+  "inputs": {
+    "base_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v7/objects.jsonl",
+    "base_objects_sha256": "8dd81907dfd7a2e2526a6f41ea9aad24845286adf268131a49c5947ffedbfa3d",
+    "base_source_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v4/records.jsonl",
+    "base_source_records_sha256": "653b16e36bae943be07a8ef94814ddf38d61c86f2ef04e598a257f85984bb936",
+    "evidence_pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98",
+    "evidence_pack_ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+    "evidence_pack_sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_5.json",
+    "kernel_sha256": "4b42a4942a5026719263e1bdd86c66bc3f602e79d422dcd0c8f5cc07ecfe753c",
+    "records": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v5/records.jsonl",
+      "sha256": "d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45"
+    },
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_5.json",
+    "route_policy_sha256": "05975a2dbe5503797e3e7487083ffa5a9c695b5587bec2f8ef8ed68857c37be7"
+  },
+  "known_boundary": "This successor appends only the one writer-citable NVIDIA public-web page introduced by the current DELL R4 Pack and its exact reviewed slice. It fixes source/object synchronization without changing the Pack, copying relevance labels, granting Evidence or NumericFact authority, or treating a public collaboration as private allocation.",
+  "object_compilation_summary": {
+    "compiled_object_count": 34198,
+    "compiled_object_kind_counts": {
+      "bounded_parent_context": 1232,
+      "claim": 24434,
+      "metric_row": 8532
+    },
+    "source_record_count": 1888
+  },
+  "output_binding": {
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v8/diagnostics.jsonl",
+    "diagnostics_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v8/objects.jsonl",
+    "objects_sha256": "6c6fc8aae3fb3e04ab6f78e82749cb5a2d83716f551f2e5736ece75005b45386"
+  },
+  "outputs": {
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v8/diagnostics.jsonl",
+    "diagnostics_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v8/objects.jsonl",
+    "objects_sha256": "6c6fc8aae3fb3e04ab6f78e82749cb5a2d83716f551f2e5736ece75005b45386",
+    "source_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v5/records.jsonl",
+    "source_records_sha256": "d4c7e51790713d32fc10a9d0382b617f8ebd60861a3741d3adcee34392045d45"
+  },
+  "recorded_at": "2026-08-25",
+  "result_digest": "28c0d9fb3ed6bceefeade9ca588982affd4b77ce3be247bb3441a948cf614d03",
+  "schema_version": "fin_ia_s1_reviewed_public_web_incremental_successor_result_v1_0",
+  "status": "missing_reviewed_public_web_source_compiled_into_candidate_successor",
+  "summary": {
+    "appended_canonical_source_record_count": 2,
+    "appended_object_count": 9,
+    "appended_page_ids": [
+      "PUBLIC::DELL-EXT::2184F13EB685F627C757"
+    ],
+    "appended_slice_ids": [
+      "PUBLIC::DELL-EXT::2184F13EB685F627C757::SLICE::62BC91E7D73822D5A187"
+    ],
+    "base_object_count": 34189,
+    "base_source_record_count": 1886,
+    "successor_object_count": 34198,
+    "successor_source_record_count": 1888
+  }
+}

@@ -1,0 +1,354 @@
+{
+  "schema_version": "fin_ia_s1c_runtime_query_atom_v2_adjudication_v1_2",
+  "status": "codex_reviewed_current_object_head_queue_successor_not_owner_acceptance",
+  "recorded_at": "2026-08-18",
+  "policy": {
+    "adjudication_authority": "codex_business_semantic_development_review",
+    "owner_acceptance": false,
+    "replace_only_materially_changed_object_relations": true,
+    "unchanged_relations_follow_parent_bound_surface_containment": true,
+    "require_target_identity_rotation": false,
+    "allow_stable_compiled_id_only_when_present_in_target_population": true,
+    "source_match_is_not_evidence_object_match": true,
+    "development_label_correction_is_not_retrieval_tuning": true,
+    "ranking_frozen_before_label_successor": true,
+    "candidate_is_not_evidence": true
+  },
+  "replacements": [
+    {
+      "atom_id": "S1C_ATOM_01_DELL_DOWNSTREAM_MSFT",
+      "business_reason_zh": "旧标签漏掉了微软当期明确披露的 AI 基础设施投入、客户需求和使用量增长，同时未登记只有泛化口号的语义近邻。三条跨案例查询共享同一目标公司与研究口径，使用同一组对象关系。",
+      "labels": {
+        "positive_object_keys": [
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::claim::11",
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_03_OF_04::claim::16",
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04::claim::15"
+        ],
+        "hard_negative_object_keys": [
+          {"object_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::table::45", "object_kind": "metric_row", "metric_row_label": "Microsoft 365 Commercial cloud revenue growth"},
+          "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001::claim::12"
+        ],
+        "unjudged_object_keys": [],
+        "expected_roles_by_object_key": {
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::claim::11": ["direct_demand_signal", "observed_operating_result"],
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_03_OF_04::claim::16": ["direct_demand_signal", "observed_operating_result"],
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04::claim::15": ["direct_demand_signal", "observed_operating_result"],
+          "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001::claim::12": ["generic_or_boilerplate"]
+        },
+        "expected_roles_by_locator": [
+          {"locator": {"object_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::table::45", "object_kind": "metric_row", "metric_row_label": "Microsoft 365 Commercial cloud revenue growth"}, "roles": ["generic_or_boilerplate"]}
+        ]
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_02_DELL_REPORTED_RESULTS",
+      "business_reason_zh": "该查询明确要求 AI 优化服务器的收入和营业利润。当前榜首的旧期重述行、毛利率段落和衍生品表虽然含有相似财务词，但不能回答该命题，必须作为硬负例保留；已实现的 AI 订单和收入仍是正样本，未来预期仍为待审指引。",
+      "labels": {
+        "positive_object_keys": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::03"
+        ],
+        "hard_negative_object_keys": [
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0001::PART_01_OF_01::claim::01",
+          {"object_key": "DELL_2026_10Q_ITEM1_BLOCK_0047_CHUNK_0001::table::61", "object_kind": "metric_row", "metric_row_label": "Operating income", "model_text_contains": "1,668"},
+          {"object_key": "DELL_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_02::table::35", "object_kind": "metric_row", "metric_row_label": "Operating income", "model_text_contains": "5,211"},
+          {"object_key": "DELL_2025_10K_ITEM8_BLOCK_0025_PART_02_OF_03::table::105", "object_kind": "metric_row", "metric_row_label": "Operating income", "model_text_contains": "1,491"},
+          "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02::claim::11",
+          "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02::claim::06",
+          "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02::claim::24",
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0017::PART_01_OF_02::claim::12",
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0017::PART_01_OF_02::claim::15",
+          "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02::claim::28",
+          {"object_key": "DELL_2026_10Q_ITEM1_BLOCK_0026_CHUNK_0001::table::38", "object_kind": "metric_row", "metric_row_label": "Total net revenue", "model_text_contains": "( 40 )"},
+          {"object_key": "DELL_2026_10Q_ITEM1_BLOCK_0026_CHUNK_0001::table::38", "object_kind": "metric_row", "metric_row_label": "Total net revenue", "model_text_contains": "( 25 )"},
+          {"object_key": "DELL_2026_10Q_ITEM1_BLOCK_0026_CHUNK_0001::table::38", "object_kind": "metric_row", "metric_row_label": "Total net revenue", "model_text_contains": "( 207 )"}
+        ],
+        "unjudged_object_keys": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::04"
+        ],
+        "expected_roles_by_object_key": {
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::02": ["direct_demand_signal", "observed_operating_result"],
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::03": ["direct_demand_signal", "observed_operating_result"],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0001::PART_01_OF_01::claim::01": ["generic_or_boilerplate"],
+          "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02::claim::11": ["observed_operating_result"],
+          "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02::claim::06": ["observed_operating_result"],
+          "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02::claim::24": ["observed_operating_result"],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0017::PART_01_OF_02::claim::12": ["observed_operating_result"],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_7::BLOCK_0017::PART_01_OF_02::claim::15": ["observed_operating_result"],
+          "DELL_2025_10K_ITEM7_BLOCK_0015_PART_01_OF_02::claim::28": ["observed_operating_result"],
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001::claim::04": ["direct_demand_signal", "management_guidance"]
+        },
+        "expected_roles_by_locator": [
+          {"locator": {"object_key": "DELL_2026_10Q_ITEM1_BLOCK_0047_CHUNK_0001::table::61", "object_kind": "metric_row", "metric_row_label": "Operating income", "model_text_contains": "1,668"}, "roles": ["financial_statement_or_reconciliation", "observed_operating_result"]},
+          {"locator": {"object_key": "DELL_2025_10K_ITEM8_BLOCK_0002_PART_01_OF_02::table::35", "object_kind": "metric_row", "metric_row_label": "Operating income", "model_text_contains": "5,211"}, "roles": ["financial_statement_or_reconciliation", "observed_operating_result"]},
+          {"locator": {"object_key": "DELL_2025_10K_ITEM8_BLOCK_0025_PART_02_OF_03::table::105", "object_kind": "metric_row", "metric_row_label": "Operating income", "model_text_contains": "1,491"}, "roles": ["financial_statement_or_reconciliation", "observed_operating_result"]},
+          {"locator": {"object_key": "DELL_2026_10Q_ITEM1_BLOCK_0026_CHUNK_0001::table::38", "object_kind": "metric_row", "metric_row_label": "Total net revenue", "model_text_contains": "( 40 )"}, "roles": ["financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "DELL_2026_10Q_ITEM1_BLOCK_0026_CHUNK_0001::table::38", "object_kind": "metric_row", "metric_row_label": "Total net revenue", "model_text_contains": "( 25 )"}, "roles": ["financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "DELL_2026_10Q_ITEM1_BLOCK_0026_CHUNK_0001::table::38", "object_kind": "metric_row", "metric_row_label": "Total net revenue", "model_text_contains": "( 207 )"}, "roles": ["financial_statement_or_reconciliation"]}
+        ]
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_03_DELL_COUNTEREVIDENCE",
+      "business_reason_zh": "AI 大客户订单波动和价格压力、需求上升时的供应约束、订单取消带来的营运资金及库存风险均是本命题直接反证；一般国际、气候和法律风险清单只是语义近邻。",
+      "labels": {
+        "positive_object_keys": [
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02::claim::03",
+          "DELL_2025_10K_ITEM1A_BLOCK_0007_PART_01_OF_02::claim::04",
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02::claim::04",
+          "DELL_2025_10K_ITEM1A_BLOCK_0005_CHUNK_0001::claim::09",
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0005::PART_01_OF_01::claim::09",
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02::claim::05"
+        ],
+        "hard_negative_object_keys": [
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02::claim::01",
+          "DELL_2025_10K_ITEM1A_BLOCK_0010_CHUNK_0001::claim::01",
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0009::PART_01_OF_01::claim::01",
+          "DELL_2025_10K_ITEM1A_BLOCK_0010_CHUNK_0001::claim::04",
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0009::PART_01_OF_01::claim::04",
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0021::PART_01_OF_01::claim::02",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0004::PART_01_OF_02::claim::07",
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0004::PART_02_OF_02::claim::01"
+        ],
+        "unjudged_object_keys": [],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02::claim::03": ["demand_risk_or_counterevidence"],
+          "DELL_2025_10K_ITEM1A_BLOCK_0007_PART_01_OF_02::claim::04": ["demand_risk_or_counterevidence"],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02::claim::04": ["demand_risk_or_counterevidence"],
+          "DELL_2025_10K_ITEM1A_BLOCK_0005_CHUNK_0001::claim::09": ["supply_risk_or_counterevidence"],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0005::PART_01_OF_01::claim::09": ["supply_risk_or_counterevidence"],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02::claim::05": ["demand_risk_or_counterevidence", "supply_risk_or_counterevidence"],
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02::claim::01": ["capital_allocation_or_valuation"],
+          "DELL_2025_10K_ITEM1A_BLOCK_0010_CHUNK_0001::claim::01": ["generic_or_boilerplate"],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0009::PART_01_OF_01::claim::01": ["generic_or_boilerplate"],
+          "DELL_2025_10K_ITEM1A_BLOCK_0010_CHUNK_0001::claim::04": ["generic_or_boilerplate"],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0009::PART_01_OF_01::claim::04": ["generic_or_boilerplate"],
+          "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0021::PART_01_OF_01::claim::02": ["regulatory_or_policy_exposure"],
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0004::PART_01_OF_02::claim::07": ["generic_or_boilerplate"],
+          "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0004::PART_02_OF_02::claim::01": ["generic_or_boilerplate"]
+        },
+        "expected_roles_by_locator": []
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+      "business_reason_zh": "GPU 供应查询必须区分制造供给承诺与容量同义词。预付制造及供应协议、库存和产能采购承诺属于直接供给证据；商业票据额度、云租赁容量、收益率曲线和研发投入只是词面碰撞。",
+      "labels": {
+        "positive_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::17",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::18",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::21",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::12",
+          {"object_key": "NVDA_2026_10Q_ITEM1_BLOCK_0009_CHUNK_0001::table::25", "object_kind": "metric_row", "metric_row_label": "Prepaid supply and capacity agreements (1)"},
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::claim::29",
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::claim::31"
+        ],
+        "hard_negative_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::22",
+          {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04::table::8", "object_kind": "metric_row", "metric_row_label": "Revenue"},
+          "NVDA_2026_10Q_ITEM1_BLOCK_0012_CHUNK_0001::claim::15",
+          "NVDA_2026_10Q_ITEM1_BLOCK_0013_CHUNK_0001::claim::13",
+          "NVDA_2026_10Q_ITEM1_BLOCK_0012_CHUNK_0001::claim::14",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0005::PART_02_OF_05::claim::06",
+          "NVDA_2025_10K_ITEM7A_BLOCK_0001_CHUNK_0001::claim::04",
+          "NVDA_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03::claim::16"
+        ],
+        "unjudged_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02::claim::08"
+        ],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::17": ["direct_supply_capacity_signal", "demand_risk_or_counterevidence"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::18": ["direct_supply_capacity_signal", "supply_risk_or_counterevidence"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::21": ["demand_risk_or_counterevidence", "supply_risk_or_counterevidence"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::12": ["demand_risk_or_counterevidence", "supply_risk_or_counterevidence"],
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::claim::29": ["direct_supply_capacity_signal", "supply_risk_or_counterevidence"],
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::claim::31": ["direct_supply_capacity_signal", "supply_risk_or_counterevidence"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::22": ["generic_or_boilerplate"],
+          "NVDA_2026_10Q_ITEM1_BLOCK_0012_CHUNK_0001::claim::15": ["relationship_context"],
+          "NVDA_2026_10Q_ITEM1_BLOCK_0013_CHUNK_0001::claim::13": ["relationship_context"],
+          "NVDA_2026_10Q_ITEM1_BLOCK_0012_CHUNK_0001::claim::14": ["relationship_context"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0005::PART_02_OF_05::claim::06": ["capital_allocation_or_valuation"],
+          "NVDA_2025_10K_ITEM7A_BLOCK_0001_CHUNK_0001::claim::04": ["capital_allocation_or_valuation"],
+          "NVDA_2025_10K_ITEM1_BLOCK_0001_PART_01_OF_03::claim::16": ["generic_or_boilerplate"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02::claim::08": ["supply_risk_or_counterevidence"]
+        },
+        "expected_roles_by_locator": [
+          {"locator": {"object_key": "NVDA_2026_10Q_ITEM1_BLOCK_0009_CHUNK_0001::table::25", "object_kind": "metric_row", "metric_row_label": "Prepaid supply and capacity agreements (1)"}, "roles": ["direct_supply_capacity_signal", "financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04::table::8", "object_kind": "metric_row", "metric_row_label": "Revenue"}, "roles": ["financial_statement_or_reconciliation", "observed_operating_result"]}
+        ]
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_08_MU_DOWNSTREAM_MSFT",
+      "business_reason_zh": "与 DELL 的微软下游查询保持同一语义标注，避免案例身份改变导致同一公开披露被不一致评价。",
+      "labels": {
+        "positive_object_keys": ["MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::claim::11", "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_03_OF_04::claim::16", "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04::claim::15"],
+        "hard_negative_object_keys": [{"object_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::table::45", "object_kind": "metric_row", "metric_row_label": "Microsoft 365 Commercial cloud revenue growth"}, "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001::claim::12"],
+        "unjudged_object_keys": [],
+        "expected_roles_by_object_key": {
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::claim::11": ["direct_demand_signal", "observed_operating_result"],
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_03_OF_04::claim::16": ["direct_demand_signal", "observed_operating_result"],
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04::claim::15": ["direct_demand_signal", "observed_operating_result"],
+          "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001::claim::12": ["generic_or_boilerplate"]
+        },
+        "expected_roles_by_locator": [
+          {"locator": {"object_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::table::45", "object_kind": "metric_row", "metric_row_label": "Microsoft 365 Commercial cloud revenue growth"}, "roles": ["generic_or_boilerplate"]}
+        ]
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_11_MU_DOWNSTREAM_NVDA",
+      "business_reason_zh": "下游加速器需求既包括已实现的数据中心收入与网络增长，也包括竞争平台、供需管理和发货时点反证。前瞻声明目录不是需求证据。",
+      "labels": {
+        "positive_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::17",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::21",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::12",
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_01_OF_02::claim::08",
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_01_OF_02::claim::23",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02::claim::15",
+          "NVDA_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001::claim::04",
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_02_OF_02::claim::05",
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04::claim::08",
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04::claim::12",
+          "NVDA_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001::claim::01",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02::claim::01",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0004::PART_01_OF_01::claim::02"
+        ],
+        "hard_negative_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::22",
+          {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04::table::8", "object_kind": "metric_row", "metric_row_label": "Revenue"},
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001::claim::01"
+        ],
+        "unjudged_object_keys": ["CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::18"],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::17": ["direct_supply_capacity_signal", "demand_risk_or_counterevidence"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::21": ["demand_risk_or_counterevidence", "supply_risk_or_counterevidence"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04::claim::12": ["demand_risk_or_counterevidence", "supply_risk_or_counterevidence"],
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_01_OF_02::claim::08": ["supply_risk_or_counterevidence"],
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_01_OF_02::claim::23": ["demand_risk_or_counterevidence"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02::claim::15": ["demand_risk_or_counterevidence"],
+          "NVDA_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001::claim::04": ["direct_demand_signal", "observed_operating_result"],
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_02_OF_02::claim::05": ["direct_demand_signal", "observed_operating_result", "supply_risk_or_counterevidence"],
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04::claim::08": ["direct_demand_signal", "observed_operating_result"],
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_01_OF_04::claim::12": ["direct_demand_signal", "demand_risk_or_counterevidence"],
+          "NVDA_2025_10K_ITEM7_BLOCK_0005_CHUNK_0001::claim::01": ["direct_demand_signal", "observed_operating_result"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_01_OF_02::claim::01": ["direct_demand_signal", "observed_operating_result"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0004::PART_01_OF_01::claim::02": ["direct_demand_signal", "observed_operating_result"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::22": ["generic_or_boilerplate"],
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001::claim::01": ["generic_or_boilerplate"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::18": ["direct_supply_capacity_signal", "supply_risk_or_counterevidence"]
+        },
+        "expected_roles_by_locator": [
+          {"locator": {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04::table::8", "object_kind": "metric_row", "metric_row_label": "Revenue"}, "roles": ["financial_statement_or_reconciliation", "observed_operating_result"]}
+        ]
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_14_NVDA_DOWNSTREAM_MSFT",
+      "business_reason_zh": "与 DELL、MU 的微软下游查询保持同一对象关系和标签口径。",
+      "labels": {
+        "positive_object_keys": ["MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::claim::11", "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_03_OF_04::claim::16", "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04::claim::15"],
+        "hard_negative_object_keys": [{"object_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::table::45", "object_kind": "metric_row", "metric_row_label": "Microsoft 365 Commercial cloud revenue growth"}, "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001::claim::12"],
+        "unjudged_object_keys": [],
+        "expected_roles_by_object_key": {
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::claim::11": ["direct_demand_signal", "observed_operating_result"],
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_03_OF_04::claim::16": ["direct_demand_signal", "observed_operating_result"],
+          "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_04_OF_04::claim::15": ["direct_demand_signal", "observed_operating_result"],
+          "MSFT_2025_10K_ITEM1_BLOCK_0001_CHUNK_0001::claim::12": ["generic_or_boilerplate"]
+        },
+        "expected_roles_by_locator": [
+          {"locator": {"object_key": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04::table::45", "object_kind": "metric_row", "metric_row_label": "Microsoft 365 Commercial cloud revenue growth"}, "roles": ["generic_or_boilerplate"]}
+        ]
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_15_NVDA_REPORTED_RESULTS",
+      "business_reason_zh": "数据中心收入的当前和允许期间内结果属于正样本；单独的营业利润、净利润与毛利变化不能替代明确要求的收入及数据中心口径。",
+      "labels": {
+        "positive_object_keys": [
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02::claim::02",
+          {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04::table::8", "object_kind": "metric_row", "metric_row_label": "Revenue"},
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_02_OF_02::claim::01",
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_02_OF_02::claim::08",
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02::claim::15",
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02::claim::01",
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02::claim::16",
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_02_OF_02::claim::04",
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02::claim::06"
+        ],
+        "hard_negative_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0001::PART_01_OF_01::claim::01",
+          {"object_key": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::table::10", "object_kind": "metric_row", "metric_row_label": "Operating income"},
+          {"object_key": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::table::10", "object_kind": "metric_row", "metric_row_label": "Net income"},
+          "NVDA_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001::claim::01",
+          "NVDA_2025_10K_ITEM7_BLOCK_0010_PART_01_OF_03::claim::05",
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::claim::18"
+        ],
+        "unjudged_object_keys": [],
+        "expected_roles_by_object_key": {
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02::claim::02": ["observed_operating_result"],
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_02_OF_02::claim::01": ["direct_demand_signal", "observed_operating_result"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_02_OF_02::claim::08": ["direct_demand_signal", "observed_operating_result"],
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02::claim::15": ["direct_demand_signal", "observed_operating_result"],
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02::claim::01": ["direct_demand_signal", "observed_operating_result"],
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02::claim::16": ["direct_demand_signal", "observed_operating_result"],
+          "NVDA_2026_10Q_ITEM2_BLOCK_0002_PART_02_OF_02::claim::04": ["direct_demand_signal", "observed_operating_result"],
+          "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02::claim::06": ["direct_demand_signal", "observed_operating_result"],
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0001::PART_01_OF_01::claim::01": ["generic_or_boilerplate"],
+          "NVDA_2025_10K_ITEM7_BLOCK_0006_CHUNK_0001::claim::01": ["observed_operating_result"],
+          "NVDA_2025_10K_ITEM7_BLOCK_0010_PART_01_OF_03::claim::05": ["observed_operating_result"],
+          "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::claim::18": ["observed_operating_result"]
+        },
+        "expected_roles_by_locator": [
+          {"locator": {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04::table::8", "object_kind": "metric_row", "metric_row_label": "Revenue"}, "roles": ["financial_statement_or_reconciliation", "observed_operating_result"]},
+          {"locator": {"object_key": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::table::10", "object_kind": "metric_row", "metric_row_label": "Operating income"}, "roles": ["financial_statement_or_reconciliation", "observed_operating_result"]},
+          {"locator": {"object_key": "NVDA_2025_10K_ITEM7_BLOCK_0001_PART_03_OF_04::table::10", "object_kind": "metric_row", "metric_row_label": "Net income"}, "roles": ["financial_statement_or_reconciliation", "observed_operating_result"]}
+        ]
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_16_NVDA_CASH_GENERATION",
+      "business_reason_zh": "operating cash flow 必须精确绑定 Net cash provided by operating activities。经营租赁支付、自由现金流、融资活动、股息、回购和期初期末现金均不能在 acceptable_proxy=false 时替代目标指标。",
+      "labels": {
+        "positive_object_keys": [
+          {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_02_OF_04::table::12", "object_kind": "metric_row", "metric_row_label": "Net cash provided by operating activities"}
+        ],
+        "hard_negative_object_keys": [
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::22",
+          {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0006::PART_02_OF_02::table::35", "object_kind": "metric_row", "metric_row_label": "Operating cash flow used for operating leases"},
+          {"object_key": "NVDA_2026_10Q_ITEM1_BLOCK_0019_CHUNK_0001::table::37", "object_kind": "metric_row", "metric_row_label": "Operating cash flow used for operating leases"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_02_OF_03::table::9", "object_kind": "metric_row", "metric_row_label": "Free cash flow"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Other"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Dividends paid"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Change in cash and cash equivalents"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Proceeds related to employee stock plans"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Net cash used in financing activities"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Cash and cash equivalents at beginning of period"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Payments related to employee stock plan taxes"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Cash and cash equivalents at end of period"},
+          {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Payments related to repurchases of common stock"}
+        ],
+        "unjudged_object_keys": [],
+        "expected_roles_by_object_key": {
+          "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_02_OF_04::claim::22": ["direct_supply_capacity_signal"]
+        },
+        "expected_roles_by_locator": [
+          {"locator": {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_02_OF_04::table::12", "object_kind": "metric_row", "metric_row_label": "Net cash provided by operating activities"}, "roles": ["financial_statement_or_reconciliation", "observed_operating_result"]},
+          {"locator": {"object_key": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0006::PART_02_OF_02::table::35", "object_kind": "metric_row", "metric_row_label": "Operating cash flow used for operating leases"}, "roles": ["financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "NVDA_2026_10Q_ITEM1_BLOCK_0019_CHUNK_0001::table::37", "object_kind": "metric_row", "metric_row_label": "Operating cash flow used for operating leases"}, "roles": ["financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_02_OF_03::table::9", "object_kind": "metric_row", "metric_row_label": "Free cash flow"}, "roles": ["financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Other"}, "roles": ["financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Dividends paid"}, "roles": ["financial_statement_or_reconciliation", "capital_allocation_or_valuation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Change in cash and cash equivalents"}, "roles": ["financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Proceeds related to employee stock plans"}, "roles": ["financial_statement_or_reconciliation", "capital_allocation_or_valuation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Net cash used in financing activities"}, "roles": ["financial_statement_or_reconciliation", "capital_allocation_or_valuation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Cash and cash equivalents at beginning of period"}, "roles": ["financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Payments related to employee stock plan taxes"}, "roles": ["financial_statement_or_reconciliation", "capital_allocation_or_valuation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Cash and cash equivalents at end of period"}, "roles": ["financial_statement_or_reconciliation"]},
+          {"locator": {"object_key": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03::table::7", "object_kind": "metric_row", "metric_row_label": "Payments related to repurchases of common stock"}, "roles": ["financial_statement_or_reconciliation", "capital_allocation_or_valuation"]}
+        ]
+      }
+    }
+  ]
+}

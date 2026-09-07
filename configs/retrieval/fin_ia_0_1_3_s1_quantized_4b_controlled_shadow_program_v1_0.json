@@ -1,0 +1,220 @@
+{
+  "schema_version": "fin_ia_s1_quantized_4b_controlled_shadow_program_v1_0",
+  "status": "preregistered_controlled_shadow_ready_after_clean_commit",
+  "recorded_at": "2026-08-24",
+  "program_id": "FIN-0.1.3-S1-QUANTIZED-4B-CONTROLLED-SHADOW-R1",
+  "attempt_id": "controlled-shadow-r1",
+  "decision_target": "On the unchanged 18-query, 86-candidate-occurrence DELL/MU/NVDA development projection, rerun the exact local 0.6B baselines and compare them with separately loaded Q4_K_M 4B challengers. Decide only whether the 4B composite challenger merits a fresh natural-candidate-pool experiment.",
+  "acquisition_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_shadow_acquisition_result_v1_0.json",
+  "acquisition_result_digest": "8655e01c7c6f686bd6a3b93031561151e64deea73ad7c4306291d5758986387e",
+  "eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_dev_only_role_eval_v1_0.json",
+  "eval_result_digest": "d7a5c401b1075dcab90225cd368cd4a1e3e8ffeb83545fa6de01bbbf86c7fe69",
+  "bound_inputs": [
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_quantized_4b_shadow_acquisition_result_v1_0.json",
+      "sha256": "6e611032d597bbf93138be3c831417807c668ddc28f16685b6752d5a5c1a1135",
+      "purpose": "immutable successful acquisition identity and execution authority"
+    },
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1_large_model_dev_only_role_eval_v1_0.json",
+      "sha256": "6c305dfb2ca999b087b0ee59479ac50b002b315501bfcb6c130cd3cf285966bc",
+      "purpose": "only allowed DELL MU NVDA controlled projection"
+    },
+    {
+      "path": "configs/retrieval/fin_ia_0_1_3_s1c_runtime_query_atom_model_shadow_result_v1_1.json",
+      "sha256": "78c0d0d41c86611a09901692bdcf0758db5f62771933f682226d29e5fbc2592b",
+      "purpose": "historical 0.6B context only; historical score is not reused as the fair baseline"
+    }
+  ],
+  "implementation_bindings": [
+    {
+      "path": "src/retrieval/quantized_shadow.py",
+      "sha256": "ef68aac4c500e9959a518cdf9ce2be77f0ed5f7497499d5fc21332fb28577f1d",
+      "purpose": "identity closure, exact official prompt, raw yes-no parser, metric and never-authorize decision compiler"
+    },
+    {
+      "path": "scripts/data_retrieval/run_s1_quantized_4b_controlled_shadow.py",
+      "sha256": "925466f429e2c8483a992fe8a682af276940f34692e09f0eb283a200bc52fc80",
+      "purpose": "clean-commit gated offline execution runner"
+    }
+  ],
+  "artifacts": {
+    "challenger_embedding_directory": "Z:/hf_models/FIN_0_1_3_Qwen3_Embedding_4B_GGUF_Q4_K_M",
+    "challenger_reranker_directory": "Z:/hf_models/FIN_0_1_3_Qwen3_Reranker_4B_GGUF_Q4_K_M",
+    "llama_cpp_directory": "Z:/fin_ia_tools/llama.cpp/b10516",
+    "challenger_embedding_provenance": "official_Qwen_Q4_K_M_GGUF",
+    "challenger_reranker_provenance": "community_Q4_K_M_static_quant_not_verified_against_official_full_precision",
+    "models_loaded_concurrently": false
+  },
+  "expected_identity_digests": {
+    "embedding_model_digest": "8d94e3ac9802c1e6b6105c788d5aafadaf278a9ffc5d0a44df164e508db937f2",
+    "reranker_model_digest": "1067660e34c2174f80f827e9984008069425cd002e6210db3ec271b1abc6fd55",
+    "llama_cpp_tool_digest": "ee50da2b1e2c8883ba0fb7814f94b8a6e3cf887a035c6f0e8e9c710dcad0fc06"
+  },
+  "baseline_models": {
+    "embedding": {
+      "model_id": "Qwen/Qwen3-Embedding-0.6B",
+      "local_directory": "D:/hf_models/Qwen__Qwen3-Embedding-0.6B",
+      "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+      "precision": "fp16",
+      "device": "cuda"
+    },
+    "reranker": {
+      "model_id": "Qwen/Qwen3-Reranker-0.6B",
+      "local_directory": "D:/hf_models/Qwen__Qwen3-Reranker-0.6B",
+      "model_digest": "9fa9d067824c3aae0aeee7a773cbb42fac95a06c981ab72e075294bb10845ad2",
+      "precision": "fp16",
+      "device": "cuda",
+      "tokenizer_files": [
+        {
+          "name": "tokenizer.json",
+          "bytes": 11422654,
+          "sha256": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4"
+        },
+        {
+          "name": "tokenizer_config.json",
+          "bytes": 9706,
+          "sha256": "253153d0738ceb4c668d2eff957714dd2bea0b56de772a9fdccd96cbf517e6a0"
+        }
+      ]
+    }
+  },
+  "split_and_leakage_policy": {
+    "allowed_case_keys": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "forbidden_case_keys": [
+      "ANET",
+      "ASML",
+      "COST",
+      "ORCL"
+    ],
+    "required_query_count": 18,
+    "required_candidate_occurrence_count": 86,
+    "required_positive_occurrence_count": 21,
+    "required_hard_negative_occurrence_count": 65,
+    "query_without_a_negative_is_metric_ineligible_not_invalid": true,
+    "each_case_must_retain_at_least_one_eligible_positive_negative_comparison": true,
+    "source_bound_inputs_forbidden": true,
+    "hidden_pack_bindings_forbidden": true,
+    "historical_scores_as_current_baseline_forbidden": true,
+    "candidate_labels_may_only_be_used_after_fixed_pool_materialization": true
+  },
+  "tokenizer_preflight": {
+    "observed_with_bound_0_6b_tokenizers": true,
+    "embedding_maximum_query_tokens": 138,
+    "embedding_maximum_document_tokens": 2199,
+    "reranker_maximum_full_official_prompt_tokens": 2397,
+    "reranker_p95_full_official_prompt_tokens": 2219,
+    "chosen_maximum_input_tokens": 2560,
+    "silent_truncation_allowed": false,
+    "challenger_token_ids_must_exactly_match_bound_0_6b_token_ids": true
+  },
+  "execution_settings": {
+    "embedding_instruction": "Given a source-bound financial research request, retrieve passages that directly address the requested evidence facet while preserving issuer, period and relationship direction.",
+    "reranker_instruction": "Retrieve source-bound financial passages that directly answer the requested evidence facet. Prefer the correct issuer, reporting period, economic relationship direction, fact state and evidence role; do not treat merely related background as direct evidence.",
+    "maximum_input_tokens": 2560,
+    "llama_context_size": 4096,
+    "challenger_embedding_dimensions": 2560,
+    "batch_size": 1,
+    "reranker_n_predict": 1,
+    "reranker_n_probs": 512,
+    "temperature": -1,
+    "cache_prompt": false,
+    "models_loaded_concurrently": false,
+    "llama_fit_adjustment_allowed": false,
+    "llama_full_gpu_offload_required": true,
+    "cpu_inference_fallback_allowed": false,
+    "external_network_allowed": false
+  },
+  "reranker_surface_decision": {
+    "direct_llama_rerank_endpoint_allowed": false,
+    "reason": "The b10516 server advertises /rerank, but the causal-LM Qwen3 path has an open near-zero-score defect; the proposed logit-margin fix was closed without merge and instruction support remains unmerged.",
+    "required_surface": "official_Qwen3_fixed_prompt_plus_completion_first_token_raw_yes_minus_no_logprob",
+    "required_checks": [
+      "server and 0.6B token IDs match for every full prompt",
+      "yes and no are each one identical token in both tokenizers",
+      "both yes and no appear in raw top_logprobs",
+      "tokens_evaluated equals submitted prompt tokens",
+      "truncated is false",
+      "one generated token only"
+    ],
+    "primary_refs": [
+      "https://github.com/ggml-org/llama.cpp/issues/25447",
+      "https://github.com/ggml-org/llama.cpp/pull/25448",
+      "https://github.com/ggml-org/llama.cpp/pull/20009",
+      "https://github.com/ggml-org/llama.cpp/blob/b10516/tools/server/README.md"
+    ]
+  },
+  "resource_gate": {
+    "required_device_name_contains": "NVIDIA GeForce RTX 4060 Laptop GPU",
+    "minimum_total_vram_mib": 8000,
+    "minimum_free_vram_mib": 6000,
+    "full_gpu_offload_log_required": true,
+    "peak_vram_monitor_interval_seconds": 0.5,
+    "oom_disposition": "preserve_attempt_failure_and_require_successor_without_cpu_or_partial_offload_fallback"
+  },
+  "token_budget_basis": {
+    "baseline_embedding_0_6b": {
+      "purpose": "produce a fair current baseline over exactly the same controlled query and document texts",
+      "input_scale": "18 instructed queries plus each unique document underlying 86 candidate occurrences; maximum observed document 2199 tokens",
+      "required_outputs": "normalized vectors, all occurrence scores, DELL/MU/NVDA and overall metrics, token/latency/VRAM receipts",
+      "schema_burden": "bound model and tokenizer identity, exact eval digest, deterministic document deduplication and metric rows",
+      "materiality_quality_risk": "reusing a historical score or changing query instruction would make the 4B comparison unfair",
+      "comparable_run_evidence": "historical 0.6B runtime shadow exists but is intentionally rerun",
+      "reasoning_profile": "non-generative embedding",
+      "stop_and_truncation": "batch one, 2560-token ceiling proven above observed maximum, fail on any truncation, omission, CPU fallback or non-finite vector"
+    },
+    "challenger_embedding_4b_q4_k_m": {
+      "purpose": "test whether the owner-requested larger quantized embedding improves controlled financial evidence ordering",
+      "input_scale": "identical instructed queries and unique documents; every raw token sequence must match the 0.6B tokenizer",
+      "required_outputs": "2560-dimensional normalized vectors, all occurrence scores, metrics, exact token digests, latency and peak VRAM",
+      "schema_burden": "official GGUF acquisition closure, pinned llama.cpp identity, local HTTP receipt and full GPU-offload proof",
+      "materiality_quality_risk": "runtime, quantization or tokenizer drift could masquerade as a parameter-scale gain",
+      "comparable_run_evidence": "same-attempt 0.6B FP16 baseline",
+      "reasoning_profile": "non-generative embedding through local offline llama.cpp",
+      "stop_and_truncation": "one input per call, 4096 context, fail on token mismatch, dimension drift, truncation, partial offload, OOM or CPU fallback"
+    },
+    "baseline_reranker_0_6b": {
+      "purpose": "produce the fair official yes/no logit-margin baseline for all 86 fixed query-document pairs",
+      "input_scale": "86 pairs; maximum observed complete official prompt 2397 tokens and p95 2219",
+      "required_outputs": "one yes-minus-no logit score per pair, full controlled metrics, prompt token digest, latency and peak VRAM",
+      "schema_burden": "bound causal-LM weights and tokenizer files, exact official prompt and score-order preservation",
+      "materiality_quality_risk": "silent longest-first truncation or prompt drift can reverse direct-evidence and hard-negative ordering",
+      "comparable_run_evidence": "historical 0.6B controlled pairwise accuracy 0.75 is context only",
+      "reasoning_profile": "non-generative discriminative first-token logits",
+      "stop_and_truncation": "batch one, 2560 tokens, fail before scoring if any full prompt exceeds budget or CUDA is unavailable"
+    },
+    "challenger_reranker_4b_q4_k_m": {
+      "purpose": "test the larger 4B Q4_K_M causal reranker on the identical prompt token arrays",
+      "input_scale": "86 exact token arrays, one generated token and up to 512 raw top log probabilities per pair",
+      "required_outputs": "raw yes/no log probabilities, their margin, generated token, tokens evaluated, all pair scores and metrics, latency and peak VRAM",
+      "schema_burden": "community quant closure, pinned completion endpoint behavior, per-prompt tokenizer equality and server log receipt",
+      "materiality_quality_risk": "the community quant is not official FP16; the advertised direct rerank endpoint is defective for causal Qwen3 and could produce false near-zero metrics",
+      "comparable_run_evidence": "same-attempt official 0.6B FP16 logit-margin baseline plus public llama.cpp defect receipts",
+      "reasoning_profile": "bounded one-token completion used only to expose raw yes/no logits; free-form generation forbidden",
+      "stop_and_truncation": "temperature -1, cache disabled, exactly one token, fail if yes/no is missing, token counts drift, truncated is true, full GPU offload is unproved, OOM occurs or CPU fallback is attempted"
+    }
+  },
+  "quality_gates": {
+    "embedding_pairwise_accuracy_minimum": 0.8,
+    "reranker_pairwise_accuracy_minimum": 0.8,
+    "reranker_pairwise_improvement_minimum": 0.05,
+    "each_case_pairwise_regression_allowed": false,
+    "embedding_must_not_regress_vs_same_pool_baseline": true
+  },
+  "authority": {
+    "controlled_shadow_execution_authorized": true,
+    "fresh_natural_candidate_pool_eval_authorized_only_if_all_gates_pass": true,
+    "runtime_promotion_authorized": false,
+    "S1_qualification_authorized": false,
+    "natural_candidate_recall_proved": false,
+    "source_gap_closure_authorized": false,
+    "evidence_or_numeric_authority_granted": false,
+    "publication_or_release_authorized": false
+  },
+  "known_boundary": "This compares a current 0.6B FP16 Transformers baseline with a 4B Q4_K_M llama.cpp composite challenger over a labeled fixed pool. It cannot isolate parameter count from quantization/runtime effects. The reranker quant is community-produced. Passing proves neither natural candidate recall nor inner/outer source completeness, and cannot close DELL gaps, qualify S1, or promote a runtime.",
+  "result_digest": "58fb88666784c2c71fb5c0cdd95ef2df0c8e63535877abe9c57359109b157681"
+}

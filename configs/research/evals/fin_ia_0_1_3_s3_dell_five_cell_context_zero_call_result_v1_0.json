@@ -1,0 +1,155 @@
+{
+  "schema_version": "fin_ia_current_research_consumer_zero_call_result_v1_2",
+  "status": "engineering_pass_zero_call_current_consumer_contract_successor",
+  "recorded_at": "2026-08-13",
+  "result_id": "FIN-0.1.3-S3-DELL-FIVE-CELL-CONTEXT-ZERO-CALL-R1",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_five_cell_context_zero_call_authority_v1_0.json",
+  "authority_sha256": "03b1b9378173305f9630130c43b9ebce742f1fd4a5aeb95b26147794c28f263e",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_five_cell_context/zero-call-r1/full_result_32c3132b9ef04785b192141533a0b40f4ddb5874ce260df4b2bcf4e18f64b1a6.json",
+  "full_result_sha256": "19eb0e86c43b3cf4643afdbaf2140fdd5bf9eed70314bf0c7765e3588606198b",
+  "bindings": {
+    "case_key": "DELL",
+    "research_as_of": "2026-08-06",
+    "evidence_pack_artifact_digest": "8bef6f3efb6892c89c0db8e78291e66c04d46cf766a492373449641633b7ebd7",
+    "evidence_pack_payload_digest": "6a7fb910a643361701c5fe8fb8cf735acebc2ef50de64efaaf8ec192d41d0a3a",
+    "controlled_plan_digest": "a53fa3223b8db078e9291649cadee25799b410e83f4280c73b222d23b3be5c80",
+    "research_input_digest": "343d37923d6ed58cf36030d1e36e379feebe76ed90c3fc445c77bd7c969ef3d6",
+    "deliverable_digest": "3ac54192aab2410389a2c9323fd47e92c341a9f1f8eb3c0615d52f29396cbc02"
+  },
+  "observed": {
+    "reviewed_pack_evidence_count": 20,
+    "model_visible_evidence_count": 19,
+    "reviewed_transcript_evidence_count": 5,
+    "source_types": [
+      "10-K",
+      "10-Q",
+      "6-K",
+      "8-K",
+      "EARNINGS_CALL_TRANSCRIPT"
+    ],
+    "controlled_plan_numeric_fact_count": 58,
+    "semantic_unique_numeric_fact_count": 45,
+    "model_visible_numeric_fact_count": 25,
+    "model_visible_residual_gap_count": 10,
+    "research_cell_count": 5,
+    "research_context_cells": [
+      {
+        "cell_id": "CELL::demand_quality",
+        "role_method_pack_id": "ROLE_METHOD::DEMAND_QUALITY::V1",
+        "method_step_count": 5,
+        "minimum_consumed_method_steps": 4,
+        "graph_node_count": 2,
+        "graph_edge_count": 2,
+        "archived_graph_rows_used": false
+      },
+      {
+        "cell_id": "CELL::operating_performance",
+        "role_method_pack_id": "ROLE_METHOD::OPERATING_PERFORMANCE::V1",
+        "method_step_count": 5,
+        "minimum_consumed_method_steps": 4,
+        "graph_node_count": 1,
+        "graph_edge_count": 1,
+        "archived_graph_rows_used": false
+      },
+      {
+        "cell_id": "CELL::value_capture",
+        "role_method_pack_id": "ROLE_METHOD::VALUE_CAPTURE::V1",
+        "method_step_count": 6,
+        "minimum_consumed_method_steps": 4,
+        "graph_node_count": 1,
+        "graph_edge_count": 1,
+        "archived_graph_rows_used": false
+      },
+      {
+        "cell_id": "CELL::cash_conversion",
+        "role_method_pack_id": "ROLE_METHOD::CASH_CONVERSION::V1",
+        "method_step_count": 5,
+        "minimum_consumed_method_steps": 4,
+        "graph_node_count": 1,
+        "graph_edge_count": 1,
+        "archived_graph_rows_used": false
+      },
+      {
+        "cell_id": "CELL::counterevidence",
+        "role_method_pack_id": "ROLE_METHOD::COUNTEREVIDENCE::V1",
+        "method_step_count": 5,
+        "minimum_consumed_method_steps": 4,
+        "graph_node_count": 4,
+        "graph_edge_count": 5,
+        "archived_graph_rows_used": false
+      }
+    ],
+    "role_method_pack_count": 5,
+    "graph_context_pack_count": 5,
+    "mutation_failure_codes": [
+      "research_consumer_evidence_use_invalid",
+      "research_consumer_evidence_use_invalid",
+      "research_consumer_output_enum_invalid",
+      "research_consumer_output_cell_fields_invalid",
+      "research_consumer_thesis_atom_invalid",
+      "research_consumer_output_ref_boundary_invalid",
+      "research_consumer_method_consumption_invalid",
+      "research_consumer_graph_consumption_invalid"
+    ],
+    "failed_r1_model_visible_user_chars": 48380,
+    "successor_model_visible_user_chars": 76509,
+    "failed_r1_replay": {
+      "v1_1_rejection_code": "research_consumer_output_cell_fields_invalid",
+      "invented_judgment_statuses": [
+        "supported_with_caveats"
+      ],
+      "invented_confidence_bases": [
+        "issuer_disclosure_plus_ecosystem_readthrough"
+      ],
+      "dual_role_evidence_by_cell": {
+        "CELL::demand_quality": [
+          "EV::ABAB2A6B49DD71A9",
+          "EV::DB0FAF039C8659F2"
+        ],
+        "CELL::value_capture": [
+          "EV::5388E016C17032C1"
+        ],
+        "CELL::counterevidence": [
+          "EV::35C817F5304A3012",
+          "EV::BA594865DB45F850",
+          "EV::E9C1A0A4C2A9A15F",
+          "EV::F37945E157DAB288"
+        ]
+      },
+      "qualified_content_audit_finding_codes": [
+        "ai_to_group_and_segment_profit_attribution_unproven",
+        "ai_working_capital_attribution_unproven",
+        "demand_durability_overreach",
+        "supply_easing_unproven",
+        "unbound_comparative_margin_and_leverage_claim"
+      ],
+      "automatic_salvage_or_publication": false
+    },
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "local_embedding_calls": 0
+  },
+  "acceptance": {
+    "reviewed_source_policy_separate_from_open_retrieval": true,
+    "transcript_automatic_numeric_promotion": false,
+    "request_identity_numeric_duplicates_removed": true,
+    "model_sees_exact_source_facts_and_numeric_facts": true,
+    "model_free_numeric_prose_blocked": true,
+    "unknown_and_cross_cell_refs_blocked": true,
+    "trusted_envelope_harness_injected": true,
+    "exact_model_visible_enums_exposed": true,
+    "typed_evidence_use_and_inference_authority": true,
+    "all_five_cells_have_role_method_pack": true,
+    "all_graph_context_compiled_from_current_case": true,
+    "all_visible_residual_gaps_preserved": true,
+    "failed_r1_not_silently_salvaged": true,
+    "harness_generated_research_conclusion": false,
+    "fake_deliverable_published_to_product": false,
+    "natural_model_quality_proven": false,
+    "s3_product_acceptance": false
+  },
+  "next_decision": "Make a separate value-cost-risk decision before any replacement DeepSeek call. If authorized later, test this changed synthesis contract once; require deterministic L1, absolute content-quality, paired and qualified-human review before any product publication.",
+  "known_boundary": "This authority proves the provider-neutral five-cell RoleMethodPack and current GraphContextPack successor on the current DELL reviewed input with deterministic fake judgments only. It does not authorize a model call, prove natural five-cell research quality, prove cross-cell synthesis, publish to Workbench, close S3 or approve release.",
+  "result_digest": "b0e2b975f371e29ca5363c62b577441a2cbb964028694d4a6158011c1b639f7c"
+}

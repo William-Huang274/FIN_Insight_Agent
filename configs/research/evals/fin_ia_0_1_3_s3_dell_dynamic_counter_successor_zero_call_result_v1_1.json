@@ -1,0 +1,99 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_cell_failed_counter_successor_zero_call_result_v1_1",
+  "status": "zero_call_failed_counter_successor_historical_binding_engineering_pass",
+  "recorded_at": "2026-08-16T20:40:00+08:00",
+  "implementation_commit": "e3f9a98737e9bdae4a07b61809b3ea144fddb4af",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "failed_fragment_tool": "submit_research_counterargument_and_wwc",
+  "obsolete_entry_failure": {
+    "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_counter_successor_chat_live_authority_v1_0.json",
+    "authority_sha256": "9ab16f0d2d19ae5c4f605d34eb84d957ccdabe32ee432ac82da658bafed72fb0",
+    "assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_counter_successor_authority_entry_failure_v1_0.json",
+    "assessment_sha256": "e2040b81319edad36a59dff049cc0a0376dab5bb7cc4da8fe1966dadf7f94c1f",
+    "provider_calls": 0,
+    "identity_reuse_allowed": false
+  },
+  "predecessor": {
+    "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_authority_v1_0.json",
+    "authority_sha256": "8cf61ecdeb5cc83ea5cf0fd8a43219cd31b5da0887fcf8fede9f9049b827f3df",
+    "implementation_commit": "ba02a24b3d01bdb70898e8ca09e442c50a09562f",
+    "all_bound_git_blobs_match": true,
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_result_v1_0.json",
+    "public_result_sha256": "81db265e960716469eb98fdba7eec93a78923605a683d3757ccf695f43b1298c",
+    "public_result_digest": "b573f049af0f2c4e3ed407791bd10d8912afd7463ca037d208d8a631932dde44",
+    "private_result_ref": "data/workbench_private/s3_dynamic_single_cell/FIN013-S3-DELL-DYNAMIC-VC-R1/full_result.json",
+    "private_result_sha256": "72717af8f6b004e5a9b39090bd7a227d663c16dae6eac2a106e6dd7ff6dfd254",
+    "private_result_digest": "0ac6fd6a20080641ff2d5f49245ce7a1b1c3ed9dda174ea0bf732de0a269d4bd",
+    "failure_assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_value_capture_chat_live_failure_assessment_v1_0.json",
+    "failure_assessment_sha256": "32c583b13377186a4d9605567298ed8111c51b10f1b3786c6fe93907935927e5"
+  },
+  "current_bound_implementation": {
+    "runner_ref": "scripts/research/run_s3_dynamic_single_cell_live.py",
+    "runner_sha256": "b3d6174e78667b07a6dc3affb39c76fc2fa2ce2e6f2ab86694e2587be71b91a5",
+    "loop_policy_ref": "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json",
+    "loop_policy_sha256": "16688fa7ffa9dd98eaf0a3d0e2e687fc8cfa86fd30e3f647931d1581e0d0f5e4",
+    "dynamic_micro_policy_ref": "configs/research/fin_ia_0_1_3_s3_dynamic_micro_judgment_policy_v1_0.json",
+    "dynamic_micro_policy_sha256": "309bb10aec492e4e2265430bee550959b8256d238baa05efa0f72dfd4bd82108",
+    "analysis_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+    "analysis_profile_sha256": "dbc14dbcc186b81f24a5b048056e663649614cd62bef1aceb98b9873189603a1",
+    "submission_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_contract_submission_non_thinking_profile_v1_0.json",
+    "submission_profile_sha256": "2c4a67a985e9f8773f56df0a232de49cab0810504eca816e100c2cc4e9622468"
+  },
+  "replay_observation": {
+    "surface_input_digest": "3d1247e1105a0a5569ff5f3ae1e2db62c405d362cad81f819eec6c5386d23329",
+    "accepted_fragment_tools": [
+      "submit_research_mechanism",
+      "submit_research_thesis"
+    ],
+    "successful_predecessor_model_nodes_reused": 5,
+    "failed_fragment_context_digest": "c87824cec2863f4e4e7d2b31ff205a5ed5bfa3f3d9e843b03a4c281e93122ae6",
+    "failed_fragment_analysis_messages_digest": "c2c3062ddd0227eba5bcdf7fc263769bd619d363defe71a57dfe46f0df679c2b",
+    "failed_fragment_analysis_message_count": 2,
+    "failed_analysis_step_absent": true,
+    "failed_submission_step_absent": true,
+    "failed_validated_fragment_absent": true
+  },
+  "mutation_verification": {
+    "historical_runner_SHA_mutation": "fail_closed_dynamic_successor_historical_bound_input_drift_runner_ref",
+    "historical_blob_missing": "fail_closed_dynamic_successor_historical_blob_missing",
+    "context_or_message_digest_drift": "fail_closed_dynamic_successor_failed_fragment_replay_drift",
+    "missing_successful_prefix_fragment": "fail_closed_dynamic_successor_predecessor_prefix_invalid",
+    "preexisting_counter_fragment": "fail_closed_dynamic_successor_predecessor_prefix_invalid"
+  },
+  "execution_budget": {
+    "successful_predecessor_model_nodes_reused": 5,
+    "maximum_fresh_model_calls": 2,
+    "maximum_counter_analysis_calls": 1,
+    "maximum_counter_submission_calls": 1,
+    "maximum_analysis_completion_tokens": 16000,
+    "maximum_submission_completion_tokens": 2000,
+    "maximum_evidence_requests": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_source_network_calls": 0
+  },
+  "observed_calls": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "embedding_calls": 0
+  },
+  "acceptance": {
+    "historical_authority_validated_from_immutable_git_commit": true,
+    "current_runtime_policies_directly_bound": true,
+    "obsolete_v1_0_identity_reuse_forbidden": true,
+    "immutable_successful_prefix_reused": true,
+    "failed_counter_context_recompiled_exactly": true,
+    "failed_counter_messages_recompiled_exactly": true,
+    "analysis_profile_max_thinking_16000_bound": true,
+    "submission_profile_non_thinking_2000_bound": true,
+    "new_evidence_or_candidate_promotion": false,
+    "natural_successor_executed": false,
+    "dynamic_single_cell_contract_pass": false,
+    "five_cell_execution": false,
+    "s3_product_acceptance": false
+  },
+  "known_boundary": "This v1.1 zero-call proof closes historical authority/current dependency separation and preserves failed-node-only replay. It does not prove DeepSeek convergence, counter/WWC content, a complete dynamic single-cell Judgment, five-cell research, generalization, S3 acceptance, publication or release.",
+  "result_digest": "33dd44136f506f4287ea89acc3a43ea79f6069dfccbd0249e90144e5e0768f62"
+}

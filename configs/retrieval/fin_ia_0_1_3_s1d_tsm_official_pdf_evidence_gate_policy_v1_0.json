@@ -1,0 +1,38 @@
+{
+  "schema_version": "fin_ia_official_pdf_evidence_gate_policy_v1_0",
+  "policy_id": "FIN-0.1.3-S1D-TSM-Q2-2026-PACKAGING-EVIDENCE-GATE-V1.0",
+  "status": "active_bounded_official_pdf_evidence_gate",
+  "recorded_at": "2026-08-13",
+  "route_id": "TSM_Q2_2026_EARNINGS_CALL_TRANSCRIPT",
+  "consumer_case_key": "DELL",
+  "evidence_owner_ticker": "TSM",
+  "slot_id": "capacity_inputs_execution",
+  "facet_id": "advanced_packaging_capacity",
+  "qualification_id": "tsm-q2-2026-packaging-capacity-constraint",
+  "allowed_page_numbers": [10, 20],
+  "max_accepted_pages": 2,
+  "max_excerpt_characters": 1400,
+  "required_anchor_groups": [
+    {
+      "group_id": "packaging_scope",
+      "any_literals": ["packaging capacity", "advanced packaging", "backend CoWoS"]
+    },
+    {
+      "group_id": "constraint_or_bottleneck",
+      "any_literals": ["so tight", "bottleneck", "shortage"]
+    },
+    {
+      "group_id": "business_effect_or_response",
+      "any_literals": ["limits my customers' growth", "buy the bottleneck tools", "put more CapEx"]
+    }
+  ],
+  "business_meaning_zh": "TSMC 管理层明确说明先进封装或后端测试产能紧张，并已限制客户增长或需要通过资本开支处理瓶颈。",
+  "claim_boundary_zh": "这是 TSMC 对行业级先进封装供需约束的自述，可作为 Dell 上游供给背景；它没有证明 TSMC 向 Dell 分配了多少产能、何时释放容量，也不授权把行业瓶颈写成 Dell 特定因果事实。",
+  "relationship_directions": [
+    "evidence_owner_own_supply_capacity_or_constraint",
+    "consumer_case_ecosystem_readthrough_only"
+  ],
+  "license_scope": "official_hosted_third_party_transcript_private_research_use",
+  "redistributable": false,
+  "causal_attribution_authorized": false
+}

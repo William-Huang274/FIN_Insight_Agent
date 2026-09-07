@@ -1,0 +1,22 @@
+{
+  "schema_version": "fin_ia_s1_vs5_official_pdf_source_spec_v1_0",
+  "status": "qualification_source_parser_contract_frozen_before_parse",
+  "program_id": "FIN-0.1.3-S1-VS5-QUALIFICATION",
+  "route_id": "TENCENT_FY2025_OFFICIAL_ANNUAL_REPORT",
+  "case_key": "0700.HK",
+  "ticker": "0700.HK",
+  "company": "Tencent Holdings Limited",
+  "title": "Tencent Holdings Limited 2025 Annual Report",
+  "source_type": "ANNUAL_REPORT",
+  "document_type": "ANNUAL_REPORT",
+  "source_tier": "primary_company_disclosure",
+  "period_end": "2025-12-31",
+  "publication_date": "2026-04-09",
+  "fiscal_year": 2025,
+  "source_url": "https://static.www.tencent.com/uploads/2026/04/09/62d786fcf3d3c8cb7e54791ee95439ac.pdf",
+  "license_scope": "public_official_source_research_use",
+  "page_selection_policy": "all_pages",
+  "ocr_policy": "automatic_low_native_text_pages",
+  "candidate_is_not_evidence": true,
+  "numeric_fact_authority": false
+}

@@ -1,0 +1,96 @@
+{
+  "schema_version": "fin_ia_clean_independent_commit_audit_failure_v1_0",
+  "audit_id": "fin-0.1.3-commit-1243b3cc-clean-independent-audit-r1",
+  "recorded_at": "2026-08-24T14:02:55+08:00",
+  "status": "failed_successor_required",
+  "audited_commit": "1243b3cc2e1e1c17a46437195c24ab076d3b4365",
+  "audited_tree": "b7b7ee71b827e4722bc2d5d534b002d9ddcc5f0b",
+  "parent_commit": "5f35b116ba8e906a7e0c73ed1972679699c6ab1c",
+  "reviewer_provenance": {
+    "reviewer_task": "/root/clean_post_successor_audit",
+    "author_separated_from_commit_author": true,
+    "read_only": true,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "model_calls": 0,
+    "restricted_COST_hidden_frozen_holdout_read": false,
+    "ignored_private_candidate_read": false,
+    "repository_mutation": false,
+    "qualified_human": false
+  },
+  "bound_git_blobs": {
+    "src/financial_facts/executor.py": "27b4abd0a02f994a8a4bb45283eb9aace0fa0815",
+    "src/retrieval/model_identity.py": "f542dd146d26e823c8589789289cc132a23e990e",
+    "tests/test_s3_R17_reversal_gate_successor.py": "3d45278f192aa600bf82204efeaf6134df7c6e75"
+  },
+  "finding_counts": {
+    "P0": 0,
+    "P1": 1,
+    "P2": 3,
+    "P3": 0
+  },
+  "findings": [
+    {
+      "priority": "P1",
+      "finding_id": "S2_REQUESTED_COMPARABLE_IDENTITY_CONFLICT_DROPPED",
+      "owner_stage": "S2_executor_period_identity_selection",
+      "evidence": "A timely current period plus a requested prior comparable with no timely origin produces an identity conflict, but the selector only propagates the newest-period conflict and looks for absent top-level fiscal identity fields, so the older requested conflict is dropped and the request can return resolved.",
+      "affected_refs": [
+        "src/financial_facts/executor.py",
+        "tests/test_s2_company_financial_fact_mart.py",
+        "configs/financial_facts/fin_ia_0_1_3_s2_mu_physical_period_identity_successor_result_v1_4.json"
+      ],
+      "impact": "The generic v1.4 no-origin fail-closed claim is false for combined current/comparable routing, and a derived formula can inherit the partial resolved state.",
+      "required_successor": "Route nested candidate fiscal identities against explicit requested years and automatic comparable identity, add direct and derived regressions, and materialize a new immutable S2 attempt."
+    },
+    {
+      "priority": "P2",
+      "finding_id": "S1_MODEL_LOCATOR_ANCESTOR_REPARSE_NOT_REJECTED",
+      "owner_stage": "S1_model_locator_filesystem_boundary",
+      "evidence": "The final model root and descendants are checked, but ancestor path components are not lstat-checked for symlink or Windows reparse attributes.",
+      "impact": "No current execution authority is granted because approved revisions and receipts are null, but the broad locator fail-closed claim is incomplete.",
+      "required_successor": "Reject link or reparse attributes on every existing path component from filesystem anchor through the model root and pass only the canonical validated path onward."
+    },
+    {
+      "priority": "P2",
+      "finding_id": "R17_CLEAN_CHECKOUT_COMPILE_TEST_READS_IGNORED_R16_PRIVATE",
+      "owner_stage": "S3_R17_clean_checkout_test_boundary",
+      "evidence": "The R17 compile test unconditionally calls compile_successor, which reads the ignored R16 private predecessor before the separate public-receipt test can skip on an absent private path.",
+      "impact": "The local test pass depends on ignored private state and is not clean-checkout reproducible; R17 content semantics are not invalidated.",
+      "required_successor": "Guard the private-dependent compile test on the exact R16 private prerequisite while keeping tracked public receipt validation mandatory."
+    },
+    {
+      "priority": "P2",
+      "finding_id": "R16_EDITORIAL_PROVENANCE_OWNER_AUTHORED_OVERCLAIM",
+      "owner_stage": "S3_Writer_author_and_finding_lineage",
+      "evidence": "Three R16 editorial paths are labeled Owner-authored while durable records say the current Codex wrote R16 and user authorization proves scope approval, not exact Owner wording.",
+      "impact": "Finding lineage and author-review separation are ambiguous, without current stage or release authority expansion.",
+      "required_successor": "Append a correction stating Owner-authorized and current-Codex-authored unless exact Owner text is separately receipted."
+    }
+  ],
+  "positive_controls": {
+    "S1_caller_status_not_authority": true,
+    "S1_program_digest_and_five_input_hashes_valid": true,
+    "S1_DELL_MU_NVDA_dev_only_and_COST_excluded": true,
+    "S1_local_manifest_not_upstream_attestation": true,
+    "S1_resource_block_only_no_4B_quality_claim": true,
+    "S2_derived_surface_conflict_propagation_present": true,
+    "S2_irrelevant_period_role_SQL_isolation_present": true,
+    "R16_independent_failure_preserved": true,
+    "R17_four_part_conjunction_semantics_pass": true,
+    "R17_one_off_and_below_threshold_negative_semantics_pass": true,
+    "R17_tracked_decision_public_and_implementation_bindings_valid": true
+  },
+  "acceptance": {
+    "audited_commit_pass": false,
+    "S1_pass": false,
+    "S2_pass": false,
+    "R17_fresh_independent_pass": false,
+    "qualified_human_pass": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "receipt_digest": "ef296be0ecc43bee14bb64724e2d6d33885a38f804d28ccd94ece7b1c1f8f9ea"
+}

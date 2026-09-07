@@ -1,0 +1,97 @@
+{
+  "case_key": "DELL",
+  "cell_id": "MULTI_AGENT::DELL::R10_PROTECTED_WRITER_SUBMISSION_SUCCESSOR",
+  "checks": {
+    "immutable_clean_proof_and_failure_bindings_valid": true,
+    "project_os_documents_available_and_parseable": true,
+    "provider_credential_present_value_unread": true,
+    "provider_profile_and_recent_complete_capture_valid": true,
+    "real_evidence_mode": "immutable_R13_analysis_rejected_submission_exact_feedback_zero_new_evidence",
+    "repository_clean_and_synced": true,
+    "root_cause_scope_allowed": true,
+    "token_and_call_budget_bounded": true
+  },
+  "credential_value_persisted": false,
+  "decision_projection": {
+    "R13_private_full_result_digest": "bfe1443939ff66c24801c59087cb1bd2608e20ba01d6a8bdea64099630d9db78",
+    "R13_public_result_digest": "1e88056b5790daf838dd01ac351dc025237dc04613aec5bc7b41f092b4b815b3",
+    "api_key_env": "DEEPSEEK_API_KEY",
+    "clean_proof_status": "R13_bound_protected_writer_submission_successor_zero_call_proven",
+    "current_dynamic_multi_agent_protected_writer_submission_successor": true,
+    "execution_limits": {
+      "candidate_promotions": 0,
+      "current_product_pointer_mutations": 0,
+      "fallbacks": 0,
+      "maximum_external_source_network_calls": 0,
+      "maximum_new_model_calls": 1,
+      "maximum_new_retrieval_rounds": 0,
+      "maximum_new_s1_s2_requests": 0,
+      "maximum_new_transport_attempts": 1,
+      "maximum_new_writer_logical_nodes": 0,
+      "maximum_writer_submission_attempts": 1,
+      "retries": 0,
+      "writer_analysis_calls": 0
+    },
+    "node_profiles": {
+      "writer_submission_json_and_surface_feedback": {
+        "comparable_run_evidence": "R13 returned a complete tool call at 9484 completion tokens under the same 12000-token non-thinking profile; its only parse error is exact and five initial surface paths are known.",
+        "input_scale": "The rejected R13 submission used 63492 prompt tokens; the reused plan has 19637 characters, the rejected arguments have 31345 characters, and the strict schema has 25714 characters.",
+        "materiality_quality_risk": "High: syntax repair alone is insufficient; any authority expansion, spelled numeric surface, cohort conversion, exact cash attribution, or product inference invalidates the report.",
+        "maximum_calls": 1,
+        "maximum_completion_tokens": 12000,
+        "node_purpose": "Reuse the completed R13 Writer plan and rejected tool call, then submit one complete protected report after exact local JSON and spelled-numeric surface feedback.",
+        "reasoning_profile": "deepseek-v4-pro thinking disabled strict tool submission",
+        "required_outputs": [
+          "exactly_one_submit_protected_report_draft_tool_call",
+          "complete_report_topic_thesis_sections_gaps_and_confidence",
+          "claim_evidence_authority_and_gap_reference_scopes",
+          "zero_spelled_numeric_or_ordinal_model_owned_surfaces",
+          "all_R10_material_and_L3_protections_preserved"
+        ],
+        "schema_burden": "The response must be one deeply nested strict tool object whose clauses carry typed claim, Evidence, presentation authority, and gap references and pass deterministic render.",
+        "stop_and_truncation_behavior": "Stop after the first valid contract. Length, transport, JSON, schema, reference, or protection failure is terminal; no retry, continuation, profile tuning, or automated Writer successor is permitted."
+      }
+    },
+    "provider_id": "deepseek",
+    "provider_model": "deepseek-v4-pro",
+    "recent_provider_steps": 2,
+    "run_scope_id": "one_R13_bound_protected_writer_JSON_and_surface_feedback_submission",
+    "writer_authority_catalog_digest": "a65c63dd31c37c2a98289fcca15dc8204ff7f96f4dad0225ca7fd9b564dee765",
+    "writer_protection_digest": "e81473c78211b163bbe87e3eaf0fae4e53e36f8d1d2a82fcc0bb1be7080a7b62"
+  },
+  "decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_submission_successor_scope_decision_v1_0.json",
+  "decision_sha256": "42dca00f35f8a6812768af37793f531254153baf4da65d3b6269e29bd5956ab9",
+  "known_boundary": "This current-baseline preflight preserves immutable R13: one complete non-thinking visible Writer analysis and one rejected strict tool call whose JSON error and five initial protected-surface findings are capture-bound. It authorizes exactly one non-thinking strict submission that reuses both R13 artifacts with only precise local feedback. It permits zero new analysis, continuation, upstream Agent, S1/S2, retrieval, external source, authority expansion, retry, fallback, profile tuning, Candidate promotion, or product-pointer action. Any failure is terminal with no automated Writer successor. A locally valid rendered candidate still requires independent post-Writer L1/L2 and eight-dimension assessment and does not authorize S3 acceptance, product acceptance, heterogeneous generalization, publication, or release.",
+  "model_calls": 0,
+  "network_calls": 0,
+  "project_os_document_digests": {
+    "docs/project_os/capability_status_ledger.jsonl": "58e71da391adf1226f748b58849888ecf477831eb67e8c4313ab1befce33f34f",
+    "docs/project_os/current_context_pack.zh-CN.md": "182eb7a41a42da9225dee5e01b853cd1e1a6075b43b68bf448b498f350de4118",
+    "docs/project_os/full_chain_preflight_checklist.json": "361aca870094aaa80c3a1f7873be7c0c514e9bb9c1982dca951532bb20e62f0f",
+    "docs/project_os/full_chain_run_policy.zh-CN.md": "efed0a4e5ee542c96db8ac359793340d5cb9e05cd7bbbb0415ababce6dfb5f3d",
+    "docs/project_os/root_cause_issue_ledger.jsonl": "063910bcf4c842aa9ecc64e53dfda2943a4c28a988aa3870365cf702debfb896",
+    "docs/project_os/senior_assistant_collaboration_policy.zh-CN.md": "f772faf528f0015a7d06d8117bb6a555629efb076045b9b82041a67cdeeb8ccf"
+  },
+  "provider_calls": 0,
+  "recorded_at": "2026-08-23T22:36:09.720675+00:00",
+  "repository": {
+    "clean": true,
+    "head": "490b4dbd56ce1fbedc6914304b64dc8f4e172956",
+    "synced": true,
+    "upstream": "490b4dbd56ce1fbedc6914304b64dc8f4e172956"
+  },
+  "run_scope_id": "one_R13_bound_protected_writer_JSON_and_surface_feedback_submission",
+  "schema_version": "fin_ia_current_decision_bound_project_os_preflight_v1_0",
+  "scope_projection": {
+    "blocking_issue_ids": [],
+    "closed_precondition_issue_ids": [
+      "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
+    ],
+    "explicit_allow_issue_ids": [
+      "RC-S3-088-R10-workpapers-pass-but-protected-Writer-report-not-yet-generated",
+      "RC-S3-091-R13-protected-writer-submission-JSON-and-surface-feedback-unreachable"
+    ],
+    "out_of_scope_full_chain_blocker_count": 54
+  },
+  "status": "pass_current_decision_bound_preflight"
+}

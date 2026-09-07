@@ -1,0 +1,49 @@
+{
+  "schema_version": "fin_ia_s1_dell_direct_source_attempt_defect_receipt_v1_0",
+  "status": "attempt_rejected_publication_date_misadjudication",
+  "recorded_at": "2026-08-24",
+  "case_key": "DELL",
+  "attempt_id": "fin013-dell-direct-r2-20260824-b5ace0f5",
+  "public_result_binding": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_direct_source_capture_successor_result_v1_0.json",
+    "sha256": "a80e70fdbed4aef2988dd9a768f1d975ec5a9e3e2efc623170edc96d3b0cb8f8",
+    "result_digest": "03cbb776bc2b0d30985d55b97cb4f871ad279343fcf518de7bfc416feaa00e54"
+  },
+  "private_terminal_binding": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_capture/fin013-dell-direct-r2-20260824-b5ace0f5/terminal_result.json",
+    "sha256": "d91e146b5bb2d56f1e785634b57bd731fa234b0b8c287ef7a8b07056646d158c",
+    "result_digest": "a5b4c1ed4ea5722a5e73e1f43762cc4cad156c7315242aa1880260b9978f8fe9"
+  },
+  "defect": {
+    "owning_stage": "original_source_publication_date_adjudication",
+    "source_url": "https://investors.delltechnologies.com/node/17471/pdf",
+    "source_body_sha256": "398bbe0d3b994516fd66e6677d0c6d7253b2d5511bf111ac42ddca138845b799",
+    "incorrect_selected_publication_date": "2026-06-06",
+    "incorrect_source": "original_pdf_creation_date",
+    "visible_release_date": "2025-03-18",
+    "provider_date_telemetry": "2025-03-18",
+    "root_cause": "PDF adjudication treated file CreationDate as higher-authority than the explicit visible release date and did not parse month-name dates from the first-page header.",
+    "impact": "The Dell source object identity, publication date receipt and both derived candidate proposals are temporally misbound and ineligible for CandidateDecision or Evidence Gate."
+  },
+  "correction": {
+    "implementation_owner": "src/retrieval/public_context_source.py",
+    "regression_test_owner": "tests/test_s1_public_context_source.py",
+    "required_behavior": "An explicit month-name release date in the first-page PDF header outranks later file CreationDate metadata; provider telemetry may corroborate but remains non-authoritative.",
+    "rerun_mode": "immutable_capture_compilation_replay",
+    "fresh_network_calls_authorized": 0,
+    "model_calls_authorized": 0,
+    "generation_calls_authorized": 0,
+    "new_attempt_id_required": true
+  },
+  "authority": {
+    "r2_attempt_immutable": true,
+    "r2_source_object_eligible": false,
+    "r2_candidates_eligible": false,
+    "candidate_decision_authorized": false,
+    "evidence_promotion_authorized": false,
+    "gap_closure_authorized": false,
+    "S1_qualification_authorized": false,
+    "product_publication_authorized": false
+  },
+  "receipt_digest": "6eefdf33bd875b74a6161b5d6f65a41980f5cd9478188723e6f082e79c23148a"
+}

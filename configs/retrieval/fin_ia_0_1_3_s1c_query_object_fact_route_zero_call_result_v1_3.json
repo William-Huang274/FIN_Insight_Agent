@@ -1,0 +1,127 @@
+{
+  "acceptance": {
+    "all_kernel_facets_routed_once": true,
+    "candidate_not_evidence": true,
+    "claim_overflow_count_zero": true,
+    "complete_s1_claimed": false,
+    "complete_s2_claimed": false,
+    "database_lane_preserved": true,
+    "missing_parent_count_zero": true,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false
+  },
+  "business_findings_zh": [
+    "旧 child 重叠会重复生成同一 claim、表格行和父级上下文；当前编译器按父文档和对象内容去重，同时保留全部 source-record lineage。",
+    "高管姓名、年龄和职位等数值型非财务表不会再冒充 metric rows；候选必须同时满足期间／单位表头或金融行标签门禁。",
+    "空 TABLE_START/TABLE_END 不再吞掉其后的真实叙事；本次恢复了 TSMC 领先制程需求与 2nm ramp 的来源绑定 claim。",
+    "同一表内重复的 Revenue／Gross margin 行会保留 Cloud Memory、Core Data Center 等行组上下文，避免检索后串错业务单元。",
+    "财报表格行仅用于召回和上下文展示，不能成为 NumericFact；精确数值必须通过 S2 typed fact executor 和公司财务事实库。",
+    "公司财务事实库由独立 S2 Runtime 提供；对象候选只保留上下文，不能替代 NumericFact、期间、单位或公式血缘。",
+    "8-K 业绩稿同时保留原始 current-report 日期和元数据中的实际报告期；对象检索按报告期过滤，不再把发布日期误当财季结束日。"
+  ],
+  "diagnostic_examples": {
+    "financial_table_has_no_compilable_metric_row": {
+      "diagnostic_code": "financial_table_has_no_compilable_metric_row",
+      "source_record_id": "DELL_2023_10K_ITEM7_BLOCK_0017_PART_03_OF_03",
+      "table_id": "23"
+    },
+    "nonfinancial_table_not_compiled_as_metric_rows": {
+      "diagnostic_code": "nonfinancial_table_not_compiled_as_metric_rows",
+      "source_record_id": "DELL_2023_10K_ITEM1_BLOCK_0009_PART_02_OF_05",
+      "table_id": "6"
+    }
+  },
+  "inputs": {
+    "documents": {
+      "bytes": 30793,
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v2/documents.jsonl",
+      "sha256": "f24d72cd6a659a43eb183c21b353f07a2598ba8973fed1a5edd1d6698f25ff3b"
+    },
+    "kernel": {
+      "bytes": 20734,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
+      "sha256": "faf85fb3b3074b979acf0b12e5e20dba934d94380383c5241164e2f4c899f1d2"
+    },
+    "object_compiler_overlay": {
+      "bytes": 808,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_object_compiler_policy_overlay_v1_0.json",
+      "sha256": "cf544e7f0cfaef49b21d8896d6fd62a578de2d8f61371fbc133c7b61a912a31c"
+    },
+    "records": {
+      "bytes": 10232724,
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v2/records.jsonl",
+      "sha256": "de3e7e7f3c5aa8ed117a58e2721a424355c37d7477b87060bfa8b8b9e18f7ab2"
+    },
+    "route_policy": {
+      "bytes": 12075,
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_2.json",
+      "sha256": "887dfd79016fe0327e43703eadb10d2967b9e6160c7a23ca43a0976eb6008306"
+    }
+  },
+  "object_compilation_summary": {
+    "candidate_not_evidence": true,
+    "compiled_object_count": 33085,
+    "deduplicated_object_count": 4511,
+    "diagnostic_count": 280,
+    "diagnostic_counts": {
+      "financial_table_has_no_compilable_metric_row": 52,
+      "nonfinancial_table_not_compiled_as_metric_rows": 228
+    },
+    "duplicate_object_group_count": 3902,
+    "missing_parent_count": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "object_kind_counts": {
+      "bounded_parent_context": 1206,
+      "claim": 24379,
+      "metric_row": 7500
+    },
+    "parent_document_count": 30,
+    "raw_compiled_object_count": 37596,
+    "source_record_count": 1841
+  },
+  "output_binding": {
+    "diagnostics_bytes": 44241,
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/diagnostics.jsonl",
+    "diagnostics_sha256": "0715f4ebd6e21e03138e04a6fed61c3835701a7a11ccec7fd1f2bc68348b8153",
+    "objects_bytes": 85066657,
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "objects_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19"
+  },
+  "payload_digest": "139d81d23c26dfb7ef30d282668c6fa5d1d287c8178dea117aa04fee28309c4d",
+  "query_route_summary": {
+    "company_financial_fact_mart_status": "separate_s2_runtime_integrated_not_object_candidate_authority",
+    "database_owning_stage": "S2",
+    "kernel_facet_count": 17,
+    "market_snapshot_fact_mart_status": "typed_route_only_store_unavailable",
+    "metric_route_count": 24,
+    "query_family_count": 11
+  },
+  "sample_objects": [
+    {
+      "compiled_object_id": "COBJ::81d0a190e1a32271e9b89347",
+      "model_text_preview": "ITEM 1A — RISK FACTORS Our business, operating results, financial condition, and prospects are subject to a variety of significant risks, many of which are beyond our control.",
+      "numeric_authority": false,
+      "object_kind": "claim",
+      "source_record_id": "DELL_2023_10K_ITEM1A_BLOCK_0001_CHUNK_0001"
+    },
+    {
+      "compiled_object_id": "COBJ::b6f4db38628721dc3b5e57e0",
+      "model_text_preview": "Company: Dell Technologies Inc. (DELL)\nSource: 10-K published 2023-03-30\nSection: Item 7. Management's Discussion and Analysis\nTable: Aggregate Adjustment for Income Taxes\nHeader: Fiscal Year Ended || February 3, 2023 | % Change | January 28, 2022 | % Change | January 29, 2021 || (in millions, except percentages)\nRow: Product net revenue | $ | 79,250 | (1) | % | $ | 79,830 | 18 | % | $ | 67,744",
+      "numeric_authority": false,
+      "object_kind": "metric_row",
+      "source_record_id": "DELL_2023_10K_ITEM7_BLOCK_0009_PART_01_OF_02"
+    },
+    {
+      "compiled_object_id": "COBJ::c609fb533b036eba2cd71984",
+      "model_text_preview": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: 10-K\nsource_tier: primary_sec_filing\npublication_date: 2023-03-30\nperiod_end: 2023-02-03\nfiscal_year: 2023\nsection: Item 1A. Risk Factors\nsubsection: Item 1A. Risk Factors",
+      "numeric_authority": false,
+      "object_kind": "bounded_parent_context",
+      "source_record_id": "DELL_2023_10K_ITEM1A_BLOCK_0001_CHUNK_0001"
+    }
+  ],
+  "schema_version": "fin_ia_s1c_query_object_fact_route_zero_call_result_v1_2",
+  "status": "s1c_temporal_correct_object_route_zero_call_proven"
+}

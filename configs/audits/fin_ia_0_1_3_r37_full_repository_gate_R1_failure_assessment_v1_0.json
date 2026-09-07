@@ -1,0 +1,45 @@
+{
+  "schema_version": "fin_ia_full_repository_gate_failure_assessment_v1_0",
+  "attempt_id": "full-repository-r37-r1-20260825T0433+0800",
+  "status": "failed_preserved_successor_required",
+  "recorded_at": "2026-08-25T04:49:51+08:00",
+  "prepared_from_commit": "0c77cf362a156023af87b5a5fd73b1962345eb90",
+  "command": "python -m pytest -q",
+  "observed": {
+    "passed": 1276,
+    "failed": 2,
+    "skipped": 2,
+    "warnings": 2,
+    "elapsed_seconds": 466.65
+  },
+  "failures": [
+    {
+      "test": "tests/test_retrieval_vertical_slice.py::test_three_cases_compile_through_one_core_without_answer_urls",
+      "observed": "three current plans each contain 28 lanes",
+      "stale_expectation": "three current plans each contain 25 lanes",
+      "earliest_faulty_stage": "S1 test acceptance projection",
+      "disposition": "update the assertion to the exact R37 28-lane contract and explicitly require the three bounded successor facets"
+    },
+    {
+      "test": "tests/test_retrieval_vertical_slice.py::test_current_snapshot_is_read_only_candidate_projection",
+      "observed": "four reviewed-label occurrences are absent from the current corpus",
+      "missing_source_page_id": "PUBLIC::DELL-EXT::2184F13EB685F627C757",
+      "missing_source_url": "https://blogs.nvidia.com/blog/dell-technologies-ai-factories-blackwell/",
+      "earliest_faulty_stage": "S1 reviewed-public source/object synchronization",
+      "root_cause": "the R4 DELL Pack admitted one new writer-citable PUBLIC_WEB source after the predecessor public-web object build, while R35 appended only reviewed PUBLIC_PDF pages and slices",
+      "disposition": "append only the missing reviewed PUBLIC_WEB page and exact slice through a new immutable source/object/index/runtime successor; do not weaken the zero-missing assertion"
+    }
+  ],
+  "authority": {
+    "historical_attempt_reclassified": false,
+    "source_gap_hidden_by_test_change": false,
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "S1_qualified": false,
+    "release": false
+  },
+  "known_boundary": "This failure assessment preserves the first full-repository R37 gate. The 28-lane assertion is contract drift, but the missing NVIDIA public-web source is a real S1 source/object synchronization defect and must be repaired in a new runtime revision before a fresh full-repository attempt.",
+  "result_digest": "ad922332bf4cb2e14d63de8e0f87b70ed2cbf0ef7ef4a9f5c82cc9b972e686a1"
+}

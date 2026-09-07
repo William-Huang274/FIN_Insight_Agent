@@ -1,0 +1,35 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_cell_failed_counter_successor_authority_entry_failure_v1_1",
+  "status": "entry_failed_zero_model_calls_current_policy_required_set_omission",
+  "recorded_at": "2026-08-16T20:44:00+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_counter_successor_chat_live_authority_v1_1.json",
+  "authority_sha256": "6ee3455b16aa6ddd46eb11a4b860f7cee6f59f98f7fed94814ff3a01226b56fb",
+  "authority_implementation_commit": "30d3665d00e30b5318584ca0a4fc9262d4465a5f",
+  "entry_failure_code": "dynamic_successor_bound_inputs_invalid",
+  "observed_calls": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "embedding_calls": 0
+  },
+  "root_cause": {
+    "owning_layer": "S3 successor authority exact bound-input set",
+    "classification": "current_runtime_policy_refs_written_but_not_listed_in_required_set",
+    "detail": "v1.1 authority correctly added loop_policy_ref and dynamic_micro_policy_ref, but _successor_bound_paths still enumerated the pre-v1.1 required set and therefore rejected the two intended bindings as unexpected fields.",
+    "not_caused_by": [
+      "historical Git blob validation",
+      "DeepSeek or credentials",
+      "R1 replay or Evidence",
+      "S1/S2 or financial validation"
+    ]
+  },
+  "required_fix": {
+    "add_both_current_policy_refs_to_canonical_required_set": true,
+    "validate_real_authority_fixture_in_unit_test": true,
+    "reuse_v1_1_authority_or_output_identity": false,
+    "new_v1_2_zero_call_proof_decision_and_authority_required": true
+  },
+  "known_boundary": "The v1.1 authority failed before any provider request and is permanently consumed as entry-failure evidence. It does not alter R1 or authorize reuse of its identities."
+}

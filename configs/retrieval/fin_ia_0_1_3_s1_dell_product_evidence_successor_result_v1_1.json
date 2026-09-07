@@ -1,0 +1,50 @@
+{
+  "authority": {
+    "S1_qualification_claimed": false,
+    "accepted_claims_capture_bound": true,
+    "accepted_evidence_proposition_bound": true,
+    "candidate_is_not_evidence": true,
+    "generation_model_calls": 0,
+    "metric_row_promoted_as_narrative_evidence": false,
+    "network_calls": 0,
+    "numeric_fact_authority": false,
+    "product_publication": false,
+    "qualified_human_review": false
+  },
+  "capture_receipt_count": 7,
+  "case_key": "DELL",
+  "coverage_delta": {
+    "added_or_rebound_evidence_count": 7,
+    "candidate_text_promoted_count": 0,
+    "numeric_authority_granted_count": 0,
+    "numeric_rows_delegated_to_S2": 12,
+    "predecessor_evidence_count": 22,
+    "retired_evidence_count": 0,
+    "successor_evidence_count": 29
+  },
+  "decision_counts": {
+    "accept_for_request_context": 3,
+    "accept_for_requirements": 5,
+    "delegate_to_s2_numeric_authority": 12,
+    "reject_for_current_scope": 8
+  },
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1_product_evidence_successor/dell-r2/full_result.json",
+  "full_result_sha256": "959c5094ccde63b35bfe5c22658c11ff6f6ce3231edf061379bc26b16b46a279",
+  "known_boundary": "This tracked projection records an internal engineering adjudication. Accepted claims are immutable-capture-bound and explicitly attached to a named requirement or request context. Request context does not satisfy a hard material requirement, metric rows remain delegated to S2, and this result does not qualify S1, grant qualified-human review or authorize publication. Candidate text and private object identities remain private.",
+  "plan_digest": "0d3e7e1a04e775a7660f8d1c11840b60e81ee831557ff78a918608d1cad5d7bc",
+  "plan_id": "FIN-0.1.3-S1-DELL-PROPOSITION-BOUND-EVIDENCE-R2",
+  "predecessor_pack_payload_digest": "c61ea7a02634ec21944ec6edc9b127c474e3474116dfe501932455664fc3dc23",
+  "prepared_from_commit": "18b431e846371dd05d74845da1f6c90441951d16",
+  "private_pack_ref": "data/workbench_private/fin_0_1_3_s1_product_evidence_successor/dell-r2/pack.json",
+  "private_pack_sha256": "a4d569ad0e6e9acf9b0ca666f1ff83f0f04be24d1162792e4efe1a4fa4fc4746",
+  "recorded_at": "2026-08-18T21:04:06+00:00",
+  "result_digest": "89180154d698baea0746c7a7e7209722ef1f5e5946423bfb994f69d5eec70425",
+  "review_scope_counts": {
+    "actionable_review_items": 28,
+    "informational_review_items_preserved": 0,
+    "review_items": 28
+  },
+  "schema_version": "fin_ia_s1_product_evidence_successor_public_result_v1_2",
+  "status": "proposition_bound_evidence_successor_materialized",
+  "successor_pack_payload_digest": "c2fd2bba785e13f0fa9545a6a4668b80a1432c65d4dfd42d17a73b4e3eb91472"
+}

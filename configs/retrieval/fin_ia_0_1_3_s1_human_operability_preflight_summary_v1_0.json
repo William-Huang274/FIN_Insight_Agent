@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_ia_s1_human_operability_preflight_summary_v1_0",
+  "status": "human_operability_engineering_ready_external_gates_open",
+  "recorded_at": "2026-08-19T12:00:00+08:00",
+  "program_ref": "configs/retrieval/fin_ia_0_1_3_s1_human_operability_and_blind_gate_program_v1_0.json",
+  "full_preflight_result_digest": "1b634f1cdd09727cc58cf54b5600156f846834c9e54ca44f0edb400d80875522",
+  "gate_states": {
+    "ai_free_human_operability": "engineering_pass",
+    "remaining_official_source_execution": "pass",
+    "evidence_admission": "pending_qualified_human",
+    "replacement_blind_qualification": "pending_external"
+  },
+  "summary": {
+    "development_case_count": 3,
+    "request_count": 24,
+    "remaining_source_request_count": 0,
+    "evidence_admission_request_count": 16,
+    "evidence_admission_requirement_count": 22,
+    "public_information_gap_eligible_request_count": 0,
+    "generation_model_calls": 0
+  },
+  "case_results": [
+    {
+      "case_key": "DELL",
+      "readiness_state": "blocked_by_evidence_admission",
+      "request_count": 8,
+      "source_route_pending_request_count": 0,
+      "evidence_admission_pending_request_count": 4,
+      "evidence_admission_pending_requirement_count": 5,
+      "partial_material_gap_request_count": 3,
+      "business_disposition_zh": "DELL 当前不是继续搜网页的问题；四个研究问题已有候选但缺正式 Evidence admission，另有三个问题只能形成部分判断且尚无公开信息边界权威。"
+    },
+    {
+      "case_key": "MU",
+      "readiness_state": "blocked_by_candidate_coverage",
+      "request_count": 8,
+      "source_route_pending_request_count": 0,
+      "source_present_candidate_coverage_failure_count": 4,
+      "evidence_admission_pending_request_count": 7,
+      "evidence_admission_pending_requirement_count": 9,
+      "partial_material_gap_request_count": 0,
+      "business_disposition_zh": "MU 当前期间的 10-K、10-Q、8-K 以及 NVDA、TSM、DELL、MSFT 关联披露已在本地权威对象快照中。四个覆盖问题属于对象化、查询召回、排序或 Evidence Role，不应重复下载；七个研究问题合计九条命题仍待合格人工 Evidence admission。"
+    },
+    {
+      "case_key": "NVDA",
+      "readiness_state": "blocked_by_candidate_coverage",
+      "request_count": 8,
+      "source_route_pending_request_count": 0,
+      "source_present_candidate_coverage_failure_count": 3,
+      "evidence_admission_pending_request_count": 5,
+      "evidence_admission_pending_requirement_count": 8,
+      "partial_material_gap_request_count": 0,
+      "business_disposition_zh": "NVDA 当前期间的 10-K、10-Q 和 8-K 已在本地权威对象快照中。订单/积压、转化持续性和供应执行属于对象化、查询召回、排序或 Evidence Role，不应重复下载；五个研究问题合计八条命题仍待合格人工 Evidence admission。"
+    }
+  ],
+  "authority": {
+    "candidate_is_evidence": false,
+    "numeric_fact_authority": false,
+    "public_information_gap_authority": false,
+    "S1_qualified_stable": false,
+    "product_or_release_authority": false
+  }
+}

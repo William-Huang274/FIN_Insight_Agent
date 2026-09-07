@@ -1,0 +1,400 @@
+{
+  "schema_version": "fin_ia_dell_03B_R14_structural_proof_grammar_v1_0",
+  "grammar_id": "FIN-0.1.3-S1-DELL-03B-R14-STRUCTURAL-PROOF-GRAMMAR-V1",
+  "parser_id": "conservative_event_proof_v1",
+  "span_contract": {
+    "coordinate_system": "unicode_code_point",
+    "interval": "half_open_start_inclusive_end_exclusive",
+    "raw_text_rewritten": false,
+    "raw_span_rewritten": false
+  },
+  "normalization": {
+    "proof_form": [
+      "NFKC",
+      "casefold",
+      "frozen_punctuation_class_map"
+    ],
+    "punctuation_class_map": {
+      "‘": "'",
+      "’": "'",
+      "“": "\"",
+      "”": "\"",
+      "‐": "-",
+      "‑": "-",
+      "–": "-",
+      "—": "-"
+    }
+  },
+  "proof_states": [
+    "PROVED",
+    "AMBIGUOUS",
+    "UNSUPPORTED",
+    "MALFORMED"
+  ],
+  "tokenizer": {
+    "longest_match": true,
+    "priority": [
+      "MONEY",
+      "PERCENT",
+      "NUMBER",
+      "WORD",
+      "PUNCT",
+      "WHITESPACE"
+    ],
+    "word_internal_joiners": [
+      "-",
+      "'"
+    ],
+    "word_joiner_requires_word_on_both_sides": true,
+    "priority_collision_state": "MALFORMED"
+  },
+  "scope": {
+    "paragraph_boundary": "newline",
+    "hard_boundary_surface": [
+      ".",
+      "?",
+      "!",
+      ";",
+      ":",
+      "—"
+    ],
+    "soft_coordinators": [
+      "and",
+      "but",
+      "or",
+      "while",
+      "whereas",
+      "then",
+      "yet"
+    ],
+    "parenthetical_pairs": [
+      "()",
+      "[]",
+      "{}"
+    ],
+    "quotation_pairs": [
+      "\"\"",
+      "''",
+      "“”",
+      "‘’"
+    ],
+    "cross_hard_scope_material_edges": "forbidden_unless_target_contract_bridge"
+  },
+  "structural_resources": {
+    "auxiliaries": [
+      "am",
+      "are",
+      "be",
+      "been",
+      "being",
+      "can",
+      "could",
+      "did",
+      "do",
+      "does",
+      "had",
+      "has",
+      "have",
+      "is",
+      "may",
+      "might",
+      "must",
+      "shall",
+      "should",
+      "was",
+      "were",
+      "will",
+      "would"
+    ],
+    "finite_or_participle_suffixes": [
+      "ed",
+      "en",
+      "es",
+      "ing",
+      "s"
+    ],
+    "irregular_finite_forms": [
+      "became",
+      "began",
+      "bought",
+      "brought",
+      "built",
+      "came",
+      "did",
+      "fell",
+      "grew",
+      "had",
+      "made",
+      "ran",
+      "rose",
+      "said",
+      "sold",
+      "took",
+      "was",
+      "went",
+      "were",
+      "won",
+      "wrote"
+    ],
+    "subject_pronouns": [
+      "he",
+      "i",
+      "it",
+      "she",
+      "they",
+      "we",
+      "you"
+    ],
+    "function_words": [
+      "a",
+      "an",
+      "as",
+      "at",
+      "by",
+      "for",
+      "from",
+      "in",
+      "of",
+      "on",
+      "the",
+      "to",
+      "with"
+    ],
+    "resource_use": "event_barrier_or_structural_premise_only_never_target_truth"
+  },
+  "resource_versions": {
+    "abbreviation_policy": {
+      "resource_id": "R14_abbreviation_boundary_exceptions_v1",
+      "entries": [
+        "Co.",
+        "Corp.",
+        "Inc.",
+        "Ltd.",
+        "No.",
+        "U.K.",
+        "U.S.",
+        "e.g.",
+        "i.e.",
+        "vs."
+      ],
+      "entries_digest": "2b25b6795c8484fe21224c57f78acb3662536648da3753e0c9f1c59a6bc41d9c"
+    },
+    "function_word_resource": {
+      "resource_id": "R14_structural_function_words_v1",
+      "entries_digest": "0c01b917932c2e7975554e8436476ef8401e6635418d281783ae1e897d11d878"
+    }
+  },
+  "rules": [
+    {
+      "rule_id": "G00-MALFORMED",
+      "precedence": 0,
+      "premises": [
+        "input_key_is_pre_registered_malformed_or_token_priority_collides"
+      ],
+      "conclusion": "terminal_typed_malformed",
+      "state": "MALFORMED"
+    },
+    {
+      "rule_id": "G10-SENTENCE",
+      "precedence": 10,
+      "premises": [
+        "sentence_or_paragraph_boundary_outside_nested_scope"
+      ],
+      "conclusion": "new_hard_scope",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G11-HARD-CLAUSE",
+      "precedence": 11,
+      "premises": [
+        "hard_boundary_surface_outside_nested_scope"
+      ],
+      "conclusion": "material_roles_cannot_cross_boundary",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G20-EXPLICIT-EVENT",
+      "precedence": 20,
+      "premises": [
+        "finite_auxiliary_or_morphological_predicate_candidate_has_exact_span"
+      ],
+      "conclusion": "new_event_candidate",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G21-COORD-EVENT",
+      "precedence": 21,
+      "premises": [
+        "coordinator_right_side_has_predicate_candidate_or_new_subject_or_nonce_head_cannot_be_excluded",
+        "G22_no_new_event_proof_absent"
+      ],
+      "conclusion": "new_event_or_ambiguous_event_barrier",
+      "state": "AMBIGUOUS"
+    },
+    {
+      "rule_id": "G22-OBJECT-LIST",
+      "precedence": 22,
+      "premises": [
+        "left_and_right_items_share_one_typed_role_slot",
+        "no_subject_auxiliary_predicate_or_hard_boundary_between_items",
+        "no_independent_event_complement_after_right_item"
+      ],
+      "conclusion": "no_new_event_object_list",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G23-SUBJECT-INHERIT",
+      "precedence": 23,
+      "premises": [
+        "coordinated_events",
+        "left_event_has_explicit_subject",
+        "right_event_has_no_competing_explicit_subject"
+      ],
+      "conclusion": "copy_actor_edge_only",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G30-ROLE-LOCAL",
+      "precedence": 30,
+      "premises": [
+        "directed_role_proof_edge_exists_within_event_local_scope"
+      ],
+      "conclusion": "material_mention_owned_by_event",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G31-TEMPORAL-LOCAL",
+      "precedence": 31,
+      "premises": [
+        "period_and_event_share_clause_without_competing_event_or_each_event_has_independent_edge"
+      ],
+      "conclusion": "period_owned_by_event",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G40-NOMINAL-HEAD",
+      "precedence": 40,
+      "premises": [
+        "directed_chunk_complement_relative_participial_apposition_or_coordination_edge_has_exact_endpoints"
+      ],
+      "conclusion": "nominal_path_candidate_preserving_all_competing_heads",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G50-PRICE-DIRECT",
+      "precedence": 50,
+      "premises": [
+        "single_pricing_event",
+        "single_product_or_hardware_object",
+        "single_price_complement",
+        "no_competing_head_event_owner_or_price"
+      ],
+      "conclusion": "unique_priced_hardware_path",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G51-PRICE-NOMINAL",
+      "precedence": 51,
+      "premises": [
+        "product_priced_at_price_or_explicit_price_cost_of_for_product_copular_amount",
+        "single_directed_path",
+        "no_competing_head_event_owner_or_price"
+      ],
+      "conclusion": "unique_priced_hardware_path",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G52-HARDWARE-BUNDLE",
+      "precedence": 52,
+      "premises": [
+        "all_bundle_members_are_typed_hardware_or_configuration",
+        "bounded_total_price",
+        "single_event_and_single_path"
+      ],
+      "conclusion": "unique_priced_hardware_bundle_path",
+      "state": "PROVED"
+    },
+    {
+      "rule_id": "G90-CONFLICT",
+      "precedence": 90,
+      "premises": [
+        "multiple_event_owner_head_price_or_path_or_unclosed_required_path"
+      ],
+      "conclusion": "material_proof_conflict_preempts_complete",
+      "state": "AMBIGUOUS"
+    }
+  ],
+  "deterministic_procedure": [
+    "TOKENIZE",
+    "SCOPE",
+    "EVENT_CANDIDATES",
+    "OBJECT_LIST",
+    "SUBJECT_TIME",
+    "NOMINAL",
+    "PRICE",
+    "TARGET"
+  ],
+  "outcome_mapping": {
+    "no_target_candidate": "N",
+    "candidate_all_required_proofs_PROVED_no_conflict": "C",
+    "candidate_missing_AMBIGUOUS_or_UNSUPPORTED_proof": "P",
+    "pre_registered_malformed_key_and_closed_code": "E",
+    "uncaught_parser_or_compiler_exception": "TERMINAL_EXECUTION_FAILURE"
+  },
+  "vocabulary_use_matrix": {
+    "target_entity_product_measure_ontology": {
+      "allowed": [
+        "candidate_discovery",
+        "mention_typing"
+      ],
+      "forbidden": [
+        "event_split",
+        "role_ownership",
+        "complete_or_negative"
+      ]
+    },
+    "target_predicate_ontology": {
+      "allowed": [
+        "event_semantic_label",
+        "candidate_discovery"
+      ],
+      "forbidden": [
+        "event_scope_existence",
+        "cross_event_merge",
+        "complete"
+      ]
+    },
+    "structural_function_resources": {
+      "allowed": [
+        "structural_premise",
+        "conservative_event_barrier"
+      ],
+      "forbidden": [
+        "target_meaning",
+        "complete"
+      ]
+    },
+    "company_verb_service_connector_lists": {
+      "allowed": [
+        "provenance",
+        "positive_typing"
+      ],
+      "forbidden": [
+        "event_barrier",
+        "priced_head",
+        "complete_partial_or_negative"
+      ]
+    },
+    "unknown_nonce_head_link_owner": {
+      "allowed": [
+        "node_creation",
+        "ambiguity_proof"
+      ],
+      "forbidden": [
+        "denylist_negative",
+        "absence_from_denylist_complete"
+      ]
+    }
+  },
+  "result_digest": "628f12fcf3df3be2dd922230ef152d5f2b67b30994a403df01425d5d13edf8a8"
+}

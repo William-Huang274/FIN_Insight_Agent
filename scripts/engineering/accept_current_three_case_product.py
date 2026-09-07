@@ -49,6 +49,11 @@ def _load_services(data_root: Path) -> tuple[ResearchWorkspaceService, ResearchE
             / "workbench_private"
             / str(evidence_config["private_object_root_relative"])
         ),
+        private_root_base=data_root / "workbench_private",
+        reviewed_anchor_catalog=read_registered_runtime_json(
+            ROOT,
+            str(evidence_config["reviewed_anchor_catalog_resource_id"]),
+        ),
     )
     workspace_config = read_registered_runtime_json(
         ROOT, "application.config.current_research_workspace_catalog"
@@ -169,7 +174,7 @@ def build_report(data_root: Path) -> dict[str, object]:
         "cases": cases,
         "violations": sorted(set(violations)),
         "bounded_findings": [
-            "All current source domains are SEC filings; source diversity remains a later S1/S3 product task.",
+            "Current packs include reviewed SEC, issuer and bounded ecosystem official sources, but source diversity and residual-gap coverage remain incomplete S1/S3 product work.",
             "The reviewed packs currently expose zero structured numeric items; numeric fact surfaces are not claimed by this baseline.",
             "Valuation, scenario sensitivity and commercial allocation remain visible typed gaps rather than inferred facts.",
         ],

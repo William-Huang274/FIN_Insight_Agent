@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_s1_vs3_evidence_role_replay_policy_v1_0",
+  "status": "pre_registered_zero_call_financial_role_grammar_replay",
+  "recorded_at": "2026-08-17",
+  "experiment_id": "FIN-0.1.3-S1-VS3-EVIDENCE-ROLE-REPLAY-V1.0",
+  "bound_inputs": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_3.json",
+    "query_atom_eval_sha256_lf": "da75bd15db011bf092952b61149f4279bc1f2499031585fd70485df432f6599d",
+    "ranking_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_result_v1_3.json",
+    "ranking_summary_sha256_lf": "3cac270c28e6534943f3817cd373dc3c1e0ad761fab96979eb91efd03979c51f",
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "compiled_objects_sha256_lf": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "kernel_sha256_lf": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+    "evidence_role_implementation_ref": "src/retrieval/evidence_role.py",
+    "evidence_role_implementation_sha256_lf": "4041395ae8a69f7ab0937d8e11582826865f8f7250e49303fd6e4eab304f491a"
+  },
+  "decision_gates": {
+    "judged_positive_role_compatible_minimum_rate": 0.8,
+    "judged_hard_negative_suppression_minimum_rate": 1.0
+  },
+  "change_scope": {
+    "changed": [
+      "observed period comparison grammar",
+      "risk-section customer and growth exposure grammar",
+      "coupled supply-demand risk grammar",
+      "customer agreement and binding commitment relationship grammar"
+    ],
+    "not_changed": [
+      "query atoms and labels",
+      "compiled object population",
+      "candidate generation and rankings",
+      "hard identity, period and source filters",
+      "Evidence promotion authority"
+    ],
+    "prohibited": [
+      "per-object allowlists",
+      "qrel identity lookup during role evaluation",
+      "new model scoring",
+      "runtime promotion from this replay"
+    ]
+  },
+  "token_budget_basis": {
+    "node_purpose": "Deterministically replay a changed Evidence Role grammar over frozen development labels.",
+    "input_scale": "42 judged object-query relations across 18 atoms, plus candidate-membership lookup.",
+    "required_outputs": [
+      "positive compatibility",
+      "hard-negative suppression",
+      "per-atom error receipts"
+    ],
+    "schema_burden": "typed local JSON only",
+    "materiality_and_quality_risk": "a permissive role rule can promote background as evidence; a narrow rule can suppress direct financial facts",
+    "comparable_run_evidence": "v1.3 frozen ranking reported 0.625 positive compatibility and 1.0 hard-negative suppression",
+    "reasoning_profile": "zero-call deterministic grammar replay",
+    "stop_and_truncation": "no truncation; fail closed on any input digest, object identity or score-result binding drift"
+  },
+  "authority": {
+    "development_labels_only": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "runtime_promotion_authorized": false,
+    "fine_tuning_authorized": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "s1_complete_claimed": false
+  }
+}

@@ -1,0 +1,419 @@
+{
+  "schema_version": "fin_ia_s2_company_financial_fact_mart_build_result_v1_0",
+  "status": "s2_company_financial_fact_mart_engineering_pass",
+  "recorded_at": "2026-08-13",
+  "research_as_of": "2026-08-06",
+  "storage": {
+    "sqlite_ref": "data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_facts.sqlite",
+    "sqlite_sha256": "d05b0cc8e08d063a252d3032db13f6840abe0048200f3696b3ffccaa9d93c585",
+    "sqlite_bytes": 1396736,
+    "observation_digest": "8bb7b9f452e9ad5d1da4f50b565aba8397a05f40d7ecd3a5b09e5a438af3ed97"
+  },
+  "counts": {
+    "observations": 1319,
+    "tickers": 3,
+    "metrics": 12,
+    "by_ticker": {
+      "DELL": 390,
+      "MU": 463,
+      "NVDA": 466
+    },
+    "by_metric": {
+      "accounts_payable": 59,
+      "accounts_receivable": 92,
+      "capital_expenditures": 91,
+      "cash_and_equivalents": 100,
+      "diluted_eps": 139,
+      "gross_profit": 146,
+      "inventory": 98,
+      "net_income": 163,
+      "operating_cash_flow": 101,
+      "operating_income": 146,
+      "revenue": 147,
+      "shares_outstanding": 37
+    },
+    "by_period_role": {
+      "instant": 386,
+      "fiscal_year": 217,
+      "quarter_discrete": 406,
+      "fiscal_ytd": 310
+    },
+    "superseded_observations": 591
+  },
+  "source_summary": {
+    "source_count": 3,
+    "sources": [
+      {
+        "ticker": "DELL",
+        "cik": "0001571996",
+        "companyfacts_sha256": "c98225ef04c692e4489ea48f8812347cc4dff4e4ce0443ee8cd5c81393341ba7",
+        "submissions_sha256": "7da3fa0e119569fad6e9e2bb7701822bd93cd3aac86951e8519331d2e24325cf",
+        "facts_seen": 1319,
+        "accepted_observations": 390,
+        "missing_filing_identity": 863,
+        "unsupported_form": 10,
+        "unsupported_period": 40,
+        "outside_period_window": 16
+      },
+      {
+        "ticker": "MU",
+        "cik": "0000723125",
+        "companyfacts_sha256": "8d198ff48519902ff6ae95c166e92e61a46b5761d18ac2addc6303ea7c244052",
+        "submissions_sha256": "1513d04033b854fc2bdc1727a5c133925818dc2069d23cc60d1e9df10e66b1c3",
+        "facts_seen": 2350,
+        "accepted_observations": 463,
+        "missing_filing_identity": 1063,
+        "unsupported_form": 66,
+        "unsupported_period": 0,
+        "outside_period_window": 758
+      },
+      {
+        "ticker": "NVDA",
+        "cik": "0001045810",
+        "companyfacts_sha256": "0f0e785326b81a149866585c343532ab2fd42d6975e15956e590c07100b98c0a",
+        "submissions_sha256": "cc1ae0ab7c10a2a04ce4de1692e4ecf79602d59a3eeb8c4d8b49f8464ee9d878",
+        "facts_seen": 2381,
+        "accepted_observations": 466,
+        "missing_filing_identity": 1676,
+        "unsupported_form": 5,
+        "unsupported_period": 0,
+        "outside_period_window": 234
+      }
+    ],
+    "raw_observation_count": 1319,
+    "deduplicated_observation_count": 1319,
+    "duplicate_observation_count": 0
+  },
+  "authority": {
+    "candidate_or_metric_row_grants_numeric_authority": false,
+    "source_capture_digest_required": true,
+    "accepted_at_and_as_of_required": true,
+    "all_admitted_vintages_preserved": true,
+    "typed_conflict_fails_closed": true,
+    "fact_signal_context_mixed_table_forbidden": true
+  },
+  "result_digest": "0c25c917f08e4e14b30d481d0dbb2724b951797c052e52b0ff940b2971f595a1",
+  "policy_ref": "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_policy_v1_0.json",
+  "policy_digest": "367dbefdc72860aba4d30d3c79cc473db634746cedb7c56713fa80973eaf354c",
+  "qrel_evaluation": {
+    "qrel_count": 24,
+    "exact_match_count": 24,
+    "strata": {
+      "current_interim": {
+        "qrel_count": 15,
+        "exact_match_count": 15
+      },
+      "latest_fiscal_year": {
+        "qrel_count": 9,
+        "exact_match_count": 9
+      }
+    },
+    "rows": [
+      {
+        "qrel_id": "DELL-FY2026-REVENUE",
+        "stratum": "latest_fiscal_year",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::c68761158a336ed3baa20222d8bde6d7"
+      },
+      {
+        "qrel_id": "DELL-FY2026-GROSS-PROFIT",
+        "stratum": "latest_fiscal_year",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::e23e86d4ca264e211e49afde2e258204"
+      },
+      {
+        "qrel_id": "DELL-FY2026-OPERATING-INCOME",
+        "stratum": "latest_fiscal_year",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::4f0d55770081214d9a761078ac3aaba6"
+      },
+      {
+        "qrel_id": "MU-FY2025-REVENUE",
+        "stratum": "latest_fiscal_year",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::93c72ef460cdadfa2d61f529d2a10501"
+      },
+      {
+        "qrel_id": "MU-FY2025-GROSS-PROFIT",
+        "stratum": "latest_fiscal_year",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::5056bd799cf9b0a61909adeef3bf4a68"
+      },
+      {
+        "qrel_id": "MU-FY2025-OPERATING-INCOME",
+        "stratum": "latest_fiscal_year",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::ea7a412576553098fde7ba32bd2c329d"
+      },
+      {
+        "qrel_id": "NVDA-FY2026-REVENUE",
+        "stratum": "latest_fiscal_year",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::a69d241852384080afedc7027ed6b676"
+      },
+      {
+        "qrel_id": "NVDA-FY2026-GROSS-PROFIT",
+        "stratum": "latest_fiscal_year",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::440ee305fe7f8e4c1d37d6daf9a3cb93"
+      },
+      {
+        "qrel_id": "NVDA-FY2026-OPERATING-INCOME",
+        "stratum": "latest_fiscal_year",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::b89244bdc5235da26563c3592d57c945"
+      },
+      {
+        "qrel_id": "DELL-FY2027-Q1-REVENUE",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::4525a48c8edf2b57a62e0a8ca71adb86"
+      },
+      {
+        "qrel_id": "DELL-FY2027-Q1-GROSS-PROFIT",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::8b1d661d1b732821e7fb2ba32696517e"
+      },
+      {
+        "qrel_id": "DELL-FY2027-Q1-OPERATING-INCOME",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::d30110fa58fe9df0e8e293450aa49c89"
+      },
+      {
+        "qrel_id": "DELL-FY2027-Q1-OCF",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::4d9150484aeb375f2e86af5724110cb8"
+      },
+      {
+        "qrel_id": "DELL-FY2027-Q1-CAPEX",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::9a26225aa447fee43a55c4f378dfb565"
+      },
+      {
+        "qrel_id": "MU-FY2026-Q3-REVENUE",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::a6918ebc265375c80dc6dbf16067bf5a"
+      },
+      {
+        "qrel_id": "MU-FY2026-Q3-GROSS-PROFIT",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::5b5769bfd2475f00f8f4d1892fe2fa06"
+      },
+      {
+        "qrel_id": "MU-FY2026-Q3-OPERATING-INCOME",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::9b51c761cfde2b956cf0676f290b8dfa"
+      },
+      {
+        "qrel_id": "MU-FY2026-Q3-YTD-OCF",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::254d635e61ad63b2404bc3306deee2fc"
+      },
+      {
+        "qrel_id": "MU-FY2026-Q3-YTD-CAPEX",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::806aa7463506edacdae235eedf83d8ab"
+      },
+      {
+        "qrel_id": "NVDA-FY2027-Q1-REVENUE",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::8d4e9d2284ac716317672543662ca563"
+      },
+      {
+        "qrel_id": "NVDA-FY2027-Q1-GROSS-PROFIT",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::fc74931954c94a7ff79ec0c6ad3a4cbb"
+      },
+      {
+        "qrel_id": "NVDA-FY2027-Q1-OPERATING-INCOME",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::adffe1caab3f7e8e2f3a03483bee8003"
+      },
+      {
+        "qrel_id": "NVDA-FY2027-Q1-OCF",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::019be0aee0186fc9c8d14311940b0d8e"
+      },
+      {
+        "qrel_id": "NVDA-FY2027-Q1-CAPEX",
+        "stratum": "current_interim",
+        "status": "resolved",
+        "fact_count": 1,
+        "exact_match": true,
+        "numeric_fact_id": "NUMFACT::e6f928c4aeeada819f0bbd407011b80c"
+      }
+    ]
+  },
+  "mutation_evaluation": {
+    "checks": {
+      "future_filing_excluded": true,
+      "mu_ytd_ocf_not_mislabeled_as_discrete_quarter": true,
+      "cross_case_unknown_entity_rejected": true,
+      "same_period_margin_trace_resolved": true,
+      "same_period_free_cash_flow_trace_resolved": true,
+      "open_period_keeps_same_cadence_comparable_without_stale_ytd": true
+    },
+    "all_pass": true,
+    "derived_examples": {
+      "dell_q1_gross_margin": {
+        "schema_version": "fin_ia_numeric_fact_v1_0",
+        "numeric_fact_id": "NUMFACT::83032788f8e6203a6bc056910ce66942",
+        "fact_request_id": "DERIVED::DELL_Q1_GROSS_MARGIN",
+        "ticker": "DELL",
+        "metric_id": "gross_margin",
+        "value_decimal": "17.75010264130286027097303955111537",
+        "unit": "percent",
+        "unit_family": "percentage",
+        "period_start": "2026-01-31",
+        "period_end": "2026-05-01",
+        "period_role": "quarter_discrete",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q1",
+        "research_as_of": "2026-08-06",
+        "authority_mode": "deterministically_derived_numeric_fact",
+        "accession_numbers": [
+          "0001571996-26-000030"
+        ],
+        "accepted_at": "2026-06-09T20:11:41+00:00",
+        "source_observation_ids": [
+          "CFOBS::208f880307e9ed19ba1c49a271c94b43",
+          "CFOBS::b0b33a0a8289894bd46e6ceeeb7a1e0e"
+        ],
+        "citation_urls": [
+          "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm"
+        ],
+        "source_digests": [
+          "7da3fa0e119569fad6e9e2bb7701822bd93cd3aac86951e8519331d2e24325cf",
+          "c98225ef04c692e4489ea48f8812347cc4dff4e4ce0443ee8cd5c81393341ba7"
+        ],
+        "formula_trace": {
+          "formula": "gross_profit / revenue * 100",
+          "operation": "divide_percent",
+          "input_numeric_fact_ids": [
+            "NUMFACT::16c1846446dafb0b73f7facd5c266d64",
+            "NUMFACT::dfa95108ed25e99a14a58b302ecabf6b"
+          ],
+          "input_metrics": [
+            "gross_profit",
+            "revenue"
+          ]
+        },
+        "numeric_fact_authority": true
+      },
+      "dell_q1_free_cash_flow": {
+        "schema_version": "fin_ia_numeric_fact_v1_0",
+        "numeric_fact_id": "NUMFACT::e76b8cfe9a493ff671e24228b2b8220b",
+        "fact_request_id": "DERIVED::DELL_Q1_FREE_CASH_FLOW",
+        "ticker": "DELL",
+        "metric_id": "free_cash_flow",
+        "value_decimal": "3118000000",
+        "unit": "USD",
+        "unit_family": "currency",
+        "period_start": "2026-01-31",
+        "period_end": "2026-05-01",
+        "period_role": "quarter_discrete",
+        "fiscal_year": 2027,
+        "fiscal_period": "Q1",
+        "research_as_of": "2026-08-06",
+        "authority_mode": "deterministically_derived_numeric_fact",
+        "accession_numbers": [
+          "0001571996-26-000030"
+        ],
+        "accepted_at": "2026-06-09T20:11:41+00:00",
+        "source_observation_ids": [
+          "CFOBS::20993783281c052123c1d30c9a053bbd",
+          "CFOBS::eb815bda81f7ad6f502301e386c6f633"
+        ],
+        "citation_urls": [
+          "https://www.sec.gov/Archives/edgar/data/1571996/000157199626000030/dell-20260501.htm"
+        ],
+        "source_digests": [
+          "7da3fa0e119569fad6e9e2bb7701822bd93cd3aac86951e8519331d2e24325cf",
+          "c98225ef04c692e4489ea48f8812347cc4dff4e4ce0443ee8cd5c81393341ba7"
+        ],
+        "formula_trace": {
+          "formula": "operating_cash_flow - capital_expenditures",
+          "operation": "subtract",
+          "input_numeric_fact_ids": [
+            "NUMFACT::82ccc4180d97ad9bc4c04af274f6d0e5",
+            "NUMFACT::6240221a3440d62219c6874e66f199ea"
+          ],
+          "input_metrics": [
+            "operating_cash_flow",
+            "capital_expenditures"
+          ]
+        },
+        "numeric_fact_authority": true
+      }
+    }
+  },
+  "acceptance": {
+    "latest_fiscal_year_9_of_9": true,
+    "current_interim_15_of_15": true,
+    "all_qrels_exact": true,
+    "mutations_pass": true,
+    "network_calls": 0,
+    "model_calls": 0,
+    "candidate_or_metric_row_grants_numeric_authority": false
+  },
+  "known_boundary": "This engineering gate authorizes source-bound company NumericFact lookup for the three current cases. It does not promote narrative candidates to Evidence, provide PIT market valuation, close S1 source gaps, or prove S3 research quality."
+}

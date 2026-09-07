@@ -1,0 +1,473 @@
+{
+  "schema_version": "fin_ia_dell_report_evidence_admission_program_v1_1",
+  "program_id": "DELL-RSQ-02A-R2",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "successor_lineage": {
+    "program_id": "DELL-RSQ-02A-R2",
+    "predecessor_attempt": "DELL-RSQ-02A-R1",
+    "predecessor_commit": "581c1d6e89f27981298d8fd9379bf53b40dc488c",
+    "predecessor_verdict": "FAIL",
+    "predecessor_audit_digest": "061cd35cbf624e8a7f84b379466396e0870f122799627107afc6ae9541d4a3ea",
+    "same_stage_root_cause_ids": [
+      "RC-S1-066-DELL-02A-nested-population-not-recounted",
+      "RC-S1-067-DELL-02A-report-claim-use-semantic-padding"
+    ],
+    "predecessor_overwrite_forbidden": true,
+    "qualified_human_decisions_carried_forward": 0
+  },
+  "expected_scope": {
+    "request_count": 8,
+    "candidate_review_item_count": 18,
+    "all_human_required_item_count": 16,
+    "blocked_request_count": 4,
+    "blocked_request_human_item_count": 8
+  },
+  "readiness_blocker_request_ids": [
+    "REQ::e17c40f93e25438950673210",
+    "REQ::081c06389f9dcb8487886b57",
+    "REQ::273bf40c53d28f49de438b41",
+    "REQ::c21c10d6e8f13263cf69ffa5"
+  ],
+  "expected_review_item_inventory_by_request": {
+    "REQ::fb06661b946711fc3b334146": {
+      "CANDOBJ::224717EF1BE75160C9B8551C": [
+        "e03184947dc71c8a679cf4cb3a30a80506ca00f0395882b0b15c81bf8929d002",
+        false
+      ],
+      "CANDOBJ::0381BE87C0EE31414BA6EA4E": [
+        "0bd1c306dbd895bfc7eac7bfe1a457c986e9ce18b5771e6ae48bb416a7110f22",
+        true
+      ],
+      "CANDOBJ::D7A996F5F40E35C760851932": [
+        "b594920f4f80823c725aa0cdb99e15df69d28ac6c7278650ebe134c525c626a4",
+        true
+      ]
+    },
+    "REQ::eb2e808dd2e48b4fe7474223": {
+      "CANDOBJ::C65DFBE229D71DEFB12E15E9": [
+        "bd4680084c81cd600dbe8ed86d60098789f2266ca010993150ce900d83c8569b",
+        false
+      ],
+      "CANDOBJ::040A820BE15FD0CEAF83C0AD": [
+        "ebc02f66b559e1631f29488e3a5e237da4939fba2ef3a28309c4764678ee2feb",
+        true
+      ],
+      "CANDOBJ::E9A0B4076252D3978B8DAB73": [
+        "5a83aa396988f3d2a14f2a1ef3e7d3fa80c12bce6e69f61d1f027a7cd11f1688",
+        true
+      ]
+    },
+    "REQ::e17c40f93e25438950673210": {
+      "CANDOBJ::E591113506AF79306D11D8AD": [
+        "3674c9ed006637a3771df271f067358530f50e00fc34af67a5a293a809e0b0a2",
+        true
+      ],
+      "CANDOBJ::8EDA130D7FDA0F0B66BA53B5": [
+        "ae21569fc5bd4876aa286f45f4a37465293497bd30dffedda98bc27b515f5f3c",
+        true
+      ]
+    },
+    "REQ::081c06389f9dcb8487886b57": {
+      "CANDOBJ::51BFECDF1794E6CE42A7B2CE": [
+        "09cddcda4bfdd2c53889d6b9cea118818b665f11483f47582849e406c3260e69",
+        true
+      ],
+      "CANDOBJ::C20F9F784D691747A36DADC3": [
+        "85c4d56d66c0c5e5f44f1444380a866ce96f9f26550312b9d40a6a9d0a067df6",
+        true
+      ]
+    },
+    "REQ::273bf40c53d28f49de438b41": {
+      "CANDOBJ::6E0870ECD8935A2BE7A6110F": [
+        "e2d5cf130dcacf1dac526c0b44846178797978a965d4bb01c997c3262348df89",
+        true
+      ],
+      "CANDOBJ::E56F86F06307372B2F18FA97": [
+        "8fa6a5bea5271cf7827728c61d5915a000ac54c84d90e825fcaadf10d3b467ef",
+        true
+      ]
+    },
+    "REQ::c21c10d6e8f13263cf69ffa5": {
+      "CANDOBJ::27FD9953E64ED8DF1F3B2428": [
+        "a2364d9afdff35d1c050708366560561cf11f9bd4bf77c485589bbe5bf4c4dd7",
+        true
+      ],
+      "CANDOBJ::9A29D551F01388C5C785FF82": [
+        "5a368493e2e560911847346d3c724773af7601f3735040a03feb07f3d8433763",
+        true
+      ]
+    },
+    "REQ::07e898259cfe6b2e12d7f82c": {
+      "CANDOBJ::0B13DC6BFDAF674340B451BC": [
+        "b813c1005b5854dc1422dcdc1ceef128403320ef0fea5539272761cb6a2b06cd",
+        true
+      ],
+      "CANDOBJ::884E327B61E2F4DCB0788D95": [
+        "5e5a3316586074463b1b35322a22980a1cfcf58c5879e650acbde88e33319b48",
+        true
+      ]
+    },
+    "REQ::39d61ebcc0dad17a756c1cac": {
+      "CANDOBJ::D7769F8FD29DE6807D0B57F6": [
+        "6f5e8565ef221147685cd6b6bd9d715a75ffb45a053726e3b0bab3f017c7396a",
+        true
+      ],
+      "CANDOBJ::C250AD7345231BD7C1DF0CBB": [
+        "f25a6f642033764f55d601441f0468a3e47a8ece8ab7b3f69042a748fb495293",
+        true
+      ]
+    }
+  },
+  "input_bindings": {
+    "G1_independent_audit": {
+      "ref": "configs/audits/fin_ia_0_1_3_commit_7ba8bb2a_dell_rsq_r3_fresh_final_audit_pass_v1_0.json",
+      "sha256": "9429d75f101097da5e48815e8a0fab8ffb8966a38c4f5dd499eb5df1c4b27189",
+      "digest_field": "result_digest",
+      "digest": "4f28008ea1a15a9813ec0ac22ec5e8219519de9c3195cf6b6928d0c6c1542dd4"
+    },
+    "G1_crosswalk_public": {
+      "ref": "configs/research/evals/fin_ia_0_1_3_dell_report_gap_crosswalk_result_v1_2.json",
+      "sha256": "990972fc1acb62696f0bebbc12713e100597271ec562424296cf8d220ff577f5",
+      "digest_field": "result_digest",
+      "digest": "afc37e760cd88c107365e727d10b53694b299f93c4245cf90110775ec22676e2"
+    },
+    "current_readiness_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_7.json",
+      "sha256": "67a65f8efbde97bef20e2cc2ff8439e30eb3fac4ddeb2680c369d67f1361b19b",
+      "digest_field": "result_digest",
+      "digest": "bd6d652cc4b9551fc3d046724702d57b62beb56bfd76f6131c4513a4c805e40f"
+    },
+    "current_readiness_private": {
+      "ref": "data/workbench_private/fin_0_1_3_s1_current_product_readiness/dell-r9/full_result.json",
+      "sha256": "c6af46811dd9f85487eface3c2e49aaafd22a4b7b2c7fa2960b75c9670b0db42",
+      "digest_field": "result_digest",
+      "digest": "2f09b9832d09ce1600f5ef403499e25fbb83ab5cf40079681be42aaa2e2c7665"
+    },
+    "R17_private_report": {
+      "ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-reversal-gate-r17/full_result.json",
+      "sha256": "433b2c486f8753d4f0b2468aa66f21c0ef2ff0e4bcc7d9347233e239b30ec0e8",
+      "digest_field": "full_result_digest",
+      "digest": "3be5a5453c8cf18cf5a14f7b7de7535b8d8c64367275e2f509dc0849db587743"
+    },
+    "immutable_execution_program": {
+      "ref": "docs/architecture/research/FIN_0_1_3_DELL_SOURCE_CLOSURE_MODEL_AND_REPORT_QUALITY_EXECUTION_PROGRAM_20260825.zh-CN.md",
+      "sha256": "5bbb52691fd183bae5c61c6d6dd1b119544e76ffa2625a42dcb1297bd1ae4f0d"
+    },
+    "R1_failed_audit": {
+      "ref": "configs/audits/fin_ia_0_1_3_commit_581c1d6e_dell_02a_03a_fresh_audit_fail_v1_0.json",
+      "sha256": "892e11be5ac74ae1191e19a6012a41b6f44cb66103836e3a4d10e7edd03260e4",
+      "digest_field": "result_digest",
+      "digest": "061cd35cbf624e8a7f84b379466396e0870f122799627107afc6ae9541d4a3ea"
+    },
+    "R1_admission_program": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_evidence_admission_program_v1_0.json",
+      "sha256": "4ebebcd60ca276d0d188013cc6d1ceec41e83585348365e5b61861a5f9cf02ee",
+      "digest_field": "program_digest",
+      "digest": "60fd30e57fa588837fd72025aa74ca96e96e5f468e5649fb18c211df08b0776b"
+    },
+    "R1_admission_public": {
+      "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_evidence_admission_manifest_v1_0.json",
+      "sha256": "5af6e9b4028c0ba02642733330db9a8f6ff564073e9d116b984710ba8b3f7306",
+      "digest_field": "result_digest",
+      "digest": "199b5d56e7ea419268a56deb333e66fa8c06f46000d3e53c5cab1e10340edcb2"
+    },
+    "R1_admission_private": {
+      "ref": "data/workbench_private/fin_0_1_3_dell_report_evidence_admission/dell-r1/full_result.json",
+      "sha256": "895d340ebdd9e79f4aa8b46344aaf925ed83ead5aa50c3310d946f07cd7ef0f7",
+      "digest_field": "full_result_digest",
+      "digest": "d5494b4ea30653792f3d7daf6efab00c0b9dbbcdee09a32f6040c553e9e9950a"
+    }
+  },
+  "item_claim_use_policies": [
+    {
+      "review_item_ref": "CANDOBJ::0381BE87C0EE31414BA6EA4E",
+      "review_item_digest": "0bd1c306dbd895bfc7eac7bfe1a457c986e9ce18b5771e6ae48bb416a7110f22",
+      "review_recommendation": "consider_bounded_context",
+      "material_use_class": "historical_same_company_timing_context",
+      "report_claim_refs": [
+        "WPCLAIM::653D7E95ECA46E262391",
+        "WPCLAIM::DFDFF241544B90012DA1"
+      ],
+      "report_surface_paths": [
+        "trusted_report.sections[0].clauses[3]"
+      ],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-Q",
+      "source_period_end": "2025-10-31",
+      "period_relationship": "historical_interim_context_not_current_quarter_fact",
+      "basis_alignment": "issuer_timing_nonlinearity_context_only",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "Dell's own non-linearity disclosure may limit claims that backlog or current orders imply a smooth shipment and revenue conversion path.",
+      "forbidden_inference": "Do not infer cancellation rate, backlog aging, delivery cohort conversion, or causal demand weakness from non-linearity alone."
+    },
+    {
+      "review_item_ref": "CANDOBJ::D7A996F5F40E35C760851932",
+      "review_item_digest": "b594920f4f80823c725aa0cdb99e15df69d28ac6c7278650ebe134c525c626a4",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-Q",
+      "source_period_end": "2025-10-31",
+      "period_relationship": "historical_interim_unrelated_to_customer_conversion",
+      "basis_alignment": "supplier_purchase_order_timing_not_customer_order_conversion",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because supplier purchase order timing not customer order conversion.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    },
+    {
+      "review_item_ref": "CANDOBJ::040A820BE15FD0CEAF83C0AD",
+      "review_item_digest": "ebc02f66b559e1631f29488e3a5e237da4939fba2ef3a28309c4764678ee2feb",
+      "review_recommendation": "recommend_rebind_duplicate_to_canonical_candidate",
+      "material_use_class": "duplicate_source_no_separate_report_citation",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "as_of_valid_risk_disclosure_duplicate",
+      "basis_alignment": "exact_duplicate_source_reserved_for_canonical_counterevidence_item",
+      "duplicate_of_review_item_ref": "CANDOBJ::0B13DC6BFDAF674340B451BC",
+      "alignment_hypothesis": "This review item is an exact source/object/surface duplicate and should be rebound to the canonical counterevidence candidate rather than create a second report citation.",
+      "forbidden_inference": "Do not admit or cite this duplicate as separate Evidence; the qualified human must rebind or reject it without duplicating source authority."
+    },
+    {
+      "review_item_ref": "CANDOBJ::E9A0B4076252D3978B8DAB73",
+      "review_item_digest": "5a83aa396988f3d2a14f2a1ef3e7d3fa80c12bce6e69f61d1f027a7cd11f1688",
+      "review_recommendation": "consider_bounded_context",
+      "material_use_class": "historical_same_company_backlog_context",
+      "report_claim_refs": [
+        "WPCLAIM::653D7E95ECA46E262391"
+      ],
+      "report_surface_paths": [
+        "trusted_report.sections[0].clauses[3]"
+      ],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "historical_annual_context_not_current_quarter_order_fact",
+      "basis_alignment": "issuer_backlog_history_context_without_conversion_inference",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "Issuer disclosure supports observed AI-server backlog growth while preserving a separate need to test conversion durability.",
+      "forbidden_inference": "Backlog growth does not establish non-cancelability, delivery timing, customer breadth, recognized revenue, or durable end demand."
+    },
+    {
+      "review_item_ref": "CANDOBJ::E591113506AF79306D11D8AD",
+      "review_item_digest": "3674c9ed006637a3771df271f067358530f50e00fc34af67a5a293a809e0b0a2",
+      "review_recommendation": "consider_bounded_context",
+      "material_use_class": "historical_same_company_mix_context",
+      "report_claim_refs": [
+        "WPCLAIM::2339C903BA4B36F0C033"
+      ],
+      "report_surface_paths": [
+        "trusted_report.sections[2].clauses[0]"
+      ],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-Q",
+      "source_period_end": "2025-10-31",
+      "period_relationship": "historical_interim_mix_context_not_current_quarter_bridge",
+      "basis_alignment": "issuer_mix_explanation_not_ASP_units_PVM_or_product_profit",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "Dell's mix explanation can support the direction of gross-margin pressure and limit a product pricing-power inference.",
+      "forbidden_inference": "Do not turn a consolidated or segment mix explanation into AI-server ASP, unit, product profit, or price-volume-mix attribution."
+    },
+    {
+      "review_item_ref": "CANDOBJ::8EDA130D7FDA0F0B66BA53B5",
+      "review_item_digest": "ae21569fc5bd4876aa286f45f4a37465293497bd30dffedda98bc27b515f5f3c",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "annual_segment_row_not_current_quarter_company_or_product_fact",
+      "basis_alignment": "reportable_segment_operating_income_not_company_bridge_or_AI_product_profit",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because reportable segment operating income not company bridge or AI product profit.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    },
+    {
+      "review_item_ref": "CANDOBJ::51BFECDF1794E6CE42A7B2CE",
+      "review_item_digest": "09cddcda4bfdd2c53889d6b9cea118818b665f11483f47582849e406c3260e69",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "annual_consolidated_row_not_current_quarter_fact",
+      "basis_alignment": "annual_company_results_do_not_support_Q1_FY2027_claims_or_product_attribution",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because annual company results do not support Q1 FY2027 claims or product attribution.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    },
+    {
+      "review_item_ref": "CANDOBJ::C20F9F784D691747A36DADC3",
+      "review_item_digest": "85c4d56d66c0c5e5f44f1444380a866ce96f9f26550312b9d40a6a9d0a067df6",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "annual_non_GAAP_row_not_current_quarter_GAAP_bridge",
+      "basis_alignment": "non_GAAP_annual_gross_margin_not_Q1_FY2027_GAAP_signed_bridge",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because non GAAP annual gross margin not Q1 FY2027 GAAP signed bridge.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    },
+    {
+      "review_item_ref": "CANDOBJ::6E0870ECD8935A2BE7A6110F",
+      "review_item_digest": "e2d5cf130dcacf1dac526c0b44846178797978a965d4bb01c997c3262348df89",
+      "review_recommendation": "consider_definition_boundary",
+      "material_use_class": "same_issuer_non_GAAP_definition_boundary",
+      "report_claim_refs": [
+        "WPCLAIM::B9FB00649A060D443976"
+      ],
+      "report_surface_paths": [
+        "trusted_report.sections[3].clauses[0]"
+      ],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "as_of_valid_definition_not_numeric_period_fact",
+      "basis_alignment": "FCF_non_GAAP_definition_boundary_only",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "The issuer's non-GAAP definition boundary can prevent free cash flow from being presented as a GAAP line or product cash result.",
+      "forbidden_inference": "Do not treat the definition statement alone as a numeric free-cash-flow observation or AI cash conversion."
+    },
+    {
+      "review_item_ref": "CANDOBJ::E56F86F06307372B2F18FA97",
+      "review_item_digest": "8fa6a5bea5271cf7827728c61d5915a000ac54c84d90e825fcaadf10d3b467ef",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "wrong_cash_flow_row_no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "annual_financing_cash_flow_row_not_current_quarter_OCF_or_FCF",
+      "basis_alignment": "financing_cash_flow_cannot_support_operating_cash_flow_free_cash_flow_or_product_cash_conversion",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because financing cash flow cannot support operating cash flow free cash flow or product cash conversion.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    },
+    {
+      "review_item_ref": "CANDOBJ::27FD9953E64ED8DF1F3B2428",
+      "review_item_digest": "a2364d9afdff35d1c050708366560561cf11f9bd4bf77c485589bbe5bf4c4dd7",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "generic_accounting_policy_no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "as_of_valid_policy_without_measured_current_period_change",
+      "basis_alignment": "generic_ECL_policy_not_credit_deterioration_working_capital_or_AI_attribution",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because generic ECL policy not credit deterioration working capital or AI attribution.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    },
+    {
+      "review_item_ref": "CANDOBJ::9A29D551F01388C5C785FF82",
+      "review_item_digest": "5a368493e2e560911847346d3c724773af7601f3735040a03feb07f3d8433763",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "stale_period_row_no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-Q",
+      "source_period_end": "2025-10-31",
+      "period_relationship": "nine_month_prior_period_row_not_May_2026_quarter_working_capital",
+      "basis_alignment": "single_receivables_cash_flow_row_not_current_quarter_complete_working_capital_bridge",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because single receivables cash flow row not current quarter complete working capital bridge.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    },
+    {
+      "review_item_ref": "CANDOBJ::0B13DC6BFDAF674340B451BC",
+      "review_item_digest": "b813c1005b5854dc1422dcdc1ceef128403320ef0fea5539272761cb6a2b06cd",
+      "review_recommendation": "consider_risk_counterevidence",
+      "material_use_class": "same_issuer_as_of_valid_risk_counterevidence",
+      "report_claim_refs": [
+        "WPCLAIM::B1BDD811CE1DF55EE55E",
+        "WPCLAIM::E3BFD59CC60F05B1BD7C",
+        "WPCLAIM::FC2C8B1EA97D7EF82311"
+      ],
+      "report_surface_paths": [
+        "trusted_report.sections[4].clauses[0]"
+      ],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "as_of_valid_risk_disclosure_not_realized_loss",
+      "basis_alignment": "issuer_AI_order_working_capital_cancellation_inventory_risk_counterevidence",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "Issuer-owned working-capital, cancellation, and obsolescence risks can qualify the order, customer-concentration, and cash narrative.",
+      "forbidden_inference": "Do not present a disclosed risk as a realized event, current-period loss, cancellation rate, or quantified concentration."
+    },
+    {
+      "review_item_ref": "CANDOBJ::884E327B61E2F4DCB0788D95",
+      "review_item_digest": "5e5a3316586074463b1b35322a22980a1cfcf58c5879e650acbde88e33319b48",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "generic_strategy_risk_no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "DELL",
+      "source_type": "10-K",
+      "source_period_end": "2026-01-30",
+      "period_relationship": "generic_as_of_risk_without_AI_event_or_threshold",
+      "basis_alignment": "generic_inventory_management_language_not_AI_impairment_cancellation_or_realized_loss",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because generic inventory management language not AI impairment cancellation or realized loss.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    },
+    {
+      "review_item_ref": "CANDOBJ::D7769F8FD29DE6807D0B57F6",
+      "review_item_digest": "6f5e8565ef221147685cd6b6bd9d715a75ffb45a053726e3b0bab3f017c7396a",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "unbridged_cross_company_context_no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "MSFT",
+      "source_type": "10-Q",
+      "source_period_end": "2026-03-31",
+      "period_relationship": "other_company_current_period_without_Dell_relationship_bridge",
+      "basis_alignment": "Microsoft_component_risk_not_NVIDIA_export_control_hyperscaler_or_Dell_fact",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because Microsoft component risk not NVIDIA export control hyperscaler or Dell fact.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    },
+    {
+      "review_item_ref": "CANDOBJ::C250AD7345231BD7C1DF0CBB",
+      "review_item_digest": "f25a6f642033764f55d601441f0468a3e47a8ece8ab7b3f69042a748fb495293",
+      "review_recommendation": "recommend_reject_no_current_material_report_use",
+      "material_use_class": "unbridged_cross_company_context_no_current_material_report_use",
+      "report_claim_refs": [],
+      "report_surface_paths": [],
+      "source_owner_ticker": "MU",
+      "source_type": "10-Q",
+      "source_period_end": "2026-05-28",
+      "period_relationship": "other_company_current_period_without_Dell_relationship_bridge",
+      "basis_alignment": "Micron_equipment_supplier_dependency_not_Dell_HBM_allocation_delivery_or_NVIDIA_claim",
+      "duplicate_of_review_item_ref": null,
+      "alignment_hypothesis": "No current material R17 use is demonstrated because Micron equipment supplier dependency not Dell HBM allocation delivery or NVIDIA claim.",
+      "forbidden_inference": "Do not cite, promote, or use this candidate for a current R17 claim unless a qualified human supplies a new exact-period, basis-aligned rebind."
+    }
+  ],
+  "decision_boundary": {
+    "author_recommendation_is_not_qualified_human_decision": true,
+    "qualified_human_must_decide_all_sixteen_items": true,
+    "empty_claim_set_is_required_for_no_current_material_report_use": true,
+    "citation_padding_forbidden": true,
+    "model_or_harness_decision_authority": false,
+    "candidate_or_evidence_promotion_authority": false,
+    "network_provider_model_embedding_reranker_authority": false
+  },
+  "program_digest": "0b34d8f68115b1c43af6a9a77af7dba7db883d59ffb2f9d45a59d8c00eafb267"
+}

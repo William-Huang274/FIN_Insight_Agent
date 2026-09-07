@@ -1,0 +1,99 @@
+{
+  "schema_version": "fin_ia_s3_bounded_finance_loop_live_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "recorded_at": "2026-08-15T16:29:15+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_micro_judgment_chat_live_authority_v1_0.json",
+  "authority_sha256": "8899e9e35ea08d8f76f54f2f795e40591c8af5672d1b806dda9113e99b83a07b",
+  "implementation_commit": "8ed2d5c0197787054498c7a5ec5c8fcc27f132e3",
+  "case_key": "DELL",
+  "required_cell_ids": [
+    "CELL::value_capture"
+  ],
+  "research_input_digest": "783de9eafec8bef8b14c8a5761bf7ce42a52b31ff7e68ea1505b264d4ea7d274",
+  "execution": {
+    "model_calls_attempted": 2,
+    "maximum_model_calls": 4,
+    "retries": 0,
+    "fallbacks": 0,
+    "planner_calls": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "tool_choice_sent": false,
+    "product_publication": false
+  },
+  "provider_steps": [
+    {
+      "step_index": 1,
+      "finish_reason": "tool_calls",
+      "tool_names": [
+        "read_reviewed_evidence_for_cell",
+        "read_numeric_facts_for_cell"
+      ],
+      "usage": {
+        "prompt_tokens": 1624,
+        "completion_tokens": 122,
+        "total_tokens": 1746,
+        "prompt_tokens_details": {
+          "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+          "reasoning_tokens": 25
+        },
+        "prompt_cache_hit_tokens": 0,
+        "prompt_cache_miss_tokens": 1624
+      },
+      "request_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_micro_judgment_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-MICRO-JUDGMENT-CHAT-R3/MICRO-STEP-01-ATTEMPT-01/model_visible_request.json",
+      "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_micro_judgment_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-MICRO-JUDGMENT-CHAT-R3/MICRO-STEP-01-ATTEMPT-01/provider_response.json",
+      "request_digest": "73a2a9be1bb67950711be8e6dac236cd6d1040d6f9ba14fb3b3bd3c8b93136e7",
+      "response_digest": "13b8a7608beac798d4bc5bcf240794d38977855892b6b1f8e34301f3574a97c2",
+      "reasoning_content_persisted": false
+    }
+  ],
+  "node_profile_selections": [
+    {
+      "step_index": 1,
+      "node_class": "tool_routing",
+      "profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_micro_read_profile_v1_0.json",
+      "profile_sha256": "b0eb9c0cdbd1521e9c75c043c10f44230dccb6f3822b8f2b7d0db2591ab0b05f",
+      "reasoning_effort": "low",
+      "max_tokens": 2000,
+      "active_tool_names": [
+        "read_reviewed_evidence_for_cell",
+        "read_numeric_facts_for_cell"
+      ]
+    },
+    {
+      "step_index": 2,
+      "node_class": "bounded_financial_judgment",
+      "profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_micro_judgment_profile_v1_0.json",
+      "profile_sha256": "d6284797428a3b762406c55fd88b6feda65523a24c20c269cbc2eb593a703307",
+      "reasoning_effort": "high",
+      "max_tokens": 8000,
+      "active_tool_names": [
+        "submit_research_thesis"
+      ]
+    }
+  ],
+  "accepted_receipt_count": 2,
+  "accepted_receipt_refs": [
+    "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-micro-judgment-chat-r3/receipt-01-step-01.json",
+    "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-micro-judgment-chat-r3/receipt-02-step-01.json"
+  ],
+  "tool_counts": {},
+  "deliverable_digest": "",
+  "failure_phase": "provider_transport_or_response",
+  "failure_code": "model_gateway_reasoning_budget_exhausted",
+  "failure_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_micro_judgment_chat_successor/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-MICRO-JUDGMENT-CHAT-R3/MICRO-STEP-02-ATTEMPT-01/provider_response.json",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-micro-judgment-chat-r3/full_result.json",
+  "full_result_sha256": "60fcc7caab64c93770b13b2189c54dbf5cfeb2a61a64db93b2b646ed2e28f5a5",
+  "acceptance": {
+    "standard_tool_transport_and_local_contract_pass": false,
+    "required_evidence_and_numeric_reads_enforced": true,
+    "content_assessment_pending": false,
+    "five_cell_live_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false
+  },
+  "known_boundary": "This authority permits exactly one new DeepSeek v4 Pro GA Chat Completions fixed-Pack micro-judgment successor for DELL CELL::value_capture on the immutable R2 research input. It permits one mandatory parallel Evidence/NumericFact read step and exactly three ordered model-owned judgment fragments, at most four provider attempts and five tool calls, with zero EvidenceRequest, retry, fallback, retrieval, embedding, protocol switch or product publication. Passing transport and contract does not itself establish L1, content quality, fixed-Pack Layer One acceptance, dynamic Agentic Research, five-cell execution, S3 acceptance or release.",
+  "result_digest": "58e869ca411064052cf458e8eae114bc10b81c066d748cf4b4ec62ea66525ad4"
+}

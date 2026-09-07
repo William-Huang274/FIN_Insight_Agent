@@ -1,0 +1,382 @@
+{
+  "schema_version": "fin_ia_s1_external_source_ladder_successor_spec_v1_0",
+  "successor_id": "FIN-0.1.3-S1-DELL-EXTERNAL-SOURCE-LADDER-R2",
+  "status": "approved_bounded_replay_and_residual_external_successor",
+  "recorded_at": "2026-08-22",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "purpose": "Preserve all successful R1 locator work, repair source-family, source-tier, date and block-relevance contracts, and add only proposition-specific residual queries for price, volume, supply chain and value pool.",
+  "predecessor_binding": {
+    "plan_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_external_source_ladder_plan_v1_0.json",
+    "plan_sha256": "a10170b5b7b6a1249f6b6c68e965875c31bdb6a3d88b45e363cdfadac5070a53",
+    "plan_digest": "782e810a8f097c5f265c03633fa404db8a492ea490024121bb34823fb202284a",
+    "public_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_external_source_ladder_result_v1_0.json",
+    "public_result_sha256": "9cd908fc2b2aa61c971493a2b706750a26397292e1dfae198430075139e48ddf",
+    "public_result_digest": "863bd22c0ef20f9e77afa644f5383c155cc27715a25e175a3c5211afbecb479c",
+    "private_result_ref": "data/workbench_private/fin_0_1_3_s1_dell_external_source_ladder/dell-external-ladder-r1/terminal_result.json",
+    "private_result_sha256": "090594455f07e2d3b57d55720c4b4552934a1b497e8d9a0532ea13bbce67b618"
+  },
+  "replay_query_unit_ids": [
+    "DELL-EXT-PRICE-OFFICIAL",
+    "DELL-EXT-PRICE-INDUSTRY",
+    "DELL-EXT-PRICE-PRODUCT",
+    "DELL-EXT-PRICE-COUNTER",
+    "DELL-EXT-VOLUME-OFFICIAL",
+    "DELL-EXT-VOLUME-INDUSTRY",
+    "DELL-EXT-VOLUME-DEPLOYMENT",
+    "DELL-EXT-VOLUME-COUNTER",
+    "DELL-EXT-PVM-OFFICIAL",
+    "DELL-EXT-PVM-INDUSTRY",
+    "DELL-EXT-PVM-PRODUCT",
+    "DELL-EXT-PVM-COUNTER",
+    "DELL-EXT-DEMAND-OFFICIAL",
+    "DELL-EXT-DEMAND-INDUSTRY",
+    "DELL-EXT-DEMAND-DEPLOYMENT",
+    "DELL-EXT-DEMAND-COUNTER",
+    "DELL-EXT-SUPPLY-OFFICIAL",
+    "DELL-EXT-SUPPLY-INDUSTRY",
+    "DELL-EXT-SUPPLY-DEPLOYMENT",
+    "DELL-EXT-SUPPLY-COUNTER",
+    "DELL-EXT-VALUE-OFFICIAL",
+    "DELL-EXT-VALUE-INDUSTRY",
+    "DELL-EXT-VALUE-PRODUCT",
+    "DELL-EXT-VALUE-COUNTER",
+    "DELL-EXT-COUNTER-OFFICIAL",
+    "DELL-EXT-COUNTER-INDUSTRY",
+    "DELL-EXT-COUNTER-DEPLOYMENT",
+    "DELL-EXT-COUNTER-TRUSTED"
+  ],
+  "execution_budget": {
+    "provider_call_ceiling": 15,
+    "original_fetch_ceiling": 48,
+    "original_fetch_ceiling_per_query": 2,
+    "original_fetch_ceiling_per_domain": 5,
+    "result_ceiling_per_call": 10,
+    "provider_timeout_seconds": 30,
+    "original_fetch_timeout_seconds": 45,
+    "original_fetch_byte_ceiling": 12582912,
+    "retry_ceiling": 0,
+    "model_call_ceiling": 0
+  },
+  "token_budget_basis": {
+    "model_tokens": 0,
+    "node_purpose": "Replay the 28 immutable R1 locator bundles under corrected source-family and source-tier controls, then locate only residual price, volume, supply and value inputs not covered by R1.",
+    "input_scale_basis": "Twenty-eight replayed query units plus fifteen residual source-targeted queries, at most ten locator rows per new query and at most forty-eight selected originals across all source families.",
+    "required_outputs": [
+      "digest-verified R1 locator replay receipts",
+      "safe request and raw response capture for each residual provider call",
+      "source-family and source-tier rejection receipts",
+      "reused immutable original captures or new capture-first original responses",
+      "original-source date receipts",
+      "block-level proposition candidate proposals with identity and material signal hits"
+    ],
+    "schema_burden": "R1 locator and original lineage must remain immutable; every R2 source has one registry family, allowed ladder tiers, speaker, relationship direction, original date and candidate-only authority.",
+    "materiality_and_quality_risk": "Wrong-tier pages, duplicate host budgets, navigation-tail matches or undercovered supplier and value routes can create false evidence readiness or false public-information gaps.",
+    "comparable_run_evidence": "R1 completed 28 of 28 locator calls but yielded only five source objects; eleven same-source redirects were rejected, four dates were unresolved, and supply/value routes produced no compiled source objects.",
+    "reasoning_profile": "Deterministic AI-free replay, source selection, original capture, parse and block relevance; no generation model.",
+    "stop_and_truncation_behavior": "Never repeat an R1 provider call; execute each residual query once with zero retry; reuse verified original captures; stop at family and global original-fetch ceilings; preserve every partial failure without declaring an information gap.",
+    "cost_and_latency_are_secondary_constraints": true
+  },
+  "source_role_tier_policy": {
+    "issuer_product_or_ir_primary": ["official_subject_regulator_customer_supplier", "product_procurement_channel_deployment"],
+    "issuer_ir_primary": ["official_subject_regulator_customer_supplier"],
+    "customer_or_hyperscaler_primary": ["official_subject_regulator_customer_supplier", "product_procurement_channel_deployment"],
+    "hyperscaler_primary": ["official_subject_regulator_customer_supplier"],
+    "upstream_gpu_primary": ["official_subject_regulator_customer_supplier"],
+    "upstream_hbm_primary": ["official_subject_regulator_customer_supplier"],
+    "upstream_foundry_packaging_primary": ["official_subject_regulator_customer_supplier"],
+    "competitor_primary": ["official_subject_regulator_customer_supplier"],
+    "industry_market_tracker": ["industry_association_market_tracking"],
+    "industry_association": ["industry_association_market_tracking"],
+    "public_procurement_primary": ["product_procurement_channel_deployment"],
+    "channel_product_primary": ["product_procurement_channel_deployment"],
+    "trusted_media_context": ["trusted_context_analyst_counterevidence"],
+    "channel_media_context": ["trusted_context_analyst_counterevidence"],
+    "technical_product_context": ["trusted_context_analyst_counterevidence"],
+    "industry_media_context": ["trusted_context_analyst_counterevidence"],
+    "technology_media_context": ["trusted_context_analyst_counterevidence"],
+    "technical_industry_analysis_context": ["trusted_context_analyst_counterevidence"],
+    "business_media_context": ["trusted_context_analyst_counterevidence"],
+    "semiconductor_industry_media_context": ["trusted_context_analyst_counterevidence"],
+    "channel_configuration_price_proxy": ["product_procurement_channel_deployment"]
+  },
+  "source_registry_additions": [
+    {
+      "host": "nextplatform.com",
+      "speaker_entity": "The Next Platform",
+      "speaker_ticker": null,
+      "source_class": "trusted_media_industry_association_or_public_analyst_context",
+      "source_role": "technical_industry_analysis_context",
+      "relationship_directions": ["trusted_technical_analysis_to_value_pool_hypothesis"]
+    },
+    {
+      "host": "fortune.com",
+      "speaker_entity": "Fortune",
+      "speaker_ticker": null,
+      "source_class": "trusted_media_industry_association_or_public_analyst_context",
+      "source_role": "business_media_context",
+      "relationship_directions": ["trusted_business_context_to_research_subject"]
+    },
+    {
+      "host": "eetimes.com",
+      "speaker_entity": "EE Times",
+      "speaker_ticker": null,
+      "source_class": "trusted_media_industry_association_or_public_analyst_context",
+      "source_role": "semiconductor_industry_media_context",
+      "relationship_directions": ["trusted_semiconductor_context_to_supply_hypothesis"]
+    },
+    {
+      "host": "eetasia.com",
+      "speaker_entity": "EE Times Asia",
+      "speaker_ticker": null,
+      "source_class": "trusted_media_industry_association_or_public_analyst_context",
+      "source_role": "semiconductor_industry_media_context",
+      "relationship_directions": ["trusted_semiconductor_context_to_supply_hypothesis"]
+    },
+    {
+      "host": "server-parts.eu",
+      "speaker_entity": "Server Parts Europe",
+      "speaker_ticker": null,
+      "source_class": "named_counterparty_or_standards_primary",
+      "source_role": "channel_configuration_price_proxy",
+      "relationship_directions": ["channel_asking_price_and_configuration_to_research_subject_proxy"]
+    },
+    {
+      "host": "boyutechs.com",
+      "speaker_entity": "Boyu Technology",
+      "speaker_ticker": null,
+      "source_class": "named_counterparty_or_standards_primary",
+      "source_role": "channel_configuration_price_proxy",
+      "relationship_directions": ["channel_asking_price_and_configuration_to_research_subject_proxy"]
+    },
+    {
+      "host": "servnetuk.com",
+      "speaker_entity": "Servnet",
+      "speaker_ticker": null,
+      "source_class": "named_counterparty_or_standards_primary",
+      "source_role": "channel_configuration_price_proxy",
+      "relationship_directions": ["channel_asking_price_and_configuration_to_research_subject_proxy"]
+    }
+  ],
+  "new_query_units": [
+    {
+      "query_unit_id": "DELL-EXT-R2-PRICE-CDW",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge XE9680 XE9685 GPU server configuration quote price 2025 2026",
+      "site": "cdw.com",
+      "expected_output_ids": ["channel_asking_price", "saleable_configuration_example"],
+      "relationship_directions": ["channel_to_research_subject_price_proxy"],
+      "speaker_or_source_targets": ["CDW"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-PRICE-SHI",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge XE9680 XE9685 GPU server configuration quote price 2025 2026",
+      "site": "shi.com",
+      "expected_output_ids": ["channel_asking_price", "saleable_configuration_example"],
+      "relationship_directions": ["channel_to_research_subject_price_proxy"],
+      "speaker_or_source_targets": ["SHI"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-PRICE-BOYU",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge XE9680 XE9685 GPU server configuration asking price",
+      "site": "boyutechs.com",
+      "expected_output_ids": ["channel_asking_price", "saleable_configuration_example"],
+      "relationship_directions": ["channel_to_research_subject_price_proxy"],
+      "speaker_or_source_targets": ["Boyu Technology"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-VOLUME-IDC",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "tier_id": "industry_association_market_tracking",
+      "query": "AI server shipments units Dell market share accelerated servers 2025 2026",
+      "site": "idc.com",
+      "expected_output_ids": ["industry_unit_volume", "dell_share_or_bounded_unit_proxy"],
+      "relationship_directions": ["industry_volume_to_research_subject_proxy"],
+      "speaker_or_source_targets": ["IDC"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-VOLUME-TRENDFORCE",
+      "proposition_id": "DELL-PROP-UNIT-VOLUME",
+      "tier_id": "industry_association_market_tracking",
+      "query": "AI server shipments units Dell market share 2025 2026",
+      "site": "trendforce.com",
+      "expected_output_ids": ["industry_unit_volume", "dell_share_or_bounded_unit_proxy"],
+      "relationship_directions": ["industry_volume_to_research_subject_proxy"],
+      "speaker_or_source_targets": ["TrendForce"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-SUPPLY-MICRON",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "HBM3E HBM4 capacity shipments supply sold out calendar 2025 2026 official earnings",
+      "site": "micron.com",
+      "expected_output_ids": ["hbm_capacity_and_shipment_timeline", "upstream_supply_release_context"],
+      "relationship_directions": ["upstream_hbm_supplier_to_research_subject_context"],
+      "speaker_or_source_targets": ["Micron Technology"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-SUPPLY-TSMC",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "tier_id": "official_subject_regulator_customer_supplier",
+      "query": "CoWoS advanced packaging capacity expansion 2025 2026 official earnings transcript",
+      "site": "tsmc.com",
+      "expected_output_ids": ["advanced_packaging_capacity_timeline", "upstream_supply_release_context"],
+      "relationship_directions": ["upstream_foundry_packaging_to_research_subject_context"],
+      "speaker_or_source_targets": ["TSMC"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-SUPPLY-TRENDFORCE",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "tier_id": "industry_association_market_tracking",
+      "query": "HBM CoWoS advanced packaging capacity yield supply allocation 2025 2026",
+      "site": "trendforce.com",
+      "expected_output_ids": ["industry_supply_timeline", "yield_and_bottleneck_context"],
+      "relationship_directions": ["industry_supply_to_research_subject_context"],
+      "speaker_or_source_targets": ["TrendForce"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-SUPPLY-EETIMES",
+      "proposition_id": "DELL-PROP-SUPPLY-CHAIN",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "HBM CoWoS GPU advanced packaging capacity bottleneck yield 2025 2026",
+      "site": "eetimes.com",
+      "expected_output_ids": ["trusted_supply_mechanism", "supply_counterevidence"],
+      "relationship_directions": ["trusted_semiconductor_context_to_supply_hypothesis"],
+      "speaker_or_source_targets": ["EE Times"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-VALUE-NEXTPLATFORM",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell PowerEdge AI server NVIDIA GPU HBM bill of materials OEM margin value pool",
+      "site": "nextplatform.com",
+      "expected_output_ids": ["component_cost_proxy", "oem_supplier_value_pool_hypothesis"],
+      "relationship_directions": ["trusted_technical_analysis_to_value_pool_hypothesis"],
+      "speaker_or_source_targets": ["The Next Platform"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-VALUE-SERVETHEHOME",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell PowerEdge XE9680 XE9685 GPU HBM networking storage configuration cost review",
+      "site": "servethehome.com",
+      "expected_output_ids": ["configuration_component_proxy", "value_pool_mechanism_context"],
+      "relationship_directions": ["trusted_product_analysis_to_value_pool_hypothesis"],
+      "speaker_or_source_targets": ["ServeTheHome"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-VALUE-SERVERPARTS",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge XE9680 GPU server configuration price components",
+      "site": "server-parts.eu",
+      "expected_output_ids": ["channel_configuration_proxy", "channel_asking_price_proxy"],
+      "relationship_directions": ["channel_asking_price_and_configuration_to_research_subject_proxy"],
+      "speaker_or_source_targets": ["Server Parts Europe"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-VALUE-SERVNET",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "AI server cost HBM GPU networking storage Dell PowerEdge configuration",
+      "site": "servnetuk.com",
+      "expected_output_ids": ["channel_configuration_proxy", "component_cost_proxy"],
+      "relationship_directions": ["channel_asking_price_and_configuration_to_research_subject_proxy"],
+      "speaker_or_source_targets": ["Servnet"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-VALUE-FORTUNE",
+      "proposition_id": "DELL-PROP-VALUE-POOL",
+      "tier_id": "trusted_context_analyst_counterevidence",
+      "query": "Dell AI server profitability margin NVIDIA suppliers value captured 2025 2026",
+      "site": "fortune.com",
+      "expected_output_ids": ["oem_supplier_value_split_context", "profitability_counterevidence"],
+      "relationship_directions": ["trusted_business_context_to_value_pool_hypothesis"],
+      "speaker_or_source_targets": ["Fortune"]
+    },
+    {
+      "query_unit_id": "DELL-EXT-R2-PRICE-PROCUREMENT",
+      "proposition_id": "DELL-PROP-PRICE-CONFIGURATION",
+      "tier_id": "product_procurement_channel_deployment",
+      "query": "Dell PowerEdge XE9680 XE9685 GPU server award contract quantity price",
+      "site": "sam.gov",
+      "expected_output_ids": ["public_procurement_price", "public_procurement_quantity_and_configuration"],
+      "relationship_directions": ["public_procurement_to_research_subject"],
+      "speaker_or_source_targets": ["U.S. public procurement"]
+    }
+  ],
+  "candidate_selection_policy": {
+    "DELL-PROP-PRICE-CONFIGURATION": {
+      "scope_anchor_terms": ["dell", "poweredge", "xe9680", "xe9685", "ai", "server", "gpu"],
+      "material_signal_terms": ["price", "pricing", "quote", "cost", "configuration", "configured", "memory", "hbm", "networking", "storage", "accelerator", "asp", "mix"],
+      "minimum_scope_anchor_hits": 1,
+      "minimum_material_signal_hits": 2,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    },
+    "DELL-PROP-UNIT-VOLUME": {
+      "scope_anchor_terms": ["dell", "poweredge", "ai", "server", "accelerated"],
+      "material_signal_terms": ["unit", "units", "shipment", "shipments", "share", "deployment", "deployed", "orders", "backlog", "cluster", "systems"],
+      "minimum_scope_anchor_hits": 1,
+      "minimum_material_signal_hits": 2,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    },
+    "DELL-PROP-PVM-BRIDGE": {
+      "scope_anchor_terms": ["dell", "poweredge", "ai", "server", "market"],
+      "material_signal_terms": ["revenue", "sales", "unit", "shipments", "asp", "price", "mix", "configuration", "growth", "volume"],
+      "minimum_scope_anchor_hits": 1,
+      "minimum_material_signal_hits": 2,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    },
+    "DELL-PROP-CUSTOMER-DEMAND": {
+      "scope_anchor_terms": ["dell", "poweredge", "ai", "server", "infrastructure"],
+      "material_signal_terms": ["demand", "orders", "backlog", "deployment", "deployed", "customer", "budget", "spending", "capacity", "cluster", "cancellation", "conversion"],
+      "minimum_scope_anchor_hits": 1,
+      "minimum_material_signal_hits": 2,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    },
+    "DELL-PROP-SUPPLY-CHAIN": {
+      "scope_anchor_terms": ["gpu", "hbm", "cowos", "packaging", "blackwell", "h100", "h200", "server", "accelerator"],
+      "material_signal_terms": ["capacity", "supply", "allocation", "yield", "availability", "lead", "shipment", "shipments", "production", "bottleneck", "constraint", "sold", "expansion"],
+      "minimum_scope_anchor_hits": 1,
+      "minimum_material_signal_hits": 2,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    },
+    "DELL-PROP-VALUE-POOL": {
+      "scope_anchor_terms": ["dell", "poweredge", "ai", "server", "gpu", "hbm", "oem"],
+      "material_signal_terms": ["margin", "profit", "profitability", "cost", "price", "bom", "value", "share", "component", "configuration", "networking", "storage"],
+      "minimum_scope_anchor_hits": 1,
+      "minimum_material_signal_hits": 2,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    },
+    "DELL-PROP-COUNTEREVIDENCE-WWC": {
+      "scope_anchor_terms": ["dell", "poweredge", "ai", "server", "orders", "backlog"],
+      "material_signal_terms": ["risk", "decline", "cancel", "cancellation", "constraint", "margin", "cash", "inventory", "delay", "competition", "nonlinear", "working", "capital"],
+      "minimum_scope_anchor_hits": 1,
+      "minimum_material_signal_hits": 2,
+      "context_blocks_before": 1,
+      "context_blocks_after": 1
+    }
+  },
+  "authority": {
+    "r1_provider_replay_only": true,
+    "residual_provider_calls_exact_once": true,
+    "original_capture_reuse_requires_digest_and_source_family_validation": true,
+    "candidate_is_not_evidence": true,
+    "candidate_decision_and_evidence_gate_required": true,
+    "public_information_gap_authorized": false,
+    "S1_qualification_authorized": false,
+    "dynamic_single_unit_authorized": false
+  },
+  "spec_digest": "3c7fd556e88d0753d3c603ff5cf44e289a672050aa4d3a879c3a038487fec74a"
+}

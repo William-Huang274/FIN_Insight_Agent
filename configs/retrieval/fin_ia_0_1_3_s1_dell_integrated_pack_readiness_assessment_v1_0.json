@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_s1_s2_integrated_pack_readiness_assessment_v1_0",
+  "status": "diagnostic_preserved_topic_coverage_polarity_contract_repair_required",
+  "recorded_at": "2026-08-18T16:55:00+08:00",
+  "case_key": "DELL",
+  "prepared_from_commit": "f9272cab924614a2f65f0c47f20370305916dc26",
+  "bound_result": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_integrated_pack_readiness_result_v1_0.json",
+    "sha256": "79ab1c95ff373ce7a889c3c3efe57a1eac4928cf521f7223dc67afcd89c6d815"
+  },
+  "private_full_result": {
+    "ref": "data/workbench_private/fin_0_1_3_s1_integrated_pack_readiness/dell-r3-v1/full_result.json",
+    "sha256": "5841be487a8601227a95d1c2e6121bb434866e9f77824d7d248f52c94d69e068",
+    "access": "restricted_requirement_evidence_numeric_audit_only"
+  },
+  "execution_facts": {
+    "requirements": 12,
+    "fully_satisfied_requirements": 3,
+    "research_consumable_requirements": 10,
+    "requests": 8,
+    "ready_requests": 1,
+    "research_consumable_requests": 7,
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "embedding_calls": 0,
+    "reranker_calls": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0,
+    "numeric_fact_creations": 0,
+    "public_information_gap_claims": 0
+  },
+  "proven_improvements": [
+    "all twelve natural requirements are explicitly mapped to current reviewed Evidence decisions rather than candidate rank",
+    "reported results, margin, cash, and working-capital metric axes are satisfied by independent S2 NumericFacts instead of redundant S1 narrative matching",
+    "backlog, orders, customer_count, and shipments are returned as S2-owned typed gaps rather than S1 or public-information gaps",
+    "adjacent upstream disclosures remain bounded and cannot become Dell facts or NumericFacts"
+  ],
+  "earliest_open_root_cause": {
+    "issue_id": "RC-S1-031-material-topic-coverage-and-claim-truth-polarity-conflated",
+    "symptom": "the review contract calls product axes supported or unsupported even though a material topic may be adequately addressed by evidence that contradicts the hypothesis",
+    "business_example": "Microsoft states continued AI-infrastructure investment and growing AI usage; this does not support hyperscaler capex slowdown but is valid evidence against slowdown and must not be treated as an S1 retrieval miss",
+    "required_fix": "record per-axis coverage state separately from evidence polarity, allowing supports, contradicts, mixed, context-only, boundary-only, or not-assessed while preserving explicit claim boundaries"
+  },
+  "cross_stage_finding": {
+    "issue_id": "RC-S3-045-hyperscaler-topic-target-entity-set-economically-incomplete",
+    "symptom": "the natural material scope selected hyperscaler capex slowdown but targeted NVDA, MU, TSM, and only one hyperscaler, MSFT",
+    "impact": "S1 can answer only the supplied MSFT slice and cannot generalize it to hyperscalers as a class without AMZN, GOOGL, META, or an explicit bounded proxy",
+    "owning_stage": "S3 ResearchBlueprint and target-entity planning",
+    "not_an_S1_gap": true
+  },
+  "next_allowed_scope": [
+    "zero-call v1.1 product-axis coverage and polarity contract",
+    "same current reviewed pack and S2 NumericFact replay",
+    "support, contradiction, mixed, boundary, cross-case, future-date, and numeric-authority mutations",
+    "S3 target-entity completeness receipt without new model or network calls"
+  ],
+  "still_blocked": [
+    "using v1.0 for S1 qualification",
+    "treating evidence that contradicts a hypothesis as a retrieval miss",
+    "broadening S1 target entities beyond the signed EvidenceRequest",
+    "declaring hyperscaler-wide conclusions from MSFT alone",
+    "full S3 acceptance",
+    "publication",
+    "release"
+  ],
+  "known_boundary": "The v1.0 result is preserved because it proves the Evidence and NumericFact authority seam and exposes a semantic contract defect. Its readiness counts are diagnostic only and must not be re-labeled after the v1.1 successor."
+}

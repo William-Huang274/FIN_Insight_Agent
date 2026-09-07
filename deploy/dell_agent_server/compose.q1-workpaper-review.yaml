@@ -1,0 +1,12 @@
+# Seeded review/delegation workflow on the SAME Agent Server stack and entry point.
+services:
+  langgraph-api:
+    environment:
+      FINSIGHT_DELL_SERVING_MODE: ${FINSIGHT_DELL_SEEDED_SERVING_MODE:-q1_workpaper_review_repair_v1}
+    volumes:
+      - type: bind
+        source: ${FINSIGHT_DELL_REVIEW_SEED_HOST_PATH:?set by the existing runner}
+        target: /run/fin-insight/review-seed.json
+        read_only: true
+        bind:
+          create_host_path: false

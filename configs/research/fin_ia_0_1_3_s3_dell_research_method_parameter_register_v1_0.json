@@ -1,0 +1,58 @@
+{
+  "schema_version": "fin_ia_research_method_parameter_register_v1_0",
+  "status": "research_method_parameters_separated_from_source_gaps",
+  "recorded_at": "2026-08-22T00:00:00+08:00",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "parameters": [
+    {
+      "parameter_id": "METHOD::DELL::QUARTERLY_MONITOR",
+      "source_gap_ref": "GAP::B070D38D076F342B",
+      "status": "research_lead_or_user_parameter_pending",
+      "decision_surface": "quarterly_monitor_threshold",
+      "owner": "RESEARCH_LEAD_OR_USER",
+      "current_basis_zh": "季度监控指标来自来源，但失效阈值取决于研究假设和用户风险偏好，不能伪装成公司披露。",
+      "customer_surface_disposition": "omit_from_information_gap_register",
+      "frozen_value": null,
+      "frozen_by": null
+    },
+    {
+      "parameter_id": "METHOD::DELL::THESIS_INVALIDATION",
+      "source_gap_ref": "GAP::04EDD7700A1409F8",
+      "status": "research_lead_or_user_parameter_pending",
+      "decision_surface": "thesis_invalidation_threshold",
+      "owner": "RESEARCH_LEAD_OR_USER",
+      "current_basis_zh": "来源给出订单、收入、利润和现金等观测项，但 thesis 失效阈值属于研究方法选择。",
+      "customer_surface_disposition": "omit_from_information_gap_register",
+      "evaluation_finding_codes": [
+        "CE_GAP_ABSENCE_NARROW",
+        "CE_WWC_OBSERVABLE",
+        "XR-5"
+      ],
+      "writer_omitted_claim_refs": [
+        "WPCLAIM::2F796E4F60AFD3F7D94D"
+      ],
+      "writer_omitted_exact_fragments": [
+        {
+          "agent_id": "AGENT::COUNTEREVIDENCE",
+          "field_name": "thesis",
+          "exact_text": "Monitorable metrics exist, but no invalidation thresholds have been frozen by the method or user."
+        }
+      ],
+      "frozen_value": null,
+      "frozen_by": null
+    }
+  ],
+  "summary": {
+    "parameter_count": 2,
+    "frozen_count": 0,
+    "pending_count": 2,
+    "customer_information_gap_count": 0
+  },
+  "authority": {
+    "research_method_parameter_is_source_disclosure": false,
+    "unfrozen_parameter_may_not_be_invented_by_writer": true,
+    "parameter_state_may_inform_what_would_change": true
+  },
+  "register_digest": "8fb2d1443630819ea6e960e04d4b54bc7457c2d5e817f4ca1a5f18898eb1d434"
+}

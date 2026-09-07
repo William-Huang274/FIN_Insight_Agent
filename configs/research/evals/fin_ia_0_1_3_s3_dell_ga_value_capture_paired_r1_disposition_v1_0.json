@@ -1,0 +1,67 @@
+{
+  "schema_version": "fin_ia_s3_deepseek_ga_single_cell_paired_disposition_v1_0",
+  "status": "terminal_failed_reasoning_budget_exhausted_replacement_bounded",
+  "recorded_at": "2026-08-14T00:00:11+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "run_id": "FIN013-S3-DELL-GA-VALUE-CAPTURE-PAIRED-R1",
+  "implementation_commit": "b8f335eb1258f1715371d0649692779b8c4e720d",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_ga_value_capture_paired_authority_v1_0.json",
+  "authority_sha256": "9704fd976b6c7df1ad79dd1b1118c6542101a5f846c4d9dc618b0730d51620e6",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_ga_value_capture_paired_result_v1_0.json",
+  "result_sha256": "ae66910355185611678233f88ae5b2c7ba0911f81625b763082ce0be945ff055",
+  "same_business_payload": true,
+  "business_payload_digest": "d259a2a95140bf843f4a32246ce3fc66aeb8774aa8d9efdd4db372936adae28b",
+  "root_cause": {
+    "owner": "project_provider_profile_capacity_and_gateway_failure_classification",
+    "earliest_faulty_artifact": "DeepSeek_GA_JSON_and_strict_profiles_v1_0_max_tokens_5000_with_thinking_max",
+    "not_yet_observed": [
+      "JSON_contract_adherence",
+      "strict_tool_schema_adherence",
+      "financial_judgment_quality",
+      "citation_or_numeric_authority_behavior"
+    ],
+    "explanation": "Both lanes returned HTTP 200 and finish_reason=length. In each lane completion_tokens=5000 and reasoning_tokens=5000, leaving zero visible content and zero tool calls. The historical generic empty-output codes remain immutable, but the diagnostic classification is reasoning budget exhaustion."
+  },
+  "lanes": {
+    "json_control": {
+      "status_code": 200,
+      "finish_reason": "length",
+      "prompt_tokens": 3796,
+      "completion_tokens": 5000,
+      "reasoning_tokens": 5000,
+      "visible_content_chars": 0,
+      "tool_calls": 0,
+      "request_capture_sha256": "855dfef0157536aa74c207f82f2a03775dc8cf2a29b6ff22454e3efbbefcb4d9",
+      "response_capture_sha256": "2885bcbf06dc537fae77e386b829ac51eee1269a6098ded178d4a73f696a2769"
+    },
+    "strict_final_tool": {
+      "status_code": 200,
+      "finish_reason": "length",
+      "prompt_tokens": 4912,
+      "completion_tokens": 5000,
+      "reasoning_tokens": 5000,
+      "visible_content_chars": 0,
+      "tool_calls": 0,
+      "request_capture_sha256": "3df5246d4ec6ea6deaaa61115dc292ac537b6208078a7b2893d54dd21d4df787",
+      "response_capture_sha256": "2de905da9b469569a273c06c8f620c219d1d79f8600915e4abc02366f583dcd0"
+    }
+  },
+  "replacement_boundary": {
+    "profile_version": "v1_1",
+    "max_tokens_per_lane": 16000,
+    "thinking": "enabled",
+    "reasoning_effort": "max",
+    "same_business_input_required": true,
+    "maximum_model_calls": 2,
+    "retries": 0,
+    "fallbacks": 0,
+    "automatic_third_pair_forbidden": true,
+    "five_cell_live_authorized": false
+  },
+  "official_api_refs": [
+    "https://api-docs.deepseek.com/api/create-chat-completion",
+    "https://api-docs.deepseek.com/quick_start/pricing"
+  ],
+  "known_boundary": "R1 produced no visible judgment and therefore provides no evidence for or against DeepSeek financial reasoning or contract adherence. A clean fresh authority is required for one replacement paired canary."
+}

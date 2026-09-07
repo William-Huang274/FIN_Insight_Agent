@@ -1,0 +1,2420 @@
+{
+  "schema_version": "fin_ia_s1c_object_role_review_set_v1_0",
+  "status": "object_level_financial_role_review_complete_development_only",
+  "recorded_at": "2026-08-12",
+  "scope": "FIN_0_1_3_S1C_OBJECT_LEVEL_EVIDENCE_ROLE_CONTRACT",
+  "bound_inputs": {
+    "adjudication_ref": "configs/retrieval/fin_ia_0_1_3_s1c_object_role_adjudication_v1_0.json",
+    "adjudication_sha256": "c52bd49d09a225230d218c1f88758fd5223c6e3848b0d3d49bbe1c97d3a25cd5",
+    "qrels_ref": "configs/retrieval/fin_ia_0_1_3_s1c_requalified_qrels_v1_1.json",
+    "qrels_sha256": "1d56f1deef3d7082b4e308a9caae1e7b70941a66cd025620adbcc80231b7562b",
+    "qrel_manifest_digest": "116d52a44569109ac47f0ce8e0875987673862d741d952eccee1a29c607ab7f4",
+    "records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v1/records.jsonl",
+    "records_sha256": "484a18a2d7c5e2b8ab42eea97d8c68bbad37cfb49fe1a2c943d64d1381ad4382",
+    "documents_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v1/documents.jsonl",
+    "documents_sha256": "04c8774f74f7b6fb25a4fad9eadf8e585e938ac549ab2bc7239bb7215549b7ab",
+    "pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_0.json",
+    "pack_result_sha256": "1da1d1e21d7b3b3211bb0008b5ac00c8b9bca8c2af17712354095ab4708117a0",
+    "primary_pack_bindings": [
+      {
+        "case_key": "DELL",
+        "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/dell/v1/da/86/da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b.json",
+        "sha256": "da86bdf8649438da03f3da65f962c0deb744a6cd4593bc93f031e495c8b42e4b",
+        "bytes": 87530
+      },
+      {
+        "case_key": "MU",
+        "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/mu/v1/93/ce/93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371.json",
+        "sha256": "93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371",
+        "bytes": 78664
+      },
+      {
+        "case_key": "NVDA",
+        "object_key": "fin-0.1.3/s1-six-case-local-evidence-pack/nvda/v1/03/a2/03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4.json",
+        "sha256": "03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4",
+        "bytes": 90045
+      }
+    ]
+  },
+  "separation_policy": {
+    "model_visible_objects_contain_no_human_labels": true,
+    "annotations_contain_no_source_surface_text": true,
+    "labels_joined_only_after_candidate_generation_or_scoring": true,
+    "ranking_relevance_is_not_evidence_promotion": true,
+    "parent_context_cannot_be_positive_evidence": true,
+    "reviewer_business_meaning_cannot_substitute_for_source_text": true,
+    "holdout_cases_forbidden_from_design_tuning_and_training": [
+      "ANET",
+      "ASML",
+      "ORCL"
+    ],
+    "development_cases": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ]
+  },
+  "summary": {
+    "object_view_count": 24,
+    "object_form_counts": {
+      "claim": 13,
+      "metric_table": 6,
+      "mixed_source_segment": 1,
+      "navigation_or_boilerplate": 1,
+      "parent_context": 3
+    },
+    "object_role_counts": {
+      "capital_allocation_or_valuation": 1,
+      "demand_risk_or_counterevidence": 2,
+      "direct_demand_signal": 5,
+      "direct_supply_capacity_signal": 3,
+      "financial_statement_or_reconciliation": 5,
+      "generic_or_boilerplate": 4,
+      "management_guidance": 3,
+      "observed_operating_result": 12,
+      "regulatory_or_policy_exposure": 1,
+      "relationship_context": 3,
+      "supply_risk_or_counterevidence": 4
+    },
+    "fact_state_counts": {
+      "contractual_commitment": 2,
+      "management_guidance": 4,
+      "management_risk_or_hypothesis": 5,
+      "mixed": 1,
+      "not_applicable": 4,
+      "reported_observed": 13,
+      "standing_business_description": 2
+    },
+    "query_relation_count": 35,
+    "judgement_counts": {
+      "hard_negative": 12,
+      "positive": 17,
+      "unjudged": 6
+    },
+    "case_relation_counts": {
+      "DELL": 13,
+      "MU": 10,
+      "NVDA": 12
+    },
+    "primary_pack_unbound_claim_or_metric_surface_count": 45
+  },
+  "object_views": [
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::ab200641c20820fab9e41c03",
+      "object_key": "msft_ai_infra_investment_claim",
+      "object_form": "claim",
+      "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "source_record_digest": "30467b897a9b0d9cce67d839782bf3c17a515b007d6c49d14c0fa215c9fb7356",
+      "parent_document_id": "CURRENT_DOC::MSFT::10_Q::0001193125_26_191507",
+      "parent_document_digest": "f4854e367befc9cdcb75888a1f095288acec4fcd3b33a2a91ca9d6c84b8a61a8",
+      "ticker": "MSFT",
+      "company": "MICROSOFT CORP",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-04-29",
+      "period_end": "2026-03-31",
+      "fiscal_year": 2026,
+      "section": "Item 2. Management's Discussion and Analysis",
+      "subsection": "Productivity and Business Processes and Intelligent Cloud",
+      "surface_text": "Gross margin percentage decreased driven by continued investments in AI infrastructure and growing AI product usage, offset in part by efficiency gains across the Microsoft Cloud.",
+      "surface_digest": "4a8bbfeb3c2954f04cdc78707930fc6acb2d6b604f37f33908c7f3cf26511ea1",
+      "focus_binding": {
+        "mode": "exact_text",
+        "char_start": 4074,
+        "char_end": 4253
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::918daa67702b3cb9d747ca24",
+      "object_key": "dell_q1_ai_orders_claim",
+      "object_form": "claim",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "source_record_digest": "bd9266bf6ec2810b206d181ae60d3b7673b245db0ed569dc40b5bbe8fa910c49",
+      "parent_document_id": "CURRENT_DOC::DELL::8_K::0001571996_26_000021",
+      "parent_document_digest": "8769d4005b13c62deba55f440acd67517541ea4b806df0eee9026c41e137447c",
+      "ticker": "DELL",
+      "company": "Dell Technologies Inc.",
+      "source_type": "8-K",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "publication_date": "2026-05-28",
+      "period_end": "2026-05-28",
+      "fiscal_year": 2026,
+      "section": "Exhibit 99.1 Earnings Release",
+      "subsection": "EX-99.1",
+      "surface_text": "“We booked $24.4 billion in AI orders and recognized $16.1 billion of AI server revenue. We’re increasing our AI server revenue expectations for FY27 to $60 billion, which only goes to show the AI opportunity shows no signs of slowing.”",
+      "surface_digest": "cc9cb453a56a18ce667e83f2e21046f8b85fb626551c35b6235855dada985ede",
+      "focus_binding": {
+        "mode": "exact_text",
+        "char_start": 840,
+        "char_end": 1076
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::13ba8f5b92b2d95f44a7ce30",
+      "object_key": "dell_ai_demand_risk_claim",
+      "object_form": "claim",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1A::BLOCK_0007::PART_01_OF_02",
+      "source_record_digest": "a4cb8f7bbdd73cdf98dd72e8e8081d0e60c10fdcaaffe923cfef5609b7b3a1ea",
+      "parent_document_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008",
+      "parent_document_digest": "b642fa6a29d858885118ba960b09950d34c42f821e6f13577dd4c589c08260f6",
+      "ticker": "DELL",
+      "company": "Dell Technologies Inc.",
+      "source_type": "10-K",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-03-16",
+      "period_end": "2026-01-30",
+      "fiscal_year": 2026,
+      "section": "Item 1A. Risk Factors",
+      "subsection": "The nature of the demand for AI solutions may have adverse effects on our operating performance.",
+      "surface_text": "While we expect the buyer base for our AI solutions to continue to expand, to date our AI solutions have been purchased primarily by a small number of larger customers and cloud service providers. If we are not successful in continuing to expand sales to a broader base of customers, our ability to maintain growth in this area may be limited. Sales of AI to large customers may also cause fluctuations in our results of operations, as such large orders may occur in some periods and not others and are generally subject to intense competition and pricing pressure, which can have an impact on our gross margins and results of operations. Larger orders may also require greater commitments of working capital, such as for purchases of key components, which could adversely affect our cash flow and expose us to the risk of holding excess and obsolete inventory due to delays or cancellations.",
+      "surface_digest": "2f5b48b22dc78755fe288e9013f5b3607add13d1f094efd9b18393fa415da2f1",
+      "focus_binding": {
+        "mode": "bounded_text",
+        "char_start": 97,
+        "char_end": 989
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::c5dd4867990d1d881c7d931b",
+      "object_key": "mu_hbm4_shipments_claim",
+      "object_form": "claim",
+      "source_record_id": "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_02_OF_03",
+      "source_record_digest": "067e96b70111db8f9347a62e82c9420d9e30389defbe8ee78f0c37a649070d55",
+      "parent_document_id": "CURRENT_DOC::MU::8_K::0000723125_26_000013",
+      "parent_document_digest": "2f80ad8833cf562c9b020d83d6d70f4f932fd90a7c8349ceb2ce7cd327cd3363",
+      "ticker": "MU",
+      "company": "Micron Technology, Inc.",
+      "source_type": "8-K",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "publication_date": "2026-06-24",
+      "period_end": "2026-06-24",
+      "fiscal_year": 2026,
+      "section": "8-K current official disclosure",
+      "subsection": "THIRD QUARTER OF FISCAL 2026",
+      "surface_text": "HBM4, built on 1-beta DRAM technology, is in high-volume shipments for our lead customer's platform, and qualification samples have been shipped to multiple end-customers.",
+      "surface_digest": "3bef8a44a0b82147ec3dac9d97fff60203c4b22995fc845d6e8ed554f3c2931e",
+      "focus_binding": {
+        "mode": "exact_text",
+        "char_start": 620,
+        "char_end": 791
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::41e0ec54d9dded3f7a8e004f",
+      "object_key": "nvda_supply_capacity_risk_claim",
+      "object_form": "claim",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0002::PART_03_OF_04",
+      "source_record_digest": "b8bfa11b7a571e38baea648cb1c10bb31704c31e957b6263b60f54c162fa6f01",
+      "parent_document_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052",
+      "parent_document_digest": "bf675fea77224f8ab97b7abc27588967659f17145d5d350cd284f73e765e4b10",
+      "ticker": "NVDA",
+      "company": "NVIDIA Corporation",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-05-20",
+      "period_end": "2026-04-26",
+      "fiscal_year": 2027,
+      "section": "Item 1A. Risk Factors",
+      "subsection": "Competition could adversely impact our market share and financial results.",
+      "surface_text": "We continue to increase our supply and capacity purchases with existing and new suppliers to support our demand projections and increasing complexity of our data center products. We have also entered and may continue to enter into prepaid manufacturing and capacity agreements to supply both current and future products. The increased purchase volumes and integration of new suppliers and contract manufacturers into our supply chain creates more complexity in managing multiple suppliers with variations in production planning, execution and logistics. Our expanding product portfolio and varying component compatibility and quality may lead to increased inventory levels. We have incurred and may in the future incur inventory provisions or impairments if our inventory or supply or capacity commitments exceed demand for our products or demand declines. We are increasing our U.S.-based manufacturing and investing in specialized equipment and processes to support domestic production. We may experience delays or difficulties in scaling production as planned. Our ability to increase manufacturing capabilities will depend on the domestic manufacturing ecosystem's capacity to ramp production supply to the required volume timely. Delays or shortfalls could impact our ability to meet demand.",
+      "surface_digest": "3f054e3f025d8839647888f60d4665fb6ab772575cb1f3deae5dcd2a63aab540",
+      "focus_binding": {
+        "mode": "bounded_text",
+        "char_start": 0,
+        "char_end": 1296
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::e14d24ee7a48db3070b6b682",
+      "object_key": "tsm_leading_edge_ramp_claim",
+      "object_form": "claim",
+      "source_record_id": "CURRENT_DOC::TSM::6_K::0001046179_26_000451::ITEM_CURRENT_REPORT::BLOCK_0001::PART_01_OF_01",
+      "source_record_digest": "09ff88eb06066ec9707df2ba751e8a41a614eae8b9a4464c29afd0af53a781d2",
+      "parent_document_id": "CURRENT_DOC::TSM::6_K::0001046179_26_000451",
+      "parent_document_digest": "e2a1ac4976734d8f608edab1ac28d09753669b97cb21e92f09df1a475ca6d27d",
+      "ticker": "TSM",
+      "company": "Taiwan Semiconductor Manufacturing Company Limited",
+      "source_type": "6-K",
+      "source_tier": "primary_global_public_disclosure",
+      "publication_date": "2026-07-16",
+      "period_end": "2026-06-30",
+      "fiscal_year": 2026,
+      "section": "6-K current official disclosure",
+      "subsection": "EX-99.1",
+      "surface_text": "“Our business in the second quarter was supported by strong demand for our leading-edge process technologies,” said Wendell Huang, Senior VP and Chief Financial Officer of TSMC. “Moving into third quarter 2026, we expect our business to be supported by continued strong demand for our leading-edge process technologies, including the steep ramp-up of our 2-nanometer technology.”",
+      "surface_digest": "345be5ad98a773637672aa35833356a6440c3465c3b1b49cb98ecbdf25446221",
+      "focus_binding": {
+        "mode": "exact_text",
+        "char_start": 1281,
+        "char_end": 1660
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::529ae5b0c5493d019a4ec952",
+      "object_key": "mu_q3_result_claim",
+      "object_form": "claim",
+      "source_record_id": "CURRENT_DOC::MU::8_K::0000723125_26_000013::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_03",
+      "source_record_digest": "53f662fc17725d2745d19b03eb0435a8427c59c669922f2f89c710a6c93c743a",
+      "parent_document_id": "CURRENT_DOC::MU::8_K::0000723125_26_000013",
+      "parent_document_digest": "2f80ad8833cf562c9b020d83d6d70f4f932fd90a7c8349ceb2ce7cd327cd3363",
+      "ticker": "MU",
+      "company": "Micron Technology, Inc.",
+      "source_type": "8-K",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "publication_date": "2026-06-24",
+      "period_end": "2026-06-24",
+      "fiscal_year": 2026,
+      "section": "8-K current official disclosure",
+      "subsection": "THIRD QUARTER OF FISCAL 2026",
+      "surface_text": "“Micron’s record fiscal Q3 financial results and even stronger outlook for Q4 reflect the strategic value of memory in the AI era,” said Sanjay Mehrotra, Chairman, President and CEO of Micron Technology. “Micron is investing at record levels in technology, products and supply to address our customers’ rapidly growing demand. We believe our multi-year Strategic Customer Agreements will significantly enhance the durability and predictability of Micron’s strong financial performance.”",
+      "surface_digest": "0af272857adfc7c508a4b71a0bca208d33e607cbe549d1073a1a8e1ef51f02a3",
+      "focus_binding": {
+        "mode": "bounded_text",
+        "char_start": 659,
+        "char_end": 1145
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::58fd043de80cc791ed6b811f",
+      "object_key": "mu_customer_commitment_claim",
+      "object_form": "claim",
+      "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0009::PART_01_OF_02",
+      "source_record_digest": "bbcb34bbf06e6f6aad51b8af123e5173c6ebfff248cc3b6f91bd142416258e2b",
+      "parent_document_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015",
+      "parent_document_digest": "f7cea6aadaf083ae3ef8e8e8ccb635d7b2c942d8bf40911f8ca2c7ab6036fac1",
+      "ticker": "MU",
+      "company": "Micron Technology, Inc.",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-06-25",
+      "period_end": "2026-05-28",
+      "fiscal_year": 2026,
+      "section": "Item 2. Management's Discussion and Analysis",
+      "subsection": "Other",
+      "surface_text": "We recently executed certain strategic customer agreements, including agreements executed subsequent to May 28, 2026. These agreements include binding commitments for specific volumes over the multi-year contract terms. Strategic customer agreements often include substantial customer deposits and related financial commitments. In connection with these strategic customer agreements, we expect to receive cash deposits and related financial commitments of $22 billion for agreements concluded to date. Approximately $18 billion of these commitments will be in the form of cash deposits.",
+      "surface_digest": "aba7fafcb76b5621fef159401f316e0f5f62eb6904985de039accb47e183309d",
+      "focus_binding": {
+        "mode": "bounded_text",
+        "char_start": 1194,
+        "char_end": 1781
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::fe1038c156a1f83fed7ec4ac",
+      "object_key": "nvda_q1_result_claim",
+      "object_form": "claim",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+      "source_record_digest": "017881b99ff829f3746de8204f1f32ce9e049096123ca33d9c2888a79200aa6b",
+      "parent_document_id": "CURRENT_DOC::NVDA::8_K::0001045810_26_000051",
+      "parent_document_digest": "18f92cd70b679ef09b2fe49b83133ddd4e0349b48b47b5081c63e66c471a28fc",
+      "ticker": "NVDA",
+      "company": "NVIDIA CORP",
+      "source_type": "8-K",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "publication_date": "2026-05-20",
+      "period_end": "2026-05-20",
+      "fiscal_year": 2026,
+      "section": "Exhibit 99.1 Earnings Release",
+      "subsection": "EX-99.1",
+      "surface_text": "NVIDIA (NASDAQ: NVDA) today reported record revenue for the first quarter ended April 26, 2026, of $81.6 billion, up 20% from the previous quarter and up 85% from a year ago.\nFor the quarter, GAAP and non-GAAP gross margins were 74.9% and 75.0%, respectively.\nFor the quarter, GAAP and non-GAAP earnings per diluted share were $2.39 and $1.87, respectively.",
+      "surface_digest": "f4bd8390c5178a11987099560b31a311b9d41e4188de13407a0019593706637f",
+      "focus_binding": {
+        "mode": "bounded_text",
+        "char_start": 424,
+        "char_end": 781
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::bc9476c2fc5a7c9843ff60ed",
+      "object_key": "nvda_q1_income_table",
+      "object_form": "metric_table",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_01_OF_04",
+      "source_record_digest": "07404c52f445e3f7d7798f80849e01da7c90478daf291de77aee284b0e5b3467",
+      "parent_document_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052",
+      "parent_document_digest": "bf675fea77224f8ab97b7abc27588967659f17145d5d350cd284f73e765e4b10",
+      "ticker": "NVDA",
+      "company": "NVIDIA Corporation",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-05-20",
+      "period_end": "2026-04-26",
+      "fiscal_year": 2027,
+      "section": "Item 1. Financial Statements",
+      "subsection": "Item 1. Financial Statements",
+      "surface_text": "[TABLE_START id=8 rows=23]\nThree Months Ended\nApr 26, 2026 | Apr 27, 2025\nRevenue | $ | 81,615 | $ | 44,062\nCost of revenue | 20,458 | 17,394\nGross profit | 61,157 | 26,668\nOperating expenses\nResearch and development | 6,321 | 3,989\nSales, general and administrative | 1,300 | 1,041\nTotal operating expenses | 7,621 | 5,030\nOperating income | 53,536 | 21,638\nInterest income | 540 | 515\nInterest expense | ( 102 ) | ( 63 )\nOther income (expense), net | 15,929 | ( 180 )\nTotal other income, net | 16,367 | 272\nIncome before income tax | 69,903 | 21,910\nIncome tax expense | 11,582 | 3,135\nNet income | $ | 58,321 | $ | 18,775\nNet income per share:\nBasic | $ | 2.40 | $ | 0.77\nDiluted | $ | 2.39 | $ | 0.76\nWeighted average shares used in per share computation:\nBasic | 24,286 | 24,441\nDiluted | 24,391 | 24,611\n[TABLE_END]",
+      "surface_digest": "502a4ff335a2a530133181f0eb3e68b18b2f702973f905c8c77c4a43c7fbbd6a",
+      "focus_binding": {
+        "mode": "balanced_table",
+        "table_id": "8",
+        "char_start": 170,
+        "char_end": 991
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::fff78429dc68628deba019ca",
+      "object_key": "nvda_q1_cash_flow_table",
+      "object_form": "metric_table",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1::BLOCK_0001::PART_03_OF_04",
+      "source_record_digest": "e912cf4f0df37655f84192ad1fbf9248e28d674a1083d7e74829114cec5f63b1",
+      "parent_document_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052",
+      "parent_document_digest": "bf675fea77224f8ab97b7abc27588967659f17145d5d350cd284f73e765e4b10",
+      "ticker": "NVDA",
+      "company": "NVIDIA Corporation",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-05-20",
+      "period_end": "2026-04-26",
+      "fiscal_year": 2027,
+      "section": "Item 1. Financial Statements",
+      "subsection": "Item 1. Financial Statements",
+      "surface_text": "[TABLE_START id=12 rows=38]\nThree Months Ended\nApr 26, 2026 | Apr 27, 2025\nCash flows from operating activities:\nNet income | $ | 58,321 | $ | 18,775\nAdjustments to reconcile net income to net cash provided by operating activities:\nStock-based compensation expense | 1,928 | 1,474\nDeferred income taxes | 1,584 | ( 2,177 )\nDepreciation and amortization | 997 | 611\n(Gains) losses from equity securities, net | ( 15,936 ) | 175\nOther | ( 94 ) | ( 98 )\nChanges in operating assets and liabilities, net of acquisitions:\nAccounts receivable | ( 2,243 ) | 933\nInventories | ( 4,420 ) | ( 1,258 )\nPrepaid expenses and other assets | ( 983 ) | 560\nAccounts payable | 2,210 | 941\nAccrued and other current liabilities | 7,763 | 7,128\nOther long-term liabilities | 1,217 | 350\nNet cash provided by operating activities | 50,344 | 27,414\nCash flows from investing activities:\nProceeds from maturities of marketable debt securities | 1,946 | 3,122\nProceeds from sales of non-marketable securities | 26 | —\nProceeds from sales of marketable debt securities | 25 | 467\nPurchases of non-marketable securities | ( 18,582 ) | ( 649 )\nPurchases of marketable debt and equity securities | ( 8,000 ) | ( 6,546 )\nPurchases related to property and equipment and intangible assets | ( 1,757 ) | ( 1,227 )\nAcquisitions, net of cash acquired | ( 87 ) | ( 383 )\nNet cash used in investing activities | ( 26,429 ) | ( 5,216 )\nCash flows from financing activities:\nProceeds related to employee stock plans | 515 | 370\nPayments related to repurchases of common stock | ( 19,312 ) | ( 14,095 )\nPayments related to employee stock plan taxes | ( 2,129 ) | ( 1,532 )\nDividends paid | ( 243 ) | ( 244 )\nPrincipal payments on property and equipment and intangible assets | ( 33 ) | ( 52 )\nOther | ( 81 ) | —\nNet cash used in financing activities | ( 21,283 ) | ( 15,553 )\nChange in cash and cash equivalents | 2,632 | 6,645\nCash and cash equivalents at beginning of period | 10,605 | 8,589\nCash and cash equivalents at end of period | $ | 13,237 | $ | 15,234\n[TABLE_END]",
+      "surface_digest": "13fc1d0fe56ce1a48bb06131d938694bea6153f6f89ef2eede851131bf9cfc73",
+      "focus_binding": {
+        "mode": "balanced_table",
+        "table_id": "12",
+        "char_start": 0,
+        "char_end": 2036
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::8976f9250c0f5ad9113188a5",
+      "object_key": "nvda_q1_mdna_summary_table",
+      "object_form": "metric_table",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_2::BLOCK_0002::PART_02_OF_02",
+      "source_record_digest": "cffde543fe8f0493c3484d4d19c71563f2a2ecc202e3f2d3622571e365287f57",
+      "parent_document_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052",
+      "parent_document_digest": "bf675fea77224f8ab97b7abc27588967659f17145d5d350cd284f73e765e4b10",
+      "ticker": "NVDA",
+      "company": "NVIDIA Corporation",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-05-20",
+      "period_end": "2026-04-26",
+      "fiscal_year": 2027,
+      "section": "Item 2. Management's Discussion and Analysis",
+      "subsection": "Recent Developments, Future Objectives and Challenges",
+      "surface_text": "[TABLE_START id=36 rows=9]\nThree Months Ended | Quarter-over-Quarter Change | Year-over-Year Change\nApr 26, 2026 | Jan 25, 2026 | Apr 27, 2025\n($ in millions, except per share data)\nRevenue | $ | 81,615 | $ | 68,127 | $ | 44,062 | 20 | % | 85 | %\nGross margin | 74.9 | % | 75.0 | % | 60.5 | % | (0.1) | pts | 14.4 | pts\nOperating expenses | $ | 7,621 | $ | 6,794 | $ | 5,030 | 12 | % | 52 | %\nOperating income | $ | 53,536 | $ | 44,299 | $ | 21,638 | 21 | % | 147 | %\nNet income | $ | 58,321 | $ | 42,960 | $ | 18,775 | 36 | % | 211 | %\nNet income per diluted share | $ | 2.39 | $ | 1.76 | $ | 0.76 | 36 | % | 214 | %\n[TABLE_END]",
+      "surface_digest": "8d2a43aebfdb48112a4e6de15687be644eadbfef30f1b1dda77f7220ea95e525",
+      "focus_binding": {
+        "mode": "balanced_table",
+        "table_id": "36",
+        "char_start": 0,
+        "char_end": 629
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::77ce86fbe60b83cbefde1c85",
+      "object_key": "dell_q1_parent_context",
+      "object_form": "parent_context",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "source_record_digest": "bd9266bf6ec2810b206d181ae60d3b7673b245db0ed569dc40b5bbe8fa910c49",
+      "parent_document_id": "CURRENT_DOC::DELL::8_K::0001571996_26_000021",
+      "parent_document_digest": "8769d4005b13c62deba55f440acd67517541ea4b806df0eee9026c41e137447c",
+      "ticker": "DELL",
+      "company": "Dell Technologies Inc.",
+      "source_type": "8-K",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "publication_date": "2026-05-28",
+      "period_end": "2026-05-28",
+      "fiscal_year": 2026,
+      "section": "Exhibit 99.1 Earnings Release",
+      "subsection": "EX-99.1",
+      "surface_text": "ticker: DELL\ncompany: Dell Technologies Inc.\nsource_type: 8-K\nsource_tier: company_authored_unaudited_sec_filing\npublication_date: 2026-05-28\nperiod_end: 2026-05-28\nfiscal_year: 2026\nsection: Exhibit 99.1 Earnings Release\nsubsection: EX-99.1",
+      "surface_digest": "7d32b04b7897c2d49857c4d53d1b5f3fc0a554c38c6999ac052e11fc792068cd",
+      "focus_binding": {
+        "mode": "parent_context",
+        "parent_context": {
+          "ticker": "DELL",
+          "company": "Dell Technologies Inc.",
+          "source_type": "8-K",
+          "source_tier": "company_authored_unaudited_sec_filing",
+          "publication_date": "2026-05-28",
+          "period_end": "2026-05-28",
+          "fiscal_year": 2026,
+          "section": "Exhibit 99.1 Earnings Release",
+          "subsection": "EX-99.1"
+        }
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::ad246c634685625ef6d8be62",
+      "object_key": "mu_liquidity_parent_context",
+      "object_form": "parent_context",
+      "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_2::BLOCK_0009::PART_01_OF_02",
+      "source_record_digest": "bbcb34bbf06e6f6aad51b8af123e5173c6ebfff248cc3b6f91bd142416258e2b",
+      "parent_document_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015",
+      "parent_document_digest": "f7cea6aadaf083ae3ef8e8e8ccb635d7b2c942d8bf40911f8ca2c7ab6036fac1",
+      "ticker": "MU",
+      "company": "Micron Technology, Inc.",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-06-25",
+      "period_end": "2026-05-28",
+      "fiscal_year": 2026,
+      "section": "Item 2. Management's Discussion and Analysis",
+      "subsection": "Other",
+      "surface_text": "ticker: MU\ncompany: Micron Technology, Inc.\nsource_type: 10-Q\nsource_tier: primary_sec_filing\npublication_date: 2026-06-25\nperiod_end: 2026-05-28\nfiscal_year: 2026\nsection: Item 2. Management's Discussion and Analysis\nsubsection: Other",
+      "surface_digest": "dfe1f03dab1c80f47f7011ef9a4b12b26f23924f51bf04eb0060d526cdc14b53",
+      "focus_binding": {
+        "mode": "parent_context",
+        "parent_context": {
+          "ticker": "MU",
+          "company": "Micron Technology, Inc.",
+          "source_type": "10-Q",
+          "source_tier": "primary_sec_filing",
+          "publication_date": "2026-06-25",
+          "period_end": "2026-05-28",
+          "fiscal_year": 2026,
+          "section": "Item 2. Management's Discussion and Analysis",
+          "subsection": "Other"
+        }
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::c385f2b7d17f046466529f28",
+      "object_key": "nvda_q1_parent_context",
+      "object_form": "parent_context",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+      "source_record_digest": "017881b99ff829f3746de8204f1f32ce9e049096123ca33d9c2888a79200aa6b",
+      "parent_document_id": "CURRENT_DOC::NVDA::8_K::0001045810_26_000051",
+      "parent_document_digest": "18f92cd70b679ef09b2fe49b83133ddd4e0349b48b47b5081c63e66c471a28fc",
+      "ticker": "NVDA",
+      "company": "NVIDIA CORP",
+      "source_type": "8-K",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "publication_date": "2026-05-20",
+      "period_end": "2026-05-20",
+      "fiscal_year": 2026,
+      "section": "Exhibit 99.1 Earnings Release",
+      "subsection": "EX-99.1",
+      "surface_text": "ticker: NVDA\ncompany: NVIDIA CORP\nsource_type: 8-K\nsource_tier: company_authored_unaudited_sec_filing\npublication_date: 2026-05-20\nperiod_end: 2026-05-20\nfiscal_year: 2026\nsection: Exhibit 99.1 Earnings Release\nsubsection: EX-99.1",
+      "surface_digest": "3682268c801c1340fdff9c36f2622e82bf3f9c7e9d94080787e7d3ec99c76ab6",
+      "focus_binding": {
+        "mode": "parent_context",
+        "parent_context": {
+          "ticker": "NVDA",
+          "company": "NVIDIA CORP",
+          "source_type": "8-K",
+          "source_tier": "company_authored_unaudited_sec_filing",
+          "publication_date": "2026-05-20",
+          "period_end": "2026-05-20",
+          "fiscal_year": 2026,
+          "section": "Exhibit 99.1 Earnings Release",
+          "subsection": "EX-99.1"
+        }
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::3928b5940e5dc4c7d6ed4a1e",
+      "object_key": "dell_company_overview_claim",
+      "object_form": "claim",
+      "source_record_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008::ITEM_1::BLOCK_0001::PART_01_OF_01",
+      "source_record_digest": "87db1a2029a7cc57f47b681e6e25c651cfbbdfcfe8e6be56533c767da662aa03",
+      "parent_document_id": "CURRENT_DOC::DELL::10_K::0001571996_26_000008",
+      "parent_document_digest": "b642fa6a29d858885118ba960b09950d34c42f821e6f13577dd4c589c08260f6",
+      "ticker": "DELL",
+      "company": "Dell Technologies Inc.",
+      "source_type": "10-K",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-03-16",
+      "period_end": "2026-01-30",
+      "fiscal_year": 2026,
+      "section": "Item 1. Business",
+      "subsection": "Company Overview",
+      "surface_text": "Dell Technologies is a leader in the global technology industry focused on providing broad and innovative technology solutions for the data and artificial intelligence (“AI”) era. These solutions range from client devices and peripherals to infrastructure solutions across servers, networking, and storage to meet the evolving needs of our customers and drive better business outcomes.",
+      "surface_digest": "28776e31a31423fdde9a3b18d12390ce98c541635a61ba59f6254e005791e240",
+      "focus_binding": {
+        "mode": "bounded_text",
+        "char_start": 35,
+        "char_end": 420
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::857cfeab8874f35ee22ee4aa",
+      "object_key": "msft_segment_definition_table",
+      "object_form": "metric_table",
+      "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "source_record_digest": "30467b897a9b0d9cce67d839782bf3c17a515b007d6c49d14c0fa215c9fb7356",
+      "parent_document_id": "CURRENT_DOC::MSFT::10_Q::0001193125_26_191507",
+      "parent_document_digest": "f4854e367befc9cdcb75888a1f095288acec4fcd3b33a2a91ca9d6c84b8a61a8",
+      "ticker": "MSFT",
+      "company": "MICROSOFT CORP",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-04-29",
+      "period_end": "2026-03-31",
+      "fiscal_year": 2026,
+      "section": "Item 2. Management's Discussion and Analysis",
+      "subsection": "Productivity and Business Processes and Intelligent Cloud",
+      "surface_text": "[TABLE_START id=45 rows=6]\nMicrosoft 365 Commercial cloud revenue growth | Revenue from Microsoft 365 Commercial subscriptions, comprising Microsoft 365 Commercial, Enterprise Mobility + Security, the cloud portion of Windows Commercial, the per-user portion of Power BI, Exchange, SharePoint, Microsoft Teams, Microsoft 365 Security and Compliance, and Microsoft 365 Copilot\nMicrosoft 365 Commercial seat growth | The number of Microsoft 365 Commercial seats at end of period where seats are paid users covered by a Microsoft 365 Commercial subscription\nMicrosoft 365 Consumer cloud revenue growth | Revenue from Microsoft 365 Consumer subscriptions and other consumer services\nLinkedIn revenue growth | Revenue from LinkedIn, including Talent Solutions, Marketing Solutions, Premium Subscriptions, and Sales Solutions\nDynamics 365 revenue growth | Revenue from Dynamics 365, including a set of intelligent, cloud-based applications across ERP, CRM, Power Apps, and Power Automate\nAzure and other cloud services revenue growth | Revenue from Azure and other cloud services, including cloud and AI consumption-based services, GitHub cloud services, Nuance Healthcare cloud services, virtual desktop offerings, and other cloud services\n[TABLE_END]",
+      "surface_digest": "f34965fadf1d82e0f8404efcef4220b8bbfbe109b117fc5068ed77da40e381cc",
+      "focus_binding": {
+        "mode": "balanced_table",
+        "table_id": "45",
+        "char_start": 276,
+        "char_end": 1522
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::06cec2d388082d2ac018577d",
+      "object_key": "mu_q2_business_unit_result_table",
+      "object_form": "metric_table",
+      "source_record_id": "8K_EARNINGS::MU::000072312526000004::A2026Q2EX991PRESSRELEASEHTM::BLOCK_0002::PART_02_OF_03",
+      "source_record_digest": "a6733025a552e3578d90efd45a70e05d0cc41dc68428d360998e01a87d241d0b",
+      "parent_document_id": "CURRENT_DOC::MU::8_K::0000723125_26_000004",
+      "parent_document_digest": "ec07400a75cbcc4ddffcd24fb916168f9d31a54497e34613bc4577fe1e8635e4",
+      "ticker": "MU",
+      "company": "MICRON TECHNOLOGY INC",
+      "source_type": "8-K",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "publication_date": "2026-03-18",
+      "period_end": "2026-03-18",
+      "fiscal_year": 2026,
+      "section": "Exhibit 99.1 Earnings Release",
+      "subsection": "SECOND QUARTER OF FISCAL 2026",
+      "surface_text": "[TABLE_START id=3 rows=18]\nQuarterly Business Unit Financial Results\nFQ2-26 | FQ1-26 | FQ2-25\nCloud Memory Business Unit\nRevenue | $ | 7,749 | $ | 5,284 | $ | 2,947\nGross margin | 74 | % | 66 | % | 55 | %\nOperating margin | 66 | % | 55 | % | 45 | %\nCore Data Center Business Unit\nRevenue | $ | 5,687 | $ | 2,379 | $ | 1,830\nGross margin | 74 | % | 51 | % | 47 | %\nOperating margin | 67 | % | 37 | % | 33 | %\nMobile and Client Business Unit\nRevenue | $ | 7,711 | $ | 4,255 | $ | 2,236\nGross margin | 79 | % | 54 | % | 15 | %\nOperating margin | 76 | % | 47 | % | 1 | %\nAutomotive and Embedded Business Unit\nRevenue | $ | 2,708 | $ | 1,720 | $ | 1,034\nGross margin | 68 | % | 45 | % | 21 | %\nOperating margin | 62 | % | 36 | % | 6 | %\n[TABLE_END]",
+      "surface_digest": "225c3d9f9492a4166b545201c1e3b739665707902c0f468b643921a62b350ec4",
+      "focus_binding": {
+        "mode": "balanced_table",
+        "table_id": "3",
+        "char_start": 0,
+        "char_end": 743
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::f5cdd5666e664e048f35693c",
+      "object_key": "tsm_q2_result_table",
+      "object_form": "metric_table",
+      "source_record_id": "CURRENT_DOC::TSM::6_K::0001046179_26_000451::ITEM_CURRENT_REPORT::BLOCK_0002::PART_01_OF_01",
+      "source_record_digest": "ba27d01bfa9cfd6ba06e2853d59c14371d57abf88719ceb05249c5655015aa59",
+      "parent_document_id": "CURRENT_DOC::TSM::6_K::0001046179_26_000451",
+      "parent_document_digest": "e2a1ac4976734d8f608edab1ac28d09753669b97cb21e92f09df1a475ca6d27d",
+      "ticker": "TSM",
+      "company": "Taiwan Semiconductor Manufacturing Company Limited",
+      "source_type": "6-K",
+      "source_tier": "primary_global_public_disclosure",
+      "publication_date": "2026-07-16",
+      "period_end": "2026-06-30",
+      "fiscal_year": 2026,
+      "section": "6-K current official disclosure",
+      "subsection": "TSMC’s 2026 second quarter consolidated results",
+      "surface_text": "[TABLE_START id=3 rows=7]\n2Q26 Amount a | 2Q25 Amount | YoY Inc. (Dec.) % | 1Q26 Amount | QoQ Inc. (Dec.) %\nNet sales | 1,270,381 | 933,792 | 36.0 | 1,134,103 | 12.0\nGross profit | 860,311 | 547,369 | 57.2 | 751,295 | 14.5\nIncome from operations | 766,603 | 463,423 | 65.4 | 658,966 | 16.3\nIncome before tax | 862,430 | 493,036 | 74.9 | 687,800 | 25.4\nNet income | 706,562 | 398,273 | 77.4 | 572,480 | 23.4\nEPS (NT$) | 27.25 b | 15.36 c | 77.4 | 22.08 d | 23.4\n[TABLE_END]",
+      "surface_digest": "00a24e53deb15f1dead0866852c275298a54f681ef989b833203179aae0e1c39",
+      "focus_binding": {
+        "mode": "balanced_table",
+        "table_id": "3",
+        "char_start": 85,
+        "char_end": 557
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::e0e57bd5a7e04364d306522f",
+      "object_key": "mu_margin_risk_claim",
+      "object_form": "claim",
+      "source_record_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015::ITEM_1A::BLOCK_0003::PART_01_OF_01",
+      "source_record_digest": "92ccfc142fbc948c0f27357fd9e33a176c736ab3639a2df24776729e85d1ce7d",
+      "parent_document_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000015",
+      "parent_document_digest": "f7cea6aadaf083ae3ef8e8e8ccb635d7b2c942d8bf40911f8ca2c7ab6036fac1",
+      "ticker": "MU",
+      "company": "Micron Technology, Inc.",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-06-25",
+      "period_end": "2026-05-28",
+      "fiscal_year": 2026,
+      "section": "Item 1A. Risk Factors",
+      "subsection": "Our gross margins may be adversely affected by a range of factors.",
+      "surface_text": "Our gross margins may be adversely affected by a range of factors.\nIn addition to the impact of our average selling prices, our gross margins are dependent, in part, upon continuing decreases in per gigabit manufacturing costs, which is primarily achieved through improvements in our manufacturing processes and product designs. Factors that may limit our ability to reduce our per gigabit manufacturing costs at sufficient levels to prevent deterioration of or improve gross margins include, but are not limited to:",
+      "surface_digest": "f3c1cef77dcb0e791bba6f2760d3a62d9473d47691e80f053955cf4e06743400",
+      "focus_binding": {
+        "mode": "bounded_text",
+        "char_start": 0,
+        "char_end": 516
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::c752000d3b2364d66719061f",
+      "object_key": "mu_international_risk_segment",
+      "object_form": "mixed_source_segment",
+      "source_record_id": "MU_2026_10Q_ITEM1A_BLOCK_0005_PART_02_OF_02",
+      "source_record_digest": "ce9a9caf7f1cc6d2e3d7068e0b9f4114bc5f1b0a9db07fdbfa7275c6a7437aa6",
+      "parent_document_id": "CURRENT_DOC::MU::10_Q::0000723125_26_000006",
+      "parent_document_digest": "0e369a9f47aea3fba597962927b118380051644200031c36f8f73b189405e3e5",
+      "ticker": "MU",
+      "company": "MICRON TECHNOLOGY INC",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-03-19",
+      "period_end": "2026-02-26",
+      "fiscal_year": 2026,
+      "section": "Item 1A. Risk Factors",
+      "subsection": "Our international operations are subject to a number of risks, including",
+      "surface_text": "In addition, governments have provided, and may continue to provide, significant assistance, financial or otherwise, to some of our competitors or to new entrants and may intervene in support of national industries and/or competitors. As a result, we face the threat of increasing competition and DRAM and NAND oversupply due to significant investment in the semiconductor industry, including by the Chinese government and various state-owned or affiliated entities, such as CXMT and YMTC. In addition, the CAC’s decision that critical information infrastructure operators in China may not purchase Micron products had an adverse impact on our ability to compete effectively in China and elsewhere.\nWe intend to advance our process technology to increase bit output per wafer, improve yields, and increase wafer supply. In addition, our competitors may increase capital expenditures resulting in future increases in worldwide supply. We, and some of our competitors, have plans to construct new fabrication facilities and/or ramp production at existing fabrication facilities. Increases in worldwide supply of semiconductor memory and storage, if not accompanied by commensurate increases in demand, could lead to declines in average selling prices for our products and could materially adversely affect our business, results of operations, or financial condition. Additionally, rapid technological change in markets we serve could contribute to shortened product life cycles and a decline in average selling prices of our products. If competitors are more successful at developing or implementing new product or process technology, their products could have cost or performance advantages.\nThe competitive nature of our industry could have a material adverse effect on our business, results of operations, or financial condition.",
+      "surface_digest": "932bb6f0d78a2177fa7007559bc4bd886e2e9fb68fe1f45d57e4dbcb217bc6c3",
+      "focus_binding": {
+        "mode": "full_source_segment",
+        "char_start": 0,
+        "char_end": 1830
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::51435eeb1041133c0c6a790d",
+      "object_key": "nvda_risk_preamble_claim",
+      "object_form": "claim",
+      "source_record_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052::ITEM_1A::BLOCK_0001::PART_01_OF_01",
+      "source_record_digest": "d331cabce5caebfe81437d33556ba4b49425079e6c435e14d664601e9c011908",
+      "parent_document_id": "CURRENT_DOC::NVDA::10_Q::0001045810_26_000052",
+      "parent_document_digest": "bf675fea77224f8ab97b7abc27588967659f17145d5d350cd284f73e765e4b10",
+      "ticker": "NVDA",
+      "company": "NVIDIA Corporation",
+      "source_type": "10-Q",
+      "source_tier": "primary_sec_filing",
+      "publication_date": "2026-05-20",
+      "period_end": "2026-04-26",
+      "fiscal_year": 2027,
+      "section": "Item 1A. Risk Factors",
+      "subsection": "Item 1A. Risk Factors",
+      "surface_text": "Other than the risk factors listed below, there have been no material changes from the risk factors previously described under Item 1A of our Annual Report on Form 10-K for the fiscal year ended January 25, 2026.\nPurchasing or owning NVIDIA common stock involves investment risks including, but not limited to, the risks described in Item 1A of our Annual Report on Form 10-K for the fiscal year ended January 25, 2026, and below. Any one of those risks could harm our business, financial condition and results of operations or reputation, which could cause our stock price to decline. Additional risks, trends and uncertainties not presently known to us or that we currently believe are immaterial may also harm our business, financial condition, results of operations or reputation.",
+      "surface_digest": "1ce5704678fba7edc865788660df325d3bc87c296be55cb5031ce815ff146346",
+      "focus_binding": {
+        "mode": "bounded_text",
+        "char_start": 22,
+        "char_end": 806
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::328901d5aa1121f8e065710d",
+      "object_key": "dell_capital_return_claim",
+      "object_form": "claim",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+      "source_record_digest": "2128fb0551d2f9dd25d70b963fc411caf325c26a66596b747f5b5be9bfe2a821",
+      "parent_document_id": "CURRENT_DOC::DELL::8_K::0001571996_26_000021",
+      "parent_document_digest": "8769d4005b13c62deba55f440acd67517541ea4b806df0eee9026c41e137447c",
+      "ticker": "DELL",
+      "company": "Dell Technologies Inc.",
+      "source_type": "8-K",
+      "source_tier": "company_authored_unaudited_sec_filing",
+      "publication_date": "2026-05-28",
+      "period_end": "2026-05-28",
+      "fiscal_year": 2026,
+      "section": "Exhibit 99.1 Earnings Release",
+      "subsection": "Capital Return",
+      "surface_text": "Dell Technologies returned $2.1 billion to shareholders in the first quarter through share repurchases and dividends.",
+      "surface_digest": "d54a08e613f5eee72fe057470185826a595fab146642c51bf2a4e3fd7cedf81d",
+      "focus_binding": {
+        "mode": "exact_text",
+        "char_start": 15,
+        "char_end": 132
+      },
+      "candidate_not_evidence": true
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_view_v1_0",
+      "object_view_id": "EOV::e575091990449cd73e53f3de",
+      "object_key": "tsm_empty_table_navigation",
+      "object_form": "navigation_or_boilerplate",
+      "source_record_id": "CURRENT_DOC::TSM::6_K::0001046179_26_000451::ITEM_CURRENT_REPORT::BLOCK_0001::PART_01_OF_01",
+      "source_record_digest": "09ff88eb06066ec9707df2ba751e8a41a614eae8b9a4464c29afd0af53a781d2",
+      "parent_document_id": "CURRENT_DOC::TSM::6_K::0001046179_26_000451",
+      "parent_document_digest": "e2a1ac4976734d8f608edab1ac28d09753669b97cb21e92f09df1a475ca6d27d",
+      "ticker": "TSM",
+      "company": "Taiwan Semiconductor Manufacturing Company Limited",
+      "source_type": "6-K",
+      "source_tier": "primary_global_public_disclosure",
+      "publication_date": "2026-07-16",
+      "period_end": "2026-06-30",
+      "fiscal_year": 2026,
+      "section": "6-K current official disclosure",
+      "subsection": "EX-99.1",
+      "surface_text": "[TABLE_START id=1 rows=0]\n[TABLE_END]",
+      "surface_digest": "29d52bdbc60d3712605240057b5e80e5d99cf51359b46b88c633617324042c36",
+      "focus_binding": {
+        "mode": "balanced_table",
+        "table_id": "1",
+        "char_start": 57,
+        "char_end": 94
+      },
+      "candidate_not_evidence": true
+    }
+  ],
+  "object_annotations": [
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::ab200641c20820fab9e41c03",
+      "object_view_digest": "695bb05af28947a9b74a0e3902c7b766db3f7ba4790a45e20aac2980b4976a73",
+      "object_form": "claim",
+      "role_labels": [
+        "direct_demand_signal",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "evidence_owner_reports_real_ai_infrastructure_spending_effect",
+        "does_not_disclose_subject_specific_procurement"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::918daa67702b3cb9d747ca24",
+      "object_view_digest": "bf373970cc9fb5a0e16390017cc7cb7368a069d45b19d26bcbd670d46f47cba3",
+      "object_form": "claim",
+      "role_labels": [
+        "direct_demand_signal",
+        "management_guidance",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed",
+        "management_guidance"
+      ],
+      "reason_codes": [
+        "orders_and_recognized_revenue_are_separately_visible",
+        "future_revenue_expectation_is_management_guidance"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::13ba8f5b92b2d95f44a7ce30",
+      "object_view_digest": "249e4a4ad9342ad78d6383893e4b257a0c68a40dba3cb8ce289b7dc18c619365",
+      "object_form": "claim",
+      "role_labels": [
+        "demand_risk_or_counterevidence",
+        "supply_risk_or_counterevidence"
+      ],
+      "fact_state_labels": [
+        "management_risk_or_hypothesis"
+      ],
+      "reason_codes": [
+        "customer_concentration_and_order_timing_risk",
+        "working_capital_and_inventory_counterevidence"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::c5dd4867990d1d881c7d931b",
+      "object_view_digest": "94774ff11ab25c95b88259f31d7b7d6e1d0eb126780b9a75a6a4b92d7e9f1097",
+      "object_form": "claim",
+      "role_labels": [
+        "direct_supply_capacity_signal",
+        "observed_operating_result",
+        "relationship_context"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "high_volume_shipments_are_observed_supply_execution",
+        "customer_identity_and_subject_allocation_remain_unattributed"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::41e0ec54d9dded3f7a8e004f",
+      "object_view_digest": "2971934862cbe98b9eb9371e633ce7e3680bb677fb93e8c9ecf7c5e24801f85c",
+      "object_form": "claim",
+      "role_labels": [
+        "demand_risk_or_counterevidence",
+        "direct_supply_capacity_signal",
+        "supply_risk_or_counterevidence"
+      ],
+      "fact_state_labels": [
+        "reported_observed",
+        "contractual_commitment",
+        "management_risk_or_hypothesis"
+      ],
+      "reason_codes": [
+        "capacity_purchases_and_prepaid_agreements_are_direct_supply_actions",
+        "production_scaling_and_demand_mismatch_remain_risks"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::e14d24ee7a48db3070b6b682",
+      "object_view_digest": "291dc20fdab1f99a86b7b852f952465b381515e72ddecc2492cb955bf1b9a39f",
+      "object_form": "claim",
+      "role_labels": [
+        "direct_demand_signal",
+        "direct_supply_capacity_signal",
+        "management_guidance",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed",
+        "management_guidance"
+      ],
+      "reason_codes": [
+        "leading_edge_demand_and_two_nanometer_ramp_are_visible",
+        "cowos_or_advanced_packaging_capacity_is_not_visible"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::529ae5b0c5493d019a4ec952",
+      "object_view_digest": "3a0b4363a88b56dda53bdd0d380cae3324a3b9267044aac74be78c3eeab79ef2",
+      "object_form": "claim",
+      "role_labels": [
+        "direct_demand_signal",
+        "management_guidance",
+        "observed_operating_result",
+        "relationship_context"
+      ],
+      "fact_state_labels": [
+        "reported_observed",
+        "management_guidance"
+      ],
+      "reason_codes": [
+        "management_separates_reported_results_from_outlook",
+        "customer_agreement_claim_requires_contract_detail_for_attribution"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::58fd043de80cc791ed6b811f",
+      "object_view_digest": "0aee53e02c41cfd50d49063005298d6bda92cf5b15f3a5e5c5475b17a2429870",
+      "object_form": "claim",
+      "role_labels": [
+        "direct_demand_signal",
+        "relationship_context"
+      ],
+      "fact_state_labels": [
+        "contractual_commitment",
+        "management_guidance"
+      ],
+      "reason_codes": [
+        "binding_volume_commitments_are_direct_demand_quality",
+        "expected_deposit_amount_is_forward_until_received"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::fe1038c156a1f83fed7ec4ac",
+      "object_view_digest": "94348dccc04cd1bb4407118ad9238bda04af78c0b3077086a5b532778b55122c",
+      "object_form": "claim",
+      "role_labels": [
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "reported_period_results_are_direct_issuer_evidence",
+        "revenue_does_not_alone_prove_demand_causality"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::bc9476c2fc5a7c9843ff60ed",
+      "object_view_digest": "dd9ce6e25e3f87ea8f81a2d32603c2996a7c9013a497b044ad50dc767fbfa2cd",
+      "object_form": "metric_table",
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "period_header_metric_row_and_unit_are_source_visible",
+        "table_requires_numeric_coordinate_compiler_before_fact_promotion"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::fff78429dc68628deba019ca",
+      "object_view_digest": "f5c457e571a62bf9d785b6a32b42f7f75825ab7fa51986f001d8111cb67e2c8c",
+      "object_form": "metric_table",
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "cash_flow_reconciliation_and_working_capital_rows_are_visible",
+        "table_requires_numeric_coordinate_compiler_before_fact_promotion"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::8976f9250c0f5ad9113188a5",
+      "object_view_digest": "b339d1e441be5788ca0ca3d1359039a8cb6d6d7f62244dd5f2b455943fa8e841",
+      "object_form": "metric_table",
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "quarter_over_quarter_and_year_over_year_result_bridge_is_visible",
+        "management_discussion_table_is_not_an_audited_fact_by_itself"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::77ce86fbe60b83cbefde1c85",
+      "object_view_digest": "533fa2745ba098303f27c0c579fce58faeced60252915011f5ecf4ecf1b1c99b",
+      "object_form": "parent_context",
+      "role_labels": [],
+      "fact_state_labels": [
+        "not_applicable"
+      ],
+      "reason_codes": [
+        "parent_context_qualifies_source_period_and_section_only"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::ad246c634685625ef6d8be62",
+      "object_view_digest": "609e961346f3682c52285255807fecbc0c8589e6b6ab314707dbb35c5496716a",
+      "object_form": "parent_context",
+      "role_labels": [],
+      "fact_state_labels": [
+        "not_applicable"
+      ],
+      "reason_codes": [
+        "parent_context_qualifies_source_period_and_section_only"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::c385f2b7d17f046466529f28",
+      "object_view_digest": "359cbc46507a6d5c8640d9fd2684b9516249113177772ede85a7fcce53785b81",
+      "object_form": "parent_context",
+      "role_labels": [],
+      "fact_state_labels": [
+        "not_applicable"
+      ],
+      "reason_codes": [
+        "parent_context_qualifies_source_period_and_section_only"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::3928b5940e5dc4c7d6ed4a1e",
+      "object_view_digest": "a733e93aac600ce99edf6bef55357ea68b94e79c252539c16ae42369a49ba26a",
+      "object_form": "claim",
+      "role_labels": [
+        "generic_or_boilerplate"
+      ],
+      "fact_state_labels": [
+        "standing_business_description"
+      ],
+      "reason_codes": [
+        "company_description_has_no_current_period_result"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::857cfeab8874f35ee22ee4aa",
+      "object_view_digest": "2a718e0c23cff9772f98d3558b5cbce8ec24857c96d9edf424051dd1b0697296",
+      "object_form": "metric_table",
+      "role_labels": [
+        "generic_or_boilerplate"
+      ],
+      "fact_state_labels": [
+        "standing_business_description"
+      ],
+      "reason_codes": [
+        "metric_definition_table_contains_no_period_value_or_deployment"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::06cec2d388082d2ac018577d",
+      "object_view_digest": "25c058d184d10e3a69ab7dfe7081196ef506eeb087d313c49a7603cfc7b56f08",
+      "object_form": "metric_table",
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "business_unit_results_do_not_show_capacity_ramp_or_constraint"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::f5cdd5666e664e048f35693c",
+      "object_view_digest": "228a4e0753c3dccd855f4c617bdaa48e444ceab5f9f54d259d0a0aa52856bc52",
+      "object_form": "metric_table",
+      "role_labels": [
+        "financial_statement_or_reconciliation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "consolidated_results_do_not_show_packaging_capacity_or_allocation"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::e0e57bd5a7e04364d306522f",
+      "object_view_digest": "3dbe101b68673cb87c9944e381c24780133d09eb216bb8c84442a3e14bd0b6eb",
+      "object_form": "claim",
+      "role_labels": [
+        "supply_risk_or_counterevidence"
+      ],
+      "fact_state_labels": [
+        "management_risk_or_hypothesis"
+      ],
+      "reason_codes": [
+        "risk_factor_is_not_observed_period_result"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::c752000d3b2364d66719061f",
+      "object_view_digest": "5c9c0548038352fce3730dc0cd283543006270f771429cb1cf35baf18ad1fdc5",
+      "object_form": "mixed_source_segment",
+      "role_labels": [
+        "regulatory_or_policy_exposure",
+        "supply_risk_or_counterevidence"
+      ],
+      "fact_state_labels": [
+        "management_risk_or_hypothesis",
+        "mixed"
+      ],
+      "reason_codes": [
+        "broad_risk_segment_has_no_claim_level_financial_reconciliation",
+        "mixed_segment_retained_to_measure_granularity_failure"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::51435eeb1041133c0c6a790d",
+      "object_view_digest": "6a7732ef49a01e2f0158688f14e48d996a121bb4c62ca85f3f264345092c5b34",
+      "object_form": "claim",
+      "role_labels": [
+        "generic_or_boilerplate"
+      ],
+      "fact_state_labels": [
+        "management_risk_or_hypothesis"
+      ],
+      "reason_codes": [
+        "generic_risk_preamble_contains_no_current_result_or_mechanism"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::328901d5aa1121f8e065710d",
+      "object_view_digest": "8111193f2d5c5e998ba0463656515825d56654e1ef1441f94552c98c4e72e03f",
+      "object_form": "claim",
+      "role_labels": [
+        "capital_allocation_or_valuation",
+        "observed_operating_result"
+      ],
+      "fact_state_labels": [
+        "reported_observed"
+      ],
+      "reason_codes": [
+        "capital_return_is_real_but_not_customer_demand"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_object_annotation_v1_0",
+      "object_view_id": "EOV::e575091990449cd73e53f3de",
+      "object_view_digest": "58519b4759e21a7fe1d813c72b5dbd69ebba3dba9957352369d80bbe55050b91",
+      "object_form": "navigation_or_boilerplate",
+      "role_labels": [
+        "generic_or_boilerplate"
+      ],
+      "fact_state_labels": [
+        "not_applicable"
+      ],
+      "reason_codes": [
+        "empty_parser_table_has_no_financial_or_operating_content"
+      ],
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "evidence_promoted": false
+    }
+  ],
+  "query_relations": [
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_001",
+      "qrel_id": "s1c_qrel_01",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "object_view_id": "EOV::ab200641c20820fab9e41c03",
+      "object_view_digest": "695bb05af28947a9b74a0e3902c7b766db3f7ba4790a45e20aac2980b4976a73",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "direct_for_msft_spend_but_not_dell_procurement"
+      ],
+      "business_rationale_zh": "微软明确说 AI 基础设施投入压低云毛利，可证明客户侧真实投入，但不能推出其中有多少采购自 Dell。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_002",
+      "qrel_id": "s1c_qrel_01",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "object_view_id": "EOV::857cfeab8874f35ee22ee4aa",
+      "object_view_digest": "2a718e0c23cff9772f98d3558b5cbce8ec24857c96d9edf424051dd1b0697296",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "definition_not_demand_observation"
+      ],
+      "business_rationale_zh": "这张表只解释 Azure 等指标包含什么，没有当期投入、部署或采购事实，不能回答需求问题。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_003",
+      "qrel_id": "s1c_qrel_02",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::918daa67702b3cb9d747ca24",
+      "object_view_digest": "bf373970cc9fb5a0e16390017cc7cb7368a069d45b19d26bcbd670d46f47cba3",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_orders_revenue_and_guidance_visible"
+      ],
+      "business_rationale_zh": "Dell 同时披露 AI 订单、已确认收入和全年展望，是本案当期经营表现的核心直接证据。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_004",
+      "qrel_id": "s1c_qrel_02",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::77ce86fbe60b83cbefde1c85",
+      "object_view_digest": "533fa2745ba098303f27c0c579fce58faeced60252915011f5ecf4ecf1b1c99b",
+      "relevance_judgement": "unjudged",
+      "directness": "context_only",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "parent_qualifies_source_not_claim"
+      ],
+      "business_rationale_zh": "父文档能确认这是 Dell 业绩稿及其日期，但单靠父级元数据不能证明订单或收入。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_005",
+      "qrel_id": "s1c_qrel_02",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::3928b5940e5dc4c7d6ed4a1e",
+      "object_view_digest": "a733e93aac600ce99edf6bef55357ea68b94e79c252539c16ae42369a49ba26a",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "standing_description_substituted_for_period_result"
+      ],
+      "business_rationale_zh": "公司概览讲 Dell 做什么，不是 Q1 FY27 已发生的订单、收入或利润表现。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_006",
+      "qrel_id": "s1c_qrel_03",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::13ba8f5b92b2d95f44a7ce30",
+      "object_view_digest": "249e4a4ad9342ad78d6383893e4b257a0c68a40dba3cb8ce289b7dc18c619365",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_specific_counterevidence_and_financial_mechanism"
+      ],
+      "business_rationale_zh": "该段直接说明大客户集中、订单波动、营运资金和库存风险，能约束对 Dell AI 增长质量的判断。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_007",
+      "qrel_id": "s1c_qrel_04",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::c5dd4867990d1d881c7d931b",
+      "object_view_digest": "94774ff11ab25c95b88259f31d7b7d6e1d0eb126780b9a75a6a4b92d7e9f1097",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "supplier_execution_visible_subject_allocation_unknown"
+      ],
+      "business_rationale_zh": "Micron 已高量出货 HBM4，能证明供应侧执行进展；但没有披露给 Dell 的具体份额。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_008",
+      "qrel_id": "s1c_qrel_04",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::06cec2d388082d2ac018577d",
+      "object_view_digest": "25c058d184d10e3a69ab7dfe7081196ef506eeb087d313c49a7603cfc7b56f08",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "financial_result_not_supply_execution"
+      ],
+      "business_rationale_zh": "业务单元收入和毛利能说明结果，不能替代 HBM 产能、良率、爬坡或约束证据。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_009",
+      "qrel_id": "s1c_qrel_05",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::41e0ec54d9dded3f7a8e004f",
+      "object_view_digest": "2971934862cbe98b9eb9371e633ce7e3680bb677fb93e8c9ecf7c5e24801f85c",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "platform_supply_actions_and_constraints_visible"
+      ],
+      "business_rationale_zh": "NVIDIA 明确披露产能采购、预付协议和扩产难点，能约束 Dell 上游 GPU 供给判断，但不能直接归因到 Dell 配额。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_010",
+      "qrel_id": "s1c_qrel_05",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::bc9476c2fc5a7c9843ff60ed",
+      "object_view_digest": "dd9ce6e25e3f87ea8f81a2d32603c2996a7c9013a497b044ad50dc767fbfa2cd",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "income_statement_not_capacity_mechanism"
+      ],
+      "business_rationale_zh": "利润表是重要结果证据，但没有产能采购、良率、爬坡或供应约束，不能回答供应链问题。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_011",
+      "qrel_id": "s1c_qrel_06",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::e14d24ee7a48db3070b6b682",
+      "object_view_digest": "291dc20fdab1f99a86b7b852f952465b381515e72ddecc2492cb955bf1b9a39f",
+      "relevance_judgement": "unjudged",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "background_only",
+      "reason_codes": [
+        "leading_edge_ramp_visible_but_requested_packaging_capacity_absent"
+      ],
+      "business_rationale_zh": "这段能证明 2nm 需求和爬坡，但题目要的是 CoWoS/先进封装产能与约束；相关却不足以作为该槽位正例。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_012",
+      "qrel_id": "s1c_qrel_06",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::f5cdd5666e664e048f35693c",
+      "object_view_digest": "228a4e0753c3dccd855f4c617bdaa48e444ceab5f9f54d259d0a0aa52856bc52",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "consolidated_result_not_packaging_capacity"
+      ],
+      "business_rationale_zh": "合并收入和利润表不能证明 CoWoS 容量、利用率、良率或客户分配。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_013",
+      "qrel_id": "s1c_qrel_06",
+      "case_key": "DELL",
+      "subject_ticker": "DELL",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::e575091990449cd73e53f3de",
+      "object_view_digest": "58519b4759e21a7fe1d813c72b5dbd69ebba3dba9957352369d80bbe55050b91",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "boilerplate_or_navigation",
+      "reason_codes": [
+        "empty_table_parser_artifact"
+      ],
+      "business_rationale_zh": "这是解析产生的空表标记，没有任何业务事实，必须在 Evidence Gate 前剔除。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_014",
+      "qrel_id": "s1c_qrel_07",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "object_view_id": "EOV::918daa67702b3cb9d747ca24",
+      "object_view_digest": "bf373970cc9fb5a0e16390017cc7cb7368a069d45b19d26bcbd670d46f47cba3",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "customer_ai_orders_are_memory_demand_readthrough"
+      ],
+      "business_rationale_zh": "Dell AI 服务器订单是 Micron 下游需求旁证，但没有披露 Micron 内存金额或份额。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_015",
+      "qrel_id": "s1c_qrel_07",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "object_view_id": "EOV::328901d5aa1121f8e065710d",
+      "object_view_digest": "8111193f2d5c5e998ba0463656515825d56654e1ef1441f94552c98c4e72e03f",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "capital_return_not_customer_deployment"
+      ],
+      "business_rationale_zh": "Dell 回购和分红是真实事实，但与 AI 服务器下单、部署和内存需求无关。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_016",
+      "qrel_id": "s1c_qrel_08",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "object_view_id": "EOV::ab200641c20820fab9e41c03",
+      "object_view_digest": "695bb05af28947a9b74a0e3902c7b766db3f7ba4790a45e20aac2980b4976a73",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "hyperscaler_ai_spend_is_memory_demand_readthrough"
+      ],
+      "business_rationale_zh": "微软的 AI 基础设施投入是 Micron 需求环境旁证，但没有 Micron 专属采购额。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_017",
+      "qrel_id": "s1c_qrel_09",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::529ae5b0c5493d019a4ec952",
+      "object_view_digest": "3a0b4363a88b56dda53bdd0d380cae3324a3b9267044aac74be78c3eeab79ef2",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_results_and_demand_outlook_visible"
+      ],
+      "business_rationale_zh": "Micron 管理层把已实现 Q3 结果、Q4 展望和客户协议联系起来，是经营判断的直接材料，但仍需把事实和展望分开。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_018",
+      "qrel_id": "s1c_qrel_09",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::e0e57bd5a7e04364d306522f",
+      "object_view_digest": "3dbe101b68673cb87c9944e381c24780133d09eb216bb8c84442a3e14bd0b6eb",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "risk_hypothesis_not_period_result"
+      ],
+      "business_rationale_zh": "毛利风险因子适合反方或 WWC，不是当期收入、利润和现金流结果。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_019",
+      "qrel_id": "s1c_qrel_10",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::58fd043de80cc791ed6b811f",
+      "object_view_digest": "0aee53e02c41cfd50d49063005298d6bda92cf5b15f3a5e5c5475b17a2429870",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "binding_volume_and_deposit_mechanism_visible"
+      ],
+      "business_rationale_zh": "绑定采购量和客户存款构成需求质量与现金机制的直接证据，但预计存款不能冒充已到账现金。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_020",
+      "qrel_id": "s1c_qrel_10",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::ad246c634685625ef6d8be62",
+      "object_view_digest": "609e961346f3682c52285255807fecbc0c8589e6b6ab314707dbb35c5496716a",
+      "relevance_judgement": "unjudged",
+      "directness": "context_only",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "parent_qualifies_source_not_financial_claim"
+      ],
+      "business_rationale_zh": "父级元数据能确认 10-Q、期间和 MD&A 位置，但不能单独证明客户存款或流动性数值。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_021",
+      "qrel_id": "s1c_qrel_10",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::c752000d3b2364d66719061f",
+      "object_view_digest": "5c9c0548038352fce3730dc0cd283543006270f771429cb1cf35baf18ad1fdc5",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "broad_policy_risk_not_financial_reconciliation"
+      ],
+      "business_rationale_zh": "国际经营风险可作为宏观反方，但不能替代库存、现金、客户存款和资本支出的当期桥接。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_022",
+      "qrel_id": "s1c_qrel_11",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::41e0ec54d9dded3f7a8e004f",
+      "object_view_digest": "2971934862cbe98b9eb9371e633ce7e3680bb677fb93e8c9ecf7c5e24801f85c",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "gpu_platform_supply_constraints_are_memory_ecosystem_context"
+      ],
+      "business_rationale_zh": "NVIDIA 的供应与产能安排能约束 Micron 所处 AI 生态的交付节奏，但不证明 Micron 获得的订单或份额。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_023",
+      "qrel_id": "s1c_qrel_12",
+      "case_key": "MU",
+      "subject_ticker": "MU",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::e14d24ee7a48db3070b6b682",
+      "object_view_digest": "291dc20fdab1f99a86b7b852f952465b381515e72ddecc2492cb955bf1b9a39f",
+      "relevance_judgement": "unjudged",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "background_only",
+      "reason_codes": [
+        "requested_packaging_or_memory_supply_mechanism_absent"
+      ],
+      "business_rationale_zh": "2nm 需求和爬坡与半导体景气相关，但不能直接回答 Micron 的 HBM/DRAM 供给约束。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_024",
+      "qrel_id": "s1c_qrel_13",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "object_view_id": "EOV::918daa67702b3cb9d747ca24",
+      "object_view_digest": "bf373970cc9fb5a0e16390017cc7cb7368a069d45b19d26bcbd670d46f47cba3",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "downstream_ai_server_orders_are_gpu_demand_readthrough"
+      ],
+      "business_rationale_zh": "Dell AI 服务器订单是 NVIDIA 下游需求旁证，但无法拆出 GPU 型号、数量、价格或交付节奏。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_025",
+      "qrel_id": "s1c_qrel_13",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "DELL",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "object_view_id": "EOV::328901d5aa1121f8e065710d",
+      "object_view_digest": "8111193f2d5c5e998ba0463656515825d56654e1ef1441f94552c98c4e72e03f",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "capital_return_not_gpu_demand"
+      ],
+      "business_rationale_zh": "Dell 股东回报不提供 GPU 采购、AI 服务器部署或订单转换信息。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_026",
+      "qrel_id": "s1c_qrel_14",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "customer_demand_and_deployment_validation",
+      "evidence_owner_ticker": "MSFT",
+      "relationship_direction": "evidence_owner_own_infrastructure_demand",
+      "object_view_id": "EOV::ab200641c20820fab9e41c03",
+      "object_view_digest": "695bb05af28947a9b74a0e3902c7b766db3f7ba4790a45e20aac2980b4976a73",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "hyperscaler_ai_investment_is_gpu_demand_readthrough"
+      ],
+      "business_rationale_zh": "微软 AI 基础设施投入证明 hyperscaler 需求环境，但不能直接归因到 NVIDIA 的采购金额。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_027",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::fe1038c156a1f83fed7ec4ac",
+      "object_view_digest": "94348dccc04cd1bb4407118ad9238bda04af78c0b3077086a5b532778b55122c",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_period_result_visible"
+      ],
+      "business_rationale_zh": "NVIDIA 当季收入、毛利率和 EPS 是公司经营结果的直接披露。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_028",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::bc9476c2fc5a7c9843ff60ed",
+      "object_view_digest": "dd9ce6e25e3f87ea8f81a2d32603c2996a7c9013a497b044ad50dc767fbfa2cd",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_income_statement_coordinates_visible"
+      ],
+      "business_rationale_zh": "10-Q 利润表提供收入、毛利、营业利润和净利润的期间坐标，是结果核验核心表格。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_029",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::8976f9250c0f5ad9113188a5",
+      "object_view_digest": "b339d1e441be5788ca0ca3d1359039a8cb6d6d7f62244dd5f2b455943fa8e841",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "issuer_period_change_bridge_visible"
+      ],
+      "business_rationale_zh": "MD&A 汇总表补充环比、同比变化，适合解释结果变化，但最终数值仍须绑定行列坐标。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_030",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::c385f2b7d17f046466529f28",
+      "object_view_digest": "359cbc46507a6d5c8640d9fd2684b9516249113177772ede85a7fcce53785b81",
+      "relevance_judgement": "unjudged",
+      "directness": "context_only",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "parent_qualifies_source_not_result"
+      ],
+      "business_rationale_zh": "父级元数据可确认来源和期间，不能单独证明收入或利润。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_031",
+      "qrel_id": "s1c_qrel_15",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "issuer_results_and_management_commentary",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::51435eeb1041133c0c6a790d",
+      "object_view_digest": "6a7732ef49a01e2f0158688f14e48d996a121bb4c62ca85f3f264345092c5b34",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "boilerplate_or_navigation",
+      "reason_codes": [
+        "generic_risk_notice_not_period_result"
+      ],
+      "business_rationale_zh": "风险提示开场没有任何 Q1 经营结果或具体经济机制，不能替代业绩证据。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_032",
+      "qrel_id": "s1c_qrel_16",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::fff78429dc68628deba019ca",
+      "object_view_digest": "f5c457e571a62bf9d785b6a32b42f7f75825ab7fa51986f001d8111cb67e2c8c",
+      "relevance_judgement": "positive",
+      "directness": "subject_direct",
+      "background_state": "core_evidence",
+      "reason_codes": [
+        "cash_flow_and_working_capital_bridge_visible"
+      ],
+      "business_rationale_zh": "现金流表直接展示净利润到经营现金流的调整及库存、应收、应付变化，是财务桥接核心证据。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_033",
+      "qrel_id": "s1c_qrel_16",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "regulatory_risk_and_financial_reconciliation",
+      "evidence_owner_ticker": "NVDA",
+      "relationship_direction": "subject_self_disclosure",
+      "object_view_id": "EOV::41e0ec54d9dded3f7a8e004f",
+      "object_view_digest": "2971934862cbe98b9eb9371e633ce7e3680bb677fb93e8c9ecf7c5e24801f85c",
+      "relevance_judgement": "hard_negative",
+      "directness": "not_supportive",
+      "background_state": "background_only",
+      "reason_codes": [
+        "supply_risk_not_cash_flow_reconciliation"
+      ],
+      "business_rationale_zh": "供给风险可以解释未来压力，但不能替代当期现金流和营运资金行列事实。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_034",
+      "qrel_id": "s1c_qrel_17",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "MU",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::c5dd4867990d1d881c7d931b",
+      "object_view_digest": "94774ff11ab25c95b88259f31d7b7d6e1d0eb126780b9a75a6a4b92d7e9f1097",
+      "relevance_judgement": "positive",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "bounded_context",
+      "reason_codes": [
+        "hbm_supplier_execution_is_platform_supply_context"
+      ],
+      "business_rationale_zh": "Micron HBM4 高量出货为 NVIDIA 平台供应生态提供旁证，但未披露对 NVIDIA 的具体供货分配。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    },
+    {
+      "schema_version": "fin_ia_evidence_query_relation_v1_0",
+      "review_id": "s1c_role_review_035",
+      "qrel_id": "s1c_qrel_18",
+      "case_key": "NVDA",
+      "subject_ticker": "NVDA",
+      "evidence_slot_id": "supply_chain_capacity_and_counterevidence",
+      "evidence_owner_ticker": "TSM",
+      "relationship_direction": "evidence_owner_own_supply_capacity_or_constraint",
+      "object_view_id": "EOV::e14d24ee7a48db3070b6b682",
+      "object_view_digest": "291dc20fdab1f99a86b7b852f952465b381515e72ddecc2492cb955bf1b9a39f",
+      "relevance_judgement": "unjudged",
+      "directness": "evidence_owner_direct_bounded_readthrough",
+      "background_state": "background_only",
+      "reason_codes": [
+        "two_nanometer_ramp_not_requested_advanced_packaging_capacity"
+      ],
+      "business_rationale_zh": "2nm 需求和爬坡只是相关背景；没有 CoWoS/先进封装产能与分配，不能直接支持 NVIDIA 供给判断。",
+      "label_authority": "Codex supervised business-semantic review on source-bound development objects; pending Owner acceptance and forbidden from holdout tuning.",
+      "candidate_not_evidence": true,
+      "evidence_promoted": false
+    }
+  ],
+  "typed_gaps": [
+    {
+      "case_key": "DELL",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0003::PART_01_OF_02",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0006::CHUNK_0001",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0006::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0007::CHUNK_0001",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0007::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0014::CHUNK_0001",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0014::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "DELL_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001_CLAIM_C85237AB",
+      "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0004_CHUNK_0001",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05_CLAIM_CA0D3EC4",
+      "source_record_id": "DELL_2026_10Q_ITEM2_BLOCK_0011_PART_04_OF_05",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6",
+      "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07_CLAIM_E759C368",
+      "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_04_OF_07_CLAIM_D4FE9E73",
+      "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_04_OF_07",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "SUPP::DELL::000157199626000008::CHUNK_0037",
+      "source_record_id": "SUPP::DELL::000157199626000008::CHUNK_0037",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "SUPP::DELL::000157199626000008::CHUNK_0059",
+      "source_record_id": "SUPP::DELL::000157199626000008::CHUNK_0059",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "SUPP::MU::000072312526000013::CHUNK_0003",
+      "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0003",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "DELL",
+      "target_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+      "source_record_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6",
+      "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000013::CHUNK_0001",
+      "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+      "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000013::CHUNK_0006",
+      "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0006",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000015::CHUNK_0040",
+      "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0040",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000015::CHUNK_0045",
+      "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0045",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000015::CHUNK_0046",
+      "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0046",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000015::CHUNK_0047",
+      "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0047",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000015::CHUNK_0053",
+      "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0053",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000015::CHUNK_0056",
+      "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0056",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000015::CHUNK_0064",
+      "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0064",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000015::CHUNK_0086",
+      "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0086",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::MU::000072312526000015::CHUNK_0106",
+      "source_record_id": "SUPP::MU::000072312526000015::CHUNK_0106",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "MU",
+      "target_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+      "source_record_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "source_record_id": "8K_EARNINGS::DELL::000157199626000021::EXHIBIT991EARNINGS8KQ1FY27HTM::BLOCK_0001::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02_CLAIM_5C919112",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0001::PART_01_OF_02",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0002::PART_01_OF_02",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001_CLAIM_EBFEA572",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0003::CHUNK_0001",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03",
+      "source_record_id": "8K_EARNINGS::NVDA::000104581026000051::Q1FY27PRHTM::BLOCK_0004::PART_01_OF_03",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04_CLAIM_3A923AB6",
+      "source_record_id": "MSFT_2026_10Q_ITEM2_BLOCK_0004_PART_01_OF_04",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_02_OF_03_CLAIM_51A80B1C",
+      "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0001_PART_02_OF_03",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_02_OF_07_CLAIM_A1D38D90",
+      "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_02_OF_07",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07_CLAIM_C93DDDB0",
+      "source_record_id": "NVDA_2026_10Q_ITEM1A_BLOCK_0005_PART_03_OF_07",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "NVDA_2026_10Q_ITEM2_BLOCK_0006_CHUNK_0001_CLAIM_432B0DD8",
+      "source_record_id": "NVDA_2026_10Q_ITEM2_BLOCK_0006_CHUNK_0001",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "NVDA_2026_10Q_ITEM2_BLOCK_0008_PART_01_OF_03_CLAIM_51EB9B34",
+      "source_record_id": "NVDA_2026_10Q_ITEM2_BLOCK_0008_PART_01_OF_03",
+      "object_type": "claim",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+      "source_record_id": "SUPP::MU::000072312526000013::CHUNK_0002",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    },
+    {
+      "case_key": "NVDA",
+      "target_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+      "source_record_id": "SUPP::TSM::000104617926000451::CHUNK_0001",
+      "object_type": "source_segment",
+      "gap_code": "claim_or_metric_surface_unbound_for_role_training",
+      "impact": "Reviewer business meaning remains usable as a qualification note, but cannot be substituted for model-visible source text or used as a claim-level training label.",
+      "evidence_pack_invalidated": false
+    }
+  ],
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "evidence_promoted": false,
+    "owner_acceptance_claimed": false,
+    "fine_tuning_authorized": false,
+    "runtime_route_promotion_authorized": false,
+    "s1d_authorized": false
+  },
+  "known_boundary": "This is a Codex-supervised development review of DELL, MU and NVDA. It establishes a source-bound object/label contract and diagnoses current role errors. ORCL, ASML and ANET remain untouched holdouts. The packet is not Evidence promotion, model training, runtime promotion or S1 completion.",
+  "review_set_digest": "8a9021df26a590b9cb2501c45c386dc61aa47f9a8ebff7bd2f2957714f03932c"
+}

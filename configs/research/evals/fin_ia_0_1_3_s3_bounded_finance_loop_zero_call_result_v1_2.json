@@ -1,0 +1,65 @@
+{
+  "schema_version": "fin_ia_bounded_finance_loop_zero_call_result_v1_0",
+  "status": "zero_call_engineering_and_fresh_process_proof_pass",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_bounded_finance_loop_zero_call_authority_v1_2.json",
+  "authority_sha256": "cea43d2f5824b6d68b90366e2660c42d8963989baf393b4330783bffb2dfa105",
+  "normalized_proof": {
+    "research_input_digest": "6505a58e68811e59e3471378bc0cf16174abef3021c3ae9900e46d5e99189b4c",
+    "single_cell_result_digest": "a0fd0ba7841cfed1cafa8e4042cf614d437876becf677cc9328bb6ed2331c0da",
+    "five_cell_result_digest": "92a0b248b8f283e3b0d32d029d5850855b47ea11241427daa253f5a776490e23",
+    "single_cell_steps": 3,
+    "five_cell_steps": 10,
+    "single_cell_tool_calls": 4,
+    "five_cell_tool_calls": 15,
+    "safe_parallel_read_pair_pass": true,
+    "single_cell_initial_message_chars": 1407,
+    "strict_tool_schema_digest": "b93cd2a75a506add5c3050abfbfce279751efb06a7760b0384e72cc97c40ef44",
+    "standard_tool_schema_digest": "ec1e5fb40d2cdfda761da198af8e800e1649d316ce8dc87d4ae233cbec35790c",
+    "single_standard_tool_schema_digest": "7bf356b3d476073b02f62e87276e0c8ea1c0c180284526a4897696d11c911650",
+    "single_cell_maximum_steps": 6,
+    "standard_profile_max_tokens": 16000,
+    "mutation_failure_codes": [
+      "finance_loop_tool_budget_exceeded",
+      "finance_loop_tool_unknown",
+      "finance_loop_judgment_cell_invalid_or_duplicate",
+      "finance_loop_required_cell_reads_incomplete",
+      "finance_loop_parallel_tool_set_invalid",
+      "finance_loop_parallel_tool_set_invalid"
+    ],
+    "wire_tool_call_index_stripped": true,
+    "wire_replay_source_digest": "7b517c5063bcec79bd61b00c4f84670f4c370f1234016e03de5a47643cbfd888",
+    "normalized_tool_names": [
+      "read_reviewed_evidence_for_cell",
+      "read_numeric_facts_for_cell"
+    ],
+    "wire_mutation_failure_codes": [
+      "model_gateway_tool_call_index_invalid",
+      "model_gateway_tool_call_index_invalid",
+      "model_gateway_tool_call_index_invalid"
+    ],
+    "network_calls": 0,
+    "model_calls": 0,
+    "provider_calls": 0,
+    "embedding_calls": 0
+  },
+  "fresh_process_count": 2,
+  "fresh_process_results_byte_equivalent": true,
+  "single_cell_proposal_boundary": {
+    "gap_status": "open",
+    "retrieval_executed": false,
+    "candidate_promoted_to_evidence": false
+  },
+  "profile_qualification": {
+    "standard_ga_endpoint": "https://api.deepseek.com",
+    "standard_ga_max_tokens": 16000,
+    "strict_beta_endpoint": "https://api.deepseek.com/beta",
+    "thinking": {
+      "type": "enabled"
+    },
+    "reasoning_effort": "max",
+    "ineffective_sampling_parameters_present": [],
+    "strict_tool_live_provider_qualified": false
+  },
+  "known_boundary": "This proves provider-neutral loop behavior, local finance authority, DeepSeek GA profile shape, strict schema shape, no-progress stopping and fresh-process determinism only. It performs no provider call, does not prove natural judgment quality and does not authorize a live canary.",
+  "result_digest": "7cfd83e2abcb6a0d0168c6faa07efe89cf1946c5672d459662aff42d6c41d0aa"
+}

@@ -1,0 +1,232 @@
+{
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "generation_model_calls": 0,
+    "hard_constraints_inherited_not_generated": true,
+    "labels_joined_after_candidate_generation": true,
+    "numeric_authority": false,
+    "provider_neutral": true
+  },
+  "facet_role_cues": {
+    "bounded_price_configuration_context": {
+      "lexical": [
+        "recommended price",
+        "contract value",
+        "configuration",
+        "bundled services",
+        "product mix"
+      ],
+      "semantic": "bounded issuer, technical-study or procurement price and configuration context; a bundle is not company ASP"
+    },
+    "bounded_unit_volume_context": {
+      "lexical": [
+        "systems",
+        "units",
+        "public procurement",
+        "deployment",
+        "orders"
+      ],
+      "semantic": "bounded issuer or public-customer unit observation; a project count is not company units or market share"
+    },
+    "capital_allocation": {
+      "lexical": [
+        "share repurchases",
+        "dividends",
+        "capital return",
+        "net debt"
+      ],
+      "semantic": "reported capital allocation or net-debt action"
+    },
+    "cash_generation": {
+      "lexical": [
+        "operating cash flow",
+        "free cash flow",
+        "cash conversion"
+      ],
+      "semantic": "reported cash generation or conversion evidence"
+    },
+    "conversion_and_durability": {
+      "lexical": [
+        "shipments",
+        "revenue conversion",
+        "cancellation",
+        "digestion"
+      ],
+      "semantic": "direct conversion, shipment durability or cancellation evidence"
+    },
+    "counterparty_direct_mention": {
+      "lexical": [
+        "customer",
+        "supplier",
+        "partnership",
+        "orders",
+        "platform"
+      ],
+      "semantic": "counterparty-direct named economic relationship"
+    },
+    "current_platform_relationship_context": {
+      "lexical": [
+        "partnership",
+        "collaboration",
+        "available",
+        "product availability",
+        "platform"
+      ],
+      "semantic": "current named platform relationship or product availability; public mention is not private allocation authority"
+    },
+    "downstream_demand_context": {
+      "lexical": [
+        "demand",
+        "deployment",
+        "usage",
+        "revenue growth"
+      ],
+      "semantic": "bounded downstream demand read-through, not attributed purchasing"
+    },
+    "guidance_and_outlook": {
+      "lexical": [
+        "guidance",
+        "outlook",
+        "expect",
+        "forecast"
+      ],
+      "semantic": "management guidance or forward outlook, distinct from reported result"
+    },
+    "issuer_counterevidence": {
+      "lexical": [
+        "risk",
+        "constraint",
+        "cancellation",
+        "inventory",
+        "concentration"
+      ],
+      "semantic": "issuer-direct fact that weakens, limits or reverses the thesis"
+    },
+    "issuer_policy_exposure": {
+      "lexical": [
+        "export controls",
+        "regulation",
+        "license",
+        "tariffs",
+        "compliance"
+      ],
+      "semantic": "issuer-direct regulatory, export or compliance exposure"
+    },
+    "margin_and_incremental_profit": {
+      "lexical": [
+        "gross margin",
+        "operating margin",
+        "incremental profit",
+        "cost"
+      ],
+      "semantic": "direct margin or incremental-profit mechanism with stated limits"
+    },
+    "orders_and_backlog": {
+      "lexical": [
+        "orders",
+        "bookings",
+        "backlog"
+      ],
+      "semantic": "direct reported orders, bookings or backlog"
+    },
+    "point_in_time_valuation": {
+      "lexical": [
+        "market price",
+        "valuation",
+        "shares outstanding",
+        "earnings per share"
+      ],
+      "semantic": "point-in-time market and denominator input; narrative retrieval is not numeric authority"
+    },
+    "pricing_and_mix": {
+      "lexical": [
+        "pricing",
+        "average selling price",
+        "product mix"
+      ],
+      "semantic": "direct pricing, ASP or product-mix mechanism"
+    },
+    "reported_results": {
+      "lexical": [
+        "reported results",
+        "revenue",
+        "operating income",
+        "gross margin"
+      ],
+      "semantic": "observed current-period operating result, distinct from guidance"
+    },
+    "subject_execution": {
+      "lexical": [
+        "capacity",
+        "supply",
+        "components",
+        "lead time",
+        "shipments"
+      ],
+      "semantic": "issuer-direct execution, component or delivery constraint"
+    },
+    "subject_relationship_disclosure": {
+      "lexical": [
+        "customer",
+        "supplier",
+        "commitment",
+        "concentration",
+        "deposit"
+      ],
+      "semantic": "issuer-direct customer, supplier, commitment or concentration relationship"
+    },
+    "upstream_capacity_context": {
+      "lexical": [
+        "capacity",
+        "yield",
+        "allocation",
+        "shipments",
+        "supply"
+      ],
+      "semantic": "bounded upstream capacity, yield or allocation read-through"
+    },
+    "upstream_or_demand_counterevidence": {
+      "lexical": [
+        "risk",
+        "competition",
+        "mismatch",
+        "substitution",
+        "inventory correction"
+      ],
+      "semantic": "upstream or downstream fact that weakens the thesis"
+    },
+    "working_capital_risk": {
+      "lexical": [
+        "working capital",
+        "inventory",
+        "receivables",
+        "payment terms"
+      ],
+      "semantic": "working-capital mechanism or risk"
+    }
+  },
+  "intent_ontology_schema": "fin_ia_financial_intent_ontology_v1_2",
+  "known_boundary": "The compiler preserves request materiality and temporal comparison structure but does not understand an open-ended user question, promote Evidence, adjudicate NumericFact or use qualification labels.",
+  "materiality_first_contract": {
+    "business_question_changes_identity_period_source_or_authority": false,
+    "period_only_intent_compiled_as_temporal_constraint": true,
+    "qrel_object_or_url_visible_to_compiler": false,
+    "same_basis_comparison_explicit": true,
+    "standalone_intents_before_cross_products": true,
+    "typed_lexical_query_excludes_generic_role_cues": true
+  },
+  "maximum_exact_phrase_needs": 2,
+  "maximum_needs_per_lane": 10,
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_2.json",
+  "recorded_at": "2026-08-25",
+  "schema_version": "fin_ia_s1_vs3_retrieval_need_compiler_policy_v1_2",
+  "status": "valid_temporal_structural_successor_provider_neutral",
+  "successor_change": {
+    "all_current_request_facets_enumerated": true,
+    "candidate_is_not_evidence": true,
+    "failed_attempt_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_r36_reviewed_public_pdf_consumer_zero_call_R5_failure_assessment_v1_0.json",
+    "numeric_authority": false,
+    "root_error": "retrieval_need_facet_policy_missing:bounded_price_configuration_context"
+  },
+  "suppress_unrequested_metric_cues_when_proxy_forbidden": true
+}

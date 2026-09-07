@@ -1,0 +1,150 @@
+{
+  "schema_version": "fin_ia_dell_q1_specialist_paid_shadow_authority_v1_0",
+  "decision_id": "decision:dell:case-convergence:20260906:a2",
+  "decision_status": "authorized_once",
+  "qualification_only": true,
+  "paid_full_chain_execution_id": "20260906-dell-case-convergence-a2",
+  "agent_session_id": "session:dell:case-convergence:20260906:a2",
+  "fin_thread_id": "thread:dell:case-convergence:20260906:a2",
+  "research_run_id": "run:dell:case-convergence:20260906:a2",
+  "run_invocation_id": "invocation:dell:case-convergence:20260906:a2",
+  "graph_id": "dell_reference_vertical",
+  "serving_mode": "case_convergence_v1",
+  "branch_id": "Q1_ISSUER_TRUTH",
+  "node_id": "specialist:Q1_ISSUER_TRUTH",
+  "provider": "deepseek",
+  "model": "deepseek-v4-pro",
+  "research_as_of": "2026-09-02T00:00:00Z",
+  "implementation_commit": "19909f0853967e043389c5d03d2004fdeba04ffe",
+  "deepseek_config_sha256": "9a558d52adcc1e070edc8cff6c4598dc095847d9dd359a735a491247296fdf1f",
+  "owner_data_gate_decision_digest": "739df0f5d2880af8e27a08b5f9e31e10e894f4900fb72681e7b02e065e89b204",
+  "inventory_snapshot_digest": "700956df7a994206dc67bf0eca3ec17cf1a8befaa087fbfc5db5999ece4740e0",
+  "source_route_catalog_digest": "28ce8858f2182e55525c9cb42ae82b63bf3034dc4b1e87209be22e6703382750",
+  "max_model_turns": 16,
+  "max_tool_actions": 48,
+  "max_input_characters_per_turn": 700000,
+  "max_output_tokens_per_turn": 32000,
+  "timeout_seconds_per_turn": 480,
+  "max_transport_attempts_per_turn": 1,
+  "retry_policy": "none",
+  "fallback_policy": "none",
+  "truncation_behavior": "fail_closed_no_partial_promotion",
+  "unknown_outcome_behavior": "stop_and_require_human_review",
+  "node_purpose": "Complete only P07 responsible revision, then full Chinese Writer and independent Verifier. Reuse five native accepted revisions from failed A1 with zero new model calls; not automatic product acceptance.",
+  "input_scale_basis": "Ten original papers; pinned public accepted revisions for P01/P04/P05/P06/P08. Only P07 gets a fresh author context. Current catalog and sources disclosed on demand; no old private transcripts.",
+  "required_outputs": [
+    "Six responsible revisions: five preserved with origin and zero new model calls, one fresh P07",
+    "Integrated Chinese full-case report with exact current claim/source links",
+    "Independent report findings and honest remaining gaps"
+  ],
+  "schema_burden": "Six native author nodes in pairs, then native Writer/Verifier; each has MCP tools plus a domain submission. Only citation/schema/authority mechanics enforced locally; free report prose judged semantically by the reviewer.",
+  "materiality_quality_risk": "Original reports and review failures remain immutable. Prior reviewers missed orders-vs-usage, so explicit host-assisted feedback is disclosed. Numeric non-S2 remains non-authoritative; no Evidence admission, SQL writes, release or product PASS.",
+  "comparable_run_evidence": "Convergence A1 19calls/512281tokens/estimated1.9249047CNY,failed on P07 unparsed JSON. Five native submissions revalidated and preserved. Native error middleware SDK fixtures + reuse projection passed72targetedchecks.",
+  "reasoning_profile": "Two independent Pro/low thinking-enabled native create_agent message loops, each persisted by Agent Server; never transfer private reasoning between them. No model fallback or automatic transport retry.",
+  "cost_and_latency_estimate": "Remaining P07+Writer+Verifier estimated1–4CNY/5–20minutes, not quote/invoice. Same 12/16 model and32/48tool limits; no whole-case rerun, no transport retry/fallback, unknown/truncated stop. Owner funded task and ordinary self-fix authority unchanged.",
+  "live_external_calls_authorized": true,
+  "evidence_admission_authorized": false,
+  "s2_write_authorized": false,
+  "other_model_nodes_authorized": true,
+  "workflow": "case_convergence",
+  "review_scope": null,
+  "lead_scope": null,
+  "case_review_scope": null,
+  "case_convergence_scope": {
+    "seed_state_host_path": "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/case-convergence-20260906-a1/convergence-input-a2.private.json",
+    "seed_state_sha256": "d7fe36bbfcbfd54250302f177b846719f0a4734aa787bcc6e9866fc22ea165af",
+    "repair_paper_ids": [
+      "P01",
+      "P04",
+      "P05",
+      "P06",
+      "P07",
+      "P08"
+    ],
+    "node_budgets": {
+      "repair": {
+        "node_role": "specialist",
+        "node_purpose": "Only P07 needs a new responsible author submission. P01/P04/P05/P06/P08 are pinned native accepted outputs; before_model stops them with zero model/tool calls.",
+        "input_scale": "One4–20k-character workpaper, exact findings, source catalog; typically3–8turns with on-demand windows.12model/32tool capacity; no sibling notebooks or hidden reasoning.",
+        "required_outputs": [
+          "Updated Chinese thesis/mechanism/narrative",
+          "Only changed source-bound claims and removals",
+          "Disposition of each review finding and unresolved gaps"
+        ],
+        "schema_burden": "Native read-only MCP tools plus one source-bound domain submission. Free Chinese report uses exact paper:claim links, not a fixed prose schema. Local errors returned together.",
+        "materiality_quality_risk": "Do not equate source binding with semantic truth; distinguish period/company/unit, non-S2, demand proxy vs usage, regional aggregate and volume shipment. Report material unresolved issues honestly.",
+        "comparable_run_evidence": "Convergence A1 19calls/512281tokens/estimated1.9249047CNY,failed on P07 unparsed JSON. Five native submissions revalidated and preserved. Native error middleware SDK fixtures + reuse projection passed72targetedchecks.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 500000,
+        "max_output_tokens": 24000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      },
+      "writer": {
+        "node_role": "specialist",
+        "node_purpose": "Write a coherent Chinese report answering the complete Dell research question from current revised papers and reread sources, not ten pasted papers or a disclaimer-only answer.",
+        "input_scale": "Ten preserved workpapers over nine Dell themes,141466 view characters, six targeted revisions. Read current papers and exact source windows on demand; never import2.91M notebook characters or another agent's private reasoning.",
+        "required_outputs": [
+          "Free Chinese report with a clear integrated thesis",
+          "All material reasoning bound inline to current paper:claim IDs",
+          "Evidence authority and remaining meaningful limitations"
+        ],
+        "schema_burden": "Native read-only MCP tools plus one source-bound domain submission. Free Chinese report uses exact paper:claim links, not a fixed prose schema. Local errors returned together.",
+        "materiality_quality_risk": "Do not equate source binding with semantic truth; distinguish period/company/unit, non-S2, demand proxy vs usage, regional aggregate and volume shipment. Report material unresolved issues honestly.",
+        "comparable_run_evidence": "Convergence A1 19calls/512281tokens/estimated1.9249047CNY,failed on P07 unparsed JSON. Five native submissions revalidated and preserved. Native error middleware SDK fixtures + reuse projection passed72targetedchecks.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      },
+      "verifier": {
+        "node_role": "specialist",
+        "node_purpose": "Independently verify the final integrated report against revised papers and actual sources; identify material entailment/period/causal errors missed by earlier reviewers.",
+        "input_scale": "Ten preserved workpapers over nine Dell themes,141466 view characters, six targeted revisions. Read current papers and exact source windows on demand; never import2.91M notebook characters or another agent's private reasoning.",
+        "required_outputs": [
+          "Chinese independent report assessment",
+          "Exact report-quote anchored material/advisory findings",
+          "Unresolved data or execution requests without fake gap claims"
+        ],
+        "schema_burden": "Native read-only MCP tools plus one source-bound domain submission. Free Chinese report uses exact paper:claim links, not a fixed prose schema. Local errors returned together.",
+        "materiality_quality_risk": "Do not equate source binding with semantic truth; distinguish period/company/unit, non-S2, demand proxy vs usage, regional aggregate and volume shipment. Report material unresolved issues honestly.",
+        "comparable_run_evidence": "Convergence A1 19calls/512281tokens/estimated1.9249047CNY,failed on P07 unparsed JSON. Five native submissions revalidated and preserved. Native error middleware SDK fixtures + reuse projection passed72targetedchecks.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
+      }
+    },
+    "node_limits": {
+      "repair": {
+        "model_calls": 12,
+        "tool_calls": 32
+      },
+      "writer": {
+        "model_calls": 16,
+        "tool_calls": 48
+      },
+      "verifier": {
+        "model_calls": 16,
+        "tool_calls": 48
+      }
+    }
+  },
+  "artifact_root_container": "/run/fin-insight/paid-shadow/20260906-dell-case-convergence-a2",
+  "model_audit_filename": "model-call-events.jsonl",
+  "source_read_enabled": true,
+  "private_reasoning_audit_authorized": true,
+  "deepseek_config_filename": "fin_ia_0_1_3_dell_case_convergence_native_v1_0.json",
+  "decision_digest": "d0f873244a8501d55d44941f156d2f3a32f0bad5bf534c8e4f0ad75e8073e4cc"
+}

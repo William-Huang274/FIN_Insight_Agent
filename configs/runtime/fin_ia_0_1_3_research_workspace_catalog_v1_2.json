@@ -1,0 +1,103 @@
+{
+  "cases": [
+    {
+      "case_id": "case_dell_current",
+      "case_key": "DELL",
+      "case_version": 1,
+      "evidence_pack_binding": {
+        "pack_artifact_digest": "5b60f38cfbf455dda1fc91126122d025ea08b8ac5c52a26453002df60b15e68c",
+        "pack_case_key": "DELL",
+        "pack_payload_digest": "c61ea7a02634ec21944ec6edc9b127c474e3474116dfe501932455664fc3dc23"
+      },
+      "research_context": {
+        "language": "zh-CN",
+        "research_as_of": "2026-08-06",
+        "research_question": "Dell 的 AI 基础设施需求、利润获取、供应约束与反方证据如何影响当前研究判断？"
+      },
+      "subject": {
+        "aliases": [
+          "Dell Technologies",
+          "Dell"
+        ],
+        "as_of": "2026-08-06",
+        "entity_id": "sec_issuer_0001571996",
+        "exchange": "NYSE",
+        "issuer_id": "0001571996",
+        "legal_name": "Dell Technologies Inc.",
+        "ticker": "DELL"
+      }
+    },
+    {
+      "case_id": "case_mu_current",
+      "case_key": "MU",
+      "case_version": 1,
+      "evidence_pack_binding": {
+        "pack_artifact_digest": "93ce23a039a000e5a9e83956804f28b425232f6b1992e9c21cc59f0aac01c371",
+        "pack_case_key": "MU",
+        "pack_payload_digest": "1c2b787a955bb145fef6acd4e1ebf70566f472259006c06891b3fd9dde0f2964"
+      },
+      "research_context": {
+        "language": "zh-CN",
+        "research_as_of": "2026-08-06",
+        "research_question": "Micron 的 HBM 需求、定价与利润获取、供给分配及周期反方证据如何影响当前研究判断？"
+      },
+      "subject": {
+        "aliases": [
+          "Micron Technology",
+          "Micron"
+        ],
+        "as_of": "2026-08-06",
+        "entity_id": "sec_issuer_0000723125",
+        "exchange": "NASDAQ",
+        "issuer_id": "0000723125",
+        "legal_name": "Micron Technology, Inc.",
+        "ticker": "MU"
+      }
+    },
+    {
+      "case_id": "case_nvda_current",
+      "case_key": "NVDA",
+      "case_version": 1,
+      "evidence_pack_binding": {
+        "pack_artifact_digest": "03a2f5da4fbfeef1b7a404eea480a53056f8c66d532cbbfeef1ea7d91c49cba4",
+        "pack_case_key": "NVDA",
+        "pack_payload_digest": "9372a57bb60bbb573a8b53fd7dda2a45d70caaf89298456982714ea84ecaf066"
+      },
+      "research_context": {
+        "language": "zh-CN",
+        "research_as_of": "2026-08-06",
+        "research_question": "NVIDIA 的 AI 基础设施需求真实性、价值获取、瓶颈与反方证据如何影响当前研究判断？"
+      },
+      "subject": {
+        "aliases": [
+          "NVIDIA",
+          "Nvidia"
+        ],
+        "as_of": "2026-08-06",
+        "entity_id": "sec_issuer_0001045810",
+        "exchange": "NASDAQ",
+        "issuer_id": "0001045810",
+        "legal_name": "NVIDIA Corporation",
+        "ticker": "NVDA"
+      }
+    }
+  ],
+  "evidence_pack_result_digest": "46a102aee335dba05d4eda6623c4ca3aa9427b758c52f6a99973568c916243cb",
+  "known_boundary": "FIN 0.1.3 exposes three identity-bound reviewed Evidence Packs. DELL now uses the capture-bound VS4 precision successor; MU and NVDA retain their predecessor packs. Dynamic case creation, S1 qualification, model research, complete reports and release remain unavailable.",
+  "product_mode": "current",
+  "read_permission": "current_product:read",
+  "schema_version": "fin_ia_research_workspace_catalog_v1_0",
+  "status": "active_read_only_research_workspace",
+  "surface_policy": {
+    "available_surfaces": [
+      "overview",
+      "evidence",
+      "retrieval"
+    ],
+    "complete_investment_report_claimed": false,
+    "model_or_network_calls": 0,
+    "mutable_case_creation": false,
+    "primary_route": "/workspace",
+    "residual_gaps_remain_visible": true
+  }
+}

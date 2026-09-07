@@ -1,0 +1,79 @@
+{
+  "schema_version": "fin_ia_s3_dell_R16_fresh_independent_review_failure_v1_0",
+  "status": "fresh_independent_review_failed_material_finding",
+  "recorded_at": "2026-08-24",
+  "attempt_id": "FIN-0.1.3-S3-DELL-R16-FRESH-INDEPENDENT-REVIEW",
+  "review": {
+    "review_mode": "clean_successor_read_only_git_object_and_bound_private_receipt_audit",
+    "independent_review": true,
+    "qualified_human_review": false,
+    "reviewed_commit": "5f35b116ba8e906a7e0c73ed1972679699c6ab1c",
+    "reviewer_was_forbidden_from_reading_uncommitted_worktree": true,
+    "network_provider_and_model_calls": 0
+  },
+  "bound_R16": {
+    "decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R16_bounded_successor_scope_decision_v1_0.json",
+    "decision_sha256": "cbce03f6f39ce2dbd7f84a5b289d975c75aae59e167d12cccf125d06ebc069bd",
+    "decision_digest": "802bdd58198b71f5c89cf8d12b5e712a185dc7194965f5f1c02ae688470c13aa",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R16_bounded_successor_candidate_result_v1_0.json",
+    "public_result_sha256": "76a983306432b5044d2935fdf14d37fe90cdbf858d324de7a998ee56ee972947",
+    "public_result_digest": "39bc326c959c5eac0c79b8d03f96b6eba3b54665d1af2a0e75016e97e9ff51cf",
+    "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-bounded-successor-r16/full_result.json",
+    "private_result_sha256": "d099e26e942cc2c3c1dde972b02edf8f069ec47134680ed52ddbde89c2fa3896",
+    "private_result_digest": "7fa183beb676f796471d252c4e2c1471168f5d514ddfba2312cd93806922ffb2",
+    "materializer_ref": "scripts/research/materialize_s3_R16_bounded_writer_successor.py",
+    "materializer_sha256": "fd7e58c40166d540426f9a59072a41bbcd5a3cf1c77db5afd8e5aa009d69e7ba",
+    "test_ref": "tests/test_s3_R16_bounded_writer_successor.py",
+    "test_sha256": "21a45e8bacd1ed98701e84f8c19ed768ce3e08122d67ffc335538c645878bad4"
+  },
+  "findings": [
+    {
+      "classification": "P1_material_reversal_gate",
+      "code": "R16_section_reversal_surface_used_persistence_or_threshold",
+      "evidence": "what_would_change[5] requires material, AI-linked, persistent evidence evaluated against a predeclared threshold, but sections[5].clauses[5] says losses that persist or breach a predeclared threshold would reverse.",
+      "impact": "A one-off event that breaches a threshold, or a persistent event never adjudicated against the threshold, could reverse the demand-quality view. This is weaker than the R15 independent-review requirement and the R16 scope decision.",
+      "required_successor": "Synchronize both surfaces to an explicit conjunction: material AND AI-linked AND persistent AND evaluated as breaching a predeclared threshold. Add negative tests for one-off threshold breach and persistent-below-threshold evidence."
+    },
+    {
+      "classification": "P2_implementation_traceability",
+      "code": "R16_receipts_did_not_bind_materializer_or_protected_validation_implementations",
+      "impact": "The receipts bind artifacts and the seven-path edit projection, but cannot by themselves establish which script and protected validation/render implementations produced the decision.",
+      "required_successor": "Bind exact SHA-256 implementation refs in the successor decision and both public and private results."
+    },
+    {
+      "classification": "P2_clean_checkout_reproducibility",
+      "code": "R16_private_receipt_test_skipped_on_public_instead_of_private_presence",
+      "impact": "The tracked public receipt makes the skip condition false in a clean checkout, so a missing ignored private result causes FileNotFoundError rather than an intentional skip or public-only validation.",
+      "required_successor": "Separate public-only receipt checks and skip private revalidation based on the private path named by the public receipt."
+    },
+    {
+      "classification": "P2_finding_lineage_attribution",
+      "code": "three_R16_editorial_paths_were_owner_authored_not_R15_review_findings",
+      "impact": "The R15 independent-review receipt did not list the inventory-context correction or the two helps-distinguish wording surfaces, although worklog 166 grouped them with review-driven corrections. The edits are conservative, reference-preserving, and separately owner-authorized, but their finding provenance was overstated.",
+      "required_successor": "Record those three paths as owner-authored bounded editorial corrections under the user's continuation authorization, not as findings contained in the R15 review receipt."
+    }
+  ],
+  "positive_findings": {
+    "R16_reference_inventory_unchanged": true,
+    "R16_remaining_gaps_unchanged": true,
+    "R16_topology_unchanged": true,
+    "company_cogrowth_wording_corrected": true,
+    "free_cash_flow_non_GAAP_derivation_identified": true,
+    "inventory_context_not_AI_risk_corroboration": true,
+    "product_margin_working_capital_and_cash_flow_gates_separated": true,
+    "local_protected_contract_pass_remains_true": true
+  },
+  "acceptance": {
+    "fresh_independent_post_writer_review_pass": false,
+    "qualified_human_review_pass": false,
+    "S3_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "calls": {
+    "network": 0,
+    "provider": 0,
+    "model": 0
+  }
+}

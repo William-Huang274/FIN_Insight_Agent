@@ -1,0 +1,76 @@
+{
+  "schema_version": "fin_ia_dell_report_internal_chain_ceiling_failure_receipt_v1_0",
+  "status": "terminal_failed_source_record_identity_field_assumption",
+  "attempt_id": "dell-rsq-03b-internal-chain-r1",
+  "recorded_at": "2026-08-25T20:10:09+08:00",
+  "prepared_from_commit": "7468e5c55155682fbcb9c8360bb3f9883b8a8a68",
+  "prepared_from_tree": "7afe435de88180799fbc798055e5b1ae025829bb",
+  "branch": "codex/fin013-dell-s1-s2-product-bridge",
+  "remote_synced_before_execution": true,
+  "policy_binding": {
+    "ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_03b_internal_chain_candidate_ceiling_policy_v1_0.json",
+    "sha256": "9e17ddd70dab63d8f4775cb0a6b86cd5dc1f69067fa59f4b65a69fe01ff09d4d",
+    "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R1"
+  },
+  "runner_binding": {
+    "ref": "scripts/data_retrieval/run_dell_report_internal_chain_ceiling.py",
+    "sha256": "f67fd1b2d1e97a768198301d6e7cca597345e318649908a8378ca6e83ac4e3dd"
+  },
+  "execution_receipt": {
+    "clean_worktree_at_start": true,
+    "current_runtime_registry": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R38",
+    "scoped_request_count": 5,
+    "held_target_execution_count": 0,
+    "local_qwen_0_6B_query_embedding_batch_started": true,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "generation_model_calls": 0,
+    "external_capture_calls": 0,
+    "4B_embedding_calls": 0,
+    "reranker_calls": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0,
+    "gap_closures": 0,
+    "private_output_created": false,
+    "public_output_created": false,
+    "current_runtime_mutated": false
+  },
+  "terminal_error": {
+    "error_type": "ValueError",
+    "error_code": "dell_03B_source_record_id_missing",
+    "owning_stage": "S1_03B_runner_source_store_identity_projection",
+    "failure_point": "post_current_runtime_execution_pre_result_compilation_pre_output_write",
+    "observed_source_store_row_count": 1888,
+    "rows_with_top_level_source_record_id": 0,
+    "rows_with_top_level_evidence_id": 1888,
+    "root_cause": "The new runner assumed the current source JSONL uses the compiled-object field name source_record_id. The canonical source store uses evidence_id, while compiled object base views correctly project that identity as source_record_id.",
+    "not_a_source_gap": true,
+    "not_a_model_quality_failure": true,
+    "not_a_public_information_boundary": true
+  },
+  "failure_disposition": {
+    "R1_reuse_or_relabel_forbidden": true,
+    "same_attempt_retry_forbidden": true,
+    "same_stage_successor_required": true,
+    "required_fix": "Accept only the canonical source-store evidence_id field, prove exact uniqueness and equality to the receipt-bound source population, add a real-store regression, preserve all prior 03B scope and call budgets, then issue a fresh R2 authority after a clean commit.",
+    "scope_expansion_authorized": false
+  },
+  "authority": {
+    "R1_success": false,
+    "03B_complete": false,
+    "03C_authorized": false,
+    "03D_4B_embedding_authorized": false,
+    "03D_reranker_authorized": false,
+    "candidate_decision_authorized": false,
+    "evidence_promotion_authorized": false,
+    "proved_information_boundary_authorized": false,
+    "G3_pass": false,
+    "S1_pass": false,
+    "report_quality_pass": false,
+    "product_acceptance": false,
+    "publication": false,
+    "release_ready": false
+  },
+  "known_boundary": "R1 reached and consumed its one local Qwen-0.6B query batch but failed in the S1 runner before any private/public result write. The failure proves a source-store identity projection defect only; it does not change source content, current runtime, model quality, report gaps or downstream authority.",
+  "result_digest": "71dabc969173c575c6a32c25ba9fe93c459cd8ada685654ece38d5b3e94ffdf9"
+}

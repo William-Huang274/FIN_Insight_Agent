@@ -1,0 +1,257 @@
+{
+  "schema_version": "fin_ia_financial_research_kernel_v1_0",
+  "contract_revision": "fin_ia_0_1_3_s1_financial_research_kernel_v1_2",
+  "status": "provider_neutral_s1_retrieval_contract",
+  "policy": {
+    "candidate_generation_precedes_relevance_labels": true,
+    "provider_specific_wire_projection_outside_core": true,
+    "candidate_is_not_evidence": true,
+    "as_of_filter_fails_closed": true,
+    "local_first_external_only_for_residual_gaps": true,
+    "relationship_context_does_not_prove_allocation": true
+  },
+  "budgets": {
+    "candidates_per_slot": 8,
+    "candidates_per_document": 3,
+    "excerpt_characters": 520
+  },
+  "evidence_slots": [
+    {
+      "slot_id": "demand_volume_quality",
+      "business_question_zh": "需求来自真实部署还是拉货，订单、积压与收入转化是否可持续？",
+      "evidence_owner_scope": "subject",
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K", "EARNINGS_CALL_TRANSCRIPT"],
+      "required_source_roles": ["issuer_disclosure"],
+      "exact_phrases": ["demand", "backlog", "customer readiness"],
+      "lexical_terms": ["demand", "orders", "backlog", "shipments", "revenue conversion", "customer readiness", "cancellation", "pull-forward", "digestion"],
+      "forbidden_expansions": ["unrelated issuer", "future publication", "unbound reporting period"],
+      "reviewed_pack_slot_ids": ["demand_volume_quality"],
+      "facets": [
+        {"facet_id": "orders_and_backlog", "business_question_zh": "订单与积压是否真实增长？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["orders", "backlog"], "lexical_terms": ["orders", "backlog", "bookings", "pipeline"]},
+        {"facet_id": "conversion_and_durability", "business_question_zh": "订单向出货与收入转化是否可持续，是否存在拉货或消化风险？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["shipments", "customer readiness", "cancellation"], "lexical_terms": ["shipments", "revenue conversion", "customer readiness", "non-linearity", "cancellation", "pull-forward", "digestion"]}
+      ]
+    },
+    {
+      "slot_id": "operating_performance",
+      "business_question_zh": "最新经营结果、指引与分部表现如何改变研究判断？",
+      "evidence_owner_scope": "subject",
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K", "EARNINGS_CALL_TRANSCRIPT"],
+      "required_source_roles": ["issuer_disclosure"],
+      "exact_phrases": ["revenue", "operating income", "guidance"],
+      "lexical_terms": ["revenue", "growth", "operating income", "gross margin", "segment", "guidance", "outlook", "year over year"],
+      "forbidden_expansions": ["unrelated issuer", "future publication", "non-operating anecdote"],
+      "reviewed_pack_slot_ids": ["operating_performance"],
+      "facets": [
+        {"facet_id": "reported_results", "business_question_zh": "最新收入、增长与经营利润表现如何？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["revenue", "operating income"], "lexical_terms": ["revenue", "growth", "operating income", "segment results", "year over year"]},
+        {"facet_id": "guidance_and_outlook", "business_question_zh": "管理层最新指引与展望是什么？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["guidance", "outlook"], "lexical_terms": ["guidance", "outlook", "expected revenue", "expected gross margin", "full-year"]}
+      ]
+    },
+    {
+      "slot_id": "pricing_mix_value_capture",
+      "business_question_zh": "公司通过价格、产品组合、单位经济或服务附加值获得了多少利润？",
+      "evidence_owner_scope": "subject",
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K", "EARNINGS_CALL_TRANSCRIPT"],
+      "required_source_roles": ["issuer_disclosure"],
+      "exact_phrases": ["pricing", "product mix", "gross margin"],
+      "lexical_terms": ["pricing", "average selling price", "product mix", "gross margin", "operating margin", "unit economics", "incremental profit", "cost pass-through"],
+      "forbidden_expansions": ["unrelated business line", "future publication", "causal inference without disclosure"],
+      "reviewed_pack_slot_ids": ["pricing_mix_value_capture"],
+      "facets": [
+        {"facet_id": "pricing_and_mix", "business_question_zh": "价格与产品组合如何改变收入质量？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["pricing", "product mix", "average selling price"], "lexical_terms": ["pricing", "product mix", "average selling price", "price", "mix"]},
+        {"facet_id": "margin_and_incremental_profit", "business_question_zh": "增长是否转化为毛利率、经营利润率和增量利润？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["gross margin", "operating margin"], "lexical_terms": ["gross margin", "operating margin", "operating income", "incremental profit", "cost pass-through"]}
+      ]
+    },
+    {
+      "slot_id": "cash_conversion_balance_sheet",
+      "business_question_zh": "增长如何转化为现金流、营运资本、库存和信用风险？",
+      "evidence_owner_scope": "subject",
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"],
+      "required_source_roles": ["issuer_disclosure"],
+      "exact_phrases": ["cash flow", "working capital", "inventory"],
+      "lexical_terms": ["cash flow", "free cash flow", "working capital", "inventory", "receivables", "payment terms", "credit", "cash conversion"],
+      "forbidden_expansions": ["unrelated issuer", "future publication", "cash balance without operating context"],
+      "reviewed_pack_slot_ids": ["cash_conversion_balance_sheet"],
+      "facets": [
+        {"facet_id": "cash_generation", "business_question_zh": "利润如何转化为经营现金流和自由现金流？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["cash flow", "free cash flow"], "lexical_terms": ["cash flow from operations", "free cash flow", "cash conversion"]},
+        {"facet_id": "working_capital_risk", "business_question_zh": "增长是否带来应收、库存、付款条款和信用风险？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["working capital", "inventory", "payment terms"], "lexical_terms": ["working capital", "inventory", "receivables", "payment terms", "credit", "obsolete inventory"]}
+      ]
+    },
+    {
+      "slot_id": "capacity_inputs_execution",
+      "business_question_zh": "关键产能、零部件、良率和交付节奏是否支持研究主体兑现需求？",
+      "evidence_owner_scope": "subject_and_related",
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K", "EARNINGS_CALL_TRANSCRIPT"],
+      "required_source_roles": ["issuer_disclosure", "related_entity_disclosure"],
+      "exact_phrases": ["capacity", "supply", "allocation"],
+      "lexical_terms": ["capacity", "supply", "allocation", "yield", "lead time", "components", "shipments", "constraints", "advanced packaging", "memory"],
+      "forbidden_expansions": ["unrelated supplier", "future publication", "industry capacity treated as company allocation"],
+      "reviewed_pack_slot_ids": ["capacity_inputs_execution"],
+      "facets": [
+        {"facet_id": "subject_execution", "business_question_zh": "研究主体披露的部件、产能和交付约束是什么？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["capacity", "supply", "components"], "lexical_terms": ["capacity", "supply", "components", "lead time", "shipments", "constraints"]},
+        {"facet_id": "upstream_capacity_context", "business_question_zh": "上游披露提供了哪些产能、良率和封装背景，边界是什么？", "evidence_owner_scope": "subject_and_related", "required_source_roles": ["related_entity_context"], "exact_phrases": ["capacity", "yield", "advanced packaging"], "lexical_terms": ["capacity", "yield", "advanced packaging", "CoWoS", "HBM", "wafer", "allocation"]}
+      ]
+    },
+    {
+      "slot_id": "relationship_attribution",
+      "business_question_zh": "客户、供应商或生态伙伴的披露能否直接证明与研究主体的经济关系？",
+      "evidence_owner_scope": "subject_and_related",
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"],
+      "required_source_roles": ["issuer_disclosure", "related_entity_disclosure"],
+      "exact_phrases": ["customer", "supplier", "purchase commitments"],
+      "lexical_terms": ["customer", "supplier", "purchase commitments", "concentration", "allocation", "partnership", "platform", "orders", "relationship"],
+      "forbidden_expansions": ["topical co-mention treated as relationship", "future publication", "unnamed counterparty attribution"],
+      "reviewed_pack_slot_ids": ["relationship_attribution"],
+      "facets": [
+        {"facet_id": "subject_relationship_disclosure", "business_question_zh": "研究主体如何披露客户、供应商、承诺和集中度？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["customer", "supplier", "concentration"], "lexical_terms": ["customer", "supplier", "concentration", "purchase commitments", "large customers"]},
+        {"facet_id": "counterparty_direct_mention", "business_question_zh": "关联方是否直接点名研究主体并披露经济关系？", "evidence_owner_scope": "subject_and_related", "required_source_roles": ["related_entity_context"], "exact_phrases": ["customer", "supplier", "partnership"], "lexical_terms": ["customer", "supplier", "partnership", "purchase", "orders", "platform"]}
+      ]
+    },
+    {
+      "slot_id": "counterevidence_and_what_would_change",
+      "business_question_zh": "哪些反方事实会削弱当前判断，什么新证据会使判断改变？",
+      "evidence_owner_scope": "subject_and_related",
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"],
+      "required_source_roles": ["issuer_disclosure"],
+      "exact_phrases": ["risk", "competition", "cancellations"],
+      "lexical_terms": ["risk", "competition", "pricing pressure", "cancellations", "delays", "inventory", "customer concentration", "cyclicality", "substitution", "what would change"],
+      "forbidden_expansions": ["generic risk unrelated to thesis", "future publication", "unsupported downside scenario"],
+      "reviewed_pack_slot_ids": ["counterevidence_and_what_would_change"],
+      "facets": [
+        {"facet_id": "issuer_counterevidence", "business_question_zh": "研究主体披露的最强反方事实是什么？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["risk", "pricing pressure", "cancellations"], "lexical_terms": ["risk", "pricing pressure", "cancellations", "delays", "inventory", "customer concentration", "cyclicality"]},
+        {"facet_id": "upstream_or_demand_counterevidence", "business_question_zh": "上下游披露了哪些可能推翻当前判断的背景？", "evidence_owner_scope": "subject_and_related", "required_source_roles": ["related_entity_context"], "exact_phrases": ["risk", "competition", "supply demand mismatch"], "lexical_terms": ["risk", "competition", "supply demand mismatch", "substitution", "inventory correction"]}
+      ]
+    },
+    {
+      "slot_id": "regulatory_policy_exposure",
+      "business_question_zh": "出口管制、监管或政策变化如何影响需求、供给和可实现收入？",
+      "evidence_owner_scope": "subject_and_related",
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K"],
+      "required_source_roles": ["issuer_disclosure"],
+      "exact_phrases": ["export controls", "regulation", "government restrictions"],
+      "lexical_terms": ["export controls", "regulation", "government restrictions", "license requirements", "China", "compliance", "tariffs", "policy"],
+      "forbidden_expansions": ["policy commentary without issuer exposure", "future publication", "jurisdiction mismatch"],
+      "reviewed_pack_slot_ids": ["regulatory_policy_exposure"],
+      "facets": [
+        {"facet_id": "issuer_policy_exposure", "business_question_zh": "研究主体直接披露的出口、监管和合规暴露是什么？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["export controls", "regulation", "license requirements"], "lexical_terms": ["export controls", "regulation", "license requirements", "government restrictions", "China", "compliance", "tariffs"]}
+      ]
+    },
+    {
+      "slot_id": "capital_allocation_and_valuation",
+      "business_question_zh": "资本回报、资产负债表与截至日市场价格能否支持估值判断？",
+      "evidence_owner_scope": "subject",
+      "source_types": ["10-K", "10-Q", "8-K", "20-F", "40-F", "6-K", "MARKET_SNAPSHOT"],
+      "required_source_roles": ["issuer_disclosure", "point_in_time_market"],
+      "exact_phrases": ["share repurchases", "dividends", "market price"],
+      "lexical_terms": ["share repurchases", "dividends", "capital return", "net debt", "shares outstanding", "market price", "valuation", "earnings per share"],
+      "forbidden_expansions": ["current price used for historical as-of", "future publication", "valuation without denominator"],
+      "reviewed_pack_slot_ids": ["capital_allocation_and_valuation"],
+      "facets": [
+        {"facet_id": "capital_allocation", "business_question_zh": "公司如何回购、分红和管理净债务？", "evidence_owner_scope": "subject", "required_source_roles": ["issuer_disclosure"], "exact_phrases": ["share repurchases", "dividends", "capital return"], "lexical_terms": ["share repurchases", "dividends", "capital return", "net debt", "shares outstanding"]},
+        {"facet_id": "point_in_time_valuation", "business_question_zh": "截至日市场价格和权威分母能否形成估值？", "evidence_owner_scope": "subject", "required_source_roles": ["point_in_time_market"], "exact_phrases": ["market price", "valuation"], "lexical_terms": ["market price", "valuation", "shares outstanding", "earnings per share"]}
+      ]
+    }
+  ],
+  "industry_packs": [
+    {
+      "pack_id": "ai_infrastructure_oem",
+      "lexical_terms": ["AI infrastructure", "AI-optimized server", "infrastructure solutions group"],
+      "slot_terms": {
+        "demand_volume_quality": ["AI server orders", "AI server backlog", "deployment readiness"],
+        "pricing_mix_value_capture": ["ISG margin", "AI server revenue", "server mix"],
+        "capacity_inputs_execution": ["GPU supply", "HBM", "server components"],
+        "counterevidence_and_what_would_change": ["large orders", "working capital", "pricing pressure"]
+      }
+    },
+    {
+      "pack_id": "memory_semiconductor",
+      "lexical_terms": ["HBM", "DRAM", "NAND", "memory semiconductor"],
+      "slot_terms": {
+        "demand_volume_quality": ["HBM demand", "data center demand", "bit shipments"],
+        "pricing_mix_value_capture": ["HBM mix", "DRAM pricing", "cost reductions"],
+        "capacity_inputs_execution": ["HBM capacity", "yield ramp", "wafer allocation"],
+        "counterevidence_and_what_would_change": ["memory cycle", "inventory correction", "supply growth"]
+      }
+    },
+    {
+      "pack_id": "accelerated_compute_platform",
+      "lexical_terms": ["accelerated computing", "data center", "AI infrastructure", "GPU"],
+      "slot_terms": {
+        "demand_volume_quality": ["cloud demand", "inference demand", "training demand"],
+        "pricing_mix_value_capture": ["data center revenue", "platform mix", "gross margin"],
+        "capacity_inputs_execution": ["CoWoS", "advanced packaging", "HBM supply"],
+        "counterevidence_and_what_would_change": ["customer concentration", "export controls", "competitive alternatives"]
+      }
+    }
+  ],
+  "cases": [
+    {
+      "case_key": "DELL",
+      "subject": {
+        "ticker": "DELL",
+        "legal_name": "Dell Technologies Inc.",
+        "aliases": ["Dell Technologies", "Dell"]
+      },
+      "research_as_of": "2026-08-06",
+      "industry_pack_id": "ai_infrastructure_oem",
+      "related_entities": [
+        {"ticker": "NVDA", "legal_name": "NVIDIA Corporation", "aliases": ["NVIDIA", "Nvidia"], "relationship_direction": "supplier_to_subject"},
+        {"ticker": "MU", "legal_name": "Micron Technology, Inc.", "aliases": ["Micron Technology", "Micron"], "relationship_direction": "supplier_to_subject"},
+        {"ticker": "TSM", "legal_name": "Taiwan Semiconductor Manufacturing Company Limited", "aliases": ["TSMC", "Taiwan Semiconductor"], "relationship_direction": "upstream_supplier_to_subject"},
+        {"ticker": "MSFT", "legal_name": "Microsoft Corporation", "aliases": ["Microsoft", "Azure"], "relationship_direction": "customer_or_ecosystem_to_subject"}
+      ],
+      "slot_terms": {
+        "demand_volume_quality": ["AI-optimized solutions", "customer readiness", "revenue variability"],
+        "pricing_mix_value_capture": ["AI-optimized servers revenue", "ISG operating income"],
+        "cash_conversion_balance_sheet": ["key components", "longer payment terms"],
+        "capacity_inputs_execution": ["component transitions", "GPU allocation", "HBM allocation"],
+        "relationship_attribution": ["large customers", "cloud service providers"],
+        "capital_allocation_and_valuation": ["Dell capital return", "Dell share repurchases"]
+      }
+    },
+    {
+      "case_key": "MU",
+      "subject": {
+        "ticker": "MU",
+        "legal_name": "Micron Technology, Inc.",
+        "aliases": ["Micron Technology", "Micron"]
+      },
+      "research_as_of": "2026-08-06",
+      "industry_pack_id": "memory_semiconductor",
+      "related_entities": [
+        {"ticker": "NVDA", "legal_name": "NVIDIA Corporation", "aliases": ["NVIDIA", "Nvidia"], "relationship_direction": "customer_or_demand_signal_to_subject"},
+        {"ticker": "TSM", "legal_name": "Taiwan Semiconductor Manufacturing Company Limited", "aliases": ["TSMC", "Taiwan Semiconductor"], "relationship_direction": "upstream_foundry_context"},
+        {"ticker": "DELL", "legal_name": "Dell Technologies Inc.", "aliases": ["Dell Technologies", "Dell"], "relationship_direction": "customer_or_demand_signal_to_subject"},
+        {"ticker": "MSFT", "legal_name": "Microsoft Corporation", "aliases": ["Microsoft", "Azure"], "relationship_direction": "end_demand_context"}
+      ],
+      "slot_terms": {
+        "demand_volume_quality": ["HBM sold out", "HBM customer qualification", "data center revenue"],
+        "pricing_mix_value_capture": ["HBM revenue mix", "DRAM gross margin", "pricing improvement"],
+        "capacity_inputs_execution": ["HBM3E", "HBM4", "yield", "cleanroom capacity"],
+        "counterevidence_and_what_would_change": ["memory oversupply", "customer inventory", "capital intensity"]
+      }
+    },
+    {
+      "case_key": "NVDA",
+      "subject": {
+        "ticker": "NVDA",
+        "legal_name": "NVIDIA Corporation",
+        "aliases": ["NVIDIA", "Nvidia"]
+      },
+      "research_as_of": "2026-08-06",
+      "industry_pack_id": "accelerated_compute_platform",
+      "related_entities": [
+        {"ticker": "TSM", "legal_name": "Taiwan Semiconductor Manufacturing Company Limited", "aliases": ["TSMC", "Taiwan Semiconductor"], "relationship_direction": "supplier_to_subject"},
+        {"ticker": "MU", "legal_name": "Micron Technology, Inc.", "aliases": ["Micron Technology", "Micron"], "relationship_direction": "supplier_to_subject"},
+        {"ticker": "DELL", "legal_name": "Dell Technologies Inc.", "aliases": ["Dell Technologies", "Dell"], "relationship_direction": "customer_to_subject"},
+        {"ticker": "MSFT", "legal_name": "Microsoft Corporation", "aliases": ["Microsoft", "Azure"], "relationship_direction": "customer_or_ecosystem_to_subject"}
+      ],
+      "slot_terms": {
+        "demand_volume_quality": ["Blackwell demand", "cloud service providers", "inference scaling"],
+        "pricing_mix_value_capture": ["data center compute revenue", "networking revenue", "gross margin"],
+        "capacity_inputs_execution": ["Blackwell supply", "CoWoS capacity", "HBM availability"],
+        "regulatory_policy_exposure": ["China export controls", "license requirements"],
+        "counterevidence_and_what_would_change": ["customer concentration", "competitive chips", "architecture transition"]
+      }
+    }
+  ]
+}

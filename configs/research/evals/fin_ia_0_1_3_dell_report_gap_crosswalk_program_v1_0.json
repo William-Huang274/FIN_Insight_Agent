@@ -1,0 +1,348 @@
+{
+  "schema_version": "fin_ia_dell_report_gap_crosswalk_program_v1_0",
+  "status": "approved_zero_call_crosswalk_materialization",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "governance_bindings": {
+    "baseline_manifest_digest": "3faebbd9a53639c5e1dba4479d212bb8f0fccb255eb1391fbf59fdc55690dd14",
+    "evaluation_protocol_digest": "5e377dc03044112b3b3187b8936f218d533a1c0d33e634f3416222ae6afba1a1",
+    "execution_authority_template_digest": "08307e0f12c3d0c0dba8c750bb75c2c42d02e0453b9062975313967a0c4ffbf4"
+  },
+  "expected_counts": {
+    "pack_gaps": 14,
+    "dynamic_unit_gaps": 9,
+    "writer_groups": 4,
+    "writer_gap_refs": 10,
+    "S2_bridge_gaps": 4,
+    "pack_gaps_not_selected_by_unit": 5,
+    "pack_gaps_not_referenced_by_writer": 4
+  },
+  "expected_narrowed_gap_ids": [
+    "dell-gap-pricing-asp",
+    "dell-gap-pricing-units",
+    "dell-gap-supplier-capacity-readthrough"
+  ],
+  "expected_pack_gaps_not_selected_by_unit": [
+    "dell-gap-ai-working-capital",
+    "dell-gap-price-in-boundary",
+    "dell-gap-scenario-sensitivity",
+    "dell-gap-supplier-capacity-readthrough",
+    "dell-gap-valuation-basis"
+  ],
+  "expected_pack_gaps_not_referenced_by_writer": [
+    "dell-gap-price-in-boundary",
+    "dell-gap-scenario-sensitivity",
+    "dell-gap-supplier-capacity-readthrough",
+    "dell-gap-valuation-basis"
+  ],
+  "writer_gap_ref_overrides": {
+    "GAP::EF4839B4BF55ADD0": "dell-gap-ai-working-capital"
+  },
+  "writer_group_policies": [
+    {
+      "writer_group_id": "working_capital_attribution",
+      "expected_pack_gap_ids": [
+        "dell-gap-ai-working-capital"
+      ],
+      "reader_label_zh": "AI 营运资金归因与规模",
+      "reader_label_en": "AI working-capital attribution and magnitude",
+      "report_placement": "cash_conversion_and_balance_sheet"
+    },
+    {
+      "writer_group_id": "demand_durability_and_supply",
+      "expected_pack_gap_ids": [
+        "dell-gap-capacity-release-timing",
+        "dell-gap-capacity-utilization-yield",
+        "dell-gap-demand-pull-forward-digestion",
+        "dell-gap-hbm-supply"
+      ],
+      "reader_label_zh": "需求持续性与供应兑现",
+      "reader_label_en": "Demand durability and supply execution",
+      "report_placement": "demand_quality_and_supply_chain"
+    },
+    {
+      "writer_group_id": "price_volume_mix",
+      "expected_pack_gap_ids": [
+        "dell-gap-price-volume-mix-bridge",
+        "dell-gap-pricing-asp",
+        "dell-gap-pricing-units"
+      ],
+      "reader_label_zh": "台数、ASP 与价格-数量-组合桥",
+      "reader_label_en": "Units, ASP and price-volume-mix bridge",
+      "report_placement": "pricing_mix_and_value_capture"
+    },
+    {
+      "writer_group_id": "research_method_thresholds",
+      "expected_pack_gap_ids": [
+        "dell-gap-invalidation-threshold",
+        "dell-gap-observable-quarterly-threshold"
+      ],
+      "reader_label_zh": "研究失效与季度复核阈值",
+      "reader_label_en": "Research invalidation and quarterly review thresholds",
+      "report_placement": "counter_thesis_and_what_would_change"
+    }
+  ],
+  "gap_policies": [
+    {
+      "gap_id": "dell-gap-capacity-release-timing",
+      "stage_owner": "S1_S3_boundary",
+      "source_or_method_type": "source_evidence_boundary",
+      "research_disposition": "source_route_pending",
+      "reader_label_zh": "供应产能释放时间与 Dell 分配",
+      "reader_label_en": "Supplier capacity release timing and Dell allocation",
+      "why_it_matters_en": "A supplier ramp does not establish when capacity becomes usable or how much reaches Dell.",
+      "what_evidence_would_change_en": "An official supplier timetable plus Dell disclosure or verifiable allocation evidence.",
+      "report_placement": "demand_quality_and_supply_chain",
+      "company_vs_industry_boundary": "Supplier capacity is industry context until Dell allocation is directly supported.",
+      "numeric_authority_boundary": "No Dell capacity quantity or delivery share may be inferred.",
+      "next_legal_action": "execute_bound_supplier_timetable_and_Dell_allocation_routes",
+      "stop_boundary": "Do not declare non-disclosure until reachable official routes and candidate admission are receipted.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-hbm-supply",
+      "stage_owner": "S1_S3_boundary",
+      "source_or_method_type": "source_evidence_boundary",
+      "research_disposition": "source_route_pending",
+      "reader_label_zh": "HBM 供给、良率与 Dell 分配",
+      "reader_label_en": "HBM supply, yield and Dell allocation",
+      "why_it_matters_en": "General memory commentary does not establish HBM availability, yield or Dell-specific allocation.",
+      "what_evidence_would_change_en": "Admissible HBM capacity, tightness, yield or allocation evidence tied to the relevant period and relationship.",
+      "report_placement": "demand_quality_and_supply_chain",
+      "company_vs_industry_boundary": "Memory-industry evidence remains context unless the Dell delivery path is proved.",
+      "numeric_authority_boundary": "No HBM quantity, yield or Dell share may be created from narrative context.",
+      "next_legal_action": "execute_bound_HBM_capacity_yield_and_allocation_routes",
+      "stop_boundary": "Generic memory news and unavailable routes do not prove a public-information boundary.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-capacity-utilization-yield",
+      "stage_owner": "S1_S3_boundary",
+      "source_or_method_type": "source_evidence_boundary",
+      "research_disposition": "source_route_pending",
+      "reader_label_zh": "供应链利用率与良率",
+      "reader_label_en": "Supply-chain utilization and yield",
+      "why_it_matters_en": "Product ramps and advanced-node revenue are not measurements of utilization or yield.",
+      "what_evidence_would_change_en": "Supplier prepared remarks or audited capacity, utilization or yield disclosure for the relevant period.",
+      "report_placement": "demand_quality_and_supply_chain",
+      "company_vs_industry_boundary": "Supplier process metrics cannot be converted into Dell delivery metrics without a relationship bridge.",
+      "numeric_authority_boundary": "No utilization or yield percentage may be inferred from ramp language.",
+      "next_legal_action": "execute_bound_supplier_utilization_and_yield_routes",
+      "stop_boundary": "Preserve a commercial-data boundary if admissible sources remain unavailable after the full ladder.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-price-in-boundary",
+      "stage_owner": "S2_S3_boundary",
+      "source_or_method_type": "numeric_or_bridge_boundary",
+      "research_disposition": "S2_numeric_or_bridge_gap",
+      "reader_label_zh": "增长预期是否已反映在价格中",
+      "reader_label_en": "Whether growth expectations are priced in",
+      "why_it_matters_en": "Operating growth cannot be translated into an investment view without point-in-time market context.",
+      "what_evidence_would_change_en": "A bound market price, valuation interval and explicit as-of date with comparable definitions.",
+      "report_placement": "valuation_and_price_in",
+      "company_vs_industry_boundary": "Peer or sector multiples cannot substitute for Dell point-in-time market facts.",
+      "numeric_authority_boundary": "Market PIT and valuation calculations must be produced by the numeric authority layer.",
+      "next_legal_action": "bind_market_PIT_and_reproducible_valuation_inputs_in_S2",
+      "stop_boundary": "Do not present a price-in conclusion while the market PIT surface is absent.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-scenario-sensitivity",
+      "stage_owner": "S2",
+      "source_or_method_type": "numeric_or_bridge_boundary",
+      "research_disposition": "S2_numeric_or_bridge_gap",
+      "reader_label_zh": "估值情景与敏感度",
+      "reader_label_en": "Valuation scenarios and sensitivity",
+      "why_it_matters_en": "A thesis without frozen scenario inputs does not show how uncertainty changes value or risk.",
+      "what_evidence_would_change_en": "Reproducible base facts plus explicit owner assumptions, ranges and sensitivity formulas.",
+      "report_placement": "valuation_and_price_in",
+      "company_vs_industry_boundary": "Industry scenarios may inform assumptions but are not Dell reported facts.",
+      "numeric_authority_boundary": "Every scenario value must be typed as an assumption or estimate, never an exact fact.",
+      "next_legal_action": "freeze_S2_scenario_inputs_ranges_and_formula_lineage",
+      "stop_boundary": "Do not generate model-memory valuation inputs or backfill a false exact point estimate.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-valuation-basis",
+      "stage_owner": "S2_S3_boundary",
+      "source_or_method_type": "numeric_or_bridge_boundary",
+      "research_disposition": "S2_numeric_or_bridge_gap",
+      "reader_label_zh": "估值基准与市场时点",
+      "reader_label_en": "Valuation basis and market timestamp",
+      "why_it_matters_en": "The report cannot make a valuation claim without a dated price and a defined multiple or cash-flow basis.",
+      "what_evidence_would_change_en": "Market PIT data or owner-supplied valuation date, metric definitions and comparable basis.",
+      "report_placement": "valuation_and_price_in",
+      "company_vs_industry_boundary": "A peer multiple is context until its period, metric and comparability are reconciled to Dell.",
+      "numeric_authority_boundary": "Valuation inputs and formulas require period, unit and source lineage in S2.",
+      "next_legal_action": "bind_dated_market_and_valuation_basis_in_S2",
+      "stop_boundary": "No valuation or price-in conclusion may be written from filing-only evidence.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-ai-working-capital",
+      "stage_owner": "S1_S2_boundary",
+      "source_or_method_type": "source_evidence_boundary",
+      "research_disposition": "candidate_admission_pending",
+      "reader_label_zh": "AI 营运资金归因与规模",
+      "reader_label_en": "AI working-capital attribution and magnitude",
+      "why_it_matters_en": "Company balance-sheet movements are only proxies until product attribution and a cash-flow reconciliation are available.",
+      "what_evidence_would_change_en": "Qualified review of existing candidates followed, if still needed, by Dell product attribution, turnover or reconciled cash-flow disclosure.",
+      "report_placement": "cash_conversion_and_balance_sheet",
+      "company_vs_industry_boundary": "Company totals cannot be assigned to the AI product line without direct attribution.",
+      "numeric_authority_boundary": "AR, inventory and AP stock changes are not an AI cash-absorption measure.",
+      "next_legal_action": "complete_qualified_human_admission_then_execute_only_residual_working_capital_routes",
+      "stop_boundary": "Do not call the gap closed or commercial while sixteen human-required packet items remain undecided.",
+      "candidate_admission_request_ids": [
+        "REQ::c21c10d6e8f13263cf69ffa5"
+      ],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-invalidation-threshold",
+      "stage_owner": "S3",
+      "source_or_method_type": "research_method_parameter",
+      "research_disposition": "S3_method_parameter",
+      "reader_label_zh": "核心判断失效阈值",
+      "reader_label_en": "Core-thesis invalidation threshold",
+      "why_it_matters_en": "Observed risks cannot reverse a thesis consistently until materiality and threshold rules are frozen.",
+      "what_evidence_would_change_en": "A preregistered research-method threshold tied to a metric or event, direction, window, owner and response route.",
+      "report_placement": "counter_thesis_and_what_would_change",
+      "company_vs_industry_boundary": "The threshold is a research choice and must not be attributed to Dell or a supplier.",
+      "numeric_authority_boundary": "Any numeric threshold is an owner-approved method parameter, not a reported fact.",
+      "next_legal_action": "freeze_owner_approved_invalidation_method_parameter_in_S3",
+      "stop_boundary": "Do not search indefinitely for a company-defined research threshold or present an unfrozen value as disclosed.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-observable-quarterly-threshold",
+      "stage_owner": "S3",
+      "source_or_method_type": "research_method_parameter",
+      "research_disposition": "S3_method_parameter",
+      "reader_label_zh": "季度复核阈值",
+      "reader_label_en": "Quarterly reassessment threshold",
+      "why_it_matters_en": "A monitoring list is not operational unless each trigger has a direction, window, threshold authority and follow-up action.",
+      "what_evidence_would_change_en": "A frozen method register using current baselines and owner risk preferences, kept separate from company disclosure.",
+      "report_placement": "counter_thesis_and_what_would_change",
+      "company_vs_industry_boundary": "Reported metrics may feed the trigger, but the trigger rule belongs to the research method.",
+      "numeric_authority_boundary": "Baseline facts remain S2 authority; trigger thresholds remain typed S3 parameters.",
+      "next_legal_action": "freeze_quarterly_WWC_metric_window_threshold_owner_and_route",
+      "stop_boundary": "Do not accept a generic continue-to-monitor statement as an executable WWC.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-demand-pull-forward-digestion",
+      "stage_owner": "S1_S3_boundary",
+      "source_or_method_type": "source_evidence_boundary",
+      "research_disposition": "source_route_pending",
+      "reader_label_zh": "需求提前采购与后续消化",
+      "reader_label_en": "Demand pull-forward and later digestion",
+      "why_it_matters_en": "Backlog and revenue growth can coexist with customer concentration, cancellation risk or non-linear shipment timing.",
+      "what_evidence_would_change_en": "Bound statements or data on cancellations, delivery cadence, customer inventory, pull-forward or digestion.",
+      "report_placement": "demand_quality_and_supply_chain",
+      "company_vs_industry_boundary": "Industry demand does not prove Dell order durability or customer inventory health.",
+      "numeric_authority_boundary": "No pull-forward magnitude may be inferred from backlog or revenue co-movement.",
+      "next_legal_action": "execute_bound_Dell_and_customer_durability_routes",
+      "stop_boundary": "Retain an open commercial boundary while mandatory source routes or candidates remain unadjudicated.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-pricing-asp",
+      "stage_owner": "S1_S2_boundary",
+      "source_or_method_type": "numeric_or_bridge_boundary",
+      "research_disposition": "narrowed",
+      "reader_label_zh": "Dell AI 服务器 ASP",
+      "reader_label_en": "Dell AI-server ASP",
+      "why_it_matters_en": "Revenue and mix disclosure do not reveal a company-wide AI-server average selling price.",
+      "what_evidence_would_change_en": "Admitted Dell price or configuration evidence with a defined denominator and period, or an explicitly typed estimate.",
+      "report_placement": "pricing_mix_and_value_capture",
+      "company_vs_industry_boundary": "Bundles and market samples cannot be substituted for Dell aggregate ASP.",
+      "numeric_authority_boundary": "A bounded quote is not a company NumericFact and cannot be divided into an ASP.",
+      "next_legal_action": "retain_narrowed_status_and_execute_only_residual_ASP_routes_before_S2_recompile",
+      "stop_boundary": "Do not compute PVM or company ASP from bundles, four-system procurement samples or industry prices.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-price-volume-mix-bridge",
+      "stage_owner": "S2",
+      "source_or_method_type": "numeric_or_bridge_boundary",
+      "research_disposition": "S2_numeric_or_bridge_gap",
+      "reader_label_zh": "价格-数量-组合桥",
+      "reader_label_en": "Price-volume-mix bridge",
+      "why_it_matters_en": "Product revenue growth cannot be decomposed while price, unit and configuration weights are missing.",
+      "what_evidence_would_change_en": "Compatible Dell ASP, shipment units and mix weights with same-period reconciliation to reported revenue.",
+      "report_placement": "pricing_mix_and_value_capture",
+      "company_vs_industry_boundary": "Industry shipments or pricing may form scenarios but cannot become Dell bridge inputs without attribution.",
+      "numeric_authority_boundary": "Price, volume and mix effects remain null until S2 has compatible authoritative inputs.",
+      "next_legal_action": "recompile_S2_PVM_only_after_ASP_units_and_mix_inputs_are_authorized",
+      "stop_boundary": "PVM must remain null; no model or Writer may fill missing bridge terms.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-pricing-units",
+      "stage_owner": "S1_S2_boundary",
+      "source_or_method_type": "numeric_or_bridge_boundary",
+      "research_disposition": "narrowed",
+      "reader_label_zh": "Dell AI 服务器出货台数或等价单位",
+      "reader_label_en": "Dell AI-server shipments or equivalent units",
+      "why_it_matters_en": "Reported AI-server revenue has no compatible shipment count or compute-unit denominator.",
+      "what_evidence_would_change_en": "Admitted Dell shipment or equivalent-unit evidence with period, entity and denominator definitions.",
+      "report_placement": "pricing_mix_and_value_capture",
+      "company_vs_industry_boundary": "Industry shipments and procurement quantities cannot be re-labeled as Dell company shipments.",
+      "numeric_authority_boundary": "Units must be typed and period-aligned before they can enter ASP or PVM formulas.",
+      "next_legal_action": "retain_narrowed_status_and_execute_only_residual_unit_routes_before_S2_recompile",
+      "stop_boundary": "Do not infer Dell units from industry share, contract bundles or component quantities.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    },
+    {
+      "gap_id": "dell-gap-supplier-capacity-readthrough",
+      "stage_owner": "S1_S3_boundary",
+      "source_or_method_type": "source_evidence_boundary",
+      "research_disposition": "narrowed",
+      "reader_label_zh": "供应商产能对 Dell 的映射",
+      "reader_label_en": "Supplier-capacity read-through to Dell",
+      "why_it_matters_en": "MU, NVIDIA and TSMC disclosures are useful industry context but do not establish Dell allocation or delivery share.",
+      "what_evidence_would_change_en": "A verified Dell-supplier relationship, allocation or delivery bridge with direction and period.",
+      "report_placement": "supply_context_boundary_register",
+      "company_vs_industry_boundary": "Supplier growth remains directional context and may not be presented as Dell-specific capacity.",
+      "numeric_authority_boundary": "No supplier share or capacity amount may be assigned to Dell without a typed relationship bridge.",
+      "next_legal_action": "retain_narrowed_industry_context_and_execute_only_residual_Dell_allocation_routes",
+      "stop_boundary": "Narrowed does not mean closed; preserve the Dell attribution boundary in the report.",
+      "candidate_admission_request_ids": [],
+      "closure_receipt": null
+    }
+  ],
+  "independent_S2_bridge_gap_policy": {
+    "gap_id": "dell-gap-product-profit-attribution",
+    "must_not_be_pack_gap": true,
+    "reader_label_zh": "AI 服务器产品利润归因",
+    "reader_label_en": "AI-server product-profit attribution",
+    "report_placement": "pricing_mix_and_value_capture",
+    "current_value_state": "null_until_authorized_inputs",
+    "what_evidence_would_change": "Product revenue, cost and operating-expense attribution or an audited product margin bridge."
+  },
+  "authority": {
+    "model_calls": 0,
+    "provider_calls": 0,
+    "network_calls": 0,
+    "embedding_calls": 0,
+    "reranker_calls": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0,
+    "gap_closures": 0
+  },
+  "known_boundary": "This program only compiles an explicit hierarchy and three projections. Technical-chain closure, unit selection, research disposition and next action are separate axes; no 14-to-9-to-4 count change is evidence of gap closure.",
+  "program_digest": "95f9826cf25eaf86c1f77969ce4e45577c0b7756ac86385debe9237a745130ae"
+}

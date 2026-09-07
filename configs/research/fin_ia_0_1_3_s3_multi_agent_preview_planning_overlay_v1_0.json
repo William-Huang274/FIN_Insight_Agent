@@ -1,0 +1,16 @@
+{
+  "schema_version": "fin_ia_multi_agent_preview_planning_overlay_v1_0",
+  "status": "provider_neutral_preview_proposal_execution_budget_separation",
+  "base_policy_resource_id": "application.config.current_research_planning_policy",
+  "max_proposed_atoms_override": 20,
+  "max_evidence_requests_must_remain": 12,
+  "selection_strategy_must_remain": "required_slot_first_then_provider_neutral_facet_priority",
+  "authority": {
+    "changes_research_evidence_or_numeric_authority": false,
+    "changes_execution_request_budget": false,
+    "records_deferred_atoms": true,
+    "provider_or_model_specific": false,
+    "product_pointer_promotion": false
+  },
+  "reason": "Six natural specialist plans contain thirteen valid topology facets. Proposal capacity must permit all facets to reach the deterministic required-slot and priority selector while the twelve-request execution ceiling remains unchanged."
+}

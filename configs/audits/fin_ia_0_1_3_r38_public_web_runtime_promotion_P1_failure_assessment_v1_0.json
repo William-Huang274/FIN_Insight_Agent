@@ -1,0 +1,24 @@
+{
+  "schema_version": "fin_ia_runtime_promotion_failure_assessment_v1_0",
+  "attempt_id": "r38-public-web-runtime-promotion-p1-20260825T0457+0800",
+  "status": "failed_before_output_materialization_successor_required",
+  "recorded_at": "2026-08-25T04:57:00+08:00",
+  "stage": "promotion_module_import",
+  "error_type": "ImportError",
+  "error": "cannot import name load_hybrid_candidate_runtime_policy from retrieval.hybrid_candidate_runtime",
+  "earliest_faulty_artifact": "scripts/data_retrieval/promote_s1_reviewed_public_web_incremental_to_current_runtime.py",
+  "root_cause": "the promotion successor referenced an API name that does not exist; the hybrid runtime validates policies through LocalQwenHybridCandidateRuntime.from_policy and its current schema also forbids extra successor fields",
+  "required_fix": "remove the nonexistent import, retain the predecessor policy's exact field set, update only the bound object/cache paths, and rely on current binding plus focused runtime tests for validation",
+  "outputs_created": [],
+  "authority": {
+    "predecessor_registry_mutated": false,
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "paid_tool_calls": 0,
+    "S1_qualified": false,
+    "release": false
+  },
+  "known_boundary": "The R38 source/object and embedding successor artifacts already existed before this promotion attempt and remain valid inputs. P1 created no current runtime outputs and cannot be reclassified as a successful promotion.",
+  "result_digest": "0d28d20b582e35c8242e33aef9114d08ce0820eaa15b4eaeeaf26b1f560413ef"
+}

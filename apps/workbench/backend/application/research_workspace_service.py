@@ -182,6 +182,16 @@ class ResearchWorkspaceService:
                 "residual_gaps": deepcopy(pack["residual_gaps"]),
                 "consumer_contract": deepcopy(pack["consumer_contract"]),
                 "hard_boundaries": deepcopy(pack["hard_boundaries"]),
+                "canonical_spine": deepcopy(pack.get("canonical_spine")),
+                "product_readiness": deepcopy(
+                    pack.get("product_readiness")
+                ),
+                "quantitative_authority": deepcopy(
+                    pack.get("quantitative_authority")
+                ),
+                "actionable_research_state": deepcopy(
+                    pack.get("actionable_research_state")
+                ),
                 "known_boundary": str(self._config["known_boundary"]),
             }
         )
@@ -386,7 +396,8 @@ class ResearchWorkspaceService:
             and bool(_DIGEST.fullmatch(str(value.get("evidence_pack_result_digest") or "")))
             and isinstance(surface, Mapping)
             and surface.get("primary_route") == "/workspace"
-            and surface.get("available_surfaces") == ["overview", "evidence"]
+            and surface.get("available_surfaces")
+            == ["overview", "evidence", "retrieval"]
             and surface.get("mutable_case_creation") is False
             and surface.get("complete_investment_report_claimed") is False
             and surface.get("model_or_network_calls") == 0

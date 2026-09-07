@@ -1,0 +1,66 @@
+{
+  "schema_version": "fin_ia_research_planner_atoms_v1_0",
+  "objective_id": "ROC::d2fe9a16317738b8a2bc2d95",
+  "atoms": [
+    {
+      "facet_id": "orders_and_backlog",
+      "metric_ids": ["orders", "backlog", "shipments"],
+      "product_intents": ["HBM and data center business", "HBM4 shipment and capacity", "customer commitment and purchase structure"],
+      "target_entity": "MU"
+    },
+    {
+      "facet_id": "conversion_and_durability",
+      "metric_ids": ["orders", "shipments"],
+      "product_intents": ["HBM and data center business", "HBM4 shipment and capacity", "customer commitment and purchase structure"],
+      "target_entity": "MU"
+    },
+    {
+      "facet_id": "reported_results",
+      "metric_ids": ["revenue", "operating_income", "net_income", "gross_margin"],
+      "product_intents": ["HBM and data center business"],
+      "target_entity": "MU"
+    },
+    {
+      "facet_id": "guidance_and_outlook",
+      "metric_ids": ["gross_margin", "operating_margin"],
+      "product_intents": ["HBM and data center business", "HBM4 shipment and capacity"],
+      "target_entity": "MU"
+    },
+    {
+      "facet_id": "pricing_and_mix",
+      "metric_ids": ["revenue", "gross_margin"],
+      "product_intents": ["HBM and data center business"],
+      "target_entity": "MU"
+    },
+    {
+      "facet_id": "margin_and_incremental_profit",
+      "metric_ids": ["gross_margin", "operating_income", "operating_margin"],
+      "product_intents": ["HBM and data center business"],
+      "target_entity": "MU"
+    },
+    {
+      "facet_id": "cash_generation",
+      "metric_ids": ["operating_cash_flow", "free_cash_flow", "capital_expenditures"],
+      "product_intents": ["cash conversion", "HBM and data center business"],
+      "target_entity": "MU"
+    },
+    {
+      "facet_id": "subject_execution",
+      "metric_ids": ["capacity", "yield", "shipments"],
+      "product_intents": ["HBM4 shipment and capacity", "HBM and data center business"],
+      "target_entity": "MU"
+    },
+    {
+      "facet_id": "issuer_counterevidence",
+      "metric_ids": ["inventory"],
+      "product_intents": ["HBM and data center business", "customer commitment and purchase structure"],
+      "target_entity": "MU"
+    },
+    {
+      "facet_id": "upstream_or_demand_counterevidence",
+      "metric_ids": ["inventory"],
+      "product_intents": ["advanced packaging and CoWoS capacity", "accelerator demand and supply constraint read-through", "HBM and data center business"],
+      "target_entity": "MU"
+    }
+  ]
+}

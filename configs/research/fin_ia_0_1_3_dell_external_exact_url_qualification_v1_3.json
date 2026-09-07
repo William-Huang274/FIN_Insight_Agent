@@ -1,0 +1,159 @@
+{
+  "schema_version": "fin_ia_dell_external_exact_url_qualification_config_v1_0",
+  "status": "frozen_zero_model_exact_url_qualification",
+  "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+  "research_as_of": "2026-09-02T00:00:00Z",
+  "data_snapshot_id": "dell_external_official_exact_url_set_20260902_v1_3",
+  "transport": "exa_hosted_web_fetch",
+  "capture_authority": "qualification_only",
+  "production_status": "HOLD",
+  "candidate_is_not_evidence": true,
+  "model_calls_authorized": false,
+  "fail_fast": true,
+  "routes": [
+    {
+      "route_id": "E01_OPENAI_GPT56_COMPUTE",
+      "branch_id": "Q6_MODEL_COMPUTE_DEMAND",
+      "official_url": "https://openai.com/index/gpt-5-6/",
+      "source_identity": {
+        "publisher": "OpenAI",
+        "document_title": "GPT-5.6: Frontier intelligence that scales with your ambition",
+        "source_period": "2026-07-09",
+        "official_domain": "openai.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["OpenAI"]
+        },
+        {
+          "group_id": "document_title",
+          "any_of": ["GPT-5.6"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "internal_research_compute_growth",
+          "any_of": ["100-fold", "100x", "100×"]
+        },
+        {
+          "group_id": "agentic_token_growth",
+          "any_of": ["22-fold", "22x", "22×"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    },
+    {
+      "route_id": "E02_TSMC_2Q26_TRANSCRIPT",
+      "branch_id": "Q5_SUPPLY_AND_PRICE",
+      "official_url": "https://investor.tsmc.com/english/encrypt/files/encrypt_file/reports/2026-08/3e494f0c14dd0890f897aa044415e21d93486cc4/TSMC%202Q26%20Transcript.pdf",
+      "source_identity": {
+        "publisher": "Taiwan Semiconductor Manufacturing Company Limited",
+        "document_title": "TSMC 2Q26 Transcript",
+        "source_period": "2026 Q2",
+        "official_domain": "investor.tsmc.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["TSMC", "Taiwan Semiconductor Manufacturing Company"]
+        },
+        {
+          "group_id": "document_period",
+          "any_of": ["2Q26", "second quarter 2026"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "advanced_packaging",
+          "any_of": ["CoWoS"]
+        },
+        {
+          "group_id": "capex_range",
+          "any_of": ["USD60 billion and USD64 billion", "60 billion and 64 billion", "$60 billion to $64 billion", "$60 billion and $64 billion"]
+        },
+        {
+          "group_id": "fab_buildout",
+          "any_of": ["13 new fabs", "thirteen new fabs", "13 leading-edge and advanced packaging fabs"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    },
+    {
+      "route_id": "E03_MICRON_Q3_FY26_PREPARED_REMARKS",
+      "branch_id": "Q5_SUPPLY_AND_PRICE",
+      "official_url": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+      "source_identity": {
+        "publisher": "Micron Technology, Inc.",
+        "document_title": "Q3 FY26 Prepared Remarks",
+        "source_period": "FY2026 Q3",
+        "official_domain": "s25.q4cdn.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Micron"]
+        },
+        {
+          "group_id": "document_period",
+          "any_of": ["Q3 FY26", "third quarter fiscal 2026", "fiscal third-quarter (Q3) 2026"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "strategic_customer_agreements",
+          "any_of": ["16 strategic customer agreements", "16 SCAs"]
+        },
+        {
+          "group_id": "hbm4_ramp",
+          "any_of": ["HBM4"]
+        },
+        {
+          "group_id": "supply_tightness_horizon",
+          "any_of": ["beyond calendar 2027", "beyond 2027"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    },
+    {
+      "route_id": "E04_DELL_Q1_FY27_PERFORMANCE_REVIEW",
+      "branch_id": "Q1_ISSUER_TRUTH",
+      "official_url": "https://investors.delltechnologies.com/static-files/a75bf8cc-b60f-4f72-8413-2e4090e46f93",
+      "source_identity": {
+        "publisher": "Dell Technologies Inc.",
+        "document_title": "Q1 FY27 Performance Review",
+        "source_period": "FY2027 Q1",
+        "official_domain": "investors.delltechnologies.com"
+      },
+      "identity_marker_groups": [
+        {
+          "group_id": "publisher",
+          "any_of": ["Dell Technologies"]
+        },
+        {
+          "group_id": "document_period",
+          "any_of": ["Q1 FY27 Performance Review", "Fiscal Year 2027 First Quarter", "Q1 FY27"]
+        }
+      ],
+      "content_marker_groups": [
+        {
+          "group_id": "ai_server_orders",
+          "any_of": ["$24.4B", "$24.4 billion"]
+        },
+        {
+          "group_id": "ai_server_backlog",
+          "any_of": ["$51.3B", "$51.3 billion"]
+        },
+        {
+          "group_id": "generation_and_asp",
+          "any_of": ["higher ASPs driven by higher content rates", "17th generation servers have higher ASPs"]
+        }
+      ],
+      "minimum_useful_characters": 500,
+      "max_characters": 50000
+    }
+  ]
+}

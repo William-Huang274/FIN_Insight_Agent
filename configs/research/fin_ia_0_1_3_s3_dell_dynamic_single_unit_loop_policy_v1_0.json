@@ -1,0 +1,105 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_unit_loop_policy_v1_0",
+  "status": "bounded_current_runtime_dynamic_single_unit_candidate",
+  "case_identity": {
+    "case_key": "DELL",
+    "subject_ticker": "DELL",
+    "subject_legal_name": "Dell Technologies Inc.",
+    "research_as_of": "2026-08-06"
+  },
+  "objective": {
+    "objective_id": "OBJ::DELL::DYNAMIC-VALUE-CAPTURE-R32",
+    "cell_id": "value_capture",
+    "agent_id": "AGENT::VALUE_CAPTURE",
+    "question_zh": "戴尔 AI 服务器收入增长有多少能转化为毛利、经营利润和现金？价格与配置、销量、价格数量组合、客户需求、供应链和上下游价值分配如何影响这一判断，哪些反方证据会改变结论？"
+  },
+  "source_refs": {
+    "request_program_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_1.json",
+    "task_readiness_ref": "configs/retrieval/fin_ia_0_1_3_s1_s2_dell_value_capture_task_readiness_result_v1_0.json",
+    "truth_spine_policy_ref": "configs/research/fin_ia_0_1_3_s3_dynamic_truth_spine_policy_v1_1.json",
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_5.json",
+    "task_quantitative_result_ref": "configs/financial_facts/fin_ia_0_1_3_s2_dell_task_quantitative_program_result_v1_0.json",
+    "role_topology_ref": "configs/research/fin_ia_0_1_3_multi_agent_role_topology_v1_0.json",
+    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json"
+  },
+  "loop_limits": {
+    "maximum_retrieval_rounds": 2,
+    "maximum_request_ids_per_round": 6,
+    "maximum_total_request_ids": 12,
+    "maximum_provider_steps": 5,
+    "repeated_request_forbidden": true,
+    "candidate_text_model_visibility": false,
+    "reviewed_evidence_excerpt_maximum_chars": 2400
+  },
+  "coverage_groups": {
+    "price_and_configuration": [
+      "REQ::DELL::PRICE_CONFIGURATION::V1"
+    ],
+    "unit_volume": [
+      "REQ::DELL::UNIT_VOLUME::V1"
+    ],
+    "pvm": [
+      "REQ::DELL::PVM_BRIDGE::V1"
+    ],
+    "customer_demand": [
+      "REQ::DELL::CUSTOMER_DEMAND_ISSUER::V1",
+      "REQ::DELL::CUSTOMER_DEMAND_DOWNSTREAM::V1"
+    ],
+    "supply_chain": [
+      "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+      "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+      "REQ::DELL::SUPPLY_RELATIONSHIP::V1"
+    ],
+    "value_pool": [
+      "REQ::DELL::VALUE_POOL_MARGIN::V1",
+      "REQ::DELL::VALUE_POOL_COUNTERPARTY::V1"
+    ],
+    "counterevidence": [
+      "REQ::DELL::COUNTER_ISSUER::V1",
+      "REQ::DELL::COUNTER_ECOSYSTEM::V1"
+    ]
+  },
+  "token_budget_bases": {
+    "request_planning": {
+      "node_purpose": "Select proposition-bound S1/S2 research requests from the current tool catalog without seeing answers.",
+      "required_outputs": ["request_ids", "research_rationale", "expected_information_gain"],
+      "schema_burden": "small strict tool payload with up to six request identifiers",
+      "materiality_and_quality_risk": "high because omitted price, volume, supply or counterevidence lanes can bias the final value-capture judgment",
+      "comparable_run_evidence": "The predecessor R1 exhausted 7999 completion tokens during a reasoning-heavy fragment and returned no visible submission.",
+      "reasoning_profile": "DeepSeek GA thinking enabled at maximum reasoning effort",
+      "maximum_completion_tokens": 16000,
+      "stop_or_truncation_behavior": "empty, truncated or non-tool output is a failed provider attempt; required research work is never silently dropped"
+    },
+    "reflection_and_plan_delta": {
+      "node_purpose": "Read exact tool receipts, identify what changed, and propose the next bounded request set or a justified stop decision.",
+      "required_outputs": ["feedback_refs", "next_request_ids", "graph_hypotheses", "proposed_stop_decision"],
+      "schema_burden": "strict reflection payload plus bounded plan and hypothesis atoms",
+      "materiality_and_quality_risk": "high because a false sufficient stop or false public-information boundary would suppress necessary research",
+      "comparable_run_evidence": "Earlier fixed and pseudo-multiturn runs did not return S1/S2 failure receipts to the model and therefore could not demonstrate plan adaptation.",
+      "reasoning_profile": "DeepSeek GA thinking enabled at maximum reasoning effort",
+      "maximum_completion_tokens": 16000,
+      "stop_or_truncation_behavior": "invalid stop authority fails closed; the failed attempt is retained and cannot be relabelled as completion"
+    },
+    "specialist_workpaper": {
+      "node_purpose": "Synthesize a decision-ready value-capture workpaper from reviewed Evidence, typed NumericFacts, bounded estimates, scenarios and explicit gaps.",
+      "required_outputs": ["thesis", "sourced_claims", "mechanism", "alternative_explanations", "counterarguments", "what_would_change"],
+      "schema_burden": "large strict workpaper tool with source, numeric, relation and gap reference enums",
+      "materiality_and_quality_risk": "very high because unsupported AI profit attribution or generic boundary prose directly degrades the research product",
+      "comparable_run_evidence": "Prior single-fragment and five-cell runs showed that contract compliance alone does not prove mechanism quality or balanced counterevidence.",
+      "reasoning_profile": "DeepSeek GA thinking enabled at maximum reasoning effort",
+      "maximum_completion_tokens": 16000,
+      "stop_or_truncation_behavior": "truncation, unbound claims and unauthorized references are terminal failures for the attempt"
+    }
+  },
+  "authority": {
+    "initial_message_may_contain_evidence_or_numeric_facts": false,
+    "model_selects_research_actions": true,
+    "harness_owns_identity_dates_sources_budgets_and_request_compilation": true,
+    "candidate_rank_grants_evidence": false,
+    "model_may_self_authorize_public_information_gap": false,
+    "graph_hypothesis_grants_fact_authority": false,
+    "failed_attempts_are_immutable": true,
+    "natural_model_authority_requires_separate_signed_run": true,
+    "single_unit_success_does_not_claim_S1_or_S3_pass": true
+  }
+}

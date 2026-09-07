@@ -1,0 +1,47 @@
+{
+  "schema_version": "fin_ia_research_objective_draft_v1_0",
+  "raw_question": "Micron 的 HBM 需求是否真实且可持续，价格和产品组合能否转化为利润与现金，供给分配、产能执行和周期反方证据会如何改变判断？",
+  "task_type": "company_deep_dive",
+  "case_key": "MU",
+  "required_slot_ids": [
+    "demand_volume_quality",
+    "operating_performance",
+    "pricing_mix_value_capture",
+    "cash_conversion_balance_sheet",
+    "capacity_inputs_execution",
+    "counterevidence_and_what_would_change"
+  ],
+  "allowed_source_types": [
+    "10-K",
+    "10-Q",
+    "8-K",
+    "20-F",
+    "6-K",
+    "EARNINGS_CALL_TRANSCRIPT"
+  ],
+  "forbidden_source_types": [],
+  "output_format": "investment_research_memo",
+  "gap_policy": "return_typed_gap",
+  "reviewer_role": "qualified_financial_research_reviewer",
+  "period": {
+    "start_date": "2024-09-01",
+    "fiscal_years": [
+      2025,
+      2026
+    ]
+  },
+  "budget": {
+    "max_evidence_requests": 8,
+    "max_metric_intents_per_request": 6,
+    "max_product_intents_per_request": 4,
+    "max_model_calls": 0
+  },
+  "pass_criteria": [
+    "identity_and_as_of_bound",
+    "required_dimensions_covered",
+    "numeric_facts_source_bound",
+    "candidate_not_evidence_boundary_preserved",
+    "counterevidence_and_what_would_change_present",
+    "qualified_human_review_required"
+  ]
+}

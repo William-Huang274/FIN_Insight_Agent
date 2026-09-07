@@ -1,0 +1,55 @@
+{
+  "schema_version": "fin_ia_s1_vs5_valid_temporal_evaluation_authority_v1_1",
+  "status": "authorized_exact_once_valid_temporal_successor_evaluation",
+  "recorded_at": "2026-08-18",
+  "attempt_id": "FIN-0.1.3-S1-VS5-VALID-TEMPORAL-EVALUATION-R2",
+  "split": "valid_temporal",
+  "case_keys": [
+    "COST"
+  ],
+  "max_executions": 1,
+  "design_baseline_commit": "11599a6be7ac552a175ea7669f944609027af549",
+  "design_branch": "codex/fin013-s1-retrieval-vertical-slice",
+  "authority_commit_scope": "this_authority_file_only_after_design_baseline",
+  "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_policy_v1_1.json",
+  "policy_sha256": "b4a43ba2c5a21b892397dff8c0ac2db8a911f6199665ac2775915c1afe8e0c3c",
+  "raw_output_ref": "data/workbench_private/fin_0_1_3_s1_vs5_qualification_evaluations/valid-temporal-eval-r2/raw.json",
+  "public_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_valid_temporal_evaluation_result_v1_1.json",
+  "execution_contract": {
+    "reference_access": "valid_temporal_only_after_R2_candidate_freeze",
+    "test_frozen_reference_access_allowed": false,
+    "holdout_heterogeneous_reference_access_allowed": false,
+    "network_calls": 0,
+    "generation_model_calls": 0,
+    "learned_vector_computation_calls": 0,
+    "cpu_vector_fallback_calls": 0,
+    "deterministic_bookkeeping_cpu_allowed": true,
+    "retry_allowed": false,
+    "fallback_allowed": false,
+    "threshold_change_allowed": false,
+    "reference_change_allowed": false,
+    "candidate_reordering_allowed": false,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "public_information_gap_authority": false,
+    "stop_on_existing_output": true,
+    "stop_on_git_or_digest_drift": true,
+    "repeat_in_memory_and_require_identical_digest": true
+  },
+  "post_execution_authority": {
+    "owner_gold_authority": false,
+    "evidence_promotion_authorized": false,
+    "numeric_fact_authority": false,
+    "test_frozen_authorized": false,
+    "heterogeneous_holdout_authorized": false,
+    "s1_qualification_authority": false,
+    "valid_temporal_R3_authorized": false
+  },
+  "authorization_basis": [
+    "The label-blind COST R2 candidate public result was frozen and pushed in commit 7862c393 before the evaluator could load the valid-temporal reference.",
+    "The unchanged reference, metric thresholds and five business impact templates are bound by the v1.1 evaluation policy.",
+    "The backward-compatible evaluator design passed 631 repository tests, compileall, active-baseline validation and a 7127-file zero-finding secret scan in clean design baseline 11599a6b.",
+    "This execution performs deterministic bookkeeping only and cannot run learned vectors, network calls, generation models or candidate mutation."
+  ],
+  "known_boundary": "This authority permits one deterministic COST R2 evaluation only. A metric pass remains provisional pending qualified-human reference review and all other S1 noncompensable gates; a failure permits no R3."
+}

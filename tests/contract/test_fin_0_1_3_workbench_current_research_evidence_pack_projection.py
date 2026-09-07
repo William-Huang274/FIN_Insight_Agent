@@ -20,12 +20,17 @@ from apps.workbench.backend.application.research_evidence_pack_service import (
     ResearchEvidencePackService,
     ResearchEvidencePackServiceError,
 )
+from apps.workbench.backend.application.research_retrieval_service import (
+    ResearchRetrievalPrincipal,
+    ResearchRetrievalService,
+)
 from apps.workbench.backend.application.research_workspace_service import (
     ResearchWorkspacePrincipal,
     ResearchWorkspaceService,
     ResearchWorkspaceServiceError,
 )
 from sec_agent.runtime_resource_registry import load_runtime_resource_registry
+from sec_agent.runtime_bridge.paths import resolve_runtime_paths
 from sec_agent.research.reviewed_evidence_pack import (
     REVIEWED_EVIDENCE_PACK_CONTRACT as CONTRACT_REF,
     REVIEWED_EVIDENCE_PACK_SCHEMA as PACK_SCHEMA,
@@ -143,7 +148,11 @@ def _pack(case_key: str, source_text: str) -> dict[str, Any]:
     return {**body, "pack_payload_digest": canonical_digest(body)}
 
 
-def _service(tmp_path: Path) -> ResearchEvidencePackService:
+def _service(
+    tmp_path: Path,
+    *,
+    split_dell_root: bool = False,
+) -> ResearchEvidencePackService:
     object_root = tmp_path / "objects"
     object_root.mkdir()
     artifacts: dict[str, dict[str, Any]] = {}
@@ -159,7 +168,12 @@ def _service(tmp_path: Path) -> ResearchEvidencePackService:
         raw = _canonical_bytes(pack)
         digest = hashlib.sha256(raw).hexdigest()
         object_key = f"{case_key.lower()}/{digest}.json"
-        target = object_root / object_key
+        target_root = (
+            tmp_path / "dell-successor"
+            if split_dell_root and case_key == "DELL"
+            else object_root
+        )
+        target = target_root / object_key
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_bytes(raw)
         artifacts[case_key] = {
@@ -169,6 +183,10 @@ def _service(tmp_path: Path) -> ResearchEvidencePackService:
             "media_type": "application/json",
             "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps",
         }
+        if split_dell_root and case_key == "DELL":
+            artifacts[case_key]["private_object_root_relative"] = (
+                "dell-successor"
+            )
         payload_digests[case_key] = pack["pack_payload_digest"]
         summaries.append(
             {
@@ -183,16 +201,12 @@ def _service(tmp_path: Path) -> ResearchEvidencePackService:
             }
         )
     result_body = {
-        "schema_version": (
-            "fin_ia_0_1_3_s1_six_case_local_evidence_pack_result_v1_0"
-        ),
+        "schema_version": "fin_ia_current_research_evidence_pack_result_v1_1",
         "contract_ref": CONTRACT_REF,
         "run_scope": "test",
         "recorded_at": "2026-08-11",
         "attempt_id": "test-zero-call-r1",
-        "status": (
-            "terminal_succeeded_six_case_local_evidence_packs_with_declared_gaps"
-        ),
+        "status": "terminal_succeeded_current_pack_composition_with_declared_gaps",
         "materialization_order": ["DELL", "MU", "NVDA"],
         "candidate_manifest_digest": "a" * 64,
         "retrieval_result_digest": "b" * 64,
@@ -241,6 +255,7 @@ def _service(tmp_path: Path) -> ResearchEvidencePackService:
         config=config,
         result=result,
         private_object_root=object_root,
+        private_root_base=tmp_path,
     )
 
 
@@ -309,7 +324,7 @@ def _workspace_config(
         "cases": cases,
         "surface_policy": {
             "primary_route": "/workspace",
-            "available_surfaces": ["overview", "evidence"],
+            "available_surfaces": ["overview", "evidence", "retrieval"],
             "mutable_case_creation": False,
             "complete_investment_report_claimed": False,
             "model_or_network_calls": 0,
@@ -334,16 +349,44 @@ def _all_keys(value: Any) -> set[str]:
 def test_default_runtime_registry_registers_current_research_projection() -> None:
     registry = load_runtime_resource_registry(ROOT)
     assert registry.registry_id == (
-        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R2"
+        "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R39"
     )
     assert set(registry.by_id()) == {
+        "application.config.current_financial_intent_ontology",
+        "application.config.current_financial_research_kernel",
+        "application.config.current_hybrid_candidate_runtime_policy",
+        "application.config.current_product_material_evidence_runtime_policy",
+        "application.config.current_query_object_fact_route_policy",
+        "application.config.current_research_planning_policy",
         "application.config.current_research_evidence_pack_projection",
+        "application.config.current_research_material_scope_policy",
         "application.config.current_research_workspace_catalog",
+        "application.config.current_retrieval_need_policy",
+        "application.config.current_s1_artifact_spine_policy",
+        "application.config.current_s1_product_readiness_catalog",
+        "application.config.current_s1_runtime_binding_policy",
+        "application.config.current_s1_source_route_portfolio",
+        "application.config.current_s1_source_use_policy",
+        "application.config.current_source_intake_policy",
         "application.result.current_research_local_evidence_packs",
+        "application.result.current_reviewed_claim_anchors",
+        "application.result.current_research_retrieval_snapshot",
+        "application.result.current_s1_dell_product_readiness",
+        "application.result.current_s1_mu_product_readiness",
+        "application.result.current_s1_nvda_product_readiness",
+        "application.result.current_s1_runtime_binding_receipt",
+        "application.result.current_s1_vs1_vertical_slice",
+        "application.result.current_s1_vs2_complex_pdf_vertical",
+        "application.result.current_s1_vs3_retrieval_vertical",
+        "application.result.current_s1_vs4_supplement_vertical",
+        "application.result.current_s1c_ranking_comparison_projection",
     }
     assert registry.detector_python_refs == (
+        "apps/workbench/backend/api/operations.py",
         "apps/workbench/backend/application/research_evidence_pack_service.py",
+        "apps/workbench/backend/application/research_retrieval_service.py",
         "apps/workbench/backend/application/research_workspace_service.py",
+        "apps/workbench/backend/application/source_intake_service.py",
     )
     assert all(
         "fin_0_1_2" not in row.repo_relative_path
@@ -354,6 +397,169 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
     assert (
         "apps/workbench/backend/application/research_evidence_pack_service.py"
         in registry.detector_python_refs
+    )
+
+
+@pytest.mark.local_data_integration
+def test_current_runtime_loads_three_product_evidence_successors() -> None:
+    paths = resolve_runtime_paths(ROOT)
+    evidence = ResearchEvidencePackService.from_runtime_paths(ROOT, paths)
+    workspace = ResearchWorkspaceService.from_runtime_paths(ROOT, evidence)
+    retrieval = ResearchRetrievalService.from_runtime_paths(
+        ROOT,
+        paths,
+        hybrid_candidate_runtime=object(),
+    )
+    pack_principal = ResearchEvidencePackPrincipal(
+        "current", frozenset({"current_product:read"})
+    )
+    workspace_principal = ResearchWorkspacePrincipal(
+        "current", frozenset({"current_product:read"})
+    )
+    retrieval_principal = ResearchRetrievalPrincipal(
+        "current", frozenset({"current_product:read"})
+    )
+    expected_counts = {"DELL": 55, "MU": 14, "NVDA": 25}
+    expected_readiness = {
+        "DELL": (
+            "blocked_by_evidence_admission",
+            0,
+            4,
+            3,
+            1,
+        ),
+        "MU": ("blocked_by_candidate_coverage", 4, 3, 0, 1),
+        "NVDA": ("blocked_by_candidate_coverage", 3, 3, 0, 2),
+    }
+    expected_review_items = {"DELL": 18, "MU": 23, "NVDA": 18}
+
+    for case_key, expected_count in expected_counts.items():
+        pack = evidence.get_case(case_key, pack_principal)
+        case_id = f"case_{case_key.lower()}_current"
+        workspace_evidence = workspace.get_evidence(
+            case_id, workspace_principal
+        )
+        retrieval_case = retrieval.get_case(case_key, retrieval_principal)
+
+        assert len(pack["evidence_items"]) == expected_count
+        product_readiness = pack["product_readiness"]
+        expected_state, candidate_blocked, admission_blocked, partial, ready = (
+            expected_readiness[case_key]
+        )
+        assert product_readiness["case_key"] == case_key
+        assert product_readiness["readiness_state"] == expected_state
+        assert product_readiness["request_count"] == 8
+        assert (
+            product_readiness["request_state_counts"]
+            ["blocked_by_candidate_coverage"]
+            == candidate_blocked
+        )
+        assert (
+            product_readiness["request_state_counts"]
+            ["blocked_by_evidence_admission"]
+            == admission_blocked
+        )
+        assert (
+            product_readiness["request_state_counts"]["partial_with_material_gaps"]
+            == partial
+        )
+        assert (
+            product_readiness["request_state_counts"]["ready_for_current_scope"]
+            == ready
+        )
+        assert product_readiness["authority"] == {
+            "S1_qualification_claimed": False,
+            "candidate_is_not_evidence": True,
+            "numeric_fact_authority_remains_with_S2": True,
+            "product_publication": False,
+            "public_information_gap_authority": False,
+        }
+        assert "full_result_ref" not in product_readiness
+        assert "full_result_sha256" not in product_readiness
+        assert product_readiness["candidate_review_packet_summary"][
+            "review_item_count"
+        ] == expected_review_items[case_key]
+        review_items = [
+            item
+            for request in product_readiness["requests"]
+            for item in request["candidate_review_items"]
+        ]
+        assert len(review_items) == expected_review_items[case_key]
+        assert all(
+            item["candidate_is_not_evidence"] is True
+            and item["candidate_text_promoted"] is False
+            and item["new_evidence_created"] is False
+            and item["numeric_authority"] is False
+            and len(item["source"]["bounded_excerpt"]) <= 560
+            for item in review_items
+        )
+        assert not {
+            "candidate_text",
+            "candidate_id",
+            "source_text",
+            "private_source_material",
+            "compiled_object_id",
+            "source_record_id",
+            "full_result_ref",
+            "full_result_sha256",
+            "source_capture_ref",
+        }.intersection(_all_keys(product_readiness))
+        assert pack["canonical_spine"]["pack_binding"]["case_key"] == case_key
+        assert (
+            pack["canonical_spine"]["evidence_successor"]
+            ["complete_s1_qualified"]
+            is False
+        )
+        assert (
+            pack["canonical_spine"]["evidence_successor"]
+            ["numeric_fact_authorized"]
+            is False
+        )
+        assert pack["canonical_spine"]["hard_boundaries"][
+            "historical_vs4_summary_not_relabelled_as_successor"
+        ] is True
+        quantitative = pack["quantitative_authority"]
+        actionable = pack["actionable_research_state"]
+        assert quantitative["status"] == "current_s2_authority_compiled"
+        assert quantitative["summary"]["reported_fact_count"] > 0
+        assert all(
+            row["quantitative_kind"] == "deterministic_derived_metric"
+            and row["numeric_fact_authority"] is False
+            for row in quantitative["deterministic_derived_metrics"]
+        )
+        assert actionable["status"] == "runtime_injected_current_data_replay"
+        assert actionable["research_actions"]
+        assert actionable["stop_decision"]["decision"] == "continue"
+        assert actionable["resume_receipt"]["status"] == (
+            "resume_replay_verified"
+        )
+        assert actionable["next_natural_node_token_budget_basis"][
+            "execution_authority"
+        ] is False
+        assert len(workspace_evidence["evidence_items"]) == expected_count
+        assert workspace_evidence["product_readiness"] == product_readiness
+        assert workspace_evidence["quantitative_authority"] == quantitative
+        assert workspace_evidence["actionable_research_state"] == actionable
+        assert retrieval_case["candidate_state"] == "candidate_not_evidence"
+        assert retrieval_case["canonical_spine"] == pack["canonical_spine"]
+
+    mu = evidence.get_case("MU", pack_principal)["product_readiness"]
+    mu_review_items = [
+        item
+        for request in mu["requests"]
+        for item in request["candidate_review_items"]
+    ]
+    assert any(
+        "HBM4" in item["source"]["bounded_excerpt"]
+        and "high-volume shipments" in item["source"]["bounded_excerpt"]
+        and "direct_demand_signal"
+        in item["advisory_evidence_role"]["labels"]
+        for item in mu_review_items
+    )
+    assert any(
+        "binding commitments for specific volumes"
+        in item["source"]["bounded_excerpt"]
+        for item in mu_review_items
     )
 
 
@@ -437,6 +643,44 @@ def test_projection_fails_closed_on_permission_case_and_artifact_drift(
     assert drift.value.status_code == 503
 
 
+def test_projection_supports_digest_bound_per_case_private_roots(
+    tmp_path: Path,
+) -> None:
+    service = _service(tmp_path, split_dell_root=True)
+    principal = ResearchEvidencePackPrincipal(
+        "current", frozenset({"current_product:read"})
+    )
+
+    dell = service.get_case("DELL", principal)
+    mu = service.get_case("MU", principal)
+
+    assert dell["case_key"] == "DELL"
+    assert mu["case_key"] == "MU"
+    assert service.readiness()["all_ready"] is True
+    assert "private_object_root_relative" not in _all_keys(dell)
+
+
+def test_projection_fails_closed_on_per_case_private_root_escape(
+    tmp_path: Path,
+) -> None:
+    service = _service(tmp_path, split_dell_root=True)
+    service._result["pack_artifacts"]["DELL"][  # noqa: SLF001
+        "private_object_root_relative"
+    ] = "../outside"
+
+    with pytest.raises(ResearchEvidencePackServiceError) as denied:
+        service.get_case(
+            "DELL",
+            ResearchEvidencePackPrincipal(
+                "current", frozenset({"current_product:read"})
+            ),
+        )
+
+    assert denied.value.error_code == (
+        "current_research_evidence_pack_private_root_invalid"
+    )
+
+
 def test_primary_workspace_binds_subject_case_and_evidence_pack(
     tmp_path: Path,
 ) -> None:
@@ -472,7 +716,11 @@ def test_primary_workspace_binds_subject_case_and_evidence_pack(
     )
     assert detail.status_code == 200
     assert detail.json()["subject"]["issuer_id"] == "0001571996"
-    assert detail.json()["available_surfaces"] == ["overview", "evidence"]
+    assert detail.json()["available_surfaces"] == [
+        "overview",
+        "evidence",
+        "retrieval",
+    ]
     assert detail.json()["evidence_pack_uri"].endswith("/evidence")
 
     evidence = client.get(

@@ -1,0 +1,78 @@
+{
+  "schema_version": "fin_ia_s1_vs3_financial_shortlist_policy_v1_1",
+  "status": "pre_registered_need_scoped_financial_shortlist_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-FINANCIAL-SHORTLIST-V1.5-NEED-SCOPED",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_financial_shortlist_policy_v1_3.json",
+  "parent_policy_sha256_lf": "264a993992179d77ef7a881b5118bbb1349ff58202a213916754f7059fc68558",
+  "bound_input_overrides": {
+    "role_replay_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_evidence_role_replay_result_v1_3.json",
+    "role_replay_result_sha256_lf": "7859efa3f039265926c1d1efdb42e39733204c314f473a7b01d20134677c8d68",
+    "shortlist_implementation_ref": "src/retrieval/financial_evidence_shortlist.py",
+    "shortlist_implementation_sha256_lf": "afef7b189ee6c0cece0df3dba9745f8852fc8d5489f112323593613de72b9da9",
+    "materializer_implementation_ref": "scripts/data_retrieval/materialize_s1_vs3_financial_shortlist.py",
+    "materializer_implementation_sha256_lf": "87b083b7b9cb5afed62b72ef05e04640734d9a0094e91c2246f844f109cb6e76"
+  },
+  "shortlist_contract": {
+    "evaluation_top_k": 10,
+    "review_queue_per_atom": 12,
+    "rank_full_candidate_union_before_review_projection": true,
+    "labels_joined_only_after_ranking": true,
+    "priority_order": [
+      "best compatible compiled RetrievalNeed rather than all request intents at once",
+      "shared Evidence Role plus financial-intent composite compatibility",
+      "typed intent and Evidence Role components",
+      "facet-specific role priority",
+      "financial fact specificity",
+      "route quality for the selected RetrievalNeed",
+      "source authority and route diversity",
+      "generic Cross-Encoder as tie-break only",
+      "recency and stable identity tie-break"
+    ],
+    "one_candidate_may_satisfy_one_of_multiple_request_needs": true,
+    "incompatible_intent_never_outranks_abstain_or_compatible": true,
+    "abstain_remains_reviewable_and_is_not_evidence": true,
+    "review_queue_is_not_candidate_rejection": true,
+    "candidate_not_evidence": true
+  },
+  "decision_gates": {
+    "positive_target_in_head_minimum_rate": 0.8,
+    "hard_negative_in_head_maximum_count": 0
+  },
+  "successor_basis": {
+    "why_successor_is_required": [
+      "v1.4 passed the eighteen development atoms but evaluated every candidate against all metric and product intents in the parent request",
+      "a real complex request needs separate evidence for a result row, a restatement, a footnote and a cross-page continuation",
+      "requiring one object to answer the whole request would suppress valid partial evidence before VS2 replay"
+    ],
+    "changed_only": [
+      "each candidate is evaluated against every already-compiled bounded RetrievalNeed and keeps its best compatible need",
+      "route quality is computed for that selected need before deterministic tie-breaking"
+    ],
+    "not_changed": [
+      "candidate unions, object population and model scores",
+      "financial ontology and Evidence Role policy",
+      "identity, period, source and relationship boundaries",
+      "candidate versus Evidence and NumericFact authority"
+    ],
+    "prohibited": [
+      "qrel or target identity use during ranking",
+      "candidate deletion",
+      "automatic Evidence promotion",
+      "runtime route promotion",
+      "model training or network access"
+    ]
+  },
+  "authority": {
+    "development_cases_only": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "runtime_route_promotion_authorized": false,
+    "runtime_evidence_promotion_authorized": false,
+    "fine_tuning_authorized": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "owner_acceptance": false,
+    "s1_complete_claimed": false
+  }
+}

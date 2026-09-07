@@ -1,0 +1,77 @@
+{
+  "acceptance": {
+    "S3_pass": false,
+    "fresh_independent_post_writer_review_pass": false,
+    "local_protected_contract_pass": true,
+    "product_acceptance": false,
+    "publication": false,
+    "qualified_human_review_pass": false,
+    "release_ready": false
+  },
+  "candidate_draft_digest": "da3009112c58e0001051082fbda6b6bb27bf08e65b0c5b18d6e3b3d901369c3a",
+  "case_key": "DELL",
+  "contract_finding_receipt_digest": "db925d6fd250af0f52b080e31cd232e6612a480f997f5f69f98db628fe1f5d3d",
+  "decision_digest": "f2c82e588ec4e7537865355462845bc4d52692044d3203b4badcb4c793f7fe75",
+  "decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R10_protected_writer_R17_reversal_gate_successor_scope_decision_v1_0.json",
+  "decision_sha256": "3155fac6df8ce724116ca6b10430c8bfc4878e620a27053d291cf6a720a19562",
+  "edit_receipt": {
+    "candidate_text_projection_digest": "37d748e76218083176c85d2b398946cd4197ccac7be10c87fe3b018af608e38d",
+    "changed_model_text_paths": [
+      "sections[5].clauses[5].model_text",
+      "what_would_change[5].model_text"
+    ],
+    "edit_receipt_digest": "9c71af62cb4a05d3270864e5c86d5b3ccec61bdb093abe7e3285051d21c9b496",
+    "one_off_threshold_breach_is_insufficient": true,
+    "persistent_below_threshold_evidence_is_insufficient": true,
+    "reference_projection_digest": "05ac970eedf7bc1f3f23f195be3872054e16cefd39f431349e82e811339321cc",
+    "reference_projection_unchanged": true,
+    "remaining_gaps_unchanged": true,
+    "reversal_gate_conjunction_proved": true,
+    "source_text_projection_digest": "874c7ddf68a55f2935355d0cc0453a6eb609d30cc0fda95c3ad9f5efa8133c2b",
+    "topology_unchanged": true
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_evidence_items": 0,
+    "provider_calls": 0
+  },
+  "implementation_refs": [
+    {
+      "ref": "scripts/research/materialize_s3_R17_reversal_gate_successor.py",
+      "sha256": "9a84773f1a62f831e7d2d35ee108ac8bea42a4a71e099edfcc9857ac52519bad"
+    },
+    {
+      "ref": "scripts/research/materialize_s3_R16_bounded_writer_successor.py",
+      "sha256": "fd7e58c40166d540426f9a59072a41bbcd5a3cf1c77db5afd8e5aa009d69e7ba"
+    },
+    {
+      "ref": "src/sec_agent/research/current_dynamic_writer.py",
+      "sha256": "d844a15787bdf1c39d4f3f7f0304f0fb9e7595ff0a2f904ac443f5c9706b0bfc"
+    },
+    {
+      "ref": "src/sec_agent/research/multi_agent_report_authority.py",
+      "sha256": "90ef0391134bec2c075e264b072e4be4d00af898718c94e8322c19515ccab015"
+    }
+  ],
+  "known_boundary": "R17 is a zero-provider Codex-authored bounded successor to the fresh independently failed R16. It is not its own fresh independent or qualified-human review and grants no S3, product, publication, or release authority.",
+  "local_validation": {
+    "hard_finding_count": 0,
+    "protected_contract_pass": true,
+    "quality_finding_count": 0,
+    "reversal_gate_conjunction_proved": true,
+    "surface_finding_count": 0
+  },
+  "private_full_result_digest": "3be5a5453c8cf18cf5a14f7b7de7535b8d8c64367275e2f509dc0849db587743",
+  "private_full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-R10-protected-writer-reversal-gate-r17/full_result.json",
+  "private_full_result_sha256": "433b2c486f8753d4f0b2468aa66f21c0ef2ff0e4bcc7d9347233e239b30ec0e8",
+  "recorded_at": "2026-08-24T13:04:49+08:00",
+  "rendered_report_digest": "e91c0a47928fd347762004825419d8aa91b2ad23ddf9943059cef6cf262396ea",
+  "result_digest": "cbdb99e902241fd98bf56bd0ba803e6055d38adc42cbf523c88b386c8838e8e9",
+  "run_id": "FIN_0_1_3_S3_DELL_R10_PROTECTED_WRITER_REVERSAL_GATE_R17",
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_protected_writer_R17_reversal_gate_successor_public_result_v1_0",
+  "source_R16_fresh_review_status": "fresh_independent_review_failed_material_finding",
+  "source_R16_result_digest": "39bc326c959c5eac0c79b8d03f96b6eba3b54665d1af2a0e75016e97e9ff51cf",
+  "status": "R17_local_bounded_candidate_fresh_review_pending"
+}

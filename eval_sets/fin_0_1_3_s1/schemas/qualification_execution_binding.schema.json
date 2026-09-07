@@ -1,0 +1,196 @@
+{
+  "$defs": {
+    "QualificationBoundRef": {
+      "additionalProperties": false,
+      "properties": {
+        "purpose": {
+          "minLength": 1,
+          "title": "Purpose",
+          "type": "string"
+        },
+        "ref": {
+          "title": "Ref",
+          "type": "string"
+        },
+        "sha256": {
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "ref",
+        "sha256",
+        "purpose"
+      ],
+      "title": "QualificationBoundRef",
+      "type": "object"
+    },
+    "QualificationParserExecutionPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "all_pdf_pages_selected": {
+          "const": true,
+          "title": "All Pdf Pages Selected",
+          "type": "boolean"
+        },
+        "candidates_only_not_evidence": {
+          "const": true,
+          "title": "Candidates Only Not Evidence",
+          "type": "boolean"
+        },
+        "learned_vector_execution": {
+          "const": "later_cuda_fp16_only_no_cpu_fallback",
+          "title": "Learned Vector Execution",
+          "type": "string"
+        },
+        "numeric_fact_authority_granted": {
+          "const": false,
+          "title": "Numeric Fact Authority Granted",
+          "type": "boolean"
+        },
+        "ocr_policy": {
+          "const": "automatic_low_native_text_pages",
+          "title": "Ocr Policy",
+          "type": "string"
+        },
+        "parse_model_calls": {
+          "const": 0,
+          "title": "Parse Model Calls",
+          "type": "integer"
+        },
+        "parse_network_calls": {
+          "const": 0,
+          "title": "Parse Network Calls",
+          "type": "integer"
+        },
+        "parser_outcome_inspected_before_binding": {
+          "const": false,
+          "title": "Parser Outcome Inspected Before Binding",
+          "type": "boolean"
+        },
+        "thresholds_or_routes_changed": {
+          "const": false,
+          "title": "Thresholds Or Routes Changed",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "parser_outcome_inspected_before_binding",
+        "all_pdf_pages_selected",
+        "ocr_policy",
+        "candidates_only_not_evidence",
+        "numeric_fact_authority_granted",
+        "thresholds_or_routes_changed",
+        "parse_network_calls",
+        "parse_model_calls",
+        "learned_vector_execution"
+      ],
+      "title": "QualificationParserExecutionPolicy",
+      "type": "object"
+    },
+    "QualificationSourceBodyBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "body_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Body Bytes",
+          "type": "integer"
+        },
+        "body_sha256": {
+          "title": "Body Sha256",
+          "type": "string"
+        },
+        "content_type": {
+          "enum": [
+            "text/html",
+            "application/pdf"
+          ],
+          "title": "Content Type",
+          "type": "string"
+        },
+        "route_id": {
+          "minLength": 1,
+          "title": "Route Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "route_id",
+        "body_sha256",
+        "body_bytes",
+        "content_type"
+      ],
+      "title": "QualificationSourceBodyBinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "bound_implementation": {
+      "items": {
+        "$ref": "#/$defs/QualificationBoundRef"
+      },
+      "title": "Bound Implementation",
+      "type": "array"
+    },
+    "execution_policy": {
+      "$ref": "#/$defs/QualificationParserExecutionPolicy"
+    },
+    "known_boundary_zh": {
+      "minLength": 1,
+      "title": "Known Boundary Zh",
+      "type": "string"
+    },
+    "preregistration": {
+      "$ref": "#/$defs/QualificationBoundRef"
+    },
+    "program_id": {
+      "minLength": 1,
+      "title": "Program Id",
+      "type": "string"
+    },
+    "recorded_at": {
+      "minLength": 1,
+      "title": "Recorded At",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "fin_ia_s1_vs5_qualification_execution_binding_v1_0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_bodies": {
+      "items": {
+        "$ref": "#/$defs/QualificationSourceBodyBinding"
+      },
+      "title": "Source Bodies",
+      "type": "array"
+    },
+    "source_capture_plan": {
+      "$ref": "#/$defs/QualificationBoundRef"
+    },
+    "source_capture_public_result": {
+      "$ref": "#/$defs/QualificationBoundRef"
+    },
+    "status": {
+      "const": "frozen_after_capture_before_parse_outcome_inspection",
+      "title": "Status",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "status",
+    "program_id",
+    "recorded_at",
+    "preregistration",
+    "source_capture_plan",
+    "source_capture_public_result",
+    "bound_implementation",
+    "source_bodies",
+    "execution_policy",
+    "known_boundary_zh"
+  ],
+  "title": "QualificationExecutionBinding",
+  "type": "object"
+}

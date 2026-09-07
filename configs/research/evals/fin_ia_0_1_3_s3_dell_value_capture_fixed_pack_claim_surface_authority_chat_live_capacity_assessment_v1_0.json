@@ -1,0 +1,80 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_claim_surface_chat_capacity_assessment_v1_0",
+  "assessment_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-SURFACE-CHAT-R1-CAPACITY-ASSESSMENT",
+  "status": "terminal_capacity_failure_preserved_structural_successor_required",
+  "recorded_at": "2026-08-15T15:14:06+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_surface_authority_chat_live_authority_v1_0.json",
+  "authority_sha256": "735a23587be1c1d84385ecd3bee95a106a4713f96df6129c72294c9ddc2bba6b",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_surface_authority_chat_live_result_v1_0.json",
+  "result_sha256": "8c4544015705d5ae108866625b541db564403ece13332e5c15740dfa41852d47",
+  "result_digest": "a45c7d3547d548289dbf66341b68e232899ac20c503167eecc696df7320bf52c",
+  "observed": {
+    "model_calls_attempted": 2,
+    "successful_read_step": 1,
+    "accepted_read_receipts": 2,
+    "judgment_materialized": false,
+    "retries": 0,
+    "fallbacks": 0,
+    "step_two_http_status": 200,
+    "step_two_response_body_complete": true,
+    "step_two_response_body_parse_status": "json",
+    "step_two_received_body_bytes": 72314,
+    "step_two_finish_reason": "length",
+    "step_two_prompt_tokens": 18902,
+    "step_two_completion_tokens": 16000,
+    "step_two_reasoning_tokens": 16000,
+    "step_two_visible_content_chars": 0,
+    "step_two_tool_calls": 0,
+    "step_two_model_visible_message_chars": 52412,
+    "step_two_tool_schema_chars": 11067,
+    "private_reasoning_fields_redacted": 1,
+    "failure_code": "model_gateway_reasoning_budget_exhausted"
+  },
+  "capture_binding": {
+    "response_capture_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_fixed_pack_claim_surface_chat_replacement/FIN013-S3-DELL-VALUE-CAPTURE-FIXED-PACK-CLAIM-SURFACE-CHAT-R1/STEP-02-ATTEMPT-01/provider_response.json",
+    "response_capture_sha256": "d959efb2e18433eedd18dc56f1ceb77c8340fdbdec3800dbf44c11d390796b12",
+    "raw_response_sha256": "eae0fa4dfd9b8c943a0ac12f8f20941d950371ef02c90cdd935cf49991a8fd1e",
+    "response_digest": "db64e1db1b8f25f0e31dce68308c395ec352a5b45342e8c0f50734b370309f55",
+    "credential_or_authorization_captured": false,
+    "private_reasoning_persisted": false
+  },
+  "root_cause": {
+    "earliest_owner": "S3_model_visible_finance_contract_projection",
+    "classification": "project_contract_density_interacting_with_provider_max_reasoning_budget",
+    "not_yet_proven": [
+      "DeepSeek_instruction_noncompliance",
+      "Evidence_or_NumericFact_semantic_failure",
+      "ClaimRelation_validation_failure",
+      "content_quality_pass_or_fail"
+    ],
+    "material_contributors": [
+      "ClaimAuthority_and_ClaimRelation_cards_are_repeated_in_initial_context_and_read_tool_result",
+      "full_audit_lineage_is_sent_instead_of_a_compact_model_visible_NumericFact_view",
+      "submit_evidence_request_schema_is_sent_even_when_its_run_budget_is_zero",
+      "model_repeats_seven_structured_relation_fields_per_atom_instead_of_selecting_one_deterministic_relation_alias"
+    ]
+  },
+  "bounded_successor": {
+    "relation_alias_selection_and_local_expansion": true,
+    "authority_cards_visible_once": true,
+    "compact_numeric_and_qualitative_fact_model_views_with_full_internal_lineage_retained": true,
+    "zero_budget_tool_removed_from_wire_surface": true,
+    "same_evidence_pack_and_provider_profile": true,
+    "reasoning_effort_or_output_limit_increase": false,
+    "zero_call_replay_and_mutation_required_before_any_new_live": true,
+    "automatic_retry_authorized": false
+  },
+  "acceptance": {
+    "transport_capture_complete": true,
+    "mandatory_reads_pass": true,
+    "claim_surface_contract_pass": false,
+    "L1_assessable": false,
+    "content_quality_assessable": false,
+    "fixed_pack_layer_one_accepted": false,
+    "dynamic_layer_two_authorized": false,
+    "five_cell_live_authorized": false
+  },
+  "known_boundary": "The HTTP response was complete and auditable, but no visible answer or tool call was produced because all 16000 completion tokens were reported as reasoning tokens. This assessment does not attribute the failure solely to DeepSeek: the current Harness presented a dense and partly duplicated model view. The failed run remains immutable and is not a retry candidate."
+}

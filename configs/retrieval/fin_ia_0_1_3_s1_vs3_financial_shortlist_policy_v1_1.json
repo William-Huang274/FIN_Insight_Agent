@@ -1,0 +1,96 @@
+{
+  "schema_version": "fin_ia_s1_vs3_financial_shortlist_policy_v1_0",
+  "status": "pre_registered_zero_call_frozen_shortlist_label_successor_replay",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS3-FINANCIAL-SHORTLIST-V1.1-LABEL-REPLAY",
+  "bound_inputs": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_4.json",
+    "query_atom_eval_sha256_lf": "c118025358d7b423a77ef515d15a9e5eeea1f6c8edd58090c6943132f02d9cdc",
+    "ranking_summary_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_result_v1_3.json",
+    "ranking_summary_sha256_lf": "3cac270c28e6534943f3817cd373dc3c1e0ad761fab96979eb91efd03979c51f",
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "compiled_objects_sha256_lf": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "kernel_sha256_lf": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+    "role_replay_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_evidence_role_replay_result_v1_0.json",
+    "role_replay_result_sha256_lf": "c6fe0bc6a0bb2ed7da8a3a5a0026ab0f28b2ef7c494254ac3e77fb3bbdb8ca7a",
+    "shortlist_implementation_ref": "src/retrieval/financial_evidence_shortlist.py",
+    "shortlist_implementation_sha256_lf": "a6480083f615d5c95118c82243a8002e13b067d44885f9c84853c038ae5c91b2",
+    "label_adjudication_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_query_atom_sentence_object_adjudication_v1_2.json",
+    "label_adjudication_sha256_lf": "7a26eb28264882c6581f3d28fa389d9e139faf797a7f1c70cb79f230bd2cd9a1"
+  },
+  "shortlist_contract": {
+    "evaluation_top_k": 10,
+    "review_queue_per_atom": 12,
+    "rank_full_candidate_union_before_review_projection": true,
+    "labels_joined_only_after_ranking": true,
+    "priority_order": [
+      "facet-compatible Evidence Role",
+      "facet-specific role priority",
+      "financial fact specificity",
+      "typed or lexical route quality",
+      "source authority",
+      "route diversity",
+      "generic Cross-Encoder as tie-break only",
+      "recency and stable identity tie-break"
+    ],
+    "review_queue_is_not_candidate_rejection": true,
+    "candidate_not_evidence": true
+  },
+  "decision_gates": {
+    "positive_target_in_head_minimum_rate": 0.8,
+    "hard_negative_in_head_maximum_count": 0
+  },
+  "successor_basis": {
+    "why_label_successor_replay_is_required": [
+      "the first shortlist was evaluated against sparse qrels that omitted obvious useful current results and obvious metric or capacity homonyms",
+      "business review must correct label coverage before changing a ranking feature",
+      "the same frozen ranking must be rescored so label correction cannot become hidden retrieval tuning"
+    ],
+    "not_changed": [
+      "query contracts",
+      "compiled objects",
+      "candidate union and candidate decisions",
+      "generic model scores",
+      "financial shortlist implementation and priority order",
+      "identity, period and source hard filters"
+    ],
+    "changed_only": [
+      "development qrels for current object-level positives, hard negatives and abstentions"
+    ],
+    "prohibited": [
+      "rerunning embedding or Cross-Encoder models",
+      "changing shortlist weights or priority order after label inspection",
+      "candidate deletion",
+      "Evidence or NumericFact promotion",
+      "claiming owner acceptance from Codex development labels"
+    ]
+  },
+  "token_budget_basis": {
+    "node_purpose": "Re-evaluate one frozen financial shortlist against a richer object-level business adjudication.",
+    "input_scale": "Eighteen atoms, the existing 1,898 candidate decisions, and a label-only successor with 55 positives, 64 hard negatives and 13 abstentions.",
+    "required_outputs": [
+      "unchanged full deterministic ranking",
+      "label-successor head metrics",
+      "hard-negative receipts",
+      "a structural root-cause disposition"
+    ],
+    "schema_burden": "zero-call digest-bound label join over a frozen ranking",
+    "materiality_and_quality_risk": "missing positives understates useful retrieval while missing hard negatives falsely certifies noisy heads",
+    "comparable_run_evidence": "v1.0 shortlist reported 6/15 top-ten positives and zero top-ten hard negatives under incomplete qrels",
+    "reasoning_profile": "deterministic replay only; no model, network, ranking or training work",
+    "stop_and_truncation": "fail closed on input digest drift and retain the full candidate-decision universe"
+  },
+  "authority": {
+    "development_cases_only": true,
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "runtime_route_promotion_authorized": false,
+    "runtime_evidence_promotion_authorized": false,
+    "fine_tuning_authorized": false,
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "owner_acceptance": false,
+    "s1_complete_claimed": false
+  }
+}

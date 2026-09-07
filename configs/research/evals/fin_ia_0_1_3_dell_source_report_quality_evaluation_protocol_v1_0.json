@@ -1,0 +1,161 @@
+{
+  "schema_version": "fin_ia_dell_source_report_quality_evaluation_protocol_v1_0",
+  "status": "preregistered_before_successor_candidate",
+  "evaluation_cycle_id": "FIN_0_1_3_DELL_SOURCE_REPORT_QUALITY_CYCLE_1",
+  "case_key": "DELL",
+  "research_as_of": "2026-08-06",
+  "baseline_manifest_binding": {
+    "ref": "configs/research/evals/fin_ia_0_1_3_dell_source_report_quality_program_baseline_manifest_v1_0.json",
+    "sha256": "4bf0fa0e07d27fd3edcbaaea4a8b3002cfe4c0e227b8214c217666350ad4edc0",
+    "manifest_digest": "3faebbd9a53639c5e1dba4479d212bb8f0fccb255eb1391fbf59fdc55690dd14"
+  },
+  "immutable_target_contract": {
+    "candidate_status_at_preregistration": "not_created",
+    "candidate_must_receive_new_run_id": true,
+    "candidate_private_public_and_rendered_sha_required": true,
+    "candidate_document_model_digest_required": true,
+    "implementation_commit_and_tree_required": true,
+    "reviewer_packet_digest_required": true,
+    "target_mutation_during_review_invalidates_review": true,
+    "rubric_change_after_candidate_requires_new_cycle": true,
+    "R17_must_remain_immutable": true
+  },
+  "formal_scoring_prerequisites": {
+    "L1_financial_truth_must_pass": true,
+    "L2_evidence_authority_must_pass": true,
+    "missing_component_disposition": "not_assessable",
+    "required_packet_components": [
+      "immutable_candidate_seal",
+      "L1_financial_truth_result",
+      "L2_evidence_authority_result",
+      "claim_source_matrix",
+      "report_gap_crosswalk_14_9_4",
+      "numeric_bridge",
+      "strongest_counter_thesis",
+      "what_would_change_register",
+      "reader_citation_appendix",
+      "final_render",
+      "baseline_comparison"
+    ]
+  },
+  "eight_dimension_thresholds": {
+    "dimensions": [
+      "Q1_company_and_question_specificity",
+      "Q2_evidence_to_conclusion_reasoning",
+      "Q3_financial_and_numeric_interpretation",
+      "Q4_causal_mechanism_and_industry_logic",
+      "Q5_cross_cell_synthesis_and_conflict_adjudication",
+      "Q6_counter_thesis_risk_and_gap_discipline",
+      "Q7_what_would_change_actionability",
+      "Q8_writing_and_senior_decision_utility"
+    ],
+    "score_minimum_each": 0,
+    "score_maximum_each": 4,
+    "total_minimum": 24,
+    "maximum_total": 32,
+    "Q1_through_Q7_minimum_each": 2,
+    "Q1_Q2_Q3_Q8_minimum_each": 3,
+    "dimensions_at_or_above_3_minimum": 4,
+    "DELL_MU_NVDA_must_pass_individually": true
+  },
+  "finding_severity_contract": {
+    "P0": {
+      "meaning": "Identity, integrity, material financial truth or evidence-authority failure that invalidates the target.",
+      "blocks": ["evaluation", "product", "publication", "release"]
+    },
+    "P1": {
+      "meaning": "Material research, citation, thesis or decision-utility failure.",
+      "blocks": ["report_quality", "product", "publication", "release"]
+    },
+    "P2": {
+      "meaning": "Substantive completeness or actionability weakness requiring repair before product acceptance.",
+      "blocks": ["report_quality", "product"]
+    },
+    "P3": {
+      "meaning": "Non-material usability or editorial weakness retained for explicit disposition.",
+      "blocks": []
+    }
+  },
+  "separate_verdicts": {
+    "engineering_and_evidence_pipeline_verdict": {
+      "allowed": ["PASS", "PASS_BOUNDED", "FAIL", "OPEN_NOT_ASSESSABLE"],
+      "cannot_grant": ["report_quality", "qualified_human", "product", "publication", "release"]
+    },
+    "report_research_quality_verdict": {
+      "allowed": ["PASS", "FAIL", "OPEN_NOT_ASSESSABLE"],
+      "cannot_grant": ["qualified_human", "product", "publication", "release"]
+    },
+    "qualified_human_product_verdict": {
+      "allowed": ["ACCEPT", "RETURN", "FALSE_NOT_GRANTED"],
+      "reviewer_must_be_qualified_human": true
+    }
+  },
+  "reason_ref_schema": {
+    "required_per_finding": [
+      "finding_id",
+      "severity",
+      "finding_code",
+      "reason",
+      "impact",
+      "earliest_responsible_stage",
+      "reason_refs"
+    ],
+    "allowed_reason_ref_types": [
+      "claim_id",
+      "evidence_id",
+      "numeric_fact_id",
+      "numeric_relation_id",
+      "typed_gap_id",
+      "writer_group_id",
+      "what_would_change_id",
+      "citation_id",
+      "section_path",
+      "render_location",
+      "source_binding_digest"
+    ],
+    "dimension_score_requires_reason_refs": true,
+    "summary_only_reason_invalid": true
+  },
+  "report_quality_required_surfaces": {
+    "claim_source_matrix": true,
+    "report_gap_crosswalk_14_9_4": true,
+    "units_share_ASP_mix_PVM_profit_working_capital_bridge": true,
+    "strongest_counter_thesis": true,
+    "adjudicated_cross_cell_dependency_or_conflict": true,
+    "operational_what_would_change": true,
+    "reader_citation_appendix": true,
+    "bilingual_semantic_equivalence": true,
+    "final_render": true,
+    "single_primary_boundary_register": true
+  },
+  "scoring_authority": {
+    "model_self_score_formal": false,
+    "LLM_as_judge_formal": false,
+    "author_can_formally_score_own_candidate": false,
+    "author_separated_content_reviewer_required": true,
+    "qualified_human_required_for_product_acceptance": true,
+    "shadow_model_score_must_be_physically_separate": true,
+    "reviewer_identity_and_time_required": true
+  },
+  "frozen_R17_baseline": {
+    "severity_counts": {
+      "P0": 0,
+      "P1": 1,
+      "P2": 2,
+      "P3": 1
+    },
+    "engineering_and_evidence_pipeline_verdict": "PASS_BOUNDED",
+    "report_research_quality_verdict": "OPEN_NOT_ASSESSABLE",
+    "qualified_human_product_verdict": "FALSE_NOT_GRANTED",
+    "formal_eight_dimension_score": null,
+    "author_diagnostic_score_reusable": false,
+    "finding_codes": [
+      "reader_citations_not_independently_verifiable",
+      "report_pack_dynamic_14_9_4_crosswalk_missing",
+      "what_would_change_not_operational",
+      "repetition_and_facts_density"
+    ]
+  },
+  "known_boundary": "This protocol freezes how a future immutable successor is evaluated. It is not a reviewer verdict, a model authority, a qualified-human decision or permission to create the candidate.",
+  "protocol_digest": "5e377dc03044112b3b3187b8936f218d533a1c0d33e634f3416222ae6afba1a1"
+}

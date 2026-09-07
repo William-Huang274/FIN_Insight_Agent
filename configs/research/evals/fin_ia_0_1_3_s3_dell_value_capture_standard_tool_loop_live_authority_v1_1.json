@@ -1,0 +1,60 @@
+{
+  "schema_version": "fin_ia_s3_bounded_finance_loop_live_authority_v1_0",
+  "authority_id": "FIN-0.1.3-S3-DELL-VALUE-CAPTURE-STANDARD-TOOL-LOOP-LIVE-AUTHORITY-V1.1",
+  "status": "signed_exact_once_standard_API_bounded_finance_loop_live",
+  "issued_at": "2026-08-14T01:44:20+08:00",
+  "implementation_commit": "6f9ed9409d388d61cfd2fa097032c24f5e31f7ea",
+  "case_key": "DELL",
+  "required_cell_ids": [
+    "CELL::value_capture"
+  ],
+  "bound_inputs": {
+    "consumer_policy_ref": "configs/research/fin_ia_0_1_3_s3_current_research_consumer_policy_v1_1.json",
+    "consumer_policy_sha256": "bc63b5fb994f7b5f5e3052f620d7d59a364a2261d686d820d04351c6132f2fe2",
+    "objective_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_minimal_planner_canary_objective_v1_0.json",
+    "objective_sha256": "e458acb042447c9ef11ad6f0a2f8152b1f6abdd4de8dc65922d2593e34f93548",
+    "planner_atoms_ref": "tests/fixtures/research/fin_ia_0_1_3_s3_dell_planner_r1_atoms_v1_0.json",
+    "planner_atoms_sha256": "a7527eaee50c9c196dc301b7a4365d51282d185e98ed9d469224381243c3c25d",
+    "current_evidence_pack_result_ref": "configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+    "current_evidence_pack_result_sha256": "e902eb8c6873caa6b139d2aa8b6261556392eaa0346a0f67d63597955199df10",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "bfbe6f11368bb4130c8b0f6594baa65c254a61bcc863ee4922c0a2ca5047f252",
+    "clean_zero_call_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_bounded_finance_loop_zero_call_result_v1_2.json",
+    "clean_zero_call_result_sha256": "baae0488ed39cc502e89f96ae3860eeacede0689bacdf9b270f88596502cd99d",
+    "loop_policy_ref": "configs/research/fin_ia_0_1_3_s3_bounded_finance_agent_loop_policy_v1_1.json",
+    "loop_policy_sha256": "16688fa7ffa9dd98eaf0a3d0e2e687fc8cfa86fd30e3f647931d1581e0d0f5e4",
+    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_agent_profile_v1_1.json",
+    "provider_profile_sha256": "dbc14dbcc186b81f24a5b048056e663649614cd62bef1aceb98b9873189603a1",
+    "runner_ref": "scripts/research/run_s3_current_research_consumer_canary.py",
+    "runner_sha256": "39c7f4b8bee35a92baf7a6ac99d27e9d27ab656a42271787418807b1dc0f24ee",
+    "loop_implementation_ref": "src/sec_agent/research/bounded_finance_loop.py",
+    "loop_implementation_sha256": "19e2475050e412ab3ea5467866877c37236ffb11a2241e7c53d374c8e9a8b982",
+    "provider_transport_ref": "src/sec_agent/providers/chat_completions.py",
+    "provider_transport_sha256": "87f529a5af38877e33408d90f742cd0cba49c5a24c90163edba619cfff3a4fa1",
+    "prior_scope_decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_standard_tool_loop_r1_disposition_v1_0.json",
+    "prior_scope_decision_sha256": "e8722020400ba220024243bff544c9d6ae8abcbaa6db9f8626c8d842eb684ac1",
+    "research_input_digest": "6505a58e68811e59e3471378bc0cf16174abef3021c3ae9900e46d5e99189b4c",
+    "finance_loop_messages_digest": "9981f4c958266265e41f83fcb4f8e85cdc6f3b57a6ecb34b05e2395a8101c07a",
+    "standard_tool_schema_digest": "ece54077aeabc3f7dc99d1e418b1ae2da75a8f6689a89a3806d1495b483a29e2"
+  },
+  "execution_budget": {
+    "maximum_model_calls": 6,
+    "maximum_transport_attempts": 6,
+    "maximum_evidence_requests": 3,
+    "retries": 0,
+    "fallbacks": 0,
+    "planner_calls": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "current_product_pointer_mutations": 0
+  },
+  "output_contract": {
+    "capture_root_ref": ".codex_runtime/model_runs/fin_0_1_3_s3_standard_tool_loop",
+    "private_output_root_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/standard-tool-loop-r2-value-capture",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_standard_tool_loop_live_result_v1_1.json",
+    "run_id": "FIN013-S3-DELL-VALUE-CAPTURE-STANDARD-TOOL-LOOP-R2",
+    "step_attempt_prefix": "STEP",
+    "product_publication": "forbidden"
+  },
+  "known_boundary": "This is the only authorized replacement standard API four-tool live qualification for DELL value_capture after clean R1 capture replay. It permits at most six exact-once model steps, only one same-cell Evidence plus NumericFact parallel read pair, up to three serial proposal-only EvidenceRequests, one serial locally validated Judgment, zero retry/fallback/external retrieval/embedding/product publication. Success authorizes node content assessment only and does not itself authorize five-cell live, S3 acceptance or release."
+}

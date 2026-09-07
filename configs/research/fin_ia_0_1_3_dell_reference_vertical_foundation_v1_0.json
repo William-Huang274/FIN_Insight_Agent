@@ -1,0 +1,434 @@
+{
+  "schema_version": "fin_ia_dell_reference_vertical_foundation_v1_0",
+  "status": "active_single_case_foundation",
+  "recorded_at": "2026-09-02T04:45:00+08:00",
+  "purpose": "Provide a bounded, answer-free research method and data contract for one resume-ready DELL AI-infrastructure vertical.",
+  "case_identity": {
+    "case_id": "DELL_AI_INFRA_REFERENCE_VERTICAL",
+    "subject_ticker": "DELL",
+    "subject_legal_name": "Dell Technologies Inc.",
+    "top_level_question_zh": "公开来源能否证明 Dell AI 基础设施需求的质量、架构与供应兑现、价格数量组合传导、财务兑现和主要反证；不能证明的部分能否被准确记录为有类型、有路径收据的边界？",
+    "current_snapshot_state": "FY2027_Q2_E0_8K_captured_10Q_XBRL_pending",
+    "current_complete_financial_period": "FY2027_Q1_structured_numeric_plus_FY2027_Q2_issuer_event_evidence",
+    "public_demo_requires_latest_refresh": true
+  },
+  "scope_ceiling": {
+    "one_subject_company_only": true,
+    "context_entities": [
+      "NVDA",
+      "AMD",
+      "INTC",
+      "MU",
+      "HPE",
+      "SMCI",
+      "MSFT",
+      "AMZN",
+      "GOOGL",
+      "META",
+      "TSM",
+      "AVGO",
+      "SK_HYNIX"
+    ],
+    "context_entity_rule": "A context entity may support demand, supply, architecture, competition or counterevidence; it does not become a second research case.",
+    "company_financial_window": "three fiscal years and at least eight quarters when public",
+    "industry_and_model_window": "rolling twenty-four months plus one landmark baseline when needed",
+    "regulatory_window": "2022 controls through the exact research cut-off",
+    "maximum_external_search_rounds_per_high_materiality_branch": 2,
+    "maximum_results_per_search": 6,
+    "maximum_captured_pages_per_branch": 4,
+    "maximum_live_pages_per_run": 24,
+    "maximum_sources_visible_per_agent_step": 10,
+    "maximum_specialist_model_rounds": 2,
+    "maximum_targeted_counter_reroutes": 1,
+    "allow_unresolved_bounded_gaps": true,
+    "perfect_recall_or_accuracy_required": false,
+    "non_goals": [
+      "valuation_or_target_price",
+      "buy_sell_recommendation",
+      "arbitrary_company_research",
+      "full_market_data",
+      "general_GraphRAG",
+      "large_unbounded_web_corpus",
+      "paid_or_private_data_purchase",
+      "automatic_investment_advice"
+    ]
+  },
+  "source_classes": {
+    "A": "free stable API data normalized into SQL with raw-response lineage",
+    "B": "versioned local document or knowledge-base object with content hash and locator",
+    "C": "time-sensitive external page or result that remains a candidate until captured and reviewed",
+    "D": "commercial, private or genuinely undisclosed boundary that is recorded but not fabricated"
+  },
+  "source_families": [
+    {
+      "source_family_id": "F1_SEC_ISSUER_FACTS",
+      "classes": ["A", "B"],
+      "purpose": "DELL and selected public comparator filings, filing identity and standardized numeric facts",
+      "entrypoints": [
+        "https://data.sec.gov/submissions/CIK0001571996.json",
+        "https://data.sec.gov/api/xbrl/companyfacts/CIK0001571996.json"
+      ],
+      "storage_route": "raw_snapshot_plus_postgresql_financial_facts",
+      "authority": "issuer_numeric_and_filing_identity",
+      "boundary": "CompanyFacts covers standardized entity-wide facts; issuer-specific AI orders, backlog and product metrics require filing or IR document evidence."
+    },
+    {
+      "source_family_id": "F2_DELL_IR_EARNINGS",
+      "classes": ["B", "C"],
+      "purpose": "earnings releases, financial tables, prepared remarks, performance reviews, transcripts and guidance definitions",
+      "entrypoints": [
+        "https://investors.delltechnologies.com/financial-information/quarterly-results",
+        "https://investors.delltechnologies.com/"
+      ],
+      "storage_route": "content_addressed_snapshot_plus_postgresql_knowledge_chunks",
+      "authority": "issuer_narrative_and_company_defined_metrics",
+      "boundary": "Prepared remarks, Q&A, reported values and forward guidance remain separately typed."
+    },
+    {
+      "source_family_id": "F3_DELL_PRODUCT_SUPPORT",
+      "classes": ["B", "C"],
+      "purpose": "Dell SKU, manual, firmware, architecture, cooling, networking and availability state",
+      "entrypoints": [
+        "https://www.dell.com/support/",
+        "https://www.dell.com/en-us/dt/corporate/newsroom/"
+      ],
+      "storage_route": "content_addressed_snapshot_plus_postgresql_knowledge_chunks",
+      "authority": "product_configuration_and_integration_state",
+      "boundary": "Announcement, support documentation or firmware readiness does not prove shipment, customer deployment or revenue recognition."
+    },
+    {
+      "source_family_id": "F4_CUSTOMER_CAPEX_DEPLOYMENT",
+      "classes": ["A", "B", "C"],
+      "purpose": "hyperscaler and named-customer capex, capacity, deployment and customer-side relationship evidence",
+      "entrypoints": [
+        "https://www.microsoft.com/en-us/investor/",
+        "https://investor.atmeta.com/",
+        "https://ir.aboutamazon.com/",
+        "https://abc.xyz/investor/"
+      ],
+      "storage_route": "sec_facts_plus_versioned_knowledge_documents",
+      "authority": "industry_demand_context_or_named_customer_relationship",
+      "boundary": "Generic cloud capex is industry context only unless a primary source explicitly names Dell or a Dell SKU."
+    },
+    {
+      "source_family_id": "F5_PUBLIC_PROCUREMENT",
+      "classes": ["A", "B", "C"],
+      "purpose": "observable public awards, configurations, quantities and bounded price proxies",
+      "entrypoints": [
+        "https://api.usaspending.gov/",
+        "https://open.gsa.gov/api/contract-awards/"
+      ],
+      "storage_route": "api_snapshot_plus_postgresql_procurement_observations",
+      "authority": "transaction_observation_not_company_total",
+      "boundary": "An award, bundle quote or a few projects cannot be extrapolated into Dell company units, ASP, shipment or recognized revenue."
+    },
+    {
+      "source_family_id": "F6_COMPUTE_PLATFORM_SUPPLIERS",
+      "classes": ["A", "B", "C"],
+      "purpose": "GPU and CPU architecture, production, shipment, OEM compatibility and supply context",
+      "entrypoints": [
+        "https://investor.nvidia.com/",
+        "https://www.nvidia.com/en-us/data-center/",
+        "https://ir.amd.com/",
+        "https://www.intc.com/"
+      ],
+      "storage_route": "sec_facts_plus_versioned_knowledge_documents",
+      "authority": "platform_and_supplier_state",
+      "boundary": "Supplier-wide production, purchase commitments or OEM listings do not prove Dell-specific allocation or revenue."
+    },
+    {
+      "source_family_id": "F7_MEMORY_FOUNDRY_NETWORK_STORAGE",
+      "classes": ["A", "B", "C"],
+      "purpose": "HBM, server DRAM, NAND/eSSD, packaging, networking and storage supply and price direction",
+      "entrypoints": [
+        "https://investors.micron.com/",
+        "https://news.skhynix.com/",
+        "https://investor.tsmc.com/",
+        "https://investors.broadcom.com/"
+      ],
+      "storage_route": "sec_facts_plus_versioned_knowledge_documents",
+      "authority": "supplier_reported_direction_and_capacity_state",
+      "boundary": "Directional price commentary is not an exact Dell contract price, BOM or gross-margin contribution."
+    },
+    {
+      "source_family_id": "F8_OEM_COMPETITION",
+      "classes": ["A", "B", "C"],
+      "purpose": "HPE, Supermicro and Lenovo demand definitions, architecture timing, margins and working-capital counterevidence",
+      "entrypoints": [
+        "https://investors.hpe.com/",
+        "https://ir.supermicro.com/",
+        "https://news.lenovo.com/"
+      ],
+      "storage_route": "sec_facts_plus_versioned_knowledge_documents",
+      "authority": "peer_context_and_counterevidence",
+      "boundary": "Peer order, backlog and AI revenue labels require definition reconciliation before comparison."
+    },
+    {
+      "source_family_id": "F9_MODEL_COMPUTE_AND_BENCHMARKS",
+      "classes": ["A", "B", "C"],
+      "purpose": "model cards, technical reports and MLCommons results that distinguish training, inference and test-time compute",
+      "entrypoints": [
+        "https://github.com/mlcommons/inference_results_v6.0",
+        "https://openai.com/index/",
+        "https://www.anthropic.com/system-cards"
+      ],
+      "storage_route": "versioned_json_csv_or_document_snapshot",
+      "authority": "workload_and_benchmark_context",
+      "boundary": "A benchmark is not customer demand, installed capacity, provider usage or Dell revenue."
+    },
+    {
+      "source_family_id": "F10_EXPORT_CONTROL_AND_POLICY",
+      "classes": ["A", "B", "C"],
+      "purpose": "Federal Register, eCFR, BIS guidance and restricted-party state",
+      "entrypoints": [
+        "https://www.federalregister.gov/developers/documentation/api/v1",
+        "https://www.ecfr.gov/developers/documentation/api/v1",
+        "https://www.bis.gov/"
+      ],
+      "storage_route": "api_snapshot_plus_versioned_legal_document",
+      "authority": "regulatory_text_and_effective_state",
+      "boundary": "A press release or search snippet alone cannot carry the legal conclusion; effective dates, supersession and exact rule text are required."
+    },
+    {
+      "source_family_id": "F12_INDEPENDENT_COUNTEREVIDENCE",
+      "classes": ["C", "B"],
+      "purpose": "attributed independent reporting for event discovery, contradiction and corroboration",
+      "entrypoints": [],
+      "storage_route": "external_search_candidate_then_captured_versioned_document",
+      "authority": "candidate_or_independent_context_not_numeric_authority",
+      "boundary": "Search results, snippets, RSS and aggregators are locators only; material claims require the underlying captured source."
+    }
+  ],
+  "question_branches": [
+    {
+      "branch_id": "Q1_ISSUER_TRUTH",
+      "priority": "high",
+      "objective": "Reconcile fiscal identity, metric definitions, orders, revenue, backlog, guidance, profit, working capital and cash.",
+      "required_source_families": ["F1_SEC_ISSUER_FACTS", "F2_DELL_IR_EARNINGS"],
+      "formula_ids": ["F_GROWTH", "F_MARGIN", "F_FCF", "F_WORKING_CAPITAL_DAYS"],
+      "counter_questions": ["Did the definition change?", "Did working capital or cash move against the revenue narrative?"]
+    },
+    {
+      "branch_id": "Q2_DEMAND_QUALITY",
+      "priority": "high",
+      "objective": "Separate named deployments, customer cohorts and durable demand from generic capex, pre-buy, double-order and backlog timing.",
+      "required_source_families": ["F2_DELL_IR_EARNINGS", "F4_CUSTOMER_CAPEX_DEPLOYMENT", "F5_PUBLIC_PROCUREMENT"],
+      "formula_ids": ["F_BACKLOG_COHORT_CONVERSION", "F_CAPEX_GROWTH"],
+      "counter_questions": ["Is Dell explicitly named?", "Is the capacity actual, financed, guided or merely announced?"]
+    },
+    {
+      "branch_id": "Q3_UNITS_ASP_PVM",
+      "priority": "high",
+      "objective": "Determine whether units, price and mix can be supported as reported values, bounded observations, scenarios or null gaps.",
+      "required_source_families": ["F2_DELL_IR_EARNINGS", "F3_DELL_PRODUCT_SUPPORT", "F5_PUBLIC_PROCUREMENT"],
+      "formula_ids": ["F_PVM_EXACT", "F_PVM_SCENARIO"],
+      "counter_questions": ["Does the price include GPU, network, storage, services or financing?", "Does the sample cover enough of Dell company activity?"]
+    },
+    {
+      "branch_id": "Q4_ARCHITECTURE_RAMP",
+      "priority": "high",
+      "objective": "Track each platform through announcement, qualification, firmware readiness, production, shipment, deployment and revenue recognition.",
+      "required_source_families": ["F3_DELL_PRODUCT_SUPPORT", "F6_COMPUTE_PLATFORM_SUPPLIERS", "F4_CUSTOMER_CAPEX_DEPLOYMENT"],
+      "formula_ids": [],
+      "counter_questions": ["Is this a readiness claim or an actual shipment/deployment?", "Could an architecture transition delay revenue?"]
+    },
+    {
+      "branch_id": "Q5_SUPPLY_AND_PRICE",
+      "priority": "high",
+      "objective": "Separate HBM, server DRAM, NAND/eSSD, packaging, GPU, networking, liquid cooling and power constraints and their direction of transmission.",
+      "required_source_families": ["F6_COMPUTE_PLATFORM_SUPPLIERS", "F7_MEMORY_FOUNDRY_NETWORK_STORAGE", "F2_DELL_IR_EARNINGS"],
+      "formula_ids": ["F_COST_PASS_THROUGH_SCENARIO"],
+      "counter_questions": ["Is the evidence Dell-specific or supplier-wide?", "Could easing supply raise units while still pressuring OEM margin?"]
+    },
+    {
+      "branch_id": "Q6_MODEL_COMPUTE_DEMAND",
+      "priority": "medium",
+      "objective": "Distinguish training, batch inference, low-latency inference and agentic test-time compute and connect only observable demand bridges to systems.",
+      "required_source_families": ["F9_MODEL_COMPUTE_AND_BENCHMARKS", "F4_CUSTOMER_CAPEX_DEPLOYMENT", "F6_COMPUTE_PLATFORM_SUPPLIERS"],
+      "formula_ids": ["F_WORKLOAD_CAPACITY_SCENARIO"],
+      "counter_questions": ["Is this benchmark performance or actual usage?", "Could efficiency lower unit demand or increase usage through lower cost?"]
+    },
+    {
+      "branch_id": "Q7_EXPORT_CONTROL_CHINA",
+      "priority": "high",
+      "objective": "Bind the current rule version, effective date, controlled performance, destination and end-user conditions while separating revenue, supply-chain and customer exposure.",
+      "required_source_families": ["F10_EXPORT_CONTROL_AND_POLICY", "F1_SEC_ISSUER_FACTS", "F6_COMPUTE_PLATFORM_SUPPLIERS"],
+      "formula_ids": [],
+      "counter_questions": ["Is the rule current and effective at the research cut-off?", "Is Greater China revenue actually disclosed rather than inferred from foreign revenue?"]
+    },
+    {
+      "branch_id": "Q8_COMPETITION_VALUE_POOL",
+      "priority": "medium",
+      "objective": "Compare only reconciled peer definitions and locate publicly observable value capture across OEM, compute, memory, network and storage layers.",
+      "required_source_families": ["F8_OEM_COMPETITION", "F6_COMPUTE_PLATFORM_SUPPLIERS", "F7_MEMORY_FOUNDRY_NETWORK_STORAGE"],
+      "formula_ids": ["F_MARGIN", "F_WORKING_CAPITAL_DAYS"],
+      "counter_questions": ["Are peer metrics comparable?", "Does faster architecture readiness or better working capital contradict Dell execution?"]
+    },
+    {
+      "branch_id": "Q9_COUNTEREVIDENCE_WWC",
+      "priority": "high",
+      "objective": "Test every material thesis against a source-bound counterclaim and a monitorable what-would-change condition.",
+      "required_source_families": ["F12_INDEPENDENT_COUNTEREVIDENCE"],
+      "formula_ids": [],
+      "counter_questions": ["What direct evidence would reverse or narrow the claim?", "Is the apparent gap actually an unexecuted or failed retrieval route?"]
+    }
+  ],
+  "formulas": [
+    {
+      "formula_id": "F_GROWTH",
+      "expression": "(current - comparable) / abs(comparable)",
+      "required_inputs": ["current", "comparable"],
+      "output_authority": "deterministic_derived_metric",
+      "stop_if": "period, unit or metric definition is not comparable"
+    },
+    {
+      "formula_id": "F_MARGIN",
+      "expression": "profit_measure / revenue",
+      "required_inputs": ["profit_measure", "revenue"],
+      "output_authority": "deterministic_derived_metric",
+      "stop_if": "scope or fiscal period differs"
+    },
+    {
+      "formula_id": "F_FCF",
+      "expression": "operating_cash_flow - capital_expenditures",
+      "required_inputs": ["operating_cash_flow", "capital_expenditures"],
+      "output_authority": "deterministic_derived_metric",
+      "stop_if": "issuer definition uses a different reconciliation without explicit mapping"
+    },
+    {
+      "formula_id": "F_WORKING_CAPITAL_DAYS",
+      "expression": "average_balance / matching_period_flow * days_in_period",
+      "required_inputs": ["opening_balance", "closing_balance", "matching_period_flow", "days_in_period"],
+      "output_authority": "deterministic_derived_metric",
+      "stop_if": "opening balance, flow denominator or period alignment is unavailable"
+    },
+    {
+      "formula_id": "F_BACKLOG_COHORT_CONVERSION",
+      "expression": "recognized_revenue_from_identified_opening_backlog_cohort / opening_backlog_cohort",
+      "required_inputs": ["opening_backlog_cohort", "revenue_from_same_cohort"],
+      "output_authority": "derived_only_if_same_cohort_is_disclosed",
+      "stop_if": "current revenue cannot be attributed to the opening backlog cohort"
+    },
+    {
+      "formula_id": "F_CAPEX_GROWTH",
+      "expression": "(current_capex - comparable_capex) / abs(comparable_capex)",
+      "required_inputs": ["current_capex", "comparable_capex", "capex_definition"],
+      "output_authority": "industry_context_unless_Dell_relationship_is_named",
+      "stop_if": "cash PP&E, finance leases and total capex are mixed"
+    },
+    {
+      "formula_id": "F_PVM_EXACT",
+      "expression": "delta_revenue = volume_effect + price_effect + mix_effect + reconciled_residual",
+      "required_inputs": ["base_and_current_units", "base_and_current_comparable_price", "mix_weights", "reported_revenue"],
+      "output_authority": "derived_only_when_inputs_are_direct_and_coverage_is_reconciled",
+      "stop_if": "two or more core inputs are missing or bundle scope is not comparable"
+    },
+    {
+      "formula_id": "F_PVM_SCENARIO",
+      "expression": "scenario_revenue = scenario_units * scenario_comparable_system_value",
+      "required_inputs": ["explicit_unit_range", "explicit_system_value_range", "bundle_scope", "coverage_ratio"],
+      "output_authority": "research_scenario_not_reported_fact",
+      "stop_if": "ranges rely on a few procurement records extrapolated to the company"
+    },
+    {
+      "formula_id": "F_COST_PASS_THROUGH_SCENARIO",
+      "expression": "system_cost_change = sum(component_weight_i * component_price_change_i)",
+      "required_inputs": ["component_price_direction_or_range", "scenario_component_weights"],
+      "output_authority": "research_scenario_not_Dell_BOM_or_margin_fact",
+      "stop_if": "scenario assumptions are not separately labeled"
+    },
+    {
+      "formula_id": "F_WORKLOAD_CAPACITY_SCENARIO",
+      "expression": "required_accelerator_time = workload_volume * compute_per_workload / effective_throughput",
+      "required_inputs": ["workload_volume_range", "compute_per_workload_range", "effective_throughput_range"],
+      "output_authority": "research_scenario_not_customer_purchase_fact",
+      "stop_if": "benchmark throughput is silently substituted for effective customer utilization"
+    }
+  ],
+  "context_delivery": {
+    "protocol": "MCP",
+    "protocol_sdk": "mcp_python_2_1_1_MCPServer",
+    "selection_rule": "The runtime loads the case summary and authority boundaries once, then calls typed tools for only the active question branch. It never binds the entire corpus or all source families into every model prompt.",
+    "tool_result_states": [
+      "retrieval_candidate",
+      "captured_source_candidate",
+      "reviewed_evidence",
+      "numeric_fact",
+      "deterministic_derived_metric",
+      "research_scenario",
+      "typed_gap",
+      "tool_failure"
+    ],
+    "candidate_is_not_evidence": true,
+    "search_snippet_is_not_source_text": true,
+    "numeric_fact_requires_typed_SQL_route": true,
+    "raw_private_paths_forbidden_in_model_context": true,
+    "model_context_compaction_rule": "Keep claim, source identity, bounded excerpt, locator, time, authority state and unresolved counterevidence; omit duplicate raw text and transport internals."
+  },
+  "freshness_contract": {
+    "special_event": "DELL_FY2027_Q2",
+    "call_time_local": "2026-09-02T04:30:00+08:00",
+    "pre_release_snapshot_must_not_claim_day_end_freshness": true,
+    "poll_order": [
+      "Dell IR home and quarterly results",
+      "SEC submissions JSON",
+      "new 8-K accession and EX-99 attachments",
+      "earnings release and financial tables",
+      "prepared remarks or performance review",
+      "transcript or webcast archive",
+      "subsequent 10-Q and complete XBRL accession package"
+    ],
+    "E0_earnings_event_seal": [
+      "earnings release and financial tables",
+      "prepared remarks or performance review",
+      "8-K and EX-99"
+    ],
+    "E1_filing_seal": [
+      "10-Q",
+      "complete accession and XBRL package",
+      "period identity reconciliation",
+      "earnings package reconciliation"
+    ],
+    "public_complete_demo_requires": "E0_earnings_event_seal_with_an_explicit_current_quarter_structured_numeric_gap",
+    "E0_may_be_used_as": "event_aware_demo_and_issuer_disclosed_evidence_but_not_current_quarter_SQL_NumericFact",
+    "freshness_hold_conditions": [
+      "expected release not yet present",
+      "8-K attachments present but IR index stale",
+      "a current-quarter structured calculation is requested before the 10-Q or another issuer structured table is available",
+      "accession or DTS capture incomplete",
+      "fiscal period or unit not reconciled",
+      "page reachable but extraction failed",
+      "call occurred but transcript is not available"
+    ]
+  },
+  "acceptance_and_stop": {
+    "branch_terminal_states": ["supported", "countered", "bounded_gap", "not_material"],
+    "supported_target": "At least one direct authoritative source plus one independent cross-entity, customer, supplier or regulatory corroborator when material and publicly available.",
+    "tolerance_policy": "The demo may retain disclosed uncertainty, bounded gaps and a small number of non-material misses. It must not hide material contradictions or turn a failed tool route into a public-information gap.",
+    "no_perfect_metric_gate": true,
+    "must_have": [
+      "all high-priority branches terminal",
+      "latest required earnings event refreshed or freshness_hold shown",
+      "source, fiscal, publication and effective time identities aligned",
+      "material positive claims paired with counterevidence or what-would-change",
+      "citations resolve to captured or stable authoritative sources",
+      "tool latency, token usage, model calls and failure states visible"
+    ],
+    "stop_and_leave_null": [
+      "paid or private data is required",
+      "company units or ASP can only be extrapolated from bundle prices or a few projects",
+      "Greater China revenue can only be inferred from foreign revenue or manufacturing locations",
+      "Dell share can only be inferred from generic cloud capex",
+      "revenue can only be inferred from a benchmark, announcement or firmware availability",
+      "period, unit or definition cannot be disambiguated",
+      "a source or parser route failed and has not yet been diagnosed"
+    ]
+  },
+  "answer_policy": {
+    "contains_case_answer": false,
+    "contains_target_company_forecast": false,
+    "contains_hidden_gold": false,
+    "method_and_formula_injection_allowed": true,
+    "runtime_must_record_method_digest_and_selected_branch_ids": true
+  }
+}

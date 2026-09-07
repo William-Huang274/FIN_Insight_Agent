@@ -1,0 +1,1406 @@
+{
+  "schema_version": "fin_ia_s1c_runtime_query_atom_eval_v1_3",
+  "status": "current_object_qrels_successor_materialized_before_runtime_ranking",
+  "recorded_at": "2026-08-17",
+  "bound_inputs": {
+    "source_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_runtime_query_atom_eval_v1_2.json",
+    "source_eval_sha256_lf": "944ed42c294c936afa272be13efc6f9275202962c6d3f7f6cce38fee3ede8207",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "kernel_sha256_lf": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+    "source_compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "source_compiled_objects_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "target_compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "target_compiled_objects_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "adjudication_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_query_atom_sentence_object_adjudication_v1_1.json",
+    "adjudication_sha256_lf": "6336751834e8125d0d3e76f5bd1503bbf01b0dc6ce0c397d291e33eb14325ad4"
+  },
+  "policy": {
+    "compile_request_before_label_join": true,
+    "one_facet_and_one_owner_per_atom": true,
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "typed_gap_is_valid_outcome": true,
+    "observed_validation_cases_forbidden_from_tuning": [
+      "ORCL",
+      "ASML",
+      "ANET"
+    ],
+    "qrel_successor_not_attempt_rewrite": true,
+    "stable_object_key_before_compiled_id": true,
+    "source_level_match_is_not_object_level_relevance": true,
+    "adjudication_authority": "codex_business_semantic_development_review",
+    "owner_acceptance": false,
+    "sentence_object_migration_uses_parent_bound_containment": true
+  },
+  "query_contract": {
+    "source_query_digest": "63b7ce8f2b72b86b160ae2a5b8f73d73121a9c5136bf9f1b2854f8660b288e50",
+    "target_query_digest": "63b7ce8f2b72b86b160ae2a5b8f73d73121a9c5136bf9f1b2854f8660b288e50",
+    "unchanged": true
+  },
+  "adjudication_summary": {
+    "replacement_atom_count": 3,
+    "replacement_atoms": [
+      {
+        "atom_id": "S1C_ATOM_02_DELL_REPORTED_RESULTS",
+        "business_reason_zh": "已报告结果与管理层未来指引必须分开。当前季度业绩和已经实现的 AI 订单及收入属于正样本；FY27 AI 服务器收入预期属于管理层指引，只保留为待审对象。"
+      },
+      {
+        "atom_id": "S1C_ATOM_04_DELL_UPSTREAM_MU",
+        "business_reason_zh": "原正样本只是指向投资者材料的导航句，不能证明 HBM4 出货。改为同一份当前官方披露中明确说明 HBM4 已为主要客户平台高量出货、并向多个终端客户发送认证样品的直接句。"
+      },
+      {
+        "atom_id": "S1C_ATOM_17_NVDA_UPSTREAM_MU",
+        "business_reason_zh": "NVDA 上游 HBM4 查询与 DELL 上游查询共享同一条 Micron 直接出货事实；原导航句不具备证据资格。"
+      }
+    ],
+    "source_target_label_identity_overlap_count": 27
+  },
+  "summary": {
+    "atom_count": 18,
+    "case_count": 3,
+    "positive_label_count": 24,
+    "hard_negative_label_count": 18,
+    "unjudged_label_count": 12,
+    "typed_gap_atom_count": 3
+  },
+  "atoms": [
+    {
+      "atom_id": "S1C_ATOM_01_DELL_DOWNSTREAM_MSFT",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_01_DELL_DOWNSTREAM_MSFT",
+        "cell_id": "CELL::S1C_ATOM_01_DELL_DOWNSTREAM_MSFT",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "MSFT"
+        ],
+        "requested_facet_ids": [
+          "downstream_demand_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "AI infrastructure deployment and usage"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::c649445947ddfb68fa3cb1fb"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::5d4863574fd88759f0524130"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::c649445947ddfb68fa3cb1fb": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::5d4863574fd88759f0524130": [
+            "generic_or_boilerplate"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_02_DELL_REPORTED_RESULTS",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_02_DELL_REPORTED_RESULTS",
+        "cell_id": "CELL::S1C_ATOM_02_DELL_REPORTED_RESULTS",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "DELL"
+        ],
+        "requested_facet_ids": [
+          "reported_results"
+        ],
+        "metric_intents": [
+          "revenue",
+          "operating income"
+        ],
+        "product_intents": [
+          "AI-optimized servers"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::47e60261fb7f1c0a7ac0383a",
+          "COBJ::67d2965825d6516f6f10b7a7"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::7d3da93edf77c9fae94d0a7a"
+        ],
+        "unjudged_object_ids": [
+          "COBJ::e452b4e0815c3240d2dd19f9"
+        ],
+        "expected_roles_by_object_id": {
+          "COBJ::47e60261fb7f1c0a7ac0383a": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::67d2965825d6516f6f10b7a7": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::e452b4e0815c3240d2dd19f9": [
+            "direct_demand_signal",
+            "management_guidance"
+          ],
+          "COBJ::7d3da93edf77c9fae94d0a7a": [
+            "generic_or_boilerplate"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_03_DELL_COUNTEREVIDENCE",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_03_DELL_COUNTEREVIDENCE",
+        "cell_id": "CELL::S1C_ATOM_03_DELL_COUNTEREVIDENCE",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "DELL"
+        ],
+        "requested_facet_ids": [
+          "issuer_counterevidence"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "AI server demand durability and component constraints"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::bd88715994968371e99d8738"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::5d4121bb5e4d032411a92c2b"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::bd88715994968371e99d8738": [
+            "demand_risk_or_counterevidence",
+            "supply_risk_or_counterevidence"
+          ],
+          "COBJ::5d4121bb5e4d032411a92c2b": [
+            "capital_allocation_or_valuation",
+            "observed_operating_result"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_04_DELL_UPSTREAM_MU",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_04_DELL_UPSTREAM_MU",
+        "cell_id": "CELL::S1C_ATOM_04_DELL_UPSTREAM_MU",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "MU"
+        ],
+        "requested_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "HBM4 shipment and capacity"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::f9c13c79a8c50dd1eeb57394"
+        ],
+        "hard_negative_object_ids": [],
+        "unjudged_object_ids": [
+          "COBJ::286e0f1016dfb5fd92840a8c",
+          "COBJ::5f224e69979d5403da55f915"
+        ],
+        "expected_roles_by_object_id": {
+          "COBJ::f9c13c79a8c50dd1eeb57394": [
+            "direct_supply_capacity_signal",
+            "observed_operating_result",
+            "relationship_context"
+          ],
+          "COBJ::286e0f1016dfb5fd92840a8c": [
+            "direct_demand_signal",
+            "management_guidance",
+            "relationship_context"
+          ],
+          "COBJ::5f224e69979d5403da55f915": [
+            "management_guidance",
+            "relationship_context"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+        "cell_id": "CELL::S1C_ATOM_05_DELL_UPSTREAM_NVDA",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "NVDA"
+        ],
+        "requested_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "GPU supply capacity and transition risk"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::0065ea7ccdb7dc162734bf2f",
+          "COBJ::446f4a4bcb2e34a40fd756f6",
+          "COBJ::6bad3b80a28f25e2d0cb3f9a",
+          "COBJ::c5f73f525dbe7e0ecaa44fff"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::100ed2971b50fc2f1af70872",
+          "COBJ::5233d284ff92225d3b1b2a79"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::0065ea7ccdb7dc162734bf2f": [
+            "direct_supply_capacity_signal",
+            "demand_risk_or_counterevidence"
+          ],
+          "COBJ::446f4a4bcb2e34a40fd756f6": [
+            "direct_supply_capacity_signal",
+            "supply_risk_or_counterevidence"
+          ],
+          "COBJ::6bad3b80a28f25e2d0cb3f9a": [
+            "demand_risk_or_counterevidence",
+            "supply_risk_or_counterevidence"
+          ],
+          "COBJ::c5f73f525dbe7e0ecaa44fff": [
+            "demand_risk_or_counterevidence",
+            "supply_risk_or_counterevidence"
+          ],
+          "COBJ::100ed2971b50fc2f1af70872": [
+            "generic_or_boilerplate"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_06_DELL_UPSTREAM_TSM_GAP",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_06_DELL_UPSTREAM_TSM_GAP",
+        "cell_id": "CELL::S1C_ATOM_06_DELL_UPSTREAM_TSM_GAP",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "DELL",
+        "subject_ticker": "DELL",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "TSM"
+        ],
+        "requested_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "advanced packaging and CoWoS capacity"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [],
+        "hard_negative_object_ids": [
+          "COBJ::890b3038d022948939bd108d"
+        ],
+        "unjudged_object_ids": [
+          "COBJ::0cc23ec3c1cd3c46bbbabdf9",
+          "COBJ::a1328fbf5c7041aa495a808a"
+        ],
+        "expected_roles_by_object_id": {
+          "COBJ::0cc23ec3c1cd3c46bbbabdf9": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::a1328fbf5c7041aa495a808a": [
+            "direct_demand_signal",
+            "management_guidance"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_07_MU_DOWNSTREAM_DELL",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_07_MU_DOWNSTREAM_DELL",
+        "cell_id": "CELL::S1C_ATOM_07_MU_DOWNSTREAM_DELL",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "DELL"
+        ],
+        "requested_facet_ids": [
+          "downstream_demand_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "AI server orders and backlog"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::67d2965825d6516f6f10b7a7"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::5d4121bb5e4d032411a92c2b"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::67d2965825d6516f6f10b7a7": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::5d4121bb5e4d032411a92c2b": [
+            "capital_allocation_or_valuation",
+            "observed_operating_result"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_08_MU_DOWNSTREAM_MSFT",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_08_MU_DOWNSTREAM_MSFT",
+        "cell_id": "CELL::S1C_ATOM_08_MU_DOWNSTREAM_MSFT",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "MSFT"
+        ],
+        "requested_facet_ids": [
+          "downstream_demand_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "AI infrastructure deployment and usage"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::c649445947ddfb68fa3cb1fb"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::5d4863574fd88759f0524130"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::c649445947ddfb68fa3cb1fb": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::5d4863574fd88759f0524130": [
+            "generic_or_boilerplate"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_09_MU_REPORTED_RESULTS",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_09_MU_REPORTED_RESULTS",
+        "cell_id": "CELL::S1C_ATOM_09_MU_REPORTED_RESULTS",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "MU"
+        ],
+        "requested_facet_ids": [
+          "reported_results"
+        ],
+        "metric_intents": [
+          "revenue",
+          "gross margin"
+        ],
+        "product_intents": [
+          "HBM and data center business"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::70ba27146c8f64b59d00f42f"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::8cb0be77aa66ff690cc2d37a"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::70ba27146c8f64b59d00f42f": [
+            "direct_demand_signal",
+            "management_guidance",
+            "observed_operating_result"
+          ],
+          "COBJ::8cb0be77aa66ff690cc2d37a": [
+            "supply_risk_or_counterevidence"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_10_MU_RELATIONSHIP",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_10_MU_RELATIONSHIP",
+        "cell_id": "CELL::S1C_ATOM_10_MU_RELATIONSHIP",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "MU"
+        ],
+        "requested_facet_ids": [
+          "subject_relationship_disclosure"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "customer commitment and purchase structure"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::9d312db02aedd3998ef91a36",
+          "COBJ::9e62f1de04fcfbe84f012778",
+          "COBJ::c27b82b71738dcf287ac514f"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::8cb0be77aa66ff690cc2d37a"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::9d312db02aedd3998ef91a36": [
+            "relationship_context"
+          ],
+          "COBJ::9e62f1de04fcfbe84f012778": [
+            "direct_demand_signal",
+            "relationship_context"
+          ],
+          "COBJ::c27b82b71738dcf287ac514f": [
+            "direct_demand_signal",
+            "relationship_context"
+          ],
+          "COBJ::8cb0be77aa66ff690cc2d37a": [
+            "supply_risk_or_counterevidence"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_11_MU_DOWNSTREAM_NVDA",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_11_MU_DOWNSTREAM_NVDA",
+        "cell_id": "CELL::S1C_ATOM_11_MU_DOWNSTREAM_NVDA",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "NVDA"
+        ],
+        "requested_facet_ids": [
+          "downstream_demand_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "accelerator demand and supply constraint read-through"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::0065ea7ccdb7dc162734bf2f",
+          "COBJ::6bad3b80a28f25e2d0cb3f9a",
+          "COBJ::c5f73f525dbe7e0ecaa44fff"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::100ed2971b50fc2f1af70872",
+          "COBJ::5233d284ff92225d3b1b2a79"
+        ],
+        "unjudged_object_ids": [
+          "COBJ::446f4a4bcb2e34a40fd756f6"
+        ],
+        "expected_roles_by_object_id": {
+          "COBJ::0065ea7ccdb7dc162734bf2f": [
+            "direct_supply_capacity_signal",
+            "demand_risk_or_counterevidence"
+          ],
+          "COBJ::6bad3b80a28f25e2d0cb3f9a": [
+            "demand_risk_or_counterevidence",
+            "supply_risk_or_counterevidence"
+          ],
+          "COBJ::c5f73f525dbe7e0ecaa44fff": [
+            "demand_risk_or_counterevidence",
+            "supply_risk_or_counterevidence"
+          ],
+          "COBJ::100ed2971b50fc2f1af70872": [
+            "generic_or_boilerplate"
+          ],
+          "COBJ::446f4a4bcb2e34a40fd756f6": [
+            "direct_supply_capacity_signal",
+            "supply_risk_or_counterevidence"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_12_MU_UPSTREAM_TSM_GAP",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_12_MU_UPSTREAM_TSM_GAP",
+        "cell_id": "CELL::S1C_ATOM_12_MU_UPSTREAM_TSM_GAP",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "MU",
+        "subject_ticker": "MU",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "TSM"
+        ],
+        "requested_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "advanced packaging and foundry capacity"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [],
+        "hard_negative_object_ids": [
+          "COBJ::890b3038d022948939bd108d"
+        ],
+        "unjudged_object_ids": [
+          "COBJ::0cc23ec3c1cd3c46bbbabdf9",
+          "COBJ::a1328fbf5c7041aa495a808a"
+        ],
+        "expected_roles_by_object_id": {
+          "COBJ::0cc23ec3c1cd3c46bbbabdf9": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::a1328fbf5c7041aa495a808a": [
+            "direct_demand_signal",
+            "management_guidance"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_13_NVDA_DOWNSTREAM_DELL",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_13_NVDA_DOWNSTREAM_DELL",
+        "cell_id": "CELL::S1C_ATOM_13_NVDA_DOWNSTREAM_DELL",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "DELL"
+        ],
+        "requested_facet_ids": [
+          "downstream_demand_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "AI server orders and backlog"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::67d2965825d6516f6f10b7a7"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::5d4121bb5e4d032411a92c2b"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::67d2965825d6516f6f10b7a7": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::5d4121bb5e4d032411a92c2b": [
+            "capital_allocation_or_valuation",
+            "observed_operating_result"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_14_NVDA_DOWNSTREAM_MSFT",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_14_NVDA_DOWNSTREAM_MSFT",
+        "cell_id": "CELL::S1C_ATOM_14_NVDA_DOWNSTREAM_MSFT",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "MSFT"
+        ],
+        "requested_facet_ids": [
+          "downstream_demand_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "AI infrastructure deployment and usage"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::c649445947ddfb68fa3cb1fb"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::5d4863574fd88759f0524130"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::c649445947ddfb68fa3cb1fb": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::5d4863574fd88759f0524130": [
+            "generic_or_boilerplate"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_15_NVDA_REPORTED_RESULTS",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_15_NVDA_REPORTED_RESULTS",
+        "cell_id": "CELL::S1C_ATOM_15_NVDA_REPORTED_RESULTS",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "NVDA"
+        ],
+        "requested_facet_ids": [
+          "reported_results"
+        ],
+        "metric_intents": [
+          "revenue"
+        ],
+        "product_intents": [
+          "data center platform"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::c143b7965f98278200d18782",
+          "COBJ::5233d284ff92225d3b1b2a79"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::fe4531005e104268c95eeacd"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::c143b7965f98278200d18782": [
+            "observed_operating_result"
+          ],
+          "COBJ::5233d284ff92225d3b1b2a79": [
+            "financial_statement_or_reconciliation",
+            "observed_operating_result"
+          ],
+          "COBJ::fe4531005e104268c95eeacd": [
+            "generic_or_boilerplate"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_16_NVDA_CASH_GENERATION",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_16_NVDA_CASH_GENERATION",
+        "cell_id": "CELL::S1C_ATOM_16_NVDA_CASH_GENERATION",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "NVDA"
+        ],
+        "requested_facet_ids": [
+          "cash_generation"
+        ],
+        "metric_intents": [
+          "operating cash flow"
+        ],
+        "product_intents": [
+          "cash conversion"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::b218c5e03a722fedcb751f1a"
+        ],
+        "hard_negative_object_ids": [
+          "COBJ::100ed2971b50fc2f1af70872"
+        ],
+        "unjudged_object_ids": [],
+        "expected_roles_by_object_id": {
+          "COBJ::b218c5e03a722fedcb751f1a": [
+            "financial_statement_or_reconciliation",
+            "observed_operating_result"
+          ],
+          "COBJ::100ed2971b50fc2f1af70872": [
+            "demand_risk_or_counterevidence",
+            "direct_supply_capacity_signal",
+            "supply_risk_or_counterevidence"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_17_NVDA_UPSTREAM_MU",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_17_NVDA_UPSTREAM_MU",
+        "cell_id": "CELL::S1C_ATOM_17_NVDA_UPSTREAM_MU",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "MU"
+        ],
+        "requested_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "HBM4 shipment and capacity"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [
+          "COBJ::f9c13c79a8c50dd1eeb57394"
+        ],
+        "hard_negative_object_ids": [],
+        "unjudged_object_ids": [
+          "COBJ::286e0f1016dfb5fd92840a8c",
+          "COBJ::5f224e69979d5403da55f915"
+        ],
+        "expected_roles_by_object_id": {
+          "COBJ::f9c13c79a8c50dd1eeb57394": [
+            "direct_supply_capacity_signal",
+            "observed_operating_result",
+            "relationship_context"
+          ],
+          "COBJ::286e0f1016dfb5fd92840a8c": [
+            "direct_demand_signal",
+            "management_guidance",
+            "relationship_context"
+          ],
+          "COBJ::5f224e69979d5403da55f915": [
+            "management_guidance",
+            "relationship_context"
+          ]
+        }
+      }
+    },
+    {
+      "atom_id": "S1C_ATOM_18_NVDA_UPSTREAM_TSM_GAP",
+      "request": {
+        "schema_version": "fin_ia_evidence_request_v1_0",
+        "request_id": "REQ::S1C_ATOM_18_NVDA_UPSTREAM_TSM_GAP",
+        "cell_id": "CELL::S1C_ATOM_18_NVDA_UPSTREAM_TSM_GAP",
+        "requester_role": "research_lead",
+        "evidence_domain": "financial_research",
+        "case_key": "NVDA",
+        "subject_ticker": "NVDA",
+        "research_as_of": "2026-08-06",
+        "target_entities": [
+          "TSM"
+        ],
+        "requested_facet_ids": [
+          "upstream_capacity_context"
+        ],
+        "metric_intents": [],
+        "product_intents": [
+          "advanced packaging and CoWoS capacity"
+        ],
+        "period": {
+          "start_date": null,
+          "end_date": "2026-08-06",
+          "fiscal_years": [
+            2025,
+            2026,
+            2027
+          ]
+        },
+        "granularity": "quarter_and_fiscal_year",
+        "unit": "reported_source_unit",
+        "acceptable_sources": [
+          "10-K",
+          "10-Q",
+          "8-K",
+          "20-F",
+          "40-F",
+          "6-K"
+        ],
+        "acceptable_proxy": false,
+        "forbidden_proxy": [
+          "unbound issuer",
+          "wrong relationship direction",
+          "future publication",
+          "unbound reporting period"
+        ],
+        "stop_condition": "return candidates, typed facts, or typed gaps",
+        "clarification_policy": "return_typed_gap"
+      },
+      "labels": {
+        "positive_object_ids": [],
+        "hard_negative_object_ids": [
+          "COBJ::890b3038d022948939bd108d"
+        ],
+        "unjudged_object_ids": [
+          "COBJ::0cc23ec3c1cd3c46bbbabdf9",
+          "COBJ::a1328fbf5c7041aa495a808a"
+        ],
+        "expected_roles_by_object_id": {
+          "COBJ::0cc23ec3c1cd3c46bbbabdf9": [
+            "direct_demand_signal",
+            "observed_operating_result"
+          ],
+          "COBJ::a1328fbf5c7041aa495a808a": [
+            "direct_demand_signal",
+            "management_guidance"
+          ]
+        }
+      }
+    }
+  ],
+  "eval_digest": "76c394626e8be00ece419671c492b20d70d9863b02d66539df7bc46535fe9a99"
+}

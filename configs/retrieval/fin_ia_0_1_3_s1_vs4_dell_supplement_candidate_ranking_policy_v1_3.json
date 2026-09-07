@@ -1,0 +1,27 @@
+{
+  "schema_version": "fin_ia_s1_vs3_candidate_ranking_policy_v1_1",
+  "status": "pre_registered_vs4_dell_evidence_role_boundary_successor",
+  "recorded_at": "2026-08-18",
+  "experiment_id": "FIN-0.1.3-S1-VS4-DELL-SUPPLEMENT-CANDIDATE-PROBE-V1.3",
+  "parent_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_candidate_ranking_policy_v1_2.json",
+  "parent_policy_sha256_lf": "f31f7dbf9a6226ee5a5f249520612c4b44b6dc5b8316990fac9cc2085fc163d7",
+  "successor_basis": {
+    "why_new_attempt_is_justified": [
+      "v1.2 corrected all six positive roles and both hard negatives that entered the candidate pool",
+      "the immutable v1.2 ledger still showed a lease payment-term fragment and a question-only transcript fragment as compatible outside the actual pool",
+      "v1.3 removes the over-broad payment-term anchor and applies speaker authority to question-only transcript fragments so the full pre-registered judgement set is evaluated honestly"
+    ],
+    "not_changed": [
+      "query atoms, labels, candidates, ranks and score caches",
+      "canonical object snapshot, embedding and reranker models, CUDA-only execution, budgets and hard filters",
+      "all prior failure and successor outputs remain immutable"
+    ],
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "training_steps_authorized": 0
+  },
+  "bound_input_overrides": {
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_dell_supplement_query_atoms_v1_1.json",
+    "query_atom_eval_sha256_lf": "3763cc85c9f79e6517c86b44c78aa327e3f434676b93d31454aecbb442c599d1"
+  }
+}

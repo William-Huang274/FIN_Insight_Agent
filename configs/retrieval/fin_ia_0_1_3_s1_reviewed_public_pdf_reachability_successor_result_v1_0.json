@@ -1,0 +1,92 @@
+{
+  "acceptance": {
+    "all_reviewed_pdf_pages_and_slices_internalized": true,
+    "all_reviewed_pdf_sources_indexed": true,
+    "base_objects_retained_exactly": true,
+    "base_source_records_retained_exactly": true,
+    "external_owner_identity_preserved": true,
+    "kernel_route_and_request_contracts_load": true
+  },
+  "authority": {
+    "bundled_quote_or_contract_is_not_company_asp": true,
+    "candidate_is_not_evidence": true,
+    "exact_lineage_join_required_for_evidence_reselection": true,
+    "issuer_relationship_pdf_does_not_prove_private_allocation": true,
+    "model_calls": 0,
+    "network_calls": 0,
+    "numeric_authority": false,
+    "public_procurement_unit_is_not_company_units_or_share": true,
+    "reviewed_relevance_labels_copied_into_candidate_index": false
+  },
+  "inputs": {
+    "base_kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_4.json",
+    "base_kernel_sha256": "13d9c142c44166cddcb34e647b68b6b6f02d73296cf65d40bb8989eb1505e2a0",
+    "base_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v6/objects.jsonl",
+    "base_objects_sha256": "494c35fe657f3df80f7878c6ec64cadd154871c9310859d418fd323767c50e8c",
+    "base_program_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_2.json",
+    "base_program_sha256": "8a92a8204042d3f7611406b03e158d76465ec372e02f1fbe5099ff82ab5261c8",
+    "base_route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_4.json",
+    "base_route_policy_sha256": "ce7db58eafdc04f4a43e93f2fba524bf3674b19d520c50d78ef261a2b610e224",
+    "base_source_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v3/records.jsonl",
+    "base_source_records_sha256": "ef84d03f4480ed668b344d12376e8af27a0b5efcb9e0fc13ccf273ab5a2a92bb",
+    "evidence_pack_payload_digest": "1654b68f3621d613768ba2a7d701ceda712a096ffeb5ab9e9b9078b3189e2a98",
+    "evidence_pack_ref": "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+    "evidence_pack_sha256": "b28afc38da5d82d8656f81d9c4b382f0e0b664ba4f212370482f32649e1c73a1",
+    "records": {
+      "ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v4/records.jsonl",
+      "sha256": "653b16e36bae943be07a8ef94814ddf38d61c86f2ef04e598a257f85984bb936"
+    }
+  },
+  "known_boundary": "This successor appends only six already-reviewed PUBLIC_PDF slices and their three page-lineage parents to the current S1 source/object surface. It makes those documents retrievable as label-free candidates; it does not convert a bundled quote into Dell ASP, a single procurement into company units/share, or a public collaboration into private allocation. Evidence authority still requires an exact immutable-Pack lineage join.",
+  "object_compilation_summary": {
+    "compiled_object_count": 34189,
+    "compiled_object_kind_counts": {
+      "bounded_parent_context": 1231,
+      "claim": 24426,
+      "metric_row": 8532
+    },
+    "source_record_count": 1886
+  },
+  "output_binding": {
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v7/diagnostics.jsonl",
+    "diagnostics_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v7/objects.jsonl",
+    "objects_sha256": "8dd81907dfd7a2e2526a6f41ea9aad24845286adf268131a49c5947ffedbfa3d"
+  },
+  "outputs": {
+    "diagnostics_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v7/diagnostics.jsonl",
+    "diagnostics_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_5.json",
+    "kernel_sha256": "4b42a4942a5026719263e1bdd86c66bc3f602e79d422dcd0c8f5cc07ecfe753c",
+    "objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v7/objects.jsonl",
+    "objects_sha256": "8dd81907dfd7a2e2526a6f41ea9aad24845286adf268131a49c5947ffedbfa3d",
+    "request_program_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_3.json",
+    "request_program_sha256": "48a3c43e57685f39bb3b0658b5f74978981efaaa83df7ba8e3b0e91c4c4da67d",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_5.json",
+    "route_policy_sha256": "05975a2dbe5503797e3e7487083ffa5a9c695b5587bec2f8ef8ed68857c37be7",
+    "source_records_ref": "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/v4/records.jsonl",
+    "source_records_sha256": "653b16e36bae943be07a8ef94814ddf38d61c86f2ef04e598a257f85984bb936"
+  },
+  "recorded_at": "2026-08-25",
+  "result_digest": "07cbbc77eed8e9a6ff490ea69e71c65d534b56c2dcf521724d78ef9874847eb8",
+  "schema_version": "fin_ia_s1_reviewed_public_pdf_reachability_successor_result_v1_0",
+  "status": "reviewed_public_pdf_compiled_into_current_candidate_successor",
+  "summary": {
+    "base_object_count": 34166,
+    "base_source_record_count": 1877,
+    "changed_request_count": 4,
+    "pdf_canonical_source_record_count": 9,
+    "pdf_facet_count": 3,
+    "pdf_object_count": 23,
+    "pdf_related_entity_count": 2,
+    "pdf_source_count": 3,
+    "pdf_source_ids": [
+      "PUBLIC::DELL-EXT::329F1654BF36A1B63B37",
+      "PUBLIC::DELL-EXT::3F7981CD8B953FA5A0E6",
+      "PUBLIC::DELL-EXT::518D98AA635617191E58"
+    ],
+    "pdf_source_slice_count": 6,
+    "successor_object_count": 34189,
+    "successor_source_record_count": 1886
+  }
+}

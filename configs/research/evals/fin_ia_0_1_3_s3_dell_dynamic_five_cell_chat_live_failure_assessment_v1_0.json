@@ -1,0 +1,131 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_live_failure_assessment_v1_0",
+  "status": "terminal_failed_after_planner_and_current_S1_S2_before_cells_capacity_contract_inconsistent",
+  "recorded_at": "2026-08-17T02:08:00+08:00",
+  "case_key": "DELL",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_chat_live_authority_v1_0.json",
+  "authority_sha256": "2bccbdf9ca1e43184d380f2ea5fae74b919313ea7df69616679191936a0cd796",
+  "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_chat_live_result_v1_0.json",
+  "public_result_sha256": "ee9615e374b03f235011b6fa54d25e86ceb72d33c049a43e6c558c374c5ac1e2",
+  "public_result_digest": "96b3fc98d4c7cf8c3b103bfe5384781b1523fd563cf27af3c1f0318ad8575708",
+  "private_full_result_ref": "data/workbench_private/s3_dynamic_five_cell/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R1/full_result.json",
+  "private_full_result_sha256": "fb8867a30e1a2399677a323322eaab80e21a69c477128751098fea47421d64b1",
+  "private_full_result_digest": "6d701e35ef09f48d2c935f3b9b4d736bdbcae81360b937ff8387e630037cb483",
+  "implementation_commit": "24e67cb135a2374fda036c472bdaa6c9590669f0",
+  "failure": {
+    "phase": "five_cell_deliverable_validation",
+    "code": "research_consumer_cell_capacity_exceeded",
+    "first_failing_cell": "CELL::value_capture",
+    "observed_evidence_count": 4,
+    "maximum_evidence_count": 8,
+    "observed_numeric_fact_count": 10,
+    "maximum_numeric_fact_count": 8
+  },
+  "natural_planner": {
+    "completed": true,
+    "proposed_atom_count": 10,
+    "selected_atom_count": 8,
+    "deferred_atom_count": 2,
+    "plan_digest": "f964f9fe814e1ea5d50c5286fb57b3cb00144514c2ee47cc9c770b7d662debaf",
+    "prompt_tokens": 1302,
+    "completion_tokens": 6103,
+    "reasoning_tokens": 5033,
+    "finish_reason": "stop"
+  },
+  "current_S1_S2": {
+    "executed": true,
+    "compiled_lane_count": 8,
+    "nonempty_lane_count": 8,
+    "hybrid_candidate_runtime": "bm25_plus_qwen_local_embedding",
+    "hybrid_selected_candidate_count": 128,
+    "unique_narrative_candidate_count": 24,
+    "local_embedding_inference_batches": 1,
+    "typed_fact_request_count": 30,
+    "typed_fact_resolved_count": 22,
+    "typed_fact_gap_count": 8,
+    "typed_fact_conflict_count": 0,
+    "numeric_fact_count_before_consumer_selection": 67,
+    "candidate_promotions": 0,
+    "external_network_calls": 0
+  },
+  "cell_capacity_audit": [
+    {
+      "cell_id": "CELL::demand_quality",
+      "evidence_count": 6,
+      "evidence_maximum": 8,
+      "numeric_fact_count": 0,
+      "numeric_fact_maximum": 4,
+      "status": "within_capacity"
+    },
+    {
+      "cell_id": "CELL::operating_performance",
+      "evidence_count": 2,
+      "evidence_maximum": 8,
+      "numeric_fact_count": 12,
+      "numeric_fact_maximum": 12,
+      "status": "at_capacity"
+    },
+    {
+      "cell_id": "CELL::value_capture",
+      "evidence_count": 4,
+      "evidence_maximum": 8,
+      "numeric_fact_count": 10,
+      "numeric_fact_maximum": 8,
+      "status": "capacity_contract_inconsistent"
+    },
+    {
+      "cell_id": "CELL::cash_conversion",
+      "evidence_count": 3,
+      "evidence_maximum": 8,
+      "numeric_fact_count": 10,
+      "numeric_fact_maximum": 10,
+      "status": "at_capacity"
+    },
+    {
+      "cell_id": "CELL::counterevidence",
+      "evidence_count": 10,
+      "evidence_maximum": 12,
+      "numeric_fact_count": 3,
+      "numeric_fact_maximum": 6,
+      "status": "within_capacity"
+    }
+  ],
+  "root_cause": {
+    "owning_stage": "S3_current_consumer_numeric_view_compiler",
+    "classification": "route_metric_bundle_and_cell_capacity_contract_mismatch",
+    "explanation_zh": "pricing_and_value_capture 路线合法包含 revenue、gross_profit、gross_margin、operating_income、operating_margin 五个指标；同期选择器为每个指标保留当期和上年同期，因此该路线的合法原子视图为 10 条。consumer policy v1.3 的静态上限仍为 8，与上游合同矛盾。",
+    "zero_call_coverage_gap_zh": "正式预回放只覆盖了当时选中的 8 条 value_capture NumericFact，没有加入 reported_results 与 margin_and_incremental_profit 两条合法 sibling 同时出现的容量 mutation。",
+    "not_caused_by": [
+      "DeepSeek planner contract or instruction adherence",
+      "provider connectivity or HTTP transport",
+      "S1 hybrid retrieval availability",
+      "S2 NumericFact correctness",
+      "candidate promotion or external source access",
+      "five-cell Judgment or synthesis quality"
+    ]
+  },
+  "successor_disposition": {
+    "preserve_R1": true,
+    "reuse_successful_natural_planner": true,
+    "reuse_successful_current_S1_S2_controlled_plan": true,
+    "rerun_planner": false,
+    "rerun_current_S1_S2": false,
+    "model_calls_reused": 1,
+    "maximum_fresh_model_calls_if_zero_call_successor_passes": 12,
+    "required_zero_call_fix": "successor consumer policy must derive or explicitly bind complete atomic metric-pair capacity for the value_capture route, reject capacity plus one, and replay all five cells from the immutable R1 controlled plan",
+    "new_attempt_and_authority_required": true,
+    "same_attempt_retry": false,
+    "product_publication": false
+  },
+  "acceptance": {
+    "R1_preserved_as_failure": true,
+    "planner_valid": true,
+    "current_S1_S2_valid": true,
+    "five_cell_judgments_started": false,
+    "financial_L1_assessable": false,
+    "content_quality_assessable": false,
+    "S3_acceptance": false,
+    "release_ready": false
+  },
+  "known_boundary": "R1 proves one fresh natural planner and current S1/S2 execution only. It does not prove any natural five-cell Judgment, synthesis, report quality, generalization, S3 acceptance, publication or release readiness."
+}

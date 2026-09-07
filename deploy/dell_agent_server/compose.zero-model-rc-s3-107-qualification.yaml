@@ -1,0 +1,37 @@
+services:
+  langgraph-api:
+    environment:
+      FIN_AGENT_SERVER_MODE: zero_model_control_plane_v1
+      FIN_AGENT_SERVER_ZERO_MODEL: "1"
+      FIN_AGENT_SERVER_HIDE_INPUTS: "1"
+      FIN_AGENT_SERVER_HIDE_OUTPUTS: "1"
+      FIN_AGENT_SERVER_RC_S3_107_QUALIFICATION: "1"
+      FINSIGHT_DELL_EXECUTION_PROFILE: zero_model_control_plane_v1
+    volumes:
+      - type: bind
+        source: ../../scripts/qualification/agent_server_rc_s3_107
+        target: /opt/fin-insight-qualification/rc-s3-107
+        read_only: true
+
+  # One-shot, host-supervised recovery authority.  It is deliberately not
+  # started with the API stack and receives neither the runtime-app credential
+  # nor any provider/model credential.  The host invokes it only for the
+  # explicit K4/K5 operator-disposition steps.
+  fin-recovery-operator:
+    profiles: ["rc-s3-107-operator"]
+    build:
+      context: ../..
+      dockerfile: deploy/dell_agent_server/Dockerfile
+    environment:
+      FIN_RUNTIME_OPERATOR_POSTGRES_URI: postgres://fin_runtime_operator:${FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD:?set FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD in the repository .env}@langgraph-postgres:5432/postgres?sslmode=disable
+      FIN_AGENT_SERVER_MODE: zero_model_control_plane_v1
+      FIN_AGENT_SERVER_ZERO_MODEL: "1"
+      FIN_AGENT_SERVER_HIDE_INPUTS: "1"
+      FIN_AGENT_SERVER_HIDE_OUTPUTS: "1"
+      FIN_AGENT_SERVER_RC_S3_107_QUALIFICATION: "1"
+      FINSIGHT_DELL_EXECUTION_PROFILE: zero_model_control_plane_v1
+    volumes:
+      - type: bind
+        source: ../../scripts/qualification/agent_server_rc_s3_107
+        target: /opt/fin-insight-qualification/rc-s3-107
+        read_only: true

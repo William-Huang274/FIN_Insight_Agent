@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_ia_s3_current_dynamic_single_unit_workpaper_submission_authority_v1_0",
+  "status": "signed_exact_once_DELL_current_dynamic_value_capture_workpaper_successor",
+  "signed_at": "2026-08-23T02:50:17+00:00",
+  "implementation_commit": "75d92ecc78bc846d5c5dc1af7f3db66ae080a024",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "execution_budget": {
+    "maximum_model_calls": 1,
+    "maximum_transport_attempts": 1,
+    "maximum_retrieval_rounds": 0,
+    "maximum_s1_s2_requests": 0,
+    "maximum_external_source_network_calls": 0,
+    "retries_per_model_node": 0,
+    "fallbacks": 0,
+    "candidate_promotions": 0,
+    "current_product_pointer_mutations": 0
+  },
+  "bound_inputs": {
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "764a6e2563ec250a3f1a32e6faec119ad50fbf953fd19310625f98921372bfa4",
+    "loop_policy_ref": "configs/research/fin_ia_0_1_3_s3_dell_dynamic_single_unit_loop_policy_v1_0.json",
+    "loop_policy_sha256": "71cad6a5f158960c0970b6e1864c7bcc6cd94f2d627b1aff59922e9de92884b7",
+    "zero_call_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_single_unit_zero_call_result_v1_0.json",
+    "zero_call_result_sha256": "132c1fd2abbaeb687b186dec273ad72007194e47b710f2a286e16229d231b3ac",
+    "provider_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_chat_control_transport_profile_v1_1.json",
+    "provider_profile_sha256": "ee5084283e2ca9c27e820f07d64add4ff38d03021357d77f6ed74000a38a88cb",
+    "runner_ref": "scripts/research/run_s3_current_dynamic_single_unit_live.py",
+    "runner_sha256": "7e04a629f678856c2dbb2e3ef8d70989addddcb94bb5d26cc9e4219b542e8042",
+    "loop_runtime_ref": "src/sec_agent/research/dynamic_single_unit_loop.py",
+    "loop_runtime_sha256": "f28c82c45c9bd777171a7c287617b5ef735b31e2159e770d1060921758dcbdeb",
+    "provider_transport_ref": "src/sec_agent/providers/chat_completions.py",
+    "provider_transport_sha256": "4e75b910b18ead890dff15d1125be87ed180163b7a215fd4c12d1421d51314f1",
+    "provider_dispatch_ref": "src/sec_agent/providers/transport_dispatch.py",
+    "provider_dispatch_sha256": "ae3d564a2c965a5ddf2cd3ceed3ff774ac53b07ce9704098a75904900385be71",
+    "failed_predecessor_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_live_result_v1_2.json",
+    "failed_predecessor_sha256": "b711237ebbfa4703a6e0f7c5e64b8937240f0a0488b2eb03243874cdcd0f27e5",
+    "scope_decision_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_workpaper_submission_scope_decision_v1_0.json",
+    "scope_decision_sha256": "c58a4b09a0260c0a78f1d4e317264c15b2b4ecbeb214e89c6025feb8e91c5ec3",
+    "submission_profile_ref": "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_workpaper_submission_non_thinking_profile_v1_0.json",
+    "submission_profile_sha256": "764853e66183fd1352a02eb439bb22292f0b82245353bd19e73b2f5163cc320a",
+    "failed_predecessor_private_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r3-20260823t0156z/full_result.json",
+    "failed_predecessor_private_sha256": "be4a308282ece46b7d5bf46563eb56134e354c437c2aa4707905aab97cd09e1e",
+    "zero_call_result_digest": "522d5bf183db4d5de77f58b09307b07b369b4feeb6353563ac221123893914ad",
+    "current_evidence_pack_payload_digest": "46f3704656ee15d960d3f39d8a45169a326604e871b7c01dd495b7bbac693864",
+    "task_readiness_result_digest": "224937d91f08259e5180d15dedf1f59ae04eaf6a32ba3d9439b431f35cd789ce",
+    "failed_predecessor_result_digest": "91a78a65968c0c6cbfd2786ce93026b9b58cb09bfa7bf618659fe22a92775855",
+    "failed_predecessor_full_result_digest": "e9f0c3999430218d4753130d2dd8b575069f8d53b7fa8439cd5987fa63bb5a0b",
+    "workpaper_context_digest": "9f8aa257b969dc596a8731c4dd83d4d241700623306b7e72e0a8ce2f1c46cafa",
+    "workpaper_submission_view_digest": "9dedcfcd8ceda66f5b69718fc746d1bee3cb5156c5e70f28c2bb7b02ddf79c23"
+  },
+  "output_contract": {
+    "capture_root_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r4-workpaper-20260823t0251z/captures",
+    "private_output_root_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_single_unit_live/dell-current-dynamic-single-unit-r4-workpaper-20260823t0251z",
+    "public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_single_unit_workpaper_submission_live_result_v1_0.json",
+    "run_id": "dell-current-dynamic-single-unit-r4-workpaper-20260823t0251z",
+    "attempt_ids": [
+      "dell-current-dynamic-single-unit-r4-workpaper-submission"
+    ],
+    "product_publication": "forbidden"
+  },
+  "known_boundary": "This authority permits one exact-once non-thinking workpaper submission from the immutable R3 DELL value-capture dynamic-research checkpoint. It reuses the first three successful R3 provider steps and the complete two-round S1/S2, FeedbackReceipt, PlanDelta, GraphDelta and StopDecision state; it does not rerun or reinterpret them. The compact model view carries all reviewed Evidence, NumericFacts, relations, gaps, methods, graph context and model-authored reflections once, while the complete context remains the local validator authority. It forbids retries, retrieval, new evidence, external network access, Candidate promotion, public-gap self-authorization, multi-agent execution, S1 or S3 acceptance, Workbench publication and release."
+}

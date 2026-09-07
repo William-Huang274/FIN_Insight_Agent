@@ -1,0 +1,531 @@
+{
+  "schema_version": "fin_ia_dell_report_internal_chain_ceiling_policy_v1_0",
+  "status": "scoped_internal_chain_execution_authorized",
+  "program_id": "FIN-0.1.3-S1-DELL-RSQ-03B-R1",
+  "attempt_id": "dell-rsq-03b-internal-chain-r1",
+  "recorded_at": "2026-08-25",
+  "decision_target": "For exactly six DELL report-material targets that do not overlap the pending 02B human packet, locate the earliest loss across the current R38 source/object/index/SQL, BM25, Qwen-0.6B dense, typed-graph union and bounded review cut. Separate a missing local source object from a retrieval miss and a post-union ranking cut before any 4B embedding, reranker or external route.",
+  "owner_basis": "The Owner instructed the approved integrated DELL S1/S2 plan to continue. This authority is narrower than the frozen 03A program: it permits one read-only local 03B attempt and does not impersonate the qualified human, execute any held target, use the network, acquire a source, run 4B or rerank, promote Evidence or close a gap.",
+  "bound_inputs": {
+    "residual_program_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_report_residual_source_ladder_program_v1_1.json",
+    "residual_program_sha256": "581c290df98b75fb06fb86842532cdc2c719d235b2aa6524f89f99a534780f64",
+    "residual_program_digest": "ed6f11a8fe091d84362d2df041d5ea0bffa50a5c781274f60eaf9e73d6919d50",
+    "execution_program_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_proposition_coverage_execution_program_v1_3.json",
+    "execution_program_sha256": "48a3c43e57685f39bb3b0658b5f74978981efaaa83df7ba8e3b0e91c4c4da67d",
+    "execution_program_id": "FIN-0.1.3-S1-DELL-PROPOSITION-COVERAGE-R4-PDF-RECALL",
+    "runtime_registry_ref": "configs/runtime/fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json",
+    "runtime_registry_sha256": "48daa2b736bd63047e67ab13a273844d391a8709ca142f781e2c7ee4f736a261",
+    "runtime_registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R38",
+    "runtime_registry_digest": "671d0bfef84e6aa5cf885317e6d38bdcbd3ad1b44848c289994c86d9d6ed5f6b",
+    "runtime_binding_receipt_ref": "configs/runtime/fin_ia_0_1_3_current_s1_runtime_binding_receipt_v1_14.json",
+    "runtime_binding_receipt_sha256": "6cd117423f1ef2037720ab5399f95d074056c1ebde636050d02436fa20aee435",
+    "runtime_binding_receipt_digest": "3c3ff77a69107669736c8a265fda5cecacba496c93a2965149e520aeb1d0f241",
+    "dell_product_readiness_ref": "configs/retrieval/fin_ia_0_1_3_s1_dell_current_product_readiness_result_v1_7.json",
+    "dell_product_readiness_sha256": "67a65f8efbde97bef20e2cc2ff8439e30eb3fac4ddeb2680c369d67f1361b19b",
+    "dell_product_readiness_digest": "bd6d652cc4b9551fc3d046724702d57b62beb56bfd76f6131c4513a4c805e40f"
+  },
+  "held_target_ids": [
+    "DELL-RSQ-03A-TARGET-DEMAND-DURABILITY",
+    "DELL-RSQ-03A-TARGET-PRODUCT-PROFIT",
+    "DELL-RSQ-03A-TARGET-WORKING-CAPITAL"
+  ],
+  "target_contracts": [
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-ASP",
+      "request_ids": [
+        "REQ::DELL::PRICE_CONFIGURATION::V1"
+      ],
+      "allowed_tickers": [
+        "DELL",
+        "MSFT"
+      ],
+      "publication_date_gte": "2025-02-01",
+      "publication_date_lte": "2026-08-06",
+      "semantic_groups": [
+        {
+          "group_id": "dell_ai_server",
+          "terms": [
+            "dell ai server",
+            "dell ai-optimized server",
+            "poweredge xe",
+            "poweredge ai",
+            "our ai-optimized server"
+          ]
+        },
+        {
+          "group_id": "price_surface",
+          "terms": [
+            "average selling price",
+            "unit price",
+            "per server",
+            "per system",
+            "configuration price",
+            "configured price",
+            "purchase price",
+            "contract price",
+            "quoted price",
+            "price per"
+          ],
+          "regexes": [
+            "(?:usd|us\\$|\\$)\\s*[0-9][0-9,]*(?:\\.[0-9]+)?\\s*(?:per|each)\\s*(?:server|system|unit)"
+          ]
+        },
+        {
+          "group_id": "valid_denominator",
+          "terms": [
+            "per server",
+            "per system",
+            "each server",
+            "each system",
+            "server quantity",
+            "system quantity",
+            "number of servers",
+            "number of systems",
+            "configured with"
+          ],
+          "regexes": [
+            "[0-9][0-9,]*\\s+(?:servers|systems|units)"
+          ]
+        }
+      ],
+      "complete_required_group_ids": [
+        "dell_ai_server",
+        "price_surface",
+        "valid_denominator"
+      ],
+      "partial_required_group_ids": [
+        "price_surface"
+      ],
+      "forbidden_complete_terms": [
+        "traditional servers and networking"
+      ],
+      "forbidden_complete_regexes": []
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-RELEASE",
+      "request_ids": [
+        "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1"
+      ],
+      "allowed_tickers": [
+        "DELL",
+        "MU",
+        "NVDA",
+        "TSM"
+      ],
+      "publication_date_gte": "2025-02-01",
+      "publication_date_lte": "2026-08-06",
+      "semantic_groups": [
+        {
+          "group_id": "relevant_supply",
+          "terms": [
+            "hbm",
+            "accelerator",
+            "gpu",
+            "advanced packaging",
+            "cowos",
+            "component supply",
+            "parts supply",
+            "server capacity"
+          ]
+        },
+        {
+          "group_id": "capacity_event",
+          "terms": [
+            "capacity expansion",
+            "expand capacity",
+            "capacity ramp",
+            "ramp capacity",
+            "capacity release",
+            "becomes available",
+            "available capacity",
+            "production capacity",
+            "manufacturing capacity"
+          ]
+        },
+        {
+          "group_id": "release_timing",
+          "terms": [
+            "first half",
+            "second half",
+            "calendar 2025",
+            "calendar 2026",
+            "calendar 2027",
+            "fiscal 2025",
+            "fiscal 2026",
+            "fiscal 2027",
+            "beginning in",
+            "by the end of",
+            "in the quarter"
+          ],
+          "regexes": [
+            "(?:q[1-4]|quarter|half|calendar|fiscal)\\s*(?:of\\s*)?20(?:25|26|27)"
+          ]
+        },
+        {
+          "group_id": "dell_allocation_bridge",
+          "terms": [
+            "allocated to dell",
+            "allocation to dell",
+            "deliver to dell",
+            "delivery to dell",
+            "dell secured supply",
+            "dell supply allocation",
+            "dell poweredge availability"
+          ]
+        }
+      ],
+      "complete_required_group_ids": [
+        "relevant_supply",
+        "capacity_event",
+        "release_timing",
+        "dell_allocation_bridge"
+      ],
+      "partial_required_group_ids": [
+        "relevant_supply",
+        "capacity_event",
+        "release_timing"
+      ],
+      "forbidden_complete_terms": [],
+      "forbidden_complete_regexes": []
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-CAPACITY-UTILIZATION-YIELD",
+      "request_ids": [
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1"
+      ],
+      "allowed_tickers": [
+        "DELL",
+        "MU",
+        "NVDA",
+        "TSM"
+      ],
+      "publication_date_gte": "2025-02-01",
+      "publication_date_lte": "2026-08-06",
+      "semantic_groups": [
+        {
+          "group_id": "relevant_supply",
+          "terms": [
+            "hbm",
+            "accelerator",
+            "gpu",
+            "advanced packaging",
+            "cowos",
+            "wafer",
+            "dram"
+          ]
+        },
+        {
+          "group_id": "observed_yield_or_utilization",
+          "terms": [
+            "yield rate",
+            "production yield",
+            "manufacturing yield",
+            "capacity utilization",
+            "utilization rate",
+            "utilization level",
+            "yield improved",
+            "yield reached"
+          ]
+        },
+        {
+          "group_id": "observed_measure_or_level",
+          "terms": [
+            "at full utilization",
+            "near full utilization",
+            "below full utilization"
+          ],
+          "regexes": [
+            "(?:yield|utilization)(?:\\s+rate|\\s+level)?\\s*(?:was|is|reached|improved to|of|at)?\\s*[0-9]{1,3}(?:\\.[0-9]+)?%"
+          ]
+        }
+      ],
+      "complete_required_group_ids": [
+        "relevant_supply",
+        "observed_yield_or_utilization",
+        "observed_measure_or_level"
+      ],
+      "partial_required_group_ids": [
+        "relevant_supply",
+        "observed_yield_or_utilization"
+      ],
+      "forbidden_complete_terms": [
+        "barriers include achieving acceptable yields",
+        "yield fallout"
+      ],
+      "forbidden_complete_regexes": [
+        "(?:may|could|might)\\s+.*(?:yield|utilization)"
+      ]
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-HBM-SUPPLY",
+      "request_ids": [
+        "REQ::DELL::SUPPLY_SUBJECT_EXECUTION::V1",
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1"
+      ],
+      "allowed_tickers": [
+        "DELL",
+        "MU",
+        "NVDA",
+        "TSM"
+      ],
+      "publication_date_gte": "2025-02-01",
+      "publication_date_lte": "2026-08-06",
+      "semantic_groups": [
+        {
+          "group_id": "hbm_subject",
+          "terms": [
+            "hbm",
+            "high bandwidth memory",
+            "high-bandwidth memory"
+          ]
+        },
+        {
+          "group_id": "supply_state",
+          "terms": [
+            "availability",
+            "available supply",
+            "capacity",
+            "supply tightness",
+            "supply constraint",
+            "constrained supply",
+            "shortage",
+            "yield",
+            "sold out",
+            "supply-demand balance"
+          ]
+        },
+        {
+          "group_id": "time_surface",
+          "terms": [
+            "calendar 2025",
+            "calendar 2026",
+            "calendar 2027",
+            "fiscal 2025",
+            "fiscal 2026",
+            "fiscal 2027",
+            "first half",
+            "second half",
+            "this quarter",
+            "next quarter"
+          ],
+          "regexes": [
+            "(?:q[1-4]|quarter|half|calendar|fiscal)\\s*(?:of\\s*)?20(?:25|26|27)"
+          ]
+        },
+        {
+          "group_id": "dell_relevance",
+          "terms": [
+            "dell",
+            "poweredge",
+            "our ai-optimized server",
+            "ai server delivery",
+            "ai server configuration"
+          ]
+        }
+      ],
+      "complete_required_group_ids": [
+        "hbm_subject",
+        "supply_state",
+        "time_surface",
+        "dell_relevance"
+      ],
+      "partial_required_group_ids": [
+        "hbm_subject",
+        "supply_state"
+      ],
+      "forbidden_complete_terms": [],
+      "forbidden_complete_regexes": []
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-SUPPLIER-READTHROUGH",
+      "request_ids": [
+        "REQ::DELL::SUPPLY_UPSTREAM_CAPACITY::V1",
+        "REQ::DELL::SUPPLY_RELATIONSHIP::V1"
+      ],
+      "allowed_tickers": [
+        "DELL",
+        "MU",
+        "NVDA",
+        "TSM"
+      ],
+      "publication_date_gte": "2025-02-01",
+      "publication_date_lte": "2026-08-06",
+      "semantic_groups": [
+        {
+          "group_id": "named_supplier",
+          "terms": [
+            "nvidia",
+            "micron",
+            "tsmc",
+            "taiwan semiconductor",
+            "sk hynix",
+            "broadcom"
+          ]
+        },
+        {
+          "group_id": "dell_subject",
+          "terms": [
+            "dell",
+            "poweredge"
+          ]
+        },
+        {
+          "group_id": "relationship_allocation_delivery",
+          "terms": [
+            "partnership",
+            "partnered with",
+            "collaboration",
+            "supplier to dell",
+            "supplies dell",
+            "allocated to dell",
+            "allocation to dell",
+            "deliver to dell",
+            "delivery to dell",
+            "available from dell",
+            "dell availability",
+            "poweredge availability"
+          ]
+        }
+      ],
+      "complete_required_group_ids": [
+        "named_supplier",
+        "dell_subject",
+        "relationship_allocation_delivery"
+      ],
+      "partial_required_group_ids": [
+        "named_supplier",
+        "relationship_allocation_delivery"
+      ],
+      "forbidden_complete_terms": [
+        "original equipment manufacturers, or oems"
+      ],
+      "forbidden_complete_regexes": []
+    },
+    {
+      "target_id": "DELL-RSQ-03A-TARGET-UNITS",
+      "request_ids": [
+        "REQ::DELL::UNIT_VOLUME::V1"
+      ],
+      "allowed_tickers": [
+        "DELL"
+      ],
+      "publication_date_gte": "2025-02-01",
+      "publication_date_lte": "2026-08-06",
+      "semantic_groups": [
+        {
+          "group_id": "dell_ai_server",
+          "terms": [
+            "ai server",
+            "ai-optimized server",
+            "poweredge xe",
+            "poweredge ai"
+          ]
+        },
+        {
+          "group_id": "physical_unit_count",
+          "terms": [
+            "units shipped",
+            "server units",
+            "systems shipped",
+            "servers shipped",
+            "systems delivered",
+            "servers delivered",
+            "number of servers",
+            "number of systems",
+            "unit count"
+          ],
+          "regexes": [
+            "[0-9][0-9,]*\\s+(?:ai[- ]optimized\\s+)?(?:server units|servers|systems|units)"
+          ]
+        },
+        {
+          "group_id": "shipment_or_delivery",
+          "terms": [
+            "shipped",
+            "shipments",
+            "delivered",
+            "delivery"
+          ]
+        }
+      ],
+      "complete_required_group_ids": [
+        "dell_ai_server",
+        "physical_unit_count",
+        "shipment_or_delivery"
+      ],
+      "partial_required_group_ids": [
+        "dell_ai_server",
+        "shipment_or_delivery"
+      ],
+      "forbidden_complete_terms": [],
+      "forbidden_complete_regexes": [
+        "(?:(?:\\$|usd|us\\$)\\s*[0-9][0-9.,]*\\s*(?:million|billion)?\\s+(?:of\\s+)?shipments|shipments(?:\\s+\\w+){0,3}\\s+(?:\\$|usd|us\\$)\\s*[0-9][0-9.,]*\\s*(?:million|billion)?)"
+      ]
+    }
+  ],
+  "candidate_ceiling_contract": {
+    "full_current_compiled_object_corpus_must_be_scanned": true,
+    "raw_union_candidate_decision_seed_must_be_joined_to_objects": true,
+    "final_review_must_be_a_subset_of_union": true,
+    "source_lineage_must_exist": true,
+    "classification_states": [
+      "complete_target_semantic_equivalent",
+      "partial_context_only",
+      "not_target_semantic_equivalent"
+    ],
+    "earliest_loss_states": [
+      "local_source_object_corpus_missing_complete_target",
+      "current_bm25_0_6b_graph_candidate_recall_miss",
+      "post_union_financial_rank_or_review_cut",
+      "none_observed_through_final_review"
+    ],
+    "4B_embedding_value_rule": "Only a complete target object present in the current object corpus but absent from the BM25+0.6B+graph union can make the 4B recall challenger eligible.",
+    "reranker_useful_at_k": 10,
+    "reranker_value_rule": "Only a complete target object already present in the same frozen union but absent from useful@10 can make a reranker challenger eligible; final-review presence at rank 11-16 does not remove reranking value.",
+    "external_route_rule": "If no complete target object exists in the current local corpus, ranking cannot create it and the exact residual remains eligible for separately authorized 03C acquisition.",
+    "candidate_or_ranking_score_grants_evidence": false
+  },
+  "execution_budget": {
+    "request_count": 5,
+    "local_embedding_inference_batches_maximum": 1,
+    "network_calls": 0,
+    "provider_calls": 0,
+    "generation_model_calls": 0,
+    "external_capture_calls": 0,
+    "4B_embedding_calls": 0,
+    "reranker_calls": 0,
+    "retries": 0,
+    "current_runtime_mutations": 0,
+    "candidate_promotions": 0,
+    "evidence_promotions": 0,
+    "gap_closures": 0
+  },
+  "TokenBudgetBasis": {
+    "node_purpose": "Encode exactly five frozen DELL 03B request queries with the already-bound local Qwen3-Embedding-0.6B and compare the resulting R38 candidate chain with six report-material target contracts.",
+    "input_scale": "Five request queries against 34,198 digest-bound current compiled objects; document embeddings are reused from the R38 FP16 cache and only one bounded query-embedding batch is permitted.",
+    "required_outputs": "Per target source/object/index/SQL truth, complete and partial semantic counts at corpus/union/final layers, exact rank traces, earliest loss, and separate 4B-embedding/reranker/external-route eligibility without Evidence promotion.",
+    "schema_burden": "Bind 03A R2, the observable-input request program, R38 registry and receipt, all candidate seeds, source lineage, object identity, route traces and private/public digests.",
+    "materiality_quality_risk": "A broad topic hit can falsely imply Dell AI-server ASP, physical units, observed yield, HBM availability or supplier-to-Dell allocation; every target therefore requires conjunctive atoms and explicit partial-context handling.",
+    "comparable_run_evidence": "DELL proposition internal R3 used one Qwen-0.6B query batch on R30 and produced 705 union candidates, but its 12/12 material-complete summary was explicitly candidate-level and not exact target sufficiency; R38 added nine reviewed objects.",
+    "reasoning_profile": "Non-generative local embedding only; deterministic lexical semantic-gate replay performs the target diagnostic; no free-form model classification.",
+    "stop_and_truncation": "Stop on input SHA/digest drift, dirty worktree, any held target, more than five requests, more than one embedding batch, missing union object/source lineage, network/provider/generation/4B/reranker activity, output collision or any mutation. The runtime review cut remains 16 and candidate union ceiling 96 per request; no silent widening."
+  },
+  "authority": {
+    "03B_internal_chain_execution_authorized": true,
+    "current_0_6B_query_embedding_authorized": true,
+    "network_authorized": false,
+    "external_capture_authorized": false,
+    "4B_embedding_authorized": false,
+    "reranker_authorized": false,
+    "candidate_decision_authorized": false,
+    "evidence_promotion_authorized": false,
+    "gap_closure_authorized": false,
+    "public_information_boundary_authorized": false,
+    "G3_authorized": false,
+    "S1_authorized": false,
+    "report_quality_authorized": false,
+    "product_publication_or_release_authorized": false
+  },
+  "known_boundary": "This policy authorizes one local read-only 03B attempt only. Its lexical semantic gates can establish a reproducible candidate-ceiling diagnostic and route the next experiment, but they cannot issue a qualified-human 02B decision, promote Candidate or Evidence, create NumericFact, prove a public-information boundary, close a report gap, authorize 03C/03D, or pass S1/S2/S3/report/product/publication/release."
+}

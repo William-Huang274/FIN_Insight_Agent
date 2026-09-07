@@ -1,0 +1,1690 @@
+{
+  "atom_results": [
+    {
+      "atom_id": "S1_VS4_MU_DOWNSTREAM_MSFT",
+      "eligible_object_count": 3270,
+      "hard_filter_exclusions": {
+        "outside_evidence_owner_scope": 25827,
+        "reporting_period_outside_request": 3988
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 179
+      },
+      "rankable_object_count": 3091,
+      "request_id": "REQ::S1_VS4_MU_DOWNSTREAM_MSFT",
+      "retrieval_need_set": {
+        "facet_id": "downstream_demand_context",
+        "lane_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1",
+        "need_set_digest": "eba66c0ebe1410a29ac098b46c8071751f80d9bbe491422d79b70070f2628535",
+        "needs": [
+          {
+            "constraint_digest": "82a976dc0b6019f79a1ab519aa263e786fbabcabf0f9e177cc9468c73c5afb0b",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [
+              [
+                "cloud capital expenditures"
+              ],
+              [
+                "AI infrastructure deployment and data-center demand"
+              ]
+            ],
+            "intent_terms": [
+              "cloud capital expenditures",
+              "AI infrastructure deployment and data-center demand"
+            ],
+            "lexical_query": "cloud capital expenditures AI infrastructure deployment and data-center demand demand deployment usage revenue growth",
+            "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::01",
+            "need_kind": "metric_product",
+            "relationship_direction": "end_demand_context",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: end_demand_context. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: cloud capital expenditures, AI infrastructure deployment and data-center demand."
+          },
+          {
+            "constraint_digest": "82a976dc0b6019f79a1ab519aa263e786fbabcabf0f9e177cc9468c73c5afb0b",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [
+              [
+                "cloud capital expenditures"
+              ]
+            ],
+            "intent_terms": [
+              "cloud capital expenditures"
+            ],
+            "lexical_query": "cloud capital expenditures demand deployment usage revenue growth",
+            "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::02",
+            "need_kind": "metric",
+            "relationship_direction": "end_demand_context",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: end_demand_context. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: cloud capital expenditures."
+          },
+          {
+            "constraint_digest": "82a976dc0b6019f79a1ab519aa263e786fbabcabf0f9e177cc9468c73c5afb0b",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [
+              [
+                "AI infrastructure deployment and data-center demand"
+              ]
+            ],
+            "intent_terms": [
+              "AI infrastructure deployment and data-center demand"
+            ],
+            "lexical_query": "AI infrastructure deployment and data-center demand demand deployment usage revenue growth",
+            "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::03",
+            "need_kind": "product",
+            "relationship_direction": "end_demand_context",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: end_demand_context. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: AI infrastructure deployment and data-center demand."
+          },
+          {
+            "constraint_digest": "82a976dc0b6019f79a1ab519aa263e786fbabcabf0f9e177cc9468c73c5afb0b",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [
+              "AI infrastructure"
+            ],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "AI infrastructure"
+            ],
+            "lexical_query": "AI infrastructure demand deployment usage revenue growth",
+            "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::04",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "end_demand_context",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: end_demand_context. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: AI infrastructure."
+          },
+          {
+            "constraint_digest": "82a976dc0b6019f79a1ab519aa263e786fbabcabf0f9e177cc9468c73c5afb0b",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [
+              "AI product usage"
+            ],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "AI product usage"
+            ],
+            "lexical_query": "AI product usage demand deployment usage revenue growth",
+            "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::05",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "end_demand_context",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: end_demand_context. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: AI product usage."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_MU_DOWNSTREAM_MSFT",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::01",
+              "object_ids": []
+            },
+            {
+              "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::02",
+              "object_ids": []
+            },
+            {
+              "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::03",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        },
+        "typed_metric_row_exact": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::01",
+              "object_ids": []
+            },
+            {
+              "need_id": "mu__demand_volume_quality__downstream_demand_context__lexical_v1::need::02",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_MU_HBM_COMMITMENTS",
+      "eligible_object_count": 3264,
+      "hard_filter_exclusions": {
+        "object_form_not_allowed": 1282,
+        "outside_evidence_owner_scope": 26007,
+        "reporting_period_outside_request": 2530,
+        "source_type_not_allowed": 2
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 188
+      },
+      "rankable_object_count": 3076,
+      "request_id": "REQ::S1_VS4_MU_HBM_COMMITMENTS",
+      "retrieval_need_set": {
+        "facet_id": "subject_relationship_disclosure",
+        "lane_id": "mu__relationship_attribution__subject_relationship_disclosure__lexical_v1",
+        "need_set_digest": "ad7851eadd63e956bf93e07d9e27d084ae14d6e7fca884510985bdf2353e8461",
+        "needs": [
+          {
+            "constraint_digest": "6797443ae1d9d8245002a681188620fa24728e9690a617790c0ba0f442b5c7b9",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [],
+            "facet_id": "subject_relationship_disclosure",
+            "intent_alias_groups": [
+              [
+                "HBM shipments, customer qualification, take-or-pay commitments and customer deposits"
+              ]
+            ],
+            "intent_terms": [
+              "HBM shipments, customer qualification, take-or-pay commitments and customer deposits"
+            ],
+            "lexical_query": "HBM shipments, customer qualification, take-or-pay commitments and customer deposits customer supplier commitment concentration deposit",
+            "need_id": "mu__relationship_attribution__subject_relationship_disclosure__lexical_v1::need::01",
+            "need_kind": "product",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "customer",
+              "supplier",
+              "commitment",
+              "concentration",
+              "deposit"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: subject_self_disclosure. Research facet: 研究主体如何披露客户、供应商、承诺和集中度？ Required evidence role: issuer-direct customer, supplier, commitment or concentration relationship. Focused intent: HBM shipments, customer qualification, take-or-pay commitments and customer deposits."
+          },
+          {
+            "constraint_digest": "6797443ae1d9d8245002a681188620fa24728e9690a617790c0ba0f442b5c7b9",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [
+              "customer"
+            ],
+            "facet_id": "subject_relationship_disclosure",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "customer"
+            ],
+            "lexical_query": "customer supplier commitment concentration deposit",
+            "need_id": "mu__relationship_attribution__subject_relationship_disclosure__lexical_v1::need::02",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "customer",
+              "supplier",
+              "commitment",
+              "concentration",
+              "deposit"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: subject_self_disclosure. Research facet: 研究主体如何披露客户、供应商、承诺和集中度？ Required evidence role: issuer-direct customer, supplier, commitment or concentration relationship. Focused intent: customer."
+          },
+          {
+            "constraint_digest": "6797443ae1d9d8245002a681188620fa24728e9690a617790c0ba0f442b5c7b9",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [
+              "supplier"
+            ],
+            "facet_id": "subject_relationship_disclosure",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "supplier"
+            ],
+            "lexical_query": "supplier customer commitment concentration deposit",
+            "need_id": "mu__relationship_attribution__subject_relationship_disclosure__lexical_v1::need::03",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "customer",
+              "supplier",
+              "commitment",
+              "concentration",
+              "deposit"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: subject_self_disclosure. Research facet: 研究主体如何披露客户、供应商、承诺和集中度？ Required evidence role: issuer-direct customer, supplier, commitment or concentration relationship. Focused intent: supplier."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_MU_HBM_COMMITMENTS",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "mu__relationship_attribution__subject_relationship_disclosure__lexical_v1::need::01",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_MU_HBM_SUPPLY_EXECUTION",
+      "eligible_object_count": 4134,
+      "hard_filter_exclusions": {
+        "outside_evidence_owner_scope": 26007,
+        "reporting_period_outside_request": 2942,
+        "source_type_not_allowed": 2
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 188
+      },
+      "rankable_object_count": 3946,
+      "request_id": "REQ::S1_VS4_MU_HBM_SUPPLY_EXECUTION",
+      "retrieval_need_set": {
+        "facet_id": "subject_execution",
+        "lane_id": "mu__capacity_inputs_execution__subject_execution__lexical_v1",
+        "need_set_digest": "4dd4d325728f03829ac816f760728b8d683c20947ecf0243514f0cb77c2a9387",
+        "needs": [
+          {
+            "constraint_digest": "26415edc7abd7bcf61f1f0af3b00143875bb149c77697d44e407af27709f6c22",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [],
+            "facet_id": "subject_execution",
+            "intent_alias_groups": [
+              [
+                "HBM advanced packaging capacity, wafer intensity, yield and production execution"
+              ]
+            ],
+            "intent_terms": [
+              "HBM advanced packaging capacity, wafer intensity, yield and production execution"
+            ],
+            "lexical_query": "HBM advanced packaging capacity, wafer intensity, yield and production execution capacity supply components lead time shipments",
+            "need_id": "mu__capacity_inputs_execution__subject_execution__lexical_v1::need::01",
+            "need_kind": "product",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "capacity",
+              "supply",
+              "components",
+              "lead time",
+              "shipments"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: subject_self_disclosure. Research facet: 研究主体披露的部件、产能和交付约束是什么？ Required evidence role: issuer-direct execution, component or delivery constraint. Focused intent: HBM advanced packaging capacity, wafer intensity, yield and production execution."
+          },
+          {
+            "constraint_digest": "26415edc7abd7bcf61f1f0af3b00143875bb149c77697d44e407af27709f6c22",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [
+              "capacity"
+            ],
+            "facet_id": "subject_execution",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "capacity"
+            ],
+            "lexical_query": "capacity supply components lead time shipments",
+            "need_id": "mu__capacity_inputs_execution__subject_execution__lexical_v1::need::02",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "capacity",
+              "supply",
+              "components",
+              "lead time",
+              "shipments"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: subject_self_disclosure. Research facet: 研究主体披露的部件、产能和交付约束是什么？ Required evidence role: issuer-direct execution, component or delivery constraint. Focused intent: capacity."
+          },
+          {
+            "constraint_digest": "26415edc7abd7bcf61f1f0af3b00143875bb149c77697d44e407af27709f6c22",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [
+              "supply"
+            ],
+            "facet_id": "subject_execution",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "supply"
+            ],
+            "lexical_query": "supply capacity components lead time shipments",
+            "need_id": "mu__capacity_inputs_execution__subject_execution__lexical_v1::need::03",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "capacity",
+              "supply",
+              "components",
+              "lead time",
+              "shipments"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: subject_self_disclosure. Research facet: 研究主体披露的部件、产能和交付约束是什么？ Required evidence role: issuer-direct execution, component or delivery constraint. Focused intent: supply."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_MU_HBM_SUPPLY_EXECUTION",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "mu__capacity_inputs_execution__subject_execution__lexical_v1::need::01",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_MU_ISSUER_COUNTER",
+      "eligible_object_count": 3264,
+      "hard_filter_exclusions": {
+        "object_form_not_allowed": 1282,
+        "outside_evidence_owner_scope": 26007,
+        "reporting_period_outside_request": 2530,
+        "source_type_not_allowed": 2
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 188
+      },
+      "rankable_object_count": 3076,
+      "request_id": "REQ::S1_VS4_MU_ISSUER_COUNTER",
+      "retrieval_need_set": {
+        "facet_id": "issuer_counterevidence",
+        "lane_id": "mu__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1",
+        "need_set_digest": "0a0d956da88474a34beb467304f1119f5f38bb06cb000851071f0c1bd06d2c40",
+        "needs": [
+          {
+            "constraint_digest": "89259a6b9de13cbf3c8916c2c6ebb466137043acbc13cb8b24c6507df692d8f6",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [],
+            "facet_id": "issuer_counterevidence",
+            "intent_alias_groups": [
+              [
+                "customer concentration, data-center buildout delays, HBM demand reversal and supply-cycle risk"
+              ]
+            ],
+            "intent_terms": [
+              "customer concentration, data-center buildout delays, HBM demand reversal and supply-cycle risk"
+            ],
+            "lexical_query": "customer concentration, data-center buildout delays, HBM demand reversal and supply-cycle risk risk constraint cancellation inventory concentration",
+            "need_id": "mu__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1::need::01",
+            "need_kind": "product",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "risk",
+              "constraint",
+              "cancellation",
+              "inventory",
+              "concentration"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: subject_self_disclosure. Research facet: 研究主体披露的最强反方事实是什么？ Required evidence role: issuer-direct fact that weakens, limits or reverses the thesis. Focused intent: customer concentration, data-center buildout delays, HBM demand reversal and supply-cycle risk."
+          },
+          {
+            "constraint_digest": "89259a6b9de13cbf3c8916c2c6ebb466137043acbc13cb8b24c6507df692d8f6",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [
+              "risk"
+            ],
+            "facet_id": "issuer_counterevidence",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "risk"
+            ],
+            "lexical_query": "risk constraint cancellation inventory concentration",
+            "need_id": "mu__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1::need::02",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "risk",
+              "constraint",
+              "cancellation",
+              "inventory",
+              "concentration"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: subject_self_disclosure. Research facet: 研究主体披露的最强反方事实是什么？ Required evidence role: issuer-direct fact that weakens, limits or reverses the thesis. Focused intent: risk."
+          },
+          {
+            "constraint_digest": "89259a6b9de13cbf3c8916c2c6ebb466137043acbc13cb8b24c6507df692d8f6",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [
+              "pricing pressure"
+            ],
+            "facet_id": "issuer_counterevidence",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "pricing pressure"
+            ],
+            "lexical_query": "pricing pressure risk constraint cancellation inventory concentration",
+            "need_id": "mu__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1::need::03",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "risk",
+              "constraint",
+              "cancellation",
+              "inventory",
+              "concentration"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: subject_self_disclosure. Research facet: 研究主体披露的最强反方事实是什么？ Required evidence role: issuer-direct fact that weakens, limits or reverses the thesis. Focused intent: pricing pressure."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_MU_ISSUER_COUNTER",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "mu__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1::need::01",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_DOWNSTREAM_MSFT",
+      "eligible_object_count": 3270,
+      "hard_filter_exclusions": {
+        "outside_evidence_owner_scope": 25827,
+        "reporting_period_outside_request": 3988
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 179
+      },
+      "rankable_object_count": 3091,
+      "request_id": "REQ::S1_VS4_NVDA_DOWNSTREAM_MSFT",
+      "retrieval_need_set": {
+        "facet_id": "downstream_demand_context",
+        "lane_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1",
+        "need_set_digest": "10e6551a5a0e2f453cef6ef1c15be94f6bc7a46b094f2990dea5078c41be99d8",
+        "needs": [
+          {
+            "constraint_digest": "7fef7e20af1640e6590c39b8c39ba5fa1393eac46bd94eefe9af4fbb22a46845",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [
+              [
+                "cloud capital expenditures"
+              ],
+              [
+                "AI infrastructure deployment, data-center demand and power constraints"
+              ]
+            ],
+            "intent_terms": [
+              "cloud capital expenditures",
+              "AI infrastructure deployment, data-center demand and power constraints"
+            ],
+            "lexical_query": "cloud capital expenditures AI infrastructure deployment, data-center demand and power constraints demand deployment usage revenue growth",
+            "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::01",
+            "need_kind": "metric_product",
+            "relationship_direction": "customer_or_ecosystem_to_subject",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: customer_or_ecosystem_to_subject. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: cloud capital expenditures, AI infrastructure deployment, data-center demand and power constraints."
+          },
+          {
+            "constraint_digest": "7fef7e20af1640e6590c39b8c39ba5fa1393eac46bd94eefe9af4fbb22a46845",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [
+              [
+                "cloud capital expenditures"
+              ]
+            ],
+            "intent_terms": [
+              "cloud capital expenditures"
+            ],
+            "lexical_query": "cloud capital expenditures demand deployment usage revenue growth",
+            "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::02",
+            "need_kind": "metric",
+            "relationship_direction": "customer_or_ecosystem_to_subject",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: customer_or_ecosystem_to_subject. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: cloud capital expenditures."
+          },
+          {
+            "constraint_digest": "7fef7e20af1640e6590c39b8c39ba5fa1393eac46bd94eefe9af4fbb22a46845",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [
+              [
+                "AI infrastructure deployment, data-center demand and power constraints"
+              ]
+            ],
+            "intent_terms": [
+              "AI infrastructure deployment, data-center demand and power constraints"
+            ],
+            "lexical_query": "AI infrastructure deployment, data-center demand and power constraints demand deployment usage revenue growth",
+            "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::03",
+            "need_kind": "product",
+            "relationship_direction": "customer_or_ecosystem_to_subject",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: customer_or_ecosystem_to_subject. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: AI infrastructure deployment, data-center demand and power constraints."
+          },
+          {
+            "constraint_digest": "7fef7e20af1640e6590c39b8c39ba5fa1393eac46bd94eefe9af4fbb22a46845",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [
+              "AI infrastructure"
+            ],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "AI infrastructure"
+            ],
+            "lexical_query": "AI infrastructure demand deployment usage revenue growth",
+            "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::04",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "customer_or_ecosystem_to_subject",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: customer_or_ecosystem_to_subject. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: AI infrastructure."
+          },
+          {
+            "constraint_digest": "7fef7e20af1640e6590c39b8c39ba5fa1393eac46bd94eefe9af4fbb22a46845",
+            "evidence_owner_ticker": "MSFT",
+            "exact_phrases": [
+              "AI product usage"
+            ],
+            "facet_id": "downstream_demand_context",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "AI product usage"
+            ],
+            "lexical_query": "AI product usage demand deployment usage revenue growth",
+            "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::05",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "customer_or_ecosystem_to_subject",
+            "role_cues": [
+              "demand",
+              "deployment",
+              "usage",
+              "revenue growth"
+            ],
+            "semantic_query": "Evidence owner: MSFT. Relationship: customer_or_ecosystem_to_subject. Research facet: 下游客户自身披露的 AI 投入、部署和使用能否提供有限需求映射，且不冒充对研究主体的采购归因？ Required evidence role: bounded downstream demand read-through, not attributed purchasing. Focused intent: AI product usage."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_NVDA_DOWNSTREAM_MSFT",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::01",
+              "object_ids": []
+            },
+            {
+              "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::02",
+              "object_ids": []
+            },
+            {
+              "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::03",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        },
+        "typed_metric_row_exact": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::01",
+              "object_ids": []
+            },
+            {
+              "need_id": "nvda__demand_volume_quality__downstream_demand_context__lexical_v1::need::02",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_REPORTED_RESULTS",
+      "eligible_object_count": 1921,
+      "hard_filter_exclusions": {
+        "outside_evidence_owner_scope": 28196,
+        "reporting_period_outside_request": 2966,
+        "source_type_not_allowed": 2
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 45
+      },
+      "rankable_object_count": 1876,
+      "request_id": "REQ::S1_VS4_NVDA_REPORTED_RESULTS",
+      "retrieval_need_set": {
+        "facet_id": "reported_results",
+        "lane_id": "nvda__operating_performance__reported_results__lexical_v1",
+        "need_set_digest": "847e5837564b218957520b3b82484e4b852542f1939f9eda045c4264329bfdf4",
+        "needs": [
+          {
+            "constraint_digest": "e811cb293e092cb153b802f4ba6c3081063b9f3a6debd274bde973176126e22c",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [],
+            "facet_id": "reported_results",
+            "intent_alias_groups": [
+              [
+                "revenue",
+                "net revenue",
+                "total net revenue",
+                "sales"
+              ],
+              [
+                "Blackwell ramp and networking demand"
+              ]
+            ],
+            "intent_terms": [
+              "revenue",
+              "Blackwell ramp and networking demand"
+            ],
+            "lexical_query": "revenue Blackwell ramp and networking demand reported results",
+            "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::01",
+            "need_kind": "metric_product",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "reported results",
+              "revenue"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 最新收入、增长与经营利润表现如何？ Required evidence role: observed current-period operating result, distinct from guidance. Focused intent: revenue, Blackwell ramp and networking demand."
+          },
+          {
+            "constraint_digest": "e811cb293e092cb153b802f4ba6c3081063b9f3a6debd274bde973176126e22c",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [],
+            "facet_id": "reported_results",
+            "intent_alias_groups": [
+              [
+                "data center revenue"
+              ],
+              [
+                "Blackwell ramp and networking demand"
+              ]
+            ],
+            "intent_terms": [
+              "data center revenue",
+              "Blackwell ramp and networking demand"
+            ],
+            "lexical_query": "data center revenue Blackwell ramp and networking demand reported results revenue",
+            "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::02",
+            "need_kind": "metric_product",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "reported results",
+              "revenue"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 最新收入、增长与经营利润表现如何？ Required evidence role: observed current-period operating result, distinct from guidance. Focused intent: data center revenue, Blackwell ramp and networking demand."
+          },
+          {
+            "constraint_digest": "e811cb293e092cb153b802f4ba6c3081063b9f3a6debd274bde973176126e22c",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [],
+            "facet_id": "reported_results",
+            "intent_alias_groups": [
+              [
+                "revenue",
+                "net revenue",
+                "total net revenue",
+                "sales"
+              ]
+            ],
+            "intent_terms": [
+              "revenue"
+            ],
+            "lexical_query": "revenue reported results",
+            "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::03",
+            "need_kind": "metric",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "reported results",
+              "revenue"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 最新收入、增长与经营利润表现如何？ Required evidence role: observed current-period operating result, distinct from guidance. Focused intent: revenue."
+          },
+          {
+            "constraint_digest": "e811cb293e092cb153b802f4ba6c3081063b9f3a6debd274bde973176126e22c",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [],
+            "facet_id": "reported_results",
+            "intent_alias_groups": [
+              [
+                "data center revenue"
+              ]
+            ],
+            "intent_terms": [
+              "data center revenue"
+            ],
+            "lexical_query": "data center revenue reported results revenue",
+            "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::04",
+            "need_kind": "metric",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "reported results",
+              "revenue"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 最新收入、增长与经营利润表现如何？ Required evidence role: observed current-period operating result, distinct from guidance. Focused intent: data center revenue."
+          },
+          {
+            "constraint_digest": "e811cb293e092cb153b802f4ba6c3081063b9f3a6debd274bde973176126e22c",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [],
+            "facet_id": "reported_results",
+            "intent_alias_groups": [
+              [
+                "Blackwell ramp and networking demand"
+              ]
+            ],
+            "intent_terms": [
+              "Blackwell ramp and networking demand"
+            ],
+            "lexical_query": "Blackwell ramp and networking demand reported results revenue",
+            "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::05",
+            "need_kind": "product",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "reported results",
+              "revenue"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 最新收入、增长与经营利润表现如何？ Required evidence role: observed current-period operating result, distinct from guidance. Focused intent: Blackwell ramp and networking demand."
+          },
+          {
+            "constraint_digest": "e811cb293e092cb153b802f4ba6c3081063b9f3a6debd274bde973176126e22c",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [
+              "revenue"
+            ],
+            "facet_id": "reported_results",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "revenue"
+            ],
+            "lexical_query": "revenue reported results",
+            "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::06",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "reported results",
+              "revenue"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 最新收入、增长与经营利润表现如何？ Required evidence role: observed current-period operating result, distinct from guidance. Focused intent: revenue."
+          },
+          {
+            "constraint_digest": "e811cb293e092cb153b802f4ba6c3081063b9f3a6debd274bde973176126e22c",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [
+              "operating income"
+            ],
+            "facet_id": "reported_results",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "operating income"
+            ],
+            "lexical_query": "operating income reported results revenue",
+            "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::07",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "reported results",
+              "revenue"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 最新收入、增长与经营利润表现如何？ Required evidence role: observed current-period operating result, distinct from guidance. Focused intent: operating income."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_NVDA_REPORTED_RESULTS",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {
+            "COBJ::03ebd6091a5288e363e1fe1c": 18,
+            "COBJ::0ec277c5efd6de4803485aa8": 19,
+            "COBJ::0ec67b43073d7f43b261b10a": 3,
+            "COBJ::10a4b3fec7f7b1219830a15c": 12,
+            "COBJ::2aeee4eb3dc19fb915bdf196": 22,
+            "COBJ::2d38e89518725ebf8c783a85": 24,
+            "COBJ::4587cbbe7ecd032c218a004b": 6,
+            "COBJ::6274a991fad880659e34b2d1": 23,
+            "COBJ::71aeb3ed0b9d069cc201e557": 13,
+            "COBJ::750a212a8d9df2c467c9a6cd": 8,
+            "COBJ::83b07e003a6c00d471f652d7": 20,
+            "COBJ::89890bd4877235ea7bfb2e7b": 1,
+            "COBJ::89f08524cd2f2ab945b816c1": 9,
+            "COBJ::8e8016aae4d6e9f6951aeaca": 10,
+            "COBJ::955c5231571bc84792303013": 17,
+            "COBJ::95c9e4d8f20b765beaa6c2b2": 7,
+            "COBJ::9814cda1076b854aafcb8908": 2,
+            "COBJ::9af287f626f84ac3329199f8": 11,
+            "COBJ::9b887dbde1410a763bb47851": 6,
+            "COBJ::b040d306c476a706260935e5": 4,
+            "COBJ::b9762fd730a0a0ee31194dc6": 1,
+            "COBJ::bd52207aac78faac9c72ecad": 21,
+            "COBJ::bd74d30f37d85b4c6b3a641a": 15,
+            "COBJ::be7188466a7500ed4c160e04": 5,
+            "COBJ::c698a259479cf3f87a3bc3cb": 4,
+            "COBJ::c812683c804405587cca613c": 8,
+            "COBJ::ca908290f145657a51646362": 2,
+            "COBJ::dc91d23b5535faa2bf7d80f0": 5,
+            "COBJ::e1293db5c20eaa7f08b59cde": 7,
+            "COBJ::efe7bd5867da4637f8636b2c": 16,
+            "COBJ::f7fd3d9e628f9970907d704d": 14,
+            "COBJ::f956157975b0abde3d2e6f44": 3
+          },
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::01",
+              "object_ids": []
+            },
+            {
+              "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::02",
+              "object_ids": []
+            },
+            {
+              "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::03",
+              "object_ids": [
+                "COBJ::b9762fd730a0a0ee31194dc6",
+                "COBJ::ca908290f145657a51646362",
+                "COBJ::0ec67b43073d7f43b261b10a",
+                "COBJ::c698a259479cf3f87a3bc3cb",
+                "COBJ::be7188466a7500ed4c160e04",
+                "COBJ::4587cbbe7ecd032c218a004b",
+                "COBJ::95c9e4d8f20b765beaa6c2b2",
+                "COBJ::750a212a8d9df2c467c9a6cd",
+                "COBJ::89f08524cd2f2ab945b816c1",
+                "COBJ::8e8016aae4d6e9f6951aeaca",
+                "COBJ::9af287f626f84ac3329199f8",
+                "COBJ::10a4b3fec7f7b1219830a15c",
+                "COBJ::71aeb3ed0b9d069cc201e557",
+                "COBJ::f7fd3d9e628f9970907d704d",
+                "COBJ::bd74d30f37d85b4c6b3a641a",
+                "COBJ::efe7bd5867da4637f8636b2c",
+                "COBJ::955c5231571bc84792303013",
+                "COBJ::03ebd6091a5288e363e1fe1c",
+                "COBJ::0ec277c5efd6de4803485aa8",
+                "COBJ::83b07e003a6c00d471f652d7",
+                "COBJ::bd52207aac78faac9c72ecad",
+                "COBJ::2aeee4eb3dc19fb915bdf196",
+                "COBJ::6274a991fad880659e34b2d1",
+                "COBJ::2d38e89518725ebf8c783a85"
+              ]
+            },
+            {
+              "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::04",
+              "object_ids": [
+                "COBJ::89890bd4877235ea7bfb2e7b",
+                "COBJ::9814cda1076b854aafcb8908",
+                "COBJ::f956157975b0abde3d2e6f44",
+                "COBJ::b040d306c476a706260935e5",
+                "COBJ::dc91d23b5535faa2bf7d80f0",
+                "COBJ::9b887dbde1410a763bb47851",
+                "COBJ::e1293db5c20eaa7f08b59cde",
+                "COBJ::c812683c804405587cca613c"
+              ]
+            },
+            {
+              "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::05",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": [
+            "COBJ::b040d306c476a706260935e5"
+          ]
+        },
+        "typed_metric_row_exact": {
+          "best_rank_by_object_id": {
+            "COBJ::0b02c699f761ab0578ebf3c0": 11,
+            "COBJ::11364f893206946dfdbc00dd": 9,
+            "COBJ::221e3d08a8aea3963de7da07": 10,
+            "COBJ::2c339bd1b7838ed5fe58a020": 1,
+            "COBJ::2ea1b4e125c2492be44e5482": 2,
+            "COBJ::316d297dbf0d7dcb5c919a4d": 16,
+            "COBJ::3db338b90a761283fed94464": 17,
+            "COBJ::4e2f76a683cbf45c04b29fd2": 18,
+            "COBJ::51fc2348d13055900f05d235": 14,
+            "COBJ::5233d284ff92225d3b1b2a79": 3,
+            "COBJ::5519ee0b5cea60f529bbb591": 6,
+            "COBJ::58ba66c32d920c249a39e1e9": 11,
+            "COBJ::5c8daf31f625514db86f474e": 19,
+            "COBJ::740cbe64d9a4b9cdc62bfb36": 4,
+            "COBJ::745f380fa54c86d300af7754": 20,
+            "COBJ::7f3d38dbc85e19881bed6061": 21,
+            "COBJ::8385ee64b87e2df29bce4e6b": 22,
+            "COBJ::a035c095d9f5330eb13df289": 23,
+            "COBJ::a4e7ce4ccab06ad89e1a938f": 24,
+            "COBJ::a8cd00ab732966074eb46e31": 15,
+            "COBJ::adb05ab6b264be0d287a45b2": 6,
+            "COBJ::bbdfd3575724b11bbc4cd5b1": 7,
+            "COBJ::be8d6b655a9ab839f5818e76": 12,
+            "COBJ::bea3d3041e598f8ce912387f": 4,
+            "COBJ::c66f86dd3d47690e7bfa59ef": 13,
+            "COBJ::d3ccea7ada32cc940c8b80b3": 5,
+            "COBJ::e2fa46fb5a3f0d72a3bc3d22": 8
+          },
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::01",
+              "object_ids": [
+                "COBJ::2c339bd1b7838ed5fe58a020",
+                "COBJ::2ea1b4e125c2492be44e5482",
+                "COBJ::5233d284ff92225d3b1b2a79",
+                "COBJ::740cbe64d9a4b9cdc62bfb36",
+                "COBJ::d3ccea7ada32cc940c8b80b3",
+                "COBJ::5519ee0b5cea60f529bbb591",
+                "COBJ::bbdfd3575724b11bbc4cd5b1",
+                "COBJ::e2fa46fb5a3f0d72a3bc3d22",
+                "COBJ::11364f893206946dfdbc00dd",
+                "COBJ::221e3d08a8aea3963de7da07",
+                "COBJ::58ba66c32d920c249a39e1e9",
+                "COBJ::be8d6b655a9ab839f5818e76",
+                "COBJ::c66f86dd3d47690e7bfa59ef",
+                "COBJ::51fc2348d13055900f05d235",
+                "COBJ::a8cd00ab732966074eb46e31",
+                "COBJ::316d297dbf0d7dcb5c919a4d",
+                "COBJ::3db338b90a761283fed94464",
+                "COBJ::4e2f76a683cbf45c04b29fd2",
+                "COBJ::5c8daf31f625514db86f474e",
+                "COBJ::745f380fa54c86d300af7754",
+                "COBJ::7f3d38dbc85e19881bed6061",
+                "COBJ::8385ee64b87e2df29bce4e6b",
+                "COBJ::a035c095d9f5330eb13df289",
+                "COBJ::a4e7ce4ccab06ad89e1a938f"
+              ]
+            },
+            {
+              "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::02",
+              "object_ids": [
+                "COBJ::2c339bd1b7838ed5fe58a020",
+                "COBJ::2ea1b4e125c2492be44e5482",
+                "COBJ::5233d284ff92225d3b1b2a79",
+                "COBJ::bea3d3041e598f8ce912387f",
+                "COBJ::740cbe64d9a4b9cdc62bfb36",
+                "COBJ::adb05ab6b264be0d287a45b2",
+                "COBJ::d3ccea7ada32cc940c8b80b3",
+                "COBJ::5519ee0b5cea60f529bbb591",
+                "COBJ::bbdfd3575724b11bbc4cd5b1",
+                "COBJ::e2fa46fb5a3f0d72a3bc3d22",
+                "COBJ::0b02c699f761ab0578ebf3c0",
+                "COBJ::11364f893206946dfdbc00dd",
+                "COBJ::221e3d08a8aea3963de7da07",
+                "COBJ::58ba66c32d920c249a39e1e9",
+                "COBJ::be8d6b655a9ab839f5818e76",
+                "COBJ::c66f86dd3d47690e7bfa59ef",
+                "COBJ::51fc2348d13055900f05d235",
+                "COBJ::a8cd00ab732966074eb46e31"
+              ]
+            },
+            {
+              "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::03",
+              "object_ids": [
+                "COBJ::2c339bd1b7838ed5fe58a020",
+                "COBJ::2ea1b4e125c2492be44e5482",
+                "COBJ::5233d284ff92225d3b1b2a79",
+                "COBJ::740cbe64d9a4b9cdc62bfb36",
+                "COBJ::d3ccea7ada32cc940c8b80b3",
+                "COBJ::5519ee0b5cea60f529bbb591",
+                "COBJ::bbdfd3575724b11bbc4cd5b1",
+                "COBJ::e2fa46fb5a3f0d72a3bc3d22",
+                "COBJ::11364f893206946dfdbc00dd",
+                "COBJ::221e3d08a8aea3963de7da07",
+                "COBJ::58ba66c32d920c249a39e1e9",
+                "COBJ::be8d6b655a9ab839f5818e76",
+                "COBJ::c66f86dd3d47690e7bfa59ef",
+                "COBJ::51fc2348d13055900f05d235",
+                "COBJ::a8cd00ab732966074eb46e31",
+                "COBJ::316d297dbf0d7dcb5c919a4d",
+                "COBJ::3db338b90a761283fed94464",
+                "COBJ::4e2f76a683cbf45c04b29fd2",
+                "COBJ::5c8daf31f625514db86f474e",
+                "COBJ::745f380fa54c86d300af7754",
+                "COBJ::7f3d38dbc85e19881bed6061",
+                "COBJ::8385ee64b87e2df29bce4e6b",
+                "COBJ::a035c095d9f5330eb13df289",
+                "COBJ::a4e7ce4ccab06ad89e1a938f"
+              ]
+            },
+            {
+              "need_id": "nvda__operating_performance__reported_results__lexical_v1::need::04",
+              "object_ids": [
+                "COBJ::2c339bd1b7838ed5fe58a020",
+                "COBJ::2ea1b4e125c2492be44e5482",
+                "COBJ::5233d284ff92225d3b1b2a79",
+                "COBJ::bea3d3041e598f8ce912387f",
+                "COBJ::740cbe64d9a4b9cdc62bfb36",
+                "COBJ::adb05ab6b264be0d287a45b2",
+                "COBJ::d3ccea7ada32cc940c8b80b3",
+                "COBJ::5519ee0b5cea60f529bbb591",
+                "COBJ::bbdfd3575724b11bbc4cd5b1",
+                "COBJ::e2fa46fb5a3f0d72a3bc3d22",
+                "COBJ::0b02c699f761ab0578ebf3c0",
+                "COBJ::11364f893206946dfdbc00dd",
+                "COBJ::221e3d08a8aea3963de7da07",
+                "COBJ::58ba66c32d920c249a39e1e9",
+                "COBJ::be8d6b655a9ab839f5818e76",
+                "COBJ::c66f86dd3d47690e7bfa59ef",
+                "COBJ::51fc2348d13055900f05d235",
+                "COBJ::a8cd00ab732966074eb46e31"
+              ]
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_SUPPLY_EXECUTION",
+      "eligible_object_count": 2920,
+      "hard_filter_exclusions": {
+        "outside_evidence_owner_scope": 28196,
+        "reporting_period_outside_request": 1967,
+        "source_type_not_allowed": 2
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 81
+      },
+      "rankable_object_count": 2839,
+      "request_id": "REQ::S1_VS4_NVDA_SUPPLY_EXECUTION",
+      "retrieval_need_set": {
+        "facet_id": "subject_execution",
+        "lane_id": "nvda__capacity_inputs_execution__subject_execution__lexical_v1",
+        "need_set_digest": "1d3806a121c13a4aea840c12f357863ae677449b0d4a53643962cec6100c7561",
+        "needs": [
+          {
+            "constraint_digest": "099cf883fd642e0b4678e6ce023f522807f4a3dc7091c26eaba9eeeec7814ed0",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [],
+            "facet_id": "subject_execution",
+            "intent_alias_groups": [
+              [
+                "long-term supply commitments, manufacturing lead times, capacity and supply-demand mismatch"
+              ]
+            ],
+            "intent_terms": [
+              "long-term supply commitments, manufacturing lead times, capacity and supply-demand mismatch"
+            ],
+            "lexical_query": "long-term supply commitments, manufacturing lead times, capacity and supply-demand mismatch capacity supply components lead time shipments",
+            "need_id": "nvda__capacity_inputs_execution__subject_execution__lexical_v1::need::01",
+            "need_kind": "product",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "capacity",
+              "supply",
+              "components",
+              "lead time",
+              "shipments"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 研究主体披露的部件、产能和交付约束是什么？ Required evidence role: issuer-direct execution, component or delivery constraint. Focused intent: long-term supply commitments, manufacturing lead times, capacity and supply-demand mismatch."
+          },
+          {
+            "constraint_digest": "099cf883fd642e0b4678e6ce023f522807f4a3dc7091c26eaba9eeeec7814ed0",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [
+              "capacity"
+            ],
+            "facet_id": "subject_execution",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "capacity"
+            ],
+            "lexical_query": "capacity supply components lead time shipments",
+            "need_id": "nvda__capacity_inputs_execution__subject_execution__lexical_v1::need::02",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "capacity",
+              "supply",
+              "components",
+              "lead time",
+              "shipments"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 研究主体披露的部件、产能和交付约束是什么？ Required evidence role: issuer-direct execution, component or delivery constraint. Focused intent: capacity."
+          },
+          {
+            "constraint_digest": "099cf883fd642e0b4678e6ce023f522807f4a3dc7091c26eaba9eeeec7814ed0",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [
+              "supply"
+            ],
+            "facet_id": "subject_execution",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "supply"
+            ],
+            "lexical_query": "supply capacity components lead time shipments",
+            "need_id": "nvda__capacity_inputs_execution__subject_execution__lexical_v1::need::03",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "capacity",
+              "supply",
+              "components",
+              "lead time",
+              "shipments"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 研究主体披露的部件、产能和交付约束是什么？ Required evidence role: issuer-direct execution, component or delivery constraint. Focused intent: supply."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_NVDA_SUPPLY_EXECUTION",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "nvda__capacity_inputs_execution__subject_execution__lexical_v1::need::01",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_ISSUER_COUNTER",
+      "eligible_object_count": 2177,
+      "hard_filter_exclusions": {
+        "object_form_not_allowed": 847,
+        "outside_evidence_owner_scope": 28196,
+        "reporting_period_outside_request": 1863,
+        "source_type_not_allowed": 2
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 81
+      },
+      "rankable_object_count": 2096,
+      "request_id": "REQ::S1_VS4_NVDA_ISSUER_COUNTER",
+      "retrieval_need_set": {
+        "facet_id": "issuer_counterevidence",
+        "lane_id": "nvda__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1",
+        "need_set_digest": "c4e6830457e4ce8c2d1cde75cb3bd5eb6aa0014369f5c63e4a304ffbd637b2aa",
+        "needs": [
+          {
+            "constraint_digest": "cd5ca4bb1d258969a6e4b5ffacfd9d9d43969ec9e07563fd29d96ead0ec2d622",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [],
+            "facet_id": "issuer_counterevidence",
+            "intent_alias_groups": [
+              [
+                "demand overestimate, customer cancellation, stranded supply commitments and data-center buildout constraints"
+              ]
+            ],
+            "intent_terms": [
+              "demand overestimate, customer cancellation, stranded supply commitments and data-center buildout constraints"
+            ],
+            "lexical_query": "demand overestimate, customer cancellation, stranded supply commitments and data-center buildout constraints risk constraint cancellation inventory concentration",
+            "need_id": "nvda__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1::need::01",
+            "need_kind": "product",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "risk",
+              "constraint",
+              "cancellation",
+              "inventory",
+              "concentration"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 研究主体披露的最强反方事实是什么？ Required evidence role: issuer-direct fact that weakens, limits or reverses the thesis. Focused intent: demand overestimate, customer cancellation, stranded supply commitments and data-center buildout constraints."
+          },
+          {
+            "constraint_digest": "cd5ca4bb1d258969a6e4b5ffacfd9d9d43969ec9e07563fd29d96ead0ec2d622",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [
+              "risk"
+            ],
+            "facet_id": "issuer_counterevidence",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "risk"
+            ],
+            "lexical_query": "risk constraint cancellation inventory concentration",
+            "need_id": "nvda__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1::need::02",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "risk",
+              "constraint",
+              "cancellation",
+              "inventory",
+              "concentration"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 研究主体披露的最强反方事实是什么？ Required evidence role: issuer-direct fact that weakens, limits or reverses the thesis. Focused intent: risk."
+          },
+          {
+            "constraint_digest": "cd5ca4bb1d258969a6e4b5ffacfd9d9d43969ec9e07563fd29d96ead0ec2d622",
+            "evidence_owner_ticker": "NVDA",
+            "exact_phrases": [
+              "pricing pressure"
+            ],
+            "facet_id": "issuer_counterevidence",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "pricing pressure"
+            ],
+            "lexical_query": "pricing pressure risk constraint cancellation inventory concentration",
+            "need_id": "nvda__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1::need::03",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "subject_self_disclosure",
+            "role_cues": [
+              "risk",
+              "constraint",
+              "cancellation",
+              "inventory",
+              "concentration"
+            ],
+            "semantic_query": "Evidence owner: NVDA. Relationship: subject_self_disclosure. Research facet: 研究主体披露的最强反方事实是什么？ Required evidence role: issuer-direct fact that weakens, limits or reverses the thesis. Focused intent: pricing pressure."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_NVDA_ISSUER_COUNTER",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "nvda__counterevidence_and_what_would_change__issuer_counterevidence__lexical_v1::need::01",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_UPSTREAM_MU",
+      "eligible_object_count": 4134,
+      "hard_filter_exclusions": {
+        "outside_evidence_owner_scope": 26007,
+        "reporting_period_outside_request": 2942,
+        "source_type_not_allowed": 2
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 188
+      },
+      "rankable_object_count": 3946,
+      "request_id": "REQ::S1_VS4_NVDA_UPSTREAM_MU",
+      "retrieval_need_set": {
+        "facet_id": "upstream_capacity_context",
+        "lane_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1",
+        "need_set_digest": "e94248d3f3271af0e5880131bc80c89be93f85bf3e5b133ea7979b4ef5fb804f",
+        "needs": [
+          {
+            "constraint_digest": "ffe20ad4357a0f23d2baf3db39c3f06db4441fabb5ee9b0c63982876eba72594",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [],
+            "facet_id": "upstream_capacity_context",
+            "intent_alias_groups": [
+              [
+                "HBM shipments, wafer intensity, yield and advanced packaging constraints"
+              ]
+            ],
+            "intent_terms": [
+              "HBM shipments, wafer intensity, yield and advanced packaging constraints"
+            ],
+            "lexical_query": "HBM shipments, wafer intensity, yield and advanced packaging constraints capacity yield allocation shipments supply",
+            "need_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1::need::01",
+            "need_kind": "product",
+            "relationship_direction": "supplier_to_subject",
+            "role_cues": [
+              "capacity",
+              "yield",
+              "allocation",
+              "shipments",
+              "supply"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: supplier_to_subject. Research facet: 上游披露提供了哪些产能、良率和封装背景，边界是什么？ Required evidence role: bounded upstream capacity, yield or allocation read-through. Focused intent: HBM shipments, wafer intensity, yield and advanced packaging constraints."
+          },
+          {
+            "constraint_digest": "ffe20ad4357a0f23d2baf3db39c3f06db4441fabb5ee9b0c63982876eba72594",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [
+              "capacity"
+            ],
+            "facet_id": "upstream_capacity_context",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "capacity"
+            ],
+            "lexical_query": "capacity yield allocation shipments supply",
+            "need_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1::need::02",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "supplier_to_subject",
+            "role_cues": [
+              "capacity",
+              "yield",
+              "allocation",
+              "shipments",
+              "supply"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: supplier_to_subject. Research facet: 上游披露提供了哪些产能、良率和封装背景，边界是什么？ Required evidence role: bounded upstream capacity, yield or allocation read-through. Focused intent: capacity."
+          },
+          {
+            "constraint_digest": "ffe20ad4357a0f23d2baf3db39c3f06db4441fabb5ee9b0c63982876eba72594",
+            "evidence_owner_ticker": "MU",
+            "exact_phrases": [
+              "yield"
+            ],
+            "facet_id": "upstream_capacity_context",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "yield"
+            ],
+            "lexical_query": "yield capacity allocation shipments supply",
+            "need_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1::need::03",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "supplier_to_subject",
+            "role_cues": [
+              "capacity",
+              "yield",
+              "allocation",
+              "shipments",
+              "supply"
+            ],
+            "semantic_query": "Evidence owner: MU. Relationship: supplier_to_subject. Research facet: 上游披露提供了哪些产能、良率和封装背景，边界是什么？ Required evidence role: bounded upstream capacity, yield or allocation read-through. Focused intent: yield."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_NVDA_UPSTREAM_MU",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1::need::01",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_UPSTREAM_TSM",
+      "eligible_object_count": 455,
+      "hard_filter_exclusions": {
+        "outside_evidence_owner_scope": 32630
+      },
+      "projection_only_exclusions": {
+        "post_selection_projection_only:bounded_parent_context": 24
+      },
+      "rankable_object_count": 431,
+      "request_id": "REQ::S1_VS4_NVDA_UPSTREAM_TSM",
+      "retrieval_need_set": {
+        "facet_id": "upstream_capacity_context",
+        "lane_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1",
+        "need_set_digest": "3e4ed4d923b132bb4108edc002d6523c83b93916b52b659a2b11d6f90f8b946c",
+        "needs": [
+          {
+            "constraint_digest": "7258df1029d43ba57306c4db92e4e9b7c9ce89ce58fc321637c4f7c4da9f3f66",
+            "evidence_owner_ticker": "TSM",
+            "exact_phrases": [],
+            "facet_id": "upstream_capacity_context",
+            "intent_alias_groups": [
+              [
+                "advanced packaging bottlenecks, tester shortages and customer growth constraints"
+              ]
+            ],
+            "intent_terms": [
+              "advanced packaging bottlenecks, tester shortages and customer growth constraints"
+            ],
+            "lexical_query": "advanced packaging bottlenecks, tester shortages and customer growth constraints capacity yield allocation shipments supply",
+            "need_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1::need::01",
+            "need_kind": "product",
+            "relationship_direction": "supplier_to_subject",
+            "role_cues": [
+              "capacity",
+              "yield",
+              "allocation",
+              "shipments",
+              "supply"
+            ],
+            "semantic_query": "Evidence owner: TSM. Relationship: supplier_to_subject. Research facet: 上游披露提供了哪些产能、良率和封装背景，边界是什么？ Required evidence role: bounded upstream capacity, yield or allocation read-through. Focused intent: advanced packaging bottlenecks, tester shortages and customer growth constraints."
+          },
+          {
+            "constraint_digest": "7258df1029d43ba57306c4db92e4e9b7c9ce89ce58fc321637c4f7c4da9f3f66",
+            "evidence_owner_ticker": "TSM",
+            "exact_phrases": [
+              "capacity"
+            ],
+            "facet_id": "upstream_capacity_context",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "capacity"
+            ],
+            "lexical_query": "capacity yield allocation shipments supply",
+            "need_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1::need::02",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "supplier_to_subject",
+            "role_cues": [
+              "capacity",
+              "yield",
+              "allocation",
+              "shipments",
+              "supply"
+            ],
+            "semantic_query": "Evidence owner: TSM. Relationship: supplier_to_subject. Research facet: 上游披露提供了哪些产能、良率和封装背景，边界是什么？ Required evidence role: bounded upstream capacity, yield or allocation read-through. Focused intent: capacity."
+          },
+          {
+            "constraint_digest": "7258df1029d43ba57306c4db92e4e9b7c9ce89ce58fc321637c4f7c4da9f3f66",
+            "evidence_owner_ticker": "TSM",
+            "exact_phrases": [
+              "yield"
+            ],
+            "facet_id": "upstream_capacity_context",
+            "intent_alias_groups": [],
+            "intent_terms": [
+              "yield"
+            ],
+            "lexical_query": "yield capacity allocation shipments supply",
+            "need_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1::need::03",
+            "need_kind": "exact_phrase",
+            "relationship_direction": "supplier_to_subject",
+            "role_cues": [
+              "capacity",
+              "yield",
+              "allocation",
+              "shipments",
+              "supply"
+            ],
+            "semantic_query": "Evidence owner: TSM. Relationship: supplier_to_subject. Research facet: 上游披露提供了哪些产能、良率和封装背景，边界是什么？ Required evidence role: bounded upstream capacity, yield or allocation read-through. Focused intent: yield."
+          }
+        ],
+        "request_id": "REQ::S1_VS4_NVDA_UPSTREAM_TSM",
+        "schema_version": "fin_ia_s1_vs3_retrieval_need_set_v1_1"
+      },
+      "routes": {
+        "typed_intent_alias_groups": {
+          "best_rank_by_object_id": {},
+          "hard_negative_object_ids_recalled": [],
+          "need_results": [
+            {
+              "need_id": "nvda__capacity_inputs_execution__upstream_capacity_context__lexical_v1::need::01",
+              "object_ids": []
+            }
+          ],
+          "positive_object_ids_recalled": []
+        }
+      }
+    }
+  ],
+  "authority": {
+    "candidate_is_not_evidence": true,
+    "numeric_fact_authority": false,
+    "runtime_route_promotion_authorized": false,
+    "s1_complete_claimed": false
+  },
+  "bound_inputs": {
+    "compiled_objects_ref": "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v4/objects.jsonl",
+    "compiled_objects_sha256": "34793a67b638a5402ca20814a7ad7f9af9b396136e1ac3ec36d3257796ec7f19",
+    "financial_intent_ontology_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_intent_ontology_v1_2.json",
+    "financial_intent_ontology_sha256_lf": "ae34843fac458caafe5da8a12fdb384aa267f39a3553835d8966e97fec7b6242",
+    "kernel_ref": "configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_3.json",
+    "kernel_sha256_lf": "7b3111754d81b09ba95da4622d2347bc892adff83cb152c61aaf0d6653781eb5",
+    "query_atom_eval_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs4_mu_nvda_supplement_query_atoms_v1_0.json",
+    "query_atom_eval_sha256_lf": "5705c6a2109cd8d548a8f92d37a9895fe2da1f939c86cddc92c6f473c5a8baca",
+    "retrieval_need_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_retrieval_need_compiler_policy_v1_1.json",
+    "retrieval_need_policy_sha256_lf": "e98f38c31a6e579b41004d3cad21d1ea2d81159a4d47083a9a9245cd7071f95e",
+    "reviewed_claim_anchor_catalog_ref": "configs/runtime/fin_ia_0_1_3_current_reviewed_claim_anchor_catalog_v1_0.json",
+    "reviewed_claim_anchor_catalog_sha256_lf": "e68123e8fb29f81aa700a98db6ee24943f98fb862f66628ee45483981fc9c4a8",
+    "route_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_3.json",
+    "route_policy_sha256_lf": "6404fdd9035b0c3428b73ddde125c57b8328e7862a35d4566bca9739cf99365a",
+    "vs1_result_ref": "configs/runtime/fin_ia_0_1_3_s1_vs1_vertical_slice_result_v1_1.json",
+    "vs1_result_sha256_lf": "1f29b58b5b51a39c5a5eb5a7bd5892c47fe71830d1da97d587a0b34b2e646861",
+    "vs2_evaluator_ref": "eval_sets/fin_0_1_3_s1/references/train_internal/vs2_complex_pdf_references_v1_0.jsonl",
+    "vs2_evaluator_sha256_lf": "56abb32dc92b05ed4393c31b29598435033b7fa1d11a5d3598a48746aebfd95f",
+    "vs2_result_ref": "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+    "vs2_result_sha256_lf": "fce09702cab81a6f2922fb996bee17ec3201bd03a9bd86edffd3c2d66090d57a"
+  },
+  "execution": {
+    "embedding_model_calls": 0,
+    "generation_model_calls": 0,
+    "labels_joined_after_route_generation": true,
+    "network_calls": 0,
+    "reranker_model_calls": 0
+  },
+  "expectations": [
+    {
+      "atom_id": "S1_VS4_MU_HBM_COMMITMENTS",
+      "business_meaning": "Customer commitment intent must naturally recall a current Micron shipment, take-or-pay or deposit claim without using qrel IDs in query construction.",
+      "maximum_rank": 24,
+      "must_exclude_presence": {},
+      "must_recall_any_ranks": {
+        "COBJ::85f4f169d8566e7c4e5209b4": null,
+        "COBJ::c27b82b71738dcf287ac514f": null,
+        "COBJ::f9c13c79a8c50dd1eeb57394": null
+      },
+      "must_recall_ranks": {},
+      "passed": false,
+      "route_id": "typed_intent_alias_groups"
+    },
+    {
+      "atom_id": "S1_VS4_MU_HBM_SUPPLY_EXECUTION",
+      "business_meaning": "HBM supply intent must recall a current issuer-authored capacity, wafer-intensity or yield barrier claim.",
+      "maximum_rank": 24,
+      "must_exclude_presence": {},
+      "must_recall_any_ranks": {
+        "COBJ::4113595bbddedf191029ba24": null,
+        "COBJ::8ce9daeffe417c82615e9857": null,
+        "COBJ::bbe786a4c79083a0dc2464e8": null
+      },
+      "must_recall_ranks": {},
+      "passed": false,
+      "route_id": "typed_intent_alias_groups"
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_REPORTED_RESULTS",
+      "business_meaning": "The current NVIDIA revenue and Data Center result claim must enter through requested metric and product intent rather than a fixed answer binding.",
+      "maximum_rank": 24,
+      "must_exclude_presence": {},
+      "must_recall_any_ranks": {},
+      "must_recall_ranks": {
+        "COBJ::b040d306c476a706260935e5": 4
+      },
+      "passed": true,
+      "route_id": "typed_intent_alias_groups"
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_SUPPLY_EXECUTION",
+      "business_meaning": "NVIDIA supply execution intent must naturally recall a capacity commitment, lead-time or supply-demand mismatch claim.",
+      "maximum_rank": 24,
+      "must_exclude_presence": {},
+      "must_recall_any_ranks": {
+        "COBJ::0065ea7ccdb7dc162734bf2f": null,
+        "COBJ::105491ae67a1a5e0c775beb2": null,
+        "COBJ::446f4a4bcb2e34a40fd756f6": null,
+        "COBJ::db735740b6438e6ce6dd3d13": null,
+        "COBJ::fd70285573b56aa0930a9188": null
+      },
+      "must_recall_ranks": {},
+      "passed": false,
+      "route_id": "typed_intent_alias_groups"
+    },
+    {
+      "atom_id": "S1_VS4_NVDA_UPSTREAM_TSM",
+      "business_meaning": "The upstream advanced-packaging request must naturally recall a TSMC management capacity or tester constraint, while attribution remains bounded later.",
+      "maximum_rank": 24,
+      "must_exclude_presence": {},
+      "must_recall_any_ranks": {
+        "COBJ::07ef64bd2d61623d1f4d9262": null,
+        "COBJ::bb4b07ecca957f89a598fc06": null,
+        "COBJ::dbe25978af4e48df2d32a099": null
+      },
+      "must_recall_ranks": {},
+      "passed": false,
+      "route_id": "typed_intent_alias_groups"
+    }
+  ],
+  "experiment_id": "FIN-0.1.3-S1-VS4-MU-NVDA-SUPPLEMENT-CANDIDATE-PROBE-V1.1::TYPED-ROUTE-PROOF",
+  "recorded_at": "2026-08-18",
+  "result_digest": "27c77eb2ed9a51ba99f95629a456bb3c4f16e5d1dc841814cb2c087aaa07da73",
+  "schema_version": "fin_ia_s1_vs3_typed_route_proof_v1_0",
+  "status": "failed",
+  "summary": {
+    "atom_count": 10,
+    "expectation_count": 5,
+    "expectation_pass_count": 1,
+    "typed_route_proof_passed": false
+  }
+}

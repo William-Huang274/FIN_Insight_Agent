@@ -1,0 +1,74 @@
+{
+  "schema_version": "fin_ia_s3_deepseek_ga_transport_paired_result_v1_0",
+  "status": "paired_contract_valid_content_assessment_pending",
+  "recorded_at": "2026-08-14T02:46:15+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_chat_responses_paired_authority_v1_0.json",
+  "authority_sha256": "7c08ee965b73edc62035341af394fd0ef43c4a01a77f7be8abea26e3657f0483",
+  "implementation_commit": "aafd8be3788a653020a86513c9cfc776e8ffae7b",
+  "case_key": "DELL",
+  "required_cell_ids": [
+    "CELL::value_capture"
+  ],
+  "research_input_digest": "6505a58e68811e59e3471378bc0cf16174abef3021c3ae9900e46d5e99189b4c",
+  "same_research_input": true,
+  "same_finance_tool_contract": true,
+  "lanes": [
+    {
+      "lane": "chat_control",
+      "wire_api": "openai_compatible_chat_completions",
+      "status": "completed_contract_valid_content_assessment_pending",
+      "model_calls_attempted": 5,
+      "tool_counts": {
+        "read_reviewed_evidence_for_cell": 1,
+        "read_numeric_facts_for_cell": 1,
+        "submit_evidence_request": 3,
+        "submit_research_judgment": 1
+      },
+      "step_count": 5,
+      "deliverable_digest": "fc143666c453a56cfc6ad17feca7d610bf896baa5f5ce28f40b1e6f21f85ad5c",
+      "failure_phase": "",
+      "failure_code": "",
+      "failure_capture_ref": "",
+      "content_assessment_pending": true
+    },
+    {
+      "lane": "responses_candidate",
+      "wire_api": "openai_responses",
+      "status": "completed_contract_valid_content_assessment_pending",
+      "model_calls_attempted": 5,
+      "tool_counts": {
+        "read_reviewed_evidence_for_cell": 1,
+        "read_numeric_facts_for_cell": 1,
+        "submit_evidence_request": 3,
+        "submit_research_judgment": 1
+      },
+      "step_count": 5,
+      "deliverable_digest": "946a1ca51bd330a943a5ad80c1a3dbe22fc4269ca6e62a671ca1150d2c06a1bd",
+      "failure_phase": "",
+      "failure_code": "",
+      "failure_capture_ref": "",
+      "content_assessment_pending": true
+    }
+  ],
+  "execution": {
+    "model_calls_attempted": 10,
+    "maximum_model_calls": 12,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "product_publication": false
+  },
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/chat-responses-paired-r1/full_result.json",
+  "full_result_sha256": "e00b799de7a55a86c68ce1f3993309e9d9544ae611a1c561f4b08ad4fbb9d473",
+  "acceptance": {
+    "both_transport_contracts_pass": true,
+    "paired_content_assessment_pending": true,
+    "five_cell_live_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false,
+    "release_ready": false
+  },
+  "known_boundary": "This is a same-input DELL value-capture transport comparison only. It does not authorize Anthropic live, five-cell execution, S3 acceptance or release; natural content must be assessed after capture preservation.",
+  "result_digest": "79ecf97e3e3ca59d44034a1f798015004c91d516c4a7cbe7d12857ecdf0b52e5"
+}

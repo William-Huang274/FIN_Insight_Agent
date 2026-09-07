@@ -1,0 +1,69 @@
+{
+  "schema_version": "fin_ia_s3_fixed_pack_failed_fragment_submission_successor_live_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "recorded_at": "2026-08-16T08:10:23+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_failed_counter_submission_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "20122affcbd60f311bcccd1f667033a8e48a2ad311075f628ae50d403ab3c00b",
+  "implementation_commit": "18139d3e295b274b9c532db63b990e38d324ed97",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "failed_fragment_tool": "submit_research_counterargument_and_wwc",
+  "research_input_digest": "f6359b3a9684f78a0b5b7bdb688e6d847069c7bc029572f164dcb390a61f9854",
+  "predecessor_result_digest": "4b590ebc21fce90ef60e5aaf2f40ea36e1a61761827fc60b7e3020403904a317",
+  "counter_fragment_context_digest": "2021a9a7d89dccff002b3b97b5eab67ef7240106c05b974630acd7ce3dedc95f",
+  "counter_submission_messages_digest": "baa604871e6e6ba64a2e10a8efe9c19f21c1dfdff8530ebc6713627b975b6650",
+  "successor_submission": {
+    "attempted": true,
+    "finish_reason": "tool_calls",
+    "tool_call_count": 1,
+    "visible_chars": 0,
+    "usage": {
+      "prompt_tokens": 6166,
+      "completion_tokens": 540,
+      "total_tokens": 6706,
+      "prompt_tokens_details": {
+        "cached_tokens": 6144
+      },
+      "prompt_cache_hit_tokens": 6144,
+      "prompt_cache_miss_tokens": 22
+    },
+    "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-VC-COUNTER-SUBMISSION-SUCCESSOR-R1/COUNTER-SUBMISSION-SUCCESSOR-R1/model_visible_request.json",
+    "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-VC-COUNTER-SUBMISSION-SUCCESSOR-R1/COUNTER-SUBMISSION-SUCCESSOR-R1/provider_response.json"
+  },
+  "validated_counter_fragment_digest": "8c8fa662d98b557137da4d39f554ca7bdf7f70b88f5d3a94bec5abeccbd3374f",
+  "judgment_output_digest": "da399c80e6442203aefe0ae0011b6321580ec5f3422697d453365fe0a922ebeb",
+  "deliverable_digest": "",
+  "failure_phase": "local_terminal_judgment_validation",
+  "failure_code": "claim_surface_narrative_relation_conflict",
+  "failure_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-VC-COUNTER-SUBMISSION-SUCCESSOR-R1/COUNTER-SUBMISSION-SUCCESSOR-R1/provider_response.json",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/fixed-pack-failed-counter-submission-successor-r1/full_result.json",
+  "full_result_sha256": "f4bf9fb7e5c8948d581494d057867e78b27877415ca57bd5ef6230d54251b77e",
+  "execution": {
+    "fresh_model_calls_attempted": 1,
+    "maximum_fresh_model_calls": 1,
+    "successful_predecessor_model_calls_reused": 5,
+    "logical_chain_model_calls": 6,
+    "fresh_tool_calls_accepted": 1,
+    "total_fragments_accepted": 3,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "protocol_switches": 0,
+    "product_publication": false
+  },
+  "acceptance": {
+    "failed_node_only_successor_pass": false,
+    "predecessor_successful_nodes_reused": true,
+    "full_three_fragment_contract_pass": false,
+    "terminal_judgment_contract_pass": false,
+    "content_assessment_pending": false,
+    "fixed_pack_layer_one_acceptance": false,
+    "dynamic_agentic_research_acceptance": false,
+    "five_cell_live_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false
+  },
+  "known_boundary": "This authority permits exactly one fresh non-thinking DeepSeek contract submission for the failed R6 counterargument and what-would-change node. It reuses five immutable predecessor calls, forbids analysis reruns, retrieval, retry, fallback, protocol switching, publication and release, and does not itself accept fixed-Pack content quality or dynamic Agentic Research.",
+  "result_digest": "4a036d98f892016952df642c89583cfb1e8dbb0d8acde4dd9657b7d5672b629f"
+}

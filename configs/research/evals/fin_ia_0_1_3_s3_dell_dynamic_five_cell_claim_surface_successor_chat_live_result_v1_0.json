@@ -1,0 +1,103 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_five_cell_claim_surface_successor_unexpected_crash_result_v1_0",
+  "status": "terminal_unexpected_project_exception_preserved_no_retry",
+  "recorded_at": "2026-08-17T09:14:27+08:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_dynamic_five_cell_claim_surface_successor_chat_live_authority_v1_0.json",
+  "authority_sha256": "4df245335c0e0d0b51460de698345df1699ffff072c18affee9c285ca4283dd5",
+  "implementation_commit": "318677b5ebffb141e146f9661057525c1540abed",
+  "run_id": "FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5",
+  "case_key": "DELL",
+  "required_cell_ids": [
+    "CELL::demand_quality",
+    "CELL::operating_performance",
+    "CELL::value_capture",
+    "CELL::cash_conversion",
+    "CELL::counterevidence"
+  ],
+  "execution": {
+    "model_calls_attempted": 2,
+    "maximum_model_calls": 12,
+    "cell_analysis_calls_attempted": 1,
+    "cell_submission_calls_attempted": 1,
+    "cell_judgments_accepted": 0,
+    "synthesis_calls_attempted": 0,
+    "retries": 0,
+    "fallbacks": 0,
+    "external_source_network_calls": 0,
+    "protocol_switches": 0,
+    "product_publication": false
+  },
+  "provider_steps": [
+    {
+      "attempt_id": "FIVE-CELL-R5-DEMAND-ANALYSIS-01",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5/FIVE-CELL-R5-DEMAND-ANALYSIS-01/model_visible_request.json",
+      "request_capture_sha256": "28537e5a768ec642968fa9221bd10f2d33e64afecd55aa2687463b4878367d2e",
+      "request_digest": "addea9ad84115ee0f6c9960bf44cf522b40bdcf9a1b1b921c007cb1cf18edf0e",
+      "messages_digest": "d2ae1355265813e4dba6bd08ae5b00ab286c0fdb998272a2cc2770176e6d2da9",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5/FIVE-CELL-R5-DEMAND-ANALYSIS-01/provider_response.json",
+      "response_capture_sha256": "bd215bca4c0d8cbb9d1a1e21150310dc483222336a6678a629108a2844a082cc",
+      "response_digest": "5533089f712096105c08c9bd031f166c74ec5aa89243f79c2b55af1e16d43283",
+      "http_status": 200,
+      "response_body_complete": true,
+      "finish_reason": "stop",
+      "model": "deepseek-v4-pro",
+      "prompt_tokens": 3359,
+      "completion_tokens": 3623,
+      "reasoning_tokens": 2811,
+      "total_tokens": 6982
+    },
+    {
+      "attempt_id": "FIVE-CELL-R5-DEMAND-SUBMISSION-01",
+      "request_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5/FIVE-CELL-R5-DEMAND-SUBMISSION-01/model_visible_request.json",
+      "request_capture_sha256": "126b5d1ece9f1c6f0f48a6526669f2545521578f280111966e298ebdae998892",
+      "request_digest": "82f772a0ee80622b91b9d1333a1c580555f23227c4a2bd497107ab84fd44bf11",
+      "messages_digest": "b078b2d2c43b52a0a7d7606e299583c0e7887a5cb974816412c6b56bfa9a88ff",
+      "wire_tool_digest": "97fdc09e63b2c64cd0478391a10deda1eff6ce793afbe6875dd2de7e190de927",
+      "response_capture_ref": "data/captures/provider_calls/FIN013-S3-DELL-DYNAMIC-FIVE-CELL-R5/FIVE-CELL-R5-DEMAND-SUBMISSION-01/provider_response.json",
+      "response_capture_sha256": "9cfd06428081c3a8fe436f7517862f43f79e298ae140bfc402672bf3ed70f93d",
+      "response_digest": "c9def1d65a467fc80054af6ed94bb83871d7fa5518bd9913920c2fff7551d04b",
+      "http_status": 200,
+      "response_body_complete": true,
+      "finish_reason": "tool_calls",
+      "tool_call_count": 1,
+      "model": "deepseek-v4-pro",
+      "prompt_tokens": 9490,
+      "completion_tokens": 934,
+      "total_tokens": 10424
+    }
+  ],
+  "failure": {
+    "observed_phase": "post_provider_local_contract_validation",
+    "observed_exception_type": "KeyError",
+    "observed_exception_surface": "allowed_qualitative_fact_refs",
+    "normalized_failure_phase": "cell_unexpected_project_exception",
+    "normalized_failure_code": "five_cell_unexpected_project_exception_keyerror",
+    "failed_cell_id": "CELL::demand_quality",
+    "root_cause_class": "project_cell_scope_contract_leak",
+    "remote_schema_offered_value_only_fields_to_demand": true,
+    "remote_schema_offered_value_only_relation_aliases_to_demand": [
+      "CR::DELL::COMPANY_MARGIN_OBSERVATION",
+      "CR::DELL::HISTORICAL_MIX_PRESSURE",
+      "CR::DELL::PROFIT_BRIDGE_GAP"
+    ],
+    "model_selected_only_server_exposed_aliases": true,
+    "private_full_result_materialized_by_original_runner": false,
+    "original_runner_process_completed_normally": false
+  },
+  "outcome": {
+    "validated_demand_judgment": false,
+    "all_five_cell_judgments_contract_valid": false,
+    "cross_cell_synthesis_contract_valid": false,
+    "five_cell_report_compiled": false,
+    "financial_L1_assessed": false,
+    "absolute_content_quality_assessed": false,
+    "paired_gain_assessed": false,
+    "qualified_human_acceptance": false,
+    "heterogeneous_generalization": false,
+    "s3_product_acceptance": false,
+    "workbench_publication": false,
+    "release_ready": false
+  },
+  "known_boundary": "This postmortem terminal artifact records the consumed R5 authority and immutable provider captures after the original runner crashed before terminal materialization. It does not salvage the model output, create a private full result retroactively, approve a rerun, assess financial content, authorize generalization, or claim S3 acceptance.",
+  "result_digest": "e8e13386afa560175b3d590940b35bc609ddde1538fa9f018dc79d5acb20b4fc"
+}

@@ -1,0 +1,81 @@
+{
+  "schema_version": "fin_ia_s3_standard_tool_loop_live_disposition_v1_0",
+  "status": "terminal_failed_project_tool_schema_validator_compilation_drift",
+  "recorded_at": "2026-08-14T01:57:37+08:00",
+  "case_key": "DELL",
+  "cell_id": "CELL::value_capture",
+  "run_id": "FIN013-S3-DELL-VALUE-CAPTURE-STANDARD-TOOL-LOOP-R2",
+  "implementation_commit": "6f9ed9409d388d61cfd2fa097032c24f5e31f7ea",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_standard_tool_loop_live_authority_v1_1.json",
+  "authority_sha256": "ec8d6cd8af39bb6ef8fd314c99a44ae371bee54687b6de8a0343d8aa71e89801",
+  "result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_standard_tool_loop_live_result_v1_1.json",
+  "result_sha256": "d61ec3507450f2f8b25d1f8bda3f4e6b59580bcb070fe308007f689be098dc7e",
+  "observed_provider_steps": {
+    "model_calls": 2,
+    "first_step": {
+      "finish_reason": "tool_calls",
+      "prompt_tokens": 2292,
+      "completion_tokens": 128,
+      "reasoning_tokens": 31,
+      "tool_names": [
+        "read_reviewed_evidence_for_cell",
+        "read_numeric_facts_for_cell"
+      ],
+      "accepted_receipts": 2
+    },
+    "second_step": {
+      "finish_reason": "tool_calls",
+      "prompt_tokens": 8088,
+      "completion_tokens": 5531,
+      "reasoning_tokens": 5296,
+      "tool_name": "submit_evidence_request",
+      "gap_ref": "GAP::14D67654F535F105",
+      "requested_facet_id": "pricing_and_mix",
+      "submitted_metric_intents": [
+        "shipments",
+        "capacity",
+        "orders",
+        "backlog"
+      ],
+      "product_intent_chars": 222
+    }
+  },
+  "business_disposition": {
+    "model_behavior": "material_research_gap_correctly_identified_but_proposal_shape_not_locally_accepted",
+    "observed_intent": "obtain_Dell_AI_server_shipments_or_equivalent_compute_capacity_to_distinguish_volume_led_from_price_led_revenue_growth",
+    "why_the_intent_is_material": "The reviewed Evidence explicitly says AI server unit volume, ASP and the price-volume-mix bridge are missing, so the proposed follow-up is relevant to value capture.",
+    "judgment_or_deliverable_created": false,
+    "gap_closed": false,
+    "candidate_or_fact_promoted": false,
+    "product_publication": false
+  },
+  "root_cause": {
+    "owner": "project_tool_contract_compiler_and_proposal_repair_semantics",
+    "earliest_faulty_artifact": "src/sec_agent/research/bounded_finance_loop.py::compile_finance_loop_tools",
+    "confirmed_findings": [
+      "The product_intents Tool Schema described the field as concise but omitted the local maximum length and array cardinality enforced by the validator.",
+      "The model produced one 222-character product intent while the hidden local ceiling was 120 characters.",
+      "Even if that text were shortened, the submitted pricing_and_mix facet would still reject shipments, capacity, orders and backlog because the route contract allows only revenue, profit, margin and ASP metrics for that query family.",
+      "The Tool Schema exposed one global facet enum and one global metric enum but did not encode their dependent validity, so the provider could generate an apparently schema-valid combination that the local compiler would reject.",
+      "A proposal-only formatting failure terminated the whole loop instead of returning a typed repairable tool observation within the existing bounded budget."
+    ],
+    "not_a_provider_contract_failure": true,
+    "not_resolved_by_raising_one_character_limit": true
+  },
+  "required_structural_fix": {
+    "single_compiled_contract_source": "Compile Tool Schema, local validator, fake path and repair feedback from the same provider-neutral EvidenceRequest contract and route policy.",
+    "dependent_intent_shape": "Represent each EvidenceRequest as bounded intent atoms whose facet and metric set is locally compatible; split a legitimate cross-family research need into multiple deterministic request atoms instead of expecting the model to guess one family.",
+    "visible_constraints": "Expose exact maxItems, maxLength and forbidden-surface constraints in the tool schema wherever the standard API supports them.",
+    "repairable_proposal_boundary": "Return a typed rejected_not_executed proposal result with safe allowed-family hints for local format/facet mismatch, while keeping the gap open and consuming the original call budget; do not repair Judgment, identity, Evidence, NumericFact or citations.",
+    "zero_call_scope": "Replay the immutable R2 tool call and prove deterministic split or typed repair, all four tool schemas against validators, DELL/MU/NVDA fake paths, and mutation for cross-case, cross-cell, invalid facet-metric and length boundaries before any future provider call."
+  },
+  "execution_boundary": {
+    "automatic_third_single_cell_live_authorized": false,
+    "five_cell_live_authorized": false,
+    "new_provider_call_authorized": false,
+    "allowed_next_scope": "zero_call_provider_neutral_tool_contract_compiler_and_repair_semantics_disposition_only",
+    "retries": 0,
+    "fallbacks": 0
+  },
+  "known_boundary": "R2 proves standard tool-result continuation through two accepted same-cell read receipts and a business-relevant natural EvidenceRequest attempt. It does not qualify the proposal contract, final Judgment, five-cell loop, eight-dimension report, qualified-human acceptance, Workbench or S3 acceptance."
+}

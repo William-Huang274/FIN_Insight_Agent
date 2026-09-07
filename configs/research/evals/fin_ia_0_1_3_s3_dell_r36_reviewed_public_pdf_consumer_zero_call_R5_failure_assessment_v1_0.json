@@ -1,0 +1,33 @@
+{
+  "schema_version": "fin_ia_s3_dynamic_single_unit_zero_call_failure_result_v1_0",
+  "attempt_id": "dell-r36-reviewed-public-pdf-consumer-zero-call-r5-20260824T194109Z",
+  "status": "terminal_failed_current_dynamic_single_unit_zero_call_gate",
+  "recorded_at": "2026-08-25T03:41:09+08:00",
+  "prepared_from_commit": "1c6b53d7",
+  "failed_stage": "S1_material_retrieval_need_compilation",
+  "failed_checks": [
+    "reviewed_public_pdf_successor_facets_have_retrieval_need_policy"
+  ],
+  "failure": {
+    "root_error": "retrieval_need_facet_policy_missing:bounded_price_configuration_context",
+    "cause": "R36 registered the bounded successor facets in the kernel, query/object route and source-route portfolio, but the current retrieval-need and material-evidence policies still enumerated only their predecessor facets."
+  },
+  "inputs": {
+    "runtime_registry_id": "FIN-0.1.3-CURRENT-PRODUCT-RUNTIME-RESOURCE-REGISTRY-R36",
+    "dynamic_policy_ref": "configs/research/fin_ia_0_1_3_s3_dell_dynamic_single_unit_loop_policy_v1_4.json",
+    "retrieval_need_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs5_retrieval_need_compiler_policy_v1_2.json",
+    "material_evidence_policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_product_material_evidence_runtime_policy_v1_1.json"
+  },
+  "authority": {
+    "provider_calls": 0,
+    "network_calls": 0,
+    "model_generation_calls": 0,
+    "paid_tool_calls": 0,
+    "candidate_auto_promotion": 0,
+    "public_information_gap_authorized_count": 0,
+    "failed_attempt_is_immutable": true,
+    "product_version_changed": false
+  },
+  "known_boundary": "This failure occurred during deterministic candidate requirement compilation after CUDA model loading and before Evidence workpaper compilation. It does not reject the PDF sources, grant Evidence or NumericFact authority, qualify S1/S3, or reopen R17. The root cause remains owned by S1 policy integration and requires a new runtime registry plus a new attempt ID.",
+  "result_digest": "2cfae030c9e23908ccca1998235d488e646f847ec70d467f606a988949fe4fbe"
+}

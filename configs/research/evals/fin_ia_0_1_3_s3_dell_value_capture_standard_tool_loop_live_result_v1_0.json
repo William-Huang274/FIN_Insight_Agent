@@ -1,0 +1,44 @@
+{
+  "schema_version": "fin_ia_s3_bounded_finance_loop_live_result_v1_0",
+  "status": "terminal_failed_no_retry",
+  "recorded_at": "2026-08-13T17:04:31+00:00",
+  "authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_standard_tool_loop_live_authority_v1_0.json",
+  "authority_sha256": "f1b3e6561499e49ae90d5c954e28849c777d67c49a25622983b92d1489c087e5",
+  "implementation_commit": "2aab623d6ff35f899002b1871b4b2fbc10fc2115",
+  "case_key": "DELL",
+  "required_cell_ids": [
+    "CELL::value_capture"
+  ],
+  "research_input_digest": "6505a58e68811e59e3471378bc0cf16174abef3021c3ae9900e46d5e99189b4c",
+  "execution": {
+    "model_calls_attempted": 1,
+    "maximum_model_calls": 6,
+    "retries": 0,
+    "fallbacks": 0,
+    "planner_calls": 0,
+    "external_retrieval_calls": 0,
+    "embedding_calls": 0,
+    "tool_choice_sent": false,
+    "product_publication": false
+  },
+  "provider_steps": [],
+  "accepted_receipt_count": 0,
+  "accepted_receipt_refs": [],
+  "tool_counts": {},
+  "deliverable_digest": "",
+  "failure_phase": "provider_transport_or_response",
+  "failure_code": "model_gateway_tool_call_invalid",
+  "failure_capture_ref": "",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s3_current_research_consumer/standard-tool-loop-r1-value-capture/full_result.json",
+  "full_result_sha256": "7518e5a9d80ed1f8ff354e5d67c242f035be84b5dc6ddda1d60da0e5ce81c6a9",
+  "acceptance": {
+    "standard_tool_transport_and_local_contract_pass": false,
+    "required_evidence_and_numeric_reads_enforced": true,
+    "content_assessment_pending": false,
+    "five_cell_live_authorized": false,
+    "s3_product_acceptance": false,
+    "qualified_human_acceptance": false
+  },
+  "known_boundary": "This is the only currently authorized standard API four-tool live qualification for DELL value_capture. It permits at most six exact-once model steps with mandatory reviewed Evidence and NumericFact reads, up to three proposal-only EvidenceRequests, one locally validated Judgment, zero retry/fallback/external retrieval/embedding/product publication. Success authorizes content assessment only and does not itself authorize five-cell live, S3 acceptance or release.",
+  "result_digest": "144f8d135afeab4202a9ca173cbb326f719c7f9286b1e19ad38c7a75f053f677"
+}

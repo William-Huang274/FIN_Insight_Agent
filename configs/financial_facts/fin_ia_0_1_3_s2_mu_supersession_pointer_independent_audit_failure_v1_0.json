@@ -1,0 +1,86 @@
+{
+  "attempt_id": "FIN-0.1.3-S2-MU-PERIOD-IDENTITY-SUPERSESSION-R1-INDEPENDENT-AUDIT",
+  "authority": {
+    "numeric_fact_or_stage_authority_granted": false,
+    "publication_or_release_authorized": false,
+    "rc_s2_006_closure_valid": false
+  },
+  "bound_predecessor": {
+    "commit": "635c943f8efc562091647838132e2aedcca7f8d4",
+    "executor_sha256": "62bd526281ac10a8090acf56bc6cea23a7ec1a9601bb6e7ba43e31a32cb8e338",
+    "result_ref": "configs/financial_facts/fin_ia_0_1_3_s2_mu_period_identity_successor_result_v1_0.json",
+    "result_sha256": "559655738fc4f1d227adb87e7174b87b145114fd9ea90a1921626126acb9a20a"
+  },
+  "calls": {
+    "model": 0,
+    "network": 0,
+    "provider": 0
+  },
+  "finding": {
+    "classification": "P1_material",
+    "code": "final_successor_pointer_conflates_numeric_vintage_with_physical_period_identity",
+    "impact": "Intermediate research-as-of dates retain multiple incompatible fiscal labels, and the final comparable copy can replace a contemporaneous correct identity with a later filing's fy/fp.",
+    "multi_vintage_population": {
+      "groups_with_more_than_two_rows": 90,
+      "maximum_rows_in_one_physical_group": 6
+    },
+    "root_cause": "The mart points every older row in a physical group directly to the final observed row. The executor treated that pointer as fiscal-period identity authority even though it is neither a PIT chain nor proof that the final comparable copy names the physical period correctly."
+  },
+  "immutable_mart": {
+    "ref": "data/workbench_private/fin_0_1_3_s2_company_financial_fact_mart/v1/company_financial_facts.sqlite",
+    "sha256": "d05b0cc8e08d063a252d3032db13f6840abe0048200f3696b3ffccaa9d93c585"
+  },
+  "point_in_time_replay": [
+    {
+      "research_as_of": "2022-12-31",
+      "result": "resolved_FY2023_Q1"
+    },
+    {
+      "research_as_of": "2023-04-01",
+      "result": "typed_conflict_FY2023_Q1_plus_FY2022_Q2"
+    },
+    {
+      "research_as_of": "2023-07-01",
+      "result": "typed_conflict_FY2023_Q1_plus_FY2022_Q2_plus_FY2022_Q3"
+    },
+    {
+      "research_as_of": "2024-01-01",
+      "result": "typed_conflict_three_fiscal_identities"
+    },
+    {
+      "research_as_of": "2024-04-01",
+      "result": "typed_conflict_three_fiscal_identities"
+    },
+    {
+      "research_as_of": "2024-07-01",
+      "result": "resolved_FY2022_Q3_final_copy"
+    }
+  ],
+  "recorded_at": "2026-08-24T11:47:25+08:00",
+  "review": {
+    "qualified_human_review": false,
+    "review_mode": "clean_subagent_read_only_independent_post_commit_audit",
+    "reviewer_wrote_or_modified_files": false
+  },
+  "sample_physical_group": {
+    "key": {
+      "metric_id": "net_income",
+      "period_end": "2022-12-01",
+      "period_role": "quarter_discrete",
+      "period_start": "2022-09-02",
+      "ticker": "MU",
+      "unit": "USD"
+    },
+    "rows": [
+      ["CFOBS::39ac35368a3aefbaef6ca5f3808e35c9", "2022-12-22T17:38:24+00:00", 2023, "Q1", "CFOBS::70b381e21b4f08c22f218e103a3153fe"],
+      ["CFOBS::fd7ece9c0ca9729d24f9880464a783be", "2023-03-29T20:48:21+00:00", 2022, "Q2", "CFOBS::70b381e21b4f08c22f218e103a3153fe"],
+      ["CFOBS::cba084ed1cde27a67f06a8cacf8bb7d3", "2023-06-29T19:34:20+00:00", 2022, "Q3", "CFOBS::70b381e21b4f08c22f218e103a3153fe"],
+      ["CFOBS::49bba3d8186cbe32122c0087d8336c39", "2023-12-21T18:05:34+00:00", 2023, "Q1", "CFOBS::70b381e21b4f08c22f218e103a3153fe"],
+      ["CFOBS::bbd04235f0ae2fd40aaba33d224e9f4d", "2024-03-21T17:17:48+00:00", 2022, "Q2", "CFOBS::70b381e21b4f08c22f218e103a3153fe"],
+      ["CFOBS::70b381e21b4f08c22f218e103a3153fe", "2024-06-27T17:19:29+00:00", 2022, "Q3", null]
+    ],
+    "value_decimal_for_all_rows": "-195000000"
+  },
+  "schema_version": "fin_ia_s2_mu_supersession_pointer_independent_audit_failure_v1_0",
+  "status": "failed_preserved_successor_required"
+}

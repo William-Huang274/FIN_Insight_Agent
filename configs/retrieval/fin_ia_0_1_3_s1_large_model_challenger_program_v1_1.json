@@ -1,0 +1,227 @@
+{
+  "schema_version": "fin_ia_s1_large_model_challenger_program_v1_1",
+  "status": "preregistered_development_challenger_identity_v3_required",
+  "recorded_at": "2026-08-24",
+  "program_id": "FIN-0.1.3-S1-LARGE-MODEL-CHALLENGER-R2",
+  "decision_target": "Decide whether a larger local embedding and reranker earn a same-corpus development shadow. This program cannot qualify S1, inspect hidden references, or promote a runtime.",
+  "predecessor": {
+    "program_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_program_v1_0.json",
+    "program_sha256": "bb5c3b2d187c82fa7edc225fd13a4e206edc71a462340ded9e59dc9087da8957",
+    "preflight_result_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_challenger_preflight_result_v1_0.json",
+    "preflight_result_sha256": "fbb04e263fd2532ad5086a10013037a1f4f5e170975077036a336839454a57a8",
+    "audit_failure_ref": "configs/retrieval/fin_ia_0_1_3_s1_large_model_identity_independent_audit_failure_v1_0.json",
+    "audit_failure_sha256": "0154a438d82ea78f5d2cacc51a6d4d7c01b2f0d646604c28ef7783787333bcb8",
+    "disposition": "R1 remains immutable and its resource-blocked zero-call result remains truthful; its identity v2 cannot authorize a later model attempt."
+  },
+  "hypothesis": {
+    "primary": "Qwen3 4B may improve same-pool financial hard-negative ordering and material target-in-pool stability versus Qwen3 0.6B without identity, period, role, source, or evidence-authority regressions.",
+    "falsification": "If the shared candidate pool lacks the material target, a larger reranker cannot repair the miss; if a larger model does not clear every preregistered material-gain and hard-safety gate, it is rejected."
+  },
+  "split_and_leakage_policy": {
+    "allowed_case_keys": [
+      "DELL",
+      "MU",
+      "NVDA"
+    ],
+    "allowed_split_classes": [
+      "current_reviewed_development",
+      "existing_business_diagnostic"
+    ],
+    "forbidden_case_keys": [
+      "COST"
+    ],
+    "historical_forbidden_case_diagnostics_as_execution_input_allowed": false,
+    "hidden_frozen_holdout_reference_loading_forbidden": true,
+    "temporal_qualification_execution_forbidden": true,
+    "known_answer_url_or_object_id_query_injection_forbidden": true,
+    "new_blind_labels_must_be_git_external": true,
+    "development_results_cannot_be_relabelled_as_blind": true
+  },
+  "bound_development_inputs": [
+    "configs/retrieval/fin_ia_0_1_3_s1_dell_current_candidate_provenance_result_v1_0.json",
+    "configs/retrieval/fin_ia_0_1_3_s1_mu_current_candidate_provenance_result_v1_1.json",
+    "configs/retrieval/fin_ia_0_1_3_s1_nvda_current_candidate_provenance_result_v1_1.json",
+    "configs/retrieval/fin_ia_0_1_3_s1c_financial_role_eval_set_v1_1.json",
+    "configs/retrieval/fin_ia_0_1_3_s1c_runtime_query_atom_model_shadow_result_v1_1.json"
+  ],
+  "artifact_identity_contract": {
+    "identity_contract_version": "local_model_identity_v3",
+    "acquisition_manifest_name": "fin_ia_model_acquisition_manifest_v1_0.json",
+    "acquisition_manifest_schema": "fin_ia_local_model_acquisition_manifest_v1_0",
+    "acquisition_tool": "huggingface_hub.snapshot_download",
+    "acquisition_manifest_required": true,
+    "expected_model_id_must_match_manifest": true,
+    "immutable_resolved_revision_required": true,
+    "resolved_revision_format": "lowercase_40_hex_git_commit",
+    "exact_recursive_file_closure_required": true,
+    "remote_code_and_nested_configs_bound": true,
+    "extra_or_missing_files_fail_closed": true,
+    "symlink_escape_forbidden": true,
+    "caller_supplied_identity_without_manifest_authority": false
+  },
+  "baselines": {
+    "lexical_and_typed_routes": [
+      "bm25_lexical",
+      "typed_balanced_bm25",
+      "sql_exact",
+      "object_identity_and_period_hard_filters"
+    ],
+    "embedding": {
+      "model_id": "Qwen/Qwen3-Embedding-0.6B",
+      "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+      "precision": "fp16",
+      "device": "cuda"
+    },
+    "reranker": {
+      "model_id": "Qwen/Qwen3-Reranker-0.6B",
+      "model_digest": "9fa9d067824c3aae0aeee7a773cbb42fac95a06c981ab72e075294bb10845ad2",
+      "controlled_pairwise_accuracy": 0.75,
+      "source_result_ref": "configs/retrieval/fin_ia_0_1_3_s1c_runtime_query_atom_model_shadow_result_v1_1.json",
+      "source_result_sha256": "78c0d0d41c86611a09901692bdcf0758db5f62771933f682226d29e5fbc2592b"
+    }
+  },
+  "candidates": {
+    "primary_embedding": {
+      "model_key": "qwen3_embedding_4b",
+      "model_id": "Qwen/Qwen3-Embedding-4B",
+      "parameter_class": "4B",
+      "maximum_context_tokens": 32768,
+      "maximum_embedding_dimensions": 2560,
+      "license": "Apache-2.0",
+      "official_model_card": "https://huggingface.co/Qwen/Qwen3-Embedding-4B",
+      "default_local_dir": "Z:/hf_models/Qwen__Qwen3-Embedding-4B",
+      "required_identity_status": "identity_bound_v3",
+      "disposition": "primary_same_corpus_challenger"
+    },
+    "primary_reranker": {
+      "model_key": "qwen3_reranker_4b",
+      "model_id": "Qwen/Qwen3-Reranker-4B",
+      "parameter_class": "4B",
+      "maximum_context_tokens": 32768,
+      "license": "Apache-2.0",
+      "official_model_card": "https://huggingface.co/Qwen/Qwen3-Reranker-4B",
+      "default_local_dir": "Z:/hf_models/Qwen__Qwen3-Reranker-4B",
+      "required_identity_status": "identity_bound_v3",
+      "disposition": "primary_same_pool_challenger"
+    },
+    "secondary_reranker": {
+      "model_key": "bge_reranker_v2_gemma",
+      "model_id": "BAAI/bge-reranker-v2-gemma",
+      "parameter_class": "Gemma-2B-derived",
+      "license": "Apache-2.0",
+      "official_model_card": "https://huggingface.co/BAAI/bge-reranker-v2-gemma",
+      "required_identity_status": "identity_bound_v3",
+      "disposition": "optional_only_after_primary_resource_gate"
+    }
+  },
+  "execution_profile": {
+    "profile_id": "single_rtx_4090_class_cuda_fp16",
+    "device": "cuda",
+    "precision": "fp16",
+    "models_loaded_concurrently": false,
+    "minimum_total_memory_bytes": 24000000000,
+    "minimum_free_memory_bytes_before_load": 21474836480,
+    "minimum_free_storage_bytes_before_download": 21474836480,
+    "required_model_keys": [
+      "qwen3_embedding_4b",
+      "qwen3_reranker_4b"
+    ],
+    "cpu_model_fallback_allowed": false,
+    "quantized_qualification_allowed": false,
+    "qualification_profile_substitution_allowed": false,
+    "batch_size_start": 1,
+    "maximum_sequence_length_start": 512,
+    "oom_policy": "record_attempt_failure_and_stop_without_cpu_or_quantized_fallback"
+  },
+  "fixed_instructions": {
+    "embedding_query_instruction": "Given a financial research evidence request, retrieve source-bound passages or objects that directly support, contradict, bridge, contextualize, or provide the required same-basis temporal comparison. Preserve company, metric, period, relationship direction, evidence role, and source identity.",
+    "reranker_instruction": "Judge whether the document materially satisfies the financial evidence request. Prefer exact company, metric, period, relationship direction, source authority, evidence role, and same-basis temporal comparability; reject topic-only co-mentions and identity or period mismatches.",
+    "instruction_change_after_first_scored_run_forbidden": true
+  },
+  "execution_order": [
+    "resource_preflight",
+    "model_identity_v3_binding",
+    "candidate_ceiling_on_shared_development_corpus",
+    "stop_if_material_target_absent_from_shared_pool",
+    "same_pool_reranker_comparison",
+    "role_period_identity_and_rank_stability_mutations",
+    "latency_throughput_and_peak_vram_receipt",
+    "development_decision_only"
+  ],
+  "metrics_and_gates": {
+    "candidate_ceiling": {
+      "metrics": [
+        "target_in_pool_recall_at_96",
+        "material_requirement_group_coverage",
+        "exact_object_diagnostic",
+        "source_owner_and_period_error_count"
+      ],
+      "gate": "no_baseline_material_hit_may_be_lost_and_at_least_one_predeclared_material_miss_must_enter_the_shared_pool_without_identity_or_period_error"
+    },
+    "reranker": {
+      "metrics": [
+        "same_pool_pairwise_hard_negative_accuracy",
+        "material_target_mrr",
+        "critical_role_error_count",
+        "rank_perturbation_stability"
+      ],
+      "gate": "pairwise_accuracy_at_least_0_80_and_at_least_0_05_above_the_0_6b_baseline_with_zero_critical_identity_period_or_role_errors"
+    },
+    "efficiency": {
+      "metrics": [
+        "cold_load_seconds",
+        "pairs_or_objects_per_second",
+        "peak_vram_bytes",
+        "wall_clock_seconds"
+      ],
+      "gate": "recorded_for_tradeoff_not_allowed_to_silently_drop_required_research_work"
+    }
+  },
+  "stop_conditions": [
+    "resource_profile_not_met",
+    "identity_v3_manifest_or_exact_file_closure_not_met",
+    "candidate_ceiling_cannot_support_the_intended_metric",
+    "any_critical_company_metric_period_relationship_direction_or_evidence_role_error",
+    "no_preregistered_material_gain_over_0_6b",
+    "cuda_oom_or_non_fp16_fallback_request",
+    "any_forbidden_case_hidden_frozen_or_holdout_reference_load_attempt"
+  ],
+  "token_budget_basis": {
+    "embedding_node": {
+      "purpose": "encode the unchanged development candidate corpus and request queries",
+      "input_scale": "up to 34166 current compiled objects plus bounded DELL/MU/NVDA development requests",
+      "required_output": "normalized dense vectors and a content-addressed cache receipt",
+      "schema_burden": "acquisition manifest, model identity v3, object digest, dimensions, truncation, device, precision, latency, and peak VRAM",
+      "materiality_quality_risk": "company, metric, period, relation, and role misses can make downstream evidence incomplete",
+      "comparable_run_evidence": "Qwen3-Embedding-0.6B current CUDA/FP16 baseline",
+      "reasoning_profile": "non-generative embedding",
+      "stop_and_truncation": "fixed 512-token initial profile; record truncation; no silent object omission, CPU fallback, quantization, or forbidden-reference load"
+    },
+    "reranker_node": {
+      "purpose": "rerank only the identical bounded candidate pool after ceiling passes",
+      "input_scale": "at most 96 candidates per bounded development request with batch size starting at one",
+      "required_output": "yes/no relevance logits and deterministic ranks",
+      "schema_burden": "acquisition manifest, model identity v3, pair identity, instruction digest, truncation, device, precision, latency, and peak VRAM",
+      "materiality_quality_risk": "topic co-mentions can displace direct, counter, bridge, context, or temporal evidence",
+      "comparable_run_evidence": "Qwen3-Reranker-0.6B controlled pairwise accuracy 0.75",
+      "reasoning_profile": "non-generative scored yes/no surface; free-form generation forbidden",
+      "stop_and_truncation": "fixed 512-token initial profile; ceiling-first stop; no CPU, quantized, hidden-label, or forbidden-case fallback"
+    }
+  },
+  "authority": {
+    "candidate_is_evidence": false,
+    "ranking_grants_numeric_authority": false,
+    "public_information_gap_authority": false,
+    "model_download_authorized_by_program": false,
+    "runtime_promotion_authorized": false,
+    "s1_qualification_authorized": false,
+    "publication_or_release_authorized": false
+  },
+  "decision_labels": [
+    "resource_blocked",
+    "identity_v3_failed",
+    "candidate_ceiling_failed",
+    "reranker_gate_failed",
+    "development_shadow_credible_not_qualified"
+  ]
+}

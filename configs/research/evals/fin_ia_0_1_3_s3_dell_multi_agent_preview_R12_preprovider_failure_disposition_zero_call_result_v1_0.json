@@ -1,0 +1,63 @@
+{
+  "schema_version": "fin_ia_s3_multi_agent_preview_preprovider_failure_disposition_zero_call_v1_0",
+  "status": "R11_preprovider_derived_workpaper_projection_replay_pass",
+  "recorded_at": "2026-08-20T14:06:42+08:00",
+  "failed_run_id": "FIN_0_1_3_S3_DELL_MULTI_AGENT_PREVIEW_R11_20260820",
+  "failed_authority_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_authority_v1_10.json",
+  "failed_authority_sha256": "0c42218944300e349606ee29466564320691092333f4c356f1caa275c30438c1",
+  "failed_public_result_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_10.json",
+  "failed_public_result_sha256": "3b3208f0e0b4e1fca45baa831731ab655e1d2a5e448de50dd83f0eeeef1bc41f",
+  "failed_public_result_digest": "8e3ad833d4dace3d1a9e37dfec603c07dffdfeefa896269d15244e12ce4dec0f",
+  "failed_terminal_result_ref": "data/workbench_private/model_runs/fin_0_1_3_s3_dell_multi_agent_preview_r11_20260820/terminal_failure.json",
+  "failed_terminal_result_sha256": "28bbf877fe5e20c0c3973d10a8d0c9dd85d8cf61e0b01f0ba743126d97138f27",
+  "failed_terminal_result_digest": "e88a0fb6e07f7f87398b6064edfeea459b0a9d908e2ed55ded4ca996f83c78c8",
+  "failure_code": "multi_agent_workpaper_identity_invalid",
+  "failure_stage": "checkpoint_replay_before_provider",
+  "model_calls": 0,
+  "network_calls": 0,
+  "candidate_promotions": 0,
+  "root_cause": {
+    "owned_stage": "S0_Harness_checkpoint_replay_projection_boundary",
+    "description": "The persisted Demand repair contains Harness-derived context_digest and workpaper_digest integrity fields. R11 sent that bound object directly to the model-submission validator, whose exact input contract intentionally accepts only model-authored fields, so the valid checkpoint was rejected before any Provider call.",
+    "not_caused_by": [
+      "DeepSeek",
+      "S1 evidence coverage",
+      "Cash continuation content",
+      "network transport",
+      "five-versus-six workpaper count"
+    ]
+  },
+  "exact_completed_repair_replay": {
+    "agent_id": "AGENT::DEMAND_QUALITY",
+    "node_id": "AGENT::DEMAND_QUALITY::COUNTER_REPAIR",
+    "workpaper_digest": "3914ddf8e0fde4ba7b82933795ada3feee70701f609fce901af684dcbeaf47e0",
+    "context_digest": "1ddcce797a2fac8566024a3c2dd1ea1eb31c837637a3352bb7dac6d37f1f0e6b",
+    "passed": true
+  },
+  "mutation_results": {
+    "workpaper_digest_mutation_rejected": true,
+    "context_digest_mutation_rejected": true
+  },
+  "fix": {
+    "summary": "Project model-authored fields for exact schema validation, then independently require the recomputed context and workpaper digests to equal the persisted bindings.",
+    "completed_node_business_content_changed": false,
+    "research_inputs_changed": false,
+    "provider_budget_changed": false
+  },
+  "replacement_constraints": {
+    "new_attempt_id_required": true,
+    "failed_authority_reuse_forbidden": true,
+    "research_inputs_unchanged": true,
+    "provider_budget_unchanged": true,
+    "completed_node_reruns_forbidden": true
+  },
+  "acceptance": {
+    "engineering_replay_pass": true,
+    "R11_reclassified_as_success": false,
+    "R12_live_authorized_by_this_proof_alone": false,
+    "S1_pass": false,
+    "S3_pass": false,
+    "release_ready": false
+  },
+  "result_digest": "ea91f30bfc8e545473545fda3853be74336e6d6ad38a6370716b352e249b1def"
+}

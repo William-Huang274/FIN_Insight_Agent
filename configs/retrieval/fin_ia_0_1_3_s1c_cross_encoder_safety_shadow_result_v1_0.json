@@ -1,0 +1,51 @@
+{
+  "schema_version": "fin_ia_s1c_cross_encoder_safety_shadow_summary_v1_0",
+  "status": "completed_zero_network_local_cross_encoder_shadow",
+  "recorded_at": "2026-08-13",
+  "experiment_id": "FIN-0.1.3-S1C-QWEN-CROSS-ENCODER-HIGH-PRECISION-SAFETY-SHADOW-R1",
+  "authority_ref": "configs/retrieval/fin_ia_0_1_3_s1c_cross_encoder_safety_shadow_authority_v1_0.json",
+  "authority_sha256_lf": "d0e309ebe6abef66fac2ead06bacee8339e383e84af39bf9b2badbed3ce8029a",
+  "full_result_ref": "data/workbench_private/fin_0_1_3_s1c_cross_encoder_safety_shadow/v1/full_result_7ee622121098c435932e2d7d8fd3bb3b350bb59e6df9793f5d172bc3bb3429bf.json",
+  "full_result_sha256_lf": "c2062e91ecb7e80bf6077b565d6fd39745e52e721743a1552f4ff518d6896722",
+  "summary": {
+    "baseline": {
+      "positive_atom_count": 15,
+      "positive_target_in_top10_count": 7,
+      "positive_target_in_top10_rate": 0.466667,
+      "mean_reciprocal_rank": 0.322222,
+      "hard_negative_in_top5_count": 0,
+      "known_parser_fragment_in_top5_count": 0,
+      "hard_boundary_violation_count": 0,
+      "candidate_authority_violation_count": 0
+    },
+    "cross_encoder_safety": {
+      "positive_atom_count": 15,
+      "positive_target_in_top10_count": 7,
+      "positive_target_in_top10_rate": 0.466667,
+      "mean_reciprocal_rank": 0.135556,
+      "hard_negative_in_top5_count": 0,
+      "known_parser_fragment_in_top5_count": 0,
+      "hard_boundary_violation_count": 0,
+      "candidate_authority_violation_count": 0
+    }
+  },
+  "gate_results": {
+    "positive_target_in_top10_not_worse": true,
+    "mean_reciprocal_rank_not_worse": false,
+    "hard_negative_in_top5_not_worse": true,
+    "known_parser_fragment_in_top5": true,
+    "hard_filter_boundary": true,
+    "candidate_authority_boundary": true
+  },
+  "decision": "development_failed_keep_current_runtime_and_disposition_without_retry",
+  "result_digest": "7ee622121098c435932e2d7d8fd3bb3b350bb59e6df9793f5d172bc3bb3429bf",
+  "authority": {
+    "network_calls_authorized": false,
+    "generation_model_calls_authorized": false,
+    "local_embedding_and_reranker_inference_authorized": true,
+    "runtime_promotion_authorized": false,
+    "candidate_is_not_evidence": true,
+    "numeric_authority": false,
+    "s1_complete_claimed": false
+  }
+}

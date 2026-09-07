@@ -1,0 +1,75 @@
+{
+  "schema_version": "fin_ia_dell_a02_planner_replay_receipt_v1_0",
+  "paid_full_chain_execution_id": "20260902-dell-reference-vertical-structured-a02",
+  "a02_attempt_state": "start_failed",
+  "authority_mode": "immutable_audit_only",
+  "resume_allowed": false,
+  "successor_authorized": false,
+  "source_authorization_record_digest": "bf14d330fd3b3ba04395e47ea0c3689e138269d7139e0bf2c76a0ba683048e2e",
+  "source_artifact_ref": "qualification://dell-reference-vertical/A02/planner-outcome",
+  "source_artifact_sha256": "234b64c3b03b39d8b76f7277dfdb4f64c2686802df5dc5c254304523d71e10d7",
+  "parsed_payload_digest": "bdeec49fb9bf75aa8101ce9ccc928d45c4f7d80b8b8378fe2a411339aa99c0fd",
+  "schema_validation_status": "schema_invalid",
+  "task_count": 9,
+  "evidence_request_count": 17,
+  "fact_request_count": 2,
+  "issue_count": 4,
+  "issues": [
+    {
+      "issue_code": "local_evidence_request_scope_underbounded",
+      "location": [
+        "tasks",
+        5,
+        "evidence_requests",
+        0
+      ],
+      "branch_id": "Q6_MODEL_COMPUTE_DEMAND",
+      "evidence_request_index": 0,
+      "owner_layer": "legacy_planner_contract",
+      "retryable": false
+    },
+    {
+      "issue_code": "local_evidence_request_scope_underbounded",
+      "location": [
+        "tasks",
+        6,
+        "evidence_requests",
+        0
+      ],
+      "branch_id": "Q7_EXPORT_CONTROL_CHINA",
+      "evidence_request_index": 0,
+      "owner_layer": "legacy_planner_contract",
+      "retryable": false
+    },
+    {
+      "issue_code": "external_request_local_retrieval_scope_forbidden",
+      "location": [
+        "tasks",
+        8,
+        "evidence_requests",
+        0
+      ],
+      "branch_id": "Q9_COUNTEREVIDENCE_WWC",
+      "evidence_request_index": 0,
+      "owner_layer": "legacy_planner_contract",
+      "retryable": false
+    },
+    {
+      "issue_code": "planner_task_evidence_requests_too_short",
+      "location": [
+        "tasks",
+        8,
+        "evidence_requests"
+      ],
+      "branch_id": "Q9_COUNTEREVIDENCE_WWC",
+      "evidence_request_index": null,
+      "owner_layer": "legacy_planner_contract",
+      "retryable": false
+    }
+  ],
+  "model_calls": 0,
+  "network_calls": 0,
+  "provider_calls": 0,
+  "raw_response_persisted": false,
+  "receipt_digest": "48ea472299edb3b247b28904940ca027fefe54a6480eb3bd065eb2cf6bfa2c42"
+}

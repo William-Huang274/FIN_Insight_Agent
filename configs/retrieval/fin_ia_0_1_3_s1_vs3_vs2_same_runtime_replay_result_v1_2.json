@@ -1,0 +1,601 @@
+{
+  "authority": {
+    "IFX_is_not_a_product_case": true,
+    "candidate_is_not_evidence": true,
+    "development_case_only": true,
+    "numeric_fact_authority": false,
+    "runtime_route_promotion_authorized": false
+  },
+  "bound_inputs": {
+    "object_identity_digest": "23580fb5ab6ec14892b44272cf6aaaa3e750e0b3f6388e1bc0fcc1b8ceab892f",
+    "policy_ref": "configs/retrieval/fin_ia_0_1_3_s1_vs3_candidate_ranking_policy_v1_8.json",
+    "policy_sha256_lf": "1d567e938eb688a3f2a997373b9d2a37fa77bebc172fed5b1e175bf34bf9cf72",
+    "vs2_evaluator_ref": "eval_sets/fin_0_1_3_s1/references/train_internal/vs2_complex_pdf_references_v1_0.jsonl",
+    "vs2_evaluator_sha256_lf": "56abb32dc92b05ed4393c31b29598435033b7fa1d11a5d3598a48746aebfd95f",
+    "vs2_result_ref": "configs/runtime/fin_ia_0_1_3_s1_vs2_complex_pdf_vertical_result_v1_1.json",
+    "vs2_result_sha256_lf": "fce09702cab81a6f2922fb996bee17ec3201bd03a9bd86edffd3c2d66090d57a"
+  },
+  "execution": {
+    "bge_embedding_cache": {
+      "build_seconds": 4.501,
+      "cache_hit": true,
+      "dense_dtype": "float16",
+      "dense_sha256": "9619a2cd94f33def69be6463553c45b92127a92a3e5d3b0adfaa00c5b0c8e5e5",
+      "embedding_dimensions": 1024,
+      "learned_sparse_dtype": "float32",
+      "maximum_sequence_length": 512,
+      "model_digest": "d6d4a7fc2980e5bde67c1cd013ef87d1a8709464ba982d61a28653070e440cd5",
+      "object_count": 67,
+      "object_identity_digest": "1caa8af19efcca1331649546892ccefa5c11edab5d83c98efb7c29a6c3370678",
+      "object_sha256": "23580fb5ab6ec14892b44272cf6aaaa3e750e0b3f6388e1bc0fcc1b8ceab892f",
+      "schema_version": "fin_ia_s1c_bge_m3_compiled_object_cache_v1_0",
+      "sparse_nonzero_count": 3692,
+      "sparse_sha256": "74896c1572940d02252809beac9ff6d26a21a04cc57ce674afb892988c2de071",
+      "sparse_vocabulary_size": 250002
+    },
+    "bounded_context_expansion": {
+      "authority": {
+        "context_is_not_independent_evidence": true,
+        "explicit_object_edges_only": true,
+        "numeric_authority": false,
+        "runtime_evidence_promotion_authorized": false,
+        "selection_precedes_context_expansion": true
+      },
+      "expanded_context_object_ids": [
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::CROSS_PAGE_RELATION_01"
+      ],
+      "expansion_digest": "e21f9266603b280feece5384344349fb720fd81070598f6bf89ffd5d879a923a",
+      "expansions": [
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+          "source_evidence_type": "pdf_page_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_table_footnote",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+          "source_evidence_type": "financial_table_footnote"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+          "source_evidence_type": "pdf_page_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_001",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::CROSS_PAGE_RELATION_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_cross_page_continuation",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_001",
+          "source_evidence_type": "cross_page_table_continuation_candidate"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_001",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_001",
+          "source_evidence_type": "pdf_page_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_table_footnote",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+          "source_evidence_type": "financial_table_footnote"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+          "source_evidence_type": "pdf_page_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_table_footnote",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+          "source_evidence_type": "financial_table_footnote"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+          "source_evidence_type": "pdf_page_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_table_footnote",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+          "source_evidence_type": "financial_table_footnote"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+          "source_evidence_type": "pdf_page_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_table_footnote",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+          "source_evidence_type": "financial_table_footnote"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+          "source_evidence_type": "pdf_page_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_table_footnote",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+          "source_evidence_type": "financial_table_footnote"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+          "source_evidence_type": "pdf_page_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_table_footnote",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+          "source_evidence_type": "financial_table_footnote"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+          "source_evidence_type": "pdf_page_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_table",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008",
+          "source_evidence_type": "financial_table_region"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_table_footnote",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008",
+          "source_evidence_type": "financial_table_footnote"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::CROSS_PAGE_RELATION_01",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_cross_page_continuation",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008",
+          "source_evidence_type": "cross_page_table_continuation_candidate"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "document_revision_or_restatement",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008",
+          "source_evidence_type": "revision_or_restatement_context"
+        },
+        {
+          "candidate_not_evidence": true,
+          "context_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::CONTEXT",
+          "context_object_kind": "claim",
+          "evidence_promotion_authorized": false,
+          "numeric_authority": false,
+          "relation_type": "selected_parent_page",
+          "selected_compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008",
+          "source_evidence_type": "pdf_page_context"
+        }
+      ],
+      "schema_version": "fin_ia_bounded_candidate_context_expansion_v1_0",
+      "selected_object_ids": [
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_001",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+        "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008"
+      ],
+      "status": "bounded_structural_context_compiled"
+    },
+    "candidate_pool_count": 64,
+    "financial_shortlist_top_ids": [
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_009",
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_001",
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_167::TABLE_01::ROW_001",
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_002",
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_003",
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_004",
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_005",
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_006",
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_007",
+      "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008"
+    ],
+    "generation_model_calls": 0,
+    "labels_joined_after_candidate_generation": true,
+    "network_calls": 0,
+    "object_count": 67,
+    "qwen_embedding_cache": {
+      "build_seconds": 2.336,
+      "cache_hit": true,
+      "dense_dtype": "float16",
+      "dense_sha256": "1114bce0281e9a39e6e13d0aac3e64350b5cda83e9e2211cffdf98e9f15c9e5c",
+      "embedding_dimensions": 1024,
+      "maximum_sequence_length": 512,
+      "model_digest": "4a3dd5cbc715bf1031d9d10ed6c7f43ff38f2ac5bc19b7fbcdc21787c68be76c",
+      "object_count": 67,
+      "object_identity_digest": "1caa8af19efcca1331649546892ccefa5c11edab5d83c98efb7c29a6c3370678",
+      "object_sha256": "23580fb5ab6ec14892b44272cf6aaaa3e750e0b3f6388e1bc0fcc1b8ceab892f",
+      "schema_version": "fin_ia_s1c_qwen3_embedding_compiled_object_cache_v1_0"
+    },
+    "retrieval_need_count": 9,
+    "training_steps": 0
+  },
+  "recorded_at": "2026-08-17",
+  "result_digest": "2cee12134fdff7be72397b8e7df924b76eb2d06ae2147c2ec3fa3fccb81decff",
+  "schema_version": "fin_ia_s1_vs3_vs2_same_runtime_replay_result_v1_0",
+  "selector_results": [
+    {
+      "attached_as_bounded_context": true,
+      "compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_164::REVISION_10",
+      "contains_all": [
+        "comparative figures for the previous year",
+        "adjusted accordingly"
+      ],
+      "evidence_type": "revision_or_restatement_context",
+      "in_any_top_k": true,
+      "in_combined_pool": true,
+      "in_final_review_surface": true,
+      "in_financial_shortlist_top_k": false,
+      "route_ranks": {
+        "bge_m3_multi_vector_refinement": 63,
+        "bge_reranker_v2_m3": 64,
+        "combined_need_union": 23,
+        "qwen3_reranker_0_6b": 8,
+        "role_guarded_dual_reranker_shadow": 64
+      }
+    },
+    {
+      "attached_as_bounded_context": false,
+      "compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::TABLE_03::ROW_008",
+      "contains_all": [
+        "Total | 2,560 | 3,105"
+      ],
+      "evidence_type": "financial_table_metric_row",
+      "in_any_top_k": true,
+      "in_combined_pool": true,
+      "in_final_review_surface": true,
+      "in_financial_shortlist_top_k": true,
+      "route_ranks": {
+        "bge_m3_multi_vector_refinement": 28,
+        "bge_reranker_v2_m3": 42,
+        "combined_need_union": 59,
+        "qwen3_reranker_0_6b": 5,
+        "role_guarded_dual_reranker_shadow": 16
+      }
+    },
+    {
+      "attached_as_bounded_context": true,
+      "compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::PAGE_166::FOOTNOTE_01",
+      "contains_all": [
+        "previous year’s figures have been adjusted accordingly"
+      ],
+      "evidence_type": "financial_table_footnote",
+      "in_any_top_k": false,
+      "in_combined_pool": true,
+      "in_final_review_surface": true,
+      "in_financial_shortlist_top_k": false,
+      "route_ranks": {
+        "bge_m3_multi_vector_refinement": 17,
+        "bge_reranker_v2_m3": 63,
+        "combined_need_union": 26,
+        "qwen3_reranker_0_6b": 29,
+        "role_guarded_dual_reranker_shadow": 47
+      }
+    },
+    {
+      "attached_as_bounded_context": true,
+      "compiled_object_id": "CURRENT_DOC::IFX_DE::ANNUAL_REPORT::945C81DCBCF5056B1266::CROSS_PAGE_RELATION_01",
+      "contains_all": [
+        "2,560",
+        "3,105",
+        "Previous page row",
+        "Following page row"
+      ],
+      "evidence_type": "cross_page_table_continuation_candidate",
+      "in_any_top_k": true,
+      "in_combined_pool": true,
+      "in_final_review_surface": true,
+      "in_financial_shortlist_top_k": false,
+      "route_ranks": {
+        "bge_m3_multi_vector_refinement": 51,
+        "bge_reranker_v2_m3": 61,
+        "combined_need_union": 40,
+        "qwen3_reranker_0_6b": 1,
+        "role_guarded_dual_reranker_shadow": 63
+      }
+    }
+  ],
+  "status": "vs2_same_runtime_candidate_replay_complete",
+  "summary": {
+    "minimum_required_in_final_review_surface": 4,
+    "minimum_required_in_pool": 3,
+    "reviewed_target_count": 4,
+    "same_runtime_replay_passed": true,
+    "target_attached_as_bounded_context_count": 3,
+    "target_in_any_top_k_count": 3,
+    "target_in_combined_pool_count": 4,
+    "target_in_final_review_surface_count": 4,
+    "target_in_financial_shortlist_top_k_count": 1
+  }
+}

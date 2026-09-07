@@ -1,0 +1,137 @@
+{
+  "assessment_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_R5_content_assessment_v1_0.json",
+  "assessment_sha256": "cfe267cc6f40801dfee103bfb8551dad7dbd1dfb1e6c368d1e49d44b0204df1f",
+  "attempt_id": "dell-current-dynamic-multi-agent-content-repair-zero-call-r6-20260823T230000Z",
+  "checks": {
+    "all_repair_contexts_and_submission_views_compile": true,
+    "assessment_bound_to_exact_R5_result": true,
+    "exact_five_role_target_set": true,
+    "predecessor_public_and_private_digests_valid": true,
+    "semantic_rules_migrated_without_authority_expansion": true,
+    "seven_material_findings_compiled": true,
+    "supply_role_not_repaired": true,
+    "writer_publication_S3_acceptance_and_release_forbidden": true,
+    "zero_model_provider_network_or_paid_calls": true
+  },
+  "execution": {
+    "candidate_promotions": 0,
+    "model_calls": 0,
+    "network_calls": 0,
+    "new_s1_s2_requests": 0,
+    "paid_tool_calls": 0,
+    "provider_calls": 0
+  },
+  "next_exact_frontier": "five_role_repair_then_one_lead_round",
+  "predecessor_public_ref": "configs/research/evals/fin_ia_0_1_3_s3_dell_current_dynamic_multi_agent_submission_successor_live_result_v1_4.json",
+  "predecessor_public_result_digest": "35709b3b40fb7ff8d35ac18bf9640a2266d108d746f0eedce0fbd79329b63f7d",
+  "predecessor_public_sha256": "b0e745f4156c416f6464199c1f5fa5ddfa4e4152045b6f1d11f97ab409f20b86",
+  "private_result_ref": "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/dell-current-dynamic-multi-agent-content-repair-zero-call-r6-20260823T230000Z/zero_call_content_repair_full_result.json",
+  "private_result_sha256": "f7e6a3a88e2ef9068b8b4b09b296dd915e1fd2b41c54c7ebe3749516cf50529f",
+  "recorded_at": "2026-08-23T14:42:44+00:00",
+  "result_digest": "836924eb75ccc7bd206032d0adbf349199146045323158eb2369d0c7c40a6b93",
+  "role_proofs": [
+    {
+      "agent_id": "AGENT::CASH_CONVERSION",
+      "authority_expanded": false,
+      "challenge_ids": [
+        "CHALLENGE::E8510FC25A8D332671F5B346"
+      ],
+      "feedback_ids": [
+        "FEEDBACK::56475411064049AC6122FD49"
+      ],
+      "finding_ids": [
+        "RC-S3-076-balance-sheet-stock-delta-promoted-to-cash-absorption"
+      ],
+      "prior_workpaper_digest": "ea4a91283094dcb541ad5137758cce2e0be4d542585584493b10911ed4ddc063",
+      "rebound_context_digest": "85f9957680f99ee143c6d35c88553839d55afdb462a7941537fc6a8d7137786a",
+      "repair_context_digest": "bfbbbb3de4dc8dd331bf18dcb4dda5a335ef1c05c48f938b442d36b51af14f58",
+      "rule_migration_receipt_digest": "39147774b752c1b53d3fb0031c89b357923f1dfc6a0c0e6bd3693af761874847",
+      "source_context_digest": "6d9735adaf9e194bb4c8a18738df0ad7e4da23600e866b3c8c120c11de53376f",
+      "submission_view_digest": "a80139103879e64fbefcf589e394aef6434c7386d752fb4bea2fdffaced4dabc"
+    },
+    {
+      "agent_id": "AGENT::COUNTEREVIDENCE",
+      "authority_expanded": false,
+      "challenge_ids": [
+        "CHALLENGE::DC1653A759A20B89861F8B13",
+        "CHALLENGE::9865229B476AA9B662F11BF5"
+      ],
+      "feedback_ids": [
+        "FEEDBACK::0B8C25FDF31BD58894D3A513",
+        "FEEDBACK::AE15AB43FB0036937F826742"
+      ],
+      "finding_ids": [
+        "RC-S3-077-cross-company-customer-structure-inferred-from-NVDA",
+        "RC-S3-078-NVDA-export-control-risk-promoted-to-DELL-exposure"
+      ],
+      "prior_workpaper_digest": "087697b5e4c673f917efb5d693c2223d47b231d617c790c85dffbabe218701bb",
+      "rebound_context_digest": "5a59bd66d2326a79838c88c35c81e557d9e588c3e6b90f373f1e3640fffcd722",
+      "repair_context_digest": "bceff02a8edb8913bab2ecddd07b45d3f6b0c276b4ee15615efe650d6ca2bbf8",
+      "rule_migration_receipt_digest": "23bef1b83a8ed96437e6b6c4de3cb12a5d9cc890913f0fe178c8358db8c8df50",
+      "source_context_digest": "af596142d3d84bb57c0c8bbe96324b6af6f22d9e02450f8ac0530b01f3c24662",
+      "submission_view_digest": "a2ab0ce9b039181a5c2f6f229f48f285b345b1eeec9b42ae7207caded1d00294"
+    },
+    {
+      "agent_id": "AGENT::DEMAND_QUALITY",
+      "authority_expanded": false,
+      "challenge_ids": [
+        "CHALLENGE::DE5EE44B9BC1E3989EDE662B"
+      ],
+      "feedback_ids": [
+        "FEEDBACK::1062604A38249496F0841999"
+      ],
+      "finding_ids": [
+        "RC-S3-080-demand-context-promoted-to-definite-pull-forward-and-digestion"
+      ],
+      "prior_workpaper_digest": "787e41a4073493e2f2fe0ae42332b359461b2602db57dc97c74ffb7c22de91fb",
+      "rebound_context_digest": "2b2ab60544c91c2385899f0b7e2779c599584b99380cb4aa0959bbe0b1bac803",
+      "repair_context_digest": "70306897c2a4e7a504d323d932a4ec1cda101b880861953e65484bf971a4e866",
+      "rule_migration_receipt_digest": "1816cfffda2f7ccaeff944fe01ae0eccb1ba02ccadbff1afe070343e0a1f6f50",
+      "source_context_digest": "d31b0c9beeba58a60844e048a08163c7b9bd230cde3dd534aeaf19c84cc1e5e1",
+      "submission_view_digest": "399ff068a888270913898b84e558282dad7a1c87a43bbb116f690533d8422171"
+    },
+    {
+      "agent_id": "AGENT::OPERATING_PERFORMANCE",
+      "authority_expanded": false,
+      "challenge_ids": [
+        "CHALLENGE::517AE5E79E9146915AE115E3",
+        "CHALLENGE::C186EA6574A37796AECB2125"
+      ],
+      "feedback_ids": [
+        "FEEDBACK::7F6CFF0ABF0E25663408474C",
+        "FEEDBACK::F03FBA7C9316D77C1DAB31D7"
+      ],
+      "finding_ids": [
+        "RC-S3-074-expense-bridge-contribution-share-misstated",
+        "RC-S3-075-same-quarter-orders-and-revenue-promoted-to-cohort-conversion"
+      ],
+      "prior_workpaper_digest": "014a413b3a7e2565011d6aaa3a0fef678045dd8ff37d462bd35935ba31722f6e",
+      "rebound_context_digest": "30ca6a417f656beae877f3e5b3a311c68c00b17c2d2aff3ab81d052906386c6e",
+      "repair_context_digest": "7600a4ff1609eb02648b7b4bd79ce98e76da7c550fd6387279426d33a4815e52",
+      "rule_migration_receipt_digest": "df420230a262e1b793d856460bc3d725b65f5af0d4311b7d4192ddd363e441db",
+      "source_context_digest": "743899da2e1c058599fc0655b5aba60b0503c524e3987c7186eb153de22d503c",
+      "submission_view_digest": "706b46401ac83cbde429898a37a651ad8201057e4dcbb01b22b6253c9fc26434"
+    },
+    {
+      "agent_id": "AGENT::VALUE_CAPTURE",
+      "authority_expanded": false,
+      "challenge_ids": [
+        "CHALLENGE::E10B682CF6FC17DA42B2D3ED"
+      ],
+      "feedback_ids": [
+        "FEEDBACK::1F6B876D3218F30CA7931633"
+      ],
+      "finding_ids": [
+        "RC-S3-079-company-gross-margin-used-as-necessary-test-of-product-pricing-power"
+      ],
+      "prior_workpaper_digest": "6f870cc95e6c145ac1f792bb89516572f175ba24ebab5ea3020835ffc1d78aad",
+      "rebound_context_digest": "f07553523513ec03a34cdf19ce91b143079716c673c97e26675da0f4e536bf8b",
+      "repair_context_digest": "3204e4cbf2c5fca29bb2b47448bd86c661d9938820663093aa0d2e7764478c96",
+      "rule_migration_receipt_digest": "711d7f953b58e44c037005d69d1aa0cb8a8f6439cd324109f5396f95bfe9b477",
+      "source_context_digest": "dfc5d3852824e350b2bf38f00acfb328760bf68c18e7a1a4635b084a3750df35",
+      "submission_view_digest": "7c2e41140aff51005cd0d67deaf8b73092f8f5cb8d7e3b26a1b8845bb1983ce5"
+    }
+  ],
+  "schema_version": "fin_ia_s3_current_dynamic_multi_agent_content_repair_zero_call_v1_0",
+  "status": "content_repair_zero_call_proven"
+}

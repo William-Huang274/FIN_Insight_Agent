@@ -27,6 +27,7 @@ PROGRAM_PATH = (
 )
 
 
+@pytest.mark.local_data_integration
 def test_current_s1_human_operability_is_actionable_but_not_qualified() -> None:
     result = compile_human_operability_preflight(
         repo_root=ROOT,
@@ -54,6 +55,7 @@ def test_current_s1_human_operability_is_actionable_but_not_qualified() -> None:
     assert result["external_authority"]["disclosed_regression_cases_cannot_support_blind_claim"] is True
 
 
+@pytest.mark.local_data_integration
 def test_current_business_failures_are_explained_as_actions_not_only_counts() -> None:
     result = compile_human_operability_preflight(
         repo_root=ROOT,

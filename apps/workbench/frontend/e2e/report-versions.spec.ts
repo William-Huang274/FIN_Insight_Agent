@@ -20,7 +20,7 @@ for (const width of [1440, 1024, 390]) {
     const session = { thread_id: id, status: "interrupted", phase: "ready_for_human_review", question: "合成界面验证：收入增长是否转为现金？", research_as_of: "2026-09-02", report_version: 2,
       report, report_review: { summary: "合成审阅示例，未启动研究。", findings: [], unresolved_data_requests: [] }, can_respond: true,
       runs: [], conversation: [{ role: "user", content: "请解释现金兑现。" }, { role: "assistant",
-        content: "该期间本地未取得数值。[MCPFACT::fixture]\n\n已保存计算 CALC::fixture 回读。\n\n`[CALC::fixture]`\n\nCALC::fixture-invented\n\n[未绑定链接](#claim:CALC%3A%3Aunknown) [坏编码](#claim:%ZZ)", citations: answerCitations }],
+        content: "该期间本地未取得数值。[MCPFACT::fixture]\n\n已保存计算 CALC::fixture 回读。\n\n`[CALC::fixture]`\n\nCALC::fixture-invented\n\n[CALC::fixture/suffix]\n\n[未绑定链接](#claim:CALC%3A%3Aunknown) [坏编码](#claim:%ZZ)", citations: answerCitations }],
       model_events: [
         { kind: "model", event: "outcome", actor: "lead", call_id: "resumed-id", run_id: "first-run", total_tokens: 82, status: "provider_output_truncated" },
         { kind: "model", event: "outcome", actor: "lead", call_id: "resumed-id", run_id: "second-run", total_tokens: 58, status: "success" },
@@ -52,6 +52,7 @@ for (const width of [1440, 1024, 390]) {
     await expect(conversation.getByRole("button", { name: "2", exact: true })).toHaveCount(1);
     await expect(conversation.locator("code")).toHaveText("[CALC::fixture]");
     await expect(conversation.getByText("CALC::fixture-invented", { exact: true })).toBeVisible();
+    await expect(conversation.getByText("[CALC::fixture/suffix]", { exact: true })).toBeVisible();
     await expect(conversation.getByRole("button", { name: "未绑定链接", exact: true })).toHaveCount(0);
     await conversation.getByRole("button", { name: "2", exact: true }).click();
     await page.getByRole("button", { name: "查看捕获片段与上下文" }).click();

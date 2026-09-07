@@ -106,6 +106,8 @@ def test_bare_saved_calculation_is_bound_and_unknown_bare_id_cannot_bypass_valid
     assert bound[CALC] == citation()
     with pytest.raises(ValueError, match="answer_source_ids_not_observed"):
         answer_citations(f"{CALC}-invented = 20; real operand [{FACT}].", artifacts, [legacy_read()])
+    with pytest.raises(ValueError, match="answer_source_ids_not_observed"):
+        answer_citations(f"{CALC}/invented = 20; real operand [{FACT}].", artifacts, [legacy_read()])
 
 
 def test_markdown_literals_urls_and_links_do_not_create_citations(citation_only_artifacts):
@@ -122,6 +124,7 @@ def test_bare_paper_and_calculation_ids_preserve_order_and_sentence_punctuation(
         "P02:C1", CALC, FACT]
     # Legacy bracket syntax remains exact: never bind a prefix of an unknown ID.
     assert answer_reference_ids("[CALC::saved-margin/suffix]") == [CALC + "/suffix"]
+    assert answer_reference_ids("P02:C1/C4/C13") == ["P02:C1/C4/C13"]
 
 
 @pytest.mark.parametrize("recorded", [False, True])

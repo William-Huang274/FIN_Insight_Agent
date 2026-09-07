@@ -7,7 +7,7 @@ export function remarkBoundCitations({ ids }: { ids: string[] }) {
   const escaped = ids.map(id => id.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   if (!escaped.length) return () => {};
   const alternatives = escaped.sort((a, b) => b.length - a.length).join("|");
-  const pattern = new RegExp(`\\[(${alternatives})\\]|(?<![\\w:/])(${alternatives})(?![\\w:-]|\\.[\\w])`, "g");
+  const pattern = new RegExp(`\\[(${alternatives})\\]|(?<![\\w:/\\[])(${alternatives})(?![\\w:/-]|\\.[\\w])`, "g");
   function visit(parent: Node) {
     if (!parent.children || ["link", "linkReference", "image", "code", "inlineCode"].includes(parent.type)) return;
     parent.children = parent.children.flatMap(child => {

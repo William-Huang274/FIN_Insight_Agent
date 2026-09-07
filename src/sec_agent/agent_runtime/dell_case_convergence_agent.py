@@ -352,7 +352,7 @@ def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
 CLAIM_REF = re.compile(r"\[(P\d{2}:[^\[\]\s]+)\]")
 ANSWER_REF = re.compile(r"\[((?:P\d{2}:|PASSAGE::|NUMFACT::|CALC::|MCPFACT::)[^\[\]\s]+)\]")
 SOURCE_ID_IN_TEXT = re.compile(
-    r"(?<![\w:/])(?:P\d{2}:[A-Za-z0-9_]+|(?:PASSAGE|NUMFACT|CALC|MCPFACT)::[A-Za-z0-9_][A-Za-z0-9_:.-]*)")
+    r"(?<![\w:/])(?:P\d{2}:|(?:PASSAGE|NUMFACT|CALC|MCPFACT)::)[A-Za-z0-9_][A-Za-z0-9_:/.-]*")
 ANSWER_TEXT_REF = re.compile(ANSWER_REF.pattern + "|" + SOURCE_ID_IN_TEXT.pattern)
 
 

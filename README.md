@@ -1,10 +1,14 @@
 # FinSight Agent — FIN 0.1.3
 
-FinSight Agent 当前是一套可审计的本地金融研究工作台基线。它把 DELL、MU、NVDA 三个案例的公司身份、研究截至日和经复核 Evidence Pack 做不可变绑定，并在浏览器中明确展示可用证据、被拒证据、来源边界和剩余缺口。
+**从研究问题到可追问报告的金融研究工作台。** 当前动态研究实现位于下方开发分支；本页所在的 `main` 保留历史固定 Evidence Pack 基线，两者的启动方式与能力范围不同。
 
-当前版本刻意不把未来能力包装成已完成产品：它不是开放式 Agentic Research、实时行情终端或自动发布研报系统。动态规划、内外源补检、模型综合和完整报告仍属于 FIN 0.1.3 后续产品路线，只有通过对应研究质量验收后才能晋升。
+[查看当前产品与代码](https://github.com/William-Huang274/FIN_Insight_Agent/tree/codex/fin013-dell-s1-s2-product-bridge) · [架构与技术分工](https://github.com/William-Huang274/FIN_Insight_Agent/blob/codex/fin013-dell-s1-s2-product-bridge/docs/public/architecture.zh-CN.md) · [运行与验证](https://github.com/William-Huang274/FIN_Insight_Agent/blob/codex/fin013-dell-s1-s2-product-bridge/docs/public/quickstart.zh-CN.md) · [English](README.en.md)
 
-## 当前入口
+当前开发实现包括动态多 Agent 研究、MCP 数据与计算工具、交叉审查、报告追问/修订、任务上传和来源绑定的四格式导出。真实前端发起的 Dell 案例已走过九个研究面并产出报告候选；最终内容与完整产品验收仍在进行，不能视作无人辅助一次成功或生产发布。具体实测范围和局限见[当前证据说明](https://github.com/William-Huang274/FIN_Insight_Agent/blob/codex/fin013-dell-s1-s2-product-bridge/docs/public/sharing-scope.md)。
+
+`main` 中的历史工作台把 DELL、MU、NVDA 三个案例的公司身份、研究截至日和经复核 Evidence Pack 做不可变绑定，展示已接受/被拒证据及来源边界。以下命令仅运行这一历史基线；动态研究请使用上方分支及运行说明。
+
+## main 历史工作台入口
 
 - 研究产品：`http://127.0.0.1:8765/workspace`
 - 运维控制台：`http://127.0.0.1:8765/operations`
@@ -13,7 +17,7 @@ FinSight Agent 当前是一套可审计的本地金融研究工作台基线。�
 
 旧 `/current`、`/next`、`/tasks` 和 `/cases` 只保留永久重定向；旧产品 API 返回带替代路径的 HTTP 410。历史代码和证明位于 `archive/versions/`，不会被当前应用加载。
 
-## 本地启动
+## 启动 main 历史基线
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -28,7 +32,7 @@ python scripts/dev/run_workbench_backend.py --host 127.0.0.1 --port 8765
 
 仓库不分发三份 reviewed Evidence Pack 的私有对象。只启动代码时，案例目录仍可读，但三个详情入口会明确显示“证据对象未挂载”，`/api/readiness` 返回 typed HTTP 503。要验收完整案例，请把包含 `workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects` 的数据根挂载为 `data/`，或在启动前设置 `FINSIGHT_DATA_ROOT`。凭据只放环境变量，禁止写入 Git。
 
-## 验证当前基线
+## 验证 main 历史基线
 
 ```powershell
 python scripts/engineering/verify_active_baseline.py --pretty

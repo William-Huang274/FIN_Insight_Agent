@@ -1960,6 +1960,7 @@ def _unique_operator_preflight_cases() -> tuple[object, ...]:
     ("family", "operator", "variant"),
     _unique_operator_preflight_cases(),
 )
+@pytest.mark.skipif(sys.platform != "win32", reason="R14 formal transaction qualification requires Windows")
 def test_r14_unique_operator_preflight_uses_actual_production_observation(
     mutation_manifest,
     family,
@@ -2017,6 +2018,7 @@ def test_r14_mutation_manifest_rejects_posthoc_denominator_drop(
         )
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="R14 formal transaction qualification requires Windows")
 def test_r14_execution_report_is_one_bound_observation_per_case(
     mutation_manifest,
     execution_report,
@@ -2063,6 +2065,7 @@ def test_r14_execution_report_is_one_bound_observation_per_case(
         )
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="R14 formal transaction qualification requires Windows")
 def test_r14_mutation_kill_receipt_requires_exact_keyset_and_100_percent(
     requirement, mutation_manifest, execution_report, implementation_source_repo
 ) -> None:
@@ -2095,6 +2098,7 @@ def test_r14_mutation_kill_receipt_requires_exact_keyset_and_100_percent(
         )
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="R14 formal transaction qualification requires Windows")
 def test_r14_mutation_survivor_cannot_be_resigned_as_pass(
     requirement, mutation_manifest, execution_report, implementation_source_repo
 ) -> None:
@@ -2170,6 +2174,7 @@ def test_r14_mutation_survivor_cannot_be_resigned_as_pass(
         )
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="R14 formal transaction qualification requires Windows")
 def test_r14_mutation_kill_receipt_rejects_resigned_row_rebind(
     requirement, mutation_manifest, execution_report, implementation_source_repo
 ) -> None:
@@ -2200,6 +2205,7 @@ def test_r14_mutation_kill_receipt_rejects_resigned_row_rebind(
         )
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="R14 formal transaction qualification requires Windows")
 def test_r14_preformal_builder_integrates_all_real_gate_receipts(
     tmp_path,
     monkeypatch,

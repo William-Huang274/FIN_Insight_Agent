@@ -137,6 +137,7 @@ def test_current_dell_audit_separates_customer_uncertainty_from_operations() -> 
     }
 
 
+@pytest.mark.local_data_integration
 def test_current_dell_stale_balance_evaluation_is_superseded_without_agent_rerun() -> None:
     catalog = json.loads(
         (
@@ -182,6 +183,7 @@ def test_current_dell_stale_balance_evaluation_is_superseded_without_agent_rerun
     assert "NUM_REF_UNRESOLVED_NET_INCOME_AND_RECON" in visible_codes
 
 
+@pytest.mark.local_data_integration
 def test_evaluation_supersession_rejects_claim_without_new_authority() -> None:
     catalog = json.loads(
         (
@@ -217,6 +219,7 @@ def test_evaluation_supersession_rejects_claim_without_new_authority() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_current_dell_writer_projection_removes_stale_state_and_method_gaps() -> None:
     catalog = json.loads(
         (

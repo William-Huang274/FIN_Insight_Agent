@@ -339,6 +339,7 @@ def test_r14_population_rebuilder_has_no_producer_classifier_package_or_projecti
         assert forbidden not in source
 
 
+@pytest.mark.local_data_integration
 def test_r14_real_population_exact_counts_families_and_independent_roots() -> None:
     source_rows = [
         json.loads(line)

@@ -80,6 +80,7 @@ def _checkpoint() -> dict[str, object]:
     return json.loads(CHECKPOINT.read_text(encoding="utf-8"))
 
 
+@pytest.mark.local_data_integration
 def test_r10_checkpoint_recovers_exact_counter_workpaper_and_lead_decision() -> None:
     checkpoint = _checkpoint()
 
@@ -124,6 +125,7 @@ def test_r10_checkpoint_rejects_lead_response_capture_mutation() -> None:
         runner._load_bound_lead_coordination_decision(checkpoint)
 
 
+@pytest.mark.local_data_integration
 def test_r11_checkpoint_recovers_completed_demand_and_exact_cash_fragment() -> None:
     progress = json.loads(
         DOWNSTREAM_PROGRESS_CHECKPOINT.read_text(encoding="utf-8")
@@ -152,6 +154,7 @@ def test_r11_checkpoint_recovers_completed_demand_and_exact_cash_fragment() -> N
     assert [row["role"] for row in original_messages] == ["system", "user"]
 
 
+@pytest.mark.local_data_integration
 def test_r11_completed_demand_replays_against_its_exact_model_context() -> None:
     progress = json.loads(
         DOWNSTREAM_PROGRESS_CHECKPOINT.read_text(encoding="utf-8")
@@ -180,6 +183,7 @@ def test_r11_completed_demand_replays_against_its_exact_model_context() -> None:
     )
 
 
+@pytest.mark.local_data_integration
 def test_r15_progress_reuses_demand_and_cash_then_starts_fresh_supply() -> None:
     progress = json.loads(
         DOWNSTREAM_PROGRESS_CHECKPOINT_V2.read_text(encoding="utf-8")
@@ -211,6 +215,7 @@ def test_r15_progress_reuses_demand_and_cash_then_starts_fresh_supply() -> None:
     ] == 0
 
 
+@pytest.mark.local_data_integration
 def test_generic_successor_frontier_replays_all_completed_lineage() -> None:
     frontier = json.loads(GENERIC_SUCCESSOR_FRONTIER.read_text(encoding="utf-8"))
 
@@ -250,6 +255,7 @@ def test_generic_successor_frontier_rejects_business_payload_mutation() -> None:
         runner._load_bound_generic_successor_frontier(frontier=frontier)
 
 
+@pytest.mark.local_data_integration
 def test_r11_completed_demand_context_rejects_request_digest_mutation() -> None:
     progress = json.loads(
         DOWNSTREAM_PROGRESS_CHECKPOINT.read_text(encoding="utf-8")
@@ -283,6 +289,7 @@ def test_r11_completed_demand_context_rejects_request_digest_mutation() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_r11_completed_demand_rejects_fresh_feedback_context_recompile() -> None:
     progress = json.loads(
         DOWNSTREAM_PROGRESS_CHECKPOINT.read_text(encoding="utf-8")
@@ -318,6 +325,7 @@ def test_r11_completed_demand_rejects_fresh_feedback_context_recompile() -> None
         )
 
 
+@pytest.mark.local_data_integration
 def test_r11_checkpoint_rejects_completed_repair_digest_mutation() -> None:
     progress = json.loads(
         DOWNSTREAM_PROGRESS_CHECKPOINT.read_text(encoding="utf-8")
@@ -344,6 +352,7 @@ def test_r11_checkpoint_rejects_completed_repair_digest_mutation() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_r11_checkpoint_rejects_cash_capture_mutation() -> None:
     fragment = json.loads(
         DOWNSTREAM_ANALYSIS_CHECKPOINT.read_text(encoding="utf-8")

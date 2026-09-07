@@ -59,6 +59,7 @@ def zero_bundle():
     return ZERO.build_zero_call_bundle()
 
 
+@pytest.mark.local_data_integration
 def test_takeover_manifest_applies_only_explicit_edits(zero_bundle) -> None:
     source = ZERO._positive_payload(
         zero_bundle["catalog"], zero_bundle["protection"]
@@ -89,6 +90,7 @@ def test_takeover_output_is_immutable(tmp_path: Path, monkeypatch) -> None:
         RUNNER._write_new("result.json", {"status": "replacement"})
 
 
+@pytest.mark.local_data_integration
 def test_takeover_compiles_zero_provider_locally_valid_candidate(
     zero_bundle, tmp_path: Path, monkeypatch
 ) -> None:

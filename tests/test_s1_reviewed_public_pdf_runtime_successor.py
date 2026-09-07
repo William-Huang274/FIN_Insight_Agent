@@ -135,6 +135,7 @@ def test_reviewed_pdf_successor_contracts_are_single_lane_and_fail_closed() -> N
     )
 
 
+@pytest.mark.local_data_integration
 def test_reviewed_pdf_successor_is_exact_append_with_lineage_and_cuda_cache() -> None:
     result = _json(
         "configs/retrieval/fin_ia_0_1_3_s1_reviewed_public_pdf_reachability_successor_result_v1_0.json"

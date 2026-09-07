@@ -479,7 +479,8 @@ def test_agent_server_image_uses_a_deny_by_default_minimum_build_context() -> No
     assert admitted_source_suffixes == {".py", ".sql"}
     assert all(
         not rule.startswith("!src/")
-        or rule in {"!src/", "!src/**/", "!src/**/*.py", "!src/**/*.sql"}
+        or rule in {"!src/", "!src/**/", "!src/**/*.py", "!src/**/*.sql",
+                    "!src/sec_agent/research_foundation/methods/*.md"}
         for rule in rules
     )
 

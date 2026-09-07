@@ -36,6 +36,7 @@ def bundle():
     return ZERO.build_zero_call_bundle()
 
 
+@pytest.mark.local_data_integration
 def test_R10_writer_zero_call_compiles_complete_protected_frontier(bundle) -> None:
     zero = bundle["zero"]
     catalog = bundle["catalog"]
@@ -66,6 +67,7 @@ def test_R10_writer_zero_call_compiles_complete_protected_frontier(bundle) -> No
     )
 
 
+@pytest.mark.local_data_integration
 def test_R10_writer_positive_draft_validates_and_renders(bundle) -> None:
     catalog = bundle["catalog"]
     protection = bundle["protection"]
@@ -91,6 +93,7 @@ def test_R10_writer_positive_draft_validates_and_renders(bundle) -> None:
         "本期涉及三家客户。",
     ],
 )
+@pytest.mark.local_data_integration
 def test_R10_writer_rejects_spelled_out_numeric_and_ordinal_surfaces(
     bundle, text: str
 ) -> None:
@@ -109,6 +112,7 @@ def test_R10_writer_rejects_spelled_out_numeric_and_ordinal_surfaces(
         )
 
 
+@pytest.mark.local_data_integration
 def test_R10_writer_cash_and_cohort_protections_are_conditional(bundle) -> None:
     catalog = bundle["catalog"]
     protection = bundle["protection"]
@@ -141,6 +145,7 @@ def test_R10_writer_cash_and_cohort_protections_are_conditional(bundle) -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_R10_writer_rejects_spelled_numeric_surface_in_heading(bundle) -> None:
     catalog = bundle["catalog"]
     protection = bundle["protection"]
@@ -157,6 +162,7 @@ def test_R10_writer_rejects_spelled_numeric_surface_in_heading(bundle) -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_R10_writer_surface_diagnostic_returns_all_paths_without_repair(bundle) -> None:
     payload = deepcopy(
         ZERO._positive_payload(bundle["catalog"], bundle["protection"])
@@ -185,6 +191,7 @@ def test_R10_writer_surface_diagnostic_returns_all_paths_without_repair(bundle) 
     )
 
 
+@pytest.mark.local_data_integration
 def test_R10_writer_scope_decision_passes_project_os_validator_without_live_calls(
     bundle,
     tmp_path: Path,

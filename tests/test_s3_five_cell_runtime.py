@@ -165,6 +165,7 @@ def _synthesis_payload(
     }
 
 
+@pytest.mark.local_data_integration
 def test_five_cell_analysis_and_submission_are_cell_local(
     five_cell_input: dict[str, object],
 ) -> None:
@@ -192,6 +193,7 @@ def test_five_cell_analysis_and_submission_are_cell_local(
     assert tool["function"]["strict"] is True
 
 
+@pytest.mark.local_data_integration
 def test_submission_projection_preserves_reasoning_but_removes_owned_surfaces(
     five_cell_input: dict[str, object],
 ) -> None:
@@ -222,6 +224,7 @@ def test_submission_projection_preserves_reasoning_but_removes_owned_surfaces(
     ]
 
 
+@pytest.mark.local_data_integration
 def test_five_cell_analysis_view_removes_submission_and_transport_duplication(
     five_cell_input: dict[str, object],
 ) -> None:
@@ -273,6 +276,7 @@ def test_five_cell_analysis_view_removes_submission_and_transport_duplication(
     assert compact_chars < len(strict_messages[1]["content"])
 
 
+@pytest.mark.local_data_integration
 def test_five_cell_synthesis_uses_only_validated_cell_refs(
     five_cell_input: dict[str, object],
     validated_judgment: tuple[dict[str, object], dict[str, object]],
@@ -333,6 +337,7 @@ def test_five_cell_synthesis_uses_only_validated_cell_refs(
     ] is False
 
 
+@pytest.mark.local_data_integration
 def test_deepseek_projection_preserves_shared_pattern_for_cell_and_synthesis(
     five_cell_input: dict[str, object],
     validated_judgment: tuple[dict[str, object], dict[str, object]],
@@ -364,6 +369,7 @@ def test_deepseek_projection_preserves_shared_pattern_for_cell_and_synthesis(
         assert '"uniqueItems"' not in rendered
 
 
+@pytest.mark.local_data_integration
 def test_five_cell_synthesis_fails_closed_on_free_number_or_unselected_ref(
     five_cell_input: dict[str, object],
     validated_judgment: tuple[dict[str, object], dict[str, object]],
@@ -390,6 +396,7 @@ def test_five_cell_synthesis_fails_closed_on_free_number_or_unselected_ref(
     assert exc.value.code == "five_cell_synthesis_evidence_refs_invalid"
 
 
+@pytest.mark.local_data_integration
 def test_five_cell_synthesis_rejects_self_links_and_missing_cell_coverage(
     five_cell_input: dict[str, object],
     validated_judgment: tuple[dict[str, object], dict[str, object]],

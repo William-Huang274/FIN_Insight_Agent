@@ -52,6 +52,7 @@ def _compile(program: dict | None = None, pack: dict | None = None) -> dict:
     )
 
 
+@pytest.mark.local_data_integration
 def test_dell_bridge_builds_revenue_surface_but_preserves_pvm_and_profit_gaps() -> None:
     result = _compile()
 
@@ -86,6 +87,7 @@ def test_dell_bridge_builds_revenue_surface_but_preserves_pvm_and_profit_gaps() 
     assert not any("asp" in key or "product_operating_profit" in key for key in derived)
 
 
+@pytest.mark.local_data_integration
 def test_bridge_rejects_reviewer_number_not_on_source_surface() -> None:
     program = _json(PROGRAM)
     mutated = deepcopy(program)
@@ -100,6 +102,7 @@ def test_bridge_rejects_reviewer_number_not_on_source_surface() -> None:
         _compile(program=mutated)
 
 
+@pytest.mark.local_data_integration
 def test_bridge_rejects_silent_product_profit_gap_closure() -> None:
     program = _json(PROGRAM)
     mutated = deepcopy(program)
@@ -112,6 +115,7 @@ def test_bridge_rejects_silent_product_profit_gap_closure() -> None:
         _compile(program=mutated)
 
 
+@pytest.mark.local_data_integration
 def test_bridge_rejects_company_asp_authority_on_bounded_quote() -> None:
     program = _json(PROGRAM)
     mutated = deepcopy(program)

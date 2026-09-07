@@ -102,6 +102,7 @@ def test_R39_route_successor_enables_only_receipted_v2_segmentation() -> None:
     load_query_object_fact_route_policy(successor, kernel)
 
 
+@pytest.mark.local_data_integration
 def test_R39_real_factory_sentence_compiles_as_one_non_authoritative_object() -> None:
     runner = _runner()
     source_path = (
@@ -160,6 +161,7 @@ def test_R39_real_factory_sentence_compiles_as_one_non_authoritative_object() ->
     assert diagnostics == []
 
 
+@pytest.mark.local_data_integration
 def test_R39_materialized_successor_is_one_exact_append() -> None:
     runner = _runner()
     result = _json(

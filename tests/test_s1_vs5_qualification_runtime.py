@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 import hashlib
 import json
 from pathlib import Path
@@ -184,6 +185,7 @@ def test_vs5_evaluator_references_are_split_bound_and_runtime_invisible() -> Non
     )
 
 
+@pytest.mark.local_data_integration
 def test_vs5_reference_objects_exist_are_case_bound_and_keep_owning_failure() -> None:
     compiled_result = json.loads(COMPILED_RESULT.read_text(encoding="utf-8"))
     object_path = ROOT / compiled_result["output_binding"]["objects_ref"]
@@ -229,6 +231,7 @@ def test_vs5_reference_objects_exist_are_case_bound_and_keep_owning_failure() ->
     )
 
 
+@pytest.mark.local_data_integration
 def test_vs5_cuda_preflight_binds_fp16_models_and_forbids_cpu_fallback() -> None:
     value = json.loads(CUDA_PREFLIGHT.read_text(encoding="utf-8"))
     receipt = value["cuda_execution_receipt"]
@@ -258,6 +261,7 @@ def test_vs5_cuda_preflight_binds_fp16_models_and_forbids_cpu_fallback() -> None
         assert digest == binding["sha256"]
 
 
+@pytest.mark.local_data_integration
 def test_vs5_source_review_packet_is_evaluator_only_and_not_gold() -> None:
     value = json.loads(REVIEW_PACKET_RESULT.read_text(encoding="utf-8"))
     assert value["status"] == "evaluator_only_source_review_packet_materialized_not_gold"

@@ -28,6 +28,7 @@ def _decision() -> dict[str, object]:
     }
 
 
+@pytest.mark.local_data_integration
 def test_owner_successors_map_all_labels_and_bind_cash_flow_semantics() -> None:
     module = _module()
     result = module.materialize(
@@ -48,6 +49,7 @@ def test_owner_successors_map_all_labels_and_bind_cash_flow_semantics() -> None:
     )
 
 
+@pytest.mark.local_data_integration
 def test_owner_successor_wrong_company_target_fails_closed() -> None:
     module = _module()
     decision = _decision()

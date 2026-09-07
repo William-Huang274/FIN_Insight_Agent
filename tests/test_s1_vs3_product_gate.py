@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from pathlib import Path
 
 from scripts.data_retrieval.materialize_s1_vs3_product_gate import materialize
@@ -12,6 +13,7 @@ def _path(value: str) -> Path:
     return ROOT / value
 
 
+@pytest.mark.local_data_integration
 def test_current_vs3_product_gate_consumes_final_successors() -> None:
     result = materialize(
         ranking_summary_path=_path(
@@ -65,4 +67,3 @@ def test_current_vs3_product_gate_consumes_final_successors() -> None:
         assert sum(ledger["decision_counts"].values()) == ledger["candidate_count"]
         assert ledger["authority"]["candidate_text_promoted"] is False
         assert ledger["authority"]["numeric_authority"] is False
-

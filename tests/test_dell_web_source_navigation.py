@@ -261,6 +261,7 @@ def test_live_original_q7_federal_register_source_after_50000():
             "source_document_completeness_verified": False, "current_legal_effect_verified": False})
 
 
+@pytest.mark.local_data_integration
 def test_live_web_method_uses_current_agent_budget_without_changing_frozen_method():
     from test_dell_specialist_agentic_composition import RUNTIME_ENVIRONMENT
     from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_receipted_composition

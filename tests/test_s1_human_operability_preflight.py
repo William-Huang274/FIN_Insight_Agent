@@ -189,6 +189,7 @@ def test_valid_partial_human_receipt_batch_cannot_close_admission_gate() -> None
     assert result["admission_gate_state"] == "pending"
 
 
+@pytest.mark.local_data_integration
 def test_current_admission_packet_has_exact_22_candidate_bindings() -> None:
     program = load_human_operability_program(PROGRAM_PATH)
     current_results = []

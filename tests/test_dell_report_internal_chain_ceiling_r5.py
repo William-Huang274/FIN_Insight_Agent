@@ -450,12 +450,14 @@ def _validate_policy(policy: dict, values: dict[str, dict]) -> dict:
     )
 
 
+@pytest.mark.local_data_integration
 def test_R5_policy_binds_immutable_R4_failure_and_R39_runtime() -> None:
     policy, values = _R5_policy_inputs()
     legacy = _validate_policy(policy, values)
     assert len(legacy["target_contracts"]) == 6
 
 
+@pytest.mark.local_data_integration
 def test_R5_policy_rejects_missing_R4_root_cause() -> None:
     policy, values = _R5_policy_inputs()
     drift = deepcopy(values)
@@ -484,6 +486,7 @@ def test_R5_policy_rejects_missing_R4_root_cause() -> None:
         ("corrected_binding", "R4_public_sha256"),
     ),
 )
+@pytest.mark.local_data_integration
 def test_R5_policy_rejects_correction_SHA_not_cross_bound_to_policy(
     section: str, field: str
 ) -> None:

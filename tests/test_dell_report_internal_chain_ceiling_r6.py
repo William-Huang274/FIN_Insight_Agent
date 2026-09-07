@@ -705,6 +705,7 @@ def _redigest(value: dict) -> dict:
     return value
 
 
+@pytest.mark.local_data_integration
 def test_R6_public_projection_uses_recursive_explicit_allowlist() -> None:
     public = build_dell_report_internal_chain_ceiling_r6_public_projection(
         private_result=_R6_projection_fixture(),
@@ -724,6 +725,7 @@ def test_R6_public_projection_uses_recursive_explicit_allowlist() -> None:
         ("source_locator", "www.example.invalid/private"),
     ],
 )
+@pytest.mark.local_data_integration
 def test_R6_public_projection_rejects_unknown_target_field(
     field: str, value: str
 ) -> None:
@@ -741,6 +743,7 @@ def test_R6_public_projection_rejects_unknown_target_field(
         )
 
 
+@pytest.mark.local_data_integration
 def test_R6_public_projection_rejects_unknown_nested_public_field() -> None:
     private = _R6_projection_fixture()
     private["target_results"][0]["candidate_ceiling"][
@@ -784,6 +787,7 @@ def test_R6_public_projection_rejects_locator_in_allowed_text_field(
         )
 
 
+@pytest.mark.local_data_integration
 def test_R6_public_projection_rejects_absolute_local_path() -> None:
     private = _R6_projection_fixture()
     private["known_boundary"] = r"Private source at D:\secret\raw.txt"
@@ -799,6 +803,7 @@ def test_R6_public_projection_rejects_absolute_local_path() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_R6_public_projection_rejects_binding_digest_payload() -> None:
     private = _R6_projection_fixture()
     private["input_bindings"]["R5_public"]["sha256"] = "SENSITIVE"
@@ -814,6 +819,7 @@ def test_R6_public_projection_rejects_binding_digest_payload() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_R6_public_projection_rejects_downstream_authority_drift() -> None:
     private = _R6_projection_fixture()
     private["authority"]["evidence_promotion_authorized"] = True
@@ -949,12 +955,14 @@ def _validate_policy(policy: dict, values: dict[str, dict]) -> dict:
     )
 
 
+@pytest.mark.local_data_integration
 def test_R6_policy_binds_immutable_R4_failure_and_R39_runtime() -> None:
     policy, values = _R6_policy_inputs()
     legacy = _validate_policy(policy, values)
     assert len(legacy["target_contracts"]) == 6
 
 
+@pytest.mark.local_data_integration
 def test_R6_policy_rejects_missing_R4_root_cause() -> None:
     policy, values = _R6_policy_inputs()
     drift = deepcopy(values)
@@ -980,6 +988,7 @@ def test_R6_policy_rejects_missing_R4_root_cause() -> None:
         ("corrected_binding", "R4_public_sha256"),
     ),
 )
+@pytest.mark.local_data_integration
 def test_R6_policy_rejects_correction_SHA_not_cross_bound_to_policy(
     section: str, field: str
 ) -> None:
@@ -995,6 +1004,7 @@ def test_R6_policy_rejects_correction_SHA_not_cross_bound_to_policy(
         _validate_policy(policy, drift)
 
 
+@pytest.mark.local_data_integration
 def test_R6_policy_rejects_missing_R5_root_cause() -> None:
     policy, values = _R6_policy_inputs()
     drift = deepcopy(values)

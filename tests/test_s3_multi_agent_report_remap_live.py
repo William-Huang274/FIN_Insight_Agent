@@ -291,6 +291,7 @@ def _patch_result(payload, number):
     )
 
 
+@pytest.mark.local_data_integration
 def test_one_logical_writer_node_allows_one_feedback_bound_contract_correction(
     tmp_path: Path,
 ) -> None:
@@ -331,6 +332,7 @@ def test_one_logical_writer_node_allows_one_feedback_bound_contract_correction(
     ] is True
 
 
+@pytest.mark.local_data_integration
 def test_second_contract_rejection_is_terminal_and_preserves_both_attempts(
     tmp_path: Path,
 ) -> None:
@@ -357,6 +359,7 @@ def test_second_contract_rejection_is_terminal_and_preserves_both_attempts(
     assert all(row["status"] == "contract_rejected" for row in caught.value.attempts)
 
 
+@pytest.mark.local_data_integration
 def test_truncated_tool_arguments_keep_call_id_and_receive_contract_feedback(
     tmp_path: Path,
 ) -> None:
@@ -388,6 +391,7 @@ def test_truncated_tool_arguments_keep_call_id_and_receive_contract_feedback(
     assert attempts[1]["status"] == "contract_validated_and_rendered"
 
 
+@pytest.mark.local_data_integration
 def test_transport_failure_is_not_silently_retried(tmp_path: Path) -> None:
     source, evaluation, catalog, _ = _actual_fixture()
     calls = []
@@ -414,6 +418,7 @@ def test_transport_failure_is_not_silently_retried(tmp_path: Path) -> None:
     assert caught.value.attempts[0]["status"] == "terminal_transport_failure"
 
 
+@pytest.mark.local_data_integration
 def test_reference_patch_reuses_complete_payload_and_feedback_is_actionable(
     tmp_path: Path,
 ) -> None:
@@ -512,6 +517,7 @@ def test_reference_patch_reuses_complete_payload_and_feedback_is_actionable(
     ]
 
 
+@pytest.mark.local_data_integration
 def test_real_replacement_capture_has_one_bounded_five_path_patch_surface() -> None:
     failed, base, catalog, source, receipt, valid_patch = (
         _actual_reference_patch_fixture()

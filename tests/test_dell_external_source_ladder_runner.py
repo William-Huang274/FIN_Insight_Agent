@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 import base64
 import hashlib
 import json
@@ -279,6 +280,7 @@ def test_public_projection_never_claims_route_exhaustion() -> None:
     assert result["authority"]["dynamic_single_unit_authorized"] is False
 
 
+@pytest.mark.local_data_integration
 def test_actual_r1_locator_replay_calls_provider_only_for_15_residual_queries(
     tmp_path: Path,
 ) -> None:
@@ -338,6 +340,7 @@ def test_provider_parse_failure_keeps_raw_response_and_failure_captures(
     assert Path(receipt["provider_failure_capture_ref"]).name == "provider_failure.json"
 
 
+@pytest.mark.local_data_integration
 def test_actual_r1_same_family_redirect_capture_is_reused_without_network(
     tmp_path: Path,
     monkeypatch,

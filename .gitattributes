@@ -15,6 +15,9 @@ configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_6.json text
 configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json text eol=crlf
 configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json text eol=crlf
 configs/retrieval/fin_ia_0_1_3_s1_abbreviation_claim_repair_successor_result_v1_0.json text eol=crlf
+configs/research/evals/fin_ia_0_1_3_s3_multi_agent_preview_zero_call_result_v1_2.json text eol=crlf
+configs/research/evals/fin_ia_0_1_3_s3_dell_multi_agent_preview_live_result_v1_1.json text eol=crlf
+eval_sets/fin_0_1_3_s1/schemas/artifact_envelope.schema.json text eol=crlf
 *.jsonl text eol=lf
 *.toml text eol=lf
 *.csv text eol=lf

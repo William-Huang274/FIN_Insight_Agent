@@ -73,6 +73,8 @@ def _git_blob_bytes(repo: Path, commit: str, path: str) -> bytes:
 
 @pytest.fixture(scope="module")
 def authority_repo(tmp_path_factory) -> dict[str, object]:
+    if sys.platform != "win32":
+        pytest.skip("R14 formal transaction qualification requires Windows durability primitives")
     repo = tmp_path_factory.mktemp("r14-authority-repo")
     _run_git(repo, "init", "-b", "test")
     _run_git(repo, "config", "user.email", "r14-test@example.invalid")

@@ -181,6 +181,7 @@ def _patch_payload(context: dict, plan_delta: dict) -> dict:
     }
 
 
+@pytest.mark.local_data_integration
 def test_semantic_repair_context_plan_and_merge_preserve_authority() -> None:
     context = _context()
     assert len(context["feedback_receipts"]) == 5
@@ -219,6 +220,7 @@ def test_semantic_repair_context_plan_and_merge_preserve_authority() -> None:
     assert result["repair_receipt"]["retrieval_round_count"] == 0
 
 
+@pytest.mark.local_data_integration
 def test_semantic_repair_reference_envelope_is_plan_scoped_and_schema_aligned() -> None:
     context = _context()
     plan = validate_semantic_repair_plan(_plan_payload(context), context=context)
@@ -241,6 +243,7 @@ def test_semantic_repair_reference_envelope_is_plan_scoped_and_schema_aligned() 
         )
 
 
+@pytest.mark.local_data_integration
 def test_semantic_repair_rejects_missing_feedback_wrong_action_and_new_ref() -> None:
     context = _context()
     missing = _plan_payload(context)
@@ -286,6 +289,7 @@ def test_semantic_repair_rejects_missing_feedback_wrong_action_and_new_ref() -> 
         )
 
 
+@pytest.mark.local_data_integration
 def test_semantic_repair_rejects_assessment_or_context_drift() -> None:
     assessment = _json(ASSESSMENT)
     assessment["case_key"] = "MU"
@@ -359,6 +363,7 @@ def test_semantic_repair_appends_failed_terminal_for_requested_attempt() -> None
     assert events[-1]["output_refs"] == ["capture://failure"]
 
 
+@pytest.mark.local_data_integration
 def test_semantic_repair_uses_successor_session_and_reuses_completed_plan() -> None:
     context = _context()
     predecessor = _json(PRIVATE_RESULT)
@@ -396,6 +401,7 @@ def test_semantic_repair_uses_successor_session_and_reuses_completed_plan() -> N
     assert advanced["active_plan_ref"] != session["active_plan_ref"]
 
 
+@pytest.mark.local_data_integration
 def test_semantic_repair_rejects_reuse_when_plan_or_failure_drifts() -> None:
     context = _context()
     failed = _json(FAILED_R6_RESULT)
@@ -421,6 +427,7 @@ def test_semantic_repair_rejects_reuse_when_plan_or_failure_drifts() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_semantic_patch_successor_zero_call_proves_remaining_seam() -> None:
     result = build_patch_successor_zero_call_result(
         recorded_at="2026-08-23T04:44:37.270569+00:00",
@@ -439,6 +446,7 @@ def test_semantic_patch_successor_zero_call_proves_remaining_seam() -> None:
     }
 
 
+@pytest.mark.local_data_integration
 def test_R7_capture_requalification_uses_no_new_call_or_evidence() -> None:
     result = build_patch_capture_requalification_zero_call_result(
         recorded_at="2026-08-23T05:20:00+00:00"
@@ -500,6 +508,7 @@ def test_R7_independent_assessment_is_bound_and_does_not_over_accept() -> None:
     ] == 0
 
 
+@pytest.mark.local_data_integration
 def test_semantic_repair_envelope_still_rejects_unrelated_context_ref() -> None:
     context = _context()
     reused = compile_reused_semantic_repair_plan(

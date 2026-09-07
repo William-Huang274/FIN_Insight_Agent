@@ -267,6 +267,7 @@ def test_live_authority_requires_one_exact_authority_commit(
         RUNNER._validate_authority(authority, authority_ref=authority_ref)
 
 
+@pytest.mark.local_data_integration
 def test_submission_successor_zero_call_binds_exact_R13_frontier(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -301,6 +302,7 @@ def test_submission_successor_zero_call_binds_exact_R13_frontier(
     assert context["feedback"]["resubmit_complete_report_once"] is True
 
 
+@pytest.mark.local_data_integration
 def test_submission_successor_runs_exactly_one_submission_without_analysis(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

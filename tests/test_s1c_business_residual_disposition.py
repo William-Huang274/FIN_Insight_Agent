@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 import hashlib
 import json
 from pathlib import Path
@@ -14,6 +15,7 @@ def _load(relative: str) -> dict[str, object]:
     return value
 
 
+@pytest.mark.local_data_integration
 def test_business_residual_disposition_binds_immutable_audit_and_all_facets() -> None:
     disposition = _load(
         "configs/retrieval/"

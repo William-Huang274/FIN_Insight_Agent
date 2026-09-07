@@ -117,6 +117,7 @@ def test_reviewed_claim_anchor_fails_closed_on_binding_mutation(
     assert exc.value.code == code
 
 
+@pytest.mark.local_data_integration
 def test_current_runtime_binds_every_claim_and_exposes_dell_margin_sentence() -> None:
     service = ResearchEvidencePackService.from_runtime_paths(
         ROOT,

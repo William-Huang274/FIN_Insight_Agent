@@ -861,6 +861,7 @@ def _r8_projection_fixture() -> dict:
     return _redigest(private)
 
 
+@pytest.mark.local_data_integration
 def test_r8_public_projection_accepts_bound_fixture_and_drops_private_rows() -> None:
     private = _r8_projection_fixture()
     public = build_dell_report_internal_chain_ceiling_r8_public_projection(
@@ -889,6 +890,7 @@ def test_r8_public_projection_accepts_bound_fixture_and_drops_private_rows() -> 
         ),
     ],
 )
+@pytest.mark.local_data_integration
 def test_r8_public_projection_rejects_fresh_bypasses_inside_valid_schema(
     field: str,
     payload: object,
@@ -911,6 +913,7 @@ def test_r8_public_projection_rejects_fresh_bypasses_inside_valid_schema(
         ("candidate_ceiling", "source_locator"),
     ],
 )
+@pytest.mark.local_data_integration
 def test_r8_public_projection_rejects_unknown_fields_before_projection(
     container: str,
     field: str,
@@ -1035,6 +1038,7 @@ def _r8_policy_fixture() -> tuple[dict, dict[str, dict]]:
     return policy, values
 
 
+@pytest.mark.local_data_integration
 def test_r8_policy_binds_immutable_r7_failure_and_predecessor_chain() -> None:
     policy, values = _r8_policy_fixture()
     validated = validate_dell_report_internal_chain_ceiling_r8_policy(
@@ -1044,6 +1048,7 @@ def test_r8_policy_binds_immutable_r7_failure_and_predecessor_chain() -> None:
     assert validated["attempt_id"] == "dell-rsq-03b-internal-chain-r1"
 
 
+@pytest.mark.local_data_integration
 def test_r8_policy_rejects_missing_r7_material_finding() -> None:
     policy, values = _r8_policy_fixture()
     drift = deepcopy(values)
@@ -1069,6 +1074,7 @@ def test_r8_policy_rejects_missing_r7_material_finding() -> None:
     "field",
     ("raw_execution_capture_ref", "terminal_failure_receipt_ref"),
 )
+@pytest.mark.local_data_integration
 def test_r8_policy_requires_failure_preservation_output_paths(
     field: str,
 ) -> None:

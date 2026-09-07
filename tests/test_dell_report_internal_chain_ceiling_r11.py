@@ -184,6 +184,7 @@ def _r11_projection_fixture() -> dict:
     return _redigest(private)
 
 
+@pytest.mark.local_data_integration
 def test_r11_public_projection_drops_transformation_private_rows() -> None:
     private = _r11_projection_fixture()
     public = build_dell_report_internal_chain_ceiling_r11_public_projection(
@@ -324,6 +325,7 @@ def _r11_policy_fixture() -> tuple[dict, dict[str, dict]]:
     return policy, values
 
 
+@pytest.mark.local_data_integration
 def test_r11_policy_binds_r10_failure_and_r17_14_file_carry_forward() -> None:
     policy, values = _r11_policy_fixture()
     predecessor = validate_dell_report_internal_chain_ceiling_r11_policy(
@@ -333,6 +335,7 @@ def test_r11_policy_binds_r10_failure_and_r17_14_file_carry_forward() -> None:
     assert predecessor["attempt_id"] == "dell-rsq-03b-internal-chain-r10"
 
 
+@pytest.mark.local_data_integration
 def test_r11_policy_rejects_changed_r17_bundle_population() -> None:
     policy, values = _r11_policy_fixture()
     drift = deepcopy(values)

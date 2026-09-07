@@ -67,6 +67,7 @@ def _compile(program: dict | None = None, pack: dict | None = None) -> dict:
     )
 
 
+@pytest.mark.local_data_integration
 def test_dell_task_quantitative_program_preserves_authority_boundaries() -> None:
     result = _compile()
 
@@ -89,6 +90,7 @@ def test_dell_task_quantitative_program_preserves_authority_boundaries() -> None
     assert result["authority"]["target_company_ASP_units_PVM_or_allocation_inferred"] is False
 
 
+@pytest.mark.local_data_integration
 def test_unbound_or_mutated_industry_source_fails_closed() -> None:
     pack = _json(PACK)
     material = next(
@@ -105,6 +107,7 @@ def test_unbound_or_mutated_industry_source_fails_closed() -> None:
         _compile(pack=pack)
 
 
+@pytest.mark.local_data_integration
 def test_industry_scenario_cannot_close_dell_asp_or_pvm_gap() -> None:
     program = _json(PROGRAM)
     target = next(
@@ -121,6 +124,7 @@ def test_industry_scenario_cannot_close_dell_asp_or_pvm_gap() -> None:
         _compile(program=program)
 
 
+@pytest.mark.local_data_integration
 def test_every_current_pack_gap_requires_explicit_owner() -> None:
     program = _json(PROGRAM)
     program["typed_gap_dispositions"] = program["typed_gap_dispositions"][:-1]
@@ -132,6 +136,7 @@ def test_every_current_pack_gap_requires_explicit_owner() -> None:
         _compile(program=program)
 
 
+@pytest.mark.local_data_integration
 def test_r4_successor_rebinds_narrowed_inputs_without_closing_pack_gaps() -> None:
     result = _compile(program=_json(R4_PROGRAM), pack=_json(R4_PACK))
 

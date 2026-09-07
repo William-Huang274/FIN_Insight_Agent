@@ -253,6 +253,7 @@ def _synthesis_payload(judgment: dict[str, object]) -> dict[str, object]:
     }
 
 
+@pytest.mark.local_data_integration
 def test_packet_separates_case_presence_cell_visibility_and_typed_absence(
     research_input: dict[str, object],
 ) -> None:
@@ -291,6 +292,7 @@ def test_packet_separates_case_presence_cell_visibility_and_typed_absence(
     )
 
 
+@pytest.mark.local_data_integration
 def test_model_view_is_compact_but_remains_bound_to_full_authority(
     research_input: dict[str, object],
 ) -> None:
@@ -350,6 +352,7 @@ def test_semantic_analysis_profile_is_bounded_visible_classification() -> None:
     assert submission_profile.authority["retry_count"] == 0
 
 
+@pytest.mark.local_data_integration
 def test_r7_false_absence_bundle_is_blocked_but_real_profit_gap_is_legal(
     research_input: dict[str, object],
     judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],
@@ -428,6 +431,7 @@ def test_r7_false_absence_bundle_is_blocked_but_real_profit_gap_is_legal(
     )
 
 
+@pytest.mark.local_data_integration
 def test_presence_and_residual_gap_can_coexist_without_false_absence(
     research_input: dict[str, object],
     judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],
@@ -490,6 +494,7 @@ def test_presence_and_residual_gap_can_coexist_without_false_absence(
     )
 
 
+@pytest.mark.local_data_integration
 def test_reconciler_contract_is_exhaustive_and_fails_closed_on_drift(
     research_input: dict[str, object],
     judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],
@@ -553,6 +558,7 @@ def test_reconciler_contract_is_exhaustive_and_fails_closed_on_drift(
     assert exc.value.code == "case_truth_packet_binding_drift"
 
 
+@pytest.mark.local_data_integration
 def test_claim_scoped_view_and_claim_polarity_separate_text_from_truth(
     research_input: dict[str, object],
     judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],
@@ -642,6 +648,7 @@ def test_claim_scoped_view_and_claim_polarity_separate_text_from_truth(
     )
 
 
+@pytest.mark.local_data_integration
 def test_cell_slices_separate_analysis_submission_and_aggregate_exhaustively(
     research_input: dict[str, object],
     judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],
@@ -786,6 +793,7 @@ def test_cell_slices_separate_analysis_submission_and_aggregate_exhaustively(
     assert exc.value.code == "case_truth_receipt_aggregation_surface_overlap"
 
 
+@pytest.mark.local_data_integration
 def test_truth_reconciliation_gates_synthesis_and_final_report(
     research_input: dict[str, object],
     judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],
@@ -951,6 +959,7 @@ def test_compiler_is_case_generic_and_cross_case_packet_cannot_be_reused() -> No
         validate_case_truth_packet(packets["MU"], research_input=mutated_input)
 
 
+@pytest.mark.local_data_integration
 def test_live_target_assessment_requires_false_absences_and_real_gap(
     research_input: dict[str, object],
     judgment_and_deliverable: tuple[dict[str, object], dict[str, object]],

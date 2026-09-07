@@ -275,6 +275,7 @@ def _demand_payload(research_input: dict[str, object]) -> dict[str, object]:
     }
 
 
+@pytest.mark.local_data_integration
 def test_dynamic_surface_exposes_exact_reviewed_anchor_and_historical_relation(
     dynamic_surface_input: dict[str, object],
 ) -> None:
@@ -297,6 +298,7 @@ def test_dynamic_surface_exposes_exact_reviewed_anchor_and_historical_relation(
     ]["allowed_claim_relation_refs"]
 
 
+@pytest.mark.local_data_integration
 def test_dynamic_historical_relation_validates_without_cross_period_expansion(
     dynamic_surface_input: dict[str, object],
 ) -> None:
@@ -314,6 +316,7 @@ def test_dynamic_historical_relation_validates_without_cross_period_expansion(
     assert validated["cells"][0]["qualitative_fact_refs"] == [MARGIN_QF]
 
 
+@pytest.mark.local_data_integration
 def test_claim_surface_contract_is_compiled_only_for_qualified_value_cell(
     dynamic_surface_input: dict[str, object],
 ) -> None:
@@ -373,6 +376,7 @@ def test_claim_surface_contract_is_compiled_only_for_qualified_value_cell(
     assert "CR::DELL::COMPANY_MARGIN_OBSERVATION" in relation_enum
 
 
+@pytest.mark.local_data_integration
 def test_nonqualified_cell_rejects_value_only_claim_authority_fields(
     dynamic_surface_input: dict[str, object],
 ) -> None:
@@ -414,6 +418,7 @@ def test_nonqualified_cell_rejects_value_only_claim_authority_fields(
         )
 
 
+@pytest.mark.local_data_integration
 def test_unattributed_direct_surface_and_cross_case_ref_fail_closed(
     dynamic_surface_input: dict[str, object],
 ) -> None:
@@ -447,6 +452,7 @@ def test_unattributed_direct_surface_and_cross_case_ref_fail_closed(
         )
 
 
+@pytest.mark.local_data_integration
 def test_historical_fact_period_and_source_surface_mutations_fail_closed(
     dynamic_surface_input: dict[str, object],
 ) -> None:
@@ -503,6 +509,7 @@ def test_historical_fact_period_and_source_surface_mutations_fail_closed(
             )
 
 
+@pytest.mark.local_data_integration
 def test_submission_repair_preserves_rejected_model_call_and_adds_typed_feedback(
     dynamic_surface_input: dict[str, object],
 ) -> None:
@@ -561,6 +568,7 @@ def test_submission_repair_preserves_rejected_model_call_and_adds_typed_feedback
     ]["deterministically_added_numeric_refs"]
 
 
+@pytest.mark.local_data_integration
 def test_submission_repair_rejects_untyped_or_already_valid_predecessor(
     dynamic_surface_input: dict[str, object],
 ) -> None:
@@ -591,6 +599,7 @@ def test_submission_repair_rejects_untyped_or_already_valid_predecessor(
         )
 
 
+@pytest.mark.local_data_integration
 def test_R6_value_capture_replays_to_one_typed_repair_and_full_fake_report(
     r6_value_repair_replay: tuple[dict[str, object], dict[str, object]],
 ) -> None:
@@ -754,6 +763,7 @@ def test_R6_value_capture_replays_to_one_typed_repair_and_full_fake_report(
     ] is False
 
 
+@pytest.mark.local_data_integration
 def test_R6_value_repair_capture_and_claim_mutations_fail_closed(
     r6_value_repair_replay: tuple[dict[str, object], dict[str, object]],
 ) -> None:

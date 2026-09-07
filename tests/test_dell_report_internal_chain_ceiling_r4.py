@@ -229,6 +229,7 @@ def _real_R39_family() -> tuple[list[dict], list[dict]]:
     return sources, objects
 
 
+@pytest.mark.local_data_integration
 def test_R4_R39_factory_claim_closes_one_canonical_gap_not_two_occurrences() -> None:
     sources, objects = _real_R39_family()
     without_repair = [
@@ -255,6 +256,7 @@ def test_R4_R39_factory_claim_closes_one_canonical_gap_not_two_occurrences() -> 
     assert repaired["coverage_gap_source_occurrence_count"] == 0
 
 
+@pytest.mark.local_data_integration
 def test_R4_R39_units_do_not_create_false_local_repair_obligations() -> None:
     sources, objects = _real_R39_family()
     result = assess_dell_report_internal_chain_r4_packages(
@@ -266,6 +268,7 @@ def test_R4_R39_units_do_not_create_false_local_repair_obligations() -> None:
     assert result["coverage_gap_source_occurrence_count"] == 0
 
 
+@pytest.mark.local_data_integration
 def test_R4_real_R39_ASP_pair_remains_a_rank_16_reranker_case() -> None:
     selected_ids = {
         "COBJ::f042c5df4e6d3a1aa92564c0",
@@ -422,12 +425,14 @@ def _validate_policy(policy: dict, values: dict[str, dict]) -> dict:
     )
 
 
+@pytest.mark.local_data_integration
 def test_R4_policy_binds_failed_R3_audit_and_R39_runtime() -> None:
     policy, values = _R4_policy_inputs()
     legacy = _validate_policy(policy, values)
     assert len(legacy["target_contracts"]) == 6
 
 
+@pytest.mark.local_data_integration
 def test_R4_policy_rejects_removed_finding_and_route_mode_drift() -> None:
     policy, values = _R4_policy_inputs()
     audit_drift = deepcopy(values)

@@ -327,6 +327,7 @@ def test_R9_reassessment_rejects_surface_or_workpaper_drift() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_R9_Demand_feedback_history_rolls_forward_without_authority_drift() -> None:
     r9 = _load(
         "data/workbench_private/fin_0_1_3_s3_current_dynamic_multi_agent/"
@@ -734,6 +735,7 @@ def test_optional_resume_manifest_allows_fresh_provider_frontier() -> None:
     )
 
 
+@pytest.mark.local_data_integration
 def test_content_repair_submission_resume_fake_runs_all_seven_fresh_nodes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -905,6 +907,7 @@ def test_content_repair_submission_resume_fake_runs_all_seven_fresh_nodes(
     assert (private_root / "full_result.json").is_file()
 
 
+@pytest.mark.local_data_integration
 def test_content_repair_authority_ceiling_resume_fake_runs_six_fresh_nodes(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1099,6 +1102,7 @@ def test_content_repair_authority_ceiling_resume_fake_runs_six_fresh_nodes(
     assert (private_root / "full_result.json").is_file()
 
 
+@pytest.mark.local_data_integration
 def test_content_reassessment_resume_fake_runs_only_Demand_and_Lead_pairs(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1341,6 +1345,7 @@ def test_content_reassessment_resume_fake_runs_only_Demand_and_Lead_pairs(
     assert (private_root / "full_result.json").is_file()
 
 
+@pytest.mark.local_data_integration
 def test_content_reassessment_resume_validator_binds_full_R9_chain(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -1453,6 +1458,7 @@ def test_content_reassessment_resume_validator_binds_full_R9_chain(
         )
 
 
+@pytest.mark.local_data_integration
 def test_content_repair_authority_ceiling_resume_validator_binds_full_chain(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -75,6 +75,12 @@ def test_invalid_operator_subnet_rejected(subnet):
 def test_lead_uses_same_seed_mount_runner_and_task_based_timeout(tmp_path, monkeypatch):
     from test_dell_specialist_paid_shadow import _lead_authority
     authority, module = _lead_authority(tmp_path), _runner_module()
+    # Exercise mount wiring with a synthetic seed, not the operator's paid run.
+    seed = tmp_path / authority.lead_scope.seed_state_relative_path
+    seed.parent.mkdir(parents=True)
+    seed.write_text("synthetic mount fixture", encoding="utf-8")
+    monkeypatch.setattr(module, "ATTEMPTS_ROOT", tmp_path)
+    monkeypatch.setattr(module, "file_sha256", lambda path: authority.lead_scope.seed_state_sha256)
     monkeypatch.setattr(module, "_dotenv", lambda: {name: "offline-fixture" for name in module._SECRETS})
     env = module._environment(authority, tmp_path / "authority.json", tmp_path / "attempt", 19999)
     assert env["FINSIGHT_DELL_SEEDED_SERVING_MODE"] == authority.serving_mode

@@ -56,6 +56,7 @@ def _atom(payload: dict, atom_id: str) -> dict:
     return next(row for row in payload["atoms"] if row["atom_id"] == atom_id)
 
 
+@pytest.mark.local_data_integration
 def test_qrel_successor_preserves_requests_and_binds_only_current_objects() -> None:
     source = _read_json(SOURCE_EVAL)
     successor = _read_json(SUCCESSOR_EVAL)
@@ -84,6 +85,7 @@ def test_qrel_successor_preserves_requests_and_binds_only_current_objects() -> N
                 assert target_by_id[object_id]["base_object_view"]["ticker"] == target
 
 
+@pytest.mark.local_data_integration
 def test_qrel_successor_replaces_fragment_and_reclassifies_weak_mu_quote() -> None:
     successor = _read_json(SUCCESSOR_EVAL)
     target_by_id, target_by_key = _target_index()

@@ -101,6 +101,7 @@ def test_r8_derives_all_four_distinct_postgres_credentials(
 ) -> None:
     monkeypatch.setenv("FINSIGHT_AGENT_SERVER_POSTGRES_PASSWORD", "seed-only-secret")
     monkeypatch.setenv("LANGSMITH_API_KEY", "trace-only-secret")
+    monkeypatch.setattr(host_runner, "_dotenv_values", lambda: {})
 
     environment = host_runner._credential_environment()
     password_names = (

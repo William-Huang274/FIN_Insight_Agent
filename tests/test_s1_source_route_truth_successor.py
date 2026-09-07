@@ -56,6 +56,7 @@ def _compile(case_key: str, predecessor: dict | None = None) -> dict:
     )
 
 
+@pytest.mark.local_data_integration
 def test_three_case_source_truth_replay_separates_complete_from_unexecuted_routes() -> None:
     expected_incomplete = {"DELL": 0, "MU": 4, "NVDA": 3}
     for case_key, incomplete_count in expected_incomplete.items():
@@ -80,6 +81,7 @@ def test_three_case_source_truth_replay_separates_complete_from_unexecuted_route
         assert result["execution_summary"]["vector_calls"] == 0
 
 
+@pytest.mark.local_data_integration
 def test_source_truth_successor_rejects_cross_case_query_plan_mutation() -> None:
     predecessor = deepcopy(_read(REPLAYS["MU"]))
     projection = predecessor["product_projection"]

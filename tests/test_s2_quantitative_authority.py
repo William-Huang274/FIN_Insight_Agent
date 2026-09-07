@@ -36,6 +36,7 @@ def _request_results(case_key: str) -> list[dict]:
 
 
 @pytest.mark.parametrize("case_key", tuple(EXPECTED))
+@pytest.mark.local_data_integration
 def test_current_three_case_numeric_results_are_separated_by_authority_kind(
     case_key: str,
 ) -> None:
@@ -73,6 +74,7 @@ def test_current_three_case_numeric_results_are_separated_by_authority_kind(
     )
 
 
+@pytest.mark.local_data_integration
 def test_declared_cross_company_targets_are_valid_but_undeclared_ticker_fails() -> None:
     request_results = _request_results("DELL")
     result = compile_quantitative_authority_state(

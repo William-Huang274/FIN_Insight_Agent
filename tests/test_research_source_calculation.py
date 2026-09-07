@@ -134,6 +134,38 @@ def test_canonical_alias_lookup_rejects_same_id_with_different_observation(artif
         current.source_item(item["numeric_fact_id"])
 
 
+def test_followup_reuses_answer_only_calc_with_operands_outside_case_catalog(artifacts):
+    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources
+    fact = {"result_state": "numeric_fact", "numeric_fact_authority": True,
+        "value_decimal": "12", "ticker": "SYNTHETIC", "metric_id": "revenue",
+        "unit": "USD", "period_end": "2025-12-31", "source_observation_ids": ["CFOBS::synthetic"]}
+    calculation = calculate_from_sources(SourceBoundCalculation(expression="a / 2",
+        operands={"a": {"source_id": "NUMFACT::synthetic"}}, result_unit="USD",
+        rationale="Synthetic prior-answer fixture"), lambda _: fact)
+    ref = calculation["calculation_id"]
+    messages = [ToolMessage(content="fixture", tool_call_id="fact", name="query_company_financial_facts",
+        artifact={"authority_state": "s2_numeric_fact_query_result", "results": [{"status": "resolved",
+            "facts": [{**fact, "numeric_fact_id": "NUMFACT::synthetic"}]}]}),
+        ToolMessage(content="fixture", tool_call_id="calc", name="calculate_research_metric", artifact=calculation)]
+    citations = answer_citations(f"Fixture [{ref}]", artifacts, messages)
+    with pytest.raises(ValueError, match="unknown_source_id"):
+        artifacts.source_item("NUMFACT::synthetic")
+
+    async def run():
+        model = NativeFixtureModel(marker="prior-answer-only", replies=[
+            [call("read_current_source", {"source_id": ref}, "read")],
+            [call("submit_case_answer", {"answer_markdown": f"Saved synthetic calculation, non-authoritative [{ref}]"}, "submit")]])
+        agent = build_case_output_agent(role="writer", model=model, tools=[], artifacts=artifacts,
+            limits={"model_calls": 3, "tool_calls": 4}, allow_answers=True, answer_only=True)
+        outcome = await agent.ainvoke({"report": {}, "request_action": "ask",
+            "conversation": [{"role": "assistant", "content": "Prior fixture answer", "citations": citations}],
+            "messages": [HumanMessage(content="Read the prior answer calculation without SQL or recalculation")]})
+        assert outcome["output"]["citations"] == citations
+        assert len(model.contexts) == 2
+        assert outcome["report"] == {}
+    asyncio.run(run())
+
+
 @pytest.mark.local_data_integration
 def test_specialist_native_calculator_survives_cross_agent_artifact_projection():
     from test_dell_specialist_agentic_composition import _RealMCPFakeModel, RUNTIME_ENVIRONMENT, _assert_assets

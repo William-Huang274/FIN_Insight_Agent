@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import sys
 
 from retrieval.dell_report_r14_common import (
     DellReportR14ContractError,
@@ -72,6 +73,7 @@ def test_r14_performance_receipt_recomputes_status_and_rejects_resign() -> None:
         validate_performance_receipt_r14(forged)
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="R14 formal transaction qualification requires Windows")
 def test_r14_resource_gate_uses_exact_formula_and_fails_closed_before_attempt(
     tmp_path: Path, monkeypatch
 ) -> None:
@@ -99,6 +101,7 @@ def test_r14_resource_gate_uses_exact_formula_and_fails_closed_before_attempt(
     assert not list((tmp_path / "attempt_reservations").glob("*.json"))
 
 
+@pytest.mark.skipif(sys.platform != "win32", reason="R14 formal transaction qualification requires Windows")
 def test_r14_resource_gate_rejects_resigned_shortfall(tmp_path: Path, monkeypatch) -> None:
     capability = probe_transaction_durability_r14(attempt_root=tmp_path)
     monkeypatch.setattr(

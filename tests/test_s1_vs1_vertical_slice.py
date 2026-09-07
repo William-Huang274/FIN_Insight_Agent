@@ -161,6 +161,7 @@ def test_vs1_exposes_business_reality_without_promoting_rank_or_false_gap() -> N
     )
 
 
+@pytest.mark.local_data_integration
 def test_candidate_permutation_is_decision_stable_and_future_mutation_fails_closed(
     runtime_services,
 ) -> None:
@@ -246,6 +247,7 @@ def test_cross_case_artifact_scope_mutation_fails_closed() -> None:
         load_s1_vs1_vertical_slice_result(mutated, policy=policy)
 
 
+@pytest.mark.local_data_integration
 def test_pack_retrieval_and_workbench_consume_the_same_canonical_lineage(
     runtime_services,
 ) -> None:
@@ -282,6 +284,7 @@ def test_pack_retrieval_and_workbench_consume_the_same_canonical_lineage(
     ResearchWorkspaceEvidenceResponse.model_validate(workspace_view)
 
 
+@pytest.mark.local_data_integration
 def test_pack_binding_drift_is_rejected_at_the_consumer_seam(runtime_services) -> None:
     _retrieval, packs, _workspace = runtime_services
     original = packs._s1_vertical_slice
@@ -301,6 +304,7 @@ def test_pack_binding_drift_is_rejected_at_the_consumer_seam(runtime_services) -
         packs._s1_vertical_slice = original
 
 
+@pytest.mark.local_data_integration
 def test_current_product_pack_artifact_drift_fails_closed(runtime_services) -> None:
     _retrieval, packs, _workspace = runtime_services
     original = packs._result
@@ -321,6 +325,7 @@ def test_current_product_pack_artifact_drift_fails_closed(runtime_services) -> N
         packs._result = original
 
 
+@pytest.mark.local_data_integration
 def test_non_vs1_cases_receive_capture_bound_lineage_without_false_qualification(
     runtime_services,
 ) -> None:

@@ -820,6 +820,7 @@ def test_completed_analysis_checkpoint_resumes_at_submission_only(
     assert submission_calls == 1
 
 
+@pytest.mark.local_data_integration
 def test_lead_checkpoint_successor_projection_skips_completed_lead_node() -> None:
     topology = json.loads(
         (
@@ -869,6 +870,7 @@ def test_lead_checkpoint_successor_projection_skips_completed_lead_node() -> Non
     assert result["materialization_readiness"]["blocking_empty_role_ids"] == []
 
 
+@pytest.mark.local_data_integration
 def test_workpaper_checkpoint_successor_projection_runs_only_counter() -> None:
     def load(ref: str) -> dict[str, Any]:
         return json.loads((ROOT / ref).read_text(encoding="utf-8"))
@@ -913,6 +915,7 @@ def test_workpaper_checkpoint_successor_projection_runs_only_counter() -> None:
     assert result["claims"]["new_completed_workpaper_model_calls"] == 0
 
 
+@pytest.mark.local_data_integration
 def test_specialist_analysis_checkpoint_successor_resumes_counter_once() -> None:
     def load(ref: str) -> dict[str, Any]:
         return json.loads((ROOT / ref).read_text(encoding="utf-8"))

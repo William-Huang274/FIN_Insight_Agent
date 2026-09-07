@@ -49,6 +49,7 @@ def test_actual_mcp_method_preserves_disclosure_vs_achievement_distinction(metho
     asyncio.run(exercise())
 
 
+@pytest.mark.local_data_integration
 def test_specialist_method_action_consumes_actual_mcp_without_general_disclosure_or_source_authority():
     import json
     from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_scripted_qualification_composition
@@ -82,6 +83,7 @@ def test_specialist_method_action_consumes_actual_mcp_without_general_disclosure
     assert result.get("final_submission") is None
 
 
+@pytest.mark.local_data_integration
 def test_new_question_reaches_specialist_without_rewriting_frozen_method_or_reusing_answers():
     import json
     from pathlib import Path

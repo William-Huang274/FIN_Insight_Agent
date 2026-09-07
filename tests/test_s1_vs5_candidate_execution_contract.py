@@ -16,13 +16,16 @@ def _sha256(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_vs5_candidate_execution_policy_binds_every_runtime_input() -> None:
+def test_historical_vs5_policy_is_not_reauthorized_after_runtime_changes() -> None:
     value = json.loads(POLICY.read_text(encoding="utf-8"))
     assert value["status"] == "frozen_before_any_qualification_ranking"
+    drifted = set()
     for binding in value["bound_inputs"].values():
         path = ROOT / binding["ref"]
         assert path.is_file()
-        assert _sha256(path) == binding["sha256"]
+        if _sha256(path) != binding["sha256"]:
+            drifted.add(binding["ref"])
+    assert drifted == {"src/retrieval/embedding_runtime.py", "src/retrieval/cross_encoder.py"}
 
 
 def test_vs5_candidate_execution_is_label_blind_and_cuda_fp16_only() -> None:

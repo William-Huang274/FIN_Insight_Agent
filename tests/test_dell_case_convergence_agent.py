@@ -415,6 +415,7 @@ def test_schema_only_convergence_reads_no_data_or_credentials(monkeypatch):
     asyncio.run(run())
 
 
+@pytest.mark.local_data_integration
 def test_actual_review_feedback_and_new_scope_are_bound_without_rewriting_old_authority():
     from pathlib import Path
     from scripts.qualification.dell_q1_specialist_paid_shadow.prepare_case_convergence import prepare

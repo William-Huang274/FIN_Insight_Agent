@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import pytest
 from collections import deque
 import hashlib
 import json
@@ -33,6 +34,7 @@ def _jsonl_tail(relative: str, count: int) -> list[dict]:
     return list(rows)
 
 
+@pytest.mark.local_data_integration
 def test_public_web_incremental_successor_is_exact_append() -> None:
     result = _json(
         "configs/retrieval/"
@@ -72,6 +74,7 @@ def test_public_web_incremental_successor_is_exact_append() -> None:
     ]
 
 
+@pytest.mark.local_data_integration
 def test_public_web_incremental_embedding_is_cuda_fp16_append_only() -> None:
     result = _json(
         "configs/retrieval/"

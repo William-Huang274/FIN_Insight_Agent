@@ -474,6 +474,17 @@ financial_semantics_verified=false means not verified, not a failed review; abse
 def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True):
     feedback = feedback or []
 
+    def prior_bindings(runtime):
+        # Native public answers retain their complete citation + operand bundle.
+        # Reusing a saved answer does not require querying its operands again.
+        citations = {}
+        for answer in runtime.state.get("conversation", []):
+            if answer.get("role") == "assistant":
+                citations.update(answer.get("citations", {}))
+        citations.update(runtime.state.get("synthesis", {}).get("citations", {}))
+        citations.update(runtime.state.get("report", {}).get("citations", {}))
+        return citations
+
     def chart_lookup(runtime, current):
         sources = chart_calculation_sources(runtime.state.get("synthesis", {}), runtime.state.get("report", {}))
         for ref, item in observed_sources(runtime.state.get("messages", [])).items():
@@ -500,9 +511,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         """Read a report citation (Pxx:claim / PASSAGE:: / NUMFACT:: / CALC::) or current source by ID. The current report's bound citation record is available on demand, not repeated in every model input. Never arbitrary path."""
         if not 0 <= offset or not 100 <= max_characters <= 16000:
             raise ToolException("source_window_invalid")
-        citations = saved_citation_bindings(runtime.state.get("messages", []), prior_citations={
-            **runtime.state.get("synthesis", {}).get("citations", {}),
-            **runtime.state.get("report", {}).get("citations", {})})
+        citations = saved_citation_bindings(runtime.state.get("messages", []), prior_citations=prior_bindings(runtime))
         if source_id in citations:
             text = json.dumps(citations[source_id], ensure_ascii=False, indent=2)
             end = offset + max_characters
@@ -589,8 +598,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             if not answer_markdown.strip() or len(answer_markdown) > 80000:
                 raise ValueError("answer_text_empty_or_too_large")
             citations = answer_citations(answer_markdown, artifacts.with_revisions(runtime.state.get("revisions", {})),
-                runtime.state.get("messages", []), prior_citations={**runtime.state.get("synthesis", {}).get("citations", {}),
-                    **runtime.state.get("report", {}).get("citations", {})})
+                runtime.state.get("messages", []), prior_citations=prior_bindings(runtime))
         except ValueError as exc:
             return output_message(runtime, error="Answer NOT saved: " + str(exc) + ". Correct the inline citations and resubmit submit_case_answer; no final answer was accepted.")
         return output_message(runtime, {"kind": "answer", "answer_markdown": answer_markdown, "citations": citations})

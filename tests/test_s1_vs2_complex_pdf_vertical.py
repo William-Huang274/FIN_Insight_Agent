@@ -119,6 +119,7 @@ def test_vs2_preserves_complex_business_objects_but_exposes_ranking_failure() ->
     ]["current_retrieval_failure_zh"]
 
 
+@pytest.mark.local_data_integration
 def test_native_and_ocr_outputs_preserve_locators_and_authority_boundaries() -> None:
     native = _read(PRIVATE_ROOT / "parsed_native_layout.json")
     ocr = _read(PRIVATE_ROOT / "parsed_ocr_mutation.json")
@@ -167,6 +168,7 @@ def test_native_and_ocr_outputs_preserve_locators_and_authority_boundaries() -> 
     )
 
 
+@pytest.mark.local_data_integration
 def test_parser_object_and_result_mutations_fail_closed() -> None:
     metadata_path = (
         ROOT
@@ -269,6 +271,7 @@ def test_result_local_payload_refs_must_resolve_and_match_the_envelope_digest() 
         validate_vs2_result(result, policy=_policy())
 
 
+@pytest.mark.local_data_integration
 def test_vs1_replay_is_byte_stable_after_vs2_parser_and_object_contracts() -> None:
     existing = read_registered_runtime_json(
         ROOT, "application.result.current_s1_vs1_vertical_slice"

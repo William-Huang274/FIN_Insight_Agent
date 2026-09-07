@@ -68,6 +68,7 @@ def _compile() -> tuple[dict, dict, dict]:
     return successor, integrated, readiness
 
 
+@pytest.mark.local_data_integration
 def test_current_dell_pack_is_ready_for_one_bounded_value_capture_unit() -> None:
     successor, integrated, readiness = _compile()
 
@@ -102,6 +103,7 @@ def test_current_dell_pack_is_ready_for_one_bounded_value_capture_unit() -> None
     }
 
 
+@pytest.mark.local_data_integration
 def test_every_promoted_current_pack_item_requires_a_review_delta() -> None:
     program, inputs = _inputs()
     mutated = deepcopy(program["review_successor_program"])
@@ -136,6 +138,7 @@ def test_every_promoted_current_pack_item_requires_a_review_delta() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_task_readiness_fails_if_a_declared_gap_is_silently_closed() -> None:
     program, inputs = _inputs()
     successor = compile_requirement_review_successor(
@@ -217,6 +220,7 @@ def _compile_successor() -> tuple[dict, dict, dict, dict]:
     return successor, integrated, readiness, bridge
 
 
+@pytest.mark.local_data_integration
 def test_r4_successor_leaves_only_company_units_not_ready() -> None:
     successor, integrated, readiness, bridge = _compile_successor()
 
@@ -250,6 +254,7 @@ def test_r4_successor_leaves_only_company_units_not_ready() -> None:
     assert bridge["bridge_readiness"]["s2_stage_qualified"] is False
 
 
+@pytest.mark.local_data_integration
 def test_r4_task_readiness_rejects_silent_bridge_gap_closure() -> None:
     program = _json(SUCCESSOR_PROGRAM)
     inputs = {

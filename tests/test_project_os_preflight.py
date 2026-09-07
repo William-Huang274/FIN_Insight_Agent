@@ -1506,6 +1506,7 @@ def test_current_dynamic_multi_agent_authority_ceiling_resume_rejects_budget_dri
         )
 
 
+@pytest.mark.local_data_integration
 def test_historical_current_dynamic_multi_agent_content_reassessment_resume_binds_four_calls_but_cannot_rerun() -> None:
     decision = json.loads(
         (
@@ -1665,6 +1666,7 @@ def test_current_dynamic_feedback_successor_binds_R2_and_round_contract() -> Non
     )
 
 
+@pytest.mark.local_data_integration
 def test_current_dynamic_workpaper_successor_reuses_R3_without_retrieval() -> None:
     decision = json.loads(
         (ROOT / CURRENT_DYNAMIC_SINGLE_UNIT_WORKPAPER_DECISION_REF).read_text(
@@ -1688,6 +1690,7 @@ def test_current_dynamic_workpaper_successor_reuses_R3_without_retrieval() -> No
     ] == 8000
 
 
+@pytest.mark.local_data_integration
 def test_current_dynamic_workpaper_replacement_preserves_zero_call_R4() -> None:
     result = build_preflight(
         root=ROOT,
@@ -1720,6 +1723,7 @@ def test_current_dynamic_workpaper_replacement_preserves_zero_call_R4() -> None:
     )
 
 
+@pytest.mark.local_data_integration
 def test_historical_current_dynamic_semantic_repair_binds_contract_but_cannot_rerun() -> None:
     decision = json.loads(
         (ROOT / CURRENT_DYNAMIC_SINGLE_UNIT_SEMANTIC_REPAIR_DECISION_REF).read_text(

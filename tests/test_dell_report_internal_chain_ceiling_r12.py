@@ -268,6 +268,7 @@ def _r12_projection_fixture() -> dict:
     return _redigest(private)
 
 
+@pytest.mark.local_data_integration
 def test_r12_public_projection_drops_transformation_private_rows() -> None:
     private = _r12_projection_fixture()
     public = build_dell_report_internal_chain_ceiling_r12_public_projection(
@@ -288,6 +289,7 @@ def test_r12_public_projection_drops_transformation_private_rows() -> None:
     )
 
 
+@pytest.mark.local_data_integration
 def test_r12_public_projection_rejects_resigned_transformation_summary_drift() -> None:
     private = _r12_projection_fixture()
     private["target_results"][0]["private_frame_transformation_summary"][
@@ -379,6 +381,7 @@ def test_r12_route_registry_rejects_rehashed_semantic_route_drift() -> None:
         build_route_contract_identity_registry_r12(program)
 
 
+@pytest.mark.local_data_integration
 def test_r12_route_identity_survives_false_then_true_active_state() -> None:
     private = _r12_projection_fixture()
     asp = next(
@@ -430,6 +433,7 @@ def test_r12_route_identity_survives_false_then_true_active_state() -> None:
     ] == exact_ids
 
 
+@pytest.mark.local_data_integration
 def test_r12_public_projection_rejects_true_external_state_with_empty_route_ids() -> None:
     private = _r12_projection_fixture()
     asp = next(
@@ -582,6 +586,7 @@ def _r12_policy_fixture() -> tuple[dict, dict[str, dict]]:
     return policy, values
 
 
+@pytest.mark.local_data_integration
 def test_r12_policy_binds_r11_failure_and_r17_14_file_carry_forward() -> None:
     policy, values = _r12_policy_fixture()
     predecessor = validate_dell_report_internal_chain_ceiling_r12_policy(
@@ -601,6 +606,7 @@ def test_r12_policy_binds_r11_failure_and_r17_14_file_carry_forward() -> None:
         "runtime_binding_receipt",
     ],
 )
+@pytest.mark.local_data_integration
 def test_r12_policy_rejects_candidate_generation_binding_drift(
     binding_id: str,
 ) -> None:
@@ -618,6 +624,7 @@ def test_r12_policy_rejects_candidate_generation_binding_drift(
         )
 
 
+@pytest.mark.local_data_integration
 def test_r12_saved_raw_validation_projects_zero_new_embedding_batch() -> None:
     _, values = _r12_policy_fixture()
     private = values["R11_private"]
@@ -649,6 +656,7 @@ def test_r12_formal_runner_has_no_fresh_retrieval_or_model_execution_path() -> N
     assert "R11_raw_execution_capture" in source
 
 
+@pytest.mark.local_data_integration
 def test_r12_policy_rejects_changed_r17_bundle_population() -> None:
     policy, values = _r12_policy_fixture()
     drift = deepcopy(values)
@@ -714,6 +722,7 @@ def test_r12_formal_fails_before_receipt_when_policy_is_missing(
     assert not r12_runner.ATTEMPT_RECEIPT.exists()
 
 
+@pytest.mark.local_data_integration
 def test_r12_raw_capture_precedes_redacted_terminal_failure(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

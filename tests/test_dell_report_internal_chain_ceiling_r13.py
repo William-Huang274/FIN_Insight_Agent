@@ -259,6 +259,7 @@ def _r13_projection_fixture() -> dict:
     return _redigest(private)
 
 
+@pytest.mark.local_data_integration
 def test_r13_public_projection_drops_transformation_private_rows() -> None:
     private = _r13_projection_fixture()
     public = build_dell_report_internal_chain_ceiling_r13_public_projection(
@@ -279,6 +280,7 @@ def test_r13_public_projection_drops_transformation_private_rows() -> None:
     )
 
 
+@pytest.mark.local_data_integration
 def test_r13_public_projection_rejects_resigned_transformation_summary_drift() -> None:
     private = _r13_projection_fixture()
     private["target_results"][0]["private_frame_transformation_summary"][
@@ -308,6 +310,7 @@ def test_r13_public_projection_rejects_resigned_transformation_summary_drift() -
         "coverage_gap_count",
     ],
 )
+@pytest.mark.local_data_integration
 def test_r13_public_projection_recomputes_every_material_summary_scalar(
     field: str,
 ) -> None:
@@ -335,6 +338,7 @@ def test_r13_public_projection_recomputes_every_material_summary_scalar(
         "compiled_clause_ownership_decision_counts",
     ],
 )
+@pytest.mark.local_data_integration
 def test_r13_public_projection_recomputes_clause_decision_maps(field: str) -> None:
     private = _r13_projection_fixture()
     summary = private["target_results"][0][
@@ -353,6 +357,7 @@ def test_r13_public_projection_recomputes_clause_decision_maps(field: str) -> No
         )
 
 
+@pytest.mark.local_data_integration
 def test_r13_public_projection_recomputes_coverage_boolean_and_digest() -> None:
     for field in (
         "complete_transformation_coverage_pass",
@@ -390,6 +395,7 @@ def test_r13_public_projection_recomputes_coverage_boolean_and_digest() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_r13_public_projection_binds_persisted_package_surface() -> None:
     private = _r13_projection_fixture()
     target = private["target_results"][0]
@@ -518,6 +524,7 @@ def test_r13_route_registry_rejects_rehashed_semantic_route_drift() -> None:
         build_route_contract_identity_registry_r13(program)
 
 
+@pytest.mark.local_data_integration
 def test_r13_route_identity_survives_false_then_true_active_state() -> None:
     private = _r13_projection_fixture()
     asp = next(
@@ -569,6 +576,7 @@ def test_r13_route_identity_survives_false_then_true_active_state() -> None:
     ] == exact_ids
 
 
+@pytest.mark.local_data_integration
 def test_r13_public_projection_rejects_true_external_state_with_empty_route_ids() -> None:
     private = _r13_projection_fixture()
     asp = next(
@@ -721,6 +729,7 @@ def _r13_policy_fixture() -> tuple[dict, dict[str, dict]]:
     return policy, values
 
 
+@pytest.mark.local_data_integration
 def test_r13_policy_binds_r12_failure_and_r17_14_file_carry_forward() -> None:
     policy, values = _r13_policy_fixture()
     predecessor = validate_dell_report_internal_chain_ceiling_r13_policy(
@@ -730,6 +739,7 @@ def test_r13_policy_binds_r12_failure_and_r17_14_file_carry_forward() -> None:
     assert predecessor["attempt_id"] == "dell-rsq-03b-internal-chain-r12"
 
 
+@pytest.mark.local_data_integration
 def test_r13_policy_rejects_resigned_R12_case_audit_boundary_drift() -> None:
     policy, values = _r13_policy_fixture()
     drift = dict(values)
@@ -762,6 +772,7 @@ def test_r13_policy_rejects_resigned_R12_case_audit_boundary_drift() -> None:
         "runtime_binding_receipt",
     ],
 )
+@pytest.mark.local_data_integration
 def test_r13_policy_rejects_candidate_generation_binding_drift(
     binding_id: str,
 ) -> None:
@@ -779,6 +790,7 @@ def test_r13_policy_rejects_candidate_generation_binding_drift(
         )
 
 
+@pytest.mark.local_data_integration
 def test_r13_saved_raw_validation_projects_zero_new_embedding_batch() -> None:
     _, values = _r13_policy_fixture()
     private = values["R12_private"]
@@ -810,6 +822,7 @@ def test_r13_formal_runner_has_no_fresh_retrieval_or_model_execution_path() -> N
     assert "R12_raw_execution_capture" in source
 
 
+@pytest.mark.local_data_integration
 def test_r13_policy_rejects_changed_r17_bundle_population() -> None:
     policy, values = _r13_policy_fixture()
     drift = deepcopy(values)
@@ -875,6 +888,7 @@ def test_r13_formal_fails_before_receipt_when_policy_is_missing(
     assert not r13_runner.ATTEMPT_RECEIPT.exists()
 
 
+@pytest.mark.local_data_integration
 def test_r13_raw_capture_precedes_redacted_terminal_failure(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,

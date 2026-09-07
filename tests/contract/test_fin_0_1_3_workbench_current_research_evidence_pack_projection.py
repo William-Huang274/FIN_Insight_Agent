@@ -400,6 +400,7 @@ def test_default_runtime_registry_registers_current_research_projection() -> Non
     )
 
 
+@pytest.mark.local_data_integration
 def test_current_runtime_loads_three_product_evidence_successors() -> None:
     paths = resolve_runtime_paths(ROOT)
     evidence = ResearchEvidencePackService.from_runtime_paths(ROOT, paths)

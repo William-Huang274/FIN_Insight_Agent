@@ -943,3 +943,13 @@ Owner 明确授权连续完成原五项及新增需求，Hermes 评估前停止�
 根因工程修复：原生交互seed仅传case_papers/report而不传已保存conversation，工具只见底稿/报告计算。现在传同一任务原生conversation但不将大引用对象塞进模型消息；CaseArtifacts以新只读视图加载其中完整宿主CALC，对ID/结构/权威/冲突检查，缺记录或异任务仍拒绝；不恢复私有CoT、不新建记忆库。100相关测试通过，真实A1四CALC零模型回读/两百分点重算成功，记录20260908_step7_calculation_reuse_offline_a1/receipt.json。未部署新API镜像或实测模型接续，不把离线重算叫修后自主成功。
 
 本阶段第二新问题Micron深度问答已在原生Pro运行，单独TokenBudgetBasis/费用观察/不自动重试，使用旧已部署镜像，不受宿主代码修改影响。尚待结果/源文核查，非独立Micron全案或跨公司benchmark。
+
+### 2026-09-08：Micron、公开源码资格与真实CALC接续故障
+
+产品/研究证据：Micron A1已终止成功，11Pro/594559tokens/0.746894元；19来源正确端点全200（最初宿主误用/sources/id产生19个404，原记录保留）。宿主审阅发现FY2024净资本开支桥漏149百万美元设备合同付款、FCF增长比较与部分现金/CHIPS/HBM推断过度、2025-09历史指引不能充当2026-09当前预测，且超字数。原回答不覆盖，修正见20260908_step7_mu_deep_a1/host-review.zh-CN.md。8个计算算术正确不意味着上述研究推断正确。
+
+工程增量：全新锁定研究/控制面/资格/交付依赖已安装，独立源码23项上传/导出/无私有数据启动检查通过。Linux CI暴露CRLF字节绑定、source-only缺私有对象启动、Docker内部网络端口及浅Git历史等问题，按原责任层修复，缺数据readiness仍503。PR #3已包含完整当前代码与正式中英文README、CHANGELOG、架构/公开范围；main仍114a935f，未整体晋升。最新CI原始34157678755为281failed/3067passed/436skipped/90errors；容器与供应链检查通过。对确需私有挂载的历史测试逐函数使用pytest标准local_data_integration，Windows事务资格显式按宿主条件，历史Git证明用完整历史；未弱化生产验证器，也未把私有重放标为通过。先前本机完整测试92failed/3764passed/7skipped/23errors保留，当前SQL事实ID与旧授权绑定漂移仍属私有重放限制。
+
+真实短问A1/BFF422参数、A2/BFF403头部错误均未启动native/model；A3在seed发现旧报告P03:S015展示别名，0provider失败，alias修复后新A4。A4第一题2Flash/29337tokens/0.015132元成功；第二题10Flash/215876tokens/0.075703元达到模型上限失败，批次已停止，后六题未执行，全部usage已知。第二题能读历史CALC却不能引用：下一角色未投影同会话已存回答的完整操作数引用；补充native prior bindings后，以无SQL/计算工具的原生循环验证，115项相关检查通过、8私有跳过。待新镜像及有依据的后续真实资格，不自动按余额续跑；报告v4没改变。
+
+运行环境事故：Z盘满引发Docker构建损坏与IPC重启失败，未factory reset、未删数据卷或历史run。保留旧IPC目录，移动已完成A4资格目录到D并以junction保留原Z路径，SQLite SHA一致；仅清31.98GB可重建buildx缓存，三服务恢复。新大文件写D。完整Git bundle因空间失败；14.8MB增量备份已verify，依赖已有main历史。17354历史text blobs敏感模式扫描仅合成测试值命中、8binary/large未扫描，不称全面安全保证。远端codex分支尚未清理；Hermes未评估，Owner尚未验收。

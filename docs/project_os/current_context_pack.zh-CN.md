@@ -16,6 +16,12 @@ GitHub 已实查为 public。默认首页曾把当前动态研究写为未来能
 
 ## 本次连续实施接续点（2026-09-08，进行中，非收口）
 
+**最新覆盖提示（2026-09-08 04:15，以下旧条目保留为历史）：** 当前已推送5b9e7685；PR #3整合运行时代码/双语README/CHANGELOG/架构/公开边界，main仍114a935f，尚未合并或清远端分支。原生v4 PDF15/Word20/PPT44页已完整渲染检查。NVIDIA短问A1/A2合计0.126237元，Micron有界长问A1为0.746894元；来源可回读但单位/增长率/推断等宿主意见仍保留，不宣称独立全案成功。八短问批次D:/temp/fin-step7-short-coverage-20260908-a4已停止：第一题成功2调用0.015132元，第二题10调用0.075703元失败，无未知费用，后六题未执行。当前无paid运行，不自动续批。第二题根因：先前回答的CALC可读，但引用投影没带入完整已保存操作数；正在修复原生conversation引用回读，不放松来源校验。
+
+**工程/收口阻塞：** 全新锁定依赖安装已完成；独立源码23项上传/导出/无私有资料启动测试通过。PR最新CI 34157678755仍281failed/3067passed/436skipped/90errors：主要私有历史挂载、Windows专属事务、浅Git历史、CRLF绑定；不能称整仓全绿。默认pytest通过标准marker隔离私有数据重放，显式--run-private-data运行原挂载；已识别旧本机全量92失败日志仍保留，部分旧私有授权与当前数据ID漂移未解决。容器与供应链CI已过。当前正在标注准确依赖、修复跨平台字节与历史fixture，不是产品验收进度。
+
+**环境事故与保全：** Z盘满导致Docker构建/IPC失败，未重置Docker或删卷。旧IPC目录在C:/Users/hht13/AppData/Local保留stale目录；仅清理31.98GB可重建buildx缓存，API/PG/Redis三容器恢复，数据与原run仍在。A4修订目录原Z路径已用junction指向D:/temp/fin-preserved-qualification-20260908/，SQLite迁移前后SHA一致。大产物写D盘。完整Git bundle因磁盘不足失败；有效14.8MB增量备份D:/temp/fin-github-remote-before-cleanup-20260908-a2.bundle依赖已有main历史。历史敏感模式扫描17354text blobs，唯一命中为合成测试值，8个binary/large未扫描；不宣称安全全面保证。远端分支尚未删，先最终main保全。
+
 - 目标/停止点：原五项＋新增需求、GitHub main/正式双语文档/版本/历史分支完成后，在任何Hermes评估之前停止供Owner逐项审阅。持续实施，不逐补丁审批；未评估Hermes，不擅自删远端未保全分支。
 - Git：当前同一codex/fin013-dell-s1-s2-product-bridge；31d89059已提交并推送（09f119da历史报告/新启动；a5524f63边界来源合同；c1664bbb计算导出）。未提交：report_sessions.py全原生运行分页累计/缓存/耗时、ResearchSession.tsx及TS类型、两会话测试，以及本pack。45项会话测试、TS和Vite生产构建已通过（660.12KB主包，常规体积提醒），尚待真实BFF读回/浏览器/日志提交。
 - 报告当前已是原真实会话v4，ready_for_human_review，未Owner accept。线程01a077d8-a47c-7280-98f5-3df94b219488。v1–v3/失败保留；原生导入run 01a07d1b-8db5-7281-bcc8-34f55e6d79e5只入审阅，宿主history行漏correction_round致BFF500后，用新零模型run 01a07d1c-c436-7541-9776-f0cc182a9371修元数据（同v4，正文没改）。此故障记录不抹去。

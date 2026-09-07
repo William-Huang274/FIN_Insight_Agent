@@ -189,6 +189,7 @@ def test_current_runtime_receipt_fails_closed_on_policy_semantic_drift() -> None
         validate_current_s1_runtime_binding_receipt(_read(RECEIPT), policy)
 
 
+@pytest.mark.local_data_integration
 def test_current_runtime_receipt_rebuilds_against_bound_assets() -> None:
     receipt = validate_current_s1_runtime_binding_receipt(
         _read(RECEIPT),
@@ -201,6 +202,7 @@ def test_current_runtime_receipt_rebuilds_against_bound_assets() -> None:
     ] is True
 
 
+@pytest.mark.local_data_integration
 def test_current_runtime_receipt_can_build_against_prospective_registry() -> None:
     registry = _read(
         ROOT
@@ -231,6 +233,7 @@ def test_current_runtime_receipt_can_build_against_prospective_registry() -> Non
     assert receipt["acceptance"]["s1_qualified_stable"] is False
 
 
+@pytest.mark.local_data_integration
 def test_current_product_direct_request_exposes_non_gap_candidate_ceiling() -> None:
     service = ResearchRetrievalService.from_runtime_paths(
         ROOT,

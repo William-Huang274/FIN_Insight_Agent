@@ -32,6 +32,7 @@ def _inputs() -> tuple[dict, dict, dict]:
     return program, predecessor, target
 
 
+@pytest.mark.local_data_integration
 def test_dell_r4_anchor_successor_is_exhaustive_and_preserves_other_cases() -> None:
     module = _module()
     program, predecessor, target = _inputs()
@@ -58,6 +59,7 @@ def test_dell_r4_anchor_successor_is_exhaustive_and_preserves_other_cases() -> N
     assert result["authority"]["model_or_network_calls"] == 0
 
 
+@pytest.mark.local_data_integration
 def test_anchor_successor_rejects_unreviewed_new_evidence() -> None:
     module = _module()
     program, predecessor, target = _inputs()
@@ -78,6 +80,7 @@ def test_anchor_successor_rejects_unreviewed_new_evidence() -> None:
         )
 
 
+@pytest.mark.local_data_integration
 def test_anchor_successor_rejects_non_source_surface() -> None:
     module = _module()
     program, predecessor, target = _inputs()

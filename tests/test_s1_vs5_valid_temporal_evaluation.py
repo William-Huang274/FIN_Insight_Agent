@@ -120,6 +120,7 @@ def _fixture() -> tuple[dict, list[dict], list[dict], dict]:
     return raw, references, [object_a, object_b], metrics
 
 
+@pytest.mark.local_data_integration
 def test_valid_temporal_evaluation_policy_binds_only_frozen_temporal_inputs() -> None:
     value = json.loads(POLICY.read_text(encoding="utf-8"))
     assert value["status"] == "frozen_after_candidate_output_before_evaluation_execution"
@@ -138,6 +139,7 @@ def test_valid_temporal_evaluation_policy_binds_only_frozen_temporal_inputs() ->
     assert contract["holdout_heterogeneous_reference_access_allowed"] is False
 
 
+@pytest.mark.local_data_integration
 def test_successor_evaluation_policy_binds_frozen_r2_without_hidden_references() -> None:
     value = json.loads(SUCCESSOR_POLICY.read_text(encoding="utf-8"))
     assert value["status"] == "frozen_after_candidate_output_before_evaluation_execution"

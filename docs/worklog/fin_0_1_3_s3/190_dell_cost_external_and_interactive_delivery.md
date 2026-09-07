@@ -674,3 +674,25 @@ Owner“继续”后从同分支clean `81abc6dc52eaf0090b66cd4eaa49e2fd26e054d7`
 当前0新provider、未部署，也未生成新报告。6run/265请求/264已知/17,060,539tokens/估28.092715元不变；v3仍needs_revision，P02/其他质量与方法问题不因小修路径通过而关闭。LangSmith3条少190815仍未定位，工具清理仍只离线字符投影；摘要、真实成本效果/用途路由、前端交互、真实上传视觉、导出引用、公开与新长短样例均保留。下一在确认该小批预算后做本地组装/真实对照，不重跑九面；无新增审批的离线工作仍可按原顺序推进。
 
 Git/交接检查：7个代码/测试路径在`578a94cbd799feebc89134b263e37aff06611929`；5个本轮源计划/上下文/ledger/worklog路径独立提交。两个变动JSONL分别447/899行逐行有效且无空行，diff与变动路径秘密模式检查通过；无新增依赖或临时/私有artifact入Git。已将本小批费用选择呈给Owner，未收到新预算前不启动provider。推送与clean状态以最终交接为准。
+
+### 2026-09-07：Owner批准3元内局部修订对照，开始真实资格
+
+Owner在上轮明确的“是否批准最多3元”之后回复“继续”，本轮按这一批次批准执行，不重跑专家或追加下一组。代码起点`a0d9980e`/clean，同分支。现有研究容器均停止，本地18165拒绝连接，非代理HTTP错误；仅临时启动`finsight-dell-report-workbench-langgraph-postgres-1`，设置default_transaction_read_only读取指定FIN thread的根checkpoint，拿到新v3/9稿/42引用/3图后已停止该容器，API/Redis未启动，无旧任务resume。
+
+沿用原生create_agent、现有Writer、case数据MCP/来源校验、CaseModelAudit和LangSmith，新增单文件资格入口`scripts/qualification/report_revision_comparison.py`，不新增服务或运行协议。原始快照checkpoint `1f1aa3b8-bd6a-6157-800a-c47e786ab255`、原run `01a0787d-961c-7f21-a590-53887cfe2c75`，没有原模型私有对话注入新Writer。准备a1漏读取原生checkpoint inline primitive，a2依次遇到严格JSON tuple入口/缺FIN_REPO_ROOT/脚本模型签名问题；均付费前修复，仅准备脚本问题，没有放宽产品validator。a1失败记录、a2失败准备和快照保留。a3两臂原生读来源/提交原稿均通过，7281字符/42引用/3图保留；首请求49,273/50,545 UTF-8 bytes，消息23,791/24,226字符，不是精确token数。原始P01:C14来源窗口2699字符完整可读。预算/未知usage的3个近邻测试通过。
+
+准备目录`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_report_local_edit_comparison_a3`。两臂同Pro thinking/low、上下文清理均关，4模型/16工具、180k输入字符/16k输出、480秒及整批3元不变。使用SDK实际payload字节上界+4096 framing余量，按峰值未缓存价预留下一请求费用，不足即传输前停止；这是保守费用保护，不自称精确provider tokenizer。只使用本题已有来源/MCP，不开新外部研究。DS只读/models=200、LangSmith既有project验证成功（0模型），当前官方价格重新确认。以下接真实结果；本段为执行前记录。
+
+#### 同批真实结果与后续零模型修正
+
+两臂2026-09-07 04:20–04:24Z执行结束，A整稿3调用：输入68,582/输出12,152/总80,734、cache hit41,216/miss27,366、reasoning5,227、估0.2933814元；B局部2调用：输入43,992/输出6,783/总50,775、hit16,384/miss27,608、reasoning6,188、估0.2182641元。总5请求131,509tokens/0.5116455元，0retry/timeout/unknown。输出已经含reasoning，不重复计费。根时长A130.735033s/B86.866816s，模型累计130.516511s/86.768303s，无P95或跨负载声明。原价格与模型参数在execution.json，现有audit_token_cost.py产出token-cost-audit.json。
+
+两组都按需读P01/P07/P09 claims各一次；A整稿提交，B一条exact edit提交。均仅改原正文第62行，其他正文/标题、42项完整citation映射和3图与原稿一致。B总tokens少37.10828%、实价估费少25.60397%；同谷价无缓存情景A0.472671/B0.2895345，少38.74503%，只是重计价而非新实验。B思考更多，非reasoning输出6925→595，显示省在无需重复输出整稿。n=1、固定A后B、质量未通过；不报普遍同质量降费率、不冒称长上下文压缩或整研究几毛钱。0研究专家/Lead/外源/视觉/付费评审调用，两臂均未实际调用方法/原文工具。
+
+人工内容复核未通过：A新增目标/第三方和“非已披露的实现值”，但未修原开头相关歧义；B沿用“非已实现”且增加未证明的“同一口径”。P01:C14实际为2026-05-28 FY27 Q1电话会管理层称符合目标，P07:C3为2026-03-01第三方分析，两者都不是精确独立披露的AI利润率。未单独披露不等于未实现；来源有归属的肯定内容不应被边界提示抹去。最早可见错误在原v3，修订请求又把开头当正确参照，B传播错误；不能只怪RAG/预算。更正上文探针解释：2699字符是claim/source绑定envelope，source.text只有100字符预览，不是完整页；宿主随后读实际retrieval_nodes.jsonl的CHUNK::03E0D7882AFA1C7DBA192E9D（2080字符/解析页4）确认其有完整相关句与上下文，没有发现导致本问题的该段解析缺失。不外推全库质量。具体对照和评语在同目录review-notes.md，不公开私有reasoning。
+
+LangSmith两root c44f2461-ffdb-49b5-8cb1-6d20a972aa33 / ee3723e3-c536-4067-becf-3156c7aba6b5均closed无error，5个LLM 131,509tokens与本地完全一致、读取投影输入输出为空；筛选元数据和真实URL保存langsmith-verification.json。历史3条少190815仍未修，不能从本批对齐外推旧问题关闭。原6run/265请求/264已知/17,060,539tokens/28.092715元单列不变。
+
+代码收口：a8d70ea1含287行有界资格入口与4测试（沿用原工具/原生create_agent，不新服务），以及输入深复制验证；1dbfcd91在原METHOD_TOOL_GUIDANCE和finance/writer/verifier方法中加一般性肯定/否定、披露/实现和说话者/时间口径区分，提示关联原稿错误，不加自然语言硬校验器。资格题目亦去掉“开头正确”的暗示，这是本批完成后的开发修正，原请求/模型结果保留在private日志，不称同一测试已证明提示效果。方法仍渐进读取，不强制每角色遍读6份。50项相关测试通过（资格、MCP方法、Writer/Verifier实际脚本模型输入及原生引用/回派近邻）；候选8代码/测试路径秘密扫描0命中、语法/diff通过。没有全仓回归、哈希扫描或新增依赖。
+
+本批结束，不花剩余预算追绿、不覆盖v3/SQL/四格式/历史run，无新部署；PG读完停回，API/PG/Redis最终均exited。产品仍needs_revision，宿主未独立验收任何候选。下一沿原步骤二处理P02/原稿责任及方法实际应用；步骤一上下文真实资格/摘要/路由仍开，前端交互、上传视觉、交付引用、公开和新场景不消失。此次增量是资格证据与小提示修正，不是产品整包完成。Git仅精确提交代码/测试和本轮文档/ledger，Z盘私有证据不入Git；文档提交和推送以最终交接为准。

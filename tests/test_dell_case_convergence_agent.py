@@ -105,6 +105,8 @@ def test_revision_comparison_changes_only_edit_interface_not_revision_role(artif
         result = await agent.ainvoke({"report": report, "messages": [{"role": "user", "content": "Synthetic revision mode comparison."}]})
         prompt = model.contexts[0][0].content
         assert "Revise the supplied full Chinese report" in prompt
+        assert "Not separately disclosed does not mean not achieved" in prompt
+        assert "similar wording alone does not prove comparability" in prompt
         assert ("prefer submit_report_edits" in prompt) is allow_edits
         assert ("submit_report_edits" in model.seen[0]) is allow_edits
         assert "submit_case_report" in model.seen[0]
@@ -229,6 +231,7 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
             assert state["phase"] == ("case_report_needs_revision" if material else "case_report_ready_for_human_review")
             assert ref in state["report"]["citations"]
             verifier_input = json.loads(model.contexts[0][1].content)
+            assert "Not separately disclosed does not mean not achieved" in model.contexts[0][0].content
             assert verifier_input["report"] == report
             assert "citations" not in verifier_input["report"]
             assert "reasoning_content" not in json.dumps(state)

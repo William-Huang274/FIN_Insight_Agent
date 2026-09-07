@@ -20,7 +20,13 @@ METHOD_TOOL_GUIDANCE = (
     "Call with no method_id for the compact catalog, then select relevant method IDs "
     "to read their content when needed. Methods are guidance, not case evidence, "
     "prewritten conclusions or extra permissions. Use the actual user question; "
-    "prior workpapers and review opinions can be wrong."
+    "prior workpapers and review opinions can be wrong. "
+    "For a source/authority correction, check the affected source and relevant method, "
+    "not just the old qualifier. Not separately disclosed does not mean not achieved; "
+    "management saying a target was met is not an independently reported numeric result. "
+    "Keep speaker, date and metric basis distinct across sources; similar wording alone "
+    "does not prove comparability. Flag a linked error in supposedly correct reference "
+    "text instead of propagating it for consistency."
 )
 
 

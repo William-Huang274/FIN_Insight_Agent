@@ -37,6 +37,18 @@ def test_actual_mcp_progressive_method_read_and_rejection():
     asyncio.run(exercise())
 
 
+@pytest.mark.parametrize("method_id", ["finance", "writer", "verifier"])
+def test_actual_mcp_method_preserves_disclosure_vs_achievement_distinction(method_id):
+    async def exercise():
+        async with Client(_build_server(), raise_exceptions=False) as client:
+            method = await client.call_tool("get_research_method", {"method_id": method_id})
+            assert not method.is_error
+            assert "未单独披露不等于未实现" in method.structured_content["content"]
+            assert method.structured_content["answer_free"]
+            assert not method.structured_content["grants_authority"]
+    asyncio.run(exercise())
+
+
 def test_specialist_method_action_consumes_actual_mcp_without_general_disclosure_or_source_authority():
     import json
     from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_scripted_qualification_composition

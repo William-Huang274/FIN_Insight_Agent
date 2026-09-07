@@ -21,6 +21,7 @@ from langchain_core.runnables import RunnableLambda
 from langchain_core.tools import ToolException
 from langgraph.graph import START, END, StateGraph
 from langgraph.types import Command
+from markdown_it import MarkdownIt
 from pydantic import BaseModel, ConfigDict, Field
 
 from .dell_case_review_agent import _text_values, InvalidToolCallFeedback
@@ -350,6 +351,31 @@ def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
 
 CLAIM_REF = re.compile(r"\[(P\d{2}:[^\[\]\s]+)\]")
 ANSWER_REF = re.compile(r"\[((?:P\d{2}:|PASSAGE::|NUMFACT::|CALC::|MCPFACT::)[^\[\]\s]+)\]")
+SOURCE_ID_IN_TEXT = re.compile(
+    r"(?<![\w:/])(?:P\d{2}:[A-Za-z0-9_]+|(?:PASSAGE|NUMFACT|CALC|MCPFACT)::[A-Za-z0-9_][A-Za-z0-9_:.-]*)")
+ANSWER_TEXT_REF = re.compile(ANSWER_REF.pattern + "|" + SOURCE_ID_IN_TEXT.pattern)
+
+
+def answer_reference_ids(prose):
+    """Recognize FIN identifiers in Markdown prose, with or without brackets.
+
+    Markdown owns code/link boundaries; this adapter only recognizes the FIN
+    identifier namespace. Recognition never confers source authority.
+    """
+    refs = []
+    for block in MarkdownIt("commonmark").parse(prose):
+        link_depth = 0
+        for token in block.children or []:
+            if token.type == "link_open":
+                link_depth += 1
+            elif token.type == "link_close":
+                link_depth -= 1
+            elif token.type == "text" and not link_depth:
+                # Preserve exact legacy bracket IDs (including unknown IDs),
+                # while recognizing bare IDs followed by sentence punctuation.
+                refs.extend(match.group(1) or match.group().rstrip(".")
+                            for match in ANSWER_TEXT_REF.finditer(token.content))
+    return list(dict.fromkeys(refs))
 
 
 def report_citations(report, artifacts, messages=None, *, prior_citations=None):
@@ -377,7 +403,7 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
     direct IDs. Saved case calculations/citations are reusable host observations.
     The source resolver remains mechanical, not an entailment judge.
     """
-    refs = list(dict.fromkeys(ANSWER_REF.findall(prose)))
+    refs = answer_reference_ids(prose)
     if not refs:
         raise ValueError("answer_has_no_inline_source_reference: cite actual [PASSAGE::id] / [NUMFACT::id] / [CALC::id] returned by read/SQL/calculator tools, [P01:claim_id] from current claims, or a successful SQL typed_gap's [MCPFACT::id] to explain only that local query boundary")
     # Prior citations come only from the server's persisted report, never model

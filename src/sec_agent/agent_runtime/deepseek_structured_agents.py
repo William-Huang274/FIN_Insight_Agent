@@ -1485,8 +1485,15 @@ class DeepSeekStructuredAgentAdapter:
                  for model in native_tools.values()],
                 tool_choice="auto", strict=False,
             )
+            # Save the request before transport: a connection failure must not
+            # erase the only record of what was attempted. Never expose it to UI.
+            if self._private_audit_sink is not None:
+                self._private_audit_sink({"event": "request", "call_id": call_id,
+                    "actor": actor, "messages": [_audit_value(m) for m in messages],
+                    "messages_basis": "original_history_before_sdk_request_projection"})
             try:
-                envelope: Any = runnable.invoke(messages)
+                envelope: Any = runnable.invoke(messages, config={"metadata": {
+                    "fin_call_id": call_id, "fin_actor": actor, "fin_model_purpose": model_purpose}})
                 if persistent_history:
                     raw_message = envelope
                     # LangChain already separates invalid JSON from parsed tool

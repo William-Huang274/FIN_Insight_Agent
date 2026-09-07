@@ -3,7 +3,7 @@ import json
 import pytest
 
 from scripts.qualification.dell_q1_specialist_paid_shadow.audit_token_cost import (
-    audit, audit_context_projection, cost_parts, message_components, peak_multiplier, usage_details,
+    audit, audit_context_projection, cost_parts, message_components, peak_multiplier, usage_details, phase_for_actor,
 )
 
 
@@ -58,6 +58,13 @@ def test_report_never_serializes_private_text_or_invents_missing_usage(tmp_path)
 def test_detail_unknown_is_not_reported_as_zero():
     assert usage_details({}) == (None, None)
     assert usage_details({"usage_metadata": {"input_token_details": {"cache_read": True}}}) == (None, None)
+
+
+@pytest.mark.parametrize("actor,phase", [("context_summary:writer", "context_summary"),
+    ("specialist:Q4:attempt", "research"), ("author_P02", "author_revision"),
+    ("report_verifier", "review"), ("writer", "writing_or_answer"), ("synthesis", "synthesis")])
+def test_cost_phase_is_descriptive_not_dropped_or_inferred_success(actor, phase):
+    assert phase_for_actor(actor) == phase
 
 
 def test_native_separate_request_and_response_preserve_context_attribution(tmp_path):

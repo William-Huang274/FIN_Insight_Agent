@@ -104,6 +104,22 @@ def summarize(calls):
     return result
 
 
+def phase_for_actor(actor):
+    if actor.startswith("context_summary:"):
+        return "context_summary"
+    if actor.startswith("lead:"):
+        return "planning"
+    if actor.startswith("specialist:"):
+        return "research"
+    if actor.startswith("author_"):
+        return "author_revision"
+    if actor in {"counter", "verifier", "research_verifier", "report_verifier"}:
+        return "review"
+    if actor in {"writer", "quick_writer"}:
+        return "writing_or_answer"
+    return "synthesis" if actor == "synthesis" else "other_disclosed_actor"
+
+
 def audit(root):
     calls, not_sent = [], []
     for audit_path in sorted(root.glob("*/model-call-events.jsonl")):
@@ -154,6 +170,8 @@ def audit(root):
                 next_seen.add(digest)
             seen[actor].update(next_seen)
             calls.append({"attempt": audit_path.parent.name, "call_id": cid, "actor": actor,
+                          "phase": phase_for_actor(actor),
+                          "message_basis": context.get("messages_basis", "legacy_original_request_history"),
                           "recorded_at": start["recorded_at"], "model": model,
                           "status": outcome.get("status", "pending"),
                           "input_tokens": inp, "output_tokens": out, "total_tokens": total,
@@ -164,14 +182,14 @@ def audit(root):
                           "private_context_available": bool(context),
                           "cost_parts_cny": parts, "modeled_cost_cny": sum(parts.values()) if parts else None})
     grouped = {}
-    for key in ("attempt", "actor", "status"):
+    for key in ("attempt", "actor", "phase", "status"):
         groups = defaultdict(list)
         for call in calls:
             groups[call[key]].append(call)
         grouped[key] = {name: summarize(rows) for name, rows in groups.items()}
     return {"price_source": PRICE_SOURCE, "price_as_of": PRICE_AS_OF,
             "cost_is_invoice": False, "missing_usage_is_not_zero": True,
-            "component_unit": "archived history characters before SDK request projection; excludes provider tool schemas and serialization overhead; not effective wire size or token attribution",
+            "component_unit": "archived model-request characters before SDK tool projection; per-call message_basis distinguishes original versus summarized history; excludes tool schemas/serialization; not provider-token attribution",
             "attribution": "post-hoc descriptive; replay/context/failure categories are not independent causal shares",
             "totals": summarize(calls), "not_sent_outcomes": not_sent, "groups": grouped, "calls": calls}
 

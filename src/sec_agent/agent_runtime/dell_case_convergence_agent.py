@@ -182,6 +182,39 @@ def observed_sources(messages):
     return sources
 
 
+def reread_native_observation(messages, source_id, offset=0, max_characters=16000):
+    """Read this agent's successful original observation, not its summary.
+
+    Reuses the native checkpoint. A saved citation window stays just that window;
+    it is NOT parsed into a new executable CALC or promoted to numeric authority.
+    """
+    observed = observed_sources(messages)
+    if source_id in observed:
+        text = json.dumps(observed[source_id], ensure_ascii=False, indent=2)
+        end = offset + max_characters
+        return {"source_id": source_id, "text": text[offset:end], "offset": offset,
+            "total_characters": len(text), "next_offset": end if end < len(text) else None,
+            "read_origin": "same_agent_successful_tool_artifact",
+            "usage": "Original observed record, not working summary. Preserve its recorded period and authority; not new source or financial verification."}
+    for message in reversed(messages):
+        if not isinstance(message, ToolMessage) or message.status != "success" or message.name != "read_current_source":
+            continue
+        try:
+            body = json.loads(message.content)
+        except (ValueError, TypeError):
+            continue
+        if not isinstance(body, dict) or (body.get("citation_id") or body.get("source_id")) != source_id:
+            continue
+        start, text = body.get("offset"), body.get("text")
+        if type(start) is not int or not isinstance(text, str) or not start <= offset < start + len(text):
+            continue
+        end = min(offset + max_characters, start + len(text))
+        return {**body, "text": text[offset-start:end-start], "offset": offset,
+            "next_offset": end if end < body["total_characters"] else None,
+            "read_origin": "same_agent_saved_source_window_not_new_calculation"}
+    return None
+
+
 def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
     errors = []
     if revision.paper_id != paper_id:
@@ -397,6 +430,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             end = offset + max_characters
             return {"citation_id": source_id, "text": text[offset:end], "offset": offset,
                     "next_offset": end if end < len(text) else None, "total_characters": len(text),
+                    **({"calculation_reuse": "This is a persisted citation, not necessarily a complete executable CALC. If calculate_research_metric cannot resolve this exact ID, re-read the bound operands from SQL/original source tools and recompute with the same intended formula/period/unit. Use the newly returned CALC ID. Do not infer missing operands from report prose or relabel them as assumptions."}
+                       if source_id.startswith("CALC::") else {}),
                     "usage": "Persisted source/claim binding; mechanical resolution is not semantic verification. Read the original source context as needed."}
         chart_sources = {**chart_source_records(runtime.state.get("synthesis", {})),
                          **chart_source_records(runtime.state.get("report", {}))}
@@ -408,6 +443,9 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         try:
             return artifacts.with_revisions(runtime.state.get("revisions", {})).read_source(source_id, offset, max_characters)
         except ValueError as exc:
+            prior = reread_native_observation(runtime.state["messages"], source_id, offset, max_characters)
+            if prior is not None:
+                return prior
             raise ToolException(str(exc)) from None
 
     @tool
@@ -544,7 +582,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     return create_agent(model=model, tools=[*selected, submit], state_schema=CaseOutputState,
         system_prompt=CONTEXT_RULES + specific + METHOD_TOOL_GUIDANCE + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
         middleware=[StopOnOutput(), InvalidToolCallFeedback(), AnswerSubmissionFeedback(submit.name), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
-            ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="error"), *([audit] if audit else [])],
+            ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="error"), *(audit.middlewares() if audit else [])],
         name=f"case_{role}_{paper_id or 'report'}")
 
 

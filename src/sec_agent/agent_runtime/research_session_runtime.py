@@ -43,6 +43,18 @@ def load_research_runtime_profile(root):
             or type(editing["trigger_tokens"]) is not int or editing["trigger_tokens"] < 1
             or type(editing["keep"]) is not int or not 1 <= editing["keep"] <= 64):
         raise ValueError("research_session_context_editing_configuration_invalid")
+    summary = profile.get("context_summarization")
+    if summary:
+        if (set(summary) != {"enabled", "trigger_tokens", "keep_tokens", "max_summaries", "profile", "budget"}
+                or type(summary["enabled"]) is not bool
+                or any(type(summary[k]) is not int for k in ("trigger_tokens", "keep_tokens", "max_summaries"))
+                or not 0 < summary["keep_tokens"] < summary["trigger_tokens"]
+                or not 1 <= summary["max_summaries"] <= 2):
+            raise ValueError("research_session_summary_configuration_invalid")
+        summary_model = DeepSeekModelProfile.model_validate_json(json.dumps(summary["profile"]))
+        summary_basis = TokenBudgetBasis.model_validate_json(json.dumps(summary["budget"]))
+        if summary_basis.reasoning_profile != "agentic_message_history_thinking_" + summary_model.thinking:
+            raise ValueError("research_session_summary_reasoning_budget_mismatch")
     for role, node in profile["nodes"].items():
         model = DeepSeekModelProfile.model_validate_json(json.dumps(node["profile"]))
         budget = TokenBudgetBasis.model_validate_json(json.dumps(node["budget"]))
@@ -166,6 +178,17 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         audit = CaseModelAudit(actor=("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True)
         model = case_chat_model(model_profile, basis, base, api_key, context_editing=profile.get("context_editing"))
+        summary = profile.get("context_summarization")
+        if summary and summary["enabled"] and role != "quick_writer":
+            from .model_context import RequestSummaryMiddleware
+            summary_profile = DeepSeekModelProfile.model_validate_json(json.dumps(summary["profile"]))
+            summary_basis = TokenBudgetBasis.model_validate_json(json.dumps(summary["budget"]))
+            summary_model = case_chat_model(summary_profile, summary_basis, base, api_key)
+            summary_audit = CaseModelAudit(actor="context_summary:" + audit.actor, profile=summary_profile,
+                basis=summary_basis, public_sink=public_sink, private_sink=private_sink, stream_public=True)
+            audit.context_summary = RequestSummaryMiddleware(model=summary_model,
+                audited_model=summary_audit.model_runnable(summary_model), trigger_tokens=summary["trigger_tokens"],
+                keep_tokens=summary["keep_tokens"], max_summaries=summary["max_summaries"])
         if role in {"counter", "verifier"}:
             return build_case_reviewer(role=role, model=model, tools=tools, artifacts=artifacts,
                 max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit)

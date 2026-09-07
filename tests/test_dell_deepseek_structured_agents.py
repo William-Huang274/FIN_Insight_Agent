@@ -66,7 +66,7 @@ class FakeStructuredModel:
         )
         return self
 
-    def invoke(self, value: Any) -> dict[str, Any]:
+    def invoke(self, value: Any, config=None) -> dict[str, Any]:
         self.calls += 1
         self.inputs.append(value)
         schema = self.schemas[-1]
@@ -938,6 +938,7 @@ def test_agentic_provider_failure_audit_keeps_http_status_without_error_body(
     events: list[dict[str, Any]] = []
     calls: list[str] = []
     private_error = "Insufficient Balance; private-provider-body-do-not-publish"
+    private_requests = []
 
     def respond(request: httpx.Request) -> httpx.Response:
         calls.append(request.method)
@@ -959,6 +960,7 @@ def test_agentic_provider_failure_audit_keeps_http_status_without_error_body(
         adapter = DeepSeekStructuredAgentAdapter(
             config=_config(), chat_models=models,
             audit_sink=lambda event: events.append(dict(event)),
+            private_audit_sink=private_requests.append,
         )
         with pytest.raises(
             DeepSeekStructuredAgentError, match="deepseek_specialist_single_call_failed"
@@ -974,6 +976,9 @@ def test_agentic_provider_failure_audit_keeps_http_status_without_error_body(
     assert outcome["usage_available"] is False
     encoded = json.dumps(events)
     assert private_error not in encoded
+    assert len(private_requests) == 1 and private_requests[0]["event"] == "request"
+    assert private_requests[0]["call_id"] == outcome["call_id"]
+    assert private_requests[0]["messages"] and "raw_response" not in private_requests[0]
     assert "dummy-key-no-network-call" not in encoded
 
 

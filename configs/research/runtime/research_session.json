@@ -4,6 +4,30 @@
   "max_tasks": 12,
   "max_parallel_tasks": 2,
   "context_editing": {"trigger_tokens": 50000, "keep": 6},
+  "context_summarization": {
+    "enabled": false,
+    "trigger_tokens": 80000,
+    "keep_tokens": 24000,
+    "max_summaries": 2,
+    "profile": {"model": "deepseek-v4-flash", "reasoning_effort": "low", "thinking": "disabled"},
+    "budget": {
+      "node_role": "specialist",
+      "node_purpose": "Native same-agent working summary of genuinely long post-research histories; not a report, Evidence, or financial acceptance. Disabled pending successful long-continuation qualification.",
+      "input_scale": "One agent's selected prefix, original task and recent tool pairs retained. Full original messages/artifacts remain in native checkpoints. No other agent's private history, no new memory service, no hidden 4k prefix trim.",
+      "required_outputs": ["Working goal/progress, exact material values/formulas/periods/source IDs, unresolved conflicts/errors and next reads; historical assertions clearly non-authoritative"],
+      "schema_burden": "Plain working note from the native summarizer; no new financial report template or tool schema. Original records, not the summary, remain the citation authority.",
+      "materiality_quality_risk": "Compression can omit qualifiers or promote historical claims. Never treat missing projected messages/failed reads as proved source absence, and never infer complete CALC objects from citation prose.",
+      "comparable_run_evidence": "2026-09-07 development n=1: native Flash summary 65726 input/1446 output; Pro continuation 73990 then46553 input. End-to-end branch failed at missing original-observation read interface and two-call limit. That interface is subsequently locally repaired; no paid revalidation and no same-quality savings claim.",
+      "reasoning_profile": "agentic_message_history_thinking_disabled",
+      "max_input_characters": 650000,
+      "max_output_tokens": 6000,
+      "timeout_seconds": 480,
+      "max_transport_attempts": 1,
+      "retry_policy": "none",
+      "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+      "input_ceiling_behavior": "fail_before_transport"
+    }
+  },
   "scope": "One fresh Dell development case on the existing as-of data plane; limits are safety ceilings, not target call counts. No old answer seed. New vision/attachment/export tooling requires separate qualification before inclusion.",
   "cost_expectation_cny": {
     "rough_low": 12,

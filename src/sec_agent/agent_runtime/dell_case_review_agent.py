@@ -2,7 +2,8 @@
 
 FIN owns citation/coverage checks. create_agent owns tool dispatch, message
 pairing and iteration; Agent Server owns persistence, concurrency and traces.
-No provider transcript is summarized or copied to another reviewer.
+Private transcripts never pass to another reviewer; optional working summaries
+only project this same agent's request, retaining its original checkpoint.
 """
 from __future__ import annotations
 
@@ -18,7 +19,7 @@ from uuid import uuid4
 
 from langchain.agents import AgentState, create_agent
 from langchain.agents.middleware import AgentMiddleware, ModelCallLimitMiddleware, ToolCallLimitMiddleware
-from langchain.agents.middleware.types import hook_config
+from langchain.agents.middleware.types import ModelRequest, ModelResponse, hook_config
 from langchain.tools import ToolRuntime, tool
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.runnables import RunnableLambda
@@ -195,6 +196,7 @@ class CaseModelAudit(AgentMiddleware):
     def __init__(self, *, actor, profile, basis: TokenBudgetBasis, public_sink, private_sink, stream_public=False):
         self.actor, self.profile, self.basis = actor, profile, basis
         self.private_sink, self.stream_public = private_sink, stream_public
+        self.context_summary = None
         self.events = []
         def emit(event):
             public_sink(event)
@@ -203,6 +205,24 @@ class CaseModelAudit(AgentMiddleware):
                 from langgraph.config import get_stream_writer
                 get_stream_writer()({"kind": "model", **event})
         self.public_sink = emit
+
+    def middlewares(self):
+        return [*([self.context_summary] if self.context_summary else []), self]
+
+    def model_runnable(self, model):
+        """The native summarizer uses this same fee/error/private-audit hook."""
+        async def invoke(value, config):
+            messages = model._convert_input(value).to_messages()
+            async def handler(request):
+                raw = await request.model.ainvoke(request.messages, config=config)
+                return ModelResponse(result=[raw])
+            result = await self.awrap_model_call(ModelRequest(model=model, messages=messages,
+                tools=[], state={"messages": messages}), handler)
+            raw = result.result[-1]
+            if not raw.text.strip() or raw.tool_calls or raw.invalid_tool_calls:
+                raise ValueError("context_summary_empty_or_tool_response")
+            return raw
+        return RunnableLambda(invoke)
 
     async def awrap_tool_call(self, request, handler):
         if not self.stream_public:
@@ -238,6 +258,10 @@ class CaseModelAudit(AgentMiddleware):
         if size > self.basis.max_input_characters:
             raise ValueError("case_review_input_ceiling_before_transport")
         call_id = str(uuid4())
+        # Native LangChain metadata gives the cloud LLM span the same stable ID
+        # as the local usage record; no backfill or mutation of historical runs.
+        request = request.override(model=request.model.model_copy(update={"metadata": {
+            **(request.model.metadata or {}), "fin_call_id": call_id, "fin_actor": self.actor}}))
         common = {"schema_version": "fin_ia_model_call_audit_event_v1_0", "call_id": call_id,
             "role": "specialist", "actor": self.actor, "model_purpose": self.actor,
             "provider": "deepseek", "model": self.profile.model, "thinking": self.profile.thinking,
@@ -248,7 +272,9 @@ class CaseModelAudit(AgentMiddleware):
             "execution_source": "provider_model", "recorded_at": datetime.now(timezone.utc).isoformat()}
         self.public_sink({**common, "event": "started", "max_output_tokens": self.basis.max_output_tokens})
         self.private_sink({"event": "request", "call_id": call_id, "actor": self.actor, "messages": serialized,
-            "messages_basis": "original_history_before_sdk_request_projection"})
+            "messages_basis": "summary_request_before_sdk_tool_projection" if request.state.get("request_summary") else "original_history_before_sdk_request_projection",
+            **({"original_messages": [m.model_dump(mode="json") for m in request.state["messages"]]}
+               if request.state.get("request_summary") else {})})
         start = perf_counter()
         try:
             response = await handler(request)
@@ -341,7 +367,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     return create_agent(model=model, tools=[*tools, submit_case_review], state_schema=CaseReviewerState,
         system_prompt=REVIEW_PROMPT + emphasis + METHOD_TOOL_GUIDANCE + f"\nBudget: up to {max_model_calls} model calls / {max_tool_calls} tools; no retries or silent partial acceptance.",
         middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="error"),
-                    ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="error"), *([audit] if audit else [])],
+                    ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="error"), *(audit.middlewares() if audit else [])],
         name=f"case_{role}")
 
 

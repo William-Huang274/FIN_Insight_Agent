@@ -696,3 +696,35 @@ LangSmith两root c44f2461-ffdb-49b5-8cb1-6d20a972aa33 / ee3723e3-c536-4067-becf-
 代码收口：a8d70ea1含287行有界资格入口与4测试（沿用原工具/原生create_agent，不新服务），以及输入深复制验证；1dbfcd91在原METHOD_TOOL_GUIDANCE和finance/writer/verifier方法中加一般性肯定/否定、披露/实现和说话者/时间口径区分，提示关联原稿错误，不加自然语言硬校验器。资格题目亦去掉“开头正确”的暗示，这是本批完成后的开发修正，原请求/模型结果保留在private日志，不称同一测试已证明提示效果。方法仍渐进读取，不强制每角色遍读6份。50项相关测试通过（资格、MCP方法、Writer/Verifier实际脚本模型输入及原生引用/回派近邻）；候选8代码/测试路径秘密扫描0命中、语法/diff通过。没有全仓回归、哈希扫描或新增依赖。
 
 本批结束，不花剩余预算追绿、不覆盖v3/SQL/四格式/历史run，无新部署；PG读完停回，API/PG/Redis最终均exited。产品仍needs_revision，宿主未独立验收任何候选。下一沿原步骤二处理P02/原稿责任及方法实际应用；步骤一上下文真实资格/摘要/路由仍开，前端交互、上传视觉、交付引用、公开和新场景不消失。此次增量是资格证据与小提示修正，不是产品整包完成。Git仅精确提交代码/测试和本轮文档/ledger，Z盘私有证据不入Git；文档提交和推送以最终交接为准。
+
+### 2026-09-07：按Owner要求只集中步骤一——费用归账、原生上下文与用途路由
+
+起点`0c55ee1e8a883d09c838a06bf7488f6b4952ddf9`，D:/FIN_Insight_Agent、原分支clean/synced；不在失效C盘worktree工作。不进入步骤二/P02/报告语义修订、前端/上传/公开范围；原v3和原始研究日志只读。沿用Project OS/成熟栈/Git/worklog；本节同时保留本轮续接检查点，不增加执行权威或状态机。
+
+费用：旧6run仍265请求264已知、17060539tokens、估28.0927149元。现有audit增加phase分类而非新计费后台，`D:/temp/finsight-dell-final-20260907-a1/token-cost-phase-audit.json`按角色用途分为规划15次0.4962636、研究99次9.8480427、审查55次5.7580431、作者修订30次3.9423651、综合32次3.5594433、写作34次4.4885571元。最后四类合计17.7484086元；它们不是纯浪费，也不是整份报告必须付出的固定成本。输出费用15.9920055（含reasoning，不重复加）、未缓存10.140831、缓存1.9598784。账单与按已知usage/时段估价区分，账户截图不强行逐分配平。
+
+旧未知项已做有界核验：Q4 `specialist-23ef10c65951-4b29b8ea0183e66cd656`连接失败，旧适配器仅成功后保存输入，因此没有可恢复的该次私有请求/用量，不能算零或猜测。新适配器改为传输前私有保存输入，失败不再抹掉请求。LangSmith三个LLM span仍0usage，而本地完整AIMessage真实合计190815tokens；原镜像与本机都是LangChain1.4.0/core1.6.1/openai1.6.0/deepseek1.1.0/LangSmith0.12.1，云端调用已结束无error，容器相关时窗没有发现LangSmith传输失败日志，**根因未证实**。不手改旧云trace，不归咎代理；新native及legacy调用在LangChain metadata记录`fin_call_id`供本地/云端直接对应。
+
+实现：已安装SummarizationMiddleware负责摘要提示组装、触发及合法工具配对切点，薄middleware只把摘要作为请求投影保存在原生checkpoint旁边。原messages/artifact不删、原任务逐字保留、最近工具/原reasoning保持协议；同一前缀不反复摘要、已有提交后不再摘要。关闭原生默认4000-token前缀裁剪及隐式自动retry，摘要走同一CaseModelAudit/SDK，费用与失败可见。80000软触发/24000近似保留、每角色最多2次摘要不是强行截断研究窗口；未资格前配置不启用。只接post-research原生节点，不为旧Lead/Specialist另造摘要/记忆服务。CALC旧文字引用明确提示：可引用不等于可继续计算，缺完整对象时通过SQL/原文补读操作数后重新计算，用新CALC ID，不从文字猜造对象。
+
+零模型资格：94项受影响近邻通过（摘要/SDK编辑/原生checkpoint/引用/原审计/legacy适配器），非全仓回归。含摘要不裁4k、无自动retry、缓存前缀复用、原任务/工具配对/原始SQL artifact保留、伪造引用拒绝、摘要用量正常入账且metadata准确关联local call ID。早期fixture未实现RunnableConfig及把None当字符串、摘要阈值过小导致合理的第二次摘要，分别修测试后通过，没有降低引用校验。没有新增依赖。
+
+新付费批准与失败：Owner明确批准独立一批≤5元/≤8调用（摘要在内）；A1 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_context_continuation_a1`原样接续原40消息历史，首请求input200272/output4500，4500全部reasoning，finish_reason=length，估1.923948元。没有答案或可接受tool call，原生audit抛截断，本批立即停，其他臂没有启动。预算编排将短问题误当低推理负担、4500输出余量偏紧，这是宿主实验设计责任，不是网络或模型能力失败，也不以半截推理代替答案。
+
+Owner随后明确同意缩小范围：**不重跑失败基线，不再跑单独工具清理臂**；只继续尚未开始的摘要＋清理、Flash短事实，Pro输出余量12000；累计仍含已花1.923948、不超过原5元/8调用。A2仅零模型准备，发现模型metadata浅复制使探针schema捕获list重新赋值而漏记，改为原位记录后A3零模型重新确认232741/21011bytes的两臂请求；实际付费预算守门始终直接取真实request.tools，未因探针漏记而少计paid余量。A3根`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_context_continuation_a3`，原输入与A1失败不可变，含新的scope correction和TokenBudgetBasis。它是隔离开发接续及来源引用资格，不是重新完成原Synthesis，更不是整案报告。
+
+本节进行中检查点：A3摘要Flash成功input65726/output1446，估0.210192元；累计2.13414元。主Pro接续正在运行，exec session33076。停止后必须检查a3 result/candidate/summary/所有新增工具动作、LangSmith实际用量；不能只看预填CALC ID字符串测试。剩余分支仅Flash短事实，没有新预算授权。原API/PG/Redis容器仍exited、无报告或SQL变更。下一先收口本步骤、更新本节与context/ledgers并汇报，不能自动开始步骤二。
+
+#### 本节收口（覆盖上一段进行中状态，不覆盖原失败证据）
+
+A3主模型两次input73990/46553、output6662/10938，连同摘要共205315tokens/估1.4707206元。首次自主回读4个CALC；宿主旧消息中确有原计算artifact或完整历史citation窗口，但read_current_source只查当前报告/底稿而忽略原观察，4读均报unknown。次轮模型误推“本会话没计算过”、无合法引用提交被拒，原2轮限制停止。这是已观察记录的本地回读接缝，不能说数据缺失或摘要降费成功。
+
+补丁只让现有read_current_source在当前来源无法解析时，复用observed_sources和原生成功历史窗口；不新增记录库、不从citation文本造CALC、不把failed/AI内容当记录。实际4对象返回7543/4867/4812/4848字符；A5_offline通过同一原生Agent/真实读取工具的4回读＋来源绑定提交，Flash支路也有1读＋提交，0provider。摘要工作说明补“非用户指令/非Evidence、遗漏或回读失败不证明未观察”，配置明确disabled，未做修后付费长接续，不晋升。
+
+A4仅执行Owner已批准且尚未启动的独立Flash短事实任务，未重试A3：2调用input5833/6624、output688/692，共13837tokens、估0.0304886元。第一次没有合法inline reference被原validator退回，第二次成功。宿主逐项读1317字符答复，对CALC原对象核公式、−882、四个数2225/2543/1239/675、USD millions及Q2 FY27对Q2 FY26、发行人文字非S2身份，数值维度正确；但“未通过/未验证”混说、unknown来源错误单解为未观察仍欠准确，不称金融语义与诊断全绿。A4机器expected_value_present=false只是Unicode负号与ASCII匹配差异，原结果保留、未来检测器归一负号，非修改validator或事实来过测。
+
+**累计6请求398998输入+24926输出=423924tokens，估3.4251572元，6项usage已知，无整案/报告/SQL变更，不再追加付费。**A2/A5仅离线。A4结束有LangSmith multipart timeout警告；随后只读云端确认5个新带fin_call_id的LLM spans均closed、local/cloud总tokens逐个一致（67172/80652/57491/6521/7316）。不手改云trace，不因此证明整个graph trace完整或旧3缺额根因；A1在关联补丁前，按本地真实usage单列。
+
+结论：成本归账、局部编辑接口、原生消息保留与历史回读整改落地；既有Flash短问答route有一个真实数值样本；原生摘要经历真实试验但未完成修后模型验收，保持关闭。严格按原计划，**步骤一尚未全部验收**，不是“五步全部完成”；剩下的具体项是修复后长接续资格，不进入步骤二、前端或另开协议。详细本批报告：`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_context_continuation_a4/review-notes.md`。下一先向Owner汇报真实结果及余项，不把1.5748428元余额当新一轮权限。
+
+最终近邻测试95通过（6文件，含本轮新增source-window负例与metadata/summary审计；前述94为增量前，不相加）。四份变动ledger逐行JSON有效449/901/198/116，配置JSON/diff通过；只检查本轮路径，不全仓扫描/回归。Git精确提交这些代码、脚本、测试、配置及源文档，不含Z盘私有输入/推理/输出，也不含D:/temp审计原物；推送与clean以最终工具结果为准。

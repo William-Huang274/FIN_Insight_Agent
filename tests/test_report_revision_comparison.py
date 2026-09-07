@@ -4,6 +4,8 @@ from types import SimpleNamespace
 from copy import deepcopy
 
 from langchain_core.messages import AIMessage
+from langchain.agents.middleware.types import ModelRequest
+from langchain_core.language_models.fake_chat_models import FakeListChatModel
 import pytest
 
 from scripts.qualification.report_revision_comparison import ComparisonAudit, input_state, model_settings
@@ -43,7 +45,7 @@ def test_comparison_preserves_existing_audit_and_counts_one_response():
         return SimpleNamespace(result=[AIMessage(content="Fixture only", usage_metadata={
             "input_tokens": 10, "output_tokens": 2, "total_tokens": 12,
             "input_token_details": {"cache_read": 4}}, response_metadata={"finish_reason": "stop"})])
-    asyncio.run(audit.awrap_model_call(SimpleNamespace(system_message=None, messages=[], tools=[]), fixture))
+    asyncio.run(audit.awrap_model_call(ModelRequest(model=FakeListChatModel(responses=["unused"]), messages=[], tools=[], state={}), fixture))
     assert [e["event"] for e in events] == ["started", "outcome"]
     assert events[-1]["usage_reported"] and events[-1]["cache_hit_tokens"] == 4
     assert [e["event"] for e in private] == ["request", "response"]

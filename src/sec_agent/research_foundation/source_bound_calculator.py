@@ -165,7 +165,7 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
 def register_source_calculator_tool(server, source_lookup, *, on_result=None):
     @server.tool(name="calculate_research_metric", structured_output=True)
     def calculate(request: SourceBoundCalculation) -> dict[str, Any]:
-        """Evaluate arithmetic using observed archive/PASSAGE/Evidence/SQL or saved CALC IDs. Search previews cannot be operands. No shell/code or S2 write; output remains non-authoritative."""
+        """Evaluate arithmetic using observed archive/PASSAGE/Evidence/SQL or saved CALC IDs. Search previews cannot be operands. No shell/code or S2 write; output remains non-authoritative. financial_semantics_verified=false means not verified, not a failed financial review."""
         try:
             result = calculate_from_sources(request, source_lookup)
             if on_result is not None:

@@ -182,6 +182,75 @@ def observed_sources(messages):
     return sources
 
 
+def numeric_fact_citation(ref, source):
+    return {"claim": {"kind": "numeric_fact", "statement":
+        f"{source['ticker']} {source['metric_id']} = {source['value_decimal']} {source['unit']}; period end {source['period_end']}"},
+        "sources": [deepcopy(source)]}
+
+
+def saved_citation_bindings(messages, *, prior_citations=None):
+    """Project persisted citations from successful native reads, not evidence.
+
+    New reads retain the full host binding in ToolMessage.artifact. The legacy
+    fallback accepts only a complete JSON citation window emitted by this tool;
+    neither partial text nor model prose can restore an executable observation.
+    """
+    citations = {}
+    for message in messages:
+        if not isinstance(message, ToolMessage) or message.status != "success" or message.name != "read_current_source":
+            continue
+        if isinstance(message.artifact, dict) and "citations" in message.artifact:
+            current = message.artifact["citations"]
+        else:
+            try:
+                window = json.loads(message.content)
+                if (not isinstance(window, dict) or not window.get("citation_id") or window.get("offset") != 0
+                        or window.get("next_offset") is not None or not isinstance(window.get("text"), str)
+                        or window.get("total_characters") != len(window["text"])):
+                    continue
+                current = {window["citation_id"]: json.loads(window["text"])}
+            except (ValueError, TypeError):
+                continue
+        if not isinstance(current, dict):
+            continue
+        for ref, record in current.items():
+            if (not isinstance(record, dict) or not isinstance(record.get("claim"), dict)
+                    or not isinstance(record.get("sources"), list) or not record["sources"]
+                    or not all(isinstance(source, dict) for source in record["sources"])):
+                continue
+            if ref.startswith(("CALC::", "NUMFACT::", "PASSAGE::")) and not any(
+                    source.get("source_id") == ref for source in record["sources"]):
+                continue
+            if ref in citations and citations[ref] != record:
+                raise ValueError("saved_citation_binding_conflict:" + ref)
+            citations[ref] = deepcopy(record)
+    # The current host report/synthesis supersedes older citation wording.
+    citations.update(deepcopy(prior_citations or {}))
+    # A persisted CALC citation already contains its bound S2 source summaries.
+    # Expose those unchanged for citation/read only, never to the calculator or
+    # revision source-admission path via observed_sources.
+    for record in list(citations.values()):
+        for source in record.get("sources", []):
+            ref = source.get("source_id", "")
+            if (ref.startswith("NUMFACT::") and source.get("result_state") == "numeric_fact"
+                    and source.get("numeric_fact_authority") is True
+                    and all(key in source for key in ("ticker", "metric_id", "value_decimal", "unit", "period_end"))):
+                binding = numeric_fact_citation(ref, source)
+                if ref in citations and citations[ref]["sources"] != binding["sources"]:
+                    raise ValueError("saved_citation_binding_conflict:" + ref)
+                citations.setdefault(ref, binding)
+    return citations
+
+
+CALCULATION_READ_GUIDANCE = (
+    "A saved citation can be cited with its existing ID; citing it needs neither a new ID nor recomputation. "
+    "Reusing it as a calculator operand requires the complete original CALC, not this citation summary. "
+    "If that record is unavailable, restore bound inputs through SQL/original source tools before calculating. "
+    "arithmetic_verified=true proves arithmetic only. financial_semantics_verified=false means not verified, "
+    "NOT a failed financial review; an absent verification field means not recorded. Reading does not change either status."
+)
+
+
 def reread_native_observation(messages, source_id, offset=0, max_characters=16000):
     """Read this agent's successful original observation, not its summary.
 
@@ -195,6 +264,7 @@ def reread_native_observation(messages, source_id, offset=0, max_characters=1600
         return {"source_id": source_id, "text": text[offset:end], "offset": offset,
             "total_characters": len(text), "next_offset": end if end < len(text) else None,
             "read_origin": "same_agent_successful_tool_artifact",
+            "citation_status": "bound",
             "usage": "Original observed record, not working summary. Preserve its recorded period and authority; not new source or financial verification."}
     for message in reversed(messages):
         if not isinstance(message, ToolMessage) or message.status != "success" or message.name != "read_current_source":
@@ -211,7 +281,9 @@ def reread_native_observation(messages, source_id, offset=0, max_characters=1600
         end = min(offset + max_characters, start + len(text))
         return {**body, "text": text[offset-start:end-start], "offset": offset,
             "next_offset": end if end < body["total_characters"] else None,
-            "read_origin": "same_agent_saved_source_window_not_new_calculation"}
+            "read_origin": "same_agent_saved_source_window_not_new_calculation",
+            "citation_status": "incomplete_saved_window",
+            "usage": "Readable historical window, but no complete citation binding is available. Restore the complete binding or original source before relying on it; changing brackets does not supply missing evidence."}
     return None
 
 
@@ -308,7 +380,8 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
         raise ValueError("answer_has_no_inline_source_reference: cite actual [PASSAGE::id] / [NUMFACT::id] / [CALC::id] returned by read/SQL/calculator tools, or [P01:claim_id] from current claims")
     # Prior citations come only from the server's persisted report, never model
     # or caller arguments. A local edit need not re-query unchanged cited facts.
-    direct = {ref: deepcopy(value) for ref, value in (prior_citations or {}).items()
+    saved = saved_citation_bindings(messages, prior_citations=prior_citations)
+    direct = {ref: deepcopy(value) for ref, value in saved.items()
               if ref.startswith(("PASSAGE::", "NUMFACT::", "CALC::"))}
     calculations = []
     observed = observed_sources(messages)
@@ -327,9 +400,7 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
         if body.get("result_state") == "numeric_fact" and body.get("numeric_fact_authority") is True:
             source = artifacts._source_summary(ref, body)
             source["source_observation_ids"] = body.get("source_observation_ids", [])
-            direct[ref] = {"claim": {"kind": "numeric_fact", "statement":
-                f"{body['ticker']} {body['metric_id']} = {body['value_decimal']} {body['unit']}; period end {body['period_end']}"},
-                "sources": [source]}
+            direct[ref] = numeric_fact_citation(ref, source)
         elif body.get("writer_citable") is True:
             source = {**artifacts._source_summary(ref, body),
                       "text": body.get("passage") or body.get("bounded_excerpt"), "numeric_fact_authority": False}
@@ -353,7 +424,10 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
     bound = report_citations(" ".join(f"[{ref}]" for ref in paper_refs), artifacts) if paper_refs else {}
     missing = [ref for ref in refs if ref not in bound and ref not in direct]
     if missing:
-        raise ValueError(f"answer_source_ids_not_observed:{missing}: query/read the actual source first; no answer saved")
+        raise ValueError(f"answer_source_ids_not_observed:{missing}: no complete source/citation binding is available. "
+            "Use read_current_source for the exact ID and inspect citation_status; a saved complete binding is reusable with its existing ID. "
+            "If only a partial legacy window remains, restore its original source through the source/SQL tools. "
+            "Retain citations on supported claims; removing brackets while retaining an unsupported claim does not fix the error. No answer saved")
     return {ref: bound[ref] if ref in bound else direct[ref] for ref in refs}
 
 
@@ -391,6 +465,7 @@ Do not treat reviewer opinions as evidence or infallible truth. Recheck the orig
 Every material fact/inference must link to actual sources/claims; exact quotes and authority/schema checks are local, economic entailment remains a reviewer responsibility.
 Issuer prose/media and general calculator results stay non-S2/non-authoritative, even when filed at SEC. Source roles, period/as-of and limits must be visible near their use. New web data requires an observed source ID before use.
 Calculator resolves archive Pxx:Sxxx IDs and numeric_fact_id from this tool session's successful SQL queries. Do not disguise sourced numbers as assumptions. Private reasoning is saved privately; output only concise public rationales.
+financial_semantics_verified=false means not verified, not a failed review; absent legacy verification fields mean not recorded. A reusable citation binding does not require newly generated source/calculation IDs and does not confer financial verification.
 """
 
 
@@ -418,35 +493,46 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         except ValueError as exc:
             raise ToolException(str(exc)) from None
 
-    @tool
-    def read_current_source(source_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 16000) -> dict:
+    @tool(response_format="content_and_artifact")
+    def read_current_source(source_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 16000) -> tuple[dict, dict | None]:
         """Read a report citation (Pxx:claim / PASSAGE:: / NUMFACT:: / CALC::) or current source by ID. The current report's bound citation record is available on demand, not repeated in every model input. Never arbitrary path."""
         if not 0 <= offset or not 100 <= max_characters <= 16000:
             raise ToolException("source_window_invalid")
-        citations = {**runtime.state.get("synthesis", {}).get("citations", {}),
-                     **runtime.state.get("report", {}).get("citations", {})}
+        citations = saved_citation_bindings(runtime.state.get("messages", []), prior_citations={
+            **runtime.state.get("synthesis", {}).get("citations", {}),
+            **runtime.state.get("report", {}).get("citations", {})})
         if source_id in citations:
             text = json.dumps(citations[source_id], ensure_ascii=False, indent=2)
             end = offset + max_characters
+            source = next((s for s in citations[source_id]["sources"] if s.get("source_id") == source_id), {})
+            verification = source.get("calculation", source)
             return {"citation_id": source_id, "text": text[offset:end], "offset": offset,
                     "next_offset": end if end < len(text) else None, "total_characters": len(text),
-                    **({"calculation_reuse": "This is a persisted citation, not necessarily a complete executable CALC. If calculate_research_metric cannot resolve this exact ID, re-read the bound operands from SQL/original source tools and recompute with the same intended formula/period/unit. Use the newly returned CALC ID. Do not infer missing operands from report prose or relabel them as assumptions."}
+                    "citation_status": "bound", "read_origin": "persisted_citation_binding",
+                    **({"calculation_reuse": CALCULATION_READ_GUIDANCE,
+                        "verification_status": {key: "verified" if verification.get(key) is True else
+                            "not_verified" if verification.get(key) is False else "not_recorded"
+                            for key in ("arithmetic_verified", "financial_semantics_verified")}}
                        if source_id.startswith("CALC::") else {}),
-                    "usage": "Persisted source/claim binding; mechanical resolution is not semantic verification. Read the original source context as needed."}
+                    "usage": "Persisted source/claim binding; mechanical resolution is not semantic verification. Read the original source context as needed."}, {"citations": {source_id: deepcopy(citations[source_id])}}
         chart_sources = {**chart_source_records(runtime.state.get("synthesis", {})),
                          **chart_source_records(runtime.state.get("report", {}))}
         if source_id in chart_sources:
             source = chart_sources[source_id]
             text, end = source["text"], offset + max_characters
             return {**source, "text": text[offset:end], "offset": offset,
-                    "next_offset": end if end < len(text) else None, "total_characters": len(text)}
+                    "next_offset": end if end < len(text) else None, "total_characters": len(text)}, None
         try:
-            return artifacts.with_revisions(runtime.state.get("revisions", {})).read_source(source_id, offset, max_characters)
+            result = artifacts.with_revisions(runtime.state.get("revisions", {})).read_source(source_id, offset, max_characters)
         except ValueError as exc:
             prior = reread_native_observation(runtime.state["messages"], source_id, offset, max_characters)
             if prior is not None:
-                return prior
-            raise ToolException(str(exc)) from None
+                result = prior
+            else:
+                raise ToolException(str(exc)) from None
+        if source_id.startswith("CALC::"):
+            result = {**result, "calculation_reuse": CALCULATION_READ_GUIDANCE}
+        return result, None
 
     @tool
     def read_current_report(runtime: ToolRuntime) -> dict:

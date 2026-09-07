@@ -107,17 +107,18 @@ jobs:
           docker run --rm -d \
             --name finsight-control-plane-ci \
             --network finsight-control-plane-ci \
-            -p 127.0.0.1:3000:3000 \
             -e DAGSTER_POSTGRES_URL_FILE=/run/secrets/dagster_postgres_url \
             --mount type=bind,source=/tmp/finsight-dagster-postgres-url,target=/run/secrets/dagster_postgres_url,readonly \
             finsight-control-plane:ci
           for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then
+            if docker exec finsight-control-plane-ci python -c "from urllib.request import urlopen; assert urlopen('http://127.0.0.1:3000/', timeout=2).status == 200"; then
               break
             fi
             sleep 2
           done
-          curl -fsS http://127.0.0.1:3000/ >/dev/null
+          # Docker does not publish ports for containers attached only to an
+          # internal network. Probe the real HTTP service inside that network.
+          docker exec finsight-control-plane-ci python -c "from urllib.request import urlopen; assert urlopen('http://127.0.0.1:3000/', timeout=5).status == 200"
 
       - name: Start container
         run: |

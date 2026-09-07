@@ -300,6 +300,12 @@ def export_report(report, format, *, review_status="待人工审阅"):
                 data.add_series(series or chart["unit"], [lookup.get(label) for label in labels])
             figure = page.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS if chart["kind"] == "line" else XL_CHART_TYPE.COLUMN_CLUSTERED,
                 Inches(.8), Inches(1.6), Inches(11.7), Inches(4.7), data).chart
+            # python-pptx's chart templates contain signed axis IDs. OOXML uses
+            # unsignedInt; remap IDs and their references together for strict readers.
+            axis_nodes = figure._chartSpace.xpath(".//c:axId | .//c:crossAx")
+            axis_ids = {value: str(i + 1) for i, value in enumerate(dict.fromkeys(n.get("val") for n in axis_nodes))}
+            for node in axis_nodes:
+                node.set("val", axis_ids[node.get("val")])
             figure.has_legend = True
             figure.has_title = False
             figure.legend.position = XL_LEGEND_POSITION.BOTTOM

@@ -24,7 +24,7 @@ class CalculationOperand(BaseModel):
     source_id: str | None = Field(default=None, min_length=1, max_length=500,
         description="Observed archive/PASSAGE/Evidence/SQL ID, or CALC ID already computed in this tool session or saved in this case. Search previews are not sources. For S2 or a saved calculation only source_id is needed; the host reads the number. A calculation never becomes S2 authority.")
     literal: str | None = Field(default=None, min_length=1, max_length=64,
-        description="For a source-reported number, copy its exact numeric literal, including commas. For S2 omit this: host reads value_decimal.")
+        description="For prose copy a number actually printed in the quote, including commas: quote 'Revenue 2,225' uses literal '2,225', not '2225'. Do not put a derived difference/ratio here: bind the original numbers and compute that difference in expression. For S2/saved CALC omit this: host reads value_decimal. Parentheses/sign interpretation belongs explicitly in expression and rationale.")
     quote: str | None = Field(default=None, min_length=1, max_length=4000,
         description="Exact contiguous source quote containing the literal; no paraphrase or ellipsis.")
     assumption_note: str | None = Field(default=None, min_length=1, max_length=1000,
@@ -34,7 +34,7 @@ class CalculationOperand(BaseModel):
 class SourceBoundCalculation(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     expression: str = Field(min_length=1, max_length=1000,
-        description="Arithmetic using named operands, parentheses and + - * /. Integer constants allowed; pass decimals as operands. No functions, attributes, powers or code.")
+        description="Arithmetic using the operand KEYS, parentheses and + - * /. Example: expression '(a-b)-(c-d)' with operands a,b,c,d bound to original source numbers. Every declared operand key must occur; never substitute raw source numbers into the formula and leave their bindings unused. Small integer scale constants allowed; decimals use operands. No functions, attributes, powers or code.")
     operands: dict[str, CalculationOperand] = Field(min_length=1, max_length=16)
     result_unit: str = Field(min_length=1, max_length=80,
         description="Your declared result unit; this calculator does not prove dimensional or financial comparability.")

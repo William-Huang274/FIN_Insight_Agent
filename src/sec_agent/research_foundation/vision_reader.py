@@ -45,8 +45,8 @@ def task_vision_reader(*, api_key, public_sink, max_output_tokens=4096):
                 "elapsed_ms": round((time.monotonic()-started)*1000), "usage_reported": usage is not None,
                 "input_tokens": usage.prompt_tokens if usage else None, "output_tokens": usage.completion_tokens if usage else None,
                 "total_tokens": usage.total_tokens if usage else None,
-                "cache_hit_tokens": getattr(usage, "prompt_cache_hit_tokens", 0) if usage else None,
-                "cache_miss_tokens": getattr(usage, "prompt_cache_miss_tokens", usage.prompt_tokens) if usage else None})
+                "cache_hit_tokens": getattr(usage, "prompt_cache_hit_tokens", None) if usage else None,
+                "cache_miss_tokens": getattr(usage, "prompt_cache_miss_tokens", None) if usage else None})
             if response.choices[0].finish_reason != "stop" or not response.choices[0].message.content:
                 raise ValueError("vision_empty_or_truncated_response")
             return response.choices[0].message.content

@@ -48,6 +48,22 @@ def test_plot_is_png_and_markdown_tables_use_mature_parser():
     assert any(kind == "table" for kind, _ in markdown_blocks(sample()["narrative_markdown"]))
 
 
+@pytest.mark.parametrize("kind", ["bar", "line"])
+def test_editable_chart_axis_ids_are_valid_ooxml_and_keep_values(kind):
+    from lxml import etree
+    report = sample()
+    report["charts"][0]["kind"] = kind
+    data, _ = export_report(report, "pptx")
+    with zipfile.ZipFile(io.BytesIO(data)) as archive:
+        chart = etree.fromstring(archive.read("ppt/charts/chart1.xml"))
+    ns = {"c": "http://schemas.openxmlformats.org/drawingml/2006/chart"}
+    ids = chart.xpath(".//c:axId/@val | .//c:crossAx/@val", namespaces=ns)
+    assert ids and all(0 <= int(value) <= 2**32 - 1 for value in ids)
+    definitions = set(chart.xpath(".//c:catAx/c:axId/@val | .//c:valAx/c:axId/@val", namespaces=ns))
+    assert len(definitions) == 2 and set(ids) == definitions
+    assert chart.xpath(".//c:val//c:numCache/c:pt/c:v/text()", namespaces=ns) == ["100.0", "120.0"]
+
+
 def test_calculation_and_unsourced_boundary_remain_readable_in_delivery():
     from copy import deepcopy
     report = sample()

@@ -904,3 +904,17 @@ Owner 明确授权连续完成原五项及新增需求，Hermes 评估前停止�
 研究/费用：A2最终 P01完成、P02遇 boundary 空来源与 CaseClaim 不一致后用尽8调用，1.4536647元；a5524f63修正薄适配合同，canonical事实/计算来源要求不变。A3原提交离线重验仍缺两处原句绑定，保留失败。A4保留P01和P02原生历史，修好P02后走现有收敛图，32次调用、4.4263212元，已知用量；A2+A4合计5.8799859元。A4最终8298字符/48引用/3图，case_report_needs_revision，未晋升原v3。终审发现Writer丢失P08架构风险；宿主另确认利润标题仍与正文矛盾、DFS限定语被后句抵消、SMCI整体毛利过度推导纯AI利润，不能按模型“唯一缺陷”宣称其余都已通过。P08已有充分底稿却被第一轮综合复核误派重做5调用，这属于路由质量不足；a5524f63已澄清表达遗漏归当前综合/写稿角色，A4旧进程不算新提示资格。
 
 下一有界A5仅Writer/报告Verifier（最多4/6调用、额外上限2.5元，仍在原12元批次内），复用A4全部研究与报告，修精确表达/架构遗漏/积压残差说明；具体TokenBudgetBasis及宿主开发审查在 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step2_writer_correction_a5/`。不重跑九主题，不当Owner/盲审，不评估Hermes。产品仍待最终报告、真实上传视觉、完整交互验收、统一输出/新案例/GitHub最终收口；本节交付工程与资格增量，不是整体验收。
+
+### 2026-09-08：v4宿主审阅候选、真实上传问答、fresh-only运行与Office兼容修复
+
+产品候选增量：A5用3次Writer＋3次Verifier完成定向修订，估0.849429元；A2/A4/A5合计6.7294149元且用量均已知，批次结束。A5无重大问题但有标题DFS和图注SMCI两建议；宿主另修开头Q1目标被延伸为Q2实际、结构性现金标签、过度组合归因与GPU旧资料时点。P04:C12的2025-08-27/2025-11-19两来源经现有validated_revision绑定、同步到底稿/引用，仅作历史背景，不冒充2026-09当前Dell配额。A7候选10136字符、54引用、3图；20重要判断维度、21保存CALC和10项正文附加算术已开发核查，所有31算术重算一致，来源非S2/语义未验证标记不晋升。`20260908_step2_host_reviewed_delivery_a7/financial-review.private.json`保留逐项依据与边界；不是盲测、全自动一次成功或Owner验收。
+
+已用官方Agent Server update_state/as_node=finish把上述候选作为v4进入原真实会话human_review，0模型导入，v1–v3和实际失败保留。第一次宿主导入行缺correction_round导致BFF读取500，已修宿主元数据并新建零模型审阅run，未改产品版本或报告内容掩盖故障。v4状态ready_for_human_review，Owner未点击accept；外部修订6.7294149元在本版审查摘要/修订原因明确另列，不混入原生run累计。原生四格式与版本文件名已下载，见 `20260908_step5_native_candidate_v4/native-delivery-receipt.json`。UI最终截图/费用累计完善、新场景和GitHub最终收口仍待完成。
+
+真实上传：官方Dell Q2 FY27九页PDF（700288 bytes）及其第8页截图（287496 bytes）通过任务上传API存副本，原源不修改。A1真实10次Flash问答＋1次vision，268232 tokens、估0.094485元；已读文件/图片，但计算器反复把衍生数值当源文literal、遗漏逗号、公式不用绑定变量，触10次上限，失败保留。仅补充已有schema参数说明，未换解析器/放松引用或增加规则引擎。用原生放弃失败追问返回审阅（0调用），A2同任务10次Flash、177931 tokens、估0.067910元保存答案，0新vision且命中原视觉缓存；6个PDF/图片/CALC引用接口全200，v3未改。现金流列、期间、净capex符号、-882=-318-564正确；图片将非现金流营业利润5929误识5329，实际答案指出并用PDF纠正。答案一处括号措辞把FCF笼统称负调整项仍为advisory，不据此宣传全面财务/OCR正确率。证据 `D:/temp/fin-step4-upload-20260908-a1/` 与a2/receipt.json，总估0.162395元；这是一题宿主辅助开发接续，不是两题独立成功。
+
+工程/资格：vision缺缓存字段改为None（未知），不会默认为零；14上传/视觉检查及36计算/引用近邻检查通过。fresh-only标准Compose已实际启动Agent Server/PG/Redis/BFF；只注册research_session，不挂旧答案/报告，BFF health显示legacy_report_loaded=false；上传问答真实在该部署运行。源数据、审查材料和既有卷仍有明确依赖，非空白机器fresh install。旧配置备份位于 `20260908_fresh_startup_a2/*.original.private`，当前稳定settings目录为fresh-only；旧legacy graph任务需恢复兼容配置才能执行，但历史未删。重新构建前均确认无运行/排队paid，卷保留。BFF8766/API18165运行中。
+
+四格式检查发现python-pptx默认图表负轴ID使严格OOXML导入失败（axis ID要求unsignedInt，[Microsoft规范](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.charts.axisid?view=openxml-3.0.1)，[上游模板示例](https://python-pptx.readthedocs.io/en/latest/dev/analysis/cht-bar-chart.html)）。薄适配统一映射轴ID及crossAx，保留可编辑图表/源值，9导出检查通过。修后artifact-tool与LibreOffice均可渲染；A6 PDF15页、DOCX20页、PPT43页检查为报告分页导出，不冒充演讲稿；A7最终正文有小幅时点修改，最终原生v4受影响渲染仍待完成。
+
+六组方法实际消费审计：完整扫描原生SQLite A2/A4/A5共124/269/62 checkpoints并按tool-call ID去重。A4 Lead实际读取lead内容；P08读取industry_product和finance内容；A2 P01及A4部分综合/报告复核只读目录；A5无方法工具调用。此前只看最近100个checkpoint遗漏A4 Lead内容，本段修正。取舍：lead **adapt**（有实际消费但综合仍发生关联标题漏改）；finance **retain**（P08消费并纠正费用/GAAP/经营杠杆，现金/期间核算另有源文与31算术证据，不能做因果归功）；industry_product **retain**（P08架构/客户/供应链明确消费，最终Writer仍曾遗漏）；writer/verifier **adapt**（提示已修责任与一致性，但这批没有读取其方法正文，不称已实证有效）；counter **hold扩展**（本批未重跑Counter、不为凑六组消费多做付费）。六组都保持按需方法资源，无新执行控制面，不以目录出现证明工具改善质量。

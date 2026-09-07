@@ -204,6 +204,21 @@ def test_direct_passage_and_calculation_operand_sources_remain_session_bound_and
         assert client.get(path, params={"source_id": "D:/private"}).status_code == 404
         assert client.get(path, params={"source_id": "PASSAGE::current", "offset": -1}).status_code == 422
     asyncio.run(service.http.aclose())
+
+
+def test_saved_local_query_receipt_is_readable_but_not_cross_task_evidence():
+    app, service, _, tid = _app()
+    receipt = {"source_id": "MCPFACT::fixture", "result_state": "query_gap_receipt",
+        "numeric_fact_authority": False, "text": "Local query conditions, not issuer non-disclosure"}
+    async def state(_):
+        return {"values": {"conversation": [{"role": "assistant", "citations": {
+            receipt["source_id"]: {"sources": [receipt]}}}]}}
+    service.sdk.threads.get_state = state
+    with TestClient(app) as client:
+        path = f"/api/v1/research-sessions/{tid}/source"
+        assert client.get(path, params={"source_id": receipt["source_id"]}).json()["numeric_fact_authority"] is False
+        assert client.get(path, params={"source_id": "MCPFACT::another-task"}).status_code == 404
+    asyncio.run(service.http.aclose())
 def test_draft_upload_and_start_use_native_task_and_no_model_until_start(tmp_path):
     from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
     app, service, calls, thread_id = _app()

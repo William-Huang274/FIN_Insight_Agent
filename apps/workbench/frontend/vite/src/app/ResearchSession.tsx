@@ -107,7 +107,7 @@ function Markdown({
 }) {
   const keys = Object.keys(citations);
   const linked = text.replace(
-    /\[((?:P\d{2}:|PASSAGE::|NUMFACT::|CALC::)[^\[\]\s]+)\]/g,
+    /\[((?:P\d{2}:|PASSAGE::|NUMFACT::|CALC::|MCPFACT::)[^\[\]\s]+)\]/g,
     (original, ref: string) =>
       citations[ref]
         ? `[${keys.indexOf(ref) + 1}](#claim:${encodeURIComponent(ref)})`
@@ -1077,7 +1077,8 @@ export function ResearchSession() {
                       {s.numeric_fact_authority
                         ? "结构化数值"
                         : s.source_id.startsWith("CALC::") || s.result_state === "non_authoritative_metric"
-                          ? "本地计算 · 非权威" : "披露 / 外部材料"}
+                          ? "本地计算 · 非权威" : s.result_state === "query_gap_receipt"
+                            ? "本地查询边界 · 非事实证据" : "披露 / 外部材料"}
                     </span>
                     <h4>
                       {s.title ||
@@ -1124,13 +1125,13 @@ export function ResearchSession() {
                           .catch((e) => setError(e.message))
                       }
                     >
-                      <Search size={13} /> 查看捕获片段与上下文
+                      <Search size={13} /> {s.result_state === "query_gap_receipt" ? "查看查询条件与回执" : "查看捕获片段与上下文"}
                     </button>
                   </div>
                 ))}
                 {source && (
                   <div className="rs-source-window" ref={sourceWindow}>
-                    <h4>{source.source_id} · 本地保存的来源窗口</h4>
+                    <h4>{source.source_id} · {source.result_state === "query_gap_receipt" ? "本地查询回执，非事实证据" : "本地保存的来源窗口"}</h4>
                     <pre>
                       {source.text || (source.value_decimal !== undefined ? `${source.value_decimal} ${source.unit}` : "此来源没有可显示的捕获片段。")}
                     </pre>

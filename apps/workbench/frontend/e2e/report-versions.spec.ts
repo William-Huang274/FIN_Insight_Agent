@@ -9,11 +9,14 @@ for (const width of [1440, 1024, 390]) {
     const checkpoint = "00000000-0000-4000-8000-000000000002";
     const source = { source_id: "NUMFACT::fixture", title: "合成财务来源", source_url: "https://example.com/source", value_decimal: "12", unit: "USD", numeric_fact_authority: true };
     const citations = { "NUMFACT::fixture": { claim: { kind: "numeric_fact", statement: "合成引用用于界面验证。" }, sources: [source] } };
+    const gap = { source_id: "MCPFACT::fixture", title: "本地查询边界回执", result_state: "query_gap_receipt",
+      numeric_fact_authority: false, text: "合成查询期间内没有结果，不证明发行人未披露。", authority_note: "仅为本地查询回执。" };
+    const gapCitations = { "MCPFACT::fixture": { claim: { kind: "local_query_gap", statement: "本地查询缺数不代表发行人未披露。" }, sources: [gap] } };
     const oldReport = { title: "历史报告标题", narrative_markdown: "## 研究结论\n\n旧版研究结论。[NUMFACT::fixture]", citations, charts: [] };
     const report = { ...oldReport, title: "当前研究报告", narrative_markdown: "## 研究结论\n\n修订后的现金流解释。[NUMFACT::fixture]" };
     const session = { thread_id: id, status: "interrupted", phase: "ready_for_human_review", question: "合成界面验证：收入增长是否转为现金？", research_as_of: "2026-09-02", report_version: 2,
       report, report_review: { summary: "合成审阅示例，未启动研究。", findings: [], unresolved_data_requests: [] }, can_respond: true,
-      runs: [], conversation: [{ role: "user", content: "请解释现金兑现。" }, { role: "assistant", content: "已修订解释，请查看右侧报告。", citations }],
+      runs: [], conversation: [{ role: "user", content: "请解释现金兑现。" }, { role: "assistant", content: "该期间本地未取得数值。[MCPFACT::fixture]", citations: gapCitations }],
       model_events: [
         { kind: "model", event: "outcome", actor: "lead", call_id: "resumed-id", run_id: "first-run", total_tokens: 82, status: "provider_output_truncated" },
         { kind: "model", event: "outcome", actor: "lead", call_id: "resumed-id", run_id: "second-run", total_tokens: 58, status: "success" },
@@ -27,12 +30,21 @@ for (const width of [1440, 1024, 390]) {
       else if (url.pathname.endsWith("/report-versions")) body = { versions: [{ version: 1, checkpoint_id: checkpoint, title: oldReport.title, reason: "初始研究" }], next_cursor: null };
       else if (url.pathname.endsWith(`/report-versions/${checkpoint}`)) body = { report: oldReport, report_version: 1, checkpoint_id: checkpoint, reason: "初始研究" };
       else if (url.pathname.endsWith("/report-diff")) body = { before_version: 1, after_version: 2, reason: "根据原始现金流来源修订", diff: "--- v1\n+++ v2\n-旧版研究结论。\n+修订后的现金流解释。", charts_changed: false, citations_changed: false };
-      else if (url.pathname.endsWith("/source")) { selectedSource = url.search; body = { ...source, text: "该历史版本绑定的来源片段。", next_offset: null }; }
+      else if (url.pathname.endsWith("/source")) { selectedSource = url.search; body = url.searchParams.get("source_id") === gap.source_id ? gap : { ...source, text: "该历史版本绑定的来源片段。", next_offset: null }; }
       else if (url.pathname.endsWith(`/${id}`)) body = session;
       await route.fulfill({ json: body });
     });
     await page.goto(`/workspace/session?thread=${id}`);
     await expect(page.getByRole("heading", { name: "当前研究报告" })).toBeVisible();
+    const conversationTab = page.getByRole("button", { name: /^追问与反馈/ });
+    const tabbed = await conversationTab.isVisible();
+    if (tabbed) await conversationTab.click();
+    await page.getByLabel("研究对话").getByRole("button", { name: "1", exact: true }).click();
+    await expect(page.getByText("本地查询边界 · 非事实证据", { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "查看查询条件与回执" }).click();
+    await expect(page.getByText(gap.text, { exact: true })).toBeVisible();
+    await page.getByRole("button", { name: "关闭详情", exact: true }).click();
+    if (tabbed) await page.getByRole("button", { name: "研究报告", exact: true }).click();
     await page.getByRole("button", { name: "审查、来源与运行", exact: true }).click();
     await page.getByRole("button", { name: "运行", exact: true }).click();
     await expect(page.getByText(/活动视图当前载入 2 次模型结果记录、140 个已报告 tokens/)).toBeVisible();

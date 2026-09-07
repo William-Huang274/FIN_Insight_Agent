@@ -953,3 +953,11 @@ Owner 明确授权连续完成原五项及新增需求，Hermes 评估前停止�
 真实短问A1/BFF422参数、A2/BFF403头部错误均未启动native/model；A3在seed发现旧报告P03:S015展示别名，0provider失败，alias修复后新A4。A4第一题2Flash/29337tokens/0.015132元成功；第二题10Flash/215876tokens/0.075703元达到模型上限失败，批次已停止，后六题未执行，全部usage已知。第二题能读历史CALC却不能引用：下一角色未投影同会话已存回答的完整操作数引用；补充native prior bindings后，以无SQL/计算工具的原生循环验证，115项相关检查通过、8私有跳过。待新镜像及有依据的后续真实资格，不自动按余额续跑；报告v4没改变。
 
 运行环境事故：Z盘满引发Docker构建损坏与IPC重启失败，未factory reset、未删数据卷或历史run。保留旧IPC目录，移动已完成A4资格目录到D并以junction保留原Z路径，SQLite SHA一致；仅清31.98GB可重建buildx缓存，三服务恢复。新大文件写D。完整Git bundle因空间失败；14.8MB增量备份已verify，依赖已有main历史。17354历史text blobs敏感模式扫描仅合成测试值命中、8binary/large未扫描，不称全面安全保证。远端codex分支尚未清理；Hermes未评估，Owner尚未验收。
+
+### 2026-09-08：真实CALC回读已过、本地缺数答案的边界回执修复
+
+产品证据：新镜像后的A5复测旧Micron计算仅2次Flash，0.008955元，成功保存；下一题百分点/相对比例计算成功0.038694元。HPE缺数题10次触及上限、0.044906元失败，批次停止，总0.092555元，后四题未执行。此A5之前脚本路径生成误指向已有A4目录，FileExistsError在网络前中止，0调用，console.log保留；修正脚本的实际日志console-corrected.log不覆盖它。
+
+根因：SQL已正确返回typed_gap，但统一答案校验只接受事实来源，合理的本地无法回答被拒。现在将原生成功SQL的MCPFACT请求ID投影成query_gap_receipt，可供回答引用并查看查询条件、期间与原gap码；显式非事实、非NumericFact、不能作为计算输入，也不证明发行人未披露或穷尽公开来源。拒绝失败工具/模型文字/异任务ID。沿用现有typed_gap和引用展示，没有新增自然语言判定器、记忆服务或运行引擎。24项原生/接口检查通过、4私有跳过；1440/1024/390三个浏览器检查与TS/Vite通过。此时新gap镜像/真实复测待执行。
+
+公开CI修正过程保留：34159034906为64failed/3056passed/755skipped；34159615517为46failed/3059passed/770skipped，主要剩余私有captured requests及字节绑定。完整Git历史已修复历史blob/Windows条件问题；根据原登记摘要确认CRLF资产，不改变内容或旧receipt。当前提交5e821183对应CI34159928850仍在检查。正式双语演示/工程故事见docs/public/demo-and-engineering.*，它是可操作路线而不是已录制视频。

@@ -349,7 +349,7 @@ def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
 
 
 CLAIM_REF = re.compile(r"\[(P\d{2}:[^\[\]\s]+)\]")
-ANSWER_REF = re.compile(r"\[((?:P\d{2}:|PASSAGE::|NUMFACT::|CALC::)[^\[\]\s]+)\]")
+ANSWER_REF = re.compile(r"\[((?:P\d{2}:|PASSAGE::|NUMFACT::|CALC::|MCPFACT::)[^\[\]\s]+)\]")
 
 
 def report_citations(report, artifacts, messages=None, *, prior_citations=None):
@@ -379,12 +379,31 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
     """
     refs = list(dict.fromkeys(ANSWER_REF.findall(prose)))
     if not refs:
-        raise ValueError("answer_has_no_inline_source_reference: cite actual [PASSAGE::id] / [NUMFACT::id] / [CALC::id] returned by read/SQL/calculator tools, or [P01:claim_id] from current claims")
+        raise ValueError("answer_has_no_inline_source_reference: cite actual [PASSAGE::id] / [NUMFACT::id] / [CALC::id] returned by read/SQL/calculator tools, [P01:claim_id] from current claims, or a successful SQL typed_gap's [MCPFACT::id] to explain only that local query boundary")
     # Prior citations come only from the server's persisted report, never model
     # or caller arguments. A local edit need not re-query unchanged cited facts.
     saved = saved_citation_bindings(messages, prior_citations=prior_citations)
     direct = {ref: deepcopy(value) for ref, value in saved.items()
-              if ref.startswith(("PASSAGE::", "NUMFACT::", "CALC::"))}
+              if ref.startswith(("PASSAGE::", "NUMFACT::", "CALC::", "MCPFACT::"))}
+    # A typed local query gap is a receipt, never evidence of issuer silence.
+    # Reuse the existing query contract/ID; no prose classifier or new gap engine.
+    for message in messages:
+        if not isinstance(message, ToolMessage) or message.status != "success" or message.name != "query_company_financial_facts":
+            continue
+        query = message.artifact
+        if not isinstance(query, dict) or query.get("authority_state") != "s2_numeric_fact_query_result":
+            continue
+        for row in query.get("results", []):
+            ref = row.get("fact_request_id", "")
+            if row.get("status") != "typed_gap" or not row.get("typed_gap") or row.get("facts") or not ref.startswith("MCPFACT::"):
+                continue
+            notice = "仅证明指定时点、期间与查询条件下本地未取得事实；不证明发行人未披露、所有公开来源已穷尽或金融数值为零。"
+            direct[ref] = {"claim": {"kind": "local_query_gap", "statement": notice,
+                "numeric_authority": "none"}, "sources": [{"source_id": ref,
+                "title": "本地财务查询边界回执 · 非事实来源", "result_state": "query_gap_receipt",
+                "numeric_fact_authority": False, "authority_note": notice,
+                "text": json.dumps({"query": query.get("query"), "query_digest": query.get("query_digest"),
+                    "typed_gap": row["typed_gap"], "tool_call_id": message.tool_call_id}, ensure_ascii=False, indent=2)}]}
     calculations = []
     observed = observed_sources(messages)
     # Saved case calculations are host observations just like saved citations,
@@ -591,7 +610,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_case_answer(answer_markdown: str, runtime: ToolRuntime) -> Command:
-        """Answer with exact inline [PASSAGE::id] from source reads, [NUMFACT::id] from SQL, [CALC::id] from calculator, or [Pxx:claim_id] from workpapers. IDs must have been observed. No fixed prose template; do not rewrite the report."""
+        """Answer with exact observed [PASSAGE::id], [NUMFACT::id], [CALC::id] or [Pxx:claim_id]. For a successful SQL typed_gap, cite its [MCPFACT::id] fact_request_id as a LOCAL QUERY RECEIPT only: no local match does not prove issuer non-disclosure or exhaustive public search. No fixed prose template; do not rewrite the report."""
         if runtime.state.get("request_action") != "ask":
             return output_message(runtime, error="This request asks for a revised report. Use submit_case_report.")
         try:

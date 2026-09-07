@@ -105,6 +105,36 @@ def test_failed_tools_model_text_and_search_previews_cannot_register_sources(art
             answer_citations(f"Unobserved [{PASSAGE_ID}]", artifacts, messages)
 
 
+def test_local_sql_gap_is_citable_as_query_receipt_not_financial_evidence(artifacts):
+    ref = "MCPFACT::synthetic-local-gap"
+    gap = {"authority_state": "s2_numeric_fact_query_result", "query_digest": "fixture-query",
+        "query": {"ticker": "SYNTHETIC", "period_end": "2025-12-31"}, "results": [{
+            "fact_request_id": ref, "status": "typed_gap", "facts": [],
+            "typed_gap": {"gap_code": "typed_fact_not_found_for_as_of_and_period"}}]}
+    observed = ToolMessage(content=json.dumps(gap), tool_call_id="fixture-call",
+        name="query_company_financial_facts", artifact=gap)
+    prose = f"指定期间本地未取得数值，不能推出发行人未披露 [{ref}]"
+    citations = answer_citations(prose, artifacts, [observed])
+    source = citations[ref]["sources"][0]
+    assert source["result_state"] == "query_gap_receipt" and source["numeric_fact_authority"] is False
+    assert json.loads(source["text"])["query"]["ticker"] == "SYNTHETIC"
+    assert observed_sources([observed]) == {}  # Not a calculator operand or NumericFact.
+    for bad in [[], [HumanMessage(content=json.dumps(gap))],
+            [ToolMessage(content=json.dumps(gap), tool_call_id="failed", name=observed.name, artifact=gap, status="error")]]:
+        with pytest.raises(ValueError, match="not_observed"):
+            answer_citations(prose, artifacts, bad)
+
+    async def run():
+        model = NativeFixtureModel(marker="local-gap-answer", replies=[[
+            call("submit_case_answer", {"answer_markdown": prose}, "submit")]])
+        agent = build_case_output_agent(role="writer", model=model, tools=[], artifacts=artifacts,
+            limits={"model_calls": 2, "tool_calls": 3}, allow_answers=True, answer_only=True)
+        outcome = await agent.ainvoke({"report": {}, "request_action": "ask", "messages": [
+            HumanMessage(content="Explain the observed local query gap"), observed]})
+        assert outcome["output"]["citations"] == citations
+    asyncio.run(run())
+
+
 def test_followup_can_read_and_cite_persisted_calculation_without_recalculation(artifacts):
     from test_dell_case_convergence_agent import saved_calculation_chart
     report, _, calculation = saved_calculation_chart(artifacts)

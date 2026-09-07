@@ -30,6 +30,19 @@ def revision_fixture(artifacts, pid):
             "explanation": "Synthetic fixture exercises original artifact preservation, not an actual correction."}]}
 
 
+def test_revision_uses_canonical_boundary_contract_without_weakening_factual_sources(artifacts):
+    request = revision_fixture(artifacts, "P01")
+    request["claim_updates"] = [{"claim_id": "boundary_fixture", "kind": "boundary", "materiality": "medium",
+        "statement": "Only the reviewed sources were inspected; this is not proof of universal non-disclosure.",
+        "source_ids": [], "numeric_authority": "not_applicable", "authority_note": "Review coverage limitation, not an external fact."}]
+    parsed = PaperRevision.model_validate(request)
+    result = validated_revision(parsed, paper_id="P01", feedback=[{"finding_id": "fixture"}], artifacts=artifacts, messages=[])
+    assert result["workpaper"]["claims"][-1]["source_ids"] == []
+    request["claim_updates"][0]["kind"] = "reported_fact"
+    with pytest.raises(ValueError, match="reported_fact_requires_evidence"):
+        validated_revision(PaperRevision.model_validate(request), paper_id="P01", feedback=[{"finding_id": "fixture"}], artifacts=artifacts, messages=[])
+
+
 def test_writer_can_recover_exact_quote_mismatch_by_reading_current_report(artifacts):
     async def run():
         ref = "P01:" + artifacts.read_paper("P01")["claims"][0]["claim_id"]

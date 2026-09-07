@@ -8,6 +8,9 @@ import sys
 
 import pytest
 
+# This suite replays the original private fixed-Pack/S2 research corpus.
+pytestmark = pytest.mark.local_data_integration
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]

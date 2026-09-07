@@ -9,6 +9,9 @@ import sys
 
 import pytest
 
+# This suite replays the original private fixed-Pack/S2 research corpus.
+pytestmark = pytest.mark.local_data_integration
+
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path[:0] = [str(ROOT), str(ROOT / "src")]
@@ -124,6 +127,15 @@ def _json(path: Path) -> dict[str, object]:
 
 
 def _current_inputs() -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
+    # This helper is the historical fixed-Pack replay, not current S2 lineage.
+    # Rebuilt S2 data assigns new NumericFact IDs even when values agree.
+    # Read the exact saved input for the digest-bound historical authority.
+    saved_ref = _json(ROOT / "configs/research/evals/fin_ia_0_1_3_s3_dell_value_capture_fixed_pack_claim_authority_zero_call_result_v1_0.json")
+    saved_path = ROOT / saved_ref["full_result_ref"]
+    if not saved_path.is_file():
+        pytest.skip("historical fixed-Pack private snapshot not mounted")
+    import hashlib
+    assert hashlib.sha256(saved_path.read_bytes()).hexdigest() == saved_ref["full_result_sha256"]
     paths = resolve_runtime_paths(ROOT)
     evidence_config = deepcopy(
         read_registered_runtime_json(
@@ -189,7 +201,11 @@ def _current_inputs() -> tuple[dict[str, object], dict[str, object], dict[str, o
         evidence_pack=evidence_pack,
         controlled_plan=controlled,
     )
-    return evidence_pack, controlled, research_input
+    saved_input = _json(saved_path)["base_research_input"]
+    assert saved_input["research_input_digest"] == saved_ref["normalized_proof"]["base_research_input_digest"]
+    # A contemporary compile is still exercised above; do not overwrite its
+    # source IDs or grant it the old authority by changing a digest in place.
+    return evidence_pack, controlled, saved_input
 
 
 def test_current_policy_consumes_reviewed_public_web_without_promoting_authority(

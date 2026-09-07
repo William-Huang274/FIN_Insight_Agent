@@ -65,6 +65,16 @@ CONTROL_FILES = (
     "fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json",
     "fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json",
     "fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json",
+    "fin_ia_0_1_3_dell_full_research_routed_v1_0.json",
+    "fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json",
+    "fin_ia_0_1_3_dell_report_quick_answer_v1_0.json",
+    "fin_ia_0_1_3_dell_q1_source_read_thinking_workpaper_capacity_v1_0.json",
+    "fin_ia_0_1_3_dell_q1_source_read_corrective_context_v1_0.json",
+    "fin_ia_0_1_3_dell_full_research_pro_low_v1_0.json",
+    "fin_ia_0_1_3_dell_case_review_native_v1_0.json",
+    "fin_ia_0_1_3_dell_case_convergence_native_v1_0.json",
+    "cases/dell_growth_quality.json",
+    "runtime/research_session.json",
 )
 
 HOST_BINDINGS = {
@@ -396,11 +406,11 @@ def test_agent_server_image_uses_a_deny_by_default_minimum_build_context() -> No
     assert "ADD ." not in dockerfile
     assert "COPY ." not in dockerfile
     assert (
-        "COPY pyproject.toml uv.lock README.md /deps/FIN_Insight_Agent/"
+        "COPY pyproject.toml uv.lock /deps/FIN_Insight_Agent/"
         in dockerfile
     )
     assert "COPY src /deps/FIN_Insight_Agent/src" in dockerfile
-    assert dockerfile.index("uv export --locked") < dockerfile.index("COPY src ")
+    assert dockerfile.index("uv export --quiet --locked") < dockerfile.index("COPY src ")
     assert dockerfile.index("--no-deps -e /api") < dockerfile.index("COPY src ")
     assert dockerfile.index("COPY src ") < dockerfile.index("--no-deps -e .")
     rules = [
@@ -417,13 +427,16 @@ def test_agent_server_image_uses_a_deny_by_default_minimum_build_context() -> No
         "!src/**/",
         "!src/**/*.py",
         "!src/**/*.sql",
+        "!src/sec_agent/research_foundation/methods/*.md",
         "**/__pycache__/**",
         "**/*.pyc",
         "**/*.pyo",
         "**/*.pyd",
         "!configs/",
         "!configs/research/",
-        *(f"!configs/research/{name}" for name in CONTROL_FILES),
+        *(f"!configs/research/{name}" for name in CONTROL_FILES if "/" not in name),
+        "!configs/research/cases/", "!configs/research/cases/dell_growth_quality.json",
+        "!configs/research/runtime/", "!configs/research/runtime/research_session.json",
     ]
     assert "!configs/**" not in rules
     assert "!configs/research/**" not in rules
@@ -494,7 +507,7 @@ def test_dockerfile_locks_agent_server_graph_and_runtime_dependencies() -> None:
         "disable_ui": True,
         "disable_webhooks": True,
     }
-    assert "uv export --locked --no-dev --extra agent-runtime" in dockerfile
+    assert "uv export --quiet --locked --no-dev --extra agent-runtime" in dockerfile
     assert "--no-emit-project" in dockerfile
     assert "--no-deps -e ." in dockerfile
     assert "finsight-agent-runtime-requirements.txt" in dockerfile

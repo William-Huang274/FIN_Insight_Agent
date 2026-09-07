@@ -128,19 +128,22 @@ def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire(tool_case):
         result = adapter.specialist_model_turn(request)
         assert result["action"]["action"] == "native_tool_batch"
         assert result["action"]["tool_calls"][0]["args"]["action"] == "request_finance"
-        assert len(wires) == 1 and len(private) == 1
+        assert len(wires) == 1 and len(private) == 2
+        assert private[0]["event"] == "request"
+        assert private[0]["call_id"] == private[1]["call_id"]
         assert "Synthetic private" not in json.dumps(public)
         return
     adapter.specialist_model_turn(request)
     adapter.specialist_model_turn(request)
     assert len(wires) == 2
     assert all(w["tool_choice"] == "auto" for w in wires)
-    assert all(len(w["tools"]) == 5 for w in wires)
+    assert all(len(w["tools"]) == 7 for w in wires)
     assert all(t["function"]["parameters"]["type"] == "object" for t in wires[0]["tools"])
     prior = next(m for m in wires[1]["messages"] if m["role"] == "assistant")
     assert prior["reasoning_content"] == "Synthetic private provider reasoning, not evidence."
     assert wires[1]["messages"][-1]["role"] == "tool"
-    assert len(private) == 2 and "reasoning_content" in json.dumps(private)
+    assert len(private) == 4 and "reasoning_content" in json.dumps(private)
+    assert sum(row.get("event") == "request" for row in private) == 2
     assert "Synthetic private" not in json.dumps(public)
 
 

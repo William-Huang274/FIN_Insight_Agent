@@ -454,7 +454,7 @@ def _multi_agent_plan_successor_fixture_root(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_current_fixed_pack_decision_passes_without_network_or_secret_read() -> None:
+def test_historical_fixed_pack_schema_passes_without_network_or_secret_read() -> None:
     result = build_preflight(
         root=ROOT,
         decision_ref=DECISION_REF,
@@ -472,6 +472,15 @@ def test_current_fixed_pack_decision_passes_without_network_or_secret_read() -> 
         "RC-S3-004-model_visible_judgment_contract_omits_enums_and_conflates_evidence_use"
         in result["scope_projection"]["closed_precondition_issue_ids"]
     )
+
+
+def test_current_repository_blockers_remain_effective() -> None:
+    with pytest.raises(ValueError, match="project_os_scope_blocked:.*RC-S3-124"):
+        build_preflight(
+            root=ROOT, decision_ref=DECISION_REF,
+            environment={"DEEPSEEK_API_KEY": "present-but-never-persisted"},
+            check_repository=False,
+        )
 
 
 def test_historical_multi_agent_preview_scope_remains_auditable_but_not_current() -> None:
@@ -2664,31 +2673,14 @@ def test_current_dynamic_writer_decision_binds_R10_and_three_call_ceiling() -> N
         )
 
 
-def test_current_dynamic_writer_submission_successor_binds_one_remaining_call() -> None:
+def test_historical_writer_submission_authority_is_not_reusable_after_runtime_changes() -> None:
     decision = json.loads(
         (
             ROOT / CURRENT_DYNAMIC_WRITER_SUBMISSION_SUCCESSOR_DECISION_REF
         ).read_text(encoding="utf-8")
     )
 
-    projection = _validate_current_dynamic_writer_submission_successor_decision(
-        root=ROOT,
-        decision=decision,
-    )
-
-    assert projection[
-        "current_dynamic_multi_agent_protected_writer_submission_successor"
-    ] is True
-    assert projection["execution_limits"]["maximum_new_model_calls"] == 1
-    assert projection["execution_limits"]["writer_analysis_calls"] == 0
-    assert projection["execution_limits"][
-        "maximum_writer_submission_attempts"
-    ] == 1
-    assert projection["clean_proof_status"] == (
-        "R13_bound_protected_writer_submission_successor_zero_call_proven"
-    )
-    assert projection["node_profiles"][
-        "writer_submission_json_and_surface_feedback"
-    ]["reasoning_profile"] == (
-        "deepseek-v4-pro thinking disabled strict tool submission"
-    )
+    with pytest.raises(ValueError, match="project_os_nested_binding_sha_drift"):
+        _validate_current_dynamic_writer_submission_successor_decision(
+            root=ROOT, decision=decision,
+        )

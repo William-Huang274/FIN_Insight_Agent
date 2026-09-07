@@ -8,11 +8,13 @@
 *.yaml text eol=lf
 *.yml text eol=lf
 *.json text eol=lf
-# These three immutable legacy registry assets bind CRLF bytes in their receipts.
+# These immutable legacy assets bind CRLF bytes in their receipts.
 # Preserve those exact bytes on Linux and Windows instead of weakening validation.
 configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_5.json text eol=crlf
 configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_6.json text eol=crlf
 configs/runtime/fin_ia_0_1_3_s1c_ranking_workbench_projection_v1_0.json text eol=crlf
+configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_result_v1_1.json text eol=crlf
+configs/retrieval/fin_ia_0_1_3_s1_abbreviation_claim_repair_successor_result_v1_0.json text eol=crlf
 *.jsonl text eol=lf
 *.toml text eol=lf
 *.csv text eol=lf

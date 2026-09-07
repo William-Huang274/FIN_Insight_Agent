@@ -130,7 +130,12 @@ class DellCaseArtifacts:
                 if calculation is None:
                     continue
                 ref = source.get("source_id", "")
-                if (not ref.startswith("CALC::") or calculation.get("calculation_id") != ref
+                if not ref.startswith("CALC::"):
+                    # Report exports can carry complete calculations under
+                    # existing Pxx:Sxxx aliases. Those observations are already
+                    # in the case store; they are not new saved-answer CALCs.
+                    continue
+                if (calculation.get("calculation_id") != ref
                         or calculation.get("result_state") != "non_authoritative_metric"
                         or calculation.get("numeric_fact_authority") is not False
                         or calculation.get("arithmetic_verified") is not True

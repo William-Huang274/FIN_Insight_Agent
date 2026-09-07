@@ -49,9 +49,14 @@ def test_saved_answer_calculation_is_readable_in_next_native_tool_session():
     ref = calculation["calculation_id"]
     state = {"case_papers": [_new_worker_fixture()], "conversation": [{"role": "assistant",
         "content": f"Saved result [{ref}]", "citations": {ref: {"sources": [{"source_id": ref, "calculation": calculation}]}}}]}
+    state["report"] = {"citations": {"P01:C99": {"sources": [
+        {"source_id": "P01:S999", "calculation": calculation},
+    ]}}}
     original = deepcopy(state)
     artifacts = current_task_artifacts(state)
     assert artifacts.source_item(ref) == calculation
+    with pytest.raises(ValueError, match="unknown_source_id"):
+        artifacts.source_item("P01:S999")  # no alias authority is imported
     child = calculate_from_sources(SourceBoundCalculation(expression="prior / 2",
         operands={"prior": {"source_id": ref}}, result_unit="test_unit", rationale="Synthetic continuation"), artifacts.source_item)
     assert child["value_decimal"] == "25"

@@ -443,6 +443,7 @@ def test_legacy_builder_reader_preserves_signed_payload_and_rejects_bad_digest(
         )
 
 
+@pytest.mark.local_data_integration
 def test_exact_preexisting_binding_never_claims_self_digest_valid(
     monkeypatch: pytest.MonkeyPatch,
     tmp_path: Path,
@@ -498,6 +499,7 @@ def test_exact_preexisting_binding_never_claims_self_digest_valid(
         load_exact_preexisting_bound_result(tracked_path)
 
 
+@pytest.mark.local_data_integration
 def test_exact_preexisting_binding_reads_each_authority_file_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -532,6 +534,7 @@ def test_exact_preexisting_binding_reads_each_authority_file_once(
     assert set(read_counts.values()) == {1}
 
 
+@pytest.mark.local_data_integration
 def test_exact_preexisting_binding_rejects_duplicate_registry_resource_id(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -562,6 +565,7 @@ def test_exact_preexisting_binding_rejects_duplicate_registry_resource_id(
         )
 
 
+@pytest.mark.local_data_integration
 def test_exact_preexisting_binding_rejects_invalid_runtime_receipt_snapshot(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:

@@ -6,15 +6,15 @@
 
 ## 当前续接入口（2026-09-07，任务 01a07afa-cf5a-7c52-b135-ccd9e49c14bf）
 
-2026-09-07 修后真实验证已收口：Owner 明确许可后的新 `20260907_context_postfix_summary_a1` 已完成，代码 `55619b57`；1 Flash 摘要＋3 Pro 接续，4 调用/263,171 tokens/估 1.710333 元，0 传输重试、0 未知用量、0 截断。模型自主四次历史 CALC 回读均成功，数字/期间与保留记录相符；第一次提交拒绝 9 个引用，最终删除方括号却保留数字断言，正式引用只剩 1 个 CALC，且仍把“未验证”写为“未通过”、误说必须生成新 ID。因此真实接续完成，但内容验收 HOLD；摘要仍 disabled、v3 needs_revision，不进入步骤二。LangSmith 4/4 与本地用量逐项一致，根 trace 闭合。该新批到此结束，不追加 paid。下一用保存反例核对历史窗口/可执行记录/正式引用的合同和反馈，不另造记忆或自然语言规则平台。证据 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_context_postfix_summary_a1/review-notes.md` 与 S3/190 文末；后续早期“未执行/只剩一次验证”不代表当前状态。
+2026-09-07 当前：Owner 允许继续修引用接缝，并要求若出现大量手写规则就先评估 cc/Codex/DS Harness 等成熟栈。工程修复已提交 `c8da5a2c`：复用已安装 LangChain 的 content_and_artifact 与 LangGraph checkpoint，读取和提交共用完整历史引用绑定，内含 S2 摘要可保留原 ID 引用；没有把引用摘要变成计算器输入。旧完整 JSON 窗口只作兼容投影，分页/摘要不抹掉新 artifact；未验证与未记录状态及新 ID/重算反馈已明确。112 项相关测试通过。原真实失败的首次答复原文不改，离线重放先复现旧版拒 9 引用，再经修复版四次原生回读、一次提交绑定 4 CALC＋6 NUMFACT；0 新 provider/0 元，证据 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_citation_binding_offline_a3/receipt.json`。旧付费批仍为 4 调用/263,171 tokens/1.710333 元、内容 HOLD，不改判；本轮是工程/资格增量，未验证修后模型自主语义表达，摘要 disabled、v3 needs_revision、步骤一未全验收、不进入步骤二。无新框架、调度器、记忆或 NLP 判定平台。
 
 Owner 因旧任务“R14语义失败根因审计与续接”压缩失败要求接手。任务接口返回的近期记录仍停在 9 月 5 日 C 盘清理/R2，而 D 盘源码和 Project OS 已推进至 9 月 7 日；旧任务接口不是当前执行依据。本次以 `D:/FIN_Insight_Agent` 的 clean/synced `6c3889c71dade8735b143eff418617fc775740dc` 接续，失效 C 盘 worktree 和 Codex live 数据未操作。
 
 当前目标仍是**先收口剩余计划步骤一并汇报**。费用归账、局部编辑、原生摘要请求投影、原观察回读已有工程实现；上一批 A1/A3/A4 共 6 调用、423,924 tokens、估 3.4251572 元，已结束、不以余额继续付费。摘要默认关闭、修后长接续未通过真实模型验收；原 v3 仍 needs_revision，暂不进入步骤二/P02/前端。后续新 paid 须有该具体切片的预算确认，不能把本次接手当作已结束批次重新授权。
 
-本次新增资格证据：复用真实付费 A3 摘要，经当前原生 Agent 进行四个历史 CALC 回读与引用提交，离线通过；HTTP/外部网络封闭、0 新模型调用。读源选择和答复为 scripted，只证明真实摘要与修复后工具接口兼容，不证明模型判断或省费率。简要 receipt：`D:/temp/fin_step1_takeover_20260907_a3/takeover-readiness.json`。详设首页的“下一步骤二”和产品入口的“仅规划”已纠正。
+接手早期离线证据 `D:/temp/fin_step1_takeover_20260907_a3/takeover-readiness.json` 使用固定 expected_answer，漏掉真实多引用反例；本次改用付费模型第一次被拒答案本身，SHA-256 `4229068e7cceb948f608555140e303180132be71e5d4da5f1e4ce8c2132c70e2`。A1 导入路径错误、A2 断网检查误拦 Windows asyncio socketpair 均原位保留；A3 用标准 asyncio.Runner 先初始化本机事件循环，再封闭外连完成。它证明引用接口接续，不证明原答案语义正确、模型采纳新反馈或省费率。成熟组件资格和详细命令见 S3/190 文末。
 
-恢复时先读本节、最新同 ID capability/root-cause 条目、[详设的 remaining-work-20260907](../architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md#remaining-work-20260907) 与 [S3/190 文末](../worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md)，不要为接手再次整批输出旧聊天或以下全部历史。旧研究 265/264 已知/估 28.0927149 元及 LangSmith 190,815 缺额不变；本次仅新增离线资格与交接记录，无产品增量、部署或新付费。
+恢复时先读本节、最新同 ID capability/root-cause 条目、[详设的 remaining-work-20260907](../architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md#remaining-work-20260907) 与 [S3/190 文末](../worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md)，不要整批输出旧聊天或以下全部历史。旧研究 265/264 已知/估 28.0927149 元及 LangSmith 190,815 缺额不变。本轮修复后先汇报：剩余是模型自主生成的内容验收和既有局部编辑语义问题；新真实切片须单列 TokenBudgetBasis/预算，不能复用已结束批次余额。无新产品验收、部署或付费。
 
 以下逐时点记录保留作历史，后续旧“最新/下一步/进行中”描述不覆盖上述当前入口。
 

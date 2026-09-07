@@ -785,3 +785,29 @@ LangSmith 只读对账：trace `b917ed5e-4ff3-4241-bf05-c121b838b4e5` 根已结�
 证据目录为 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_context_postfix_summary_a1`：`validation-answer.md` 是原答复，`validation-review.json`/`review-notes.md` 是宿主结论，`token-cost-audit.json`/`langsmith-verification.json` 是费用及云端对账；私有消息、摘要、失败提交均保留，不入 Git。新输入副本与原 A3 输入字节一致，原历史/报告/SQL 未写入。
 
 本次增量分类：产品无新验收/无部署；工程只增加已有资格脚本的单分支入口与 5 个截止/隔离用例（启动前相关共 15 测试通过），未新增运行时；资格证据是一次真实模型完成、数值和回读通过、引用/状态表述失败；文档/Project OS 原位更新当前事实。摘要默认仍 false，v3 needs_revision，步骤一未全验收，不进入步骤二/P02/前端。下一先用保存反例核对历史窗口、完整对象、正式引用以及模型反馈，保持 FIN 权威边界，不再增加自然语言规则平台或同批付费追绿。
+
+### 2026-09-07：原生工具 artifact 修复历史引用接缝，离线反例验证完成
+
+Owner 最新授权继续修复，并明确：若又要开始手写大量规则，先找 cc、Codex、DS Harness 等现成技术栈。本切片修复“历史读得到、正式引用接不上”，并纠正验证状态/新 ID 的反馈含义，仍属于步骤一。
+
+**根因与工程实现（代码 `c8da5a2c`）：** 原 read_current_source 只返回模型可见 content，answer_citations 未复用完整历史引用窗口，因此 3 CALC/6 NUMFACT 明明读过仍被拒。采用已安装 LangChain 的 `@tool(response_format="content_and_artifact")`，模型看有界窗口，完整宿主引用绑定随 ToolMessage.artifact 经原生 LangGraph checkpoint 保留；读取和提交共用 saved_citation_bindings 薄投影，没有新增注册表、运行时、摘要器或依赖。
+
+旧格式只兼容成功 read_current_source 的完整 JSON 引用窗口（起点 0、未截断、长度完整、内部源 ID 匹配）；半截/错误/其他工具/AI/user 文本不能取得引用能力，同 ID 冲突拒绝。已有 CALC 绑定中的 S2 摘要保留原 ID、数值、单位、期间、authority 和 observation IDs，仅提供读取/引用，不进入 observed_sources 或被升级为可执行计算输入。原 CALC 内容与身份散列不改。
+
+返回投影和工具说明区分 verified / not_verified / not_recorded：false 为“未验证”，字段缺失为“未记录”，不能据此称审核失败。引用已有绑定不要求新 canonical ID 或强制重算；计算器缺完整旧对象时，仍须先恢复实际来源和操作数。没有添加逐句数字/中文关键词判断器。方括号引用解析仍是机械绑定检查，失败反馈不能保证模型不再生成无引用断言或错误结论。
+
+**成熟组件资格：ADOPT 现有工具 artifact 与 checkpoint。** 已核对本地 LangChain 1.4.0 / langchain-core 1.6.1 / LangGraph 1.2.11 实现和 [官方 ToolMessage 文档](https://docs.langchain.com/oss/python/langchain/messages)。原生 artifact 与模型 content 分离覆盖此处通用保存问题，FIN 只负责引用结构和来源权威。分页/检查点/内容省略后的引用能力均有执行测试。本轮无需迁移整个 CC/Codex/DS Harness，也未声称已重新逐项比较这些候选。若后续需大量自写恢复、调度或文本语义规则，先停止扩写并重新评估成熟组件。
+
+**真实失败样本原文重放：** 输入为 `20260907_context_postfix_summary_a1` 保存的消息与 snapshot，选取真实模型“第一次被拒”的 submit_case_answer 参数，不再使用只引一个 CALC 的 expected_answer。原文 SHA-256 `4229068e7cceb948f608555140e303180132be71e5d4da5f1e4ce8c2132c70e2`。旧基线 `0af8ba55` 复现同样 9 个引用拒绝；修复版原生 Agent 四次回读成功，一次原文提交绑定 4 CALC＋6 NUMFACT，共 10 个正式引用。两步 scripted 响应、0 provider/0 元；后三个历史引用形成完整 native artifacts，主 CALC 沿用原完整工具观察。答案文字/方括号不改，无重算；原付费目录逐文件 SHA 与 report/revisions/synthesis 状态均不变。这不是原答案语义通过或修后模型行为证明。
+
+离线 A1 因仓库根不在 sys.path 导入失败；A2 已完成旧拒绝/新绑定检查，但断网检查误拦 Windows asyncio 唤醒用 loopback socketpair。两次失败保留在各自目录，不修改重跑。A3 用标准 asyncio.Runner 先初始化事件循环，再封闭外连，完整原生流程成功；这些验证脚本环境错误不产生产品版本。成功命令（脚本拒绝覆盖已有 receipt，再执行需新 attempt 目录）：
+
+```powershell
+.venv/Scripts/python.exe Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_citation_binding_offline_a3/replay.py
+```
+
+证据 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_citation_binding_offline_a3/receipt.json`，同目录 replayed-answer.md 保留原语义错误，不作新的正确答案参考。
+
+**验证与增量分类：** 112 项定向检查通过：新增 saved_citation_continuation 13 项，及 request_summary、dell_case_convergence_agent、research_source_calculation、report_revision_comparison、context_continuation_comparison、research_convergence、dell_case_artifacts。覆盖分页、原生 checkpoint、内容省略后的 artifact 保留、不完整/伪造/冲突引用拒绝和原研究/修订/计算流程。Git diff --check、候选文件秘密扫描和语法检查通过。代码和测试单独提交，产品/技术/Project OS 记录另提交随分支推送。
+
+产品无新验收/部署；工程为引用薄适配、状态/失败反馈和回归测试；资格为保存的真实失败答案原文通过离线绑定；文档更新现有入口、工作记录和四个同 ID 账本。剩余是修后模型自主生成的语义结果与既有局部编辑语义问题，摘要仍 false、v3 needs_revision、步骤一未全验收。先向 Owner 汇报，不自动接续已结束 paid 批次。上轮 4 调用/263,171 tokens/1.710333 元和所有旧成本、190,815 缺额、失败 verdict 均不改。

@@ -894,3 +894,13 @@ Owner 明确授权连续完成原五项及新增需求，Hermes 评估前停止�
 研究资格：宿主20项主张/20条算术开发核查已保存；P01利润排他归因及P02相当部分/非泡沫/积压完全闭合需责任修订，净资本开支口径经官方FCF附注确认正确，不误改。官方Q2电话会PDF已读取。余额操作数及其他跨公司数值仍需核查，非全报告验收或盲测。
 
 新有限原生修订批次上限12元，角色有具体TokenBudgetBasis，未知用量/提交失败停止，无传输重试。A1隔离宿主未提供父checkpointer，在模型调用前失败，0元；保留result.json。A2复用已安装LangGraph AsyncSqliteSaver和原有convergence图，P01/P02→Lead→独立复核→Writer→报告复核，进行中；不修改原v3，不重跑其他研究面。证据根 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step2_responsible_revision_a2/`。产品增量尚待真实修订、交互/上传/统一导出/独立启动和新案例完成；本节不是收口。
+
+### 2026-09-08：历史报告交互与新研究启动解耦；A4停止结果
+
+工程增量：复用 Agent Server 原生 checkpoint/history，按页浏览完成的报告版本，用 difflib 比较正文；历史来源、图表、四格式导出绑定选定 checkpoint，修订原因从新修订起保存，旧版明确未记录。桌面为历史/对话/报告布局，宽阅读与窄屏 tab 可切换，引用与运行详情按需展开。无独立历史数据库或自建差异引擎。BFF 新研究模式不再强制读取旧报告和私有验收材料；新增标准 Compose fresh-only 配置，不挂载旧 bundle/report，本地状态默认 .finsight 并忽略入库。
+
+资格证据：83项近邻回归、另2项启动检查通过；最后受影响19项通过。生产前端 TypeScript/Vite 构建通过，1440/1024/390 浏览器交互3项通过。真实原会话从原生 PostgreSQL 读到 v1/v2/v3；v1→v3差异13651字符，历史v1导出SHA 924b762a91a05ba575e16c60dfd330d023af1d91f7e688d53112e15588063640。收据 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step3_live_versions_a1/receipt.json`；实际浏览器旧版选择、差异、对应引用与导出已检查，截图 `D:/temp/fin-step3-live-ui-20260908-a1/`。0模型交互。fresh-only Compose config 已通过；实际 fresh-only 全栈启动仍待完成，当前运行的是兼容旧报告部署，不能混称通过。镜像更新前只读确认无排队/运行中的模型任务，原 PG/Redis 卷与失败记录均保留。
+
+研究/费用：A2最终 P01完成、P02遇 boundary 空来源与 CaseClaim 不一致后用尽8调用，1.4536647元；a5524f63修正薄适配合同，canonical事实/计算来源要求不变。A3原提交离线重验仍缺两处原句绑定，保留失败。A4保留P01和P02原生历史，修好P02后走现有收敛图，32次调用、4.4263212元，已知用量；A2+A4合计5.8799859元。A4最终8298字符/48引用/3图，case_report_needs_revision，未晋升原v3。终审发现Writer丢失P08架构风险；宿主另确认利润标题仍与正文矛盾、DFS限定语被后句抵消、SMCI整体毛利过度推导纯AI利润，不能按模型“唯一缺陷”宣称其余都已通过。P08已有充分底稿却被第一轮综合复核误派重做5调用，这属于路由质量不足；a5524f63已澄清表达遗漏归当前综合/写稿角色，A4旧进程不算新提示资格。
+
+下一有界A5仅Writer/报告Verifier（最多4/6调用、额外上限2.5元，仍在原12元批次内），复用A4全部研究与报告，修精确表达/架构遗漏/积压残差说明；具体TokenBudgetBasis及宿主开发审查在 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step2_writer_correction_a5/`。不重跑九主题，不当Owner/盲审，不评估Hermes。产品仍待最终报告、真实上传视觉、完整交互验收、统一输出/新案例/GitHub最终收口；本节交付工程与资格增量，不是整体验收。

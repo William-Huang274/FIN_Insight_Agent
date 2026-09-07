@@ -30,7 +30,7 @@ def _app(*, enabled=True, graph_id=RESEARCH_GRAPH):
         return thread
     async def get_state(_):
         return {"values": {"phase": "ready_for_human_review"}, "interrupts": [{"value": {"kind": "dell_report_review"}}]}
-    service = ReportSessionService("http://127.0.0.1:18165", None, sdk=SimpleNamespace(
+    service = ReportSessionService("http://127.0.0.1:18165", object(), sdk=SimpleNamespace(
         threads=SimpleNamespace(create=create_thread, get=get_thread, get_state=get_state), runs=SimpleNamespace(create=create_run)),
         research_profile={"default_question": "A new bounded Dell growth-quality research question", "title": "New Dell research"} if enabled else None)
     app = FastAPI()
@@ -50,6 +50,19 @@ def test_new_task_and_review_remain_different_native_entries_and_fresh_has_no_se
         assert calls[-1][2]["multitask_strategy"] == "reject"
         result = client.post("/api/v1/research-sessions", json={"mode": "review"}, headers={"x-workbench-request": "1"})
         assert result.status_code == 200 and calls[-1][1][1] == GRAPH and calls[-1][2]["input"] == {"open": True}
+    asyncio.run(service.http.aclose())
+
+
+def test_fresh_task_without_any_legacy_bundle_and_legacy_open_is_explicitly_unavailable():
+    app, service, calls, _ = _app()
+    service.artifacts = None
+    with TestClient(app) as client:
+        config = client.get("/api/v1/research-session-config").json()
+        assert config["fresh_research_enabled"] and not config["legacy_review_enabled"]
+        assert client.post("/api/v1/research-sessions", json={"mode": "review"}, headers={"x-workbench-request": "1"}).status_code == 409
+        assert not calls
+        assert client.post("/api/v1/research-sessions", json={"mode": "research"}, headers={"x-workbench-request": "1"}).status_code == 200
+        assert calls[-1][1][1] == RESEARCH_GRAPH and "report" not in calls[-1][2]["input"]
     asyncio.run(service.http.aclose())
 
 

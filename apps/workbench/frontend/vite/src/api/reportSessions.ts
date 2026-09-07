@@ -110,6 +110,7 @@ export type Session = {
 };
 export type ResearchConfiguration = {
   fresh_research_enabled: boolean;
+  legacy_review_enabled?: boolean;
   title?: string;
   default_question?: string;
   research_as_of?: string;
@@ -118,6 +119,9 @@ export type ResearchConfiguration = {
 };
 
 const base = "/api/v1/research-sessions";
+export type ReportVersion = { version: number; checkpoint_id: string; created_at?: string; title: string; reason: string };
+export type ReportSnapshot = { report: NonNullable<Session["report"]>; report_version: number; checkpoint_id: string; reason?: string };
+export type ReportDiff = { before_version: number; after_version: number; reason: string; diff: string; charts_changed: boolean; citations_changed: boolean };
 async function request<T>(url: string, body?: unknown): Promise<T> {
   const response = await fetch(url, {
     headers: { "Content-Type": "application/json", "X-Workbench-Request": "1" },
@@ -150,15 +154,18 @@ export const sessionsApi = {
     return value;
   },
   state: (id: string) => request<Session>(`${base}/${id}`),
+  versions: (id: string, before?: string) => request<{ versions: ReportVersion[]; next_cursor: string | null }>(`${base}/${id}/report-versions${before ? `?before=${encodeURIComponent(before)}` : ""}`),
+  version: (id: string, checkpoint: string) => request<ReportSnapshot>(`${base}/${id}/report-versions/${encodeURIComponent(checkpoint)}`),
+  diff: (id: string, before: string) => request<ReportDiff>(`${base}/${id}/report-diff?before=${encodeURIComponent(before)}`),
   action: (id: string, action: string, message: string, answerMode: "quick" | "deep" = "deep") =>
     request<{ run_id: string }>(`${base}/${id}/actions`, { action, message, answer_mode: answerMode }),
   cancel: (id: string, run: string) =>
     request(`${base}/${id}/runs/${run}/cancel`, {}),
   abandonQuestion: (id: string) =>
     request<{ run_id: string }>(`${base}/${id}/abandon-question`, {}),
-  source: (id: string, source: string, offset = 0) =>
+  source: (id: string, source: string, offset = 0, checkpoint?: string) =>
     request<Source>(
-      `${base}/${id}/source?source_id=${encodeURIComponent(source)}&offset=${offset}`,
+      `${base}/${id}/source?source_id=${encodeURIComponent(source)}&offset=${offset}${checkpoint ? `&checkpoint_id=${encodeURIComponent(checkpoint)}` : ""}`,
     ),
 };
 // Official stream client; mutations use the narrow BFF, never arbitrary native inputs.

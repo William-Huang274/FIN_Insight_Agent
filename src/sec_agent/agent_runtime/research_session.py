@@ -105,6 +105,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
             "research_stop_reason": result.get("stop_reason"),
             "phase": "needs_revision" if result["phase"] == "case_report_needs_revision" else "ready_for_human_review",
             "report_version": state["report_version"] + (result["report"] != state["report"]),
+            **({"report_revision_reason": state.get("message", "未记录修订请求")} if result["report"] != state["report"] else {}),
             "last_output_kind": "report"}
 
     graph = build_report_session_graph(

@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import re
+from difflib import unified_diff
 from copy import deepcopy
 from datetime import datetime, timezone
 from pathlib import Path
@@ -204,6 +205,22 @@ class ReportSessionService:
         await self.owned_thread(thread_id)
         return await self.sdk.threads.get_state(str(thread_id))
 
+    async def report_state(self, thread_id, checkpoint_id=None):
+        if checkpoint_id is None:
+            return await self.state(thread_id)
+        await self.owned_thread(thread_id)
+        state = await self.sdk.threads.get_state(str(thread_id), checkpoint_id=str(checkpoint_id))
+        if not report_snapshot(state):
+            raise HTTPException(404, "该历史记录没有完成的报告版本")
+        return state
+
+
+def report_snapshot(state):
+    """Only completed human-review snapshots, not intermediate Writer output."""
+    values = state.get("values", {})
+    return bool(values.get("report") and values.get("report_version") and (
+        "human_review" in state.get("next", []) or values.get("phase") == "human_reviewed_not_released"))
+
 
 def build_report_sessions_router(service):
     router = APIRouter()
@@ -227,7 +244,49 @@ def build_report_sessions_router(service):
     @router.get("/research-session-config")
     async def configuration():
         profile = getattr(service, "research_profile", None)
-        return {"fresh_research_enabled": profile is not None, **(deepcopy(profile) if profile else {})}
+        return {"fresh_research_enabled": profile is not None, "legacy_review_enabled": service.artifacts is not None,
+            **(deepcopy(profile) if profile else {})}
+
+    @router.get("/research-sessions/{thread_id}/report-versions")
+    async def report_versions(thread_id: UUID, before: UUID | None = None):
+        await service.owned_thread(thread_id)
+        history = await service.sdk.threads.get_history(str(thread_id), limit=10, before=str(before) if before else None)
+        versions = {}
+        for state in history:
+            if not report_snapshot(state):
+                continue
+            values = state["values"]
+            number = values["report_version"]
+            versions.setdefault(number, {"version": number, "checkpoint_id": state["checkpoint"]["checkpoint_id"],
+                "created_at": state.get("created_at"), "title": values["report"]["title"],
+                "reason": values.get("report_revision_reason") or "历史版本未单独记录修订原因"})
+        return {"versions": list(versions.values()),
+            "next_cursor": history[-1]["checkpoint"]["checkpoint_id"] if len(history) == 10 else None}
+
+    @router.get("/research-sessions/{thread_id}/report-versions/{checkpoint_id}")
+    async def report_version(thread_id: UUID, checkpoint_id: UUID):
+        state = await service.report_state(thread_id, checkpoint_id)
+        values = state["values"]
+        return {"report": values["report"], "report_version": values["report_version"],
+            "report_review": values.get("report_review"), "reason": values.get("report_revision_reason"),
+            "checkpoint_id": str(checkpoint_id)}
+
+    @router.get("/research-sessions/{thread_id}/report-diff")
+    async def report_diff(thread_id: UUID, before: UUID, after: UUID | None = None):
+        old = (await service.report_state(thread_id, before))["values"]
+        current = await service.report_state(thread_id, after)
+        if not report_snapshot(current):
+            raise HTTPException(409, "当前修订尚未完成，请完成后比较，或选择已完成的历史版本")
+        new = current["values"]
+        if not new.get("report"):
+            raise HTTPException(409, "报告尚未生成")
+        return {"before_version": old["report_version"], "after_version": new["report_version"],
+            "reason": new.get("report_revision_reason") or "历史版本未单独记录修订原因",
+            "diff": "\n".join(unified_diff(old["report"]["narrative_markdown"].splitlines(),
+                new["report"]["narrative_markdown"].splitlines(), fromfile=f"v{old['report_version']}",
+                tofile=f"v{new['report_version']}", lineterm="")),
+            "charts_changed": old["report"].get("charts", []) != new["report"].get("charts", []),
+            "citations_changed": old["report"].get("citations", {}) != new["report"].get("citations", {})}
 
     @router.post("/research-sessions")
     async def create(body: NewSession, request: Request):
@@ -242,6 +301,8 @@ def build_report_sessions_router(service):
             payload = ResearchRequest(question=body.question or profile["default_question"]).model_dump(mode="json")
         elif body.question is not None:
             raise HTTPException(422, "研究问题请使用新研究模式；打开旧报告不执行研究")
+        elif service.artifacts is None:
+            raise HTTPException(409, "本部署未配置旧报告；可以创建新研究或打开任务历史")
         if body.defer_start and body.mode != "research":
             raise HTTPException(422, "只有新研究支持先上传资料")
         metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode}
@@ -428,8 +489,8 @@ def build_report_sessions_router(service):
         return {"cancel_requested": True, "notice": "保留已完成内容；未知供应商用量不记零。不会自动重发。"}
 
     @router.get("/research-sessions/{thread_id}/source")
-    async def source(thread_id: UUID, source_id: str, offset: int = 0):
-        state = await service.state(thread_id)
+    async def source(thread_id: UUID, source_id: str, offset: int = 0, checkpoint_id: UUID | None = None):
+        state = await service.report_state(thread_id, checkpoint_id) if checkpoint_id else await service.state(thread_id)
         values = state.get("values", {})
         citations = [values.get("report", {}).get("citations", {})]
         citations += [values.get("synthesis", {}).get("citations", {}), values.get("research_synthesis", {}).get("citations", {})]
@@ -467,20 +528,21 @@ def build_report_sessions_router(service):
             raise HTTPException(422, "来源或阅读范围不合法") from None
 
     @router.get("/research-sessions/{thread_id}/report/export/{format}")
-    async def export(thread_id: UUID, format: Literal["md", "pdf", "docx", "pptx"]):
-        state = await service.state(thread_id)
+    async def export(thread_id: UUID, format: Literal["md", "pdf", "docx", "pptx"], checkpoint_id: UUID | None = None):
+        state = await service.report_state(thread_id, checkpoint_id) if checkpoint_id else await service.state(thread_id)
         report = state.get("values", {}).get("report")
         if not report:
             raise HTTPException(409, "报告尚未生成，不能导出空结果")
         from apps.workbench.backend.application.report_delivery import export_report
         data, mime = await run_in_threadpool(export_report, report, format,
             review_status="报告导出快照，请以工作台中当前的人工审阅状态为准")
-        return Response(data, media_type=mime, headers={"Content-Disposition": f'attachment; filename="finsight-research.{format}"',
+        version = state.get("values", {}).get("report_version", "snapshot")
+        return Response(data, media_type=mime, headers={"Content-Disposition": f'attachment; filename="finsight-research-v{version}.{format}"',
             "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})
 
     @router.get("/research-sessions/{thread_id}/report/charts/{index}.png")
-    async def report_chart(thread_id: UUID, index: int):
-        state = await service.state(thread_id)
+    async def report_chart(thread_id: UUID, index: int, checkpoint_id: UUID | None = None):
+        state = await service.report_state(thread_id, checkpoint_id) if checkpoint_id else await service.state(thread_id)
         charts = state.get("values", {}).get("report", {}).get("charts", [])
         if index < 0 or index >= len(charts):
             raise HTTPException(404, "报告中没有这个图表")

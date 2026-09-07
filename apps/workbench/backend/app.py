@@ -58,7 +58,7 @@ def create_app(
     product graph.
     """
 
-    if os.environ.get("FINSIGHT_REPORT_SESSION_SETTINGS") and os.environ.get("FINSIGHT_REPORT_SESSION_API_URL"):
+    if os.environ.get("FINSIGHT_REPORT_SESSION_API_URL"):
         return create_report_session_app(frontend_dist_root=frontend_dist_root)
 
     if workbench_runtime_mode not in {"current", "fixture"}:
@@ -409,25 +409,29 @@ def create_report_session_app(frontend_dist_root=None):
     from fastapi.middleware.trustedhost import TrustedHostMiddleware
     from .api.v1.report_sessions import ReportSessionService, build_report_sessions_router
     from sec_agent.agent_runtime.dell_report_session import load_session_materials
-    settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
-    artifacts, _ = load_session_materials(settings)
+    settings_path = os.environ.get("FINSIGHT_REPORT_SESSION_SETTINGS")
+    settings = json.loads(Path(settings_path).read_text(encoding="utf-8")) if settings_path else {}
+    state_root = Path(os.environ.get("FINSIGHT_LOCAL_STATE_ROOT", CODE_ROOT / ".finsight"))
+    artifacts = None
+    if settings.get("bundle_path") or settings.get("report_path"):
+        artifacts, _ = load_session_materials(settings)
     research_profile = None
     if os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") == "1":
         from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
         from sec_agent.agent_runtime.dell_agent_server_data_composition import DELL_APPROVED_RESEARCH_AS_OF
-        runtime_profile, case = load_research_runtime_profile(os.environ["FIN_REPO_ROOT"])
+        runtime_profile, case = load_research_runtime_profile(os.environ.get("FIN_REPO_ROOT", CODE_ROOT))
         research_profile = {"title": case["title"], "default_question": case["question"],
             "research_as_of": DELL_APPROVED_RESEARCH_AS_OF, "cost_expectation_cny": runtime_profile["cost_expectation_cny"],
             "notice": "新问题从空底稿研究；复用原始文档/SQL/索引，不载入旧专家答案。日期为已绑定案例时点，不宣称实时全量。"}
     from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
-    attachment_store = TaskAttachmentStore(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).parent / "attachments")
-    service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts, audit_root=settings["audit_root"],
+    attachment_store = TaskAttachmentStore((Path(settings_path).parent if settings_path else state_root) / "attachments")
+    service = ReportSessionService(os.environ["FINSIGHT_REPORT_SESSION_API_URL"], artifacts, audit_root=settings.get("audit_root", str(state_root / "calls")),
         research_profile=research_profile, attachment_store=attachment_store)
     @asynccontextmanager
     async def lifespan(app):
         yield
         await service.http.aclose()
-    app = FastAPI(title="FinSight Dell Research Session", lifespan=lifespan)
+    app = FastAPI(title="FinSight Research Session", version="0.1.3", lifespan=lifespan)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
     @app.exception_handler(__import__("httpx").HTTPError)
@@ -440,7 +444,7 @@ def create_report_session_app(frontend_dist_root=None):
         app.mount("/assets", StaticFiles(directory=dist / "assets"), name="session-assets")
     @app.get("/api/health")
     def health():
-        return {"service": "finsight-workbench", "mode": "local_dell_report_review", "status": "ok"}
+        return {"service": "finsight-workbench", "mode": "research_session", "status": "ok", "legacy_report_loaded": artifacts is not None}
     @app.get("/", include_in_schema=False)
     def root():
         return RedirectResponse("/workspace/session")

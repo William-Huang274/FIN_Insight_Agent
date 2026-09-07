@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { ReportVersions } from "./ReportVersions";
+import type { ReportSnapshot } from "../api/reportSessions";
 import {
   ArrowUp,
   BookOpen,
@@ -161,6 +163,9 @@ export function ResearchSession() {
     new URLSearchParams(window.location.search).get("thread") || "",
   );
   const [session, setSession] = useState<Session | null>(null);
+  const [historicalReport, setHistoricalReport] = useState<ReportSnapshot | null>(null);
+  const displayedReport = historicalReport?.report || session?.report;
+  const reportQuery = historicalReport ? `?checkpoint_id=${encodeURIComponent(historicalReport.checkpoint_id)}` : "";
   const [text, setText] = useState("");
   const [action, setAction] = useState<"ask" | "revise">("ask");
   const [answerMode, setAnswerMode] = useState<"quick" | "deep">("quick");
@@ -168,15 +173,19 @@ export function ResearchSession() {
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"report" | "conversation">("report");
+  const [inspectorOpen, setInspectorOpen] = useState(false);
+  const [readerFocus, setReaderFocus] = useState(false);
   const [inspector, setInspector] = useState<"review" | "activity" | "source">(
     "review",
   );
   const [selected, setSelected] = useState<{
     key: string;
     citation: Citation;
+    checkpoint?: string;
   } | null>(null);
   const [source, setSource] = useState<Source | null>(null);
   const sourceWindow = useRef<HTMLDivElement>(null);
+  useEffect(() => { setHistoricalReport(null); setSelected(null); setSource(null); }, [id]);
   const conversationEnd = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (tab === "conversation") conversationEnd.current?.scrollIntoView({ block: "end" });
@@ -393,10 +402,11 @@ export function ResearchSession() {
       setSending(false);
     }
   };
-  const cite = (key: string, citation: Citation) => {
-    setSelected({ key, citation });
+  const cite = (key: string, citation: Citation, checkpoint?: string) => {
+    setSelected({ key, citation, checkpoint });
     setSource(null);
     setInspector("source");
+    setInspectorOpen(true);
   };
   const findings = session?.report_review?.findings || [];
   return (
@@ -413,9 +423,9 @@ export function ResearchSession() {
         <button className="rs-new" onClick={() => setCreating(true)} disabled={sending}>
           <Plus size={16} /> 新建研究任务
         </button>
-        <button className="rs-legacy-link" onClick={() => newSession("review")} disabled={sending}>
+        {configuration?.legacy_review_enabled && <button className="rs-legacy-link" onClick={() => newSession("review")} disabled={sending}>
           <BookOpen size={14} /> 打开已有 Dell 报告审阅
-        </button>
+        </button>}
         <div className="rs-side-label">
           研究会话{" "}
           <button
@@ -461,6 +471,7 @@ export function ResearchSession() {
           <span className="rs-local">
             <span /> LOCAL PILOT
           </span>
+          <button onClick={() => setInspectorOpen(v => !v)} aria-expanded={inspectorOpen}>审查、来源与运行</button>
         </header>
         {!session || creating ? (
           <section className="rs-empty">
@@ -516,7 +527,7 @@ export function ResearchSession() {
             <small>
               {configurationError || (configuration?.fresh_research_enabled
                 ? "开始研究会产生真实模型调用；研究过程中可查看任务和费用、停止执行。打开旧报告则不重新研究。"
-                : "新研究尚未在当前服务启用，不会拿旧稿冒充新结果。已有报告审阅仍可使用。")}
+                : configuration?.legacy_review_enabled ? "新研究尚未启用；可打开已有报告审阅。" : "连接研究运行服务并启用新研究后即可开始；此部署没有预装旧报告。")}
             </small>
           </section>
         ) : (
@@ -607,13 +618,15 @@ export function ResearchSession() {
                 </button>
               </div>
               <span>
-                {Object.keys(session.report?.citations || {}).length}{" "}
+                {Object.keys(displayedReport?.citations || {}).length}{" "}
                 条引用可展开
+                <button className="rs-focus-reader" onClick={() => setReaderFocus(v => !v)}>{readerFocus ? "返回对话与报告" : "展开报告阅读"}</button>
               </span>
             </div>
-            <div className="rs-document" key={tab}>
-              {tab === "report" ? (
-                <>
+            <div className={`rs-content-shell ${readerFocus ? "rs-reader-focus" : ""}`}>
+            <div className={`rs-document rs-active-${tab}`}>
+                <section className="rs-report-pane" aria-label="研究报告">
+                  {session.report && <ReportVersions key={id} id={id} currentVersion={session.report_version || 1} onSelect={setHistoricalReport} />}
                   <div className="rs-report-notice">
                     <ShieldCheck size={17} />
                     <span>
@@ -621,22 +634,22 @@ export function ResearchSession() {
                     </span>
                   </div>
                   <article className="rs-prose">
-                    <h2 className="rs-report-title">{session.report?.title}</h2>
-                    {session.report && <div className="rs-export-actions"><span>导出这版报告</span>
+                    <h2 className="rs-report-title">{displayedReport?.title}</h2>
+                    {displayedReport && <div className="rs-export-actions"><span>导出这版报告</span>
                       {([['md', 'Markdown'], ['pdf', 'PDF'], ['docx', 'Word'], ['pptx', 'PowerPoint']] as const).map(([format, label]) =>
-                        <a key={format} href={`/api/v1/research-sessions/${id}/report/export/${format}`} download>{label}</a>)}
-                      {!!session.report.charts?.length && <a href="#report-charts">查看 {session.report.charts.length} 幅图表</a>}
+                        <a key={format} href={`/api/v1/research-sessions/${id}/report/export/${format}${reportQuery}`} download>{label}</a>)}
+                      {!!displayedReport.charts?.length && <a href="#report-charts">查看 {displayedReport.charts.length} 幅图表</a>}
                     </div>}
                     <Markdown
                       text={
-                        session.report?.narrative_markdown || (session.is_draft ? "研究尚未启动。这里将在研究完成后显示报告。" : session.status === "error" ? "本次尚未取得报告。请查看运行状态；失败记录与已有研究材料均保留。" : "报告尚未生成；请在研究现场查看真实任务进度。")
+                        displayedReport?.narrative_markdown || (session.is_draft ? "研究尚未启动。这里将在研究完成后显示报告。" : session.status === "error" ? "本次尚未取得报告。请查看运行状态；失败记录与已有研究材料均保留。" : "报告尚未生成；请在研究现场查看真实任务进度。")
                       }
-                      citations={session.report?.citations}
-                      onCitation={cite}
+                      citations={displayedReport?.citations}
+                      onCitation={(key, citation) => cite(key, citation, historicalReport?.checkpoint_id)}
                     />
-                    {!!session.report?.charts?.length && <h3 id="report-charts">图表与出处</h3>}
-                    {session.report?.charts?.map((chart, index) => <figure className="rs-research-chart" key={`${session.report_version}-${index}`}>
-                      <img src={`/api/v1/research-sessions/${id}/report/charts/${index}.png?v=${session.report_version}`} alt={chart.title} />
+                    {!!displayedReport?.charts?.length && <h3 id="report-charts">图表与出处</h3>}
+                    {displayedReport?.charts?.map((chart, index) => <figure className="rs-research-chart" key={`${historicalReport?.report_version || session.report_version}-${index}`}>
+                      <img src={`/api/v1/research-sessions/${id}/report/charts/${index}.png${reportQuery || `?v=${session.report_version}`}`} alt={chart.title} />
                       <figcaption>{chart.interpretation}</figcaption>
                       <details><summary>图表数值与来源（{chart.unit}）</summary><table><thead><tr><th>项目</th><th>系列</th><th>数值</th><th>来源</th></tr></thead>
                         <tbody>{chart.points.map((point, p) => <tr key={p}><td>{point.label}</td><td>{point.series}</td><td>{point.value.toLocaleString()}</td>
@@ -644,9 +657,8 @@ export function ResearchSession() {
                             <details><summary>定位与计算明细</summary><small>{point.source_id}</small><pre>{JSON.stringify(point.provenance, null, 2)}</pre></details></td></tr>)}</tbody></table></details>
                     </figure>)}
                   </article>
-                </>
-              ) : (
-                <div className="rs-conversation">
+                </section>
+                <div className="rs-conversation" aria-label="研究对话">
                   {!session.conversation?.length && (
                     <div className="rs-conversation-empty">
                       <MessageSquare size={28} />
@@ -680,7 +692,6 @@ export function ResearchSession() {
                   )}
                   <div ref={conversationEnd} />
                 </div>
-              )}
             </div>
             <footer className="rs-compose">
               <div className="rs-compose-tools">
@@ -800,6 +811,7 @@ export function ResearchSession() {
                 )}
               </div>
             </footer>
+            </div>
           </>
         )}
         {error && (
@@ -811,7 +823,7 @@ export function ResearchSession() {
           </div>
         )}
       </main>
-      <aside className="rs-inspector">
+      <aside className={`rs-inspector ${inspectorOpen ? "rs-inspector-open" : ""}`} aria-label="审查与运行详情" hidden={!inspectorOpen}>
         <header>
           <span>
             <Radio size={16} /> 研究现场
@@ -819,6 +831,7 @@ export function ResearchSession() {
           <span className={connected ? "rs-live" : "rs-muted"}>
             {connected ? "实时连接" : "已保存状态"}
           </span>
+          <button aria-label="关闭详情" onClick={() => setInspectorOpen(false)}><X size={16} /></button>
         </header>
         <div className="rs-inspector-tabs">
           <button
@@ -1091,7 +1104,7 @@ export function ResearchSession() {
                     <button
                       onClick={() =>
                         sessionsApi
-                          .source(id, s.source_id)
+                          .source(id, s.source_id, 0, selected.checkpoint)
                           .then(setSource)
                           .catch((e) => setError(e.message))
                       }
@@ -1110,7 +1123,7 @@ export function ResearchSession() {
                       <button
                         onClick={() =>
                           sessionsApi
-                            .source(id, source.source_id, source.next_offset)
+                            .source(id, source.source_id, source.next_offset, selected.checkpoint)
                             .then(setSource)
                             .catch((e) => setError(e.message))
                         }

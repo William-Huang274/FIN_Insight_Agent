@@ -12,6 +12,19 @@ Owner 已明确授权开始连续实施，并要求在 Hermes 评估之前停下
 
 GitHub 已实查为 public。默认首页曾把当前动态研究写为未来能力，现已通过PR #2修正中英文版本入口，CI编译/测试/浏览器步骤全过后合并为114a935f并读回确认。仅首页与两处既有路由测试兼容进入main，没有整体晋升开发运行时代码。独立源码资格使用9e363302，17项上传/导出检查与四格式合成导出成功，0模型；复用本机依赖，不能外推全新安装或新研究无旧bundle启动已通过。公开历史/资料、完整展示及原产品验收仍待完成。
 
+## 本次连续实施接续点（2026-09-08，进行中，非收口）
+
+最新覆盖下列早期进行中状态：A4已经结束，case_report_needs_revision，32调用/4.4263212元，与A2合计5.8799859元已知用量。终稿仍有架构遗漏与标题/DFS因果表达矛盾；A5仅Writer/Verifier，额外上限2.5元且不超原12元批次，正在执行，shell session 67562，目录 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step2_writer_correction_a5/`；脚本 `D:/temp/fin-step2-sources-20260908/run_writer.py`。看result.json实际结果，未完成不能猜通过。原v3不变。a5524f63已提交边界合同及表达责任提示修复。历史UI/原生版本接口与新BFF启动解耦已完成定向资格，最新19项通过；实际旧会话v1/v2/v3及差异/历史引用导出已在原生服务和浏览器验证，收据step3_live_versions_a1/receipt.json，详S3/190最新节。Agent Server API18165/PG/Redis及BFF8766(session34881)运行中；fresh-only Compose仅config检查通过，完整启动仍待做。
+
+- 用户要求：原五项＋新增需求、GitHub main/正式双语文档/版本/历史分支整理完成后，在任何 Hermes 评估前停止供其审阅。继续实施，不逐补丁审批；旧模型批余额不再使用。
+- 已提交并推送 `c1664bbb`：计算引用保存完整结构化来源，导出公式/操作数/期间/URL/假设/校验状态，无来源边界不再空白。68项回归＋1项新增不可变性检查；真实v3机械投影42引用/25计算绑定/3图、0模型，`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step2_citation_delivery_a1/receipt.json`。原v3未晋升。
+- 未提交工程：历史报告从原生 checkpoint 分页读取、difflib差异、修订原因持久化、所选版的引用/图表/导出；桌面历史/对话/报告三栏与按需详情，窄屏tab；新BFF不再强制加载旧报告/私有验收材料。主要文件 report_sessions.py、backend/app.py、ResearchSession.tsx、ReportVersions.tsx、research-session.css、dell_report_session.py、research_session.py。另已修 CaseClaim 来源列表与 canonical SpecialistClaim 的边界合同冲突；事实/计算来源要求仍由canonical校验，新增回归通过。
+- 验证：83项报告/会话/BFF/责任修订回归通过；另外2项无旧bundle的启动/新任务检查通过。TypeScript/生产build成功。真实浏览器、合成API数据的1440/1024/390三尺寸3项通过，截图 `D:/temp/fin-step3-ui-20260908-a3/` 已检查宽屏/手机，无横向溢出。旧E2E启动先失败于私有readiness强制依赖，修后又遇Windows保留4173端口，使用已检查的15173成功。此证据不是整套Agent Server无私有数据全链启动或真实用户验收。
+- 模型批次总上限12元：A1无父checkpoint、0调用失败；A2原生SQLite父图运行，P01完成，P02最后提交因boundary空source_ids被拒并触8调用上限，总估1.4536647元、已知用量。原材料/失败均保留。A3修接口后离线重验同一P02原提交，仍报C12两个缺少原句绑定，未改判成功。
+- 当前有界A4正在运行：`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step2_responsible_revision_a4/`，shell session 40351；调用脚本 `D:/temp/fin-step2-sources-20260908/run_revision.py`。复用P01成果与P02原native私有历史，3次修提交后P02成功，随后原生Lead→独立复核。复核新增P08架构遗漏责任，正在定向补齐；不重做其余作者。A4上限10.5463353元与A2合计不超过12。每个节点具体TokenBudgetBasis；未知usage/提交失败停止，不能按余额无依据追绿。阶段实际输出stage-N.private.json，实际P02输出P02-candidate.private.json；最后看result.json/candidate.private.json，未完成不能按文件存在猜成功。
+- 重要未解决语义：A4第一版Lead开头/标题仍写“而非AI自身”，正文却写不能排除；复核漏检。同时把H2平均20.7B写为Q3/Q4逐季监测门槛，DFS定量归因仍须核。宿主已向用户及时指出，不能因模型summary说通过就收口。20主张/20算术初审在A2 claim-audit.private.json，非盲测且尚非所有关键计算闭环。Dell官方Q2电话会PDF和文本在 `D:/temp/fin-step2-sources-20260908/`，PDF正文7-8页管理层利润机制、18-19页提前订购与DFS；FCF净资本开支原口径经官方脚注确认正确，不误改。21条唯一CALC（25引用绑定）已列出，跨公司/余额原文核查仍须补齐。
+- 下一步：收完当前A4，核最终每处责任结论/阈值/计算与出处；必要的有限修复须保留失败原件，不新开产品版本。完成当前工程slice的日志、精确暂存提交推送；再沿唯一详设步骤三/四/五/六/七继续真实UI/文件与视觉→最终四格式及图→无旧答案依赖的完整启动→1–2新场景/展示/版本/GitHub分支收口。停止点是Hermes之前，当前远未到最终审阅。
+
 ## 已完成的步骤一收口（2026-09-07，任务 01a07afa-cf5a-7c52-b135-ccd9e49c14bf）
 
 **当前结论：步骤一的本地工程整改与有界资格已收口，不再停在规划/逐补丁审批。** 采用现有 LangChain 工具输出清理、原生 artifact/checkpoint 与按需回读；8万触发的自动摘要资格为 HOLD，保持 disabled，不能把它写成通过。长历史工具清理接续 A3：2次 Pro/325423 tokens/估1.1224047元，四条CALC、十个操作数、12引用、期间及未验证/未记录状态保留，旧错误明确未保存且没有杜撰确切失败ID。该问题限定四个原有ID，非与摘要臂同题因果对照；原FCF金融口径仍未核验。

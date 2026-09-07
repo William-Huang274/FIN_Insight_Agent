@@ -57,6 +57,7 @@ class SessionState(TypedDict, total=False):
     report_review: dict[str, Any]
     revisions: dict[str, Any]
     report_version: int
+    report_revision_reason: str
     phase: str
     request_action: str
     message: str
@@ -91,7 +92,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
         material = initial(state) if callable(initial) else initial
         return {"initialized": True, "report": deepcopy(material["report"]),
             "report_review": deepcopy(material["report_review"]), "revisions": deepcopy(material["revisions"]),
-            "report_version": 1, "phase": material.get("phase", "needs_revision"), "conversation": [], "model_events": []}
+            "report_version": 1, "report_revision_reason": "初始报告", "phase": material.get("phase", "needs_revision"), "conversation": [], "model_events": []}
 
     def human_review(state):
         response = interrupt({"kind": "dell_report_review", "report_version": state["report_version"],
@@ -165,6 +166,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             or any(r["disposition"] == "unresolved" for v in state.get("revisions", {}).values()
                    for r in v.get("finding_responses", [])))
         return {"report_version": state["report_version"] + (state["last_output_kind"] == "report"),
+            **({"report_revision_reason": state.get("message", "未记录修订请求")} if state["last_output_kind"] == "report" else {}),
             "phase": "needs_revision" if material else "ready_for_human_review"}
 
     def question_error(state, error: NodeError):

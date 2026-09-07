@@ -15,15 +15,19 @@ import shutil
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["build", "up", "serve"])
+    parser.add_argument("action", choices=["check", "build", "up", "serve"])
     parser.add_argument("--settings-directory", type=Path, required=True)
     parser.add_argument("--api-port", type=int, default=18165)
     parser.add_argument("--ui-port", type=int, default=8766)
     parser.add_argument("--no-build", action="store_true", help="Use the already built image; no source change implied.")
     parser.add_argument("--enable-research", action="store_true", help="Enable the approved fresh research entry; does not start a model run.")
+    parser.add_argument("--fresh-only", action="store_true", help="Run only new research without mounting an archived answer bundle or report.")
     args = parser.parse_args()
     repo = Path(__file__).resolve().parents[2]
     settings_root = args.settings_directory.resolve(strict=True)
+    settings = json.loads((settings_root / "host-settings.json").read_text(encoding="utf-8"))
+    if args.fresh_only and (settings.get("bundle_path") or settings.get("report_path")):
+        raise ValueError("fresh_only_settings_must_not_reference_legacy_answers")
     os.environ["FIN_REPO_ROOT"] = str(repo)
     os.environ["FINSIGHT_RESEARCH_SESSION_ENABLED"] = "1" if args.enable_research else "0"
     if args.action == "serve":
@@ -42,12 +46,13 @@ def main():
             ("operator", "FINSIGHT_FIN_RUNTIME_OPERATOR_POSTGRES_PASSWORD")):
         # Stable deployment-scoped DB credentials, not per-question credentials.
         env[key] = hmac.new(secret, f"dell-report-workbench:{role}".encode(), hashlib.sha256).hexdigest()
-    settings = json.loads((settings_root / "host-settings.json").read_text(encoding="utf-8"))
     env.update(FINSIGHT_AGENT_SERVER_HOST_PORT=str(args.api_port),
         FINSIGHT_REPORT_SESSION_SETTINGS_HOST_PATH=str(settings_root / "container-settings.json"),
-        FINSIGHT_REPORT_SESSION_BUNDLE_HOST_PATH=settings["bundle_path"],
-        FINSIGHT_REPORT_SESSION_REPORT_HOST_PATH=settings["report_path"],
         FINSIGHT_REPORT_SESSION_CALLS_HOST_PATH=str(settings_root / "calls"))
+    if not args.fresh_only:
+        env.update(FINSIGHT_REPORT_SESSION_BUNDLE_HOST_PATH=settings["bundle_path"],
+            FINSIGHT_REPORT_SESSION_REPORT_HOST_PATH=settings["report_path"])
+    (settings_root / "calls").mkdir(exist_ok=True)
     (settings_root / "attachments").mkdir(exist_ok=True)
     env["FINSIGHT_TASK_ATTACHMENTS_HOST_ROOT"] = str(settings_root / "attachments")
     env["FINSIGHT_TASK_VISION_ENABLED"] = "1" if args.enable_research else "0"
@@ -55,8 +60,10 @@ def main():
     if not Path(docker).is_file():
         raise FileNotFoundError("Docker CLI not found; add the installed Docker CLI to PATH")
     command = [str(docker), "compose", "--env-file", str(repo / ".env"), "-p", "finsight-dell-report-workbench",
-        "-f", "deploy/dell_agent_server/compose.yaml", "-f", "deploy/dell_agent_server/compose.report-session.yaml"]
+        "-f", "deploy/dell_agent_server/compose.yaml", "-f", "deploy/dell_agent_server/compose.research-session.yaml" if args.fresh_only else "deploy/dell_agent_server/compose.report-session.yaml"]
     subprocess.run([*command, "config", "--quiet"], cwd=repo, env=env, check=True)
+    if args.action == "check":
+        return
     if args.action == "build":
         subprocess.run([*command, "build", "langgraph-api"], cwd=repo, env=env, check=True)
         return  # Build does not stop/recreate a running paid task.

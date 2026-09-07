@@ -1,64 +1,51 @@
 # FinSight Agent — FIN 0.1.3
 
-**A financial-research workspace from question to an inspectable report.** Agents use real data tools to analyze business growth, profit and cash flow, with traceable sources, calculations and charts.
+**A financial research workspace that turns a question into a traceable report and follow-up conversation.** Agents use financial SQL, source passages and source-bound calculations to examine business growth, earnings and cash conversion.
 
-This branch contains the current dynamic workflow: a real frontend, nine research topics, cross-review and targeted author repair, synthesis, reporting, follow-up and export. A developed Dell case produced a v3 candidate with 42 citations and three charts, downloaded and rendered in four formats. One material workpaper/report inconsistency remains; final content acceptance is open.
+[中文](README.md) · [Run and verify](docs/public/quickstart.en.md) · [Architecture](docs/public/architecture.en.md) · [Evidence and sharing](docs/public/sharing-scope.md) · [Changelog](CHANGELOG.md)
 
-**Version:** this README describes the development candidate on `codex/fin013-dell-s1-s2-product-bridge`. Runtime code on `main` is the historical fixed Evidence Pack workspace. Full research requires configured services, model credentials and prepared data. The [run guide](docs/public/quickstart.en.md) also provides checks that require no model calls.
+## Capabilities
 
-## Current implementation
+| Capability | Implementation and evidence boundary |
+| --- | --- |
+| Dynamic research | A Lead creates a task DAG; experts plan, call tools and submit workpapers. The Dell case exercised nine research areas with a concurrency limit of two. |
+| Review and revision | Counter / Verifier, accountable authors, synthesis, research review, Writer, final review and human review. Failed attempts remain visible; model reviewers can miss errors. |
+| Traceable evidence | MCP tools for financial SQL, document navigation/search/passages, external search, web reading and calculations. Expressions, operands, periods, units and provenance are retained; arithmetic validity is distinct from financial validity. |
+| Interaction | New research, short and deep questions, local revisions, stop, report versions/diffs and source inspection. Saved guidance can be delivered to a later stage; delivery does not prove semantic adoption. |
+| Context and costs | Clear old tool output from requests while retaining artifacts/checkpoints and ID-based retrieval; reuse saved calculations and edit locally. Aggregate all native runs with input/output/cache usage, elapsed time, estimated cost and explicit unknowns. |
+| User material | Task-scoped documents and images, parsing/chunking and on-demand cached vision. Actual PDF/image questions were exercised, including an identified OCR error. |
+| Delivery | Markdown, PDF, Word and PowerPoint from one report. Editable PPT charts and detailed source references in speaker notes. Export makes no model calls. |
 
-- Dynamic Lead DAG and independent multi-turn specialists. Nine research topics; concurrency two is not a two-specialist limit.
-- Counter/Verifier, targeted author repair, Lead synthesis, independent research review, Writer, final review and human handoff have all executed with real models. Model review can still miss errors.
-- MCP tools for SEC financial SQL, document structure/search/source windows, external search/page reads and source-bound calculation.
-- LangChain / LangGraph, Agent Server, PostgreSQL, Redis and LangSmith. FIN owns research contracts, source authority and thin adapters.
-- Bounded validation of old tool-output clearing, original evidence retention, source readback and local report edits. Automatic summarization remains disabled; no general cost-saving percentage is established.
-- Real task creation, activity, source inspection, follow-up, revision, cancellation and guidance consumed at subsequent phase boundaries.
-- Task-isolated uploads, mature parsing/chunking and on-demand Flash vision. One real MCP vision probe used 423 tokens; this is not an OCR accuracy benchmark.
-- Source-bound charts and Markdown/PDF/Word/PowerPoint exports. File/visual checks are distinct from financial-content acceptance.
+The current **Dell report v4** is a development-reviewed candidate awaiting Owner content review: 54 citations, three charts, rendered PDF (15 pages), Word (20 pages) and PowerPoint (44 slides). **FIN 0.1.3** is the product version; report revisions and execution attempts are separate. This evidence is not an unassisted first-pass success rate or production certification.
 
-Current workspace: `http://127.0.0.1:8766/workspace/session`; native Agent Server: `http://127.0.0.1:18165`. Both are local-only. The case snapshot is 2026-09-02; financial SQL currently covers DELL/MU/NVDA, not every company. Fresh research reuses original data, not previous expert answers.
+Automatic summarization remains **HOLD and disabled by default**. Tool-output clearing, artifact retrieval and local edits have bounded qualification evidence; no general equal-quality token-saving percentage has been established.
 
-[Architecture and build/adopt split](docs/public/architecture.en.md) · [Run and test](docs/public/quickstart.en.md) · [Sharing scope and evidence claims](docs/public/sharing-scope.md) · [中文](README.md)
+## Runtime
 
-An independent source checkout passed 17 upload/export checks and generated four synthetic export formats on 2026-09-08, with zero model calls. It reused installed dependencies; fresh dependency installation and independent full-research startup remain unverified. The original developed Dell case used 265 requests, 264 with known usage, at an estimated CNY 28.09 including failures and revisions. Step-one remediation batches are separate; these figures are not short-Q&A prices or unassisted success rates. See the [evidence and sharing scope](docs/public/sharing-scope.md).
+React → FastAPI BFF → LangGraph Agent Server → Lead/expert DAG → review/revision → report → human review and export. PostgreSQL and Redis provide native persistence/execution infrastructure; MCP exposes tools, and LangSmith plus local call records support inspection. FIN owns research contracts, source authority and thin adapters. See [architecture and tradeoffs](docs/public/architecture.en.md).
 
-The repository is public. Uploads, databases, raw model context and private traces are excluded from the intended showcase; full report sharing requires a separate content review.
-
-<details>
-<summary>Historical fixed Evidence Pack workspace: compatibility, startup and baseline</summary>
-
-## Legacy fixed-pack workspace
-
-The 8765 commands below refer to the earlier read-only Evidence Pack interface, retained for compatibility/regression. They do not launch the new research workflow or prove multi-case agent performance.
-
-### Run the legacy interface
+## Run a zero-model check
 
 ```powershell
-uv sync --locked
-cd apps/workbench/frontend
-npm ci
-npm run build
-cd ../../..
-uv run --locked python scripts/dev/run_workbench_backend.py --host 127.0.0.1 --port 8765
+uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery
+uv run --no-sync python -m pytest tests/test_task_attachments.py tests/test_report_delivery.py -q
+uv run --no-sync python -m scripts.qualification.research_delivery_smoke --output-directory D:/temp/finsight-delivery-smoke
 ```
 
-Python dependencies are maintained only in `pyproject.toml` and pinned by the tracked `uv.lock`; do not add a second hand-maintained requirements file.
+The output directory must not already exist. Outputs are explicitly synthetic. Full research also requires Docker, provider/tool credentials, prepared financial data and service settings. The complete private qualification data is not distributed. `--fresh-only` starts without old reports or expert answers, but still requires source data. Follow the [quickstart](docs/public/quickstart.en.md) for frontend builds, deployment and limitations.
 
-- Product: `http://127.0.0.1:8765/workspace`
-- Operations: `http://127.0.0.1:8765/operations`
-- Health: `http://127.0.0.1:8765/api/health`
+- Current research: `http://127.0.0.1:8766/workspace/session`; native API: `http://127.0.0.1:18165`.
+- Historical fixed Evidence Pack UI: `http://127.0.0.1:8765/workspace`. Source-only health works; missing private evidence returns typed readiness 503 instead of fabricated reports.
+- Services bind to localhost. Uploads and operations currently assume a trusted Owner, not public multi-tenant access.
 
-The repository does not distribute the private reviewed-pack objects. Without a mount, the case catalog remains visible, detail buttons are disabled, and `/api/readiness` returns a typed HTTP 503. For full case review, set `FINSIGHT_DATA_ROOT` to a data root containing `workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects`. Keep all credentials in environment variables and out of Git.
+## Review the evidence
 
-### Verify the legacy baseline
+Inspect source passages, calculation operands, report versions, failed attempts and unknown usage alongside successful outputs. The original Dell development research recorded 265 requests, 264 known usage outcomes and an estimated CNY 28.092715, including failures and revisions. Context repair, uploads, later report repairs and new questions are separate batches; this is not a normal single-question price.
 
-```powershell
-uv run --locked python scripts/engineering/verify_active_baseline.py --pretty
-uv run --locked python scripts/engineering/build_archive_redirect_index.py --check
-uv run --locked python -m pytest -q
-```
+The fixed case data cutoff is 2026-09-02; financial SQL covers DELL, MU and NVDA. A complete Dell case and bounded NVIDIA/Micron follow-ups are different qualification scopes. Neither proves general full-company research coverage.
 
-See the [current code map](docs/architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md) and [current context pack](docs/project_os/current_context_pack.zh-CN.md) for the exact product and repository boundary.
+## Documentation and history
 
-</details>
+This README and `docs/public/` describe the current implementation. [CHANGELOG](CHANGELOG.md) separates product milestones from report revisions. `archive/versions/` and Git retain historical baselines; worklogs retain contemporaneous decisions and failures.
+
+This public repository is available for code and engineering review. User uploads, databases, raw model contexts and private traces are outside the default sharing scope; full-report sharing is reviewed separately. No repository-wide open-source license has been selected. Third-party components retain their own licenses.

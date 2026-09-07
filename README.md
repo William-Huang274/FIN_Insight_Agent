@@ -1,108 +1,70 @@
 # FinSight Agent — FIN 0.1.3
 
-**从研究问题到可追问报告的金融研究工作台。** 多 Agent 通过真实数据工具分析业务增长、利润和现金流，交付带来源、计算过程和图表的研究判断。
+**从研究问题到可追问报告的金融研究工作台。** 多 Agent 使用财务 SQL、原文检索和来源绑定计算，研究业务增长、利润与现金流，并交付可追溯的判断、图表与报告。
 
-本分支提供当前动态研究实现：真实前端 → 九个研究面 → 交叉审查与责任修订 → 综合和报告 → 追问与导出。Dell 开发案例已产出含 42 处引用、3 张图表的 v3 候选，并完成四格式下载与渲染。报告仍有一项重要的底稿与正文一致性问题待修，最终内容验收未完成。
+[English](README.en.md) · [运行与验证](docs/public/quickstart.zh-CN.md) · [架构](docs/public/architecture.zh-CN.md) · [证据与展示边界](docs/public/sharing-scope.md) · [版本迭代](CHANGELOG.md)
 
-**版本入口：**本 README 对应 `codex/fin013-dell-s1-s2-product-bridge` 开发候选；`main` 的运行代码仍是历史固定 Evidence Pack 工作台。完整研究需要配置服务、模型凭据和资料；无需模型的源码检查见[运行说明](docs/public/quickstart.zh-CN.md)。
+## 当前可以做什么
 
-## 产品与工程能力
-
-| 能力 | 当前实现与证据边界 |
+| 能力 | 实现与验证范围 |
 | --- | --- |
-| 自主研究 | Lead 动态任务 DAG；专家各自多轮规划和调用工具，九研究面、并发2而非固定2专家 |
-| 多角色质量闭环 | Counter/Verifier → 责任作者 → Lead 综合判断 → 独立研究复核 → Writer → 终审 → 人工；已真实执行，模型审查仍可能漏错 |
-| 数据工具 | SEC 结构化财务SQL、本地文档结构/搜索/原文窗口、外源搜索/网页读取、来源绑定计算；通过 MCP 接入 |
-| 运行底座 | LangChain / LangGraph、Agent Server、PostgreSQL、Redis、LangSmith；FIN 负责研究合同、来源权威和薄适配 |
-| 长会话与成本 | 请求中的旧工具输出清理、原始证据保存、按ID回读和局部编辑已做有界验证；自动摘要暂不采用，未证明普遍节费比例 |
-| 交互 | 新研究、实际事件与任务状态、来源展开、追问/修订、停止；运行中意见在后续阶段交接读取 |
-| 上传与视觉 | 任务隔离文件副本、成熟解析/分块、按需 Flash vision 工具；真实MCP视觉探针1调用423tokens，非OCR全面准确率 |
-| 报告交付 | 来源绑定图表，MD/PDF/Word/PowerPoint导出；本地真实文件与视觉检查，财务图表仍需语义审阅 |
+| 动态多 Agent 研究 | Lead 生成任务 DAG；专家自行规划、调用工具并提交底稿。Dell 实案覆盖九个研究面，并发上限为 2。 |
+| 研究质量闭环 | Counter / Verifier → 责任作者修订 → Lead 综合 → 研究复核 → Writer → 终审 → 人工审阅。保留失败和修改记录；模型审查仍会漏错。 |
+| 可核查证据 | MCP 接入财务 SQL、文档结构/检索/原文窗口、外源搜索与网页读取；计算保存表达式、操作数、期间、单位和来源。计算正确不自动等于财务含义正确。 |
+| 研究交互 | 新研究、短问答、深度追问、局部修订、停止、报告版本与差异查看、来源展开。运行中意见可保存并交给后续阶段；送达不等于被模型采纳。 |
+| 长会话与费用 | 清理请求内的旧工具输出，保留原始证据和 checkpoint，按 ID 回读，复用已保存计算，避免局部修改时重写全文。展示全部原生运行的输入/输出/缓存、耗时、估费与未知用量。 |
+| 用户资料 | 任务隔离的文档/图片上传、解析与分块；按需视觉读取并缓存。已用真实 PDF 和图片完成问答，发现并保留过 OCR 错误。 |
+| 四格式交付 | 同一报告导出 Markdown、PDF、Word、PowerPoint；来源绑定图表，PPT 图表可编辑，详细来源放在讲者备注。导出不调用模型。 |
 
-当前入口：`http://127.0.0.1:8766/workspace/session`；原生 Agent Server：`http://127.0.0.1:18165`。服务只绑定本机，密钥在服务端。研究原始资料可复用；新研究不加载旧专家答案。当前固定案例资料时点为2026-09-02，SQL实际覆盖DELL/MU/NVDA，非任意公司数据库。
+**当前报告：** Dell v4 开发审阅候选，54 处引用、3 张图表；PDF 15 页、Word 20 页、PowerPoint 44 页完成渲染检查，等待 Owner 内容审阅。产品版本仍为 **FIN 0.1.3**；报告 v4、执行 attempt 和产品版本分别记录。这不是无人辅助一次成功率或生产认证。
 
-- [架构与自研/成熟栈分工](docs/public/architecture.zh-CN.md)
-- [运行、测试和部署说明](docs/public/quickstart.zh-CN.md)
-- [对外展示范围与证据声明](docs/public/sharing-scope.md)
-- [执行记录与本次真实成本](docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md)
-- English: [README.en.md](README.en.md)
+自动摘要资格目前为 **HOLD，默认关闭**。已验证的是工具输出清理、证据回读和局部编辑；尚未证明同等研究质量下的普遍 token 节省比例。
 
-2026-09-08 独立源码检查：17项上传/导出测试及四格式合成导出通过，0模型调用；复用本机已安装依赖，未验证全新安装或完整研究独立启动。Dell 原开发案例的 265 请求/264 已知用量/估28.09元包含失败和修订；另有步骤一整改批次，不应当作一次普通问答价格或无辅助成功率。完整边界见[证据声明](docs/public/sharing-scope.md)。
+## 架构
 
-仓库已公开。用户上传、数据库、原始模型上下文与私有trace不属于默认展示材料；完整报告的分享范围单独审阅。
+```mermaid
+flowchart LR
+    UI[React 研究工作台] --> BFF[FastAPI BFF]
+    BFF --> Runtime[LangGraph Agent Server]
+    Runtime --> Lead[Lead 与专家任务 DAG]
+    Lead --> Review[交叉审查与责任修订]
+    Review --> Writer[综合与报告]
+    Writer --> Human[人工审阅与追问]
+    Human --> Export[MD / PDF / Word / PPT]
+    Lead --> MCP[MCP 财务 / 文档 / 外源 / 计算工具]
+    Runtime --> Store[PostgreSQL / Redis]
+    Runtime --> Trace[LangSmith 与本地调用审计]
+```
 
-<details>
-<summary>历史固定 Evidence Pack 工作台：兼容入口、启动与基线说明</summary>
+执行、并发、持久化使用成熟组件。FIN 代码负责金融研究角色、证据与计算合同、来源权威、薄适配和产品验收；详见[架构及工程取舍](docs/public/architecture.zh-CN.md)。
 
-## 历史只读工作台（兼容入口，不代表上面新研究链）
+## 运行
 
-下列8765入口属于早期固定Evidence Pack展示，保留用于兼容/回归。不要用它演示新研究，也不要把它的旧三公司Pack当成新多Agent全链已通过的证明。
-
-### 历史入口
-
-- 研究产品：`http://127.0.0.1:8765/workspace`
-- 运维控制台：`http://127.0.0.1:8765/operations`
-- 健康检查：`http://127.0.0.1:8765/api/health`
-- 当前案例 API：`/api/v1/research-cases`
-
-旧 `/current`、`/next`、`/tasks` 和 `/cases` 只保留永久重定向；旧产品 API 返回带替代路径的 HTTP 410。历史代码和证明位于 `archive/versions/`，不会被当前应用加载。
-
-### 历史入口启动
+不需要模型凭据的源码检查：
 
 ```powershell
-uv sync --locked
-
-cd apps/workbench/frontend
-npm ci
-npm run build
-cd ../../..
-
-uv run --locked python scripts/dev/run_workbench_backend.py --host 127.0.0.1 --port 8765
+uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery
+uv run --no-sync python -m pytest tests/test_task_attachments.py tests/test_report_delivery.py -q
+uv run --no-sync python -m scripts.qualification.research_delivery_smoke --output-directory D:/temp/finsight-delivery-smoke
 ```
 
-Python 依赖只在 `pyproject.toml` 人工维护，并由 tracked `uv.lock` 固定；不要另建手工 requirements 文件。
+输出目录须尚不存在。该命令生成的是合成测试文件。完整研究还需要 Docker、模型与工具凭据、已准备的财务数据和服务设置；当前不分发完整私有资格数据。`--fresh-only` 可在不加载旧报告/专家答案的情况下启动，仍需要原始资料。前端构建、配置、故障边界和验证命令见[运行说明](docs/public/quickstart.zh-CN.md)。
 
-仓库不分发三份 reviewed Evidence Pack 的私有对象。只启动代码时，案例目录仍可读，但三个详情入口会明确显示“证据对象未挂载”，`/api/readiness` 返回 typed HTTP 503。要验收完整案例，请把包含 `workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects` 的数据根挂载为 `data/`，或在启动前设置 `FINSIGHT_DATA_ROOT`。凭据只放环境变量，禁止写入 Git。
+- 当前研究入口：`http://127.0.0.1:8766/workspace/session`；原生服务：`http://127.0.0.1:18165`。
+- 历史固定 Evidence Pack 入口：`http://127.0.0.1:8765/workspace`。源码模式健康检查可用；未挂载私有证据时数据就绪检查返回 503，不展示虚构报告。
+- 服务默认绑定本机；当前上传与操作面向可信 Owner，不是公网多租户产品。
 
-### 历史基线验证
+## 如何审阅项目
 
-```powershell
-uv run --locked python scripts/engineering/verify_active_baseline.py --pretty
-uv run --locked python scripts/engineering/build_archive_redirect_index.py --check
-uv run --locked python -m pytest -q
-```
+1. 从[架构](docs/public/architecture.zh-CN.md)了解研究状态、证据流和自研边界。
+2. 按[运行说明](docs/public/quickstart.zh-CN.md)运行零模型测试及合成导出。
+3. 在配置好的工作台查看报告、来源、计算操作数、历史版本与差异，再尝试追问和上传。
+4. 同时查看失败、未知用量和修订记录。原 Dell 开发研究为 265 次请求、264 次已知用量、估算 28.092715 元，包含失败和修订；后续整改、上传及新问题另列，不能作为一次普通问答价格。
 
-前端验证：
+当前固定资料时点为 2026-09-02，财务 SQL 覆盖 DELL / MU / NVDA。Dell 完整研究与 NVIDIA / Micron 有界追问的验证范围不同，不能据此声称任意公司全案已通过。研究结论、资料时点、估算与信息边界应结合原文审阅。
 
-```powershell
-cd apps/workbench/frontend
-npm run typecheck
-npm run build
-```
+## 文档与历史
 
-## 代码结构
+当前入口以本页和 `docs/public/` 为准；[CHANGELOG](CHANGELOG.md)区分产品里程碑与报告修订。`archive/versions/` 和 Git 历史保存此前基线，工作日志保存当时的决定与失败，不应将旧“下一步”当作当前状态。
 
-```text
-apps/workbench/        唯一浏览器产品与运维组合根
-src/                   当前稳定领域、数据与运行时模块
-scripts/               受控数据构建、启动和基线治理入口
-tests/                 当前基线测试；不递归执行 archive
-configs/runtime/       三个当前运行时资源和注册表
-configs/repository/    当前活动图、生命周期和验收合同
-docs/                  PRD、当前技术图、质量标准和 Project OS
-archive/versions/      不可执行的版本历史与逐文件重定向索引
-data/                  本地/挂载数据根；私有内容不进入 Git
-```
-
-详细边界见 [当前代码图](docs/architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md) 和 [当前上下文包](docs/project_os/current_context_pack.zh-CN.md)。
-
-### 历史数据与研究边界
-
-- 当前公开基线不包含私有数据、API key、模型 capture、生成索引或报告运行产物。
-- SEC、8-K、市场和行业脚本只负责受控数据准备；运行脚本不等于对应数据已完整可用。
-- Evidence 只有通过身份、日期、来源和 digest 绑定后才能被当前 workspace 展示；当前三份 Pack 尚无结构化数值项，不能据此声称数值事实能力已完成。
-- 历史失败保持不可变，但不能作为当前能力或发布通过的证据。
-
-English: [README.en.md](README.en.md)
-
-</details>
+仓库公开供代码与工程展示审阅。用户上传、数据库、原始模型上下文和私有 trace 不属于默认展示材料；完整研究报告的外部分享范围另行审阅。仓库目前没有统一开源许可证，不暗示授予额外使用权；第三方组件遵循各自许可证。

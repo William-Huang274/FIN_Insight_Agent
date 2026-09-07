@@ -1,6 +1,6 @@
 # Local run and validation
 
-2026-09-07 · [中文](quickstart.zh-CN.md)
+2026-09-08 · [中文](quickstart.zh-CN.md)
 
 ## Code-only checks
 
@@ -26,19 +26,23 @@ The complete Dell case additionally requires the operator's qualified source fil
 
 Install Docker and verify the engine. Distinguish host loopback from container networking when diagnosing proxies; do not delete volumes to treat transient network errors. Keep DeepSeek/LangSmith credentials and database passwords in the local `.env`, never command-line logs or Git. LangSmith is required; there is no alternate tracing fallback.
 
-Prepare the existing qualified settings directory with `host-settings.json` and `container-settings.json`, data mounts and preserved compatibility-report bindings. The BFF still initializes its legacy report-review entry from the saved bundle/report. This is a private deployment-packaging dependency, not fresh-model input; the fresh parent does not load old answers.
+Prepare a qualified settings directory with `host-settings.json`, `container-settings.json` and source-data mounts. Use `--fresh-only` to run new research without an archived bundle/report; omit both legacy answer paths from these settings. This registers only research_session and retains the fixed PostgreSQL/Redis services and task data. Use the original settings without this flag for legacy report compatibility.
 
 ```powershell
 # Substitute an existing controlled settings directory. Neither command starts a model task.
-uv run --no-sync python -m scripts.deployment.dell_report_workbench up --settings-directory D:/private/finsight-session --enable-research
-uv run --no-sync python -m scripts.deployment.dell_report_workbench serve --settings-directory D:/private/finsight-session --enable-research
+uv run --no-sync python -m scripts.deployment.dell_report_workbench up --settings-directory D:/private/finsight-session --enable-research --fresh-only
+uv run --no-sync python -m scripts.deployment.dell_report_workbench serve --settings-directory D:/private/finsight-session --enable-research --fresh-only
 ```
 
 Workspace: `127.0.0.1:8766`; native Agent Server: `127.0.0.1:18165`. Runtime configuration is `configs/research/runtime/research_session.json`; the case question is `configs/research/cases/dell_growth_quality.json`. A new question creates a native thread/run, not another Compose project, port or database volume.
 
+Verified on 2026-09-08: fresh-only services started without loading archived answers and completed actual uploaded PDF/image Q&A. This reused dependencies, source data and database volumes; it is not a blank-machine or data-free research claim. The old 8765 source-only entry can also start: missing private readiness data yields health 200 and readiness 503, with a readable catalog and refused report reads. Corrupt or mismatched data still fails validation.
+
 ## Use and verify
 
 Create a research task, check as-of date/estimated cost, optionally upload files and explicitly start. Invalid parsing preserves a draft without starting models. Watch actual tasks and per-request calls/tokens/estimated cost. Concurrency two does not mean two topics. In-run guidance is consumed at later phase handoffs; confirm the delivery event.
+
+Usage separates the selected operation from all native runs, including input/output/cache, estimated cost, elapsed time and unknowns. External imported revisions are itemized in version reasons. Parallel model durations are a sum, not wall-clock research time. Guidance delivery confirms input handoff, not acceptance of the user's claim.
 
 Cancellation preserves completed records and does not retry unknown provider results. Inspect the owning node before deciding on a targeted correction. Model review is contestable, and human acceptance does not publish. Quick Flash Q&A and deep Pro follow-up are explicit modes.
 

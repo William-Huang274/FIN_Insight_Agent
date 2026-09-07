@@ -1,6 +1,6 @@
 # 本地运行与验证
 
-2026-09-07 · [English](quickstart.en.md)
+2026-09-08 · [English](quickstart.en.md)
 
 ## 先区分两种复现
 
@@ -29,20 +29,22 @@ npm run build
 
 在仓库`.env`配置实际DeepSeek、LangSmith和PostgreSQL密码；不在命令行或日志打印值。Agent Server使用已固定镜像，LangSmith必须可用，无替代trace服务。Exa等现有外源接入配置遵循当前工具适配器；不能未试用便宣称可检索。
 
-准备设置目录，其中`host-settings.json`/`container-settings.json`分别描述宿主和容器路径，固定原始数据挂载及既有报告兼容材料。当前BFF仍保留旧报告兼容入口，因此初始设置需要已保存的bundle/report绑定；这是尚未独立打包的私有case部署依赖，不是fresh模型输入。新研究父图不读取旧答案。
+准备设置目录，其中`host-settings.json`/`container-settings.json`分别描述宿主和容器路径及原始数据挂载。新研究可用`--fresh-only`运行，无需旧bundle/report；两份设置中不得带这两个旧答案路径。此模式只注册research_session，保留同一个PostgreSQL/Redis和任务资料目录。旧报告兼容模式另用原有设置，不带`--fresh-only`。
 
 ```powershell
 # 替换为你已有的受控设置目录；以下命令不会启动模型任务。
-uv run --no-sync python -m scripts.deployment.dell_report_workbench up --settings-directory D:/private/finsight-session --enable-research
-uv run --no-sync python -m scripts.deployment.dell_report_workbench serve --settings-directory D:/private/finsight-session --enable-research
+uv run --no-sync python -m scripts.deployment.dell_report_workbench up --settings-directory D:/private/finsight-session --enable-research --fresh-only
+uv run --no-sync python -m scripts.deployment.dell_report_workbench serve --settings-directory D:/private/finsight-session --enable-research --fresh-only
 ```
 
 固定服务：工作台`127.0.0.1:8766`，Agent Server`127.0.0.1:18165`。源配置在`configs/research/runtime/research_session.json`，案例题目在`configs/research/cases/dell_growth_quality.json`。数据库/Redis归原生服务器；新提问不新建Compose项目、端口或volume。
 
+2026-09-08已实际启动上述fresh-only模式，健康检查确认未加载旧报告，并完成真实任务PDF/图片问答。复用本机依赖、原数据及数据库卷；这证明无旧答案的启动与执行，不代表空白机器或无数据也能完成研究。旧8765入口的源码模式也可以启动：缺少私有readiness资料时健康检查200、数据就绪检查503，目录可读、具体报告拒绝读取；损坏/校验不匹配仍报错。
+
 ## 操作
 
 1. 新建研究，核对资料时点和估费；上传可选文件，再显式启动。坏文件保留草稿但不启动模型。
-2. 看真实任务、依赖、调用/token/估费。并发2不代表只研究两面。可补充意见；在后续阶段的送达事件出现前不能假设模型已读。
+2. 看真实任务、依赖、本次操作及全部原生运行累计的输入/输出/缓存/token/估费/耗时与未知项。外部导入修订费用见版本原因；并行耗时求和不是墙钟时长。并发2不代表只研究两面。可补充意见；在后续阶段的送达事件出现前不能假设模型已读，送达也不证明观点已被采纳。
 3. 停止会保留已完成记录；未知付费用量不记零，不自动重发。运行失败后先查责任节点，不能整案无脑重跑。
 4. 报告完成后检查来源和图表。模型审查意见可质疑；“人工确认”不会自动发布。短问答Flash与深度Pro为显式选择。
 5. 导出MD/PDF/Word/PPT不调用模型、不改变报告，不代表内容被人工接受。PPT为可编辑图表/表格及分页内容，不是另一次LLM重写的演讲稿。

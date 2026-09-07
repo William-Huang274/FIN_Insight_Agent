@@ -256,11 +256,20 @@ class ResearchEvidencePackService:
             raise ResearchEvidencePackServiceError(
                 "current_s1_source_use_policy_invalid", 503
             ) from exc
-        self._product_readiness = self._validate_product_readiness_surface(
-            product_readiness_catalog,
-            product_readiness_results,
-            product_readiness_private_root,
-        )
+        self._readiness_mount_error = None
+        try:
+            self._product_readiness = self._validate_product_readiness_surface(
+                product_readiness_catalog,
+                product_readiness_results,
+                product_readiness_private_root,
+            )
+        except ResearchEvidencePackServiceError as exc:
+            if exc.error_code != "current_s1_product_readiness_private_result_missing":
+                raise
+            # A source-only checkout can show its catalog and health. It must
+            # still refuse every product read until the required data is mounted.
+            self._readiness_mount_error = exc
+            self._product_readiness = {}
         # Keep the already validated, immutable public receipts separately for
         # digest-bound lineage projection. The Workbench-safe projection above
         # intentionally adds bounded review excerpts and therefore no longer has
@@ -828,7 +837,13 @@ class ResearchEvidencePackService:
                 case_key=case_key,
             ) from exc
         _require(
-            target.is_file() and file_sha256(target) == expected_sha256,
+            target.is_file(),
+            "current_s1_product_readiness_private_result_missing",
+            503,
+            case_key=case_key,
+        )
+        _require(
+            file_sha256(target) == expected_sha256,
             "current_s1_product_readiness_private_result_unavailable",
             503,
             case_key=case_key,
@@ -1134,6 +1149,10 @@ class ResearchEvidencePackService:
             ) from exc
 
     def _load_pack(self, case_key: str) -> tuple[dict[str, Any], dict[str, Any]]:
+        if self._readiness_mount_error is not None:
+            raise ResearchEvidencePackServiceError(
+                self._readiness_mount_error.error_code, 503, case_key=case_key,
+            )
         artifact = dict(self._result["pack_artifacts"][case_key])
         object_root = self._artifact_object_root(artifact)
         object_key = str(artifact.get("object_key") or "")

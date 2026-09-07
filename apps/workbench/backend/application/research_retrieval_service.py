@@ -303,6 +303,7 @@ class ResearchRetrievalService:
                 "research_runtime_binding_contract_incomplete", 503
             )
         self._runtime_binding_receipt: dict[str, Any] | None = None
+        self._runtime_binding_data_missing = False
         if (
             runtime_binding_policy is not None
             and runtime_binding_receipt is not None
@@ -320,11 +321,16 @@ class ResearchRetrievalService:
                     )
                 )
             except CurrentS1RuntimeBindingError as exc:
-                raise ResearchRetrievalServiceError(
-                    "research_runtime_binding_invalid",
-                    503,
-                    typed_reason=str(exc),
-                ) from exc
+                if str(exc).startswith("current_s1_runtime_asset_missing:data/"):
+                    # A source-only checkout may boot, but no retrieval may use
+                    # an unverified private-data binding. Other drift is fatal.
+                    self._runtime_binding_data_missing = True
+                else:
+                    raise ResearchRetrievalServiceError(
+                        "research_runtime_binding_invalid",
+                        503,
+                        typed_reason=str(exc),
+                    ) from exc
         self._company_financial_fact_mart_path = (
             Path(company_financial_fact_mart_path).resolve()
             if company_financial_fact_mart_path is not None
@@ -1712,8 +1718,7 @@ class ResearchRetrievalService:
                 )
         return value
 
-    @staticmethod
-    def _require_read(principal: ResearchRetrievalPrincipal) -> None:
+    def _require_read(self, principal: ResearchRetrievalPrincipal) -> None:
         if principal.mode != "current":
             raise ResearchRetrievalServiceError(
                 "research_retrieval_current_mode_required", 403
@@ -1721,6 +1726,10 @@ class ResearchRetrievalService:
         if "current_product:read" not in principal.permissions:
             raise ResearchRetrievalServiceError(
                 "research_retrieval_read_permission_required", 403
+            )
+        if self._runtime_binding_data_missing:
+            raise ResearchRetrievalServiceError(
+                "research_runtime_private_data_not_mounted", 503
             )
 
     @staticmethod

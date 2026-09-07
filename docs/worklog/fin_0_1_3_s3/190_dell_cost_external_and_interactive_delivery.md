@@ -850,3 +850,18 @@ Owner纠正“不要步步审批，先把第一步做完再返回整体结果”
 **验证与可检查交付：** 117项测试通过，覆盖历史引用/分页/checkpoint、摘要配额续接、精确引号恢复、价格边界预留及现有研究/修订/计算流程。变更差异与候选文件秘密扫描通过；运行证据保持Git外。汇总 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_step1_reviewed_delivery_a1/closeout.json`，同目录receipt.json为三处宿主修改核验，reviewed-report.md为隔离局部稿；长接续正文为 `20260907_step1_context_acceptance_a3/answer.md`。
 
 产品增量是可检查的隔离修订稿与接续答案，未部署/发布；工程增量为上述运行路径修复；资格增量含成功与HOLD；文档工作为既有源计划、产品当前入口和同ID账本更新。剩余阻塞是整份报告的金融内容/Owner产品验收及后续前端等原计划，不把摘要HOLD重新变成要求每个小补丁审批的循环。
+<a id="hermes-integration-boundary-20260907"></a>
+
+### 2026-09-07：Hermes 条件接入边界核查（候选说明，未采纳或实施迁移）
+
+Owner 询问接入 Hermes 是否需要替换底层架构。本次仅核对当前源码与官方接口，建议保留 LangGraph 父流程及 FIN 的金融数据、计算、引用和验收，由 Hermes 接管一个有界执行节点内部的模型/工具循环与上下文；不得将其完整 Agent 接口当成一次模型响应，继续由旧循环重复执行工具。
+
+源码依据：research_session.py:90 通过注入 Runnable 组合研究阶段；research_session_runtime.py:125 有 worker 回调边界。当前 :165 的 Client(data.mcp_server) 是进程内连接，外部 Hermes 需要用既有 MCP SDK 提供跨进程入口并保留宿主绑定的 run_scope。case_mcp_tools（dell_case_review_agent.py:139）隐藏任务范围并保留 artifact；submit_case_answer（dell_case_convergence_agent.py:582）依赖 ToolRuntime/Command 和实际观察到的引用，须做薄适配并复用领域校验，不能仅转发自由文本。
+
+[Hermes 原生集成](https://hermes-agent.nousresearch.com/docs/developer-guide/programmatic-integration)有独立 API/进程入口；[Runs API](https://hermes-agent.nousresearch.com/docs/user-guide/features/api-server)提供 session_id、事件、停止和有保留期限的原生请求去重。请求去重不证明执行中崩溃后能无缝恢复。Chat Completions 是无状态入口，Responses 可接续服务端会话；接口少传历史不等于模型少计费。[MCP 客户端](https://hermes-agent.nousresearch.com/docs/user-guide/features/mcp)支持 stdio/HTTP，可复用 FIN 工具。[上下文引擎插件](https://hermes-agent.nousresearch.com/docs/developer-guide/context-engine-plugin)依赖 Hermes 宿主接口，不能视作现成 LangChain 摘要中间件。
+
+需要执行资格的工作集中在：节点任务/结果适配、MCP 任务隔离、原始证据及结构化提交适配、会话与重试/取消映射、主调用及摘要等辅助调用的 TokenBudgetBasis/usage/费用对账、同模型同任务同历史同验收标准的质量与总成本比较。先验证一个报告追问/来源与计算接续任务；内置上下文策略与第三方 LCM 分开资格。使用现成生命周期能力，若出现大量自写状态机、恢复或语义规则，停止扩展并重新评估接入边界。
+
+更正前期候选判断：[NVIDIA 官方 NemoClaw for Hermes 架构](https://build.nvidia.com/nvidia/nemoclaw-for-hermes-agent/architecture)已提供实质集成依据，不能由少量公开客户案例推断大企业无人使用；这也不证明其第三方 LCM 或本项目接入已通过。当前摘要配置 HOLD 仍基于已有质量负结果，窗口尚有余量不是否定节费需求的依据，摘要是否节费须同题测量。
+
+增量分类：产品和工程增量为零；研究增量为源码/接口边界核查，文档增量为本条及外部模式登记。未安装 Hermes、未新发模型调用、未迁移状态或改变产品版本/步骤一结论。候选主要未决项是 FIN 证据语义、逐调用费用及中断恢复的真实互操作；当前不作已接入、已节费或新一轮付费授权声明。

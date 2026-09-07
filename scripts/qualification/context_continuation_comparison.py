@@ -87,13 +87,13 @@ class BoundedAudit(CaseModelAudit):
         # Byte upper bound is conservative, not claimed tokenizer equivalence.
         miss_price, output_price = (3, 9) if self.profile.model == "deepseek-v4-flash" else (9, 27)
         reserve = (byte_bound * miss_price + self.basis.max_output_tokens * output_price) / 1e6
-        if self.shared["unknown"] or self.shared["calls"] >= 8 or self.shared["spent"] + reserve > 5:
+        if self.shared["unknown"] or self.shared["calls"] >= self.shared.get("max_calls", 8) or self.shared["spent"] + reserve > 5:
             raise ValueError("context_batch_reserve_or_call_limit_before_transport")
         self.shared["calls"] += 1
         return await super().awrap_model_call(request, handler)
 
 
-def settings(root, *, flash=False, summary=False):
+def settings(root, *, flash=False, summary=False, postfix=False):
     profile, basis, config, case = model_settings(root)
     if flash:
         profile = profile.model_copy(update={"model": "deepseek-v4-flash", "thinking": "disabled"})
@@ -106,15 +106,28 @@ def settings(root, *, flash=False, summary=False):
         "comparable_run_evidence": "Original full session 265 requests, 264 known usage, CNY28.092715; previous local-edit n=1 five requests CNY0.5116455 failed semantic check. This batch is not a same-quality whole-report savings estimate.",
         "reasoning_profile": "agentic_message_history_thinking_" + profile.thinking,
         "max_input_characters": 650000, "max_output_tokens": 6000 if summary else 4500 if flash else 12000, "timeout_seconds": 480})
+    if postfix:
+        basis = basis.model_copy(update={
+            "input_scale": "Same archived 40-message synthesis history, fresh summary plus repaired original-observation reread only. Original input about 200k tokens; prior summarized main input 73990/46553. Retain original task, recent tool pairs and host evidence. No baseline, standalone editing or short-Flash arm.",
+            "comparable_run_evidence": "Prior A3: one Flash summary and two Pro calls, 205315 tokens, estimated CNY1.4707206; model requested four historical CALCs but the local resolver failed. Patched four-record reread and actual saved-summary/native-tool replay passed offline. Fresh ceiling CNY5 and five calls: one summary plus up to four continuation rounds for read/answer/actionable feedback; no transport retry or fallback.",
+            "required_outputs": (("Working summary preserving original task, exact IDs, source/period/authority distinctions, failures and next reads; never Evidence",) if summary else
+                ("Retained CALC ID, formula, result, unit, operands, sources and periods with valid citations", "Distinguish arithmetic verified from financial semantics not verified and non-S2 authority", "Identify the latest unresolved synthesis submission error without inventing its root cause; use existing read tools when needed")),
+            "reasoning_profile": "nonthinking_summary" if summary else "thinking_enabled_reasoning_effort_low_with_12000_output_including_reasoning"})
     return profile, basis, config, case
 
 
-async def run(root, out, execute, remaining_from=None, flash_after=None):
+async def run(root, out, execute, remaining_from=None, flash_after=None, *, postfix_summary=False):
+    if postfix_summary and (remaining_from or flash_after):
+        raise ValueError("fresh_postfix_cannot_reuse_closed_batch_authority")
     prepared = json.loads((out / "input.private.json").read_text(encoding="utf-8"))
     snapshot, raw_history = prepared["snapshot"], prepared["history"]
     artifacts = DellCaseArtifacts(snapshot["state"]["case_papers"])
     env, shared = {**host_data_environment(), "FIN_REPO_ROOT": str(root)}, {"spent": 0.0, "unknown": False, "calls": 0}
-    variants = VARIANTS
+    variants = ("summary_and_edit",) if postfix_summary else VARIANTS
+    summary_policy = {**SUMMARY, "max_summaries": 1} if postfix_summary else SUMMARY
+    limits = {"model_calls": 4, "tool_calls": 12} if postfix_summary else {"model_calls": 2, "tool_calls": 8}
+    if postfix_summary:
+        shared["max_calls"] = 5
     if remaining_from:
         prior = cost_audit(remaining_from / "calls")["totals"]
         if prior["requests"] != 1 or prior["cost_known_requests"] != 1 or prior["statuses"] != {"truncated": 1}:
@@ -131,16 +144,17 @@ async def run(root, out, execute, remaining_from=None, flash_after=None):
     results = []
     if execute:
         write_new(out / "execution.json", {"started_at": datetime.now(timezone.utc).isoformat(),
-            "owner_approval": "Owner explicitly approved this new batch, <=CNY5, <=8 model calls including summary",
-            "budget_cny": 5, "max_calls": 8, "no_retry_resume_or_promotion": True,
+            "owner_approval": ("Owner explicitly authorized real model calls for repaired long-history continuation on 2026-09-07; agent bounded this fresh slice to CNY5/five calls" if postfix_summary else "Owner explicitly approved this new batch, <=CNY5, <=8 model calls including summary"),
+            "budget_cny": 5, "max_calls": shared.get("max_calls", 8), "no_retry_resume_or_promotion": True,
+            "variants": variants, "agent_limits": limits,
             "remaining_from": str(remaining_from) if remaining_from else None,
             "flash_after": str(flash_after) if flash_after else None,
             "scope_correction": "Owner explicitly approved only the unstarted summary+edit and Flash-short branches, Pro output up to12000, original CNY5/eight-call cumulative ceiling. Never retry baseline." if remaining_from else None,
-            "node_settings": {n: {"profile": settings(root, flash=n in {"flash_short", "summary"}, summary=n == "summary")[0].model_dump(mode="json"),
-                "basis": settings(root, flash=n in {"flash_short", "summary"}, summary=n == "summary")[1].model_dump(mode="json")}
-                for n in ("continuation", "flash_short", "summary")}, "summary_policy": SUMMARY})
+            "node_settings": {n: {"profile": settings(root, flash=n in {"flash_short", "summary"}, summary=n == "summary", postfix=postfix_summary)[0].model_dump(mode="json"),
+                "basis": settings(root, flash=n in {"flash_short", "summary"}, summary=n == "summary", postfix=postfix_summary)[1].model_dump(mode="json")}
+                for n in (("continuation", "summary") if postfix_summary else ("continuation", "flash_short", "summary"))}, "summary_policy": summary_policy})
     for variant in variants:
-        profile, basis, config, case = settings(root, flash=variant == "flash_short")
+        profile, basis, config, case = settings(root, flash=variant == "flash_short", postfix=postfix_summary)
         model = case_chat_model(profile, basis, config, SecretStr(os.environ.get("DEEPSEEK_API_KEY", "offline")),
             context_editing={"trigger_tokens": 50000, "keep": 6} if variant in {"tool_edit", "summary_and_edit"} else None)
         history = messages_from_dict([{"type": m["type"], "data": m} for m in raw_history if m["type"] != "system"])
@@ -183,20 +197,20 @@ async def run(root, out, execute, remaining_from=None, flash_after=None):
                     public_sink=emit, private_sink=private) if execute else CaseModelAudit(actor=variant,
                     profile=profile, basis=basis, public_sink=lambda _: None, private_sink=lambda _: None))
                 if variant == "summary_and_edit":
-                    sp, sb, sc, _ = settings(root, flash=True, summary=True)
+                    sp, sb, sc, _ = settings(root, flash=True, summary=True, postfix=postfix_summary)
                     sm = case_chat_model(sp, sb, sc, SecretStr(os.environ.get("DEEPSEEK_API_KEY", "offline")))
                     sa = BoundedAudit(shared=shared, model=sm, actor="context_summary:"+variant, profile=sp, basis=sb,
                         public_sink=emit, private_sink=private)
                     async def fake_summary(value):
                         return AIMessage(content="Offline summary fixture only: " + prepared["expected_answer"])
                     active_audit.context_summary = RequestSummaryMiddleware(model=sm,
-                        audited_model=sa.model_runnable(sm) if execute else RunnableLambda(fake_summary), **SUMMARY)
+                        audited_model=sa.model_runnable(sm) if execute else RunnableLambda(fake_summary), **summary_policy)
                 read_ids = [prepared["calculation"]["calculation_id"]]
                 if variant != "flash_short":
                     read_ids += ["CALC::0492c9e9171a77ff72e6de2d", "CALC::812f9c41c0d1042fb23e5581", "CALC::1eb8a4e07239c6addbaeeee7"]
                 probe = Probe(report={"answer": prepared["expected_answer"], "read_ids": read_ids})
                 agent = build_case_output_agent(role="writer", model=model if execute else probe, tools=tools,
-                    artifacts=artifacts, limits={"model_calls": 2, "tool_calls": 8}, audit=active_audit,
+                    artifacts=artifacts, limits=limits, audit=active_audit,
                     report_revision=True, allow_answers=True, answer_only=True)
                 agent.checkpointer = InMemorySaver()
                 run_id = uuid4()
@@ -242,10 +256,19 @@ def main():
     parser.add_argument("--execute", action="store_true")
     parser.add_argument("--remaining-from", type=Path)
     parser.add_argument("--flash-after", type=Path, help="Only the already-approved, unstarted Flash branch; add all prior calls/fees.")
+    parser.add_argument("--postfix-summary-from", type=Path, help="Fresh repaired-summary-only qualification; copy this prior attempt's input, never its spent-call authority.")
     args = parser.parse_args()
+    if args.postfix_summary_from and (args.remaining_from or args.flash_after):
+        parser.error("A fresh repaired-summary run cannot reuse the closed prior batch")
     root = Path(__file__).resolve().parents[2]
     load_dotenv(root / ".env", override=False)
     if not args.execute:
+        if args.postfix_summary_from:
+            args.output.mkdir(parents=True, exist_ok=False)
+            write_new(args.output / "input.private.json", json.loads((args.postfix_summary_from / "input.private.json").read_text(encoding="utf-8")))
+            with tracing_context(enabled=False):
+                asyncio.run(run(root, args.output, False, postfix_summary=True))
+            return
         if args.remaining_from:
             args.output.mkdir(parents=True, exist_ok=True)
             write_new(args.output / "input.private.json", json.loads((args.remaining_from / "input.private.json").read_text(encoding="utf-8")))
@@ -265,13 +288,15 @@ def main():
             asyncio.run(run(root, args.output, False))
         return
     prep = json.loads((args.output / "preparation.json").read_text(encoding="utf-8"))
-    if len(prep["variants"]) != (1 if args.flash_after else 2 if args.remaining_from else 4) or any(r["status"] != "candidate_produced" for r in prep["variants"]):
+    if (len(prep["variants"]) != (1 if args.postfix_summary_from or args.flash_after else 2 if args.remaining_from else 4)
+            or any(r["status"] != "candidate_produced" for r in prep["variants"])
+            or (args.postfix_summary_from and [r["variant"] for r in prep["variants"]] != ["summary_and_edit"])):
         raise ValueError("offline_preparation_required")
     ls = LangSmithClient(hide_inputs=True, hide_outputs=True)
     project = ls.read_project(project_name="fin-insight-dell-reference-vertical")
     with tracing_context(enabled=True, project_name=project.name, client=ls):
         try:
-            asyncio.run(run(root, args.output, True, args.remaining_from, args.flash_after))
+            asyncio.run(run(root, args.output, True, args.remaining_from, args.flash_after, postfix_summary=bool(args.postfix_summary_from)))
         finally:
             from langchain_core.tracers.langchain import wait_for_all_tracers
             wait_for_all_tracers()

@@ -1,37 +1,48 @@
-# 对外展示范围 / Sharing scope
+# 对外展示范围 / Evidence and sharing scope
 
-2026-09-07。本文是展示准备，不是修改远端仓库可见性、自动发布报告或授权重分发第三方资料。
+2026-09-08 · [中文首页](../../README.md) · [English](../../README.en.md)
 
-2026-09-08 可见性实查：GitHub 仓库已为 public，默认 main 的历史工作台与当前开发分支须明确区分并互相导航。已公开不等于完整历史/资料经过审查，也不等于最终报告已验收。当前优先完成既有功能与展示证据，Hermes 接入后置。
+仓库已公开，当前代码与工程证据可供审阅。产品仍为 FIN 0.1.3；报告 v4 等待 Owner 审阅。公开代码、开发核查、模型终审与 Owner 接受不是同一状态。此次不改变仓库可见性，也不自动发布完整报告。
 
-Visibility checked on 2026-09-08: the repository is already public. The historical main baseline and current development branch need clear navigation. Public visibility does not establish a completed history/data review or report acceptance. Existing product delivery and showcase evidence take priority over Hermes integration.
+The repository is public. Current code and engineering evidence are reviewable; FIN 0.1.3 and report v4 still await Owner acceptance. Code visibility, host inspection, model review and Owner acceptance are distinct. This work does not change visibility or publish the full report.
 
-## 可以准备展示 / Suitable for review
+## 适合展示 / Suitable for review
 
-- 源码、版本锁、合成测试、实际架构和可验证交互。Source, dependency locks, synthetic tests and truthful architecture.
-- 已脱敏的截图、按请求/角色汇总的成本/token/耗时，附运行类型、样本数与失败。Redacted screenshots and request/role metrics, with sample sizes and failures.
-- 人工确认的报告节选及可访问的出处链接；完整报告对外分享需另确认。Human-reviewed excerpts with source links; full publication is a separate decision.
+- 源码、锁文件、合成测试、真实架构和可复现的交互。Source, locks, synthetic tests, architecture and reproducible interactions.
+- 脱敏界面、请求级汇总、失败定位及修复证据；同时列样本和限制。Redacted UI, request summaries and failure/repair evidence, with sample scope and limits.
+- 经 Owner 选定的报告节选及原始出处链接。Owner-selected report excerpts and original source links.
 
-## 不默认公开 / Excluded by default
+## 默认排除 / Excluded by default
 
-`.env`、账户/鉴权信息、用户上传、原始抓取正文、私有SQL/索引、原始模型请求/回复/私有reasoning、完整LangSmith trace、个人求职资料和机器本地状态。也不把忽略规则当作Git历史已无秘密的证明。
+凭据、用户上传、原始抓取正文、私有 SQL/索引、原始模型上下文/私有推理、完整 trace、个人求职资料和机器本地状态。不将 `.gitignore` 当作历史中没有秘密的证明。
 
-Credentials, uploads, crawled source bodies, private databases/indexes, raw model context/private reasoning, full traces, job-search data and host state are excluded. Ignore rules do not prove Git history is secret-free.
+Credentials, uploads, crawled bodies, private databases/indexes, raw model contexts/private reasoning, full traces, job-search material and host state are excluded. Ignore rules do not establish that history is free of secrets.
 
-## 指标怎么说 / Evidence claims
+当前仓库未选定统一开源许可证；第三方组件各自的许可不等于授权重分发财务资料、图片或整份模型报告。依赖锁、CI 漏洞审计与许可证清单属于工程审查，不代替材料权利判断。
 
-- 一个Dell开发case不等于跨公司泛化或盲测；一种上传图片不等于OCR准确率。One developed case is not generalization; one vision probe is not an OCR benchmark.
-- 测试替身不计作真实模型成功；子图成功不能相加为端到端成功。Scripted fixtures and independent segment successes are not full-chain model results.
-- 单样本耗时不是P95；估费不是账单。Single-run latency is not P95; estimates are not invoices.
-- token包括已知失败；缺失用量单列。Include known failed-call usage; disclose unknown usage.
-- 模型审查、宿主核查和Owner验收分别记录。Model review, host review and Owner acceptance remain distinct.
+No repository-wide open-source license has been selected. Dependency licenses do not grant redistribution rights for source documents, images or reports. Lockfiles and CI vulnerability/license inventories support engineering review, not content-rights adjudication.
 
-## 当前证明 / Current evidence
+## 已执行证据 / Executed evidence
 
-2026-09-07真实前端→新Dell九主题研究→审查/责任修订→综合/Writer/终审已发生；v3为7,281字符、42引用、3图，四格式已下载/渲染。当前仍为needs_revision：1条重大意见指向P02需求底稿旧推断未与正文同步，未Owner验收。265请求/264已知用量/17,060,539tokens/估28.092715元，包含失败、原生接续和人审改稿，另1次失败用量未知。不是无辅助一次通过、不是单次普通问答定价。任务上传MCP视觉另1请求、423tokens、2.801s，正确识别两个值且标为合成数据；再次请求缓存。详S3/190，不再追加paid。
+| 场景 / Scenario | 实际结果 / Result | 已知费用 / Estimated CNY |
+| --- | --- | ---: |
+| 原 Dell 九研究面 / Original Dell research | 265请求、264已知用量、17,060,539 tokens；包含失败、接续和修订，另1未知 / Includes failures and continuations, one unknown | 28.092715 |
+| 步骤一集中整改 / Bounded context and local-edit repair | 6个fresh attempts、20调用、1,176,251 tokens；工具清理接续可用，摘要HOLD；非同题全质量节费率 / Not an equal-quality savings benchmark | 4.096831 |
+| 报告修订 A2/A4/A5 / Report repairs | 责任作者与Writer/Verifier定向修订；全部用量已知，后续宿主核查另列 / Targeted model repairs plus separate host inspection | 6.729415 |
+| 真实PDF/图片问答 / Actual PDF and image Q&A | A1计算参数限额失败；A2保存答案、6来源可读，复用视觉缓存；识别错误由PDF纠正，仍有措辞限制 / Failure retained; cached vision and a corrected OCR value | 0.162395 |
+| NVIDIA短问答与修订 / NVIDIA short Q&A and correction | 13调用、269,970 tokens；表格取数可追溯，两次输出分别有单位错误；旧CALC回读工程问题已修 / Unit errors retained, saved-CALC retrieval repaired | 0.126237 |
+| Micron有界深问 / Micron bounded deep Q&A | 11调用、594,559 tokens、19来源可读；主要取数/算术一致，但桥接与推断需宿主更正 / Source access and arithmetic inspected; semantic corrections required | 0.746894 |
 
-The fresh UI-started nine-topic case has reached v3 (7,281 narrative characters, 42 citations, three charts) with real reviews, targeted repairs and four rendered exports. One material workpaper/report inconsistency remains; the state is needs_revision, not accepted. The six native runs total 265 requests, 264 with usage, 17,060,539 tokens and estimated CNY 28.092715; one failed request has unknown usage. This includes development continuations and human-directed revisions, not unassisted one-shot success or short-Q&A pricing. A separate real MCP vision probe used 423 tokens in 2.801s and correctly identified synthetic data; repetition used the cached interpretation. No further paid execution was started.
+这不是全部历史账单，不将不同时期开发批次相加冒充一轮研究成本。单价按调用时公开价格估算，账单为最终依据；未知用量保留，缓存缺项不记零。
 
-公开前仍需确认展示选稿、第三方许可/再分发、仓库当前及历史敏感项、私有数据剥离，以及用户是否要改变远端可见性。当前只做准备，不擅自公开。
+This is not the complete historical invoice. Separate development batches are not one research-run cost. Estimates use recorded usage and applicable public pricing; unknown usage and unknown cache fields remain explicit.
 
-Before publication: choose approved examples, review third-party redistribution/licenses, inspect current and historical sensitive material, separate private assets, and obtain the Owner's visibility decision. No visibility change is performed by this work.
+当前 Dell v4：10136正文字符、54引用、3图。宿主检查20项重要判断维度、21保存CALC及10附加算术；31算术一致，金融语义标记不自动晋升。MD/PDF/Word/PPT均来自原生版本；渲染PDF15页、Word20页、PPT44页，PPT完整出处与解释在讲者备注。v1–v3、失败及外部修订费用保留；v4不等于Owner接受。
+
+Dell v4 has 54 citations and three charts. Host inspection covered twenty material-judgment dimensions and 31 arithmetic checks; arithmetic consistency does not establish financial validity. Native exports were rendered as PDF (15 pages), Word (20 pages) and PowerPoint (44 slides), with detailed PPT sources in speaker notes. Earlier reports and failures remain available; v4 is not Owner acceptance.
+
+NVIDIA/Micron均为既有工作区内的新问题，不是两次独立全案或泛化benchmark。方法可供读取不等于模型实际消费，模型终审无重大意见不等于百分百正确。自动摘要保持关闭；没有承诺普遍省费率、P95、生产高可用或多租户安全。
+
+NVIDIA/Micron are bounded new questions in an existing workspace, not independent full-company runs or a generalization benchmark. Available methods are not necessarily consumed. A clean model review is not perfect accuracy. Automatic summaries remain disabled; no general savings percentage, P95, production HA or multi-tenant security claim is made.
+
+复现条件见[中文运行说明](quickstart.zh-CN.md) / [English quickstart](quickstart.en.md)。逐项结果与不可变失败见 [S3/190](../worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md)；当前公开文档优先于历史日志中的旧“下一步”。Hermes 未评估，是本轮 Owner 审阅之后的独立决定。

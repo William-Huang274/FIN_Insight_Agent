@@ -1,6 +1,6 @@
 # FinSight: architecture and build/adopt boundary
 
-2026-09-07 · Local Dell development case · [中文](architecture.zh-CN.md)
+2026-09-08 · Local Dell development case · [中文](architecture.zh-CN.md)
 
 ## Research flow
 
@@ -28,6 +28,10 @@ Each role keeps its own native message history. Handoffs carry tasks, public wor
 The host validates schema, observed-source references and arithmetic. It does not impose one natural-language report template or claim to decide semantic truth. Citations resolve submitted claims, observed PASSAGE windows, SQL NUMFACTs or CALC results. Unstructured financial data may support analysis but never silently becomes authoritative SQL data.
 
 In-run guidance is saved in native thread metadata and consumed at subsequent research/review/convergence phase handoffs. It is not an instantaneous override of an in-flight completion. Uploads are task-owned copies; no model tool can edit arbitrary user files.
+
+Old tool text is cleared only from the outgoing request projection; messages and artifacts remain in native checkpoints. Complete CALCs from saved answers are exposed through a task-scoped read-only tool view without reinserting entire citation trees into model messages. Missing, conflicting or cross-task records are rejected. Automatic summaries remain HOLD and disabled. The BFF paginates all native runs and uses run ID plus call ID for identity; unknown usage/cache/time remains explicit, with external imported-revision costs separate.
+
+`--fresh-only` registers research_session without old answers and retains the fixed PostgreSQL/Redis deployment and source data. Vision is an on-demand read-only tool with caching; absent cache fields are unknown. MD/PDF/Word/PPT share one versioned report/source projection, with editable PPT charts and detailed sources in speaker notes. Current v4 exports were rendered and await Owner review.
 
 ## Limits
 

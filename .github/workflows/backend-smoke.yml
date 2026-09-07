@@ -52,19 +52,19 @@ jobs:
           uv run --locked --no-dev --extra control-plane --extra qualification python -c "import importlib.metadata as m, importlib.util as i, psycopg; assert psycopg.__version__ == '3.3.4'; assert all(i.find_spec(name) is not None for name in ('dagster', 'dagster_webserver', 'dagster_postgres', 'dagster_graphql', 'filelock', 'psycopg', 'psycopg2')); assert m.version('psycopg-binary') == '3.3.4'; assert m.version('psycopg2-binary') == '2.9.12'"
           uv run --locked --extra control-plane --extra qualification python -m pytest tests/qualification/test_postgres_dagster_s2_fact_mart_vertical.py -q
 
-      - name: Install the locked development profile
-        run: uv sync --locked
+      - name: Install the locked development and research profiles
+        run: uv sync --locked --extra control-plane --extra qualification --extra agent-runtime --extra external-search --extra workbench-delivery
 
       - name: Verify active code and archive integrity
         run: |
-          uv run --locked python scripts/engineering/verify_active_baseline.py --pretty
-          uv run --locked python scripts/engineering/build_archive_redirect_index.py --check
-          uv run --locked python scripts/engineering/check_repository_secrets.py
+          uv run --no-sync python scripts/engineering/verify_active_baseline.py --pretty
+          uv run --no-sync python scripts/engineering/build_archive_redirect_index.py --check
+          uv run --no-sync python scripts/engineering/check_repository_secrets.py
 
       - name: Compile and test current Python baseline
         run: |
-          uv run --locked python -m compileall -q apps src scripts
-          uv run --locked python -m pytest -q
+          uv run --no-sync python -m compileall -q apps src scripts
+          uv run --no-sync python -m pytest -q
 
       - name: Build and test the browser product
         working-directory: apps/workbench/frontend
@@ -116,13 +116,15 @@ jobs:
           uv export --locked --no-dev --no-emit-project -o supply-artifacts/core-requirements.txt
           uv export --locked --no-dev --no-emit-project --extra control-plane -o supply-artifacts/control-plane-requirements.txt
           uv export --locked --no-dev --no-emit-project --extra control-plane --extra qualification -o supply-artifacts/qualification-requirements.txt
+          uv export --locked --no-dev --no-emit-project --extra agent-runtime --extra external-search --extra workbench-delivery -o supply-artifacts/research-requirements.txt
           uv export --locked --only-group supply --no-emit-project -o supply-artifacts/supply-tooling-requirements.txt
           UV_PROJECT_ENVIRONMENT=.venv-supply uv sync --locked --only-group supply --no-install-project
           UV_PROJECT_ENVIRONMENT=.venv-license-core uv sync --locked --no-dev --no-install-project
           UV_PROJECT_ENVIRONMENT=.venv-license-control-plane uv sync --locked --no-dev --no-install-project --extra control-plane
           UV_PROJECT_ENVIRONMENT=.venv-license-qualification uv sync --locked --no-dev --no-install-project --extra control-plane --extra qualification
+          UV_PROJECT_ENVIRONMENT=.venv-license-research uv sync --locked --no-dev --no-install-project --extra agent-runtime --extra external-search --extra workbench-delivery
           scan_status=0
-          for profile in core control-plane qualification; do
+          for profile in core control-plane qualification research; do
             if ! UV_PROJECT_ENVIRONMENT=.venv-supply uv run --locked --only-group supply --no-sync pip-audit \
               --strict --progress-spinner off \
               --requirement "supply-artifacts/${profile}-requirements.txt" \

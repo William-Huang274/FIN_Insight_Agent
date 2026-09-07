@@ -7,6 +7,7 @@ comparability, source reliability, units, extraction meaning or causality.
 from __future__ import annotations
 
 import ast
+from copy import deepcopy
 from decimal import Decimal, localcontext
 import operator
 import re
@@ -21,7 +22,7 @@ from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_
 class CalculationOperand(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_id: str | None = Field(default=None, min_length=1, max_length=500,
-        description="Observed Pxx:Sxxx archive ID, PASSAGE ID from read_source_document, evidence_id from read_reviewed_evidence, or numeric_fact_id from this tool session's successful SQL query. Search previews are not sources. For S2 only source_id is needed; the host reads the number.")
+        description="Observed archive/PASSAGE/Evidence/SQL ID, or CALC ID already computed in this tool session or saved in this case. Search previews are not sources. For S2 or a saved calculation only source_id is needed; the host reads the number. A calculation never becomes S2 authority.")
     literal: str | None = Field(default=None, min_length=1, max_length=64,
         description="For a source-reported number, copy its exact numeric literal, including commas. For S2 omit this: host reads value_decimal.")
     quote: str | None = Field(default=None, min_length=1, max_length=4000,
@@ -68,6 +69,9 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
     if tool_name == "read_reviewed_evidence" and body.get("authority_state") == "reviewed_evidence_read":
         return {p["evidence_id"]: {**p, "result_state": "reviewed_evidence", "numeric_fact_authority": False}
                 for p in body.get("evidence", []) if p.get("writer_citable") is True}
+    if (tool_name == "calculate_research_metric" and body.get("result_state") == "non_authoritative_metric"
+            and body.get("arithmetic_verified") is True and body.get("numeric_fact_authority") is False):
+        return {body["calculation_id"]: deepcopy(body)}
     return {}
 
 
@@ -91,6 +95,19 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                     raise ValueError("operand_value_differs_from_observed_s2_fact")
                 binding = {"source_id": operand.source_id, "authority": "s2_input", **{
                     key: item[key] for key in ("ticker", "metric_id", "period_start", "period_end", "unit", "fiscal_period") if key in item}}
+            elif (item.get("result_state") == "non_authoritative_metric" and item.get("arithmetic_verified") is True
+                    and item.get("numeric_fact_authority") is False and item.get("financial_semantics_verified") is False):
+                if operand.source_id.startswith("CALC::") and operand.source_id != item.get("calculation_id"):
+                    raise ValueError("calculation_source_id_mismatch")
+                value = Decimal(str(item["value_decimal"]))
+                if not value.is_finite() or abs(value) > Decimal("1e100"):
+                    raise ValueError("saved_calculation_value_out_of_range")
+                if operand.literal is not None and _number(operand.literal) != value:
+                    raise ValueError("operand_value_differs_from_observed_calculation")
+                if operand.quote is not None:
+                    raise ValueError("calculated_operand_uses_saved_result_not_a_source_quote")
+                binding = {"source_id": operand.source_id, "authority": "non_authoritative_calculation",
+                    "source_calculation": {key: item[key] for key in ("calculation_id", "expression", "result_unit", "authority_note")}}
             elif item.get("result_state") in {"reviewed_evidence", "source_bound_passage"} and item.get("writer_citable") is True:
                 text = str(item.get("passage") or item.get("bounded_excerpt") or "")
                 if not operand.quote or operand.quote not in text or operand.literal is None:
@@ -145,12 +162,15 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
     return {"calculation_id": "CALC::" + canonical_sha256(body)[:24], **body}
 
 
-def register_source_calculator_tool(server, source_lookup):
+def register_source_calculator_tool(server, source_lookup, *, on_result=None):
     @server.tool(name="calculate_research_metric", structured_output=True)
     def calculate(request: SourceBoundCalculation) -> dict[str, Any]:
-        """Evaluate arithmetic using observed archive, read-source PASSAGE, reviewed Evidence or SQL IDs. Search previews cannot be operands. No shell/code or S2 write; output remains non-authoritative."""
+        """Evaluate arithmetic using observed archive/PASSAGE/Evidence/SQL or saved CALC IDs. Search previews cannot be operands. No shell/code or S2 write; output remains non-authoritative."""
         try:
-            return calculate_from_sources(request, source_lookup)
+            result = calculate_from_sources(request, source_lookup)
+            if on_result is not None:
+                on_result(result)
+            return result
         except ValueError as exc:
             from mcp.server.mcpserver.exceptions import ToolError
-            raise ToolError(str(exc) + ". For S2 use {source_id: observed numeric_fact_id}; for prose use an observed PASSAGE/evidence/archive ID plus exact quote and literal. Re-query SQL or read the original passage if this tool session has not observed the ID. Do not remove source binding or relabel sourced numbers as assumptions.") from None
+            raise ToolError(str(exc) + ". For S2 or a saved CALC use {source_id: observed ID}; for prose use an observed PASSAGE/evidence/archive ID plus exact quote and literal. Re-query SQL or read the original passage if this tool session has not observed the ID. Do not remove source binding or relabel sourced numbers as assumptions.") from None

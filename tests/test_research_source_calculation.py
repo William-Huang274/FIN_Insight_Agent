@@ -57,6 +57,12 @@ def test_read_passage_calculate_native_report_and_preserved_revision(artifacts):
             assert operand["authority"] == "non_authoritative_source_reported"
             assert operand["source_provenance"]["source_url"] == NODE["stable_url"]
             assert operand["source_provenance"]["source_locator"]["node_id"] == NODE["node_id"]
+            chained = await client.call_tool("calculate_research_metric", {"request": {
+                "expression": "prior * 2", "operands": {"prior": {"source_id": calculation["calculation_id"]}},
+                "result_unit": "fixture_dollars", "rationale": "Reuse the same MCP session's verified calculation; not financial validation."}})
+            assert not chained.is_error, chained.content
+            assert chained.structured_content["value_decimal"] == "1234.50"
+            assert chained.structured_content["operands"]["prior"]["authority"] == "non_authoritative_calculation"
             wrong_quote = deepcopy(CALCULATION)
             wrong_quote["operands"]["amount"]["quote"] = "invented revenue was 1,234.50"
             assert (await client.call_tool("calculate_research_metric", {"request": wrong_quote})).is_error
@@ -97,6 +103,35 @@ def test_failed_tools_model_text_and_search_previews_cannot_register_sources(art
         assert observed_sources(messages) == {}
         with pytest.raises(ValueError, match="not_observed"):
             answer_citations(f"Unobserved [{PASSAGE_ID}]", artifacts, messages)
+
+
+def test_followup_can_read_and_cite_persisted_calculation_without_recalculation(artifacts):
+    from test_dell_case_convergence_agent import saved_calculation_chart
+    report, _, calculation = saved_calculation_chart(artifacts)
+    report.pop("charts")
+    calc_id = calculation["calculation_id"]
+    report["citations"] = answer_citations(f"Fixture [{calc_id}]", artifacts, [ToolMessage(
+        content="synthetic calculation", name="calculate_research_metric", tool_call_id="prior", artifact=calculation)])
+    original = deepcopy(report)
+    async def run():
+        model = NativeFixtureModel(marker="saved-answer", replies=[
+            [call("read_current_source", {"source_id": calc_id}, "read")],
+            [call("submit_case_answer", {"answer_markdown": f"Saved fixture calculation, not S2 authority [{calc_id}]"}, "submit")]])
+        agent = build_case_output_agent(role="writer", model=model, tools=[], artifacts=artifacts,
+            limits={"model_calls": 3, "tool_calls": 4}, allow_answers=True, answer_only=True)
+        outcome = await agent.ainvoke({"report": report, "request_action": "ask",
+            "messages": [HumanMessage(content="Read the saved calculation, don't regenerate the report.")]})
+        assert outcome["output"]["citations"][calc_id] == report["citations"][calc_id]
+        assert outcome["report"] == original and len(model.contexts) == 2
+    asyncio.run(run())
+
+
+def test_canonical_alias_lookup_rejects_same_id_with_different_observation(artifacts):
+    current = deepcopy(artifacts)
+    item = next(row for row in current._sources.values() if row.get("numeric_fact_id"))
+    current._sources["P01:S999"] = {**item, "value_decimal": "-999999999999"}
+    with pytest.raises(ValueError, match="canonical_source_observation_conflict"):
+        current.source_item(item["numeric_fact_id"])
 
 
 @pytest.mark.local_data_integration
@@ -143,6 +178,33 @@ def test_specialist_native_calculator_survives_cross_agent_artifact_projection()
     original_id = detail["operands"]["a"]["source_id"]
     assert current.read_source(detail["operand_source_aliases"][original_id])["numeric_fact_authority"] is True
     assert answer_citations("Fixture [P01:fixture:calculation]", current, [])["P01:fixture:calculation"]["sources"]
+    # The next agent sees the actual calculator ID as well as the compact paper alias.
+    # No model output gets promoted into the host's source map.
+    calc_id = value["calculation_id"]
+    assert current.source_item(calc_id)["value_decimal"] == value["value_decimal"]
+    citations = answer_citations(f"Synthetic archived calculation [{calc_id}]", current, [])
+    assert citations[calc_id]["claim"]["numeric_authority"] == "non_authoritative"
+    assert citations[calc_id]["sources"][0]["calculation"]["calculation_id"] == calc_id
+    async def reuse_in_fresh_native_role():
+        async with Client(_build_server(case_artifacts=current), raise_exceptions=False) as client:
+            derived = await client.call_tool("calculate_research_metric", {"request": {
+                "expression": "prior / 2", "operands": {"prior": {"source_id": calc_id}},
+                "result_unit": "fixture_USD", "rationale": "Reusing archived arithmetic in a new scoped composition."}})
+            assert not derived.is_error, derived.content
+            report = {"title": "Synthetic canonical calculation handoff", "narrative_markdown":
+                "This is an offline protocol fixture, not a financial conclusion. " * 4 + f"[{calc_id}]"}
+            model = NativeFixtureModel(marker="archived-calculation", replies=[
+                [call("read_current_source", {"source_id": calc_id}, "read")],
+                [call("submit_case_report", {"report": report}, "submit")]])
+            agent = build_case_output_agent(role="writer", model=model, tools=await case_mcp_tools(client), artifacts=current,
+                limits={"model_calls": 3, "tool_calls": 4})
+            outcome = await agent.ainvoke({"messages": [HumanMessage(content="Source-bound protocol fixture only.")]})
+            assert outcome["output"]["citations"][calc_id] == citations[calc_id]
+        async with Client(_build_server(), raise_exceptions=False) as unrelated:
+            assert (await unrelated.call_tool("calculate_research_metric", {"request": {
+                "expression": "prior / 2", "operands": {"prior": {"source_id": calc_id}},
+                "result_unit": "fixture_USD", "rationale": "Unrelated composition must not inherit source state."}})).is_error
+    asyncio.run(reuse_in_fresh_native_role())
 
 
 @pytest.mark.local_data_integration

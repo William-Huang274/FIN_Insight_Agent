@@ -93,6 +93,25 @@ def test_native_next_role_can_reuse_server_saved_calculation_chart(artifacts, ro
     asyncio.run(run())
 
 
+@pytest.mark.parametrize("allow_edits", [False, True])
+def test_revision_comparison_changes_only_edit_interface_not_revision_role(artifacts, allow_edits):
+    async def run():
+        report, _, _ = saved_calculation_chart(artifacts)
+        submission = {k: v for k, v in report_model_view(report).items() if k != "chart_display_values"}
+        model = NativeFixtureModel(marker="revision-mode", replies=[[
+            call("submit_case_report", {"report": submission}, "submit")]])
+        agent = build_case_output_agent(role="writer", model=model, tools=[], artifacts=artifacts,
+            limits={"model_calls": 2, "tool_calls": 3}, report_revision=True, allow_report_edits=allow_edits)
+        result = await agent.ainvoke({"report": report, "messages": [{"role": "user", "content": "Synthetic revision mode comparison."}]})
+        prompt = model.contexts[0][0].content
+        assert "Revise the supplied full Chinese report" in prompt
+        assert ("prefer submit_report_edits" in prompt) is allow_edits
+        assert ("submit_report_edits" in model.seen[0]) is allow_edits
+        assert "submit_case_report" in model.seen[0]
+        assert result["output"]["charts"] == report["charts"]
+    asyncio.run(run())
+
+
 def test_unknown_source_error_identifies_exact_id_and_existing_read_tools(artifacts):
     with pytest.raises(ValueError) as caught:
         artifacts.source_item("CALC::not-observed")

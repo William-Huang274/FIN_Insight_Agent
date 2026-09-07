@@ -108,6 +108,15 @@ class DellCaseArtifacts:
 
     def source_item(self, source_id):
         if source_id not in self._sources:
+            # Canonical IDs and compact Pxx:Sxxx aliases refer to the same
+            # already validated, case-scoped observations. No global lookup.
+            matches = [item for item in self._sources.values() if any(item.get(key) == source_id
+                for key in ("calculation_id", "numeric_fact_id", "passage_id", "evidence_id", "fact_id"))]
+            if matches:
+                normalized = [{k: v for k, v in item.items() if k not in {"operand_source_aliases", "fact_request_id"}} for item in matches]
+                if any(item != normalized[0] for item in normalized[1:]):
+                    raise ValueError("canonical_source_observation_conflict:" + source_id)
+                return deepcopy(matches[0])
             raise ValueError("unknown_source_id_read_paper_sources_first: " + json.dumps(source_id, ensure_ascii=False)
                 + "; inspect the current paper sources catalog for exact IDs, or read_current_source for a saved report/chart binding. Do not invent an alias.")
         return json.loads(json.dumps(self._sources[source_id]))
@@ -151,10 +160,10 @@ class DellCaseArtifacts:
                        "Exact archived observation window. End of this capture is not proof of full document coverage or truth; no new Evidence admission.")}
 
 
-def register_case_artifact_tools(server, artifacts: DellCaseArtifacts, *, source_lookup=None):
+def register_case_artifact_tools(server, artifacts: DellCaseArtifacts, *, source_lookup=None, calculation_observer=None):
     """Use the existing official MCP server, not another transport or tool bus."""
     from sec_agent.research_foundation.source_bound_calculator import register_source_calculator_tool
-    register_source_calculator_tool(server, source_lookup or artifacts.source_item)
+    register_source_calculator_tool(server, source_lookup or artifacts.source_item, on_result=calculation_observer)
 
     @server.tool(name="research_artifact_catalog", structured_output=True)
     def catalog() -> dict[str, Any]:

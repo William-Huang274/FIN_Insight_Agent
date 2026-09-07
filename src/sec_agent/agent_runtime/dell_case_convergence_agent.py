@@ -170,9 +170,6 @@ def observed_sources(messages):
         if not isinstance(message, ToolMessage) or message.status != "success" or not isinstance(message.artifact, dict):
             continue
         current = source_items_from_tool(message.name, message.artifact)
-        if (message.name == "calculate_research_metric" and message.artifact.get("arithmetic_verified") is True
-                and message.artifact.get("numeric_fact_authority") is False):
-            current[message.artifact["calculation_id"]] = message.artifact
         for ref, item in current.items():
             if ref in sources and sources[ref] != item:
                 # The same S2 observation can be returned for different queries.
@@ -270,7 +267,8 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
 
     A short SQL question need not find an older research claim for a fact it has
     just queried. Only successful tool observations, never AI/user prose, bind
-    direct IDs. The source resolver remains mechanical, not an entailment judge.
+    direct IDs. Saved case calculations/citations are reusable host observations.
+    The source resolver remains mechanical, not an entailment judge.
     """
     refs = list(dict.fromkeys(ANSWER_REF.findall(prose)))
     if not refs:
@@ -280,7 +278,19 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
     direct = {ref: deepcopy(value) for ref, value in (prior_citations or {}).items()
               if ref.startswith(("PASSAGE::", "NUMFACT::", "CALC::"))}
     calculations = []
-    for ref, body in observed_sources(messages).items():
+    observed = observed_sources(messages)
+    # Saved case calculations are host observations just like saved citations,
+    # not new facts supplied by model text. Preserve canonical IDs across roles.
+    for ref in refs:
+        if not ref.startswith("CALC::") or ref in observed or ref in direct:
+            continue
+        try:
+            saved = artifacts.source_item(ref)
+        except ValueError:
+            continue
+        if saved.get("calculation_id") == ref and saved.get("result_state") == "non_authoritative_metric":
+            observed[ref] = saved
+    for ref, body in observed.items():
         if body.get("result_state") == "numeric_fact" and body.get("numeric_fact_authority") is True:
             source = artifacts._source_summary(ref, body)
             source["source_observation_ids"] = body.get("source_observation_ids", [])
@@ -298,6 +308,7 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
         ref = body["calculation_id"]
         source = {"source_id": ref, "title": "本地来源绑定计算 · 非发行人直接披露", "numeric_fact_authority": False,
             "value_decimal": body["value_decimal"], "unit": body["result_unit"], "authority_note": body["authority_note"],
+            "calculation": deepcopy(body),
             "text": json.dumps({k: body[k] for k in ("expression", "operands", "rationale", "authority_note")}, ensure_ascii=False, indent=2)}
         sources = [source]
         for operand in body["operands"].values():
@@ -350,7 +361,7 @@ Calculator resolves archive Pxx:Sxxx IDs and numeric_fact_id from this tool sess
 """
 
 
-def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False):
+def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True):
     feedback = feedback or []
 
     def chart_lookup(runtime, current):
@@ -451,7 +462,9 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         try:
             if not answer_markdown.strip() or len(answer_markdown) > 80000:
                 raise ValueError("answer_text_empty_or_too_large")
-            citations = answer_citations(answer_markdown, artifacts.with_revisions(runtime.state.get("revisions", {})), runtime.state.get("messages", []))
+            citations = answer_citations(answer_markdown, artifacts.with_revisions(runtime.state.get("revisions", {})),
+                runtime.state.get("messages", []), prior_citations={**runtime.state.get("synthesis", {}).get("citations", {}),
+                    **runtime.state.get("report", {}).get("citations", {})})
         except ValueError as exc:
             return output_message(runtime, error="Answer NOT saved: " + str(exc) + ". Correct the inline citations and resubmit submit_case_answer; no final answer was accepted.")
         return output_message(runtime, {"kind": "answer", "answer_markdown": answer_markdown, "citations": citations})
@@ -512,7 +525,9 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         specific += "\nWhen research_synthesis is supplied, it is the Lead's independently reviewed judgment and source-bound rationale. Organize it faithfully with the current papers; do not silently substitute a new unsupported research conclusion. Corrections may recheck original sources. Distinguish remaining findings from stylistic advice."
     if role in {"writer", "verifier", "synthesis"}:
         specific += "\nReport citations may use actual paper:claim IDs, newly read [PASSAGE::id] source windows, [NUMFACT::id] SQL facts or [CALC::id] source-bound calculator results. Do not invent an old workpaper claim for new data. Passage numbers and calculations retain non-S2/non-authoritative status with sources and operands. For an existing report, use read_current_source with the exact inline citation ID to inspect its bound record on demand; then verify relevant original context."
-    if role == "writer" and (report_revision or allow_answers):
+    # A full-submission control can disable only the edit interface while
+    # keeping the same revision role, sources, model and validation.
+    if role == "writer" and (report_revision or allow_answers) and allow_report_edits:
         specific += "\nFor a few corrections, prefer submit_report_edits with exact old_str/new_str spans from the supplied current report; unchanged paragraphs and charts are preserved locally, not generated again. Read relevant original sources as needed. Use submit_case_report for a genuinely extensive rewrite or changed charts. The supplied charts field uses the submission schema; chart_display_values is read-only display data, never tool arguments."
         selected = [*selected, submit_report_edits]
     if allow_answers:

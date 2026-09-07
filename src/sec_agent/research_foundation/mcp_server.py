@@ -196,15 +196,17 @@ def build_research_data_mcp_server(
             "tools are legacy compatibility only."
         ),
     )
-    # Source projection of this composition's successful SQL responses only.
+    # Source projection of this composition's successful data/calculator responses.
     # No new store/admission: the typed SQL result remains the authority and is
-    # already persisted in the agent's native ToolMessages. Re-query after a new
-    # composition; never accept a model-supplied number as an observed fact.
+    # already persisted in the agent's native ToolMessages. A new composition
+    # must re-query or receive its case archive; never accept a model-supplied
+    # number as an observed fact.
     from .source_bound_calculator import source_items_from_tool, register_source_calculator_tool
     observed_sources: dict[str, dict[str, Any]] = {}
 
     def remember_sources(tool_name, result):
-        observed_sources.update(source_items_from_tool(tool_name, result.model_dump(mode="json")))
+        body = result if isinstance(result, dict) else result.model_dump(mode="json")
+        observed_sources.update(source_items_from_tool(tool_name, body))
         return result
 
     @server.tool(name="get_research_method",
@@ -550,9 +552,11 @@ def build_research_data_mcp_server(
 
     if dependencies.case_artifacts is not None:
         from sec_agent.agent_runtime.dell_case_artifacts import register_case_artifact_tools
-        register_case_artifact_tools(server, dependencies.case_artifacts, source_lookup=calculation_source)
+        register_case_artifact_tools(server, dependencies.case_artifacts, source_lookup=calculation_source,
+            calculation_observer=lambda result: remember_sources("calculate_research_metric", result))
     else:
-        register_source_calculator_tool(server, calculation_source)
+        register_source_calculator_tool(server, calculation_source,
+            on_result=lambda result: remember_sources("calculate_research_metric", result))
     return server
 
 

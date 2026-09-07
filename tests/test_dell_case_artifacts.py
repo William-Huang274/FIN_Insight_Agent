@@ -44,6 +44,36 @@ def test_calculator_non_s2_source_literal_and_assumption_are_explicit():
     assert result["operands"]["scale"]["authority"] == "assumption"
 
 
+def test_calculator_reuses_saved_calculation_without_promoting_or_copying_parent_tree():
+    parent = _calculate()
+    original = deepcopy(parent)
+    request = SourceBoundCalculation(expression="prior / 2", operands={"prior": {"source_id": parent["calculation_id"]}},
+        result_unit="test_unit", rationale="Synthetic chained arithmetic; no financial conclusion.")
+    child = calculate_from_sources(request, lambda _: parent)
+    assert child["value_decimal"] == "25" and parent == original
+    assert not child["numeric_fact_authority"] and not child["financial_semantics_verified"]
+    binding = child["operands"]["prior"]
+    assert binding["authority"] == "non_authoritative_calculation"
+    assert binding["source_calculation"]["calculation_id"] == parent["calculation_id"]
+    assert binding["source_calculation"]["expression"] == parent["expression"]
+    assert "operands" not in binding["source_calculation"]  # parent ID links to the saved record, no growing tree copy
+    forged = request.model_copy(update={"operands": {"prior": request.operands["prior"].model_copy(update={"literal": "999"})}})
+    with pytest.raises(ValueError, match="differs_from_observed_calculation"):
+        calculate_from_sources(forged, lambda _: parent)
+
+
+@pytest.mark.parametrize("change", [
+    {"arithmetic_verified": False}, {"numeric_fact_authority": True}, {"financial_semantics_verified": True},
+    {"calculation_id": "CALC::another"}, {"value_decimal": "Infinity"},
+])
+def test_chained_calculator_rejects_invalid_saved_authority_identity_or_value(change):
+    parent = _calculate()
+    request = SourceBoundCalculation(expression="prior / 2", operands={"prior": {"source_id": parent["calculation_id"]}},
+        result_unit="test_unit", rationale="Negative fixture only.")
+    with pytest.raises(ValueError):
+        calculate_from_sources(request, lambda _: {**parent, **change})
+
+
 @pytest.mark.parametrize("operands,error", [
     ({"a": {"source_id": "fact", "literal": "101"}}, "differs_from_observed"),
     ({"a": {"source_id": "missing"}}, "unknown_source"),

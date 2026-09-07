@@ -22,3 +22,11 @@
 产品增量是引用可定位；工程增量是Markdown到既有来源合同的薄适配。上述是有界工程/回放证据，不是财务正确率或token节省率。旧问答原文和v4报告不改；已标注的单位解释、Micron桥接/因果判断、客户明细穷尽措辞仍属研究质量意见，不通过自动链接追认其正确。
 
 GitHub本轮临时分支在合并后清理，保持公开main＋真实历史版本分支的展示要求。汇总状态见Owner审阅清单；Hermes未评估，无付费重跑。
+
+## 实际部署与公开交付
+
+PR #4：<https://github.com/William-Huang274/FIN_Insight_Agent/pull/4>。首个实现提交 `6ae91c76` 的完整公开 CI 已通过：3066 passed / 817 skipped，6项浏览器检查，锁定依赖与容器检查均通过。随后补齐斜杠后缀/方括号近似ID边界，定向保存引用检查18 passed，三宽度浏览器3 passed，TypeScript与生产构建再次通过；最终提交须由该PR的最新CI确认后合并。
+
+实际原生服务已使用最终代码重建并切换；容器中 `markdown-it-py 4.2.0` 可导入，引用模块SHA-256与本地相等。在容器内再次回放原Micron回答，正确绑定CALC及两个NUMFACT，完整CALC等于原已保存记录，未调用模型。切换前后原生checkpoint相同，报告仍为v4，运行总数仍为28，无pending/running，BFF读取成功。证据 `D:/temp/fin-bare-citation-deploy-after-20260908-a1.json`，构建记录 `D:/temp/fin-bare-citation-native-build-20260908-a2.log`。
+
+修复对后续提交的回答生效；零模型回放验证了旧正文可被正确绑定，但没有补写历史答案的citations映射。因此，已保存的旧答案不会仅凭刷新页面自动新增原先漏掉的按钮。没有改写历史证据，也没有将此工程修复描述为旧财务判断已获确认。本轮新增provider请求、token和模型费用均为0。

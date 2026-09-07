@@ -6,6 +6,8 @@
 
 ## 当前交付与停止点
 
+2026-09-08继续补丁：Owner再次要求继续，按剩余质量问题推进，Hermes仍后置。PR#3已合入main58f84943并清理六个保全的远端codex引用。新PR#4修裸来源ID漏绑定，真实旧MU答案零模型回放由2操作数恢复为原CALC＋2操作数，原回答未改；100定向/3宽度通过。使用现成MarkdownIt/remark薄适配，无新parser平台或语义规则。最终CI、部署与临时分支收口见[S3/191](../worklog/fin_0_1_3_s3/191_bare_citation_binding_followup.md)。Owner未接受，摘要disabled，新问答金融语义意见未自动关闭。
+
 Owner 授权原五项＋新增需求连续实施、收齐 GitHub 展示后，**在任何 Hermes 评估之前停下供逐项审阅**。不重开步骤一、不迁移 runtime、不把文档/报告修订当产品升级。最新逐项完成证据见 [Owner 审阅清单](../product/FIN_0_1_3_OWNER_REVIEW_20260908.zh-CN.md)，以下旧时点仅供历史追溯。
 
 产品增量：新题目九研究面、十专家任务（含失败与替代）、责任修订与综合形成 v4；真实上传 PDF/图片、任务 RAG、视觉缓存、来源与 CALC/操作数回读、短/深问和非事实本地 SQL gap 回执、四格式交付已实际验证。自动摘要 HOLD、默认 disabled；没有同质量普遍省费率。六组方法实际消费不齐，保留 retain/adapt/hold 与未消费范围。

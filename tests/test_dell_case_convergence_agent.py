@@ -30,6 +30,29 @@ def revision_fixture(artifacts, pid):
             "explanation": "Synthetic fixture exercises original artifact preservation, not an actual correction."}]}
 
 
+def test_writer_can_recover_exact_quote_mismatch_by_reading_current_report(artifacts):
+    async def run():
+        ref = "P01:" + artifacts.read_paper("P01")["claims"][0]["claim_id"]
+        prose = "Synthetic existing report. " * 12 + f"Original “quoted target” [{ref}]"
+        report = {"title": "Quote recovery fixture", "narrative_markdown": prose,
+            "citations": report_citations(prose, artifacts)}
+        model = NativeFixtureModel(marker="quote-fixture", replies=[
+            [call("submit_report_edits", {"edits": [{"old_str": 'Original "quoted target"', "new_str": "Revised source qualifier"}]}, "bad")],
+            [call("read_current_report", {}, "reread")],
+            [call("submit_report_edits", {"edits": [{"old_str": "Original “quoted target”", "new_str": "Revised source qualifier"}]}, "fixed")]])
+        agent = build_case_output_agent(role="writer", model=model, tools=[], artifacts=artifacts,
+            report_revision=True, limits={"model_calls": 3, "tool_calls": 3})
+        result = await agent.ainvoke({"request_action": "revise", "report": report,
+            "messages": [{"role": "user", "content": "Correct one qualifier using exact current text."}]})
+        assert result["output"]["narrative_markdown"] == prose.replace("Original “quoted target”", "Revised source qualifier")
+        assert report["narrative_markdown"] == prose
+        failed = next(m for m in result["messages"] if isinstance(m, ToolMessage) and m.status == "error")
+        assert "read_current_report" in failed.content
+        reread = next(m for m in result["messages"] if isinstance(m, ToolMessage) and m.name == "read_current_report")
+        assert json.loads(reread.content)["narrative_markdown"] == prose
+    asyncio.run(run())
+
+
 class NativeFixtureModel(BaseChatModel):
     marker: str
     replies: list

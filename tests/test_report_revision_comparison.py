@@ -11,6 +11,33 @@ import pytest
 from scripts.qualification.report_revision_comparison import ComparisonAudit, input_state, model_settings
 
 
+@pytest.mark.parametrize("utc_hour,minute,blocked", [(0, 59, True), (13, 0, False)])
+def test_reservation_uses_tariff_through_request_timeout(monkeypatch, utc_hour, minute, blocked):
+    from datetime import datetime, timezone
+    import scripts.qualification.report_revision_comparison as module
+    class Clock(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return datetime(2026, 9, 7, utc_hour, minute, tzinfo=timezone.utc)
+    monkeypatch.setattr(module, "datetime", Clock)
+    profile, basis, _, _ = model_settings(Path(__file__).resolve().parents[1])
+    model = SimpleNamespace(_get_request_payload=lambda *a, **k: {"messages": [{"content": "x" * 60000}], "tools": []})
+    audit = ComparisonAudit(shared={"spent": 2.4, "unknown": False}, model=model, actor="tariff-fixture",
+        profile=profile, basis=basis, public_sink=lambda _: None, private_sink=lambda _: None)
+    reached = []
+    async def fixture(_):
+        reached.append(True)
+        return SimpleNamespace(result=[AIMessage(content="Fixture", usage_metadata={"input_tokens": 10, "output_tokens": 2,
+            "total_tokens": 12, "input_token_details": {"cache_read": 0}}, response_metadata={"finish_reason": "stop"})])
+    request = ModelRequest(model=FakeListChatModel(responses=["unused"]), messages=[], tools=[], state={})
+    if blocked:
+        with pytest.raises(ValueError, match="budget_reserve_insufficient"):
+            asyncio.run(audit.awrap_model_call(request, fixture))
+    else:
+        asyncio.run(audit.awrap_model_call(request, fixture))
+    assert bool(reached) is not blocked
+
+
 def test_comparison_inputs_do_not_share_mutable_original_report_state():
     snapshot = {"state": {"question": "Synthetic question", "report": {"title": "Fixture",
         "narrative_markdown": "Fixture prose", "citations": {}}, "revisions": {}, "synthesis": {}}}

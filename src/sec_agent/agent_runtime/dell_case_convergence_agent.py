@@ -108,7 +108,7 @@ def apply_report_edits(report, edits):
     for index, edit in enumerate(edits):
         count = text.count(edit.old_str)
         if count != 1:
-            raise ValueError(f"report_edit_{index}_matched_{count}_times: use exact unique text with surrounding context; no edits were saved")
+            raise ValueError(f"report_edit_{index}_matched_{count}_times: read_current_report and copy exact unique Markdown, including the original Unicode quotation marks and surrounding context; no edits were saved")
         text = text.replace(edit.old_str, edit.new_str, 1)
     if text == report["narrative_markdown"]:
         raise ValueError("report_edits_made_no_change")
@@ -653,7 +653,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     # keeping the same revision role, sources, model and validation.
     if role == "writer" and (report_revision or allow_answers) and allow_report_edits:
         specific += "\nFor a few corrections, prefer submit_report_edits with exact old_str/new_str spans from the supplied current report; unchanged paragraphs and charts are preserved locally, not generated again. Read relevant original sources as needed. Use submit_case_report for a genuinely extensive rewrite or changed charts. The supplied charts field uses the submission schema; chart_display_values is read-only display data, never tool arguments."
-        selected = [*selected, submit_report_edits]
+        selected = [*selected, read_current_report, submit_report_edits]
     if allow_answers:
         if role != "writer":
             raise ValueError("only_writer_may_answer_session_questions")
@@ -663,7 +663,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         if not allow_answers:
             raise ValueError("answer_only_requires_interactive_writer")
         specific = "Answer the actual user question about this existing Dell case in concise Chinese. Plan your own relevant reads; do not reread every paper or reconstruct a whole report. Prefer query_company_financial_facts for financial numbers. Cite its actual numeric_fact_id inline as [NUMFACT::id], and calculator calculation_id as [CALC::id]; exact [P01:claim_id] citations remain available for existing research. You do not need an old paper to cite a newly queried SQL fact. Include period, unit, source authority and uncertainty where they matter. The current report is available through read_current_report if needed, not presumed evidence. Source-bound answers may still be wrong: do not claim independent verification or product acceptance. If the question exceeds available evidence or needs a new deep study, explain what is unresolved without fabricating it. Submit using submit_case_answer, not a revised report."
-        selected = [t for t in selected if t.name not in {"submit_case_answer", "submit_report_edits"}] + [read_current_report]
+        selected = [t for t in selected if t.name not in {"submit_case_answer", "submit_report_edits", "read_current_report"}] + [read_current_report]
         submit = submit_case_answer
     return create_agent(model=model, tools=[*selected, submit], state_schema=CaseOutputState,
         system_prompt=CONTEXT_RULES + specific + METHOD_TOOL_GUIDANCE + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",

@@ -9,7 +9,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 from copy import deepcopy
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
 import os
 from pathlib import Path
@@ -109,6 +109,7 @@ def input_state(snapshot, artifacts):
     body = {"question": state["question"], "revision_request": QUESTION,
         "report": report_model_view(state["report"]),
         "catalog": artifacts.with_revisions(state["revisions"]).catalog()}
+    body["revision_request"] = snapshot.get("revision_request", QUESTION)
     return {**{k: deepcopy(state[k]) for k in ("report", "revisions", "synthesis")},
         "request_action": "revise", "messages": [HumanMessage(content=json.dumps(body, ensure_ascii=False))]}
 
@@ -140,6 +141,14 @@ class SourceProbe(BaseChatModel):
             additional_kwargs={"reasoning_content": "Protocol fixture only, not financial analysis."}))])
 
 
+def reserve_request_cost(model, basis, byte_bound):
+    """Use the existing dated prices over this bounded request's timeout."""
+    now = datetime.now(timezone.utc)
+    tariff = max(peak_multiplier(now.isoformat()),
+        peak_multiplier((now + timedelta(seconds=basis.timeout_seconds)).isoformat()))
+    return sum(cost_parts(model, 0, byte_bound, basis.max_output_tokens, tariff).values())
+
+
 class ComparisonAudit(CaseModelAudit):
     """Budget check on the existing audit hook, not another model runner."""
     def __init__(self, *, shared, model, **kwargs):
@@ -151,30 +160,39 @@ class ComparisonAudit(CaseModelAudit):
         payload = self.model._get_request_payload(messages, tools=[convert_to_openai_tool(t) for t in request.tools])
         # Conservative byte bound, not claimed to be the provider tokenizer.
         byte_bound = len(json.dumps(payload, ensure_ascii=False).encode("utf-8")) + 4096
-        reserve = (byte_bound * 9 + self.basis.max_output_tokens * 27) / 1_000_000
-        if self.shared["unknown"] or self.shared["spent"] + reserve > 3:
+        reserve = reserve_request_cost(self.profile.model, self.basis, byte_bound)
+        if self.shared["unknown"] or self.shared["spent"] + reserve > self.shared.get("budget_cny", 3):
             raise ValueError("comparison_budget_reserve_insufficient_before_transport")
         return await super().awrap_model_call(request, handler)
 
 
-async def run_comparison(root, out, execute):
+async def run_comparison(root, out, execute, *, variant=None, budget_cny=3.0):
+    if not 0 < budget_cny <= 3 or variant not in {None, "full_submission", "local_edits"}:
+        raise ValueError("comparison_scope_or_budget_invalid")
     profile, basis, config, case = model_settings(root)
     snapshot = json.loads((out / "snapshot.private.json").read_text(encoding="utf-8"))
+    if snapshot.get("revision_request"):
+        basis = basis.model_copy(update={"node_purpose": "Apply source-grounded human review to this isolated existing report candidate using the native local-edit path.",
+            "input_scale": "Existing candidate and same case sources, with a recorded review request; no old private model conversation or research rerun.",
+            "comparable_run_evidence": "Unassisted local-edit A2 produced a candidate in three calls/CNY0.2501985 but retained source-period conflation. This is one human-feedback revision, not a rerun of the full-submission control or an autonomous quality/savings claim."})
     if snapshot["thread_id"] != THREAD or snapshot["state"]["report_version"] != 3:
         raise ValueError("comparison_snapshot_identity_mismatch")
     original, artifacts = deepcopy(snapshot["state"]), DellCaseArtifacts(snapshot["state"]["case_papers"])
-    env, shared = {**host_data_environment(), "FIN_REPO_ROOT": str(root)}, {"spent": 0.0, "unknown": False}
+    env, shared = {**host_data_environment(), "FIN_REPO_ROOT": str(root)}, {"spent": 0.0, "unknown": False, "budget_cny": budget_cny}
+    variants = [(name, edits) for name, edits in (("full_submission", False), ("local_edits", True)) if variant is None or variant == name]
+    limits = {**LIMITS, "model_calls": 5} if variant == "local_edits" else LIMITS
     if execute:
         # Exclusive create is only output-overwrite protection; no retries/resume.
         write_new(out / "execution.json", {"started_at": datetime.now(timezone.utc).isoformat(),
-            "budget_cny": 3, "owner_approval": "2026-09-07 continue after explicit up-to-CNY3 comparison proposal",
-            "basis": basis.model_dump(mode="json"), "profile": profile.model_dump(mode="json"), "limits": LIMITS})
+            "budget_cny": budget_cny, "owner_approval": "2026-09-07 Owner authorized completing step one continuously; bounded fresh qualification within its allocated cost",
+            "basis": basis.model_dump(mode="json"), "profile": profile.model_dump(mode="json"), "limits": limits,
+            "variants": [name for name, _ in variants], "repair_round_basis": "A local-only fresh attempt permits one extra read/correction round after an observed exact-quote mismatch; no automatic transport retry."})
         for name in ("DEEPSEEK_API_KEY", "LANGSMITH_API_KEY"):
             if not os.environ.get(name):
                 raise ValueError("missing_credential:" + name)
     model = case_chat_model(profile, basis, config, SecretStr(os.environ.get("DEEPSEEK_API_KEY", "unused-offline")))
     summary = []
-    for variant, edits in (("full_submission", False), ("local_edits", True)):
+    for variant, edits in variants:
         invocation = f"report-revision-comparison:{out.name}:{variant}"
         with open_dell_approved_data_composition(run_invocation_id=invocation, environment=env,
                 source_read_enabled=True, live_web_read_enabled=False, case_artifacts=artifacts) as data:
@@ -214,7 +232,7 @@ async def run_comparison(root, out, execute):
                 probe = SourceProbe(report={k: v for k, v in report_model_view(original["report"]).items() if k != "chart_display_values"})
                 active_model = model if execute else probe
                 agent = build_case_output_agent(role="writer", model=active_model, tools=tools, artifacts=artifacts,
-                    limits=LIMITS, audit=audit, report_revision=True, allow_report_edits=edits)
+                    limits=limits, audit=audit, report_revision=True, allow_report_edits=edits)
                 run_id = uuid4()
                 try:
                     result = await agent.ainvoke(input_state(snapshot, artifacts), {"run_id": run_id,
@@ -254,6 +272,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--execute", action="store_true")
+    parser.add_argument("--variant", choices=["full_submission", "local_edits"], help="Qualify only a repaired branch, preserving the completed control.")
+    parser.add_argument("--budget-cny", type=float, default=3.0, help="Lower the existing three-CNY work-package ceiling for a fresh attempt.")
     parser.add_argument("--snapshot", type=Path, help="Reuse an existing read-only export for a fresh local preparation.")
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
@@ -266,18 +286,19 @@ def main():
             snapshot = json.loads(args.snapshot.read_text(encoding="utf-8")) if args.snapshot else capture_checkpoint()
             write_new(args.output / "snapshot.private.json", snapshot)
         with tracing_context(enabled=False):
-            asyncio.run(run_comparison(root, args.output, False))
+            asyncio.run(run_comparison(root, args.output, False, variant=args.variant, budget_cny=args.budget_cny))
         return
     if not (args.output / "preparation.json").is_file():
         raise ValueError("offline_preparation_required")
     preparation = json.loads((args.output / "preparation.json").read_text(encoding="utf-8"))
-    if len(preparation["variants"]) != 2 or any(v["status"] != "offline_source_and_submission_pass" for v in preparation["variants"]):
+    expected = [args.variant] if args.variant else ["full_submission", "local_edits"]
+    if [v["variant"] for v in preparation["variants"]] != expected or any(v["status"] != "offline_source_and_submission_pass" for v in preparation["variants"]):
         raise ValueError("successful_offline_preparation_required")
     ls = LangSmithClient(api_key=os.environ.get("LANGSMITH_API_KEY"), hide_inputs=True, hide_outputs=True)
     project = ls.read_project(project_name="fin-insight-dell-reference-vertical")
     with tracing_context(enabled=True, project_name=project.name, client=ls):
         try:
-            asyncio.run(run_comparison(root, args.output, True))
+            asyncio.run(run_comparison(root, args.output, True, variant=args.variant, budget_cny=args.budget_cny))
         finally:
             from langchain_core.tracers.langchain import wait_for_all_tracers
             wait_for_all_tracers()

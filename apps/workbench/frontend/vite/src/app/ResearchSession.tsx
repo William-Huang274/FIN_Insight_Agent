@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { remarkBoundCitations } from "./remarkBoundCitations";
 import { ReportVersions } from "./ReportVersions";
 import type { ReportSnapshot } from "../api/reportSessions";
 import {
@@ -106,21 +107,17 @@ function Markdown({
   onCitation: (key: string, citation: Citation) => void;
 }) {
   const keys = Object.keys(citations);
-  const linked = text.replace(
-    /\[((?:P\d{2}:|PASSAGE::|NUMFACT::|CALC::|MCPFACT::)[^\[\]\s]+)\]/g,
-    (original, ref: string) =>
-      citations[ref]
-        ? `[${keys.indexOf(ref) + 1}](#claim:${encodeURIComponent(ref)})`
-        : original,
-  );
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
+      remarkPlugins={[remarkGfm, [remarkBoundCitations, { ids: keys }]]}
       skipHtml
       components={{
         a: ({ href, children }) => {
           if (href?.startsWith("#claim:")) {
-            const key = decodeURIComponent(href.slice(7));
+            let key: string;
+            try { key = decodeURIComponent(href.slice(7)); }
+            catch { return <span>{children}</span>; }
+            if (!citations[key]) return <span>{children}</span>;
             return (
               <button
                 className="rs-cite"
@@ -146,7 +143,7 @@ function Markdown({
         ),
       }}
     >
-      {linked}
+      {text}
     </ReactMarkdown>
   );
 }

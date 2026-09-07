@@ -2,13 +2,14 @@
 import asyncio
 from copy import deepcopy
 import json
+from types import SimpleNamespace
 
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langgraph.checkpoint.memory import InMemorySaver
 import pytest
 
 from sec_agent.agent_runtime.dell_case_convergence_agent import (
-    answer_citations, build_case_output_agent, observed_sources, saved_citation_bindings,
+    answer_citations, answer_reference_ids, build_case_output_agent, observed_sources, saved_citation_bindings,
 )
 from scripts.qualification.context_continuation_comparison import Probe
 from test_dell_case_review_agent import artifacts
@@ -90,15 +91,54 @@ def test_conflicting_canonical_binding_is_not_silently_replaced():
         saved_citation_bindings([legacy_read(), legacy_read(changed)])
 
 
+@pytest.fixture
+def citation_only_artifacts():
+    def missing(_):
+        raise ValueError("No case source: only the supplied native observation is available")
+    return SimpleNamespace(source_item=missing)
+
+
+def test_bare_saved_calculation_is_bound_and_unknown_bare_id_cannot_bypass_validation(citation_only_artifacts):
+    artifacts = citation_only_artifacts
+    prose = f"Saved calculation {CALC} 回读：result 20 percent; operand [{FACT}]."
+    bound = answer_citations(prose, artifacts, [legacy_read()])
+    assert list(bound) == [CALC, FACT]
+    assert bound[CALC] == citation()
+    with pytest.raises(ValueError, match="answer_source_ids_not_observed"):
+        answer_citations(f"{CALC}-invented = 20; real operand [{FACT}].", artifacts, [legacy_read()])
+    with pytest.raises(ValueError, match="answer_source_ids_not_observed"):
+        answer_citations(f"{CALC}/invented = 20; real operand [{FACT}].", artifacts, [legacy_read()])
+
+
+def test_markdown_literals_urls_and_links_do_not_create_citations(citation_only_artifacts):
+    artifacts = citation_only_artifacts
+    prose = (f"`[{CALC}]`\n\n```text\n{CALC}\n```\n\n"
+             f"[documentation {CALC}](https://example.com) https://example.com/{CALC}\n\n"
+             f"Actual input [{FACT}].")
+    assert answer_reference_ids(prose) == [FACT]
+    assert list(answer_citations(prose, artifacts, [legacy_read()])) == [FACT]
+
+
+def test_bare_paper_and_calculation_ids_preserve_order_and_sentence_punctuation():
+    assert answer_reference_ids("P02:C1 supports CALC::saved-margin. Input [NUMFACT::saved-revenue].") == [
+        "P02:C1", CALC, FACT]
+    # Legacy bracket syntax remains exact: never bind a prefix of an unknown ID.
+    assert answer_reference_ids("[CALC::saved-margin/suffix]") == [CALC + "/suffix"]
+    assert answer_reference_ids("P02:C1/C4/C13") == ["P02:C1/C4/C13"]
+
+
 @pytest.mark.parametrize("recorded", [False, True])
-def test_native_read_pagination_checkpoint_and_submission_share_the_full_binding(artifacts, recorded):
+@pytest.mark.parametrize("bracketed", [False, True])
+def test_native_read_pagination_checkpoint_and_submission_share_the_full_binding(artifacts, recorded, bracketed):
     async def run():
         record = citation()
         if recorded:
             record["sources"][0]["calculation"] = {
                 "arithmetic_verified": True, "financial_semantics_verified": False}
         # Current server citation -> paginated content + full native artifact.
-        model = PaginatedReadProbe(report={"read_ids": [CALC, FACT], "answer": f"Historical result [{CALC}] and operand [{FACT}]."})
+        calc_reference = f"[{CALC}]" if bracketed else CALC
+        answer = f"Historical result {calc_reference} and operand [{FACT}]."
+        model = PaginatedReadProbe(report={"read_ids": [CALC, FACT], "answer": answer})
         agent = build_case_output_agent(role="writer", model=model, tools=[], artifacts=artifacts,
             limits={"model_calls": 2, "tool_calls": 3}, allow_answers=True, answer_only=True)
         agent.checkpointer = InMemorySaver()
@@ -106,6 +146,7 @@ def test_native_read_pagination_checkpoint_and_submission_share_the_full_binding
         result = await agent.ainvoke({"request_action": "ask", "messages": [legacy_read(record),
             HumanMessage(content="Continue using the saved citations.")]}, config)
         assert set(result["output"]["citations"]) == {CALC, FACT}
+        assert result["output"]["answer_markdown"] == answer
         assert len(model.contexts) == 2  # Original submission accepted, no repair call.
         saved = await agent.aget_state(config)
         reads = [m for m in saved.values["messages"] if isinstance(m, ToolMessage) and m.artifact]

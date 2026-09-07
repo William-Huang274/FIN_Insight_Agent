@@ -811,3 +811,42 @@ Owner 最新授权继续修复，并明确：若又要开始手写大量规则�
 **验证与增量分类：** 112 项定向检查通过：新增 saved_citation_continuation 13 项，及 request_summary、dell_case_convergence_agent、research_source_calculation、report_revision_comparison、context_continuation_comparison、research_convergence、dell_case_artifacts。覆盖分页、原生 checkpoint、内容省略后的 artifact 保留、不完整/伪造/冲突引用拒绝和原研究/修订/计算流程。Git diff --check、候选文件秘密扫描和语法检查通过。代码和测试单独提交，产品/技术/Project OS 记录另提交随分支推送。
 
 产品无新验收/部署；工程为引用薄适配、状态/失败反馈和回归测试；资格为保存的真实失败答案原文通过离线绑定；文档更新现有入口、工作记录和四个同 ID 账本。剩余是修后模型自主生成的语义结果与既有局部编辑语义问题，摘要仍 false、v3 needs_revision、步骤一未全验收。先向 Owner 汇报，不自动接续已结束 paid 批次。上轮 4 调用/263,171 tokens/1.710333 元和所有旧成本、190,815 缺额、失败 verdict 均不改。
+
+<a id="step1-closeout-20260907"></a>
+
+### 2026-09-07：步骤一工程与资格收口，采用工具清理，早摘要HOLD
+
+Owner纠正“不要步步审批，先把第一步做完再返回整体结果”。本轮据此连续完成必要修复及有界真实调用；工作包上限8元（上下文5、局部编辑3），付费串行，独立本地验证可同时进行。每次仍有任务TokenBudgetBasis、输入/输出/超时/调用上限，无自动传输重试或未知结果重发。六个新attempt全部结束，未用余额继续追绿；旧失败、旧报告、SQL及Codex失效任务存储不修改。
+
+**交付判断：步骤一的本地工程整改与资格已收口，包含负结论；不是所有实验或整份产品验收通过。** 选择现有LangChain工具结果清理、原生artifact/checkpoint保留与按需回读。局部编辑保持独立/宿主审阅职责；早摘要未达到内容要求，保持关闭。原v3仍needs_revision，P02及关键计算/因果链属于后续步骤二，本轮未启动该步骤或部署。
+
+**工程变化：** `19a6893c`修复摘要调用次数耗尽即错误中止：保留上一次摘要投影与其后全部消息，由正常输入/费用/调用上限控制继续。`79253366`让Writer局部编辑使用已有read_current_report取回准确Markdown，精确替换失败提示保留Unicode引号；没有模糊替换。资格入口共享现有日期价格函数预留请求费用，取开始/480秒超时两端较高费率，继续使用保守字节上界；可降低fresh attempt上限或只测修复臂，不重跑已完成控制臂。支持已记录的审阅请求和单一上下文策略，未新增引擎、存储、路由模型或自然语言判定平台。
+
+**真实证据与全部费用（人民币估算，非账单）：** 下表目录均位于 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/`。调用数包含摘要和模型自行纠正工具参数的轮次。
+
+| 本轮attempt | 模型调用 | 总tokens | 估费CNY | 结果 |
+| --- | ---: | ---: | ---: | --- |
+| 20260907_step1_context_acceptance_a1 | 2 | 152178 | 0.4491102 | 摘要及首次接续完成后，错误的摘要配额检查中止；失败保留 |
+| 20260907_step1_context_acceptance_a2 | 4 | 313746 | 1.0805760 | 修后执行完成；遗漏三个毛利率记录的操作数，并猜测旧错误，内容HOLD |
+| 20260907_step1_context_acceptance_a3 | 2 | 325423 | 1.1224047 | 原40消息、只清理旧工具输出，四CALC/十操作数/期间/12引用及状态保留；有界记录接续通过 |
+| 20260907_step1_local_edit_acceptance_a1 | 7 | 253015 | 0.9334281 | 整稿控制4次/0.5795022元完成；局部3次/0.3539259元因引号精确匹配拒绝、静态高峰价预留挡住纠正 |
+| 20260907_step1_local_edit_acceptance_a2 | 3 | 78119 | 0.2501985 | 局部替换完成；三月第三方与五月管理层/当期口径仍混写，进入审阅 |
+| 20260907_step1_local_edit_acceptance_a3 | 2 | 53770 | 0.2611134 | 实读P01:S056、P07:S014后做五处替换；宿主再以三处精确替换收紧Q2措辞，额外0模型/0元 |
+| **合计** | **20** | **1176251** | **4.0968309** | **20/20已知usage，均与关闭的LangSmith LLM记录按fin_call_id对应** |
+
+输入1065429、输出110822；上下文累计2.6520909元，局部累计1.4447400元。0新未知usage/超时/截断/传输重试；两处宿主执行/预留停止仍记为失败，HTTP成功不冒充流程成功。各attempt保留result、token-cost-audit、langsmith-verification及review；新20个云端记录完整不证明旧190815缺额根因已修。旧265/264与全部历史费用不变。
+
+**内容边界：** A3长接续任务明确限定四个已经存在的CALC ID，原40消息与A1/A2逐对象相同；不含预设数值答案，但比此前“所有已观察CALC”范围清楚，因此不是同题同质量的省费因果对照。答案保留六个S2操作数ID，区分完整CALC的false与旧引用记录字段缺失，承认原综合未保存且错误缺确切ID。它没有验证FCF/capex原金融口径；原quote不足以单独证明净capex，保留未验证身份。当前读成功亦不自动证明图表可执行输入登记。
+
+局部编辑自主候选没有一遍消除全部歧义。A3反馈来自**Codex宿主助手核对实际源节点**，不是Owner、独立人类或盲测；原请求/执行把它叫human review的措辞不准确，已在该attempt的review.json追加来源纠正，原文件不改。最终宿主只再改三处精确跨度：去掉“单体仍落在目标”的Q2暗示，改为本次材料只支持Q1管理层定性表现、Q2仍需补核，未披露不推成未实现。使用既有apply_report_edits及answer_citations，42绑定/三图/标题完整保留，原候选不覆盖。完整报告的其他判断未因此验收。最终局部稿是**模型修订＋宿主审阅**产物，不作模型自主全对或普遍省费宣传。
+
+**成熟栈取舍（2026-09-07核官方资料）：**
+
+- ADOPT已安装LangChain 1.4.0/core 1.6.1/LangGraph 1.2.11的原生编辑、工具artifact与checkpoint。当前接缝已有真实运行和117测试，无需替换运行框架。
+- [Claude Code](https://code.claude.com/docs/en/how-claude-code-works)先清旧工具输出，再在接近容量时摘要；[DeepSeek Harness compaction](https://github.com/deepseek-ai/deepseek-harness/blob/master/packages/compaction/compaction-basic/README.md)默认按路由容量80%触发，配有工具输出pruner；其[官方仓库](https://github.com/deepseek-ai/deepseek-harness)仍标developer preview。两者支持本轮先清理、谨慎采用摘要的取舍，但未安装运行它们的FIN迁移切片，不宣称其FIN资格通过或不满足需求。
+- [Codex SDK](https://learn.chatgpt.com/docs/codex-sdk)已有开始/继续/恢复任务能力；本机CLI已存在。本轮只核官方接口，不接触旧压缩失败任务底层存储，不把工程任务SDK直接认定为金融权威运行时。
+- [DeepSeek官方模型页](https://api-docs.deepseek.com/zh-cn/quick_start/pricing/)当前V4窗口1M。历史峰值约20万输入，8万摘要属于激进压缩试验，当前并非容量必需。HOLD该配置是负结果处置，不能推断所有语义错误都是摘要造成，也不能保证迟摘要天然正确。未来真正需要更长历史时再用单个有界切片资格，不扩写手工规则。
+
+**验证与可检查交付：** 117项测试通过，覆盖历史引用/分页/checkpoint、摘要配额续接、精确引号恢复、价格边界预留及现有研究/修订/计算流程。变更差异与候选文件秘密扫描通过；运行证据保持Git外。汇总 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_step1_reviewed_delivery_a1/closeout.json`，同目录receipt.json为三处宿主修改核验，reviewed-report.md为隔离局部稿；长接续正文为 `20260907_step1_context_acceptance_a3/answer.md`。
+
+产品增量是可检查的隔离修订稿与接续答案，未部署/发布；工程增量为上述运行路径修复；资格增量含成功与HOLD；文档工作为既有源计划、产品当前入口和同ID账本更新。剩余阻塞是整份报告的金融内容/Owner产品验收及后续前端等原计划，不把摘要HOLD重新变成要求每个小补丁审批的循环。

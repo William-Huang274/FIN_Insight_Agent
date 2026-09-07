@@ -6,6 +6,16 @@
 
 ## 当前续接入口（2026-09-07，任务 01a07afa-cf5a-7c52-b135-ccd9e49c14bf）
 
+**当前结论：步骤一的本地工程整改与有界资格已收口，不再停在规划/逐补丁审批。** 采用现有 LangChain 工具输出清理、原生 artifact/checkpoint 与按需回读；8万触发的自动摘要资格为 HOLD，保持 disabled，不能把它写成通过。长历史工具清理接续 A3：2次 Pro/325423 tokens/估1.1224047元，四条CALC、十个操作数、12引用、期间及未验证/未记录状态保留，旧错误明确未保存且没有杜撰确切失败ID。该问题限定四个原有ID，非与摘要臂同题因果对照；原FCF金融口径仍未核验。
+
+局部修订 A2/A3：3＋2次真实调用，经宿主源文审阅纠正三月第三方、五月Q1管理层及Q2待核口径；最后3处精确替换使用已有编辑/引用校验函数，0额外模型。最终隔离稿保留42引用/3图/标题，原v3不晋升。这里的审阅者是Codex宿主助手，非Owner、人类或盲测裁决；原A3把反馈标为human的记录原位保留，review.json纠正其来源。工程修复包括摘要次数用完后保留现有投影继续执行、局部编辑可读回准确原文、资格预算按现有日期价格预留。117项相关测试通过，代码提交19a6893c、79253366（后续记录更正/收口提交见Git）。
+
+本轮共6个fresh paid attempts，20/20已知调用、1176251 tokens、估4.0968309元（长上下文2.6520909、局部编辑1.4447400），20个LangSmith LLM用量按fin_call_id对应且关闭。上限8元（5＋3）未突破，0未知usage/传输重试/截断；两处执行停止与语义负例全部保留。总证据 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_step1_reviewed_delivery_a1/receipt.json`；完整逐臂费用、成熟栈取舍和边界见 [S3/190步骤一收口](../worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md#step1-closeout-20260907) 与 [详设当前步骤](../architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md#remaining-work-20260907)。
+
+Owner 最新纠正持续有效：已经授权范围内的必要修复/有限实测自行连续完成，不逐补丁要求审批；本轮所有付费已结束，不按余额继续追绿。步骤一收口不等于自动语义全通过、同质量省费或产品发布。后续仍沿原步骤二处理P02及关键主张/计算/因果链；本轮未开始步骤二、前端或部署，产品FIN0.1.3/v3 needs_revision及旧1未知/190815云端缺额不改。
+
+### 本任务较早时点（历史，不覆盖上述收口与授权）
+
 2026-09-07 当前：Owner 允许继续修引用接缝，并要求若出现大量手写规则就先评估 cc/Codex/DS Harness 等成熟栈。工程修复已提交 `c8da5a2c`：复用已安装 LangChain 的 content_and_artifact 与 LangGraph checkpoint，读取和提交共用完整历史引用绑定，内含 S2 摘要可保留原 ID 引用；没有把引用摘要变成计算器输入。旧完整 JSON 窗口只作兼容投影，分页/摘要不抹掉新 artifact；未验证与未记录状态及新 ID/重算反馈已明确。112 项相关测试通过。原真实失败的首次答复原文不改，离线重放先复现旧版拒 9 引用，再经修复版四次原生回读、一次提交绑定 4 CALC＋6 NUMFACT；0 新 provider/0 元，证据 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_citation_binding_offline_a3/receipt.json`。旧付费批仍为 4 调用/263,171 tokens/1.710333 元、内容 HOLD，不改判；本轮是工程/资格增量，未验证修后模型自主语义表达，摘要 disabled、v3 needs_revision、步骤一未全验收、不进入步骤二。无新框架、调度器、记忆或 NLP 判定平台。
 
 Owner 因旧任务“R14语义失败根因审计与续接”压缩失败要求接手。任务接口返回的近期记录仍停在 9 月 5 日 C 盘清理/R2，而 D 盘源码和 Project OS 已推进至 9 月 7 日；旧任务接口不是当前执行依据。本次以 `D:/FIN_Insight_Agent` 的 clean/synced `6c3889c71dade8735b143eff418617fc775740dc` 接续，失效 C 盘 worktree 和 Codex live 数据未操作。

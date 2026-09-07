@@ -172,9 +172,9 @@ async def run_comparison(root, out, execute, *, variant=None, budget_cny=3.0):
     profile, basis, config, case = model_settings(root)
     snapshot = json.loads((out / "snapshot.private.json").read_text(encoding="utf-8"))
     if snapshot.get("revision_request"):
-        basis = basis.model_copy(update={"node_purpose": "Apply source-grounded human review to this isolated existing report candidate using the native local-edit path.",
+        basis = basis.model_copy(update={"node_purpose": "Apply recorded source-grounded review to this isolated existing report candidate using the native local-edit path.",
             "input_scale": "Existing candidate and same case sources, with a recorded review request; no old private model conversation or research rerun.",
-            "comparable_run_evidence": "Unassisted local-edit A2 produced a candidate in three calls/CNY0.2501985 but retained source-period conflation. This is one human-feedback revision, not a rerun of the full-submission control or an autonomous quality/savings claim."})
+            "comparable_run_evidence": "Unassisted local-edit A2 produced a candidate in three calls/CNY0.2501985 but retained source-period conflation. This is one review-feedback revision; reviewer provenance belongs to the prepared input. It is not a rerun of the full-submission control or an autonomous quality/savings claim."})
     if snapshot["thread_id"] != THREAD or snapshot["state"]["report_version"] != 3:
         raise ValueError("comparison_snapshot_identity_mismatch")
     original, artifacts = deepcopy(snapshot["state"]), DellCaseArtifacts(snapshot["state"]["case_papers"])

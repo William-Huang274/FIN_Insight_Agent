@@ -18,6 +18,8 @@ npm run build
 
 Use a previously nonexistent output directory. The generated files are explicitly synthetic, not Dell benchmark results. Render Word/PPT with LibreOffice and inspect pages; XML checks are not visual acceptance. PDF export itself needs no Office installation.
 
+Verified on 2026-09-08 from an independent clean source worktree at `9e363302`: the export module resolved to that checkout. Only tracked files were checked out; the working-directory `.env` was not copied and no additional private research data was mounted. All 17 checks in the two listed test files passed, and all four synthetic export formats were generated with zero model calls. This reused installed dependencies. Fresh installation, frontend builds, independent full-research startup and a new visual review were outside this check.
+
 ## Full local deployment
 
 The complete Dell case additionally requires the operator's qualified source files, SQL data and private deployment settings. This is not yet a clone-and-download-all-data distribution. Missing data must not be replaced with invented records or old expert answers.

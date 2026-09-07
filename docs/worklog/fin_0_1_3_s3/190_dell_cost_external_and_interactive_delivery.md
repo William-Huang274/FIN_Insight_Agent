@@ -865,3 +865,21 @@ Owner 询问接入 Hermes 是否需要替换底层架构。本次仅核对当前
 更正前期候选判断：[NVIDIA 官方 NemoClaw for Hermes 架构](https://build.nvidia.com/nvidia/nemoclaw-for-hermes-agent/architecture)已提供实质集成依据，不能由少量公开客户案例推断大企业无人使用；这也不证明其第三方 LCM 或本项目接入已通过。当前摘要配置 HOLD 仍基于已有质量负结果，窗口尚有余量不是否定节费需求的依据，摘要是否节费须同题测量。
 
 增量分类：产品和工程增量为零；研究增量为源码/接口边界核查，文档增量为本条及外部模式登记。未安装 Hermes、未新发模型调用、未迁移状态或改变产品版本/步骤一结论。候选主要未决项是 FIN 证据语义、逐调用费用及中断恢复的真实互操作；当前不作已接入、已节费或新一轮付费授权声明。
+
+<a id="application-first-delivery-20260908"></a>
+
+### 2026-09-08：原五项＋新增需求与投递优先合并，Hermes后置；首页和独立源码资格切片
+
+Owner 明确要求先完成原五项＋新增需求、收齐 GitHub 展示并投简历，再考虑 Hermes。采纳此顺序，原技术详设 §0 的映射及七段编号保留，步骤一不重开、原功能/内容验收不删除。报告/P02及关键判断计算先收口，再交互、真实上传视觉、同一版本交付和既定小范围新场景；GitHub、演示与本人讲解可提前穿插。Hermes登记为延后候选，未安装或实施迁移。
+
+本次实查发现 GitHub 已 public，默认 main 仍是963eed99的历史固定Pack说明，把动态研究写成未来工作。当前开发候选与默认分支相差755提交，不能为了改README将全部运行代码直接晋升。独立main工作树 D:/temp/fin-portfolio-entry-20260908 中只调整中英文入口和版本说明，提交a282c697、PR [#2](https://github.com/William-Huang274/FIN_Insight_Agent/pull/2)；主工作分支同时整理首屏能力/证据导航，折叠保留历史入口，并更新双语运行说明、公开范围、源计划和Project OS。
+
+首个可执行资格：以9e363302建立不含.env或未跟踪私有资料的独立源码工作树 D:/temp/fin-portfolio-source-20260908-a1，确认实际导出模块来自该目录。复用本机已安装.venv依赖，运行 tests/test_task_attachments.py 与 tests/test_report_delivery.py，17 passed in 6.35s；既有 research_delivery_smoke 生成四格式合成报告，0模型/0元。PDF文件头/尾及DOCX/PPTX ZIP/主文档存在检查通过，四文件size/SHA收在 D:/temp/fin-portfolio-delivery-20260908-a1/verification.json。没有新渲染审阅，不证明财务报告内容、全新依赖安装、前端build或无旧bundle的完整新研究启动已通过。
+
+PR首次CI [34142238932](https://github.com/William-Huang274/FIN_Insight_Agent/actions/runs/34142238932) 为不可变失败：42通过、2处旧测试因_IncludedRouter无path报错，前端步骤未执行。当前开发分支已经有对应兼容；仅回移两处path-bearing路由过滤，保留准确路径集合与实际API响应断言，未跳过测试/放松产品权限/修改运行时。独立main工作树实际加载对应app，定向6项通过（0.95s）；fec7dad0提交后触发新CI。PR题目/正文已按最终三文件范围重写。
+
+增量分类：产品功能无新增、报告状态仍needs_revision；工程为旧main两处测试兼容回移；资格为独立源码17项与四格式合成执行、旧main6项回归；文档为交付顺序和中英文展示入口。当前PR最终检查/合并结果在本节后续记录。候选文档20个相对链接可解析、围栏/details平衡，diff与变动秘密模式检查通过；不是全Git历史敏感项/许可审核完成。
+
+剩余仍归原清单：报告重要判断及P02同步、完整交互/版本差异/费用、真实上传视觉消费、最终图表/引用/四格式、独立完整启动、公开范围/历史审核、演示与少量新场景。既有paid均已结束，本轮0模型；不把这次排序和展示切片称为原五项＋新增全部完成，不将未完成候选包装成可投递验收通过。
+
+首页最终结果：fresh CI [34142597329](https://github.com/William-Huang274/FIN_Insight_Agent/actions/runs/34142597329) 的编译/Python测试/浏览器build与测试均成功，PR #2以精确head fec7dad0经squash合并为main的114a935f0e15fd3c4813e15795ef95e03eba9861。默认分支中英文README已通过GitHub接口读回确认新入口。保留现有About描述，增加六个实际使用的主题financial-research/multi-agent/langgraph/mcp/rag/python并读回；未改变可见性或发布报告。文档20相对链接、两账本454/203条JSON、diff及变动秘密模式检查通过；资格/PR临时工作树和合成文件留在D:/temp作为可检查证据，不入Git。

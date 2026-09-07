@@ -2,6 +2,10 @@
 
 2026-09-07。本文是展示准备，不是修改远端仓库可见性、自动发布报告或授权重分发第三方资料。
 
+2026-09-08 可见性实查：GitHub 仓库已为 public，默认 main 的历史工作台与当前开发分支须明确区分并互相导航。已公开不等于完整历史/资料经过审查，也不等于最终报告已验收。当前优先完成既有功能与展示证据，Hermes 接入后置。
+
+Visibility checked on 2026-09-08: the repository is already public. The historical main baseline and current development branch need clear navigation. Public visibility does not establish a completed history/data review or report acceptance. Existing product delivery and showcase evidence take priority over Hermes integration.
+
 ## 可以准备展示 / Suitable for review
 
 - 源码、版本锁、合成测试、实际架构和可验证交互。Source, dependency locks, synthetic tests and truthful architecture.

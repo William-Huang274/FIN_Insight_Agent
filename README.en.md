@@ -1,17 +1,18 @@
 # FinSight Agent — FIN 0.1.3
 
-**A local financial-research workspace combining autonomous agents, real tools and traceable sources.** The objective is a useful, conditional research judgment connecting business growth to profit, cash realization and execution pressure—not a report dominated by disclaimers.
+**A financial-research workspace from question to an inspectable report.** Agents use real data tools to analyze business growth, profit and cash flow, with traceable sources, calculations and charts.
 
-As of 2026-09-07, a fresh Dell growth-quality question has run from the real frontend through multi-agent research, reporting and a human-review checkpoint. The developed case includes preserved failures, native continuations and human-directed revisions; it is not an unassisted, error-free one-shot benchmark. The delivery version, measured costs and remaining findings are recorded in the worklog. Owner acceptance and public release remain separate decisions.
+This branch contains the current dynamic workflow: a real frontend, nine research topics, cross-review and targeted author repair, synthesis, reporting, follow-up and export. A developed Dell case produced a v3 candidate with 42 citations and three charts, downloaded and rendered in four formats. One material workpaper/report inconsistency remains; final content acceptance is open.
 
-The current review candidate is v3: 7,281 narrative characters, 42 citations and three charts, downloaded and rendered in four formats. One material finding remains: an overstrong demand-workpaper inference was not synchronized with the corrected report. The session made 265 requests (264 with reported usage), estimated at CNY 28.09; additional paid execution is stopped. **Final quality acceptance is not claimed.** These development-and-revision costs are not a normal short-question price. See the [execution and cost record](docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md).
+**Version:** this README describes the development candidate on `codex/fin013-dell-s1-s2-product-bridge`. Runtime code on `main` is the historical fixed Evidence Pack workspace. Full research requires configured services, model credentials and prepared data. The [run guide](docs/public/quickstart.en.md) also provides checks that require no model calls.
 
 ## Current implementation
 
 - Dynamic Lead DAG and independent multi-turn specialists. Nine research topics; concurrency two is not a two-specialist limit.
 - Counter/Verifier, targeted author repair, Lead synthesis, independent research review, Writer, final review and human handoff have all executed with real models. Model review can still miss errors.
 - MCP tools for SEC financial SQL, document structure/search/source windows, external search/page reads and source-bound calculation.
-- LangChain create_agent / LangGraph, Agent Server, PostgreSQL, Redis and LangSmith—not a custom execution/checkpoint/queue platform.
+- LangChain / LangGraph, Agent Server, PostgreSQL, Redis and LangSmith. FIN owns research contracts, source authority and thin adapters.
+- Bounded validation of old tool-output clearing, original evidence retention, source readback and local report edits. Automatic summarization remains disabled; no general cost-saving percentage is established.
 - Real task creation, activity, source inspection, follow-up, revision, cancellation and guidance consumed at subsequent phase boundaries.
 - Task-isolated uploads, mature parsing/chunking and on-demand Flash vision. One real MCP vision probe used 423 tokens; this is not an OCR accuracy benchmark.
 - Source-bound charts and Markdown/PDF/Word/PowerPoint exports. File/visual checks are distinct from financial-content acceptance.
@@ -20,7 +21,12 @@ Current workspace: `http://127.0.0.1:8766/workspace/session`; native Agent Serve
 
 [Architecture and build/adopt split](docs/public/architecture.en.md) · [Run and test](docs/public/quickstart.en.md) · [Sharing scope and evidence claims](docs/public/sharing-scope.md) · [中文](README.md)
 
-Repository preparation does not change visibility. Uploaded files, crawled source bodies, databases, raw model context and private traces are not redistributed by default. Model review is neither an oracle nor human acceptance; the product does not autonomously publish investment advice.
+An independent source checkout passed 17 upload/export checks and generated four synthetic export formats on 2026-09-08, with zero model calls. It reused installed dependencies; fresh dependency installation and independent full-research startup remain unverified. The original developed Dell case used 265 requests, 264 with known usage, at an estimated CNY 28.09 including failures and revisions. Step-one remediation batches are separate; these figures are not short-Q&A prices or unassisted success rates. See the [evidence and sharing scope](docs/public/sharing-scope.md).
+
+The repository is public. Uploads, databases, raw model context and private traces are excluded from the intended showcase; full report sharing requires a separate content review.
+
+<details>
+<summary>Historical fixed Evidence Pack workspace: compatibility, startup and baseline</summary>
 
 ## Legacy fixed-pack workspace
 
@@ -54,3 +60,5 @@ uv run --locked python -m pytest -q
 ```
 
 See the [current code map](docs/architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md) and [current context pack](docs/project_os/current_context_pack.zh-CN.md) for the exact product and repository boundary.
+
+</details>

@@ -42,6 +42,29 @@ def _new_worker_fixture():
     return _run(_ScriptedModel([_evidence_action(), _finance_action(), _submission()]), FullSourceFixturePorts())
 
 
+def test_saved_answer_calculation_is_readable_in_next_native_tool_session():
+    from test_dell_case_artifacts import _calculate
+    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources
+    calculation = _calculate()
+    ref = calculation["calculation_id"]
+    state = {"case_papers": [_new_worker_fixture()], "conversation": [{"role": "assistant",
+        "content": f"Saved result [{ref}]", "citations": {ref: {"sources": [{"source_id": ref, "calculation": calculation}]}}}]}
+    original = deepcopy(state)
+    artifacts = current_task_artifacts(state)
+    assert artifacts.source_item(ref) == calculation
+    child = calculate_from_sources(SourceBoundCalculation(expression="prior / 2",
+        operands={"prior": {"source_id": ref}}, result_unit="test_unit", rationale="Synthetic continuation"), artifacts.source_item)
+    assert child["value_decimal"] == "25"
+    assert child["financial_semantics_verified"] is False
+    assert state == original
+    with pytest.raises(ValueError, match="unknown_source_id"):
+        current_task_artifacts({"case_papers": state["case_papers"]}).source_item(ref)
+    corrupted = deepcopy(state)
+    corrupted["conversation"][0]["citations"][ref]["sources"][0]["calculation"]["calculation_id"] = "CALC::wrong"
+    with pytest.raises(ValueError, match="saved_calculation_binding_invalid"):
+        current_task_artifacts(corrupted)
+
+
 def _phases(*, material=False, incomplete=False, fail_convergence=False, full_profile=False, fail_one_first=False, fail_synthesis_once=False):
     seen = {"research": 0, "review": 0, "converge": 0, "ask": 0}
     models = {}

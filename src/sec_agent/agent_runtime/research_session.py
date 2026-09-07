@@ -48,7 +48,11 @@ class ResearchSessionState(SessionState, total=False):
 
 
 def current_task_artifacts(state):
-    return DellCaseArtifacts(state["case_papers"])
+    artifacts = DellCaseArtifacts(state["case_papers"])
+    # These are native server outputs. The browser cannot submit source records.
+    for output in [state.get("report", {}), *state.get("conversation", [])]:
+        artifacts = artifacts.with_saved_calculations(output.get("citations", {}))
+    return artifacts
 
 
 def can_continue_remaining_research(state):

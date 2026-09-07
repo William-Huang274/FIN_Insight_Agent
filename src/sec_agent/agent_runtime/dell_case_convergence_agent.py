@@ -144,6 +144,7 @@ class CaseOutputState(AgentState):
     report: dict[str, Any]
     request_action: str
     synthesis: dict[str, Any]
+    conversation: list[dict[str, Any]]
 
 
 def review_responsibility_errors(review, artifacts, *, required=False):

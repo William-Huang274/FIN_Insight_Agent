@@ -142,6 +142,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
         get_stream_writer()({"kind": "stage", "actor": role, "event": "started", "recorded_at": datetime.now(timezone.utc).isoformat()})
         return {"messages": [HumanMessage(content=json.dumps(body, ensure_ascii=False))],
             "revisions": state["revisions"], "report": state["report"], "request_action": state["request_action"],
+            "conversation": deepcopy(state.get("conversation", [])),
             **({"case_papers": state["case_papers"]} if "case_papers" in state else {})}
 
     def collect(state, role):

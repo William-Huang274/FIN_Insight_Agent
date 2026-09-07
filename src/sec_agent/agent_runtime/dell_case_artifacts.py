@@ -121,6 +121,26 @@ class DellCaseArtifacts:
                 + "; inspect the current paper sources catalog for exact IDs, or read_current_source for a saved report/chart binding. Do not invent an alias.")
         return json.loads(json.dumps(self._sources[source_id]))
 
+    def with_saved_calculations(self, citations):
+        """Reuse complete host-bound calculations from this native task only."""
+        result = deepcopy(self)
+        for citation in citations.values():
+            for source in citation.get("sources", []):
+                calculation = source.get("calculation")
+                if calculation is None:
+                    continue
+                ref = source.get("source_id", "")
+                if (not ref.startswith("CALC::") or calculation.get("calculation_id") != ref
+                        or calculation.get("result_state") != "non_authoritative_metric"
+                        or calculation.get("numeric_fact_authority") is not False
+                        or calculation.get("arithmetic_verified") is not True
+                        or not all(k in calculation for k in ("expression", "operands", "value_decimal", "result_unit"))):
+                    raise ValueError("saved_calculation_binding_invalid:" + ref)
+                if ref in result._sources and result._sources[ref] != calculation:
+                    raise ValueError("saved_calculation_binding_conflict:" + ref)
+                result._sources[ref] = deepcopy(calculation)
+        return result
+
     def with_revisions(self, revisions):
         """A new public research view; never overwrite original run artifacts.
 

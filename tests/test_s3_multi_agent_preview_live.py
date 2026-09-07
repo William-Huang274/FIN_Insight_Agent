@@ -373,6 +373,7 @@ def test_r11_checkpoint_rejects_cash_capture_mutation() -> None:
         runner._load_bound_analysis_checkpoint_source(fragment)
 
 
+@pytest.mark.local_data_integration
 def test_r10_authority_accepts_only_coordination_checkpoint_successor(
     tmp_path: Path,
 ) -> None:
@@ -463,6 +464,7 @@ def test_r10_authority_accepts_only_coordination_checkpoint_successor(
     assert outputs["run_id"] == "PYTEST-R10-UNUSED"
 
 
+@pytest.mark.local_data_integration
 def test_r11_authority_accepts_only_downstream_analysis_successor(
     tmp_path: Path,
 ) -> None:
@@ -560,6 +562,7 @@ def test_r11_authority_accepts_only_downstream_analysis_successor(
     assert outputs["run_id"] == "PYTEST-R11-UNUSED"
 
 
+@pytest.mark.local_data_integration
 def test_r12_authority_requires_immutable_r11_preprovider_disposition(
     tmp_path: Path,
 ) -> None:
@@ -622,6 +625,7 @@ def test_r12_authority_requires_immutable_r11_preprovider_disposition(
     assert outputs["run_id"] == "PYTEST-R12-UNUSED"
 
 
+@pytest.mark.local_data_integration
 def test_r13_authority_requires_exact_r10_source_context_replay(
     tmp_path: Path,
 ) -> None:
@@ -684,6 +688,7 @@ def test_r13_authority_requires_exact_r10_source_context_replay(
     assert outputs["run_id"] == "PYTEST-R13-UNUSED"
 
 
+@pytest.mark.local_data_integration
 def test_r14_authority_replaces_only_the_failed_continuation_profile(
     tmp_path: Path,
 ) -> None:
@@ -764,6 +769,7 @@ def test_r14_authority_replaces_only_the_failed_continuation_profile(
     }
 
 
+@pytest.mark.local_data_integration
 def test_r15_authority_reuses_two_repairs_and_starts_fresh_supply(
     tmp_path: Path,
 ) -> None:
@@ -882,6 +888,7 @@ def test_r15_authority_reuses_two_repairs_and_starts_fresh_supply(
         (HIERARCHICAL_EVALUATOR_CHECKPOINT_SCOPE, 12, True, True, True),
     ),
 )
+@pytest.mark.local_data_integration
 def test_generic_successor_authority_uses_one_compiled_frontier(
     tmp_path: Path,
     scope_path: Path,
@@ -1054,6 +1061,7 @@ def test_generic_successor_authority_uses_one_compiled_frontier(
     ) is expects_evaluation_checkpoint
 
 
+@pytest.mark.local_data_integration
 def test_terminal_writer_authority_binds_only_one_writer_node(
     tmp_path: Path,
 ) -> None:
@@ -1161,6 +1169,7 @@ def test_terminal_writer_authority_binds_only_one_writer_node(
     assert "writer_continuation_profile" in inputs
 
 
+@pytest.mark.local_data_integration
 def test_terminal_writer_submission_authority_binds_no_new_analysis(
     tmp_path: Path,
 ) -> None:

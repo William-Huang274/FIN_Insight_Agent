@@ -633,6 +633,7 @@ def test_multi_agent_preview_plan_checkpoint_successor_rejects_promoting_overlay
         )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_analysis_checkpoint_successor_binds_one_continuation() -> None:
     result = build_preflight(
         root=ROOT,
@@ -663,6 +664,7 @@ def test_multi_agent_preview_analysis_checkpoint_successor_binds_one_continuatio
     }.issubset(set(result["scope_projection"]["explicit_allow_issue_ids"]))
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_analysis_checkpoint_successor_rejects_second_continuation() -> None:
     decision = json.loads(
         (
@@ -679,6 +681,7 @@ def test_multi_agent_preview_analysis_checkpoint_successor_rejects_second_contin
         )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_submission_successor_reuses_completed_analysis() -> None:
     result = build_preflight(
         root=ROOT,
@@ -711,6 +714,7 @@ def test_multi_agent_preview_submission_successor_reuses_completed_analysis() ->
     }.issubset(set(result["scope_projection"]["explicit_allow_issue_ids"]))
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_submission_successor_rejects_lead_analysis_rerun() -> None:
     decision = json.loads(
         (
@@ -727,6 +731,7 @@ def test_multi_agent_preview_submission_successor_rejects_lead_analysis_rerun() 
         )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_lead_checkpoint_successor_starts_downstream() -> None:
     result = build_preflight(
         root=ROOT,
@@ -756,6 +761,7 @@ def test_multi_agent_preview_lead_checkpoint_successor_starts_downstream() -> No
     assert result["provider_calls"] == 0
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_lead_checkpoint_successor_rejects_lead_rerun() -> None:
     decision = json.loads(
         (
@@ -778,6 +784,7 @@ def test_multi_agent_preview_lead_checkpoint_successor_rejects_lead_rerun() -> N
         )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_workpaper_checkpoint_successor_starts_at_counter() -> None:
     result = build_preflight(
         root=ROOT,
@@ -809,6 +816,7 @@ def test_multi_agent_preview_workpaper_checkpoint_successor_starts_at_counter() 
     ]
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_workpaper_checkpoint_rejects_completed_rerun() -> None:
     decision = json.loads(
         (
@@ -829,6 +837,7 @@ def test_multi_agent_preview_workpaper_checkpoint_rejects_completed_rerun() -> N
         )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_specialist_analysis_successor_resumes_once() -> None:
     result = build_preflight(
         root=ROOT,
@@ -856,6 +865,7 @@ def test_multi_agent_preview_specialist_analysis_successor_resumes_once() -> Non
     assert "exact original Counter conversation" in result["known_boundary"]
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_specialist_analysis_successor_rejects_initial_rerun() -> None:
     decision = json.loads(
         (
@@ -878,6 +888,7 @@ def test_multi_agent_preview_specialist_analysis_successor_rejects_initial_rerun
         )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_coordination_checkpoint_starts_at_repairs() -> None:
     result = build_preflight(
         root=ROOT,
@@ -905,6 +916,7 @@ def test_multi_agent_preview_coordination_checkpoint_starts_at_repairs() -> None
     ]
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_coordination_checkpoint_rejects_coordination_rerun() -> None:
     decision = json.loads(
         (
@@ -925,6 +937,7 @@ def test_multi_agent_preview_coordination_checkpoint_rejects_coordination_rerun(
         )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_repair_context_successor_enters_full_preflight() -> None:
     result = build_preflight(
         root=ROOT,
@@ -951,6 +964,7 @@ def test_multi_agent_preview_repair_context_successor_enters_full_preflight() ->
     ]
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_generic_successor_binds_compiled_frontier() -> None:
     decision = json.loads(
         (ROOT / MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE_DECISION_REF).read_text(
@@ -981,6 +995,7 @@ def test_multi_agent_preview_generic_successor_binds_compiled_frontier() -> None
     assert "Supply remains pending fresh" not in preflight["known_boundary"]
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_generic_successor_rejects_frontier_digest_drift() -> None:
     decision = json.loads(
         (ROOT / MULTI_AGENT_PREVIEW_GENERIC_SUCCESSOR_SCOPE_DECISION_REF).read_text(
@@ -997,6 +1012,7 @@ def test_multi_agent_preview_generic_successor_rejects_frontier_digest_drift() -
         )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_hierarchical_evaluator_binds_zero_call_proof() -> None:
     decision = json.loads(
         (
@@ -1019,6 +1035,7 @@ def test_multi_agent_preview_hierarchical_evaluator_binds_zero_call_proof() -> N
     ] == decision["hierarchical_evaluator_zero_call_proof_result_digest"]
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_hierarchical_evaluator_rejects_proof_digest_drift() -> None:
     decision = json.loads(
         (
@@ -1037,6 +1054,7 @@ def test_multi_agent_preview_hierarchical_evaluator_rejects_proof_digest_drift()
         )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_hierarchical_evaluator_separates_audit_profile() -> None:
     decision = json.loads(
         (
@@ -1078,6 +1096,7 @@ def test_multi_agent_preview_hierarchical_evaluator_separates_audit_profile() ->
     )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_role_evaluation_checkpoint_resumes_at_operating() -> None:
     decision = json.loads(
         (
@@ -1121,6 +1140,7 @@ def test_multi_agent_preview_role_evaluation_checkpoint_resumes_at_operating() -
     )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_all_role_evaluations_resume_at_cross_role() -> None:
     decision = json.loads(
         (
@@ -1157,6 +1177,7 @@ def test_multi_agent_preview_all_role_evaluations_resume_at_cross_role() -> None
     )
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_terminal_writer_reuses_all_upstream_nodes() -> None:
     decision = json.loads(
         (ROOT / MULTI_AGENT_PREVIEW_TERMINAL_WRITER_SCOPE_DECISION_REF).read_text(
@@ -1196,6 +1217,7 @@ def test_multi_agent_preview_terminal_writer_reuses_all_upstream_nodes() -> None
     assert "forbids analysis continuation" not in boundary
 
 
+@pytest.mark.local_data_integration
 def test_multi_agent_preview_terminal_writer_submission_reuses_completed_analysis() -> None:
     decision = json.loads(
         (
@@ -1355,6 +1377,7 @@ def test_current_dynamic_multi_agent_decision_binds_six_role_live_scope() -> Non
     assert "six independent specialist sessions" in result["known_boundary"]
 
 
+@pytest.mark.local_data_integration
 def test_consumed_R8_scope_remains_bound_but_cannot_run_on_R9_runtime() -> None:
     decision = json.loads(
         (ROOT / CURRENT_DYNAMIC_MULTI_AGENT_CONTENT_REPAIR_DECISION_REF).read_text(
@@ -1430,6 +1453,7 @@ def test_current_dynamic_multi_agent_content_repair_rejects_target_drift() -> No
         )
 
 
+@pytest.mark.local_data_integration
 def test_historical_authority_ceiling_decision_expires_but_branch_still_binds_six_calls() -> None:
     decision = json.loads(
         (
@@ -2092,6 +2116,7 @@ def test_dynamic_five_cell_decision_rejects_weakened_runner_proof(
         )
 
 
+@pytest.mark.local_data_integration
 def test_obsolete_dynamic_counter_successor_v1_0_fails_after_entry_drift() -> None:
     with pytest.raises(
         ValueError, match="project_os_dynamic_counter_runner_drift"
@@ -2104,6 +2129,7 @@ def test_obsolete_dynamic_counter_successor_v1_0_fails_after_entry_drift() -> No
         )
 
 
+@pytest.mark.local_data_integration
 def test_obsolete_dynamic_counter_successor_v1_1_fails_after_set_repair() -> None:
     with pytest.raises(
         ValueError, match="project_os_dynamic_counter_runner_drift"
@@ -2116,6 +2142,7 @@ def test_obsolete_dynamic_counter_successor_v1_1_fails_after_set_repair() -> Non
         )
 
 
+@pytest.mark.local_data_integration
 def test_dynamic_counter_successor_v1_2_history_survives_runner_evolution_but_scope_is_closed(
 ) -> None:
     with pytest.raises(
@@ -2637,6 +2664,7 @@ def test_report_remap_replacement_binds_length_failure_and_budget_basis() -> Non
     ] == "72d5fe7f3d1c16e9f6014bece396ef00a45f5212d971ce7480038d86a36af648"
 
 
+@pytest.mark.local_data_integration
 def test_historical_report_reference_patch_rejects_current_runtime_drift() -> None:
     decision = json.loads(
         (ROOT / REPORT_REMAP_REFERENCE_PATCH_DECISION_REF).read_text(
@@ -2656,6 +2684,7 @@ def test_historical_report_reference_patch_rejects_current_runtime_drift() -> No
         validate_report_remap_scope_decision(root=ROOT, decision=decision)
 
 
+@pytest.mark.local_data_integration
 def test_current_dynamic_writer_decision_binds_R10_and_three_call_ceiling() -> None:
     decision = json.loads(
         (ROOT / CURRENT_DYNAMIC_WRITER_DECISION_REF).read_text(encoding="utf-8")
@@ -2677,6 +2706,7 @@ def test_current_dynamic_writer_decision_binds_R10_and_three_call_ceiling() -> N
         )
 
 
+@pytest.mark.local_data_integration
 def test_historical_writer_submission_authority_is_not_reusable_after_runtime_changes() -> None:
     decision = json.loads(
         (

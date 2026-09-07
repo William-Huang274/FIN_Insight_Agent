@@ -728,3 +728,22 @@ A4仅执行Owner已批准且尚未启动的独立Flash短事实任务，未重�
 结论：成本归账、局部编辑接口、原生消息保留与历史回读整改落地；既有Flash短问答route有一个真实数值样本；原生摘要经历真实试验但未完成修后模型验收，保持关闭。严格按原计划，**步骤一尚未全部验收**，不是“五步全部完成”；剩下的具体项是修复后长接续资格，不进入步骤二、前端或另开协议。详细本批报告：`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_context_continuation_a4/review-notes.md`。下一先向Owner汇报真实结果及余项，不把1.5748428元余额当新一轮权限。
 
 最终近邻测试95通过（6文件，含本轮新增source-window负例与metadata/summary审计；前述94为增量前，不相加）。四份变动ledger逐行JSON有效449/901/198/116，配置JSON/diff通过；只检查本轮路径，不全仓扫描/回归。Git精确提交这些代码、脚本、测试、配置及源文档，不含Z盘私有输入/推理/输出，也不含D:/temp审计原物；推送与clean以最终工具结果为准。
+
+### 2026-09-07：压缩失败后的接手、当前入口纠偏与真实摘要离线回放
+
+Owner 指定接手旧任务 `01a04d93-91a2-73a1-a422-2cf4b6b175a7`（“R14语义失败根因审计与续接”）。当前任务 `01a07afa-cf5a-7c52-b135-ccd9e49c14bf` 在 D:/FIN_Insight_Agent 开始，分支 `codex/fin013-dell-s1-s2-product-bridge`、基线 `6c3889c71dade8735b143eff418617fc775740dc` clean/synced。旧任务接口近期页最后仍显示 9 月 5 日清 C 盘/待 R2，实际 D 盘 Git/Project OS 已是 9 月 7 日步骤一收口；不以该过时页重跑 R2，不操作旧 C 盘 worktree 或 Codex live SQLite/JSONL，未声称修复 Codex 压缩故障。
+
+接手范围按本文件上一节 Owner 最新要求解释：先完成步骤一汇报，旧批已结束，不能花余额追绿或自动进入步骤二/P02/前端。发现详设首页仍写“下一沿步骤二”、产品入口仍写“本次只整理计划”，与最新状态冲突，现已原位纠正；current_context_pack 顶部给出短续接入口，历史逐时点保留，不建立新运行时协议或新产品版本。
+
+本次有一个新增、零付费的资格切片：既有 A5_offline 使用 expected-answer 摘要 fixture，本次改用原 paid A3 保存的**真实摘要正文**，只在 D:/temp 临时脚本中替换离线摘要 runnable，继续调用当前仓库的原生 Agent、真实本地 MCP/来源读取和原引用 validator。模型动作与提交答复仍由 scripted Probe 给定；这是开发接口复证，不是自主模型行为或内容质量测试。命令为 `D:/FIN_Insight_Agent/.venv/Scripts/python.exe -c "import runpy; runpy.run_path('D:/temp/fin_step1_takeover_replay_20260907.py', run_name='__main__')"`。
+
+- 成功结果：真实摘要进入两轮请求（14/19 条消息），四次 read_current_source 成功，submit_case_answer 通过；首请求序列化 237,532 UTF-8 bytes，仅作输入规模观察，不当作 tokens 或省费率。
+- 新 provider = 0；禁用 LangSmith tracing，显式阻断 HTTP 及外部 socket，保留 Windows/AnyIO 自身 loopback socketpair。源研究/v3/SQL/摘要配置/容器未改，未部署。
+- 两次临时脚本失败分别在主事件循环和 AnyIO 子线程初始化时被过宽的 socket 拦截误挡，均未调用 provider。核对 Python socketpair 官方文档与实际堆栈后，仅修离线仪器；旧 a1/a2 输入及 recovery-failure.json 原位保留，成功为新 a3，不改产品代码。该失败不归因于模型、MCP 源记录或 Codex 压缩。
+- 从原始本地审计只读重算 A1/A3/A4，仍分别为 1/3/2 调用、204,772/205,315/13,837 tokens、估 1.923948/1.4707206/0.0304886 元，合计 6 调用、423,924 tokens、估 3.4251572 元；没有未知 usage 被算零。
+
+成功 receipt：`D:/temp/fin_step1_takeover_20260907_a3/takeover-readiness.json`；输入副本仅留同目录 private 文件，不入 Git。临时脚本路径见上述命令；本次复证没有修改原 Z 盘 A1/A3/A4/A5_offline 证据。联网拦截修正的外部依据：[Python 3.11 socketpair](https://docs.python.org/3.11/library/socket.html#socket.socketpair)。
+
+进度分类：产品增量 0；产品/运行时代码增量 0；资格证据增加真实摘要与当前回读工具的离线兼容结果；文档工作纠正三个当前入口并同步 capability 记录。步骤一仍未全部验收，摘要默认 disabled，修后真实长接续仍未执行；原报告 needs_revision、局部编辑语义余项、旧云端三条 190,815 tokens 缺额等事实不变。
+
+下一动作是向 Owner 汇报以上接手结果及唯一当前资格缺口。若后续 Owner 批准该具体付费切片，再根据实际输入/输出和历史 1.4707206 元摘要分支重算有界预算，用新 attempt 验证修后长接续；不将“接手”或旧 1.5748428 元余额当新许可，不重跑已失败基线、已完成 Flash 或整案研究。本轮仅提交上述源文档/Project OS，不把私有输入/摘要/推理、临时探针或原模型输出送入 Git。文档/JSON/差异检查及提交推送以最终工具结果为准；没有因纯文档更正重跑已通过的 95 项代码测试。

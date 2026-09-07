@@ -4,6 +4,18 @@
 当前产品版本：FIN 0.1.3
 当前工作分支：`codex/fin013-dell-s1-s2-product-bridge`（S0 权威基线仍为远端 `main`）
 
+## 当前续接入口（2026-09-07，任务 01a07afa-cf5a-7c52-b135-ccd9e49c14bf）
+
+Owner 因旧任务“R14语义失败根因审计与续接”压缩失败要求接手。任务接口返回的近期记录仍停在 9 月 5 日 C 盘清理/R2，而 D 盘源码和 Project OS 已推进至 9 月 7 日；旧任务接口不是当前执行依据。本次以 `D:/FIN_Insight_Agent` 的 clean/synced `6c3889c71dade8735b143eff418617fc775740dc` 接续，失效 C 盘 worktree 和 Codex live 数据未操作。
+
+当前目标仍是**先收口剩余计划步骤一并汇报**。费用归账、局部编辑、原生摘要请求投影、原观察回读已有工程实现；上一批 A1/A3/A4 共 6 调用、423,924 tokens、估 3.4251572 元，已结束、不以余额继续付费。摘要默认关闭、修后长接续未通过真实模型验收；原 v3 仍 needs_revision，暂不进入步骤二/P02/前端。后续新 paid 须有该具体切片的预算确认，不能把本次接手当作已结束批次重新授权。
+
+本次新增资格证据：复用真实付费 A3 摘要，经当前原生 Agent 进行四个历史 CALC 回读与引用提交，离线通过；HTTP/外部网络封闭、0 新模型调用。读源选择和答复为 scripted，只证明真实摘要与修复后工具接口兼容，不证明模型判断或省费率。简要 receipt：`D:/temp/fin_step1_takeover_20260907_a3/takeover-readiness.json`。详设首页的“下一步骤二”和产品入口的“仅规划”已纠正。
+
+恢复时先读本节、最新同 ID capability/root-cause 条目、[详设的 remaining-work-20260907](../architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md#remaining-work-20260907) 与 [S3/190 文末](../worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md)，不要为接手再次整批输出旧聊天或以下全部历史。旧研究 265/264 已知/估 28.0927149 元及 LangSmith 190,815 缺额不变；本次仅新增离线资格与交接记录，无产品增量、部署或新付费。
+
+以下逐时点记录保留作历史，后续旧“最新/下一步/进行中”描述不覆盖上述当前入口。
+
 2026-09-07 最新：Owner要求只完成剩余计划步骤一后汇报，未进入步骤二/P02/前端。费用已分阶段归账，旧265/264已知/估28.0927149不变；旧1未知与3个LangSmith缺额190815保留，云端根因未证实。新native/legacy fin_call_id及失败前输入留存、LangChain原生摘要请求投影/原证据保留/无隐式重试、原生历史观察回读均已实现。新5次带fin_call_id的云端与local用量对应；一次云上传timeout不外推历史根因。Owner两次明确批准同一累计≤5元/≤8调用，实际A1+A3+A4共6次/423924tokens/估3.4251572元：原样长历史截断；摘要长接续因旧CALC回读接口遗漏而失败，该接口已修并A5_offline真实工具重放；Flash短事实2次/13837tokens/约0.03049元成功引用，数字/期间/权威正确，非语义/故障诊断全绿。摘要默认false、不重跑失败基线、不追加paid；步骤一整体未全验收，剩修后长接续验证，不能声称已全面省费或进入步骤二。原v3/SQL/研究记录/容器不动、无部署。详源详设`remaining-work-20260907`与S3/190最后节，代码起点0c55ee1e，本轮改动已说明；Git最终提交见收口。
 G12 代码复证提交：`cd9990ac7ea4586cc55af0bc77f41c3f797399cb`
 

@@ -1178,6 +1178,7 @@ def test_R7_public_projection_rejects_unknown_nested_public_field() -> None:
         ("target_proposition", "See /private/source/raw.json"),
     ],
 )
+@pytest.mark.local_data_integration
 def test_R7_public_projection_rejects_locator_in_allowed_text_field(
     field: str, value: str
 ) -> None:
@@ -1268,6 +1269,7 @@ def test_R7_public_projection_rejects_downstream_authority_drift() -> None:
         ),
     ],
 )
+@pytest.mark.local_data_integration
 def test_R7_public_projection_rejects_allowed_narrative_content_attacks(
     payload: str, error: str
 ) -> None:

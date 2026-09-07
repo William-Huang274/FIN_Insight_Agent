@@ -18,7 +18,16 @@ npm run build
 
 Use a previously nonexistent output directory. The generated files are explicitly synthetic, not Dell benchmark results. Render Word/PPT with LibreOffice and inspect pages; XML checks are not visual acceptance. PDF export itself needs no Office installation.
 
-Verified on 2026-09-08 from an independent clean source worktree at `9e363302`: the export module resolved to that checkout. Only tracked files were checked out; the working-directory `.env` was not copied and no additional private research data was mounted. All 17 checks in the two listed test files passed, and all four synthetic export formats were generated with zero model calls. This reused installed dependencies. Fresh installation, frontend builds, independent full-research startup and a new visual review were outside this check.
+Verified on 2026-09-08: the initial independent source check at `9e363302` passed17 tests and generated four synthetic formats. A subsequent independent virtual environment installed the locked research, external-search, delivery, control-plane and qualification dependencies from scratch. The independent source checkout passed23 upload, delivery and source-only startup checks without copying `.env`, databases or private research results; zero model calls. Missing data leaves health/catalog available and readiness/data access unavailable. This does not prove that research can finish without data.
+
+The complete public test profile also needs the optional test dependencies:
+
+```powershell
+uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery --extra control-plane --extra qualification
+uv run --no-sync python -m pytest -q
+```
+
+Tests marked `local_data_integration` / `requires_local_data` are skipped by default. With the original private mounts, use `--run-private-data` explicitly; missing inputs and old authority/current fact-ID drift can still fail. Historical Windows transaction qualification runs only on Windows, and historical Git proofs need full history. Public CI, private historical replay and paid model research are separate evidence scopes.
 
 ## Full local deployment
 
@@ -56,3 +65,9 @@ uv run --no-sync python -m pytest tests/test_research_session.py tests/test_rese
 ```
 
 These are contract/wiring checks, not semantic or production certification. Evaluate actual workpapers, sources, reports and usage under the same thread/run. Keep feature probes, failures, full research and follow-ups separate; account billing is not one task's cost. Investigate data, tool, schema and network failures separately. Never clear data or weaken validators merely to turn a check green.
+
+## Update and rollback
+
+Preserve the settings directory and code commit, confirm no paid run is active, then build and update the fixed Compose services. A failed build does not authorize deleting database volumes. Roll back using a compatible verified image and its settings; `--no-build` reuses an image and does not establish that current source code is deployed. Keep legacy settings and report versions separately.
+
+The local2026-09-08 disk-full incident affected Docker builds and IPC. Recovery preserved databases, uploads and failed runs and removed only reproducible build cache. Diagnose disk and Docker logs first; do not copy host-specific path repairs or factory-reset instructions blindly.

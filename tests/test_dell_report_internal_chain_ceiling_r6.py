@@ -770,6 +770,7 @@ def test_R6_public_projection_rejects_unknown_nested_public_field() -> None:
         ("target_proposition", "See /private/source/raw.json"),
     ],
 )
+@pytest.mark.local_data_integration
 def test_R6_public_projection_rejects_locator_in_allowed_text_field(
     field: str, value: str
 ) -> None:

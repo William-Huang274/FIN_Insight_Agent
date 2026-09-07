@@ -196,6 +196,7 @@ def test_dynamic_successor_validates_R1_inputs_from_historical_commit() -> None:
     )
 
 
+@pytest.mark.local_data_integration
 def test_dynamic_successor_bound_set_includes_current_runtime_policies() -> None:
     authority_path = (
         ROOT

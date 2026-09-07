@@ -2,7 +2,7 @@
 
 **从研究问题到可追问报告的金融研究工作台。** 多 Agent 使用财务 SQL、原文检索和来源绑定计算，研究业务增长、利润与现金流，并交付可追溯的判断、图表与报告。
 
-[English](README.en.md) · [运行与验证](docs/public/quickstart.zh-CN.md) · [架构](docs/public/architecture.zh-CN.md) · [证据与展示边界](docs/public/sharing-scope.md) · [版本迭代](CHANGELOG.md)
+[English](README.en.md) · [运行与验证](docs/public/quickstart.zh-CN.md) · [架构](docs/public/architecture.zh-CN.md) · [三分钟演示与工程讲解](docs/public/demo-and-engineering.zh-CN.md) · [证据与展示边界](docs/public/sharing-scope.md) · [版本迭代](CHANGELOG.md)
 
 ## 当前可以做什么
 

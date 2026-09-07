@@ -32,6 +32,7 @@ def _resign(value: dict) -> dict:
     return with_result_digest(value)
 
 
+@pytest.mark.local_data_integration
 def test_r14_machine_contracts_bind_exact_G_inputs_and_zero_call_authority() -> None:
     bundle = load_and_validate_r14_contracts(root=ROOT)
     frozen = validate_plan_frozen_git(bundle.requirement, root=ROOT)

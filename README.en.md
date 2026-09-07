@@ -2,7 +2,7 @@
 
 **A financial research workspace that turns a question into a traceable report and follow-up conversation.** Agents use financial SQL, source passages and source-bound calculations to examine business growth, earnings and cash conversion.
 
-[中文](README.md) · [Run and verify](docs/public/quickstart.en.md) · [Architecture](docs/public/architecture.en.md) · [Evidence and sharing](docs/public/sharing-scope.md) · [Changelog](CHANGELOG.md)
+[中文](README.md) · [Run and verify](docs/public/quickstart.en.md) · [Architecture](docs/public/architecture.en.md) · [Three-minute demo](docs/public/demo-and-engineering.en.md) · [Evidence and sharing](docs/public/sharing-scope.md) · [Changelog](CHANGELOG.md)
 
 ## Capabilities
 

@@ -246,7 +246,8 @@ def test_request_usage_includes_failed_nodes_without_private_data_or_fake_zero(t
     assert events[-2]["kind"] == "task" and events[-2]["dependency_ids"] == ["T1"]
     assert events[-1]["status"] == "specialist_human_review_handoff_emitted"
     assert usage == {"recorded_requests": 2, "reported_requests": 1, "unknown_or_pending_requests": 1,
-        "partial_audit": True, "input_tokens": 8, "output_tokens": 4, "total_tokens": 12}
+        "partial_audit": True, "input_tokens": 8, "output_tokens": 4, "total_tokens": 12,
+        "cache_hit_tokens": 0, "cache_miss_tokens": 0, "elapsed_ms": 0, "unknown_cache_requests": 2, "unknown_elapsed_requests": 2}
     with pytest.raises(ValueError):
         public_run_usage(tmp_path, "../outside", run)
 

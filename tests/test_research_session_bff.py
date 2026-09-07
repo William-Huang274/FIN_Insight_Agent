@@ -38,6 +38,40 @@ def _app(*, enabled=True, graph_id=RESEARCH_GRAPH):
     return app, service, calls, thread_id
 
 
+def test_cumulative_usage_includes_native_run_pages_and_preserves_unknown_cache(tmp_path):
+    app, service, _, tid = _app()
+    service.audit_root = tmp_path
+    rows = [{"run_id": str(uuid4()), "status": "success", "created_at": "2026-09-07T00:00:00Z",
+        "updated_at": "2026-09-07T00:00:01Z", "metadata": {"model_calls_requested": 0}} for _ in range(101)]
+    rows[-2]["metadata"] = {}  # no audit and no explicit zero-model action
+    rows[-1]["metadata"] = {"human_action": "ask"}
+    path = tmp_path / tid / rows[-1]["run_id"] / "model-call-events.jsonl"
+    path.parent.mkdir(parents=True)
+    events = [{"event": "started", "actor": "quick_writer", "call_id": "last-page-call", "model": "deepseek-v4-flash", "recorded_at": "2026-09-07T00:00:00Z"},
+        {"event": "outcome", "actor": "quick_writer", "call_id": "last-page-call", "model": "deepseek-v4-flash",
+         "input_tokens": 123, "output_tokens": 7, "total_tokens": 130, "elapsed_ms": 321.75, "usage_reported": True,
+         "recorded_at": "2026-09-07T00:00:01Z"}]
+    path.write_text("\n".join(json.dumps(e) for e in events), encoding="utf-8")
+    offsets = []
+    async def runs(_, *, limit, offset=0):
+        offsets.append(offset)
+        return rows[offset:offset+limit]
+    service.sdk.runs.list = runs
+    with TestClient(app) as client:
+        response = client.get(f"/api/v1/research-sessions/{tid}")
+        assert response.status_code == 200
+        body = response.json()
+    assert offsets == [0, 100] and len(body["runs"]) == 101
+    total = body["cumulative_usage"]
+    assert total["native_runs"] == 101 and total["input_tokens"] == 123 and total["total_tokens"] == 130
+    assert total["recorded_requests"] == 1 and total["unknown_or_pending_requests"] == 0
+    assert total["unknown_cache_requests"] == 1 and total["unpriced_requests"] == 1
+    assert total["missing_audit_runs"] == 1 and total["elapsed_ms"] == 321.75
+    assert total["unknown_elapsed_requests"] == 0
+    assert body["runs"][-1]["elapsed_ms"] == 1000
+    asyncio.run(service.http.aclose())
+
+
 def test_new_task_and_review_remain_different_native_entries_and_fresh_has_no_seed():
     app, service, calls, _ = _app()
     with TestClient(app) as client:

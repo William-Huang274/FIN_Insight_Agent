@@ -59,6 +59,10 @@ export type Finding = {
   paper_ids?: string[];
 };
 export type Session = {
+  cumulative_usage?: { native_runs: number; known_cny: number; recorded_requests: number; reported_requests: number;
+    unknown_or_pending_requests: number; unpriced_requests: number; input_tokens: number; output_tokens: number;
+    total_tokens: number; cache_hit_tokens: number; cache_miss_tokens: number; unknown_cache_requests: number; unknown_elapsed_requests: number;
+    elapsed_ms: number; missing_audit_runs: number; partial_audit: boolean; notice: string };
   is_draft?: boolean;
   attachments?: { document_id: string; name: string; kind: string; bytes: number; sections: number; needs_vision: boolean }[];
   thread_id: string;
@@ -103,10 +107,11 @@ export type Session = {
     citations?: Record<string, Citation>;
   }[];
   model_events?: Event[];
-  runs?: { run_id: string; status: string; created_at: string; human_action?: string; answer_mode?: string;
+  runs?: { run_id: string; status: string; created_at: string; human_action?: string; answer_mode?: string; elapsed_ms?: number; model_calls_requested?: number;
     cost_estimate?: { known_cny: number; priced_requests: number; unknown_or_pending_requests: number; price_as_of: string; notice: string };
     usage?: { recorded_requests: number; reported_requests: number; unknown_or_pending_requests: number;
-      input_tokens: number; output_tokens: number; total_tokens: number; partial_audit: boolean } | null }[];
+      input_tokens: number; output_tokens: number; total_tokens: number; cache_hit_tokens?: number; cache_miss_tokens?: number;
+      unknown_cache_requests?: number; elapsed_ms?: number; partial_audit: boolean } | null }[];
 };
 export type ResearchConfiguration = {
   fresh_research_enabled: boolean;

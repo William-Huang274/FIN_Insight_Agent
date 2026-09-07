@@ -63,10 +63,12 @@ def public_run_usage(audit_root, thread_id, run_id):
             events.append(event)
     ids = {e["call_id"] for e in events if e.get("call_id")}
     outcomes = {e["call_id"]: e for e in events if e.get("call_id") and e.get("event") == "outcome"}
-    totals = {key: sum(e[key] for e in outcomes.values() if isinstance(e.get(key), int))
-              for key in ("input_tokens", "output_tokens", "total_tokens")}
+    totals = {key: sum(e[key] for e in outcomes.values() if isinstance(e.get(key), (int, float)) and not isinstance(e.get(key), bool))
+              for key in ("input_tokens", "output_tokens", "total_tokens", "cache_hit_tokens", "cache_miss_tokens", "elapsed_ms")}
     return events, {"recorded_requests": len(ids), "reported_requests": sum(isinstance(e.get("total_tokens"), int) for e in outcomes.values()),
         "unknown_or_pending_requests": sum(not isinstance(outcomes.get(i, {}).get("total_tokens"), int) for i in ids),
+        "unknown_cache_requests": sum(not all(isinstance(outcomes.get(i, {}).get(k), int) for k in ("cache_hit_tokens", "cache_miss_tokens")) for i in ids),
+        "unknown_elapsed_requests": sum(not isinstance(outcomes.get(i, {}).get("elapsed_ms"), (int, float)) for i in ids),
         "partial_audit": partial, **totals}
 
 
@@ -213,6 +215,16 @@ class ReportSessionService:
         if not report_snapshot(state):
             raise HTTPException(404, "该历史记录没有完成的报告版本")
         return state
+
+    async def all_runs(self, thread_id):
+        """Read native pagination; do not call ten recent runs a session total."""
+        rows, offset = {}, 0
+        while True:
+            page = await self.sdk.runs.list(str(thread_id), limit=100, offset=offset)
+            rows.update({row["run_id"]: row for row in page})
+            if len(page) < 100:
+                return list(rows.values())
+            offset += len(page)
 
 
 def report_snapshot(state):
@@ -424,7 +436,7 @@ def build_report_sessions_router(service):
     async def snapshot(thread_id: UUID):
         thread = await service.owned_thread(thread_id)
         state = await service.sdk.threads.get_state(str(thread_id))
-        runs = await service.sdk.runs.list(str(thread_id), limit=10)
+        runs = await service.all_runs(thread_id)
         projection = public_state(state)
         if not runs and thread.get("metadata", {}).get("pending_question"):
             projection.update(question=thread["metadata"]["pending_question"], phase="draft", case_profile="dell_growth_quality")
@@ -436,6 +448,19 @@ def build_report_sessions_router(service):
                 "human_action": run.get("metadata", {}).get("human_action"),
                 "answer_mode": run.get("metadata", {}).get("answer_mode"), "usage": usage})
             public_runs[-1]["cost_estimate"] = public_cost_estimate(events)
+            public_runs[-1]["model_calls_requested"] = run.get("metadata", {}).get("model_calls_requested")
+            if run.get("status") not in {"pending", "running"} and run.get("created_at") and run.get("updated_at"):
+                public_runs[-1]["elapsed_ms"] = max(0, round((datetime.fromisoformat(run["updated_at"].replace("Z", "+00:00"))
+                    - datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))).total_seconds()*1000))
+        usages = [r["usage"] for r in public_runs if r["usage"] is not None]
+        cumulative = {key: sum(u.get(key, 0) for u in usages) for key in (
+            "recorded_requests", "reported_requests", "unknown_or_pending_requests", "input_tokens", "output_tokens",
+            "total_tokens", "cache_hit_tokens", "cache_miss_tokens", "unknown_cache_requests", "unknown_elapsed_requests", "elapsed_ms")}
+        cumulative.update(native_runs=len(public_runs), known_cny=round(sum(r["cost_estimate"]["known_cny"] for r in public_runs), 6),
+            unpriced_requests=sum(r["cost_estimate"]["unknown_or_pending_requests"] for r in public_runs),
+            missing_audit_runs=sum(r["usage"] is None and r.get("model_calls_requested") != 0 for r in public_runs),
+            partial_audit=any(u["partial_audit"] for u in usages),
+            notice="本任务全部原生运行的已知用量；并行模型耗时为求和，不是墙钟时间。外部导入修订费用另见版本原因，缺失用量不计零。")
         if thread.get("status") == "error":
             projection["can_continue_remaining"] = can_restart_remaining_node(thread, state, runs[0] if runs else None,
                 public_runs[0]["usage"] if public_runs else None)
@@ -444,7 +469,7 @@ def build_report_sessions_router(service):
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
             "attachments": service.attachment_store.list(thread_id) if service.attachment_store else [],
-            "runs": public_runs}
+            "runs": public_runs, "cumulative_usage": cumulative}
 
     @router.post("/research-sessions/{thread_id}/abandon-question")
     async def abandon_question(thread_id: UUID, request: Request):

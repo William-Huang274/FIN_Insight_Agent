@@ -918,3 +918,14 @@ Owner 明确授权连续完成原五项及新增需求，Hermes 评估前停止�
 四格式检查发现python-pptx默认图表负轴ID使严格OOXML导入失败（axis ID要求unsignedInt，[Microsoft规范](https://learn.microsoft.com/en-us/dotnet/api/documentformat.openxml.drawing.charts.axisid?view=openxml-3.0.1)，[上游模板示例](https://python-pptx.readthedocs.io/en/latest/dev/analysis/cht-bar-chart.html)）。薄适配统一映射轴ID及crossAx，保留可编辑图表/源值，9导出检查通过。修后artifact-tool与LibreOffice均可渲染；A6 PDF15页、DOCX20页、PPT43页检查为报告分页导出，不冒充演讲稿；A7最终正文有小幅时点修改，最终原生v4受影响渲染仍待完成。
 
 六组方法实际消费审计：完整扫描原生SQLite A2/A4/A5共124/269/62 checkpoints并按tool-call ID去重。A4 Lead实际读取lead内容；P08读取industry_product和finance内容；A2 P01及A4部分综合/报告复核只读目录；A5无方法工具调用。此前只看最近100个checkpoint遗漏A4 Lead内容，本段修正。取舍：lead **adapt**（有实际消费但综合仍发生关联标题漏改）；finance **retain**（P08消费并纠正费用/GAAP/经营杠杆，现金/期间核算另有源文与31算术证据，不能做因果归功）；industry_product **retain**（P08架构/客户/供应链明确消费，最终Writer仍曾遗漏）；writer/verifier **adapt**（提示已修责任与一致性，但这批没有读取其方法正文，不称已实证有效）；counter **hold扩展**（本批未重跑Counter、不为凑六组消费多做付费）。六组都保持按需方法资源，无新执行控制面，不以目录出现证明工具改善质量。
+
+
+### 2026-09-08：完整运行累计、旧调用身份与最终v4渲染
+
+工程增量：费用接口从最近10次改为原生SDK分页读取全部运行；分别显示操作与会话输入/输出/缓存/费用/耗时及未知项，不另建计费库。实查发现旧耗时为float毫秒，整数求和严重少算，已接受数值并单列未知耗时；旧接续两次调用可有同call_id但不同run_id，前端按二者组合保留失败与成功，避免漏82271 tokens。外部宿主修订费用继续单列。
+
+真实原生11次运行：286记录/285已报用量、17506702 tokens、已知估28.255109元，1未知/未计价、1缓存未知；已记录模型耗时求和13237.887秒（并行求和，不是墙钟研究时长）。比旧265记录多出真实上传A1/A2的21次，费用增加0.162395元。页面v4、54引用、3图及累计已读回；收据20260908_step3_cumulative_usage_a1/receipt.json。45项Python、TS/Vite及1440/1024/390三项浏览器检查通过。原默认Playwright启动旧8765时因缺S1私有readiness结果失败，未运行用例；保留失败，定向UI用现有8766与合成API完成，不能把它写成旧入口无数据启动通过。
+
+交付资格：最终原生v4 MD/PDF/DOCX/PPTX仍同源；PDF15页、Word20页、PPT44页均已渲染并逐页概览检查。LibreOffice另打开PPT，图2/4实际满尺寸确认数值格式/标签正常；artifact-tool的小数显示属于其渲染差异。PPT正文分页，图解释/完整来源在讲者备注，不是新生成的演讲摘要。收据20260908_step5_native_candidate_v4/render-review.json；尚无Owner内容/产品验收。0新增模型。
+
+剩余：交互收口、新小场景、独立源码启动/数据条件、默认main整体集成/正式双语文档/版本迭代/历史分支保全清理，以及简历演示。Hermes未评估；不能称整包完成。

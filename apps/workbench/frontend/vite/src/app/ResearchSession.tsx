@@ -320,7 +320,7 @@ export function ResearchSession() {
   const allEvents = useMemo(() => {
     const map = new Map<string, Event>();
     for (const e of [...events, ...(session?.model_events || [])])
-      map.set(`${e.kind}/${e.actor}/${e.call_id}/${e.task_id}/${e.event}/${e.recorded_at}`, e);
+      map.set(`${e.run_id}/${e.kind}/${e.actor}/${e.call_id}/${e.task_id}/${e.event}/${e.recorded_at}`, e);
     return [...map.values()].sort(
       (a, b) => (Date.parse(a.recorded_at || "") || 0) - (Date.parse(b.recorded_at || "") || 0),
     );
@@ -340,7 +340,7 @@ export function ResearchSession() {
     const map = new Map<string, Event>();
     for (const e of allEvents)
       if (e.kind === "model" && e.event === "outcome" && e.call_id)
-        map.set(e.call_id, e);
+        map.set(`${e.run_id}/${e.call_id}`, e);
     return [...map.values()];
   }, [allEvents]);
   const totals = models.reduce(
@@ -352,6 +352,7 @@ export function ResearchSession() {
     { tokens: 0, input: 0, output: 0 },
   );
   const usageRun = session?.runs?.find(r => r.run_id === usageRunId) || session?.runs?.[0];
+  const cumulative = session?.cumulative_usage;
   const visibleEvents = usageRun ? allEvents.filter(e => e.run_id === usageRun.run_id) : allEvents;
   const visibleModels = visibleEvents.filter(e => e.kind === "model" && e.event === "outcome");
   const newSession = async (mode: "review" | "research" = "review") => {
@@ -966,7 +967,21 @@ export function ResearchSession() {
                 {usageRun?.usage ? <>输入 {format(usageRun.usage.input_tokens)} · 输出 {format(usageRun.usage.output_tokens)} · {usageRun.usage.unknown_or_pending_requests} 次用量待定 / 未知。{usageRun.usage.partial_audit && "审计记录尚不完整。"}</> : "没有本次模型用量记录；载入报告或放弃追问不会发起模型调用。"}
               </p>
               <p className="rs-helper">
-                本会话当前载入 {models.length} 次模型记录、{format(totals.tokens)} tokens；含失败任务已知用量，不含载入前研究费用。下方仅显示所选请求，最新事件在前；可在上方切换查看历史请求。
+                {usageRun?.usage && <>所选请求缓存：已知命中 {format(usageRun.usage.cache_hit_tokens || 0)} / 未命中 {format(usageRun.usage.cache_miss_tokens || 0)} tokens；{usageRun.usage.unknown_cache_requests ?? "未知"} 次缓存明细待定。</>}
+                {usageRun?.elapsed_ms !== undefined && <> 执行耗时 {(usageRun.elapsed_ms / 1000).toFixed(1)} 秒（含调度与工具）。</>}
+              </p>
+              {cumulative && <>
+                <h4>本任务累计 · 全部 {cumulative.native_runs} 次原生运行</h4>
+                <div className="rs-usage">
+                  <div><small>已知部分估费 · 非账单</small><strong>¥{cumulative.known_cny.toFixed(3)}</strong></div>
+                  <div><small>已记录模型调用</small><strong>{cumulative.recorded_requests}</strong></div>
+                  <div><small>已报告 tokens</small><strong>{format(cumulative.total_tokens)}</strong></div>
+                </div>
+                <p className="rs-helper">输入 {format(cumulative.input_tokens)} · 输出 {format(cumulative.output_tokens)}；缓存已知命中 {format(cumulative.cache_hit_tokens)} / 未命中 {format(cumulative.cache_miss_tokens)}，{cumulative.unknown_cache_requests} 次缓存明细未知。已记录模型耗时合计 {(cumulative.elapsed_ms / 1000).toFixed(1)} 秒，{cumulative.unknown_elapsed_requests} 次耗时未知。</p>
+                <p className="rs-helper">{cumulative.unknown_or_pending_requests} 次用量待定 / 未知，{cumulative.unpriced_requests} 次未计价，{cumulative.missing_audit_runs} 次运行缺少用量记录。{cumulative.partial_audit && "存在未完整读取的审计记录。"}{cumulative.notice}</p>
+              </>}
+              <p className="rs-helper">
+                活动视图当前载入 {models.length} 次模型结果记录、{format(totals.tokens)} 个已报告 tokens。下方仅显示所选请求，最新事件在前；可在上方切换查看历史请求。
               </p>
               <div className="rs-agent-cards">
                 {[...new Set(visibleEvents.filter(e => e.kind === "model").map(e => e.actor))].map((role) => (

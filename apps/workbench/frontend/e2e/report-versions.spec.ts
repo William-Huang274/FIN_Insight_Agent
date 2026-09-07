@@ -13,7 +13,11 @@ for (const width of [1440, 1024, 390]) {
     const report = { ...oldReport, title: "当前研究报告", narrative_markdown: "## 研究结论\n\n修订后的现金流解释。[NUMFACT::fixture]" };
     const session = { thread_id: id, status: "interrupted", phase: "ready_for_human_review", question: "合成界面验证：收入增长是否转为现金？", research_as_of: "2026-09-02", report_version: 2,
       report, report_review: { summary: "合成审阅示例，未启动研究。", findings: [], unresolved_data_requests: [] }, can_respond: true,
-      runs: [], conversation: [{ role: "user", content: "请解释现金兑现。" }, { role: "assistant", content: "已修订解释，请查看右侧报告。", citations }], model_events: [] };
+      runs: [], conversation: [{ role: "user", content: "请解释现金兑现。" }, { role: "assistant", content: "已修订解释，请查看右侧报告。", citations }],
+      model_events: [
+        { kind: "model", event: "outcome", actor: "lead", call_id: "resumed-id", run_id: "first-run", total_tokens: 82, status: "provider_output_truncated" },
+        { kind: "model", event: "outcome", actor: "lead", call_id: "resumed-id", run_id: "second-run", total_tokens: 58, status: "success" },
+      ] };
     let selectedSource = "";
     await page.route("**/api/v1/**", async route => {
       const url = new URL(route.request().url());
@@ -29,6 +33,10 @@ for (const width of [1440, 1024, 390]) {
     });
     await page.goto(`/workspace/session?thread=${id}`);
     await expect(page.getByRole("heading", { name: "当前研究报告" })).toBeVisible();
+    await page.getByRole("button", { name: "审查、来源与运行", exact: true }).click();
+    await page.getByRole("button", { name: "运行", exact: true }).click();
+    await expect(page.getByText(/活动视图当前载入 2 次模型结果记录、140 个已报告 tokens/)).toBeVisible();
+    await page.getByRole("button", { name: "关闭详情", exact: true }).click();
     if (width >= 1280) await expect(page.getByLabel("研究对话")).toBeVisible();
     await page.getByLabel("阅读报告版本").selectOption(checkpoint);
     await expect(page.getByRole("heading", { name: "历史报告标题" })).toBeVisible();

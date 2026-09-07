@@ -363,7 +363,7 @@ def report_citations(report, artifacts, messages=None, *, prior_citations=None):
         raise ValueError(f"report_citation_ids_missing_or_unknown:{missing}")
     # Mechanical resolution is not semantic entailment. The verifier evaluates
     # whether each material sentence actually follows from these claims/sources.
-    return {ref: {"claim": claims[ref], "sources": [artifacts.read_source(s, max_characters=100)
+    return {ref: {"claim": claims[ref], "sources": [artifacts.citation_source(s)
         for s in claims[ref]["source_ids"]]} for ref in refs}
 
 

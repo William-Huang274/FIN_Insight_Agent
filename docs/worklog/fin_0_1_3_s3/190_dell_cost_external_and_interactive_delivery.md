@@ -883,3 +883,14 @@ PR首次CI [34142238932](https://github.com/William-Huang274/FIN_Insight_Agent/a
 剩余仍归原清单：报告重要判断及P02同步、完整交互/版本差异/费用、真实上传视觉消费、最终图表/引用/四格式、独立完整启动、公开范围/历史审核、演示与少量新场景。既有paid均已结束，本轮0模型；不把这次排序和展示切片称为原五项＋新增全部完成，不将未完成候选包装成可投递验收通过。
 
 首页最终结果：fresh CI [34142597329](https://github.com/William-Huang274/FIN_Insight_Agent/actions/runs/34142597329) 的编译/Python测试/浏览器build与测试均成功，PR #2以精确head fec7dad0经squash合并为main的114a935f0e15fd3c4813e15795ef95e03eba9861。默认分支中英文README已通过GitHub接口读回确认新入口。保留现有About描述，增加六个实际使用的主题financial-research/multi-agent/langgraph/mcp/rag/python并读回；未改变可见性或发布报告。文档20相对链接、两账本454/203条JSON、diff及变动秘密模式检查通过；资格/PR临时工作树和合成文件留在D:/temp作为可检查证据，不入Git。
+
+
+### 2026-09-08 步骤二开始：责任修订与计算引用交付
+
+Owner 明确授权连续完成原五项及新增需求，Hermes 评估前停止供其审阅；GitHub 最终整理 main/历史版本分支、统一版本与迭代详情及正式文档。当前仍 FIN 0.1.3，不把报告修订当产品发布。
+
+工程增量：原引用绑定只保留100字符预览，CALC公式与操作数在导出时丢失；现在保存结构化计算来源，导出明确公式、操作数、期间/来源及非权威边界，无来源边界主张不再生成空引用条目。复用已有Markdown/Office导出，无新解析平台。68项定向回归通过，另1项计算引用不可变性检查通过。真实v3机械投影保留42引用、25计算绑定、3图及原文，0模型；证据 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step2_citation_delivery_a1/receipt.json`，不代表金融内容通过。
+
+研究资格：宿主20项主张/20条算术开发核查已保存；P01利润排他归因及P02相当部分/非泡沫/积压完全闭合需责任修订，净资本开支口径经官方FCF附注确认正确，不误改。官方Q2电话会PDF已读取。余额操作数及其他跨公司数值仍需核查，非全报告验收或盲测。
+
+新有限原生修订批次上限12元，角色有具体TokenBudgetBasis，未知用量/提交失败停止，无传输重试。A1隔离宿主未提供父checkpointer，在模型调用前失败，0元；保留result.json。A2复用已安装LangGraph AsyncSqliteSaver和原有convergence图，P01/P02→Lead→独立复核→Writer→报告复核，进行中；不修改原v3，不重跑其他研究面。证据根 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step2_responsible_revision_a2/`。产品增量尚待真实修订、交互/上传/统一导出/独立启动和新案例完成；本节不是收口。

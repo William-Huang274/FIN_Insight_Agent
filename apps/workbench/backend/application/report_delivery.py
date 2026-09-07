@@ -16,12 +16,28 @@ def readable_report(report):
     references = []
     for number, (key, citation) in enumerate(report.get("citations", {}).items(), 1):
         text = text.replace("[" + key + "]", f"[{number}]")
-        titles, urls = [], []
+        titles, urls, calculations = [], [], []
         for source in citation.get("sources", []):
-            if source.get("title"):
-                titles.append(source["title"])
+            titles.append(source.get("title") or source.get("source_id") or "已绑定来源")
             urls.extend(([source["source_url"]] if source.get("source_url") else []) + list(source.get("citation_urls") or []))
-        references.append(f"[{number}] " + "；".join(dict.fromkeys(titles)) + "\n" + "\n".join(dict.fromkeys(urls)))
+            if calculation := source.get("calculation"):
+                calculations.append(f"计算：{calculation['expression']} = {calculation['value_decimal']} {calculation['result_unit']}")
+                for name, operand in calculation["operands"].items():
+                    provenance = operand.get("source_provenance", {})
+                    origin = operand.get("source_id") or "显式假设"
+                    details = "；".join(str(provenance[k]) for k in ("title", "fiscal_period", "period_end", "source_reporting_period_end", "unit") if provenance.get(k))
+                    calculations.append(f"{name} = {operand['value_decimal']}；{origin}" + (f"；{details}" if details else ""))
+                    if operand.get("assumption_note"):
+                        calculations.append("假设：" + operand["assumption_note"])
+                    urls.extend(([provenance["source_url"]] if provenance.get("source_url") else []) + list(provenance.get("citation_urls") or []))
+                calculations.append("计算说明：" + calculation.get("rationale", "未记录"))
+                for field, label in (("arithmetic_verified", "算术校验"), ("financial_semantics_verified", "金融口径校验")):
+                    calculations.append(label + "：" + {True: "已通过", False: "未通过"}.get(calculation.get(field), "未记录"))
+                calculations.append("来源绑定计算，非发行人直接披露；算术验证不等于金融口径验证。")
+        if not titles:
+            claim = citation.get("claim", {})
+            titles.append("研究边界说明（未绑定外部来源）：" + (claim.get("statement") or key))
+        references.append(f"[{number}] " + "；".join(dict.fromkeys(titles)) + "\n" + "\n".join(calculations + list(dict.fromkeys(urls))))
     def source_urls(value):
         if isinstance(value, dict):
             for key, item in value.items():

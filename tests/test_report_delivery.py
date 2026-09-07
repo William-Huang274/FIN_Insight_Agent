@@ -3,7 +3,7 @@ import zipfile
 
 import pytest
 
-from apps.workbench.backend.application.report_delivery import export_report, chart_png, markdown_blocks
+from apps.workbench.backend.application.report_delivery import export_report, chart_png, markdown_blocks, readable_report
 from sec_agent.research_foundation.report_charts import ReportChart, bind_report_charts
 
 
@@ -46,6 +46,30 @@ def test_four_formats_keep_sources_and_data(format):
 def test_plot_is_png_and_markdown_tables_use_mature_parser():
     assert chart_png(sample()["charts"][0]).startswith(b"\x89PNG")
     assert any(kind == "table" for kind, _ in markdown_blocks(sample()["narrative_markdown"]))
+
+
+def test_calculation_and_unsourced_boundary_remain_readable_in_delivery():
+    from copy import deepcopy
+    report = sample()
+    report["narrative_markdown"] += "隐含下半年要求。[P01:C2] 披露边界。[P01:C3]"
+    report["citations"].update({
+        "P01:C2": {"claim": {"kind": "calculation"}, "sources": [{"source_id": "P01:S2", "calculation": {
+            "expression": "annual - first_half", "value_decimal": "120", "result_unit": "USD million",
+            "rationale": "达到全年指引所需，不是预测。", "operands": {
+                "annual": {"value_decimal": "200", "source_id": "P01:S3", "source_provenance": {
+                    "title": "全年指引", "fiscal_period": "FY2027", "source_url": "https://example.com/guidance"}},
+                "first_half": {"value_decimal": "80", "source_id": "P01:S4", "source_provenance": {
+                    "title": "半年实际", "fiscal_period": "FY2027_H1", "source_url": "https://example.com/actual"}}}}}]},
+        "P01:C3": {"claim": {"kind": "boundary", "statement": "未取得客户利用率数据。"}, "sources": []}})
+    original = deepcopy(report)
+    text, references = readable_report(report)
+    joined = "\n".join(references)
+    for expected in ("annual - first_half = 120 USD million", "annual = 200", "first_half = 80",
+                     "FY2027_H1", "https://example.com/actual", "https://example.com/guidance",
+                     "不是预测", "算术验证不等于金融口径验证", "未绑定外部来源", "未取得客户利用率数据"):
+        assert expected in joined
+    assert "[P01:C2]" not in text
+    assert report == original
 
 
 def test_chart_cannot_invent_values_or_bind_search_preview():

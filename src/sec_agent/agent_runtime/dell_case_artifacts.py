@@ -139,6 +139,14 @@ class DellCaseArtifacts:
                 result._papers[paper_id]["sources"][ref] = self._source_summary(ref, source)
         return result
 
+    def citation_source(self, source_id):
+        """Persist arithmetic provenance separately from the short text preview."""
+        source = self.read_source(source_id, max_characters=100)
+        item = self.source_item(source_id)
+        if item["result_state"] == "non_authoritative_metric":
+            source["calculation"] = deepcopy(item)
+        return source
+
     def read_source(self, source_id, offset=0, max_characters=16000):
         if type(offset) is not int or offset < 0 or type(max_characters) is not int or not 100 <= max_characters <= 50000:
             raise ValueError("source_window_invalid")

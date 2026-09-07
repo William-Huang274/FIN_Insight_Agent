@@ -44,6 +44,20 @@ def test_calculator_non_s2_source_literal_and_assumption_are_explicit():
     assert result["operands"]["scale"]["authority"] == "assumption"
 
 
+def test_citation_keeps_calculation_provenance_beyond_its_text_preview(real_bundle):
+    artifacts = DellCaseArtifacts(real_bundle["papers"])
+    result = _calculate("a * scale", {"a": {"source_id": "text", "literal": "1,234.50", "quote": "revenue was 1,234.50 dollars"},
+        "scale": {"literal": "0.1", "assumption_note": "Illustrative scenario, not issuer guidance"}})
+    # Use the same case-scoped observation collection as the calculator callback.
+    artifacts._sources[result["calculation_id"]] = deepcopy(result)
+    cited = artifacts.citation_source(result["calculation_id"])
+    assert len(cited["text"]) == 100 and cited["next_offset"] == 100
+    assert cited["calculation"]["operands"]["scale"]["assumption_note"] == "Illustrative scenario, not issuer guidance"
+    assert cited["calculation"]["operands"]["a"]["quote"] == "revenue was 1,234.50 dollars"
+    cited["calculation"]["operands"]["scale"]["value_decimal"] = "99"
+    assert artifacts.source_item(result["calculation_id"]) == result
+
+
 def test_calculator_reuses_saved_calculation_without_promoting_or_copying_parent_tree():
     parent = _calculate()
     original = deepcopy(parent)

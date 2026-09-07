@@ -6,7 +6,7 @@
 
 ## 当前续接入口（2026-09-07，任务 01a07afa-cf5a-7c52-b135-ccd9e49c14bf）
 
-2026-09-07 真实验证授权更新：Owner 已明确允许修复后的长会话真实模型调用。仅执行新 `20260907_context_postfix_summary_a1` 的 summary_and_edit，原 40 消息历史/快照不改；助手限定预算 5 元、最多 1 Flash 摘要＋4 Pro 接续、12 工具动作，预计 1–3 元。新单分支入口、15 定向测试及原生四回读/提交零模型准备均通过。下一直接按新入口执行、核模型答复与费用；原摘要配置 disabled、v3 needs_revision、旧批结束、步骤二未启动。若工具/会话中断，先读该目录 execution/result/调用账本判明是否已发出，不重发未知请求。详 S3/190 最后节；下文“后续须另获许可”已由本次明确授权在此窄范围内满足。
+2026-09-07 修后真实验证已收口：Owner 明确许可后的新 `20260907_context_postfix_summary_a1` 已完成，代码 `55619b57`；1 Flash 摘要＋3 Pro 接续，4 调用/263,171 tokens/估 1.710333 元，0 传输重试、0 未知用量、0 截断。模型自主四次历史 CALC 回读均成功，数字/期间与保留记录相符；第一次提交拒绝 9 个引用，最终删除方括号却保留数字断言，正式引用只剩 1 个 CALC，且仍把“未验证”写为“未通过”、误说必须生成新 ID。因此真实接续完成，但内容验收 HOLD；摘要仍 disabled、v3 needs_revision，不进入步骤二。LangSmith 4/4 与本地用量逐项一致，根 trace 闭合。该新批到此结束，不追加 paid。下一用保存反例核对历史窗口/可执行记录/正式引用的合同和反馈，不另造记忆或自然语言规则平台。证据 `Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260907_context_postfix_summary_a1/review-notes.md` 与 S3/190 文末；后续早期“未执行/只剩一次验证”不代表当前状态。
 
 Owner 因旧任务“R14语义失败根因审计与续接”压缩失败要求接手。任务接口返回的近期记录仍停在 9 月 5 日 C 盘清理/R2，而 D 盘源码和 Project OS 已推进至 9 月 7 日；旧任务接口不是当前执行依据。本次以 `D:/FIN_Insight_Agent` 的 clean/synced `6c3889c71dade8735b143eff418617fc775740dc` 接续，失效 C 盘 worktree 和 Codex live 数据未操作。
 

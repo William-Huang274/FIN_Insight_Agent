@@ -226,6 +226,16 @@ class ReportSessionService:
                 return list(rows.values())
             offset += len(page)
 
+    async def report_history(self, thread_id, before=None):
+        if before is None:
+            return await self.sdk.threads.get_history(str(thread_id), limit=10)
+        # API 0.13.3 POST rejects SDK string cursors and fails on its own
+        # CheckpointConfig shape. Its documented GET cursor route works.
+        response = await self.http.get(f"/threads/{thread_id}/history",
+            params={"limit": 10, "before": str(before)})
+        response.raise_for_status()
+        return response.json()
+
 
 def report_snapshot(state):
     """Only completed human-review snapshots, not intermediate Writer output."""
@@ -262,7 +272,7 @@ def build_report_sessions_router(service):
     @router.get("/research-sessions/{thread_id}/report-versions")
     async def report_versions(thread_id: UUID, before: UUID | None = None):
         await service.owned_thread(thread_id)
-        history = await service.sdk.threads.get_history(str(thread_id), limit=10, before=str(before) if before else None)
+        history = await service.report_history(thread_id, before)
         versions = {}
         for state in history:
             if not report_snapshot(state):

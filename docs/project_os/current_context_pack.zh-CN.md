@@ -1,38 +1,33 @@
 # FIN Insight 当前上下文包
 
 更新时间：2026-09-08
-当前产品版本：FIN 0.1.3
-当前工作分支：`codex/fin013-dell-s1-s2-product-bridge`（S0 权威基线仍为远端 `main`）
+当前产品版本：FIN 0.1.3；当前报告版本：Dell v4，ready_for_human_review，Owner 未接受。
+公开主线入口：main；本轮成果与检查见 [PR #3](https://github.com/William-Huang274/FIN_Insight_Agent/pull/3)。本地 codex/fin013-dell-s1-s2-product-bridge 与恢复引用保留，不代表仍需另做一轮规划。
 
-## 当前交付顺序（2026-09-08 Owner 更新）
+## 当前交付与停止点
 
-Owner 已明确授权开始连续实施，并要求在 Hermes 评估之前停下，提交原五项及新增需求的逐项完成证据供审阅。最终 GitHub 收口须同步正式中英文 README、活动文档、产品版本号与版本迭代详情；先保全并合并有效工作，再清理可恢复的远端 `codex/*` 分支，仅保留 `main` 和有实际版本意义的历史分支。当前工作分支暂留；不把文档整理或研究报告修订误作产品版本升级。本次已进入步骤二源文与主张核查，尚未完成产品验收。
+Owner 授权原五项＋新增需求连续实施、收齐 GitHub 展示后，**在任何 Hermes 评估之前停下供逐项审阅**。不重开步骤一、不迁移 runtime、不把文档/报告修订当产品升级。最新逐项完成证据见 [Owner 审阅清单](../product/FIN_0_1_3_OWNER_REVIEW_20260908.zh-CN.md)，以下旧时点仅供历史追溯。
 
-先完成原五项及新增需求、收齐 GitHub 展示并用于投递；Hermes 接入后置，不是本轮依赖。唯一实施清单仍在完整纵切详设 §0，七段编号与需求不删。步骤一已经收口，先沿原步骤二修报告/P02责任同步和关键判断/计算，再完成交互、真实上传视觉、统一交付与既定小范围案例；展示准备可穿插。不要再把“第一步规划”或 Hermes 选型变成前置工作。
+产品增量：新题目九研究面、十专家任务（含失败与替代）、责任修订与综合形成 v4；真实上传 PDF/图片、任务 RAG、视觉缓存、来源与 CALC/操作数回读、短/深问和非事实本地 SQL gap 回执、四格式交付已实际验证。自动摘要 HOLD、默认 disabled；没有同质量普遍省费率。六组方法实际消费不齐，保留 retain/adapt/hold 与未消费范围。
 
-GitHub 已实查为 public。默认首页曾把当前动态研究写为未来能力，现已通过PR #2修正中英文版本入口，CI编译/测试/浏览器步骤全过后合并为114a935f并读回确认。仅首页与两处既有路由测试兼容进入main，没有整体晋升开发运行时代码。独立源码资格使用9e363302，17项上传/导出检查与四格式合成导出成功，0模型；复用本机依赖，不能外推全新安装或新研究无旧bundle启动已通过。公开历史/资料、完整展示及原产品验收仍待完成。
+研究证据：v4 10136字符/54引用/3图，20重要判断维度＋21 CALC＋10附加算术核查，31算术一致；PDF15/Word20/PPT44页全部渲染。外部修订A2/A4/A5 6.7294149元单列。NVIDIA A1/A2 0.126237元，Micron深问0.746894元，原输出单位/桥接/过度推断的宿主纠正单独保存，非两个独立全案。八不同短问 A4/A5/A6 最终8成功＋2付费失败，49调用/1106250tokens/0.405444元，0未知，17来源全部200；引用表达、百分点解释与非披露穷尽措辞仍有审阅意见，不重复付费追绿。
 
-最新工程资格补充：完整累计与旧跨run调用ID去重已修，45 Python＋3宽度浏览器＋TS/Vite通过；真实11runs/286记录/285usage/17506702tokens/28.255109元，1未知保留，模型耗时13237.887秒。最终原生v4 PDF15/Word20/PPT44页渲染已检查，PPT来源在讲者备注；Owner仍待审。默认旧E2E启动缺S1私有readiness，隔离mock UI通过不替代其修复。详情S3/190末节。
+工程增量：原生同会话 CALC 与上一答案操作数投影、typed_gap 非事实引用已修。真实录屏发现 API0.13.3 POST历史分页拒绝SDK字符串、对象形状又触发configurable错误；a9eefc1c采用其公开GET游标接口，21定向检查通过，实际旧v3→v4差异可读，0模型。a9eefc1c公开CI34161503185为3063passed/815skipped，6浏览器＋容器＋供应链通过。私有历史数据/授权ID漂移未关闭，不能称全部历史资格绿；最终文档提交的CI状态以PR为准。
 
-## 本次连续实施接续点（2026-09-08，进行中，非收口）
+真实服务：API18165/PG/Redis固定三容器健康；BFF8766 session89658/PID33360 已载分页修复，API无需重建。settings位于 Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/report-workbench-20260906-a1，fresh-only、无旧bundle挂载，原数据/历史保留。当前无paid运行，不自动追加新研究。
 
-**最新覆盖提示（2026-09-08 04:15，以下旧条目保留为历史）：** 当前已推送5b9e7685；PR #3整合运行时代码/双语README/CHANGELOG/架构/公开边界，main仍114a935f，尚未合并或清远端分支。原生v4 PDF15/Word20/PPT44页已完整渲染检查。NVIDIA短问A1/A2合计0.126237元，Micron有界长问A1为0.746894元；来源可回读但单位/增长率/推断等宿主意见仍保留，不宣称独立全案成功。八短问批次D:/temp/fin-step7-short-coverage-20260908-a4已停止：第一题成功2调用0.015132元，第二题10调用0.075703元失败，无未知费用，后六题未执行。当前无paid运行，不自动续批。第二题根因：先前回答的CALC可读，但引用投影没带入完整已保存操作数；正在修复原生conversation引用回读，不放松来源校验。
+当前会话01a077d8-a47c-7280-98f5-3df94b219488：28 native runs、359请求/358已知、19477481tokens、29.533684元已知；1未知用量/未计价、1缺审计run、1缓存未知。模型耗时求和13720.9秒≠墙钟。外部修订费用不混入原生累计。
 
-**工程/收口阻塞：** 全新锁定依赖安装已完成；独立源码23项上传/导出/无私有资料启动测试通过。PR最新CI 34157678755仍281failed/3067passed/436skipped/90errors：主要私有历史挂载、Windows专属事务、浅Git历史、CRLF绑定；不能称整仓全绿。默认pytest通过标准marker隔离私有数据重放，显式--run-private-data运行原挂载；已识别旧本机全量92失败日志仍保留，部分旧私有授权与当前数据ID漂移未解决。容器与供应链CI已过。当前正在标注准确依赖、修复跨平台字节与历史fixture，不是产品验收进度。
+## Owner 文件与保全
 
-**环境事故与保全：** Z盘满导致Docker构建/IPC失败，未重置Docker或删卷。旧IPC目录在C:/Users/hht13/AppData/Local保留stale目录；仅清理31.98GB可重建buildx缓存，API/PG/Redis三容器恢复，数据与原run仍在。A4修订目录原Z路径已用junction指向D:/temp/fin-preserved-qualification-20260908/，SQLite迁移前后SHA一致。大产物写D盘。完整Git bundle因磁盘不足失败；有效14.8MB增量备份D:/temp/fin-github-remote-before-cleanup-20260908-a2.bundle依赖已有main历史。历史敏感模式扫描17354text blobs，唯一命中为合成测试值，8个binary/large未扫描；不宣称安全全面保证。远端分支尚未删，先最终main保全。
-
-- 目标/停止点：原五项＋新增需求、GitHub main/正式双语文档/版本/历史分支完成后，在任何Hermes评估之前停止供Owner逐项审阅。持续实施，不逐补丁审批；未评估Hermes，不擅自删远端未保全分支。
-- Git：当前同一codex/fin013-dell-s1-s2-product-bridge；31d89059已提交并推送（09f119da历史报告/新启动；a5524f63边界来源合同；c1664bbb计算导出）。未提交：report_sessions.py全原生运行分页累计/缓存/耗时、ResearchSession.tsx及TS类型、两会话测试，以及本pack。45项会话测试、TS和Vite生产构建已通过（660.12KB主包，常规体积提醒），尚待真实BFF读回/浏览器/日志提交。
-- 报告当前已是原真实会话v4，ready_for_human_review，未Owner accept。线程01a077d8-a47c-7280-98f5-3df94b219488。v1–v3/失败保留；原生导入run 01a07d1b-8db5-7281-bcc8-34f55e6d79e5只入审阅，宿主history行漏correction_round致BFF500后，用新零模型run 01a07d1c-c436-7541-9776-f0cc182a9371修元数据（同v4，正文没改）。此故障记录不抹去。
-- 步骤二：A2 P01完成/P02拒提交后限额停，1.4536647元；A4修好P02，后综合/架构修订/Writer/终审，32调用4.4263212元，needs_revision；A5仅Writer3＋Verifier3，0.849429元，ready_for_human_review含两建议。三者合计6.7294149元、全用量已知，原12元批次结束，不按余额追加。原生SQLite/MCP/create_agent/LangSmith；0传输重试，非一次自主成功。
-- 最终宿主A7：标题/图注/开头目标/结构性现金/过度组合归因/旧GPU资料时点精确修正；P04:C12经现有validated_revision同步来源日期2025-08-27/11-19，只作历史背景。10136字符/54引用/3图。20重要判断维度＋21原CALC＋10正文附加算术核查，31算术一致，权威/语义验证原标记不改。目录 Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step2_host_reviewed_delivery_a7/（candidate.private.json、reviewed-report.private.json、host-edits.private.json、financial-review.private.json、四格式、receipt.json）。A6原投影/旧错误PPT不覆盖。
-- 原生v4导出：Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step5_native_candidate_v4/，四个Dell-growth-quality-v4.*、live-snapshot.private.json、native-versions.json、native-delivery-receipt.json。外部修订6.7294149元在本版审查摘要/版本原因另列，不混成原生run费用；导入不冒充模型作者/Owner验收。
-- 六组方法实际消费已全查A2/A4/A5的124/269/62 checkpoints：A4 Lead读lead内容，P08读industry_product/finance；其他部分仅目录、A5无方法调用。取舍lead adapt、finance/industry retain、writer/verifier adapt但未消费正文、counter hold扩展（本批没重跑）。S3/190最新节有完整证据/边界，不能按目录证明六组有效。
-- 上传实际资格：D:/temp/fin-step4-upload-20260908-a1/及a2/。官方Dell九页PDF700288B及第8页PNG287496B已入上述任务。文档ID UPLOAD::a586a123bf024591b544b7f70d1cb5c9；图ID UPLOAD::79c0a9f090784a769a3bbc581c3803d7。A1 run01a07d0a-0794-7a41-9d40-d8e74534e63e：10Flash＋1vision/268232tokens/0.094485元，算参反复错误限额失败；原生放弃失败追问0调用返回。只补现有计算schema说明，不放松校验。A2 run01a07d0f-2103-7973-93ba-d837ab9757e3：10Flash/177931tokens/0.067910元，0新vision（缓存），保存答案和6可打开引用/3CALC。图片错误5329vs5929被答案指出并用PDF纠正；答复一处FCF负调整括号措辞仍advisory，不称OCR全面正确。合计0.162395元，失败/修后属于同开发问题，不冒充两独立case。
-- 工程验证：vision缺缓存字段保留None；14上传/视觉＋36计算引用定向通过。PPTX默认负轴ID违反OOXML unsignedInt，薄映射axId/crossAx，数据/编辑性不变；9导出检查过。修后artifact-tool与LibreOffice均可渲染。A6 PDF15/DOCX20/PPT43页已检查，A7原生v4最终渲染在D:/temp/fin-step5-render-native-v4/；PDF15/Word已生成、PPT渲染session14872待结果及受影响页目检。原生四格式有导出专属审阅标识，与离线A7二进制hash不要求相同；正文/图/引用须一致。
-- 当前服务：API18165/PG/Redis固定finsight-dell-report-workbench三容器运行；BFF8766 session25004/PID14116已加载完整累计与float耗时修复（无需重建API）。API镜像aac1d2bbd8371a55b7fcb372bf62a2c581d91ac808927e7410d25fe9f4fc8566含calculator参数说明/vision修复。无paid在跑。当前stable settings目录 Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/report-workbench-20260906-a1/已临时fresh-only，只注册research_session、无旧bundle/report挂载，原卷/源数据/上传/调用目录保留。BFF/api/health legacy_report_loaded=false；真实上传问答已在此栈完成。旧host/container-settings备份在20260908_fresh_startup_a2/*.original.private；旧dell_report_session历史未删，但执行需恢复兼容配置。完整新研究仍需数据/provider，不能说全新依赖安装或无私有数据。
-- 剩余：先完成累计用量UI定向验证与提交、v4最终渲染/实际UI/源与导出一致、意见保存/送达/应用和停止恢复等逐项检查；然后既定1–2新短/有界长场景、独立源码完整启动与可复现条件、GitHub main全展示/版本/Changelog/敏感范围和保全后分支清理、简历演示讲解。原生新研究默认Dell profile，不冒充任意公司全案已验证。Hermes前停，当前还没完成整包。
+- v4四格式：Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/20260908_step5_native_candidate_v4/Dell-growth-quality-v4.*
+- 实际只读视频：D:/temp/fin-owner-demo-20260908-a4/FinSight-v4-read-only-demo.webm；a1/a2失败录制保留，a3完整录制但diff截图过早，a4等待实际diff显示；未公开完整报告视频。
+- 八短问：D:/temp/fin-step7-short-coverage-review-20260908-a1/summary.json、host-review.zh-CN.md、原answers/sources.private.json；A4/A5/A6原run记录保留。
+- NVIDIA和Micron宿主更正分别在20260908_step7_nvda_short_a2、20260908_step7_mu_deep_a1的host-review.zh-CN.md；不覆盖模型原文。
+- 全新锁定依赖已安装，独立源码23项检查过。当前源码8631文件敏感模式扫描0命中；历史17354 text blobs仅合成测试值命中，8binary/large不在该文本扫描覆盖内，非全面安全保证。
+- GitHub现public。本轮收口为main及history/fin-0.1.0-resume-demo、history/fin-0.1.1-internal-honest-block；最终合并和清理结果以PR#3/远端refs读回为准。有效增量backup D:/temp/fin-github-remote-before-cleanup-20260908-a2.bundle（14.8MB）已verify，依赖main114a935f/963eed99已有历史；portfolio分支fec7dad0是非祖先例外，已备份且保留本地ref，不能无保全删除。
+- Z盘满事故保留旧IPC目录；仅清可重建Docker buildx缓存，没重置/删卷。A4资格移至D:/temp/fin-preserved-qualification-20260908/并保留Z junction，SQLite SHA相同。大产物继续写D。
+- 本轮停止点：Owner审阅清单、报告v4、实际工作台与视频；不再发起模型任务或Hermes评估。GitHub整理不等于Owner产品接受。完整事实见S3/190末节。
 
 ## 已完成的步骤一收口（2026-09-07，任务 01a07afa-cf5a-7c52-b135-ccd9e49c14bf）
 

@@ -961,3 +961,17 @@ Owner 明确授权连续完成原五项及新增需求，Hermes 评估前停止�
 根因：SQL已正确返回typed_gap，但统一答案校验只接受事实来源，合理的本地无法回答被拒。现在将原生成功SQL的MCPFACT请求ID投影成query_gap_receipt，可供回答引用并查看查询条件、期间与原gap码；显式非事实、非NumericFact、不能作为计算输入，也不证明发行人未披露或穷尽公开来源。拒绝失败工具/模型文字/异任务ID。沿用现有typed_gap和引用展示，没有新增自然语言判定器、记忆服务或运行引擎。24项原生/接口检查通过、4私有跳过；1440/1024/390三个浏览器检查与TS/Vite通过。此时新gap镜像/真实复测待执行。
 
 公开CI修正过程保留：34159034906为64failed/3056passed/755skipped；34159615517为46failed/3059passed/770skipped，主要剩余私有captured requests及字节绑定。完整Git历史已修复历史blob/Windows条件问题；根据原登记摘要确认CRLF资产，不改变内容或旧receipt。当前提交5e821183对应CI34159928850仍在检查。正式双语演示/工程故事见docs/public/demo-and-engineering.*，它是可操作路线而不是已录制视频。
+
+### 2026-09-08：八短问资格、真实版本分页与交付审阅包
+
+产品/研究证据：A6在gap回执修复镜像上完成五题，22调用/576741tokens/0.222054元；与A4/A5合并为八不同短题8成功＋2失败、49调用/1106250tokens/0.405444元、0未知、17来源全部200。HPE typed_gap能以MCPFACT非事实回执引用；缺汇率合理不换算，PDF/图片不同表格不冒充数据冲突，财年跨公司按实际期间解释。旧CALC已真实回读并保存，但CALCID纯文本、百分点解释和客户明细答复的内部claim/穷尽性措辞仍有意见；不以来源200证明所有结论。原始结果/宿主审阅：D:/temp/fin-step7-short-coverage-review-20260908-a1/。NVIDIA A2宿主单位更正亦单独保存，Micron桥接/推断意见保留，不覆盖原回答。
+
+工程增量：0f70507d的完整公开CI34160358591为3062passed/815skipped/23warnings，6浏览器检查通过；34160358592容器及供应链亦通过。前序34159928850的4失败、34160164583的2失败均保留；最终修正准确私有fixture边界而非弱化生产验证器。私有数据opt-in仍有旧ID/授权漂移，不称私有全量回放绿。
+
+真实录制A1/A2暴露历史第二页502：SDK向API0.13.3 POST传string收到422，CheckpointConfig对象又触发内部KeyError configurable。同服务OpenAPI提供GET /threads/{id}/history?before=...，直接只读实查200且游标正确。a9eefc1c以现有httpx调用该公开GET分页，保持先校验任务归属，21会话/版本检查通过；补丁第一次测试因编辑缩进错而collection失败，修好后重测通过，未部署错误稿。BFF已重启，API/PG/Redis和历史无需重建，0新模型。
+
+实际只读演示A3完成；宿主发现diff截图在读取中，A4另等实际v3→v4差异显示后录制，原A1/A2失败及A3保留。最终D:/temp/fin-owner-demo-20260908-a4/FinSight-v4-read-only-demo.webm，含当前报告、计算来源、旧版差异、费用和图表；完整视频供Owner审阅未上传GitHub。费用读回D:/temp/fin-owner-demo-20260908-a3/cumulative-usage.json：28原生runs/359记录/358usage/19477481tokens/29.533684元已知，1未知、1未计价、1缺审计run、1缓存未知；模型耗时求和13720.9秒，外部修订6.7294149元另列。
+
+文档/治理：原五项与新增需求统一到docs/product/FIN_0_1_3_OWNER_REVIEW_20260908.zh-CN.md，详设原七步与产品计划原位更新当前性，正式双语README/CHANGELOG/架构/运行/成本/演示入口齐备。源码8631文件敏感模式0命中，历史17354文本仅合成测试值、8binary/large未纳入文本扫描。PR#3等待最终提交CI、保全合并与远端分支收口；不是Owner验收，不发布新产品版本。
+
+剩余阻塞/停止：Owner需阅读v4、操作工作台及审阅新场景质量意见；本人面试讲解与报告/视频外部分享由Owner选择。私有历史资格漂移仍列限制。Hermes没有评估，完成GitHub读回即停于本轮审阅点。

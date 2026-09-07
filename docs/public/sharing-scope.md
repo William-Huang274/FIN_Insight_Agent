@@ -32,6 +32,7 @@ No repository-wide open-source license has been selected. Dependency licenses do
 | 真实PDF/图片问答 / Actual PDF and image Q&A | A1计算参数限额失败；A2保存答案、6来源可读，复用视觉缓存；识别错误由PDF纠正，仍有措辞限制 / Failure retained; cached vision and a corrected OCR value | 0.162395 |
 | NVIDIA短问答与修订 / NVIDIA short Q&A and correction | 13调用、269,970 tokens；表格取数可追溯，两次输出分别有单位错误；旧CALC回读工程问题已修 / Unit errors retained, saved-CALC retrieval repaired | 0.126237 |
 | Micron有界深问 / Micron bounded deep Q&A | 11调用、594,559 tokens、19来源可读；主要取数/算术一致，但桥接与推断需宿主更正 / Source access and arithmetic inspected; semantic corrections required | 0.746894 |
+| 八不同短问 / Eight distinct short questions | 8成功+2失败run、49调用、1,106,250 tokens、17来源全部可回读；百分点解释、部分引用和边界措辞仍需审阅 / Eight saved answers, two failures retained; semantic and citation caveats remain | 0.405444 |
 
 这不是全部历史账单，不将不同时期开发批次相加冒充一轮研究成本。单价按调用时公开价格估算，账单为最终依据；未知用量保留，缓存缺项不记零。
 
@@ -42,6 +43,10 @@ This is not the complete historical invoice. Separate development batches are no
 Dell v4 has 54 citations and three charts. Host inspection covered twenty material-judgment dimensions and 31 arithmetic checks; arithmetic consistency does not establish financial validity. Native exports were rendered as PDF (15 pages), Word (20 pages) and PowerPoint (44 slides), with detailed PPT sources in speaker notes. Earlier reports and failures remain available; v4 is not Owner acceptance.
 
 NVIDIA/Micron均为既有工作区内的新问题，不是两次独立全案或泛化benchmark。方法可供读取不等于模型实际消费，模型终审无重大意见不等于百分百正确。自动摘要保持关闭；没有承诺普遍省费率、P95、生产高可用或多租户安全。
+
+最终本地只读演示已经录制，覆盖原生 v4、来源、历史版本差异、累计用量和图表，0模型调用。完整视频仍为Owner审阅材料；公开的[讲解路线](demo-and-engineering.zh-CN.md)不包含原始模型上下文。当前源码8,631文件敏感模式扫描无命中，历史17,354文本blob唯一命中为合成测试值；8个binary/large未纳入该文本扫描，不宣称全面安全或权利审计。
+
+A read-only local recording covers native v4, sources, historical diffs, cumulative usage and charts with no model calls. The full video remains Owner-review material. Pattern scanning found no hits in 8,631 current files; the sole hit among 17,354 historical text blobs was synthetic test data. Eight binary/large blobs were outside that text scan; this is not a comprehensive security or rights audit.
 
 NVIDIA/Micron are bounded new questions in an existing workspace, not independent full-company runs or a generalization benchmark. Available methods are not necessarily consumed. A clean model review is not perfect accuracy. Automatic summaries remain disabled; no general savings percentage, P95, production HA or multi-tenant security claim is made.
 

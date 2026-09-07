@@ -20,6 +20,8 @@ The current **Dell report v4** is a development-reviewed candidate awaiting Owne
 
 Automatic summarization remains **HOLD and disabled by default**. Tool-output clearing, artifact retrieval and local edits have bounded qualification evidence; no general equal-quality token-saving percentage has been established.
 
+The [itemized Owner review checklist (Chinese)](docs/product/FIN_0_1_3_OWNER_REVIEW_20260908.zh-CN.md) records the original five requirements, additions, costs and outstanding findings. A successful SQL query with no local facts can now expose a non-factual query receipt; this does not prove issuer non-disclosure. Work stops before Hermes evaluation.
+
 ## Runtime
 
 React → FastAPI BFF → LangGraph Agent Server → Lead/expert DAG → review/revision → report → human review and export. PostgreSQL and Redis provide native persistence/execution infrastructure; MCP exposes tools, and LangSmith plus local call records support inspection. FIN owns research contracts, source authority and thin adapters. See [architecture and tradeoffs](docs/public/architecture.en.md).

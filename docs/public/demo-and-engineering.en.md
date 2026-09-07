@@ -37,7 +37,10 @@ Provider caching, tool-output cleanup, summarization and checkpoint persistence 
 | NVIDIA short A1/A2 |13 /269970|0.126237|12 sources readable; unit wording still required correction.|
 | Micron bounded deep A1 |11 /594559|0.746894|19 sources readable,8 arithmetic results consistent; capex bridge and inference corrections, length overrun.|
 | Dell latest complete fiscal-year revenue lookup |2 /29337|0.015132|Saved answer with one SQL citation; report unchanged.|
+| Eight distinct short questions (including the revenue row) |49 /1106250|0.405444|Eight successful runs and two retained failures;17 sources readable, with remaining semantic/citation comments. Do not add the revenue row twice.|
 
 Estimates use reported usage and the corresponding public price; billing is authoritative. Keep failed repairs and later feature probes separate. These small development samples do not establish P95, generalized accuracy or multi-agent superiority.
+
+An actual read-only local recording covers v4 sources, the v3-to-v4 diff, cumulative usage and charts with zero model calls. It remains Owner-review material. Recording exposed a native history POST pagination incompatibility; the adapter now uses the same service's documented GET cursor endpoint without changing checkpoints.
 
 A truthful portfolio description can cover source-bound research, native persistence and human revisions, visible cost and multi-format delivery. Do not claim production HA, multi-tenancy, universal company coverage, unattended accuracy or an unproven savings percentage. SQL currently covers DELL/MU/NVDA and full research defaults to Dell. Report excerpts and raw model context require a separate sharing review.

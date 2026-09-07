@@ -2,7 +2,7 @@
 
 文档状态：`DESIGN_FROZEN_REVISION_1_2 / OWNER_ADOPT_LANGSMITH_AGENT_SERVER / A5_Q1_REVIEW_PASS_BOUNDED / A2_FAILED_IMMUTABLE / OWNER_FUNDED_AND_APPROVED_COST_EXTERNAL_UI_CORRECTION / FULL_PRODUCT_NOT_PASSED`
 
-当前执行入口（2026-09-07）：本文件 [原五项＋新增需求剩余工作](#remaining-work-20260907) 与 S3/190 文末。起始代码 `55d7326d7896aef7d3047fb6ebb0d5426b38102b`，起点核验分支 clean。新题目九研究面真实全链产出 v3（7,281字符/42引用/3图、四格式），但仍 needs_revision，P02底稿与正文推断不同步；原五项与新增要求并非全部验收，不能再概括成“前四包完成，只差P02”。6个native run/265请求/264已知/17,060,539tokens/估28.092715元（含失败、接续和修订），1次用量未知；LangSmith末run少190815tokens尚未对齐。当前没有自动摘要或旧工具结果清理；下一付费修订前先做成本/上下文/局部编辑的有界整改。此次授权是整理计划并咨询秋招任务，0新paid，不修改报告/运行代码、不重启服务、不改变公开范围。报告文件仍在 `D:/temp/finsight-dell-final-20260907-a1`。下方既往日期均历史，不把旧PID、正在运行或“下一只修P02”当当前事实。
+当前执行入口（2026-09-07）：本文件 [原五项＋新增需求剩余工作](#remaining-work-20260907) 与 S3/190 文末。Owner“开始下一步”后，已从 clean `9a52ca29965b9ea7a8926b03249d09a1cc1c4007` 实施步骤一的首个离线切片：父图Writer局部编辑、图表输入/输出适配与已保存CALC复用、具体来源错误反馈；LangChain原生旧工具结果编辑接入两条路径共用的DeepSeek SDK请求投影。264份既有请求离线测量有59份触发，SDK消息字符量减少16.696%，不是token/费用或研究质量改善证明；未部署、无摘要/新路由/新paid。v3仍needs_revision，P02及其余质量/前端/上传/公开任务未完成；6run/265请求/264已知/17,060,539tokens/估28.092715元不变，LangSmith少190815tokens仍待定位。报告仍在 `D:/temp/finsight-dell-final-20260907-a1`，未改原稿/SQL/运行证据或服务。下方既往日期均历史，不把旧PID或“仅规划/下一只修P02”当当前事实。
 
 2026-09-06 12:58Z 工作包2增量：专家现有原生工具循环已接通来源计算器，SQL查询不再硬编码只许DELL；当前SQL实际仍只有DELL/MU/NVDA，HPE返回真实本地缺数而非权限错误。新读原文PASSAGE/Reviewed及SQL观察可作为计算输入；CALC随底稿跨Agent保留，Lead/Writer/问答可以直接引用本任务观察到的PASSAGE/NUMFACT/CALC，原始来源/公式/非S2属性保留。195项定向检查和前端类型/build通过，含真实只读MCP、HPE第8页原文计算与来源分页/跨会话拒绝；0新DeepSeek/外部研究请求。代码本地验证不等于已部署或新Dell质量通过；接下来按原顺序做任务上传/解析/视觉、图表导出及必要资料补充，再部署/完整新题目验收，不新增执行协议。
 
@@ -24,7 +24,7 @@
 
 ### 2026-09-07 原五项＋新增需求：成本与上下文优先的剩余交付计划
 
-本节合并 Owner 最近三轮关于完成度、前端最终形态、token 费用和上下文的问答；替代此前“下一只修 P02”的不完整待办，保留原五项定义与新增需求，不新开 R/Phase、执行协议或架构重选。产品体验定义见 [当前产品目标](../../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)。本节是执行计划，不是实现或付费许可；本轮仅落文档、与“秋招投递计划”进行只读咨询。
+本节合并 Owner 最近三轮关于完成度、前端最终形态、token 费用和上下文的问答；替代此前“下一只修 P02”的不完整待办，保留原五项定义与新增需求，不新开 R/Phase、执行协议或架构重选。产品体验定义见 [当前产品目标](../../product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)。计划/秋招咨询已完成，Owner随后批准开始实施；以下勾选仅对应已经验证的子项，不代表整包或付费许可。
 
 #### 1. 已有成果、缺口与原要求对照
 
@@ -49,7 +49,7 @@
 - 本次265请求中264有usage：输入15,852,412、输出1,208,127；输入均值约60,047、最大200,851 tokens。输出内已报告reasoning771,246，不重复计费，也不把无字段计零。
 - 现有估费28.092715元：缓存输入1.959878、未缓存输入10.140831、输出15.992006；初稿19.930891、两轮后续修订8.161824。缓存命中84.92%不代表上下文已压缩；重复字符79.73%不是可省费用比例。归因是事后开发诊断，不是同质量因果对照。
 - 当前请求是角色prompt＋任务/目录/有关底稿＋本Agent历史＋工具schema。Lead/Specialist追加新增反馈但保留旧消息；审查/综合/Writer使用原生create_agent消息。跨Agent传产物与引用，不传完整私有对话。PG checkpoint保留状态、Redis服务运行、provider缓存降重复前缀计费，三者均不自动压缩。
-- 当前未接 `ContextEditingMiddleware` / `SummarizationMiddleware`。本机锁定LangChain1.4.0已包含两者；旧工具清理改本次请求副本，摘要会改活动消息状态。现有部分引用验证从messages观察工具结果，因此必须保留原始证据/审计并验证读取路径，不能删证据后放宽validator。
+- 规划起点未接工具清理/摘要；现已将LangChain1.4.0原生 `ClearToolUsesEdit` 接到共用SDK请求投影，而非复制两套middleware接线。旧工具清理只改本次请求副本；`SummarizationMiddleware`仍未接。引用验证继续读取完整messages及artifact，不能删证据后放宽validator；当前50k近似触发/保留最近6次工具结果配置仅经离线资格，未部署。
 - DeepSeek带tools的thinking历史要求完整回传所保留消息的reasoning_content，不能粗暴删字段；保持工具请求/结果配对与原生checkpoint兼容。归档私有推理不等于跨Agent公开或每次无界重发。
 - 官方依据（2026-09-07已核）：[LangChain上下文清理](https://docs.langchain.com/oss/python/langchain/middleware/built-in#context-editing)、[短期记忆/摘要](https://docs.langchain.com/oss/python/langchain/short-term-memory)、[DeepSeek thinking工具协议](https://api-docs.deepseek.com/guides/thinking_mode/)、[缓存](https://api-docs.deepseek.com/guides/kv_cache/)、[价格](https://api-docs.deepseek.com/zh-cn/quick_start/pricing/)。成熟组件安装不等于已完成本项目资格。
 
@@ -60,15 +60,18 @@
 **一、成本、局部编辑与上下文整改——下一次付费前的首要工作。**
 
 - [ ] 沿用 `scripts/qualification/dell_q1_specialist_paid_shadow/audit_token_cost.py` 与 `CaseModelAudit`，分研究/审查/综合/写作/修订/失败输出每请求用量和阶段总量；核价格/时段、1未知用量及LangSmith末run3条零usage。原记录只读，修SDK/投影不手改历史云trace，不另造追踪或计费后台。
-- [ ] 在 `dell_case_artifacts.py`、`dell_case_convergence_agent.py`、`research_session_runtime.py`、`research_convergence.py` 窄修：明确unknown source的具体ID与可行补读；已有CALC跨角色观察登记；chart读取/提交形状适配；让已有 `submit_report_edits` 覆盖需要的修订路径。保留动态父图及审查职责，不用删审查掩盖成本。
-- [ ] 针对一条引用/一句话修改验证：无关专家调用0、未修改段落由本地保留、错误不要求整稿重新提交；审查仍能按责任检查受影响主张。不是另造通用增量研究调度器。
-- [ ] 先在现有长历史做零模型请求投影和证据回读测试，再资格验证LangChain旧工具结果清理：仅削减送模型的可再读取正文，保留原始归档、近期工具对、定位和关键状态；必须覆盖Lead/Specialist旧adapter与create_agent后段两条实际路径，不能只给Writer接组件就称全链压缩。
+- [x] 窄修unknown source具体ID与补读提示、chart读取/提交形状及缩放保留、宿主已保存图表CALC的跨角色复用；让已有 `submit_report_edits` 覆盖原生父图Writer修订路径。动态父图/审查职责不变，伪造计算身份/权威或冲突记录仍拒绝。
+- [x] 原生父图脚本模型验证一句话修改：无关专家0重跑、Writer局部编辑1个模拟响应、未修改正文/引用保留，仍经终审。不是付费效果验证或通用增量研究调度器；综合及审查仍可能有相关调用。
+- [x] 共用SDK请求副本清理的离线资格：同步/异步实际SDK MockTransport、create_agent原生checkpoint及被清理SQL观察的引用校验均通过。264份已有历史中的59份可编辑；保留AI推理/工具配对和宿主原始证据。
+- [ ] 真实小批比较上述接缝与清理的语义保留/回读/总费用；非图表旧CALC首次新增正文引用或再次运算的完整迁移路径尚未单独资格，不从图表复用测试外推全部CALC路径已关闭。
 - [ ] 真正长程任务再试原生摘要：保留目标、已完成工作、重要数字/公式/期间/引用、冲突和下一步；摘要非Evidence。检查active state变化、source registry、原始记录和DeepSeek协议兼容。每步不摘要，不凭统一13次或窗口容量机械截断。
 - [ ] 基于实际工作量在既有节点配置验证用途路由：简单事实/材料选择/小改写可试Flash；复杂跨源判断留Pro或已验证配置。不开额外路由模型，不silent fallback，不把同题上下文/路由同时大改后归因单项收益。
 
 这一项的产出是：可用的局部编辑路径、原始证据不丢的有限工作上下文、明确的费用/故障归账，以及小范围真实对照结论。先处理不必要的整稿输出/重复审查和错误返工，再清理可回读旧工具结果、摘要真正长历史、验证用途路由；不是只裁输入。先选历史输入中一个长工具会话与一个局部修订场景；第一小批至多做1–2组有意义的开发对照，具体调用上限和估费在paid前根据输入重算并确认，不把它误写成1–2次HTTP调用。先本地检查，不能用昂贵全案发现已知协议错误。
 
 验收看同题/同资料/同质量检查下input/output、缓存、总费用、耗时、回读和遗漏；不预先承诺降费百分比或“每报告几毛钱”。清理导致证据丢失、非法工具历史、重要遗漏或重读/费用反升时保留失败，回滚该配置并就地诊断；不得一直跑到省钱。
+
+2026-09-07 首切片证据：`model_context.py`仅调用已安装LangChain编辑器，SDK出口是旧Lead/Specialist与新create_agent的共同点，因此不另建摘要/存储/调度层。清理白名单中的旧读取正文，保留参数、最近6个工具结果、原生status=error工具及方法/计算/提交等控制工具；50,000为软近似阈值，非DeepSeek精确token计数。`audit_token_cost.py --context-projection`对既有264请求离线投影得到45,860,118→38,203,239 SDK消息字符（含原样reasoning、不含未变tool schema），531次工具结果在请求中的重复出现被替换；原文件只读。产物 `D:/temp/fin_model_context_projection_20260907_a1.json` 无原文/推理正文，0provider调用。历史归因审计明确字符是SDK清理前归档，不再混称实际出站字数。原12–20元配置已标成历史估算，不能当新增预算；LangSmith3条缺失仍未修，当前本机SDK离线序列化能正确取出其190815tokens，不能凭此猜云端根因。摘要、用途路由、真实降本/质量对照和部署均待做。
 
 **二、关闭报告责任问题，并验证研究方法实际起作用。**
 

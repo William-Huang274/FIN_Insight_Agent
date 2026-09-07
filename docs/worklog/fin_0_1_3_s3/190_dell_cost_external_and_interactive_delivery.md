@@ -631,3 +631,24 @@ Owner在逐项完成度与成本/前端/上下文问答后，要求合并为下�
 咨询结论：现有成果应如实称真实前端/多角色研究/报告候选，不能仍说只有RAG原型，也不能说无辅助一次成功。优先局部修订一致性和成本、质量受约束的上下文对照、可理解交互、真实上传视觉、独立启动及长短案例；讲解和已有证据可提前准备，不以等待全部美化拖延投递准备，也不取消原需求。报告现金桥接/H2倒算有价值，但利润排他因果、DFS与AI归因、利润率目标限定及触发阈值依据需定向核查。主任务只读确认MD的[11]/[35]计算条目缺可读公式/输入、[38]为空、[P05]仍内部ID；并入交付投影检查，未断言所有格式/UI同样失败。本次是招聘/成果可读性点评，不构成金融质量PASS。
 
 文档验证：仅9个已说明docs路径；源计划/产品当前节2个本地链接可解析，3个变动JSONL共445/897/196行逐行有效，diff无空白错误，变动路径高熵key/私钥标记规则0命中（非全仓安全认证）。无运行代码改动，不跑全仓回归、不做paid试验或覆盖历史报告。源计划与产品目标原位更新、Project OS仅记录本轮事实；实施待办不因文档提交而完成。
+
+### 2026-09-07 02:57Z：成本/局部修订/上下文首个离线实现切片
+
+Owner“可以，开始下一步”后从clean `9a52ca29965b9ea7a8926b03249d09a1cc1c4007`开始，同分支实施已有剩余计划步骤一。不是文档-only，不重开Phase0–7或新runtime。0新DeepSeek；未重启Docker/API/BFF、未修改原报告/SQL/失败run/私有模型记录、未改变公开范围。报告v3/needs_revision、265请求/264已知/17,060,539tokens/估28.092715元保持原事实。
+
+工程改动：
+
+- 原生父图Writer修订也暴露已有`submit_report_edits`，不再仅老交互入口可用；`request_action=revise`检查不弱化，快问仍不得改报告。一句话修改的脚本模型原生图测试中，Writer一条edits提交，无关专家0重跑，未改正文/引用/图表本地保留，仍走报告终审；不能外推综合/审查零调用或实际语义正确。
+- `report_model_view`输出chart的合法提交形状并保留`scale_divisor`，显示数值分为只读`chart_display_values`。`chart_calculation_sources`仅复用宿主已有图表的完整CALC，不信任模型自填value/权威；错误身份、非权威标识篡改和同ID冲突仍拒绝。两个后段角色可跨轮提交同一图表，不必重算只为重新登记。`unknown_source_id`给具体ID及已有补读工具。非图表旧CALC首次新增正文引用/再次运算仍需单独验证，未称所有来源迁移问题消失。
+- `model_context.py`约35行薄适配，使用现锁定LangChain1.4.0的`ClearToolUsesEdit`，没有新依赖/清理算法/记忆存储。挂在两条路径共用的`ReasoningPreservingChatDeepSeek._get_request_payload`，覆盖旧Lead/Specialist和原生create_agent角色。配置50k软近似阈值、保留最近6个工具结果、只清理可再次读取的工具正文；保留tool参数和配对、AI reasoning、方法/计算/提交及原生error工具。编辑深复制后的请求，不修改host历史/ToolMessage artifact/PG checkpoint；原有引用验证仍能从完整SQL观察取证。
+- 审计字段明确`input_characters`与私有messages是SDK请求清理前的归档，不是实际出站token/字节；真实usage仍以provider返回为准。原配置12–20元改标历史预估并记录已发生28.092715元，不冒作下一批授权。摘要和新用途路由未实施，没有silent fallback。
+
+资格证据：最初5项新增接缝回归在旧实现失败，修复后通过；随后67项图/来源近邻通过。新增4项上下文测试使用真实同步/异步SDK的MockTransport及原生create_agent/checkpoint，证明请求清理、原始记录/推理/工具协议保留、清理后直接SQL引用仍经同一validator。最终10个相关测试文件覆盖168项：167通过，1项旧测试期待“answer was saved”而HEAD已有代码使用“output was saved”；更新措辞断言并同时要求`Use submit_case_answer`，不放宽未保存/纠正/报告不变的行为要求。重跑相关43项全部通过；这些数字有重叠，不相加冒称全仓测试。没有付费或金融准确率结论。
+
+真实历史离线测量（开发诊断，非盲测）：既有根`Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/report-workbench-20260906-a1/calls/01a077d8-a47c-7280-98f5-3df94b219488`，用既有费用脚本新增`--context-projection`，只走SDK构造出站messages、不invoke模型。264份可用请求中59份触发，SDK序列化消息字符45,860,118→38,203,239（减少7,656,879/16.696%），含保留reasoning、不含不变工具schema；531是跨请求被替换工具结果的出现次数，不是独立工具调用。Q4未知usage对应无可用该日志的请求不纳入264。逐条检查原messages不变、非tool出站消息一致、tool_call_id顺序一致。产物`D:/temp/fin_model_context_projection_20260907_a1.json`仅计数/actor/call ID，无原文或私有推理。工具结果变短不保证成本下降：前缀缓存变化、回读、新输出/遗漏均待真实同条件比较，不能把16.696%写成token/CNY节省。
+
+LangSmith窄诊断：3条历史0usage span重新只读获取仍为0，metadata没有用量、输入输出投影空；原始响应均有usage_metadata及token_usage。用本机实际`dumpd(AIMessage)`和LangChain tracer `_get_usage_metadata_from_generations`分别正确读出69,345/60,663/60,807，恰为190,815差额。说明本机离线序列化不能复现缺失，尚不足区分当时容器SDK、回调/上报或云投影根因；不凭网络猜修复、不手改云trace、不把0计费。继续使用已完整本地usage做对账，LangSmith仍是原观测平台。
+
+当前切片仅代码/离线资格，服务未加载此配置、报告没有重生成。下一优先补查未覆盖CALC接缝、以实际输入提出1–2组小范围等条件开发对照预算（paid前确认，含回读/输出/失败），再关闭P02和其余研究质量/方法问题。原计划前端版本/费用交互、真实上传视觉、交付引用投影、公开准备和新长短样例均保留，未因本切片完成而打勾。
+
+Git/验证收口：15个源码/配置/定向测试路径已提交`21ce4ad72f9902a1b96e5def6bd503b283f70deb`；6个源文档/Project OS路径作为对应事实另行提交，不追入私有artifact。全部21变动路径带边界秘密模式扫描无命中（初始宽模式误匹配历史issue标识中的sk-子串，未发现实际key），变动Python语法检查和diff通过，3个JSONL共446/898/197行逐行有效。配置预算标识更正后共用factory定向1项再过，无新paid/服务操作。本轮不做全仓回归或全量哈希，推送结果以最终Git交接为准。

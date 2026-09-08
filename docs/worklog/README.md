@@ -3,6 +3,7 @@
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 
 - 当前总清单：`00_current_master_checklist.md`
+- 工作台切片A：真实报告阅读、章节目录、来源/计算回读与返回：`fin_0_1_3_s3/193_report_reading_and_source_navigation.md`
 - 工作台交互重新设计（仅本地概念评审，正式改造待Owner认可）：`fin_0_1_3_s3/192_workbench_ux_concept_review.md`
 - Dell原五项＋新增需求剩余交付（成本/上下文优先、报告/前端/上传/公开准备及秋招咨询）：`fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md`
 - Dell Q1 多 Agent 审查与责任回派（当前实施包）：`fin_0_1_3_s3/189_dell_agentic_review_and_responsible_repair.md`

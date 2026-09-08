@@ -6,6 +6,8 @@
 
 ## 当前交付与停止点
 
+2026-09-08最新执行：概念原型交付后Owner要求“继续”，按认可方向实施切片A（真实报告阅读＋来源核对）。移除宽屏强制对话/报告双显示，压缩任务头、折叠资料说明，增加同名可定位目录、来源/计算与操作数回读及返回，保留历史版本和原始语义状态。TypeScript/构建与三宽度浏览器A4通过，A1焦点失败原件保留；真实v4旧JSON计算兼容、原文回读与返回成功，0模型。详见[S3/193](../worklog/fin_0_1_3_s3/193_report_reading_and_source_navigation.md)。8766已载本地体验版，分支codex/fin013-report-reader尚未推送/合main；公开仍main＋两个历史分支。B追问修订、C入口进度、D整体收口未完成；切片A交Owner真实体验，不声称全前端已验收。Hermes仍后置。
+
 2026-09-08最新Owner纠正：实际打开前端后认为不好用，明确页面杂乱、阅读/来源/追问切换、研究入口/进度三项均需重想；要求先看概念图/概设详设，认可后才改正式前端。本轮仅交[交互概设](../product/UX_WORKBENCH_CONCEPT_20260908.zh-CN.md)、详设与本地可点击原型，正式应用代码不改、不推GitHub草稿、不部署。详见[S3/192](../worklog/fin_0_1_3_s3/192_workbench_ux_concept_review.md)。工程检查通过不得表述为易用性获认可。此前引用修复PR#4已合main3cb0e3f4，远端只保留main和两个历史分支；本地设计分支不改变该公开状态。Hermes仍后置。
 
 2026-09-08继续补丁：Owner再次要求继续，按剩余质量问题推进，Hermes仍后置。PR#3已合入main58f84943并清理六个保全的远端codex引用。新PR#4修裸来源ID漏绑定，真实旧MU答案零模型回放由2操作数恢复为原CALC＋2操作数，原回答未改；100定向/3宽度通过。使用现成MarkdownIt/remark薄适配，无新parser平台或语义规则。最终CI、部署与临时分支收口见[S3/191](../worklog/fin_0_1_3_s3/191_bare_citation_binding_followup.md)。Owner未接受，摘要disabled，新问答金融语义意见未自动关闭。

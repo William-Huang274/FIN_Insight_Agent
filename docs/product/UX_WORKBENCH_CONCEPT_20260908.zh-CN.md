@@ -1,6 +1,6 @@
 # FinSight 工作台交互概设 A
 
-状态：概念审阅稿，未获 Owner 认可，不是正式前端实现。日期：2026-09-08。产品仍为 FIN 0.1.3，Hermes 后置。
+状态：Owner看过概念交付后要求继续，按认可方向推进切片A；全套交互与易用性仍待实际审阅。日期：2026-09-08。产品仍为 FIN 0.1.3，Hermes 后置。阅读与来源实现见[S3/193](../worklog/fin_0_1_3_s3/193_report_reading_and_source_navigation.md)。
 
 ## 设计起点
 
@@ -85,4 +85,4 @@ flowchart LR
 
 原型有意简化内容与滚动，展示的三节不是删减正式报告的决定；固定示例不代表重新审过财务事实。正式长文、长对话、来源加载与服务恢复须在获批后使用真实保存会话验证。
 
-对应[交互详设与实施切片](../architecture/UX_WORKBENCH_INTERACTION_DESIGN_20260908.zh-CN.md)。原型源文件：`prototypes/finsight-concept.html`。仅本地评审，不发布 GitHub 草稿或替换8766正式服务。
+对应[交互详设与实施切片](../architecture/UX_WORKBENCH_INTERACTION_DESIGN_20260908.zh-CN.md)。原型源文件：`prototypes/finsight-concept.html`。原型不接正式服务；Owner要求继续后，切片A的真实实现已在8766提供本地体验，尚未并入GitHub主线。

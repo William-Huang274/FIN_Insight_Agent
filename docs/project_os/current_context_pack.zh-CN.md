@@ -1,10 +1,14 @@
 # FIN Insight 当前上下文包
 
 更新时间：2026-09-08
-当前产品版本：FIN 0.1.3；当前报告版本：Dell v4，ready_for_human_review，Owner 未接受。
+当前产品版本：FIN 0.1.3；当前报告版本：Dell v5，ready_for_human_review，Owner 未接受；v4历史保留。
 公开主线入口：main；本轮成果与检查见 [PR #3](https://github.com/William-Huang274/FIN_Insight_Agent/pull/3)。本地 codex/fin013-dell-s1-s2-product-bridge 与恢复引用保留，不代表仍需另做一轮规划。
 
 ## 当前交付与停止点
+
+2026-09-08最新完成：方案D正式工作台＋运行中的实际任务/阶段卡片和公开活动流已接8766。最终10浏览器通过（40.5秒）、34后端通过；真实前端提交P01:C9目标、v4基线，在run01a0801b-0b5b-7c83-a16b-413ad918f450实际Writer3→Verifier3，v5只改第三节目标段落，引用/图表未变、旧checkpoint完全保留；272176tokens/已知1.436408元/本次未知0。Verifier发现底稿C9旧因果措辞advisory，RC-S3-199仍开放。详见[S3/199](../worklog/fin_0_1_3_s3/199_formal_workspace_and_live_revision.md)。本轮只1次付费修订，无自动accept；运行页不是完整逐token模型思维/任意节点控制，通用UI不等于跨公司真实数据底座已资格。等待Owner体验与审阅，Hermes后置。
+
+2026-09-08最新Owner授权：方案D选为正式前端，允许补齐侧栏/头部交互；先验证前端，再接真实后端，前端执行1–2条小修订验证原生节点。正在执行[S3/199](../worklog/fin_0_1_3_s3/199_formal_workspace_and_live_revision.md)，该授权覆盖下方设计-only/0模型停止点。React Router/既有React Flow/LangGraph薄接入，不写Dell内容路由规则；现有runtime数据底座仍为已资格Dell配置，不能将通用UI误报为任意公司真实研究已通过。Hermes与公开分支整理继续后置。
 
 2026-09-08最新Owner方向：已认可概念C横向研究图达到基本预期，要求保留修订方案，再补侧栏和统一视觉、弃用绿色并交总体方案。已交[前端总体方案D](../product/FRONTEND_OVERALL_DESIGN_20260908.zh-CN.md)与独立可点击原型（C原件保留）：工作区/任务两层导航、搜索切换、收起、本页新建草稿、资料/修订/运行/偏好，统一研究蓝/中性背景/Lucide/字体/动效。见[S3/198](../worklog/fin_0_1_3_s3/198_frontend_sidebar_and_visual_system.md)。本轮是设计原型与总体方案，正式应用未按D改造，0研究模型，Hermes后置；不能把新增页面演示计入正式工程完成。
 

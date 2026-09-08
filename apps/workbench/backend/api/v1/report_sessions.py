@@ -24,6 +24,7 @@ from langgraph_sdk.client import LangGraphClient
 from pydantic import BaseModel, ConfigDict, Field
 
 from sec_agent.agent_runtime.dell_report_session import ReviewAction, abandoned_question_update
+from sec_agent.agent_runtime.targeted_revision import report_digest, validate_revision_target
 
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
@@ -137,6 +138,7 @@ def public_state(state):
         for row in values.get("convergence_history", [])]
     result["model_events"] = [p for e in values.get("model_events", []) if (p := public_event({"kind": "model", **e}))]
     result["can_respond"] = bool(review_interrupts(state))
+    result["report_digest"] = report_digest(values["report"]) if values.get("report") else None
     result["can_accept"] = result["can_respond"] and result.get("phase") == "ready_for_human_review"
     # No tasks, raw native messages, private checkpoints or source filesystem paths.
     return result
@@ -290,6 +292,7 @@ def build_report_sessions_router(service):
         state = await service.report_state(thread_id, checkpoint_id)
         values = state["values"]
         return {"report": values["report"], "report_version": values["report_version"],
+            "report_digest": report_digest(values["report"]),
             "report_review": values.get("report_review"), "reason": values.get("report_revision_reason"),
             "checkpoint_id": str(checkpoint_id)}
 
@@ -455,6 +458,7 @@ def build_report_sessions_router(service):
             events, usage = public_run_usage(service.audit_root, thread_id, run["run_id"])
             projection["model_events"].extend(events)
             public_runs.append({**{k: run.get(k) for k in ("run_id", "status", "created_at")},
+                "revision_target": run.get("metadata", {}).get("revision_target"),
                 "human_action": run.get("metadata", {}).get("human_action"),
                 "answer_mode": run.get("metadata", {}).get("answer_mode"), "usage": usage})
             public_runs[-1]["cost_estimate"] = public_cost_estimate(events)
@@ -503,7 +507,23 @@ def build_report_sessions_router(service):
     @router.post("/research-sessions/{thread_id}/actions")
     async def action(thread_id: UUID, body: ReviewAction, request: Request):
         browser_write(request)
+        if body.target:
+            await service.owned_thread(thread_id)
+            for previous in await service.all_runs(thread_id):
+                meta = previous.get("metadata", {})
+                if meta.get("revision_target", {}).get("request_id") == str(body.target.request_id):
+                    if (meta["revision_target"] != body.target.model_dump(mode="json")
+                            or meta.get("revision_feedback_digest") != report_digest(body.message)):
+                        raise HTTPException(409, "相同请求标识不能提交不同修订内容")
+                    return {"run_id": previous["run_id"], "status": previous["status"], "existing_request": True}
         state = await service.state(thread_id)
+        if body.target:
+            try:
+                validate_revision_target(state.get("values", {}), body.target)
+                baseline = await service.report_state(thread_id, body.target.base_checkpoint)
+                validate_revision_target(baseline.get("values", {}), body.target)
+            except ValueError as exc:
+                raise HTTPException(409, str(exc)) from exc
         if not review_interrupts(state):
             raise HTTPException(409, "当前不在人工审阅点；运行中请先等待或停止，不会自动重发模型调用")
         if body.action == "accept" and not public_state(state)["can_accept"]:
@@ -511,9 +531,10 @@ def build_report_sessions_router(service):
         if body.action != "accept" and not body.message.strip():
             raise HTTPException(422, "请填写问题或修订意见")
         thread = await service.owned_thread(thread_id)
-        run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), command={"resume": body.model_dump()},
+        run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), command={"resume": body.model_dump(mode="json", exclude_none=True)},
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
-            metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode})
+            metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode,
+                **({"revision_target": body.target.model_dump(mode="json"), "revision_feedback_digest": report_digest(body.message)} if body.target else {})})
         return {"run_id": run["run_id"], "status": run["status"]}
 
     @router.post("/research-sessions/{thread_id}/runs/{run_id}/cancel")

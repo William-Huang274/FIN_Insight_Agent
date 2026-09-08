@@ -10,7 +10,8 @@ for (const width of [1440, 1024, 390]) {
     const citations = { C1: { claim: { statement: "现金转换率需要核查。", kind: "calculation" }, sources: [source] },
       C2: { claim: { statement: "第二条独立引用。", kind: "fact" }, sources: [{ source_id: "SOURCE::other", title: "另一条来源" }] } };
     const report = { title: "图集成测试报告", narrative_markdown: "## 判断\n\n现金转换率需要核查。[C1]", citations, charts: [] };
-    const session = { thread_id: id, title: "图测试任务", status: "interrupted", report_version: 4, report, conversation: [], runs: [], model_events: [], can_respond: true };
+    const session = { thread_id: id, title: "图测试任务", status: "interrupted", report_version: 4, report_digest: "a".repeat(64), report, conversation: [], runs: [] as any[], model_events: [], can_respond: true };
+    let submitted: any;
     let failSource = true;
     const requests: string[] = [], writes: string[] = [];
     await page.route("**/api/v1/**", async route => {
@@ -20,10 +21,12 @@ for (const width of [1440, 1024, 390]) {
       if (url.pathname.endsWith("/research-session-config")) body = { fresh_research_enabled: false };
       else if (url.pathname.endsWith("/research-sessions")) body = [session];
       else if (url.pathname.endsWith("/report-versions")) body = { versions: [{ version: 4, checkpoint_id: checkpoint, title: report.title }], next_cursor: null };
+      else if (url.pathname.endsWith("/actions")) { submitted = route.request().postDataJSON(); session.runs = [{ run_id: "test-target-run", status: "pending", created_at: "2026-09-08T00:00:00Z", revision_target: submitted.target }]; session.can_respond = false; body = { run_id: "test-target-run" }; }
+      else if (url.pathname.endsWith("/report-diff")) body = { diff: "-原判断\n+修订候选判断", before_version: 4, after_version: 5 };
       else if (url.pathname.endsWith("/source")) {
         requests.push(url.search);
         if (failSource) { await route.fulfill({ status: 503, json: { detail: "测试来源读取失败" } }); return; }
-        body = url.searchParams.get("source_id") === "P01:S001" ? { source_id: "P01:S001", text: "原始现金流出处。" }
+        body = url.searchParams.get("source_id") === "P01:S001" ? { source_id: "P01:S001", text: url.searchParams.get("offset") === "16" ? "\n\n后续上下文与限定条件。" : "原始现金流出处。", next_offset: url.searchParams.get("offset") === "16" ? null : 16 }
           : width === 1024 ? { ...source, text: JSON.stringify(calculation), arithmetic_verified: true, financial_semantics_verified: false }
             : { ...source, calculation };
       } else if (url.pathname.endsWith(id)) body = session;
@@ -32,6 +35,11 @@ for (const width of [1440, 1024, 390]) {
     await page.goto(`/workspace/session?thread=${id}`);
     const graph = page.getByRole("region", { name: "研究依据图" });
     await expect(graph).toBeVisible();
+    await expect(graph.getByRole("combobox")).toHaveCount(0);
+    const enter = async (topic: string, statement: string) => { await graph.getByRole("button", { name: "报告总览", exact: true }).click();
+      await graph.locator(".rg-outline-list").getByRole("button", { name: new RegExp(topic) }).click();
+      await graph.locator(".rg-outline-list").getByRole("button", { name: new RegExp(statement) }).click(); };
+    await enter("判断", "现金转换率");
     await expect(graph.getByText("已固定报告 v4 的来源版本")).toBeVisible();
     await graph.getByRole("button", { name: "展开来源 / 计算", exact: true }).click();
     await expect(graph.getByRole("alert")).toContainText("测试来源读取失败");
@@ -45,15 +53,25 @@ for (const width of [1440, 1024, 390]) {
     await expect(graph.getByText("原始现金流出处。", { exact: true })).toBeVisible();
     expect(requests.every(q => q.includes(`checkpoint_id=${checkpoint}`))).toBe(true);
     expect(requests.some(q => q.includes("P01%3AS001"))).toBe(true);
+    await graph.getByRole("button", { name: "扩展上下文 / 阅读原文" }).click();
+    const reader = page.getByRole("dialog", { name: "来源上下文与原文阅读" });
+    await expect(reader).toBeVisible();
+    await reader.getByRole("button", { name: "已存档原文", exact: true }).click();
+    await reader.getByRole("button", { name: "继续读取后续原文" }).click();
+    await expect(reader.getByText("后续上下文与限定条件。", { exact: true })).toBeVisible();
+    await reader.getByLabel("在已载入原文中查找").fill("限定条件");
+    await reader.getByRole("button", { name: "定位下一处" }).click();
+    await expect(reader.locator("mark")).toHaveText("限定条件");
+    await page.keyboard.press("Escape"); await expect(reader).toHaveCount(0);
     await graph.getByRole("button", { name: "针对这条引用写修订意见" }).click();
     await graph.getByLabel("你的假设 / 质疑 / 补证要求").fill("请核对回款跨期，不应直接视为已发生事实。");
     await graph.getByRole("button", { name: "查看修订范围" }).click();
-    await expect(graph.getByRole("status")).toContainText("尚未连接修订执行");
+    await expect(graph.getByRole("status")).toContainText("确认提交后会调用研究模型");
     await expect(graph.locator('.react-flow__node.rg-affected')).toHaveCount(2);
-    await graph.getByLabel("选择研究引用", { exact: false }).selectOption("C2");
+    await enter("尚未定位", "第二条独立引用");
     await graph.getByRole("button", { name: "针对这条引用写修订意见" }).click();
     await expect(graph.getByLabel("你的假设 / 质疑 / 补证要求")).toHaveValue("");
-    await graph.getByLabel("选择研究引用", { exact: false }).selectOption("C1");
+    await enter("判断", "现金转换率");
     await graph.getByRole("button", { name: "针对这条引用写修订意见" }).click();
     await expect(graph.getByLabel("你的假设 / 质疑 / 补证要求")).toHaveValue("请核对回款跨期，不应直接视为已发生事实。");
     await graph.getByRole("button", { name: "阅读完整报告" }).click();
@@ -61,6 +79,13 @@ for (const width of [1440, 1024, 390]) {
     await page.getByRole("button", { name: "研究图", exact: true }).click();
     await expect(graph.getByLabel("你的假设 / 质疑 / 补证要求")).toHaveValue("请核对回款跨期，不应直接视为已发生事实。");
     expect(writes).toEqual([]);
+    await graph.getByRole("button", { name: "查看修订范围" }).click();
+    await graph.getByRole("button", { name: "确认提交修订", exact: true }).click();
+    await expect(graph.getByText("节点修订：等待执行", { exact: true })).toBeVisible();
+    expect(submitted.target).toMatchObject({ citation_id: "C1", base_version: 4, base_digest: "a".repeat(64), base_checkpoint: checkpoint });
+    expect(submitted.action).toBe("revise"); expect(writes).toHaveLength(1);
+    await graph.getByRole("button", { name: "查看相对基线的报告变化" }).click();
+    await expect(graph.locator(".rg-run-result pre")).toContainText("修订候选判断");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   });
 }

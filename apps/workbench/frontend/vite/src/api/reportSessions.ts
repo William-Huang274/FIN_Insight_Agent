@@ -73,6 +73,7 @@ export type Finding = {
   paper_ids?: string[];
 };
 export type Session = {
+  report_digest?: string;
   cumulative_usage?: { native_runs: number; known_cny: number; recorded_requests: number; reported_requests: number;
     unknown_or_pending_requests: number; unpriced_requests: number; input_tokens: number; output_tokens: number;
     total_tokens: number; cache_hit_tokens: number; cache_miss_tokens: number; unknown_cache_requests: number; unknown_elapsed_requests: number;
@@ -121,7 +122,7 @@ export type Session = {
     citations?: Record<string, Citation>;
   }[];
   model_events?: Event[];
-  runs?: { run_id: string; status: string; created_at: string; human_action?: string; answer_mode?: string; elapsed_ms?: number; model_calls_requested?: number;
+  runs?: { run_id: string; status: string; created_at: string; human_action?: string; answer_mode?: string; elapsed_ms?: number; model_calls_requested?: number; revision_target?: RevisionTarget;
     cost_estimate?: { known_cny: number; priced_requests: number; unknown_or_pending_requests: number; price_as_of: string; notice: string };
     usage?: { recorded_requests: number; reported_requests: number; unknown_or_pending_requests: number;
       input_tokens: number; output_tokens: number; total_tokens: number; cache_hit_tokens?: number; cache_miss_tokens?: number;
@@ -139,7 +140,8 @@ export type ResearchConfiguration = {
 
 const base = "/api/v1/research-sessions";
 export type ReportVersion = { version: number; checkpoint_id: string; created_at?: string; title: string; reason: string };
-export type ReportSnapshot = { report: NonNullable<Session["report"]>; report_version: number; checkpoint_id: string; reason?: string };
+export type RevisionTarget = { request_id: string; citation_id: string; base_version: number; base_digest: string; base_checkpoint: string };
+export type ReportSnapshot = { report: NonNullable<Session["report"]>; report_version: number; checkpoint_id: string; reason?: string; report_digest?: string };
 export type ReportDiff = { before_version: number; after_version: number; reason: string; diff: string; charts_changed: boolean; citations_changed: boolean };
 async function request<T>(url: string, body?: unknown): Promise<T> {
   const response = await fetch(url, {
@@ -176,8 +178,8 @@ export const sessionsApi = {
   versions: (id: string, before?: string) => request<{ versions: ReportVersion[]; next_cursor: string | null }>(`${base}/${id}/report-versions${before ? `?before=${encodeURIComponent(before)}` : ""}`),
   version: (id: string, checkpoint: string) => request<ReportSnapshot>(`${base}/${id}/report-versions/${encodeURIComponent(checkpoint)}`),
   diff: (id: string, before: string) => request<ReportDiff>(`${base}/${id}/report-diff?before=${encodeURIComponent(before)}`),
-  action: (id: string, action: string, message: string, answerMode: "quick" | "deep" = "deep") =>
-    request<{ run_id: string }>(`${base}/${id}/actions`, { action, message, answer_mode: answerMode }),
+  action: (id: string, action: string, message: string, answerMode: "quick" | "deep" = "deep", target?: RevisionTarget) =>
+    request<{ run_id: string }>(`${base}/${id}/actions`, { action, message, answer_mode: answerMode, ...(target ? { target } : {}) }),
   cancel: (id: string, run: string) =>
     request(`${base}/${id}/runs/${run}/cancel`, {}),
   abandonQuestion: (id: string) =>

@@ -699,7 +699,8 @@ export function ResearchSession() {
             <div className="rs-content-shell" data-tab={tab}>
             {displayedReport && <ResearchGraph key={`${id}:${historicalReport?.checkpoint_id || session.report_version}`} id={id}
               version={historicalReport?.report_version || session.report_version || 1} checkpoint={historicalReport?.checkpoint_id}
-              report={displayedReport} active={tab === "graph"} onReport={() => setTab("report")} />}
+              report={displayedReport} digest={historicalReport?.report_digest || session.report_digest} canRevise={!historicalReport && !!session.can_respond}
+              runs={session.runs || []} onRefresh={async () => { setSession(await sessionsApi.state(id)); await refresh(); }} active={tab === "graph"} onReport={() => setTab("report")} />}
             {tab === "report" && !!outline.length && <nav className="rs-outline" aria-label="报告目录">
               <label htmlFor="report-section-picker">报告目录</label>
               <select id="report-section-picker" value={activeHeading} onChange={e => { setActiveHeading(e.target.value); document.getElementById(e.target.value)?.scrollIntoView({ block: "start" }); }}>

@@ -420,7 +420,7 @@ def create_report_session_app(frontend_dist_root=None):
         from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
         from sec_agent.agent_runtime.dell_agent_server_data_composition import DELL_APPROVED_RESEARCH_AS_OF
         runtime_profile, case = load_research_runtime_profile(os.environ.get("FIN_REPO_ROOT", CODE_ROOT))
-        research_profile = {"title": case["title"], "default_question": case["question"],
+        research_profile = {"title": case["title"], "default_question": case["question"], "branch_topics": case["branch_topics"],
             "research_as_of": DELL_APPROVED_RESEARCH_AS_OF, "cost_expectation_cny": runtime_profile["cost_expectation_cny"],
             "notice": "新问题从空底稿研究；复用原始文档/SQL/索引，不载入旧专家答案。日期为已绑定案例时点，不宣称实时全量。"}
     from sec_agent.research_foundation.task_attachments import TaskAttachmentStore

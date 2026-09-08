@@ -4,6 +4,9 @@ import { sessionsApi, type Citation, type Session, type Source, type RevisionTar
 import { ReportDiffView } from "./ReportDiffView";
 import { sourceCalculation } from "./sourceCalculation";
 import { reportTopics } from "./reportTopics";
+import { claimLabel, sourceTitle } from "./researchLabels";
+import { ExecutionPicker, executionReady } from "./ExecutionPicker";
+import { defaultExecution, type ExecutionOptions } from "../api/reportSessions";
 import { ResearchOutline } from "./ResearchOutline";
 import { SourceReader } from "./SourceReader";
 import ReactMarkdown from "react-markdown";
@@ -48,6 +51,7 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
   useEffect(() => { writeMemory(`drafts:${memoryKey}`, drafts); }, [drafts, memoryKey]);
   const [preview, setPreview] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [execution, setExecution] = useState<ExecutionOptions>(defaultExecution);
   const [reader, setReader] = useState<Source | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [submission, setSubmission] = useState("");
@@ -66,10 +70,11 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
     submitLock.current = true; setSubmitting(true); setSubmission("");
     const target: RevisionTarget = { request_id: crypto.randomUUID(), citation_id: claimId, base_version: version, base_digest: digest, base_checkpoint: pinned };
     try {
-      const result = await sessionsApi.action(id, "revise", current, "deep", target);
+      const result = await sessionsApi.action(id, "revise", current, "deep", target, execution);
       setSubmission(`已提交修订，运行 ${result.run_id}。原报告保留，等待实际结果。`);
       setDrafts(old => ({ ...old, [claimId]: "" })); setPreview(false);
       await onRefresh();
+      setParams(p => { p.set("view", "activity"); return p; });
     } catch (e) { setSubmission(`提交未确认：${(e as Error).message}。请刷新运行状态，勿直接重复发送。`); setUncertain(true); }
     finally { setSubmitting(false); submitLock.current = false; }
   };
@@ -126,7 +131,7 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
       const saved = loaded[s.source_id] || s;
       const calc = sourceCalculation(saved);
       if (info[sourceId]) return;
-      add(sourceId, 10 + shift, index * 180, calc ? calc.expression : s.title || "保存的来源", calc ? "保存计算" : "来源记录",
+      add(sourceId, 10 + shift, index * 180, calc ? calc.expression : sourceTitle(s), calc ? "保存计算" : "来源记录",
         saved.text || saved.notice || "选择此节点读取原文或计算。", s.source_id, saved);
       edge(sourceId, "claim", "被引用");
       if (expanded && calc) Object.entries(calc.operands).forEach(([name, operand], i) => {
@@ -150,7 +155,7 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
       <button onClick={onReport}>阅读完整报告</button>
     </div>
     {targetedRun && <div className="rg-run-result" role="status"><strong>节点修订：{({ pending: "等待执行", running: "正在修订", success: "运行完成，待审阅", error: "修订失败，旧结果保留", interrupted: "运行已停止 / 等待处理" } as Record<string, string>)[targetedRun.status] || targetedRun.status}</strong>
-      <p>目标：{targetedRun.revision_target!.citation_id} · 基线 v{targetedRun.revision_target!.base_version} → 当前报告 v{version}。运行完成不等同于判断已通过审阅。</p>
+      <p>{claimLabel(targetedRun.revision_target!.citation_id, report.citations)} · 基线 v{targetedRun.revision_target!.base_version} → 当前报告 v{version}。运行完成不等同于判断已通过审阅。</p>
       <button aria-expanded={diffOpen} aria-controls="targeted-report-diff" disabled={diffLoading} onClick={async () => { if (diffOpen) { setDiffOpen(false); return; } if (diff) { setDiffOpen(true); return; } setDiffLoading(true); try { const result = await sessionsApi.diff(id, targetedRun.revision_target!.base_checkpoint); setDiff(result); setDiffOpen(true); } catch (e) { setError((e as Error).message); } finally { setDiffLoading(false); } }}>{diffLoading ? "正在读取变化…" : diffOpen ? "收起报告变化" : "查看相对基线的报告变化"}</button>
       <div id="targeted-report-diff" hidden={!diffOpen}>{diff && <><ReportDiffView value={diff} /><button onClick={() => { setDiffOpen(false); document.querySelector<HTMLButtonElement>('[aria-controls="targeted-report-diff"]')?.focus(); }}>收起并返回研究图 ↑</button></>}</div></div>}
     {submission && <div className="rg-run-result" role="status">{submission}<button onClick={() => void onRefresh()}>刷新运行状态</button></div>}
@@ -178,7 +183,7 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
             <Background gap={22} size={1} />
           </ReactFlow></div>}
         </div>
-        {expanded && (citation?.sources.length || 0) > 1 && <div className="rg-other-sources"><span>同一引用的其他依据</span>{citation.sources.filter(s => s.source_id !== expandedSource).map(s => <button key={s.source_id} onClick={() => { setExpanded(false); void read(s.source_id, true); }}>{s.title || s.source_id}</button>)}</div>}
+        {expanded && (citation?.sources.length || 0) > 1 && <div className="rg-other-sources"><span>同一引用的其他依据</span>{citation.sources.filter(s => s.source_id !== expandedSource).map(s => <button key={s.source_id} onClick={() => { setExpanded(false); void read(s.source_id, true); }}>{sourceTitle(s)}</button>)}</div>}
         <div className="rg-mobile-nodes" aria-label="图节点列表">{Object.entries(graph.info).map(([key, d]) =>
           <button key={key} onClick={() => { request.current += 1; setLoading(false); setError(""); setDetail(d); if (d.sourceId) void read(d.sourceId); }}>{d.title}</button>)}</div>
         <p className="rg-hint">箭头表示已记录的依赖。选中节点可查看详情；关系缺失时不推定完整推导过程。</p>
@@ -196,11 +201,12 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
         {detail?.source && <button className="rg-open-reader" onClick={() => setReader(detail.source!)}>扩展上下文 / 阅读原文</button>}
         <div className="rg-edit-area"><button className="rg-primary" onClick={() => { setEditing(true); setPreview(false); }}>针对这条引用写修订意见</button>
           {editing && <><label htmlFor="rg-draft">你的假设 / 质疑 / 补证要求</label><textarea id="rg-draft" value={current} onChange={e => { setDrafts(old => ({ ...old, [claimId]: e.target.value })); setPreview(false); }} placeholder="例如：请检查回款跨期的影响，并区分假设与已披露事实。" />
+            <ExecutionPicker value={execution} onChange={setExecution} action="revise" disabled={submitting}/>
             <div className="rg-draft-actions"><button disabled={!current.trim()} onClick={() => setPreview(true)}>查看修订范围</button><button onClick={() => { setDrafts(old => ({ ...old, [claimId]: "" })); setPreview(false); }}>清空草稿</button></div>
             <small>草稿按任务、引用和报告基线保存在此浏览器标签页，刷新后可继续。原始证据不变。</small></>}
         </div>
         {preview && <div className="rg-preview" role="status"><strong>修订预览 · 基于报告 v{version}</strong><p>{current}</p><p>目标是这条已绑定引用及其报告表述。交由现有研究修订与复核流程处理，可能涉及上游研究和整份报告，不承诺仅重跑图上节点。</p><p>确认提交后会调用研究模型并产生费用，实际用量见“运行与费用”。原报告历史保留；候选仍需审阅。</p>
-          <button className="rg-primary" disabled={!canRevise || !digest || !pinned || submitting || uncertain} onClick={() => void submit()}>{submitting ? "正在提交…" : "确认提交修订"}</button>{(!canRevise || !digest) && <p>历史版只读，或当前尚未处于可修订审阅点；请返回当前报告核对状态。</p>}</div>}
+          <button className="rg-primary" disabled={!executionReady(execution) || !canRevise || !digest || !pinned || submitting || uncertain} onClick={() => void submit()}>{submitting ? "正在提交…" : "确认提交修订"}</button>{(!canRevise || !digest) && <p>历史版只读，或当前尚未处于可修订审阅点；请返回当前报告核对状态。</p>}</div>}
       </aside>
     </div>
     </div>

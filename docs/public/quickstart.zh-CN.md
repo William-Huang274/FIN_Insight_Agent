@@ -40,7 +40,7 @@ Linux 如果缺少浏览器系统依赖，使用 `npx playwright install --with-
 
 需要观察操作时运行 `npm run test:public -- --headed --workers=1`。失败截图和 trace 写入 `apps/workbench/frontend/test-results/public/`；使用 `npx playwright show-trace <trace.zip>` 查看。该结果目录由 Playwright 管理，需要保存失败证据时先复制到独立目录。
 
-端口占用时设置环境变量 `FINSIGHT_E2E_FRONTEND_PORT` 为另一个空闲端口，再执行测试。不要停止别人的服务来腾端口。
+端口占用或被 Windows 保留时，设置环境变量 `FINSIGHT_E2E_FRONTEND_PORT` 为另一个可用端口，再执行测试。默认 `test:e2e` 还会启动旧兼容后端，可用 `FINSIGHT_E2E_BACKEND_PORT` 同步更换后端监听和前端代理端口，例如 PowerShell 中 `$env:FINSIGHT_E2E_BACKEND_PORT='18795'`。`test:public` 不需要后端。不要停止别人的服务来腾端口。
 
 ## 3. 启动完整本地研究
 

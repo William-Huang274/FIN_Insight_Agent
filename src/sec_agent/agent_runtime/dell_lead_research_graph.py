@@ -150,7 +150,7 @@ def build_dell_lead_research_graph(
     allowed_branch_ids: tuple[str, ...], seed_workpapers: Mapping[str, Mapping[str, Any]],
     model_turn: Callable, run_child: Callable, max_lead_turns: int = 8,
     max_tasks: int = 4, max_parallel_tasks: int = 2, turn_source: str = "scripted_qualification", unfinished_only: bool = False,
-    role_method=None,
+    role_method=None, require_all_branches=True, public_progress=None,
 ) -> StateGraph:
     allowed = set(allowed_branch_ids)
     if expected_input is not None and (not allowed or len(allowed) != len(allowed_branch_ids)
@@ -212,6 +212,7 @@ def build_dell_lead_research_graph(
             "research_as_of": expected_input.task.research_as_of,
             "branch_catalog": [row for row in branch_catalog if row["branch_id"] in allowed],
             "required_branch_ids": list(allowed_branch_ids),
+            "scope_policy": "All listed branches require submitted research." if require_all_branches else "The catalog is available scope, NOT a checklist. Select only branches material to this question; explain your selection and omitted scope in public handoff notes. At least one source-grounded workpaper is required.",
             "capabilities": lead_capability_catalog(expected_input.l0_context.capability_summaries),
             "capacity": {"max_tasks": max_tasks, "max_parallel_tasks": max_parallel_tasks,
                          "max_lead_turns": max_lead_turns},
@@ -297,11 +298,14 @@ def build_dell_lead_research_graph(
                         # A failed attempt remains failed, but an explicitly
                         # acknowledged attempt must not veto successful replacement
                         # work. Pending tasks or missing coverage still block.
-                        if incomplete - failed_attempts or not allowed.issubset(coverage):
+                        if incomplete - failed_attempts or not done or (require_all_branches and not allowed.issubset(coverage)):
                             raise ValueError("required_research_tasks_not_submitted_no_silent_completion")
                     working.update(lead_handoff=action.model_dump(mode="json"),
                                    phase="research_" + action.disposition, stop_reason=None)
                     value = {"handoff_disposition": action.disposition, "financial_or_product_pass": False}
+                if public_progress:
+                    public_progress({"kind": "stage", "actor": "lead", "event": "progress", "call_id": call.id,
+                        "objective": action.reason_summary})
                 return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
             except (ValueError, KeyError) as exc:
                 detail = ({"schema_errors": [{"loc": list(e["loc"]), "type": e["type"], "msg": e["msg"]}

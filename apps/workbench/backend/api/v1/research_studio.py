@@ -21,14 +21,17 @@ async def owned_configuration(service, assistant_id):
     return value, config
 
 
-async def run_configuration(service, thread):
+async def run_configuration(service, thread, execution=None):
+    from sec_agent.agent_runtime.execution_options import ExecutionOptions
+    selection = execution or thread.get("metadata", {}).get("execution")
+    values = {"finsight_execution": ExecutionOptions.model_validate(selection).model_dump()} if selection else {}
     assistant_id = thread.get("metadata", {}).get("studio_assistant_id")
     if not assistant_id:
-        return {}
+        return {"configurable": values} if values else {}
     _, config = await owned_configuration(service, assistant_id)
     # Native run owns a full immutable config snapshot. Later task selection
     # cannot alter an in-flight request or an old checkpoint's configuration.
-    return {"configurable": {"finsight_studio": config.model_dump(), "finsight_studio_assistant_id": assistant_id}}
+    return {"configurable": {**values, "finsight_studio": config.model_dump(), "finsight_studio_assistant_id": assistant_id}}
 
 
 class ApplyConfiguration(BaseModel):

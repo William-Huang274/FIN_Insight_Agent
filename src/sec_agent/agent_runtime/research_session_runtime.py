@@ -14,10 +14,13 @@ from pathlib import Path
 from uuid import UUID
 
 from langchain_core.runnables import RunnableConfig, RunnableLambda
+from langchain_core.tools import StructuredTool, tool, ToolException
+from langchain_core.messages import HumanMessage
+from langgraph.prebuilt import ToolRuntime
 from langgraph.config import get_stream_writer
 from langgraph_sdk.runtime import ServerRuntime
 from mcp import Client
-from pydantic import SecretStr
+from pydantic import SecretStr, BaseModel, Field
 
 from .deepseek_structured_agents import (
     DeepSeekModelProfile, DeepSeekStructuredAgentAdapter, TokenBudgetBasis, load_deepseek_structured_agent_config,
@@ -31,6 +34,11 @@ from .dell_specialist_agentic_composition import open_dell_specialist_receipted_
 from .research_session import build_research_session_graph, current_task_artifacts
 from .research_convergence import build_research_convergence_graph
 from .studio_configuration import configuration_from_native
+from .execution_options import ExecutionOptions, execution_from_config
+
+
+class ResearchProgress(BaseModel):
+    message: str = Field(min_length=1, max_length=1200, description="面向研究者的简短进展：正在核对什么、已观察到什么、接下来做什么。不是私有思维链，不粘贴原文或凭据。")
 
 
 def load_research_runtime_profile(root):
@@ -70,20 +78,34 @@ def load_research_runtime_profile(root):
 
 
 def create_research_phase_runnables(*, root, settings, profile, case, run_id, thread_id, api_key,
-                                    environment=None, public_sink, private_sink, read_guidance=None, studio=None):
+                                    environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None):
     if studio:
         profile = studio.apply_profile(profile)
+    execution = execution or ExecutionOptions()
+    execution.validate_catalog(case["branch_topics"])
+    profile = execution.apply_profile(profile)
     environment = {**(os.environ if environment is None else environment), "FINSIGHT_TASK_THREAD_ID": thread_id,
         "FINSIGHT_TASK_RUN_ID": run_id, "FINSIGHT_TASK_AUDIT_ROOT": settings["audit_root"]}
     base = load_deepseek_structured_agent_config(Path(root) / profile["model_config"])
     invocation = "invocation:research-session:" + run_id
     research_id = "research-session:" + thread_id
     def emit(event):
+        event = {"recorded_at": datetime.now(timezone.utc).isoformat(), **event}
         # Redis stream retention is not a durable task history. Reuse the
         # existing public audit sink; never expose child message histories.
         if event.get("kind") in {"task", "stage"}:
             public_sink(event)
         get_stream_writer()(event)
+    def visible_turn(turn, actor, task_id=None):
+        def invoke(request):
+            response = turn(request)
+            for call in response.get("action", {}).get("tool_calls", []):
+                args = call.get("args")
+                if isinstance(args, dict) and isinstance(args.get("reason_summary"), str):
+                    emit({"kind": "stage", "actor": actor, "event": "progress", "call_id": call.get("id"),
+                        "task_id": task_id, "objective": args["reason_summary"], "status": "planned"})
+            return response
+        return invoke
     def research_audit(event):
         public_sink(event)
         emit({"kind": "model", **event})
@@ -118,15 +140,24 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         lead_adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
             audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"))
         specialist_limits = profile["nodes"]["specialist"]["limits"]
-        branches = case["branch_topics"]
+        branches = [b for b in case["branch_topics"] if not execution.branch_ids or b["branch_id"] in execution.branch_ids]
         first_branch = branches[0]["branch_id"]
         with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
-                branch_id=first_branch, turn_source="provider_model", model_turn=lead_adapter.specialist_model_turn,
+                branch_id=first_branch, turn_source="provider_model", model_turn=visible_turn(lead_adapter.specialist_model_turn, "specialist"),
                 role_method_reader=studio.method if studio else None,
                 role_method=studio.method(studio.bindings["specialist"]) if studio else None,
                 environment=environment, source_read_enabled=True, live_web_read_enabled=True,
                 max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
                 research_question=request["question"]) as bootstrap:
+            if execution.mode == "single":
+                emit({"kind": "stage", "actor": "specialist", "event": "started", "objective": "按所选方向独立研究；不启动负责人分派或其他审查 Agent。"})
+                output = await bootstrap.graph.ainvoke(bootstrap.graph_input.model_dump(mode="json"), {**config, "recursion_limit": 200})
+                task_id = output["task"]["task_id"]
+                submitted = output.get("final_submission") is not None
+                return {"phase": "research_ready_for_review" if submitted else "research_needs_attention",
+                    "tasks": [{"task_id": task_id, "owner_role": "specialist", "objective": request["question"], "dependency_ids": []}],
+                    "task_results": [{"task_id": task_id, "status": "submitted" if submitted else "needs_attention", "agent_state": output}],
+                    "lead_handoff": None, "stop_reason": None if submitted else "single_agent_no_submission"}
             def worker(task, dependencies, child_config):
                 task_event = {"kind": "task", "task_id": task["task_id"], "actor": task["owner_role"],
                     "objective": task["objective"], "dependency_ids": task["dependency_ids"],
@@ -137,7 +168,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"))
                 try:
                     with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
-                            branch_id=task["coverage_obligation_ids"][0], turn_source="provider_model", model_turn=adapter.specialist_model_turn,
+                            branch_id=task["coverage_obligation_ids"][0], turn_source="provider_model", model_turn=visible_turn(adapter.specialist_model_turn, task["owner_role"], task["task_id"]),
                             role_method_reader=studio.method if studio else None,
                             role_method=studio.method(studio.bindings["specialist"]) if studio else None,
                             environment=environment, source_read_enabled=True, live_web_read_enabled=True,
@@ -154,6 +185,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             graph = build_dell_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],
                 branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers=seeds,
                 model_turn=lead_adapter.lead_research_turn, run_child=worker,
+                require_all_branches=execution.mode != "auto", public_progress=emit,
                 role_method=studio.method(studio.bindings["lead"]) if studio else None,
                 max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], max_tasks=profile["max_tasks"],
                 max_parallel_tasks=profile["max_parallel_tasks"], turn_source="provider_model", unfinished_only=bool(seeds)).compile()
@@ -182,11 +214,26 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 tools = await case_mcp_tools(client, run_scope=binding.structured_content["run_scope"])
                 yield artifacts, tools
 
-    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False):
+    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None):
+        if role == "repair" and execution.mode == "selected":
+            branch = next((p["branch_id"] for p in artifacts.catalog()["papers"] if p["paper_id"] == paper_id), None)
+            if branch not in execution.branch_ids:
+                raise ValueError("所需修订超出所选研究方向；请扩大范围后发起新运行")
         method_instructions = studio.instructions(role) if studio else ""
+        async def report_progress(message: str):
+            emit({"kind": "stage", "actor": actor_override or ("author_" + paper_id if paper_id else role),
+                "event": "progress", "objective": message})
+            return "进展已展示给研究者；不是证据或阶段完成。"
+        progress_tool = StructuredTool.from_function(coroutine=report_progress, name="report_research_progress",
+            description="Send a concise public progress update at a meaningful change of work. Do not expose private chain of thought, repeat every tool result, or claim unverified completion.", args_schema=ResearchProgress)
+        tools = [*tools, progress_tool]
+        method_instructions += "\nUse report_research_progress to briefly tell the researcher your approach before substantial work, and significant findings or a changed plan. Keep it concise and public; do not narrate hidden reasoning or call it after every tool."
         model_profile, basis, limits = model_values(role)
-        audit = CaseModelAudit(actor=("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
+        audit = CaseModelAudit(actor=actor_override or ("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True)
+        if any(t.name == "consult_research_specialist" for t in tools):
+            from langchain.agents.middleware import ToolCallLimitMiddleware
+            audit.extra_middlewares = [ToolCallLimitMiddleware(tool_name="consult_research_specialist", run_limit=2, exit_behavior="error")]
         model = case_chat_model(model_profile, basis, base, api_key, context_editing=profile.get("context_editing"))
         summary = profile.get("context_summarization")
         if summary and summary["enabled"] and role != "quick_writer":
@@ -241,6 +288,32 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     def interactive(role):
         async def execute(state, config: RunnableConfig):
             async with tools_for(state) as (artifacts, tools):
+                if execution.mode in {"auto", "selected", "standard"}:
+                    allowed = [b for b in case["branch_topics"] if not execution.branch_ids or b["branch_id"] in execution.branch_ids]
+                    research_tools = tools
+                    @tool(response_format="content_and_artifact")
+                    async def consult_research_specialist(branch_id: str, objective: str, runtime: ToolRuntime):
+                        """Ask one independent research specialist a focused subquestion. Choose an allowed branch from the supplied scope. Child returns source-bound findings, never private messages. Use only when another perspective is necessary."""
+                        if branch_id not in {b["branch_id"] for b in allowed} or not 10 <= len(objective) <= 4000:
+                            raise ToolException("请选择已允许的方向，并提供10–4000字符的具体研究问题")
+                        task_id = runtime.tool_call_id
+                        emit({"kind": "task", "actor": branch_id, "task_id": task_id, "event": "started", "status": "running", "objective": objective})
+                        # Reuse native create_agent, run config and checkpoints. The child has
+                        # its own short history and no delegation tool, so no recursive fan-out.
+                        child = native_agent("quick_writer", research_tools, artifacts, interactive=True, actor_override=branch_id)
+                        output = await child.ainvoke({"messages": [HumanMessage(content=json.dumps({
+                            "research_question": objective, "scope": next(b for b in allowed if b["branch_id"] == branch_id),
+                            "research_as_of": artifacts.research_as_of, "catalog": artifacts.catalog(),
+                            "instruction": "核对所分配问题，必要时读当前资料，给出有来源的简短答复。"}, ensure_ascii=False))],
+                            "report": state.get("report", {}), "revisions": state.get("revisions", {}), "conversation": [], "request_action": "ask"}, runtime.config)
+                        result = output.get("output", {})
+                        if result.get("kind") != "answer" or not result.get("citations"):
+                            raise ToolException("专家没有提交有效的来源绑定回答；不能推定完成")
+                        emit({"kind": "task", "actor": branch_id, "task_id": task_id, "event": "outcome", "status": "submitted", "objective": objective})
+                        return json.dumps({"answer": result["answer_markdown"], "source_ids": list(result["citations"]), "notice": "专家结论仍需主研究者核对"}, ensure_ascii=False), {"citations": result["citations"]}
+                    tools = [*tools, consult_research_specialist]
+                    state = {**state, "messages": [*state.get("messages", []), HumanMessage(content=
+                        "本次允许按需要调用 consult_research_specialist，请自行判断是否必要，不为填满名单而分派。每次聚焦一个子问题；专家只收到该问题和可回读资料。允许的方向：" + json.dumps(allowed, ensure_ascii=False))]}
                 agent = native_agent(role, tools, artifacts, interactive=True)
                 return await agent.ainvoke({key: value for key, value in state.items() if key != "case_papers"}, config)
         return RunnableLambda(execute)
@@ -269,6 +342,12 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
     profile, case = load_research_runtime_profile(root)
     studio = configuration_from_native(config)
     public, private = session_audit_sinks(Path(settings["audit_root"]) / thread_id / run_id)
+    execution = execution_from_config(config).validate_catalog(case["branch_topics"])
+    public({"kind": "stage", "actor": "research_configuration", "event": "applied", "status": "loaded",
+        "objective": "本次运行已固定：" + {"auto": "自由调度", "selected": "指定专家", "single": "单 Agent", "standard": "完整研究"}[execution.mode]
+            + "；模型：" + ("按角色配置" if execution.model == "default" else execution.model)
+            + ("；所选方向：" + "、".join(b["objective"] for b in case["branch_topics"] if b["branch_id"] in execution.branch_ids) if execution.branch_ids else ""),
+        "recorded_at": datetime.now(timezone.utc).isoformat(), "run_id": run_id})
     if studio:
         public({"kind": "stage", "actor": "research_configuration", "event": "applied", "status": "loaded",
             "objective": f"已固定配置：{studio.title} · {studio.digest[:12]} · 专家并行 {studio.max_parallel_tasks} · 审查 {studio.review_order}",
@@ -281,7 +360,7 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
     try:
         phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
-            private_sink=private, read_guidance=read_guidance, studio=studio)
+            private_sink=private, read_guidance=read_guidance, studio=studio, execution=execution)
         yield build_research_session_graph(**phases).compile(name="research_session").with_config({"recursion_limit": 280})
     finally:
         await native.http.client.aclose()

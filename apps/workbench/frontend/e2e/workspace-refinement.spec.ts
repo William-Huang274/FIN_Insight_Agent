@@ -8,7 +8,7 @@ for (const width of [1440,1024,390]) test(`research start, organization, panel a
   const roles={lead:"研究负责人",specialist:"研究专家",counter:"反证审查",verifier:"底稿核验",repair:"责任修订",synthesis:"综合研究",research_verifier:"研究判断复核",writer:"报告写作与修订",report_verifier:"报告独立复核",quick_writer:"简短追问"};
   let saved:any=null;
   const session={thread_id:id,title:"Atlas · 盈利质量",status:"interrupted",report_version:2,report_digest:"a".repeat(64),question:"研究 Atlas 最近季度的盈利质量。".repeat(30),can_upload:true,
-    report:{title:"Atlas研究",narrative_markdown:"## 现金质量\n\n当前判断。",citations:{}},research_tasks:[],
+    report:{title:"Atlas研究",narrative_markdown:"## 现金质量\n\n当前判断。[C1]",citations:{C1:{claim:{statement:"现金变化需要区分期间。",kind:"inference"},sources:[{source_id:"P01:S06",title:"P01:S06",result_state:"reviewed_evidence"}]}}},research_tasks:[],
     runs:[{run_id:"saved-run",status:"success",human_action:"revise",revision_target:{citation_id:"C1",base_version:1,base_checkpoint:checkpoint}}]};
   await page.route("**/api/v1/**",async route=>{
     const path=new URL(route.request().url()).pathname; if(route.request().method()!=="GET")writes.push(path);
@@ -36,6 +36,14 @@ for (const width of [1440,1024,390]) test(`research start, organization, panel a
   const toggle=page.getByRole("button",{name:"任务说明与资料",exact:true});const panel=page.locator("#task-details-panel");
   for(let i=0;i<3;i++){await toggle.click();await expect(panel).toBeVisible();await toggle.click();await expect(panel).toBeHidden();}
   await toggle.click();await panel.evaluate(el=>el.scrollTop=el.scrollHeight);await page.getByRole("button",{name:"收起资料面板"}).click();await expect(panel).toBeHidden();await expect(toggle).toBeFocused();
+  await nav("研究资料");
+  await expect(page.locator(".fs-evidence-topic h2")).toHaveText("现金质量");
+  await page.locator(".fs-evidence-claim summary").click();
+  await expect(page.locator(".fs-evidence-claim summary")).toContainText("现金变化需要区分期间");
+  await expect(page.locator(".fs-source-grid h3")).toHaveText("已审阅资料（来源编号 P01:S06）");
+  await page.getByRole("button",{name:"判断与依据 →",exact:true}).click();
+  await expect(page).toHaveURL(/claim=C1/);
+  await expect(page.getByRole("region",{name:"研究依据图"})).toBeVisible();
   await nav("修订记录");await page.getByRole("button",{name:"比较基线与当前报告"}).click();
   await expect(page.locator(".fs-diff-side.after strong")).toHaveText("新判断");await expect(page.locator(".fs-diff-side.before strong")).toHaveText("旧判断");await expect(page.locator(".fs-diff-raw pre")).toBeHidden();
   await page.getByRole("checkbox",{name:"显示邻近上下文"}).check();await expect(page.locator(".fs-diff-side.after h2")).toHaveText("现金质量");

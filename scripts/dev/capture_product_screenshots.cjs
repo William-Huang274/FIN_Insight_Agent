@@ -34,7 +34,7 @@ async function main() {
       ['research-start', '/workspace', '这次，你想弄清楚什么？'],
       ['research-map', session + '&view=graph&level=overview', '报告总览'],
       ['research-studio', '/workspace?view=studio', '保存为新版本'],
-      ['research-runtime', session + '&view=activity', '回放已保存过程'],
+      ['research-runtime', session + '&view=activity', '研究中的节点'],
     ]) {
       const sessionsLoaded = page.waitForResponse(response => new URL(response.url()).pathname.endsWith('/research-sessions') && response.request().method() === 'GET');
       await page.goto(new URL(path, base).href);

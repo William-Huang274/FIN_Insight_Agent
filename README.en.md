@@ -23,7 +23,8 @@ FinSight brings financial SQL, source retrieval, source-bound calculations and m
 | Step | What you can do |
 | --- | --- |
 | Start with a question | Choose a company, filing or judgment to investigate, set the research date, and attach documents or images. Organize research by project; project groups and pins currently live in this browser. |
-| Follow the work | Inspect recorded stages, public activity, reported tokens and estimated cost. Add guidance during a run or request cancellation. Replay saved events afterward. |
+| Choose execution | Select a model and single-agent, selected-expert, free-delegation or full-research mode for new research, followups and revisions. Each run pins its selection; single-agent results are explicitly unreviewed. |
+| Follow the work | Read public progress, model and tool records, reported tokens and estimated cost in the main activity column. Add guidance or request cancellation; switch between saved runs afterward. |
 | Inspect the evidence | Navigate report overview → topic → judgment and evidence. Expand source context, formulas, operands, periods and provenance. |
 | Request a revision | Submit feedback on a selected judgment. The target and report baseline enter the native revision flow; compare the result while retaining the original version. |
 | Define research methods | Edit role Skills, expert concurrency and dual-review order. Save an independent configuration version and apply it to an existing or new task. |
@@ -33,13 +34,15 @@ FinSight brings financial SQL, source retrieval, source-bound calculations and m
 
 ![Report overview with expandable topics](docs/public/images/research-map.png)
 
-The research map represents report content and citation relationships. Artifact IDs, report versions and checkpoints bind revision targets to execution; navigation nodes do not need a one-to-one match with runtime nodes. Source inspection opens wider context. A visual connection does not establish financial causality.
+The research map represents report content and citation relationships. Artifact IDs, report versions and checkpoints bind revision targets to execution; navigation nodes do not need a one-to-one match with runtime nodes. The evidence library shares the same topic, judgment and source grouping, with links back to the map. Natural-language labels explain items while canonical identifiers retain exact bindings. Source inspection opens wider context. A visual connection does not establish financial causality.
 
 ### See actual execution and stay involved
 
 ![Actual saved stages, public activity and usage](docs/public/images/research-runtime.png)
 
-This screenshot shows a completed short question, including configuration loading, actual model calls and cost. Historical replay reveals saved events without calling a model again. During an active run, guidance is read at later phase handoffs. The UI exposes public progress and tool activity, not private reasoning transcripts.
+This screenshot shows saved activity from a NVIDIA/Micron fiscal-period comparison. The lead chose one research direction, followed by independent review. Viewing history makes no new model calls. Public progress and tool events append during execution; guidance is read at later phase handoffs. Private reasoning transcripts are not displayed.
+
+[Interaction and mode test questions](eval_sets/workbench_execution_modes.json) cover short followups, selected experts, new-company single-agent research, targeted revisions and free delegation. Selectable modes do not imply optimal cost: one local same-question comparison used 44,069 → 25,495 tokens, while the free-delegation example still needed 41 calls and 506,744 tokens. Review overhead remains an optimization target. These are individual engineering qualifications, not general savings guarantees.
 
 <details>
 <summary>View the research start page</summary>

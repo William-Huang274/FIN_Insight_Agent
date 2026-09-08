@@ -9,7 +9,7 @@ export const taskViews = [
   { id: "conversation", title: "追问与反馈", icon: MessageSquare }, { id: "activity", title: "运行与费用", icon: Radio },
 ] as const;
 export const pageTitles: Record<string, string> = { home: "开始研究", studio: "研究配置", all: "全部研究", inbox: "待审阅", new: "新建研究", preferences: "外观与偏好", review: "审查意见", ...Object.fromEntries(taskViews.map(v => [v.id, v.title])) };
-export const sessionStatus = (s: Session) => s.is_draft || s.phase === "draft" ? "资料准备中" : s.status === "busy" ? "运行中" : s.status === "error" ? "执行失败" : s.phase === "human_reviewed_not_released" ? "已人工审阅" : s.status === "interrupted" ? "等待审阅" : "已保存";
+export const sessionStatus = (s: Session) => s.is_draft || s.phase === "draft" ? "资料准备中" : s.status === "busy" ? "运行中" : s.status === "error" ? "执行失败" : s.phase === "research_needs_attention" ? "研究受阻 · 待处理" : s.phase === "single_agent_unreviewed" ? "单 Agent 结果 · 未复核" : s.phase === "human_reviewed_not_released" ? "已人工审阅" : s.status === "interrupted" ? "等待审阅" : "已保存";
 
 export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse, navigate, projects, onProjects }: { sessions: Session[]; id: string; page: string; collapsed: boolean; onCollapse: () => void; navigate: (page: string, id?: string) => void; projects: ProjectIndex; onProjects: (index: ProjectIndex) => void }) {
   const organize = useRef<HTMLDialogElement>(null);
@@ -31,7 +31,7 @@ export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse,
           if (!project.id && !items.length) return null;
           return <details className="fs-project" key={project.id} open><summary><ChevronRight size={13} /><FolderOpen size={16} /><span>{project.name}</span><small>{items.length}</small></summary>
             {items.map(s => <div key={s.thread_id} className={s.thread_id === id ? "fs-task selected" : "fs-task"}>
-              <button className="fs-task-link" title={s.title} onClick={() => go("graph", s.thread_id)}><FileClock size={15} /><span>{s.title || "未命名研究"}<small>{sessionStatus(s)} · {s.thread_id.slice(-6)}</small></span></button>
+              <button className="fs-task-link" title={s.title} onClick={() => go("graph", s.thread_id)}><FileClock size={15} /><span><span className="fs-task-title">{s.title || "未命名研究"}</span><small>{sessionStatus(s)} · {s.thread_id.slice(-6)}</small></span></button>
               {s.thread_id === id && !["home","all","inbox","preferences","studio","new"].includes(page) && <div className="fs-subnav">{taskViews.map(v => <button key={v.id} aria-current={page === v.id ? "page" : undefined} onClick={() => go(v.id, id)}><v.icon size={15} />{v.title}</button>)}</div>}
             </div>)}{!items.length && <p className="fs-project-empty">在管理项目中添加研究</p>}
           </details>;

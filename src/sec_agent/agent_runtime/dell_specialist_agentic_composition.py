@@ -364,6 +364,8 @@ def _build_graph_input(
                                  if live_web_read_enabled else "unavailable_in_this_profile"),
                    "usage": "Use request_source with operation catalog/search to get document_id; outline/read by document_id and optional node_id. Read full sections/tables, paginate with offset. Prefer node IDs for HTML. Search previews are not citable.",
                    "completion": (
+                       "Answer the current research question. Cite observed sources for each material claim, use canonical receipts for calculations, and disclose unresolved limitations. Historical case route obligations remain historical provenance, not mandatory coverage for this question. Source attribution, exact quotes and numeric authority checks still apply; semantic completeness requires review."
+                       if research_question else
                        "Q1 requires cited F2 issuer narrative plus cited S2 financial facts, accumulated across actions; old all-Reviewed F1/F2 route completion is not required in this profile. Other missing topics may be disclosed as limitations without claiming public non-disclosure."
                        if branch_id == "Q1_ISSUER_TRUTH" else
                        "Submit a source-grounded workpaper for independent semantic review. If a required Reviewed route is incomplete, read and cite actual source passages with exact quotes and authority notes, and explicitly describe the unresolved source/coverage limitations in open_gaps. This does not satisfy or promote the Reviewed route, prove full branch coverage, or prove public non-disclosure. Do not repeat the same failed route merely to raise its count."),
@@ -1112,6 +1114,7 @@ def _open_dell_specialist_composition(
                 ),
                 turn_source=turn_source,
                 method_reader=approved.method_reader,
+                enforce_case_route_requirements=research_question is None,
                 expected_graph_input_digest=canonical_sha256(graph_input),
             )
             yield _OpenedSpecialistComposition(

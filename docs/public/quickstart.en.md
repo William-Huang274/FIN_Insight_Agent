@@ -40,7 +40,7 @@ On Linux, use `npx playwright install --with-deps chromium` if browser system de
 
 Use `npm run test:public -- --headed --workers=1` to watch the tests. Failure screenshots and traces are written under `apps/workbench/frontend/test-results/public/`; inspect a trace with `npx playwright show-trace <trace.zip>`. Playwright manages this results directory; copy failures elsewhere before another run if you need to preserve them.
 
-If the port is occupied, set `FINSIGHT_E2E_FRONTEND_PORT` to another available port. Do not stop unrelated services to free a port.
+If a port is occupied or reserved by Windows, set `FINSIGHT_E2E_FRONTEND_PORT` to another available port. The default `test:e2e` also starts the compatibility backend; `FINSIGHT_E2E_BACKEND_PORT` changes both its listener and the frontend proxy (PowerShell: `$env:FINSIGHT_E2E_BACKEND_PORT='18795'`). `test:public` needs no backend. Do not stop unrelated services to free a port.
 
 ## 3. Start full local research
 

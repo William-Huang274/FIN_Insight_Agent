@@ -196,7 +196,9 @@ class CaseModelAudit(AgentMiddleware):
     def __init__(self, *, actor, profile, basis: TokenBudgetBasis, public_sink, private_sink, stream_public=False):
         self.actor, self.profile, self.basis = actor, profile, basis
         self.private_sink, self.stream_public = private_sink, stream_public
+        self.activity_sink = public_sink
         self.context_summary = None
+        self.extra_middlewares = []
         self.events = []
         def emit(event):
             public_sink(event)
@@ -207,7 +209,7 @@ class CaseModelAudit(AgentMiddleware):
         self.public_sink = emit
 
     def middlewares(self):
-        return [*([self.context_summary] if self.context_summary else []), self]
+        return [*([self.context_summary] if self.context_summary else []), *self.extra_middlewares, self]
 
     def model_runnable(self, model):
         """The native summarizer uses this same fee/error/private-audit hook."""
@@ -231,6 +233,7 @@ class CaseModelAudit(AgentMiddleware):
         stream = get_stream_writer()
         def emit(event):
             self.events.append(event)
+            self.activity_sink(event)
             stream(event)
         event = {"kind": "tool", "actor": self.actor, "call_id": request.tool_call["id"],
             "tool": request.tool_call["name"], "recorded_at": datetime.now(timezone.utc).isoformat()}

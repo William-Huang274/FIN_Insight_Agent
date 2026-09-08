@@ -20,6 +20,7 @@ from .dell_case_artifacts import DellCaseArtifacts
 from .dell_case_review_agent import CaseReview
 from .dell_report_session import SessionState, build_report_session_graph
 from .dell_workpaper_review_graph import validate_workpaper_state
+from .execution_options import execution_from_config, unreviewed_report_status
 
 
 class ResearchRequest(BaseModel):
@@ -118,6 +119,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         initial=lambda state: {key: state[key] for key in ("report", "report_review", "revisions", "phase")},
         state_schema=ResearchSessionState, input_schema=ResearchRequest, start_at_initialize=False,
         revision_handler=revision_handler if revise_research is not None else None,
+        revision_requires_case_review=True,
     )
 
     async def run_research(state, config: RunnableConfig, *, continuing=False):
@@ -132,7 +134,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         if continuing:
             # Only native state from this same task, never browser or old-case seeds.
             payload["completed_workpapers"] = retained
-        _stage("lead", "started", status="continue_remaining" if continuing else "fresh")
+        _stage("research", "started", status="continue_remaining" if continuing else "fresh")
         result = await research.ainvoke(payload, config)
         outcomes = result.get("task_results", [])
         papers = [*retained, *[validate_workpaper_state(row["agent_state"]) for row in outcomes if row["status"] == "submitted"]]
@@ -142,7 +144,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         # Canonical source checks occur before any of these papers reach review.
         artifacts = DellCaseArtifacts(papers) if papers else None
         ready = result.get("phase") == "research_ready_for_review" and bool(papers)
-        _stage("lead", "outcome", status="handoff" if ready else "needs_attention")
+        _stage("research", "outcome", status="handoff" if ready else "needs_attention")
         prior_done = {row["task"]["task_id"] for row in retained}
         new_tasks = deepcopy(result.get("tasks", []))
         new_outcomes = [{"task_id": row["task_id"], "status": row["status"]} for row in outcomes]
@@ -156,6 +158,17 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
             history.append({"run_id": None, "origin": "preceding_native_checkpoint",
                 "tasks": deepcopy(state.get("research_tasks", [])), "outcomes": deepcopy(state.get("research_outcomes", [])),
                 "phase": state["phase"]})
+        single_output = {}
+        if ready and execution_from_config(config).mode == "single":
+            from .dell_case_convergence_agent import report_citations
+            paper = artifacts.read_paper("P01")
+            # Render the agent's original workpaper, with an explicit claim index.
+            # No synthesis model, inferred short titles or invented verification.
+            prose = paper["narrative_markdown"] + "\n\n## 判断与依据\n\n" + "\n\n".join(
+                c["statement"] + f" [P01:{c['claim_id']}]" for c in paper["claims"])
+            single_output = {"report": {"title": paper["thesis"], "narrative_markdown": prose,
+                "citations": report_citations(prose, artifacts), "charts": []}, "report_review": unreviewed_report_status(),
+                "revisions": {}, "phase": "single_agent_unreviewed"}
         return {"case_profile": request.case_profile, "case_papers": papers,
             "research_tasks": [*[t for t in state.get("research_tasks", []) if t["task_id"] in prior_done], *new_tasks],
             "research_outcomes": [*[{"task_id": key, "status": "submitted"} for key in prior_done], *new_outcomes],
@@ -165,7 +178,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
             "research_as_of": artifacts.research_as_of if artifacts else "",
             "snapshot_id": artifacts.snapshot_id if artifacts else "",
             "phase": "research_reviewing" if ready else "research_needs_attention",
-            "research_stop_reason": None if ready else result.get("stop_reason") or "research_incomplete"}
+            "research_stop_reason": None if ready else result.get("stop_reason") or "research_incomplete", **single_output}
 
     async def research_node(state, config: RunnableConfig):
         return await run_research(state, config)
@@ -217,8 +230,10 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     graph.add_node("convergence", converge_node)
     graph.add_node("research_attention", attention)
     graph.add_edge(START, "research")
-    graph.add_conditional_edges("research", lambda state: "case_review" if state["phase"] == "research_reviewing" else "research_attention")
-    graph.add_conditional_edges("remaining_research", lambda state: "case_review" if state["phase"] == "research_reviewing" else "research_attention")
+    def after_research(state):
+        return "initialize" if state["phase"] == "single_agent_unreviewed" else "case_review" if state["phase"] == "research_reviewing" else "research_attention"
+    graph.add_conditional_edges("research", after_research)
+    graph.add_conditional_edges("remaining_research", after_research)
     graph.add_edge("case_review", "convergence")
     graph.add_conditional_edges("convergence", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "initialize")
     graph.add_conditional_edges("research_attention", lambda state: "remaining_research" if state.get("continue_remaining_research") else END)

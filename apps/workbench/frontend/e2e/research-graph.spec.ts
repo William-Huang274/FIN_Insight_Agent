@@ -18,7 +18,7 @@ for (const width of [1440, 1024, 390]) {
       const url = new URL(route.request().url());
       if (route.request().method() !== "GET") writes.push(url.pathname);
       let body: unknown = {};
-      if (url.pathname.endsWith("/research-session-config")) body = { fresh_research_enabled: false };
+      if (url.pathname.endsWith("/research-session-config")) body = { fresh_research_enabled: false, branch_topics: [{branch_id:"cash", objective:"现金质量"}, {branch_id:"demand", objective:"需求质量"}] };
       else if (url.pathname.endsWith("/research-sessions")) body = [session];
       else if (url.pathname.endsWith("/report-versions")) body = { versions: [{ version: 4, checkpoint_id: checkpoint, title: report.title }], next_cursor: null };
       else if (url.pathname.endsWith("/actions")) { submitted = route.request().postDataJSON(); session.runs = [{ run_id: "test-target-run", status: "pending", created_at: "2026-09-08T00:00:00Z", revision_target: submitted.target }]; session.can_respond = false; body = { run_id: "test-target-run" }; }
@@ -79,10 +79,18 @@ for (const width of [1440, 1024, 390]) {
     await taskPage(page, "研究地图");
     await expect(graph.getByLabel("你的假设 / 质疑 / 补证要求")).toHaveValue("请核对回款跨期，不应直接视为已发生事实。");
     expect(writes).toEqual([]);
+    await graph.getByLabel("协作模式").selectOption("selected");
+    await graph.getByRole("button", { name: "查看修订范围" }).click();
+    await expect(graph.getByRole("button", {name:"确认提交修订",exact:true})).toBeDisabled();
+    await graph.getByRole("checkbox", {name:"现金质量",exact:true}).check();
+    await graph.getByLabel("研究模型").selectOption("deepseek-v4-flash");
     await graph.getByRole("button", { name: "查看修订范围" }).click();
     await graph.getByRole("button", { name: "确认提交修订", exact: true }).click();
     await expect(graph.getByText("节点修订：等待执行", { exact: true })).toBeVisible();
     expect(submitted.target).toMatchObject({ citation_id: "C1", base_version: 4, base_digest: "a".repeat(64), base_checkpoint: checkpoint });
+    expect(submitted.execution).toEqual({mode:"selected",model:"deepseek-v4-flash",branch_ids:["cash"]});
+    await expect(page.getByRole("heading", { name: "研究现场" })).toBeVisible();
+    await page.goto(`/workspace/session?thread=${id}&view=graph`);
     expect(submitted.action).toBe("revise"); expect(writes).toHaveLength(1);
     await graph.getByRole("button", { name: "查看相对基线的报告变化" }).click();
       await expect(graph.locator(".rg-run-result .fs-diff-side.after")).toContainText("修订候选判断");

@@ -894,10 +894,13 @@ def _project_agentic_specialist_request(
         task_context = request["task_context"]
         projected["task_context"] = _agentic_semantic_value(task_context)
         # These are semantic dependency names, not host execution identities.
-        projected["task_context"]["assignment"]["task_id"] = task_context["assignment"]["task_id"]
-        for original, view in zip(task_context["dependency_workpapers"],
-                                  projected["task_context"]["dependency_workpapers"], strict=True):
-            view["task_id"] = original["task_id"]
+        # A direct single-researcher question has no Lead assignment or sibling
+        # handoffs. Preserve the question-only contract instead of inventing one.
+        if "assignment" in task_context:
+            projected["task_context"]["assignment"]["task_id"] = task_context["assignment"]["task_id"]
+            for original, view in zip(task_context["dependency_workpapers"],
+                                      projected["task_context"]["dependency_workpapers"], strict=True):
+                view["task_id"] = original["task_id"]
     if collaboration:
         projected["collaboration_context"] = {
             "mode": collaboration["mode"],
@@ -1319,6 +1322,8 @@ class DeepSeekStructuredAgentAdapter:
             prompt = _NATIVE_REVIEW_SYSTEM_PROMPT if is_reviewer else _NATIVE_SPECIALIST_SYSTEM_PROMPT
             if is_lead:
                 prompt = LEAD_RESEARCH_SYSTEM_PROMPT
+                if request_value.get("scope_policy"):
+                    prompt += "\nCurrent run scope policy overrides the default all-branches requirement: " + request_value["scope_policy"]
             if collaboration_mode == "repair":
                 prompt += (" You are the original responsible author revising your prior workpaper in response to "
                            "independent review findings. Prior source observations are available, but the reviewer "

@@ -33,6 +33,7 @@ from .dell_case_artifacts import DellCaseArtifacts
 from .dell_case_convergence_agent import build_case_output_agent, report_citations, report_model_view, CaseReport, ReportReview
 from .dell_case_review_agent import CaseModelAudit, case_chat_model, case_mcp_tools
 from .targeted_revision import RevisionTarget, targeted_feedback
+from .execution_options import ExecutionOptions, execution_from_config, unreviewed_report_status
 
 
 class ReviewAction(BaseModel):
@@ -41,6 +42,7 @@ class ReviewAction(BaseModel):
     message: str = Field(default="", max_length=16000)
     answer_mode: Literal["quick", "deep"] = "deep"
     target: RevisionTarget | None = None
+    execution: ExecutionOptions | None = None
 
     @model_validator(mode="after")
     def quick_only_for_questions(self):
@@ -83,7 +85,7 @@ def abandoned_question_update(state, reason):
 
 
 def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=None, quick_writer=None,
-                               state_schema=SessionState, input_schema=SessionInput, start_at_initialize=True, revision_handler=None):
+                               state_schema=SessionState, input_schema=SessionInput, start_at_initialize=True, revision_handler=None, revision_requires_case_review=False):
     """One human request, native agentic work, then another real interrupt.
 
     There is no automatic rewrite-until-PASS edge. Report acceptance is a human
@@ -100,13 +102,15 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             "report_review": deepcopy(material["report_review"]), "revisions": deepcopy(material["revisions"]),
             "report_version": 1, "report_revision_reason": "初始报告", "phase": material.get("phase", "needs_revision"), "conversation": [], "model_events": []}
 
-    def human_review(state):
+    def human_review(state, config: RunnableConfig):
         response = interrupt({"kind": "dell_report_review", "report_version": state["report_version"],
             "phase": state["phase"], "actions": ["ask", "revise", "accept"],
             "notice": "Acceptance is local human report review, not automatic release or financial authority."})
         action = ReviewAction.model_validate(response)
         if action.action == "accept":
             review = state["report_review"]
+            if review.get("review_status") == "not_run":
+                raise ValueError("single_agent_result_requires_independent_review_before_acceptance")
             if (state.get("research_stop_reason") or review.get("unresolved_data_requests") or any(f["severity"] == "material" for f in review["findings"])
                     or any(r["disposition"] == "unresolved" for v in state.get("revisions", {}).values()
                            for r in v.get("finding_responses", []))):
@@ -116,7 +120,8 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             raise ValueError("human_question_or_revision_feedback_required")
         message = targeted_feedback(state, action.target, action.message) if action.target else action.message
         target = "quick_writer" if action.answer_mode == "quick" else "writer"
-        if action.action == "revise" and revision_handler is not None:
+        execution = execution_from_config(config)
+        if action.action == "revise" and revision_handler is not None and execution.mode != "single" and (not revision_requires_case_review or state.get("case_review")):
             target = "research_revision"
         if target == "quick_writer" and quick_writer is None:
             raise ValueError("quick_answer_not_configured")
@@ -135,8 +140,11 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             body["research_question"] = state["question"]
         if role in {"writer", "quick_writer"}:
             # Do not repeat the large citation object: canonical IDs resolve via tools.
+            history = state.get("conversation", [])[:-1]
             body.update(request_action=state["request_action"], user_message=state["message"],
-                public_conversation=[{k: m[k] for k in ("role", "content")} for m in state.get("conversation", [])[:-1]])
+                conversation_history={"message_count": len(history), "read_on_demand": "read_public_conversation lists or reads saved public messages. Full text and citation bindings remain stored; previews are not substitutes for evidence.",
+                    "recent": [{"message_index": i, "role": m["role"], "preview": m["content"][:400], "truncated": len(m["content"]) > 400}
+                        for i, m in enumerate(history) if i >= len(history)-2]})
             if role == "quick_writer":
                 body["report_overview"] = {"title": state["report"]["title"], "version": state["report_version"],
                     "read_on_demand": "read_current_report for the complete current prose; use relevant sources for facts."}
@@ -170,15 +178,18 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
                 "conversation": [{"role": "assistant", "content": output["answer_markdown"], "citations": output["citations"]}]}
         return {"report": output, "last_output_kind": "report", "model_events": events}
 
-    def finish(state):
+    def finish(state, config: RunnableConfig):
         review = state["report_review"]
+        if state["last_output_kind"] == "report" and execution_from_config(config).mode == "single":
+            review = unreviewed_report_status()
         material = (bool(state.get("research_stop_reason") or review.get("unresolved_data_requests"))
             or any(f["severity"] == "material" for f in review["findings"])
             or any(r["disposition"] == "unresolved" for v in state.get("revisions", {}).values()
                    for r in v.get("finding_responses", [])))
         return {"report_version": state["report_version"] + (state["last_output_kind"] == "report"),
             **({"report_revision_reason": state.get("message", "未记录修订请求")} if state["last_output_kind"] == "report" else {}),
-            "phase": "needs_revision" if material else "ready_for_human_review"}
+            "report_review": review,
+            "phase": "needs_revision" if material else "single_agent_unreviewed" if review.get("review_status") == "not_run" else "ready_for_human_review"}
 
     def question_error(state, error: NodeError):
         from langchain.agents.middleware.model_call_limit import ModelCallLimitExceededError
@@ -212,7 +223,9 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
     if start_at_initialize:
         graph.add_edge(START, "initialize")
     graph.add_edge("initialize", "human_review")
-    graph.add_conditional_edges("writer", lambda s: "verifier" if s["last_output_kind"] == "report" else "finish")
+    def after_writer(state, config: RunnableConfig):
+        return "verifier" if state["last_output_kind"] == "report" and execution_from_config(config).mode != "single" else "finish"
+    graph.add_conditional_edges("writer", after_writer)
     graph.add_edge("verifier", "finish")
     if quick_writer is not None:
         graph.add_edge("quick_writer", "finish")

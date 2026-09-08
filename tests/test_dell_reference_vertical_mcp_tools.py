@@ -825,6 +825,11 @@ def test_mid_lane_transport_failure_preserves_calls_and_partial_items(
     )
     assert partial["partial_success_item_count"] >= 1
     assert partial["partial_success_not_promoted"] is True
+    method_diagnostic = call_items[0]["structured_output_projection"]
+    assert method_diagnostic["successful_method_binding"] is True
+    assert len(method_diagnostic["method_package_digest"]) == 64
+    assert "method_package" not in method_diagnostic
+    assert call_items[-1]["structured_output_projection"]["error_code"] == "mcp_transport_exception"
     assert all(
         item.get("result_state") != "reviewed_evidence"
         for item in result["items"]

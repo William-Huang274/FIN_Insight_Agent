@@ -21,6 +21,27 @@ from .conversation_agent import GrantedTool
 def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | None = None):
     """Paths and thread ownership come from the host, never tool arguments."""
     grants = []
+    @tool
+    def read_saved_result(tool_call_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000):
+        """Read a prior successful data tool result from this conversation's original checkpoint.
+
+        Use the original tool_call_id when an old result was omitted from the
+        current request. No web/SQL request is repeated. Pagination preserves
+        exact original text; it is not a new source or permission grant.
+        """
+        if offset < 0 or not 1 <= max_characters <= 24000:
+            raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
+        allowed = {"read_public_source", "query_financial_data", "read_task_material", "calculate_research_metric"}
+        saved = next((m for m in runtime.state.get("messages", []) if isinstance(m, ToolMessage)
+                      and m.tool_call_id == tool_call_id and m.name in allowed and m.status == "success"), None)
+        if saved is None:
+            raise ToolException("当前对话没有这条成功数据读取记录；不能跨窗口猜测或回放失败操作")
+        content = saved.content if isinstance(saved.content, str) else json.dumps(saved.content, ensure_ascii=False)
+        return {"original_tool": saved.name, "original_tool_call_id": tool_call_id,
+                "content": content[offset:offset+max_characters], "offset": offset,
+                "next_offset": offset+max_characters if offset+max_characters < len(content) else None,
+                "total_characters": len(content), "new_tool_dispatch": False}
+    grants.append(GrantedTool(read_saved_result, "read", "本对话原生checkpoint中的成功数据读取记录"))
     if attachment_store is not None:
         @tool
         def list_task_materials():
@@ -63,7 +84,7 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
                 if message.name == "read_handoff_evidence" and message.status != "error":
                     observed.update(message.artifact.get("source_items", {}))
                     continue
-                tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document"}.get(message.name, message.name)
+                tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_public_source": "read_source_document"}.get(message.name, message.name)
                 observed.update(source_items_from_tool(tool_name, message.artifact))
         try:
             result = calculate_from_sources(request, observed.__getitem__)

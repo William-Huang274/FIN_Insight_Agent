@@ -989,13 +989,14 @@ def _action_attempt_id(
     *,
     notebook: SpecialistNotebook,
     action: SpecialistAction,
+    turn_index: int | None = None,
 ) -> str:
     digest = canonical_sha256(
         {
             "run_invocation_id": state["run_invocation_id"],
             "agent_id": state["agent_id"],
             "task_id": notebook.task_id,
-            "model_turn_count": notebook.model_turn_count,
+            "model_turn_count": notebook.model_turn_count if turn_index is None else turn_index,
             "action": action.model_dump(mode="json"),
         }
     )
@@ -1011,6 +1012,44 @@ def _semantic_action_digest(action: SpecialistAction) -> str:
             exclude={"context_digest", "reason_summary"},
         )
     )
+
+
+def _saved_read_observation(state, notebook, action):
+    """Recover an exact successful read from this task's native checkpoint.
+
+    A projected ToolMessage can be read again without dispatching or charging a
+    new tool action. Failed/denied reads and control actions are never replayed.
+    Bind through the original action attempt, not observation list positions
+    (method reads also occupy the dispatch ledger).
+    """
+    if not isinstance(action, (RequestEvidenceAction, RequestFinanceAction,
+                               RequestCalculationAction, RequestSourceAction)):
+        return None
+    digest = _semantic_action_digest(action)
+    if digest not in notebook.dispatched_action_digests:
+        return None
+    observations = {item.action_attempt_id: item for item in notebook.observations}
+    for record in notebook.model_turn_records:
+        decision = record.action
+        if isinstance(decision, SpecialistNativeToolBatch):
+            originals = []
+            for call in decision.tool_calls:
+                if isinstance(call, SpecialistNativeToolCall):
+                    try:
+                        originals.append(_validate_action(call.args))
+                    except (ValueError, DellSpecialistAgenticGraphError):
+                        continue
+        else:
+            originals = [decision]
+        for original in originals:
+            if _semantic_action_digest(original) != digest:
+                continue
+            attempt = _action_attempt_id(state, notebook=notebook, action=original,
+                                         turn_index=record.turn_index)
+            observation = observations.get(attempt)
+            if observation is not None and observation.status == "success" and observation.failure is None:
+                return observation
+    return None
 
 
 def _build_tool_request(
@@ -1844,6 +1883,17 @@ def build_dell_specialist_agentic_state_graph(
                 return ToolMessage(name=call.name, tool_call_id=call.id,
                     content=json.dumps({"human_review_required": True}))
             kind = "finance" if isinstance(action, (RequestFinanceAction, RequestCalculationAction)) else "evidence"
+            saved = _saved_read_observation(working, before, action)
+            if saved is not None:
+                body = {"observations": [{key: saved.model_dump(mode="json")[key] for key in (
+                    "kind", "status", "references", "content", "route_completions", "failure")}],
+                    "feedback": [], "checkpoint_replay": {
+                        "original_action_attempt_id": saved.action_attempt_id,
+                        "observation_digest": saved.observation_digest,
+                        "new_tool_dispatch": False}}
+                working.update(pending_action=None, phase="tool_observation_ready")
+                return ToolMessage(name=call.name, tool_call_id=call.id,
+                    status="success", content=json.dumps(body, ensure_ascii=False))
             update = execute_tool(working,
                 port=dependencies.finance_tool if kind == "finance" else dependencies.evidence_tool,
                 expected_kind=kind)

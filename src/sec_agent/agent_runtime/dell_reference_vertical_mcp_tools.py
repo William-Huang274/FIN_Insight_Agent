@@ -1391,7 +1391,13 @@ class DellMCPToolLaneAdapter(AbstractContextManager["DellMCPToolLaneAdapter"]):
         items = [
             {
                 "result_state": "tool_failure", "mcp_receipt": call.receipt,
-                "structured_output_projection": _bounded_diagnostic(call.content),
+                "structured_output_projection": (
+                    {"successful_method_binding": True,
+                     "method_package_digest": canonical_sha256(call.content["method_package"]),
+                     "method_content_omitted_from_failure_diagnostic": True}
+                    if not call.error and isinstance(call.content, Mapping) and "method_package" in call.content
+                    else _bounded_diagnostic(call.content)
+                ),
                 "call_returned_error": call.error,
                 "cell_binding_used": False,
             }

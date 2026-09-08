@@ -62,7 +62,7 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
         return {f["numeric_fact_id"]: {**f, "result_state": "numeric_fact"}
                 for row in body.get("results", []) if row.get("status") == "resolved"
                 for f in row.get("facts", []) if f.get("numeric_fact_authority") is True}
-    if tool_name == "read_source_document" and body.get("operation") == "read":
+    if tool_name == "read_source_document" and body.get("operation") in {"read", "search"}:
         return {p["passage_id"]: dict(p) for p in body.get("items", [])
                 if p.get("result_state") == "source_bound_passage" and p.get("writer_citable") is True
                 and p.get("numeric_fact_authority") is False and p.get("passage_id") and p.get("passage")}

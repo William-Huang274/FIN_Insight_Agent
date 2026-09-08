@@ -30,7 +30,7 @@ def public_history(state):
 
 def observed_sources(state):
     items = {}
-    names = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document"}
+    names = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_public_source": "read_source_document"}
     for message in state.get("values", {}).get("messages", []):
         body = message.get("artifact")
         if message.get("type") != "tool" or message.get("status") == "error" or not isinstance(body, dict):

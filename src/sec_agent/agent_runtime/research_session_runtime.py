@@ -230,7 +230,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 "event": "progress", "objective": message})
             return "进展已展示给研究者；不是证据或阶段完成。"
         progress_tool = StructuredTool.from_function(coroutine=report_progress, name="report_research_progress",
-            description="Send a concise public progress update at a meaningful change of work. Do not expose private chain of thought, repeat every tool result, or claim unverified completion.", args_schema=ResearchProgress)
+            description="Send a concise public progress update in the user's language (Chinese for a Chinese question) at a meaningful change of work. Do not expose private chain of thought, repeat every tool result, or claim unverified completion.", args_schema=ResearchProgress)
         tools = [*tools, progress_tool]
         method_instructions += "\nUse report_research_progress to briefly tell the researcher your approach before substantial work, and significant findings or a changed plan. Keep it concise and public; do not narrate hidden reasoning or call it after every tool."
         model_profile, basis, limits = model_values(role)

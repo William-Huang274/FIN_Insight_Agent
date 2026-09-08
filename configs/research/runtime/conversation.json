@@ -1,6 +1,7 @@
 {
   "profile": {"model": "deepseek-v4-flash", "thinking": "disabled", "reasoning_effort": "low"},
   "limits": {"model_calls": 8, "tool_calls": 12},
+  "context_editing": {"trigger_tokens": 6000, "keep": 2},
   "budget": {
     "node_role": "specialist",
     "node_purpose": "General multi-turn assistant and bounded source/financial-data questions; no mandatory financial expert pipeline",

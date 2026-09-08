@@ -29,6 +29,8 @@ def test_report_never_serializes_private_text_or_invents_missing_usage(tmp_path)
     folder = tmp_path / "attempt"
     folder.mkdir()
     events = [
+        {"kind": "tool", "event": "started", "call_id": "read-source", "recorded_at": "2026-09-05T19:00:00Z"},
+        {"kind": "tool", "event": "outcome", "call_id": "read-source", "status": "success"},
         {"kind": "task", "event": "started", "task_id": "T1"},
         {"kind": "task", "event": "outcome", "task_id": "T1", "status": "submitted"},
         {"event": "started", "call_id": "a", "actor": "specialist", "model": "deepseek-v4-pro",

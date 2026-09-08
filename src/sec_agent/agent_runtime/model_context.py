@@ -14,6 +14,7 @@ from typing_extensions import NotRequired
 
 
 REREADABLE_TOOLS = frozenset({
+    "read_public_source", "read_task_material", "query_financial_data", "read_saved_result",
     "read_research_artifact", "read_current_workpaper", "read_research_source",
     "read_current_source", "read_source_document", "query_company_financial_facts",
     "RequestEvidenceAction", "RequestFinanceAction", "RequestSourceAction", "ReadWorkpaperAction",
@@ -27,7 +28,7 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6):
     known = set(names.values()) | {m.name for m in messages if isinstance(m, ToolMessage)}
     edit = ClearToolUsesEdit(trigger=trigger_tokens, keep=keep, clear_tool_inputs=False,
         exclude_tools=tuple(sorted(name for name in known if name and name not in REREADABLE_TOOLS)),
-        placeholder="[Older read result omitted from this request; the host retains the original. Repeat the same read tool and arguments when its source context is needed.]")
+        placeholder="[Older read result omitted from this request; the host retains the original. Use read_saved_result with this original tool_call_id when available, or repeat the same read tool and arguments when its source context is needed.]")
     projected = deepcopy(list(messages))
     edit.apply(projected, count_tokens=count_tokens_approximately)
     # Native 1.4 exclusions are by tool name. A single failed read must not pin

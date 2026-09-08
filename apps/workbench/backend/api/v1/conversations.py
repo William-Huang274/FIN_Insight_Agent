@@ -36,6 +36,19 @@ class ConversationHandoff(BaseModel):
     note: str = Field(min_length=1, max_length=2000)
 
 
+class ConversationApproval(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    checkpoint_id: UUID
+    interrupt_id: str = Field(min_length=1, max_length=100)
+    decisions: list[Literal["approve", "reject"]] = Field(min_length=1, max_length=12)
+
+
+def pending_approvals(state):
+    return [{"id": item["id"], "value": item["value"]}
+        for task in state.get("tasks", []) for item in task.get("interrupts", [])
+        if isinstance(item.get("value"), dict) and item["value"].get("action_requests")]
+
+
 def public_messages(state):
     result = []
     for message in state.get("values", {}).get("messages", []):
@@ -133,6 +146,30 @@ def build_conversations_router(service):
             raise HTTPException(409, "请先处理当前等待批准的操作")
         run = await invoke(thread_id, body)
         return {"thread_id": str(thread_id), "run_id": run["run_id"]}
+    @router.post("/{thread_id}/approvals")
+    async def approve(thread_id: UUID, body: ConversationApproval, request: Request):
+        browser_write(request)
+        thread = await owned(thread_id)
+        if thread.get("status") == "busy":
+            raise HTTPException(409, "本轮已在运行，请刷新操作状态")
+        state = await service.sdk.threads.get_state(str(thread_id))
+        pending = next((item for item in pending_approvals(state) if item["id"] == body.interrupt_id), None)
+        if state.get("checkpoint", {}).get("checkpoint_id") != str(body.checkpoint_id) or not pending:
+            raise HTTPException(409, "待批准操作已变化或已处理，请刷新后核对")
+        if len(body.decisions) != len(pending["value"]["action_requests"]):
+            raise HTTPException(422, "每个待执行动作都需要明确的决定")
+        runs = await service.sdk.runs.list(str(thread_id), limit=1)
+        if not runs or runs[0]["status"] != "interrupted":
+            raise HTTPException(409, "原运行当前不在等待批准状态")
+        previous = runs[0].get("metadata", {})
+        selected = ConversationMessage(message="批准恢复", model=previous["model"], permission_mode=previous["permission_mode"])
+        run = await service.sdk.runs.create(str(thread_id), GRAPH,
+            command={"resume": {body.interrupt_id: {"decisions": [{"type": d} for d in body.decisions]}}},
+            config={"configurable": {"conversation_model": selected.model, "permission_mode": selected.permission_mode}},
+            stream_mode=["custom", "messages-tuple"], stream_resumable=True, multitask_strategy="reject",
+            metadata={"surface": SURFACE, "model": selected.model, "permission_mode": selected.permission_mode,
+                "approval": {"checkpoint_id": str(body.checkpoint_id), "interrupt_id": body.interrupt_id, "decisions": body.decisions}})
+        return {"thread_id": str(thread_id), "run_id": run["run_id"]}
     @router.get("/{thread_id}/handoff-preview")
     async def handoff_preview(thread_id: UUID):
         thread = await owned(thread_id)
@@ -177,9 +214,10 @@ def build_conversations_router(service):
                 "usage": usage, "context_usage": request_context_usage(activity), "cost_estimate": public_cost_estimate(activity)})
         return {"thread_id": str(thread_id), "title": thread.get("metadata", {}).get("title"), "status": thread.get("status"),
             "messages": public_messages(state), "events": events, "runs": public_runs,
+            "checkpoint_id": state.get("checkpoint", {}).get("checkpoint_id"), "approvals": pending_approvals(state),
             "attachments": service.attachment_store.list(thread_id) if getattr(service, "attachment_store", None) else [],
             "handoff": thread.get("metadata", {}).get("handoff"),
-            "permissions_notice": "当前仅提供本对话资料/已配置财务快照的读取和计算；三档模式均不授权修改用户原文件。OS sandbox和可写工具尚未开放。"}
+            "permissions_notice": "资料和财务快照只读。部署启用隔离Python时，请求标准逐次批准；代我批准/完全访问仅在空白临时容器内执行。各档均未开放用户原文件、宿主终端或服务器写入。"}
     @router.post("/{thread_id}/stop")
     async def stop(thread_id: UUID, request: Request):
         browser_write(request)

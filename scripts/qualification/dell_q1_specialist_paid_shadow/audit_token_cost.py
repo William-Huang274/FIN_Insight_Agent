@@ -123,7 +123,9 @@ def phase_for_actor(actor):
 def audit(root):
     calls, not_sent = [], []
     for audit_path in sorted(root.glob("*/model-call-events.jsonl")):
-        events = [e for e in records(audit_path) if e.get("call_id") and e.get("execution_source") != "saved_response_replay"]
+        events = [e for e in records(audit_path) if e.get("call_id")
+                  and e.get("kind") not in {"tool", "stage"}
+                  and e.get("execution_source") != "saved_response_replay"]
         starts = {e["call_id"]: e for e in events if e.get("event") == "started"}
         outcomes = {e["call_id"]: e for e in events if e.get("event") == "outcome"}
         if len(starts) != sum(e.get("event") == "started" for e in events):

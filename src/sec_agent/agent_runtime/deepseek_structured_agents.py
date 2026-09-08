@@ -428,7 +428,7 @@ def load_deepseek_structured_agent_config(
 
 _SYSTEM_PROMPTS: dict[NodeRole, str] = {
     "planner": (
-        "You are the planning node for one bounded DELL financial-research case. "
+        "You are the planning node for the supplied bounded financial-research case. "
         "Select only supplied branches and express search/fact requests using only "
         "the supplied tool capabilities and output schema. Do not answer the research "
         "question and do not invent runtime IDs, "
@@ -470,7 +470,7 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
         "all analytical prose in clear Simplified Chinese."
     ),
     "lead": (
-        "You are the lead analyst for one bounded DELL case. Synthesize every supplied "
+        "You are the lead analyst for the supplied bounded research case. Synthesize every supplied "
         "branch, address the counter-thesis, preserve cited IDs, and state calibrated "
         "confidence. Return report semantics only; never generate runtime identity, "
         "binding, digest, receipt, snapshot or plan fields. Write all analytical prose "
@@ -482,7 +482,7 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
 
 _SPECIALIST_COMMON_SYSTEM_PROMPT = (
     "You are one autonomous financial-research Specialist operating inside a "
-    "bounded tool loop for the supplied DELL branch. Decide only the next action; "
+    "bounded tool loop for the assigned research branch and company. Decide only the next action; "
     "do not pretend that a requested tool has already run. Copy the supplied "
     "context_digest exactly as an opaque binding. Use only assigned evidence "
     "routes, disclosed topic constraints and disclosed finance metrics. Reviewed "
@@ -493,7 +493,10 @@ _SPECIALIST_COMMON_SYSTEM_PROMPT = (
     "submit an evidence-bound Chinese workpaper, or request human review when the "
     "bounded tools cannot proceed. Treat the disclosed remaining-turn and "
     "remaining-tool counts as hard anomaly ceilings, not completion targets. "
-    "reason_summary is a concise decision rationale, never hidden chain-of-thought."
+    "reason_summary is a concise public decision rationale, never hidden chain-of-thought. "
+    "Write reason_summary, reasoning_summary and all public progress in the user's language "
+    "(Simplified Chinese for a Chinese question). Source queries, exact quotes and identifiers "
+    "retain the source language; that does not change the language of your explanation."
     " When request_source is disclosed, use catalog/search/outline/read to inspect "
     "approved original-context passages; do not keep repeating unproductive searches. "
     "PASSAGE references are source-bound and citable with exact citation_quotes and "
@@ -510,8 +513,10 @@ _AGENTIC_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     " Return one object whose sole top-level field is action, containing the next action matching the schema."
 )
 _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
-    " Express decisions using the supplied tools. Independent read-only requests may "
-    "share one response; all results will be returned by tool_call_id before your next turn. "
+    " Express decisions using the supplied tools. Independent source reads and source-bound "
+    "calculations should share one response when their inputs are already observed; all results "
+    "will be returned by tool_call_id before your next turn. Do not spend separate model turns "
+    "on independent ratios or unit conversions. If a calculation needs a new result, wait for it first. "
     "Use the same supplied context_digest for every call in that response. Pass each tool's "
     "arguments directly, without another action wrapper. Wait for results before making dependent requests. "
     "SubmitWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "

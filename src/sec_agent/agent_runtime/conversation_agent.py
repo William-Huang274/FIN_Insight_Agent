@@ -25,7 +25,8 @@ class GrantedTool:
 
 
 def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mode: PermissionMode,
-                             checkpointer, middleware=(), model_calls=8, tool_calls=12):
+                             checkpointer, middleware=(), model_calls=8, tool_calls=12,
+                             server_managed_persistence=False):
     """Build a native agent; grants are trusted host configuration, not model input.
 
     Read access is explicitly granted by the host. Only task-owned generated
@@ -50,7 +51,7 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
         interrupt_on[name] = ({"allowed_decisions": ["approve", "reject"],
                               "description": f"请求执行 {name}。授权范围：{grant.scope_description}"}
                              if needs_approval else False)
-    if any(interrupt_on.values()) and checkpointer is None:
+    if any(interrupt_on.values()) and checkpointer is None and not server_managed_persistence:
         raise ValueError("conversation_approval_requires_native_checkpoint")
     prompt = (
         "You are FinSight, a helpful assistant for ordinary questions, tool use, and source-grounded financial research. "

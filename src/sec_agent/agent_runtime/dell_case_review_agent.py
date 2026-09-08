@@ -258,9 +258,20 @@ class CaseModelAudit(AgentMiddleware):
         # the provider. Do not count a second copy as model context.
         context_view = [m.model_dump(mode="json", exclude={"artifact", "response_metadata", "usage_metadata"}) for m in messages]
         size = len(json.dumps({"messages": context_view, "tools": [convert_to_openai_tool(t) for t in request.tools]}, ensure_ascii=False))
-        if size > self.basis.max_input_characters:
-            raise ValueError("case_review_input_ceiling_before_transport")
+        character_basis = "unprojected_messages_and_tool_schemas_not_provider_tokens"
+        from .deepseek_structured_agents import ReasoningPreservingChatDeepSeek
+        if isinstance(request.model, ReasoningPreservingChatDeepSeek):
+            payload = request.model._get_request_payload(messages, tools=[convert_to_openai_tool(t) for t in request.tools])
+            size = len(json.dumps(payload, ensure_ascii=False))
+            character_basis = "projected_sdk_payload_including_tools_not_provider_tokens"
         call_id = str(uuid4())
+        if size > self.basis.max_input_characters:
+            self.public_sink({"event": "outcome", "status": "blocked_before_transport_input_limit",
+                "call_id": call_id, "actor": self.actor, "role": "specialist", "model": self.profile.model,
+                "recorded_at": datetime.now(timezone.utc).isoformat(), "provider_call_attempted": False,
+                "input_characters": size, "max_input_characters": self.basis.max_input_characters,
+                "input_character_basis": character_basis})
+            raise ValueError("case_review_input_ceiling_before_transport")
         # Native LangChain metadata gives the cloud LLM span the same stable ID
         # as the local usage record; no backfill or mutation of historical runs.
         request = request.override(model=request.model.model_copy(update={"metadata": {
@@ -271,7 +282,7 @@ class CaseModelAudit(AgentMiddleware):
             "reasoning_effort": self.profile.reasoning_effort if self.profile.thinking == "enabled" else None,
             "input_characters": size,
             "max_input_characters": self.basis.max_input_characters,
-            "input_character_basis": "unprojected_messages_and_tool_schemas_not_provider_tokens",
+            "input_character_basis": character_basis,
             "transport_attempt_limit": 1, "provider_call_attempted": True,
             "execution_source": "provider_model", "recorded_at": datetime.now(timezone.utc).isoformat()}
         self.public_sink({**common, "event": "started", "max_output_tokens": self.basis.max_output_tokens})

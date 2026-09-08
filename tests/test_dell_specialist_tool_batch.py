@@ -83,7 +83,6 @@ def test_four_reads_are_one_model_turn_four_actions_with_all_results():
     ("context", "specialist_model_turn_context_binding_invalid"),
     ("route", "specialist_evidence_route_not_assigned"),
     ("unknown", "not a valid tool"),
-    ("duplicate_request", "duplicate_tool_request_blocked_before_dispatch"),
     ("invalid_json", "specialist_tool_arguments_json_invalid"),
 ])
 def test_one_invalid_call_does_not_discard_three_valid_reads(defect, code):
@@ -121,6 +120,52 @@ def test_source_profile_denial_and_tool_ceiling_remain_effective():
     assert result["notebook"]["tool_action_count"] == 2
     assert result["human_review_handoff"]["trigger"] == "tool_action_ceiling"
     assert [row["status"] for row in result["tool_results"]] == ["success", "success", "error", "error"]
+
+
+def test_duplicate_success_reads_replay_original_checkpoint_without_dispatch():
+    def mutate(batch):
+        batch["tool_calls"][0]["name"] = "RequestFinanceAction"
+        batch["tool_calls"][0]["args"] = deepcopy(batch["tool_calls"][1]["args"])
+    _, requests, calls = _exercise(mutate)
+    assert len(calls) == 3
+    replies = requests[1]["tool_results"]
+    assert all(row["status"] == "success" for row in replies)
+    original, replay = (json.loads(replies[index]["content"]) for index in (0, 1))
+    assert original["observations"] == replay["observations"]
+    assert replay["checkpoint_replay"]["new_tool_dispatch"] is False
+    assert requests[1]["notebook"]["tool_action_count"] == 3
+
+
+@pytest.mark.parametrize("failed", [False, True])
+def test_later_turn_read_keeps_operands_and_failed_read_is_not_retried(failed):
+    ports, requests = _ToolPorts(), []
+    def model(request):
+        requests.append(request)
+        if len(requests) > 2:
+            return _handoff(request)
+        action = _finance_action()({})
+        action["reason_summary"] = "Read again after context projection" if len(requests) == 2 else "Original read"
+        return _batch(request, [action])
+    def finance(request):
+        if failed:
+            ports.calls.append(request)
+            raise RuntimeError("fixture_transport_failure")
+        return ports.finance(request)
+    graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=finance)).compile()
+    result = graph.invoke(_input(), config={"recursion_limit": 32})
+    assert len(ports.calls) == 1
+    assert result["notebook"]["tool_action_count"] == 1
+    reply = requests[2]["tool_results"][0]
+    body = json.loads(reply["content"])
+    if failed:
+        assert reply["status"] == "error"
+        assert "duplicate_tool_request_blocked_before_dispatch" in reply["content"]
+    else:
+        assert reply["status"] == "success"
+        assert body["observations"] == json.loads(requests[1]["tool_results"][0]["content"])["observations"]
+        saved = result["notebook"]["observations"][0]
+        assert body["checkpoint_replay"]["observation_digest"] == saved["observation_digest"]
 
 
 def test_terminal_mixed_with_reads_returns_errors_without_any_dispatch():

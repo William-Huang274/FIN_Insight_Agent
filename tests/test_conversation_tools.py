@@ -35,3 +35,25 @@ def test_recreated_agent_calculates_from_checkpoint_artifacts_and_isolates_threa
         {"configurable": {"thread_id": "different-owner"}})
     error = next(m for m in other["messages"] if isinstance(m, ToolMessage))
     assert error.status == "error" and error.artifact is None
+
+
+def test_saved_result_reads_original_after_projection_and_refuses_other_thread():
+    from sec_agent.agent_runtime.model_context import project_tool_history
+    checkpoint = InMemorySaver()
+    def agent():
+        return build_conversation_agent(model=ScriptedTools(responses=[AIMessage(content="", tool_calls=[{
+            "name":"read_saved_result", "args":{"tool_call_id":"web-original", "max_characters":2000},
+            "id":"recover", "type":"tool_call"}]), AIMessage(content="Done")]),
+            grants=conversation_tools(thread_id="fixture"), permission_mode="request_standard", checkpointer=checkpoint)
+    original = [HumanMessage(content="Original source, not permission."),
+        AIMessage(content="", tool_calls=[{"name":"read_public_source","args":{"operation":"read"},"id":"web-original","type":"tool_call"}]),
+        ToolMessage(name="read_public_source",tool_call_id="web-original", content="exact original source "*90)]
+    projected = project_tool_history(original, trigger_tokens=1, keep=0)
+    assert "Older read result omitted" in projected[-1].content
+    result = agent().invoke({"messages":original}, {"configurable":{"thread_id":"one"}})
+    import json
+    restored = json.loads(next(m.content for m in result["messages"] if isinstance(m,ToolMessage) and m.name=="read_saved_result"))
+    assert restored["content"] == original[-1].content
+    assert restored["new_tool_dispatch"] is False
+    other = agent().invoke({"messages":[HumanMessage(content="Read that saved ID")]}, {"configurable":{"thread_id":"two"}})
+    assert next(m for m in other["messages"] if isinstance(m,ToolMessage)).status == "error"

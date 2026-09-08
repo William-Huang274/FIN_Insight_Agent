@@ -17,6 +17,16 @@ from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research_foundation.contracts import DellResearchRunScope
 
 
+class ConversationSourceScope(DellResearchRunScope):
+    """Same immutable locator binding without claiming a reviewed finance pool.
+
+    Reuses scope digest/time/branch validation; only the honest source-policy
+    identity differs for ordinary conversations. Not a second runtime registry.
+    """
+    schema_version: Literal["fin_ia_conversation_source_scope_v1_0"]
+    source_policy: Literal["public_web_locator_only"]
+
+
 DISCOVERY_RECEIPT_SCHEMA_VERSION = "fin_ia_external_discovery_receipt_v1_0"
 RETRIEVAL_CANDIDATE_SCHEMA_VERSION = "fin_ia_retrieval_candidate_v1_0"
 CAPTURE_RECEIPT_SCHEMA_VERSION = "fin_ia_external_capture_receipt_v1_0"
@@ -61,7 +71,7 @@ class ExternalSearchRequest(BaseModel):
 
     query: str = Field(min_length=3, max_length=600)
     branch_id: str = Field(min_length=1, max_length=96)
-    run_scope: DellResearchRunScope
+    run_scope: DellResearchRunScope | ConversationSourceScope
     purpose: str = Field(min_length=3, max_length=500)
     max_results: int = Field(default=5, ge=1, le=8)
     include_domains: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
@@ -496,7 +506,7 @@ class ExternalCaptureRequest(BaseModel):
     discovery_receipt: DiscoveryReceipt
     candidate_id: str = Field(min_length=1, max_length=128)
     branch_id: str = Field(min_length=1, max_length=96)
-    run_scope: DellResearchRunScope
+    run_scope: DellResearchRunScope | ConversationSourceScope
     max_characters: int = Field(default=12_000, ge=500, le=200_000)
     render_policy: Literal["auto", "static", "hosted", "browser"] = "auto"
     minimum_useful_characters: int = Field(default=200, ge=1, le=2_000)
@@ -941,7 +951,7 @@ class ExternalSourceCapture:
         self,
         *,
         guard: PublicURLGuard,
-        static_fetcher: PageFetcher,
+        static_fetcher: PageFetcher | None = None,
         hosted_fetcher: PageFetcher | None = None,
         browser_fetcher: PageFetcher | None = None,
         extractor: Callable[[str], str] = trafilatura_extract_text,
@@ -999,7 +1009,7 @@ class ExternalSourceCapture:
                 PageFetcher,
             ]
         ] = []
-        if request.render_policy in {"auto", "static"}:
+        if request.render_policy in {"auto", "static"} and self.static_fetcher is not None:
             methods.append(("trafilatura_static", self.static_fetcher))
         if (
             request.render_policy in {"auto", "hosted"}

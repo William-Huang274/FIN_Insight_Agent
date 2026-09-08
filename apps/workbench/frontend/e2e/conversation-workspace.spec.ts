@@ -52,3 +52,24 @@ for (const width of [1440, 1024, 390]) test(`handoff preview preserves checkpoin
   expect(writes).toEqual([{path:`/api/v1/conversations/${parent}/handoff`,body:{checkpoint_id:checkpoint,note:"金额用十亿美元，保留原USD与期间。"}}]);
   await expect(page.getByLabel("发送消息",{exact:true})).toHaveValue("请根据交接说明继续，先核对原始约束和所需依据。");
 });
+
+for (const width of [1440,1024,390]) test(`review isolated code before native approval at ${width}`,async({page})=>{
+  await page.setViewportSize({width,height:950});
+  const tid="00000000-0000-4000-8000-000000000094", checkpoint="00000000-0000-4000-8000-000000000095", writes:any[]=[];
+  const snapshot:any={thread_id:tid,title:"隔离计算",status:"interrupted",messages:[],events:[],runs:[],checkpoint_id:checkpoint,
+    approvals:[{id:"approve-1",value:{action_requests:[{name:"run_isolated_python",args:{code:"print(sum([1, 2, 3]))"},description:"空白临时容器，无网络或宿主文件。"}]}}],permissions_notice:"仅隔离临时目录"};
+  await page.route("**/api/v1/conversations**",async route=>{
+    if(route.request().method()==="POST"){writes.push(route.request().postDataJSON());snapshot.approvals=[];await route.fulfill({json:{thread_id:tid,run_id:"resumed"}});return;}
+    await route.fulfill({json:new URL(route.request().url()).pathname.endsWith("conversations")?[snapshot]:snapshot});
+  });
+  await page.goto(`/workspace/assistant?thread=${tid}`);
+  const card=page.getByRole("region",{name:"待批准的工具操作"});
+  await expect(card.getByText("print(sum([1, 2, 3]))",{exact:true})).toBeVisible();
+  await expect(page.getByRole("combobox",{name:"权限",exact:true})).toBeDisabled();
+  await expect(page.getByRole("button",{name:"发送",exact:true})).toBeDisabled();
+  expect(writes).toEqual([]);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBeTruthy();
+  await page.getByRole("button",{name:"拒绝这些操作",exact:true}).click();
+  await expect(card).not.toBeVisible();
+  expect(writes).toEqual([{checkpoint_id:checkpoint,interrupt_id:"approve-1",decisions:["reject"]}]);
+});

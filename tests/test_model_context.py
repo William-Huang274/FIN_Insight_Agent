@@ -59,7 +59,8 @@ def test_current_runtime_supplies_same_policy_to_legacy_and_native_model_factori
     adapter = DeepSeekStructuredAgentAdapter.from_config(config=base, api_key=SecretStr("offline-fixture"), context_editing=profile["context_editing"])
     native = case_chat_model(base.profile_for("specialist"), base.token_budget_basis["specialist"], base, SecretStr("offline-fixture"), context_editing=profile["context_editing"])
     for model in [*adapter._chat_models.values(), native]:
-        assert model.tool_context_trigger_tokens == 50000 and model.tool_context_keep == 6
+        assert model.tool_context_trigger_tokens == profile["context_editing"]["trigger_tokens"]
+        assert model.tool_context_keep == profile["context_editing"]["keep"]
         assert "tool_context_trigger_tokens" not in model.model_dump()
 
 

@@ -97,3 +97,8 @@
 .fs-handoff-dialog h2 { font-size:21px; }
 .fs-handoff-dialog textarea { display:block; box-sizing:border-box; width:100%; margin:10px 0; padding:12px; font:inherit; border:1px solid #ccd2e6; border-radius:8px; }
 .fs-handoff-dialog small { display:block; line-height:1.6; margin:16px 0; }
+.fs-assistant-approval { border: 1px solid #c6caef; border-radius: 14px; padding: 22px; background: #f7f7ff; margin: 20px 0; }
+.fs-assistant-approval h2 { font-size: 19px; margin: 0 0 12px; }
+.fs-assistant-approval p { font-size: 15px; line-height: 1.65; }
+.fs-assistant-approval pre { max-height: 280px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: #fff; padding: 16px; border-radius: 8px; }
+.fs-assistant-approval button { margin: 8px 8px 0 0; }

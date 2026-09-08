@@ -18,7 +18,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--private-audit", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
+    parser.add_argument("--trigger-tokens", type=int, default=50000)
+    parser.add_argument("--keep", type=int, default=6)
     args = parser.parse_args()
+    if args.trigger_tokens < 1000 or args.keep < 1:
+        raise ValueError("invalid_projection_qualification_parameters")
     if args.output.exists():
         raise ValueError("preserve_previous_attempt")
     rows = []
@@ -35,7 +39,7 @@ def main():
         ClearToolUsesEdit(trigger=50000, keep=6, clear_tool_inputs=False,
             exclude_tools=tuple(n for n in known if n and (n not in REREADABLE_TOOLS or n in protected)),
             placeholder="[Older read result omitted from this request; the host retains the original. Repeat the same read tool and arguments when its source context is needed.]").apply(old, count_tokens=count_tokens_approximately)
-        new = project_tool_history(messages, trigger_tokens=50000, keep=6)
+        new = project_tool_history(messages, trigger_tokens=args.trigger_tokens, keep=args.keep)
         assert messages == original
         assert [m for m in new if isinstance(m, AIMessage)] == [m for m in original if isinstance(m, AIMessage)]
         assert all(new[i] == m for i, m in enumerate(original) if isinstance(m, ToolMessage) and m.status == "error")
@@ -44,6 +48,7 @@ def main():
         rows.append({"call_id": record["call_id"], "actor": record["actor"], "original_characters": chars(original),
                      "old_projection_characters": chars(old), "new_projection_characters": chars(new)})
     result = {"qualification": "offline_projection_only_not_paid_savings_or_answer_accuracy", "model_calls": 0,
+              "candidate_trigger_tokens": args.trigger_tokens, "candidate_keep": args.keep,
               "saved_requests": len(rows), "originals_and_errors_and_tool_calls_preserved": True, "requests": rows}
     for field in ("original_characters", "old_projection_characters", "new_projection_characters"):
         result[field] = sum(r[field] for r in rows)

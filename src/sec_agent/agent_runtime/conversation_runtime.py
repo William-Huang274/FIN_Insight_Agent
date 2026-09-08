@@ -42,13 +42,24 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
     store = TaskAttachmentStore(Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"])) if os.environ.get("FINSIGHT_TASK_ATTACHMENTS_ROOT") else None
     grants = conversation_tools(thread_id=thread_id, attachment_store=store,
         fact_mart=Path(settings["conversation_fact_mart"]) if settings.get("conversation_fact_mart") else None)
+    if store is not None:
+        from hashlib import sha256
+        from .conversation_web import public_web_tool
+        grants.append(public_web_tool(thread_id=thread_id,run_id=run_id,
+            method_digest=sha256((root / "configs/research/runtime/conversation.json").read_bytes()).hexdigest(),
+            cache_root=Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"]) / "public-source-cache"))
+    if settings.get("conversation_sandbox_url"):
+        from .sandbox_mcp import remote_sandbox_tool
+        grants.append(remote_sandbox_tool(endpoint=settings["conversation_sandbox_url"],
+            token=settings["conversation_sandbox_token"], thread_id=thread_id))
     # The in-process native SDK resolves only host-owned metadata. A deep link
     # in model text cannot select a thread or grant access.
     from langgraph_sdk import get_client
     from .conversation_handoff import handoff_tools
     sdk = get_client(api_key=None)
     audit = CaseModelAudit(actor="conversation", profile=profile, basis=basis, public_sink=public, private_sink=private, stream_public=True)
-    model = case_chat_model(profile, basis, SimpleNamespace(base_url="https://api.deepseek.com"), SecretStr(os.environ["DEEPSEEK_API_KEY"]), streaming=True)
+    model = case_chat_model(profile, basis, SimpleNamespace(base_url="https://api.deepseek.com"), SecretStr(os.environ["DEEPSEEK_API_KEY"]), streaming=True,
+                            context_editing=specification.get("context_editing"))
     try:
         thread = await sdk.threads.get(thread_id)
         metadata = thread.get("metadata", {})
@@ -57,12 +68,15 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
                                        owner_id=metadata.get("owner_id", "local-pilot")))
         yield build_conversation_agent(model=model, grants=grants,
             permission_mode=ids.get("permission_mode", "request_standard"), checkpointer=None,
-            middleware=[audit], **specification["limits"])
+            middleware=[audit], server_managed_persistence=True, **specification["limits"])
     except Exception as exc:
         from langgraph.errors import GraphInterrupt
         if not isinstance(exc, GraphInterrupt):
+            objective = ("当前请求超过宿主上下文输入限额，已在发模型前停止；原始消息和来源仍保存在本对话，可缩小问题或交接到新窗口。"
+                         if str(exc) == "case_review_input_ceiling_before_transport" else
+                         "本轮尚未完成；原生checkpoint和已产生输出保留。请检查工具、权限或上下文容量后继续。")
             public({"kind": "stage", "actor": "conversation", "event": "failure", "status": "error",
-                "error_type": type(exc).__name__, "objective": "本轮尚未完成；原生checkpoint和已产生输出保留。请检查工具、权限或上下文容量后继续。",
+                "error_type": type(exc).__name__, "objective": objective,
                 "recorded_at": datetime.now(timezone.utc).isoformat(), "run_id": run_id})
         raise
     finally:

@@ -119,3 +119,15 @@ Hermes a1/a2最多单次输入5152/9694tokens；模型耗时11.42/26.86秒；a2�
 验证：33项会话/工具/原生接续/BFF通过；随后上下文/报告/交接/API定向22通过4.89秒。新增报告测试首次缺operands造成1失败21通过，补齐合成fixture后通过，未改变计算实现规避失败。真实前端6项（1440/1024/390）13秒通过，涵盖交接打开/关闭/固定版本提交、不自动调用模型和原对话控件；D:/temp/fin205-handoff-browser-a1。TS/Vite8.61秒通过。所有费用均为已报用量按公开价估算，免费抵扣和账单未知。
 
 整轮累计176推理尝试、已知4499144tokens/¥2.4483113、1实际传输用量未知；另保留1模型前拦截及早前无效key网络请求。服务18165镜像938f209e62df40b49de2e53cae4fe70ca9be8464863bcbffca44d57eb818e4e2，BFF18795，只有busy=0时重建API，PG/Redis卷和旧BFF完整。没有Hermes追加付费、主线合并或版本变化。剩余复杂题token、两新题/旧失败、统一指标、批准/sandbox产品接入、经授权知识入库和多租户继续处理。
+
+## HPE自由模式、成功依据回读与批准工具（继续，未验收）
+
+产品/工程：通用对话新增经注册的公开搜索/捕获/文内检索薄工具，复用Exa MCP、ExternalSourceCapture、DiskCache和既有BM25导航，文内结果给原文字偏移再按需读。域名/DNS策略与thread作用域继续有效，不把外部文本当用户授权，不自动转为全局知识或金融已审来源。原生HITL前后端接入：显示具体代码和批准/拒绝，绑定thread/checkpoint/interrupt/current run，旧批准过期不执行，不允许批准携带更高权限或新模型。宿主隔离服务采用已装MCP2.1的标准认证和HTTP传输，工具只接code，thread来自宿主认证header；Docker配置固定、无host/daemon挂载和网络。该代码未完成真实部署：自动审批审查拒绝“写入本地sandbox配置并启动宿主MCP服务”的一整条命令，只返回blocked by policy，事后确认无备份和18796监听；没有拆开绕过。当前不能称真实用户批准闭环/生产权限完成。
+
+研究/资格：sandbox/MCP/API18通过，浏览器1440/1024/390共9通过16.4秒，FE类型与构建通过9.79秒；只证明确定性协议/UI，不是生产部署。通用web37通过5材料跳过、另16会话/上下文/启动通过。实际公开RFC9111来源D:/temp/fin205-general-web-a1，2搜索＋1捕获，首次1.9388秒、缓存复用0.026秒，原捕获时间与passage digest一致，0模型；Exa账单未知。文内BM25是在该探测后添加，尚未真实模型复核。
+
+新题4：上传HPE官方176页FY2025年报，https://annualmeeting.hpe.com/2026/proxy/images/HPE_10K2025.pdf；首个IR下载403保留a1，另一个官方公开链接a2成功，非绕过访问限制。实际UI自由模式thread01a0833f-bd3f-7791-a904-b38ab2395a22/run01a08340-2103-7942-a26f-6641ef160525，2026-09-09 07:00:13→07:10:59本地。48调用全部报告用量：输入2055918/输出138216/合2194134，cache hit1568768/miss487150，已知估算¥1.4311354。两个方向HPE_Q1_FIN_CONVERSION与HPE_Q4_JUNIPER_COMPARABILITY均needs_attention，HPE_Q9_COUNTEREVIDENCE planned，research_incomplete，无报告。API run success只是原生控制成功返回，产品为失败待处理。D:/temp/fin205-hpe-auto-a1保存原始题目/提交/final-snapshot.json/metrics-a1.json；不覆盖或自动重新提交。
+
+根因/纠正：16k tokens/keep2仅离线在旧MSFT94请求减少38.29%消息字符，不能当成实际节费或质量合格。HPE暴露ClearToolUsesEdit要求重复原读请求，但原Specialist重复分派拦截把它拒绝；另有数字literal不是纯十进制和operand_quote_not_in_observed_source计算错误、JSON/schema修复、Lead未提交必需计划理由。已加native ToolNode路径从同任务原checkpoint查找原action-attempt绑定的成功只读observation，返回原引用/内容/observation_digest，记录new_tool_dispatch=False，原工具次数与观察账不增加；失败/拒绝不重试，控制工具不回放。55 Specialist定向通过含跨轮不同reason_summary回读和原失败不重试。失败诊断另省略成功method_package大正文，仅保留成功绑定/digest，保留真正MCP错误文本；待验证部署。没有用删历史/摘要替代金融依据。系统提示删除活动路径DELL定死措辞，公开进度随用户语言，独立来源绑定计算允许同轮批量，尚未实测改善。
+
+整轮224推理尝试/6683278已知tokens/估算¥3.8794467/未知1，含失败成本，实际账单/免费额度抵扣未知。当前API部署镜像2e3ca50e…包含16k候选但未含本次回读/web修复；最新构建00981cd9…仍早于回读修复，不能误称已部署。剩余五题末题、旧失败有根因新attempt重验、统一指标、Hermes同条件对照、经授权知识入库、完整长报告/多租户和sandbox阻塞仍开放；不换版本或合main。

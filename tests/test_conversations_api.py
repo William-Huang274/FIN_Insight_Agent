@@ -94,3 +94,27 @@ def test_handoff_pins_native_checkpoint_rejects_stale_and_does_not_run_model():
         assert client.post(route,headers=headers,json=body).json()=={"thread_id":child,"model_calls":0}
         assert created[0]["metadata"]["handoff"]=={"source_thread":tid,**body}
         assert "messages" not in created[0]  # no second transcript or summary
+
+
+def test_approval_is_native_resume_and_rejects_stale_or_altered_permission():
+    tid,cid=str(uuid4()),str(uuid4());writes=[]
+    thread={"status":"interrupted","metadata":{"surface":SURFACE,"graph":GRAPH}}
+    state={"checkpoint":{"checkpoint_id":cid},"tasks":[{"interrupts":[{"id":"approval-1","value":{"action_requests":[{"name":"run_isolated_python","args":{"code":"print(2)"}}]}}]}]}
+    async def get(_):return thread
+    async def get_state(_):return state
+    async def runs(*args,**kwargs):return [{"status":"interrupted","metadata":{"model":"deepseek-v4-flash","permission_mode":"request_standard"}}]
+    async def create(*args,**kwargs):writes.append(kwargs);return {"run_id":str(uuid4())}
+    sdk=SimpleNamespace(threads=SimpleNamespace(get=get,get_state=get_state),runs=SimpleNamespace(list=runs,create=create))
+    app=FastAPI();app.include_router(build_conversations_router(SimpleNamespace(sdk=sdk)))
+    with TestClient(app) as client:
+        path=f"/conversations/{tid}/approvals";headers={"X-Workbench-Request":"1"}
+        body={"checkpoint_id":cid,"interrupt_id":"approval-1","decisions":["approve"]}
+        assert client.post(path,json=body).status_code==403
+        assert client.post(path,headers=headers,json={**body,"permission_mode":"full_access"}).status_code==422
+        assert client.post(path,headers=headers,json={**body,"checkpoint_id":str(uuid4())}).status_code==409
+        assert not writes
+        assert client.post(path,headers=headers,json=body).status_code==200
+        assert writes[0]["command"]=={"resume":{"approval-1":{"decisions":[{"type":"approve"}]}}}
+        assert writes[0]["config"]["configurable"]["permission_mode"]=="request_standard"
+        state["tasks"]=[]
+        assert client.post(path,headers=headers,json=body).status_code==409

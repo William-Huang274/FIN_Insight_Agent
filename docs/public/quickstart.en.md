@@ -1,73 +1,98 @@
 # Local run and validation
 
-2026-09-08 · [中文](quickstart.zh-CN.md)
+[中文](quickstart.zh-CN.md) · [Home](../../README.en.md) · FIN 0.1.3
 
-## Code-only checks
+## Choose a verification path
 
-These checks need no API key, real financial data, Docker or archived report:
+| Path | Requirements | What it checks |
+| --- | --- | --- |
+| Public source check | Python 3.11, uv | Attachments, exports, configuration consumption, targeted revision; synthetic reports in four formats |
+| Browser interaction check | Node.js 22, npm, Chromium | Navigation, sources, diffs, configuration editing and replay at three widths, using synthetic API responses |
+| Full research workspace | The above, Docker, model/tool credentials, source data and service settings | Actual threads, models, tools, reports, revisions and usage |
 
-```powershell
+The first two paths need no private database and make no model calls. They do not establish financial correctness or replace the full backend. A downloadable, complete research data bundle is not currently distributed.
+
+## 1. Check source and generate synthetic reports
+
+From the repository root, in PowerShell or a typical POSIX shell:
+
+```bash
 uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery
-uv run --no-sync python -m pytest tests/test_task_attachments.py tests/test_report_delivery.py -q
-uv run --no-sync python -m scripts.qualification.research_delivery_smoke --output-directory D:/temp/finsight-delivery-smoke
+uv run --no-sync python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
+```
+
+This iteration passed **34 tests** and generated MD, PDF, DOCX, PPTX, a chart PNG and synthetic report JSON. The output directory must not exist. Choose `.local/public-check-02` for another attempt; earlier results are not overwritten. Files are explicitly synthetic, not company research results. Inspect Word/PPT layout in Office or LibreOffice in addition to structural checks.
+
+The script calls existing pytest tests and the exporter. It does not load local `.env`, deploy services or submit model tasks.
+
+## 2. Check browser interactions
+
+```bash
 cd apps/workbench/frontend
 npm ci
 npm run typecheck
 npm run build
+npx playwright install chromium
+npm run test:public
 ```
 
-Use a previously nonexistent output directory. The generated files are explicitly synthetic, not Dell benchmark results. Render Word/PPT with LibreOffice and inspect pages; XML checks are not visual acceptance. PDF export itself needs no Office installation.
+On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing. The public profile starts only local Vite, on port **4183** by default, and does not start the legacy 8765 backend. This iteration passed **13 tests**, including 1440, 1024 and 390 pixel layouts. Research APIs are intercepted with explicit synthetic responses.
 
-Verified on 2026-09-08: the initial independent source check at `9e363302` passed17 tests and generated four synthetic formats. A subsequent independent virtual environment installed the locked research, external-search, delivery, control-plane and qualification dependencies from scratch. The independent source checkout passed23 upload, delivery and source-only startup checks without copying `.env`, databases or private research results; zero model calls. Missing data leaves health/catalog available and readiness/data access unavailable. This does not prove that research can finish without data.
+Use `npm run test:public -- --headed --workers=1` to watch the tests. Failure screenshots and traces are written under `apps/workbench/frontend/test-results/public/`; inspect a trace with `npx playwright show-trace <trace.zip>`. Playwright manages this results directory; copy failures elsewhere before another run if you need to preserve them.
 
-The complete public test profile also needs the optional test dependencies:
+If the port is occupied, set `FINSIGHT_E2E_FRONTEND_PORT` to another available port. Do not stop unrelated services to free a port.
 
-```powershell
+## 3. Start full local research
+
+The runtime uses LangGraph Agent Server, PostgreSQL, Redis and LangSmith. Prepare:
+
+- A working Docker Engine.
+- Local model, LangSmith and applicable tool credentials; see the root `.env.example`.
+- Financial SQL, document trees and source materials conforming to the current data contracts.
+- A settings directory containing `host-settings.json`, `container-settings.json` and data mounts; see [deployment](../../deploy/dell_agent_server/README.md) and the [research runtime](../../src/sec_agent/agent_runtime/research_session_runtime.py).
+
+`--fresh-only` omits old reports and expert answers but still requires source data. Omit legacy bundle/report paths from those settings. Replace the placeholder below with your prepared directory:
+
+```bash
+uv run --no-sync python -m scripts.deployment.research_workbench check --settings-directory /path/to/prepared-settings --enable-research --fresh-only
+uv run --no-sync python -m scripts.deployment.research_workbench up --settings-directory /path/to/prepared-settings --enable-research --fresh-only
+uv run --no-sync python -m scripts.deployment.research_workbench serve --settings-directory /path/to/prepared-settings --enable-research --fresh-only --ui-port 8793
+```
+
+On Windows, a path such as `D:/private/finsight-session` is valid. Build the frontend first. Open **http://127.0.0.1:8793/workspace**; the native API defaults to **18165**. The BFF runs in the foreground; Ctrl+C stops it. These commands do not submit a model task. The `up` command creates or updates services; do not rebuild during active research.
+
+The neutral `research_workbench` entry preserves the existing `dell_report_workbench` implementation and deployment identity, including database volumes. The old entry remains compatible. A new question creates a native thread, not a separate Compose project or port.
+
+## 4. Walkthrough for testers
+
+1. **Research start:** select a suggested question, set the scope and attach material. Preparation and actual execution are separate; live execution incurs model costs.
+2. **Research map:** open overview → topic → judgment and evidence. Check breadcrumb return, source context and calculation periods.
+3. **Revision comparison:** expand and collapse again, including the bottom return button. Check the report version and baseline.
+4. **Research Studio:** edit a Skill, save a new version, reload it, then apply it to an idle task. Browser project organization and backend configuration snapshots have different persistence scopes.
+5. **Run history:** choose a past run, filter a stage and play/pause/seek. Replay makes no model calls. Live guidance is read at later phase handoffs.
+6. **Optional live change:** in a configured environment, submit one small, explicit correction and inspect its target, result, diff and cost. Testing should not default to a full research rerun.
+
+Report steps, expected/actual behavior, browser/viewport, code commit and public error text; include a run ID for execution issues. Do not attach credentials, raw model context, private traces or personal material. The repository includes a Bug report template.
+
+## Troubleshooting
+
+| Symptom | Check |
+| --- | --- |
+| Studio reports an unavailable runtime | Full functionality requires the research BFF and native API. Vite alone is not a research backend. |
+| Readiness returns 503 without data | Historical source-only health/catalog can work while real data is unavailable. The service does not invent financial records. |
+| Chromium executable is missing | Run the Playwright install command; check download proxies and OS dependencies. |
+| Output directory exists | Choose a new name and keep the earlier result. |
+| A model request has an uncertain outcome | Inspect the original run and audit before deciding on a new paid request. |
+
+## Broader engineering checks
+
+The full public Python suite needs additional dependencies:
+
+```bash
 uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery --extra control-plane --extra qualification
 uv run --no-sync python -m pytest -q
 ```
 
-Tests marked `local_data_integration` / `requires_local_data` are skipped by default. With the original private mounts, use `--run-private-data` explicitly; missing inputs and old authority/current fact-ID drift can still fail. Historical Windows transaction qualification runs only on Windows, and historical Git proofs need full history. Public CI, private historical replay and paid model research are separate evidence scopes.
+Private-data tests are skipped by default; use `--run-private-data` only with their original mounts. Historical Git proofs require full history, and Windows qualification runs on Windows. Full-suite checks, public interaction tests and live research are distinct evidence scopes.
 
-## Full local deployment
-
-The complete Dell case additionally requires the operator's qualified source files, SQL data and private deployment settings. This is not yet a clone-and-download-all-data distribution. Missing data must not be replaced with invented records or old expert answers.
-
-Install Docker and verify the engine. Distinguish host loopback from container networking when diagnosing proxies; do not delete volumes to treat transient network errors. Keep DeepSeek/LangSmith credentials and database passwords in the local `.env`, never command-line logs or Git. LangSmith is required; there is no alternate tracing fallback.
-
-Prepare a qualified settings directory with `host-settings.json`, `container-settings.json` and source-data mounts. Use `--fresh-only` to run new research without an archived bundle/report; omit both legacy answer paths from these settings. This registers only research_session and retains the fixed PostgreSQL/Redis services and task data. Use the original settings without this flag for legacy report compatibility.
-
-```powershell
-# Substitute an existing controlled settings directory. Neither command starts a model task.
-uv run --no-sync python -m scripts.deployment.dell_report_workbench up --settings-directory D:/private/finsight-session --enable-research --fresh-only
-uv run --no-sync python -m scripts.deployment.dell_report_workbench serve --settings-directory D:/private/finsight-session --enable-research --fresh-only
-```
-
-Workspace: `127.0.0.1:8766`; native Agent Server: `127.0.0.1:18165`. Runtime configuration is `configs/research/runtime/research_session.json`; the case question is `configs/research/cases/dell_growth_quality.json`. A new question creates a native thread/run, not another Compose project, port or database volume.
-
-Verified on 2026-09-08: fresh-only services started without loading archived answers and completed actual uploaded PDF/image Q&A. This reused dependencies, source data and database volumes; it is not a blank-machine or data-free research claim. The old 8765 source-only entry can also start: missing private readiness data yields health 200 and readiness 503, with a readable catalog and refused report reads. Corrupt or mismatched data still fails validation.
-
-## Use and verify
-
-Create a research task, check as-of date/estimated cost, optionally upload files and explicitly start. Invalid parsing preserves a draft without starting models. Watch actual tasks and per-request calls/tokens/estimated cost. Concurrency two does not mean two topics. In-run guidance is consumed at later phase handoffs; confirm the delivery event.
-
-Usage separates the selected operation from all native runs, including input/output/cache, estimated cost, elapsed time and unknowns. External imported revisions are itemized in version reasons. Parallel model durations are a sum, not wall-clock research time. Guidance delivery confirms input handoff, not acceptance of the user's claim.
-
-Cancellation preserves completed records and does not retry unknown provider results. Inspect the owning node before deciding on a targeted correction. Model review is contestable, and human acceptance does not publish. Quick Flash Q&A and deep Pro follow-up are explicit modes.
-
-Exports do not invoke a model or change the report. PPT uses editable charts/tables and paginated content, not an additional model-generated presentation narrative. Source-bound chart values still require period/semantic review.
-
-Uploads support PDF/DOCX/MD/TXT/CSV/HTML/PNG/JPEG/WebP, limited to 20MiB per file, twelve files/80MiB per task and 200 PDF pages, plus expansion/text limits. Images/scanned pages may be sent on demand to DeepSeek vision. This is trusted-owner local input, not a public malicious-file sandbox.
-
-```powershell
-uv run --no-sync python scripts/eval_multi_agent/run_project_os_full_chain_preflight.py --decision configs/research/runtime/research_session.json --pretty
-uv run --no-sync python -m pytest tests/test_research_session.py tests/test_research_session_bff.py -q
-```
-
-These are contract/wiring checks, not semantic or production certification. Evaluate actual workpapers, sources, reports and usage under the same thread/run. Keep feature probes, failures, full research and follow-ups separate; account billing is not one task's cost. Investigate data, tool, schema and network failures separately. Never clear data or weaken validators merely to turn a check green.
-
-## Update and rollback
-
-Preserve the settings directory and code commit, confirm no paid run is active, then build and update the fixed Compose services. A failed build does not authorize deleting database volumes. Roll back using a compatible verified image and its settings; `--no-build` reuses an image and does not establish that current source code is deployed. Keep legacy settings and report versions separately.
-
-The local2026-09-08 disk-full incident affected Docker builds and IPC. Recovery preserved databases, uploads and failed runs and removed only reproducible build cache. Diagnose disk and Docker logs first; do not copy host-specific path repairs or factory-reset instructions blindly.
+The product remains FIN 0.1.3; Dell report v5 awaits review. Previously reported v4 export page counts are historical evidence, not a new v5 rendering result.

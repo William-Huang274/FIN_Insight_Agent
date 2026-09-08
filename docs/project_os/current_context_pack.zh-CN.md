@@ -6,6 +6,8 @@
 
 ## 当前交付与停止点
 
+2026-09-08 Owner已授权前端本轮后进行GitHub展示整理：中英文首页/快速开始/架构/导览更新，报告口径统一v5待审阅；新增实际产品截图、公开零模型检查和独立前端测试、通用research_workbench CLI。下面旧“不push/公开整理尚未启动”属于历史时点；本轮按PR检查→合并main→移除临时远端分支推进，保留history分支和FIN0.1.3含义。成果与发布状态见[S3/202](../worklog/fin_0_1_3_s3/202_public_repository_showcase.md)。不发布完整报告或正式release，Hermes后置。
+
 2026-09-08最新Owner纠正与实施：200只是配置文件/浏览器草稿不满足要求；当前已接可编辑角色/Skill/并行数/双审查顺序→原生Assistant独立快照→指定任务metadata→原生run config→实际Agent提示与MCP方法。原生服务与8793 BFF已重载，PG/Redis/history保留。前端保存配置42857090-55f8-43f3-aa79-be9905bc4f41并应用当前219488任务；真实短问run01a08075-3c4e-7e72-a84b-8037fb26573a两次Flash请求收到新增方法、回答按结论/限定，43622tokens、已知0.085984元、无未知，约15秒，v5和原报告未改。修正用户实际所指研究图diff不能收起；新增历史事件回放明确非实时。77后端通过/7材料依赖跳过，浏览器最终attempt见[S3/201](../worklog/fin_0_1_3_s3/201_runtime_configuration_and_diff_toggle.md)。不造任意工作流编辑器、不开放删除必需复核；旧claim advisory仍开放。Hermes/公开整理尚未启动，Owner审阅后再收口，不追加付费重跑。
 
 2026-09-08最新体验修订：Owner要求修订diff可读、顶部资料可收起、首页改问题起始页、侧栏按项目组织并加Skill/编排入口。已完成本地工程，体验地址改为 http://127.0.0.1:8793/workspace ，同一18165原生服务/原v5历史；旧8766 BFF未重启。项目/置顶/配置草稿只存浏览器；六组方法为工作台源包，静态图由原生SDK读取，不代表技能发布/任意编排调试已通。35后端检查及13项三宽度浏览器通过，真实v4→v5差异、资料关闭与方法目录已CUA读回，0研究模型。见[S3/200](../worklog/fin_0_1_3_s3/200_workspace_start_revision_and_studio.md)，最终attempt/提交以该记录为准。Owner体验后考虑前端收口与公开展示整理；本轮不push，Hermes后置，RC-S3-199旧claim仍开放。

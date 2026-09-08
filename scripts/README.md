@@ -14,7 +14,12 @@
 
 ## 产品与治理
 
-- `dev/run_workbench_backend.py`：唯一后端启动入口。
+- `deployment/research_workbench.py`：当前研究工作台统一 CLI，check/build/up/serve；沿用旧部署身份，不提交模型任务。
+- `dev/verify_public_checkout.py`：外部测试者的零模型源码检查与合成导出。
+- `dev/capture_product_screenshots.cjs`：只读拍摄实际本地产品界面，拒绝写入请求，保留截图与拍摄回执。
+- `dev/run_workbench_backend.py`：历史 Evidence Pack / source-only 后端入口。
+
+使用步骤见[公开快速开始](../docs/public/quickstart.zh-CN.md)。公开入口采用 research/workbench 命名；旧 `dell_*` 实现保留兼容，不批量修改既有图 ID、数据库身份和历史合同。
 - `engineering/verify_active_baseline.py`：从产品、数据构建和前端入口重建活动 import graph，禁止旧版本/attempt/archive 进入活动图。
 - `engineering/build_archive_redirect_index.py`：对所有版本归档重建逐文件 SHA256 重定向索引；对不可移植的长路径使用可逆 path map 和短路径对象名。
 - `research/run_s3_multi_agent_report_remap_live.py`：当前 S3 的通用 protected-report terminal remap CLI；它只消费不可变报告与 typed authority，不得重跑研究，并在 S3 closeout 后随对应执行证据一起归档。

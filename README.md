@@ -1,72 +1,108 @@
-# FinSight Agent — FIN 0.1.3
+<div align="center">
 
-**从研究问题到可追问报告的金融研究工作台。** 多 Agent 使用财务 SQL、原文检索和来源绑定计算，研究业务增长、利润与现金流，并交付可追溯的判断、图表与报告。
+# FinSight Agent
 
-[English](README.en.md) · [运行与验证](docs/public/quickstart.zh-CN.md) · [架构](docs/public/architecture.zh-CN.md) · [三分钟演示与工程讲解](docs/public/demo-and-engineering.zh-CN.md) · [证据与展示边界](docs/public/sharing-scope.md) · [版本迭代](CHANGELOG.md)
+### 从一个研究问题，走到有依据、可追问的判断。
 
-## 当前可以做什么
+多 Agent 投研 · 证据追溯 · 人工修订 · 可编辑研究方法
 
-| 能力 | 实现与验证范围 |
+[English](README.en.md) · [快速开始](docs/public/quickstart.zh-CN.md) · [产品导览](docs/public/demo-and-engineering.zh-CN.md) · [架构](docs/public/architecture.zh-CN.md) · [更新记录](CHANGELOG.md)
+
+**FIN 0.1.3 · 本地研究工作台 · 开发预览**
+
+</div>
+
+FinSight 将财务 SQL、原文检索、来源绑定计算和多 Agent 审查放进一个研究工作区。你可以提出问题，跟踪研究过程，从报告判断回到依据，再针对具体节点提出修订。它面向需要核查研究结论的分析师，也为开发者提供可检查的状态、调用记录和测试入口。
+
+![研究配置：角色、方法和执行顺序](docs/public/images/research-studio.png)
+
+*实际运行界面，2026-09-08。配置可保存到原生运行服务并应用到任务；当前界面为中文，中英文文档提供相同使用说明。*
+
+## 在工作台里完成一次研究
+
+| 步骤 | 你可以做什么 |
 | --- | --- |
-| 动态多 Agent 研究 | Lead 生成任务 DAG；专家自行规划、调用工具并提交底稿。Dell 实案覆盖九个研究面，并发上限为 2。 |
-| 研究质量闭环 | Counter / Verifier → 责任作者修订 → Lead 综合 → 研究复核 → Writer → 终审 → 人工审阅。保留失败和修改记录；模型审查仍会漏错。 |
-| 可核查证据 | MCP 接入财务 SQL、文档结构/检索/原文窗口、外源搜索与网页读取；计算保存表达式、操作数、期间、单位和来源。计算正确不自动等于财务含义正确。 |
-| 研究交互 | 新研究、短问答、深度追问、局部修订、停止、报告版本与差异查看、来源展开。运行中意见可保存并交给后续阶段；送达不等于被模型采纳。 |
-| 长会话与费用 | 清理请求内的旧工具输出，保留原始证据和 checkpoint，按 ID 回读，复用已保存计算，避免局部修改时重写全文。展示全部原生运行的输入/输出/缓存、耗时、估费与未知用量。 |
-| 用户资料 | 任务隔离的文档/图片上传、解析与分块；按需视觉读取并缓存。已用真实 PDF 和图片完成问答，发现并保留过 OCR 错误。 |
-| 四格式交付 | 同一报告导出 Markdown、PDF、Word、PowerPoint；来源绑定图表，PPT 图表可编辑，详细来源放在讲者备注。导出不调用模型。 |
+| 提出问题 | 从公司、财报或待核查判断开始，设定研究时点，添加文档或图片。侧栏按项目组织研究；当前项目分组和置顶保存在本浏览器。 |
+| 观察研究 | 查看实际阶段、公开活动、已报告 tokens 与估费；运行中补充意见，必要时请求停止。历史事件可以回放。 |
+| 追溯依据 | 沿“报告总览 → 专题 → 判断与依据”进入，展开原文上下文、公式、操作数、期间和来源。 |
+| 提出修订 | 选中判断并提交意见，目标和报告基线进入原生修订流程；完成后比较修订前后，保留原版本。 |
+| 定义方法 | 编辑角色使用的 Skill、专家并行数和双审查顺序，保存为独立配置版本，应用到当前或新研究。 |
+| 交付报告 | 从同一报告导出 Markdown、PDF、Word、PowerPoint；导出不调用模型，PPT 图表可编辑。 |
 
-**当前报告：** Dell v4 开发审阅候选，54 处引用、3 张图表；PDF 15 页、Word 20 页、PowerPoint 44 页完成渲染检查，等待 Owner 内容审阅。产品版本仍为 **FIN 0.1.3**；报告 v4、执行 attempt 和产品版本分别记录。这不是无人辅助一次成功率或生产认证。
+### 按图索骥，回到每条判断的依据
 
-自动摘要资格目前为 **HOLD，默认关闭**。已验证的是工具输出清理、证据回读和局部编辑；尚未证明同等研究质量下的普遍 token 节省比例。
+![报告总览与可展开专题](docs/public/images/research-map.png)
 
-原五项与新增需求的逐项交付、真实成本和未决意见见 [Owner 审阅清单](docs/product/FIN_0_1_3_OWNER_REVIEW_20260908.zh-CN.md)。新增本地缺数回执能展示成功 SQL 的查询条件与覆盖边界；它不是事实证据，也不代表公司未披露。当前停在 Hermes 评估之前。
+研究地图表达报告内容及引用关系。它通过真实产物 ID、版本和 checkpoint 绑定修订目标；导航层不要求与执行图一一对应。来源展开后可以查看更完整的上下文。图线本身不代表已证实的财务因果关系。
 
-## 架构
+### 看见实际运行，保留人的参与
+
+![真实运行的阶段、公开活动与用量](docs/public/images/research-runtime.png)
+
+上图是一次已完成短问的保存记录，包含配置加载、实际模型调用和费用。历史回放逐条展示已有事件，不重新调用模型；运行中的补充意见在后续阶段交接时读取。界面展示公开进展及工具活动，不展示私有思维链。
+
+<details>
+<summary>查看研究起始页</summary>
+
+![从问题开始研究](docs/public/images/research-start.png)
+
+</details>
+
+## 快速验证：无需模型密钥或私有数据
+
+准备 Python 3.11、uv、Node.js 22 与 npm。从仓库根目录执行：
+
+```bash
+uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery
+uv run --no-sync python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
+
+cd apps/workbench/frontend
+npm ci
+npm run build
+npx playwright install chromium
+npm run test:public
+```
+
+Python 检查覆盖上传、导出、配置和目标修订，并生成明确标注的合成报告。输出目录须尚不存在。浏览器测试只启动 Vite，使用合成 API 响应，覆盖三种屏幕宽度、导航、来源、修订对比、配置编辑与回放；**它验证交互，不是模型研究效果测试**。Linux 缺浏览器系统依赖时使用 `npx playwright install --with-deps chromium`。
+
+完整研究需要 Docker、模型/工具凭据、原始资料及服务配置。公开仓库不包含本地资格数据，因此不能承诺 clone 后无配置跑完真实研究。部署、检查预期和故障处理见[快速开始](docs/public/quickstart.zh-CN.md)。
+
+## 架构与工程重点
 
 ```mermaid
 flowchart LR
-    UI[React 研究工作台] --> BFF[FastAPI BFF]
+    UI[React 研究工作台] --> BFF[FastAPI]
     BFF --> Runtime[LangGraph Agent Server]
-    Runtime --> Lead[Lead 与专家任务 DAG]
-    Lead --> Review[交叉审查与责任修订]
-    Review --> Writer[综合与报告]
-    Writer --> Human[人工审阅与追问]
-    Human --> Export[MD / PDF / Word / PPT]
-    Lead --> MCP[MCP 财务 / 文档 / 外源 / 计算工具]
-    Runtime --> Store[PostgreSQL / Redis]
-    Runtime --> Trace[LangSmith 与本地调用审计]
+    Runtime --> Lead[Lead / 专家任务 DAG]
+    Lead --> Review[交叉审查 / 责任修订]
+    Review --> Report[综合 / 报告 / 人工审阅]
+    Report --> UI
+    Lead --> MCP[MCP: 财务 SQL / 原文 / 搜索 / 计算]
+    Runtime --> State[PostgreSQL / Redis]
+    Runtime --> Trace[LangSmith / 调用审计]
 ```
 
-执行、并发、持久化使用成熟组件。FIN 代码负责金融研究角色、证据与计算合同、来源权威、薄适配和产品验收；详见[架构及工程取舍](docs/public/architecture.zh-CN.md)。
+- **原生运行基础设施：** LangChain 工具循环、LangGraph 执行与 checkpoint、原生 Assistants 配置快照。FIN 代码负责研究角色、证据合同与薄适配。
+- **可核查数字：** 计算保留表达式、操作数、期间、单位和来源，区分算术校验与金融语义审阅。
+- **长会话管理：** 清理下一次请求中的旧工具正文，保留原始状态和证据，按 ID 回读并复用计算；局部修订避免无关全文重写。
+- **运行可解释：** 区分本次操作与历史累计用量，保留失败、未知计费和人工修改记录。
 
-## 运行
+代码入口、配置生效路径和采用成熟组件的边界见[架构说明](docs/public/architecture.zh-CN.md)。
 
-不需要模型凭据的源码检查：
+## 当前验证范围
 
-```powershell
-uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery
-uv run --no-sync python -m pytest tests/test_task_attachments.py tests/test_report_delivery.py -q
-uv run --no-sync python -m scripts.qualification.research_delivery_smoke --output-directory D:/temp/finsight-delivery-smoke
-```
+FIN 0.1.3 是当前产品迭代，Dell 报告 **v5** 是待人工审阅的内容版本，两者分开编号。已有 Dell 九研究面实案、NVIDIA/Micron 有界追问、真实上传问答和前端局部修订证据；这不代表任意公司完整研究均已通过。研究图与配置接口不按 Dell 文本硬编码，数据覆盖资格仍需逐项验证。
 
-输出目录须尚不存在。该命令生成的是合成测试文件。完整研究还需要 Docker、模型与工具凭据、已准备的财务数据和服务设置；当前不分发完整私有资格数据。`--fresh-only` 可在不加载旧报告/专家答案的情况下启动，仍需要原始资料。前端构建、配置、故障边界和验证命令见[运行说明](docs/public/quickstart.zh-CN.md)。
+模型审查可能漏错，已知引用和财务措辞意见保留。自动摘要默认关闭、资格 HOLD；没有宣称同等研究质量下的普遍 token 节省比例。当前服务面向可信本地使用者，尚未提供公网多租户认证与隔离。详细样本、成本和局限见[证据说明](docs/public/sharing-scope.md)。
 
-- 当前研究入口：`http://127.0.0.1:8766/workspace/session`；原生服务：`http://127.0.0.1:18165`。
-- 历史固定 Evidence Pack 入口：`http://127.0.0.1:8765/workspace`。源码模式健康检查可用；未挂载私有证据时数据就绪检查返回 503，不展示虚构报告。
-- 服务默认绑定本机；当前上传与操作面向可信 Owner，不是公网多租户产品。
+## 继续了解
 
-## 如何审阅项目
+| 入口 | 内容 |
+| --- | --- |
+| [产品导览](docs/public/demo-and-engineering.zh-CN.md) | 三分钟界面走查与工程讲解 |
+| [快速开始](docs/public/quickstart.zh-CN.md) | 无模型测试、完整本地部署、排错与反馈 |
+| [工作台代码](apps/workbench/README.md) | 前后端入口和开发命令 |
+| [测试说明](tests/README.md) | 公开检查、私有资料重放与真实模型验证的区别 |
+| [更新记录](CHANGELOG.md) | 产品里程碑、前端交付与报告修订 |
 
-1. 从[架构](docs/public/architecture.zh-CN.md)了解研究状态、证据流和自研边界。
-2. 按[运行说明](docs/public/quickstart.zh-CN.md)运行零模型测试及合成导出。
-3. 在配置好的工作台查看报告、来源、计算操作数、历史版本与差异，再尝试追问和上传。
-4. 同时查看失败、未知用量和修订记录。原 Dell 开发研究为 265 次请求、264 次已知用量、估算 28.092715 元，包含失败和修订；后续整改、上传及新问题另列，不能作为一次普通问答价格。
-
-当前固定资料时点为 2026-09-02，财务 SQL 覆盖 DELL / MU / NVDA。Dell 完整研究与 NVIDIA / Micron 有界追问的验证范围不同，不能据此声称任意公司全案已通过。研究结论、资料时点、估算与信息边界应结合原文审阅。
-
-## 文档与历史
-
-当前入口以本页和 `docs/public/` 为准；[CHANGELOG](CHANGELOG.md)区分产品里程碑与报告修订。`archive/versions/` 和 Git 历史保存此前基线，工作日志保存当时的决定与失败，不应将旧“下一步”当作当前状态。
-
-仓库公开供代码与工程展示审阅。用户上传、数据库、原始模型上下文和私有 trace 不属于默认展示材料；完整研究报告的外部分享范围另行审阅。仓库目前没有统一开源许可证，不暗示授予额外使用权；第三方组件遵循各自许可证。
+历史基线保存在 Git 和 `archive/versions/`；内部工作日志保留当时的决策与失败，当前对外说明以本页及 `docs/public/` 为准。仓库公开供代码与工程审阅，尚未选定统一开源许可证；第三方组件遵循各自许可证。

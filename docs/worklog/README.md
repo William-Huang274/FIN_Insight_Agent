@@ -3,6 +3,7 @@
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 
 - 当前总清单：`00_current_master_checklist.md`
+- 公开仓库展示、双语文档与外部测试：`fin_0_1_3_s3/202_public_repository_showcase.md`
 - 可执行研究配置、真实方法消费与差异收起：`fin_0_1_3_s3/201_runtime_configuration_and_diff_toggle.md`
 - 研究开始页、项目侧栏、可读修订与研究配置入口：`fin_0_1_3_s3/200_workspace_start_revision_and_studio.md`
 - 正式工作台、运行双视图与真实目标修订：`fin_0_1_3_s3/199_formal_workspace_and_live_revision.md`

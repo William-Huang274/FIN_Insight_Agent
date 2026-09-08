@@ -93,3 +93,17 @@ Hermes a1/a2最多单次输入5152/9694tokens；模型耗时11.42/26.86秒；a2�
 本轮累计74推理请求/306160tokens/估算0.1817943元（Qwen46、DS28；全部已报用量），另有前述测试无效key401网络与0模型部署失败。免费抵扣/实际账单未知。当前服务18795新工作台及通用对话、18165API镜像f639f74f…；旧BFF18793/18794均未终止，数据库卷完整。真实输出在D:/temp/fin205-ui-ordinary-a2、fin205-ui-msft-a1、fin205-ui-msft-unit-a1，不入Git。
 
 已提交工程切片84f6969f（Qwen对照/新快照入库/同thread源缓存）、d457fb05（通用多轮/作用域工具/上下文/前后端/资格脚本）。文档与本轮其余工作继续，不合main、不发release、不宣布五新题/旧失败/Hermes/报告/sandbox/多租户全部完成。
+
+## 新题3：MSFT指定双方向与执行失败根因（继续，不是全轮收口）
+
+实际前端选择Q1公司财务与Q3量价组合，上传微软FY2025官方年报；题目要求IC分部增长/利润率及组合解释，区分Azure、Microsoft Cloud分母。thread `01a082df-cd1a-7ee3-bd9f-151e1c83f369`，run `01a082df-cf9d-76e2-8d9b-fc05dcf8a8af`，约20分钟后生成报告v1，ready_for_human_review，不代表Owner接受。浏览器a1路由错误没有提交；a2已启动后记录器response body失效，回读身份而没有再次提交。脚本修正，原目录均保留。
+
+实证：95请求意图，94实际provider尝试，93已报告；1连接失败用量未知，1输入上限前拦截未发送。已知输入3908059/输出205169/合4113228 tokens，缓存命中3172096/未命中735963，估算¥2.185810。整轮累计168推理尝试、已知4419388tokens/¥2.3676043、未知1；另有1预检拦截与早前无效key网络请求。实际账单与免费抵扣未知。D:/temp/fin205-msft-selected-a2/final-snapshot.json、metrics-a1.json及原audit保留。公开汇总脚本区分未发送与未知，不再把0传输误记未知。
+
+工程增量：Lead在model_execution_failure/model_turn_ceiling/tool_action_ceiling后停止并保存其他已完成方向，禁止悄悄创建替代task重置预算；质量修订仍走原语义流程。原生ClearToolUsesEdit只保留具体错误结果，不再保留同名工具全部成功内容；700k字符保护按SDK实际投影请求（含tools schema）计数，不放宽上限。94历史请求离线回放字符13123301→12822461，仅约2.3%，不是实际token节费或正确率结论。read_source_document新增工具边界校验，明确UPLOAD::前缀不可删，历史合同仍可加载错误请求，避免迁移破坏证据。
+
+产品/导出：微软v1有1图，真实PDF5页/Word7页。发现图表说明[P01:C4]与实际[P01:C4_margins_derived]不一致，不能猜别名。新增chart_index局部说明编辑，保持绑定数据/来源，提交验证同时检查正文与图表引用；待真实前端修订验证。导出显示投影已修本机端口链接、已知引用编号与PDF数学字形，未知图表引用显式标记待修订，绝不改checkpoint出处。D:/temp/fin205-msft-selected-a2/export-repaired-a1 PDF5页已逐页查看；DOCX7页仍需完整视觉检查，不能标正式交付完成。
+
+权限资格：Docker官方现成容器隔离，固定本地sha256镜像，非root、无网络、只读root、无host/daemon/secret挂载、cap-drop、CPU/内存/pids限制、tmpfs临时目录、超时终止与有界日志。仅模型code参数，不开放镜像/挂载/命令选择。D:/temp/fin205-sandbox-a1/a2启动失败保存；a3三次真实容器证明任务内写入/跨容器不留存/root写入阻止/网络阻止/超时137，0模型。只移除自己新建容器，未删镜像/卷/用户文件。native HITL三档定向测试通过，但未接前端与Agent Server；不能宣称生产sandbox/多租户成立，也不挂Docker socket给Agent容器。
+
+通用对话新增draft与TaskAttachmentStore上传，解析后才发模型，前端选择文件/已上传列表/失败不重复上传。只是当前thread复制件，没有原文件写入，未擅自全局知识入库。零模型回归88 passed/5缺素材 skipped（报告/会话/Lead/上下文/附件/sandbox），最终TS/Vite通过10.45秒，已有大bundle警告仍在。此处尚未部署上述新源码，正在构建，需确认busy=0后重载服务并继续真实修订。没有新付费调用或Hermes重试。

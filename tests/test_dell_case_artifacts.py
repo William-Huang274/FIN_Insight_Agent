@@ -21,6 +21,44 @@ def _lookup(source_id):
     return fixtures[source_id]
 
 
+def test_catalog_exposes_actual_claim_binding_and_rejects_guessed_number():
+    from test_research_session import _new_worker_fixture
+    from sec_agent.agent_runtime.dell_case_convergence_agent import report_citations
+    paper = _new_worker_fixture()
+    paper["final_submission"]["claims"][0]["claim_id"] = "revenue_period_boundary"
+    artifacts = DellCaseArtifacts([paper])
+    assert "P01:revenue_period_boundary" in artifacts.catalog()["papers"][0]["citation_ids"]
+    with pytest.raises(ValueError, match="exact current citation IDs") as error:
+        report_citations("An unsupported alias [P01:C999].", artifacts)
+    assert "P01:revenue_period_boundary" in str(error.value)
+    assert "P01:C999" not in artifacts.catalog()["papers"][0]["citation_ids"]
+
+
+def test_reader_and_calculator_share_newly_observed_source_lookup():
+    from mcp import Client
+    from mcp.server import MCPServer
+    from sec_agent.agent_runtime.dell_case_artifacts import register_case_artifact_tools
+    from test_research_session import _new_worker_fixture
+    artifacts = DellCaseArtifacts([_new_worker_fixture()])
+    source = {"result_state": "numeric_fact", "numeric_fact_authority": True,
+        "numeric_fact_id": "NUMFACT::new-full-id", "ticker": "TEST", "value_decimal": "123", "unit": "USD",
+        "period_start": "2025-01-01", "period_end": "2025-12-31"}
+    def lookup(ref):
+        return source if ref == source["numeric_fact_id"] else artifacts.source_item(ref)
+    server = MCPServer("source-lookup-fixture")
+    register_case_artifact_tools(server, artifacts, source_lookup=lookup)
+    async def exercise():
+        async with Client(server, raise_exceptions=False) as client:
+            result = await client.call_tool("read_research_source", {"source_id": source["numeric_fact_id"]})
+            assert not result.is_error and result.structured_content["value_decimal"] == "123"
+            assert result.structured_content["period_end"] == "2025-12-31"
+            rejected = await client.call_tool("read_research_source", {"source_id": "NUMFACT::new"})
+            assert rejected.is_error and "unknown_source_id" in str(rejected.content)
+    asyncio.run(exercise())
+    with pytest.raises(ValueError, match="unknown_source_id"):
+        artifacts.source_item(source["numeric_fact_id"])  # no cross-session mutation
+
+
 def _calculate(expression="a / 2", operands=None):
     request = SourceBoundCalculation(expression=expression, operands=operands or {"a": {"source_id": "fact"}},
         result_unit="test_unit", rationale="Fixture arithmetic, not a financial conclusion.")

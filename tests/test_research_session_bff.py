@@ -10,9 +10,22 @@ from fastapi.testclient import TestClient
 import pytest
 
 from apps.workbench.backend.api.v1.report_sessions import (
-    ReportSessionService, build_report_sessions_router, public_event, public_state, GRAPH, RESEARCH_GRAPH,
+    ReportSessionService, build_report_sessions_router, public_event, public_state, public_native_failures, GRAPH, RESEARCH_GRAPH,
 )
 from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile, research_session_graph
+
+
+def test_native_failure_shows_reason_but_never_raw_error_payload():
+    run = {"run_id": "latest-run", "updated_at": "2026-09-09T00:00:00Z"}
+    events = public_native_failures({"tasks": [{"name": "research", "error":
+        'ValueError("research_bundle_invalid_citations:wave2:PRIVATE_SECRET:/host/private/path")'}]}, run)
+    assert events[0]["error_type"] == "ValueError"
+    assert "research_bundle_invalid_citations" in events[0]["objective"]
+    assert "引用校验" in events[0]["objective"]
+    assert "PRIVATE" not in json.dumps(events) and "/host" not in json.dumps(events)
+    provider = public_native_failures({"tasks": [{"name": "writer", "error":
+        'AuthenticationError("Bearer SECRET /private/path")'}]}, run)
+    assert provider[0]["error_type"] == "NativeNodeError" and "SECRET" not in json.dumps(provider)
 
 
 def _app(*, enabled=True, graph_id=RESEARCH_GRAPH):

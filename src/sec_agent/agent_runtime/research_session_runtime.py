@@ -101,6 +101,11 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             response = turn(request)
             for call in response.get("action", {}).get("tool_calls", []):
                 args = call.get("args")
+                from .public_research_output import submitted_prose
+                prose = submitted_prose(call.get("name"), args)
+                if prose:
+                    emit({"kind": "stage", "actor": actor, "event": "output", "call_id": call.get("id"),
+                        "task_id": task_id, "objective": prose, "status": "candidate"})
                 if isinstance(args, dict) and isinstance(args.get("reason_summary"), str):
                     emit({"kind": "stage", "actor": actor, "event": "progress", "call_id": call.get("id"),
                         "task_id": task_id, "objective": args["reason_summary"], "status": "planned"})
@@ -185,7 +190,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             graph = build_dell_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],
                 branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers=seeds,
                 model_turn=lead_adapter.lead_research_turn, run_child=worker,
-                require_all_branches=execution.mode != "auto", public_progress=emit,
+                require_all_branches=execution.mode != "auto", public_progress=emit, require_execution_plan=True,
                 role_method=studio.method(studio.bindings["lead"]) if studio else None,
                 max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], max_tasks=profile["max_tasks"],
                 max_parallel_tasks=profile["max_parallel_tasks"], turn_source="provider_model", unfinished_only=bool(seeds)).compile()
@@ -274,8 +279,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     revising=role == "writer" and revising_report)
             graph = build_research_convergence_graph(artifacts=artifacts, question=state["question"], feedback=state["feedback"],
                 make_agent=make_agent, max_parallel_authors=profile["max_parallel_tasks"],
-                research_review_context={**{r: state["case_review"][r]["review"] for r in ("counter", "verifier")},
+                research_review_context={**{r: state.get("case_review", {})[r]["review"] for r in ("counter", "verifier") if r in state.get("case_review", {})},
                     "lead_handoff": state.get("research_handoff")}, existing_state=existing,
+                execution_plan=(state.get("research_handoff") or {}).get("execution_plan"),
                 human_feedback=existing.get("message") if existing else None).compile()
             return await graph.ainvoke({}, config)
 
@@ -318,8 +324,22 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 return await agent.ainvoke({key: value for key, value in state.items() if key != "case_papers"}, config)
         return RunnableLambda(execute)
 
-    return {"research": RunnableLambda(research), "review": RunnableLambda(review), "converge": RunnableLambda(converge),
-            "revise_research": RunnableLambda(revise_research), "writer": interactive("writer"),
+    def guarded(name, function):
+        async def invoke(state, config: RunnableConfig):
+            try:
+                return await function(state, config)
+            except Exception as exc:
+                import re
+                # Publish domain error codes, never arbitrary provider payloads,
+                # credentials, SQL, file paths or nested private agent messages.
+                code = str(exc) if re.fullmatch(r"[a-z][a-z0-9_:]{0,180}", str(exc)) else type(exc).__name__
+                emit({"kind": "stage", "actor": name, "event": "failure", "status": "error",
+                    "error_type": type(exc).__name__, "objective": f"本阶段未完成。系统记录：{code}。已产生的候选输出和执行记录保留；这不是模型对失败原因的解释。"})
+                raise
+        return RunnableLambda(invoke)
+
+    return {"research": guarded("research", research), "review": guarded("review", review), "converge": guarded("convergence", converge),
+            "revise_research": guarded("research_revision", revise_research), "writer": interactive("writer"),
             "verifier": interactive("report_verifier"), "quick_writer": interactive("quick_writer")}
 
 
@@ -362,5 +382,17 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
             private_sink=private, read_guidance=read_guidance, studio=studio, execution=execution)
         yield build_research_session_graph(**phases).compile(name="research_session").with_config({"recursion_limit": 280})
+    except Exception as exc:
+        from langgraph.errors import GraphInterrupt
+        if not isinstance(exc, GraphInterrupt):
+            import re
+            code = str(exc).split(":", 1)[0]
+            code = code if re.fullmatch(r"[a-z_]{3,96}", code) else type(exc).__name__
+            # Persist parent/handoff errors too, so starting a later native run
+            # does not erase the previous attempt's public failure explanation.
+            public({"kind": "stage", "actor": "research", "event": "failure", "status": "error",
+                "error_type": type(exc).__name__, "objective": f"运行未完成。系统错误代码：{code}。已产生的候选输出与执行记录保留；这不是模型对失败原因的解释。",
+                "recorded_at": datetime.now(timezone.utc).isoformat(), "run_id": run_id})
+        raise
     finally:
         await native.http.client.aclose()

@@ -36,8 +36,10 @@ def independent_review(findings=()):
             "findings": list(findings), "unresolved_data_requests": []}
 
 
-async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False):
+async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False, depth=None):
     artifacts = artifact_fixture()
+    if depth == "focused":
+        artifacts = DellCaseArtifacts([_worker_result(_task("first"), _new_worker_fixture())])
     sequence, contexts = [], {}
     async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
         tools = await case_mcp_tools(client)
@@ -73,13 +75,39 @@ async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=Fals
         saver = InMemorySaver()
         graph = build_research_convergence_graph(artifacts=artifacts, question="Synthetic question on growth quality and realization",
             feedback=initial_feedback or {}, research_review_context={"counter": independent_review(), "verifier": independent_review()},
-            make_agent=make_agent, existing_state=existing_state, human_feedback="Explicit fixture revision request" if existing_state else None).compile(checkpointer=saver)
+            make_agent=make_agent, existing_state=existing_state, human_feedback="Explicit fixture revision request" if existing_state else None,
+            execution_plan={"depth": depth, "rationale": "Synthetic scope-specific route qualification, not a model's financial judgment.",
+                "omitted_steps_reason": "Omit repeated prose generation; preserve independent final source verification.",
+                "escalation_conditions": "Material evidence findings return to the actual responsible research author."} if depth else None).compile(checkpointer=saver)
         config = {"configurable": {"thread_id": "native-research-convergence"}, "recursion_limit": 180}
         result = await graph.ainvoke({}, config)
         saved = await graph.aget_state(config)
         assert saved.values["artifact_history"] == result["artifact_history"]
         assert "-private" not in json.dumps(result)
         return result, sequence, contexts
+
+
+def test_focused_workpaper_goes_directly_to_independent_final_verification():
+    result, sequence, _ = asyncio.run(exercise_case(depth="focused"))
+    assert [s[0] for s in sequence] == ["report_verifier"]
+    assert result["report"]["citations"]
+    assert result["phase"] == "case_report_ready_for_human_review"
+
+
+def test_integrated_research_omits_duplicate_synthesis_and_keeps_final_review():
+    result, sequence, models = asyncio.run(exercise_case(depth="integrated"))
+    assert [s[0] for s in sequence] == ["writer", "report_verifier"]
+    writer_input = json.loads(models[("writer", None, 0)].contexts[0][1].content)
+    assert writer_input["research_review"]["counter"]
+    verifier_input = json.loads(models[("report_verifier", None, 0)].contexts[0][1].content)
+    assert verifier_input["completed_research_reviews"]["verifier"]
+    assert result["phase"] == "case_report_ready_for_human_review"
+
+
+def test_integrated_material_findings_repair_actual_owner_without_duplicate_synthesis():
+    result, sequence, _ = asyncio.run(exercise_case(depth="integrated", terminal_owner="research"))
+    assert [s[0] for s in sequence] == ["writer", "report_verifier", "repair", "writer", "report_verifier"]
+    assert set(result["revisions"]) == {"P02"}
 
 
 def test_lead_actual_method_read_and_revised_papers_enter_writer_without_private_histories():
@@ -106,6 +134,9 @@ def test_writer_only_feedback_does_not_rerun_authors_lead_or_research_review():
 
 def test_native_parent_writer_revision_uses_edits_not_full_report_or_research_rerun():
     result, sequence, models = asyncio.run(exercise_case(terminal_owner="writer", local_writer_edits=True))
+    review_input = json.loads(models[("report_verifier", None, 1)].contexts[0][1].content)
+    assert "Locally revised wording" in review_input["report_changes_from_previous_review"]
+    assert "correction review" in review_input["instruction"]
     assert [s[0] for s in sequence] == ["synthesis", "research_verifier", "writer", "report_verifier", "writer", "report_verifier"]
     reports = [r["output"] for r in result["artifact_history"] if r["actor"] == "writer"]
     edit = reports[1]["applied_edits"][0]
@@ -159,6 +190,17 @@ def test_explicit_followup_revision_uses_saved_research_and_routes_prior_researc
     assert [s[0] for s in sequence] == ["repair", "synthesis", "research_verifier", "writer", "report_verifier"]
     assert previous == original and result["phase"] == "case_report_ready_for_human_review"
     assert "Explicit fixture revision request" in str(models[("repair", "P02", 1)].contexts[0])
+
+
+def test_followup_local_edit_hands_previous_review_and_real_diff_to_verifier():
+    previous, _, _ = asyncio.run(exercise_case(depth="integrated"))
+    original = deepcopy(previous)
+    result, sequence, models = asyncio.run(exercise_case(depth="integrated", existing_state=previous, local_writer_edits=True))
+    assert [row[0] for row in sequence] == ["writer", "report_verifier"]
+    body = json.loads(models[("report_verifier", None, 0)].contexts[0][1].content)
+    assert body["previous_review"] == original["report_review"]
+    assert "Locally revised wording" in body["report_changes_from_previous_review"]
+    assert previous == original and result["phase"] == "case_report_ready_for_human_review"
 
 
 def test_native_verifier_receives_invalid_owner_feedback_then_corrects_without_weakening_schema():

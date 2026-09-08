@@ -372,11 +372,11 @@ def build_research_data_mcp_server(
             description="Existing lowercase snake_case S2 metric IDs, e.g. revenue, operating_income (GAAP), net_income, diluted_eps. Not display labels or uppercase formula IDs. Inspect returned periods; a company's fiscal year is not its calendar year.")],
         research_as_of: date,
         granularity: Literal["quarter_discrete", "fiscal_ytd", "fiscal_year", "instant", "quarter", "quarter_and_fiscal_year"],
-        selection_mode: Literal[
+        selection_mode: Annotated[Literal[
             "exact_period_end", "latest_on_or_before"
-        ],
+        ], Field(description="exact_period_end REQUIRES a known period_end date. When only a fiscal-year label is known, use latest_on_or_before with fiscal_years; inspect returned period_start/period_end. Never guess a fiscal year-end from its label.")],
         period_start: date | None = None,
-        period_end: date | None = None,
+        period_end: Annotated[date | None, Field(description="Required YYYY-MM-DD date for exact_period_end; optional upper bound for latest_on_or_before. A fiscal-year label is not an end date.")] = None,
         fiscal_years: list[int] | None = None,
         requested_unit: Literal["reported_source_unit"] = "reported_source_unit",
         unit_family: str | None = None,
@@ -406,7 +406,7 @@ def build_research_data_mcp_server(
             problems = "; ".join(".".join(map(str, e["loc"])) + ": " + e["msg"]
                 for e in exc.errors(include_input=False, include_context=False, include_url=False))
             raise ToolError("Financial query validation failed: " + problems
-                + ". Use lowercase metric IDs such as revenue and operating_income; check fiscal-year/date selection. No SQL query was executed.") from None
+                + ". exact_period_end requires period_end. If only fiscal_years is known, use latest_on_or_before and inspect the returned dates; do not invent an end date. Use lowercase metric IDs such as revenue and operating_income. No SQL query was executed.") from None
         result = await _invoke_model(
             dependencies.financial_fact_reader,
             CompanyFinancialFactQueryResult,

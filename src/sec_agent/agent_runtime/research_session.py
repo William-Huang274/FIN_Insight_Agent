@@ -197,7 +197,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     async def converge_node(state, config: RunnableConfig):
         _stage("convergence", "started")
         result = await converge.ainvoke({"question": state["question"], "case_papers": state["case_papers"],
-            "feedback": state["author_feedback"], "case_review": state["case_review"],
+            "feedback": state.get("author_feedback", {}), "case_review": state.get("case_review", {}),
             "research_handoff": state["research_handoff"]}, config)
         retained = {key: deepcopy(result.get(key, {})) for key in ("synthesis", "synthesis_review")}
         retained.update(convergence_history=deepcopy(result.get("artifact_history", [])),
@@ -231,6 +231,9 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     graph.add_node("research_attention", attention)
     graph.add_edge(START, "research")
     def after_research(state):
+        plan = (state.get("research_handoff") or {}).get("execution_plan")
+        if state["phase"] == "research_reviewing" and plan and plan["depth"] == "focused":
+            return "convergence"
         return "initialize" if state["phase"] == "single_agent_unreviewed" else "case_review" if state["phase"] == "research_reviewing" else "research_attention"
     graph.add_conditional_edges("research", after_research)
     graph.add_conditional_edges("remaining_research", after_research)

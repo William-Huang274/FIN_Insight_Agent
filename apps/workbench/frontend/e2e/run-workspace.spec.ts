@@ -33,4 +33,12 @@ for (const width of [1440, 1024, 390]) test(`agent conversation and run history 
   await page.getByRole("button", { name:"收起资料面板", exact:true }).click();
   await expect(panel).toBeHidden();
   await expect(page.getByRole("log", {name:"Agent 活动流"})).toBeVisible();
+  session.status = "error"; session.runs[0].status = "error";
+  session.model_events.push({run_id:run, kind:"stage", actor:"specialist", event:"output", status:"recovered_candidate",
+    objective:"## 已执行结果\n\n已核对期间和单位。**不同财年不可直接比较**。", recorded_at:"2026-09-08T08:00:04Z"});
+  await page.reload();
+  await expect(page.getByRole("region", {name:"失败说明"})).toBeVisible();
+  await expect(page.getByRole("heading", {name:"已执行结果"})).toBeVisible();
+  await expect(page.locator(".fs-live-output-label")).toHaveText("从历史提交记录恢复的候选输出");
+  expect(await page.locator(".fs-live-prose").first().evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
 });

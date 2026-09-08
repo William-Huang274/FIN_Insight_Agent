@@ -27,6 +27,7 @@ from .dell_specialist_agentic_graph import (
 )
 from .dell_workpaper_review_graph import validate_workpaper_state
 from sec_agent.research_foundation.research_methods import get_research_method
+from .research_execution_plan import ResearchExecutionPlan
 
 
 class LeadResearchError(ValueError):
@@ -37,6 +38,7 @@ class _LeadAction(BaseModel):
     model_config = ConfigDict(extra="forbid", strict=True, frozen=True)
     context_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
     reason_summary: str = Field(min_length=1, max_length=2000)
+    execution_plan: ResearchExecutionPlan | None = None
 
 
 class DelegatedResearchTask(ResearchTaskSpec):
@@ -150,7 +152,7 @@ def build_dell_lead_research_graph(
     allowed_branch_ids: tuple[str, ...], seed_workpapers: Mapping[str, Mapping[str, Any]],
     model_turn: Callable, run_child: Callable, max_lead_turns: int = 8,
     max_tasks: int = 4, max_parallel_tasks: int = 2, turn_source: str = "scripted_qualification", unfinished_only: bool = False,
-    role_method=None, require_all_branches=True, public_progress=None,
+    role_method=None, require_all_branches=True, public_progress=None, require_execution_plan=False,
 ) -> StateGraph:
     allowed = set(allowed_branch_ids)
     if expected_input is not None and (not allowed or len(allowed) != len(allowed_branch_ids)
@@ -213,6 +215,7 @@ def build_dell_lead_research_graph(
             "branch_catalog": [row for row in branch_catalog if row["branch_id"] in allowed],
             "required_branch_ids": list(allowed_branch_ids),
             "scope_policy": "All listed branches require submitted research." if require_all_branches else "The catalog is available scope, NOT a checklist. Select only branches material to this question; explain your selection and omitted scope in public handoff notes. At least one source-grounded workpaper is required.",
+            "execution_policy": ("Submit execution_plan on delegation and handoff. Choose responsibilities from actual scope and evidence, not company names or branch counts. focused uses ONE self-contained paper and final independent verification; integrated retains counter/source review, writer and final verification; extended additionally requires genuinely distinct synthesis work and its review. Explain every omission and escalation. At handoff revisit actual findings. This policy supersedes generic instructions that separate synthesis/writer always follow." if require_execution_plan else "Legacy fixed review pipeline."),
             "capabilities": lead_capability_catalog(expected_input.l0_context.capability_summaries),
             "capacity": {"max_tasks": max_tasks, "max_parallel_tasks": max_parallel_tasks,
                          "max_lead_turns": max_lead_turns},
@@ -257,6 +260,8 @@ def build_dell_lead_research_graph(
                 action = LEAD_RESEARCH_TOOLS[call.name].model_validate_json(json.dumps(call.args))
                 if action.context_digest != batch.context_digest:
                     raise ValueError("lead_tool_context_mismatch")
+                if require_execution_plan and isinstance(action, (DelegateResearchTasksAction, SubmitResearchHandoffAction)) and action.execution_plan is None:
+                    raise ValueError("execution_plan_required_with_scope_omission_and_escalation_reasons")
                 if isinstance(action, DelegateResearchTasksAction):
                     ids = [task.task_id for task in action.tasks]
                     known = set(seeds) | {task["task_id"] for task in state["tasks"]}
@@ -293,6 +298,8 @@ def build_dell_lead_research_graph(
                     if set(action.acknowledged_incomplete_task_ids) != incomplete:
                         raise ValueError("handoff_must_acknowledge_exact_incomplete_task_ids")
                     if action.disposition == "ready_for_review":
+                        if action.execution_plan and action.execution_plan.depth == "focused" and len(done) != 1:
+                            raise ValueError("focused_requires_one_self_contained_paper_choose_integrated_for_multiple_deliverables")
                         coverage = {row["task"]["branch_id"] for row in done.values()}
                         failed_attempts = {row["task_id"] for row in state["task_results"] if row["status"] == "needs_attention"}
                         # A failed attempt remains failed, but an explicitly
@@ -305,7 +312,7 @@ def build_dell_lead_research_graph(
                     value = {"handoff_disposition": action.disposition, "financial_or_product_pass": False}
                 if public_progress:
                     public_progress({"kind": "stage", "actor": "lead", "event": "progress", "call_id": call.id,
-                        "objective": action.reason_summary})
+                        "objective": action.reason_summary + ("\n\n" + action.execution_plan.public_summary() if action.execution_plan else "")})
                 return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
             except (ValueError, KeyError) as exc:
                 detail = ({"schema_errors": [{"loc": list(e["loc"]), "type": e["type"], "msg": e["msg"]}

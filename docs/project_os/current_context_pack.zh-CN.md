@@ -1,10 +1,14 @@
 # FIN Insight 当前上下文包
 
-更新时间：2026-09-08
+更新时间：2026-09-09
 当前产品版本：FIN 0.1.3；当前报告版本：Dell v5，ready_for_human_review，Owner 未接受；v4历史保留。
 公开主线入口：main；本轮成果与检查见 [PR #3](https://github.com/William-Huang274/FIN_Insight_Agent/pull/3)。本地 codex/fin013-dell-s1-s2-product-bridge 与恢复引用保留，不代表仍需另做一轮规划。
 
 ## 当前交付与停止点
+
+2026-09-09 [S3/204](../worklog/fin_0_1_3_s3/204_adaptive_research_and_context_comparison.md)工程/实证：模型声明focused/integrated/extended及公开理由，原生条件边分别精简大小题；公开候选输出/失败说明16px、旧A5候选正文恢复且原失败不变。小题同题41→9调用、506744→108491tokens；大题148调用8282356tokens/¥4.935817，待人工审阅，额外综合两层未运行，但重复读取仍偏多。后补完整引用目录与前次审查/报告diff接续确定性通过，真实节费尚未量化。Hermes官方0.21.1隔离ContextCompressor已实测，长历史压缩约75%但计算操作数缺失，原生摘要亦丢信息，故自动摘要继续关闭；未完成Hermes全Agent接续资格。173调用总计已知¥6.214989/未知0，失败含在成本内，停止追加付费。Owner可看小题b25721和大题4be034；不接受报告、不改FIN0.1.3，不声明大题token问题全部解决。
+
+2026-09-09 Owner授权[S3/204](../worklog/fin_0_1_3_s3/204_adaptive_research_and_context_comparison.md)：大小题分别精简，模型说明计划/省略/升级理由；修公开分析与失败输出保留、前端字号；修后再做原生/Hermes上下文正确率和精简程度同题对照。基线PR6已合main fbcb0a99，旧203不是执行效率完成验收。新工作在codex/fin013-adaptive-research，保留失败/旧报告，FIN0.1.3不变。
 
 2026-09-08 Owner最新要求本地完成：[S3/203](../worklog/fin_0_1_3_s3/203_research_activity_and_execution_modes.md)。资料按专题/判断/来源与地图对齐、自然语言标题、宽幅实时公开Agent活动流；新建/追问/修订模式和模型选择接原生运行。五类小题含失败共9attempt/93调用/1,856,553tokens/估算1.457538元，0未知。NVIDIA单Agent新研究只5调用；前端财年措辞修订v1→v2走Writer+Verifier；NVIDIA/Micron自由研究Lead只选一个方向但仍41调用/506,744tokens。按需历史同题n=1下降42.1%，不外推普遍节费。263后端通过/19材料环境跳过，15三宽度浏览器通过，真实起始/活动截图更新。Hermes官方上下文接口已评估，整体替换HOLD未接入；先需区分单次上下文与固定多层复核开销。此授权覆盖下方旧停止点；不迁移runtime、不接受旧报告、不改产品版本。GitHub发布状态见203末尾；BFF18793/native18165及原PG/Redis保留，8793属Windows排除端口。
 

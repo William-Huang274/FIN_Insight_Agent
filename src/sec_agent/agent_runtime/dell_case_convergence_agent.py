@@ -76,7 +76,7 @@ class CaseReport(BaseModel):
     model_config = ConfigDict(extra="forbid")
     title: str = Field(min_length=5, max_length=250)
     narrative_markdown: str = Field(min_length=200, max_length=80000,
-        description="Free Chinese report, not a fixed template. Bind material statements inline using actual [P01:C15] paper claims, [PASSAGE::id] read-source windows, [NUMFACT::id] SQL facts or [CALC::id] calculator results observed in this task. Sources and authority notes are resolved locally; invented IDs are rejected.")
+        description="Free Chinese report, not a fixed template. Bind material statements using exact citation_ids from the current catalog (paper_id:claim_id), [PASSAGE::id] read-source windows, [NUMFACT::id] SQL facts or [CALC::id] calculator results observed in this task. Paper order is not branch numbering; never renumber author claim IDs. Sources and authority notes are resolved locally; invented IDs are rejected.")
     charts: list[ReportChart] = Field(default_factory=list, max_length=5,
         description="Optional useful evidence charts, preferably 1-3 when data support comparison. Points bind actual source operands or CALC IDs; host reads values. Never invent values or use charts decoratively. Labels/period/unit choices are independently reviewed.")
 
@@ -388,7 +388,10 @@ def report_citations(report, artifacts, messages=None, *, prior_citations=None):
     refs = list(dict.fromkeys(CLAIM_REF.findall(prose)))
     missing = sorted(set(refs) - claims.keys())
     if not refs or missing:
-        raise ValueError(f"report_citation_ids_missing_or_unknown:{missing}")
+        affected = {ref.split(":", 1)[0] for ref in missing}
+        available = [ref for ref in claims if ref.split(":", 1)[0] in affected]
+        raise ValueError(f"report_citation_ids_missing_or_unknown:{missing}; exact current citation IDs for affected papers: {available}. "
+            "Copy the matching claim's actual ID from the catalog/workpaper; paper order is not branch numbering. No automatic alias substitution.")
     # Mechanical resolution is not semantic entailment. The verifier evaluates
     # whether each material sentence actually follows from these claims/sources.
     return {ref: {"claim": claims[ref], "sources": [artifacts.citation_source(s)
@@ -625,7 +628,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_case_report(report: CaseReport, runtime: ToolRuntime) -> Command:
-        """Submit a free-form cited Chinese research report for independent final review, not release."""
+        """Submit a cited Chinese report for independent review. report MUST be a JSON object, not a JSON-encoded string. Copy COMPLETE citation IDs exactly from read_current_workpaper/read_current_source; never abbreviate hashes or invent P01:C1 aliases. Only cite claim IDs actually returned by the tools."""
         if allow_answers and runtime.state.get("request_action") != "revise":
             return output_message(runtime, error="This is a question, not a report-revision request. Use submit_case_answer.")
         try:
@@ -704,7 +707,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         submit = submit_research_synthesis
         selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     elif role == "writer":
-        specific = "Write the final integrated research report in Chinese. Use the actual catalog to review the current workpapers needed to cover the question (read_current_workpaper, not superseded archive text); do not assume a fixed paper count. Read relevant original sources and perform supported financial calculations. Directly answer the full question; lead with a clear, conditional judgment, connect demand/architecture/supply/competition to revenue/margin/cash, distinguish evidence from hypothesis and state what would change the view. Check whether disclosed guidance and realized results imply meaningful future execution requirements, and compare cash realization on compatible periods where evidence permits. Do not force an unavailable volume/price decomposition. Use readable comparisons or tables when useful, not a fixed prose template, disclaimer dump or pasted workpapers. No valuation/target price or invented metrics. Inline important claims as [P01:C15] using exact current IDs. Review actual sources before citing; retain period/authority distinctions."
+        specific = "Write the final integrated research report in Chinese. Use the actual catalog to review the current workpapers needed to cover the question (read_current_workpaper, not superseded archive text); do not assume a fixed paper count. Read relevant original sources and perform supported financial calculations. Directly answer the full question; lead with a clear, conditional judgment, connect demand/architecture/supply/competition to revenue/margin/cash, distinguish evidence from hypothesis and state what would change the view. Check whether disclosed guidance and realized results imply meaningful future execution requirements, and compare cash realization on compatible periods where evidence permits. Do not force an unavailable volume/price decomposition. Use readable comparisons or tables when useful, not a fixed prose template, disclaimer dump or pasted workpapers. No valuation/target price or invented metrics. Copy each claim's exact citation_id from the current catalog inside brackets; never replace a semantic author claim ID with a guessed number, or infer paper ID from branch number. Review actual sources before citing; retain period/authority distinctions."
         if report_revision:
             specific = "Revise the supplied full Chinese report against the independent review and explicitly labeled human feedback. Read affected current workpapers and selected original sources as needed; do not restart all research or copy another agent's private context. Preserve the full question's coverage and useful analysis. Reviewers and prior workpapers can be wrong: use source-backed facts, not invalid underlying inference claims, when correcting reasoning. Explain uncertainty naturally beside the claim; keep internal S2/typed_gap/formula IDs and execution receipts in a short technical appendix, not the research headline or repeated boilerplate. No valuation/target price or invented metrics. Use exact current paper:claim IDs, not abbreviations. Submit the revised report, not a reply to reviewers."
         submit = submit_case_report

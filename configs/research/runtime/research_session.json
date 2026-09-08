@@ -52,10 +52,11 @@
         "input_scale": "Current question, compact nine-theme data/method catalog, Lead method, task statuses and actual public workpapers read through native history; no raw corpus or specialist private reasoning.",
         "required_outputs": [
           "Dynamic tasks and dependencies",
+          "Model-authored execution depth, necessary responsibilities, omitted-step reasons and evidence-triggered escalation conditions",
           "Source-grounded follow-up decisions",
           "Review handoff or explicit incomplete work"
         ],
-        "schema_burden": "Existing native planning tools and semantic task schemas; the host binds context. No full report output.",
+        "schema_burden": "Existing native planning tools and semantic task schemas plus one execution plan (depth and three short public rationales); the host binds context. No full report output.",
         "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
         "comparable_run_evidence": "Full research A2 used seven Flash/disabled Lead turns (~0.1143 CNY); full-chain model quality remains to be requalified on the new question.",
         "reasoning_profile": "agentic_message_history_thinking_disabled",

@@ -289,6 +289,20 @@ class CaseModelAudit(AgentMiddleware):
         raw = next(m for m in reversed(response.result) if isinstance(m, AIMessage))
         truncated = raw.response_metadata.get("finish_reason") == "length"
         self.private_sink({"event": "response", "call_id": call_id, "actor": self.actor, "raw_response": raw.model_dump(mode="json")})
+        if self.stream_public and not request.state.get("request_summary"):
+            from .public_research_output import submitted_prose
+            from langgraph.config import get_stream_writer
+            # Ordinary assistant text / explicit FIN submissions only. Provider
+            # reasoning blocks and additional_kwargs never enter this projection.
+            texts = [raw.text] if raw.text.strip() else []
+            texts.extend(p for c in raw.tool_calls if (p := submitted_prose(c["name"], c["args"])))
+            for index, prose in enumerate(texts):
+                event = {"kind": "stage", "actor": self.actor, "event": "output", "status": "candidate",
+                    "call_id": f"{call_id}:output:{index}", "objective": prose,
+                    "recorded_at": datetime.now(timezone.utc).isoformat()}
+                self.activity_sink(event)
+                self.events.append(event)
+                get_stream_writer()(event)
         self.public_sink({**common, "event": "outcome", "status": "truncated" if truncated else "success",
             "valid_tool_call_count": len(raw.tool_calls), "invalid_tool_call_count": len(raw.invalid_tool_calls),
             "success_scope": "provider_response_only_not_tool_or_task_acceptance",

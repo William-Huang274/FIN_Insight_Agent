@@ -59,6 +59,26 @@ def _graph(model, worker, *, seed=None, **kwargs):
         model_turn=model, run_child=worker, **kwargs).compile(), value
 
 
+def test_adaptive_handoff_requires_model_plan_and_exposes_reasons():
+    events, requests = [], []
+    plan = {"depth": "focused", "rationale": "One self-contained source-bound paper answers the user's complete limited scope.",
+        "omitted_steps_reason": "No cross-paper synthesis is needed; final independent verification remains necessary.",
+        "escalation_conditions": "Escalate when conflicting evidence requires more than one research deliverable."}
+    def model(request):
+        requests.append(request)
+        response = _stop(request, ready=True)
+        if len(requests) > 1:
+            response["action"]["tool_calls"][0]["args"]["execution_plan"] = plan
+        return response
+    graph, value = _graph(model, lambda *_: pytest.fail("existing paper must not rerun"),
+        require_execution_plan=True, require_all_branches=False, public_progress=events.append)
+    result = graph.invoke(value.model_dump(mode="json"))
+    assert len(requests) == 2
+    assert "execution_plan_required" in str(requests[1]["tool_results"])
+    assert result["lead_handoff"]["execution_plan"] == plan
+    assert plan["omitted_steps_reason"] in events[-1]["objective"]
+
+
 def test_lead_parallel_workers_then_dynamic_dependent_task_without_rewriting_seed():
     seed = _seed()
     original, seen, workers = deepcopy(seed), [], []

@@ -64,6 +64,12 @@ def public_run_usage(audit_root, thread_id, run_id):
             continue
         if event := public_event({"kind": "model", **raw, "run_id": str(run_id)}):
             events.append(event)
+    recovery = path.parent / "public-output-recovery.json"
+    if recovery.is_file() and recovery.resolve().is_relative_to(root):
+        recovered = json.loads(recovery.read_text(encoding="utf-8"))
+        if recovered.get("origin") == "explicit_submission_projection_not_acceptance":
+            events.extend(p for row in recovered.get("events", [])
+                if (p := public_event({**row, "run_id": str(run_id)})) and p.get("kind") == "stage")
     ids = {e["call_id"] for e in events if e.get("kind") == "model" and e.get("call_id")}
     outcomes = {e["call_id"]: e for e in events if e.get("kind") == "model" and e.get("call_id") and e.get("event") == "outcome"}
     totals = {key: sum(e[key] for e in outcomes.values() if isinstance(e.get(key), (int, float)) and not isinstance(e.get(key), bool))
@@ -85,6 +91,35 @@ def public_event(value):
         result["responsible_paper_ids"] = [v for v in value.get("responsible_paper_ids", [])
             if isinstance(v, str) and re.fullmatch(r"P\d{2}", v)][:24]
     return result if result.get("kind") in {"model", "tool", "stage", "task"} else None
+
+
+def public_native_failures(state, run):
+    """Project the latest native checkpoint's failure without raw exception data.
+
+    Checkpoints belong to the native server. Never assign their current failure
+    to an older run or expose provider payloads, filesystem paths or credentials.
+    """
+    events = []
+    for index, task in enumerate(state.get("tasks", [])):
+        raw = task.get("error")
+        if not isinstance(raw, str) or not raw:
+            continue
+        match = re.match(r"(ValueError|RuntimeError|TypeError|TimeoutError)\(['\"]([a-z_]{3,96})(?=[:'\"])", raw)
+        error_type, code = match.groups() if match else ("NativeNodeError", None)
+        summary = "原生运行节点失败；已产生的候选输出保留，未通过的产物不会作为正式报告。"
+        if code == "research_bundle_invalid_citations":
+            summary = "研究底稿未通过交接时的引用校验，因而停止生成报告。已提交的候选底稿仍可查看。"
+        elif code:
+            summary = "原生节点返回执行错误，已产生的候选输出保留。"
+        if code:
+            summary += f"\n\n系统错误代码：`{code}`。此为运行系统的记录，并非模型自行解释。"
+        actor = task.get("name", "research")
+        actor = actor if isinstance(actor, str) and re.fullmatch(r"[a-z_]{1,80}", actor) else "research"
+        events.append({"kind": "stage", "actor": actor, "event": "failure", "status": "error",
+            "error_type": error_type, "objective": summary, "run_id": run["run_id"],
+            "call_id": f"native-failure:{run['run_id']}:{index}",
+            "recorded_at": run.get("updated_at") or run.get("created_at")})
+    return events
 
 
 def public_cost_estimate(events):
@@ -379,7 +414,7 @@ def build_report_sessions_router(service):
             return {"thread_id": thread["thread_id"], "run_id": None, "status": "draft"}
         run = await service.sdk.runs.create(thread["thread_id"], graph, input=payload, stream_mode="custom",
             config=await run_configuration(service, thread),
-            stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": body.mode, "execution": metadata.get("execution")})
+            stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": body.mode, "execution": metadata.get("execution"), "request_message": payload.get("question")})
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"], "status": run["status"]}
 
     @router.post("/research-sessions/{thread_id}/start")
@@ -395,7 +430,7 @@ def build_report_sessions_router(service):
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH,
             config=await run_configuration(service, thread),
             input=ResearchRequest(question=question).model_dump(mode="json"), stream_mode="custom", stream_subgraphs=True,
-            stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "research", "execution": thread.get("metadata", {}).get("execution")})
+            stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "research", "execution": thread.get("metadata", {}).get("execution"), "request_message": question})
         return {"thread_id": str(thread_id), "run_id": run["run_id"], "status": run["status"]}
 
     @router.post("/research-sessions/{thread_id}/guidance")
@@ -501,6 +536,8 @@ def build_report_sessions_router(service):
         public_runs = []
         for run in runs:
             events, usage = public_run_usage(service.audit_root, thread_id, run["run_id"])
+            if run is runs[0] and thread.get("status") == "error" and run.get("status") == "error":
+                events.extend(public_native_failures(state, run))
             projection["model_events"].extend(events)
             public_runs.append({**{k: run.get(k) for k in ("run_id", "status", "created_at")},
                 "revision_target": run.get("metadata", {}).get("revision_target"),

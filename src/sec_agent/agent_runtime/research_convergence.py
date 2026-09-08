@@ -8,6 +8,7 @@ from __future__ import annotations
 
 from copy import deepcopy
 from datetime import datetime, timezone
+from difflib import unified_diff
 import json
 import operator
 from typing import Annotated, Any
@@ -20,6 +21,7 @@ from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, Send
 
 from .dell_case_convergence_agent import ReportReview, report_model_view, review_responsibility_errors
+from .research_execution_plan import ResearchExecutionPlan
 
 
 class ResearchConvergenceState(TypedDict, total=False):
@@ -68,7 +70,8 @@ def route_material_findings(review, artifacts, *, stage, round_index):
 
 
 def build_research_convergence_graph(*, artifacts, question, feedback, research_review_context,
-                                     make_agent, max_parallel_authors=2, existing_state=None, human_feedback=None):
+                                     make_agent, max_parallel_authors=2, existing_state=None, human_feedback=None,
+                                     execution_plan=None):
     """A current-task graph: authors -> Lead -> research review -> report review.
 
     make_agent reuses native create_agent and current read-only MCP tools. It is
@@ -80,6 +83,10 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     if not set(feedback).issubset(p["paper_id"] for p in artifacts.catalog()["papers"]):
         raise ValueError("unknown_initial_responsible_paper")
     graph = StateGraph(ResearchConvergenceState)
+    plan = ResearchExecutionPlan.model_validate(execution_plan) if execution_plan else None
+    depth = plan.depth if plan else "extended"  # old persisted sessions keep their contract
+    if depth == "focused" and len(artifacts.catalog()["papers"]) != 1:
+        raise ValueError("focused_plan_requires_one_self_contained_workpaper")
 
     def event(actor, event, **details):
         get_stream_writer()({"kind": "stage", "actor": actor, "event": event,
@@ -93,7 +100,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
 
     def initial_route(state):
         if not existing_state:
-            return "prepare_authors"
+            return "prepare_authors" if feedback or depth != "focused" else "prepare_focused_report"
         review = state["report_review"]
         return "route_review" if review.get("unresolved_data_requests") or any(f["severity"] == "material" for f in review["findings"]) else "writer"
 
@@ -110,7 +117,19 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         if state.get("stop_reason"):
             return "finish"
         ids = ready_authors(state)
-        return [Send("responsible_author", {**state, "paper_id": pid}) for pid in ids] if ids else "lead_synthesis"
+        return [Send("responsible_author", {**state, "paper_id": pid}) for pid in ids] if ids else (
+            "lead_synthesis" if depth == "extended" else "prepare_focused_report" if depth == "focused" else "writer")
+
+    def prepare_focused_report(state):
+        from .dell_case_convergence_agent import report_citations
+        current = artifacts.with_revisions(state.get("revisions", {}))
+        paper = current.read_paper("P01")
+        prose = paper["narrative_markdown"] + "\n\n## 判断与依据\n\n" + "\n\n".join(
+            c["statement"] + f" [P01:{c['claim_id']}]" for c in paper["claims"])
+        report = {"title": paper["thesis"], "narrative_markdown": prose,
+            "citations": report_citations(prose, current), "charts": []}
+        event("research", "output", status="candidate", objective=prose)
+        return {"report": report}
 
     async def invoke(role, state, config, *, paper_id=None):
         current = artifacts.with_revisions(state.get("revisions", {}))
@@ -149,8 +168,11 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 if round_index:
                     body["revision_request"] = deepcopy(state[state["active_review"]])
             elif role == "writer":
-                body["research_synthesis"] = report_model_view(state["synthesis"])
-                body["research_review"] = deepcopy(state["synthesis_review"])
+                body["research_synthesis"] = report_model_view(state["synthesis"]) if state.get("synthesis") else None
+                body["research_review"] = deepcopy(state.get("synthesis_review", research_review_context))
+                if plan:
+                    body["execution_plan"] = plan.model_dump(mode="json")
+                    body["instruction"] = "Answer only the user's scope. Read relevant workpapers on demand and integrate them directly. Do not repeat unchanged source queries; re-query only for a concrete missing/contradictory field. Retain evidence, limitations and necessary checks. Charts are optional when they do not help this question."
                 if state.get("report"):
                     value["report"] = deepcopy(state["report"])
                     body.update(report=report_model_view(state["report"]), revision_request=deepcopy(state["report_review"]))
@@ -161,8 +183,18 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 body.update(review_target="lead_synthesis" if target == "synthesis" else "final_report",
                             report=report_model_view(state[target]))
                 if role == "report_verifier":
-                    body["research_synthesis"] = report_model_view(state["synthesis"])
-                if round_index:
+                    body["research_synthesis"] = report_model_view(state["synthesis"]) if state.get("synthesis") else None
+                    body["completed_research_reviews"] = deepcopy(research_review_context)
+                    body["instruction"] = "Independently verify the report's material claims and transformations against actual sources. Prior reviews are navigation and completed-work records, not evidence or automatic approval. Reuse immutable source/calculation bindings; do not re-query an unchanged value merely to recreate its ID. Explain your inspection scope and any need to reopen prior work. No unrelated research expansion."
+                    reports = [r["output"] for r in state.get("artifact_history", []) if r["actor"] == "writer"]
+                    baseline = reports[-2] if len(reports) > 1 else (existing_state or {}).get("report")
+                    if baseline and reports:
+                        body["report_changes_from_previous_review"] = "\n".join(unified_diff(
+                            json.dumps(report_model_view(baseline), ensure_ascii=False, indent=2).splitlines(),
+                            json.dumps(report_model_view(reports[-1]), ensure_ascii=False, indent=2).splitlines(),
+                            fromfile="previously_reviewed_report", tofile="current_report", lineterm=""))
+                        body["instruction"] += " This is a correction review: verify closure of prior findings, changed text/charts and newly introduced consequences. Reopen unchanged research only for a stated material reason; do not automatically repeat a full-case review."
+                if round_index or existing_state:
                     body["previous_review"] = deepcopy(state.get("synthesis_review" if role == "research_verifier" else "report_review", {}))
         value["messages"] = [HumanMessage(content=json.dumps(body, ensure_ascii=False))]
         # An explicitly retried parent can reach a child whose native loop ended
@@ -237,6 +269,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
 
     graph.add_node("initialize", initialize)
     graph.add_node("prepare_authors", prepare_authors)
+    graph.add_node("prepare_focused_report", prepare_focused_report)
     graph.add_node("responsible_author", author)
     for name, role in (("lead_synthesis", "synthesis"), ("research_verifier", "research_verifier"),
                        ("writer", "writer"), ("report_verifier", "report_verifier")):
@@ -244,8 +277,9 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_node("route_review", route_review)
     graph.add_node("finish", finish)
     graph.add_edge(START, "initialize")
-    graph.add_conditional_edges("initialize", initial_route, ["prepare_authors", "route_review", "writer"])
-    graph.add_conditional_edges("prepare_authors", author_routes, ["responsible_author", "lead_synthesis", "finish"])
+    graph.add_conditional_edges("initialize", initial_route, ["prepare_authors", "prepare_focused_report", "route_review", "writer"])
+    graph.add_conditional_edges("prepare_authors", author_routes, ["responsible_author", "lead_synthesis", "writer", "prepare_focused_report", "finish"])
+    graph.add_edge("prepare_focused_report", "report_verifier")
     graph.add_edge("responsible_author", "prepare_authors")
     graph.add_edge("lead_synthesis", "research_verifier")
     graph.add_edge("research_verifier", "route_review")

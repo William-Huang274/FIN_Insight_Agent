@@ -57,6 +57,8 @@ class FilingIdentity:
 
 def load_company_fact_mart_policy(
     payload: Mapping[str, Any],
+    *,
+    require_acceptance_qrels: bool = True,
 ) -> CompanyFactMartPolicy:
     _require(
         payload.get("schema_version") == POLICY_SCHEMA_VERSION,
@@ -150,8 +152,11 @@ def load_company_fact_mart_policy(
         and authority.get("typed_conflict_fails_closed") is True,
         "company_fact_authority_invalid",
     )
-    qrels = payload.get("acceptance_qrels")
-    _require(isinstance(qrels, list) and qrels, "company_fact_qrels_invalid")
+    # Runtime materialization must not require an evaluation answer set. Historical
+    # qualification callers keep their strict default and cannot pass vacuously.
+    qrels = payload.get("acceptance_qrels", [])
+    _require(isinstance(qrels, list) and (qrels or not require_acceptance_qrels),
+             "company_fact_qrels_invalid")
     return CompanyFactMartPolicy(
         recorded_at=str(payload["recorded_at"]),
         research_as_of=str(payload["research_as_of"]),

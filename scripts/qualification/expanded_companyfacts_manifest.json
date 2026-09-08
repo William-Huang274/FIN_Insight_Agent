@@ -1,0 +1,8 @@
+{
+  "schema_version": "fin_ia_sec_snapshot_input_v1_0",
+  "attempt_id": "fin205-msft-hpe-companyfacts-a1",
+  "companies": [
+    {"ticker": "MSFT", "cik": "0000789019", "legal_name": "MICROSOFT CORP"},
+    {"ticker": "HPE", "cik": "0001645590", "legal_name": "Hewlett Packard Enterprise Co"}
+  ]
+}

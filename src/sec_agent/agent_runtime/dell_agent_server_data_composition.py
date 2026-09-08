@@ -312,10 +312,16 @@ def open_dell_approved_data_composition(
             )
             from sec_agent.research_foundation.web_source_navigation import WebSourceReader
             guard = PublicURLGuard()
+            live_capture = ExternalSourceCapture(guard=guard, static_fetcher=StaticHTTPPageFetcher(guard=guard),
+                hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard, max_characters=200000))
+            if env.get("FINSIGHT_TASK_ATTACHMENTS_ROOT") and env.get("FINSIGHT_TASK_THREAD_ID"):
+                from sec_agent.research_foundation.source_capture_cache import ScopedSourceCaptureCache
+                live_capture = ScopedSourceCaptureCache(
+                    root=Path(env["FINSIGHT_TASK_ATTACHMENTS_ROOT"]) / "public-source-cache",
+                    thread_id=env["FINSIGHT_TASK_THREAD_ID"], capture=live_capture, guard=guard)
             web_reader = WebSourceReader(
                 discovery=ExternalSourceDiscovery(primary=ExaHostedMCPProvider()),
-                capture=ExternalSourceCapture(guard=guard, static_fetcher=StaticHTTPPageFetcher(guard=guard),
-                    hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard, max_characters=200000)))
+                capture=live_capture)
 
             async def source_reader(*, request, branch_id, run_scope):
                 if request.source_space == "web":

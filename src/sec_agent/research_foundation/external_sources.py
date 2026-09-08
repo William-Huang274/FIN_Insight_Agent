@@ -563,6 +563,7 @@ class CaptureAttempt(BaseModel):
         "exa_hosted_web_fetch",
         "playwright_browser",
         "frozen_exact_url_candidate_replay",
+        "cached_public_source_replay",
     ]
     status: Literal["ok", "empty", "tool_failure"]
     extracted_characters: int = Field(ge=0)
@@ -598,6 +599,7 @@ class CaptureReceipt(BaseModel):
         "exa_hosted_web_fetch",
         "playwright_browser",
         "frozen_exact_url_candidate_replay",
+        "cached_public_source_replay",
     ] | None
     attempts: tuple[CaptureAttempt, ...]
     text: str

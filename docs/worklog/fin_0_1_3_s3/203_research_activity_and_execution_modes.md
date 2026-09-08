@@ -16,7 +16,7 @@
 - [x] 新题、追问、修订模型选择真实消费；Flash 和 Pro 均有真实请求。
 - [x] 五类小题实测完成，含失败共九个 attempt，费用完整归集。
 - [x] 本地真实界面部署、截图内容审阅。
-- [ ] GitHub PR 检查、合并与临时远端分支收口（以末尾发布记录为准）。
+- [x] 代码与文档分开提交，推送 [PR #6](https://github.com/William-Huang274/FIN_Insight_Agent/pull/6)；最终 CI、合并与临时远端分支状态由该 PR 和远端引用记录承载。
 
 产品增量：研究资料与研究地图共用 reportTopics 和服务器引用绑定，按专题→判断→来源展开；编号保留底层身份，界面使用判断内容、来源标题或自然语言编号说明。未绑定的正文编号不会伪装为证据链接。公开 Agent 活动在主栏按时间追加，工具调用可展开；切换历史、回到最新、节点过滤、运行中意见与停止均有真实接口。任务说明在尚无报告的运行页也可以关闭。
 
@@ -95,4 +95,4 @@ A1→A6 使用已有公共历史按需读取工具，不再逐轮注入全部旧
 - 实际页面截图 `D:/temp/fin-activity-public-capture-a1`，1600×1000、0 page errors、0写请求、0模型调用。选取新起始页和 A9 已完成公开活动流，非伪造实时运行；保留此前 Dell 地图和配置编辑图。
 - 可复用题目与检查要点见 [workbench_execution_modes.json](../../../eval_sets/workbench_execution_modes.json)。大型完整模式题目仅备好，未在本批追加付费。
 
-发布：待本轮最终 GitHub 检查记录补充。FIN 0.1.3 不升版、不创建 release、不自动接受报告。
+发布：工程提交 `b5a5dfc9`、实测/展示提交 `f8ac4de1` 已推送 [PR #6](https://github.com/William-Huang274/FIN_Insight_Agent/pull/6)，本地提交后工作区干净。最终 CI 与合并状态查看该 PR；检查通过后按 Owner 授权合 main 并移除临时远端分支，保留 main 与两个 history 分支。FIN 0.1.3 不升版、不创建 release、不自动接受报告。

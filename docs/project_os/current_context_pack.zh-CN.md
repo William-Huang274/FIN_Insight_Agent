@@ -6,6 +6,10 @@
 
 ## 当前交付与停止点
 
+2026-09-09 205继续：工程84f6969f/d457fb05，18795工作台＋通用对话/18165原生服务。新题1两轮2调用5169tokens（措辞缺陷保留），新题2三轮7调用45862tokens/原生重启续读原始依据成功；389公开文本片段及完整usage实测。本轮累计74推理请求306160tokens/估算¥0.1817943未知0，Hermes财务文本仍HOLD；五题/旧失败重验/知识入库批准/跨thread/多格式/sandbox/多租户未完成，继续本轮，不合main或换版本。详情见205日志。
+
+2026-09-09 Owner新增整轮授权覆盖204停止点：Qwen向量/重排API同条件对照先行，扩充资料/SQL池及外源缓存，五个新模式/复杂度/普通问答用例并整理旧失败新attempt，通用多轮、上下文用量、Hermes带证据回读/跨thread交接、多格式可用报告与修订，三档权限/sandbox及本地多租户部署探索。统一[实施基线](../product/CONVERSATION_RETRIEVAL_AND_DELIVERY_20260909.zh-CN.md)、[205记录](../worklog/fin_0_1_3_s3/205_conversation_retrieval_and_delivery.md)，不重开多份规划。main a7053972/PR7已合，新分支codex/fin013-conversation-and-retrieval。QWEN_API_KEY存在Windows用户环境，先公开小批探测；不得印密钥/越权文件改删。实施状态以基线清单为准，不把计划当完成。
+
 2026-09-09 [S3/204](../worklog/fin_0_1_3_s3/204_adaptive_research_and_context_comparison.md)工程/实证：模型声明focused/integrated/extended及公开理由，原生条件边分别精简大小题；公开候选输出/失败说明16px、旧A5候选正文恢复且原失败不变。小题同题41→9调用、506744→108491tokens；大题148调用8282356tokens/¥4.935817，待人工审阅，额外综合两层未运行，但重复读取仍偏多。后补完整引用目录与前次审查/报告diff接续确定性通过，真实节费尚未量化。Hermes官方0.21.1隔离ContextCompressor已实测，长历史压缩约75%但计算操作数缺失，原生摘要亦丢信息，故自动摘要继续关闭；未完成Hermes全Agent接续资格。173调用总计已知¥6.214989/未知0，失败含在成本内，停止追加付费。Owner可看小题b25721和大题4be034；不接受报告、不改FIN0.1.3，不声明大题token问题全部解决。
 
 2026-09-09 Owner授权[S3/204](../worklog/fin_0_1_3_s3/204_adaptive_research_and_context_comparison.md)：大小题分别精简，模型说明计划/省略/升级理由；修公开分析与失败输出保留、前端字号；修后再做原生/Hermes上下文正确率和精简程度同题对照。基线PR6已合main fbcb0a99，旧203不是执行效率完成验收。新工作在codex/fin013-adaptive-research，保留失败/旧报告，FIN0.1.3不变。

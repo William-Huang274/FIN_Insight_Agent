@@ -1,0 +1,45 @@
+.rg-workspace { min-height: 0; overflow: auto; flex: 1; background: #f7f9f8; color: #233e37; }
+.rg-toolbar { display: flex; align-items: center; gap: 12px; padding: 15px 22px; border-bottom: 1px solid #dce5df; flex-wrap: wrap; }
+.rg-toolbar label { font-size: 13px; white-space: nowrap; }
+.rg-toolbar label span { color: #67796e; margin-left: 6px; }
+.rg-toolbar select { min-width: 0; flex: 1; width: 240px; padding: 9px; border: 1px solid #cadbd3; border-radius: 7px; font: inherit; font-size: 13px; color: #28483c; background: #fff; }
+.rg-workspace button, .rg-empty button { border: 1px solid #cadbd3; border-radius: 7px; padding: 8px 11px; color: #24654f; background: white; font: inherit; font-size: 12px; cursor: pointer; }
+.rg-workspace button:disabled { opacity: .5; cursor: default; }
+.rg-workspace button:hover:not(:disabled) { background: #e9f2eb; }
+.rg-summary { padding: 16px 22px; background: #fff; border-bottom: 1px solid #dce5df; }
+.rg-summary strong { display: block; font-size: 14px; line-height: 1.8; font-weight: 500; }
+.rg-summary span, .rg-hint { display: block; color: #69796d; font-size: 12px; line-height: 1.7; margin-top: 8px; }
+.rg-layout { display: grid; grid-template-columns: minmax(0,1fr) 310px; min-height: 530px; }
+.rg-canvas-area { min-width: 0; }
+.rg-canvas-tools { padding: 12px 16px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.rg-canvas-tools span { flex: 1; color: #66766c; font-size: 12px; }
+.rg-canvas { height: 410px; width: 100%; background: #f4f7f5; }
+.rg-canvas .react-flow__node { text-align: left; padding: 17px; background: #fff; border: 1px solid #bfd1c6; border-radius: 9px; color: #2c483a; }
+.rg-canvas .react-flow__node.selected { border: 2px solid #2b795a; }
+.rg-canvas .react-flow__node small { display: block; font-size: 12px; color: #687c6d; margin-bottom: 10px; }
+.rg-canvas .react-flow__node strong { display: block; font-size: 18px; font-weight: 500; overflow-wrap: anywhere; }
+.rg-canvas .react-flow__node.rg-affected { background: #fff5e0; border-color: #b5985e; }
+.rg-canvas .react-flow__edge-text { font-size: 12px; fill: #596d60; }
+.rg-hint { padding: 0 16px; }
+.rg-details { min-width: 0; padding: 22px; border-left: 1px solid #dce5df; background: #fff; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+.rg-details h3 { font-size: 17px; margin: 8px 0 16px; font-weight: 500; }
+.rg-eyebrow { font-size: 11px; color: #43705b; letter-spacing: .05em; }
+.rg-source-text { white-space: pre-wrap; max-height: 320px; overflow: auto; }
+.rg-details details { font-size: 11px; color: #718075; }
+.rg-edit-area { padding-top: 18px; margin-top: 18px; border-top: 1px solid #dce5df; }
+.rg-workspace .rg-primary { background: #276e50; color: white; }
+.rg-workspace .rg-primary:hover:not(:disabled) { background: #215b43; }
+.rg-edit-area label { display: block; margin: 15px 0 7px; font-size: 12px; }
+.rg-edit-area textarea { width: 100%; min-height: 130px; box-sizing: border-box; padding: 10px; border: 1px solid #bed0c5; border-radius: 7px; resize: vertical; font: inherit; font-size: 14px; color: #263e33; background: #fafcf9; }
+.rg-edit-area small { display: block; margin-top: 10px; color: #728075; font-size: 11px; }
+.rg-draft-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.rg-preview { border: 1px solid #dfcfaa; border-radius: 8px; padding: 12px; margin-top: 15px; background: #fff6e5; }
+.rg-error { color: #933f2b; padding: 12px; background: #fff0e9; }
+.rg-empty { padding: 35px; }
+.rg-mobile-nodes { display: none; }
+.rg-other-sources { display: flex; padding: 10px 16px; flex-wrap: wrap; gap: 8px; font-size: 12px; align-items: center; }
+.rg-other-sources button { max-width: 100%; overflow-wrap: anywhere; text-align: left; }
+.rs-content-shell[data-tab="graph"] > .rs-document, .rs-content-shell[data-tab="graph"] > .rs-compose { display: none; }
+.rs-content-shell:not([data-tab="graph"]) > .rg-workspace { display: none; }
+@media (max-width: 1250px) { .rg-layout { grid-template-columns: 1fr; } .rg-details { border-left: 0; border-top: 1px solid #dce5df; } .rg-canvas { height: 340px; } }
+@media (max-width: 600px) { .rg-toolbar { padding: 12px; } .rg-toolbar select { flex-basis: 100%; width: 100%; } .rg-summary { padding: 12px; } .rg-canvas { height: 270px; } .rg-mobile-nodes { display: flex; flex-wrap: wrap; gap: 6px; padding: 12px; } .rg-mobile-nodes button { text-align: left; max-width: 100%; overflow-wrap: anywhere; } .rg-edit-area textarea { font-size: 16px; } .rg-details { padding: 16px; } }

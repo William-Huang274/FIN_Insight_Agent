@@ -46,6 +46,7 @@ for (const width of [1440, 1024, 390]) {
       await route.fulfill({ json: body });
     });
     await page.goto(`/workspace/session?thread=${id}`);
+    await page.getByRole("button", { name: "研究报告", exact: true }).click();
     await expect(page.getByRole("heading", { name: "当前研究报告" })).toBeVisible();
     await expect(page.getByLabel("研究对话")).toBeHidden();
     await expect(page.getByText(session.question, { exact: true })).toBeHidden();

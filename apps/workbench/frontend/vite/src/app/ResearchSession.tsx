@@ -5,6 +5,7 @@ import { remarkBoundCitations } from "./remarkBoundCitations";
 import { remarkReportHeadings } from "./remarkReportHeadings";
 import { sourceCalculation } from "./sourceCalculation";
 import { ReportVersions } from "./ReportVersions";
+import { ResearchGraph } from "./ResearchGraph";
 import type { ReportSnapshot } from "../api/reportSessions";
 import {
   ArrowUp,
@@ -173,7 +174,8 @@ export function ResearchSession() {
   const [usageRunId, setUsageRunId] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<"report" | "conversation">("report");
+  const [tab, setTab] = useState<"graph" | "report" | "conversation">("graph");
+  useEffect(() => { if (session && !session.report && tab === "graph") setTab("report"); }, [session, tab]);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [taskDetails, setTaskDetails] = useState(false);
   const [outline, setOutline] = useState<{ id: string; label: string }[]>([]);
@@ -674,6 +676,7 @@ export function ResearchSession() {
             </div>}
             <div className="rs-tabs">
               <div>
+                {displayedReport && <button className={tab === "graph" ? "active" : ""} onClick={() => { setInspectorOpen(false); setTab("graph"); }}><Layers size={15} /> 研究图</button>}
                 <button
                   className={tab === "report" ? "active" : ""}
                   onClick={() => setTab("report")}
@@ -694,6 +697,9 @@ export function ResearchSession() {
               </span>
             </div>
             <div className="rs-content-shell" data-tab={tab}>
+            {displayedReport && <ResearchGraph key={`${id}:${historicalReport?.checkpoint_id || session.report_version}`} id={id}
+              version={historicalReport?.report_version || session.report_version || 1} checkpoint={historicalReport?.checkpoint_id}
+              report={displayedReport} active={tab === "graph"} onReport={() => setTab("report")} />}
             {tab === "report" && !!outline.length && <nav className="rs-outline" aria-label="报告目录">
               <label htmlFor="report-section-picker">报告目录</label>
               <select id="report-section-picker" value={activeHeading} onChange={e => { setActiveHeading(e.target.value); document.getElementById(e.target.value)?.scrollIntoView({ block: "start" }); }}>

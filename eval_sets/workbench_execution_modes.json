@@ -1,0 +1,62 @@
+{
+  "schema_version": 1,
+  "purpose": "Human-run UI acceptance cases; this file does not schedule or authorize model calls.",
+  "product_version": "0.1.3",
+  "cases": [
+    {
+      "id": "short_report_question",
+      "difficulty": "small",
+      "entry": "followup",
+      "mode": "single",
+      "model": "deepseek-v4-flash",
+      "question": "只根据当前报告第三节，简短解释经营现金流除以 GAAP 净利润这个比值说明什么、为何不能称为客户回款率。最多180字，保留Q2单季与合并口径；不要重写报告，不补查外部资料。",
+      "check": ["Only quick_writer model calls", "Current report and checkpoint unchanged", "Bound citation opens", "Compare reported input/output/cache usage with the same-question baseline"]
+    },
+    {
+      "id": "selected_expert_evidence_boundary",
+      "difficulty": "medium",
+      "entry": "followup",
+      "mode": "selected",
+      "model": "deepseek-v4-pro",
+      "selection": "Customer demand quality from the deployed catalog",
+      "question": "请咨询需求质量方向的研究者，检查现有订单和积压披露能否支持每个客户的未履约订单金额。只回读现有资料，不外搜、不改报告。公开说明开始核对和关键发现，给真实引用，区分公司合计与客户明细；本地缺数不能推出发行人未披露。",
+      "check": ["Only selected consultation branch", "Public progress arrives during execution", "Child citation bindings survive handoff", "No automatic report rewrite"]
+    },
+    {
+      "id": "new_company_single_research",
+      "difficulty": "small",
+      "entry": "new_research",
+      "mode": "single",
+      "model": "deepseek-v4-flash",
+      "question": "从本地财务SQL核对 NVIDIA FY2026 与 FY2025 全年收入、财年起止日和整美元单位，计算同比，说明收入增长不能单独证明盈利质量。最少必要证据，保留一个补充问题，不外搜、不研究 Dell、不扩展九主题。",
+      "check": ["One specialist, no lead/review/synthesis model", "Generic observed financial facts and calculation receipts", "Historical case routes not promoted or forced onto current question", "Report version 1 is explicitly unreviewed"]
+    },
+    {
+      "id": "targeted_period_wording_revision",
+      "difficulty": "small",
+      "entry": "map_claim_revision",
+      "mode": "auto",
+      "model": "deepseek-v4-flash",
+      "question": "核对两个已绑定财年日期。将写反的衔接关系修正为后一财年期初是前一财年期末的次日，写明日期；保留收入、同比与盈利质量限定，不扩写其他章节。",
+      "check": ["Request contains claim ID, checkpoint, digest, feedback and execution selection", "Writer and verifier activate", "Before/after diff is readable and collapsible", "Original checkpoint and source values remain intact"]
+    },
+    {
+      "id": "free_scope_fiscal_comparison",
+      "difficulty": "medium",
+      "entry": "new_research",
+      "mode": "auto",
+      "model": "deepseek-v4-flash",
+      "question": "用本地SQL取 NVIDIA FY2026 与 Micron FY2025 各一个完整财年的收入及起止日，解释不同财年标签不能直接当成同一自然年比较。负责人自主选必要研究方向，两个来源、一个核心判断和一条局限，保留独立核验。不外搜、不比较估值或盈利质量。",
+      "check": ["Lead chooses actual scope instead of filling every catalog branch", "Independent review still runs", "Periods remain explicit", "Local query failures are distinguished from information non-disclosure"]
+    },
+    {
+      "id": "full_research_quality",
+      "difficulty": "large",
+      "entry": "new_research",
+      "mode": "standard",
+      "model": "default",
+      "question": "基于部署中可达的发行人公告、财务数据与外部资料，研究一家公司最新完整季度的增长质量、利润兑现、现金约束和主要反证；区分事实、计算、推断、假设，保留验证条件。",
+      "check": ["All configured directions and independent reviews", "No mandatory inherited issuer when user selects another company", "Citation and financial-semantic acceptance", "Separate paid budget qualification before running; not part of the small-case batch"]
+    }
+  ]
+}

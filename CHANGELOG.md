@@ -5,6 +5,14 @@ Product versions, report revisions and execution attempts are separate. Mainline
 
 ## FIN 0.1.3 — Development preview / 当前开发预览
 
+### 2026-09-08 · Agent activity and execution choices / 活动流与运行选择
+
+- 资料按专题→判断→来源与地图共用真实绑定，自然语言名称保留底层引用身份。Evidence navigation shares the report map's topic/claim/source bindings and readable labels.
+- 主栏公开 Agent 进展、可展开工具记录、历史切换、节点过滤与实时补充意见。Main-column public activity, expandable calls, saved-run selection, node filtering and live guidance.
+- 新建、追问、修订可选完整/自由/指定/单 Agent 和已配置 Flash/Pro 模型；原生运行消费这些选择。单 Agent 产物明确未独立复核。Execution/model choices reach native runs; single-agent output remains explicitly unreviewed.
+- 跨公司小题实测与财年文字微修订完成；含失败共九次尝试、93调用、1,856,553 tokens、估算1.457538元。Nine attempts including failures; no unknown/pending usage. One same-question history-on-demand comparison reduced tokens by42.1%; free-mode small research still required41calls, so this is not a general savings claim.
+- Hermes 上下文接口已评估，尚未接入或替换运行时；先保留测量依据和独立复核边界。Hermes context interfaces reviewed; integration remains deferred. [Evidence / 实测记录](docs/worklog/fin_0_1_3_s3/203_research_activity_and_execution_modes.md).
+
 ### 2026-09-08 · Research workspace and public walkthrough / 研究工作台与公开展示
 
 - **工作台 / Workspace:** 问题起始页、项目侧栏、报告总览→专题→判断与依据、完整来源阅读、可渲染且可收起的修订对比。Question-first entry, project sidebar, hierarchical report navigation, expanded sources and rendered/collapsible diffs.

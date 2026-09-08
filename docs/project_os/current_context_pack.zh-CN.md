@@ -6,6 +6,8 @@
 
 ## 当前交付与停止点
 
+2026-09-08 Owner最新要求本地完成：[S3/203](../worklog/fin_0_1_3_s3/203_research_activity_and_execution_modes.md)。资料按专题/判断/来源与地图对齐、自然语言标题、宽幅实时公开Agent活动流；新建/追问/修订模式和模型选择接原生运行。五类小题含失败共9attempt/93调用/1,856,553tokens/估算1.457538元，0未知。NVIDIA单Agent新研究只5调用；前端财年措辞修订v1→v2走Writer+Verifier；NVIDIA/Micron自由研究Lead只选一个方向但仍41调用/506,744tokens。按需历史同题n=1下降42.1%，不外推普遍节费。263后端通过/19材料环境跳过，15三宽度浏览器通过，真实起始/活动截图更新。Hermes官方上下文接口已评估，整体替换HOLD未接入；先需区分单次上下文与固定多层复核开销。此授权覆盖下方旧停止点；不迁移runtime、不接受旧报告、不改产品版本。GitHub发布状态见203末尾；BFF18793/native18165及原PG/Redis保留，8793属Windows排除端口。
+
 2026-09-08 Owner已授权前端本轮后进行GitHub展示整理：中英文首页/快速开始/架构/导览更新，报告口径统一v5待审阅；新增实际产品截图、公开零模型检查和独立前端测试、通用research_workbench CLI。下面旧“不push/公开整理尚未启动”属于历史时点；本轮按PR检查→合并main→移除临时远端分支推进，保留history分支和FIN0.1.3含义。成果与发布状态见[S3/202](../worklog/fin_0_1_3_s3/202_public_repository_showcase.md)。不发布完整报告或正式release，Hermes后置。
 
 2026-09-08最新Owner纠正与实施：200只是配置文件/浏览器草稿不满足要求；当前已接可编辑角色/Skill/并行数/双审查顺序→原生Assistant独立快照→指定任务metadata→原生run config→实际Agent提示与MCP方法。原生服务与8793 BFF已重载，PG/Redis/history保留。前端保存配置42857090-55f8-43f3-aa79-be9905bc4f41并应用当前219488任务；真实短问run01a08075-3c4e-7e72-a84b-8037fb26573a两次Flash请求收到新增方法、回答按结论/限定，43622tokens、已知0.085984元、无未知，约15秒，v5和原报告未改。修正用户实际所指研究图diff不能收起；新增历史事件回放明确非实时。77后端通过/7材料依赖跳过，浏览器最终attempt见[S3/201](../worklog/fin_0_1_3_s3/201_runtime_configuration_and_diff_toggle.md)。不造任意工作流编辑器、不开放删除必需复核；旧claim advisory仍开放。Hermes/公开整理尚未启动，Owner审阅后再收口，不追加付费重跑。

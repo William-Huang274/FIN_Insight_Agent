@@ -1324,3 +1324,20 @@ def test_known_model_failure_preserves_notebook_in_terminal_handoff(code):
     assert result["human_review_handoff"]["trigger"] == "model_execution_failure"
     assert result["human_review_handoff"]["reason_code"] == code
     assert result["human_review_handoff"]["continuation_authorized"] is False
+
+
+def test_new_question_does_not_inherit_historical_issuer_routes_but_retains_claim_authority():
+    result = _run(_ScriptedModel([_evidence_action(), _finance_action(), _submission()]), _ToolPorts())
+    notebook = SpecialistNotebook.model_validate_json(json.dumps(result["notebook"]))
+    notebook = notebook.model_copy(update={"source_read_enabled": True, "satisfied_route_obligation_ids": ()})
+    submission = SubmitWorkpaperAction.model_validate_json(json.dumps(result["final_submission"]))
+    numeric = tuple(c for c in submission.claims if c.kind == "numeric_fact")
+    assert numeric
+    scoped = submission.model_copy(update={"claims": numeric})
+    assert "q1_issuer_narrative_source_required" in _submission_errors(scoped, notebook)
+    assert not _submission_errors(scoped, notebook, enforce_case_route_requirements=False)
+    forged = numeric[0].model_copy(update={"fact_ids": ("UNKNOWN",)})
+    assert "unknown_fact_id:UNKNOWN" in _submission_errors(scoped.model_copy(update={"claims": (forged,)}), notebook, enforce_case_route_requirements=False)
+    unsupported = numeric[0].model_copy(update={"fact_ids": (), "evidence_ids": ()})
+    assert any(e.startswith("unsupported_deliverable_claim:") for e in _submission_errors(scoped.model_copy(update={"claims": (unsupported,)}), notebook, enforce_case_route_requirements=False))
+    assert notebook.satisfied_route_obligation_ids == ()

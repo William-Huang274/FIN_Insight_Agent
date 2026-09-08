@@ -28,7 +28,8 @@ class DellCaseArtifacts:
             paper = validate_workpaper_state(original)
             notebook = SpecialistNotebook.model_validate_json(json.dumps(paper["notebook"]))
             submission = SubmitWorkpaperAction.model_validate_json(json.dumps(paper["final_submission"]))
-            errors = _submission_errors(submission, notebook)
+            errors = _submission_errors(submission, notebook, enforce_case_route_requirements=
+                paper.get("task_context", {}).get("instruction_source") != "current_user_research_request")
             if errors:
                 raise ValueError(f"research_bundle_invalid_citations:{paper['task']['task_id']}:{errors}")
             identity = (paper["agent_id"], paper["task"]["task_id"], paper["task"]["revision"])

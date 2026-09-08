@@ -1026,6 +1026,14 @@ def test_agentic_observation_projection_strips_receipt_and_transport_internals()
         assert forbidden not in encoded
 
 
+def test_direct_research_question_does_not_require_lead_assignment():
+    request = _agentic_turn_request()
+    request["task_context"] = {"research_question": "NVIDIA annual revenue comparison", "prior_workpapers": "none"}
+    projected = adapter_module._project_request("specialist", request, specialist_mode="agentic_turn")
+    assert projected["task_context"]["research_question"] == "NVIDIA annual revenue comparison"
+    assert "assignment" not in projected["task_context"]
+
+
 def test_agentic_saved_response_replay_skips_transport_and_records_truth() -> None:
     request = _agentic_turn_request()
     models = _models()

@@ -823,6 +823,7 @@ class DellSpecialistAgenticDependencies:
     turn_source: SpecialistModelTurnSource = "scripted_qualification"
     expected_graph_input_digest: str | None = None
     method_reader: Callable[[str], Mapping[str, Any]] | None = None
+    enforce_case_route_requirements: bool = True
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -1068,6 +1069,7 @@ def _feedback(
 def _submission_errors(
     submission: SubmitWorkpaperAction,
     notebook: SpecialistNotebook,
+    *, enforce_case_route_requirements: bool = True,
 ) -> tuple[str, ...]:
     errors: list[str] = []
     references: dict[str, SpecialistObservedReference] = {}
@@ -1090,7 +1092,12 @@ def _submission_errors(
         set(notebook.required_route_obligation_ids)
         - set(notebook.satisfied_route_obligation_ids)
     )
-    if notebook.source_read_enabled and notebook.branch_id == "Q1_ISSUER_TRUTH":
+    if not enforce_case_route_requirements:
+        # The historical case route ledger describes its original coverage,
+        # not a new user question. Keep it intact; validate every actual claim
+        # below without pretending that unrelated case routes were satisfied.
+        pass
+    elif notebook.source_read_enabled and notebook.branch_id == "Q1_ISSUER_TRUTH":
         # Owner-approved division of work: issuer narrative and S2 financial
         # observations can arrive in different actions/periods. Do not claim
         # that the original all-Reviewed route receipt has been satisfied.
@@ -1887,7 +1894,8 @@ def build_dell_specialist_agentic_state_graph(
         if isinstance(action, SubmitReviewAction):
             errors = _review_submission_errors(action, notebook, state.get("collaboration_context"))
         else:
-            errors = _submission_errors(action, notebook)
+            errors = _submission_errors(action, notebook,
+                enforce_case_route_requirements=dependencies.enforce_case_route_requirements)
         if errors:
             feedback = _feedback(
                 "specialist_submission_reference_validation_failed",

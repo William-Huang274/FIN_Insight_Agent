@@ -365,10 +365,13 @@ def test_public_tool_events_saved_without_raw_arguments(monkeypatch):
     monkeypatch.setattr("langgraph.config.get_stream_writer", lambda: emitted.append)
     audit = CaseModelAudit.__new__(CaseModelAudit)
     audit.stream_public, audit.actor, audit.events = True, "writer", []
+    persisted = []
+    audit.activity_sink = persisted.append
     async def handler(request):
         return ToolMessage(content="PRIVATE", tool_call_id="c1")
     asyncio.run(audit.awrap_tool_call(SimpleNamespace(tool_call={"id": "c1", "name": "read_current_source", "args": {"private": "PRIVATE"}}), handler))
     assert len(audit.events) == 2 and audit.events == emitted
+    assert persisted == emitted
     assert "PRIVATE" not in json.dumps(audit.events)
 
 
@@ -397,7 +400,10 @@ def test_quick_route_progressive_report_and_private_histories(artifacts):
         result = await graph.ainvoke(Command(resume={"action": "ask", "message": "Explain further"}), config)
         assert len(models["writer"].contexts) == 1 and len(models["quick_writer"].contexts) == 3
         seed = json.loads(models["writer"].contexts[0][-1].content)
-        assert all(set(m) == {"role", "content"} for m in seed["public_conversation"])
+        assert "public_conversation" not in seed
+        assert seed["conversation_history"]["message_count"] == 2
+        assert len(seed["conversation_history"]["recent"]) == 2
+        assert "read_public_conversation" in models["writer"].seen[0]
         assert "quick-private" not in str(models["writer"].contexts[0])
         assert result["report_version"] == 1
     asyncio.run(run())
@@ -430,3 +436,24 @@ def test_archived_locator_addition_does_not_change_existing_evidence_contract():
     resolved = deepcopy(archived)
     resolved["P01:C1"]["claim"]["statement"] = "changed"
     assert not compatible_archived_citations(resolved, archived)
+
+
+def test_saved_public_history_paging_preserves_full_text_and_citations(artifacts):
+    from langchain_core.messages import ToolMessage
+    async def run():
+        _, _, initial, ref = setup_session(artifacts)
+        text = "older public context " * 500 + "TAIL_MARKER"
+        history = [{"role": "assistant", "content": text, "citations": initial["report"]["citations"]}]
+        model = NativeFixtureModel(marker="private", replies=[
+            [call("read_public_conversation", {"message_index": 0, "offset": len(text)-11, "max_characters": 11}, "old")],
+            [call("submit_case_answer", {"answer_markdown": f"Saved citation remains resolvable. [{ref}]"}, "answer")]])
+        agent = build_case_output_agent(role="writer", model=model, tools=[], artifacts=artifacts,
+            allow_answers=True, answer_only=True, limits={"model_calls": 3, "tool_calls": 4})
+        result = await agent.ainvoke({"messages": [{"role": "user", "content": "Read the last saved message."}],
+            "conversation": history, "report": initial["report"], "request_action": "ask"})
+        assert text not in str(model.contexts[0])
+        window = json.loads(next(m.content for m in result["messages"] if isinstance(m, ToolMessage) and m.name == "read_public_conversation"))
+        assert window["text"] == "TAIL_MARKER" and window["next_offset"] is None
+        assert ref in window["citation_ids"] and ref in result["output"]["citations"]
+        assert history[0]["content"] == text
+    asyncio.run(run())

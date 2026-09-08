@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { parsePatch } from "diff";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { remarkBoundCitations } from "./remarkBoundCitations";
 import type { ReportDiff } from "../api/reportSessions";
 
 /** Interpret the server's immutable patch with jsdiff; never regenerate report text. */
@@ -22,7 +23,7 @@ export function ReportDiffView({ value }: { value: ReportDiff }) {
       const text = h.lines.filter(line => line.startsWith(sign) || line.startsWith(" ")).map(line => context || line.startsWith(sign) ? line.slice(1) : "").join("\n").trim();
       return <section key={side} className={`fs-diff-side ${side}`} aria-label={side === "before" ? "修订前" : "修订后"}>
         <h4>{side === "before" ? "修订前" : "修订后"} <span>v{side === "before" ? value.before_version : value.after_version} · 第 {i + 1} 处</span></h4>
-        <div className="fs-diff-prose"><ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml components={{ img: ({alt}) => <span>{alt}</span>, a: ({children}) => <span>{children}</span> }}>{text || (side === "before" ? "此处为新增内容。" : "此处内容已删除。")}</ReactMarkdown></div>
+        <div className="fs-diff-prose"><ReactMarkdown remarkPlugins={[remarkGfm, [remarkBoundCitations, { ids: [] }]]} skipHtml components={{ img: ({alt}) => <span>{alt}</span>, a: ({children}) => <span>{children}</span> }}>{text || (side === "before" ? "此处为新增内容。" : "此处内容已删除。")}</ReactMarkdown></div>
       </section>;
     })}</div>)}
     <details className="fs-diff-raw"><summary>原始差异记录</summary><pre>{value.diff}</pre></details>

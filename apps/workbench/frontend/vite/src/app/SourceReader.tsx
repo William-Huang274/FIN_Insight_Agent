@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { sessionsApi, type Source } from "../api/reportSessions";
+import { sourceTitle } from "./researchLabels";
 
 function safeUrl(value?: string) { try { const url = new URL(value || ""); return ["http:", "https:"].includes(url.protocol) ? url.href : undefined; } catch { return undefined; } }
 export function SourceReader({ id, checkpoint, source, context, quote, onClose }: { id: string; checkpoint: string; source: Source; context: string; quote?: string; onClose: () => void }) {
@@ -41,7 +42,7 @@ export function SourceReader({ id, checkpoint, source, context, quote, onClose }
     finally { if (epoch === ticket.current) setLoading(false); }
   };
   return <dialog ref={dialog} className="rg-reader" aria-label="来源上下文与原文阅读" onCancel={onClose}>
-    <header><div><small>固定研究版本 · 已保存的来源</small><h2>{source.title || "来源原文"}</h2></div><button onClick={onClose}>关闭原文，返回研究图</button></header>
+    <header><div><small>固定研究版本 · 已保存的来源</small><h2>{sourceTitle(source)}</h2></div><button onClick={onClose}>关闭原文，返回研究图</button></header>
     <nav><button aria-pressed={mode === "context"} onClick={() => setMode("context")}>扩展上下文</button><button aria-pressed={mode === "document"} onClick={() => setMode("document")}>已存档原文</button>{original && <a href={original} target="_blank" rel="noopener noreferrer">打开外部原始文献 ↗</a>}</nav>
     <div className="rg-reader-search"><label>在已载入原文中查找<input value={search} onChange={e => { setSearch(e.target.value); setMatch(0); }} /></label><button disabled={!search.trim()} onClick={jump}>定位下一处</button></div>
     <div className={`rg-reader-body ${mode}`}>

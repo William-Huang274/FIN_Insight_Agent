@@ -26,6 +26,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from sec_agent.agent_runtime.dell_report_session import ReviewAction, abandoned_question_update
 from sec_agent.agent_runtime.targeted_revision import report_digest, validate_revision_target
 from .research_studio import build_studio_router, run_configuration, owned_configuration
+from sec_agent.agent_runtime.execution_options import ExecutionOptions
 
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
@@ -63,8 +64,8 @@ def public_run_usage(audit_root, thread_id, run_id):
             continue
         if event := public_event({"kind": "model", **raw, "run_id": str(run_id)}):
             events.append(event)
-    ids = {e["call_id"] for e in events if e.get("call_id")}
-    outcomes = {e["call_id"]: e for e in events if e.get("call_id") and e.get("event") == "outcome"}
+    ids = {e["call_id"] for e in events if e.get("kind") == "model" and e.get("call_id")}
+    outcomes = {e["call_id"]: e for e in events if e.get("kind") == "model" and e.get("call_id") and e.get("event") == "outcome"}
     totals = {key: sum(e[key] for e in outcomes.values() if isinstance(e.get(key), (int, float)) and not isinstance(e.get(key), bool))
               for key in ("input_tokens", "output_tokens", "total_tokens", "cache_hit_tokens", "cache_miss_tokens", "elapsed_ms")}
     return events, {"recorded_requests": len(ids), "reported_requests": sum(isinstance(e.get("total_tokens"), int) for e in outcomes.values()),
@@ -88,8 +89,8 @@ def public_event(value):
 
 def public_cost_estimate(events):
     from scripts.qualification.dell_q1_specialist_paid_shadow.audit_token_cost import OFF_PEAK, PRICE_AS_OF, cost_parts, peak_multiplier
-    starts = {e["call_id"]: e for e in events if e.get("call_id") and e.get("event") == "started"}
-    outcomes = {e["call_id"]: e for e in events if e.get("call_id") and e.get("event") == "outcome"}
+    starts = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "started"}
+    outcomes = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "outcome"}
     amount, priced = 0.0, 0
     for call_id, outcome in outcomes.items():
         start = starts.get(call_id, {})
@@ -174,6 +175,7 @@ class NewSession(BaseModel):
     question: str | None = Field(default=None, min_length=10, max_length=16000)
     defer_start: bool = False
     studio_assistant_id: UUID | None = None
+    execution: ExecutionOptions | None = None
 
 
 class ResearchGuidance(BaseModel):
@@ -266,6 +268,7 @@ def build_report_sessions_router(service):
         threads = await service.sdk.threads.search(metadata={"surface": SURFACE}, limit=50)
         return [{"thread_id": t["thread_id"], "status": t["status"], "updated_at": t["updated_at"],
             "title": t.get("metadata", {}).get("title", "研究任务"),
+            "phase": (t.get("values") or {}).get("phase"),
             "studio_assistant_id": t.get("metadata", {}).get("studio_assistant_id")} for t in threads]
 
     @router.get("/research-session-config")
@@ -355,6 +358,14 @@ def build_report_sessions_router(service):
         if body.defer_start and body.mode != "research":
             raise HTTPException(422, "只有新研究支持先上传资料")
         metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode}
+        if body.execution:
+            if graph != RESEARCH_GRAPH:
+                raise HTTPException(422, "运行模式选择仅适用于研究任务")
+            try:
+                body.execution.validate_catalog((service.research_profile or {}).get("branch_topics", []))
+            except ValueError as exc:
+                raise HTTPException(422, str(exc)) from exc
+            metadata["execution"] = body.execution.model_dump()
         if body.studio_assistant_id:
             if graph != RESEARCH_GRAPH:
                 raise HTTPException(422, "研究配置需要新研究模式")
@@ -368,7 +379,7 @@ def build_report_sessions_router(service):
             return {"thread_id": thread["thread_id"], "run_id": None, "status": "draft"}
         run = await service.sdk.runs.create(thread["thread_id"], graph, input=payload, stream_mode="custom",
             config=await run_configuration(service, thread),
-            stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": body.mode})
+            stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": body.mode, "execution": metadata.get("execution")})
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"], "status": run["status"]}
 
     @router.post("/research-sessions/{thread_id}/start")
@@ -384,7 +395,7 @@ def build_report_sessions_router(service):
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH,
             config=await run_configuration(service, thread),
             input=ResearchRequest(question=question).model_dump(mode="json"), stream_mode="custom", stream_subgraphs=True,
-            stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "research"})
+            stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "research", "execution": thread.get("metadata", {}).get("execution")})
         return {"thread_id": str(thread_id), "run_id": run["run_id"], "status": run["status"]}
 
     @router.post("/research-sessions/{thread_id}/guidance")
@@ -494,6 +505,8 @@ def build_report_sessions_router(service):
             public_runs.append({**{k: run.get(k) for k in ("run_id", "status", "created_at")},
                 "revision_target": run.get("metadata", {}).get("revision_target"),
                 "human_action": run.get("metadata", {}).get("human_action"),
+                "request_message": run.get("metadata", {}).get("request_message"),
+                "execution": run.get("metadata", {}).get("execution"),
                 "answer_mode": run.get("metadata", {}).get("answer_mode"), "usage": usage})
             public_runs[-1]["cost_estimate"] = public_cost_estimate(events)
             public_runs[-1]["model_calls_requested"] = run.get("metadata", {}).get("model_calls_requested")
@@ -513,7 +526,7 @@ def build_report_sessions_router(service):
             projection["can_continue_remaining"] = can_restart_remaining_node(thread, state, runs[0] if runs else None,
                 public_runs[0]["usage"] if public_runs else None)
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
-            **projection, "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
+            **projection, "execution": thread.get("metadata", {}).get("execution"), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
             "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
@@ -549,7 +562,8 @@ def build_report_sessions_router(service):
                 meta = previous.get("metadata", {})
                 if meta.get("revision_target", {}).get("request_id") == str(body.target.request_id):
                     if (meta["revision_target"] != body.target.model_dump(mode="json")
-                            or meta.get("revision_feedback_digest") != report_digest(body.message)):
+                            or meta.get("revision_feedback_digest") != report_digest(body.message)
+                            or meta.get("execution") != (body.execution.model_dump() if body.execution else None)):
                         raise HTTPException(409, "相同请求标识不能提交不同修订内容")
                     return {"run_id": previous["run_id"], "status": previous["status"], "existing_request": True}
         state = await service.state(thread_id)
@@ -567,10 +581,18 @@ def build_report_sessions_router(service):
         if body.action != "accept" and not body.message.strip():
             raise HTTPException(422, "请填写问题或修订意见")
         thread = await service.owned_thread(thread_id)
+        if body.execution:
+            if graph_for_thread(thread) != RESEARCH_GRAPH:
+                raise HTTPException(422, "旧报告审阅入口不支持切换研究模式")
+            try:
+                body.execution.validate_catalog((service.research_profile or {}).get("branch_topics", []))
+            except ValueError as exc:
+                raise HTTPException(422, str(exc)) from exc
         run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), command={"resume": body.model_dump(mode="json", exclude_none=True)},
-            config=await run_configuration(service, thread),
+            config=await run_configuration(service, thread, body.execution.model_dump() if body.execution else None),
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
-            metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode,
+            metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode, "request_message": body.message,
+                "execution": body.execution.model_dump() if body.execution else thread.get("metadata", {}).get("execution"),
                 **({"revision_target": body.target.model_dump(mode="json"), "revision_feedback_digest": report_digest(body.message)} if body.target else {})})
         return {"run_id": run["run_id"], "status": run["status"]}
 

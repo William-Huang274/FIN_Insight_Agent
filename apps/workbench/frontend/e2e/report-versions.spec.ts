@@ -22,7 +22,7 @@ for (const width of [1440, 1024, 390]) {
     const session = { thread_id: id, status: "interrupted", phase: "ready_for_human_review", question: "合成界面验证：收入增长是否转为现金？", research_as_of: "2026-09-02", report_version: 2,
       report, report_review: { summary: "合成审阅示例，未启动研究。", findings: [], unresolved_data_requests: [] }, can_respond: true,
       runs: [], conversation: [{ role: "user", content: "请解释现金兑现。" }, { role: "assistant",
-        content: "该期间本地未取得数值。[MCPFACT::fixture]\n\n已保存计算 CALC::fixture 回读。\n\n`[CALC::fixture]`\n\nCALC::fixture-invented\n\n[CALC::fixture/suffix]\n\n[未绑定链接](#claim:CALC%3A%3Aunknown) [坏编码](#claim:%ZZ)", citations: answerCitations }],
+        content: "该期间本地未取得数值。[MCPFACT::fixture]\n\n已保存计算 CALC::fixture 回读。\n\n`[CALC::fixture]`\n\nCALC::fixture-invented\n\n[CALC::fixture/suffix]\n\n未绑定记录 P01:C99 与 NUMFACT::abcdef。\n\n判断编号 P01:C98\n\n[未绑定链接](#claim:CALC%3A%3Aunknown) [坏编码](#claim:%ZZ)", citations: answerCitations }],
       model_events: [
         { kind: "model", event: "outcome", actor: "lead", call_id: "resumed-id", run_id: "first-run", total_tokens: 82, status: "provider_output_truncated" },
         { kind: "model", event: "outcome", actor: "lead", call_id: "resumed-id", run_id: "second-run", total_tokens: 58, status: "success" },
@@ -69,18 +69,22 @@ for (const width of [1440, 1024, 390]) {
     await expect(secondCitation).toBeFocused();
     expect(Math.abs(await page.locator(".rs-document").evaluate(el => el.scrollTop) - reportScroll)).toBeLessThan(5);
     await taskPage(page, "追问与反馈");
-    await page.getByLabel("研究对话").getByRole("button", { name: "1", exact: true }).click();
+    await page.getByLabel("研究对话").getByRole("button", { name: "依据 1", exact: true }).click();
     await expect(page.getByText("本地查询边界 · 非事实证据", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "查看查询条件与回执" }).click();
     await expect(page.getByText(gap.text, { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "关闭详情", exact: true }).click();
     const conversation = page.getByLabel("研究对话");
-    await expect(conversation.getByRole("button", { name: "2", exact: true })).toHaveCount(1);
+    await expect(conversation.getByRole("button", { name: "依据 2", exact: true })).toHaveCount(1);
     await expect(conversation.locator("code")).toHaveText("[CALC::fixture]");
     await expect(conversation.getByText("CALC::fixture-invented", { exact: true })).toBeVisible();
     await expect(conversation.getByText("[CALC::fixture/suffix]", { exact: true })).toBeVisible();
     await expect(conversation.getByRole("button", { name: "未绑定链接", exact: true })).toHaveCount(0);
-    await conversation.getByRole("button", { name: "2", exact: true }).click();
+    await expect(conversation).toContainText("未绑定记录 判断编号 P01:C99 与 财务数据编号 NUMFACT::abcdef。");
+    await expect(conversation).toContainText("判断编号 P01:C98");
+    await expect(conversation).not.toContainText("判断编号 判断编号");
+    await expect(conversation.getByRole("button", { name: /P01:C99|NUMFACT::abcdef/ })).toHaveCount(0);
+    await conversation.getByRole("button", { name: "依据 2", exact: true }).click();
     await page.getByRole("button", { name: "查看捕获片段与上下文" }).click();
     await expect(page.getByRole("heading", { name: "计算过程", exact: true })).toBeVisible();
     await expect(page.getByText("金融语义：未确认", { exact: false })).toBeVisible();
@@ -95,8 +99,11 @@ for (const width of [1440, 1024, 390]) {
     // for the report pane before opening a panel on the destination page.
     await expect(page.locator(".rs-report-pane")).toBeVisible();
     await page.locator(".rs-top").getByRole("button", { name: "运行与费用", exact: true }).click();
-    await expect(page.getByText(/活动视图当前载入 2 次模型结果记录、140 个已报告 tokens/)).toBeVisible();
-    await page.getByRole("button", { name: "关闭详情", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "研究现场", exact: true })).toBeVisible();
+    await page.getByText("模型与工具活动 · 2 条记录", { exact: true }).click();
+    await expect(page.getByLabel("Agent 活动流")).toContainText("82 tokens");
+    await expect(page.getByLabel("Agent 活动流")).toContainText("58 tokens");
+    await page.getByRole("button", { name: "阅读当前报告", exact: true }).click();
     await expect(page.getByLabel("研究对话")).toBeHidden();
     await page.getByLabel("阅读报告版本").selectOption(checkpoint);
     await expect(page.getByRole("heading", { name: "历史报告标题" })).toBeVisible();

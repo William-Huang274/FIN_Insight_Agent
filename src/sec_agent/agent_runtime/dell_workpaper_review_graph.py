@@ -59,7 +59,8 @@ def validate_workpaper_state(value: Mapping[str, Any]) -> dict[str, Any]:
     if (notebook.agent_id != state["agent_id"] or notebook.branch_id != state["task"]["branch_id"]
         or notebook.task_revision != state["task"]["revision"]):
         raise DellWorkpaperReviewError("review_source_identity_mismatch")
-    return {"agent_id": notebook.agent_id, "task": state["task"],
+    return {**({"task_context": {key: state["task_context"][key] for key in ("research_question", "instruction_source") if key in state["task_context"]}} if state.get("task_context") else {}),
+            "agent_id": notebook.agent_id, "task": state["task"],
             "notebook": notebook.model_dump(mode="json"),
             "final_submission": submission.model_dump(mode="json"),
             "phase": state["phase"]}

@@ -12,6 +12,9 @@ import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
 import { readMemory, writeMemory } from "./workspaceMemory";
 import { RunWorkspace } from "./RunWorkspace";
 import { ResearchStart } from "./ResearchStart";
+import { ExecutionPicker, executionReady } from "./ExecutionPicker";
+import { defaultExecution, type ExecutionOptions } from "../api/reportSessions";
+import { branchName, claimLabel, sourceTitle } from "./researchLabels";
 import { ResearchStudio, ResearchConfigurationPicker } from "./ResearchStudio";
 import { useWorkspaceProjects } from "./workspaceProjects";
 import type { ReportSnapshot } from "../api/reportSessions";
@@ -58,7 +61,7 @@ const stageName: Record<string, string> = {
   responsibility_router: "按问题责任回派",
   writer: "报告写作",
   verifier: "独立复核",
-  quick_writer: "快速问答 · Flash",
+  quick_writer: "追问研究者",
   human_guidance: "用户补充意见",
   issuer_truth_specialist: "收入、利润与现金",
   demand_quality_specialist: "客户需求质量",
@@ -71,8 +74,6 @@ const stageName: Record<string, string> = {
   counterevidence_specialist: "反证与替代解释",
   counterevidence_synthesis_specialist: "反证与替代解释",
 };
-const branchName: Record<string, string> = { Q1: "收入、利润与现金", Q2: "客户需求质量", Q3: "量价与产品组合",
-  Q4: "架构更新与交付", Q5: "供应链与成本", Q6: "模型与算力需求", Q7: "出口管制", Q8: "同行竞争", Q9: "反证与替代解释" };
 const actorName = (actor: string) => {
   if (actor.startsWith("lead:")) return "Lead · 研究任务规划";
   const branch = actor.match(/^specialist:(Q\d+)_/)?.[1];
@@ -81,6 +82,7 @@ const actorName = (actor: string) => {
 };
 const responsibilityName: Record<string, string> = { writer: "报告表达", research: "上游研究", data_tool: "数据 / 工具", human: "人工处理" };
 const phaseName: Record<string, string> = {
+  single_agent_unreviewed: "单 Agent 结果 · 未经独立复核",
   draft: "资料准备中 · 未调用模型",
   needs_revision: "有问题待修订",
   ready_for_human_review: "等待人工审阅",
@@ -135,9 +137,10 @@ function Markdown({
             return (
               <button
                 className="rs-cite"
+                title={claimLabel(key, citations)}
                 onClick={() => onCitation(key, citations[key])}
               >
-                {children}
+                依据 {keys.indexOf(key) + 1}
               </button>
             );
           }
@@ -197,6 +200,8 @@ export function ResearchSession() {
   const [text, setText] = useState("");
   const [action, setAction] = useState<"ask" | "revise">("ask");
   const [answerMode, setAnswerMode] = useState<"quick" | "deep">("quick");
+  const [execution, setExecution] = useState<ExecutionOptions>(defaultExecution);
+  const [actionExecution, setActionExecution] = useState<ExecutionOptions>(defaultExecution);
   const [usageRunId, setUsageRunId] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
@@ -204,6 +209,7 @@ export function ResearchSession() {
   const setTab = (value: string) => navigate(value);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [taskDetails, setTaskDetails] = useState(false);
+  useEffect(() => { if (session?.is_draft) setTaskDetails(true); }, [session?.thread_id, session?.is_draft]);
   const [outline, setOutline] = useState<{ id: string; label: string }[]>([]);
   const [activeHeading, setActiveHeading] = useState("");
   const reportArticle = useRef<HTMLElement>(null);
@@ -431,6 +437,7 @@ export function ResearchSession() {
       const made = await sessionsApi.create(mode === "research" ? {
         mode, title: researchQuestion.trim().slice(0, 100) || "新研究任务", question: researchQuestion, defer_start: draft || uploadFiles.length > 0,
         ...(studioAssistant ? {studio_assistant_id:studioAssistant} : {}),
+        execution,
       } : { mode });
       choose(made.thread_id);
       if (mode === "research" && uploadFiles.length) {
@@ -460,12 +467,11 @@ export function ResearchSession() {
     setSending(true);
     setError("");
     try {
-      await sessionsApi.action(id, selectedAction, message, selectedAction === "ask" ? answerMode : "deep");
+      await sessionsApi.action(id, selectedAction, message, selectedAction === "ask" ? answerMode : "deep", undefined, selectedAction === "accept" ? undefined : actionExecution);
       setUsageRunId("");
       setText("");
       writeMemory(`conversation:${id}`, "");
-      setInspector("activity");
-      if (selectedAction === "ask") setTab("conversation");
+      navigate("activity");
       setSession(await sessionsApi.state(id));
       await refresh();
     } catch (e) {
@@ -511,11 +517,11 @@ export function ResearchSession() {
           </span>
           <div className="rs-detail-actions" hidden={!session || globalPage || creating}>
             <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); }}>审查意见</button>
-            <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("activity"); setInspectorOpen(true); }}>运行与费用</button>
+            <button onClick={() => navigate("activity")}>运行与费用</button>
           </div>
         </header>
         {projects.error && <p role="alert">{projects.error}</p>}
-        {page === "home" && <ResearchStart question={researchQuestion} onQuestion={setResearchQuestion} navigate={navigate} sessions={sessions} />}
+        {page === "home" && <ResearchStart question={researchQuestion} onQuestion={setResearchQuestion} navigate={navigate} sessions={sessions} execution={execution} onExecution={setExecution} />}
         {page === "studio" && <ResearchStudio />}
         {globalPage && page !== "home" && page !== "studio" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
         <div className="fs-session-view" hidden={globalPage}>
@@ -547,6 +553,7 @@ export function ResearchSession() {
             <div className="rs-research-prompt">
               {configuration?.title && <p>当前部署的已接通研究配置：{configuration.title}</p>}
               <ResearchConfigurationPicker value={studioAssistant} onChange={setStudioAssistant}/>
+              <ExecutionPicker value={execution} onChange={setExecution} disabled={sending}/>
               <label htmlFor="new-research-question">这次你想研究什么？</label>
               <textarea id="new-research-question" value={researchQuestion} maxLength={16000}
                 onChange={(e) => setResearchQuestion(e.target.value)} rows={7}
@@ -556,7 +563,7 @@ export function ResearchSession() {
             </div>
             <button
               className="rs-primary"
-              disabled={sending || !configuration?.fresh_research_enabled || researchQuestion.trim().length < 10}
+              disabled={sending || !executionReady(execution) || !configuration?.fresh_research_enabled || researchQuestion.trim().length < 10}
               onClick={() => newSession("research")}
             >
               {sending ? (
@@ -607,8 +614,8 @@ export function ResearchSession() {
                     : phaseName[session.phase || ""] || "正在载入"}
               </span>
             </section>
-            <div id="task-details-panel" className="rs-task-details" hidden={!taskDetails && !!session.report} onKeyDown={e => { if (e.key === "Escape" && session.report) { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); } }}>
-            {session.report && <div className="fs-task-panel-bar"><strong>任务说明与资料</strong><button onClick={() => { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); }}><X size={15} />收起资料面板</button></div>}
+            <div id="task-details-panel" className="rs-task-details" hidden={!taskDetails} onKeyDown={e => { if (e.key === "Escape") { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); } }}>
+            <div className="fs-task-panel-bar"><strong>任务说明与资料</strong><button onClick={() => { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); }}><X size={15} />收起资料面板</button></div>
             {session.question && <div className="rs-task-question">{session.question}</div>}
             {uploadStatus && <div className="rs-report-notice">{uploadStatus}</div>}
             {!busy && (session.is_draft || session.can_upload) &&
@@ -736,7 +743,7 @@ export function ResearchSession() {
                   {busy && (
                     <div className="rs-working">
                       <LoaderCircle size={16} className="rs-spin" />{" "}
-                      正在按需读取材料与工具反馈。可在右侧查看真实运行事件。
+                      正在按需读取材料与工具反馈。可在研究现场查看实时活动。
                     </div>
                   )}
                   <div ref={conversationEnd} />
@@ -770,12 +777,13 @@ export function ResearchSession() {
                   <select id="answer-mode" value={answerMode}
                     disabled={busy || sending}
                     onChange={(e) => setAnswerMode(e.target.value as "quick" | "deep")}>
-                    <option value="quick">快速问答 · Flash</option>
-                    <option value="deep">深度追问 · Pro</option>
+                    <option value="quick">简短回答</option>
+                    <option value="deep">深入分析</option>
                   </select>
                   <small>{answerMode === "quick" ? "查数、出处与简短解释；资料按需读取" : "复杂推断与多来源分析；通常耗时更长"}</small>
                 </div>
               )}
+              <ExecutionPicker value={actionExecution} onChange={setActionExecution} disabled={busy} action={action}/>
               <textarea
                 aria-label="问题或修订意见"
                 value={text}
@@ -852,7 +860,7 @@ export function ResearchSession() {
                   <button
                     className="rs-send"
                     aria-label="发送"
-                    disabled={!text.trim() || !session.can_respond || busy}
+                    disabled={!text.trim() || !executionReady(actionExecution) || !session.can_respond || busy}
                     onClick={() => send()}
                   >
                     <ArrowUp size={19} />
@@ -1129,11 +1137,11 @@ export function ResearchSession() {
                             ? "本地查询边界 · 非事实证据" : "披露 / 外部材料"}
                     </span>
                     <h4>
-                      {s.title ||
+                      {(s.title && s.title !== s.source_id ? s.title : "") ||
                         [s.ticker, s.metric_id, s.period_end]
                           .filter(Boolean)
                           .join(" · ") ||
-                        s.source_id}
+                        sourceTitle(s)}
                     </h4>
                     {[s.source_url, ...(s.citation_urls || [])]
                       .filter(Boolean)

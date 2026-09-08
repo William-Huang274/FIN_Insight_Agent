@@ -197,6 +197,9 @@ def test_frontend_composition_root_has_no_old_product_consumer() -> None:
         ROOT / "apps/workbench/frontend/vite/src/main.tsx"
     ).read_text(encoding="utf-8")
     assert "ResearchWorkspace" in main
+    assert 'import { ResearchSession } from "./app/ResearchSession"' in main
+    assert '<BrowserRouter><ResearchSession /></BrowserRouter>' in main
+    assert 'window.location.pathname === "/workspace/evidence-packs"' in main
     assert "OperationsConsole" in main
     for forbidden in (
         "AppShell",

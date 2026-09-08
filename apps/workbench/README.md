@@ -6,7 +6,7 @@ React/Vite frontend and FastAPI BFF for FIN 0.1.3. [中文使用说明](../../do
 
 | Area | Route / source |
 | --- | --- |
-| Start and project navigation | `/workspace` · `frontend/vite/src/app/ResearchWorkspace.tsx` |
+| Start and project navigation | `/workspace` · `frontend/vite/src/app/ResearchStart.tsx`, `WorkspaceNavigation.tsx` |
 | Research methods and configuration | `/workspace?view=studio` · `ResearchStudio.tsx` |
 | Report, map, sources, revisions, activity | `/workspace/session?thread=<id>` · `ResearchSession.tsx` |
 | Research APIs | `backend/api/v1/report_sessions.py`, `research_studio.py` |
@@ -16,7 +16,7 @@ React/Vite frontend and FastAPI BFF for FIN 0.1.3. [中文使用说明](../../do
 
 The current product can create research, ask follow-up questions and request targeted revisions through a configured native LangGraph service. Reports remain versioned and subject to human review. Studio persists independent native Assistants snapshots; project grouping/pins remain browser-local.
 
-The older fixed Evidence Pack APIs and `/operations` remain compatibility surfaces. Their readiness failures or retired action routes do not describe the newer research-session product.
+The older fixed Evidence Pack view is available at `/workspace/evidence-packs`; its APIs and `/operations` remain compatibility surfaces. Their readiness failures or retired action routes do not describe the newer research-session product. The default `/workspace` opens the current question-first UI.
 
 ## Develop and verify
 

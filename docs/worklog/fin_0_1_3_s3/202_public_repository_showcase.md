@@ -24,3 +24,11 @@
 远端检查时为main和两个history分支，无开放PR。当前分支承载已完成前端修改；通过GitHub PR检查后合并当前代码与展示面，再删除临时远端分支，保留历史提交。GitHub最终状态在完成后补录。
 
 产品增量为实际界面介绍与试用路径；工程增量为通用CLI、公开检查入口、截图工具和CI接入；无新增paid研究证据；文档与治理为本轮主要交付。Owner内容审阅、旧claim意见、跨公司完整研究与生产资格不由仓库整理关闭。
+
+## 独立检出与首轮CI
+
+独立检出83f70745：全新.venv按文档uv锁安装127包，34检查48秒通过、四格式导出；没有复制.env、数据库或旧报告。GitHub PR #5 首轮34216728226：3080通过、817跳过、1失败；依赖与容器通过。唯一失败是旧首页组件断言，进一步发现旧Evidence Pack UI组件缺入口。恢复明确兼容地址/workspace/evidence-packs，保留新首页ResearchSession，更新对应旧浏览器测试的路由与首页预期，未删除其证据/操作控制台覆盖。7项基线定向检查通过。首轮CI和本地日志D:/temp/fin-showcase-ci-a1.log保留。
+
+默认全浏览器A1：15通过/1失败，390px测试在移动导航返回前点开目标页面板，后到的路由提交关闭了面板。测试改为确认目标报告窗格已可见再点击，保留产品交互断言，没有扩大timeout或增加重试。失败trace/screenshot保存在D:/temp/fin-public-default-browser-a1-failure。历史Evidence Pack组件按需lazy加载，不增加常规研究首页的历史组件下载。
+
+修复后默认浏览器A2：16项通过（1.3分钟），包含旧证据页、操作控制台与新首页/三宽度研究交互；TypeScript/Vite再次通过，旧组件独立lazy chunk。中英文README均已通过GitHub Markdown API渲染，各4图、2表、1折叠区。发布载体为[PR #5](https://github.com/William-Huang274/FIN_Insight_Agent/pull/5)；最终主线提交、检查与合入时间以该原生PR记录为准，保留首轮失败，不把静态日志当Git控制面。

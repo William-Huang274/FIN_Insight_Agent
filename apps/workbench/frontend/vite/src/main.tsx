@@ -4,6 +4,8 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { OperationsConsole } from "./operations/OperationsConsole";
 import { ResearchSession } from "./app/ResearchSession";
+const EvidencePackWorkspace = React.lazy(() => import("./app/ResearchWorkspace")
+  .then(module => ({ default: module.ResearchWorkspace })));
 
 
 function canonicalEntry(pathname: string): "/workspace" | "/operations" {
@@ -38,6 +40,8 @@ createRoot(root).render(
   <React.StrictMode>
     {entry === "/operations" ? (
       <OperationsConsole />
+    ) : window.location.pathname === "/workspace/evidence-packs" ? (
+      <React.Suspense fallback={<p role="status">正在读取历史证据工作台…</p>}><EvidencePackWorkspace /></React.Suspense>
     ) : (
       <BrowserRouter><ResearchSession /></BrowserRouter>
     )}

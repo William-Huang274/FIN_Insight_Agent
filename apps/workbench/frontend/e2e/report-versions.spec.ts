@@ -68,7 +68,6 @@ for (const width of [1440, 1024, 390]) {
     await page.getByRole("button", { name: "关闭详情", exact: true }).click();
     await expect(secondCitation).toBeFocused();
     expect(Math.abs(await page.locator(".rs-document").evaluate(el => el.scrollTop) - reportScroll)).toBeLessThan(5);
-    const tabbed = true;
     await taskPage(page, "追问与反馈");
     await page.getByLabel("研究对话").getByRole("button", { name: "1", exact: true }).click();
     await expect(page.getByText("本地查询边界 · 非事实证据", { exact: true })).toBeVisible();
@@ -91,7 +90,10 @@ for (const width of [1440, 1024, 390]) {
     await page.getByRole("button", { name: "← 返回上一级来源 / 计算" }).click();
     await expect(page.getByRole("heading", { name: "计算过程", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "关闭详情", exact: true }).click();
-    if (tabbed) await taskPage(page, "研究报告");
+    await taskPage(page, "研究报告");
+    // The mobile navigation closes before the route transition commits. Wait
+    // for the report pane before opening a panel on the destination page.
+    await expect(page.locator(".rs-report-pane")).toBeVisible();
     await page.locator(".rs-top").getByRole("button", { name: "运行与费用", exact: true }).click();
     await expect(page.getByText(/活动视图当前载入 2 次模型结果记录、140 个已报告 tokens/)).toBeVisible();
     await page.getByRole("button", { name: "关闭详情", exact: true }).click();

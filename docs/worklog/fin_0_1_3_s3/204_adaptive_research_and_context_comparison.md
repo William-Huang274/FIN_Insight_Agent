@@ -77,5 +77,11 @@ A2 thread `01a08225-74ee-7341-b21d-8b35254be034` / run `01a08225-74f8-7630-9a82-
 - [x] 模型公开输出/失败产物保留与可读前端
 - [x] 改后原生小题同题实测、复杂题新attempt
 - [x] Hermes隔离组件实测与留存对照；自动摘要保真HOLD，非完整Agent接续通过
-- [ ] 最终Git交付记录
+- [x] 最终Git交付记录
 - [ ] 大题剩余重复读取、增量复核真实节费与Hermes原始证据补取资格
+
+## Git及本地交付
+
+实现提交 `07adf9f4` 已推送 `codex/fin013-adaptive-research`，审查入口 [PR #7](https://github.com/William-Huang274/FIN_Insight_Agent/pull/7)。PR明确保留大题重复读取和Hermes保真HOLD，不把资格失败改写成产品完成。公开分支按已有授权在CI通过并合main后清理；实际合并状态以PR为准。
+
+最终镜像 manifest list `sha256:f8c4269790eb2a5c2dc113a9df882d9eba399097526757dcd6677e46a012b700`。容器内读回确认父级失败审计、跨run报告差异接续均在运行代码中；UI18793和native18165健康200，两个新任务及报告v1都保留在ready_for_human_review。没有活动付费运行。前端实际截图已读回，正文16px且无页面脚本错误。未升级产品版本、未接受报告或启用自动摘要。

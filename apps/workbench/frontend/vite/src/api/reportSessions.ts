@@ -73,6 +73,7 @@ export type Finding = {
   paper_ids?: string[];
 };
 export type Session = {
+  can_upload?: boolean;
   report_digest?: string;
   cumulative_usage?: { native_runs: number; known_cny: number; recorded_requests: number; reported_requests: number;
     unknown_or_pending_requests: number; unpriced_requests: number; input_tokens: number; output_tokens: number;

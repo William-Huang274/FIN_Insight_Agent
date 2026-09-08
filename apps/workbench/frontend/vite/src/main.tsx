@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import { ResearchWorkspace } from "./app/ResearchWorkspace";
+import { BrowserRouter } from "react-router";
 import { OperationsConsole } from "./operations/OperationsConsole";
 import { ResearchSession } from "./app/ResearchSession";
 
@@ -36,10 +36,10 @@ if (!root) throw new Error("workbench_root_missing");
 const entry = canonicalEntry(window.location.pathname);
 createRoot(root).render(
   <React.StrictMode>
-    {window.location.pathname === "/workspace/session" ? <ResearchSession /> : entry === "/operations" ? (
+    {entry === "/operations" ? (
       <OperationsConsole />
     ) : (
-      <ResearchWorkspace />
+      <BrowserRouter><ResearchSession /></BrowserRouter>
     )}
   </React.StrictMode>,
 );

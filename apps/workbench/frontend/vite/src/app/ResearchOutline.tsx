@@ -1,12 +1,7 @@
-import { Background, Controls, MarkerType, Position, ReactFlow } from "@xyflow/react";
+import { ArrowRight, CornerDownRight, Layers } from "lucide-react";
 
 export function ResearchOutline({ title, items, onOpen }: { title: string; items: { id: string; title: string; subtitle: string }[]; onOpen: (id: string) => void }) {
-  const nodes = [{ id: "outline-root", position: { x: 165, y: 0 }, data: { label: <strong>{title}</strong> }, sourcePosition: Position.Bottom, style: { width: 260 } },
-    ...items.map((item, i) => ({ id: item.id, position: { x: (i % 2) * 330, y: 160 + Math.floor(i / 2) * 175 },
-      data: { label: <><strong>{item.title.length > 66 ? item.title.slice(0, 66) + "…" : item.title}</strong><small>{item.subtitle} · 点击进入</small></> }, targetPosition: Position.Top, style: { width: 260 }, ariaLabel: item.title }))];
-  return <><div className="rg-outline-canvas" style={{ height: Math.max(420, 170 + Math.ceil(items.length / 2) * 170) }}>
-    <ReactFlow nodes={nodes} edges={items.map(item => ({ id: `contains:${item.id}`, source: "outline-root", target: item.id, type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed } }))}
-      fitView fitViewOptions={{ padding: .1, maxZoom: 1 }} nodesDraggable={false} nodesConnectable={false} edgesReconnectable={false} deleteKeyCode={null} minZoom={.3}
-      onNodeClick={(_, node) => { if (node.id !== "outline-root") onOpen(node.id); }}><Background gap={24} /><Controls showInteractive={false} /></ReactFlow>
-  </div><div className="rg-outline-list" aria-label="可进入的研究节点">{items.map(item => <button key={item.id} onClick={() => onOpen(item.id)}><strong>{item.title}</strong><span>{item.subtitle} →</span></button>)}</div></>;
+  return <div className="fs-horizontal-tree"><div className="fs-tree-root"><span className="fs-kicker"><Layers size={17} /> 当前研究范围</span><h3>{title}</h3><p>{items.length} 个可进入的节点</p><span className="fs-tree-guide">选择右侧节点，展开下一层 <ArrowRight size={16} /></span></div>
+    <div className="fs-tree-branches" aria-label="可进入的研究节点">{items.map((item, i) => <div className="fs-tree-branch" key={item.id}><span className="fs-branch-port" aria-hidden="true" /><button className="fs-node-card" onClick={() => onOpen(item.id)} aria-label={item.title} title={item.title}><div><span>{String(i + 1).padStart(2, "0")}</span><CornerDownRight size={16} /></div><h3>{item.title}</h3><footer><span>{item.subtitle}</span><ArrowRight size={18} /></footer></button></div>)}</div>
+  </div>;
 }

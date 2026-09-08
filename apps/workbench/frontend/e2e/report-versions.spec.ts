@@ -46,7 +46,7 @@ for (const width of [1440, 1024, 390]) {
       await route.fulfill({ json: body });
     });
     await page.goto(`/workspace/session?thread=${id}`);
-    await page.getByRole("button", { name: "研究报告", exact: true }).click();
+    await taskPage(page, "研究报告");
     await expect(page.getByRole("heading", { name: "当前研究报告" })).toBeVisible();
     await expect(page.getByLabel("研究对话")).toBeHidden();
     await expect(page.getByText(session.question, { exact: true })).toBeHidden();
@@ -68,9 +68,8 @@ for (const width of [1440, 1024, 390]) {
     await page.getByRole("button", { name: "关闭详情", exact: true }).click();
     await expect(secondCitation).toBeFocused();
     expect(Math.abs(await page.locator(".rs-document").evaluate(el => el.scrollTop) - reportScroll)).toBeLessThan(5);
-    const conversationTab = page.getByRole("button", { name: /^追问与反馈/ });
-    const tabbed = await conversationTab.isVisible();
-    if (tabbed) await conversationTab.click();
+    const tabbed = true;
+    await taskPage(page, "追问与反馈");
     await page.getByLabel("研究对话").getByRole("button", { name: "1", exact: true }).click();
     await expect(page.getByText("本地查询边界 · 非事实证据", { exact: true })).toBeVisible();
     await page.getByRole("button", { name: "查看查询条件与回执" }).click();
@@ -92,8 +91,8 @@ for (const width of [1440, 1024, 390]) {
     await page.getByRole("button", { name: "← 返回上一级来源 / 计算" }).click();
     await expect(page.getByRole("heading", { name: "计算过程", exact: true })).toBeVisible();
     await page.getByRole("button", { name: "关闭详情", exact: true }).click();
-    if (tabbed) await page.getByRole("button", { name: "研究报告", exact: true }).click();
-    await page.getByRole("button", { name: "运行与费用", exact: true }).click();
+    if (tabbed) await taskPage(page, "研究报告");
+    await page.locator(".rs-top").getByRole("button", { name: "运行与费用", exact: true }).click();
     await expect(page.getByText(/活动视图当前载入 2 次模型结果记录、140 个已报告 tokens/)).toBeVisible();
     await page.getByRole("button", { name: "关闭详情", exact: true }).click();
     await expect(page.getByLabel("研究对话")).toBeHidden();
@@ -114,4 +113,11 @@ for (const width of [1440, 1024, 390]) {
     await page.getByLabel("阅读报告版本").selectOption("");
     await expect(page.getByRole("heading", { name: "当前研究报告" })).toBeVisible();
   });
+}
+
+async function taskPage(page: import("playwright/test").Page, name: string) {
+  if ((page.viewportSize()?.width || 1440) <= 760) {
+    await page.getByRole("button", { name: "打开导航", exact: true }).click();
+    await page.locator(".fs-nav-dialog").getByRole("button", { name, exact: true }).click();
+  } else await page.locator(".fs-sidebar").getByRole("button", { name, exact: true }).click();
 }

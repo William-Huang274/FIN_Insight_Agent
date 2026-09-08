@@ -37,8 +37,8 @@ for (const width of [1440, 1024, 390]) {
     await expect(graph).toBeVisible();
     await expect(graph.getByRole("combobox")).toHaveCount(0);
     const enter = async (topic: string, statement: string) => { await graph.getByRole("button", { name: "报告总览", exact: true }).click();
-      await graph.locator(".rg-outline-list").getByRole("button", { name: new RegExp(topic) }).click();
-      await graph.locator(".rg-outline-list").getByRole("button", { name: new RegExp(statement) }).click(); };
+      await graph.locator(".fs-tree-branches").getByRole("button", { name: new RegExp(topic) }).click();
+      await graph.locator(".fs-tree-branches").getByRole("button", { name: new RegExp(statement) }).click(); };
     await enter("判断", "现金转换率");
     await expect(graph.getByText("已固定报告 v4 的来源版本")).toBeVisible();
     await graph.getByRole("button", { name: "展开来源 / 计算", exact: true }).click();
@@ -76,7 +76,7 @@ for (const width of [1440, 1024, 390]) {
     await expect(graph.getByLabel("你的假设 / 质疑 / 补证要求")).toHaveValue("请核对回款跨期，不应直接视为已发生事实。");
     await graph.getByRole("button", { name: "阅读完整报告" }).click();
     await expect(page.getByRole("heading", { name: report.title, exact: true })).toBeVisible();
-    await page.getByRole("button", { name: "研究图", exact: true }).click();
+    await taskPage(page, "研究地图");
     await expect(graph.getByLabel("你的假设 / 质疑 / 补证要求")).toHaveValue("请核对回款跨期，不应直接视为已发生事实。");
     expect(writes).toEqual([]);
     await graph.getByRole("button", { name: "查看修订范围" }).click();
@@ -88,4 +88,11 @@ for (const width of [1440, 1024, 390]) {
     await expect(graph.locator(".rg-run-result pre")).toContainText("修订候选判断");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   });
+}
+
+async function taskPage(page: import("playwright/test").Page, name: string) {
+  if ((page.viewportSize()?.width || 1440) <= 760) {
+    await page.getByRole("button", { name: "打开导航", exact: true }).click();
+    await page.locator(".fs-nav-dialog").getByRole("button", { name, exact: true }).click();
+  } else await page.locator(".fs-sidebar").getByRole("button", { name, exact: true }).click();
 }

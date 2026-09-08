@@ -6,6 +6,8 @@ import { reportTopics } from "./reportTopics";
 import { ResearchOutline } from "./ResearchOutline";
 import { SourceReader } from "./SourceReader";
 import ReactMarkdown from "react-markdown";
+import { useSearchParams } from "react-router";
+import { readMemory, writeMemory } from "./workspaceMemory";
 import remarkGfm from "remark-gfm";
 import "@xyflow/react/dist/style.css";
 import "./research-graph.css";
@@ -19,10 +21,18 @@ const verification = (v?: boolean) => v === true ? "已记录通过" : v === fal
 export function ResearchGraph({ id, version, checkpoint, report, digest, canRevise, runs, active, onReport, onRefresh }: Props) {
   const entries = useMemo(() => Object.entries(report.citations || {}), [report.citations]);
   const topics = useMemo(() => reportTopics(report), [report]);
-  const [topicId, setTopicId] = useState("");
-  const [level, setLevel] = useState<"overview" | "topic" | "claim">("overview");
+  const memoryKey = `graph:${id}:${digest || checkpoint || version}`;
+  const [params, setParams] = useSearchParams();
+  const saved = readMemory(memoryKey, { topic: "", level: "overview", claim: entries[0]?.[0] || "" });
+  const topicId = params.get("topic") || saved.topic;
+  const requestedLevel = params.get("level") || saved.level;
+  const level = topics.some(t => t.id === topicId) ? requestedLevel : "overview";
   const topic = topics.find(t => t.id === topicId);
-  const [claimId, setClaimId] = useState(entries[0]?.[0] || "");
+  const claimId = params.get("claim") || saved.claim;
+  const go = (nextLevel: string, nextTopic = topicId, nextClaim = claimId) => {
+    writeMemory(memoryKey, { topic: nextTopic, level: nextLevel, claim: nextClaim });
+    setParams(next => { next.set("level", nextLevel); next.set("topic", nextTopic); next.set("claim", nextClaim); return next; });
+  };
   const citation: Citation | undefined = report.citations[claimId];
   const [pinned, setPinned] = useState(checkpoint || "");
   const [pinError, setPinError] = useState("");
@@ -33,7 +43,8 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
   const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [expandedSource, setExpandedSource] = useState("");
-  const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [drafts, setDrafts] = useState<Record<string, string>>(() => readMemory(`drafts:${memoryKey}`, {}));
+  useEffect(() => { writeMemory(`drafts:${memoryKey}`, drafts); }, [drafts, memoryKey]);
   const [preview, setPreview] = useState(false);
   const [editing, setEditing] = useState(false);
   const [reader, setReader] = useState<Source | null>(null);
@@ -102,15 +113,16 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
     };
     const edge = (from: string, to: string, label: string) => edges.push({ id: `${from}->${to}`, source: from, target: to,
       label, type: "smoothstep", markerEnd: { type: MarkerType.ArrowClosed } });
-    add("claim", 330, 70, "引用记录中的原始主张", "研究引用", citation?.claim.statement || "没有保存主张文本");
-    add("report", 330, 260, `报告 v${version}`, "报告输出", report.title);
+    const shift = expanded ? 280 : 0;
+    add("claim", 300 + shift, 70, "引用记录中的原始主张", "研究引用", citation?.claim.statement || "没有保存主张文本");
+    add("report", 590 + shift, 70, `报告 v${version}`, "报告输出", report.title);
     edge("claim", "report", "引用绑定");
     (citation?.sources || []).filter(s => !expanded || s.source_id === expandedSource).forEach((s, index) => {
       const sourceId = `source:${s.source_id}`;
       const saved = loaded[s.source_id] || s;
       const calc = sourceCalculation(saved);
       if (info[sourceId]) return;
-      add(sourceId, 40, index * 180, calc ? calc.expression : s.title || "保存的来源", calc ? "保存计算" : "来源记录",
+      add(sourceId, 10 + shift, index * 180, calc ? calc.expression : s.title || "保存的来源", calc ? "保存计算" : "来源记录",
         saved.text || saved.notice || "选择此节点读取原文或计算。", s.source_id, saved);
       edge(sourceId, "claim", "被引用");
       if (expanded && calc) Object.entries(calc.operands).forEach(([name, operand], i) => {
@@ -118,7 +130,7 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
         const rawId = operand.source_id;
         const actualId = rawId ? calc.operand_source_aliases?.[rawId] || rawId : undefined;
         const value = operand.value_decimal ?? operand.literal ?? "数值未记录";
-        add(operandId, -240, i * 170, `${name} = ${value}`, "计算操作数",
+        add(operandId, 10, i * 170, `${name} = ${value}`, "计算操作数",
           `单位：${operand.unit || operand.source_provenance?.unit || "未记录"}\n期间：${operand.period_end || operand.source_provenance?.fiscal_period || "未记录"}\n${operand.quote || ""}${actualId ? "" : "\n未绑定来源；可能为常量或显式假设，请核对原计算。"}`, actualId);
         edge(operandId, sourceId, name);
       });
@@ -127,10 +139,10 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
   }, [citation, loaded, expanded, expandedSource, current, report.title, version]);
 
   const calc = sourceCalculation(detail?.source || null);
-  if (!entries.length) return <div className="rg-empty">这版报告尚未保存可展示的引用关系。<button onClick={onReport}>阅读报告</button></div>;
+  if (!entries.length) return <div className="rg-empty" hidden={!active}>这版报告尚未保存可展示的引用关系。<button onClick={onReport}>阅读报告</button></div>;
   return <section className="rg-workspace" aria-label="研究依据图">
     <div className="rg-toolbar">
-      <nav aria-label="研究图路径"><button onClick={() => setLevel("overview")}>报告总览</button>{level !== "overview" && <><span> / </span><button onClick={() => setLevel("topic")}>{topic?.title || "专题"}</button></>}{level === "claim" && <span> / 判断与依据</span>}</nav>
+      <nav aria-label="研究图路径"><button onClick={() => go("overview")}>报告总览</button>{level !== "overview" && <><span> / </span><button onClick={() => go("topic")}>{topic?.title || "专题"}</button></>}{level === "claim" && <span> / 判断与依据</span>}</nav>
       <button onClick={onReport}>阅读完整报告</button>
     </div>
     {targetedRun && <div className="rg-run-result" role="status"><strong>节点修订：{({ pending: "等待执行", running: "正在修订", success: "运行完成，待审阅", error: "修订失败，旧结果保留", interrupted: "运行已停止 / 等待处理" } as Record<string, string>)[targetedRun.status] || targetedRun.status}</strong>
@@ -138,9 +150,9 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
       <button onClick={async () => { try { const result = await sessionsApi.diff(id, targetedRun.revision_target!.base_checkpoint); setDiff(result.diff || "报告正文没有变化。请核对审查意见与运行记录。"); } catch (e) { setDiff((e as Error).message); } }}>查看相对基线的报告变化</button>
       {diff && <pre>{diff}</pre>}</div>}
     {submission && <div className="rg-run-result" role="status">{submission}<button onClick={() => void onRefresh()}>刷新运行状态</button></div>}
-    {level === "overview" && <div className="rg-hierarchy"><h2>这份报告研究了什么？</h2><p>按报告章节浏览。连线表示内容归属，不代表已证实的因果关系。</p>{active && <ResearchOutline title={report.title} items={topics.map(t => ({ id: t.id, title: t.title, subtitle: `${t.claimIds.length} 条研究引用` }))} onOpen={next => { setTopicId(next); setLevel("topic"); }} />}</div>}
+    {level === "overview" && <div className="rg-hierarchy"><h2>这份报告研究了什么？</h2><p>按报告章节浏览。连线表示内容归属，不代表已证实的因果关系。</p>{active && <ResearchOutline title={report.title} items={topics.map(t => ({ id: t.id, title: t.title, subtitle: `${t.claimIds.length} 条研究引用` }))} onOpen={next => { go("topic", next); }} />}</div>}
     {level === "topic" && topic && <div className="rg-hierarchy"><h2>{topic.title}</h2><p>{topic.excerpt}</p><details><summary>展开本专题的报告正文</summary><ReactMarkdown skipHtml remarkPlugins={[remarkGfm]}>{topic.markdown}</ReactMarkdown></details>
-      {!topic.claimIds.length && <p>本节没有定位到已绑定引用，可先阅读正文。</p>}{active && topic.claimIds.length > 0 && <ResearchOutline title={topic.title} items={topic.claimIds.map(key => ({ id: key, title: report.citations[key].claim.statement, subtitle: `${report.citations[key].sources.length} 条来源 / 计算依据` }))} onOpen={next => { setClaimId(next); setLevel("claim"); }} />}</div>}
+      {!topic.claimIds.length && <p>本节没有定位到已绑定引用，可先阅读正文。</p>}{active && topic.claimIds.length > 0 && <ResearchOutline title={topic.title} items={topic.claimIds.map(key => ({ id: key, title: report.citations[key].claim.statement, subtitle: `${report.citations[key].sources.length} 条来源 / 计算依据` }))} onOpen={next => { go("claim", topicId, next); }} />}</div>}
     <div hidden={level !== "claim"}>
     <div className="rg-summary"><strong>{citation?.claim.statement}</strong><span>引用原始主张可能早于报告修订；请结合当前正文核对。图仅展示保存的引用与计算关系。</span></div>
     {pinError && <div className="rg-error" role="alert">{pinError} <button onClick={() => setPinAttempt(n => n + 1)}>重试版本读取</button></div>}
@@ -154,13 +166,13 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
           }}>{expanded ? "收起操作数" : "展开来源 / 计算"}</button>
         </div>
         <div className="rg-canvas">
-          {active && level === "claim" && <ReactFlow key={`${claimId}:${expanded}`} nodes={graph.nodes} edges={graph.edges} fitView fitViewOptions={{ padding: .18, maxZoom: 1 }}
-            minZoom={.25} maxZoom={1.6} nodesDraggable={false} nodesConnectable={false} edgesReconnectable={false} deleteKeyCode={null}
+          {active && level === "claim" && <div style={{ width: expanded ? 1130 : 850, height: Math.max(420, ...graph.nodes.map(n => n.position.y + 185)) }}><ReactFlow key={`${claimId}:${expanded}`} nodes={graph.nodes} edges={graph.edges} defaultViewport={{ x: 15, y: 20, zoom: 1 }}
+            minZoom={1} maxZoom={1} panOnDrag={false} zoomOnScroll={false} zoomOnPinch={false} zoomOnDoubleClick={false} preventScrolling={false} nodesDraggable={false} nodesConnectable={false} edgesReconnectable={false} deleteKeyCode={null}
             onNodeClick={(_, node) => { request.current += 1; setLoading(false); const selected = graph.info[node.id]; setDetail(selected); setError("");
               if (selected.sourceId) void read(selected.sourceId);
               if (window.innerWidth < 1000) detailsRef.current?.scrollIntoView({ block: "start", behavior: "smooth" }); }}>
-            <Background gap={22} size={1} /><Controls showInteractive={false} />
-          </ReactFlow>}
+            <Background gap={22} size={1} />
+          </ReactFlow></div>}
         </div>
         {expanded && (citation?.sources.length || 0) > 1 && <div className="rg-other-sources"><span>同一引用的其他依据</span>{citation.sources.filter(s => s.source_id !== expandedSource).map(s => <button key={s.source_id} onClick={() => { setExpanded(false); void read(s.source_id, true); }}>{s.title || s.source_id}</button>)}</div>}
         <div className="rg-mobile-nodes" aria-label="图节点列表">{Object.entries(graph.info).map(([key, d]) =>
@@ -181,7 +193,7 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
         <div className="rg-edit-area"><button className="rg-primary" onClick={() => { setEditing(true); setPreview(false); }}>针对这条引用写修订意见</button>
           {editing && <><label htmlFor="rg-draft">你的假设 / 质疑 / 补证要求</label><textarea id="rg-draft" value={current} onChange={e => { setDrafts(old => ({ ...old, [claimId]: e.target.value })); setPreview(false); }} placeholder="例如：请检查回款跨期的影响，并区分假设与已披露事实。" />
             <div className="rg-draft-actions"><button disabled={!current.trim()} onClick={() => setPreview(true)}>查看修订范围</button><button onClick={() => { setDrafts(old => ({ ...old, [claimId]: "" })); setPreview(false); }}>清空草稿</button></div>
-            <small>草稿仅保留在当前页面；刷新后清除。原始证据不变。</small></>}
+            <small>草稿按任务、引用和报告基线保存在此浏览器标签页，刷新后可继续。原始证据不变。</small></>}
         </div>
         {preview && <div className="rg-preview" role="status"><strong>修订预览 · 基于报告 v{version}</strong><p>{current}</p><p>目标是这条已绑定引用及其报告表述。交由现有研究修订与复核流程处理，可能涉及上游研究和整份报告，不承诺仅重跑图上节点。</p><p>确认提交后会调用研究模型并产生费用，实际用量见“运行与费用”。原报告历史保留；候选仍需审阅。</p>
           <button className="rg-primary" disabled={!canRevise || !digest || !pinned || submitting || uncertain} onClick={() => void submit()}>{submitting ? "正在提交…" : "确认提交修订"}</button>{(!canRevise || !digest) && <p>历史版只读，或当前尚未处于可修订审阅点；请返回当前报告核对状态。</p>}</div>}

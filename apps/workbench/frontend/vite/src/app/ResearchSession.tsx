@@ -6,6 +6,11 @@ import { remarkReportHeadings } from "./remarkReportHeadings";
 import { sourceCalculation } from "./sourceCalculation";
 import { ReportVersions } from "./ReportVersions";
 import { ResearchGraph } from "./ResearchGraph";
+import { useSearchParams } from "react-router";
+import { WorkspaceNavigation, pageTitles } from "./WorkspaceNavigation";
+import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
+import { readMemory, writeMemory } from "./workspaceMemory";
+import { RunWorkspace } from "./RunWorkspace";
 import type { ReportSnapshot } from "../api/reportSessions";
 import {
   ArrowUp,
@@ -36,6 +41,7 @@ import {
   type ResearchConfiguration,
 } from "../api/reportSessions";
 import "./research-session.css";
+import "./workspace-design.css";
 
 const format = (n: number) => new Intl.NumberFormat("zh-CN").format(n);
 const stageName: Record<string, string> = {
@@ -154,17 +160,32 @@ function Markdown({
 }
 
 export function ResearchSession() {
+  const [params, setParams] = useSearchParams();
+  const id = params.get("thread") || "";
+  const page = params.get("view") || (id ? "graph" : "home");
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem("finsight.sidebar") === "collapsed");
+  const [theme, setTheme] = useState(() => localStorage.getItem("finsight.theme") || "system");
+  const [motion, setMotion] = useState(() => localStorage.getItem("finsight.motion") === "reduced");
+  const [taskQuery, setTaskQuery] = useState("");
+  const [taskFilter, setTaskFilter] = useState("");
+  const globalPage = ["home", "all", "inbox", "preferences"].includes(page);
+  const navigate = (view: string, thread = id) => {
+    setParams(next => { next.set("view", view); if (thread !== id) { next.delete("level"); next.delete("topic"); next.delete("claim"); } if (thread) next.set("thread", thread); else next.delete("thread"); return next; });
+  };
+  useEffect(() => { localStorage.setItem("finsight.sidebar", collapsed ? "collapsed" : "expanded"); localStorage.setItem("finsight.theme", theme); localStorage.setItem("finsight.motion", motion ? "reduced" : "full"); }, [collapsed, theme, motion]);
   const [configuration, setConfiguration] = useState<ResearchConfiguration | null>(null);
   const [configurationError, setConfigurationError] = useState("");
-  const [creating, setCreating] = useState(false);
+  const creating = page === "new";
   const [researchQuestion, setResearchQuestion] = useState("");
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploadStatus, setUploadStatus] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
-  const [id, setId] = useState(
-    new URLSearchParams(window.location.search).get("thread") || "",
-  );
-  const [session, setSession] = useState<Session | null>(null);
+  const [snapshot, setSnapshot] = useState<Session | null>(null);
+  const currentThread = useRef(id); currentThread.current = id;
+  const setSession = useCallback((value: Session | null) => {
+    if (!value || value.thread_id === currentThread.current) setSnapshot(value);
+  }, []);
+  const session = snapshot?.thread_id === id ? snapshot : null;
   const [historicalReport, setHistoricalReport] = useState<ReportSnapshot | null>(null);
   const displayedReport = historicalReport?.report || session?.report;
   const reportQuery = historicalReport ? `?checkpoint_id=${encodeURIComponent(historicalReport.checkpoint_id)}` : "";
@@ -174,8 +195,8 @@ export function ResearchSession() {
   const [usageRunId, setUsageRunId] = useState("");
   const [sending, setSending] = useState(false);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<"graph" | "report" | "conversation">("graph");
-  useEffect(() => { if (session && !session.report && tab === "graph") setTab("report"); }, [session, tab]);
+  const tab = page === "graph" && session?.is_draft ? "report" : ["graph", "report", "conversation", "sources", "revisions"].includes(page) ? page : "graph";
+  const setTab = (value: string) => navigate(value);
   const [inspectorOpen, setInspectorOpen] = useState(false);
   const [taskDetails, setTaskDetails] = useState(false);
   const [outline, setOutline] = useState<{ id: string; label: string }[]>([]);
@@ -193,6 +214,7 @@ export function ResearchSession() {
   const [inspector, setInspector] = useState<"review" | "activity" | "source">(
     "review",
   );
+  useEffect(() => { if (page === "review") { setInspector(page); setInspectorOpen(true); } else setInspectorOpen(false); }, [page, session?.thread_id]);
   const [selected, setSelected] = useState<{
     key: string;
     citation: Citation;
@@ -202,7 +224,8 @@ export function ResearchSession() {
   const calculation = useMemo(() => sourceCalculation(source), [source]);
   const sourceWindow = useRef<HTMLDivElement>(null);
   useEffect(() => { setHistoricalReport(null); setSelected(null); setSource(null); setSourceHistory([]);
-    setInspectorOpen(false); setTaskDetails(false); reportScroll.current = 0; sourceRequest.current += 1;
+    setInspectorOpen(page === "review"); setTaskDetails(false); sourceRequest.current += 1;
+    setText(readMemory(`conversation:${id}`, ""));
   }, [id]);
   useEffect(() => {
     setOutline(Array.from(reportArticle.current?.querySelectorAll<HTMLElement>("[id^='report-section-']") || [])
@@ -210,13 +233,14 @@ export function ResearchSession() {
     setActiveHeading("");
   }, [displayedReport?.narrative_markdown]);
   useEffect(() => {
-    reportScroll.current = 0;
-    if (documentWindow.current) documentWindow.current.scrollTop = 0;
+    reportScroll.current = readMemory(`reading:${id}:${historicalReport?.checkpoint_id || session?.report_version}`, 0);
+    if (documentWindow.current) documentWindow.current.scrollTop = reportScroll.current;
     setSelected(null); setSource(null); setSourceHistory([]); setSourceError(""); setSourceLoading(false);
-    setInspectorOpen(false); sourceRequest.current += 1;
+    setInspectorOpen(page === "review"); sourceRequest.current += 1;
   }, [id, historicalReport?.checkpoint_id, session?.report_version]);
   useEffect(() => { if (tab === "report" && documentWindow.current) documentWindow.current.scrollTop = reportScroll.current; }, [tab]);
   const closeInspector = useCallback(() => {
+    if (page === "review") navigate("graph");
     setInspectorOpen(false); sourceRequest.current += 1; setSourceLoading(false);
     requestAnimationFrame(() => {
       const origin = sourceReturnFocus.current;
@@ -226,7 +250,7 @@ export function ResearchSession() {
       target?.focus({ preventScroll: true });
       if (tab === "report" && documentWindow.current) documentWindow.current.scrollTop = reportScroll.current;
     });
-  }, [tab]);
+  }, [tab, page, id]);
   useEffect(() => {
     if (!inspectorOpen) return;
     inspectorClose.current?.focus({ preventScroll: true });
@@ -251,24 +275,18 @@ export function ResearchSession() {
     refresh().catch((e) => setError(String(e.message)));
     sessionsApi.config().then((value) => {
       setConfiguration(value);
-      setResearchQuestion((current) => current || value.default_question || "");
     }).catch((e) => setConfigurationError(`无法读取当前服务的新研究配置：${String(e.message)}。新研究不会启动；请完成后台版本部署后再试。`));
   }, [refresh]);
   const choose = (next: string) => {
-    setCreating(false);
+    navigate("graph", next);
     setUsageRunId("");
-    setId(next);
     setSession(null);
     setEvents([]);
     setSelected(null);
     setSource(null);
     setError("");
-    window.history.replaceState(
-      {},
-      "",
-      `/workspace/session?thread=${encodeURIComponent(next)}`,
-    );
   };
+  useEffect(() => { setSession(null); setEvents([]); setUsageRunId(""); setError(""); }, [id]);
   useEffect(() => {
     if (!id) return;
     let disposed = false;
@@ -282,7 +300,7 @@ export function ResearchSession() {
         if (!disposed) {
           setSession(value);
           if (firstSnapshot) {
-            setInspector(value.status === "busy" ? "activity" : "review");
+            setInspector(page === "activity" || page === "review" ? page : value.status === "busy" ? "activity" : "review");
             firstSnapshot = false;
           }
         }
@@ -352,7 +370,7 @@ export function ResearchSession() {
           setConnected(false);
           sessionsApi
             .state(id)
-            .then(setSession)
+            .then(value => { if (!control.signal.aborted) setSession(value); })
             .catch(() => {});
           refresh().catch(() => {});
         }
@@ -401,12 +419,12 @@ export function ResearchSession() {
   const cumulative = session?.cumulative_usage;
   const visibleEvents = usageRun ? allEvents.filter(e => e.run_id === usageRun.run_id) : allEvents;
   const visibleModels = visibleEvents.filter(e => e.kind === "model" && e.event === "outcome");
-  const newSession = async (mode: "review" | "research" = "review") => {
+  const newSession = async (mode: "review" | "research" = "review", draft = false) => {
     setSending(true);
     setError("");
     try {
       const made = await sessionsApi.create(mode === "research" ? {
-        mode, title: configuration?.title || "Dell · 新研究任务", question: researchQuestion, defer_start: uploadFiles.length > 0,
+        mode, title: researchQuestion.trim().slice(0, 100) || "新研究任务", question: researchQuestion, defer_start: draft || uploadFiles.length > 0,
       } : { mode });
       choose(made.thread_id);
       if (mode === "research" && uploadFiles.length) {
@@ -416,7 +434,7 @@ export function ResearchSession() {
         }
         setUploadFiles([]);
         setUploadStatus("");
-        await sessionsApi.start(made.thread_id);
+        if (!draft) await sessionsApi.start(made.thread_id);
       }
       if (mode === "research") setInspector("activity");
       await refresh();
@@ -439,6 +457,7 @@ export function ResearchSession() {
       await sessionsApi.action(id, selectedAction, message, selectedAction === "ask" ? answerMode : "deep");
       setUsageRunId("");
       setText("");
+      writeMemory(`conversation:${id}`, "");
       setInspector("activity");
       if (selectedAction === "ask") setTab("conversation");
       setSession(await sessionsApi.state(id));
@@ -474,79 +493,30 @@ export function ResearchSession() {
   };
   const findings = session?.report_review?.findings || [];
   return (
-    <div className={`rs-shell ${inspectorOpen ? "rs-has-inspector" : ""}`}>
-      <aside className="rs-sidebar">
-        <a className="rs-brand" href="/workspace/session">
-          <span className="rs-brand-mark">
-            <Layers size={20} />
-          </span>
-          <strong>
-            FinSight<span>RESEARCH WORKSPACE</span>
-          </strong>
-        </a>
-        <button className="rs-new" onClick={() => setCreating(true)} disabled={sending}>
-          <Plus size={16} /> 新建研究任务
-        </button>
-        {configuration?.legacy_review_enabled && <button className="rs-legacy-link" onClick={() => newSession("review")} disabled={sending}>
-          <BookOpen size={14} /> 打开已有 Dell 报告审阅
-        </button>}
-        <div className="rs-side-label">
-          研究会话{" "}
-          <button
-            aria-label="刷新会话"
-            onClick={() => refresh().catch((e) => setError(e.message))}
-          >
-            <RefreshCw size={13} />
-          </button>
-        </div>
-        <nav className="rs-session-list">
-          {sessions.map((s) => (
-            <button
-              key={s.thread_id}
-              className={s.thread_id === id ? "selected" : ""}
-              onClick={() => choose(s.thread_id)}
-            >
-              <FileText size={15} />
-              <span>
-                {s.title}
-                <small>
-                  {s.status === "busy"
-                    ? "运行中"
-                    : s.status === "interrupted"
-                      ? "等待审阅"
-                    : "已保存"} · {s.thread_id.slice(-6)}
-                </small>
-              </span>
-            </button>
-          ))}
-        </nav>
-        <div className="rs-sidebar-bottom">
-          <ShieldCheck size={17} />
-          <div>
-            本地研究环境<small>来源只读 · 密钥留在服务端</small>
-          </div>
-        </div>
-      </aside>
+    <div data-theme={theme} data-motion={motion ? "reduced" : "full"} data-page={page} className={`rs-shell fs-workspace ${collapsed ? "fs-collapsed" : ""} ${inspectorOpen ? "rs-has-inspector" : ""}`}>
+      <WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} />
       <main className="rs-main">
         <header className="rs-top">
           <div className="rs-breadcrumb">
-            <a href="/workspace/session">研究列表</a> / <b>研究工作台</b>
+            <button onClick={() => navigate("home")}>工作台</button> / <b>{pageTitles[page] || "研究工作区"}</b>
           </div>
           <span className="rs-local">
             <span /> LOCAL PILOT
           </span>
-          <div className="rs-detail-actions">
+          <div className="rs-detail-actions" hidden={!session || globalPage || creating}>
             <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); }}>审查意见</button>
             <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("activity"); setInspectorOpen(true); }}>运行与费用</button>
           </div>
         </header>
+        {globalPage && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
+        <div className="fs-session-view" hidden={globalPage}>
         {id && !session && !creating ? <section className="rs-empty" role="status"><LoaderCircle className="rs-spin" /><h1>正在读取已保存研究…</h1><p>读取报告不会发起新的模型调用。</p></section> : !session || creating ? (
           <section className="rs-empty">
             <span className="rs-eyebrow">从一份研究，到一个可追问的判断</span>
             <h1>让结论经得起追问。</h1>
             <p>
               提出一个有分量的问题，让研究 Agent 自主拆解、查资料、核算与交叉质疑。
-              当前围绕 Dell 案例运行，原始资料可以复用，旧报告不会被当成新研究答案。
+              先写明对象、期间和问题，再准备资料；保存草稿后可以继续补充。
             </p>
             <div className="rs-empty-cards">
               <div>
@@ -566,10 +536,11 @@ export function ResearchSession() {
               </div>
             </div>
             <div className="rs-research-prompt">
+              {configuration?.title && <p>当前部署的已接通研究配置：{configuration.title}</p>}
               <label htmlFor="new-research-question">这次你想研究什么？</label>
               <textarea id="new-research-question" value={researchQuestion} maxLength={16000}
                 onChange={(e) => setResearchQuestion(e.target.value)} rows={7}
-                placeholder="例如：判断 Dell 的增长质量、盈利兑现和未来执行压力，并说明什么证据会改变判断。" />
+                placeholder="写明研究对象、期间，以及希望核实的具体问题…" />
               <div><span>案例资料时点：{configuration?.research_as_of?.slice(0, 10) || "待配置"}</span>
                 {configuration?.cost_expectation_cny && <span>完整研究规划估费约 ¥{configuration.cost_expectation_cny.rough_low}–{configuration.cost_expectation_cny.rough_high}，非固定价格</span>}</div>
             </div>
@@ -585,6 +556,7 @@ export function ResearchSession() {
               )}{" "}
               {sending ? "正在创建任务" : "开始全新研究"}
             </button>
+            <button className="fs-secondary" disabled={sending || !configuration?.fresh_research_enabled || !researchQuestion.trim()} onClick={() => newSession("research", true)}>保存为资料准备草稿</button>
             <label className="rs-upload-label">补充本次研究资料（可选）
               <input type="file" multiple accept=".pdf,.docx,.md,.txt,.csv,.html,.htm,.png,.jpg,.jpeg,.webp"
                 disabled={sending} onChange={(e) => { const files = Array.from(e.target.files || []); if (files.length > 12) { setError("一次最多12份资料，请重新选择；没有静默丢弃文件。"); e.target.value = ""; setUploadFiles([]); } else setUploadFiles(files); }} />
@@ -628,7 +600,7 @@ export function ResearchSession() {
             <div className="rs-task-details" hidden={!taskDetails && !!session.report}>
             {session.question && <div className="rs-task-question">{session.question}</div>}
             {uploadStatus && <div className="rs-report-notice">{uploadStatus}</div>}
-            {!busy && (session.is_draft || (session.case_profile === "dell_growth_quality" && session.can_respond)) &&
+            {!busy && (session.is_draft || session.can_upload) &&
               <label className="rs-upload-label">补充本任务资料
                 <input type="file" aria-label="补充本任务资料" accept=".pdf,.docx,.md,.txt,.csv,.html,.htm,.png,.jpg,.jpeg,.webp"
                   disabled={sending} onChange={async (e) => { const file = e.target.files?.[0]; if (!file) return;
@@ -674,29 +646,9 @@ export function ResearchSession() {
               <ShieldCheck size={16} /><span>本次研究仍有未解决问题，已保存报告供审阅，不会自动重跑。</span>
               <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); }}>查看未决审查</button>
             </div>}
-            <div className="rs-tabs">
-              <div>
-                {displayedReport && <button className={tab === "graph" ? "active" : ""} onClick={() => { setInspectorOpen(false); setTab("graph"); }}><Layers size={15} /> 研究图</button>}
-                <button
-                  className={tab === "report" ? "active" : ""}
-                  onClick={() => setTab("report")}
-                >
-                  <FileText size={15} /> 研究报告
-                </button>
-                <button
-                  className={tab === "conversation" ? "active" : ""}
-                  onClick={() => setTab("conversation")}
-                >
-                  <MessageSquare size={15} /> 追问与反馈{" "}
-                  <small>{session.conversation?.length || 0}</small>
-                </button>
-              </div>
-              <span>
-                {Object.keys(displayedReport?.citations || {}).length}{" "}
-                条引用可展开
-              </span>
-            </div>
-            <div className="rs-content-shell" data-tab={tab}>
+            {(page === "activity" || (page === "graph" && !session.report && !session.is_draft)) && <RunWorkspace key={id} session={session} events={allEvents} connected={connected} refresh={async () => { setSession(await sessionsApi.state(id)); await refresh(); }} onReport={() => setTab("report")} />}
+            {(tab === "sources" || tab === "revisions") && displayedReport && <SessionLibrary key={`${id}:${historicalReport?.checkpoint_id || session.report_version}:${tab}`} session={session} checkpoint={historicalReport?.checkpoint_id} report={displayedReport} view={tab} />}
+            <div className="rs-content-shell" data-tab={tab} hidden={tab === "sources" || tab === "revisions" || page === "activity" || page === "review" || (page === "graph" && !session.report && !session.is_draft)}>
             {displayedReport && <ResearchGraph key={`${id}:${historicalReport?.checkpoint_id || session.report_version}`} id={id}
               version={historicalReport?.report_version || session.report_version || 1} checkpoint={historicalReport?.checkpoint_id}
               report={displayedReport} digest={historicalReport?.report_digest || session.report_digest} canRevise={!historicalReport && !!session.can_respond}
@@ -709,7 +661,7 @@ export function ResearchSession() {
               <div>{outline.map(h => <button key={h.id} aria-current={activeHeading === h.id ? "location" : undefined}
                 onClick={() => { setActiveHeading(h.id); document.getElementById(h.id)?.scrollIntoView({ block: "start" }); }}>{h.label}</button>)}</div>
             </nav>}
-            <div className={`rs-document rs-active-${tab}`} ref={documentWindow} onScroll={e => { if (tab === "report" && !inspectorOpen) reportScroll.current = e.currentTarget.scrollTop; }}>
+            <div className={`rs-document rs-active-${tab}`} ref={documentWindow} onScroll={e => { if (tab === "report" && !inspectorOpen) { reportScroll.current = e.currentTarget.scrollTop; writeMemory(`reading:${id}:${historicalReport?.checkpoint_id || session?.report_version}`, reportScroll.current); } }}>
                 <section className="rs-report-pane" aria-label="研究报告">
                   {session.report && <ReportVersions key={id} id={id} currentVersion={session.report_version || 1} onSelect={setHistoricalReport} />}
                   <div className="rs-report-notice">
@@ -750,7 +702,7 @@ export function ResearchSession() {
                       <MessageSquare size={28} />
                       <h3>从一个具体问题开始</h3>
                       <p>
-                        例如：融资应收加回变小，为什么不一定代表现金流变差？
+                        例如：这个判断使用了哪些来源，还有哪些解释没有排除？
                       </p>
                     </div>
                   )}
@@ -798,7 +750,7 @@ export function ResearchSession() {
                 <span>
                   {action === "ask"
                     ? "回答问题，不自动重写报告"
-                    : "Writer 修订后交独立 Verifier"}
+                    : "按实际责任路由修订并复核"}
                 </span>
               </div>
               {action === "ask" && (
@@ -816,7 +768,7 @@ export function ResearchSession() {
               <textarea
                 aria-label="问题或修订意见"
                 value={text}
-                onChange={(e) => setText(e.target.value)}
+                onChange={(e) => { setText(e.target.value); writeMemory(`conversation:${id}`, e.target.value); }}
                 maxLength={16000}
                 placeholder={
                   action === "ask"
@@ -900,6 +852,7 @@ export function ResearchSession() {
             </div>
           </>
         )}
+        </div>
         {error && (
           <div className="rs-error" role="alert">
             <span>{error}</span>
@@ -909,7 +862,7 @@ export function ResearchSession() {
           </div>
         )}
       </main>
-      <aside className={`rs-inspector ${inspectorOpen ? "rs-inspector-open" : ""}`} aria-label="审查与运行详情" hidden={!inspectorOpen}>
+      <aside className={`rs-inspector ${inspectorOpen ? "rs-inspector-open" : ""}`} aria-label="审查与运行详情" hidden={!inspectorOpen || globalPage || creating || page === "activity"}>
         <header>
           <span>
             <Radio size={16} /> {inspector === "source" ? "来源与计算" : inspector === "review" ? "审查意见" : "运行与费用"}

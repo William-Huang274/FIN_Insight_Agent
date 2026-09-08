@@ -168,7 +168,7 @@ def can_restart_remaining_node(thread, state, last_run, usage):
 
 class NewSession(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-    title: str = Field(default="Dell AI 基础设施 · 全案审阅", min_length=1, max_length=120)
+    title: str = Field(default="新研究任务", min_length=1, max_length=120)
     mode: Literal["review", "research"] = "review"
     question: str | None = Field(default=None, min_length=10, max_length=16000)
     defer_start: bool = False
@@ -263,7 +263,7 @@ def build_report_sessions_router(service):
     async def sessions():
         threads = await service.sdk.threads.search(metadata={"surface": SURFACE}, limit=50)
         return [{"thread_id": t["thread_id"], "status": t["status"], "updated_at": t["updated_at"],
-            "title": t.get("metadata", {}).get("title", "Dell 研究会话")} for t in threads]
+            "title": t.get("metadata", {}).get("title", "研究任务")} for t in threads]
 
     @router.get("/research-session-config")
     async def configuration():
@@ -481,6 +481,7 @@ def build_report_sessions_router(service):
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
             **projection, "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
+            "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
             "attachments": service.attachment_store.list(thread_id) if service.attachment_store else [],
             "runs": public_runs, "cumulative_usage": cumulative}

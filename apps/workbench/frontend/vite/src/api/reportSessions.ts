@@ -127,6 +127,7 @@ export type Session = {
   }[];
   model_events?: Event[];
   runs?: { run_id: string; status: string; created_at: string; human_action?: string; request_message?: string; answer_mode?: string; execution?: ExecutionOptions; elapsed_ms?: number; model_calls_requested?: number; revision_target?: RevisionTarget;
+    context_usage?: { notice: string; nodes: { actor: string; call_id: string; model?: string; input_tokens: number | null; input_characters?: number; capacity_tokens: number | null; capacity_source?: string; basis: string; near_capacity: boolean }[] };
     cost_estimate?: { known_cny: number; priced_requests: number; unknown_or_pending_requests: number; price_as_of: string; notice: string };
     usage?: { recorded_requests: number; reported_requests: number; unknown_or_pending_requests: number;
       input_tokens: number; output_tokens: number; total_tokens: number; cache_hit_tokens?: number; cache_miss_tokens?: number;

@@ -61,6 +61,15 @@ def main():
         raise FileNotFoundError("Docker CLI not found; add the installed Docker CLI to PATH")
     command = [str(docker), "compose", "--env-file", str(repo / ".env"), "-p", "finsight-dell-report-workbench",
         "-f", "deploy/dell_agent_server/compose.yaml", "-f", "deploy/dell_agent_server/compose.research-session.yaml" if args.fresh_only else "deploy/dell_agent_server/compose.report-session.yaml"]
+    if settings.get("conversation_fact_mart"):
+        mart = Path(settings["conversation_fact_mart"]).resolve(strict=True)
+        if not mart.is_file():
+            raise ValueError("conversation_fact_mart_must_be_file")
+        container_settings = json.loads((settings_root / "container-settings.json").read_text(encoding="utf-8"))
+        if container_settings.get("conversation_fact_mart") != "/run/fin-insight/conversation/financial-facts.sqlite":
+            raise ValueError("conversation_fact_mart_container_binding_mismatch")
+        env["FINSIGHT_CONVERSATION_FACT_MART_HOST_PATH"] = str(mart)
+        command.extend(["-f", "deploy/dell_agent_server/compose.conversation-data.yaml"])
     subprocess.run([*command, "config", "--quiet"], cwd=repo, env=env, check=True)
     if args.action == "check":
         return

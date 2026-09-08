@@ -530,10 +530,10 @@ async def open_case_review_composition(*, authority, model_config, api_key, publ
                 run_invocation_id=authority.run_invocation_id).compile(name="dell_reference_vertical").with_config({"recursion_limit": 240})
 
 
-def case_chat_model(profile, basis, model_config, api_key, *, context_editing=None):
+def case_chat_model(profile, basis, model_config, api_key, *, context_editing=None, streaming=False):
     return ReasoningPreservingChatDeepSeek(model=profile.model, api_key=api_key,
         base_url=model_config.base_url, temperature=0, max_tokens=basis.max_output_tokens,
-        timeout=basis.timeout_seconds, max_retries=0, streaming=False, use_responses_api=False,
+        timeout=basis.timeout_seconds, max_retries=0, streaming=streaming, stream_usage=streaming, use_responses_api=False,
         extra_body={"thinking": {"type": profile.thinking}},
         **({"tool_context_trigger_tokens": context_editing["trigger_tokens"],
             "tool_context_keep": context_editing["keep"]} if context_editing else {}),

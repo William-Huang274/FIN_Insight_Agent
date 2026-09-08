@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router";
 import { OperationsConsole } from "./operations/OperationsConsole";
 import { ResearchSession } from "./app/ResearchSession";
+const ConversationWorkspace = React.lazy(() => import("./app/ConversationWorkspace"));
 const EvidencePackWorkspace = React.lazy(() => import("./app/ResearchWorkspace")
   .then(module => ({ default: module.ResearchWorkspace })));
 
@@ -42,6 +43,8 @@ createRoot(root).render(
       <OperationsConsole />
     ) : window.location.pathname === "/workspace/evidence-packs" ? (
       <React.Suspense fallback={<p role="status">正在读取历史证据工作台…</p>}><EvidencePackWorkspace /></React.Suspense>
+    ) : window.location.pathname === "/workspace/assistant" ? (
+      <BrowserRouter><React.Suspense fallback={<p role="status">正在打开对话…</p>}><ConversationWorkspace /></React.Suspense></BrowserRouter>
     ) : (
       <BrowserRouter><ResearchSession /></BrowserRouter>
     )}

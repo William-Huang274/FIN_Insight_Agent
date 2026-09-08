@@ -11,7 +11,7 @@ services:
     cap_drop: [ALL]
     security_opt: ["no-new-privileges:true"]
     environment:
-      LANGSERVE_GRAPHS: '{"research_session": {"path": "sec_agent.agent_runtime.research_session_runtime:research_session_graph", "description": "Fresh source-bound research with native persistence and human review"}}'
+      LANGSERVE_GRAPHS: '{"research_session": {"path": "sec_agent.agent_runtime.research_session_runtime:research_session_graph", "description": "Fresh source-bound research with native persistence and human review"}, "conversation_session": {"path": "sec_agent.agent_runtime.conversation_runtime:conversation_session_graph", "description": "General multi-turn assistant with scoped tools and native persistence"}}'
       FINSIGHT_RESEARCH_SESSION_ENABLED: ${FINSIGHT_RESEARCH_SESSION_ENABLED:-0}
       FINSIGHT_TASK_ATTACHMENTS_ROOT: /run/fin-insight/task-attachments
       FINSIGHT_TASK_VISION_ENABLED: ${FINSIGHT_TASK_VISION_ENABLED:-0}

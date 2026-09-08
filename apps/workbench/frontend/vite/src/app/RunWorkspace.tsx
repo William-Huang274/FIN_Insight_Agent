@@ -6,6 +6,7 @@ import { sessionsApi, type Event, type Session } from "../api/reportSessions";
 import { branchName, claimLabel } from "./researchLabels";
 import { executionModeName } from "./ExecutionPicker";
 import { useSearchParams } from "react-router";
+import { ContextUsage } from "./ContextUsage";
 
 const statusName = (s: string) => ({running:"执行中", pending:"等待执行", success:"运行完成", interrupted:"已停止 / 到达等待点", error:"执行失败", submitted:"底稿已提交", handoff:"已交接结果"} as Record<string,string>)[s] || s;
 const needsAttention = (phase?: string) => phase === "research_needs_attention";
@@ -45,6 +46,7 @@ export function RunWorkspace({ session, events, connected, refresh, onReport }: 
     {run?.human_action === "ask" && <button onClick={() => setParams(p => { p.set("view", "conversation"); return p; })}>查看追问与回答</button>}
     {run?.execution && <p className="fs-run-config">{executionModeName[run.execution.mode]} · {run.execution.model === "default" ? "模型按角色配置" : run.execution.model} · 本次运行已固定</p>}
     {run?.revision_target && <p className="fs-run-target">{claimLabel(run.revision_target.citation_id, session.report?.citations || {})} · 基线 v{run.revision_target.base_version}</p>}
+    <ContextUsage usage={run?.context_usage} nodeName={nodeName}/>
     <div className="fs-live-layout"><div className="fs-live-main"><div className="fs-live-feed" ref={feed} role="log" aria-label="Agent 活动流" aria-live="polite" onScroll={() => { const el = feed.current!; setFollow(el.scrollHeight - el.scrollTop - el.clientHeight < 70); }}>
       <div className="fs-live-request"><small>{actionName(run?.human_action)}</small><p>{run?.request_message || (run?.human_action === "research" ? session.question : run?.revision_target ? claimLabel(run.revision_target.citation_id, session.report?.citations || {}) : "本次请求的执行活动")}</p></div>
       {groups.map((g,i) => <article className={`fs-live-entry ${g.kind}`} key={`${g.events[0].recorded_at}:${i}`}><header><span className="fs-live-avatar">{g.kind === "calls" ? <Terminal size={17}/> : <Radio size={17}/>}</span><strong>{nodeName(g.actor)}</strong><time>{g.events[0].recorded_at ? new Date(g.events[0].recorded_at).toLocaleTimeString("zh-CN") : ""}</time></header>

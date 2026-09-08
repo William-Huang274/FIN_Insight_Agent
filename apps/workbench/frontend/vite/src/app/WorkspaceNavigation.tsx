@@ -20,6 +20,7 @@ export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse,
     <div className="fs-brand"><span className="fs-logo"><Layers size={21} /></span><strong>FinSight<small>RESEARCH WORKSPACE</small></strong>
       <button aria-label={mobile ? "关闭导航" : collapsed ? "展开侧边栏" : "收起侧边栏"} onClick={() => mobile ? drawer.current?.close() : onCollapse()}>{mobile ? <X size={17} /> : collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
     <button className="fs-create" title="新建研究" onClick={() => go("new")}><Plus size={17} /><span>新建研究</span></button>
+    <a className="fs-assistant-entry" href="/workspace/assistant"><MessageSquare size={17}/><span>通用对话</span></a>
     <nav aria-label={mobile ? "移动工作区导航" : "工作区导航"} className="fs-global-nav">{[
       { id: "home", title: "开始研究", icon: House }, { id: "studio", title: "研究配置", icon: Workflow }, { id: "all", title: "全部研究", icon: FolderOpen }, { id: "inbox", title: "待审阅", icon: ShieldCheck },
     ].map(item => <button title={item.title} aria-current={page === item.id ? "page" : undefined} key={item.id} onClick={() => go(item.id)}><item.icon size={17} /><span>{item.title}</span></button>)}</nav>

@@ -3,6 +3,7 @@
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 
 - 当前总清单：`00_current_master_checklist.md`
+- 横向研究桌面概念C（正式改造暂停、交互原型待审）：`fin_0_1_3_s3/197_horizontal_research_desk_prototype.md`
 - 三层研究图、宽幅来源阅读及基线绑定修订入口：`fin_0_1_3_s3/196_hierarchical_graph_targeted_revision.md`
 - 真实研究依据图与本地修订草稿首版：`fin_0_1_3_s3/195_live_research_graph_pilot.md`
 - 研究图概念B与数据/checkpoint实现评估：`fin_0_1_3_s3/194_research_graph_concept.md`

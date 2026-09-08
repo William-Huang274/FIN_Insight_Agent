@@ -34,7 +34,10 @@ def readable_report(report):
                     urls.extend(([provenance["source_url"]] if provenance.get("source_url") else []) + list(provenance.get("citation_urls") or []))
                 calculations.append("计算说明：" + calculation.get("rationale", "未记录"))
                 for field, label in (("arithmetic_verified", "算术校验"), ("financial_semantics_verified", "金融口径校验")):
-                    calculations.append(label + "：" + {True: "已通过", False: "未通过"}.get(calculation.get(field), "未记录"))
+                    # The calculator does not assess financial semantics; False
+                    # means not verified, not a negative research adjudication.
+                    negative = "未验证（计算工具不判断金融口径）" if field == "financial_semantics_verified" else "未通过"
+                    calculations.append(label + "：" + {True: "已通过", False: negative}.get(calculation.get(field), "未记录"))
                 calculations.append("来源绑定计算，非发行人直接披露；算术验证不等于金融口径验证。")
         if not titles:
             claim = citation.get("claim", {})

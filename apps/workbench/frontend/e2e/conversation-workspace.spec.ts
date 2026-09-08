@@ -22,3 +22,33 @@ for (const width of [1440, 1024, 390]) test(`general conversation persists and s
   await page.getByRole("button",{name:"新对话",exact:true}).click();
   await expect(page.getByRole("heading",{name:"从一个问题开始"})).toBeVisible();
 });
+
+for (const width of [1440, 1024, 390]) test(`handoff preview preserves checkpoint without starting a model at ${width}`, async ({page}) => {
+  await page.setViewportSize({width,height:950});
+  const parent="00000000-0000-4000-8000-000000000091", child="00000000-0000-4000-8000-000000000092";
+  const checkpoint="00000000-0000-4000-8000-000000000093", writes:any[]=[];
+  const snapshot={thread_id:parent,title:"收入单位更正",status:"idle",messages:[],events:[],runs:[],permissions_notice:"只读回溯"};
+  await page.route("**/api/v1/conversations**",async route=>{
+    const path=new URL(route.request().url()).pathname;
+    if(route.request().method()==="POST") {
+      writes.push({path,body:route.request().postDataJSON()});
+      await route.fulfill({json:{thread_id:child}});return;
+    }
+    await route.fulfill({json:path.endsWith("handoff-preview") ? {
+      source_thread:parent,checkpoint_id:checkpoint,title:snapshot.title,message_count:6,evidence_count:3,
+      latest_user_request:"金额用十亿美元，保留原USD与期间。",notice:"回读原始记录，不把摘要当证据。"
+    } : path.endsWith("conversations") ? [snapshot] : {...snapshot,thread_id:path.endsWith(child)?child:parent}});
+  });
+  await page.goto(`/workspace/assistant?thread=${parent}`);
+  await page.getByRole("button",{name:"保留进度并开新对话",exact:true}).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await expect(page.getByLabel("接下来要做什么、必须保留哪些约束？")).toHaveValue("金额用十亿美元，保留原USD与期间。");
+  expect(await page.getByRole("dialog").evaluate(e=>e.scrollWidth <= e.clientWidth+1)).toBeTruthy();
+  await page.getByRole("button",{name:"关闭交接",exact:true}).click();
+  await expect(page.getByRole("dialog")).not.toBeVisible();
+  await page.getByRole("button",{name:"保留进度并开新对话",exact:true}).click();
+  await page.getByRole("button",{name:"创建接续窗口",exact:true}).click();
+  await expect(page).toHaveURL(new RegExp(child));
+  expect(writes).toEqual([{path:`/api/v1/conversations/${parent}/handoff`,body:{checkpoint_id:checkpoint,note:"金额用十亿美元，保留原USD与期间。"}}]);
+  await expect(page.getByLabel("发送消息",{exact:true})).toHaveValue("请根据交接说明继续，先核对原始约束和所需依据。");
+});

@@ -23,8 +23,11 @@ def request_context_usage(events):
         measured = call.get("input_tokens")
         measured = measured if type(measured) is int and measured >= 0 else None
         capacity = MODEL_CAPACITY.get(call.get("model"))
+        characters, character_limit = call.get("input_characters"), call.get("max_input_characters")
+        near_character_limit = type(characters) is int and type(character_limit) is int and character_limit > 0 and characters >= character_limit * .8
         latest[actor] = {"actor": actor, "call_id": call_id, "model": call.get("model"),
             "input_tokens": measured, "input_characters": call.get("input_characters"),
+            "max_input_characters": character_limit, "near_character_limit": near_character_limit,
             "capacity_tokens": capacity, "capacity_source": CAPACITY_SOURCE if capacity else None,
             "capacity_as_of": CAPACITY_AS_OF if capacity else None,
             "basis": "provider_reported_input" if measured is not None else "awaiting_provider_usage",

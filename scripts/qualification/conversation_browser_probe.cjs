@@ -26,16 +26,30 @@ fs.writeFileSync(path.join(output, "case.json"), JSON.stringify(spec, null, 2));
   page.on("pageerror", e => errors.push(e.message));
   try {
     const entry = new URL("/workspace/assistant", base);
-    if (spec.thread_id) {
-      if (!/^[0-9a-f-]{36}$/.test(spec.thread_id)) throw Error("Invalid existing thread ID");
-      entry.searchParams.set("thread", spec.thread_id);
+    const existing = spec.handoff_from || spec.thread_id;
+    if (existing) {
+      if (!/^[0-9a-f-]{36}$/.test(existing) || (spec.handoff_from && spec.thread_id)) throw Error("Invalid existing thread selection");
+      entry.searchParams.set("thread", existing);
     }
     await page.goto(entry.href);
+    if (spec.handoff_from) {
+      if (!spec.handoff_note) throw Error("A reviewable handoff note is required");
+      await page.getByRole("button",{name:"保留进度并开新对话",exact:true}).click();
+      await page.getByLabel("接下来要做什么、必须保留哪些约束？",{exact:true}).fill(spec.handoff_note);
+      await page.screenshot({path:path.join(output,"handoff-prepared.png"),fullPage:true});
+      const response=page.waitForResponse(r=>r.request().method()==="POST" && new URL(r.url()).pathname===`/api/v1/conversations/${spec.handoff_from}/handoff`);
+      await page.getByRole("button",{name:"创建接续窗口",exact:true}).click();
+      const sent=await response, handoff=await sent.json();
+      fs.writeFileSync(path.join(output,"handoff.json"),JSON.stringify({status:sent.status(),...handoff},null,2));
+      if(!sent.ok())throw Error("Handoff failed, no retry");
+      await page.waitForURL(u=>u.searchParams.get("thread")===handoff.thread_id);
+    }
     for (let index=0; index<spec.turns.length; index++) {
       if (index) await page.reload(); // prove persistence, not retained component state
       await page.getByLabel("发送消息", {exact:true}).fill(spec.turns[index]);
       await page.getByRole("combobox", {name:"模型",exact:true}).selectOption(spec.model || "deepseek-v4-flash");
       await page.getByRole("combobox", {name:"权限",exact:true}).selectOption(spec.permission_mode || "request_standard");
+      if (!index && spec.attachments?.length) await page.getByLabel("添加对话资料",{exact:true}).setInputFiles(spec.attachments);
       const response = page.waitForResponse(r => r.request().method()==="POST" && /\/api\/v1\/conversations(?:\/[^/]+\/messages)?$/.test(new URL(r.url()).pathname));
       await page.getByRole("button", {name:"发送",exact:true}).click();
       const sent = await response;

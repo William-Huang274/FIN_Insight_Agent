@@ -70,3 +70,27 @@ def test_draft_upload_stores_task_copy_without_model_or_cross_thread_access(tmp_
         thread["metadata"]["surface"]="another"
         assert client.post(path,headers=headers,content=b"x").status_code == 404
         assert len(store.list(thread_id)) == 1
+
+
+def test_handoff_pins_native_checkpoint_rejects_stale_and_does_not_run_model():
+    tid, cid, child = str(uuid4()), str(uuid4()), str(uuid4()); created=[]
+    thread={"thread_id":tid,"status":"idle","metadata":{"surface":SURFACE,"graph":GRAPH,"title":"Original"}}
+    state={"checkpoint":{"checkpoint_id":cid},"tasks":[],"values":{"messages":[{"type":"human","content":"Keep annual units"}]}}
+    async def get(_):return thread
+    async def get_state(_):return state
+    async def create(**kwargs):created.append(kwargs);return {"thread_id":child}
+    sdk=SimpleNamespace(threads=SimpleNamespace(get=get,get_state=get_state,create=create))
+    app=FastAPI();app.include_router(build_conversations_router(SimpleNamespace(sdk=sdk)))
+    with TestClient(app) as client:
+        route=f"/conversations/{tid}/handoff"; headers={"X-Workbench-Request":"1"}
+        preview=client.get(route+"-preview").json()
+        assert preview["checkpoint_id"]==cid and preview["message_count"]==1
+        body={"checkpoint_id":cid,"note":"Continue and retain annual units"}
+        assert client.post(route,json=body).status_code==403
+        assert client.post(route,headers=headers,json={**body,"checkpoint_id":str(uuid4())}).status_code==409
+        state["tasks"]=[{"interrupts":[{"id":"pending"}]}]
+        assert client.post(route,headers=headers,json=body).status_code==409
+        state["tasks"]=[]
+        assert client.post(route,headers=headers,json=body).json()=={"thread_id":child,"model_calls":0}
+        assert created[0]["metadata"]["handoff"]=={"source_thread":tid,**body}
+        assert "messages" not in created[0]  # no second transcript or summary

@@ -2,13 +2,15 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { ArrowUp, Layers, MessageSquare, Paperclip, Plus, Square, X } from "lucide-react";
+import { ArrowUp, GitBranch, Layers, Link, MessageSquare, Paperclip, Plus, Square, X } from "lucide-react";
 import { ContextUsage } from "./ContextUsage";
 import type { Event, Session } from "../api/reportSessions";
 import "./research-session.css";
 import "./workspace-design.css";
 
-type Conversation = { thread_id: string; title: string; status: string; messages: {id: string; role: string; content: string}[]; events: Event[]; runs: NonNullable<Session["runs"]>; permissions_notice: string; attachments?: {document_id:string;name:string}[] };
+type Handoff = {source_thread:string;checkpoint_id:string;note:string};
+type HandoffPreview = Handoff & {title:string;message_count:number;evidence_count:number;latest_user_request:string;notice:string};
+type Conversation = { thread_id: string; title: string; status: string; messages: {id: string; role: string; content: string}[]; events: Event[]; runs: NonNullable<Session["runs"]>; permissions_notice: string; attachments?: {document_id:string;name:string}[];handoff?:Handoff };
 async function request<T>(path: string, body?: unknown): Promise<T> {
   const response = await fetch(`/api/v1/conversations${path}`, { method: body === undefined ? "GET" : "POST", headers: {"Content-Type":"application/json","X-Workbench-Request":"1"}, ...(body === undefined ? {} : {body:JSON.stringify(body)}) });
   const result = await response.json();
@@ -25,6 +27,9 @@ export default function ConversationWorkspace() {
   const [navOpen, setNavOpen] = useState(false);
   const [files, setFiles] = useState<File[]>([]);
   const uploadInput = useRef<HTMLInputElement>(null);
+  const handoffDialog = useRef<HTMLDialogElement>(null);
+  const [handoff, setHandoff] = useState<HandoffPreview | null>(null), [handoffNote, setHandoffNote] = useState("");
+  const [copied, setCopied] = useState(false);
   const [draftMessages, setDraftMessages] = useState<Record<string, string>>({});
   const reading = useRef<HTMLDivElement>(null), followBottom = useRef(true);
   useEffect(() => { followBottom.current = true; }, [id]);
@@ -57,6 +62,7 @@ export default function ConversationWorkspace() {
   return <div className={`rs-shell fs-workspace fs-assistant-shell ${navOpen ? "nav-open" : ""}`}><aside className="fs-assistant-nav"><a className="fs-brand" href="/workspace"><Layers size={24}/><strong>FinSight</strong></a><button className="fs-primary" disabled={sending} onClick={() => { setParams({}); setText(""); setFiles([]); setNavOpen(false); }}><Plus size={17}/>新对话</button><a href="/workspace">研究工作台 →</a><nav aria-label="已保存对话">{threads.map(t => <button key={t.thread_id} aria-current={id===t.thread_id ? "page":undefined} disabled={sending} onClick={() => {setParams({thread:t.thread_id}); setFiles([]); setNavOpen(false);}}><MessageSquare size={15}/><span>{t.title || "未命名对话"}</span></button>)}</nav></aside>
     <main className="fs-assistant-main"><header><button className="fs-assistant-menu" aria-expanded={navOpen} onClick={()=>setNavOpen(!navOpen)}>对话列表</button><div><small>FINSIGHT · ASSISTANT</small><h1>{session?.title || "从一个问题开始"}</h1></div><a href="/workspace">返回研究</a></header>
       <div className="fs-assistant-messages" aria-live="polite" ref={reading} onScroll={e=>{const el=e.currentTarget;followBottom.current=el.scrollHeight-el.scrollTop-el.clientHeight<120;}}>{!id && <p>日常问答、资料阅读与数据核对，可以在同一对话中继续。复杂投研仍可从研究工作台启动。</p>}
+        {session?.handoff && <aside className="fs-assistant-handoff"><strong>从已保存的对话接续</strong><p>{session.handoff.note}</p><a href={`/workspace/assistant?thread=${session.handoff.source_thread}`}>查看原对话与依据 →</a><small>按需回读交接时的固定版本；旧回答不自动作为已核实事实。</small></aside>}
         {session?.messages.map((message, i) => <article className={`fs-assistant-message ${message.role}`} key={message.id || i}><small>{message.role==="user" ? "你" : "FinSight"}</small><ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown></article>)}
         {active && Object.entries(draftMessages).filter(([messageId]) => !session?.messages.some(m=>m.id===messageId)).map(([messageId,content])=><article className="fs-assistant-message assistant" key={messageId}><small>FinSight · 正在输出</small><ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown></article>)}
         {active && <section className="fs-assistant-live" aria-label="实时助理活动"><strong>正在处理这一轮</strong>{live.filter(e => e.kind==="stage" && e.objective).map((e,i) => <ReactMarkdown key={i} remarkPlugins={[remarkGfm]}>{e.objective}</ReactMarkdown>)}<details><summary>模型与工具活动</summary>{live.filter(e=>e.kind!=="stage").map((e,i)=><p key={i}>{e.tool || e.model || "助理"} · {e.event==="started" ? "已发起" : e.status || "已返回"}</p>)}</details></section>}
@@ -64,6 +70,7 @@ export default function ConversationWorkspace() {
         {!!session?.events.length && !active && <details><summary>本对话已保存活动</summary>{session.events.map((e,i)=><div key={i}>{e.objective ? <ReactMarkdown remarkPlugins={[remarkGfm]}>{e.objective}</ReactMarkdown> : <p>{e.tool || e.model || "助理"} · {e.event==="started" ? "已发起" : e.status || "已返回"}</p>}</div>)}</details>}
       </div>
       <footer className="fs-assistant-compose">{session?.runs[0] && <ContextUsage usage={session.runs[0].context_usage} nodeName={() => "当前助理"}/>}
+        {id && <div className="fs-assistant-memory-actions"><button disabled={sending || !!active} onClick={async()=>{try {const value=await request<HandoffPreview>(`/${id}/handoff-preview`);if(current.current!==id)return;setHandoff(value);setHandoffNote(value.latest_user_request);handoffDialog.current?.showModal();}catch(e){setError((e as Error).message);}}}><GitBranch size={15}/>保留进度并开新对话</button><button onClick={async()=>{try{await navigator.clipboard.writeText(`${location.origin}/workspace/assistant?thread=${id}`);setCopied(true);window.setTimeout(()=>setCopied(false),2000);}catch{setError("无法访问剪贴板，请复制浏览器地址栏中的对话链接。");}}}><Link size={15}/>{copied?"链接已复制":"复制对话链接"}</button></div>}
         {error && <p role="alert">{error}</p>}
         {!!session?.attachments?.length && <details><summary>本对话资料 · {session.attachments.length} 份</summary>{session.attachments.map(f=><p key={f.document_id}>{f.name}</p>)}</details>}
         {!!files.length && <div>{files.map((file,i)=><button key={i} disabled={sending} onClick={()=>setFiles(rows=>rows.filter(f=>f!==file))}>{file.name} <X size={12}/></button>)}</div>}
@@ -73,5 +80,5 @@ export default function ConversationWorkspace() {
         <div className="fs-assistant-controls"><label>模型 <select value={model} onChange={e=>setModel(e.target.value)} disabled={sending || !!active}><option value="deepseek-v4-flash">DeepSeek V4 Flash</option><option value="deepseek-v4-pro">DeepSeek V4 Pro</option></select></label><label>权限 <select value={permission} onChange={e=>setPermission(e.target.value)} disabled={sending || !!active}><option value="request_standard">请求标准</option><option value="approve_for_me">代我批准</option><option value="full_access">完全访问权限</option></select></label>{active ? <button onClick={async()=>{try {await request(`/${id}/stop`,{}); await refresh();} catch(e){setError((e as Error).message);}}}><Square size={16}/>停止</button> : <button className="fs-primary" disabled={!text.trim() || sending} onClick={send}><ArrowUp size={17}/>{sending ? "发送中" : "发送"}</button>}</div>
         <small>{session?.permissions_notice || "当前工具范围：对话资料读取与精确计算。选择权限模式不会自动开放用户文件、终端或服务器访问。"}</small>
       </footer>
-    </main></div>;
+    </main><dialog className="fs-handoff-dialog" ref={handoffDialog} aria-labelledby="handoff-title"><header><h2 id="handoff-title">在新窗口继续，保留原始依据</h2><button aria-label="关闭交接" onClick={()=>handoffDialog.current?.close()}><X size={18}/></button></header>{handoff && <><p>{handoff.title}</p><p>固定版本包含 {handoff.message_count} 条公开消息、{handoff.evidence_count} 条已读取凭证。</p><label htmlFor="handoff-note">接下来要做什么、必须保留哪些约束？</label><textarea id="handoff-note" rows={5} maxLength={2000} value={handoffNote} onChange={e=>setHandoffNote(e.target.value)}/><p>{handoff.notice}</p><small>这一步不调用模型；原窗口和失败记录保留。链接只用于导航，不授予其他用户访问权限。</small><button className="fs-primary" disabled={sending || !handoffNote.trim()} onClick={async()=>{setSending(true);try{const result=await request<{thread_id:string}>(`/${handoff.source_thread}/handoff`,{checkpoint_id:handoff.checkpoint_id,note:handoffNote});handoffDialog.current?.close();setText("请根据交接说明继续，先核对原始约束和所需依据。");setFiles([]);setParams({thread:result.thread_id});}catch(e){setError((e as Error).message);handoffDialog.current?.close();}finally{setSending(false);}}}>创建接续窗口</button></>}</dialog></div>;
 }

@@ -60,6 +60,9 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         observed = {}
         for message in runtime.state.get("messages", []):
             if isinstance(message, ToolMessage) and isinstance(message.artifact, dict):
+                if message.name == "read_handoff_evidence" and message.status != "error":
+                    observed.update(message.artifact.get("source_items", {}))
+                    continue
                 tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document"}.get(message.name, message.name)
                 observed.update(source_items_from_tool(tool_name, message.artifact))
         try:

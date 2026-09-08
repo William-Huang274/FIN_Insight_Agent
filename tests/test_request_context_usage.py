@@ -29,3 +29,13 @@ def test_late_completion_cannot_replace_newer_pending_request():
     ]
     latest = request_context_usage(events)["nodes"][0]
     assert latest["call_id"] == "new" and latest["input_tokens"] is None
+
+
+def test_host_character_limit_is_independent_of_provider_token_capacity():
+    latest = request_context_usage([{
+        "kind": "model", "event": "started", "actor": "conversation", "call_id": "1",
+        "model": "deepseek-v4-flash", "input_characters": 64000, "max_input_characters": 80000,
+    }])["nodes"][0]
+    assert latest["near_character_limit"] and not latest["near_capacity"]
+    assert latest["input_tokens"] is None
+    assert latest["max_input_characters"] == 80000

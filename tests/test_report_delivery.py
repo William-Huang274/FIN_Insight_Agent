@@ -130,6 +130,19 @@ def test_calculation_and_unsourced_boundary_remain_readable_in_delivery():
     assert report == original
 
 
+def test_unassessed_financial_semantics_is_not_a_failed_validation():
+    report = sample()
+    report["citations"]["P01:C1"]["sources"][0]["calculation"] = {
+        "expression": "a / b", "value_decimal": "1", "result_unit": "ratio",
+        "arithmetic_verified": True, "financial_semantics_verified": False,
+        "operands": {},
+    }
+    _, references = readable_report(report)
+    text = "\n".join(references)
+    assert "未验证（计算工具不判断金融口径）" in text
+    assert "金融口径校验：未通过" not in text
+
+
 def test_chart_cannot_invent_values_or_bind_search_preview():
     spec = {"title": "不可伪造图表", "unit": "USD", "points": [{"label": x, "source": {"source_id": x, "literal": "100", "quote": "100"}} for x in ["a", "b"]],
         "interpretation": "不允许拿检索预览当作实际观察来源。"}

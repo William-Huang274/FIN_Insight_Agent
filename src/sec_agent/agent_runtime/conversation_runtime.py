@@ -42,9 +42,19 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
     store = TaskAttachmentStore(Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"])) if os.environ.get("FINSIGHT_TASK_ATTACHMENTS_ROOT") else None
     grants = conversation_tools(thread_id=thread_id, attachment_store=store,
         fact_mart=Path(settings["conversation_fact_mart"]) if settings.get("conversation_fact_mart") else None)
+    # The in-process native SDK resolves only host-owned metadata. A deep link
+    # in model text cannot select a thread or grant access.
+    from langgraph_sdk import get_client
+    from .conversation_handoff import handoff_tools
+    sdk = get_client(api_key=None)
     audit = CaseModelAudit(actor="conversation", profile=profile, basis=basis, public_sink=public, private_sink=private, stream_public=True)
     model = case_chat_model(profile, basis, SimpleNamespace(base_url="https://api.deepseek.com"), SecretStr(os.environ["DEEPSEEK_API_KEY"]), streaming=True)
     try:
+        thread = await sdk.threads.get(thread_id)
+        metadata = thread.get("metadata", {})
+        if metadata.get("handoff"):
+            grants.extend(handoff_tools(reference=metadata["handoff"], sdk=sdk,
+                                       owner_id=metadata.get("owner_id", "local-pilot")))
         yield build_conversation_agent(model=model, grants=grants,
             permission_mode=ids.get("permission_mode", "request_standard"), checkpointer=None,
             middleware=[audit], **specification["limits"])
@@ -55,3 +65,5 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
                 "error_type": type(exc).__name__, "objective": "本轮尚未完成；原生checkpoint和已产生输出保留。请检查工具、权限或上下文容量后继续。",
                 "recorded_at": datetime.now(timezone.utc).isoformat(), "run_id": run_id})
         raise
+    finally:
+        await sdk.aclose()

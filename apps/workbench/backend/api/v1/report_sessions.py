@@ -35,7 +35,7 @@ PUBLIC_EVENT_FIELDS = frozenset({"kind", "actor", "event", "status", "call_id", 
     "model", "thinking", "reasoning_effort", "elapsed_ms", "input_tokens", "output_tokens", "total_tokens",
     "cache_hit_tokens", "cache_miss_tokens", "reasoning_tokens", "usage_reported", "error_type", "http_status_code",
     "max_output_tokens", "valid_tool_call_count", "invalid_tool_call_count", "success_scope", "run_id",
-    "task_id", "objective", "responsible_author_count", "correction_round", "paper_id", "input_characters", "provider_call_attempted"})
+    "task_id", "objective", "responsible_author_count", "correction_round", "paper_id", "input_characters", "max_input_characters", "provider_call_attempted"})
 
 
 def public_run_usage(audit_root, thread_id, run_id):

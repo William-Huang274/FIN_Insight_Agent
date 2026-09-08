@@ -87,3 +87,13 @@
 .fs-assistant-menu{display:none}@media(max-width:760px){.fs-assistant-menu{display:block}.fs-assistant-shell.nav-open .fs-assistant-nav{display:flex;position:fixed;z-index:20;left:0;top:76px;bottom:0;width:260px;box-shadow:10px 0 40px #25335a30}.fs-assistant-main>header{gap:10px}.fs-assistant-main>header>div{min-width:0}.fs-assistant-main h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}}
 
 .fs-assistant-shell a{color:var(--accent);text-decoration:none}.fs-assistant-nav .fs-brand{display:flex;gap:10px;align-items:center;font-size:22px;margin-bottom:8px}.fs-assistant-nav nav button{font:inherit}.fs-assistant-nav nav button span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.fs-assistant-main>header h1{max-width:940px;font-size:20px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.fs-assistant-main>header>a{white-space:nowrap}.fs-assistant-message{font-size:16px;line-height:1.85}.fs-assistant-message table{border-collapse:collapse;width:100%;margin:16px 0}.fs-assistant-message :is(td,th){border-bottom:1px solid var(--line);padding:10px;text-align:left}.fs-assistant-compose small{display:block;margin-top:10px;color:var(--muted)}
+.fs-assistant-memory-actions { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:8px; }
+.fs-assistant-memory-actions button { display:inline-flex; align-items:center; gap:6px; }
+.fs-assistant-handoff { border:1px solid var(--fs-border, #dfe3ef); border-radius:12px; padding:18px; margin-bottom:24px; background:var(--fs-surface, #fff); }
+.fs-assistant-handoff small { display:block; margin-top:8px; }
+.fs-handoff-dialog { width:min(640px, 90vw); border:1px solid #dfe3ef; border-radius:16px; padding:24px; color:#222b3d; }
+.fs-handoff-dialog::backdrop { background:rgba(18,25,43,.4); backdrop-filter:blur(3px); }
+.fs-handoff-dialog header { display:flex; justify-content:space-between; align-items:center; gap:16px; }
+.fs-handoff-dialog h2 { font-size:21px; }
+.fs-handoff-dialog textarea { display:block; box-sizing:border-box; width:100%; margin:10px 0; padding:12px; font:inherit; border:1px solid #ccd2e6; border-radius:8px; }
+.fs-handoff-dialog small { display:block; line-height:1.6; margin:16px 0; }

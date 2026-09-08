@@ -270,6 +270,7 @@ class CaseModelAudit(AgentMiddleware):
             "provider": "deepseek", "model": self.profile.model, "thinking": self.profile.thinking,
             "reasoning_effort": self.profile.reasoning_effort if self.profile.thinking == "enabled" else None,
             "input_characters": size,
+            "max_input_characters": self.basis.max_input_characters,
             "input_character_basis": "unprojected_messages_and_tool_schemas_not_provider_tokens",
             "transport_attempt_limit": 1, "provider_call_attempted": True,
             "execution_source": "provider_model", "recorded_at": datetime.now(timezone.utc).isoformat()}

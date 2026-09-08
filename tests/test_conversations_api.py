@@ -47,3 +47,26 @@ def test_new_and_followup_use_native_runs_and_reject_cross_surface_or_busy():
         thread["metadata"]["surface"] = "other_surface"
         assert client.get(f"/api/v1/conversations/{thread_id}").status_code == 404
         assert len([w for w in writes if w[0]=="run"]) == 2
+
+
+def test_draft_upload_stores_task_copy_without_model_or_cross_thread_access(tmp_path):
+    from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
+    store = TaskAttachmentStore(tmp_path)
+    thread_id = str(uuid4())
+    thread = {"thread_id":thread_id, "status":"idle", "metadata":{"surface":SURFACE,"graph":GRAPH}}
+    async def create(**kwargs): return thread
+    async def get(_): return thread
+    sdk = SimpleNamespace(threads=SimpleNamespace(create=create,get=get))  # no runs capability
+    app = FastAPI();app.include_router(build_conversations_router(SimpleNamespace(sdk=sdk,attachment_store=store)))
+    with TestClient(app) as client:
+        headers={"X-Workbench-Request":"1", "X-Filename":"notes.md"}
+        assert client.post("/conversations/drafts", headers=headers, json={"title":"Read notes"}).json()["model_calls"] == 0
+        path=f"/conversations/{thread_id}/attachments"
+        response=client.post(path, headers=headers,content=b"# Task\nA factual note.")
+        assert response.status_code == 200 and len(store.list(thread_id)) == 1
+        assert store.list(str(uuid4())) == []
+        thread["status"]="busy"
+        assert client.post(path,headers=headers,content=b"x").status_code == 409
+        thread["metadata"]["surface"]="another"
+        assert client.post(path,headers=headers,content=b"x").status_code == 404
+        assert len(store.list(thread_id)) == 1

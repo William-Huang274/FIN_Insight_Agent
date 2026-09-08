@@ -1,11 +1,13 @@
 """Local general-conversation BFF. Native server owns runs and checkpoints."""
 from typing import Literal
 from uuid import UUID
+from urllib.parse import unquote
 import json
 import re
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse
+from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, ConfigDict, Field
 
 from .report_sessions import public_run_usage, public_cost_estimate, public_event
@@ -20,6 +22,11 @@ class ConversationMessage(BaseModel):
     message: str = Field(min_length=1, max_length=16000)
     model: Literal["deepseek-v4-flash", "deepseek-v4-pro"] = "deepseek-v4-flash"
     permission_mode: Literal["request_standard", "approve_for_me", "full_access"] = "request_standard"
+
+
+class ConversationDraft(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+    title: str = Field(default="新对话", min_length=1, max_length=80)
 
 
 def public_messages(state):
@@ -61,6 +68,8 @@ def build_conversations_router(service):
             raise HTTPException(404, "对话不存在")
         return thread
     async def invoke(thread_id, body):
+        if not service.research_profile:
+            raise HTTPException(503, "本部署未启用模型运行")
         return await service.sdk.runs.create(str(thread_id), GRAPH,
             input={"messages": [{"role": "user", "content": body.message}]},
             config={"configurable": {"conversation_model": body.model, "permission_mode": body.permission_mode}},
@@ -80,6 +89,32 @@ def build_conversations_router(service):
         thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.message[:80]})
         run = await invoke(thread["thread_id"], body)
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"]}
+    @router.post("/drafts")
+    async def draft(body: ConversationDraft, request: Request):
+        browser_write(request)
+        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.title})
+        return {"thread_id": thread["thread_id"], "model_calls": 0}
+    @router.post("/{thread_id}/attachments")
+    async def upload(thread_id: UUID, request: Request):
+        browser_write(request)
+        thread = await owned(thread_id)
+        if thread.get("status") == "busy":
+            raise HTTPException(409, "请等待本轮完成后再补充资料")
+        if service.attachment_store is None:
+            raise HTTPException(503, "本部署未配置对话资料存储")
+        from sec_agent.research_foundation.task_attachments import MAX_BYTES
+        body = bytearray()
+        async for chunk in request.stream():
+            if len(body) + len(chunk) > MAX_BYTES:
+                raise HTTPException(413, "单文件上限20MiB")
+            body.extend(chunk)
+        try:
+            return await run_in_threadpool(service.attachment_store.add, thread_id,
+                unquote(request.headers.get("x-filename", "")), bytes(body))
+        except (ValueError, UnicodeError) as exc:
+            raise HTTPException(422, str(exc)) from None
+        except Exception:
+            raise HTTPException(422, "文件解析失败；未启动模型，请检查格式或文件内容") from None
     @router.post("/{thread_id}/messages")
     async def message(thread_id: UUID, body: ConversationMessage, request: Request):
         browser_write(request)
@@ -104,6 +139,7 @@ def build_conversations_router(service):
                 "usage": usage, "context_usage": request_context_usage(activity), "cost_estimate": public_cost_estimate(activity)})
         return {"thread_id": str(thread_id), "title": thread.get("metadata", {}).get("title"), "status": thread.get("status"),
             "messages": public_messages(state), "events": events, "runs": public_runs,
+            "attachments": service.attachment_store.list(thread_id) if getattr(service, "attachment_store", None) else [],
             "permissions_notice": "当前仅提供本对话资料/已配置财务快照的读取和计算；三档模式均不授权修改用户原文件。OS sandbox和可写工具尚未开放。"}
     @router.post("/{thread_id}/stop")
     async def stop(thread_id: UUID, request: Request):

@@ -6,6 +6,8 @@
 
 ## 当前交付与停止点
 
+2026-09-08最新Owner纠正：实际打开前端后认为不好用，明确页面杂乱、阅读/来源/追问切换、研究入口/进度三项均需重想；要求先看概念图/概设详设，认可后才改正式前端。本轮仅交[交互概设](../product/UX_WORKBENCH_CONCEPT_20260908.zh-CN.md)、详设与本地可点击原型，正式应用代码不改、不推GitHub草稿、不部署。详见[S3/192](../worklog/fin_0_1_3_s3/192_workbench_ux_concept_review.md)。工程检查通过不得表述为易用性获认可。此前引用修复PR#4已合main3cb0e3f4，远端只保留main和两个历史分支；本地设计分支不改变该公开状态。Hermes仍后置。
+
 2026-09-08继续补丁：Owner再次要求继续，按剩余质量问题推进，Hermes仍后置。PR#3已合入main58f84943并清理六个保全的远端codex引用。新PR#4修裸来源ID漏绑定，真实旧MU答案零模型回放由2操作数恢复为原CALC＋2操作数，原回答未改；100定向/3宽度通过。使用现成MarkdownIt/remark薄适配，无新parser平台或语义规则。最终CI、部署与临时分支收口见[S3/191](../worklog/fin_0_1_3_s3/191_bare_citation_binding_followup.md)。Owner未接受，摘要disabled，新问答金融语义意见未自动关闭。
 
 Owner 授权原五项＋新增需求连续实施、收齐 GitHub 展示后，**在任何 Hermes 评估之前停下供逐项审阅**。不重开步骤一、不迁移 runtime、不把文档/报告修订当产品升级。最新逐项完成证据见 [Owner 审阅清单](../product/FIN_0_1_3_OWNER_REVIEW_20260908.zh-CN.md)，以下旧时点仅供历史追溯。

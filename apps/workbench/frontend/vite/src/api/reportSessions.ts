@@ -40,6 +40,20 @@ export type Source = {
   unit?: string;
   next_offset?: number;
   notice?: string;
+  arithmetic_verified?: boolean;
+  financial_semantics_verified?: boolean;
+  calculation?: {
+    expression: string;
+    value_decimal?: string;
+    result_unit?: string;
+    rationale?: string;
+    arithmetic_verified?: boolean;
+    financial_semantics_verified?: boolean;
+    operand_source_aliases?: Record<string, string>;
+    operands: Record<string, { source_id?: string; value_decimal?: string; unit?: string;
+      ticker?: string; metric_id?: string; period_start?: string; period_end?: string; authority?: string;
+      quote?: string; literal?: string; source_provenance?: { ticker?: string; fiscal_period?: string; unit?: string } }>;
+  };
 };
 export type Citation = {
   claim: {

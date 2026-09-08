@@ -2,6 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { remarkBoundCitations } from "./remarkBoundCitations";
+import { remarkReportHeadings } from "./remarkReportHeadings";
+import { sourceCalculation } from "./sourceCalculation";
 import { ReportVersions } from "./ReportVersions";
 import type { ReportSnapshot } from "../api/reportSessions";
 import {
@@ -101,15 +103,17 @@ function Markdown({
   text,
   citations = {},
   onCitation,
+  reportHeadings = false,
 }: {
   text: string;
   citations?: Record<string, Citation>;
   onCitation: (key: string, citation: Citation) => void;
+  reportHeadings?: boolean;
 }) {
   const keys = Object.keys(citations);
   return (
     <ReactMarkdown
-      remarkPlugins={[remarkGfm, [remarkBoundCitations, { ids: keys }]]}
+      remarkPlugins={[remarkGfm, [remarkBoundCitations, { ids: keys }], [remarkReportHeadings, { enabled: reportHeadings }]]}
       skipHtml
       components={{
         a: ({ href, children }) => {
@@ -171,7 +175,19 @@ export function ResearchSession() {
   const [error, setError] = useState("");
   const [tab, setTab] = useState<"report" | "conversation">("report");
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [readerFocus, setReaderFocus] = useState(false);
+  const [taskDetails, setTaskDetails] = useState(false);
+  const [outline, setOutline] = useState<{ id: string; label: string }[]>([]);
+  const [activeHeading, setActiveHeading] = useState("");
+  const reportArticle = useRef<HTMLElement>(null);
+  const documentWindow = useRef<HTMLDivElement>(null);
+  const reportScroll = useRef(0);
+  const sourceReturnFocus = useRef<HTMLElement | null>(null);
+  const sourceReturnLocation = useRef<{ area: string; index: number } | null>(null);
+  const inspectorClose = useRef<HTMLButtonElement>(null);
+  const sourceRequest = useRef(0);
+  const [sourceLoading, setSourceLoading] = useState(false);
+  const [sourceError, setSourceError] = useState("");
+  const [sourceHistory, setSourceHistory] = useState<Source[]>([]);
   const [inspector, setInspector] = useState<"review" | "activity" | "source">(
     "review",
   );
@@ -181,15 +197,46 @@ export function ResearchSession() {
     checkpoint?: string;
   } | null>(null);
   const [source, setSource] = useState<Source | null>(null);
+  const calculation = useMemo(() => sourceCalculation(source), [source]);
   const sourceWindow = useRef<HTMLDivElement>(null);
-  useEffect(() => { setHistoricalReport(null); setSelected(null); setSource(null); }, [id]);
+  useEffect(() => { setHistoricalReport(null); setSelected(null); setSource(null); setSourceHistory([]);
+    setInspectorOpen(false); setTaskDetails(false); reportScroll.current = 0; sourceRequest.current += 1;
+  }, [id]);
+  useEffect(() => {
+    setOutline(Array.from(reportArticle.current?.querySelectorAll<HTMLElement>("[id^='report-section-']") || [])
+      .map(h => ({ id: h.id, label: h.textContent || "章节" })));
+    setActiveHeading("");
+  }, [displayedReport?.narrative_markdown]);
+  useEffect(() => {
+    reportScroll.current = 0;
+    if (documentWindow.current) documentWindow.current.scrollTop = 0;
+    setSelected(null); setSource(null); setSourceHistory([]); setSourceError(""); setSourceLoading(false);
+    setInspectorOpen(false); sourceRequest.current += 1;
+  }, [id, historicalReport?.checkpoint_id, session?.report_version]);
+  useEffect(() => { if (tab === "report" && documentWindow.current) documentWindow.current.scrollTop = reportScroll.current; }, [tab]);
+  const closeInspector = useCallback(() => {
+    setInspectorOpen(false); sourceRequest.current += 1; setSourceLoading(false);
+    requestAnimationFrame(() => {
+      const origin = sourceReturnFocus.current;
+      const location = sourceReturnLocation.current;
+      const target = origin?.isConnected ? origin : location
+        ? document.querySelectorAll<HTMLElement>(`${location.area} .rs-cite`)[location.index] : null;
+      target?.focus({ preventScroll: true });
+      if (tab === "report" && documentWindow.current) documentWindow.current.scrollTop = reportScroll.current;
+    });
+  }, [tab]);
+  useEffect(() => {
+    if (!inspectorOpen) return;
+    inspectorClose.current?.focus({ preventScroll: true });
+    const escape = (event: KeyboardEvent) => { if (event.key === "Escape") closeInspector(); };
+    window.addEventListener("keydown", escape);
+    return () => window.removeEventListener("keydown", escape);
+  }, [inspectorOpen, closeInspector]);
   const conversationEnd = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (tab === "conversation") conversationEnd.current?.scrollIntoView({ block: "end" });
   }, [id, tab, session?.conversation?.length]);
-  useEffect(() => {
-    sourceWindow.current?.scrollIntoView({ block: "nearest" });
-  }, [source]);
+  useEffect(() => { if (source) sourceWindow.current?.scrollIntoView({ block: "nearest" }); }, [source]);
   const [events, setEvents] = useState<Event[]>([]);
   const [connected, setConnected] = useState(false);
   const abort = useRef<AbortController | null>(null);
@@ -401,14 +448,31 @@ export function ResearchSession() {
     }
   };
   const cite = (key: string, citation: Citation, checkpoint?: string) => {
+    sourceReturnFocus.current = document.activeElement as HTMLElement;
+    const area = sourceReturnFocus.current.closest(".rs-report-pane") ? ".rs-report-pane" : ".rs-conversation";
+    sourceReturnLocation.current = { area, index: Array.from(document.querySelectorAll(`${area} .rs-cite`)).indexOf(sourceReturnFocus.current) };
+    if (tab === "report") reportScroll.current = documentWindow.current?.scrollTop || 0;
+    sourceRequest.current += 1;
     setSelected({ key, citation, checkpoint });
     setSource(null);
+    setSourceHistory([]); setSourceError(""); setSourceLoading(false);
     setInspector("source");
     setInspectorOpen(true);
   };
+  const readSource = async (sourceId: string, offset = 0, keepHistory = false) => {
+    const request = ++sourceRequest.current;
+    setSourceLoading(true); setSourceError("");
+    try {
+      const result = await sessionsApi.source(id, sourceId, offset, selected?.checkpoint);
+      if (request !== sourceRequest.current) return;
+      setSourceHistory(history => keepHistory && source ? [...history, source] : []);
+      setSource(result);
+    } catch (e) { if (request === sourceRequest.current) setSourceError((e as Error).message); }
+    finally { if (request === sourceRequest.current) setSourceLoading(false); }
+  };
   const findings = session?.report_review?.findings || [];
   return (
-    <div className="rs-shell">
+    <div className={`rs-shell ${inspectorOpen ? "rs-has-inspector" : ""}`}>
       <aside className="rs-sidebar">
         <a className="rs-brand" href="/workspace/session">
           <span className="rs-brand-mark">
@@ -448,7 +512,7 @@ export function ResearchSession() {
                     ? "运行中"
                     : s.status === "interrupted"
                       ? "等待审阅"
-                      : "已保存"}
+                    : "已保存"} · {s.thread_id.slice(-6)}
                 </small>
               </span>
             </button>
@@ -464,14 +528,17 @@ export function ResearchSession() {
       <main className="rs-main">
         <header className="rs-top">
           <div className="rs-breadcrumb">
-            研究 / <b>Dell Technologies</b>
+            <a href="/workspace/session">研究列表</a> / <b>研究工作台</b>
           </div>
           <span className="rs-local">
             <span /> LOCAL PILOT
           </span>
-          <button onClick={() => setInspectorOpen(v => !v)} aria-expanded={inspectorOpen}>审查、来源与运行</button>
+          <div className="rs-detail-actions">
+            <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); }}>审查意见</button>
+            <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("activity"); setInspectorOpen(true); }}>运行与费用</button>
+          </div>
         </header>
-        {!session || creating ? (
+        {id && !session && !creating ? <section className="rs-empty" role="status"><LoaderCircle className="rs-spin" /><h1>正在读取已保存研究…</h1><p>读取报告不会发起新的模型调用。</p></section> : !session || creating ? (
           <section className="rs-empty">
             <span className="rs-eyebrow">从一份研究，到一个可追问的判断</span>
             <h1>让结论经得起追问。</h1>
@@ -532,11 +599,11 @@ export function ResearchSession() {
           <>
             <section className="rs-heading">
               <div>
-                <span className="rs-eyebrow">DELL / AI INFRASTRUCTURE</span>
-                <h1>{session.question ? "增长，是否正在兑现？" : "需求如何变成利润与现金？"}</h1>
+                <h1>{session.title || sessions.find(s => s.thread_id === id)?.title || "研究报告"}</h1>
                 <p>
-                  {session.question ? "新问题 · 完整研究" : "已有报告审阅"} <span>·</span> 信息截止 {session.research_as_of?.slice(0, 10) || "2026-09-02"} <span>·</span>{" "}
-                  报告版本 {session.report_version || "—"}
+                  信息截止 {session.research_as_of?.slice(0, 10) || "未提供"} <span>·</span>{" "}
+                  {historicalReport ? `正在阅读历史 v${historicalReport.report_version}` : `当前报告 v${session.report_version || "—"}`}
+                  <button className="rs-task-toggle" aria-expanded={taskDetails} onClick={() => setTaskDetails(v => !v)}>任务说明与资料</button>
                 </p>
               </div>
               <span
@@ -556,6 +623,7 @@ export function ResearchSession() {
                     : phaseName[session.phase || ""] || "正在载入"}
               </span>
             </section>
+            <div className="rs-task-details" hidden={!taskDetails && !!session.report}>
             {session.question && <div className="rs-task-question">{session.question}</div>}
             {uploadStatus && <div className="rs-report-notice">{uploadStatus}</div>}
             {!busy && (session.is_draft || (session.case_profile === "dell_growth_quality" && session.can_respond)) &&
@@ -599,6 +667,11 @@ export function ResearchSession() {
                 </details>}
               </details>
             )}
+            </div>
+            {session.report && session.research_stop_reason && !taskDetails && <div className="rs-report-notice">
+              <ShieldCheck size={16} /><span>本次研究仍有未解决问题，已保存报告供审阅，不会自动重跑。</span>
+              <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); }}>查看未决审查</button>
+            </div>}
             <div className="rs-tabs">
               <div>
                 <button
@@ -618,11 +691,18 @@ export function ResearchSession() {
               <span>
                 {Object.keys(displayedReport?.citations || {}).length}{" "}
                 条引用可展开
-                <button className="rs-focus-reader" onClick={() => setReaderFocus(v => !v)}>{readerFocus ? "返回对话与报告" : "展开报告阅读"}</button>
               </span>
             </div>
-            <div className={`rs-content-shell ${readerFocus ? "rs-reader-focus" : ""}`}>
-            <div className={`rs-document rs-active-${tab}`}>
+            <div className="rs-content-shell" data-tab={tab}>
+            {tab === "report" && !!outline.length && <nav className="rs-outline" aria-label="报告目录">
+              <label htmlFor="report-section-picker">报告目录</label>
+              <select id="report-section-picker" value={activeHeading} onChange={e => { setActiveHeading(e.target.value); document.getElementById(e.target.value)?.scrollIntoView({ block: "start" }); }}>
+                <option value="">选择章节</option>{outline.map(h => <option key={h.id} value={h.id}>{h.label}</option>)}
+              </select>
+              <div>{outline.map(h => <button key={h.id} aria-current={activeHeading === h.id ? "location" : undefined}
+                onClick={() => { setActiveHeading(h.id); document.getElementById(h.id)?.scrollIntoView({ block: "start" }); }}>{h.label}</button>)}</div>
+            </nav>}
+            <div className={`rs-document rs-active-${tab}`} ref={documentWindow} onScroll={e => { if (tab === "report" && !inspectorOpen) reportScroll.current = e.currentTarget.scrollTop; }}>
                 <section className="rs-report-pane" aria-label="研究报告">
                   {session.report && <ReportVersions key={id} id={id} currentVersion={session.report_version || 1} onSelect={setHistoricalReport} />}
                   <div className="rs-report-notice">
@@ -631,7 +711,7 @@ export function ResearchSession() {
                       {session.report ? "引用可以展开查看依据；报告的实质判断仍需结合来源上下文审阅。" : session.is_draft ? "资料上传与解析不启动研究模型。确认材料后点击开始。" : "研究进行中：底稿、审查与报告会按实际完成情况出现。"}
                     </span>
                   </div>
-                  <article className="rs-prose">
+                  <article className="rs-prose" ref={reportArticle}>
                     <h2 className="rs-report-title">{displayedReport?.title}</h2>
                     {displayedReport && <div className="rs-export-actions"><span>导出这版报告</span>
                       {([['md', 'Markdown'], ['pdf', 'PDF'], ['docx', 'Word'], ['pptx', 'PowerPoint']] as const).map(([format, label]) =>
@@ -639,6 +719,7 @@ export function ResearchSession() {
                       {!!displayedReport.charts?.length && <a href="#report-charts">查看 {displayedReport.charts.length} 幅图表</a>}
                     </div>}
                     <Markdown
+                      reportHeadings
                       text={
                         displayedReport?.narrative_markdown || (session.is_draft ? "研究尚未启动。这里将在研究完成后显示报告。" : session.status === "error" ? "本次尚未取得报告。请查看运行状态；失败记录与已有研究材料均保留。" : "报告尚未生成；请在研究现场查看真实任务进度。")
                       }
@@ -824,12 +905,12 @@ export function ResearchSession() {
       <aside className={`rs-inspector ${inspectorOpen ? "rs-inspector-open" : ""}`} aria-label="审查与运行详情" hidden={!inspectorOpen}>
         <header>
           <span>
-            <Radio size={16} /> 研究现场
+            <Radio size={16} /> {inspector === "source" ? "来源与计算" : inspector === "review" ? "审查意见" : "运行与费用"}
           </span>
           <span className={connected ? "rs-live" : "rs-muted"}>
             {connected ? "实时连接" : "已保存状态"}
           </span>
-          <button aria-label="关闭详情" onClick={() => setInspectorOpen(false)}><X size={16} /></button>
+          <button ref={inspectorClose} aria-label="关闭详情" onClick={closeInspector}><span className="rs-return-label">返回阅读</span><X size={16} /></button>
         </header>
         <div className="rs-inspector-tabs">
           <button
@@ -1058,15 +1139,14 @@ export function ResearchSession() {
                   <span className="rs-eyebrow">CITATION DETAIL</span>
                   <button
                     aria-label="关闭引用"
-                    onClick={() => {
-                      setSelected(null);
-                      setSource(null);
-                    }}
+                    onClick={closeInspector}
                   >
                     <PanelRightClose size={16} />
                   </button>
                 </div>
-                <h3>{selected.key}</h3>
+                <h3>引用依据</h3>
+                <details className="rs-source-id"><summary>引用标识</summary><code>{selected.key}</code></details>
+                <small>引用记录中的原始主张</small>
                 <p>{selected.citation.claim.statement}</p>
                 {selected.citation.sources.map((s) => (
                   <div className="rs-source-card" key={s.source_id}>
@@ -1115,31 +1195,36 @@ export function ResearchSession() {
                       </blockquote>
                     )}
                     <button
-                      onClick={() =>
-                        sessionsApi
-                          .source(id, s.source_id, 0, selected.checkpoint)
-                          .then(setSource)
-                          .catch((e) => setError(e.message))
-                      }
+                      onClick={() => readSource(s.source_id)}
                     >
                       <Search size={13} /> {s.result_state === "query_gap_receipt" ? "查看查询条件与回执" : "查看捕获片段与上下文"}
                     </button>
                   </div>
                 ))}
-                {source && (
+                {sourceLoading && <p role="status">正在读取来源…</p>}
+                {sourceError && <p role="alert">来源读取失败：{sourceError}。可再次点击来源读取；报告仍保留。</p>}
+                {source && !sourceLoading && (
                   <div className="rs-source-window" ref={sourceWindow}>
-                    <h4>{source.source_id} · {source.result_state === "query_gap_receipt" ? "本地查询回执，非事实证据" : "本地保存的来源窗口"}</h4>
-                    <pre>
+                    {!!sourceHistory.length && <button onClick={() => { sourceRequest.current += 1; setSourceError(""); setSource(sourceHistory[sourceHistory.length - 1]); setSourceHistory(v => v.slice(0, -1)); }}>← 返回上一级来源 / 计算</button>}
+                    <h4>{source.title || (source.result_state === "query_gap_receipt" ? "本地查询回执，非事实证据" : "本地保存的来源窗口")}</h4>
+                    {calculation && <div className="rs-calculation" aria-label="计算与操作数">
+                      <h4>计算过程</h4><p><code>{calculation.expression}</code> = {calculation.value_decimal || source.value_decimal} {calculation.result_unit || source.unit}</p>
+                      <p>{calculation.rationale}</p>
+                      {Object.entries(calculation.operands).map(([name, operand]) => <div className="rs-operand" key={name}>
+                        <strong>{name} · {operand.metric_id || "输入"}</strong><p>{operand.value_decimal ?? "未提供数值"} {operand.unit}</p>
+                        <small>{[operand.ticker || operand.source_provenance?.ticker, operand.period_start, operand.period_end || operand.source_provenance?.fiscal_period, operand.unit || operand.source_provenance?.unit || "单位未单列"].filter(Boolean).join(" · ")} · {operand.authority || "权威状态未提供"}</small>
+                        {operand.quote && <blockquote>{operand.quote}</blockquote>}
+                        {operand.source_id && <button onClick={() => readSource(calculation.operand_source_aliases?.[operand.source_id!] || operand.source_id!, 0, true)}>查看操作数 {name} 来源</button>}
+                      </div>)}
+                      <p>算术核验：{calculation.arithmetic_verified === true ? "通过" : calculation.arithmetic_verified === false ? "未通过或未核验" : "未提供"}；金融语义：{calculation.financial_semantics_verified === true ? "已核验" : "未确认"}。</p>
+                    </div>}
+                    {calculation ? <details><summary>原始计算记录</summary><pre>{source.text}</pre></details> : <pre>
                       {source.text || (source.value_decimal !== undefined ? `${source.value_decimal} ${source.unit}` : "此来源没有可显示的捕获片段。")}
-                    </pre>
+                    </pre>}
+                    <details><summary>来源标识</summary><code>{source.source_id}</code></details>
                     {source.next_offset != null && (
                       <button
-                        onClick={() =>
-                          sessionsApi
-                            .source(id, source.source_id, source.next_offset, selected.checkpoint)
-                            .then(setSource)
-                            .catch((e) => setError(e.message))
-                        }
+                        onClick={() => readSource(source.source_id, source.next_offset, true)}
                       >
                         下一段原文 →
                       </button>

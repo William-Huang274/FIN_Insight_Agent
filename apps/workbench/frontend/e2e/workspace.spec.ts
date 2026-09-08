@@ -19,9 +19,9 @@ async function expectNoHorizontalOverflow(page: import("playwright/test").Page) 
   expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport);
 }
 
-test("workspace exposes the three identity-bound reviewed cases", async ({ page }, testInfo) => {
+test("compatibility evidence view exposes the three identity-bound reviewed cases", async ({ page }, testInfo) => {
   const productDataExpected = Boolean(process.env.FINSIGHT_E2E_DATA_ROOT);
-  await page.goto("/workspace");
+  await page.goto("/workspace/evidence-packs");
   await expect(page.getByRole("heading", { name: "当前研究案例" })).toBeVisible();
   await expect(page.getByText(/3 个案例已通过身份与摘要绑定/)).toBeVisible();
   for (const ticker of ["DELL", "MU", "NVDA"]) {
@@ -117,12 +117,12 @@ test("operations is isolated from the research product", async ({ page }, testIn
   await capture(page, "operations", testInfo.project.name);
   await page.getByRole("link", { name: /研究工作区/ }).click();
   await expect(page).toHaveURL(/\/workspace$/);
-  await expect(page.getByRole("heading", { name: "当前研究案例" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "这次，你想弄清楚什么？" })).toBeVisible();
 });
 
 
 test("retired frontend route resolves to the current workspace", async ({ page }) => {
   await page.goto("/current/NVDA/report");
   await expect(page).toHaveURL(/\/workspace$/);
-  await expect(page.getByRole("heading", { name: "当前研究案例" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "这次，你想弄清楚什么？" })).toBeVisible();
 });

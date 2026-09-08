@@ -516,7 +516,7 @@ financial_semantics_verified=false means not verified, not a failed review; abse
 """
 
 
-def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True):
+def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions=""):
     feedback = feedback or []
 
     def prior_bindings(runtime):
@@ -721,7 +721,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         selected = [t for t in selected if t.name not in {"submit_case_answer", "submit_report_edits", "read_current_report"}] + [read_current_report]
         submit = submit_case_answer
     return create_agent(model=model, tools=[*selected, submit], state_schema=CaseOutputState,
-        system_prompt=CONTEXT_RULES + specific + METHOD_TOOL_GUIDANCE + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
+        system_prompt=CONTEXT_RULES + specific + METHOD_TOOL_GUIDANCE + method_instructions + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
         middleware=[StopOnOutput(), InvalidToolCallFeedback(), AnswerSubmissionFeedback(submit.name), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
             ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="error"), *(audit.middlewares() if audit else [])],
         name=f"case_{role}_{paper_id or 'report'}")

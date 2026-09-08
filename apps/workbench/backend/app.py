@@ -448,6 +448,7 @@ def create_report_session_app(frontend_dist_root=None):
     @app.get("/", include_in_schema=False)
     def root():
         return RedirectResponse("/workspace/session")
+    @app.get("/workspace", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/workspace/session", response_class=HTMLResponse, include_in_schema=False)
     def session_page():
         return _frontend_index(dist)

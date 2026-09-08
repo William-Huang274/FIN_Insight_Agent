@@ -1,10 +1,36 @@
 # FIN Insight 当前上下文包
 
 更新时间：2026-09-08
-当前产品版本：FIN 0.1.3；当前报告版本：Dell v4，ready_for_human_review，Owner 未接受。
+当前产品版本：FIN 0.1.3；当前报告版本：Dell v5，ready_for_human_review，Owner 未接受；v4历史保留。
 公开主线入口：main；本轮成果与检查见 [PR #3](https://github.com/William-Huang274/FIN_Insight_Agent/pull/3)。本地 codex/fin013-dell-s1-s2-product-bridge 与恢复引用保留，不代表仍需另做一轮规划。
 
 ## 当前交付与停止点
+
+2026-09-08 Owner已授权前端本轮后进行GitHub展示整理：中英文首页/快速开始/架构/导览更新，报告口径统一v5待审阅；新增实际产品截图、公开零模型检查和独立前端测试、通用research_workbench CLI。下面旧“不push/公开整理尚未启动”属于历史时点；本轮按PR检查→合并main→移除临时远端分支推进，保留history分支和FIN0.1.3含义。成果与发布状态见[S3/202](../worklog/fin_0_1_3_s3/202_public_repository_showcase.md)。不发布完整报告或正式release，Hermes后置。
+
+2026-09-08最新Owner纠正与实施：200只是配置文件/浏览器草稿不满足要求；当前已接可编辑角色/Skill/并行数/双审查顺序→原生Assistant独立快照→指定任务metadata→原生run config→实际Agent提示与MCP方法。原生服务与8793 BFF已重载，PG/Redis/history保留。前端保存配置42857090-55f8-43f3-aa79-be9905bc4f41并应用当前219488任务；真实短问run01a08075-3c4e-7e72-a84b-8037fb26573a两次Flash请求收到新增方法、回答按结论/限定，43622tokens、已知0.085984元、无未知，约15秒，v5和原报告未改。修正用户实际所指研究图diff不能收起；新增历史事件回放明确非实时。77后端通过/7材料依赖跳过，浏览器最终attempt见[S3/201](../worklog/fin_0_1_3_s3/201_runtime_configuration_and_diff_toggle.md)。不造任意工作流编辑器、不开放删除必需复核；旧claim advisory仍开放。Hermes/公开整理尚未启动，Owner审阅后再收口，不追加付费重跑。
+
+2026-09-08最新体验修订：Owner要求修订diff可读、顶部资料可收起、首页改问题起始页、侧栏按项目组织并加Skill/编排入口。已完成本地工程，体验地址改为 http://127.0.0.1:8793/workspace ，同一18165原生服务/原v5历史；旧8766 BFF未重启。项目/置顶/配置草稿只存浏览器；六组方法为工作台源包，静态图由原生SDK读取，不代表技能发布/任意编排调试已通。35后端检查及13项三宽度浏览器通过，真实v4→v5差异、资料关闭与方法目录已CUA读回，0研究模型。见[S3/200](../worklog/fin_0_1_3_s3/200_workspace_start_revision_and_studio.md)，最终attempt/提交以该记录为准。Owner体验后考虑前端收口与公开展示整理；本轮不push，Hermes后置，RC-S3-199旧claim仍开放。
+
+2026-09-08最新完成：方案D正式工作台＋运行中的实际任务/阶段卡片和公开活动流已接8766。最终10浏览器通过（40.5秒）、34后端通过；真实前端提交P01:C9目标、v4基线，在run01a0801b-0b5b-7c83-a16b-413ad918f450实际Writer3→Verifier3，v5只改第三节目标段落，引用/图表未变、旧checkpoint完全保留；272176tokens/已知1.436408元/本次未知0。Verifier发现底稿C9旧因果措辞advisory，RC-S3-199仍开放。详见[S3/199](../worklog/fin_0_1_3_s3/199_formal_workspace_and_live_revision.md)。本轮只1次付费修订，无自动accept；运行页不是完整逐token模型思维/任意节点控制，通用UI不等于跨公司真实数据底座已资格。等待Owner体验与审阅，Hermes后置。
+
+2026-09-08最新Owner授权：方案D选为正式前端，允许补齐侧栏/头部交互；先验证前端，再接真实后端，前端执行1–2条小修订验证原生节点。正在执行[S3/199](../worklog/fin_0_1_3_s3/199_formal_workspace_and_live_revision.md)，该授权覆盖下方设计-only/0模型停止点。React Router/既有React Flow/LangGraph薄接入，不写Dell内容路由规则；现有runtime数据底座仍为已资格Dell配置，不能将通用UI误报为任意公司真实研究已通过。Hermes与公开分支整理继续后置。
+
+2026-09-08最新Owner方向：已认可概念C横向研究图达到基本预期，要求保留修订方案，再补侧栏和统一视觉、弃用绿色并交总体方案。已交[前端总体方案D](../product/FRONTEND_OVERALL_DESIGN_20260908.zh-CN.md)与独立可点击原型（C原件保留）：工作区/任务两层导航、搜索切换、收起、本页新建草稿、资料/修订/运行/偏好，统一研究蓝/中性背景/Lucide/字体/动效。见[S3/198](../worklog/fin_0_1_3_s3/198_frontend_sidebar_and_visual_system.md)。本轮是设计原型与总体方案，正式应用未按D改造，0研究模型，Hermes后置；不能把新增页面演示计入正式工程完成。
+
+2026-09-08最新Owner纠正：上一版视觉像Markdown、纵向排版简陋、连线弱且依赖缩放；明确先停正式实现，参考投研/Agent产品并渲染原型。已交[横向研究桌面概念C](../product/UX_RESEARCH_DESK_CONCEPT_20260908.zh-CN.md)，现金质量完整演示路径、过渡/清晰连接/并排原文/意见预览，0模型，正式8766代码与服务不动。见[S3/197](../worklog/fin_0_1_3_s3/197_horizontal_research_desk_prototype.md)。新设计待Owner审阅，不能沿下方旧实施授权继续自动改正式应用；小case和Hermes均未启动。
+
+2026-09-08最新执行（覆盖下方旧未实施状态）：Owner明确授权合并三层导航、宽幅阅读与真实目标修订。已完成报告总览→专题→判断与依据，按保存正文的章节与绑定引用组织；来源可进入宽幅上下文/存档原文、查找与分页。目标修订携带引用ID、基线版本/digest/checkpoint和请求ID，BFF及原生human_review校验后进入既有责任修订流程；运行状态、目标与相对基线报告diff回显。实现41e680bc，34后端/原生图脚本检查及6浏览器通过，0研究模型调用；真实v4下钻、计算操作数、宽幅原文、查找、修订预览只读核对通过，草稿已清空。8766/BFF4512及18165原生服务已重载，28runs/v4和原数据库保留。详见[S3/196](../worklog/fin_0_1_3_s3/196_hierarchical_graph_targeted_revision.md)。执行入口已接通，真实模型修订质量、精确节点影响与持久候选分支仍未验收；Owner看完决定小case，不自动付费。仅本地分支，公开main不变，Hermes继续后置。
+
+2026-09-08最新Owner体验反馈：54条长引用下拉框仍别扭；希望初始展示全报告图结构，点节点进入二级图，来源与节点详情可进入扩展上下文及完整原文窗口，节点不必按agent执行graph组织。当前首版尚未满足该层级导航与宽幅阅读需求，不能将6项工程测试称易用性验收。下一建议是报告章节/研究问题总览→专题判断与依据→宽幅来源阅读；区分文档组织与已证实的论证关系。本轮先给节点呈现建议，尚未实施此轮改版。
+
+2026-09-08最新执行：Owner认可概念B、授权先做一版。已接React Flow12.11.6真实依据图作为已有报告默认入口，逐引用展开来源/CALC/操作数，固定报告checkpoint读取并支持legacy计算与alias回读；本地按引用修订草稿与影响范围可体验，尚未接执行/持久分支。TS/构建及A2三宽度图＋阅读历史6浏览器通过，真实v4第21条CALC可读，0模型。8766已载本地体验版，公开main不变；详见[S3/195](../worklog/fin_0_1_3_s3/195_live_research_graph_pilot.md)。下方“尚未认可/未接正式前端”是前轮历史状态；本轮已获设计实现授权，等待实际体验反馈，Hermes继续后置。
+
+2026-09-08最新Owner方向：希望以图展开明确研究依据并参与编辑，随后要求“先把前端概念做出来，然后想想该怎么实现”，关注数据结构与checkpoint。本轮交付[研究图概念B](../product/UX_RESEARCH_GRAPH_CONCEPT_20260908.zh-CN.md)与[实现评估](../architecture/RESEARCH_GRAPH_IMPLEMENTATION_20260908.zh-CN.md)：可点击合成数据原型，假设→影响→候选比较，0模型；正式图/持久化/分支重跑未实现。发现现有report_versions按整数版本聚合的候选分支限制；建议React Flow资格＋现有LangGraph薄适配，先真实只读证据链，不造第二运行时。Owner未认可图设计前不继续正式改造；原报告阅读切片保留。详见[S3/194](../worklog/fin_0_1_3_s3/194_research_graph_concept.md)。Hermes继续后置。
+
+2026-09-08最新执行：概念原型交付后Owner要求“继续”，按认可方向实施切片A（真实报告阅读＋来源核对）。移除宽屏强制对话/报告双显示，压缩任务头、折叠资料说明，增加同名可定位目录、来源/计算与操作数回读及返回，保留历史版本和原始语义状态。TypeScript/构建与三宽度浏览器A4通过，A1焦点失败原件保留；真实v4旧JSON计算兼容、原文回读与返回成功，0模型。详见[S3/193](../worklog/fin_0_1_3_s3/193_report_reading_and_source_navigation.md)。8766已载本地体验版，分支codex/fin013-report-reader尚未推送/合main；公开仍main＋两个历史分支。B追问修订、C入口进度、D整体收口未完成；切片A交Owner真实体验，不声称全前端已验收。Hermes仍后置。
+
+2026-09-08最新Owner纠正：实际打开前端后认为不好用，明确页面杂乱、阅读/来源/追问切换、研究入口/进度三项均需重想；要求先看概念图/概设详设，认可后才改正式前端。本轮仅交[交互概设](../product/UX_WORKBENCH_CONCEPT_20260908.zh-CN.md)、详设与本地可点击原型，正式应用代码不改、不推GitHub草稿、不部署。详见[S3/192](../worklog/fin_0_1_3_s3/192_workbench_ux_concept_review.md)。工程检查通过不得表述为易用性获认可。此前引用修复PR#4已合main3cb0e3f4，远端只保留main和两个历史分支；本地设计分支不改变该公开状态。Hermes仍后置。
 
 2026-09-08继续补丁：Owner再次要求继续，按剩余质量问题推进，Hermes仍后置。PR#3已合入main58f84943并清理六个保全的远端codex引用。新PR#4修裸来源ID漏绑定，真实旧MU答案零模型回放由2操作数恢复为原CALC＋2操作数，原回答未改；100定向/3宽度通过。使用现成MarkdownIt/remark薄适配，无新parser平台或语义规则。最终CI、部署与临时分支收口见[S3/191](../worklog/fin_0_1_3_s3/191_bare_citation_binding_followup.md)。Owner未接受，摘要disabled，新问答金融语义意见未自动关闭。
 

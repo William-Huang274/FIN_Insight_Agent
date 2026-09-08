@@ -30,6 +30,7 @@ from .dell_report_session import session_audit_sinks
 from .dell_specialist_agentic_composition import open_dell_specialist_receipted_composition
 from .research_session import build_research_session_graph, current_task_artifacts
 from .research_convergence import build_research_convergence_graph
+from .studio_configuration import configuration_from_native
 
 
 def load_research_runtime_profile(root):
@@ -69,7 +70,9 @@ def load_research_runtime_profile(root):
 
 
 def create_research_phase_runnables(*, root, settings, profile, case, run_id, thread_id, api_key,
-                                    environment=None, public_sink, private_sink, read_guidance=None):
+                                    environment=None, public_sink, private_sink, read_guidance=None, studio=None):
+    if studio:
+        profile = studio.apply_profile(profile)
     environment = {**(os.environ if environment is None else environment), "FINSIGHT_TASK_THREAD_ID": thread_id,
         "FINSIGHT_TASK_RUN_ID": run_id, "FINSIGHT_TASK_AUDIT_ROOT": settings["audit_root"]}
     base = load_deepseek_structured_agent_config(Path(root) / profile["model_config"])
@@ -119,6 +122,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         first_branch = branches[0]["branch_id"]
         with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                 branch_id=first_branch, turn_source="provider_model", model_turn=lead_adapter.specialist_model_turn,
+                role_method_reader=studio.method if studio else None,
+                role_method=studio.method(studio.bindings["specialist"]) if studio else None,
                 environment=environment, source_read_enabled=True, live_web_read_enabled=True,
                 max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
                 research_question=request["question"]) as bootstrap:
@@ -133,6 +138,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 try:
                     with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                             branch_id=task["coverage_obligation_ids"][0], turn_source="provider_model", model_turn=adapter.specialist_model_turn,
+                            role_method_reader=studio.method if studio else None,
+                            role_method=studio.method(studio.bindings["specialist"]) if studio else None,
                             environment=environment, source_read_enabled=True, live_web_read_enabled=True,
                             max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
                             research_task=task, dependency_workpapers=dependencies, research_question=request["question"]) as child:
@@ -147,6 +154,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             graph = build_dell_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],
                 branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers=seeds,
                 model_turn=lead_adapter.lead_research_turn, run_child=worker,
+                role_method=studio.method(studio.bindings["lead"]) if studio else None,
                 max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], max_tasks=profile["max_tasks"],
                 max_parallel_tasks=profile["max_parallel_tasks"], turn_source="provider_model", unfinished_only=bool(seeds)).compile()
             return await graph.ainvoke(bootstrap.graph_input.model_dump(mode="json"), {**config, "recursion_limit": 240})
@@ -155,7 +163,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     async def tools_for(state):
         artifacts = current_task_artifacts(state)
         with open_dell_approved_data_composition(run_invocation_id=invocation, environment=environment,
-                source_read_enabled=True, live_web_read_enabled=True, case_artifacts=artifacts) as data:
+                source_read_enabled=True, live_web_read_enabled=True, case_artifacts=artifacts,
+                role_method_reader=studio.method if studio else None) as data:
             if any(left != right for left, right in (
                 (artifacts.case_id, data.foundation_binding.case_id), (artifacts.research_as_of, data.foundation_binding.research_as_of),
                 (artifacts.snapshot_id, data.foundation_binding.snapshot_id), (artifacts.foundation_digest, data.foundation_binding.foundation_digest),
@@ -174,6 +183,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 yield artifacts, tools
 
     def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False):
+        method_instructions = studio.instructions(role) if studio else ""
         model_profile, basis, limits = model_values(role)
         audit = CaseModelAudit(actor=("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True)
@@ -191,20 +201,22 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 keep_tokens=summary["keep_tokens"], max_summaries=summary["max_summaries"])
         if role in {"counter", "verifier"}:
             return build_case_reviewer(role=role, model=model, tools=tools, artifacts=artifacts,
-                max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit)
+                max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit,
+                method_instructions=method_instructions)
         output_role = ("verifier" if role in {"report_verifier", "research_verifier"} else "writer" if role in {"writer", "quick_writer"}
                        else "synthesis" if role == "synthesis" else "repair")
         return build_case_output_agent(role=output_role, model=model, tools=tools, artifacts=artifacts,
             feedback=feedback, paper_id=paper_id, limits=limits, audit=audit, report_revision=interactive or revising,
             allow_answers=interactive and output_role == "writer", answer_only=role == "quick_writer",
-            require_responsibility=role in {"report_verifier", "research_verifier"})
+            require_responsibility=role in {"report_verifier", "research_verifier"}, method_instructions=method_instructions)
 
     async def review(state, config: RunnableConfig):
         state = await with_guidance(state, "review")
         async with tools_for(state) as (artifacts, tools):
             reviewers = {role: native_agent(role, tools, artifacts) for role in ("counter", "verifier")}
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question=state["question"],
-                run_id=research_id, run_invocation_id=invocation).compile()
+                run_id=research_id, run_invocation_id=invocation,
+                review_order=studio.review_order if studio else "parallel").compile()
             return await graph.ainvoke({"run_id": research_id, "run_invocation_id": invocation}, config)
 
     async def execute_convergence(state, config, existing=None):
@@ -255,7 +267,12 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
     root = Path(os.environ["FIN_REPO_ROOT"])
     settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
     profile, case = load_research_runtime_profile(root)
+    studio = configuration_from_native(config)
     public, private = session_audit_sinks(Path(settings["audit_root"]) / thread_id / run_id)
+    if studio:
+        public({"kind": "stage", "actor": "research_configuration", "event": "applied", "status": "loaded",
+            "objective": f"已固定配置：{studio.title} · {studio.digest[:12]} · 专家并行 {studio.max_parallel_tasks} · 审查 {studio.review_order}",
+            "recorded_at": datetime.now(timezone.utc).isoformat(), "run_id": run_id})
     from langgraph_sdk import get_client
     native = get_client()  # official in-process Agent Server connection
     async def read_guidance():
@@ -264,7 +281,7 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
     try:
         phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
-            private_sink=private, read_guidance=read_guidance)
+            private_sink=private, read_guidance=read_guidance, studio=studio)
         yield build_research_session_graph(**phases).compile(name="research_session").with_config({"recursion_limit": 280})
     finally:
         await native.http.client.aclose()

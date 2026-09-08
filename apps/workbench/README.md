@@ -1,40 +1,41 @@
-# FinSight Workbench — FIN 0.1.3 baseline
+# FinSight Workbench
 
-This directory is the only active browser product and operator runtime.
+React/Vite frontend and FastAPI BFF for FIN 0.1.3. [中文使用说明](../../docs/public/quickstart.zh-CN.md) · [English quickstart](../../docs/public/quickstart.en.md).
 
-## Entrypoints
+## Product entry points
 
-- Product: `/workspace`
-- Operator console: `/operations`
-- Backend: `backend/app.py`
-- Product APIs: `backend/api/v1/research_workspace.py` and
-  `backend/api/v1/research_evidence_packs.py`
-- Operator API: `backend/api/operations.py`
-- React/Vite root: `frontend/vite/src/main.tsx`
+| Area | Route / source |
+| --- | --- |
+| Start and project navigation | `/workspace` · `frontend/vite/src/app/ResearchStart.tsx`, `WorkspaceNavigation.tsx` |
+| Research methods and configuration | `/workspace?view=studio` · `ResearchStudio.tsx` |
+| Report, map, sources, revisions, activity | `/workspace/session?thread=<id>` · `ResearchSession.tsx` |
+| Research APIs | `backend/api/v1/report_sessions.py`, `research_studio.py` |
+| Export | `backend/application/report_delivery.py` |
+| App composition | `backend/app.py` |
+| Runtime configuration contract | `../../src/sec_agent/agent_runtime/studio_configuration.py` |
 
-`/current`, `/next`, `/tasks` and `/cases` redirect to `/workspace`.
-`/legacy` redirects to `/operations`.  Their old implementations are preserved
-under `archive/versions/pre_fin_0_1_3/`; they are not loaded by this app.
+The current product can create research, ask follow-up questions and request targeted revisions through a configured native LangGraph service. Reports remain versioned and subject to human review. Studio persists independent native Assistants snapshots; project grouping/pins remain browser-local.
 
-## Honest product boundary
+The older fixed Evidence Pack view is available at `/workspace/evidence-packs`; its APIs and `/operations` remain compatibility surfaces. Their readiness failures or retired action routes do not describe the newer research-session product. The default `/workspace` opens the current question-first UI.
 
-The product currently offers a read-only, identity-bound view of reviewed DELL,
-MU and NVDA Evidence Packs. It shows evidence, source boundaries and typed
-residual gaps. The current packs contain no structured numeric items, so
-numeric-fact readiness is not claimed. It does **not** claim unrestricted dynamic
-research, a complete valuation, autonomous report release, realtime commercial
-market data or production multitenancy.
+## Develop and verify
 
-The reviewed objects are deliberately not distributed in Git. Without a
-`FINSIGHT_DATA_ROOT` mount, the catalog remains readable, detail actions are
-disabled and `/api/readiness` returns typed HTTP 503. A full local acceptance
-mount must contain
-`workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/zero-call-r1/objects`.
+From this directory's `frontend/`:
 
-The operator surface manages profiles, source bundles, admitted data-build
-steps, saved-run inspection and the active-baseline verifier.  Agent ask,
-session continuation and native-checkpoint execution return HTTP 410 until a
-provider-neutral successor is promoted through the current Runtime contract.
+```bash
+npm ci
+npm run typecheck
+npm run build
+npx playwright install chromium
+npm run test:public
+```
 
-The authoritative code map is
-`../../docs/architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md`.
+Public browser tests start Vite on 4183 with synthetic API fixtures; no BFF or model. The original `npm run test:e2e` also starts the historical BFF and covers legacy source-only behavior.
+
+For actual research, build the frontend and start the BFF with `python -m scripts.deployment.research_workbench serve` from the repository root and the required settings. See the quickstart for complete arguments and data requirements. Vite development defaults to proxying the older 8765 BFF; use the built frontend on the research BFF for the documented live walkthrough.
+
+## Compatibility and naming
+
+Public CLI and new session/configuration interfaces use research-oriented names. Older `dell_*` modules and the Compose identity are retained where renaming would affect imports, credentials, volumes or historical evidence. Their original names do not establish cross-company qualification, nor are they instructions to hardcode UI behavior to Dell.
+
+Current evidence: local Dell research and targeted revision, bounded other-company questions, public synthetic interaction tests. This is a trusted local preview, without public multi-tenant authentication or unrestricted workflow-code editing.

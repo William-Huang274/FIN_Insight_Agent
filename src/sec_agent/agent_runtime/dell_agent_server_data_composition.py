@@ -168,6 +168,7 @@ def open_dell_approved_data_composition(
     source_read_enabled: bool = False,
     live_web_read_enabled: bool = False,
     case_artifacts: Any = None,
+    role_method_reader: Any = None,
 ) -> Iterator[DellApprovedDataComposition]:
     """Open the exact Owner-approved data readers behind one MCP lifecycle."""
 
@@ -349,7 +350,7 @@ def open_dell_approved_data_composition(
                 external_capture=capture,  # type: ignore[arg-type]
                 source_document_reader=source_reader,
                 case_artifacts=case_artifacts,
-            )
+            ), role_method_reader=role_method_reader,
         )
     except DellApprovedDataCompositionError:
         raise

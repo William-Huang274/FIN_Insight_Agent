@@ -1028,6 +1028,8 @@ def _open_dell_specialist_composition(
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     research_question: str | None = None,
+    role_method_reader=None,
+    role_method=None,
 ) -> Iterator[_OpenedSpecialistComposition]:
     try:
         with open_dell_approved_data_composition(
@@ -1035,6 +1037,7 @@ def _open_dell_specialist_composition(
             environment=environment,
             source_read_enabled=source_read_enabled,
             live_web_read_enabled=live_web_read_enabled,
+            role_method_reader=role_method_reader,
         ) as approved:
             graph_input = _build_graph_input(
                 run_id=run_id,
@@ -1056,6 +1059,9 @@ def _open_dell_specialist_composition(
                 live_web_read_enabled=live_web_read_enabled,
                 research_question=research_question,
             )
+            if role_method is not None:
+                from .studio_configuration import bind_specialist_method
+                graph_input = bind_specialist_method(graph_input, role_method)
             if environment and environment.get("FINSIGHT_TASK_ATTACHMENTS_ROOT"):
                 body = graph_input.model_dump(mode="json")
                 for capability in body["l0_context"]["capability_summaries"]:
@@ -1184,6 +1190,8 @@ def open_dell_specialist_receipted_composition(
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     research_question: str | None = None,
+    role_method_reader=None,
+    role_method=None,
 ) -> Iterator[DellSpecialistReceiptedComposition]:
     """Open the same bounded graph for a trusted replay or provider turn port."""
 
@@ -1208,6 +1216,8 @@ def open_dell_specialist_receipted_composition(
         research_task=research_task,
         dependency_workpapers=dependency_workpapers,
         research_question=research_question,
+        role_method_reader=role_method_reader,
+        role_method=role_method,
     ) as opened:
         yield DellSpecialistReceiptedComposition(
             graph_input=opened.graph_input,

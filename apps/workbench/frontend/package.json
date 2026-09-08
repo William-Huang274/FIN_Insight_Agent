@@ -8,15 +8,21 @@
     "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
     "build": "node node_modules/typescript/bin/tsc -p tsconfig.json && node node_modules/vite/bin/vite.js build --config vite.config.ts",
     "preview": "node node_modules/vite/bin/vite.js preview --config vite.config.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:public": "playwright test --config playwright.public.config.ts"
   },
   "dependencies": {
     "@langchain/langgraph-sdk": "1.10.2",
+    "@xyflow/react": "12.11.6",
+    "diff": "8.0.3",
     "lucide-react": "^0.544.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "10.1.0",
-    "remark-gfm": "4.0.1"
+    "react-router": "7.18.3",
+    "remark-gfm": "4.0.1",
+    "remark-parse": "11.0.0",
+    "unified": "11.0.5"
   },
   "devDependencies": {
     "@types/react": "^19.2.15",

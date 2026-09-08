@@ -1,53 +1,108 @@
-# FinSight Agent — FIN 0.1.3
+<div align="center">
 
-**A financial research workspace that turns a question into a traceable report and follow-up conversation.** Agents use financial SQL, source passages and source-bound calculations to examine business growth, earnings and cash conversion.
+# FinSight Agent
 
-[中文](README.md) · [Run and verify](docs/public/quickstart.en.md) · [Architecture](docs/public/architecture.en.md) · [Three-minute demo](docs/public/demo-and-engineering.en.md) · [Evidence and sharing](docs/public/sharing-scope.md) · [Changelog](CHANGELOG.md)
+### From a research question to a judgment you can inspect and challenge.
 
-## Capabilities
+Multi-agent research · Traceable evidence · Human revision · Editable research methods
 
-| Capability | Implementation and evidence boundary |
+[中文](README.md) · [Quickstart](docs/public/quickstart.en.md) · [Product tour](docs/public/demo-and-engineering.en.md) · [Architecture](docs/public/architecture.en.md) · [Changelog](CHANGELOG.md)
+
+**FIN 0.1.3 · Local research workspace · Development preview**
+
+</div>
+
+FinSight brings financial SQL, source retrieval, source-bound calculations and multi-agent review into one workspace. Ask a question, follow the research, trace a report judgment to its evidence, and request a revision to a specific finding. It serves analysts who need to inspect conclusions and developers who want observable state, calls and reproducible checks.
+
+![Research Studio: roles, methods and execution order](docs/public/images/research-studio.png)
+
+*Actual application captured on September 8, 2026. Configuration versions persist in the native runtime and can be applied to a task. The current UI is Chinese; both documentation editions describe the same capabilities.*
+
+## A research workflow you can participate in
+
+| Step | What you can do |
 | --- | --- |
-| Dynamic research | A Lead creates a task DAG; experts plan, call tools and submit workpapers. The Dell case exercised nine research areas with a concurrency limit of two. |
-| Review and revision | Counter / Verifier, accountable authors, synthesis, research review, Writer, final review and human review. Failed attempts remain visible; model reviewers can miss errors. |
-| Traceable evidence | MCP tools for financial SQL, document navigation/search/passages, external search, web reading and calculations. Expressions, operands, periods, units and provenance are retained; arithmetic validity is distinct from financial validity. |
-| Interaction | New research, short and deep questions, local revisions, stop, report versions/diffs and source inspection. Saved guidance can be delivered to a later stage; delivery does not prove semantic adoption. |
-| Context and costs | Clear old tool output from requests while retaining artifacts/checkpoints and ID-based retrieval; reuse saved calculations and edit locally. Aggregate all native runs with input/output/cache usage, elapsed time, estimated cost and explicit unknowns. |
-| User material | Task-scoped documents and images, parsing/chunking and on-demand cached vision. Actual PDF/image questions were exercised, including an identified OCR error. |
-| Delivery | Markdown, PDF, Word and PowerPoint from one report. Editable PPT charts and detailed source references in speaker notes. Export makes no model calls. |
+| Start with a question | Choose a company, filing or judgment to investigate, set the research date, and attach documents or images. Organize research by project; project groups and pins currently live in this browser. |
+| Follow the work | Inspect recorded stages, public activity, reported tokens and estimated cost. Add guidance during a run or request cancellation. Replay saved events afterward. |
+| Inspect the evidence | Navigate report overview → topic → judgment and evidence. Expand source context, formulas, operands, periods and provenance. |
+| Request a revision | Submit feedback on a selected judgment. The target and report baseline enter the native revision flow; compare the result while retaining the original version. |
+| Define research methods | Edit role Skills, expert concurrency and dual-review order. Save an independent configuration version and apply it to an existing or new task. |
+| Deliver the report | Export the same report as Markdown, PDF, Word or PowerPoint. Export makes no model calls; PowerPoint charts remain editable. |
 
-The current **Dell report v4** is a development-reviewed candidate awaiting Owner content review: 54 citations, three charts, rendered PDF (15 pages), Word (20 pages) and PowerPoint (44 slides). **FIN 0.1.3** is the product version; report revisions and execution attempts are separate. This evidence is not an unassisted first-pass success rate or production certification.
+### Follow a report back to its evidence
 
-Automatic summarization remains **HOLD and disabled by default**. Tool-output clearing, artifact retrieval and local edits have bounded qualification evidence; no general equal-quality token-saving percentage has been established.
+![Report overview with expandable topics](docs/public/images/research-map.png)
 
-The [itemized Owner review checklist (Chinese)](docs/product/FIN_0_1_3_OWNER_REVIEW_20260908.zh-CN.md) records the original five requirements, additions, costs and outstanding findings. A successful SQL query with no local facts can now expose a non-factual query receipt; this does not prove issuer non-disclosure. Work stops before Hermes evaluation.
+The research map represents report content and citation relationships. Artifact IDs, report versions and checkpoints bind revision targets to execution; navigation nodes do not need a one-to-one match with runtime nodes. Source inspection opens wider context. A visual connection does not establish financial causality.
 
-## Runtime
+### See actual execution and stay involved
 
-React → FastAPI BFF → LangGraph Agent Server → Lead/expert DAG → review/revision → report → human review and export. PostgreSQL and Redis provide native persistence/execution infrastructure; MCP exposes tools, and LangSmith plus local call records support inspection. FIN owns research contracts, source authority and thin adapters. See [architecture and tradeoffs](docs/public/architecture.en.md).
+![Actual saved stages, public activity and usage](docs/public/images/research-runtime.png)
 
-## Run a zero-model check
+This screenshot shows a completed short question, including configuration loading, actual model calls and cost. Historical replay reveals saved events without calling a model again. During an active run, guidance is read at later phase handoffs. The UI exposes public progress and tool activity, not private reasoning transcripts.
 
-```powershell
+<details>
+<summary>View the research start page</summary>
+
+![Start a research question](docs/public/images/research-start.png)
+
+</details>
+
+## Verify a checkout without model keys or private data
+
+Install Python 3.11, uv, Node.js 22 and npm. From the repository root:
+
+```bash
 uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery
-uv run --no-sync python -m pytest tests/test_task_attachments.py tests/test_report_delivery.py -q
-uv run --no-sync python -m scripts.qualification.research_delivery_smoke --output-directory D:/temp/finsight-delivery-smoke
+uv run --no-sync python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
+
+cd apps/workbench/frontend
+npm ci
+npm run build
+npx playwright install chromium
+npm run test:public
 ```
 
-The output directory must not already exist. Outputs are explicitly synthetic. Full research also requires Docker, provider/tool credentials, prepared financial data and service settings. The complete private qualification data is not distributed. `--fresh-only` starts without old reports or expert answers, but still requires source data. Follow the [quickstart](docs/public/quickstart.en.md) for frontend builds, deployment and limitations.
+The Python check covers attachments, delivery, configuration and targeted revisions, then generates clearly synthetic reports. Choose an output directory that does not exist. Browser tests start only Vite and use synthetic API responses, covering three screen widths, navigation, sources, diffs, configuration editing and replay. **They verify interactions, not model research quality.** On Linux, install missing browser system dependencies with `npx playwright install --with-deps chromium`.
 
-- Current research: `http://127.0.0.1:8766/workspace/session`; native API: `http://127.0.0.1:18165`.
-- Historical fixed Evidence Pack UI: `http://127.0.0.1:8765/workspace`. Source-only health works; missing private evidence returns typed readiness 503 instead of fabricated reports.
-- Services bind to localhost. Uploads and operations currently assume a trusted Owner, not public multi-tenant access.
+Full research additionally requires Docker, model/tool credentials, source data and service settings. Private qualification data is not distributed, so a fresh clone cannot complete real research without preparation. See the [quickstart](docs/public/quickstart.en.md) for deployment, expected results and troubleshooting.
 
-## Review the evidence
+## Architecture and engineering focus
 
-Inspect source passages, calculation operands, report versions, failed attempts and unknown usage alongside successful outputs. The original Dell development research recorded 265 requests, 264 known usage outcomes and an estimated CNY 28.092715, including failures and revisions. Context repair, uploads, later report repairs and new questions are separate batches; this is not a normal single-question price.
+```mermaid
+flowchart LR
+    UI[React workspace] --> BFF[FastAPI]
+    BFF --> Runtime[LangGraph Agent Server]
+    Runtime --> Lead[Lead / expert task DAG]
+    Lead --> Review[Cross-review / accountable revision]
+    Review --> Report[Synthesis / report / human review]
+    Report --> UI
+    Lead --> MCP[MCP: financial SQL / sources / search / calculation]
+    Runtime --> State[PostgreSQL / Redis]
+    Runtime --> Trace[LangSmith / call audit]
+```
 
-The fixed case data cutoff is 2026-09-02; financial SQL covers DELL, MU and NVDA. A complete Dell case and bounded NVIDIA/Micron follow-ups are different qualification scopes. Neither proves general full-company research coverage.
+- **Native runtime infrastructure:** LangChain tool loops, LangGraph execution/checkpoints and native Assistants configuration snapshots. FIN owns research roles, evidence contracts and thin adapters.
+- **Inspectable numbers:** expressions, operands, periods, units and provenance stay with calculations. Arithmetic checks and financial interpretation remain distinct.
+- **Long-session context:** clear old tool bodies from outgoing requests while retaining original state and evidence; retrieve by ID, reuse calculations and avoid rewriting unrelated content.
+- **Observable execution:** distinguish the selected operation from historical totals, preserving failures, unknown costs and human edits.
 
-## Documentation and history
+See [architecture](docs/public/architecture.en.md) for code entry points, configuration consumption and component boundaries.
 
-This README and `docs/public/` describe the current implementation. [CHANGELOG](CHANGELOG.md) separates product milestones from report revisions. `archive/versions/` and Git retain historical baselines; worklogs retain contemporaneous decisions and failures.
+## Current qualification scope
 
-This public repository is available for code and engineering review. User uploads, databases, raw model contexts and private traces are outside the default sharing scope; full-report sharing is reviewed separately. No repository-wide open-source license has been selected. Third-party components retain their own licenses.
+FIN 0.1.3 is the product iteration; Dell report **v5** is a separate content version awaiting human review. Evidence includes a nine-area Dell research case, bounded NVIDIA/Micron follow-ups, actual attachment Q&A and a frontend-driven local revision. It does not establish complete research quality for arbitrary companies. Graph/configuration interfaces do not branch on Dell prose; data coverage still needs separate qualification.
+
+Model review can miss errors, and known citation/financial-wording findings remain recorded. Automatic summaries are disabled by default and on HOLD; no general equal-quality token-saving percentage is claimed. The deployment assumes a trusted local user and does not provide public multi-tenant authentication or isolation. Sample scope, costs and limitations are documented in [evidence and sharing](docs/public/sharing-scope.md).
+
+## Explore the repository
+
+| Entry | Contents |
+| --- | --- |
+| [Product tour](docs/public/demo-and-engineering.en.md) | Three-minute walkthrough and engineering narrative |
+| [Quickstart](docs/public/quickstart.en.md) | Zero-model checks, local deployment, troubleshooting and feedback |
+| [Workbench](apps/workbench/README.md) | Frontend/backend entry points and development commands |
+| [Tests](tests/README.md) | Public checks, private-data replay and live model qualification |
+| [Changelog](CHANGELOG.md) | Product milestones, frontend delivery and report revisions |
+
+Git and `archive/versions/` preserve historical baselines. Internal worklogs retain decisions and failures from their original dates; this README and `docs/public/` describe the current public surface. The repository is public for code and engineering review, with no repository-wide open-source license selected. Third-party components retain their own licenses.

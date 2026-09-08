@@ -3,6 +3,17 @@
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 
 - 当前总清单：`00_current_master_checklist.md`
+- 公开仓库展示、双语文档与外部测试：`fin_0_1_3_s3/202_public_repository_showcase.md`
+- 可执行研究配置、真实方法消费与差异收起：`fin_0_1_3_s3/201_runtime_configuration_and_diff_toggle.md`
+- 研究开始页、项目侧栏、可读修订与研究配置入口：`fin_0_1_3_s3/200_workspace_start_revision_and_studio.md`
+- 正式工作台、运行双视图与真实目标修订：`fin_0_1_3_s3/199_formal_workspace_and_live_revision.md`
+- 侧栏与统一视觉、前端总体方案D：`fin_0_1_3_s3/198_frontend_sidebar_and_visual_system.md`
+- 横向研究桌面概念C（正式改造暂停、交互原型待审）：`fin_0_1_3_s3/197_horizontal_research_desk_prototype.md`
+- 三层研究图、宽幅来源阅读及基线绑定修订入口：`fin_0_1_3_s3/196_hierarchical_graph_targeted_revision.md`
+- 真实研究依据图与本地修订草稿首版：`fin_0_1_3_s3/195_live_research_graph_pilot.md`
+- 研究图概念B与数据/checkpoint实现评估：`fin_0_1_3_s3/194_research_graph_concept.md`
+- 工作台切片A：真实报告阅读、章节目录、来源/计算回读与返回：`fin_0_1_3_s3/193_report_reading_and_source_navigation.md`
+- 工作台交互重新设计（仅本地概念评审，正式改造待Owner认可）：`fin_0_1_3_s3/192_workbench_ux_concept_review.md`
 - Dell原五项＋新增需求剩余交付（成本/上下文优先、报告/前端/上传/公开准备及秋招咨询）：`fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md`
 - Dell Q1 多 Agent 审查与责任回派（当前实施包）：`fin_0_1_3_s3/189_dell_agentic_review_and_responsible_repair.md`
 - Dell 单 Specialist R11 运行闭环通过、内容复核未通过：`fin_0_1_3_s3/188_dell_native_tool_batch_correction.md`

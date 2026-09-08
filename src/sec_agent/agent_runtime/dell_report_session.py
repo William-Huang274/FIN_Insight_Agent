@@ -32,6 +32,7 @@ from .deepseek_structured_agents import DeepSeekModelProfile, TokenBudgetBasis, 
 from .dell_case_artifacts import DellCaseArtifacts
 from .dell_case_convergence_agent import build_case_output_agent, report_citations, report_model_view, CaseReport, ReportReview
 from .dell_case_review_agent import CaseModelAudit, case_chat_model, case_mcp_tools
+from .targeted_revision import RevisionTarget, targeted_feedback
 
 
 class ReviewAction(BaseModel):
@@ -39,9 +40,12 @@ class ReviewAction(BaseModel):
     action: Literal["ask", "revise", "accept"]
     message: str = Field(default="", max_length=16000)
     answer_mode: Literal["quick", "deep"] = "deep"
+    target: RevisionTarget | None = None
 
     @model_validator(mode="after")
     def quick_only_for_questions(self):
+        if self.target is not None and self.action != "revise":
+            raise ValueError("revision_target_is_only_for_revise")
         if self.answer_mode == "quick" and self.action != "ask":
             raise ValueError("quick_mode_is_only_for_questions")
         return self
@@ -52,6 +56,8 @@ class SessionInput(TypedDict):
 
 
 class SessionState(TypedDict, total=False):
+    revision_target: dict[str, Any] | None
+    handled_revision_request_ids: list[str]
     initialized: bool
     report: dict[str, Any]
     report_review: dict[str, Any]
@@ -108,12 +114,16 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             return Command(update={"phase": "human_reviewed_not_released"}, goto=END)
         if not action.message.strip():
             raise ValueError("human_question_or_revision_feedback_required")
+        message = targeted_feedback(state, action.target, action.message) if action.target else action.message
         target = "quick_writer" if action.answer_mode == "quick" else "writer"
         if action.action == "revise" and revision_handler is not None:
             target = "research_revision"
         if target == "quick_writer" and quick_writer is None:
             raise ValueError("quick_answer_not_configured")
-        return Command(update={"request_action": action.action, "message": action.message,
+        return Command(update={"request_action": action.action, "message": message,
+            "revision_target": action.target.model_dump(mode="json") if action.target else None,
+            "handled_revision_request_ids": [*state.get("handled_revision_request_ids", []), str(action.target.request_id)]
+                if action.target else state.get("handled_revision_request_ids", []),
             "phase": "working", "conversation": [{"role": "user", "content": action.message,
                 "action": action.action, "answer_mode": action.answer_mode}]}, goto=target)
 

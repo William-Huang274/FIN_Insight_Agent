@@ -2,9 +2,9 @@
 
 2026-09-08 · [中文首页](../../README.md) · [English](../../README.en.md)
 
-仓库已公开，当前代码与工程证据可供审阅。产品仍为 FIN 0.1.3；报告 v4 等待 Owner 审阅。公开代码、开发核查、模型终审与 Owner 接受不是同一状态。此次不改变仓库可见性，也不自动发布完整报告。
+仓库已公开，当前代码与工程证据可供审阅。产品仍为 FIN 0.1.3；报告 v5 等待 Owner 审阅。公开代码、开发核查、模型终审与 Owner 接受不是同一状态。此次不改变仓库可见性，也不自动发布完整报告。
 
-The repository is public. Current code and engineering evidence are reviewable; FIN 0.1.3 and report v4 still await Owner acceptance. Code visibility, host inspection, model review and Owner acceptance are distinct. This work does not change visibility or publish the full report.
+The repository is public. Current code and engineering evidence are reviewable; FIN 0.1.3 and report v5 still await Owner acceptance. Code visibility, host inspection, model review and Owner acceptance are distinct. This work does not change visibility or publish the full report.
 
 ## 适合展示 / Suitable for review
 
@@ -38,7 +38,7 @@ No repository-wide open-source license has been selected. Dependency licenses do
 
 This is not the complete historical invoice. Separate development batches are not one research-run cost. Estimates use recorded usage and applicable public pricing; unknown usage and unknown cache fields remain explicit.
 
-当前 Dell v4：10136正文字符、54引用、3图。宿主检查20项重要判断维度、21保存CALC及10附加算术；31算术一致，金融语义标记不自动晋升。MD/PDF/Word/PPT均来自原生版本；渲染PDF15页、Word20页、PPT44页，PPT完整出处与解释在讲者备注。v1–v3、失败及外部修订费用保留；v4不等于Owner接受。
+历史 Dell v4 导出证据：10136正文字符、54引用、3图。宿主检查20项重要判断维度、21保存CALC及10附加算术；31算术一致，金融语义标记不自动晋升。MD/PDF/Word/PPT均来自原生版本；渲染PDF15页、Word20页、PPT44页，PPT完整出处与解释在讲者备注。v1–v3、失败及外部修订费用保留；v4不等于Owner接受。
 
 Dell v4 has 54 citations and three charts. Host inspection covered twenty material-judgment dimensions and 31 arithmetic checks; arithmetic consistency does not establish financial validity. Native exports were rendered as PDF (15 pages), Word (20 pages) and PowerPoint (44 slides), with detailed PPT sources in speaker notes. Earlier reports and failures remain available; v4 is not Owner acceptance.
 
@@ -51,3 +51,13 @@ A read-only local recording covers native v4, sources, historical diffs, cumulat
 NVIDIA/Micron are bounded new questions in an existing workspace, not independent full-company runs or a generalization benchmark. Available methods are not necessarily consumed. A clean model review is not perfect accuracy. Automatic summaries remain disabled; no general savings percentage, P95, production HA or multi-tenant security claim is made.
 
 复现条件见[中文运行说明](quickstart.zh-CN.md) / [English quickstart](quickstart.en.md)。逐项结果与不可变失败见 [S3/190](../worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md)；当前公开文档优先于历史日志中的旧“下一步”。Hermes 未评估，是本轮 Owner 审阅之后的独立决定。
+
+## 当前前端展示 / Current frontend showcase
+
+本轮经 Owner 要求增加四张实际产品截图：起始页、研究地图、研究配置、运行记录。它们来自本地实际应用，未用合成响应替换产品内容，没有拍摄完整报告、原文窗口、上传正文、凭据或私有 trace。运行图展示已完成短问的历史记录，不能称实时运行或完整九研究面成本。截图位于 images/，复拍命令和来源说明见 [图片说明](images/README.md)。
+
+The four actual application screenshots show research start, the map, Studio and saved runtime activity. They do not include the full report, expanded source bodies, uploaded documents, credentials or private traces. The runtime screenshot shows a completed short question, not a live full research run. See [capture notes](images/README.md).
+
+最新真实增量：前端定向修订 v4→v5，272176 tokens、估1.436408元；配置编辑消费短问，2调用、43622 tokens、估0.085984元，报告未改。两批独立列示，不与上表混成一次研究费用。v5仍待人工审阅，旧引用措辞意见保留。上述v4页数和长录屏是历史证据，不改称v5输出。
+
+Recent live increments: frontend-targeted v4→v5 revision, 272,176 tokens and estimated CNY1.436408; edited-method short Q&A, two calls and 43,622 tokens at estimated CNY0.085984, with the report unchanged. These are separate operations. Report v5 remains under human review with a known citation-wording finding. Earlier v4 page counts and recordings remain historical evidence.

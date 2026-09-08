@@ -1,9 +1,11 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 
-import { ResearchWorkspace } from "./app/ResearchWorkspace";
+import { BrowserRouter } from "react-router";
 import { OperationsConsole } from "./operations/OperationsConsole";
 import { ResearchSession } from "./app/ResearchSession";
+const EvidencePackWorkspace = React.lazy(() => import("./app/ResearchWorkspace")
+  .then(module => ({ default: module.ResearchWorkspace })));
 
 
 function canonicalEntry(pathname: string): "/workspace" | "/operations" {
@@ -36,10 +38,12 @@ if (!root) throw new Error("workbench_root_missing");
 const entry = canonicalEntry(window.location.pathname);
 createRoot(root).render(
   <React.StrictMode>
-    {window.location.pathname === "/workspace/session" ? <ResearchSession /> : entry === "/operations" ? (
+    {entry === "/operations" ? (
       <OperationsConsole />
+    ) : window.location.pathname === "/workspace/evidence-packs" ? (
+      <React.Suspense fallback={<p role="status">正在读取历史证据工作台…</p>}><EvidencePackWorkspace /></React.Suspense>
     ) : (
-      <ResearchWorkspace />
+      <BrowserRouter><ResearchSession /></BrowserRouter>
     )}
   </React.StrictMode>,
 );

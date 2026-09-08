@@ -167,6 +167,7 @@ class ResearchDataMCPDependencies:
 
 def build_research_data_mcp_server(
     dependencies: ResearchDataMCPDependencies,
+    *, role_method_reader=None,
 ) -> Any:
     """Build the thin MCP v2 surface used by the DELL reference vertical.
 
@@ -214,7 +215,7 @@ def build_research_data_mcp_server(
         structured_output=True)
     def read_role_method(method_id: str = "") -> dict[str, Any]:
         from .research_methods import get_research_method
-        return get_research_method(method_id)
+        return (role_method_reader or get_research_method)(method_id)
 
     @server.tool(
         name=GET_RESEARCH_METHOD_TOOL,

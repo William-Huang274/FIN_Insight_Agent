@@ -1,10 +1,13 @@
-# FinSight Agent 中文说明
+# FinSight Agent · 中文文档
 
-当前权威中文入口是 [README.md](README.md)。
+[完整中文首页](README.md) · [English](README.en.md)
 
-项目状态、当前能力边界和下一步恢复入口见：
+FinSight 是支持多 Agent 研究、证据追溯、人工修订和方法编辑的本地金融研究工作台。
 
-- [FIN 0.1.3 当前上下文包](docs/project_os/current_context_pack.zh-CN.md)
-- [FIN 0.1.3 当前计划](docs/product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)
-- [FIN 0.1.3 当前代码图](docs/architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md)
-- [产品 PRD](docs/product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md)
+- [产品界面与当前能力](README.md)
+- [快速开始与外部测试](docs/public/quickstart.zh-CN.md)
+- [三分钟产品导览](docs/public/demo-and-engineering.zh-CN.md)
+- [架构及代码入口](docs/public/architecture.zh-CN.md)
+- [产品迭代记录](CHANGELOG.md)
+
+中文首页统一维护在 `README.md`，避免多个副本的状态与版本号不一致。维护者恢复工作时使用[内部文档地图](docs/README.md)。

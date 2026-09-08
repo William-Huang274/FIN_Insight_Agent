@@ -24,6 +24,8 @@ from langgraph_sdk.client import LangGraphClient
 from pydantic import BaseModel, ConfigDict, Field
 
 from sec_agent.agent_runtime.dell_report_session import ReviewAction, abandoned_question_update
+from sec_agent.agent_runtime.targeted_revision import report_digest, validate_revision_target
+from .research_studio import build_studio_router, run_configuration, owned_configuration
 
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
@@ -137,6 +139,7 @@ def public_state(state):
         for row in values.get("convergence_history", [])]
     result["model_events"] = [p for e in values.get("model_events", []) if (p := public_event({"kind": "model", **e}))]
     result["can_respond"] = bool(review_interrupts(state))
+    result["report_digest"] = report_digest(values["report"]) if values.get("report") else None
     result["can_accept"] = result["can_respond"] and result.get("phase") == "ready_for_human_review"
     # No tasks, raw native messages, private checkpoints or source filesystem paths.
     return result
@@ -166,10 +169,11 @@ def can_restart_remaining_node(thread, state, last_run, usage):
 
 class NewSession(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
-    title: str = Field(default="Dell AI 基础设施 · 全案审阅", min_length=1, max_length=120)
+    title: str = Field(default="新研究任务", min_length=1, max_length=120)
     mode: Literal["review", "research"] = "review"
     question: str | None = Field(default=None, min_length=10, max_length=16000)
     defer_start: bool = False
+    studio_assistant_id: UUID | None = None
 
 
 class ResearchGuidance(BaseModel):
@@ -261,13 +265,35 @@ def build_report_sessions_router(service):
     async def sessions():
         threads = await service.sdk.threads.search(metadata={"surface": SURFACE}, limit=50)
         return [{"thread_id": t["thread_id"], "status": t["status"], "updated_at": t["updated_at"],
-            "title": t.get("metadata", {}).get("title", "Dell 研究会话")} for t in threads]
+            "title": t.get("metadata", {}).get("title", "研究任务"),
+            "studio_assistant_id": t.get("metadata", {}).get("studio_assistant_id")} for t in threads]
 
     @router.get("/research-session-config")
     async def configuration():
         profile = getattr(service, "research_profile", None)
         return {"fresh_research_enabled": profile is not None, "legacy_review_enabled": service.artifacts is not None,
             **(deepcopy(profile) if profile else {})}
+
+    @router.get("/research-studio")
+    async def research_studio():
+        # Public, answer-free packaged methods; no caller-selected file paths or secrets.
+        from sec_agent.research_foundation.research_methods import METHODS, get_research_method
+        return {"methods": [get_research_method(key) for key in METHODS],
+            "origin": "workbench_packaged_methods", "editable_runtime": False,
+            "notice": "方法为本地工作台源码版本；草稿不发布到运行服务。运行图单独从原生服务读取。"}
+
+    @router.get("/research-studio/graph/{kind}")
+    async def research_studio_graph(kind: Literal["research", "review"]):
+        graph_id = RESEARCH_GRAPH if kind == "research" else GRAPH
+        try:
+            graph = await service.sdk.assistants.get_graph(graph_id)
+        except httpx.HTTPError as exc:
+            raise HTTPException(502, "原生运行图暂不可读取，请稍后重试") from exc
+        # Node data may include implementation details; expose only IDs and topology.
+        return {"graph_id": graph_id, "origin": "native_runtime", "editable_runtime": False,
+            "nodes": [{"id": str(n["id"])} for n in graph.get("nodes", [])],
+            "edges": [{"source": str(e["source"]), "target": str(e["target"]),
+                "conditional": bool(e.get("conditional"))} for e in graph.get("edges", [])]}
 
     @router.get("/research-sessions/{thread_id}/report-versions")
     async def report_versions(thread_id: UUID, before: UUID | None = None):
@@ -290,6 +316,7 @@ def build_report_sessions_router(service):
         state = await service.report_state(thread_id, checkpoint_id)
         values = state["values"]
         return {"report": values["report"], "report_version": values["report_version"],
+            "report_digest": report_digest(values["report"]),
             "report_review": values.get("report_review"), "reason": values.get("report_revision_reason"),
             "checkpoint_id": str(checkpoint_id)}
 
@@ -328,12 +355,19 @@ def build_report_sessions_router(service):
         if body.defer_start and body.mode != "research":
             raise HTTPException(422, "只有新研究支持先上传资料")
         metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode}
+        if body.studio_assistant_id:
+            if graph != RESEARCH_GRAPH:
+                raise HTTPException(422, "研究配置需要新研究模式")
+            _, studio = await owned_configuration(service, body.studio_assistant_id)
+            metadata.update(studio_assistant_id=str(body.studio_assistant_id), studio_configuration_title=studio.title,
+                studio_configuration_digest=studio.digest)
         if body.defer_start:
             metadata["pending_question"] = payload["question"]
         thread = await service.sdk.threads.create(metadata=metadata)
         if body.defer_start:
             return {"thread_id": thread["thread_id"], "run_id": None, "status": "draft"}
         run = await service.sdk.runs.create(thread["thread_id"], graph, input=payload, stream_mode="custom",
+            config=await run_configuration(service, thread),
             stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": body.mode})
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"], "status": run["status"]}
 
@@ -348,6 +382,7 @@ def build_report_sessions_router(service):
             raise HTTPException(409, "本任务已有启动记录，请查看状态；不会重复启动付费研究")
         from sec_agent.agent_runtime.research_session import ResearchRequest
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH,
+            config=await run_configuration(service, thread),
             input=ResearchRequest(question=question).model_dump(mode="json"), stream_mode="custom", stream_subgraphs=True,
             stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "research"})
         return {"thread_id": str(thread_id), "run_id": run["run_id"], "status": run["status"]}
@@ -375,6 +410,7 @@ def build_report_sessions_router(service):
         if graph_for_thread(thread) != RESEARCH_GRAPH or not any(i.get("value", {}).get("kind") == "research_needs_attention" for i in interrupts):
             raise HTTPException(409, "当前没有待确认的未完成研究交接")
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH, command={"resume": {"action": "acknowledge"}},
+            config=await run_configuration(service, thread),
             multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "acknowledge_incomplete", "model_calls_requested": 0})
         return {"run_id": run["run_id"], "notice": "只确认已查看；不接受报告、不重跑研究。"}
 
@@ -397,6 +433,7 @@ def build_report_sessions_router(service):
             raise HTTPException(409, "仅未完成研究交接或用量已知的接续失败可继续；未知结果不重发，不跳过审查或重跑已交稿")
         invocation = {"input": None} if known_failure else {"command": {"resume": {"action": "continue_remaining"}}}
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH, **invocation,
+            config=await run_configuration(service, thread),
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": "continue_remaining"})
         return {"run_id": run["run_id"], "status": run["status"], "notice": "新调用只完成缺项；保留已提交底稿和原失败，不重发旧请求。"}
@@ -455,6 +492,7 @@ def build_report_sessions_router(service):
             events, usage = public_run_usage(service.audit_root, thread_id, run["run_id"])
             projection["model_events"].extend(events)
             public_runs.append({**{k: run.get(k) for k in ("run_id", "status", "created_at")},
+                "revision_target": run.get("metadata", {}).get("revision_target"),
                 "human_action": run.get("metadata", {}).get("human_action"),
                 "answer_mode": run.get("metadata", {}).get("answer_mode"), "usage": usage})
             public_runs[-1]["cost_estimate"] = public_cost_estimate(events)
@@ -477,6 +515,7 @@ def build_report_sessions_router(service):
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
             **projection, "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
+            "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
             "attachments": service.attachment_store.list(thread_id) if service.attachment_store else [],
             "runs": public_runs, "cumulative_usage": cumulative}
@@ -496,6 +535,7 @@ def build_report_sessions_router(service):
         checkpoint = await service.sdk.threads.update_state(str(thread_id),
             abandoned_question_update(state["values"], "已停止这次追问并返回报告审阅。" if stopped else "已放弃这次失败的追问并返回报告审阅。"), as_node="finish")
         run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), input=None, checkpoint=checkpoint["checkpoint"],
+            config=await run_configuration(service, thread),
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": "return_stopped_question" if stopped else "abandon_failed_question", "model_calls_requested": 0})
         return {"run_id": run["run_id"], "status": run["status"], "model_retry_requested": False}
@@ -503,7 +543,23 @@ def build_report_sessions_router(service):
     @router.post("/research-sessions/{thread_id}/actions")
     async def action(thread_id: UUID, body: ReviewAction, request: Request):
         browser_write(request)
+        if body.target:
+            await service.owned_thread(thread_id)
+            for previous in await service.all_runs(thread_id):
+                meta = previous.get("metadata", {})
+                if meta.get("revision_target", {}).get("request_id") == str(body.target.request_id):
+                    if (meta["revision_target"] != body.target.model_dump(mode="json")
+                            or meta.get("revision_feedback_digest") != report_digest(body.message)):
+                        raise HTTPException(409, "相同请求标识不能提交不同修订内容")
+                    return {"run_id": previous["run_id"], "status": previous["status"], "existing_request": True}
         state = await service.state(thread_id)
+        if body.target:
+            try:
+                validate_revision_target(state.get("values", {}), body.target)
+                baseline = await service.report_state(thread_id, body.target.base_checkpoint)
+                validate_revision_target(baseline.get("values", {}), body.target)
+            except ValueError as exc:
+                raise HTTPException(409, str(exc)) from exc
         if not review_interrupts(state):
             raise HTTPException(409, "当前不在人工审阅点；运行中请先等待或停止，不会自动重发模型调用")
         if body.action == "accept" and not public_state(state)["can_accept"]:
@@ -511,9 +567,11 @@ def build_report_sessions_router(service):
         if body.action != "accept" and not body.message.strip():
             raise HTTPException(422, "请填写问题或修订意见")
         thread = await service.owned_thread(thread_id)
-        run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), command={"resume": body.model_dump()},
+        run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), command={"resume": body.model_dump(mode="json", exclude_none=True)},
+            config=await run_configuration(service, thread),
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
-            metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode})
+            metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode,
+                **({"revision_target": body.target.model_dump(mode="json"), "revision_feedback_digest": report_digest(body.message)} if body.target else {})})
         return {"run_id": run["run_id"], "status": run["status"]}
 
     @router.post("/research-sessions/{thread_id}/runs/{run_id}/cancel")
@@ -605,4 +663,5 @@ def build_report_sessions_router(service):
                 yield prefix + "event: custom\ndata: " + json.dumps(data, ensure_ascii=False) + "\n\n"
         return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
 
+    router.include_router(build_studio_router(service, browser_write))
     return router

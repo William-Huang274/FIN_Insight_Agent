@@ -1,78 +1,98 @@
 # 本地运行与验证
 
-2026-09-08 · [English](quickstart.en.md)
+[English](quickstart.en.md) · [首页](../../README.md) · FIN 0.1.3
 
-## 先区分两种复现
+## 选择验证方式
 
-**仅源码/合成检查**不需要API key、真实财务资料、Docker或旧报告，可验证上传、分块、图表和导出。
+| 方式 | 需要什么 | 可以验证什么 |
+| --- | --- | --- |
+| 公开源码检查 | Python 3.11、uv | 上传、导出、配置消费、目标修订；合成四格式报告 |
+| 前端交互检查 | Node.js 22、npm、Chromium | 三种宽度下的导航、来源、修订对比、配置编辑和回放；API 为合成响应 |
+| 完整研究工作台 | 上述依赖、Docker、模型/工具凭据、原始资料和服务设置 | 实际线程、模型、工具、报告、修订和运行费用 |
 
-```powershell
+前两项不需要私有数据库，不调用模型。它们不证明真实财务研究正确，也不是完整后端的替代品。当前仓库没有可供下载的一键完整研究数据包。
+
+## 1. 检查源码与生成合成报告
+
+在仓库根目录执行；命令适用于 PowerShell 和常用 POSIX shell：
+
+```bash
 uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery
-uv run --no-sync python -m pytest tests/test_task_attachments.py tests/test_report_delivery.py -q
-uv run --no-sync python -m scripts.qualification.research_delivery_smoke --output-directory D:/temp/finsight-delivery-smoke
+uv run --no-sync python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
+```
 
+本轮结果为 **34 项通过**，并生成 MD、PDF、DOCX、PPTX、图表 PNG 和合成报告 JSON。目录必须尚不存在；再次运行请改成 `.local/public-check-02`，脚本不会覆盖旧结果。导出文件明确标注为合成测试，不是公司研究结果。PDF 可直接打开；Word/PPT 还应在 Office 或 LibreOffice 中检查实际布局。
+
+脚本使用现有 pytest 与导出器，不加载本地 `.env`、不部署服务、不提交模型任务。
+
+## 2. 验证前端交互
+
+```bash
 cd apps/workbench/frontend
 npm ci
 npm run typecheck
 npm run build
+npx playwright install chromium
+npm run test:public
 ```
 
-输出目录必须尚不存在，避免覆盖先前结果。生成文件明确是合成测试，不是Dell案例成绩。Word/PPT结构校验不能代替实际渲染；可用本机LibreOffice将它们转为PDF后检查各页。PDF导出本身不依赖Office。
+Linux 如果缺少浏览器系统依赖，使用 `npx playwright install --with-deps chromium`。公开测试只启动本机 Vite，默认端口 **4183**，不启动旧 8765 后端；本轮 **13 项通过**，涵盖 1440、1024、390 像素界面。测试使用明确的合成 API 响应，不会调用实际研究接口。
 
-2026-09-08 实测：最初独立源码资格为 `9e363302`、17项检查与四格式合成导出。后续建立独立虚拟环境，按锁文件全新安装研究、外搜、交付、控制面与资格依赖；独立源码的上传、导出、source-only启动共23项通过，未复制工作区 `.env`、数据库或私有研究结果，0模型调用。无私有资料时健康/目录可用，readiness和真实资料读取拒绝服务；这不是无数据完成研究的证明。
+需要观察操作时运行 `npm run test:public -- --headed --workers=1`。失败截图和 trace 写入 `apps/workbench/frontend/test-results/public/`；使用 `npx playwright show-trace <trace.zip>` 查看。该结果目录由 Playwright 管理，需要保存失败证据时先复制到独立目录。
 
-完整公开测试还需控制面和资格测试依赖：
+端口占用时设置环境变量 `FINSIGHT_E2E_FRONTEND_PORT` 为另一个空闲端口，再执行测试。不要停止别人的服务来腾端口。
 
-```powershell
+## 3. 启动完整本地研究
+
+运行服务使用 LangGraph Agent Server、PostgreSQL、Redis 和 LangSmith。需要准备：
+
+- Docker Engine 可用；
+- 本地模型、LangSmith 及所用外部工具凭据，参考根目录 `.env.example`；
+- 符合当前数据合同的原始财务 SQL、文档树和来源资料；
+- 独立设置目录中的 `host-settings.json`、`container-settings.json` 及数据挂载，结构参考[部署目录](../../deploy/dell_agent_server/README.md)和[当前研究启动实现](../../src/sec_agent/agent_runtime/research_session_runtime.py)。
+
+`--fresh-only` 不读取旧报告或专家答案，但仍需要原始资料，设置中应省略旧 bundle/report 路径。以下目录仅为占位示例，须替换为实际准备好的设置目录：
+
+```bash
+uv run --no-sync python -m scripts.deployment.research_workbench check --settings-directory /path/to/prepared-settings --enable-research --fresh-only
+uv run --no-sync python -m scripts.deployment.research_workbench up --settings-directory /path/to/prepared-settings --enable-research --fresh-only
+uv run --no-sync python -m scripts.deployment.research_workbench serve --settings-directory /path/to/prepared-settings --enable-research --fresh-only --ui-port 8793
+```
+
+Windows 可使用 `D:/private/finsight-session`。先完成上节前端构建，再启动；浏览器打开 **http://127.0.0.1:8793/workspace**，原生 API 默认为 **18165**。`serve` 占用当前终端，Ctrl+C 结束该 BFF。上述命令本身不提交模型任务；`up` 会创建或更新本地服务，运行中不要重建服务。
+
+`research_workbench` 是统一对外入口，沿用原 `dell_report_workbench` 实现和部署身份，避免改变已有数据库卷。旧入口保持兼容。新问题创建原生线程，不创建新的 Compose 项目或端口。
+
+## 4. 给测试者的走查清单
+
+1. **开始研究：** 选择快捷问题、填写范围、添加资料；准备与实际启动是分开的。真实启动会产生模型费用。
+2. **研究地图：** 总览进入专题，再进入判断和来源；检查面包屑返回、完整原文和计算口径。
+3. **修订对比：** 展开后再次点击收起，或用底部“收起并返回研究图”；确认报告版本和基线。
+4. **研究配置：** 编辑 Skill 并保存新版本，刷新后回读，再应用到指定空闲任务；浏览器项目分组与后端配置版本是不同存储范围。
+5. **运行记录：** 选择历史运行、筛选阶段、播放/暂停/定位；历史回放不调用模型。运行中补充意见在后续阶段交接时读取。
+6. **真实小修改（可选）：** 在已配置环境提交一条明确、局部的修改，核对目标、运行结果、差异和费用；测试不应默认重跑完整研究。
+
+反馈时提供复现步骤、预期/实际结果、浏览器及宽度、代码提交、公开错误文字；运行问题补充 run ID。不要上传凭据、原始模型上下文、私有 trace 或个人资料。可用仓库的 Bug report 模板。
+
+## 常见问题
+
+| 现象 | 检查方向 |
+| --- | --- |
+| 配置页提示运行服务不可用 | 完整功能要连接研究 BFF 和原生 API；单独 Vite 不是研究后端。 |
+| 无资料时 readiness 503 | 历史源码模式健康与目录可用，真实数据未就绪；不是自动填充测试财务数据。 |
+| 浏览器测试找不到 Chromium | 执行 Playwright 安装命令；检查下载代理和系统依赖。 |
+| 输出目录已存在 | 使用新的目录名，保留旧测试结果。 |
+| 模型请求结果未确定 | 先查看原运行和审计，不自动重复提交付费请求。 |
+
+## 更多工程检查
+
+完整公开 Python 套件需要附加依赖：
+
+```bash
 uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery --extra control-plane --extra qualification
 uv run --no-sync python -m pytest -q
 ```
 
-默认测试跳过标记为 `local_data_integration` / `requires_local_data` 的私有历史重放。具备原始挂载时，可显式运行 `--run-private-data`；缺数据、旧授权与当前事实ID漂移仍会失败，不以默认跳过证明通过。Windows专属历史事务资格仅在Windows运行，完整Git历史用于旧授权溯源。默认CI、私有历史重放与真实模型研究是三个不同的验证范围。
+私有资料测试默认跳过，挂载原资料后才使用 `--run-private-data`；历史 Git 证明需要完整历史，Windows 专属资格只在对应环境执行。完整套件、公开交互测试与真实模型研究分别记录，不能混成一个成功率。
 
-**完整Dell复现**需要运营者已准备的私有资格数据与当前服务设置；当前不是“clone后一个命令下载全部语料”的公开发行包。不得伪造缺失数据或用旧答案填入新研究。现部署的可复现资产路径/版本在私有settings和源详设/S3工作日志记录。
-
-## 完整服务部署
-
-先安装Docker Desktop并确认引擎正常。确认代理时区分宿主`127.0.0.1`和容器网络；本机API请求不经环境代理。不要因网络报错删除Docker卷。
-
-在仓库`.env`配置实际DeepSeek、LangSmith和PostgreSQL密码；不在命令行或日志打印值。Agent Server使用已固定镜像，LangSmith必须可用，无替代trace服务。Exa等现有外源接入配置遵循当前工具适配器；不能未试用便宣称可检索。
-
-准备设置目录，其中`host-settings.json`/`container-settings.json`分别描述宿主和容器路径及原始数据挂载。新研究可用`--fresh-only`运行，无需旧bundle/report；两份设置中不得带这两个旧答案路径。此模式只注册research_session，保留同一个PostgreSQL/Redis和任务资料目录。旧报告兼容模式另用原有设置，不带`--fresh-only`。
-
-```powershell
-# 替换为你已有的受控设置目录；以下命令不会启动模型任务。
-uv run --no-sync python -m scripts.deployment.dell_report_workbench up --settings-directory D:/private/finsight-session --enable-research --fresh-only
-uv run --no-sync python -m scripts.deployment.dell_report_workbench serve --settings-directory D:/private/finsight-session --enable-research --fresh-only
-```
-
-固定服务：工作台`127.0.0.1:8766`，Agent Server`127.0.0.1:18165`。源配置在`configs/research/runtime/research_session.json`，案例题目在`configs/research/cases/dell_growth_quality.json`。数据库/Redis归原生服务器；新提问不新建Compose项目、端口或volume。
-
-2026-09-08已实际启动上述fresh-only模式，健康检查确认未加载旧报告，并完成真实任务PDF/图片问答。复用本机依赖、原数据及数据库卷；这证明无旧答案的启动与执行，不代表空白机器或无数据也能完成研究。旧8765入口的源码模式也可以启动：缺少私有readiness资料时健康检查200、数据就绪检查503，目录可读、具体报告拒绝读取；损坏/校验不匹配仍报错。
-
-## 操作
-
-1. 新建研究，核对资料时点和估费；上传可选文件，再显式启动。坏文件保留草稿但不启动模型。
-2. 看真实任务、依赖、本次操作及全部原生运行累计的输入/输出/缓存/token/估费/耗时与未知项。外部导入修订费用见版本原因；并行耗时求和不是墙钟时长。并发2不代表只研究两面。可补充意见；在后续阶段的送达事件出现前不能假设模型已读，送达也不证明观点已被采纳。
-3. 停止会保留已完成记录；未知付费用量不记零，不自动重发。运行失败后先查责任节点，不能整案无脑重跑。
-4. 报告完成后检查来源和图表。模型审查意见可质疑；“人工确认”不会自动发布。短问答Flash与深度Pro为显式选择。
-5. 导出MD/PDF/Word/PPT不调用模型、不改变报告，不代表内容被人工接受。PPT为可编辑图表/表格及分页内容，不是另一次LLM重写的演讲稿。
-
-上传只保存任务副本：PDF、DOCX、MD、TXT、CSV、HTML、PNG/JPEG/WebP；单文件20MiB、单任务12份/80MiB，PDF200页、解压/文本量有上限。图片/扫描页按需发送给DeepSeek视觉模型，文字识别有误差。当前仅可信Owner本地文件，不对公网开放上传。
-
-## 验收与排错
-
-```powershell
-uv run --no-sync python scripts/eval_multi_agent/run_project_os_full_chain_preflight.py --decision configs/research/runtime/research_session.json --pretty
-uv run --no-sync python -m pytest tests/test_research_session.py tests/test_research_session_bff.py -q
-```
-
-上述是合同/接线检查，不是语义或生产认证。真实研究看相同thread/run的来源、底稿、最终报告、LangSmith与本地usage。不能把全账单解释为单次用户任务费用；试错、功能探针、完整研究、追问分别归账。价格按已知usage估算，账单为最终依据。
-
-不要把旧8765固定Pack页面当成新8766研究入口。资料缺失、来源失败、schema问题和网络问题分别诊断；不通过清数据、弱化验证器或补假来源恢复“绿色”。
-
-## 更新与回退
-
-先保存设置目录和代码提交号，确认没有付费运行，再构建并更新固定Compose服务。构建失败时保留现有镜像和原生运行，禁止用删除数据库卷来恢复。回退代码须使用兼容的已验证镜像及原设置；`--no-build`只复用已有镜像，不表示源代码已经部署。旧报告配置备份与报告版本独立保留。
-
-本地2026-09-08曾发生磁盘满导致镜像构建与Docker IPC失败：恢复保留数据库、附件和失败记录，只清理可重建构建缓存。若引擎不能启动，先查磁盘与Docker日志；不要照搬某个本机路径修复或执行factory reset。
+当前产品为 FIN 0.1.3，当前 Dell 报告为 v5 待审阅；已有 v4 导出页数属于历史版本，不冒充 v5 的新渲染结果。

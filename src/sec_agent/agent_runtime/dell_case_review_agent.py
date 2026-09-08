@@ -346,7 +346,7 @@ Use submit_case_review when inspection is complete. Each finding must anchor an 
 """
 
 
-def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, max_tool_calls=64, audit=None):
+def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, max_tool_calls=64, audit=None, method_instructions=""):
     if role not in {"counter", "verifier"}:
         raise ValueError("case_reviewer_role_invalid")
 
@@ -365,7 +365,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     emphasis = ("Your role is Counter: challenge the thesis, demand/competition/supply mechanisms and cross-paper contradictions."
                 if role == "counter" else "Your role is Verifier: inspect material factual/numeric/citation/period consistency and whether conclusions are warranted by actual sources.")
     return create_agent(model=model, tools=[*tools, submit_case_review], state_schema=CaseReviewerState,
-        system_prompt=REVIEW_PROMPT + emphasis + METHOD_TOOL_GUIDANCE + f"\nBudget: up to {max_model_calls} model calls / {max_tool_calls} tools; no retries or silent partial acceptance.",
+        system_prompt=REVIEW_PROMPT + emphasis + METHOD_TOOL_GUIDANCE + method_instructions + f"\nBudget: up to {max_model_calls} model calls / {max_tool_calls} tools; no retries or silent partial acceptance.",
         middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="error"),
                     ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="error"), *(audit.middlewares() if audit else [])],
         name=f"case_{role}")
@@ -380,7 +380,9 @@ class CaseReviewState(TypedDict, total=False):
     material_finding_count: int
 
 
-def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invocation_id):
+def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invocation_id, review_order="parallel"):
+    if review_order not in {"parallel", "counter_first", "verifier_first"}:
+        raise ValueError("unknown_review_order")
     graph = StateGraph(CaseReviewState)
     for role in ("counter", "verifier"):
         def seed(state, _role=role):
@@ -398,7 +400,8 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
         # RunnableSequence keeps the compiled subgraph statically discoverable;
         # each reviewer receives its own messages, not sibling reasoning.
         graph.add_node(role, RunnableLambda(seed) | reviewers[role] | RunnableLambda(collect))
-        graph.add_edge(START, role)
+        if review_order == "parallel":
+            graph.add_edge(START, role)
 
     def close(state):
         complete = all(state[r]["status"] == "review_submitted" for r in ("counter", "verifier"))
@@ -408,7 +411,13 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                 "material_finding_count": count}
 
     graph.add_node("collect_case_review", close)
-    graph.add_edge(["counter", "verifier"], "collect_case_review")
+    if review_order == "parallel":
+        graph.add_edge(["counter", "verifier"], "collect_case_review")
+    else:
+        first, second = ("counter", "verifier") if review_order == "counter_first" else ("verifier", "counter")
+        graph.add_edge(START, first)
+        graph.add_edge(first, second)
+        graph.add_edge(second, "collect_case_review")
     graph.add_edge("collect_case_review", END)
     return graph
 

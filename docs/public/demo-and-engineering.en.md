@@ -1,46 +1,40 @@
-# Three-minute demonstration and engineering discussion
+# Three-minute product tour
 
-2026-09-08 · FIN 0.1.3 · [中文](demo-and-engineering.zh-CN.md) · [Run requirements](quickstart.en.md)
+[中文](demo-and-engineering.zh-CN.md) · [Run requirements](quickstart.en.md) · FIN 0.1.3
 
-Use the configured local workspace and existing results for this demonstration; there is no need to pay for another complete research run. Without the private data, use the public synthetic checks. Dell report v4 is a development review candidate, pending Owner review.
+Use a configured workspace and saved results; there is no need to rerun full research for a demonstration. Dell v5 awaits human review. Public screenshots show the actual application without distributing the full report or source corpus.
+
+## Walkthrough
 
 | Time | Action | What to explain |
 | --- | --- | --- |
-| 0:00–0:30 | Open the task and its research assignments | Question → Lead dependencies → specialist workpapers. The Dell case covers nine research dimensions with concurrency capped at two. Preserve completed, failed and unfinished work. |
-| 0:30–1:10 | Read the core conclusion and open a cash-flow citation | Follow prose to source or calculation. Inspect expression, original values, units, periods and provenance. Verified arithmetic does not establish financial comparability. |
-| 1:10–1:40 | Compare report v3 and v4 | Explain why a responsible-author correction must propagate to workpaper, synthesis, prose and captions. Report revisions do not automatically change the product version. |
-| 1:40–2:10 | Inspect follow-up answers and usage | Compare a short lookup and a bounded deep question. Show request and all-run totals, cache, failures and unknown usage. Reusing saved calculations does not prove a general cost-saving percentage. |
-| 2:10–2:35 | Open uploaded PDF/image sources | A real nine-page PDF and a related image were consumed. OCR confused 5329 with 5929; the answer used the PDF to correct it. This is not comprehensive OCR qualification. |
-| 2:35–3:00 | Export and inspect the preserved failure | MD/PDF/Word/PPT share the report and require zero model calls. Return to review without retrying the failed question. Human acceptance remains the user's decision. |
+| 0:00–0:25 | Open the start page and project sidebar | Begin with a research question. Project groups live in the browser; tasks and reports live on the server. |
+| 0:25–1:00 | Navigate overview → topic → judgment | Browse report content without treating the execution graph as the report outline; follow a judgment to its evidence. |
+| 1:00–1:30 | Expand source context or a calculation | Inspect periods, units, operands and source locations; arithmetic checks do not establish financial interpretation. |
+| 1:30–2:00 | Inspect the existing v4→v5 diff, then collapse it | Targeted feedback carries a target and baseline. Revisions preserve the old report; completed execution is not human acceptance. |
+| 2:00–2:30 | Open Studio and select a role/Skill | Methods, concurrency and dual-review order are editable. Saved snapshots persist natively and can be applied to tasks; viewing does not require saving. |
+| 2:30–3:00 | Inspect run history and play/pause replay | Stage cards and public events are connected. Cost remains the whole operation's recorded usage; replay makes no model calls. |
 
-Saved guidance, delivery to a later stage and actual adoption are separate states. Cancellation cannot erase already incurred cost, and uncertain paid outcomes are not automatically resubmitted. Reading the demo does not require submitting a new question or accepting the report.
+![Editable research methods](images/research-studio.png)
 
-## Two concrete failure stories
+Studio is backed by runtime configuration rather than a raw JSON draft. A live short question verified that edited instructions entered two model requests and changed answer organization: about 15 seconds, 43,622 tokens and estimated CNY0.085984. This is neither a full research cost nor a cross-role effectiveness comparison.
 
-**A saved calculation was readable but could not be cited.** The next role inherited report citations but missed the complete operand bindings in an earlier conversation answer. The real question exhausted ten Flash calls and failed at an estimated CNY0.075703. The fix reuses complete native conversation citation bundles for reading and submission, without copying private reasoning or building another memory service. A native-loop test reads and submits the prior calculation with no SQL/calculation tools available. The paid failure is retained; local wiring and subsequent live model behavior are distinct evidence.
+![Run history and public activity](images/research-runtime.png)
 
-**A public clone required private data during startup.** Construction tried to load readiness and object files that are not distributed. Missing private mounts now produce an explicit not-ready state: health/catalog work, actual data access returns503. Present files with invalid digests still fail. An independent source checkout with newly installed locked dependencies passed23 upload, delivery and startup checks. Private historical replays are explicitly marked; skipping them does not prove research quality.
+Saved guidance, input delivery at a later phase and actual adoption are different states. Cancellation cannot reverse incurred cost; uncertain requests are not automatically resubmitted. During a read-only demo, do not start research, save configurations, submit revisions or accept a report.
 
-## Component responsibilities
+## Three engineering topics worth inspecting
 
-React presents tasks, reports and sources. FastAPI validates local operations and proxies native sessions. LangGraph Agent Server owns execution, checkpoints and recovery; PostgreSQL persists state and Redis supports the runtime. LangChain/create_agent runs tool loops; MCP exposes SQL, document, external-source and calculation tools. FIN owns research responsibilities, evidence authority and financial contracts. The calculator uses simpleeval and Decimal. LangSmith and local auditing expose observed usage and unknowns.
+**From a UI node to a real revision.** Sections provide navigation. A judgment carries an artifact ID, version, digest and checkpoint. The BFF checks the baseline and the native graph executes the revision. A new report version and actual diff return to the UI; company names in titles do not select hardcoded revision behavior.
 
-Provider caching, tool-output cleanup, summarization and checkpoint persistence solve different problems. Cache changes billing; cleanup reduces the next request; summarization adds calls and can lose information, so it remains HOLD; persistence preserves history but does not itself reduce inputs. Cache hit rate is not compression rate.
+**From an edited method to execution.** Native Assistants store independent configuration snapshots fixed for each run. Methods enter role prompts and MCP reads. Specialist context is bound before its request digest is generated, preserving receipt validation. The editor exposes supported order/concurrency choices and retains required review.
 
-## Bounded development measurements
+**Preserving evidence while managing context.** Native checkpoints retain original messages and artifacts. Outgoing requests can clear old tool bodies and retrieve them by ID later. Saved calculations keep their operands/provenance and do not become authoritative database facts just because they are reused. Automatic summaries remain disabled; cache hit rate is neither compression nor overall savings.
 
-| Scenario | Calls / reported tokens | Estimated CNY | Outcome and limits |
-| --- | --- | --- | --- |
-| Original Dell development research and early revisions |265 requests,264 with usage|28.092715 plus unknown usage|Includes failures and continuations; not an unattended single-run price.|
-| Responsible revisions A2/A4/A5 |Three separately accounted batches|6.7294149|Host review produced v4; not one-shot autonomous success.|
-| PDF/image questions A1/A2 |20 ordinary calls +1 vision call|0.162395|A1 failed on calculation parameters; A2 reused vision cache, with remaining wording comments.|
-| NVIDIA short A1/A2 |13 /269970|0.126237|12 sources readable; unit wording still required correction.|
-| Micron bounded deep A1 |11 /594559|0.746894|19 sources readable,8 arithmetic results consistent; capex bridge and inference corrections, length overrun.|
-| Dell latest complete fiscal-year revenue lookup |2 /29337|0.015132|Saved answer with one SQL citation; report unchanged.|
-| Eight distinct short questions (including the revenue row) |49 /1106250|0.405444|Eight successful runs and two retained failures;17 sources readable, with remaining semantic/citation comments. Do not add the revenue row twice.|
+See [architecture](architecture.en.md) for implementation paths and [evidence](sharing-scope.md) for actual failures and development costs. Later success does not erase earlier failed attempts.
 
-Estimates use reported usage and the corresponding public price; billing is authoritative. Keep failed repairs and later feature probes separate. These small development samples do not establish P95, generalized accuracy or multi-agent superiority.
+## Testing and feedback
 
-An actual read-only local recording covers v4 sources, the v3-to-v4 diff, cumulative usage and charts with zero model calls. It remains Owner-review material. Recording exposed a native history POST pagination incompatibility; the adapter now uses the same service's documented GET cursor endpoint without changing checkpoints.
+Without the complete research data, use the source and synthetic browser checks in the [quickstart](quickstart.en.md). They verify interactions and wiring, not report quality. Report the page, exact steps, expected/actual result and code version. Do not submit private model context or source documents.
 
-A truthful portfolio description can cover source-bound research, native persistence and human revisions, visible cost and multi-format delivery. Do not claim production HA, multi-tenancy, universal company coverage, unattended accuracy or an unproven savings percentage. SQL currently covers DELL/MU/NVDA and full research defaults to Dell. Report excerpts and raw model context require a separate sharing review.
+Demonstrated engineering work includes source binding, native state and human revision, configuration consumption, usage visibility and multi-format delivery. Production HA, universal company coverage, unassisted accuracy and general cost savings remain unproven.

@@ -76,6 +76,7 @@ jobs:
           npx playwright install --with-deps chromium
           export PATH="$GITHUB_WORKSPACE/.venv/bin:$PATH"
           npm run test:e2e -- --project=chromium-desktop
+          npm run test:public
 
       - name: Upload failed browser evidence
         if: failure()

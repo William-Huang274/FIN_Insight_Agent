@@ -1,0 +1,24 @@
+name: Bug report / 问题反馈
+description: Report a reproducible UI, setup or runtime problem.
+body:
+  - type: markdown
+    attributes:
+      value: "Please omit credentials, private traces and uploaded documents. 请勿附上密钥、私有模型上下文或个人资料。"
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Steps to reproduce / 复现步骤
+      description: Include the command or page, and whether the run used synthetic fixtures or a configured backend.
+    validations:
+      required: true
+  - type: textarea
+    id: behavior
+    attributes:
+      label: Expected and actual behavior / 预期与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment / 环境
+      description: OS, browser and viewport, Python/Node versions, commit, public error text, and run ID if relevant.

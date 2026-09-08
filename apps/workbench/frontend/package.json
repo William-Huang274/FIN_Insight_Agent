@@ -8,7 +8,8 @@
     "typecheck": "node node_modules/typescript/bin/tsc -p tsconfig.json --noEmit",
     "build": "node node_modules/typescript/bin/tsc -p tsconfig.json && node node_modules/vite/bin/vite.js build --config vite.config.ts",
     "preview": "node node_modules/vite/bin/vite.js preview --config vite.config.ts",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:public": "playwright test --config playwright.public.config.ts"
   },
   "dependencies": {
     "@langchain/langgraph-sdk": "1.10.2",

@@ -80,6 +80,7 @@ venv/
 node_modules/
 dist/
 test-results/
+.local/
 playwright-report/
 *.pyc
 !/data/logs/.gitkeep

@@ -83,6 +83,8 @@ class CaseReport(BaseModel):
 
 class ReportTextEdit(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    chart_index: int | None = Field(default=None, ge=0, le=4,
+        description="Omit for report body. Set the zero-based chart index to edit only that chart's interpretation; points and sources stay unchanged.")
     old_str: str = Field(min_length=1, max_length=20000,
         description="Exact unique text from the current report, including Markdown. Add context if it occurs more than once.")
     new_str: str = Field(max_length=20000,
@@ -107,14 +109,23 @@ def apply_report_edits(report, edits):
     if not 1 <= len(edits) <= 24:
         raise ValueError("report_edit_count_must_be_1_to_24")
     text = report["narrative_markdown"]
+    charts = [chart_submission_view(c) for c in report.get("charts", [])]
+    original_charts = deepcopy(charts)
     for index, edit in enumerate(edits):
-        count = text.count(edit.old_str)
+        if edit.chart_index is not None and edit.chart_index >= len(charts):
+            raise ValueError("report_edit_chart_index_out_of_range")
+        selected = text if edit.chart_index is None else charts[edit.chart_index]["interpretation"]
+        count = selected.count(edit.old_str)
         if count != 1:
             raise ValueError(f"report_edit_{index}_matched_{count}_times: read_current_report and copy exact unique Markdown, including the original Unicode quotation marks and surrounding context; no edits were saved")
-        text = text.replace(edit.old_str, edit.new_str, 1)
-    if text == report["narrative_markdown"]:
+        selected = selected.replace(edit.old_str, edit.new_str, 1)
+        if edit.chart_index is None:
+            text = selected
+        else:
+            charts[edit.chart_index]["interpretation"] = selected
+    if text == report["narrative_markdown"] and charts == original_charts:
         raise ValueError("report_edits_made_no_change")
-    return CaseReport(title=report["title"], narrative_markdown=text)
+    return CaseReport(title=report["title"], narrative_markdown=text, charts=charts)
 
 
 class ReportFinding(BaseModel):
@@ -379,12 +390,12 @@ def answer_reference_ids(prose):
 
 
 def report_citations(report, artifacts, messages=None, *, prior_citations=None):
+    prose = report if isinstance(report, str) else "\n".join([report.narrative_markdown,
+        *(chart.interpretation for chart in report.charts)])
     if messages is not None:
-        prose = report if isinstance(report, str) else report.narrative_markdown
         return answer_citations(prose, artifacts, messages, prior_citations=prior_citations)
     claims = {f"{p['paper_id']}:{c['claim_id']}": c for p in artifacts.catalog()["papers"]
         for c in artifacts.read_paper(p["paper_id"], "claims")}
-    prose = report if isinstance(report, str) else report.narrative_markdown
     refs = list(dict.fromkeys(CLAIM_REF.findall(prose)))
     missing = sorted(set(refs) - claims.keys())
     if not refs or missing:
@@ -671,7 +682,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_report_edits(edits: list[ReportTextEdit], runtime: ToolRuntime) -> Command:
-        """Submit 1–24 exact, unique old_str/new_str report edits atomically, then independent review. No file/path access. Prefer this for local corrections instead of reproducing the whole report."""
+        """Submit 1–24 exact unique text edits atomically, then independent review. Omit chart_index for body, or set it for one chart interpretation. No file/path access or changed chart values. Prefer local edits instead of reproducing the report."""
         if runtime.state.get("request_action") != "revise":
             return output_message(runtime, error="Report edits require a revision request, not an ordinary question.")
         try:
@@ -681,7 +692,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
         return output_message(runtime, {**report.model_dump(mode="json", exclude={"charts"}), "citations": citations,
-            **({"charts": deepcopy(runtime.state["report"]["charts"])} if runtime.state["report"].get("charts") else {}),
+            **({"charts": [{**deepcopy(original), "interpretation": edited.interpretation}
+                for original, edited in zip(runtime.state["report"]["charts"], report.charts, strict=True)]} if report.charts else {}),
             "applied_edits": [edit.model_dump(mode="json") for edit in edits]})
 
     @tool

@@ -6,8 +6,10 @@ do not invoke a model, mutate the report, or imply human approval.
 from __future__ import annotations
 
 import io
+from copy import deepcopy
 from pathlib import Path
 import re
+from urllib.parse import urlsplit
 from xml.sax.saxutils import escape
 
 
@@ -126,7 +128,27 @@ def chart_png(chart):
     return output.getvalue()
 
 
-def export_report(report, format, *, review_status="待人工审阅"):
+def export_report(report, format, *, review_status="待人工审阅", public_base_url=None):
+    report = deepcopy(report)  # display projection, never rewrite checkpoint provenance
+    citation_numbers = {key: str(i) for i, key in enumerate(report.get("citations", {}), 1)}
+    for chart in report.get("charts", []):
+        for key, number in citation_numbers.items():
+            chart["interpretation"] = chart["interpretation"].replace("[" + key + "]", "[" + number + "]")
+        chart["interpretation"] = re.sub(r"\[(P\d{2}:[A-Za-z0-9_.-]+)\]",
+            r"[未解析引用：\1；请在工作台修订]", chart["interpretation"])
+    if public_base_url:
+        def relocate_upload_links(value):
+            if isinstance(value, dict):
+                return {k: relocate_upload_links(v) for k, v in value.items()}
+            if isinstance(value, list):
+                return [relocate_upload_links(v) for v in value]
+            if isinstance(value, str):
+                parsed = urlsplit(value) if value.startswith(("http://", "https://")) else None
+                if parsed and parsed.hostname in {"localhost", "127.0.0.1"} and re.fullmatch(
+                        r"/api/v1/research-sessions/[a-f0-9-]{36}/attachments/UPLOAD::[a-f0-9]{32}", parsed.path):
+                    return public_base_url.rstrip("/") + parsed.path
+            return value
+        report = relocate_upload_links(report)
     text, references = readable_report(report)
     charts = report.get("charts", [])
     blocks = markdown_blocks(text)
@@ -154,13 +176,29 @@ def export_report(report, format, *, review_status="待人工审阅"):
             else:
                 font = "STSong-Light"
                 pdfmetrics.registerFont(UnicodeCIDFont(font))
+        # CJK fonts may omit mathematical symbols. Select a real glyph from
+        # matplotlib's packaged DejaVu font instead of emitting empty squares.
+        from matplotlib import get_data_path
+        fallback = "FinSymbols"
+        if fallback not in pdfmetrics.getRegisteredFontNames():
+            pdfmetrics.registerFont(TTFont(fallback, str(Path(get_data_path()) / "fonts/ttf/DejaVuSans.ttf")))
+        primary_glyphs = getattr(pdfmetrics.getFont(font).face, "charToGlyph", None)
+        fallback_glyphs = pdfmetrics.getFont(fallback).face.charToGlyph
+        def styled_text(value):
+            parts = []
+            for char in str(value):
+                escaped = escape(char)
+                if primary_glyphs is not None and ord(char) not in primary_glyphs and ord(char) in fallback_glyphs:
+                    escaped = f'<font name="{fallback}">{escaped}</font>'
+                parts.append("<br/>" if char == "\n" else escaped)
+            return "".join(parts)
         normal = ParagraphStyle("Body", fontName=font, fontSize=10, leading=17, spaceAfter=9, wordWrap="CJK")
         small = ParagraphStyle("Source", parent=normal, fontSize=8, leading=12, splitLongWords=True)
         heading = ParagraphStyle("Heading", parent=normal, fontSize=15, leading=22, spaceBefore=17, keepWithNext=True)
         title_style = ParagraphStyle("Title", parent=normal, fontSize=22, leading=31, spaceAfter=14)
-        story = [Paragraph(escape(title), title_style), Paragraph(escape(review_status), small), Spacer(1, 12)]
+        story = [Paragraph(styled_text(title), title_style), Paragraph(styled_text(review_status), small), Spacer(1, 12)]
         def para(value, style=normal):
-            return Paragraph(escape(str(value)).replace("\n", "<br/>"), style)
+            return Paragraph(styled_text(value), style)
         for kind, value in blocks:
             if kind == "table":
                 width = max(len(row) for row in value)

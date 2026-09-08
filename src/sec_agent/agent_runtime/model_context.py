@@ -24,14 +24,18 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6):
     if trigger_tokens is None:
         return messages
     names = {call["id"]: call["name"] for m in messages if isinstance(m, AIMessage) for call in m.tool_calls}
-    protected = {m.name or names.get(m.tool_call_id) for m in messages
-                 if isinstance(m, ToolMessage) and m.status == "error"}
     known = set(names.values()) | {m.name for m in messages if isinstance(m, ToolMessage)}
     edit = ClearToolUsesEdit(trigger=trigger_tokens, keep=keep, clear_tool_inputs=False,
-        exclude_tools=tuple(sorted(name for name in known if name and (name not in REREADABLE_TOOLS or name in protected))),
+        exclude_tools=tuple(sorted(name for name in known if name and name not in REREADABLE_TOOLS)),
         placeholder="[Older read result omitted from this request; the host retains the original. Repeat the same read tool and arguments when its source context is needed.]")
     projected = deepcopy(list(messages))
     edit.apply(projected, count_tokens=count_tokens_approximately)
+    # Native 1.4 exclusions are by tool name. A single failed read must not pin
+    # every successful result from that reader forever. Restore only the exact
+    # error messages; the native edit still owns selection and pair preservation.
+    for index, message in enumerate(messages):
+        if isinstance(message, ToolMessage) and message.status == "error":
+            projected[index] = deepcopy(message)
     return projected
 
 

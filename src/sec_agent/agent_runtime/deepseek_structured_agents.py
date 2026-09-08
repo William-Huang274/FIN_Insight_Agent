@@ -1403,6 +1403,19 @@ class DeepSeekStructuredAgentAdapter:
             semantic_json = json.dumps([_audit_value(m) for m in messages], ensure_ascii=False)
         input_characters = len(semantic_json)
         input_utf8_bytes = len(semantic_json.encode("utf-8"))
+        unprojected_characters = input_characters
+        input_character_basis = "unprojected_semantic_input_or_history_not_provider_tokens"
+        if persistent_history and isinstance(self._chat_models[model_purpose], ReasoningPreservingChatDeepSeek):
+            # Measure the same SDK payload projection used for transport, with
+            # tool schemas and provider-required reasoning included. Full saved
+            # history is storage, not the current request's input budget.
+            payload = self._chat_models[model_purpose]._get_request_payload(messages,
+                tools=[_native_function_schema(model, runtime_context_binding=runtime_context_binding)
+                       for model in native_tools.values()], tool_choice="auto")
+            payload_json = json.dumps(payload, ensure_ascii=False)
+            input_characters = len(payload_json)
+            input_utf8_bytes = len(payload_json.encode("utf-8"))
+            input_character_basis = "projected_sdk_payload_including_tools_not_provider_tokens"
         budget_role = "specialist" if model_purpose in {"verifier", "repair"} else model_purpose
         basis = self._config.token_budget_basis[budget_role]
         if input_characters > basis.max_input_characters:
@@ -1418,7 +1431,8 @@ class DeepSeekStructuredAgentAdapter:
                     "request_digest": request_digest,
                     "semantic_input_digest": semantic_input_digest,
                     "input_characters": input_characters,
-                    "input_character_basis": "unprojected_semantic_input_or_history_not_provider_tokens",
+                    "input_character_basis": input_character_basis,
+                    "unprojected_input_characters": unprojected_characters,
                     "input_utf8_bytes": input_utf8_bytes,
                     "max_input_characters": basis.max_input_characters,
                     "provider_call_attempted": False,
@@ -1450,7 +1464,8 @@ class DeepSeekStructuredAgentAdapter:
                 "structured_output_method": self._config.structured_output_method,
                 "thinking": model_profile.thinking,
                 "input_characters": input_characters,
-                "input_character_basis": "unprojected_semantic_input_or_history_not_provider_tokens",
+                "input_character_basis": input_character_basis,
+                "unprojected_input_characters": unprojected_characters,
                 "input_utf8_bytes": input_utf8_bytes,
                 "max_input_characters": basis.max_input_characters,
                 "max_output_tokens": basis.max_output_tokens,

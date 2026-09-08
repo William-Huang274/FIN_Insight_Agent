@@ -21,7 +21,8 @@ class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_space: Literal["local", "web", "uploads"] = "local"
     operation: Literal["catalog", "outline", "search", "read", "inspect_image"]
-    document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$")
+    document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
+        description="Exact server document_id from catalog/search. Uploaded documents keep the UPLOAD:: prefix; a node's embedded hash is not a document ID.")
     node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$")
     query: str = Field(default="", max_length=600)
     page_start: int | None = Field(default=None, ge=1)
@@ -56,6 +57,16 @@ class SourceDocumentRequest(BaseModel):
             self.page_start is None or self.page_end < self.page_start
         ):
             raise ValueError("source_page_range_invalid")
+        return self
+
+
+class SourceDocumentToolRequest(SourceDocumentRequest):
+    """Current tool boundary; archived action contracts retain their validation."""
+
+    @model_validator(mode="after")
+    def require_complete_upload_id(self):
+        if self.source_space == "uploads" and self.document_id and not self.document_id.startswith("UPLOAD::"):
+            raise ValueError("uploaded_document_id_must_keep_UPLOAD_prefix_use_uploads_catalog_for_exact_id")
         return self
 
 

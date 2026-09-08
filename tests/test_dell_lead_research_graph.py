@@ -59,6 +59,26 @@ def _graph(model, worker, *, seed=None, **kwargs):
         model_turn=model, run_child=worker, **kwargs).compile(), value
 
 
+@pytest.mark.parametrize("trigger", ["model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"])
+def test_execution_failure_stops_before_lead_can_replace_worker(trigger):
+    seed, calls = _seed(), []
+    def model(request):
+        calls.append(request)
+        assert len(calls) == 1, "must not issue another paid planner call after execution failure"
+        return _call(request, "DelegateResearchTasksAction", tasks=[_task()])
+    def worker(task, dependencies, config):
+        result = _worker_result(task, seed)
+        result.update(phase="specialist_human_review_handoff_emitted",
+                      human_review_handoff={"trigger": trigger, "reason_code": "synthetic_execution_failure"})
+        return result
+    graph, value = _graph(model, worker)
+    result = graph.invoke(value.model_dump(mode="json"))
+    assert result["phase"] == "research_needs_attention"
+    assert result["stop_reason"] == "delegated_execution_failure_requires_new_attempt"
+    assert len(result["task_results"]) == 1
+    assert result["task_results"][0]["agent_state"]["human_review_handoff"]["trigger"] == trigger
+
+
 def test_adaptive_handoff_requires_model_plan_and_exposes_reasons():
     events, requests = [], []
     plan = {"depth": "focused", "rationale": "One self-contained source-bound paper answers the user's complete limited scope.",

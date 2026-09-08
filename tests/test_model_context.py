@@ -35,6 +35,20 @@ def test_native_edit_only_changes_request_copy_and_retains_errors_methods_calcul
     assert projected[2].response_metadata["context_editing"]["cleared"] and projected[2].artifact is None
     assert projected[4:] == rows[4:]
     assert [m for m in projected if isinstance(m, AIMessage)] == [m for m in rows if isinstance(m, AIMessage)]
+
+
+def test_failed_reader_does_not_pin_all_successful_results_from_same_tool():
+    rows = [HumanMessage(content="Retain source access and unresolved error.")]
+    for i in range(5):
+        rows.extend([AIMessage(content="", tool_calls=[{"name": "read_source_document", "args": {"document_id": str(i)},
+            "id": str(i), "type": "tool_call"}]), ToolMessage(name="read_source_document", tool_call_id=str(i),
+            content="original source " * 200, status="error" if i == 1 else "success")])
+    original = deepcopy(rows)
+    projected = project_tool_history(rows, trigger_tokens=1, keep=1)
+    assert projected[4] == rows[4]  # the original error remains actionable
+    assert projected[-1] == rows[-1]  # keep the recent result
+    assert all(projected[i].response_metadata["context_editing"]["cleared"] for i in [2, 6, 8])
+    assert rows == original
     assert project_tool_history(rows) is rows
 
 

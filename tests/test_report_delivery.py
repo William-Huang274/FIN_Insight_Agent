@@ -48,6 +48,48 @@ def test_plot_is_png_and_markdown_tables_use_mature_parser():
     assert any(kind == "table" for kind, _ in markdown_blocks(sample()["narrative_markdown"]))
 
 
+def test_chart_citations_and_task_links_follow_export_surface_without_mutating_report():
+    from copy import deepcopy
+    report = sample()
+    report["charts"][0]["interpretation"] += "依据 [P01:C1]。"
+    report["citations"]["P01:C1"]["sources"][0]["source_url"] = "http://localhost:8766/api/v1/research-sessions/11111111-1111-4111-8111-111111111111/attachments/UPLOAD::" + "a"*32
+    original = deepcopy(report)
+    body, _ = export_report(report, "md", public_base_url="http://127.0.0.1:18795/")
+    text = body.decode()
+    assert "依据 [1]" in text and "localhost:8766" not in text and "127.0.0.1:18795" in text
+    assert report == original
+
+
+def test_pdf_math_symbols_survive_font_fallback():
+    from pypdf import PdfReader
+    report = sample()
+    report["narrative_markdown"] += "\n收入增长 ⇒ 利润仍需核验；变化 ≈ 20%。"
+    body, _ = export_report(report, "pdf")
+    text = "".join(p.extract_text() for p in PdfReader(io.BytesIO(body)).pages)
+    assert "⇒" in text and "≈" in text
+
+
+def test_chart_only_edit_keeps_values_and_rejects_unknown_chart_citations():
+    from copy import deepcopy
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.dell_case_convergence_agent import apply_report_edits, ReportTextEdit, report_citations
+    report = sample()
+    report["narrative_markdown"] += "\n这是合成资格样例，仅用于检查修订是否保留正文和来源绑定。收入比较使用同一公司、相同期间与单位，不能把算术变化解释为已经证明的经营因果。修订图表说明时，既有数据点和原始来源必须保持不变。\n"
+    report["charts"][0]["interpretation"] += " 来源 [P01:wrong_alias]。"
+    original = deepcopy(report)
+    current = apply_report_edits(report, [ReportTextEdit(chart_index=0,old_str="[P01:wrong_alias]",new_str="[P01:C1]")])
+    assert current.narrative_markdown == report["narrative_markdown"]
+    assert current.charts[0].points[0].source.source_id == "a" and report == original
+    artifacts = SimpleNamespace(catalog=lambda:{"papers":[{"paper_id":"P01"}]},
+        read_paper=lambda *_:[{"claim_id":"C1","source_ids":[]}], citation_source=lambda *_:None)
+    assert set(report_citations(current, artifacts)) == {"P01:C1"}
+    broken = current.model_copy(update={"charts":[current.charts[0].model_copy(update={"interpretation":"Source [P01:wrong_alias]"})]})
+    with pytest.raises(ValueError,match="wrong_alias"):
+        report_citations(broken, artifacts)
+    body,_=export_report(report,"md")
+    assert "未解析引用：P01:wrong_alias" in body.decode()
+
+
 @pytest.mark.parametrize("kind", ["bar", "line"])
 def test_editable_chart_axis_ids_are_valid_ooxml_and_keep_values(kind):
     from lxml import etree

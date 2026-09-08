@@ -283,6 +283,11 @@ def test_cost_estimate_counts_known_usage_and_does_not_price_failed_unknown_as_z
     estimate = public_cost_estimate(rows)
     assert estimate["known_cny"] == pytest.approx(0.0105)
     assert estimate["priced_requests"] == 1 and estimate["unknown_or_pending_requests"] == 1
+    rows.append({"event": "outcome", "call_id": "preflight", "provider_call_attempted": False,
+                 "status": "blocked_before_transport_input_limit"})
+    corrected = public_cost_estimate(rows)
+    assert corrected["not_attempted_requests"] == 1
+    assert corrected["unknown_or_pending_requests"] == 1 and corrected["known_cny"] == estimate["known_cny"]
 
 
 def test_continue_remaining_uses_native_interrupt_and_no_browser_seed_or_checkpoint_update():

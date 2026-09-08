@@ -35,7 +35,7 @@ PUBLIC_EVENT_FIELDS = frozenset({"kind", "actor", "event", "status", "call_id", 
     "model", "thinking", "reasoning_effort", "elapsed_ms", "input_tokens", "output_tokens", "total_tokens",
     "cache_hit_tokens", "cache_miss_tokens", "reasoning_tokens", "usage_reported", "error_type", "http_status_code",
     "max_output_tokens", "valid_tool_call_count", "invalid_tool_call_count", "success_scope", "run_id",
-    "task_id", "objective", "responsible_author_count", "correction_round", "paper_id", "input_characters"})
+    "task_id", "objective", "responsible_author_count", "correction_round", "paper_id", "input_characters", "provider_call_attempted"})
 
 
 def public_run_usage(audit_root, thread_id, run_id):
@@ -72,12 +72,15 @@ def public_run_usage(audit_root, thread_id, run_id):
                 if (p := public_event({**row, "run_id": str(run_id)})) and p.get("kind") == "stage")
     ids = {e["call_id"] for e in events if e.get("kind") == "model" and e.get("call_id")}
     outcomes = {e["call_id"]: e for e in events if e.get("kind") == "model" and e.get("call_id") and e.get("event") == "outcome"}
+    not_attempted = {i for i, e in outcomes.items() if e.get("provider_call_attempted") is False}
+    possible_calls = ids - not_attempted
     totals = {key: sum(e[key] for e in outcomes.values() if isinstance(e.get(key), (int, float)) and not isinstance(e.get(key), bool))
               for key in ("input_tokens", "output_tokens", "total_tokens", "cache_hit_tokens", "cache_miss_tokens", "elapsed_ms")}
     return events, {"recorded_requests": len(ids), "reported_requests": sum(isinstance(e.get("total_tokens"), int) for e in outcomes.values()),
-        "unknown_or_pending_requests": sum(not isinstance(outcomes.get(i, {}).get("total_tokens"), int) for i in ids),
-        "unknown_cache_requests": sum(not all(isinstance(outcomes.get(i, {}).get(k), int) for k in ("cache_hit_tokens", "cache_miss_tokens")) for i in ids),
-        "unknown_elapsed_requests": sum(not isinstance(outcomes.get(i, {}).get("elapsed_ms"), (int, float)) for i in ids),
+        "not_attempted_requests": len(not_attempted),
+        "unknown_or_pending_requests": sum(not isinstance(outcomes.get(i, {}).get("total_tokens"), int) for i in possible_calls),
+        "unknown_cache_requests": sum(not all(isinstance(outcomes.get(i, {}).get(k), int) for k in ("cache_hit_tokens", "cache_miss_tokens")) for i in possible_calls),
+        "unknown_elapsed_requests": sum(not isinstance(outcomes.get(i, {}).get("elapsed_ms"), (int, float)) for i in possible_calls),
         "partial_audit": partial, **totals}
 
 
@@ -127,7 +130,10 @@ def public_cost_estimate(events):
     starts = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "started"}
     outcomes = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "outcome"}
     amount, priced = 0.0, 0
+    not_attempted = {i for i, e in outcomes.items() if e.get("provider_call_attempted") is False}
     for call_id, outcome in outcomes.items():
+        if call_id in not_attempted:
+            continue
         start = starts.get(call_id, {})
         model = start.get("model") or outcome.get("model")
         counts = [outcome.get(key) for key in ("cache_hit_tokens", "cache_miss_tokens", "output_tokens")]
@@ -135,7 +141,8 @@ def public_cost_estimate(events):
         if model in OFF_PEAK and timestamp and all(type(n) is int and n >= 0 for n in counts):
             amount += sum(cost_parts(model, *counts, peak_multiplier(timestamp)).values())
             priced += 1
-    return {"known_cny": round(amount, 6), "priced_requests": priced, "unknown_or_pending_requests": len(set(starts) | set(outcomes)) - priced,
+    return {"known_cny": round(amount, 6), "priced_requests": priced, "not_attempted_requests": len(not_attempted),
+        "unknown_or_pending_requests": len((set(starts) | set(outcomes)) - not_attempted) - priced,
         "price_as_of": PRICE_AS_OF, "notice": "按已报告用量和公开分时单价估算，不是账单；未知/进行中请求未计入。"}
 
 
@@ -554,7 +561,7 @@ def build_report_sessions_router(service):
                     - datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))).total_seconds()*1000))
         usages = [r["usage"] for r in public_runs if r["usage"] is not None]
         cumulative = {key: sum(u.get(key, 0) for u in usages) for key in (
-            "recorded_requests", "reported_requests", "unknown_or_pending_requests", "input_tokens", "output_tokens",
+            "recorded_requests", "reported_requests", "not_attempted_requests", "unknown_or_pending_requests", "input_tokens", "output_tokens",
             "total_tokens", "cache_hit_tokens", "cache_miss_tokens", "unknown_cache_requests", "unknown_elapsed_requests", "elapsed_ms")}
         cumulative.update(native_runs=len(public_runs), known_cny=round(sum(r["cost_estimate"]["known_cny"] for r in public_runs), 6),
             unpriced_requests=sum(r["cost_estimate"]["unknown_or_pending_requests"] for r in public_runs),
@@ -682,14 +689,14 @@ def build_report_sessions_router(service):
             raise HTTPException(422, "来源或阅读范围不合法") from None
 
     @router.get("/research-sessions/{thread_id}/report/export/{format}")
-    async def export(thread_id: UUID, format: Literal["md", "pdf", "docx", "pptx"], checkpoint_id: UUID | None = None):
+    async def export(thread_id: UUID, format: Literal["md", "pdf", "docx", "pptx"], request: Request, checkpoint_id: UUID | None = None):
         state = await service.report_state(thread_id, checkpoint_id) if checkpoint_id else await service.state(thread_id)
         report = state.get("values", {}).get("report")
         if not report:
             raise HTTPException(409, "报告尚未生成，不能导出空结果")
         from apps.workbench.backend.application.report_delivery import export_report
         data, mime = await run_in_threadpool(export_report, report, format,
-            review_status="报告导出快照，请以工作台中当前的人工审阅状态为准")
+            review_status="报告导出快照，请以工作台中当前的人工审阅状态为准", public_base_url=str(request.base_url))
         version = state.get("values", {}).get("report_version", "snapshot")
         return Response(data, media_type=mime, headers={"Content-Disposition": f'attachment; filename="finsight-research-v{version}.{format}"',
             "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})

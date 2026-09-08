@@ -97,6 +97,7 @@ LEAD_RESEARCH_SYSTEM_PROMPT = (
     "SubmitResearchHandoffAction only passes material to downstream review or requests attention; "
     "All required branches need submitted work and no tasks may remain pending. Failed attempts must "
     "be explicitly acknowledged; successful replacement work may then proceed to independent review. "
+    "Transport failures or execution/input/call limits require a host-qualified new attempt, not automatic replacement tasks. "
     "it is NOT a verified final report, publication approval or financial PASS. Retain limitations "
     "Uncompleted Reviewed routes are disclosed separately from source-bound workpaper admissibility; "
     "do not call them completed or equate a source tag with full semantic research coverage. "
@@ -378,7 +379,15 @@ def build_dell_lead_research_graph(
         content["task_results"] = [{**workpaper_view(row["task_id"], row["agent_state"]), "status": row["status"],
             "stop_reason": row["agent_state"].get("human_review_handoff")} for row in new]
         replies[0]["content"] = json.dumps(content, ensure_ascii=False)
-        return {"tool_results": replies, "phase": "lead_observing",
+        # A semantic follow-up is permitted; recreating a failed model worker
+        # would reset its limits and may repeat an unaccounted provider call.
+        # Preserve all sibling results and stop before another Lead/model call.
+        execution_failures = [row["task_id"] for row in new
+            if (row["agent_state"].get("human_review_handoff") or {}).get("trigger")
+            in {"model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"}]
+        return {"tool_results": replies,
+                "phase": "research_needs_attention" if execution_failures else "lead_observing",
+                "stop_reason": "delegated_execution_failure_requires_new_attempt" if execution_failures else None,
                 "active_task_ids": [row["task_id"] for row in state["task_results"]]}
 
     graph = StateGraph(LeadResearchState, input_schema=SpecialistAgenticInput)
@@ -392,5 +401,6 @@ def build_dell_lead_research_graph(
     graph.add_conditional_edges("lead", lambda s: END if s["phase"] == "research_needs_attention" else "lead_tools", [END, "lead_tools"])
     graph.add_conditional_edges("lead_tools", dispatch, ["lead", "specialist", END])
     graph.add_edge("specialist", "collect_task_artifacts")
-    graph.add_edge("collect_task_artifacts", "lead")
+    graph.add_conditional_edges("collect_task_artifacts",
+        lambda s: END if s["phase"] == "research_needs_attention" else "lead", [END, "lead"])
     return graph

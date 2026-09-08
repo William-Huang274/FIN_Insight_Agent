@@ -22,7 +22,7 @@ for (const width of [1440, 1024, 390]) {
       else if (url.pathname.endsWith("/research-sessions")) body = [session];
       else if (url.pathname.endsWith("/report-versions")) body = { versions: [{ version: 4, checkpoint_id: checkpoint, title: report.title }], next_cursor: null };
       else if (url.pathname.endsWith("/actions")) { submitted = route.request().postDataJSON(); session.runs = [{ run_id: "test-target-run", status: "pending", created_at: "2026-09-08T00:00:00Z", revision_target: submitted.target }]; session.can_respond = false; body = { run_id: "test-target-run" }; }
-      else if (url.pathname.endsWith("/report-diff")) body = { diff: "-原判断\n+修订候选判断", before_version: 4, after_version: 5 };
+      else if (url.pathname.endsWith("/report-diff")) body = { diff: "--- v4\n+++ v5\n@@ -1 +1 @@\n-原判断\n+修订候选判断", before_version: 4, after_version: 5 };
       else if (url.pathname.endsWith("/source")) {
         requests.push(url.search);
         if (failSource) { await route.fulfill({ status: 503, json: { detail: "测试来源读取失败" } }); return; }
@@ -85,7 +85,7 @@ for (const width of [1440, 1024, 390]) {
     expect(submitted.target).toMatchObject({ citation_id: "C1", base_version: 4, base_digest: "a".repeat(64), base_checkpoint: checkpoint });
     expect(submitted.action).toBe("revise"); expect(writes).toHaveLength(1);
     await graph.getByRole("button", { name: "查看相对基线的报告变化" }).click();
-    await expect(graph.locator(".rg-run-result pre")).toContainText("修订候选判断");
+    await expect(graph.locator(".rg-run-result .fs-diff-side.after")).toContainText("修订候选判断");
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   });
 }

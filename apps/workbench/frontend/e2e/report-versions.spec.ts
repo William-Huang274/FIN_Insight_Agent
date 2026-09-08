@@ -36,7 +36,7 @@ for (const width of [1440, 1024, 390]) {
       else if (url.pathname.endsWith("/research-sessions")) body = [{ thread_id: id, title: "版本验证任务", status: "interrupted" }];
       else if (url.pathname.endsWith("/report-versions")) body = { versions: [{ version: 1, checkpoint_id: checkpoint, title: oldReport.title, reason: "初始研究" }], next_cursor: null };
       else if (url.pathname.endsWith(`/report-versions/${checkpoint}`)) body = { report: oldReport, report_version: 1, checkpoint_id: checkpoint, reason: "初始研究" };
-      else if (url.pathname.endsWith("/report-diff")) body = { before_version: 1, after_version: 2, reason: "根据原始现金流来源修订", diff: "--- v1\n+++ v2\n-旧版研究结论。\n+修订后的现金流解释。", charts_changed: false, citations_changed: false };
+      else if (url.pathname.endsWith("/report-diff")) body = { before_version: 1, after_version: 2, reason: "根据原始现金流来源修订", diff: "--- v1\n+++ v2\n@@ -1 +1 @@\n-旧版研究结论。\n+修订后的现金流解释。", charts_changed: false, citations_changed: false };
       else if (url.pathname.endsWith("/source")) {
         if (sourceUnavailable) { await route.fulfill({ status: 503, json: { detail: "合成来源暂时不可读取" } }); return; }
         selectedSource = url.search; body = url.searchParams.get("source_id") === gap.source_id ? gap : url.searchParams.get("source_id") === calc.source_id
@@ -100,6 +100,7 @@ for (const width of [1440, 1024, 390]) {
     await expect(page.getByRole("heading", { name: "历史报告标题" })).toBeVisible();
     await expect(page.getByRole("link", { name: "Markdown", exact: true })).toHaveAttribute("href", new RegExp(`checkpoint_id=${checkpoint}`));
     await page.getByRole("button", { name: "与当前版本比较" }).click();
+    await page.locator(".fs-diff-reason summary").click();
     await expect(page.getByText("根据原始现金流来源修订", { exact: false })).toBeVisible();
     const root = process.env.FINSIGHT_E2E_SCREENSHOT_DIR;
     if (root) { mkdirSync(root, { recursive: true }); await page.screenshot({ path: resolve(root, `report-versions-${width}.png`) }); }

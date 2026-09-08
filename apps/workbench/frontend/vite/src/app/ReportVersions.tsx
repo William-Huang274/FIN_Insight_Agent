@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { sessionsApi, type ReportVersion, type ReportSnapshot, type ReportDiff } from "../api/reportSessions";
+import { ReportDiffView } from "./ReportDiffView";
 
 export function ReportVersions({ id, currentVersion, onSelect }: {
   id: string; currentVersion: number; onSelect: (report: ReportSnapshot | null) => void;
@@ -64,9 +65,7 @@ export function ReportVersions({ id, currentVersion, onSelect }: {
     {version && <p>正在阅读历史 v{version.version}；引用、图表和导出均对应此版。修订原因：{version.reason}</p>}
     {error && <p role="alert">{error}</p>}
     {diff && <details open className="rs-version-diff"><summary>v{diff.before_version} → v{diff.after_version} 的实际变化</summary>
-      <p>修订原因：{diff.reason}</p>
-      <p>{diff.charts_changed ? "图表有变化，请切换版本查看数值与来源。" : "图表未变。"} {diff.citations_changed ? "引用绑定有变化。" : "引用绑定未变。"}</p>
-      {diff.diff ? <pre>{diff.diff.split("\n").map((line, i) => <span key={i} className={line.startsWith("+") ? "rs-diff-added" : line.startsWith("-") ? "rs-diff-removed" : ""}>{line}{"\n"}</span>)}</pre> : <p>报告正文相同。</p>}
+      <ReportDiffView value={diff} />
     </details>}
   </section>;
 }

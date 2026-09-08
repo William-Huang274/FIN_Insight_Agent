@@ -271,6 +271,27 @@ def build_report_sessions_router(service):
         return {"fresh_research_enabled": profile is not None, "legacy_review_enabled": service.artifacts is not None,
             **(deepcopy(profile) if profile else {})}
 
+    @router.get("/research-studio")
+    async def research_studio():
+        # Public, answer-free packaged methods; no caller-selected file paths or secrets.
+        from sec_agent.research_foundation.research_methods import METHODS, get_research_method
+        return {"methods": [get_research_method(key) for key in METHODS],
+            "origin": "workbench_packaged_methods", "editable_runtime": False,
+            "notice": "方法为本地工作台源码版本；草稿不发布到运行服务。运行图单独从原生服务读取。"}
+
+    @router.get("/research-studio/graph/{kind}")
+    async def research_studio_graph(kind: Literal["research", "review"]):
+        graph_id = RESEARCH_GRAPH if kind == "research" else GRAPH
+        try:
+            graph = await service.sdk.assistants.get_graph(graph_id)
+        except httpx.HTTPError as exc:
+            raise HTTPException(502, "原生运行图暂不可读取，请稍后重试") from exc
+        # Node data may include implementation details; expose only IDs and topology.
+        return {"graph_id": graph_id, "origin": "native_runtime", "editable_runtime": False,
+            "nodes": [{"id": str(n["id"])} for n in graph.get("nodes", [])],
+            "edges": [{"source": str(e["source"]), "target": str(e["target"]),
+                "conditional": bool(e.get("conditional"))} for e in graph.get("edges", [])]}
+
     @router.get("/research-sessions/{thread_id}/report-versions")
     async def report_versions(thread_id: UUID, before: UUID | None = None):
         await service.owned_thread(thread_id)

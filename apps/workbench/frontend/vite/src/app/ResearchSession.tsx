@@ -11,6 +11,9 @@ import { WorkspaceNavigation, pageTitles } from "./WorkspaceNavigation";
 import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
 import { readMemory, writeMemory } from "./workspaceMemory";
 import { RunWorkspace } from "./RunWorkspace";
+import { ResearchStart } from "./ResearchStart";
+import { ResearchStudio } from "./ResearchStudio";
+import { useWorkspaceProjects } from "./workspaceProjects";
 import type { ReportSnapshot } from "../api/reportSessions";
 import {
   ArrowUp,
@@ -168,7 +171,8 @@ export function ResearchSession() {
   const [motion, setMotion] = useState(() => localStorage.getItem("finsight.motion") === "reduced");
   const [taskQuery, setTaskQuery] = useState("");
   const [taskFilter, setTaskFilter] = useState("");
-  const globalPage = ["home", "all", "inbox", "preferences"].includes(page);
+  const globalPage = ["home", "all", "inbox", "preferences", "studio"].includes(page);
+  const projects = useWorkspaceProjects();
   const navigate = (view: string, thread = id) => {
     setParams(next => { next.set("view", view); if (thread !== id) { next.delete("level"); next.delete("topic"); next.delete("claim"); } if (thread) next.set("thread", thread); else next.delete("thread"); return next; });
   };
@@ -494,7 +498,7 @@ export function ResearchSession() {
   const findings = session?.report_review?.findings || [];
   return (
     <div data-theme={theme} data-motion={motion ? "reduced" : "full"} data-page={page} className={`rs-shell fs-workspace ${collapsed ? "fs-collapsed" : ""} ${inspectorOpen ? "rs-has-inspector" : ""}`}>
-      <WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} />
+      <WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} projects={projects.index} onProjects={projects.update} />
       <main className="rs-main">
         <header className="rs-top">
           <div className="rs-breadcrumb">
@@ -508,7 +512,10 @@ export function ResearchSession() {
             <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("activity"); setInspectorOpen(true); }}>运行与费用</button>
           </div>
         </header>
-        {globalPage && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
+        {projects.error && <p role="alert">{projects.error}</p>}
+        {page === "home" && <ResearchStart question={researchQuestion} onQuestion={setResearchQuestion} navigate={navigate} sessions={sessions} />}
+        {page === "studio" && <ResearchStudio />}
+        {globalPage && page !== "home" && page !== "studio" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
         <div className="fs-session-view" hidden={globalPage}>
         {id && !session && !creating ? <section className="rs-empty" role="status"><LoaderCircle className="rs-spin" /><h1>正在读取已保存研究…</h1><p>读取报告不会发起新的模型调用。</p></section> : !session || creating ? (
           <section className="rs-empty">
@@ -577,7 +584,7 @@ export function ResearchSession() {
                 <p>
                   信息截止 {session.research_as_of?.slice(0, 10) || "未提供"} <span>·</span>{" "}
                   {historicalReport ? `正在阅读历史 v${historicalReport.report_version}` : `当前报告 v${session.report_version || "—"}`}
-                  <button className="rs-task-toggle" aria-expanded={taskDetails} onClick={() => setTaskDetails(v => !v)}>任务说明与资料</button>
+                  <button className="rs-task-toggle" aria-controls="task-details-panel" aria-expanded={taskDetails} onClick={() => setTaskDetails(v => !v)}>任务说明与资料 <ChevronRight size={13} style={{transform: taskDetails ? "rotate(90deg)" : undefined}} /></button>
                 </p>
               </div>
               <span
@@ -597,7 +604,8 @@ export function ResearchSession() {
                     : phaseName[session.phase || ""] || "正在载入"}
               </span>
             </section>
-            <div className="rs-task-details" hidden={!taskDetails && !!session.report}>
+            <div id="task-details-panel" className="rs-task-details" hidden={!taskDetails && !!session.report} onKeyDown={e => { if (e.key === "Escape" && session.report) { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); } }}>
+            {session.report && <div className="fs-task-panel-bar"><strong>任务说明与资料</strong><button onClick={() => { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); }}><X size={15} />收起资料面板</button></div>}
             {session.question && <div className="rs-task-question">{session.question}</div>}
             {uploadStatus && <div className="rs-report-notice">{uploadStatus}</div>}
             {!busy && (session.is_draft || session.can_upload) &&

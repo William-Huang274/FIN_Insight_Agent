@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Background, Controls, MarkerType, Position, ReactFlow, type Node, type Edge } from "@xyflow/react";
-import { sessionsApi, type Citation, type Session, type Source, type RevisionTarget } from "../api/reportSessions";
+import { sessionsApi, type Citation, type Session, type Source, type RevisionTarget, type ReportDiff } from "../api/reportSessions";
+import { ReportDiffView } from "./ReportDiffView";
 import { sourceCalculation } from "./sourceCalculation";
 import { reportTopics } from "./reportTopics";
 import { ResearchOutline } from "./ResearchOutline";
@@ -52,7 +53,7 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
   const [submission, setSubmission] = useState("");
   const [uncertain, setUncertain] = useState(false);
   const submitLock = useRef(false);
-  const [diff, setDiff] = useState("");
+  const [diff, setDiff] = useState<ReportDiff | null>(null);
   const request = useRef(0);
   const detailsRef = useRef<HTMLElement>(null);
   const current = drafts[claimId] || "";
@@ -147,8 +148,8 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
     </div>
     {targetedRun && <div className="rg-run-result" role="status"><strong>节点修订：{({ pending: "等待执行", running: "正在修订", success: "运行完成，待审阅", error: "修订失败，旧结果保留", interrupted: "运行已停止 / 等待处理" } as Record<string, string>)[targetedRun.status] || targetedRun.status}</strong>
       <p>目标：{targetedRun.revision_target!.citation_id} · 基线 v{targetedRun.revision_target!.base_version} → 当前报告 v{version}。运行完成不等同于判断已通过审阅。</p>
-      <button onClick={async () => { try { const result = await sessionsApi.diff(id, targetedRun.revision_target!.base_checkpoint); setDiff(result.diff || "报告正文没有变化。请核对审查意见与运行记录。"); } catch (e) { setDiff((e as Error).message); } }}>查看相对基线的报告变化</button>
-      {diff && <pre>{diff}</pre>}</div>}
+      <button onClick={async () => { try { const result = await sessionsApi.diff(id, targetedRun.revision_target!.base_checkpoint); setDiff(result); } catch (e) { setError((e as Error).message); } }}>查看相对基线的报告变化</button>
+      {diff && <ReportDiffView value={diff} />}</div>}
     {submission && <div className="rg-run-result" role="status">{submission}<button onClick={() => void onRefresh()}>刷新运行状态</button></div>}
     {level === "overview" && <div className="rg-hierarchy"><h2>这份报告研究了什么？</h2><p>按报告章节浏览。连线表示内容归属，不代表已证实的因果关系。</p>{active && <ResearchOutline title={report.title} items={topics.map(t => ({ id: t.id, title: t.title, subtitle: `${t.claimIds.length} 条研究引用` }))} onOpen={next => { go("topic", next); }} />}</div>}
     {level === "topic" && topic && <div className="rg-hierarchy"><h2>{topic.title}</h2><p>{topic.excerpt}</p><details><summary>展开本专题的报告正文</summary><ReactMarkdown skipHtml remarkPlugins={[remarkGfm]}>{topic.markdown}</ReactMarkdown></details>

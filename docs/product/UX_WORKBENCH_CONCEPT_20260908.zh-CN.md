@@ -1,5 +1,7 @@
 # FinSight 工作台交互概设 A
 
+后续方向（2026-09-08）：Owner提出可展开、可编辑的研究关系图，要求先看概念再考虑实现。当前待审基线改为[概念B](UX_RESEARCH_GRAPH_CONCEPT_20260908.zh-CN.md)；本文件保留阅读/来源等已实现设计，不再作为主工作区唯一方向。
+
 状态：Owner看过概念交付后要求继续，按认可方向推进切片A；全套交互与易用性仍待实际审阅。日期：2026-09-08。产品仍为 FIN 0.1.3，Hermes 后置。阅读与来源实现见[S3/193](../worklog/fin_0_1_3_s3/193_report_reading_and_source_navigation.md)。
 
 ## 设计起点

@@ -12,7 +12,7 @@ import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
 import { readMemory, writeMemory } from "./workspaceMemory";
 import { RunWorkspace } from "./RunWorkspace";
 import { ResearchStart } from "./ResearchStart";
-import { ResearchStudio } from "./ResearchStudio";
+import { ResearchStudio, ResearchConfigurationPicker } from "./ResearchStudio";
 import { useWorkspaceProjects } from "./workspaceProjects";
 import type { ReportSnapshot } from "../api/reportSessions";
 import {
@@ -181,6 +181,7 @@ export function ResearchSession() {
   const [configurationError, setConfigurationError] = useState("");
   const creating = page === "new";
   const [researchQuestion, setResearchQuestion] = useState("");
+  const [studioAssistant, setStudioAssistant] = useState("");
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [uploadStatus, setUploadStatus] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -429,6 +430,7 @@ export function ResearchSession() {
     try {
       const made = await sessionsApi.create(mode === "research" ? {
         mode, title: researchQuestion.trim().slice(0, 100) || "新研究任务", question: researchQuestion, defer_start: draft || uploadFiles.length > 0,
+        ...(studioAssistant ? {studio_assistant_id:studioAssistant} : {}),
       } : { mode });
       choose(made.thread_id);
       if (mode === "research" && uploadFiles.length) {
@@ -544,6 +546,7 @@ export function ResearchSession() {
             </div>
             <div className="rs-research-prompt">
               {configuration?.title && <p>当前部署的已接通研究配置：{configuration.title}</p>}
+              <ResearchConfigurationPicker value={studioAssistant} onChange={setStudioAssistant}/>
               <label htmlFor="new-research-question">这次你想研究什么？</label>
               <textarea id="new-research-question" value={researchQuestion} maxLength={16000}
                 onChange={(e) => setResearchQuestion(e.target.value)} rows={7}

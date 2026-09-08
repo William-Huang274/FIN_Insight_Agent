@@ -150,6 +150,7 @@ def build_dell_lead_research_graph(
     allowed_branch_ids: tuple[str, ...], seed_workpapers: Mapping[str, Mapping[str, Any]],
     model_turn: Callable, run_child: Callable, max_lead_turns: int = 8,
     max_tasks: int = 4, max_parallel_tasks: int = 2, turn_source: str = "scripted_qualification", unfinished_only: bool = False,
+    role_method=None,
 ) -> StateGraph:
     allowed = set(allowed_branch_ids)
     if expected_input is not None and (not allowed or len(allowed) != len(allowed_branch_ids)
@@ -207,7 +208,7 @@ def build_dell_lead_research_graph(
             return {"phase": "research_needs_attention", "stop_reason": "lead_turn_ceiling"}
         request = {
             "agent_id": "lead:research-delegation", "research_question": research_question,
-            "role_method": get_research_method("lead"),
+            "role_method": role_method or get_research_method("lead"),
             "research_as_of": expected_input.task.research_as_of,
             "branch_catalog": [row for row in branch_catalog if row["branch_id"] in allowed],
             "required_branch_ids": list(allowed_branch_ids),

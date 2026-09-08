@@ -162,7 +162,7 @@ async function request<T>(url: string, body?: unknown): Promise<T> {
 export const sessionsApi = {
   config: () => request<ResearchConfiguration>("/api/v1/research-session-config"),
   list: () => request<Session[]>(base),
-  create: (body: { mode?: "review" | "research"; title?: string; question?: string; defer_start?: boolean } = {}) =>
+  create: (body: { mode?: "review" | "research"; title?: string; question?: string; defer_start?: boolean; studio_assistant_id?:string } = {}) =>
     request<{ thread_id: string; run_id: string | null }>(base, body),
   start: (id: string) => request<{ run_id: string }>(`${base}/${id}/start`, {}),
   guidance: (id: string, message: string) => request(`${base}/${id}/guidance`, { message }),

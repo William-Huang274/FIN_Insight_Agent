@@ -25,6 +25,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from sec_agent.agent_runtime.dell_report_session import ReviewAction, abandoned_question_update
 from sec_agent.agent_runtime.targeted_revision import report_digest, validate_revision_target
+from .research_studio import build_studio_router, run_configuration, owned_configuration
 
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
@@ -172,6 +173,7 @@ class NewSession(BaseModel):
     mode: Literal["review", "research"] = "review"
     question: str | None = Field(default=None, min_length=10, max_length=16000)
     defer_start: bool = False
+    studio_assistant_id: UUID | None = None
 
 
 class ResearchGuidance(BaseModel):
@@ -263,7 +265,8 @@ def build_report_sessions_router(service):
     async def sessions():
         threads = await service.sdk.threads.search(metadata={"surface": SURFACE}, limit=50)
         return [{"thread_id": t["thread_id"], "status": t["status"], "updated_at": t["updated_at"],
-            "title": t.get("metadata", {}).get("title", "研究任务")} for t in threads]
+            "title": t.get("metadata", {}).get("title", "研究任务"),
+            "studio_assistant_id": t.get("metadata", {}).get("studio_assistant_id")} for t in threads]
 
     @router.get("/research-session-config")
     async def configuration():
@@ -352,12 +355,19 @@ def build_report_sessions_router(service):
         if body.defer_start and body.mode != "research":
             raise HTTPException(422, "只有新研究支持先上传资料")
         metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode}
+        if body.studio_assistant_id:
+            if graph != RESEARCH_GRAPH:
+                raise HTTPException(422, "研究配置需要新研究模式")
+            _, studio = await owned_configuration(service, body.studio_assistant_id)
+            metadata.update(studio_assistant_id=str(body.studio_assistant_id), studio_configuration_title=studio.title,
+                studio_configuration_digest=studio.digest)
         if body.defer_start:
             metadata["pending_question"] = payload["question"]
         thread = await service.sdk.threads.create(metadata=metadata)
         if body.defer_start:
             return {"thread_id": thread["thread_id"], "run_id": None, "status": "draft"}
         run = await service.sdk.runs.create(thread["thread_id"], graph, input=payload, stream_mode="custom",
+            config=await run_configuration(service, thread),
             stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": body.mode})
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"], "status": run["status"]}
 
@@ -372,6 +382,7 @@ def build_report_sessions_router(service):
             raise HTTPException(409, "本任务已有启动记录，请查看状态；不会重复启动付费研究")
         from sec_agent.agent_runtime.research_session import ResearchRequest
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH,
+            config=await run_configuration(service, thread),
             input=ResearchRequest(question=question).model_dump(mode="json"), stream_mode="custom", stream_subgraphs=True,
             stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "research"})
         return {"thread_id": str(thread_id), "run_id": run["run_id"], "status": run["status"]}
@@ -399,6 +410,7 @@ def build_report_sessions_router(service):
         if graph_for_thread(thread) != RESEARCH_GRAPH or not any(i.get("value", {}).get("kind") == "research_needs_attention" for i in interrupts):
             raise HTTPException(409, "当前没有待确认的未完成研究交接")
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH, command={"resume": {"action": "acknowledge"}},
+            config=await run_configuration(service, thread),
             multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "acknowledge_incomplete", "model_calls_requested": 0})
         return {"run_id": run["run_id"], "notice": "只确认已查看；不接受报告、不重跑研究。"}
 
@@ -421,6 +433,7 @@ def build_report_sessions_router(service):
             raise HTTPException(409, "仅未完成研究交接或用量已知的接续失败可继续；未知结果不重发，不跳过审查或重跑已交稿")
         invocation = {"input": None} if known_failure else {"command": {"resume": {"action": "continue_remaining"}}}
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH, **invocation,
+            config=await run_configuration(service, thread),
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": "continue_remaining"})
         return {"run_id": run["run_id"], "status": run["status"], "notice": "新调用只完成缺项；保留已提交底稿和原失败，不重发旧请求。"}
@@ -522,6 +535,7 @@ def build_report_sessions_router(service):
         checkpoint = await service.sdk.threads.update_state(str(thread_id),
             abandoned_question_update(state["values"], "已停止这次追问并返回报告审阅。" if stopped else "已放弃这次失败的追问并返回报告审阅。"), as_node="finish")
         run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), input=None, checkpoint=checkpoint["checkpoint"],
+            config=await run_configuration(service, thread),
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": "return_stopped_question" if stopped else "abandon_failed_question", "model_calls_requested": 0})
         return {"run_id": run["run_id"], "status": run["status"], "model_retry_requested": False}
@@ -554,6 +568,7 @@ def build_report_sessions_router(service):
             raise HTTPException(422, "请填写问题或修订意见")
         thread = await service.owned_thread(thread_id)
         run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), command={"resume": body.model_dump(mode="json", exclude_none=True)},
+            config=await run_configuration(service, thread),
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode,
                 **({"revision_target": body.target.model_dump(mode="json"), "revision_feedback_digest": report_digest(body.message)} if body.target else {})})
@@ -648,4 +663,5 @@ def build_report_sessions_router(service):
                 yield prefix + "event: custom\ndata: " + json.dumps(data, ensure_ascii=False) + "\n\n"
         return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
 
+    router.include_router(build_studio_router(service, browser_write))
     return router

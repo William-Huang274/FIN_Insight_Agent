@@ -54,6 +54,9 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
   const [uncertain, setUncertain] = useState(false);
   const submitLock = useRef(false);
   const [diff, setDiff] = useState<ReportDiff | null>(null);
+  const [diffOpen, setDiffOpen] = useState(false);
+  const [diffLoading, setDiffLoading] = useState(false);
+  useEffect(() => { setDiff(null); setDiffOpen(false); }, [id, version]);
   const request = useRef(0);
   const detailsRef = useRef<HTMLElement>(null);
   const current = drafts[claimId] || "";
@@ -148,8 +151,8 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
     </div>
     {targetedRun && <div className="rg-run-result" role="status"><strong>节点修订：{({ pending: "等待执行", running: "正在修订", success: "运行完成，待审阅", error: "修订失败，旧结果保留", interrupted: "运行已停止 / 等待处理" } as Record<string, string>)[targetedRun.status] || targetedRun.status}</strong>
       <p>目标：{targetedRun.revision_target!.citation_id} · 基线 v{targetedRun.revision_target!.base_version} → 当前报告 v{version}。运行完成不等同于判断已通过审阅。</p>
-      <button onClick={async () => { try { const result = await sessionsApi.diff(id, targetedRun.revision_target!.base_checkpoint); setDiff(result); } catch (e) { setError((e as Error).message); } }}>查看相对基线的报告变化</button>
-      {diff && <ReportDiffView value={diff} />}</div>}
+      <button aria-expanded={diffOpen} aria-controls="targeted-report-diff" disabled={diffLoading} onClick={async () => { if (diffOpen) { setDiffOpen(false); return; } if (diff) { setDiffOpen(true); return; } setDiffLoading(true); try { const result = await sessionsApi.diff(id, targetedRun.revision_target!.base_checkpoint); setDiff(result); setDiffOpen(true); } catch (e) { setError((e as Error).message); } finally { setDiffLoading(false); } }}>{diffLoading ? "正在读取变化…" : diffOpen ? "收起报告变化" : "查看相对基线的报告变化"}</button>
+      <div id="targeted-report-diff" hidden={!diffOpen}>{diff && <><ReportDiffView value={diff} /><button onClick={() => { setDiffOpen(false); document.querySelector<HTMLButtonElement>('[aria-controls="targeted-report-diff"]')?.focus(); }}>收起并返回研究图 ↑</button></>}</div></div>}
     {submission && <div className="rg-run-result" role="status">{submission}<button onClick={() => void onRefresh()}>刷新运行状态</button></div>}
     {level === "overview" && <div className="rg-hierarchy"><h2>这份报告研究了什么？</h2><p>按报告章节浏览。连线表示内容归属，不代表已证实的因果关系。</p>{active && <ResearchOutline title={report.title} items={topics.map(t => ({ id: t.id, title: t.title, subtitle: `${t.claimIds.length} 条研究引用` }))} onOpen={next => { go("topic", next); }} />}</div>}
     {level === "topic" && topic && <div className="rg-hierarchy"><h2>{topic.title}</h2><p>{topic.excerpt}</p><details><summary>展开本专题的报告正文</summary><ReactMarkdown skipHtml remarkPlugins={[remarkGfm]}>{topic.markdown}</ReactMarkdown></details>

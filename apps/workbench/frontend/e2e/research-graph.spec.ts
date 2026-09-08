@@ -85,7 +85,13 @@ for (const width of [1440, 1024, 390]) {
     expect(submitted.target).toMatchObject({ citation_id: "C1", base_version: 4, base_digest: "a".repeat(64), base_checkpoint: checkpoint });
     expect(submitted.action).toBe("revise"); expect(writes).toHaveLength(1);
     await graph.getByRole("button", { name: "查看相对基线的报告变化" }).click();
-    await expect(graph.locator(".rg-run-result .fs-diff-side.after")).toContainText("修订候选判断");
+      await expect(graph.locator(".rg-run-result .fs-diff-side.after")).toContainText("修订候选判断");
+      await graph.getByRole("button", {name:"收起报告变化",exact:true}).click();
+      await expect(graph.locator("#targeted-report-diff")).toBeHidden();
+      await graph.getByRole("button", {name:"查看相对基线的报告变化"}).click();
+      await expect(graph.locator("#targeted-report-diff")).toBeVisible();
+      await graph.getByRole("button", {name:"收起并返回研究图 ↑"}).click();
+      await expect(graph.locator("#targeted-report-diff")).toBeHidden();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
   });
 }

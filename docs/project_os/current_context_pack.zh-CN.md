@@ -6,6 +6,8 @@
 
 ## 当前交付与停止点
 
+2026-09-08最新执行：Owner认可概念B、授权先做一版。已接React Flow12.11.6真实依据图作为已有报告默认入口，逐引用展开来源/CALC/操作数，固定报告checkpoint读取并支持legacy计算与alias回读；本地按引用修订草稿与影响范围可体验，尚未接执行/持久分支。TS/构建及A2三宽度图＋阅读历史6浏览器通过，真实v4第21条CALC可读，0模型。8766已载本地体验版，公开main不变；详见[S3/195](../worklog/fin_0_1_3_s3/195_live_research_graph_pilot.md)。下方“尚未认可/未接正式前端”是前轮历史状态；本轮已获设计实现授权，等待实际体验反馈，Hermes继续后置。
+
 2026-09-08最新Owner方向：希望以图展开明确研究依据并参与编辑，随后要求“先把前端概念做出来，然后想想该怎么实现”，关注数据结构与checkpoint。本轮交付[研究图概念B](../product/UX_RESEARCH_GRAPH_CONCEPT_20260908.zh-CN.md)与[实现评估](../architecture/RESEARCH_GRAPH_IMPLEMENTATION_20260908.zh-CN.md)：可点击合成数据原型，假设→影响→候选比较，0模型；正式图/持久化/分支重跑未实现。发现现有report_versions按整数版本聚合的候选分支限制；建议React Flow资格＋现有LangGraph薄适配，先真实只读证据链，不造第二运行时。Owner未认可图设计前不继续正式改造；原报告阅读切片保留。详见[S3/194](../worklog/fin_0_1_3_s3/194_research_graph_concept.md)。Hermes继续后置。
 
 2026-09-08最新执行：概念原型交付后Owner要求“继续”，按认可方向实施切片A（真实报告阅读＋来源核对）。移除宽屏强制对话/报告双显示，压缩任务头、折叠资料说明，增加同名可定位目录、来源/计算与操作数回读及返回，保留历史版本和原始语义状态。TypeScript/构建与三宽度浏览器A4通过，A1焦点失败原件保留；真实v4旧JSON计算兼容、原文回读与返回成功，0模型。详见[S3/193](../worklog/fin_0_1_3_s3/193_report_reading_and_source_navigation.md)。8766已载本地体验版，分支codex/fin013-report-reader尚未推送/合main；公开仍main＋两个历史分支。B追问修订、C入口进度、D整体收口未完成；切片A交Owner真实体验，不声称全前端已验收。Hermes仍后置。

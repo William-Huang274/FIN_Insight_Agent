@@ -1,5 +1,7 @@
 # 研究图实现评估：复用 checkpoint，补齐研究关系
 
+后续状态：Owner认可后完成首个React Flow真实依据链和本地草稿切片，见[S3/195](../worklog/fin_0_1_3_s3/195_live_research_graph_pilot.md)。成熟画布已完成当前React19接入资格；基线写入、分支与精确局部运行仍未实现。以下为原始有界评估，未据此承诺全量能力。
+
 2026-09-08，提议/未实施。关联[概念B](../product/UX_RESEARCH_GRAPH_CONCEPT_20260908.zh-CN.md)。本轮只读源码、官方资料和可运行交互演示，不安装新运行时，不调用研究模型。
 
 ## 结论

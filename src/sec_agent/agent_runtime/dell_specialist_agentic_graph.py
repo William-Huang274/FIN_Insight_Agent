@@ -38,6 +38,7 @@ from pydantic import (
 from .dell_agentic_contracts import ProviderEvidenceIntent
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
+from sec_agent.research_foundation.source_quotes import contains_source_quote
 from .dell_reference_vertical_contracts import (
     BoundBranchTask,
     RuntimeReceipt,
@@ -1255,7 +1256,7 @@ def _submission_errors(
                 value = claim.citation_quotes.get(evidence_id, "")
                 quotes = value if isinstance(value, list) else [value]
                 for index, quote in enumerate(quotes or [""]):
-                    if not quote.strip() or not any(quote in str(p.get("passage", "")) for p in passages):
+                    if not any(contains_source_quote(str(p.get("passage", "")), quote) for p in passages):
                         errors.append(
                             f"source_quote_not_in_observed_passage:{evidence_id}:"
                             f"claim={claim.claim_id}:quote_index={index}:"

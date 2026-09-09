@@ -5,6 +5,8 @@ iteration, messages, tool pairing, concurrency and persistence; no new runner.
 """
 from __future__ import annotations
 
+from sec_agent.research_foundation.source_quotes import contains_source_quote
+
 from copy import deepcopy
 import json
 import operator
@@ -335,7 +337,7 @@ def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
                 errors.append(f"source_quote_required:{claim.claim_id}:{ref}")
             body = str(source.get("passage") or source.get("bounded_excerpt") or source.get("value_decimal") or "")
             for quote in ([quotes] if isinstance(quotes, str) else quotes or []):
-                if not quote or quote not in body:
+                if not quote or not contains_source_quote(body, quote):
                     errors.append(f"source_quote_not_exact:{claim.claim_id}:{ref}")
         if not set(claim.citation_quotes).issubset(claim.source_ids):
             errors.append(f"quote_ref_not_in_source_ids:{claim.claim_id}")

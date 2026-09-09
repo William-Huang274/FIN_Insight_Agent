@@ -56,7 +56,7 @@ async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=Fals
             elif role.endswith("verifier"):
                 owner = research_owner if role == "research_verifier" else terminal_owner
                 findings = [finding(owner)] if owner and (repeat or correction_round == 0) else []
-                replies = [[call("submit_report_review", {"review": independent_review(findings)}, "verify")]]
+                replies = [[call("submit_report_review", {"review": {**independent_review(findings), "completion": "complete"}}, "verify")]]
             elif role == "writer" and revising_report and local_writer_edits:
                 replies = [[call("submit_report_edits", {"edits": [
                     {"old_str": f"[{ref}]", "new_str": f"Locally revised wording [{ref}]"}]}, "local-edit")]]
@@ -213,8 +213,8 @@ def test_native_verifier_receives_invalid_owner_feedback_then_corrects_without_w
         malformed = independent_review([finding("research", pid="P99")])
         corrected = independent_review([finding("research")])
         model = NativeFixtureModel(marker="verifier-private", replies=[
-            [call("submit_report_review", {"review": malformed}, "bad")],
-            [call("submit_report_review", {"review": corrected}, "good")]])
+            [call("submit_report_review", {"review": {**malformed, "completion": "complete"}}, "bad")],
+            [call("submit_report_review", {"review": {**corrected, "completion": "complete"}}, "good")]])
         agent = build_case_output_agent(role="verifier", model=model, tools=[], artifacts=artifacts,
             limits={"model_calls": 3, "tool_calls": 4}, require_responsibility=True)
         from langchain_core.messages import HumanMessage, ToolMessage

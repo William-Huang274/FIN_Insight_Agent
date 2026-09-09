@@ -54,6 +54,13 @@ def test_rejected_candidate_resumes_same_worker_without_retrieval_or_lifetime_re
     assert request["execution_budget"]["remaining_model_turns"] == 3
     assert request["submission_to_repair"]["candidate"] == failed["last_submission_attempt"]["arguments"]
     assert failed == original
+    # The locator must retain the original invocation after a new product run.
+    from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistNotebook, _saved_read_observation
+    notebook = SpecialistNotebook.model_validate_json(json.dumps(recovered["notebook"]))
+    for record in notebook.model_turn_records[:2]:
+        saved = _saved_read_observation(recovered, notebook, record.action)
+        assert saved is not None and saved in notebook.observations
+    assert recovered["model_turn_invocations"]["1"] == failed["run_invocation_id"]
     with pytest.raises(DellSpecialistAgenticGraphError, match="recovery_task_or_data_scope_mismatch"):
         graph(second, failed).invoke({**value, "run_id": "another-thread"})
 
@@ -133,7 +140,7 @@ def test_product_interrupt_resumes_only_incomplete_reviewer_with_original_reads(
                 tools = await case_mcp_tools(client)
                 reads = [call("read_research_artifact", {"paper_id": p["paper_id"]}, "read-" + p["paper_id"])
                          for p in artifacts.catalog()["papers"]]
-                submit = [call("submit_case_review", {"review": review_fixture(artifacts)}, "submit")]
+                submit = [call("submit_case_review", {"review": {**review_fixture(artifacts), "completion": "complete"}}, "submit")]
                 models = {r: RecoveryChat(marker=r, replies=([reads] if r == "counter" else [reads, submit])
                           if review_calls == 1 else ([submit] if r == "counter" else [])) for r in ("counter", "verifier")}
                 agents = {r: build_case_reviewer(role=r, model=models[r], tools=tools, artifacts=artifacts,

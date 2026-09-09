@@ -30,6 +30,26 @@ def review_fixture(artifacts):
                         for p in artifacts.catalog()["papers"]], "findings": [], "unresolved_data_requests": [], "withdrawn_finding_reasons": {}}
 
 
+@pytest.mark.parametrize("kind", ["case", "revision", "report"])
+def test_all_review_submission_boundaries_reject_observed_omitted_unfinished_work(kind):
+    from sec_agent.agent_runtime.dell_case_review_agent import SubmittedCaseReview, RevisionCaseReview
+    from sec_agent.agent_runtime.dell_case_convergence_agent import SubmittedReportReview, ReportReview
+    pending = "The necessary attribution source has not been inspected, so this assessment remains incomplete."
+    legacy = {"summary": pending}
+    if kind != "report":
+        legacy["assessments"] = [{"paper_id": "P01", "assessment": pending}]
+    schema = {"case": SubmittedCaseReview, "revision": RevisionCaseReview, "report": SubmittedReportReview}[kind]
+    # Historical records remain readable. New submissions cannot repeat the
+    # observed omission that silently defaulted an unfinished review to [].
+    (ReportReview if kind == "report" else CaseReview).model_validate(legacy)
+    with pytest.raises(ValueError):
+        schema.model_validate(legacy)
+    with pytest.raises(ValueError):
+        schema.model_validate({**legacy, "completion": "complete", "unresolved_data_requests": [pending]})
+    parsed = schema.model_validate({**legacy, "completion": "incomplete", "unresolved_data_requests": [pending]})
+    assert parsed.unresolved_data_requests == [pending]
+
+
 class ScriptedNativeChat(BaseChatModel):
     replies: list
     marker: str
@@ -167,8 +187,8 @@ def test_native_parallel_agents_errors_and_checkpointed_private_messages(artifac
             replies = [read_calls, [call("read_research_source", {"source_id": "unknown"}, "badsource")],
                 [call("calculate_research_metric", {"request": {"expression": "a / 2", "operands": {"a": {"source_id": source_id}},
                     "result_unit": "fixture", "rationale": "Test arithmetic only, not economic interpretation."}}, "calc")],
-                [call("submit_case_review", {"review": bad}, "badreview")],
-                [call("submit_case_review", {"review": good}, "goodreview")]]
+                [call("submit_case_review", {"review": {**bad, "completion": "complete"}}, "badreview")],
+                [call("submit_case_review", {"review": {**good, "completion": "complete"}}, "goodreview")]]
             reviewers = {r: build_case_reviewer(role=r, model=ScriptedNativeChat(replies=replies, marker=r),
                 tools=tools, artifacts=artifacts) for r in ("counter", "verifier")}
             saver = InMemorySaver()
@@ -222,7 +242,7 @@ def test_saved_finding_survives_limit_and_is_merged_without_rewriting(artifacts,
             reviewers = {role: build_case_reviewer(role=role, artifacts=artifacts, tools=tools,
                 max_model_calls=2 if role == "counter" else 3,
                 model=ScriptedNativeChat(marker=role, replies=[reads, save,
-                    [call("submit_case_review", {"review": final}, "submit")]]))
+                    [call("submit_case_review", {"review": {**final, "completion": "complete"}}, "submit")]]))
                 for role in ("counter", "verifier")}
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question="Fixture question",
                 research_handoff={"synthesis_notes": "Unverified model coverage, not source truth."},
@@ -315,7 +335,7 @@ def test_native_limit_keeps_peer_review_and_incomplete_checkpoint(artifacts):
                 "counter": build_case_reviewer(role="counter", model=ScriptedNativeChat(replies=[reads], marker="counter"),
                     tools=tools, artifacts=artifacts, max_model_calls=1),
                 "verifier": build_case_reviewer(role="verifier", model=ScriptedNativeChat(
-                    replies=[reads, [call("submit_case_review", {"review": review_fixture(artifacts)}, "submit")]], marker="verifier"),
+                    replies=[reads, [call("submit_case_review", {"review": {**review_fixture(artifacts), "completion": "complete"}}, "submit")]], marker="verifier"),
                     tools=tools, artifacts=artifacts, max_model_calls=2),
             }
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question="Bounded peer isolation qualification",
@@ -406,7 +426,7 @@ def test_actual_case_data_plane_with_native_MCP_tool_projection(artifacts):
                 binding = await client.call_tool("get_dell_research_method", {"branch_ids": branches, **args})
                 assert not binding.is_error
                 tools = {t.name: t for t in await case_mcp_tools(client, run_scope=binding.structured_content["run_scope"], method_arguments=args)}
-                assert len(tools) == 8
+                assert len(tools) == 9 and "search_research_sources" in tools
                 method = await tools["get_dell_research_method"].ainvoke(call("get_dell_research_method", {"branch_ids": branches}, "method"))
                 assert "scope_ceiling" not in method.artifact and "execution_budget_notice" in method.artifact
                 catalog = await tools["read_source_document"].ainvoke(call("read_source_document", {
@@ -432,7 +452,7 @@ def test_real_DeepSeek_SDK_native_requests_usage_and_reasoning_preservation(arti
     config = load_deepseek_structured_agent_config("configs/research/fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json")
     replies = [[call("read_research_artifact", {"paper_id": p["paper_id"]}, f"read{i}")
                for i, p in enumerate(artifacts.catalog()["papers"])],
-               [call("submit_case_review", {"review": review_fixture(artifacts)}, "submit")]]
+               [call("submit_case_review", {"review": {**review_fixture(artifacts), "completion": "complete"}}, "submit")]]
 
     def serve(request):
         body = json.loads(request.content)

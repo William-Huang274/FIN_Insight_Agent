@@ -34,6 +34,20 @@ def test_catalog_exposes_actual_claim_binding_and_rejects_guessed_number():
     assert "P01:C999" not in artifacts.catalog()["papers"][0]["citation_ids"]
 
 
+def test_answer_can_reference_exact_operand_source_alias_without_claim_renaming():
+    from test_research_session import _new_worker_fixture
+    from sec_agent.agent_runtime.dell_case_convergence_agent import answer_citations
+    artifacts = DellCaseArtifacts([_new_worker_fixture()])
+    ref = next(iter(artifacts.read_paper("P01", "sources")))
+    before = deepcopy(artifacts._sources)
+    bound = answer_citations(f"The saved calculation names this original source [{ref}].", artifacts, [])
+    assert bound[ref]["sources"][0] == artifacts.citation_source(ref)
+    assert bound[ref]["claim"]["numeric_authority"] == "not_applicable"
+    assert artifacts._sources == before
+    with pytest.raises(ValueError):
+        answer_citations("An invented source [P01:S999].", artifacts, [])
+
+
 def test_reader_and_calculator_share_newly_observed_source_lookup():
     from mcp import Client
     from mcp.server import MCPServer
@@ -63,6 +77,49 @@ def _calculate(expression="a / 2", operands=None):
     request = SourceBoundCalculation(expression=expression, operands=operands or {"a": {"source_id": "fact"}},
         result_unit="test_unit", rationale="Fixture arithmetic, not a financial conclusion.")
     return calculate_from_sources(request, _lookup)
+
+
+def test_scoped_fts_search_returns_exact_reread_and_preserves_source_authority():
+    from test_research_session import _new_worker_fixture
+    artifacts = DellCaseArtifacts([_new_worker_fixture()])
+    other = deepcopy(artifacts)
+    passage = "前文 Unicode € " * 150 + "Goodwill impairment was 1,578; this is a test fixture." + " context" * 200
+    source = {"result_state": "source_bound_passage", "title": "Fixture annual report",
+              "passage": passage, "numeric_fact_authority": False}
+    artifacts._sources["P01:S999"] = source
+    original = deepcopy(artifacts._sources)
+    result = artifacts.search_sources('"Goodwill impairment"')
+    hit = result["matches"][0]
+    assert hit["source_id"] == "P01:S999" and hit["numeric_fact_authority"] is False
+    assert "Goodwill impairment" in hit["snippet"]
+    window = artifacts.read_source(**hit["read_arguments"])
+    assert window["text"] == passage[window["offset"]:window["offset"] + 2000]
+    assert "Goodwill impairment was 1,578" in window["text"]
+    assert artifacts._sources == original
+    assert not other.search_sources('"Goodwill impairment"')["matches"]
+    with pytest.raises(ValueError, match="query_invalid"):
+        artifacts.search_sources('"unclosed')
+    assert not artifacts.search_sources('"nonexistent; DROP TABLE sources;"')["matches"]
+
+
+def test_source_search_is_available_through_native_mcp_and_case_adapter():
+    from mcp import Client
+    from mcp.server import MCPServer
+    from sec_agent.agent_runtime.dell_case_artifacts import register_case_artifact_tools
+    from sec_agent.agent_runtime.dell_case_review_agent import CASE_TOOLS
+    from test_research_session import _new_worker_fixture
+    assert "search_research_sources" in CASE_TOOLS
+    server = MCPServer("scoped-search-test")
+    artifacts = DellCaseArtifacts([_new_worker_fixture()])
+    register_case_artifact_tools(server, artifacts)
+    async def exercise():
+        async with Client(server, raise_exceptions=False) as client:
+            result = await client.call_tool("search_research_sources", {"query": "revenue"})
+            assert not result.is_error
+            assert "matches" in result.structured_content
+            invalid = await client.call_tool("search_research_sources", {"query": '"unclosed'})
+            assert invalid.is_error
+    asyncio.run(exercise())
 
 
 def test_calculator_reads_s2_value_locally_without_model_copy_or_authority_promotion():

@@ -151,7 +151,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
                 models[role] = NativeFixtureModel(marker=role+"-private", replies=[
                     [call("read_research_artifact", {"paper_id": p["paper_id"]}, "read-"+p["paper_id"])
                      for p in artifacts.catalog()["papers"]],
-                    [call("submit_case_review", {"review": result}, "review-submit")]])
+                    [call("submit_case_review", {"review": {**result, "completion": "complete"}}, "review-submit")]])
                 reviewers[role] = build_case_reviewer(role=role, model=models[role], tools=tools, artifacts=artifacts)
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question=state["question"],
                 run_id="parent-fixture", run_invocation_id="review-fixture").compile()
@@ -185,7 +185,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
                         "explanation": "Synthetic local plumbing test, not an actual financial correction."} for f in feedback]
                     reply = call("submit_paper_revision", {"revision": revision}, "rev")
                 elif role.endswith("verifier"):
-                    reply = call("submit_report_review", {"review": review_result}, "check")
+                    reply = call("submit_report_review", {"review": {**review_result, "completion": "complete"}}, "check")
                 elif role == "synthesis":
                     if fail_synthesis_once and not synthesis_failed:
                         synthesis_failed = True

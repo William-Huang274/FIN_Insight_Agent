@@ -24,7 +24,7 @@ from langchain_core.tools import ToolException
 from langgraph.graph import START, END, StateGraph
 from langgraph.types import Command
 from markdown_it import MarkdownIt
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .dell_case_review_agent import _text_values, InvalidToolCallFeedback
 from .dell_specialist_agentic_graph import SpecialistClaim
@@ -150,6 +150,18 @@ class ReportReview(BaseModel):
     findings: list[ReportFinding] = Field(default_factory=list, max_length=40)
     unresolved_data_requests: list[str] = Field(default_factory=list, max_length=20,
         description="Only data still indispensable to a remaining material claim, so the report cannot safely stand without it. Optional future disclosure, future S2 ingestion, or limits already handled by removing/qualifying the claim belong in summary/advisory findings, not this blocking list. Do not require forbidden SQL/Evidence writes.")
+
+
+class SubmittedReportReview(ReportReview):
+    completion: Literal["complete", "incomplete"] = Field(description="Whether all necessary checks in the requested scope were completed.")
+    unresolved_data_requests: list[str] = Field(max_length=20,
+        description="Explicit required list of indispensable checks still undone, including those mentioned in prose. Empty only when none remain.")
+
+    @model_validator(mode="after")
+    def completion_matches_unresolved(self):
+        if (self.completion == "incomplete") != bool(self.unresolved_data_requests):
+            raise ValueError("report_completion_must_match_explicit_unresolved_checks")
+        return self
 
 
 class CaseOutputState(AgentState):
@@ -483,7 +495,20 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
                 sources.extend(direct[source_id]["sources"] if source_id in direct else [artifacts.read_source(source_id)])
         direct[ref] = {"claim": {"kind": "calculation", "statement": f"{body['expression']} = {body['value_decimal']} {body['result_unit']}",
             "numeric_authority": "non_authoritative", "authority_note": body["authority_note"]}, "sources": sources}
-    paper_refs = [ref for ref in refs if CLAIM_REF.fullmatch(f"[{ref}]")]
+    # A retained operand can point to a source alias, not an author claim.
+    # Resolve exact archived IDs through the same reader instead of interpreting
+    # every Pxx:* token as a claim. This creates a citation view, never a new fact.
+    for ref in refs:
+        if ref in direct:
+            continue
+        try:
+            artifacts.source_item(ref)
+            source = artifacts.citation_source(ref)
+        except ValueError:
+            continue
+        direct[ref] = {"claim": {"kind": "source_reference", "statement": "Exact archived source reference; citation resolution is not financial verification.",
+            "numeric_authority": "not_applicable"}, "sources": [source]}
+    paper_refs = [ref for ref in refs if ref not in direct and CLAIM_REF.fullmatch(f"[{ref}]")]
     bound = report_citations(" ".join(f"[{ref}]" for ref in paper_refs), artifacts) if paper_refs else {}
     missing = [ref for ref in refs if ref not in bound and ref not in direct]
     if missing:
@@ -578,6 +603,16 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         return artifacts.with_revisions(runtime.state.get("revisions", {})).catalog()
 
     @tool
+    def search_research_sources(query: str, runtime: ToolRuntime, limit: int = 5) -> dict:
+        """Locate archived source windows in the current revised papers using FTS5 source-language terms, OR or quoted phrases. Read matches with read_current_source; searching is not verification."""
+        try:
+            result = artifacts.with_revisions(runtime.state.get("revisions", {})).search_sources(query, limit)
+            result["notice"] = result["notice"].replace("read_research_source", "read_current_source")
+            return result
+        except ValueError as exc:
+            raise ToolException(str(exc)) from None
+
+    @tool
     def read_current_workpaper(paper_id: str, runtime: ToolRuntime, section: Literal["workpaper", "claims", "sources"] = "workpaper") -> dict:
         """Read the latest case workpaper view including accepted author amendments. Original archives stay immutable."""
         try:
@@ -670,7 +705,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_case_answer(answer_markdown: str, runtime: ToolRuntime) -> Command:
-        """Answer with exact observed [PASSAGE::id], [NUMFACT::id], [CALC::id] or [Pxx:claim_id]. For a successful SQL typed_gap, cite its [MCPFACT::id] fact_request_id as a LOCAL QUERY RECEIPT only: no local match does not prove issuer non-disclosure or exhaustive public search. No fixed prose template; do not rewrite the report."""
+        """Answer with exact observed [PASSAGE::id], [NUMFACT::id], [CALC::id], [Pxx:claim_id] or archived source aliases. For a successful SQL typed_gap, cite its [MCPFACT::id] fact_request_id as a LOCAL QUERY RECEIPT only: no local match does not prove issuer non-disclosure or exhaustive public search. When discussing an unbound ID or namespace in an error, use Markdown code notation: a diagnostic identifier is not an evidence citation. Supported financial claims still require real citations. No fixed prose template; do not rewrite the report."""
         if runtime.state.get("request_action") != "ask":
             return output_message(runtime, error="This request asks for a revised report. Use submit_case_report.")
         try:
@@ -699,7 +734,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
             "applied_edits": [edit.model_dump(mode="json") for edit in edits]})
 
     @tool
-    def submit_report_review(review: ReportReview, runtime: ToolRuntime) -> Command:
+    def submit_report_review(review: SubmittedReportReview, runtime: ToolRuntime) -> Command:
         """Submit independent report findings; verify financial meaning, not just citation syntax."""
         report = runtime.state["report"]
         errors = review_responsibility_errors(review, artifacts, required=require_responsibility)
@@ -709,9 +744,10 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
                   if not any(f.report_quote in t for t in reviewable)]
         if errors:
             return output_message(runtime, error=json.dumps({"errors": errors}, ensure_ascii=False))
-        return output_message(runtime, review.model_dump(mode="json"))
+        return output_message(runtime, review.model_dump(mode="json", exclude={"completion"}))
 
-    read_current_workpaper.handle_tool_error = read_current_source.handle_tool_error = True
+    read_current_workpaper.handle_tool_error = read_current_source.handle_tool_error = search_research_sources.handle_tool_error = True
+    tools = [t for t in tools if t.name != "search_research_sources"] + [search_research_sources]
     if role == "repair":
         specific = "Revise only your responsible workpaper in Chinese. Use claim_updates for changed/new claims, preserve unaffected claim IDs. Replace the thesis/mechanism/narrative so old errors do not survive in prose; respond to each finding, including explicitly marked human feedback. Do not mechanically accept reviewer causal conclusions."
         submit = submit_paper_revision

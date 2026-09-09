@@ -7,6 +7,9 @@ new Evidence admission, new research claims or execution state are created here.
 from __future__ import annotations
 
 import json
+import sqlite3
+from contextlib import closing
+from uuid import uuid4
 from difflib import SequenceMatcher
 from copy import deepcopy
 from collections.abc import Mapping, Sequence
@@ -202,6 +205,40 @@ class DellCaseArtifacts:
             source["calculation"] = deepcopy(item)
         return source
 
+    @staticmethod
+    def _source_text(item):
+        if item["result_state"] == "numeric_fact":
+            return json.dumps(item, ensure_ascii=False, sort_keys=True)
+        if item["result_state"] == "non_authoritative_metric":
+            return json.dumps({k: item[k] for k in ("expression", "operands", "rationale", "authority_note", "operand_source_aliases") if k in item},
+                              ensure_ascii=False, indent=2)
+        return str(item.get("passage") or item.get("bounded_excerpt") or item.get("text") or item.get("content") or "")
+
+    def search_sources(self, query, limit=5):
+        """FTS5 navigation over this immutable case view, never evidence admission."""
+        if not isinstance(query, str) or not query.strip() or len(query) > 500 or type(limit) is not int or not 1 <= limit <= 8:
+            raise ValueError("source_search_requires_query_and_limit_1_to_8")
+        rows = [(ref, str(item.get("title", "")), self._source_text(item)) for ref, item in self._sources.items()]
+        marker = str(uuid4())
+        with closing(sqlite3.connect(":memory:")) as db:
+            db.execute("CREATE VIRTUAL TABLE sources USING fts5(source_id UNINDEXED, title, body)")
+            db.executemany("INSERT INTO sources VALUES (?, ?, ?)", rows)
+            try:
+                matches = db.execute("SELECT source_id, highlight(sources, 2, ?, '') FROM sources WHERE sources MATCH ? ORDER BY bm25(sources), source_id LIMIT ?",
+                                     (marker, query, limit)).fetchall()
+            except sqlite3.OperationalError as exc:
+                raise ValueError("source_search_query_invalid_use_FTS5_terms_or_quoted_phrase") from exc
+        hits = []
+        for ref, highlighted in matches:
+            item = self._sources[ref]
+            offset = max(0, highlighted.find(marker) - 180)
+            text = self._source_text(item)
+            hits.append({**self._source_summary(ref, item), "snippet": text[offset:offset + 600],
+                         "read_arguments": {"source_id": ref, "offset": 0 if item["result_state"] == "numeric_fact" else offset,
+                                            "max_characters": 2000}})
+        return {"query": query, "matches": hits,
+                "notice": "Navigation only across this task's archived observations. Read matches with read_research_source before verification. No matches does not prove non-disclosure or absence from the full document. FTS5 lexical search is not semantic retrieval."}
+
     def read_source(self, source_id, offset=0, max_characters=16000):
         if type(offset) is not int or offset < 0 or type(max_characters) is not int or not 100 <= max_characters <= 50000:
             raise ValueError("source_window_invalid")
@@ -210,11 +247,7 @@ class DellCaseArtifacts:
         if item["result_state"] == "numeric_fact":
             return {**self._source_summary(source_id, item), "formula_trace": item.get("formula_trace"),
                     "source_observation_ids": item.get("source_observation_ids"), "next_offset": None}
-        if item["result_state"] == "non_authoritative_metric":
-            text = json.dumps({k: item[k] for k in ("expression", "operands", "rationale", "authority_note", "operand_source_aliases") if k in item},
-                              ensure_ascii=False, indent=2)
-        else:
-            text = str(item.get("passage") or item.get("bounded_excerpt") or item.get("text") or item.get("content") or "")
+        text = self._source_text(item)
         end = min(len(text), offset + max_characters)
         return {**self._source_summary(source_id, item), "text": text[offset:end], "offset": offset,
             "next_offset": end if end < len(text) else None, "captured_characters": len(text),
@@ -227,6 +260,16 @@ def register_case_artifact_tools(server, artifacts: DellCaseArtifacts, *, source
     """Use the existing official MCP server, not another transport or tool bus."""
     from sec_agent.research_foundation.source_bound_calculator import register_source_calculator_tool
     register_source_calculator_tool(server, source_lookup or artifacts.source_item, on_result=calculation_observer)
+
+    @server.tool(name="search_research_sources", structured_output=True)
+    def search_sources(query: Annotated[str, Field(min_length=1, max_length=500)],
+                       limit: Annotated[int, Field(ge=1, le=8)] = 5) -> dict[str, Any]:
+        """Locate saved source windows using FTS5 terms, OR or quoted phrases in the source language. Then read exact sources; a search is not verification."""
+        from mcp.server.mcpserver.exceptions import ToolError
+        try:
+            return artifacts.search_sources(query, limit)
+        except ValueError as exc:
+            raise ToolError(str(exc)) from exc
 
     @server.tool(name="research_artifact_catalog", structured_output=True)
     def catalog() -> dict[str, Any]:

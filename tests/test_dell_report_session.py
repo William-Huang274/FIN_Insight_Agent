@@ -52,7 +52,7 @@ def test_native_open_question_revision_review_and_accept(artifacts):
         new_report = {k: initial["report"][k] for k in ("title", "narrative_markdown")}
         new_report["narrative_markdown"] += " Revised."
         models["writer"].replies = [[call("submit_case_report", {"report": new_report}, "r1")]]
-        models["verifier"].replies = [[call("submit_report_review", {"review": initial["report_review"]}, "v1")]]
+        models["verifier"].replies = [[call("submit_report_review", {"review": {**initial["report_review"], "completion": "complete"}}, "v1")]]
         events = []
         async for e in graph.astream(Command(resume={"action": "revise", "message": "Explicit public feedback marker"}), config,
                 stream_mode="custom", subgraphs=True, version="v2"):
@@ -325,7 +325,7 @@ def test_native_report_edit_errors_corrected_without_full_rewrite(artifacts):
             [call("submit_report_edits", {"edits": [{"old_str": "missing span", "new_str": "new"}]}, "e1")],
             [call("submit_report_edits", {"edits": [{"old_str": f"[{ref}]", "new_str": "[P99:INVALID]"}]}, "e2")],
             [call("submit_report_edits", {"edits": [{"old_str": f"[{ref}]", "new_str": f"[{ref}] One focused correction."}]}, "e3")]]
-        models["verifier"].replies = [[call("submit_report_review", {"review": initial["report_review"]}, "v1")]]
+        models["verifier"].replies = [[call("submit_report_review", {"review": {**initial["report_review"], "completion": "complete"}}, "v1")]]
         result = await graph.ainvoke(Command(resume={"action": "revise", "message": "Correct one sentence"}), config)
         assert result["report"]["narrative_markdown"] == initial["report"]["narrative_markdown"] + " One focused correction."
         assert result["report_version"] == 2 and len(result["report"]["applied_edits"]) == 1

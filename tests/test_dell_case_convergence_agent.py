@@ -206,7 +206,7 @@ def test_native_reviewer_can_read_and_quote_persisted_chart_only_source(artifact
                 "requested_change": "Keep the quote and source visible when the chart point is inspected.", "responsibility": "writer", "paper_ids": []}]}
         model = NativeFixtureModel(marker="chart-review", replies=[
             [call("read_current_source", {"source_id": ref}, "read-chart")],
-            [call("submit_report_review", {"review": review}, "review-chart")]])
+            [call("submit_report_review", {"review": {**review, "completion": "complete", "unresolved_data_requests": []}}, "review-chart")]])
         agent = build_case_output_agent(role="verifier", model=model, tools=[], artifacts=artifacts,
             limits={"model_calls": 3, "tool_calls": 4}, require_responsibility=True)
         result = await agent.ainvoke({"report": report, "messages": [{"role": "user", "content": "Review the chart and its source."}]})
@@ -254,7 +254,7 @@ def test_six_responsible_authors_then_writer_verifier_native_checkpoints(artifac
                     "diagnosis": "Synthetic negative must remain visible as needs revision.",
                     "requested_change": "Synthetic finding only; do not claim actual financial review."}] if material else []),
                 "unresolved_data_requests": []}
-            model = NativeFixtureModel(marker="verifier", replies=[[call("submit_report_review", {"review": review}, "review")]])
+            model = NativeFixtureModel(marker="verifier", replies=[[call("submit_report_review", {"review": {**review, "completion": "complete"}}, "review")]])
             agents["verifier"] = build_case_output_agent(role="verifier", model=model, tools=tools, artifacts=artifacts, limits=limits)
             saver = InMemorySaver()
             graph = build_case_convergence_graph(agents=agents, artifacts=artifacts, question="fixture only", feedback=feedback,

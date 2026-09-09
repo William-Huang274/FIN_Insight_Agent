@@ -111,6 +111,31 @@ def test_sync_and_async_sdk_wire_clears_read_bodies_not_reasoning_or_tool_pairs(
     assert len(requests) == 2 and rows == original
 
 
+def test_specialist_sdk_advertises_only_actions_allowed_by_native_graph():
+    from test_dell_deepseek_structured_agents import _config, _models, _agentic_turn_request
+    request = _agentic_turn_request()
+    request["allowed_actions"] = ["request_evidence", "request_human_review"]
+    seen = []
+    def serve(wire):
+        body = json.loads(wire.content)
+        seen.append(body)
+        assert {t["function"]["name"] for t in body["tools"]} == {
+            "RequestEvidenceAction", "RequestHumanReviewAction"}
+        return httpx.Response(200, json={"id": "offline-capabilities", "object": "chat.completion", "created": 1,
+            "model": "deepseek-v4-pro", "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
+                "role": "assistant", "content": "", "tool_calls": [{"id": "stop", "type": "function", "function": {
+                    "name": "RequestHumanReviewAction", "arguments": json.dumps({"action": "request_human_review",
+                    "context_digest": request["context_digest"], "reason_summary": "Offline boundary check."})}}]}}],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 30, "total_tokens": 130}})
+    with httpx.Client(transport=httpx.MockTransport(serve)) as client:
+        models = _models()
+        models["specialist"] = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("offline-fixture"),
+            http_client=client, max_retries=0, use_responses_api=False)
+        adapter = DeepSeekStructuredAgentAdapter(config=_config().model_copy(update={"agentic_message_history": True}), chat_models=models)
+        adapter.specialist_model_turn(request)
+    assert len(seen) == 1
+
+
 def test_native_checkpoint_and_citation_validation_retain_cleared_sql_observation():
     from test_research_convergence import artifact_fixture
     artifacts = artifact_fixture()

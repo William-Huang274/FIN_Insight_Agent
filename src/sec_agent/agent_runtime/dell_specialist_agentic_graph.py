@@ -857,6 +857,8 @@ class DellSpecialistAgenticState(TypedDict, total=False):
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
+    # Native-state provenance for archived turns; not model-editable input.
+    model_turn_invocations: dict[str, str]
     final_submission: dict[str, Any] | None
     last_submission_attempt: dict[str, Any] | None
     human_review_handoff: dict[str, Any] | None
@@ -1108,7 +1110,9 @@ def _saved_read_observation(state, notebook, action):
         for original in originals:
             if _semantic_action_digest(original) != digest:
                 continue
-            attempt = _action_attempt_id(state, notebook=notebook, action=original,
+            original_state = {**state, "run_invocation_id": state.get("model_turn_invocations", {}).get(
+                str(record.turn_index), state["run_invocation_id"])}
+            attempt = _action_attempt_id(original_state, notebook=notebook, action=original,
                                          turn_index=record.turn_index)
             observation = observations.get(attempt)
             if observation is not None and observation.status == "success" and observation.failure is None:
@@ -1418,6 +1422,10 @@ def build_dell_specialist_agentic_state_graph(
                 "max_tool_actions": prior.tool_action_count + validated.max_tool_actions,
                 "last_submission_attempt": _jsonable(recovery_state.get("last_submission_attempt")),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
+                "model_turn_invocations": {
+                    str(record.turn_index): recovery_state.get("model_turn_invocations", {}).get(
+                        str(record.turn_index), recovery_state["run_invocation_id"])
+                    for record in prior.model_turn_records},
                 "pending_action": None, "final_submission": None, "human_review_handoff": None,
                 "review_reason": None, "review_trigger": None, "phase": "ready_for_model_decision"}
         return {

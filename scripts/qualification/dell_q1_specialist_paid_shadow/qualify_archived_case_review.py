@@ -118,7 +118,7 @@ async def main():
             "node_purpose": "Independently verify actual changed claim/prose against original sources and return a scoped review; unchanged research is not accepted.",
             "input_scale": f"One mechanically computed revision target ({len(json.dumps(target, ensure_ascii=False))} characters); {len(target['changed_claim_ids'])} changed claims. Original source/calculation windows on demand; no full source catalog or sibling history.",
             "required_outputs": ["revision-only assessment with source-grounded public rationale", "valid exact-quote findings or explicit necessary scope expansion"],
-            "comparable_run_evidence": "Previous revision verifier used 6 actual calls and still no valid submission after scope expansion, truncation and malformed findings. Current qualification changes the explicit review interface, not a same-condition model benchmark.",
+            "comparable_run_evidence": "Scoped review a2 used 6 calls / 126018 tokens, submitted prose admitting unfinished checks but omitted the list. Current native submission requires explicit completion and offers FTS5 search over the same saved sources. This is a changed-interface qualification, not a same-condition saving benchmark.",
             "schema_burden": "Native CaseReview tools with required completion/unresolved fields for revision-only submission and host-bound revision_scope. Output ceiling includes reasoning and complete findings; no full report rewrite."}))
     _write_new(args.output_dir / "manifest.json", {"source_sha256": sha256(raw).hexdigest(),
         "source_path": str(args.state_file), "question": args.question, "catalog": artifacts.catalog(), "input_artifact": input_artifact,

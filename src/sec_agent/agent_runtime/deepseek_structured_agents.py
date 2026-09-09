@@ -14,7 +14,7 @@ from hashlib import sha256
 from pathlib import Path
 import re
 from time import perf_counter
-from typing import Any, Literal, Protocol, TypeVar, cast
+from typing import Any, Literal, Protocol, TypeVar, cast, get_args
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.utils.function_calling import convert_to_openai_tool
@@ -520,7 +520,7 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "Use the same supplied context_digest for every call in that response. Pass each tool's "
     "arguments directly, without another action wrapper. Wait for results before making dependent requests. "
     "SubmitWorkpaperAction, ReviseWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
-    "When submission_to_repair is present, prefer ReviseWorkpaperAction for local corrections: use its exact base digest "
+    "Only when ReviseWorkpaperAction is supplied and submission_to_repair is present, use it for local corrections: use its exact base digest "
     "and JSON Pointer old/new values; unchanged claims and prose remain intact and all submission checks run again. "
     "To finish, call SubmitWorkpaperAction; "
     "do not replace the tool call with a plain-text final answer."
@@ -1322,6 +1322,11 @@ class DeepSeekStructuredAgentAdapter:
         model_profile = self._config.profile_for(model_purpose)
         is_reviewer = collaboration_mode in {"counter", "verifier"}
         native_tools = _NATIVE_REVIEW_TOOLS if is_reviewer else _NATIVE_SPECIALIST_TOOLS
+        if specialist_mode == "agentic_turn":
+            # Advertise the same action capability the native graph enforces.
+            # Disabled experiments must not become attractive dead-end tools.
+            native_tools = {name: model for name, model in native_tools.items()
+                            if set(get_args(model.model_fields["action"].annotation)) & set(semantic_input["allowed_actions"])}
         if is_lead:
             from .dell_lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
             native_tools = LEAD_RESEARCH_TOOLS

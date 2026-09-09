@@ -102,3 +102,31 @@ HPE 尚未走到完整报告写作/导出，不能据此把 Writer 或 PDF/Word 
 - 既有修复证据：`D:/temp/fin205-hpe-a3-unseen-tool-batch-loss.json`、`fin205-hpe-a3-unseen-tool-batch-fixed.json`、`fin205-hpe-a4-quote-replay.json`、`fin205-hpe-scoped-review-a2/result.json` 及 `completion-schema-replay.json`。
 - 产品增量：无。工程增量：无源码/部署改动。研究/资格证据：跨用例历史阶段统计、当前恢复 guard 零模型探测、官方成熟方案核对。文档：本审计及上下文/根因记录更新。
 - 阻塞仍在：复杂研究稳定交付、必要问题覆盖、失败专家/审查原生恢复、财务语义验收；第一步未完成。不得把本审计或前次隔离局部资格写成完整 HPE 成功。
+
+## 6. Owner 同意后的原生恢复实施（2026-09-09）
+
+本节更新上述“无源码/部署增量”和恢复入口未接通的时点描述；保留原诊断、失败和费用记录。Owner 同意后，完成一个可执行切片，没有启动新的研究模型请求，也没有把历史候选改成通过。
+
+**产品与工程增量。** 在既有 LangGraph / LangChain 原生图中接通保存候选→同任务继续→提交或显式停止→父图接收。专家从同一任务的服务端失败状态恢复 notebook、原文观察、提交候选和校验反馈；任务、分支、数据范围与 digest 不一致时拒绝恢复。Lead 先恢复原 unfinished task，再做后续分派。已提交分支仍可补具体缺项，但新补研必须依赖该分支的正式底稿，不能仅以“分支已提交”禁止补全问题。已成功底稿保留。
+
+未完成的 Counter / Verifier 保存各自原生消息与发现，恢复时只运行未完成角色；已完成同伴直接沿用。问题与完整底稿/来源内容 digest 必须相同。角色私有历史只在服务端传回原角色，不进入前端 public_state 或其他作者的上下文。旧记录缺少恢复状态时明确不可恢复，不用一个全新审查冒充接续。
+
+沿用工作台 `/continue-remaining`，没有增加第二个任务引擎或浏览器可传入的恢复状态。前端新的“研究现场”新增可见的“接着完成 · 保留已有成果”。浏览器检查曾发现原继续按钮只位于隐藏的旧面板，这一产品入口缺口已一起修复。BFF 对前次未知请求、缺失用量或不完整审计拒绝继续；不会自动重发未知调用。身份/任务权限与原生 multitask reject 保持生效。
+
+**额度含义。** 用户点击继续会启动一次使用当前所选配置的新运行，拥有该配置的单次额度；这不是自动重试，也不是原任务无限额度。专家 lifetime 模型/工具计数保留，新运行在原计数上加本次 allowance；审查保留累计模型调用数与各次独立审计，原失败仍在 checkpoint/history。没有提高配置中的输入、输出或单次调用上限。当前仍使用既有角色 TokenBudgetBasis；本轮仅零模型资格，后续真实恢复对照必须补记具体恢复任务、候选与已读依据规模、必要交付和停止条件，不将本轮离线通过解释为新的整题付费预算。
+
+**验证与证据。**
+
+- Python 最终定向集：120 passed / 5 skipped（25.88 秒）；5 项依赖私有材料的既有检查跳过。覆盖真实父图 interrupt/resume、原专家候选修正、同分支补缺、审查原生消息接续、已完成同伴零新增调用、跨任务/内容变更拒绝以及 BFF 未知用量阻断。测试内模型输出为脚本响应，不是金融质量证明。命令为 `python -m pytest tests/test_research_recovery.py tests/test_research_session.py tests/test_dell_lead_research_graph.py tests/test_dell_case_review_agent.py tests/test_research_session_bff.py tests/test_dell_specialist_agentic_graph.py`。JUnit：`D:/temp/fin205-native-recovery-a1/tests-final.xml`。
+- 浏览器最终 3 passed，1440 / 1024 / 390 三种宽度均验证当前页面继续按钮与一次 POST。使用公开 API 拦截测试资料，无模型；首轮隐藏按钮失败记录保留，修复后新 attempt：`D:/temp/fin205-native-recovery-a1/browser-a2/`。TypeScript 与 Vite build 通过；既有大 bundle 警告尚在。
+- 真实 HPE a4 已保存状态进入当前专家图，44 条观察保留、原候选进入 `submission_to_repair`、累计模型记录 24→25（第 25 条为脚本停止），原记录 digest `31af3490b86fe4f2c17a3a520ec51d12edb814d7af18ff289f3944063e8efe14` 不变。0 provider / 0 source calls，`financial_pass=false`。结果：`D:/temp/fin205-native-recovery-a1/result.json`；脚本：`D:/temp/fin205-native-recovery-replay.py`。这是原生恢复资格，未把脚本响应写回原产品 HPE 窗口。
+- 实际 MSFT 窗口 `01a082df-cd1a-7ee3-bd9f-151e1c83f369` 只读保存为 `D:/temp/fin205-native-recovery-a1/msft-native-state.json`：4 个 task，报告待审，但 `research_failed_workpapers` 为 0。不能声称其旧失败候选也完成原样恢复；不回填缺失历史或付费补造证据。
+
+**已部署。** 确认原生服务无 busy 任务后，用既有 `scripts.deployment.research_workbench build/up --no-build` 更新 Docker 服务，Postgres/Redis volumes 和原窗口保留。镜像 manifest digest：`79e5748234726ba84cdbf0230cfc3e75325860e005370f49d3ac9753d3e0eabb`。容器内检查确认专家 `recovery_state` 与审查 `previous_review` 接口已加载。18795 原先没有监听，已用既有 serve CLI 隐藏后台启动；`18165/ok`、`18795/workspace`、`18795/api/v1/research-session-config` 均返回 200。启动日志在同一临时证据目录。没有对历史 HPE/MSFT 发起接续或改写。
+
+**仍未完成。** 本切片解决了可恢复交接的工程入口，尚未证明模型会正确修复费用总额/同比增量、减值归属等语义错误；补研理由和问题覆盖充分性仍需独立验收。长上下文外置/回读优化、Hermes 同单元对照、完整 HPE 报告及第一步整体验收仍开放。历史 205 费用统计不变；本轮新增付费请求为 0。下一次真实验证应限于一个已保存研究单元的明确未决事项，以必要输出与原始依据可达性验收，不能再以整题重跑代替诊断。
+
+工程提交：`cde16c53`（`codex/fin013-conversation-and-retrieval`），13 个源码/测试文件；本节与 Project OS 状态单独提交。生成状态、日志、截图和模型候选留在临时证据目录，不提交凭据或原文到 Git。产品版本仍为 FIN 0.1.3。
+
+收尾服务复查发现 Docker Desktop 与宿主 BFF 进程已停止（原因未确定），并非源码构建失败。重新启动现有 `Z:/Docker/Docker/Docker Desktop.exe`，等待其 WSL/BuildKit 初始化后，原 Compose `up --no-build` 成功启动相同的 Redis、Postgres、Agent API；未新建或删除 volume。BFF 通过相同 serve CLI 重启，日志另存 `workbench-restart.stdout.log` / `workbench-restart.stderr.log`，保留初次启动证据。
+重启后最终复查：`18165/ok`、`18795/workspace`、`18795/api/v1/research-session-config` 均为 HTTP 200；Redis/Postgres 为 healthy，原生 API 可响应。没有因此发起研究模型请求。

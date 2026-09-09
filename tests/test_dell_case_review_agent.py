@@ -104,6 +104,35 @@ def test_cannot_claim_all_papers_read_without_observation(artifacts):
         validate_case_review(CaseReview.model_validate(review_fixture(artifacts)), artifacts, [])
 
 
+def test_native_limit_keeps_peer_review_and_incomplete_checkpoint(artifacts):
+    async def exercise():
+        async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
+            tools = await case_mcp_tools(client)
+            reads = [call("read_research_artifact", {"paper_id": p["paper_id"]}, f"read{i}")
+                     for i, p in enumerate(artifacts.catalog()["papers"])]
+            reviewers = {
+                "counter": build_case_reviewer(role="counter", model=ScriptedNativeChat(replies=[reads], marker="counter"),
+                    tools=tools, artifacts=artifacts, max_model_calls=1),
+                "verifier": build_case_reviewer(role="verifier", model=ScriptedNativeChat(
+                    replies=[reads, [call("submit_case_review", {"review": review_fixture(artifacts)}, "submit")]], marker="verifier"),
+                    tools=tools, artifacts=artifacts, max_model_calls=2),
+            }
+            graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question="Bounded peer isolation qualification",
+                run_id="limit-run", run_invocation_id="limit-attempt").compile(checkpointer=InMemorySaver())
+            config = {"configurable": {"thread_id": "limited-review"}, "recursion_limit": 40}
+            result = await graph.ainvoke({"run_id": "limit-run", "run_invocation_id": "limit-attempt"}, config)
+            assert result["phase"] == "case_review_incomplete"
+            assert result["counter"]["status"] == "incomplete_no_submission"
+            assert result["counter"]["model_calls"] == 1  # host limit notice is not a paid model call
+            assert not result["counter"]["incomplete_output"]  # this fixture model returned only tool calls
+            assert result["counter"]["runtime_notices"]
+            assert result["verifier"]["status"] == "review_submitted"
+            assert result["verifier"]["model_calls"] == 2
+            assert (await graph.aget_state(config)).values["counter"] == result["counter"]
+            assert "reasoning_content" not in json.dumps(result)
+    asyncio.run(exercise())
+
+
 def test_review_returns_all_independent_quote_errors_at_once(artifacts):
     data = review_fixture(artifacts)
     data["findings"] = [{"finding_id": fid, "paper_id": "P01", "severity": "material",

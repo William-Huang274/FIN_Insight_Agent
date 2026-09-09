@@ -274,6 +274,26 @@ def test_incomplete_research_keeps_submitted_work_and_does_not_write_a_report():
     asyncio.run(exercise())
 
 
+def test_incomplete_review_is_retained_and_never_reaches_writer():
+    async def exercise():
+        phases, seen, _ = _phases()
+        review = {"phase": "case_review_incomplete", "counter": {"status": "incomplete_no_submission",
+            "review": None, "incomplete_output": ["A public candidate observation remains unresolved."]},
+            "verifier": {"status": "review_submitted", "review": {"summary": "Peer result retained."}}}
+        phases["review"] = RunnableLambda(lambda _: deepcopy(review))
+        graph = build_research_session_graph(**phases).compile(checkpointer=InMemorySaver())
+        config = {"configurable": {"thread_id": "incomplete-review-parent"}, "recursion_limit": 120}
+        result = await graph.ainvoke({"question": "Retain incomplete independent review without writing a report."}, config)
+        assert result["phase"] == "research_needs_attention"
+        assert result["case_review"] == {**review, "source_run_id": None}
+        assert result["research_stop_reason"] == "independent_review_incomplete_no_report_acceptance"
+        assert not result.get("report") and seen["converge"] == 0
+        assert (await graph.aget_state(config)).values["case_review"] == result["case_review"]
+        with pytest.raises(ValueError, match="cannot_be_accepted"):
+            await graph.ainvoke(Command(resume={"action": "accept"}), config)
+    asyncio.run(exercise())
+
+
 def test_failure_keeps_earlier_stage_artifacts_in_native_checkpoint_without_fake_report():
     async def exercise():
         phases, seen, _ = _phases(fail_convergence=True)

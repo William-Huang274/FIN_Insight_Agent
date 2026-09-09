@@ -198,7 +198,19 @@ def public_state(state):
         result["synthesis_review"] = deepcopy(values["synthesis_review"])
     result["workpaper_reviews"] = []
     for actor in ("counter", "verifier"):
-        review = values.get("case_review", {}).get(actor, {}).get("review")
+        review_state = values.get("case_review", {})
+        reviewer = review_state.get(actor, {})
+        review = reviewer.get("review")
+        if reviewer.get("status") == "incomplete_no_submission":
+            # Separate the native limit notice from actual public model output.
+            texts = [x for x in reviewer.get("incomplete_output", []) if isinstance(x, str)]
+            result["research_failures"].append({"run_id": review_state.get("source_run_id"),
+                "task_id": "反证审查" if actor == "counter" else "事实与引用核验",
+                "reason": "独立审查未提交完整结果；已保存公开输出，不能进入报告交付。",
+                "candidate": {"narrative_markdown": "\n\n".join(texts)}, "accepted": False,
+                "model_explanation": None, "model_turns": reviewer.get("model_calls"),
+                "tool_actions": reviewer.get("tool_calls"), "saved_observations": None,
+                "validation_issues": [], "feedback_codes": [x for x in reviewer.get("runtime_notices", []) if isinstance(x, str)]})
         if not review:
             continue
         result["workpaper_reviews"].append({"actor": actor, "summary": review["summary"],

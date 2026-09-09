@@ -189,6 +189,21 @@ def test_failed_workpaper_projects_only_deliverable_and_validation_metadata():
     assert "private" not in str(projected)
 
 
+def test_incomplete_review_output_and_host_notice_are_separate_public_records():
+    projected = public_state({"values": {"case_review": {"source_run_id": "review-run",
+        "counter": {"status": "incomplete_no_submission", "review": None,
+            "incomplete_output": ["A source-backed public observation."],
+            "runtime_notices": ["Model call limit reached"], "model_calls": 24,
+            "tool_calls": 40, "messages": ["private reasoning"], "tool_feedback": ["private tool context"]}}}})
+    failure = projected["research_failures"][0]
+    assert failure["run_id"] == "review-run" and failure["task_id"] == "反证审查"
+    assert failure["candidate"] == {"narrative_markdown": "A source-backed public observation."}
+    assert failure["model_explanation"] is None
+    assert failure["feedback_codes"] == ["Model call limit reached"]
+    assert failure["accepted"] is False and failure["model_turns"] == 24
+    assert "private" not in str(projected)
+
+
 def test_failed_task_without_submission_keeps_tool_error_and_explicit_model_handoff_reason():
     state = {"values": {"research_failed_workpapers": [{"run_id": "r", "task_id": "t", "agent_state": {
         "review_reason": "source_read_failed", "notebook": {

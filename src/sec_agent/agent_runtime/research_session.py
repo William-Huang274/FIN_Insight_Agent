@@ -197,6 +197,10 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     async def review_node(state, config: RunnableConfig):
         _stage("case_review", "started")
         result = await review.ainvoke({"question": state["question"], "case_papers": state["case_papers"]}, config)
+        if result.get("phase") == "case_review_incomplete":
+            _stage("case_review", "outcome", status="needs_attention")
+            return {"case_review": {**deepcopy(result), "source_run_id": config.get("configurable", {}).get("run_id")}, "phase": "research_needs_attention",
+                    "research_stop_reason": "independent_review_incomplete_no_report_acceptance"}
         artifacts = current_task_artifacts(state)
         feedback = responsible_author_feedback(result, artifacts)
         _stage("case_review", "outcome", status="handoff", responsible_author_count=len(feedback))
@@ -245,7 +249,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         return "initialize" if state["phase"] == "single_agent_unreviewed" else "case_review" if state["phase"] == "research_reviewing" else "research_attention"
     graph.add_conditional_edges("research", after_research)
     graph.add_conditional_edges("remaining_research", after_research)
-    graph.add_edge("case_review", "convergence")
+    graph.add_conditional_edges("case_review", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "convergence")
     graph.add_conditional_edges("convergence", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "initialize")
     graph.add_conditional_edges("research_attention", lambda state: "remaining_research" if state.get("continue_remaining_research") else END)
     return graph

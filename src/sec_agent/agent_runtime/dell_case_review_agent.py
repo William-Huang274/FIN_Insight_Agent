@@ -33,6 +33,7 @@ from .deepseek_structured_agents import TokenBudgetBasis, ReasoningPreservingCha
 from .dell_case_artifacts import DellCaseArtifacts
 from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
 from sec_agent.research_foundation.source_bound_calculator import source_items_from_tool
+from sec_agent.research_foundation.source_quotes import contains_source_quote
 
 
 CASE_TOOLS = frozenset({"research_artifact_catalog", "read_research_artifact", "read_research_source",
@@ -128,7 +129,7 @@ def validate_case_review(review: CaseReview, artifacts: DellCaseArtifacts, messa
                     errors.append(f"unknown_source_id:{finding.finding_id}:{check.source_id}")
                     continue
                 body = str(source.get("passage") or source.get("bounded_excerpt") or source.get("value_decimal") or "")
-            if check.quote not in body:
+            if not contains_source_quote(body, check.quote):
                 errors.append(f"source_quote_not_exact:{finding.finding_id}:{check.source_id}")
     if errors:
         # Return all independent local errors at once. Exactness is unchanged;
@@ -393,11 +394,15 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
 
     emphasis = ("Your role is Counter: challenge the thesis, demand/competition/supply mechanisms and cross-paper contradictions."
                 if role == "counter" else "Your role is Verifier: inspect material factual/numeric/citation/period consistency and whether conclusions are warranted by actual sources.")
-    return create_agent(model=model, tools=[*tools, submit_case_review], state_schema=CaseReviewerState,
+    agent = create_agent(model=model, tools=[*tools, submit_case_review], state_schema=CaseReviewerState,
         system_prompt=REVIEW_PROMPT + emphasis + METHOD_TOOL_GUIDANCE + method_instructions + f"\nBudget: up to {max_model_calls} model calls / {max_tool_calls} tools; no retries or silent partial acceptance.",
-        middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="error"),
-                    ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="error"), *(audit.middlewares() if audit else [])],
+        middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="end"),
+                    ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="end"), *(audit.middlewares() if audit else [])],
         name=f"case_{role}")
+    # Expose only the native count to the parent collector. Binding ainvoke
+    # output_keys would hide this compiled child from subgraph discovery.
+    agent.output_channels = [*agent.output_channels, "thread_model_call_count"]
+    return agent
 
 
 class CaseReviewState(TypedDict, total=False):
@@ -422,8 +427,13 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
 
         def collect(state, _role=role):
             review = state.get("review")
+            answers = [m for m in state["messages"] if isinstance(m, AIMessage)]
+            count = state.get("thread_model_call_count", len(answers))
             return {_role: {"status": "review_submitted" if review else "incomplete_no_submission", "review": review,
-                "model_calls": sum(isinstance(m, AIMessage) for m in state["messages"]),
+                "model_calls": count,
+                **({"incomplete_output": [m.content for m in answers[:count] if m.content],
+                    "runtime_notices": [m.content for m in answers[count:] if m.content],
+                    "tool_feedback": [m.content for m in state["messages"] if isinstance(m, ToolMessage) and m.status == "error"]} if not review else {}),
                 "tool_calls": sum(isinstance(m, ToolMessage) for m in state["messages"])}}
 
         # RunnableSequence keeps the compiled subgraph statically discoverable;

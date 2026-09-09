@@ -47,4 +47,20 @@ for (const width of [1440, 1024, 390]) test(`agent conversation and run history 
   await expect(page.getByRole("heading", {name:"已执行结果"})).toBeVisible();
   await expect(page.locator(".fs-live-output-label")).toHaveText("从历史提交记录恢复的候选输出");
   expect(await page.locator(".fs-live-prose").first().evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(16);
+  session.runs[0].status = "success"; session.phase = "research_needs_attention";
+  session.research_tasks = [{ task_id: "task-a", objective: "核对年度收入依据", dependency_ids: [] }];
+  session.research_failures = [{ run_id: run, task_id: "task-a", reason: "model_turn_ceiling_reached_no_silent_completion",
+    accepted: false, candidate: { narrative_markdown: "## 未验收结果\n\n仍保留提交内容。" },
+    feedback_codes: ["specialist_tool_arguments_invalid"], validation_issues: [{location:["claims",1], message:"invalid authority",type:"value_error"}],
+    model_turns: 2, tool_actions: 1, saved_observations: 1 }];
+  await page.reload();
+  await expect(page.getByRole("region", {name:"失败说明"})).toBeVisible();
+  await expect(page.getByRole("region", {name:"未完成底稿"})).toContainText("核对年度收入依据");
+  await expect(page.getByRole("heading", {name:"未验收结果"})).toBeVisible();
+  await page.getByText("查看提交校验与停止原因", {exact:true}).click();
+  await expect(page.getByRole("region", {name:"未完成底稿"})).toContainText("invalid authority");
+  session.runs.unshift({run_id:"later-run", status:"success", created_at:"2026-09-09T08:00:00Z"});
+  session.phase = "ready_for_human_review";
+  await page.reload();
+  await expect(page.getByRole("region", {name:"未完成底稿"})).toHaveCount(0);
 });

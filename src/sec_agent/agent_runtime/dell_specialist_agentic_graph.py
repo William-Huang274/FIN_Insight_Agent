@@ -14,7 +14,9 @@ are never checkpoint fields.
 from __future__ import annotations
 
 import json
+import jsonpatch
 from collections.abc import Callable, Mapping
+from copy import deepcopy
 from dataclasses import dataclass
 from typing import Annotated, Any, Literal, TypedDict
 
@@ -318,6 +320,49 @@ class SubmitWorkpaperAction(_StrictModel):
         if self.terminal_state in {"supported", "countered"} and not self.claims:
             raise ValueError("supported_submission_requires_claims")
         return self
+
+
+class WorkpaperFieldEdit(_StrictModel):
+    path: str = Field(min_length=1, description="RFC 6901 JSON Pointer into the current rejected workpaper. Replace existing fields only.")
+    old_value: Any = Field(description="Exact current JSON value; the edit fails if it does not match.")
+    new_value: Any = Field(description="Replacement JSON value. Preserve unchanged claims and prose.")
+
+
+class ReviseWorkpaperAction(_StrictModel):
+    action: Literal["revise_workpaper"]
+    context_digest: str = Field(pattern=_DIGEST_PATTERN)
+    reason_summary: str = Field(min_length=1, max_length=1000)
+    base_submission_digest: str = Field(pattern=_DIGEST_PATTERN)
+    edits: tuple[WorkpaperFieldEdit, ...] = Field(min_length=1, max_length=24)
+
+
+def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperAction) -> dict[str, Any]:
+    """Standard atomic JSON Patch against a rejected artifact, then normal gates.
+
+    No file access, accepted-report mutation or independent acceptance authority.
+    """
+    if canonical_sha256(original) != action.base_submission_digest:
+        raise ValueError("workpaper_edit_base_mismatch")
+    editable = set(SubmitWorkpaperAction.model_fields) - {"action", "context_digest", "reason_summary"}
+    operations = []
+    for edit in action.edits:
+        try:
+            parts = jsonpatch.JsonPointer(edit.path).parts
+        except jsonpatch.JsonPointerException:
+            raise ValueError("workpaper_edit_old_value_or_path_mismatch") from None
+        if not parts or parts[0] not in editable:
+            raise ValueError("workpaper_edit_field_not_editable")
+        operations.extend([{"op": "test", "path": edit.path, "value": edit.old_value},
+            {"op": "replace", "path": edit.path, "value": edit.new_value}])
+    try:
+        updated = jsonpatch.apply_patch(original, operations, in_place=False)
+    except (jsonpatch.JsonPatchException, jsonpatch.JsonPointerException):
+        raise ValueError("workpaper_edit_old_value_or_path_mismatch") from None
+    if not isinstance(updated.get("claims"), list) or not all(isinstance(c, dict) for c in updated["claims"]):
+        raise ValueError("workpaper_edit_must_preserve_claim_identity_and_order")
+    if [c.get("claim_id") for c in updated["claims"]] != [c.get("claim_id") for c in original.get("claims", [])]:
+        raise ValueError("workpaper_edit_must_preserve_claim_identity_and_order")
+    return {**updated, "context_digest": action.context_digest, "reason_summary": action.reason_summary}
 
 
 class WorkpaperReviewFinding(_StrictModel):
@@ -809,6 +854,7 @@ class DellSpecialistAgenticState(TypedDict, total=False):
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
     final_submission: dict[str, Any] | None
+    last_submission_attempt: dict[str, Any] | None
     human_review_handoff: dict[str, Any] | None
     review_reason: str | None
     review_trigger: str | None
@@ -956,6 +1002,11 @@ def _model_request(
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
+    last = state.get("last_submission_attempt") or {}
+    candidate = last.get("arguments")
+    if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
+        allowed_actions.append("revise_workpaper")
+        body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
     return {**body, "context_digest": canonical_sha256(body)}
 
 
@@ -1337,6 +1388,7 @@ def build_dell_specialist_agentic_state_graph(
             "pending_action": None,
             "tool_results": [],
             "final_submission": None,
+            "last_submission_attempt": None,
             "human_review_handoff": None,
             "review_reason": None,
             "review_trigger": None,
@@ -1353,7 +1405,6 @@ def build_dell_specialist_agentic_state_graph(
         )
         if notebook.model_turn_count >= int(state["max_model_turns"]):
             return {
-                "tool_results": [],
                 "pending_action": None,
                 "review_reason": "model_turn_ceiling_reached_no_silent_completion",
                 "review_trigger": "model_turn_ceiling",
@@ -1807,10 +1858,10 @@ def build_dell_specialist_agentic_state_graph(
         calls = {call.id: call for call in batch.tool_calls}
         models = {model.__name__: model for model in (
             RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
-            SubmitWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
+            SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
         terminal_mixed = len(batch.tool_calls) > 1 and any(
-            call.name in {"SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction"}
+            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction"}
             for call in batch.tool_calls)
         l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
         assigned_routes = {row.get("minimum_route_obligation_id")
@@ -1819,12 +1870,27 @@ def build_dell_specialist_agentic_state_graph(
         def run_tool(runtime: ToolRuntime, **_arguments: Any) -> ToolMessage:
             call = calls[runtime.tool_call_id]
             before = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
+            terminal_submission = call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction"}
+            if call.name == "ReviseWorkpaperAction":
+                working["last_submission_attempt"] = {**(working.get("last_submission_attempt") or {}),
+                    "tool_call_id": call.id, "tool_name": call.name, "feedback": [], "accepted": False}
+            elif terminal_submission:
+                # Retain the original assertion even when schema validation fails.
+                # This is checkpoint evidence, never an accepted deliverable.
+                working["last_submission_attempt"] = {
+                    "tool_call_id": call.id, "tool_name": call.name,
+                    "arguments": {key: deepcopy(value) for key, value in call.args.items()
+                        if key in models[call.name].model_fields} if isinstance(call.args, dict) else None,
+                    "accepted": False, "feedback": [],
+                }
 
             def reject(code: str, message: str, *, agent_error: bool = False) -> ToolMessage:
                 feedback = _feedback(code, message, owner_layer="agent" if agent_error else "runtime",
                     next_actions=("revise_request", "request_human_review"))
                 working["notebook"] = _replace_notebook(before, feedback=(*before.feedback, feedback)).model_dump(mode="json")
                 working["phase"] = "typed_feedback_ready"
+                if terminal_submission:
+                    working["last_submission_attempt"]["feedback"] = [feedback.model_dump(mode="json")]
                 return ToolMessage(name=call.name, tool_call_id=call.id, status="error",
                     content=json.dumps({"observations": [], "feedback": [feedback.model_dump(mode="json")]}, ensure_ascii=False))
 
@@ -1850,6 +1916,10 @@ def build_dell_specialist_agentic_state_graph(
                 # Use Pydantic's field locations and errors, never echo raw
                 # arguments/reasoning. The supplied tool schema stays authoritative.
                 errors = exc.errors(include_input=False, include_context=False, include_url=False)
+                if terminal_submission:
+                    working["last_submission_attempt"]["validation_issues"] = [
+                        {"location": list(item["loc"]), "type": item["type"], "message": item["msg"]}
+                        for item in errors]
                 details = json.dumps(errors, ensure_ascii=False)
                 return reject("specialist_tool_arguments_invalid",
                     "Submission/request was not accepted. Correct these fields against the supplied tool schema and resubmit; "
@@ -1866,6 +1936,21 @@ def build_dell_specialist_agentic_state_graph(
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")
             if isinstance(action, RequestEvidenceAction) and action.minimum_route_obligation_id not in assigned_routes:
                 return reject("specialist_evidence_route_not_assigned", "This evidence route is outside this Specialist task assignment.")
+            if isinstance(action, ReviseWorkpaperAction):
+                prior = working.get("last_submission_attempt") or {}
+                try:
+                    candidate = apply_workpaper_edits(prior["arguments"], action)
+                    working["last_submission_attempt"] = {"arguments": candidate, "accepted": False,
+                        "tool_call_id": call.id, "tool_name": call.name, "feedback": []}
+                    action = SubmitWorkpaperAction.model_validate_json(json.dumps(candidate, ensure_ascii=False))
+                except ValidationError as exc:
+                    working["last_submission_attempt"]["validation_issues"] = [
+                        {"location": list(item["loc"]), "type": item["type"], "message": item["msg"]}
+                        for item in exc.errors(include_input=False, include_context=False, include_url=False)]
+                    terminal_submission = True
+                    return reject("specialist_workpaper_edit_invalid", "Edited workpaper did not pass the existing submission schema.", agent_error=True)
+                except (ValueError, KeyError) as exc:
+                    return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
             working["pending_action"] = action.model_dump(mode="json")
             if isinstance(action, RequestResearchMethodAction):
                 update, message = execute_method(working, tool_call_id=call.id)
@@ -1963,6 +2048,10 @@ def build_dell_specialist_agentic_state_graph(
                 ),
             )
             return {
+                "last_submission_attempt": {**(state.get("last_submission_attempt") or {}),
+                    "arguments": action.model_dump(mode="json"), "accepted": False,
+                    "validation_issues": [{"location": ["references"], "type": "reference_validation", "message": error}
+                        for error in errors], "feedback": [feedback.model_dump(mode="json")]},
                 "pending_action": None,
                 "notebook": _replace_notebook(
                     notebook,
@@ -1971,6 +2060,9 @@ def build_dell_specialist_agentic_state_graph(
                 "phase": "submission_rejected_with_typed_feedback",
             }
         return {
+            "last_submission_attempt": {**(state.get("last_submission_attempt") or {}),
+                "arguments": action.model_dump(mode="json"), "accepted": True,
+                "validation_issues": [], "feedback": []},
             "pending_action": None,
             "final_submission": action.model_dump(mode="json"),
             "notebook": _replace_notebook(

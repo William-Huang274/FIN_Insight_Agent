@@ -165,6 +165,25 @@ def public_state(state):
     result["can_continue_remaining"] = can_continue_remaining_research(values)
     result["research_attempt_history"] = [{key: deepcopy(row[key]) for key in ("run_id", "phase", "outcomes") if key in row}
         for row in values.get("research_attempt_history", [])]
+    result["research_failures"] = []
+    for row in values.get("research_failed_workpapers", []):
+        agent = row.get("agent_state") or {}
+        attempt = agent.get("last_submission_attempt") or {}
+        arguments = attempt.get("arguments")
+        # Only explicit deliverable prose is public. Invalid JSON, raw tool
+        # payloads, private reasoning and checkpoint notebooks stay server-side.
+        candidate = {key: arguments[key] for key in ("thesis", "mechanism", "narrative_markdown", "summary")
+            if isinstance(arguments, dict) and isinstance(arguments.get(key), str)}
+        notebook = agent.get("notebook") or {}
+        result["research_failures"].append({"run_id": row.get("run_id"), "task_id": row.get("task_id"),
+            "reason": agent.get("review_reason"), "candidate": candidate,
+            "accepted": False,
+            "validation_issues": [{key: deepcopy(item[key]) for key in ("location", "type", "message") if key in item}
+                for item in attempt.get("validation_issues", []) if isinstance(item, dict)],
+            "feedback_codes": [item["code"] for item in attempt.get("feedback", [])
+                if isinstance(item, dict) and isinstance(item.get("code"), str)],
+            "model_turns": notebook.get("model_turn_count"), "tool_actions": notebook.get("tool_action_count"),
+            "saved_observations": len(notebook.get("observations", []))})
     # Public source-bound deliverables, not private agent message histories.
     result["research_synthesis"] = {key: deepcopy(values["synthesis"][key]) for key in ("title", "narrative_markdown")
         if key in values.get("synthesis", {})}

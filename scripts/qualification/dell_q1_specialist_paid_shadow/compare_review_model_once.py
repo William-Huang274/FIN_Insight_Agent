@@ -9,10 +9,12 @@ import argparse
 from datetime import datetime, timezone
 import json
 import os
+from hashlib import sha256
 from pathlib import Path
 from time import perf_counter
+from types import SimpleNamespace
 
-from langchain_core.messages import messages_from_dict
+from langchain_core.messages import HumanMessage, SystemMessage, messages_from_dict
 from langchain_core.tracers.langchain import wait_for_all_tracers
 from langsmith import tracing_context
 from pydantic import SecretStr
@@ -21,6 +23,9 @@ from sec_agent.agent_runtime.deepseek_structured_agents import (
     ReasoningPreservingChatDeepSeek, _NATIVE_REVIEW_TOOLS, _provider_function_schema, _usage_audit_fields,
 )
 from sec_agent.agent_runtime.dell_lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
+from sec_agent.agent_runtime.dell_specialist_agentic_graph import (
+    SubmitWorkpaperAction, _submission_errors,
+)
 from scripts.qualification.dell_q1_specialist_paid_shadow.run_once import _dotenv, _write_new
 
 
@@ -30,7 +35,10 @@ def main():
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--model", choices=("deepseek-v4-pro", "deepseek-v4-flash"), required=True)
     parser.add_argument("--effort", choices=("low", "high"), required=True)
-    parser.add_argument("--task", choices=("review", "lead"), default="review")
+    parser.add_argument("--task", choices=("review", "lead", "submission"), default="review")
+    parser.add_argument("--budget-basis", type=Path)
+    parser.add_argument("--prepare-only", action="store_true", help="Write the exact input locally without loading credentials or calling a model.")
+    parser.add_argument("--additional-source-ids", type=Path, help="Submission diagnostic only: explicit IDs already present in the original observations.")
     parser.add_argument("--source-turn", type=int, default=1)
     parser.add_argument("--thinking", choices=("enabled", "disabled"), default="enabled")
     parser.add_argument("--max-output-tokens", type=int, default=32000)
@@ -41,6 +49,8 @@ def main():
     if not 1 <= args.source_turn <= len(sources) or not 1000 <= args.max_output_tokens <= 32000:
         raise ValueError("comparison_source_turn_or_output_limit_invalid")
     source = sources[args.source_turn - 1]
+    if args.task == "submission" and not args.budget_basis:
+        raise ValueError("submission_diagnostic_requires_task_specific_budget_basis")
     if args.task == "review" and (not source["actor"].startswith("verifier:") or
             [m["type"] for m in source["messages"]] != ["system", "human"]):
         raise ValueError("comparison_requires_first_verifier_turn_without_private_reasoning_history")
@@ -52,6 +62,67 @@ def main():
         # Known-input diagnostic of the corrected instruction. Own past model
         # response/reasoning and actual failed tool feedback remain verbatim.
         messages[0].content = LEAD_RESEARCH_SYSTEM_PROMPT
+    if args.task == "submission":
+        if not source["actor"].startswith("specialist:"):
+            raise ValueError("submission_diagnostic_requires_specialist_source")
+        original = [call for call in source["raw_response"]["tool_calls"] if call["name"] == "SubmitWorkpaperAction"]
+        if len(original) != 1:
+            raise ValueError("submission_diagnostic_requires_one_original_submission")
+        candidate = original[0]["args"]
+        progress = source["semantic_input"]["progress"]
+        cited = {ref for claim in candidate["claims"] for key in ("evidence_ids", "fact_ids") for ref in claim.get(key, [])}
+        if args.additional_source_ids:
+            additional = json.loads(args.additional_source_ids.read_text(encoding="utf-8"))
+            observed_ids = {ref["ref_id"] for obs in progress["observations"] for ref in obs["references"]}
+            if not isinstance(additional, list) or any(not isinstance(ref, str) or ref not in observed_ids for ref in additional):
+                raise ValueError("additional_source_must_be_observed_in_original_attempt")
+            cited.update(additional)
+        # Select exact recorded observations; do not summarize passages or
+        # fabricate a full notebook/receipt. Acceptance below checks ALL original
+        # observations, including identity conflicts outside the selected input.
+        items = [item for obs in progress["observations"] for item in obs["content"]]
+        for item in items:
+            if item.get("calculation_id") in cited:
+                # Preserve operand provenance alongside the canonical result.
+                operands = item.get("operands", {})
+                for operand in operands.values() if isinstance(operands, dict) else operands:
+                    if isinstance(operand, dict) and isinstance(operand.get("source_id"), str):
+                        cited.add(operand["source_id"])
+        selected, seen_references, seen_items = [], set(), set()
+        for obs in progress["observations"]:
+            references, content = [], []
+            for ref in obs["references"]:
+                identity = json.dumps(ref, sort_keys=True, ensure_ascii=False)
+                if ref["ref_id"] in cited and identity not in seen_references:
+                    references.append(ref)
+                    seen_references.add(identity)
+            for item in obs["content"]:
+                identity = json.dumps(item, sort_keys=True, ensure_ascii=False)
+                if any(item.get(key) in cited for key in ("passage_id", "calculation_id", "fact_id", "evidence_id")) and identity not in seen_items:
+                    content.append(item)
+                    seen_items.add(identity)
+            if references or content:
+                selected.append({**obs, "references": references, "content": content})
+        diagnostic_binding = sha256(json.dumps(candidate, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
+        native_tools = {"SubmitWorkpaperAction": SubmitWorkpaperAction}
+        messages = [SystemMessage(content=(
+            "Repair the supplied rejected workpaper against the tool schema and exact recorded sources. "
+            "Retain every required finding, limitation and calculation. A disclosed number quoted from an original "
+            "passage is reported_fact; numeric_fact requires an authoritative structured financial observation. "
+            "Use exact observed references and contiguous quotes; calculations cite the recorded CALC receipts. "
+            "Do not fetch new evidence, invent facts, silently remove difficult claims, or claim full research passed. "
+            "Keep all original claim_id values exactly; correct each claim in place, without adding, merging or dropping claims. "
+            "Read all supplied observations before declaring missing information. Correct unsupported inferences (including "
+            "overstated financing or dilution conclusions); exact quote matching alone does not establish semantic support. "
+            "Return one complete SubmitWorkpaperAction. This is a bounded repair diagnostic, not a resumed research run.")),
+            HumanMessage(content=json.dumps({"original_candidate": candidate,
+                "observations": selected, "original_task": source["semantic_input"].get("task_context"),
+                "diagnostic_context_digest": diagnostic_binding}, ensure_ascii=False))]
+    if args.prepare_only:
+        _write_new(args.output_dir / "messages.private.json", [m.model_dump(mode="json") for m in messages])
+        print(json.dumps({"status": "prepared_no_model_call", "input_characters": sum(len(m.content) for m in messages),
+            "source_call_id": source["call_id"], "task": args.task}))
+        return
     secrets = _dotenv()
     for name, value in secrets.items():
         if name.startswith("LANGSMITH_") or name in {"LANGCHAIN_API_KEY", "LANGCHAIN_TRACING_V2", "LANGCHAIN_PROJECT"}:
@@ -61,9 +132,9 @@ def main():
         "source_call_id": source["call_id"], "source_actor": source["actor"], "model": args.model,
         "reasoning_effort": args.effort if args.thinking == "enabled" else None,
         "thinking": args.thinking, "max_output_tokens": args.max_output_tokens,
-        "input_characters": sum(len(m["content"]) for m in source["messages"]),
+        "input_characters": sum(len(m.content) for m in messages),
         "timeout_seconds": 480, "transport_attempts_allowed": 1, "retry": False,
-        "TokenBudgetBasis": "docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md",
+        "TokenBudgetBasis": args.budget_basis.read_text(encoding="utf-8") if args.budget_basis else "docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md",
         "langsmith_project": project, "recorded_at": datetime.now(timezone.utc).isoformat()}
     _write_new(args.output_dir / "request.json", manifest)
     _write_new(args.output_dir / "messages.private.json", [m.model_dump(mode="json") for m in messages])
@@ -82,11 +153,27 @@ def main():
                 "tags": ["cost-model-comparison", "diagnostic-only", "no-tool-execution"]})
         _write_new(args.output_dir / "response.private.json", raw.model_dump(mode="json"))
         valid = not raw.invalid_tool_calls and bool(raw.tool_calls)
+        reference_errors = None
         for call in raw.tool_calls:
             if call["name"] not in native_tools:
                 valid = False
             else:
-                native_tools[call["name"]].model_validate_json(json.dumps(call["args"]))
+                arguments = call["args"]
+                if args.task == "submission":
+                    # The provider-facing schema omits host-owned context_digest.
+                    arguments = {**arguments, "context_digest": diagnostic_binding}
+                validated = native_tools[call["name"]].model_validate_json(json.dumps(arguments))
+                if args.task == "submission":
+                    observed = SimpleNamespace(observations=[SimpleNamespace(
+                        references=[SimpleNamespace(**ref) for ref in obs["references"]],
+                        content=obs["content"]) for obs in progress["observations"]],
+                        required_route_obligation_ids=progress["required_route_obligation_ids"],
+                        satisfied_route_obligation_ids=progress["satisfied_route_obligation_ids"])
+                    reference_errors = list(_submission_errors(validated, observed, enforce_case_route_requirements=False))
+                    original_claims = {claim["claim_id"] for claim in candidate["claims"]}
+                    if {claim.claim_id for claim in validated.claims} != original_claims:
+                        reference_errors.append("diagnostic_claim_set_changed_requires_review")
+                    valid = valid and not reference_errors and len(raw.tool_calls) == 1
         lead_binding_valid = None
         if args.task == "lead":
             lead_binding_valid = (len(raw.tool_calls) == 1 and
@@ -100,6 +187,8 @@ def main():
                   "finish_reason": raw.response_metadata.get("finish_reason"),
                   "actions": [call["name"] for call in raw.tool_calls],
                   "lead_context_and_coverage_binding_valid": lead_binding_valid,
+                  "submission_reference_errors": reference_errors,
+                  "archive_receipts_verified": False if args.task == "submission" else None,
                   "full_task_passed": False, "elapsed_seconds": round(perf_counter() - started, 3),
                   **_usage_audit_fields(raw)}
     except Exception as exc:

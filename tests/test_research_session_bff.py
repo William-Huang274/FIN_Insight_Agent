@@ -172,6 +172,23 @@ def test_public_task_projection_has_real_objective_and_dependencies_not_private_
     assert history["responsibility_history"] == [{"actor": "synthesis", "correction_round": 0}]
 
 
+def test_failed_workpaper_projects_only_deliverable_and_validation_metadata():
+    projected = public_state({"values": {"research_failed_workpapers": [{"run_id": "run-a", "task_id": "task-a",
+        "agent_state": {"review_reason": "model_turn_ceiling_reached_no_silent_completion",
+            "notebook": {"model_turn_count": 2, "tool_action_count": 1,
+                "observations": [{"raw_source": "private payload"}], "messages": ["private reasoning"]},
+            "last_submission_attempt": {"arguments": {"narrative_markdown": "## Candidate\n\nObserved result.",
+                "context_digest": "private binding", "hidden_reasoning": "private reasoning"},
+                "feedback": [{"code": "specialist_tool_arguments_invalid", "message": "private raw error"}],
+                "validation_issues": [{"location": ["claims", 1], "type": "value_error", "message": "invalid authority"}]}}}]}})
+    failure = projected["research_failures"][0]
+    assert failure["candidate"] == {"narrative_markdown": "## Candidate\n\nObserved result."}
+    assert failure["saved_observations"] == 1 and failure["accepted"] is False
+    assert failure["feedback_codes"] == ["specialist_tool_arguments_invalid"]
+    assert failure["validation_issues"][0]["location"] == ["claims", 1]
+    assert "private" not in str(projected)
+
+
 def test_original_workpaper_reviews_are_visible_without_private_messages_or_raw_source_payloads():
     projected = public_state({"values": {"case_review": {"counter": {"messages": ["private trace"], "review": {
         "summary": "A current-period comparison needs revision.", "findings": [{"finding_id": "F1", "paper_id": "P09",

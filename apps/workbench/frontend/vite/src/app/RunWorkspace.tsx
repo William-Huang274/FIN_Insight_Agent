@@ -24,6 +24,9 @@ export function RunWorkspace({ session, events, connected, refresh, onReport }: 
   const history = useRef<HTMLDetailsElement>(null); const feed = useRef<HTMLDivElement>(null);
   const run = session.runs?.find(r => r.run_id === chosenRun) || session.runs?.[0];
   const live = run?.status === "running" || run?.status === "pending";
+  const failures = (session.research_failures || []).filter(f => f.run_id === run?.run_id);
+  const incomplete = !live && (run?.status === "error" || failures.length > 0 ||
+    (run?.run_id === session.runs?.[0]?.run_id && needsAttention(session.phase)));
   const recorded = useMemo(() => events.filter(e => !run || e.run_id === run.run_id).sort((a,b) => (a.recorded_at || "").localeCompare(b.recorded_at || "")), [events, run?.run_id]);
   const actors = [...new Set(recorded.map(e => e.actor))];
   const visible = actor ? recorded.filter(e => e.actor === actor) : recorded;
@@ -53,7 +56,14 @@ export function RunWorkspace({ session, events, connected, refresh, onReport }: 
         {g.kind === "message" ? <div className="fs-live-prose">{g.events[0].event === "output" && <strong className="fs-live-output-label">{g.events[0].status === "recovered_candidate" ? "从历史提交记录恢复的候选输出" : "模型输出 · 候选内容"}</strong>}<ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml components={{a:({children})=><span>{children}</span>,img:()=>null}}>{describe(g.events[0])}</ReactMarkdown>{g.events[0].status === "planned" && <small>计划中的动作，执行结果见后续工具记录</small>}{g.events[0].event === "output" && <small>保留模型原文；提交校验与独立复核结果以对应阶段为准。</small>}</div> : <details className="fs-live-calls"><summary>模型与工具活动 · {g.events.length} 条记录</summary>{g.events.map((e,j) => <div key={j}>{e.status === "error" || e.status === "provider_failed" ? <TriangleAlert size={15}/> : e.event === "outcome" ? <CheckCircle2 size={15}/> : <Terminal size={15}/>}<span>{e.kind === "model" ? `模型 ${e.model || "已配置模型"}` : toolName(e.tool || "")} · {e.event === "outcome" ? e.status === "success" ? "已返回" : statusName(e.status || "结果已记录") : "已发起"}{e.total_tokens != null ? ` · ${e.total_tokens.toLocaleString()} tokens` : ""}</span></div>)}</details>}
       </article>)}
       {!groups.length && <p>{live ? "等待 Agent 发出首条活动…" : "本次运行未保存公开活动；不能从耗时重建过程。"}</p>}
-      {run?.status === "error" && <section className="fs-live-failure" aria-label="失败说明"><strong>运行未完成 · 已产生的输出保留在上方</strong><p>{recorded.filter(e => e.error_type).at(-1)?.error_type ? `系统记录：${recorded.filter(e => e.error_type).at(-1)?.error_type}。` : "本次历史记录没有保存可展示的详细系统错误。"} {run.run_id === session.runs?.[0]?.run_id && session.research_stop_reason}</p><p>模型候选输出不代表提交已通过校验。已执行活动和候选结果可继续查看；未收到模型的失败说明时，不推测模型理由。</p></section>}
+      {incomplete && <section className="fs-live-failure" aria-label="失败说明"><strong>研究未完成 · 已产生的输出仍可查看</strong><p>{recorded.filter(e => e.error_type).at(-1)?.error_type ? `系统记录：${recorded.filter(e => e.error_type).at(-1)?.error_type}。` : failures.length ? "以下底稿尚未通过提交校验或完成研究。" : "本次历史记录没有保存可展示的详细系统错误。"} {run?.run_id === session.runs?.[0]?.run_id && session.research_stop_reason}</p><p>模型候选输出不代表提交已通过校验。未收到模型的失败说明时，不推测模型理由。</p></section>}
+      {failures.map((failure, index) => <section className="fs-live-prose fs-live-failure" aria-label="未完成底稿" key={`${failure.task_id}:${index}`}>
+        <h3>{session.research_tasks?.find(t => t.task_id === failure.task_id)?.objective || "研究节点未完成"}</h3>
+        <p>已执行 {failure.model_turns ?? "未记录"} 轮模型调用、{failure.tool_actions ?? "未记录"} 次工具操作，保留 {failure.saved_observations} 条资料读取结果。</p>
+        <strong>最后提交内容 · 未通过验收</strong>
+        <ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml components={{a:({children})=><span>{children}</span>,img:()=>null}}>{failure.candidate.narrative_markdown || failure.candidate.summary || failure.candidate.thesis || "该节点没有保存可展示的完整提交内容。"}</ReactMarkdown>
+        <details><summary>查看提交校验与停止原因</summary><p>{failure.reason || "未记录停止原因"}</p>{failure.feedback_codes.map(code => <p key={code}>{code}</p>)}{failure.validation_issues.map((issue, i) => <p key={i}>{issue.location.join(" · ")}：{issue.message}</p>)}</details>
+      </section>)}
       {live && <div className="fs-live-working"><LoaderCircle className="rs-spin" size={17}/><span>Agent 正在工作，新的进展会追加在这里。</span></div>}
       {!live && !!groups.length && <p className="fs-live-end">本次运行{run?.status === "success" ? needsAttention(session.phase) && run.run_id === session.runs?.[0]?.run_id ? "已停止在需要处理的研究问题，尚未形成可审阅报告" : "已结束，结果仍需审阅" : statusName(run?.status || "")}。{!recorded.some(e => e.event === "progress") && "这条历史记录未保存文字进展，仅列示实际阶段和调用。"}</p>}
     </div>{newEvents && <button className="fs-jump-latest" onClick={() => setFollow(true)}><ArrowDown size={15}/>查看最新活动</button>}

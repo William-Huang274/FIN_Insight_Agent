@@ -1037,6 +1037,7 @@ dependencies = [
 
 [package.optional-dependencies]
 agent-runtime = [
+    { name = "jsonpatch" },
     { name = "langchain" },
     { name = "langchain-core" },
     { name = "langchain-deepseek" },
@@ -1113,6 +1114,7 @@ requires-dist = [
     { name = "duckdb", specifier = ">=1.0.0" },
     { name = "fastapi", specifier = ">=0.115.0" },
     { name = "filelock", marker = "extra == 'control-plane'", specifier = "==3.32.4" },
+    { name = "jsonpatch", marker = "extra == 'agent-runtime'", specifier = "==1.33" },
     { name = "langchain", marker = "extra == 'agent-runtime'", specifier = "==1.4.0" },
     { name = "langchain-core", marker = "extra == 'agent-runtime'", specifier = "==1.6.1" },
     { name = "langchain-deepseek", marker = "extra == 'agent-runtime'", specifier = "==1.1.0" },

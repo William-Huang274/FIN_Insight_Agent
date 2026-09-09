@@ -37,6 +37,7 @@ qualification = [
   "psycopg[binary]==3.3.4",
 ]
 agent-runtime = [
+  "jsonpatch==1.33",
   "markdown-it-py>=4",
   "langchain==1.4.0",
   "langchain-core==1.6.1",

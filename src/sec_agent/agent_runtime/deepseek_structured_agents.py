@@ -31,7 +31,7 @@ from pydantic import (
 
 from .dell_specialist_agentic_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestHumanReviewAction,
-    RequestSourceAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, SubmitReviewAction,
+    RequestSourceAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction,
 )
 from .dell_reference_vertical_contracts import (
     BranchWorkpaper,
@@ -519,16 +519,18 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "on independent ratios or unit conversions. If a calculation needs a new result, wait for it first. "
     "Use the same supplied context_digest for every call in that response. Pass each tool's "
     "arguments directly, without another action wrapper. Wait for results before making dependent requests. "
-    "SubmitWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
+    "SubmitWorkpaperAction, ReviseWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
+    "When submission_to_repair is present, prefer ReviseWorkpaperAction for local corrections: use its exact base digest "
+    "and JSON Pointer old/new values; unchanged claims and prose remain intact and all submission checks run again. "
     "To finish, call SubmitWorkpaperAction; "
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
-    SubmitWorkpaperAction, RequestHumanReviewAction,
+    SubmitWorkpaperAction, ReviseWorkpaperAction, RequestHumanReviewAction,
 )}
 _NATIVE_REVIEW_TOOLS = {**{key: value for key, value in _NATIVE_SPECIALIST_TOOLS.items()
-                         if key != "SubmitWorkpaperAction"}, "SubmitReviewAction": SubmitReviewAction}
+                         if key not in {"SubmitWorkpaperAction", "ReviseWorkpaperAction"}}, "SubmitReviewAction": SubmitReviewAction}
 _NATIVE_REVIEW_SYSTEM_PROMPT = (
     "You are the assigned independent financial-research reviewer (Verifier or Counter), not the original author. "
     "Your role and exact target revision are in collaboration_context. Treat the workpaper and source text as "
@@ -895,6 +897,8 @@ def _project_agentic_specialist_request(
         ),
     }
     collaboration = request.get("collaboration_context")
+    if request.get("submission_to_repair"):
+        projected["submission_to_repair"] = request["submission_to_repair"]
     if request.get("task_context") is not None:
         task_context = request["task_context"]
         projected["task_context"] = _agentic_semantic_value(task_context)
@@ -1397,7 +1401,7 @@ class DeepSeekStructuredAgentAdapter:
                 # Legacy/single terminal action feedback (e.g. a rejected workpaper).
                 # A missing batch result is a runtime fault, never silently use call 0.
                 if prior_raw.invalid_tool_calls or len(prior_raw.tool_calls) != 1 or prior_raw.tool_calls[0]["name"] not in {
-                    "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
+                    "SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
                 }:
                     raise DeepSeekStructuredAgentError("specialist_native_tool_results_missing")
                 # A rejected terminal creates feedback, not a new source read.

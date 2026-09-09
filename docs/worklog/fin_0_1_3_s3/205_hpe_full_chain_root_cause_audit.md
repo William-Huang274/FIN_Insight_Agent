@@ -130,3 +130,7 @@ HPE 尚未走到完整报告写作/导出，不能据此把 Writer 或 PDF/Word 
 
 收尾服务复查发现 Docker Desktop 与宿主 BFF 进程已停止（原因未确定），并非源码构建失败。重新启动现有 `Z:/Docker/Docker/Docker Desktop.exe`，等待其 WSL/BuildKit 初始化后，原 Compose `up --no-build` 成功启动相同的 Redis、Postgres、Agent API；未新建或删除 volume。BFF 通过相同 serve CLI 重启，日志另存 `workbench-restart.stdout.log` / `workbench-restart.stderr.log`，保留初次启动证据。
 重启后最终复查：`18165/ok`、`18795/workspace`、`18795/api/v1/research-session-config` 均为 HTTP 200；Redis/Postgres 为 healthy，原生 API 可响应。没有因此发起研究模型请求。
+
+## 7. 原任务精确回读与上下文组件对照
+
+后续实质切片及当前费用/未完成项见 [205 来源回读与上下文资格](205_source_rehydration_and_context_qualification.md)。已实施恢复读身份、工具能力对齐、FTS5 归档来源搜索、全审查必填未决项和来源别名解析。HPE 局部复核及长历史两臂共 11 次有上限真实调用，459125 tokens，估算 ¥0.3754987，未知 0；没有整题重跑。原文可达性通过与模型金融质量失败并存，不能混为一步完成；Hermes 是请求投影组件对照，尚未成为正式默认执行栈。

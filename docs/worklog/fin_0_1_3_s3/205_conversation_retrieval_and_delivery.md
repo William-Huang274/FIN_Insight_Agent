@@ -238,3 +238,25 @@ Verifier公开活动已发现Hybrid Cloud商誉减值与Juniper收购因果混�
 最终引用词边界补强3bf68bd8：不能把1234匹配为123或把单词内部片段当完整引文；119后端/原生流程/引用检查通过、1材料跳过（31.18秒）。a5真实前端活动页重新读取，0pageerror，历史失败明确显示且公开活动仍可查看（D:/temp/fin205-hpe-auto-ui-a5/runtime-live.png，已视觉检查），但最新BFF失败候选投影未加载，不能写成真实新展示通过。当前无付费运行。第一步尚缺合格复杂报告、审查真实完成及最新BFF部署后的UI验收；没有HPE完整PDF/Word可交付。
 
 收尾部署：原生镜像adbd0ae878cb65609d47e0577a35b184c9c570e2bf8836252982c8e23f75d017，/ok200，容器排版引文通过/部分数字拒绝，原Q1已提交和Q3失败状态均回读。119检查通过1跳过。BFF18795重载仍受此前自动审查阻止，不绕过、不声称新BFF已部署。所有工程与失败记录同一S3/205，不合main，不更新产品版本，第一步/整轮未完成。
+
+## Owner要求解决财务质量、范围收缩与上下文成本三问题
+
+Owner强调DS费用持续发生但复杂题尚未解决。本轮选择先离线修复，仅允许一次局部Verifier资格，不再整题重跑。原分支继续，FIN0.1.3/S3/205不变。用户要求的复杂报告仍未验收。
+
+工程增量：发现review系统提示仍写complete Dell case，改为实际用户主体/时点；发现父research_session和runtime review入口均遗漏research_handoff，已贯通。Lead现代执行计划的handoff新增逐项question_coverage，引用实际用户问题、关联已交任务、说明省略/未决；无引用/编造任务/未决却ready被拒。只校验引用和状态，不把机械检查说成覆盖语义验证，也不按公司名写路由。公开活动显示自然语言覆盖情况，原历史handoff不回写。
+
+审查用现有CaseReviewFinding及LangGraph reducer/checkpoint逐条保存，最终提交自动合并；后续发现自己判断错误可显式撤回并给理由，不默默删掉。引用/已读/claim校验继续执行，并发同ID及记录与提交同批竞态拒绝。失败父状态和前端白名单保留已存发现，公开输出不包含私有推理。原责任修订机制继续使用，没有增加审查层。金融方法补总额/变化量、存量/流量、主体/期间/单位/分部口径、因果身份；这是方法注入，不是模型金融质量已经改善的证明。
+
+上下文：既有MCP读稿工具增加按claim_ids读取，局部读取不能冒充读过全稿；来源默认4000字符，保留offset/next_offset及更大窗口，公式/操作数仍可从原存储恢复。没有删Provider要求的reasoning_content，没有开启摘要或新建检索/调度引擎。
+
+一次真实局部资格D:/temp/fin205-hpe-focused-review-a1：原a4已交底稿＋归档源，无外网检索、无人工答案注入；Flash thinking/low，6调用，全部transport/tool成功；98106输入＋12178输出＝110284tokens，6条usage已知，估算¥0.3875872（既有2026-09-07计价场景，非账单），0未知。模型仍持续读/算，未record、未submit，故失败。已保留manifest、原生完整state.private、公开result与metrics，不另发付费。全205累计471尝试/14783667已知tokens/¥14.4273368场景估算/未知2。历史费用不因本轮失败消失。
+
+失败提供的工程证据：仅倒计时提示无法保证交接；同样原读请求实际全部显式给窗口大小，故此样本4000默认值带来的响应节省为0（26031→26031字符），不能宣传节费。动态每轮改系统提示也会破坏稳定前缀，本轮将其改成只有进入最后阶段时的一次稳定提示。按官方LangChain动态tools hook和本地SDK采用最后两轮只开放record/submit，同时工具hook拒绝模型仍提出的新读取。原Provider思考协议不变，不用强制tool_choice；DeepSeek官方oh_my_pi集成说明此模式不支持该参数。若交接有unresolved_data_requests，父图明确incomplete_review并停止写作，前端显示未决检查；保存结果不是假成功。
+
+验证：最终144检查通过7材料依赖跳过（37.60秒）；包括真实SDK MockTransport检查末轮线上payload只含交接工具且原reasoning逐字保留、已存发现跨限额持久化/撤回、未知任务及遗漏状态拒绝、原生父图handoff消费、局部读取不冒充全读、前端私有字段隔离。之前出现operator.or拼写、预算角色枚举、测试旧默认字段/旧全量工具假设，均离线修复；不掩盖真实局部资格失败。最后工具筛选版本仅离线验证，未再次付费，不能称三个问题解决完。
+
+成熟方案依据：https://docs.langchain.com/oss/python/langchain/middleware/custom ，https://api-docs.deepseek.com/quick_start/agent_integrations/oh_my_pi/ 。只做FIN交付契约和原生hook薄适配。下一质量证据应是限定审查实际交出可执行纠错、随后原责任作者完成并被复核；不能通过改更高上限、另起整题或追加Hermes实验隐藏目前未完成。
+
+工程提交06384061。补查接续预算计数采用原生run_model_call_count而非累计thread计数，定向14通过；完整144/7为此前相关组合，不累加计数。原6次SDK输入零模型回放closeout-replay.json证明1–4次仍有读取工具、5–6次仅record/submit，六次原始消息均未改。这只证明新请求工具选择，不声称模型已经生成修订。最后原生部署状态见下文。
+
+原生18165最终部署镜像56d90e4f43da91a05e486fbb588b6370863053c20f382dc488d2c923595cc5a9；官方部署CLI build/up成功，/ok200，容器确认question_coverage、recorded_findings、run预算及去除Dell提示生效。旧HPE仍research_reviewing/1已交+1失败，原件未回写。18795宿主进程未再次尝试此前被审查拒绝的重启，新增前端失败发现展示仅本地验证。当前无付费运行，不合main、不发产品版本；代码与状态分别提交并推开发分支。

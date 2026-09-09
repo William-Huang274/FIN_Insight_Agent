@@ -3,7 +3,7 @@ import asyncio
 import json
 
 from langchain_core.language_models.chat_models import BaseChatModel
-from langchain_core.messages import AIMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langchain_core.outputs import ChatGeneration, ChatResult
 from langgraph.checkpoint.memory import InMemorySaver
 from mcp import Client
@@ -41,6 +41,7 @@ class ScriptedNativeChat(BaseChatModel):
     def bind_tools(self, tools, **kwargs):
         names = {t.name for t in tools}
         assert ({"read_research_artifact", "calculate_research_metric", "submit_case_review"}.issubset(names)
+                or {"read_review_target", "submit_case_review"}.issubset(names)
                 or names == {"record_case_finding", "submit_case_review"})
         return self
 
@@ -56,6 +57,99 @@ class ScriptedNativeChat(BaseChatModel):
 
 def call(name, args, identity):
     return {"name": name, "args": args, "id": identity, "type": "tool_call"}
+
+
+def test_revision_review_scope_preserves_valid_findings_and_never_passes_whole_case():
+    from copy import deepcopy
+    from test_research_convergence import artifact_fixture
+    from sec_agent.agent_runtime.dell_case_artifacts import revision_review_target
+
+    async def exercise():
+        base = artifact_fixture()
+        original = base.read_paper("P01")
+        revised = deepcopy(original)
+        revised["claims"][0]["statement"] += " Revised synthetic statement."
+        revision = {"status": "revision_submitted", "workpaper": revised, "finding_responses": [], "sources": {}}
+        target = revision_review_target(base, "P01", revision)
+        current = base.with_revisions({"P01": revision})
+        cid = revised["claims"][0]["claim_id"]
+        assert target["changed_claim_ids"] == [cid]
+        assert base.read_paper("P01") == original
+        valid = {"finding_id": "valid", "paper_id": "P01", "claim_ids": [cid], "severity": "advisory",
+            "problematic_quote": revised["claims"][0]["statement"], "diagnosis": "Synthetic source-independent scope plumbing test.",
+            "requested_change": "Inspect only this synthetic revision; this is not a financial result."}
+        outside = {**valid, "finding_id": "outside", "claim_ids": ["UNCHANGED_OTHER_TOPIC"]}
+        wrong_quote = {**valid, "finding_id": "wrong-quote", "problematic_quote": "Joined ... text that is not an exact quote."}
+        final = {"summary": "Only the selected revision was checked in this synthetic test.",
+            "assessments": [{"paper_id": "P01", "assessment": "Changed claim inspected; unchanged claims are not verified."}]}
+        replies = [[call("read_review_target", {}, "read")],
+            [call("record_case_finding", {"finding": valid}, "valid"),
+             call("record_case_finding", {"finding": json.dumps(valid)}, "string"),
+             call("record_case_finding", {"finding": outside}, "outside"),
+             call("record_case_finding", {"finding": wrong_quote}, "badquote")],
+            [call("submit_case_review", {"review": {**final, "completion": "complete", "unresolved_data_requests": []}}, "submit")]]
+        agent = build_case_reviewer(role="verifier", model=ScriptedNativeChat(marker="local", replies=replies),
+            tools=[], artifacts=current, revision_target=target, max_model_calls=3)
+        tool_names = set(agent.get_graph().nodes["tools"].data.tools_by_name)
+        assert "read_review_target" in tool_names
+        assert not {"read_research_artifact", "research_artifact_catalog", "read_source_document"} & tool_names
+        result = await agent.ainvoke({"messages": [HumanMessage(content="Review this revision only.")]})
+        assert list(result["recorded_findings"]) == ["valid"]
+        assert result["review"]["review_scope"]["kind"] == "revision_only"
+        assert [f["finding_id"] for f in result["review"]["findings"]] == ["valid"]
+        errors = [m.content for m in result["messages"] if isinstance(m, ToolMessage) and m.status == "error"]
+        assert len(errors) == 3 and any("finding_outside_revision_scope" in e for e in errors)
+        assert any("problematic_quote_not_exact" in e for e in errors)
+        with pytest.raises(ValueError, match="read_missing_papers"):
+            validate_case_review(CaseReview.model_validate(final), current, result["messages"], paper_ids=["P01"])
+        # Full-case parent must not promote this narrower submission.
+        from langchain_core.runnables import RunnableLambda
+        reviewers = {r: RunnableLambda(lambda _: result) for r in ("counter", "verifier")}
+        parent = build_case_review_graph(reviewers=reviewers, artifacts=current, question="Full case",
+            run_id="scope", run_invocation_id="a1").compile()
+        outcome = await parent.ainvoke({"run_id": "scope", "run_invocation_id": "a1"})
+        assert outcome["phase"] == "case_review_incomplete"
+        invalid_target = {**target, "current_digest": "stale"}
+        with pytest.raises(ValueError, match="does_not_match"):
+            build_case_reviewer(role="verifier", model=ScriptedNativeChat(marker="local", replies=[]),
+                tools=[], artifacts=current, revision_target=invalid_target)
+    asyncio.run(exercise())
+
+
+def test_revision_submission_requires_explicit_completion_and_preserves_incomplete_work():
+    from copy import deepcopy
+    from test_research_convergence import artifact_fixture
+    from sec_agent.agent_runtime.dell_case_artifacts import revision_review_target
+
+    async def exercise():
+        base = artifact_fixture()
+        revised = deepcopy(base.read_paper("P01"))
+        revised["claims"][0]["statement"] += " Synthetic revision."
+        revision = {"status": "revision_submitted", "workpaper": revised, "finding_responses": [], "sources": {}}
+        target = revision_review_target(base, "P01", revision)
+        pending = "A necessary attribution source has not yet been inspected."
+        # Observed provider failure: prose admits unfinished work but omits the
+        # structured list. Do not infer or fabricate that list from prose.
+        omitted = {"summary": pending, "assessments": [{"paper_id": "P01", "assessment": pending}]}
+        mismatch = {**omitted, "completion": "complete", "unresolved_data_requests": [pending]}
+        explicit = {**omitted, "completion": "incomplete", "unresolved_data_requests": [pending]}
+        replies = [[call("read_review_target", {}, "read")],
+            [call("submit_case_review", {"review": omitted}, "omitted")],
+            [call("submit_case_review", {"review": mismatch}, "mismatch")],
+            [call("submit_case_review", {"review": explicit}, "explicit")]]
+        agent = build_case_reviewer(role="verifier", model=ScriptedNativeChat(marker="local", replies=replies),
+            tools=[], artifacts=base.with_revisions({"P01": revision}), revision_target=target, max_model_calls=4)
+        result = await agent.ainvoke({"messages": [HumanMessage(content="Synthetic revision qualification.")]})
+        responses = {m.tool_call_id: m for m in result["messages"] if isinstance(m, ToolMessage)}
+        assert responses["omitted"].status == "error"
+        assert "completion" in responses["omitted"].content and "unresolved_data_requests" in responses["omitted"].content
+        assert responses["mismatch"].status == "error"
+        assert "revision_completion_must_match" in responses["mismatch"].content
+        assert responses["explicit"].status == "success"
+        assert result["review"]["completion"] == "incomplete"
+        assert result["review"]["unresolved_data_requests"] == [pending]
+        assert result["review"]["summary"] == pending
+    asyncio.run(exercise())
 
 
 def test_native_parallel_agents_errors_and_checkpointed_private_messages(artifacts):

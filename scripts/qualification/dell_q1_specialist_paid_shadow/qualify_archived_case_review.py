@@ -20,7 +20,7 @@ from mcp.server.mcpserver import MCPServer
 from pydantic import SecretStr
 
 from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekModelProfile, TokenBudgetBasis
-from sec_agent.agent_runtime.dell_case_artifacts import DellCaseArtifacts, register_case_artifact_tools
+from sec_agent.agent_runtime.dell_case_artifacts import DellCaseArtifacts, register_case_artifact_tools, revision_review_target
 from sec_agent.agent_runtime.dell_case_review_agent import CaseModelAudit, build_case_reviewer, case_chat_model, case_mcp_tools
 from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent, paper_revision_input
 from sec_agent.research_foundation.research_methods import get_research_method
@@ -41,6 +41,7 @@ async def main():
     parser.add_argument("--author-output-tokens", type=int, choices=(10000, 16000), default=10000,
         help="Explicitly qualified author output ceiling; does not change reviewer limits.")
     parser.add_argument("--review-output-tokens", type=int, choices=(6000, 12000), default=6000)
+    parser.add_argument("--revision-only", action="store_true", help="Bind review to computed changes; cannot count as complete paper acceptance.")
     args = parser.parse_args()
     args.output_dir.mkdir(exist_ok=False)
     raw = args.state_file.read_bytes()
@@ -49,7 +50,9 @@ async def main():
     artifacts = DellCaseArtifacts(state["case_papers"])
     if len(artifacts.catalog()["papers"]) != 1:
         raise ValueError("this_bounded_qualification_requires_one_existing_paper")
-    feedback, input_artifact = [], None
+    feedback, input_artifact, target = [], None, None
+    if args.revision_only and not args.revision_file:
+        raise ValueError("revision_only_requires_revision_file")
     paper_id = artifacts.catalog()["papers"][0]["paper_id"]
     if args.author_findings_file or args.revision_file:
         input_path = args.author_findings_file or args.revision_file
@@ -64,6 +67,8 @@ async def main():
             if not feedback or any(f["paper_id"] != paper_id for f in feedback):
                 raise ValueError("qualification_requires_saved_findings_for_this_paper")
         else:
+            if args.revision_only:
+                target = revision_review_target(artifacts, paper_id, prior["revision"])
             artifacts = artifacts.with_revisions({paper_id: prior["revision"]})
     repairing = bool(args.author_findings_file)
     restored, continuation = None, None
@@ -75,7 +80,8 @@ async def main():
         if (parent_manifest["source_sha256"] != sha256(raw).hexdigest()
                 or parent_manifest["input_artifact"] != input_artifact
                 or parent_manifest["question"] != args.question
-                or parent_manifest["mode"] != ("responsible_author" if repairing else "independent_reviewer")):
+                or parent_manifest["mode"] != ("responsible_author" if repairing else "independent_reviewer")
+                or parent_manifest.get("revision_target") != target):
             raise ValueError("continuation_author_input_mismatch")
         restored = json.loads(parent_raw)
         if restored.get("output") or restored.get("review"):
@@ -107,11 +113,19 @@ async def main():
         reasoning_profile="agentic_message_history_thinking_enabled", max_input_characters=100000,
         max_output_tokens=args.author_output_tokens if repairing else args.review_output_tokens, timeout_seconds=240 if repairing else 180, max_transport_attempts=1, retry_policy="none",
         truncation_stop_behavior="fail_closed_no_partial_promotion", input_ceiling_behavior="fail_before_transport")
+    if target:
+        basis = TokenBudgetBasis.model_validate_json(json.dumps({**basis.model_dump(mode="json"),
+            "node_purpose": "Independently verify actual changed claim/prose against original sources and return a scoped review; unchanged research is not accepted.",
+            "input_scale": f"One mechanically computed revision target ({len(json.dumps(target, ensure_ascii=False))} characters); {len(target['changed_claim_ids'])} changed claims. Original source/calculation windows on demand; no full source catalog or sibling history.",
+            "required_outputs": ["revision-only assessment with source-grounded public rationale", "valid exact-quote findings or explicit necessary scope expansion"],
+            "comparable_run_evidence": "Previous revision verifier used 6 actual calls and still no valid submission after scope expansion, truncation and malformed findings. Current qualification changes the explicit review interface, not a same-condition model benchmark.",
+            "schema_burden": "Native CaseReview tools with required completion/unresolved fields for revision-only submission and host-bound revision_scope. Output ceiling includes reasoning and complete findings; no full report rewrite."}))
     _write_new(args.output_dir / "manifest.json", {"source_sha256": sha256(raw).hexdigest(),
         "source_path": str(args.state_file), "question": args.question, "catalog": artifacts.catalog(), "input_artifact": input_artifact,
         "mode": "responsible_author" if repairing else "independent_reviewer",
         "TokenBudgetBasis": basis.model_dump(mode="json"), "max_model_calls": model_limit, "max_tool_calls": tool_limit,
         "continuation": continuation,
+        "revision_target": target,
         "model": "deepseek-v4-flash", "reasoning_effort": "low", "automatic_retry": False,
         "scope": "known-problem node qualification, not blind evaluation or product acceptance"})
     if args.prepare_only:
@@ -142,7 +156,7 @@ async def main():
             else:
                 agent = build_case_reviewer(role="verifier", model=model, tools=tools, artifacts=artifacts,
                     max_model_calls=model_limit, max_tool_calls=tool_limit, audit=audit,
-                    method_instructions=json.dumps(get_research_method("verifier"), ensure_ascii=False))
+                    method_instructions=json.dumps(get_research_method("verifier"), ensure_ascii=False), revision_target=target)
             # Agent Server owns production persistence; isolated qualification
             # uses its same compiled graph with a native in-memory checkpointer.
             saver = InMemorySaver()
@@ -151,6 +165,9 @@ async def main():
             body = {
                     "question": args.question, "catalog": artifacts.catalog(),
                     "boundary": "Only original archived sources are exposed. If their context is insufficient, report the missing check; do not claim public non-disclosure."}
+            if target:
+                body.pop("catalog")
+                body["review_scope"] = {k: target[k] for k in ("kind", "paper_id", "changed_claim_ids", "boundary")}
             if repairing:
                 body.update(**paper_revision_input(artifacts, paper_id, feedback),
                     review_boundary="These saved findings come from an incomplete review. Correct their proved errors; do not presume unreviewed content has passed. Reviewer suggestions may also be wrong.")
@@ -176,6 +193,7 @@ async def main():
         "model_output": [m.content for m in result.get("messages", []) if isinstance(m, AIMessage) and m.content] if result else []}
     _write_new(args.output_dir / "result.json", public)
     print(json.dumps({"review_submitted": bool(public["review"]),
+        "revision_review_completion": (public["review"] or {}).get("completion"),
         "revision_submitted": bool(public["revision"]),
         "recorded_findings": len(public["recorded_findings"]), "error": error}, ensure_ascii=False))
 

@@ -7,6 +7,7 @@ new Evidence admission, new research claims or execution state are created here.
 from __future__ import annotations
 
 import json
+from difflib import SequenceMatcher
 from copy import deepcopy
 from collections.abc import Mapping, Sequence
 from typing import Annotated, Any, Literal
@@ -16,6 +17,33 @@ from pydantic import Field
 from .dell_reference_vertical_contracts import canonical_sha256
 from .dell_specialist_agentic_graph import SpecialistNotebook, SubmitWorkpaperAction, _submission_errors
 from .dell_workpaper_review_graph import validate_workpaper_state
+
+
+def revision_review_target(artifacts, paper_id, revision):
+    """Mechanical before/after scope; no inferred financial dependencies or verdict."""
+    before = artifacts.read_paper(paper_id)
+    after = artifacts.with_revisions({paper_id: revision}).read_paper(paper_id)
+    old = {c["claim_id"]: c for c in before["claims"]}
+    new = {c["claim_id"]: c for c in after["claims"]}
+    changed = sorted(k for k in old.keys() | new.keys() if old.get(k) != new.get(k))
+    prose = []
+    for field in ("thesis", "mechanism", "narrative_markdown", "counterevidence", "what_would_change", "open_gaps"):
+        left, right = before[field], after[field]
+        if left == right:
+            continue
+        if not isinstance(left, str):
+            left, right = "\n".join(left), "\n".join(right)
+        for group in SequenceMatcher(None, left, right, autojunk=False).get_grouped_opcodes(80):
+            prose.append({"field": field, "before": left[group[0][1]:group[-1][2]],
+                "after": right[group[0][3]:group[-1][4]]})
+    if not changed and not prose:
+        raise ValueError("revision_has_no_reviewable_changes")
+    return {"kind": "revision_only", "paper_id": paper_id,
+        "baseline_digest": canonical_sha256(before), "current_digest": canonical_sha256(after),
+        "changed_claim_ids": changed,
+        "claim_changes": [{"claim_id": k, "before": old.get(k), "after": new.get(k)} for k in changed],
+        "prose_changes": prose, "author_responses": deepcopy(revision["finding_responses"]),
+        "boundary": "Review only changed claims and changed prose in context. Unchanged claims are NOT verified by this review. If a dependency needs wider investigation, record the exact expansion needed in unresolved_data_requests; do not silently perform whole-paper research."}
 
 
 class DellCaseArtifacts:

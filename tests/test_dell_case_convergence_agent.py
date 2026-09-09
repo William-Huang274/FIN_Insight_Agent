@@ -502,3 +502,8 @@ def test_dynamic_author_counts_preserve_report_artifacts_without_model_context_d
     assert result["report"] == report
     assert captured["verifier"]["report"] == {key: report[key] for key in ("title", "narrative_markdown")}
     assert "large-source-marker" not in json.dumps(captured)
+    for pid in selected:
+        author_seed = captured["author_" + pid]
+        assert author_seed["original_workpaper"] == artifacts.read_paper(pid)
+        assert "sources" not in author_seed
+        assert "read_current_source" in author_seed["source_access"]

@@ -153,6 +153,10 @@ def test_research_finding_returns_only_responsible_paper_then_lead_and_both_revi
         "repair", "synthesis", "research_verifier", "writer", "report_verifier"]
     assert set(result["revisions"]) == {"P02"} and result["phase"] == "case_report_ready_for_human_review"
     assert ("repair", "P01", 1) not in models
+    seed = json.loads(models[("repair", "P02", 1)].contexts[0][1].content)
+    assert seed["original_workpaper"] == artifact_fixture().read_paper("P02")
+    assert "sources" not in seed
+    assert "read_current_source" in seed["source_access"]
     assert result["revisions"]["P02"]["workpaper"]["thesis"] in str(models[("synthesis", None, 1)].contexts[0])
 
 

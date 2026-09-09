@@ -462,7 +462,8 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
         try:
             current = next((m for m in reversed(runtime.state["messages"]) if isinstance(m, AIMessage)), None)
             same_id_calls = [c for c in current.tool_calls if c["name"] == "record_case_finding"
-                and c["args"].get("finding", {}).get("finding_id") == finding.finding_id] if current else []
+                and isinstance(c["args"].get("finding"), dict)
+                and c["args"]["finding"].get("finding_id") == finding.finding_id] if current else []
             if len(same_id_calls) > 1:
                 raise ValueError("record_same_finding_id_once_per_parallel_batch")
             validate_case_review(partial, artifacts, runtime.state["messages"], paper_ids=[finding.paper_id])

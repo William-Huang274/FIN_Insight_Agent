@@ -788,6 +788,13 @@ def validate_reused_revisions(reused, artifacts, feedback):
     return deepcopy(reused)
 
 
+def paper_revision_input(artifacts, paper_id, findings):
+    """Pass the affected paper once; source bodies/metadata stay behind tools."""
+    return {"paper_id": paper_id, "original_workpaper": artifacts.read_paper(paper_id),
+        "findings": findings,
+        "source_access": "The workpaper contains exact source IDs. Read their original context with read_current_source; use read_current_workpaper(section='sources') only when you need the wider source catalog."}
+
+
 def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_id, run_invocation_id, reused_revisions=None,
                                  report_revision_request=None, research_review_context=None):
     reused = validate_reused_revisions(reused_revisions, artifacts, feedback) if reused_revisions else {}
@@ -809,8 +816,7 @@ def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_i
             value = {"revisions": state.get("revisions", {}), "report": state.get("report", {})}
             if _author:
                 pid = _actor.removeprefix("author_")
-                body.update(paper_id=pid, original_workpaper=artifacts.read_paper(pid),
-                    findings=feedback[pid], sources=artifacts.read_paper(pid, "sources"))
+                body.update(paper_revision_input(artifacts, pid, feedback[pid]))
                 # No sibling context or private reasoning enters an author.
                 value = {}
             else:

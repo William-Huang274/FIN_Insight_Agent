@@ -106,7 +106,8 @@ def test_cannot_claim_all_papers_read_without_observation(artifacts):
 
 
 @pytest.mark.parametrize("withdraw", [False, True])
-def test_saved_finding_survives_limit_and_is_merged_without_rewriting(artifacts, withdraw):
+@pytest.mark.parametrize("malformed_sibling", [False, True])
+def test_saved_finding_survives_limit_and_is_merged_without_rewriting(artifacts, withdraw, malformed_sibling):
     async def exercise():
         async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
             tools = await case_mcp_tools(client)
@@ -117,6 +118,10 @@ def test_saved_finding_survives_limit_and_is_merged_without_rewriting(artifacts,
             reads = [call("read_research_artifact", {"paper_id": p["paper_id"]}, f"r{i}")
                 for i, p in enumerate(artifacts.catalog()["papers"])]
             save = [call("record_case_finding", {"finding": finding}, "save")]
+            if malformed_sibling:
+                # Actual provider failure shape: JSON string instead of object.
+                # Native validation rejects it without aborting the valid sibling.
+                save.append(call("record_case_finding", {"finding": json.dumps(finding)}, "bad-sibling"))
             final = review_fixture(artifacts)
             if withdraw:
                 final["withdrawn_finding_reasons"] = {"F-saved": "Subsequent source inspection disproved this synthetic finding."}

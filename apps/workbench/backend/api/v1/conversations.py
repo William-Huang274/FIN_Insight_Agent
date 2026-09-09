@@ -6,7 +6,7 @@ import json
 import re
 
 from fastapi import APIRouter, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, Response
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -59,7 +59,8 @@ def public_messages(state):
         if isinstance(content, list):
             content = "\n".join(p.get("text", "") for p in content if isinstance(p, dict) and p.get("type") == "text")
         if isinstance(content, str) and content:
-            result.append({"id": message.get("id"), "role": role, "content": content})
+            result.append({"id": message.get("id"), "role": role, "content": content,
+                           "final_answer": role == "assistant" and not message.get("tool_calls")})
     return result
 
 
@@ -154,12 +155,20 @@ def build_conversations_router(service):
             raise HTTPException(409, "本轮已在运行，请刷新操作状态")
         state = await service.sdk.threads.get_state(str(thread_id))
         pending = next((item for item in pending_approvals(state) if item["id"] == body.interrupt_id), None)
-        if state.get("checkpoint", {}).get("checkpoint_id") != str(body.checkpoint_id) or not pending:
+        if (state.get("checkpoint") or {}).get("checkpoint_id") != str(body.checkpoint_id) or not pending:
             raise HTTPException(409, "待批准操作已变化或已处理，请刷新后核对")
         if len(body.decisions) != len(pending["value"]["action_requests"]):
             raise HTTPException(422, "每个待执行动作都需要明确的决定")
+        sources = observed_sources(state)
+        for action, decision in zip(pending["value"]["action_requests"], body.decisions):
+            if decision == "approve" and action.get("name") == "save_sources_to_knowledge":
+                ids = action.get("args", {}).get("source_ids")
+                if not isinstance(ids, list) or not ids or any(not isinstance(key, str) or key not in sources for key in ids):
+                    raise HTTPException(422, "待保存来源不在本对话已读凭证中；请拒绝后让模型修正，不会猜测编号")
         runs = await service.sdk.runs.list(str(thread_id), limit=1)
-        if not runs or runs[0]["status"] != "interrupted":
+        # Agent Server can complete a run successfully at an intentional graph
+        # interrupt. The current thread/checkpoint/action is the approval gate.
+        if thread.get("status") != "interrupted" or not runs or runs[0]["status"] not in {"interrupted", "success"}:
             raise HTTPException(409, "原运行当前不在等待批准状态")
         previous = runs[0].get("metadata", {})
         selected = ConversationMessage(message="批准恢复", model=previous["model"], permission_mode=previous["permission_mode"])
@@ -176,7 +185,7 @@ def build_conversations_router(service):
         if thread.get("status") == "busy":
             raise HTTPException(409, "本轮运行中，请先等待完成或停止再交接")
         state = await service.sdk.threads.get_state(str(thread_id))
-        if not state.get("checkpoint", {}).get("checkpoint_id"):
+        if not (state.get("checkpoint") or {}).get("checkpoint_id"):
             raise HTTPException(409, "当前没有可交接的已保存对话")
         messages = public_history(state)
         return {"source_thread": str(thread_id), "title": thread.get("metadata", {}).get("title"),
@@ -191,7 +200,7 @@ def build_conversations_router(service):
         if source.get("status") == "busy":
             raise HTTPException(409, "请先等待本轮完成或停止")
         state = await service.sdk.threads.get_state(str(thread_id))
-        if state.get("checkpoint", {}).get("checkpoint_id") != str(body.checkpoint_id):
+        if (state.get("checkpoint") or {}).get("checkpoint_id") != str(body.checkpoint_id):
             raise HTTPException(409, "对话已变化，请重新查看交接内容")
         if any(t.get("interrupts") for t in state.get("tasks", [])):
             raise HTTPException(409, "请先处理待批准的操作；新窗口不会继承待执行授权")
@@ -214,7 +223,16 @@ def build_conversations_router(service):
                 "usage": usage, "context_usage": request_context_usage(activity), "cost_estimate": public_cost_estimate(activity)})
         return {"thread_id": str(thread_id), "title": thread.get("metadata", {}).get("title"), "status": thread.get("status"),
             "messages": public_messages(state), "events": events, "runs": public_runs,
-            "checkpoint_id": state.get("checkpoint", {}).get("checkpoint_id"), "approvals": pending_approvals(state),
+            "checkpoint_id": (state.get("checkpoint") or {}).get("checkpoint_id"), "approvals": pending_approvals(state),
+            "approval_sources": {key: {"title": item.get("title") or " / ".join(str(item[k]) for k in ("ticker","metric_id","period_end","unit") if item.get(k)) or "已读来源",
+                "preview": str(item.get("passage") or item.get("value_decimal") or item.get("expression") or "")[:1200],
+                "source_url": item.get("source_url") or next(iter(item.get("citation_urls") or []), None),
+                "source_role": item.get("source_role") or item.get("result_state"),
+                "unit": item.get("unit"), "period_start": item.get("period_start"), "period_end": item.get("period_end"),
+                "accession_numbers": item.get("accession_numbers", [])}
+                for key,item in observed_sources(state).items() if any(key in action.get("args",{}).get("source_ids",[])
+                    for pending in pending_approvals(state) for action in pending["value"]["action_requests"]
+                    if action.get("name")=="save_sources_to_knowledge" and isinstance(action.get("args",{}).get("source_ids"),list))},
             "attachments": service.attachment_store.list(thread_id) if getattr(service, "attachment_store", None) else [],
             "handoff": thread.get("metadata", {}).get("handoff"),
             "permissions_notice": "资料和财务快照只读。部署启用隔离Python时，请求标准逐次批准；代我批准/完全访问仅在空白临时容器内执行。各档均未开放用户原文件、宿主终端或服务器写入。"}
@@ -227,6 +245,32 @@ def build_conversations_router(service):
             if run["status"] in {"pending", "running"}:
                 await service.sdk.runs.cancel(str(thread_id), run["run_id"], action="interrupt")
         return {"status": "interrupt_requested"}
+    @router.get("/{thread_id}/messages/{message_id}/export/{format}")
+    async def export_answer(thread_id: UUID, message_id: str, format: Literal["md", "pdf", "docx"], checkpoint_id: UUID):
+        thread = await owned(thread_id)
+        state = await service.sdk.threads.get_state(str(thread_id), checkpoint={"checkpoint_id": str(checkpoint_id), "checkpoint_ns": ""})
+        messages = state.get("values", {}).get("messages", [])
+        index = next((i for i, m in enumerate(messages) if m.get("id") == message_id), None)
+        if index is None:
+            raise HTTPException(404, "这个保存版本中没有该回答")
+        chosen = public_messages({"values": {"messages": [messages[index]]}})
+        if not chosen or not chosen[0]["final_answer"]:
+            raise HTTPException(409, "请选择一条已保存的完整回答，不能导出工具活动或私有推理")
+        # Only sources read before this answer enter its source directory. This
+        # directory is not an inferred sentence-to-source citation mapping.
+        sources = observed_sources({"values": {"messages": messages[:index]}})
+        citations = {key: {"sources": [{**item, "source_id": key,
+            "title": item.get("title") or " / ".join(str(item[k]) for k in ("ticker", "metric_id", "period_end", "unit") if item.get(k)) or "已读取凭证",
+            **({"calculation": item} if key.startswith("CALC::") else {})}]} for key, item in sources.items()}
+        # Thread titles may be clipped prompts, not document titles. Preserve the
+        # saved answer verbatim and use a compact neutral cover heading.
+        report = {"title": "FinSight · 已保存回答",
+            "narrative_markdown": chosen[0]["content"], "citations": citations, "charts": []}
+        from ...application.report_delivery import export_report
+        data, mime = await run_in_threadpool(export_report, report, format,
+            review_status="已保存回答的固定版本；来源目录列出本回答之前已读凭证，不代表逐句引用或金融结论已核验。")
+        return Response(data, media_type=mime, headers={"Content-Disposition": f'attachment; filename="finsight-answer.{format}"',
+            "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})
     @router.get("/{thread_id}/runs/{run_id}/stream")
     async def stream(thread_id: UUID, run_id: UUID, request: Request):
         await owned(thread_id)

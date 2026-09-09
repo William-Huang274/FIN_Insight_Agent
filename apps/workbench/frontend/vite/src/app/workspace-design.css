@@ -102,3 +102,5 @@
 .fs-assistant-approval p { font-size: 15px; line-height: 1.65; }
 .fs-assistant-approval pre { max-height: 280px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: #fff; padding: 16px; border-radius: 8px; }
 .fs-assistant-approval button { margin: 8px 8px 0 0; }
+
+.fs-answer-exports{display:flex;gap:10px;margin-top:12px}.fs-answer-exports a{font-size:13px;padding:5px 12px;border:1px solid #d8deee;border-radius:8px;text-decoration:none;background:#fff}.fs-approval-jump{border:1px solid #aeb8ef;background:#eef0ff;color:#304abe;padding:8px 14px;border-radius:8px;margin-bottom:10px}.fs-assistant-approval article{background:white;border:1px solid #e1e5f0;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}

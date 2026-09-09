@@ -3,6 +3,7 @@ from uuid import uuid4
 
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
+import pytest
 
 from apps.workbench.backend.api.v1.conversations import build_conversations_router, public_messages, public_message_delta, SURFACE, GRAPH
 
@@ -20,6 +21,49 @@ def test_public_projection_excludes_tools_and_private_reasoning():
         "additional_kwargs": {"reasoning_content": "PRIVATE"}}, {}])
     assert delta == {"id": "message", "text": "Public"}
     assert public_message_delta([{"type": "tool", "id": "tool", "content": "PRIVATE"}, {}]) is None
+
+
+def test_pending_first_checkpoint_is_readable_and_cannot_be_handed_off(tmp_path):
+    tid = str(uuid4())
+    thread = {"status": "idle", "metadata": {"surface": SURFACE, "graph": GRAPH}}
+    async def get(_): return thread
+    async def get_state(_): return {"checkpoint": None, "values": {}, "tasks": []}
+    async def runs(*args, **kwargs): return []
+    sdk = SimpleNamespace(threads=SimpleNamespace(get=get, get_state=get_state), runs=SimpleNamespace(list=runs))
+    app = FastAPI()
+    app.include_router(build_conversations_router(SimpleNamespace(sdk=sdk, audit_root=tmp_path)))
+    with TestClient(app) as client:
+        path = f"/conversations/{tid}"
+        response = client.get(path)
+        assert response.status_code == 200
+        assert response.json()["checkpoint_id"] is None
+        assert response.json()["messages"] == []
+        assert client.get(path + "/handoff-preview").status_code == 409
+        assert client.post(path + "/handoff", headers={"X-Workbench-Request": "1"},
+            json={"checkpoint_id": str(uuid4()), "note": "Continue"}).status_code == 409
+
+
+def test_answer_export_pins_version_and_never_uses_later_or_private_content():
+    tid, checkpoint = str(uuid4()), str(uuid4())
+    async def get(_): return {"metadata": {"surface": SURFACE, "graph": GRAPH, "title": "Saved answer"}}
+    async def state(thread, **kwargs):
+        assert thread == tid and kwargs == {"checkpoint": {"checkpoint_id": checkpoint, "checkpoint_ns": ""}}
+        return {"values": {"messages": [
+            {"type": "tool", "id": "tool", "name": "read_public_source", "artifact": {"operation": "search", "items": [
+                {"passage_id": "PASSAGE::old", "title": "Earlier source", "passage": "Original window", "result_state": "source_bound_passage", "writer_citable": True, "numeric_fact_authority": False}]}},
+            {"type": "ai", "id": "answer", "content": "A saved **answer**.", "additional_kwargs": {"reasoning_content": "PRIVATE"}},
+            {"type": "ai", "id": "progress", "content": "Looking", "tool_calls": [{"name": "read_public_source"}]},
+            {"type": "ai", "id": "later", "content": "LATER ANSWER"},
+        ]}}
+    app = FastAPI(); app.include_router(build_conversations_router(SimpleNamespace(sdk=SimpleNamespace(threads=SimpleNamespace(get=get, get_state=state)))))
+    with TestClient(app) as client:
+        path = f"/conversations/{tid}/messages/answer/export/md"
+        assert client.get(path).status_code == 422
+        response = client.get(path, params={"checkpoint_id": checkpoint})
+        assert response.status_code == 200 and "A saved **answer**" in response.text
+        assert "Earlier source" in response.text and "PRIVATE" not in response.text and "LATER ANSWER" not in response.text
+        for message_id in ("tool", "progress"):
+            assert client.get(path.replace("/answer/", f"/{message_id}/"), params={"checkpoint_id": checkpoint}).status_code == 409
 
 
 def test_new_and_followup_use_native_runs_and_reject_cross_surface_or_busy():
@@ -96,13 +140,14 @@ def test_handoff_pins_native_checkpoint_rejects_stale_and_does_not_run_model():
         assert "messages" not in created[0]  # no second transcript or summary
 
 
-def test_approval_is_native_resume_and_rejects_stale_or_altered_permission():
+@pytest.mark.parametrize("run_status", ["interrupted", "success"])
+def test_approval_is_native_resume_and_rejects_stale_or_altered_permission(run_status):
     tid,cid=str(uuid4()),str(uuid4());writes=[]
     thread={"status":"interrupted","metadata":{"surface":SURFACE,"graph":GRAPH}}
     state={"checkpoint":{"checkpoint_id":cid},"tasks":[{"interrupts":[{"id":"approval-1","value":{"action_requests":[{"name":"run_isolated_python","args":{"code":"print(2)"}}]}}]}]}
     async def get(_):return thread
     async def get_state(_):return state
-    async def runs(*args,**kwargs):return [{"status":"interrupted","metadata":{"model":"deepseek-v4-flash","permission_mode":"request_standard"}}]
+    async def runs(*args,**kwargs):return [{"status":run_status,"metadata":{"model":"deepseek-v4-flash","permission_mode":"request_standard"}}]
     async def create(*args,**kwargs):writes.append(kwargs);return {"run_id":str(uuid4())}
     sdk=SimpleNamespace(threads=SimpleNamespace(get=get,get_state=get_state),runs=SimpleNamespace(list=runs,create=create))
     app=FastAPI();app.include_router(build_conversations_router(SimpleNamespace(sdk=sdk)))
@@ -116,5 +161,10 @@ def test_approval_is_native_resume_and_rejects_stale_or_altered_permission():
         assert client.post(path,headers=headers,json=body).status_code==200
         assert writes[0]["command"]=={"resume":{"approval-1":{"decisions":[{"type":"approve"}]}}}
         assert writes[0]["config"]["configurable"]["permission_mode"]=="request_standard"
+        state["tasks"][0]["interrupts"][0]["value"]["action_requests"]=[{
+            "name":"save_sources_to_knowledge","args":{"source_ids":["CFOBS::not-a-readable-fact"]}}]
+        assert client.post(path,headers=headers,json=body).status_code==422
+        assert len(writes)==1
+        assert client.post(path,headers=headers,json={**body,"decisions":["reject"]}).status_code==200
         state["tasks"]=[]
         assert client.post(path,headers=headers,json=body).status_code==409

@@ -53,7 +53,7 @@ fs.writeFileSync(path.join(output, "case.json"), JSON.stringify(spec, null, 2));
       const response = page.waitForResponse(r => r.request().method()==="POST" && /\/api\/v1\/conversations(?:\/[^/]+\/messages)?$/.test(new URL(r.url()).pathname));
       await page.getByRole("button", {name:"发送",exact:true}).click();
       const sent = await response;
-      const identity = await sent.json(); receipts.push({index,status:sent.status(),...identity});
+      let identity = await sent.json(); receipts.push({index,status:sent.status(),...identity});
       fs.writeFileSync(path.join(output, "submissions.json"), JSON.stringify(receipts,null,2));
       if (!sent.ok()) throw Error("UI submission failed; no retry");
       const started = Date.now(); let state;
@@ -62,6 +62,27 @@ fs.writeFileSync(path.join(output, "case.json"), JSON.stringify(spec, null, 2));
         if (!result.ok()) throw Error("State read failed; preserve submitted run identity");
         state = await result.json();
         const run = state.runs.find(r => r.run_id === identity.run_id);
+        if (state.approvals?.length && spec.knowledge_approval_source_ids && !receipts.some(r=>r.approval)) {
+          const pending=state.approvals;
+          const expected=[...spec.knowledge_approval_source_ids].sort();
+          const actions=pending?.[0]?.value?.action_requests;
+          if(pending?.length!==1 || actions?.length!==1 || actions[0].name!=="save_sources_to_knowledge" ||
+              !Array.isArray(actions[0].args.source_ids) || JSON.stringify([...actions[0].args.source_ids].sort())!==JSON.stringify(expected) ||
+              expected.some(id=>!state.approval_sources?.[id]?.preview)) throw Error("Knowledge approval differs from explicitly scoped qualification; leave pending");
+          fs.writeFileSync(path.join(output,"approval-prepared.json"),JSON.stringify(state,null,2));
+          await page.reload();
+          await page.getByRole("region",{name:"待批准的工具操作"}).waitFor();
+          await page.screenshot({path:path.join(output,"approval-prepared.png"),fullPage:true});
+          const approvalResponse=page.waitForResponse(r=>r.request().method()==="POST" && new URL(r.url()).pathname===`/api/v1/conversations/${identity.thread_id}/approvals`);
+          await page.getByRole("button",{name:"批准这些操作",exact:true}).click();
+          const approved=await approvalResponse;
+          const resumed=await approved.json();
+          receipts.push({index,approval:true,status:approved.status(),...resumed});
+          fs.writeFileSync(path.join(output,"submissions.json"),JSON.stringify(receipts,null,2));
+          if(!approved.ok())throw Error("Knowledge approval failed; no retry");
+          identity=resumed;
+          continue;
+        }
         if (run && !["pending","running"].includes(run.status)) break;
         await page.waitForTimeout(1500);
       }
@@ -71,6 +92,7 @@ fs.writeFileSync(path.join(output, "case.json"), JSON.stringify(spec, null, 2));
       await page.screenshot({path:path.join(output,`turn-${index+1}.png`),fullPage:true});
       const run = state.runs.find(r => r.run_id === identity.run_id);
       if (!run || run.status !== "success") throw Error(`Native run ended ${run?.status}; no paid retry`);
+      if (spec.knowledge_approval_source_ids && !receipts.some(r=>r.approval)) throw Error("Model returned prose without the required native knowledge approval; nothing saved");
       if (errors.length) throw Error("Browser error; inspect receipt");
     }
     console.log(JSON.stringify({status:"runs_completed_pending_content_review",output,receipts}));

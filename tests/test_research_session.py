@@ -316,6 +316,11 @@ def test_explicit_native_continuation_only_runs_missing_theme_preserves_original
         assert original["phase"] == "research_needs_attention" and len(original["case_papers"]) == 1
         assert "continue_remaining" in original["__interrupt__"][0].value["actions"]
         first_paper = deepcopy(original["case_papers"][0])
+        failed = deepcopy(original["research_failed_workpapers"])
+        assert len(failed) == 1 and failed[0]["run_id"] == "first"
+        assert failed[0]["task_id"] == "task:compute"
+        assert failed[0]["agent_state"]["human_review_handoff"]["reason"] == "synthetic_single_transport_failure"
+        assert failed[0]["agent_state"]["notebook"]
         graph = build_research_session_graph(**phases).compile(checkpointer=saver)
         next_config = {**config, "configurable": {**config["configurable"], "run_id": "second"}}
         if fail_remaining_once:
@@ -333,6 +338,7 @@ def test_explicit_native_continuation_only_runs_missing_theme_preserves_original
             continued = await graph.ainvoke(Command(resume={"action": "continue_remaining"}), next_config)
         assert continued["case_papers"][0] == first_paper and len(continued["case_papers"]) == 2
         assert continued["report"] and continued["phase"] == "ready_for_human_review"
+        assert continued["research_failed_workpapers"] == failed
         history = continued["research_attempt_history"]
         assert history[0]["outcomes"] == original["research_outcomes"]
         assert history[0]["outcomes"][1]["status"] == "needs_attention"

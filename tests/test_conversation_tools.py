@@ -57,3 +57,22 @@ def test_saved_result_reads_original_after_projection_and_refuses_other_thread()
     assert restored["new_tool_dispatch"] is False
     other = agent().invoke({"messages":[HumanMessage(content="Read that saved ID")]}, {"configurable":{"thread_id":"two"}})
     assert next(m for m in other["messages"] if isinstance(m,ToolMessage)).status == "error"
+
+
+def test_upload_reader_limits_schema_and_returns_parameter_feedback(tmp_path):
+    import asyncio
+    from uuid import uuid4
+    from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
+    store, thread = TaskAttachmentStore(tmp_path), str(uuid4())
+    item = store.add(thread, "brief.md", b"# Synthetic brief\nRead only user materials.")
+    grant = next(g for g in conversation_tools(thread_id=thread,attachment_store=store) if g.tool.name=="read_task_material")
+    schema = grant.tool.args_schema.model_json_schema()
+    assert schema['$defs']['TaskMaterialRequest']['properties']['source_space']['const']=='uploads'
+    async def run():
+        # Omitted source_space is host-confined to uploads, never the generic
+        # SourceDocumentRequest web default.
+        result = await grant.tool.ainvoke({'request':{'operation':'read','document_id':item['document_id']}})
+        assert 'Read only user materials' in result
+        bad = await grant.tool.ainvoke({'request':{'operation':'read','document_id':'UPLOAD::missing'}})
+        assert 'attachment_not_in_current_task' in bad
+    asyncio.run(run())

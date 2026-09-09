@@ -14,7 +14,7 @@ from langchain.agents.middleware import HumanInTheLoopMiddleware, ModelCallLimit
 
 
 PermissionMode = Literal["request_standard", "approve_for_me", "full_access"]
-ToolEffect = Literal["read", "task_artifact_write", "user_file_change", "external_change"]
+ToolEffect = Literal["read", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"]
 
 
 @dataclass(frozen=True)
@@ -42,11 +42,11 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
     for grant in grants:
         name = grant.tool.name
         if name in names or not grant.scope_description.strip() or grant.effect not in {
-            "read", "task_artifact_write", "user_file_change", "external_change"
+            "read", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"
         }:
             raise ValueError("conversation_tool_grant_invalid")
         names.add(name)
-        needs_approval = grant.effect in {"user_file_change", "external_change"} or (
+        needs_approval = grant.effect in {"user_file_change", "external_change", "knowledge_admission"} or (
             grant.effect == "task_artifact_write" and permission_mode == "request_standard")
         interrupt_on[name] = ({"allowed_decisions": ["approve", "reject"],
                               "description": f"请求执行 {name}。授权范围：{grant.scope_description}"}

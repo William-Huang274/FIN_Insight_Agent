@@ -73,3 +73,22 @@ for (const width of [1440,1024,390]) test(`review isolated code before native ap
   await expect(card).not.toBeVisible();
   expect(writes).toEqual([{checkpoint_id:checkpoint,interrupt_id:"approve-1",decisions:["reject"]}]);
 });
+
+for (const width of [1440,1024,390]) test(`review original source before knowledge admission at ${width}`,async({page})=>{
+  await page.setViewportSize({width,height:950});
+  const tid="00000000-0000-4000-8000-000000000096", checkpoint="00000000-0000-4000-8000-000000000097", writes:any[]=[];
+  const snapshot={thread_id:tid,title:"来源复用",status:"interrupted",messages:[],events:[],runs:[],checkpoint_id:checkpoint,
+    approvals:[{id:"save-1",value:{action_requests:[{name:"save_sources_to_knowledge",args:{source_ids:["PASSAGE::source"],purpose:"后续核对缓存语义"},description:"保存到个人资料库，保留原始版本。"}]}}],
+    approval_sources:{"PASSAGE::source":{title:"RFC 9111 HTTP Caching",preview:"Exact captured source window.",source_url:"https://www.rfc-editor.org/rfc/rfc9111.html"}},permissions_notice:"个人来源复用"};
+  await page.route("**/api/v1/conversations**",async route=>{
+    if(route.request().method()==="POST"){writes.push(route.request().postDataJSON());await route.fulfill({json:{run_id:"resumed"}});return;}
+    await route.fulfill({json:new URL(route.request().url()).pathname.endsWith("conversations")?[snapshot]:snapshot});
+  });
+  await page.goto(`/workspace/assistant?thread=${tid}`);
+  await expect(page.getByText("RFC 9111 HTTP Caching",{exact:true})).toBeVisible();
+  await expect(page.getByText("Exact captured source window.",{exact:true})).toBeVisible();
+  expect(writes).toEqual([]);
+  await page.getByRole("button",{name:"批准这些操作",exact:true}).click();
+  await expect.poll(()=>writes.length).toBe(1);
+  expect(writes[0]).toEqual({checkpoint_id:checkpoint,interrupt_id:"save-1",decisions:["approve"]});
+});

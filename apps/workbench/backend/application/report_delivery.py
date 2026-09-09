@@ -265,13 +265,19 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
                     borders.append(border)
                 table._tbl.tblPr.append(borders)
                 for index, row in enumerate(value):
-                    cells = table.add_row().cells
+                    table_row = table.add_row()
+                    # Keep a financial amount/formula with the rest of its row
+                    # across page boundaries; Word still handles oversized rows.
+                    table_row._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
+                    cells = table_row.cells
                     for column, text in enumerate(row):
                         cells[column].text = text
                     if index == 0:
                         repeat = OxmlElement("w:tblHeader")
                         table.rows[0]._tr.get_or_add_trPr().append(repeat)
                         for cell in cells:
+                            for paragraph in cell.paragraphs:
+                                paragraph.paragraph_format.keep_with_next = True
                             shade = OxmlElement("w:shd")
                             shade.set(qn("w:fill"), "E9EFF4")
                             cell._tc.get_or_add_tcPr().append(shade)

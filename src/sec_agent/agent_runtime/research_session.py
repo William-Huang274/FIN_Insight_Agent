@@ -39,6 +39,7 @@ class ResearchSessionState(SessionState, total=False):
     research_outcomes: list[dict[str, Any]]
     research_handoff: dict[str, Any] | None
     research_attempt_history: list[dict[str, Any]]
+    research_failed_workpapers: list[dict[str, Any]]
     continue_remaining_research: bool
     case_review: dict[str, Any]
     author_feedback: dict[str, list[dict[str, Any]]]
@@ -151,6 +152,12 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         attempt = {"run_id": config.get("configurable", {}).get("run_id"), "continued": continuing,
                    "tasks": new_tasks, "outcomes": new_outcomes, "phase": result.get("phase"),
                    "recorded_at": datetime.now(timezone.utc).isoformat()}
+        # A rejected worker is still an immutable research artifact. Retain its
+        # original notebook, tool receipts, last submission and handoff in the
+        # native parent checkpoint. It never enters case_papers or a new prompt.
+        failed = [*deepcopy(state.get("research_failed_workpapers", [])), *[
+            {"run_id": attempt["run_id"], "task_id": row["task_id"], "agent_state": deepcopy(row["agent_state"])}
+            for row in outcomes if row["status"] != "submitted" and row.get("agent_state")]]
         history = deepcopy(state.get("research_attempt_history", []))
         if continuing and not history:
             # Compatibility with a task started before this public projection.
@@ -173,6 +180,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
             "research_tasks": [*[t for t in state.get("research_tasks", []) if t["task_id"] in prior_done], *new_tasks],
             "research_outcomes": [*[{"task_id": key, "status": "submitted"} for key in prior_done], *new_outcomes],
             "research_attempt_history": [*history, attempt],
+            "research_failed_workpapers": failed,
             "continue_remaining_research": False,
             "research_handoff": deepcopy(result.get("lead_handoff")),
             "research_as_of": artifacts.research_as_of if artifacts else "",

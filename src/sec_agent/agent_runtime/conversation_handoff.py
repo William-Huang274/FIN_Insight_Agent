@@ -35,7 +35,7 @@ def observed_sources(state):
         body = message.get("artifact")
         if message.get("type") != "tool" or message.get("status") == "error" or not isinstance(body, dict):
             continue
-        if message.get("name") == "read_handoff_evidence":
+        if message.get("name") in {"read_handoff_evidence", "read_saved_knowledge"}:
             items.update(body.get("source_items", {}))
         else:
             items.update(source_items_from_tool(names.get(message.get("name"), message.get("name")), body))

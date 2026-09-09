@@ -63,6 +63,8 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
     try:
         thread = await sdk.threads.get(thread_id)
         metadata = thread.get("metadata", {})
+        from .conversation_knowledge import knowledge_tools
+        grants.extend(knowledge_tools(sdk=sdk, owner_id=metadata.get("owner_id", "local-pilot"), thread_id=thread_id))
         if metadata.get("handoff"):
             grants.extend(handoff_tools(reference=metadata["handoff"], sdk=sdk,
                                        owner_id=metadata.get("owner_id", "local-pilot")))

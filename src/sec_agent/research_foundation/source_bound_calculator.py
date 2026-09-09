@@ -22,9 +22,9 @@ from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_
 class CalculationOperand(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_id: str | None = Field(default=None, min_length=1, max_length=500,
-        description="Observed archive/PASSAGE/Evidence/SQL ID, or CALC ID already computed in this tool session or saved in this case. Search previews are not sources. For S2 or a saved calculation only source_id is needed; the host reads the number. A calculation never becomes S2 authority.")
+        description="Copy the passage_id from an actually read source, an observed SQL/Evidence ID, or a saved CALC ID. A CHUNK/node_id, UPLOAD/document_id, WEB/document_id or SOURCELOC candidate_id is a navigation locator, NOT a calculator source ID; read it and use the returned PASSAGE ID. For S2 or a saved calculation only source_id is needed; the host reads the number. A calculation never becomes S2 authority.")
     literal: str | None = Field(default=None, min_length=1, max_length=64,
-        description="For prose copy a number actually printed in the quote, including commas: quote 'Revenue 2,225' uses literal '2,225', not '2225'. Do not put a derived difference/ratio here: bind the original numbers and compute that difference in expression. For S2/saved CALC omit this: host reads value_decimal. Parentheses/sign interpretation belongs explicitly in expression and rationale.")
+        description="For prose copy the decimal numeric substring printed in the quote, including commas: quote 'Revenue $2,225 million' uses literal '2,225', not '2225' or '$2,225 million'. Exclude percent symbols, currency symbols, units and parentheses; no exponent notation. Do not put a derived difference/ratio here: bind originals and calculate in expression. For S2/saved CALC omit this. Parentheses/sign interpretation belongs explicitly in expression and rationale.")
     quote: str | None = Field(default=None, min_length=1, max_length=4000,
         description="Exact contiguous source quote containing the literal; no paraphrase or ellipsis.")
     assumption_note: str | None = Field(default=None, min_length=1, max_length=1000,

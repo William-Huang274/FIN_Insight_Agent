@@ -234,7 +234,11 @@ ClaimKind = Literal[
 
 class SpecialistClaim(_StrictModel):
     claim_id: str = Field(min_length=1, max_length=240)
-    kind: ClaimKind
+    kind: ClaimKind = Field(description=(
+        "reported_fact includes numbers quoted from source passages/PDF tables; cite PASSAGE in evidence_ids. "
+        "numeric_fact is exclusively a typed S2/NUMFACT receipt in fact_ids, not any sentence containing a number. "
+        "calculation cites an observed CALC receipt; inference/hypothesis/boundary describe analytical interpretation."
+    ))
     materiality: Literal["high", "medium", "low"]
     statement: str = Field(min_length=1, max_length=4_000)
     evidence_ids: tuple[str, ...] = Field(default=(), max_length=32)

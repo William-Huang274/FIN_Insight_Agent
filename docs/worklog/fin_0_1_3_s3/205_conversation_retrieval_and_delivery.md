@@ -181,3 +181,60 @@ Owner批准按缺口执行，继续本轮205。工程增量：Specialist保存�
 部署界限：本轮没有重新尝试此前被自动审批审查拒绝的18795 BFF重启或sandbox配置/MCP启动，也没有拆命令规避。前端构建已生成；原生服务仍未载入失败底稿/字段修订工程，当前网页不能视为新全链路验收。下一步需先完成可执行服务更新，再用真实小修订检验新路径；之后才有依据重跑HPE整题及同条件Hermes对照。全轮仍开放，不合main、不改变FIN0.1.3。
 
 工程提交1bb3d805（12文件）；补充SDK原生局部编辑验证后批处理30通过2跳过，全文/Schema/来源关卡均保留。staged差异检查与密钥模式扫描0匹配。文档单独提交，Git推送以分支状态为准。
+
+## Owner要求完成第一步：真实资格失败与原生路径重验
+
+Owner要求第一步完整执行并允许尝试9月9日DS V4.1 Flash。官方/models当前只返回v4-flash、v4-pro、v4-flash-vision-exp，官方文档未确认独立v4.1名称，未猜别名或宣称已用新版。
+
+四次新局部诊断a3-a6均未通过：Flash auto输出截断，Flash指定工具JSON错误，Pro数组路径误用claim_id，Pro读错误反馈后尝试修改受保护的context字段。全部拒绝、无原底稿修改；共99,710tokens，按2026-09-07场景估算¥0.5972864（非账单）。原件D:/temp/fin205-hpe-submission-repair-a3至a6；指标D:/temp/fin205-hpe-submission-repair-metrics-a2.json。加上此前205为319实际尝试、9,320,220已知tokens、估算¥6.6379762、未知1；以下新HPE运行另计，尚未纳入此数。
+
+依据实测缩小自研：字段编辑默认关闭，仅隔离资格显式启用，保留已有完整SubmitWorkpaperAction与ToolMessage反馈。拒绝候选/校验错误/精确成功读取回放继续启用。新增数组路径描述，诊断输入真实Pydantic错误；修正资格脚本host绑定与生产不一致，不覆盖不同context_digest。定向68通过2材料跳过，失败中的测试变量名拼写已修正后重跑；不把这些模拟通过当真实模型通过。
+
+部署：原生服务18165已构建更新，当前镜像af90533e62dc309efc784e813dc32762d52d0f2e5cae1bfdbe2772203bad44e1，/ok200，容器读取allow_workpaper_field_edits=False；原PG/Redis继续使用，HPE旧失败与MSFT报告checkpoint可读取。18795 BFF重启整条命令再次被自动审批审查拒绝，仅blocked by policy、无具体原因，未执行/未拆命令绕过；BFF仍旧进程，当前失败投影/部分导出新代码不等于已载入。
+
+新HPE a3通过真实前端填写/上传/选择auto+Flash/点击开始，thread01a084d3-abcb-7c43-803e-990e51bf432e，run01a084d4-0d83-76b3-b29a-707be337d644，2026-09-09T06:21:24Z开始。D:/temp/fin205-hpe-auto-ui-a3保存真实截图、case及start200；上传200的响应正文被浏览器缓存淘汰，已明确记录，不重发。此次是同S3新诊断、沿用已有完整提交路径，字段补丁不作为其前置依赖；源问题与176页10-K不删必要研究，预算详205_hpe_submission_repair_budget.md。结果待运行结束，第一步/整轮均未完成。
+
+## a3结束：首次工具结果被提前精简的根因
+
+a3最终research_needs_attention、无报告：49真实模型调用、1,918,418tokens、场景估算¥2.4099352，Q1/Q2失败，其余原计划保留未擅自启动。原生控制success不能当作研究成功。Q1/Q2候选6,405/4,342字符、32/39原观察实际保留在checkpoint。通过当前代码public_state读回原checkpoint验证候选/反馈，18795旧进程仍未载入BFF投影，二者不混淆。Q1的明确人工交接说明也新增白名单投影；无提交时保留工具反馈码，不伪造模型失败理由。真实运行截图D:/temp/fin205-hpe-auto-ui-a3/runtime-live.png，浏览器页面错误0。
+
+源请求回放查明：原生ClearToolUsesEdit keep按工具数量计数；并行一批3–4个读取结果在keep2下，前几条在模型首次看见之前就被清除。a3有18个请求、21个全新结果受影响。修改仅6行，FIN薄适配保留最后AIMessage之后所有未消费ToolMessage；仍由成熟编辑器管理旧历史、配对、错误和保持原checkpoint；不放松硬输入上限、不编摘要。49真实请求/113新结果回放后首次丢失0，材料见D:/temp/fin205-hpe-a3-unseen-tool-batch-loss.json与-fixed.json。原费用脚本一次错误以run目录调用得到0 requests，未当0成本；改用其规定thread目录，正确费用保存在D:/temp/fin205-hpe-a3-cost-a2.json。
+
+工程9cdbb9cd：上述上下文修复、显式模型交接展示、字段补丁默认HOLD及诊断host绑定一致性。57相关检查通过2材料跳过，TypeScript/Vite构建通过、三宽度UI3项通过20.5秒；此前68相关通过2跳过是另一组合，不重复加总。原生18165已加载镜像02a71cbd09b7874aebb4327df1f966523f7b673d15587d4241a9c31ab0e4b715，容器确认新批次保护生效；PG/Redis保留，BFF重启审查阻塞仍未绕过。
+
+第一步继续a4新诊断：同题/原176页资料/auto+Flash，各节点原预算，字段补丁关闭；仅批次首次交付修复纳入真实重验。前端start200，thread01a084e8-6088-7e10-a595-de82201e8020/run01a084e8-bd0b-7a51-bda8-9b445f5e2fcb，2026-09-09T06:44:00Z开始，D:/temp/fin205-hpe-auto-ui-a4。不得未看终态就重启/重发/宣称报告完成。a4前205累计368实际尝试、11,238,638已知tokens、估算¥9.0479114、未知1。a4另计；第一步和全轮仍未验收。
+
+## HPE a4真实终态与引用排版缺陷
+
+
+a4实际48调用/2,465,574tokens/峰时场景估算¥3.4982508，无未知；Q1底稿submitted，Q3增长拆解needs_attention，其余未执行，无完整报告。累计416实际尝试/13,704,212已知tokens/估算¥12.5461622/未知1。保持原attempt不可变。
+
+原Q3末次9处引用错误，8处只是PDF换行/表格空白/百分号前空格，1处把不连续句子拼接为单一引文。FIN引用校验新增薄的标准库词/标点序列比较：仅容忍排版空白，数字/词边界、标点、大小写、单位与顺序不变；专家提交与责任作者修订共用。原失败候选不改，离线校验9→1，真实不连续引文仍拒绝。77定向检查通过、1材料依赖跳过，0付费。
+
+下一实际资格使用已有同窗口continue_remaining入口，保留a4已提交Q1和历史失败，以新run只推进未完成研究，不创建替代整题重置已完成工作。沿用原题/材料/必要输出/各角色TokenBudgetBasis、Flash/auto配置、模型/工具上限与停止条件；新增根因仅排版引用适配，字段补丁HOLD，不能修改原候选替模型提交。原同尺度a4为费用依据。新run最多一次，执行失败不自动重发；每条已提交研究仍须后续实质审查、报告及多格式验证。原生profile预检与部署完成后才执行。
+
+原生实物D:/temp/fin205-hpe-auto-ui-a4/native-state.json；指标D:/temp/fin205-hpe-a4-cost.json；新校验回放D:/temp/fin205-hpe-a4-quote-replay.json。单次历史推理字段约18万字符仅作体积归因，不输出私有推理。首交付修复没有证明全流程节费。BFF新代码仍未重载（自动审查拒绝，不绕过）。
+
+### a5同窗口真实接续已启动
+
+前端conversation页“继续未完成主题·保留已交稿”200，run01a084fe-d637-7730-9e47-c62b881ca4bf，thread仍01a084e8-6088-7e10-a595-de82201e8020，截图/响应D:/temp/fin205-hpe-auto-ui-a5。原生镜像ed44226c…，/ok200，原Q1与失败checkpoint均保留。最新引用校验已在容器函数探测生效。
+
+新证据：接续Lead实际没有执行原剩余分支，而以现有Q1足够为由提交handoff，07:09Z进入独立case_review。公开理由把Q2-Q8称为Dell/产业无关方向，并称Q1已获supported；这不等于金融验收。Q1尚有明确同比费用总额混用及待核验因果/分部口径问题，独立人工观察D:/temp/fin205-hpe-a4-manual-audit.md未注入模型，检查后续原生独立审查是否发现。不能报告“余下原五分支全部执行”或“范围充分已通过”。本a5正在运行，不重发。
+
+Provider约束已核对：DeepSeek官方https://api-docs.deepseek.com/guides/thinking_mode/明确携带tools的思考请求需完整回传历史reasoning_content并计入context，不能直接删除字段当作节费修复。保持SDK兼容，本轮仅记录体积；后续上下文方案须验证完整工具链边界/明确模式选择，不盲目删推理字段。
+
+### a5真实失败及审查节点限额退出修复
+
+a5 run01a084fe-d637-7730-9e47-c62b881ca4bf在07:12:09Z以error结束。49实际调用、48已报用量969,171tokens，已知峰时场景估算¥1.4935874，另1个verifier请求因兄弟取消而用量未知。累计465实际尝试/14,673,383已知tokens/估算¥14.0397496/未知2。D:/temp/fin205-hpe-a4-a5-cost.json为同thread合计，不与a4重复相加；a5差量另存fin205-hpe-a5-cost-delta.json。没有报告或新导出，不再付费重跑本attempt。
+
+Verifier公开活动已发现Hybrid Cloud商誉减值与Juniper收购因果混用，但尚未提交完整审查。最早技术异常是counter的原生ModelCallLimitMiddleware(run_limit=24, exit_behavior=error)，异常经过MCP TaskGroup包装为ExceptionGroup，并取消运行中的verifier，随后父节点未保存完整阶段结果。此处不是网络不可达或公开信息缺口。
+
+采用现有LangChain原生exit_behavior=end（模型与工具限额），不放大预算、不写新并发/异常引擎。审查collect保留公开模型输出、独立宿主限额通知与实际native模型调用计数；不得把宿主AIMessage算付费模型输出。父图对case_review_incomplete持久保存两位审查结果，进入research_attention，禁止继续写报告或自动接续；原生子图保持可发现。BFF将未完成审查映射到既有失败卡片，只投影公开输出与限额提示，私有推理/原始消息/工具内部上下文不出服务器。
+
+工程曾用Runnable.bind(output_keys)传native计数导致子图发现测试失败；已改compiled graph原生output_channels只增加计数字段，保留原RunnableSequence和静态子图发现。第一次32项最终通过。另把source quote相同排版修复扩到case reviewer，报告问题原句仍精确匹配。最新新增BFF投影检查正在跑。新工程未付费资格，不宣称HPE端到端通过。
+
+最终限额/父子图/BFF/引用检查54通过（20.06秒），工程提交2229bc91；正在部署原生，无新的模型调用。分支目录本身已有通用目标，因此a5称Q2-Q8为Dell专属属于模型调度理由质量失败，不据此另造规则或改成案例固定路由。
+
+最终引用词边界补强3bf68bd8：不能把1234匹配为123或把单词内部片段当完整引文；119后端/原生流程/引用检查通过、1材料跳过（31.18秒）。a5真实前端活动页重新读取，0pageerror，历史失败明确显示且公开活动仍可查看（D:/temp/fin205-hpe-auto-ui-a5/runtime-live.png，已视觉检查），但最新BFF失败候选投影未加载，不能写成真实新展示通过。当前无付费运行。第一步尚缺合格复杂报告、审查真实完成及最新BFF部署后的UI验收；没有HPE完整PDF/Word可交付。
+
+收尾部署：原生镜像adbd0ae878cb65609d47e0577a35b184c9c570e2bf8836252982c8e23f75d017，/ok200，容器排版引文通过/部分数字拒绝，原Q1已提交和Q3失败状态均回读。119检查通过1跳过。BFF18795重载仍受此前自动审查阻止，不绕过、不声称新BFF已部署。所有工程与失败记录同一S3/205，不合main，不更新产品版本，第一步/整轮未完成。

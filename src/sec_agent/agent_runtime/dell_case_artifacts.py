@@ -206,9 +206,16 @@ def register_case_artifact_tools(server, artifacts: DellCaseArtifacts, *, source
         return artifacts.catalog()
 
     @server.tool(name="read_research_artifact", structured_output=True)
-    def read_paper(paper_id: str, section: Literal["workpaper", "claims", "sources"] = "workpaper") -> dict[str, Any]:
-        """Read one workpaper, its claims, or source catalog on demand; no file paths."""
-        return {"paper_id": paper_id, "section": section, "content": artifacts.read_paper(paper_id, section)}
+    def read_paper(paper_id: str, section: Literal["workpaper", "claims", "sources"] = "workpaper",
+                   claim_ids: list[str] | None = None) -> dict[str, Any]:
+        """Read a paper once; for targeted follow-up use section=claims and exact claim_ids. Partial reads are not full paper coverage."""
+        from mcp.server.mcpserver.exceptions import ToolError
+        content = artifacts.read_paper(paper_id, section)
+        if claim_ids is not None:
+            if section != "claims" or not claim_ids or not set(claim_ids).issubset({c["claim_id"] for c in content}):
+                raise ToolError("claim_ids_require_claims_section_and_existing_nonempty_ids")
+            content = [c for c in content if c["claim_id"] in claim_ids]
+        return {"paper_id": paper_id, "section": section, "claim_ids": claim_ids, "content": content}
 
     @server.tool(name="read_research_source", structured_output=True)
     def read_source(source_id: str, offset: Annotated[int, Field(ge=0)] = 0,

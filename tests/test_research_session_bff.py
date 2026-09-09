@@ -216,6 +216,16 @@ def test_failed_task_without_submission_keeps_tool_error_and_explicit_model_hand
     assert "private" not in str(row)
 
 
+def test_saved_incomplete_findings_are_readable_without_private_checkpoint_fields():
+    state = {"values": {"case_review": {"counter": {"status": "incomplete_no_submission",
+        "recorded_findings": {"F1": {"problematic_quote": "本期费用等于同比增加额",
+            "diagnosis": "需要核对本期总额与比较期变化量。", "requested_change": "读取两个期间后修订费用桥接。",
+            "private_state": "secret reasoning", "source_checks": [{"raw": "private source"}]}}}}}}
+    text = public_state(state)["research_failures"][0]["candidate"]["narrative_markdown"]
+    assert "已保存审查发现" in text and "修订费用桥接" in text
+    assert "secret" not in text and "private" not in text
+
+
 def test_original_workpaper_reviews_are_visible_without_private_messages_or_raw_source_payloads():
     projected = public_state({"values": {"case_review": {"counter": {"messages": ["private trace"], "review": {
         "summary": "A current-period comparison needs revision.", "findings": [{"finding_id": "F1", "paper_id": "P09",

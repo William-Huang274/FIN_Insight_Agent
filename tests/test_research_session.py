@@ -134,6 +134,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
 
     async def review(state, config):
         seen["review"] += 1
+        assert state.get("research_handoff"), "parent must deliver saved scope and omissions to review"
         artifacts = current_task_artifacts(state)
         assert len(artifacts.catalog()["papers"]) == (10 if full_profile else 2)
         assert "messages" not in state and "reasoning_content" not in json.dumps(state)

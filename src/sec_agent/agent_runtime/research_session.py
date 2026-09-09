@@ -196,7 +196,8 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
 
     async def review_node(state, config: RunnableConfig):
         _stage("case_review", "started")
-        result = await review.ainvoke({"question": state["question"], "case_papers": state["case_papers"]}, config)
+        result = await review.ainvoke({"question": state["question"], "case_papers": state["case_papers"],
+            "research_handoff": state.get("research_handoff")}, config)
         if result.get("phase") == "case_review_incomplete":
             _stage("case_review", "outcome", status="needs_attention")
             return {"case_review": {**deepcopy(result), "source_run_id": config.get("configurable", {}).get("run_id")}, "phase": "research_needs_attention",

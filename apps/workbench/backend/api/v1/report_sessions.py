@@ -201,12 +201,22 @@ def public_state(state):
         review_state = values.get("case_review", {})
         reviewer = review_state.get(actor, {})
         review = reviewer.get("review")
-        if reviewer.get("status") == "incomplete_no_submission":
+        if reviewer.get("status") in {"incomplete_no_submission", "incomplete_review"}:
             # Separate the native limit notice from actual public model output.
             texts = [x for x in reviewer.get("incomplete_output", []) if isinstance(x, str)]
+            if review:
+                texts.extend("**尚未完成的检查**：" + item for item in review.get("unresolved_data_requests", []) if isinstance(item, str))
+            for finding in reviewer.get("recorded_findings", {}).values():
+                if not isinstance(finding, dict):
+                    continue
+                # Explicit public fields only; never expose native/private state.
+                fields = [("原判断", "problematic_quote"), ("已发现的问题", "diagnosis"), ("建议修订", "requested_change")]
+                text = "\n\n".join(f"**{label}**：{finding[key]}" for label, key in fields if isinstance(finding.get(key), str))
+                if text:
+                    texts.append("### 已保存审查发现（审查尚未完成）\n\n" + text)
             result["research_failures"].append({"run_id": review_state.get("source_run_id"),
                 "task_id": "反证审查" if actor == "counter" else "事实与引用核验",
-                "reason": "独立审查未提交完整结果；已保存公开输出，不能进入报告交付。",
+                "reason": "独立审查尚有未完成检查；已保存结果，不能进入报告交付。",
                 "candidate": {"narrative_markdown": "\n\n".join(texts)}, "accepted": False,
                 "model_explanation": None, "model_turns": reviewer.get("model_calls"),
                 "tool_actions": reviewer.get("tool_calls"), "saved_observations": None,

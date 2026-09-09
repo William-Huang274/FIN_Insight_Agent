@@ -57,9 +57,19 @@ class ContinueResearchTasksAction(_LeadAction):
     """Execute the next ready tasks already present in the dependency graph."""
 
 
+class QuestionCoverage(BaseModel):
+    """Model assessment of an actual user requirement, not a new evidence claim."""
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    question_quote: str = Field(min_length=1, max_length=2000, description="Exact excerpt of the user's question identifying this requirement, not a branch catalog label. Cover every material requested outcome.")
+    status: Literal["answered", "not_needed", "unresolved"]
+    supporting_task_ids: tuple[str, ...] = Field(default=(), max_length=24, description="Existing submitted task IDs covering this requirement; mandatory for answered. Submission is not semantic acceptance.")
+    rationale: str = Field(min_length=20, max_length=2000, description="What the paper establishes or why this is unnecessary; distinguish unfinished work from genuine information boundaries. Do not omit required work for cost.")
+
+
 class SubmitResearchHandoffAction(_LeadAction):
     """Request downstream review or explicit attention; never publish a report."""
     disposition: Literal["ready_for_review", "needs_attention"]
+    question_coverage: tuple[QuestionCoverage, ...] = Field(default=(), max_length=24)
     synthesis_notes: str = Field(min_length=1, max_length=12000, description=(
         "Brief handoff notes, normally <=1800 characters: main issues and what downstream reviewers should check. "
         "Do not repeat all workpapers or write the final report; separate synthesis and Writer agents follow."
@@ -103,6 +113,12 @@ LEAD_RESEARCH_SYSTEM_PROMPT = (
     "do not call them completed or equate a source tag with full semantic research coverage. "
     "and acknowledge incomplete task IDs. Write research objectives and handoff notes in Chinese. "
     "Use the exact current context_digest. Hidden reasoning is not an artifact or source."
+    " At handoff provide question_coverage for every material outcome requested in the actual user question. "
+    "Quote that requirement verbatim, link answered items to submitted task IDs, and explain each omission. "
+    "Task submission means source-bound candidate, not supported/verified financial judgment. "
+    "Unfinished necessary research is unresolved, not not_needed; use needs_attention when it cannot proceed. "
+    "Do not offload omitted research to reviewers or classify generic branch topics by a historical issuer name. "
+    "A single paper may cover several requirements; specialist counts do not prove completeness."
 )
 
 
@@ -295,6 +311,17 @@ def build_dell_lead_research_graph(
                     value = {"continuing_ready_task_ids": [task["task_id"] for task in ready(state)]}
                 else:
                     done = completed(state)
+                    if require_execution_plan and not action.question_coverage:
+                        raise ValueError("question_coverage_required_for_actual_user_requirements")
+                    for item in action.question_coverage:
+                        if item.question_quote not in research_question:
+                            raise ValueError("coverage_quote_must_come_from_original_user_question")
+                        if not set(item.supporting_task_ids).issubset(done):
+                            raise ValueError("coverage_requires_existing_submitted_task_ids")
+                        if item.status == "answered" and not item.supporting_task_ids:
+                            raise ValueError("answered_requirement_requires_submitted_task_reference")
+                    if action.disposition == "ready_for_review" and any(item.status == "unresolved" for item in action.question_coverage):
+                        raise ValueError("unresolved_required_research_needs_attention_not_review_completion")
                     incomplete = {task["task_id"] for task in state["tasks"]} - set(done)
                     if set(action.acknowledged_incomplete_task_ids) != incomplete:
                         raise ValueError("handoff_must_acknowledge_exact_incomplete_task_ids")
@@ -312,8 +339,12 @@ def build_dell_lead_research_graph(
                                    phase="research_" + action.disposition, stop_reason=None)
                     value = {"handoff_disposition": action.disposition, "financial_or_product_pass": False}
                 if public_progress:
+                    coverage_text = "\n\n".join(f"**问题覆盖：{item.question_quote}**\n"
+                        + {"answered": "已有底稿，待核验", "not_needed": "本次省略", "unresolved": "尚未解决"}[item.status]
+                        + "：" + item.rationale for item in getattr(action, "question_coverage", ()))
                     public_progress({"kind": "stage", "actor": "lead", "event": "progress", "call_id": call.id,
-                        "objective": action.reason_summary + ("\n\n" + action.execution_plan.public_summary() if action.execution_plan else "")})
+                        "objective": action.reason_summary + ("\n\n" + action.execution_plan.public_summary() if action.execution_plan else "")
+                        + ("\n\n" + coverage_text if coverage_text else "")})
                 return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
             except (ValueError, KeyError) as exc:
                 detail = ({"schema_errors": [{"loc": list(e["loc"]), "type": e["type"], "msg": e["msg"]}

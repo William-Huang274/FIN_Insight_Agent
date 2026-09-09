@@ -268,7 +268,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             reviewers = {role: native_agent(role, tools, artifacts) for role in ("counter", "verifier")}
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question=state["question"],
                 run_id=research_id, run_invocation_id=invocation,
-                review_order=studio.review_order if studio else "parallel").compile()
+                review_order=studio.review_order if studio else "parallel",
+                research_handoff=state.get("research_handoff")).compile()
             return await graph.ainvoke({"run_id": research_id, "run_invocation_id": invocation}, config)
 
     async def execute_convergence(state, config, existing=None):

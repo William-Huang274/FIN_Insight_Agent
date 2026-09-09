@@ -89,6 +89,10 @@ def test_adaptive_handoff_requires_model_plan_and_exposes_reasons():
         response = _stop(request, ready=True)
         if len(requests) > 1:
             response["action"]["tool_calls"][0]["args"]["execution_plan"] = plan
+            response["action"]["tool_calls"][0]["args"]["question_coverage"] = [{
+                "question_quote": request["research_question"], "status": "answered",
+                "supporting_task_ids": [request["workpapers"][0]["task_id"]],
+                "rationale": "Existing fixture paper covers this question; still requires independent semantic review."}]
         return response
     graph, value = _graph(model, lambda *_: pytest.fail("existing paper must not rerun"),
         require_execution_plan=True, require_all_branches=False, public_progress=events.append)
@@ -97,6 +101,41 @@ def test_adaptive_handoff_requires_model_plan_and_exposes_reasons():
     assert "execution_plan_required" in str(requests[1]["tool_results"])
     assert result["lead_handoff"]["execution_plan"] == plan
     assert plan["omitted_steps_reason"] in events[-1]["objective"]
+    assert "问题覆盖" in events[-1]["objective"]
+
+
+@pytest.mark.parametrize("problem, expected", [
+    ("absent", "question_coverage_required"),
+    ("quote", "coverage_quote_must_come"),
+    ("unknown", "coverage_requires_existing"),
+    ("unbound", "answered_requirement_requires"),
+    ("unresolved", "unresolved_required_research"),
+])
+def test_adaptive_scope_cannot_silently_discard_unfinished_requirements(problem, expected):
+    requests = []
+    plan = {"depth": "focused", "rationale": "Single existing paper available for this qualification.",
+        "omitted_steps_reason": "Only unnecessary synthesis omitted; necessary research cannot be omitted.",
+        "escalation_conditions": "An unresolved material requirement prevents a complete handoff."}
+    def model(request):
+        requests.append(request)
+        response = _stop(request, ready=True)
+        args = response["action"]["tool_calls"][0]["args"]
+        args["execution_plan"] = plan
+        item = {"question_quote": request["research_question"], "status": "answered",
+            "supporting_task_ids": [request["workpapers"][0]["task_id"]],
+            "rationale": "Only fixture coverage is asserted, never a semantic financial pass."}
+        if problem == "quote": item["question_quote"] = "unrelated issuer question"
+        if problem == "unknown": item["supporting_task_ids"] = ["invented-task"]
+        if problem == "unbound": item["supporting_task_ids"] = []
+        if problem == "unresolved": item["status"] = "unresolved"
+        args["question_coverage"] = [] if problem == "absent" else [item]
+        return response
+    graph, value = _graph(model, lambda *_: pytest.fail("no paid worker or automatic replacement"),
+        require_execution_plan=True, require_all_branches=False, max_lead_turns=2)
+    result = graph.invoke(value.model_dump(mode="json"))
+    assert expected in str(requests[-1]["tool_results"])
+    assert result["phase"] == "research_needs_attention"
+    assert result["lead_handoff"] is None
 
 
 def test_lead_parallel_workers_then_dynamic_dependent_task_without_rewriting_seed():

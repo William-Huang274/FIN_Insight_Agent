@@ -27,7 +27,7 @@ def artifacts():
 def review_fixture(artifacts):
     return {"summary": "Synthetic native-loop qualification only; not a real financial review or product PASS.",
         "assessments": [{"paper_id": p["paper_id"], "assessment": "Fixture checked tool access only, no semantic verdict."}
-                        for p in artifacts.catalog()["papers"]], "findings": [], "unresolved_data_requests": []}
+                        for p in artifacts.catalog()["papers"]], "findings": [], "unresolved_data_requests": [], "withdrawn_finding_reasons": {}}
 
 
 class ScriptedNativeChat(BaseChatModel):
@@ -40,7 +40,8 @@ class ScriptedNativeChat(BaseChatModel):
 
     def bind_tools(self, tools, **kwargs):
         names = {t.name for t in tools}
-        assert {"read_research_artifact", "calculate_research_metric", "submit_case_review"}.issubset(names)
+        assert ({"read_research_artifact", "calculate_research_metric", "submit_case_review"}.issubset(names)
+                or names == {"record_case_finding", "submit_case_review"})
         return self
 
     def _generate(self, messages, stop=None, run_manager=None, **kwargs):
@@ -102,6 +103,102 @@ def test_native_parallel_agents_errors_and_checkpointed_private_messages(artifac
 def test_cannot_claim_all_papers_read_without_observation(artifacts):
     with pytest.raises(ValueError, match="read_missing_papers"):
         validate_case_review(CaseReview.model_validate(review_fixture(artifacts)), artifacts, [])
+
+
+@pytest.mark.parametrize("withdraw", [False, True])
+def test_saved_finding_survives_limit_and_is_merged_without_rewriting(artifacts, withdraw):
+    async def exercise():
+        async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
+            tools = await case_mcp_tools(client)
+            finding = {"finding_id": "F-saved", "paper_id": "P01", "severity": "advisory",
+                "problematic_quote": artifacts.read_paper("P01")["thesis"],
+                "diagnosis": "Synthetic checkpoint test, not a financial diagnosis.",
+                "requested_change": "Retain this finding across model calls and the parent graph."}
+            reads = [call("read_research_artifact", {"paper_id": p["paper_id"]}, f"r{i}")
+                for i, p in enumerate(artifacts.catalog()["papers"])]
+            save = [call("record_case_finding", {"finding": finding}, "save")]
+            final = review_fixture(artifacts)
+            if withdraw:
+                final["withdrawn_finding_reasons"] = {"F-saved": "Subsequent source inspection disproved this synthetic finding."}
+            reviewers = {role: build_case_reviewer(role=role, artifacts=artifacts, tools=tools,
+                max_model_calls=2 if role == "counter" else 3,
+                model=ScriptedNativeChat(marker=role, replies=[reads, save,
+                    [call("submit_case_review", {"review": final}, "submit")]]))
+                for role in ("counter", "verifier")}
+            graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question="Fixture question",
+                research_handoff={"synthesis_notes": "Unverified model coverage, not source truth."},
+                run_id="saved", run_invocation_id="a1").compile(checkpointer=InMemorySaver())
+            result = await graph.ainvoke({"run_id": "saved", "run_invocation_id": "a1"},
+                {"configurable": {"thread_id": "saved-finding"}, "recursion_limit": 80})
+            assert result["phase"] == "case_review_incomplete"
+            assert result["counter"]["recorded_findings"]["F-saved"]["diagnosis"] == finding["diagnosis"]
+            assert [f["finding_id"] for f in result["verifier"]["review"]["findings"]] == ([] if withdraw else ["F-saved"])
+            assert "reasoning_content" not in json.dumps(result)
+    asyncio.run(exercise())
+
+
+def test_targeted_claim_read_is_smaller_but_not_complete_review_coverage(artifacts):
+    async def exercise():
+        async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
+            tools = await case_mcp_tools(client)
+            reader = next(t for t in tools if t.name == "read_research_artifact")
+            claim_id = artifacts.read_paper("P01", "claims")[0]["claim_id"]
+            reply = await reader.ainvoke(call("read_research_artifact",
+                {"paper_id": "P01", "section": "claims", "claim_ids": [claim_id]}, "target"))
+            assert [c["claim_id"] for c in reply.artifact["content"]] == [claim_id]
+            with pytest.raises(ValueError, match="read_missing_papers"):
+                validate_case_review(CaseReview.model_validate(review_fixture(artifacts)), artifacts, [reply])
+            assert len(json.dumps(reply.artifact["content"])) < len(json.dumps(artifacts.read_paper("P01")))
+            source_reader = next(t for t in tools if t.name == "read_research_source")
+            assert source_reader.args["max_characters"]["default"] == 4000
+    asyncio.run(exercise())
+
+
+def test_budget_hint_keeps_provider_history_intact():
+    from langchain.agents.middleware.types import ModelRequest
+    from langchain_core.messages import SystemMessage
+    from sec_agent.agent_runtime.dell_case_review_agent import ReviewWorkBudget
+    model = ScriptedNativeChat(marker="private", replies=[])
+    history = [AIMessage(content="public", additional_kwargs={"reasoning_content": "private"}),
+        ToolMessage(name="read_research_artifact", content="paper", tool_call_id="r",
+            artifact={"section": "workpaper", "paper_id": "P01"})]
+    request = ModelRequest(model=model, messages=history, system_message=SystemMessage(content="Issuer comes from user."),
+        state={"messages": history, "thread_model_call_count": 22, "recorded_findings": {"F1": {}}})
+    projected = ReviewWorkBudget(24).request_with_budget(request)
+    assert "at most two" in projected.system_message.content
+    assert "submit_case_review now" in projected.system_message.content
+    assert projected.messages == history
+    assert history[0].additional_kwargs["reasoning_content"] == "private"
+    request.state["thread_model_call_count"] = 2
+    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Stable cache prefix, not a counter rewritten every turn.
+    request.state.update(thread_model_call_count=40, run_model_call_count=2)
+    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Match the native run limit after an authorized resume.
+
+
+def test_closeout_reserve_blocks_new_reads_without_fabricating_a_result():
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.dell_case_review_agent import ReviewWorkBudget
+    state = {"thread_model_call_count": 5, "messages": [ToolMessage(name="read_research_artifact", content="paper",
+        tool_call_id="read", artifact={"paper_id": "P01", "section": "workpaper"})]}
+    request = SimpleNamespace(state=state, tool_call={"name": "read_research_source", "id": "late-read"})
+    result = ReviewWorkBudget(6).wrap_tool_call(request, lambda _: pytest.fail("late read must not execute"))
+    assert result.status == "error" and "not executed" in result.content
+    request.tool_call = {"name": "submit_case_review", "id": "close"}
+    assert ReviewWorkBudget(6).wrap_tool_call(request, lambda _: "submitted") == "submitted"
+
+
+def test_submitted_review_with_unchecked_work_does_not_enter_report_pipeline(artifacts):
+    from langchain_core.runnables import RunnableLambda
+    good = review_fixture(artifacts)
+    incomplete = {**good, "unresolved_data_requests": ["The prior-period expense basis has not been inspected."]}
+    reviewers = {r: RunnableLambda(lambda _, result=(incomplete if r == "counter" else good):
+        {"review": result, "messages": []}) for r in ("counter", "verifier")}
+    graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question="Fixture",
+        run_id="pending", run_invocation_id="a1").compile()
+    result = graph.invoke({"run_id": "pending", "run_invocation_id": "a1"})
+    assert result["phase"] == "case_review_incomplete"
+    assert result["counter"]["status"] == "incomplete_review"
+    assert result["counter"]["review"]["unresolved_data_requests"]
 
 
 def test_native_limit_keeps_peer_review_and_incomplete_checkpoint(artifacts):
@@ -237,6 +334,8 @@ def test_real_DeepSeek_SDK_native_requests_usage_and_reasoning_preservation(arti
         request_rows.append(body)
         assert all(t["function"]["parameters"]["type"] == "object" for t in body["tools"])
         if index == 1:
+            assert {t["function"]["name"] for t in body["tools"]} == {"record_case_finding", "submit_case_review"}
+            assert body.get("tool_choice") in {None, "auto"}
             prior = next(m for m in body["messages"] if m["role"] == "assistant")
             assert prior["reasoning_content"] == "private fixture reasoning preserved verbatim"
             assert len([m for m in body["messages"] if m["role"] == "tool"]) == 10
@@ -252,7 +351,7 @@ def test_real_DeepSeek_SDK_native_requests_usage_and_reasoning_preservation(arti
             model = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("fixture-not-a-secret"),
                 http_async_client=http_client, max_retries=0, streaming=False, use_responses_api=False,
                 extra_body={"thinking": {"type": "enabled"}})
-            agent = build_case_reviewer(role="verifier", model=model, tools=await case_mcp_tools(client), artifacts=artifacts,
+            agent = build_case_reviewer(role="verifier", model=model, tools=await case_mcp_tools(client), artifacts=artifacts, max_model_calls=2,
                 audit=CaseModelAudit(actor="case_verifier", profile=config.profile_for("verifier"), basis=config.token_budget_basis["specialist"],
                     public_sink=public.append, private_sink=private.append))
             result = await agent.ainvoke({"messages": [{"role": "user", "content": "Fixture native loop qualification, not real research."}]})

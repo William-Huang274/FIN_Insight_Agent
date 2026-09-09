@@ -522,6 +522,13 @@ def build_report_sessions_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         interrupts = [*state.get("interrupts", []), *[i for task in state.get("tasks", []) for i in task.get("interrupts", [])]]
         handoff = any(i.get("value", {}).get("kind") == "research_needs_attention" for i in interrupts)
+        if handoff:
+            last_runs = await service.sdk.runs.list(str(thread_id), limit=1)
+            if last_runs:
+                _, usage = public_run_usage(service.audit_root, thread_id, last_runs[0]["run_id"])
+                if ((usage is None and last_runs[0].get("metadata", {}).get("model_calls_requested") != 0)
+                        or (usage and (usage["unknown_or_pending_requests"] or usage["partial_audit"]))):
+                    raise HTTPException(409, "上次运行仍有未知请求或不完整用量记录，先核实结果；不会重发。")
         known_failure = False
         if not handoff and thread.get("status") == "error":
             last_runs = await service.sdk.runs.list(str(thread_id), limit=1)
@@ -537,7 +544,7 @@ def build_report_sessions_router(service):
             config=await run_configuration(service, thread),
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": "continue_remaining"})
-        return {"run_id": run["run_id"], "status": run["status"], "notice": "新调用只完成缺项；保留已提交底稿和原失败，不重发旧请求。"}
+        return {"run_id": run["run_id"], "status": run["status"], "notice": "按当前配置开启一次接续额度；原任务、候选、已完成审查与累计用量保留，不重发未知请求。"}
 
     def attachments():
         if service.attachment_store is None:

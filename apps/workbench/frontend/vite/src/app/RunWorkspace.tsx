@@ -50,6 +50,17 @@ export function RunWorkspace({ session, events, connected, refresh, onReport }: 
     {run?.execution && <p className="fs-run-config">{executionModeName[run.execution.mode]} · {run.execution.model === "default" ? "模型按角色配置" : run.execution.model} · 本次运行已固定</p>}
     {run?.revision_target && <p className="fs-run-target">{claimLabel(run.revision_target.citation_id, session.report?.citations || {})} · 基线 v{run.revision_target.base_version}</p>}
     <ContextUsage usage={run?.context_usage} nodeName={nodeName}/>
+    {!live && session.status !== "busy" && run?.run_id === session.runs?.[0]?.run_id && session.can_continue_remaining &&
+      <section className="fs-live-failure" aria-label="接续未完成工作">
+        <strong>从已有成果接着完成</strong>
+        <p>从保存的任务或审查继续；本次使用所选配置的新运行额度，累计用量保留。</p>
+        <button disabled={sending} onClick={async () => {
+          setSending(true);
+          try { await sessionsApi.continueRemaining(session.thread_id); setNotice("已发起接续，保留已有成果。"); await refresh(); }
+          catch(e) { setNotice((e as Error).message); }
+          finally { setSending(false); }
+        }}>接着完成 · 保留已有成果</button>
+      </section>}
     <div className="fs-live-layout"><div className="fs-live-main"><div className="fs-live-feed" ref={feed} role="log" aria-label="Agent 活动流" aria-live="polite" onScroll={() => { const el = feed.current!; setFollow(el.scrollHeight - el.scrollTop - el.clientHeight < 70); }}>
       <div className="fs-live-request"><small>{actionName(run?.human_action)}</small><p>{run?.request_message || (run?.human_action === "research" ? session.question : run?.revision_target ? claimLabel(run.revision_target.citation_id, session.report?.citations || {}) : "本次请求的执行活动")}</p></div>
       {groups.map((g,i) => <article className={`fs-live-entry ${g.kind}`} key={`${g.events[0].recorded_at}:${i}`}><header><span className="fs-live-avatar">{g.kind === "calls" ? <Terminal size={17}/> : <Radio size={17}/>}</span><strong>{nodeName(g.actor)}</strong><time>{g.events[0].recorded_at ? new Date(g.events[0].recorded_at).toLocaleTimeString("zh-CN") : ""}</time></header>

@@ -22,7 +22,7 @@ from langchain.agents import AgentState, create_agent
 from langchain.agents.middleware import AgentMiddleware, ModelCallLimitMiddleware, ToolCallLimitMiddleware
 from langchain.agents.middleware.types import ModelRequest, ModelResponse, hook_config
 from langchain.tools import ToolRuntime, tool
-from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage, messages_from_dict, messages_to_dict
 from langchain_core.runnables import RunnableLambda
 from langchain_core.tools import StructuredTool, ToolException
 from langchain_core.utils.function_calling import convert_to_openai_tool
@@ -571,7 +571,7 @@ When done, submit_case_review with an assessment of this revision, all saved fin
         name=f"case_{role}")
     # Expose only the native count to the parent collector. Binding ainvoke
     # output_keys would hide this compiled child from subgraph discovery.
-    agent.output_channels = [*agent.output_channels, "thread_model_call_count"]
+    agent.output_channels = [*agent.output_channels, "thread_model_call_count", "thread_tool_call_count"]
     return agent
 
 
@@ -582,16 +582,30 @@ class CaseReviewState(TypedDict, total=False):
     verifier: dict[str, Any]
     phase: str
     material_finding_count: int
+    scope_digest: str
 
 
-def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invocation_id, review_order="parallel", research_handoff=None):
+def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invocation_id, review_order="parallel", research_handoff=None, previous_review=None):
     if review_order not in {"parallel", "counter_first", "verifier_first"}:
         raise ValueError("unknown_review_order")
     graph = StateGraph(CaseReviewState)
+    from .dell_reference_vertical_contracts import canonical_sha256
+    scope_digest = canonical_sha256({"question": question, "catalog": artifacts.catalog(),
+        "papers": {p["paper_id"]: {"workpaper": artifacts.read_paper(p["paper_id"]),
+                                   "sources": artifacts.read_paper(p["paper_id"], "sources")}
+                   for p in artifacts.catalog()["papers"]}}) if artifacts else None
+    if previous_review and previous_review.get("scope_digest") != scope_digest:
+        raise ValueError("review_recovery_requires_same_question_and_artifacts")
     for role in ("counter", "verifier"):
         def seed(state, _role=role):
             if state.get("run_id") != run_id or state.get("run_invocation_id") != run_invocation_id:
                 raise ValueError("case_review_run_identity_mismatch")
+            saved = (previous_review or {}).get(_role, {}).get("recovery_state")
+            if saved:
+                return {"recorded_findings": deepcopy(saved.get("recorded_findings", {})),
+                    "messages": [*messages_from_dict(saved["messages"]),
+                    HumanMessage(content="Continue this same review using the saved reads and findings. Finish only outstanding checks; explain unresolved items explicitly. This is a new configured run allowance, not a reset of lifetime usage.")],
+                    "review": None}
             return {"messages": [HumanMessage(content=json.dumps({"role": _role, "question": question,
                 "catalog": artifacts.catalog(), "research_handoff": research_handoff,
                 "handoff_notice": "Model-authored scope and limitations, not verified facts. Check against the original question and actual papers."}, ensure_ascii=False))]}
@@ -600,9 +614,16 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
             review = state.get("review")
             complete = bool(review) and not review.get("unresolved_data_requests") and not review.get("review_scope")
             answers = [m for m in state["messages"] if isinstance(m, AIMessage)]
-            count = state.get("thread_model_call_count", len(answers))
+            # Native middleware private counters are not graph input fields.
+            # This new invocation enforces its own run limit; aggregate prior
+            # usage in the parent, never silently reset the displayed lifetime.
+            count = state.get("thread_model_call_count", len(answers)) + (previous_review or {}).get(_role, {}).get("model_calls", 0)
             return {_role: {"status": "review_submitted" if complete else "incomplete_review" if review else "incomplete_no_submission", "review": review,
                 "model_calls": count,
+                **({"recovery_state": {"messages": messages_to_dict(state["messages"]),
+                     "recorded_findings": deepcopy(state.get("recorded_findings", {})),
+                     "thread_model_call_count": count,
+                     "thread_tool_call_count": deepcopy(state.get("thread_tool_call_count", {}))}} if not complete else {}),
                 **({"incomplete_output": [m.content for m in answers[:count] if m.content],
                     "recorded_findings": state.get("recorded_findings", {}),
                     "runtime_notices": [m.content for m in answers[count:] if m.content],
@@ -611,7 +632,13 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
 
         # RunnableSequence keeps the compiled subgraph statically discoverable;
         # each reviewer receives its own messages, not sibling reasoning.
-        graph.add_node(role, RunnableLambda(seed) | reviewers[role] | RunnableLambda(collect))
+        prior = (previous_review or {}).get(role)
+        if prior and prior.get("status") == "review_submitted":
+            graph.add_node(role, RunnableLambda(lambda state, _role=role, _prior=deepcopy(prior): {_role: _prior}))
+        else:
+            if prior and not prior.get("recovery_state"):
+                raise ValueError("legacy_review_has_no_resumable_state_no_silent_restart")
+            graph.add_node(role, RunnableLambda(seed) | reviewers[role] | RunnableLambda(collect))
         if review_order == "parallel":
             graph.add_edge(START, role)
 
@@ -620,6 +647,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
         count = sum(f["severity"] == "material" for r in ("counter", "verifier")
                     for f in (state[r].get("review") or {}).get("findings", []))
         return {"phase": "case_review_ready_for_convergence" if complete else "case_review_incomplete",
+                "scope_digest": scope_digest,
                 "material_finding_count": count}
 
     graph.add_node("collect_case_review", close)

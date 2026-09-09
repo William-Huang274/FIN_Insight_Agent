@@ -61,6 +61,12 @@ for (const width of [1440, 1024, 390]) test(`agent conversation and run history 
   await expect(page.getByLabel("模型交接说明")).toContainText("原文读取未完成，请核对来源访问。");
   await page.getByText("查看提交校验与停止原因", {exact:true}).click();
   await expect(page.getByRole("region", {name:"未完成底稿"})).toContainText("invalid authority");
+  session.can_continue_remaining = true;
+  await page.reload();
+  await expect(page.getByText("从保存的任务或审查继续；本次使用所选配置的新运行额度，累计用量保留。", {exact:true})).toBeVisible();
+  await page.getByRole("button", {name:"接着完成 · 保留已有成果", exact:true}).click();
+  expect(writes).toBe(1);
+  session.can_continue_remaining = false;
   session.runs.unshift({run_id:"later-run", status:"success", created_at:"2026-09-09T08:00:00Z"});
   session.phase = "ready_for_human_review";
   await page.reload();

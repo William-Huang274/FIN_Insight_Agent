@@ -814,7 +814,7 @@ export function ResearchSession() {
                 {!busy && session.can_continue_remaining && <button disabled={sending} onClick={async () => {
                   setSending(true); try { await sessionsApi.continueRemaining(id); setSession(await sessionsApi.state(id)); }
                   catch (e) { setError((e as Error).message); } finally { setSending(false); }
-                }}>继续未完成主题 · 保留已交稿</button>}
+                }}>继续未完成工作 · 新运行额度</button>}
                 {busy && session.question && <button disabled={sending || !text.trim()} onClick={async () => {
                   setSending(true); try { await sessionsApi.guidance(id, text); setText(""); setSession(await sessionsApi.state(id)); }
                   catch (e) { setError((e as Error).message); } finally { setSending(false); }

@@ -170,6 +170,7 @@ def build_dell_lead_research_graph(
     model_turn: Callable, run_child: Callable, max_lead_turns: int = 8,
     max_tasks: int = 4, max_parallel_tasks: int = 2, turn_source: str = "scripted_qualification", unfinished_only: bool = False,
     role_method=None, require_all_branches=True, public_progress=None, require_execution_plan=False,
+    recovery_tasks=(),
 ) -> StateGraph:
     allowed = set(allowed_branch_ids)
     if expected_input is not None and (not allowed or len(allowed) != len(allowed_branch_ids)
@@ -178,6 +179,15 @@ def build_dell_lead_research_graph(
             or turn_source not in {"scripted_qualification", "provider_model"}):
         raise LeadResearchError("lead_scope_or_capacity_invalid")
     seeds = {key: validate_workpaper_state(value) for key, value in seed_workpapers.items()}
+    resumed = [DelegatedResearchTask.model_validate_json(json.dumps(t)).model_dump(mode="json") for t in recovery_tasks]
+    if (len({t["task_id"] for t in resumed}) != len(resumed)
+            or any(t["task_id"] in seeds or len(t["coverage_obligation_ids"]) != 1
+                   or not set(t["coverage_obligation_ids"]).issubset(allowed) for t in resumed)):
+        raise LeadResearchError("recovery_tasks_must_be_original_unfinished_tasks")
+    recovery_ids = set(seeds) | {t["task_id"] for t in resumed}
+    if any(not set(t["dependency_ids"]).issubset(recovery_ids) for t in resumed):
+        raise LeadResearchError("recovery_task_dependency_missing")
+    tuple(TopologicalSorter({t["task_id"]: t["dependency_ids"] for t in resumed}).static_order())
     if expected_input is None and (allowed or seeds or branch_catalog or research_question):
         raise LeadResearchError("schema_only_lead_cannot_bind_research")
     for key, seed in seeds.items():
@@ -218,8 +228,9 @@ def build_dell_lead_research_graph(
         parsed = SpecialistAgenticInput.model_validate_json(json.dumps(body))
         if canonical_sha256(parsed) != canonical_sha256(expected_input):
             raise LeadResearchError("lead_entry_input_mismatch")
-        return {"tasks": [], "task_results": [], "lead_turns": [], "tool_results": [],
-                "phase": "lead_observing", "lead_handoff": None, "stop_reason": None,
+        return {"tasks": resumed, "task_results": [], "lead_turns": [],
+                "tool_results": [ToolMessage(content="{}", tool_call_id="restored-parent-tasks").model_dump(mode="json")] if resumed else [],
+                "phase": "schedule_ready_tasks" if resumed else "lead_observing", "lead_handoff": None, "stop_reason": None,
                 "pending_batch": None, "active_task_ids": []}
 
     def decide(state):
@@ -237,7 +248,7 @@ def build_dell_lead_research_graph(
             "capacity": {"max_tasks": max_tasks, "max_parallel_tasks": max_parallel_tasks,
                          "max_lead_turns": max_lead_turns},
             "workpapers": [workpaper_view(key, value) for key, value in completed(state).items()],
-            "continue_only_unsubmitted_branches": unfinished_only,
+            "continuation_policy": "Preserve submitted work. Unfinished tasks retain their original IDs. A submitted branch may still have an unanswered requirement: a supplemental task must depend on its saved workpaper and explain the specific missing question, without repeating completed work.",
             "tasks": state["tasks"], "tool_results": state["tool_results"],
             "progress": {"turn_index": len(state["lead_turns"]) + 1,
                          "ready_task_ids": [task["task_id"] for task in ready(state)],
@@ -289,8 +300,9 @@ def build_dell_lead_research_graph(
                     for task in action.tasks:
                         if len(task.coverage_obligation_ids) != 1 or not set(task.coverage_obligation_ids).issubset(allowed):
                             raise ValueError("task_requires_one_disclosed_coverage_obligation")
-                        if unfinished_only and any(seed["task"]["branch_id"] in task.coverage_obligation_ids for seed in seeds.values()):
-                            raise ValueError("continuation_reuses_submitted_branches_only_delegate_missing_coverage")
+                        branch_seeds = {key for key, seed in seeds.items() if seed["task"]["branch_id"] in task.coverage_obligation_ids}
+                        if unfinished_only and branch_seeds and not branch_seeds.intersection(task.dependency_ids):
+                            raise ValueError("supplemental_research_must_depend_on_submitted_workpaper")
                         if (task.status not in {"planned", "ready"} or task.required_authority_refs
                                 or not set(task.requested_capability_refs).issubset(available)
                                 or not set(task.expected_output_kinds).issubset({"branch_notebook", "claim_ledger", "narrative_artifact"})):
@@ -428,7 +440,7 @@ def build_dell_lead_research_graph(
     graph.add_node("specialist", worker)
     graph.add_node("collect_task_artifacts", collect)
     graph.add_edge(START, "bind_case")
-    graph.add_edge("bind_case", "lead")
+    graph.add_conditional_edges("bind_case", dispatch, ["lead", "specialist", END])
     graph.add_conditional_edges("lead", lambda s: END if s["phase"] == "research_needs_attention" else "lead_tools", [END, "lead_tools"])
     graph.add_conditional_edges("lead_tools", dispatch, ["lead", "specialist", END])
     graph.add_edge("specialist", "collect_task_artifacts")

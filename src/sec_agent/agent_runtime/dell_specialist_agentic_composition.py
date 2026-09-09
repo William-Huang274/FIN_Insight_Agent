@@ -1027,6 +1027,7 @@ def _open_dell_specialist_composition(
     source_read_enabled: bool = False,
     live_web_read_enabled: bool = False,
     collaboration_context: Mapping[str, Any] | None = None,
+    recovery_state: Mapping[str, Any] | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     research_question: str | None = None,
@@ -1120,7 +1121,7 @@ def _open_dell_specialist_composition(
             yield _OpenedSpecialistComposition(
                 graph_input=graph_input,
                 graph=build_dell_specialist_agentic_state_graph(
-                    dependencies=dependencies
+                    dependencies=dependencies, recovery_state=recovery_state
                 ).compile(),
                 owner_data_gate_decision_digest=approved.decision_digest,
                 inventory_snapshot_digest=approved.inventory_snapshot_digest,
@@ -1190,6 +1191,7 @@ def open_dell_specialist_receipted_composition(
     source_read_enabled: bool = False,
     live_web_read_enabled: bool = False,
     collaboration_context: Mapping[str, Any] | None = None,
+    recovery_state: Mapping[str, Any] | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     research_question: str | None = None,
@@ -1216,6 +1218,7 @@ def open_dell_specialist_receipted_composition(
         source_read_enabled=source_read_enabled,
         live_web_read_enabled=live_web_read_enabled,
         collaboration_context=collaboration_context,
+        recovery_state=recovery_state,
         research_task=research_task,
         dependency_workpapers=dependency_workpapers,
         research_question=research_question,

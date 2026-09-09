@@ -135,6 +135,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     async def research(request, config: RunnableConfig):
         request = await with_guidance(request, "research")
         seeds = {paper["task"]["task_id"]: paper for paper in request.get("completed_workpapers", [])}
+        recoveries = {row["task_id"]: row["agent_state"] for row in request.get("failed_workpapers", [])
+                      if row["task_id"] not in seeds}
         if environment.get("FINSIGHT_TASK_ATTACHMENTS_ROOT"):
             from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
             uploads = TaskAttachmentStore(environment["FINSIGHT_TASK_ATTACHMENTS_ROOT"]).list(thread_id)
@@ -153,7 +155,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 role_method=studio.method(studio.bindings["specialist"]) if studio else None,
                 environment=environment, source_read_enabled=True, live_web_read_enabled=True,
                 max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
-                research_question=request["question"]) as bootstrap:
+                research_question=request["question"],
+                recovery_state=next(iter(recoveries.values()), None) if execution.mode == "single" else None) as bootstrap:
             if execution.mode == "single":
                 emit({"kind": "stage", "actor": "specialist", "event": "started", "objective": "按所选方向独立研究；不启动负责人分派或其他审查 Agent。"})
                 output = await bootstrap.graph.ainvoke(bootstrap.graph_input.model_dump(mode="json"), {**config, "recursion_limit": 200})
@@ -178,6 +181,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                             role_method=studio.method(studio.bindings["specialist"]) if studio else None,
                             environment=environment, source_read_enabled=True, live_web_read_enabled=True,
                             max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
+                            recovery_state=recoveries.get(task["task_id"]),
                             research_task=task, dependency_workpapers=dependencies, research_question=request["question"]) as child:
                         output = child.graph.invoke(child.graph_input.model_dump(mode="json"), {**child_config, "recursion_limit": 200})
                 except Exception as exc:
@@ -191,6 +195,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers=seeds,
                 model_turn=lead_adapter.lead_research_turn, run_child=worker,
                 require_all_branches=execution.mode != "auto", public_progress=emit, require_execution_plan=True,
+                recovery_tasks=request.get("unfinished_tasks", []),
                 role_method=studio.method(studio.bindings["lead"]) if studio else None,
                 max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], max_tasks=profile["max_tasks"],
                 max_parallel_tasks=profile["max_parallel_tasks"], turn_source="provider_model", unfinished_only=bool(seeds)).compile()
@@ -269,7 +274,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question=state["question"],
                 run_id=research_id, run_invocation_id=invocation,
                 review_order=studio.review_order if studio else "parallel",
-                research_handoff=state.get("research_handoff")).compile()
+                research_handoff=state.get("research_handoff"), previous_review=state.get("previous_review")).compile()
             return await graph.ainvoke({"run_id": research_id, "run_invocation_id": invocation}, config)
 
     async def execute_convergence(state, config, existing=None):

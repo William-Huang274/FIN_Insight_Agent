@@ -39,12 +39,14 @@ def _app(*, enabled=True, graph_id=RESEARCH_GRAPH):
     async def create_run(*args, **kwargs):
         calls.append(("run", args, kwargs))
         return {"run_id": run_id, "status": "pending"}
+    async def list_runs(*args, **kwargs):
+        return []
     async def get_thread(_):
         return thread
     async def get_state(_):
         return {"values": {"phase": "ready_for_human_review"}, "interrupts": [{"value": {"kind": "dell_report_review"}}]}
     service = ReportSessionService("http://127.0.0.1:18165", object(), sdk=SimpleNamespace(
-        threads=SimpleNamespace(create=create_thread, get=get_thread, get_state=get_state), runs=SimpleNamespace(create=create_run)),
+        threads=SimpleNamespace(create=create_thread, get=get_thread, get_state=get_state), runs=SimpleNamespace(create=create_run, list=list_runs)),
         research_profile={"default_question": "A new bounded Dell growth-quality research question", "title": "New Dell research"} if enabled else None)
     app = FastAPI()
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
@@ -342,6 +344,29 @@ def test_cost_estimate_counts_known_usage_and_does_not_price_failed_unknown_as_z
     corrected = public_cost_estimate(rows)
     assert corrected["not_attempted_requests"] == 1
     assert corrected["unknown_or_pending_requests"] == 1 and corrected["known_cny"] == estimate["known_cny"]
+
+
+@pytest.mark.parametrize("audit", [None, "pending", "partial"])
+def test_attention_continuation_rejects_unknown_usage_without_creating_run(tmp_path, audit):
+    app, service, calls, thread_id = _app()
+    service.audit_root = tmp_path
+    run_id = str(uuid4())
+    async def state(_):
+        return {"values": {"phase": "research_needs_attention", "case_papers": [1]},
+                "interrupts": [{"value": {"kind": "research_needs_attention"}}]}
+    async def runs(*args, **kwargs):
+        return [{"run_id": run_id, "status": "success", "metadata": {}}]
+    service.sdk.threads.get_state, service.sdk.runs.list = state, runs
+    if audit:
+        folder = tmp_path / thread_id / run_id
+        folder.mkdir(parents=True)
+        (folder / "model-call-events.jsonl").write_text('{"call_id":"unfinished","event":"started"}'
+            if audit == "pending" else '{broken', encoding="utf-8")
+    with TestClient(app) as client:
+        response = client.post(f"/api/v1/research-sessions/{thread_id}/continue-remaining", headers={"x-workbench-request": "1"})
+        assert response.status_code == 409
+        assert not any(c[0] == "run" for c in calls)
+    asyncio.run(service.http.aclose())
 
 
 def test_continue_remaining_uses_native_interrupt_and_no_browser_seed_or_checkpoint_update():

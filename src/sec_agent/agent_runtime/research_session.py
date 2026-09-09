@@ -41,6 +41,7 @@ class ResearchSessionState(SessionState, total=False):
     research_attempt_history: list[dict[str, Any]]
     research_failed_workpapers: list[dict[str, Any]]
     continue_remaining_research: bool
+    research_review_history: list[dict[str, Any]]
     case_review: dict[str, Any]
     author_feedback: dict[str, list[dict[str, Any]]]
     research_stop_reason: str | None
@@ -58,8 +59,14 @@ def current_task_artifacts(state):
 
 
 def can_continue_remaining_research(state):
-    return (state.get("phase") == "research_needs_attention" and bool(state.get("case_papers"))
-            and not state.get("case_review") and not state.get("report"))
+    if state.get("phase") != "research_needs_attention" or state.get("report"):
+        return False
+    if state.get("case_review"):
+        review = state["case_review"]
+        return (review.get("phase") == "case_review_incomplete" and bool(review.get("scope_digest"))
+                and all(review.get(r, {}).get("status") == "review_submitted" or review.get(r, {}).get("recovery_state")
+                        for r in ("counter", "verifier")))
+    return bool(state.get("case_papers") or state.get("research_failed_workpapers"))
 
 
 def responsible_author_feedback(case_review, artifacts):
@@ -135,6 +142,9 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         if continuing:
             # Only native state from this same task, never browser or old-case seeds.
             payload["completed_workpapers"] = retained
+            done = {p["task"]["task_id"] for p in retained}
+            payload["unfinished_tasks"] = [deepcopy(t) for t in state.get("research_tasks", []) if t["task_id"] not in done]
+            payload["failed_workpapers"] = deepcopy(state.get("research_failed_workpapers", []))
         _stage("research", "started", status="continue_remaining" if continuing else "fresh")
         result = await research.ainvoke(payload, config)
         outcomes = result.get("task_results", [])
@@ -154,7 +164,8 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
                    "recorded_at": datetime.now(timezone.utc).isoformat()}
         # A rejected worker is still an immutable research artifact. Retain its
         # original notebook, tool receipts, last submission and handoff in the
-        # native parent checkpoint. It never enters case_papers or a new prompt.
+        # native parent checkpoint. Only that same worker can consume it on an
+        # explicit continuation; it never enters case_papers or sibling history.
         failed = [*deepcopy(state.get("research_failed_workpapers", [])), *[
             {"run_id": attempt["run_id"], "task_id": row["task_id"], "agent_state": deepcopy(row["agent_state"])}
             for row in outcomes if row["status"] != "submitted" and row.get("agent_state")]]
@@ -197,15 +208,19 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     async def review_node(state, config: RunnableConfig):
         _stage("case_review", "started")
         result = await review.ainvoke({"question": state["question"], "case_papers": state["case_papers"],
-            "research_handoff": state.get("research_handoff")}, config)
+            "research_handoff": state.get("research_handoff"),
+            "previous_review": state.get("case_review") if state.get("continue_remaining_research") else None}, config)
+        retained = {"continue_remaining_research": False,
+                    "research_review_history": [*deepcopy(state.get("research_review_history", [])),
+                        {"run_id": config.get("configurable", {}).get("run_id"), "result": deepcopy(result)}]}
         if result.get("phase") == "case_review_incomplete":
             _stage("case_review", "outcome", status="needs_attention")
-            return {"case_review": {**deepcopy(result), "source_run_id": config.get("configurable", {}).get("run_id")}, "phase": "research_needs_attention",
+            return {**retained, "case_review": {**deepcopy(result), "source_run_id": config.get("configurable", {}).get("run_id")}, "phase": "research_needs_attention",
                     "research_stop_reason": "independent_review_incomplete_no_report_acceptance"}
         artifacts = current_task_artifacts(state)
         feedback = responsible_author_feedback(result, artifacts)
         _stage("case_review", "outcome", status="handoff", responsible_author_count=len(feedback))
-        return {"case_review": deepcopy(result), "author_feedback": feedback, "phase": "research_writing"}
+        return {**retained, "case_review": deepcopy(result), "author_feedback": feedback, "phase": "research_writing"}
 
     async def converge_node(state, config: RunnableConfig):
         _stage("convergence", "started")
@@ -230,7 +245,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         response = interrupt({"kind": "research_needs_attention", "reason": state["research_stop_reason"],
             "completed_papers": len(state["case_papers"]),
             "actions": ["acknowledge", *(["continue_remaining"] if can_continue_remaining_research(state) else [])],
-            "notice": "Submitted work and failed/unfinished tasks remain visible. No report was accepted; no automatic retry."})
+            "notice": "Continue starts a new configured run allowance for unfinished work only, retaining lifetime usage and saved results. No automatic retry or report acceptance."})
         if isinstance(response, dict) and response.get("action") == "continue_remaining" and can_continue_remaining_research(state):
             return {"continue_remaining_research": True}
         if not isinstance(response, dict) or response.get("action") != "acknowledge":
@@ -252,5 +267,5 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     graph.add_conditional_edges("remaining_research", after_research)
     graph.add_conditional_edges("case_review", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "convergence")
     graph.add_conditional_edges("convergence", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "initialize")
-    graph.add_conditional_edges("research_attention", lambda state: "remaining_research" if state.get("continue_remaining_research") else END)
+    graph.add_conditional_edges("research_attention", lambda state: ("case_review" if state.get("case_review") else "remaining_research") if state.get("continue_remaining_research") else END)
     return graph

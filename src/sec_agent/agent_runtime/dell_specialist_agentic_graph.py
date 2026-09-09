@@ -475,7 +475,7 @@ class SpecialistModelTurnRecord(_StrictModel):
     schema_version: Literal[
         "fin_ia_dell_specialist_model_turn_record_v1_1"
     ] = "fin_ia_dell_specialist_model_turn_record_v1_1"
-    turn_index: int = Field(ge=1, le=24)
+    turn_index: int = Field(ge=1)
     turn_source: SpecialistModelTurnSource = "scripted_qualification"
     model_execution_evidence: bool = False
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
@@ -712,8 +712,9 @@ class SpecialistNotebook(_StrictModel):
     owner_data_gate_decision_digest: str = Field(pattern=_DIGEST_PATTERN)
     source_route_catalog_digest: str = Field(pattern=_DIGEST_PATTERN)
     inventory_snapshot_digest: str = Field(pattern=_DIGEST_PATTERN)
-    model_turn_count: int = Field(ge=0, le=24)
-    tool_action_count: int = Field(ge=0, le=48)
+    # Lifetime counters across explicit runs; each input still caps its allowance.
+    model_turn_count: int = Field(ge=0)
+    tool_action_count: int = Field(ge=0)
     required_route_obligation_ids: tuple[str, ...] = Field(
         min_length=1,
         max_length=16,
@@ -1329,6 +1330,7 @@ def _review_submission_errors(
 def build_dell_specialist_agentic_state_graph(
     *,
     dependencies: DellSpecialistAgenticDependencies,
+    recovery_state: Mapping[str, Any] | None = None,
 ) -> StateGraph[DellSpecialistAgenticState]:
     """Build one cyclic Specialist graph with injected model and tool ports."""
 
@@ -1390,6 +1392,34 @@ def build_dell_specialist_agentic_state_graph(
             status="researching",
             source_read_enabled=validated.l0_context.source_read_enabled,
         )
+        if recovery_state is not None:
+            # Supplied only by the server's parent checkpoint, never graph input.
+            # Reuse the canonical notebook; do not promote a rejected candidate.
+            prior = _validate_model_json(SpecialistNotebook, recovery_state.get("notebook"),
+                                        code="recovery_notebook_invalid")
+            if (recovery_state.get("phase") != "specialist_human_review_handoff_emitted"
+                    or recovery_state.get("final_submission") is not None
+                    or recovery_state.get("run_id") != validated.run_id
+                    or recovery_state.get("agent_id") != validated.agent_id
+                    or recovery_state.get("task") != validated.task.model_dump(mode="json")
+                    or prior.task_id != validated.task.task_id
+                    or prior.branch_id != validated.task.branch_id
+                    or prior.owner_data_gate_decision_digest != notebook.owner_data_gate_decision_digest
+                    or prior.source_route_catalog_digest != notebook.source_route_catalog_digest
+                    or prior.inventory_snapshot_digest != notebook.inventory_snapshot_digest
+                    or set(prior.required_route_obligation_ids) != set(notebook.required_route_obligation_ids)):
+                raise DellSpecialistAgenticGraphError("recovery_task_or_data_scope_mismatch")
+            return {**validated.model_dump(mode="json"),
+                "notebook": _replace_notebook(prior, run_invocation_id=validated.run_invocation_id,
+                                             status="researching").model_dump(mode="json"),
+                # A user-initiated new run has its configured allowance. Lifetime
+                # counts are retained, not reset by inventing a replacement task.
+                "max_model_turns": prior.model_turn_count + validated.max_model_turns,
+                "max_tool_actions": prior.tool_action_count + validated.max_tool_actions,
+                "last_submission_attempt": _jsonable(recovery_state.get("last_submission_attempt")),
+                "tool_results": _jsonable(recovery_state.get("tool_results", [])),
+                "pending_action": None, "final_submission": None, "human_review_handoff": None,
+                "review_reason": None, "review_trigger": None, "phase": "ready_for_model_decision"}
         return {
             **validated.model_dump(mode="json"),
             "notebook": notebook.model_dump(mode="json"),

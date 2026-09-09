@@ -232,7 +232,12 @@ def test_saved_finding_survives_limit_and_is_merged_without_rewriting(artifacts,
             assert result["phase"] == "case_review_incomplete"
             assert result["counter"]["recorded_findings"]["F-saved"]["diagnosis"] == finding["diagnosis"]
             assert [f["finding_id"] for f in result["verifier"]["review"]["findings"]] == ([] if withdraw else ["F-saved"])
-            assert "reasoning_content" not in json.dumps(result)
+            # Recovery history is server-private and belongs only to its role.
+            # Public projections and convergence must never receive that history.
+            from apps.workbench.backend.api.v1.report_sessions import public_state
+            projected = public_state({"values": {"phase": "research_needs_attention", "case_review": result}})
+            assert "reasoning_content" not in json.dumps(projected)
+            assert "recovery_state" not in json.dumps(projected)
     asyncio.run(exercise())
 
 
@@ -325,7 +330,9 @@ def test_native_limit_keeps_peer_review_and_incomplete_checkpoint(artifacts):
             assert result["verifier"]["status"] == "review_submitted"
             assert result["verifier"]["model_calls"] == 2
             assert (await graph.aget_state(config)).values["counter"] == result["counter"]
-            assert "reasoning_content" not in json.dumps(result)
+            from apps.workbench.backend.api.v1.report_sessions import public_state
+            assert "reasoning_content" not in json.dumps(public_state({"values": {"case_review": result}}))
+            assert "recovery_state" not in json.dumps(public_state({"values": {"case_review": result}}))
     asyncio.run(exercise())
 
 

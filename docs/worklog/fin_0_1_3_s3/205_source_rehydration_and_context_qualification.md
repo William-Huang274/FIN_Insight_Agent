@@ -93,3 +93,9 @@ DeepSeek 官方还要求启用 tools 时保留此前 reasoning_content，不能�
 实际运行镜像 `sha256:8dba19aff83ee4f2d90dfe6cfd430b3a30e905ab39ae7df898420e10751308a1`。容器内检查确认 SQLite FTS5 可用、search tool 已加载、历史 turn 身份字段存在、case/report 未决字段必填。`18165/ok`、`18795/workspace`、`18795/api/v1/research-session-config` 均 HTTP 200。18795 宿主 BFF 本轮无代码变化，无需重启。构建与 up 日志在 `D:/temp/fin205-context-build-a1.log`、`fin205-context-up-a1.log`、`fin205-context-up-a2.log`。没有因部署触发模型或续跑任何产品任务。
 
 本轮只推送开发分支，不合并 main，不修改产品版本。私有模型历史、来源全文、真实候选、API 凭据与本地原始审计不进入 Git；Git 只包含源码、回归和证据说明。
+
+## 2026-09-10 全部规划盘点
+
+Owner要求收拢此前完整规划和未完成项。已把原五项/前端与展示、四组长提示词及A–F工作包的当前成果、缺口、依赖统一更新到[同一实施基线](../../product/CONVERSATION_RETRIEVAL_AND_DELIVERY_20260909.zh-CN.md#2026-09-10-全部规划收拢与未完成总表)，没有新增执行阶段或重定义验收。当前第一/第二步只是研究可靠性和上下文两条工作线，不能覆盖或替代知识库、Qwen、sandbox、多租户及公开收口。
+
+只读远端核对main a7053972、开发5069d02e（本次文档提交前）、两个history，无tags；最新实现仍未合main。本次产品/工程增量为0，新增研究/模型调用为0；交付是当前状态核对和文档归并。旧记录保留，不把文档整理计作修复完成，不重试历史部署阻塞，不删除分支。检查仅相对链接存在性、diff与文档变更范围，不为文档修改运行模型或全仓测试。

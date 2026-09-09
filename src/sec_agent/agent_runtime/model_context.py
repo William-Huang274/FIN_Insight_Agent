@@ -31,11 +31,15 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6):
         placeholder="[Older read result omitted from this request; the host retains the original. Use read_saved_result with this original tool_call_id when available, or repeat the same read tool and arguments when its source context is needed.]")
     projected = deepcopy(list(messages))
     edit.apply(projected, count_tokens=count_tokens_approximately)
+    # keep counts individual tool uses, not an assistant's parallel batch.
+    # Every result after the last assistant turn is unread by the model and
+    # must survive its FIRST delivery, even when the batch is larger than keep.
+    last_assistant = max((i for i, m in enumerate(messages) if isinstance(m, AIMessage)), default=-1)
     # Native 1.4 exclusions are by tool name. A single failed read must not pin
     # every successful result from that reader forever. Restore only the exact
     # error messages; the native edit still owns selection and pair preservation.
     for index, message in enumerate(messages):
-        if isinstance(message, ToolMessage) and message.status == "error":
+        if isinstance(message, ToolMessage) and (message.status == "error" or index > last_assistant):
             projected[index] = deepcopy(message)
     return projected
 

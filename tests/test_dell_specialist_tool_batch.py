@@ -124,6 +124,7 @@ def test_model_can_correct_rejected_submission_without_repeating_successful_read
         else:
             assert request["tool_results"][0]["status"] == "error"
             assert len(request["notebook"]["observations"]) == 2
+            assert "revise_workpaper" not in request["allowed_actions"]
         return _batch(request, [candidate])
     graph_input = _input()
     graph_input["max_model_turns"] = 3
@@ -161,7 +162,8 @@ def test_native_local_workpaper_edits_keep_whole_candidate_and_all_gates(defect)
         return _batch(request, [action])
     graph_input = _input(); graph_input["max_model_turns"] = 3
     graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
-        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile()
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        allow_workpaper_field_edits=True)).compile()
     result = graph.invoke(graph_input, config={"recursion_limit": 32})
     assert len(requests) == 3 and len(ports.calls) == 2
     if defect is None:
@@ -444,7 +446,8 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
             return adapter.specialist_model_turn(request)["action"]
 
         graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
-            model_turn=model_turn, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile()
+            model_turn=model_turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
+            allow_workpaper_field_edits=local_edit)).compile()
         result = graph.invoke(_input(), config={"recursion_limit": 32})
     assert len(ports.calls) == 2  # Submissions/feedback never dispatch data tools.
     assert "reasoning_content" not in json.dumps(result) + json.dumps(public)

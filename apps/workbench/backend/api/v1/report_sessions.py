@@ -175,13 +175,20 @@ def public_state(state):
         candidate = {key: arguments[key] for key in ("thesis", "mechanism", "narrative_markdown", "summary")
             if isinstance(arguments, dict) and isinstance(arguments.get(key), str)}
         notebook = agent.get("notebook") or {}
+        records = notebook.get("model_turn_records") or []
+        last_action = records[-1].get("action", {}) if records else {}
+        # This is the model's explicit public handoff rationale, not reasoning
+        # text and not a host-generated claim that unfinished work succeeded.
+        explanation = last_action.get("reason_summary") if last_action.get("action") == "request_human_review" else None
         result["research_failures"].append({"run_id": row.get("run_id"), "task_id": row.get("task_id"),
             "reason": agent.get("review_reason"), "candidate": candidate,
+            "model_explanation": explanation if isinstance(explanation, str) else None,
             "accepted": False,
             "validation_issues": [{key: deepcopy(item[key]) for key in ("location", "type", "message") if key in item}
                 for item in attempt.get("validation_issues", []) if isinstance(item, dict)],
-            "feedback_codes": [item["code"] for item in attempt.get("feedback", [])
-                if isinstance(item, dict) and isinstance(item.get("code"), str)],
+            "feedback_codes": list(dict.fromkeys(item["code"] for item in
+                (attempt.get("feedback") or notebook.get("feedback", [])[-10:])
+                if isinstance(item, dict) and isinstance(item.get("code"), str))),
             "model_turns": notebook.get("model_turn_count"), "tool_actions": notebook.get("tool_action_count"),
             "saved_observations": len(notebook.get("observations", []))})
     # Public source-bound deliverables, not private agent message histories.

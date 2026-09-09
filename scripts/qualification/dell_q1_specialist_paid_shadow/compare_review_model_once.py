@@ -14,17 +14,18 @@ from pathlib import Path
 from time import perf_counter
 from types import SimpleNamespace
 
-from langchain_core.messages import HumanMessage, SystemMessage, messages_from_dict
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage, messages_from_dict
 from langchain_core.tracers.langchain import wait_for_all_tracers
 from langsmith import tracing_context
-from pydantic import SecretStr
+from pydantic import SecretStr, ValidationError
 
 from sec_agent.agent_runtime.deepseek_structured_agents import (
-    ReasoningPreservingChatDeepSeek, _NATIVE_REVIEW_TOOLS, _provider_function_schema, _usage_audit_fields,
+    ReasoningPreservingChatDeepSeek, _NATIVE_REVIEW_TOOLS, _provider_function_schema, _native_function_schema,
+    _bind_native_call_context, _usage_audit_fields,
 )
 from sec_agent.agent_runtime.dell_lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
 from sec_agent.agent_runtime.dell_specialist_agentic_graph import (
-    SubmitWorkpaperAction, _submission_errors,
+    SubmitWorkpaperAction, ReviseWorkpaperAction, apply_workpaper_edits, _submission_errors, canonical_sha256,
 )
 from scripts.qualification.dell_q1_specialist_paid_shadow.run_once import _dotenv, _write_new
 
@@ -35,21 +36,29 @@ def main():
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--model", choices=("deepseek-v4-pro", "deepseek-v4-flash"), required=True)
     parser.add_argument("--effort", choices=("low", "high"), required=True)
-    parser.add_argument("--task", choices=("review", "lead", "submission"), default="review")
+    parser.add_argument("--task", choices=("review", "lead", "submission", "submission-edit"), default="review")
     parser.add_argument("--budget-basis", type=Path)
     parser.add_argument("--prepare-only", action="store_true", help="Write the exact input locally without loading credentials or calling a model.")
     parser.add_argument("--additional-source-ids", type=Path, help="Submission diagnostic only: explicit IDs already present in the original observations.")
     parser.add_argument("--source-turn", type=int, default=1)
     parser.add_argument("--thinking", choices=("enabled", "disabled"), default="enabled")
+    parser.add_argument("--force-repair-tool", action="store_true", help="Non-thinking submission-edit diagnostic only: require the named native repair tool.")
+    parser.add_argument("--repair-feedback-from", type=Path, help="Continue a rejected same-candidate repair with the original AI tool call and standard error feedback; no automatic retry.")
     parser.add_argument("--max-output-tokens", type=int, default=32000)
     args = parser.parse_args()
+    is_submission = args.task in {"submission", "submission-edit"}
+    if args.force_repair_tool and (args.task != "submission-edit" or args.thinking != "disabled"):
+        raise ValueError("forced_repair_requires_non_thinking_submission_edit")
+    if args.repair_feedback_from and args.task != "submission-edit":
+        raise ValueError("repair_feedback_requires_submission_edit")
+    tool_choice = {"type": "function", "function": {"name": "ReviseWorkpaperAction"}} if args.force_repair_tool else "auto"
     # Exclusive directory is just ordinary file safety, not another execution protocol.
     args.output_dir.mkdir(exist_ok=False)
     sources = [json.loads(line) for line in args.source_audit.read_text(encoding="utf-8").splitlines() if line.strip()]
     if not 1 <= args.source_turn <= len(sources) or not 1000 <= args.max_output_tokens <= 32000:
         raise ValueError("comparison_source_turn_or_output_limit_invalid")
     source = sources[args.source_turn - 1]
-    if args.task == "submission" and not args.budget_basis:
+    if is_submission and not args.budget_basis:
         raise ValueError("submission_diagnostic_requires_task_specific_budget_basis")
     if args.task == "review" and (not source["actor"].startswith("verifier:") or
             [m["type"] for m in source["messages"]] != ["system", "human"]):
@@ -62,7 +71,7 @@ def main():
         # Known-input diagnostic of the corrected instruction. Own past model
         # response/reasoning and actual failed tool feedback remain verbatim.
         messages[0].content = LEAD_RESEARCH_SYSTEM_PROMPT
-    if args.task == "submission":
+    if is_submission:
         if not source["actor"].startswith("specialist:"):
             raise ValueError("submission_diagnostic_requires_specialist_source")
         original = [call for call in source["raw_response"]["tool_calls"] if call["name"] == "SubmitWorkpaperAction"]
@@ -118,6 +127,38 @@ def main():
             HumanMessage(content=json.dumps({"original_candidate": candidate,
                 "observations": selected, "original_task": source["semantic_input"].get("task_context"),
                 "diagnostic_context_digest": diagnostic_binding}, ensure_ascii=False))]
+        if args.task == "submission-edit":
+            native_tools = {"ReviseWorkpaperAction": ReviseWorkpaperAction}
+            messages[0].content = messages[0].content.replace("Return one complete SubmitWorkpaperAction.",
+                "Return one ReviseWorkpaperAction containing only necessary JSON Pointer replacements with exact old_value/new_value. "
+                "The full updated workpaper must still satisfy the provided SubmitWorkpaperAction schema. "
+                "Prefer replacing individual claim fields and citation dictionaries. Preserve unchanged narrative unless its meaning requires correction.")
+            packet = json.loads(messages[1].content)
+            packet.update(base_submission_digest=canonical_sha256(candidate),
+                required_submission_schema=SubmitWorkpaperAction.model_json_schema())
+            try:
+                SubmitWorkpaperAction.model_validate_json(json.dumps(candidate))
+            except ValidationError as exc:
+                packet["candidate_validation_errors"] = exc.errors(include_input=False, include_context=False, include_url=False)
+            messages[1].content = json.dumps(packet, ensure_ascii=False)
+            if args.repair_feedback_from:
+                prior_messages = json.loads((args.repair_feedback_from / "messages.private.json").read_text(encoding="utf-8"))
+                prior_packet = json.loads(prior_messages[1]["content"])
+                if canonical_sha256(prior_packet["original_candidate"]) != canonical_sha256(candidate):
+                    raise ValueError("repair_feedback_candidate_mismatch")
+                prior = AIMessage.model_validate(json.loads((args.repair_feedback_from / "response.private.json").read_text(encoding="utf-8")))
+                if prior.invalid_tool_calls or len(prior.tool_calls) != 1 or prior.tool_calls[0]["name"] != "ReviseWorkpaperAction":
+                    raise ValueError("repair_feedback_requires_one_parsed_repair")
+                call = prior.tool_calls[0]
+                try:
+                    edit = ReviseWorkpaperAction.model_validate_json(json.dumps({**call["args"], "context_digest": diagnostic_binding}))
+                    apply_workpaper_edits(candidate, edit)
+                except ValueError:
+                    messages.extend([prior, ToolMessage(tool_call_id=call["id"], name=call["name"], status="error",
+                        content=json.dumps({"accepted": False, "error": "workpaper_edit_old_value_or_path_mismatch",
+                            "message": "No edits were applied. Use zero-based numeric array indices, e.g. /claims/0/kind; copy exact current old_value. Correct the candidate_validation_errors as well. The original candidate and base digest remain unchanged."}))])
+                else:
+                    raise ValueError("repair_feedback_requires_rejected_patch")
     if args.prepare_only:
         _write_new(args.output_dir / "messages.private.json", [m.model_dump(mode="json") for m in messages])
         print(json.dumps({"status": "prepared_no_model_call", "input_characters": sum(len(m.content) for m in messages),
@@ -132,6 +173,7 @@ def main():
         "source_call_id": source["call_id"], "source_actor": source["actor"], "model": args.model,
         "reasoning_effort": args.effort if args.thinking == "enabled" else None,
         "thinking": args.thinking, "max_output_tokens": args.max_output_tokens,
+        "tool_choice": tool_choice,
         "input_characters": sum(len(m.content) for m in messages),
         "timeout_seconds": 480, "transport_attempts_allowed": 1, "retry": False,
         "TokenBudgetBasis": args.budget_basis.read_text(encoding="utf-8") if args.budget_basis else "docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md",
@@ -143,8 +185,9 @@ def main():
         api_key=SecretStr(secrets["DEEPSEEK_API_KEY"]), base_url="https://api.deepseek.com",
         max_tokens=args.max_output_tokens, timeout=480, max_retries=0, streaming=False, use_responses_api=False,
         extra_body={"thinking": {"type": args.thinking}})
-    runnable = model.bind_tools([_provider_function_schema(tool, strict=False) for tool in native_tools.values()],
-                               tool_choice="auto", strict=False)
+    runnable = model.bind_tools([_native_function_schema(tool, runtime_context_binding=True) if is_submission
+                                else _provider_function_schema(tool, strict=False) for tool in native_tools.values()],
+                               tool_choice=tool_choice, strict=False)
     started = perf_counter()
     raw = None
     try:
@@ -159,11 +202,17 @@ def main():
                 valid = False
             else:
                 arguments = call["args"]
-                if args.task == "submission":
+                if is_submission:
                     # The provider-facing schema omits host-owned context_digest.
-                    arguments = {**arguments, "context_digest": diagnostic_binding}
+                    arguments = _bind_native_call_context(call, diagnostic_binding)["args"]
+                    if arguments.get("context_digest") != diagnostic_binding:
+                        raise ValueError("diagnostic_context_digest_mismatch")
                 validated = native_tools[call["name"]].model_validate_json(json.dumps(arguments))
-                if args.task == "submission":
+                if args.task == "submission-edit":
+                    repaired = apply_workpaper_edits(candidate, validated)
+                    _write_new(args.output_dir / "repaired-submission.private.json", repaired)
+                    validated = SubmitWorkpaperAction.model_validate_json(json.dumps(repaired, ensure_ascii=False))
+                if is_submission:
                     observed = SimpleNamespace(observations=[SimpleNamespace(
                         references=[SimpleNamespace(**ref) for ref in obs["references"]],
                         content=obs["content"]) for obs in progress["observations"]],
@@ -188,11 +237,16 @@ def main():
                   "actions": [call["name"] for call in raw.tool_calls],
                   "lead_context_and_coverage_binding_valid": lead_binding_valid,
                   "submission_reference_errors": reference_errors,
-                  "archive_receipts_verified": False if args.task == "submission" else None,
+                  "archive_receipts_verified": False if is_submission else None,
                   "full_task_passed": False, "elapsed_seconds": round(perf_counter() - started, 3),
                   **_usage_audit_fields(raw)}
     except Exception as exc:
-        result = {"status": "failed", "error_type": type(exc).__name__, "http_status_code": getattr(exc, "status_code", None),
+        # Only expose project-defined rejection codes, never arbitrary provider
+        # exceptions (which can contain request bodies or credentials).
+        code = str(exc)
+        known_code = code if code.startswith(("workpaper_edit_", "diagnostic_", "repair_feedback_")) and code.replace("_", "").isalnum() else None
+        result = {"status": "failed", "error_type": type(exc).__name__, "error_code": known_code, "http_status_code": getattr(exc, "status_code", None),
+                  "validation_errors": exc.errors(include_input=False, include_context=False, include_url=False) if isinstance(exc, ValidationError) else None,
                   "full_task_passed": False, "elapsed_seconds": round(perf_counter() - started, 3),
                   **(_usage_audit_fields(raw) if raw is not None else {"usage_reported": False})}
     finally:

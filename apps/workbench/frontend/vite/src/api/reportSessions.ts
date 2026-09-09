@@ -94,7 +94,7 @@ export type Session = {
   research_as_of?: string;
   snapshot_id?: string;
   research_stop_reason?: string;
-  research_failures?: { run_id: string; task_id: string; reason?: string; accepted: false;
+  research_failures?: { run_id: string; task_id: string; reason?: string; model_explanation?: string | null; accepted: false;
     candidate: { thesis?: string; mechanism?: string; narrative_markdown?: string; summary?: string };
     feedback_codes: string[]; validation_issues: { location: (string | number)[]; type: string; message: string }[];
     model_turns?: number; tool_actions?: number; saved_observations: number }[];

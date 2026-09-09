@@ -52,6 +52,25 @@ def test_failed_reader_does_not_pin_all_successful_results_from_same_tool():
     assert project_tool_history(rows) is rows
 
 
+def test_parallel_read_results_are_delivered_once_before_becoming_clearable_history():
+    rows = history()
+    calls = [{"name": "RequestSourceAction", "args": {"page": i}, "id": f"fresh-{i}", "type": "tool_call"} for i in range(4)]
+    rows.append(AIMessage(content="", tool_calls=calls))
+    fresh = [ToolMessage(name=c["name"], tool_call_id=c["id"], content=f"Exact page {i}: amount, period, unit and citation. " * 300,
+        artifact={"passage_id": f"PASSAGE:{i}"}) for i,c in enumerate(calls)]
+    rows.extend(fresh)
+    original = deepcopy(rows)
+    projected = project_tool_history(rows, trigger_tokens=1, keep=2)
+    assert projected[-4:] == fresh  # all four unread results, despite keep=2
+    assert projected[2].response_metadata["context_editing"]["cleared"]
+    assert rows == original
+    # After the model has consumed the batch, older results may be projected.
+    consumed = [*rows, AIMessage(content="Observed all four pages.")]
+    projected_later = project_tool_history(consumed, trigger_tokens=1, keep=2)
+    assert projected_later[-5].response_metadata["context_editing"]["cleared"]
+    assert projected_later[-3:-1] == fresh[-2:]
+
+
 def test_current_runtime_supplies_same_policy_to_legacy_and_native_model_factories():
     profile, _ = load_research_runtime_profile(Path(__file__).resolve().parents[1])
     base = load_deepseek_structured_agent_config(profile["model_config"])

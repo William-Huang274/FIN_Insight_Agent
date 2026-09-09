@@ -323,7 +323,9 @@ class SubmitWorkpaperAction(_StrictModel):
 
 
 class WorkpaperFieldEdit(_StrictModel):
-    path: str = Field(min_length=1, description="RFC 6901 JSON Pointer into the current rejected workpaper. Replace existing fields only.")
+    path: str = Field(min_length=1, description=("RFC 6901 JSON Pointer into the current rejected workpaper. "
+        "Arrays use zero-based numeric indices: /claims/0/kind edits the first claim's kind. "
+        "A claim_id is a value, never an array index. Replace existing fields only; no wildcards or partial-string replacements."))
     old_value: Any = Field(description="Exact current JSON value; the edit fails if it does not match.")
     new_value: Any = Field(description="Replacement JSON value. Preserve unchanged claims and prose.")
 
@@ -874,6 +876,9 @@ class DellSpecialistAgenticDependencies:
     expected_graph_input_digest: str | None = None
     method_reader: Callable[[str], Mapping[str, Any]] | None = None
     enforce_case_route_requirements: bool = True
+    # Real model qualification is still open. Production uses the existing full
+    # submission/error-feedback path; only isolated qualification opts in.
+    allow_workpaper_field_edits: bool = False
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -946,6 +951,7 @@ def _model_request(
     *,
     state: DellSpecialistAgenticState,
     notebook: SpecialistNotebook,
+    allow_workpaper_field_edits: bool = False,
 ) -> dict[str, Any]:
     l0 = _validate_model_json(
         SpecialistL0Context,
@@ -1005,7 +1011,8 @@ def _model_request(
     last = state.get("last_submission_attempt") or {}
     candidate = last.get("arguments")
     if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
-        allowed_actions.append("revise_workpaper")
+        if allow_workpaper_field_edits:
+            allowed_actions.append("revise_workpaper")
         body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
     return {**body, "context_digest": canonical_sha256(body)}
 
@@ -1414,7 +1421,8 @@ def build_dell_specialist_agentic_state_graph(
                 ).model_dump(mode="json"),
                 "phase": "human_review_required",
             }
-        request = _model_request(state=state, notebook=notebook)
+        request = _model_request(state=state, notebook=notebook,
+            allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits)
         try:
             raw = dependencies.model_turn(request)
         except Exception as exc:
@@ -1930,7 +1938,8 @@ def build_dell_specialist_agentic_state_graph(
             if action.context_digest != batch.context_digest:
                 return reject("specialist_model_turn_context_binding_invalid",
                     "Copy the current context_digest exactly; this call was not dispatched.")
-            if action.action not in _model_request(state=working, notebook=before)["allowed_actions"]:
+            if action.action not in _model_request(state=working, notebook=before,
+                    allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits)["allowed_actions"]:
                 return reject("specialist_action_not_available_in_current_runtime", "This action is not available for your assigned role.")
             if isinstance(action, RequestSourceAction) and not l0.source_read_enabled:
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")

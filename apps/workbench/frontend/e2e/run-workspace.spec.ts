@@ -50,6 +50,7 @@ for (const width of [1440, 1024, 390]) test(`agent conversation and run history 
   session.runs[0].status = "success"; session.phase = "research_needs_attention";
   session.research_tasks = [{ task_id: "task-a", objective: "核对年度收入依据", dependency_ids: [] }];
   session.research_failures = [{ run_id: run, task_id: "task-a", reason: "model_turn_ceiling_reached_no_silent_completion",
+    model_explanation: "原文读取未完成，请核对来源访问。",
     accepted: false, candidate: { narrative_markdown: "## 未验收结果\n\n仍保留提交内容。" },
     feedback_codes: ["specialist_tool_arguments_invalid"], validation_issues: [{location:["claims",1], message:"invalid authority",type:"value_error"}],
     model_turns: 2, tool_actions: 1, saved_observations: 1 }];
@@ -57,6 +58,7 @@ for (const width of [1440, 1024, 390]) test(`agent conversation and run history 
   await expect(page.getByRole("region", {name:"失败说明"})).toBeVisible();
   await expect(page.getByRole("region", {name:"未完成底稿"})).toContainText("核对年度收入依据");
   await expect(page.getByRole("heading", {name:"未验收结果"})).toBeVisible();
+  await expect(page.getByLabel("模型交接说明")).toContainText("原文读取未完成，请核对来源访问。");
   await page.getByText("查看提交校验与停止原因", {exact:true}).click();
   await expect(page.getByRole("region", {name:"未完成底稿"})).toContainText("invalid authority");
   session.runs.unshift({run_id:"later-run", status:"success", created_at:"2026-09-09T08:00:00Z"});

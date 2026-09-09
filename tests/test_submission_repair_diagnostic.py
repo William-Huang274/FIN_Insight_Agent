@@ -7,7 +7,8 @@ from scripts.qualification.dell_q1_specialist_paid_shadow import compare_review_
 
 
 @pytest.mark.parametrize("additional", ["PASSAGE:B", "PASSAGE:UNKNOWN"])
-def test_prepare_uses_only_original_observations_without_credentials(tmp_path, monkeypatch, capsys, additional):
+@pytest.mark.parametrize("task", ["submission", "submission-edit"])
+def test_prepare_uses_only_original_observations_without_credentials(tmp_path, monkeypatch, capsys, additional, task):
     def observation(ref):
         return {"references": [{"ref_id": ref}], "content": [{"passage_id": ref, "passage": f"Original {ref}"}]}
     source = {"actor": "specialist:fixture", "call_id": "original-call", "messages": [],
@@ -22,7 +23,7 @@ def test_prepare_uses_only_original_observations_without_credentials(tmp_path, m
     output = tmp_path / "prepared"
     monkeypatch.setattr(diagnostic, "_dotenv", lambda: pytest.fail("prepare must not load credentials"))
     monkeypatch.setattr(sys, "argv", ["diagnostic", "--source-audit", str(archive), "--output-dir", str(output),
-        "--task", "submission", "--model", "deepseek-v4-flash", "--effort", "low", "--prepare-only",
+        "--task", task, "--model", "deepseek-v4-flash", "--effort", "low", "--prepare-only",
         "--budget-basis", str(basis), "--additional-source-ids", str(extra)])
     if additional.endswith("UNKNOWN"):
         with pytest.raises(ValueError, match="additional_source_must_be_observed"):
@@ -33,3 +34,6 @@ def test_prepare_uses_only_original_observations_without_credentials(tmp_path, m
     packet = json.loads(messages[1]["content"])
     assert [o["content"][0]["passage_id"] for o in packet["observations"]] == ["PASSAGE:A", "PASSAGE:B"]
     assert "prepared_no_model_call" in capsys.readouterr().out
+    if task == "submission-edit":
+        assert packet["candidate_validation_errors"]
+        assert packet["base_submission_digest"] == diagnostic.canonical_sha256(packet["original_candidate"])

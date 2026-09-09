@@ -189,6 +189,18 @@ def test_failed_workpaper_projects_only_deliverable_and_validation_metadata():
     assert "private" not in str(projected)
 
 
+def test_failed_task_without_submission_keeps_tool_error_and_explicit_model_handoff_reason():
+    state = {"values": {"research_failed_workpapers": [{"run_id": "r", "task_id": "t", "agent_state": {
+        "review_reason": "source_read_failed", "notebook": {
+            "feedback": [{"code": "source_read_failed", "message": "private source payload"}],
+            "model_turn_records": [{"action": {"action": "request_human_review", "reason_summary": "原文读取未完成，请核对来源访问。",
+                "reasoning_content": "private reasoning"}}]}}}]}}
+    row = public_state(state)["research_failures"][0]
+    assert row["candidate"] == {} and row["feedback_codes"] == ["source_read_failed"]
+    assert row["model_explanation"] == "原文读取未完成，请核对来源访问。"
+    assert "private" not in str(row)
+
+
 def test_original_workpaper_reviews_are_visible_without_private_messages_or_raw_source_payloads():
     projected = public_state({"values": {"case_review": {"counter": {"messages": ["private trace"], "review": {
         "summary": "A current-period comparison needs revision.", "findings": [{"finding_id": "F1", "paper_id": "P09",

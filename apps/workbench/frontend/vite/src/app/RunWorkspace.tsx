@@ -61,6 +61,7 @@ export function RunWorkspace({ session, events, connected, refresh, onReport }: 
         <h3>{session.research_tasks?.find(t => t.task_id === failure.task_id)?.objective || "研究节点未完成"}</h3>
         <p>已执行 {failure.model_turns ?? "未记录"} 轮模型调用、{failure.tool_actions ?? "未记录"} 次工具操作，保留 {failure.saved_observations} 条资料读取结果。</p>
         <strong>最后提交内容 · 未通过验收</strong>
+        {failure.model_explanation && <aside aria-label="模型交接说明"><strong>模型交接说明</strong><p>{failure.model_explanation}</p></aside>}
         <ReactMarkdown remarkPlugins={[remarkGfm]} skipHtml components={{a:({children})=><span>{children}</span>,img:()=>null}}>{failure.candidate.narrative_markdown || failure.candidate.summary || failure.candidate.thesis || "该节点没有保存可展示的完整提交内容。"}</ReactMarkdown>
         <details><summary>查看提交校验与停止原因</summary><p>{failure.reason || "未记录停止原因"}</p>{failure.feedback_codes.map(code => <p key={code}>{code}</p>)}{failure.validation_issues.map((issue, i) => <p key={i}>{issue.location.join(" · ")}：{issue.message}</p>)}</details>
       </section>)}

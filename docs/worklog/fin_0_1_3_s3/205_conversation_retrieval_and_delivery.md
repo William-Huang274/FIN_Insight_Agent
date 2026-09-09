@@ -131,3 +131,37 @@ Hermes a1/a2最多单次输入5152/9694tokens；模型耗时11.42/26.86秒；a2�
 根因/纠正：16k tokens/keep2仅离线在旧MSFT94请求减少38.29%消息字符，不能当成实际节费或质量合格。HPE暴露ClearToolUsesEdit要求重复原读请求，但原Specialist重复分派拦截把它拒绝；另有数字literal不是纯十进制和operand_quote_not_in_observed_source计算错误、JSON/schema修复、Lead未提交必需计划理由。已加native ToolNode路径从同任务原checkpoint查找原action-attempt绑定的成功只读observation，返回原引用/内容/observation_digest，记录new_tool_dispatch=False，原工具次数与观察账不增加；失败/拒绝不重试，控制工具不回放。55 Specialist定向通过含跨轮不同reason_summary回读和原失败不重试。失败诊断另省略成功method_package大正文，仅保留成功绑定/digest，保留真正MCP错误文本；待验证部署。没有用删历史/摘要替代金融依据。系统提示删除活动路径DELL定死措辞，公开进度随用户语言，独立来源绑定计算允许同轮批量，尚未实测改善。
 
 整轮224推理尝试/6683278已知tokens/估算¥3.8794467/未知1，含失败成本，实际账单/免费额度抵扣未知。当前API部署镜像2e3ca50e…包含16k候选但未含本次回读/web修复；最新构建00981cd9…仍早于回读修复，不能误称已部署。剩余五题末题、旧失败有根因新attempt重验、统一指标、Hermes同条件对照、经授权知识入库、完整长报告/多租户和sandbox阻塞仍开放；不换版本或合main。
+
+
+## 继续：外网问答、HPE第二次失败、资料双公司与原生批准接线
+
+工程40fd7859已推开发分支，未合main。HPE a2确实部署了成功只读观察回读（12次回读原记录）；thread01a0836c-bef0-72f2-8167-eab92caa423e/run01a0836d-3046-71c3-82f8-44f99ed0d67b，51调用2140450tokens/估算¥1.628082，约9分钟后两个方向needs_attention，其余方向未执行，无报告。保持原失败，禁止第三次盲跑。初判MCP来源登记/回读冲突后检查实际参数：六次source_id_not_observed均用了CHUNK导航ID，而原已观察的是PASSAGE/CALC，并非原文丢失。已向Owner纠正，工具说明明确凭证ID/literal，不能后台猜映射。Q4无ToolMessage错误但24轮到顶，仍需诊断；复杂题未通过。
+
+普通官方RFC问答新检索任务：a1五调用54897tokens/¥0.0323767（旧metrics-a1误含工具行，保留，metrics-a2正确）；a2八调用58847/¥0.0597425仍到8次上限；a3两轮六调用64515/¥0.0606093完成。a1根因为把query传给仅offset读取却静默忽略，a2文内匹配片段仅返回开头500字符，遗漏匹配正文导致反复查找。现在通用工具拒绝错用query，文内BM25命中返回实际捕获原文窗口而非前缀；全网检索仍未审preview。原生SDK投影实际输入加入预检审计，read_saved_result按原tool_call_id回读同thread成功数据，不重复SQL/网络。a3内容仍有英文进度和no-cache/强刷过度概括，不能宣布100%正确。三次目录D:/temp/fin205-general-qa-source-a1/a2/a3均保留。
+
+新题5 a1附件读取失败（2调用5029tokens/¥0.0018087），upload-only SourceDocumentRequest默认空间修复，随后真实返回对象必须model_dump的序列化错误在本地测试发现并修正。a2 thread01a08384-3ce0-7d83-93a6-ccdcc703a47c/run01a08384-3e80-79c1-908a-40febb924fa2本身成功；浏览器因首次checkpoint=None状态读取500中断，未重新提交，恢复snapshot另存recovered-snapshot-a2。本地服务停机后使用原容器/数据库重新启动，第二轮run01a083c8-3584-7381-8034-e11d7f4a4f44复用原始凭证工具换算，无新SQL。两轮7调用56206tokens，四原数/期间/换算保留，仍把CFOBS来源观察号误称SEC原始申报号，英文进度未改好。附件含显式标注的不可信删除指令，模型未执行；这只是该夹具结果，不证明全面防注入。
+
+知识工程：复用Agent Server原生Store保存经批准的固定checkpoint来源指针，个人namespace，逐次native HITL，即使full_access也不能自动入库；读取再次验证来源owner。当前是资料目录/固定版本回读，不是语义检索、研究全局SQL扩池或生产租户鉴权。三权限零写入到批准一写入、跨用户/撤权拒绝的定向测试通过。真实模型第一次只用文字询问批准（run01a083ce-3067-7b62-a8aa-d1963bb8c7e8），没有保存；第二次run01a083d0-198f-7431-be3e-8730c3355201产生native interrupt，但run状态success/thread状态interrupted，发现BFF错误只接受run interrupted。另模型提出CFOBS而不是NUMFACT，原凭证未丢失，不能猜测映射。正修批准接线、来源校验、具体期间/原数/SEC编号预览；尚未批准写入，不重复提交pending操作。
+
+证据/用量：截至上述待批准状态，本轮305实际推理尝试/9087394已知tokens/估算¥5.7134545/未知1，含失败和Qwen/Hermes探测；case5当前9调用80378tokens/¥0.0513886详D:/temp/fin205-case5-metrics-a1.json。费用按统一audit工具公开分时价格估算，非账单/免费抵扣；BFF早期价格版本独立标示，不把两种口径混加。未完成其余旧失败复测/Hermes全执行适配/长报告交付完善/生产多租户；sandbox部署仍受此前自动审批阻止，没有规避。产品不是整轮完成。
+
+检查与服务：checkpoint=None状态可读/不可交接定向通过；知识/会话/上传12后端通过，前端12项三宽度通过43.2秒（D:/temp/fin205-knowledge-browser-a2）。此前浏览器a1误用了启动旧BFF的默认config，端口8765绑定失败、0测试，原件保留，后用现有public config。后续真实批准问题说明模拟通过不能当服务资格。当前18165及18795、原PG/Redis保存；服务镜像/后续批准实测以新增段为准。
+
+
+## 继续：真实个人知识回读、固定回答导出与全历史指标
+
+产品实证：错误CFOBS入库提议经真实UI拒绝（D:/temp/fin205-knowledge-reject-a1），0写入。模型收到原成功SQL凭证后修正为四条NUMFACT，前端明确显示数值、期间、单位、来源并批准，保存四条原生Store来源指针（D:/temp/fin205-knowledge-corrected-a1；run01a083dc-b740-7162-b166-f6dc59aa45d4→批准恢复01a083dc-d932-74f1-9c57-a289742c3c5e）。随后无handoff的独立thread01a083e0-5e66-79c1-9881-c97754e51583/run01a083e0-5e6f-7b31-af0c-c4c281a1296c，用目录→四次原来源读取→两次来源绑定计算完成，4调用22238tokens/¥0.0347712；四原始对象逐字段一致，含完整财年/单位/原数/SEC provenance，无新SQL或网页。见D:/temp/fin205-knowledge-new-window-a1/source-continuity-a1.json。答案仍错误概括财年“完全不同/不存在可比性”；只算证据回读通过，不宣称金融措辞准确率100%。case5原thread全部入库相关操作累计13调用133374tokens/¥0.1056182，不能再加它的分轮小计。
+
+工程：知识准入强制逐次原生HITL（三权限均如此），来源只取实际成功工具artifact；修原生run success而thread interrupted的审批合法状态，错误来源不能批准，但允许拒绝；空checkpoint不再首屏500。Store按个人namespace和原thread权限回读，不是生产身份认证或语义检索。批量逐项put不是数据库原子事务，部分基础设施失败回执仍待完善。新增批准跳转按钮避免长对话卡片藏在上方，脚本在截图前滚到具体批准卡片。
+
+交付：通用对话每条已保存final answer可按固定checkpoint下载MD/PDF/DOCX，仅正文和该回答之前已读来源进入文档；不导出工具过程/私有推理/后续新答案，不伪造逐句引用关系。真实UI三格式下载D:/temp/fin205-knowledge-answer-export-a1成功；发现截断问题充当长标题及Word公式跨页。改为简短标题和Word标准cantSplit/表头keep_with_next，当前代码通过进程内BFF接真实固定checkpoint导出a2/a3，零模型。a2 PDF2页、a3 Word3页全数渲染查看：中文/表格无裁切，公式整行，附录机器ID与小数仍密集，正文质量问题原样保留。旧a1/a2失败排版原件均在，不覆盖。
+
+复杂题根因：D:/temp/fin205-hpe-auto-a2/last-submission-schema-a1.json仅schema原候选诊断，0模型；Q4最后24轮SubmitWorkpaperAction中claims[1]/[2]的numeric_fact却非authoritative_fact，实际报numeric_fact_requires_authoritative_fact。数字来自原文披露应由模型按证据选择reported_fact，后台不能自动升格/改标。补kind字段说明；父research_session现保留失败worker原agent_state（notebook、工具、最后提交、handoff）在原生checkpoint，不混入case_papers或新提示。旧失败未含此结构不能伪称已恢复全部原notebook；尚未部署新保留逻辑/真实局部修复，未再盲跑HPE a3。
+
+审计与文档：复用既有audit_token_cost新增只读批处理CLI，24窗口按题目/重试/追问关联，22有审计、2缺失（其中0调用已有审计仍与缺失分开）；逐thread/run/actor/phase保留输入输出、cache、估算、未知、最大输入。指标见205_case_metrics_index.md与D:/temp/fin205-all-thread-metrics-a1；不把24窗口称24题，不把历史累计与205总账再相加。5新题覆盖已实际执行，HPE未通过；旧失败最新runtime重验仍未完成。
+
+定向检查：本次API/知识/上传14通过4.05秒，Specialist/父研究图43通过13.37秒，报告13通过3.78秒；此前12浏览器三宽度通过、TS/Vite已通过。实际知识UI提交和导出UI收据比模拟测试单列。git diff --check通过；本轮后续无新模型，总账保持313实际推理尝试/9162628已知tokens/¥5.8024553/未知1。价格是场景估算非账单/免费额度。
+
+部署阻塞：自动审批审查拒绝“核对busy后重启18795 BFF以载入导出标题修复”的整条命令，只返回blocked by policy，没有具体原因，整条未执行，未拆开或绕过。原BFF reload-a4/18795继续服务；原生18165部署6d9a197b…含知识准入和原来源ID说明，不含新失败产物保留/kind说明；最新导出标题/Word行分页只完成当前代码的进程内资格。此前写sandbox配置并启动宿主MCP的整条命令也被同样拒绝、未执行。保持数据库/卷/失败证据，无删除和新版本；Hermes正式适配、复杂研究质量/费用、旧失败重测、多格式完善和生产多租户依然开放。
+
+代码提交：8673a163，21个源码/测试/资格脚本文件，staged差异检查及密钥模式扫描通过（无匹配）；二进制导出/真实模型原文/凭据与数据库不入Git。文档另提交；开发分支推送结果以下一条Git证据为准。

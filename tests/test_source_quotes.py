@@ -16,6 +16,8 @@ def test_pdf_layout_whitespace_is_not_a_new_assertion(quote):
     ("Revenue 12.3%", "Revenue 12.4%"),
     ("Revenue -12.3%", "Revenue 12.3%"),
     ("Revenue 1 234", "Revenue 1234"),
+    ("Revenue 1234", "Revenue 123"),
+    ("Costs for boilers", "oil"),
     ("Revenue $12 million", "Revenue $12 billion"),
     ("Revenue did not grow.", "Revenue did grow."),
     ("A increased. B decreased. C was flat.", "A increased. C was flat."),

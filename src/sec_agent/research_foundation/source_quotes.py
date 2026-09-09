@@ -12,8 +12,6 @@ def contains_source_quote(source: str, quote: str) -> bool:
     """
     if not quote.strip():
         return False
-    if quote in source:
-        return True
     pattern = r"\w+|[^\w\s]"
     observed = re.findall(pattern, source)
     requested = re.findall(pattern, quote)

@@ -1,5 +1,7 @@
 # 205 多轮工作台与检索交付
 
+最新只读审计见 [HPE 完整链路与跨用例根因](205_hpe_full_chain_root_cause_audit.md)：纠正此前以长审查为首要成本归因，HPE 前四次 98.7% tokens 位于研究专家；确认当前候选/原任务/未完成审查接续缺口，并对照 MSFT、NVDA、Dell 与普通问答/SQL。成熟方案优先补现有 LangGraph 恢复和产物引用，Deep Agents/Hermes只作为受限上下文资格候选。本轮新增付费调用 0、源码/部署改动 0；只增加诊断证据与文档，第一步仍未完成。
+
 2026-09-09，Owner授权Qwen对照、五新题/旧失败重跑、数据池缓存、通用多轮/Hermes/多格式、权限与多租户探索。唯一新增计划见[实施基线](../../product/CONVERSATION_RETRIEVAL_AND_DELIVERY_20260909.zh-CN.md)。基于main a7053972，工作分支codex/fin013-conversation-and-retrieval。
 
 开始状态：干净工作树，QWEN_API_KEY仅Windows用户环境存在，未输出密钥。未开始新模型调用、未删文件；D盘用于新增资格产物。204已合main，自动摘要仍HOLD。现有thread追问/报告导出/原生checkpoint复用，不重造。

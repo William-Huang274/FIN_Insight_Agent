@@ -26,3 +26,15 @@ HPE 研究现场把内部编排分支 ID（如 `Q1_ISSUER_TRUTH`）直接放进�
 
 这项实现尚未加载进 Docker 原生运行时：本机 Docker Desktop Linux 引擎的命名管道不存在，`com.docker.service` 停止且当前会话无权启动该 Windows 服务。静态前端已完成 production build；Docker 引擎恢复后，应重新构建并 `up --no-build` 原生 API、重启 BFF，随后以现有 HPE thread 做只读 API 验证。不能把这个部署阻塞写成产品已验证。
 
+### 2026-09-11 部署收尾：上述阻塞已解除
+
+- 用户要求先完成 206 部署，再开展 207。实际 Docker 安装路径为 `Z:/Docker/Docker`；此前只检查常见 C 盘路径与 Windows 服务，诊断不充分。恢复引擎后已重新构建 `06648d22` 原生镜像并执行原 Compose 项目的 `up --no-build`，复用原 PostgreSQL/Redis 卷。三个容器均 healthy。
+- 产品部署：18165 原生 API `/ok` 成功；18795 BFF 与生产前端已启动；18806 Hermes 已恢复，宿主机和原生容器访问其 `/health` 均为 200。四个运行时文件（user_context、conversation_agent、research_session_runtime、dell_report_session）的容器内容 SHA-256 与仓库一致。
+- 真实界面证据：HPE `01a084e8-6088-7e10-a595-de82201e8020` 的底稿弹窗无搜索即显示两张角色卡片（收入、利润与现金／量价与产品组合），分别标识历史提交和未完成候选；可打开正文，原件只读。原始调度说明默认折叠。“研究设置与记忆”可打开且输入框可用。1440 宽屏与 390 窄屏检查通过，dialog 无横向溢出，pageerror 为 0。HPE checkpoint 未写入，旧失败状态保留。
+- 实际编辑验收：创建独立且明确标识的“界面验收 206 · 无模型调用”空白对话 `01a08c72-0763-7ba2-8eb3-991e9cc5c927`，种入非研究测试底稿。真实浏览器验证要求保存→刷新→清空→刷新，清空后 user_context_prompt 为空；底稿直接保存新版→读取旧版原文。最终验收仅 3 次 PUT，无模型运行 POST。准备阶段 draft 创建接口明确返回 model_calls=0。
+- 验收脚本最初两项失败属于测试同步/选择错误：菜单 GET 未完成即断言，以及选择首张卡片误选“我的研究要求”；改为等待加载和按测试底稿标题定位后通过。没有修改产品实现来迎合断言。所有试写仅在上述独立测试对话中。
+- 工程增量：本次没有新增运行时代码；加载并核实已提交实现。没有 DeepSeek/Qwen 付费请求，没有借此重跑金融研究。Hermes 使用既有隔离依赖和 home，仍是已定义的工作底稿试用能力，不代表整体适配或长期记忆验收完成。
+- 本地证据：`D:/temp/fin206-live-ui.cjs`、`fin206-live-edit.cjs`、`fin206-ui-receipt.json`、`fin206-live-edit-receipt.json`；截图 `fin206-hpe-workpapers.png`、`fin206-context-menu.png`、`fin206-hpe-mobile.png`。运行日志 `fin206-workbench.*.log`、`fin206-hermes-a2.*.log`。本机路径用于开发验收，不提交数据和服务凭据。
+
+206 部署关闭；207 的旧复杂案例、人工作业闭环、长期记忆和混合 RAG 仍是下一工作包，不能计为本次完成项。
+

@@ -61,6 +61,9 @@ def create_app(
     if os.environ.get("FINSIGHT_REPORT_SESSION_API_URL"):
         return create_report_session_app(frontend_dist_root=frontend_dist_root)
 
+    if os.environ.get("FINSIGHT_AUTH_MODE", "local") != "local":
+        raise ValueError("oidc_pilot_requires_private_native_session_api")
+
     if workbench_runtime_mode not in {"current", "fixture"}:
         raise ValueError("workbench_runtime_mode_invalid")
     supplied_retired = sorted(
@@ -432,6 +435,8 @@ def create_report_session_app(frontend_dist_root=None):
         yield
         await service.http.aclose()
     app = FastAPI(title="FinSight Research Session", version="0.1.3", lifespan=lifespan)
+    from .authentication import install_conversation_auth
+    install_conversation_auth(app)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
     from .api.v1.conversations import build_conversations_router

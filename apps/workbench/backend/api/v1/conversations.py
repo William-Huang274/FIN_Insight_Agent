@@ -12,6 +12,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .report_sessions import public_run_usage, public_cost_estimate, public_event
 from ...application.context_usage import request_context_usage
+from ...authentication import current_owner
 from sec_agent.agent_runtime.conversation_handoff import public_history, observed_sources
 
 SURFACE = "finsight_general_conversation"
@@ -82,10 +83,11 @@ def build_conversations_router(service):
     def browser_write(request):
         if request.headers.get("x-workbench-request") != "1":
             raise HTTPException(403, "缺少本地工作台请求标识")
-    async def owned(thread_id):
+    async def owned(thread_id, request):
         thread = await service.sdk.threads.get(str(thread_id))
         metadata = thread.get("metadata", {})
-        if metadata.get("surface") != SURFACE or metadata.get("graph") != GRAPH:
+        if (metadata.get("surface") != SURFACE or metadata.get("graph") != GRAPH
+                or metadata.get("owner_id", "local-pilot") != current_owner(request)):
             raise HTTPException(404, "对话不存在")
         return thread
     async def invoke(thread_id, body):
@@ -97,8 +99,11 @@ def build_conversations_router(service):
             stream_mode=["custom", "messages-tuple"], stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "request_message": body.message, "model": body.model, "permission_mode": body.permission_mode})
     @router.get("")
-    async def list_conversations():
-        threads = await service.sdk.threads.search(metadata={"surface": SURFACE}, limit=100)
+    async def list_conversations(request: Request):
+        owner = current_owner(request)
+        filters = {"surface": SURFACE, **({"owner_id": owner} if owner != "local-pilot" else {})}
+        threads = await service.sdk.threads.search(metadata=filters, limit=100)
+        threads = [t for t in threads if t.get("metadata", {}).get("owner_id", "local-pilot") == owner]
         return [{"thread_id": t["thread_id"], "title": t.get("metadata", {}).get("title"), "status": t.get("status")} for t in threads]
     @router.post("")
     async def create(body: ConversationMessage, request: Request):
@@ -107,18 +112,18 @@ def build_conversations_router(service):
             raise HTTPException(503, "本部署未启用模型运行")
         # Validate the actual deployed graph before creating a paid-capable thread.
         await service.sdk.assistants.get_graph(GRAPH)
-        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.message[:80]})
+        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.message[:80], "owner_id": current_owner(request)})
         run = await invoke(thread["thread_id"], body)
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"]}
     @router.post("/drafts")
     async def draft(body: ConversationDraft, request: Request):
         browser_write(request)
-        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.title})
+        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.title, "owner_id": current_owner(request)})
         return {"thread_id": thread["thread_id"], "model_calls": 0}
     @router.post("/{thread_id}/attachments")
     async def upload(thread_id: UUID, request: Request):
         browser_write(request)
-        thread = await owned(thread_id)
+        thread = await owned(thread_id, request)
         if thread.get("status") == "busy":
             raise HTTPException(409, "请等待本轮完成后再补充资料")
         if service.attachment_store is None:
@@ -139,7 +144,7 @@ def build_conversations_router(service):
     @router.post("/{thread_id}/messages")
     async def message(thread_id: UUID, body: ConversationMessage, request: Request):
         browser_write(request)
-        thread = await owned(thread_id)
+        thread = await owned(thread_id, request)
         if thread.get("status") == "busy":
             raise HTTPException(409, "当前轮次仍在运行，请等待或停止后再发送")
         state = await service.sdk.threads.get_state(str(thread_id))
@@ -150,7 +155,7 @@ def build_conversations_router(service):
     @router.post("/{thread_id}/approvals")
     async def approve(thread_id: UUID, body: ConversationApproval, request: Request):
         browser_write(request)
-        thread = await owned(thread_id)
+        thread = await owned(thread_id, request)
         if thread.get("status") == "busy":
             raise HTTPException(409, "本轮已在运行，请刷新操作状态")
         state = await service.sdk.threads.get_state(str(thread_id))
@@ -180,8 +185,8 @@ def build_conversations_router(service):
                 "approval": {"checkpoint_id": str(body.checkpoint_id), "interrupt_id": body.interrupt_id, "decisions": body.decisions}})
         return {"thread_id": str(thread_id), "run_id": run["run_id"]}
     @router.get("/{thread_id}/handoff-preview")
-    async def handoff_preview(thread_id: UUID):
-        thread = await owned(thread_id)
+    async def handoff_preview(thread_id: UUID, request: Request):
+        thread = await owned(thread_id, request)
         if thread.get("status") == "busy":
             raise HTTPException(409, "本轮运行中，请先等待完成或停止再交接")
         state = await service.sdk.threads.get_state(str(thread_id))
@@ -196,7 +201,7 @@ def build_conversations_router(service):
     @router.post("/{thread_id}/handoff")
     async def handoff(thread_id: UUID, body: ConversationHandoff, request: Request):
         browser_write(request)
-        source = await owned(thread_id)
+        source = await owned(thread_id, request)
         if source.get("status") == "busy":
             raise HTTPException(409, "请先等待本轮完成或停止")
         state = await service.sdk.threads.get_state(str(thread_id))
@@ -211,8 +216,8 @@ def build_conversations_router(service):
             "handoff": {"source_thread": str(thread_id), "checkpoint_id": str(body.checkpoint_id), "note": body.note}})
         return {"thread_id": target["thread_id"], "model_calls": 0}
     @router.get("/{thread_id}")
-    async def get_conversation(thread_id: UUID):
-        thread = await owned(thread_id)
+    async def get_conversation(thread_id: UUID, request: Request):
+        thread = await owned(thread_id, request)
         state = await service.sdk.threads.get_state(str(thread_id))
         runs = await service.sdk.runs.list(str(thread_id), limit=100)
         events, public_runs = [], []
@@ -239,15 +244,15 @@ def build_conversations_router(service):
     @router.post("/{thread_id}/stop")
     async def stop(thread_id: UUID, request: Request):
         browser_write(request)
-        await owned(thread_id)
+        await owned(thread_id, request)
         runs = await service.sdk.runs.list(str(thread_id), limit=100)
         for run in runs:
             if run["status"] in {"pending", "running"}:
                 await service.sdk.runs.cancel(str(thread_id), run["run_id"], action="interrupt")
         return {"status": "interrupt_requested"}
     @router.get("/{thread_id}/messages/{message_id}/export/{format}")
-    async def export_answer(thread_id: UUID, message_id: str, format: Literal["md", "pdf", "docx"], checkpoint_id: UUID):
-        thread = await owned(thread_id)
+    async def export_answer(thread_id: UUID, message_id: str, format: Literal["md", "pdf", "docx"], checkpoint_id: UUID, request: Request):
+        thread = await owned(thread_id, request)
         state = await service.sdk.threads.get_state(str(thread_id), checkpoint={"checkpoint_id": str(checkpoint_id), "checkpoint_ns": ""})
         messages = state.get("values", {}).get("messages", [])
         index = next((i for i, m in enumerate(messages) if m.get("id") == message_id), None)
@@ -274,7 +279,7 @@ def build_conversations_router(service):
             "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})
     @router.get("/{thread_id}/runs/{run_id}/stream")
     async def stream(thread_id: UUID, run_id: UUID, request: Request):
-        await owned(thread_id)
+        await owned(thread_id, request)
         last_id = request.headers.get("last-event-id") or "0-0"
         if not re.fullmatch(r"[0-9]+-[0-9]+", last_id):
             raise HTTPException(422, "无效的续读位置")

@@ -27,6 +27,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+workbench-auth = [
+  "PyJWT[crypto]==2.13.0",
+]
 control-plane = [
   "dagster==1.13.20",
   "dagster-postgres==0.29.20",

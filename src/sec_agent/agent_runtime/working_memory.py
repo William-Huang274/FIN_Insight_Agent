@@ -26,7 +26,8 @@ class WorkingMemory:
         db = sqlite3.connect(self.path, timeout=10)
         db.row_factory = sqlite3.Row
         try:
-            db.execute("PRAGMA journal_mode=WAL")
+            # Conservative mode on older embedded runtimes (SQLite WAL-reset fix 3.51.3).
+            db.execute("PRAGMA journal_mode=" + ("WAL" if sqlite3.sqlite_version_info >= (3,51,3) else "DELETE"))
             db.execute("""CREATE TABLE IF NOT EXISTS working_notes (
                 id TEXT PRIMARY KEY, owner TEXT NOT NULL, workspace TEXT NOT NULL,
                 actor TEXT NOT NULL, title TEXT NOT NULL, version INTEGER NOT NULL,

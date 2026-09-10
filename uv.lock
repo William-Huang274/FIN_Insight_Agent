@@ -1051,6 +1051,7 @@ agent-runtime = [
     { name = "psycopg", extra = ["binary", "pool"] },
     { name = "pypdfium2" },
     { name = "simpleeval" },
+    { name = "sqlite-vec" },
     { name = "sse-starlette" },
 ]
 complex-pdf = [
@@ -1154,6 +1155,7 @@ requires-dist = [
     { name = "requests", specifier = ">=2.32.0" },
     { name = "scipy", specifier = ">=1.11,<2" },
     { name = "simpleeval", marker = "extra == 'agent-runtime'", specifier = "==1.0.7" },
+    { name = "sqlite-vec", marker = "extra == 'agent-runtime'", specifier = "==0.1.9" },
     { name = "sse-starlette", marker = "extra == 'agent-runtime'", specifier = "==3.3.4" },
     { name = "tencentcloud-sdk-python", marker = "extra == 'external-search'", specifier = ">=3.1.162" },
     { name = "trafilatura", marker = "extra == 'external-search'", specifier = "==2.2.0" },

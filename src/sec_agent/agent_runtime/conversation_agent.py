@@ -26,7 +26,7 @@ class GrantedTool:
 
 def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mode: PermissionMode,
                              checkpointer, middleware=(), model_calls=8, tool_calls=12,
-                             server_managed_persistence=False):
+                             server_managed_persistence=False, task_context=""):
     """Build a native agent; grants are trusted host configuration, not model input.
 
     Read access is explicitly granted by the host. Only task-owned generated
@@ -71,6 +71,8 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
     if "WriteWorkingNote" in names:
         from .working_memory_tools import WORKING_MEMORY_GUIDANCE
         prompt += WORKING_MEMORY_GUIDANCE
+    if task_context:
+        prompt += '\n' + task_context
     return create_agent(model=model, tools=[g.tool for g in grants], system_prompt=prompt,
         checkpointer=checkpointer, middleware=[
             HumanInTheLoopMiddleware(interrupt_on=interrupt_on),

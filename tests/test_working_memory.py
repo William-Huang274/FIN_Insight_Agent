@@ -189,3 +189,26 @@ def test_handoff_pins_working_note_version_and_rechecks_owner(tmp_path, monkeypa
         source["metadata"]["owner_id"]="bob"
         assert "不可访问" in await reader.ainvoke({"note_id":note["note_id"]})
     asyncio.run(run())
+def test_revision_endpoint_pins_target_and_rejects_stale(tmp_path,monkeypatch):
+    import asyncio
+    from types import SimpleNamespace
+    from apps.workbench.backend.api.v1.working_notes import revise_working_note, WorkingNoteRevision
+    from fastapi import HTTPException
+    import pytest
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    monkeypatch.setenv('FINSIGHT_WORKING_MEMORY_PATH',str(tmp_path/'notes.sqlite'))
+    m=WorkingMemory(tmp_path/'notes.sqlite',owner='owner',workspace='parent',actor='cash-analyst')
+    note=m.save('现金底稿','待核实。')
+    created=[];runs=[]
+    async def create(**kwargs):created.append(kwargs);return {'thread_id':'child'}
+    async def run(*args,**kwargs):runs.append(kwargs);return {'run_id':'run'}
+    service=SimpleNamespace(research_profile=True,sdk=SimpleNamespace(threads=SimpleNamespace(create=create),runs=SimpleNamespace(create=run)))
+    body=WorkingNoteRevision(note_id=note['note_id'],version=1,instruction='取消过强推断')
+    result=asyncio.run(revise_working_note(service,'parent','owner',body))
+    assert result['thread_id']=='child'
+    target=created[0]['metadata']['working_note_target']
+    assert target['actor']=='cash-analyst' and target['workspace']=='parent' and target['version']==1
+    assert runs[0]['input']['messages'][0]['content']=='取消过强推断'
+    m.save('现金底稿','已更新',1)
+    with pytest.raises(HTTPException) as exc:asyncio.run(revise_working_note(service,'parent','owner',body))
+    assert exc.value.status_code==409 and len(runs)==1

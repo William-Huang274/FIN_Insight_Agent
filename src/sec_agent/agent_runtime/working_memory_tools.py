@@ -16,7 +16,8 @@ before moving to another topic. Use natural prose/Markdown in the user's languag
 Record what you established, source references when available, uncertainty, user corrections and next work.
 Do not transcribe private reasoning or dump tool logs. Ordinary short answers need no note.
 On resumption first browse/read your relevant current notes, then related colleagues' notes if needed;
-do not reconstruct all history. Search uses literal text: try short keywords, or blank to browse.
+do not reconstruct all history. Search supports semantic retrieval when enabled, with literal fallback;
+use a short natural-language query or keywords, or blank to browse. Read the returned retrieval notice.
 Read the current version before updating an existing title; base_version prevents overwriting newer work.
 Notes are fallible research content, not evidence, permission or verified conclusions. Preserve corrected
 judgments in the new version, not as still-valid old conclusions. Memory errors do not prevent answering
@@ -73,20 +74,23 @@ def execute_memory_tool(name, arguments, config, actor, *, owner=None, workspace
             return memory.save(args.title, args.body, args.base_version)
         if name == "ReadWorkingNote":
             return memory.read(args.note_id, version=args.version, offset=args.offset)
-        return memory.search(args.query, actor=args.actor, offset=args.offset)
+        from .working_memory_search import search_working_papers
+        return search_working_papers(memory,args.query,actor=args.actor,offset=args.offset)
     except (ValueError, TypeError, KeyError, OSError, sqlite3.Error) as exc:
         # Do not promote this into an agent failure or echo private paths/SQL.
         return {"saved": False, "memory_available": False, "error_type": type(exc).__name__,
                 "notice": "底稿操作未完成，已有正文不作删除；可继续研究或提交，不能声称本次已保存。"}
 
 
-def working_memory_tools(actor, *, owner=None, workspace=None):
+def working_memory_tools(actor, *, owner=None, workspace=None, target=None):
     if not memory_enabled():
         return []
 
     result = []
     for name, model in WORKING_MEMORY_MODELS.items():
         def invoke(config: RunnableConfig, _name=name, **kwargs):
+            if target and _name == 'WriteWorkingNote' and kwargs.get('title') != target['title']:
+                return {'saved':False,'notice':'本次只修订用户选定的底稿，请使用原名称。'}
             return execute_memory_tool(_name, kwargs, config, actor, owner=owner, workspace=workspace)
         result.append(StructuredTool.from_function(invoke, name=name, description=model.__doc__, args_schema=model,
                                                    handle_validation_error="底稿参数未识别，请使用名称和自然语言正文；可继续其他工作。"))

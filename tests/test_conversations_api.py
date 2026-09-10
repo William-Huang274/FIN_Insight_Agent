@@ -8,6 +8,23 @@ import pytest
 from apps.workbench.backend.api.v1.conversations import build_conversations_router, public_messages, public_message_delta, SURFACE, GRAPH
 
 
+def test_hermes_attachment_boundary_and_revision_memory_ownership(monkeypatch):
+    child,parent=str(uuid4()),str(uuid4())
+    records={child:{'metadata':{'surface':SURFACE,'graph':GRAPH,'owner_id':'local-pilot','harness':'hermes',
+        'working_note_target':{'workspace':parent}}},parent:{'metadata':{'owner_id':'local-pilot'}}}
+    async def get(t): return records[t]
+    async def view(t,owner,**kwargs): return {'workspace':t,'owner':owner}
+    monkeypatch.setattr('apps.workbench.backend.api.v1.working_notes.working_notes_view',view)
+    app=FastAPI();app.include_router(build_conversations_router(SimpleNamespace(sdk=SimpleNamespace(threads=SimpleNamespace(get=get)))))
+    with TestClient(app) as client:
+        headers={'X-Workbench-Request':'1'}
+        assert client.post('/conversations/drafts',json={'harness':'hermes'},headers=headers).status_code==422
+        assert client.post(f'/conversations/{child}/attachments',content=b'private',headers=headers).status_code==422
+        assert client.get(f'/conversations/{child}/working-notes').json()['workspace']==parent
+        records[parent]['metadata']['owner_id']='another-user'
+        assert client.get(f'/conversations/{child}/working-notes').status_code==404
+
+
 def test_public_projection_excludes_tools_and_private_reasoning():
     result = public_messages({"values": {"messages": [
         {"type": "human", "content": "Hello"},

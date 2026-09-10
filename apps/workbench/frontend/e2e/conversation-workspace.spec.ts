@@ -15,7 +15,7 @@ for (const width of [1440, 1024, 390]) test(`general conversation persists and s
   await page.getByRole("button",{name:"发送",exact:true}).click();
   await expect(page).toHaveURL(new RegExp(id));
   await expect(page.getByText("可继续的回答",{exact:true})).toBeVisible();
-  expect(writes).toEqual([{message:"改成给同事的三条说明",model:"deepseek-v4-pro",permission_mode:"approve_for_me"}]);
+  expect(writes).toEqual([{message:"改成给同事的三条说明",model:"deepseek-v4-pro",permission_mode:"approve_for_me",harness:"native"}]);
   await page.reload(); await expect(page.getByText("改成给同事的三条说明",{exact:true})).toBeVisible();
   expect(await page.evaluate(()=>document.documentElement.scrollWidth <= innerWidth+1)).toBeTruthy();
   if(width===390) await page.getByRole("button",{name:"对话列表",exact:true}).click();

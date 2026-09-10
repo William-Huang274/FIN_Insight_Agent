@@ -4,6 +4,7 @@ from uuid import UUID
 from urllib.parse import unquote
 import json
 import re
+import os
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import StreamingResponse, Response
@@ -24,11 +25,13 @@ class ConversationMessage(BaseModel):
     message: str = Field(min_length=1, max_length=16000)
     model: Literal["deepseek-v4-flash", "deepseek-v4-pro"] = "deepseek-v4-flash"
     permission_mode: Literal["request_standard", "approve_for_me", "full_access"] = "request_standard"
+    harness: Literal['native','hermes'] = 'native'
 
 
 class ConversationDraft(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     title: str = Field(default="新对话", min_length=1, max_length=80)
+    harness: Literal['native','hermes'] = 'native'
 
 
 class ConversationHandoff(BaseModel):
@@ -93,11 +96,27 @@ def build_conversations_router(service):
     async def invoke(thread_id, body):
         if not service.research_profile:
             raise HTTPException(503, "本部署未启用模型运行")
+        thread=await service.sdk.threads.get(str(thread_id))
+        harness=thread.get('metadata',{}).get('harness','native')
         return await service.sdk.runs.create(str(thread_id), GRAPH,
             input={"messages": [{"role": "user", "content": body.message}]},
-            config={"configurable": {"conversation_model": body.model, "permission_mode": body.permission_mode}},
+            config={"configurable": {"conversation_model": body.model, "permission_mode": body.permission_mode,'conversation_harness':harness}},
             stream_mode=["custom", "messages-tuple"], stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "request_message": body.message, "model": body.model, "permission_mode": body.permission_mode})
+    from .working_notes import WorkingNoteRevision, revise_working_note
+    @router.post('/{thread_id}/working-notes/revise')
+    async def revise_note(thread_id: UUID, body: WorkingNoteRevision, request: Request):
+        browser_write(request)
+        thread = await owned(thread_id,request)
+        if thread.get('status') == 'busy':
+            raise HTTPException(409,'当前运行尚未完成，请等待或停止后再修订底稿')
+        target=thread.get('metadata',{}).get('working_note_target')
+        if target:
+            parent=await service.sdk.threads.get(target['workspace'])
+            if parent.get('metadata',{}).get('owner_id','local-pilot')!=current_owner(request):
+                raise HTTPException(404,'底稿不存在')
+            thread_id=target['workspace']
+        return await revise_working_note(service,thread_id,current_owner(request),body)
     @router.get("")
     async def list_conversations(request: Request):
         owner = current_owner(request)
@@ -110,20 +129,26 @@ def build_conversations_router(service):
         browser_write(request)
         if not service.research_profile:
             raise HTTPException(503, "本部署未启用模型运行")
+        if body.harness=='hermes' and not os.environ.get('FINSIGHT_HERMES_URL'):
+            raise HTTPException(503,'本部署尚未连接 Hermes')
         # Validate the actual deployed graph before creating a paid-capable thread.
         await service.sdk.assistants.get_graph(GRAPH)
-        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.message[:80], "owner_id": current_owner(request)})
+        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.message[:80], "owner_id": current_owner(request),'harness':body.harness})
         run = await invoke(thread["thread_id"], body)
         return {"thread_id": thread["thread_id"], "run_id": run["run_id"]}
     @router.post("/drafts")
     async def draft(body: ConversationDraft, request: Request):
         browser_write(request)
-        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.title, "owner_id": current_owner(request)})
+        if body.harness=='hermes':
+            raise HTTPException(422,'Hermes 工作底稿试用尚不支持上传资料，请直接发送消息或选择当前 Agent')
+        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.title, "owner_id": current_owner(request),'harness':body.harness})
         return {"thread_id": thread["thread_id"], "model_calls": 0}
     @router.post("/{thread_id}/attachments")
     async def upload(thread_id: UUID, request: Request):
         browser_write(request)
         thread = await owned(thread_id, request)
+        if thread.get('metadata',{}).get('harness')=='hermes':
+            raise HTTPException(422,'Hermes 工作底稿试用尚不支持读取上传资料')
         if thread.get("status") == "busy":
             raise HTTPException(409, "请等待本轮完成后再补充资料")
         if service.attachment_store is None:
@@ -240,6 +265,7 @@ def build_conversations_router(service):
             public_runs.append({"run_id": run["run_id"], "status": run["status"], "created_at": run.get("created_at"),
                 "usage": usage, "context_usage": request_context_usage(activity), "cost_estimate": public_cost_estimate(activity)})
         return {"thread_id": str(thread_id), "title": thread.get("metadata", {}).get("title"), "status": thread.get("status"),
+            'harness':thread.get('metadata',{}).get('harness','native'),
             "messages": public_messages(state), "events": events, "runs": public_runs,
             "checkpoint_id": (state.get("checkpoint") or {}).get("checkpoint_id"), "approvals": pending_approvals(state),
             "approval_sources": {key: {"title": item.get("title") or " / ".join(str(item[k]) for k in ("ticker","metric_id","period_end","unit") if item.get(k)) or "已读来源",
@@ -306,6 +332,12 @@ def build_conversations_router(service):
                     continue
                 if part.event.split("|", 1)[0] != "custom":
                     continue
+                if isinstance(part.data,dict) and part.data.get('kind')=='assistant_delta':
+                    value=part.data
+                    if isinstance(value.get('text'),str) and isinstance(value.get('id'),str):
+                        prefix = f"id: {part.id}\n" if part.id and re.fullmatch(r"[0-9]+-[0-9]+", part.id) else ""
+                        yield prefix+'event: assistant_delta\ndata: '+json.dumps({'id':value['id'],'text':value['text']},ensure_ascii=False)+'\n\n'
+                    continue
                 event = public_event(part.data)
                 if event is not None:
                     prefix = f"id: {part.id}\n" if part.id and re.fullmatch(r"[0-9]+-[0-9]+", part.id) else ""
@@ -314,7 +346,13 @@ def build_conversations_router(service):
     @router.get("/{thread_id}/working-notes")
     async def notes(thread_id: UUID, request: Request, query: str = "", note_id: str | None = None,
                     version: int | None = None, offset: int = 0, download: bool = False):
-        await owned(thread_id, request)
+        thread=await owned(thread_id, request)
+        target=thread.get('metadata',{}).get('working_note_target')
+        if target:
+            parent=await service.sdk.threads.get(target['workspace'])
+            if parent.get('metadata',{}).get('owner_id','local-pilot')!=current_owner(request):
+                raise HTTPException(404,'底稿不存在')
+            thread_id=target['workspace']
         from .working_notes import working_notes_view
         return await working_notes_view(thread_id, current_owner(request), query=query, note_id=note_id,
                                         version=version, offset=offset, download=download)

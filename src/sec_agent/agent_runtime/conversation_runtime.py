@@ -63,19 +63,38 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
     try:
         thread = await sdk.threads.get(thread_id)
         metadata = thread.get("metadata", {})
+        target = metadata.get('working_note_target')
+        task_context = ''
+        memory_actor, memory_workspace = 'conversation',thread_id
+        if target:
+            parent = await sdk.threads.get(target['workspace'])
+            if parent.get('metadata',{}).get('owner_id','local-pilot') != metadata.get('owner_id','local-pilot'):
+                raise ValueError('working_note_parent_owner_changed')
+            memory_actor,memory_workspace = target['actor'],target['workspace']
+            task_context = ('You are resuming the responsible role for a USER-SELECTED working paper. '
+                'Read its current body first, compare with the pinned baseline if it changed, apply the user correction, '
+                'save using its original title and current base_version. Explain which previous conclusion or next step '
+                'changed and whether related papers may need review. Do not claim other agents were rerun or the final '
+                'report was updated. If the instruction contradicts source evidence, show the conflict and ask rather '
+                'than silently preserving your old conclusion or changing facts. Target: '+json.dumps(target,ensure_ascii=False))
         from .working_memory_tools import working_memory_tools
         from .conversation_agent import GrantedTool
         grants.extend(GrantedTool(t, "working_note_write" if t.name == "WriteWorkingNote" else "read",
             "当前对话的工作底稿；不改用户原文件、不写入已核验事实库") for t in working_memory_tools(
-                "conversation", owner=metadata.get("owner_id", "local-pilot"), workspace=thread_id))
+                memory_actor, owner=metadata.get("owner_id", "local-pilot"), workspace=memory_workspace,target=target))
         from .conversation_knowledge import knowledge_tools
         grants.extend(knowledge_tools(sdk=sdk, owner_id=metadata.get("owner_id", "local-pilot"), thread_id=thread_id))
         if metadata.get("handoff"):
             grants.extend(handoff_tools(reference=metadata["handoff"], sdk=sdk,
                                        owner_id=metadata.get("owner_id", "local-pilot")))
-        yield build_conversation_agent(model=model, grants=grants,
-            permission_mode=ids.get("permission_mode", "request_standard"), checkpointer=None,
-            middleware=[audit], server_managed_persistence=True, **specification["limits"])
+        if metadata.get('harness') == 'hermes':
+            from .hermes_bridge import build_hermes_graph
+            yield build_hermes_graph(owner=metadata.get('owner_id','local-pilot'),workspace=memory_workspace,
+                actor=memory_actor,model=profile.model,target=target,task_context=task_context,public_sink=public)
+        else:
+            yield build_conversation_agent(model=model, grants=grants,
+                permission_mode=ids.get("permission_mode", "request_standard"), checkpointer=None,
+                middleware=[audit], server_managed_persistence=True, task_context=task_context, **specification["limits"])
     except Exception as exc:
         from langgraph.errors import GraphInterrupt
         if not isinstance(exc, GraphInterrupt):

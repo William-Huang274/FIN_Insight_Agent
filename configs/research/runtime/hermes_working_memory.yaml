@@ -1,0 +1,18 @@
+# Pinned Hermes 0.21.1 working-paper pilot; copy to the isolated HERMES_HOME/config.yaml.
+model:
+  default: deepseek-v4-flash
+  provider: deepseek
+agent:
+  api_max_retries: 1
+  environment_probe: false
+  intent_ack_continuation: never
+fallback_chain: []
+tools:
+  tool_search:
+    enabled: 'off'
+display:
+  streaming: true
+compression:
+  enabled: false
+auxiliary:
+  transient_retries: 0

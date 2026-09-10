@@ -30,7 +30,7 @@ def public_history(state):
 
 def observed_sources(state):
     items = {}
-    names = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_public_source": "read_source_document"}
+    names = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_handoff_material": "read_source_document", "read_public_source": "read_source_document"}
     for message in state.get("values", {}).get("messages", []):
         body = message.get("artifact")
         if message.get("type") != "tool" or message.get("status") == "error" or not isinstance(body, dict):
@@ -53,7 +53,7 @@ def answer_charts(messages):
             for chart in message["artifact"].get("charts", [])]
 
 
-def handoff_tools(*, reference, sdk, owner_id):
+def handoff_tools(*, reference, sdk, owner_id, attachment_store=None):
     """Reference and owner originate in host-owned thread metadata, not user text."""
     source_thread = str(UUID(reference["source_thread"]))
     checkpoint = {"checkpoint_id": str(UUID(reference["checkpoint_id"])), "checkpoint_ns": ""}
@@ -129,6 +129,30 @@ def handoff_tools(*, reference, sdk, owner_id):
             except (ValueError, OSError, sqlite3.Error):
                 raise ToolException("工作底稿暂不可读取，未用聊天摘要代替") from None
         grants.append(GrantedTool(read_handoff_working_note, "read", "用户明确交接的工作底稿固定版本"))
+    if reference.get('attachments') and attachment_store is not None:
+        from .conversation_tools import TaskMaterialRequest
+        @tool(response_format='content_and_artifact')
+        async def read_handoff_material(request: TaskMaterialRequest):
+            """Browse uploaded document pointers captured by this handoff, or read/search one.
+
+            Empty document_id with catalog lists fixed document IDs. Other operations
+            require one listed document_id. Reads the immutable upload in its original
+            owner-scoped window; not another filesystem or newly added old-window files.
+            """
+            await read()
+            refs=reference['attachments']
+            if request.operation=='catalog' and not request.document_id:
+                body={'documents':refs,'notice':'选择已交接文档ID，按原页码检索或读取；目录不是事实。'}
+            else:
+                if request.document_id not in {r['document_id'] for r in refs}:
+                    raise ToolException('请选择交接目录内的文档；未授权其他上传或文件')
+                try:
+                    result=await attachment_store.read(thread_id=source_thread,request=request)
+                except ValueError as exc:
+                    raise ToolException('原上传资料未能读取：'+str(exc)) from exc
+                body=result.model_dump(mode='json')
+            return json.dumps(body,ensure_ascii=False),body
+        grants.append(GrantedTool(read_handoff_material,'read','交接时固定的同用户上传资料'))
     for grant in grants:
         grant.tool.handle_tool_error = True
     return grants

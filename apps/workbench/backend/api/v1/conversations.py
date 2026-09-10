@@ -223,7 +223,7 @@ def build_conversations_router(service):
             "checkpoint_id": state["checkpoint"]["checkpoint_id"], "message_count": len(messages),
             "evidence_count": len(observed_sources(state)), "status": thread.get("status"),
             "latest_user_request": next((m["content"][:2000] for m in reversed(messages) if m["role"] == "user"), ""),
-            "notice": "新窗口按需读取这个固定版本的公开对话和原始工具凭证；不复制全部历史，不把摘要或旧回答当已核实事实。未读入的上传文件仍在旧窗口。"}
+            "notice": "新窗口按需读取这个固定版本的公开对话和原始工具凭证；不复制全部历史，不把摘要或旧回答当已核实事实。上传资料按交接时目录从旧窗口只读回读，之后新增的文件不自动纳入。"}
     @router.post("/{thread_id}/handoff")
     async def handoff(thread_id: UUID, body: ConversationHandoff, request: Request):
         browser_write(request)
@@ -245,11 +245,13 @@ def build_conversations_router(service):
                     workspace=str(thread_id)).manifest())
             except (OSError, sqlite3.Error):
                 memory_notice = "工作底稿索引暂不可读取，未纳入本次交接；原底稿未删除。"
+        attachments = await run_in_threadpool(service.attachment_store.list,str(thread_id)) if getattr(service,'attachment_store',None) else []
         target = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH,
             "owner_id": metadata.get("owner_id", "local-pilot"),
             "title": ("接续 · " + (metadata.get("title") or "对话"))[:80],
             "handoff": {"source_thread": str(thread_id), "checkpoint_id": str(body.checkpoint_id), "note": body.note,
                         **({"working_notes": notes} if notes else {}),
+                        **({'attachments':attachments} if attachments else {}),
                         **({"working_memory_notice": memory_notice} if memory_notice else {})}})
         return {"thread_id": target["thread_id"], "model_calls": 0,
                 **({"working_notes_count": len(notes)} if notes else {}),

@@ -84,5 +84,8 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
         checkpointer=checkpointer, middleware=[
             HumanInTheLoopMiddleware(interrupt_on=interrupt_on),
             ModelCallLimitMiddleware(run_limit=model_calls, exit_behavior="error"),
-            ToolCallLimitMiddleware(run_limit=tool_calls, exit_behavior="error"), *navigation, *middleware],
+            # Native end pairs every pending call with an explicit skipped/limit
+            # result. Raising here left dangling tool calls in the checkpoint,
+            # preventing a later user correction from continuing coherently.
+            ToolCallLimitMiddleware(run_limit=tool_calls, exit_behavior="end"), *navigation, *middleware],
         name="conversation")

@@ -13,6 +13,8 @@ RESULT_REGIONS = {
     "calculate_research_metric": ("numbers", "来源绑定计算"),
     "read_public_source": ("sources", "网页原文"),
     "read_task_material": ("sources", "任务资料原文"),
+    "read_handoff_material": ("sources", "交接资料原文"),
+    "read_handoff_evidence": ("sources", "交接原始凭证"),
 }
 NAVIGATION_GUIDANCE = """
 Context has separate regions: conversation (public turns), numbers (saved query/calculation
@@ -54,6 +56,10 @@ def checkpoint_index(messages, *, for_search=False):
                            "preview": public_text(m)[:240], "read_tool": "read_context_turn"})
         elif isinstance(m, ToolMessage) and m.name in RESULT_REGIONS:
             region, label = RESULT_REGIONS[m.name]
+            if m.name == "read_handoff_evidence":
+                items = (m.artifact or {}).get("source_items", {})
+                if items and all(key.startswith(("NUMFACT::", "CALC::")) for key in items):
+                    region, label = "numbers", "交接数字凭证"
             arguments = calls.get(m.tool_call_id, {}).get("args", {})
             result.append({"key": m.tool_call_id, "region": region, "label": label,
                            "tool": m.name, "status": m.status,

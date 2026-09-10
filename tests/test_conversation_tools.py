@@ -38,7 +38,7 @@ def test_recreated_agent_calculates_from_checkpoint_artifacts_and_isolates_threa
     assert error.status == "error" and error.artifact is None
 
 
-@pytest.mark.parametrize('reader',['read_public_source','calculate_research_metric','create_report_chart','list_financial_data','ReadWorkingNote'])
+@pytest.mark.parametrize('reader',['read_public_source','calculate_research_metric','create_report_chart','list_financial_data','ReadWorkingNote','read_handoff_material','read_handoff_evidence'])
 def test_saved_result_reads_original_after_projection_and_refuses_other_thread(reader):
     from sec_agent.agent_runtime.model_context import project_tool_history
     checkpoint = InMemorySaver()

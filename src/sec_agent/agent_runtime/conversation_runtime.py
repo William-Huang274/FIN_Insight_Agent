@@ -90,7 +90,7 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
         grants.extend(research_memory_tools(sdk,metadata.get('owner_id','local-pilot')))
         if metadata.get("handoff"):
             grants.extend(handoff_tools(reference=metadata["handoff"], sdk=sdk,
-                                       owner_id=metadata.get("owner_id", "local-pilot")))
+                                       owner_id=metadata.get("owner_id", "local-pilot"),attachment_store=store))
         if metadata.get('harness') == 'hermes':
             from .hermes_bridge import build_hermes_graph
             yield build_hermes_graph(owner=metadata.get('owner_id','local-pilot'),workspace=memory_workspace,

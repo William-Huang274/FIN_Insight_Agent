@@ -41,7 +41,7 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         if offset < 0 or not 1 <= max_characters <= 24000:
             raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
         allowed = {"read_public_source", "query_financial_data", "read_task_material", "calculate_research_metric",
-                   "create_report_chart", "list_financial_data", "ReadWorkingNote"}
+                   "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence"}
         saved = next((m for m in runtime.state.get("messages", []) if isinstance(m, ToolMessage)
                       and m.tool_call_id == tool_call_id and m.name in allowed and m.status == "success"), None)
         if saved is None:
@@ -118,7 +118,7 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
                 if message.name == "read_handoff_evidence" and message.status != "error":
                     observed.update(message.artifact.get("source_items", {}))
                     continue
-                tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_public_source": "read_source_document"}.get(message.name, message.name)
+                tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_handoff_material": "read_source_document", "read_public_source": "read_source_document"}.get(message.name, message.name)
                 observed.update(source_items_from_tool(tool_name, message.artifact))
         try:
             result = calculate_from_sources(request, observed.__getitem__)

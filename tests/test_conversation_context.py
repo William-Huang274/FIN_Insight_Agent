@@ -10,6 +10,19 @@ from apps.workbench.backend.application.conversation_context import context_stat
 from sec_agent.agent_runtime.hermes_context_tools import execute_context_tool
 
 
+def test_handed_off_receipts_remain_discoverable_in_separate_regions():
+    from langchain_core.messages import ToolMessage
+    from sec_agent.agent_runtime.context_records import browse_checkpoint
+    messages = [
+        ToolMessage(name='read_handoff_evidence',tool_call_id='number',content='unchanged',
+                    artifact={'source_items':{'NUMFACT::original':{'value':71}}}),
+        ToolMessage(name='read_handoff_evidence',tool_call_id='passage',content='unchanged',
+                    artifact={'source_items':{'PASSAGE::original':{'passage':'original'}}}),
+        ToolMessage(name='read_handoff_material',tool_call_id='upload',content='unchanged')]
+    assert [r['key'] for r in browse_checkpoint(messages,'numbers')['items']] == ['number']
+    assert [r['key'] for r in browse_checkpoint(messages,'sources')['items']] == ['upload','passage']
+
+
 def test_hermes_native_rows_are_public_and_exact():
     rows=[{'id':4,'role':'user','content':'取消旧计划，仅保留 NOVA FY2024。'},
           {'id':5,'role':'assistant','content':[{'type':'reasoning','text':'PRIVATE'},{'type':'text','text':'保留原始记录'}], 'reasoning':'PRIVATE'},

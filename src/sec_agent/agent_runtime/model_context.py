@@ -27,7 +27,7 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
         return messages
     names = {call["id"]: call["name"] for m in messages if isinstance(m, AIMessage) for call in m.tool_calls}
     known = set(names.values()) | {m.name for m in messages if isinstance(m, ToolMessage)}
-    rereadable = REREADABLE_TOOLS | ({"calculate_research_metric", "create_report_chart", "list_financial_data", "ReadWorkingNote"} if saved_result_reader else set())
+    rereadable = REREADABLE_TOOLS | ({"calculate_research_metric", "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence"} if saved_result_reader else set())
     edit = ClearToolUsesEdit(trigger=trigger_tokens, keep=keep, clear_tool_inputs=False,
         exclude_tools=tuple(sorted(name for name in known if name and name not in rereadable)),
         placeholder="[Older read result omitted from this request; the host retains the original. Use read_saved_result with this original tool_call_id when available, or repeat the same read tool and arguments when its source context is needed.]")

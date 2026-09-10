@@ -104,6 +104,28 @@ def test_unknown_effect_cannot_silently_auto_approve():
             permission_mode="full_access", checkpointer=InMemorySaver())
 
 
+def test_tool_limit_ends_with_paired_skipped_calls_and_accepts_next_user_turn():
+    from langchain_core.messages import ToolMessage
+    calls=[]
+    @tool
+    def read_fixture():
+        """Read a synthetic fixture only."""
+        calls.append(True)
+        return 'source'
+    model=ScriptedTools(responses=[AIMessage(content='',tool_calls=[
+        {'id':str(i),'name':'read_fixture','args':{},'type':'tool_call'} for i in range(2)]),
+        AIMessage(content='The clarified request needs no tool.')])
+    agent=build_conversation_agent(model=model,grants=[GrantedTool(read_fixture,'read','fixture')],
+        permission_mode='request_standard',checkpointer=InMemorySaver(),tool_calls=1)
+    config={'configurable':{'thread_id':'tool-limit-pairing'}}
+    result=agent.invoke({'messages':[HumanMessage(content='Read two fixtures')]},config)
+    assert not calls
+    assert {m.tool_call_id for m in result['messages'] if isinstance(m,ToolMessage)}=={'0','1'}
+    assert isinstance(result['messages'][-1],AIMessage)
+    result=agent.invoke({'messages':[HumanMessage(content='Stop reading; explain the limit only.')]},config)
+    assert result['messages'][-1].content=='The clarified request needs no tool.' and not calls
+
+
 def test_explicit_native_approval_runs_the_concrete_operation_once(tmp_path):
     calls = []
     @tool

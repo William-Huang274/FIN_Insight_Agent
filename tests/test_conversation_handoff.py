@@ -47,3 +47,26 @@ def test_pinned_handoff_rehydrates_financial_operands_and_rejects_owner_change()
     asyncio.run(run())
     assert reads==[{"checkpoint":{"checkpoint_id":checkpoint,"checkpoint_ns":""}}] and state==original
     assert "PRIVATE" not in str(public_history(state))
+
+
+def test_handoff_original_upload_scope_is_fixed_at_handoff(tmp_path):
+    from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
+    store=TaskAttachmentStore(tmp_path);thread=str(uuid4());owner={'value':'alice'}
+    first=store.add(thread,'source.md',b'# Company filing\nFiscal year ends October 31.')
+    refs=store.list(thread)
+    later=store.add(thread,'later.md',b'Not included in original handoff')
+    async def get(_):return {'metadata':{'surface':SURFACE,'owner_id':owner['value']}}
+    async def state(*args,**kwargs):return {'values':{'messages':[]}}
+    sdk=SimpleNamespace(threads=SimpleNamespace(get=get,get_state=state))
+    tool=handoff_tools(reference={'source_thread':thread,'checkpoint_id':str(uuid4()),'attachments':refs},
+        sdk=sdk,owner_id='alice',attachment_store=store)[-1].tool
+    async def run():
+        listed=await tool.ainvoke({'request':{'operation':'catalog'}})
+        assert 'source.md' in listed and 'later.md' not in listed
+        body=await tool.ainvoke({'request':{'operation':'read','document_id':first['document_id']}})
+        assert 'October 31' in body
+        denied=await tool.ainvoke({'request':{'operation':'read','document_id':later['document_id']}})
+        assert '未授权' in denied
+        owner['value']='bob'
+        assert '不可访问' in await tool.ainvoke({'request':{'operation':'catalog'}})
+    asyncio.run(run())

@@ -38,9 +38,12 @@ def budget(case_id, summarizer=False):
                             "Follow current user scope and current working-note version; final public prose"],
         "schema_burden":"Only existing reader region/ID/version parameters. No financial prose template or extra structured final answer.",
         "materiality_quality_risk":"Development memory qualification, not financial reasoning or production acceptance. Summary and originals retained independently; tool ceilings preserve partial checkpoint.",
-        "comparable_run_evidence":"Previous Acme full/lossy a2 each 3calls: 7446/6124 tokens. Both recovered but visible arm redundantly read. New fixed cases avoid fresh calculation or broad research.",
+        "comparable_run_evidence":("Owner correction after matrix a1: first summary spent all 1600 output tokens on reasoning with empty content. Next two summaries explicitly omit client output cap, keep thinking enabled/low and no retry; provider defaults still apply." if summarizer else
+            "Previous Acme full/lossy a2 each 3calls: 7446/6124 tokens. Both recovered but visible arm redundantly read. New fixed cases avoid fresh calculation or broad research."),
         "reasoning_profile":"agentic_message_history_thinking_enabled", "max_input_characters":24000,
-        "max_output_tokens":1600 if summarizer else 1200,"timeout_seconds":90,"max_transport_attempts":1,
+        # Owner: the first and second summary calls must not be prematurely
+        # truncated by our output cap. Null is intentional, not unlimited API.
+        "max_output_tokens":None if summarizer else 1200,"timeout_seconds":90,"max_transport_attempts":1,
         "retry_policy":"none","truncation_stop_behavior":"fail_closed_no_partial_promotion","input_ceiling_behavior":"fail_before_transport"}))
 
 

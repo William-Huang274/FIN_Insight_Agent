@@ -29,6 +29,21 @@ def test_case_receipt_targets_and_missing_record_are_not_guessed():
         assert budget(case["id"]).max_transport_attempts==1
 
 
+def test_summary_omits_output_limit_on_actual_sdk_payload_only_when_explicit():
+    from types import SimpleNamespace
+    from pydantic import SecretStr
+    from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekModelProfile
+    from sec_agent.agent_runtime.dell_case_review_agent import case_chat_model
+    profile=DeepSeekModelProfile(model="deepseek-flash",thinking="enabled",reasoning_effort="low")
+    for summary in [False,True]:
+        basis=budget("two_compactions_correction",summary)
+        model=case_chat_model(profile,basis,SimpleNamespace(base_url="https://api.deepseek.com"),SecretStr("offline"))
+        payload=model._get_request_payload([HumanMessage(content="fixture")])
+        caps=[payload[k] for k in ["max_tokens","max_completion_tokens"] if k in payload]
+        assert caps==([] if summary else [1200])
+        assert payload["extra_body"]["thinking"]["type"]=="enabled"
+
+
 def test_two_actual_native_cutoffs_still_allow_original_receipt_and_correction_reads():
     async def run():
         case=next(c for c in cases() if c["summary_rounds"]==2)

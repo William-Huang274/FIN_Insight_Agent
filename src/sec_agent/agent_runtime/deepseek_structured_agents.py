@@ -232,7 +232,8 @@ class TokenBudgetBasis(_StrictSemanticModel):
         "agentic_message_history_thinking_enabled",
     ]
     max_input_characters: int = Field(ge=10_000, le=1_000_000)
-    max_output_tokens: int = Field(ge=1_000, le=32_000)
+    max_output_tokens: int | None = Field(ge=1_000, le=32_000,
+        description="Explicit null omits the client output cap; provider defaults and context limits still apply.")
     timeout_seconds: float = Field(ge=30, le=600)
     max_transport_attempts: Literal[1]
     retry_policy: Literal["none"]

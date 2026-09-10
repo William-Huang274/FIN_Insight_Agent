@@ -40,7 +40,8 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         """
         if offset < 0 or not 1 <= max_characters <= 24000:
             raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
-        allowed = {"read_public_source", "query_financial_data", "read_task_material", "calculate_research_metric"}
+        allowed = {"read_public_source", "query_financial_data", "read_task_material", "calculate_research_metric",
+                   "create_report_chart", "list_financial_data", "ReadWorkingNote"}
         saved = next((m for m in runtime.state.get("messages", []) if isinstance(m, ToolMessage)
                       and m.tool_call_id == tool_call_id and m.name in allowed and m.status == "success"), None)
         if saved is None:

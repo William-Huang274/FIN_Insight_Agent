@@ -1190,7 +1190,9 @@ class ReasoningPreservingChatDeepSeek(ChatDeepSeek):
     def _get_request_payload(self, input_, *, stop=None, **kwargs):
         from .model_context import project_tool_history
         originals = self._convert_input(input_).to_messages()
-        projected = project_tool_history(originals, trigger_tokens=self.tool_context_trigger_tokens, keep=self.tool_context_keep)
+        saved_reader = any(isinstance(t, dict) and t.get('function', {}).get('name') == 'read_saved_result' for t in kwargs.get('tools', []))
+        projected = project_tool_history(originals, trigger_tokens=self.tool_context_trigger_tokens,
+            keep=self.tool_context_keep, saved_result_reader=saved_reader)
         payload = super()._get_request_payload(projected, stop=stop, **kwargs)
         for original, encoded in zip(projected, payload["messages"], strict=True):
             if isinstance(original, AIMessage) and "reasoning_content" in original.additional_kwargs:

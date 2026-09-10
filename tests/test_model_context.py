@@ -52,6 +52,20 @@ def test_failed_reader_does_not_pin_all_successful_results_from_same_tool():
     assert project_tool_history(rows) is rows
 
 
+def test_calculation_receipts_clear_only_when_original_reader_is_offered():
+    rows=history()
+    old=deepcopy(rows)
+    assert project_tool_history(rows,trigger_tokens=1,keep=1)[4]==rows[4]
+    projected=project_tool_history(rows,trigger_tokens=1,keep=1,saved_result_reader=True)
+    assert 'Older read result omitted' in projected[4].content
+    assert rows==old and projected[-1]==rows[-1]
+    model=ReasoningPreservingChatDeepSeek(model='deepseek-v4-flash',api_key=SecretStr('offline'),tool_context_trigger_tokens=1,tool_context_keep=1)
+    without=model._get_request_payload(rows)
+    with_reader=model._get_request_payload(rows,tools=[{'type':'function','function':{'name':'read_saved_result','parameters':{'type':'object'}}}])
+    assert without['messages'][4]['content']==rows[4].content
+    assert 'Older read result omitted' in with_reader['messages'][4]['content']
+
+
 def test_parallel_read_results_are_delivered_once_before_becoming_clearable_history():
     rows = history()
     calls = [{"name": "RequestSourceAction", "args": {"page": i}, "id": f"fresh-{i}", "type": "tool_call"} for i in range(4)]

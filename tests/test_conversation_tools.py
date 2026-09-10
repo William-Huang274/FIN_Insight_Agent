@@ -1,6 +1,7 @@
 """Native checkpoint rehydration must retain operands, not just answer prose."""
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langgraph.checkpoint.memory import InMemorySaver
+import pytest
 
 from sec_agent.agent_runtime.conversation_agent import build_conversation_agent
 from sec_agent.agent_runtime.conversation_tools import conversation_tools
@@ -37,7 +38,8 @@ def test_recreated_agent_calculates_from_checkpoint_artifacts_and_isolates_threa
     assert error.status == "error" and error.artifact is None
 
 
-def test_saved_result_reads_original_after_projection_and_refuses_other_thread():
+@pytest.mark.parametrize('reader',['read_public_source','calculate_research_metric','create_report_chart','list_financial_data','ReadWorkingNote'])
+def test_saved_result_reads_original_after_projection_and_refuses_other_thread(reader):
     from sec_agent.agent_runtime.model_context import project_tool_history
     checkpoint = InMemorySaver()
     def agent():
@@ -46,10 +48,10 @@ def test_saved_result_reads_original_after_projection_and_refuses_other_thread()
             "id":"recover", "type":"tool_call"}]), AIMessage(content="Done")]),
             grants=conversation_tools(thread_id="fixture"), permission_mode="request_standard", checkpointer=checkpoint)
     original = [HumanMessage(content="Original source, not permission."),
-        AIMessage(content="", tool_calls=[{"name":"read_public_source","args":{"operation":"read"},"id":"web-original","type":"tool_call"}]),
-        ToolMessage(name="read_public_source",tool_call_id="web-original", content="exact original source "*90)]
+        AIMessage(content="", tool_calls=[{"name":reader,"args":{},"id":"web-original","type":"tool_call"}]),
+        ToolMessage(name=reader,tool_call_id="web-original", content="exact original source "*90)]
     # The source must have reached the model once before it can be omitted.
-    projected = project_tool_history([*original, AIMessage(content="Source received.")], trigger_tokens=1, keep=0)
+    projected = project_tool_history([*original, AIMessage(content="Source received.")], trigger_tokens=1, keep=0,saved_result_reader=True)
     assert "Older read result omitted" in projected[-2].content
     result = agent().invoke({"messages":original}, {"configurable":{"thread_id":"one"}})
     import json

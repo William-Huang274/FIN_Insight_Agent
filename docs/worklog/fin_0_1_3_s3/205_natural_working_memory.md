@@ -1,5 +1,46 @@
 # 205 自然语言工作底稿（2026-09-10）
 
+## 最新：Qwen 检索与 Hermes 原生循环已进入实际前端
+
+本段覆盖下方早期“未部署/Hermes 未接入/Qwen 后置”的时点。Owner 已批准把底稿部署、语义检索、定向修订、Hermes 内层循环合并推进。FIN 0.1.3 / S3 / 205 不变，不重开金融核验付费追绿。
+
+产品增量：工作底稿弹窗已能语义检索、阅读正文/旧版本、选择模型及执行方式、向指定底稿版本提交意见；普通对话有固定执行方式选择。实际 BFF 18795 / Native API 18165 已加载新代码，原 PostgreSQL/Redis 卷与旧任务保持。Hermes 原生 HTTP 服务运行于本机 18806，容器经 host.docker.internal 访问。当前为普通问答和工作底稿试用，未开放 Hermes 上传资料/SQL/网页/用户文件工具，界面与后端均限制，避免选择后静默变成另一执行器。
+
+工程增量与成熟栈分工：
+
+- LangGraph 继续管理外层 thread/run/checkpoint；固定 Hermes `0.21.1` 源码 `abd83ab560327c58f17f8e2ecd9be0307d5c9cf9` 的 `APIServerAdapter` / `/v1/runs` 管理内部模型工具循环、SSE、会话、取消和请求幂等。FIN 仅绑定可信 owner/workspace/actor、三个底稿工具和定向修订。扩展 `_create_agent` 属于固定版本的内部接缝，升级需要重新资格，不能声称任意 Hermes 版本兼容。
+- 正文仍只有同一份 SQLite 权威存储。Qwen 使用已有 provider 适配器，sqlite-vec 0.1.9 做向量距离，LangChain RecursiveCharacterTextSplitter 分块，Qwen 重排。关键词候选与向量候选合并；按 owner/workspace 和当前版本筛选。没有金融专用词表或新工作流引擎。
+- 检索结果/向量缓存可复用；未变正文块复用向量，更新版本保留旧正文；每次最多索引 20 个新块、最多四次远程请求，剩余积压和降级可见。失败/不确定请求短暂冷却，不自动立即重发。每次付费检索写任务预算依据与用量；索引不是财务核验，精确正文读取不依赖向量服务。
+- 用户修订由服务端固定目标、责任角色、基线、所有权，创建独立原生修订窗口，工具只能写选中底稿。历史版本保留，冲突版本拒绝覆盖。修订窗口也可查看原底稿、继续问答；**尚不是运行中任意研究节点打断、依赖失效或自动重新调度**。
+- 原始模型请求/响应含供应商返回字段留在私有审计目录，HTTP 流边读边保存，不等待整段完成才转发。公开文本通过原生 resumable SSE 投影；第三轮实际记录 205 个 assistant_delta 和 4 个 custom 事件。初版事件名错配、工具名称字段和逐块段落问题在本轮修正；前两轮旧记录保持原件。
+- 本机 Python 内置 SQLite 3.50.4 存在上游已披露 WAL-reset 风险，Hermes 已选择 DELETE journal；FIN 对低于 3.51.3 的版本也保守选 DELETE。生产并发/跨主机不由这份本地 SQLite 试用承担。
+
+真实资格分两份独立记录（均非盲测，也不是完整金融报告验收）：
+
+| 验证 | 结果 | 模型/API 用量 |
+|---|---|---|
+| 四份短底稿的同义检索 | “赚到的利润还没有变成手里的钱”关键词零命中，语义首位为“现金兑现观察”；重复查询零新增调用 | Qwen 3 请求 / 309 tokens；冷查询约 1.855 秒 |
+| 产品前端保存 v1 | Hermes 调 WriteWorkingNote，保存虚构现金流底稿 | Flash 2 请求 / 7,410 tokens |
+| 产品前端定向修订 v1→v2 | 先 ReadWorkingNote 再 WriteWorkingNote；去掉过强结论、明确 CFO 80 和简化 FCF 50、等待用户附注 | Flash 3 请求 / 12,751 tokens |
+| 重启 Hermes、Native API 和 BFF 后原修订窗口追问 | ReadWorkingNote 回读 v2，正确保留口径/未决判断/等待安排，未再次保存 | Flash 2 请求 / 10,663 tokens |
+| 产品底稿语义搜索 | 实际 Qwen 向量与重排命中当前底稿 | Qwen 3 请求 / 729 tokens |
+
+本轮 DS 共 **7 请求 / 30,824 已知 tokens / 新未知 0 / 自动重试 0**；三轮调用前已冻结最多 15 请求，实际无需用满。全部 thinking disabled，与当前普通对话配置一致，不把本次结果当成推理强度优劣对照。前次原生工作记忆资格用过 enabled/low，任务与执行器也不同，不能据此声称 Hermes 更省或推理更好。Qwen 共 **6 请求 / 1,038 tokens**，单独统计，不混入 DS 调用计数。205 DS 累计 **598 尝试 / 17,840,912 已知 tokens / 历史未知 3**，实际账单价格未核验。
+
+实际产物：`D:/temp/fin205-hermes-product-a1/{TokenBudgetBasis,result,turn1,turn2,turn3,versions}.json`、`turn3-stream.txt`；检索对照 `D:/temp/fin205-working-semantic-a1`；Hermes 原始审计 `D:/temp/fin205-hermes-memory-service-a1/fin-audit`。这些包含运行记录，不提交 Git。真实原窗口 `01a08a8b-0f5b-76a2-b884-105076308974`，修订窗口 `01a08a8d-9705-76e0-860e-2a4ad9f8553a`，底稿 `4c3713bd329e9c692cfb3b2fb64025c9` 的 v1/v2 均可读。
+
+本轮工程验证：最终定向 Python 检查 25 通过；前端 14 项桌面/窄屏检查通过（夹具），TypeScript/Vite 生产构建通过，已有 bundle 体积提示仍在。Hermes 启动前零模型工厂资格验证只有三项底稿工具、SDK 重试为零；MockTransport 验证原生幂等键、可信作用域、SSE、失败取消。实际前端另完成上述三轮与语义检索、重启回读，不能把夹具测试冒充真实模型验证。
+
+部署入口：`python -m scripts.deployment.research_workbench {build|up|serve} --settings-directory <已有设置目录> --enable-research --fresh-only --semantic-memory --hermes`，serve 加 `--ui-port 18795`；已构建时 up 加 `--no-build`。设置目录的私有 `hermes-connection.json` 包含 `host_url`、`container_url`、`token`，不得提交。QWEN_API_KEY 从进程/.env/Windows 用户环境读取而不打印。底稿目录自动挂载到 Native API，BFF 使用对应宿主路径。Hermes 用独立 venv，源固定到上述提交，安装官方 API 所需 aiohttp 以及 FIN 工具依赖 langchain-core/langchain-text-splitters/sqlite-vec；复制 `configs/research/runtime/hermes_working_memory.yaml` 到隔离 HERMES_HOME。启动脚本 `scripts/deployment/hermes_working_memory.py --hermes <源码目录> --home <隔离home> --port 18806` 需要 FIN 的 src/repo 在 PYTHONPATH，以及 DEEPSEEK_API_KEY、FINSIGHT_HERMES_TOKEN、FINSIGHT_WORKING_MEMORY_PATH；启用语义时再设 QWEN_API_KEY/FINSIGHT_WORKING_MEMORY_SEMANTIC=1。不开放内置 shell/文件系统/网络工具。
+
+尚未完成：Hermes 其他研究角色/工具全量迁移、自动压缩及金融信息保真对照、多 Agent 在任意节点接受干预后的依赖重算、真实多租户/生产 sandbox。当前短循环特意关闭 Hermes 自动压缩，以先隔离保存/检索/修订是否正确；超过输入上限会在发模型前停止，不会偷偷丢证据。Hermes 当前窗口 token 计量还没有接入统一卡片，UI 如实提示并显示本轮累计用量，不把累计计费当上下文长度。首轮模型仍加了多余解释，定向用户纠正后改正；这正是可审阅工作底稿的用途，不宣称模型已无幻觉。
+
+后续顺序：在本次可用底稿循环上接已授权的原始来源读回与另外一个研究角色，再做一次“用户意见影响两份相关底稿”的有界测试；随后用同一批保留数值/来源/用户纠正的长历史，对照 Hermes 原生压缩和检索回读。认证/sandbox 主线继续，不回到金融语义无限追绿。
+
+本轮工程提交：`d59a532f`。代码/测试/可复用部署配置与文档分别提交；30 个候选文件凭据模式扫描无命中，运行日志、API 凭据、SQLite、原始模型响应均留在私有目录。最新已部署镜像 `0c990335fbeb`；源码主要功能与实际实测版本一致，新增公开 Hermes 配置示例无需重新构建运行镜像。
+
+## 早期切片记录（保留当时状态）
+
 Owner明确区分工程记录和工作底稿：当前切片以自由正文、渐进保存、快速回读为核心，不以新增严格金融模板卡住保存和下游。现有正式研究提交合同没有在本轮放宽；新的工作记忆独立于它，失败/未交卷的Agent也可留下工作正文。继续 FIN0.1.3/S3/205，同开发分支。
 
 ## 选型与最小切片

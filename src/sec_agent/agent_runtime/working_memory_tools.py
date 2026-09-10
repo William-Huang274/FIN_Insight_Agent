@@ -14,8 +14,13 @@ Working memory is available through WriteWorkingNote, ReadWorkingNote and Search
 For substantial work, start a short working note and update it after a useful finding or changed judgment,
 before moving to another topic. Use natural prose/Markdown in the user's language; no required template.
 Record what you established, source references when available, uncertainty, user corrections and next work.
+Use a descriptive title: subject/company, period when relevant, and research topic (in the user's language).
+The title helps discovery; the returned note_id is the stable lookup key. Copy it, never guess it from the title.
+Working papers are a separate region from conversation history and exact query/calculation receipts.
+Keep numeric source/calculation identifiers in prose so those originals can be read separately.
 Do not transcribe private reasoning or dump tool logs. Ordinary short answers need no note.
 On resumption first browse/read your relevant current notes, then related colleagues' notes if needed;
+also recheck after compaction, a scope correction or missing prior context, before repeating work.
 do not reconstruct all history. Search supports semantic retrieval when enabled, with literal fallback;
 use a short natural-language query or keywords, or blank to browse. Read the returned retrieval notice.
 Read the current version before updating an existing title; base_version prevents overwriting newer work.

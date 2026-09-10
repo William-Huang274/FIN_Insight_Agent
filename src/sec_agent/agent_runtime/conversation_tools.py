@@ -27,6 +27,9 @@ class TaskMaterialRequest(SourceDocumentRequest):
 def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | None = None, method_reader=None):
     """Paths and thread ownership come from the host, never tool arguments."""
     grants = []
+    from .context_navigation import context_navigation_tools
+    grants.extend(GrantedTool(t, "read", "本对话原生checkpoint的分区目录与公开消息")
+                  for t in context_navigation_tools())
     @tool
     def read_saved_result(tool_call_id: str, runtime: ToolRuntime, offset: int = 0, max_characters: int = 6000):
         """Read a prior successful data tool result from this conversation's original checkpoint.

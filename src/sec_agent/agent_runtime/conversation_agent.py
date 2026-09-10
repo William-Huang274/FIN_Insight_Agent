@@ -73,9 +73,14 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
         prompt += WORKING_MEMORY_GUIDANCE
     if task_context:
         prompt += '\n' + task_context
+    navigation = []
+    if "browse_context" in names:
+        from .context_navigation import ContextOrientationMiddleware, NAVIGATION_GUIDANCE
+        prompt += NAVIGATION_GUIDANCE
+        navigation = [ContextOrientationMiddleware()]
     return create_agent(model=model, tools=[g.tool for g in grants], system_prompt=prompt,
         checkpointer=checkpointer, middleware=[
             HumanInTheLoopMiddleware(interrupt_on=interrupt_on),
             ModelCallLimitMiddleware(run_limit=model_calls, exit_behavior="error"),
-            ToolCallLimitMiddleware(run_limit=tool_calls, exit_behavior="error"), *middleware],
+            ToolCallLimitMiddleware(run_limit=tool_calls, exit_behavior="error"), *navigation, *middleware],
         name="conversation")

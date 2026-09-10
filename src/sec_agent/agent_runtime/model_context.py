@@ -86,7 +86,7 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         self.max_summaries = max_summaries
 
     @staticmethod
-    def projected_messages(state):
+    def projected_messages(state, *, pin_user=True):
         messages = state["messages"]
         record = state.get("request_summary")
         if not record:
@@ -96,7 +96,12 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         if (end >= len(messages) or messages[end - 1].id != record["last_original_id"]
                 or messages[0].id != record["first_original_id"]):
             raise ValueError("request_summary_history_changed")
-        return [messages[0], HumanMessage.model_validate(record["message"]), *messages[end:]]
+        # The most recent user turn in the omitted prefix must not depend on a
+        # lossy summary. Preserve it verbatim; older instructions remain in the
+        # canonical checkpoint and can be read on demand.
+        latest_user = next((m for m in reversed(messages[1:end]) if isinstance(m, HumanMessage)), None)
+        pinned = [latest_user] if pin_user and latest_user is not None else []
+        return [messages[0], HumanMessage.model_validate(record["message"]), *pinned, *messages[end:]]
 
     async def abefore_model(self, state, runtime):
         if state.get("output") or state.get("review"):
@@ -104,7 +109,9 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         full = state["messages"]
         if not full or not isinstance(full[0], HumanMessage):
             raise ValueError("request_summary_requires_original_user_task")
-        projected = self.projected_messages(state)
+        # Extra pinned turns are request-only. Native cutoff accounting must
+        # operate on summary + original suffix, not count a duplicate as history.
+        projected = self.projected_messages(state, pin_user=False)
         # The original user task remains verbatim, outside the summarized prefix.
         working = deepcopy(projected[1:])
         if not self.native._should_summarize(working, self.native.token_counter(working)):
@@ -129,6 +136,10 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             "This note describes historical claims, not newly verified facts. The current user task wins. "
             "Omitted tool messages still exist in the host checkpoint; omission or a failed lookup does not prove that a source/calculation never existed. "
             "Use read_current_source to re-read an exact observed ID; preserve unresolved errors as unresolved.\n\n" + summary.content)
+        summary.content += ("\nContext was compacted. Before continuing, reconcile the latest user correction, "
+            "completed work and next unfinished action against the relevant original records using the available "
+            "read/index tools. Do not restart completed research because its tool output is absent here. "
+            "If recovery is incomplete, name the missing record and ask for a scoped handoff rather than inventing it.")
         end = len(full) - len(recent)
         if end <= 1 or end >= len(full) or not full[0].id or not full[end - 1].id:
             raise ValueError("request_summary_boundary_invalid")

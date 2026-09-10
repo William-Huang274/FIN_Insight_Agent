@@ -557,7 +557,9 @@ financial_semantics_verified=false means not verified, not a failed review; abse
 """
 
 
-def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions=""):
+def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions="", review_scope="full_report"):
+    if review_scope not in {"full_report", "selected_claims"} or (review_scope == "selected_claims" and role != "verifier"):
+        raise ValueError("selected_claim_review_requires_verifier")
     feedback = feedback or []
 
     @tool
@@ -744,7 +746,12 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
                   if not any(f.report_quote in t for t in reviewable)]
         if errors:
             return output_message(runtime, error=json.dumps({"errors": errors}, ensure_ascii=False))
-        return output_message(runtime, review.model_dump(mode="json", exclude={"completion"}))
+        value = review.model_dump(mode="json", exclude={"completion"})
+        if review_scope == "selected_claims":
+            # The host invocation scope must survive separately from the
+            # model's prose; scoped completion never approves the full report.
+            value.update(review_scope=review_scope, completion=review.completion, full_report_acceptance=False)
+        return output_message(runtime, value)
 
     read_current_workpaper.handle_tool_error = read_current_source.handle_tool_error = search_research_sources.handle_tool_error = True
     tools = [t for t in tools if t.name != "search_research_sources"] + [search_research_sources]
@@ -768,7 +775,12 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     else:
         raise ValueError("case_output_role_invalid")
-    if require_responsibility and role == "verifier":
+    if role == "verifier" and review_scope == "selected_claims":
+        specific = "Independently verify only the host-selected exact claims in focused_review.targets, with their original paragraph context and supplied native source_records. For each target ID identify the proposition/metric object, the source support and whether the inference follows. Do not assume a target is wrong. Emit source-backed findings for actual errors; acknowledge sound targets in the summary. No full-report acceptance. Use supplied original records directly; read_current_source only for an indispensable missing bound record. Do not repeat whole-table arithmetic or launch a separate company investigation."
+        selected = [t for t in selected if t.name in {"read_current_source", "get_research_method"}]
+        if require_responsibility:
+            specific += " Material findings must identify the earliest responsible owner. Use writer for expression/inference introduced by this answer; research requires existing responsible paper IDs, never invented papers."
+    if require_responsibility and role == "verifier" and review_scope == "full_report":
         specific += "\nThe input review_target distinguishes lead_synthesis from final_report. For a synthesis, review the Lead's research judgment and actual revised papers before writing; for a report, check final expression against that research. Every material finding must declare the earliest responsibility and exact paper_ids for research repairs. Do not call an upstream research error writer-only. Conversely, when a current workpaper already contains the correct analysis but the synthesis omits or distorts it, assign writer: this routes a synthesis review back to the Lead, not to an unaffected specialist. Check the opening thesis, headings and monitoring conditions against the body, not only the paragraph describing the correction. data_tool requires an observed data/tool defect after relevant permitted reads/attempts, not an empty search or unsupported public gap. For a source problem the researcher can remedy by permitted supplementary reads, use research. Missing owner/invalid paper IDs are rejected for you to correct. State concise source-backed rationales; no private reasoning in output."
     if role == "writer":
         specific += "\nUse the report charts field for 1-3 useful source-bound comparisons when data supports them (cash conversion, achieved vs implied execution, comparable margin/revenue). Points use actual source IDs, exact prose quote/literal where needed, or observed calculator IDs; the host supplies values and renders charts. Do not force incomparable data onto one axis. No arbitrary plotting code. Charts need source/period review just like text."
@@ -791,8 +803,10 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         specific = "Answer the actual user question about this existing Dell case in concise Chinese. Plan your own relevant reads; do not reread every paper or reconstruct a whole report. Prefer query_company_financial_facts for financial numbers. Cite its actual numeric_fact_id inline as [NUMFACT::id], and calculator calculation_id as [CALC::id]; exact [P01:claim_id] citations remain available for existing research. You do not need an old paper to cite a newly queried SQL fact. Include period, unit, source authority and uncertainty where they matter. The current report is available through read_current_report if needed, not presumed evidence. Source-bound answers may still be wrong: do not claim independent verification or product acceptance. If the question exceeds available evidence or needs a new deep study, explain what is unresolved without fabricating it. Submit using submit_case_answer, not a revised report."
         selected = [t for t in selected if t.name not in {"submit_case_answer", "submit_report_edits", "read_current_report"}] + [read_current_report]
         submit = submit_case_answer
+    scope_notice = ("\nInvocation scope: selected claims only. Apply the supplied role method within those targets, not its whole-report coverage steps. The verifier method is already fully loaded here; other methods are optional only when necessary to a target. Missing unselected sections are NOT unresolved checks. Only an indispensable unanswered dependency of a selected claim may block its check. completion describes this selected scope, never the whole report. Keep the summary compact and account for every target ID. Submit inspected results with explicit unresolved dependencies; do not infer acceptance from correct arithmetic or the presence of a qualifier."
+        if review_scope == "selected_claims" else "")
     return create_agent(model=model, tools=[*selected, submit], state_schema=CaseOutputState,
-        system_prompt=CONTEXT_RULES + specific + METHOD_TOOL_GUIDANCE + method_instructions + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
+        system_prompt=CONTEXT_RULES + specific + METHOD_TOOL_GUIDANCE + method_instructions + scope_notice + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
         middleware=[StopOnOutput(), InvalidToolCallFeedback(), AnswerSubmissionFeedback(submit.name), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
             ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="error"), *(audit.middlewares() if audit else [])],
         name=f"case_{role}_{paper_id or 'report'}")

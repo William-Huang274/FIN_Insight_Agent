@@ -72,3 +72,48 @@ def test_qualification_exposes_method_read_named_by_production_prompt(tmp_path):
     assert tools["get_research_method"].invoke({})
     assert tools["get_research_method"].invoke({"method_id": "verifier"})["content"]
     assert tools["read_saved_financial_inventory"].invoke({}) == {"catalogs": [], "captured": False}
+
+
+def test_focused_packet_preserves_context_and_rejects_answer_labels_or_invented_sources():
+    from scripts.qualification.review_saved_report import focused_review_input
+    report = {"title": "Bounded review", "narrative_markdown": "A claim with an important qualifier."}
+    sources = {"NUMFACT::x": {"value_decimal": "7", "period_end": "2025-12-31"}}
+    packet = {"targets": [{"id": "T1", "quote": "A claim", "context": report["narrative_markdown"]}], "source_ids": ["NUMFACT::x"]}
+    result = focused_review_input(report, sources, packet)
+    assert result["targets"][0]["context"].endswith("important qualifier.")
+    result["source_records"]["NUMFACT::x"]["value_decimal"] = "99"
+    assert sources["NUMFACT::x"]["value_decimal"] == "7"
+    for bad in ({**packet, "expected": "wrong"}, {**packet, "source_ids": ["invented"]},
+                {**packet, "targets": [{"id": "T1", "quote": "A claim", "context": "A claim without its qualifier."}]}):
+        with pytest.raises(ValueError):
+            focused_review_input(report, sources, bad)
+
+
+def test_selected_claim_role_consumes_scope_without_whole_report_obligations():
+    async def run():
+        artifacts = DellCaseArtifacts.from_observed_sources({}, case_id="fixture", research_as_of="2026-01-01")
+        model = NativeFixtureModel(marker="focused", replies=[[call("submit_report_review", {"review": {
+            "summary": "T1: The selected claim is a valid evidence limitation. This fixture exercises scoped completion only, not whole-report acceptance.",
+            "completion": "complete", "unresolved_data_requests": [], "findings": []}}, "done")]])
+        agent = build_case_output_agent(role="verifier", model=model, tools=[], artifacts=artifacts,
+            review_scope="selected_claims", require_responsibility=True, method_instructions="Role method fixture.",
+            limits={"model_calls": 1, "tool_calls": 1})
+        result = await agent.ainvoke({"report": {"title": "Test title", "narrative_markdown": "Original paragraph. " * 15},
+            "messages": [{"role": "user", "content": "Review selected T1 only."}]})
+        assert result["output"]["unresolved_data_requests"] == []
+        assert result["output"]["review_scope"] == "selected_claims"
+        assert result["output"]["completion"] == "complete"
+        assert result["output"]["full_report_acceptance"] is False
+        system = str(model.contexts[0][0].content)
+        assert "Invocation scope: selected claims only" in system
+        assert "Check the opening thesis, headings" not in system
+        assert "research_artifact_catalog" not in model.seen[0]
+        assert "read_current_source" in model.seen[0]
+    asyncio.run(run())
+
+
+def test_call_accounting_does_not_count_local_ceiling_as_unknown_paid_usage():
+    from scripts.qualification.review_saved_report import call_usage
+    value = call_usage([{"event": "outcome", "provider_call_attempted": True, "usage_reported": True, "total_tokens": 30},
+        {"event": "outcome", "provider_call_attempted": False, "status": "blocked_before_transport_input_limit"}])
+    assert value == {"model_calls": 1, "blocked_before_transport": 1, "known_tokens": 30, "unknown_usage_calls": 0}

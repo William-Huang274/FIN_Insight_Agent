@@ -1,0 +1,11 @@
+{
+  "synthetic": true,
+  "frozen_before_calls": true,
+  "never_send_to_model": true,
+  "A": "Supported: simple FCF 30-8=22 and 45-25=20. No additional causal interpretation required.",
+  "B": "Not established: CFO/net income is not CFO/operating profit; given CFO/operating profit actually rises from 0.75 to 0.9. Neither ratio alone proves cash realization quality. Recognize the object substitution, not merely generic uncertainty.",
+  "C": "Only co-movement established. It does not establish how earnings growth is backed by cash or rule out noncash earnings/working-capital drivers. Reject the stronger final clause, preserve the observed increases.",
+  "D": "Supported boundary. Do not manufacture an error.",
+  "E": "Trough timing, industry and main growth cause unavailable from these totals. May offer an explicitly untested alternative hypothesis, not promote it as likely principal cause or actual trough.",
+  "acceptance": "All five answered, both correct controls preserved, all three unsupported steps recognized, no invented facts or misleading repairs. One synthetic example is not a benchmark or proof of production reliability."
+}

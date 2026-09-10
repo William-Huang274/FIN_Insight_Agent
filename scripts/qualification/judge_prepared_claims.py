@@ -90,6 +90,13 @@ def messages_for(packet):
     return [SystemMessage(content=system), HumanMessage(content=json.dumps(packet, ensure_ascii=False))]
 
 
+def short_messages_for(question: str):
+    if not question.strip() or len(question) > 2000:
+        raise ValueError("short_question_requires_one_to_2000_characters")
+    return [SystemMessage(content="请根据用户给定的信息回答，用中文简短解释理由。"),
+            HumanMessage(content=question)]
+
+
 def save(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -116,16 +123,21 @@ def save_exception_completion(exc, output_dir):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--seed", type=Path, action="append", required=True)
+    inputs = parser.add_mutually_exclusive_group(required=True)
+    inputs.add_argument("--seed", type=Path, action="append")
+    inputs.add_argument("--short-question", type=Path, help="Plain short-answer diagnostic, no JSON schema or tool loop.")
+    parser.add_argument("--budget-basis", type=Path, help="Explicit task-specific budget for a fresh authorized comparison.")
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--model", choices=["deepseek-flash", "deepseek-v4-pro"], default="deepseek-flash")
     parser.add_argument("--effort", choices=["low", "high", "max"], required=True)
     parser.add_argument("--prepare-only", action="store_true")
     args = parser.parse_args()
-    packet = prepare_packet([json.loads(p.read_text(encoding="utf-8")) for p in args.seed])
-    messages = messages_for(packet)
+    packet = prepare_packet([json.loads(p.read_text(encoding="utf-8")) for p in args.seed]) if args.seed else None
+    messages = messages_for(packet) if packet else short_messages_for(args.short_question.read_text(encoding="utf-8"))
     input_chars = sum(len(m.content) for m in messages)
-    basis = TokenBudgetBasis(node_role="counter",
+    if args.short_question and not args.budget_basis:
+        raise ValueError("short_comparison_requires_explicit_budget")
+    basis = TokenBudgetBasis.model_validate_json(args.budget_basis.read_text(encoding="utf-8")) if args.budget_basis else TokenBudgetBasis(node_role="counter",
         node_purpose="Single-turn prepared-evidence judgment; isolate completion and semantic accuracy from tool-loop behavior.",
         input_scale=f"{len(packet['cases'])} frozen cases; {input_chars} characters; original source objects, no sibling reasoning or answer labels.",
         required_outputs=("Exactly one structured judgment per frozen target", "Concise source-based explanation and justified minimal correction"),
@@ -150,8 +162,9 @@ def main():
         base_url="https://api.deepseek.com", max_tokens=basis.max_output_tokens,
         timeout=basis.timeout_seconds, max_retries=0, streaming=False, use_responses_api=False,
         extra_body={"thinking": {"type": "enabled"}}, reasoning_effort=args.effort)
-    runnable = model.bind(response_format={"type": "json_object"})
-    payload = model._get_request_payload(messages, **runnable.kwargs)
+    bindings = {"response_format": {"type": "json_object"}} if packet else {}
+    runnable = model.bind(**bindings)
+    payload = model._get_request_payload(messages, **bindings)
     save(args.output_dir / "sdk-payload.private.json", payload)
     save(args.output_dir / "manifest.json", {"model": args.model, "effort": args.effort,
         "thinking_requested": payload.get("extra_body", {}).get("thinking"),
@@ -169,10 +182,13 @@ def main():
             output_characters=len(raw.content))
         if outcome["finish_reason"] == "length":
             outcome["status"] = "truncated_no_promotion"
-        else:
+        elif packet:
             review = validate_review(raw.content, packet)
             save(args.output_dir / "review.json", review.model_dump(mode="json"))
             outcome["status"] = "structured_judgments_saved_pending_human_semantic_assessment"
+        else:
+            (args.output_dir / "answer.md").write_text(raw.content, encoding="utf-8")
+            outcome["status"] = "plain_answer_saved_pending_human_assessment" if raw.content.strip() else "empty_answer_no_promotion"
     except Exception as exc:
         outcome.update(status="failed_no_retry", error_type=type(exc).__name__,
                        http_status_code=getattr(exc, "status_code", None))

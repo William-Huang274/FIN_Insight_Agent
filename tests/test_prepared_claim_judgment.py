@@ -3,6 +3,7 @@ import json
 import pytest
 
 from scripts.qualification.judge_prepared_claims import prepare_packet, validate_review, messages_for
+from scripts.qualification.judge_prepared_claims import short_messages_for
 
 
 def seed():
@@ -56,3 +57,15 @@ def test_sdk_length_exception_preserves_raw_reasoning_partial_content_and_billed
     saved = json.loads((tmp_path / "provider-completion.private.json").read_text(encoding="utf-8"))
     assert saved["choices"][0]["message"]["reasoning_content"] == "PRIVATE TRACE"
     assert "PRIVATE TRACE" not in json.dumps(outcome)
+
+
+def test_short_arm_is_plain_question_without_schema_or_labels():
+    from pathlib import Path
+    question = Path("tests/fixtures/qualification/financial_entailment_short_question.txt").read_text(encoding="utf-8")
+    messages = short_messages_for(question)
+    assert len(messages) == 2 and messages[1].content == question
+    assert sum(len(m.content) for m in messages) < 600
+    assert "schema" not in messages[0].content and "expected" not in messages[0].content
+    for invalid in ("", " " * 10, "a" * 2001):
+        with pytest.raises(ValueError):
+            short_messages_for(invalid)

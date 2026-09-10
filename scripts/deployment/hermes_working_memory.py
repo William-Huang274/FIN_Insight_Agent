@@ -20,8 +20,10 @@ def main():
     from gateway.platforms.api_server import APIServerAdapter
     from run_agent import AIAgent
     from tools.registry import registry
+    from langchain_core.tools import ToolException
     from sec_agent.agent_runtime.working_memory import WorkingMemory
     from sec_agent.agent_runtime.working_memory_tools import WORKING_MEMORY_MODELS, execute_memory_tool
+    from sec_agent.agent_runtime.hermes_context_tools import CONTEXT_MODELS, execute_context_tool
     args.home.mkdir(parents=True,exist_ok=True)
     def binding(session):
         reader=WorkingMemory(os.environ['FINSIGHT_WORKING_MEMORY_PATH'],owner='host',workspace='host',actor='host')
@@ -38,6 +40,19 @@ def main():
             return json.dumps(execute_memory_tool(_name,parameters,{},row['actor'],owner=row['owner'],workspace=row['workspace']),ensure_ascii=False)
         registry.register(name=name,toolset='fin_working_memory',schema={'name':name,'description':model.__doc__,'parameters':model.model_json_schema()},handler=handler)
 
+    adapter_ref = {}
+    for name, model in CONTEXT_MODELS.items():
+        def reader(parameters, _name=name, **kwargs):
+            session = kwargs.get('session_id')
+            binding(session)  # Tool caller cannot choose another user's session.
+            db = adapter_ref['adapter']._ensure_session_db()
+            rows = db.get_messages(session, include_compacted=True)
+            try:
+                return json.dumps(execute_context_tool(_name, parameters, rows), ensure_ascii=False)
+            except (ValueError, ToolException) as exc:
+                return json.dumps({'error':str(exc)}, ensure_ascii=False)
+        registry.register(name=name,toolset='fin_working_memory',schema={'name':name,'description':model.__doc__,'parameters':model.model_json_schema()},handler=reader)
+
     class FinAPI(APIServerAdapter):
         def _create_agent(self,**kwargs):
             binding(kwargs['session_id'])
@@ -50,14 +65,14 @@ def main():
                 skip_context_files=True,skip_memory=True,skip_background_review=True,load_soul_identity=False,
                 quiet_mode=True,run_budget_seconds=180,ephemeral_system_prompt=kwargs.get('ephemeral_system_prompt'),
                 stream_delta_callback=kwargs.get('stream_delta_callback'),tool_progress_callback=kwargs.get('tool_progress_callback'))
-            if set(agent.valid_tool_names)!=set(WORKING_MEMORY_MODELS): raise ValueError('hermes_tool_scope_mismatch')
+            if set(agent.valid_tool_names)!=set(WORKING_MEMORY_MODELS)|set(CONTEXT_MODELS): raise ValueError('hermes_tool_scope_mismatch')
             import httpx
             audit_dir=args.home/'fin-audit'/kwargs['session_id']/uuid4().hex
             audit_dir.mkdir(parents=True)
             basis={'node_purpose':'Hermes native task working-memory loop, at most five model requests per turn',
-                'input_scale':'Current Hermes session, three scoped working-paper tools, user-selected revisions',
+                'input_scale':'Current Hermes session, three scoped working-paper and two native transcript reader tools, user-selected revisions',
                 'required_outputs':['Public answer','Save/read/update relevant working paper'],
-                'schema_burden':'Three simple tools; no finance template',
+                'schema_burden':'Five simple tools; no finance template',
                 'materiality_quality_risk':'Fallible notes, not financial acceptance; no user file or external-change tools',
                 'comparable_run_evidence':'Native two-turn five-call memory proof used 8480 tokens; no forecast of savings',
                 'reasoning_profile':'thinking_disabled; matched native conversation default',
@@ -104,6 +119,7 @@ def main():
             return agent
     async def serve():
         adapter=FinAPI(PlatformConfig(enabled=True,extra={'host':'127.0.0.1','port':args.port,'key':os.environ['FINSIGHT_HERMES_TOKEN']}))
+        adapter_ref['adapter'] = adapter
         if args.check_session:
             agent=adapter._create_agent(session_id=args.check_session,requested_model='deepseek-v4-flash')
             print(json.dumps({'tools':sorted(agent.valid_tool_names),'api_attempts':agent._api_max_retries,'model_calls':0}))

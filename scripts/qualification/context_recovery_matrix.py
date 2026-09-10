@@ -57,9 +57,11 @@ def tool_metrics(messages, initial_ids, expected_key):
             "note":"Off-target read is not by itself a wrong answer; assess public output separately."}
 
 
-async def run(output,live):
+async def run(output,live,case_id=None):
+    suite=[case for case in cases() if case_id is None or case["id"]==case_id]
+    if not suite:
+        raise ValueError("unknown_case_id")
     output.mkdir(parents=True,exist_ok=False)
-    suite=cases()
     write(output/"frozen-cases.json",suite)
     for case in suite:
         directory=output/case["id"]
@@ -108,6 +110,7 @@ async def run(output,live):
                             break  # retain originals and proceed under the same answer budget
                         if i==0: append_after_first_compaction(state)
                     state["messages"].append(HumanMessage(id="final-request",content="继续整理当前范围的那条观察，注明数值、公司、期间、单位和来源。"))
+                    outcome["completed_summary_count"]=state.get("request_summary",{}).get("count",0)
                 elif case["summary_rounds"]==-1:
                     end=len(state["messages"])-2
                     state["request_summary"]={"prefix_end":end,"first_original_id":state["messages"][0].id,
@@ -152,5 +155,6 @@ if __name__=="__main__":
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir",required=True,type=Path)
     parser.add_argument("--live",action="store_true")
+    parser.add_argument("--case-id",choices=[case["id"] for case in cases()])
     args=parser.parse_args()
-    asyncio.run(run(args.output_dir,args.live))
+    asyncio.run(run(args.output_dir,args.live,args.case_id))

@@ -13,6 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from .report_sessions import public_run_usage, public_cost_estimate, public_event
 from ...application.context_usage import request_context_usage
+from ...application.conversation_context import context_status, context_messages
 from ...authentication import current_owner
 from sec_agent.agent_runtime.conversation_handoff import public_history, observed_sources
 
@@ -253,6 +254,37 @@ def build_conversations_router(service):
         return {"thread_id": target["thread_id"], "model_calls": 0,
                 **({"working_notes_count": len(notes)} if notes else {}),
                 **({"notice": memory_notice} if memory_notice else {})}
+    @router.get("/{thread_id}/context")
+    async def browse_memory(thread_id: UUID, request: Request, region: Literal['conversation','numbers','sources']='conversation', query: str='', offset: int=0):
+        await owned(thread_id, request)
+        from sec_agent.agent_runtime.context_navigation import browse_checkpoint
+        from langchain_core.tools import ToolException
+        state = await service.sdk.threads.get_state(str(thread_id))
+        try:
+            return browse_checkpoint(context_messages(state),region,query,offset)
+        except ToolException as exc:
+            raise HTTPException(422,str(exc)) from exc
+
+    @router.get("/{thread_id}/context/read")
+    async def read_memory(thread_id: UUID, request: Request, key: str, region: Literal['conversation','numbers','sources']='conversation', offset: int=0):
+        await owned(thread_id, request)
+        from sec_agent.agent_runtime.context_navigation import read_checkpoint_turn, checkpoint_index
+        from sec_agent.agent_runtime.conversation_tools import conversation_tools
+        from langchain_core.tools import ToolException
+        from types import SimpleNamespace
+        messages = context_messages(await service.sdk.threads.get_state(str(thread_id)))
+        try:
+            if region=='conversation':
+                return read_checkpoint_turn(messages,key,offset)
+            rows = checkpoint_index(messages)
+            if not any(r['region']==region and r['key']==key and r.get('read_tool')=='read_saved_result' for r in rows):
+                raise ToolException('本分区没有这条可读原始凭证')
+            reader = next(g.tool for g in conversation_tools(thread_id=str(thread_id)) if g.tool.name=='read_saved_result')
+            result = reader.func(tool_call_id=key,runtime=SimpleNamespace(state={'messages':messages}),offset=offset)
+            return {**result,'text':result['content']}
+        except ToolException as exc:
+            raise HTTPException(404,str(exc)) from exc
+
     @router.get("/{thread_id}")
     async def get_conversation(thread_id: UUID, request: Request):
         thread = await owned(thread_id, request)
@@ -266,6 +298,7 @@ def build_conversations_router(service):
                 "usage": usage, "context_usage": request_context_usage(activity), "cost_estimate": public_cost_estimate(activity)})
         return {"thread_id": str(thread_id), "title": thread.get("metadata", {}).get("title"), "status": thread.get("status"),
             'harness':thread.get('metadata',{}).get('harness','native'),
+            'context_memory':context_status(state,thread.get('metadata',{}).get('harness','native')),
             "messages": public_messages(state), "events": events, "runs": public_runs,
             "checkpoint_id": (state.get("checkpoint") or {}).get("checkpoint_id"), "approvals": pending_approvals(state),
             "approval_sources": {key: {"title": item.get("title") or " / ".join(str(item[k]) for k in ("ticker","metric_id","period_end","unit") if item.get(k)) or "已读来源",

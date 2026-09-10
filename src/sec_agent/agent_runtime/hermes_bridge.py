@@ -36,10 +36,11 @@ def build_hermes_graph(*, owner, workspace, actor, model, target=None, task_cont
         ids = config['configurable']
         message = next(m.content for m in reversed(state['messages']) if m.type=='human')
         from .working_memory_tools import WORKING_MEMORY_GUIDANCE
+        from .context_navigation import NAVIGATION_GUIDANCE
         body = {'input':message,'session_id':session,'model':model,
             'instructions':'You are FinSight. Answer in the user language. Working papers are fallible, not verified sources. '
-                'Respect user corrections and disclose missing tools. Available tools only read or write task working papers. '
-                'Do not claim to run SQL, search the web, alter user files or revise the final report. '+WORKING_MEMORY_GUIDANCE+task_context}
+                'Respect user corrections and disclose missing tools. Available tools read/write task working papers and read original public session turns. '
+                'Do not claim to run SQL, search the web, alter user files or revise the final report. '+WORKING_MEMORY_GUIDANCE+NAVIGATION_GUIDANCE+task_context}
         remote_id = None
         async with httpx.AsyncClient(timeout=30,trust_env=False) as client:
             try:

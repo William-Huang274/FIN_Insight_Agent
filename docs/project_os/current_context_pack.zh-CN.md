@@ -2,6 +2,8 @@
 
 更新时间：2026-09-10
 
+205工作记忆最新：[自然语言工作底稿](../worklog/fin_0_1_3_s3/205_natural_working_memory.md)。Owner明确工程记录归runtime、工作底稿自由正文可读可检索，拒绝新增严格金融模板卡保存。已实现SQLite/WAL/版本+FTS5本地薄适配、通用/Lead/Specialist/核验/作者工具、前端正文/搜索/历史/下载、授权交接固定版本。真实Flash两轮重开checkpoint后按用户纠正保存v2，v1保留：5调用8480tokens、新未知0；205累计591尝试17810088已知tokens/历史未知3。回归155通过8跳过1兼容失败已修，相应末轮19通过；17浏览器通过。明确opt-in配置，未部署/未启动旧Docker；Hermes全循环/Qwen语义检索/任意节点干预重新调度未完成。此次为工作记忆主线增量，不重开金融核验追绿，也不变FIN0.1.3/S3。下文为历史时点。
+
 205最新：Owner明确要求Pro及自编短题，授权重开有界3请求，现已结束。[Pro/短题对照](../worklog/fin_0_1_3_s3/205_pro_and_short_question_comparison.md)：同旧长输入Pro-low抓住1/3问题，仍漏净利润/经营利润与非纯账面两项；新334字符短题Flash/Pro-low均5项方向正确，但修订仍有比率含义/增量与增速/过强支持问题，不称金融全通过。三次均thinking enabled、low、有正文；42106已知tokens/新未知0；205累计586尝试17801608已知tokens/未知3。长短并非单变量消融，不能认定Flash缺基础知识或仅长度根因。10离线检查通过；无生产默认/部署/报告变更。此授权对照结束，继续四主线，不追加付费追绿。下段STOP为前次切片历史边界，本段为最新结果。
 
 205最新主次/执行：[四主线与有界核验](../worklog/fin_0_1_3_s3/205_mainline_security_and_bounded_judge.md)。Owner已定认证隔离/sandbox/Hermes多轮/Qwen为主线，核验一次支线。冻结5目标同输入Flash low/high：low31989tokens交5条但漏3问题；原high SDK length异常未接raw，用量未知；离线修日志后唯一补测high41373tokens（12000全reasoning、43790字符、最终content0），原始推理重复摇摆/猜测试答案，不能升级默认。**核验支线STOP，无更多追跑**。3请求73362已知tokens/新未知1，205累计583尝试17759502已知tokens/未知3。新增可选oidc_conversation_pilot：Starlette/PyJWT真实验签→服务端owner→通用对话9类入口归属、交接保持身份；其他未验收API在试点关闭，旧local资料不接管。71检查通过；IdP/JWKS HTTP与nativeSDK仍夹具，无前端登录/真实PG多用户/原生授权/部署/新报告，不能称认证主线完成。下一步主攻真实IdP+前端登录和原生资源隔离，其他主线按同日志闭环推进。旧“优先磨完金融核验”排序已覆盖，FIN0.1.3/S3不变。

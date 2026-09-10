@@ -18,6 +18,7 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from langchain_core.tracers.langchain import wait_for_all_tracers
 from langsmith import tracing_context
 from pydantic import SecretStr, ValidationError
+from jsonschema import Draft202012Validator
 
 from sec_agent.agent_runtime.deepseek_structured_agents import (
     ReasoningPreservingChatDeepSeek, _NATIVE_REVIEW_TOOLS, _provider_function_schema, _native_function_schema,
@@ -35,8 +36,10 @@ def main():
     parser.add_argument("--source-audit", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--model", choices=("deepseek-v4-pro", "deepseek-v4-flash"), required=True)
-    parser.add_argument("--effort", choices=("low", "high"), required=True)
-    parser.add_argument("--task", choices=("review", "lead", "submission", "submission-edit"), default="review")
+    parser.add_argument("--effort", choices=("low", "high", "max"), required=True)
+    parser.add_argument("--task", choices=("review", "lead", "submission", "submission-edit", "archived-action"), default="review")
+    parser.add_argument("--tools-file", type=Path, help="Archived-action only: frozen native tool schemas, never executed by this diagnostic.")
+    parser.add_argument("--context-trigger-tokens", type=int, help="Archived-action only: reproduce the recorded request-only tool projection.")
     parser.add_argument("--budget-basis", type=Path)
     parser.add_argument("--prepare-only", action="store_true", help="Write the exact input locally without loading credentials or calling a model.")
     parser.add_argument("--additional-source-ids", type=Path, help="Submission diagnostic only: explicit IDs already present in the original observations.")
@@ -58,6 +61,19 @@ def main():
     if not 1 <= args.source_turn <= len(sources) or not 1000 <= args.max_output_tokens <= 32000:
         raise ValueError("comparison_source_turn_or_output_limit_invalid")
     source = sources[args.source_turn - 1]
+    archived_action = args.task == "archived-action"
+    if archived_action and (not args.tools_file or not args.budget_basis):
+        raise ValueError("archived_action_requires_frozen_tools_and_budget")
+    frozen_tools = json.loads(args.tools_file.read_text(encoding="utf-8")) if archived_action else None
+    if archived_action:
+        from sec_agent.agent_runtime.deepseek_structured_agents import TokenBudgetBasis
+        basis = TokenBudgetBasis.model_validate_json(args.budget_basis.read_text(encoding="utf-8"))
+        if args.max_output_tokens != basis.max_output_tokens:
+            raise ValueError("archived_action_output_budget_mismatch")
+        if not frozen_tools or len({t["function"]["name"] for t in frozen_tools}) != len(frozen_tools):
+            raise ValueError("archived_action_unique_native_tools_required")
+        for spec in frozen_tools:
+            Draft202012Validator.check_schema(spec["function"]["parameters"])
     if is_submission and not args.budget_basis:
         raise ValueError("submission_diagnostic_requires_task_specific_budget_basis")
     if args.task == "review" and (not source["actor"].startswith("verifier:") or
@@ -159,8 +175,14 @@ def main():
                             "message": "No edits were applied. Use zero-based numeric array indices, e.g. /claims/0/kind; copy exact current old_value. Correct the candidate_validation_errors as well. The original candidate and base digest remain unchanged."}))])
                 else:
                     raise ValueError("repair_feedback_requires_rejected_patch")
+    if archived_action:
+        input_size = len(json.dumps([m.model_dump(mode="json") for m in messages], ensure_ascii=False)) + len(json.dumps(frozen_tools, ensure_ascii=False))
+        if input_size > basis.max_input_characters:
+            raise ValueError("archived_action_input_budget_exceeded")
     if args.prepare_only:
         _write_new(args.output_dir / "messages.private.json", [m.model_dump(mode="json") for m in messages])
+        if archived_action:
+            _write_new(args.output_dir / "tools.json", frozen_tools)
         print(json.dumps({"status": "prepared_no_model_call", "input_characters": sum(len(m.content) for m in messages),
             "source_call_id": source["call_id"], "task": args.task}))
         return
@@ -175,19 +197,34 @@ def main():
         "thinking": args.thinking, "max_output_tokens": args.max_output_tokens,
         "tool_choice": tool_choice,
         "input_characters": sum(len(m.content) for m in messages),
-        "timeout_seconds": 480, "transport_attempts_allowed": 1, "retry": False,
+        "timeout_seconds": basis.timeout_seconds if archived_action else 480, "transport_attempts_allowed": 1, "retry": False,
         "TokenBudgetBasis": args.budget_basis.read_text(encoding="utf-8") if args.budget_basis else "docs/worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md",
         "langsmith_project": project, "recorded_at": datetime.now(timezone.utc).isoformat()}
+    if archived_action:
+        manifest.update(messages_sha256=sha256(json.dumps([m.model_dump(mode="json") for m in messages], sort_keys=True).encode()).hexdigest(),
+            tools_sha256=sha256(json.dumps(frozen_tools, sort_keys=True).encode()).hexdigest(), context_trigger_tokens=args.context_trigger_tokens)
+        _write_new(args.output_dir / "tools.json", frozen_tools)
     _write_new(args.output_dir / "request.json", manifest)
     _write_new(args.output_dir / "messages.private.json", [m.model_dump(mode="json") for m in messages])
     model = ReasoningPreservingChatDeepSeek(model=args.model,
         **({"reasoning_effort": args.effort} if args.thinking == "enabled" else {}),
         api_key=SecretStr(secrets["DEEPSEEK_API_KEY"]), base_url="https://api.deepseek.com",
-        max_tokens=args.max_output_tokens, timeout=480, max_retries=0, streaming=False, use_responses_api=False,
+        max_tokens=args.max_output_tokens, timeout=basis.timeout_seconds if archived_action else 480, max_retries=0, streaming=False, use_responses_api=False,
+        tool_context_trigger_tokens=args.context_trigger_tokens if archived_action else None,
+        tool_context_keep=2 if archived_action else 6,
         extra_body={"thinking": {"type": args.thinking}})
-    runnable = model.bind_tools([_native_function_schema(tool, runtime_context_binding=True) if is_submission
+    runnable = model.bind_tools(frozen_tools if archived_action else [_native_function_schema(tool, runtime_context_binding=True) if is_submission
                                 else _provider_function_schema(tool, strict=False) for tool in native_tools.values()],
                                tool_choice=tool_choice, strict=False)
+    if archived_action:
+        payload = model._get_request_payload(messages, **runnable.kwargs)
+        _write_new(args.output_dir / "sdk-payload.private.json", payload)
+        _write_new(args.output_dir / "input-identity.json", {
+            "sdk_messages_sha256": sha256(json.dumps(payload["messages"], sort_keys=True).encode()).hexdigest(),
+            "sdk_tools_sha256": sha256(json.dumps(payload["tools"], sort_keys=True).encode()).hexdigest(),
+            "sdk_message_characters": len(json.dumps(payload["messages"], ensure_ascii=False)),
+            "reasoning_effort": payload.get("reasoning_effort"),
+        })
     started = perf_counter()
     raw = None
     try:
@@ -198,6 +235,10 @@ def main():
         valid = not raw.invalid_tool_calls and bool(raw.tool_calls)
         reference_errors = None
         for call in raw.tool_calls:
+            if archived_action:
+                spec = next((s for s in frozen_tools if s["function"]["name"] == call["name"]), None)
+                valid = valid and spec is not None and Draft202012Validator(spec["function"]["parameters"]).is_valid(call["args"])
+                continue
             if call["name"] not in native_tools:
                 valid = False
             else:

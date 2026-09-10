@@ -445,15 +445,18 @@ class ReviewWorkBudget(AgentMiddleware):
         remaining = max(0, self.limit - used)
         if remaining > 2 or not self.has_paper_read(request.state):
             return request  # Keep the stable prefix cacheable during inspection.
-        notice = ("\nReview closeout reserve: at most two model calls remain. Saved findings merge at submission. "
-                  "Finish using submit_case_review now if read coverage permits. Include all unchecked necessary work "
+        notice = ("\nReview closeout reserve: " + str(remaining) + " model call(s) remain. Saved findings merge at submission. "
+                  "Finish using submit_case_review if read coverage permits. Include all unchecked necessary work "
                   "in unresolved_data_requests; do not invent completion. If a source/tool failure prevents submission, "
-                  "state the exact unfinished check and last useful result. Only finding/closeout tools are available.")
+                  "state the exact unfinished check and last useful result. " +
+                  ("This penultimate call retains tools for a necessary source check or correction of an observed tool result; "
+                   "the final call is reserved for findings/submission. Do not restart the research."
+                   if remaining == 2 else "Only finding/closeout tools are available on this final call."))
         original = request.system_message
         blocks = original.content if original else ""
         content = blocks + notice if isinstance(blocks, str) else [*blocks, {"type": "text", "text": notice}]
         overrides = {"system_message": SystemMessage(content=content)}
-        if remaining <= 2 and self.has_paper_read(request.state):
+        if remaining <= 1 and self.has_paper_read(request.state):
             # Native dynamic tool selection. Keep provider thinking/tool_choice
             # protocol unchanged; forced choice is not supported in V4 thinking.
             overrides["tools"] = [t for t in request.tools if getattr(t, "name", None) in {
@@ -461,7 +464,7 @@ class ReviewWorkBudget(AgentMiddleware):
         return request.override(**overrides)
 
     def closeout_tool_feedback(self, request):
-        if (request.state.get("run_model_call_count", request.state.get("thread_model_call_count", 0)) >= self.limit - 1
+        if (request.state.get("run_model_call_count", request.state.get("thread_model_call_count", 0)) >= self.limit
                 and self.has_paper_read(request.state)
                 and request.tool_call["name"] not in {"record_case_finding", "submit_case_review"}):
             return ToolMessage(name=request.tool_call["name"], tool_call_id=request.tool_call["id"], status="error",

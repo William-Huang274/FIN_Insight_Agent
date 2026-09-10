@@ -102,9 +102,51 @@ def test_summary_failure_has_no_native_automatic_retry():
             raise TimeoutError("fixture")
         middleware = policy([])
         middleware.native._summary_model = RunnableLambda(fail)
-        with pytest.raises(TimeoutError):
-            await middleware.abefore_model({"messages": history()}, None)
+        state={"messages": history()}
+        original=deepcopy(state)
+        state.update(await middleware.abefore_model(state,None))
+        assert state["request_summary_failure"]["automatic_retry"] is False
+        assert state["messages"]==original["messages"]
+        assert await middleware.abefore_model(state,None) is None
         assert len(calls) == 1
+    asyncio.run(run())
+
+
+def test_reasoning_only_length_response_is_not_promoted_and_native_conversation_continues():
+    """Replay the observed empty-content/length wire shape without another paid call."""
+    from test_conversation_agent import ScriptedTools
+    from sec_agent.agent_runtime.conversation_agent import build_conversation_agent
+    from sec_agent.agent_runtime.conversation_tools import conversation_tools
+    from scripts.qualification.context_recovery_cases import cases
+    profile,basis,_,_=model_settings(Path(__file__).resolve().parents[1])
+    events,private,requests=[],[],[]
+    audit=CaseModelAudit(actor="summary-truncation-replay",profile=profile,basis=basis,
+                        public_sink=events.append,private_sink=private.append)
+    def wire(request):
+        requests.append(request)
+        return httpx.Response(200,json={"id":"truncated-summary-fixture","object":"chat.completion","created":1,
+            "model":"deepseek-flash","choices":[{"index":0,"finish_reason":"length","message":{
+                "role":"assistant","content":"","reasoning_content":"Unfinished internal analysis."}}],
+            "usage":{"prompt_tokens":4023,"completion_tokens":1600,"total_tokens":5623,
+                     "completion_tokens_details":{"reasoning_tokens":1600}}})
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(wire)) as client:
+            summarizer=ReasoningPreservingChatDeepSeek(model="deepseek-flash",api_key=SecretStr("offline"),
+                http_async_client=client,max_retries=0,use_responses_api=False)
+            policy=RequestSummaryMiddleware(model=summarizer,audited_model=audit.model_runnable(summarizer),
+                trigger_tokens=800,keep_tokens=200)
+            rows=next(c["messages"] for c in cases() if c["summary_rounds"]==2)
+            graph=build_conversation_agent(model=ScriptedTools(responses=[AIMessage(content="Original observation retained."),
+                AIMessage(content="Current user correction retained.")]),grants=conversation_tools(thread_id="replay"),
+                permission_mode="request_standard",checkpointer=InMemorySaver(),middleware=[policy])
+            config={"configurable":{"thread_id":"replay"}}
+            result=await graph.ainvoke({"messages":rows},config)
+            assert result["request_summary_failure"]["reason"]=="case_review_truncated_no_partial_acceptance"
+            assert not result.get("request_summary")
+            assert any(isinstance(m,ToolMessage) and m.tool_call_id=="r-91c" for m in result["messages"])
+            await graph.ainvoke({"messages":[HumanMessage(content="Continue using the retained originals.")]},config)
+            assert len(requests)==1
+            assert events[-1]["status"]=="truncated" and events[-1]["total_tokens"]==5623
     asyncio.run(run())
 
 

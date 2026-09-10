@@ -61,6 +61,13 @@ def test_old_index_pagination_and_no_reasoning_export():
     assert public_text(msg) == "public"
 
 
+def test_metadata_search_does_not_lose_keys_beyond_display_preview():
+    rows = [AIMessage(content="", tool_calls=[{"name":"query_financial_data", "id":"long-args",
+        "args":{"description":"x" * 700,"ticker":"OMEGA","fiscal_years":[2023]}}]),
+        ToolMessage(name="query_financial_data",tool_call_id="long-args",content="retained")]
+    assert browse_checkpoint(rows,"numbers","OMEGA")["items"][0]["key"] == "long-args"
+
+
 def test_lossy_summary_cannot_replace_latest_omitted_user_correction():
     rows = retained_history()
     state = {"messages": rows, "request_summary": summary_record(rows)}

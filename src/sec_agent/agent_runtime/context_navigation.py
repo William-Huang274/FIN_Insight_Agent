@@ -49,7 +49,7 @@ def public_text(message):
                      if isinstance(b, dict) and b.get("type") == "text")
 
 
-def checkpoint_index(messages):
+def checkpoint_index(messages, *, for_search=False):
     calls = {c["id"]: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
     result = []
     for m in messages:
@@ -65,17 +65,23 @@ def checkpoint_index(messages):
                            "preview": json.dumps(arguments, ensure_ascii=False, default=str)[:480],
                            "read_tool": "read_saved_result" if m.status == "success" else None,
                            "notice": "原始参数用于定位；读取完整结果核对期间、单位、缺口和来源。"})
+            if for_search:
+                # UI preview limits must not silently remove discoverable keys.
+                # Metadata only: never index financial values from assistant prose.
+                result[-1]["_search_arguments"] = arguments
     return result
 
 
 def browse_checkpoint(messages, region, query="", offset=0):
     if offset < 0 or len(query) > 500:
         raise ToolException("offset需非负，检索词最多500字符")
-    rows = [r for r in checkpoint_index(messages) if r["region"] == region]
+    rows = [r for r in checkpoint_index(messages, for_search=True) if r["region"] == region]
     rows.reverse()  # Recent first, but pagination can reach all old records.
     if query.strip():
         term = query.strip().casefold()
         rows = [r for r in rows if term in json.dumps(r, ensure_ascii=False).casefold()]
+    for row in rows:
+        row.pop("_search_arguments", None)
     return {"region": region, "items": rows[offset:offset+12], "total_matches": len(rows),
             "next_offset": offset+12 if offset+12 < len(rows) else None,
             "retrieval": "checkpoint_metadata_literal_no_remote_calls",

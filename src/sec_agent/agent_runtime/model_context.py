@@ -8,8 +8,9 @@ from copy import deepcopy
 from langchain.agents import AgentState
 from langchain.agents.middleware import AgentMiddleware, ClearToolUsesEdit, SummarizationMiddleware
 from langchain.agents.middleware.summarization import DEFAULT_SUMMARY_PROMPT
-from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.messages.utils import count_tokens_approximately
+from openai import APIError
 from typing_extensions import NotRequired
 
 
@@ -63,6 +64,9 @@ class RequestSummaryState(AgentState):
     # LangGraph checkpoints this small projection beside, not instead of, the
     # complete messages channel. No external memory/cache database is added.
     request_summary: NotRequired[dict]
+    # Optional summary failed; do not retry automatically on the next model turn.
+    # A trusted host may explicitly clear this after a new recovery decision.
+    request_summary_failure: NotRequired[dict | None]
 
 
 class RequestSummaryMiddleware(AgentMiddleware):
@@ -104,7 +108,7 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         return [messages[0], HumanMessage.model_validate(record["message"]), *pinned, *messages[end:]]
 
     async def abefore_model(self, state, runtime):
-        if state.get("output") or state.get("review"):
+        if state.get("output") or state.get("review") or state.get("request_summary_failure"):
             return None
         full = state["messages"]
         if not full or not isinstance(full[0], HumanMessage):
@@ -127,7 +131,22 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             # last projection and every subsequent message; the ordinary model
             # input/cost/call ceilings still stop an oversized continuation.
             return None
-        update = await self.native.abefore_model({"messages": working}, runtime)
+        try:
+            update = await self.native.abefore_model({"messages": working}, runtime)
+        except (ValueError, TimeoutError, APIError) as exc:
+            # This optional memory projection is not the research output. Reject
+            # a truncated/empty summary, retain the previous view + full journal,
+            # and let the ordinary input/call ceilings govern continuation.
+            # Unexpected programming/contract errors still propagate.
+            known = {"case_review_truncated_no_partial_acceptance",
+                     "context_summary_empty_or_tool_response",
+                     "case_review_input_ceiling_before_transport"}
+            if isinstance(exc, ValueError) and str(exc) not in known:
+                raise
+            return {"request_summary_failure": {
+                "reason": str(exc) if isinstance(exc, ValueError) else type(exc).__name__,
+                "original_history_retained": True, "automatic_retry": False,
+                "previous_summary_count": previous.get("count", 0)}}
         if not update:
             return None
         # Native update = RemoveMessage(all), one summary, complete recent pairs.
@@ -148,4 +167,13 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             "last_original_id": full[end - 1].id, "count": previous.get("count", 0) + 1}}
 
     async def awrap_model_call(self, request, handler):
-        return await handler(request.override(messages=self.projected_messages(request.state)))
+        update = {"messages": self.projected_messages(request.state)}
+        if request.state.get("request_summary_failure"):
+            content = request.system_message.content if request.system_message else ""
+            blocks = [{"type":"text", "text":content}] if isinstance(content,str) else list(content)
+            update["system_message"] = SystemMessage(content=[*blocks,{"type":"text","text":
+                "Optional history summary failed; its partial text was NOT accepted. The previous view and original "
+                "checkpoint are retained. Continue only from available original records and current user instructions. "
+                "No automatic summary retry. If required context cannot be recovered within the current limits, "
+                "state the missing context and request a scoped handoff; never claim data was not disclosed."}])
+        return await handler(request.override(**update))

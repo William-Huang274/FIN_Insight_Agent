@@ -35,6 +35,8 @@ def bind_report_charts(charts, source_lookup):
             if not point.source.source_id or point.source.assumption_note:
                 raise ValueError("chart_points_require_observed_sources_not_unsourced_values")
             item = source_lookup(point.source.source_id)
+            if item.get("result_state") == "numeric_fact" and item.get("unit") != chart.unit:
+                raise ValueError("chart_unit_differs_from_numeric_fact_use_scale_divisor")
             if item.get("arithmetic_verified") is True and item.get("result_state") == "non_authoritative_metric":
                 value = Decimal(item["value_decimal"])
                 provenance = {"calculation": item}

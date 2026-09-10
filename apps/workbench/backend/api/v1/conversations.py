@@ -264,8 +264,9 @@ def build_conversations_router(service):
             **({"calculation": item} if key.startswith("CALC::") else {})}]} for key, item in sources.items()}
         # Thread titles may be clipped prompts, not document titles. Preserve the
         # saved answer verbatim and use a compact neutral cover heading.
+        from sec_agent.agent_runtime.conversation_handoff import answer_charts
         report = {"title": "FinSight · 已保存回答",
-            "narrative_markdown": chosen[0]["content"], "citations": citations, "charts": []}
+            "narrative_markdown": chosen[0]["content"], "citations": citations, "charts": answer_charts(messages[:index])}
         from ...application.report_delivery import export_report
         data, mime = await run_in_threadpool(export_report, report, format,
             review_status="已保存回答的固定版本；来源目录列出本回答之前已读凭证，不代表逐句引用或金融结论已核验。")

@@ -13,6 +13,11 @@ from urllib.parse import urlsplit
 from xml.sax.saxutils import escape
 
 
+def chart_display_unit(chart):
+    scale = chart.get("scale_divisor", 1)
+    return chart["unit"] if scale == 1 else f"{scale:,} {chart['unit']}"
+
+
 def readable_report(report):
     text = report["narrative_markdown"]
     references = []
@@ -20,9 +25,20 @@ def readable_report(report):
         text = text.replace("[" + key + "]", f"[{number}]")
         titles, urls, calculations = [], [], []
         for source in citation.get("sources", []):
-            titles.append(source.get("title") or source.get("source_id") or "已绑定来源")
+            trace = source.get("formula_trace") or {}
+            metric_label = trace.get("metric_title") or source.get("metric_id")
+            fact_title = " · ".join(str(v) for v in (source.get("ticker"), metric_label, source.get("period_start"), source.get("period_end")) if v)
+            titles.append(source.get("title") or ("财务指标：" + fact_title if metric_label else source.get("source_id")) or "已绑定来源")
             urls.extend(([source["source_url"]] if source.get("source_url") else []) + list(source.get("citation_urls") or []))
-            if calculation := source.get("calculation"):
+            if metric_label and source.get("value_decimal") is not None:
+                calculations.append(f"数值：{source['value_decimal']} {source.get('unit', '')}")
+                if trace:
+                    calculations.append("派生计算：" + trace.get("formula", "") + f"；定义版本 {trace.get('definition_version', '未记录')}")
+                    for operand in trace.get("inputs", []):
+                        calculations.append(f"输入 {operand['metric_id']}：{operand['value_decimal']} {operand['unit']}；{operand.get('period_start', '')} 至 {operand['period_end']}")
+                    if trace.get("interpretation_boundary"):
+                        calculations.append("解释边界：" + trace["interpretation_boundary"])
+            if calculation := (source.get("calculation") or (source if source.get("result_state") == "non_authoritative_metric" and source.get("arithmetic_verified") is True else None)):
                 calculations.append(f"计算：{calculation['expression']} = {calculation['value_decimal']} {calculation['result_unit']}")
                 for name, operand in calculation["operands"].items():
                     provenance = operand.get("source_provenance", {})
@@ -118,7 +134,7 @@ def chart_png(chart):
                 label=name, color=colors[group % len(colors)])
             axis.bar_label(bars, fmt="%.2f", padding=4, fontsize=10, fontproperties=font)
     axis.set_xticks(range(len(labels)), labels, fontproperties=font, rotation=15 if len(labels) > 5 else 0)
-    axis.set_ylabel(chart["unit"], fontproperties=font)
+    axis.set_ylabel(chart_display_unit(chart), fontproperties=font)
     axis.set_title(chart["title"], loc="left", fontproperties=font, fontsize=16, pad=20)
     axis.spines[["top", "right"]].set_visible(False)
     axis.set_axisbelow(True)
@@ -159,7 +175,7 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
     if format == "md":
         body = f"# {title}\n\n{review_status}\n\n{text}"
         for chart in charts:
-            body += f"\n\n## {chart['title']}\n\n{chart['interpretation']}\n\n单位：{chart['unit']}\n\n| 项目 | 系列 | 数值 |\n|---|---|---:|\n"
+            body += f"\n\n## {chart['title']}\n\n{chart['interpretation']}\n\n单位：{chart_display_unit(chart)}\n\n| 项目 | 系列 | 数值 |\n|---|---|---:|\n"
             body += "\n".join(f"| {p['label']} | {p['series']} | {p['value']:g} |" for p in chart["points"])
         body += "\n\n## 来源\n\n" + "\n\n".join(references)
         return body.encode("utf-8"), "text/markdown; charset=utf-8"
@@ -344,7 +360,7 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
             data.categories = labels
             for series in dict.fromkeys(p["series"] for p in chart["points"]):
                 lookup = {p["label"]: p["value"] for p in chart["points"] if p["series"] == series}
-                data.add_series(series or chart["unit"], [lookup.get(label) for label in labels])
+                data.add_series(series or chart_display_unit(chart), [lookup.get(label) for label in labels])
             figure = page.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS if chart["kind"] == "line" else XL_CHART_TYPE.COLUMN_CLUSTERED,
                 Inches(.8), Inches(1.6), Inches(11.7), Inches(4.7), data).chart
             # python-pptx's chart templates contain signed axis IDs. OOXML uses
@@ -358,7 +374,7 @@ def export_report(report, format, *, review_status="待人工审阅", public_bas
             figure.legend.position = XL_LEGEND_POSITION.BOTTOM
             figure.legend.font.name, figure.legend.font.size = "Microsoft YaHei", Pt(13)
             figure.value_axis.has_title = True
-            figure.value_axis.axis_title.text_frame.text = chart["unit"]
+            figure.value_axis.axis_title.text_frame.text = chart_display_unit(chart)
             figure.value_axis.tick_labels.number_format = "#,##0.##"
             if chart["kind"] == "bar":
                 values = [p["value"] for p in chart["points"]]

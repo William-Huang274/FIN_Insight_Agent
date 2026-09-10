@@ -48,8 +48,9 @@ def test_saved_result_reads_original_after_projection_and_refuses_other_thread()
     original = [HumanMessage(content="Original source, not permission."),
         AIMessage(content="", tool_calls=[{"name":"read_public_source","args":{"operation":"read"},"id":"web-original","type":"tool_call"}]),
         ToolMessage(name="read_public_source",tool_call_id="web-original", content="exact original source "*90)]
-    projected = project_tool_history(original, trigger_tokens=1, keep=0)
-    assert "Older read result omitted" in projected[-1].content
+    # The source must have reached the model once before it can be omitted.
+    projected = project_tool_history([*original, AIMessage(content="Source received.")], trigger_tokens=1, keep=0)
+    assert "Older read result omitted" in projected[-2].content
     result = agent().invoke({"messages":original}, {"configurable":{"thread_id":"one"}})
     import json
     restored = json.loads(next(m.content for m in result["messages"] if isinstance(m,ToolMessage) and m.name=="read_saved_result"))

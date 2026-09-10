@@ -218,6 +218,7 @@ def open_dell_approved_data_composition(
             sqlite_path=paths["s2_mart"],
             expected_mart_sha256=decision.bound_inputs.s2_mart_sha256,
             snapshot_id=DELL_APPROVED_DATA_SNAPSHOT_ID,
+            include_runtime_derivatives=False,
         )
         reviewed_index = load_executable_reviewed_evidence_index_v1_2(
             config_path=enrichment_path,
@@ -253,6 +254,14 @@ def open_dell_approved_data_composition(
         )
         compiler = SourceFamilyCompiler(inventory=inventory, baseline=baseline)
         source_route_catalog = compiler.provider_route_catalog()
+        # Keep the approved physical inventory identity bound to its captured
+        # metric definitions. Runtime derived capabilities have their own digest
+        # and do not rewrite old source inventories or report checkpoints.
+        planner_capabilities = derive_planner_tool_capabilities(
+            sqlite_path=paths["s2_mart"],
+            expected_mart_sha256=decision.bound_inputs.s2_mart_sha256,
+            snapshot_id=DELL_APPROVED_DATA_SNAPSHOT_ID,
+        )
         branch_ids = tuple(row.branch_id for row in foundation.question_branches)
         graph_run = compose_dell_mcp_graph_run(
             foundation,

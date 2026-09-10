@@ -50,19 +50,27 @@ def test_configuration_scope_and_run_isolation():
         with pytest.raises(ValidationError): StudioConfiguration.model_validate(invalid)
 
 
-def test_selected_method_reaches_native_agent_system_prompt(monkeypatch):
+@pytest.mark.parametrize("revision_target", [None, {"paper_id": "P-development", "changed_claim_ids": []}])
+def test_selected_method_reaches_native_agent_system_prompt(monkeypatch, revision_target):
     from sec_agent.agent_runtime import dell_case_convergence_agent as output
     from sec_agent.agent_runtime import dell_case_review_agent as review
     config=default_configuration()
     config.methods["writer"] += "\nSTUDIO_WRITER_CONSUMPTION_MARKER"
     config.methods["verifier"] += "\nSTUDIO_REVIEW_CONSUMPTION_MARKER"
     monkeypatch.setattr(output,"create_agent",lambda **kwargs:kwargs)
-    monkeypatch.setattr(review,"create_agent",lambda **kwargs:kwargs)
+    class CapturedAgent(dict):
+        output_channels = []
+    monkeypatch.setattr(review,"create_agent",lambda **kwargs:CapturedAgent(kwargs))
     writer=output.build_case_output_agent(role="writer",model=None,tools=[],artifacts=None,
         limits={"model_calls":10,"tool_calls":32},method_instructions=config.instructions("quick_writer"),
         allow_answers=True,answer_only=True)
-    verifier=review.build_case_reviewer(role="verifier",model=None,tools=[],artifacts=None,
-        method_instructions=config.instructions("verifier"))
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_sha256
+    artifacts = SimpleNamespace(read_paper=lambda _: {})
+    if revision_target:
+        revision_target = {**revision_target, "kind": "revision_only", "current_digest": canonical_sha256({})}
+    verifier=review.build_case_reviewer(role="verifier",model=None,tools=[],artifacts=artifacts,
+        method_instructions=config.instructions("verifier"), revision_target=revision_target)
     assert "STUDIO_WRITER_CONSUMPTION_MARKER" in writer["system_prompt"]
     assert "STUDIO_REVIEW_CONSUMPTION_MARKER" in verifier["system_prompt"]
     assert "STUDIO_WRITER_CONSUMPTION_MARKER" not in verifier["system_prompt"]

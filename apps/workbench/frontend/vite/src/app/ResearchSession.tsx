@@ -707,7 +707,7 @@ export function ResearchSession() {
                     {displayedReport?.charts?.map((chart, index) => <figure className="rs-research-chart" key={`${historicalReport?.report_version || session.report_version}-${index}`}>
                       <img src={`/api/v1/research-sessions/${id}/report/charts/${index}.png${reportQuery || `?v=${session.report_version}`}`} alt={chart.title} />
                       <figcaption>{chart.interpretation}</figcaption>
-                      <details><summary>图表数值与来源（{chart.unit}）</summary><table><thead><tr><th>项目</th><th>系列</th><th>数值</th><th>来源</th></tr></thead>
+                      <details><summary>图表数值与来源（{(chart.scale_divisor || 1) === 1 ? chart.unit : `${chart.scale_divisor!.toLocaleString()} ${chart.unit}`}）</summary><table><thead><tr><th>项目</th><th>系列</th><th>数值</th><th>来源</th></tr></thead>
                         <tbody>{chart.points.map((point, p) => <tr key={p}><td>{point.label}</td><td>{point.series}</td><td>{point.value.toLocaleString()}</td>
                           <td>{chartSourceLinks(point.provenance).map((url, n) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">原始来源 {n + 1} </a>)}
                             <details><summary>定位与计算明细</summary><small>{point.source_id}</small><pre>{JSON.stringify(point.provenance, null, 2)}</pre></details></td></tr>)}</tbody></table></details>

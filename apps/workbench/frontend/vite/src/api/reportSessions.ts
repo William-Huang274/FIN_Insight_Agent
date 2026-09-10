@@ -114,7 +114,7 @@ export type Session = {
   research_attempt_history?: { run_id: string | null; phase: string; outcomes: { task_id: string; status: string }[] }[];
   research_guidance?: { message: string; created_at: string }[];
   report?: {
-    charts?: { title: string; interpretation: string; unit: string; points: { label: string; series: string; value: number; source_id: string; provenance: unknown }[] }[];
+    charts?: { title: string; interpretation: string; unit: string; scale_divisor?: number; points: { label: string; series: string; value: number; source_id: string; provenance: unknown }[] }[];
     title: string;
     narrative_markdown: string;
     citations: Record<string, Citation>;

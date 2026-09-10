@@ -337,6 +337,12 @@ class NumericFormulaTrace(_StrictOutputModel):
     operation: str
     input_numeric_fact_ids: tuple[str, ...]
     input_metrics: tuple[str, ...]
+    definition_version: int | None = None
+    metric_title: str = ""
+    interpretation_boundary: str = ""
+    comparison: str = "same_period"
+    vintage_policy: str = ""
+    inputs: tuple["NumericFactProjection", ...] = ()
 
 
 class NumericFactProjection(_StrictOutputModel):

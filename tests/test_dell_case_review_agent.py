@@ -461,11 +461,15 @@ def test_actual_case_data_plane_with_native_MCP_tool_projection(artifacts):
                     "request": {"operation": "catalog"}, "branch_id": "Q1_ISSUER_TRUTH"}, "catalog"))
                 assert catalog.status == "success" and catalog.artifact["items"]
                 facts = await tools["query_company_financial_facts"].ainvoke(call("query_company_financial_facts", {
-                    "branch_id": next(b for b in branches if b.startswith("Q8_")), "ticker": "DELL", "metric_ids": ["revenue"],
+                    "branch_id": next(b for b in branches if b.startswith("Q8_")), "ticker": "DELL", "metric_ids": ["revenue", "net_margin", "revenue_yoy_growth"],
                     "research_as_of": "2026-09-02", "granularity": "fiscal_year", "fiscal_years": [2026],
                     "selection_mode": "latest_on_or_before"}, "facts"))
                 assert facts.status == "success", facts.content
                 assert "numeric_fact" in facts.content
+                import json
+                payload = facts.artifact
+                assert [r["metric_id"] for r in payload["results"]] == ["revenue", "net_margin", "revenue_yoy_growth"]
+                assert all(r["status"] == "resolved" for r in payload["results"]), json.dumps(payload)
         asyncio.run(exercise())
 
 

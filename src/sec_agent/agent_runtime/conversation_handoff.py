@@ -42,6 +42,17 @@ def observed_sources(state):
     return items
 
 
+def answer_charts(messages):
+    """Successful host-bound charts from this user turn only, never old charts."""
+    from copy import deepcopy
+    start = max((i for i, message in enumerate(messages)
+                 if (message.get("type") or message.get("role")) in {"human", "user"}), default=0)
+    return [deepcopy(chart) for message in messages[start:]
+            if message.get("type") == "tool" and message.get("name") == "create_report_chart"
+            and message.get("status") != "error" and isinstance(message.get("artifact"), dict)
+            for chart in message["artifact"].get("charts", [])]
+
+
 def handoff_tools(*, reference, sdk, owner_id):
     """Reference and owner originate in host-owned thread metadata, not user text."""
     source_thread = str(UUID(reference["source_thread"]))

@@ -48,6 +48,21 @@ def test_plot_is_png_and_markdown_tables_use_mature_parser():
     assert any(kind == "table" for kind, _ in markdown_blocks(sample()["narrative_markdown"]))
 
 
+def test_scaled_source_values_have_scaled_display_units_without_mutating_authority():
+    from apps.workbench.backend.application.report_delivery import chart_display_unit
+    from copy import deepcopy
+    report = sample()
+    report["charts"] = bind_report_charts([ReportChart(title="缩放比较", unit="USD", scale_divisor=1000000,
+        points=[{"label": key, "source": {"source_id": key}} for key in ("a", "b")],
+        interpretation="来源美元数值展示为百万美元；不重新计算金融指标。")],
+        lambda key: {"result_state": "numeric_fact", "numeric_fact_authority": True, "unit": "USD", "value_decimal": "2000000"})
+    original = deepcopy(report)
+    assert chart_display_unit(report["charts"][0]) == "1,000,000 USD"
+    body, _ = export_report(report, "md")
+    assert "单位：1,000,000 USD" in body.decode() and "| a |  | 2 |" in body.decode()
+    assert report == original
+
+
 def test_chart_citations_and_task_links_follow_export_surface_without_mutating_report():
     from copy import deepcopy
     report = sample()
@@ -141,6 +156,19 @@ def test_unassessed_financial_semantics_is_not_a_failed_validation():
     text = "\n".join(references)
     assert "未验证（计算工具不判断金融口径）" in text
     assert "金融口径校验：未通过" not in text
+
+
+def test_conversation_flat_calculation_and_derived_fact_keep_readable_provenance():
+    report = sample()
+    report["citations"] = {
+        "NUMFACT::derived": {"sources": [{"ticker": "EXAMPLE", "metric_id": "revenue_yoy_growth", "value_decimal": "25", "unit": "percent", "period_start": "2025-01-01", "period_end": "2025-12-31",
+            "formula_trace": {"metric_title": "收入同比变化率", "definition_version": 1, "formula": "(current / prior - 1) * 100", "inputs": [
+                {"metric_id": "revenue", "value_decimal": "100", "unit": "USD", "period_start": "2024-01-01", "period_end": "2024-12-31"}]}}]},
+        "CALC::flat": {"sources": [{"result_state": "non_authoritative_metric", "arithmetic_verified": True, "expression": "a - b", "value_decimal": "25", "result_unit": "USD", "operands": {}, "rationale": "Synthetic difference."}]}}
+    _, references = readable_report(report)
+    joined = "\n".join(references)
+    assert "收入同比变化率" in joined and "输入 revenue：100 USD" in joined
+    assert "a - b = 25 USD" in joined
 
 
 def test_chart_cannot_invent_values_or_bind_search_preview():

@@ -360,7 +360,10 @@ def build_research_data_mcp_server(
         description=(
             "Query company financial facts through the injected typed SQL/domain "
             "port. Every query field is explicit in the MCP schema; there is no "
-            "free-form request object or narrative numeric fallback."
+            "free-form request object or narrative numeric fallback. Prefer catalog derived metric IDs "
+            "for standard ratios and period comparisons, rather than re-entering formulas. "
+            "Use the returned NumericFact IDs unchanged in workpapers, report citations and charts; "
+            "formula_trace preserves inputs, period and interpretation limits."
         ),
         structured_output=True,
     )

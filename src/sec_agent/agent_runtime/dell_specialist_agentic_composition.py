@@ -231,6 +231,8 @@ def _build_graph_input(
                 "availability",
                 "formula",
                 "observed_period_roles",
+                "title",
+                "interpretation_boundary",
             )
         }
         for row in metric_rows
@@ -353,7 +355,7 @@ def _build_graph_input(
                  "answer_free": True, "grants_authority": False},
                 {"capability_ref": "capability:research:methods",
                  "action": "request_method",
-                 "usage": "Read the compact catalog with empty method_id; then select lead, finance, industry_product, counter, writer or verifier. Packaged answer-free guidance only, never evidence or file access.",
+                 "usage": "Before substantive financial judgments, read the relevant finance or industry_product method unless its full text is already bound in this run. For review select counter/verifier. Empty method_id lists all six roles. Apply the steps to this task, not just acknowledge reading. Prefer catalog standard derived financial metrics to re-entering formulas. Packaged guidance only, never evidence or file access.",
                  "answer_free": True, "grants_authority": False},
                 *(({"capability_ref": "capability:dell:source-document-read",
                    "actions": ["catalog", "outline", "search", "read"],

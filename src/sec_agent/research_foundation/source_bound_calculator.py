@@ -94,7 +94,8 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                 if operand.literal is not None and _number(operand.literal) != value:
                     raise ValueError("operand_value_differs_from_observed_s2_fact")
                 binding = {"source_id": operand.source_id, "authority": "s2_input", **{
-                    key: item[key] for key in ("ticker", "metric_id", "period_start", "period_end", "unit", "fiscal_period") if key in item}}
+                    key: item[key] for key in ("ticker", "metric_id", "period_start", "period_end", "unit", "fiscal_period",
+                                              "formula_trace", "source_observation_ids", "citation_urls", "research_as_of") if key in item}}
             elif (item.get("result_state") == "non_authoritative_metric" and item.get("arithmetic_verified") is True
                     and item.get("numeric_fact_authority") is False and item.get("financial_semantics_verified") is False):
                 if operand.source_id.startswith("CALC::") and operand.source_id != item.get("calculation_id"):

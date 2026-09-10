@@ -250,7 +250,7 @@ ModelPurpose = Literal["planner", "specialist", "counter", "verifier", "lead", "
 
 
 class DeepSeekModelProfile(_StrictSemanticModel):
-    model: Literal["deepseek-v4-pro", "deepseek-v4-flash"]
+    model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash"]
     reasoning_effort: Literal["low", "high", "max"] = "high"
     thinking: Literal["disabled", "enabled"] | None = None
 
@@ -260,7 +260,7 @@ class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
         "fin_ia_dell_reference_vertical_deepseek_structured_agents_v1_0"
     ]
     provider: Literal["deepseek"]
-    model: Literal["deepseek-v4-pro", "deepseek-v4-flash"]
+    model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash"]
     reasoning_effort: Literal["low", "high", "max"] = "high"
     model_profiles: dict[ModelPurpose, DeepSeekModelProfile] = Field(default_factory=dict)
     base_url: Literal["https://api.deepseek.com"]

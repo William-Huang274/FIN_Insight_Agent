@@ -15,6 +15,7 @@ from langgraph.prebuilt import ToolRuntime
 from financial_facts import FactLookup, execute_fact_lookup
 from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources, source_items_from_tool
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+from sec_agent.research_foundation.report_charts import ReportChart, bind_report_charts
 from .conversation_agent import GrantedTool
 
 
@@ -23,7 +24,7 @@ class TaskMaterialRequest(SourceDocumentRequest):
     source_space: Literal["uploads"] = "uploads"
 
 
-def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | None = None):
+def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | None = None, method_reader=None):
     """Paths and thread ownership come from the host, never tool arguments."""
     grants = []
     @tool
@@ -65,22 +66,40 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
     if fact_mart is not None:
         fact_mart = fact_mart.resolve(strict=True)
         @tool
+        def get_research_method(method_id: str = ""):
+            """Read a role method before substantive financial analysis: finance, industry_product, counter, writer, verifier or lead. Empty ID lists methods. Guidance only, not evidence or extra permissions."""
+            from sec_agent.research_foundation.research_methods import get_research_method as read_method
+            try:
+                return (method_reader or read_method)(method_id)
+            except ValueError as exc:
+                raise ToolException(str(exc)) from exc
+        grants.append(GrantedTool(get_research_method, "read", "已打包研究方法，只读"))
+        @tool
         def list_financial_data():
             """List companies, metrics and periods available in the host-approved fact snapshot. Availability is not financial comparability or complete worldwide coverage."""
             with closing(sqlite3.connect(fact_mart.as_uri() + "?mode=ro", uri=True)) as db:
                 rows = db.execute("SELECT ticker, legal_name, metric_id, period_role, MIN(fiscal_year), MAX(fiscal_year) FROM company_fact_observations GROUP BY ticker,legal_name,metric_id,period_role").fetchall()
+                base_ids = [row[0] for row in db.execute("SELECT metric_id FROM metric_definitions WHERE formula IS NULL")]
+            from financial_facts.derived_metrics import derived_metric_catalog
             return {"coverage": [dict(zip(["ticker", "company", "metric", "period_role", "first_year", "last_year"], row)) for row in rows],
+                    "derived_metrics": derived_metric_catalog(base_ids),
                     "notice": "本地申报快照；查询时必须指定信息截止日，不宣称实时数据。"}
         @tool(response_format="content_and_artifact")
-        def query_financial_data(ticker: str, metric_id: str, fiscal_years: list[int], research_as_of: date,
-                                 granularity: Literal["fiscal_year", "quarter_discrete", "fiscal_ytd", "instant"], runtime: ToolRuntime):
-            """Read up to four fiscal-year selections using native point-in-time/unit/vintage validation. For each year returns the latest matching period on or before the cutoff. Check exact returned start/end; a quarter is not a full year. No free-form SQL or writes."""
+        def query_financial_data(ticker: str, fiscal_years: list[int], research_as_of: date,
+                                 granularity: Literal["fiscal_year", "quarter_discrete", "fiscal_ytd", "instant"], runtime: ToolRuntime,
+                                 metric_id: str = "", metric_ids: list[str] | None = None):
+            """Batch up to twelve metrics and four fiscal-year selections using native point-in-time/unit/vintage validation. Provide metric_ids for a batch OR metric_id for one metric. Select only metrics needed for the question; batch current-year comparisons separately from two-year raw values. Prefer catalog derived metric IDs for standard ratios/growth instead of writing formulas. Reuse returned NumericFact IDs in answers and charts. Each requested metric/year has its own result or gap; one missing metric does not discard successful results. For each year returns the latest matching period on or before cutoff. Check exact start/end; a quarter is not a full year. No free-form SQL or writes."""
             if not 1 <= len(fiscal_years) <= 4 or len(set(fiscal_years)) != len(fiscal_years):
                 raise ToolException("请选择一至四个不重复财年")
-            rows = [execute_fact_lookup(fact_mart, FactLookup(fact_request_id=f"{runtime.tool_call_id}:{year}",
-                ticker=ticker, metric_id=metric_id, research_as_of=research_as_of.isoformat(),
+            if bool(metric_id) == bool(metric_ids):
+                raise ToolException("请选择单个 metric_id 或批量 metric_ids，不要同时提供")
+            selected = metric_ids or [metric_id]
+            if not 1 <= len(selected) <= 12 or len(set(selected)) != len(selected) or any(not m.strip() for m in selected):
+                raise ToolException("请选择一至十二个不重复、非空的指标")
+            rows = [execute_fact_lookup(fact_mart, FactLookup(fact_request_id=(f"{runtime.tool_call_id}:{metric}:{year}" if metric_ids else f"{runtime.tool_call_id}:{year}"),
+                ticker=ticker, metric_id=metric, research_as_of=research_as_of.isoformat(),
                 period={"fiscal_years": [year], "selection_mode": "latest_on_or_before"},
-                granularity=granularity, requested_unit="reported_source_unit")).as_dict() for year in fiscal_years]
+                granularity=granularity, requested_unit="reported_source_unit")).as_dict() for metric in selected for year in fiscal_years]
             result = {"authority_state": "s2_numeric_fact_query_result", "results": rows}
             return json.dumps(result, ensure_ascii=False), result
         grants.extend(GrantedTool(t, "read", "部署已批准的财务事实快照，只读查询") for t in [list_financial_data, query_financial_data])
@@ -103,6 +122,19 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
             raise ToolException("计算未通过来源绑定或表达式检查，请回读实际来源并修正参数：" + str(exc)) from exc
         return json.dumps(result, ensure_ascii=False), result
     grants.append(GrantedTool(calculate_research_metric, "read", "已读取来源的精确计算，无文件或数据库写入"))
+    if fact_mart is not None:
+        @tool(response_format="content_and_artifact")
+        def create_report_chart(chart: ReportChart, runtime: ToolRuntime):
+            """Bind a chart to source IDs already read in this thread. Points take source_id, never new values. Reuse standard derived NumericFacts directly. Use the source unit and scale_divisor for display. This turn's exported answer includes saved charts."""
+            from .conversation_handoff import observed_sources
+            state = {"values": {"messages": [m.model_dump(mode="json") for m in runtime.state.get("messages", [])]}}
+            sources = observed_sources(state)
+            try:
+                result = {"charts": bind_report_charts([chart], sources.__getitem__)}
+            except (ValueError, KeyError) as exc:
+                raise ToolException("图表绑定未通过，请使用当前会话实际读取的完整来源ID和单位：" + str(exc)) from exc
+            return json.dumps(result, ensure_ascii=False), result
+        grants.append(GrantedTool(create_report_chart, "read", "已读来源的图表投影，仅保存于当前会话记录"))
     # Native ToolException is recoverable input feedback. Infrastructure errors
     # still propagate, preserving the failed run rather than fabricating a gap.
     for grant in grants:

@@ -210,11 +210,24 @@ def build_conversations_router(service):
         if any(t.get("interrupts") for t in state.get("tasks", [])):
             raise HTTPException(409, "请先处理待批准的操作；新窗口不会继承待执行授权")
         metadata = source.get("metadata", {})
+        from sec_agent.agent_runtime.working_memory_tools import memory_enabled, memory_for
+        notes, memory_notice = [], None
+        if memory_enabled():
+            import sqlite3
+            try:
+                notes = await run_in_threadpool(lambda: memory_for({}, "handoff", owner=current_owner(request),
+                    workspace=str(thread_id)).manifest())
+            except (OSError, sqlite3.Error):
+                memory_notice = "工作底稿索引暂不可读取，未纳入本次交接；原底稿未删除。"
         target = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH,
             "owner_id": metadata.get("owner_id", "local-pilot"),
             "title": ("接续 · " + (metadata.get("title") or "对话"))[:80],
-            "handoff": {"source_thread": str(thread_id), "checkpoint_id": str(body.checkpoint_id), "note": body.note}})
-        return {"thread_id": target["thread_id"], "model_calls": 0}
+            "handoff": {"source_thread": str(thread_id), "checkpoint_id": str(body.checkpoint_id), "note": body.note,
+                        **({"working_notes": notes} if notes else {}),
+                        **({"working_memory_notice": memory_notice} if memory_notice else {})}})
+        return {"thread_id": target["thread_id"], "model_calls": 0,
+                **({"working_notes_count": len(notes)} if notes else {}),
+                **({"notice": memory_notice} if memory_notice else {})}
     @router.get("/{thread_id}")
     async def get_conversation(thread_id: UUID, request: Request):
         thread = await owned(thread_id, request)
@@ -298,4 +311,12 @@ def build_conversations_router(service):
                     prefix = f"id: {part.id}\n" if part.id and re.fullmatch(r"[0-9]+-[0-9]+", part.id) else ""
                     yield prefix + "event: custom\ndata: " + json.dumps(event, ensure_ascii=False) + "\n\n"
         return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-store"})
+    @router.get("/{thread_id}/working-notes")
+    async def notes(thread_id: UUID, request: Request, query: str = "", note_id: str | None = None,
+                    version: int | None = None, offset: int = 0, download: bool = False):
+        await owned(thread_id, request)
+        from .working_notes import working_notes_view
+        return await working_notes_view(thread_id, current_owner(request), query=query, note_id=note_id,
+                                        version=version, offset=offset, download=download)
+
     return router

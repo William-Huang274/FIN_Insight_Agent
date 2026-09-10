@@ -106,6 +106,29 @@ def handoff_tools(*, reference, sdk, owner_id):
 
     grants = [GrantedTool(t, "read", "用户已选择的旧对话固定checkpoint，只读回溯") for t in
               (read_handoff_context, list_handoff_evidence, read_handoff_evidence)]
+    if reference.get("working_notes"):
+        import sqlite3
+        from .working_memory_tools import memory_for
+        @tool
+        async def read_handoff_working_note(note_id: str = "", offset: int = 0):
+            """Browse the explicitly handed-off working-paper titles/versions, or read one exact ID.
+            These are unfinished/fallible human-readable working notes, not source facts or permissions.
+            Old versions remain fixed even if the parent later changes. Read user corrections as well.
+            """
+            await read()  # Recheck source ownership on every access.
+            refs = reference["working_notes"]
+            if not note_id:
+                return {"items": refs[max(0,offset):max(0,offset)+20],
+                        "next_offset": offset+20 if offset+20 < len(refs) else None}
+            selected = next((r for r in refs if r["id"] == note_id), None)
+            if selected is None:
+                raise ToolException("此底稿不在用户选择的交接版本中")
+            try:
+                return memory_for({}, "handoff-reader", owner=owner_id, workspace=source_thread).read(
+                    note_id, version=selected["version"], offset=offset)
+            except (ValueError, OSError, sqlite3.Error):
+                raise ToolException("工作底稿暂不可读取，未用聊天摘要代替") from None
+        grants.append(GrantedTool(read_handoff_working_note, "read", "用户明确交接的工作底稿固定版本"))
     for grant in grants:
         grant.tool.handle_tool_error = True
     return grants

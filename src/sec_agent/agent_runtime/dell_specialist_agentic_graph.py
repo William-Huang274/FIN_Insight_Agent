@@ -1907,6 +1907,9 @@ def build_dell_specialist_agentic_state_graph(
             RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
             SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
+        from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, execute_memory_tool
+        if memory_enabled():
+            models.update(WORKING_MEMORY_MODELS)
         terminal_mixed = len(batch.tool_calls) > 1 and any(
             call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction"}
             for call in batch.tool_calls)
@@ -1917,6 +1920,17 @@ def build_dell_specialist_agentic_state_graph(
         def run_tool(runtime: ToolRuntime, **_arguments: Any) -> ToolMessage:
             call = calls[runtime.tool_call_id]
             before = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
+            if call.name in WORKING_MEMORY_MODELS:
+                if before.tool_action_count >= working["max_tool_actions"]:
+                    body = {"saved": False, "notice": "工具额度已用完；底稿未保存，可按当前未完成状态交接。"}
+                else:
+                    body = execute_memory_tool(call.name, call.args, config, str(working["task"]["task_id"]))
+                    digest = canonical_sha256({"memory_call_id": call.id, "arguments": call.args})
+                    if digest not in before.dispatched_action_digests:
+                        working["notebook"] = _replace_notebook(before,
+                            tool_action_count=before.tool_action_count + 1,
+                            dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode="json")
+                return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps(body, ensure_ascii=False))
             terminal_submission = call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction"}
             if call.name == "ReviseWorkpaperAction":
                 working["last_submission_attempt"] = {**(working.get("last_submission_attempt") or {}),

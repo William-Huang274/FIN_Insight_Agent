@@ -276,9 +276,14 @@ def build_dell_lead_research_graph(
     def execute_tools(state, config: RunnableConfig):
         batch = SpecialistNativeToolBatch.model_validate_json(json.dumps(state["pending_batch"]))
         working = {"phase": "lead_observing", "pending_batch": None}
+        from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, execute_memory_tool
+        tool_models = {**LEAD_RESEARCH_TOOLS, **(WORKING_MEMORY_MODELS if memory_enabled() else {})}
 
         def invoke_tool(runtime: ToolRuntime, **kwargs):
             call = next(row for row in batch.tool_calls if row.id == runtime.tool_call_id)
+            if call.name in WORKING_MEMORY_MODELS:
+                value = execute_memory_tool(call.name, call.args, config, "lead")
+                return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
             try:
                 if len(batch.tool_calls) != 1:
                     raise ValueError("one_planning_mutation_per_turn_put_parallel_tasks_in_one_tasks_list")
@@ -376,7 +381,7 @@ def build_dell_lead_research_graph(
                 return ToolMessage(content=json.dumps(detail, ensure_ascii=False), tool_call_id=call.id, name=call.name, status="error")
 
         tools = [StructuredTool.from_function(invoke_tool, name=name, description=model.__doc__ or name,
-                    args_schema=model.model_json_schema()) for name, model in LEAD_RESEARCH_TOOLS.items()]
+                    args_schema=model.model_json_schema()) for name, model in tool_models.items()]
         node = ToolNode(tools, handle_tool_errors=False)
         calls = [row.model_dump(mode="json") if not isinstance(row, SpecialistInvalidToolCall)
                  else {"id": row.id, "name": row.name, "args": {}, "type": "tool_call"} for row in batch.tool_calls]

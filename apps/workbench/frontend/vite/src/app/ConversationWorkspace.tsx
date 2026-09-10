@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { ArrowUp, GitBranch, Layers, Link, MessageSquare, Paperclip, Plus, Square, X } from "lucide-react";
 import { ContextUsage } from "./ContextUsage";
+import { WorkingNotes } from "./WorkingNotes";
 import type { Event, Session } from "../api/reportSessions";
 import "./research-session.css";
 import "./workspace-design.css";
@@ -74,6 +75,7 @@ export default function ConversationWorkspace() {
       </div>
       <footer className="fs-assistant-compose">{awaitingApproval && <button className="fs-approval-jump" onClick={()=>reading.current?.querySelector(".fs-assistant-approval")?.scrollIntoView({block:"start",behavior:"smooth"})}>有待批准操作 · 查看内容</button>}{session?.runs[0] && <ContextUsage usage={session.runs[0].context_usage} nodeName={() => "当前助理"}/>}
         {id && <div className="fs-assistant-memory-actions"><button disabled={sending || !!active} onClick={async()=>{try {const value=await request<HandoffPreview>(`/${id}/handoff-preview`);if(current.current!==id)return;setHandoff(value);setHandoffNote(value.latest_user_request);handoffDialog.current?.showModal();}catch(e){setError((e as Error).message);}}}><GitBranch size={15}/>保留进度并开新对话</button><button onClick={async()=>{try{await navigator.clipboard.writeText(`${location.origin}/workspace/assistant?thread=${id}`);setCopied(true);window.setTimeout(()=>setCopied(false),2000);}catch{setError("无法访问剪贴板，请复制浏览器地址栏中的对话链接。");}}}><Link size={15}/>{copied?"链接已复制":"复制对话链接"}</button></div>}
+        {id && <WorkingNotes key={id} endpoint={`/api/v1/conversations/${id}/working-notes`}/>}
         {error && <p role="alert">{error}</p>}
         {!!session?.attachments?.length && <details><summary>本对话资料 · {session.attachments.length} 份</summary>{session.attachments.map(f=><p key={f.document_id}>{f.name}</p>)}</details>}
         {!!files.length && <div>{files.map((file,i)=><button key={i} disabled={sending} onClick={()=>setFiles(rows=>rows.filter(f=>f!==file))}>{file.name} <X size={12}/></button>)}</div>}

@@ -63,6 +63,11 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
     try:
         thread = await sdk.threads.get(thread_id)
         metadata = thread.get("metadata", {})
+        from .working_memory_tools import working_memory_tools
+        from .conversation_agent import GrantedTool
+        grants.extend(GrantedTool(t, "working_note_write" if t.name == "WriteWorkingNote" else "read",
+            "当前对话的工作底稿；不改用户原文件、不写入已核验事实库") for t in working_memory_tools(
+                "conversation", owner=metadata.get("owner_id", "local-pilot"), workspace=thread_id))
         from .conversation_knowledge import knowledge_tools
         grants.extend(knowledge_tools(sdk=sdk, owner_id=metadata.get("owner_id", "local-pilot"), thread_id=thread_id))
         if metadata.get("handoff"):

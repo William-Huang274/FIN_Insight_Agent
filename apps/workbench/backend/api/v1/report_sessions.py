@@ -787,4 +787,13 @@ def build_report_sessions_router(service):
         return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
 
     router.include_router(build_studio_router(service, browser_write))
+    @router.get("/research-sessions/{thread_id}/working-notes")
+    async def notes(thread_id: UUID, request: Request, query: str = "", note_id: str | None = None,
+                    version: int | None = None, offset: int = 0, download: bool = False):
+        await service.owned_thread(thread_id)
+        from ...authentication import current_owner
+        from .working_notes import working_notes_view
+        return await working_notes_view(thread_id, current_owner(request), query=query, note_id=note_id,
+                                        version=version, offset=offset, download=download)
+
     return router

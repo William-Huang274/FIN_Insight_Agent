@@ -11,6 +11,7 @@ import { WorkspaceNavigation, pageTitles } from "./WorkspaceNavigation";
 import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
 import { readMemory, writeMemory } from "./workspaceMemory";
 import { RunWorkspace } from "./RunWorkspace";
+import { WorkingNotes } from "./WorkingNotes";
 import { ResearchStart } from "./ResearchStart";
 import { ExecutionPicker, executionReady } from "./ExecutionPicker";
 import { defaultExecution, type ExecutionOptions } from "../api/reportSessions";
@@ -595,6 +596,7 @@ export function ResearchSession() {
                   信息截止 {session.research_as_of?.slice(0, 10) || "未提供"} <span>·</span>{" "}
                   {historicalReport ? `正在阅读历史 v${historicalReport.report_version}` : `当前报告 v${session.report_version || "—"}`}
                   <button className="rs-task-toggle" aria-controls="task-details-panel" aria-expanded={taskDetails} onClick={() => setTaskDetails(v => !v)}>任务说明与资料 <ChevronRight size={13} style={{transform: taskDetails ? "rotate(90deg)" : undefined}} /></button>
+                  <WorkingNotes key={id} endpoint={`/api/v1/research-sessions/${id}/working-notes`}/>
                 </p>
               </div>
               <span

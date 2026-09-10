@@ -14,7 +14,7 @@ from langchain.agents.middleware import HumanInTheLoopMiddleware, ModelCallLimit
 
 
 PermissionMode = Literal["request_standard", "approve_for_me", "full_access"]
-ToolEffect = Literal["read", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"]
+ToolEffect = Literal["read", "working_note_write", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"]
 
 
 @dataclass(frozen=True)
@@ -42,7 +42,7 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
     for grant in grants:
         name = grant.tool.name
         if name in names or not grant.scope_description.strip() or grant.effect not in {
-            "read", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"
+            "read", "working_note_write", "task_artifact_write", "user_file_change", "external_change", "knowledge_admission"
         }:
             raise ValueError("conversation_tool_grant_invalid")
         names.add(name)
@@ -68,6 +68,9 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
         "If information or access is missing, request the specific missing material or permission. "
         "Give concise public explanations, not private chain of thought. Do not declare report review/approval yourself."
     )
+    if "WriteWorkingNote" in names:
+        from .working_memory_tools import WORKING_MEMORY_GUIDANCE
+        prompt += WORKING_MEMORY_GUIDANCE
     return create_agent(model=model, tools=[g.tool for g in grants], system_prompt=prompt,
         checkpointer=checkpointer, middleware=[
             HumanInTheLoopMiddleware(interrupt_on=interrupt_on),

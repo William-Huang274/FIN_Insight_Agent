@@ -1330,6 +1330,10 @@ class DeepSeekStructuredAgentAdapter:
         if is_lead:
             from .dell_lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
             native_tools = LEAD_RESEARCH_TOOLS
+        from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, WORKING_MEMORY_GUIDANCE
+        notes_enabled = persistent_history and memory_enabled()
+        if notes_enabled:
+            native_tools = {**native_tools, **WORKING_MEMORY_MODELS}
         messages = [SystemMessage(content=_AGENTIC_SPECIALIST_SYSTEM_PROMPT if specialist_mode == "agentic_turn" else _SYSTEM_PROMPTS[role]),
                     HumanMessage(content=semantic_json)]
         if persistent_history:
@@ -1349,6 +1353,8 @@ class DeepSeekStructuredAgentAdapter:
                            "Do not remove citation/claim records while retaining the unsupported statement in prose. "
                            "This is a new revision using artifact handoff, not continuation of the old provider conversation.")
             messages[0] = SystemMessage(content=prompt)
+        if notes_enabled:
+            messages[0] = SystemMessage(content=messages[0].content + WORKING_MEMORY_GUIDANCE)
         if runtime_context_binding:
             # Only execution binding is host-only; task/claim/source arguments
             # and every original tool result remain model-owned and validated.

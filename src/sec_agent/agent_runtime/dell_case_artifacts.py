@@ -50,6 +50,26 @@ def revision_review_target(artifacts, paper_id, revision):
 
 
 class DellCaseArtifacts:
+    @classmethod
+    def from_observed_sources(cls, sources: Mapping, *, case_id: str, research_as_of: str):
+        """Read-only report view of host-restored native observations, without fake papers.
+
+        The caller must restore successful tool artifacts from its own checkpoint;
+        this is not a source-admission endpoint for model/client supplied records.
+        Existing reader and FTS5 navigation retain original IDs and authority.
+        """
+        result = cls.__new__(cls)
+        result._papers, result._sources = {}, {}
+        for ref, item in sources.items():
+            if (not isinstance(item, Mapping) or item.get("result_state") not in {
+                    "numeric_fact", "reviewed_evidence", "source_bound_passage", "non_authoritative_metric"}
+                    or ref not in [item.get(k) for k in (
+                        "numeric_fact_id", "evidence_id", "passage_id", "calculation_id", "fact_id")]):
+                raise ValueError("report_source_observation_identity_invalid")
+            result._sources[ref] = deepcopy(dict(item))
+        result.case_id, result.research_as_of = case_id, research_as_of
+        return result
+
     def __init__(self, papers: Sequence[Mapping]):
         if not papers:
             raise ValueError("research_bundle_empty")

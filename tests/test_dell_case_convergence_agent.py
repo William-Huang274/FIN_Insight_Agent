@@ -179,7 +179,7 @@ def test_lead_can_submit_source_bound_charts_and_plain_prose_is_not_false_comple
         source_id = next(s for s, row in artifacts.read_paper("P01", "sources").items() if row["result_state"] == "numeric_fact")
         claim_id = artifacts.read_paper("P01")["claims"][0]["claim_id"]
         report = {"title": "Synthetic Lead chart submission", "narrative_markdown": "Native submission fixture, not a financial judgment. " * 6 + f"[P01:{claim_id}]",
-            "charts": [{"title": "Same-source wiring fixture", "unit": "source units", "interpretation": "Both labels intentionally refer to the same source in this wiring test.",
+            "charts": [{"title": "Same-source wiring fixture", "unit": artifacts.source_item(source_id)["unit"], "interpretation": "Both labels intentionally refer to the same source in this wiring test.",
                 "points": [{"label": label, "source": {"source_id": source_id}} for label in ("A", "B")]}]}
         model = NativeFixtureModel(marker="lead-private", replies=[[], [call("submit_research_synthesis", {"synthesis": report}, "submit")]])
         async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:

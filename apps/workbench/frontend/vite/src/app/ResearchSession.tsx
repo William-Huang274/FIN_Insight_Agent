@@ -13,6 +13,7 @@ import { readMemory, writeMemory } from "./workspaceMemory";
 import { RunWorkspace } from "./RunWorkspace";
 import { WorkingNotes } from "./WorkingNotes";
 import { UserContextMenu } from "./UserContextMenu";
+import { ManualReview } from './ManualReview';
 import { ResearchStart } from "./ResearchStart";
 import { ExecutionPicker, executionReady } from "./ExecutionPicker";
 import { defaultExecution, type ExecutionOptions } from "../api/reportSessions";
@@ -89,6 +90,7 @@ const phaseName: Record<string, string> = {
   needs_revision: "有问题待修订",
   ready_for_human_review: "等待人工审阅",
   human_reviewed_not_released: "已人工审阅 · 未发布",
+  human_completed: "人工修改后完成",
   working: "正在研究",
   research_reviewing: "专家底稿已提交 · 跨稿审查中",
   research_writing: "整合判断与撰写报告",
@@ -176,7 +178,7 @@ export function ResearchSession() {
   const [motion, setMotion] = useState(() => localStorage.getItem("finsight.motion") === "reduced");
   const [taskQuery, setTaskQuery] = useState("");
   const [taskFilter, setTaskFilter] = useState("");
-  const globalPage = ["home", "all", "inbox", "preferences", "studio"].includes(page);
+  const globalPage = ["home", "all", "completed", "inbox", "preferences", "studio"].includes(page);
   const projects = useWorkspaceProjects();
   const navigate = (view: string, thread = id) => {
     setParams(next => { next.set("view", view); if (thread !== id) { next.delete("level"); next.delete("topic"); next.delete("claim"); } if (thread) next.set("thread", thread); else next.delete("thread"); return next; });
@@ -599,6 +601,7 @@ export function ResearchSession() {
                   <button className="rs-task-toggle" aria-controls="task-details-panel" aria-expanded={taskDetails} onClick={() => setTaskDetails(v => !v)}>任务说明与资料 <ChevronRight size={13} style={{transform: taskDetails ? "rotate(90deg)" : undefined}} /></button>
                   <WorkingNotes key={id} endpoint={`/api/v1/research-sessions/${id}/working-notes`}/>
                   <UserContextMenu key={`context:${id}`} endpoint={`/api/v1/research-sessions/${id}/user-context`}/>
+                  <ManualReview key={`manual:${id}`} session={session} onSaved={async()=>{setSession(await sessionsApi.state(id));await refresh();}}/>
                 </p>
               </div>
               <span
@@ -611,7 +614,7 @@ export function ResearchSession() {
                 )}{" "}
                 {session.is_draft ? (uploadStatus ? "正在解析资料 · 未调用模型" : "资料准备中 · 未调用模型") : busy
                   ? "Agent 正在执行"
-                  : session.runs?.[0]?.status === "interrupted"
+                  : session.phase === "human_completed" ? `人工修改 ${session.human_edit_count || 0} 次 · 已完成` : session.runs?.[0]?.status === "interrupted"
                     ? "已停止 · 原有结果和记录保留"
                     : session.status === "error"
                     ? "本次执行失败 · 状态已保留"

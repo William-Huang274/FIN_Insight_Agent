@@ -6,14 +6,14 @@ import { remarkBoundCitations } from "./remarkBoundCitations";
 import type { ReportDiff } from "../api/reportSessions";
 
 /** Interpret the server's immutable patch with jsdiff; never regenerate report text. */
-export function ReportDiffView({ value }: { value: ReportDiff }) {
+export function ReportDiffView({ value, proseOnly=false }: { value: ReportDiff; proseOnly?:boolean }) {
   const [context, setContext] = useState(false);
   const parsed = useMemo(() => {
     try { return { hunks: parsePatch(value.diff).flatMap(p => p.hunks), error: "" }; }
     catch { return { hunks: [], error: "无法呈现这份差异，请展开原始记录核对。" }; }
   }, [value.diff]);
   return <section className="fs-diff" aria-label="报告修订前后对照">
-    <header><div><strong>v{value.before_version} → v{value.after_version}</strong><span>{parsed.hunks.length} 处变化 · {value.citations_changed ? "引用有变化" : "引用未变"} · {value.charts_changed ? "图表有变化" : "图表未变"}</span></div>
+    <header><div><strong>v{value.before_version} → v{value.after_version}</strong><span>{parsed.hunks.length} 处变化{proseOnly ? ' · 正文对照' : ` · ${value.citations_changed ? "引用有变化" : "引用未变"} · ${value.charts_changed ? "图表有变化" : "图表未变"}`}</span></div>
       <label><input type="checkbox" checked={context} onChange={e => setContext(e.target.checked)} />显示邻近上下文</label></header>
     {value.reason && <details className="fs-diff-reason"><summary>修订请求与基线说明</summary><p>{value.reason}</p></details>}
     {parsed.error && <p role="alert">{parsed.error}</p>}

@@ -86,6 +86,8 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
                 memory_actor, owner=metadata.get("owner_id", "local-pilot"), workspace=memory_workspace,target=target))
         from .conversation_knowledge import knowledge_tools
         grants.extend(knowledge_tools(sdk=sdk, owner_id=metadata.get("owner_id", "local-pilot"), thread_id=thread_id))
+        from .research_memory import research_memory_tools
+        grants.extend(research_memory_tools(sdk,metadata.get('owner_id','local-pilot')))
         if metadata.get("handoff"):
             grants.extend(handoff_tools(reference=metadata["handoff"], sdk=sdk,
                                        owner_id=metadata.get("owner_id", "local-pilot")))

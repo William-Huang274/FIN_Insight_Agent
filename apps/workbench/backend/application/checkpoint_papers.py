@@ -25,4 +25,14 @@ def checkpoint_papers(state):
             'found':True, 'is_current':True, 'total_characters':len(body)})
     unique = {}
     for row in result: unique.setdefault(row['id'],row)
-    return list(unique.values())
+    corrections = {}
+    for decision in values.get('human_edits', []):
+        for edit in decision.get('papers', []):
+            body = edit['after']
+            identity = hashlib.sha256(json.dumps([edit['paper_id'],decision['number'],body],ensure_ascii=False).encode()).hexdigest()
+            corrections[edit['paper_id']] = {'id':'checkpoint:'+identity,
+                'title':edit['title'], 'actor':edit['actor'], 'version':decision['number']+1,
+                'body':body, 'preview':body[:240], 'editable':False,
+                'origin':f"人工修改 {decision['number']} 次 · 已确认报告底稿",
+                'found':True, 'is_current':True, 'total_characters':len(body)}
+    return [*corrections.values(), *unique.values()]

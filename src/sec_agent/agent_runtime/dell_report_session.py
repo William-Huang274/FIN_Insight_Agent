@@ -34,11 +34,13 @@ from .dell_case_convergence_agent import build_case_output_agent, report_citatio
 from .dell_case_review_agent import CaseModelAudit, case_chat_model, case_mcp_tools
 from .targeted_revision import RevisionTarget, targeted_feedback
 from .execution_options import ExecutionOptions, execution_from_config, unreviewed_report_status
+from .manual_review import ManualReview, apply_manual_review
 
 
 class ReviewAction(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    action: Literal["ask", "revise", "accept"]
+    action: Literal["ask", "revise", "accept", "manual_complete"]
+    manual_review: ManualReview | None = None
     message: str = Field(default="", max_length=16000)
     answer_mode: Literal["quick", "deep"] = "deep"
     target: RevisionTarget | None = None
@@ -46,6 +48,8 @@ class ReviewAction(BaseModel):
 
     @model_validator(mode="after")
     def quick_only_for_questions(self):
+        if (self.action == 'manual_complete') != (self.manual_review is not None):
+            raise ValueError('人工完成需要对应的正文修改与确认')
         if self.target is not None and self.action != "revise":
             raise ValueError("revision_target_is_only_for_revise")
         if self.answer_mode == "quick" and self.action != "ask":
@@ -72,6 +76,7 @@ class SessionState(TypedDict, total=False):
     conversation: Annotated[list[dict], operator.add]
     model_events: Annotated[list[dict], operator.add]
     last_output_kind: str
+    human_edits: list[dict[str, Any]]
 
 
 def abandoned_question_update(state, reason):
@@ -107,6 +112,11 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             "phase": state["phase"], "actions": ["ask", "revise", "accept"],
             "notice": "Acceptance is local human report review, not automatic release or financial authority."})
         action = ReviewAction.model_validate(response)
+        if action.action == 'manual_complete':
+            current = artifacts(state) if callable(artifacts) else artifacts
+            update = apply_manual_review(state, action.manual_review, current,
+                owner=config.get('configurable', {}).get('manual_review_owner', 'local-pilot'))
+            return Command(update=update, goto='human_review')
         if action.action == "accept":
             review = state["report_review"]
             if review.get("review_status") == "not_run":
@@ -142,6 +152,9 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             # Do not repeat the large citation object: canonical IDs resolve via tools.
             history = state.get("conversation", [])[:-1]
             body.update(request_action=state["request_action"], user_message=state["message"],
+                human_corrections=list({p['paper_id']: {'number': h['number'], 'reason': h['reason'],
+                    'paper_id': p['paper_id'], 'body': p['after']}
+                    for h in state.get('human_edits', []) for p in h['papers']}.values()),
                 conversation_history={"message_count": len(history), "read_on_demand": "read_public_conversation lists or reads saved public messages. Full text and citation bindings remain stored; previews are not substitutes for evidence.",
                     "recent": [{"message_index": i, "role": m["role"], "preview": m["content"][:400], "truncated": len(m["content"]) > 400}
                         for i, m in enumerate(history) if i >= len(history)-2]})
@@ -212,7 +225,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
     agents = {"writer": writer, "verifier": verifier}
     if quick_writer is not None:
         agents["quick_writer"] = quick_writer
-    graph.add_node("human_review", human_review, destinations=(*agents, *(("research_revision",) if revision_handler is not None else ()), END))
+    graph.add_node("human_review", human_review, destinations=('human_review', *agents, *(("research_revision",) if revision_handler is not None else ()), END))
     if revision_handler is not None:
         graph.add_node("research_revision", revision_handler)
         graph.add_edge("research_revision", "human_review")

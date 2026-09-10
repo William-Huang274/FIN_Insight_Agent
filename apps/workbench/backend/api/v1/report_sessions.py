@@ -27,6 +27,7 @@ from sec_agent.agent_runtime.dell_report_session import ReviewAction, abandoned_
 from sec_agent.agent_runtime.targeted_revision import report_digest, validate_revision_target
 from .research_studio import build_studio_router, run_configuration, owned_configuration
 from sec_agent.agent_runtime.execution_options import ExecutionOptions
+from sec_agent.agent_runtime.manual_review import manual_review_available, apply_manual_review
 
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
@@ -157,7 +158,7 @@ def review_interrupts(state):
 def public_state(state):
     values = state.get("values", {})
     result = {k: deepcopy(values[k]) for k in ("report", "report_review", "report_version", "phase", "conversation",
-        "question", "case_profile", "research_as_of", "snapshot_id", "research_stop_reason") if k in values}
+        "question", "case_profile", "research_as_of", "snapshot_id", "research_stop_reason", "human_edits") if k in values}
     outcomes = {row["task_id"]: row["status"] for row in values.get("research_outcomes", [])}
     result["research_tasks"] = [{**{key: deepcopy(row[key]) for key in ("task_id", "owner_role", "objective", "dependency_ids") if key in row},
         "status": outcomes.get(row["task_id"], row.get("status", "planned"))} for row in values.get("research_tasks", [])]
@@ -232,6 +233,8 @@ def public_state(state):
     result["can_respond"] = bool(review_interrupts(state))
     result["report_digest"] = report_digest(values["report"]) if values.get("report") else None
     result["can_accept"] = result["can_respond"] and result.get("phase") == "ready_for_human_review"
+    result['can_manual_complete'] = result['can_respond'] and manual_review_available(values)
+    result['human_edit_count'] = len(values.get('human_edits', []))
     # No tasks, raw native messages, private checkpoints or source filesystem paths.
     return result
 
@@ -359,6 +362,7 @@ def build_report_sessions_router(service):
         return [{"thread_id": t["thread_id"], "status": t["status"], "updated_at": t["updated_at"],
             "title": t.get("metadata", {}).get("title", "研究任务"),
             "phase": (t.get("values") or {}).get("phase"),
+            "human_edit_count": len((t.get('values') or {}).get('human_edits', [])),
             "studio_assistant_id": t.get("metadata", {}).get("studio_assistant_id")} for t in threads]
 
     @router.get("/research-session-config")
@@ -679,9 +683,18 @@ def build_report_sessions_router(service):
             raise HTTPException(409, "当前不在人工审阅点；运行中请先等待或停止，不会自动重发模型调用")
         if body.action == "accept" and not public_state(state)["can_accept"]:
             raise HTTPException(409, "仍有重大问题，不能标记人工审阅通过")
-        if body.action != "accept" and not body.message.strip():
+        if body.action not in {"accept", "manual_complete"} and not body.message.strip():
             raise HTTPException(422, "请填写问题或修订意见")
         thread = await service.owned_thread(thread_id)
+        if body.action == 'manual_complete':
+            if thread.get('status') in {'error', 'busy'}:
+                raise HTTPException(409, '请先处理当前运行，失败或运行中不能标记完成')
+            from sec_agent.agent_runtime.research_session import current_task_artifacts
+            try:
+                artifacts = current_task_artifacts(state['values']) if graph_for_thread(thread) == RESEARCH_GRAPH else service.artifacts
+                apply_manual_review(state['values'], body.manual_review, artifacts)
+            except ValueError as exc:
+                raise HTTPException(422, str(exc)) from exc
         if body.execution:
             if graph_for_thread(thread) != RESEARCH_GRAPH:
                 raise HTTPException(422, "旧报告审阅入口不支持切换研究模式")
@@ -689,13 +702,43 @@ def build_report_sessions_router(service):
                 body.execution.validate_catalog((service.research_profile or {}).get("branch_topics", []))
             except ValueError as exc:
                 raise HTTPException(422, str(exc)) from exc
+        action_config = await run_configuration(service, thread, body.execution.model_dump() if body.execution else None)
+        if body.action == 'manual_complete':
+            from ...authentication import current_owner
+            action_config.setdefault('configurable', {})['manual_review_owner'] = current_owner(request)
         run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), command={"resume": body.model_dump(mode="json", exclude_none=True)},
-            config=await run_configuration(service, thread, body.execution.model_dump() if body.execution else None),
+            config=action_config,
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode, "request_message": body.message,
+                **({'model_calls_requested': 0} if body.action == 'manual_complete' else {}),
                 "execution": body.execution.model_dump() if body.execution else thread.get("metadata", {}).get("execution"),
                 **({"revision_target": body.target.model_dump(mode="json"), "revision_feedback_digest": report_digest(body.message)} if body.target else {})})
         return {"run_id": run["run_id"], "status": run["status"]}
+
+    @router.post('/research-sessions/{thread_id}/remember')
+    async def remember(thread_id: UUID, request: Request):
+        browser_write(request)
+        await service.owned_thread(thread_id)
+        from ...authentication import current_owner
+        from sec_agent.agent_runtime.research_memory import remember_research
+        try:
+            return await remember_research(service.sdk,str(thread_id),current_owner(request))
+        except ValueError as exc:
+            raise HTTPException(409,str(exc)) from exc
+
+    @router.get('/research-sessions/{thread_id}/manual-review')
+    async def manual_review_draft(thread_id: UUID):
+        thread = await service.owned_thread(thread_id)
+        state = await service.state(thread_id)
+        values = state.get('values', {})
+        if not public_state(state)['can_manual_complete'] or thread.get('status') in {'error', 'busy'}:
+            raise HTTPException(409, '当前没有可人工修订的报告，请先完成运行或处理数据问题')
+        from sec_agent.agent_runtime.research_session import current_task_artifacts
+        artifacts = current_task_artifacts(values) if graph_for_thread(thread) == RESEARCH_GRAPH else service.artifacts
+        previous = {p['paper_id']: p['after'] for h in values.get('human_edits', []) for p in h['papers']}
+        return {'base_version': values['report_version'], 'report_markdown': values['report']['narrative_markdown'],
+            'papers': [{**p, 'body': previous.get(p['paper_id'], artifacts.read_paper(p['paper_id'])['narrative_markdown'])}
+                for p in artifacts.catalog()['papers']], 'review': values.get('report_review')}
 
     @router.post("/research-sessions/{thread_id}/runs/{run_id}/cancel")
     async def cancel(thread_id: UUID, run_id: UUID, request: Request):

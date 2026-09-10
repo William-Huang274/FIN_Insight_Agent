@@ -56,3 +56,13 @@ def test_old_checkpoint_papers_are_readable_without_memory_migration(tmp_path,mo
         assert catalog['items']==[]
         assert (await working_notes_view('task','alice',query='无匹配',checkpoint=state))['checkpoint_items']==[]
     asyncio.run(run())
+
+
+def test_human_correction_keeps_original_paper_visible():
+    from apps.workbench.backend.application.checkpoint_papers import checkpoint_papers
+    state={'values':{'case_papers':[{'agent_id':'analyst','final_submission':{'thesis':'现金观察','narrative_markdown':'原件'}}],
+        'human_edits':[{'number':1,'papers':[{'paper_id':'P01','actor':'analyst','title':'现金观察','after':'第一次'}]},
+            {'number':2,'papers':[{'paper_id':'P01','actor':'analyst','title':'现金观察','after':'最新人工正文'}]}]}}
+    rows=checkpoint_papers(state)
+    assert len(rows)==2 and rows[0]['body']=='最新人工正文' and rows[1]['body']=='原件'
+    assert '人工修改 2 次' in rows[0]['origin'] and rows[0]['actor']=='analyst'

@@ -3,7 +3,7 @@ import { ArrowRight, FileClock, Files, FolderOpen, Search, ShieldCheck } from "l
 import { sessionsApi, type Session, type Source, type ReportDiff } from "../api/reportSessions";
 import { ReportDiffView } from "./ReportDiffView";
 import { SourceReader } from "./SourceReader";
-import { pageTitles, sessionStatus } from "./WorkspaceNavigation";
+import { pageTitles, sessionStatus, isResearchComplete } from "./WorkspaceNavigation";
 import { reportTopics } from "./reportTopics";
 import { claimLabel, claimTitle, sourceKind, sourceTitle } from "./researchLabels";
 import { useSearchParams } from "react-router";
@@ -12,8 +12,8 @@ export function GlobalWorkspacePage({ page, sessions, navigate, query, onQuery, 
   page: string; sessions: Session[]; navigate: (page: string, id?: string) => void; query: string; onQuery: (value: string) => void;
   filter: string; onFilter: (value: string) => void; theme: string; onTheme: (value: string) => void; motion: boolean; onMotion: (value: boolean) => void;
 }) {
-  const pending = sessions.filter(s => s.status === "interrupted" && s.phase !== "human_reviewed_not_released" && s.phase !== "research_needs_attention");
-  const matching = (page === "inbox" ? pending : sessions).filter(s => `${s.title} ${s.question || ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()) && (!filter || s.status === filter));
+  const pending = sessions.filter(s => s.status === "interrupted" && !isResearchComplete(s) && s.phase !== "human_reviewed_not_released" && s.phase !== "research_needs_attention");
+  const matching = (page === "inbox" ? pending : page === "completed" ? sessions.filter(isResearchComplete) : sessions).filter(s => `${s.title} ${s.question || ""}`.toLocaleLowerCase().includes(query.toLocaleLowerCase()) && (!filter || s.status === filter));
   if (page === "preferences") return <section className="fs-page"><span className="fs-kicker">YOUR WORKSPACE</span><h1>外观与偏好</h1><p>偏好保存在此浏览器，不影响研究运行。</p><div className="fs-setting"><div><h3>界面外观</h3><p>研究蓝与中性色，阅读和图谱使用同一套视觉。</p></div><select aria-label="界面外观" value={theme} onChange={e => onTheme(e.target.value)}><option value="system">跟随系统</option><option value="light">浅色</option><option value="dark">深色</option></select></div><div className="fs-setting"><div><h3>减少动态效果</h3><p>系统减少动态效果偏好始终优先。</p></div><input type="checkbox" aria-label="减少动态效果" checked={motion} onChange={e => onMotion(e.target.checked)} /></div></section>;
   return <section className="fs-page"><div className="fs-page-title"><div><span className="fs-kicker">RESEARCH WORKSPACE</span><h1>{page === "home" ? "从上次的判断，继续研究。" : pageTitles[page]}</h1><p>{page === "inbox" ? "回到保存的审阅点，核对依据与修订结果。" : "报告、来源与研究过程，在一个工作空间中连续展开。"}</p></div><button className="fs-primary" onClick={() => navigate("new")}>新建研究 <ArrowRight size={16} /></button></div>
     {page === "home" && <div className="fs-metrics">{[{ title: "已保存研究", value: sessions.length, icon: FolderOpen, view: "all" }, { title: "等待审阅", value: pending.length, icon: ShieldCheck, view: "inbox" }, { title: "正在运行", value: sessions.filter(s => s.status === "busy").length, icon: FileClock, view: "all" }].map(m => <button key={m.title} onClick={() => { onFilter(m.title === "正在运行" ? "busy" : ""); navigate(m.view); }}><m.icon size={21} /><strong>{m.value}</strong><span>{m.title}<ArrowRight size={14} /></span></button>)}</div>}

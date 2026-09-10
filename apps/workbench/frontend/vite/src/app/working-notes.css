@@ -14,3 +14,15 @@
 .fs-notes-gallery nav button{padding:18px;min-height:235px;gap:12px;margin:0;border-radius:14px;box-shadow:0 3px 12px #26345b08}.fs-notes-gallery nav strong{font-size:17px;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .fs-note-role{display:flex;gap:7px;align-items:center}.fs-notes-gallery nav .fs-note-thumbnail{background:#f7f8fc;border:1px solid #eef0f6;border-radius:7px;padding:12px;line-height:1.8;width:100%;box-sizing:border-box;-webkit-line-clamp:4}.fs-notes-gallery nav button:hover{border-color:#7785db;box-shadow:0 5px 18px #26345b14}
 .fs-working-notes>header{position:sticky;top:-24px;background:white;z-index:1;padding-top:12px}.fs-run-meter{margin:12px 0}.fs-run-meter>summary{cursor:pointer;color:#687392}
+.fs-human-editor { max-height: 90vh; overflow-y: auto; }
+.fs-human-editor textarea { width: 100%; min-height: 220px; margin: 10px 0 18px; padding: 16px; border: 1px solid var(--rs-border, #dce1ed); border-radius: 12px; background: var(--rs-bg, #fff); color: inherit; font: inherit; line-height: 1.7; box-sizing: border-box; }
+.fs-human-editor textarea[aria-label="人工修改说明"] { min-height: 90px; }
+.fs-human-editor summary, .fs-human-history summary { cursor: pointer; padding: 12px 0; }
+.fs-human-editor button { padding: 10px 16px; margin: 6px; border: 1px solid #dce1ed; border-radius: 10px; background: #f5f6ff; color: #4557c6; font: inherit; cursor: pointer; }
+.fs-human-editor button:disabled { opacity: .5; cursor: default; }
+.fs-human-confirm { display: flex; gap: 10px; align-items: flex-start; line-height: 1.6; }
+.fs-human-confirm input[type="checkbox"] { flex: 0 0 18px; width: 18px; height: 18px; padding: 0; margin: 4px 0 0; }
+.fs-human-history { flex-basis: 100%; white-space: normal; }
+.fs-human-history section { padding: 16px; background: var(--rs-bg, #fff); border-radius: 14px; border: 1px solid #dce1ed; }
+.rs-upload-label input[type="file"] { font: inherit; padding: 12px; border: 1px dashed #cbd2ea; border-radius: 12px; background: #f8f9ff; }
+.rs-upload-label input[type="file"]::file-selector-button { font: inherit; padding: 10px 16px; margin-right: 14px; border: 1px solid #d9def0; border-radius: 9px; color: #4557c6; background: #eef0fc; cursor: pointer; }

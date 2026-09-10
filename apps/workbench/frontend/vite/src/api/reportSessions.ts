@@ -75,6 +75,9 @@ export type Finding = {
   paper_ids?: string[];
 };
 export type Session = {
+  can_manual_complete?: boolean;
+  human_edit_count?: number;
+  human_edits?: {number:number;owner:string;recorded_at:string;reason:string;base_version:number;report_before:string;report_after:string;papers:{paper_id:string;actor:string;title:string;before:string;after:string}[]}[];
   execution?: ExecutionOptions;
   can_upload?: boolean;
   report_digest?: string;

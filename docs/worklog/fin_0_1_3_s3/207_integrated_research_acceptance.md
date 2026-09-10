@@ -1,6 +1,6 @@
 # 207 · 人工完成、混合检索与跨主题记忆验收
 
-2026-09-11 Owner 授权执行；FIN 0.1.3 不变。前序 206 已提交，部署待实际核对。
+2026-09-11 Owner 授权执行；FIN 0.1.3 不变。前序 206 已完成部署。207 当前为实现已通过本地检查、真实资格待执行。
 
 ## 单一实施顺序
 
@@ -26,3 +26,12 @@
 
 - LangGraph checkpoint/interrupt 用于同线程恢复，Store 用于跨线程 namespace 记忆：https://docs.langchain.com/oss/python/langgraph/persistence
 - 现有 Qwen OpenAI SDK 适配器、rank_bm25、LangChain splitter、DiskCache 优先复用；价格按实际地域/模型核对：https://www.alibabacloud.com/help/en/model-studio/model-pricing
+
+## 207 实现切片（真实验收前）
+
+- 产品：现有报告人工审阅 interrupt 接直接编辑报告/角色底稿、原文差异和人工次数，完成后留在可多轮恢复的 human_review 节点；原始失败/审查不覆盖。自动完成区按服务端 phase 分类。文件选择器现代化。底稿画廊同时列最新人工正文和历史原件。
+- 工程：人工入口校验基础版本、引用绑定、任务内底稿 ID、用户确认；数据/工具故障不能靠按钮转绿。LangGraph 原生 checkpoint/Store 持久化，不新造流程。长期记忆按 owner 保存 report checkpoint + 研究要求版本，四区域分别回读；只做目录/精确指针，不称已完成语义长期记忆。
+- 原文 RAG：现有 BM25 + LangChain InMemoryVectorStore + Qwen text-embedding-v4/qwen3-rerank + DiskCache。先过滤当前文档范围。显式准备索引，搜索最多查询向量/重排各一次；未准备时明确退回 BM25，不隐式全文付费。失败/未知请求不自动重发。缓存有输入规模/用途/风险等逐调用依据。
+- 已检验：共享后端 86 passed（与前次65等重叠，不累加）；人工节点6项验证原checkpoint不变、修改版本递增、无模型调用、陈旧/非法引用拒绝。前端5项浏览器检查含1440/390人工编辑和完成区；修复移动端checkbox被flex压为零。TypeScript/Vite通过，保留既有大bundle提醒。Project OS interactive preflight通过，非全产品通过。
+- 尚未计入：部署、真实旧复杂题、新连续多主题问答、真实Qwen检索质量、长期跨窗口模型回读。至本记录无207付费调用。
+- 开发验收材料：D:/temp/fin207/hpe-source-nodes.json（只读提取旧上传原文，396叶节点/762向量切片约111万字符）与hpe-rag-queries-a1.json（6个公开开发问题/目标页，非盲测）。预计77个批量embedding请求以及每问题至多2个检索请求；真实统计以缓存回执为准。索引写入本项目working-memory/source-rag，原年报/旧任务不修改。

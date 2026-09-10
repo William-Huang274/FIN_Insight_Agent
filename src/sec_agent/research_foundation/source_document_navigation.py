@@ -118,7 +118,9 @@ def navigate_source_nodes(
     # hashed IDs and silently scrambling the author's sections.
     if request.operation == "catalog":
         rows.sort(key=lambda r: (str(r.get("company")), str(r.get("title")), str(r.get("parent_document_id"))))
+    retrieval_notice = ''
     if request.operation == "search" and rows:
+        eligible_rows = rows
         tokens = tokenize(request.query)
         # Reuse the mature retriever. Positive token overlap admits ties when
         # BM25 IDF is zero/negative in a very small document-scoped population.
@@ -126,6 +128,19 @@ def navigate_source_nodes(
         scores = BM25Okapi(corpus).get_scores(tokens)
         ranked = sorted(range(len(rows)), key=lambda i: (-float(scores[i]), str(rows[i]["node_id"])))
         rows = [rows[i] for i in ranked if set(tokens).intersection(corpus[i])]
+        import os
+        if os.environ.get('FINSIGHT_SOURCE_HYBRID') == '1':
+            from retrieval.source_hybrid import cache_path, rank_sources
+            path = cache_path()
+            try:
+                rows, receipt = rank_sources(eligible_rows, request.query, snapshot, rows, path=path)
+                retrieval_notice = ' Retrieval: '+str(receipt)
+            except (RuntimeError, ValueError, KeyError, OSError) as exc:
+                retrieval_notice = ' Hybrid unavailable; BM25 results retained. '+str(exc)[:160]
+            except Exception:
+                # Provider failures must not turn an available source into a gap.
+                # Private transport details are not exposed in source results.
+                retrieval_notice = ' Hybrid provider unavailable; BM25 results retained; no automatic retry.'
     items: list[dict[str, Any]] = []
     used = 0
     notice = "Use returned IDs to read complete sections/tables; search previews cannot be cited."
@@ -175,5 +190,5 @@ def navigate_source_nodes(
     return SourceDocumentResult(
         operation=request.operation, items=tuple(items),
         next_offset=next_offset if next_offset < len(rows) else None,
-        total_matches=len(rows), notice=notice, source_snapshot_sha256=snapshot,
+        total_matches=len(rows), notice=notice+retrieval_notice, source_snapshot_sha256=snapshot,
     )

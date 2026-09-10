@@ -36,7 +36,11 @@ def main():
     parser.add_argument("--working-memory", action="store_true", help="Enable persistent task working papers in this deployment.")
     parser.add_argument("--semantic-memory", action="store_true", help="Enable authorized Qwen working-paper retrieval; implies working-memory.")
     parser.add_argument('--hermes',action='store_true',help='Use the configured local Hermes native API for opt-in threads.')
+    parser.add_argument('--hybrid-rag',action='store_true',help='Use prepared original-source Qwen vectors with BM25 and reranking.')
     args = parser.parse_args()
+    if args.hybrid_rag:
+        args.semantic_memory=True
+    os.environ['FINSIGHT_SOURCE_HYBRID']='1' if args.hybrid_rag else '0'
     repo = Path(__file__).resolve().parents[2]
     settings_root = args.settings_directory.resolve(strict=True)
     settings = json.loads((settings_root / "host-settings.json").read_text(encoding="utf-8"))

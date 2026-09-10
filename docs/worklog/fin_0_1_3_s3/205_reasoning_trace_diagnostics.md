@@ -73,3 +73,4 @@ HPE 使用第五次真实消息及工具结果，只替换提前关闭工具的�
 
 已构建镜像sha256:339b7f9da873d3e7d1bb41b3b271e696591922ac6cf415f98df043a1cd6c15f3，使用既有research_workbench build、fresh-only和原settings，无运行任务变更。无网络/只读root隔离容器检查确认新ReviewWorkBudget已装入镜像，容器随即移除，未启动服务。构建日志D:/temp/fin206-reasoning-audit-a1/build.log。开始检查时本工作台API/PG/Redis容器均Exited（约一小时前停止），没有运行中的模型。此次仅构建含修复镜像，不自动启动可能有未核清排队任务的服务，也不把镜像构建称服务已加载。
 
+源码与诊断提交3c1272be，继续开发分支codex/fin013-conversation-and-retrieval，不合并main或升版本。定向编译通过、JSONL可读；凭据扫描最初宽泛sk-模式误中历史task-/risk-/disk-标识，改用凭据词边界后未发现候选凭据；私有输入/输出仍全部在临时目录，不提交仓库。

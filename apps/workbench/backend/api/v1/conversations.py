@@ -390,4 +390,6 @@ def build_conversations_router(service):
         return await working_notes_view(thread_id, current_owner(request), query=query, note_id=note_id,
                                         version=version, offset=offset, download=download)
 
+    from .working_notes import install_edit_routes
+    install_edit_routes(router,'',owned,service.sdk)
     return router

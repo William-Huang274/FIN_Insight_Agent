@@ -382,7 +382,10 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
     native = get_client()  # official in-process Agent Server connection
     async def read_guidance():
         thread = await native.threads.get(thread_id)
-        return thread.get("metadata", {}).get("research_guidance", [])
+        from .user_context import user_context_prompt
+        metadata = thread.get('metadata', {})
+        current = user_context_prompt(metadata.get('owner_id','local-pilot'),thread_id)
+        return [*metadata.get("research_guidance", []), *([{'message':current}] if current else [])]
     try:
         phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,

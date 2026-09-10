@@ -48,7 +48,6 @@ export function ConversationMemory({thread, memory}:{thread:string;memory?:Conte
       <header><div><small>CONTEXT & MEMORY</small><h2>从记录接着做</h2></div><button aria-label="关闭记忆目录" onClick={()=>dialog.current?.close()}><X size={20}/></button></header>
       <p>{memory.notice}</p>
       <div className="fs-memory-summary"><span>原始记录 <strong>{memory.original_message_count}</strong> 条</span>{memory.summary_status!=='unavailable'&&<span>当前历史投影 <strong>{memory.projected_message_count}</strong> 条</span>}<small>{memory.summary_status==='unavailable'?'Hermes 实时输入量尚未接入；记录条数不是 tokens，用量缺失不代表零消耗。':'记录条数不等于模型输入 tokens；精确用量见单次请求记录。'}</small></div>
-      {memory.summary_text && <details><summary>当前接续摘要 · 定位参考，非金融依据</summary><ReactMarkdown remarkPlugins={[remarkGfm]}>{memory.summary_text}</ReactMarkdown></details>}
       <nav aria-label="记忆分区">{regions.map(r=><button key={r.id} aria-pressed={region===r.id} onClick={()=>{setRegion(r.id);setOffset(0);setQuery('');}}><r.icon size={16}/>{r.label}<span>{memory.regions[r.id]||0}</span></button>)}</nav>
       <input aria-label="检索记忆目录" placeholder="按原文预览或原始查询参数检索；留空浏览全部" value={query} onChange={e=>{setQuery(e.target.value);setOffset(0);}}/>
       {error&&<p role="alert">{error}</p>}

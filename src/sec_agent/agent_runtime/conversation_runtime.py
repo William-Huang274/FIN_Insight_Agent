@@ -78,6 +78,8 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
                 'report was updated. If the instruction contradicts source evidence, show the conflict and ask rather '
                 'than silently preserving your old conclusion or changing facts. Target: '+json.dumps(target,ensure_ascii=False))
         from .working_memory_tools import working_memory_tools
+        from .user_context import user_context_prompt
+        task_context += user_context_prompt(metadata.get('owner_id','local-pilot'),thread_id)
         from .conversation_agent import GrantedTool
         grants.extend(GrantedTool(t, "working_note_write" if t.name == "WriteWorkingNote" else "read",
             "当前对话的工作底稿；不改用户原文件、不写入已核验事实库") for t in working_memory_tools(

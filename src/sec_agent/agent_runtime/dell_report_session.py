@@ -320,6 +320,14 @@ async def dell_report_session_graph(config: RunnableConfig, runtime: ServerRunti
     _require_langsmith_execution_environment(config)
     ids = config["configurable"]
     thread_id, run_id = str(UUID(str(ids["thread_id"]))), str(UUID(str(ids["run_id"])))
+    from langgraph_sdk import get_client
+    from .user_context import user_context_prompt
+    native = get_client()
+    try:
+        thread = await native.threads.get(thread_id)
+        user_brief = user_context_prompt(thread.get('metadata',{}).get('owner_id','local-pilot'),thread_id)
+    finally:
+        await native.aclose()
     settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
     if settings.get("owner_scope") != "funded_local_dell_report_review_only":
         raise ValueError("session_owner_scope_required")
@@ -354,6 +362,6 @@ async def dell_report_session_graph(config: RunnableConfig, runtime: ServerRunti
                     public_sink=public_sink, private_sink=private_sink, stream_public=True)
                 agents[role] = build_case_output_agent(role="writer" if quick else role, model=case_chat_model(profile, basis, model_config, SecretStr(os.environ["DEEPSEEK_API_KEY"])),
                     tools=tools, artifacts=artifacts, limits=quick_limits if quick else settings["node_limits"][role], audit=audits[role],
-                    report_revision=True, allow_answers=role != "verifier", answer_only=quick)
+                    report_revision=True, allow_answers=role != "verifier", answer_only=quick, method_instructions=user_brief)
             yield build_report_session_graph(**agents, artifacts=artifacts, initial=initial, audits=audits).compile(
                 name="dell_report_session").with_config({"recursion_limit": 240})

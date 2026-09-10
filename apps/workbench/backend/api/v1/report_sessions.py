@@ -803,6 +803,17 @@ def build_report_sessions_router(service):
         from ...authentication import current_owner
         from .working_notes import working_notes_view
         return await working_notes_view(thread_id, current_owner(request), query=query, note_id=note_id,
-                                        version=version, offset=offset, download=download)
+                                        version=version, offset=offset, download=download,
+                                        checkpoint=await service.sdk.threads.get_state(str(thread_id)))
 
+    # Source-only deployments and their contract tests intentionally omit the
+    # native thread SDK.  Keep that read-only surface independent from the
+    # direct-editing endpoints, which require the SDK for owner and busy checks.
+    if hasattr(service, "sdk"):
+        from .working_notes import install_edit_routes
+
+        async def authorize_edit(thread_id,request):
+            return await service.owned_thread(thread_id)
+
+        install_edit_routes(router,'/research-sessions',authorize_edit,service.sdk)
     return router

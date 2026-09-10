@@ -13,6 +13,7 @@ for (const width of [1440, 1024, 390]) test(`agent conversation and run history 
   await page.route("**/api/v1/**", async route => { if (route.request().method() !== "GET") writes++; const path = new URL(route.request().url()).pathname; await route.fulfill({ json: path.endsWith("research-sessions") ? [session] : path.endsWith("research-session-config") ? { fresh_research_enabled: true } : path.endsWith("report-versions") ? { versions: [], next_cursor: null } : session }); });
   await page.goto(`/workspace/session?thread=${id}&view=activity`);
   await expect(page.getByRole("log", { name: "Agent 活动流" })).toBeVisible();
+  await page.getByText("查看运行用量",{exact:true}).click();
   const context = page.getByRole("region", {name:"模型上下文用量"});
   await expect(context).toContainText("810,000 tokens");
   await context.locator("summary").click();

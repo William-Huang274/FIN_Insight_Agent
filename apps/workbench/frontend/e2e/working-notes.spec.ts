@@ -27,6 +27,7 @@ for(const width of [1440,390]) test(`working papers read render and close at ${w
   const download=page.waitForEvent("download");await dialog.getByRole("button",{name:"下载正文"}).click();
   expect((await download).suggestedFilename()).toBe("finsight-working-note.md");
   await dialog.getByRole('button',{name:'最新版本',exact:true}).click();
+  await dialog.getByText('需要模型协助修改',{exact:true}).click();
   await dialog.getByLabel('底稿修改意见').fill('只保留观察，取消因果判断');
   await dialog.getByLabel('修订执行方式').selectOption('hermes');
   await dialog.getByRole('button',{name:'交给责任 Agent 修订'}).click();

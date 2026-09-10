@@ -2482,3 +2482,9 @@ Owner 已于 2026-08-15 审阅第一层结构结果，并授权在同一 FIN 0.1
 - R9 engineering=`FAIL`、R9 independent=false、03B independent=false；R9 不覆盖、不重试。完整机器结论见 `configs/audits/fin_ia_0_1_3_commit_6e2189de_dell_03b_r9_fresh_dual_audit_fail_v1_0.json` 与工作记录 107。
 - R17 固定包 unchanged，继续 `FAIL_GATE_OPEN_NOT_ASSESSABLE`=`0/1/2/1`：reader 0 URL、0/18 exact passage/locator binding，14/9/4/10 未绑定，WWC 0/6，Facts 72/36，02B 0/16，8D null。
 - 下一合法动作是工作记录 108 定义的 non-overwriting R10：结构性开放词事件边界、同组 product-price completion、relational semantic signature/transformation、风险分层门、zero-call preview、新 policy/attempt/replay 与 fresh audit。其前 03C/4B/reranker/Evidence/S2/S3/report/product/publication/release全 false。
+
+### 2026-09-11 S3 用户可编辑研究要求与工作底稿投影
+
+- 实现完成且本地回归通过：研究现场不再默认暴露 Q1-Q9 内部编排 ID；checkpoint 中既有 `case_papers`／失败候选底稿以责任角色卡片直接展示，历史原件只读；“研究设置与记忆”将用户要求版本化保存到既有 WorkingMemory，下一次 native/Hermes/研究阶段运行读取，不启动模型、不改写报告。
+- 直接编辑在运行中拒绝，以免中途改变已启动节点的输入快照；用户要求与已核验事实、工程日志、原始 reasoning 分层。backend=78 passed，frontend=Playwright 7/7 + TypeScript/Vite build pass，零付费调用、未改写 HPE 数据。
+- Docker Desktop Linux engine 当前不可用（`com.docker.service` 停止，当前会话无启动权限），故 native image/BFF 尚未更新，不得把实现写成已部署。详见工作记录 206、capability/root-cause ledger。

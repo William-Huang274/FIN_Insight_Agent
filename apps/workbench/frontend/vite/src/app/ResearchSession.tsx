@@ -12,6 +12,7 @@ import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
 import { readMemory, writeMemory } from "./workspaceMemory";
 import { RunWorkspace } from "./RunWorkspace";
 import { WorkingNotes } from "./WorkingNotes";
+import { UserContextMenu } from "./UserContextMenu";
 import { ResearchStart } from "./ResearchStart";
 import { ExecutionPicker, executionReady } from "./ExecutionPicker";
 import { defaultExecution, type ExecutionOptions } from "../api/reportSessions";
@@ -597,6 +598,7 @@ export function ResearchSession() {
                   {historicalReport ? `正在阅读历史 v${historicalReport.report_version}` : `当前报告 v${session.report_version || "—"}`}
                   <button className="rs-task-toggle" aria-controls="task-details-panel" aria-expanded={taskDetails} onClick={() => setTaskDetails(v => !v)}>任务说明与资料 <ChevronRight size={13} style={{transform: taskDetails ? "rotate(90deg)" : undefined}} /></button>
                   <WorkingNotes key={id} endpoint={`/api/v1/research-sessions/${id}/working-notes`}/>
+                  <UserContextMenu key={`context:${id}`} endpoint={`/api/v1/research-sessions/${id}/user-context`}/>
                 </p>
               </div>
               <span

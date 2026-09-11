@@ -99,3 +99,41 @@ a2另暴露接续工具绑定失配：旧Q1/Q3 checkpoint保留旧plan_digest，
 **工程增量与部署**：fa3efa3d包含最新字段说明、接续plan身份与FIN方法修正。确认无busy研究后使用既有Compose/no-build加载，image manifest `b252c1a2d213cc6175bd43043e61ab572e1fd744ea18d62f6dcdba2c3839d167`（build config `1e5bae41587cfabcecd84385eab610f11b2b9c0a70c93763acc133326637ca72`），18165 healthy。composition/graph/convergence三个关键文件容器/仓库SHA一致；Linux检索cache quick_check=ok。BFF18795原接口70文档snapshot56e4f597…及9月10日MU977.41行情回读正确。22/22旧研究档案报告版本、人工次数和状态保留；首次final-a1比较将3个空native phase与基线默认draft混比，final-a2逐一确认BFF is_draft后同口径22一致，非数据丢失。原PG/Redis卷保留。Sandbox18796、Hermes18806仍停止，不纳入在线声明。
 
 **文档/治理增量**：本日志、context pack、根因/方法学习/能力台账记录案例发现与边界。前述所有报告运行中状态为历史时点，由本段覆盖。FIN0.1.3/S3不变，不替代209 Owner产品结项决定。下一步若继续，应优先一次小范围财务一致性/文档内搜索实测，或让Owner阅读本报告；不要自动再跑整题、扩大角色数或新造基础设施。
+
+
+### 2026-09-12 上下文与Agent表现的事后审计
+
+
+- 总计6,780,446已知tokens，其中输入6,293,803（92.8%）、输出486,643。输入缓存命中4,007,680，约63.7%；供应商前缀缓存不等于RAG、语义记忆或模型记住事实。
+- 生成式摘要0次：执行前后代码版本8cdac783/374b5e7a中context_summarization.enabled均为false，原始审计无context_summary角色调用。不能宣称通过多次摘要压缩保真。
+- 实际开启工具结果投影：估算16000 tokens触发，keep=2。以记录的97份original_history_before_sdk_request_projection按同一代码离线重放，62份请求移出过旧工具结果，涉及146个不同工具结果。这是请求投影重放计数，不是62次生成式摘要，也不是独立持久化压缩事件。
+- 投影只作用请求副本。重放中原始用户/系统消息0条被修改，刚返回、模型尚未读过的结果0条被移除；原始工具记录仍在检查点。这证明具体保留规则，不证明语义理解或所有历史恢复无误。
+- 最高实际单次输入215,747tokens（Q1），其他峰值：Q3供需190,029，Q9估值147,471，SK补查124,252，Lead88,783，Verifier78,852，Counter64,553。16000是触发估算，不是整个模型上下文上限。
+- 95个已知响应finish_reason均为tool_calls，未见length截断；2次未知源于中断/取消。无本次模型窗口溢出证据，不意味着长上下文质量合格。
+
+| 角色 | 模型请求数 | 已知tokens（万） | 表现边界 |
+|---|---:|---:|---|
+| Lead研究组织 | 12 | 58.55 | 分工、检查点接续、识别SK必答项并定向补查；尚未完成审后综合 |
+| Q1发行人财务 | 10 | 120.05 | 财务与现金基础资料形成，仍有同比/环比和FCF定金矛盾 |
+| Q3行业供需 | 18（1未知） | 136.19 | 多公司/行业覆盖，含工程读取失配与周期结论过强 |
+| Q9估值 | 15 | 124.74 | 价格锚和算术有用，存在合同现金误用与估值伪必要条件 |
+| SK定向补查 | 16 | 96.35 | 找到非经营收益解释，但口径与单位仍需校正 |
+| Verifier | 16 | 93.45 | 35工具动作、实际3material/1advisory，提交incomplete_review |
+| Counter | 10（1未知） | 48.74 | 未提交最终反证审查，不能评分为完成 |
+
+#### 检索与记忆使用
+
+专家发出109个RequestSourceAction：local search17/read55/catalog3/outline3；web search5/read17；uploads search1/read5/catalog3。另RequestEvidenceAction5、RequestFinanceAction22、RequestCalculationAction18。审查节点read_research_artifact35、read_research_source10、SQL查询2。以上为模型实际发出的工具请求数，包含失败和重读，不是独立成功来源数，也未细分Qwen后台embedding/rerank请求。
+
+工作笔记WriteWorkingNote8、SearchWorkingNotes3、ReadWorkingNote1。说明实际使用过记忆工具，但未完成跨任务长期记忆质量验证。四条前端补充已保存，review阶段读取前两条；后两条预定在后续阶段读取，而运行已停止，不能把未执行阶段的意见未消费记成模型遗忘。
+
+#### 最清楚的上下文短板
+
+Verifier20次底稿读取中有9次同参数重复；Counter15次中有7次同参数重复。逐次重建发出请求的上下文后，16次重复对应的所有此前同参数结果均已移出。两者都把P01整份workpaper读了4次。结果能够恢复，但保留窗口与审查需要交叉对照多个底稿/引文的工作方式之间出现摩擦。反证节点公开输出亦说明因旧读取移出而重新读取。
+
+这支持“工具结果保留策略值得优先验证”的假设，不能直接把16次重读全算浪费或把财务错误全部归因压缩。精确引用复核可能本来就需要重读；还没有固定模型/任务、不同保留策略的因果对照。
+
+综合评价：原始记录保存和任务接续有实际证据；工作上下文使用效率不足；数字口径与结论语义一致性未过关；生成式压缩和最终Writer长程综合本轮未验证。下一小片应比较现有keep=2与按当前审查对象保留/定向claim读取，衡量重复读取、首次正确定位、输入负担及最终错误。不要仅调大keep或开启摘要就宣称改进。
+
+
+审计脚本/分请求投影/同参数重读证据：D:/temp/fin211/context-audit-20260912-a1；可读稿output/research/ai_memory_20260911/context_audit.md。此次只有诊断证据与文档增量，0产品/工程运行时变更、0新增付费调用；未执行新A/B或全仓测试。

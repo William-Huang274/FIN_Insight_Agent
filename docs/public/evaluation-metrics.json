@@ -1,0 +1,218 @@
+{
+  "evaluated_at": "2026-09-11",
+  "product_version": "0.1.3",
+  "scope": "Local open-label qualification; not production certification",
+  "retrieval": {
+    "development": {
+      "positive_queries": 12,
+      "negative_queries": 2,
+      "metrics": {
+        "bm25": {
+          "hit_at_5": 0.4166666666666667,
+          "anchor_recall_at_5": 0.25347222222222227,
+          "mrr_at_20": 0.2222222222222222
+        },
+        "dense": {
+          "hit_at_5": 0.6666666666666666,
+          "anchor_recall_at_5": 0.5052083333333334,
+          "mrr_at_20": 0.5274140211640211
+        },
+        "hybrid": {
+          "hit_at_5": 0.9166666666666666,
+          "anchor_recall_at_5": 0.6739583333333333,
+          "mrr_at_20": 0.625
+        }
+      },
+      "source_receipt_sha256": "8ceea2842c4ad699c4f287964b3fd26d5856caccec141cb13abe7856398b4afc",
+      "blind": false
+    },
+    "validation": {
+      "positive_queries": 12,
+      "negative_queries": 2,
+      "metrics": {
+        "bm25": {
+          "hit_at_5": 0.5833333333333334,
+          "anchor_recall_at_5": 0.4036796536796537,
+          "mrr_at_20": 0.46081349206349204
+        },
+        "dense": {
+          "hit_at_5": 0.75,
+          "anchor_recall_at_5": 0.5564574314574314,
+          "mrr_at_20": 0.5758627946127945
+        },
+        "hybrid": {
+          "hit_at_5": 1.0,
+          "anchor_recall_at_5": 0.8493867243867245,
+          "mrr_at_20": 0.8055555555555555
+        }
+      },
+      "source_receipt_sha256": "eb750de65e05f144bf6b8d3ef887645177fc59ba56c2e4b0c51720dae388376d",
+      "blind": false
+    },
+    "source_leaves": 739,
+    "chunks": 1105,
+    "characters": 1456098,
+    "embedding_tokens": 317882,
+    "reranking_tokens": 370916,
+    "completed_api_requests": 167,
+    "estimated_list_cost_cny": 0.344399,
+    "not_answer_accuracy": true
+  },
+  "conversation": {
+    "user_turns": 19,
+    "original_intents": 12,
+    "targeted_recovery_turns": 5,
+    "handoff_intents": 2,
+    "model_requests": 81,
+    "known_tokens": 1231464,
+    "unknown_usage_requests": 0
+  },
+  "memory_comparison": {
+    "turns_per_harness": 3,
+    "native": {
+      "model_requests": 10,
+      "known_tokens": 65713
+    },
+    "hermes": {
+      "model_requests": 8,
+      "known_tokens": 44961
+    },
+    "equal_tool_ablation": false
+  },
+  "identity": {
+    "users": 2,
+    "real_http_checks": 39,
+    "concurrent_reads": 8,
+    "production_qualified": false
+  },
+  "financial_data": {
+    "companies": 5,
+    "observation_rows": 2274,
+    "parity_batches": 10,
+    "metrics_per_batch": 3
+  },
+  "sandbox": {
+    "isolated_container_scenarios": 3,
+    "approval_scenarios": 4,
+    "product_deployed": false
+  },
+  "custom_research": {
+    "company": "MSFT",
+    "report_version": 2,
+    "human_edits": 2,
+    "phase": "human_completed",
+    "runs": [
+      {
+        "thread_id": "01a08f18-0b40-7813-8f1a-df294d6a5b6f",
+        "run_id": "01a08f18-0b5c-7c61-86a6-38b9e6033872",
+        "requests": 43,
+        "reported_total_tokens": 1542624,
+        "unknown_usage": 0,
+        "input_tokens": 1451591,
+        "output_tokens": 91033,
+        "cache_hit_tokens": 1049856,
+        "models": [
+          "deepseek-v4-flash"
+        ],
+        "duration_seconds": 430.553,
+        "cost_estimate": {
+          "known_cny": 1.573728,
+          "priced_requests": 43,
+          "not_attempted_requests": 0,
+          "unknown_or_pending_requests": 0,
+          "price_as_of": "2026-09-11",
+          "notice": "按已报告用量和请求日期对应的公开分时单价估算，不是账单；旧记录保留原计价方案，未知/进行中请求未计入。"
+        },
+        "native_status": "success"
+      },
+      {
+        "thread_id": "01a08f2e-422f-7b32-94a7-a799775216dd",
+        "run_id": "01a08f2e-4242-7350-97d4-0cecc92b5828",
+        "requests": 27,
+        "reported_total_tokens": 927019,
+        "unknown_usage": 0,
+        "input_tokens": 860273,
+        "output_tokens": 66746,
+        "cache_hit_tokens": 593152,
+        "models": [
+          "deepseek-v4-flash"
+        ],
+        "duration_seconds": 289.602,
+        "cost_estimate": {
+          "known_cny": 1.091936,
+          "priced_requests": 27,
+          "not_attempted_requests": 0,
+          "unknown_or_pending_requests": 0,
+          "price_as_of": "2026-09-11",
+          "notice": "按已报告用量和请求日期对应的公开分时单价估算，不是账单；旧记录保留原计价方案，未知/进行中请求未计入。"
+        },
+        "native_status": "success"
+      },
+      {
+        "thread_id": "01a08f2e-422f-7b32-94a7-a799775216dd",
+        "run_id": "01a08f3f-d153-7ee2-962c-223d9b950a32",
+        "requests": 38,
+        "reported_total_tokens": 1321253,
+        "unknown_usage": 0,
+        "input_tokens": 1242555,
+        "output_tokens": 78698,
+        "cache_hit_tokens": 969472,
+        "models": [
+          "deepseek-v4-flash"
+        ],
+        "duration_seconds": 370.256,
+        "cost_estimate": {
+          "known_cny": 1.214529,
+          "priced_requests": 38,
+          "not_attempted_requests": 0,
+          "unknown_or_pending_requests": 0,
+          "price_as_of": "2026-09-11",
+          "notice": "按已报告用量和请求日期对应的公开分时单价估算，不是账单；旧记录保留原计价方案，未知/进行中请求未计入。"
+        },
+        "native_status": "success"
+      },
+      {
+        "thread_id": "01a08f2e-422f-7b32-94a7-a799775216dd",
+        "run_id": "01a08f4e-2690-7833-b7d6-46aa81f0ef6b",
+        "requests": 17,
+        "reported_total_tokens": 672006,
+        "unknown_usage": 0,
+        "input_tokens": 628447,
+        "output_tokens": 43559,
+        "cache_hit_tokens": 434944,
+        "models": [
+          "deepseek-v4-flash"
+        ],
+        "duration_seconds": 196.473,
+        "cost_estimate": {
+          "known_cny": 0.752876,
+          "priced_requests": 17,
+          "not_attempted_requests": 0,
+          "unknown_or_pending_requests": 0,
+          "price_as_of": "2026-09-11",
+          "notice": "按已报告用量和请求日期对应的公开分时单价估算，不是账单；旧记录保留原计价方案，未知/进行中请求未计入。"
+        },
+        "native_status": "success"
+      }
+    ],
+    "total_model_requests": 125,
+    "known_tokens": 4462902,
+    "unknown_usage_requests": 0,
+    "estimated_list_cost_cny": 4.633069,
+    "cost_boundary": "Includes initial engineering failure and all repair attempts; not invoice or efficient first-pass delivery.",
+    "final_confirmation_model_requests": 0
+  },
+  "final_checks": {
+    "python_passed": 104,
+    "python_skipped_private_fixtures": 5,
+    "browser_public_passed": 36,
+    "caption_browser_passed": 2,
+    "overlapping_suites_not_summed": true,
+    "pdf_visual_review": true,
+    "word_structural_review": true,
+    "word_visual_render_review": false,
+    "browser_public_receipt": "final-ui-a2.xml",
+    "python_receipt": "final-integrated-a2.xml"
+  },
+  "engineering_commit": "cafa9d4c"
+}

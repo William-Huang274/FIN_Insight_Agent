@@ -6,6 +6,7 @@ FinSight 是支持多 Agent 研究、证据追溯、人工修订和方法编辑�
 
 - [产品界面与当前能力](README.md)
 - [快速开始与外部测试](docs/public/quickstart.zh-CN.md)
+- [工程与产品实测报告](docs/public/technical-evaluation.zh-CN.md)
 - [三分钟产品导览](docs/public/demo-and-engineering.zh-CN.md)
 - [架构及代码入口](docs/public/architecture.zh-CN.md)
 - [产品迭代记录](CHANGELOG.md)

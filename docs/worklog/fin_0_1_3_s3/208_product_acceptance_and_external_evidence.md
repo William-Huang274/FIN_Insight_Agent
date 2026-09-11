@@ -45,3 +45,32 @@
 - a5仅接续这两项，两次均交出正文：更新接续底稿v5；回读MSFT CFO136162、现金capex64551、FCF71611（百万美元）及HPE报告v2/人工2次。没有重跑取数。仍有模型呈现边界：用户要求百万美元而主表先列USD再补百万；原记录与旧摘要中的NumericFact ID有冲突，模型保留未决而未伪造新值。后续交接需读原回执，不能把摘要声明升级为原始事实。
 - 此时同窗口17个真实用户回合（原12意图+5次有依据的局部接续），不是17独立用例或12题首遍通过。原报告仍v2/人工2，底稿历史版本保留。尚需真实重启后的新窗口交接、Hermes同能力对照和最终四类界面验收。
 - 工程验证：最后集成85项Python通过（identity/receipts/conversation/delivery/notes/summary/context/Chinese/dated-cost），先前26交付定向检查包含其中；不得相加作独立测试总数。TS/Vite通过。原生镜像e7935a6a已部署、BFF18795 b4已加载；18796部署审核阻塞未绕过。
+
+## 第四段实际结果与新定位（继续执行，未收口）
+
+- 工程切片4645c383已提交并推送。最终公共前端36检查通过（final-ui-a1.xml），85Python与子组不相加。真实提交回执prepare→重启18165/18795→replay，三次均同一native草稿/零run，证据submission-restart-a1。
+- 长会话：同窗口17回合含5个有依据的局部恢复；重启后真实前端开子窗口两回合，原数/百万美元/取消项/HPE人工版均回读成功。合计19个用户回合、81模型请求、1,231,464已知tokens、未知0，含初始失败与摘要成本；不是19独立题、不是首遍全部通过。handoff-a1原窗口CFO主NumericFact与FCF输入ID不同，但相同CFOBS/数值，模型通过原回执正确说明身份区别，未凭摘要改数。保留融资租赁金额未查等边界。
+- Hermes同题三轮：假设ALPHA CFO120/capex40→更正50/FCF70，底稿v1→v2、回读原始更正、历史值撤回，原生与Hermes均交付。原生10调用65713tokens；Hermes原服务私有审计8调用44961tokens/未知0。原生另有计算器工具，Hermes仅五项工作记忆工具，因此不是严格等工具消融，也不是完整投研迁移；不把短三轮成功当无限长记忆证明。BFF原生审计没有Hermes逐调用记录却返回0，已修为None/未取得，原生Hermes阶段仍显示其累计用量，不能把0当费用；对应回归新增。
+- HPE真实最终前端复验：hpe-final-ui-a3，原报告v2/人工修改2、角色底稿差异滚动、MD24095字节/PDF312658/Word105424均下载通过，0模型。a1资格选择器误匹配两个导出栏；a2脚本误读history滚动容器（真实容器是rs-heading），均只修资格脚本并保留原件，不算产品新缺陷。
+- 自定义方向自由研究a1确实保存新Assistant版本并传入任务，但43请求/1,542,624tokens/未知0后research_needs_attention、3底稿均为本地数据缺口。**主要根因已确认是数据接入工程错误，不是模型金融能力**：通用对话读新增HPE/MSFT955行mart，研究仍读旧Dell/MU/NVDA1319行mart。原模型只是忠实返回各自库的不同覆盖；不得以人工签字消除该工程缺口。a1 thread01a08f18-0b40-7813-8f1a-df294d6a5b6f原件保留。
+- 修复采用既有SEC parser与fact mart builder合并兼容源policy，构建新2274行/5公司只读快照；保留两个源policy/快照，定义或同发行人源冲突拒绝，无覆盖写入。新的host-approved runtime fact reader和planner均绑定同快照digest，冻结Dell源inventory及旧报告绑定不变。financial-route-parity-a3同5公司×2FY×3指标的10批MCP/通用工具查询，全部非空且数值/期间/单位一致，0模型；a1缺host环境、a2用旧两公司库测Dell为空的失败原件保留。数据/API17通过11私有跳过、研究startup/session37通过；真实parity不依赖跳过测试。
+- 新快照D:/temp/fin208/unified-financial-mart-a1/financial-facts.sqlite，SHA256385485745a01dddc80c3201880a35d6eed948ad8fed174c656b87d86543894d8；只更新host-settings的conversation_fact_mart，备份host-settings.before-208-unified-mart.json，容器挂载位置不变。c1a1269e镜像/18795 b6已加载，容器读回5公司2274行。18796未启动，这次改的是既有取数数据绑定，不是绕过sandbox审核。
+- a2重新使用同题/同自定义方向版本，因原三稿均描述失效的数据绑定而新开attempt，不把它们当现有数值证据。thread01a08f2e-422f-7b32-94a7-a799775216dd / run01a08f2e-4242-7350-97d4-0cecc92b5828正在运行；只一次有根因修复的新执行，不自动重试。新增源码尚待最终review/commit，仍须完成该题交付、必要人工修改、最终技术报告与简历证据。公开报告不能声称sandbox产品部署完成。
+
+## 第五段最终交付（2026-09-11）
+
+**产品增量**：MSFT自定义研究现为report v2 / human_completed /人工修改2次，两份责任角色底稿、1幅来源绑定数据图；实际前端修改并确认、保存个人研究记忆，0模型。完整数值FY2024→FY2025 CFO118548→136162、现金capex44477→64551、派生FCF74071→71611，均百万美元。修改未改来源事实/图表数值。原HPEv2人工2保持不变，最终部署再验MD/PDF/Word及角色底稿滚动通过。
+
+**工程增量**：数据入口统一后，a2已交出两份正确数字底稿，但主Agent自行把历史Reviewed路线缺口写成当前question_coverage未解决；不是validator强制把所有历史路线做完。当前用户任务的scope与参数反馈明确旧路线仅作覆盖记录，不能假称已完成；实际必需缺数/冲突仍需处理。a3经明确范围确认进入独立review；review产生错误财年理解和超范围依赖。新增已有interrupt内的amend_reviewed_workpapers薄接续：CAS校验底稿/审查/人工历史digest，逐条处置material finding和unresolved request，修正必须落实到责任底稿，保留原结构化claims与review。human_edits传入convergence和writer，输出仍待最终人工确认。最终人工编辑新增图表interpretation字段、范围与引用检查，不能通过此入口改图表点/单位/来源；UI按写作角色列图表说明差异。
+
+**真实模型与边界**：a1 43请求1542624tokens/¥1.573728；a2 27/927019/¥1.091936；a3 38/1321253/¥1.214529；a4 17/672006/¥.752876。合计125请求4462902tokens/估算¥4.633069/未知0，含首轮工程失败；成功交付窗口82请求2920278tokens/¥3.059341。均保留原件，Flash别名按调用日期解释。这个规模对窄题仍然偏重，不作为高效率或全自动成功的证据；已停止继续付费。a4终审仅两advisory无unresolved：其一误把sourceunitUSD+百万显示缩放视作单位错误（未采纳破坏缩放的改法），另一指出派生FCF被写作原始事实（人工修正文/角色底稿/图注）。最终UI的manual_complete native run01a08f64-f141-79c2-962d-b8c9a2c785dc成功且0模型。
+
+**实际UI与文件**：custom-final-manual-ui-a1动作已成功，但脚本在异步checkpoint落盘前读取而误报未提交；新脚本加入有界只读轮询，a2使用verify-only，不重发修改，保存记忆成功。custom-final-export-a1真实MD34931/PDF302619/Word94061字节，PDF10页/Word1图1表；一般RFC回答final-general-export-a2三格式4735/151573/39552字节，数据回答final-data-export-a3为6465/143224/40324字节。PDF均渲染并逐页缩略检查无裁切；Word只验ZIP/OOXML表/图结构，机器缺少渲染器，不冒称视觉验收。普通回答的导出来源改为本轮已读+正文明确引用的旧来源，去掉更早无关金融题来源；相关13检查通过。来源/计算附录仍长，是呈现余量，不影响正文交付。
+
+**工程验证**：final-integrated-a2为104通过/5私有fixture条件跳过；manual-caption-a1为24通过，桌面/移动图注编辑2通过，与其他组重叠不相加。TS/Vite成功。最终native image05f89122cffbdd95a56bfae9af0d5d5cfaea6c1e9cb4ced8be05c307e7f1a670与18795 b8 parent36148已部署。新实例在真实UI使用新chart_edits接受并保留完整图表provenance，证明非仅静态bundle更新。
+
+**对外产物**：docs/public/technical-evaluation.zh-CN.md与英文版、evaluation-metrics.json、resume-evidence.md；真实HPE/MSFT完成版截图；evaluation目录公开28条问题、逐题top5和739节点manifest（正文/私人附件URL不公开）。verify_public_retrieval零API独立复算Hit@5及anchor Recall@5均一致，MRR20只保留原测量值不声称top5包能重算。README三语入口链接到产物。19真实对话回合含5恢复，不当19独立cases；24正例23/24候选命中不当答案准确率；Hermes三轮对照不当全研究图迁移。
+
+**唯一当前外部部署阻塞**：18796产品sandbox自动审批两次执行前拒绝（第二次已有Owner授权），无更具体原因；未绕过/未再索授权。独立Docker与审批链已验证，但产品UI→真实sandbox端到端仍未部署。生产身份运维、跨主机配额/幂等/大并发、多Agent长期全局重排属后续范围，不以本轮本地证据冒称完成。新增代码和公开报告待本段最终Git核对后提交推送。
+
+最终复验：同一前端构建36/36通过（final-ui-a2.xml）；hpe-final-ui-a5在最终05f89122镜像/18795b8上报告v2人工2与三个导出文件保持一致。最终状态回执final-deployment.json。工程源码/测试/操作脚本已提交cafa9d4c；公开CN/EN报告、可复核检索记录与日志在独立证据提交中落库。所有已授权可执行工作已交付；18796自动审核拒绝的部署仍未完成，不把隔离资格当产品接入。

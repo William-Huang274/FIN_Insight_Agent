@@ -14,6 +14,8 @@
 
 FinSight 将财务 SQL、原文检索、来源绑定计算和多 Agent 审查放进一个研究工作区。你可以提出问题，跟踪研究过程，从报告判断回到依据，再针对具体节点提出修订。它面向需要核查研究结论的分析师，也为开发者提供可检查的状态、调用记录和测试入口。
 
+**实测报告（2026-09-11）**：[工程与产品评测](docs/public/technical-evaluation.zh-CN.md)记录混合检索、真实长对话、人工报告交付、身份隔离及故障恢复；附[机器可读指标](docs/public/evaluation-metrics.json)和[简历成果口径](docs/public/resume-evidence.md)。
+
 ![研究配置：角色、方法和执行顺序](docs/public/images/research-studio.png)
 
 *实际运行界面，2026-09-08。配置可保存到原生运行服务并应用到任务；当前界面为中文，中英文文档提供相同使用说明。*

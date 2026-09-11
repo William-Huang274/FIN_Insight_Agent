@@ -1,5 +1,7 @@
 # Product screenshots / 产品截图
 
+`hpe-reviewed-report.png` was captured from the deployed workspace on 2026-09-11 at 1440×1000. It shows the human-confirmed HPE report v2, two recorded human edits, role-paper navigation and real export controls. Public research prose is visible; no original uploaded document, credentials or private reasoning is included. The selected capture waits for the saved report version to finish loading. Local read-only receipt: `D:/temp/fin208/hpe-final-ui-a4/result.json`.
+
 Actual FinSight FIN 0.1.3 application, captured 2026-09-08 at 1600×1000. Chinese UI; the English README uses the same images with English captions. No invented data, image generation or DOM content replacement.
 
 | File | Surface |
@@ -22,3 +24,5 @@ node scripts/dev/capture_product_screenshots.cjs --base-url http://127.0.0.1:187
 Run from the repository root after installing frontend dependencies and Playwright Chromium. The script rejects non-local URLs and blocks non-read HTTP requests. Inspect every image before selecting new public screenshots. It does not sanitize arbitrary private content automatically.
 
 本轮截图是 Owner 要求的产品界面展示，不发布完整研究报告或原始资料。复拍后仍须逐张检查内容；脚本只防止写入，不会自动判断素材是否适合公开。
+
+`msft-reviewed-report.png`: actual deployed 2026-09-11 MSFT v2 / two human amendments, captured after completion and visually inspected.

@@ -14,6 +14,8 @@ Multi-agent research · Traceable evidence · Human revision · Editable researc
 
 FinSight brings financial SQL, source retrieval, source-bound calculations and multi-agent review into one workspace. Ask a question, follow the research, trace a report judgment to its evidence, and request a revision to a specific finding. It serves analysts who need to inspect conclusions and developers who want observable state, calls and reproducible checks.
 
+**Measured evaluation (2026-09-11):** [Engineering and product report](docs/public/technical-evaluation.en.md), [metrics JSON](docs/public/evaluation-metrics.json) and [résumé claims with evidence](docs/public/resume-evidence.md) cover hybrid retrieval, real multi-turn recovery, human-reviewed delivery and identity checks.
+
 ![Research Studio: roles, methods and execution order](docs/public/images/research-studio.png)
 
 *Actual application captured on September 8, 2026. Configuration versions persist in the native runtime and can be applied to a task. The current UI is Chinese; both documentation editions describe the same capabilities.*

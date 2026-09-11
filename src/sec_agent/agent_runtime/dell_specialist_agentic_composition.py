@@ -186,6 +186,7 @@ def _build_graph_input(
     source_read_enabled: bool = False,
     live_web_read_enabled: bool = False,
     research_question: str | None = None,
+    plan_invocation_id: str | None = None,
 ) -> SpecialistAgenticInput:
     methods = {
         method.branch_id: method for method in foundation_binding.branch_methods
@@ -249,9 +250,13 @@ def _build_graph_input(
         raise DellSpecialistAgenticCompositionError(
             "specialist_reviewed_topic_catalog_missing"
         )
+    # Native checkpoint continuation keeps its initial plan identity while
+    # tool execution and audit retain the current run_invocation_id. Callers
+    # must preserve the original question/data scope; all task fields are still
+    # checked exactly by the MCP port (this does not waive a changed plan).
     plan_basis = {
         "run_id": run_id,
-        "run_invocation_id": run_invocation_id,
+        "run_invocation_id": plan_invocation_id or run_invocation_id,
         "case_id": foundation_binding.case_id,
         "branch_id": branch_id,
         "research_as_of": foundation_binding.research_as_of,
@@ -1030,6 +1035,7 @@ def _open_dell_specialist_composition(
     live_web_read_enabled: bool = False,
     collaboration_context: Mapping[str, Any] | None = None,
     recovery_state: Mapping[str, Any] | None = None,
+    plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     research_question: str | None = None,
@@ -1063,6 +1069,7 @@ def _open_dell_specialist_composition(
                 source_read_enabled=source_read_enabled,
                 live_web_read_enabled=live_web_read_enabled,
                 research_question=research_question,
+                plan_invocation_id=plan_invocation_id,
             )
             if role_method is not None:
                 from .studio_configuration import bind_specialist_method
@@ -1195,6 +1202,7 @@ def open_dell_specialist_receipted_composition(
     live_web_read_enabled: bool = False,
     collaboration_context: Mapping[str, Any] | None = None,
     recovery_state: Mapping[str, Any] | None = None,
+    plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     research_question: str | None = None,
@@ -1222,6 +1230,7 @@ def open_dell_specialist_receipted_composition(
         live_web_read_enabled=live_web_read_enabled,
         collaboration_context=collaboration_context,
         recovery_state=recovery_state,
+        plan_invocation_id=plan_invocation_id,
         research_task=research_task,
         dependency_workpapers=dependency_workpapers,
         research_question=research_question,

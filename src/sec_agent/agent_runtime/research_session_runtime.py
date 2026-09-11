@@ -7,11 +7,14 @@ The browser selects a case/question, never file paths, budgets or credentials.
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
+import asyncio
+from threading import Event
 from datetime import datetime, timezone
 import json
 import os
 from pathlib import Path
 from uuid import UUID
+
 
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.tools import StructuredTool, tool, ToolException
@@ -35,6 +38,29 @@ from .research_session import build_research_session_graph, current_task_artifac
 from .research_convergence import build_research_convergence_graph
 from .studio_configuration import configuration_from_native
 from .execution_options import ExecutionOptions, execution_from_config
+
+
+def cancellable_model_turn(turn, cancelled):
+    """Retain an in-flight receipt but stop cancelled synchronous workers."""
+    def invoke(request):
+        if cancelled.is_set():
+            raise RuntimeError('research_cancelled_before_model_call')
+        response = turn(request)
+        if cancelled.is_set():
+            raise RuntimeError('research_cancelled_after_model_call')
+        return response
+    return invoke
+
+
+def block_unknown_model_inputs(turn, blocked_digests):
+    """An operator continuation cannot resend an unresolved semantic input."""
+    from .deepseek_structured_agents import _project_request, canonical_sha256
+    def invoke(request):
+        semantic = _project_request('specialist', request, specialist_mode='agentic_turn')
+        if canonical_sha256(semantic) in blocked_digests:
+            raise RuntimeError('unresolved_model_input_resend_blocked')
+        return turn(request)
+    return invoke
 
 
 class ResearchProgress(BaseModel):
@@ -78,7 +104,8 @@ def load_research_runtime_profile(root):
 
 
 def create_research_phase_runnables(*, root, settings, profile, case, run_id, thread_id, api_key,
-                                    environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None):
+                                    environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None,
+                                    blocked_model_inputs=(), plan_invocation_id=None):
     if studio:
         profile = studio.apply_profile(profile)
         case = studio.apply_case(case)
@@ -94,6 +121,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     base = load_deepseek_structured_agent_config(Path(root) / profile["model_config"])
     invocation = "invocation:research-session:" + run_id
     research_id = "research-session:" + thread_id
+    cancelled = Event()
     def emit(event):
         event = {"recorded_at": datetime.now(timezone.utc).isoformat(), **event}
         # Redis stream retention is not a durable task history. Reuse the
@@ -102,6 +130,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             public_sink(event)
         get_stream_writer()(event)
     def visible_turn(turn, actor, task_id=None):
+        if blocked_model_inputs:
+            turn = block_unknown_model_inputs(turn, blocked_model_inputs)
+        turn = cancellable_model_turn(turn, cancelled)
         def invoke(request):
             response = turn(request)
             for call in response.get("action", {}).get("tool_calls", []):
@@ -155,6 +186,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         branches = [b for b in case["branch_topics"] if not execution.branch_ids or b["branch_id"] in execution.branch_ids]
         first_branch = branches[0]["branch_id"]
         with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
+                plan_invocation_id=plan_invocation_id,
                 branch_id=first_branch, turn_source="provider_model", model_turn=visible_turn(lead_adapter.specialist_model_turn, "specialist"),
                 role_method_reader=studio.method if studio else None,
                 role_method=studio.specialist_method([first_branch]) if studio else None,
@@ -186,6 +218,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"))
                 try:
                     with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
+                            plan_invocation_id=plan_invocation_id,
                             branch_id=task["coverage_obligation_ids"][0], turn_source="provider_model", model_turn=visible_turn(adapter.specialist_model_turn, task["owner_role"], task["task_id"]),
                             role_method_reader=studio.method if studio else None,
                             role_method=studio.specialist_method(task['coverage_obligation_ids']) if studio else None,
@@ -203,7 +236,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 return output
             graph = build_dell_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],
                 branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers=seeds,
-                model_turn=lead_adapter.lead_research_turn, run_child=worker,
+                model_turn=cancellable_model_turn(lead_adapter.lead_research_turn, cancelled), run_child=worker,
                 require_all_branches=execution.mode != "auto", public_progress=emit, require_execution_plan=True,
                 recovery_tasks=request.get("unfinished_tasks", []),
                 role_method=studio.method(studio.bindings["lead"]) if studio else None,
@@ -347,6 +380,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         async def invoke(state, config: RunnableConfig):
             try:
                 return await function(state, config)
+            except asyncio.CancelledError:
+                cancelled.set()
+                raise
             except Exception as exc:
                 import re
                 # Publish domain error codes, never arbitrary provider payloads,
@@ -403,6 +439,8 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
             private_sink=private, read_guidance=read_guidance, studio=studio, execution=execution,
+            blocked_model_inputs=tuple(ids.get('finsight_blocked_model_inputs', ())),
+            plan_invocation_id=ids.get('finsight_plan_invocation_id'),
             environment={**os.environ, **({'FINSIGHT_RESEARCH_AS_OF': ids['finsight_research_as_of']}
                 if ids.get('finsight_research_as_of') else {})})
         from .working_memory_tools import native_memory_scope

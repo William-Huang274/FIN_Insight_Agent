@@ -969,6 +969,7 @@ def _model_request(
     state: DellSpecialistAgenticState,
     notebook: SpecialistNotebook,
     allow_workpaper_field_edits: bool = False,
+    continuation_guidance: str | None = None,
 ) -> dict[str, Any]:
     l0 = _validate_model_json(
         SpecialistL0Context,
@@ -1025,6 +1026,11 @@ def _model_request(
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
+    if continuation_guidance:
+        # A new native invocation can add an analyst instruction while retaining
+        # the preceding checkpoint. This is input, never a source or authority.
+        body["task_context"] = {**body.get("task_context", {}),
+            "continuation_guidance": continuation_guidance}
     last = state.get("last_submission_attempt") or {}
     candidate = last.get("arguments")
     if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
@@ -1456,6 +1462,7 @@ def build_dell_specialist_agentic_state_graph(
 
     def model_decide(
         state: DellSpecialistAgenticState,
+        config: RunnableConfig,
     ) -> DellSpecialistAgenticState:
         notebook = _validate_model_json(
             SpecialistNotebook,
@@ -1474,7 +1481,8 @@ def build_dell_specialist_agentic_state_graph(
                 "phase": "human_review_required",
             }
         request = _model_request(state=state, notebook=notebook,
-            allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits)
+            allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
+            continuation_guidance=config.get("configurable", {}).get("finsight_continuation_guidance"))
         try:
             raw = dependencies.model_turn(request)
         except Exception as exc:

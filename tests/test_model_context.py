@@ -98,6 +98,26 @@ def test_parallel_read_results_are_delivered_once_before_becoming_clearable_hist
     assert projected_later[-3:-1] == fresh[-2:]
 
 
+def test_cleared_full_papers_keep_literal_claim_navigation_without_changing_originals():
+    rows = [HumanMessage(content="Compare three papers")]
+    for i in range(3):
+        body = {"paper_id": f"P{i}", "section": "workpaper", "content": {"claims": [
+            {"claim_id": "C1", "statement": "Unverified classification " * 100, "source_ids": [f"P{i}:S1"]}],
+            "narrative_markdown": "long draft " * 1000}}
+        rows += [AIMessage(content="", tool_calls=[{"id": str(i), "name": "read_research_artifact", "args": {"paper_id": f"P{i}"}, "type": "tool_call"}]),
+            ToolMessage(name="read_research_artifact", tool_call_id=str(i), content=json.dumps(body), artifact=body)]
+    rows.append(AIMessage(content="Inspect the claims next"))
+    original = deepcopy(rows)
+    result = project_tool_history(rows, trigger_tokens=1, keep=2, workpaper_navigation=True)
+    assert rows == original and result[2].artifact is None
+    assert '"paper_id":"P0"' in result[2].content and '"claim_id":"C1"' in result[2].content
+    assert 'P0:S1' in result[2].content and "NOT evidence" in result[2].content
+    assert "long draft" not in result[2].content
+    assert result[4:] == rows[4:]
+    assert project_tool_history(rows, trigger_tokens=1, keep=2, workpaper_navigation=True) == result
+    assert 'Unverified workpaper navigation' not in project_tool_history(rows, trigger_tokens=1, keep=2)[2].content
+
+
 def test_current_runtime_supplies_same_policy_to_legacy_and_native_model_factories():
     profile, _ = load_research_runtime_profile(Path(__file__).resolve().parents[1])
     base = load_deepseek_structured_agent_config(profile["model_config"])
@@ -108,6 +128,8 @@ def test_current_runtime_supplies_same_policy_to_legacy_and_native_model_factori
         assert model.tool_context_trigger_tokens == profile["context_editing"]["trigger_tokens"]
         assert model.tool_context_keep == profile["context_editing"]["keep"]
         assert "tool_context_trigger_tokens" not in model.model_dump()
+        assert model.tool_workpaper_navigation is False
+        assert "tool_workpaper_navigation" not in model.model_dump()
 
 
 def test_sync_and_async_sdk_wire_clears_read_bodies_not_reasoning_or_tool_pairs():

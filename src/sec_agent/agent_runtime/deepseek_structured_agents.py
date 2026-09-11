@@ -1191,13 +1191,17 @@ class ReasoningPreservingChatDeepSeek(ChatDeepSeek):
 
     tool_context_trigger_tokens: int | None = Field(default=None, ge=1, exclude=True)
     tool_context_keep: int = Field(default=6, ge=1, le=64, exclude=True)
+    # Qualification-only until paired financial quality passes. Default requests
+    # retain the deployed ClearToolUsesEdit policy without experimental labels.
+    tool_workpaper_navigation: bool = Field(default=False, exclude=True)
 
     def _get_request_payload(self, input_, *, stop=None, **kwargs):
         from .model_context import project_tool_history
         originals = self._convert_input(input_).to_messages()
         saved_reader = any(isinstance(t, dict) and t.get('function', {}).get('name') == 'read_saved_result' for t in kwargs.get('tools', []))
         projected = project_tool_history(originals, trigger_tokens=self.tool_context_trigger_tokens,
-            keep=self.tool_context_keep, saved_result_reader=saved_reader)
+            keep=self.tool_context_keep, saved_result_reader=saved_reader,
+            workpaper_navigation=self.tool_workpaper_navigation)
         payload = super()._get_request_payload(projected, stop=stop, **kwargs)
         for original, encoded in zip(projected, payload["messages"], strict=True):
             if isinstance(original, AIMessage) and "reasoning_content" in original.additional_kwargs:

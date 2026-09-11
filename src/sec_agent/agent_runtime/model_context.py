@@ -4,6 +4,7 @@ Full messages/artifacts stay in the native checkpoint for FIN verification.
 Summaries are working notes, never evidence or a second source registry.
 """
 from copy import deepcopy
+import json
 
 from langchain.agents import AgentState
 from langchain.agents.middleware import AgentMiddleware, ClearToolUsesEdit, SummarizationMiddleware
@@ -22,7 +23,30 @@ REREADABLE_TOOLS = frozenset({
 })
 
 
-def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False):
+def _workpaper_navigation(message):
+    """Literal navigation from a tool's public artifact, never a new summary.
+
+    Keep the original claim/source keys discoverable after the full paper is
+    cleared. Short statement previews are unverified labels, not citeable text.
+    """
+    value = message.artifact
+    if (message.name != "read_research_artifact" or not isinstance(value, dict)
+            or value.get("section") != "workpaper" or not isinstance(value.get("content"), dict)):
+        return ""
+    paper = value["content"]
+    claims = paper.get("claims")
+    if not isinstance(claims, list) or not claims:
+        return ""
+    index = {"paper_id": value.get("paper_id"), "read_tool": "read_research_artifact",
+        "follow_up_arguments": {"paper_id": value.get("paper_id"), "section": "claims"},
+        "claims": [{"claim_id": c["claim_id"], "label": str(c.get("statement", ""))[:180],
+            "source_ids": c.get("source_ids", [])} for c in claims if isinstance(c, dict) and "claim_id" in c]}
+    return ("\nUnverified workpaper navigation retained from this exact read. Labels may be partial and are NOT evidence. "
+        "Add claim_ids from this index to read relevant claims, then verify original sources; reread full prose only when its surrounding context is necessary.\n"
+        + json.dumps(index, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+
+
+def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False):
     if trigger_tokens is None:
         return messages
     names = {call["id"]: call["name"] for m in messages if isinstance(m, AIMessage) for call in m.tool_calls}
@@ -60,6 +84,9 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
             # Small save/version receipts locate the exact durable note. Only
             # obsolete full write arguments are removed from the request copy.
             projected[index] = deepcopy(message)
+        elif (workpaper_navigation and isinstance(message, ToolMessage)
+                and projected[index].response_metadata.get("context_editing", {}).get("cleared")):
+            projected[index].content += _workpaper_navigation(message)
     return projected
 
 

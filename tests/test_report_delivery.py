@@ -178,3 +178,21 @@ def test_chart_cannot_invent_values_or_bind_search_preview():
         bind_report_charts([ReportChart.model_validate(spec)], lambda _: {"result_state": "retrieval_candidate"})
     with pytest.raises(ValueError, match="differs"):
         bind_report_charts([ReportChart.model_validate(spec)], lambda _: {"result_state": "numeric_fact", "numeric_fact_authority": True, "value_decimal": "50"})
+
+
+@pytest.mark.parametrize("format", ["md", "pdf", "docx"])
+def test_partial_calculation_receipt_does_not_block_report_delivery(format):
+    from copy import deepcopy
+    report = sample()
+    report["citations"]["P01:C1"]["sources"][0].update({
+        "result_state": "non_authoritative_metric", "arithmetic_verified": True,
+        "value_decimal": "986", "result_unit": "USD million",
+    })
+    original = deepcopy(report)
+    _, references = readable_report(report)
+    joined = "\n".join(references)
+    assert "计算回执摘要" in joined and "986" in joined
+    assert "未包含完整公式与操作数" in joined
+    assert "a - b =" not in joined
+    data, _ = export_report(report, format)
+    assert data and report == original

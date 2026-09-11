@@ -358,6 +358,41 @@ def test_real_P07_A1_counterexample_stays_invalid_and_is_pairable():
     assert message.tool_calls == []  # Never auto-repair/execute invalid arguments.
 
 
+@pytest.mark.parametrize('unknown_source', [False, True])
+def test_report_extra_brace_uses_normal_native_source_validation_without_model_rewrite(artifacts, unknown_source):
+    import httpx
+    from pydantic import SecretStr
+    from sec_agent.agent_runtime.deepseek_structured_agents import ReasoningPreservingChatDeepSeek
+    from langchain.agents.middleware.model_call_limit import ModelCallLimitExceededError
+    ref = 'P01:UNKNOWN' if unknown_source else 'P01:' + artifacts.read_paper('P01')['claims'][0]['claim_id']
+    report = {'title': 'Report syntax recovery fixture', 'narrative_markdown': 'Public report candidate. '*12 + f'[{ref}]', 'charts': []}
+    arguments = json.dumps({'report': report}) + '}'
+    calls = []
+    def serve(request):
+        calls.append(request)
+        return httpx.Response(200, json={'id': 'fixture', 'object': 'chat.completion', 'created': 1,
+            'model': 'deepseek-v4-pro', 'choices': [{'index': 0, 'finish_reason': 'tool_calls', 'message': {
+                'role': 'assistant', 'content': '', 'tool_calls': [{'id': 'report-submit', 'type': 'function',
+                    'function': {'name': 'submit_case_report', 'arguments': arguments}}]}}],
+            'usage': {'prompt_tokens': 100, 'completion_tokens': 50, 'total_tokens': 150}})
+    async def run():
+        async with httpx.AsyncClient(transport=httpx.MockTransport(serve)) as http:
+            model = ReasoningPreservingChatDeepSeek(model='deepseek-v4-pro', api_key=SecretStr('fixture-not-secret'),
+                http_async_client=http, max_retries=0, streaming=False)
+            agent = build_case_output_agent(role='writer', model=model, tools=[], artifacts=artifacts,
+                limits={'model_calls': 1, 'tool_calls': 2})
+            if unknown_source:
+                with pytest.raises(ModelCallLimitExceededError):
+                    await agent.ainvoke({'messages': [{'role': 'user', 'content': 'Fixture only'}]})
+            else:
+                result = await agent.ainvoke({'messages': [{'role': 'user', 'content': 'Fixture only'}]})
+                assert result['output']['narrative_markdown'] == report['narrative_markdown']
+                message = next(m for m in result['messages'] if isinstance(m, AIMessage))
+                assert message.response_metadata['format_recovery'] == 'redundant_closing_brace'
+            assert len(calls) == 1
+    asyncio.run(run())
+
+
 def test_terminal_reuse_must_equal_the_pinned_seed(tmp_path, monkeypatch):
     from hashlib import sha256
     from scripts.qualification.dell_q1_specialist_paid_shadow import container_once as module

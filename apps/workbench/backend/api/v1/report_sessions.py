@@ -828,8 +828,11 @@ def build_report_sessions_router(service):
         if not report:
             raise HTTPException(409, "报告尚未生成，不能导出空结果")
         from apps.workbench.backend.application.report_delivery import export_report
+        values = state.get('values', {})
+        review_label = (f"人工修改 {len(values.get('human_edits', []))} 次后确认完成；原模型审查与修改记录保留。"
+            if values.get('phase') == 'human_completed' else "报告导出快照，请以工作台中当前的人工审阅状态为准")
         data, mime = await run_in_threadpool(export_report, report, format,
-            review_status="报告导出快照，请以工作台中当前的人工审阅状态为准", public_base_url=str(request.base_url))
+            review_status=review_label, public_base_url=str(request.base_url))
         version = state.get("values", {}).get("report_version", "snapshot")
         return Response(data, media_type=mime, headers={"Content-Disposition": f'attachment; filename="finsight-research-v{version}.{format}"',
             "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})

@@ -39,6 +39,13 @@ def readable_report(report):
                     if trace.get("interpretation_boundary"):
                         calculations.append("解释边界：" + trace["interpretation_boundary"])
             if calculation := (source.get("calculation") or (source if source.get("result_state") == "non_authoritative_metric" and source.get("arithmetic_verified") is True else None)):
+                if not all(key in calculation for key in ('expression', 'value_decimal', 'result_unit', 'operands')):
+                    # Citation summaries are not executable calculator receipts.
+                    # Keep known values and links without inventing missing inputs.
+                    value = calculation.get('value_decimal')
+                    calculations.append('计算回执摘要' + (f"：{value} {calculation.get('result_unit') or calculation.get('unit', '')}" if value is not None else '')
+                        + '；此引用摘要未包含完整公式与操作数，请在工作台回读原始计算依据。')
+                    continue
                 calculations.append(f"计算：{calculation['expression']} = {calculation['value_decimal']} {calculation['result_unit']}")
                 for name, operand in calculation["operands"].items():
                     provenance = operand.get("source_provenance", {})

@@ -356,6 +356,12 @@ class CaseModelAudit(AgentMiddleware):
             # reasoning blocks and additional_kwargs never enter this projection.
             texts = [raw.text] if raw.text.strip() else []
             texts.extend(p for c in raw.tool_calls if (p := submitted_prose(c["name"], c["args"])))
+            from .workpaper_delivery import decode_workpaper_arguments
+            for call in raw.invalid_tool_calls:
+                if call.get('name') == 'submit_case_report' and isinstance(call.get('args'), str):
+                    fields, _, _ = decode_workpaper_arguments(call['args'])
+                    if prose := submitted_prose(call['name'], fields):
+                        texts.append(prose)  # public candidate, never accepted by projection
             for index, prose in enumerate(texts):
                 event = {"kind": "stage", "actor": self.actor, "event": "output", "status": "candidate",
                     "call_id": f"{call_id}:output:{index}", "objective": prose,
@@ -376,10 +382,15 @@ class InvalidToolCallFeedback(AgentMiddleware):
     """Return unparsed calls to their author through native middleware.
 
     create_agent 1.4 routes only parsed tool_calls (upstream issue #33504).
-    Never repair/execute malformed arguments or copy SDK's full-payload error.
+    An explicitly enabled terminal report may recover one redundant brace;
+    normal ToolNode schema/source checks still own acceptance. Other malformed
+    calls are not executed. Never copy SDK's full-payload error.
     Valid siblings still use the normal ToolNode route exactly once.
     """
-    @hook_config(can_jump_to=["model"])
+    def __init__(self, *, recover_report=False):
+        self.recover_report = recover_report
+
+    @hook_config(can_jump_to=["model", "tools"])
     def after_model(self, state, runtime):
         message = state["messages"][-1]
         if not isinstance(message, AIMessage) or not message.invalid_tool_calls:
@@ -387,8 +398,15 @@ class InvalidToolCallFeedback(AgentMiddleware):
         ids = [c.get("id") for c in [*message.tool_calls, *message.invalid_tool_calls]]
         if any(not isinstance(i, str) or not i.strip() for i in ids) or len(ids) != len(set(ids)):
             raise ValueError("invalid_tool_call_unpairable_id")
-        feedback = []
+        feedback, recovered, invalid = [], [], []
         for call in message.invalid_tool_calls:
+            if self.recover_report and call.get('name') == 'submit_case_report' and isinstance(call.get('args'), str):
+                from .workpaper_delivery import decode_workpaper_arguments
+                fields, complete, repair = decode_workpaper_arguments(call['args'])
+                if complete and repair == 'redundant_closing_brace':
+                    recovered.append({'id': call['id'], 'name': call['name'], 'args': fields, 'type': 'tool_call'})
+                    continue
+            invalid.append(call)
             detail = {"error": "tool_arguments_invalid_json", "tool": call.get("name"),
                 "action": "Resend this tool call with valid JSON matching its declared schema. Nothing from this invalid call was executed."}
             try:
@@ -399,6 +417,12 @@ class InvalidToolCallFeedback(AgentMiddleware):
                 detail["reason"] = "Expected a JSON object encoded as a string."
             feedback.append(ToolMessage(tool_call_id=call["id"], name=call.get("name"), status="error",
                 content=json.dumps(detail, ensure_ascii=False)))
+        if recovered:
+            from .dell_reference_vertical_contracts import canonical_sha256
+            replacement = message.model_copy(update={'tool_calls': [*message.tool_calls, *recovered], 'invalid_tool_calls': invalid,
+                'response_metadata': {**message.response_metadata, 'format_recovery': 'redundant_closing_brace',
+                    'original_invalid_arguments_digest': canonical_sha256(message.invalid_tool_calls)}})
+            return {'messages': [replacement, *feedback], 'jump_to': 'tools'}
         return {"messages": feedback, **({"jump_to": "model"} if not message.tool_calls else {})}
 
 

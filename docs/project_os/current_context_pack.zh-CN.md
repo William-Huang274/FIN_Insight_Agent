@@ -1,5 +1,7 @@
 # FIN Insight 当前上下文包
 
+209阶段盘点已执行：见 docs/product/FIN_0_1_3_STAGE_CLOSEOUT_20260911.zh-CN.md 与 docs/worklog/fin_0_1_3_s3/209_stage_closeout.md。22研究窗口盘点，NVDA单题/跨公司比较分别v2人工1，HPE/MSFT现金题仍v2人工2；0新增模型/API费用。发现并修复旧dell_report_session图移除导致两档案502：现有schema只读注册，禁止旧运行，原v3及失败记录恢复；最终22/22可读、10窗口有报告、4人工完成。原PRD广度未全部完成，建议本地Internal Alpha结项评审，尚缺Owner整篇内容接受/边界决定和最终干净安装回滚签发；不变版本、不宣称S5完成。MSFT旧指定专家题实为IC分部/组合，不是新FCF题，历史索引已注明纠正。
+
 更新时间：2026-09-11
 
 208 sandbox 已接入本地 native 产品：Owner 手动启动18796成功；宿主错误凭据401/正确目录、native容器MCP与挂载凭据一致性均通过。真实前端标准拒绝/标准批准/代我批准/完全访问4场景全通过，标准决策前零容器活动；拒绝0执行，其余各1容器且全部清理，禁网/只读根/non-root/无宿主挂载回执。8真实模型请求45609tokens未知0估算¥0.01205，证据 D:/temp/fin208/sandbox-product-a1，截图等待数据加载问题仅0模型回读修正 sandbox-product-ui-a2。服务前台运行，关闭Owner终端即停止；Hermes与生产托管未包含。已更新对外CN/EN报告/指标/简历口径。下方“未启动/未接入”为历史时点。

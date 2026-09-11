@@ -144,7 +144,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
 
     def seed(state, role):
         current_artifacts = artifacts(state) if callable(artifacts) else artifacts
-        view = current_artifacts.with_revisions(state["revisions"])
+        view = current_artifacts.with_revisions(state["revisions"]).with_human_edits(state.get('human_edits', []))
         body = {"research_as_of": current_artifacts.research_as_of, "catalog": view.catalog()}
         if state.get("question"):
             body["research_question"] = state["question"]
@@ -153,7 +153,8 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             history = state.get("conversation", [])[:-1]
             body.update(request_action=state["request_action"], user_message=state["message"],
                 human_corrections=list({p['paper_id']: {'number': h['number'], 'reason': h['reason'],
-                    'paper_id': p['paper_id'], 'body': p['after']}
+                    'paper_id': p['paper_id'], 'actor': p['actor'],
+                    'read_current': 'read_current_workpaper returns the current human-edited prose. Original structured claims may be superseded. Read sources for facts; do not silently restore withdrawn conclusions.'}
                     for h in state.get('human_edits', []) for p in h['papers']}.values()),
                 conversation_history={"message_count": len(history), "read_on_demand": "read_public_conversation lists or reads saved public messages. Full text and citation bindings remain stored; previews are not substitutes for evidence.",
                     "recent": [{"message_index": i, "role": m["role"], "preview": m["content"][:400], "truncated": len(m["content"]) > 400}
@@ -173,6 +174,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
         get_stream_writer()({"kind": "stage", "actor": role, "event": "started", "recorded_at": datetime.now(timezone.utc).isoformat()})
         return {"messages": [HumanMessage(content=json.dumps(body, ensure_ascii=False))],
             "revisions": state["revisions"], "report": state["report"], "request_action": state["request_action"],
+            "human_edits": deepcopy(state.get('human_edits', [])),
             "conversation": deepcopy(state.get("conversation", [])),
             **({"case_papers": state["case_papers"]} if "case_papers" in state else {})}
 

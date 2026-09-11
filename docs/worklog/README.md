@@ -3,6 +3,7 @@
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 
 - 当前总清单：`00_current_master_checklist.md`
+- 当前六组产品验收、对外技术报告与简历证据：`fin_0_1_3_s3/208_product_acceptance_and_external_evidence.md`
 - 两次真实摘要、Hermes原文回读和前端实际部署：`fin_0_1_3_s3/205_context_product_deployment.md`
 - 固定情境恢复矩阵、摘要失败隔离：`fin_0_1_3_s3/205_context_recovery_matrix.md`
 - 分区上下文导航、压缩后回读与真实小样本接续：`fin_0_1_3_s3/205_layered_context_recovery.md`

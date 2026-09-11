@@ -55,7 +55,7 @@ def current_task_artifacts(state):
     # These are native server outputs. The browser cannot submit source records.
     for output in [state.get("report", {}), *state.get("conversation", [])]:
         artifacts = artifacts.with_saved_calculations(output.get("citations", {}))
-    return artifacts
+    return artifacts.with_revisions(state.get('revisions', {})).with_human_edits(state.get('human_edits', []))
 
 
 def can_continue_remaining_research(state):

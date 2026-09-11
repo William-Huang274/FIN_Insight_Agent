@@ -121,10 +121,17 @@ def test_lead_restores_original_task_before_planning_and_can_supplement_submitte
     def supplement(request):
         calls.append(request)
         return _call(request, "DelegateResearchTasksAction", tasks=[same_branch]) if len(calls) == 1 else _stop(request, ready=True)
-    graph, value = _graph(supplement, worker, seed=seed, unfinished_only=True, require_all_branches=False)
+    # A new explicit research request can supplement a submitted branch;
+    # bounded recovery authority cannot create any new task.
+    graph, value = _graph(supplement, worker, seed=seed, unfinished_only=False, require_all_branches=False)
     result = graph.invoke(value.model_dump(mode="json"))
     assert result["phase"] == "research_ready_for_review"
     assert result["task_results"][0]["task_id"] == same_branch["task_id"]
+
+    calls.clear()
+    graph, value = _graph(supplement, worker, seed=seed, unfinished_only=True, require_all_branches=False)
+    result = graph.invoke(value.model_dump(mode="json"))
+    assert result['task_results'] == []
 
 
 def test_product_interrupt_resumes_only_incomplete_reviewer_with_original_reads():

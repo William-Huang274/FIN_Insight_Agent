@@ -217,6 +217,28 @@ class DellCaseArtifacts:
                 result._papers[paper_id]["sources"][ref] = self._source_summary(ref, source)
         return result
 
+    def with_human_edits(self, history):
+        """Project current editorial prose without altering source or claim records.
+
+        Human prose is not a replacement financial schema. Original structured
+        claims remain available as history, explicitly requiring reconciliation.
+        """
+        result = deepcopy(self)
+        for entry in history:
+            for edit in entry.get('papers', []):
+                if edit['paper_id'] not in result._papers:
+                    raise ValueError('human_edit_unknown_paper')
+                paper = result._papers[edit['paper_id']]['workpaper']
+                if paper.get('human_editorial_revision', {}).get('number', 0) >= entry['number']:
+                    continue  # A subsequent accepted author revision already consumed this edit.
+                paper['narrative_markdown'] = edit['after']
+                paper['human_editorial_revision'] = {
+                    'number': entry['number'], 'reason': entry['reason'],
+                    'authority': 'Current user editorial decision, not source evidence. Original structured claims may be superseded; reconcile against this prose and read sources for facts. Do not silently restore withdrawn conclusions.'}
+                # A neutral heading avoids advertising a superseded thesis.
+                paper['thesis'] = '人工修订底稿 · ' + edit['paper_id']
+        return result
+
     def citation_source(self, source_id):
         """Persist arithmetic provenance separately from the short text preview."""
         source = self.read_source(source_id, max_characters=100)

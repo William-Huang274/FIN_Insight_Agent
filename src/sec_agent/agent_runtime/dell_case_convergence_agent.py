@@ -165,6 +165,7 @@ class SubmittedReportReview(ReportReview):
 
 
 class CaseOutputState(AgentState):
+    human_edits: list[dict[str, Any]]
     output: dict[str, Any]
     revisions: dict[str, Any]
     report: dict[str, Any]
@@ -602,7 +603,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     @tool
     def research_artifact_catalog(runtime: ToolRuntime) -> dict:
         """List current paper theses including accepted revisions, not superseded archive theses."""
-        return artifacts.with_revisions(runtime.state.get("revisions", {})).catalog()
+        return artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', [])).catalog()
 
     @tool
     def search_research_sources(query: str, runtime: ToolRuntime, limit: int = 5) -> dict:
@@ -618,7 +619,13 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     def read_current_workpaper(paper_id: str, runtime: ToolRuntime, section: Literal["workpaper", "claims", "sources"] = "workpaper") -> dict:
         """Read the latest case workpaper view including accepted author amendments. Original archives stay immutable."""
         try:
-            return artifacts.with_revisions(runtime.state.get("revisions", {})).read_paper(paper_id, section)
+            current = artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', []))
+            result = current.read_paper(paper_id, section)
+            editorial = current.read_paper(paper_id).get('human_editorial_revision')
+            if section == 'claims' and editorial:
+                return {'original_structured_claims': result, 'human_editorial_revision': editorial,
+                    'current_narrative_markdown': current.read_paper(paper_id)['narrative_markdown']}
+            return result
         except ValueError as exc:
             raise ToolException(str(exc)) from None
 
@@ -671,7 +678,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         """Submit only the responsible paper amendment with source-bound changed claims and each finding disposition."""
         try:
             value = validated_revision(revision, paper_id=paper_id, feedback=feedback,
-                artifacts=artifacts.with_revisions(runtime.state.get("revisions", {})), messages=runtime.state["messages"])
+                artifacts=artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', [])), messages=runtime.state["messages"])
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
         return output_message(runtime, value)

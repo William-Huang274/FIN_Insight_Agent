@@ -39,7 +39,7 @@ def paper_owner_role(state, paper):
 
 
 def apply_manual_review(state, decision, artifacts, *, owner='local-pilot'):
-    from .dell_case_convergence_agent import answer_citations
+    from .dell_case_convergence_agent import answer_citations, answer_reference_ids
     if not manual_review_available(state):
         raise ValueError('数据或运行问题尚未解决，不能通过人工修改标记完成')
     if not decision.confirmed or not decision.reason.strip() or not decision.report_markdown.strip():
@@ -55,6 +55,8 @@ def apply_manual_review(state, decision, artifacts, *, owner='local-pilot'):
         if edit.paper_id not in catalog:
             raise ValueError('底稿不属于当前研究')
         before = previous.get(edit.paper_id, artifacts.read_paper(edit.paper_id)['narrative_markdown'])
+        if answer_reference_ids(edit.body):
+            answer_citations(edit.body, artifacts, [], prior_citations=state['report'].get('citations', {}))
         if before != edit.body:
             edits.append({'paper_id': edit.paper_id, 'actor': paper_owner_role(state, catalog[edit.paper_id]),
                 'title': catalog[edit.paper_id].get('thesis', edit.paper_id), 'before': before, 'after': edit.body})

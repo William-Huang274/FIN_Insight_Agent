@@ -325,7 +325,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                             "research_question": objective, "scope": next(b for b in allowed if b["branch_id"] == branch_id),
                             "research_as_of": artifacts.research_as_of, "catalog": artifacts.catalog(),
                             "instruction": "核对所分配问题，必要时读当前资料，给出有来源的简短答复。"}, ensure_ascii=False))],
-                            "report": state.get("report", {}), "revisions": state.get("revisions", {}), "conversation": [], "request_action": "ask"}, runtime.config)
+                            "report": state.get("report", {}), "revisions": state.get("revisions", {}),
+                            "human_edits": state.get('human_edits', []), "conversation": [], "request_action": "ask"}, runtime.config)
                         result = output.get("output", {})
                         if result.get("kind") != "answer" or not result.get("citations"):
                             raise ToolException("专家没有提交有效的来源绑定回答；不能推定完成")

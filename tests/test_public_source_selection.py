@@ -1,5 +1,5 @@
 import pytest
-from scripts.data_retrieval.expand_case_source_library import selected_public_sources
+from scripts.data_retrieval.expand_case_source_library import selected_public_sources, public_source_parser
 
 
 def source(**updates):
@@ -21,3 +21,9 @@ def test_time_boundary_deduplication_and_source_authority_are_preserved():
 def test_invalid_source_metadata_is_rejected(updates):
     with pytest.raises(ValueError):
         selected_public_sources({'sources': [source(**updates)]}, '2026-09-11')
+
+
+def test_sec_6k_uses_filing_parser_instead_of_article_extractor():
+    assert public_source_parser(source(url='https://www.sec.gov/Archives/edgar/data/1/report.htm')) == 'sec2md_filing'
+    assert public_source_parser(source(url='https://www.sec.gov.evil.test/Archives/edgar/data/1/report.htm')) == 'trafilatura_xml'
+    assert public_source_parser(source(document_kind='pdf')) == 'pypdf_pages'

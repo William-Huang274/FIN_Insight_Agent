@@ -58,6 +58,15 @@ def selected_public_sources(manifest, cutoff):
     return selected
 
 
+def public_source_parser(item):
+    if item['document_kind'] == 'pdf':
+        return 'pypdf_pages'
+    parsed = urlsplit(item['url'])
+    if parsed.hostname in {'www.sec.gov', 'sec.gov'} and parsed.path.startswith('/Archives/edgar/'):
+        return 'sec2md_filing'
+    return 'trafilatura_xml'
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     selection = parser.add_mutually_exclusive_group(required=True)
@@ -81,6 +90,8 @@ def main():
         selected = [r for b in policy['source_bindings'] for r in selected_filings(b, args.as_of)]
     else:
         selected = selected_public_sources(json.loads(args.source_manifest.read_text(encoding='utf-8')), args.as_of)
+        if args.capture and any(public_source_parser(row) == 'sec2md_filing' for row in selected):
+            import sec2md  # table-heavy 6-K filings use the existing SEC parser
     (args.output/'plan.json').write_text(json.dumps(selected, ensure_ascii=False, indent=2), encoding='utf-8')
     if not args.capture:
         print(json.dumps({'planned': len(selected), 'path': str(args.output/'plan.json')})); return
@@ -116,7 +127,7 @@ def main():
                 'source_role': item.get('source_role') or item['form'], 'document_kind': kind,
                 'stable_url': item['url'], 'branches': ['public_company_research']}, raw_body_sha256=body_digest)
             profile = ({'10-K':'sec2md_10k','10-Q':'sec2md_10q'}.get(item['form'], 'sec2md_exhibit')
-                       if args.policy else ('pypdf_pages' if kind == 'pdf' else 'trafilatura_xml'))
+                       if args.policy else public_source_parser(item))
             tree = build_structured_document_tree(source=source, body=body, parser_profile=profile)
             corpus['documents'].append(tree['document'])
             for key in ('sections','blocks','chunks'): corpus[key].extend(tree[key])

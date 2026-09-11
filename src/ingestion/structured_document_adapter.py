@@ -24,7 +24,7 @@ BLOCK_SCHEMA = "fin_ia_structured_block_v1_0"
 CHUNK_SCHEMA = "fin_ia_structured_retrieval_chunk_v1_1"
 
 _SEC_PROFILES = frozenset(
-    {"sec2md_10k", "sec2md_10q", "sec2md_exhibit"}
+    {"sec2md_10k", "sec2md_10q", "sec2md_exhibit", "sec2md_filing"}
 )
 _IMAGE_MARKDOWN_RE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 
@@ -612,7 +612,7 @@ def _sec_sections(
                 (),
                 {
                     "part": None,
-                    "item": "EXHIBIT 99.1",
+                    "item": "SEC FILING" if profile == 'sec2md_filing' else "EXHIBIT 99.1",
                     "item_title": title,
                     "pages": pages,
                 },
@@ -1067,7 +1067,7 @@ def build_structured_document_tree(
                     max_table_tokens=sec_max_table_tokens,
                     header=" > ".join(section.path),
                 )
-                if parser_profile == "sec2md_exhibit"
+                if parser_profile in {"sec2md_exhibit", "sec2md_filing"}
                 else chunk_section(
                     parsed,
                     chunk_size=sec_chunk_size_tokens,

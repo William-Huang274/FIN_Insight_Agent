@@ -1,7 +1,18 @@
 from dataclasses import dataclass
 import pytest
-from retrieval.source_hybrid import prepare_source_index,rank_sources
+from retrieval.source_hybrid import prepare_source_index,rank_sources,cache_path
 from retrieval.qwen_api import RetrievalResponse
+
+
+def test_runtime_cache_override_separates_native_and_host_writers(monkeypatch):
+    monkeypatch.setenv('FINSIGHT_SOURCE_HYBRID','1')
+    monkeypatch.setenv('FINSIGHT_WORKING_MEMORY_PATH','/shared/notes.sqlite')
+    monkeypatch.setenv('FINSIGHT_SOURCE_RAG_CACHE_PATH','/native/source-rag')
+    assert cache_path() == '/native/source-rag'
+    monkeypatch.delenv('FINSIGHT_SOURCE_RAG_CACHE_PATH')
+    assert cache_path().replace('\\','/') == '/shared/source-rag'
+    monkeypatch.setenv('FINSIGHT_SOURCE_HYBRID','0')
+    assert cache_path() is None
 
 
 class API:

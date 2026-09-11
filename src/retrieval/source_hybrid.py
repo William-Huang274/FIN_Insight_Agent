@@ -19,6 +19,8 @@ from .qwen_api import QwenRetrieval
 def cache_path():
     if os.environ.get('FINSIGHT_SOURCE_HYBRID') != '1':
         return None
+    if path := os.environ.get('FINSIGHT_SOURCE_RAG_CACHE_PATH'):
+        return path
     path = os.environ.get('FINSIGHT_WORKING_MEMORY_PATH')
     return str(Path(path).parent / 'source-rag') if path else None
 

@@ -75,6 +75,7 @@ CONTROL_FILES = (
     "fin_ia_0_1_3_dell_case_convergence_native_v1_0.json",
     "cases/dell_growth_quality.json",
     "runtime/research_session.json",
+    "runtime/conversation.json",
 )
 
 HOST_BINDINGS = {
@@ -437,6 +438,7 @@ def test_agent_server_image_uses_a_deny_by_default_minimum_build_context() -> No
         *(f"!configs/research/{name}" for name in CONTROL_FILES if "/" not in name),
         "!configs/research/cases/", "!configs/research/cases/dell_growth_quality.json",
         "!configs/research/runtime/", "!configs/research/runtime/research_session.json",
+        "!configs/research/runtime/conversation.json",
     ]
     assert "!configs/**" not in rules
     assert "!configs/research/**" not in rules

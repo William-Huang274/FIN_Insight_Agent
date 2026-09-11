@@ -94,7 +94,7 @@ def prepare_source_index(rows, snapshot, path, api):
         return {'chunks':len(chunks),'calls':client.calls,'cache_hits':client.hits,'embedding_model':api.embedding_model}
 
 
-def rank_sources(rows, query, snapshot, literal, *, path, api=None):
+def rank_sources(rows, query, snapshot, literal, *, path, api=None, diagnostics=False):
     owned=api is None
     api=api or QwenRetrieval(os.environ['QWEN_API_KEY'])
     try:
@@ -107,12 +107,14 @@ def rank_sources(rows, query, snapshot, literal, *, path, api=None):
             vectorstore.add_texts([c['text'] for c in chunks],metadatas=[{'index':i} for i in range(len(chunks))])
             dense=vectorstore.similarity_search(query,k=min(24,len(chunks)))
             indices=[d.metadata['index'] for d in dense]
+            dense_ids=list(dict.fromkeys(chunks[i]['node_id'] for i in indices))
             lexical_ids={r['node_id'] for r in literal[:12]}
             indices=list(dict.fromkeys([*indices,*[i for i,c in enumerate(chunks) if c['node_id'] in lexical_ids][:24]]))
             ranked=client.call('rerank',[query,[chunks[i]['text'] for i in indices]])['values']
             node_ids=list(dict.fromkeys(chunks[indices[r['index']]]['node_id'] for r in ranked))
             by_id={r['node_id']:r for r in rows}
             return [by_id[i] for i in node_ids], {'mode':'qwen_dense_bm25_rerank','calls':client.calls,'cache_hits':client.hits,
-                'embedding_model':api.embedding_model,'rerank_model':api.rerank_model,'candidates':len(indices)}
+                'embedding_model':api.embedding_model,'rerank_model':api.rerank_model,'candidates':len(indices),
+                **({'dense_node_ids':dense_ids,'candidate_node_ids':list(dict.fromkeys(chunks[i]['node_id'] for i in indices))} if diagnostics else {})}
     finally:
         if owned:api.close()

@@ -13,6 +13,19 @@ class ScriptedTools(FakeMessagesListChatModel):
         return self
 
 
+def test_last_authorized_call_is_reserved_for_delivery_without_more_tools():
+    from langchain.agents.middleware.types import ModelRequest
+    from langchain_core.messages import SystemMessage
+    from sec_agent.agent_runtime.conversation_agent import ConversationDeliveryMiddleware
+    request=ModelRequest(model=ScriptedTools(responses=[]),messages=[HumanMessage(content='Keep the current scope')],
+        system_message=SystemMessage(content='Source rules'),tools=[{'name':'read'}],state={'run_model_call_count':7})
+    delivery=ConversationDeliveryMiddleware(8).request_for_delivery(request)
+    assert delivery.tools==[] and request.tools==[{'name':'read'}]
+    assert 'Deliver your answer now' in str(delivery.system_message.content)
+    assert 'incomplete review as passed' in str(delivery.system_message.content)
+    assert delivery.messages==request.messages
+
+
 def test_deployed_conversation_json_budget_validates_in_strict_json_mode():
     import json
     from pathlib import Path
@@ -104,7 +117,7 @@ def test_unknown_effect_cannot_silently_auto_approve():
             permission_mode="full_access", checkpointer=InMemorySaver())
 
 
-def test_tool_limit_ends_with_paired_skipped_calls_and_accepts_next_user_turn():
+def test_tool_limit_blocks_excess_pairs_and_delivers_before_next_user_turn():
     from langchain_core.messages import ToolMessage
     calls=[]
     @tool
@@ -114,16 +127,18 @@ def test_tool_limit_ends_with_paired_skipped_calls_and_accepts_next_user_turn():
         return 'source'
     model=ScriptedTools(responses=[AIMessage(content='',tool_calls=[
         {'id':str(i),'name':'read_fixture','args':{},'type':'tool_call'} for i in range(2)]),
+        AIMessage(content='One source was read; the second check was blocked and remains incomplete.'),
         AIMessage(content='The clarified request needs no tool.')])
     agent=build_conversation_agent(model=model,grants=[GrantedTool(read_fixture,'read','fixture')],
         permission_mode='request_standard',checkpointer=InMemorySaver(),tool_calls=1)
     config={'configurable':{'thread_id':'tool-limit-pairing'}}
     result=agent.invoke({'messages':[HumanMessage(content='Read two fixtures')]},config)
-    assert not calls
+    assert len(calls)==1
     assert {m.tool_call_id for m in result['messages'] if isinstance(m,ToolMessage)}=={'0','1'}
     assert isinstance(result['messages'][-1],AIMessage)
+    assert 'remains incomplete' in result['messages'][-1].content
     result=agent.invoke({'messages':[HumanMessage(content='Stop reading; explain the limit only.')]},config)
-    assert result['messages'][-1].content=='The clarified request needs no tool.' and not calls
+    assert result['messages'][-1].content=='The clarified request needs no tool.' and len(calls)==1
 
 
 def test_explicit_native_approval_runs_the_concrete_operation_once(tmp_path):

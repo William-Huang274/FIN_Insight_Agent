@@ -185,6 +185,8 @@ def create_app(
             name="assets",
         )
 
+    from .oidc_login import install_identity_status
+    install_identity_status(app)
     @app.get("/api/health")
     def health() -> dict[str, str]:
         return {
@@ -435,8 +437,12 @@ def create_report_session_app(frontend_dist_root=None):
         yield
         await service.http.aclose()
     app = FastAPI(title="FinSight Research Session", version="0.1.3", lifespan=lifespan)
+    from .submission_receipts import SubmissionReceipts
+    app.add_middleware(SubmissionReceipts, directory=(Path(settings_path).parent if settings_path else state_root) / 'submission-receipts')
     from .authentication import install_conversation_auth
     install_conversation_auth(app)
+    from .oidc_login import install_identity_status
+    install_identity_status(app)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
     from .api.v1.conversations import build_conversations_router

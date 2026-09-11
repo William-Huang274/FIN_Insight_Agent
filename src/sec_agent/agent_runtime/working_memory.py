@@ -40,8 +40,10 @@ class WorkingMemory:
         finally:
             db.close()
 
-    def save(self, title: str, body: str, base_version: int = 0):
+    def save(self, title: str, body: str, base_version: int = 0, *, mode="replace"):
         # Only transport/resource limits; no heading, prose, citation or finance schema.
+        if mode not in {"replace", "append"}:
+            raise ValueError("working_note_mode_invalid")
         if not title.strip() or len(title) > 240 or not body.strip() or len(body) > 200000:
             return {"saved": False, "reason": "名称需1–240字符，正文需1–200000字符；无必填章节，请分篇保存超长正文。"}
         identity = json.dumps([self.owner, self.workspace, self.actor, title], ensure_ascii=False)
@@ -50,7 +52,7 @@ class WorkingMemory:
         with self.connection() as db:
             db.execute("BEGIN IMMEDIATE")
             prior = db.execute("SELECT * FROM working_notes WHERE id=?", (note_id,)).fetchone()
-            if prior and prior["body"] == body:
+            if mode == "replace" and prior and prior["body"] == body:
                 db.rollback()
                 return {"saved": True, "note_id": note_id, "version": prior["version"], "unchanged": True}
             current = prior["version"] if prior else 0
@@ -58,6 +60,14 @@ class WorkingMemory:
                 db.rollback()
                 return {"saved": False, "reason": "底稿已变化；先读当前版本再合并，旧请求未覆盖它。",
                         "note_id": note_id, "current_version": current}
+            if mode == "append":
+                if not prior:
+                    db.rollback()
+                    return {"saved": False, "reason": "追加前需要已有底稿；请先新建或读取当前版本。"}
+                body = prior["body"] + "\n\n" + body
+                if len(body) > 200000:
+                    db.rollback()
+                    return {"saved": False, "reason": "合并后正文过长；请另建关联底稿。"}
             version = current + 1
             db.execute("INSERT INTO working_note_versions VALUES (?,?,?,?)", (note_id, version, body, now))
             db.execute("""INSERT INTO working_notes VALUES (?,?,?,?,?,?,?,?)

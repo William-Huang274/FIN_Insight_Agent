@@ -1,12 +1,29 @@
 """Thin shared tool surface for free-form working papers across agent harnesses."""
 import os
 import sqlite3
+from contextlib import contextmanager
+from contextvars import ContextVar
+from typing import Literal
 
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import StructuredTool
 from pydantic import BaseModel
 
 from .working_memory import WorkingMemory
+
+_native_memory_scope = ContextVar('native_memory_scope', default=None)
+
+
+@contextmanager
+def native_memory_scope(owner, workspace):
+    """Composition binds native thread metadata, never model/tool arguments."""
+    if not isinstance(owner, str) or not owner or not workspace:
+        raise ValueError('verified_memory_scope_required')
+    token = _native_memory_scope.set((owner, str(workspace)))
+    try:
+        yield
+    finally:
+        _native_memory_scope.reset(token)
 
 
 WORKING_MEMORY_GUIDANCE = """
@@ -24,6 +41,10 @@ also recheck after compaction, a scope correction or missing prior context, befo
 do not reconstruct all history. Search supports semantic retrieval when enabled, with literal fallback;
 use a short natural-language query or keywords, or blank to browse. Read the returned retrieval notice.
 Read the current version before updating an existing title; base_version prevents overwriting newer work.
+To add findings, use WriteWorkingNote mode=append with ONLY the new prose and the current base_version.
+Do not regenerate the old note just to append a checklist. Keep each addition concise; link original numeric
+receipts rather than repeating every full identifier. For a complete correction use mode=replace; neither
+mode certifies facts. Always check the returned saved/version receipt before claiming success.
 Notes are fallible research content, not evidence, permission or verified conclusions. Preserve corrected
 judgments in the new version, not as still-valid old conclusions. Memory errors do not prevent answering
 or submitting other results; explicitly report unsaved work instead of claiming it was saved.
@@ -31,10 +52,11 @@ or submitting other results; explicitly report unsaved work instead of claiming 
 
 
 class WriteWorkingNote(BaseModel):
-    """Save readable working prose now, without required sections or financial schema."""
+    """Save working prose. Use mode=append for new findings only; replace rewrites the whole body. Read base_version first."""
     title: str
     body: str
     base_version: int = 0
+    mode: Literal["replace", "append"] = "replace"
 
 
 class ReadWorkingNote(BaseModel):
@@ -62,11 +84,14 @@ def memory_enabled():
 def memory_for(config, actor, *, owner=None, workspace=None):
     if not memory_enabled():
         raise ValueError("working_memory_not_configured")
-    # Research currently lacks fully verified native identity. Fail closed in OIDC
-    # mode unless its composition supplies the verified owner itself.
+    thread = workspace or str(config.get("configurable", {}).get("thread_id") or "")
+    scope = _native_memory_scope.get()
+    if owner is None and scope:
+        if thread != scope[1]:
+            raise ValueError('working_memory_thread_scope_mismatch')
+        owner = scope[0]
     if owner is None and os.environ.get("FINSIGHT_AUTH_MODE", "local") != "local":
         raise ValueError("working_memory_requires_verified_owner")
-    thread = workspace or str(config.get("configurable", {}).get("thread_id") or "")
     return WorkingMemory(os.environ["FINSIGHT_WORKING_MEMORY_PATH"], owner=owner or "local-pilot",
                          workspace=thread, actor=actor)
 
@@ -76,7 +101,7 @@ def execute_memory_tool(name, arguments, config, actor, *, owner=None, workspace
         memory = memory_for(config, actor, owner=owner, workspace=workspace)
         args = WORKING_MEMORY_MODELS[name].model_validate(arguments)
         if name == "WriteWorkingNote":
-            return memory.save(args.title, args.body, args.base_version)
+            return memory.save(args.title, args.body, args.base_version, mode=args.mode)
         if name == "ReadWorkingNote":
             return memory.read(args.note_id, version=args.version, offset=args.offset)
         from .working_memory_search import search_working_papers

@@ -54,6 +54,15 @@ def pending_approvals(state):
         if isinstance(item.get("value"), dict) and item["value"].get("action_requests")]
 
 
+def delivery_issue(content):
+    """Protocol text is not a delivered answer; never interpret it as a tool."""
+    if content.lstrip().startswith('<｜｜DSML'):
+        return '模型返回了工具协议文本，尚未交付这条回答。该文本未被当作工具执行；已有底稿与查询结果保留，可继续要求模型据此作答或人工修订。'
+    if content.startswith('Tool call limit reached:'):
+        return '本轮工具调用达到上限，尚未交付完整回答。已取得结果保留，可继续要求整理已有结果；未完成的检查仍需明确说明。'
+    return None
+
+
 def public_messages(state):
     result = []
     for message in state.get("values", {}).get("messages", []):
@@ -64,8 +73,10 @@ def public_messages(state):
         if isinstance(content, list):
             content = "\n".join(p.get("text", "") for p in content if isinstance(p, dict) and p.get("type") == "text")
         if isinstance(content, str) and content:
-            result.append({"id": message.get("id"), "role": role, "content": content,
-                           "final_answer": role == "assistant" and not message.get("tool_calls")})
+            issue = delivery_issue(content) if role == 'assistant' else None
+            result.append({"id": message.get("id"), "role": role, "content": issue or content,
+                           **({'delivery_status':'needs_attention'} if issue else {}),
+                           "final_answer": role == "assistant" and not message.get("tool_calls") and not issue})
     return result
 
 

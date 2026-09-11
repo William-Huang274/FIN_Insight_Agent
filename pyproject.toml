@@ -21,6 +21,7 @@ dependencies = [
   "pydantic>=2.13,<3",
   "PyYAML>=6.0.1",
   "rank-bm25>=0.2.2",
+  "jieba==0.42.1",
   "requests>=2.32.0",
   "scipy>=1.11,<2",
   "uvicorn[standard]>=0.30.0",
@@ -29,6 +30,8 @@ dependencies = [
 [project.optional-dependencies]
 workbench-auth = [
   "PyJWT[crypto]==2.13.0",
+  "Authlib==1.7.0",
+  "itsdangerous==2.2.0",
 ]
 control-plane = [
   "dagster==1.13.20",

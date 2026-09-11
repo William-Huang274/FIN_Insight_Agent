@@ -8,6 +8,17 @@ import pytest
 from apps.workbench.backend.api.v1.conversations import build_conversations_router, public_messages, public_message_delta, SURFACE, GRAPH
 
 
+@pytest.mark.parametrize('content', ['<｜｜DSML｜｜ calls>unexecuted tool', 'Tool call limit reached: run limit exceeded (13/12 calls).'])
+def test_non_answer_control_text_is_not_exportable_or_delivered(content):
+    raw={'values':{'messages':[{'id':'model','type':'ai','content':content}]}}
+    rows=public_messages(raw)
+    assert rows[0]['delivery_status']=='needs_attention' and not rows[0]['final_answer']
+    assert rows[0]['content']!=content
+    assert raw['values']['messages'][0]['content']==content
+    user=public_messages({'values':{'messages':[{'id':'user','type':'human','content':content}]}})
+    assert user[0]['content']==content
+
+
 def test_hermes_attachment_boundary_and_revision_memory_ownership(monkeypatch):
     child,parent=str(uuid4()),str(uuid4())
     records={child:{'metadata':{'surface':SURFACE,'graph':GRAPH,'owner_id':'local-pilot','harness':'hermes',

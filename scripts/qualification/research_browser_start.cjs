@@ -12,7 +12,23 @@ page.on("response",async r=>{if(r.request().method()==="POST" && /\/api\/v1\/res
   try {receipt.body=await r.json();} catch(e) {receipt.body_read_error=String(e);}
   submissions.push(receipt);fs.writeFileSync(path.join(output,"submissions.json"),JSON.stringify(submissions,null,2));}});
 try {
+ if(spec.direction){
+  if(!spec.TokenBudgetBasis)throw Error('Custom direction qualification requires task budget basis');
+  await page.goto(new URL('/workspace?view=studio',base).href);
+  await page.getByLabel('配置名称',{exact:true}).fill(spec.direction.configuration_title);
+  await page.locator('.fs-direction-editor details').first().locator('summary').click();
+  await page.getByLabel('方向名称 1',{exact:true}).fill(spec.direction.name);
+  await page.getByLabel('研究问题 1',{exact:true}).fill(spec.direction.objective);
+  await page.getByLabel('方法要求 1',{exact:true}).fill(spec.direction.instructions);
+  const saved=page.waitForResponse(r=>r.request().method()==='POST' && new URL(r.url()).pathname==='/api/v1/research-studio/configurations');
+  await page.getByRole('button',{name:'保存为新版本',exact:true}).click();
+  const response=await saved, version=await response.json();
+  fs.writeFileSync(path.join(output,'configuration.json'),JSON.stringify({status:response.status(),...version},null,2));
+  if(!response.ok())throw Error('Configuration not saved; no run started');
+  spec.assistant_id=version.assistant_id;
+ }
  await page.goto(new URL("/workspace?view=new",base).href);
+ if(spec.assistant_id)await page.getByLabel('本次研究配置',{exact:true}).selectOption(spec.assistant_id);
  await page.getByLabel("这次你想研究什么？",{exact:true}).fill(spec.question);
  await page.getByLabel("协作模式",{exact:true}).selectOption(spec.execution.mode);
  await page.getByLabel("研究模型",{exact:true}).selectOption(spec.execution.model);

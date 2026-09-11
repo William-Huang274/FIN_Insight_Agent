@@ -50,6 +50,23 @@ def test_parallel_edits_do_not_overwrite_each_other(tmp_path):
     assert memory(tmp_path).search()["items"][0]["version"] == 2
 
 
+def test_append_preserves_long_original_and_rejects_stale_or_foreign_writer(tmp_path):
+    original = "精确记录 NUMFACT::original，不是现金余额。\n" * 1000
+    paper = memory(tmp_path)
+    saved = paper.save("current", original)
+    with ThreadPoolExecutor(2) as pool:
+        results = list(pool.map(lambda text: memory(tmp_path).save("current", text, 1, mode="append"),
+                                ["新观察A", "新观察B"]))
+    assert sum(r["saved"] for r in results) == 1
+    current = paper.export_markdown(saved["note_id"])
+    assert current["markdown"] in {original + "\n\n新观察A", original + "\n\n新观察B"}
+    assert current["version"] == 2
+    assert paper.export_markdown(saved["note_id"], version=1)["markdown"] == original
+    assert not paper.save("current", "重发", 1, mode="append")["saved"]
+    assert not memory(tmp_path, owner="bob").save("current", "他人修改", 1, mode="append")["saved"]
+    assert not memory(tmp_path, actor="lead").save("current", "另一角色", 1, mode="append")["saved"]
+
+
 def test_paging_and_export_preserve_all_text(tmp_path):
     prose = "ABC中文\n" * 4000
     paper = memory(tmp_path)

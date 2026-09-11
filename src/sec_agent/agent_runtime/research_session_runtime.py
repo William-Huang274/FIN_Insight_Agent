@@ -399,7 +399,10 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
             private_sink=private, read_guidance=read_guidance, studio=studio, execution=execution)
-        yield build_research_session_graph(**phases).compile(name="research_session").with_config({"recursion_limit": 280})
+        from .working_memory_tools import native_memory_scope
+        thread = await native.threads.get(thread_id)
+        with native_memory_scope(thread.get('metadata', {}).get('owner_id', 'local-pilot'), thread_id):
+            yield build_research_session_graph(**phases).compile(name="research_session").with_config({"recursion_limit": 280})
     except Exception as exc:
         from langgraph.errors import GraphInterrupt
         if not isinstance(exc, GraphInterrupt):

@@ -66,6 +66,19 @@ def test_calculation_receipts_clear_only_when_original_reader_is_offered():
     assert 'Older read result omitted' in with_reader['messages'][4]['content']
 
 
+def test_saved_note_inputs_can_shrink_without_losing_receipt_or_unread_arguments():
+    rows = [HumanMessage(content='Keep current scope'),
+        AIMessage(content='',tool_calls=[{'name':'WriteWorkingNote','id':'saved','args':{'title':'FY2025','body':'original '*2000},'type':'tool_call'}]),
+        ToolMessage(name='WriteWorkingNote',tool_call_id='saved',content='{"saved":true,"note_id":"note-1","version":2}'),
+        AIMessage(content='',tool_calls=[{'name':'query_financial_data','id':str(i),'args':{'ticker':'HPE'},'type':'tool_call'} for i in range(4)]),
+        *[ToolMessage(name='query_financial_data',tool_call_id=str(i),content='Unread financial original '*100) for i in range(4)]]
+    original=deepcopy(rows)
+    projected=project_tool_history(rows,trigger_tokens=1,keep=1,saved_result_reader=True)
+    assert projected[1].tool_calls[0]['args']=={}
+    assert projected[2]==rows[2] and projected[3:]==rows[3:]
+    assert rows==original
+
+
 def test_parallel_read_results_are_delivered_once_before_becoming_clearable_history():
     rows = history()
     calls = [{"name": "RequestSourceAction", "args": {"page": i}, "id": f"fresh-{i}", "type": "tool_call"} for i in range(4)]

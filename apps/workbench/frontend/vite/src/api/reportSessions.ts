@@ -1,4 +1,5 @@
 import { Client } from "@langchain/langgraph-sdk";
+import { submissionFetch } from './submissionFetch';
 
 export type Event = {
   kind: "stage" | "model" | "tool" | "task";
@@ -158,7 +159,7 @@ export type RevisionTarget = { request_id: string; citation_id: string; base_ver
 export type ReportSnapshot = { report: NonNullable<Session["report"]>; report_version: number; checkpoint_id: string; reason?: string; report_digest?: string };
 export type ReportDiff = { before_version: number; after_version: number; reason: string; diff: string; charts_changed: boolean; citations_changed: boolean };
 async function request<T>(url: string, body?: unknown): Promise<T> {
-  const response = await fetch(url, {
+  const response = await submissionFetch(url, {
     headers: { "Content-Type": "application/json", "X-Workbench-Request": "1" },
     method: body === undefined ? "GET" : "POST",
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),

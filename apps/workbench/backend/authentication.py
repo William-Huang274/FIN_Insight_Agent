@@ -5,9 +5,11 @@ remain private to the BFF. Other product APIs are not yet tenant-qualified and
 fail closed in this pilot; this is not a multi-tenant production deployment.
 """
 from dataclasses import dataclass
+from contextvars import ContextVar
 from hashlib import sha256
 import json
 import os
+import time
 from urllib.parse import urlsplit
 
 from fastapi import HTTPException
@@ -15,6 +17,34 @@ from starlette.authentication import AuthenticationBackend, AuthenticationError,
 from starlette.concurrency import run_in_threadpool
 from starlette.middleware.authentication import AuthenticationMiddleware
 from starlette.responses import JSONResponse
+
+# Request-scoped identity, set only after signature verification. ContextVar
+# isolates concurrent requests and propagates into async service operations.
+_request_owner = ContextVar('finsight_request_owner', default='local-pilot')
+
+
+def service_owner():
+    return _request_owner.get()
+
+
+class ProductIdentityBoundary:
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope['type'] != 'http':
+            await self.app(scope, receive, send)
+            return
+        user = scope.get('user')
+        if scope['path'].startswith('/api/v1/') and (user is None or not user.is_authenticated):
+            await JSONResponse({'detail': '请先登录'}, status_code=401,
+                headers={'WWW-Authenticate': 'Bearer'})(scope, receive, send)
+            return
+        token = _request_owner.set(user.display_name if user and user.is_authenticated else None)
+        try:
+            await self.app(scope, receive, send)
+        finally:
+            _request_owner.reset(token)
 
 
 @dataclass(frozen=True)
@@ -51,6 +81,12 @@ class OIDCBackend(AuthenticationBackend):
     async def authenticate(self, conn):
         header = conn.headers.get("authorization")
         if header is None:
+            session = conn.scope.get('session', {})
+            identity = session.get('verified_owner')
+            if (isinstance(identity, str) and identity.startswith('oidc:')
+                    and isinstance(session.get('identity_expires'), (int, float))
+                    and session['identity_expires'] > time.time()):
+                return AuthCredentials(['authenticated']), SimpleUser(identity)
             return None
         scheme, _, token = header.partition(" ")
         if scheme.lower() != "bearer" or not token or len(token) > 16384:
@@ -95,7 +131,7 @@ class ConversationPilotBoundary:
 
 def install_conversation_auth(app, *, backend=None):
     mode = os.environ.get("FINSIGHT_AUTH_MODE", "local")
-    if mode not in {"local", "oidc_conversation_pilot"}:
+    if mode not in {"local", "oidc_conversation_pilot", "oidc_product"}:
         raise ValueError("unsupported_finsight_auth_mode")
     if mode == "local" and backend is None:
         return
@@ -103,7 +139,10 @@ def install_conversation_auth(app, *, backend=None):
         issuer=os.environ["FINSIGHT_OIDC_ISSUER"], audience=os.environ["FINSIGHT_OIDC_AUDIENCE"],
         jwks_url=os.environ["FINSIGHT_OIDC_JWKS_URL"]))
     app.state.oidc_conversation_pilot = True
-    app.add_middleware(ConversationPilotBoundary)
+    app.add_middleware(ProductIdentityBoundary if mode == 'oidc_product' else ConversationPilotBoundary)
     app.add_middleware(AuthenticationMiddleware, backend=backend,
         on_error=lambda conn, exc: JSONResponse({"detail": "身份凭证无效或已过期"}, status_code=401,
                                               headers={"WWW-Authenticate": "Bearer"}))
+    if mode == 'oidc_product' and os.environ.get('FINSIGHT_OIDC_CLIENT_ID'):
+        from .oidc_login import install_browser_login
+        install_browser_login(app, backend)

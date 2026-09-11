@@ -30,6 +30,8 @@ def main():
     parser.add_argument("--settings-directory", type=Path, required=True)
     parser.add_argument("--api-port", type=int, default=18165)
     parser.add_argument("--ui-port", type=int, default=8766)
+    parser.add_argument('--tls-certificate', type=Path)
+    parser.add_argument('--tls-key', type=Path)
     parser.add_argument("--no-build", action="store_true", help="Use the already built image; no source change implied.")
     parser.add_argument("--enable-research", action="store_true", help="Enable the approved fresh research entry; does not start a model run.")
     parser.add_argument("--fresh-only", action="store_true", help="Run only new research without mounting an archived answer bundle or report.")
@@ -38,6 +40,8 @@ def main():
     parser.add_argument('--hermes',action='store_true',help='Use the configured local Hermes native API for opt-in threads.')
     parser.add_argument('--hybrid-rag',action='store_true',help='Use prepared original-source Qwen vectors with BM25 and reranking.')
     args = parser.parse_args()
+    if bool(args.tls_certificate) != bool(args.tls_key):
+        raise ValueError('tls_certificate_and_key_required_together')
     if args.hybrid_rag:
         args.semantic_memory=True
     os.environ['FINSIGHT_SOURCE_HYBRID']='1' if args.hybrid_rag else '0'
@@ -67,7 +71,9 @@ def main():
         os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"] = str(settings_root / "host-settings.json")
         os.environ["FINSIGHT_REPORT_SESSION_API_URL"] = f"http://127.0.0.1:{args.api_port}"
         import uvicorn
-        uvicorn.run("apps.workbench.backend.app:app", host="127.0.0.1", port=args.ui_port, access_log=False)
+        uvicorn.run("apps.workbench.backend.app:app", host="127.0.0.1", port=args.ui_port, access_log=False,
+            ssl_certfile=str(args.tls_certificate) if args.tls_certificate else None,
+            ssl_keyfile=str(args.tls_key) if args.tls_key else None)
         return
     from scripts.qualification.dell_q1_specialist_paid_shadow.run_once import _dotenv
     env = {**os.environ, **_dotenv()}

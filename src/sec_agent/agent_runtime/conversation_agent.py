@@ -10,7 +10,47 @@ from dataclasses import dataclass
 from typing import Literal
 
 from langchain.agents import create_agent
-from langchain.agents.middleware import HumanInTheLoopMiddleware, ModelCallLimitMiddleware, ToolCallLimitMiddleware
+from langchain.agents.middleware import AgentMiddleware, HumanInTheLoopMiddleware, ModelCallLimitMiddleware, ToolCallLimitMiddleware
+from langchain_core.messages import SystemMessage
+
+
+class ConversationDeliveryMiddleware(AgentMiddleware):
+    """Reserve the last authorized call for delivery, using native call counts.
+
+    No extra model call or retry. Missing checks remain explicit in the answer;
+    reaching this boundary does not certify research or hide a model failure.
+    """
+    def __init__(self, limit, tool_limit=12):
+        self.limit = limit
+        self.tool_limit = tool_limit
+
+    def request_for_delivery(self, request):
+        remaining = self.limit - request.state.get('run_model_call_count', 0)
+        tools_remaining = self.tool_limit - request.state.get('run_tool_call_count', {}).get('__all__', 0)
+        if tools_remaining <= 0:
+            remaining = 1  # one delivery call within the remaining model allowance
+        if remaining > 2:
+            return request
+        content = request.system_message.content if request.system_message else ''
+        blocks = [{'type': 'text', 'text': content}] if isinstance(content, str) else list(content)
+        guidance = (f'This request has {remaining} authorized model calls left, including this one. '
+            'Do not repeat completed searches. Preserve the latest user scope. ')
+        if remaining <= 1:
+            guidance += ('Deliver your answer now in the user language using the results already received. '
+                'Tools are unavailable for this final call. Distinguish completed results, source-bound numbers, '
+                'remaining checks and any uncertainty. If a requested check is incomplete, say exactly which '
+                'part remains and how the user can continue; do not label an incomplete review as passed. '
+                'Do not invent facts or replace the answer with a progress promise.')
+        else:
+            guidance += 'Use this call only for a necessary missing check or answer directly; the next call is reserved for delivery.'
+        return request.override(system_message=SystemMessage(content=[*blocks, {'type':'text','text':guidance}]),
+            **({'tools': []} if remaining <= 1 else {}))
+
+    def wrap_model_call(self, request, handler):
+        return handler(self.request_for_delivery(request))
+
+    async def awrap_model_call(self, request, handler):
+        return await handler(self.request_for_delivery(request))
 
 
 PermissionMode = Literal["request_standard", "approve_for_me", "full_access"]
@@ -84,8 +124,8 @@ def build_conversation_agent(*, model, grants: list[GrantedTool], permission_mod
         checkpointer=checkpointer, middleware=[
             HumanInTheLoopMiddleware(interrupt_on=interrupt_on),
             ModelCallLimitMiddleware(run_limit=model_calls, exit_behavior="error"),
-            # Native end pairs every pending call with an explicit skipped/limit
-            # result. Raising here left dangling tool calls in the checkpoint,
-            # preventing a later user correction from continuing coherently.
-            ToolCallLimitMiddleware(run_limit=tool_calls, exit_behavior="end"), *navigation, *middleware],
+            # Native continue pairs blocked calls without executing them, then
+            # delivery middleware disables tools and requests a usable answer.
+            ToolCallLimitMiddleware(run_limit=tool_calls, exit_behavior="continue"), *navigation, *middleware,
+            ConversationDeliveryMiddleware(model_calls, tool_calls)],
         name="conversation")

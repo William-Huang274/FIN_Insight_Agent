@@ -1,8 +1,8 @@
 """Public request-size projection, independent of cumulative billing totals."""
 
 CAPACITY_SOURCE = "https://api-docs.deepseek.com/quick_start/pricing"
-CAPACITY_AS_OF = "2026-09-09"
-MODEL_CAPACITY = {"deepseek-v4-flash": 1_000_000, "deepseek-v4-pro": 1_000_000}
+CAPACITY_AS_OF = "2026-09-11"
+MODEL_CAPACITY = {"deepseek-flash": 1_000_000, "deepseek-v4-flash": 1_000_000, "deepseek-v4-pro": 1_000_000}
 
 
 def request_context_usage(events):

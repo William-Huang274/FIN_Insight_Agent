@@ -1,4 +1,4 @@
-import { test, expect } from "playwright/test";
+import { test, expect } from "./identity-fixture";
 
 for (const width of [1440,1024,390]) test(`research start, organization, panel and rendered revision at ${width}`, async ({page}) => {
   await page.setViewportSize({width,height:950});

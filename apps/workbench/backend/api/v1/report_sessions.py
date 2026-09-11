@@ -28,6 +28,7 @@ from sec_agent.agent_runtime.targeted_revision import report_digest, validate_re
 from .research_studio import build_studio_router, run_configuration, owned_configuration
 from sec_agent.agent_runtime.execution_options import ExecutionOptions
 from sec_agent.agent_runtime.manual_review import manual_review_available, apply_manual_review
+from ...authentication import service_owner
 
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
@@ -138,7 +139,7 @@ def public_native_failures(state, run):
 
 
 def public_cost_estimate(events):
-    from scripts.qualification.dell_q1_specialist_paid_shadow.audit_token_cost import OFF_PEAK, PRICE_AS_OF, cost_parts, peak_multiplier
+    from scripts.qualification.dell_q1_specialist_paid_shadow.audit_token_cost import dated_public_cost
     starts = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "started"}
     outcomes = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "outcome"}
     amount, priced = 0.0, 0
@@ -150,12 +151,14 @@ def public_cost_estimate(events):
         model = start.get("model") or outcome.get("model")
         counts = [outcome.get(key) for key in ("cache_hit_tokens", "cache_miss_tokens", "output_tokens")]
         timestamp = start.get("recorded_at") or outcome.get("recorded_at")
-        if model in OFF_PEAK and timestamp and all(type(n) is int and n >= 0 for n in counts):
-            amount += sum(cost_parts(model, *counts, peak_multiplier(timestamp)).values())
-            priced += 1
+        if timestamp and all(type(n) is int and n >= 0 for n in counts):
+            value = dated_public_cost(model, *counts, timestamp)
+            if value is not None:
+                amount += value
+                priced += 1
     return {"known_cny": round(amount, 6), "priced_requests": priced, "not_attempted_requests": len(not_attempted),
         "unknown_or_pending_requests": len((set(starts) | set(outcomes)) - not_attempted) - priced,
-        "price_as_of": PRICE_AS_OF, "notice": "按已报告用量和公开分时单价估算，不是账单；未知/进行中请求未计入。"}
+        "price_as_of": "2026-09-11", "notice": "按已报告用量和请求日期对应的公开分时单价估算，不是账单；旧记录保留原计价方案，未知/进行中请求未计入。"}
 
 
 def review_interrupts(state):
@@ -309,7 +312,8 @@ class ReportSessionService:
 
     async def owned_thread(self, thread_id):
         thread = await self.sdk.threads.get(str(thread_id))
-        if thread.get("metadata", {}).get("surface") != SURFACE:
+        if (thread.get("metadata", {}).get("surface") != SURFACE
+                or thread.get('metadata', {}).get('owner_id', 'local-pilot') != service_owner()):
             raise HTTPException(404, "研究会话不存在")
         return thread
 
@@ -369,7 +373,10 @@ def build_report_sessions_router(service):
 
     @router.get("/research-sessions")
     async def sessions():
-        threads = await service.sdk.threads.search(metadata={"surface": SURFACE}, limit=50)
+        owner = service_owner()
+        threads = await service.sdk.threads.search(metadata={"surface": SURFACE,
+            **({'owner_id': owner} if owner != 'local-pilot' else {})}, limit=50)
+        threads = [t for t in threads if t.get('metadata', {}).get('owner_id', 'local-pilot') == owner]
         return [{"thread_id": t["thread_id"], "status": t["status"], "updated_at": t["updated_at"],
             "title": t.get("metadata", {}).get("title", "研究任务"),
             "phase": (t.get("values") or {}).get("phase"),
@@ -448,6 +455,8 @@ def build_report_sessions_router(service):
     @router.post("/research-sessions")
     async def create(body: NewSession, request: Request):
         browser_write(request)
+        if service_owner() != 'local-pilot' and body.mode != 'research':
+            raise HTTPException(403, '共享历史样例只在本地个人模式开放')
         graph, payload = GRAPH, {"open": True}
         if body.mode == "research":
             profile = getattr(service, "research_profile", None)
@@ -462,7 +471,7 @@ def build_report_sessions_router(service):
             raise HTTPException(409, "本部署未配置旧报告；可以创建新研究或打开任务历史")
         if body.defer_start and body.mode != "research":
             raise HTTPException(422, "只有新研究支持先上传资料")
-        metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode}
+        metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode, 'owner_id': service_owner()}
         if body.execution:
             if graph != RESEARCH_GRAPH:
                 raise HTTPException(422, "运行模式选择仅适用于研究任务")

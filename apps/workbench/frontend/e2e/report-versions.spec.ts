@@ -1,4 +1,4 @@
-import { expect, test } from "playwright/test";
+import { expect, test } from "./identity-fixture";
 import { mkdirSync } from "node:fs";
 import { resolve } from "node:path";
 

@@ -60,6 +60,23 @@ def cost_parts(model, hit, miss, output, multiplier):
         ("cached_input", "uncached_input", "output"), (hit, miss, output), prices)}
 
 
+def dated_public_cost(model, hit, miss, output, timestamp):
+    """Dated UI estimate; keep historical qualification's frozen prices unchanged."""
+    local = datetime.fromisoformat(timestamp.replace("Z", "+00:00")).astimezone(timezone(timedelta(hours=8)))
+    # Verified on this date; do not silently reprice older immutable evidence.
+    if local.date().isoformat() >= "2026-09-11":
+        if model in {"deepseek-flash", "deepseek-v4-flash", "deepseek-v4-flash-vision-exp"}:
+            rates = (0.02, 1.0, 4.0)
+        elif model == "deepseek-v4-pro":
+            rates = (0.02, 1.0, 4.0) if local.isoformat() >= "2026-09-14T12:00:00+08:00" else (0.15, 4.5, 13.5)
+        else:
+            return None
+        return sum(count * rate for count, rate in zip((hit, miss, output), rates)) * peak_multiplier(timestamp) / 1_000_000
+    if model in OFF_PEAK:
+        return sum(cost_parts(model, hit, miss, output, peak_multiplier(timestamp)).values())
+    return None
+
+
 def message_components(messages):
     sizes = Counter()
     for message in messages:

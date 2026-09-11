@@ -39,6 +39,29 @@ def policy(calls, *, trigger=1500, keep=300):
         audited_model=RunnableLambda(summarize), trigger_tokens=trigger, keep_tokens=keep)
 
 
+def test_rolling_summary_requires_new_user_turn_and_keeps_original_history():
+    async def run():
+        calls=[]
+        middleware=policy(calls,trigger=500,keep=100)
+        middleware.per_user_turn=True
+        rows=history()
+        rows.extend([AIMessage(content='Already completed original research. '*200,id='answer'),
+                     HumanMessage(content='Cancel attribution; observations only.',id='correction')])
+        original=deepcopy(rows)
+        update=await middleware.abefore_model({'messages':rows},None)
+        assert update['request_summary']['last_summary_user_id']=='correction'
+        state={'messages':rows,**update}
+        assert await middleware.abefore_model(state,None) is None
+        assert len(calls)==1 and rows==original
+        rows.extend([AIMessage(content='Observed only, no revived plan. '*200,id='answer2'),
+                     HumanMessage(content='Continue with the source index only.',id='next-user')])
+        update2=await middleware.abefore_model(state,None)
+        assert update2['request_summary']['count']==2 and len(calls)==2
+        projected=middleware.projected_messages({'messages':rows,**update2})
+        assert projected[0]==original[0] and projected[-1]==rows[-1]
+    asyncio.run(run())
+
+
 def test_native_prefix_is_not_4k_trimmed_and_pairs_original_task_are_retained():
     async def run():
         calls, rows = [], history()

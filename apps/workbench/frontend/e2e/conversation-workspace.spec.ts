@@ -1,4 +1,29 @@
-import { test, expect } from "playwright/test";
+import { test, expect } from "./identity-fixture";
+
+test('lost submission response retains one intent key across reload', async ({page}) => {
+  const keys:string[]=[];
+  const id='00000000-0000-4000-8000-000000000099';
+  const snapshot={thread_id:id,title:'回执验证',status:'idle',messages:[],events:[],runs:[]};
+  await page.route('**/api/v1/conversations**',async route=>{
+    if(route.request().method()==='POST') {
+      keys.push(route.request().headers()['idempotency-key']);
+      if(keys.length===1) return route.abort('connectionreset');
+      return route.fulfill({json:{thread_id:id,run_id:'same-server-run'}});
+    }
+    return route.fulfill({json:new URL(route.request().url()).pathname.endsWith('conversations')?[]:snapshot});
+  });
+  await page.goto('/workspace/assistant');
+  await page.getByLabel('发送消息',{exact:true}).fill('保存同一个提交意图');
+  await page.getByRole('button',{name:'发送',exact:true}).click();
+  await expect.poll(()=>keys.length).toBe(1);
+  await page.reload();
+  await page.getByLabel('发送消息',{exact:true}).fill('保存同一个提交意图');
+  await page.getByRole('button',{name:'发送',exact:true}).click();
+  await expect(page).toHaveURL(new RegExp(id));
+  expect(keys[0]).toMatch(/^[0-9a-f-]{36}$/);
+  expect(keys[1]).toBe(keys[0]);
+});
+
 for (const width of [1440, 1024, 390]) test(`general conversation persists and selects controls at ${width}`, async ({page}) => {
   await page.setViewportSize({width,height:950});
   const id="00000000-0000-4000-8000-000000000090";

@@ -378,5 +378,7 @@ async def dell_report_session_graph(config: RunnableConfig, runtime: ServerRunti
                 agents[role] = build_case_output_agent(role="writer" if quick else role, model=case_chat_model(profile, basis, model_config, SecretStr(os.environ["DEEPSEEK_API_KEY"])),
                     tools=tools, artifacts=artifacts, limits=quick_limits if quick else settings["node_limits"][role], audit=audits[role],
                     report_revision=True, allow_answers=role != "verifier", answer_only=quick, method_instructions=user_brief)
-            yield build_report_session_graph(**agents, artifacts=artifacts, initial=initial, audits=audits).compile(
-                name="dell_report_session").with_config({"recursion_limit": 240})
+            from .working_memory_tools import native_memory_scope
+            with native_memory_scope(thread.get('metadata', {}).get('owner_id', 'local-pilot'), thread_id):
+                yield build_report_session_graph(**agents, artifacts=artifacts, initial=initial, audits=audits).compile(
+                    name="dell_report_session").with_config({"recursion_limit": 240})

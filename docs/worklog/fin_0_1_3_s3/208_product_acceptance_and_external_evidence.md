@@ -24,3 +24,24 @@
 - HPE完成版冻结副本真实追问2/2提交，7次DS Flash thinking enabled/low，112863已知tokens，未知0。第一问正确区分并表/有机、CFO/两种FCF；第二问拒绝与原文冲突的新结论。逐项人工阅读，不冒称金融全覆盖。原前端报告v2/人工2次未改。证据D:/temp/fin208/human-followup-live-a2；a1因脚本调用方式import失败，0模型，保留failure；支持python -m入口。
 - Docker实际3场景通过（临时写/宿主根只读/禁网/无凭据、另一任务空目录、超时停止）；native SQLite重开→真实HTTP MCP→Docker四权限场景通过，拒绝0执行、批准1执行、两委托模式各1执行。均0模型。证据D:/temp/fin208/docker-isolation-a1和sandbox-approval-a1；不当作前端或多用户验收。
 - 尚需本轮部署和其余工作包；发现研究线程与配置缺owner隔离，先补齐再进行真实双用户验证。未形成最终报告或简历指标，不称本轮完成。
+
+## 第二段实际证据（执行中，尚非最终交付）
+
+- 产品增量：研究线程/运行/导出/底稿/配置读取与应用绑定服务端verified owner，原共享人工审阅入口在OIDC产品模式拒绝；前端身份门禁、owner分区浏览器记忆与项目分组。Keycloak26.7.3真实HTTPS授权码PKCE→Authlib→PyJWT校验issuer/audience→安全签名会话；Alice/Bob实际浏览器登录和退出通过。独立18815资格入口，不冒称公网生产部署。39项真实HTTP归属隔离与8并发读，0模型；证据identity-resource-a1、identity-browser-a1。Keycloak开发模式、TrustedHost正式域名、生产运维仍不在已部署声明内。
+- 工程增量：模型调用最后一个已授权名额禁用进一步工具，要求交付已有结果并保留未核实项，不增加调用额度；浏览器持久提交UUID，BFF按verified owner+UUID+请求内容使用DiskCache原子回执。同内容失联重提交重放原结果；不同内容拒绝；未知结果不自动过期重发。5后端回执检查及真实浏览器网络断开/刷新复用key通过，13浏览器检查通过。无key的旧API保留兼容，不宣称所有外部客户端无条件exactly-once。
+- 成熟组件选择：检查原生Agent Server0.13.3/SDK，未提供客户端run_id或幂等键；snok/asgi-idempotency-header缺owner隔离与payload冲突核对，且待定租约不能满足付费调用未知结果保留要求。因此沿用已采用DiskCache atomic add做本地薄HTTP回执适配，任务创建执行仍归Agent Server。多个主机未共享交易存储时不宣称可扩展此本地回执。
+- 真实RAG：固定739原文叶节点/1105嵌入片段，28查询（开发14/验证14，各12有答案2无答案）。同资料BM25、Qwen text-embedding-v4（1024维）、BM25+向量候选再qwen3-rerank；167个请求全部已知完成，embedding317882tokens、rerank370916tokens。按官网两模型均0.0005元/千tokens的日期价格方案估算总¥0.344399，未扣免费额度，非实际账单。精确重复全部0新API请求。开发Hit@5：5/12、8/12、11/12；验证：7/12、9/12、12/12。固定锚点不是全部相关段落，不能把候选命中当回答正确率。
+- 检索初始失败和修复：development-a1发现RFC no-cache/no-store标注漏0312，公开开发标注修正保留a1；validation-a1在R23纯中文问题被ASCII tokenizer误判空查询，尚未发对应API即失败。复用jieba0.42.1搜索分词修复，保留英语既有token行为；validation-a2重放复用已付款缓存，development-a3同代码重评0调用。因看过验证结果后修工程缺陷，不称盲测；没有按验证金融答案调参。原件D:/temp/fin208/retrieval-*。
+- 长对话a1第二意图：8模型+1摘要、109185tokens，先取到正确财务数字后重复检索，耗尽调用无答案；原件保留。a2接续前三意图成功：正确交付MSFT数表，保存工作底稿，回读HPE人改2次/v2并保留财务区别。第四意图重写完整底稿时output3000截断，拒绝部分工具写入，旧v1保留。责任属于全篇写入接口和输出预算不适配，不能说是金融知识不懂。新增WriteWorkingNote mode=append，仅输出新增正文、原版本CAS合并，旧版/他人角色/并发冲突验证27通过；模型无严格章节模板。a3正在同一窗口接续，尚不能称12轮通过。
+- 18796产品sandbox启动与两份配置接入：自动审批审查在执行前拒绝，Owner再次明确授权后再次拒绝，仅blocked by policy，无具体原因。未执行未写配置，没有绕过；与既有Docker/SQLite-MCP隔离审批资格分列。用户授权有效，不能反复索要同一授权；当前唯一此类环境阻塞。
+- 原HPE完成版不改。本轮原生镜像先a8d2e68e、后6084c6c增加底稿追加，后端18795当前b3，18815身份资格入口独立；最终固定部署验收尚待执行。外部报告与简历结果尚未最终发布。
+
+供应商映射/价格核查：https://api-docs.deepseek.com/zh-cn/quick_start/pricing/（2026-09-11）；旧deepseek-v4-flash当前映射V4.1-Flash，Pro仍V4-Pro-0813，公告09-14中午后Pro名也映射Flash；不以别名宣称独立模型对照。旧成本审计函数继续保留09-07方案；产品展示新请求按09-11核查价，未知不当0。
+
+## 第三段：长对话故障收口与真实接续
+
+- a3追加底稿v2成功；下一HTTP读取后，原生累计两次摘要耗尽，80k输入前置边界阻断。改为采用原生Summarization每个新用户回合最多一次按需摘要；摘要前以已有saved-result reader把已读旧工具参数/结果投影为定位符，保留未读批次、工具错误及原checkpoint。研究图摘要策略不随通用对话改变。真实失败checkpoint零模型回放208296消息字符→21544请求消息字符，原始digest未变；这是结构验证，不是摘要语义正确率。
+- a4七次运行结束，其中两项未交付：工具上限提示、DSML工具协议被当正文。人工逐条阅读发现，修正资格脚本只看native success的漏检。采用原生ToolCallLimit continue阻止超额工具后允许在原模型额度内交付；公开投影把已识别协议/限额非答案标needs_attention、禁止导出，不执行文本里的工具调用。保留私有原件，不伪造结果。
+- a5仅接续这两项，两次均交出正文：更新接续底稿v5；回读MSFT CFO136162、现金capex64551、FCF71611（百万美元）及HPE报告v2/人工2次。没有重跑取数。仍有模型呈现边界：用户要求百万美元而主表先列USD再补百万；原记录与旧摘要中的NumericFact ID有冲突，模型保留未决而未伪造新值。后续交接需读原回执，不能把摘要声明升级为原始事实。
+- 此时同窗口17个真实用户回合（原12意图+5次有依据的局部接续），不是17独立用例或12题首遍通过。原报告仍v2/人工2，底稿历史版本保留。尚需真实重启后的新窗口交接、Hermes同能力对照和最终四类界面验收。
+- 工程验证：最后集成85项Python通过（identity/receipts/conversation/delivery/notes/summary/context/Chinese/dated-cost），先前26交付定向检查包含其中；不得相加作独立测试总数。TS/Vite通过。原生镜像e7935a6a已部署、BFF18795 b4已加载；18796部署审核阻塞未绕过。

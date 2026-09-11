@@ -27,8 +27,8 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
         return messages
     names = {call["id"]: call["name"] for m in messages if isinstance(m, AIMessage) for call in m.tool_calls}
     known = set(names.values()) | {m.name for m in messages if isinstance(m, ToolMessage)}
-    rereadable = REREADABLE_TOOLS | ({"calculate_research_metric", "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence"} if saved_result_reader else set())
-    edit = ClearToolUsesEdit(trigger=trigger_tokens, keep=keep, clear_tool_inputs=False,
+    rereadable = REREADABLE_TOOLS | ({"calculate_research_metric", "create_report_chart", "list_financial_data", "ReadWorkingNote", "WriteWorkingNote", "read_handoff_material", "read_handoff_evidence"} if saved_result_reader else set())
+    edit = ClearToolUsesEdit(trigger=trigger_tokens, keep=keep, clear_tool_inputs=saved_result_reader,
         exclude_tools=tuple(sorted(name for name in known if name and name not in rereadable)),
         placeholder="[Older read result omitted from this request; the host retains the original. Use read_saved_result with this original tool_call_id when available, or repeat the same read tool and arguments when its source context is needed.]")
     projected = deepcopy(list(messages))
@@ -42,6 +42,23 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
     # error messages; the native edit still owns selection and pair preservation.
     for index, message in enumerate(messages):
         if isinstance(message, ToolMessage) and (message.status == "error" or index > last_assistant):
+            projected[index] = deepcopy(message)
+            # Keep the arguments of a failed or not-yet-consumed operation too.
+            for j, original in enumerate(messages[:index]):
+                if isinstance(original, AIMessage):
+                    by_id = {c['id']: c for c in original.tool_calls}
+                    projected[j].tool_calls = [deepcopy(by_id[c['id']]) if c['id'] == message.tool_call_id else c
+                                               for c in projected[j].tool_calls]
+                    context = projected[j].response_metadata.get('context_editing', {})
+                    if message.tool_call_id in context.get('cleared_tool_inputs', []):
+                        remaining = [c for c in context['cleared_tool_inputs'] if c != message.tool_call_id]
+                        if remaining:
+                            context['cleared_tool_inputs'] = remaining
+                        else:
+                            projected[j].response_metadata = deepcopy(original.response_metadata)
+        elif isinstance(message, ToolMessage) and message.name == 'WriteWorkingNote':
+            # Small save/version receipts locate the exact durable note. Only
+            # obsolete full write arguments are removed from the request copy.
             projected[index] = deepcopy(message)
     return projected
 
@@ -79,7 +96,7 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
     """
     state_schema = RequestSummaryState
 
-    def __init__(self, *, model, audited_model, trigger_tokens, keep_tokens, max_summaries=2):
+    def __init__(self, *, model, audited_model, trigger_tokens, keep_tokens, max_summaries=2, per_user_turn=False):
         if not 0 < keep_tokens < trigger_tokens or max_summaries < 1:
             raise ValueError("request_summary_configuration_invalid")
         self.native = SummarizationMiddleware(model=model, trigger=("tokens", trigger_tokens),
@@ -89,6 +106,8 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         # Replace that runnable, not its message-selection/summarization logic.
         self.native._summary_model = audited_model
         self.max_summaries = max_summaries
+        self.per_user_turn = per_user_turn
+        self.trigger_tokens = trigger_tokens
 
     @staticmethod
     def projected_messages(state, *, pin_user=True):
@@ -114,20 +133,25 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
         full = state["messages"]
         if not full or not isinstance(full[0], HumanMessage):
             raise ValueError("request_summary_requires_original_user_task")
+        latest_user_id = next((m.id for m in reversed(full) if isinstance(m, HumanMessage)), None)
+        previous = state.get("request_summary", {})
+        if self.per_user_turn and latest_user_id and previous.get('last_summary_user_id') == latest_user_id:
+            return None
         # Extra pinned turns are request-only. Native cutoff accounting must
         # operate on summary + original suffix, not count a duplicate as history.
         projected = self.projected_messages(state, pin_user=False)
         # The original user task remains verbatim, outside the summarized prefix.
         working = deepcopy(projected[1:])
+        if self.per_user_turn:
+            working = project_tool_history(working, trigger_tokens=self.trigger_tokens, keep=2, saved_result_reader=True)
         if not self.native._should_summarize(working, self.native.token_counter(working)):
             return None
-        previous = state.get("request_summary", {})
         cutoff = self.native._determine_cutoff_index(working)
         if cutoff <= (1 if previous else 0):
             # A large indivisible tool batch may exceed keep. Do not pay again
             # just to summarize the same cached note while retaining that batch.
             return None
-        if previous.get("count", 0) >= self.max_summaries:
+        if not self.per_user_turn and previous.get("count", 0) >= self.max_summaries:
             # This caps paid summarizer calls, not the research task. Keep the
             # last projection and every subsequent message; the ordinary model
             # input/cost/call ceilings still stop an oversized continuation.
@@ -165,7 +189,8 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             raise ValueError("request_summary_boundary_invalid")
         return {"request_summary": {"message": summary.model_dump(mode="json"),
             "prefix_end": end, "first_original_id": full[0].id,
-            "last_original_id": full[end - 1].id, "count": previous.get("count", 0) + 1}}
+            "last_original_id": full[end - 1].id, "count": previous.get("count", 0) + 1,
+            "last_summary_user_id": latest_user_id, "frequency": "once_per_user_turn" if self.per_user_turn else "thread_limit"}}
 
     async def awrap_model_call(self, request, handler):
         update = {"messages": self.projected_messages(request.state)}

@@ -1,4 +1,4 @@
-import {test,expect} from 'playwright/test';
+import {test,expect} from './identity-fixture';
 for(const width of [1440,390])test(`human edits and completed workspace ${width}`,async({page})=>{
   await page.setViewportSize({width,height:1000});
   const id='00000000-0000-4000-8000-000000000097';let edits:any[]=[];

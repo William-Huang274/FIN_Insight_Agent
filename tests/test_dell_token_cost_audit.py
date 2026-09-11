@@ -25,6 +25,17 @@ def test_current_flash_scenario_is_third_of_pro_not_predicted_saving():
     assert pro == pytest.approx(3 * flash)
 
 
+def test_dated_alias_prices_preserve_old_runs_and_provider_cutover():
+    from scripts.qualification.dell_q1_specialist_paid_shadow.audit_token_cost import dated_public_cost
+    counts = (0, 1_000_000, 0)
+    assert dated_public_cost("deepseek-v4-flash", *counts, "2026-09-07T04:00:00Z") == 1.5
+    assert dated_public_cost("deepseek-flash", *counts, "2026-09-11T04:00:00Z") == 1.0
+    assert dated_public_cost("deepseek-v4-flash", *counts, "2026-09-11T06:00:00Z") == 2.0
+    assert dated_public_cost("deepseek-v4-pro", *counts, "2026-09-14T03:59:59Z") == 9.0
+    assert dated_public_cost("deepseek-v4-pro", *counts, "2026-09-14T04:00:00Z") == 1.0
+    assert dated_public_cost("unknown", *counts, "2026-09-11T04:00:00Z") is None
+
+
 def test_report_never_serializes_private_text_or_invents_missing_usage(tmp_path):
     folder = tmp_path / "attempt"
     folder.mkdir()

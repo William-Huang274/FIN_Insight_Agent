@@ -1,4 +1,4 @@
-import {test,expect} from 'playwright/test';
+import {test,expect} from './identity-fixture';
 for(const width of [1440,390]) test(`context directory exact reads, empty region and closing at ${width}`,async({page})=>{
   await page.setViewportSize({width,height:950});
   const tid='00000000-0000-4000-8000-000000000081';

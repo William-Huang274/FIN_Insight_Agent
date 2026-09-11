@@ -9,7 +9,8 @@ if (!args.includes("--execute") || !args.includes("--case") || !args.includes("-
 const spec = JSON.parse(fs.readFileSync(option("--case"), "utf8"));
 const output = path.resolve(option("--output"));
 const base = new URL(option("--base-url"));
-if (base.hostname !== "127.0.0.1" || !Array.isArray(spec.turns) || spec.turns.length < 1 || spec.turns.length > 3) throw Error("Only bounded loopback qualification allowed");
+const maxTurns = spec.qualification === '208-long-dialogue' && spec.TokenBudgetBasis ? 16 : 3;
+if (base.hostname !== "127.0.0.1" || !Array.isArray(spec.turns) || spec.turns.length < 1 || spec.turns.length > maxTurns) throw Error("Only bounded loopback qualification allowed");
 fs.mkdirSync(output); // immutable attempt, never overwrite a prior run
 fs.writeFileSync(path.join(output, "case.json"), JSON.stringify(spec, null, 2));
 (async () => {
@@ -47,8 +48,9 @@ fs.writeFileSync(path.join(output, "case.json"), JSON.stringify(spec, null, 2));
     for (let index=0; index<spec.turns.length; index++) {
       if (index) await page.reload(); // prove persistence, not retained component state
       await page.getByLabel("发送消息", {exact:true}).fill(spec.turns[index]);
-      await page.getByRole("combobox", {name:"模型",exact:true}).selectOption(spec.model || "deepseek-v4-flash");
+      await page.getByRole("combobox", {name:"模型",exact:true}).selectOption(spec.models?.[index] || spec.model || "deepseek-v4-flash");
       await page.getByRole("combobox", {name:"权限",exact:true}).selectOption(spec.permission_mode || "request_standard");
+      if (!existing && !index && spec.harness) await page.getByRole('combobox',{name:'执行方式',exact:true}).selectOption(spec.harness);
       if (!index && spec.attachments?.length) await page.getByLabel("添加对话资料",{exact:true}).setInputFiles(spec.attachments);
       const response = page.waitForResponse(r => r.request().method()==="POST" && /\/api\/v1\/conversations(?:\/[^/]+\/messages)?$/.test(new URL(r.url()).pathname));
       await page.getByRole("button", {name:"发送",exact:true}).click();
@@ -92,8 +94,11 @@ fs.writeFileSync(path.join(output, "case.json"), JSON.stringify(spec, null, 2));
       await page.screenshot({path:path.join(output,`turn-${index+1}.png`),fullPage:true});
       const run = state.runs.find(r => r.run_id === identity.run_id);
       if (!run || run.status !== "success") throw Error(`Native run ended ${run?.status}; no paid retry`);
+      const answer=state.messages.filter(m=>m.role==='assistant').at(-1);
+      if(!answer?.final_answer || answer.delivery_status==='needs_attention' || /^\s*(<｜｜DSML|Tool call limit reached:)/.test(answer.content)) throw Error('Run ended but no complete public answer was delivered; preserve result for targeted review');
       if (spec.knowledge_approval_source_ids && !receipts.some(r=>r.approval)) throw Error("Model returned prose without the required native knowledge approval; nothing saved");
       if (errors.length) throw Error("Browser error; inspect receipt");
+      console.log(JSON.stringify({turn:index+1,thread_id:identity.thread_id,run_id:identity.run_id,status:run.status}));
     }
     console.log(JSON.stringify({status:"runs_completed_pending_content_review",output,receipts}));
   } catch(e) {

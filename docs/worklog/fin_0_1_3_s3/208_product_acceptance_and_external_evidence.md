@@ -90,3 +90,7 @@
 - check 不执行代码：先核验宿主无凭据/错误凭据 401、认证工具目录，再可从已有 native 容器读取自身挂载配置、检查 MCP 连通及凭据一致性。容器挂载是单文件，宿主原子替换后是否读到新文件必须实际验证。Hermes 当前未注册 sandbox，不将 native 接入范围扩大。
 - 验证：14 项定向 pytest 通过（部署配置/失败回退/鉴权/容器陈旧凭据与错误脱敏/原隔离适配测试）；真实只读 plan 验证固定镜像可用、configured=false、18796 无监听。此轮未运行真实 configure/serve，没有触碰两份实际配置，没有重试此前被拒绝动作，0 模型费用。
 - [操作者步骤与检查边界](../../architecture/local_sandbox_operator.zh-CN.md) 已提供实际机器命令。剩余阻塞：由操作者手动启动后，才可运行宿主/容器真实 check 和产品前端批准到隔离执行验收。此轮是工程入口交付，不是已部署产品增量。
+
+### 操作者 Python 启动失败修复
+
+Owner PowerShell 截图显示 `.venv/Scripts/python.exe` 在加载 uv 缓存 CPython 时 `No Python at ...`，configure 未执行，if 条件跳过 serve；不同于此前 CreateProcess 策略拒绝。Codex 当前同路径及 Windows PowerShell 子进程可正常启动，文件存在且无目录链接，具体会话差异未复现，不宣称缓存被删除。为移除该部署依赖，将同一 CPython 3.11.14 复制到已忽略的 `.venv/sandbox-python311`，原 pyvenv.cfg 备份为 `.venv/pyvenv.cfg.before-project-python-20260911` 后仅修改 home；不删旧解释器、不改系统 Python、不重装项目依赖。新 Windows PowerShell 进程确认 base_prefix 指向项目目录、MCP/Uvicorn 可导入，真实只读 plan 通过，原 14 定向测试再次通过。操作文档补充失败时明确报错。真实 settings 仍未配置、18796 未启动，等待用户原终端实测；0 模型费用。本次是本机解释器依赖修复和文档增量，非 sandbox 产品接入完成。

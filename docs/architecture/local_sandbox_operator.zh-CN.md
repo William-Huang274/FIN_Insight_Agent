@@ -32,6 +32,8 @@ $finSandboxArgs = @('--settings-dir', 'Z:/FIN_Insight_Agent_qualification/dell_r
 .venv/Scripts/python.exe -m scripts.deployment.local_sandbox configure @finSandboxArgs
 if ($LASTEXITCODE -eq 0) {
     .venv/Scripts/python.exe -m scripts.deployment.local_sandbox serve @finSandboxArgs
+} else {
+    Write-Error '配置未完成，服务没有启动。请保留上方第一条错误。'
 }
 ```
 
@@ -43,6 +45,13 @@ if ($LASTEXITCODE -eq 0) {
 
 `serve` 前台运行已有 MCP 服务，错误显示在当前终端；保持终端开启，Ctrl+C 停止。
 端口已有监听时停止，不杀进程。不会自动重启工作台或 Docker 容器。
+
+如果第一条错误是 `No Python at ...`，Python 尚未启动，配置模块也未执行。
+先检查 `.venv/pyvenv.cfg` 的 home 对应解释器在操作者终端是否可用；不要以此诊断
+Docker/MCP。2026-09-11 本机发现该启动错误，部署人员终端无法定位 uv 缓存解释器，
+而 Codex 子进程可运行，具体会话差异未查明。已将同一 CPython 3.11.14 复制到
+项目 `.venv/sandbox-python311`，备份 pyvenv.cfg 后仅修改 home，保留原 site-packages。
+该本机修复不上传解释器、不更改系统 Python，也不代表所有其他机器已修复。
 
 在另一个仓库 PowerShell 窗口，重新定义上述 `$finSandboxArgs` 后：
 

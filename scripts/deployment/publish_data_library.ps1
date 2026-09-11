@@ -4,6 +4,32 @@ param(
     [switch]$Plan
 )
 $ErrorActionPreference = 'Stop'
+function Get-WorkbenchReloadTarget([string]$RepositoryPath) {
+    $listener = Get-NetTCPConnection -LocalPort 18795 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($listener) {
+        $backend = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
+        if (!$backend -or $backend.CommandLine -notmatch 'scripts.deployment.research_workbench.*serve' -or $backend.CommandLine -notmatch [regex]::Escape($RepositoryPath)) {
+            throw '18795 is not the expected repository workbench'
+        }
+        $sessions = Invoke-RestMethod 'http://127.0.0.1:18795/api/v1/research-sessions' -TimeoutSec 15
+        if (@($sessions | Where-Object status -eq 'busy').Count -gt 0) { throw 'Research is running; wait before deployment' }
+        $conversations = Invoke-RestMethod 'http://127.0.0.1:18795/api/v1/conversations' -TimeoutSec 15
+        if (@($conversations | Where-Object status -eq 'busy').Count -gt 0) { throw 'Conversation is running; wait before deployment' }
+        return $backend
+    }
+    # The BFF may be down while the native workers are still processing research.
+    $running = @(docker ps --filter 'label=com.docker.compose.project=finsight-dell-report-workbench' --format '{{.Names}}')
+    if ($LASTEXITCODE -ne 0) { throw 'Docker engine is unavailable; start Docker Desktop and wait for the engine' }
+    $nativeListener = Get-NetTCPConnection -LocalPort 18165 -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($running -contains 'finsight-dell-report-workbench-langgraph-api-1') {
+        $busy = Invoke-RestMethod 'http://127.0.0.1:18165/threads/search' -Method Post -ContentType 'application/json' -Body '{"status":"busy","limit":1}' -TimeoutSec 15
+        if (@($busy).Count -gt 0) { throw 'Native research is running; wait before deployment' }
+    } elseif ($nativeListener) {
+        throw '18165 is occupied without the expected Agent Server container'
+    }
+    Write-Host 'Workbench is stopped; using cold startup (no process to stop).'
+    return $null
+}
 $repoPath = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 $settingsPath = (Resolve-Path -LiteralPath $SettingsDirectory).Path
 $snapshotPath = (Resolve-Path -LiteralPath $SnapshotDirectory).Path
@@ -18,13 +44,9 @@ Write-Output "Snapshot: $digest"
 Write-Output "Public library destination: $libraryPath"
 Write-Output 'Actions: retain snapshot; reload existing Docker Agent Server; restart only the verified 18795 workbench; check health and data APIs. No model calls.'
 if ($Plan) { return }
-$sessions = Invoke-RestMethod 'http://127.0.0.1:18795/api/v1/research-sessions'
-if (@($sessions | Where-Object status -eq 'busy').Count -gt 0) { throw 'Research is running; wait before deployment' }
-$conversations = Invoke-RestMethod 'http://127.0.0.1:18795/api/v1/conversations'
-if (@($conversations | Where-Object status -eq 'busy').Count -gt 0) { throw 'Conversation is running; wait before deployment' }
-$listener = Get-NetTCPConnection -LocalPort 18795 -State Listen | Select-Object -First 1
-$backendProcess = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
-if (!$backendProcess -or $backendProcess.CommandLine -notmatch 'scripts.deployment.research_workbench.*serve' -or $backendProcess.CommandLine -notmatch [regex]::Escape($repoPath)) { throw '18795 is not the expected repository workbench' }
+& $pythonPath -c 'import uvicorn; import langgraph_sdk'
+if ($LASTEXITCODE -ne 0) { throw 'Project Python is unavailable; no files were published' }
+$backendProcess = Get-WorkbenchReloadTarget $repoPath
 $snapshotDestination = Join-Path $libraryPath "snapshots/$digest"
 New-Item -ItemType Directory -Path $snapshotDestination -Force | Out-Null
 foreach ($file in Get-ChildItem -LiteralPath $snapshotPath -File) {
@@ -42,7 +64,7 @@ Push-Location $repoPath
 try {
     & $pythonPath -X utf8 -m scripts.deployment.research_workbench up --no-build --settings-directory $settingsPath --enable-research --fresh-only --semantic-memory --hermes --hybrid-rag
     if ($LASTEXITCODE -ne 0) { throw 'Agent Server deployment failed; workbench was not stopped' }
-    Stop-Process -Id $backendProcess.ProcessId
+    if ($backendProcess) { Stop-Process -Id $backendProcess.ProcessId }
     $logRoot = Join-Path $libraryPath ('deployment-' + (Get-Date -Format 'yyyyMMdd-HHmmss'))
     New-Item -ItemType Directory -Path $logRoot | Out-Null
     $serverArgs = @('-X','utf8','-m','scripts.deployment.research_workbench','serve','--settings-directory',('"'+$settingsPath+'"'),'--enable-research','--fresh-only','--semantic-memory','--hermes','--hybrid-rag','--ui-port','18795')

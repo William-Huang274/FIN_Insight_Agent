@@ -11,7 +11,9 @@ from scripts.deployment.dell_report_workbench import configured_key
 
 def main():
     p=argparse.ArgumentParser(); p.add_argument('--nodes',type=Path,required=True); p.add_argument('--cache',required=True)
-    p.add_argument('--output',type=Path,required=True); p.add_argument('--execute',action='store_true'); a=p.parse_args()
+    p.add_argument('--output',type=Path,required=True); p.add_argument('--execute',action='store_true')
+    p.add_argument('--reuse-snapshot', help='Reuse only exact-text vectors from this previously prepared snapshot')
+    a=p.parse_args()
     a.output.mkdir(parents=True,exist_ok=False)
     body=a.nodes.read_bytes(); snapshot=sha256(body).hexdigest()
     rows=[json.loads(line) for line in body.decode('utf-8').splitlines() if line.strip()]
@@ -24,7 +26,8 @@ def main():
         'comparable_run_evidence':'208 739-leaf Qwen hybrid retrieval qualification; new five-company SEC documents 210',
         'reasoning_profile':'Non-generative text-embedding-v4',
         'stop_truncation_behavior':'No document truncation; no retry on unknown/failed request; existing DiskCache resumes successful batches',
-        'snapshot':snapshot, 'cost_basis':'Historical 2026-09-09 provider price CNY0.5/million tokens; log actual tokens, credit usage unavailable'}
+        'snapshot':snapshot, 'reuse_snapshot':a.reuse_snapshot,
+        'cost_basis':'Historical 2026-09-09 provider price CNY0.5/million tokens; log actual tokens, credit usage unavailable'}
     (a.output/'basis.json').write_text(json.dumps(basis,ensure_ascii=False,indent=2),encoding='utf-8')
     if not a.execute: print(json.dumps(basis)); return
     if basis['input_scale']['characters']>16_000_000: raise ValueError('outside_210_qualified_corpus_size')
@@ -36,7 +39,7 @@ def main():
             return result
     api=AuditedAPI(configured_key('QWEN_API_KEY'))
     try:
-        result=prepare_source_index(rows,snapshot,a.cache,api)
+        result=prepare_source_index(rows,snapshot,a.cache,api,reuse_snapshot=a.reuse_snapshot)
         (a.output/'result.json').write_text(json.dumps(result),encoding='utf-8');print(json.dumps(result))
     finally: api.close()
 

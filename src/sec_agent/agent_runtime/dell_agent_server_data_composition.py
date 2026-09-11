@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timezone
 from hashlib import sha256
 import os
 from pathlib import Path
@@ -69,6 +69,15 @@ DELL_APPROVED_DATA_SNAPSHOT_ID = (
     "dell-owner-data-gate-739df0f5d2880af8e27a08b5f9e31e10"
 )
 DELL_APPROVED_RESEARCH_AS_OF = "2026-09-02T00:00:00Z"
+
+
+def task_research_as_of(environment):
+    """A task cutoff is separate from frozen historical inventory dates."""
+    value = environment.get('FINSIGHT_RESEARCH_AS_OF', DELL_APPROVED_RESEARCH_AS_OF)
+    parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+    if parsed.tzinfo is None or parsed > datetime.now(timezone.utc):
+        raise ValueError('research_as_of_timezone_or_future_invalid')
+    return parsed.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
 
 _ENV_PATHS = {
     "s1_nodes": "FINSIGHT_DELL_S1_NODES_PATH",
@@ -271,7 +280,7 @@ def open_dell_approved_data_composition(
         graph_run = compose_dell_mcp_graph_run(
             foundation,
             branch_ids=branch_ids,
-            research_as_of=DELL_APPROVED_RESEARCH_AS_OF,
+            research_as_of=task_research_as_of(env),
             snapshot_id=DELL_APPROVED_DATA_SNAPSHOT_ID,
             execution_attempt_id=run_invocation_id.strip(),
         )
@@ -298,7 +307,7 @@ def open_dell_approved_data_composition(
             nodes_path=nodes_path,
             expected_sha256=node_digest,
             expected_node_count=node_count,
-            research_as_of=date.fromisoformat(catalog.research_as_of),
+            research_as_of=date.fromisoformat(task_research_as_of(env)[:10]),
             allowed_branch_ids=branch_ids,
         )
         fact_reader = ExistingS2FinancialFactReader(

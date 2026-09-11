@@ -483,6 +483,10 @@ def build_report_sessions_router(service):
         if body.defer_start and body.mode != "research":
             raise HTTPException(422, "只有新研究支持先上传资料")
         metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode, 'owner_id': service_owner()}
+        if graph == RESEARCH_GRAPH:
+            # Freeze new research at creation time; continuations retain it.
+            # Existing tasks without this field keep their historical binding.
+            metadata['research_as_of'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
         if body.execution:
             if graph != RESEARCH_GRAPH:
                 raise HTTPException(422, "运行模式选择仅适用于研究任务")
@@ -651,6 +655,8 @@ def build_report_sessions_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         runs = await service.all_runs(thread_id)
         projection = public_state(state)
+        if not projection.get('research_as_of') and thread.get('metadata', {}).get('research_as_of'):
+            projection['research_as_of'] = thread['metadata']['research_as_of']
         if archived(thread):
             projection.update(can_respond=False, can_accept=False, can_manual_complete=False,
                               can_continue_remaining=False,

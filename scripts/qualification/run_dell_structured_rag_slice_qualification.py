@@ -257,7 +257,7 @@ def load_frozen_corpus(policy: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def build_retrieval_nodes(corpus: Mapping[str, Any]) -> dict[str, Any]:
+def build_retrieval_nodes(corpus: Mapping[str, Any], *, require_tables: bool = True) -> dict[str, Any]:
     documents = list(corpus["documents"])
     sections = list(corpus["sections"])
     blocks = list(corpus["blocks"])
@@ -637,7 +637,7 @@ def build_retrieval_nodes(corpus: Mapping[str, Any]) -> dict[str, Any]:
     all_ids = [row["node_id"] for row in [*parents, *prose, *tables, *images]]
     if len(all_ids) != len(set(all_ids)):
         raise QualificationError("retrieval_node_identifier_duplicate")
-    if not parents or not prose or not tables:
+    if not parents or not prose or (require_tables and not tables):
         raise QualificationError("required_retrieval_lane_empty")
     mixed_prose = [
         row for row in prose if row.get("node_kind") == "mixed_prose_span"

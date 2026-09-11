@@ -72,6 +72,7 @@ external-search = [
   "tencentcloud-sdk-python>=3.1.162",
 ]
 sec-source-library = ["sec2md==0.1.23"]
+public-source-library = ["trafilatura==2.2.0", "haystack-ai==2.26.0"]
 retrieval-api = [
   "openai==3.6.0",
 ]

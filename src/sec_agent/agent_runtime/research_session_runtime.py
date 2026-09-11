@@ -402,7 +402,9 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
     try:
         phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
-            private_sink=private, read_guidance=read_guidance, studio=studio, execution=execution)
+            private_sink=private, read_guidance=read_guidance, studio=studio, execution=execution,
+            environment={**os.environ, **({'FINSIGHT_RESEARCH_AS_OF': ids['finsight_research_as_of']}
+                if ids.get('finsight_research_as_of') else {})})
         from .working_memory_tools import native_memory_scope
         thread = await native.threads.get(thread_id)
         with native_memory_scope(thread.get('metadata', {}).get('owner_id', 'local-pilot'), thread_id):

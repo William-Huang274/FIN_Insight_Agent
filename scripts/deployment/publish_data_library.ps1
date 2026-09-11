@@ -50,7 +50,7 @@ $backendProcess = Get-WorkbenchReloadTarget $repoPath
 $snapshotDestination = Join-Path $libraryPath "snapshots/$digest"
 New-Item -ItemType Directory -Path $snapshotDestination -Force | Out-Null
 foreach ($file in Get-ChildItem -LiteralPath $snapshotPath -File) {
-    if ($file.Name -match '^[a-f0-9]{64}\.html$|^(retrieval_nodes\.jsonl|documents\.json|plan\.json|receipts\.json)$') {
+    if ($file.Name -match '^[a-f0-9]{64}\.(html|pdf)$|^(retrieval_nodes\.jsonl|documents\.json|plan\.json|receipts\.json|market-prices\.sqlite)$') {
         Copy-Item -LiteralPath $file.FullName -Destination (Join-Path $snapshotDestination $file.Name)
     }
 }
@@ -60,6 +60,15 @@ if (Test-Path -LiteralPath $activeNodes) {
     Copy-Item -LiteralPath $activeNodes -Destination (Join-Path $libraryPath "previous-$oldDigest.jsonl")
 }
 Copy-Item -LiteralPath $nodesPath -Destination $activeNodes
+$marketSource = Join-Path $snapshotPath 'market-prices.sqlite'
+if (Test-Path -LiteralPath $marketSource -PathType Leaf) {
+    $marketActive = Join-Path $libraryPath 'market-prices.sqlite'
+    if (Test-Path -LiteralPath $marketActive) {
+        $marketDigest = (Get-FileHash -LiteralPath $marketActive -Algorithm SHA256).Hash.ToLowerInvariant()
+        Copy-Item -LiteralPath $marketActive -Destination (Join-Path $libraryPath "previous-market-$marketDigest.sqlite")
+    }
+    Copy-Item -LiteralPath $marketSource -Destination $marketActive
+}
 Push-Location $repoPath
 try {
     & $pythonPath -X utf8 -m scripts.deployment.research_workbench up --no-build --settings-directory $settingsPath --enable-research --fresh-only --semantic-memory --hermes --hybrid-rag

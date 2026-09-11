@@ -53,6 +53,23 @@ def _app(*, enabled=True, graph_id=RESEARCH_GRAPH):
     return app, service, calls, thread_id
 
 
+def test_new_task_date_is_frozen_in_native_metadata_and_run_config():
+    app, service, calls, tid = _app()
+    response = TestClient(app).post('/api/v1/research-sessions', json={
+        'mode':'research','question':'Research the current memory investment cycle.'}, headers={'x-workbench-request':'1'})
+    assert response.status_code == 200
+    metadata = next(c[1]['metadata'] for c in calls if c[0] == 'thread')
+    run = next(c[2] for c in calls if c[0] == 'run')
+    assert run['config']['configurable']['finsight_research_as_of'] == metadata['research_as_of']
+    from apps.workbench.backend.api.v1.research_studio import run_configuration
+    assert asyncio.run(run_configuration(service, {'metadata': {}})) == {}
+    continued = asyncio.run(run_configuration(service, {'metadata':metadata}))
+    assert continued == run['config']
+    snapshot = TestClient(app).get('/api/v1/research-sessions/'+tid)
+    assert snapshot.status_code == 200
+    assert snapshot.json()['research_as_of'] == metadata['research_as_of']
+
+
 def test_cumulative_usage_includes_native_run_pages_and_preserves_unknown_cache(tmp_path):
     app, service, _, tid = _app()
     service.audit_root = tmp_path

@@ -86,12 +86,25 @@ def source_chunks(rows):
     return result
 
 
-def prepare_source_index(rows, snapshot, path, api):
+def prepare_source_index(rows, snapshot, path, api, *, reuse_snapshot=None):
     chunks=source_chunks([r for r in rows if r.get('node_kind')!='section'])
     with Cache(path) as cache:
         client=CachedRetrieval(cache,api,snapshot,prepare=True)
+        reused=0
+        if reuse_snapshot and reuse_snapshot != snapshot:
+            # Identical full text, provider models and dimensions only. Reuse
+            # vectors, never query/rerank receipts or financial source authority.
+            previous=CachedRetrieval(cache,api,reuse_snapshot)
+            for text in dict.fromkeys(c['text'] for c in chunks):
+                target=client.key('vector',text)
+                if cache.get(target) is None:
+                    vector=cache.get(previous.key('vector',text))
+                    if vector is not None:
+                        cache.add(target,vector)
+                        reused+=1
         client.embed_documents([c['text'] for c in chunks])
-        return {'chunks':len(chunks),'calls':client.calls,'cache_hits':client.hits,'embedding_model':api.embedding_model}
+        return {'chunks':len(chunks),'calls':client.calls,'cache_hits':client.hits,'embedding_model':api.embedding_model,
+                'reused_vectors':reused}
 
 
 def rank_sources(rows, query, snapshot, literal, *, path, api=None, diagnostics=False):

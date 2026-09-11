@@ -15,6 +15,20 @@ METRIC_LABELS = {'revenue':'营业收入','operating_cash_flow':'经营现金流
 def build_data_library_router(attachments_root, fact_mart=None):
     router = APIRouter(prefix='/data-library')
 
+    @router.get('/market-prices')
+    def market_prices(request: Request, ticker: str = Query('',max_length=30),
+                      as_of: str = Query('9999-12-31',pattern=r'^\d{4}-\d{2}-\d{2}$'),
+                      limit: int = Query(30,ge=1,le=100)):
+        current_owner(request)
+        path = Path(attachments_root)/'public-library'/'market-prices.sqlite'
+        if not path.is_file(): raise HTTPException(503,'行情数据库尚未接入')
+        with closing(sqlite3.connect(path.resolve().as_uri()+'?mode=ro',uri=True)) as db:
+            db.row_factory=sqlite3.Row
+            items=[dict(r) for r in db.execute(
+                'SELECT * FROM market_prices WHERE trade_date<=? AND (?=\'\' OR ticker=?) ORDER BY trade_date DESC LIMIT ?',
+                (as_of,ticker.upper(),ticker.upper(),limit))]
+        return {'items':items,'notice':'行情供应商日线观察，原价与复权收盘价分列；抓取时间不代表历史可获得时点，非发行人财务事实或盈利预测。'}
+
     @router.get('/sources')
     def sources(request: Request, ticker: str = '', query: str = Query('',max_length=200),
                 year: str = '', kind: str = '', as_of: str = Query('9999-12-31',pattern=r'^\d{4}-\d{2}-\d{2}$'),

@@ -42,3 +42,16 @@ def test_failed_call_is_not_retried(tmp_path):
         with pytest.raises(TimeoutError):client.embed_query('query')
         with pytest.raises(RuntimeError,match='未自动重发'):client.embed_query('query')
     assert len(api.calls)==1
+
+
+def test_expansion_reuses_only_identical_text_with_same_provider_config(tmp_path):
+    api=API();old=[{'node_id':'old','content':'Operating cash','node_kind':'text'}]
+    prepare_source_index(old,'old',str(tmp_path),api)
+    api.calls.clear()
+    expanded=[*old,{'node_id':'new','content':'HBM supply','node_kind':'text'}]
+    result=prepare_source_index(expanded,'new',str(tmp_path),api,reuse_snapshot='old')
+    assert result['reused_vectors']==1 and result['calls']==1
+    assert len(api.calls[0][1])==1 and 'HBM supply' in api.calls[0][1][0]
+    api.embedding_model='changed-model';api.calls.clear()
+    result=prepare_source_index(old,'changed',str(tmp_path),api,reuse_snapshot='old')
+    assert result['reused_vectors']==0 and result['calls']==1

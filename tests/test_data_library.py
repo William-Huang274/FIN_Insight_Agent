@@ -43,6 +43,17 @@ def test_unknown_document_not_arbitrary_path(library):
     assert client.get('/api/v1/data-library/sources/unknown').status_code==404
 
 
+def test_market_prices_are_readonly_filtered_vendor_observations(library):
+    client,root=library
+    from tests.test_market_price_snapshot import materialize, body, ARGS
+    materialize(body(),root/'public-library/market-prices.sqlite',**ARGS)
+    response=client.get('/api/v1/data-library/market-prices?ticker=MU')
+    assert response.status_code==200
+    assert response.json()['items'][0]['close_decimal']=='12.00'
+    assert client.get('/api/v1/data-library/market-prices?as_of=2026-09-09').json()['items']==[]
+    assert client.get('/api/v1/data-library/market-prices',params={'ticker':"' OR 1=1 --"}).json()['items']==[]
+
+
 def test_cutoff_excludes_later_publications(library):
     client,root=library
     assert client.get('/api/v1/data-library/sources?as_of=2024-12-31').json()['total']==1

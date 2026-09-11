@@ -565,7 +565,7 @@ export function ResearchSession() {
               <textarea id="new-research-question" value={researchQuestion} maxLength={16000}
                 onChange={(e) => setResearchQuestion(e.target.value)} rows={7}
                 placeholder="写明研究对象、期间，以及希望核实的具体问题…" />
-              <div><span>案例资料时点：{configuration?.research_as_of?.slice(0, 10) || "待配置"}</span>
+              <div><span>信息截止按任务创建时间固定；具体资料期间以原文为准</span>
                 {configuration?.cost_expectation_cny && <span>完整研究规划估费约 ¥{configuration.cost_expectation_cny.rough_low}–{configuration.cost_expectation_cny.rough_high}，非固定价格</span>}</div>
             </div>
             <button

@@ -893,7 +893,7 @@ def build_structured_document_tree(
     parser_profile: str,
     generic_split_length_words: int = 350,
     generic_split_overlap_words: int = 50,
-    generic_split_threshold_words: int = 80,
+    generic_split_threshold_words: int = 0,
     sec_chunk_size_tokens: int = 512,
     sec_chunk_overlap_tokens: int = 64,
     sec_max_table_tokens: int = 2048,
@@ -1297,6 +1297,9 @@ def build_structured_document_tree(
             from haystack import Document
             from haystack.components.preprocessors import DocumentSplitter
 
+            # Keep short tails as separate original spans by default. Haystack
+            # 2.26's threshold merge can append the overlap a second time, making
+            # its output no longer a contiguous source passage (211 live HTML).
             splitter_component = DocumentSplitter(
                 split_by="word",
                 split_length=generic_split_length_words,

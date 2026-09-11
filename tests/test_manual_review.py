@@ -44,6 +44,30 @@ def test_two_roles_in_one_branch_keep_distinct_manual_edit_ownership():
     assert paper_owner_role(state, {'author': 'b', 'branch_id': 'Q1'}) == 'merger-analyst'
 
 
+def test_caption_only_edit_preserves_financial_chart_and_records_history(artifacts):
+    _, _, initial, _ = setup_session(artifacts)
+    state = {**deepcopy(initial), 'report_version': 1}
+    state['report']['charts'] = [{'title': 'Cash flows', 'interpretation': 'All original facts.',
+        'unit': 'USD', 'scale_divisor': 1000000, 'points': [{'value': 71611000000, 'source_id': 'saved'}]}]
+    baseline = deepcopy(state)
+    decision = ManualReview(base_version=1, report_markdown=state['report']['narrative_markdown'],
+        reason='Distinguish calculated FCF from direct operating cash flow.', confirmed=True,
+        chart_edits=[{'chart_index': 0, 'interpretation': 'FCF is calculated as CFO less capital expenditure.'}])
+    result = apply_manual_review(state, decision, artifacts)
+    assert result['phase'] == 'human_completed' and result['report_version'] == 2
+    assert result['human_edits'][-1]['charts'][0]['before'] == 'All original facts.'
+    assert result['human_edits'][-1]['papers'] == []
+    for key in ('unit', 'scale_divisor', 'points'):
+        assert result['report']['charts'][0][key] == baseline['report']['charts'][0][key]
+    assert state == baseline
+    with pytest.raises(ValueError):
+        apply_manual_review(state, decision.model_copy(update={'chart_edits': [
+            decision.chart_edits[0].model_copy(update={'chart_index': 1})]}), artifacts)
+    with pytest.raises(ValueError):
+        ManualReview(**{**decision.model_dump(), 'chart_edits': [
+            {'chart_index': 0, 'interpretation': 'Overwrite', 'points': []}]})
+
+
 def test_manual_completion_retains_checkpoint_roles_and_accepts_next_question(artifacts):
     async def run():
         graph, models, initial, ref = setup_session(artifacts)

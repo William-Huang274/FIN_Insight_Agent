@@ -87,6 +87,10 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     profile = execution.apply_profile(profile)
     environment = {**(os.environ if environment is None else environment), "FINSIGHT_TASK_THREAD_ID": thread_id,
         "FINSIGHT_TASK_RUN_ID": run_id, "FINSIGHT_TASK_AUDIT_ROOT": settings["audit_root"]}
+    # The same host-approved, mounted fact snapshot serves both entry points.
+    # Frozen Dell source inventories and historical result bindings stay intact.
+    if settings.get('conversation_fact_mart'):
+        environment['FINSIGHT_RESEARCH_FACT_MART_PATH'] = str(Path(settings['conversation_fact_mart']).resolve(strict=True))
     base = load_deepseek_structured_agent_config(Path(root) / profile["model_config"])
     invocation = "invocation:research-session:" + run_id
     research_id = "research-session:" + thread_id

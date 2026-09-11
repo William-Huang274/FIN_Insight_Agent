@@ -401,7 +401,7 @@ def _build_graph_input(
         max_tool_actions=max_tool_actions,
         task_context=({"research_question": research_question,
                        "instruction_source": "current_user_research_request",
-                       "data_baseline_rule": "The original foundation and method digests bind historical data provenance, not the current research question or model-turn budget."}
+                       "data_baseline_rule": "The original foundation and method digests bind historical data provenance, not the current research question or model-turn budget. Historical required Reviewed routes are retained coverage receipts, not mandatory gates for this new question. Use observed SQL facts or exact passages appropriate to the requested claims. Disclose missing corroboration without calling its route satisfied; missing facts actually necessary to the user's question still require attention."}
                       if research_question else None),
     )
 

@@ -42,6 +42,22 @@ def observed_sources(state):
     return items
 
 
+def answer_sources(messages, answer):
+    """Current-turn receipts plus explicitly referenced earlier sources.
+
+    This is a source directory, not inferred sentence-level entailment.
+    Earlier unrelated topics must not silently become this answer's appendix.
+    """
+    start = max((i for i, message in enumerate(messages)
+                 if (message.get('type') or message.get('role')) in {'human', 'user'}), default=0)
+    current = observed_sources({'values': {'messages': messages[start:]}})
+    for key, item in observed_sources({'values': {'messages': messages[:start]}}).items():
+        urls = [item.get(field) for field in ('url', 'citation_url', 'source_url')]
+        if key in answer or any(isinstance(url, str) and url and url in answer for url in urls):
+            current.setdefault(key, item)
+    return current
+
+
 def answer_charts(messages):
     """Successful host-bound charts from this user turn only, never old charts."""
     from copy import deepcopy

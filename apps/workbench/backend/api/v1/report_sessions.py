@@ -781,6 +781,8 @@ def build_report_sessions_router(service):
         previous = {p['paper_id']: p['after'] for h in values.get('human_edits', []) for p in h['papers']}
         from sec_agent.agent_runtime.manual_review import paper_owner_role
         return {'base_version': values['report_version'], 'report_markdown': values['report']['narrative_markdown'],
+            'charts': [{'chart_index': i, 'title': c.get('title', '图表'), 'interpretation': c.get('interpretation', '')}
+                for i, c in enumerate(values['report'].get('charts', []))],
             'papers': [{**p, 'branch_id': paper_owner_role(values, p), 'body': previous.get(p['paper_id'], artifacts.read_paper(p['paper_id'])['narrative_markdown'])}
                 for p in artifacts.catalog()['papers']], 'review': values.get('report_review')}
 

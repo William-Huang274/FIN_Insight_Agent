@@ -225,6 +225,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     async def converge_node(state, config: RunnableConfig):
         _stage("convergence", "started")
         result = await converge.ainvoke({"question": state["question"], "case_papers": state["case_papers"],
+            "human_edits": state.get("human_edits", []),
             "feedback": state.get("author_feedback", {}), "case_review": state.get("case_review", {}),
             "research_handoff": state["research_handoff"]}, config)
         retained = {key: deepcopy(result.get(key, {})) for key in ("synthesis", "synthesis_review")}
@@ -259,6 +260,10 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         if isinstance(response, dict) and response.get('action') == 'write_after_incomplete_review':
             from .workpaper_intervention import write_after_incomplete_review
             return write_after_incomplete_review(state, response,
+                owner=config.get('configurable', {}).get('manual_review_owner', 'local-pilot'))
+        if isinstance(response, dict) and response.get('action') == 'amend_reviewed_workpapers':
+            from .workpaper_intervention import amend_reviewed_workpapers
+            return amend_reviewed_workpapers(state, response,
                 owner=config.get('configurable', {}).get('manual_review_owner', 'local-pilot'))
         if not isinstance(response, dict) or response.get("action") != "acknowledge":
             raise ValueError("incomplete_research_cannot_be_accepted_as_a_report")

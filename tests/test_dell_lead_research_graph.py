@@ -534,3 +534,26 @@ def test_real_q8_rejected_output_is_identified_at_the_exact_field():
     assert any(e["loc"][:3] == ("tasks", 0, "expected_output_kinds") for e in error.value.errors())
     # Diagnose a real unsupported enum; do not mutate the archived provider task
     # or claim the hypothetical corrected task was executed.
+
+
+@pytest.mark.parametrize("current_question", [False, True])
+def test_historical_route_receipt_not_promoted_or_new_question_delivery_gate(current_question):
+    raw = _input()
+    if current_question:
+        raw['task_context'] = {'instruction_source': 'current_user_research_request'}
+    value = SpecialistAgenticInput.model_validate_json(json.dumps(raw))
+    seed = _seed()
+    original = deepcopy(seed)
+    seen = []
+    def model(request):
+        seen.append(request)
+        assert ('historical coverage receipts' in request['scope_policy']) == current_question
+        assert request['workpapers'][0]['uncompleted_reviewed_route_ids'] == sorted(
+            set(seed['notebook']['required_route_obligation_ids']) - set(seed['notebook']['satisfied_route_obligation_ids']))
+        return _stop(request, ready=True)
+    graph = build_dell_lead_research_graph(expected_input=value, research_question='Current bounded request',
+        branch_catalog=CATALOG, allowed_branch_ids=BRANCHES, seed_workpapers={seed['task']['task_id']:seed},
+        model_turn=model, run_child=lambda *_:pytest.fail('Do not repeat submitted work'), require_all_branches=False).compile()
+    result = graph.invoke(value.model_dump(mode='json'))
+    assert result['phase'] == 'research_ready_for_review'
+    assert seed == original and len(seen) == 1

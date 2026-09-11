@@ -242,7 +242,12 @@ def build_dell_lead_research_graph(
             "research_as_of": expected_input.task.research_as_of,
             "branch_catalog": [row for row in branch_catalog if row["branch_id"] in allowed],
             "required_branch_ids": list(allowed_branch_ids),
-            "scope_policy": "All listed branches require submitted research." if require_all_branches else "The catalog is available scope, NOT a checklist. Select only branches material to this question; explain your selection and omitted scope in public handoff notes. At least one source-grounded workpaper is required.",
+            "scope_policy": ("All listed branches require submitted research." if require_all_branches else
+                "The catalog is available scope, NOT a checklist. Select only branches material to this question; explain your selection and omitted scope in public handoff notes. At least one source-grounded workpaper is required.")
+                + (" This is a current-user task, not the historical foundation case. Uncompleted Reviewed route IDs in saved papers are historical coverage receipts, NOT mandatory delivery gates for this question. "
+                   "Do not mark a user requirement unresolved solely because that historical index has no matching entry. Assess whether the actual cited SQL facts/passages support the requested result; retain unavailable corroboration in limitations. "
+                   "Missing required facts, unsupported claims or unresolved material source conflicts still require attention. Independent review remains required; never mark an uncompleted route satisfied."
+                   if expected_input.task_context and expected_input.task_context.get("instruction_source") == "current_user_research_request" else ""),
             "execution_policy": ("Submit execution_plan on delegation and handoff. Choose responsibilities from actual scope and evidence, not company names or branch counts. focused uses ONE self-contained paper and final independent verification; integrated retains counter/source review, writer and final verification; extended additionally requires genuinely distinct synthesis work and its review. Explain every omission and escalation. At handoff revisit actual findings. This policy supersedes generic instructions that separate synthesis/writer always follow." if require_execution_plan else "Legacy fixed review pipeline."),
             "capabilities": lead_capability_catalog(expected_input.l0_context.capability_summaries),
             "capacity": {"max_tasks": max_tasks, "max_parallel_tasks": max_parallel_tasks,
@@ -381,6 +386,11 @@ def build_dell_lead_research_graph(
                 if str(exc) == "handoff_must_acknowledge_exact_incomplete_task_ids":
                     detail.update(expected_incomplete_task_ids=sorted(incomplete),
                         explanation="Acknowledge only these current unsubmitted tasks. Source-route gaps are not task IDs; retain them in notes, not this field.")
+                if str(exc) == "focused_requires_one_self_contained_paper_choose_integrated_for_multiple_deliverables":
+                    detail.update(submitted_paper_count=len(done), correction="Keep every saved paper. Select integrated for multiple deliverables; this is a plan-depth mismatch, not missing financial evidence or an unsatisfied Reviewed route. Do not rerun research to fix it.")
+                if str(exc) == "unresolved_required_research_needs_attention_not_review_completion":
+                    detail.update(unresolved_requirements=[item.question_quote for item in action.question_coverage if item.status == "unresolved"],
+                        explanation="Your own question_coverage marks these requirements unresolved. Check the actual cited evidence against the current question. A historical Reviewed route gap alone is not a new-task gate; keep it disclosed without claiming completion of that route. Actual missing necessary evidence still requires needs_attention.")
                 return ToolMessage(content=json.dumps(detail, ensure_ascii=False), tool_call_id=call.id, name=call.name, status="error")
 
         tools = [StructuredTool.from_function(invoke_tool, name=name, description=model.__doc__ or name,

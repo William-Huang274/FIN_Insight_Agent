@@ -304,11 +304,15 @@ def build_conversations_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         runs = await service.sdk.runs.list(str(thread_id), limit=100)
         events, public_runs = [], []
+        hermes = thread.get('metadata', {}).get('harness') == 'hermes'
         for run in runs:
             activity, usage = public_run_usage(service.audit_root, thread_id, run["run_id"])
             events.extend(activity)
             public_runs.append({"run_id": run["run_id"], "status": run["status"], "created_at": run.get("created_at"),
-                "usage": usage, "context_usage": request_context_usage(activity), "cost_estimate": public_cost_estimate(activity)})
+                # Hermes owns its individual call receipts. This sink contains
+                # stage events only; absence of native calls is not zero usage.
+                "usage": None if hermes else usage, "context_usage": request_context_usage(activity),
+                "cost_estimate": None if hermes else public_cost_estimate(activity)})
         return {"thread_id": str(thread_id), "title": thread.get("metadata", {}).get("title"), "status": thread.get("status"),
             'harness':thread.get('metadata',{}).get('harness','native'),
             'context_memory':context_status(state,thread.get('metadata',{}).get('harness','native')),
@@ -346,9 +350,8 @@ def build_conversations_router(service):
         chosen = public_messages({"values": {"messages": [messages[index]]}})
         if not chosen or not chosen[0]["final_answer"]:
             raise HTTPException(409, "请选择一条已保存的完整回答，不能导出工具活动或私有推理")
-        # Only sources read before this answer enter its source directory. This
-        # directory is not an inferred sentence-to-source citation mapping.
-        sources = observed_sources({"values": {"messages": messages[:index]}})
+        from sec_agent.agent_runtime.conversation_handoff import answer_sources
+        sources = answer_sources(messages[:index], chosen[0]['content'])
         citations = {key: {"sources": [{**item, "source_id": key,
             "title": item.get("title") or " / ".join(str(item[k]) for k in ("ticker", "metric_id", "period_end", "unit") if item.get(k)) or "已读取凭证",
             **({"calculation": item} if key.startswith("CALC::") else {})}]} for key, item in sources.items()}
@@ -359,7 +362,7 @@ def build_conversations_router(service):
             "narrative_markdown": chosen[0]["content"], "citations": citations, "charts": answer_charts(messages[:index])}
         from ...application.report_delivery import export_report
         data, mime = await run_in_threadpool(export_report, report, format,
-            review_status="已保存回答的固定版本；来源目录列出本回答之前已读凭证，不代表逐句引用或金融结论已核验。")
+            review_status="已保存回答的固定版本；来源目录列出本轮读取或正文明确引用的历史凭证，不代表逐句引用或金融结论已核验。")
         return Response(data, media_type=mime, headers={"Content-Disposition": f'attachment; filename="finsight-answer.{format}"',
             "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})
     @router.get("/{thread_id}/runs/{run_id}/stream")

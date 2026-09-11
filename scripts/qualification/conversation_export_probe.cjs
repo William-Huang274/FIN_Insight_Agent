@@ -11,7 +11,9 @@ fs.mkdirSync(output);
  const browser=await chromium.launch({headless:true}),page=await browser.newPage({viewport:{width:1440,height:1000}});
  try{
   await page.goto(new URL(`/workspace/assistant?thread=${tid}`,base).href);
-  const nav=page.getByRole('navigation',{name:'导出这条回答'}).last();await nav.waitFor();await nav.scrollIntoViewIfNeeded();
+  const answerIndex=args.includes('--answer-index')?Number(opt('--answer-index')):-1;
+  if(!Number.isInteger(answerIndex)||answerIndex < -1)throw Error('Invalid answer index');
+  const nav=page.getByRole('navigation',{name:'导出这条回答'}).nth(answerIndex);await nav.waitFor();await nav.scrollIntoViewIfNeeded();
   await page.screenshot({path:path.join(output,'answer.png'),fullPage:true});
   const receipts=[];
   for(const [label,ext] of [['MD','md'],['PDF','pdf'],['Word','docx']]){

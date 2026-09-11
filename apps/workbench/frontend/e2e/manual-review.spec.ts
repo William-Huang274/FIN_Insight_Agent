@@ -7,8 +7,8 @@ for(const width of [1440,390])test(`human edits and completed workspace ${width}
   await page.route('**/api/v1/**',async route=>{
     const url=new URL(route.request().url());let data:any={};
     if(url.pathname.endsWith('/research-sessions'))data=[{...snapshot(),title:report.title}];
-    else if(url.pathname.endsWith('/manual-review'))data={base_version:1,report_markdown:report.narrative_markdown,papers:[{paper_id:'P01',branch_id:'Q1_ISSUER_TRUTH',thesis:'现金观察',body:'原底稿'}],review:snapshot().report_review};
-    else if(url.pathname.endsWith('/actions')){const body=route.request().postDataJSON();expect(body.action).toBe('manual_complete');const d=body.manual_review;expect(d.confirmed).toBe(true);edits=[{number:1,owner:'local-pilot',recorded_at:new Date().toISOString(),reason:d.reason,base_version:1,report_before:report.narrative_markdown,report_after:d.report_markdown,papers:[{paper_id:'P01',actor:'Q1_ISSUER_TRUTH',title:'现金观察',before:'原底稿',after:d.paper_edits[0].body}]}];report={...report,narrative_markdown:d.report_markdown};phase='human_completed';data={run_id:'manual',status:'pending'};}
+    else if(url.pathname.endsWith('/manual-review'))data={base_version:1,report_markdown:report.narrative_markdown,charts:[{chart_index:0,title:'现金图',interpretation:'全部为原始事实'}],papers:[{paper_id:'P01',branch_id:'Q1_ISSUER_TRUTH',thesis:'现金观察',body:'原底稿'}],review:snapshot().report_review};
+    else if(url.pathname.endsWith('/actions')){const body=route.request().postDataJSON();expect(body.action).toBe('manual_complete');const d=body.manual_review;expect(d.confirmed).toBe(true);expect(d.chart_edits).toEqual([{chart_index:0,interpretation:'FCF 为计算结果；CFO 为原始数值。'}]);edits=[{number:1,owner:'local-pilot',recorded_at:new Date().toISOString(),reason:d.reason,base_version:1,report_before:report.narrative_markdown,report_after:d.report_markdown,charts:[{chart_index:0,title:'现金图',before:'全部为原始事实',after:d.chart_edits[0].interpretation}],papers:[{paper_id:'P01',actor:'Q1_ISSUER_TRUTH',title:'现金观察',before:'原底稿',after:d.paper_edits[0].body}]}];report={...report,narrative_markdown:d.report_markdown};phase='human_completed';data={run_id:'manual',status:'pending'};}
     else if(url.pathname.endsWith('/'+id))data=snapshot();
     else if(url.pathname.endsWith('/report-versions'))data={versions:[]};
     await route.fulfill({json:data});
@@ -16,9 +16,10 @@ for(const width of [1440,390])test(`human edits and completed workspace ${width}
   await page.goto(`/workspace/session?thread=${id}&view=report`);
   await page.getByRole('button',{name:'人工修改与确认',exact:true}).click();const dlg=page.getByRole('dialog',{name:'人工修改与确认'});
   await dlg.getByText('收入、利润与现金 — 现金观察',{exact:true}).click();await dlg.getByLabel('修改底稿 P01').fill('只描述观察，不作归因。\n\n'+'已核对的上下文段落。\n\n'.repeat(60)+'底稿末尾可回读。');
-  await dlg.getByLabel('人工修改报告正文').fill('改后观察 [P01:C1]');await dlg.getByLabel('人工修改说明').fill('去除过度归因');await dlg.getByRole('checkbox').check();
+  await dlg.getByLabel('修改图表说明 1').fill('FCF 为计算结果；CFO 为原始数值。');await dlg.getByLabel('人工修改报告正文').fill('改后观察 [P01:C1]');await dlg.getByLabel('人工修改说明').fill('去除过度归因');await dlg.getByRole('checkbox').check();
   await dlg.getByRole('button',{name:'保存修改并确认完成'}).click();await expect(dlg).not.toBeVisible();
   await page.getByText('人工修改 1 次 · 查看角色与底稿',{exact:true}).click();await page.locator('.fs-human-history').getByText('收入、利润与现金 — 现金观察',{exact:true}).click();await expect(page.locator('.fs-human-history').getByText('只描述观察，不作归因。',{exact:true}).first()).toBeVisible();
+  await expect(page.locator('.fs-human-history').locator('summary').filter({hasText:'图表说明 · 现金图'})).toHaveCount(1);
   const heading=page.locator('.rs-heading');const box=await heading.boundingBox();
   await page.mouse.move(box!.x+box!.width/2,box!.y+box!.height-25);
   const start=await heading.evaluate(e=>e.scrollTop);await page.mouse.wheel(0,700);

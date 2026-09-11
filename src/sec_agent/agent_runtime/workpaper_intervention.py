@@ -45,6 +45,69 @@ def public_paper_body(candidate):
     return body
 
 
+def amend_reviewed_workpapers(state, decision, *, owner):
+    """Version human prose and dispositions, then write for final human review.
+
+    This does not mark model findings resolved, mutate source evidence, or
+    certify a report. Every blocking finding/request requires an explicit
+    human disposition tied to the current immutable review snapshot.
+    """
+    review = state.get('case_review', {})
+    papers = state.get('case_papers', [])
+    if (state.get('research_stop_reason') != 'independent_review_incomplete_no_report_acceptance'
+            or review.get('phase') != 'case_review_incomplete'):
+        raise ValueError('human_paper_amendment_requires_review_interrupt')
+    if (not decision.get('confirmed') or len(decision.get('reason', '').strip()) < 20
+            or decision.get('base_review_digest') != canonical_sha256(review)
+            or decision.get('base_papers_digest') != canonical_sha256(papers)
+            or decision.get('base_edits_digest') != canonical_sha256(state.get('human_edits', []))):
+        raise ValueError('human_paper_amendment_unconfirmed_or_stale')
+    blockers = {}
+    for role in ('counter', 'verifier'):
+        row = review.get(role, {})
+        for finding in [*row.get('review', {}).get('findings', []), *row.get('recorded_findings', {}).values()]:
+            if finding.get('severity') == 'material':
+                blockers[f"{role}:finding:{finding['finding_id']}"] = finding.get('paper_id')
+        for index, request in enumerate(row.get('review', {}).get('unresolved_data_requests', [])):
+            blockers[f'{role}:request:{index}'] = None
+    dispositions = decision.get('dispositions', {})
+    if set(dispositions) != set(blockers):
+        raise ValueError('human_paper_amendment_requires_every_blocker_disposition')
+    current = DellCaseArtifacts(papers).with_human_edits(state.get('human_edits', []))
+    catalog = {p['paper_id']: p for p in current.catalog()['papers']}
+    edits = []
+    for edit in decision.get('papers', []):
+        paper = current.read_paper(edit['paper_id'])
+        after = edit.get('after', '').strip()
+        if not after or len(after) > 100000 or after == paper['narrative_markdown']:
+            raise ValueError('human_paper_amendment_requires_changed_readable_prose')
+        task = papers[list(catalog).index(edit['paper_id'])]['task']
+        role = next((t['owner_role'] for t in state.get('research_tasks', []) if t['task_id'] == task['task_id']), catalog[edit['paper_id']]['author'])
+        edits.append({'paper_id': edit['paper_id'], 'actor': role,
+            'title': paper['thesis'], 'before': paper['narrative_markdown'], 'after': after})
+    edited_ids = {e['paper_id'] for e in edits}
+    if not edits or len(edited_ids) != len(edits):
+        raise ValueError('human_paper_amendment_requires_unique_papers')
+    for key, item in dispositions.items():
+        if (item.get('decision') not in {'corrected', 'outside_requested_scope', 'retained_limitation'}
+                or len(item.get('reason', '').strip()) < 20):
+            raise ValueError('human_paper_amendment_requires_specific_disposition')
+        if item['decision'] == 'corrected' and blockers[key] and blockers[key] not in edited_ids:
+            raise ValueError('human_paper_amendment_missing_responsible_paper')
+    history = deepcopy(state.get('human_edits', []))
+    history.append({'number': len(history)+1, 'owner': owner, 'recorded_at': datetime.now(timezone.utc).isoformat(),
+        'reason': decision['reason'], 'base_version': state.get('report_version', 0), 'papers': edits,
+        'report_before': '', 'report_after': '', 'stage': 'reviewed_workpaper',
+        'review_digest': canonical_sha256(review), 'review_dispositions': deepcopy(dispositions)})
+    handoff = deepcopy(state.get('research_handoff') or {})
+    handoff['human_review_direction'] = {'owner': owner, 'reason': decision['reason'],
+        'review_status': 'incomplete_retained', 'final_human_confirmation_required': True,
+        'dispositions': deepcopy(dispositions), 'edited_paper_ids': sorted(edited_ids)}
+    return {'human_edits': history, 'research_handoff': handoff, 'phase': 'research_writing',
+        'research_stop_reason': None, 'continue_remaining_research': False, 'author_feedback': {},
+        'conversation': [{'role': 'system', 'content': '人工修订角色底稿并说明审查处置，原审查保留，最终报告仍需人工确认：' + decision['reason']}]}
+
+
 def write_after_incomplete_review(state, decision, *, owner):
     """An explicit human direction permits writing, never certifies review."""
     review = state.get('case_review', {})

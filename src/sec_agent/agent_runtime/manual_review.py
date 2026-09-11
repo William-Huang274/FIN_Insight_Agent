@@ -14,12 +14,19 @@ class PaperEdit(BaseModel):
     body: str = Field(min_length=1, max_length=100000)
 
 
+class ChartEdit(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    chart_index: int = Field(ge=0)
+    interpretation: str = Field(min_length=1, max_length=12000)
+
+
 class ManualReview(BaseModel):
     model_config = ConfigDict(extra='forbid')
     base_version: int = Field(ge=1)
     report_markdown: str = Field(min_length=1, max_length=200000)
     reason: str = Field(min_length=1, max_length=4000)
     paper_edits: list[PaperEdit] = Field(default_factory=list, max_length=30)
+    chart_edits: list[ChartEdit] = Field(default_factory=list, max_length=32)
     confirmed: bool
 
 
@@ -61,17 +68,30 @@ def apply_manual_review(state, decision, artifacts, *, owner='local-pilot'):
             edits.append({'paper_id': edit.paper_id, 'actor': paper_owner_role(state, catalog[edit.paper_id]),
                 'title': catalog[edit.paper_id].get('thesis', edit.paper_id), 'before': before, 'after': edit.body})
     old = state['report']
-    if old['narrative_markdown'] == decision.report_markdown and not edits:
+    charts = deepcopy(old.get('charts', []))
+    chart_edits = []
+    if len({e.chart_index for e in decision.chart_edits}) != len(decision.chart_edits):
+        raise ValueError('同一图表不能重复提交')
+    for edit in decision.chart_edits:
+        if edit.chart_index >= len(charts) or not edit.interpretation.strip():
+            raise ValueError('请选择当前报告的图表并填写说明')
+        chart = charts[edit.chart_index]
+        before = chart.get('interpretation', '')
+        if before != edit.interpretation:
+            chart_edits.append({'chart_index': edit.chart_index, 'title': chart.get('title', '图表'),
+                'before': before, 'after': edit.interpretation})
+            chart['interpretation'] = edit.interpretation
+    if old['narrative_markdown'] == decision.report_markdown and not edits and not chart_edits:
         raise ValueError('没有正文修改；请使用原有审阅入口')
     # Bind direct SQL/passage/calculation references to saved receipts as well as
     # claim IDs. Unknown references fail here, before a no-model resume is sent.
-    prose = '\n\n'.join([decision.report_markdown, *[c.get('interpretation', '') for c in old.get('charts', [])]])
+    prose = '\n\n'.join([decision.report_markdown, *[c.get('interpretation', '') for c in charts]])
     citations = answer_citations(prose, artifacts, [], prior_citations=old.get('citations', {}))
     history = {'number': len(state.get('human_edits', [])) + 1, 'owner': owner,
         'recorded_at': datetime.now(timezone.utc).isoformat(), 'reason': decision.reason,
-        'base_version': decision.base_version, 'papers': edits,
+        'base_version': decision.base_version, 'papers': edits, 'charts': chart_edits,
         'report_before': old['narrative_markdown'], 'report_after': decision.report_markdown}
-    return {'report': {**deepcopy(old), 'narrative_markdown': decision.report_markdown, 'citations': citations},
+    return {'report': {**deepcopy(old), 'narrative_markdown': decision.report_markdown, 'citations': citations, 'charts': charts},
         'report_version': decision.base_version + 1, 'report_revision_reason': '人工修改：' + decision.reason,
         'phase': 'human_completed', 'human_edits': [*state.get('human_edits', []), history],
         'last_output_kind': 'report', 'conversation': [{'role': 'system',

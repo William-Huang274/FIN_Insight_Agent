@@ -257,9 +257,14 @@ def open_dell_approved_data_composition(
         # Keep the approved physical inventory identity bound to its captured
         # metric definitions. Runtime derived capabilities have their own digest
         # and do not rewrite old source inventories or report checkpoints.
+        runtime_mart = paths['s2_mart']
+        runtime_mart_digest = decision.bound_inputs.s2_mart_sha256
+        if env.get('FINSIGHT_RESEARCH_FACT_MART_PATH'):
+            runtime_mart = _required_file_environment('FINSIGHT_RESEARCH_FACT_MART_PATH', env)
+            runtime_mart_digest = _file_sha256(runtime_mart)
         planner_capabilities = derive_planner_tool_capabilities(
-            sqlite_path=paths["s2_mart"],
-            expected_mart_sha256=decision.bound_inputs.s2_mart_sha256,
+            sqlite_path=runtime_mart,
+            expected_mart_sha256=runtime_mart_digest,
             snapshot_id=DELL_APPROVED_DATA_SNAPSHOT_ID,
         )
         branch_ids = tuple(row.branch_id for row in foundation.question_branches)
@@ -288,8 +293,8 @@ def open_dell_approved_data_composition(
             allowed_branch_ids=branch_ids,
         )
         fact_reader = ExistingS2FinancialFactReader(
-            paths["s2_mart"],
-            expected_sha256=decision.bound_inputs.s2_mart_sha256,
+            runtime_mart,
+            expected_sha256=runtime_mart_digest,
         )
         external_pack = FrozenExternalCandidatePack.load(
             paths["external_manifest"],

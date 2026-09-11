@@ -161,3 +161,28 @@ def test_human_writer_handoff_preserves_incomplete_review_and_blocks_material_ga
             write_after_incomplete_review(broken, {**decision, 'base_review_digest': canonical_sha256(broken['case_review'])}, owner='operator')
     with pytest.raises(ValueError, match='unconfirmed_or_stale'):
         write_after_incomplete_review(state, {**decision, 'confirmed': False}, owner='operator')
+
+
+def test_human_review_amendment_preserves_sources_and_requires_all_dispositions():
+    from copy import deepcopy
+    from sec_agent.agent_runtime.workpaper_intervention import amend_reviewed_workpapers
+    from sec_agent.agent_runtime.dell_case_artifacts import DellCaseArtifacts
+    paper = _new_worker_fixture()
+    review = {'phase':'case_review_incomplete','counter':{'review':{'findings':[{'finding_id':'F1','severity':'material','paper_id':'P01'}], 'unresolved_data_requests':['Optional alternative definition']}}}
+    state = {'case_papers':[paper], 'case_review':review, 'research_handoff':{},
+             'research_stop_reason':'independent_review_incomplete_no_report_acceptance'}
+    old=deepcopy(state)
+    decision={'confirmed':True,'reason':'Human has read the original source and corrected the affected working paper.',
+        'base_papers_digest':canonical_sha256(state['case_papers']), 'base_review_digest':canonical_sha256(review),
+        'base_edits_digest':canonical_sha256([]), 'papers':[{'paper_id':'P01','after':'Human corrected prose; original source facts remain independently readable.'}],
+        'dispositions':{'counter:finding:F1':{'decision':'corrected','reason':'Corrected the specific misleading sentence in the responsible paper.'},
+                        'counter:request:0':{'decision':'outside_requested_scope','reason':'The user requested the standard metric only; alternative definition remains disclosed.'}}}
+    result=amend_reviewed_workpapers(state,decision,owner='operator')
+    assert state==old and 'case_review' not in result and 'case_papers' not in result and 'report' not in result
+    assert result['phase']=='research_writing' and result['human_edits'][0]['number']==1
+    assert result['research_handoff']['human_review_direction']['final_human_confirmation_required']
+    current=DellCaseArtifacts(state['case_papers']).with_human_edits(result['human_edits'])
+    assert current.read_paper('P01')['narrative_markdown']==decision['papers'][0]['after']
+    assert current.read_paper('P01')['claims']==DellCaseArtifacts(state['case_papers']).read_paper('P01')['claims']
+    for patch in ({'confirmed':False},{'base_edits_digest':'0'*64},{'dispositions':{}},{'papers':[]}):
+        with pytest.raises(ValueError):amend_reviewed_workpapers(state,{**decision,**patch},owner='operator')

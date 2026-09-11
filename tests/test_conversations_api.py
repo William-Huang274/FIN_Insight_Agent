@@ -36,6 +36,21 @@ def test_hermes_attachment_boundary_and_revision_memory_ownership(monkeypatch):
         assert client.get(f'/conversations/{child}/working-notes').status_code==404
 
 
+def test_hermes_stage_only_audit_is_not_reported_as_zero_usage(tmp_path):
+    import json
+    tid,rid=str(uuid4()),str(uuid4())
+    audit=tmp_path/tid/rid; audit.mkdir(parents=True)
+    (audit/'model-call-events.jsonl').write_text(json.dumps({'kind':'stage','event':'completed','objective':'Hermes completed'})+'\n')
+    async def get(_):return {'metadata':{'surface':SURFACE,'graph':GRAPH,'harness':'hermes'}}
+    async def state(_):return {'values':{},'tasks':[]}
+    async def runs(*args,**kwargs):return [{'run_id':rid,'status':'success'}]
+    service=SimpleNamespace(audit_root=tmp_path,sdk=SimpleNamespace(threads=SimpleNamespace(get=get,get_state=state),runs=SimpleNamespace(list=runs)))
+    app=FastAPI();app.include_router(build_conversations_router(service))
+    with TestClient(app) as client:
+        row=client.get(f'/conversations/{tid}').json()['runs'][0]
+        assert row['usage'] is None and row['cost_estimate'] is None
+
+
 def test_public_projection_excludes_tools_and_private_reasoning():
     result = public_messages({"values": {"messages": [
         {"type": "human", "content": "Hello"},
@@ -196,3 +211,14 @@ def test_approval_is_native_resume_and_rejects_stale_or_altered_permission(run_s
         assert client.post(path,headers=headers,json={**body,"decisions":["reject"]}).status_code==200
         state["tasks"]=[]
         assert client.post(path,headers=headers,json=body).status_code==409
+
+
+def test_export_source_directory_does_not_leak_unrelated_earlier_topics():
+    from sec_agent.agent_runtime.conversation_handoff import answer_sources
+    def receipt(key):
+        return {'type':'tool','name':'read_public_source','artifact':{'operation':'search','items':[
+            {'passage_id':key,'title':key,'passage':'Source text','result_state':'source_bound_passage','writer_citable':True,'numeric_fact_authority':False}]}}
+    messages=[{'type':'human','content':'Earlier financial question'},receipt('PASSAGE::finance'),
+        {'type':'human','content':'Current RFC question'},receipt('PASSAGE::rfc')]
+    assert set(answer_sources(messages,'RFC explanation')) == {'PASSAGE::rfc'}
+    assert set(answer_sources(messages,'Explicit comparison with PASSAGE::finance')) == {'PASSAGE::rfc','PASSAGE::finance'}

@@ -15,10 +15,14 @@ for(const width of [1440,390])test(`human edits and completed workspace ${width}
   });
   await page.goto(`/workspace/session?thread=${id}&view=report`);
   await page.getByRole('button',{name:'人工修改与确认',exact:true}).click();const dlg=page.getByRole('dialog',{name:'人工修改与确认'});
-  await dlg.getByText('收入、利润与现金 — 现金观察',{exact:true}).click();await dlg.getByLabel('修改底稿 P01').fill('只描述观察，不作归因。');
+  await dlg.getByText('收入、利润与现金 — 现金观察',{exact:true}).click();await dlg.getByLabel('修改底稿 P01').fill('只描述观察，不作归因。\n\n'+'已核对的上下文段落。\n\n'.repeat(60)+'底稿末尾可回读。');
   await dlg.getByLabel('人工修改报告正文').fill('改后观察 [P01:C1]');await dlg.getByLabel('人工修改说明').fill('去除过度归因');await dlg.getByRole('checkbox').check();
   await dlg.getByRole('button',{name:'保存修改并确认完成'}).click();await expect(dlg).not.toBeVisible();
   await page.getByText('人工修改 1 次 · 查看角色与底稿',{exact:true}).click();await page.locator('.fs-human-history').getByText('收入、利润与现金 — 现金观察',{exact:true}).click();await expect(page.locator('.fs-human-history').getByText('只描述观察，不作归因。',{exact:true}).first()).toBeVisible();
+  const heading=page.locator('.rs-heading');const box=await heading.boundingBox();
+  await page.mouse.move(box!.x+box!.width/2,box!.y+box!.height-25);
+  const start=await heading.evaluate(e=>e.scrollTop);await page.mouse.wheel(0,700);
+  await expect.poll(()=>heading.evaluate(e=>e.scrollTop)).toBeGreaterThan(start+100);
   if(width===390)await page.getByRole('button',{name:'打开导航',exact:true}).click();
   const nav=page.getByRole('navigation',{name:width===390?'移动工作区导航':'工作区导航',exact:true});await nav.getByRole('button',{name:'已完成研究',exact:true}).click();await expect(page.getByRole('heading',{name:'已完成研究',exact:true})).toBeVisible();await expect(page.locator('.fs-research-list>button')).toHaveCount(1);
 });

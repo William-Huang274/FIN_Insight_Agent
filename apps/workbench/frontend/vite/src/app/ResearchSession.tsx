@@ -557,7 +557,7 @@ export function ResearchSession() {
             <div className="rs-research-prompt">
               {configuration?.title && <p>当前部署的已接通研究配置：{configuration.title}</p>}
               <ResearchConfigurationPicker value={studioAssistant} onChange={setStudioAssistant}/>
-              <ExecutionPicker value={execution} onChange={setExecution} disabled={sending}/>
+              <ExecutionPicker value={execution} onChange={setExecution} disabled={sending} assistantId={studioAssistant}/>
               <label htmlFor="new-research-question">这次你想研究什么？</label>
               <textarea id="new-research-question" value={researchQuestion} maxLength={16000}
                 onChange={(e) => setResearchQuestion(e.target.value)} rows={7}
@@ -674,7 +674,7 @@ export function ResearchSession() {
             {(page === "activity" || (page === "graph" && !session.report && !session.is_draft)) && <RunWorkspace key={id} session={session} events={allEvents} connected={connected} refresh={async () => { setSession(await sessionsApi.state(id)); await refresh(); }} onReport={() => setTab("report")} />}
             {(tab === "sources" || tab === "revisions") && displayedReport && <SessionLibrary key={`${id}:${historicalReport?.checkpoint_id || session.report_version}:${tab}`} session={session} checkpoint={historicalReport?.checkpoint_id} report={displayedReport} view={tab} />}
             <div className="rs-content-shell" data-tab={tab} hidden={tab === "sources" || tab === "revisions" || page === "activity" || page === "review" || (page === "graph" && !session.report && !session.is_draft)}>
-            {displayedReport && <ResearchGraph key={`${id}:${historicalReport?.checkpoint_id || session.report_version}`} id={id}
+            {displayedReport && <ResearchGraph key={`${id}:${historicalReport?.checkpoint_id || session.report_version}`} id={id} assistantId={session.studio_assistant_id}
               version={historicalReport?.report_version || session.report_version || 1} checkpoint={historicalReport?.checkpoint_id}
               report={displayedReport} digest={historicalReport?.report_digest || session.report_digest} canRevise={!historicalReport && !!session.can_respond}
               runs={session.runs || []} onRefresh={async () => { setSession(await sessionsApi.state(id)); await refresh(); }} active={tab === "graph"} onReport={() => setTab("report")} />}
@@ -790,7 +790,7 @@ export function ResearchSession() {
                   <small>{answerMode === "quick" ? "查数、出处与简短解释；资料按需读取" : "复杂推断与多来源分析；通常耗时更长"}</small>
                 </div>
               )}
-              <ExecutionPicker value={actionExecution} onChange={setActionExecution} disabled={busy} action={action}/>
+              <ExecutionPicker value={actionExecution} onChange={setActionExecution} disabled={busy} action={action} assistantId={session.studio_assistant_id}/>
               <textarea
                 aria-label="问题或修订意见"
                 value={text}

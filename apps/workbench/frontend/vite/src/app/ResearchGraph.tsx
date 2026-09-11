@@ -16,13 +16,13 @@ import remarkGfm from "remark-gfm";
 import "@xyflow/react/dist/style.css";
 import "./research-graph.css";
 
-type Props = { id: string; version: number; checkpoint?: string; report: NonNullable<Session["report"]>;
+type Props = { id: string; version: number; checkpoint?: string; assistantId?:string; report: NonNullable<Session["report"]>;
   digest?: string; canRevise: boolean; runs: NonNullable<Session["runs"]>; active: boolean; onReport: () => void; onRefresh: () => Promise<void> };
 type Detail = { title: string; description: string; sourceId?: string; source?: Source };
 const verification = (v?: boolean) => v === true ? "已记录通过" : v === false ? "未通过 / 未验证" : "未记录";
 
 /** A read-only projection of saved citation and calculation relationships, not an execution graph. */
-export function ResearchGraph({ id, version, checkpoint, report, digest, canRevise, runs, active, onReport, onRefresh }: Props) {
+export function ResearchGraph({ id, version, checkpoint, assistantId, report, digest, canRevise, runs, active, onReport, onRefresh }: Props) {
   const entries = useMemo(() => Object.entries(report.citations || {}), [report.citations]);
   const topics = useMemo(() => reportTopics(report), [report]);
   const memoryKey = `graph:${id}:${digest || checkpoint || version}`;
@@ -201,7 +201,7 @@ export function ResearchGraph({ id, version, checkpoint, report, digest, canRevi
         {detail?.source && <button className="rg-open-reader" onClick={() => setReader(detail.source!)}>扩展上下文 / 阅读原文</button>}
         <div className="rg-edit-area"><button className="rg-primary" onClick={() => { setEditing(true); setPreview(false); }}>针对这条引用写修订意见</button>
           {editing && <><label htmlFor="rg-draft">你的假设 / 质疑 / 补证要求</label><textarea id="rg-draft" value={current} onChange={e => { setDrafts(old => ({ ...old, [claimId]: e.target.value })); setPreview(false); }} placeholder="例如：请检查回款跨期的影响，并区分假设与已披露事实。" />
-            <ExecutionPicker value={execution} onChange={setExecution} action="revise" disabled={submitting}/>
+            <ExecutionPicker value={execution} onChange={setExecution} action="revise" disabled={submitting} assistantId={assistantId}/>
             <div className="rg-draft-actions"><button disabled={!current.trim()} onClick={() => setPreview(true)}>查看修订范围</button><button onClick={() => { setDrafts(old => ({ ...old, [claimId]: "" })); setPreview(false); }}>清空草稿</button></div>
             <small>草稿按任务、引用和报告基线保存在此浏览器标签页，刷新后可继续。原始证据不变。</small></>}
         </div>

@@ -81,6 +81,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                                     environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None):
     if studio:
         profile = studio.apply_profile(profile)
+        case = studio.apply_case(case)
     execution = execution or ExecutionOptions()
     execution.validate_catalog(case["branch_topics"])
     profile = execution.apply_profile(profile)
@@ -152,7 +153,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                 branch_id=first_branch, turn_source="provider_model", model_turn=visible_turn(lead_adapter.specialist_model_turn, "specialist"),
                 role_method_reader=studio.method if studio else None,
-                role_method=studio.method(studio.bindings["specialist"]) if studio else None,
+                role_method=studio.specialist_method([first_branch]) if studio else None,
                 environment=environment, source_read_enabled=True, live_web_read_enabled=True,
                 max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
                 research_question=request["question"],
@@ -183,7 +184,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                             branch_id=task["coverage_obligation_ids"][0], turn_source="provider_model", model_turn=visible_turn(adapter.specialist_model_turn, task["owner_role"], task["task_id"]),
                             role_method_reader=studio.method if studio else None,
-                            role_method=studio.method(studio.bindings["specialist"]) if studio else None,
+                            role_method=studio.specialist_method(task['coverage_obligation_ids']) if studio else None,
                             environment=environment, source_read_enabled=True, live_web_read_enabled=True,
                             max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
                             recovery_state=recoveries.get(task["task_id"]),

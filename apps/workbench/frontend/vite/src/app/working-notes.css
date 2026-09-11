@@ -23,6 +23,14 @@
 .fs-human-confirm { display: flex; gap: 10px; align-items: flex-start; line-height: 1.6; }
 .fs-human-confirm input[type="checkbox"] { flex: 0 0 18px; width: 18px; height: 18px; padding: 0; margin: 4px 0 0; }
 .fs-human-history { flex-basis: 100%; white-space: normal; font-size: 15px; line-height: 1.75; color: var(--rs-text, #263142); }
+.fs-workspace .rs-heading { flex-shrink: 0; max-height: 60dvh; overflow-y: auto; scrollbar-gutter: stable; align-items: flex-start; }
+.fs-human-history > summary { position: sticky; top: 0; z-index: 2; background: var(--surface, #fff); }
+.fs-direction-editor > details { border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; margin: 12px 0; background: var(--surface); }
+.fs-direction-editor summary { cursor: pointer; font-weight: 600; }
+.fs-direction-editor label { display: grid; gap: 8px; margin-top: 18px; }
+.fs-direction-editor :is(input,textarea) { box-sizing: border-box; width: 100%; border: 1px solid var(--line); border-radius: 8px; padding: 12px; font: inherit; color: var(--ink); background: var(--surface); }
+.fs-direction-editor textarea { min-height: 110px; resize: vertical; line-height: 1.7; }
+.fs-studio-tabs { flex-wrap: wrap; }
 .rs-heading .fs-human-history p { font-size: inherit; color: inherit; line-height: inherit; }
 .rs-heading .fs-human-history h3 { font-size: 17px; line-height: 1.6; }
 .fs-human-history section { padding: 16px; background: var(--rs-bg, #fff); border-radius: 14px; border: 1px solid #dce1ed; }

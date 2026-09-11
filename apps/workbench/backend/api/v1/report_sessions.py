@@ -665,7 +665,7 @@ def build_report_sessions_router(service):
             projection["can_continue_remaining"] = can_restart_remaining_node(thread, state, runs[0] if runs else None,
                 public_runs[0]["usage"] if public_runs else None)
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
-            **projection, "execution": thread.get("metadata", {}).get("execution"), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
+            **projection, "execution": thread.get("metadata", {}).get("execution"), "studio_assistant_id": thread.get('metadata', {}).get('studio_assistant_id'), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
             "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),

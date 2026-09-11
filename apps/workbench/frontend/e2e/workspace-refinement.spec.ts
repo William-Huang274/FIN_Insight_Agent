@@ -4,7 +4,7 @@ for (const width of [1440,1024,390]) test(`research start, organization, panel a
   await page.setViewportSize({width,height:950});
   const id="00000000-0000-4000-8000-000000000031", checkpoint="00000000-0000-4000-8000-000000000032";
   const writes:string[]=[];
-  const config={schema_version:1,title:"标准研究编排",methods:{lead:"规划",finance:"财务",industry_product:"行业",counter:"反证",writer:"# 写作方法",verifier:"核验"},bindings:{lead:"lead",specialist:"finance",counter:"counter",verifier:"verifier",repair:"finance",synthesis:"writer",research_verifier:"verifier",writer:"writer",report_verifier:"verifier",quick_writer:"writer"},max_parallel_tasks:2,review_order:"parallel"};
+  const config={directions:{Q1_ISSUER_TRUTH:{name:"收入与现金",objective:"核对期间",instructions:""}},schema_version:1,title:"标准研究编排",methods:{lead:"规划",finance:"财务",industry_product:"行业",counter:"反证",writer:"# 写作方法",verifier:"核验"},bindings:{lead:"lead",specialist:"finance",counter:"counter",verifier:"verifier",repair:"finance",synthesis:"writer",research_verifier:"verifier",writer:"writer",report_verifier:"verifier",quick_writer:"writer"},max_parallel_tasks:2,review_order:"parallel"};
   const roles={lead:"研究负责人",specialist:"研究专家",counter:"反证审查",verifier:"底稿核验",repair:"责任修订",synthesis:"综合研究",research_verifier:"研究判断复核",writer:"报告写作与修订",report_verifier:"报告独立复核",quick_writer:"简短追问"};
   let saved:any=null;
   const session={thread_id:id,title:"Atlas · 盈利质量",status:"interrupted",report_version:2,report_digest:"a".repeat(64),question:"研究 Atlas 最近季度的盈利质量。".repeat(30),can_upload:true,
@@ -47,10 +47,10 @@ for (const width of [1440,1024,390]) test(`research start, organization, panel a
   await nav("修订记录");await page.getByRole("button",{name:"比较基线与当前报告"}).click();
   await expect(page.locator(".fs-diff-side.after strong")).toHaveText("新判断");await expect(page.locator(".fs-diff-side.before strong")).toHaveText("旧判断");await expect(page.locator(".fs-diff-raw pre")).toBeHidden();
   await page.getByRole("checkbox",{name:"显示邻近上下文"}).check();await expect(page.locator(".fs-diff-side.after h2")).toHaveText("现金质量");
-  await nav("研究配置");await page.getByLabel("专家并行数").selectOption("1");await page.getByLabel("审查执行顺序").selectOption("counter_first");
+  await nav("研究配置");await page.getByText("收入与现金",{exact:true}).click();await page.getByLabel("方向名称 1",{exact:true}).fill("现金流核对");await page.getByLabel("方法要求 1",{exact:true}).fill("区分CFO与现金余额");await page.getByRole("button",{name:"Agent 图与编排",exact:true}).click();await page.getByLabel("专家并行数").selectOption("1");await page.getByLabel("审查执行顺序").selectOption("counter_first");
   await page.getByRole("button",{name:"编辑此 Skill"}).click();await page.getByLabel("Skill 内容").fill("# 新方法\n\n核对期间、单位和反证。");
   await page.getByRole("button",{name:"保存为新版本"}).click();await expect(page.getByRole("status")).toContainText("已保存到运行服务");
-  expect(saved.max_parallel_tasks).toBe(1);expect(saved.review_order).toBe("counter_first");expect(saved.methods.writer).toContain("核对期间");
+  expect(saved.directions.Q1_ISSUER_TRUTH.name).toBe("现金流核对");expect(saved.directions.Q1_ISSUER_TRUTH.instructions).toBe("区分CFO与现金余额");expect(saved.max_parallel_tasks).toBe(1);expect(saved.review_order).toBe("counter_first");expect(saved.methods.writer).toContain("核对期间");
   await page.getByLabel("应用配置的任务").selectOption(id);await page.getByRole("button",{name:"应用保存版本"}).click();await expect(page.getByRole("status")).toContainText("已应用到任务");
   await page.reload();await page.getByLabel("保存版本").selectOption(checkpoint);await page.getByRole("button",{name:"投研 Skills"}).click();await expect(page.getByLabel("Skill 内容")).toHaveValue(saved.methods.writer);
   expect(writes).toEqual(["/api/v1/research-studio/configurations",`/api/v1/research-studio/configurations/${checkpoint}/apply`]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

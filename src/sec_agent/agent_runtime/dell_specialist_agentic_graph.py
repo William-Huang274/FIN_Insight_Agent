@@ -255,7 +255,12 @@ class SpecialistClaim(_StrictModel):
         "For source-reported numbers, describe non-S2/source limitations in authority_note instead. "
         "This provenance label does not establish GAAP status or semantic correctness."
     ))
-    authority_note: str | None = Field(default=None, min_length=1, max_length=1_000)
+    authority_note: str | None = Field(default=None, min_length=1, max_length=1_000, description=(
+        "Required (non-null) for calculation, inference, hypothesis and boundary claims, "
+        "and for every claim citing source PASSAGE IDs. State the actual source/assumption "
+        "limitations and why this is a calculation or interpretation rather than an S2 fact. "
+        "Include it in the first submission; do not wait for validation feedback."
+    ))
     reasoning_summary: str | None = Field(default=None, max_length=4_000)
     citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict, description=(
         "Required for EVERY PASSAGE reference in evidence_ids, including inference and boundary claims: "

@@ -43,7 +43,11 @@ class CaseClaim(BaseModel):
         description="Observed source IDs. A boundary/hypothesis may have none with an explicit authority_note; the canonical SpecialistClaim contract still requires sources for factual and calculated claims.")
     numeric_authority: Literal["authoritative", "non_authoritative", "not_applicable"] = Field(
         description="Existing FIN kind contract: numeric_fact uses authoritative with S2 facts only; calculation uses non_authoritative with an authority_note; all other kinds use not_applicable. For reported_fact/inference from non-S2 prose, put the non-authoritative source warning in authority_note, not this enum.")
-    authority_note: str | None = None
+    authority_note: str | None = Field(default=None, description=(
+        "Required (non-null) for calculation, inference, hypothesis and boundary claims, "
+        "and for source-passage claims. Explain actual source/assumption limitations; "
+        "numeric_authority=not_applicable does not waive this field."
+    ))
     reasoning_summary: str | None = None
     citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict)
 

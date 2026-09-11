@@ -2,6 +2,8 @@
 
 更新时间：2026-09-11
 
+208 sandbox 接续：原始三次启动在执行前 blocked by policy，具体理由未提供；Owner 同意可检查入口/必要时手动启动。已新增 scripts/deployment/local_sandbox.py 的只读 plan、配置备份/失败回退、前台 serve、宿主及 native 容器鉴权/目录 check；14 定向检查通过，真实只读预检 configured=false/18796 无监听/固定镜像存在。真实配置和启动未执行，不换包装重试拒绝；等待操作者按 docs/architecture/local_sandbox_operator.zh-CN.md 启动，再验证产品审批链。工程入口增量，非已部署；0 模型费用。详208日志末段。
+
 208最终收尾：已完成可执行六包证据与对外CN/EN技术报告、resume-evidence、public metrics及28题/739源节点定位清单。MSFT自定义研究v2人工2次/两角色底稿/1图/三格式/个人研究记忆真实UI已完成；a1+a2+a3+a4总125请求4462902tokens/估算¥4.633069未知0，不当高效小题。研究/对话统一5公司2274行mart，10批实际工具一致；current-user scope历史路线误投影已修；已有interrupt内人改review底稿接writer，最后0模型人改图注和正文，原facts/review保留。原HPEv2人工2不改。长会话19回合81请求1231464tokens含5恢复与重启交接；Hermes3轮8请求44961tokensvs原生10/65713仅短闭环。Qwen28查询24正例23/24Hit5，非答案准确率。最后104Python通过5私有跳过，TS/build、人工图注桌面/移动通过，最终36公共UI通过（final-ui-a2.xml）；native05f89122/18795b8 parent36148已加载。唯一当前外部阻塞18796sandbox两次自动审核拒绝，不绕过不重问；生产/全局长记忆非已验收承诺。详208日志第五段；工程切片cafa9d4c已提交；本轮公开报告/证据与日志同次文档提交。结束时核对remote跟踪状态，不再付费追模型。
 
 208第二段执行中：真实Keycloak PKCE双用户浏览器/39HTTP隔离检查及8并发读通过；Qwen/BM25固定28查询已完成，24正例混合Hit@5=23/24（非最终答案准确率），167API已知token688798。纯中文被ASCII误判空query已用jieba修复。长对话a1重复检索耗尽→末调用交付修复；a2前三接续成功后整篇底稿3000token截断→版本化append修复27检查通过，a3同一thread正在接续。新幂等回执后端5/浏览器13检查通过。18796sandbox启动自动审核两次拒绝（第二次有Owner明确授权），无操作、不绕过、不再问同一授权。完整详情208；仍须长对话/Hermes/最终四题和外部报告，不返回半成品终结。

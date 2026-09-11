@@ -447,6 +447,8 @@ def create_report_session_app(frontend_dist_root=None):
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
     from .api.v1.conversations import build_conversations_router
     app.include_router(build_conversations_router(service), prefix="/api/v1")
+    from .api.v1.data_library import build_data_library_router
+    app.include_router(build_data_library_router(attachment_store.root, settings.get('conversation_fact_mart')), prefix='/api/v1')
     @app.exception_handler(__import__("httpx").HTTPError)
     async def upstream_error(request, exc):
         status = getattr(getattr(exc, "response", None), "status_code", 502)

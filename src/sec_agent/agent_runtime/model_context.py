@@ -15,7 +15,7 @@ from typing_extensions import NotRequired
 
 
 REREADABLE_TOOLS = frozenset({
-    "read_public_source", "read_task_material", "query_financial_data", "read_saved_result",
+    "read_public_source", "read_company_library", "read_task_material", "query_financial_data", "read_saved_result",
     "read_research_artifact", "read_current_workpaper", "read_research_source", "search_research_sources",
     "read_current_source", "read_source_document", "query_company_financial_facts",
     "RequestEvidenceAction", "RequestFinanceAction", "RequestSourceAction", "ReadWorkpaperAction",

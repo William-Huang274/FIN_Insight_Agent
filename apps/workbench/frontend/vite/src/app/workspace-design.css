@@ -118,4 +118,14 @@
 .fs-assistant-approval pre { max-height: 280px; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; background: #fff; padding: 16px; border-radius: 8px; }
 .fs-assistant-approval button { margin: 8px 8px 0 0; }
 
+/* Chapter overview uses the full canvas; no empty third graph column. */
+.fs-horizontal-tree.fs-outline-grid{max-width:none;grid-template-columns:minmax(0,1fr);gap:22px}
+.fs-outline-grid .fs-tree-root{position:static;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 28px;padding:22px 26px}
+.fs-outline-grid .fs-tree-root h3{grid-column:1;margin:10px 0;font-size:18px}.fs-outline-grid .fs-tree-root p{grid-column:2;grid-row:1;align-self:center;margin:0}.fs-outline-grid .fs-tree-guide{grid-column:2;grid-row:2;align-self:center;margin:0;border:0;padding:0}
+.fs-outline-grid .fs-tree-root:after,.fs-outline-grid .fs-tree-branch:before{display:none}
+.fs-outline-grid .fs-tree-branches{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));border:0;padding:0;margin:0;gap:18px}
+.fs-outline-grid .fs-tree-branch{min-width:0}.fs-workspace .fs-outline-grid .fs-node-card{height:100%;min-height:195px;display:flex;flex-direction:column;border-radius:15px;padding:22px}
+.fs-outline-grid .fs-node-card>div{width:100%}.fs-outline-grid .fs-node-card h3{font-size:17px}.fs-outline-grid .fs-node-card footer{width:100%;margin-top:auto}.fs-node-preview{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;font-size:13px;line-height:1.8;color:var(--muted);margin:0 0 18px}
+@media(max-width:760px){.fs-outline-grid .fs-tree-root{display:block;padding:18px}.fs-outline-grid .fs-tree-root p{margin:10px 0}.fs-outline-grid .fs-tree-guide{margin-top:12px}.fs-workspace .fs-outline-grid .fs-node-card{min-height:160px}}
+
 .fs-answer-exports{display:flex;gap:10px;margin-top:12px}.fs-answer-exports a{font-size:13px;padding:5px 12px;border:1px solid #d8deee;border-radius:8px;text-decoration:none;background:#fff}.fs-approval-jump{border:1px solid #aeb8ef;background:#eef0ff;color:#304abe;padding:8px 14px;border-radius:8px;margin-bottom:10px}.fs-assistant-approval article{background:white;border:1px solid #e1e5f0;border-radius:10px;padding:12px;margin:10px 0;overflow-wrap:anywhere}

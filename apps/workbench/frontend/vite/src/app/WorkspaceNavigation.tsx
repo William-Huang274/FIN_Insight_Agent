@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Database } from "lucide-react";
 import { ChevronRight, FolderPlus, Pin, Workflow, BookOpen, CircleUserRound, FileClock, Files, FolderOpen, House, Layers, MessageSquare, PanelLeftClose, PanelLeftOpen, Plus, Radio, Settings2, ShieldCheck, X } from "lucide-react";
 import type { ProjectIndex } from "./workspaceProjects";
 import type { Session } from "../api/reportSessions";
@@ -13,6 +14,7 @@ export const isResearchComplete = (s: Session) => !["busy","error"].includes(s.s
 export const sessionStatus = (s: Session) => s.is_draft || s.phase === "draft" ? "资料准备中" : s.status === "busy" ? "运行中" : s.status === "error" ? "执行失败" : s.phase === "research_needs_attention" ? "研究受阻 · 待处理" : s.phase === "single_agent_unreviewed" ? "单 Agent 结果 · 未复核" : s.phase === "human_completed" ? `人工修改 ${s.human_edit_count || s.human_edits?.length || 0} 次 · 已完成` : s.phase === "human_reviewed_not_released" ? "已人工审阅" : s.status === "interrupted" ? "等待审阅" : "已保存";
 
 export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse, navigate, projects, onProjects }: { sessions: Session[]; id: string; page: string; collapsed: boolean; onCollapse: () => void; navigate: (page: string, id?: string) => void; projects: ProjectIndex; onProjects: (index: ProjectIndex) => void }) {
+  const dataArea = ["library", "financial-data"].includes(page);
   const organize = useRef<HTMLDialogElement>(null);
   const [projectName, setProjectName] = useState("");
   const drawer = useRef<HTMLDialogElement>(null);
@@ -20,6 +22,8 @@ export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse,
   const content = (mobile = false) => <>
     <div className="fs-brand"><span className="fs-logo"><Layers size={21} /></span><strong>FinSight<small>RESEARCH WORKSPACE</small></strong>
       <button aria-label={mobile ? "关闭导航" : collapsed ? "展开侧边栏" : "收起侧边栏"} onClick={() => mobile ? drawer.current?.close() : onCollapse()}>{mobile ? <X size={17} /> : collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
+    <div className="fs-area-switch" aria-label="工作区域"><button title="研究工作台" aria-pressed={!dataArea} onClick={()=>go("home")}><Layers size={16}/><span>研究工作台</span></button><button title="资料与数据" aria-pressed={dataArea} onClick={()=>go("library")}><Database size={16}/><span>资料与数据</span></button></div>
+    {dataArea ? <><nav className="fs-global-nav" aria-label="资料与数据导航"><button aria-current={page==="library"?"page":undefined} onClick={()=>go("library")}><BookOpen size={17}/><span>公司资料库</span></button><button aria-current={page==="financial-data"?"page":undefined} onClick={()=>go("financial-data")}><Database size={17}/><span>财务数据</span></button></nav><div className="fs-library-guide">查阅公开资料与财务数据覆盖。研究问题、底稿和历史报告在研究工作台中。</div></> : <>
     <button className="fs-create" title="新建研究" onClick={() => go("new")}><Plus size={17} /><span>新建研究</span></button>
     <a className="fs-assistant-entry" href="/workspace/assistant"><MessageSquare size={17}/><span>通用对话</span></a>
     <nav aria-label={mobile ? "移动工作区导航" : "工作区导航"} className="fs-global-nav">{[
@@ -41,6 +45,7 @@ export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse,
         {!sessions.length && <p>尚无已保存研究</p>}
       </nav>
     </div>
+    </>}
     <div className="fs-sidebar-footer"><button title="外观与偏好" onClick={() => go("preferences")}><Settings2 size={17} /><span>外观与偏好</span></button><div title="本地个人工作区"><CircleUserRound size={25} /><span>个人工作区<small>本地环境 · FIN 0.1.3</small></span></div></div>
   </>;
   return <><aside className={`fs-sidebar ${collapsed ? "is-collapsed" : ""}`}>{content()}</aside>

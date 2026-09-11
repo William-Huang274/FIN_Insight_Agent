@@ -285,10 +285,19 @@ def open_dell_approved_data_composition(
         reviewed_reader = CurrentReviewedEvidenceReader(
             case_reader=lambda _case_key: reviewed_case
         )
+        from sec_agent.research_foundation.public_library import library_path
+        public_nodes = library_path(env['FINSIGHT_TASK_ATTACHMENTS_ROOT']) if env.get('FINSIGHT_TASK_ATTACHMENTS_ROOT') else None
+        nodes_path = public_nodes if public_nodes and public_nodes.is_file() else paths['s1_nodes']
+        node_digest = _file_sha256(nodes_path) if nodes_path != paths['s1_nodes'] else catalog.local_nodes_sha256
+        if nodes_path != paths['s1_nodes']:
+            with nodes_path.open(encoding='utf-8') as source_stream:
+                node_count = sum(1 for _ in source_stream)
+        else:
+            node_count = catalog.expected_physical_node_count
         local_reader = StructuredLocalKnowledgeReader(
-            nodes_path=paths["s1_nodes"],
-            expected_sha256=catalog.local_nodes_sha256,
-            expected_node_count=catalog.expected_physical_node_count,
+            nodes_path=nodes_path,
+            expected_sha256=node_digest,
+            expected_node_count=node_count,
             research_as_of=date.fromisoformat(catalog.research_as_of),
             allowed_branch_ids=branch_ids,
         )

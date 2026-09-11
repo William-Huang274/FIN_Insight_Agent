@@ -12,6 +12,7 @@ RESULT_REGIONS = {
     "query_financial_data": ("numbers", "财务查询"),
     "calculate_research_metric": ("numbers", "来源绑定计算"),
     "read_public_source": ("sources", "网页原文"),
+    "read_company_library": ("sources", "公共公司资料"),
     "read_task_material": ("sources", "任务资料原文"),
     "read_handoff_material": ("sources", "交接资料原文"),
     "read_handoff_evidence": ("sources", "交接原始凭证"),

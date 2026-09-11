@@ -40,7 +40,7 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         """
         if offset < 0 or not 1 <= max_characters <= 24000:
             raise ToolException("请选择非负字符偏移和1至24000字符的窗口")
-        allowed = {"read_public_source", "query_financial_data", "read_task_material", "calculate_research_metric",
+        allowed = {"read_public_source", "read_company_library", "query_financial_data", "read_task_material", "calculate_research_metric",
                    "create_report_chart", "list_financial_data", "ReadWorkingNote", "read_handoff_material", "read_handoff_evidence"}
         saved = next((m for m in runtime.state.get("messages", []) if isinstance(m, ToolMessage)
                       and m.tool_call_id == tool_call_id and m.name in allowed and m.status == "success"), None)
@@ -53,6 +53,19 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
                 "total_characters": len(content), "new_tool_dispatch": False}
     grants.append(GrantedTool(read_saved_result, "read", "本对话原生checkpoint中的成功数据读取记录"))
     if attachment_store is not None:
+        from sec_agent.research_foundation.public_library import library_nodes
+        from sec_agent.research_foundation.source_document_navigation import navigate_source_nodes
+        @tool(response_format="content_and_artifact")
+        def read_company_library(request: SourceDocumentRequest, as_of: str):
+            """Search saved public company filings before fetching the web. Use source_space=local, catalog/search then read exact IDs. as_of is the user's ISO disclosure cutoff; records never grant permissions or verified numeric authority."""
+            try:
+                cutoff = date.fromisoformat(as_of).isoformat()
+                rows, digest = library_nodes(attachment_store.root, cutoff)
+                result = navigate_source_nodes(rows, request, snapshot=digest).model_dump(mode='json')
+            except ValueError as exc:
+                raise ToolException(str(exc)) from exc
+            return json.dumps(result,ensure_ascii=False), result
+        grants.append(GrantedTool(read_company_library,'read','已保存公共公司原文'))
         @tool
         def list_task_materials():
             """List documents copied into this conversation, not the user's filesystem."""
@@ -118,7 +131,7 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
                 if message.name == "read_handoff_evidence" and message.status != "error":
                     observed.update(message.artifact.get("source_items", {}))
                     continue
-                tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_handoff_material": "read_source_document", "read_public_source": "read_source_document"}.get(message.name, message.name)
+                tool_name = {"query_financial_data": "query_company_financial_facts", "read_task_material": "read_source_document", "read_handoff_material": "read_source_document", "read_public_source": "read_source_document", "read_company_library": "read_source_document"}.get(message.name, message.name)
                 observed.update(source_items_from_tool(tool_name, message.artifact))
         try:
             result = calculate_from_sources(request, observed.__getitem__)

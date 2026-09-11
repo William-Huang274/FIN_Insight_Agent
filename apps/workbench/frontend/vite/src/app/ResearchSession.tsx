@@ -8,6 +8,7 @@ import { ReportVersions } from "./ReportVersions";
 import { ResearchGraph } from "./ResearchGraph";
 import { useSearchParams } from "react-router";
 import { WorkspaceNavigation, pageTitles } from "./WorkspaceNavigation";
+import { DataLibrary } from "./DataLibrary";
 import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
 import { readMemory, writeMemory } from "./workspaceMemory";
 import { RunWorkspace } from "./RunWorkspace";
@@ -178,7 +179,8 @@ export function ResearchSession() {
   const [motion, setMotion] = useState(() => localStorage.getItem("finsight.motion") === "reduced");
   const [taskQuery, setTaskQuery] = useState("");
   const [taskFilter, setTaskFilter] = useState("");
-  const globalPage = ["home", "all", "completed", "inbox", "preferences", "studio"].includes(page);
+  const dataPage = ["library", "financial-data"].includes(page);
+  const globalPage = dataPage || ["home", "all", "completed", "inbox", "preferences", "studio"].includes(page);
   const projects = useWorkspaceProjects();
   const navigate = (view: string, thread = id) => {
     setParams(next => { next.set("view", view); if (thread !== id) { next.delete("level"); next.delete("topic"); next.delete("claim"); } if (thread) next.set("thread", thread); else next.delete("thread"); return next; });
@@ -514,7 +516,7 @@ export function ResearchSession() {
       <main className="rs-main">
         <header className="rs-top">
           <div className="rs-breadcrumb">
-            <button onClick={() => navigate("home")}>工作台</button> / <b>{pageTitles[page] || "研究工作区"}</b>
+            <button onClick={() => navigate("home")}>工作台</button> / <b>{page === "library" ? "公司资料库" : page === "financial-data" ? "财务数据" : pageTitles[page] || "研究工作区"}</b>
           </div>
           <span className="rs-local">
             <span /> LOCAL PILOT
@@ -527,7 +529,8 @@ export function ResearchSession() {
         {projects.error && <p role="alert">{projects.error}</p>}
         {page === "home" && <ResearchStart question={researchQuestion} onQuestion={setResearchQuestion} navigate={navigate} sessions={sessions} execution={execution} onExecution={setExecution} />}
         {page === "studio" && <ResearchStudio />}
-        {globalPage && page !== "home" && page !== "studio" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
+        {dataPage && <DataLibrary page={page} navigate={navigate} onSupplement={question=>{setResearchQuestion(question);navigate("new","");}} />}
+        {globalPage && !dataPage && page !== "home" && page !== "studio" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
         <div className="fs-session-view" hidden={globalPage}>
         {id && !session && !creating ? <section className="rs-empty" role="status"><LoaderCircle className="rs-spin" /><h1>正在读取已保存研究…</h1><p>读取报告不会发起新的模型调用。</p></section> : !session || creating ? (
           <section className="rs-empty">

@@ -71,6 +71,7 @@ external-search = [
   "trafilatura==2.2.0",
   "tencentcloud-sdk-python>=3.1.162",
 ]
+sec-source-library = ["sec2md==0.1.23"]
 retrieval-api = [
   "openai==3.6.0",
 ]

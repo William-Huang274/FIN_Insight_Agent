@@ -1,5 +1,7 @@
 # FIN Insight 当前上下文包
 
+210结项前补充已实现、待部署：见 docs/worklog/fin_0_1_3_s3/210_data_library_and_navigation.md。五公司新增40份SEC原件，合并60文档/7510节点/11015向量块；沿用2274行SQL，新增资料目录/正文阅读/财务筛选，两主入口与全宽研究地图。15年度原文及5公司CFO产品工具回读、13定向+36相邻测试（另1私有skip）、9公共UI、3宽度真实回执浏览器检查通过。Qwen1097检索请求3636553已知tokens/估算¥1.8183，完整缓存与5查询重放0请求，0生成模型调用；非新增准确率声明。新镜像已构建，独立只读容器目录60份通过；自动审批拒绝资料发布和18795重载，仅blocked by policy，未换包装执行。Owner收到 scripts/deployment/publish_data_library.ps1 手动命令，待实际服务回读；18796不动。FIN0.1.3/S3不变，结项评审暂停至本包部署确认。
+
 209阶段盘点已执行：见 docs/product/FIN_0_1_3_STAGE_CLOSEOUT_20260911.zh-CN.md 与 docs/worklog/fin_0_1_3_s3/209_stage_closeout.md。22研究窗口盘点，NVDA单题/跨公司比较分别v2人工1，HPE/MSFT现金题仍v2人工2；0新增模型/API费用。发现并修复旧dell_report_session图移除导致两档案502：现有schema只读注册，禁止旧运行，原v3及失败记录恢复；最终22/22可读、10窗口有报告、4人工完成。原PRD广度未全部完成，建议本地Internal Alpha结项评审，尚缺Owner整篇内容接受/边界决定和最终干净安装回滚签发；不变版本、不宣称S5完成。MSFT旧指定专家题实为IC分部/组合，不是新FCF题，历史索引已注明纠正。
 
 更新时间：2026-09-11

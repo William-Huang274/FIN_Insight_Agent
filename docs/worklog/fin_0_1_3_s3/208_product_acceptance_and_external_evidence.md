@@ -94,3 +94,12 @@
 ### 操作者 Python 启动失败修复
 
 Owner PowerShell 截图显示 `.venv/Scripts/python.exe` 在加载 uv 缓存 CPython 时 `No Python at ...`，configure 未执行，if 条件跳过 serve；不同于此前 CreateProcess 策略拒绝。Codex 当前同路径及 Windows PowerShell 子进程可正常启动，文件存在且无目录链接，具体会话差异未复现，不宣称缓存被删除。为移除该部署依赖，将同一 CPython 3.11.14 复制到已忽略的 `.venv/sandbox-python311`，原 pyvenv.cfg 备份为 `.venv/pyvenv.cfg.before-project-python-20260911` 后仅修改 home；不删旧解释器、不改系统 Python、不重装项目依赖。新 Windows PowerShell 进程确认 base_prefix 指向项目目录、MCP/Uvicorn 可导入，真实只读 plan 通过，原 14 定向测试再次通过。操作文档补充失败时明确报错。真实 settings 仍未配置、18796 未启动，等待用户原终端实测；0 模型费用。本次是本机解释器依赖修复和文档增量，非 sandbox 产品接入完成。
+
+### 手动启动后真实产品验收完成
+
+- 产品增量：Owner 手动 configure/serve 成功，18796 foreground 进程已运行。宿主无/错误凭据401、正确凭据工具目录、native 容器 host.docker.internal MCP及挂载凭据一致性全部通过，无需重启已有容器。此前执行策略拒绝由操作者手动执行完成，不是助手改写命令绕过。
+- 新增 scripts/qualification/sandbox_product_probe.cjs，真实浏览器点击发起任务与批准/拒绝；固定 print("FINSIGHT_SANDBOX_OK",6*7)（实际代码保留空格见原件），仅批准逐字匹配代码。批准前通过按线程标记的 Docker events 验证零容器活动；结束读取 native ToolMessage 和 Docker 创建/销毁事件核对隔离及清理。不是仅以模型回答判成功。四项全部通过。
+- 标准拒绝 thread01a08f98-450e-7220-9817-08611b75a72a：0容器；标准批准01a08f98-7ba6-7cb2-a9a9-a0e37c63913d、代我批准01a08f98-b1a9-75e0-a448-51387f4eb04a、完全访问01a08f98-d156-77e2-b2dc-3ccbbac6d151：各1容器/1清理，exit0、禁网/只读根/65534:65534/空bind mounts，输出固定42。
+- 资格证据 D:/temp/fin208/sandbox-product-a1，含任务专属TokenBudgetBasis、6 native runs、原生状态、前后Docker事件、前端审批截图。共8真实模型请求45609已知tokens，unknown0，产品日期价估算¥0.01205非账单。既有ProjectOS交互profile预检通过（仅共享profile检查），实际对话执行沿用部署的conversation预算，不伪称研究图跑过；停止付费。
+- 首轮最终截图仅等待输入框加载，拍到异步内容尚未就绪的空状态；接口/容器检查已成功。修资格截图等待正文条件，sandbox-product-ui-a2重新打开四窗口全部读到对应正文且0模型。已目视核对批准卡片与成功答复。不是重新提交请求或产品新版本。
+- 文档增量：同步公开中英文报告、机器指标、简历表述与操作说明。仍未包含Hermes sandbox、开机自启/生产服务托管、多租户执行配额或任意用户文件变更；当前空白容器不挂载宿主文件，Owner终端需保持开启。以前“唯一部署阻塞”由本段证据解除。

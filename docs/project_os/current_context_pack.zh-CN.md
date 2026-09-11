@@ -2,6 +2,8 @@
 
 更新时间：2026-09-11
 
+208 sandbox 已接入本地 native 产品：Owner 手动启动18796成功；宿主错误凭据401/正确目录、native容器MCP与挂载凭据一致性均通过。真实前端标准拒绝/标准批准/代我批准/完全访问4场景全通过，标准决策前零容器活动；拒绝0执行，其余各1容器且全部清理，禁网/只读根/non-root/无宿主挂载回执。8真实模型请求45609tokens未知0估算¥0.01205，证据 D:/temp/fin208/sandbox-product-a1，截图等待数据加载问题仅0模型回读修正 sandbox-product-ui-a2。服务前台运行，关闭Owner终端即停止；Hermes与生产托管未包含。已更新对外CN/EN报告/指标/简历口径。下方“未启动/未接入”为历史时点。
+
 208 本机部署解释器接续：Owner PowerShell 报 No Python at uv 缓存路径，configure/serve 未执行；Codex 同路径可运行，具体会话差异未复现。已复制同版本 CPython3.11.14 到已忽略的 .venv/sandbox-python311，仅备份修改 .venv/pyvenv.cfg home，不改系统/依赖；新 Windows PowerShell 可加载 MCP/Uvicorn，真实只读 plan 与14定向测试通过。真实配置仍未写/18796 未启动，等待用户原终端重试，非已接入。详208末段。
 
 208 sandbox 接续：原始三次启动在执行前 blocked by policy，具体理由未提供；Owner 同意可检查入口/必要时手动启动。已新增 scripts/deployment/local_sandbox.py 的只读 plan、配置备份/失败回退、前台 serve、宿主及 native 容器鉴权/目录 check；14 定向检查通过，真实只读预检 configured=false/18796 无监听/固定镜像存在。真实配置和启动未执行，不换包装重试拒绝；等待操作者按 docs/architecture/local_sandbox_operator.zh-CN.md 启动，再验证产品审批链。工程入口增量，非已部署；0 模型费用。详208日志末段。

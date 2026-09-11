@@ -8,6 +8,16 @@ from test_dell_report_session import setup_session
 from test_dell_case_review_agent import artifacts
 
 
+def test_two_roles_in_one_branch_keep_distinct_manual_edit_ownership():
+    from sec_agent.agent_runtime.manual_review import paper_owner_role
+    state = {'case_papers': [{'agent_id': 'a', 'task': {'task_id': 'cash'}},
+                            {'agent_id': 'b', 'task': {'task_id': 'merger'}}],
+             'research_tasks': [{'task_id': 'cash', 'owner_role': 'financial-analyst'},
+                                {'task_id': 'merger', 'owner_role': 'merger-analyst'}]}
+    assert paper_owner_role(state, {'author': 'a', 'branch_id': 'Q1'}) == 'financial-analyst'
+    assert paper_owner_role(state, {'author': 'b', 'branch_id': 'Q1'}) == 'merger-analyst'
+
+
 def test_manual_completion_retains_checkpoint_roles_and_accepts_next_question(artifacts):
     async def run():
         graph, models, initial, ref = setup_session(artifacts)

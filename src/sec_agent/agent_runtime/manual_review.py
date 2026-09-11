@@ -30,6 +30,14 @@ def manual_review_available(state):
         and not any(f.get('responsibility') == 'data_tool' for f in review.get('findings', [])))
 
 
+def paper_owner_role(state, paper):
+    saved = next((p for p in state.get('case_papers', []) if p.get('agent_id') == paper.get('author')), {})
+    task_id = saved.get('task', {}).get('task_id')
+    return next((t['owner_role'] for t in state.get('research_tasks', [])
+                 if t.get('task_id') == task_id and t.get('owner_role')),
+                paper.get('branch_id') or paper.get('author', 'specialist'))
+
+
 def apply_manual_review(state, decision, artifacts, *, owner='local-pilot'):
     from .dell_case_convergence_agent import answer_citations
     if not manual_review_available(state):
@@ -48,7 +56,7 @@ def apply_manual_review(state, decision, artifacts, *, owner='local-pilot'):
             raise ValueError('底稿不属于当前研究')
         before = previous.get(edit.paper_id, artifacts.read_paper(edit.paper_id)['narrative_markdown'])
         if before != edit.body:
-            edits.append({'paper_id': edit.paper_id, 'actor': catalog[edit.paper_id].get('branch_id') or catalog[edit.paper_id].get('agent_id', 'specialist'),
+            edits.append({'paper_id': edit.paper_id, 'actor': paper_owner_role(state, catalog[edit.paper_id]),
                 'title': catalog[edit.paper_id].get('thesis', edit.paper_id), 'before': before, 'after': edit.body})
     old = state['report']
     if old['narrative_markdown'] == decision.report_markdown and not edits:

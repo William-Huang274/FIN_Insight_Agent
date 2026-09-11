@@ -167,6 +167,11 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     "task_results": [{"task_id": task_id, "status": "submitted" if submitted else "needs_attention", "agent_state": output}],
                     "lead_handoff": None, "stop_reason": None if submitted else "single_agent_no_submission"}
             def worker(task, dependencies, child_config):
+                # Native checkpoints can retain a child queued by an older
+                # planner. Recheck current continuation authority before any
+                # adapter/provider call, not just when creating a new task.
+                if seeds and task['task_id'] not in {t['task_id'] for t in request.get('unfinished_tasks', [])}:
+                    raise ValueError('continuation_queued_task_outside_original_scope')
                 task_event = {"kind": "task", "task_id": task["task_id"], "actor": task["owner_role"],
                     "objective": task["objective"], "dependency_ids": task["dependency_ids"],
                     "recorded_at": datetime.now(timezone.utc).isoformat()}
@@ -286,7 +291,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             graph = build_research_convergence_graph(artifacts=artifacts, question=state["question"], feedback=state["feedback"],
                 make_agent=make_agent, max_parallel_authors=profile["max_parallel_tasks"],
                 research_review_context={**{r: state.get("case_review", {})[r]["review"] for r in ("counter", "verifier") if r in state.get("case_review", {})},
-                    "lead_handoff": state.get("research_handoff")}, existing_state=existing,
+                    "lead_handoff": state.get("research_handoff"),
+                    "incomplete_review_records": {r: {k: state['case_review'][r].get(k) for k in ('status', 'recorded_findings', 'incomplete_output')}
+                        for r in ('counter', 'verifier') if state.get('case_review', {}).get(r, {}).get('status') not in (None, 'review_submitted')}}, existing_state=existing,
                 execution_plan=(state.get("research_handoff") or {}).get("execution_plan"),
                 human_feedback=existing.get("message") if existing else None).compile()
             return await graph.ainvoke({}, config)

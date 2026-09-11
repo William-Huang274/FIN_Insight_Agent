@@ -248,7 +248,8 @@ def build_dell_lead_research_graph(
             "capacity": {"max_tasks": max_tasks, "max_parallel_tasks": max_parallel_tasks,
                          "max_lead_turns": max_lead_turns},
             "workpapers": [workpaper_view(key, value) for key, value in completed(state).items()],
-            "continuation_policy": "Preserve submitted work. Unfinished tasks retain their original IDs. A submitted branch may still have an unanswered requirement: a supplemental task must depend on its saved workpaper and explain the specific missing question, without repeating completed work.",
+            "allowed_planning_tools": [name for name in LEAD_RESEARCH_TOOLS if not unfinished_only or name != "DelegateResearchTasksAction"],
+            "continuation_policy": ("This is an explicitly bounded continuation. Only original unfinished tasks may run. Do not create any new task, even with a different branch or dependency. Review saved workpapers, then submit a handoff with truthful question coverage; unresolved material scope goes to human attention, not automatic expansion." if unfinished_only else "Preserve submitted work. New tasks must address actual unanswered requirements without repeating completed work."),
             "tasks": state["tasks"], "tool_results": state["tool_results"],
             "progress": {"turn_index": len(state["lead_turns"]) + 1,
                          "ready_task_ids": [task["task_id"] for task in ready(state)],
@@ -296,6 +297,8 @@ def build_dell_lead_research_graph(
                 if require_execution_plan and isinstance(action, (DelegateResearchTasksAction, SubmitResearchHandoffAction)) and action.execution_plan is None:
                     raise ValueError("execution_plan_required_with_scope_omission_and_escalation_reasons")
                 if isinstance(action, DelegateResearchTasksAction):
+                    if unfinished_only:
+                        raise ValueError("continuation_cannot_create_new_tasks_request_owner_scope_change")
                     ids = [task.task_id for task in action.tasks]
                     known = set(seeds) | {task["task_id"] for task in state["tasks"]}
                     if len(ids) != len(set(ids)) or known.intersection(ids):

@@ -5,7 +5,8 @@ export const branchName: Record<string, string> = { Q1: "收入、利润与现�
   Q4: "架构更新与交付", Q5: "供应链与成本", Q6: "模型与算力需求", Q7: "出口管制", Q8: "同行竞争", Q9: "反证与替代解释" };
 
 export const roleName=(actor:string)=>branchName[actor.replace(/^specialist:/,'').split('_')[0]] ||
-  ({conversation:'研究助理',user_context:'用户',lead:'研究负责人',specialist:'研究员',verifier:'底稿核验',counter:'反证审查',synthesis:'综合研究',writer:'报告写作'} as Record<string,string>)[actor] || actor;
+  ({conversation:'研究助理',user_context:'用户',lead:'研究负责人',specialist:'研究员',verifier:'底稿核验',counter:'反证审查',synthesis:'综合研究',writer:'报告写作',
+    'issuer-financials-analyst':'财务与现金流研究员','ma-comparability-analyst':'并购与可比性研究员'} as Record<string,string>)[actor] || actor;
 
 /** Display aliases only. Canonical identifiers remain intact for all requests. */
 export const claimTitle = (id: string, citations: Record<string, Citation>) =>

@@ -241,13 +241,25 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         return {**retained, "report": deepcopy(result["report"]), "report_review": deepcopy(result["report_review"]),
                 "phase": phase, "research_stop_reason": result.get("stop_reason")}
 
-    def attention(state):
+    def attention(state, config: RunnableConfig):
         response = interrupt({"kind": "research_needs_attention", "reason": state["research_stop_reason"],
             "completed_papers": len(state["case_papers"]),
-            "actions": ["acknowledge", *(["continue_remaining"] if can_continue_remaining_research(state) else [])],
+            "actions": ["acknowledge", *(["continue_remaining", "recover_workpaper"] if can_continue_remaining_research(state) else [])],
             "notice": "Continue starts a new configured run allowance for unfinished work only, retaining lifetime usage and saved results. No automatic retry or report acceptance."})
         if isinstance(response, dict) and response.get("action") == "continue_remaining" and can_continue_remaining_research(state):
             return {"continue_remaining_research": True}
+        if isinstance(response, dict) and response.get("action") == "recover_workpaper" and can_continue_remaining_research(state):
+            from .workpaper_intervention import recover_workpaper
+            return recover_workpaper(state, response,
+                owner=config.get('configurable', {}).get('manual_review_owner', 'local-pilot'))
+        if isinstance(response, dict) and response.get('action') == 'review_saved_workpapers':
+            from .workpaper_intervention import review_saved_workpapers
+            return review_saved_workpapers(state, response,
+                owner=config.get('configurable', {}).get('manual_review_owner', 'local-pilot'))
+        if isinstance(response, dict) and response.get('action') == 'write_after_incomplete_review':
+            from .workpaper_intervention import write_after_incomplete_review
+            return write_after_incomplete_review(state, response,
+                owner=config.get('configurable', {}).get('manual_review_owner', 'local-pilot'))
         if not isinstance(response, dict) or response.get("action") != "acknowledge":
             raise ValueError("incomplete_research_cannot_be_accepted_as_a_report")
         return {"phase": "research_incomplete_acknowledged"}
@@ -267,5 +279,5 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     graph.add_conditional_edges("remaining_research", after_research)
     graph.add_conditional_edges("case_review", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "convergence")
     graph.add_conditional_edges("convergence", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "initialize")
-    graph.add_conditional_edges("research_attention", lambda state: ("case_review" if state.get("case_review") else "remaining_research") if state.get("continue_remaining_research") else END)
+    graph.add_conditional_edges("research_attention", lambda state: 'convergence' if state.get('phase') == 'research_writing' else 'case_review' if state.get('phase') == 'research_reviewing' else ("case_review" if state.get("case_review") else "remaining_research") if state.get("continue_remaining_research") else END)
     return graph

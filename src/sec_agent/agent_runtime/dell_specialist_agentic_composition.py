@@ -1097,6 +1097,7 @@ def _open_dell_specialist_composition(
             task = graph_input.task
             dependencies = DellSpecialistAgenticDependencies(
                 model_turn=model_turn,
+                allow_workpaper_field_edits=True,
                 evidence_tool=_mcp_port(
                     expected_task=task,
                     baseline_source_plan=approved.baseline_source_plan,

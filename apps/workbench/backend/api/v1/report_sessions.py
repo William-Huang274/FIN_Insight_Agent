@@ -32,6 +32,17 @@ from sec_agent.agent_runtime.manual_review import manual_review_available, apply
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
 RESEARCH_GRAPH = "research_session"
+
+
+class WorkpaperRecovery(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    task_id: str = Field(min_length=1, max_length=240)
+    base_agent_digest: str = Field(pattern=r"^[a-f0-9]{64}$")
+    submission: dict
+    reason: str = Field(min_length=1, max_length=4000)
+    confirmed: bool
+    original_tool_arguments: str | None = Field(default=None, max_length=200000)
+
 PUBLIC_EVENT_FIELDS = frozenset({"kind", "actor", "event", "status", "call_id", "tool", "recorded_at",
     "model", "thinking", "reasoning_effort", "elapsed_ms", "input_tokens", "output_tokens", "total_tokens",
     "cache_hit_tokens", "cache_miss_tokens", "reasoning_tokens", "usage_reported", "error_type", "http_status_code",
@@ -519,6 +530,29 @@ def build_report_sessions_router(service):
             multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "acknowledge_incomplete", "model_calls_requested": 0})
         return {"run_id": run["run_id"], "notice": "只确认已查看；不接受报告、不重跑研究。"}
 
+    @router.post("/research-sessions/{thread_id}/recover-workpaper")
+    async def recover_saved_workpaper(thread_id: UUID, body: WorkpaperRecovery, request: Request):
+        browser_write(request)
+        from ...authentication import current_owner
+        from sec_agent.agent_runtime.workpaper_intervention import recover_workpaper
+        thread = await service.owned_thread(thread_id)
+        state = await service.sdk.threads.get_state(str(thread_id))
+        interrupts = [*state.get('interrupts', []), *[i for t in state.get('tasks', []) for i in t.get('interrupts', [])]]
+        if (graph_for_thread(thread) != RESEARCH_GRAPH or thread.get('status') in {'busy', 'error'}
+                or not any(i.get('value', {}).get('kind') == 'research_needs_attention' for i in interrupts)):
+            raise HTTPException(409, '请在研究暂停、待处理时修正未交出的底稿')
+        decision = {'action': 'recover_workpaper', **body.model_dump()}
+        try:
+            recover_workpaper(state.get('values', {}), decision, owner=current_owner(request))
+        except (ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(422, str(exc)) from exc
+        config = await run_configuration(service, thread)
+        config.setdefault('configurable', {})['manual_review_owner'] = current_owner(request)
+        run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH,
+            command={'resume': decision}, config=config, multitask_strategy='reject',
+            metadata={'surface': SURFACE, 'human_action': 'recover_workpaper'})
+        return {'run_id': run['run_id'], 'notice': '保存人工修正并接续下游；原始失败和其他角色底稿保留。'}
+
     @router.post("/research-sessions/{thread_id}/continue-remaining")
     async def continue_remaining(thread_id: UUID, request: Request):
         browser_write(request)
@@ -736,8 +770,9 @@ def build_report_sessions_router(service):
         from sec_agent.agent_runtime.research_session import current_task_artifacts
         artifacts = current_task_artifacts(values) if graph_for_thread(thread) == RESEARCH_GRAPH else service.artifacts
         previous = {p['paper_id']: p['after'] for h in values.get('human_edits', []) for p in h['papers']}
+        from sec_agent.agent_runtime.manual_review import paper_owner_role
         return {'base_version': values['report_version'], 'report_markdown': values['report']['narrative_markdown'],
-            'papers': [{**p, 'body': previous.get(p['paper_id'], artifacts.read_paper(p['paper_id'])['narrative_markdown'])}
+            'papers': [{**p, 'branch_id': paper_owner_role(values, p), 'body': previous.get(p['paper_id'], artifacts.read_paper(p['paper_id'])['narrative_markdown'])}
                 for p in artifacts.catalog()['papers']], 'review': values.get('report_review')}
 
     @router.post("/research-sessions/{thread_id}/runs/{run_id}/cancel")

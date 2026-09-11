@@ -523,6 +523,8 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "SubmitWorkpaperAction, ReviseWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
     "Only when ReviseWorkpaperAction is supplied and submission_to_repair is present, use it for local corrections: use its exact base digest "
     "and JSON Pointer old/new values; unchanged claims and prose remain intact and all submission checks run again. "
+    "Shared citation_quotes may be supplied once on the workpaper, keyed by exact evidence ID; "
+    "each claim still states its own evidence_ids. Do not duplicate source quotes across claims. "
     "To finish, call SubmitWorkpaperAction; "
     "do not replace the tool call with a plain-text final answer."
 )
@@ -932,10 +934,13 @@ def _project_request(
     if role == "lead" and specialist_mode == "agentic_lead":
         # Already a host-built semantic projection. Keep task IDs as dependency
         # names; never include SDK reasoning or private source notebooks here.
-        return {key: request[key] for key in (
+        projected = {key: request[key] for key in (
             "research_question", "research_as_of", "branch_catalog", "required_branch_ids",
             "capabilities", "capacity", "workpapers", "tasks", "progress", "context_digest",
         )}
+        projected.update({key: request[key] for key in ('scope_policy', 'execution_policy',
+            'continuation_policy', 'allowed_planning_tools', 'role_method') if key in request})
+        return projected
     if role == "planner":
         catalog = request.get("branch_catalog")
         if not isinstance(catalog, Sequence) or isinstance(catalog, (str, bytes)):
@@ -1333,6 +1338,9 @@ class DeepSeekStructuredAgentAdapter:
         if is_lead:
             from .dell_lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
             native_tools = LEAD_RESEARCH_TOOLS
+            if semantic_input.get("allowed_planning_tools") is not None:
+                native_tools = {name: model for name, model in native_tools.items()
+                                if name in semantic_input["allowed_planning_tools"]}
         from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, WORKING_MEMORY_GUIDANCE
         notes_enabled = persistent_history and memory_enabled()
         if notes_enabled:
@@ -1345,6 +1353,8 @@ class DeepSeekStructuredAgentAdapter:
                 prompt = LEAD_RESEARCH_SYSTEM_PROMPT
                 if request_value.get("scope_policy"):
                     prompt += "\nCurrent run scope policy overrides the default all-branches requirement: " + request_value["scope_policy"]
+                if request_value.get("continuation_policy"):
+                    prompt += "\nCurrent continuation authority overrides any permission to create tasks: " + request_value["continuation_policy"]
             if collaboration_mode == "repair":
                 prompt += (" You are the original responsible author revising your prior workpaper in response to "
                            "independent review findings. Prior source observations are available, but the reviewer "

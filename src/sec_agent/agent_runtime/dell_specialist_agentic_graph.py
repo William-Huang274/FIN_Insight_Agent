@@ -17,6 +17,7 @@ import json
 import jsonpatch
 from collections.abc import Callable, Mapping
 from copy import deepcopy
+from .workpaper_delivery import decode_workpaper_arguments
 from dataclasses import dataclass
 from typing import Annotated, Any, Literal, TypedDict
 
@@ -312,9 +313,21 @@ class SubmitWorkpaperAction(_StrictModel):
     counterevidence: tuple[str, ...] = Field(min_length=1, max_length=12)
     what_would_change: tuple[str, ...] = Field(min_length=1, max_length=12)
     open_gaps: tuple[str, ...] = Field(default=(), max_length=16)
+    citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict, exclude=True,
+        description="Optional shared quotes keyed by exact evidence ID. Runtime copies them only to claims already citing that ID; no need to repeat the same quote in every claim.")
 
     @model_validator(mode="after")
     def validate_submission_shape(self) -> "SubmitWorkpaperAction":
+        referenced = {ref for claim in self.claims for ref in claim.evidence_ids}
+        if set(self.citation_quotes) - referenced:
+            raise ValueError("workpaper_shared_quote_not_referenced")
+        for claim in self.claims:
+            for ref in claim.evidence_ids:
+                if ref not in self.citation_quotes:
+                    continue
+                if ref in claim.citation_quotes and claim.citation_quotes[ref] != self.citation_quotes[ref]:
+                    raise ValueError("workpaper_shared_quote_conflict")
+                claim.citation_quotes[ref] = deepcopy(self.citation_quotes[ref])
         claim_ids = tuple(claim.claim_id for claim in self.claims)
         if len(claim_ids) != len(set(claim_ids)):
             raise ValueError("specialist_submission_claim_id_duplicate")
@@ -1919,6 +1932,13 @@ def build_dell_specialist_agentic_state_graph(
 
         def run_tool(runtime: ToolRuntime, **_arguments: Any) -> ToolMessage:
             call = calls[runtime.tool_call_id]
+            raw_arguments = call.args if isinstance(call, SpecialistInvalidToolCall) else None
+            recovered, recoverable, repair = ({}, False, None)
+            if raw_arguments is not None and call.name == "SubmitWorkpaperAction":
+                recovered, recoverable, repair = decode_workpaper_arguments(raw_arguments)
+                if recoverable:
+                    call = SpecialistNativeToolCall(id=call.id, name=call.name,
+                        args={"context_digest": batch.context_digest, **recovered})
             before = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
             if call.name in WORKING_MEMORY_MODELS:
                 if before.tool_action_count >= working["max_tool_actions"]:
@@ -1944,6 +1964,15 @@ def build_dell_specialist_agentic_state_graph(
                         if key in models[call.name].model_fields} if isinstance(call.args, dict) else None,
                     "accepted": False, "feedback": [],
                 }
+                if raw_arguments is not None:
+                    attempt = working["last_submission_attempt"]
+                    # Provider raw bytes remain in the private call audit. Keep
+                    # a digest plus public fields, never arbitrary extra fields.
+                    attempt["original_arguments_digest"] = canonical_sha256(raw_arguments)
+                    attempt["format_recovery"] = repair
+                    if not recoverable:
+                        attempt["readable_candidate"] = {key: deepcopy(value) for key, value in recovered.items()
+                            if key in models[call.name].model_fields and key != "context_digest"}
 
             def reject(code: str, message: str, *, agent_error: bool = False) -> ToolMessage:
                 feedback = _feedback(code, message, owner_layer="agent" if agent_error else "runtime",
@@ -1959,8 +1988,8 @@ def build_dell_specialist_agentic_state_graph(
                 return reject("specialist_terminal_action_must_be_alone",
                     "No tools in this response were dispatched. Submit or request human review as the sole call, after observing pending data results.")
             if isinstance(call, SpecialistInvalidToolCall):
-                # Do not repair or partially parse a model's assertion. Return
-                # the standard JSON location through its original tool call ID.
+                # Unrecoverable syntax never executes. Complete prose fields
+                # remain available for human review independently of acceptance.
                 try:
                     json.loads(call.args)
                     detail = "Arguments must be one JSON object matching the supplied schema."

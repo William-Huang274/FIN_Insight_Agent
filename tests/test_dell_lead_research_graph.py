@@ -22,6 +22,21 @@ BRANCHES = ("Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND")
 CATALOG = [{"branch_id": key, "objective": "Synthetic task qualification; no research answer."} for key in BRANCHES]
 
 
+def test_bounded_continuation_rejects_new_branch_even_with_existing_dependency():
+    requests=[]
+    def model(request):
+        requests.append(request)
+        assert 'DelegateResearchTasksAction' not in request['allowed_planning_tools']
+        if len(requests)==1:
+            return _call(request,'DelegateResearchTasksAction',tasks=[_task('new',BRANCHES[1])])
+        assert 'continuation_cannot_create_new_tasks' in str(request['tool_results'])
+        return _stop(request,ready=True)
+    graph,value=_graph(model,lambda *_:pytest.fail('no new worker allowed'),
+        unfinished_only=True,require_all_branches=False)
+    result=graph.invoke(value.model_dump(mode='json'))
+    assert len(requests)==2 and result['phase']=='research_ready_for_review'
+
+
 def _task(key="price", branch=BRANCHES[0], dependencies=()):
     return {"task_id": "task:" + key, "owner_role": "research_analyst",
             "objective": "按已披露资料自主研究供应或行业需求，说明依据及局限。",
@@ -259,12 +274,18 @@ def test_invalid_lead_action_reaches_next_turn_without_worker_execution(defect):
     assert not executions and result["phase"] == "research_needs_attention" and len(seen) == 2
 
 
-def test_native_sdk_lead_history_keeps_own_reasoning_and_exact_tool_feedback():
+@pytest.mark.parametrize('bounded', [False, True])
+def test_native_sdk_lead_history_keeps_own_reasoning_and_exact_tool_feedback(bounded):
     from test_dell_deepseek_structured_agents import _config
     seen, wires, events = [], [], []
     def transport(request):
         wire = json.loads(request.content); wires.append(wire)
         current = seen[-1]
+        first_input = json.loads(next(m['content'] for m in wire['messages'] if m['role']=='user'))
+        for field in ['scope_policy','execution_policy','continuation_policy','allowed_planning_tools']:
+            assert first_input[field] == current[field]
+        disclosed = {t['function']['name'] for t in wire['tools']}
+        assert ('DelegateResearchTasksAction' in disclosed) is (not bounded)
         if len(wires) == 1:
             name, arguments = "DelegateResearchTasksAction", '{"tasks":'
         else:
@@ -286,11 +307,11 @@ def test_native_sdk_lead_history_keeps_own_reasoning_and_exact_tool_feedback():
         # The mock SDK receipt is validated, but this test must not claim paid execution.
         assert result["runtime_receipt"]["kind"] == "model"
         return result
-    graph, value = _graph(turn, lambda *args: pytest.fail("invalid plan must not run workers"), turn_source="provider_model")
+    graph, value = _graph(turn, lambda *args: pytest.fail("invalid plan must not run workers"), turn_source="provider_model", unfinished_only=bounded)
     try: result = graph.invoke(value.model_dump(mode="json"))
     finally: client.close()
     assert result["phase"] == "research_needs_attention" and len(wires) == 2
-    assert {row["function"]["name"] for row in wires[0]["tools"]} == {"DelegateResearchTasksAction", "ContinueResearchTasksAction", "SubmitResearchHandoffAction"}
+    assert {row["function"]["name"] for row in wires[0]["tools"]} == ({"ContinueResearchTasksAction", "SubmitResearchHandoffAction"} | (set() if bounded else {"DelegateResearchTasksAction"}))
     assert wires[1]["messages"][2]["reasoning_content"] == "synthetic private planning reasoning"
     assert wires[1]["messages"][3]["tool_call_id"] == "wire-1"
     assert "Expecting value" in wires[1]["messages"][3]["content"]

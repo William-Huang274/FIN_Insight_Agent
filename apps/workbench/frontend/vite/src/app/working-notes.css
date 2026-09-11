@@ -22,7 +22,9 @@
 .fs-human-editor button:disabled { opacity: .5; cursor: default; }
 .fs-human-confirm { display: flex; gap: 10px; align-items: flex-start; line-height: 1.6; }
 .fs-human-confirm input[type="checkbox"] { flex: 0 0 18px; width: 18px; height: 18px; padding: 0; margin: 4px 0 0; }
-.fs-human-history { flex-basis: 100%; white-space: normal; }
+.fs-human-history { flex-basis: 100%; white-space: normal; font-size: 15px; line-height: 1.75; color: var(--rs-text, #263142); }
+.rs-heading .fs-human-history p { font-size: inherit; color: inherit; line-height: inherit; }
+.rs-heading .fs-human-history h3 { font-size: 17px; line-height: 1.6; }
 .fs-human-history section { padding: 16px; background: var(--rs-bg, #fff); border-radius: 14px; border: 1px solid #dce1ed; }
 .rs-upload-label input[type="file"] { font: inherit; padding: 12px; border: 1px dashed #cbd2ea; border-radius: 12px; background: #f8f9ff; }
 .rs-upload-label input[type="file"]::file-selector-button { font: inherit; padding: 10px 16px; margin-right: 14px; border: 1px solid #d9def0; border-radius: 9px; color: #4557c6; background: #eef0fc; cursor: pointer; }

@@ -96,7 +96,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
         def lead(payload):
             turns.append(payload)
             assert payload["research_question"] == request["question"]
-            if len(turns) == 1:
+            if len(turns) == 1 and not seeds:
                 assert len(payload["workpapers"]) == len(seeds)
                 return _call(payload, "DelegateResearchTasksAction", tasks=delegated)
             if full_profile and len(turns) == 2:
@@ -125,6 +125,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
         graph = build_dell_lead_research_graph(expected_input=SpecialistAgenticInput.model_validate_json(json.dumps(_input())),
             research_question=request["question"], branch_catalog=catalog, allowed_branch_ids=branches, seed_workpapers=seeds,
             unfinished_only=bool(seeds),
+            recovery_tasks=request.get("unfinished_tasks", []),
             max_tasks=profile["max_tasks"], max_parallel_tasks=profile["max_parallel_tasks"],
             max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], model_turn=lead, run_child=worker).compile()
         result = await graph.ainvoke(_input(), config)

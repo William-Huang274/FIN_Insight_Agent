@@ -9,8 +9,9 @@ def checkpoint_papers(state):
     papers += [(row.get('agent_state') or {}, '未完成的候选底稿') for row in values.get('research_failed_workpapers', [])]
     result = []
     for paper, status in papers:
-        submission = paper.get('final_submission') or (paper.get('last_submission_attempt') or {}).get('arguments') or {}
-        if not isinstance(submission, dict) or not submission.get('narrative_markdown'):
+        attempt = paper.get('last_submission_attempt') or {}
+        submission = paper.get('final_submission') or attempt.get('arguments') or attempt.get('readable_candidate') or {}
+        if not isinstance(submission, dict) or not isinstance(submission.get('narrative_markdown'), str) or not submission['narrative_markdown']:
             continue
         body = submission['narrative_markdown']
         for field, label in [('claims','判断与依据'), ('counterevidence','反证'), ('what_would_change','改变判断的条件'), ('open_gaps','待核查事项')]:

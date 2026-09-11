@@ -601,8 +601,8 @@ export function ResearchSession() {
                   <button className="rs-task-toggle" aria-controls="task-details-panel" aria-expanded={taskDetails} onClick={() => setTaskDetails(v => !v)}>任务说明与资料 <ChevronRight size={13} style={{transform: taskDetails ? "rotate(90deg)" : undefined}} /></button>
                   <WorkingNotes key={id} endpoint={`/api/v1/research-sessions/${id}/working-notes`}/>
                   <UserContextMenu key={`context:${id}`} endpoint={`/api/v1/research-sessions/${id}/user-context`}/>
-                  <ManualReview key={`manual:${id}`} session={session} onSaved={async()=>{setSession(await sessionsApi.state(id));await refresh();}}/>
                 </p>
+                <ManualReview key={`manual:${id}`} session={session} onSaved={async()=>{setSession(await sessionsApi.state(id));await refresh();}}/>
               </div>
               <span
                 className={`rs-status ${busy ? "running" : session.phase === "needs_revision" ? "warning" : ""}`}

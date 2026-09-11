@@ -17,7 +17,7 @@ from urllib.parse import urlsplit, unquote, quote
 from uuid import UUID
 
 import httpx
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse, Response
 from starlette.concurrency import run_in_threadpool
 from langgraph_sdk.client import LangGraphClient
@@ -359,7 +359,18 @@ def report_snapshot(state):
 
 
 def build_report_sessions_router(service):
-    router = APIRouter()
+    def archived(thread):
+        return (getattr(service, 'artifacts', object()) is None
+                and thread.get('metadata', {}).get('graph_id') == GRAPH)
+
+    async def protect_archive(request: Request):
+        tid = request.path_params.get('thread_id')
+        if (tid and getattr(service, 'artifacts', object()) is None
+                and request.method not in {'GET', 'HEAD', 'OPTIONS'}):
+            if archived(await service.owned_thread(tid)):
+                raise HTTPException(409, '这是旧版只读研究档案；请新建研究继续，原始报告和运行记录仍可查看。')
+
+    router = APIRouter(dependencies=[Depends(protect_archive)])
 
     def browser_write(request):
         # A cross-site form/opaque fetch must not be able to start paid work.
@@ -640,6 +651,10 @@ def build_report_sessions_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         runs = await service.all_runs(thread_id)
         projection = public_state(state)
+        if archived(thread):
+            projection.update(can_respond=False, can_accept=False, can_manual_complete=False,
+                              can_continue_remaining=False,
+                              archive_notice='旧版只读研究档案：报告、来源和原始运行记录保留。继续工作请新建研究；旧执行器不会重新调用模型。')
         if not runs and thread.get("metadata", {}).get("pending_question"):
             projection.update(question=thread["metadata"]["pending_question"], phase="draft", case_profile="dell_growth_quality")
         public_runs = []
@@ -670,7 +685,7 @@ def build_report_sessions_router(service):
             missing_audit_runs=sum(r["usage"] is None and r.get("model_calls_requested") != 0 for r in public_runs),
             partial_audit=any(u["partial_audit"] for u in usages),
             notice="本任务全部原生运行的已知用量；并行模型耗时为求和，不是墙钟时间。外部导入修订费用另见版本原因，缺失用量不计零。")
-        if thread.get("status") == "error":
+        if thread.get("status") == "error" and not archived(thread):
             projection["can_continue_remaining"] = can_restart_remaining_node(thread, state, runs[0] if runs else None,
                 public_runs[0]["usage"] if public_runs else None)
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),

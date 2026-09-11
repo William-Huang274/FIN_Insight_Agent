@@ -594,6 +594,7 @@ export function ResearchSession() {
           <>
             <section className="rs-heading">
               <div>
+                {session.archive_notice && <p role="status">{session.archive_notice}</p>}
                 <h1>{session.title || sessions.find(s => s.thread_id === id)?.title || "研究报告"}</h1>
                 <p>
                   信息截止 {session.research_as_of?.slice(0, 10) || "未提供"} <span>·</span>{" "}

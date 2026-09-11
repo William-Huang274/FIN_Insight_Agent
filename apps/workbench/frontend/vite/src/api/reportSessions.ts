@@ -78,6 +78,7 @@ export type Finding = {
 export type Session = {
   studio_assistant_id?: string;
   can_manual_complete?: boolean;
+  archive_notice?: string;
   human_edit_count?: number;
   human_edits?: {number:number;owner:string;recorded_at:string;reason:string;base_version:number;report_before:string;report_after:string;charts?:{chart_index:number;title:string;before:string;after:string}[];papers:{paper_id:string;actor:string;title:string;before:string;after:string}[]}[];
   execution?: ExecutionOptions;

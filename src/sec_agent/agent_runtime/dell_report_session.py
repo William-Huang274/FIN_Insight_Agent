@@ -325,6 +325,14 @@ def _schema_graph():
 
 
 @asynccontextmanager
+async def archived_report_session_graph(config: RunnableConfig, runtime: ServerRuntime):
+    """Read historical native checkpoints without re-enabling the retired runner."""
+    if runtime.execution_runtime is not None:
+        raise RuntimeError("archived_report_is_read_only_start_a_new_research_session")
+    yield _schema_graph()
+
+
+@asynccontextmanager
 async def dell_report_session_graph(config: RunnableConfig, runtime: ServerRuntime):
     if runtime.execution_runtime is None:
         yield _schema_graph()

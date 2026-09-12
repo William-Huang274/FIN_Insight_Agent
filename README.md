@@ -8,9 +8,11 @@
 
 [English](README.en.md) · [快速开始](docs/public/quickstart.zh-CN.md) · [产品导览](docs/public/demo-and-engineering.zh-CN.md) · [架构](docs/public/architecture.zh-CN.md) · [更新记录](CHANGELOG.md)
 
-**FIN 0.1.3 · 本地研究工作台 · 开发预览**
+**FIN 0.1.3 · 本地研究工作台 · 迭代已收口｜FIN 0.1.4 规划中**
 
 </div>
+
+**2026-09-12：** [0.1.3正式收口](docs/product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4自主研究规划](docs/product/fin_0_1_4_research_plan.zh-CN.md)。本地Internal Alpha收口，不代表无人审阅金融正确性或生产发布；新版本方法库与自主收敛尚未实施。
 
 FinSight 将财务 SQL、原文检索、来源绑定计算和多 Agent 审查放进一个研究工作区。你可以提出问题，跟踪研究过程，从报告判断回到依据，再针对具体节点提出修订。它面向需要核查研究结论的分析师，也为开发者提供可检查的状态、调用记录和测试入口。
 
@@ -96,7 +98,7 @@ flowchart LR
 
 ## 当前验证范围
 
-FIN 0.1.3 是当前产品迭代，Dell 报告 **v5** 是待人工审阅的内容版本，两者分开编号。已有 Dell 九研究面实案、NVIDIA/Micron 有界追问、真实上传问答和前端局部修订证据；这不代表任意公司完整研究均已通过。研究图与配置接口不按 Dell 文本硬编码，数据覆盖资格仍需逐项验证。
+FIN 0.1.3 已结束本地工作台迭代，以下保留各项资格范围；Dell 报告 **v5** 是待人工审阅的内容版本，两者分开编号。已有 Dell 九研究面实案、NVIDIA/Micron 有界追问、真实上传问答和前端局部修订证据；这不代表任意公司完整研究均已通过。研究图与配置接口不按 Dell 文本硬编码，数据覆盖资格仍需逐项验证。
 
 模型审查可能漏错，已知引用和财务措辞意见保留。自动摘要默认关闭、资格 HOLD；没有宣称同等研究质量下的普遍 token 节省比例。当前服务面向可信本地使用者，尚未提供公网多租户认证与隔离。详细样本、成本和局限见[证据说明](docs/public/sharing-scope.md)。
 

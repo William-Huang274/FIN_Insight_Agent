@@ -8,9 +8,11 @@ Multi-agent research · Traceable evidence · Human revision · Editable researc
 
 [中文](README.md) · [Quickstart](docs/public/quickstart.en.md) · [Product tour](docs/public/demo-and-engineering.en.md) · [Architecture](docs/public/architecture.en.md) · [Changelog](CHANGELOG.md)
 
-**FIN 0.1.3 · Local research workspace · Development preview**
+**FIN 0.1.3 · Local research workspace · Iteration closed | FIN 0.1.4 planned**
 
 </div>
+
+**September 12, 2026:** [0.1.3 closeout](docs/product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4 research plan](docs/product/fin_0_1_4_research_plan.zh-CN.md) (Chinese). Local Internal Alpha closeout, not unattended financial correctness or production certification. The next-version method library and autonomous convergence remain planned.
 
 FinSight brings financial SQL, source retrieval, source-bound calculations and multi-agent review into one workspace. Ask a question, follow the research, trace a report judgment to its evidence, and request a revision to a specific finding. It serves analysts who need to inspect conclusions and developers who want observable state, calls and reproducible checks.
 

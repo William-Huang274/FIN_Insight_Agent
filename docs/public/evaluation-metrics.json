@@ -224,5 +224,30 @@
     "browser_public_receipt": "final-ui-a2.xml",
     "python_receipt": "final-integrated-a2.xml"
   },
-  "engineering_commit": "cafa9d4c"
+  "engineering_commit": "cafa9d4c",
+  "closeout_20260912": {
+    "iteration_status": "closed_local_internal_alpha",
+    "next_version": "0.1.4",
+    "next_version_status": "planned_not_implemented",
+    "production_certified": false,
+    "latest_library": {
+      "documents": 70,
+      "unique_urls": 66,
+      "source_nodes": 9253,
+      "vector_chunks": 12994,
+      "financial_observations": 2274,
+      "note": "not the snapshot used by original retrieval metrics"
+    },
+    "model_comparison": {
+      "calls": 16,
+      "known_tokens": 299954,
+      "questions": 2,
+      "conditions": 2,
+      "profiles": 4,
+      "samples_per_cell": 1,
+      "blind": false,
+      "general_accuracy_claim": false
+    },
+    "evidence": "docs/worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md"
+  }
 }

@@ -1,45 +1,21 @@
-# FIN 0.1.3 文档地图
+# FinSight 文档地图
 
-当前文档按“产品目标、当前技术事实、研究质量、历史证据”分层，避免用数百份过程日志冒充项目结构。
+2026-09-12：FIN0.1.3已收口，FIN0.1.4规划中。
 
-## 当前多 Agent 产品入口（2026-09-08）
+## 产品与版本
 
-- [架构与自研边界](public/architecture.zh-CN.md) / [Architecture](public/architecture.en.md)
-- [部署与测试](public/quickstart.zh-CN.md) / [Quickstart](public/quickstart.en.md)
-- [产品导览](public/demo-and-engineering.zh-CN.md) / [Product tour](public/demo-and-engineering.en.md)
-- [对外展示范围 / Sharing scope](public/sharing-scope.md)
-- 当前执行权威为[纵切详设§0](architecture/research/FIN_0_1_3_DELL_AGENTIC_MULTI_AGENT_VERTICAL_DETAILED_TECHNICAL_DESIGN_20260903.zh-CN.md)与[当前上下文](project_os/current_context_pack.zh-CN.md)，不是下列历史基线文档的旧状态。S3/190及后续日志保留运行与失败证据；前端与配置编辑已实现，当前报告v5待审阅，不等于正式产品发布。
+- [0.1.3收口](product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4规划](product/fin_0_1_4_research_plan.zh-CN.md)
+- [公开导览](public/demo-and-engineering.zh-CN.md) · [技术实测](public/technical-evaluation.zh-CN.md) · [简历证据](public/resume-evidence.md)
+- [产品历史与愿景](product/README.md)
 
-## 每次恢复先读
+## 工程与接续
 
-1. [当前上下文包](project_os/current_context_pack.zh-CN.md)
-2. [高级助手协作规范](project_os/senior_assistant_collaboration_policy.zh-CN.md)
-3. [FIN 0.1.3 当前计划](product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)
-4. [当前代码图](architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md)
+- [当前上下文](project_os/current_context_pack.zh-CN.md) · [协作规范](project_os/senior_assistant_collaboration_policy.zh-CN.md)
+- [架构](public/architecture.zh-CN.md) · [安装和公开检查](public/quickstart.zh-CN.md)
+- [目录与命名](architecture/repository/naming_and_entrypoints.zh-CN.md) · [资格脚本](../scripts/qualification/README.zh-CN.md)
+- [212本次收口](worklog/fin_0_1_3_s3/212_version_closeout_and_repository_cleanup.md) · [211研究与模型对照](worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md)
+- [工作记录索引](worklog/README.md)
 
-## 产品
+## 历史与证据
 
-- [产品 PRD](product/PRD_20260628_b2b_financial_research_workbench.zh-CN.md)：完整愿景和用户价值。
-- [FIN 0.1.3 当前计划](product/FIN_0_1_3_CURRENT_BASELINE_AND_S0_TO_S5_CLOSEOUT_PLAN_20260812.zh-CN.md)：唯一当前范围、S 阶段归属和下一步。
-- [PRD 功能吸收与版本分配矩阵](product/FIN_PRD_FULL_ABSORPTION_AND_RELEASE_ALLOCATION_MATRIX_20260719.zh-CN.md)：长期功能归属。
-
-## 当前工程
-
-- [当前代码图](architecture/repository/FIN_0_1_3_CURRENT_BASELINE_CODE_MAP_20260811.zh-CN.md)
-- [严格主线验收程序](architecture/repository/FIN_0_1_3_STRICT_MAINLINE_REBASELINE_ACCEPTANCE_AND_MIGRATION_PROGRAM_20260811.zh-CN.md)
-- 机器活动图：`../configs/repository/fin_0_1_3_active_baseline_manifest_v1_0.json`
-- 严格验收门：`../configs/repository/fin_0_1_3_strict_mainline_rebaseline_acceptance_v1_0.json`
-- 历史重定向：`../archive/versions/FIN_0_1_3_REBASELINE_REDIRECT_INDEX.jsonl`
-
-## 研究质量与案例证据
-
-- [研究内容质量 Rubric](eval/FIN_0_1_3_RESEARCH_CONTENT_OUTPUT_QUALITY_RUBRIC_20260806.zh-CN.md)
-- [三案例研究协议](eval/FIN_0_1_3_CODEX_VS_DEEPSEEK_THREE_CASE_RESEARCH_PROTOCOL_20260806.zh-CN.md)
-- `research/fin_0_1_3_gold_candidates/`：DELL、MU、NVDA 参考研究。
-- `research/fin_0_1_3_retrieval_autopsy/`：三案例真实检索尸检与跨案根因。
-
-## Project OS
-
-`project_os/` 的规范路径只保存当前短投影和长期方法注册表。完整旧上下文、能力台账和 root-cause 台账已保存在版本归档，避免每次任务恢复都重新加载数 MB 历史。
-
-历史设计、attempt、运行报告和旧工作日志不在当前文档入口；请通过 archive 重定向索引查找。
+原设计、日期文档、配置合同和失败attempt继续保留；它们的“当前”指历史时点，不覆盖上面的版本决定。大型原始资料、索引、私有模型响应与本地产物不进入Git；公开指标保留每项样本和范围。Project OS提供人类接续记忆，不充当第二套runtime。

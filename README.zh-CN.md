@@ -1,5 +1,7 @@
 # FinSight Agent · 中文文档
 
+[0.1.3正式收口](docs/product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4规划](docs/product/fin_0_1_4_research_plan.zh-CN.md)。新版本目前没有已实施能力。
+
 [完整中文首页](README.md) · [English](README.en.md)
 
 FinSight 是支持多 Agent 研究、证据追溯、人工修订和方法编辑的本地金融研究工作台。

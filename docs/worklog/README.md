@@ -1,5 +1,7 @@
 # FIN Insight 当前工作记录
 
+当前版本入口：[212正式收口与仓库整理](fin_0_1_3_s3/212_version_closeout_and_repository_cleanup.md)；[0.1.4规划](../product/fin_0_1_4_research_plan.zh-CN.md)。下方日志和旧总清单保留历史。
+
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 
 - 当前总清单：`00_current_master_checklist.md`

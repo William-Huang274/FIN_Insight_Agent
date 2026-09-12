@@ -1,5 +1,7 @@
 # FinSight Agent Engineering and Evaluation Report
 
+2026-09-12 status: FIN0.1.3 iteration closed as a local Internal Alpha; FIN0.1.4 is planned only. [Closeout / 收口](../product/fin_0_1_3_closeout.zh-CN.md) · [Plan / 规划](../product/fin_0_1_4_research_plan.zh-CN.md). The September11 metrics below keep their original samples; latest data-library size is not a rerun of the old retrieval benchmark.
+
 2026-09-11 · FIN 0.1.3 · Local product qualification
 
 [中文](technical-evaluation.zh-CN.md) · [Reproduction guide](quickstart.en.md) · [Metrics JSON](evaluation-metrics.json) · [Résumé claims and evidence](resume-evidence.md)

@@ -29,9 +29,10 @@ def test_conditions_change_only_draft_and_profiles_share_messages(tmp_path, monk
             assert probe.call_payload(profile, a)["messages"] == a
 
 
-@pytest.mark.parametrize("known", [True, False])
-def test_stream_usage_required_and_private_reasoning_not_in_answer(tmp_path, monkeypatch, known):
+@pytest.mark.parametrize("outcome", ["known", "missing_usage", "transport_failure"])
+def test_stream_usage_required_and_private_reasoning_not_in_answer(tmp_path, monkeypatch, outcome):
     monkeypatch.setenv("QWEN_API_KEY", "fake-test-key")
+    closed = []
     class Client:
         def __init__(self, **kwargs):
             assert kwargs["max_retries"] == 0
@@ -45,15 +46,26 @@ def test_stream_usage_required_and_private_reasoning_not_in_answer(tmp_path, mon
                 yield ChatCompletionChunk.model_validate({"id": "response", "created": 1, "model": "qwen3.8-max",
                     "object": "chat.completion.chunk", "choices": [{"index": 0, "finish_reason": "stop",
                     "delta": {"content": "Public answer", "reasoning_content": "Private reasoning"}}],
-                    "usage": {"prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30} if known else None})
-            return chunks()
+                    "usage": {"prompt_tokens": 10, "completion_tokens": 20, "total_tokens": 30} if outcome == "known" else None})
+                if outcome == "transport_failure":
+                    raise OSError("simulated interrupted stream")
+            class Stream:
+                async def __aenter__(self): return self
+                async def __aexit__(self, *args): closed.append(True)
+                def __aiter__(self): return chunks()
+            return Stream()
     monkeypatch.setattr(probe, "AsyncOpenAI", Client)
     output = tmp_path / "run"
     call = probe.once("qwen-max", "mu-source-only", [{"role": "user", "content": "question"}], output)
-    if known:
+    if outcome == "known":
         asyncio.run(call)
     else:
         with pytest.raises(RuntimeError, match="no_automatic_retry"):
             asyncio.run(call)
         assert (output / "failure.json").is_file()
-    assert (output / "answer.md").read_text(encoding="utf-8") == "Public answer"
+    assert closed == [True]
+    if outcome == "transport_failure":
+        assert not (output / "result.json").exists()
+        assert (output / "response.private.jsonl").is_file()
+    else:
+        assert (output / "answer.md").read_text(encoding="utf-8") == "Public answer"

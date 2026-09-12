@@ -93,16 +93,17 @@ async def once(profile_id, task, messages, output):
         async with AsyncOpenAI(api_key=key, base_url=profile["base_url"], max_retries=0, timeout=600) as client:
             async with asyncio.timeout(600):
                 stream = await client.chat.completions.create(**payload)
-                with (output / "response.private.jsonl").open("w", encoding="utf-8") as raw:
-                    async for chunk in stream:
-                        raw.write(json.dumps(chunk.model_dump(mode="json"), ensure_ascii=False) + "\n")
-                        raw.flush()
-                        model, request_id = chunk.model or model, chunk.id or request_id
-                        if chunk.usage:
-                            usage = chunk.usage.model_dump(mode="json")
-                        for choice in chunk.choices:
-                            content += choice.delta.content or ""
-                            finish = choice.finish_reason or finish
+                async with stream:
+                    with (output / "response.private.jsonl").open("w", encoding="utf-8") as raw:
+                        async for chunk in stream:
+                            raw.write(json.dumps(chunk.model_dump(mode="json"), ensure_ascii=False) + "\n")
+                            raw.flush()
+                            model, request_id = chunk.model or model, chunk.id or request_id
+                            if chunk.usage:
+                                usage = chunk.usage.model_dump(mode="json")
+                            for choice in chunk.choices:
+                                content += choice.delta.content or ""
+                                finish = choice.finish_reason or finish
         (output / "answer.md").write_text(content, encoding="utf-8")
         result = {"profile": profile_id, "task": task, "actual_model": model, "response_id": request_id,
             "elapsed_seconds": perf_counter() - start, "finish_reason": finish, "usage": usage,

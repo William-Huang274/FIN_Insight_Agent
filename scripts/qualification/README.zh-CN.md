@@ -1,4 +1,12 @@
-# 成熟控制面 qualification 最小复现说明
+# 隔离资格脚本与复现入口
+
+## 当前目录入口（2026-09-12）
+
+- [AI内存研究/上下文/模型比较](ai_memory/README.md)：四个标准模块，旧路径兼容。
+- `research_delivery_smoke.py`及`scripts/dev/verify_public_checkout.py`：零模型公开检查。
+- 其他retrieval/conversation/identity/sandbox等脚本按任务独立资格；不是所有脚本都使用下方旧控制面环境。
+
+以下为2026-08-31控制面实验历史说明，仅对该实验适用。
 
 本目录只用于 2026-08-31 成熟栈资格实验，不是生产运行入口，也不是新的 FIN 控制协议。
 

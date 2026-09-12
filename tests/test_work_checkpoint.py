@@ -3,6 +3,41 @@ from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, Tool
 from sec_agent.agent_runtime.work_checkpoint import WorkCheckpointMiddleware, CHECKPOINT_NAME
 
 
+def test_explicit_phase_saves_model_note_and_reads_exact_version_after_revision(tmp_path):
+    import asyncio
+    from sec_agent.agent_runtime.work_checkpoint import consolidate_research_phase, read_phase_checkpoint
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    memory = WorkingMemory(tmp_path / "notes.sqlite", owner="test", workspace="case", actor="test")
+    records = [{"source_id": "S1", "text": "Revenue rose sequentially. Draft YoY is unverified."}]
+    original = deepcopy(records)
+    body = "已读S1，期间环比。待查现金流；下一步读S2。" * 400
+    seen = []
+    async def invoke(messages):
+        seen.extend(messages)
+        return AIMessage(content=body)
+    receipt = asyncio.run(consolidate_research_phase(invoke=invoke, memory=memory,
+        title="phase", question="Check period and cash", records=records))
+    assert records == original
+    assert "S1" in seen[-1].content
+    assert receipt["authority"] == "model_working_note_not_verified_evidence"
+    memory.save("phase", "Later corrected version", base_version=1)
+    assert read_phase_checkpoint(memory, receipt) == body
+
+
+def test_explicit_phase_rejects_truncated_note_without_saving(tmp_path):
+    import asyncio
+    import pytest
+    from sec_agent.agent_runtime.work_checkpoint import consolidate_research_phase
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    memory = WorkingMemory(tmp_path / "notes.sqlite", owner="test", workspace="case", actor="test")
+    async def invoke(messages):
+        return AIMessage(content="partial", response_metadata={"finish_reason": "length"})
+    with pytest.raises(ValueError, match="truncated"):
+        asyncio.run(consolidate_research_phase(invoke=invoke, memory=memory,
+            title="phase", question="question", records=[]))
+    assert not memory.search()["items"]
+
+
 def test_notice_is_append_only_and_does_not_repeat_without_new_work():
     original = [HumanMessage(content="Keep user correction"), AIMessage(content="", tool_calls=[
         {"id": "r", "name": "read_research_source", "args": {}, "type": "tool_call"}]),

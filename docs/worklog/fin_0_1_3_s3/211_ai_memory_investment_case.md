@@ -174,3 +174,25 @@ SK工具修复后两臂均10调用/0同参重读，baseline149999tokens/233.1秒
 产品增量：新增可阅读的案例收尾评估和7份保留原样的模型候选；原七页分析师审阅报告仍是正式交付，原生Writer未完成历史不改。工程增量：可复用资格脚本、实验性工作索引/提醒、明确工具错误反馈和89pass/1skip回归。研究证据：当前两版上下文候选不具备推广证据，具体统计及逐项财务评价见output/research/ai_memory_20260911/context_closeout.md和context_closeout_summary.json。文档增量：本记录和Project OS状态。剩余：金融结论一致性、阶段笔记真实生成/消费、关键原文保留仍未通过；本case作为有边界的dogfood+负面资格结果收尾，FIN0.1.3/S3及Owner产品验收权限不变。
 
 工程已提交8d24d893；代码和文档随后一并推送既有codex/ai-memory-investment-case分支。原始/private audit与SQLite仅存D:/temp/fin211和既有资格盘，Git不收录。
+
+
+### 2026-09-12 Owner授权下一轮：最终原文保留的单调用对照
+
+Owner同意上一条建议。先用已知完成的MU a4和修复工具SK baseline最后请求，各比较原keep2投影与原位置恢复成功读取原文；MU限定S079/S080的所有副本，SK限定read_source_document operation=read且source_bound_passage，搜索预览不提升。四次单判断，无新搜索、不注入人工答案、不重发未知旧调用；如有可解释改善，最多一次四调用倒序重复。固定deepseek-v4-pro/low/thinking enabled/temperature0，12k输出、450k字符、360秒、0重试，任务特定TokenBudgetBasis在每次调用前保存。非盲开发对照，无统计推广或缓存性能声明。原system/user/历史推理和工具调用保持；只恢复被清除的ToolMessage。
+
+验收先看现金流分类、期间、韩元量级、已读自述、范围和必要条件，不按tokens判成功。未知/截断立即停止且不重试。若保留原文有改善，再复用LangGraph/WorkingMemory做显式阶段整理→读取笔记及原文→审阅修订的小闭环，原文和笔记权威分开；不新增记忆数据库/工作流引擎、不切生产。研究阶段触发优先、阈值只兜底。本包延续211/S3，不恢复整份报告或扩展公司来源。工程准备：scripts/qualification/ai_memory_final_evidence_probe.py及差异不变性测试；证据D:/temp/fin211/20260912_final_evidence_*。费用等执行结果后补，不以旧价声称账单。
+
+执行中证据：r1四调用均已知；实际SDK payload仅MU消息11/12/23/33/35变化，其他字段一致，restored确有financing与Sequentially原句。现金分类改善，但restored仍误写同比且把其他历史投影省略说成读取失败。SK restored r1输出DSML工具标记而非结论，未执行、属于交付失败；原始provider success只指响应返回，不作财务接受。按预注册仅做一次倒序重复，非追绿。显式阶段整理已实现为opt-in函数，复用WorkingMemory/StateGraph；阶段整理→暂停→精确版本回读→审查修订原生图本地测试通过，总30tests。工程98c4a7da；生产未变。
+
+
+### 2026-09-12 授权有界后续已结束：原文保留局部有效，显式整理质量未通过
+
+八次单判断（四条件+倒序一次重复）145102tokens；三节点显式整理/审阅/修订97233tokens。总11请求11已知242335tokens（input188330/output54005/cachehit73472），官方周六非高峰估算USD0.184353，非账单对账。0未知/length/新检索/嵌入/整题重跑；生成式阶段笔记1次实际保存消费，不与原来0摘要混淆。供应商调用耗时合计14.26分钟，非整个工程耗时。已停止付费，无自动追加。
+
+MU恢复原文两次都正确识别融资分类，但两次仍误用同比，实际原句在provider输入；控制r1错误现金/期间，r2仅DSML标记。SK控制两次虚称未读附注且r2十倍单位错；恢复r1仅DSML标记，r2核心表/主桥接和H1正确但净利息/净汇兑两处亿单位仍十倍错。2/8无正文不删除、不执行伪工具、不混称provider success为交付通过。非盲小样本，不作整体成功率/缓存性能推广。
+
+显式阶段整理使用原生StateGraph/AsyncSqliteSaver和WorkingMemory，19公开工具记录/13原件数值记录。模型笔记真实保存note da90d048378b33993491536f87203797 v1，图在consolidate后暂停、下次调用从review接续，review/revise实际payload精确消费同一笔记和13原件。笔记却从$422M合同负债列其他非流动负债直接推断进入OCF/FCF，并编造管理层融资分类只针对未来款项；10-Q确实说合同负债主要由SCA定金组成，错误是未经证明的现金流桥接，不是否认关联。审阅和修订继续沿用该错误；期间退为待核而未读对Sequentially；估值必要性仍未真正闭合。语义失败不是笔记未保存/消费或末轮原文缺失，仍不能单因果归咎笔记（组合流程改变提示/组织/阶段数）。
+
+决定HOLD：工程98c4a7da已提交，默认builder不接显式节点、生产keep2/disabled摘要及镜像未改；现有finance方法/skill未再作未验证推广。30相关tests及AST/diff/凭据模式扫描通过。工程增量为可选阶段函数和两资格脚本，产品无新增验收能力；研究增量为可区分检索可达、最终原文可见、已写已读笔记与财务推理的负面证据。下次应先资格直接原文判断与对错误中间结论的纠偏能力，再决定方法/模型档位，不能继续只加摘要。
+
+完整评阅和费用：output/research/ai_memory_20260911/context_followup.md、context_followup/summary.json；11份公共候选及结果保留在同目录（有已知错误，不作报告终稿）。原始/private请求与SQLite在D:/temp/fin211/20260912_final_evidence_paid_r1,r2、20260912_phase_checkpoint_paid_r1；原档SHA不变、两次对照精确dispatch代码摘要匹配。FIN0.1.3/S3及原Writer未完成历史保持。

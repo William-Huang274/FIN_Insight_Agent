@@ -1115,8 +1115,6 @@ def test_schema_sources_are_digest_pinned_but_repository_install_is_retired() ->
     assert connection.transaction_commits == 0
 
 
-
-
 def test_repository_requires_pool_checkout_and_rejects_active_connection() -> None:
     bare_connection = _ScriptedConnection()
     with pytest.raises(

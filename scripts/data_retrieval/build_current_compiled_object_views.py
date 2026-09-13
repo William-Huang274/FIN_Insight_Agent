@@ -132,37 +132,34 @@ def main() -> int:
     )
     parser.add_argument(
         "--kernel",
-        default="configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
+        default="configs/retrieval/financial_research_kernel.json",
     )
     parser.add_argument(
         "--policy",
-        default="configs/retrieval/fin_ia_0_1_3_s1c_query_object_fact_route_policy_v1_2.json",
+        default="configs/retrieval/query_fact_routes.json",
     )
     parser.add_argument(
         "--documents",
         default=(
-            "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/"
-            "v2/documents.jsonl"
+            "data/financial-objects/documents.jsonl"
         ),
     )
     parser.add_argument(
         "--records",
         default=(
-            "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/"
-            "v2/records.jsonl"
+            "data/financial-objects/records.jsonl"
         ),
     )
     parser.add_argument(
         "--output-dir",
         default=(
-            "data/workbench_private/fin_0_1_3_s1c_compiled_financial_object_views/v3"
+            "data/compiled-objects"
         ),
     )
     parser.add_argument(
         "--result-output",
         default=(
-            "configs/retrieval/"
-            "fin_ia_0_1_3_s1c_query_object_fact_route_zero_call_result_v1_2.json"
+            "data/compiled-objects/result.json"
         ),
     )
     parser.add_argument(
@@ -309,9 +306,9 @@ def main() -> int:
         "diagnostic_examples": diagnostic_examples,
         "sample_objects": sample_objects,
         "business_findings_zh": [
-            "旧 child 重叠会重复生成同一 claim、表格行和父级上下文；当前编译器按父文档和对象内容去重，同时保留全部 source-record lineage。",
+            "编译器按父文档和对象内容去重，同时保留全部来源记录的关联信息。",
             "高管姓名、年龄和职位等数值型非财务表不会再冒充 metric rows；候选必须同时满足期间／单位表头或金融行标签门禁。",
-            "空 TABLE_START/TABLE_END 不再吞掉其后的真实叙事；本次恢复了 TSMC 领先制程需求与 2nm ramp 的来源绑定 claim。",
+            "空表格标记后的叙述文本独立解析，来源绑定和表格解析分别校验。",
             "同一表内重复的 Revenue／Gross margin 行会保留 Cloud Memory、Core Data Center 等行组上下文，避免检索后串错业务单元。",
             "财报表格行仅用于召回和上下文展示，不能成为 NumericFact；精确数值必须通过 S2 typed fact executor 和公司财务事实库。",
             "公司财务事实库由独立 S2 Runtime 提供；对象候选只保留上下文，不能替代 NumericFact、期间、单位或公式血缘。",

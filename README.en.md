@@ -60,7 +60,7 @@ The research map represents report content and citation relationships. Artifact 
 
 This screenshot shows saved activity from a NVIDIA/Micron fiscal-period comparison. The lead chose one research direction, followed by independent review. Viewing history makes no new model calls. Public progress and tool events append during execution; guidance is read at later phase handoffs. Private reasoning transcripts are not displayed.
 
-[Interaction and mode test questions](eval_sets/workbench_execution_modes.json) cover short followups, selected experts, new-company single-agent research, targeted revisions and free delegation. Usage is recorded by task and call; failures and unknown costs are not reported as zero. Multi-layer review adds model calls; analysts still need to verify financial judgments against the original sources.
+Interaction and mode test questions cover short followups, selected experts, new-company single-agent research, targeted revisions and free delegation. Usage is recorded by task and call; failures and unknown costs are not reported as zero. Multi-layer review adds model calls; analysts still need to verify financial judgments against the original sources.
 
 ### Review, revise and deliver the same report
 

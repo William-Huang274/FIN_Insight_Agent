@@ -566,8 +566,6 @@ def test_s2_policy_bridge_rejects_research_as_of_regression(tmp_path: Path) -> N
         )
 
 
-
-
 def test_s2_policy_bridge_rejects_as_of_before_snapshot_fact_accepted_at(
     tmp_path: Path,
 ) -> None:

@@ -34,7 +34,8 @@ class FullSourceFixturePorts(_ToolPorts):
                 row.update(result_state="reviewed_evidence", evidence_id=row["ref_id"], writer_citable=True,
                            numeric_fact_authority=False, source_url="https://example.com/fixture")
             if "fact_id" in row:
-                row.update(result_state="numeric_fact", numeric_fact_authority=True, ticker="DELL")
+                row.update(result_state="numeric_fact", numeric_fact_authority=True,
+                           numeric_fact_id=row["fact_id"], ticker="DELL")
         return super()._observation(request, **{**kwargs, "content": rows})
 
 
@@ -75,7 +76,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
     models = {}
     synthesis_failed = False
     root = Path(__file__).resolve().parents[1]
-    case = json.loads((root / "configs/research/cases/dell_growth_quality.json").read_text(encoding="utf-8"))
+    case = json.loads((root / "configs/research/cases/growth_quality.json").read_text(encoding="utf-8"))
     profile = json.loads((root / "configs/research/runtime/research_session.json").read_text(encoding="utf-8"))
     catalog = case["branch_topics"] if full_profile else CATALOG
     branches = tuple(b["branch_id"] for b in catalog)

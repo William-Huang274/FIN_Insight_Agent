@@ -140,7 +140,7 @@ jobs:
             -H 'X-Fin-Product-Mode: current' \
             -H 'X-Fin-Case-Permissions: current_product:read' \
             http://127.0.0.1:8765/api/v1/research-cases \
-            | python -c 'import json,sys; value=json.load(sys.stdin); assert [row["case_key"] for row in value["items"]] == ["DELL","MU","NVDA"]; assert value["evidence_objects_ready"] is False'
+            | python -c 'import json,sys; value=json.load(sys.stdin); assert value["items"] == []; assert value["evidence_objects_ready"] is False'
           readiness_status="$(curl -sS -o /tmp/finsight-readiness.json -w '%{http_code}' http://127.0.0.1:8765/api/readiness)"
           test "$readiness_status" = "503"
           python -c 'import json; value=json.load(open("/tmp/finsight-readiness.json", encoding="utf-8")); assert value["status"] == "data_mount_required"'

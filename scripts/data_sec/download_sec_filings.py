@@ -64,7 +64,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--config",
-        default="configs/sec_tech_universe.yaml",
+        default="configs/sources/sec_universe.yaml",
         help="Universe YAML config.",
     )
     parser.add_argument(

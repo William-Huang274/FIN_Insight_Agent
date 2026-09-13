@@ -1,19 +1,23 @@
-# FIN_Insight_Agent collaboration rules
+# Contributing with an assistant
 
-These rules apply to every non-trivial task in this repository and survive chat compaction or task handoff.
+Read `README.md`, `docs/README.md` and the documentation for the component you change. Check the working tree first and preserve unrelated edits. Use an isolated worktree for concurrent tasks.
 
-1. Read `docs/project_os/current_context_pack.zh-CN.md` and `docs/project_os/senior_assistant_collaboration_policy.zh-CN.md` before planning or changing the project.
-2. Do not act as a silent executor. Continually check whether the accepted request, existing plan, stage ownership, cost, evidence, or technical direction is contradictory, impractical, over-engineered, or no longer supported by new evidence.
-3. When a material problem is found, tell the user promptly in plain language, explain the evidence and impact, and recommend a concrete change. Do not wait until closeout and do not hide disagreement behind implementation.
-4. User goals remain authoritative, but prior approval does not make a direction permanently correct. New evidence requires a fresh recommendation. Do not silently broaden scope or override the user; pause before materially changing product scope, release meaning, safety, cost, or an irreversible action.
-5. Keep failures in their owning stage. Preserve every failed run as immutable evidence, fix the root cause in the same stage, and use a new attempt ID for a justified rerun. A failed test or proof must not automatically create a new product version.
-6. Separate product version, S-stage, contract version, and execution attempt. Product version changes require a real product-scope or compatibility decision, or completion/termination of the full approved product iteration.
-7. Record material decisions, objections, changed assumptions, and user-approved corrections in durable source documents and Project OS; do not rely on chat memory.
-8. A research gap is a proved information-boundary state, not a synonym for an empty result. Before declaring a public-information gap, distinguish and receipt local data/object/index/SQL failures, reachable retrieval/ranking/tool/model-execution failures, and genuine non-disclosure or commercial/private-data boundaries.
-9. Every model node or paid-call authority must record a task-specific `TokenBudgetBasis` covering node purpose, input scale, required outputs, schema burden, materiality/quality risk, comparable-run evidence, reasoning profile, and stop/truncation behavior. Cost and latency are secondary constraints; never silently drop required research work merely to meet a cheaper or faster cap.
-10. Mature-stack-first is the default for generic infrastructure. Before creating a new workflow engine, state machine, queue, lock service, experiment tracker, lineage store, policy engine, parser platform, retrieval engine, provider transport, or observability system, inspect and qualify mature alternatives. Custom implementation requires written evidence that the mature options fail a FIN-specific requirement; “more control” or “the current plan already describes it” is not sufficient.
-11. Keep three responsibility layers separate: repository/engineering governance belongs in Git hosting, CI, review and supply-chain tools; execution, concurrency, persistence, lineage and telemetry belong in qualified runtime infrastructure; FIN code owns only financial-research authority, canonical domain contracts, thin adapters and product acceptance. Markdown plans and Project OS ledgers are durable human memory, not a second runtime control plane.
-12. Planning has a complexity budget. One bounded planning package must be followed by the smallest real, reversible evidence-producing slice. If two consecutive meaningful work packages produce only plans, reviews, schemas or governance artifacts and no executable qualification, code integration, product evidence or measured result, stop, report the lack of product progress, and simplify or adopt a mature component before continuing.
-13. Apply controls in proportion to risk. Destructive deletion, production cutover, paid/external calls, secret handling and irreversible publication need explicit safeguards; ordinary reads, local tests, documentation, status checks and reversible isolated pilots must not inherit deletion-grade ceremony.
-14. Every progress report and closeout must distinguish product increment, engineering increment, research/qualification evidence, documentation/governance work, and remaining blockers. Never describe documentation-only progress as implementation progress.
-15. Follow `docs/project_os/mature_stack_first_and_complexity_budget_policy.zh-CN.md` for Build/Adopt/Hold/Retire decisions, complexity stop lines, qualification slices and repository boundaries.
+- Keep product behavior, engineering validation and research-quality results distinct. Passing a synthetic test is not evidence that a financial conclusion is correct.
+- Prefer maintained infrastructure for workflow execution, queues, persistence, parsing and retrieval. FIN code owns research contracts, financial semantics and thin integrations.
+- Preserve source, period, unit, revision and citation identity. Treat a missing tool result as an execution problem until source availability has been checked.
+- Model calls require explicit task scope and a `TokenBudgetBasis`: purpose, input scale, required output, quality risk, reasoning profile, limits and stop behavior. Do not silently omit necessary research to meet a lower budget.
+- Run the checks relevant to the change. Keep failed paid requests and unknown usage in the user's local records; do not automatically resubmit them.
+- Store generated datasets, credentials, run history and personal work notes outside Git. Do not make installation or CI depend on a developer's machine paths or private records. Optional local instructions may exist in Git-ignored `docs/project_os/`; they are not installation prerequisites.
+- Name modules and configurations by maintained function. Keep wire IDs and database identities compatible unless an explicit migration is part of the task.
+- Update reader-facing documentation when behavior changes. Explain material scope, compatibility or cost issues promptly and substantiate claims with reproducible evidence.
+
+Common checks from the repository root:
+
+```bash
+uv sync --locked --extra agent-runtime --extra external-search --extra workbench-delivery --extra control-plane --extra qualification
+uv run --no-sync python -m pytest -q
+uv run --no-sync python scripts/engineering/verify_active_baseline.py
+uv run --no-sync python scripts/engineering/check_repository_secrets.py
+```
+
+Frontend checks and deployment requirements are in `docs/public/quickstart.en.md` and `docs/public/quickstart.zh-CN.md`.

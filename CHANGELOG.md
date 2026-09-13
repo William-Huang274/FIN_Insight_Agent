@@ -16,6 +16,8 @@
 - 本地身份校验、资源归属检查与工具审批。Local identity, resource ownership checks and tool approval.
 - SQLite 本地记录替换旧缓存依赖，保留提交去重与历史结果。SQLite records replace the legacy cache dependency while preserving idempotency and saved results.
 - 运行模块改为功能命名，部署入口统一为 `research_workbench`。Runtime modules use functional names and deployment uses the `research_workbench` entry point.
+- 数据集清单与运行结果改为独立部署输入；公开源码可以在未配置研究资料时启动并显示准备状态。Dataset manifests and saved runs are external deployment inputs; a source checkout starts without a private case catalog.
+- 财务数据库构建使用明确提供的来源和校验项，默认写入本地数据目录。Financial mart builds use supplied sources and checks, with generated outputs stored outside the source tree.
 - 更新双语文档、实际界面截图、合成测试与容器检查。Bilingual documentation, actual screenshots, synthetic checks and container verification.
 
 本版本需要使用者配置资料和凭据，金融判断仍需人工复核。示例和评测不代表生产多租户或无人审阅研究保证。

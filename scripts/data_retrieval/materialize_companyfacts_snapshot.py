@@ -22,7 +22,7 @@ def main():
     parser.add_argument("--snapshot", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--as-of", type=date.fromisoformat, required=True)
-    parser.add_argument("--rules", type=Path, default=ROOT / "configs/financial_facts/fin_ia_0_1_3_s2_company_financial_fact_mart_policy_v1_0.json")
+    parser.add_argument("--rules", type=Path, default=ROOT / "configs/financial_facts/company_fact_mart.json")
     args = parser.parse_args()
     root = args.snapshot.resolve().parent
     snapshot = load_sec_snapshot_result_manifest(args.snapshot)

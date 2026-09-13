@@ -19,10 +19,15 @@ def test_source_only_startup_exposes_catalog_but_refuses_product_data(tmp_path, 
         assert client.get("/api/readiness").status_code == 503
         catalog = client.get("/api/v1/research-cases", headers=headers)
         assert catalog.status_code == 200
+        assert catalog.json()["items"] == []
         detail = client.get("/api/v1/current-research/evidence-packs/DELL", headers=headers)
         assert detail.status_code == 503
-        assert "current_s1_product_readiness_private_result_missing" in detail.text
+        assert "research_data_not_configured" in detail.text
         assert str(tmp_path) not in detail.text
+        options = client.get("/api/v1/report-sessions/execution-options")
+        assert options.status_code == 503
+        assert options.json()["code"] == "research_service_not_configured"
+        assert client.post("/api/v1/report-sessions", json={"question": "test"}).status_code == 503
 
 
 def test_wrong_digest_is_not_treated_as_a_missing_mount(tmp_path):
@@ -36,17 +41,10 @@ def test_wrong_digest_is_not_treated_as_a_missing_mount(tmp_path):
     assert error.value.error_code == "current_s1_product_readiness_private_result_unavailable"
 
 
-def test_retrieval_binding_drift_still_blocks_startup(tmp_path, monkeypatch):
-    monkeypatch.setenv("FINSIGHT_DATA_ROOT", str(tmp_path))
+def test_explicit_missing_resource_package_still_blocks_startup(tmp_path, monkeypatch):
+    monkeypatch.setenv("FINSIGHT_RESEARCH_RESOURCES_ROOT", str(tmp_path))
     monkeypatch.delenv("FINSIGHT_REPORT_SESSION_API_URL", raising=False)
     from apps.workbench.backend.app import create_app
-    from apps.workbench.backend.application import research_retrieval_service as retrieval
-    from retrieval.current_runtime_binding import CurrentS1RuntimeBindingError
-
-    def drift(*args, **kwargs):
-        raise CurrentS1RuntimeBindingError("current_s1_runtime_registry_binding_drift:test")
-
-    monkeypatch.setattr(retrieval, "validate_current_s1_runtime_binding_receipt", drift)
-    with pytest.raises(retrieval.ResearchRetrievalServiceError) as error:
+    from sec_agent.runtime_resource_registry import RuntimeResourceRegistryError
+    with pytest.raises(RuntimeResourceRegistryError, match="runtime_resource_registry_missing"):
         create_app(store_path=tmp_path / "workspace.sqlite")
-    assert error.value.error_code == "research_runtime_binding_invalid"

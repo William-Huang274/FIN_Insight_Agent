@@ -142,26 +142,6 @@ def test_non_https_or_unallowlisted_source_fails_closed() -> None:
         validate_capture_plan(plan)
 
 
-def test_repository_capture_plan_is_bounded_to_three_official_routes() -> None:
-    plan = validate_capture_plan(
-        json.loads(
-            (
-                ROOT
-                / "configs"
-                / "retrieval"
-                / "fin_ia_0_1_3_s1b_official_source_capture_plan_v1_0.json"
-            ).read_text(encoding="utf-8")
-        )
-    )
-    assert len(plan["sources"]) == 3
-    assert {row["case_key"] for row in plan["sources"]} == {
-        "DELL",
-        "MU",
-        "NVDA",
-    }
-    assert plan["policy"]["bounded_addendum_not_general_crawler"] is True
-
-
 def _successor_plan() -> dict[str, object]:
     plan = _plan()
     plan["schema_version"] = "fin_ia_s1d_official_source_capture_plan_v1_1"
@@ -190,45 +170,6 @@ def test_generic_capture_plan_reuses_one_capture_first_engine(
     assert result["schema_version"] == "fin_ia_official_source_capture_result_v1_0"
     assert result["status"] == "official_sources_captured"
     assert result["model_calls"] == 0
-
-
-def test_vs5_qualification_capture_plan_matches_preregistered_targets() -> None:
-    plan = validate_capture_plan(
-        json.loads(
-            (
-                ROOT
-                / "configs"
-                / "retrieval"
-                / "fin_ia_0_1_3_s1_vs5_qualification_source_capture_plan_v1_0.json"
-            ).read_text(encoding="utf-8")
-        )
-    )
-    preregistration = json.loads(
-        (
-            ROOT
-            / "eval_sets"
-            / "fin_0_1_3_s1"
-            / "qualification_preregistration_v1_0.json"
-        ).read_text(encoding="utf-8")
-    )
-    expected = {
-        target["target_id"]
-        for case in preregistration["cases"]
-        for target in case["source_targets"]
-    }
-
-    assert {row["route_id"] for row in plan["sources"]} == expected
-    assert all(
-        int(row["max_transport_retries"]) + 1
-        <= next(
-            target["max_network_attempts"]
-            for case in preregistration["cases"]
-            for target in case["source_targets"]
-            if target["target_id"] == row["route_id"]
-        )
-        for row in plan["sources"]
-    )
-    assert plan["policy"]["runtime_labels_forbidden"] is True
 
 
 def test_playwright_successor_is_capture_first_with_injected_zero_network_fetcher(
@@ -271,22 +212,6 @@ def test_legacy_plan_cannot_silently_enable_playwright_transport() -> None:
         validate_capture_plan(plan)
 
 
-def test_repository_s1d_plan_is_bounded_to_and_tsm_official_pdfs() -> None:
-    plan = validate_capture_plan(
-        json.loads(
-            (
-                ROOT
-                / "configs"
-                / "retrieval"
-                / "fin_ia_0_1_3_s1d_official_source_capture_plan_v1_1.json"
-            ).read_text(encoding="utf-8")
-        )
-    )
-    assert {row["case_key"] for row in plan["sources"]} == {"DELL", "TSM"}
-    assert all(row["transport"] == "playwright_api_request" for row in plan["sources"])
-    assert plan["policy"]["broad_web_search_forbidden"] is True
-
-
 def test_browser_download_plan_requires_allowlisted_discovery_and_bound_link() -> None:
     plan = _successor_plan()
     plan["schema_version"] = "fin_ia_s1d_official_source_browser_capture_plan_v1_2"
@@ -305,26 +230,6 @@ def test_browser_download_plan_requires_allowlisted_discovery_and_bound_link() -
     plan["sources"][0]["discovery_url"] = "https://untrusted.example.test/results"
     with pytest.raises(OfficialSourceCaptureError, match="source_invalid"):
         validate_capture_plan(plan)
-
-
-def test_repository_browser_download_successor_is_two_official_routes() -> None:
-    plan = validate_capture_plan(
-        json.loads(
-            (
-                ROOT
-                / "configs"
-                / "retrieval"
-                / "fin_ia_0_1_3_s1d_official_source_browser_capture_plan_v1_2.json"
-            ).read_text(encoding="utf-8")
-        )
-    )
-    assert {row["case_key"] for row in plan["sources"]} == {"DELL", "TSM"}
-    assert all(
-        row["transport"] == "playwright_browser_download"
-        and row["discovery_url"].startswith("https://")
-        and row["expected_download_url"] == row["url"]
-        for row in plan["sources"]
-    )
 
 
 @pytest.mark.parametrize(

@@ -33,14 +33,13 @@ COPY src /deps/FIN_Insight_Agent/src
 COPY README.md /deps/FIN_Insight_Agent/
 RUN cd /deps/FIN_Insight_Agent \
     && PYTHONDONTWRITEBYTECODE=1 uv pip install --system --no-cache-dir --no-deps -e .
-COPY configs/research/fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_disabled_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_enabled_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json \
-     configs/research/fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json \
-     /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research/cases/growth_quality.json /deps/FIN_Insight_Agent/configs/research/cases/
+COPY configs/research/model_routing.json /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research/quick_answer.json /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research/reference_foundation.json /deps/FIN_Insight_Agent/configs/research/
+COPY configs/research/runtime/conversation.json /deps/FIN_Insight_Agent/configs/research/runtime/
+COPY configs/research/runtime/research_session.json /deps/FIN_Insight_Agent/configs/research/runtime/
+COPY configs/research/structured_agents.json /deps/FIN_Insight_Agent/configs/research/
 # -- End of minimum local package sources --
 
 # -- Remove build package managers from the final image --
@@ -56,19 +55,5 @@ RUN rm -rf /usr/lib/python*/site-packages/pip* \
     && find /usr/bin -name "pip*" -delete \
     || true
 RUN uv pip uninstall --system pip setuptools wheel && rm /usr/bin/uv /usr/bin/uvx
-
-# Budget-only successor config is copied after locked dependencies so changing
-# its run capacity does not force another download of the entire runtime.
-COPY configs/research/fin_ia_0_1_3_dell_q1_source_read_thinking_workpaper_capacity_v1_0.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/fin_ia_0_1_3_dell_q1_source_read_corrective_context_v1_0.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/fin_ia_0_1_3_dell_full_research_pro_low_v1_0.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/fin_ia_0_1_3_dell_full_research_routed_v1_0.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/fin_ia_0_1_3_dell_case_review_native_v1_0.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/fin_ia_0_1_3_dell_case_convergence_native_v1_0.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/fin_ia_0_1_3_dell_report_quick_answer_v1_0.json /deps/FIN_Insight_Agent/configs/research/
-COPY configs/research/cases/dell_growth_quality.json /deps/FIN_Insight_Agent/configs/research/cases/
-COPY configs/research/runtime/research_session.json /deps/FIN_Insight_Agent/configs/research/runtime/
-COPY configs/research/runtime/conversation.json /deps/FIN_Insight_Agent/configs/research/runtime/
 
 WORKDIR /deps/FIN_Insight_Agent

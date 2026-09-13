@@ -1,6 +1,6 @@
 # FinSight 当前上下文
 
-更新时间：2026-09-12。Owner已要求FIN0.1.3正式收口，并把专业、自主、按期交付的研究能力列为FIN0.1.4规划。
+更新时间：2026-09-13。FIN 0.1.3 正式冻结；Owner 追加全仓代码清理、解耦归档及中英文图文更新。专业、自主、按期交付研究能力仍属 FIN 0.1.4 规划。
 
 ## 当前状态与唯一入口
 
@@ -8,7 +8,8 @@
 - [0.1.4规划](../product/fin_0_1_4_research_plan.zh-CN.md)：planned，未实施。一个有界规划包已完成，下一步应产出最小可执行研究切片，不继续只扩写框架。
 - [212收口整理](../worklog/fin_0_1_3_s3/212_version_closeout_and_repository_cleanup.md)：本轮验证、命名与简历任务交接。
 - [211案例](../worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md)：原报告、上下文及模型差异完整正反面证据。
-- 包版本仍0.1.3；当前分支codex/ai-memory-investment-case。未合main/未部署/未签生产release。
+- [213冻结代码清理](../worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md)：现用入口依赖、归档原件校验、完整回归与文档同步。
+- 包版本仍 0.1.3；清理分支 `codex/fin-013-repository-cleanup`。Git 发布结果以 213 最终记录为准；不部署、不签生产 release。
 
 ## 已证事实
 
@@ -26,11 +27,11 @@ Agent主动提出有依据的竞争性假设、沿经济关系取证并交叉验
 
 - 生产模型、keep2、默认关闭的实验索引/阶段函数、摘要配置未因负面资格推广。
 - 保留失败/未知/人工修订；不要付费重试未知或自动整题重跑。
-- 当前命名图：../architecture/repository/naming_and_entrypoints.zh-CN.md。AI内存脚本新目录scripts/qualification/ai_memory，旧模块兼容；历史重放使用冻结代码。
+- 当前命名图：../architecture/repository/naming_and_entrypoints.zh-CN.md。一次性资格与旧兼容脚本已退出当前树；历史重放使用 `7b8287ab` / `archive/fin-0.1.3-before-cleanup-20260913`，不恢复为运行时依赖。
 - 公开验证是合成/本地工程检查，不是完整金融质量或全新机器安装。
 - 0.1.3未完的金融自主性转入0.1.4；生产HA/运维、干净安装和恢复演练保留发布遗留，不自动进入已通过状态。
 - 依照高级助手协作规范和mature-stack-first策略，复用运行栈，不自造通用控制面。
 
 ## 历史
 
-旧长上下文完整保存在[0.1.3历史快照](../../archive/versions/fin_0_1_3_closeout/docs/project_os/current_context_pack.zh-CN.md)，其中相对引用按原docs/project_os位置理解，旧“当前/进行中”均为历史时点。能力/根因台账append-only，读取相关尾部，不递归加载全部历史。
+旧长上下文和原 archive 全树通过[冻结源码](../../archive/README.md)恢复，其中相对引用按原提交位置理解，旧“当前/进行中”均为历史时点。能力/根因台账 append-only，读取相关尾部，不递归加载全部历史。

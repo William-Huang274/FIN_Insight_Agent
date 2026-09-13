@@ -15,7 +15,7 @@ import requests
 from dotenv import load_dotenv
 from ingestion.structured_document_adapter import StructuredSourceDescriptor, build_structured_document_tree
 from financial_facts.sec_snapshot import sec_user_agent_from_environment
-from scripts.qualification.run_dell_structured_rag_slice_qualification import build_retrieval_nodes
+from ingestion.retrieval_nodes import build_retrieval_nodes
 
 
 def selected_filings(binding, cutoff):

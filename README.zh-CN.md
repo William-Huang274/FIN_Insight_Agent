@@ -1,6 +1,6 @@
 # FinSight Agent · 中文文档
 
-[0.1.3正式收口](docs/product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4规划](docs/product/fin_0_1_4_research_plan.zh-CN.md)。新版本目前没有已实施能力。
+[0.1.3冻结收口](docs/product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4规划](docs/product/fin_0_1_4_research_plan.zh-CN.md) · [2026-09-13代码清理与归档](docs/architecture/repository/frozen_cleanup.zh-CN.md)。新版本目前没有已实施能力；主文档已同步资料库、财务数据与人工报告交付图文。
 
 [完整中文首页](README.md) · [English](README.en.md)
 

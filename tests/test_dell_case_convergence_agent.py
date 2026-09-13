@@ -393,26 +393,6 @@ def test_report_extra_brace_uses_normal_native_source_validation_without_model_r
     asyncio.run(run())
 
 
-def test_terminal_reuse_must_equal_the_pinned_seed(tmp_path, monkeypatch):
-    from hashlib import sha256
-    from scripts.qualification.dell_q1_specialist_paid_shadow import container_once as module
-    seed = tmp_path / "seed.json"
-    saved = {"output": {"paper_id": "P01", "status": "revision_submitted"}, "origin": {"execution_id": "prior"}}
-    seed.write_text(json.dumps({"accepted_revisions": {"P01": saved}}), encoding="utf-8")
-    monkeypatch.setattr(module, "Path", lambda value: seed)
-    scope = SimpleNamespace(repair_paper_ids=PAPERS, seed_state_sha256=sha256(seed.read_bytes()).hexdigest(),
-        node_limits={r: SimpleNamespace(model_calls=12, tool_calls=32) for r in ("repair", "writer", "verifier")})
-    authority = SimpleNamespace(case_convergence_scope=scope, research_run_id="run", run_invocation_id="invoke")
-    values = {"run_id": "run", "run_invocation_id": "invoke", "phase": "case_report_ready_for_human_review",
-        "revisions": {p: (saved["output"] if p == "P01" else {}) for p in PAPERS},
-        "report": {"title": "Fixture cited report", "narrative_markdown": "Synthetic report. " * 30},
-        "report_review": {"summary": "Synthetic independent review with sufficient description for the domain schema.", "findings": [], "unresolved_data_requests": []},
-        "actor_metrics": {a: {"model_calls": 1, "tool_calls": 1} for a in ("writer", "verifier", *("author_"+p for p in PAPERS))}}
-    values["actor_metrics"]["author_P01"] = {"model_calls": 0, "tool_calls": 0, "reused_from": saved["origin"]}
-    assert module._terminal({"values": values}, authority)["model_turn_count"] == 7
-    values["revisions"]["P01"] = {"paper_id": "P99"}
-    with pytest.raises(module.ContainerRunError, match="reuse_mismatch"):
-        module._terminal({"values": values}, authority)
 
 
 def test_source_bound_updates_reject_quote_and_authority_errors_together(artifacts):
@@ -450,58 +430,10 @@ def test_schema_only_convergence_reads_no_data_or_credentials(monkeypatch):
     asyncio.run(run())
 
 
-@pytest.mark.local_data_integration
-def test_actual_review_feedback_and_new_scope_are_bound_without_rewriting_old_authority():
-    from pathlib import Path
-    from scripts.qualification.dell_q1_specialist_paid_shadow.prepare_case_convergence import prepare
-    from sec_agent.agent_runtime.dell_specialist_paid_shadow import (
-        CaseConvergenceScope, load_dell_q1_paid_shadow_authority,
-    )
-    from sec_agent.agent_runtime.deepseek_structured_agents import load_deepseek_structured_agent_config
-    old_path = Path("configs/research/evals/fin_ia_0_1_3_s3_dell_case_native_review_a1_authority_v1_0.json")
-    old = load_dell_q1_paid_shadow_authority(old_path)
-    assert old.decision_digest == "bfd1149f19d65d628f020640d3660a56515ad8db8483b421d2bc443ecc45225e"
-    data = prepare()
-    assert set(data["feedback"]) == set(PAPERS)
-    assert data["host_assisted"] is True
-    assert any(f["origin"].startswith("explicit_host") for f in data["feedback"]["P08"])
-    config = load_deepseek_structured_agent_config("configs/research/fin_ia_0_1_3_dell_case_convergence_native_v1_0.json")
-    scope = {"seed_state_host_path": "test", "seed_state_sha256": "a"*64, "repair_paper_ids": list(PAPERS),
-        "node_budgets": {r: config.token_budget_basis["specialist"].model_dump(mode="json") for r in ("repair", "writer", "verifier")},
-        "node_limits": {r: {"model_calls": 12, "tool_calls": 32} for r in ("repair", "writer", "verifier")}}
-    CaseConvergenceScope.model_validate_json(json.dumps(scope))
-    scope["repair_paper_ids"] = ["P99"]
-    with pytest.raises(ValueError, match="roles_or_papers"):
-        CaseConvergenceScope.model_validate_json(json.dumps(scope))
 
 
-def test_real_report_revision_seed_reuses_all_authors_without_private_transcripts():
-    from pathlib import Path
-    from scripts.qualification.dell_q1_specialist_paid_shadow.prepare_case_convergence import prepare_report_revision
-    base = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical")
-    state = base / "q1_specialist_paid_shadow/attempts/20260906-dell-case-convergence-a2/specialist-final-state.private.json"
-    notes = base / "case-convergence-20260906-a1/report-a2-human-review.json"
-    if not state.exists() or not notes.exists():
-        pytest.skip("private report handoff not present")
-    seed = prepare_report_revision(state, notes)
-    assert set(seed["accepted_revisions"]) == set(PAPERS)
-    request = seed["report_revision_request"]
-    assert "citations" not in request["prior_report"]  # No duplicated full evidence package.
-    assert request["human_review"]["origin"].startswith("explicit_host")
-    serialized = json.dumps(seed)
-    assert '"reasoning_content"' not in serialized and '"messages"' not in serialized
 
 
-def test_case_report_export_resolves_all_source_links_without_rewriting_prose():
-    from scripts.qualification.dell_q1_specialist_paid_shadow.export_workpaper import render_case_report
-    state = {"phase": "case_report_needs_revision", "report": {"title": "Fixture report", "narrative_markdown": "Unchanged analyst prose [P01:C1].",
-        "citations": {"P01:C1": {"claim": {"authority_note": "Non-S2 fixture"}, "sources": [
-            {"source_id": "s1", "title": "Source one", "source_url": "https://example.com/a"},
-            {"source_id": "s2", "citation_urls": ["https://example.com/b", "javascript:alert(1)"]}]}}}}
-    rendered = render_case_report(state)
-    assert "Unchanged analyst prose [^s1]." in rendered
-    assert "https://example.com/a" in rendered and "https://example.com/b" in rendered
-    assert "javascript:" not in rendered and "case_report_needs_revision" in rendered
 
 
 @pytest.mark.parametrize("author_count", [0, 1, 3])

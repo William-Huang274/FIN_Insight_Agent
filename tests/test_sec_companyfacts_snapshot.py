@@ -11,9 +11,6 @@ from pydantic import ValidationError
 import pytest
 import requests
 
-from scripts.data_retrieval.materialize_sec_snapshot_s2_policy_bridge import (
-    parse_args as parse_s2_bridge_args,
-)
 
 from financial_facts import (
     CompanyFactMartPolicy,
@@ -569,21 +566,6 @@ def test_s2_policy_bridge_rejects_research_as_of_regression(tmp_path: Path) -> N
         )
 
 
-def test_s2_policy_bridge_cli_requires_explicit_research_as_of() -> None:
-    common = [
-        "--baseline-policy",
-        "baseline.json",
-        "--snapshot-manifest",
-        "snapshot-manifest.json",
-        "--output-policy",
-        "successor.json",
-    ]
-    with pytest.raises(SystemExit) as caught:
-        parse_s2_bridge_args(common)
-    assert caught.value.code == 2
-
-    parsed = parse_s2_bridge_args([*common, "--research-as-of", "2026-09-02"])
-    assert parsed.research_as_of == "2026-09-02"
 
 
 def test_s2_policy_bridge_rejects_as_of_before_snapshot_fact_accepted_at(

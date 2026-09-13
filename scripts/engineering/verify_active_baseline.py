@@ -17,74 +17,56 @@ ACTIVE_PYTHON_ROOTS = (
     "src",
 )
 _BASE_PYTHON_ENTRYPOINTS = (
-    "apps/workbench/backend/app.py",
-    "scripts/data_retrieval/build_bm25_index.py",
-    "scripts/data_retrieval/build_current_compiled_object_views.py",
-    "scripts/data_retrieval/build_current_financial_object_store.py",
-    "scripts/data_retrieval/build_current_retrieval_snapshot.py",
-    "scripts/data_retrieval/build_evidence_store.py",
-    "scripts/data_retrieval/build_s2_company_financial_fact_mart.py",
-    "scripts/data_retrieval/capture_s1b_official_sources.py",
-    "scripts/data_retrieval/run_s1d_source_intake.py",
-    "scripts/data_retrieval/run_s1d_official_pdf_successor.py",
-    "scripts/data_retrieval/run_dell_proposition_coverage_internal.py",
-    "scripts/data_retrieval/run_dell_external_source_ladder.py",
-    "scripts/data_retrieval/run_current_evidence_pack_promotion.py",
-    "scripts/data_retrieval/materialize_s1_current_product_readiness.py",
-    "scripts/data_retrieval/materialize_s1_source_route_truth_successor.py",
-    "scripts/data_retrieval/materialize_s1_human_evidence_admission_packet.py",
-    "scripts/data_retrieval/materialize_s1c_financial_role_eval_set.py",
-    "scripts/data_retrieval/materialize_s1c_object_role_review_set.py",
-    "scripts/data_retrieval/materialize_s1c_requalified_qrels.py",
-    "scripts/data_retrieval/materialize_s1_vs4_case_supplement_vertical.py",
-    "scripts/data_retrieval/materialize_s1_vs4_dell_supplement_vertical.py",
-    "scripts/data_retrieval/run_s1_candidate_ranking.py",
-    "scripts/data_retrieval/run_s1_human_operability_preflight.py",
-    "scripts/data_retrieval/run_s1c_compiled_object_retriever_comparison.py",
-    "scripts/data_retrieval/run_s1c_cross_encoder_role_shadow.py",
-    "scripts/data_retrieval/run_s1c_object_role_shadow.py",
-    "scripts/data_retrieval/run_s1c_ranking_comparison.py",
-    "scripts/data_retrieval/validate_s1_program_foundation.py",
-    "scripts/data_sec/build_sec_8k_earnings_chunks.py",
-    "scripts/data_sec/build_sec_8k_earnings_manifest.py",
-    "scripts/data_sec/build_sec_chunks.py",
-    "scripts/data_sec/build_sec_manifest.py",
-    "scripts/data_sec/download_sec_8k_earnings.py",
-    "scripts/data_sec/download_sec_filings.py",
-    "scripts/data_sec/merge_sec_source_gaps.py",
-    "scripts/dev/run_workbench_backend.py",
-    "scripts/engineering/build_archive_redirect_index.py",
-    "scripts/engineering/accept_current_three_case_product.py",
-    "scripts/engineering/check_repository_secrets.py",
-    "scripts/engineering/verify_active_baseline.py",
-    "scripts/eval_multi_agent/run_project_os_full_chain_preflight.py",
-    "scripts/industry/10_download_industry_source_snapshot.py",
-    "scripts/market/06_download_yahoo_chart_snapshot.py",
-    "scripts/market/07_enrich_market_snapshot_valuation_fmp.py",
-    "scripts/market/08_build_market_events_from_sec_manifest.py",
-    "scripts/market/09_download_fmp_historical_snapshot.py",
-    "scripts/market/10_normalize_market_snapshot_fixture.py",
-    "scripts/market/20_build_market_snapshot_catalog.py",
-    "scripts/market/30_compute_market_analytics.py",
-    "scripts/market/40_build_market_evidence_pack.py",
-    "scripts/market/50_validate_market_snapshot.py",
-    "scripts/research/run_s3_current_research_consumer_zero_call.py",
-    "scripts/research/run_s3_current_research_consumer_canary.py",
-    "scripts/research/run_s3_material_scope_canary.py",
-    "scripts/research/run_s3_bounded_finance_loop_zero_call.py",
-    "scripts/research/run_s3_dynamic_truth_spine_zero_call.py",
-    "scripts/research/run_s3_current_dynamic_single_unit_zero_call.py",
-    "scripts/research/run_s3_current_dynamic_single_unit_live.py",
-    "scripts/research/run_s3_feedback_driven_workpaper_repair.py",
-    "scripts/research/run_s3_current_dynamic_multi_agent.py",
-    "scripts/research/run_s3_dynamic_five_cell_live.py",
-    "scripts/research/run_s3_case_truth_reconciliation_zero_call.py",
-    "scripts/research/run_s3_case_truth_reconciliation_live.py",
-    "scripts/research/run_s3_tool_contract_transport_zero_call.py",
-    "scripts/research/run_s3_transport_paired_canary.py",
-    "scripts/research/run_agent_runtime_feedback_zero_call_proof.py",
-    "scripts/research/materialize_s1_s3_actionable_research_three_case.py",
-    "scripts/research/run_s3_multi_agent_report_remap_live.py",
+    'apps/workbench/backend/app.py',
+    'scripts/data_retrieval/build_bm25_index.py',
+    'scripts/data_retrieval/build_current_compiled_object_views.py',
+    'scripts/data_retrieval/build_current_financial_object_store.py',
+    'scripts/data_retrieval/build_current_retrieval_snapshot.py',
+    'scripts/data_retrieval/build_evidence_store.py',
+    'scripts/data_retrieval/build_s2_company_financial_fact_mart.py',
+    'scripts/data_retrieval/capture_official_sources.py',
+    'scripts/data_retrieval/capture_sec_companyfacts_snapshot.py',
+    'scripts/data_retrieval/combine_financial_snapshots.py',
+    'scripts/data_retrieval/expand_case_source_library.py',
+    'scripts/data_retrieval/materialize_companyfacts_snapshot.py',
+    'scripts/data_retrieval/materialize_market_price_snapshot.py',
+    'scripts/data_retrieval/parse_captured_official_pdf_layout.py',
+    'scripts/data_retrieval/prepare_public_library_vectors.py',
+    'scripts/data_sec/build_sec_8k_earnings_chunks.py',
+    'scripts/data_sec/build_sec_8k_earnings_manifest.py',
+    'scripts/data_sec/build_sec_chunks.py',
+    'scripts/data_sec/build_sec_manifest.py',
+    'scripts/data_sec/download_sec_8k_earnings.py',
+    'scripts/data_sec/download_sec_filings.py',
+    'scripts/data_sec/merge_sec_source_gaps.py',
+    'scripts/deployment/dell_report_workbench.py',
+    'scripts/deployment/environment.py',
+    'scripts/deployment/hermes_working_memory.py',
+    'scripts/deployment/local_sandbox.py',
+    'scripts/deployment/research_workbench.py',
+    'scripts/dev/export_synthetic_report.py',
+    'scripts/dev/run_workbench_backend.py',
+    'scripts/dev/verify_public_checkout.py',
+    'scripts/engineering/check_repository_secrets.py',
+    'scripts/engineering/verify_active_baseline.py',
+    'scripts/industry/10_download_industry_source_snapshot.py',
+    'scripts/market/06_download_yahoo_chart_snapshot.py',
+    'scripts/market/07_enrich_market_snapshot_valuation_fmp.py',
+    'scripts/market/08_build_market_events_from_sec_manifest.py',
+    'scripts/market/09_download_fmp_historical_snapshot.py',
+    'scripts/market/10_normalize_market_snapshot_fixture.py',
+    'scripts/market/20_build_market_snapshot_catalog.py',
+    'scripts/market/30_compute_market_analytics.py',
+    'scripts/market/40_build_market_evidence_pack.py',
+    'scripts/market/50_validate_market_snapshot.py',
+    'src/sec_agent/adapters/dagster_control_plane_launcher.py',
+    'src/sec_agent/adapters/dagster_s2_fact_mart.py',
+    'src/sec_agent/agent_runtime/conversation_runtime.py',
+    'src/sec_agent/agent_runtime/dell_agent_server_entry.py',
+    'src/sec_agent/agent_runtime/dell_reference_vertical_mcp_tools.py',
+    'src/sec_agent/agent_runtime/hermes_context_tools.py',
+    'src/sec_agent/agent_runtime/research_session_runtime.py',
+    'src/sec_agent/agent_runtime/sandbox_mcp.py',
 )
 
 
@@ -117,6 +99,8 @@ REGISTRY_REF = (
 )
 FORBIDDEN_ACTIVE_PATH_TOKENS = (
     "archive/",
+    "scripts/qualification/",
+    "scripts/research/",
     "fin_0_1_2",
     "p36",
     "r53_r60",
@@ -174,6 +158,11 @@ def _resolve_python_imports(
         package_parts = package_parts[:-1]
 
     def admit(name: str) -> bool:
+        parts = name.split(".")
+        for index in range(1, len(parts)):
+            parent = by_module.get(".".join(parts[:index]))
+            if parent is not None and parent.name == "__init__.py":
+                discovered.add(parent)
         target = by_module.get(name)
         if target is not None:
             discovered.add(target)
@@ -185,7 +174,7 @@ def _resolve_python_imports(
             for alias in node.names:
                 parts = alias.name.split(".")
                 if not any(admit(".".join(parts[:index])) for index in range(len(parts), 0, -1)):
-                    if alias.name.startswith(("apps.", "sec_agent.")):
+                    if alias.name.startswith(("apps.", "sec_agent.", "scripts.", "retrieval.", "ingestion.")):
                         unresolved.append(f"{_relative(path)}:{alias.name}")
         elif isinstance(node, ast.ImportFrom):
             if node.level:
@@ -202,8 +191,19 @@ def _resolve_python_imports(
                     continue
                 candidate = f"{base}.{alias.name}" if base else alias.name
                 matched = admit(candidate) or matched
-            if not matched and base.startswith(("apps.", "sec_agent.")):
+            if not matched and base.startswith(("apps.", "sec_agent.", "scripts.", "retrieval.", "ingestion.")):
                 unresolved.append(f"{_relative(path)}:{base}")
+        elif isinstance(node, ast.Constant) and isinstance(node.value, str):
+            # Include local importlib module names and subprocess script paths.
+            ref = node.value
+            if ref in by_module:
+                admit(ref)
+            elif ref.startswith(("scripts/", "src/")) and ref.endswith(".py"):
+                target = (ROOT / ref).resolve()
+                if target.is_file():
+                    discovered.add(target)
+                else:
+                    unresolved.append(f"{_relative(path)}:{ref}")
     return discovered, unresolved
 
 

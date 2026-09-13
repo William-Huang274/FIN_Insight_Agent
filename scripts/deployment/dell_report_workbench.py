@@ -14,8 +14,8 @@ import shutil
 
 
 def configured_key(name):
-    from scripts.qualification.dell_q1_specialist_paid_shadow.run_once import _dotenv
-    value=os.environ.get(name) or _dotenv().get(name)
+    from scripts.deployment.environment import read_local_environment
+    value=os.environ.get(name) or read_local_environment().get(name)
     if not value and os.name=='nt':
         import winreg
         with winreg.OpenKey(winreg.HKEY_CURRENT_USER,'Environment') as reg:
@@ -63,7 +63,7 @@ def main():
         os.environ["FINSIGHT_WORKING_MEMORY_SEMANTIC"] = "1" if args.semantic_memory else "0"
     if args.action == "serve":
         if args.semantic_memory:
-            from scripts.qualification.dell_q1_specialist_paid_shadow.run_once import _dotenv
+            from scripts.deployment.environment import read_local_environment
             key = configured_key('QWEN_API_KEY')
             if not key:
                 raise ValueError("QWEN_API_KEY_required_for_semantic_memory")
@@ -75,8 +75,8 @@ def main():
             ssl_certfile=str(args.tls_certificate) if args.tls_certificate else None,
             ssl_keyfile=str(args.tls_key) if args.tls_key else None)
         return
-    from scripts.qualification.dell_q1_specialist_paid_shadow.run_once import _dotenv
-    env = {**os.environ, **_dotenv()}
+    from scripts.deployment.environment import read_local_environment
+    env = {**os.environ, **read_local_environment()}
     if args.semantic_memory:
         env['QWEN_API_KEY']=configured_key('QWEN_API_KEY') or ''
         if not env['QWEN_API_KEY']:raise ValueError('QWEN_API_KEY_required_for_semantic_memory')

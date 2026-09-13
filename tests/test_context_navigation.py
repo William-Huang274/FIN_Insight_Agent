@@ -26,10 +26,6 @@ def retained_history():
         HumanMessage(id="continue", content="Continue from the saved result.")]
 
 
-def test_live_qualification_only_advertises_the_three_budgeted_readers():
-    from scripts.qualification.context_navigation_roundtrip import recovery_grants
-    assert {g.tool.name for g in recovery_grants("fixture")} == {
-        "browse_context", "read_context_turn", "read_saved_result"}
 
 
 def summary_record(rows, end=5):

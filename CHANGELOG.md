@@ -6,6 +6,8 @@
 
 ## FIN 0.1.3 — Iteration closed / 本地Internal Alpha收口
 
+2026-09-13：冻结后代码树清理，解耦运行时与一次性资格脚本，移除旧实验和树内历史源码，保留不可变 Git 标签及校验清单。双语首页补充公司资料库、财务数据、人工报告交付的真实截图，同步 0.1.3 已验证范围；0.1.4 未实施。Frozen source-tree cleanup and bilingual product documentation; no new research capability or production deployment. [Details / 说明](docs/architecture/repository/frozen_cleanup.zh-CN.md).
+
 2026-09-12：Owner正式结束本版，保留未通过的全自动金融质量及发布条件。补齐资料库与AI内存案例事实，整理资格代码/当前文档，旧脚本兼容；见[收口](docs/product/fin_0_1_3_closeout.zh-CN.md)。The following entries are historical milestones, not current service-status declarations.
 
 FIN 产品版本、报告版本和执行 attempt 分开记录。产品代码的主线更新不自动表示正式 release 或报告已通过人审。

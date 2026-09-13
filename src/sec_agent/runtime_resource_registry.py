@@ -188,49 +188,6 @@ def _nonblank(value: Any, code: str) -> str:
     return value.strip()
 
 
-def _literal_string_mapping(path: Path, variable_name: str) -> dict[str, str]:
-    try:
-        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
-    except (OSError, UnicodeDecodeError, SyntaxError) as exc:
-        raise RuntimeResourceRegistryError(
-            "runtime_resource_registry_compatibility_adapter_parse_failed"
-        ) from exc
-    candidate: ast.AST | None = None
-    for node in tree.body:
-        if (
-            isinstance(node, ast.AnnAssign)
-            and isinstance(node.target, ast.Name)
-            and node.target.id == variable_name
-        ):
-            candidate = node.value
-            break
-        if isinstance(node, ast.Assign) and any(
-            isinstance(target, ast.Name) and target.id == variable_name
-            for target in node.targets
-        ):
-            candidate = node.value
-            break
-    try:
-        value = ast.literal_eval(candidate) if candidate is not None else None
-    except (TypeError, ValueError) as exc:
-        raise RuntimeResourceRegistryError(
-            "runtime_resource_registry_compatibility_adapter_not_literal"
-        ) from exc
-    if (
-        not isinstance(value, dict)
-        or not value
-        or not all(
-            isinstance(key, str)
-            and key.strip()
-            and isinstance(item, str)
-            and item.strip()
-            for key, item in value.items()
-        )
-    ):
-        raise RuntimeResourceRegistryError(
-            "runtime_resource_registry_compatibility_adapter_invalid"
-        )
-    return {str(key): str(item) for key, item in value.items()}
 
 
 def _repo_relative_path(
@@ -448,27 +405,6 @@ def load_runtime_resource_registry(
         raise RuntimeResourceRegistryError(
             "runtime_resource_registry_resource_order_invalid"
         )
-    research_adapter_ref = "src/sec_agent/research_skills.py"
-    if research_adapter_ref in detector_refs:
-        mapping = _literal_string_mapping(
-            root / research_adapter_ref,
-            "SKILL_FILES",
-        )
-        adapter_rows = {
-            row.resource_id: row.repo_relative_path
-            for row in resources
-            if row.classification == "prompt_skill_instruction"
-        }
-        expected_adapter_rows = {
-            f"research_skill.{skill_id}": (
-                "src/sec_agent/prompts/skills/" + filename
-            )
-            for skill_id, filename in mapping.items()
-        }
-        if adapter_rows != expected_adapter_rows:
-            raise RuntimeResourceRegistryError(
-                "runtime_resource_registry_compatibility_adapter_drift"
-            )
     canonical_rows = [row.as_dict() for row in resources]
     canonical_digest = _sha256_bytes(_canonical_bytes(canonical_rows))
     if (
@@ -596,14 +532,6 @@ def detect_repo_relative_runtime_resource_literals(
                 and candidate.parts[0] in _REPOSITORY_ROOTS
             ):
                 detected.add(candidate.as_posix())
-            elif (
-                source_ref == "src/sec_agent/research_skills.py"
-                and candidate.suffix.lower() == ".md"
-                and len(candidate.parts) == 1
-            ):
-                detected.add(
-                    (Path("src/sec_agent/prompts/skills") / candidate).as_posix()
-                )
     return tuple(sorted(detected))
 
 

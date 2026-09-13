@@ -139,7 +139,7 @@ def public_native_failures(state, run):
 
 
 def public_cost_estimate(events):
-    from scripts.qualification.dell_q1_specialist_paid_shadow.audit_token_cost import dated_public_cost
+    from sec_agent.agent_runtime.usage_pricing import dated_public_cost
     starts = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "started"}
     outcomes = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "outcome"}
     amount, priced = 0.0, 0

@@ -19,6 +19,7 @@ if (!Number.isInteger(backendPort) || backendPort < 1024 || backendPort > 65535)
 export default defineConfig({
   testDir: "./e2e",
   fullyParallel: false,
+  workers: 2,
   retries: 0,
   reporter: [["list"]],
   outputDir: "test-results",

@@ -1,34 +1,28 @@
 # 当前脚本入口
-`scripts/` 只保留 FIN 0.1.3 当前基线会直接使用或维护的入口。历史实验、单次 attempt runner、旧 full-chain、旧 MCP/CLI 与发布证明脚本均已迁入 `archive/versions/`。
 
-## 数据准备
+FIN 0.1.3 冻结代码树，2026-09-13。这里只保留当前产品、部署、数据构建和工程检查实际使用的入口。一次性资格、单次 attempt 和旧研究 runner 已清出，使用[冻结提交恢复](../archive/README.md)。
 
-- `data_sec/`：SEC filing 与 8-K earnings 的下载、manifest、chunk 和 source-gap 合并。
-- `data_retrieval/`：Evidence Store 与 BM25 索引。
-  - `build_current_compiled_object_views.py`：把当前 source-bound child 编译为去重的 claim、metric-row 与 bounded-context 候选，并显式保留 S2 数据库事实路线；输出没有 Evidence 或 NumericFact 权限。
-  - `run_s1c_compiled_object_retriever_comparison.py`：在同一编译对象、硬过滤和预算上运行 BM25／BGE／Qwen shadow；模型资产不完整时必须写 typed block，不能生成伪结果。GPU／reranker 依赖仍属于未晋升的隔离 qualification 候选，不进入产品 Runtime lock。
-- `market/`：离线行情快照、事件、分析和 Evidence Pack 构建。
-- `industry/`：受合同约束的行业来源快照。
+| 目录 | 用途 |
+| --- | --- |
+| `data_sec/` | SEC filing、20-F/40-F、8-K earnings 的下载、manifest、chunk 与来源记录 |
+| `data_retrieval/` | 原始来源捕获、资料库扩充、检索节点/对象/索引、财务事实表与公开向量准备 |
+| `market/` | 行情快照、事件、分析和市场证据构建 |
+| `industry/` | 受合同约束的行业来源快照 |
+| `deployment/` | 本地工作台部署、数据发布与环境读取 |
+| `dev/` | 无模型源码检查、合成四格式导出、实际界面截图、source-only BFF |
+| `engineering/` | 当前依赖边界和敏感模式检查 |
 
-脚本出现在目录中只表示“受维护的数据构建入口”，不表示外部来源、私有数据或相应研究能力已自动可用。Workbench `/operations` 只暴露 `src/sec_agent/workbench/data_build.py` 明确准入的步骤。
+## 常用命令
 
-## 产品与治理
+```bash
+python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
+python scripts/engineering/verify_active_baseline.py --pretty
+python scripts/engineering/check_repository_secrets.py
+python -m scripts.deployment.research_workbench --help
+```
 
-- `deployment/research_workbench.py`：当前研究工作台统一 CLI，check/build/up/serve；沿用旧部署身份，不提交模型任务。
-- `dev/verify_public_checkout.py`：外部测试者的零模型源码检查与合成导出。
-- `dev/capture_product_screenshots.cjs`：只读拍摄实际本地产品界面，拒绝写入请求，保留截图与拍摄回执。
-- `dev/run_workbench_backend.py`：历史 Evidence Pack / source-only 后端入口。
+依赖和部署参数见[快速开始](../docs/public/quickstart.zh-CN.md)。部署入口沿用现有图 ID、数据库和卷身份；`dell_report_workbench` 仍是当前实现，不因命名删除。
 
-使用步骤见[公开快速开始](../docs/public/quickstart.zh-CN.md)。公开入口采用 research/workbench 命名；旧 `dell_*` 实现保留兼容，不批量修改既有图 ID、数据库身份和历史合同。
-- `engineering/verify_active_baseline.py`：从产品、数据构建和前端入口重建活动 import graph，禁止旧版本/attempt/archive 进入活动图。
-- `engineering/build_archive_redirect_index.py`：对所有版本归档重建逐文件 SHA256 重定向索引；对不可移植的长路径使用可逆 path map 和短路径对象名。
-- `research/run_s3_multi_agent_report_remap_live.py`：当前 S3 的通用 protected-report terminal remap CLI；它只消费不可变报告与 typed authority，不得重跑研究，并在 S3 closeout 后随对应执行证据一起归档。
+Workbench `/operations` 只暴露 `src/sec_agent/workbench/data_build.py` 准入的构建步骤。资料库扩充使用 `data_retrieval/expand_case_source_library.py`，节点投影由 `src/ingestion/retrieval_nodes.py` 提供；运行时不再 import 资格脚本。
 
-本次一次性迁移程序已经完成使命，并随执行前代码一起迁入 `archive/versions/fin_0_1_3_prebaseline/`；它不再是活动入口。
-
-## 规则
-
-1. 新的单次实验不能直接成为 `scripts/` 中的长期入口。
-2. 新入口必须进入当前代码图、测试和 Workbench/CLI 的真实消费者之一。
-3. 私有数据、生成索引、模型输出和凭据不进入脚本目录或 Git。
-4. 归档脚本不可被当前 Runtime import；恢复功能要先建立版本中立 successor。
+新单次实验不直接成为长期入口。可复用能力须有真实消费者和适当回归；私有数据、索引、模型输出和凭据不进入 Git。保留根和退出清单见[清理说明](../docs/architecture/repository/frozen_cleanup.zh-CN.md)。

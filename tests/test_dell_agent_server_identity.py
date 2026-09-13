@@ -7,7 +7,6 @@ from typing import Any, Sequence
 
 import pytest
 
-from scripts.research import qualify_dell_agent_server_identity_postgres_v1
 from sec_agent.agent_runtime import dell_agent_server_identity as identity
 from sec_agent.agent_runtime.dell_agent_server_identity import (
     DellAgentServerIdentityConflict,
@@ -1116,15 +1115,6 @@ def test_schema_sources_are_digest_pinned_but_repository_install_is_retired() ->
     assert connection.transaction_commits == 0
 
 
-def test_pre_lifecycle_postgres_qualifier_is_a_typed_tombstone() -> None:
-    with pytest.raises(
-        RuntimeError,
-        match=(
-            qualify_dell_agent_server_identity_postgres_v1
-            .LEGACY_IDENTITY_QUALIFIER_RETIREMENT_CODE
-        ),
-    ):
-        qualify_dell_agent_server_identity_postgres_v1.main()
 
 
 def test_repository_requires_pool_checkout_and_rejects_active_connection() -> None:

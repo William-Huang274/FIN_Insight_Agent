@@ -28,7 +28,7 @@
 
 ## 本次仓库整理与验证
 
-AI内存资格代码统一到`scripts/qualification/ai_memory/`；旧模块保留薄兼容入口，旧导入/CLI及monkeypatch可用。历史attempt依然绑定冻结代码；目录迁移后的代码摘要不冒充原dispatch摘要。原包名`sec_agent`、配置/数据/图ID及归档文件不为品牌重命名，避免破坏恢复和来源引用。
+9月12日先整理了 AI 内存资格目录；9月13日按 Owner 要求进一步清出一次性代码及旧兼容入口。现用 runtime 所需函数已抽到维护模块，历史实验与旧 `archive/versions/` 通过[冻结标签恢复](../../archive/README.md)。原包名 `sec_agent`、仍用的配置/数据/图 ID 和 SQL 迁移保留，避免破坏来源与部署身份。完整退出范围与验证见[213](../worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md)。
 
 产品品牌统一为FinSight Agent；版本写作FIN 0.1.3 / FIN 0.1.4；Python分发名为`finsight-agent`。新当前文档采用小写、下划线与语言后缀；历史大写/日期文件原位保留并注明当前入口。详见[仓库与命名地图](../architecture/repository/naming_and_entrypoints.zh-CN.md)。
 

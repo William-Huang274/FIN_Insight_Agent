@@ -1,6 +1,6 @@
 # FinSight 文档地图
 
-2026-09-12：FIN0.1.3已收口，FIN0.1.4规划中。
+2026-09-13：FIN 0.1.3 已冻结并整理当前代码树，FIN 0.1.4 规划中。
 
 ## 产品与版本
 
@@ -12,7 +12,8 @@
 
 - [当前上下文](project_os/current_context_pack.zh-CN.md) · [协作规范](project_os/senior_assistant_collaboration_policy.zh-CN.md)
 - [架构](public/architecture.zh-CN.md) · [安装和公开检查](public/quickstart.zh-CN.md)
-- [目录与命名](architecture/repository/naming_and_entrypoints.zh-CN.md) · [资格脚本](../scripts/qualification/README.zh-CN.md)
+- [目录与命名](architecture/repository/naming_and_entrypoints.zh-CN.md) · [当前脚本](../scripts/README.md) · [历史恢复](../archive/README.md)
+- [213冻结代码清理](worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md) · [保留与退出范围](architecture/repository/frozen_cleanup.zh-CN.md)
 - [212本次收口](worklog/fin_0_1_3_s3/212_version_closeout_and_repository_cleanup.md) · [211研究与模型对照](worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md)
 - [工作记录索引](worklog/README.md)
 

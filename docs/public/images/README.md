@@ -1,5 +1,7 @@
 # Product screenshots / 产品截图
 
+`company-library.png` and `financial-data.png`: actual deployed application captured on 2026-09-11 at 1440 px, selected from S3/210 capture A2. The receipt records deployed API access without interception, zero model calls and no page overflow. Local provenance: `D:/temp/fin210/deployed-ui-a2/result.json`; originals `library-1440.png` and `financials-1440.png`. Both images were visually inspected: public company metadata/financial rows, no credentials or uploaded private documents. The library screenshot shows 60 documents before the frozen library grew to 70; captions preserve that distinction. Financial data is filtered to MSFT and is not the full five-company count.
+
 `hpe-reviewed-report.png` was captured from the deployed workspace on 2026-09-11 at 1440×1000. It shows the human-confirmed HPE report v2, two recorded human edits, role-paper navigation and real export controls. Public research prose is visible; no original uploaded document, credentials or private reasoning is included. The selected capture waits for the saved report version to finish loading. Local read-only receipt: `D:/temp/fin208/hpe-final-ui-a4/result.json`.
 
 Actual FinSight FIN 0.1.3 application, captured 2026-09-08 at 1600×1000. Chinese UI; the English README uses the same images with English captions. No invented data, image generation or DOM content replacement.

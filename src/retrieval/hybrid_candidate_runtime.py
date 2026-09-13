@@ -27,14 +27,14 @@ from .material_evidence_runtime import (
     adapt_material_candidate_from_feature_views,
     compile_material_requirement_plan_from_runtime_input,
 )
-from .object_retrieval_comparison import (
+from .candidate_scoring import (
     CandidateScore,
     bm25_rank,
     dense_rank,
     load_compiled_objects,
     union_candidate_ids,
 )
-from .query_atom_shadow import eligible_request_indices
+from .candidate_scoring import eligible_request_indices
 from .query_plan import (
     canonical_digest,
     compile_query_facet_plan_for_request as compile_query_facet_plan_for_request_v1,

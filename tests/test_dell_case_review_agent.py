@@ -18,10 +18,13 @@ from test_dell_research_mcp import _build_server
 
 @pytest.fixture(scope="module")
 def artifacts():
-    from scripts.qualification.dell_q1_specialist_paid_shadow.collect_research_bundle import SOURCES, collect
-    if not all(p.is_file() for p, _ in SOURCES):
-        pytest.skip("local immutable research artifacts unavailable")
-    return DellCaseArtifacts(collect()["papers"])
+    """Optional saved product bundle; no dependency on a qualification runner."""
+    import os
+    from pathlib import Path
+    ref = os.environ.get("FIN_TEST_ARCHIVED_RESEARCH_BUNDLE")
+    if not ref:
+        pytest.skip("private archived research bundle not configured")
+    return DellCaseArtifacts(json.loads(Path(ref).read_text(encoding="utf-8"))["papers"])
 
 
 def review_fixture(artifacts):

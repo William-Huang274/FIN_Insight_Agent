@@ -54,7 +54,7 @@ def test_generic_short_tail_keeps_exact_original_spans(monkeypatch):
     assert tree['chunks']
     assert all(c['text'] in text for c in tree['chunks'])
     assert 'word979' in tree['chunks'][-1]['text']
-    from scripts.qualification.run_dell_structured_rag_slice_qualification import build_retrieval_nodes, QualificationError
+    from ingestion.retrieval_nodes import build_retrieval_nodes, QualificationError
     corpus = {'documents':[tree['document']], **{k:tree[k] for k in ('sections','blocks','chunks')}}
     with pytest.raises(QualificationError, match='required_retrieval_lane_empty'):
         build_retrieval_nodes(corpus)

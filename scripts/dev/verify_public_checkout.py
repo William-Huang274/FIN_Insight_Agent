@@ -22,7 +22,7 @@ def main():
                     "tests/test_task_attachments.py", "tests/test_report_delivery.py",
                     "tests/test_studio_configuration.py", "tests/test_targeted_revision.py"],
                    cwd=root, check=True)
-    subprocess.run([sys.executable, "-m", "scripts.qualification.research_delivery_smoke",
+    subprocess.run([sys.executable, "-m", "scripts.dev.export_synthetic_report",
                     "--output-directory", str(output)], cwd=root, check=True)
     print("Public checkout check passed. Synthetic exports only; no model calls.")
 

@@ -1,31 +1,26 @@
 # 仓库命名与当前入口
 
-2026-09-12 · 0.1.3收口整理。
+2026-09-13 · FIN 0.1.3 冻结代码树。[清理说明](frozen_cleanup.zh-CN.md) · [历史恢复](../../../archive/README.md)
 
-## 名称
-
-| 类型 | 规范 |
+| 类型 | 当前规范 |
 | --- | --- |
-| 产品 | FinSight Agent，中文可用“FinSight 金融研究工作台” |
-| 产品版本 | FIN 0.1.3已收口；FIN 0.1.4规划中 |
-| Python分发 | `finsight-agent`，实现包`sec_agent`保留兼容 |
+| 产品 | FinSight Agent / FinSight 金融研究工作台 |
+| 产品版本 | FIN 0.1.3 已冻结；FIN 0.1.4 规划中 |
+| Python 分发 | `finsight-agent`，实现包 `sec_agent` 保持兼容 |
 | 前端包 | `@finsight/workbench-frontend` |
-| 文档 | 新当前入口用`fin_0_1_4_research_plan.zh-CN.md`等小写语义名称；历史日期/大写文件保留 |
-| 代码 | 目录表达领域/阶段，文件表达动作；版本优先由Git/合同表达，避免文件名堆叠final/new/v2 |
-| 实验 | 产品版本、协议版本、attempt分离；已执行目录和冻结代码不改名、不复用 |
+| 当前文档 | 小写语义名称，语言后缀 `.zh-CN.md` / `.en.md`；中文首页统一为根 README |
+| 当前代码 | 目录表达领域，文件表达用途；避免 final/new/连续 rN 副本 |
+| 实验与版本 | 产品版本、合同版本、attempt 分开；历史执行用冻结提交恢复 |
 
-## 当前目录
+## 当前入口
 
-- `src/sec_agent/`：领域合同、Agent适配与研究逻辑；稳定导入名不随品牌改变。
-- `apps/workbench/`：FastAPI/React工作台；`deploy/`、`compose.yaml`、`langgraph.json`为部署入口。
-- `scripts/dev/`：零模型公开检查；`scripts/deployment/`：本地部署与检查。
-- `scripts/qualification/`：隔离资格脚本；AI内存研究统一在`ai_memory/`，旧文件仅兼容。
-- `tests/`：本地回归；`eval_sets/`：公开评测合同与fixture，隐藏评测不得普通全文检索。
-- `docs/product/`：版本范围和规划；`docs/architecture/`：实现；`docs/public/`：对外事实和指标。
-- `docs/worklog/`：实际进度及失败；`docs/project_os/current_context_pack.zh-CN.md`：短接续入口。
-- `archive/versions/`：历史内容，不能用旧“当前”状态覆盖新版本决定。
-- `output/`、`artifacts/runtime/`、本地数据/索引/cache/临时目录：忽略的运行产物，不因Git清理而删除。
+- `apps/workbench/`：FastAPI/React 工作台；`deploy/`、`compose.yaml`、`langgraph.json`：部署。
+- `scripts/deployment/research_workbench.py`：统一 CLI，保留现有部署身份。
+- `scripts/dev/`：公开检查、合成导出和截图；数据 CLI 见[脚本目录](../../../scripts/README.md)。
+- `src/sec_agent/`、`src/retrieval/`、`src/ingestion/` 等：被实际入口引用的领域模块与薄适配。
+- `tests/`：现用回归；`eval_sets/`：评测合同和 fixture，隐藏评测不普通全文检索。
+- `docs/product/`：版本范围；`docs/architecture/`：实现；`docs/public/`：对外事实。
+- `docs/worklog/`：实际进度与失败；`docs/project_os/current_context_pack.zh-CN.md`：短接续入口。
+- `archive/README.md`：只提供恢复指针，旧代码不留在当前树。
 
-旧AI内存模块导入与`python -m`命令保留；新代码使用`scripts.qualification.ai_memory.*`。历史脚本的精确重放使用原attempt冻结副本，当前兼容入口仅保持调用方式，不冒充旧代码摘要。
-
-本次未批量改名数千份历史合同、图ID、数据路径和配置，以免破坏来源绑定及恢复。当前入口的规范化与历史兼容分别处理。
+旧资格脚本及兼容跳板已退出；需要重放时使用冻结提交，不把旧模块重新放回运行路径。仍被产品使用的 Dell/S1 命名模块、SQL 迁移、图 ID、数据库和来源合同不批量改名，避免破坏已验证的身份与来源关系。忽略的本地数据、索引、输出与运行状态不因源码清理而删除。

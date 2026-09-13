@@ -8,12 +8,14 @@ from apps.workbench.backend.submission_receipts import SubmissionReceipts
 from apps.workbench.backend.authentication import _request_owner
 
 
-def application(root, effects, *, fail=False):
+def application(root, effects, *, fail=False, dispatch_started=None, release_dispatch=None):
     app = FastAPI()
     @app.post('/api/v1/dispatch')
     async def dispatch():
         effects.append('executed')
-        await asyncio.sleep(.02)
+        if dispatch_started is not None:
+            dispatch_started.set()
+            await release_dispatch.wait()
         if fail:
             return JSONResponse({'detail':'unknown upstream result'},status_code=502)
         return {'run_id': 'native-issued-id'}
@@ -64,9 +66,19 @@ def test_receipts_are_per_verified_owner_not_per_guessed_uuid(tmp_path):
 def test_two_process_equivalent_ingresses_share_atomic_claim(tmp_path):
     calls=[];h=headers()
     async def run():
-        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=application(tmp_path,calls)),base_url='http://a') as a, httpx.AsyncClient(transport=httpx.ASGITransport(app=application(tmp_path,calls)),base_url='http://b') as b:
-            results=await asyncio.gather(a.post('/api/v1/dispatch',headers=h,json={}),b.post('/api/v1/dispatch',headers=h,json={}))
-            assert sorted(r.status_code for r in results)==[200,409]
+        started, release = asyncio.Event(), asyncio.Event()
+        app = application(tmp_path,calls,dispatch_started=started,release_dispatch=release)
+        async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app),base_url='http://a') as a, httpx.AsyncClient(transport=httpx.ASGITransport(app=application(tmp_path,calls)),base_url='http://b') as b:
+            first = asyncio.create_task(a.post('/api/v1/dispatch',headers=h,json={}))
+            try:
+                await asyncio.wait_for(started.wait(), timeout=5)
+                # Hold the first dispatch open; a timing sleep cannot prove
+                # the second ingress arrives before a completed replay exists.
+                second = await asyncio.wait_for(b.post('/api/v1/dispatch',headers=h,json={}), timeout=5)
+            finally:
+                release.set()
+            assert (await first).status_code == 200
+            assert second.status_code == 409
     asyncio.run(run())
     assert len(calls)==1
 

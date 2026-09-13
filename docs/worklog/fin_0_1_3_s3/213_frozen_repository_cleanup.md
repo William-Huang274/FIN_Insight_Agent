@@ -69,3 +69,7 @@ Owner 明确回复“纳入本轮，修复兼容性后再合并（建议）”�
 - HTTP 旧提交重放测试已补充；完整回归与修复后的 GitHub CI 使用新 attempt，下文追加最终结果。
 
 本地修复后验收：完整 pytest cache A2 **1457 passed / 134 skipped**（239.40 秒）；卸载 diskcache 后定向兼容性 A2 **22 passed**；活动依赖与锁一致性、编译、暂存格式检查通过；敏感模式扫描 2334 文本文件无命中。前端无新增行为改动，远端 CI 继续执行原完整浏览器套件。唯一 warning 为第三方 LangSmith import 弃用提示。
+
+远端修复 A2（`9bb98739`）：run `34744285363` 容器 **SUCCESS**（主工作台、冻结 control-plane、非 root secret、内网 PostgreSQL/Dagster 和产品健康接口）；run `34744285367` 的 locked-supply-chain **SUCCESS**（所有锁定 Python profiles 与 npm）。同 run 产品 Python 为 **1 failed / 1441 passed / 150 skipped**：并发 ingress 测试用 20ms sleep 假定第二请求必在首请求完成前到达，实际断言得到 `[200,200]`。已完成重放本就可返回 200，不能仅凭该状态断言重复执行或去重成功。
+
+修正该测试为 asyncio Event 握手：首个 dispatch 明确保持未完成，第二 ingress 必须 409；放行首个后必须 200，且 effects 精确一次。已有独立重放测试继续要求原响应和重放 header，跨 OS 进程的 SQLite 唯一 claim 测试保留。无产品代码或权限变更。定向 A3 **22 passed**（7.85 秒）。原始 Linux 失败日志保留 `D:/temp/fin213/github-product-cache-a2-job.txt`，下一提交触发新 CI；最终远端检查和合并凭证以 [PR #8](https://github.com/William-Huang274/FIN_Insight_Agent/pull/8) 的匹配提交状态为准，不把此处记录的 A2 失败覆盖为成功。

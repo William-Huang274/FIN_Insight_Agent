@@ -24,7 +24,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Download and normalize concrete industry source-family snapshots."
     )
-    parser.add_argument("--contract", default="configs/industry_data_api_contracts_v0_2.yaml")
+    parser.add_argument("--contract", default="configs/sources/industry_apis.yaml")
     parser.add_argument("--snapshot-id", default="")
     parser.add_argument("--as-of-date", default="")
     parser.add_argument("--output-root", default="data/processed_private/industry_data")

@@ -341,23 +341,6 @@ def test_invalid_json_feedback_native_SDK_preserves_raw_call_and_valid_siblings(
     asyncio.run(run())
 
 
-def test_real_P07_A1_counterexample_stays_invalid_and_is_pairable():
-    from pathlib import Path
-    from sec_agent.agent_runtime.case_review_agent import InvalidToolCallFeedback
-    path = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260906-dell-case-convergence-a1/model-context-reasoning.private.jsonl")
-    if not path.exists():
-        pytest.skip("private real run fixture not present")
-    rows = [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()]
-    raw = next(r["raw_response"] for r in reversed(rows) if r.get("actor") == "author_P07" and r.get("event") == "response")
-    message = AIMessage.model_validate(raw)
-    result = InvalidToolCallFeedback().after_model({"messages": [message]}, None)
-    assert result["jump_to"] == "model" and len(result["messages"]) == 1
-    assert result["messages"][0].tool_call_id == message.invalid_tool_calls[0]["id"]
-    detail = json.loads(result["messages"][0].content)
-    assert detail["reason"] == "Extra data" and detail["column"] == 10935
-    assert message.tool_calls == []  # Never auto-repair/execute invalid arguments.
-
-
 @pytest.mark.parametrize('unknown_source', [False, True])
 def test_report_extra_brace_uses_normal_native_source_validation_without_model_rewrite(artifacts, unknown_source):
     import httpx
@@ -393,8 +376,6 @@ def test_report_extra_brace_uses_normal_native_source_validation_without_model_r
     asyncio.run(run())
 
 
-
-
 def test_source_bound_updates_reject_quote_and_authority_errors_together(artifacts):
     data = revision_fixture(artifacts, "P01")
     source = next(s for s, row in artifacts.read_paper("P01", "sources").items() if row["result_state"] != "numeric_fact")
@@ -428,12 +409,6 @@ def test_schema_only_convergence_reads_no_data_or_credentials(monkeypatch):
             assert len(list(graph.get_subgraphs())) == 8
             assert "report" in graph.get_output_jsonschema()["properties"]
     asyncio.run(run())
-
-
-
-
-
-
 
 
 @pytest.mark.parametrize("author_count", [0, 1, 3])

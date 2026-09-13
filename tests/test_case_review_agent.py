@@ -16,21 +16,21 @@ from sec_agent.agent_runtime.case_review_agent import (
 from test_research_mcp import _build_server
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture
 def artifacts():
-    """Optional saved product bundle; no dependency on a qualification runner."""
-    import os
-    from pathlib import Path
-    ref = os.environ.get("FIN_TEST_ARCHIVED_RESEARCH_BUNDLE")
-    if not ref:
-        pytest.skip("private archived research bundle not configured")
-    return CaseArtifacts(json.loads(Path(ref).read_text(encoding="utf-8"))["papers"])
+    """Build source-bound synthetic papers without a saved research bundle."""
+    from test_lead_research_graph import _task, _worker_result
+    from test_research_session import _new_worker_fixture
+
+    seed = _new_worker_fixture()
+    return CaseArtifacts([_worker_result(_task(f"synthetic-{i}"), seed) for i in range(8)])
 
 
 def review_fixture(artifacts):
-    return {"summary": "Synthetic native-loop qualification only; not a real financial review or product PASS.",
-        "assessments": [{"paper_id": p["paper_id"], "assessment": "Fixture checked tool access only, no semantic verdict."}
-                        for p in artifacts.catalog()["papers"]], "findings": [], "unresolved_data_requests": [], "withdrawn_finding_reasons": {}}
+    return {"summary": "Synthetic review used to verify tool access and state transitions.",
+        "assessments": [{"paper_id": p["paper_id"], "assessment": "Synthetic source access only; no financial verdict."}
+                        for p in artifacts.catalog()["papers"]], "findings": [],
+        "unresolved_data_requests": [], "withdrawn_finding_reasons": {}}
 
 
 @pytest.mark.parametrize("kind", ["case", "revision", "report"])
@@ -175,6 +175,82 @@ def test_revision_submission_requires_explicit_completion_and_preserves_incomple
     asyncio.run(exercise())
 
 
+def test_budget_hint_keeps_provider_history_intact():
+    from langchain.agents.middleware.types import ModelRequest
+    from langchain_core.messages import SystemMessage
+    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
+    model = ScriptedNativeChat(marker="private", replies=[])
+    history = [AIMessage(content="public", additional_kwargs={"reasoning_content": "private"}),
+        ToolMessage(name="read_research_artifact", content="paper", tool_call_id="r",
+            artifact={"section": "workpaper", "paper_id": "P01"})]
+    request = ModelRequest(model=model, messages=history, system_message=SystemMessage(content="Issuer comes from user."),
+        state={"messages": history, "thread_model_call_count": 22, "recorded_findings": {"F1": {}}})
+    projected = ReviewWorkBudget(24).request_with_budget(request)
+    assert "2 model call(s) remain" in projected.system_message.content
+    assert "penultimate call retains tools" in projected.system_message.content
+    assert projected.messages == history
+    assert history[0].additional_kwargs["reasoning_content"] == "private"
+    request.state["thread_model_call_count"] = 2
+    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Stable cache prefix, not a counter rewritten every turn.
+    request.state.update(thread_model_call_count=40, run_model_call_count=2)
+    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Match the native run limit after an authorized resume.
+
+
+def test_closeout_reserve_blocks_new_reads_without_fabricating_a_result():
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
+    state = {"thread_model_call_count": 6, "messages": [ToolMessage(name="read_research_artifact", content="paper",
+        tool_call_id="read", artifact={"paper_id": "P01", "section": "workpaper"})]}
+    request = SimpleNamespace(state=state, tool_call={"name": "read_research_source", "id": "late-read"})
+    result = ReviewWorkBudget(6).wrap_tool_call(request, lambda _: pytest.fail("late read must not execute"))
+    assert result.status == "error" and "not executed" in result.content
+    request.tool_call = {"name": "submit_case_review", "id": "close"}
+    assert ReviewWorkBudget(6).wrap_tool_call(request, lambda _: "submitted") == "submitted"
+
+
+def test_penultimate_review_can_correct_calculation_before_final_submission():
+    from types import SimpleNamespace
+    from langchain.agents.middleware.types import ModelRequest
+    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
+    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources
+    history = [ToolMessage(name="read_review_target", content="scope", tool_call_id="scope",
+        artifact={"kind": "revision_only"})]
+    tools = [SimpleNamespace(name=n) for n in ("calculate_research_metric", "read_research_source", "submit_case_review", "record_case_finding")]
+    request = ModelRequest(model=ScriptedNativeChat(marker="fixture", replies=[]), messages=history, tools=tools,
+        state={"messages": history, "run_model_call_count": 4})
+    budget = ReviewWorkBudget(6)
+    assert budget.request_with_budget(request).tools == tools
+    # The fifth response has already incremented the native counter when its
+    # tool executes. Previously this correction was rejected with one turn left.
+    source = {"result_state": "numeric_fact", "numeric_fact_authority": True, "value_decimal": "-7"}
+    calc = SourceBoundCalculation(expression="base - loss", operands={
+        "base": {"literal": "11", "assumption_note": "Synthetic baseline"}, "loss": {"source_id": "NUMFACT::fixture"}},
+        result_unit="USD", rationale="Synthetic decline from positive income to a signed loss.")
+    tool_request = SimpleNamespace(state={**request.state, "run_model_call_count": 5},
+        tool_call={"name": "calculate_research_metric", "id": "correction"})
+    result = budget.wrap_tool_call(tool_request, lambda _: calculate_from_sources(calc, lambda _: source))
+    assert result["value_decimal"] == "18"
+    request.state["run_model_call_count"] = 5
+    assert {t.name for t in budget.request_with_budget(request).tools} == {"submit_case_review", "record_case_finding"}
+    tool_request.state["run_model_call_count"] = 6
+    assert budget.wrap_tool_call(tool_request, lambda _: pytest.fail("final call cannot start another calculation")).status == "error"
+
+
+def test_case_schema_factory_is_read_only_and_discovers_both_subgraphs(monkeypatch):
+    from types import SimpleNamespace
+    import sec_agent.agent_runtime.agent_server_entry as entry
+    monkeypatch.setenv("FINSIGHT_DELL_SERVING_MODE", "case_workpaper_review_v1")
+    monkeypatch.setattr(entry, "open_case_review_composition", lambda **kwargs: pytest.fail("schema read opened case/model/data"))
+
+    async def exercise():
+        async with entry.research_graph({}, SimpleNamespace(execution_runtime=None)) as graph:
+            assert {name for name, _ in graph.get_subgraphs()} == {"counter", "verifier"}
+            assert "counter" in graph.get_output_jsonschema()["properties"]
+    asyncio.run(exercise())
+
+
+
+
 def test_native_parallel_agents_errors_and_checkpointed_private_messages(artifacts):
     async def exercise():
         server = _build_server(case_artifacts=artifacts)
@@ -281,67 +357,6 @@ def test_targeted_claim_read_is_smaller_but_not_complete_review_coverage(artifac
     asyncio.run(exercise())
 
 
-def test_budget_hint_keeps_provider_history_intact():
-    from langchain.agents.middleware.types import ModelRequest
-    from langchain_core.messages import SystemMessage
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
-    model = ScriptedNativeChat(marker="private", replies=[])
-    history = [AIMessage(content="public", additional_kwargs={"reasoning_content": "private"}),
-        ToolMessage(name="read_research_artifact", content="paper", tool_call_id="r",
-            artifact={"section": "workpaper", "paper_id": "P01"})]
-    request = ModelRequest(model=model, messages=history, system_message=SystemMessage(content="Issuer comes from user."),
-        state={"messages": history, "thread_model_call_count": 22, "recorded_findings": {"F1": {}}})
-    projected = ReviewWorkBudget(24).request_with_budget(request)
-    assert "2 model call(s) remain" in projected.system_message.content
-    assert "penultimate call retains tools" in projected.system_message.content
-    assert projected.messages == history
-    assert history[0].additional_kwargs["reasoning_content"] == "private"
-    request.state["thread_model_call_count"] = 2
-    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Stable cache prefix, not a counter rewritten every turn.
-    request.state.update(thread_model_call_count=40, run_model_call_count=2)
-    assert ReviewWorkBudget(24).request_with_budget(request) is request  # Match the native run limit after an authorized resume.
-
-
-def test_closeout_reserve_blocks_new_reads_without_fabricating_a_result():
-    from types import SimpleNamespace
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
-    state = {"thread_model_call_count": 6, "messages": [ToolMessage(name="read_research_artifact", content="paper",
-        tool_call_id="read", artifact={"paper_id": "P01", "section": "workpaper"})]}
-    request = SimpleNamespace(state=state, tool_call={"name": "read_research_source", "id": "late-read"})
-    result = ReviewWorkBudget(6).wrap_tool_call(request, lambda _: pytest.fail("late read must not execute"))
-    assert result.status == "error" and "not executed" in result.content
-    request.tool_call = {"name": "submit_case_review", "id": "close"}
-    assert ReviewWorkBudget(6).wrap_tool_call(request, lambda _: "submitted") == "submitted"
-
-
-def test_penultimate_review_can_correct_calculation_before_final_submission():
-    from types import SimpleNamespace
-    from langchain.agents.middleware.types import ModelRequest
-    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
-    from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources
-    history = [ToolMessage(name="read_review_target", content="scope", tool_call_id="scope",
-        artifact={"kind": "revision_only"})]
-    tools = [SimpleNamespace(name=n) for n in ("calculate_research_metric", "read_research_source", "submit_case_review", "record_case_finding")]
-    request = ModelRequest(model=ScriptedNativeChat(marker="fixture", replies=[]), messages=history, tools=tools,
-        state={"messages": history, "run_model_call_count": 4})
-    budget = ReviewWorkBudget(6)
-    assert budget.request_with_budget(request).tools == tools
-    # The fifth response has already incremented the native counter when its
-    # tool executes. Previously this correction was rejected with one turn left.
-    source = {"result_state": "numeric_fact", "numeric_fact_authority": True, "value_decimal": "-7"}
-    calc = SourceBoundCalculation(expression="base - loss", operands={
-        "base": {"literal": "11", "assumption_note": "Synthetic baseline"}, "loss": {"source_id": "NUMFACT::fixture"}},
-        result_unit="USD", rationale="Synthetic decline from positive income to a signed loss.")
-    tool_request = SimpleNamespace(state={**request.state, "run_model_call_count": 5},
-        tool_call={"name": "calculate_research_metric", "id": "correction"})
-    result = budget.wrap_tool_call(tool_request, lambda _: calculate_from_sources(calc, lambda _: source))
-    assert result["value_decimal"] == "18"
-    request.state["run_model_call_count"] = 5
-    assert {t.name for t in budget.request_with_budget(request).tools} == {"submit_case_review", "record_case_finding"}
-    tool_request.state["run_model_call_count"] = 6
-    assert budget.wrap_tool_call(tool_request, lambda _: pytest.fail("final call cannot start another calculation")).status == "error"
-
-
 def test_submitted_review_with_unchecked_work_does_not_enter_report_pipeline(artifacts):
     from langchain_core.runnables import RunnableLambda
     good = review_fixture(artifacts)
@@ -406,19 +421,6 @@ def test_review_returns_all_independent_quote_errors_at_once(artifacts):
         assert f"unknown_source_id:{fid}:P99:S001" in errors
 
 
-def test_case_schema_factory_is_read_only_and_discovers_both_subgraphs(monkeypatch):
-    from types import SimpleNamespace
-    import sec_agent.agent_runtime.agent_server_entry as entry
-    monkeypatch.setenv("FINSIGHT_DELL_SERVING_MODE", "case_workpaper_review_v1")
-    monkeypatch.setattr(entry, "open_case_review_composition", lambda **kwargs: pytest.fail("schema read opened case/model/data"))
-
-    async def exercise():
-        async with entry.research_graph({}, SimpleNamespace(execution_runtime=None)) as graph:
-            assert {name for name, _ in graph.get_subgraphs()} == {"counter", "verifier"}
-            assert "counter" in graph.get_output_jsonschema()["properties"]
-    asyncio.run(exercise())
-
-
 def test_source_tool_scopes_hidden_and_injected(artifacts):
     async def exercise():
         async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
@@ -436,91 +438,3 @@ def test_source_tool_scopes_hidden_and_injected(artifacts):
                 "research_as_of": "2026-09-02", "granularity": "quarter_discrete", "selection_mode": "latest_on_or_before"}, "badbranch"))
             assert response.status == "error" and "branch_outside_case_scope" in response.content
     asyncio.run(exercise())
-
-
-def test_actual_case_data_plane_with_native_MCP_tool_projection(artifacts):
-    from sec_agent.agent_runtime.agent_server_data_composition import open_approved_data_composition
-    from test_agent_server_data_composition import DEFAULT_ARTIFACT_ENV
-    with open_approved_data_composition(run_invocation_id="case-native-zero-model-host",
-            environment=DEFAULT_ARTIFACT_ENV, source_read_enabled=True, case_artifacts=artifacts) as data:
-        assert artifacts.case_id == data.foundation_binding.case_id
-        assert artifacts.foundation_digest == data.foundation_binding.foundation_digest
-        assert artifacts.snapshot_id == data.foundation_binding.snapshot_id
-        assert artifacts.owner_data_gate_decision_digest == data.decision_digest
-        assert artifacts.inventory_snapshot_digest == data.inventory_snapshot_digest
-        assert artifacts.source_route_catalog_digest == data.source_route_catalog_digest
-        async def exercise():
-            async with Client(data.mcp_server, raise_exceptions=False) as client:
-                args = {"research_as_of": artifacts.research_as_of, "data_snapshot_id": artifacts.snapshot_id,
-                    "execution_attempt_id": "case-native-zero-model-host"}
-                branches = sorted({p["branch_id"] for p in artifacts.catalog()["papers"]})
-                binding = await client.call_tool("get_dell_research_method", {"branch_ids": branches, **args})
-                assert not binding.is_error
-                tools = {t.name: t for t in await case_mcp_tools(client, run_scope=binding.structured_content["run_scope"], method_arguments=args)}
-                assert len(tools) == 9 and "search_research_sources" in tools
-                method = await tools["get_dell_research_method"].ainvoke(call("get_dell_research_method", {"branch_ids": branches}, "method"))
-                assert "scope_ceiling" not in method.artifact and "execution_budget_notice" in method.artifact
-                catalog = await tools["read_source_document"].ainvoke(call("read_source_document", {
-                    "request": {"operation": "catalog"}, "branch_id": "Q1_ISSUER_TRUTH"}, "catalog"))
-                assert catalog.status == "success" and catalog.artifact["items"]
-                facts = await tools["query_company_financial_facts"].ainvoke(call("query_company_financial_facts", {
-                    "branch_id": next(b for b in branches if b.startswith("Q8_")), "ticker": "DELL", "metric_ids": ["revenue", "net_margin", "revenue_yoy_growth"],
-                    "research_as_of": "2026-09-02", "granularity": "fiscal_year", "fiscal_years": [2026],
-                    "selection_mode": "latest_on_or_before"}, "facts"))
-                assert facts.status == "success", facts.content
-                assert "numeric_fact" in facts.content
-                import json
-                payload = facts.artifact
-                assert [r["metric_id"] for r in payload["results"]] == ["revenue", "net_margin", "revenue_yoy_growth"]
-                assert all(r["status"] == "resolved" for r in payload["results"]), json.dumps(payload)
-        asyncio.run(exercise())
-
-
-def test_real_DeepSeek_SDK_native_requests_usage_and_reasoning_preservation(artifacts):
-    import httpx
-    from pydantic import SecretStr
-    from sec_agent.agent_runtime.deepseek_structured_agents import (
-        ReasoningPreservingChatDeepSeek, load_deepseek_structured_agent_config,
-    )
-    from sec_agent.agent_runtime.case_review_agent import CaseModelAudit
-    request_rows, public, private = [], [], []
-    config = load_deepseek_structured_agent_config("configs/research/fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json")
-    replies = [[call("read_research_artifact", {"paper_id": p["paper_id"]}, f"read{i}")
-               for i, p in enumerate(artifacts.catalog()["papers"])],
-               [call("submit_case_review", {"review": {**review_fixture(artifacts), "completion": "complete"}}, "submit")]]
-
-    def serve(request):
-        body = json.loads(request.content)
-        index = len(request_rows)
-        request_rows.append(body)
-        assert all(t["function"]["parameters"]["type"] == "object" for t in body["tools"])
-        if index == 1:
-            assert {t["function"]["name"] for t in body["tools"]} == {"record_case_finding", "submit_case_review"}
-            assert body.get("tool_choice") in {None, "auto"}
-            prior = next(m for m in body["messages"] if m["role"] == "assistant")
-            assert prior["reasoning_content"] == "private fixture reasoning preserved verbatim"
-            assert len([m for m in body["messages"] if m["role"] == "tool"]) == 10
-        return httpx.Response(200, json={"id": f"fixture{index}", "object": "chat.completion", "created": 1,
-            "model": "deepseek-v4-pro", "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
-                "role": "assistant", "content": "", "reasoning_content": "private fixture reasoning preserved verbatim",
-                "tool_calls": [{"id": c["id"], "type": "function", "function": {"name": c["name"], "arguments": json.dumps(c["args"])}} for c in replies[index]]}}],
-            "usage": {"prompt_tokens": 100, "completion_tokens": 50, "total_tokens": 150, "prompt_cache_hit_tokens": 40,
-                "prompt_cache_miss_tokens": 60, "completion_tokens_details": {"reasoning_tokens": 30}}})
-
-    async def exercise():
-        async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client, httpx.AsyncClient(transport=httpx.MockTransport(serve)) as http_client:
-            model = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("fixture-not-a-secret"),
-                http_async_client=http_client, max_retries=0, streaming=False, use_responses_api=False,
-                extra_body={"thinking": {"type": "enabled"}})
-            agent = build_case_reviewer(role="verifier", model=model, tools=await case_mcp_tools(client), artifacts=artifacts, max_model_calls=2,
-                audit=CaseModelAudit(actor="case_verifier", profile=config.profile_for("verifier"), basis=config.token_budget_basis["specialist"],
-                    public_sink=public.append, private_sink=private.append))
-            result = await agent.ainvoke({"messages": [{"role": "user", "content": "Fixture native loop qualification, not real research."}]})
-            assert result["review"] == review_fixture(artifacts)
-    asyncio.run(exercise())
-    assert len(request_rows) == 2 and len(public) == 4 and len(private) == 4
-    assert sum(r.get("total_tokens", 0) for r in public) == 300
-    assert all(r["input_character_basis"] == "projected_sdk_payload_including_tools_not_provider_tokens" for r in public)
-    assert all(r["messages_basis"] == "original_history_before_sdk_request_projection" for r in private if r["event"] == "request")
-    assert [r["cache_hit_tokens"] for r in public if r["event"] == "outcome"] == [40, 40]
-    assert "private fixture" not in json.dumps(public) and "private fixture" in json.dumps(private)

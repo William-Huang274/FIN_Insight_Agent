@@ -1,0 +1,211 @@
+{
+  "schema_version": "fin_ia_s2_company_financial_fact_mart_policy_v1_0",
+  "status": "zero_network_source_bound_company_fact_mart_policy",
+  "minimum_period_end": "2022-01-01",
+  "allowed_forms": [
+    "10-K",
+    "10-Q"
+  ],
+  "metric_definitions": [
+    {
+      "metric_id": "revenue",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "RevenueFromContractWithCustomerExcludingAssessedTax"
+        },
+        {
+          "taxonomy": "us-gaap",
+          "concept": "Revenues"
+        },
+        {
+          "taxonomy": "us-gaap",
+          "concept": "SalesRevenueNet"
+        }
+      ]
+    },
+    {
+      "metric_id": "gross_profit",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "GrossProfit"
+        }
+      ]
+    },
+    {
+      "metric_id": "operating_income",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "OperatingIncomeLoss"
+        }
+      ]
+    },
+    {
+      "metric_id": "net_income",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "NetIncomeLoss"
+        }
+      ]
+    },
+    {
+      "metric_id": "diluted_eps",
+      "unit_family": "currency_per_share",
+      "allowed_units": [
+        "USD/shares"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "EarningsPerShareDiluted"
+        }
+      ]
+    },
+    {
+      "metric_id": "operating_cash_flow",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "NetCashProvidedByUsedInOperatingActivities"
+        }
+      ]
+    },
+    {
+      "metric_id": "capital_expenditures",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "PaymentsToAcquirePropertyPlantAndEquipment"
+        },
+        {
+          "taxonomy": "us-gaap",
+          "concept": "PaymentsToAcquireProductiveAssets"
+        }
+      ]
+    },
+    {
+      "metric_id": "inventory",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "InventoryNet"
+        }
+      ]
+    },
+    {
+      "metric_id": "accounts_receivable",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "AccountsReceivableNetCurrent"
+        }
+      ]
+    },
+    {
+      "metric_id": "accounts_payable",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "AccountsPayableCurrent"
+        }
+      ]
+    },
+    {
+      "metric_id": "cash_and_equivalents",
+      "unit_family": "currency",
+      "allowed_units": [
+        "USD"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "us-gaap",
+          "concept": "CashAndCashEquivalentsAtCarryingValue"
+        }
+      ]
+    },
+    {
+      "metric_id": "shares_outstanding",
+      "unit_family": "shares",
+      "allowed_units": [
+        "shares"
+      ],
+      "concepts": [
+        {
+          "taxonomy": "dei",
+          "concept": "EntityCommonStockSharesOutstanding"
+        }
+      ]
+    },
+    {
+      "metric_id": "gross_margin",
+      "unit_family": "percentage",
+      "allowed_units": [],
+      "concepts": [],
+      "formula": "gross_profit / revenue * 100"
+    },
+    {
+      "metric_id": "operating_margin",
+      "unit_family": "percentage",
+      "allowed_units": [],
+      "concepts": [],
+      "formula": "operating_income / revenue * 100"
+    },
+    {
+      "metric_id": "free_cash_flow",
+      "unit_family": "currency",
+      "allowed_units": [],
+      "concepts": [],
+      "formula": "operating_cash_flow - capital_expenditures"
+    }
+  ],
+  "authority": {
+    "raw_capture_digest_required": true,
+    "accepted_at_required": true,
+    "preserve_all_vintages": true,
+    "fact_signal_context_mixed_table_forbidden": true,
+    "typed_conflict_fails_closed": true,
+    "candidate_or_metric_row_grants_numeric_authority": false,
+    "derived_fact_requires_same_period_unit_and_accession": true,
+    "network_calls": 0,
+    "model_calls": 0
+  }
+}

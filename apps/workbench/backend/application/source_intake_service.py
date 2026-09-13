@@ -51,7 +51,7 @@ class SourceIntakeService:
             root
             / "configs"
             / "retrieval"
-            / "fin_ia_0_1_3_s1d_source_intake_policy_v1_0.json"
+            / "source_intake.json"
         )
         return cls(
             policy=policy,

@@ -198,7 +198,7 @@ class ModelExecutionAuthority(BaseModel):
     source_read_enabled: bool = False
     private_reasoning_audit_authorized: bool = False
     deepseek_config_filename: str = Field(
-        default="fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json",
+        default="structured_agents.json",
         pattern=r"^[a-z0-9_]+\.json$",
     )
     decision_digest: str = Field(pattern=_DIGEST_PATTERN)

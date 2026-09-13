@@ -245,7 +245,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
 
 def load_quick_answer_config(model_config_path):
     """Checked-in task profile next to the existing deployment config, never browser-selected."""
-    path = Path(model_config_path).with_name("fin_ia_0_1_3_dell_report_quick_answer_v1_0.json")
+    path = Path(model_config_path).with_name("quick_answer.json")
     settings = json.loads(path.read_text(encoding="utf-8"))
     profile = DeepSeekModelProfile.model_validate(settings["model_profile"])
     basis = TokenBudgetBasis.model_validate_json(json.dumps(settings["token_budget_basis"]))

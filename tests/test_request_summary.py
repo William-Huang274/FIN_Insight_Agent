@@ -85,8 +85,6 @@ def test_native_prefix_is_not_4k_trimmed_and_pairs_original_task_are_retained():
     asyncio.run(run())
 
 
-
-
 def test_summary_failure_has_no_native_automatic_retry():
     async def run():
         calls = []
@@ -103,8 +101,6 @@ def test_summary_failure_has_no_native_automatic_retry():
         assert await middleware.abefore_model(state,None) is None
         assert len(calls) == 1
     asyncio.run(run())
-
-
 
 
 def test_exhausted_summary_allowance_preserves_continuation_without_another_summary():

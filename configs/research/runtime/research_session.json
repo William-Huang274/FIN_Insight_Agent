@@ -1,23 +1,32 @@
 {
   "version": 1,
-  "model_config": "configs/research/fin_ia_0_1_3_dell_full_research_routed_v1_0.json",
+  "model_config": "configs/research/model_routing.json",
   "max_tasks": 12,
   "max_parallel_tasks": 2,
-  "context_editing": {"trigger_tokens": 16000, "keep": 2},
+  "context_editing": {
+    "trigger_tokens": 16000,
+    "keep": 2
+  },
   "context_summarization": {
     "enabled": false,
     "trigger_tokens": 80000,
     "keep_tokens": 24000,
     "max_summaries": 2,
-    "profile": {"model": "deepseek-v4-flash", "reasoning_effort": "low", "thinking": "disabled"},
+    "profile": {
+      "model": "deepseek-v4-flash",
+      "reasoning_effort": "low",
+      "thinking": "disabled"
+    },
     "budget": {
       "node_role": "specialist",
       "node_purpose": "Native same-agent working summary of genuinely long post-research histories; not a report, Evidence, or financial acceptance. Disabled pending successful long-continuation qualification.",
       "input_scale": "One agent's selected prefix, original task and recent tool pairs retained. Full original messages/artifacts remain in native checkpoints. No other agent's private history, no new memory service, no hidden 4k prefix trim.",
-      "required_outputs": ["Working goal/progress, exact material values/formulas/periods/source IDs, unresolved conflicts/errors and next reads; historical assertions clearly non-authoritative"],
+      "required_outputs": [
+        "Working goal/progress, exact material values/formulas/periods/source IDs, unresolved conflicts/errors and next reads; historical assertions clearly non-authoritative"
+      ],
       "schema_burden": "Plain working note from the native summarizer; no new financial report template or tool schema. Original records, not the summary, remain the citation authority.",
       "materiality_quality_risk": "Compression can omit qualifiers or promote historical claims. Never treat missing projected messages/failed reads as proved source absence, and never infer complete CALC objects from citation prose.",
-      "comparable_run_evidence": "2026-09-07 development n=1: native Flash summary 65726 input/1446 output; Pro continuation 73990 then46553 input. End-to-end branch failed at missing original-observation read interface and two-call limit. That interface is subsequently locally repaired; no paid revalidation and no same-quality savings claim.",
+      "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
       "reasoning_profile": "agentic_message_history_thinking_disabled",
       "max_input_characters": 650000,
       "max_output_tokens": 6000,
@@ -28,12 +37,12 @@
       "input_ceiling_behavior": "fail_before_transport"
     }
   },
-  "scope": "One fresh Dell development case on the existing as-of data plane; limits are safety ceilings, not target call counts. No old answer seed. New vision/attachment/export tooling requires separate qualification before inclusion.",
+  "scope": "One user research question with configured sources, scoped tools and role workpapers; limits are ceilings, not target call counts.",
   "cost_expectation_cny": {
-    "rough_low": 12,
-    "rough_high": 20,
-    "kind": "historical_pre_run_estimate_not_current_paid_authority",
-    "basis": "The 12-20 CNY range was the original pre-run estimate, not an achieved cost or a renewed budget. The completed development session needed six native runs including failures, continuation and revisions: 265 requests, 264 known usage, estimated 28.092715 CNY as of 2026-09-07; one usage unknown, not zero. Further paid work is paused pending a task-specific small-comparison input/output budget and Owner confirmation. The request-only context edit is offline-qualified, not measured savings. Vision remains separately itemized. Do not omit required research or auto-rerun the full case to fit an arbitrary call count."
+    "rough_low": null,
+    "rough_high": null,
+    "kind": "task_dependent",
+    "basis": "Costs depend on model rates, input scale, tool use and review depth. Inspect actual usage; no fixed per-case price is promised."
   },
   "nodes": {
     "lead": {
@@ -58,7 +67,7 @@
         ],
         "schema_burden": "Existing native planning tools and semantic task schemas plus one execution plan (depth and three short public rationales); the host binds context. No full report output.",
         "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
-        "comparable_run_evidence": "Full research A2 used seven Flash/disabled Lead turns (~0.1143 CNY); full-chain model quality remains to be requalified on the new question.",
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
         "reasoning_profile": "agentic_message_history_thinking_disabled",
         "max_input_characters": 500000,
         "max_output_tokens": 8000,
@@ -90,7 +99,7 @@
         ],
         "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
         "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
-        "comparable_run_evidence": "Prior eight-worker full A2: 68 requests/~3.0M tokens/~6.63 CNY including a failed Q8. Q8's 500k-character ceiling blocked otherwise purposeful research; 700k aligns with the qualified native review capacity, not a quality or cost guarantee.",
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
         "reasoning_profile": "agentic_message_history_thinking_enabled",
         "max_input_characters": 700000,
         "max_output_tokens": 32000,
@@ -122,7 +131,7 @@
         ],
         "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
         "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
-        "comparable_run_evidence": "Native case review A1 used Counter 14 and Verifier 10 calls, 1.57M combined tokens/~1.92 CNY. Pro/low produced useful tool actions; Flash/high exhausted 32k on a reviewed input.",
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
         "reasoning_profile": "agentic_message_history_thinking_enabled",
         "max_input_characters": 700000,
         "max_output_tokens": 32000,
@@ -154,7 +163,7 @@
         ],
         "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
         "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
-        "comparable_run_evidence": "Native whole-case review A1 Verifier took 10 calls. Prior review also made false absence/causality judgments, so valid schema does not establish semantic correctness.",
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
         "reasoning_profile": "agentic_message_history_thinking_enabled",
         "max_input_characters": 700000,
         "max_output_tokens": 32000,
@@ -186,7 +195,7 @@
         ],
         "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
         "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
-        "comparable_run_evidence": "Prior P07 targeted convergence used three author calls; other five completed authors needed no rerun. New parent sends only actual material findings, not a fixed six-author list.",
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
         "reasoning_profile": "agentic_message_history_thinking_enabled",
         "max_input_characters": 700000,
         "max_output_tokens": 32000,
@@ -198,35 +207,67 @@
       }
     },
     "synthesis": {
-      "profile": {"model": "deepseek-v4-pro", "thinking": "enabled", "reasoning_effort": "low"},
-      "limits": {"model_calls": 16, "tool_calls": 48},
+      "profile": {
+        "model": "deepseek-v4-pro",
+        "thinking": "enabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 16,
+        "tool_calls": 48
+      },
       "budget": {
         "node_role": "lead",
         "node_purpose": "The research Lead weighs current multi-topic findings AFTER review/author responses, integrating financial and industry mechanisms before Writer. Revisit only affected conclusions after a targeted repair.",
         "input_scale": "Current question, compact paper catalog, public Counter/Verifier findings and author responses; latest workpapers and source windows on demand, not private specialist histories or complete raw notebooks.",
-        "required_outputs": ["Source-bound conditional research synthesis", "Strongest countercase and what changes the view", "Effect of actual review/author amendments on research judgment"],
+        "required_outputs": [
+          "Source-bound conditional research synthesis",
+          "Strongest countercase and what changes the view",
+          "Effect of actual review/author amendments on research judgment"
+        ],
         "schema_burden": "Existing free cited prose submission shape, not a new report template; source references resolve locally.",
         "materiality_quality_risk": "Cross-paper causality and comparability need substantive judgment, not cheap task dispatch or simply accepting reviewer findings. No answer preloading; non-S2 calculations stay non-authoritative.",
-        "comparable_run_evidence": "No matched paid synthesis yet. Prior Pro Writer used four full-report calls and current native reviewers read multi-paper evidence. Sixteen calls/48 tools provide headroom for targeted synthesis, not a measured cost or quality claim. Do not reuse Flash planner's purpose budget for this analytical node.",
-        "reasoning_profile": "agentic_message_history_thinking_enabled", "max_input_characters": 700000, "max_output_tokens": 32000,
-        "timeout_seconds": 480, "max_transport_attempts": 1, "retry_policy": "none",
-        "truncation_stop_behavior": "fail_closed_no_partial_promotion", "input_ceiling_behavior": "fail_before_transport"
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
       }
     },
     "research_verifier": {
-      "profile": {"model": "deepseek-v4-pro", "thinking": "enabled", "reasoning_effort": "low"},
-      "limits": {"model_calls": 16, "tool_calls": 48},
+      "profile": {
+        "model": "deepseek-v4-pro",
+        "thinking": "enabled",
+        "reasoning_effort": "low"
+      },
+      "limits": {
+        "model_calls": 16,
+        "tool_calls": 48
+      },
       "budget": {
         "node_role": "counter",
         "node_purpose": "Independently check the Lead synthesis and affected current author amendments before Writer, with explicit earliest-owner findings.",
         "input_scale": "Source-bound Lead prose, compact current paper catalog and actual author responses; exact sources/current papers on demand, no prior agent private messages.",
-        "required_outputs": ["Independent research assessment", "Material findings with exact quotes and responsible paper IDs", "Indispensable unresolved tool/data/human needs without false public gaps"],
+        "required_outputs": [
+          "Independent research assessment",
+          "Material findings with exact quotes and responsible paper IDs",
+          "Indispensable unresolved tool/data/human needs without false public gaps"
+        ],
         "schema_burden": "Existing ReportReview plus small explicit responsibility/paper_ids fields; reject invalid targets without natural-language rules.",
         "materiality_quality_risk": "A corrected author may still be wrong, and a reviewer may be wrong. Check sources and substantive inference, not cosmetic template conformity. No ritual zero-advisory requirement.",
-        "comparable_run_evidence": "Existing whole-case review needed 24 calls across two reviewers for ten papers; targeted revised-synthesis workload is narrower. This new placement has zero paid results so far; final case must record incremental review cost separately.",
-        "reasoning_profile": "agentic_message_history_thinking_enabled", "max_input_characters": 700000, "max_output_tokens": 32000,
-        "timeout_seconds": 480, "max_transport_attempts": 1, "retry_policy": "none",
-        "truncation_stop_behavior": "fail_closed_no_partial_promotion", "input_ceiling_behavior": "fail_before_transport"
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
+        "reasoning_profile": "agentic_message_history_thinking_enabled",
+        "max_input_characters": 700000,
+        "max_output_tokens": 32000,
+        "timeout_seconds": 480,
+        "max_transport_attempts": 1,
+        "retry_policy": "none",
+        "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+        "input_ceiling_behavior": "fail_before_transport"
       }
     },
     "writer": {
@@ -250,7 +291,7 @@
         ],
         "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
         "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
-        "comparable_run_evidence": "Existing native Writer used four calls for full reports and three for local edits. Old report quality was constrained by audit-oriented question/omitted analysis; correcting the task and methods is not a promised cost reduction.",
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
         "reasoning_profile": "agentic_message_history_thinking_enabled",
         "max_input_characters": 700000,
         "max_output_tokens": 32000,
@@ -282,7 +323,7 @@
         ],
         "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
         "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
-        "comparable_run_evidence": "Earlier convergence first inputs were 170k/197k chars, mostly duplicated citation objects. Workbench prose-only terminal inputs were 21k/29k on different reports; not a matched A/B or guaranteed savings.",
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
         "reasoning_profile": "agentic_message_history_thinking_enabled",
         "max_input_characters": 700000,
         "max_output_tokens": 32000,
@@ -314,7 +355,7 @@
         ],
         "schema_burden": "Existing native tools and role-appropriate submission. Free prose is not forced into a report template; local checks bind observed sources/IDs and expose actionable errors.",
         "materiality_quality_risk": "Do not fabricate data, conflate company/period/unit, promote non-S2 prose or source-bound calculations, or call local tool/parse/budget failure a public-information gap. Do not omit necessary research just to fit a cheaper cap.",
-        "comparable_run_evidence": "Actual successful SQL/calculator quick follow-up: 3 calls, 28776 tokens, 11.4 s, estimated0.019796 CNY (n=1). This is not a cost promise for long research.",
+        "comparable_run_evidence": "Default capacity is based on development workloads, not a cost or quality guarantee. Record task-specific input scale, required output and measured usage before increasing limits.",
         "reasoning_profile": "agentic_message_history_thinking_disabled",
         "max_input_characters": 350000,
         "max_output_tokens": 8000,

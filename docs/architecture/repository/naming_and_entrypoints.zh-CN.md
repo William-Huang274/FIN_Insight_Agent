@@ -11,7 +11,7 @@
 | `src/sec_agent/research_foundation/` | 方法、资料读取、MCP 工具与来源绑定计算 |
 | `src/retrieval/`、`src/ingestion/` | 资料解析、节点生成、检索和索引构建 |
 | `scripts/data_retrieval/`、`data_sec/`、`market/`、`industry/` | 可重复的数据准备命令 |
-| `tests/` | 合成回归与需要显式启用的原始资料测试 |
+| `tests/` | 合成回归、可选基础设施集成及显式启用的网络检查 |
 
 ## 运行模块
 

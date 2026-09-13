@@ -4,6 +4,7 @@ import ast
 from dataclasses import dataclass
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 from typing import Any, Mapping, Sequence
@@ -12,10 +13,12 @@ from typing import Any, Mapping, Sequence
 RUNTIME_RESOURCE_REGISTRY_SCHEMA = (
     "fin_ia_0_1_3_runtime_resource_registry_v1_0"
 )
-DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF = (
-    "configs/runtime/"
-    "fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
-)
+DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF = "runtime-resources.json"
+
+
+def runtime_resource_root(repository_root: str | Path) -> Path:
+    """Dataset manifests are supplied by the deployment, never bundled runs."""
+    return Path(os.environ.get("FINSIGHT_RESEARCH_RESOURCES_ROOT") or repository_root).resolve()
 
 _RESOURCE_ROW_FIELDS = frozenset(
     {
@@ -228,7 +231,7 @@ def load_runtime_resource_registry(
     repository_root: str | Path,
     registry_ref: str = DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF,
 ) -> RuntimeResourceRegistry:
-    root = Path(repository_root).resolve()
+    root = runtime_resource_root(repository_root) if registry_ref == DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF else Path(repository_root).resolve()
     relative = _repo_relative_path(
         root,
         registry_ref,
@@ -448,7 +451,7 @@ def resolve_registered_runtime_resource(
     *,
     registry_ref: str = DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF,
 ) -> Path:
-    root = Path(repository_root).resolve()
+    root = runtime_resource_root(repository_root) if registry_ref == DEFAULT_RUNTIME_RESOURCE_REGISTRY_REF else Path(repository_root).resolve()
     row = registered_runtime_resource(
         root,
         resource_id,

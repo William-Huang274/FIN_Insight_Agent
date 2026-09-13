@@ -97,7 +97,7 @@ def load_research_runtime_profile(root):
             raise ValueError("research_session_node_reasoning_budget_mismatch:" + role)
         if not 1 <= node["limits"]["model_calls"] <= 48 or not 1 <= node["limits"]["tool_calls"] <= 96:
             raise ValueError("research_session_node_capacity_invalid")
-    case = json.loads((root / "configs/research/cases/dell_growth_quality.json").read_text(encoding="utf-8"))
+    case = json.loads((root / "configs/research/cases/growth_quality.json").read_text(encoding="utf-8"))
     if not case["fresh_research"] or case["reuse_prior_workpapers"]:
         raise ValueError("fresh_research_profile_cannot_reuse_archived_answers")
     return profile, case

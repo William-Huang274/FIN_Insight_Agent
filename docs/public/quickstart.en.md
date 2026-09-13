@@ -79,7 +79,7 @@ Report steps, expected/actual behavior, browser/viewport, code commit and public
 | Symptom | Check |
 | --- | --- |
 | Studio reports an unavailable runtime | Full functionality requires the research BFF and native API. Vite alone is not a research backend. |
-| Readiness returns 503 without data | Historical source-only health/catalog can work while real data is unavailable. The service does not invent financial records. |
+| Readiness returns 503 without data | A new checkout starts with a healthy API and an empty case catalog; configure research services and data before running research. |
 | Chromium executable is missing | Run the Playwright install command; check download proxies and OS dependencies. |
 | Output directory exists | Choose a new name and keep the earlier result. |
 | A model request has an uncertain outcome | Inspect the original run and audit before deciding on a new paid request. |
@@ -93,6 +93,6 @@ uv sync --locked --extra agent-runtime --extra external-search --extra workbench
 uv run --no-sync python -m pytest -q
 ```
 
-Private-data tests are skipped by default; use `--run-private-data` only with their original mounts. Historical Git proofs require full history, and Windows-specific tests require Windows. Full-suite checks, public interaction tests and live research are distinct evidence scopes.
+The public suite uses synthetic data and temporary directories. Private-case replays are distributed separately from the repository; Windows-specific tests require Windows. Full-suite checks, public interaction tests and live research are distinct evidence scopes.
 
 v0.1.3 is a local preview for evaluation and development. Reports retain their own versions and review states; see the [evaluation report](technical-evaluation.en.md) for results and scope.

@@ -139,8 +139,6 @@ def test_calculator_non_s2_source_literal_and_assumption_are_explicit():
     assert result["operands"]["scale"]["authority"] == "assumption"
 
 
-
-
 def test_calculator_reuses_saved_calculation_without_promoting_or_copying_parent_tree():
     parent = _calculate()
     original = deepcopy(parent)

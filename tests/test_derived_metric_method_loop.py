@@ -10,7 +10,7 @@ from financial_facts import FactLookup, execute_fact_lookup, write_company_fact_
 from financial_facts.derived_metrics import derived_metric_catalog
 from sec_agent.agent_runtime.planner_tool_capabilities import derive_planner_tool_capabilities
 from sec_agent.research_foundation.report_charts import ReportChart, bind_report_charts
-from test_s2_company_financial_fact_mart import _metric, _observation, _policy
+from test_company_financial_fact_mart import _metric, _observation, _policy
 
 
 def build_mart(tmp_path, *, ticker="ALPHA", start="2025-01-01", end="2025-12-31", year=2025,

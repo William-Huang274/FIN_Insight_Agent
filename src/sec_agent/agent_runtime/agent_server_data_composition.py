@@ -182,23 +182,16 @@ def open_approved_data_composition(
         label: _required_file_environment(name, env)
         for label, name in _ENV_PATHS.items()
     }
-    config_root = root / "configs" / "research"
-    foundation_path = (
-        config_root
-        / "fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json"
-    )
-    physical_catalog_path = (
-        config_root
-        / "fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json"
-    )
-    enrichment_path = (
-        config_root
-        / "fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json"
-    )
-    owner_decision_path = (
-        config_root
-        / "fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json"
-    )
+    # Preserve signed data bindings independently from product configuration.
+    # Public templates are not substitutes for a verified dataset manifest.
+    resource_root = env.get("FINSIGHT_RESEARCH_RESOURCES_ROOT")
+    if not resource_root:
+        raise ApprovedDataCompositionError("research_resources_directory_required")
+    config_root = Path(resource_root).resolve(strict=True)
+    foundation_path = config_root / "foundation.json"
+    physical_catalog_path = config_root / "source-routes.json"
+    enrichment_path = config_root / "reviewed-evidence.json"
+    owner_decision_path = config_root / "access-policy.json"
 
     try:
         decision = load_owner_data_gate_decision(owner_decision_path)

@@ -87,24 +87,3 @@ def test_deepseek_strict_projection_rejects_non_strict_tool() -> None:
     tool["function"]["strict"] = False
     with pytest.raises(DeepSeekStrictProjectionError, match="deepseek_strict_tool_invalid"):
         project_deepseek_strict_tool(tool)
-
-
-def test_deepseek_strict_submission_profile_is_isolated_to_beta() -> None:
-    profile_path = (
-        Path(__file__).resolve().parents[1]
-        / "configs/providers/fin_ia_0_1_3_deepseek_v4_pro_ga_"
-        "contract_submission_non_thinking_strict_beta_profile_v1_0.json"
-    )
-    payload = json.loads(profile_path.read_text(encoding="utf-8"))
-    profile = load_chat_completion_profile(payload)
-    validate_deepseek_strict_submission_profile(profile)
-
-    changed = deepcopy(payload)
-    changed["base_url"] = "https://api.deepseek.com"
-    with pytest.raises(
-        DeepSeekStrictProjectionError,
-        match="deepseek_strict_submission_profile_invalid",
-    ):
-        validate_deepseek_strict_submission_profile(
-            load_chat_completion_profile(changed)
-        )

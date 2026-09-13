@@ -98,8 +98,8 @@ def main():
     (settings_root / "attachments").mkdir(exist_ok=True)
     env["FINSIGHT_TASK_ATTACHMENTS_HOST_ROOT"] = str(settings_root / "attachments")
     env["FINSIGHT_TASK_VISION_ENABLED"] = "1" if args.enable_research else "0"
-    docker = shutil.which("docker") or "Z:/Docker/Docker/resources/bin/docker.exe"
-    if not Path(docker).is_file():
+    docker = shutil.which("docker")
+    if not docker:
         raise FileNotFoundError("Docker CLI not found; add the installed Docker CLI to PATH")
     command = [str(docker), "compose", "--env-file", str(repo / ".env"), "-p", "finsight-dell-report-workbench",
         "-f", "deploy/agent_server/compose.yaml", "-f", "deploy/agent_server/compose.research-session.yaml" if args.fresh_only else "deploy/agent_server/compose.report-session.yaml"]

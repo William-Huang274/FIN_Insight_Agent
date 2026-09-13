@@ -92,6 +92,7 @@ services:
       FINSIGHT_DELL_EXECUTION_PROFILE: product
       N_JOBS_PER_WORKER: "4"
       FIN_REPO_ROOT: /deps/FIN_Insight_Agent
+      FINSIGHT_RESEARCH_RESOURCES_ROOT: /run/fin-insight/resources
       FINSIGHT_DELL_S1_NODES_PATH: /run/fin-insight/s1/retrieval_nodes.jsonl
       FINSIGHT_DELL_REVIEWED_BASE_PACK_PATH: /run/fin-insight/reviewed/base/pack.json
       FINSIGHT_DELL_REVIEWED_OVERLAY_PATH: /run/fin-insight/reviewed/overlay/reviewed-evidence-case-projection.json
@@ -100,37 +101,43 @@ services:
       FINSIGHT_DELL_EXTERNAL_MANIFEST_PATH: /run/fin-insight/external-r12/manifest.json
     volumes:
       - type: bind
-        source: "${FINSIGHT_DELL_S1_NODES_HOST_PATH:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/rag_mature_stack/retrieval_qualification/dell_rag_full_stack_preview_attempt_20260902_03/retrieval_nodes.jsonl}"
+        source: "${FINSIGHT_RESEARCH_RESOURCES_HOST_ROOT:?configure the verified dataset resources directory}"
+        target: /run/fin-insight/resources
+        read_only: true
+        bind:
+          create_host_path: false
+      - type: bind
+        source: "${FINSIGHT_DELL_S1_NODES_HOST_PATH:?configure the dataset path in your local environment}"
         target: /run/fin-insight/s1/retrieval_nodes.jsonl
         read_only: true
         bind:
           create_host_path: false
       - type: bind
-        source: "${FINSIGHT_DELL_REVIEWED_BASE_PACK_HOST_PATH:-D:/FIN_Insight_Agent/data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json}"
+        source: "${FINSIGHT_DELL_REVIEWED_BASE_PACK_HOST_PATH:?configure the dataset path in your local environment}"
         target: /run/fin-insight/reviewed/base/pack.json
         read_only: true
         bind:
           create_host_path: false
       - type: bind
-        source: "${FINSIGHT_DELL_REVIEWED_OVERLAY_HOST_PATH:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/evidence_overlay/attempts/20260902T051005+0800-dell-fy27q2-sec-ex99-review-a01/reviewed-evidence-case-projection.json}"
+        source: "${FINSIGHT_DELL_REVIEWED_OVERLAY_HOST_PATH:?configure the dataset path in your local environment}"
         target: /run/fin-insight/reviewed/overlay/reviewed-evidence-case-projection.json
         read_only: true
         bind:
           create_host_path: false
       - type: bind
-        source: "${FINSIGHT_DELL_S2_RESULT_HOST_PATH:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/s2/s2_exact_period_contract_successor_20260902_r1/company_financial_fact_mart_result.json}"
+        source: "${FINSIGHT_DELL_S2_RESULT_HOST_PATH:?configure the dataset path in your local environment}"
         target: /run/fin-insight/s2/company_financial_fact_mart_result.json
         read_only: true
         bind:
           create_host_path: false
       - type: bind
-        source: "${FINSIGHT_DELL_S2_MART_HOST_PATH:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/s2/s2_exact_period_contract_successor_20260902_r1/company_financial_facts.sqlite}"
+        source: "${FINSIGHT_DELL_S2_MART_HOST_PATH:?configure the dataset path in your local environment}"
         target: /run/fin-insight/s2/company_financial_facts.sqlite
         read_only: true
         bind:
           create_host_path: false
       - type: bind
-        source: "${FINSIGHT_DELL_EXTERNAL_PACK_HOST_ROOT:-Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/external_exact_url_qualification/dell_external_exact_url_zero_model_20260902_r12}"
+        source: "${FINSIGHT_DELL_EXTERNAL_PACK_HOST_ROOT:?configure the dataset path in your local environment}"
         target: /run/fin-insight/external-r12
         read_only: true
         bind:

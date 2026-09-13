@@ -21,7 +21,7 @@ DEFAULT_REFERENCE_VERTICAL_FOUNDATION_PATH = (
     Path(__file__).resolve().parents[3]
     / "configs"
     / "research"
-    / "fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json"
+    / "reference_foundation.json"
 )
 
 

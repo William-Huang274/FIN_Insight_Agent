@@ -4,8 +4,10 @@ import argparse
 import ast
 from collections import deque
 import json
+import os
 from pathlib import Path
 import re
+import subprocess
 import sys
 from typing import Iterable
 
@@ -23,7 +25,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     'scripts/data_retrieval/build_current_financial_object_store.py',
     'scripts/data_retrieval/build_current_retrieval_snapshot.py',
     'scripts/data_retrieval/build_evidence_store.py',
-    'scripts/data_retrieval/build_s2_company_financial_fact_mart.py',
+    'scripts/data_retrieval/build_company_financial_mart.py',
     'scripts/data_retrieval/capture_official_sources.py',
     'scripts/data_retrieval/capture_sec_companyfacts_snapshot.py',
     'scripts/data_retrieval/combine_financial_snapshots.py',
@@ -93,10 +95,6 @@ PYTHON_ENTRYPOINTS = tuple(
 FRONTEND_ENTRYPOINTS = (
     "apps/workbench/frontend/vite/src/main.tsx",
 )
-REGISTRY_REF = (
-    "configs/runtime/"
-    "fin_ia_0_1_3_clean_baseline_runtime_resource_registry_v1_0.json"
-)
 FORBIDDEN_ACTIVE_PATH_TOKENS = (
     "archive/",
     "/dell_",
@@ -112,6 +110,41 @@ FORBIDDEN_ACTIVE_PATH_TOKENS = (
 _FRONTEND_IMPORT = re.compile(
     r"(?:from\s+|import\s*\(?\s*)[\"'](?P<ref>\.[^\"']+)[\"']"
 )
+PRIVATE_RECORD_ROOTS = (
+    "archive/", "reports/", "eval_sets/", "artifacts/", "outputs/",
+    "docs/project_os/", "docs/worklog/", "docs/internal/", "docs/research/",
+    "configs/audits/", "configs/engineering/", "configs/repository/",
+    "tests/qualification/",
+)
+
+
+def public_surface_violations() -> list[str]:
+    """Keep private work records out of the tracked public application tree."""
+    try:
+        result = subprocess.run(
+            ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],
+            cwd=ROOT, capture_output=True, check=True,
+        )
+        refs = result.stdout.decode("utf-8").split("\0")
+    except (OSError, subprocess.CalledProcessError):
+        # Source archives do not have Git metadata. Ignore local dependency and
+        # generated directories when checking an extracted public release.
+        refs = []
+        ignored = {".git", ".local", ".finsight", ".codex_runtime", "node_modules",
+                   "dist", "__pycache__", "test-results", "playwright-report"}
+        for directory, subdirs, files in os.walk(ROOT):
+            subdirs[:] = [name for name in subdirs if name not in ignored
+                          and not name.startswith(".venv")]
+            refs.extend((Path(directory) / name).relative_to(ROOT).as_posix() for name in files)
+    violations = []
+    for ref in sorted(set(refs)):
+        if not ref or not (ROOT / ref).is_file():
+            continue
+        if ref.startswith(PRIVATE_RECORD_ROOTS):
+            violations.append(ref)
+        elif ref.startswith("configs/") and re.search(r"(?:fin_ia_|attempts?/|_result_|_202\d{5})", ref):
+            violations.append(ref)
+    return violations
 
 
 def _relative(path: Path) -> str:
@@ -283,18 +316,16 @@ def _forbidden_refs(refs: Iterable[str]) -> list[str]:
 def build_report() -> dict[str, object]:
     python_refs, python_unresolved = python_closure(PYTHON_ENTRYPOINTS)
     frontend_refs, frontend_unresolved = frontend_closure(FRONTEND_ENTRYPOINTS)
-    registry_path = ROOT / REGISTRY_REF
-    registry = json.loads(registry_path.read_text(encoding="utf-8"))
-    detector_refs = [str(value) for value in registry.get("detector_python_refs") or ()]
-    resource_refs = [
-        str(row.get("repo_relative_path") or "")
-        for row in registry.get("resources") or ()
-    ]
+    # Dataset manifests and run history are deployment inputs, not source code.
+    # Audit maintained files without opening any private research package.
+    detector_refs = []
+    resource_refs = sorted(_relative(path) for path in (ROOT / "configs").rglob("*") if path.is_file())
     forbidden = {
         "python_import_graph": _forbidden_refs(python_refs),
         "frontend_import_graph": _forbidden_refs(frontend_refs),
         "runtime_registry_detectors": _forbidden_refs(detector_refs),
         "runtime_registry_resources": _forbidden_refs(resource_refs),
+        "public_tree_private_records": public_surface_violations(),
     }
     failures: list[str] = []
     if python_unresolved:
@@ -309,7 +340,7 @@ def build_report() -> dict[str, object]:
         "entrypoints": {
             "python": list(PYTHON_ENTRYPOINTS),
             "frontend": list(FRONTEND_ENTRYPOINTS),
-            "runtime_registry": REGISTRY_REF,
+            "configuration_root": "configs",
         },
         "observed": {
             "python_files": len(python_refs),

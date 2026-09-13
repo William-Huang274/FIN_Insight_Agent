@@ -461,27 +461,24 @@ def _write_jsonl(path: Path, rows: list[Mapping[str, Any]]) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build the FIN 0.1.3 S1-B current financial object store."
+        description="Build financial objects from a prepared source manifest."
     )
     parser.add_argument(
         "--manifest",
         default=(
-            "configs/retrieval/"
-            "fin_ia_0_1_3_s1b_current_source_object_manifest_v1_1.json"
+            "data/financial-objects/source-manifest.json"
         ),
     )
     parser.add_argument(
         "--output-root",
         default=(
-            "data/workbench_private/"
-            "fin_0_1_3_s1b_current_financial_object_store/v2"
+            "data/financial-objects"
         ),
     )
     parser.add_argument(
         "--summary-output",
         default=(
-            "configs/runtime/"
-            "fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_1.json"
+            "data/financial-objects/result.json"
         ),
     )
     return parser.parse_args()

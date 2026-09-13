@@ -27,6 +27,6 @@ uv run --no-sync python -m pytest -q
 uv run --no-sync python scripts/engineering/verify_active_baseline.py --pretty
 ```
 
-Tests marked `local_data_integration` or `requires_local_data` skip by default. `--run-private-data` requires the original private mounts. Synthetic model adapters prove wiring and invariants, not financial judgment.
+Tests use synthetic data and temporary directories. Platform-specific checks run only on their supported platforms. Model adapters prove wiring and invariants, not financial judgment.
 
-Synthetic tests check interfaces and invariants. Private-data tests require their original sources; model quality must be evaluated separately from these engineering checks.
+Synthetic tests check interfaces and invariants. Model quality must be evaluated separately from these engineering checks.

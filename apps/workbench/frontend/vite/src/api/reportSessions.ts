@@ -151,7 +151,7 @@ export type ResearchConfiguration = {
   default_question?: string;
   research_as_of?: string;
   notice?: string;
-  cost_expectation_cny?: { rough_low: number; rough_high: number };
+  cost_expectation_cny?: { rough_low: number | null; rough_high: number | null };
 };
 
 const base = "/api/v1/research-sessions";

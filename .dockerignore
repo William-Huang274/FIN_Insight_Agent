@@ -40,3 +40,10 @@ reports/retrieval_eval/
 build/
 *.egg-info/
 .secrets/
+
+# Local-only records
+docs/
+reports/
+eval_sets/
+.codex_runtime/
+.finsight/

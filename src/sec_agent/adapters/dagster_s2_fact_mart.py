@@ -13,8 +13,8 @@ from dagster import Definitions, Failure, Field, job, op
 from filelock import FileLock, Timeout
 
 
-BUILDER_MODULE = "scripts.data_retrieval.build_s2_company_financial_fact_mart"
-BUILDER_RELATIVE_PATH = Path("scripts/data_retrieval/build_s2_company_financial_fact_mart.py")
+BUILDER_MODULE = "scripts.data_retrieval.build_company_financial_mart"
+BUILDER_RELATIVE_PATH = Path("scripts/data_retrieval/build_company_financial_mart.py")
 DEFAULT_TIMEOUT_SECONDS = 900
 MAX_TIMEOUT_SECONDS = 900
 CHILD_ENV_ALLOWLIST = frozenset(

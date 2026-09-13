@@ -40,7 +40,7 @@ Linux 如果缺少浏览器系统依赖，使用 `npx playwright install --with-
 
 需要观察操作时运行 `npm run test:public -- --headed --workers=1`。失败截图和 trace 写入 `apps/workbench/frontend/test-results/public/`；使用 `npx playwright show-trace <trace.zip>` 查看。该结果目录由 Playwright 管理，需要保存失败证据时先复制到独立目录。
 
-端口占用或被 Windows 保留时，设置环境变量 `FINSIGHT_E2E_FRONTEND_PORT` 为另一个可用端口，再执行测试。默认 `test:e2e` 还会启动旧兼容后端，可用 `FINSIGHT_E2E_BACKEND_PORT` 同步更换后端监听和前端代理端口，例如 PowerShell 中 `$env:FINSIGHT_E2E_BACKEND_PORT='18795'`。`test:public` 不需要后端。不要停止别人的服务来腾端口。
+端口占用或被 Windows 保留时，设置环境变量 `FINSIGHT_E2E_FRONTEND_PORT` 为另一个可用端口，再执行测试。默认 `test:e2e` 还会启动无资料的源码后端，可用 `FINSIGHT_E2E_BACKEND_PORT` 同步更换后端监听和前端代理端口，例如 PowerShell 中 `$env:FINSIGHT_E2E_BACKEND_PORT='18795'`。`test:public` 不需要后端。不要停止别人的服务来腾端口。
 
 ## 3. 启动完整本地研究
 
@@ -79,7 +79,7 @@ Windows 可使用 `D:/private/finsight-session`。先完成上节前端构建，
 | 现象 | 检查方向 |
 | --- | --- |
 | 配置页提示运行服务不可用 | 完整功能要连接研究 BFF 和原生 API；单独 Vite 不是研究后端。 |
-| 无资料时 readiness 503 | 历史源码模式健康与目录可用，真实数据未就绪；不是自动填充测试财务数据。 |
+| 无资料时 readiness 503 | 新克隆的健康接口可用、案例列表为空；配置运行服务及资料后才可进行真实研究。 |
 | 浏览器测试找不到 Chromium | 执行 Playwright 安装命令；检查下载代理和系统依赖。 |
 | 输出目录已存在 | 使用新的目录名，保留旧测试结果。 |
 | 模型请求结果未确定 | 先查看原运行和审计，不自动重复提交付费请求。 |
@@ -93,6 +93,6 @@ uv sync --locked --extra agent-runtime --extra external-search --extra workbench
 uv run --no-sync python -m pytest -q
 ```
 
-私有资料测试默认跳过，挂载原资料后才使用 `--run-private-data`；历史 Git 证明需要完整历史，Windows 专属测试只在对应环境执行。完整套件、公开交互测试与真实模型研究分别记录，不能混成一个成功率。
+公开套件使用合成资料和临时目录；依赖原始私有案例的重放记录不随仓库分发。Windows 专属测试只在对应环境执行。完整套件、公开交互测试与真实模型研究分别记录，不能混成一个成功率。
 
 v0.1.3 面向本地体验与开发。报告会保存各自的版本和人工审阅状态；评测结果及适用范围见[评测报告](technical-evaluation.zh-CN.md)。

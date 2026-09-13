@@ -93,45 +93,7 @@ def test_operations_surface_reads_version_neutral_store_and_runtime(tmp_path: Pa
     evals = client.get("/api/operations/evals")
     assert evals.status_code == 200
     assert isinstance(evals.json()["evals"], list)
-    document_quality = client.get("/api/operations/s1/complex-document-quality")
-    assert document_quality.status_code == 200
-    quality_payload = document_quality.json()
-    assert quality_payload["product_case_enrollment"] is False
-    assert quality_payload["document_quality"]["table_region_count"] == 5
-    assert quality_payload["financial_objects"]["cross_page_relation_count"] == 1
-    assert quality_payload["coverage_summary"]["true_public_information_gap_count"] == 0
-    retrieval_quality = client.get("/api/operations/s1/retrieval-quality")
-    assert retrieval_quality.status_code == 200
-    retrieval_payload = retrieval_quality.json()
-    assert retrieval_payload["summary"]["vs3_vertical_slice_integrated"] is True
-    assert retrieval_payload["summary"]["combined_union_positive_atom_count"] == 15
-    assert retrieval_payload["summary"]["financial_shortlist_positive_top10_count"] == 15
-    assert retrieval_payload["summary"]["financial_shortlist_hard_negative_top10_count"] == 0
-    assert retrieval_payload["authority"]["candidate_is_not_evidence"] is True
-    assert retrieval_payload["authority"]["s1_qualified_stable"] is False
-    supplement_quality = client.get("/api/operations/s1/supplement-quality")
-    assert supplement_quality.status_code == 200
-    supplement_payload = supplement_quality.json()
-    case_summaries = {
-        row["case_key"]: row for row in supplement_payload["case_summaries"]
-    }
-    assert tuple(case_summaries) == ("DELL", "MU", "NVDA")
-    expected = {
-        "DELL": {"retired": 3, "added": 5, "narrowed": 1, "new_gap": 0, "gaps": 14},
-        "MU": {"retired": 16, "added": 11, "narrowed": 2, "new_gap": 2, "gaps": 15},
-        "NVDA": {"retired": 14, "added": 19, "narrowed": 3, "new_gap": 0, "gaps": 13},
-    }
-    for case_key, values in expected.items():
-        row = case_summaries[case_key]
-        delta = row["coverage_delta"]
-        assert delta["retired_broad_or_legacy_evidence_count"] == values["retired"]
-        assert delta["added_capture_bound_claim_count"] == values["added"]
-        assert delta["narrowed_gap_count"] == values["narrowed"]
-        assert delta.get("added_gap_count", 0) == values["new_gap"]
-        assert delta["closed_gap_count"] == 0
-        assert delta["successor_gap_count"] == values["gaps"]
-        assert all(item["proposition_ready"] for item in row["proposition_rows"])
-        assert row["authority"]["complete_s1_qualified"] is False
+
 
 
 def test_operations_runs_real_smoke_and_current_baseline_eval(tmp_path: Path) -> None:

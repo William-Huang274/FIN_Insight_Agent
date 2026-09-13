@@ -17,4 +17,14 @@ $env:FIN_NATIVE_ATTEMPT_DIR='D:/FIN_Insight_Agent/.local/fin014/<新的attempt�
 
 测试结束仅停止本attempt创建的服务，保留容器、卷、网络和日志。清理另行明确选择目标，不运行全局prune。连续失败先核对配置/原生文档和日志，不增加自研运行协议。
 
-该资格不覆盖真实金融质量、模型供应商、跨用户公平性、父子共享预算、多台主机、备份恢复或正式商业部署许可。具体结果见[工作记录005](../../docs/worklog/fin_0_1_4/005_e1_native_queue_and_recovery.md)。
+上述队列资格不覆盖真实金融质量、模型供应商、跨用户公平性、父子共享预算、多台主机、备份恢复或正式商业部署许可。具体结果见[工作记录005](../../docs/worklog/fin_0_1_4/005_e1_native_queue_and_recovery.md)。
+
+共享预算与模型派发资格使用相同环境变量和另一个新attempt目录，执行：
+
+```powershell
+.venv/Scripts/python.exe -m pytest tests/qualification/test_model_dispatch_budget.py -q
+```
+
+该入口在本attempt独立PG中显式安装`003_model_dispatch_budget_v1.sql`，通过真实连接争抢同一研究预算，再通过原生重启测试真实`CaseModelAudit`的可选保护。当前`src`只读挂载覆盖镜像内项目代码；模拟handler只返回合成消息，SDK仅做请求格式化，没有模型网络调用。金额均为合成整数micro单位，不是真实价格：预算1000、交付预留200、单请求占用600、合成返回usage计价200。未知占用不自动到期；已保存消息可回放，不再次结算。
+
+模型资格覆盖一个研究根预算及子调用，不覆盖跨研究月额度/公平调度、供应商账单对账或所有产品入口。原始模型消息存入PG是为了回放，不能直接作为公共查询接口；正式启用前须完成可信owner绑定、数据库权限和保留策略。见[工作记录006](../../docs/worklog/fin_0_1_4/006_e1_shared_budget_and_model_dispatch.md)。

@@ -18,6 +18,9 @@ class ProbeState(TypedDict, total=False):
     completed: bool
     reviewed: bool
     worker: str
+    guard_budget: str
+    guard_owner: str
+    guard_mode: str
 
 
 def _event(state, phase):
@@ -40,6 +43,13 @@ async def simulate_work(state: ProbeState):
     if not 0 <= delay <= 90:
         raise ValueError('probe_delay_out_of_bounds')
     _event(state, 'work_started')
+    if state.get('guard_budget'):
+        import sys
+        if '/probe' not in sys.path:
+            sys.path.insert(0, '/probe')
+        from model_dispatch_probe import invoke_model
+        await invoke_model(state, _event)
+        return {'completed': True, 'worker': os.environ['HOSTNAME']}
     await asyncio.sleep(delay)
     _event(state, 'work_finished')
     return {'completed': True, 'worker': os.environ['HOSTNAME']}

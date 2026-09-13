@@ -235,10 +235,11 @@ async def case_mcp_tools(client, *, run_scope=None, method_arguments=None):
 
 class CaseModelAudit(AgentMiddleware):
     """Existing audit format on the native middleware hook; SDK does transport."""
-    def __init__(self, *, actor, profile, basis: TokenBudgetBasis, public_sink, private_sink, stream_public=False):
+    def __init__(self, *, actor, profile, basis: TokenBudgetBasis, public_sink, private_sink, stream_public=False, dispatch_guard=None):
         self.actor, self.profile, self.basis = actor, profile, basis
         self.private_sink, self.stream_public = private_sink, stream_public
         self.activity_sink = public_sink
+        self.dispatch_guard = dispatch_guard
         self.context_summary = None
         self.extra_middlewares = []
         self.events = []
@@ -314,6 +315,14 @@ class CaseModelAudit(AgentMiddleware):
                 "input_characters": size, "max_input_characters": self.basis.max_input_characters,
                 "input_character_basis": character_basis})
             raise ValueError("case_review_input_ceiling_before_transport")
+        async def execute(identity):
+            return await self._execute_model_call(request, handler, serialized, size, character_basis, identity)
+        if self.dispatch_guard is not None:
+            return await self.dispatch_guard.invoke(request, execute, actor=self.actor, basis=self.basis,
+                profile=self.profile, replay_sink=self.public_sink)
+        return await execute(call_id)
+
+    async def _execute_model_call(self, request, handler, serialized, size, character_basis, call_id):
         # Native LangChain metadata gives the cloud LLM span the same stable ID
         # as the local usage record; no backfill or mutation of historical runs.
         request = request.override(model=request.model.model_copy(update={"metadata": {

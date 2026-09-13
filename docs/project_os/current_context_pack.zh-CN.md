@@ -1,18 +1,19 @@
 # FinSight 当前上下文
 
-更新时间：2026-09-13。FIN 0.1.3为本地预览版；PR #9已合并。FIN 0.1.4开工审查通过，E1同机回执及原生运行资格已执行；产品功能尚未新增，未发布。
+更新时间：2026-09-13。FIN 0.1.3为本地预览版；PR #9已合并。FIN 0.1.4开工审查通过，E1回执/原生运行资格及可选PG预算/模型派发保护已实现验证；尚无默认产品功能新增，未发布。
 
 ## 当前状态与唯一入口
 
 - [0.1.3正式收口](../product/fin_0_1_3_closeout.zh-CN.md)：本地研究工作台/Internal Alpha，迭代结束。不是原PRD全通过、S5生产发布或逐份历史报告接受。
-- 0.1.4当前入口：[PRD](../product/fin_0_1_4_prd.zh-CN.md)、[技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md)、[执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md)。文档草案v0.1，`102a4584`开工审查通过；E1同机BFF真实进程3场景及现有定向测试共15通过，不代表原生队列/跨主机/共享预算通过，见[004](../worklog/fin_0_1_4/004_baseline_review_and_e1_process_qualification.md)。下一步为隔离原生实例的模拟队列/取消/checkpoint/worker验证，不扩写完整平台；当前实施分支`codex/fin014-e1-runtime-qualification`。
+- 0.1.4当前入口：[PRD](../product/fin_0_1_4_prd.zh-CN.md)、[技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md)、[执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md)。文档草案v0.1，`102a4584`开工审查通过；E1同机BFF真实进程3场景及现有定向测试共15通过，其覆盖仅限同机提交，见[004](../worklog/fin_0_1_4/004_baseline_review_and_e1_process_qualification.md)。原生运行和模型预算后续证据见005/006；当前实施分支`codex/fin014-e1-runtime-qualification`。
 - 本任务用户授权合理范围DS/Qwen测试；逐节点TokenBudgetBasis与未知调用不重发继续生效。Docker/网络问题优先排查本地代理。下方旧日志中的“无新付费权限”是当时授权，不覆盖本次新授权。
 - [005原生资格](../worklog/fin_0_1_4/005_e1_native_queue_and_recovery.md)：0.13.3队列/取消/checkpoint、人工pause释放容量、限时优雅停机及双worker4场景通过；SIGKILL单独通过，API健康后129.516秒完成，100秒失败保留。重启会重放未完成节点，每worker=1不是总上限。下一实现为模型入口共享预算和持久派发边界，先模拟验证未知不重发，不能直接启用付费自动恢复。native当前lite模式，不代表正式部署许可。
+- [006共享预算与派发保护](../worklog/fin_0_1_4/006_e1_shared_budget_and_model_dispatch.md)：PG根研究预算/交付预留与可选CaseModelAudit保护已实现；真实PG竞争和原生重启4场景通过，模拟调用未知不重发、保存响应回放不再结算。完整默认回归1472通过/143跳过，单测a1事件名错误保留。本轮模型费用0。下一步是主模型/专家/摘要统一可信预算的真实研究图合成接入及已知失败结算，不直接推广付费恢复；真实价格、跨研究公平性、存储权限、正式许可仍未闭合。
 - [212收口整理](../worklog/fin_0_1_3_s3/212_version_closeout_and_repository_cleanup.md)：本轮验证、命名与简历任务交接。
 - [211案例](../worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md)：原报告、上下文及模型差异完整正反面证据。
 - [213冻结代码清理](../worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md)：现用入口依赖、归档原件校验、完整回归与文档同步。
 - [214功能命名与公开文档](../worklog/fin_0_1_3_s3/214_functional_names_and_public_docs.md)：22 个现用模块按功能重命名、部署入口合并、公开文档重写，保持已存身份兼容。
-- 包版本仍 0.1.3；当前规划分支 `codex/fin014-runtime-economics`。PR #9已合并`271e4ee5`，代码树与通过CI的`9e68ba97`相同：本地1458/134跳过，Linux1443/150跳过，浏览器39+36通过；容器和供应链通过。原记录214保留当时状态，不部署、不签生产release。
+- 包版本仍 0.1.3；规划基线分支 `codex/fin014-runtime-economics`，当前实施分支见上。PR #9已合并`271e4ee5`，该合并代码树与通过CI的`9e68ba97`相同：本地1458/134跳过，Linux1443/150跳过，浏览器39+36通过；容器和供应链通过。原记录214保留当时状态，不部署、不签生产release。
 - [0.1.4范围补充](../worklog/fin_0_1_4/001_runtime_economics_positioning.md)：多人队列/中断接续/跨进程一致性、合格交付成本、相对通用Agent加skill的价值为用户明确要求；持续公司/议题跟踪、订阅加额度为建议待验证。先离线成本归因与模拟供应商运行验证，再固定问题的研究及追加资料更新对照。无新付费权限、服务器购买或上线。
 - [数据服务与资产补充](../worklog/fin_0_1_4/002_data_services_assets_and_cost_model.md)：用户要求可校准成本公式、云/专业供应商多来源接入、准确/可维护/权限/时效，以及研究成果与资料库/数据库贯通和前端逻辑调整。公式及历史MSFT125请求费用4.633069元离线核算已保存，不是新运行效果；Wind未实际连接，自动校准/前端重构未实施。
 - [三份规划文档整理](../worklog/fin_0_1_4/003_prd_technical_execution_baseline.md)：P1–P8需求对应技术职责和E1–E5工作包；未锁定供应商/模型/价格/容量/日期。仅文档整理，不新增版本实现或测试效果。

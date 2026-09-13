@@ -78,3 +78,29 @@ def test_replay_still_requires_browser_write_marker(tmp_path):
         del h['X-Workbench-Request']
         assert c.post('/api/v1/dispatch',headers=h,json={}).status_code==403
     assert len(calls)==1
+
+
+def test_legacy_http_receipts_replay_or_hold_without_dispatch(tmp_path):
+    from hashlib import sha256
+    import json
+    import pickle
+    import sqlite3
+    from apps.workbench.backend.authentication import service_owner
+    calls = []
+    completed, uncertain = headers(), headers()
+    fingerprint = sha256(b'POST/api/v1/dispatch{}').hexdigest()
+    body = b'{"run_id":"legacy-native-id"}'
+    with sqlite3.connect(tmp_path / 'cache.db') as db:
+        db.execute('CREATE TABLE Cache (key BLOB, raw INTEGER, expire_time REAL, mode INTEGER, filename TEXT, value BLOB)')
+        for h, receipt in [
+            (completed, {'fingerprint': fingerprint, 'status': 'received', 'http_status': 201, 'body': body}),
+            (uncertain, {'fingerprint': fingerprint, 'status': 'dispatching'}),
+        ]:
+            key = sha256(json.dumps([service_owner(), h['Idempotency-Key']]).encode()).hexdigest()
+            db.execute('INSERT INTO Cache VALUES (?,1,NULL,4,NULL,?)', (key, pickle.dumps(receipt)))
+    with TestClient(application(tmp_path, calls)) as client:
+        response = client.post('/api/v1/dispatch', headers=completed, json={})
+        assert response.status_code == 201 and response.content == body
+        assert response.headers['Idempotent-Replayed'] == 'true'
+        assert client.post('/api/v1/dispatch', headers=uncertain, json={}).status_code == 409
+    assert calls == []

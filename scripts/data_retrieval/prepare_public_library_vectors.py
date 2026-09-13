@@ -25,7 +25,7 @@ def main():
         'materiality_quality_risk':'Candidate recall only; actual claims require original reads and numeric fact authority',
         'comparable_run_evidence':'208 739-leaf Qwen hybrid retrieval qualification; new five-company SEC documents 210',
         'reasoning_profile':'Non-generative text-embedding-v4',
-        'stop_truncation_behavior':'No document truncation; no retry on unknown/failed request; existing DiskCache resumes successful batches',
+        'stop_truncation_behavior':'No document truncation; no retry on unknown/failed request; existing SQLite records resumes successful batches',
         'snapshot':snapshot, 'reuse_snapshot':a.reuse_snapshot,
         'cost_basis':'Historical 2026-09-09 provider price CNY0.5/million tokens; log actual tokens, credit usage unavailable'}
     (a.output/'basis.json').write_text(json.dumps(basis,ensure_ascii=False,indent=2),encoding='utf-8')

@@ -3,7 +3,6 @@ from uuid import uuid4
 
 import pytest
 
-pytest.importorskip("diskcache")
 
 from sec_agent.research_foundation.source_capture_cache import ScopedSourceCaptureCache
 from sec_agent.research_foundation.external_sources import (

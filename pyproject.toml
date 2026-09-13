@@ -66,7 +66,6 @@ complex-pdf = [
   "rapidocr-onnxruntime>=1.4.4",
 ]
 external-search = [
-  "diskcache==5.6.3",
   "ddgs==9.16.0",
   "trafilatura==2.2.0",
   "tencentcloud-sdk-python>=3.1.162",

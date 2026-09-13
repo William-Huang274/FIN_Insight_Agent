@@ -1,4 +1,4 @@
-"""Scoped public-source reuse over DiskCache, not an evidence or lineage store.
+"""Scoped public-source reuse over SQLite, not an evidence or lineage store.
 
 Only successful captured text is cached. Every replay receives the current run
 binding while retaining the original capture time, text digest and limitations.
@@ -19,7 +19,7 @@ from .external_sources import CaptureReceipt, ExternalCaptureRequest, PublicURLG
 class ScopedSourceCaptureCache:
     def __init__(self, *, root: Path, thread_id: str, capture,
                  lifetime_seconds: int = 3600, guard=None):
-        from diskcache import Cache
+        from sec_agent.adapters.local_records import LocalRecords as Cache
         # Thread identity is assigned by Agent Server. No model-supplied path.
         namespace = str(UUID(thread_id))
         if not 1 <= lifetime_seconds <= 86400:
@@ -27,18 +27,18 @@ class ScopedSourceCaptureCache:
         self.root = root.resolve() / namespace
         self.capture_service, self.lifetime = capture, lifetime_seconds
         self.guard = guard or PublicURLGuard()
-        # Strings/bytes only: DiskCache never needs to unpickle source content.
+        # JSON-only source text, with a bounded disposable cache.
         with Cache(str(self.root), size_limit=64 * 1024 * 1024) as cache:
-            cache.stats(enable=True)
+            pass
 
     def _read(self, key):
-        from diskcache import Cache
-        with Cache(str(self.root)) as cache:
+        from sec_agent.adapters.local_records import LocalRecords as Cache
+        with Cache(str(self.root), size_limit=64 * 1024 * 1024) as cache:
             return cache.get(key)
 
     def _write(self, key, receipt):
-        from diskcache import Cache
-        with Cache(str(self.root)) as cache:
+        from sec_agent.adapters.local_records import LocalRecords as Cache
+        with Cache(str(self.root), size_limit=64 * 1024 * 1024) as cache:
             cache.set(key, receipt.model_dump_json(), expire=self.lifetime)
 
     async def capture(self, request: ExternalCaptureRequest, *, force_refresh=False):

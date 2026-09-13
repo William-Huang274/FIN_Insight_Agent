@@ -55,3 +55,17 @@
 原始检查输出按 attempt 分开保留于 `D:/temp/fin213/`，合成交付在忽略的 `.local/fin213/public-check-a1/`。原始 private 数据、运行中数据库/卷、模型响应均未删除或上传。完整历史由冻结提交及外部 ZIP 保留，ZIP SHA256 为 `3b0fe3e59ec847f7090b4018532e83df5e426ce4a461e4152bc725250e6f0967`。
 
 收口区分：**产品增量**无新增金融能力；**工程增量**为依赖解耦、淘汰代码退出、开发身份代理与回归同步；**研究证据**沿用 0.1.3 冻结结果；**文档**完成双语状态和实际功能图文；**剩余限制**为五个误触发历史私有重放的旧预期不兼容、生产安全/安装/恢复验收及 0.1.4 金融语义研究工作，均未改写为通过。GitHub CI 是另一个执行环境，须单独记录结果。
+
+## PR #8 安全与兼容性修复
+
+初次推送 `0b249dea` 后，GitHub run `34743254004` 的 engineering-and-product 成功，但 locked-supply-chain 失败：research profile 的 diskcache 5.6.3 命中 PYSEC-2026-2447 / CVE-2025-69872，无修复版本。run `34743253999` 的主工作台镜像构建成功，可选 control-plane 在获取冻结 libc6-dev 时失败。原始日志/审计存于 `D:/temp/fin213/github-*-a1*`，不覆盖失败证据。
+
+Owner 明确回复“纳入本轮，修复兼容性后再合并（建议）”。这授权修复依赖及其兼容路径，不增加产品版本、不重跑付费研究、不部署生产。
+
+- 存储采用已有 SQLite 成熟引擎，新增固定 JSON/旧基础类型映射适配器；移除 diskcache 依赖且 `uv lock --offline` 只移除该包，其他版本不变。保留提交原子去重、响应字节、未知调用阻断、向量复用和来源 TTL。迁移事务失败时不放行业务操作，保留全部原件。
+- 已检查无修复 DiskCache、进程内缓存和外部缓存服务的适配差异，选择理由及停旧进程、备份和不能盲目降级的说明见[升级文档](../../architecture/repository/local_record_upgrade.zh-CN.md)。没有自造通用缓存/调度平台。
+- Docker OCI 原始层清单验证 glibc 为 `2.41-12+deb13u3`；Debian 签名历史源 20260701T000000Z 有精确匹配的 libc6-dev 和 libc-dev-bin。保留现有 pin，补充历史来源及构建前后版本断言。
+- 本地 cache-compat A1：21 passed，包含跨进程唯一 claim、恶意旧载荷拒绝及整体回滚、目录越界拒绝、旧完成/未知 provider 不重发。另用真实 DiskCache 5.6.3 生成四类临时记录（包含外部大值）对照新读取，全部相等，原文件 SHA256 不变，0 provider 调用；完成后从本地虚拟环境卸载旧包。测试没有迁移真实运行缓存。
+- HTTP 旧提交重放测试已补充；完整回归与修复后的 GitHub CI 使用新 attempt，下文追加最终结果。
+
+本地修复后验收：完整 pytest cache A2 **1457 passed / 134 skipped**（239.40 秒）；卸载 diskcache 后定向兼容性 A2 **22 passed**；活动依赖与锁一致性、编译、暂存格式检查通过；敏感模式扫描 2334 文本文件无命中。前端无新增行为改动，远端 CI 继续执行原完整浏览器套件。唯一 warning 为第三方 LangSmith import 弃用提示。

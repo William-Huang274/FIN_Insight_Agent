@@ -10,6 +10,7 @@
 - [211案例](../worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md)：原报告、上下文及模型差异完整正反面证据。
 - [213冻结代码清理](../worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md)：现用入口依赖、归档原件校验、完整回归与文档同步。
 - 包版本仍 0.1.3；清理分支 `codex/fin-013-repository-cleanup`。Git 发布结果以 213 最终记录为准；不部署、不签生产 release。
+- PR #8 初次 Linux 产品检查通过，供应链发现 diskcache 无补丁漏洞、可选容器缺失旧开发包。Owner 已授权本轮修复兼容性后合并；使用 SQLite 薄适配器保留旧提交/付费请求记录，冻结 Debian 历史源恢复原包版本。当前验证结果和合并状态继续记入 213。
 
 ## 已证事实
 

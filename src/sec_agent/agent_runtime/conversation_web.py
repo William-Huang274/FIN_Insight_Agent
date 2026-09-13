@@ -1,4 +1,4 @@
-"""Ordinary conversation tool over existing Exa discovery/capture and DiskCache."""
+"""Ordinary conversation tool over existing Exa discovery/capture and SQLite records."""
 from datetime import datetime, timezone
 import json
 from pathlib import Path

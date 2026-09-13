@@ -1,6 +1,6 @@
 """Opt-in original-document retrieval: LangChain vectors + BM25 union + Qwen.
 
-The caller filters the snapshot/document/page scope before ranking. DiskCache
+The caller filters the snapshot/document/page scope before ranking. SQLite
 stores provider responses, not evidence authority. Index preparation is explicit:
 ordinary search never starts an unbounded corpus embedding job.
 """
@@ -9,7 +9,7 @@ from hashlib import sha256
 import json
 import os
 from pathlib import Path
-from diskcache import Cache
+from sec_agent.adapters.local_records import LocalRecords as Cache
 from langchain_core.embeddings import Embeddings
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_text_splitters import RecursiveCharacterTextSplitter

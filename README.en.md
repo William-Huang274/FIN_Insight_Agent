@@ -14,6 +14,8 @@ Multi-agent research · Traceable evidence · Human revision · Editable researc
 
 **Frozen baseline: FIN 0.1.3 (September 12, 2026); source-tree cleanup: September 13.** [Closeout](docs/product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4 research plan](docs/product/fin_0_1_4_research_plan.zh-CN.md) · [Code retention and historical recovery](docs/architecture/repository/frozen_cleanup.zh-CN.md) (Chinese). The local Internal Alpha iteration is closed. The next-version method library and autonomous convergence remain planned.
 
+Upgrading an existing workspace: SQLite replaces the vulnerable legacy cache dependency while preserving submission receipts and retrieval records. Stop old processes sharing the cache and back up their data before switching. Invalid legacy records stop migration rather than automatically resending requests. See the [compatibility and recovery guide](docs/architecture/repository/local_record_upgrade.zh-CN.md) (Chinese).
+
 FinSight brings financial SQL, source retrieval, source-bound calculations and multi-agent review into one workspace. Ask a question, follow the research, trace a report judgment to its evidence, and request a revision to a specific finding. It serves analysts who need to inspect conclusions and developers who want observable state, calls and reproducible checks.
 
 **Measured evaluation (2026-09-11):** [Engineering and product report](docs/public/technical-evaluation.en.md), [metrics JSON](docs/public/evaluation-metrics.json) and [résumé claims with evidence](docs/public/resume-evidence.md) cover hybrid retrieval, real multi-turn recovery, human-reviewed delivery and identity checks.

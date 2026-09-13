@@ -1,4 +1,4 @@
-"""Local BFF response receipts over DiskCache's atomic, persistent add.
+"""Local BFF response receipts over SQLite's atomic, persistent add.
 
 Not a run scheduler: Agent Server still creates/executes every run. An uncertain
 dispatch is never expired/retried automatically. Deployments on different hosts
@@ -8,7 +8,7 @@ from hashlib import sha256
 import json
 from uuid import UUID
 
-from diskcache import Cache
+from sec_agent.adapters.local_records import LocalRecords as Cache
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
 from starlette.concurrency import run_in_threadpool
@@ -19,13 +19,13 @@ class SubmissionReceipts:
         self.app, self.directory = app, str(directory)
 
     def claim(self, key, fingerprint):
-        with Cache(self.directory, eviction_policy='none') as cache:
+        with Cache(self.directory) as cache:
             if cache.add(key, {'fingerprint': fingerprint, 'status': 'dispatching'}):
                 return None
             return cache[key]
 
     def complete(self, key, fingerprint, status, body):
-        with Cache(self.directory, eviction_policy='none') as cache:
+        with Cache(self.directory) as cache:
             cache[key] = {'fingerprint': fingerprint, 'status': 'received', 'http_status': status, 'body': body}
 
     async def __call__(self, scope, receive, send):

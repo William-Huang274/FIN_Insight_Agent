@@ -14,6 +14,8 @@
 
 **冻结基线：FIN 0.1.3（2026-09-12），代码树整理：2026-09-13。** [正式收口](docs/product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4自主研究规划](docs/product/fin_0_1_4_research_plan.zh-CN.md) · [代码保留与历史恢复](docs/architecture/repository/frozen_cleanup.zh-CN.md)。当前是已收口的本地 Internal Alpha；新版本方法库与自主收敛尚未实施。
 
+已有工作台升级：本轮以 SQLite 替换存在反序列化风险的旧缓存依赖，兼容已有提交凭证和检索记录。切换前停止共享缓存的旧进程并备份；遇到旧记录损坏时停止迁移，不自动重发请求。详见[兼容性与恢复说明](docs/architecture/repository/local_record_upgrade.zh-CN.md)。
+
 FinSight 将财务 SQL、原文检索、来源绑定计算和多 Agent 审查放进一个研究工作区。你可以提出问题，跟踪研究过程，从报告判断回到依据，再针对具体节点提出修订。它面向需要核查研究结论的分析师，也为开发者提供可检查的状态、调用记录和测试入口。
 
 **实测报告（2026-09-11）**：[工程与产品评测](docs/public/technical-evaluation.zh-CN.md)记录混合检索、真实长对话、人工报告交付、身份隔离及故障恢复；附[机器可读指标](docs/public/evaluation-metrics.json)和[简历成果口径](docs/public/resume-evidence.md)。

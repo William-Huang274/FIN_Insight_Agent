@@ -43,7 +43,7 @@ def test_hybrid_cache_and_scoped_candidates(tmp_path):
 
 
 def test_failed_call_is_not_retried(tmp_path):
-    from diskcache import Cache
+    from sec_agent.adapters.local_records import LocalRecords as Cache
     from retrieval.source_hybrid import CachedRetrieval
     api=API()
     def fail(text):api.calls.append(('failed',text));raise TimeoutError()

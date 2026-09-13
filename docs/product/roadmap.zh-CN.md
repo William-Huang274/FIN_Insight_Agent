@@ -2,6 +2,8 @@
 
 以下是 v0.1.4 的开发方向，尚未作为当前版本功能提供。
 
+详细范围与实施安排：[PRD](fin_0_1_4_prd.zh-CN.md) · [技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md) · [执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md)。三份文档先保留可开工的概要，随工程实践更新。
+
 | 方向 | 预期改善 |
 | --- | --- |
 | 金融判断方法库 | 根据问题、行业、商业模式、准则和研究时点选择方法，明确推断需要的证据与检查步骤 |

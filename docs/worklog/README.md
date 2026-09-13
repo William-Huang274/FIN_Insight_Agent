@@ -1,8 +1,9 @@
 # FIN Insight 当前工作记录
 
-当前版本入口：[0.1.3版本说明](../product/version_0_1_3.zh-CN.md)；[0.1.4规划](../product/fin_0_1_4_research_plan.zh-CN.md)；[0.1.4运行成本与定位讨论](fin_0_1_4/001_runtime_economics_positioning.md)。下方日志和旧总清单保留历史。
+当前版本入口：[0.1.3版本说明](../product/version_0_1_3.zh-CN.md)；[0.1.4 PRD](../product/fin_0_1_4_prd.zh-CN.md)；[技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md)；[执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md)。下方日志和旧总清单保留历史。
 
 - [0.1.4数据服务、研究资产与成本核算](fin_0_1_4/002_data_services_assets_and_cost_model.md)
+- [0.1.4 PRD、技术与执行文档整理](fin_0_1_4/003_prd_technical_execution_baseline.md)
 
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 

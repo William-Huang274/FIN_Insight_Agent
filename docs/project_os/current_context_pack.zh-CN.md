@@ -5,7 +5,7 @@
 ## 当前状态与唯一入口
 
 - [0.1.3正式收口](../product/fin_0_1_3_closeout.zh-CN.md)：本地研究工作台/Internal Alpha，迭代结束。不是原PRD全通过、S5生产发布或逐份历史报告接受。
-- [0.1.4规划](../product/fin_0_1_4_research_plan.zh-CN.md)：planned，未实施。一个有界规划包已完成，下一步应产出最小可执行研究切片，不继续只扩写框架。
+- 0.1.4当前入口：[PRD](../product/fin_0_1_4_prd.zh-CN.md)、[技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md)、[执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md)。文档草案v0.1，产品planned未实施；旧research_plan只作历史。用户要求概要先行、按实践调整，下一包E1应验证现有队列/恢复/预算，不扩写完整平台。
 - [212收口整理](../worklog/fin_0_1_3_s3/212_version_closeout_and_repository_cleanup.md)：本轮验证、命名与简历任务交接。
 - [211案例](../worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md)：原报告、上下文及模型差异完整正反面证据。
 - [213冻结代码清理](../worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md)：现用入口依赖、归档原件校验、完整回归与文档同步。
@@ -13,6 +13,7 @@
 - 包版本仍 0.1.3；当前规划分支 `codex/fin014-runtime-economics`。PR #9已合并`271e4ee5`，代码树与通过CI的`9e68ba97`相同：本地1458/134跳过，Linux1443/150跳过，浏览器39+36通过；容器和供应链通过。原记录214保留当时状态，不部署、不签生产release。
 - [0.1.4范围补充](../worklog/fin_0_1_4/001_runtime_economics_positioning.md)：多人队列/中断接续/跨进程一致性、合格交付成本、相对通用Agent加skill的价值为用户明确要求；持续公司/议题跟踪、订阅加额度为建议待验证。先离线成本归因与模拟供应商运行验证，再固定问题的研究及追加资料更新对照。无新付费权限、服务器购买或上线。
 - [数据服务与资产补充](../worklog/fin_0_1_4/002_data_services_assets_and_cost_model.md)：用户要求可校准成本公式、云/专业供应商多来源接入、准确/可维护/权限/时效，以及研究成果与资料库/数据库贯通和前端逻辑调整。公式及历史MSFT125请求费用4.633069元离线核算已保存，不是新运行效果；Wind未实际连接，自动校准/前端重构未实施。
+- [三份规划文档整理](../worklog/fin_0_1_4/003_prd_technical_execution_baseline.md)：P1–P8需求对应技术职责和E1–E5工作包；未锁定供应商/模型/价格/容量/日期。仅文档整理，不新增版本实现或测试效果。
 - PR #8 初次 Linux 产品检查通过，供应链发现 diskcache 无补丁漏洞、可选容器缺失旧开发包。Owner 已授权本轮修复兼容性后合并；使用 SQLite 薄适配器保留旧提交/付费请求记录，冻结 Debian 历史源恢复原包版本。PR #8 最终 Linux 1442 passed / 150 skipped、浏览器 39+36、容器和供应链通过，合并证据见 PR。
 
 ## 已证事实

@@ -5,6 +5,7 @@
 - [0.1.4数据服务、研究资产与成本核算](fin_0_1_4/002_data_services_assets_and_cost_model.md)
 - [0.1.4 PRD、技术与执行文档整理](fin_0_1_4/003_prd_technical_execution_baseline.md)
 - [0.1.4开工审查与E1真实进程资格](fin_0_1_4/004_baseline_review_and_e1_process_qualification.md)
+- [0.1.4 E1原生队列、中断与恢复资格](fin_0_1_4/005_e1_native_queue_and_recovery.md)
 
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 

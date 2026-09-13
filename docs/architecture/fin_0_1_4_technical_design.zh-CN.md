@@ -82,4 +82,6 @@ Wind等服务的认证、环境、保存/再使用权限逐连接确认。可借
 
 尚待实践决定：首个远程数据服务与检索存储、项目持久化映射、并发容量、模型路由、首批方法、更新时延目标、许可和服务器配置。仅为即将执行的切片补API/schema/部署细节；取舍和结果写回本节与执行路线。
 
+[005原生资格](../worklog/fin_0_1_4/005_e1_native_queue_and_recovery.md)已证明0.13.3队列/取消/接续、人工pause与双worker共享队列。保留Agent Server为执行owner。未完成节点在重启后重放，已完成checkpoint不重跑；每worker=1也能产生部署并发2。模型入口仍需PG原生事务承载的薄FIN共享预算/持久派发约束，审计uuid和BFF回执不能当模型去重。不另造调度器；当前日志为lite模式，正式许可仍待核定。
+
 2026-09-13 E1局部采用：保留`SubmissionReceipts` → `LocalRecords` → SQLite事务的同机提交边界。真实进程竞争、派发后退出、保存响应后送达前退出均通过；无新生产控制代码。跨主机共享存储、Agent Server队列/取消、父子预算、真实认证及供应商语义未由此覆盖。Dockerfile固定0.13.3，官方当前部署资料已复核，但本账号许可/费用未证，不直接升级或外网部署。见[004](../worklog/fin_0_1_4/004_baseline_review_and_e1_process_qualification.md)。

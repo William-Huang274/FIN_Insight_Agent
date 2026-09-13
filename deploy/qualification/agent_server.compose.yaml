@@ -1,0 +1,57 @@
+# Isolated, synthetic qualification only. No production volumes or model keys.
+services:
+  postgres:
+    image: pgvector/pgvector:pg16@sha256:ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b
+    environment:
+      POSTGRES_DB: probe
+      POSTGRES_USER: probe
+      POSTGRES_PASSWORD: ${FIN_E1_POSTGRES_PASSWORD:?local ephemeral password required}
+    volumes:
+      - database:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, 'pg_isready -U probe -d probe']
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  redis:
+    image: redis:6@sha256:143f7bfc2358911d6b36138eabfbfffea46273c5d4b5696d90e5cbf23d633cf8
+    healthcheck:
+      test: [CMD, redis-cli, ping]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+  api: &api
+    image: ${FIN_E1_IMAGE:?exact locally qualified image digest required}
+    ports:
+      - '127.0.0.1:18414:8000'
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      POSTGRES_URI: postgres://probe:${FIN_E1_POSTGRES_PASSWORD}@postgres:5432/probe?sslmode=disable
+      REDIS_URI: redis://redis:6379
+      LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:?existing local development account required}
+      LANGSMITH_TRACING: 'false'
+      LANGSMITH_HIDE_INPUTS: 'true'
+      LANGSMITH_HIDE_OUTPUTS: 'true'
+      LANGSERVE_GRAPHS: '{"runtime_probe":"/probe/native_runtime_probe.py:graph"}'
+      N_JOBS_PER_WORKER: '1'
+      BG_JOB_SHUTDOWN_GRACE_PERIOD_SECS: '1'
+      LOG_JSON: 'true'
+    volumes:
+      - ../../tests/qualification/fixtures/native_runtime_probe.py:/probe/native_runtime_probe.py:ro
+      - ${FIN_E1_EVIDENCE_DIR:?unique attempt evidence directory required}:/probe-evidence
+  peer:
+    <<: *api
+    profiles: [peer]
+    ports:
+      - '127.0.0.1:18415:8000'
+volumes:
+  database:
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: ${FIN_E1_SUBNET:?choose an unused subnet after route inspection}

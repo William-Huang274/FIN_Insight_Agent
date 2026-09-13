@@ -1,12 +1,13 @@
 # FinSight 当前上下文
 
-更新时间：2026-09-13。FIN 0.1.3为本地预览版；PR #9已合并。FIN 0.1.4开工基线审查通过，E1同机进程资格已执行；产品功能尚未新增，未发布。
+更新时间：2026-09-13。FIN 0.1.3为本地预览版；PR #9已合并。FIN 0.1.4开工审查通过，E1同机回执及原生运行资格已执行；产品功能尚未新增，未发布。
 
 ## 当前状态与唯一入口
 
 - [0.1.3正式收口](../product/fin_0_1_3_closeout.zh-CN.md)：本地研究工作台/Internal Alpha，迭代结束。不是原PRD全通过、S5生产发布或逐份历史报告接受。
 - 0.1.4当前入口：[PRD](../product/fin_0_1_4_prd.zh-CN.md)、[技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md)、[执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md)。文档草案v0.1，`102a4584`开工审查通过；E1同机BFF真实进程3场景及现有定向测试共15通过，不代表原生队列/跨主机/共享预算通过，见[004](../worklog/fin_0_1_4/004_baseline_review_and_e1_process_qualification.md)。下一步为隔离原生实例的模拟队列/取消/checkpoint/worker验证，不扩写完整平台；当前实施分支`codex/fin014-e1-runtime-qualification`。
 - 本任务用户授权合理范围DS/Qwen测试；逐节点TokenBudgetBasis与未知调用不重发继续生效。Docker/网络问题优先排查本地代理。下方旧日志中的“无新付费权限”是当时授权，不覆盖本次新授权。
+- [005原生资格](../worklog/fin_0_1_4/005_e1_native_queue_and_recovery.md)：0.13.3队列/取消/checkpoint、人工pause释放容量、限时优雅停机及双worker4场景通过；SIGKILL单独通过，API健康后129.516秒完成，100秒失败保留。重启会重放未完成节点，每worker=1不是总上限。下一实现为模型入口共享预算和持久派发边界，先模拟验证未知不重发，不能直接启用付费自动恢复。native当前lite模式，不代表正式部署许可。
 - [212收口整理](../worklog/fin_0_1_3_s3/212_version_closeout_and_repository_cleanup.md)：本轮验证、命名与简历任务交接。
 - [211案例](../worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md)：原报告、上下文及模型差异完整正反面证据。
 - [213冻结代码清理](../worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md)：现用入口依赖、归档原件校验、完整回归与文档同步。

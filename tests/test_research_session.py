@@ -15,15 +15,15 @@ import pytest
 
 from sec_agent.agent_runtime.research_session import build_research_session_graph, current_task_artifacts
 from sec_agent.agent_runtime.research_convergence import build_research_convergence_graph
-from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent, CaseOutputState
-from sec_agent.agent_runtime.dell_case_review_agent import build_case_review_graph, build_case_reviewer, case_mcp_tools
-from sec_agent.agent_runtime.dell_lead_research_graph import build_dell_lead_research_graph
-from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistAgenticInput
-from test_dell_case_convergence_agent import NativeFixtureModel, revision_fixture
-from test_dell_case_review_agent import call, review_fixture
-from test_dell_lead_research_graph import _task, _call, _stop, _worker_result, BRANCHES, CATALOG
-from test_dell_research_mcp import _build_server
-from test_dell_specialist_agentic_graph import _input, _run, _ScriptedModel, _ToolPorts, _evidence_action, _finance_action, _submission
+from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent, CaseOutputState
+from sec_agent.agent_runtime.case_review_agent import build_case_review_graph, build_case_reviewer, case_mcp_tools
+from sec_agent.agent_runtime.lead_research_graph import build_lead_research_graph
+from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticInput
+from test_report_synthesis_agent import NativeFixtureModel, revision_fixture
+from test_case_review_agent import call, review_fixture
+from test_lead_research_graph import _task, _call, _stop, _worker_result, BRANCHES, CATALOG
+from test_research_mcp import _build_server
+from test_specialist_graph import _input, _run, _ScriptedModel, _ToolPorts, _evidence_action, _finance_action, _submission
 
 
 class FullSourceFixturePorts(_ToolPorts):
@@ -43,7 +43,7 @@ def _new_worker_fixture():
 
 
 def test_saved_answer_calculation_is_readable_in_next_native_tool_session():
-    from test_dell_case_artifacts import _calculate
+    from test_case_artifacts import _calculate
     from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation, calculate_from_sources
     calculation = _calculate()
     ref = calculation["calculation_id"]
@@ -122,7 +122,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
             finally:
                 with lock:
                     running -= 1
-        graph = build_dell_lead_research_graph(expected_input=SpecialistAgenticInput.model_validate_json(json.dumps(_input())),
+        graph = build_lead_research_graph(expected_input=SpecialistAgenticInput.model_validate_json(json.dumps(_input())),
             research_question=request["question"], branch_catalog=catalog, allowed_branch_ids=branches, seed_workpapers=seeds,
             unfinished_only=bool(seeds),
             recovery_tasks=request.get("unfinished_tasks", []),

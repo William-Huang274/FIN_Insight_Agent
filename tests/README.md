@@ -1,6 +1,6 @@
 # Testing FinSight Agent
 
-FIN 0.1.3 frozen baseline · [中文步骤](../docs/public/quickstart.zh-CN.md) · [English instructions](../docs/public/quickstart.en.md)
+FinSight v0.1.3 · [中文步骤](../docs/public/quickstart.zh-CN.md) · [English instructions](../docs/public/quickstart.en.md)
 
 ## Public checkout
 
@@ -29,4 +29,4 @@ uv run --no-sync python scripts/engineering/verify_active_baseline.py --pretty
 
 Tests marked `local_data_integration` or `requires_local_data` skip by default. `--run-private-data` requires the original private mounts. Synthetic model adapters prove wiring and invariants, not financial judgment.
 
-One-off qualification tests have left the active tree with their runners; current runtime regression tests and reusable fixtures remain. Historical replay uses the [frozen source](../archive/README.md) in a separate worktree. Failures stay recorded. Do not combine public passes, skipped private tests and paid case evidence into one accuracy score. Cleanup verification results are recorded in [worklog 213](../docs/worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md).
+Synthetic tests check interfaces and invariants. Private-data tests require their original sources; model quality must be evaluated separately from these engineering checks.

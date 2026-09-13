@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import pytest
 from fastapi.testclient import TestClient
 
-from sec_agent.agent_runtime.dell_report_session import archived_report_session_graph
+from sec_agent.agent_runtime.report_session import archived_report_session_graph
 from test_research_session_bff import _app, GRAPH
 
 

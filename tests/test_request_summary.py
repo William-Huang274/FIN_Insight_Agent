@@ -14,9 +14,9 @@ from pydantic import SecretStr
 
 from sec_agent.agent_runtime.model_context import RequestSummaryMiddleware
 from sec_agent.agent_runtime.deepseek_structured_agents import ReasoningPreservingChatDeepSeek
-from sec_agent.agent_runtime.dell_case_review_agent import CaseModelAudit
-from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent
-from sec_agent.agent_runtime.dell_case_convergence_agent import reread_native_observation
+from sec_agent.agent_runtime.case_review_agent import CaseModelAudit
+from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent
+from sec_agent.agent_runtime.report_synthesis_agent import reread_native_observation
 from pathlib import Path
 
 

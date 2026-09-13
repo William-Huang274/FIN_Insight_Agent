@@ -36,6 +36,6 @@ For actual research, build the frontend and start the BFF with `python -m script
 
 ## Compatibility and naming
 
-Public CLI and new session/configuration interfaces use research-oriented names. Older `dell_*` modules and the Compose identity are retained where renaming would affect imports, credentials, volumes or historical evidence. Their original names do not establish cross-company qualification, nor are they instructions to hardcode UI behavior to Dell.
+The `research_workbench` CLI and runtime modules use functional names. Existing graph IDs, database identities and Compose volume names remain compatible with saved tasks.
 
 Current evidence: local Dell research and targeted revision, bounded other-company questions, public synthetic interaction tests. This is a trusted local preview, without public multi-tenant authentication or unrestricted workflow-code editing.

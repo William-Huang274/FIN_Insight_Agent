@@ -39,7 +39,7 @@ _BASE_PYTHON_ENTRYPOINTS = (
     'scripts/data_sec/download_sec_8k_earnings.py',
     'scripts/data_sec/download_sec_filings.py',
     'scripts/data_sec/merge_sec_source_gaps.py',
-    'scripts/deployment/dell_report_workbench.py',
+    'scripts/deployment/research_workbench.py',
     'scripts/deployment/environment.py',
     'scripts/deployment/hermes_working_memory.py',
     'scripts/deployment/local_sandbox.py',
@@ -62,8 +62,8 @@ _BASE_PYTHON_ENTRYPOINTS = (
     'src/sec_agent/adapters/dagster_control_plane_launcher.py',
     'src/sec_agent/adapters/dagster_s2_fact_mart.py',
     'src/sec_agent/agent_runtime/conversation_runtime.py',
-    'src/sec_agent/agent_runtime/dell_agent_server_entry.py',
-    'src/sec_agent/agent_runtime/dell_reference_vertical_mcp_tools.py',
+    'src/sec_agent/agent_runtime/agent_server_entry.py',
+    'src/sec_agent/agent_runtime/research_mcp_tools.py',
     'src/sec_agent/agent_runtime/hermes_context_tools.py',
     'src/sec_agent/agent_runtime/research_session_runtime.py',
     'src/sec_agent/agent_runtime/sandbox_mcp.py',
@@ -99,6 +99,7 @@ REGISTRY_REF = (
 )
 FORBIDDEN_ACTIVE_PATH_TOKENS = (
     "archive/",
+    "/dell_",
     "scripts/qualification/",
     "scripts/research/",
     "fin_0_1_2",

@@ -608,7 +608,7 @@ def test_capture_bound_lineage_projection_requires_exact_predecessor_and_success
             )
 
 
-def test_generic_case_summary_set_projects_without_dell_special_case(
+def test_generic_case_summary_set_projects_without_special_case(
     tmp_path: Path,
 ) -> None:
     result = _run(_fixture(tmp_path))
@@ -696,7 +696,7 @@ def test_generic_case_summary_set_projects_without_dell_special_case(
     assert initialized["hard_boundaries"]["base_vs1_decision_rows_available"] is False
 
 
-def test_summary_set_validation_is_idempotent_for_legacy_dell_member(
+def test_summary_set_validation_is_idempotent_for_legacy_member(
     tmp_path: Path,
 ) -> None:
     result = _run(_fixture(tmp_path))

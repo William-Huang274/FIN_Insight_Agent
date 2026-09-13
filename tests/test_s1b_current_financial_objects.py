@@ -306,7 +306,7 @@ def test_qualification_manifest_accepts_layout_documents_without_market_requirem
     )
 
 
-def test_successor_manifest_projects_reviewed_dell_transcript_without_hiding_other_gaps() -> None:
+def test_successor_manifest_projects_reviewed_transcript_without_hiding_other_gaps() -> None:
     manifest_path = (
         ROOT
         / "configs"
@@ -361,7 +361,7 @@ def test_successor_kernel_grants_transcript_route_only_to_relevant_slots() -> No
     }
 
 
-def test_current_snapshot_reaches_transcript_as_dell_evidence_candidate_only() -> None:
+def test_current_snapshot_reaches_transcript_as_evidence_candidate_only() -> None:
     snapshot = json.loads(
         (
             ROOT
@@ -373,17 +373,17 @@ def test_current_snapshot_reaches_transcript_as_dell_evidence_candidate_only() -
     assert snapshot["status"].endswith("ready_with_typed_gaps")
     cases = {row["case_key"]: row for row in snapshot["cases"]}
 
-    dell_transcript_candidates = []
+    transcript_candidates = []
     for lane in cases["DELL"]["retrieval"]["lane_results"]:
         for candidate in lane["candidates"]:
             if "EARNINGS_CALL_TRANSCRIPT" in str(
                 candidate.get("source_record_id") or ""
             ):
-                dell_transcript_candidates.append(candidate)
-    assert dell_transcript_candidates
+                transcript_candidates.append(candidate)
+    assert transcript_candidates
     assert any(
         candidate["reviewed_pack_match"] is True
-        for candidate in dell_transcript_candidates
+        for candidate in transcript_candidates
     )
 
     for case_key in ("MU", "NVDA"):

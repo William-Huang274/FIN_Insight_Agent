@@ -122,10 +122,10 @@ def test_native_agent_writes_then_interrupts_and_reopens_checkpoint(tmp_path, mo
 
 
 def test_specialist_can_save_prose_before_formal_submission(tmp_path, monkeypatch):
-    from test_dell_specialist_agentic_graph import _input, _ToolPorts
-    from test_dell_specialist_tool_batch import _handoff
-    from sec_agent.agent_runtime.dell_specialist_agentic_graph import (
-        build_dell_specialist_agentic_state_graph, DellSpecialistAgenticDependencies)
+    from test_specialist_graph import _input, _ToolPorts
+    from test_specialist_tool_batch import _handoff
+    from sec_agent.agent_runtime.specialist_graph import (
+        build_specialist_agentic_state_graph, SpecialistAgenticDependencies)
     monkeypatch.setenv("FINSIGHT_WORKING_MEMORY_PATH", str(tmp_path / "notes.sqlite"))
     calls=[]
     def model(request):
@@ -136,7 +136,7 @@ def test_specialist_can_save_prose_before_formal_submission(tmp_path, monkeypatc
         return {"action":"native_tool_batch", "context_digest":request["context_digest"], "tool_calls":[
             {"name":"WriteWorkingNote", "id":"note-specialist", "args":{"title":"未完成的工作", "body":"先记下来：现金流口径待核实。"}}]}
     ports=_ToolPorts()
-    graph=build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+    graph=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=model,evidence_tool=ports.evidence,finance_tool=ports.finance)).compile()
     result=graph.invoke(_input(), {"configurable":{"thread_id":"study"}})
     assert result["final_submission"] is None
@@ -145,7 +145,7 @@ def test_specialist_can_save_prose_before_formal_submission(tmp_path, monkeypatc
 
 
 def test_lead_can_keep_free_notes_without_planning_schema(tmp_path, monkeypatch):
-    from test_dell_lead_research_graph import _graph, _stop
+    from test_lead_research_graph import _graph, _stop
     monkeypatch.setenv("FINSIGHT_WORKING_MEMORY_PATH", str(tmp_path / "notes.sqlite"))
     calls=[]
     def model(request):

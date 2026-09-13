@@ -16,10 +16,10 @@ from langgraph.graph import START, END
 from langgraph.types import interrupt
 from pydantic import BaseModel, ConfigDict, Field
 
-from .dell_case_artifacts import DellCaseArtifacts
-from .dell_case_review_agent import CaseReview
-from .dell_report_session import SessionState, build_report_session_graph
-from .dell_workpaper_review_graph import validate_workpaper_state
+from .case_artifacts import CaseArtifacts
+from .case_review_agent import CaseReview
+from .report_session import SessionState, build_report_session_graph
+from .workpaper_review_graph import validate_workpaper_state
 from .execution_options import execution_from_config, unreviewed_report_status
 
 
@@ -51,7 +51,7 @@ class ResearchSessionState(SessionState, total=False):
 
 
 def current_task_artifacts(state):
-    artifacts = DellCaseArtifacts(state["case_papers"])
+    artifacts = CaseArtifacts(state["case_papers"])
     # These are native server outputs. The browser cannot submit source records.
     for output in [state.get("report", {}), *state.get("conversation", [])]:
         artifacts = artifacts.with_saved_calculations(output.get("citations", {}))
@@ -153,7 +153,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         if len(paper_ids) != len(set(paper_ids)):
             raise ValueError("continuation_must_not_rerun_submitted_workpapers")
         # Canonical source checks occur before any of these papers reach review.
-        artifacts = DellCaseArtifacts(papers) if papers else None
+        artifacts = CaseArtifacts(papers) if papers else None
         ready = result.get("phase") == "research_ready_for_review" and bool(papers)
         _stage("research", "outcome", status="handoff" if ready else "needs_attention")
         prior_done = {row["task"]["task_id"] for row in retained}
@@ -178,7 +178,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
                 "phase": state["phase"]})
         single_output = {}
         if ready and execution_from_config(config).mode == "single":
-            from .dell_case_convergence_agent import report_citations
+            from .report_synthesis_agent import report_citations
             paper = artifacts.read_paper("P01")
             # Render the agent's original workpaper, with an explicit claim index.
             # No synthesis model, inferred short titles or invented verification.

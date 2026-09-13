@@ -20,7 +20,7 @@ from langgraph.config import get_stream_writer
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, Send
 
-from .dell_case_convergence_agent import ReportReview, report_model_view, review_responsibility_errors, paper_revision_input
+from .report_synthesis_agent import ReportReview, report_model_view, review_responsibility_errors, paper_revision_input
 from .research_execution_plan import ResearchExecutionPlan
 
 
@@ -121,7 +121,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             "lead_synthesis" if depth == "extended" else "prepare_focused_report" if depth == "focused" else "writer")
 
     def prepare_focused_report(state):
-        from .dell_case_convergence_agent import report_citations
+        from .report_synthesis_agent import report_citations
         current = artifacts.with_revisions(state.get("revisions", {}))
         paper = current.read_paper("P01")
         prose = paper["narrative_markdown"] + "\n\n## 判断与依据\n\n" + "\n\n".join(

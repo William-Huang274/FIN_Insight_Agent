@@ -35,3 +35,10 @@ def test_runtime_does_not_admit_retired_script_families():
     assert boundary._forbidden_refs([
         "scripts/qualification/example.py", "scripts/research/old.py", "archive/old.py"
     ]) == ["archive/old.py", "scripts/qualification/example.py", "scripts/research/old.py"]
+
+
+def test_case_named_implementation_cannot_reenter_the_runtime_tree():
+    assert boundary._forbidden_refs([
+        "src/sec_agent/agent_runtime/dell_report_session.py",
+        "src/sec_agent/agent_runtime/report_session.py",
+    ]) == ["src/sec_agent/agent_runtime/dell_report_session.py"]

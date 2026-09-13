@@ -12,7 +12,7 @@ from langchain_core.runnables import RunnableLambda
 from pydantic import ValidationError
 
 from sec_agent.agent_runtime.studio_configuration import default_configuration, StudioConfiguration
-from sec_agent.agent_runtime.dell_case_review_agent import build_case_review_graph
+from sec_agent.agent_runtime.case_review_agent import build_case_review_graph
 from apps.workbench.backend.api.v1.report_sessions import build_report_sessions_router
 from apps.workbench.backend.api.v1.research_studio import STUDIO_SURFACE, run_configuration
 
@@ -89,8 +89,8 @@ def test_direction_edits_preserve_keys_and_reach_catalog_and_specialist():
 
 @pytest.mark.parametrize("revision_target", [None, {"paper_id": "P-development", "changed_claim_ids": []}])
 def test_selected_method_reaches_native_agent_system_prompt(monkeypatch, revision_target):
-    from sec_agent.agent_runtime import dell_case_convergence_agent as output
-    from sec_agent.agent_runtime import dell_case_review_agent as review
+    from sec_agent.agent_runtime import report_synthesis_agent as output
+    from sec_agent.agent_runtime import case_review_agent as review
     config=default_configuration()
     config.methods["writer"] += "\nSTUDIO_WRITER_CONSUMPTION_MARKER"
     config.methods["verifier"] += "\nSTUDIO_REVIEW_CONSUMPTION_MARKER"
@@ -102,7 +102,7 @@ def test_selected_method_reaches_native_agent_system_prompt(monkeypatch, revisio
         limits={"model_calls":10,"tool_calls":32},method_instructions=config.instructions("quick_writer"),
         allow_answers=True,answer_only=True)
     from types import SimpleNamespace
-    from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_sha256
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
     artifacts = SimpleNamespace(read_paper=lambda _: {})
     if revision_target:
         revision_target = {**revision_target, "kind": "revision_only", "current_digest": canonical_sha256({})}
@@ -131,8 +131,8 @@ def test_native_mcp_reads_run_bound_method_not_packaged_old_text():
 
 def test_specialist_method_is_inside_original_receipted_request():
     import json
-    from test_dell_specialist_agentic_graph import _input, _action, _model_turn_receipt, _ToolPorts
-    from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistAgenticInput, DellSpecialistAgenticDependencies, build_dell_specialist_agentic_state_graph
+    from test_specialist_graph import _input, _action, _model_turn_receipt, _ToolPorts
+    from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticInput, SpecialistAgenticDependencies, build_specialist_agentic_state_graph
     from sec_agent.agent_runtime.studio_configuration import bind_specialist_method
     config=default_configuration();config.methods["finance"] += "\nSPECIALIST_INPUT_MARKER"
     direction=next(iter(config.directions));config.directions[direction].instructions='DIRECTION_INPUT_MARKER'
@@ -149,7 +149,7 @@ def test_specialist_method_is_inside_original_receipted_request():
             input_tokens=0,output_tokens=0,total_tokens=0,usage_reported=None)
         return {"action":action,"runtime_receipt":receipt}
     ports=_ToolPorts()
-    graph=build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+    graph=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=turn,evidence_tool=ports.evidence,finance_tool=ports.finance,turn_source="saved_response_replay")).compile()
     result=graph.invoke(bound.model_dump(mode="json"))
     assert result["phase"]=="specialist_human_review_handoff_emitted"
@@ -161,7 +161,7 @@ def test_native_assistant_save_apply_and_run_snapshot():
     config.directions[next(iter(config.directions))].instructions = '保存版本方法要求'
     row={"assistant_id":aid,"graph_id":"research_session","config":{"configurable":{"finsight_studio":config.model_dump()}},
         "metadata":{"surface":STUDIO_SURFACE,"configuration_digest":config.digest}}
-    thread={"thread_id":tid,"status":"interrupted","metadata":{"surface":"dell_report_workbench","graph":"research_session"}}
+    thread={"thread_id":tid,"status":"interrupted","metadata":{"surface":'research_workbench',"graph":"research_session"}}
     assistants=SimpleNamespace(create=AsyncMock(return_value=row),get=AsyncMock(return_value=row),search=AsyncMock(return_value=[]))
     update=AsyncMock(); runs=SimpleNamespace(create=AsyncMock())
     service=SimpleNamespace(sdk=SimpleNamespace(assistants=assistants,threads=SimpleNamespace(update=update),runs=runs),owned_thread=AsyncMock(return_value=thread))

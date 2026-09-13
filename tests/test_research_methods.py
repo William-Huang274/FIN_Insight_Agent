@@ -4,7 +4,7 @@ import pytest
 from mcp import Client
 
 from sec_agent.research_foundation.research_methods import METHODS, get_research_method
-from test_dell_research_mcp import _build_server
+from test_research_mcp import _build_server
 
 
 def test_method_catalog_is_compact_answer_free_and_content_is_packaged():
@@ -52,8 +52,8 @@ def test_actual_mcp_method_preserves_disclosure_vs_achievement_distinction(metho
 @pytest.mark.local_data_integration
 def test_specialist_method_action_consumes_actual_mcp_without_general_disclosure_or_source_authority():
     import json
-    from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_scripted_qualification_composition
-    from test_dell_agent_server_data_composition import DEFAULT_ARTIFACT_ENV
+    from sec_agent.agent_runtime.specialist_composition import open_specialist_scripted_qualification_composition
+    from test_agent_server_data_composition import DEFAULT_ARTIFACT_ENV
     requests = []
 
     def model(request):
@@ -69,7 +69,7 @@ def test_specialist_method_action_consumes_actual_mcp_without_general_disclosure
         return {"action": "request_human_review", "context_digest": request["context_digest"],
                 "reason_summary": "Zero-model fixture ended; this is not research completion.", "blocker_code": "fixture_complete"}
 
-    with open_dell_specialist_scripted_qualification_composition(
+    with open_specialist_scripted_qualification_composition(
         run_id="method-host-fixture", run_invocation_id="method-mcp-fixture", branch_id="Q1_ISSUER_TRUTH",
         environment=DEFAULT_ARTIFACT_ENV, scripted_model_turn=model,
     ) as composition:
@@ -87,8 +87,8 @@ def test_specialist_method_action_consumes_actual_mcp_without_general_disclosure
 def test_new_question_reaches_specialist_without_rewriting_frozen_method_or_reusing_answers():
     import json
     from pathlib import Path
-    from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_scripted_qualification_composition
-    from test_dell_agent_server_data_composition import DEFAULT_ARTIFACT_ENV
+    from sec_agent.agent_runtime.specialist_composition import open_specialist_scripted_qualification_composition
+    from test_agent_server_data_composition import DEFAULT_ARTIFACT_ENV
 
     root = Path(__file__).resolve().parents[1]
     profile = json.loads((root / "configs/research/cases/dell_growth_quality.json").read_text(encoding="utf-8"))
@@ -103,7 +103,7 @@ def test_new_question_reaches_specialist_without_rewriting_frozen_method_or_reus
 
     inputs = []
     for question in (None, profile["question"]):
-        with open_dell_specialist_scripted_qualification_composition(
+        with open_specialist_scripted_qualification_composition(
             run_id="question-fixture", run_invocation_id="question-fixture-1", branch_id="Q1_ISSUER_TRUTH",
             environment=DEFAULT_ARTIFACT_ENV, scripted_model_turn=model, research_question=question,
         ) as composition:

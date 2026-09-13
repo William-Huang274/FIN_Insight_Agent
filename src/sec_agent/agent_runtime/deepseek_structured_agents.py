@@ -29,11 +29,11 @@ from pydantic import (
     model_validator,
 )
 
-from .dell_specialist_agentic_graph import (
+from .specialist_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestHumanReviewAction,
     RequestSourceAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction,
 )
-from .dell_reference_vertical_contracts import (
+from .research_graph_contracts import (
     BranchWorkpaper,
     CounterDecision,
     EvidenceIntentRequest,
@@ -1340,7 +1340,7 @@ class DeepSeekStructuredAgentAdapter:
             native_tools = {name: model for name, model in native_tools.items()
                             if set(get_args(model.model_fields["action"].annotation)) & set(semantic_input["allowed_actions"])}
         if is_lead:
-            from .dell_lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
+            from .lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
             native_tools = LEAD_RESEARCH_TOOLS
             if semantic_input.get("allowed_planning_tools") is not None:
                 native_tools = {name: model for name, model in native_tools.items()

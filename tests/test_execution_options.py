@@ -11,10 +11,10 @@ from langchain_core.runnables import RunnableLambda
 from langgraph.checkpoint.memory import InMemorySaver
 from sec_agent.agent_runtime.execution_options import ExecutionOptions
 from sec_agent.agent_runtime.research_session import build_research_session_graph
-from sec_agent.agent_runtime.dell_lead_research_graph import build_dell_lead_research_graph
-from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistAgenticInput
-from test_dell_lead_research_graph import _task, _call, _stop, _worker_result, BRANCHES, CATALOG
-from test_dell_specialist_agentic_graph import _input
+from sec_agent.agent_runtime.lead_research_graph import build_lead_research_graph
+from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticInput
+from test_lead_research_graph import _task, _call, _stop, _worker_result, BRANCHES, CATALOG
+from test_specialist_graph import _input
 from test_research_session import _new_worker_fixture
 from apps.workbench.backend.api.v1.research_studio import run_configuration
 from apps.workbench.backend.api.v1.report_sessions import public_run_usage
@@ -50,7 +50,7 @@ def test_auto_scope_completes_chosen_branch_without_running_catalog():
     def worker(task, deps, config):
         calls.append(task["coverage_obligation_ids"])
         return _worker_result(task, seed)
-    graph = build_dell_lead_research_graph(expected_input=value, research_question="有界问题只研究一个方向", branch_catalog=CATALOG,
+    graph = build_lead_research_graph(expected_input=value, research_question="有界问题只研究一个方向", branch_catalog=CATALOG,
         allowed_branch_ids=BRANCHES, seed_workpapers={}, model_turn=model, run_child=worker,
         require_all_branches=False, public_progress=events.append).compile()
     result = graph.invoke(value.model_dump(mode="json"))
@@ -66,7 +66,7 @@ def test_single_agent_skips_every_other_model_and_keeps_bound_citations():
     paper["task_context"] = {"instruction_source": "current_user_research_request", "research_question": "Independent current question"}
     nb = paper["notebook"]
     nb.update(source_read_enabled=True, satisfied_route_obligation_ids=[])
-    from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_sha256
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
     nb["notebook_digest"] = canonical_sha256({k:v for k,v in nb.items() if k != "notebook_digest"})
     async def research(state):
         return {"phase": "research_ready_for_review", "tasks": [], "task_results": [{"task_id": paper["task"]["task_id"], "status": "submitted", "agent_state": paper}]}
@@ -95,7 +95,7 @@ def test_activity_events_do_not_inflate_billing(tmp_path):
 
 def test_specialist_handoff_citations_are_bound_not_model_prose():
     from langchain_core.messages import ToolMessage, AIMessage
-    from sec_agent.agent_runtime.dell_case_convergence_agent import saved_citation_bindings
+    from sec_agent.agent_runtime.report_synthesis_agent import saved_citation_bindings
     citation = {"claim": {"statement": "Synthetic scoped observation"}, "sources": [{"source_id": "SOURCE::scoped"}]}
     valid = ToolMessage(content="Public answer", name="consult_research_specialist", tool_call_id="child", artifact={"citations": {"C1": citation}})
     assert saved_citation_bindings([valid]) == {"C1": citation}

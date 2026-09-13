@@ -12,25 +12,25 @@ from typing import Any
 
 
 _GRAPH_EXPORTS = {
-    "DellReferenceVerticalDependencies",
-    "DellReferenceVerticalGraphError",
-    "DellReferenceVerticalGraphInput",
+    "ResearchGraphDependencies",
+    "ResearchGraphError",
+    "ResearchGraphInput",
     "GRAPH_CONTRACT_VERSION",
-    "build_dell_reference_vertical_state_graph",
+    'build_research_state_graph',
 }
 
 
 def __getattr__(name: str) -> Any:
     if name not in _GRAPH_EXPORTS:
         raise AttributeError(name)
-    value = getattr(import_module(".dell_reference_vertical_graph", __name__), name)
+    value = getattr(import_module('.research_graph', __name__), name)
     globals()[name] = value
     return value
 
 __all__ = [
-    "DellReferenceVerticalDependencies",
-    "DellReferenceVerticalGraphError",
-    "DellReferenceVerticalGraphInput",
+    "ResearchGraphDependencies",
+    "ResearchGraphError",
+    "ResearchGraphInput",
     "GRAPH_CONTRACT_VERSION",
-    "build_dell_reference_vertical_state_graph",
+    'build_research_state_graph',
 ]

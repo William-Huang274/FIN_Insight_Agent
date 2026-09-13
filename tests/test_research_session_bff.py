@@ -31,7 +31,7 @@ def test_native_failure_shows_reason_but_never_raw_error_payload():
 def _app(*, enabled=True, graph_id=RESEARCH_GRAPH):
     calls = []
     thread_id, run_id = str(uuid4()), str(uuid4())
-    thread = {"thread_id": thread_id, "status": "interrupted", "metadata": {"surface": "dell_report_workbench", "graph": graph_id}}
+    thread = {"thread_id": thread_id, "status": "interrupted", "metadata": {"surface": 'research_workbench', "graph": graph_id}}
     async def create_thread(**kwargs):
         calls.append(("thread", kwargs))
         thread["metadata"] = kwargs["metadata"]
@@ -332,7 +332,7 @@ def test_draft_upload_and_start_use_native_task_and_no_model_until_start(tmp_pat
 def test_guidance_is_native_metadata_and_never_new_run():
     app, service, calls, thread_id = _app()
     async def get_thread(_):
-        return {"status": "busy", "metadata": {"surface": "dell_report_workbench", "graph": RESEARCH_GRAPH}}
+        return {"status": "busy", "metadata": {"surface": 'research_workbench', "graph": RESEARCH_GRAPH}}
     async def update_thread(*args, **kwargs):
         calls.append(("metadata", kwargs))
     service.sdk.threads.get = get_thread
@@ -414,7 +414,7 @@ def test_known_remaining_failure_restarts_native_pending_node_but_unknown_usage_
     run_id = str(uuid4())
     service.audit_root = tmp_path
     async def thread(_):
-        return {"status": "error", "metadata": {"surface": "dell_report_workbench", "graph": RESEARCH_GRAPH}}
+        return {"status": "error", "metadata": {"surface": 'research_workbench', "graph": RESEARCH_GRAPH}}
     async def state(_):
         values = {"phase": "research_needs_attention", "case_papers": [{}]}
         if node == "convergence":

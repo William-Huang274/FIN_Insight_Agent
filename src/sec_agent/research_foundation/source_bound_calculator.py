@@ -16,7 +16,7 @@ from typing import Any, Callable
 from pydantic import BaseModel, ConfigDict, Field
 from simpleeval import SimpleEval
 
-from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_sha256
+from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
 
 
 class CalculationOperand(BaseModel):

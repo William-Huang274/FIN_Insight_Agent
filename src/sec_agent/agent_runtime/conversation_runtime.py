@@ -15,8 +15,8 @@ from pydantic import SecretStr
 from .conversation_agent import build_conversation_agent
 from .conversation_tools import conversation_tools
 from .deepseek_structured_agents import DeepSeekModelProfile, TokenBudgetBasis
-from .dell_case_review_agent import CaseModelAudit, case_chat_model
-from .dell_report_session import session_audit_sinks
+from .case_review_agent import CaseModelAudit, case_chat_model
+from .report_session import session_audit_sinks
 
 
 @asynccontextmanager
@@ -25,7 +25,7 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
         yield build_conversation_agent(model=FakeMessagesListChatModel(responses=[]), grants=[],
                                        permission_mode="request_standard", checkpointer=None)
         return
-    from .dell_agent_server_entry import _require_langsmith_execution_environment
+    from .agent_server_entry import _require_langsmith_execution_environment
     _require_langsmith_execution_environment(config)
     if os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") != "1":
         raise ValueError("conversation_execution_not_enabled")

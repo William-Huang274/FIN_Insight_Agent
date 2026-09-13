@@ -97,7 +97,7 @@ def _object(identity: str, *, ticker: str, text: str) -> dict[str, object]:
     }
 
 
-def test_dell_program_intents_are_typed_in_successor_ontology() -> None:
+def test_program_intents_are_typed_in_successor_ontology() -> None:
     _, _, ontology, program, _ = _contracts()
     mappings: list[tuple[str, str]] = []
     for request in program["evidence_requests"]:

@@ -1,22 +1,14 @@
-# FinSight 文档地图
+# FinSight 文档
 
-2026-09-13：FIN 0.1.3 已冻结并整理当前代码树，FIN 0.1.4 规划中。
+FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工修订的本地金融研究工作台。
 
-## 产品与版本
-
-- [0.1.3收口](product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4规划](product/fin_0_1_4_research_plan.zh-CN.md)
-- [公开导览](public/demo-and-engineering.zh-CN.md) · [技术实测](public/technical-evaluation.zh-CN.md) · [简历证据](public/resume-evidence.md)
-- [产品历史与愿景](product/README.md)
-
-## 工程与接续
-
-- [当前上下文](project_os/current_context_pack.zh-CN.md) · [协作规范](project_os/senior_assistant_collaboration_policy.zh-CN.md)
-- [架构](public/architecture.zh-CN.md) · [安装和公开检查](public/quickstart.zh-CN.md)
-- [目录与命名](architecture/repository/naming_and_entrypoints.zh-CN.md) · [当前脚本](../scripts/README.md) · [历史恢复](../archive/README.md)
-- [213冻结代码清理](worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md) · [保留与退出范围](architecture/repository/frozen_cleanup.zh-CN.md)
-- [212本次收口](worklog/fin_0_1_3_s3/212_version_closeout_and_repository_cleanup.md) · [211研究与模型对照](worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md)
-- [工作记录索引](worklog/README.md)
-
-## 历史与证据
-
-原设计、日期文档、配置合同和失败attempt继续保留；它们的“当前”指历史时点，不覆盖上面的版本决定。大型原始资料、索引、私有模型响应与本地产物不进入Git；公开指标保留每项样本和范围。Project OS提供人类接续记忆，不充当第二套runtime。
+| 文档 | 内容 |
+| --- | --- |
+| [产品导览](public/demo-and-engineering.zh-CN.md) · [English](public/demo-and-engineering.en.md) | 从研究问题到报告交付的界面与操作 |
+| [快速开始](public/quickstart.zh-CN.md) · [English](public/quickstart.en.md) | 环境准备、运行命令、测试和升级 |
+| [系统架构](public/architecture.zh-CN.md) · [English](public/architecture.en.md) | 执行、资料检索、计算和存储的职责 |
+| [评测报告](public/technical-evaluation.zh-CN.md) · [English](public/technical-evaluation.en.md) | 数据集、方法、结果及适用范围 |
+| [v0.1.3 版本说明](product/version_0_1_3.zh-CN.md) | 已有功能与使用条件 |
+| [路线图](product/roadmap.zh-CN.md) | 后续研究能力的开发方向 |
+| [数据与报告说明](public/sharing-scope.md) | 示例数据、研究结果和使用范围 |
+| [代码目录](architecture/repository/naming_and_entrypoints.zh-CN.md) | 模块职责和开发入口 |

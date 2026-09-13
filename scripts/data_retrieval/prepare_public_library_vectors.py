@@ -6,7 +6,7 @@ import json
 from pathlib import Path
 from retrieval.qwen_api import QwenRetrieval
 from retrieval.source_hybrid import prepare_source_index, source_chunks
-from scripts.deployment.dell_report_workbench import configured_key
+from scripts.deployment.research_workbench import configured_key
 
 
 def main():

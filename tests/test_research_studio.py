@@ -24,4 +24,4 @@ def test_studio_public_methods_and_native_topology_only():
         graph.assert_awaited_once_with("research_session")
         assert client.get("/research-studio/graph/arbitrary").status_code == 422
         assert client.post("/research-studio", json={"method": "replace"}).status_code == 405
-        assert client.get("/research-studio/graph/review").json()["graph_id"] == "dell_report_session"
+        assert client.get("/research-studio/graph/review").json()["graph_id"] == 'report_session'

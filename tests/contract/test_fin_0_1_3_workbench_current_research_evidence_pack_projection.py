@@ -151,7 +151,7 @@ def _pack(case_key: str, source_text: str) -> dict[str, Any]:
 def _service(
     tmp_path: Path,
     *,
-    split_dell_root: bool = False,
+    split_root: bool = False,
 ) -> ResearchEvidencePackService:
     object_root = tmp_path / "objects"
     object_root.mkdir()
@@ -170,7 +170,7 @@ def _service(
         object_key = f"{case_key.lower()}/{digest}.json"
         target_root = (
             tmp_path / "dell-successor"
-            if split_dell_root and case_key == "DELL"
+            if split_root and case_key == "DELL"
             else object_root
         )
         target = target_root / object_key
@@ -183,7 +183,7 @@ def _service(
             "media_type": "application/json",
             "artifact_type": "reviewed_local_evidence_pack_with_declared_gaps",
         }
-        if split_dell_root and case_key == "DELL":
+        if split_root and case_key == "DELL":
             artifacts[case_key]["private_object_root_relative"] = (
                 "dell-successor"
             )
@@ -646,7 +646,7 @@ def test_projection_fails_closed_on_permission_case_and_artifact_drift(
 def test_projection_supports_digest_bound_per_case_private_roots(
     tmp_path: Path,
 ) -> None:
-    service = _service(tmp_path, split_dell_root=True)
+    service = _service(tmp_path, split_root=True)
     principal = ResearchEvidencePackPrincipal(
         "current", frozenset({"current_product:read"})
     )
@@ -663,7 +663,7 @@ def test_projection_supports_digest_bound_per_case_private_roots(
 def test_projection_fails_closed_on_per_case_private_root_escape(
     tmp_path: Path,
 ) -> None:
-    service = _service(tmp_path, split_dell_root=True)
+    service = _service(tmp_path, split_root=True)
     service._result["pack_artifacts"]["DELL"][  # noqa: SLF001
         "private_object_root_relative"
     ] = "../outside"

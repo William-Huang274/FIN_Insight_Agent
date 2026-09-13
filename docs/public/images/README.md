@@ -1,30 +1,30 @@
-# Product screenshots / 产品截图
+# 产品截图 / Product screenshots
 
-`company-library.png` and `financial-data.png`: actual deployed application captured on 2026-09-11 at 1440 px, selected from S3/210 capture A2. The receipt records deployed API access without interception, zero model calls and no page overflow. Local provenance: `D:/temp/fin210/deployed-ui-a2/result.json`; originals `library-1440.png` and `financials-1440.png`. Both images were visually inspected: public company metadata/financial rows, no credentials or uploaded private documents. The library screenshot shows 60 documents before the frozen library grew to 70; captions preserve that distinction. Financial data is filtered to MSFT and is not the full five-company count.
+以下图片来自实际运行的 FinSight v0.1.3 工作台，未使用生成式界面图或替换页面数据。界面为中文，中英文文档使用相同截图。
+These images show the running FinSight v0.1.3 application. They are not generated mockups or substituted page data. Both language editions use the same Chinese interface screenshots.
 
-`hpe-reviewed-report.png` was captured from the deployed workspace on 2026-09-11 at 1440×1000. It shows the human-confirmed HPE report v2, two recorded human edits, role-paper navigation and real export controls. Public research prose is visible; no original uploaded document, credentials or private reasoning is included. The selected capture waits for the saved report version to finish loading. Local read-only receipt: `D:/temp/fin208/hpe-final-ui-a4/result.json`.
+| 图片 / Image | 内容 / Content | 日期 / Date |
+| --- | --- | --- |
+| research-start.png | 问题入口、模型与执行方式 / Questions, models and execution choices | 2026-09-08 |
+| research-map.png | Dell 示例报告地图，报告仍待审阅 / Dell example report map, awaiting review | 2026-09-08 |
+| research-studio.png | 角色方法与配置编辑 / Research methods and configuration | 2026-09-08 |
+| research-runtime.png | NVIDIA/Micron 研究的保存活动 / Saved NVIDIA/Micron research activity | 2026-09-08 |
+| company-library.png | 公司资料库 / Company document library | 2026-09-11 |
+| financial-data.png | MSFT 财务数据筛选 / Filtered MSFT financial data | 2026-09-11 |
+| hpe-reviewed-report.png | HPE v2，记录两次人工修改 / HPE v2 with two human edits | 2026-09-11 |
+| msft-reviewed-report.png | MSFT v2，记录两次人工修改 / MSFT v2 with two human edits | 2026-09-11 |
 
-Actual FinSight FIN 0.1.3 application, captured 2026-09-08 at 1600×1000. Chinese UI; the English README uses the same images with English captions. No invented data, image generation or DOM content replacement.
+资料库截图中的 60 份文档对应扩充前快照；2026-09-12 的计数为 70 份。财务截图显示筛选结果，并非整个数据集。
+The library screenshot contains 60 documents from an earlier snapshot; the September 12 count is 70. The financial screen shows filtered results, not the entire dataset.
 
-| File | Surface |
-| --- | --- |
-| research-start.png | Question-first entry, execution/model selection and actual research navigation / 起始页与模式、模型选择 |
-| research-map.png | Actual Dell v5 report overview, awaiting review / 报告地图 |
-| research-studio.png | Standard role/Skill configuration editor / 原生配置编辑器 |
-| research-runtime.png | Saved NVIDIA/Micron free-mode research activity, not a currently running simulation / 真实已完成自由研究的公开 Agent 活动流 |
+## 在本地重新截图 / Capture locally
 
-The requested public selection excludes full report bodies, expanded original sources, uploaded documents, credentials and private model context. Short task suffixes and configuration digests are visible correlation identifiers, not credentials. Capture made no model calls and recorded zero page errors/blocked writes. The first capture caught the entry animation in progress; the selected second capture waits for task loading and finishes finite animations through Playwright's screenshot option.
-
-The start/runtime images were refreshed in S3/203 from the actual deployed application; map/studio remain the reviewed S3/202 captures. Failed research attempts remain visible in the sidebar. Runtime prose is explicitly emitted public progress, not private reasoning. Local S3/203 capture receipt: `D:/temp/fin-activity-public-capture-a1/capture.json`.
-
-Reproduce against a configured **local** workbench, with a new output directory:
+安装前端依赖和 Playwright Chromium，在仓库根目录执行：
+Install the frontend dependencies and Playwright Chromium, then run from the repository root:
 
 ```bash
 node scripts/dev/capture_product_screenshots.cjs --base-url http://127.0.0.1:18793 --thread YOUR_THREAD_ID --output-directory .local/screenshots-01
 ```
 
-Run from the repository root after installing frontend dependencies and Playwright Chromium. The script rejects non-local URLs and blocks non-read HTTP requests. Inspect every image before selecting new public screenshots. It does not sanitize arbitrary private content automatically.
-
-本轮截图是 Owner 要求的产品界面展示，不发布完整研究报告或原始资料。复拍后仍须逐张检查内容；脚本只防止写入，不会自动判断素材是否适合公开。
-
-`msft-reviewed-report.png`: actual deployed 2026-09-11 MSFT v2 / two human amendments, captured after completion and visually inspected.
+截图脚本只接受本机地址并阻止写入请求。分享前需逐张检查，避免包含凭据、私有上传或不适合公开的研究资料。
+The script accepts local URLs and blocks write requests. Inspect each image before sharing to exclude credentials, private uploads and restricted research material.

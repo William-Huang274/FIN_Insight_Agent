@@ -29,7 +29,7 @@ POLICY_PATH = (
     / "retrieval"
     / "fin_ia_0_1_3_s1d_source_intake_policy_v1_0.json"
 )
-DELL_ROUTE = "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT"
+ROUTE = "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT"
 
 
 def _pdf_bytes() -> bytes:
@@ -90,7 +90,7 @@ def test_upload_and_automatic_driver_share_pdf_intake_and_raw_cas(
     body = _pdf_bytes()
 
     def fake_fetcher(source):  # noqa: ANN001
-        assert source["route_id"] == DELL_ROUTE
+        assert source["route_id"] == ROUTE
         return _TransportResponse(
             status_code=200,
             final_url=str(source["url"]),
@@ -107,13 +107,13 @@ def test_upload_and_automatic_driver_share_pdf_intake_and_raw_cas(
         network_snapshotter=_network_snapshot,
     )
     uploaded = service.upload(
-        route_id=DELL_ROUTE,
+        route_id=ROUTE,
         attempt_id="upload-r1",
         body=body,
         declared_content_type="application/pdf",
     )
     automatic = service.acquire_automatic(
-        route_id=DELL_ROUTE,
+        route_id=ROUTE,
         attempt_id="automatic-r1",
     )
 
@@ -145,7 +145,7 @@ def test_invalid_pdf_is_captured_privately_but_never_admitted_for_parse(
         SourceIntakePolicy.from_path(POLICY_PATH),
     )
     result = store.ingest_pdf_bytes(
-        route_id=DELL_ROUTE,
+        route_id=ROUTE,
         attempt_id="fake-pdf-r1",
         body=b"<html>not a pdf</html>",
         acquisition_method="operator_upload",
@@ -173,7 +173,7 @@ def test_attempt_identity_content_type_size_and_route_fail_closed(
     store = SourceIntakeStore(tmp_path / "source-intake", policy)
     body = _pdf_bytes()
     store.ingest_pdf_bytes(
-        route_id=DELL_ROUTE,
+        route_id=ROUTE,
         attempt_id="immutable-r1",
         body=body,
         acquisition_method="operator_upload",
@@ -182,7 +182,7 @@ def test_attempt_identity_content_type_size_and_route_fail_closed(
     )
     with pytest.raises(SourceIntakeError, match="attempt_already_exists"):
         store.ingest_pdf_bytes(
-            route_id=DELL_ROUTE,
+            route_id=ROUTE,
             attempt_id="immutable-r1",
             body=body,
             acquisition_method="operator_upload",
@@ -190,7 +190,7 @@ def test_attempt_identity_content_type_size_and_route_fail_closed(
             declared_content_type="application/pdf",
         )
     rejected = store.ingest_pdf_bytes(
-        route_id=DELL_ROUTE,
+        route_id=ROUTE,
         attempt_id="mime-r1",
         body=body,
         acquisition_method="operator_upload",
@@ -220,7 +220,7 @@ def test_truncated_and_encrypted_pdfs_are_captured_but_rejected(
     eof_offset = body.rfind(b"%%EOF")
     assert eof_offset > 0
     truncated = store.ingest_pdf_bytes(
-        route_id=DELL_ROUTE,
+        route_id=ROUTE,
         attempt_id="truncated-r1",
         body=body[:eof_offset],
         acquisition_method="operator_upload",
@@ -228,7 +228,7 @@ def test_truncated_and_encrypted_pdfs_are_captured_but_rejected(
         declared_content_type="application/pdf",
     )
     encrypted = store.ingest_pdf_bytes(
-        route_id=DELL_ROUTE,
+        route_id=ROUTE,
         attempt_id="encrypted-r1",
         body=_encrypted_pdf_bytes(),
         acquisition_method="operator_upload",
@@ -257,7 +257,7 @@ def test_policy_host_binding_and_byte_ceiling_fail_closed(tmp_path: Path) -> Non
     )
     with pytest.raises(SourceIntakeError, match="body_too_large"):
         bounded_store.ingest_pdf_bytes(
-            route_id=DELL_ROUTE,
+            route_id=ROUTE,
             attempt_id="too-large-r1",
             body=_pdf_bytes(),
             acquisition_method="operator_upload",
@@ -286,7 +286,7 @@ def test_automatic_403_preserves_typed_transport_and_tun_diagnostics(
         network_snapshotter=_network_snapshot,
     )
     result = service.acquire_automatic(
-        route_id=DELL_ROUTE,
+        route_id=ROUTE,
         attempt_id="automatic-403-r1",
     )
 
@@ -306,7 +306,7 @@ def test_attempt_listing_never_exposes_raw_object_path(tmp_path: Path) -> None:
         private_root=tmp_path / "source-intake",
     )
     service.upload(
-        route_id=DELL_ROUTE,
+        route_id=ROUTE,
         attempt_id="list-r1",
         body=_pdf_bytes(),
         declared_content_type="application/pdf",

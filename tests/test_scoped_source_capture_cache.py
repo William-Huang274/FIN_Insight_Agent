@@ -9,15 +9,15 @@ from sec_agent.research_foundation.external_sources import (
     ExternalCaptureRequest, ExternalSearchRequest, ExternalSourceDiscovery,
     ExternalSourceCapture, ExternalSourceError, FetchedPage,
 )
-from test_dell_external_sources import _run_scope, _FakeFetcher, _public_guard, _SingleURLProvider
+from test_external_sources import _run_scope, _FakeFetcher, _public_guard, _SingleURLProvider
 
 BRANCH = "Q8_COMPETITION_VALUE_POOL"
 
 
 def request(attempt="A1"):
-    from sec_agent.research_foundation.contracts import bind_dell_research_method, load_dell_reference_vertical_foundation
+    from sec_agent.research_foundation.contracts import bind_research_method, load_research_graph_foundation
     base = _run_scope(BRANCH)
-    scope = bind_dell_research_method(load_dell_reference_vertical_foundation(), (BRANCH,),
+    scope = bind_research_method(load_research_graph_foundation(), (BRANCH,),
         research_as_of=base.research_as_of, data_snapshot_id=base.data_snapshot_id,
         execution_attempt_id=attempt).run_scope
     discovery = asyncio.run(ExternalSourceDiscovery(primary=_SingleURLProvider("https://example.com/annual")).search(

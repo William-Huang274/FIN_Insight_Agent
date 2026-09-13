@@ -44,7 +44,7 @@ def test_native_streaming_keeps_usage_and_emits_public_chunks_without_retry():
     from pydantic import SecretStr
     from langchain_core.callbacks import AsyncCallbackHandler
     from sec_agent.agent_runtime.deepseek_structured_agents import TokenBudgetBasis, DeepSeekModelProfile
-    from sec_agent.agent_runtime.dell_case_review_agent import case_chat_model
+    from sec_agent.agent_runtime.case_review_agent import case_chat_model
     spec = json.loads((Path(__file__).resolve().parents[1] / "configs/research/runtime/conversation.json").read_text(encoding="utf-8"))
     sent, chunks = [], []
     class Capture(AsyncCallbackHandler):

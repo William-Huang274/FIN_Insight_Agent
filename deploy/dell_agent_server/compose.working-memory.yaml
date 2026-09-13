@@ -1,0 +1,21 @@
+# Local opt-in task memory. Same files are read by the host BFF and native runtime.
+services:
+  langgraph-api:
+    environment:
+      FINSIGHT_WORKING_MEMORY_PATH: /run/fin-insight/working-memory/notes.sqlite
+      FINSIGHT_WORKING_MEMORY_SEMANTIC: ${FINSIGHT_WORKING_MEMORY_SEMANTIC:-0}
+      FINSIGHT_SOURCE_HYBRID: ${FINSIGHT_SOURCE_HYBRID:-0}
+      # Keep native SQLite WAL writers on a Linux-owned volume. The Windows
+      # conversation service has its own cache under its working-memory path.
+      FINSIGHT_SOURCE_RAG_CACHE_PATH: /var/lib/fin-insight/source-rag
+      QWEN_API_KEY: ${QWEN_API_KEY:-}
+      FINSIGHT_HERMES_URL: ${FINSIGHT_HERMES_CONTAINER_URL:-}
+      FINSIGHT_HERMES_TOKEN: ${FINSIGHT_HERMES_TOKEN:-}
+    volumes:
+      - type: bind
+        source: ${FINSIGHT_WORKING_MEMORY_HOST_ROOT:?task-owned memory directory}
+        target: /run/fin-insight/working-memory
+        bind: {create_host_path: false}
+      - source-rag:/var/lib/fin-insight/source-rag
+volumes:
+  source-rag:

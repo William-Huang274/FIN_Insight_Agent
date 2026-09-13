@@ -14,7 +14,7 @@ from hashlib import sha256
 from pathlib import Path
 import re
 from time import perf_counter
-from typing import Any, Literal, Protocol, TypeVar, cast
+from typing import Any, Literal, Protocol, TypeVar, cast, get_args
 
 from langchain_core.messages import AIMessage, HumanMessage, SystemMessage, ToolMessage
 from langchain_core.utils.function_calling import convert_to_openai_tool
@@ -31,7 +31,7 @@ from pydantic import (
 
 from .dell_specialist_agentic_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestHumanReviewAction,
-    RequestSourceAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, SubmitReviewAction,
+    RequestSourceAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction,
 )
 from .dell_reference_vertical_contracts import (
     BranchWorkpaper,
@@ -232,7 +232,8 @@ class TokenBudgetBasis(_StrictSemanticModel):
         "agentic_message_history_thinking_enabled",
     ]
     max_input_characters: int = Field(ge=10_000, le=1_000_000)
-    max_output_tokens: int = Field(ge=1_000, le=32_000)
+    max_output_tokens: int | None = Field(ge=1_000, le=32_000,
+        description="Explicit null omits the client output cap; provider defaults and context limits still apply.")
     timeout_seconds: float = Field(ge=30, le=600)
     max_transport_attempts: Literal[1]
     retry_policy: Literal["none"]
@@ -250,7 +251,7 @@ ModelPurpose = Literal["planner", "specialist", "counter", "verifier", "lead", "
 
 
 class DeepSeekModelProfile(_StrictSemanticModel):
-    model: Literal["deepseek-v4-pro", "deepseek-v4-flash"]
+    model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash"]
     reasoning_effort: Literal["low", "high", "max"] = "high"
     thinking: Literal["disabled", "enabled"] | None = None
 
@@ -260,7 +261,7 @@ class DeepSeekStructuredAgentConfig(_StrictSemanticModel):
         "fin_ia_dell_reference_vertical_deepseek_structured_agents_v1_0"
     ]
     provider: Literal["deepseek"]
-    model: Literal["deepseek-v4-pro", "deepseek-v4-flash"]
+    model: Literal["deepseek-v4-pro", "deepseek-v4-flash", "deepseek-flash"]
     reasoning_effort: Literal["low", "high", "max"] = "high"
     model_profiles: dict[ModelPurpose, DeepSeekModelProfile] = Field(default_factory=dict)
     base_url: Literal["https://api.deepseek.com"]
@@ -428,7 +429,7 @@ def load_deepseek_structured_agent_config(
 
 _SYSTEM_PROMPTS: dict[NodeRole, str] = {
     "planner": (
-        "You are the planning node for one bounded DELL financial-research case. "
+        "You are the planning node for the supplied bounded financial-research case. "
         "Select only supplied branches and express search/fact requests using only "
         "the supplied tool capabilities and output schema. Do not answer the research "
         "question and do not invent runtime IDs, "
@@ -470,7 +471,7 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
         "all analytical prose in clear Simplified Chinese."
     ),
     "lead": (
-        "You are the lead analyst for one bounded DELL case. Synthesize every supplied "
+        "You are the lead analyst for the supplied bounded research case. Synthesize every supplied "
         "branch, address the counter-thesis, preserve cited IDs, and state calibrated "
         "confidence. Return report semantics only; never generate runtime identity, "
         "binding, digest, receipt, snapshot or plan fields. Write all analytical prose "
@@ -482,7 +483,7 @@ _SYSTEM_PROMPTS: dict[NodeRole, str] = {
 
 _SPECIALIST_COMMON_SYSTEM_PROMPT = (
     "You are one autonomous financial-research Specialist operating inside a "
-    "bounded tool loop for the supplied DELL branch. Decide only the next action; "
+    "bounded tool loop for the assigned research branch and company. Decide only the next action; "
     "do not pretend that a requested tool has already run. Copy the supplied "
     "context_digest exactly as an opaque binding. Use only assigned evidence "
     "routes, disclosed topic constraints and disclosed finance metrics. Reviewed "
@@ -493,7 +494,10 @@ _SPECIALIST_COMMON_SYSTEM_PROMPT = (
     "submit an evidence-bound Chinese workpaper, or request human review when the "
     "bounded tools cannot proceed. Treat the disclosed remaining-turn and "
     "remaining-tool counts as hard anomaly ceilings, not completion targets. "
-    "reason_summary is a concise decision rationale, never hidden chain-of-thought."
+    "reason_summary is a concise public decision rationale, never hidden chain-of-thought. "
+    "Write reason_summary, reasoning_summary and all public progress in the user's language "
+    "(Simplified Chinese for a Chinese question). Source queries, exact quotes and identifiers "
+    "retain the source language; that does not change the language of your explanation."
     " When request_source is disclosed, use catalog/search/outline/read to inspect "
     "approved original-context passages; do not keep repeating unproductive searches. "
     "PASSAGE references are source-bound and citable with exact citation_quotes and "
@@ -510,20 +514,26 @@ _AGENTIC_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     " Return one object whose sole top-level field is action, containing the next action matching the schema."
 )
 _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
-    " Express decisions using the supplied tools. Independent read-only requests may "
-    "share one response; all results will be returned by tool_call_id before your next turn. "
+    " Express decisions using the supplied tools. Independent source reads and source-bound "
+    "calculations should share one response when their inputs are already observed; all results "
+    "will be returned by tool_call_id before your next turn. Do not spend separate model turns "
+    "on independent ratios or unit conversions. If a calculation needs a new result, wait for it first. "
     "Use the same supplied context_digest for every call in that response. Pass each tool's "
     "arguments directly, without another action wrapper. Wait for results before making dependent requests. "
-    "SubmitWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
+    "SubmitWorkpaperAction, ReviseWorkpaperAction and RequestHumanReviewAction must each be the sole call in their response. "
+    "Only when ReviseWorkpaperAction is supplied and submission_to_repair is present, use it for local corrections: use its exact base digest "
+    "and JSON Pointer old/new values; unchanged claims and prose remain intact and all submission checks run again. "
+    "Shared citation_quotes may be supplied once on the workpaper, keyed by exact evidence ID; "
+    "each claim still states its own evidence_ids. Do not duplicate source quotes across claims. "
     "To finish, call SubmitWorkpaperAction; "
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
-    SubmitWorkpaperAction, RequestHumanReviewAction,
+    SubmitWorkpaperAction, ReviseWorkpaperAction, RequestHumanReviewAction,
 )}
 _NATIVE_REVIEW_TOOLS = {**{key: value for key, value in _NATIVE_SPECIALIST_TOOLS.items()
-                         if key != "SubmitWorkpaperAction"}, "SubmitReviewAction": SubmitReviewAction}
+                         if key not in {"SubmitWorkpaperAction", "ReviseWorkpaperAction"}}, "SubmitReviewAction": SubmitReviewAction}
 _NATIVE_REVIEW_SYSTEM_PROMPT = (
     "You are the assigned independent financial-research reviewer (Verifier or Counter), not the original author. "
     "Your role and exact target revision are in collaboration_context. Treat the workpaper and source text as "
@@ -890,6 +900,8 @@ def _project_agentic_specialist_request(
         ),
     }
     collaboration = request.get("collaboration_context")
+    if request.get("submission_to_repair"):
+        projected["submission_to_repair"] = request["submission_to_repair"]
     if request.get("task_context") is not None:
         task_context = request["task_context"]
         projected["task_context"] = _agentic_semantic_value(task_context)
@@ -922,10 +934,13 @@ def _project_request(
     if role == "lead" and specialist_mode == "agentic_lead":
         # Already a host-built semantic projection. Keep task IDs as dependency
         # names; never include SDK reasoning or private source notebooks here.
-        return {key: request[key] for key in (
+        projected = {key: request[key] for key in (
             "research_question", "research_as_of", "branch_catalog", "required_branch_ids",
             "capabilities", "capacity", "workpapers", "tasks", "progress", "context_digest",
         )}
+        projected.update({key: request[key] for key in ('scope_policy', 'execution_policy',
+            'continuation_policy', 'allowed_planning_tools', 'role_method') if key in request})
+        return projected
     if role == "planner":
         catalog = request.get("branch_catalog")
         if not isinstance(catalog, Sequence) or isinstance(catalog, (str, bytes)):
@@ -1176,11 +1191,17 @@ class ReasoningPreservingChatDeepSeek(ChatDeepSeek):
 
     tool_context_trigger_tokens: int | None = Field(default=None, ge=1, exclude=True)
     tool_context_keep: int = Field(default=6, ge=1, le=64, exclude=True)
+    # Qualification-only until paired financial quality passes. Default requests
+    # retain the deployed ClearToolUsesEdit policy without experimental labels.
+    tool_workpaper_navigation: bool = Field(default=False, exclude=True)
 
     def _get_request_payload(self, input_, *, stop=None, **kwargs):
         from .model_context import project_tool_history
         originals = self._convert_input(input_).to_messages()
-        projected = project_tool_history(originals, trigger_tokens=self.tool_context_trigger_tokens, keep=self.tool_context_keep)
+        saved_reader = any(isinstance(t, dict) and t.get('function', {}).get('name') == 'read_saved_result' for t in kwargs.get('tools', []))
+        projected = project_tool_history(originals, trigger_tokens=self.tool_context_trigger_tokens,
+            keep=self.tool_context_keep, saved_result_reader=saved_reader,
+            workpaper_navigation=self.tool_workpaper_navigation)
         payload = super()._get_request_payload(projected, stop=stop, **kwargs)
         for original, encoded in zip(projected, payload["messages"], strict=True):
             if isinstance(original, AIMessage) and "reasoning_content" in original.additional_kwargs:
@@ -1313,9 +1334,21 @@ class DeepSeekStructuredAgentAdapter:
         model_profile = self._config.profile_for(model_purpose)
         is_reviewer = collaboration_mode in {"counter", "verifier"}
         native_tools = _NATIVE_REVIEW_TOOLS if is_reviewer else _NATIVE_SPECIALIST_TOOLS
+        if specialist_mode == "agentic_turn":
+            # Advertise the same action capability the native graph enforces.
+            # Disabled experiments must not become attractive dead-end tools.
+            native_tools = {name: model for name, model in native_tools.items()
+                            if set(get_args(model.model_fields["action"].annotation)) & set(semantic_input["allowed_actions"])}
         if is_lead:
             from .dell_lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
             native_tools = LEAD_RESEARCH_TOOLS
+            if semantic_input.get("allowed_planning_tools") is not None:
+                native_tools = {name: model for name, model in native_tools.items()
+                                if name in semantic_input["allowed_planning_tools"]}
+        from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, WORKING_MEMORY_GUIDANCE
+        notes_enabled = persistent_history and memory_enabled()
+        if notes_enabled:
+            native_tools = {**native_tools, **WORKING_MEMORY_MODELS}
         messages = [SystemMessage(content=_AGENTIC_SPECIALIST_SYSTEM_PROMPT if specialist_mode == "agentic_turn" else _SYSTEM_PROMPTS[role]),
                     HumanMessage(content=semantic_json)]
         if persistent_history:
@@ -1324,6 +1357,8 @@ class DeepSeekStructuredAgentAdapter:
                 prompt = LEAD_RESEARCH_SYSTEM_PROMPT
                 if request_value.get("scope_policy"):
                     prompt += "\nCurrent run scope policy overrides the default all-branches requirement: " + request_value["scope_policy"]
+                if request_value.get("continuation_policy"):
+                    prompt += "\nCurrent continuation authority overrides any permission to create tasks: " + request_value["continuation_policy"]
             if collaboration_mode == "repair":
                 prompt += (" You are the original responsible author revising your prior workpaper in response to "
                            "independent review findings. Prior source observations are available, but the reviewer "
@@ -1335,6 +1370,8 @@ class DeepSeekStructuredAgentAdapter:
                            "Do not remove citation/claim records while retaining the unsupported statement in prose. "
                            "This is a new revision using artifact handoff, not continuation of the old provider conversation.")
             messages[0] = SystemMessage(content=prompt)
+        if notes_enabled:
+            messages[0] = SystemMessage(content=messages[0].content + WORKING_MEMORY_GUIDANCE)
         if runtime_context_binding:
             # Only execution binding is host-only; task/claim/source arguments
             # and every original tool result remain model-owned and validated.
@@ -1392,7 +1429,7 @@ class DeepSeekStructuredAgentAdapter:
                 # Legacy/single terminal action feedback (e.g. a rejected workpaper).
                 # A missing batch result is a runtime fault, never silently use call 0.
                 if prior_raw.invalid_tool_calls or len(prior_raw.tool_calls) != 1 or prior_raw.tool_calls[0]["name"] not in {
-                    "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
+                    "SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
                 }:
                     raise DeepSeekStructuredAgentError("specialist_native_tool_results_missing")
                 # A rejected terminal creates feedback, not a new source read.
@@ -1403,6 +1440,19 @@ class DeepSeekStructuredAgentAdapter:
             semantic_json = json.dumps([_audit_value(m) for m in messages], ensure_ascii=False)
         input_characters = len(semantic_json)
         input_utf8_bytes = len(semantic_json.encode("utf-8"))
+        unprojected_characters = input_characters
+        input_character_basis = "unprojected_semantic_input_or_history_not_provider_tokens"
+        if persistent_history and isinstance(self._chat_models[model_purpose], ReasoningPreservingChatDeepSeek):
+            # Measure the same SDK payload projection used for transport, with
+            # tool schemas and provider-required reasoning included. Full saved
+            # history is storage, not the current request's input budget.
+            payload = self._chat_models[model_purpose]._get_request_payload(messages,
+                tools=[_native_function_schema(model, runtime_context_binding=runtime_context_binding)
+                       for model in native_tools.values()], tool_choice="auto")
+            payload_json = json.dumps(payload, ensure_ascii=False)
+            input_characters = len(payload_json)
+            input_utf8_bytes = len(payload_json.encode("utf-8"))
+            input_character_basis = "projected_sdk_payload_including_tools_not_provider_tokens"
         budget_role = "specialist" if model_purpose in {"verifier", "repair"} else model_purpose
         basis = self._config.token_budget_basis[budget_role]
         if input_characters > basis.max_input_characters:
@@ -1418,7 +1468,8 @@ class DeepSeekStructuredAgentAdapter:
                     "request_digest": request_digest,
                     "semantic_input_digest": semantic_input_digest,
                     "input_characters": input_characters,
-                    "input_character_basis": "unprojected_semantic_input_or_history_not_provider_tokens",
+                    "input_character_basis": input_character_basis,
+                    "unprojected_input_characters": unprojected_characters,
                     "input_utf8_bytes": input_utf8_bytes,
                     "max_input_characters": basis.max_input_characters,
                     "provider_call_attempted": False,
@@ -1450,7 +1501,8 @@ class DeepSeekStructuredAgentAdapter:
                 "structured_output_method": self._config.structured_output_method,
                 "thinking": model_profile.thinking,
                 "input_characters": input_characters,
-                "input_character_basis": "unprojected_semantic_input_or_history_not_provider_tokens",
+                "input_character_basis": input_character_basis,
+                "unprojected_input_characters": unprojected_characters,
                 "input_utf8_bytes": input_utf8_bytes,
                 "max_input_characters": basis.max_input_characters,
                 "max_output_tokens": basis.max_output_tokens,

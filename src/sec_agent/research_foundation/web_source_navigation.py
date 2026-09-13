@@ -2,8 +2,9 @@
 
 Not an index, crawler, Evidence admission service, or persistence engine. Run
 composition owns the short-lived discovered locators. Disclosed source windows
-and capture identifiers remain in the normal MCP/tool observations. The cache
-is not durable resume support; a fresh lifecycle must search again.
+and capture identifiers remain in the normal MCP/tool observations. A fresh
+lifecycle discovers locators again; the supplied capture adapter may reuse a
+scoped persisted capture. This is not cross-thread memory or evidence admission.
 """
 from __future__ import annotations
 
@@ -12,7 +13,7 @@ from hashlib import sha256
 from urllib.parse import urlsplit
 
 from .external_sources import ExternalCaptureRequest, ExternalSearchRequest
-from .source_document_navigation import SourceDocumentRequest, SourceDocumentResult
+from .source_document_navigation import SourceDocumentRequest, SourceDocumentResult, navigate_source_nodes
 
 
 class WebSourceReader:
@@ -25,7 +26,7 @@ class WebSourceReader:
         if request.source_space != "web" or branch_id not in run_scope.selected_branch_ids:
             raise ValueError("web_source_scope_invalid")
         key = (run_scope.run_scope_digest, branch_id)
-        if request.operation == "search":
+        if request.operation == "search" and not request.document_id:
             receipt = await self.discovery.search(ExternalSearchRequest(
                 query=request.query, branch_id=branch_id, run_scope=run_scope,
                 purpose="Agent-selected public source research; no Evidence or NumericFact promotion",
@@ -67,6 +68,26 @@ class WebSourceReader:
                     source_snapshot_sha256=result.receipt_digest,
                     notice="Source fetch failed, not public non-disclosure: " + str([a.model_dump() for a in result.attempts]))
             self._captures[capture_key] = result
+        if request.operation == "search":
+            # Reuse the existing chunker/BM25 navigator inside one captured
+            # source; no second index, full-document prompt or new ranking rules.
+            from langchain_text_splitters import RecursiveCharacterTextSplitter
+            chunks = RecursiveCharacterTextSplitter(chunk_size=1800,chunk_overlap=180,add_start_index=True).create_documents([result.text])
+            nodes=[{"node_id":str(chunk.metadata["start_index"]),"parent_document_id":request.document_id,
+                "node_kind":"paragraph","title":candidate.title,"stable_url":result.final_url,
+                "content":chunk.page_content,"document_kind":"html"} for chunk in chunks]
+            matches=navigate_source_nodes(nodes,request,snapshot=result.receipt_digest,allowed_space="web")
+            # These matches are already inside the captured original. Return
+            # exact bounded passages rather than a prefix preview that may cut
+            # off the matching paragraph and induce repeated searching.
+            passages = []
+            for item in matches.items:
+                start = int(item["node_id"])
+                read = await self(request=request.model_copy(update={"operation":"read", "query":"",
+                    "offset":start, "max_characters":item["content_characters"]}), branch_id=branch_id, run_scope=run_scope)
+                passages.extend(read.items)
+            return matches.model_copy(update={"items":tuple(passages),
+                "notice":"Matched bounded passages read verbatim from the captured original, with exact character locators. These are not complete-document or financial-quality verification. Read adjacent offsets only if the passage ends before the needed context."})
         end = min(len(result.text), request.offset + request.max_characters)
         passage = result.text[request.offset:end]
         if not passage:

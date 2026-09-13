@@ -40,6 +40,28 @@ def _source_mapping() -> dict[str, object]:
     }
 
 
+def test_generic_short_tail_keeps_exact_original_spans(monkeypatch):
+    pytest.importorskip('haystack')
+    import ingestion.structured_document_adapter as adapter
+    # A short final window following overlapping chunks used to duplicate its
+    # overlap during threshold merging, corrupting both text and locators.
+    text = ' '.join(f'word{i}' for i in range(980))
+    monkeypatch.setattr(adapter, '_generic_sections_from_html', lambda *_:
+        [adapter._RawSection(path=('Original',), blocks=(adapter._RawBlock(kind='paragraph', content=text),))])
+    body = b'<html>source</html>'
+    source = StructuredSourceDescriptor.from_mapping(_source_mapping(), raw_body_sha256=sha256(body).hexdigest())
+    tree = adapter.build_structured_document_tree(source=source, body=body, parser_profile='trafilatura_xml')
+    assert tree['chunks']
+    assert all(c['text'] in text for c in tree['chunks'])
+    assert 'word979' in tree['chunks'][-1]['text']
+    from ingestion.retrieval_nodes import build_retrieval_nodes, QualificationError
+    corpus = {'documents':[tree['document']], **{k:tree[k] for k in ('sections','blocks','chunks')}}
+    with pytest.raises(QualificationError, match='required_retrieval_lane_empty'):
+        build_retrieval_nodes(corpus)
+    nodes = build_retrieval_nodes(corpus, require_tables=False)
+    assert nodes['leaves'] and not nodes['tables']
+
+
 def test_structured_source_descriptor_normalizes_ticker_and_digest() -> None:
     body = b"<html><body>Dell</body></html>"
 

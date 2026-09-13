@@ -61,6 +61,9 @@ def create_app(
     if os.environ.get("FINSIGHT_REPORT_SESSION_API_URL"):
         return create_report_session_app(frontend_dist_root=frontend_dist_root)
 
+    if os.environ.get("FINSIGHT_AUTH_MODE", "local") != "local":
+        raise ValueError("oidc_pilot_requires_private_native_session_api")
+
     if workbench_runtime_mode not in {"current", "fixture"}:
         raise ValueError("workbench_runtime_mode_invalid")
     supplied_retired = sorted(
@@ -182,6 +185,8 @@ def create_app(
             name="assets",
         )
 
+    from .oidc_login import install_identity_status
+    install_identity_status(app)
     @app.get("/api/health")
     def health() -> dict[str, str]:
         return {
@@ -432,8 +437,18 @@ def create_report_session_app(frontend_dist_root=None):
         yield
         await service.http.aclose()
     app = FastAPI(title="FinSight Research Session", version="0.1.3", lifespan=lifespan)
+    from .submission_receipts import SubmissionReceipts
+    app.add_middleware(SubmissionReceipts, directory=(Path(settings_path).parent if settings_path else state_root) / 'submission-receipts')
+    from .authentication import install_conversation_auth
+    install_conversation_auth(app)
+    from .oidc_login import install_identity_status
+    install_identity_status(app)
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=["127.0.0.1", "localhost", "testserver"])
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
+    from .api.v1.conversations import build_conversations_router
+    app.include_router(build_conversations_router(service), prefix="/api/v1")
+    from .api.v1.data_library import build_data_library_router
+    app.include_router(build_data_library_router(attachment_store.root, settings.get('conversation_fact_mart')), prefix='/api/v1')
     @app.exception_handler(__import__("httpx").HTTPError)
     async def upstream_error(request, exc):
         status = getattr(getattr(exc, "response", None), "status_code", 502)
@@ -450,6 +465,7 @@ def create_report_session_app(frontend_dist_root=None):
         return RedirectResponse("/workspace/session")
     @app.get("/workspace", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/workspace/session", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace/assistant", response_class=HTMLResponse, include_in_schema=False)
     def session_page():
         return _frontend_index(dist)
     return app

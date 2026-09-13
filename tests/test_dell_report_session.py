@@ -52,7 +52,7 @@ def test_native_open_question_revision_review_and_accept(artifacts):
         new_report = {k: initial["report"][k] for k in ("title", "narrative_markdown")}
         new_report["narrative_markdown"] += " Revised."
         models["writer"].replies = [[call("submit_case_report", {"report": new_report}, "r1")]]
-        models["verifier"].replies = [[call("submit_report_review", {"review": initial["report_review"]}, "v1")]]
+        models["verifier"].replies = [[call("submit_report_review", {"review": {**initial["report_review"], "completion": "complete"}}, "v1")]]
         events = []
         async for e in graph.astream(Command(resume={"action": "revise", "message": "Explicit public feedback marker"}), config,
                 stream_mode="custom", subgraphs=True, version="v2"):
@@ -245,7 +245,7 @@ def test_request_usage_includes_failed_nodes_without_private_data_or_fake_zero(t
     assert "PRIVATE" not in json.dumps(events) and all(e["run_id"] == run for e in events)
     assert events[-2]["kind"] == "task" and events[-2]["dependency_ids"] == ["T1"]
     assert events[-1]["status"] == "specialist_human_review_handoff_emitted"
-    assert usage == {"recorded_requests": 2, "reported_requests": 1, "unknown_or_pending_requests": 1,
+    assert usage == {"recorded_requests": 2, "reported_requests": 1, "not_attempted_requests": 0, "unknown_or_pending_requests": 1,
         "partial_audit": True, "input_tokens": 8, "output_tokens": 4, "total_tokens": 12,
         "cache_hit_tokens": 0, "cache_miss_tokens": 0, "elapsed_ms": 0, "unknown_cache_requests": 2, "unknown_elapsed_requests": 2}
     with pytest.raises(ValueError):
@@ -325,7 +325,7 @@ def test_native_report_edit_errors_corrected_without_full_rewrite(artifacts):
             [call("submit_report_edits", {"edits": [{"old_str": "missing span", "new_str": "new"}]}, "e1")],
             [call("submit_report_edits", {"edits": [{"old_str": f"[{ref}]", "new_str": "[P99:INVALID]"}]}, "e2")],
             [call("submit_report_edits", {"edits": [{"old_str": f"[{ref}]", "new_str": f"[{ref}] One focused correction."}]}, "e3")]]
-        models["verifier"].replies = [[call("submit_report_review", {"review": initial["report_review"]}, "v1")]]
+        models["verifier"].replies = [[call("submit_report_review", {"review": {**initial["report_review"], "completion": "complete"}}, "v1")]]
         result = await graph.ainvoke(Command(resume={"action": "revise", "message": "Correct one sentence"}), config)
         assert result["report"]["narrative_markdown"] == initial["report"]["narrative_markdown"] + " One focused correction."
         assert result["report_version"] == 2 and len(result["report"]["applied_edits"]) == 1

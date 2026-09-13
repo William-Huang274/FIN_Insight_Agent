@@ -39,16 +39,35 @@ def _app(*, enabled=True, graph_id=RESEARCH_GRAPH):
     async def create_run(*args, **kwargs):
         calls.append(("run", args, kwargs))
         return {"run_id": run_id, "status": "pending"}
+    async def list_runs(*args, **kwargs):
+        return []
     async def get_thread(_):
         return thread
     async def get_state(_):
         return {"values": {"phase": "ready_for_human_review"}, "interrupts": [{"value": {"kind": "dell_report_review"}}]}
     service = ReportSessionService("http://127.0.0.1:18165", object(), sdk=SimpleNamespace(
-        threads=SimpleNamespace(create=create_thread, get=get_thread, get_state=get_state), runs=SimpleNamespace(create=create_run)),
+        threads=SimpleNamespace(create=create_thread, get=get_thread, get_state=get_state), runs=SimpleNamespace(create=create_run, list=list_runs)),
         research_profile={"default_question": "A new bounded Dell growth-quality research question", "title": "New Dell research"} if enabled else None)
     app = FastAPI()
     app.include_router(build_report_sessions_router(service), prefix="/api/v1")
     return app, service, calls, thread_id
+
+
+def test_new_task_date_is_frozen_in_native_metadata_and_run_config():
+    app, service, calls, tid = _app()
+    response = TestClient(app).post('/api/v1/research-sessions', json={
+        'mode':'research','question':'Research the current memory investment cycle.'}, headers={'x-workbench-request':'1'})
+    assert response.status_code == 200
+    metadata = next(c[1]['metadata'] for c in calls if c[0] == 'thread')
+    run = next(c[2] for c in calls if c[0] == 'run')
+    assert run['config']['configurable']['finsight_research_as_of'] == metadata['research_as_of']
+    from apps.workbench.backend.api.v1.research_studio import run_configuration
+    assert asyncio.run(run_configuration(service, {'metadata': {}})) == {}
+    continued = asyncio.run(run_configuration(service, {'metadata':metadata}))
+    assert continued == run['config']
+    snapshot = TestClient(app).get('/api/v1/research-sessions/'+tid)
+    assert snapshot.status_code == 200
+    assert snapshot.json()['research_as_of'] == metadata['research_as_of']
 
 
 def test_cumulative_usage_includes_native_run_pages_and_preserves_unknown_cache(tmp_path):
@@ -172,6 +191,60 @@ def test_public_task_projection_has_real_objective_and_dependencies_not_private_
     assert history["responsibility_history"] == [{"actor": "synthesis", "correction_round": 0}]
 
 
+def test_failed_workpaper_projects_only_deliverable_and_validation_metadata():
+    projected = public_state({"values": {"research_failed_workpapers": [{"run_id": "run-a", "task_id": "task-a",
+        "agent_state": {"review_reason": "model_turn_ceiling_reached_no_silent_completion",
+            "notebook": {"model_turn_count": 2, "tool_action_count": 1,
+                "observations": [{"raw_source": "private payload"}], "messages": ["private reasoning"]},
+            "last_submission_attempt": {"arguments": {"narrative_markdown": "## Candidate\n\nObserved result.",
+                "context_digest": "private binding", "hidden_reasoning": "private reasoning"},
+                "feedback": [{"code": "specialist_tool_arguments_invalid", "message": "private raw error"}],
+                "validation_issues": [{"location": ["claims", 1], "type": "value_error", "message": "invalid authority"}]}}}]}})
+    failure = projected["research_failures"][0]
+    assert failure["candidate"] == {"narrative_markdown": "## Candidate\n\nObserved result."}
+    assert failure["saved_observations"] == 1 and failure["accepted"] is False
+    assert failure["feedback_codes"] == ["specialist_tool_arguments_invalid"]
+    assert failure["validation_issues"][0]["location"] == ["claims", 1]
+    assert "private" not in str(projected)
+
+
+def test_incomplete_review_output_and_host_notice_are_separate_public_records():
+    projected = public_state({"values": {"case_review": {"source_run_id": "review-run",
+        "counter": {"status": "incomplete_no_submission", "review": None,
+            "incomplete_output": ["A source-backed public observation."],
+            "runtime_notices": ["Model call limit reached"], "model_calls": 24,
+            "tool_calls": 40, "messages": ["private reasoning"], "tool_feedback": ["private tool context"]}}}})
+    failure = projected["research_failures"][0]
+    assert failure["run_id"] == "review-run" and failure["task_id"] == "反证审查"
+    assert failure["candidate"] == {"narrative_markdown": "A source-backed public observation."}
+    assert failure["model_explanation"] is None
+    assert failure["feedback_codes"] == ["Model call limit reached"]
+    assert failure["accepted"] is False and failure["model_turns"] == 24
+    assert "private" not in str(projected)
+
+
+def test_failed_task_without_submission_keeps_tool_error_and_explicit_model_handoff_reason():
+    state = {"values": {"research_failed_workpapers": [{"run_id": "r", "task_id": "t", "agent_state": {
+        "review_reason": "source_read_failed", "notebook": {
+            "feedback": [{"code": "source_read_failed", "message": "private source payload"}],
+            "model_turn_records": [{"action": {"action": "request_human_review", "reason_summary": "原文读取未完成，请核对来源访问。",
+                "reasoning_content": "private reasoning"}}]}}}]}}
+    row = public_state(state)["research_failures"][0]
+    assert row["candidate"] == {} and row["feedback_codes"] == ["source_read_failed"]
+    assert row["model_explanation"] == "原文读取未完成，请核对来源访问。"
+    assert "private" not in str(row)
+
+
+def test_saved_incomplete_findings_are_readable_without_private_checkpoint_fields():
+    state = {"values": {"case_review": {"counter": {"status": "incomplete_no_submission",
+        "recorded_findings": {"F1": {"problematic_quote": "本期费用等于同比增加额",
+            "diagnosis": "需要核对本期总额与比较期变化量。", "requested_change": "读取两个期间后修订费用桥接。",
+            "private_state": "secret reasoning", "source_checks": [{"raw": "private source"}]}}}}}}
+    text = public_state(state)["research_failures"][0]["candidate"]["narrative_markdown"]
+    assert "已保存审查发现" in text and "修订费用桥接" in text
+    assert "secret" not in text and "private" not in text
+
+
 def test_original_workpaper_reviews_are_visible_without_private_messages_or_raw_source_payloads():
     projected = public_state({"values": {"case_review": {"counter": {"messages": ["private trace"], "review": {
         "summary": "A current-period comparison needs revision.", "findings": [{"finding_id": "F1", "paper_id": "P09",
@@ -283,6 +356,34 @@ def test_cost_estimate_counts_known_usage_and_does_not_price_failed_unknown_as_z
     estimate = public_cost_estimate(rows)
     assert estimate["known_cny"] == pytest.approx(0.0105)
     assert estimate["priced_requests"] == 1 and estimate["unknown_or_pending_requests"] == 1
+    rows.append({"event": "outcome", "call_id": "preflight", "provider_call_attempted": False,
+                 "status": "blocked_before_transport_input_limit"})
+    corrected = public_cost_estimate(rows)
+    assert corrected["not_attempted_requests"] == 1
+    assert corrected["unknown_or_pending_requests"] == 1 and corrected["known_cny"] == estimate["known_cny"]
+
+
+@pytest.mark.parametrize("audit", [None, "pending", "partial"])
+def test_attention_continuation_rejects_unknown_usage_without_creating_run(tmp_path, audit):
+    app, service, calls, thread_id = _app()
+    service.audit_root = tmp_path
+    run_id = str(uuid4())
+    async def state(_):
+        return {"values": {"phase": "research_needs_attention", "case_papers": [1]},
+                "interrupts": [{"value": {"kind": "research_needs_attention"}}]}
+    async def runs(*args, **kwargs):
+        return [{"run_id": run_id, "status": "success", "metadata": {}}]
+    service.sdk.threads.get_state, service.sdk.runs.list = state, runs
+    if audit:
+        folder = tmp_path / thread_id / run_id
+        folder.mkdir(parents=True)
+        (folder / "model-call-events.jsonl").write_text('{"call_id":"unfinished","event":"started"}'
+            if audit == "pending" else '{broken', encoding="utf-8")
+    with TestClient(app) as client:
+        response = client.post(f"/api/v1/research-sessions/{thread_id}/continue-remaining", headers={"x-workbench-request": "1"})
+        assert response.status_code == 409
+        assert not any(c[0] == "run" for c in calls)
+    asyncio.run(service.http.aclose())
 
 
 def test_continue_remaining_uses_native_interrupt_and_no_browser_seed_or_checkpoint_update():

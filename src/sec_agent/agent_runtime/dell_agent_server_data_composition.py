@@ -12,7 +12,7 @@ from __future__ import annotations
 from collections.abc import Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, timezone
 from hashlib import sha256
 import os
 from pathlib import Path
@@ -69,6 +69,15 @@ DELL_APPROVED_DATA_SNAPSHOT_ID = (
     "dell-owner-data-gate-739df0f5d2880af8e27a08b5f9e31e10"
 )
 DELL_APPROVED_RESEARCH_AS_OF = "2026-09-02T00:00:00Z"
+
+
+def task_research_as_of(environment):
+    """A task cutoff is separate from frozen historical inventory dates."""
+    value = environment.get('FINSIGHT_RESEARCH_AS_OF', DELL_APPROVED_RESEARCH_AS_OF)
+    parsed = datetime.fromisoformat(value.replace('Z', '+00:00'))
+    if parsed.tzinfo is None or parsed > datetime.now(timezone.utc):
+        raise ValueError('research_as_of_timezone_or_future_invalid')
+    return parsed.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
 
 _ENV_PATHS = {
     "s1_nodes": "FINSIGHT_DELL_S1_NODES_PATH",
@@ -218,6 +227,7 @@ def open_dell_approved_data_composition(
             sqlite_path=paths["s2_mart"],
             expected_mart_sha256=decision.bound_inputs.s2_mart_sha256,
             snapshot_id=DELL_APPROVED_DATA_SNAPSHOT_ID,
+            include_runtime_derivatives=False,
         )
         reviewed_index = load_executable_reviewed_evidence_index_v1_2(
             config_path=enrichment_path,
@@ -253,11 +263,24 @@ def open_dell_approved_data_composition(
         )
         compiler = SourceFamilyCompiler(inventory=inventory, baseline=baseline)
         source_route_catalog = compiler.provider_route_catalog()
+        # Keep the approved physical inventory identity bound to its captured
+        # metric definitions. Runtime derived capabilities have their own digest
+        # and do not rewrite old source inventories or report checkpoints.
+        runtime_mart = paths['s2_mart']
+        runtime_mart_digest = decision.bound_inputs.s2_mart_sha256
+        if env.get('FINSIGHT_RESEARCH_FACT_MART_PATH'):
+            runtime_mart = _required_file_environment('FINSIGHT_RESEARCH_FACT_MART_PATH', env)
+            runtime_mart_digest = _file_sha256(runtime_mart)
+        planner_capabilities = derive_planner_tool_capabilities(
+            sqlite_path=runtime_mart,
+            expected_mart_sha256=runtime_mart_digest,
+            snapshot_id=DELL_APPROVED_DATA_SNAPSHOT_ID,
+        )
         branch_ids = tuple(row.branch_id for row in foundation.question_branches)
         graph_run = compose_dell_mcp_graph_run(
             foundation,
             branch_ids=branch_ids,
-            research_as_of=DELL_APPROVED_RESEARCH_AS_OF,
+            research_as_of=task_research_as_of(env),
             snapshot_id=DELL_APPROVED_DATA_SNAPSHOT_ID,
             execution_attempt_id=run_invocation_id.strip(),
         )
@@ -271,16 +294,25 @@ def open_dell_approved_data_composition(
         reviewed_reader = CurrentReviewedEvidenceReader(
             case_reader=lambda _case_key: reviewed_case
         )
+        from sec_agent.research_foundation.public_library import library_path
+        public_nodes = library_path(env['FINSIGHT_TASK_ATTACHMENTS_ROOT']) if env.get('FINSIGHT_TASK_ATTACHMENTS_ROOT') else None
+        nodes_path = public_nodes if public_nodes and public_nodes.is_file() else paths['s1_nodes']
+        node_digest = _file_sha256(nodes_path) if nodes_path != paths['s1_nodes'] else catalog.local_nodes_sha256
+        if nodes_path != paths['s1_nodes']:
+            with nodes_path.open(encoding='utf-8') as source_stream:
+                node_count = sum(1 for _ in source_stream)
+        else:
+            node_count = catalog.expected_physical_node_count
         local_reader = StructuredLocalKnowledgeReader(
-            nodes_path=paths["s1_nodes"],
-            expected_sha256=catalog.local_nodes_sha256,
-            expected_node_count=catalog.expected_physical_node_count,
-            research_as_of=date.fromisoformat(catalog.research_as_of),
+            nodes_path=nodes_path,
+            expected_sha256=node_digest,
+            expected_node_count=node_count,
+            research_as_of=date.fromisoformat(task_research_as_of(env)[:10]),
             allowed_branch_ids=branch_ids,
         )
         fact_reader = ExistingS2FinancialFactReader(
-            paths["s2_mart"],
-            expected_sha256=decision.bound_inputs.s2_mart_sha256,
+            runtime_mart,
+            expected_sha256=runtime_mart_digest,
         )
         external_pack = FrozenExternalCandidatePack.load(
             paths["external_manifest"],
@@ -312,10 +344,16 @@ def open_dell_approved_data_composition(
             )
             from sec_agent.research_foundation.web_source_navigation import WebSourceReader
             guard = PublicURLGuard()
+            live_capture = ExternalSourceCapture(guard=guard, static_fetcher=StaticHTTPPageFetcher(guard=guard),
+                hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard, max_characters=200000))
+            if env.get("FINSIGHT_TASK_ATTACHMENTS_ROOT") and env.get("FINSIGHT_TASK_THREAD_ID"):
+                from sec_agent.research_foundation.source_capture_cache import ScopedSourceCaptureCache
+                live_capture = ScopedSourceCaptureCache(
+                    root=Path(env["FINSIGHT_TASK_ATTACHMENTS_ROOT"]) / "public-source-cache",
+                    thread_id=env["FINSIGHT_TASK_THREAD_ID"], capture=live_capture, guard=guard)
             web_reader = WebSourceReader(
                 discovery=ExternalSourceDiscovery(primary=ExaHostedMCPProvider()),
-                capture=ExternalSourceCapture(guard=guard, static_fetcher=StaticHTTPPageFetcher(guard=guard),
-                    hosted_fetcher=ExaHostedMCPPageFetcher(guard=guard, max_characters=200000)))
+                capture=live_capture)
 
             async def source_reader(*, request, branch_id, run_scope):
                 if request.source_space == "web":

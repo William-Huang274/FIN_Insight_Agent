@@ -41,35 +41,18 @@ def test_data_build_catalog_exposes_complete_8k_path_without_unbuilt_object_inde
     assert "sec_build_object_bm25_index" not in step_ids
 
 
-def test_data_build_catalog_exposes_s1c_as_one_controlled_comparison_chain() -> None:
+def test_data_build_catalog_keeps_builders_without_retired_experiment_launchers() -> None:
     steps = {step.step_id: step for step in data_build_catalog()}
 
+    assert "retrieval_build_current_compiled_object_views" in steps
     assert {
-        "retrieval_build_current_compiled_object_views",
         "retrieval_materialize_s1c_qrels",
         "retrieval_run_s1c_ranking_comparison",
         "retrieval_materialize_s1c_financial_role_eval",
         "retrieval_run_s1c_cross_encoder_role_shadow",
         "retrieval_materialize_s1c_runtime_query_atoms",
         "retrieval_run_s1c_runtime_query_atom_model_shadow",
-    }.issubset(steps)
-    comparison = steps["retrieval_run_s1c_ranking_comparison"]
-    model = next(row for row in comparison.parameters if row.name == "model")
-    assert model.required is True
-    assert comparison.timeout_hint_s == 1800
-    shadow = steps["retrieval_run_s1c_cross_encoder_role_shadow"]
-    assert next(
-        row for row in shadow.parameters if row.name == "bge_model"
-    ).required is True
-    assert next(
-        row for row in shadow.parameters if row.name == "cross_encoder_model"
-    ).required is True
-    assert shadow.timeout_hint_s == 1800
-    atom_shadow = steps["retrieval_run_s1c_runtime_query_atom_model_shadow"]
-    assert atom_shadow.timeout_hint_s == 7200
-    assert {
-        row.name for row in atom_shadow.parameters
-    } == {"policy", "cache_root", "full_output_root", "summary_output"}
+    }.isdisjoint(steps)
     fact_mart = steps["financial_facts_build_s2_company_mart"]
     assert fact_mart.timeout_hint_s == 900
     assert {row.name for row in fact_mart.parameters} == {

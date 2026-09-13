@@ -3,7 +3,7 @@
   "model_config": "configs/research/fin_ia_0_1_3_dell_full_research_routed_v1_0.json",
   "max_tasks": 12,
   "max_parallel_tasks": 2,
-  "context_editing": {"trigger_tokens": 50000, "keep": 6},
+  "context_editing": {"trigger_tokens": 16000, "keep": 2},
   "context_summarization": {
     "enabled": false,
     "trigger_tokens": 80000,

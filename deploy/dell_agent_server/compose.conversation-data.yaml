@@ -1,0 +1,9 @@
+# Optional host-approved financial snapshot; never grants database writes.
+services:
+  langgraph-api:
+    volumes:
+      - type: bind
+        source: ${FINSIGHT_CONVERSATION_FACT_MART_HOST_PATH:?approved financial snapshot}
+        target: /run/fin-insight/conversation/financial-facts.sqlite
+        read_only: true
+        bind: {create_host_path: false}

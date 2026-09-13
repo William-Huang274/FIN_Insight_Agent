@@ -85,6 +85,7 @@ ARG OCI_REVISION=uncommitted
 ARG OCI_SOURCE=https://github.com/William-Huang274/FIN_Insight_Agent
 ARG DEBIAN_GCC_VERSION=4:14.2.0-1
 ARG DEBIAN_LIBC6_DEV_VERSION=2.41-12+deb13u3
+ARG DEBIAN_GLIBC_SNAPSHOT=20260701T000000Z
 ARG DEBIAN_LIBPQ_VERSION=17.11-0+deb13u1
 ENV WORKBENCH_IMAGE_KIND=control-plane
 ENV WORKBENCH_RUNTIME_PROFILE=dagster-postgres-shadow
@@ -93,10 +94,13 @@ ENV FINSIGHT_S2_POLICY_ROOT=/app/configs/financial_facts
 ENV FINSIGHT_S2_OUTPUT_ROOT=/app/state/s2-shadow
 ENV DAGSTER_HOME=/app/dagster-home
 RUN saved_apt_mark="$(apt-mark showmanual)" \
+    && test "$(dpkg-query -W -f='${Version}' libc6)" = "${DEBIAN_LIBC6_DEV_VERSION}" \
+    && echo "deb [check-valid-until=no signed-by=/usr/share/keyrings/debian-archive-keyring.gpg] https://snapshot.debian.org/archive/debian/${DEBIAN_GLIBC_SNAPSHOT} trixie main" > /etc/apt/sources.list.d/finsight-glibc-snapshot.list \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
         "gcc=${DEBIAN_GCC_VERSION}" \
         "libc6-dev=${DEBIAN_LIBC6_DEV_VERSION}" \
+        "libc-dev-bin=${DEBIAN_LIBC6_DEV_VERSION}" \
         "libpq-dev=${DEBIAN_LIBPQ_VERSION}" \
         "libpq5=${DEBIAN_LIBPQ_VERSION}" \
     && uv sync --locked --no-dev --extra control-plane --no-editable \
@@ -113,6 +117,7 @@ RUN saved_apt_mark="$(apt-mark showmanual)" \
     && apt-get purge -y --auto-remove \
     && rm -rf /var/lib/apt/lists/* /tmp/psycopg2.ldd \
     && test "$(dpkg-query -W -f='${Version}' libpq5)" = "${DEBIAN_LIBPQ_VERSION}" \
+    && test "$(dpkg-query -W -f='${Version}' libc6)" = "${DEBIAN_LIBC6_DEV_VERSION}" \
     && psycopg2_module="$(python -c 'import psycopg2._psycopg as module; print(module.__file__)')" \
     && libpq_path="$(ldd "$psycopg2_module" | awk '$1 == "libpq.so.5" {print $3}')" \
     && test -n "$libpq_path" \

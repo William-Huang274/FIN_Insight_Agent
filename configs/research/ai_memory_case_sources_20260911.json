@@ -1,0 +1,161 @@
+{
+  "as_of": "2026-09-11",
+  "sources": [
+    {
+      "url": "https://investors.micron.com/news/press-release/2026/Micron-Technology-Inc--Reports-Record-Results-for-the-Third-Quarter-of-Fiscal-2026/default.aspx",
+      "title": "Micron FY2026 Q3 results",
+      "publisher": "Micron Investor Relations",
+      "issuer_id": "0000723125",
+      "ticker": "MU",
+      "company": "Micron Technology",
+      "publication_date": "2026-06-24",
+      "period_end": "2026-05-28",
+      "source_role": "issuer_earnings_release",
+      "document_kind": "html"
+    },
+    {
+      "url": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/Q3-FY26-Prepared-Remarks.pdf",
+      "title": "Micron FY2026 Q3 prepared remarks",
+      "publisher": "Micron Investor Relations",
+      "issuer_id": "0000723125",
+      "ticker": "MU",
+      "company": "Micron Technology",
+      "publication_date": "2026-06-24",
+      "period_end": "2026-05-28",
+      "source_role": "management_prepared_remarks",
+      "document_kind": "pdf"
+    },
+    {
+      "url": "https://s25.q4cdn.com/621799436/files/doc_financials/2026/q3/0000723125-26-000015.pdf",
+      "title": "Micron FY2026 Q3 10-Q",
+      "publisher": "Micron Investor Relations",
+      "issuer_id": "0000723125",
+      "ticker": "MU",
+      "company": "Micron Technology",
+      "publication_date": "2026-06-25",
+      "period_end": "2026-05-28",
+      "source_role": "10-Q",
+      "document_kind": "pdf"
+    },
+    {
+      "url": "https://news.skhynix.com/en/q2-2026-business-results/",
+      "title": "SK hynix 2026 Q2 results and HBM capacity",
+      "publisher": "SK hynix Newsroom",
+      "issuer_id": "KR000660",
+      "ticker": "000660.KS",
+      "company": "SK hynix",
+      "publication_date": "2026-07-29",
+      "period_end": "2026-06-30",
+      "source_role": "issuer_earnings_release",
+      "document_kind": "html"
+    },
+    {
+      "url": "https://news.samsung.com/global/samsung-electronics-announces-second-quarter-2026-results",
+      "title": "Samsung Electronics 2026 Q2 results",
+      "publisher": "Samsung Global Newsroom",
+      "issuer_id": "KR005930",
+      "ticker": "005930.KS",
+      "company": "Samsung Electronics",
+      "publication_date": "2026-07-30",
+      "period_end": "2026-06-30",
+      "source_role": "issuer_earnings_release",
+      "document_kind": "html"
+    },
+    {
+      "url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-second-quarter-fiscal-2027",
+      "title": "NVIDIA FY2027 Q2 results and platform shipment status",
+      "publisher": "NVIDIA Newsroom",
+      "issuer_id": "0001045810",
+      "ticker": "NVDA",
+      "company": "NVIDIA",
+      "publication_date": "2026-08-26",
+      "period_end": "2026-07-26",
+      "source_role": "issuer_earnings_release",
+      "document_kind": "html"
+    },
+    {
+      "url": "https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4",
+      "title": "Microsoft FY2026 Q4 earnings call: demand, capex and leases",
+      "publisher": "Microsoft Investor Relations",
+      "issuer_id": "0000789019",
+      "ticker": "MSFT",
+      "company": "Microsoft",
+      "publication_date": "2026-07-29",
+      "period_end": "2026-06-30",
+      "source_role": "management_earnings_transcript",
+      "document_kind": "html"
+    },
+    {
+      "url": "https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary",
+      "title": "Key Questions on Energy and AI 2026: executive summary",
+      "publisher": "International Energy Agency",
+      "issuer_id": "IEA",
+      "ticker": "",
+      "company": "Cross-industry energy and AI",
+      "publication_date": "2026-04-16",
+      "period_end": "",
+      "source_role": "intergovernmental_research_and_forecast",
+      "document_kind": "html"
+    },
+    {
+      "url": "https://images.samsung.com/is/content/samsung/assets/global/ir/docs/2026_2Q_conference_eng.pdf",
+      "title": "Samsung 2026 Q2 earnings presentation",
+      "publisher": "Samsung Investor Relations",
+      "issuer_id": "KR005930",
+      "ticker": "005930.KS",
+      "company": "Samsung Electronics",
+      "publication_date": "2026-07-30",
+      "period_end": "2026-06-30",
+      "source_role": "management_earnings_presentation",
+      "document_kind": "pdf"
+    },
+    {
+      "url": "https://nvidianews.nvidia.com/news/rubin-platform-ai-supercomputer",
+      "title": "NVIDIA Rubin platform technical launch",
+      "publisher": "NVIDIA Newsroom",
+      "issuer_id": "0001045810",
+      "ticker": "NVDA",
+      "company": "NVIDIA",
+      "publication_date": "2026-01-05",
+      "period_end": "",
+      "source_role": "manufacturer_technical_disclosure",
+      "document_kind": "html"
+    },
+    {
+      "url": "https://www.trendforce.com/presscenter/news/20260907-13219.html",
+      "title": "TrendForce 2026 Q2 DRAM industry revenue and pricing outlook",
+      "publisher": "TrendForce",
+      "issuer_id": "TREND_FORCE",
+      "ticker": "",
+      "company": "Memory industry",
+      "publication_date": "2026-09-07",
+      "period_end": "2026-06-30",
+      "source_role": "third_party_industry_estimate_and_forecast",
+      "document_kind": "html"
+    },
+    {
+      "url": "https://stockanalysis.com/stocks/mu/history/",
+      "title": "Micron market prices captured 2026-09-11",
+      "publisher": "Stock Analysis",
+      "issuer_id": "0000723125",
+      "ticker": "MU",
+      "company": "Micron Technology",
+      "publication_date": "2026-09-11",
+      "period_end": "2026-09-10",
+      "source_role": "market_data_snapshot",
+      "document_kind": "html"
+    },
+    {
+      "url": "https://www.sec.gov/Archives/edgar/data/2120882/000119312526354777/d147827d6k.htm",
+      "title": "SK hynix 2026 semiannual consolidated and separate financial statements",
+      "publisher": "SEC / SK hynix",
+      "issuer_id": "0002120882",
+      "ticker": "000660.KS",
+      "company": "SK hynix",
+      "publication_date": "2026-08-18",
+      "period_end": "2026-06-30",
+      "source_role": "6-K",
+      "document_kind": "html"
+    }
+  ]
+}

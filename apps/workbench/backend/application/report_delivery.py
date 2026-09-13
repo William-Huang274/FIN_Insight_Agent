@@ -6,9 +6,16 @@ do not invoke a model, mutate the report, or imply human approval.
 from __future__ import annotations
 
 import io
+from copy import deepcopy
 from pathlib import Path
 import re
+from urllib.parse import urlsplit
 from xml.sax.saxutils import escape
+
+
+def chart_display_unit(chart):
+    scale = chart.get("scale_divisor", 1)
+    return chart["unit"] if scale == 1 else f"{scale:,} {chart['unit']}"
 
 
 def readable_report(report):
@@ -18,9 +25,27 @@ def readable_report(report):
         text = text.replace("[" + key + "]", f"[{number}]")
         titles, urls, calculations = [], [], []
         for source in citation.get("sources", []):
-            titles.append(source.get("title") or source.get("source_id") or "已绑定来源")
+            trace = source.get("formula_trace") or {}
+            metric_label = trace.get("metric_title") or source.get("metric_id")
+            fact_title = " · ".join(str(v) for v in (source.get("ticker"), metric_label, source.get("period_start"), source.get("period_end")) if v)
+            titles.append(source.get("title") or ("财务指标：" + fact_title if metric_label else source.get("source_id")) or "已绑定来源")
             urls.extend(([source["source_url"]] if source.get("source_url") else []) + list(source.get("citation_urls") or []))
-            if calculation := source.get("calculation"):
+            if metric_label and source.get("value_decimal") is not None:
+                calculations.append(f"数值：{source['value_decimal']} {source.get('unit', '')}")
+                if trace:
+                    calculations.append("派生计算：" + trace.get("formula", "") + f"；定义版本 {trace.get('definition_version', '未记录')}")
+                    for operand in trace.get("inputs", []):
+                        calculations.append(f"输入 {operand['metric_id']}：{operand['value_decimal']} {operand['unit']}；{operand.get('period_start', '')} 至 {operand['period_end']}")
+                    if trace.get("interpretation_boundary"):
+                        calculations.append("解释边界：" + trace["interpretation_boundary"])
+            if calculation := (source.get("calculation") or (source if source.get("result_state") == "non_authoritative_metric" and source.get("arithmetic_verified") is True else None)):
+                if not all(key in calculation for key in ('expression', 'value_decimal', 'result_unit', 'operands')):
+                    # Citation summaries are not executable calculator receipts.
+                    # Keep known values and links without inventing missing inputs.
+                    value = calculation.get('value_decimal')
+                    calculations.append('计算回执摘要' + (f"：{value} {calculation.get('result_unit') or calculation.get('unit', '')}" if value is not None else '')
+                        + '；此引用摘要未包含完整公式与操作数，请在工作台回读原始计算依据。')
+                    continue
                 calculations.append(f"计算：{calculation['expression']} = {calculation['value_decimal']} {calculation['result_unit']}")
                 for name, operand in calculation["operands"].items():
                     provenance = operand.get("source_provenance", {})
@@ -32,7 +57,10 @@ def readable_report(report):
                     urls.extend(([provenance["source_url"]] if provenance.get("source_url") else []) + list(provenance.get("citation_urls") or []))
                 calculations.append("计算说明：" + calculation.get("rationale", "未记录"))
                 for field, label in (("arithmetic_verified", "算术校验"), ("financial_semantics_verified", "金融口径校验")):
-                    calculations.append(label + "：" + {True: "已通过", False: "未通过"}.get(calculation.get(field), "未记录"))
+                    # The calculator does not assess financial semantics; False
+                    # means not verified, not a negative research adjudication.
+                    negative = "未验证（计算工具不判断金融口径）" if field == "financial_semantics_verified" else "未通过"
+                    calculations.append(label + "：" + {True: "已通过", False: negative}.get(calculation.get(field), "未记录"))
                 calculations.append("来源绑定计算，非发行人直接披露；算术验证不等于金融口径验证。")
         if not titles:
             claim = citation.get("claim", {})
@@ -113,7 +141,7 @@ def chart_png(chart):
                 label=name, color=colors[group % len(colors)])
             axis.bar_label(bars, fmt="%.2f", padding=4, fontsize=10, fontproperties=font)
     axis.set_xticks(range(len(labels)), labels, fontproperties=font, rotation=15 if len(labels) > 5 else 0)
-    axis.set_ylabel(chart["unit"], fontproperties=font)
+    axis.set_ylabel(chart_display_unit(chart), fontproperties=font)
     axis.set_title(chart["title"], loc="left", fontproperties=font, fontsize=16, pad=20)
     axis.spines[["top", "right"]].set_visible(False)
     axis.set_axisbelow(True)
@@ -126,7 +154,27 @@ def chart_png(chart):
     return output.getvalue()
 
 
-def export_report(report, format, *, review_status="待人工审阅"):
+def export_report(report, format, *, review_status="待人工审阅", public_base_url=None):
+    report = deepcopy(report)  # display projection, never rewrite checkpoint provenance
+    citation_numbers = {key: str(i) for i, key in enumerate(report.get("citations", {}), 1)}
+    for chart in report.get("charts", []):
+        for key, number in citation_numbers.items():
+            chart["interpretation"] = chart["interpretation"].replace("[" + key + "]", "[" + number + "]")
+        chart["interpretation"] = re.sub(r"\[(P\d{2}:[A-Za-z0-9_.-]+)\]",
+            r"[未解析引用：\1；请在工作台修订]", chart["interpretation"])
+    if public_base_url:
+        def relocate_upload_links(value):
+            if isinstance(value, dict):
+                return {k: relocate_upload_links(v) for k, v in value.items()}
+            if isinstance(value, list):
+                return [relocate_upload_links(v) for v in value]
+            if isinstance(value, str):
+                parsed = urlsplit(value) if value.startswith(("http://", "https://")) else None
+                if parsed and parsed.hostname in {"localhost", "127.0.0.1"} and re.fullmatch(
+                        r"/api/v1/research-sessions/[a-f0-9-]{36}/attachments/UPLOAD::[a-f0-9]{32}", parsed.path):
+                    return public_base_url.rstrip("/") + parsed.path
+            return value
+        report = relocate_upload_links(report)
     text, references = readable_report(report)
     charts = report.get("charts", [])
     blocks = markdown_blocks(text)
@@ -134,7 +182,7 @@ def export_report(report, format, *, review_status="待人工审阅"):
     if format == "md":
         body = f"# {title}\n\n{review_status}\n\n{text}"
         for chart in charts:
-            body += f"\n\n## {chart['title']}\n\n{chart['interpretation']}\n\n单位：{chart['unit']}\n\n| 项目 | 系列 | 数值 |\n|---|---|---:|\n"
+            body += f"\n\n## {chart['title']}\n\n{chart['interpretation']}\n\n单位：{chart_display_unit(chart)}\n\n| 项目 | 系列 | 数值 |\n|---|---|---:|\n"
             body += "\n".join(f"| {p['label']} | {p['series']} | {p['value']:g} |" for p in chart["points"])
         body += "\n\n## 来源\n\n" + "\n\n".join(references)
         return body.encode("utf-8"), "text/markdown; charset=utf-8"
@@ -154,13 +202,29 @@ def export_report(report, format, *, review_status="待人工审阅"):
             else:
                 font = "STSong-Light"
                 pdfmetrics.registerFont(UnicodeCIDFont(font))
+        # CJK fonts may omit mathematical symbols. Select a real glyph from
+        # matplotlib's packaged DejaVu font instead of emitting empty squares.
+        from matplotlib import get_data_path
+        fallback = "FinSymbols"
+        if fallback not in pdfmetrics.getRegisteredFontNames():
+            pdfmetrics.registerFont(TTFont(fallback, str(Path(get_data_path()) / "fonts/ttf/DejaVuSans.ttf")))
+        primary_glyphs = getattr(pdfmetrics.getFont(font).face, "charToGlyph", None)
+        fallback_glyphs = pdfmetrics.getFont(fallback).face.charToGlyph
+        def styled_text(value):
+            parts = []
+            for char in str(value):
+                escaped = escape(char)
+                if primary_glyphs is not None and ord(char) not in primary_glyphs and ord(char) in fallback_glyphs:
+                    escaped = f'<font name="{fallback}">{escaped}</font>'
+                parts.append("<br/>" if char == "\n" else escaped)
+            return "".join(parts)
         normal = ParagraphStyle("Body", fontName=font, fontSize=10, leading=17, spaceAfter=9, wordWrap="CJK")
         small = ParagraphStyle("Source", parent=normal, fontSize=8, leading=12, splitLongWords=True)
         heading = ParagraphStyle("Heading", parent=normal, fontSize=15, leading=22, spaceBefore=17, keepWithNext=True)
         title_style = ParagraphStyle("Title", parent=normal, fontSize=22, leading=31, spaceAfter=14)
-        story = [Paragraph(escape(title), title_style), Paragraph(escape(review_status), small), Spacer(1, 12)]
+        story = [Paragraph(styled_text(title), title_style), Paragraph(styled_text(review_status), small), Spacer(1, 12)]
         def para(value, style=normal):
-            return Paragraph(escape(str(value)).replace("\n", "<br/>"), style)
+            return Paragraph(styled_text(value), style)
         for kind, value in blocks:
             if kind == "table":
                 width = max(len(row) for row in value)
@@ -224,13 +288,19 @@ def export_report(report, format, *, review_status="待人工审阅"):
                     borders.append(border)
                 table._tbl.tblPr.append(borders)
                 for index, row in enumerate(value):
-                    cells = table.add_row().cells
+                    table_row = table.add_row()
+                    # Keep a financial amount/formula with the rest of its row
+                    # across page boundaries; Word still handles oversized rows.
+                    table_row._tr.get_or_add_trPr().append(OxmlElement("w:cantSplit"))
+                    cells = table_row.cells
                     for column, text in enumerate(row):
                         cells[column].text = text
                     if index == 0:
                         repeat = OxmlElement("w:tblHeader")
                         table.rows[0]._tr.get_or_add_trPr().append(repeat)
                         for cell in cells:
+                            for paragraph in cell.paragraphs:
+                                paragraph.paragraph_format.keep_with_next = True
                             shade = OxmlElement("w:shd")
                             shade.set(qn("w:fill"), "E9EFF4")
                             cell._tc.get_or_add_tcPr().append(shade)
@@ -297,7 +367,7 @@ def export_report(report, format, *, review_status="待人工审阅"):
             data.categories = labels
             for series in dict.fromkeys(p["series"] for p in chart["points"]):
                 lookup = {p["label"]: p["value"] for p in chart["points"] if p["series"] == series}
-                data.add_series(series or chart["unit"], [lookup.get(label) for label in labels])
+                data.add_series(series or chart_display_unit(chart), [lookup.get(label) for label in labels])
             figure = page.shapes.add_chart(XL_CHART_TYPE.LINE_MARKERS if chart["kind"] == "line" else XL_CHART_TYPE.COLUMN_CLUSTERED,
                 Inches(.8), Inches(1.6), Inches(11.7), Inches(4.7), data).chart
             # python-pptx's chart templates contain signed axis IDs. OOXML uses
@@ -311,7 +381,7 @@ def export_report(report, format, *, review_status="待人工审阅"):
             figure.legend.position = XL_LEGEND_POSITION.BOTTOM
             figure.legend.font.name, figure.legend.font.size = "Microsoft YaHei", Pt(13)
             figure.value_axis.has_title = True
-            figure.value_axis.axis_title.text_frame.text = chart["unit"]
+            figure.value_axis.axis_title.text_frame.text = chart_display_unit(chart)
             figure.value_axis.tick_labels.number_format = "#,##0.##"
             if chart["kind"] == "bar":
                 values = [p["value"] for p in chart["points"]]

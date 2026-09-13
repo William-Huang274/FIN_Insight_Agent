@@ -405,6 +405,33 @@ def _run(model: _ScriptedModel, tools: _ToolPorts) -> dict[str, Any]:
     return graph.invoke(_input(), {"recursion_limit": 50})
 
 
+def test_native_continuation_instruction_is_new_semantic_input_and_old_input_is_blocked():
+    from sec_agent.agent_runtime.deepseek_structured_agents import _project_request
+    from sec_agent.agent_runtime.research_session_runtime import block_unknown_model_inputs
+    requests = []
+    def capture(request):
+        requests.append(request)
+        return {**_action('request_human_review', blocker_code='bounded_operator_check')(request),
+            'context_digest': request['context_digest']}
+    tools = _ToolPorts()
+    graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+        model_turn=capture, evidence_tool=tools.evidence, finance_tool=tools.finance)).compile()
+    graph.invoke(_input())
+    graph.invoke(_input(), {'configurable': {'finsight_continuation_guidance':
+        'Read the newly available formal filing and verify nonoperating gains.'}})
+    semantic = lambda r: _project_request('specialist', r, specialist_mode='agentic_turn')
+    old, new = requests
+    assert 'task_context' not in old
+    assert 'newly available formal filing' in semantic(new)['task_context']['continuation_guidance']
+    sent = []
+    guarded = block_unknown_model_inputs(lambda r: sent.append(r), [canonical_sha256(semantic(old))])
+    with pytest.raises(RuntimeError, match='unresolved_model_input_resend_blocked'):
+        guarded(old)
+    assert sent == []
+    guarded(new)
+    assert sent == [new]
+
+
 def test_specialist_runs_multi_turn_tools_then_accepts_source_bound_submission() -> None:
     model = _ScriptedModel(
         [

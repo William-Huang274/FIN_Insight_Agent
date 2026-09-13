@@ -3,6 +3,7 @@ from uuid import UUID, uuid4
 
 from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel, ConfigDict
+from ...authentication import service_owner
 
 from sec_agent.agent_runtime.studio_configuration import (
     StudioConfiguration, default_configuration, ROLE_TITLES,
@@ -13,7 +14,8 @@ STUDIO_SURFACE = "finsight_research_studio_v1"
 
 async def owned_configuration(service, assistant_id):
     value = await service.sdk.assistants.get(str(assistant_id))
-    if value.get("metadata", {}).get("surface") != STUDIO_SURFACE or value.get("graph_id") != "research_session":
+    if (value.get("metadata", {}).get("surface") != STUDIO_SURFACE or value.get("graph_id") != "research_session"
+            or value.get('metadata', {}).get('owner_id', 'local-pilot') != service_owner()):
         raise HTTPException(404, "研究配置不存在")
     config = StudioConfiguration.model_validate(value["config"]["configurable"]["finsight_studio"])
     if config.digest != value["metadata"].get("configuration_digest"):
@@ -25,6 +27,8 @@ async def run_configuration(service, thread, execution=None):
     from sec_agent.agent_runtime.execution_options import ExecutionOptions
     selection = execution or thread.get("metadata", {}).get("execution")
     values = {"finsight_execution": ExecutionOptions.model_validate(selection).model_dump()} if selection else {}
+    if cutoff := thread.get('metadata', {}).get('research_as_of'):
+        values['finsight_research_as_of'] = cutoff
     assistant_id = thread.get("metadata", {}).get("studio_assistant_id")
     if not assistant_id:
         return {"configurable": values} if values else {}
@@ -44,7 +48,10 @@ def build_studio_router(service, browser_write):
 
     @router.get("")
     async def configurations():
-        rows = await service.sdk.assistants.search(metadata={"surface": STUDIO_SURFACE}, limit=100)
+        owner = service_owner()
+        rows = await service.sdk.assistants.search(metadata={"surface": STUDIO_SURFACE,
+            **({'owner_id': owner} if owner != 'local-pilot' else {})}, limit=100)
+        rows = [r for r in rows if r.get('metadata', {}).get('owner_id', 'local-pilot') == owner]
         return {"default": default_configuration().model_dump(), "roles": ROLE_TITLES,
             "versions": [{"assistant_id": r["assistant_id"], "title": r.get("name"), "created_at": r.get("created_at"),
                 "digest": r.get("metadata", {}).get("configuration_digest")} for r in rows],
@@ -63,7 +70,7 @@ def build_studio_router(service, browser_write):
         assistant_id = str(uuid4())
         result = await service.sdk.assistants.create("research_session", assistant_id=assistant_id,
             name=body.title, config={"configurable": {"finsight_studio": body.model_dump()}},
-            metadata={"surface": STUDIO_SURFACE, "configuration_digest": body.digest})
+            metadata={"surface": STUDIO_SURFACE, "configuration_digest": body.digest, 'owner_id': service_owner()})
         return {"assistant_id": result["assistant_id"], "digest": body.digest, "configuration": body.model_dump()}
 
     @router.post("/{assistant_id}/apply")

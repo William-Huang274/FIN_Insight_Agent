@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { browserOwner } from './IdentityBoundary';
 
 export type ProjectIndex = { projects: { id: string; name: string }[]; assignments: Record<string, string>; pinned: string[] };
-const key = "finsight.project-index.v1";
+const storageKey = () => browserOwner === 'local-pilot' ? 'finsight.project-index.v1' : `finsight.project-index.v1:${browserOwner}`;
 const empty: ProjectIndex = { projects: [], assignments: {}, pinned: [] };
 export function useWorkspaceProjects() {
+  const key = storageKey();
   const [index, setIndex] = useState<ProjectIndex>(() => {
     try { const value = JSON.parse(localStorage.getItem(key) || "null"); return value && Array.isArray(value.projects) && value.assignments && Array.isArray(value.pinned) ? value : empty; } catch { return empty; }
   });

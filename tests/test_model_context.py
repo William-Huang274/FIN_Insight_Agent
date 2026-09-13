@@ -35,7 +35,87 @@ def test_native_edit_only_changes_request_copy_and_retains_errors_methods_calcul
     assert projected[2].response_metadata["context_editing"]["cleared"] and projected[2].artifact is None
     assert projected[4:] == rows[4:]
     assert [m for m in projected if isinstance(m, AIMessage)] == [m for m in rows if isinstance(m, AIMessage)]
+
+
+def test_failed_reader_does_not_pin_all_successful_results_from_same_tool():
+    rows = [HumanMessage(content="Retain source access and unresolved error.")]
+    for i in range(5):
+        rows.extend([AIMessage(content="", tool_calls=[{"name": "read_source_document", "args": {"document_id": str(i)},
+            "id": str(i), "type": "tool_call"}]), ToolMessage(name="read_source_document", tool_call_id=str(i),
+            content="original source " * 200, status="error" if i == 1 else "success")])
+    original = deepcopy(rows)
+    projected = project_tool_history(rows, trigger_tokens=1, keep=1)
+    assert projected[4] == rows[4]  # the original error remains actionable
+    assert projected[-1] == rows[-1]  # keep the recent result
+    assert all(projected[i].response_metadata["context_editing"]["cleared"] for i in [2, 6, 8])
+    assert rows == original
     assert project_tool_history(rows) is rows
+
+
+def test_calculation_receipts_clear_only_when_original_reader_is_offered():
+    rows=history()
+    old=deepcopy(rows)
+    assert project_tool_history(rows,trigger_tokens=1,keep=1)[4]==rows[4]
+    projected=project_tool_history(rows,trigger_tokens=1,keep=1,saved_result_reader=True)
+    assert 'Older read result omitted' in projected[4].content
+    assert rows==old and projected[-1]==rows[-1]
+    model=ReasoningPreservingChatDeepSeek(model='deepseek-v4-flash',api_key=SecretStr('offline'),tool_context_trigger_tokens=1,tool_context_keep=1)
+    without=model._get_request_payload(rows)
+    with_reader=model._get_request_payload(rows,tools=[{'type':'function','function':{'name':'read_saved_result','parameters':{'type':'object'}}}])
+    assert without['messages'][4]['content']==rows[4].content
+    assert 'Older read result omitted' in with_reader['messages'][4]['content']
+
+
+def test_saved_note_inputs_can_shrink_without_losing_receipt_or_unread_arguments():
+    rows = [HumanMessage(content='Keep current scope'),
+        AIMessage(content='',tool_calls=[{'name':'WriteWorkingNote','id':'saved','args':{'title':'FY2025','body':'original '*2000},'type':'tool_call'}]),
+        ToolMessage(name='WriteWorkingNote',tool_call_id='saved',content='{"saved":true,"note_id":"note-1","version":2}'),
+        AIMessage(content='',tool_calls=[{'name':'query_financial_data','id':str(i),'args':{'ticker':'HPE'},'type':'tool_call'} for i in range(4)]),
+        *[ToolMessage(name='query_financial_data',tool_call_id=str(i),content='Unread financial original '*100) for i in range(4)]]
+    original=deepcopy(rows)
+    projected=project_tool_history(rows,trigger_tokens=1,keep=1,saved_result_reader=True)
+    assert projected[1].tool_calls[0]['args']=={}
+    assert projected[2]==rows[2] and projected[3:]==rows[3:]
+    assert rows==original
+
+
+def test_parallel_read_results_are_delivered_once_before_becoming_clearable_history():
+    rows = history()
+    calls = [{"name": "RequestSourceAction", "args": {"page": i}, "id": f"fresh-{i}", "type": "tool_call"} for i in range(4)]
+    rows.append(AIMessage(content="", tool_calls=calls))
+    fresh = [ToolMessage(name=c["name"], tool_call_id=c["id"], content=f"Exact page {i}: amount, period, unit and citation. " * 300,
+        artifact={"passage_id": f"PASSAGE:{i}"}) for i,c in enumerate(calls)]
+    rows.extend(fresh)
+    original = deepcopy(rows)
+    projected = project_tool_history(rows, trigger_tokens=1, keep=2)
+    assert projected[-4:] == fresh  # all four unread results, despite keep=2
+    assert projected[2].response_metadata["context_editing"]["cleared"]
+    assert rows == original
+    # After the model has consumed the batch, older results may be projected.
+    consumed = [*rows, AIMessage(content="Observed all four pages.")]
+    projected_later = project_tool_history(consumed, trigger_tokens=1, keep=2)
+    assert projected_later[-5].response_metadata["context_editing"]["cleared"]
+    assert projected_later[-3:-1] == fresh[-2:]
+
+
+def test_cleared_full_papers_keep_literal_claim_navigation_without_changing_originals():
+    rows = [HumanMessage(content="Compare three papers")]
+    for i in range(3):
+        body = {"paper_id": f"P{i}", "section": "workpaper", "content": {"claims": [
+            {"claim_id": "C1", "statement": "Unverified classification " * 100, "source_ids": [f"P{i}:S1"]}],
+            "narrative_markdown": "long draft " * 1000}}
+        rows += [AIMessage(content="", tool_calls=[{"id": str(i), "name": "read_research_artifact", "args": {"paper_id": f"P{i}"}, "type": "tool_call"}]),
+            ToolMessage(name="read_research_artifact", tool_call_id=str(i), content=json.dumps(body), artifact=body)]
+    rows.append(AIMessage(content="Inspect the claims next"))
+    original = deepcopy(rows)
+    result = project_tool_history(rows, trigger_tokens=1, keep=2, workpaper_navigation=True)
+    assert rows == original and result[2].artifact is None
+    assert '"paper_id":"P0"' in result[2].content and '"claim_id":"C1"' in result[2].content
+    assert 'P0:S1' in result[2].content and "NOT evidence" in result[2].content
+    assert "long draft" not in result[2].content
+    assert result[4:] == rows[4:]
+    assert project_tool_history(rows, trigger_tokens=1, keep=2, workpaper_navigation=True) == result
+    assert 'Unverified workpaper navigation' not in project_tool_history(rows, trigger_tokens=1, keep=2)[2].content
 
 
 def test_current_runtime_supplies_same_policy_to_legacy_and_native_model_factories():
@@ -45,8 +125,11 @@ def test_current_runtime_supplies_same_policy_to_legacy_and_native_model_factori
     adapter = DeepSeekStructuredAgentAdapter.from_config(config=base, api_key=SecretStr("offline-fixture"), context_editing=profile["context_editing"])
     native = case_chat_model(base.profile_for("specialist"), base.token_budget_basis["specialist"], base, SecretStr("offline-fixture"), context_editing=profile["context_editing"])
     for model in [*adapter._chat_models.values(), native]:
-        assert model.tool_context_trigger_tokens == 50000 and model.tool_context_keep == 6
+        assert model.tool_context_trigger_tokens == profile["context_editing"]["trigger_tokens"]
+        assert model.tool_context_keep == profile["context_editing"]["keep"]
         assert "tool_context_trigger_tokens" not in model.model_dump()
+        assert model.tool_workpaper_navigation is False
+        assert "tool_workpaper_navigation" not in model.model_dump()
 
 
 def test_sync_and_async_sdk_wire_clears_read_bodies_not_reasoning_or_tool_pairs():
@@ -75,6 +158,31 @@ def test_sync_and_async_sdk_wire_clears_read_bodies_not_reasoning_or_tool_pairs(
             assert (await model.ainvoke(rows)).usage_metadata["total_tokens"] == 110
     asyncio.run(run())
     assert len(requests) == 2 and rows == original
+
+
+def test_specialist_sdk_advertises_only_actions_allowed_by_native_graph():
+    from test_dell_deepseek_structured_agents import _config, _models, _agentic_turn_request
+    request = _agentic_turn_request()
+    request["allowed_actions"] = ["request_evidence", "request_human_review"]
+    seen = []
+    def serve(wire):
+        body = json.loads(wire.content)
+        seen.append(body)
+        assert {t["function"]["name"] for t in body["tools"]} == {
+            "RequestEvidenceAction", "RequestHumanReviewAction"}
+        return httpx.Response(200, json={"id": "offline-capabilities", "object": "chat.completion", "created": 1,
+            "model": "deepseek-v4-pro", "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
+                "role": "assistant", "content": "", "tool_calls": [{"id": "stop", "type": "function", "function": {
+                    "name": "RequestHumanReviewAction", "arguments": json.dumps({"action": "request_human_review",
+                    "context_digest": request["context_digest"], "reason_summary": "Offline boundary check."})}}]}}],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 30, "total_tokens": 130}})
+    with httpx.Client(transport=httpx.MockTransport(serve)) as client:
+        models = _models()
+        models["specialist"] = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("offline-fixture"),
+            http_client=client, max_retries=0, use_responses_api=False)
+        adapter = DeepSeekStructuredAgentAdapter(config=_config().model_copy(update={"agentic_message_history": True}), chat_models=models)
+        adapter.specialist_model_turn(request)
+    assert len(seen) == 1
 
 
 def test_native_checkpoint_and_citation_validation_retain_cleared_sql_observation():

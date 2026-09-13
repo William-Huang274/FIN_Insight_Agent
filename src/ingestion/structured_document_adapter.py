@@ -24,7 +24,7 @@ BLOCK_SCHEMA = "fin_ia_structured_block_v1_0"
 CHUNK_SCHEMA = "fin_ia_structured_retrieval_chunk_v1_1"
 
 _SEC_PROFILES = frozenset(
-    {"sec2md_10k", "sec2md_10q", "sec2md_exhibit"}
+    {"sec2md_10k", "sec2md_10q", "sec2md_exhibit", "sec2md_filing"}
 )
 _IMAGE_MARKDOWN_RE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 
@@ -612,7 +612,7 @@ def _sec_sections(
                 (),
                 {
                     "part": None,
-                    "item": "EXHIBIT 99.1",
+                    "item": "SEC FILING" if profile == 'sec2md_filing' else "EXHIBIT 99.1",
                     "item_title": title,
                     "pages": pages,
                 },
@@ -893,7 +893,7 @@ def build_structured_document_tree(
     parser_profile: str,
     generic_split_length_words: int = 350,
     generic_split_overlap_words: int = 50,
-    generic_split_threshold_words: int = 80,
+    generic_split_threshold_words: int = 0,
     sec_chunk_size_tokens: int = 512,
     sec_chunk_overlap_tokens: int = 64,
     sec_max_table_tokens: int = 2048,
@@ -1067,7 +1067,7 @@ def build_structured_document_tree(
                     max_table_tokens=sec_max_table_tokens,
                     header=" > ".join(section.path),
                 )
-                if parser_profile == "sec2md_exhibit"
+                if parser_profile in {"sec2md_exhibit", "sec2md_filing"}
                 else chunk_section(
                     parsed,
                     chunk_size=sec_chunk_size_tokens,
@@ -1297,6 +1297,9 @@ def build_structured_document_tree(
             from haystack import Document
             from haystack.components.preprocessors import DocumentSplitter
 
+            # Keep short tails as separate original spans by default. Haystack
+            # 2.26's threshold merge can append the overlap a second time, making
+            # its output no longer a contiguous source passage (211 live HTML).
             splitter_component = DocumentSplitter(
                 split_by="word",
                 split_length=generic_split_length_words,

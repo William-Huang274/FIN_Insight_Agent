@@ -48,6 +48,63 @@ def test_plot_is_png_and_markdown_tables_use_mature_parser():
     assert any(kind == "table" for kind, _ in markdown_blocks(sample()["narrative_markdown"]))
 
 
+def test_scaled_source_values_have_scaled_display_units_without_mutating_authority():
+    from apps.workbench.backend.application.report_delivery import chart_display_unit
+    from copy import deepcopy
+    report = sample()
+    report["charts"] = bind_report_charts([ReportChart(title="缩放比较", unit="USD", scale_divisor=1000000,
+        points=[{"label": key, "source": {"source_id": key}} for key in ("a", "b")],
+        interpretation="来源美元数值展示为百万美元；不重新计算金融指标。")],
+        lambda key: {"result_state": "numeric_fact", "numeric_fact_authority": True, "unit": "USD", "value_decimal": "2000000"})
+    original = deepcopy(report)
+    assert chart_display_unit(report["charts"][0]) == "1,000,000 USD"
+    body, _ = export_report(report, "md")
+    assert "单位：1,000,000 USD" in body.decode() and "| a |  | 2 |" in body.decode()
+    assert report == original
+
+
+def test_chart_citations_and_task_links_follow_export_surface_without_mutating_report():
+    from copy import deepcopy
+    report = sample()
+    report["charts"][0]["interpretation"] += "依据 [P01:C1]。"
+    report["citations"]["P01:C1"]["sources"][0]["source_url"] = "http://localhost:8766/api/v1/research-sessions/11111111-1111-4111-8111-111111111111/attachments/UPLOAD::" + "a"*32
+    original = deepcopy(report)
+    body, _ = export_report(report, "md", public_base_url="http://127.0.0.1:18795/")
+    text = body.decode()
+    assert "依据 [1]" in text and "localhost:8766" not in text and "127.0.0.1:18795" in text
+    assert report == original
+
+
+def test_pdf_math_symbols_survive_font_fallback():
+    from pypdf import PdfReader
+    report = sample()
+    report["narrative_markdown"] += "\n收入增长 ⇒ 利润仍需核验；变化 ≈ 20%。"
+    body, _ = export_report(report, "pdf")
+    text = "".join(p.extract_text() for p in PdfReader(io.BytesIO(body)).pages)
+    assert "⇒" in text and "≈" in text
+
+
+def test_chart_only_edit_keeps_values_and_rejects_unknown_chart_citations():
+    from copy import deepcopy
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.dell_case_convergence_agent import apply_report_edits, ReportTextEdit, report_citations
+    report = sample()
+    report["narrative_markdown"] += "\n这是合成资格样例，仅用于检查修订是否保留正文和来源绑定。收入比较使用同一公司、相同期间与单位，不能把算术变化解释为已经证明的经营因果。修订图表说明时，既有数据点和原始来源必须保持不变。\n"
+    report["charts"][0]["interpretation"] += " 来源 [P01:wrong_alias]。"
+    original = deepcopy(report)
+    current = apply_report_edits(report, [ReportTextEdit(chart_index=0,old_str="[P01:wrong_alias]",new_str="[P01:C1]")])
+    assert current.narrative_markdown == report["narrative_markdown"]
+    assert current.charts[0].points[0].source.source_id == "a" and report == original
+    artifacts = SimpleNamespace(catalog=lambda:{"papers":[{"paper_id":"P01"}]},
+        read_paper=lambda *_:[{"claim_id":"C1","source_ids":[]}], citation_source=lambda *_:None)
+    assert set(report_citations(current, artifacts)) == {"P01:C1"}
+    broken = current.model_copy(update={"charts":[current.charts[0].model_copy(update={"interpretation":"Source [P01:wrong_alias]"})]})
+    with pytest.raises(ValueError,match="wrong_alias"):
+        report_citations(broken, artifacts)
+    body,_=export_report(report,"md")
+    assert "未解析引用：P01:wrong_alias" in body.decode()
+
+
 @pytest.mark.parametrize("kind", ["bar", "line"])
 def test_editable_chart_axis_ids_are_valid_ooxml_and_keep_values(kind):
     from lxml import etree
@@ -88,6 +145,32 @@ def test_calculation_and_unsourced_boundary_remain_readable_in_delivery():
     assert report == original
 
 
+def test_unassessed_financial_semantics_is_not_a_failed_validation():
+    report = sample()
+    report["citations"]["P01:C1"]["sources"][0]["calculation"] = {
+        "expression": "a / b", "value_decimal": "1", "result_unit": "ratio",
+        "arithmetic_verified": True, "financial_semantics_verified": False,
+        "operands": {},
+    }
+    _, references = readable_report(report)
+    text = "\n".join(references)
+    assert "未验证（计算工具不判断金融口径）" in text
+    assert "金融口径校验：未通过" not in text
+
+
+def test_conversation_flat_calculation_and_derived_fact_keep_readable_provenance():
+    report = sample()
+    report["citations"] = {
+        "NUMFACT::derived": {"sources": [{"ticker": "EXAMPLE", "metric_id": "revenue_yoy_growth", "value_decimal": "25", "unit": "percent", "period_start": "2025-01-01", "period_end": "2025-12-31",
+            "formula_trace": {"metric_title": "收入同比变化率", "definition_version": 1, "formula": "(current / prior - 1) * 100", "inputs": [
+                {"metric_id": "revenue", "value_decimal": "100", "unit": "USD", "period_start": "2024-01-01", "period_end": "2024-12-31"}]}}]},
+        "CALC::flat": {"sources": [{"result_state": "non_authoritative_metric", "arithmetic_verified": True, "expression": "a - b", "value_decimal": "25", "result_unit": "USD", "operands": {}, "rationale": "Synthetic difference."}]}}
+    _, references = readable_report(report)
+    joined = "\n".join(references)
+    assert "收入同比变化率" in joined and "输入 revenue：100 USD" in joined
+    assert "a - b = 25 USD" in joined
+
+
 def test_chart_cannot_invent_values_or_bind_search_preview():
     spec = {"title": "不可伪造图表", "unit": "USD", "points": [{"label": x, "source": {"source_id": x, "literal": "100", "quote": "100"}} for x in ["a", "b"]],
         "interpretation": "不允许拿检索预览当作实际观察来源。"}
@@ -95,3 +178,21 @@ def test_chart_cannot_invent_values_or_bind_search_preview():
         bind_report_charts([ReportChart.model_validate(spec)], lambda _: {"result_state": "retrieval_candidate"})
     with pytest.raises(ValueError, match="differs"):
         bind_report_charts([ReportChart.model_validate(spec)], lambda _: {"result_state": "numeric_fact", "numeric_fact_authority": True, "value_decimal": "50"})
+
+
+@pytest.mark.parametrize("format", ["md", "pdf", "docx"])
+def test_partial_calculation_receipt_does_not_block_report_delivery(format):
+    from copy import deepcopy
+    report = sample()
+    report["citations"]["P01:C1"]["sources"][0].update({
+        "result_state": "non_authoritative_metric", "arithmetic_verified": True,
+        "value_decimal": "986", "result_unit": "USD million",
+    })
+    original = deepcopy(report)
+    _, references = readable_report(report)
+    joined = "\n".join(references)
+    assert "计算回执摘要" in joined and "986" in joined
+    assert "未包含完整公式与操作数" in joined
+    assert "a - b =" not in joined
+    data, _ = export_report(report, format)
+    assert data and report == original

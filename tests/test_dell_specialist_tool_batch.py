@@ -23,7 +23,7 @@ from test_dell_specialist_agentic_graph import _input, _evidence_action, _financ
 def _batch(request, actions):
     names = {"request_evidence": "RequestEvidenceAction", "request_finance": "RequestFinanceAction",
              "request_source": "RequestSourceAction", "request_human_review": "RequestHumanReviewAction",
-             "submit_workpaper": "SubmitWorkpaperAction"}
+             "submit_workpaper": "SubmitWorkpaperAction", "revise_workpaper": "ReviseWorkpaperAction"}
     return {"action": "native_tool_batch", "context_digest": request["context_digest"], "tool_calls": [
         {"id": f"call-{n}", "name": names[action["action"]], "type": "tool_call",
          "args": {**action, "context_digest": request["context_digest"]}} for n, action in enumerate(actions)]}
@@ -77,13 +77,109 @@ def test_four_reads_are_one_model_turn_four_actions_with_all_results():
     assert result["final_submission"] is None
 
 
+@pytest.mark.parametrize("defect", ["schema", "reference"])
+def test_last_rejected_submission_and_feedback_survive_turn_ceiling(defect):
+    ports, requests = _ToolPorts(), []
+    def model(request):
+        requests.append(request)
+        if len(requests) == 1:
+            return _batch(request, [_evidence_action()({}), _finance_action()({})])
+        candidate = _submission()(request)
+        if defect == "schema":
+            candidate["claims"][1]["numeric_authority"] = "not_applicable"
+        else:
+            candidate["claims"][0]["evidence_ids"] = ["E:NOT_OBSERVED"]
+        candidate["unknown_private_field"] = "must not enter checkpoint"
+        # Keep reference validation separate from the extra-field schema check.
+        if defect == "reference":
+            del candidate["unknown_private_field"]
+        return _batch(request, [candidate])
+    graph_input = _input()
+    graph_input["max_model_turns"] = 2
+    graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile()
+    result = graph.invoke(graph_input, config={"recursion_limit": 32})
+    assert len(requests) == 2 and len(ports.calls) == 2
+    assert result["final_submission"] is None
+    attempt = result["last_submission_attempt"]
+    assert attempt["accepted"] is False
+    assert attempt["arguments"]["narrative_markdown"] == _submission()({})["narrative_markdown"]
+    assert "unknown_private_field" not in attempt["arguments"]
+    assert attempt["feedback"]
+    assert result["tool_results"][0]["status"] == "error"
+    assert result["review_reason"] == "model_turn_ceiling_reached_no_silent_completion"
+    if defect == "schema":
+        assert attempt["validation_issues"]
+
+
+def test_model_can_correct_rejected_submission_without_repeating_successful_reads():
+    ports, requests = _ToolPorts(), []
+    def model(request):
+        requests.append(request)
+        if len(requests) == 1:
+            return _batch(request, [_evidence_action()({}), _finance_action()({})])
+        candidate = _submission()(request)
+        if len(requests) == 2:
+            candidate["claims"][1]["numeric_authority"] = "not_applicable"
+        else:
+            assert request["tool_results"][0]["status"] == "error"
+            assert len(request["notebook"]["observations"]) == 2
+            assert "revise_workpaper" not in request["allowed_actions"]
+        return _batch(request, [candidate])
+    graph_input = _input()
+    graph_input["max_model_turns"] = 3
+    graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile()
+    result = graph.invoke(graph_input, config={"recursion_limit": 32})
+    assert len(requests) == 3 and len(ports.calls) == 2
+    assert result["final_submission"] is not None
+    assert result["last_submission_attempt"]["accepted"] is True
+    assert result["last_submission_attempt"]["validation_issues"] == []
+    assert result["last_submission_attempt"]["tool_call_id"] == "call-0"
+    assert any(item["code"] == "specialist_tool_arguments_invalid" for item in result["notebook"]["feedback"])
+
+
+@pytest.mark.parametrize("defect", [None, "stale_base", "wrong_old_value", "protected_field", "unknown_evidence"])
+def test_native_local_workpaper_edits_keep_whole_candidate_and_all_gates(defect):
+    ports, requests = _ToolPorts(), []
+    def model(request):
+        requests.append(request)
+        if len(requests) == 1:
+            return _batch(request, [_evidence_action()({}), _finance_action()({})])
+        if len(requests) == 2:
+            candidate = _submission()(request)
+            candidate["claims"][1]["numeric_authority"] = "not_applicable"
+            return _batch(request, [candidate])
+        target = request["submission_to_repair"]
+        edit = {"path": "/claims/1/numeric_authority", "old_value": "not_applicable", "new_value": "authoritative"}
+        action = {"action": "revise_workpaper", "reason_summary": "Correct authority using the original observed S2 fact.",
+            "base_submission_digest": target["base_submission_digest"], "edits": [edit]}
+        if defect == "stale_base": action["base_submission_digest"] = "0" * 64
+        if defect == "wrong_old_value": edit["old_value"] = "wrong"
+        if defect == "protected_field": edit["path"] = "/context_digest"
+        if defect == "unknown_evidence": action["edits"].append({"path": "/claims/0/evidence_ids",
+            "old_value": target["candidate"]["claims"][0]["evidence_ids"], "new_value": ["E:UNOBSERVED"]})
+        return _batch(request, [action])
+    graph_input = _input(); graph_input["max_model_turns"] = 3
+    graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance,
+        allow_workpaper_field_edits=True)).compile()
+    result = graph.invoke(graph_input, config={"recursion_limit": 32})
+    assert len(requests) == 3 and len(ports.calls) == 2
+    if defect is None:
+        assert result["final_submission"]["narrative_markdown"] == _submission()({})["narrative_markdown"]
+        assert [c["claim_id"] for c in result["final_submission"]["claims"]] == [c["claim_id"] for c in _submission()({})["claims"]]
+    else:
+        assert result["final_submission"] is None
+        assert result["tool_results"][0]["status"] == "error"
+
+
 @pytest.mark.parametrize("defect,code", [
     ("bad_schema", "specialist_tool_arguments_invalid"),
     ("wrong_tag", "specialist_tool_arguments_invalid"),
     ("context", "specialist_model_turn_context_binding_invalid"),
     ("route", "specialist_evidence_route_not_assigned"),
     ("unknown", "not a valid tool"),
-    ("duplicate_request", "duplicate_tool_request_blocked_before_dispatch"),
     ("invalid_json", "specialist_tool_arguments_json_invalid"),
 ])
 def test_one_invalid_call_does_not_discard_three_valid_reads(defect, code):
@@ -121,6 +217,52 @@ def test_source_profile_denial_and_tool_ceiling_remain_effective():
     assert result["notebook"]["tool_action_count"] == 2
     assert result["human_review_handoff"]["trigger"] == "tool_action_ceiling"
     assert [row["status"] for row in result["tool_results"]] == ["success", "success", "error", "error"]
+
+
+def test_duplicate_success_reads_replay_original_checkpoint_without_dispatch():
+    def mutate(batch):
+        batch["tool_calls"][0]["name"] = "RequestFinanceAction"
+        batch["tool_calls"][0]["args"] = deepcopy(batch["tool_calls"][1]["args"])
+    _, requests, calls = _exercise(mutate)
+    assert len(calls) == 3
+    replies = requests[1]["tool_results"]
+    assert all(row["status"] == "success" for row in replies)
+    original, replay = (json.loads(replies[index]["content"]) for index in (0, 1))
+    assert original["observations"] == replay["observations"]
+    assert replay["checkpoint_replay"]["new_tool_dispatch"] is False
+    assert requests[1]["notebook"]["tool_action_count"] == 3
+
+
+@pytest.mark.parametrize("failed", [False, True])
+def test_later_turn_read_keeps_operands_and_failed_read_is_not_retried(failed):
+    ports, requests = _ToolPorts(), []
+    def model(request):
+        requests.append(request)
+        if len(requests) > 2:
+            return _handoff(request)
+        action = _finance_action()({})
+        action["reason_summary"] = "Read again after context projection" if len(requests) == 2 else "Original read"
+        return _batch(request, [action])
+    def finance(request):
+        if failed:
+            ports.calls.append(request)
+            raise RuntimeError("fixture_transport_failure")
+        return ports.finance(request)
+    graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+        model_turn=model, evidence_tool=ports.evidence, finance_tool=finance)).compile()
+    result = graph.invoke(_input(), config={"recursion_limit": 32})
+    assert len(ports.calls) == 1
+    assert result["notebook"]["tool_action_count"] == 1
+    reply = requests[2]["tool_results"][0]
+    body = json.loads(reply["content"])
+    if failed:
+        assert reply["status"] == "error"
+        assert "duplicate_tool_request_blocked_before_dispatch" in reply["content"]
+    else:
+        assert reply["status"] == "success"
+        assert body["observations"] == json.loads(requests[1]["tool_results"][0]["content"])["observations"]
+        saved = result["notebook"]["observations"][0]
+        assert body["checkpoint_replay"]["observation_digest"] == saved["observation_digest"]
 
 
 def test_terminal_mixed_with_reads_returns_errors_without_any_dispatch():
@@ -246,7 +388,7 @@ def test_missing_or_misattributed_batch_feedback_stops_before_next_transport(res
         adapter.specialist_model_turn(request)
 
 
-def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=False):
+def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=False, local_edit=False):
     """Offline model responses, actual SDK/ToolNode/history; not paid research."""
     from test_dell_deepseek_structured_agents import _config
     requests, wires, public, ports = [], [], [], _ToolPorts()
@@ -272,6 +414,11 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
                 # Schema now valid, but an invented reference must still fail
                 # the unchanged financial acceptance validator.
                 action["claims"][0]["evidence_ids"] = ["E:invented"]
+                if local_edit:
+                    target = request["submission_to_repair"]
+                    action = {"action": "revise_workpaper", "reason_summary": "Restore the observed evidence binding.",
+                        "base_submission_digest": target["base_submission_digest"], "edits": [
+                            {"path": "/claims/0/evidence_ids", "old_value": [], "new_value": ["E:DELL:Q1"]}]}
             calls = _batch(request, [action])["tool_calls"]
         if runtime_context_binding:
             for call in calls:
@@ -299,7 +446,8 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
             return adapter.specialist_model_turn(request)["action"]
 
         graph = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
-            model_turn=model_turn, evidence_tool=ports.evidence, finance_tool=ports.finance)).compile()
+            model_turn=model_turn, evidence_tool=ports.evidence, finance_tool=ports.finance,
+            allow_workpaper_field_edits=local_edit)).compile()
         result = graph.invoke(_input(), config={"recursion_limit": 32})
     assert len(ports.calls) == 2  # Submissions/feedback never dispatch data tools.
     assert "reasoning_content" not in json.dumps(result) + json.dumps(public)
@@ -320,6 +468,15 @@ def test_terminal_schema_feedback_then_semantic_feedback_then_corrected_submissi
     assert result["phase"] == "specialist_submission_accepted"
     assert (result["notebook"]["model_turn_count"], result["notebook"]["tool_action_count"]) == (4, 2)
     assert result["final_submission"]["claims"][0]["evidence_ids"] == ["E:DELL:Q1"]
+
+
+def test_local_edit_survives_real_sdk_tool_binding_and_returns_whole_workpaper():
+    result, requests, wires = _terminal_feedback_sdk_graph(runtime_context_binding=True, local_edit=True)
+    assert len(requests) == 3
+    assert result["phase"] == "specialist_submission_accepted"
+    assert result["final_submission"]["narrative_markdown"] == _submission()({})["narrative_markdown"]
+    assert requests[2]["submission_to_repair"]["base_submission_digest"] in json.dumps(wires[2])
+    assert result["last_submission_attempt"]["tool_name"] == "ReviseWorkpaperAction"
 
 
 def test_runtime_context_is_not_a_model_argument_and_quote_guards_still_apply():

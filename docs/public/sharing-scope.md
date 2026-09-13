@@ -1,10 +1,10 @@
 # 对外展示范围 / Evidence and sharing scope
 
-2026-09-08 · [中文首页](../../README.md) · [English](../../README.en.md)
+2026-09-13 · FIN 0.1.3 frozen · [中文首页](../../README.md) · [English](../../README.en.md)
 
-仓库已公开，当前代码与工程证据可供审阅。产品仍为 FIN 0.1.3；报告 v5 等待 Owner 审阅。公开代码、开发核查、模型终审与 Owner 接受不是同一状态。此次不改变仓库可见性，也不自动发布完整报告。
+仓库已公开，FIN 0.1.3 已由 Owner 按本地 Internal Alpha 范围收口；0.1.4 尚为规划。报告内容版本分别保留人审状态，不能用产品收口代替所有历史报告接受。最新指标见[实测报告](technical-evaluation.zh-CN.md)；下文费用与 Dell v4/v5 记录是各自原时点的历史证据。
 
-The repository is public. Current code and engineering evidence are reviewable; FIN 0.1.3 and report v5 still await Owner acceptance. Code visibility, host inspection, model review and Owner acceptance are distinct. This work does not change visibility or publish the full report.
+The repository is public. FIN 0.1.3 is closed as a local Internal Alpha; 0.1.4 remains planned. Report-specific review states remain independent of product closeout. See the [evaluation report](technical-evaluation.en.md) for the frozen scope; the cost batches and Dell v4/v5 records below retain their historical dates.
 
 ## 适合展示 / Suitable for review
 
@@ -50,13 +50,13 @@ A read-only local recording covers native v4, sources, historical diffs, cumulat
 
 NVIDIA/Micron are bounded new questions in an existing workspace, not independent full-company runs or a generalization benchmark. Available methods are not necessarily consumed. A clean model review is not perfect accuracy. Automatic summaries remain disabled; no general savings percentage, P95, production HA or multi-tenant security claim is made.
 
-复现条件见[中文运行说明](quickstart.zh-CN.md) / [English quickstart](quickstart.en.md)。逐项结果与不可变失败见 [S3/190](../worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md)；当前公开文档优先于历史日志中的旧“下一步”。Hermes 未评估，是本轮 Owner 审阅之后的独立决定。
+复现条件见[中文运行说明](quickstart.zh-CN.md) / [English quickstart](quickstart.en.md)。历史结果与失败见 [S3/190](../worklog/fin_0_1_3_s3/190_dell_cost_external_and_interactive_delivery.md)。Hermes 工作记忆适配及后续资格见最新评测，不再使用旧“未评估”作为当前状态。一次性代码按[冻结标签](../../archive/README.md)恢复。
 
 ## 当前前端展示 / Current frontend showcase
 
-本轮经 Owner 要求增加四张实际产品截图：起始页、研究地图、研究配置、运行记录。它们来自本地实际应用，未用合成响应替换产品内容，没有拍摄完整报告、原文窗口、上传正文、凭据或私有 trace。运行图展示已完成短问的历史记录，不能称实时运行或完整九研究面成本。截图位于 images/，复拍命令和来源说明见 [图片说明](images/README.md)。
+公开首页已展示研究起始、地图、配置、运行记录、公司资料库、财务查询及人工审阅报告的实际截图。图片保留各自拍摄日期与样本范围；资料库 60 文件截图早于冻结 70 文档计数。没有发布凭据、上传正文或私有思维链。来源和复拍方式见[图片说明](images/README.md)。
 
-The four actual application screenshots show research start, the map, Studio and saved runtime activity. They do not include the full report, expanded source bodies, uploaded documents, credentials or private traces. The runtime screenshot shows a completed short question, not a live full research run. See [capture notes](images/README.md).
+The public pages show actual research, Studio, activity, company-library, financial-data and human-reviewed report screens. Captions preserve capture dates and sample scope. The 60-document library screenshot predates the frozen 70-document count. Credentials, uploaded private material and private reasoning are excluded. See [capture notes](images/README.md).
 
 最新真实增量：前端定向修订 v4→v5，272176 tokens、估1.436408元；配置编辑消费短问，2调用、43622 tokens、估0.085984元，报告未改。两批独立列示，不与上表混成一次研究费用。v5仍待人工审阅，旧引用措辞意见保留。上述v4页数和长录屏是历史证据，不改称v5输出。
 

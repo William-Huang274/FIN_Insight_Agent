@@ -27,13 +27,19 @@ METHOD_TOOL_GUIDANCE = (
     "Keep speaker, date and metric basis distinct across sources; similar wording alone "
     "does not prove comparability. Flag a linked error in supposedly correct reference "
     "text instead of propagating it for consistency."
+    " Before the first substantive financial judgment, load the relevant role method "
+    "unless its full content is already in this run's context. Apply it to the actual "
+    "question; do not merely mention that it was read. Prefer catalog financial "
+    "metrics to hand-entered formulas, and reuse their exact NumericFact IDs. "
+    "Publish a concise evidence-to-conclusion explanation, alternatives and missing "
+    "checks; this is an analysis rationale, not a request to reveal private reasoning."
 )
 
 
 def get_research_method(method_id: str = "") -> dict:
     """Return the catalog or one packaged method; never a local path."""
     if not method_id:
-        return {"version": 1, "answer_free": True, "methods": [
+        return {"version": 2, "answer_free": True, "methods": [
             {"method_id": key, "title": title, "summary": summary}
             for key, (title, summary) in METHODS.items()
         ]}
@@ -41,5 +47,5 @@ def get_research_method(method_id: str = "") -> dict:
         raise ValueError("unknown_research_method: select an ID from get_research_method()")
     title, summary = METHODS[method_id]
     content = files("sec_agent.research_foundation").joinpath("methods", method_id + ".md").read_text(encoding="utf-8")
-    return {"version": 1, "method_id": method_id, "title": title, "summary": summary,
+    return {"version": 2, "method_id": method_id, "title": title, "summary": summary,
             "content": content, "answer_free": True, "grants_authority": False}

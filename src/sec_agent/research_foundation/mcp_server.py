@@ -37,7 +37,7 @@ from .data_ports import (
     ReviewedEvidenceReadResult,
     ReviewedEvidenceSearchResult,
 )
-from .source_document_navigation import SourceDocumentRequest, SourceDocumentResult
+from .source_document_navigation import SourceDocumentRequest, SourceDocumentResult, SourceDocumentToolRequest
 
 
 GET_RESEARCH_METHOD_TOOL = "get_dell_research_method"
@@ -360,7 +360,10 @@ def build_research_data_mcp_server(
         description=(
             "Query company financial facts through the injected typed SQL/domain "
             "port. Every query field is explicit in the MCP schema; there is no "
-            "free-form request object or narrative numeric fallback."
+            "free-form request object or narrative numeric fallback. Prefer catalog derived metric IDs "
+            "for standard ratios and period comparisons, rather than re-entering formulas. "
+            "Use the returned NumericFact IDs unchanged in workpapers, report citations and charts; "
+            "formula_trace preserves inputs, period and interpretation limits."
         ),
         structured_output=True,
     )
@@ -421,7 +424,7 @@ def build_research_data_mcp_server(
         @server.tool(name=READ_SOURCE_DOCUMENT_TOOL, structured_output=True,
                      description="Read sources from runtime-enabled spaces: local case catalog/outline/search/read; web search/read; uploads task-only catalog/outline/search/read and inspect_image for uploaded image or PDF page. Inspect_image delegates to a vision model and returns fallible source-linked interpretation, not authoritative facts. Unavailable spaces are rejected. Use returned server document IDs, never paths or shell. Web offsets are characters. Search previews cannot be cited; source passages are not Reviewed Evidence or NumericFacts.")
         async def read_source_document(
-            request: SourceDocumentRequest, branch_id: str, run_scope: DellResearchRunScope,
+            request: SourceDocumentToolRequest, branch_id: str, run_scope: DellResearchRunScope,
         ) -> SourceDocumentResult:
             await _validate_scope(dependencies.method_reader, run_scope=run_scope, branch_id=branch_id)
             result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,

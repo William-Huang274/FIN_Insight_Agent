@@ -8,9 +8,13 @@ import { ReportVersions } from "./ReportVersions";
 import { ResearchGraph } from "./ResearchGraph";
 import { useSearchParams } from "react-router";
 import { WorkspaceNavigation, pageTitles } from "./WorkspaceNavigation";
+import { DataLibrary } from "./DataLibrary";
 import { GlobalWorkspacePage, SessionLibrary } from "./WorkspacePages";
 import { readMemory, writeMemory } from "./workspaceMemory";
 import { RunWorkspace } from "./RunWorkspace";
+import { WorkingNotes } from "./WorkingNotes";
+import { UserContextMenu } from "./UserContextMenu";
+import { ManualReview } from './ManualReview';
 import { ResearchStart } from "./ResearchStart";
 import { ExecutionPicker, executionReady } from "./ExecutionPicker";
 import { defaultExecution, type ExecutionOptions } from "../api/reportSessions";
@@ -87,6 +91,7 @@ const phaseName: Record<string, string> = {
   needs_revision: "有问题待修订",
   ready_for_human_review: "等待人工审阅",
   human_reviewed_not_released: "已人工审阅 · 未发布",
+  human_completed: "人工修改后完成",
   working: "正在研究",
   research_reviewing: "专家底稿已提交 · 跨稿审查中",
   research_writing: "整合判断与撰写报告",
@@ -174,7 +179,8 @@ export function ResearchSession() {
   const [motion, setMotion] = useState(() => localStorage.getItem("finsight.motion") === "reduced");
   const [taskQuery, setTaskQuery] = useState("");
   const [taskFilter, setTaskFilter] = useState("");
-  const globalPage = ["home", "all", "inbox", "preferences", "studio"].includes(page);
+  const dataPage = ["library", "financial-data"].includes(page);
+  const globalPage = dataPage || ["home", "all", "completed", "inbox", "preferences", "studio"].includes(page);
   const projects = useWorkspaceProjects();
   const navigate = (view: string, thread = id) => {
     setParams(next => { next.set("view", view); if (thread !== id) { next.delete("level"); next.delete("topic"); next.delete("claim"); } if (thread) next.set("thread", thread); else next.delete("thread"); return next; });
@@ -510,7 +516,7 @@ export function ResearchSession() {
       <main className="rs-main">
         <header className="rs-top">
           <div className="rs-breadcrumb">
-            <button onClick={() => navigate("home")}>工作台</button> / <b>{pageTitles[page] || "研究工作区"}</b>
+            <button onClick={() => navigate("home")}>工作台</button> / <b>{page === "library" ? "公司资料库" : page === "financial-data" ? "财务数据" : pageTitles[page] || "研究工作区"}</b>
           </div>
           <span className="rs-local">
             <span /> LOCAL PILOT
@@ -523,7 +529,8 @@ export function ResearchSession() {
         {projects.error && <p role="alert">{projects.error}</p>}
         {page === "home" && <ResearchStart question={researchQuestion} onQuestion={setResearchQuestion} navigate={navigate} sessions={sessions} execution={execution} onExecution={setExecution} />}
         {page === "studio" && <ResearchStudio />}
-        {globalPage && page !== "home" && page !== "studio" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
+        {dataPage && <DataLibrary page={page} navigate={navigate} onSupplement={question=>{setResearchQuestion(question);navigate("new","");}} />}
+        {globalPage && !dataPage && page !== "home" && page !== "studio" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
         <div className="fs-session-view" hidden={globalPage}>
         {id && !session && !creating ? <section className="rs-empty" role="status"><LoaderCircle className="rs-spin" /><h1>正在读取已保存研究…</h1><p>读取报告不会发起新的模型调用。</p></section> : !session || creating ? (
           <section className="rs-empty">
@@ -553,12 +560,12 @@ export function ResearchSession() {
             <div className="rs-research-prompt">
               {configuration?.title && <p>当前部署的已接通研究配置：{configuration.title}</p>}
               <ResearchConfigurationPicker value={studioAssistant} onChange={setStudioAssistant}/>
-              <ExecutionPicker value={execution} onChange={setExecution} disabled={sending}/>
+              <ExecutionPicker value={execution} onChange={setExecution} disabled={sending} assistantId={studioAssistant}/>
               <label htmlFor="new-research-question">这次你想研究什么？</label>
               <textarea id="new-research-question" value={researchQuestion} maxLength={16000}
                 onChange={(e) => setResearchQuestion(e.target.value)} rows={7}
                 placeholder="写明研究对象、期间，以及希望核实的具体问题…" />
-              <div><span>案例资料时点：{configuration?.research_as_of?.slice(0, 10) || "待配置"}</span>
+              <div><span>信息截止按任务创建时间固定；具体资料期间以原文为准</span>
                 {configuration?.cost_expectation_cny && <span>完整研究规划估费约 ¥{configuration.cost_expectation_cny.rough_low}–{configuration.cost_expectation_cny.rough_high}，非固定价格</span>}</div>
             </div>
             <button
@@ -590,12 +597,16 @@ export function ResearchSession() {
           <>
             <section className="rs-heading">
               <div>
+                {session.archive_notice && <p role="status">{session.archive_notice}</p>}
                 <h1>{session.title || sessions.find(s => s.thread_id === id)?.title || "研究报告"}</h1>
                 <p>
                   信息截止 {session.research_as_of?.slice(0, 10) || "未提供"} <span>·</span>{" "}
                   {historicalReport ? `正在阅读历史 v${historicalReport.report_version}` : `当前报告 v${session.report_version || "—"}`}
                   <button className="rs-task-toggle" aria-controls="task-details-panel" aria-expanded={taskDetails} onClick={() => setTaskDetails(v => !v)}>任务说明与资料 <ChevronRight size={13} style={{transform: taskDetails ? "rotate(90deg)" : undefined}} /></button>
+                  <WorkingNotes key={id} endpoint={`/api/v1/research-sessions/${id}/working-notes`}/>
+                  <UserContextMenu key={`context:${id}`} endpoint={`/api/v1/research-sessions/${id}/user-context`}/>
                 </p>
+                <ManualReview key={`manual:${id}`} session={session} onSaved={async()=>{setSession(await sessionsApi.state(id));await refresh();}}/>
               </div>
               <span
                 className={`rs-status ${busy ? "running" : session.phase === "needs_revision" ? "warning" : ""}`}
@@ -607,7 +618,7 @@ export function ResearchSession() {
                 )}{" "}
                 {session.is_draft ? (uploadStatus ? "正在解析资料 · 未调用模型" : "资料准备中 · 未调用模型") : busy
                   ? "Agent 正在执行"
-                  : session.runs?.[0]?.status === "interrupted"
+                  : session.phase === "human_completed" ? `人工修改 ${session.human_edit_count || 0} 次 · 已完成` : session.runs?.[0]?.status === "interrupted"
                     ? "已停止 · 原有结果和记录保留"
                     : session.status === "error"
                     ? "本次执行失败 · 状态已保留"
@@ -667,7 +678,7 @@ export function ResearchSession() {
             {(page === "activity" || (page === "graph" && !session.report && !session.is_draft)) && <RunWorkspace key={id} session={session} events={allEvents} connected={connected} refresh={async () => { setSession(await sessionsApi.state(id)); await refresh(); }} onReport={() => setTab("report")} />}
             {(tab === "sources" || tab === "revisions") && displayedReport && <SessionLibrary key={`${id}:${historicalReport?.checkpoint_id || session.report_version}:${tab}`} session={session} checkpoint={historicalReport?.checkpoint_id} report={displayedReport} view={tab} />}
             <div className="rs-content-shell" data-tab={tab} hidden={tab === "sources" || tab === "revisions" || page === "activity" || page === "review" || (page === "graph" && !session.report && !session.is_draft)}>
-            {displayedReport && <ResearchGraph key={`${id}:${historicalReport?.checkpoint_id || session.report_version}`} id={id}
+            {displayedReport && <ResearchGraph key={`${id}:${historicalReport?.checkpoint_id || session.report_version}`} id={id} assistantId={session.studio_assistant_id}
               version={historicalReport?.report_version || session.report_version || 1} checkpoint={historicalReport?.checkpoint_id}
               report={displayedReport} digest={historicalReport?.report_digest || session.report_digest} canRevise={!historicalReport && !!session.can_respond}
               runs={session.runs || []} onRefresh={async () => { setSession(await sessionsApi.state(id)); await refresh(); }} active={tab === "graph"} onReport={() => setTab("report")} />}
@@ -707,7 +718,7 @@ export function ResearchSession() {
                     {displayedReport?.charts?.map((chart, index) => <figure className="rs-research-chart" key={`${historicalReport?.report_version || session.report_version}-${index}`}>
                       <img src={`/api/v1/research-sessions/${id}/report/charts/${index}.png${reportQuery || `?v=${session.report_version}`}`} alt={chart.title} />
                       <figcaption>{chart.interpretation}</figcaption>
-                      <details><summary>图表数值与来源（{chart.unit}）</summary><table><thead><tr><th>项目</th><th>系列</th><th>数值</th><th>来源</th></tr></thead>
+                      <details><summary>图表数值与来源（{(chart.scale_divisor || 1) === 1 ? chart.unit : `${chart.scale_divisor!.toLocaleString()} ${chart.unit}`}）</summary><table><thead><tr><th>项目</th><th>系列</th><th>数值</th><th>来源</th></tr></thead>
                         <tbody>{chart.points.map((point, p) => <tr key={p}><td>{point.label}</td><td>{point.series}</td><td>{point.value.toLocaleString()}</td>
                           <td>{chartSourceLinks(point.provenance).map((url, n) => <a key={url} href={url} target="_blank" rel="noopener noreferrer">原始来源 {n + 1} </a>)}
                             <details><summary>定位与计算明细</summary><small>{point.source_id}</small><pre>{JSON.stringify(point.provenance, null, 2)}</pre></details></td></tr>)}</tbody></table></details>
@@ -783,7 +794,7 @@ export function ResearchSession() {
                   <small>{answerMode === "quick" ? "查数、出处与简短解释；资料按需读取" : "复杂推断与多来源分析；通常耗时更长"}</small>
                 </div>
               )}
-              <ExecutionPicker value={actionExecution} onChange={setActionExecution} disabled={busy} action={action}/>
+              <ExecutionPicker value={actionExecution} onChange={setActionExecution} disabled={busy} action={action} assistantId={session.studio_assistant_id}/>
               <textarea
                 aria-label="问题或修订意见"
                 value={text}
@@ -814,7 +825,7 @@ export function ResearchSession() {
                 {!busy && session.can_continue_remaining && <button disabled={sending} onClick={async () => {
                   setSending(true); try { await sessionsApi.continueRemaining(id); setSession(await sessionsApi.state(id)); }
                   catch (e) { setError((e as Error).message); } finally { setSending(false); }
-                }}>继续未完成主题 · 保留已交稿</button>}
+                }}>继续未完成工作 · 新运行额度</button>}
                 {busy && session.question && <button disabled={sending || !text.trim()} onClick={async () => {
                   setSending(true); try { await sessionsApi.guidance(id, text); setText(""); setSession(await sessionsApi.state(id)); }
                   catch (e) { setError((e as Error).message); } finally { setSending(false); }

@@ -359,9 +359,12 @@ def test_actual_sdk_reviewer_tool_schema_and_actor_history_isolation(defect):
         assert result["final_submission"]["action"] == "submit_review"
         assert not ports.calls and result["notebook"]["tool_action_count"] == 0
     assert len(wires) == 4
+    # This fixture binds only evidence and finance ports. The frozen adapter
+    # advertises allowed actions, so unavailable readers must not reach the SDK.
     assert all({t["function"]["name"] for t in w["tools"]} == {
-        "RequestEvidenceAction", "RequestSourceAction", "RequestFinanceAction", "RequestCalculationAction",
-        "RequestResearchMethodAction", "RequestHumanReviewAction", "SubmitReviewAction"} for w in wires)
+        "RequestEvidenceAction", "RequestFinanceAction", "RequestHumanReviewAction", "SubmitReviewAction"} for w in wires), [
+            sorted(t["function"]["name"] for t in wire["tools"]) for wire in wires
+        ]
     assert len(wires[2]["messages"]) == 2
     assert "private-counter-fixture" in json.dumps(wires[1]) and "private-counter-fixture" not in json.dumps(wires[2:])
     assert "private-" not in json.dumps(public) and "private-verifier-fixture" in json.dumps(private)

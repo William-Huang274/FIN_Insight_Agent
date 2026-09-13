@@ -1,4 +1,5 @@
 import { Client } from "@langchain/langgraph-sdk";
+import { submissionFetch } from './submissionFetch';
 
 export type Event = {
   kind: "stage" | "model" | "tool" | "task";
@@ -75,6 +76,11 @@ export type Finding = {
   paper_ids?: string[];
 };
 export type Session = {
+  studio_assistant_id?: string;
+  can_manual_complete?: boolean;
+  archive_notice?: string;
+  human_edit_count?: number;
+  human_edits?: {number:number;owner:string;recorded_at:string;reason:string;base_version:number;report_before:string;report_after:string;charts?:{chart_index:number;title:string;before:string;after:string}[];papers:{paper_id:string;actor:string;title:string;before:string;after:string}[]}[];
   execution?: ExecutionOptions;
   can_upload?: boolean;
   report_digest?: string;
@@ -94,6 +100,10 @@ export type Session = {
   research_as_of?: string;
   snapshot_id?: string;
   research_stop_reason?: string;
+  research_failures?: { run_id: string; task_id: string; reason?: string; model_explanation?: string | null; accepted: false;
+    candidate: { thesis?: string; mechanism?: string; narrative_markdown?: string; summary?: string };
+    feedback_codes: string[]; validation_issues: { location: (string | number)[]; type: string; message: string }[];
+    model_turns?: number; tool_actions?: number; saved_observations: number }[];
   research_synthesis?: { title?: string; narrative_markdown?: string };
   synthesis_review?: { summary: string; findings: Finding[]; unresolved_data_requests: string[] };
   workpaper_reviews?: { actor: string; summary: string; findings: {
@@ -110,7 +120,7 @@ export type Session = {
   research_attempt_history?: { run_id: string | null; phase: string; outcomes: { task_id: string; status: string }[] }[];
   research_guidance?: { message: string; created_at: string }[];
   report?: {
-    charts?: { title: string; interpretation: string; unit: string; points: { label: string; series: string; value: number; source_id: string; provenance: unknown }[] }[];
+    charts?: { title: string; interpretation: string; unit: string; scale_divisor?: number; points: { label: string; series: string; value: number; source_id: string; provenance: unknown }[] }[];
     title: string;
     narrative_markdown: string;
     citations: Record<string, Citation>;
@@ -127,6 +137,7 @@ export type Session = {
   }[];
   model_events?: Event[];
   runs?: { run_id: string; status: string; created_at: string; human_action?: string; request_message?: string; answer_mode?: string; execution?: ExecutionOptions; elapsed_ms?: number; model_calls_requested?: number; revision_target?: RevisionTarget;
+    context_usage?: { notice: string; nodes: { actor: string; call_id: string; model?: string; input_tokens: number | null; input_characters?: number; max_input_characters?:number; near_character_limit?:boolean; capacity_tokens: number | null; capacity_source?: string; basis: string; near_capacity: boolean }[] };
     cost_estimate?: { known_cny: number; priced_requests: number; unknown_or_pending_requests: number; price_as_of: string; notice: string };
     usage?: { recorded_requests: number; reported_requests: number; unknown_or_pending_requests: number;
       input_tokens: number; output_tokens: number; total_tokens: number; cache_hit_tokens?: number; cache_miss_tokens?: number;
@@ -149,7 +160,7 @@ export type RevisionTarget = { request_id: string; citation_id: string; base_ver
 export type ReportSnapshot = { report: NonNullable<Session["report"]>; report_version: number; checkpoint_id: string; reason?: string; report_digest?: string };
 export type ReportDiff = { before_version: number; after_version: number; reason: string; diff: string; charts_changed: boolean; citations_changed: boolean };
 async function request<T>(url: string, body?: unknown): Promise<T> {
-  const response = await fetch(url, {
+  const response = await submissionFetch(url, {
     headers: { "Content-Type": "application/json", "X-Workbench-Request": "1" },
     method: body === undefined ? "GET" : "POST",
     ...(body === undefined ? {} : { body: JSON.stringify(body) }),

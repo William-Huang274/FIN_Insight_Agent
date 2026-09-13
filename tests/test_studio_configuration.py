@@ -50,19 +50,64 @@ def test_configuration_scope_and_run_isolation():
         with pytest.raises(ValidationError): StudioConfiguration.model_validate(invalid)
 
 
-def test_selected_method_reaches_native_agent_system_prompt(monkeypatch):
+def test_direction_edits_preserve_keys_and_reach_catalog_and_specialist():
+    from copy import deepcopy
+    from hashlib import sha256
+    import json
+    from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
+    from pathlib import Path
+    base = default_configuration()
+    edited = base.model_copy(deep=True)
+    key = next(iter(edited.directions))
+    edited.directions[key].name = '财年与现金核对'
+    edited.directions[key].objective = '核对两年财年起止日期及现金流定义。'
+    edited.directions[key].instructions = 'CFO 与现金余额分别讨论。'
+    _, case = load_research_runtime_profile(Path(__file__).resolve().parents[1])
+    original = deepcopy(case)
+    projected = edited.apply_case(case)
+    assert case == original and projected['branch_topics'][0]['branch_id'] == key
+    assert '财年与现金核对' in projected['branch_topics'][0]['objective']
+    assert 'CFO 与现金余额分别讨论' in projected['branch_topics'][0]['objective']
+    from sec_agent.agent_runtime.deepseek_structured_agents import _project_request
+    request = dict.fromkeys(('research_question','research_as_of','required_branch_ids','capabilities','capacity','workpapers','tasks','progress','context_digest'))
+    request['branch_catalog'] = projected['branch_topics']
+    wire = _project_request('lead', request, specialist_mode='agentic_lead')
+    assert '财年与现金核对' in wire['branch_catalog'][0]['objective']
+    assert 'CFO 与现金余额分别讨论' in edited.specialist_method([key])['content']
+    other = list(edited.directions)[1]
+    assert 'CFO 与现金余额分别讨论' not in edited.specialist_method([other])['content']
+    # Previously saved Assistants retain their digest and behavior.
+    old = base.model_dump(); old.pop('directions')
+    restored = StudioConfiguration.model_validate(old)
+    assert restored.digest == sha256(json.dumps(old,sort_keys=True,ensure_ascii=False).encode()).hexdigest()
+    assert restored.apply_case(case) == case
+    for directions in ({'unknown': edited.directions[key].model_dump()},
+                       {**edited.model_dump()['directions'],key:{'name':' ', 'objective':'x'}}):
+        with pytest.raises(ValidationError):
+            StudioConfiguration.model_validate({**base.model_dump(),'directions':directions})
+
+
+@pytest.mark.parametrize("revision_target", [None, {"paper_id": "P-development", "changed_claim_ids": []}])
+def test_selected_method_reaches_native_agent_system_prompt(monkeypatch, revision_target):
     from sec_agent.agent_runtime import dell_case_convergence_agent as output
     from sec_agent.agent_runtime import dell_case_review_agent as review
     config=default_configuration()
     config.methods["writer"] += "\nSTUDIO_WRITER_CONSUMPTION_MARKER"
     config.methods["verifier"] += "\nSTUDIO_REVIEW_CONSUMPTION_MARKER"
     monkeypatch.setattr(output,"create_agent",lambda **kwargs:kwargs)
-    monkeypatch.setattr(review,"create_agent",lambda **kwargs:kwargs)
+    class CapturedAgent(dict):
+        output_channels = []
+    monkeypatch.setattr(review,"create_agent",lambda **kwargs:CapturedAgent(kwargs))
     writer=output.build_case_output_agent(role="writer",model=None,tools=[],artifacts=None,
         limits={"model_calls":10,"tool_calls":32},method_instructions=config.instructions("quick_writer"),
         allow_answers=True,answer_only=True)
-    verifier=review.build_case_reviewer(role="verifier",model=None,tools=[],artifacts=None,
-        method_instructions=config.instructions("verifier"))
+    from types import SimpleNamespace
+    from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_sha256
+    artifacts = SimpleNamespace(read_paper=lambda _: {})
+    if revision_target:
+        revision_target = {**revision_target, "kind": "revision_only", "current_digest": canonical_sha256({})}
+    verifier=review.build_case_reviewer(role="verifier",model=None,tools=[],artifacts=artifacts,
+        method_instructions=config.instructions("verifier"), revision_target=revision_target)
     assert "STUDIO_WRITER_CONSUMPTION_MARKER" in writer["system_prompt"]
     assert "STUDIO_REVIEW_CONSUMPTION_MARKER" in verifier["system_prompt"]
     assert "STUDIO_WRITER_CONSUMPTION_MARKER" not in verifier["system_prompt"]
@@ -90,13 +135,15 @@ def test_specialist_method_is_inside_original_receipted_request():
     from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistAgenticInput, DellSpecialistAgenticDependencies, build_dell_specialist_agentic_state_graph
     from sec_agent.agent_runtime.studio_configuration import bind_specialist_method
     config=default_configuration();config.methods["finance"] += "\nSPECIALIST_INPUT_MARKER"
+    direction=next(iter(config.directions));config.directions[direction].instructions='DIRECTION_INPUT_MARKER'
     original=SpecialistAgenticInput.model_validate_json(json.dumps(_input()))
-    bound=bind_specialist_method(original,config.method("finance"))
+    bound=bind_specialist_method(original,config.specialist_method([direction]))
     assert "SPECIALIST_INPUT_MARKER" not in original.model_dump_json()
     seen=[]
     def turn(request):
         seen.append(request)
         assert "SPECIALIST_INPUT_MARKER" in json.dumps(request,ensure_ascii=False)
+        assert 'DIRECTION_INPUT_MARKER' in json.dumps(request,ensure_ascii=False)
         action={**_action("request_human_review",blocker_code="explicit_owner_review")(request), "context_digest":request["context_digest"]}
         receipt=_model_turn_receipt(request,action,kind="host",actor="dell_specialist_saved_response_replay",
             input_tokens=0,output_tokens=0,total_tokens=0,usage_reported=None)
@@ -111,6 +158,7 @@ def test_specialist_method_is_inside_original_receipted_request():
 
 def test_native_assistant_save_apply_and_run_snapshot():
     config=default_configuration(); aid=str(uuid4()); tid=str(uuid4())
+    config.directions[next(iter(config.directions))].instructions = '保存版本方法要求'
     row={"assistant_id":aid,"graph_id":"research_session","config":{"configurable":{"finsight_studio":config.model_dump()}},
         "metadata":{"surface":STUDIO_SURFACE,"configuration_digest":config.digest}}
     thread={"thread_id":tid,"status":"interrupted","metadata":{"surface":"dell_report_workbench","graph":"research_session"}}

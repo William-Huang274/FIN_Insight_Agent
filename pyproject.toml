@@ -21,12 +21,18 @@ dependencies = [
   "pydantic>=2.13,<3",
   "PyYAML>=6.0.1",
   "rank-bm25>=0.2.2",
+  "jieba==0.42.1",
   "requests>=2.32.0",
   "scipy>=1.11,<2",
   "uvicorn[standard]>=0.30.0",
 ]
 
 [project.optional-dependencies]
+workbench-auth = [
+  "PyJWT[crypto]==2.13.0",
+  "Authlib==1.7.0",
+  "itsdangerous==2.2.0",
+]
 control-plane = [
   "dagster==1.13.20",
   "dagster-postgres==0.29.20",
@@ -37,6 +43,8 @@ qualification = [
   "psycopg[binary]==3.3.4",
 ]
 agent-runtime = [
+  "sqlite-vec==0.1.9",
+  "jsonpatch==1.33",
   "markdown-it-py>=4",
   "langchain==1.4.0",
   "langchain-core==1.6.1",
@@ -61,6 +69,11 @@ external-search = [
   "ddgs==9.16.0",
   "trafilatura==2.2.0",
   "tencentcloud-sdk-python>=3.1.162",
+]
+sec-source-library = ["sec2md==0.1.23"]
+public-source-library = ["trafilatura==2.2.0", "haystack-ai==2.26.0"]
+retrieval-api = [
+  "openai==3.6.0",
 ]
 workbench-delivery = [
     "markdown-it-py>=4",

@@ -20,7 +20,7 @@ from langgraph.config import get_stream_writer
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command, Send
 
-from .dell_case_convergence_agent import ReportReview, report_model_view, review_responsibility_errors
+from .dell_case_convergence_agent import ReportReview, report_model_view, review_responsibility_errors, paper_revision_input
 from .research_execution_plan import ResearchExecutionPlan
 
 
@@ -156,8 +156,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         if paper_id:
             # A fresh responsibility invocation, NOT a resumed private history.
             value = {}
-            body.update(paper_id=paper_id, original_workpaper=current.read_paper(paper_id),
-                        sources=current.read_paper(paper_id, "sources"), findings=own_feedback)
+            body.update(paper_revision_input(current, paper_id, own_feedback))
         else:
             body.update(catalog=current.catalog(),
                 author_responses={pid: row["finding_responses"] for pid, row in state.get("revisions", {}).items()})

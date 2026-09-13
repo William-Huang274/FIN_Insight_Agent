@@ -1,6 +1,8 @@
 # FinSight: architecture and build/adopt boundary
 
-2026-09-08 · Local Dell development case · [中文](architecture.zh-CN.md)
+2026-09-13 · FIN 0.1.3 frozen local Internal Alpha · [中文](architecture.zh-CN.md)
+
+The [0.1.3 closeout](../product/fin_0_1_3_closeout.zh-CN.md) defines the current scope. Dynamic method applicability, rule updates, bounded expert delegation and deadline convergence remain planned for 0.1.4. One-off implementations have left the active tree; see [historical recovery](../../archive/README.md).
 
 ## Research flow
 
@@ -35,9 +37,9 @@ Old tool text is cleared only from the outgoing request projection; messages and
 
 ## Limits
 
-Trusted local-owner pilot only: no public authentication, production multitenancy or process-sandbox qualification for malicious documents. The model has no shell, arbitrary file-write or escalation tool; that is not equivalent to end-to-end multi-tenant security. Empty retrieval does not prove non-disclosure.
+The frozen version includes OIDC/PKCE with two users, 39 resource-ownership checks, 8 concurrent reads and 4 actual frontend approval scenarios. Approved operations resume natively through authenticated MCP into a Docker sandbox; rejection prevents execution. Tools follow their configured capabilities. These are local qualifications, not production multitenancy, comprehensive malicious-document security or HA certification. Empty retrieval does not prove non-disclosure.
 
-The fresh question has reached a real report and human checkpoint, including preserved failures, native continuations and human-directed revisions—not unassisted one-shot success. General-company performance, crash recovery during paid calls, production concurrency and P95 latency are not inferred from one case. Tested `dell_*` adapters remain for compatibility; new session/upload/chart interfaces use generic names. Historical filenames are not mass-renamed for cosmetic reasons.
+Tasks have reached real reports and human review, with preserved failures, targeted revisions and bounded verification of restart handoff and submission deduplication. The 19 real user turns include recovery; they do not establish general-company financial quality or production P95. Still-used `dell_*` modules preserve graph, database and source identities; retired implementations have left the active tree.
 
 Method availability is not proof of consistent use: six short methods are available; some roles read specific methods while others only requested the catalog. Stock-versus-flow, causal and formula errors still occurred after numeric/reference checks and needed model review and host inspection. These case answers were not converted into generic NLP rules. A model's zero-material-finding review is not a claim of perfect accuracy.
 

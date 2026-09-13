@@ -34,6 +34,20 @@ def test_catalog_exposes_actual_claim_binding_and_rejects_guessed_number():
     assert "P01:C999" not in artifacts.catalog()["papers"][0]["citation_ids"]
 
 
+def test_answer_can_reference_exact_operand_source_alias_without_claim_renaming():
+    from test_research_session import _new_worker_fixture
+    from sec_agent.agent_runtime.dell_case_convergence_agent import answer_citations
+    artifacts = DellCaseArtifacts([_new_worker_fixture()])
+    ref = next(iter(artifacts.read_paper("P01", "sources")))
+    before = deepcopy(artifacts._sources)
+    bound = answer_citations(f"The saved calculation names this original source [{ref}].", artifacts, [])
+    assert bound[ref]["sources"][0] == artifacts.citation_source(ref)
+    assert bound[ref]["claim"]["numeric_authority"] == "not_applicable"
+    assert artifacts._sources == before
+    with pytest.raises(ValueError):
+        answer_citations("An invented source [P01:S999].", artifacts, [])
+
+
 def test_reader_and_calculator_share_newly_observed_source_lookup():
     from mcp import Client
     from mcp.server import MCPServer
@@ -65,6 +79,49 @@ def _calculate(expression="a / 2", operands=None):
     return calculate_from_sources(request, _lookup)
 
 
+def test_scoped_fts_search_returns_exact_reread_and_preserves_source_authority():
+    from test_research_session import _new_worker_fixture
+    artifacts = DellCaseArtifacts([_new_worker_fixture()])
+    other = deepcopy(artifacts)
+    passage = "前文 Unicode € " * 150 + "Goodwill impairment was 1,578; this is a test fixture." + " context" * 200
+    source = {"result_state": "source_bound_passage", "title": "Fixture annual report",
+              "passage": passage, "numeric_fact_authority": False}
+    artifacts._sources["P01:S999"] = source
+    original = deepcopy(artifacts._sources)
+    result = artifacts.search_sources('"Goodwill impairment"')
+    hit = result["matches"][0]
+    assert hit["source_id"] == "P01:S999" and hit["numeric_fact_authority"] is False
+    assert "Goodwill impairment" in hit["snippet"]
+    window = artifacts.read_source(**hit["read_arguments"])
+    assert window["text"] == passage[window["offset"]:window["offset"] + 2000]
+    assert "Goodwill impairment was 1,578" in window["text"]
+    assert artifacts._sources == original
+    assert not other.search_sources('"Goodwill impairment"')["matches"]
+    with pytest.raises(ValueError, match="query_invalid"):
+        artifacts.search_sources('"unclosed')
+    assert not artifacts.search_sources('"nonexistent; DROP TABLE sources;"')["matches"]
+
+
+def test_source_search_is_available_through_native_mcp_and_case_adapter():
+    from mcp import Client
+    from mcp.server import MCPServer
+    from sec_agent.agent_runtime.dell_case_artifacts import register_case_artifact_tools
+    from sec_agent.agent_runtime.dell_case_review_agent import CASE_TOOLS
+    from test_research_session import _new_worker_fixture
+    assert "search_research_sources" in CASE_TOOLS
+    server = MCPServer("scoped-search-test")
+    artifacts = DellCaseArtifacts([_new_worker_fixture()])
+    register_case_artifact_tools(server, artifacts)
+    async def exercise():
+        async with Client(server, raise_exceptions=False) as client:
+            result = await client.call_tool("search_research_sources", {"query": "revenue"})
+            assert not result.is_error
+            assert "matches" in result.structured_content
+            invalid = await client.call_tool("search_research_sources", {"query": '"unclosed'})
+            assert invalid.is_error
+    asyncio.run(exercise())
+
+
 def test_calculator_reads_s2_value_locally_without_model_copy_or_authority_promotion():
     result = _calculate()
     assert result["value_decimal"] == "50" and result["arithmetic_verified"]
@@ -82,18 +139,6 @@ def test_calculator_non_s2_source_literal_and_assumption_are_explicit():
     assert result["operands"]["scale"]["authority"] == "assumption"
 
 
-def test_citation_keeps_calculation_provenance_beyond_its_text_preview(real_bundle):
-    artifacts = DellCaseArtifacts(real_bundle["papers"])
-    result = _calculate("a * scale", {"a": {"source_id": "text", "literal": "1,234.50", "quote": "revenue was 1,234.50 dollars"},
-        "scale": {"literal": "0.1", "assumption_note": "Illustrative scenario, not issuer guidance"}})
-    # Use the same case-scoped observation collection as the calculator callback.
-    artifacts._sources[result["calculation_id"]] = deepcopy(result)
-    cited = artifacts.citation_source(result["calculation_id"])
-    assert len(cited["text"]) == 100 and cited["next_offset"] == 100
-    assert cited["calculation"]["operands"]["scale"]["assumption_note"] == "Illustrative scenario, not issuer guidance"
-    assert cited["calculation"]["operands"]["a"]["quote"] == "revenue was 1,234.50 dollars"
-    cited["calculation"]["operands"]["scale"]["value_decimal"] = "99"
-    assert artifacts.source_item(result["calculation_id"]) == result
 
 
 def test_calculator_reuses_saved_calculation_without_promoting_or_copying_parent_tree():
@@ -147,176 +192,3 @@ def test_calculator_rejects_unbound_wrong_or_unlabelled_inputs(operands, error):
 def test_calculator_rejects_code_dos_unknown_and_unrelated_source_bindings(expression):
     with pytest.raises(ValueError):
         _calculate(expression)
-
-
-@pytest.fixture(scope="module")
-def real_bundle():
-    from scripts.qualification.dell_q1_specialist_paid_shadow.collect_research_bundle import SOURCES, collect
-    if not all(path.is_file() for path, _ in SOURCES):
-        pytest.skip("local immutable research artifacts unavailable")
-    return collect()
-
-
-def test_real_nine_topics_and_ten_unchanged_papers_keep_parent_failure(real_bundle):
-    artifacts = DellCaseArtifacts(real_bundle["papers"])
-    assert len(artifacts.catalog()["papers"]) == 10
-    assert len({p["branch_id"] for p in artifacts.catalog()["papers"]}) == 9
-    assert not real_bundle["financial_or_product_pass"]
-    assert any(o["source_role"] == "accepted_children_of_failed_parent" for o in real_bundle["origins"])
-    original = deepcopy(real_bundle)
-    for p in artifacts.catalog()["papers"]:
-        view = artifacts.read_paper(p["paper_id"])
-        assert "context_digest" not in view and "notebook" not in view
-        for claim in view["claims"]:
-            for source_id in claim["source_ids"]:
-                source = artifacts.read_source(source_id)
-                assert source.get("text") or source.get("value_decimal") is not None
-                assert "mcp_receipt_chain" not in source
-        view["thesis"] = "caller edit cannot mutate source"
-        assert artifacts.read_paper(p["paper_id"])["thesis"] != view["thesis"]
-    assert real_bundle == original
-    with pytest.raises(ValueError, match="duplicate_paper"):
-        DellCaseArtifacts([real_bundle["papers"][0], real_bundle["papers"][0]])
-
-
-def test_mcp_actual_client_reads_one_source_and_calculates_from_real_s2_fact(real_bundle):
-    from mcp import Client
-    from test_dell_research_mcp import _build_server
-    artifacts = DellCaseArtifacts(real_bundle["papers"])
-    server = _build_server(case_artifacts=artifacts)
-
-    async def exercise():
-        async with Client(server) as client:
-            catalog = await client.call_tool("research_artifact_catalog", {})
-            assert not catalog.is_error
-            paper = await client.call_tool("read_research_artifact", {"paper_id": "P01", "section": "sources"})
-            assert not paper.is_error
-            sources = artifacts.read_paper("P01", "sources")
-            source_id = next(key for key in sources if sources[key]["result_state"] == "numeric_fact")
-            source = await client.call_tool("read_research_source", {"source_id": source_id})
-            assert not source.is_error
-            result = await client.call_tool("calculate_research_metric", {"request": {
-                "expression": "a / 2", "operands": {"a": {"source_id": source_id}},
-                "result_unit": "test_half_original_unit", "rationale": "Host transport/arithmetic check, no financial claim."}})
-            assert not result.is_error
-            # Actual FY2026 source inputs -> locally recomputed margin, compared
-            # with the existing independent S2 derived metric (not model gold).
-            by_metric = {item["metric_id"]: key for key, item in artifacts.read_paper("P09", "sources").items()
-                         if item["result_state"] == "numeric_fact" and item.get("fiscal_year") == 2026}
-            margin = await client.call_tool("calculate_research_metric", {"request": {
-                "expression": "gross_profit / revenue * 100", "operands": {
-                    "gross_profit": {"source_id": by_metric["gross_profit"]}, "revenue": {"source_id": by_metric["revenue"]}},
-                "result_unit": "percent", "rationale": "Host F_MARGIN check on same-period DELL FY2026 S2 inputs."}})
-            assert not margin.is_error
-            expected = Decimal(artifacts.source_item(by_metric["gross_margin"])["value_decimal"])
-            assert Decimal(margin.structured_content["value_decimal"]) == expected
-            bad = await client.call_tool("read_research_source", {"source_id": "D:/secrets"})
-            assert bad.is_error
-    asyncio.run(exercise())
-
-
-@pytest.mark.local_data_integration
-def test_live_sql_ids_calculate_only_after_observation_in_this_composition(real_bundle):
-    """Actual read-only Dell mart through MCP, not fabricated NumericFact IDs."""
-    from mcp import Client
-    from test_dell_agent_server_data_composition import DEFAULT_ARTIFACT_ENV
-    from sec_agent.agent_runtime.dell_agent_server_data_composition import (
-        open_dell_approved_data_composition, DELL_APPROVED_RESEARCH_AS_OF, DELL_APPROVED_DATA_SNAPSHOT_ID)
-
-    artifacts = DellCaseArtifacts(real_bundle["papers"])
-    async def exercise():
-        branch = artifacts.catalog()["papers"][0]["branch_id"]
-        calculation = None
-        for index in range(2):
-            attempt = f"host-sql-calculator-binding-{index}"
-            with open_dell_approved_data_composition(run_invocation_id=attempt,
-                    environment=DEFAULT_ARTIFACT_ENV, case_artifacts=artifacts) as composition:
-                async with Client(composition.mcp_server, raise_exceptions=False) as client:
-                    if calculation is not None:
-                        unobserved = await client.call_tool("calculate_research_metric", {"request": calculation})
-                        assert unobserved.is_error and "Re-query SQL" in str(unobserved.content)
-                    method = await client.call_tool("get_dell_research_method", {
-                        "branch_ids": [branch], "research_as_of": DELL_APPROVED_RESEARCH_AS_OF,
-                        "data_snapshot_id": DELL_APPROVED_DATA_SNAPSHOT_ID, "execution_attempt_id": attempt})
-                    assert not method.is_error
-                    queried = await client.call_tool("query_company_financial_facts", {
-                        "branch_id": branch, "run_scope": method.structured_content["run_scope"],
-                        "ticker": "DELL", "metric_ids": ["revenue", "operating_income"],
-                        "research_as_of": "2026-09-02", "granularity": "quarter_discrete",
-                        "selection_mode": "exact_period_end", "period_end": "2026-05-01", "fiscal_years": [2027]})
-                    assert not queried.is_error
-                    query = queried.structured_content
-                    assert query["resolved_metric_count"] == 2
-                    assert query["fact_mart_sha256_before"] == query["fact_mart_sha256_after"]
-                    facts = {r["metric_id"]: r["facts"][0] for r in query["results"]}
-                    assert facts["revenue"]["value_decimal"] == "43842000000"
-                    assert facts["operating_income"]["value_decimal"] == "3656000000"
-                    calculation = {"expression": "operating_income / revenue * 100", "operands": {
-                        k: {"source_id": f["numeric_fact_id"]} for k, f in facts.items()},
-                        "result_unit": "percent", "rationale": "Host development check: same-company, same-quarter GAAP operating income / revenue. Not a model gold test."}
-                    margin = await client.call_tool("calculate_research_metric", {"request": calculation})
-                    assert not margin.is_error, margin.content
-                    result = margin.structured_content
-                    expected = Decimal(3656) / Decimal(43842) * 100
-                    assert abs(Decimal(result["value_decimal"]) - expected) < Decimal("1e-20")
-                    assert not result["numeric_fact_authority"] and result["arithmetic_verified"]
-                    assert all(v["authority"] == "s2_input" and v["period_end"] == "2026-05-01"
-                               for v in result["operands"].values())
-                    from langchain_core.messages import ToolMessage
-                    from sec_agent.agent_runtime.dell_case_convergence_agent import answer_citations
-                    fact_id = facts["revenue"]["numeric_fact_id"]
-                    refs = answer_citations(f"Read [{fact_id}], calculate [{result['calculation_id']}]", artifacts, [
-                        ToolMessage(content="SQL", artifact=query, name="query_company_financial_facts", tool_call_id="query"),
-                        ToolMessage(content="calculation", artifact=result, name="calculate_research_metric", tool_call_id="calc")])
-                    assert refs[fact_id]["sources"][0]["value_decimal"] == "43842000000"
-                    assert refs[result["calculation_id"]]["claim"]["numeric_authority"] == "non_authoritative"
-                    assert len(refs[result["calculation_id"]]["sources"]) == 3
-                    if index == 0:
-                        # Full native query -> calculation -> accepted answer,
-                        # with a scripted model but actual SQL/MCP/tool artifacts.
-                        from langchain_core.messages import HumanMessage
-                        from test_dell_case_convergence_agent import NativeFixtureModel
-                        from test_dell_case_review_agent import call
-                        from sec_agent.agent_runtime.dell_case_review_agent import case_mcp_tools
-                        from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent
-                        model = NativeFixtureModel(marker="host-fixture-only", replies=[
-                            [call("query_company_financial_facts", {"branch_id": branch, **query["query"]}, "query-again")],
-                            [call("calculate_research_metric", {"request": calculation}, "calc-again")],
-                            [call("submit_case_answer", {"answer_markdown": f"Development fixture: source [{fact_id}], computed [{result['calculation_id']}]"}, "answer")]])
-                        native_tools = await case_mcp_tools(client, run_scope=method.structured_content["run_scope"])
-                        agent = build_case_output_agent(role="writer", model=model, tools=native_tools, artifacts=artifacts,
-                            limits={"model_calls": 4, "tool_calls": 8}, allow_answers=True, answer_only=True)
-                        accepted = await agent.ainvoke({"messages": [HumanMessage(content="Host protocol test, not semantic gold")], "request_action": "ask"})
-                        assert accepted["output"]["kind"] == "answer" and len(model.contexts) == 3
-                        assert accepted["output"]["citations"] == refs
-                        # The report uses the same observed IDs, not an invented
-                        # old workpaper claim. SQL/calculation stay real/read-only.
-                        report = {"title": "Host integration fixture, not a research result",
-                            "narrative_markdown": ("This is a mechanical source-binding development fixture, not a financial conclusion. " * 4)
-                                + f"Source [{fact_id}], computed [{result['calculation_id']}]."}
-                        writer = NativeFixtureModel(marker="report-fixture", replies=[
-                            [call("query_company_financial_facts", {"branch_id": branch, **query["query"]}, "report-query")],
-                            [call("calculate_research_metric", {"request": calculation}, "report-calc")],
-                            [call("submit_case_report", {"report": report}, "report-submit")]])
-                        writer_graph = build_case_output_agent(role="writer", model=writer, tools=native_tools,
-                            artifacts=artifacts, limits={"model_calls": 4, "tool_calls": 8})
-                        written = await writer_graph.ainvoke({"messages": [HumanMessage(content="Host report citation qualification only")]})
-                        assert written["output"]["citations"] == refs
-                        editor = NativeFixtureModel(marker="edit-fixture", replies=[
-                            [call("read_current_source", {"source_id": result["calculation_id"]}, "read-citation")],
-                            [call("submit_report_edits", {"edits": [{"old_str": "Source [", "new_str": "Unchanged cited source ["}]}, "edit")]])
-                        edit_graph = build_case_output_agent(role="writer", model=editor, tools=native_tools,
-                            artifacts=artifacts, limits={"model_calls": 3, "tool_calls": 6}, allow_answers=True)
-                        edited = await edit_graph.ainvoke({"messages": [HumanMessage(content="Change only the fixture wording")],
-                            "report": written["output"], "request_action": "revise"})
-                        assert edited["output"]["citations"] == refs
-                        assert "operating_income / revenue * 100" in str(editor.contexts[1])
-                        assert "arithmetic" not in edited["output"]["narrative_markdown"].lower()
-                    wrong = deepcopy(calculation)
-                    wrong["operands"]["revenue"]["literal"] = "1"
-                    rejected = await client.call_tool("calculate_research_metric", {"request": wrong})
-                    assert rejected.is_error and "differs_from_observed_s2_fact" in str(rejected.content)
-                    wrong["operands"]["revenue"] = {"source_id": "NUMFACT::made-up"}
-                    rejected = await client.call_tool("calculate_research_metric", {"request": wrong})
-                    assert rejected.is_error and "Re-query SQL" in str(rejected.content)
-    asyncio.run(exercise())

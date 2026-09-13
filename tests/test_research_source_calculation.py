@@ -13,7 +13,7 @@ from sec_agent.agent_runtime.dell_case_convergence_agent import (
     answer_citations, build_case_output_agent, observed_sources,
 )
 from sec_agent.agent_runtime.dell_case_review_agent import case_mcp_tools
-from sec_agent.research_foundation.source_document_navigation import navigate_source_nodes
+from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest, navigate_source_nodes
 from test_dell_case_convergence_agent import NativeFixtureModel
 from test_dell_case_review_agent import artifacts, call
 from test_dell_research_mcp import _build_server, _method_arguments
@@ -97,12 +97,23 @@ def test_failed_tools_model_text_and_search_previews_cannot_register_sources(art
     item = {"passage_id": PASSAGE_ID, "passage": TEXT, "result_state": "source_bound_passage",
             "writer_citable": True, "numeric_fact_authority": False}
     for name, status, operation in [("read_source_document", "error", "read"),
-            ("read_source_document", "success", "search"), ("invented_tool", "success", "read")]:
+            ("invented_tool", "success", "read")]:
         messages = [ToolMessage(content="ignored", tool_call_id="test", name=name, status=status,
                                 artifact={"operation": operation, "items": [item]})]
         assert observed_sources(messages) == {}
         with pytest.raises(ValueError, match="not_observed"):
             answer_citations(f"Unobserved [{PASSAGE_ID}]", artifacts, messages)
+    # Use the real navigation preview contract. A saved, fully bound passage
+    # returned by a knowledge search is not a preview merely because its outer
+    # operation is "search" (supported since source-recovery 40fd7859).
+    preview = navigate_source_nodes([{**NODE, "node_kind": "paragraph"}], SourceDocumentRequest(operation="search", query="revenue"),
+        snapshot="frozen-fixture").model_dump(mode="json")
+    assert preview["items"] and preview["items"][0]["writer_citable"] is False
+    messages = [ToolMessage(content=json.dumps(preview), tool_call_id="preview", name="read_source_document", artifact=preview)]
+    assert observed_sources(messages) == {}
+    with pytest.raises(ValueError, match="not_observed"):
+        answer_citations(f"Unobserved [{PASSAGE_ID}]", artifacts, messages)
+    assert observed_sources([HumanMessage(content=json.dumps(item))]) == {}
 
 
 def test_local_sql_gap_is_citable_as_query_receipt_not_financial_evidence(artifacts):

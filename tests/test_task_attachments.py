@@ -5,11 +5,18 @@ from uuid import uuid4
 import pytest
 
 from sec_agent.research_foundation.task_attachments import TaskAttachmentStore, parse_document, MAX_BYTES
-from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
+from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest, SourceDocumentToolRequest
 
 
 def request(store, thread, **kwargs):
     return asyncio.run(store.read(thread_id=thread, request=SourceDocumentRequest(source_space="uploads", **kwargs)))
+
+
+def test_upload_document_id_feedback_precedes_masked_remote_failure():
+    with pytest.raises(ValueError, match="must_keep_UPLOAD_prefix"):
+        SourceDocumentToolRequest(source_space="uploads", operation="search", query="segment", document_id="a25d79583063485c8b6d4b8c137178ed")
+    # Failed historical requests remain loadable; do not rewrite their evidence.
+    SourceDocumentRequest(source_space="uploads", operation="search", query="segment", document_id="a25d79583063485c8b6d4b8c137178ed")
 
 
 def test_upload_markdown_structure_search_read_and_task_isolation(tmp_path):

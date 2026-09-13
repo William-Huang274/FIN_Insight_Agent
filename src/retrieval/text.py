@@ -4,7 +4,15 @@ import re
 
 
 def tokenize(text: str) -> list[str]:
-    return re.findall(r"[a-z0-9][a-z0-9&'/-]*", text.lower())
+    result = []
+    for match in re.finditer(r"[a-z0-9][a-z0-9&'/-]*|[\u3400-\u9fff]+", text.lower()):
+        part = match.group()
+        if '\u3400' <= part[0] <= '\u9fff':
+            import jieba
+            result.extend(jieba.cut_for_search(part, HMM=False))
+        else:
+            result.append(part)
+    return result
 
 
 def evidence_search_text(record: dict) -> str:

@@ -1,9 +1,19 @@
 # 更新记录 / Changelog
 
+## FIN 0.1.4 — Planned / 规划中
+
+2026-09-12：专业方法适用、假设驱动研究、信息/规则更新、专家有限委派与按期收敛，见[规划](docs/product/fin_0_1_4_research_plan.zh-CN.md)。No runtime implementation or release.
+
+## FIN 0.1.3 — Iteration closed / 本地Internal Alpha收口
+
+2026-09-13：冻结后代码树清理，解耦运行时与一次性资格脚本，移除旧实验和树内历史源码，保留不可变 Git 标签及校验清单。双语首页补充公司资料库、财务数据、人工报告交付的真实截图，同步 0.1.3 已验证范围；0.1.4 未实施。Frozen source-tree cleanup and bilingual product documentation; no new research capability or production deployment. [Details / 说明](docs/architecture/repository/frozen_cleanup.zh-CN.md).
+
+2026-09-12：Owner正式结束本版，保留未通过的全自动金融质量及发布条件。补齐资料库与AI内存案例事实，整理资格代码/当前文档，旧脚本兼容；见[收口](docs/product/fin_0_1_3_closeout.zh-CN.md)。The following entries are historical milestones, not current service-status declarations.
+
 FIN 产品版本、报告版本和执行 attempt 分开记录。产品代码的主线更新不自动表示正式 release 或报告已通过人审。
 Product versions, report revisions and execution attempts are separate. Mainline publication does not imply a formal release or human acceptance of a report.
 
-## FIN 0.1.3 — Development preview / 当前开发预览
+## FIN 0.1.3 — Historical development milestones / 历史开发记录
 
 ### 2026-09-08 · Agent activity and execution choices / 活动流与运行选择
 
@@ -46,4 +56,4 @@ Existing tag: `fin-0.1.1-internal-honest-block`, commit `b1f216d0`. Preserves an
 Existing tag: `v0.1.0-resume-demo`, commit `ac692bcc`. Historical SEC research demonstration; not the current architecture.
 历史简历演示基线，不代表当前架构与能力。
 
-No new version or release tag is created for UI cleanup, a report revision or a failed test. Main and meaningful historical branches remain the public branch surface; merged temporary branches can be removed without rewriting commits. 界面整理不额外编造产品版本，失败历史不重写。Hermes remains deferred / Hermes 继续后置。
+No new version or release tag is created merely for UI cleanup, a report revision or a failed test. 界面整理不额外编造产品版本，失败历史不重写。上述Hermes后置为当时状态；其后已有局部普通对话/工作记忆资格，完整研究接入仍未通过，见0.1.3收口。

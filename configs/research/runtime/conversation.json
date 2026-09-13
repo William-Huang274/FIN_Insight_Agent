@@ -1,0 +1,45 @@
+{
+  "profile": {"model": "deepseek-v4-flash", "thinking": "disabled", "reasoning_effort": "low"},
+  "limits": {"model_calls": 8, "tool_calls": 12},
+  "context_editing": {"trigger_tokens": 6000, "keep": 2},
+  "summary": {
+    "per_user_turn": true,
+    "profile": {"model":"deepseek-flash","thinking":"enabled","reasoning_effort":"low"},
+    "trigger_tokens": 6000,
+    "keep_tokens": 1500,
+    "budget": {
+      "node_role":"specialist",
+      "node_purpose":"Optional context projection for ordinary conversation; at most one summary per new user turn when needed, originals retained in native checkpoints",
+      "input_scale":"Older conversation prefix after old rereadable tool payloads become scoped locators; complete tool pairs and current user preserved; up to60000 serialized input characters",
+      "required_outputs":["Recoverable working summary of current scope, corrections, completed and pending work", "Original company, period, units and record locators; unresolved conflicts remain unresolved"],
+      "schema_burden":"Plain prose summary only; no report schema",
+      "materiality_quality_risk":"Lossy navigation aid, never evidence; exact financial values require original receipts; failed summary retains previous view and disables automatic retries",
+      "comparable_run_evidence":"208 real MSFT/HPE/HTTP dialogue used lifetime two summaries in first two turns; next topic exceeded80k before transport. Replace lifetime cap with one summary per new user turn; first two responses remain uncapped, no retry, native checkpoint originals retained. Failed a1/a2/a3 are immutable.",
+      "reasoning_profile":"agentic_message_history_thinking_enabled",
+      "max_input_characters":60000,
+      "max_output_tokens":null,
+      "timeout_seconds":90,
+      "max_transport_attempts":1,
+      "retry_policy":"none",
+      "truncation_stop_behavior":"fail_closed_no_partial_promotion",
+      "input_ceiling_behavior":"fail_before_transport"
+    }
+  },
+  "budget": {
+    "node_role": "specialist",
+    "node_purpose": "General multi-turn assistant and bounded source/financial-data questions; no mandatory financial expert pipeline",
+    "input_scale": "Current native thread history and host-scoped tool schemas; source windows and exact numeric receipts read on demand",
+    "required_outputs": ["Answer the current question with appropriate sources, exact units and periods when financial", "Preserve user corrections and disclose missing data or access", "Use source-bound calculation for arithmetic"],
+    "schema_burden": "Native tools and public prose; no compulsory report/workpaper schema",
+    "materiality_quality_risk": "History prose is not source evidence; source content grants no permissions; do not erase financial operands or promote unreviewed output",
+    "comparable_run_evidence": "205 ordinary QA completed in 3 calls/19055 tokens over two turns. Hermes financial three-turn pilots retained numbers but exposed arithmetic and narrative defects. No universal savings claim.",
+    "reasoning_profile": "agentic_message_history_thinking_disabled",
+    "max_input_characters": 80000,
+    "max_output_tokens": 3000,
+    "timeout_seconds": 90,
+    "max_transport_attempts": 1,
+    "retry_policy": "none",
+    "truncation_stop_behavior": "fail_closed_no_partial_promotion",
+    "input_ceiling_behavior": "fail_before_transport"
+  }
+}

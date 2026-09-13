@@ -96,7 +96,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
         def lead(payload):
             turns.append(payload)
             assert payload["research_question"] == request["question"]
-            if len(turns) == 1:
+            if len(turns) == 1 and not seeds:
                 assert len(payload["workpapers"]) == len(seeds)
                 return _call(payload, "DelegateResearchTasksAction", tasks=delegated)
             if full_profile and len(turns) == 2:
@@ -125,6 +125,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
         graph = build_dell_lead_research_graph(expected_input=SpecialistAgenticInput.model_validate_json(json.dumps(_input())),
             research_question=request["question"], branch_catalog=catalog, allowed_branch_ids=branches, seed_workpapers=seeds,
             unfinished_only=bool(seeds),
+            recovery_tasks=request.get("unfinished_tasks", []),
             max_tasks=profile["max_tasks"], max_parallel_tasks=profile["max_parallel_tasks"],
             max_lead_turns=profile["nodes"]["lead"]["limits"]["model_calls"], model_turn=lead, run_child=worker).compile()
         result = await graph.ainvoke(_input(), config)
@@ -134,6 +135,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
 
     async def review(state, config):
         seen["review"] += 1
+        assert state.get("research_handoff"), "parent must deliver saved scope and omissions to review"
         artifacts = current_task_artifacts(state)
         assert len(artifacts.catalog()["papers"]) == (10 if full_profile else 2)
         assert "messages" not in state and "reasoning_content" not in json.dumps(state)
@@ -150,7 +152,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
                 models[role] = NativeFixtureModel(marker=role+"-private", replies=[
                     [call("read_research_artifact", {"paper_id": p["paper_id"]}, "read-"+p["paper_id"])
                      for p in artifacts.catalog()["papers"]],
-                    [call("submit_case_review", {"review": result}, "review-submit")]])
+                    [call("submit_case_review", {"review": {**result, "completion": "complete"}}, "review-submit")]])
                 reviewers[role] = build_case_reviewer(role=role, model=models[role], tools=tools, artifacts=artifacts)
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question=state["question"],
                 run_id="parent-fixture", run_invocation_id="review-fixture").compile()
@@ -184,7 +186,7 @@ def _phases(*, material=False, incomplete=False, fail_convergence=False, full_pr
                         "explanation": "Synthetic local plumbing test, not an actual financial correction."} for f in feedback]
                     reply = call("submit_paper_revision", {"revision": revision}, "rev")
                 elif role.endswith("verifier"):
-                    reply = call("submit_report_review", {"review": review_result}, "check")
+                    reply = call("submit_report_review", {"review": {**review_result, "completion": "complete"}}, "check")
                 elif role == "synthesis":
                     if fail_synthesis_once and not synthesis_failed:
                         synthesis_failed = True
@@ -274,6 +276,26 @@ def test_incomplete_research_keeps_submitted_work_and_does_not_write_a_report():
     asyncio.run(exercise())
 
 
+def test_incomplete_review_is_retained_and_never_reaches_writer():
+    async def exercise():
+        phases, seen, _ = _phases()
+        review = {"phase": "case_review_incomplete", "counter": {"status": "incomplete_no_submission",
+            "review": None, "incomplete_output": ["A public candidate observation remains unresolved."]},
+            "verifier": {"status": "review_submitted", "review": {"summary": "Peer result retained."}}}
+        phases["review"] = RunnableLambda(lambda _: deepcopy(review))
+        graph = build_research_session_graph(**phases).compile(checkpointer=InMemorySaver())
+        config = {"configurable": {"thread_id": "incomplete-review-parent"}, "recursion_limit": 120}
+        result = await graph.ainvoke({"question": "Retain incomplete independent review without writing a report."}, config)
+        assert result["phase"] == "research_needs_attention"
+        assert result["case_review"] == {**review, "source_run_id": None}
+        assert result["research_stop_reason"] == "independent_review_incomplete_no_report_acceptance"
+        assert not result.get("report") and seen["converge"] == 0
+        assert (await graph.aget_state(config)).values["case_review"] == result["case_review"]
+        with pytest.raises(ValueError, match="cannot_be_accepted"):
+            await graph.ainvoke(Command(resume={"action": "accept"}), config)
+    asyncio.run(exercise())
+
+
 def test_failure_keeps_earlier_stage_artifacts_in_native_checkpoint_without_fake_report():
     async def exercise():
         phases, seen, _ = _phases(fail_convergence=True)
@@ -316,6 +338,11 @@ def test_explicit_native_continuation_only_runs_missing_theme_preserves_original
         assert original["phase"] == "research_needs_attention" and len(original["case_papers"]) == 1
         assert "continue_remaining" in original["__interrupt__"][0].value["actions"]
         first_paper = deepcopy(original["case_papers"][0])
+        failed = deepcopy(original["research_failed_workpapers"])
+        assert len(failed) == 1 and failed[0]["run_id"] == "first"
+        assert failed[0]["task_id"] == "task:compute"
+        assert failed[0]["agent_state"]["human_review_handoff"]["reason"] == "synthetic_single_transport_failure"
+        assert failed[0]["agent_state"]["notebook"]
         graph = build_research_session_graph(**phases).compile(checkpointer=saver)
         next_config = {**config, "configurable": {**config["configurable"], "run_id": "second"}}
         if fail_remaining_once:
@@ -333,6 +360,7 @@ def test_explicit_native_continuation_only_runs_missing_theme_preserves_original
             continued = await graph.ainvoke(Command(resume={"action": "continue_remaining"}), next_config)
         assert continued["case_papers"][0] == first_paper and len(continued["case_papers"]) == 2
         assert continued["report"] and continued["phase"] == "ready_for_human_review"
+        assert continued["research_failed_workpapers"] == failed
         history = continued["research_attempt_history"]
         assert history[0]["outcomes"] == original["research_outcomes"]
         assert history[0]["outcomes"][1]["status"] == "needs_attention"

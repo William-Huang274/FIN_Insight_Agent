@@ -1,4 +1,7 @@
 .git
+archive/
+.local/
+.venv-*/
 .pytest_cache
 .tmp_*
 *.tmp

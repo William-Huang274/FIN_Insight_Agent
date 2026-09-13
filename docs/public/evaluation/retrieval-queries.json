@@ -1,0 +1,272 @@
+[
+  {
+    "id": "R01",
+    "split": "development",
+    "query": "HPE FY2025完整财年的收入对比FY2024，找到合并报表原数。",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:53:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:53:2:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:59:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:59:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:72:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:72:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:86:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:86:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:105:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:105:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:106:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:106:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:107:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:107:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:149:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:149:1:leaf"
+    ]
+  },
+  {
+    "id": "R02",
+    "split": "development",
+    "query": "HPE fiscal 2025 net cash provided by operating activities compared with 2024",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:53:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:53:2:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:68:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:68:2:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:74:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:74:2:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:89:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:89:1:leaf"
+    ]
+  },
+  {
+    "id": "R03",
+    "split": "development",
+    "query": "Juniper收购价分摊，取得资产和承担负债的公允价值在哪里？",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:83:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:134:0:leaf"
+    ]
+  },
+  {
+    "id": "R04",
+    "split": "development",
+    "query": "HPE Hybrid Cloud全年商誉减值金额，不要把一次测试当全年。",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:138:0:leaf"
+    ]
+  },
+  {
+    "id": "R05",
+    "split": "development",
+    "query": "HPE美国、欧洲中东非洲、亚太的地区收入分布。",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:107:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:107:1:leaf"
+    ]
+  },
+  {
+    "id": "R06",
+    "split": "development",
+    "query": "微软2025财年收入总额与上一财年对比。",
+    "relevant_node_ids": [
+      "msft-fy2025:chunk-0087",
+      "msft-fy2025:chunk-0089",
+      "msft-fy2025:chunk-0129",
+      "msft-fy2025:chunk-0227",
+      "msft-fy2025:chunk-0228"
+    ]
+  },
+  {
+    "id": "R07",
+    "split": "development",
+    "query": "Microsoft FY2025 operating cash flow original statement",
+    "relevant_node_ids": [
+      "msft-fy2025:chunk-0133"
+    ]
+  },
+  {
+    "id": "R08",
+    "split": "development",
+    "query": "微软2025现金购买物业和设备的支出，不要融资租赁新增资产。",
+    "relevant_node_ids": [
+      "msft-fy2025:chunk-0134"
+    ]
+  },
+  {
+    "id": "R09",
+    "split": "development",
+    "query": "Microsoft fiscal 2025 GAAP net income, not operating income",
+    "relevant_node_ids": [
+      "msft-fy2025:chunk-0087",
+      "msft-fy2025:chunk-0129",
+      "msft-fy2025:chunk-0130",
+      "msft-fy2025:chunk-0133",
+      "msft-fy2025:chunk-0135",
+      "msft-fy2025:chunk-0170"
+    ]
+  },
+  {
+    "id": "R10",
+    "split": "development",
+    "query": "HTTP响应中no-cache是否等于禁止存储？找RFC正文。",
+    "relevant_node_ids": [
+      "http-cache:chunk-0312",
+      "http-cache:chunk-0313"
+    ]
+  },
+  {
+    "id": "R11",
+    "split": "development",
+    "query": "HTTP response no-store Cache-Control storage rule",
+    "relevant_node_ids": [
+      "http-cache:chunk-0313"
+    ]
+  },
+  {
+    "id": "R12",
+    "split": "development",
+    "query": "RFC9111计算缓存Age时如何计入响应延迟？",
+    "relevant_node_ids": [
+      "http-cache:chunk-0290"
+    ]
+  },
+  {
+    "id": "R13",
+    "split": "development",
+    "query": "HPE FY2035实际年度收入已审计数字。",
+    "relevant_node_ids": []
+  },
+  {
+    "id": "R14",
+    "split": "development",
+    "query": "Microsoft FY2029 actual audited annual operating cash flow",
+    "relevant_node_ids": []
+  },
+  {
+    "id": "R15",
+    "split": "validation",
+    "query": "HPE公司口径FCF从经营现金流调整而来，处置款和汇率如何列示？",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:74:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:74:2:leaf"
+    ]
+  },
+  {
+    "id": "R16",
+    "split": "validation",
+    "query": "HPE自由现金流里的380是处置固定资产收款还是利润表收益？",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:74:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:74:2:leaf"
+    ]
+  },
+  {
+    "id": "R17",
+    "split": "validation",
+    "query": "HPE净利润57与普通股股东亏损59两个口径的对照原表。",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:53:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:53:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:53:2:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:59:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:59:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:73:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:73:2:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:86:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:86:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:155:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:155:2:leaf"
+    ]
+  },
+  {
+    "id": "R18",
+    "split": "validation",
+    "query": "HPE FY2025 diluted loss per share versus FY2024, US dollars",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:53:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:53:2:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:73:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:86:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:86:1:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:155:0:leaf",
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:155:2:leaf"
+    ]
+  },
+  {
+    "id": "R19",
+    "split": "validation",
+    "query": "Juniper并表给HPE带来的产品与服务收入分别是多少？",
+    "relevant_node_ids": [
+      "CHUNK::bf191f96d8a84c6f9f1fc80d283e362c:64:0:leaf"
+    ]
+  },
+  {
+    "id": "R20",
+    "split": "validation",
+    "query": "微软Intelligent Cloud、Productivity and Business Processes分部收入和营业利润。",
+    "relevant_node_ids": [
+      "msft-fy2025:chunk-0087",
+      "msft-fy2025:chunk-0089",
+      "msft-fy2025:chunk-0226"
+    ]
+  },
+  {
+    "id": "R21",
+    "split": "validation",
+    "query": "Microsoft FY2025 financing lease cash payments vs operating lease cash flows",
+    "relevant_node_ids": [
+      "msft-fy2025:chunk-0208"
+    ]
+  },
+  {
+    "id": "R22",
+    "split": "validation",
+    "query": "Microsoft FY2025现金余额和短期投资在哪里？不是期间CFO。",
+    "relevant_node_ids": [
+      "msft-fy2025:chunk-0131"
+    ]
+  },
+  {
+    "id": "R23",
+    "split": "validation",
+    "query": "微软股票薪酬费用的现金流量表调节项目。",
+    "relevant_node_ids": [
+      "msft-fy2025:chunk-0133"
+    ]
+  },
+  {
+    "id": "R24",
+    "split": "validation",
+    "query": "RFC9111 must-revalidate过期缓存是否必须重新验证？",
+    "relevant_node_ids": [
+      "http-cache:chunk-0310"
+    ]
+  },
+  {
+    "id": "R25",
+    "split": "validation",
+    "query": "HTTP Cache-Control private对共享缓存和私有缓存有什么区别？",
+    "relevant_node_ids": [
+      "http-cache:chunk-0314"
+    ]
+  },
+  {
+    "id": "R26",
+    "split": "validation",
+    "query": "HTTP Expires日期对缓存何时过期的含义。",
+    "relevant_node_ids": [
+      "http-cache:chunk-0320"
+    ]
+  },
+  {
+    "id": "R27",
+    "split": "validation",
+    "query": "NVIDIA FY2027公司全年已审计收入，当前资料库的原始披露。",
+    "relevant_node_ids": []
+  },
+  {
+    "id": "R28",
+    "split": "validation",
+    "query": "从RFC9111取得我的银行账户密码。",
+    "relevant_node_ids": []
+  }
+]

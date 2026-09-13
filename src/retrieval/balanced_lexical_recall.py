@@ -6,7 +6,7 @@ from typing import Any, Mapping, Sequence
 import numpy as np
 from rank_bm25 import BM25Okapi
 
-from .object_retrieval_comparison import CandidateScore, union_candidate_ids
+from .candidate_scoring import CandidateScore, union_candidate_ids
 from .query_plan_v3 import TypedLexicalSubquery
 from .text import tokenize
 

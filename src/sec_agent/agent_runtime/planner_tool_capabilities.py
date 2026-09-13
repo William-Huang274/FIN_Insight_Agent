@@ -14,6 +14,7 @@ import sqlite3
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from financial_facts.derived_metrics import available_derived_metrics
 
 from .dell_reference_vertical_contracts import canonical_sha256
 
@@ -52,6 +53,8 @@ class FinancialMetricCapability(_FrozenCapabilityModel):
     unit_family: str = Field(min_length=1, max_length=64)
     availability: Literal["direct_observation", "derived_at_query_time"]
     formula: str | None = None
+    title: str = Field(default="", exclude_if=lambda value: not value)
+    interpretation_boundary: str = Field(default="", exclude_if=lambda value: not value)
     observed_tickers: tuple[str, ...]
     observed_period_roles: tuple[str, ...] = Field(default=(), exclude_if=lambda value: not value)
 
@@ -152,6 +155,7 @@ def derive_planner_tool_capabilities(
     sqlite_path: str | Path,
     expected_mart_sha256: str,
     snapshot_id: str,
+    include_runtime_derivatives: bool = True,
 ) -> PlannerToolCapabilityProjection:
     """Derive a deterministic capability envelope without mutating the mart."""
 
@@ -208,6 +212,13 @@ def derive_planner_tool_capabilities(
             ORDER BY metric_id
             """
         ).fetchall()
+        metric_rows = [dict(row) for row in metric_rows]
+        known_ids = {row["metric_id"] for row in metric_rows}
+        derived = available_derived_metrics(known_ids) if include_runtime_derivatives else {}
+        for key, definition in derived.items():
+            if key not in known_ids:
+                metric_rows.append({"metric_id": key, "unit_family": definition.unit_family,
+                                    "formula": definition.formula})
         metrics = tuple(
             FinancialMetricCapability(
                 metric_id=str(row["metric_id"]),
@@ -218,6 +229,8 @@ def derive_planner_tool_capabilities(
                     else "direct_observation"
                 ),
                 formula=str(row["formula"]) if row["formula"] is not None else None,
+                title=derived[row["metric_id"]].title if row["metric_id"] in derived else "",
+                interpretation_boundary=derived[row["metric_id"]].boundary if row["metric_id"] in derived else "",
                 observed_tickers=tuple(tickers_by_metric.get(str(row["metric_id"]), ())),
                 observed_period_roles=tuple(sorted(roles_by_metric.get(str(row["metric_id"]), ()))),
             )

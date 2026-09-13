@@ -57,9 +57,19 @@ class ContinueResearchTasksAction(_LeadAction):
     """Execute the next ready tasks already present in the dependency graph."""
 
 
+class QuestionCoverage(BaseModel):
+    """Model assessment of an actual user requirement, not a new evidence claim."""
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    question_quote: str = Field(min_length=1, max_length=2000, description="Exact excerpt of the user's question identifying this requirement, not a branch catalog label. Cover every material requested outcome.")
+    status: Literal["answered", "not_needed", "unresolved"]
+    supporting_task_ids: tuple[str, ...] = Field(default=(), max_length=24, description="Existing submitted task IDs covering this requirement; mandatory for answered. Submission is not semantic acceptance.")
+    rationale: str = Field(min_length=20, max_length=2000, description="What the paper establishes or why this is unnecessary; distinguish unfinished work from genuine information boundaries. Do not omit required work for cost.")
+
+
 class SubmitResearchHandoffAction(_LeadAction):
     """Request downstream review or explicit attention; never publish a report."""
     disposition: Literal["ready_for_review", "needs_attention"]
+    question_coverage: tuple[QuestionCoverage, ...] = Field(default=(), max_length=24)
     synthesis_notes: str = Field(min_length=1, max_length=12000, description=(
         "Brief handoff notes, normally <=1800 characters: main issues and what downstream reviewers should check. "
         "Do not repeat all workpapers or write the final report; separate synthesis and Writer agents follow."
@@ -97,11 +107,18 @@ LEAD_RESEARCH_SYSTEM_PROMPT = (
     "SubmitResearchHandoffAction only passes material to downstream review or requests attention; "
     "All required branches need submitted work and no tasks may remain pending. Failed attempts must "
     "be explicitly acknowledged; successful replacement work may then proceed to independent review. "
+    "Transport failures or execution/input/call limits require a host-qualified new attempt, not automatic replacement tasks. "
     "it is NOT a verified final report, publication approval or financial PASS. Retain limitations "
     "Uncompleted Reviewed routes are disclosed separately from source-bound workpaper admissibility; "
     "do not call them completed or equate a source tag with full semantic research coverage. "
     "and acknowledge incomplete task IDs. Write research objectives and handoff notes in Chinese. "
     "Use the exact current context_digest. Hidden reasoning is not an artifact or source."
+    " At handoff provide question_coverage for every material outcome requested in the actual user question. "
+    "Quote that requirement verbatim, link answered items to submitted task IDs, and explain each omission. "
+    "Task submission means source-bound candidate, not supported/verified financial judgment. "
+    "Unfinished necessary research is unresolved, not not_needed; use needs_attention when it cannot proceed. "
+    "Do not offload omitted research to reviewers or classify generic branch topics by a historical issuer name. "
+    "A single paper may cover several requirements; specialist counts do not prove completeness."
 )
 
 
@@ -153,6 +170,7 @@ def build_dell_lead_research_graph(
     model_turn: Callable, run_child: Callable, max_lead_turns: int = 8,
     max_tasks: int = 4, max_parallel_tasks: int = 2, turn_source: str = "scripted_qualification", unfinished_only: bool = False,
     role_method=None, require_all_branches=True, public_progress=None, require_execution_plan=False,
+    recovery_tasks=(),
 ) -> StateGraph:
     allowed = set(allowed_branch_ids)
     if expected_input is not None and (not allowed or len(allowed) != len(allowed_branch_ids)
@@ -161,6 +179,15 @@ def build_dell_lead_research_graph(
             or turn_source not in {"scripted_qualification", "provider_model"}):
         raise LeadResearchError("lead_scope_or_capacity_invalid")
     seeds = {key: validate_workpaper_state(value) for key, value in seed_workpapers.items()}
+    resumed = [DelegatedResearchTask.model_validate_json(json.dumps(t)).model_dump(mode="json") for t in recovery_tasks]
+    if (len({t["task_id"] for t in resumed}) != len(resumed)
+            or any(t["task_id"] in seeds or len(t["coverage_obligation_ids"]) != 1
+                   or not set(t["coverage_obligation_ids"]).issubset(allowed) for t in resumed)):
+        raise LeadResearchError("recovery_tasks_must_be_original_unfinished_tasks")
+    recovery_ids = set(seeds) | {t["task_id"] for t in resumed}
+    if any(not set(t["dependency_ids"]).issubset(recovery_ids) for t in resumed):
+        raise LeadResearchError("recovery_task_dependency_missing")
+    tuple(TopologicalSorter({t["task_id"]: t["dependency_ids"] for t in resumed}).static_order())
     if expected_input is None and (allowed or seeds or branch_catalog or research_question):
         raise LeadResearchError("schema_only_lead_cannot_bind_research")
     for key, seed in seeds.items():
@@ -201,8 +228,9 @@ def build_dell_lead_research_graph(
         parsed = SpecialistAgenticInput.model_validate_json(json.dumps(body))
         if canonical_sha256(parsed) != canonical_sha256(expected_input):
             raise LeadResearchError("lead_entry_input_mismatch")
-        return {"tasks": [], "task_results": [], "lead_turns": [], "tool_results": [],
-                "phase": "lead_observing", "lead_handoff": None, "stop_reason": None,
+        return {"tasks": resumed, "task_results": [], "lead_turns": [],
+                "tool_results": [ToolMessage(content="{}", tool_call_id="restored-parent-tasks").model_dump(mode="json")] if resumed else [],
+                "phase": "schedule_ready_tasks" if resumed else "lead_observing", "lead_handoff": None, "stop_reason": None,
                 "pending_batch": None, "active_task_ids": []}
 
     def decide(state):
@@ -214,13 +242,19 @@ def build_dell_lead_research_graph(
             "research_as_of": expected_input.task.research_as_of,
             "branch_catalog": [row for row in branch_catalog if row["branch_id"] in allowed],
             "required_branch_ids": list(allowed_branch_ids),
-            "scope_policy": "All listed branches require submitted research." if require_all_branches else "The catalog is available scope, NOT a checklist. Select only branches material to this question; explain your selection and omitted scope in public handoff notes. At least one source-grounded workpaper is required.",
+            "scope_policy": ("All listed branches require submitted research." if require_all_branches else
+                "The catalog is available scope, NOT a checklist. Select only branches material to this question; explain your selection and omitted scope in public handoff notes. At least one source-grounded workpaper is required.")
+                + (" This is a current-user task, not the historical foundation case. Uncompleted Reviewed route IDs in saved papers are historical coverage receipts, NOT mandatory delivery gates for this question. "
+                   "Do not mark a user requirement unresolved solely because that historical index has no matching entry. Assess whether the actual cited SQL facts/passages support the requested result; retain unavailable corroboration in limitations. "
+                   "Missing required facts, unsupported claims or unresolved material source conflicts still require attention. Independent review remains required; never mark an uncompleted route satisfied."
+                   if expected_input.task_context and expected_input.task_context.get("instruction_source") == "current_user_research_request" else ""),
             "execution_policy": ("Submit execution_plan on delegation and handoff. Choose responsibilities from actual scope and evidence, not company names or branch counts. focused uses ONE self-contained paper and final independent verification; integrated retains counter/source review, writer and final verification; extended additionally requires genuinely distinct synthesis work and its review. Explain every omission and escalation. At handoff revisit actual findings. This policy supersedes generic instructions that separate synthesis/writer always follow." if require_execution_plan else "Legacy fixed review pipeline."),
             "capabilities": lead_capability_catalog(expected_input.l0_context.capability_summaries),
             "capacity": {"max_tasks": max_tasks, "max_parallel_tasks": max_parallel_tasks,
                          "max_lead_turns": max_lead_turns},
             "workpapers": [workpaper_view(key, value) for key, value in completed(state).items()],
-            "continue_only_unsubmitted_branches": unfinished_only,
+            "allowed_planning_tools": [name for name in LEAD_RESEARCH_TOOLS if not unfinished_only or name != "DelegateResearchTasksAction"],
+            "continuation_policy": ("This is an explicitly bounded continuation. Only original unfinished tasks may run. Do not create any new task, even with a different branch or dependency. Review saved workpapers, then submit a handoff with truthful question coverage; unresolved material scope goes to human attention, not automatic expansion." if unfinished_only else "Preserve submitted work. New tasks must address actual unanswered requirements without repeating completed work."),
             "tasks": state["tasks"], "tool_results": state["tool_results"],
             "progress": {"turn_index": len(state["lead_turns"]) + 1,
                          "ready_task_ids": [task["task_id"] for task in ready(state)],
@@ -248,9 +282,14 @@ def build_dell_lead_research_graph(
     def execute_tools(state, config: RunnableConfig):
         batch = SpecialistNativeToolBatch.model_validate_json(json.dumps(state["pending_batch"]))
         working = {"phase": "lead_observing", "pending_batch": None}
+        from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, execute_memory_tool
+        tool_models = {**LEAD_RESEARCH_TOOLS, **(WORKING_MEMORY_MODELS if memory_enabled() else {})}
 
         def invoke_tool(runtime: ToolRuntime, **kwargs):
             call = next(row for row in batch.tool_calls if row.id == runtime.tool_call_id)
+            if call.name in WORKING_MEMORY_MODELS:
+                value = execute_memory_tool(call.name, call.args, config, "lead")
+                return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
             try:
                 if len(batch.tool_calls) != 1:
                     raise ValueError("one_planning_mutation_per_turn_put_parallel_tasks_in_one_tasks_list")
@@ -263,6 +302,8 @@ def build_dell_lead_research_graph(
                 if require_execution_plan and isinstance(action, (DelegateResearchTasksAction, SubmitResearchHandoffAction)) and action.execution_plan is None:
                     raise ValueError("execution_plan_required_with_scope_omission_and_escalation_reasons")
                 if isinstance(action, DelegateResearchTasksAction):
+                    if unfinished_only:
+                        raise ValueError("continuation_cannot_create_new_tasks_request_owner_scope_change")
                     ids = [task.task_id for task in action.tasks]
                     known = set(seeds) | {task["task_id"] for task in state["tasks"]}
                     if len(ids) != len(set(ids)) or known.intersection(ids):
@@ -272,8 +313,9 @@ def build_dell_lead_research_graph(
                     for task in action.tasks:
                         if len(task.coverage_obligation_ids) != 1 or not set(task.coverage_obligation_ids).issubset(allowed):
                             raise ValueError("task_requires_one_disclosed_coverage_obligation")
-                        if unfinished_only and any(seed["task"]["branch_id"] in task.coverage_obligation_ids for seed in seeds.values()):
-                            raise ValueError("continuation_reuses_submitted_branches_only_delegate_missing_coverage")
+                        branch_seeds = {key for key, seed in seeds.items() if seed["task"]["branch_id"] in task.coverage_obligation_ids}
+                        if unfinished_only and branch_seeds and not branch_seeds.intersection(task.dependency_ids):
+                            raise ValueError("supplemental_research_must_depend_on_submitted_workpaper")
                         if (task.status not in {"planned", "ready"} or task.required_authority_refs
                                 or not set(task.requested_capability_refs).issubset(available)
                                 or not set(task.expected_output_kinds).issubset({"branch_notebook", "claim_ledger", "narrative_artifact"})):
@@ -294,6 +336,17 @@ def build_dell_lead_research_graph(
                     value = {"continuing_ready_task_ids": [task["task_id"] for task in ready(state)]}
                 else:
                     done = completed(state)
+                    if require_execution_plan and not action.question_coverage:
+                        raise ValueError("question_coverage_required_for_actual_user_requirements")
+                    for item in action.question_coverage:
+                        if item.question_quote not in research_question:
+                            raise ValueError("coverage_quote_must_come_from_original_user_question")
+                        if not set(item.supporting_task_ids).issubset(done):
+                            raise ValueError("coverage_requires_existing_submitted_task_ids")
+                        if item.status == "answered" and not item.supporting_task_ids:
+                            raise ValueError("answered_requirement_requires_submitted_task_reference")
+                    if action.disposition == "ready_for_review" and any(item.status == "unresolved" for item in action.question_coverage):
+                        raise ValueError("unresolved_required_research_needs_attention_not_review_completion")
                     incomplete = {task["task_id"] for task in state["tasks"]} - set(done)
                     if set(action.acknowledged_incomplete_task_ids) != incomplete:
                         raise ValueError("handoff_must_acknowledge_exact_incomplete_task_ids")
@@ -311,8 +364,12 @@ def build_dell_lead_research_graph(
                                    phase="research_" + action.disposition, stop_reason=None)
                     value = {"handoff_disposition": action.disposition, "financial_or_product_pass": False}
                 if public_progress:
+                    coverage_text = "\n\n".join(f"**问题覆盖：{item.question_quote}**\n"
+                        + {"answered": "已有底稿，待核验", "not_needed": "本次省略", "unresolved": "尚未解决"}[item.status]
+                        + "：" + item.rationale for item in getattr(action, "question_coverage", ()))
                     public_progress({"kind": "stage", "actor": "lead", "event": "progress", "call_id": call.id,
-                        "objective": action.reason_summary + ("\n\n" + action.execution_plan.public_summary() if action.execution_plan else "")})
+                        "objective": action.reason_summary + ("\n\n" + action.execution_plan.public_summary() if action.execution_plan else "")
+                        + ("\n\n" + coverage_text if coverage_text else "")})
                 return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
             except (ValueError, KeyError) as exc:
                 detail = ({"schema_errors": [{"loc": list(e["loc"]), "type": e["type"], "msg": e["msg"]}
@@ -329,10 +386,15 @@ def build_dell_lead_research_graph(
                 if str(exc) == "handoff_must_acknowledge_exact_incomplete_task_ids":
                     detail.update(expected_incomplete_task_ids=sorted(incomplete),
                         explanation="Acknowledge only these current unsubmitted tasks. Source-route gaps are not task IDs; retain them in notes, not this field.")
+                if str(exc) == "focused_requires_one_self_contained_paper_choose_integrated_for_multiple_deliverables":
+                    detail.update(submitted_paper_count=len(done), correction="Keep every saved paper. Select integrated for multiple deliverables; this is a plan-depth mismatch, not missing financial evidence or an unsatisfied Reviewed route. Do not rerun research to fix it.")
+                if str(exc) == "unresolved_required_research_needs_attention_not_review_completion":
+                    detail.update(unresolved_requirements=[item.question_quote for item in action.question_coverage if item.status == "unresolved"],
+                        explanation="Your own question_coverage marks these requirements unresolved. Check the actual cited evidence against the current question. A historical Reviewed route gap alone is not a new-task gate; keep it disclosed without claiming completion of that route. Actual missing necessary evidence still requires needs_attention.")
                 return ToolMessage(content=json.dumps(detail, ensure_ascii=False), tool_call_id=call.id, name=call.name, status="error")
 
         tools = [StructuredTool.from_function(invoke_tool, name=name, description=model.__doc__ or name,
-                    args_schema=model.model_json_schema()) for name, model in LEAD_RESEARCH_TOOLS.items()]
+                    args_schema=model.model_json_schema()) for name, model in tool_models.items()]
         node = ToolNode(tools, handle_tool_errors=False)
         calls = [row.model_dump(mode="json") if not isinstance(row, SpecialistInvalidToolCall)
                  else {"id": row.id, "name": row.name, "args": {}, "type": "tool_call"} for row in batch.tool_calls]
@@ -378,7 +440,15 @@ def build_dell_lead_research_graph(
         content["task_results"] = [{**workpaper_view(row["task_id"], row["agent_state"]), "status": row["status"],
             "stop_reason": row["agent_state"].get("human_review_handoff")} for row in new]
         replies[0]["content"] = json.dumps(content, ensure_ascii=False)
-        return {"tool_results": replies, "phase": "lead_observing",
+        # A semantic follow-up is permitted; recreating a failed model worker
+        # would reset its limits and may repeat an unaccounted provider call.
+        # Preserve all sibling results and stop before another Lead/model call.
+        execution_failures = [row["task_id"] for row in new
+            if (row["agent_state"].get("human_review_handoff") or {}).get("trigger")
+            in {"model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"}]
+        return {"tool_results": replies,
+                "phase": "research_needs_attention" if execution_failures else "lead_observing",
+                "stop_reason": "delegated_execution_failure_requires_new_attempt" if execution_failures else None,
                 "active_task_ids": [row["task_id"] for row in state["task_results"]]}
 
     graph = StateGraph(LeadResearchState, input_schema=SpecialistAgenticInput)
@@ -388,9 +458,10 @@ def build_dell_lead_research_graph(
     graph.add_node("specialist", worker)
     graph.add_node("collect_task_artifacts", collect)
     graph.add_edge(START, "bind_case")
-    graph.add_edge("bind_case", "lead")
+    graph.add_conditional_edges("bind_case", dispatch, ["lead", "specialist", END])
     graph.add_conditional_edges("lead", lambda s: END if s["phase"] == "research_needs_attention" else "lead_tools", [END, "lead_tools"])
     graph.add_conditional_edges("lead_tools", dispatch, ["lead", "specialist", END])
     graph.add_edge("specialist", "collect_task_artifacts")
-    graph.add_edge("collect_task_artifacts", "lead")
+    graph.add_conditional_edges("collect_task_artifacts",
+        lambda s: END if s["phase"] == "research_needs_attention" else "lead", [END, "lead"])
     return graph

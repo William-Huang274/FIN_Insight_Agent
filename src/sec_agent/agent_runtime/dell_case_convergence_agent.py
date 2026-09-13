@@ -5,6 +5,8 @@ iteration, messages, tool pairing, concurrency and persistence; no new runner.
 """
 from __future__ import annotations
 
+from sec_agent.research_foundation.source_quotes import contains_source_quote
+
 from copy import deepcopy
 import json
 import operator
@@ -22,7 +24,7 @@ from langchain_core.tools import ToolException
 from langgraph.graph import START, END, StateGraph
 from langgraph.types import Command
 from markdown_it import MarkdownIt
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .dell_case_review_agent import _text_values, InvalidToolCallFeedback
 from .dell_specialist_agentic_graph import SpecialistClaim
@@ -41,7 +43,11 @@ class CaseClaim(BaseModel):
         description="Observed source IDs. A boundary/hypothesis may have none with an explicit authority_note; the canonical SpecialistClaim contract still requires sources for factual and calculated claims.")
     numeric_authority: Literal["authoritative", "non_authoritative", "not_applicable"] = Field(
         description="Existing FIN kind contract: numeric_fact uses authoritative with S2 facts only; calculation uses non_authoritative with an authority_note; all other kinds use not_applicable. For reported_fact/inference from non-S2 prose, put the non-authoritative source warning in authority_note, not this enum.")
-    authority_note: str | None = None
+    authority_note: str | None = Field(default=None, description=(
+        "Required (non-null) for calculation, inference, hypothesis and boundary claims, "
+        "and for source-passage claims. Explain actual source/assumption limitations; "
+        "numeric_authority=not_applicable does not waive this field."
+    ))
     reasoning_summary: str | None = None
     citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict)
 
@@ -83,6 +89,8 @@ class CaseReport(BaseModel):
 
 class ReportTextEdit(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    chart_index: int | None = Field(default=None, ge=0, le=4,
+        description="Omit for report body. Set the zero-based chart index to edit only that chart's interpretation; points and sources stay unchanged.")
     old_str: str = Field(min_length=1, max_length=20000,
         description="Exact unique text from the current report, including Markdown. Add context if it occurs more than once.")
     new_str: str = Field(max_length=20000,
@@ -107,14 +115,23 @@ def apply_report_edits(report, edits):
     if not 1 <= len(edits) <= 24:
         raise ValueError("report_edit_count_must_be_1_to_24")
     text = report["narrative_markdown"]
+    charts = [chart_submission_view(c) for c in report.get("charts", [])]
+    original_charts = deepcopy(charts)
     for index, edit in enumerate(edits):
-        count = text.count(edit.old_str)
+        if edit.chart_index is not None and edit.chart_index >= len(charts):
+            raise ValueError("report_edit_chart_index_out_of_range")
+        selected = text if edit.chart_index is None else charts[edit.chart_index]["interpretation"]
+        count = selected.count(edit.old_str)
         if count != 1:
             raise ValueError(f"report_edit_{index}_matched_{count}_times: read_current_report and copy exact unique Markdown, including the original Unicode quotation marks and surrounding context; no edits were saved")
-        text = text.replace(edit.old_str, edit.new_str, 1)
-    if text == report["narrative_markdown"]:
+        selected = selected.replace(edit.old_str, edit.new_str, 1)
+        if edit.chart_index is None:
+            text = selected
+        else:
+            charts[edit.chart_index]["interpretation"] = selected
+    if text == report["narrative_markdown"] and charts == original_charts:
         raise ValueError("report_edits_made_no_change")
-    return CaseReport(title=report["title"], narrative_markdown=text)
+    return CaseReport(title=report["title"], narrative_markdown=text, charts=charts)
 
 
 class ReportFinding(BaseModel):
@@ -139,7 +156,20 @@ class ReportReview(BaseModel):
         description="Only data still indispensable to a remaining material claim, so the report cannot safely stand without it. Optional future disclosure, future S2 ingestion, or limits already handled by removing/qualifying the claim belong in summary/advisory findings, not this blocking list. Do not require forbidden SQL/Evidence writes.")
 
 
+class SubmittedReportReview(ReportReview):
+    completion: Literal["complete", "incomplete"] = Field(description="Whether all necessary checks in the requested scope were completed.")
+    unresolved_data_requests: list[str] = Field(max_length=20,
+        description="Explicit required list of indispensable checks still undone, including those mentioned in prose. Empty only when none remain.")
+
+    @model_validator(mode="after")
+    def completion_matches_unresolved(self):
+        if (self.completion == "incomplete") != bool(self.unresolved_data_requests):
+            raise ValueError("report_completion_must_match_explicit_unresolved_checks")
+        return self
+
+
 class CaseOutputState(AgentState):
+    human_edits: list[dict[str, Any]]
     output: dict[str, Any]
     revisions: dict[str, Any]
     report: dict[str, Any]
@@ -324,7 +354,7 @@ def validated_revision(revision, *, paper_id, feedback, artifacts, messages):
                 errors.append(f"source_quote_required:{claim.claim_id}:{ref}")
             body = str(source.get("passage") or source.get("bounded_excerpt") or source.get("value_decimal") or "")
             for quote in ([quotes] if isinstance(quotes, str) else quotes or []):
-                if not quote or quote not in body:
+                if not quote or not contains_source_quote(body, quote):
                     errors.append(f"source_quote_not_exact:{claim.claim_id}:{ref}")
         if not set(claim.citation_quotes).issubset(claim.source_ids):
             errors.append(f"quote_ref_not_in_source_ids:{claim.claim_id}")
@@ -379,12 +409,12 @@ def answer_reference_ids(prose):
 
 
 def report_citations(report, artifacts, messages=None, *, prior_citations=None):
+    prose = report if isinstance(report, str) else "\n".join([report.narrative_markdown,
+        *(chart.interpretation for chart in report.charts)])
     if messages is not None:
-        prose = report if isinstance(report, str) else report.narrative_markdown
         return answer_citations(prose, artifacts, messages, prior_citations=prior_citations)
     claims = {f"{p['paper_id']}:{c['claim_id']}": c for p in artifacts.catalog()["papers"]
         for c in artifacts.read_paper(p["paper_id"], "claims")}
-    prose = report if isinstance(report, str) else report.narrative_markdown
     refs = list(dict.fromkeys(CLAIM_REF.findall(prose)))
     missing = sorted(set(refs) - claims.keys())
     if not refs or missing:
@@ -470,7 +500,20 @@ def answer_citations(prose, artifacts, messages, *, prior_citations=None):
                 sources.extend(direct[source_id]["sources"] if source_id in direct else [artifacts.read_source(source_id)])
         direct[ref] = {"claim": {"kind": "calculation", "statement": f"{body['expression']} = {body['value_decimal']} {body['result_unit']}",
             "numeric_authority": "non_authoritative", "authority_note": body["authority_note"]}, "sources": sources}
-    paper_refs = [ref for ref in refs if CLAIM_REF.fullmatch(f"[{ref}]")]
+    # A retained operand can point to a source alias, not an author claim.
+    # Resolve exact archived IDs through the same reader instead of interpreting
+    # every Pxx:* token as a claim. This creates a citation view, never a new fact.
+    for ref in refs:
+        if ref in direct:
+            continue
+        try:
+            artifacts.source_item(ref)
+            source = artifacts.citation_source(ref)
+        except ValueError:
+            continue
+        direct[ref] = {"claim": {"kind": "source_reference", "statement": "Exact archived source reference; citation resolution is not financial verification.",
+            "numeric_authority": "not_applicable"}, "sources": [source]}
+    paper_refs = [ref for ref in refs if ref not in direct and CLAIM_REF.fullmatch(f"[{ref}]")]
     bound = report_citations(" ".join(f"[{ref}]" for ref in paper_refs), artifacts) if paper_refs else {}
     missing = [ref for ref in refs if ref not in bound and ref not in direct]
     if missing:
@@ -519,7 +562,9 @@ financial_semantics_verified=false means not verified, not a failed review; abse
 """
 
 
-def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions=""):
+def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions="", review_scope="full_report"):
+    if review_scope not in {"full_report", "selected_claims"} or (review_scope == "selected_claims" and role != "verifier"):
+        raise ValueError("selected_claim_review_requires_verifier")
     feedback = feedback or []
 
     @tool
@@ -562,13 +607,29 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     @tool
     def research_artifact_catalog(runtime: ToolRuntime) -> dict:
         """List current paper theses including accepted revisions, not superseded archive theses."""
-        return artifacts.with_revisions(runtime.state.get("revisions", {})).catalog()
+        return artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', [])).catalog()
+
+    @tool
+    def search_research_sources(query: str, runtime: ToolRuntime, limit: int = 5) -> dict:
+        """Locate archived source windows in the current revised papers using FTS5 source-language terms, OR or quoted phrases. Read matches with read_current_source; searching is not verification."""
+        try:
+            result = artifacts.with_revisions(runtime.state.get("revisions", {})).search_sources(query, limit)
+            result["notice"] = result["notice"].replace("read_research_source", "read_current_source")
+            return result
+        except ValueError as exc:
+            raise ToolException(str(exc)) from None
 
     @tool
     def read_current_workpaper(paper_id: str, runtime: ToolRuntime, section: Literal["workpaper", "claims", "sources"] = "workpaper") -> dict:
         """Read the latest case workpaper view including accepted author amendments. Original archives stay immutable."""
         try:
-            return artifacts.with_revisions(runtime.state.get("revisions", {})).read_paper(paper_id, section)
+            current = artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', []))
+            result = current.read_paper(paper_id, section)
+            editorial = current.read_paper(paper_id).get('human_editorial_revision')
+            if section == 'claims' and editorial:
+                return {'original_structured_claims': result, 'human_editorial_revision': editorial,
+                    'current_narrative_markdown': current.read_paper(paper_id)['narrative_markdown']}
+            return result
         except ValueError as exc:
             raise ToolException(str(exc)) from None
 
@@ -621,7 +682,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         """Submit only the responsible paper amendment with source-bound changed claims and each finding disposition."""
         try:
             value = validated_revision(revision, paper_id=paper_id, feedback=feedback,
-                artifacts=artifacts.with_revisions(runtime.state.get("revisions", {})), messages=runtime.state["messages"])
+                artifacts=artifacts.with_revisions(runtime.state.get("revisions", {})).with_human_edits(runtime.state.get('human_edits', [])), messages=runtime.state["messages"])
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
         return output_message(runtime, value)
@@ -657,7 +718,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_case_answer(answer_markdown: str, runtime: ToolRuntime) -> Command:
-        """Answer with exact observed [PASSAGE::id], [NUMFACT::id], [CALC::id] or [Pxx:claim_id]. For a successful SQL typed_gap, cite its [MCPFACT::id] fact_request_id as a LOCAL QUERY RECEIPT only: no local match does not prove issuer non-disclosure or exhaustive public search. No fixed prose template; do not rewrite the report."""
+        """Answer with exact observed [PASSAGE::id], [NUMFACT::id], [CALC::id], [Pxx:claim_id] or archived source aliases. For a successful SQL typed_gap, cite its [MCPFACT::id] fact_request_id as a LOCAL QUERY RECEIPT only: no local match does not prove issuer non-disclosure or exhaustive public search. When discussing an unbound ID or namespace in an error, use Markdown code notation: a diagnostic identifier is not an evidence citation. Supported financial claims still require real citations. No fixed prose template; do not rewrite the report."""
         if runtime.state.get("request_action") != "ask":
             return output_message(runtime, error="This request asks for a revised report. Use submit_case_report.")
         try:
@@ -671,7 +732,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
 
     @tool
     def submit_report_edits(edits: list[ReportTextEdit], runtime: ToolRuntime) -> Command:
-        """Submit 1–24 exact, unique old_str/new_str report edits atomically, then independent review. No file/path access. Prefer this for local corrections instead of reproducing the whole report."""
+        """Submit 1–24 exact unique text edits atomically, then independent review. Omit chart_index for body, or set it for one chart interpretation. No file/path access or changed chart values. Prefer local edits instead of reproducing the report."""
         if runtime.state.get("request_action") != "revise":
             return output_message(runtime, error="Report edits require a revision request, not an ordinary question.")
         try:
@@ -681,11 +742,12 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         except ValueError as exc:
             return output_message(runtime, error=str(exc))
         return output_message(runtime, {**report.model_dump(mode="json", exclude={"charts"}), "citations": citations,
-            **({"charts": deepcopy(runtime.state["report"]["charts"])} if runtime.state["report"].get("charts") else {}),
+            **({"charts": [{**deepcopy(original), "interpretation": edited.interpretation}
+                for original, edited in zip(runtime.state["report"]["charts"], report.charts, strict=True)]} if report.charts else {}),
             "applied_edits": [edit.model_dump(mode="json") for edit in edits]})
 
     @tool
-    def submit_report_review(review: ReportReview, runtime: ToolRuntime) -> Command:
+    def submit_report_review(review: SubmittedReportReview, runtime: ToolRuntime) -> Command:
         """Submit independent report findings; verify financial meaning, not just citation syntax."""
         report = runtime.state["report"]
         errors = review_responsibility_errors(review, artifacts, required=require_responsibility)
@@ -695,9 +757,15 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
                   if not any(f.report_quote in t for t in reviewable)]
         if errors:
             return output_message(runtime, error=json.dumps({"errors": errors}, ensure_ascii=False))
-        return output_message(runtime, review.model_dump(mode="json"))
+        value = review.model_dump(mode="json", exclude={"completion"})
+        if review_scope == "selected_claims":
+            # The host invocation scope must survive separately from the
+            # model's prose; scoped completion never approves the full report.
+            value.update(review_scope=review_scope, completion=review.completion, full_report_acceptance=False)
+        return output_message(runtime, value)
 
-    read_current_workpaper.handle_tool_error = read_current_source.handle_tool_error = True
+    read_current_workpaper.handle_tool_error = read_current_source.handle_tool_error = search_research_sources.handle_tool_error = True
+    tools = [t for t in tools if t.name != "search_research_sources"] + [search_research_sources]
     if role == "repair":
         specific = "Revise only your responsible workpaper in Chinese. Use claim_updates for changed/new claims, preserve unaffected claim IDs. Replace the thesis/mechanism/narrative so old errors do not survive in prose; respond to each finding, including explicitly marked human feedback. Do not mechanically accept reviewer causal conclusions."
         submit = submit_paper_revision
@@ -718,7 +786,12 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     else:
         raise ValueError("case_output_role_invalid")
-    if require_responsibility and role == "verifier":
+    if role == "verifier" and review_scope == "selected_claims":
+        specific = "Independently verify only the host-selected exact claims in focused_review.targets, with their original paragraph context and supplied native source_records. For each target ID identify the proposition/metric object, the source support and whether the inference follows. Do not assume a target is wrong. Emit source-backed findings for actual errors; acknowledge sound targets in the summary. No full-report acceptance. Use supplied original records directly; read_current_source only for an indispensable missing bound record. Do not repeat whole-table arithmetic or launch a separate company investigation."
+        selected = [t for t in selected if t.name in {"read_current_source", "get_research_method"}]
+        if require_responsibility:
+            specific += " Material findings must identify the earliest responsible owner. Use writer for expression/inference introduced by this answer; research requires existing responsible paper IDs, never invented papers."
+    if require_responsibility and role == "verifier" and review_scope == "full_report":
         specific += "\nThe input review_target distinguishes lead_synthesis from final_report. For a synthesis, review the Lead's research judgment and actual revised papers before writing; for a report, check final expression against that research. Every material finding must declare the earliest responsibility and exact paper_ids for research repairs. Do not call an upstream research error writer-only. Conversely, when a current workpaper already contains the correct analysis but the synthesis omits or distorts it, assign writer: this routes a synthesis review back to the Lead, not to an unaffected specialist. Check the opening thesis, headings and monitoring conditions against the body, not only the paragraph describing the correction. data_tool requires an observed data/tool defect after relevant permitted reads/attempts, not an empty search or unsupported public gap. For a source problem the researcher can remedy by permitted supplementary reads, use research. Missing owner/invalid paper IDs are rejected for you to correct. State concise source-backed rationales; no private reasoning in output."
     if role == "writer":
         specific += "\nUse the report charts field for 1-3 useful source-bound comparisons when data supports them (cash conversion, achieved vs implied execution, comparable margin/revenue). Points use actual source IDs, exact prose quote/literal where needed, or observed calculator IDs; the host supplies values and renders charts. Do not force incomparable data onto one axis. No arbitrary plotting code. Charts need source/period review just like text."
@@ -741,9 +814,13 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         specific = "Answer the actual user question about this existing Dell case in concise Chinese. Plan your own relevant reads; do not reread every paper or reconstruct a whole report. Prefer query_company_financial_facts for financial numbers. Cite its actual numeric_fact_id inline as [NUMFACT::id], and calculator calculation_id as [CALC::id]; exact [P01:claim_id] citations remain available for existing research. You do not need an old paper to cite a newly queried SQL fact. Include period, unit, source authority and uncertainty where they matter. The current report is available through read_current_report if needed, not presumed evidence. Source-bound answers may still be wrong: do not claim independent verification or product acceptance. If the question exceeds available evidence or needs a new deep study, explain what is unresolved without fabricating it. Submit using submit_case_answer, not a revised report."
         selected = [t for t in selected if t.name not in {"submit_case_answer", "submit_report_edits", "read_current_report"}] + [read_current_report]
         submit = submit_case_answer
-    return create_agent(model=model, tools=[*selected, submit], state_schema=CaseOutputState,
-        system_prompt=CONTEXT_RULES + specific + METHOD_TOOL_GUIDANCE + method_instructions + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
-        middleware=[StopOnOutput(), InvalidToolCallFeedback(), AnswerSubmissionFeedback(submit.name), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
+    scope_notice = ("\nInvocation scope: selected claims only. Apply the supplied role method within those targets, not its whole-report coverage steps. The verifier method is already fully loaded here; other methods are optional only when necessary to a target. Missing unselected sections are NOT unresolved checks. Only an indispensable unanswered dependency of a selected claim may block its check. completion describes this selected scope, never the whole report. Keep the summary compact and account for every target ID. Submit inspected results with explicit unresolved dependencies; do not infer acceptance from correct arithmetic or the presence of a qualifier."
+        if review_scope == "selected_claims" else "")
+    from .working_memory_tools import working_memory_tools, WORKING_MEMORY_GUIDANCE
+    notes = working_memory_tools(f"{role}:{paper_id or 'report'}")
+    return create_agent(model=model, tools=[*selected, *notes, submit], state_schema=CaseOutputState,
+        system_prompt=CONTEXT_RULES + specific + (WORKING_MEMORY_GUIDANCE if notes else "") + METHOD_TOOL_GUIDANCE + method_instructions + scope_notice + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
+        middleware=[StopOnOutput(), InvalidToolCallFeedback(recover_report=role == 'writer'), AnswerSubmissionFeedback(submit.name), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
             ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="error"), *(audit.middlewares() if audit else [])],
         name=f"case_{role}_{paper_id or 'report'}")
 
@@ -774,6 +851,13 @@ def validate_reused_revisions(reused, artifacts, feedback):
     return deepcopy(reused)
 
 
+def paper_revision_input(artifacts, paper_id, findings):
+    """Pass the affected paper once; source bodies/metadata stay behind tools."""
+    return {"paper_id": paper_id, "original_workpaper": artifacts.read_paper(paper_id),
+        "findings": findings,
+        "source_access": "The workpaper contains exact source IDs. Read their original context with read_current_source; use read_current_workpaper(section='sources') only when you need the wider source catalog."}
+
+
 def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_id, run_invocation_id, reused_revisions=None,
                                  report_revision_request=None, research_review_context=None):
     reused = validate_reused_revisions(reused_revisions, artifacts, feedback) if reused_revisions else {}
@@ -795,8 +879,7 @@ def build_case_convergence_graph(*, agents, artifacts, question, feedback, run_i
             value = {"revisions": state.get("revisions", {}), "report": state.get("report", {})}
             if _author:
                 pid = _actor.removeprefix("author_")
-                body.update(paper_id=pid, original_workpaper=artifacts.read_paper(pid),
-                    findings=feedback[pid], sources=artifacts.read_paper(pid, "sources"))
+                body.update(paper_revision_input(artifacts, pid, feedback[pid]))
                 # No sibling context or private reasoning enters an author.
                 value = {}
             else:

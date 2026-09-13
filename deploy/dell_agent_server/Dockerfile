@@ -69,5 +69,6 @@ COPY configs/research/fin_ia_0_1_3_dell_case_convergence_native_v1_0.json /deps/
 COPY configs/research/fin_ia_0_1_3_dell_report_quick_answer_v1_0.json /deps/FIN_Insight_Agent/configs/research/
 COPY configs/research/cases/dell_growth_quality.json /deps/FIN_Insight_Agent/configs/research/cases/
 COPY configs/research/runtime/research_session.json /deps/FIN_Insight_Agent/configs/research/runtime/
+COPY configs/research/runtime/conversation.json /deps/FIN_Insight_Agent/configs/research/runtime/
 
 WORKDIR /deps/FIN_Insight_Agent

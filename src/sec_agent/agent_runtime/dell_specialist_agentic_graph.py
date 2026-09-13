@@ -14,7 +14,10 @@ are never checkpoint fields.
 from __future__ import annotations
 
 import json
+import jsonpatch
 from collections.abc import Callable, Mapping
+from copy import deepcopy
+from .workpaper_delivery import decode_workpaper_arguments
 from dataclasses import dataclass
 from typing import Annotated, Any, Literal, TypedDict
 
@@ -36,6 +39,7 @@ from pydantic import (
 from .dell_agentic_contracts import ProviderEvidenceIntent
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
+from sec_agent.research_foundation.source_quotes import contains_source_quote
 from .dell_reference_vertical_contracts import (
     BoundBranchTask,
     RuntimeReceipt,
@@ -234,7 +238,11 @@ ClaimKind = Literal[
 
 class SpecialistClaim(_StrictModel):
     claim_id: str = Field(min_length=1, max_length=240)
-    kind: ClaimKind
+    kind: ClaimKind = Field(description=(
+        "reported_fact includes numbers quoted from source passages/PDF tables; cite PASSAGE in evidence_ids. "
+        "numeric_fact is exclusively a typed S2/NUMFACT receipt in fact_ids, not any sentence containing a number. "
+        "calculation cites an observed CALC receipt; inference/hypothesis/boundary describe analytical interpretation."
+    ))
     materiality: Literal["high", "medium", "low"]
     statement: str = Field(min_length=1, max_length=4_000)
     evidence_ids: tuple[str, ...] = Field(default=(), max_length=32)
@@ -247,7 +255,12 @@ class SpecialistClaim(_StrictModel):
         "For source-reported numbers, describe non-S2/source limitations in authority_note instead. "
         "This provenance label does not establish GAAP status or semantic correctness."
     ))
-    authority_note: str | None = Field(default=None, min_length=1, max_length=1_000)
+    authority_note: str | None = Field(default=None, min_length=1, max_length=1_000, description=(
+        "Required (non-null) for calculation, inference, hypothesis and boundary claims, "
+        "and for every claim citing source PASSAGE IDs. State the actual source/assumption "
+        "limitations and why this is a calculation or interpretation rather than an S2 fact. "
+        "Include it in the first submission; do not wait for validation feedback."
+    ))
     reasoning_summary: str | None = Field(default=None, max_length=4_000)
     citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict, description=(
         "Required for EVERY PASSAGE reference in evidence_ids, including inference and boundary claims: "
@@ -305,15 +318,72 @@ class SubmitWorkpaperAction(_StrictModel):
     counterevidence: tuple[str, ...] = Field(min_length=1, max_length=12)
     what_would_change: tuple[str, ...] = Field(min_length=1, max_length=12)
     open_gaps: tuple[str, ...] = Field(default=(), max_length=16)
+    citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict, exclude=True,
+        description="Optional shared quotes keyed by exact evidence ID. Runtime copies them only to claims already citing that ID; no need to repeat the same quote in every claim.")
 
     @model_validator(mode="after")
     def validate_submission_shape(self) -> "SubmitWorkpaperAction":
+        referenced = {ref for claim in self.claims for ref in claim.evidence_ids}
+        if set(self.citation_quotes) - referenced:
+            raise ValueError("workpaper_shared_quote_not_referenced")
+        for claim in self.claims:
+            for ref in claim.evidence_ids:
+                if ref not in self.citation_quotes:
+                    continue
+                if ref in claim.citation_quotes and claim.citation_quotes[ref] != self.citation_quotes[ref]:
+                    raise ValueError("workpaper_shared_quote_conflict")
+                claim.citation_quotes[ref] = deepcopy(self.citation_quotes[ref])
         claim_ids = tuple(claim.claim_id for claim in self.claims)
         if len(claim_ids) != len(set(claim_ids)):
             raise ValueError("specialist_submission_claim_id_duplicate")
         if self.terminal_state in {"supported", "countered"} and not self.claims:
             raise ValueError("supported_submission_requires_claims")
         return self
+
+
+class WorkpaperFieldEdit(_StrictModel):
+    path: str = Field(min_length=1, description=("RFC 6901 JSON Pointer into the current rejected workpaper. "
+        "Arrays use zero-based numeric indices: /claims/0/kind edits the first claim's kind. "
+        "A claim_id is a value, never an array index. Replace existing fields only; no wildcards or partial-string replacements."))
+    old_value: Any = Field(description="Exact current JSON value; the edit fails if it does not match.")
+    new_value: Any = Field(description="Replacement JSON value. Preserve unchanged claims and prose.")
+
+
+class ReviseWorkpaperAction(_StrictModel):
+    action: Literal["revise_workpaper"]
+    context_digest: str = Field(pattern=_DIGEST_PATTERN)
+    reason_summary: str = Field(min_length=1, max_length=1000)
+    base_submission_digest: str = Field(pattern=_DIGEST_PATTERN)
+    edits: tuple[WorkpaperFieldEdit, ...] = Field(min_length=1, max_length=24)
+
+
+def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperAction) -> dict[str, Any]:
+    """Standard atomic JSON Patch against a rejected artifact, then normal gates.
+
+    No file access, accepted-report mutation or independent acceptance authority.
+    """
+    if canonical_sha256(original) != action.base_submission_digest:
+        raise ValueError("workpaper_edit_base_mismatch")
+    editable = set(SubmitWorkpaperAction.model_fields) - {"action", "context_digest", "reason_summary"}
+    operations = []
+    for edit in action.edits:
+        try:
+            parts = jsonpatch.JsonPointer(edit.path).parts
+        except jsonpatch.JsonPointerException:
+            raise ValueError("workpaper_edit_old_value_or_path_mismatch") from None
+        if not parts or parts[0] not in editable:
+            raise ValueError("workpaper_edit_field_not_editable")
+        operations.extend([{"op": "test", "path": edit.path, "value": edit.old_value},
+            {"op": "replace", "path": edit.path, "value": edit.new_value}])
+    try:
+        updated = jsonpatch.apply_patch(original, operations, in_place=False)
+    except (jsonpatch.JsonPatchException, jsonpatch.JsonPointerException):
+        raise ValueError("workpaper_edit_old_value_or_path_mismatch") from None
+    if not isinstance(updated.get("claims"), list) or not all(isinstance(c, dict) for c in updated["claims"]):
+        raise ValueError("workpaper_edit_must_preserve_claim_identity_and_order")
+    if [c.get("claim_id") for c in updated["claims"]] != [c.get("claim_id") for c in original.get("claims", [])]:
+        raise ValueError("workpaper_edit_must_preserve_claim_identity_and_order")
+    return {**updated, "context_digest": action.context_digest, "reason_summary": action.reason_summary}
 
 
 class WorkpaperReviewFinding(_StrictModel):
@@ -423,7 +493,7 @@ class SpecialistModelTurnRecord(_StrictModel):
     schema_version: Literal[
         "fin_ia_dell_specialist_model_turn_record_v1_1"
     ] = "fin_ia_dell_specialist_model_turn_record_v1_1"
-    turn_index: int = Field(ge=1, le=24)
+    turn_index: int = Field(ge=1)
     turn_source: SpecialistModelTurnSource = "scripted_qualification"
     model_execution_evidence: bool = False
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
@@ -660,8 +730,9 @@ class SpecialistNotebook(_StrictModel):
     owner_data_gate_decision_digest: str = Field(pattern=_DIGEST_PATTERN)
     source_route_catalog_digest: str = Field(pattern=_DIGEST_PATTERN)
     inventory_snapshot_digest: str = Field(pattern=_DIGEST_PATTERN)
-    model_turn_count: int = Field(ge=0, le=24)
-    tool_action_count: int = Field(ge=0, le=48)
+    # Lifetime counters across explicit runs; each input still caps its allowance.
+    model_turn_count: int = Field(ge=0)
+    tool_action_count: int = Field(ge=0)
     required_route_obligation_ids: tuple[str, ...] = Field(
         min_length=1,
         max_length=16,
@@ -804,7 +875,10 @@ class DellSpecialistAgenticState(TypedDict, total=False):
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
+    # Native-state provenance for archived turns; not model-editable input.
+    model_turn_invocations: dict[str, str]
     final_submission: dict[str, Any] | None
+    last_submission_attempt: dict[str, Any] | None
     human_review_handoff: dict[str, Any] | None
     review_reason: str | None
     review_trigger: str | None
@@ -824,6 +898,9 @@ class DellSpecialistAgenticDependencies:
     expected_graph_input_digest: str | None = None
     method_reader: Callable[[str], Mapping[str, Any]] | None = None
     enforce_case_route_requirements: bool = True
+    # Real model qualification is still open. Production uses the existing full
+    # submission/error-feedback path; only isolated qualification opts in.
+    allow_workpaper_field_edits: bool = False
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -896,6 +973,8 @@ def _model_request(
     *,
     state: DellSpecialistAgenticState,
     notebook: SpecialistNotebook,
+    allow_workpaper_field_edits: bool = False,
+    continuation_guidance: str | None = None,
 ) -> dict[str, Any]:
     l0 = _validate_model_json(
         SpecialistL0Context,
@@ -952,6 +1031,17 @@ def _model_request(
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
+    if continuation_guidance:
+        # A new native invocation can add an analyst instruction while retaining
+        # the preceding checkpoint. This is input, never a source or authority.
+        body["task_context"] = {**body.get("task_context", {}),
+            "continuation_guidance": continuation_guidance}
+    last = state.get("last_submission_attempt") or {}
+    candidate = last.get("arguments")
+    if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
+        if allow_workpaper_field_edits:
+            allowed_actions.append("revise_workpaper")
+        body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
     return {**body, "context_digest": canonical_sha256(body)}
 
 
@@ -989,13 +1079,14 @@ def _action_attempt_id(
     *,
     notebook: SpecialistNotebook,
     action: SpecialistAction,
+    turn_index: int | None = None,
 ) -> str:
     digest = canonical_sha256(
         {
             "run_invocation_id": state["run_invocation_id"],
             "agent_id": state["agent_id"],
             "task_id": notebook.task_id,
-            "model_turn_count": notebook.model_turn_count,
+            "model_turn_count": notebook.model_turn_count if turn_index is None else turn_index,
             "action": action.model_dump(mode="json"),
         }
     )
@@ -1011,6 +1102,46 @@ def _semantic_action_digest(action: SpecialistAction) -> str:
             exclude={"context_digest", "reason_summary"},
         )
     )
+
+
+def _saved_read_observation(state, notebook, action):
+    """Recover an exact successful read from this task's native checkpoint.
+
+    A projected ToolMessage can be read again without dispatching or charging a
+    new tool action. Failed/denied reads and control actions are never replayed.
+    Bind through the original action attempt, not observation list positions
+    (method reads also occupy the dispatch ledger).
+    """
+    if not isinstance(action, (RequestEvidenceAction, RequestFinanceAction,
+                               RequestCalculationAction, RequestSourceAction)):
+        return None
+    digest = _semantic_action_digest(action)
+    if digest not in notebook.dispatched_action_digests:
+        return None
+    observations = {item.action_attempt_id: item for item in notebook.observations}
+    for record in notebook.model_turn_records:
+        decision = record.action
+        if isinstance(decision, SpecialistNativeToolBatch):
+            originals = []
+            for call in decision.tool_calls:
+                if isinstance(call, SpecialistNativeToolCall):
+                    try:
+                        originals.append(_validate_action(call.args))
+                    except (ValueError, DellSpecialistAgenticGraphError):
+                        continue
+        else:
+            originals = [decision]
+        for original in originals:
+            if _semantic_action_digest(original) != digest:
+                continue
+            original_state = {**state, "run_invocation_id": state.get("model_turn_invocations", {}).get(
+                str(record.turn_index), state["run_invocation_id"])}
+            attempt = _action_attempt_id(original_state, notebook=notebook, action=original,
+                                         turn_index=record.turn_index)
+            observation = observations.get(attempt)
+            if observation is not None and observation.status == "success" and observation.failure is None:
+                return observation
+    return None
 
 
 def _build_tool_request(
@@ -1154,7 +1285,7 @@ def _submission_errors(
                 value = claim.citation_quotes.get(evidence_id, "")
                 quotes = value if isinstance(value, list) else [value]
                 for index, quote in enumerate(quotes or [""]):
-                    if not quote.strip() or not any(quote in str(p.get("passage", "")) for p in passages):
+                    if not any(contains_source_quote(str(p.get("passage", "")), quote) for p in passages):
                         errors.append(
                             f"source_quote_not_in_observed_passage:{evidence_id}:"
                             f"claim={claim.claim_id}:quote_index={index}:"
@@ -1227,6 +1358,7 @@ def _review_submission_errors(
 def build_dell_specialist_agentic_state_graph(
     *,
     dependencies: DellSpecialistAgenticDependencies,
+    recovery_state: Mapping[str, Any] | None = None,
 ) -> StateGraph[DellSpecialistAgenticState]:
     """Build one cyclic Specialist graph with injected model and tool ports."""
 
@@ -1288,12 +1420,45 @@ def build_dell_specialist_agentic_state_graph(
             status="researching",
             source_read_enabled=validated.l0_context.source_read_enabled,
         )
+        if recovery_state is not None:
+            # Supplied only by the server's parent checkpoint, never graph input.
+            # Reuse the canonical notebook; do not promote a rejected candidate.
+            prior = _validate_model_json(SpecialistNotebook, recovery_state.get("notebook"),
+                                        code="recovery_notebook_invalid")
+            if (recovery_state.get("phase") != "specialist_human_review_handoff_emitted"
+                    or recovery_state.get("final_submission") is not None
+                    or recovery_state.get("run_id") != validated.run_id
+                    or recovery_state.get("agent_id") != validated.agent_id
+                    or recovery_state.get("task") != validated.task.model_dump(mode="json")
+                    or prior.task_id != validated.task.task_id
+                    or prior.branch_id != validated.task.branch_id
+                    or prior.owner_data_gate_decision_digest != notebook.owner_data_gate_decision_digest
+                    or prior.source_route_catalog_digest != notebook.source_route_catalog_digest
+                    or prior.inventory_snapshot_digest != notebook.inventory_snapshot_digest
+                    or set(prior.required_route_obligation_ids) != set(notebook.required_route_obligation_ids)):
+                raise DellSpecialistAgenticGraphError("recovery_task_or_data_scope_mismatch")
+            return {**validated.model_dump(mode="json"),
+                "notebook": _replace_notebook(prior, run_invocation_id=validated.run_invocation_id,
+                                             status="researching").model_dump(mode="json"),
+                # A user-initiated new run has its configured allowance. Lifetime
+                # counts are retained, not reset by inventing a replacement task.
+                "max_model_turns": prior.model_turn_count + validated.max_model_turns,
+                "max_tool_actions": prior.tool_action_count + validated.max_tool_actions,
+                "last_submission_attempt": _jsonable(recovery_state.get("last_submission_attempt")),
+                "tool_results": _jsonable(recovery_state.get("tool_results", [])),
+                "model_turn_invocations": {
+                    str(record.turn_index): recovery_state.get("model_turn_invocations", {}).get(
+                        str(record.turn_index), recovery_state["run_invocation_id"])
+                    for record in prior.model_turn_records},
+                "pending_action": None, "final_submission": None, "human_review_handoff": None,
+                "review_reason": None, "review_trigger": None, "phase": "ready_for_model_decision"}
         return {
             **validated.model_dump(mode="json"),
             "notebook": notebook.model_dump(mode="json"),
             "pending_action": None,
             "tool_results": [],
             "final_submission": None,
+            "last_submission_attempt": None,
             "human_review_handoff": None,
             "review_reason": None,
             "review_trigger": None,
@@ -1302,6 +1467,7 @@ def build_dell_specialist_agentic_state_graph(
 
     def model_decide(
         state: DellSpecialistAgenticState,
+        config: RunnableConfig,
     ) -> DellSpecialistAgenticState:
         notebook = _validate_model_json(
             SpecialistNotebook,
@@ -1310,7 +1476,6 @@ def build_dell_specialist_agentic_state_graph(
         )
         if notebook.model_turn_count >= int(state["max_model_turns"]):
             return {
-                "tool_results": [],
                 "pending_action": None,
                 "review_reason": "model_turn_ceiling_reached_no_silent_completion",
                 "review_trigger": "model_turn_ceiling",
@@ -1320,7 +1485,9 @@ def build_dell_specialist_agentic_state_graph(
                 ).model_dump(mode="json"),
                 "phase": "human_review_required",
             }
-        request = _model_request(state=state, notebook=notebook)
+        request = _model_request(state=state, notebook=notebook,
+            allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
+            continuation_guidance=config.get("configurable", {}).get("finsight_continuation_guidance"))
         try:
             raw = dependencies.model_turn(request)
         except Exception as exc:
@@ -1764,10 +1931,13 @@ def build_dell_specialist_agentic_state_graph(
         calls = {call.id: call for call in batch.tool_calls}
         models = {model.__name__: model for model in (
             RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
-            SubmitWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
+            SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
+        from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, execute_memory_tool
+        if memory_enabled():
+            models.update(WORKING_MEMORY_MODELS)
         terminal_mixed = len(batch.tool_calls) > 1 and any(
-            call.name in {"SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction"}
+            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction"}
             for call in batch.tool_calls)
         l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
         assigned_routes = {row.get("minimum_route_obligation_id")
@@ -1775,13 +1945,55 @@ def build_dell_specialist_agentic_state_graph(
 
         def run_tool(runtime: ToolRuntime, **_arguments: Any) -> ToolMessage:
             call = calls[runtime.tool_call_id]
+            raw_arguments = call.args if isinstance(call, SpecialistInvalidToolCall) else None
+            recovered, recoverable, repair = ({}, False, None)
+            if raw_arguments is not None and call.name == "SubmitWorkpaperAction":
+                recovered, recoverable, repair = decode_workpaper_arguments(raw_arguments)
+                if recoverable:
+                    call = SpecialistNativeToolCall(id=call.id, name=call.name,
+                        args={"context_digest": batch.context_digest, **recovered})
             before = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
+            if call.name in WORKING_MEMORY_MODELS:
+                if before.tool_action_count >= working["max_tool_actions"]:
+                    body = {"saved": False, "notice": "工具额度已用完；底稿未保存，可按当前未完成状态交接。"}
+                else:
+                    body = execute_memory_tool(call.name, call.args, config, str(working["task"]["task_id"]))
+                    digest = canonical_sha256({"memory_call_id": call.id, "arguments": call.args})
+                    if digest not in before.dispatched_action_digests:
+                        working["notebook"] = _replace_notebook(before,
+                            tool_action_count=before.tool_action_count + 1,
+                            dispatched_action_digests=(*before.dispatched_action_digests, digest)).model_dump(mode="json")
+                return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps(body, ensure_ascii=False))
+            terminal_submission = call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction"}
+            if call.name == "ReviseWorkpaperAction":
+                working["last_submission_attempt"] = {**(working.get("last_submission_attempt") or {}),
+                    "tool_call_id": call.id, "tool_name": call.name, "feedback": [], "accepted": False}
+            elif terminal_submission:
+                # Retain the original assertion even when schema validation fails.
+                # This is checkpoint evidence, never an accepted deliverable.
+                working["last_submission_attempt"] = {
+                    "tool_call_id": call.id, "tool_name": call.name,
+                    "arguments": {key: deepcopy(value) for key, value in call.args.items()
+                        if key in models[call.name].model_fields} if isinstance(call.args, dict) else None,
+                    "accepted": False, "feedback": [],
+                }
+                if raw_arguments is not None:
+                    attempt = working["last_submission_attempt"]
+                    # Provider raw bytes remain in the private call audit. Keep
+                    # a digest plus public fields, never arbitrary extra fields.
+                    attempt["original_arguments_digest"] = canonical_sha256(raw_arguments)
+                    attempt["format_recovery"] = repair
+                    if not recoverable:
+                        attempt["readable_candidate"] = {key: deepcopy(value) for key, value in recovered.items()
+                            if key in models[call.name].model_fields and key != "context_digest"}
 
             def reject(code: str, message: str, *, agent_error: bool = False) -> ToolMessage:
                 feedback = _feedback(code, message, owner_layer="agent" if agent_error else "runtime",
                     next_actions=("revise_request", "request_human_review"))
                 working["notebook"] = _replace_notebook(before, feedback=(*before.feedback, feedback)).model_dump(mode="json")
                 working["phase"] = "typed_feedback_ready"
+                if terminal_submission:
+                    working["last_submission_attempt"]["feedback"] = [feedback.model_dump(mode="json")]
                 return ToolMessage(name=call.name, tool_call_id=call.id, status="error",
                     content=json.dumps({"observations": [], "feedback": [feedback.model_dump(mode="json")]}, ensure_ascii=False))
 
@@ -1789,8 +2001,8 @@ def build_dell_specialist_agentic_state_graph(
                 return reject("specialist_terminal_action_must_be_alone",
                     "No tools in this response were dispatched. Submit or request human review as the sole call, after observing pending data results.")
             if isinstance(call, SpecialistInvalidToolCall):
-                # Do not repair or partially parse a model's assertion. Return
-                # the standard JSON location through its original tool call ID.
+                # Unrecoverable syntax never executes. Complete prose fields
+                # remain available for human review independently of acceptance.
                 try:
                     json.loads(call.args)
                     detail = "Arguments must be one JSON object matching the supplied schema."
@@ -1807,6 +2019,10 @@ def build_dell_specialist_agentic_state_graph(
                 # Use Pydantic's field locations and errors, never echo raw
                 # arguments/reasoning. The supplied tool schema stays authoritative.
                 errors = exc.errors(include_input=False, include_context=False, include_url=False)
+                if terminal_submission:
+                    working["last_submission_attempt"]["validation_issues"] = [
+                        {"location": list(item["loc"]), "type": item["type"], "message": item["msg"]}
+                        for item in errors]
                 details = json.dumps(errors, ensure_ascii=False)
                 return reject("specialist_tool_arguments_invalid",
                     "Submission/request was not accepted. Correct these fields against the supplied tool schema and resubmit; "
@@ -1817,12 +2033,28 @@ def build_dell_specialist_agentic_state_graph(
             if action.context_digest != batch.context_digest:
                 return reject("specialist_model_turn_context_binding_invalid",
                     "Copy the current context_digest exactly; this call was not dispatched.")
-            if action.action not in _model_request(state=working, notebook=before)["allowed_actions"]:
+            if action.action not in _model_request(state=working, notebook=before,
+                    allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits)["allowed_actions"]:
                 return reject("specialist_action_not_available_in_current_runtime", "This action is not available for your assigned role.")
             if isinstance(action, RequestSourceAction) and not l0.source_read_enabled:
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")
             if isinstance(action, RequestEvidenceAction) and action.minimum_route_obligation_id not in assigned_routes:
                 return reject("specialist_evidence_route_not_assigned", "This evidence route is outside this Specialist task assignment.")
+            if isinstance(action, ReviseWorkpaperAction):
+                prior = working.get("last_submission_attempt") or {}
+                try:
+                    candidate = apply_workpaper_edits(prior["arguments"], action)
+                    working["last_submission_attempt"] = {"arguments": candidate, "accepted": False,
+                        "tool_call_id": call.id, "tool_name": call.name, "feedback": []}
+                    action = SubmitWorkpaperAction.model_validate_json(json.dumps(candidate, ensure_ascii=False))
+                except ValidationError as exc:
+                    working["last_submission_attempt"]["validation_issues"] = [
+                        {"location": list(item["loc"]), "type": item["type"], "message": item["msg"]}
+                        for item in exc.errors(include_input=False, include_context=False, include_url=False)]
+                    terminal_submission = True
+                    return reject("specialist_workpaper_edit_invalid", "Edited workpaper did not pass the existing submission schema.", agent_error=True)
+                except (ValueError, KeyError) as exc:
+                    return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
             working["pending_action"] = action.model_dump(mode="json")
             if isinstance(action, RequestResearchMethodAction):
                 update, message = execute_method(working, tool_call_id=call.id)
@@ -1844,6 +2076,17 @@ def build_dell_specialist_agentic_state_graph(
                 return ToolMessage(name=call.name, tool_call_id=call.id,
                     content=json.dumps({"human_review_required": True}))
             kind = "finance" if isinstance(action, (RequestFinanceAction, RequestCalculationAction)) else "evidence"
+            saved = _saved_read_observation(working, before, action)
+            if saved is not None:
+                body = {"observations": [{key: saved.model_dump(mode="json")[key] for key in (
+                    "kind", "status", "references", "content", "route_completions", "failure")}],
+                    "feedback": [], "checkpoint_replay": {
+                        "original_action_attempt_id": saved.action_attempt_id,
+                        "observation_digest": saved.observation_digest,
+                        "new_tool_dispatch": False}}
+                working.update(pending_action=None, phase="tool_observation_ready")
+                return ToolMessage(name=call.name, tool_call_id=call.id,
+                    status="success", content=json.dumps(body, ensure_ascii=False))
             update = execute_tool(working,
                 port=dependencies.finance_tool if kind == "finance" else dependencies.evidence_tool,
                 expected_kind=kind)
@@ -1909,6 +2152,10 @@ def build_dell_specialist_agentic_state_graph(
                 ),
             )
             return {
+                "last_submission_attempt": {**(state.get("last_submission_attempt") or {}),
+                    "arguments": action.model_dump(mode="json"), "accepted": False,
+                    "validation_issues": [{"location": ["references"], "type": "reference_validation", "message": error}
+                        for error in errors], "feedback": [feedback.model_dump(mode="json")]},
                 "pending_action": None,
                 "notebook": _replace_notebook(
                     notebook,
@@ -1917,6 +2164,9 @@ def build_dell_specialist_agentic_state_graph(
                 "phase": "submission_rejected_with_typed_feedback",
             }
         return {
+            "last_submission_attempt": {**(state.get("last_submission_attempt") or {}),
+                "arguments": action.model_dump(mode="json"), "accepted": True,
+                "validation_issues": [], "feedback": []},
             "pending_action": None,
             "final_submission": action.model_dump(mode="json"),
             "notebook": _replace_notebook(

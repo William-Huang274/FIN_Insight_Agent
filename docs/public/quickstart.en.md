@@ -21,7 +21,7 @@ uv sync --locked --extra agent-runtime --extra external-search --extra workbench
 uv run --no-sync python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
 ```
 
-This iteration passed **34 tests** and generated MD, PDF, DOCX, PPTX, a chart PNG and synthetic report JSON. The output directory must not exist. Choose `.local/public-check-02` for another attempt; earlier results are not overwritten. Files are explicitly synthetic, not company research results. Inspect Word/PPT layout in Office or LibreOffice in addition to structural checks.
+The check generates MD, PDF, DOCX, PPTX, a chart PNG and synthetic report JSON; test counts come from the current output. The output directory must not exist. Choose `.local/public-check-02` for another attempt; earlier results are not overwritten. Files are explicitly synthetic, not company research results. Inspect Word/PPT layout in Office or LibreOffice in addition to structural checks.
 
 The script calls existing pytest tests and the exporter. It does not load local `.env`, deploy services or submit model tasks.
 
@@ -36,7 +36,7 @@ npx playwright install chromium
 npm run test:public
 ```
 
-On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing. The public profile starts only local Vite, on port **4183** by default, and does not start the legacy 8765 backend. This iteration passed **13 tests**, including 1440, 1024 and 390 pixel layouts. Research APIs are intercepted with explicit synthetic responses.
+On Linux, use `npx playwright install --with-deps chromium` if browser system dependencies are missing. The public profile starts only local Vite, on port **4183** by default, without the source-only backend. Tests cover 1440, 1024 and 390 pixel layouts; counts come from the current output. Research APIs use explicit synthetic responses.
 
 Use `npm run test:public -- --headed --workers=1` to watch the tests. Failure screenshots and traces are written under `apps/workbench/frontend/test-results/public/`; inspect a trace with `npx playwright show-trace <trace.zip>`. Playwright manages this results directory; copy failures elsewhere before another run if you need to preserve them.
 
@@ -95,4 +95,4 @@ uv run --no-sync python -m pytest -q
 
 Private-data tests are skipped by default; use `--run-private-data` only with their original mounts. Historical Git proofs require full history, and Windows qualification runs on Windows. Full-suite checks, public interaction tests and live research are distinct evidence scopes.
 
-The product remains FIN 0.1.3; Dell report v5 awaits review. Previously reported v4 export page counts are historical evidence, not a new v5 rendering result.
+The product is the frozen FIN 0.1.3 local Internal Alpha. Report versions are independent: HPE/MSFT human delivery and the older Dell v5 review state remain separately recorded. Retired experiment replay uses the [frozen source](../../archive/README.md).

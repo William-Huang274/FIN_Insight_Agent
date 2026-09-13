@@ -137,7 +137,11 @@ def test_provider_tool_history_retains_reasoning_on_actual_sdk_wire(tool_case):
     adapter.specialist_model_turn(request)
     assert len(wires) == 2
     assert all(w["tool_choice"] == "auto" for w in wires)
-    assert all(len(w["tools"]) == 7 for w in wires)
+    expected_tools = {
+        "RequestEvidenceAction", "RequestFinanceAction",
+        "SubmitWorkpaperAction", "RequestHumanReviewAction",
+    }
+    assert all({t["function"]["name"] for t in w["tools"]} == expected_tools for w in wires)
     assert all(t["function"]["parameters"]["type"] == "object" for t in wires[0]["tools"])
     prior = next(m for m in wires[1]["messages"] if m["role"] == "assistant")
     assert prior["reasoning_content"] == "Synthetic private provider reasoning, not evidence."

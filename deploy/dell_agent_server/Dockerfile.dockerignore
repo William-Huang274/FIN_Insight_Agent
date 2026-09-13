@@ -36,3 +36,4 @@
 !configs/research/cases/dell_growth_quality.json
 !configs/research/runtime/
 !configs/research/runtime/research_session.json
+!configs/research/runtime/conversation.json

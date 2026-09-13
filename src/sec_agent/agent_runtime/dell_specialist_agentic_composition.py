@@ -186,6 +186,7 @@ def _build_graph_input(
     source_read_enabled: bool = False,
     live_web_read_enabled: bool = False,
     research_question: str | None = None,
+    plan_invocation_id: str | None = None,
 ) -> SpecialistAgenticInput:
     methods = {
         method.branch_id: method for method in foundation_binding.branch_methods
@@ -231,6 +232,8 @@ def _build_graph_input(
                 "availability",
                 "formula",
                 "observed_period_roles",
+                "title",
+                "interpretation_boundary",
             )
         }
         for row in metric_rows
@@ -247,9 +250,13 @@ def _build_graph_input(
         raise DellSpecialistAgenticCompositionError(
             "specialist_reviewed_topic_catalog_missing"
         )
+    # Native checkpoint continuation keeps its initial plan identity while
+    # tool execution and audit retain the current run_invocation_id. Callers
+    # must preserve the original question/data scope; all task fields are still
+    # checked exactly by the MCP port (this does not waive a changed plan).
     plan_basis = {
         "run_id": run_id,
-        "run_invocation_id": run_invocation_id,
+        "run_invocation_id": plan_invocation_id or run_invocation_id,
         "case_id": foundation_binding.case_id,
         "branch_id": branch_id,
         "research_as_of": foundation_binding.research_as_of,
@@ -353,7 +360,7 @@ def _build_graph_input(
                  "answer_free": True, "grants_authority": False},
                 {"capability_ref": "capability:research:methods",
                  "action": "request_method",
-                 "usage": "Read the compact catalog with empty method_id; then select lead, finance, industry_product, counter, writer or verifier. Packaged answer-free guidance only, never evidence or file access.",
+                 "usage": "Before substantive financial judgments, read the relevant finance or industry_product method unless its full text is already bound in this run. For review select counter/verifier. Empty method_id lists all six roles. Apply the steps to this task, not just acknowledge reading. Prefer catalog standard derived financial metrics to re-entering formulas. Packaged guidance only, never evidence or file access.",
                  "answer_free": True, "grants_authority": False},
                 *(({"capability_ref": "capability:dell:source-document-read",
                    "actions": ["catalog", "outline", "search", "read"],
@@ -399,7 +406,7 @@ def _build_graph_input(
         max_tool_actions=max_tool_actions,
         task_context=({"research_question": research_question,
                        "instruction_source": "current_user_research_request",
-                       "data_baseline_rule": "The original foundation and method digests bind historical data provenance, not the current research question or model-turn budget."}
+                       "data_baseline_rule": "The original foundation and method digests bind historical data provenance, not the current research question or model-turn budget. Historical required Reviewed routes are retained coverage receipts, not mandatory gates for this new question. Use observed SQL facts or exact passages appropriate to the requested claims. Disclose missing corroboration without calling its route satisfied; missing facts actually necessary to the user's question still require attention."}
                       if research_question else None),
     )
 
@@ -1027,6 +1034,8 @@ def _open_dell_specialist_composition(
     source_read_enabled: bool = False,
     live_web_read_enabled: bool = False,
     collaboration_context: Mapping[str, Any] | None = None,
+    recovery_state: Mapping[str, Any] | None = None,
+    plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     research_question: str | None = None,
@@ -1060,6 +1069,7 @@ def _open_dell_specialist_composition(
                 source_read_enabled=source_read_enabled,
                 live_web_read_enabled=live_web_read_enabled,
                 research_question=research_question,
+                plan_invocation_id=plan_invocation_id,
             )
             if role_method is not None:
                 from .studio_configuration import bind_specialist_method
@@ -1094,6 +1104,7 @@ def _open_dell_specialist_composition(
             task = graph_input.task
             dependencies = DellSpecialistAgenticDependencies(
                 model_turn=model_turn,
+                allow_workpaper_field_edits=True,
                 evidence_tool=_mcp_port(
                     expected_task=task,
                     baseline_source_plan=approved.baseline_source_plan,
@@ -1120,7 +1131,7 @@ def _open_dell_specialist_composition(
             yield _OpenedSpecialistComposition(
                 graph_input=graph_input,
                 graph=build_dell_specialist_agentic_state_graph(
-                    dependencies=dependencies
+                    dependencies=dependencies, recovery_state=recovery_state
                 ).compile(),
                 owner_data_gate_decision_digest=approved.decision_digest,
                 inventory_snapshot_digest=approved.inventory_snapshot_digest,
@@ -1190,6 +1201,8 @@ def open_dell_specialist_receipted_composition(
     source_read_enabled: bool = False,
     live_web_read_enabled: bool = False,
     collaboration_context: Mapping[str, Any] | None = None,
+    recovery_state: Mapping[str, Any] | None = None,
+    plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
     research_question: str | None = None,
@@ -1216,6 +1229,8 @@ def open_dell_specialist_receipted_composition(
         source_read_enabled=source_read_enabled,
         live_web_read_enabled=live_web_read_enabled,
         collaboration_context=collaboration_context,
+        recovery_state=recovery_state,
+        plan_invocation_id=plan_invocation_id,
         research_task=research_task,
         dependency_workpapers=dependency_workpapers,
         research_question=research_question,

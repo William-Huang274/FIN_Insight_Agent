@@ -1,0 +1,10 @@
+[
+  {"id":"msft_revenue","text":"微软2025完整财年收入及同比变化是多少？财年何时结束？"},
+  {"id":"msft_azure","text":"Microsoft FY2025 Azure年度收入和增长，以及Microsoft Cloud毛利率受到哪些影响？"},
+  {"id":"msft_cash","text":"微软2025年度经营活动现金流、购置固定资产的现金支付是多少？"},
+  {"id":"msft_segment","text":"FY2025 Intelligent Cloud收入和营业利润相比上年如何变化？"},
+  {"id":"msft_repurchase","text":"微软2025财年回购股份花费多少钱，回购了多少股？"},
+  {"id":"cache_freshness","text":"According to RFC 9111, when is a stored HTTP response fresh and how is freshness lifetime determined?"},
+  {"id":"cache_revalidation","text":"RFC 9111: how does a cache use validators and a 304 Not Modified response to update a stored response?"},
+  {"id":"cache_invalidation","text":"When must an HTTP cache invalidate a stored response after an unsafe request such as POST?"}
+]

@@ -1,0 +1,8 @@
+.identity-entry { box-sizing: border-box; max-width: 520px; margin: 15vh auto; padding: 40px; border: 1px solid #e0e5f2; border-radius: 20px; background: white; color: #26324a; font: 16px/1.7 system-ui, sans-serif; box-shadow: 0 12px 40px #23326808; }
+.identity-entry h1 { font-size: 28px; margin: 0 0 12px; }
+.identity-entry p { color: #6c7891; }
+.identity-entry a { display: inline-block; margin-top: 18px; background: #4355c7; color: white; padding: 10px 24px; border-radius: 10px; text-decoration: none; font-weight: 600; }
+.identity-signout { position: fixed; right: 16px; bottom: 16px; z-index: 100; border: 1px solid #dce2f1; border-radius: 10px; padding: 9px 15px; background: #fff; color: #4659b8; font: 14px/1.4 system-ui, sans-serif; cursor: pointer; box-shadow: 0 2px 12px #23326808; }
+.identity-signout:hover { background: #eff2ff; }
+.identity-entry a:focus-visible, .identity-signout:focus-visible { outline: 3px solid #8797ee; outline-offset: 3px; }
+@media (max-width: 600px) { .identity-entry { margin: 12vh 20px; padding: 28px; } }

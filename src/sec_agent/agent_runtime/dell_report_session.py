@@ -34,11 +34,13 @@ from .dell_case_convergence_agent import build_case_output_agent, report_citatio
 from .dell_case_review_agent import CaseModelAudit, case_chat_model, case_mcp_tools
 from .targeted_revision import RevisionTarget, targeted_feedback
 from .execution_options import ExecutionOptions, execution_from_config, unreviewed_report_status
+from .manual_review import ManualReview, apply_manual_review
 
 
 class ReviewAction(BaseModel):
     model_config = ConfigDict(extra="forbid")
-    action: Literal["ask", "revise", "accept"]
+    action: Literal["ask", "revise", "accept", "manual_complete"]
+    manual_review: ManualReview | None = None
     message: str = Field(default="", max_length=16000)
     answer_mode: Literal["quick", "deep"] = "deep"
     target: RevisionTarget | None = None
@@ -46,6 +48,8 @@ class ReviewAction(BaseModel):
 
     @model_validator(mode="after")
     def quick_only_for_questions(self):
+        if (self.action == 'manual_complete') != (self.manual_review is not None):
+            raise ValueError('人工完成需要对应的正文修改与确认')
         if self.target is not None and self.action != "revise":
             raise ValueError("revision_target_is_only_for_revise")
         if self.answer_mode == "quick" and self.action != "ask":
@@ -72,6 +76,7 @@ class SessionState(TypedDict, total=False):
     conversation: Annotated[list[dict], operator.add]
     model_events: Annotated[list[dict], operator.add]
     last_output_kind: str
+    human_edits: list[dict[str, Any]]
 
 
 def abandoned_question_update(state, reason):
@@ -107,6 +112,11 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             "phase": state["phase"], "actions": ["ask", "revise", "accept"],
             "notice": "Acceptance is local human report review, not automatic release or financial authority."})
         action = ReviewAction.model_validate(response)
+        if action.action == 'manual_complete':
+            current = artifacts(state) if callable(artifacts) else artifacts
+            update = apply_manual_review(state, action.manual_review, current,
+                owner=config.get('configurable', {}).get('manual_review_owner', 'local-pilot'))
+            return Command(update=update, goto='human_review')
         if action.action == "accept":
             review = state["report_review"]
             if review.get("review_status") == "not_run":
@@ -134,7 +144,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
 
     def seed(state, role):
         current_artifacts = artifacts(state) if callable(artifacts) else artifacts
-        view = current_artifacts.with_revisions(state["revisions"])
+        view = current_artifacts.with_revisions(state["revisions"]).with_human_edits(state.get('human_edits', []))
         body = {"research_as_of": current_artifacts.research_as_of, "catalog": view.catalog()}
         if state.get("question"):
             body["research_question"] = state["question"]
@@ -142,6 +152,10 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
             # Do not repeat the large citation object: canonical IDs resolve via tools.
             history = state.get("conversation", [])[:-1]
             body.update(request_action=state["request_action"], user_message=state["message"],
+                human_corrections=list({p['paper_id']: {'number': h['number'], 'reason': h['reason'],
+                    'paper_id': p['paper_id'], 'actor': p['actor'],
+                    'read_current': 'read_current_workpaper returns the current human-edited prose. Original structured claims may be superseded. Read sources for facts; do not silently restore withdrawn conclusions.'}
+                    for h in state.get('human_edits', []) for p in h['papers']}.values()),
                 conversation_history={"message_count": len(history), "read_on_demand": "read_public_conversation lists or reads saved public messages. Full text and citation bindings remain stored; previews are not substitutes for evidence.",
                     "recent": [{"message_index": i, "role": m["role"], "preview": m["content"][:400], "truncated": len(m["content"]) > 400}
                         for i, m in enumerate(history) if i >= len(history)-2]})
@@ -160,6 +174,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
         get_stream_writer()({"kind": "stage", "actor": role, "event": "started", "recorded_at": datetime.now(timezone.utc).isoformat()})
         return {"messages": [HumanMessage(content=json.dumps(body, ensure_ascii=False))],
             "revisions": state["revisions"], "report": state["report"], "request_action": state["request_action"],
+            "human_edits": deepcopy(state.get('human_edits', [])),
             "conversation": deepcopy(state.get("conversation", [])),
             **({"case_papers": state["case_papers"]} if "case_papers" in state else {})}
 
@@ -212,7 +227,7 @@ def build_report_session_graph(*, writer, verifier, artifacts, initial, audits=N
     agents = {"writer": writer, "verifier": verifier}
     if quick_writer is not None:
         agents["quick_writer"] = quick_writer
-    graph.add_node("human_review", human_review, destinations=(*agents, *(("research_revision",) if revision_handler is not None else ()), END))
+    graph.add_node("human_review", human_review, destinations=('human_review', *agents, *(("research_revision",) if revision_handler is not None else ()), END))
     if revision_handler is not None:
         graph.add_node("research_revision", revision_handler)
         graph.add_edge("research_revision", "human_review")
@@ -310,6 +325,14 @@ def _schema_graph():
 
 
 @asynccontextmanager
+async def archived_report_session_graph(config: RunnableConfig, runtime: ServerRuntime):
+    """Read historical native checkpoints without re-enabling the retired runner."""
+    if runtime.execution_runtime is not None:
+        raise RuntimeError("archived_report_is_read_only_start_a_new_research_session")
+    yield _schema_graph()
+
+
+@asynccontextmanager
 async def dell_report_session_graph(config: RunnableConfig, runtime: ServerRuntime):
     if runtime.execution_runtime is None:
         yield _schema_graph()
@@ -320,6 +343,14 @@ async def dell_report_session_graph(config: RunnableConfig, runtime: ServerRunti
     _require_langsmith_execution_environment(config)
     ids = config["configurable"]
     thread_id, run_id = str(UUID(str(ids["thread_id"]))), str(UUID(str(ids["run_id"])))
+    from langgraph_sdk import get_client
+    from .user_context import user_context_prompt
+    native = get_client()
+    try:
+        thread = await native.threads.get(thread_id)
+        user_brief = user_context_prompt(thread.get('metadata',{}).get('owner_id','local-pilot'),thread_id)
+    finally:
+        await native.aclose()
     settings = json.loads(Path(os.environ["FINSIGHT_REPORT_SESSION_SETTINGS"]).read_text(encoding="utf-8"))
     if settings.get("owner_scope") != "funded_local_dell_report_review_only":
         raise ValueError("session_owner_scope_required")
@@ -354,6 +385,8 @@ async def dell_report_session_graph(config: RunnableConfig, runtime: ServerRunti
                     public_sink=public_sink, private_sink=private_sink, stream_public=True)
                 agents[role] = build_case_output_agent(role="writer" if quick else role, model=case_chat_model(profile, basis, model_config, SecretStr(os.environ["DEEPSEEK_API_KEY"])),
                     tools=tools, artifacts=artifacts, limits=quick_limits if quick else settings["node_limits"][role], audit=audits[role],
-                    report_revision=True, allow_answers=role != "verifier", answer_only=quick)
-            yield build_report_session_graph(**agents, artifacts=artifacts, initial=initial, audits=audits).compile(
-                name="dell_report_session").with_config({"recursion_limit": 240})
+                    report_revision=True, allow_answers=role != "verifier", answer_only=quick, method_instructions=user_brief)
+            from .working_memory_tools import native_memory_scope
+            with native_memory_scope(thread.get('metadata', {}).get('owner_id', 'local-pilot'), thread_id):
+                yield build_report_session_graph(**agents, artifacts=artifacts, initial=initial, audits=audits).compile(
+                    name="dell_report_session").with_config({"recursion_limit": 240})

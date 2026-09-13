@@ -21,7 +21,7 @@ uv sync --locked --extra agent-runtime --extra external-search --extra workbench
 uv run --no-sync python -m scripts.dev.verify_public_checkout --output-directory .local/public-check-01
 ```
 
-本轮结果为 **34 项通过**，并生成 MD、PDF、DOCX、PPTX、图表 PNG 和合成报告 JSON。目录必须尚不存在；再次运行请改成 `.local/public-check-02`，脚本不会覆盖旧结果。导出文件明确标注为合成测试，不是公司研究结果。PDF 可直接打开；Word/PPT 还应在 Office 或 LibreOffice 中检查实际布局。
+检查会生成 MD、PDF、DOCX、PPTX、图表 PNG 和合成报告 JSON，测试数量以当前执行输出为准。目录必须尚不存在；再次运行请改成 `.local/public-check-02`。导出文件明确标注为合成测试，不是公司研究结果。PDF 可直接打开；Word/PPT 还应在 Office 或 LibreOffice 中检查布局。
 
 脚本使用现有 pytest 与导出器，不加载本地 `.env`、不部署服务、不提交模型任务。
 
@@ -36,7 +36,7 @@ npx playwright install chromium
 npm run test:public
 ```
 
-Linux 如果缺少浏览器系统依赖，使用 `npx playwright install --with-deps chromium`。公开测试只启动本机 Vite，默认端口 **4183**，不启动旧 8765 后端；本轮 **13 项通过**，涵盖 1440、1024、390 像素界面。测试使用明确的合成 API 响应，不会调用实际研究接口。
+Linux 如果缺少浏览器系统依赖，使用 `npx playwright install --with-deps chromium`。公开测试只启动本机 Vite，默认端口 **4183**，不启动 source-only 后端；覆盖 1440、1024、390 像素界面。测试使用合成 API 响应，数量以当前运行输出为准，不会调用实际研究接口。
 
 需要观察操作时运行 `npm run test:public -- --headed --workers=1`。失败截图和 trace 写入 `apps/workbench/frontend/test-results/public/`；使用 `npx playwright show-trace <trace.zip>` 查看。该结果目录由 Playwright 管理，需要保存失败证据时先复制到独立目录。
 
@@ -95,4 +95,4 @@ uv run --no-sync python -m pytest -q
 
 私有资料测试默认跳过，挂载原资料后才使用 `--run-private-data`；历史 Git 证明需要完整历史，Windows 专属资格只在对应环境执行。完整套件、公开交互测试与真实模型研究分别记录，不能混成一个成功率。
 
-当前产品为 FIN 0.1.3，当前 Dell 报告为 v5 待审阅；已有 v4 导出页数属于历史版本，不冒充 v5 的新渲染结果。
+当前产品为已冻结的 FIN 0.1.3 本地 Internal Alpha。报告版本独立于产品版本，HPE/MSFT 人工交付与旧 Dell v5 的待审状态分别保留。旧实验脚本已退出当前树，历史重放使用[冻结提交](../../archive/README.md)。

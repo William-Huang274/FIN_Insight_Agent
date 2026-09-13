@@ -1,4 +1,4 @@
-import { expect, test } from "playwright/test";
+import { expect, test } from "./identity-fixture";
 
 for (const width of [1440, 1024, 390]) {
   test(`saved evidence graph, draft and checkpoint isolation at ${width}`, async ({ page }) => {

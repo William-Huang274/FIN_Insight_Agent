@@ -17,7 +17,7 @@ from urllib.parse import urlsplit, unquote, quote
 from uuid import UUID
 
 import httpx
-from fastapi import APIRouter, HTTPException, Request
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse, Response
 from starlette.concurrency import run_in_threadpool
 from langgraph_sdk.client import LangGraphClient
@@ -27,15 +27,28 @@ from sec_agent.agent_runtime.dell_report_session import ReviewAction, abandoned_
 from sec_agent.agent_runtime.targeted_revision import report_digest, validate_revision_target
 from .research_studio import build_studio_router, run_configuration, owned_configuration
 from sec_agent.agent_runtime.execution_options import ExecutionOptions
+from sec_agent.agent_runtime.manual_review import manual_review_available, apply_manual_review
+from ...authentication import service_owner
 
 SURFACE = "dell_report_workbench"
 GRAPH = "dell_report_session"
 RESEARCH_GRAPH = "research_session"
+
+
+class WorkpaperRecovery(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    task_id: str = Field(min_length=1, max_length=240)
+    base_agent_digest: str = Field(pattern=r"^[a-f0-9]{64}$")
+    submission: dict
+    reason: str = Field(min_length=1, max_length=4000)
+    confirmed: bool
+    original_tool_arguments: str | None = Field(default=None, max_length=200000)
+
 PUBLIC_EVENT_FIELDS = frozenset({"kind", "actor", "event", "status", "call_id", "tool", "recorded_at",
     "model", "thinking", "reasoning_effort", "elapsed_ms", "input_tokens", "output_tokens", "total_tokens",
     "cache_hit_tokens", "cache_miss_tokens", "reasoning_tokens", "usage_reported", "error_type", "http_status_code",
     "max_output_tokens", "valid_tool_call_count", "invalid_tool_call_count", "success_scope", "run_id",
-    "task_id", "objective", "responsible_author_count", "correction_round", "paper_id"})
+    "task_id", "objective", "responsible_author_count", "correction_round", "paper_id", "input_characters", "max_input_characters", "provider_call_attempted"})
 
 
 def public_run_usage(audit_root, thread_id, run_id):
@@ -72,12 +85,15 @@ def public_run_usage(audit_root, thread_id, run_id):
                 if (p := public_event({**row, "run_id": str(run_id)})) and p.get("kind") == "stage")
     ids = {e["call_id"] for e in events if e.get("kind") == "model" and e.get("call_id")}
     outcomes = {e["call_id"]: e for e in events if e.get("kind") == "model" and e.get("call_id") and e.get("event") == "outcome"}
+    not_attempted = {i for i, e in outcomes.items() if e.get("provider_call_attempted") is False}
+    possible_calls = ids - not_attempted
     totals = {key: sum(e[key] for e in outcomes.values() if isinstance(e.get(key), (int, float)) and not isinstance(e.get(key), bool))
               for key in ("input_tokens", "output_tokens", "total_tokens", "cache_hit_tokens", "cache_miss_tokens", "elapsed_ms")}
     return events, {"recorded_requests": len(ids), "reported_requests": sum(isinstance(e.get("total_tokens"), int) for e in outcomes.values()),
-        "unknown_or_pending_requests": sum(not isinstance(outcomes.get(i, {}).get("total_tokens"), int) for i in ids),
-        "unknown_cache_requests": sum(not all(isinstance(outcomes.get(i, {}).get(k), int) for k in ("cache_hit_tokens", "cache_miss_tokens")) for i in ids),
-        "unknown_elapsed_requests": sum(not isinstance(outcomes.get(i, {}).get("elapsed_ms"), (int, float)) for i in ids),
+        "not_attempted_requests": len(not_attempted),
+        "unknown_or_pending_requests": sum(not isinstance(outcomes.get(i, {}).get("total_tokens"), int) for i in possible_calls),
+        "unknown_cache_requests": sum(not all(isinstance(outcomes.get(i, {}).get(k), int) for k in ("cache_hit_tokens", "cache_miss_tokens")) for i in possible_calls),
+        "unknown_elapsed_requests": sum(not isinstance(outcomes.get(i, {}).get("elapsed_ms"), (int, float)) for i in possible_calls),
         "partial_audit": partial, **totals}
 
 
@@ -123,20 +139,26 @@ def public_native_failures(state, run):
 
 
 def public_cost_estimate(events):
-    from scripts.qualification.dell_q1_specialist_paid_shadow.audit_token_cost import OFF_PEAK, PRICE_AS_OF, cost_parts, peak_multiplier
+    from sec_agent.agent_runtime.usage_pricing import dated_public_cost
     starts = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "started"}
     outcomes = {e["call_id"]: e for e in events if e.get("kind", "model") == "model" and e.get("call_id") and e.get("event") == "outcome"}
     amount, priced = 0.0, 0
+    not_attempted = {i for i, e in outcomes.items() if e.get("provider_call_attempted") is False}
     for call_id, outcome in outcomes.items():
+        if call_id in not_attempted:
+            continue
         start = starts.get(call_id, {})
         model = start.get("model") or outcome.get("model")
         counts = [outcome.get(key) for key in ("cache_hit_tokens", "cache_miss_tokens", "output_tokens")]
         timestamp = start.get("recorded_at") or outcome.get("recorded_at")
-        if model in OFF_PEAK and timestamp and all(type(n) is int and n >= 0 for n in counts):
-            amount += sum(cost_parts(model, *counts, peak_multiplier(timestamp)).values())
-            priced += 1
-    return {"known_cny": round(amount, 6), "priced_requests": priced, "unknown_or_pending_requests": len(set(starts) | set(outcomes)) - priced,
-        "price_as_of": PRICE_AS_OF, "notice": "按已报告用量和公开分时单价估算，不是账单；未知/进行中请求未计入。"}
+        if timestamp and all(type(n) is int and n >= 0 for n in counts):
+            value = dated_public_cost(model, *counts, timestamp)
+            if value is not None:
+                amount += value
+                priced += 1
+    return {"known_cny": round(amount, 6), "priced_requests": priced, "not_attempted_requests": len(not_attempted),
+        "unknown_or_pending_requests": len((set(starts) | set(outcomes)) - not_attempted) - priced,
+        "price_as_of": "2026-09-11", "notice": "按已报告用量和请求日期对应的公开分时单价估算，不是账单；旧记录保留原计价方案，未知/进行中请求未计入。"}
 
 
 def review_interrupts(state):
@@ -150,7 +172,7 @@ def review_interrupts(state):
 def public_state(state):
     values = state.get("values", {})
     result = {k: deepcopy(values[k]) for k in ("report", "report_review", "report_version", "phase", "conversation",
-        "question", "case_profile", "research_as_of", "snapshot_id", "research_stop_reason") if k in values}
+        "question", "case_profile", "research_as_of", "snapshot_id", "research_stop_reason", "human_edits") if k in values}
     outcomes = {row["task_id"]: row["status"] for row in values.get("research_outcomes", [])}
     result["research_tasks"] = [{**{key: deepcopy(row[key]) for key in ("task_id", "owner_role", "objective", "dependency_ids") if key in row},
         "status": outcomes.get(row["task_id"], row.get("status", "planned"))} for row in values.get("research_tasks", [])]
@@ -158,6 +180,32 @@ def public_state(state):
     result["can_continue_remaining"] = can_continue_remaining_research(values)
     result["research_attempt_history"] = [{key: deepcopy(row[key]) for key in ("run_id", "phase", "outcomes") if key in row}
         for row in values.get("research_attempt_history", [])]
+    result["research_failures"] = []
+    for row in values.get("research_failed_workpapers", []):
+        agent = row.get("agent_state") or {}
+        attempt = agent.get("last_submission_attempt") or {}
+        arguments = attempt.get("arguments")
+        # Only explicit deliverable prose is public. Invalid JSON, raw tool
+        # payloads, private reasoning and checkpoint notebooks stay server-side.
+        candidate = {key: arguments[key] for key in ("thesis", "mechanism", "narrative_markdown", "summary")
+            if isinstance(arguments, dict) and isinstance(arguments.get(key), str)}
+        notebook = agent.get("notebook") or {}
+        records = notebook.get("model_turn_records") or []
+        last_action = records[-1].get("action", {}) if records else {}
+        # This is the model's explicit public handoff rationale, not reasoning
+        # text and not a host-generated claim that unfinished work succeeded.
+        explanation = last_action.get("reason_summary") if last_action.get("action") == "request_human_review" else None
+        result["research_failures"].append({"run_id": row.get("run_id"), "task_id": row.get("task_id"),
+            "reason": agent.get("review_reason"), "candidate": candidate,
+            "model_explanation": explanation if isinstance(explanation, str) else None,
+            "accepted": False,
+            "validation_issues": [{key: deepcopy(item[key]) for key in ("location", "type", "message") if key in item}
+                for item in attempt.get("validation_issues", []) if isinstance(item, dict)],
+            "feedback_codes": list(dict.fromkeys(item["code"] for item in
+                (attempt.get("feedback") or notebook.get("feedback", [])[-10:])
+                if isinstance(item, dict) and isinstance(item.get("code"), str))),
+            "model_turns": notebook.get("model_turn_count"), "tool_actions": notebook.get("tool_action_count"),
+            "saved_observations": len(notebook.get("observations", []))})
     # Public source-bound deliverables, not private agent message histories.
     result["research_synthesis"] = {key: deepcopy(values["synthesis"][key]) for key in ("title", "narrative_markdown")
         if key in values.get("synthesis", {})}
@@ -165,7 +213,29 @@ def public_state(state):
         result["synthesis_review"] = deepcopy(values["synthesis_review"])
     result["workpaper_reviews"] = []
     for actor in ("counter", "verifier"):
-        review = values.get("case_review", {}).get(actor, {}).get("review")
+        review_state = values.get("case_review", {})
+        reviewer = review_state.get(actor, {})
+        review = reviewer.get("review")
+        if reviewer.get("status") in {"incomplete_no_submission", "incomplete_review"}:
+            # Separate the native limit notice from actual public model output.
+            texts = [x for x in reviewer.get("incomplete_output", []) if isinstance(x, str)]
+            if review:
+                texts.extend("**尚未完成的检查**：" + item for item in review.get("unresolved_data_requests", []) if isinstance(item, str))
+            for finding in reviewer.get("recorded_findings", {}).values():
+                if not isinstance(finding, dict):
+                    continue
+                # Explicit public fields only; never expose native/private state.
+                fields = [("原判断", "problematic_quote"), ("已发现的问题", "diagnosis"), ("建议修订", "requested_change")]
+                text = "\n\n".join(f"**{label}**：{finding[key]}" for label, key in fields if isinstance(finding.get(key), str))
+                if text:
+                    texts.append("### 已保存审查发现（审查尚未完成）\n\n" + text)
+            result["research_failures"].append({"run_id": review_state.get("source_run_id"),
+                "task_id": "反证审查" if actor == "counter" else "事实与引用核验",
+                "reason": "独立审查尚有未完成检查；已保存结果，不能进入报告交付。",
+                "candidate": {"narrative_markdown": "\n\n".join(texts)}, "accepted": False,
+                "model_explanation": None, "model_turns": reviewer.get("model_calls"),
+                "tool_actions": reviewer.get("tool_calls"), "saved_observations": None,
+                "validation_issues": [], "feedback_codes": [x for x in reviewer.get("runtime_notices", []) if isinstance(x, str)]})
         if not review:
             continue
         result["workpaper_reviews"].append({"actor": actor, "summary": review["summary"],
@@ -177,6 +247,8 @@ def public_state(state):
     result["can_respond"] = bool(review_interrupts(state))
     result["report_digest"] = report_digest(values["report"]) if values.get("report") else None
     result["can_accept"] = result["can_respond"] and result.get("phase") == "ready_for_human_review"
+    result['can_manual_complete'] = result['can_respond'] and manual_review_available(values)
+    result['human_edit_count'] = len(values.get('human_edits', []))
     # No tasks, raw native messages, private checkpoints or source filesystem paths.
     return result
 
@@ -240,7 +312,8 @@ class ReportSessionService:
 
     async def owned_thread(self, thread_id):
         thread = await self.sdk.threads.get(str(thread_id))
-        if thread.get("metadata", {}).get("surface") != SURFACE:
+        if (thread.get("metadata", {}).get("surface") != SURFACE
+                or thread.get('metadata', {}).get('owner_id', 'local-pilot') != service_owner()):
             raise HTTPException(404, "研究会话不存在")
         return thread
 
@@ -286,7 +359,18 @@ def report_snapshot(state):
 
 
 def build_report_sessions_router(service):
-    router = APIRouter()
+    def archived(thread):
+        return (getattr(service, 'artifacts', object()) is None
+                and thread.get('metadata', {}).get('graph_id') == GRAPH)
+
+    async def protect_archive(request: Request):
+        tid = request.path_params.get('thread_id')
+        if (tid and getattr(service, 'artifacts', object()) is None
+                and request.method not in {'GET', 'HEAD', 'OPTIONS'}):
+            if archived(await service.owned_thread(tid)):
+                raise HTTPException(409, '这是旧版只读研究档案；请新建研究继续，原始报告和运行记录仍可查看。')
+
+    router = APIRouter(dependencies=[Depends(protect_archive)])
 
     def browser_write(request):
         # A cross-site form/opaque fetch must not be able to start paid work.
@@ -300,10 +384,14 @@ def build_report_sessions_router(service):
 
     @router.get("/research-sessions")
     async def sessions():
-        threads = await service.sdk.threads.search(metadata={"surface": SURFACE}, limit=50)
+        owner = service_owner()
+        threads = await service.sdk.threads.search(metadata={"surface": SURFACE,
+            **({'owner_id': owner} if owner != 'local-pilot' else {})}, limit=50)
+        threads = [t for t in threads if t.get('metadata', {}).get('owner_id', 'local-pilot') == owner]
         return [{"thread_id": t["thread_id"], "status": t["status"], "updated_at": t["updated_at"],
             "title": t.get("metadata", {}).get("title", "研究任务"),
             "phase": (t.get("values") or {}).get("phase"),
+            "human_edit_count": len((t.get('values') or {}).get('human_edits', [])),
             "studio_assistant_id": t.get("metadata", {}).get("studio_assistant_id")} for t in threads]
 
     @router.get("/research-session-config")
@@ -378,6 +466,8 @@ def build_report_sessions_router(service):
     @router.post("/research-sessions")
     async def create(body: NewSession, request: Request):
         browser_write(request)
+        if service_owner() != 'local-pilot' and body.mode != 'research':
+            raise HTTPException(403, '共享历史样例只在本地个人模式开放')
         graph, payload = GRAPH, {"open": True}
         if body.mode == "research":
             profile = getattr(service, "research_profile", None)
@@ -392,7 +482,11 @@ def build_report_sessions_router(service):
             raise HTTPException(409, "本部署未配置旧报告；可以创建新研究或打开任务历史")
         if body.defer_start and body.mode != "research":
             raise HTTPException(422, "只有新研究支持先上传资料")
-        metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode}
+        metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode, 'owner_id': service_owner()}
+        if graph == RESEARCH_GRAPH:
+            # Freeze new research at creation time; continuations retain it.
+            # Existing tasks without this field keep their historical binding.
+            metadata['research_as_of'] = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
         if body.execution:
             if graph != RESEARCH_GRAPH:
                 raise HTTPException(422, "运行模式选择仅适用于研究任务")
@@ -460,6 +554,29 @@ def build_report_sessions_router(service):
             multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": "acknowledge_incomplete", "model_calls_requested": 0})
         return {"run_id": run["run_id"], "notice": "只确认已查看；不接受报告、不重跑研究。"}
 
+    @router.post("/research-sessions/{thread_id}/recover-workpaper")
+    async def recover_saved_workpaper(thread_id: UUID, body: WorkpaperRecovery, request: Request):
+        browser_write(request)
+        from ...authentication import current_owner
+        from sec_agent.agent_runtime.workpaper_intervention import recover_workpaper
+        thread = await service.owned_thread(thread_id)
+        state = await service.sdk.threads.get_state(str(thread_id))
+        interrupts = [*state.get('interrupts', []), *[i for t in state.get('tasks', []) for i in t.get('interrupts', [])]]
+        if (graph_for_thread(thread) != RESEARCH_GRAPH or thread.get('status') in {'busy', 'error'}
+                or not any(i.get('value', {}).get('kind') == 'research_needs_attention' for i in interrupts)):
+            raise HTTPException(409, '请在研究暂停、待处理时修正未交出的底稿')
+        decision = {'action': 'recover_workpaper', **body.model_dump()}
+        try:
+            recover_workpaper(state.get('values', {}), decision, owner=current_owner(request))
+        except (ValueError, KeyError, TypeError) as exc:
+            raise HTTPException(422, str(exc)) from exc
+        config = await run_configuration(service, thread)
+        config.setdefault('configurable', {})['manual_review_owner'] = current_owner(request)
+        run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH,
+            command={'resume': decision}, config=config, multitask_strategy='reject',
+            metadata={'surface': SURFACE, 'human_action': 'recover_workpaper'})
+        return {'run_id': run['run_id'], 'notice': '保存人工修正并接续下游；原始失败和其他角色底稿保留。'}
+
     @router.post("/research-sessions/{thread_id}/continue-remaining")
     async def continue_remaining(thread_id: UUID, request: Request):
         browser_write(request)
@@ -467,6 +584,13 @@ def build_report_sessions_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         interrupts = [*state.get("interrupts", []), *[i for task in state.get("tasks", []) for i in task.get("interrupts", [])]]
         handoff = any(i.get("value", {}).get("kind") == "research_needs_attention" for i in interrupts)
+        if handoff:
+            last_runs = await service.sdk.runs.list(str(thread_id), limit=1)
+            if last_runs:
+                _, usage = public_run_usage(service.audit_root, thread_id, last_runs[0]["run_id"])
+                if ((usage is None and last_runs[0].get("metadata", {}).get("model_calls_requested") != 0)
+                        or (usage and (usage["unknown_or_pending_requests"] or usage["partial_audit"]))):
+                    raise HTTPException(409, "上次运行仍有未知请求或不完整用量记录，先核实结果；不会重发。")
         known_failure = False
         if not handoff and thread.get("status") == "error":
             last_runs = await service.sdk.runs.list(str(thread_id), limit=1)
@@ -482,7 +606,7 @@ def build_report_sessions_router(service):
             config=await run_configuration(service, thread),
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": "continue_remaining"})
-        return {"run_id": run["run_id"], "status": run["status"], "notice": "新调用只完成缺项；保留已提交底稿和原失败，不重发旧请求。"}
+        return {"run_id": run["run_id"], "status": run["status"], "notice": "按当前配置开启一次接续额度；原任务、候选、已完成审查与累计用量保留，不重发未知请求。"}
 
     def attachments():
         if service.attachment_store is None:
@@ -531,6 +655,12 @@ def build_report_sessions_router(service):
         state = await service.sdk.threads.get_state(str(thread_id))
         runs = await service.all_runs(thread_id)
         projection = public_state(state)
+        if not projection.get('research_as_of') and thread.get('metadata', {}).get('research_as_of'):
+            projection['research_as_of'] = thread['metadata']['research_as_of']
+        if archived(thread):
+            projection.update(can_respond=False, can_accept=False, can_manual_complete=False,
+                              can_continue_remaining=False,
+                              archive_notice='旧版只读研究档案：报告、来源和原始运行记录保留。继续工作请新建研究；旧执行器不会重新调用模型。')
         if not runs and thread.get("metadata", {}).get("pending_question"):
             projection.update(question=thread["metadata"]["pending_question"], phase="draft", case_profile="dell_growth_quality")
         public_runs = []
@@ -546,24 +676,26 @@ def build_report_sessions_router(service):
                 "execution": run.get("metadata", {}).get("execution"),
                 "answer_mode": run.get("metadata", {}).get("answer_mode"), "usage": usage})
             public_runs[-1]["cost_estimate"] = public_cost_estimate(events)
+            from ...application.context_usage import request_context_usage
+            public_runs[-1]["context_usage"] = request_context_usage(events)
             public_runs[-1]["model_calls_requested"] = run.get("metadata", {}).get("model_calls_requested")
             if run.get("status") not in {"pending", "running"} and run.get("created_at") and run.get("updated_at"):
                 public_runs[-1]["elapsed_ms"] = max(0, round((datetime.fromisoformat(run["updated_at"].replace("Z", "+00:00"))
                     - datetime.fromisoformat(run["created_at"].replace("Z", "+00:00"))).total_seconds()*1000))
         usages = [r["usage"] for r in public_runs if r["usage"] is not None]
         cumulative = {key: sum(u.get(key, 0) for u in usages) for key in (
-            "recorded_requests", "reported_requests", "unknown_or_pending_requests", "input_tokens", "output_tokens",
+            "recorded_requests", "reported_requests", "not_attempted_requests", "unknown_or_pending_requests", "input_tokens", "output_tokens",
             "total_tokens", "cache_hit_tokens", "cache_miss_tokens", "unknown_cache_requests", "unknown_elapsed_requests", "elapsed_ms")}
         cumulative.update(native_runs=len(public_runs), known_cny=round(sum(r["cost_estimate"]["known_cny"] for r in public_runs), 6),
             unpriced_requests=sum(r["cost_estimate"]["unknown_or_pending_requests"] for r in public_runs),
             missing_audit_runs=sum(r["usage"] is None and r.get("model_calls_requested") != 0 for r in public_runs),
             partial_audit=any(u["partial_audit"] for u in usages),
             notice="本任务全部原生运行的已知用量；并行模型耗时为求和，不是墙钟时间。外部导入修订费用另见版本原因，缺失用量不计零。")
-        if thread.get("status") == "error":
+        if thread.get("status") == "error" and not archived(thread):
             projection["can_continue_remaining"] = can_restart_remaining_node(thread, state, runs[0] if runs else None,
                 public_runs[0]["usage"] if public_runs else None)
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
-            **projection, "execution": thread.get("metadata", {}).get("execution"), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
+            **projection, "execution": thread.get("metadata", {}).get("execution"), "studio_assistant_id": thread.get('metadata', {}).get('studio_assistant_id'), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
             "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
@@ -615,9 +747,18 @@ def build_report_sessions_router(service):
             raise HTTPException(409, "当前不在人工审阅点；运行中请先等待或停止，不会自动重发模型调用")
         if body.action == "accept" and not public_state(state)["can_accept"]:
             raise HTTPException(409, "仍有重大问题，不能标记人工审阅通过")
-        if body.action != "accept" and not body.message.strip():
+        if body.action not in {"accept", "manual_complete"} and not body.message.strip():
             raise HTTPException(422, "请填写问题或修订意见")
         thread = await service.owned_thread(thread_id)
+        if body.action == 'manual_complete':
+            if thread.get('status') in {'error', 'busy'}:
+                raise HTTPException(409, '请先处理当前运行，失败或运行中不能标记完成')
+            from sec_agent.agent_runtime.research_session import current_task_artifacts
+            try:
+                artifacts = current_task_artifacts(state['values']) if graph_for_thread(thread) == RESEARCH_GRAPH else service.artifacts
+                apply_manual_review(state['values'], body.manual_review, artifacts)
+            except ValueError as exc:
+                raise HTTPException(422, str(exc)) from exc
         if body.execution:
             if graph_for_thread(thread) != RESEARCH_GRAPH:
                 raise HTTPException(422, "旧报告审阅入口不支持切换研究模式")
@@ -625,13 +766,46 @@ def build_report_sessions_router(service):
                 body.execution.validate_catalog((service.research_profile or {}).get("branch_topics", []))
             except ValueError as exc:
                 raise HTTPException(422, str(exc)) from exc
+        action_config = await run_configuration(service, thread, body.execution.model_dump() if body.execution else None)
+        if body.action == 'manual_complete':
+            from ...authentication import current_owner
+            action_config.setdefault('configurable', {})['manual_review_owner'] = current_owner(request)
         run = await service.sdk.runs.create(str(thread_id), graph_for_thread(thread), command={"resume": body.model_dump(mode="json", exclude_none=True)},
-            config=await run_configuration(service, thread, body.execution.model_dump() if body.execution else None),
+            config=action_config,
             stream_mode="custom", stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "human_action": body.action, "answer_mode": body.answer_mode, "request_message": body.message,
+                **({'model_calls_requested': 0} if body.action == 'manual_complete' else {}),
                 "execution": body.execution.model_dump() if body.execution else thread.get("metadata", {}).get("execution"),
                 **({"revision_target": body.target.model_dump(mode="json"), "revision_feedback_digest": report_digest(body.message)} if body.target else {})})
         return {"run_id": run["run_id"], "status": run["status"]}
+
+    @router.post('/research-sessions/{thread_id}/remember')
+    async def remember(thread_id: UUID, request: Request):
+        browser_write(request)
+        await service.owned_thread(thread_id)
+        from ...authentication import current_owner
+        from sec_agent.agent_runtime.research_memory import remember_research
+        try:
+            return await remember_research(service.sdk,str(thread_id),current_owner(request))
+        except ValueError as exc:
+            raise HTTPException(409,str(exc)) from exc
+
+    @router.get('/research-sessions/{thread_id}/manual-review')
+    async def manual_review_draft(thread_id: UUID):
+        thread = await service.owned_thread(thread_id)
+        state = await service.state(thread_id)
+        values = state.get('values', {})
+        if not public_state(state)['can_manual_complete'] or thread.get('status') in {'error', 'busy'}:
+            raise HTTPException(409, '当前没有可人工修订的报告，请先完成运行或处理数据问题')
+        from sec_agent.agent_runtime.research_session import current_task_artifacts
+        artifacts = current_task_artifacts(values) if graph_for_thread(thread) == RESEARCH_GRAPH else service.artifacts
+        previous = {p['paper_id']: p['after'] for h in values.get('human_edits', []) for p in h['papers']}
+        from sec_agent.agent_runtime.manual_review import paper_owner_role
+        return {'base_version': values['report_version'], 'report_markdown': values['report']['narrative_markdown'],
+            'charts': [{'chart_index': i, 'title': c.get('title', '图表'), 'interpretation': c.get('interpretation', '')}
+                for i, c in enumerate(values['report'].get('charts', []))],
+            'papers': [{**p, 'branch_id': paper_owner_role(values, p), 'body': previous.get(p['paper_id'], artifacts.read_paper(p['paper_id'])['narrative_markdown'])}
+                for p in artifacts.catalog()['papers']], 'review': values.get('report_review')}
 
     @router.post("/research-sessions/{thread_id}/runs/{run_id}/cancel")
     async def cancel(thread_id: UUID, run_id: UUID, request: Request):
@@ -680,14 +854,17 @@ def build_report_sessions_router(service):
             raise HTTPException(422, "来源或阅读范围不合法") from None
 
     @router.get("/research-sessions/{thread_id}/report/export/{format}")
-    async def export(thread_id: UUID, format: Literal["md", "pdf", "docx", "pptx"], checkpoint_id: UUID | None = None):
+    async def export(thread_id: UUID, format: Literal["md", "pdf", "docx", "pptx"], request: Request, checkpoint_id: UUID | None = None):
         state = await service.report_state(thread_id, checkpoint_id) if checkpoint_id else await service.state(thread_id)
         report = state.get("values", {}).get("report")
         if not report:
             raise HTTPException(409, "报告尚未生成，不能导出空结果")
         from apps.workbench.backend.application.report_delivery import export_report
+        values = state.get('values', {})
+        review_label = (f"人工修改 {len(values.get('human_edits', []))} 次后确认完成；原模型审查与修改记录保留。"
+            if values.get('phase') == 'human_completed' else "报告导出快照，请以工作台中当前的人工审阅状态为准")
         data, mime = await run_in_threadpool(export_report, report, format,
-            review_status="报告导出快照，请以工作台中当前的人工审阅状态为准")
+            review_status=review_label, public_base_url=str(request.base_url))
         version = state.get("values", {}).get("report_version", "snapshot")
         return Response(data, media_type=mime, headers={"Content-Disposition": f'attachment; filename="finsight-research-v{version}.{format}"',
             "X-Content-Type-Options": "nosniff", "Cache-Control": "no-store"})
@@ -723,4 +900,33 @@ def build_report_sessions_router(service):
         return StreamingResponse(events(), media_type="text/event-stream", headers={"Cache-Control": "no-store", "X-Accel-Buffering": "no"})
 
     router.include_router(build_studio_router(service, browser_write))
+    from .working_notes import WorkingNoteRevision, revise_working_note
+    @router.post('/research-sessions/{thread_id}/working-notes/revise')
+    async def revise_note(thread_id: UUID, body: WorkingNoteRevision, request: Request):
+        browser_write(request)
+        thread = await service.owned_thread(thread_id)
+        if thread.get('status') == 'busy':
+            raise HTTPException(409,'当前运行尚未完成，请等待或停止后再修订底稿')
+        from ...authentication import current_owner
+        return await revise_working_note(service,thread_id,current_owner(request),body)
+    @router.get("/research-sessions/{thread_id}/working-notes")
+    async def notes(thread_id: UUID, request: Request, query: str = "", note_id: str | None = None,
+                    version: int | None = None, offset: int = 0, download: bool = False):
+        await service.owned_thread(thread_id)
+        from ...authentication import current_owner
+        from .working_notes import working_notes_view
+        return await working_notes_view(thread_id, current_owner(request), query=query, note_id=note_id,
+                                        version=version, offset=offset, download=download,
+                                        checkpoint=await service.sdk.threads.get_state(str(thread_id)))
+
+    # Source-only deployments and their contract tests intentionally omit the
+    # native thread SDK.  Keep that read-only surface independent from the
+    # direct-editing endpoints, which require the SDK for owner and busy checks.
+    if hasattr(service, "sdk"):
+        from .working_notes import install_edit_routes
+
+        async def authorize_edit(thread_id,request):
+            return await service.owned_thread(thread_id)
+
+        install_edit_routes(router,'/research-sessions',authorize_edit,service.sdk)
     return router

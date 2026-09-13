@@ -35,6 +35,15 @@ from sec_agent.research_foundation.contracts import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_task_cutoff_preserves_legacy_and_rejects_future_or_naive_time():
+    from sec_agent.agent_runtime.dell_agent_server_data_composition import task_research_as_of
+    assert task_research_as_of({}) == DELL_APPROVED_RESEARCH_AS_OF
+    assert task_research_as_of({'FINSIGHT_RESEARCH_AS_OF': '2026-09-10T23:00:00Z'}) == '2026-09-10T23:00:00Z'
+    for value in ('9999-01-01T00:00:00Z', '2026-09-10T00:00:00'):
+        with pytest.raises(ValueError):
+            task_research_as_of({'FINSIGHT_RESEARCH_AS_OF': value})
 FOUNDATION_PATH = (
     ROOT
     / "configs"

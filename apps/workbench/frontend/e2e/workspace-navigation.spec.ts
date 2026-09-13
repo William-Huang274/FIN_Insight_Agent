@@ -1,4 +1,4 @@
-import { test, expect, type Page } from "playwright/test";
+import { test, expect, type Page } from "./identity-fixture";
 
 for (const width of [1440, 1024, 390]) test(`formal navigation, generic tasks and draft continuity at ${width}`, async ({page}) => {
   await page.setViewportSize({width,height:950});

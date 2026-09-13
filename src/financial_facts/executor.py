@@ -1,14 +1,15 @@
 from __future__ import annotations
 
 from contextlib import closing
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import dataclass, replace
+from datetime import date, timedelta
 from decimal import Decimal, localcontext
 from pathlib import Path
 import sqlite3
 from typing import Any, Mapping, Sequence
 
 from retrieval.query_plan import canonical_digest
+from .derived_metrics import DERIVED_METRICS
 from retrieval.route_compiler import TypedFactRequest
 
 from .contracts import (
@@ -26,15 +27,8 @@ _ROLE_ORDER = {
     "fiscal_year": 2,
     "instant": 3,
 }
-_DERIVED_FORMULAS = {
-    "gross_margin": ("gross_profit", "revenue", "divide_percent"),
-    "operating_margin": ("operating_income", "revenue", "divide_percent"),
-    "free_cash_flow": (
-        "operating_cash_flow",
-        "capital_expenditures",
-        "subtract",
-    ),
-}
+_DERIVED_FORMULAS = {key: (*value.inputs, value.operation)
+                     for key, value in DERIVED_METRICS.items()}
 _PERIOD_IDENTITY_MAX_FILING_LAG_DAYS = {
     "10-Q": 45,
     "10-K": 90,
@@ -136,6 +130,12 @@ def execute_fact_lookup(
             "WHERE metric_id = ?",
             (lookup.metric_id,),
         ).fetchone()
+        canonical = DERIVED_METRICS.get(lookup.metric_id)
+        if canonical is not None:
+            if lookup.unit_family and canonical.unit_family != lookup.unit_family:
+                return _gap(fact_request_id=lookup.fact_request_id, ticker=lookup.ticker,
+                            metric_id=lookup.metric_id, code="metric_unit_family_mismatch")
+            return _execute_derived(connection, lookup, formula=canonical.formula)
         if definition is None:
             return _gap(
                 fact_request_id=lookup.fact_request_id,
@@ -271,7 +271,10 @@ def _execute_derived(
             code="derived_formula_not_implemented",
         )
     left_metric, right_metric, operation = formula_contract
-    left = _execute_direct(
+    metric = DERIVED_METRICS[lookup.metric_id]
+    if metric.comparison != "same_period":
+        return _execute_comparison(connection, lookup)
+    left = _execute_metric(
         connection,
         FactLookup(
             **{
@@ -282,7 +285,7 @@ def _execute_derived(
             }
         ),
     )
-    right = _execute_direct(
+    right = _execute_metric(
         connection,
         FactLookup(
             **{
@@ -362,17 +365,23 @@ def _execute_derived(
             )
         left_value = Decimal(left_fact.value_decimal)
         right_value = Decimal(right_fact.value_decimal)
-        if operation == "divide_percent":
+        if left_fact.unit != right_fact.unit:
+            return _conflict(lookup, [{"code": "derived_formula_unit_mismatch", "period": key}])
+        if operation in {"divide_percent", "divide_ratio"}:
             if right_value == 0:
                 return _conflict(
                     lookup,
                     [{"code": "derived_formula_division_by_zero", "period": key}],
                 )
+            if right_value < 0:
+                return _conflict(lookup, [{"code": "derived_formula_nonpositive_denominator", "period": key}])
             with localcontext() as context:
                 context.prec = 34
-                value = left_value / right_value * Decimal("100")
-            unit = "percent"
+                value = left_value / right_value * (Decimal("100") if operation == "divide_percent" else Decimal("1"))
+            unit = "percent" if operation == "divide_percent" else "ratio"
         elif operation == "subtract":
+            if lookup.metric_id == "free_cash_flow" and right_value < 0:
+                return _conflict(lookup, [{"code": "derived_capex_sign_not_positive_outflow", "period": key}])
             if left_fact.unit != right_fact.unit:
                 return _conflict(
                     lookup,
@@ -398,9 +407,7 @@ def _execute_derived(
                 metric_id=lookup.metric_id,
                 value_decimal=_decimal_text(value),
                 unit=unit,
-                unit_family=(
-                    "percentage" if operation == "divide_percent" else "currency"
-                ),
+                unit_family=metric.unit_family,
                 period_start=left_fact.period_start,
                 period_end=left_fact.period_end,
                 period_role=left_fact.period_role,
@@ -427,6 +434,9 @@ def _execute_derived(
                     )
                 ),
                 formula_trace={
+                    "definition_version": 1,
+                    "metric_title": metric.title,
+                    "interpretation_boundary": metric.boundary,
                     "formula": formula,
                     "operation": operation,
                     "input_numeric_fact_ids": [
@@ -434,6 +444,7 @@ def _execute_derived(
                         right_fact.numeric_fact_id,
                     ],
                     "input_metrics": [left_metric, right_metric],
+                    "inputs": [left_fact.as_dict(), right_fact.as_dict()],
                 },
                 numeric_fact_authority=True,
             )
@@ -449,6 +460,103 @@ def _execute_derived(
         typed_conflict=None,
         fact_request_is_not_numeric_fact=True,
     )
+
+
+def _execute_metric(connection, lookup):
+    metric = DERIVED_METRICS.get(lookup.metric_id)
+    if metric:
+        return _execute_derived(connection, lookup, formula=metric.formula)
+    return _execute_direct(connection, lookup)
+
+
+def _execute_comparison(connection, lookup):
+    """Compare source-identified fiscal periods, never calendar-label guesses."""
+    metric = DERIVED_METRICS[lookup.metric_id]
+    base_id = metric.inputs[0]
+    current = _execute_metric(connection, replace(lookup, metric_id=base_id,
+                              unit_family=None, fact_request_id=lookup.fact_request_id + "::CURRENT"))
+    if current.status != "resolved":
+        return replace(current, metric_id=lookup.metric_id, fact_request_id=lookup.fact_request_id)
+    facts = []
+    for cur in current.facts:
+        if cur.period_role not in {"fiscal_year", "quarter_discrete", "fiscal_ytd"} or not cur.period_start or cur.fiscal_year is None:
+            return _conflict(lookup, [{"code": "comparison_period_not_supported"}])
+        if metric.comparison == "qoq" and cur.period_role != "quarter_discrete":
+            return _conflict(lookup, [{"code": "qoq_requires_discrete_quarter"}])
+        if metric.comparison == "qoq":
+            prior_period = {"selection_mode": "exact_period_end",
+                            "end_date": (date.fromisoformat(cur.period_start) - timedelta(days=1)).isoformat()}
+        else:
+            prior_period = {"selection_mode": "latest_on_or_before", "fiscal_years": [cur.fiscal_year - 1],
+                            "end_date": (date.fromisoformat(cur.period_end) - timedelta(days=350)).isoformat()}
+            # Resolve a physical prior period first. An open/latest query also
+            # imposes a latest-filing cohort, which is unsuitable for looking up
+            # a historical comparison revised in a later filing.
+            anchor_metric = base_id
+            while anchor_metric in DERIVED_METRICS:
+                anchor_metric = DERIVED_METRICS[anchor_metric].inputs[0]
+            candidates, _ = _candidate_rows(connection, replace(lookup, metric_id=anchor_metric,
+                unit_family=None, period=prior_period, granularity=cur.period_role))
+            periods = {(r["period_start"], r["period_end"]) for r in candidates
+                       if r["fiscal_period"] == cur.fiscal_period and r["period_start"]
+                       and 350 <= (date.fromisoformat(cur.period_end) - date.fromisoformat(r["period_end"])).days <= 380}
+            if len(periods) == 1:
+                prior_start, prior_end = next(iter(periods))
+                prior_period = {"selection_mode": "exact_period_end", "start_date": prior_start,
+                                "end_date": prior_end, "fiscal_years": [cur.fiscal_year - 1]}
+        previous = _execute_metric(connection, replace(lookup, metric_id=base_id, unit_family=None,
+            fact_request_id=lookup.fact_request_id + "::PRIOR", period=prior_period, granularity=cur.period_role))
+        if previous.status != "resolved":
+            return _gap(fact_request_id=lookup.fact_request_id, ticker=lookup.ticker, metric_id=lookup.metric_id,
+                        code="comparison_prior_unavailable", details={"prior_result": previous.as_dict(), "current_fact": cur.as_dict()})
+        candidates = [old for old in previous.facts if old.period_role == cur.period_role
+                      and (metric.comparison == "qoq" or old.fiscal_period == cur.fiscal_period)]
+        if len(candidates) != 1:
+            return _conflict(lookup, [{"code": "comparison_prior_ambiguous_or_wrong_fiscal_period"}])
+        old = candidates[0]
+        duration = lambda f: (date.fromisoformat(f.period_end) - date.fromisoformat(f.period_start)).days + 1
+        separation = (date.fromisoformat(cur.period_end) - date.fromisoformat(old.period_end)).days
+        aligned = bool(old.period_start) and abs(duration(cur) - duration(old)) <= 8
+        aligned = aligned and (350 <= separation <= 380 if metric.comparison == "yoy" else
+                               70 <= duration(cur) <= 105 and 70 <= duration(old) <= 105)
+        if not aligned or cur.unit != old.unit:
+            return _conflict(lookup, [{"code": "comparison_period_or_unit_mismatch"}])
+        # A changed taxonomy definition needs source review, not automatic growth.
+        def concepts(f):
+            result = set()
+            for identifier in f.source_observation_ids:
+                row = connection.execute("SELECT metric_id, taxonomy, concept FROM company_fact_observations WHERE observation_id = ?", (identifier,)).fetchone()
+                if row:
+                    result.add(tuple(row))
+            return result
+        if concepts(cur) != concepts(old):
+            return _conflict(lookup, [{"code": "comparison_source_definition_changed"}])
+        now_value, old_value = Decimal(cur.value_decimal), Decimal(old.value_decimal)
+        if metric.operation == "growth_percent" and (old_value <= 0 or now_value <= 0):
+            return _gap(fact_request_id=lookup.fact_request_id, ticker=lookup.ticker, metric_id=lookup.metric_id,
+                code="growth_rate_not_meaningful_for_nonpositive_values",
+                details={"current_fact": cur.as_dict(), "prior_fact": old.as_dict(),
+                         "use_metric": lookup.metric_id.removesuffix("growth") + "change"})
+        with localcontext() as context:
+            context.prec = 34
+            value = ((now_value / old_value - 1) * 100 if metric.operation == "growth_percent" else now_value - old_value)
+        unit = "percent" if metric.operation == "growth_percent" else "percentage_point" if metric.operation == "subtract_pp" else cur.unit
+        trace = {"definition_version": 1, "metric_title": metric.title, "formula": metric.formula,
+                 "operation": metric.operation, "comparison": metric.comparison, "interpretation_boundary": metric.boundary,
+                 "input_numeric_fact_ids": [cur.numeric_fact_id, old.numeric_fact_id], "input_metrics": [base_id, base_id],
+                 "inputs": [cur.as_dict(), old.as_dict()],
+                 "vintage_policy": "each_period_latest_disclosure_available_as_of; comparability_requires_source_review"}
+        identity = {"metric": lookup.metric_id, "request": lookup.fact_request_id, "trace": trace, "value": _decimal_text(value)}
+        facts.append(replace(cur, numeric_fact_id="NUMFACT::" + canonical_digest(identity)[:32],
+            fact_request_id=lookup.fact_request_id, metric_id=lookup.metric_id, value_decimal=_decimal_text(value),
+            unit=unit, unit_family=metric.unit_family, authority_mode="deterministically_derived_numeric_fact",
+            accepted_at=max(cur.accepted_at, old.accepted_at),
+            accession_numbers=tuple(sorted(set(cur.accession_numbers + old.accession_numbers))),
+            source_observation_ids=tuple(sorted(set(cur.source_observation_ids + old.source_observation_ids))),
+            citation_urls=tuple(sorted(set(cur.citation_urls + old.citation_urls))),
+            source_digests=tuple(sorted(set(cur.source_digests + old.source_digests))), formula_trace=trace))
+    return TypedFactExecutionResult(TYPED_FACT_EXECUTION_RESULT_SCHEMA_VERSION, "resolved", lookup.fact_request_id,
+                                    lookup.ticker, lookup.metric_id, tuple(facts), None, None, True)
 
 
 def _candidate_rows(

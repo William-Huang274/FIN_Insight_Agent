@@ -22,6 +22,21 @@ BRANCHES = ("Q5_SUPPLY_AND_PRICE", "Q6_MODEL_COMPUTE_DEMAND")
 CATALOG = [{"branch_id": key, "objective": "Synthetic task qualification; no research answer."} for key in BRANCHES]
 
 
+def test_bounded_continuation_rejects_new_branch_even_with_existing_dependency():
+    requests=[]
+    def model(request):
+        requests.append(request)
+        assert 'DelegateResearchTasksAction' not in request['allowed_planning_tools']
+        if len(requests)==1:
+            return _call(request,'DelegateResearchTasksAction',tasks=[_task('new',BRANCHES[1])])
+        assert 'continuation_cannot_create_new_tasks' in str(request['tool_results'])
+        return _stop(request,ready=True)
+    graph,value=_graph(model,lambda *_:pytest.fail('no new worker allowed'),
+        unfinished_only=True,require_all_branches=False)
+    result=graph.invoke(value.model_dump(mode='json'))
+    assert len(requests)==2 and result['phase']=='research_ready_for_review'
+
+
 def _task(key="price", branch=BRANCHES[0], dependencies=()):
     return {"task_id": "task:" + key, "owner_role": "research_analyst",
             "objective": "按已披露资料自主研究供应或行业需求，说明依据及局限。",
@@ -59,6 +74,26 @@ def _graph(model, worker, *, seed=None, **kwargs):
         model_turn=model, run_child=worker, **kwargs).compile(), value
 
 
+@pytest.mark.parametrize("trigger", ["model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"])
+def test_execution_failure_stops_before_lead_can_replace_worker(trigger):
+    seed, calls = _seed(), []
+    def model(request):
+        calls.append(request)
+        assert len(calls) == 1, "must not issue another paid planner call after execution failure"
+        return _call(request, "DelegateResearchTasksAction", tasks=[_task()])
+    def worker(task, dependencies, config):
+        result = _worker_result(task, seed)
+        result.update(phase="specialist_human_review_handoff_emitted",
+                      human_review_handoff={"trigger": trigger, "reason_code": "synthetic_execution_failure"})
+        return result
+    graph, value = _graph(model, worker)
+    result = graph.invoke(value.model_dump(mode="json"))
+    assert result["phase"] == "research_needs_attention"
+    assert result["stop_reason"] == "delegated_execution_failure_requires_new_attempt"
+    assert len(result["task_results"]) == 1
+    assert result["task_results"][0]["agent_state"]["human_review_handoff"]["trigger"] == trigger
+
+
 def test_adaptive_handoff_requires_model_plan_and_exposes_reasons():
     events, requests = [], []
     plan = {"depth": "focused", "rationale": "One self-contained source-bound paper answers the user's complete limited scope.",
@@ -69,6 +104,10 @@ def test_adaptive_handoff_requires_model_plan_and_exposes_reasons():
         response = _stop(request, ready=True)
         if len(requests) > 1:
             response["action"]["tool_calls"][0]["args"]["execution_plan"] = plan
+            response["action"]["tool_calls"][0]["args"]["question_coverage"] = [{
+                "question_quote": request["research_question"], "status": "answered",
+                "supporting_task_ids": [request["workpapers"][0]["task_id"]],
+                "rationale": "Existing fixture paper covers this question; still requires independent semantic review."}]
         return response
     graph, value = _graph(model, lambda *_: pytest.fail("existing paper must not rerun"),
         require_execution_plan=True, require_all_branches=False, public_progress=events.append)
@@ -77,6 +116,41 @@ def test_adaptive_handoff_requires_model_plan_and_exposes_reasons():
     assert "execution_plan_required" in str(requests[1]["tool_results"])
     assert result["lead_handoff"]["execution_plan"] == plan
     assert plan["omitted_steps_reason"] in events[-1]["objective"]
+    assert "问题覆盖" in events[-1]["objective"]
+
+
+@pytest.mark.parametrize("problem, expected", [
+    ("absent", "question_coverage_required"),
+    ("quote", "coverage_quote_must_come"),
+    ("unknown", "coverage_requires_existing"),
+    ("unbound", "answered_requirement_requires"),
+    ("unresolved", "unresolved_required_research"),
+])
+def test_adaptive_scope_cannot_silently_discard_unfinished_requirements(problem, expected):
+    requests = []
+    plan = {"depth": "focused", "rationale": "Single existing paper available for this qualification.",
+        "omitted_steps_reason": "Only unnecessary synthesis omitted; necessary research cannot be omitted.",
+        "escalation_conditions": "An unresolved material requirement prevents a complete handoff."}
+    def model(request):
+        requests.append(request)
+        response = _stop(request, ready=True)
+        args = response["action"]["tool_calls"][0]["args"]
+        args["execution_plan"] = plan
+        item = {"question_quote": request["research_question"], "status": "answered",
+            "supporting_task_ids": [request["workpapers"][0]["task_id"]],
+            "rationale": "Only fixture coverage is asserted, never a semantic financial pass."}
+        if problem == "quote": item["question_quote"] = "unrelated issuer question"
+        if problem == "unknown": item["supporting_task_ids"] = ["invented-task"]
+        if problem == "unbound": item["supporting_task_ids"] = []
+        if problem == "unresolved": item["status"] = "unresolved"
+        args["question_coverage"] = [] if problem == "absent" else [item]
+        return response
+    graph, value = _graph(model, lambda *_: pytest.fail("no paid worker or automatic replacement"),
+        require_execution_plan=True, require_all_branches=False, max_lead_turns=2)
+    result = graph.invoke(value.model_dump(mode="json"))
+    assert expected in str(requests[-1]["tool_results"])
+    assert result["phase"] == "research_needs_attention"
+    assert result["lead_handoff"] is None
 
 
 def test_lead_parallel_workers_then_dynamic_dependent_task_without_rewriting_seed():
@@ -200,12 +274,18 @@ def test_invalid_lead_action_reaches_next_turn_without_worker_execution(defect):
     assert not executions and result["phase"] == "research_needs_attention" and len(seen) == 2
 
 
-def test_native_sdk_lead_history_keeps_own_reasoning_and_exact_tool_feedback():
+@pytest.mark.parametrize('bounded', [False, True])
+def test_native_sdk_lead_history_keeps_own_reasoning_and_exact_tool_feedback(bounded):
     from test_dell_deepseek_structured_agents import _config
     seen, wires, events = [], [], []
     def transport(request):
         wire = json.loads(request.content); wires.append(wire)
         current = seen[-1]
+        first_input = json.loads(next(m['content'] for m in wire['messages'] if m['role']=='user'))
+        for field in ['scope_policy','execution_policy','continuation_policy','allowed_planning_tools']:
+            assert first_input[field] == current[field]
+        disclosed = {t['function']['name'] for t in wire['tools']}
+        assert ('DelegateResearchTasksAction' in disclosed) is (not bounded)
         if len(wires) == 1:
             name, arguments = "DelegateResearchTasksAction", '{"tasks":'
         else:
@@ -227,11 +307,11 @@ def test_native_sdk_lead_history_keeps_own_reasoning_and_exact_tool_feedback():
         # The mock SDK receipt is validated, but this test must not claim paid execution.
         assert result["runtime_receipt"]["kind"] == "model"
         return result
-    graph, value = _graph(turn, lambda *args: pytest.fail("invalid plan must not run workers"), turn_source="provider_model")
+    graph, value = _graph(turn, lambda *args: pytest.fail("invalid plan must not run workers"), turn_source="provider_model", unfinished_only=bounded)
     try: result = graph.invoke(value.model_dump(mode="json"))
     finally: client.close()
     assert result["phase"] == "research_needs_attention" and len(wires) == 2
-    assert {row["function"]["name"] for row in wires[0]["tools"]} == {"DelegateResearchTasksAction", "ContinueResearchTasksAction", "SubmitResearchHandoffAction"}
+    assert {row["function"]["name"] for row in wires[0]["tools"]} == ({"ContinueResearchTasksAction", "SubmitResearchHandoffAction"} | (set() if bounded else {"DelegateResearchTasksAction"}))
     assert wires[1]["messages"][2]["reasoning_content"] == "synthetic private planning reasoning"
     assert wires[1]["messages"][3]["tool_call_id"] == "wire-1"
     assert "Expecting value" in wires[1]["messages"][3]["content"]
@@ -454,3 +534,26 @@ def test_real_q8_rejected_output_is_identified_at_the_exact_field():
     assert any(e["loc"][:3] == ("tasks", 0, "expected_output_kinds") for e in error.value.errors())
     # Diagnose a real unsupported enum; do not mutate the archived provider task
     # or claim the hypothetical corrected task was executed.
+
+
+@pytest.mark.parametrize("current_question", [False, True])
+def test_historical_route_receipt_not_promoted_or_new_question_delivery_gate(current_question):
+    raw = _input()
+    if current_question:
+        raw['task_context'] = {'instruction_source': 'current_user_research_request'}
+    value = SpecialistAgenticInput.model_validate_json(json.dumps(raw))
+    seed = _seed()
+    original = deepcopy(seed)
+    seen = []
+    def model(request):
+        seen.append(request)
+        assert ('historical coverage receipts' in request['scope_policy']) == current_question
+        assert request['workpapers'][0]['uncompleted_reviewed_route_ids'] == sorted(
+            set(seed['notebook']['required_route_obligation_ids']) - set(seed['notebook']['satisfied_route_obligation_ids']))
+        return _stop(request, ready=True)
+    graph = build_dell_lead_research_graph(expected_input=value, research_question='Current bounded request',
+        branch_catalog=CATALOG, allowed_branch_ids=BRANCHES, seed_workpapers={seed['task']['task_id']:seed},
+        model_turn=model, run_child=lambda *_:pytest.fail('Do not repeat submitted work'), require_all_branches=False).compile()
+    result = graph.invoke(value.model_dump(mode='json'))
+    assert result['phase'] == 'research_ready_for_review'
+    assert seed == original and len(seen) == 1

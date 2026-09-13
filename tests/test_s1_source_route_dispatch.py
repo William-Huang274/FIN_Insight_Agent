@@ -175,7 +175,7 @@ def test_candidate_coverage_gap_requires_unexecuted_official_route() -> None:
     assert result["summary"]["public_information_gap_authority"] is False
 
 
-def test_registered_dell_transcript_capture_is_terminal_for_exact_route_only() -> None:
+def test_registered_transcript_capture_is_terminal_for_exact_route_only() -> None:
     result = _compile(
         request=_request(sources=["EARNINGS_CALL_TRANSCRIPT"]),
         query_plan=_plan(sources=["EARNINGS_CALL_TRANSCRIPT"]),

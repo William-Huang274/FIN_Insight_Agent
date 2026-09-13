@@ -28,12 +28,12 @@ from pydantic import SecretStr, BaseModel, Field
 from .deepseek_structured_agents import (
     DeepSeekModelProfile, DeepSeekStructuredAgentAdapter, TokenBudgetBasis, load_deepseek_structured_agent_config,
 )
-from .dell_agent_server_data_composition import open_dell_approved_data_composition
-from .dell_case_convergence_agent import build_case_output_agent
-from .dell_case_review_agent import CaseModelAudit, build_case_review_graph, build_case_reviewer, case_chat_model, case_mcp_tools
-from .dell_lead_research_graph import build_dell_lead_research_graph
-from .dell_report_session import session_audit_sinks
-from .dell_specialist_agentic_composition import open_dell_specialist_receipted_composition
+from .agent_server_data_composition import open_approved_data_composition
+from .report_synthesis_agent import build_case_output_agent
+from .case_review_agent import CaseModelAudit, build_case_review_graph, build_case_reviewer, case_chat_model, case_mcp_tools
+from .lead_research_graph import build_lead_research_graph
+from .report_session import session_audit_sinks
+from .specialist_composition import open_specialist_receipted_composition
 from .research_session import build_research_session_graph, current_task_artifacts
 from .research_convergence import build_research_convergence_graph
 from .studio_configuration import configuration_from_native
@@ -185,7 +185,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         specialist_limits = profile["nodes"]["specialist"]["limits"]
         branches = [b for b in case["branch_topics"] if not execution.branch_ids or b["branch_id"] in execution.branch_ids]
         first_branch = branches[0]["branch_id"]
-        with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
+        with open_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                 plan_invocation_id=plan_invocation_id,
                 branch_id=first_branch, turn_source="provider_model", model_turn=visible_turn(lead_adapter.specialist_model_turn, "specialist"),
                 role_method_reader=studio.method if studio else None,
@@ -217,7 +217,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
                     audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"))
                 try:
-                    with open_dell_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
+                    with open_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                             plan_invocation_id=plan_invocation_id,
                             branch_id=task["coverage_obligation_ids"][0], turn_source="provider_model", model_turn=visible_turn(adapter.specialist_model_turn, task["owner_role"], task["task_id"]),
                             role_method_reader=studio.method if studio else None,
@@ -234,7 +234,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 emit({**task_event, "event": "outcome", "status": output["phase"],
                       "recorded_at": datetime.now(timezone.utc).isoformat()})
                 return output
-            graph = build_dell_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],
+            graph = build_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],
                 branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers=seeds,
                 model_turn=cancellable_model_turn(lead_adapter.lead_research_turn, cancelled), run_child=worker,
                 require_all_branches=execution.mode != "auto", public_progress=emit, require_execution_plan=True,
@@ -247,7 +247,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     @asynccontextmanager
     async def tools_for(state):
         artifacts = current_task_artifacts(state)
-        with open_dell_approved_data_composition(run_invocation_id=invocation, environment=environment,
+        with open_approved_data_composition(run_invocation_id=invocation, environment=environment,
                 source_read_enabled=True, live_web_read_enabled=True, case_artifacts=artifacts,
                 role_method_reader=studio.method if studio else None) as data:
             if any(left != right for left, right in (
@@ -406,7 +406,7 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         phases = {key: RunnableLambda(unavailable) for key in ("research", "review", "converge", "writer", "verifier", "quick_writer", "revise_research")}
         yield build_research_session_graph(**phases).compile(name="research_session")
         return
-    from .dell_agent_server_entry import _require_langsmith_execution_environment
+    from .agent_server_entry import _require_langsmith_execution_environment
     _require_langsmith_execution_environment(config)
     if os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") != "1":
         raise ValueError("fresh_research_deployment_not_enabled")

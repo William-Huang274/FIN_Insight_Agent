@@ -1,10 +1,8 @@
 # FinSight Agent Engineering and Evaluation Report
 
-2026-09-12 status: FIN0.1.3 iteration closed as a local Internal Alpha; FIN0.1.4 is planned only. [Closeout / 收口](../product/fin_0_1_3_closeout.zh-CN.md) · [Plan / 规划](../product/fin_0_1_4_research_plan.zh-CN.md). The September11 metrics below keep their original samples; latest data-library size is not a rerun of the old retrieval benchmark.
+2026-09-11 · FIN 0.1.3 · Local evaluation
 
-2026-09-11 · FIN 0.1.3 · Local product qualification
-
-[中文](technical-evaluation.zh-CN.md) · [Reproduction guide](quickstart.en.md) · [Metrics JSON](evaluation-metrics.json) · [Résumé claims and evidence](resume-evidence.md)
+[中文](technical-evaluation.zh-CN.md) · [Reproduction guide](quickstart.en.md) · [Metrics JSON](evaluation-metrics.json) · [Résumé claims and evidence](engineering-evidence.md)
 
 FinSight combines resumable financial research, source-bound calculations, role-owned working papers and human-editable reports. This evaluation asks whether useful work survives parsing failures, context pressure, review interruptions and service restarts, and whether a researcher can finish delivery without erasing the original evidence.
 
@@ -93,8 +91,8 @@ The public browser suite passed **36 checks**, including 390/1,024/1,440-pixel v
 
 ## Reproduction and scope
 
-The [query, source-manifest and per-query records](evaluation/README.md) include a zero-API verifier: `python -m scripts.qualification.verify_public_retrieval` recomputes Hit@5 and anchor Recall@5.
+The [query, source-manifest and per-query records](evaluation/README.md) retain the public labels and top-five candidates for checking the reported retrieval metrics. Re-ranking requires the corresponding source material or a newly labeled corpus.
 
-Use the [public checkout guide](quickstart.en.md) for tests without private data or paid calls. Qualification entry points include `retrieval_acceptance.py`, `financial_route_parity.py`, `product_identity_probe.py`, `identity_browser_probe.cjs`, `submission_restart_probe.py`, `research_delivery_probe.cjs`, `conversation_export_probe.cjs` and `sandbox_approval_roundtrip.py` under `scripts/qualification`. Inspect Python `--help` output and the browser script argument handling; configure your own services and data before live execution. Use a new output directory for each attempt.
+Use the [public checkout guide](quickstart.en.md) for maintained retrieval, configuration, revision, export and browser checks without private data or model credentials. Historical experiments use their original implementation, as described in the [evaluation records](evaluation/README.md); archived runners are not current startup commands.
 
 Private source material, account configuration and raw provider responses are not distributed with the repository. Evidence supports controlled local usage, auditable human completion and bounded multi-topic recovery. Production identity operations, sandbox production hosting and Hermes integration, cross-host idempotency/quotas, arbitrary multi-agent replanning and unlimited-history fidelity are outside the verified scope. Remaining model errors should be corrected through source-aware human participation, with complete role/paper history, rather than hidden behind repeated full paid reruns.

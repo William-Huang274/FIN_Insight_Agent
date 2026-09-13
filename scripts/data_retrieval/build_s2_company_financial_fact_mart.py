@@ -170,7 +170,7 @@ def _evaluate_qrels(
 
 
 def _evaluate_mutations(sqlite_path: Path) -> dict[str, Any]:
-    dell_before_filing = execute_fact_lookup(
+    before_filing = execute_fact_lookup(
         sqlite_path,
         FactLookup(
             fact_request_id="MUTATION::DELL_BEFORE_Q1_ACCEPTED",
@@ -221,7 +221,7 @@ def _evaluate_mutations(sqlite_path: Path) -> dict[str, Any]:
             requested_unit="reported_source_unit",
         ),
     )
-    dell_margin = execute_fact_lookup(
+    margin = execute_fact_lookup(
         sqlite_path,
         FactLookup(
             fact_request_id="DERIVED::DELL_Q1_GROSS_MARGIN",
@@ -238,7 +238,7 @@ def _evaluate_mutations(sqlite_path: Path) -> dict[str, Any]:
             requested_unit="reported_source_unit",
         ),
     )
-    dell_fcf = execute_fact_lookup(
+    fcf = execute_fact_lookup(
         sqlite_path,
         FactLookup(
             fact_request_id="DERIVED::DELL_Q1_FREE_CASH_FLOW",
@@ -255,7 +255,7 @@ def _evaluate_mutations(sqlite_path: Path) -> dict[str, Any]:
             requested_unit="reported_source_unit",
         ),
     )
-    dell_current_series = execute_fact_lookup(
+    current_series = execute_fact_lookup(
         sqlite_path,
         FactLookup(
             fact_request_id="MUTATION::DELL_CURRENT_DISCLOSURE_COHORT",
@@ -273,24 +273,24 @@ def _evaluate_mutations(sqlite_path: Path) -> dict[str, Any]:
         ),
     )
     checks = {
-        "future_filing_excluded": dell_before_filing.status == "typed_gap",
+        "future_filing_excluded": before_filing.status == "typed_gap",
         "mu_ytd_ocf_not_mislabeled_as_discrete_quarter": (
             mu_discrete_ocf.status == "typed_gap"
         ),
         "cross_case_unknown_entity_rejected": unknown_entity.status == "typed_gap",
         "same_period_margin_trace_resolved": (
-            dell_margin.status == "resolved"
-            and len(dell_margin.facts) == 1
-            and dell_margin.facts[0].formula_trace is not None
+            margin.status == "resolved"
+            and len(margin.facts) == 1
+            and margin.facts[0].formula_trace is not None
         ),
         "same_period_free_cash_flow_trace_resolved": (
-            dell_fcf.status == "resolved"
-            and len(dell_fcf.facts) == 1
-            and dell_fcf.facts[0].value_decimal == "3118000000"
+            fcf.status == "resolved"
+            and len(fcf.facts) == 1
+            and fcf.facts[0].value_decimal == "3118000000"
         ),
         "open_period_keeps_same_cadence_comparable_without_stale_ytd": (
-            dell_current_series.status == "resolved"
-            and {fact.period_role for fact in dell_current_series.facts}
+            current_series.status == "resolved"
+            and {fact.period_role for fact in current_series.facts}
             == {"quarter_discrete", "fiscal_year"}
             and {
                 (
@@ -299,7 +299,7 @@ def _evaluate_mutations(sqlite_path: Path) -> dict[str, Any]:
                     fact.period_role,
                     fact.period_end,
                 )
-                for fact in dell_current_series.facts
+                for fact in current_series.facts
             }
             == {
                 (2027, "Q1", "quarter_discrete", "2026-05-01"),
@@ -313,10 +313,10 @@ def _evaluate_mutations(sqlite_path: Path) -> dict[str, Any]:
         "all_pass": all(checks.values()),
         "derived_examples": {
             "dell_q1_gross_margin": (
-                dell_margin.facts[0].as_dict() if dell_margin.facts else None
+                margin.facts[0].as_dict() if margin.facts else None
             ),
             "dell_q1_free_cash_flow": (
-                dell_fcf.facts[0].as_dict() if dell_fcf.facts else None
+                fcf.facts[0].as_dict() if fcf.facts else None
             ),
         },
     }

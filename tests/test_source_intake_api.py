@@ -24,7 +24,7 @@ POLICY_PATH = (
     / "retrieval"
     / "fin_ia_0_1_3_s1d_source_intake_policy_v1_0.json"
 )
-DELL_ROUTE = "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT"
+ROUTE = "DELL_Q1_FY2027_EARNINGS_CALL_TRANSCRIPT"
 
 
 class _FixtureEvidencePacks:
@@ -74,7 +74,7 @@ def test_operations_source_intake_routes_and_upload_are_real_consumers(
     }
 
     uploaded = client.post(
-        f"/api/operations/source-intake/uploads/{DELL_ROUTE}",
+        f"/api/operations/source-intake/uploads/{ROUTE}",
         params={"attempt_id": "api-upload-r1"},
         content=_pdf_bytes(),
         headers={"Content-Type": "application/pdf"},
@@ -106,13 +106,13 @@ def test_upload_route_identity_and_attempt_immutability_fail_closed(
     assert unknown.json()["detail"] == "source_intake_route_not_found"
 
     first = client.post(
-        f"/api/operations/source-intake/uploads/{DELL_ROUTE}",
+        f"/api/operations/source-intake/uploads/{ROUTE}",
         params={"attempt_id": "api-immutable-r1"},
         content=_pdf_bytes(),
         headers={"Content-Type": "application/pdf"},
     )
     second = client.post(
-        f"/api/operations/source-intake/uploads/{DELL_ROUTE}",
+        f"/api/operations/source-intake/uploads/{ROUTE}",
         params={"attempt_id": "api-immutable-r1"},
         content=_pdf_bytes(),
         headers={"Content-Type": "application/pdf"},

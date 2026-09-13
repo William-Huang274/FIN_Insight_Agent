@@ -17,7 +17,7 @@ from typing import Any, Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
-DEFAULT_DELL_REFERENCE_VERTICAL_FOUNDATION_PATH = (
+DEFAULT_REFERENCE_VERTICAL_FOUNDATION_PATH = (
     Path(__file__).resolve().parents[3]
     / "configs"
     / "research"
@@ -229,7 +229,7 @@ class AnswerPolicy(_StrictFrozenModel):
     runtime_must_record_method_digest_and_selected_branch_ids: Literal[True]
 
 
-class DellReferenceVerticalFoundation(_StrictFrozenModel):
+class ResearchGraphFoundation(_StrictFrozenModel):
     schema_version: Literal["fin_ia_dell_reference_vertical_foundation_v1_0"]
     status: Literal["active_single_case_foundation"]
     recorded_at: datetime
@@ -246,7 +246,7 @@ class DellReferenceVerticalFoundation(_StrictFrozenModel):
     answer_policy: AnswerPolicy
 
     @model_validator(mode="after")
-    def validate_cross_references(self) -> "DellReferenceVerticalFoundation":
+    def validate_cross_references(self) -> "ResearchGraphFoundation":
         source_family_ids = [row.source_family_id for row in self.source_families]
         branch_ids = [row.branch_id for row in self.question_branches]
         formula_ids = [row.formula_id for row in self.formulas]
@@ -278,7 +278,7 @@ class DellReferenceVerticalFoundation(_StrictFrozenModel):
         return self
 
 
-class DellResearchMethodProjection(_StrictFrozenModel):
+class ResearchMethodProjection(_StrictFrozenModel):
     """Whitelist-only runtime projection; it has no answer/result fields."""
 
     schema_version: Literal["fin_ia_dell_research_method_projection_v1_0"]
@@ -297,7 +297,7 @@ class DellResearchMethodProjection(_StrictFrozenModel):
     acceptance_and_stop: AcceptanceAndStop
 
     @model_validator(mode="after")
-    def validate_projection_members(self) -> "DellResearchMethodProjection":
+    def validate_projection_members(self) -> "ResearchMethodProjection":
         projected_branch_ids = tuple(row.branch_id for row in self.question_branches)
         if projected_branch_ids != self.selected_branch_ids:
             raise ValueError("selected_branch_ids_must_match_projected_branches")
@@ -320,19 +320,19 @@ class DellResearchMethodProjection(_StrictFrozenModel):
         return self
 
 
-class DellResearchMethodPackage(_StrictFrozenModel):
+class ResearchMethodPackage(_StrictFrozenModel):
     schema_version: Literal["fin_ia_dell_research_method_package_v1_0"]
     method_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
-    method: DellResearchMethodProjection
+    method: ResearchMethodProjection
 
     @model_validator(mode="after")
-    def validate_digest(self) -> "DellResearchMethodPackage":
+    def validate_digest(self) -> "ResearchMethodPackage":
         if self.method_sha256 != canonical_sha256(self.method):
             raise ValueError("method_sha256_mismatch")
         return self
 
 
-class DellResearchRunScope(_StrictFrozenModel):
+class ResearchRunScope(_StrictFrozenModel):
     """One immutable, method-bound scope reused by every non-method tool.
 
     The scope is deliberately self-contained and deterministic.  A transport can
@@ -379,7 +379,7 @@ class DellResearchRunScope(_StrictFrozenModel):
         return value
 
     @model_validator(mode="after")
-    def validate_scope_digest(self) -> "DellResearchRunScope":
+    def validate_scope_digest(self) -> "ResearchRunScope":
         if len(set(self.selected_branch_ids)) != len(self.selected_branch_ids):
             raise ValueError("run_scope_branch_ids_must_be_unique")
         body = self.model_dump(mode="json", exclude={"run_scope_digest"})
@@ -388,15 +388,15 @@ class DellResearchRunScope(_StrictFrozenModel):
         return self
 
 
-class DellResearchMethodBinding(_StrictFrozenModel):
+class ResearchMethodBinding(_StrictFrozenModel):
     """Answer-free method package plus its exact run-bound scope."""
 
     schema_version: Literal["fin_ia_dell_research_method_binding_v1_0"]
-    method_package: DellResearchMethodPackage
-    run_scope: DellResearchRunScope
+    method_package: ResearchMethodPackage
+    run_scope: ResearchRunScope
 
     @model_validator(mode="after")
-    def validate_binding(self) -> "DellResearchMethodBinding":
+    def validate_binding(self) -> "ResearchMethodBinding":
         if self.run_scope.case_id != self.method_package.method.case_identity.case_id:
             raise ValueError("run_scope_case_id_mismatch")
         if self.run_scope.method_sha256 != self.method_package.method_sha256:
@@ -427,20 +427,20 @@ def canonical_sha256(value: Any) -> str:
     return sha256(_canonical_json_bytes(value)).hexdigest()
 
 
-def load_dell_reference_vertical_foundation(
-    path: str | Path = DEFAULT_DELL_REFERENCE_VERTICAL_FOUNDATION_PATH,
-) -> DellReferenceVerticalFoundation:
+def load_research_graph_foundation(
+    path: str | Path = DEFAULT_REFERENCE_VERTICAL_FOUNDATION_PATH,
+) -> ResearchGraphFoundation:
     """Load and strictly validate the answer-free foundation contract."""
 
-    return DellReferenceVerticalFoundation.model_validate_json(
+    return ResearchGraphFoundation.model_validate_json(
         Path(path).read_bytes()
     )
 
 
-def project_dell_research_method(
-    foundation: DellReferenceVerticalFoundation,
+def project_research_method(
+    foundation: ResearchGraphFoundation,
     branch_ids: Sequence[str],
-) -> DellResearchMethodPackage:
+) -> ResearchMethodPackage:
     """Project the selected branches in foundation order and seal the method.
 
     ``branch_ids`` is treated as a set: caller order and duplicates do not alter
@@ -473,7 +473,7 @@ def project_dell_research_method(
         for branch in selected_branches
         for formula_id in branch.formula_ids
     }
-    projection = DellResearchMethodProjection(
+    projection = ResearchMethodProjection(
         schema_version="fin_ia_dell_research_method_projection_v1_0",
         foundation_schema_version=foundation.schema_version,
         case_identity=foundation.case_identity,
@@ -495,15 +495,15 @@ def project_dell_research_method(
         freshness_contract=foundation.freshness_contract,
         acceptance_and_stop=foundation.acceptance_and_stop,
     )
-    return DellResearchMethodPackage(
+    return ResearchMethodPackage(
         schema_version="fin_ia_dell_research_method_package_v1_0",
         method_sha256=canonical_sha256(projection),
         method=projection,
     )
 
 
-def bind_dell_research_method(
-    foundation: DellReferenceVerticalFoundation,
+def bind_research_method(
+    foundation: ResearchGraphFoundation,
     branch_ids: Sequence[str],
     *,
     research_as_of: datetime,
@@ -512,10 +512,10 @@ def bind_dell_research_method(
     source_policy: Literal[
         "frozen_local_reviewed_plus_public_web_locator_only"
     ] = "frozen_local_reviewed_plus_public_web_locator_only",
-) -> DellResearchMethodBinding:
+) -> ResearchMethodBinding:
     """Project the answer-free method and seal the only valid tool-call scope."""
 
-    package = project_dell_research_method(foundation, branch_ids)
+    package = project_research_method(foundation, branch_ids)
     scope_body = {
         "schema_version": "fin_ia_dell_research_run_scope_v1_0",
         "case_id": package.method.case_identity.case_id,
@@ -526,11 +526,11 @@ def bind_dell_research_method(
         "execution_attempt_id": execution_attempt_id,
         "source_policy": source_policy,
     }
-    scope = DellResearchRunScope(
+    scope = ResearchRunScope(
         **{**scope_body, "research_as_of": research_as_of},
         run_scope_digest=canonical_sha256(scope_body),
     )
-    return DellResearchMethodBinding(
+    return ResearchMethodBinding(
         schema_version="fin_ia_dell_research_method_binding_v1_0",
         method_package=package,
         run_scope=scope,

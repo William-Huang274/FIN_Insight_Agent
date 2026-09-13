@@ -1,0 +1,370 @@
+{
+  "baseline_commit": "ec709194bd7cf8aabf33f1e1158d3b67cac456a7",
+  "scope": "FIN 0.1.3 functional naming; no product scope change",
+  "runtime_modules": [
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_agent_server_data_composition.py",
+      "module": "src/sec_agent/agent_runtime/agent_server_data_composition.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "apps/workbench/backend/app.py",
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/case_review_agent.py",
+        "src/sec_agent/agent_runtime/report_session.py",
+        "src/sec_agent/agent_runtime/research_session_runtime.py",
+        "src/sec_agent/agent_runtime/specialist_composition.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_agent_server_entry.py",
+      "module": "src/sec_agent/agent_runtime/agent_server_entry.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "scripts/engineering/verify_active_baseline.py",
+        "src/sec_agent/agent_runtime/conversation_runtime.py",
+        "src/sec_agent/agent_runtime/report_session.py",
+        "src/sec_agent/agent_runtime/research_session_runtime.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_agent_server_identity.py",
+      "module": "src/sec_agent/agent_runtime/agent_server_identity.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_entry.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_agent_server_recovery.py",
+      "module": "src/sec_agent/agent_runtime/agent_server_recovery.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_identity.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_agentic_contracts.py",
+      "module": "src/sec_agent/agent_runtime/research_contracts.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/capability_inventory.py",
+        "src/sec_agent/agent_runtime/data_access_policy.py",
+        "src/sec_agent/agent_runtime/lead_research_graph.py",
+        "src/sec_agent/agent_runtime/model_execution_policy.py",
+        "src/sec_agent/agent_runtime/research_graph_contracts.py",
+        "src/sec_agent/agent_runtime/reviewed_evidence_inventory.py",
+        "src/sec_agent/agent_runtime/source_family_compiler.py",
+        "src/sec_agent/agent_runtime/specialist_composition.py",
+        "src/sec_agent/agent_runtime/specialist_graph.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_case_artifacts.py",
+      "module": "src/sec_agent/agent_runtime/case_artifacts.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/case_review_agent.py",
+        "src/sec_agent/agent_runtime/report_session.py",
+        "src/sec_agent/agent_runtime/research_session.py",
+        "src/sec_agent/agent_runtime/workpaper_intervention.py",
+        "src/sec_agent/research_foundation/mcp_server.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_case_convergence_agent.py",
+      "module": "src/sec_agent/agent_runtime/report_synthesis_agent.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/case_review_agent.py",
+        "src/sec_agent/agent_runtime/manual_review.py",
+        "src/sec_agent/agent_runtime/report_session.py",
+        "src/sec_agent/agent_runtime/research_convergence.py",
+        "src/sec_agent/agent_runtime/research_session.py",
+        "src/sec_agent/agent_runtime/research_session_runtime.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_case_review_agent.py",
+      "module": "src/sec_agent/agent_runtime/case_review_agent.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/conversation_runtime.py",
+        "src/sec_agent/agent_runtime/report_session.py",
+        "src/sec_agent/agent_runtime/report_synthesis_agent.py",
+        "src/sec_agent/agent_runtime/research_session.py",
+        "src/sec_agent/agent_runtime/research_session_runtime.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_current_capability_inventory.py",
+      "module": "src/sec_agent/agent_runtime/capability_inventory.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_data_composition.py",
+        "src/sec_agent/agent_runtime/reviewed_evidence_inventory.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_lead_research_graph.py",
+      "module": "src/sec_agent/agent_runtime/lead_research_graph.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/deepseek_structured_agents.py",
+        "src/sec_agent/agent_runtime/research_session_runtime.py",
+        "src/sec_agent/agent_runtime/workpaper_intervention.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_owner_data_gate.py",
+      "module": "src/sec_agent/agent_runtime/data_access_policy.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_data_composition.py",
+        "src/sec_agent/agent_runtime/capability_inventory.py",
+        "src/sec_agent/agent_runtime/reviewed_evidence_inventory.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_reference_vertical_contracts.py",
+      "module": "src/sec_agent/agent_runtime/research_graph_contracts.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_data_composition.py",
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/case_artifacts.py",
+        "src/sec_agent/agent_runtime/case_review_agent.py",
+        "src/sec_agent/agent_runtime/deepseek_structured_agents.py",
+        "src/sec_agent/agent_runtime/execution_profile_checks.py",
+        "src/sec_agent/agent_runtime/lead_research_graph.py",
+        "src/sec_agent/agent_runtime/model_execution_policy.py",
+        "src/sec_agent/agent_runtime/planner_tool_capabilities.py",
+        "src/sec_agent/agent_runtime/research_graph.py",
+        "src/sec_agent/agent_runtime/research_mcp_tools.py",
+        "src/sec_agent/agent_runtime/specialist_composition.py",
+        "src/sec_agent/agent_runtime/specialist_graph.py",
+        "src/sec_agent/agent_runtime/workpaper_intervention.py",
+        "src/sec_agent/agent_runtime/workpaper_review_graph.py",
+        "src/sec_agent/research_foundation/source_bound_calculator.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_reference_vertical_graph.py",
+      "module": "src/sec_agent/agent_runtime/research_graph.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/__init__.py",
+        "src/sec_agent/agent_runtime/agent_server_data_composition.py",
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/case_artifacts.py",
+        "src/sec_agent/agent_runtime/case_review_agent.py",
+        "src/sec_agent/agent_runtime/deepseek_structured_agents.py",
+        "src/sec_agent/agent_runtime/execution_profile_checks.py",
+        "src/sec_agent/agent_runtime/lead_research_graph.py",
+        "src/sec_agent/agent_runtime/model_execution_policy.py",
+        "src/sec_agent/agent_runtime/planner_tool_capabilities.py",
+        "src/sec_agent/agent_runtime/research_contracts.py",
+        "src/sec_agent/agent_runtime/research_mcp_tools.py",
+        "src/sec_agent/agent_runtime/specialist_composition.py",
+        "src/sec_agent/agent_runtime/specialist_graph.py",
+        "src/sec_agent/agent_runtime/workpaper_intervention.py",
+        "src/sec_agent/agent_runtime/workpaper_review_graph.py",
+        "src/sec_agent/canonical_runtime/contracts_v1_2.py",
+        "src/sec_agent/research_foundation/source_bound_calculator.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_reference_vertical_mcp_tools.py",
+      "module": "src/sec_agent/agent_runtime/research_mcp_tools.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "scripts/engineering/verify_active_baseline.py",
+        "src/sec_agent/agent_runtime/agent_server_data_composition.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_report_session.py",
+      "module": "src/sec_agent/agent_runtime/report_session.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "apps/workbench/backend/api/v1/conversations.py",
+        "apps/workbench/backend/api/v1/report_sessions.py",
+        "apps/workbench/backend/app.py",
+        "src/sec_agent/agent_runtime/agent_server_data_composition.py",
+        "src/sec_agent/agent_runtime/conversation_runtime.py",
+        "src/sec_agent/agent_runtime/research_session.py",
+        "src/sec_agent/agent_runtime/research_session_runtime.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_reviewed_evidence_inventory.py",
+      "module": "src/sec_agent/agent_runtime/reviewed_evidence_inventory.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_data_composition.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_source_family_compiler.py",
+      "module": "src/sec_agent/agent_runtime/source_family_compiler.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_data_composition.py",
+        "src/sec_agent/agent_runtime/capability_inventory.py",
+        "src/sec_agent/agent_runtime/research_mcp_tools.py",
+        "src/sec_agent/agent_runtime/reviewed_evidence_inventory.py",
+        "src/sec_agent/agent_runtime/specialist_composition.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_specialist_agentic_composition.py",
+      "module": "src/sec_agent/agent_runtime/specialist_composition.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/research_session_runtime.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_specialist_agentic_graph.py",
+      "module": "src/sec_agent/agent_runtime/specialist_graph.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/case_artifacts.py",
+        "src/sec_agent/agent_runtime/deepseek_structured_agents.py",
+        "src/sec_agent/agent_runtime/lead_research_graph.py",
+        "src/sec_agent/agent_runtime/report_synthesis_agent.py",
+        "src/sec_agent/agent_runtime/specialist_composition.py",
+        "src/sec_agent/agent_runtime/studio_configuration.py",
+        "src/sec_agent/agent_runtime/workpaper_intervention.py",
+        "src/sec_agent/agent_runtime/workpaper_review_graph.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_specialist_paid_shadow.py",
+      "module": "src/sec_agent/agent_runtime/model_execution_policy.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/case_review_agent.py",
+        "src/sec_agent/agent_runtime/report_session.py",
+        "src/sec_agent/agent_runtime/report_synthesis_agent.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_workpaper_review_graph.py",
+      "module": "src/sec_agent/agent_runtime/workpaper_review_graph.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/case_artifacts.py",
+        "src/sec_agent/agent_runtime/lead_research_graph.py",
+        "src/sec_agent/agent_runtime/research_session.py",
+        "src/sec_agent/agent_runtime/specialist_composition.py"
+      ]
+    },
+    {
+      "previous_module": "src/sec_agent/agent_runtime/dell_zero_model_graph_qualification.py",
+      "module": "src/sec_agent/agent_runtime/execution_profile_checks.py",
+      "disposition": "maintained_and_renamed",
+      "consumers": [
+        "src/sec_agent/agent_runtime/agent_server_entry.py",
+        "src/sec_agent/agent_runtime/research_graph.py"
+      ]
+    }
+  ],
+  "renamed_paths": {
+    "deploy/dell_agent_server/Dockerfile": "deploy/agent_server/Dockerfile",
+    "deploy/dell_agent_server/Dockerfile.dockerignore": "deploy/agent_server/Dockerfile.dockerignore",
+    "deploy/dell_agent_server/README.md": "deploy/agent_server/README.md",
+    "deploy/dell_agent_server/compose.conversation-data.yaml": "deploy/agent_server/compose.conversation-data.yaml",
+    "deploy/dell_agent_server/compose.q1-specialist-network.yaml": "deploy/agent_server/compose.q1-specialist-network.yaml",
+    "deploy/dell_agent_server/compose.q1-specialist-paid-shadow.yaml": "deploy/agent_server/compose.q1-specialist-paid-shadow.yaml",
+    "deploy/dell_agent_server/compose.q1-workpaper-review.yaml": "deploy/agent_server/compose.q1-workpaper-review.yaml",
+    "deploy/dell_agent_server/compose.report-session.yaml": "deploy/agent_server/compose.report-session.yaml",
+    "deploy/dell_agent_server/compose.research-session.yaml": "deploy/agent_server/compose.research-session.yaml",
+    "deploy/dell_agent_server/compose.working-memory.yaml": "deploy/agent_server/compose.working-memory.yaml",
+    "deploy/dell_agent_server/compose.yaml": "deploy/agent_server/compose.yaml",
+    "deploy/dell_agent_server/compose.zero-model-qualification.yaml": "deploy/agent_server/compose.zero-model-qualification.yaml",
+    "deploy/dell_agent_server/compose.zero-model-rc-s3-107-qualification.yaml": "deploy/agent_server/compose.zero-model-rc-s3-107-qualification.yaml",
+    "deploy/dell_agent_server/postgres-init/010-create-runtime-roles.sh": "deploy/agent_server/postgres-init/010-create-runtime-roles.sh",
+    "deploy/dell_agent_server/postgres-init/020-install-fin-runtime-identity.sh": "deploy/agent_server/postgres-init/020-install-fin-runtime-identity.sh",
+    "deploy/dell_agent_server/postgres-init/025-install-fin-runtime-lifecycle-v1-1.sh": "deploy/agent_server/postgres-init/025-install-fin-runtime-lifecycle-v1-1.sh",
+    "deploy/dell_agent_server/postgres-init/030-runtime-readiness.sh": "deploy/agent_server/postgres-init/030-runtime-readiness.sh",
+    "deploy/dell_agent_server/postgres-init/031-runtime-readiness-v1-1.sh": "deploy/agent_server/postgres-init/031-runtime-readiness-v1-1.sh",
+    "deploy/dell_agent_server/postgres-init/040-fin-runtime-schema-fingerprint.sql": "deploy/agent_server/postgres-init/040-fin-runtime-schema-fingerprint.sql",
+    "scripts/deployment/dell_report_workbench.py": "scripts/deployment/research_workbench.py",
+    "src/sec_agent/agent_runtime/dell_agent_server_data_composition.py": "src/sec_agent/agent_runtime/agent_server_data_composition.py",
+    "src/sec_agent/agent_runtime/dell_agent_server_entry.py": "src/sec_agent/agent_runtime/agent_server_entry.py",
+    "src/sec_agent/agent_runtime/dell_agent_server_identity.py": "src/sec_agent/agent_runtime/agent_server_identity.py",
+    "src/sec_agent/agent_runtime/dell_agent_server_recovery.py": "src/sec_agent/agent_runtime/agent_server_recovery.py",
+    "src/sec_agent/agent_runtime/dell_agentic_contracts.py": "src/sec_agent/agent_runtime/research_contracts.py",
+    "src/sec_agent/agent_runtime/dell_case_artifacts.py": "src/sec_agent/agent_runtime/case_artifacts.py",
+    "src/sec_agent/agent_runtime/dell_case_convergence_agent.py": "src/sec_agent/agent_runtime/report_synthesis_agent.py",
+    "src/sec_agent/agent_runtime/dell_case_review_agent.py": "src/sec_agent/agent_runtime/case_review_agent.py",
+    "src/sec_agent/agent_runtime/dell_current_capability_inventory.py": "src/sec_agent/agent_runtime/capability_inventory.py",
+    "src/sec_agent/agent_runtime/dell_lead_research_graph.py": "src/sec_agent/agent_runtime/lead_research_graph.py",
+    "src/sec_agent/agent_runtime/dell_owner_data_gate.py": "src/sec_agent/agent_runtime/data_access_policy.py",
+    "src/sec_agent/agent_runtime/dell_reference_vertical_contracts.py": "src/sec_agent/agent_runtime/research_graph_contracts.py",
+    "src/sec_agent/agent_runtime/dell_reference_vertical_graph.py": "src/sec_agent/agent_runtime/research_graph.py",
+    "src/sec_agent/agent_runtime/dell_reference_vertical_mcp_tools.py": "src/sec_agent/agent_runtime/research_mcp_tools.py",
+    "src/sec_agent/agent_runtime/dell_report_session.py": "src/sec_agent/agent_runtime/report_session.py",
+    "src/sec_agent/agent_runtime/dell_reviewed_evidence_inventory.py": "src/sec_agent/agent_runtime/reviewed_evidence_inventory.py",
+    "src/sec_agent/agent_runtime/dell_source_family_compiler.py": "src/sec_agent/agent_runtime/source_family_compiler.py",
+    "src/sec_agent/agent_runtime/dell_specialist_agentic_composition.py": "src/sec_agent/agent_runtime/specialist_composition.py",
+    "src/sec_agent/agent_runtime/dell_specialist_agentic_graph.py": "src/sec_agent/agent_runtime/specialist_graph.py",
+    "src/sec_agent/agent_runtime/dell_specialist_paid_shadow.py": "src/sec_agent/agent_runtime/model_execution_policy.py",
+    "src/sec_agent/agent_runtime/dell_workpaper_review_graph.py": "src/sec_agent/agent_runtime/workpaper_review_graph.py",
+    "src/sec_agent/agent_runtime/dell_zero_model_graph_qualification.py": "src/sec_agent/agent_runtime/execution_profile_checks.py",
+    "src/sec_agent/agent_runtime/sql/001_dell_agent_server_identity_v1_0.sql": "src/sec_agent/agent_runtime/sql/001_agent_server_identity_v1_0.sql",
+    "src/sec_agent/agent_runtime/sql/002_dell_agent_server_remote_create_lifecycle_v1_1.sql": "src/sec_agent/agent_runtime/sql/002_agent_server_remote_create_lifecycle_v1_1.sql",
+    "tests/test_dell_agent_server_data_composition.py": "tests/test_agent_server_data_composition.py",
+    "tests/test_dell_agent_server_deployment.py": "tests/test_agent_server_deployment.py",
+    "tests/test_dell_agent_server_entry.py": "tests/test_agent_server_entry.py",
+    "tests/test_dell_agent_server_identity.py": "tests/test_agent_server_identity.py",
+    "tests/test_dell_agent_server_recovery.py": "tests/test_agent_server_recovery.py",
+    "tests/test_dell_agentic_contracts.py": "tests/test_research_contracts.py",
+    "tests/test_dell_case_artifacts.py": "tests/test_case_artifacts.py",
+    "tests/test_dell_case_convergence_agent.py": "tests/test_report_synthesis_agent.py",
+    "tests/test_dell_case_review_agent.py": "tests/test_case_review_agent.py",
+    "tests/test_dell_current_capability_inventory.py": "tests/test_capability_inventory.py",
+    "tests/test_dell_data_seed_manifest.py": "tests/test_data_seed_manifest.py",
+    "tests/test_dell_deepseek_structured_agents.py": "tests/test_deepseek_structured_agents.py",
+    "tests/test_dell_external_sources.py": "tests/test_external_sources.py",
+    "tests/test_dell_frozen_external_candidate_pack_mcp.py": "tests/test_frozen_external_candidate_pack_mcp.py",
+    "tests/test_dell_lead_research_graph.py": "tests/test_lead_research_graph.py",
+    "tests/test_dell_owner_data_gate.py": "tests/test_data_access_policy.py",
+    "tests/test_dell_planner_tool_capabilities.py": "tests/test_planner_tool_capabilities.py",
+    "tests/test_dell_q1_source_read_correction.py": "tests/test_q1_source_read_correction.py",
+    "tests/test_dell_reference_vertical_graph.py": "tests/test_research_graph.py",
+    "tests/test_dell_reference_vertical_mcp_tools.py": "tests/test_research_mcp_tools.py",
+    "tests/test_dell_reference_vertical_real_composition.py": "tests/test_reference_vertical_real_composition.py",
+    "tests/test_dell_report_session.py": "tests/test_report_session.py",
+    "tests/test_dell_research_data_ports.py": "tests/test_research_data_ports.py",
+    "tests/test_dell_research_foundation_contracts.py": "tests/test_research_foundation_contracts.py",
+    "tests/test_dell_research_mcp.py": "tests/test_research_mcp.py",
+    "tests/test_dell_research_mcp_real_data.py": "tests/test_research_mcp_real_data.py",
+    "tests/test_dell_research_task_handoff.py": "tests/test_research_task_handoff.py",
+    "tests/test_dell_reviewed_evidence_inventory.py": "tests/test_reviewed_evidence_inventory.py",
+    "tests/test_dell_runtime_foundation.py": "tests/test_runtime_foundation.py",
+    "tests/test_dell_source_family_compiler.py": "tests/test_source_family_compiler.py",
+    "tests/test_dell_specialist_agentic_composition.py": "tests/test_specialist_composition.py",
+    "tests/test_dell_specialist_agentic_graph.py": "tests/test_specialist_graph.py",
+    "tests/test_dell_specialist_paid_shadow.py": "tests/test_model_execution_policy.py",
+    "tests/test_dell_specialist_tool_batch.py": "tests/test_specialist_tool_batch.py",
+    "tests/test_dell_structured_local_knowledge_reader.py": "tests/test_structured_local_knowledge_reader.py",
+    "tests/test_dell_web_source_navigation.py": "tests/test_web_source_navigation.py",
+    "tests/test_dell_workpaper_review_graph.py": "tests/test_workpaper_review_graph.py"
+  },
+  "retired_entry": "scripts/deployment/dell_report_workbench.py",
+  "replacement_entry": "scripts/deployment/research_workbench.py",
+  "compatibility": [
+    "Existing graph and MCP tool IDs retained",
+    "Environment names and credential derivation retained",
+    "Source/authority JSON unchanged",
+    "SQL contents and legacy installer hashes unchanged"
+  ]
+}

@@ -2,9 +2,9 @@ import json
 from copy import deepcopy
 import pytest
 from sec_agent.agent_runtime.workpaper_delivery import decode_workpaper_arguments
-from sec_agent.agent_runtime.dell_specialist_agentic_graph import SubmitWorkpaperAction
+from sec_agent.agent_runtime.specialist_graph import SubmitWorkpaperAction
 from sec_agent.agent_runtime.workpaper_intervention import recover_workpaper
-from sec_agent.agent_runtime.dell_reference_vertical_contracts import canonical_sha256
+from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
 from test_research_session import _new_worker_fixture
 
 
@@ -24,9 +24,9 @@ def test_truncated_claim_does_not_lose_already_written_body_or_execute():
 
 @pytest.mark.parametrize('partial',[False,True])
 def test_native_submission_recovery_or_readable_handoff(partial):
-    from sec_agent.agent_runtime.dell_specialist_agentic_graph import DellSpecialistAgenticDependencies, build_dell_specialist_agentic_state_graph
-    from test_dell_specialist_tool_batch import _batch
-    from test_dell_specialist_agentic_graph import _input, _evidence_action, _finance_action, _submission, _ToolPorts
+    from sec_agent.agent_runtime.specialist_graph import SpecialistAgenticDependencies, build_specialist_agentic_state_graph
+    from test_specialist_tool_batch import _batch
+    from test_specialist_graph import _input, _evidence_action, _finance_action, _submission, _ToolPorts
     calls,ports=[],_ToolPorts()
     def model(request):
         calls.append(request)
@@ -38,7 +38,7 @@ def test_native_submission_recovery_or_readable_handoff(partial):
             raw=json.dumps({'action':'submit_workpaper','narrative_markdown':candidate['narrative_markdown']})[:-1]+',"claims":['
         return {'action':'native_tool_batch','context_digest':request['context_digest'],'tool_calls':[
             {'id':'saved-call','name':'SubmitWorkpaperAction','args':raw,'type':'invalid_tool_call'}]}
-    result=build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+    result=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
         model_turn=model,evidence_tool=ports.evidence,finance_tool=ports.finance)).compile().invoke(
             {**_input(),'max_model_turns':2},config={'recursion_limit':32})
     if partial:
@@ -166,7 +166,7 @@ def test_human_writer_handoff_preserves_incomplete_review_and_blocks_material_ga
 def test_human_review_amendment_preserves_sources_and_requires_all_dispositions():
     from copy import deepcopy
     from sec_agent.agent_runtime.workpaper_intervention import amend_reviewed_workpapers
-    from sec_agent.agent_runtime.dell_case_artifacts import DellCaseArtifacts
+    from sec_agent.agent_runtime.case_artifacts import CaseArtifacts
     paper = _new_worker_fixture()
     review = {'phase':'case_review_incomplete','counter':{'review':{'findings':[{'finding_id':'F1','severity':'material','paper_id':'P01'}], 'unresolved_data_requests':['Optional alternative definition']}}}
     state = {'case_papers':[paper], 'case_review':review, 'research_handoff':{},
@@ -181,8 +181,8 @@ def test_human_review_amendment_preserves_sources_and_requires_all_dispositions(
     assert state==old and 'case_review' not in result and 'case_papers' not in result and 'report' not in result
     assert result['phase']=='research_writing' and result['human_edits'][0]['number']==1
     assert result['research_handoff']['human_review_direction']['final_human_confirmation_required']
-    current=DellCaseArtifacts(state['case_papers']).with_human_edits(result['human_edits'])
+    current=CaseArtifacts(state['case_papers']).with_human_edits(result['human_edits'])
     assert current.read_paper('P01')['narrative_markdown']==decision['papers'][0]['after']
-    assert current.read_paper('P01')['claims']==DellCaseArtifacts(state['case_papers']).read_paper('P01')['claims']
+    assert current.read_paper('P01')['claims']==CaseArtifacts(state['case_papers']).read_paper('P01')['claims']
     for patch in ({'confirmed':False},{'base_edits_digest':'0'*64},{'dispositions':{}},{'papers':[]}):
         with pytest.raises(ValueError):amend_reviewed_workpapers(state,{**decision,**patch},owner='operator')

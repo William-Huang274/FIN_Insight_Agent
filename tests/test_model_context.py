@@ -10,8 +10,8 @@ from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import SecretStr
 
 from sec_agent.agent_runtime.deepseek_structured_agents import DeepSeekStructuredAgentAdapter, ReasoningPreservingChatDeepSeek, load_deepseek_structured_agent_config
-from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent
-from sec_agent.agent_runtime.dell_case_review_agent import case_chat_model
+from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent
+from sec_agent.agent_runtime.case_review_agent import case_chat_model
 from sec_agent.agent_runtime.model_context import project_tool_history
 from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
 
@@ -161,7 +161,7 @@ def test_sync_and_async_sdk_wire_clears_read_bodies_not_reasoning_or_tool_pairs(
 
 
 def test_specialist_sdk_advertises_only_actions_allowed_by_native_graph():
-    from test_dell_deepseek_structured_agents import _config, _models, _agentic_turn_request
+    from test_deepseek_structured_agents import _config, _models, _agentic_turn_request
     request = _agentic_turn_request()
     request["allowed_actions"] = ["request_evidence", "request_human_review"]
     seen = []

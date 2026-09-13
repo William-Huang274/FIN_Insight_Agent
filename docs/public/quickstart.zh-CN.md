@@ -49,7 +49,7 @@ Linux 如果缺少浏览器系统依赖，使用 `npx playwright install --with-
 - Docker Engine 可用；
 - 本地模型、LangSmith 及所用外部工具凭据，参考根目录 `.env.example`；
 - 符合当前数据合同的原始财务 SQL、文档树和来源资料；
-- 独立设置目录中的 `host-settings.json`、`container-settings.json` 及数据挂载，结构参考[部署目录](../../deploy/dell_agent_server/README.md)和[当前研究启动实现](../../src/sec_agent/agent_runtime/research_session_runtime.py)。
+- 独立设置目录中的 `host-settings.json`、`container-settings.json` 及数据挂载，结构参考[部署目录](../../deploy/agent_server/README.md)和[当前研究启动实现](../../src/sec_agent/agent_runtime/research_session_runtime.py)。
 
 `--fresh-only` 不读取旧报告或专家答案，但仍需要原始资料，设置中应省略旧 bundle/report 路径。以下目录仅为占位示例，须替换为实际准备好的设置目录：
 
@@ -61,7 +61,7 @@ uv run --no-sync python -m scripts.deployment.research_workbench serve --setting
 
 Windows 可使用 `D:/private/finsight-session`。先完成上节前端构建，再启动；浏览器打开 **http://127.0.0.1:8793/workspace**，原生 API 默认为 **18165**。`serve` 占用当前终端，Ctrl+C 结束该 BFF。上述命令本身不提交模型任务；`up` 会创建或更新本地服务，运行中不要重建服务。
 
-`research_workbench` 是统一对外入口，沿用原 `dell_report_workbench` 实现和部署身份，避免改变已有数据库卷。旧入口保持兼容。新问题创建原生线程，不创建新的 Compose 项目或端口。
+`research_workbench` 提供完整部署命令。新问题创建原生线程，复用已有服务和数据卷。已有环境升级前请停止旧服务并备份，参见[升级说明](../architecture/repository/local_record_upgrade.zh-CN.md)。
 
 ## 4. 给测试者的走查清单
 
@@ -93,6 +93,6 @@ uv sync --locked --extra agent-runtime --extra external-search --extra workbench
 uv run --no-sync python -m pytest -q
 ```
 
-私有资料测试默认跳过，挂载原资料后才使用 `--run-private-data`；历史 Git 证明需要完整历史，Windows 专属资格只在对应环境执行。完整套件、公开交互测试与真实模型研究分别记录，不能混成一个成功率。
+私有资料测试默认跳过，挂载原资料后才使用 `--run-private-data`；历史 Git 证明需要完整历史，Windows 专属测试只在对应环境执行。完整套件、公开交互测试与真实模型研究分别记录，不能混成一个成功率。
 
-当前产品为已冻结的 FIN 0.1.3 本地 Internal Alpha。报告版本独立于产品版本，HPE/MSFT 人工交付与旧 Dell v5 的待审状态分别保留。旧实验脚本已退出当前树，历史重放使用[冻结提交](../../archive/README.md)。
+v0.1.3 面向本地体验与开发。报告会保存各自的版本和人工审阅状态；评测结果及适用范围见[评测报告](technical-evaluation.zh-CN.md)。

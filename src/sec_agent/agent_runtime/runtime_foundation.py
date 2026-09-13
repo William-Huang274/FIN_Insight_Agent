@@ -31,7 +31,7 @@ class RuntimeFoundationError(ValueError):
 
 
 @dataclass(frozen=True)
-class DellRuntimeFoundation:
+class RuntimeFoundation:
     """Resolved state-backend contract with a secret-free public projection."""
 
     profile: RuntimeProfile
@@ -44,7 +44,7 @@ class DellRuntimeFoundation:
         environment: Mapping[str, str],
         *,
         default_state_root: str | Path,
-    ) -> "DellRuntimeFoundation":
+    ) -> "RuntimeFoundation":
         raw_profile = environment.get(PROFILE_ENV, "disabled").strip().lower()
         if raw_profile not in {
             "disabled",
@@ -151,7 +151,7 @@ def _read_secret_file(value: str) -> str:
 
 @contextmanager
 def open_runtime_checkpointer(
-    foundation: DellRuntimeFoundation,
+    foundation: RuntimeFoundation,
     *,
     initialize_postgres_schema: bool = False,
 ) -> Iterator[Any]:
@@ -192,7 +192,7 @@ def open_runtime_checkpointer(
 
 
 __all__ = [
-    "DellRuntimeFoundation",
+    "RuntimeFoundation",
     "POSTGRES_URL_ENV",
     "POSTGRES_URL_FILE_ENV",
     "PROFILE_ENV",

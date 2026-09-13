@@ -23,15 +23,15 @@ from starlette.concurrency import run_in_threadpool
 from langgraph_sdk.client import LangGraphClient
 from pydantic import BaseModel, ConfigDict, Field
 
-from sec_agent.agent_runtime.dell_report_session import ReviewAction, abandoned_question_update
+from sec_agent.agent_runtime.report_session import ReviewAction, abandoned_question_update
 from sec_agent.agent_runtime.targeted_revision import report_digest, validate_revision_target
 from .research_studio import build_studio_router, run_configuration, owned_configuration
 from sec_agent.agent_runtime.execution_options import ExecutionOptions
 from sec_agent.agent_runtime.manual_review import manual_review_available, apply_manual_review
 from ...authentication import service_owner
 
-SURFACE = "dell_report_workbench"
-GRAPH = "dell_report_session"
+SURFACE = 'research_workbench'
+GRAPH = 'report_session'
 RESEARCH_GRAPH = "research_session"
 
 

@@ -1,6 +1,6 @@
 # FinSight 当前上下文
 
-更新时间：2026-09-13。FIN 0.1.3 正式冻结；Owner 追加全仓代码清理、解耦归档及中英文图文更新。专业、自主、按期交付研究能力仍属 FIN 0.1.4 规划。
+更新时间：2026-09-13。FIN 0.1.3 为本地预览版；用户追加功能命名与公开文档优化。专业、自主、按期交付研究能力仍属 FIN 0.1.4 规划。
 
 ## 当前状态与唯一入口
 
@@ -9,8 +9,9 @@
 - [212收口整理](../worklog/fin_0_1_3_s3/212_version_closeout_and_repository_cleanup.md)：本轮验证、命名与简历任务交接。
 - [211案例](../worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md)：原报告、上下文及模型差异完整正反面证据。
 - [213冻结代码清理](../worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md)：现用入口依赖、归档原件校验、完整回归与文档同步。
-- 包版本仍 0.1.3；清理分支 `codex/fin-013-repository-cleanup`。Git 发布结果以 213 最终记录为准；不部署、不签生产 release。
-- PR #8 初次 Linux 产品检查通过，供应链发现 diskcache 无补丁漏洞、可选容器缺失旧开发包。Owner 已授权本轮修复兼容性后合并；使用 SQLite 薄适配器保留旧提交/付费请求记录，冻结 Debian 历史源恢复原包版本。容器及供应链复验已通过；并发测试改用显式时序握手后本地 22 项通过，最终 Linux 完整检查与合并凭证以 213 所指 PR #8 匹配提交为准。
+- [214功能命名与公开文档](../worklog/fin_0_1_3_s3/214_functional_names_and_public_docs.md)：22 个现用模块按功能重命名、部署入口合并、公开文档重写，保持已存身份兼容。
+- 包版本仍 0.1.3；当前分支 `codex/functional-names-public-docs`。PR #8 已合并 `ec709194`，对应代码通过全部 CI；本轮记录为 214；不部署、不签生产 release。
+- PR #8 初次 Linux 产品检查通过，供应链发现 diskcache 无补丁漏洞、可选容器缺失旧开发包。Owner 已授权本轮修复兼容性后合并；使用 SQLite 薄适配器保留旧提交/付费请求记录，冻结 Debian 历史源恢复原包版本。PR #8 最终 Linux 1442 passed / 150 skipped、浏览器 39+36、容器和供应链通过，合并证据见 PR。
 
 ## 已证事实
 

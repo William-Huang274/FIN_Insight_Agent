@@ -16,7 +16,7 @@ def test_real_app_import_without_settings_or_legacy_materials(tmp_path):
 import json
 from unittest.mock import patch
 from fastapi.testclient import TestClient
-with patch('sec_agent.agent_runtime.dell_report_session.load_session_materials', side_effect=AssertionError('legacy material must not be loaded')):
+with patch('sec_agent.agent_runtime.report_session.load_session_materials', side_effect=AssertionError('legacy material must not be loaded')):
     from apps.workbench.backend.app import app
 with TestClient(app) as client:
     print(json.dumps({'health':client.get('/api/health').json(),'config':client.get('/api/v1/research-session-config').json()}))

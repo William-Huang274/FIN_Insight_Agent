@@ -46,7 +46,7 @@ def paper_owner_role(state, paper):
 
 
 def apply_manual_review(state, decision, artifacts, *, owner='local-pilot'):
-    from .dell_case_convergence_agent import answer_citations, answer_reference_ids
+    from .report_synthesis_agent import answer_citations, answer_reference_ids
     if not manual_review_available(state):
         raise ValueError('数据或运行问题尚未解决，不能通过人工修改标记完成')
     if not decision.confirmed or not decision.reason.strip() or not decision.report_markdown.strip():

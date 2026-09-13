@@ -28,7 +28,7 @@ def version_app():
     pending["values"]["report"]["narrative_markdown"] = "尚未复核的中间结果"
     calls = []
     async def get(tid):
-        return {"metadata": {"surface": "dell_report_workbench" if tid == thread else "another_surface"}}
+        return {"metadata": {"surface": 'research_workbench' if tid == thread else "another_surface"}}
     async def history(tid, **kwargs):
         calls.append((tid, kwargs))
         return [pending, new, deepcopy(new), old]

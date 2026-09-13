@@ -49,7 +49,7 @@ The runtime uses LangGraph Agent Server, PostgreSQL, Redis and LangSmith. Prepar
 - A working Docker Engine.
 - Local model, LangSmith and applicable tool credentials; see the root `.env.example`.
 - Financial SQL, document trees and source materials conforming to the current data contracts.
-- A settings directory containing `host-settings.json`, `container-settings.json` and data mounts; see [deployment](../../deploy/dell_agent_server/README.md) and the [research runtime](../../src/sec_agent/agent_runtime/research_session_runtime.py).
+- A settings directory containing `host-settings.json`, `container-settings.json` and data mounts; see [deployment](../../deploy/agent_server/README.md) and the [research runtime](../../src/sec_agent/agent_runtime/research_session_runtime.py).
 
 `--fresh-only` omits old reports and expert answers but still requires source data. Omit legacy bundle/report paths from those settings. Replace the placeholder below with your prepared directory:
 
@@ -61,7 +61,7 @@ uv run --no-sync python -m scripts.deployment.research_workbench serve --setting
 
 On Windows, a path such as `D:/private/finsight-session` is valid. Build the frontend first. Open **http://127.0.0.1:8793/workspace**; the native API defaults to **18165**. The BFF runs in the foreground; Ctrl+C stops it. These commands do not submit a model task. The `up` command creates or updates services; do not rebuild during active research.
 
-The neutral `research_workbench` entry preserves the existing `dell_report_workbench` implementation and deployment identity, including database volumes. The old entry remains compatible. A new question creates a native thread, not a separate Compose project or port.
+The `research_workbench` entry owns the deployment implementation. New questions use native threads and reuse existing services and data volumes. Before upgrading, stop old processes and back up data; see the [upgrade guide](../architecture/repository/local_record_upgrade.zh-CN.md).
 
 ## 4. Walkthrough for testers
 
@@ -93,6 +93,6 @@ uv sync --locked --extra agent-runtime --extra external-search --extra workbench
 uv run --no-sync python -m pytest -q
 ```
 
-Private-data tests are skipped by default; use `--run-private-data` only with their original mounts. Historical Git proofs require full history, and Windows qualification runs on Windows. Full-suite checks, public interaction tests and live research are distinct evidence scopes.
+Private-data tests are skipped by default; use `--run-private-data` only with their original mounts. Historical Git proofs require full history, and Windows-specific tests require Windows. Full-suite checks, public interaction tests and live research are distinct evidence scopes.
 
-The product is the frozen FIN 0.1.3 local Internal Alpha. Report versions are independent: HPE/MSFT human delivery and the older Dell v5 review state remain separately recorded. Retired experiment replay uses the [frozen source](../../archive/README.md).
+v0.1.3 is a local preview for evaluation and development. Reports retain their own versions and review states; see the [evaluation report](technical-evaluation.en.md) for results and scope.

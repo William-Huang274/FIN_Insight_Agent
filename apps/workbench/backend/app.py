@@ -12,7 +12,7 @@ from fastapi.staticfiles import StaticFiles
 
 from sec_agent.runtime_bridge.paths import RuntimePathRegistry, resolve_runtime_paths
 from sec_agent.agent_runtime.runtime_foundation import (
-    DellRuntimeFoundation,
+    RuntimeFoundation,
     RuntimeFoundationError,
 )
 from sec_agent.workbench.api_contracts import install_api_contracts
@@ -111,11 +111,11 @@ def create_app(
             CODE_ROOT / ".codex_runtime",
         )
     ).resolve()
-    dell_runtime_foundation = DellRuntimeFoundation.from_environment(
+    runtime_foundation = RuntimeFoundation.from_environment(
         os.environ,
         default_state_root=runtime_state_root,
     )
-    if dell_runtime_foundation.profile == "postgres_pilot":
+    if runtime_foundation.profile == "postgres_pilot":
         raise RuntimeFoundationError("postgres_pilot_runtime_not_composed")
 
     app = FastAPI(
@@ -130,8 +130,8 @@ def create_app(
     app.state.primary_product_route = "/workspace"
     app.state.operator_route = "/operations"
     app.state.retired_product_runtime_loaded = False
-    app.state.dell_runtime_foundation = (
-        dell_runtime_foundation.public_projection()
+    app.state.runtime_foundation = (
+        runtime_foundation.public_projection()
     )
     install_api_contracts(app)
     app.add_middleware(
@@ -160,8 +160,8 @@ def create_app(
             evidence_packs=evidence_packs,
             fixture_mode=workbench_runtime_mode == "fixture",
             frontend_dist_root=resolved_frontend_dist_root,
-            dell_runtime_foundation=(
-                dell_runtime_foundation.public_projection()
+            runtime_foundation=(
+                runtime_foundation.public_projection()
             ),
         )
 
@@ -305,7 +305,7 @@ def _system_status(
     evidence_packs: ResearchEvidencePackService,
     fixture_mode: bool,
     frontend_dist_root: Path,
-    dell_runtime_foundation: Mapping[str, object],
+    runtime_foundation: Mapping[str, object],
 ) -> dict[str, Any]:
     store_health = store.inspect_health()
     product_readiness = _evidence_pack_readiness(
@@ -353,7 +353,7 @@ def _system_status(
             "operator_route": "/operations",
             "retired_product_runtime_loaded": False,
             "readiness": product_readiness,
-            "dell_reference_vertical": dict(dell_runtime_foundation),
+            "dell_reference_vertical": dict(runtime_foundation),
         },
     }
 
@@ -413,7 +413,7 @@ def create_report_session_app(frontend_dist_root=None):
     from contextlib import asynccontextmanager
     from fastapi.middleware.trustedhost import TrustedHostMiddleware
     from .api.v1.report_sessions import ReportSessionService, build_report_sessions_router
-    from sec_agent.agent_runtime.dell_report_session import load_session_materials
+    from sec_agent.agent_runtime.report_session import load_session_materials
     settings_path = os.environ.get("FINSIGHT_REPORT_SESSION_SETTINGS")
     settings = json.loads(Path(settings_path).read_text(encoding="utf-8")) if settings_path else {}
     state_root = Path(os.environ.get("FINSIGHT_LOCAL_STATE_ROOT", CODE_ROOT / ".finsight"))
@@ -423,10 +423,10 @@ def create_report_session_app(frontend_dist_root=None):
     research_profile = None
     if os.environ.get("FINSIGHT_RESEARCH_SESSION_ENABLED") == "1":
         from sec_agent.agent_runtime.research_session_runtime import load_research_runtime_profile
-        from sec_agent.agent_runtime.dell_agent_server_data_composition import DELL_APPROVED_RESEARCH_AS_OF
+        from sec_agent.agent_runtime.agent_server_data_composition import APPROVED_RESEARCH_AS_OF
         runtime_profile, case = load_research_runtime_profile(os.environ.get("FIN_REPO_ROOT", CODE_ROOT))
         research_profile = {"title": case["title"], "default_question": case["question"], "branch_topics": case["branch_topics"],
-            "research_as_of": DELL_APPROVED_RESEARCH_AS_OF, "cost_expectation_cny": runtime_profile["cost_expectation_cny"],
+            "research_as_of": APPROVED_RESEARCH_AS_OF, "cost_expectation_cny": runtime_profile["cost_expectation_cny"],
             "notice": "新问题从空底稿研究；复用原始文档/SQL/索引，不载入旧专家答案。日期为已绑定案例时点，不宣称实时全量。"}
     from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
     attachment_store = TaskAttachmentStore((Path(settings_path).parent if settings_path else state_root) / "attachments")

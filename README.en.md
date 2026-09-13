@@ -8,17 +8,13 @@ Multi-agent research · Traceable evidence · Human revision · Editable researc
 
 [中文](README.md) · [Quickstart](docs/public/quickstart.en.md) · [Product tour](docs/public/demo-and-engineering.en.md) · [Architecture](docs/public/architecture.en.md) · [Changelog](CHANGELOG.md)
 
-**FIN 0.1.3 · Local research workspace · Iteration closed | FIN 0.1.4 planned**
+**v0.1.3 · Local financial research workspace · Preview**
 
 </div>
 
-**Frozen baseline: FIN 0.1.3 (September 12, 2026); source-tree cleanup: September 13.** [Closeout](docs/product/fin_0_1_3_closeout.zh-CN.md) · [0.1.4 research plan](docs/product/fin_0_1_4_research_plan.zh-CN.md) · [Code retention and historical recovery](docs/architecture/repository/frozen_cleanup.zh-CN.md) (Chinese). The local Internal Alpha iteration is closed. The next-version method library and autonomous convergence remain planned.
-
-Upgrading an existing workspace: SQLite replaces the vulnerable legacy cache dependency while preserving submission receipts and retrieval records. Stop old processes sharing the cache and back up their data before switching. Invalid legacy records stop migration rather than automatically resending requests. See the [compatibility and recovery guide](docs/architecture/repository/local_record_upgrade.zh-CN.md) (Chinese).
-
 FinSight brings financial SQL, source retrieval, source-bound calculations and multi-agent review into one workspace. Ask a question, follow the research, trace a report judgment to its evidence, and request a revision to a specific finding. It serves analysts who need to inspect conclusions and developers who want observable state, calls and reproducible checks.
 
-**Measured evaluation (2026-09-11):** [Engineering and product report](docs/public/technical-evaluation.en.md), [metrics JSON](docs/public/evaluation-metrics.json) and [résumé claims with evidence](docs/public/resume-evidence.md) cover hybrid retrieval, real multi-turn recovery, human-reviewed delivery and identity checks.
+**Measured evaluation (2026-09-11):** [Engineering and product report](docs/public/technical-evaluation.en.md), [metrics JSON](docs/public/evaluation-metrics.json) cover hybrid retrieval, real multi-turn recovery, human-reviewed delivery and identity checks.
 
 ![Research Studio: roles, methods and execution order](docs/public/images/research-studio.png)
 
@@ -40,7 +36,7 @@ FinSight brings financial SQL, source retrieval, source-bound calculations and m
 
 ![Company library: company, year and document-type filters](docs/public/images/company-library.png)
 
-The company library connects disclosure files, retrieval nodes and a document reader. Filter by company, year, document type and research cutoff, read the original material, then use it in research. The frozen library contains **70 documents, 66 unique URLs, 9,253 nodes and 12,994 retrieval chunks**. Standardizable public material enters the library; external search and capture supplement its coverage.
+The company library connects disclosure files, retrieval nodes and a document reader. Filter by company, year, document type and research cutoff, read the original material, then use it in research. The September 12, 2026 library snapshot contains **70 documents, 66 unique URLs, 9,253 nodes and 12,994 retrieval chunks**. Standardizable public material enters the library; external search and capture supplement its coverage.
 
 *Actual deployed application, September 11, 2026. The screenshot's 60 documents are from the earlier snapshot; 70 is the count at the freeze.*
 
@@ -48,7 +44,7 @@ The company library connects disclosure files, retrieval nodes and a document re
 
 ![Financial data: company metrics, reporting periods and sources](docs/public/images/financial-data.png)
 
-Query financial observations by company and metric, retaining reporting periods, filing versions, units and original sources. The frozen scope includes **5 companies and 2,274 financial observations**, plus **37 source-bound derived metrics**. Calculation readback shows expressions and operands so analysts can inspect denominators, units and periods. Arithmetic validation still requires a separate review of financial meaning.
+Query financial observations by company and metric, retaining reporting periods, filing versions, units and original sources. The evaluated dataset includes **5 companies and 2,274 financial observations**, plus **37 source-bound derived metrics**. Calculation readback shows expressions and operands so analysts can inspect denominators, units and periods. Arithmetic validation still requires a separate review of financial meaning.
 
 *Actual deployed application, September 11, 2026, showing filtered MSFT data. The visible row count is not the total library size.*
 
@@ -64,7 +60,7 @@ The research map represents report content and citation relationships. Artifact 
 
 This screenshot shows saved activity from a NVIDIA/Micron fiscal-period comparison. The lead chose one research direction, followed by independent review. Viewing history makes no new model calls. Public progress and tool events append during execution; guidance is read at later phase handoffs. Private reasoning transcripts are not displayed.
 
-[Interaction and mode test questions](eval_sets/workbench_execution_modes.json) cover short followups, selected experts, new-company single-agent research, targeted revisions and free delegation. Usage is recorded by task and call; failures and unknown costs are not reported as zero. Historical multi-layer review incurred substantial overhead. The frozen version claims neither general cost savings nor unattended financial correctness.
+[Interaction and mode test questions](eval_sets/workbench_execution_modes.json) cover short followups, selected experts, new-company single-agent research, targeted revisions and free delegation. Usage is recorded by task and call; failures and unknown costs are not reported as zero. Multi-layer review adds model calls; analysts still need to verify financial judgments against the original sources.
 
 ### Review, revise and deliver the same report
 
@@ -98,7 +94,7 @@ npm run test:public
 
 The Python check covers attachments, delivery, configuration and targeted revisions, then generates clearly synthetic reports. Choose an output directory that does not exist. Browser tests start only Vite and use synthetic API responses, covering three screen widths, navigation, sources, diffs, configuration editing and replay. **They verify interactions, not model research quality.** On Linux, install missing browser system dependencies with `npx playwright install --with-deps chromium`.
 
-Full research additionally requires Docker, model/tool credentials, source data and service settings. Private qualification data is not distributed, so a fresh clone cannot complete real research without preparation. See the [quickstart](docs/public/quickstart.en.md) for deployment, expected results and troubleshooting.
+Full research additionally requires Docker, model/tool credentials, source data and service settings. Source data and credentials must be configured before running full research. See the [quickstart](docs/public/quickstart.en.md) for deployment, expected results and troubleshooting.
 
 ## Architecture and engineering focus
 
@@ -122,9 +118,9 @@ flowchart LR
 
 See [architecture](docs/public/architecture.en.md) for code entry points, configuration consumption and component boundaries.
 
-## Current qualification scope
+## Evaluation scope
 
-FIN 0.1.3 is frozen as a local research workspace. These bounded results measure different things and do not combine into a financial accuracy score:
+The following v0.1.3 results use specified datasets and a local deployment. Retrieval, interactions and financial judgments are evaluated separately:
 
 | Verified area | Result and scope |
 | --- | --- |
@@ -134,7 +130,7 @@ FIN 0.1.3 is frozen as a local research workspace. These bounded results measure
 | Tool approval | 4 actual frontend approval scenarios covering approval, rejection and pre-execution constraints through native task resumption, MCP and Docker sandbox execution. |
 | Report delivery | Human revisions, version differences, source/calculation readback and four export formats. The AI/memory case produced a 7-page analyst-reviewed report; its native Writer did not finish, so it is not an autonomous end-to-end pass. |
 
-Models can still misinterpret financial semantics or miss counterevidence. Automatic summaries are disabled by default. Dynamic financial methods, rule updates, bounded expert delegation and deadline-aware research convergence belong to the **0.1.4 plan**. See the [evaluation report](docs/public/technical-evaluation.en.md) and [evidence and sharing](docs/public/sharing-scope.md) for samples, failures and cost scope.
+Models can still misinterpret financial semantics or miss counterevidence. Automatic summaries are disabled by default. Dynamic financial methods, rule updates, bounded expert delegation and deadline-aware research convergence are planned in the [v0.1.4 roadmap](docs/product/roadmap.zh-CN.md) (Chinese). See the [evaluation report](docs/public/technical-evaluation.en.md) and [evidence and sharing](docs/public/sharing-scope.md) for samples, failures and cost scope.
 
 ## Explore the repository
 
@@ -143,7 +139,7 @@ Models can still misinterpret financial semantics or miss counterevidence. Autom
 | [Product tour](docs/public/demo-and-engineering.en.md) | Three-minute walkthrough and engineering narrative |
 | [Quickstart](docs/public/quickstart.en.md) | Zero-model checks, local deployment, troubleshooting and feedback |
 | [Workbench](apps/workbench/README.md) | Frontend/backend entry points and development commands |
-| [Tests](tests/README.md) | Public checks, private-data replay and live model qualification |
+| [Tests](tests/README.md) | Public checks, private-data replay and live model evaluation |
 | [Changelog](CHANGELOG.md) | Product milestones, frontend delivery and report revisions |
 
-The current source tree retains code used for product execution, data builds, deployment and regression checks. One-off experiments and the former `archive/versions/` contents have left the active tree and can be recovered from the [frozen tag](https://github.com/William-Huang274/FIN_Insight_Agent/tree/archive/fin-0.1.3-before-cleanup-20260913); the [archive guide](archive/README.md) gives the exact commit and recovery commands. Internal worklogs retain decisions and failures from their original dates; this README and `docs/public/` describe the current public surface. The repository is public for code and engineering review, with no repository-wide open-source license selected. Third-party components retain their own licenses.
+The code, tests and documentation are available for project review. See the [quickstart](docs/public/quickstart.en.md) for installation and upgrades. No repository-wide open-source license has been selected; third-party components retain their own licenses.

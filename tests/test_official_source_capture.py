@@ -271,7 +271,7 @@ def test_legacy_plan_cannot_silently_enable_playwright_transport() -> None:
         validate_capture_plan(plan)
 
 
-def test_repository_s1d_plan_is_bounded_to_dell_and_tsm_official_pdfs() -> None:
+def test_repository_s1d_plan_is_bounded_to_and_tsm_official_pdfs() -> None:
     plan = validate_capture_plan(
         json.loads(
             (

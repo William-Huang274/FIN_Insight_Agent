@@ -6,10 +6,10 @@ from types import SimpleNamespace
 import pytest
 from langchain_core.messages import ToolMessage
 
-from sec_agent.agent_runtime.dell_case_artifacts import DellCaseArtifacts
-from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent
-from test_dell_case_convergence_agent import NativeFixtureModel
-from test_dell_case_review_agent import call
+from sec_agent.agent_runtime.case_artifacts import CaseArtifacts
+from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent
+from test_report_synthesis_agent import NativeFixtureModel
+from test_case_review_agent import call
 
 
 def test_report_observations_are_isolated_and_do_not_create_research_papers():
@@ -17,7 +17,7 @@ def test_report_observations_are_isolated_and_do_not_create_research_papers():
         "ticker": "FIX", "metric_id": "net_income", "value_decimal": "12", "unit": "USD",
         "period_end": "2025-12-31", "numeric_fact_authority": True}}
     original = deepcopy(source)
-    artifacts = DellCaseArtifacts.from_observed_sources(source, case_id="test", research_as_of="2026-01-01")
+    artifacts = CaseArtifacts.from_observed_sources(source, case_id="test", research_as_of="2026-01-01")
     source["NUMFACT::fixture"]["value_decimal"] = "999"
     assert artifacts.catalog()["papers"] == []
     assert artifacts.read_source("NUMFACT::fixture")["value_decimal"] == "12"
@@ -25,7 +25,7 @@ def test_report_observations_are_isolated_and_do_not_create_research_papers():
     with pytest.raises(ValueError, match="unknown_paper"):
         artifacts.read_paper("P01")
     with pytest.raises(ValueError, match="identity_invalid"):
-        DellCaseArtifacts.from_observed_sources({"invented": original["NUMFACT::fixture"]}, case_id="x", research_as_of="x")
+        CaseArtifacts.from_observed_sources({"invented": original["NUMFACT::fixture"]}, case_id="x", research_as_of="x")
 
 
 def test_existing_verifier_and_local_writer_can_use_saved_direct_report_sources():
@@ -34,7 +34,7 @@ def test_existing_verifier_and_local_writer_can_use_saved_direct_report_sources(
         source = {"numeric_fact_id": ref, "source_id": ref, "result_state": "numeric_fact", "ticker": "FIX",
             "metric_id": "net_income", "value_decimal": "12", "unit": "USD", "period_end": "2025-12-31",
             "numeric_fact_authority": True}
-        artifacts = DellCaseArtifacts.from_observed_sources({ref: source}, case_id="test", research_as_of="2026-01-01")
+        artifacts = CaseArtifacts.from_observed_sources({ref: source}, case_id="test", research_as_of="2026-01-01")
         text = "Scope and source fixture. " * 12 + f"Operating profit 12 [{ref}]."
         report = {"title": "Saved report fixture", "narrative_markdown": text, "citations": {ref: {"sources": [source]}}}
         original = deepcopy(report)
@@ -68,7 +68,7 @@ def test_existing_verifier_and_local_writer_can_use_saved_direct_report_sources(
 
 def test_selected_claim_role_consumes_scope_without_whole_report_obligations():
     async def run():
-        artifacts = DellCaseArtifacts.from_observed_sources({}, case_id="fixture", research_as_of="2026-01-01")
+        artifacts = CaseArtifacts.from_observed_sources({}, case_id="fixture", research_as_of="2026-01-01")
         model = NativeFixtureModel(marker="focused", replies=[[call("submit_report_review", {"review": {
             "summary": "T1: The selected claim is a valid evidence limitation. This fixture exercises scoped completion only, not whole-report acceptance.",
             "completion": "complete", "unresolved_data_requests": [], "findings": []}}, "done")]])

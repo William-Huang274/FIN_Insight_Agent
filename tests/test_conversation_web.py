@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from sec_agent.agent_runtime.conversation_web import public_web_tool
 from sec_agent.research_foundation.external_sources import ConversationSourceScope
-from test_dell_web_source_navigation import _reader
+from test_web_source_navigation import _reader
 
 
 def test_general_web_reuses_readers_without_claiming_financial_review(tmp_path):

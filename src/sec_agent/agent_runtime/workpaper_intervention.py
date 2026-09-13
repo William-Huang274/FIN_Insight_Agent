@@ -3,15 +3,15 @@ from copy import deepcopy
 from datetime import datetime, timezone
 import json
 
-from .dell_specialist_agentic_graph import SubmitWorkpaperAction, SpecialistNotebook, _replace_notebook, _submission_errors
-from .dell_reference_vertical_contracts import canonical_sha256
-from .dell_case_artifacts import DellCaseArtifacts
+from .specialist_graph import SubmitWorkpaperAction, SpecialistNotebook, _replace_notebook, _submission_errors
+from .research_graph_contracts import canonical_sha256
+from .case_artifacts import CaseArtifacts
 from .workpaper_delivery import decode_workpaper_arguments
 
 
 def review_saved_workpapers(state, decision, *, owner):
     """Human scope decision starts review; it does not certify the report."""
-    from .dell_lead_research_graph import SubmitResearchHandoffAction
+    from .lead_research_graph import SubmitResearchHandoffAction
     papers = state.get('case_papers', [])
     done = {p['task']['task_id'] for p in papers}
     required = {t['task_id'] for t in state.get('research_tasks', [])}
@@ -21,7 +21,7 @@ def review_saved_workpapers(state, decision, *, owner):
         raise ValueError('human_scope_review_requires_explicit_reason')
     if decision.get('base_papers_digest') != canonical_sha256(papers):
         raise ValueError('human_scope_review_stale_workpapers')
-    DellCaseArtifacts(papers)
+    CaseArtifacts(papers)
     handoff = SubmitResearchHandoffAction.model_validate_json(json.dumps({
         'context_digest': canonical_sha256(papers), 'reason_summary': decision['reason'],
         'disposition': 'ready_for_review', 'execution_plan': decision['execution_plan'],
@@ -73,7 +73,7 @@ def amend_reviewed_workpapers(state, decision, *, owner):
     dispositions = decision.get('dispositions', {})
     if set(dispositions) != set(blockers):
         raise ValueError('human_paper_amendment_requires_every_blocker_disposition')
-    current = DellCaseArtifacts(papers).with_human_edits(state.get('human_edits', []))
+    current = CaseArtifacts(papers).with_human_edits(state.get('human_edits', []))
     catalog = {p['paper_id']: p for p in current.catalog()['papers']}
     edits = []
     for edit in decision.get('papers', []):
@@ -118,7 +118,7 @@ def write_after_incomplete_review(state, decision, *, owner):
             or decision.get('base_review_digest') != canonical_sha256(review)
             or decision.get('base_papers_digest') != canonical_sha256(state.get('case_papers', []))):
         raise ValueError('human_writer_handoff_unconfirmed_or_stale')
-    DellCaseArtifacts(state['case_papers'])
+    CaseArtifacts(state['case_papers'])
     # This recovery handles a reviewer that did not submit, not an identified
     # missing-data dependency or a material finding requiring author correction.
     for role in ('counter', 'verifier'):
@@ -168,7 +168,7 @@ def recover_workpaper(state, decision, *, owner):
         'last_submission_attempt': {'arguments': candidate.model_dump(mode='json'), 'accepted': True,
             'feedback': [], 'validation_issues': [], 'origin': 'human_workpaper_intervention'}}
     papers = [*deepcopy(state.get('case_papers', [])), restored]
-    catalog = DellCaseArtifacts(papers).catalog()['papers']  # all source gates remain
+    catalog = CaseArtifacts(papers).catalog()['papers']  # all source gates remain
     paper_id = catalog[-1]['paper_id']
     role = next((t['owner_role'] for t in state.get('research_tasks', []) if t['task_id'] == task_id), saved['agent_id'])
     # Normalize quote placement for an honest before/after; no syntax fix is a

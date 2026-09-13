@@ -114,7 +114,7 @@ def configuration_from_native(config):
 
 def bind_specialist_method(graph_input, method):
     """Bind before request/digest construction, never mutate a receipted request."""
-    from .dell_specialist_agentic_graph import SpecialistAgenticInput
+    from .specialist_graph import SpecialistAgenticInput
     body = graph_input.model_dump(mode="json")
     body["l0_context"]["skill_summaries"].append({"skill_ref": "skill:research:user-selected",
         "purpose": "Run-bound research guidance; not evidence or additional authority.", "role_method": method})

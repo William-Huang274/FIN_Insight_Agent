@@ -1,8 +1,8 @@
-# FIN 0.1.3 冻结代码树
+# 代码版本与历史恢复
 
 2026-09-13 · [首页](../../../README.md) · [历史恢复](../../../archive/README.md)
 
-本次整理保留 FIN 0.1.3 正在使用的代码，将一次性研究、已淘汰实现和旧归档从当前树移出。产品仍为 0.1.3 本地 Internal Alpha，0.1.4 仍是规划。
+本次整理保留 FIN 0.1.3 正在使用的代码，将一次性研究、已淘汰实现和旧归档从当前树移出。当前产品为 v0.1.3 本地预览版。
 
 ## 保留范围
 
@@ -17,7 +17,7 @@
 | `tests/` | 当前代码的合成/本地回归、明确 opt-in 的私有资料测试；保留受支持 Dagster 适配器测试 |
 | `deploy/`、`configs/`、`eval_sets/` | 当前部署、资源合同、测试夹具及有限历史证明；历史结果文件不等于可执行入口 |
 
-入口清单由[核验清单](frozen_cleanup_manifest.json)记录；`scripts/engineering/verify_active_baseline.py` 从现用入口检查 import、包初始化和动态调用路径。名字带 Dell/S1 或旧合同号的模块若仍被产品使用则保留，不批量改图 ID、SQL 迁移、数据库身份和数据路径。
+入口清单由[核验清单](frozen_cleanup_manifest.json)记录；`scripts/engineering/verify_active_baseline.py` 从现用入口检查 import、包初始化和动态调用路径。运行模块使用功能名称。已有图 ID、SQL 内容、数据库身份与来源快照保持兼容；模块目录见[命名说明](naming_and_entrypoints.zh-CN.md)。
 
 ## 解耦和退出
 
@@ -31,7 +31,7 @@
 
 静态依赖不能证明所有动态行为，因此清理后继续跑 Python 回归、当前入口检查、公开合成导出、前端构建与交互测试。实际结果、失败和修正见[工作记录 213](../../worklog/fin_0_1_3_s3/213_frozen_repository_cleanup.md)。没有借本次整理新增付费研究或声称金融能力提升。
 
-远端 CI 触发的依赖修复已获 Owner 授权；已有本地工作台升级请先读[提交凭证与缓存兼容性说明](local_record_upgrade.zh-CN.md)，保留未知请求状态并停止旧进程后再切换。
+已有本地工作台升级请先读[提交凭证与缓存兼容性说明](local_record_upgrade.zh-CN.md)，保留未知请求状态并停止旧进程后再切换。
 
 ## 后续代码准入
 

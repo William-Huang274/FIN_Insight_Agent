@@ -5,12 +5,12 @@ from uuid import uuid4
 import pytest
 from langgraph.types import Command
 from sec_agent.agent_runtime.manual_review import ManualReview, apply_manual_review
-from test_dell_report_session import setup_session
-from test_dell_case_review_agent import artifacts
+from test_report_session import setup_session
+from test_case_review_agent import artifacts
 
 
 def test_followup_tool_reads_human_corrected_paper_not_original(artifacts):
-    from test_dell_case_review_agent import call
+    from test_case_review_agent import call
     async def run():
         graph, models, initial, ref = setup_session(artifacts, quick=True)
         config = {'configurable': {'thread_id': str(uuid4())}}

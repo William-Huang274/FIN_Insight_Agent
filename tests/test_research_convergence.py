@@ -7,19 +7,19 @@ from langgraph.checkpoint.memory import InMemorySaver
 from mcp import Client
 import pytest
 
-from sec_agent.agent_runtime.dell_case_artifacts import DellCaseArtifacts
-from sec_agent.agent_runtime.dell_case_convergence_agent import build_case_output_agent, ReportReview
-from sec_agent.agent_runtime.dell_case_review_agent import case_mcp_tools
+from sec_agent.agent_runtime.case_artifacts import CaseArtifacts
+from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent, ReportReview
+from sec_agent.agent_runtime.case_review_agent import case_mcp_tools
 from sec_agent.agent_runtime.research_convergence import build_research_convergence_graph, route_material_findings
-from test_dell_case_convergence_agent import NativeFixtureModel, revision_fixture
-from test_dell_case_review_agent import call
-from test_dell_lead_research_graph import _task, _worker_result, BRANCHES
-from test_dell_research_mcp import _build_server
+from test_report_synthesis_agent import NativeFixtureModel, revision_fixture
+from test_case_review_agent import call
+from test_lead_research_graph import _task, _worker_result, BRANCHES
+from test_research_mcp import _build_server
 from test_research_session import _new_worker_fixture
 
 
 def artifact_fixture():
-    return DellCaseArtifacts([_worker_result(_task("first"), _new_worker_fixture()),
+    return CaseArtifacts([_worker_result(_task("first"), _new_worker_fixture()),
                               _worker_result(_task("second", BRANCHES[1]), _new_worker_fixture())])
 
 
@@ -39,7 +39,7 @@ def independent_review(findings=()):
 async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False, depth=None):
     artifacts = artifact_fixture()
     if depth == "focused":
-        artifacts = DellCaseArtifacts([_worker_result(_task("first"), _new_worker_fixture())])
+        artifacts = CaseArtifacts([_worker_result(_task("first"), _new_worker_fixture())])
     sequence, contexts = [], {}
     async with Client(_build_server(case_artifacts=artifacts), raise_exceptions=False) as client:
         tools = await case_mcp_tools(client)

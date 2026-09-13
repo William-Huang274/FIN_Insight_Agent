@@ -16,7 +16,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from financial_facts.derived_metrics import available_derived_metrics
 
-from .dell_reference_vertical_contracts import canonical_sha256
+from .research_graph_contracts import canonical_sha256
 
 
 PLANNER_TOOL_CAPABILITY_SCHEMA_VERSION = (

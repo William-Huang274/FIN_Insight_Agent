@@ -14,10 +14,10 @@ from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
-from sec_agent.research_foundation.contracts import DellResearchRunScope
+from sec_agent.research_foundation.contracts import ResearchRunScope
 
 
-class ConversationSourceScope(DellResearchRunScope):
+class ConversationSourceScope(ResearchRunScope):
     """Same immutable locator binding without claiming a reviewed finance pool.
 
     Reuses scope digest/time/branch validation; only the honest source-policy
@@ -71,7 +71,7 @@ class ExternalSearchRequest(BaseModel):
 
     query: str = Field(min_length=3, max_length=600)
     branch_id: str = Field(min_length=1, max_length=96)
-    run_scope: DellResearchRunScope | ConversationSourceScope
+    run_scope: ResearchRunScope | ConversationSourceScope
     purpose: str = Field(min_length=3, max_length=500)
     max_results: int = Field(default=5, ge=1, le=8)
     include_domains: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
@@ -506,7 +506,7 @@ class ExternalCaptureRequest(BaseModel):
     discovery_receipt: DiscoveryReceipt
     candidate_id: str = Field(min_length=1, max_length=128)
     branch_id: str = Field(min_length=1, max_length=96)
-    run_scope: DellResearchRunScope | ConversationSourceScope
+    run_scope: ResearchRunScope | ConversationSourceScope
     max_characters: int = Field(default=12_000, ge=500, le=200_000)
     render_policy: Literal["auto", "static", "hosted", "browser"] = "auto"
     minimum_useful_characters: int = Field(default=200, ge=1, le=2_000)

@@ -14,12 +14,12 @@ from sec_agent.research.finance_tool_contract import (
 )
 
 from .contracts import (
-    DEFAULT_DELL_REFERENCE_VERTICAL_FOUNDATION_PATH,
-    DellReferenceVerticalFoundation,
-    DellResearchMethodBinding,
-    DellResearchRunScope,
-    bind_dell_research_method,
-    load_dell_reference_vertical_foundation,
+    DEFAULT_REFERENCE_VERTICAL_FOUNDATION_PATH,
+    ResearchGraphFoundation,
+    ResearchMethodBinding,
+    ResearchRunScope,
+    bind_research_method,
+    load_research_graph_foundation,
 )
 from .external_sources import (
     CaptureReceipt,
@@ -40,6 +40,7 @@ from .data_ports import (
 from .source_document_navigation import SourceDocumentRequest, SourceDocumentResult, SourceDocumentToolRequest
 
 
+# Published tool ID retained so saved calls and method bindings remain valid.
 GET_RESEARCH_METHOD_TOOL = "get_dell_research_method"
 SEARCH_LOCAL_KNOWLEDGE_TOOL = "search_local_knowledge"
 SEARCH_REVIEWED_EVIDENCE_TOOL = "search_reviewed_evidence"
@@ -59,7 +60,7 @@ class MethodReader(Protocol):
         data_snapshot_id: str,
         execution_attempt_id: str,
         source_policy: str,
-    ) -> DellResearchMethodBinding | Awaitable[DellResearchMethodBinding]: ...
+    ) -> ResearchMethodBinding | Awaitable[ResearchMethodBinding]: ...
 
 
 class LocalKnowledgeReader(Protocol):
@@ -69,7 +70,7 @@ class LocalKnowledgeReader(Protocol):
         query: str,
         branch_id: str,
         limit: int,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
         retrieval_scope: LocalKnowledgeScope,
     ) -> LocalKnowledgeReadResult | Awaitable[LocalKnowledgeReadResult]: ...
 
@@ -86,7 +87,7 @@ class EvidenceReader(Protocol):
         *,
         evidence_ids: Sequence[str],
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
     ) -> ReviewedEvidenceReadResult | Awaitable[ReviewedEvidenceReadResult]: ...
 
 
@@ -97,7 +98,7 @@ class EvidenceSearchReader(Protocol):
         query: str,
         branch_id: str,
         limit: int,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
     ) -> ReviewedEvidenceSearchResult | Awaitable[ReviewedEvidenceSearchResult]: ...
 
 
@@ -107,21 +108,21 @@ class FinancialFactReader(Protocol):
         *,
         request: CompanyFinancialFactQuery,
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
     ) -> CompanyFinancialFactQueryResult | Awaitable[CompanyFinancialFactQueryResult]: ...
 
 
 @dataclass(frozen=True)
-class DellFoundationMethodReader:
+class FoundationMethodReader:
     """Adapter from the frozen foundation contract to an MCP method port."""
 
-    foundation: DellReferenceVerticalFoundation
+    foundation: ResearchGraphFoundation
 
     @classmethod
-    def from_default_contract(cls) -> "DellFoundationMethodReader":
+    def from_default_contract(cls) -> "FoundationMethodReader":
         return cls(
-            foundation=load_dell_reference_vertical_foundation(
-                DEFAULT_DELL_REFERENCE_VERTICAL_FOUNDATION_PATH
+            foundation=load_research_graph_foundation(
+                DEFAULT_REFERENCE_VERTICAL_FOUNDATION_PATH
             )
         )
 
@@ -133,10 +134,10 @@ class DellFoundationMethodReader:
         data_snapshot_id: str,
         execution_attempt_id: str,
         source_policy: str,
-    ) -> DellResearchMethodBinding:
+    ) -> ResearchMethodBinding:
         if source_policy != "frozen_local_reviewed_plus_public_web_locator_only":
             raise ValueError("research_source_policy_invalid")
-        return bind_dell_research_method(
+        return bind_research_method(
             self.foundation,
             branch_ids,
             research_as_of=research_as_of,
@@ -225,7 +226,7 @@ def build_research_data_mcp_server(
         ),
         structured_output=True,
     )
-    async def get_dell_research_method(
+    async def get_case_method_binding(
         branch_ids: list[str],
         research_as_of: datetime,
         data_snapshot_id: str,
@@ -233,10 +234,10 @@ def build_research_data_mcp_server(
         source_policy: Literal[
             "frozen_local_reviewed_plus_public_web_locator_only"
         ] = "frozen_local_reviewed_plus_public_web_locator_only",
-    ) -> DellResearchMethodBinding:
+    ) -> ResearchMethodBinding:
         return await _invoke_model(
             dependencies.method_reader,
-            DellResearchMethodBinding,
+            ResearchMethodBinding,
             branch_ids=tuple(branch_ids),
             research_as_of=research_as_of,
             data_snapshot_id=data_snapshot_id,
@@ -255,7 +256,7 @@ def build_research_data_mcp_server(
     async def search_local_knowledge(
         query: str,
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
         limit: int = 8,
         issuer_ids: list[str] | None = None,
         fiscal_periods: list[str] | None = None,
@@ -300,7 +301,7 @@ def build_research_data_mcp_server(
     async def search_reviewed_evidence(
         query: str,
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
         limit: int = 8,
         eligible_evidence_ids: list[str] | None = None,
     ) -> ReviewedEvidenceSearchResult:
@@ -333,7 +334,7 @@ def build_research_data_mcp_server(
     async def read_reviewed_evidence(
         evidence_ids: list[str],
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
     ) -> ReviewedEvidenceReadResult:
         if (
             not evidence_ids
@@ -369,7 +370,7 @@ def build_research_data_mcp_server(
     )
     async def query_company_financial_facts(
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
         ticker: str,
         metric_ids: Annotated[list[str], Field(min_length=1, max_length=12,
             description="Existing lowercase snake_case S2 metric IDs, e.g. revenue, operating_income (GAAP), net_income, diluted_eps. Not display labels or uppercase formula IDs. Inspect returned periods; a company's fiscal year is not its calendar year.")],
@@ -424,7 +425,7 @@ def build_research_data_mcp_server(
         @server.tool(name=READ_SOURCE_DOCUMENT_TOOL, structured_output=True,
                      description="Read sources from runtime-enabled spaces: local case catalog/outline/search/read; web search/read; uploads task-only catalog/outline/search/read and inspect_image for uploaded image or PDF page. Inspect_image delegates to a vision model and returns fallible source-linked interpretation, not authoritative facts. Unavailable spaces are rejected. Use returned server document IDs, never paths or shell. Web offsets are characters. Search previews cannot be cited; source passages are not Reviewed Evidence or NumericFacts.")
         async def read_source_document(
-            request: SourceDocumentToolRequest, branch_id: str, run_scope: DellResearchRunScope,
+            request: SourceDocumentToolRequest, branch_id: str, run_scope: ResearchRunScope,
         ) -> SourceDocumentResult:
             await _validate_scope(dependencies.method_reader, run_scope=run_scope, branch_id=branch_id)
             result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
@@ -444,7 +445,7 @@ def build_research_data_mcp_server(
         async def read_reviewed_evidence_for_cell(
             cell_id: str,
             branch_id: str,
-            run_scope: DellResearchRunScope,
+            run_scope: ResearchRunScope,
         ) -> dict[str, Any]:
             await _validate_scope(
                 dependencies.method_reader,
@@ -470,7 +471,7 @@ def build_research_data_mcp_server(
         async def read_numeric_facts_for_cell(
             cell_id: str,
             branch_id: str,
-            run_scope: DellResearchRunScope,
+            run_scope: ResearchRunScope,
         ) -> dict[str, Any]:
             await _validate_scope(
                 dependencies.method_reader,
@@ -493,7 +494,7 @@ def build_research_data_mcp_server(
     async def search_external_sources(
         query: str,
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
         purpose: str,
         max_results: int = 5,
         include_domains: list[str] | None = None,
@@ -528,7 +529,7 @@ def build_research_data_mcp_server(
         discovery_receipt: DiscoveryReceipt,
         candidate_id: str,
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
         max_characters: int = 12_000,
         render_policy: Literal["auto", "static", "hosted", "browser"] = "auto",
     ) -> CaptureReceipt:
@@ -555,7 +556,7 @@ def build_research_data_mcp_server(
         raise ValueError("source_id_not_observed_in_this_tool_session")
 
     if dependencies.case_artifacts is not None:
-        from sec_agent.agent_runtime.dell_case_artifacts import register_case_artifact_tools
+        from sec_agent.agent_runtime.case_artifacts import register_case_artifact_tools
         register_case_artifact_tools(server, dependencies.case_artifacts, source_lookup=calculation_source,
             calculation_observer=lambda result: remember_sources("calculate_research_metric", result))
     else:
@@ -612,7 +613,7 @@ async def _invoke_model(
 async def _validate_scope(
     method_reader: MethodReader,
     *,
-    run_scope: DellResearchRunScope,
+    run_scope: ResearchRunScope,
     branch_id: str,
 ) -> None:
     normalized_branch = str(branch_id).strip()
@@ -620,7 +621,7 @@ async def _validate_scope(
         raise ValueError("research_branch_outside_run_scope")
     expected = await _invoke_model(
         method_reader,
-        DellResearchMethodBinding,
+        ResearchMethodBinding,
         branch_ids=run_scope.selected_branch_ids,
         research_as_of=run_scope.research_as_of,
         data_snapshot_id=run_scope.data_snapshot_id,
@@ -633,7 +634,7 @@ async def _validate_scope(
 
 __all__ = [
     "CAPTURE_EXTERNAL_SOURCE_TOOL",
-    "DellFoundationMethodReader",
+    "FoundationMethodReader",
     "GET_RESEARCH_METHOD_TOOL",
     "QUERY_COMPANY_FINANCIAL_FACTS_TOOL",
     "READ_REVIEWED_EVIDENCE_BY_ID_TOOL",

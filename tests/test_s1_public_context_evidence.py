@@ -150,7 +150,7 @@ def test_public_context_evidence_preserves_speaker_and_target_boundary() -> None
     assert result["authority"]["target_company_exact_numeric_authority"] is False
 
 
-def test_public_context_cannot_close_dell_gap() -> None:
+def test_public_context_cannot_close_gap() -> None:
     compiled, plan = _fixture()
     mutated = deepcopy(plan)
     mutated["decisions"][0]["gap_ids_satisfied"] = ["dell-gap-pricing-asp"]

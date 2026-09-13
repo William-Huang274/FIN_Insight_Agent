@@ -87,7 +87,7 @@ def test_pdf_math_symbols_survive_font_fallback():
 def test_chart_only_edit_keeps_values_and_rejects_unknown_chart_citations():
     from copy import deepcopy
     from types import SimpleNamespace
-    from sec_agent.agent_runtime.dell_case_convergence_agent import apply_report_edits, ReportTextEdit, report_citations
+    from sec_agent.agent_runtime.report_synthesis_agent import apply_report_edits, ReportTextEdit, report_citations
     report = sample()
     report["narrative_markdown"] += "\n这是合成资格样例，仅用于检查修订是否保留正文和来源绑定。收入比较使用同一公司、相同期间与单位，不能把算术变化解释为已经证明的经营因果。修订图表说明时，既有数据点和原始来源必须保持不变。\n"
     report["charts"][0]["interpretation"] += " 来源 [P01:wrong_alias]。"

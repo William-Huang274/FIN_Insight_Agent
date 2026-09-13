@@ -29,7 +29,7 @@ from rank_bm25 import BM25Okapi
 from financial_facts import FactLookup, execute_fact_lookup
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from retrieval.text import evidence_search_text, tokenize
-from sec_agent.research_foundation.contracts import DellResearchRunScope
+from sec_agent.research_foundation.contracts import ResearchRunScope
 
 
 EVIDENCE_READ_SCHEMA_VERSION = "fin_ia_reviewed_evidence_id_read_v1_0"
@@ -526,7 +526,7 @@ def _reviewed_evidence_index(
 
 
 def _require_branch_in_scope(
-    *, branch_id: str, run_scope: DellResearchRunScope
+    *, branch_id: str, run_scope: ResearchRunScope
 ) -> str:
     normalized = str(branch_id).strip()
     if normalized not in run_scope.selected_branch_ids:
@@ -624,7 +624,7 @@ class CurrentReviewedEvidenceReader:
         *,
         evidence_ids: Sequence[str],
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
     ) -> ReviewedEvidenceReadResult:
         branch_id = _require_branch_in_scope(
             branch_id=branch_id,
@@ -677,7 +677,7 @@ class CurrentReviewedEvidenceReader:
         query: str,
         branch_id: str,
         limit: int,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
         eligible_evidence_ids: Sequence[str] | None = None,
     ) -> ReviewedEvidenceSearchResult:
         branch_id = _require_branch_in_scope(
@@ -806,7 +806,7 @@ class ExistingS2FinancialFactReader:
         *,
         request: Mapping[str, Any] | CompanyFinancialFactQuery,
         branch_id: str,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
     ) -> CompanyFinancialFactQueryResult:
         branch_id = _require_branch_in_scope(
             branch_id=branch_id,
@@ -1063,7 +1063,7 @@ class FrozenLegacyLocalKnowledgeReader:
         query: str,
         branch_id: str,
         limit: int,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
         retrieval_scope: Mapping[str, Any] | LocalKnowledgeScope | None = None,
     ) -> LocalKnowledgeReadResult:
         normalized_query = str(query).strip()
@@ -1411,7 +1411,7 @@ class StructuredLocalKnowledgeReader:
         query: str,
         branch_id: str,
         limit: int,
-        run_scope: DellResearchRunScope,
+        run_scope: ResearchRunScope,
         retrieval_scope: Mapping[str, Any] | LocalKnowledgeScope | None = None,
     ) -> LocalKnowledgeReadResult:
         normalized_query = str(query).strip()

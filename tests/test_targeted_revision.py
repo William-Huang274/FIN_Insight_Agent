@@ -11,7 +11,7 @@ from langchain_core.runnables import RunnableLambda
 from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
-from sec_agent.agent_runtime.dell_report_session import build_report_session_graph, ReviewAction
+from sec_agent.agent_runtime.report_session import build_report_session_graph, ReviewAction
 from sec_agent.agent_runtime.targeted_revision import report_digest, RevisionTarget
 from apps.workbench.backend.api.v1.report_sessions import build_report_sessions_router
 
@@ -68,7 +68,7 @@ def test_bff_rejects_stale_and_unknown_target_and_recovers_duplicate_request():
     state = {"values": values, "tasks": [{"name": "human_review", "interrupts": [{"value": {"kind": "dell_report_review"}}]}], "next": ["human_review"]}
     checkpoint = str(uuid4()); data = target(values, checkpoint)
     stored, calls = [], []
-    async def owned(_): return {"metadata": {"surface": "dell_report_workbench"}}
+    async def owned(_): return {"metadata": {"surface": 'research_workbench'}}
     async def get_state(_): return state
     async def report_state(*_): return {"values": values}
     async def all_runs(_): return stored

@@ -11,16 +11,16 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 from mcp import Client
 
-from sec_agent.agent_runtime.dell_specialist_agentic_graph import (
-    DellSpecialistAgenticDependencies, DellSpecialistAgenticGraphError, build_dell_specialist_agentic_state_graph,
+from sec_agent.agent_runtime.specialist_graph import (
+    SpecialistAgenticDependencies, SpecialistAgenticGraphError, build_specialist_agentic_state_graph,
 )
-from sec_agent.agent_runtime.dell_case_review_agent import build_case_review_graph, build_case_reviewer, case_mcp_tools
+from sec_agent.agent_runtime.case_review_agent import build_case_review_graph, build_case_reviewer, case_mcp_tools
 from sec_agent.agent_runtime.research_session import build_research_session_graph
-from test_dell_specialist_agentic_graph import _input, _ScriptedModel, _ToolPorts, _evidence_action, _finance_action, _submission
-from test_dell_lead_research_graph import _graph, _task, _stop, _call, _seed, _worker_result, BRANCHES
-from test_dell_case_review_agent import ScriptedNativeChat, review_fixture, call
+from test_specialist_graph import _input, _ScriptedModel, _ToolPorts, _evidence_action, _finance_action, _submission
+from test_lead_research_graph import _graph, _task, _stop, _call, _seed, _worker_result, BRANCHES
+from test_case_review_agent import ScriptedNativeChat, review_fixture, call
 from test_research_session import _phases, current_task_artifacts, FullSourceFixturePorts
-from test_dell_research_mcp import _build_server
+from test_research_mcp import _build_server
 
 
 class RecoveryChat(ScriptedNativeChat):
@@ -38,7 +38,7 @@ def test_rejected_candidate_resumes_same_worker_without_retrieval_or_lifetime_re
     ports = _ToolPorts()
     first = _ScriptedModel([_evidence_action(), _finance_action(), _submission(evidence_id="UNKNOWN")])
     def graph(model, prior=None):
-        return build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+        return build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
             model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance), recovery_state=prior).compile()
     failed = graph(first).invoke(value)
     original = deepcopy(failed)
@@ -55,13 +55,13 @@ def test_rejected_candidate_resumes_same_worker_without_retrieval_or_lifetime_re
     assert request["submission_to_repair"]["candidate"] == failed["last_submission_attempt"]["arguments"]
     assert failed == original
     # The locator must retain the original invocation after a new product run.
-    from sec_agent.agent_runtime.dell_specialist_agentic_graph import SpecialistNotebook, _saved_read_observation
+    from sec_agent.agent_runtime.specialist_graph import SpecialistNotebook, _saved_read_observation
     notebook = SpecialistNotebook.model_validate_json(json.dumps(recovered["notebook"]))
     for record in notebook.model_turn_records[:2]:
         saved = _saved_read_observation(recovered, notebook, record.action)
         assert saved is not None and saved in notebook.observations
     assert recovered["model_turn_invocations"]["1"] == failed["run_invocation_id"]
-    with pytest.raises(DellSpecialistAgenticGraphError, match="recovery_task_or_data_scope_mismatch"):
+    with pytest.raises(SpecialistAgenticGraphError, match="recovery_task_or_data_scope_mismatch"):
         graph(second, failed).invoke({**value, "run_id": "another-thread"})
 
 
@@ -76,7 +76,7 @@ def test_product_can_resume_before_first_formal_paper_and_preserves_failed_attem
             prior = request.get("failed_workpapers", [])
             model = _ScriptedModel([_submission()] if prior else [
                 _evidence_action(), _finance_action(), _submission(evidence_id="UNKNOWN")])
-            child = build_dell_specialist_agentic_state_graph(dependencies=DellSpecialistAgenticDependencies(
+            child = build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
                 model_turn=model, evidence_tool=ports.evidence, finance_tool=ports.finance),
                 recovery_state=prior[-1]["agent_state"] if prior else None).compile()
             output = await child.ainvoke({**value, "run_invocation_id": str(len(calls))}, config)

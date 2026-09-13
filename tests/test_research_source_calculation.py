@@ -8,15 +8,15 @@ from langchain_core.messages import HumanMessage, ToolMessage
 from mcp import Client
 import pytest
 
-from sec_agent.agent_runtime.dell_case_artifacts import DellCaseArtifacts
-from sec_agent.agent_runtime.dell_case_convergence_agent import (
+from sec_agent.agent_runtime.case_artifacts import CaseArtifacts
+from sec_agent.agent_runtime.report_synthesis_agent import (
     answer_citations, build_case_output_agent, observed_sources,
 )
-from sec_agent.agent_runtime.dell_case_review_agent import case_mcp_tools
+from sec_agent.agent_runtime.case_review_agent import case_mcp_tools
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest, navigate_source_nodes
-from test_dell_case_convergence_agent import NativeFixtureModel
-from test_dell_case_review_agent import artifacts, call
-from test_dell_research_mcp import _build_server, _method_arguments
+from test_report_synthesis_agent import NativeFixtureModel
+from test_case_review_agent import artifacts, call
+from test_research_mcp import _build_server, _method_arguments
 
 
 TEXT = "Synthetic test document: revenue was 1,234.50 dollars. This is a protocol fixture, not Dell data."
@@ -147,7 +147,7 @@ def test_local_sql_gap_is_citable_as_query_receipt_not_financial_evidence(artifa
 
 
 def test_followup_can_read_and_cite_persisted_calculation_without_recalculation(artifacts):
-    from test_dell_case_convergence_agent import saved_calculation_chart
+    from test_report_synthesis_agent import saved_calculation_chart
     report, _, calculation = saved_calculation_chart(artifacts)
     report.pop("charts")
     calc_id = calculation["calculation_id"]
@@ -209,8 +209,8 @@ def test_followup_reuses_answer_only_calc_with_operands_outside_case_catalog(art
 
 @pytest.mark.local_data_integration
 def test_specialist_native_calculator_survives_cross_agent_artifact_projection():
-    from test_dell_specialist_agentic_composition import _RealMCPFakeModel, RUNTIME_ENVIRONMENT, _assert_assets
-    from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_scripted_qualification_composition
+    from test_specialist_composition import _RealMCPFakeModel, RUNTIME_ENVIRONMENT, _assert_assets
+    from sec_agent.agent_runtime.specialist_composition import open_specialist_scripted_qualification_composition
     from sec_agent.agent_runtime.deepseek_structured_agents import _NATIVE_SPECIALIST_TOOLS
     _assert_assets()
     base, decisions = _RealMCPFakeModel(), []
@@ -237,13 +237,13 @@ def test_specialist_native_calculator_survives_cross_agent_artifact_projection()
         return {"action": "native_tool_batch", "context_digest": request["context_digest"], "tool_calls": [
             {"id": f"native-fixture-{len(decisions)}", "name": tool_names[action["action"]], "args": action, "type": "tool_call"}]}
 
-    with open_dell_specialist_scripted_qualification_composition(run_id="source-calculation-native-fixture",
+    with open_specialist_scripted_qualification_composition(run_id="source-calculation-native-fixture",
             run_invocation_id="source-calculation-native-fixture-a1", branch_id=BRANCH,
             environment=RUNTIME_ENVIRONMENT, scripted_model_turn=model, max_model_turns=8) as composition:
         result = composition.graph.invoke(composition.graph_input.model_dump(mode="json"), {"recursion_limit": 40})
     assert result["final_submission"] is not None
     assert [d["action"] for d in decisions].count("request_calculation") == 1
-    current = DellCaseArtifacts([result])
+    current = CaseArtifacts([result])
     claim = next(c for c in current.read_paper("P01", "claims") if c["kind"] == "calculation")
     value = current.read_source(claim["source_ids"][0])
     assert value["arithmetic_verified"] is True and value["numeric_fact_authority"] is False
@@ -283,8 +283,8 @@ def test_specialist_native_calculator_survives_cross_agent_artifact_projection()
 @pytest.mark.local_data_integration
 @pytest.mark.parametrize("ticker,available", [("NVDA", True), ("HPE", False)])
 def test_specialist_peer_sql_queries_are_not_rejected_as_outside_dell(ticker, available):
-    from test_dell_specialist_agentic_composition import RUNTIME_ENVIRONMENT, _assert_assets
-    from sec_agent.agent_runtime.dell_specialist_agentic_composition import open_dell_specialist_scripted_qualification_composition
+    from test_specialist_composition import RUNTIME_ENVIRONMENT, _assert_assets
+    from sec_agent.agent_runtime.specialist_composition import open_specialist_scripted_qualification_composition
     _assert_assets()
     requests = []
     def model(request):
@@ -294,7 +294,7 @@ def test_specialist_peer_sql_queries_are_not_rejected_as_outside_dell(ticker, av
                     "intent": {"ticker": ticker, "metric_ids": ["revenue"], "granularity": "quarter_discrete", "selection_mode": "latest_on_or_before"}}
         return {"action": "request_human_review", "context_digest": request["context_digest"],
                 "reason_summary": "Host-only tool qualification complete.", "blocker_code": "fixture_complete"}
-    with open_dell_specialist_scripted_qualification_composition(run_id="peer-sql-fixture",
+    with open_specialist_scripted_qualification_composition(run_id="peer-sql-fixture",
             run_invocation_id="peer-sql-fixture-a1", branch_id="Q8_COMPETITION_VALUE_POOL",
             environment=RUNTIME_ENVIRONMENT, scripted_model_turn=model) as composition:
         result = composition.graph.invoke(composition.graph_input.model_dump(mode="json"), {"recursion_limit": 20})
@@ -313,16 +313,16 @@ def test_specialist_peer_sql_queries_are_not_rejected_as_outside_dell(ticker, av
 def test_actual_local_hpe_pdf_window_calculates_without_pretending_sql_authority():
     """Host-read development check of a real parsed page, not a model answer seed."""
     from decimal import Decimal
-    from test_dell_specialist_agentic_composition import RUNTIME_ENVIRONMENT
-    from sec_agent.agent_runtime.dell_agent_server_data_composition import (
-        open_dell_approved_data_composition, DELL_APPROVED_RESEARCH_AS_OF, DELL_APPROVED_DATA_SNAPSHOT_ID)
+    from test_specialist_composition import RUNTIME_ENVIRONMENT
+    from sec_agent.agent_runtime.agent_server_data_composition import (
+        open_approved_data_composition, APPROVED_RESEARCH_AS_OF, APPROVED_DATA_SNAPSHOT_ID)
     async def run():
         attempt = "local-hpe-source-calculator-fixture-a1"
-        with open_dell_approved_data_composition(run_invocation_id=attempt, environment=RUNTIME_ENVIRONMENT,
+        with open_approved_data_composition(run_invocation_id=attempt, environment=RUNTIME_ENVIRONMENT,
                 source_read_enabled=True) as composition:
             async with Client(composition.mcp_server, raise_exceptions=False) as client:
                 method = await client.call_tool("get_dell_research_method", {"branch_ids": [BRANCH],
-                    "research_as_of": DELL_APPROVED_RESEARCH_AS_OF, "data_snapshot_id": DELL_APPROVED_DATA_SNAPSHOT_ID,
+                    "research_as_of": APPROVED_RESEARCH_AS_OF, "data_snapshot_id": APPROVED_DATA_SNAPSHOT_ID,
                     "execution_attempt_id": attempt})
                 read = await client.call_tool("read_source_document", {"branch_id": BRANCH, "run_scope": method.structured_content["run_scope"],
                     "request": {"operation": "read", "document_id": "DOC::CFF8E63F4B9BE4912F4138DA", "node_id": "CHUNK::8570D626593572A0828C15E8"}})

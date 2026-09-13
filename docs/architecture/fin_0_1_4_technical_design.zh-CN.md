@@ -84,6 +84,8 @@ Wind等服务的认证、环境、保存/再使用权限逐连接确认。可借
 
 [005原生资格](../worklog/fin_0_1_4/005_e1_native_queue_and_recovery.md)已证明0.13.3队列/取消/接续、人工pause与双worker共享队列。保留Agent Server为执行owner。未完成节点在重启后重放，已完成checkpoint不重跑；每worker=1也能产生部署并发2。审计uuid和BFF回执不能当模型去重。不另造调度器；当前日志为lite模式，正式许可仍待核定。
 
-[006共享预算/派发切片](../worklog/fin_0_1_4/006_e1_shared_budget_and_model_dispatch.md)采用PG预算行锁及两张FIN业务表，网络调用不持锁；原生task身份绑定完整请求/价格/预算依据，未知不重发、不释放，已保存消息回放不再结算，探索不能耗用交付预留。真实PG竞争与原生重启已有合成证据。`CaseModelAudit`只显式可选接入，尚未推广到全部研究/专家/摘要入口。金额是固定价格下usage计算值，缺失usage保留占用，实算超预留如实记录；不是账单保证。可信身份/私有消息权限、已知失败响应结算、真实SDK/价格与跨研究总额仍待验证。
+[006共享预算/派发切片](../worklog/fin_0_1_4/006_e1_shared_budget_and_model_dispatch.md)采用PG预算行锁及两张FIN业务表，网络调用不持锁；原生task身份绑定完整请求/价格/预算依据，未知不重发、不释放，已保存消息回放不再结算，探索不能耗用交付预留。真实PG竞争与原生重启已有合成证据。金额是固定价格下usage计算值，缺失usage保留占用，实算超预留如实记录；不是账单保证。
+
+[007研究入口接入](../worklog/fin_0_1_4/007_e1_research_budget_wiring.md)将同步负责人/专家、原生研究角色/交互专家/摘要及普通对话入口连到同一可选`ResearchBudget`。绑定从挂载host settings按thread核对owner和既有PG预算，子Agent不能自建额度。先保存SDK原始响应/usage再进行解析与接受；已知失败计费、回放不绕过校验。实际同步图和Writer工厂的MockTransport＋真实PG两场景已通过，后者4调用（含摘要/子专家）共计合成800 micro。未默认启用；数据库角色/保留策略、流式SDK/真实价格、跨研究总额和正式部署许可仍待资格，Hermes启用预算时拒绝未接入路径。
 
 2026-09-13 E1局部采用：保留`SubmissionReceipts` → `LocalRecords` → SQLite事务的同机提交边界。真实进程竞争、派发后退出、保存响应后送达前退出均通过；无新生产控制代码。跨主机共享存储、Agent Server队列/取消、父子预算、真实认证及供应商语义未由此覆盖。Dockerfile固定0.13.3，官方当前部署资料已复核，但本账号许可/费用未证，不直接升级或外网部署。见[004](../worklog/fin_0_1_4/004_baseline_review_and_e1_process_qualification.md)。

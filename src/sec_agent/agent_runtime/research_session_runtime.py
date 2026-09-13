@@ -105,7 +105,7 @@ def load_research_runtime_profile(root):
 
 def create_research_phase_runnables(*, root, settings, profile, case, run_id, thread_id, api_key,
                                     environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None,
-                                    blocked_model_inputs=(), plan_invocation_id=None):
+                                    blocked_model_inputs=(), plan_invocation_id=None, budget_scope=None):
     if studio:
         profile = studio.apply_profile(profile)
         case = studio.apply_case(case)
@@ -168,6 +168,10 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             "model_profiles": {**base.model_profiles, **{r: row[0] for r, row in updates.items()}},
             "token_budget_basis": {**base.token_budget_basis, **{r: row[1] for r, row in updates.items()}}})
 
+    def research_guards(configured):
+        return None if budget_scope is None else {
+            role: budget_scope.guard(role, configured.profile_for(role)) for role in ('lead', 'specialist')}
+
     async def research(request, config: RunnableConfig):
         request = await with_guidance(request, "research")
         seeds = {paper["task"]["task_id"]: paper for paper in request.get("completed_workpapers", [])}
@@ -181,7 +185,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     + json.dumps(uploads, ensure_ascii=False) + "\n通过 read_source_document 的 source_space=uploads 按需目录、检索、原文读取；图片/PDF页面可用 operation=inspect_image。"}
         configured = research_config()
         lead_adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
-            audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"))
+            audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
+            dispatch_guards=research_guards(configured))
         specialist_limits = profile["nodes"]["specialist"]["limits"]
         branches = [b for b in case["branch_topics"] if not execution.branch_ids or b["branch_id"] in execution.branch_ids]
         first_branch = branches[0]["branch_id"]
@@ -215,7 +220,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 emit({**task_event, "event": "started", "status": "running"})
                 # A fresh provider history and read-only MCP lifecycle per child.
                 adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
-                    audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"))
+                    audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
+                    dispatch_guards=research_guards(configured))
                 try:
                     with open_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                             plan_invocation_id=plan_invocation_id,
@@ -283,7 +289,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         method_instructions += "\nUse report_research_progress to briefly tell the researcher your approach before substantial work, and significant findings or a changed plan. Keep it concise and public; do not narrate hidden reasoning or call it after every tool."
         model_profile, basis, limits = model_values(role)
         audit = CaseModelAudit(actor=actor_override or ("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
-            public_sink=public_sink, private_sink=private_sink, stream_public=True)
+            public_sink=public_sink, private_sink=private_sink, stream_public=True,
+            dispatch_guard=budget_scope.guard(role, model_profile) if budget_scope else None)
         if any(t.name == "consult_research_specialist" for t in tools):
             from langchain.agents.middleware import ToolCallLimitMiddleware
             audit.extra_middlewares = [ToolCallLimitMiddleware(tool_name="consult_research_specialist", run_limit=2, exit_behavior="error")]
@@ -295,7 +302,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             summary_basis = TokenBudgetBasis.model_validate_json(json.dumps(summary["budget"]))
             summary_model = case_chat_model(summary_profile, summary_basis, base, api_key)
             summary_audit = CaseModelAudit(actor="context_summary:" + audit.actor, profile=summary_profile,
-                basis=summary_basis, public_sink=public_sink, private_sink=private_sink, stream_public=True)
+                basis=summary_basis, public_sink=public_sink, private_sink=private_sink, stream_public=True,
+                dispatch_guard=budget_scope.guard('context_summary', summary_profile) if budget_scope else None)
             audit.context_summary = RequestSummaryMiddleware(model=summary_model,
                 audited_model=summary_audit.model_runnable(summary_model), trigger_tokens=summary["trigger_tokens"],
                 keep_tokens=summary["keep_tokens"], max_summaries=summary["max_summaries"])
@@ -436,11 +444,15 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         current = user_context_prompt(metadata.get('owner_id','local-pilot'),thread_id)
         return [*metadata.get("research_guidance", []), *([{'message':current}] if current else [])]
     try:
+        from .research_budget import budget_from_host
+        thread = await native.threads.get(thread_id)
+        budget_scope = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
+            metadata=thread.get('metadata', {}), environment=os.environ)
         phases = create_research_phase_runnables(root=root, settings=settings, profile=profile, case=case,
             thread_id=thread_id, run_id=run_id, api_key=SecretStr(os.environ["DEEPSEEK_API_KEY"]), public_sink=public,
             private_sink=private, read_guidance=read_guidance, studio=studio, execution=execution,
             blocked_model_inputs=tuple(ids.get('finsight_blocked_model_inputs', ())),
-            plan_invocation_id=ids.get('finsight_plan_invocation_id'),
+            plan_invocation_id=ids.get('finsight_plan_invocation_id'), budget_scope=budget_scope,
             environment={**os.environ, **({'FINSIGHT_RESEARCH_AS_OF': ids['finsight_research_as_of']}
                 if ids.get('finsight_research_as_of') else {})})
         from .working_memory_tools import native_memory_scope

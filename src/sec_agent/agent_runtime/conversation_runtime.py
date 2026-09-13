@@ -63,6 +63,12 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
     try:
         thread = await sdk.threads.get(thread_id)
         metadata = thread.get("metadata", {})
+        import asyncio
+        from .research_budget import budget_from_host
+        budget_scope = await asyncio.to_thread(budget_from_host, settings, thread_id=thread_id,
+            metadata=metadata, environment=os.environ)
+        if budget_scope:
+            audit.dispatch_guard = budget_scope.guard('conversation', profile)
         target = metadata.get('working_note_target')
         task_context = ''
         memory_actor, memory_workspace = 'conversation',thread_id
@@ -92,6 +98,8 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
             grants.extend(handoff_tools(reference=metadata["handoff"], sdk=sdk,
                                        owner_id=metadata.get("owner_id", "local-pilot"),attachment_store=store))
         if metadata.get('harness') == 'hermes':
+            if budget_scope:
+                raise ValueError('research_budget_hermes_path_not_qualified')
             from .hermes_bridge import build_hermes_graph
             yield build_hermes_graph(owner=metadata.get('owner_id','local-pilot'),workspace=memory_workspace,
                 actor=memory_actor,model=profile.model,target=target,task_context=task_context,public_sink=public)
@@ -101,7 +109,8 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
             summary_profile = DeepSeekModelProfile.model_validate(summary_spec['profile'])
             summary_basis = TokenBudgetBasis.model_validate_json(json.dumps(summary_spec['budget']))
             summary_audit = CaseModelAudit(actor='conversation_summary',profile=summary_profile,basis=summary_basis,
-                public_sink=public,private_sink=private)
+                public_sink=public,private_sink=private,
+                dispatch_guard=budget_scope.guard('context_summary', summary_profile) if budget_scope else None)
             summary_model = case_chat_model(summary_profile,summary_basis,SimpleNamespace(base_url='https://api.deepseek.com'),
                 SecretStr(os.environ['DEEPSEEK_API_KEY']))
             summary = RequestSummaryMiddleware(model=summary_model,audited_model=summary_audit.model_runnable(summary_model),

@@ -315,14 +315,17 @@ class CaseModelAudit(AgentMiddleware):
                 "input_characters": size, "max_input_characters": self.basis.max_input_characters,
                 "input_character_basis": character_basis})
             raise ValueError("case_review_input_ceiling_before_transport")
-        async def execute(identity):
-            return await self._execute_model_call(request, handler, serialized, size, character_basis, identity)
         if self.dispatch_guard is not None:
-            return await self.dispatch_guard.invoke(request, execute, actor=self.actor, basis=self.basis,
-                profile=self.profile, replay_sink=self.public_sink)
-        return await execute(call_id)
+            import asyncio
+            guard = self.dispatch_guard
+            prior = await asyncio.to_thread(guard.prepare, request, actor=self.actor, basis=self.basis, profile=self.profile)
+            async def transport(bound_request):
+                return await guard.run_async(prior, lambda identity: handler(bound_request), replay_sink=self.public_sink)
+            return await self._execute_model_call(request, transport, serialized, size, character_basis,
+                prior['call_id'], replayed=prior['status'] == 'received')
+        return await self._execute_model_call(request, handler, serialized, size, character_basis, call_id)
 
-    async def _execute_model_call(self, request, handler, serialized, size, character_basis, call_id):
+    async def _execute_model_call(self, request, handler, serialized, size, character_basis, call_id, replayed=False):
         # Native LangChain metadata gives the cloud LLM span the same stable ID
         # as the local usage record; no backfill or mutation of historical runs.
         request = request.override(model=request.model.model_copy(update={"metadata": {
@@ -336,8 +339,12 @@ class CaseModelAudit(AgentMiddleware):
             "input_character_basis": character_basis,
             "transport_attempt_limit": 1, "provider_call_attempted": True,
             "execution_source": "provider_model", "recorded_at": datetime.now(timezone.utc).isoformat()}
-        self.public_sink({**common, "event": "started", "max_output_tokens": self.basis.max_output_tokens})
-        self.private_sink({"event": "request", "call_id": call_id, "actor": self.actor, "messages": serialized,
+        # Replays still pass the same acceptance checks and output projection,
+        # but do not emit a second billable usage/request record.
+        public = (lambda event: None) if replayed else self.public_sink
+        private = (lambda event: None) if replayed else self.private_sink
+        public({**common, "event": "started", "max_output_tokens": self.basis.max_output_tokens})
+        private({"event": "request", "call_id": call_id, "actor": self.actor, "messages": serialized,
             "messages_basis": "summary_request_before_sdk_tool_projection" if request.state.get("request_summary") else "original_history_before_sdk_request_projection",
             **({"original_messages": [m.model_dump(mode="json") for m in request.state["messages"]]}
                if request.state.get("request_summary") else {})})
@@ -345,13 +352,13 @@ class CaseModelAudit(AgentMiddleware):
         try:
             response = await handler(request)
         except BaseException as exc:
-            self.public_sink({**common, "event": "outcome", "status": "provider_failed",
+            public({**common, "event": "outcome", "status": "provider_failed",
                 "usage_reported": False, "error_type": type(exc).__name__,
                 "http_status_code": getattr(exc, "status_code", None), "elapsed_ms": round((perf_counter()-start)*1000, 3)})
             raise
         raw = next(m for m in reversed(response.result) if isinstance(m, AIMessage))
         truncated = raw.response_metadata.get("finish_reason") == "length"
-        self.private_sink({"event": "response", "call_id": call_id, "actor": self.actor, "raw_response": raw.model_dump(mode="json")})
+        private({"event": "response", "call_id": call_id, "actor": self.actor, "raw_response": raw.model_dump(mode="json")})
         if self.stream_public and not request.state.get("request_summary"):
             from .public_research_output import submitted_prose
             from langgraph.config import get_stream_writer
@@ -372,7 +379,7 @@ class CaseModelAudit(AgentMiddleware):
                 self.activity_sink(event)
                 self.events.append(event)
                 get_stream_writer()(event)
-        self.public_sink({**common, "event": "outcome", "status": "truncated" if truncated else "success",
+        public({**common, "event": "outcome", "status": "truncated" if truncated else "success",
             "valid_tool_call_count": len(raw.tool_calls), "invalid_tool_call_count": len(raw.invalid_tool_calls),
             "success_scope": "provider_response_only_not_tool_or_task_acceptance",
             "elapsed_ms": round((perf_counter()-start)*1000, 3), **_usage_audit_fields(raw)})

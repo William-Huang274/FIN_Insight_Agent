@@ -122,6 +122,34 @@ def test_currency_micros_round_up_without_float_loss():
     assert prices.cost(response()) == 1
 
 
+@pytest.mark.parametrize('mode', ['truncated', 'audit_failure'])
+def test_known_response_settled_before_acceptance_and_never_repromoted(boundary, mode):
+    b, calls = boundary, []
+    raw = response(response_metadata={'finish_reason': 'length' if mode == 'truncated' else 'tool_calls'})
+    original_private = b.audit.private_sink
+    def private(event):
+        if event['event'] == 'response':
+            raise RuntimeError('synthetic_audit_write_failed')
+    if mode == 'audit_failure':
+        b.audit.private_sink = private
+    async def handler(request):
+        calls.append(request)
+        return raw
+    with pytest.raises((ValueError, RuntimeError)):
+        asyncio.run(b.audit.awrap_model_call(b.request, handler))
+    assert b.store.received.call_args.args[-1] == 200
+    b.store.unknown.assert_not_called()
+    b.audit.private_sink = original_private
+    b.store.reserve.return_value = {'status':'received', 'call_id':'durable-call',
+                                   'response': {'messages': messages_to_dict(raw.result)}}
+    if mode == 'truncated':
+        with pytest.raises(ValueError, match='truncated_no_partial_acceptance'):
+            asyncio.run(b.audit.awrap_model_call(b.request, handler))
+    else:
+        assert asyncio.run(b.audit.awrap_model_call(b.request, handler)).result == raw.result
+    assert len(calls) == 1 and b.store.received.call_count == 1
+
+
 def test_opt_out_retains_existing_audit_behavior(boundary):
     b = boundary
     b.audit.dispatch_guard = None

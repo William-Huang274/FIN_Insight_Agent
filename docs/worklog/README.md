@@ -7,6 +7,7 @@
 - [0.1.4开工审查与E1真实进程资格](fin_0_1_4/004_baseline_review_and_e1_process_qualification.md)
 - [0.1.4 E1原生队列、中断与恢复资格](fin_0_1_4/005_e1_native_queue_and_recovery.md)
 - [0.1.4 E1共享研究预算与模型派发保护](fin_0_1_4/006_e1_shared_budget_and_model_dispatch.md)
+- [0.1.4 E1研究入口预算接入与已知失败结算](fin_0_1_4/007_e1_research_budget_wiring.md)
 
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 

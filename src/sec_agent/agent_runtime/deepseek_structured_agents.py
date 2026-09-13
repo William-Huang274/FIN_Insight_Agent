@@ -1219,6 +1219,7 @@ class DeepSeekStructuredAgentAdapter:
         chat_models: Mapping[ModelPurpose, _StructuredOutputCapable],
         audit_sink: ModelCallAuditSink | None = None,
         private_audit_sink: ModelCallAuditSink | None = None,
+        dispatch_guards=None,
     ) -> None:
         expected = {"planner", "specialist", "counter", "lead"} | set(config.model_profiles)
         if set(chat_models) != expected:
@@ -1228,6 +1229,7 @@ class DeepSeekStructuredAgentAdapter:
         self._audit_sink = audit_sink
         self._private_audit_sink = private_audit_sink
         self._agentic_history: dict[str, list[Any]] = {}
+        self._dispatch_guards = dispatch_guards
 
     @classmethod
     def from_config(
@@ -1238,6 +1240,7 @@ class DeepSeekStructuredAgentAdapter:
         audit_sink: ModelCallAuditSink | None = None,
         private_audit_sink: ModelCallAuditSink | None = None,
         context_editing: Mapping[str, int] | None = None,
+        dispatch_guards=None,
     ) -> "DeepSeekStructuredAgentAdapter":
         """Construct four independently budgeted ChatDeepSeek clients.
 
@@ -1269,7 +1272,7 @@ class DeepSeekStructuredAgentAdapter:
                 **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}),
             )
         return cls(config=config, chat_models=models, audit_sink=audit_sink,
-                   private_audit_sink=private_audit_sink)
+                   private_audit_sink=private_audit_sink, dispatch_guards=dispatch_guards)
 
     def _audit(self, event: Mapping[str, Any]) -> None:
         if self._audit_sink is None:
@@ -1305,6 +1308,7 @@ class DeepSeekStructuredAgentAdapter:
         semantic_input_digest = canonical_sha256(semantic_input)
         actor = _required_text(request_value, "agent_id")
         provider_call_attempted = saved_envelope is None
+        audit = self._audit
         execution_source = (
             "live_provider"
             if provider_call_attempted
@@ -1456,7 +1460,7 @@ class DeepSeekStructuredAgentAdapter:
         budget_role = "specialist" if model_purpose in {"verifier", "repair"} else model_purpose
         basis = self._config.token_budget_basis[budget_role]
         if input_characters > basis.max_input_characters:
-            self._audit(
+            audit(
                 {
                     "schema_version": "fin_ia_model_call_audit_event_v1_0",
                     "event": "outcome",
@@ -1484,7 +1488,25 @@ class DeepSeekStructuredAgentAdapter:
             raise DeepSeekStructuredAgentError(
                 f"deepseek_{role}_input_character_limit_exceeded"
             )
-        self._audit(
+        dispatch_guard = None
+        dispatch = None
+        if self._dispatch_guards is not None and saved_envelope is None:
+            from langchain.agents.middleware.types import ModelRequest
+            from langchain_core.utils.function_calling import convert_to_openai_tool
+            from sec_agent.adapters.model_dispatch_store import DispatchBlocked
+            dispatch_guard = self._dispatch_guards.get(model_purpose)
+            if dispatch_guard is None or not persistent_history:
+                raise DispatchBlocked('research_model_path_not_budgeted')
+            dispatch = dispatch_guard.prepare(ModelRequest(model=self._chat_models[model_purpose], messages=messages,
+                tools=[convert_to_openai_tool(_native_function_schema(model, runtime_context_binding=runtime_context_binding), strict=False)
+                       for model in native_tools.values()], tool_choice='auto', state={}),
+                actor=actor, basis=basis, profile=model_profile)
+            call_id = dispatch['call_id']
+            provider_call_attempted = dispatch['status'] != 'received'
+            execution_source = 'live_provider' if provider_call_attempted else 'saved_response_replay'
+            if not provider_call_attempted:
+                audit = lambda event: None  # Guard emits one replay event, not duplicate billable usage.
+        audit(
             {
                 "schema_version": "fin_ia_model_call_audit_event_v1_0",
                 "event": "started",
@@ -1517,7 +1539,7 @@ class DeepSeekStructuredAgentAdapter:
             }
         )
         started = perf_counter()
-        if provider_call_attempted:
+        if saved_envelope is None:
             if not persistent_history:
                 messages = [
                 SystemMessage(
@@ -1549,8 +1571,15 @@ class DeepSeekStructuredAgentAdapter:
                     "actor": actor, "messages": [_audit_value(m) for m in messages],
                     "messages_basis": "original_history_before_sdk_request_projection"})
             try:
-                envelope: Any = runnable.invoke(messages, config={"metadata": {
-                    "fin_call_id": call_id, "fin_actor": actor, "fin_model_purpose": model_purpose}})
+                def transport(identity):
+                    return runnable.invoke(messages, config={"metadata": {
+                        "fin_call_id": identity, "fin_actor": actor, "fin_model_purpose": model_purpose}})
+                if dispatch_guard is not None:
+                    from langchain.agents.middleware.types import ModelResponse
+                    envelope = dispatch_guard.run_sync(dispatch, lambda identity: ModelResponse(result=[transport(identity)]),
+                        replay_sink=self._audit).result[-1]
+                else:
+                    envelope: Any = transport(call_id)
                 if persistent_history:
                     raw_message = envelope
                     # LangChain already separates invalid JSON from parsed tool
@@ -1583,7 +1612,7 @@ class DeepSeekStructuredAgentAdapter:
                                 "parsing_error": None if valid else ValueError("native_action_tool_calls_invalid")}
             except Exception as exc:
                 http_status_code = getattr(exc, "status_code", None)
-                self._audit(
+                audit(
                     {
                         "schema_version": "fin_ia_model_call_audit_event_v1_0",
                         "event": "outcome",
@@ -1621,7 +1650,7 @@ class DeepSeekStructuredAgentAdapter:
             envelope = saved_envelope
         elapsed_ms = (perf_counter() - started) * 1_000
         if not isinstance(envelope, Mapping):
-            self._audit(
+            audit(
                 {
                     "schema_version": "fin_ia_model_call_audit_event_v1_0",
                     "event": "outcome",
@@ -1649,7 +1678,7 @@ class DeepSeekStructuredAgentAdapter:
                 "provider_reasoning_is_untrusted_audit_data_not_evidence": True,
             })
         if getattr(envelope.get("raw"), "response_metadata", {}).get("finish_reason") == "length":
-            self._audit({"schema_version": "fin_ia_model_call_audit_event_v1_0",
+            audit({"schema_version": "fin_ia_model_call_audit_event_v1_0",
                          "event": "outcome", "status": "provider_output_truncated",
                          "call_id": call_id, "role": role, "actor": actor,
                          "request_digest": request_digest, "elapsed_ms": elapsed_ms,
@@ -1658,7 +1687,7 @@ class DeepSeekStructuredAgentAdapter:
             raise DeepSeekStructuredAgentError("provider_output_truncated_no_partial_promotion")
         if envelope.get("parsing_error") is not None or envelope.get("parsed") is None:
             parsing_error = envelope.get("parsing_error")
-            self._audit(
+            audit(
                 {
                     "schema_version": "fin_ia_model_call_audit_event_v1_0",
                     "event": "outcome",
@@ -1698,7 +1727,7 @@ class DeepSeekStructuredAgentAdapter:
             )
             raise DeepSeekStructuredAgentError("model_structured_parse_failed")
         if envelope.get("raw") is None:
-            self._audit(
+            audit(
                 {
                     "schema_version": "fin_ia_model_call_audit_event_v1_0",
                     "event": "outcome",
@@ -1729,7 +1758,7 @@ class DeepSeekStructuredAgentAdapter:
             parsed = _validate_payload(schema, envelope["parsed"])
             usage = _usage(envelope["raw"])
         except DeepSeekStructuredAgentError as exc:
-            self._audit(
+            audit(
                 {
                     "schema_version": "fin_ia_model_call_audit_event_v1_0",
                     "event": "outcome",
@@ -1767,7 +1796,7 @@ class DeepSeekStructuredAgentAdapter:
                 }
             )
             raise
-        self._audit(
+        audit(
             {
                 "schema_version": "fin_ia_model_call_audit_event_v1_0",
                 "event": "outcome",
@@ -1803,7 +1832,7 @@ class DeepSeekStructuredAgentAdapter:
                 ),
             }
         )
-        if persistent_history and provider_call_attempted:
+        if persistent_history and saved_envelope is None:
             self._agentic_history[actor] = [*messages, envelope["raw"]]
         return (
             parsed,

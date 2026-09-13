@@ -59,7 +59,8 @@ class ModelDispatchGuard:
             raise ValueError('reservation_basis_required')
         self.reservation_basis, self.delivery = reservation_basis, delivery
 
-    async def invoke(self, request, handler, *, actor, basis, profile, replay_sink):
+    def prepare(self, request, *, actor, basis, profile):
+        """Reserve using native execution identity; callers must preserve this context."""
         from .deepseek_structured_agents import ReasoningPreservingChatDeepSeek
         try:
             native = get_config().get('configurable', {})
@@ -91,25 +92,52 @@ class ModelDispatchGuard:
         fingerprint = sha256(json.dumps({'payload': payload, 'policy': policy,
                                         'provider_base': str(request.model.openai_api_base)}, sort_keys=True,
                                        ensure_ascii=False, allow_nan=False).encode()).hexdigest()
-        prior = await asyncio.to_thread(self.store.reserve, self.owner, self.budget, key, fingerprint,
-                                       self.reserved, policy, currency=self.prices.currency, delivery=self.delivery)
-        call_id = str(prior['call_id'])
+        prior = self.store.reserve(self.owner, self.budget, key, fingerprint,
+                                  self.reserved, policy, currency=self.prices.currency, delivery=self.delivery)
+        return {**prior, 'key': key, 'actor': actor, 'call_id': str(prior['call_id'])}
+
+    def replay(self, prior, replay_sink):
         if prior['status'] == 'received':
-            replay_sink({'event': 'replay', 'status': 'saved_response', 'actor': actor,
-                         'call_id': call_id, 'provider_call_attempted': False})
+            replay_sink({'event': 'replay', 'status': 'saved_response', 'actor': prior['actor'],
+                         'call_id': prior['call_id'], 'provider_call_attempted': False})
             return ModelResponse(result=messages_from_dict(prior['response']['messages']))
+
+    def settle(self, prior, result):
+        if result.structured_response is not None:
+            raise ValueError('typed_structured_response_replay_not_qualified')
+        self.store.received(self.owner, self.budget, prior['key'],
+                            {'messages': messages_to_dict(result.result)}, self.prices.cost(result))
+
+    def run_sync(self, prior, handler, *, replay_sink):
+        if (saved := self.replay(prior, replay_sink)) is not None:
+            return saved
         try:
-            result = await handler(call_id)
-            if result.structured_response is not None:
-                raise ValueError('typed_structured_response_replay_not_qualified')
-            await asyncio.to_thread(self.store.received, self.owner, self.budget, key,
-                                    {'messages': messages_to_dict(result.result)}, self.prices.cost(result))
+            result = handler(prior['call_id'])
+            self.settle(prior, result)
+            return result
+        except BaseException:
+            try:
+                self.store.unknown(self.owner, self.budget, prior['key'])
+            except Exception:
+                pass  # Precommitted dispatched reservation remains durable.
+            raise
+
+    async def run_async(self, prior, handler, *, replay_sink):
+        if (saved := self.replay(prior, replay_sink)) is not None:
+            return saved
+        try:
+            result = await handler(prior['call_id'])
+            await asyncio.to_thread(self.settle, prior, result)
             return result
         except BaseException:
             # Cancellation/process death cannot make the precommitted reservation
             # disappear. Failed reconciliation itself leaves dispatched durable.
             try:
-                await asyncio.shield(asyncio.to_thread(self.store.unknown, self.owner, self.budget, key))
+                await asyncio.shield(asyncio.to_thread(self.store.unknown, self.owner, self.budget, prior['key']))
             except Exception:
                 pass
             raise
+
+    async def invoke(self, request, handler, *, actor, basis, profile, replay_sink):
+        prior = await asyncio.to_thread(self.prepare, request, actor=actor, basis=basis, profile=profile)
+        return await self.run_async(prior, handler, replay_sink=replay_sink)

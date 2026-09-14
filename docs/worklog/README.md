@@ -11,6 +11,7 @@
 - [0.1.4 E1流式用量与一次真实DS样本](fin_0_1_4/008_e1_stream_usage_and_live_probe.md)
 - [0.1.4 E1私有预算存储权限与恢复](fin_0_1_4/009_e1_private_budget_store_and_restore.md)
 - [0.1.4 E2持久项目与项目资料回读](fin_0_1_4/010_e2_persistent_projects_and_document_library.md)
+- [0.1.4 E2项目资料进入研究与引用回读](fin_0_1_4/011_e2_project_materials_into_research.md)
 
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 

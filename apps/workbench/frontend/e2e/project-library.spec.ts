@@ -35,4 +35,22 @@ for(const width of [1440,390]) test(`项目保存上传与新浏览器重查 ${w
     expect(await other.evaluate(()=>Object.keys(localStorage).some(k=>k.startsWith('finsight.project-index')))).toBe(false);
     await other.reload();await expect(other.locator('.fs-project-documents article')).toHaveCount(1);
   } finally {await second.close();}
+  await page.getByLabel('选择资料 合成资料.md',{exact:true}).check();
+  await page.getByRole('button',{name:'用所选资料准备研究',exact:true}).click();
+  await expect(page.getByText('将保存为本次研究的独立资料副本，仍需核验。',{exact:true})).toBeVisible();
+  await page.getByLabel('这次你想研究什么？',{exact:true}).fill('请读取所选资料，核查留存率线索的出处和局限。');
+  await page.getByRole('button',{name:'保存为资料准备草稿',exact:true}).click();
+  await expect(page.getByText('资料准备任务已保存，尚未调用研究模型。',{exact:true})).toBeVisible();
+  await page.getByText('本任务资料 · 1 份',{exact:true}).click();
+  await expect(page.locator('.rs-task-board').filter({hasText:'本任务资料'})).toContainText('项目资料快照，待核验');
+  const thread=new URL(page.url()).searchParams.get('thread');
+  const index=await (await page.request.get('/api/v1/projects')).json();
+  expect(index.assignments[thread!]).toBe(new URL(url).searchParams.get('project'));
+  const snapshot=await (await page.request.get(`/api/v1/research-sessions/${thread}`)).json();
+  expect(snapshot.runs).toEqual([]);
+  expect(snapshot.attachments[0].project_origin.document_id).toMatch(/^UPLOAD::/);
+  await page.reload();
+  await expect(page.getByText('资料准备任务已保存，尚未调用研究模型。',{exact:true})).toBeVisible();
+  await page.getByText('本任务资料 · 1 份',{exact:true}).click();
+  await page.screenshot({path:testInfo.outputPath(`project-draft-${width}.png`),fullPage:true});
 });

@@ -193,6 +193,7 @@ export function ResearchSession() {
   const [researchQuestion, setResearchQuestion] = useState("");
   const [studioAssistant, setStudioAssistant] = useState("");
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
+  const [projectMaterials,setProjectMaterials]=useState<{project_id:string;project_name:string;documents:{document_id:string;name:string}[]}|null>(null);
   const [uploadStatus, setUploadStatus] = useState("");
   const [sessions, setSessions] = useState<Session[]>([]);
   const [snapshot, setSnapshot] = useState<Session | null>(null);
@@ -438,15 +439,21 @@ export function ResearchSession() {
   const visibleEvents = usageRun ? allEvents.filter(e => e.run_id === usageRun.run_id) : allEvents;
   const visibleModels = visibleEvents.filter(e => e.kind === "model" && e.event === "outcome");
   const newSession = async (mode: "review" | "research" = "review", draft = false) => {
+    if (uploadFiles.length + (projectMaterials?.documents.length || 0) > 12) { setError('项目资料与补充文件合计最多12份，请调整选择。'); return; }
     setSending(true);
     setError("");
     try {
       const made = await sessionsApi.create(mode === "research" ? {
-        mode, title: researchQuestion.trim().slice(0, 100) || "新研究任务", question: researchQuestion, defer_start: draft || uploadFiles.length > 0,
+        mode, title: researchQuestion.trim().slice(0, 100) || "新研究任务", question: researchQuestion, defer_start: draft || uploadFiles.length > 0 || !!projectMaterials,
+        ...(projectMaterials ? {project_materials:{project_id:projectMaterials.project_id,document_ids:projectMaterials.documents.map(d=>d.document_id)}} : {}),
         ...(studioAssistant ? {studio_assistant_id:studioAssistant} : {}),
         execution,
       } : { mode });
       choose(made.thread_id);
+      if (mode === 'research' && projectMaterials) {
+        setProjectMaterials(null);
+        await projects.reload();
+      }
       if (mode === "research" && uploadFiles.length) {
         for (const file of uploadFiles) {
           setUploadStatus(`正在解析 ${file.name}，尚未启动研究模型`);
@@ -454,8 +461,8 @@ export function ResearchSession() {
         }
         setUploadFiles([]);
         setUploadStatus("");
-        if (!draft) await sessionsApi.start(made.thread_id);
       }
+      if (mode === 'research' && !draft && (uploadFiles.length > 0 || projectMaterials)) await sessionsApi.start(made.thread_id);
       if (mode === "research") setInspector("activity");
       await refresh();
     } catch (e) {
@@ -529,7 +536,7 @@ export function ResearchSession() {
         </header>
         {projects.error && <p role="alert">{projects.error} <button onClick={()=>void projects.reload()}>重新载入项目</button></p>}
         {projects.legacy && projects.ready && <p>发现此浏览器的旧项目整理，原记录仍保留。<button disabled={projects.saving} onClick={()=>void projects.update(projects.legacy!)}>导入到当前工作台</button></p>}
-        {page === 'project' && (projects.index.projects.some(p=>p.id===params.get('project')) ? <ProjectLibrary key={params.get('project')} project={projects.index.projects.find(p=>p.id===params.get('project'))!} sessions={sessions.filter(s=>projects.index.assignments[s.thread_id]===params.get('project'))} navigate={navigate}/> : <section className="fs-page"><h1>{projects.ready?'项目不存在或不属于当前工作区':'正在读取项目…'}</h1></section>)}
+        {page === 'project' && (projects.index.projects.some(p=>p.id===params.get('project')) ? <ProjectLibrary key={params.get('project')} project={projects.index.projects.find(p=>p.id===params.get('project'))!} sessions={sessions.filter(s=>projects.index.assignments[s.thread_id]===params.get('project'))} navigate={navigate} onResearch={documents=>{const project=projects.index.projects.find(p=>p.id===params.get('project'))!;setProjectMaterials({project_id:project.id,project_name:project.name,documents});navigate('new','');}}/> : <section className="fs-page"><h1>{projects.ready?'项目不存在或不属于当前工作区':'正在读取项目…'}</h1></section>)}
         {page === "home" && <ResearchStart question={researchQuestion} onQuestion={setResearchQuestion} navigate={navigate} sessions={sessions} execution={execution} onExecution={setExecution} />}
         {page === "studio" && <ResearchStudio />}
         {dataPage && <DataLibrary page={page} navigate={navigate} onSupplement={question=>{setResearchQuestion(question);navigate("new","");}} />}
@@ -565,6 +572,7 @@ export function ResearchSession() {
               <ResearchConfigurationPicker value={studioAssistant} onChange={setStudioAssistant}/>
               <ExecutionPicker value={execution} onChange={setExecution} disabled={sending} assistantId={studioAssistant}/>
               <label htmlFor="new-research-question">这次你想研究什么？</label>
+              {projectMaterials&&<div role="status"><p>来自项目“{projectMaterials.project_name}”的 {projectMaterials.documents.length} 份资料：{projectMaterials.documents.map(d=>d.name).join('、')}</p><p>将保存为本次研究的独立资料副本，仍需核验。</p><button disabled={sending} onClick={()=>setProjectMaterials(null)}>移除项目资料选择</button></div>}
               <textarea id="new-research-question" value={researchQuestion} maxLength={16000}
                 onChange={(e) => setResearchQuestion(e.target.value)} rows={7}
                 placeholder="写明研究对象、期间，以及希望核实的具体问题…" />
@@ -642,10 +650,10 @@ export function ResearchSession() {
               </label>}
             {!!session.attachments?.length && <details className="rs-task-board"><summary>本任务资料 · {session.attachments.length} 份</summary>
               {session.attachments.map((file) => <p key={file.document_id}><a href={`/api/v1/research-sessions/${id}/attachments/${encodeURIComponent(file.document_id)}`}>{file.name}</a>
-                {" · "}{file.sections} 个页面/章节{file.needs_vision ? " · 可按需视觉识别" : " · 已解析，可检索"}</p>)}
+                {" · "}{file.sections} 个页面/章节{file.needs_vision ? " · 可按需视觉识别" : " · 已解析，可检索"}{file.project_origin&&' · 项目资料快照，待核验'}</p>)}
             </details>}
-            {session.is_draft && <div className="rs-report-notice"><span>资料准备任务已保存，尚未调用研究模型。</span>
-              <button disabled={busy} onClick={async () => { setSending(true); try { await sessionsApi.start(id); setSession(await sessionsApi.state(id)); }
+            {session.is_draft && <div className="rs-report-notice"><span>{session.project_materials_ready===false?'项目资料准备未确认完成，原草稿已保留，暂不能启动研究。':'资料准备任务已保存，尚未调用研究模型。'}</span>
+              <button disabled={busy||session.project_materials_ready===false} onClick={async () => { setSending(true); try { await sessionsApi.start(id); setSession(await sessionsApi.state(id)); }
                 catch (e) { setError((e as Error).message); } finally { setSending(false); } }}>开始已准备的研究</button></div>}
             {session.research_stop_reason && <div className="rs-report-notice">
               <ShieldCheck size={17} /><span>本次仍有未解决问题，已保留成果，不会自动整案重跑。

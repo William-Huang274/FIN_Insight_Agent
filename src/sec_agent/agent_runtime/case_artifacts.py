@@ -135,7 +135,7 @@ class CaseArtifacts:
             "causal_attribution_authorized", "truncated", "excerpt_truncated", "source_document_completeness_verified",
             "source_locator", "parser_page_start", "parser_page_end", "page_semantics", "section_path",
             "document_id", "node_id", "company", "issuer_id", "content_sha256", "calculation_id", "result_unit",
-            "arithmetic_verified", "financial_semantics_verified") if key in item}}
+            "arithmetic_verified", "financial_semantics_verified", "project_origin", "raw_body_sha256") if key in item}}
 
     def catalog(self):
         return {"case_id": self.case_id, "research_as_of": self.research_as_of,

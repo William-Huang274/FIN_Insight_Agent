@@ -13,6 +13,7 @@ import sqlite3
 from uuid import UUID, uuid4
 import zipfile
 from contextlib import contextmanager
+from datetime import datetime, timezone
 
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
@@ -109,6 +110,7 @@ class TaskAttachmentStore:
         with self.connect() as db:
             db.execute("CREATE TABLE IF NOT EXISTS attachments (thread TEXT, id TEXT PRIMARY KEY, name TEXT, kind TEXT, body BLOB, pages TEXT, digest TEXT, created TEXT DEFAULT CURRENT_TIMESTAMP)")
             db.execute("CREATE TABLE IF NOT EXISTS vision (thread TEXT, object_id TEXT, page INTEGER, prompt_hash TEXT, result TEXT, PRIMARY KEY(thread, object_id, page, prompt_hash))")
+            db.execute("CREATE TABLE IF NOT EXISTS attachment_origins (object_id TEXT PRIMARY KEY, origin TEXT NOT NULL)")
 
     @contextmanager
     def connect(self):
@@ -141,8 +143,36 @@ class TaskAttachmentStore:
     def list(self, thread_id):
         with self.connect() as db:
             rows = db.execute("SELECT id,name,kind,pages,LENGTH(body) AS bytes FROM attachments WHERE thread=? ORDER BY rowid", (str(UUID(str(thread_id))),)).fetchall()
+            origins = {r['object_id']: json.loads(r['origin']) for r in db.execute(
+                'SELECT o.* FROM attachment_origins o JOIN attachments a ON a.id=o.object_id WHERE a.thread=?', (str(thread_id),))}
         return [{"document_id": row["id"], "name": row["name"], "kind": row["kind"], "bytes": row["bytes"],
+                 **({'project_origin': origins[row['id']]} if row['id'] in origins else {}),
                  "sections": len(json.loads(row["pages"])), "needs_vision": any(p["needs_vision"] for p in json.loads(row["pages"]))} for row in rows]
+
+    def copy_project_materials(self, thread_id, project_id, rows):
+        """Copy an authorized selection atomically, retaining exact parsed bytes.
+
+        Caller resolves project ownership. This is only for a newly created task,
+        before publishing its ID or dispatching any research run.
+        """
+        thread_id = str(UUID(str(thread_id)))
+        if not rows or len(rows) > 12 or len({r['id'] for r in rows}) != len(rows):
+            raise ValueError('project_material_selection_invalid')
+        with self.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            count, size = db.execute('SELECT COUNT(*), COALESCE(SUM(LENGTH(body)),0) FROM attachments WHERE thread=?', (thread_id,)).fetchone()
+            if count + len(rows) > 12 or size + sum(len(r['body']) for r in rows) > 80 * 1024 * 1024:
+                raise ValueError('task_upload_limit_12_files_80MiB')
+            for row in rows:
+                if _digest(row['body']) != row['digest']:
+                    raise ValueError('project_material_integrity_failure')
+                object_id = 'UPLOAD::' + uuid4().hex
+                origin = {'project_id': str(project_id), 'document_id': row['id'], 'raw_body_sha256': row['digest'],
+                          'source_role': 'user_upload_unverified', 'copied_at': datetime.now(timezone.utc).isoformat()}
+                db.execute('INSERT INTO attachments(thread,id,name,kind,body,pages,digest) VALUES(?,?,?,?,?,?,?)',
+                           (thread_id, object_id, row['name'], row['kind'], row['body'], row['pages'], row['digest']))
+                db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps(origin)))
+        return self.list(thread_id)
 
     def get(self, thread_id, object_id):
         with self.connect() as db:
@@ -224,4 +254,6 @@ class TaskAttachmentStore:
                         "company": "user_supplied_verify_in_context", "stable_url": url, "content": chunk,
                         "content_sha256": _digest(chunk.encode()), "raw_body_sha256": row["digest"]}
                     nodes.extend([{**base, "node_kind": "section"}, {**base, "node_kind": "text", "node_id": node_id + ":leaf"}])
-        return navigate_source_nodes(nodes, request, snapshot=_digest("".join(row["digest"] for row in rows).encode()), allowed_space="uploads")
+        result = navigate_source_nodes(nodes, request, snapshot=_digest("".join(row["digest"] for row in rows).encode()), allowed_space="uploads")
+        origins = {r['document_id']: r['project_origin'] for r in self.list(thread_id) if r.get('project_origin')}
+        return result.model_copy(update={'items': tuple({**item, **({'project_origin': origins[item['document_id']]} if item['document_id'] in origins else {})} for item in result.items)})

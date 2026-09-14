@@ -1,6 +1,6 @@
 # FinSight 0.1.4 技术方案
 
-2026-09-13 · 文档草案 v0.1 · 设计方向，尚未作为0.1.4运行时实现。
+2026-09-14 · 文档草案 v0.1 · E1/E2已有局部运行实现，完整范围仍按执行路线推进，未整版验收。
 
 [PRD](../product/fin_0_1_4_prd.zh-CN.md) · [执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md) · [当前架构](../public/architecture.zh-CN.md)
 
@@ -78,7 +78,7 @@ E1私有存储采用独立预算数据库和`FIN_MODEL_BUDGET_POSTGRES_URI`；�
 
 ## 7. 验证、兼容与待决策
 
-E2首片采用既有SQLite与`TaskAttachmentStore`，不新增存储服务/解析平台。`/api/v1/projects`按认证owner保存项目索引，修订号+事务防旧窗口覆盖；项目文件由owner/project共同命名空间保存于独立`project-library`目录，复用原大小/数量限制。前端新增项目资料页，可查找保存文本和下载原件，源属性固定用户上传待核验；当前不是语义检索/Agent知识接入。新归类引用仍通过原研究owner检查，既有报告权限/版本不转移。旧浏览器整理不删除，可在服务端为空时显式导入；无自动跨端旧索引合并或删除。验证与下一步见[010](../worklog/fin_0_1_4/010_e2_persistent_projects_and_document_library.md)。
+E2采用既有SQLite与`TaskAttachmentStore`，不新增存储服务/解析平台。`/api/v1/projects`按认证owner保存索引，修订号+事务防旧窗口覆盖；项目文件由owner/project共同命名空间保存于独立`project-library`目录，复用原大小/数量限制。页面可查找文本、下载原件及选择用于新研究；BFF验证归属后复制原件和已解析页面到新任务，记录原项目/文件/摘要，原生元数据准备状态阻止中途失败误启动。目标SQLite批量原子提交不等同跨原生服务事务；异常草稿保留且不自动重试。现有研究资料工具、专家观察和跨Agent来源回读保留出处，属性仍为用户上传待核验；当前不是语义索引或真实模型质量验收。旧浏览器整理保留，空服务端可显式导入。历史研究权限/版本不转移，副本不随项目变化自动更新，撤销传播仍待实现。见[010](../worklog/fin_0_1_4/010_e2_persistent_projects_and_document_library.md)、[011](../worklog/fin_0_1_4/011_e2_project_materials_into_research.md)。
 
 [008流式与真实样本](../worklog/fin_0_1_4/008_e1_stream_usage_and_live_probe.md)：沿用SDK的SSE传输/聚合，薄映射补DeepSeek原始usage及cache hit；缺必需字段保留预算占用。无终止字段的提前EOF保持未知；CaseModelAudit拒绝不完整输出，已知截断/中止仍先结算再拒绝接受。Pro当前价表纠正，一次真实非思考响应77输入/37输出估算0.001692元，PG保存后同checkpoint回放不再请求。原付费pytest因数值字符串格式失败保留，离线复核不产生新调用，行数偏差未消除；不是付费硬崩溃或金融全链资格。下一步验证PG原生角色/保留恢复，预算默认仍关闭。
 

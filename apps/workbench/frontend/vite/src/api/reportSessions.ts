@@ -83,13 +83,14 @@ export type Session = {
   human_edits?: {number:number;owner:string;recorded_at:string;reason:string;base_version:number;report_before:string;report_after:string;charts?:{chart_index:number;title:string;before:string;after:string}[];papers:{paper_id:string;actor:string;title:string;before:string;after:string}[]}[];
   execution?: ExecutionOptions;
   can_upload?: boolean;
+  project_materials_ready?: boolean;
   report_digest?: string;
   cumulative_usage?: { native_runs: number; known_cny: number; recorded_requests: number; reported_requests: number;
     unknown_or_pending_requests: number; unpriced_requests: number; input_tokens: number; output_tokens: number;
     total_tokens: number; cache_hit_tokens: number; cache_miss_tokens: number; unknown_cache_requests: number; unknown_elapsed_requests: number;
     elapsed_ms: number; missing_audit_runs: number; partial_audit: boolean; notice: string };
   is_draft?: boolean;
-  attachments?: { document_id: string; name: string; kind: string; bytes: number; sections: number; needs_vision: boolean }[];
+  attachments?: { document_id: string; name: string; kind: string; bytes: number; sections: number; needs_vision: boolean; project_origin?:{project_id:string;document_id:string;raw_body_sha256:string} }[];
   thread_id: string;
   title: string;
   status: string;
@@ -177,7 +178,7 @@ async function request<T>(url: string, body?: unknown): Promise<T> {
 export const sessionsApi = {
   config: () => request<ResearchConfiguration>("/api/v1/research-session-config"),
   list: () => request<Session[]>(base),
-  create: (body: { mode?: "review" | "research"; title?: string; question?: string; defer_start?: boolean; studio_assistant_id?:string; execution?: ExecutionOptions } = {}) =>
+  create: (body: { mode?: "review" | "research"; title?: string; question?: string; defer_start?: boolean; studio_assistant_id?:string; execution?: ExecutionOptions; project_materials?:{project_id:string;document_ids:string[]} } = {}) =>
     request<{ thread_id: string; run_id: string | null }>(base, body),
   start: (id: string) => request<{ run_id: string }>(`${base}/${id}/start`, {}),
   guidance: (id: string, message: string) => request(`${base}/${id}/guidance`, { message }),

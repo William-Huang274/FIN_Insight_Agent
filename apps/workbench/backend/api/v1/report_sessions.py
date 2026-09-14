@@ -275,6 +275,12 @@ def can_restart_remaining_node(thread, state, last_run, usage):
         and usage and usage["recorded_requests"] > 0 and not usage["unknown_or_pending_requests"] and not usage["partial_audit"])
 
 
+class ProjectMaterials(BaseModel):
+    model_config = ConfigDict(extra='forbid')
+    project_id: UUID
+    document_ids: list[str] = Field(min_length=1, max_length=12)
+
+
 class NewSession(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     title: str = Field(default="新研究任务", min_length=1, max_length=120)
@@ -283,6 +289,7 @@ class NewSession(BaseModel):
     defer_start: bool = False
     studio_assistant_id: UUID | None = None
     execution: ExecutionOptions | None = None
+    project_materials: ProjectMaterials | None = None
 
 
 class ResearchGuidance(BaseModel):
@@ -466,6 +473,24 @@ def build_report_sessions_router(service):
     @router.post("/research-sessions")
     async def create(body: NewSession, request: Request):
         browser_write(request)
+        project_library = None
+        project_rows = []
+        if body.project_materials:
+            if body.mode != 'research' or not body.defer_start:
+                raise HTTPException(422, '项目资料须先保存为研究草稿，核对后再启动')
+            if service.attachment_store is None:
+                raise HTTPException(503, '本部署未配置任务资料存储')
+            from sec_agent.research_foundation.project_library import ProjectLibrary
+            project_library = ProjectLibrary(service.attachment_store.root.parent / 'project-library')
+            selection = body.project_materials
+            if len(set(selection.document_ids)) != len(selection.document_ids):
+                raise HTTPException(422, '请勿重复选择同一份项目资料')
+            try:
+                scope = await run_in_threadpool(project_library.scope, service_owner(), selection.project_id)
+                for document_id in selection.document_ids:
+                    project_rows.append(await run_in_threadpool(project_library.documents.get, scope, document_id))
+            except (KeyError, ValueError):
+                raise HTTPException(404, '所选项目或资料不存在于当前工作区') from None
         if service_owner() != 'local-pilot' and body.mode != 'research':
             raise HTTPException(403, '共享历史样例只在本地个人模式开放')
         graph, payload = GRAPH, {"open": True}
@@ -503,7 +528,18 @@ def build_report_sessions_router(service):
                 studio_configuration_digest=studio.digest)
         if body.defer_start:
             metadata["pending_question"] = payload["question"]
+        if body.project_materials:
+            metadata['project_materials_status'] = 'preparing'
         thread = await service.sdk.threads.create(metadata=metadata)
+        if body.project_materials:
+            try:
+                await run_in_threadpool(service.attachment_store.copy_project_materials, thread['thread_id'],
+                                        body.project_materials.project_id, project_rows)
+                await run_in_threadpool(project_library.assign_new_thread, service_owner(),
+                                        body.project_materials.project_id, thread['thread_id'])
+                await service.sdk.threads.update(thread['thread_id'], metadata={'project_materials_status': 'ready'})
+            except Exception:
+                raise HTTPException(409, f"研究草稿 {thread['thread_id']} 已保留，项目资料准备未确认完成；未启动模型，请检查草稿，不要重复创建。") from None
         if body.defer_start:
             return {"thread_id": thread["thread_id"], "run_id": None, "status": "draft"}
         run = await service.sdk.runs.create(thread["thread_id"], graph, input=payload, stream_mode="custom",
@@ -516,6 +552,8 @@ def build_report_sessions_router(service):
         browser_write(request)
         thread = await service.owned_thread(thread_id)
         question = thread.get("metadata", {}).get("pending_question")
+        if thread.get('metadata', {}).get('project_materials_status') not in (None, 'ready'):
+            raise HTTPException(409, '项目资料准备未完成，不能启动研究；请检查原草稿')
         if graph_for_thread(thread) != RESEARCH_GRAPH or not service.research_profile or not question:
             raise HTTPException(409, "这不是待启动的新研究任务")
         if await service.sdk.runs.list(str(thread_id), limit=1):
@@ -697,6 +735,7 @@ def build_report_sessions_router(service):
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
             **projection, "execution": thread.get("metadata", {}).get("execution"), "studio_assistant_id": thread.get('metadata', {}).get('studio_assistant_id'), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
+            "project_materials_ready": thread.get('metadata', {}).get('project_materials_status') in (None, 'ready'),
             "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
             "attachments": service.attachment_store.list(thread_id) if service.attachment_store else [],

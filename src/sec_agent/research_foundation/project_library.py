@@ -64,6 +64,20 @@ class ProjectLibrary:
                            'source_role':'user_upload_unverified'})
         return {'items':result,'query':query,'search_mode':'saved_text_substring'}
 
+    def assign_new_thread(self, owner, project_id, thread_id):
+        """Merge a server-created thread without overwriting concurrent UI edits."""
+        with self.documents.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            row = db.execute('SELECT revision,body FROM project_indexes WHERE owner=?', (owner,)).fetchone()
+            body = json.loads(row['body']) if row else {}
+            if not any(p['id'] == str(project_id) for p in body.get('projects', [])):
+                raise ValueError('project_not_found')
+            if len(body['assignments']) >= 1000:
+                raise ValueError('project_assignment_limit_1000')
+            body['assignments'][str(thread_id)] = str(project_id)
+            db.execute('UPDATE project_indexes SET revision=?,body=? WHERE owner=?',
+                       (row['revision'] + 1, json.dumps(body, ensure_ascii=False), owner))
+
     def detail(self, owner, project_id, document_id):
         row=self.documents.get(self.scope(owner,project_id),document_id)
         return {'document_id':row['id'],'name':row['name'],'digest':row['digest'],

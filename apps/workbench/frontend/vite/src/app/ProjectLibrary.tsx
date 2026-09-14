@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { Session } from '../api/reportSessions';
 import './project-library.css';
+import {ProjectSecSource} from './ProjectSecSource';
 
 type Document = {document_id:string;name:string;bytes:number;text_status:string;excerpt:string;sections:number};
 type Detail = {name:string;sections:{heading:string;text:string;page:number|null;needs_vision:boolean}[]};
@@ -38,6 +39,7 @@ export function ProjectLibrary({project, sessions, navigate, onResearch}:{projec
       <a href={`${base}/${encodeURIComponent(item.document_id)}/download`}>下载原文件</a>
     </article>)}</div>{!busy&&!items.length&&<p>暂无符合条件的资料。可上传文件或更换关键词。</p>}
     {detail&&<section className="fs-project-document-reader" aria-label="项目资料正文"><button onClick={()=>setDetail(null)}>收起正文</button><h2>{detail.name}</h2>{detail.sections.map((s,i)=><section key={i}><h3>{s.heading}</h3><pre>{s.text||'此页需要图像识别，尚无可查找正文。'}</pre></section>)}</section>}
+    <ProjectSecSource key={project.id} projectId={project.id}/>
     <h2>项目内的研究与成果</h2><p>所选资料会进入新研究的资料工具，Agent 按需读取；来源绑定不代表内容已核验。已有研究及报告保持原有权限和版本。</p>
     <div className="fs-research-list">{sessions.map(s=><button key={s.thread_id} onClick={()=>navigate('graph',s.thread_id)}>{s.title||'未命名研究'}</button>)}</div>{!sessions.length&&<p>可在“管理项目”中归入已有研究。</p>}
   </section>;

@@ -7,7 +7,7 @@ const repo=resolve(dirname(fileURLToPath(import.meta.url)),'../../..');
 const python=resolve(repo,'.venv','Scripts','python.exe');
 if(!state) throw new Error('Use a new isolated FINSIGHT_LOCAL_STATE_ROOT for each attempt.');
 export default defineConfig({
-  testDir:'./e2e',testMatch:'project-library.spec.ts',workers:1,retries:0,reporter:'list',
+  testDir:'./e2e',testMatch:['project-library.spec.ts','project-sec.spec.ts'],workers:1,retries:0,reporter:'list',
   outputDir:resolve(state,'browser'),
   use:{baseURL:'http://127.0.0.1:5173',screenshot:'only-on-failure',trace:'retain-on-failure'},
   projects:[{name:'chromium',use:{...devices['Desktop Chrome']}}],

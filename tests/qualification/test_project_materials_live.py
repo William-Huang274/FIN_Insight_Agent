@@ -5,7 +5,6 @@ calculator, model adapter and PG dispatch guard are reused without a new runner.
 """
 from dataclasses import asdict
 from datetime import datetime, timezone
-from decimal import Decimal
 import hashlib
 import json
 import os
@@ -51,7 +50,7 @@ def configuration():
                           'Submit a short Chinese workpaper with limitations, no investment recommendation'),
         schema_burden='Existing native specialist tool schemas, exact source IDs/quotes and workpaper schema; 4000 output tokens per turn',
         materiality_quality_risk='Quarter/year or unit confusion and unsupported causal claims are hard failures; public upload remains unverified, not S2 authority',
-        comparable_run_evidence='011 actual graph scripted catalog/read/quote/CaseArtifacts passed;008 real Pro SDK usage;007 real adapter/PG wiring;this real-company sample is not yet qualified',
+        comparable_run_evidence='012 real Pro:5 requests,118156 input/4290 output,largest payload113596 bytes,PG414193 micro CNY; margins/citations pass but unread segment components called undisclosed. Fresh same-source development attempt tests generic prompt/scope correction; no blind or causal attribution claim',
         reasoning_profile='agentic_message_history_thinking_disabled', max_input_characters=128000,
         max_output_tokens=4000, timeout_seconds=120, max_transport_attempts=1, retry_policy='none',
         truncation_stop_behavior='fail_closed_no_partial_promotion', input_ceiling_behavior='fail_before_transport')
@@ -141,6 +140,9 @@ def test_real_project_materials_specialist(native, monkeypatch):
     guard=ModelDispatchGuard(budget,owner='project-probe',budget=tid,prices=prices,reservation_micros=reserved,
         reservation_basis='128000 UTF8 bytes+4096 framing token allowance at peak miss tariff+4000 output; conservative scenario, not invoice guarantee')
     native.save('paid_preflight',{'basis':basis.model_dump(mode='json'),'source':receipt,'question':question,
+        'comparison_baseline':'20260914_e2_msft_live_a1',
+        'changed_variable':'shared specialist partial-read instruction and attachment scope notice from4285a67b; task/source/model/limits unchanged',
+        'evaluation':'same public-source development regression; host reviews all claims/counterevidence/open_gaps, not only engineering pytest',
         'qualification_code_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'max_provider_requests':MAX_CALLS,'max_payload_utf8_bytes':MAX_BYTES,'root_limit_micros':8000000,'delivery_floor_micros':100000,
         'per_call_reservation_micros':reserved,'prices':asdict(prices),'price_source':'https://api-docs.deepseek.com/zh-cn/quick_start/pricing/',

@@ -1,6 +1,7 @@
 """Authenticated persistent project index and a bounded private document library."""
 from urllib.parse import unquote, quote
 from uuid import UUID
+from datetime import date
 from fastapi import APIRouter, HTTPException, Request, Query, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from starlette.concurrency import run_in_threadpool
@@ -8,12 +9,20 @@ from starlette.concurrency import run_in_threadpool
 from ...authentication import current_owner
 from sec_agent.research_foundation.project_library import ProjectLibrary, ProjectConflict
 from sec_agent.research_foundation.task_attachments import MAX_BYTES
+from sec_agent.research_foundation.project_sec_sources import ProjectSecSources
 
 
 class Project(BaseModel):
     model_config=ConfigDict(extra='forbid')
     id: UUID
     name: str=Field(min_length=1,max_length=60)
+
+
+class SecRefresh(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    version: UUID
+    ticker: str=Field(pattern=r'^[A-Z][A-Z0-9.-]{0,9}$')
+    cik: str=Field(pattern=r'^[0-9]{10}$')
 
 
 class ProjectIndex(BaseModel):
@@ -35,6 +44,7 @@ class ProjectIndex(BaseModel):
 
 def build_projects_router(root, service):
     library=ProjectLibrary(root)
+    sec=ProjectSecSources(library)
     router=APIRouter(prefix='/projects')
 
     def owner(request, write=False):
@@ -97,6 +107,40 @@ def build_projects_router(root, service):
         except ValueError: raise HTTPException(404,'项目资料不存在') from None
         return Response(row['body'],media_type='application/octet-stream',headers={
             'Content-Disposition':"attachment; filename*=UTF-8''"+quote(row['name'],safe=''),
+            'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'})
+
+    @router.get('/{project_id}/sec')
+    def sec_versions(project_id: UUID, request: Request, response: Response):
+        identity=owner(request); scope(identity,project_id)
+        response.headers['Cache-Control']='no-store'
+        return sec.versions(identity,project_id)
+
+    @router.post('/{project_id}/sec')
+    def sec_refresh(project_id: UUID, body: SecRefresh, request: Request, response: Response):
+        identity=owner(request,True); scope(identity,project_id)
+        response.headers['Cache-Control']='no-store'
+        try: return sec.capture(identity,project_id,body.version,body.ticker,body.cik)
+        except ValueError as exc: raise HTTPException(409,str(exc)) from None
+
+    @router.get('/{project_id}/sec/{version}')
+    def sec_read(project_id: UUID, version: UUID, request: Request, response: Response,
+                 taxonomy: str=Query('',max_length=100), tag: str=Query('',max_length=240),
+                 as_of: date|None=None, offset: int=Query(0,ge=0,le=100000)):
+        identity=owner(request); scope(identity,project_id)
+        response.headers['Cache-Control']='no-store'
+        try: return sec.observations(identity,project_id,version,taxonomy,tag,as_of.isoformat() if as_of else '',offset)
+        except KeyError as exc: raise HTTPException(404,str(exc)) from None
+        except (ValueError,OSError): raise HTTPException(409,'该版本不可读取，请检查同步状态和原件。') from None
+
+    @router.get('/{project_id}/sec/{version}/download/{kind}')
+    def sec_download(project_id: UUID, version: UUID, kind: str, request: Request):
+        identity=owner(request); scope(identity,project_id)
+        if kind not in ('sec_companyfacts','sec_submissions'): raise HTTPException(404,'数据原件不存在')
+        try: raw,_=sec.raw(identity,project_id,version,kind)
+        except KeyError: raise HTTPException(404,'数据版本不存在') from None
+        except (ValueError,OSError): raise HTTPException(409,'该版本不可读取，请检查同步状态和原件。') from None
+        return Response(raw,media_type='application/json',headers={
+            'Content-Disposition':f'attachment; filename="{kind}.json"',
             'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'})
 
     return router

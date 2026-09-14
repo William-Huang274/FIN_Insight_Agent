@@ -26,6 +26,12 @@ ALLOWED_SUFFIXES = {".pdf", ".docx", ".md", ".txt", ".csv", ".html", ".htm", ".p
 IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 
 
+def task_material_catalog(materials):
+    """Compact navigation only; full source/provenance stays in the read tools."""
+    fields = ("document_id", "name", "kind", "sections", "needs_vision")
+    return [{key: item[key] for key in fields if key in item} for item in materials]
+
+
 def _digest(value):
     return hashlib.sha256(value).hexdigest()
 

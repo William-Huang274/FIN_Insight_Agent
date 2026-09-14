@@ -299,6 +299,8 @@ def build_lead_research_graph(
                 if isinstance(action, DelegateResearchTasksAction):
                     if unfinished_only:
                         raise ValueError("continuation_cannot_create_new_tasks_request_owner_scope_change")
+                    if action.execution_plan and action.execution_plan.depth == "focused" and len(action.tasks) > 1:
+                        raise ValueError("focused_route_requires_one_self_contained_workpaper_choose_integrated_for_multiple_task_papers")
                     ids = [task.task_id for task in action.tasks]
                     known = set(seeds) | {task["task_id"] for task in state["tasks"]}
                     if len(ids) != len(set(ids)) or known.intersection(ids):

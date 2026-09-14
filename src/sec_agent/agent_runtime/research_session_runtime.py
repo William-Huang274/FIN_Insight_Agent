@@ -180,6 +180,12 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         if environment.get("FINSIGHT_TASK_ATTACHMENTS_ROOT"):
             from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
             uploads = TaskAttachmentStore(environment["FINSIGHT_TASK_ATTACHMENTS_ROOT"]).list(thread_id)
+            from sec_agent.research_foundation.project_financial_facts import task_financial_snapshot
+            selected = task_financial_snapshot(environment['FINSIGHT_TASK_ATTACHMENTS_ROOT'], thread_id)
+            if selected is not None:
+                request = {**request, 'question': request['question'] + '\n\n本任务已绑定项目SEC财务数据版本（独立快照）：'
+                    + json.dumps(selected[1], ensure_ascii=False)
+                    + '\n通过 query_company_financial_facts 查询已映射指标；缺失申报身份、映射或期间不等于公司未披露。原始资料和研究结论仍须核对。'}
             if uploads:
                 request = {**request, "question": request["question"] + "\n\n用户为本任务上传了以下材料（不是预设答案，需核对出处/时间）。"
                     + json.dumps(uploads, ensure_ascii=False) + "\n通过 read_source_document 的 source_space=uploads 按需目录、检索、原文读取；图片/PDF页面可用 operation=inspect_image。"}

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from contextlib import closing
 from dataclasses import dataclass, replace
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal, localcontext
 from pathlib import Path
 import sqlite3
@@ -51,6 +51,13 @@ class FactLookup:
     granularity: str
     requested_unit: str
     unit_family: str | None = None
+    accepted_at_cutoff: str | None = None
+
+    def __post_init__(self):
+        if self.accepted_at_cutoff is not None:
+            cutoff = datetime.fromisoformat(self.accepted_at_cutoff.replace('Z', '+00:00'))
+            if cutoff.tzinfo is None:
+                raise ValueError('financial_fact_acceptance_cutoff_timezone_required')
 
 
 def execute_typed_fact_request(
@@ -590,6 +597,9 @@ def _candidate_rows(
         period_end,
     ]
     start_date = lookup.period.get("start_date")
+    if lookup.accepted_at_cutoff is not None:
+        clauses.append("julianday(current.accepted_at) <= julianday(?)")
+        params.append(lookup.accepted_at_cutoff)
     if start_date:
         clauses.append("(current.period_start IS NULL OR current.period_start >= ?)")
         params.append(str(start_date))
@@ -905,8 +915,9 @@ def _latest_filing_cohorts(
         row = connection.execute(
             "SELECT accession_number, accepted_at FROM company_fact_observations "
             "WHERE ticker = ? AND form = ? AND substr(accepted_at, 1, 10) <= ? "
+            "AND (? IS NULL OR julianday(accepted_at) <= julianday(?)) "
             "ORDER BY accepted_at DESC, accession_number DESC LIMIT 1",
-            (lookup.ticker.upper(), form, cutoff),
+            (lookup.ticker.upper(), form, cutoff, lookup.accepted_at_cutoff, lookup.accepted_at_cutoff),
         ).fetchone()
         if row is not None:
             output[key] = str(row["accession_number"])

@@ -59,4 +59,28 @@ test('SEC真实连接保存与桌面手机回读',async({page,browser},testInfo)
     const download=await phone.request.get(`/api/v1/projects/${new URL(url).searchParams.get('project')}/sec/${snapshot.version}/download/sec_companyfacts`);
     expect(download.status()).toBe(200);expect((await download.json()).cik).toBe(789019);
   }finally{await second.close();}
+  await section.getByRole('button',{name:'用此数据版本准备研究',exact:true}).click();
+  await page.getByLabel('这次你想研究什么？',{exact:true}).fill('核对微软2025财年的收入、营业利润和利润率，保留期间与来源。');
+  await page.getByRole('button',{name:'保存为资料准备草稿',exact:true}).click();
+  const binding=page.getByLabel('本任务财务数据',{exact:true});
+  await expect(binding).toContainText('MSFT');
+  await expect(binding).toContainText('162');
+  const thread=new URL(page.url()).searchParams.get('thread');
+  const state=await (await page.request.get(`/api/v1/research-sessions/${thread}`)).json();
+  expect(state.runs).toEqual([]);
+  expect(state.project_financial_data.project_origin.sec_version).toBe(snapshot.version);
+  const factResponse=await page.request.post(`/api/v1/research-sessions/${thread}/financial-facts`,{data:{ticker:'MSFT',
+    metric_ids:['revenue','operating_income','operating_margin'],research_as_of:'2025-08-01',
+    selection_mode:'exact_period_end',period_start:'2024-07-01',period_end:'2025-06-30',granularity:'fiscal_year'}});
+  expect(factResponse.status()).toBe(200);
+  const result=await factResponse.json();
+  await writeFile(testInfo.outputPath('task-financial-query.json'),JSON.stringify(result,null,2));
+  expect(result.query_result.results.find((r:any)=>r.metric_id==='revenue').facts[0].value_decimal).toBe('281724000000');
+  await page.screenshot({path:testInfo.outputPath('sec-research-desktop.png'),fullPage:true});
+  const mobile=await browser.newContext({viewport:{width:390,height:900}});
+  try{const phone=await mobile.newPage();await phone.goto(page.url());
+    await expect(phone.getByLabel('本任务财务数据',{exact:true})).toContainText('MSFT');
+    await phone.screenshot({path:testInfo.outputPath('sec-research-phone.png'),fullPage:true});
+    expect(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  }finally{await mobile.close();}
 });

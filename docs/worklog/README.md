@@ -14,6 +14,7 @@
 - [0.1.4 E2项目资料进入研究与引用回读](fin_0_1_4/011_e2_project_materials_into_research.md)
 - [0.1.4 E2真实项目资料计算与未读/未披露边界复核](fin_0_1_4/012_e2_live_project_source_qualification.md)
 - [0.1.4 E2同源复验与SEC项目数据连接](fin_0_1_4/013_e2_boundary_revalidation_and_sec_project_source.md)
+- [0.1.4 E2项目SEC版本进入任务财务工具](fin_0_1_4/014_e2_sec_task_financial_mapping.md)
 
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 

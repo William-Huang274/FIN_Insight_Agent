@@ -2,7 +2,7 @@ import { test, expect } from 'playwright/test';
 
 for(const width of [1440,390]) test(`项目保存上传与新浏览器重查 ${width}`,async({page,browser},testInfo)=>{
   await page.setViewportSize({width,height:950});
-  const name=`持久项目 ${width}`;
+  const name=`持久项目 ${width} ${Date.now()}`;
   await page.goto('/workspace/session');
   if(width<760) await page.getByRole('button',{name:'打开导航',exact:true}).click();
   const nav=page.locator(width<760?'.fs-nav-dialog':'.fs-sidebar');

@@ -6,7 +6,7 @@ type Observation={val:string;unit:string;start?:string;end:string;filed:string;a
 type Rows={items:Observation[];total:number;next_offset:number|null;notice?:string};
 async function json(response:Response){const body=await response.json();if(!response.ok)throw new Error(typeof body.detail==='string'?body.detail:'数据操作失败');return body;}
 
-export function ProjectSecSource({projectId}:{projectId:string}){
+export function ProjectSecSource({projectId,onResearch}:{projectId:string;onResearch:(version:string)=>void}){
   const base=`/api/v1/projects/${projectId}/sec`;
   const [ticker,setTicker]=useState('');const [cik,setCik]=useState('');
   const [versions,setVersions]=useState<Version[]>([]);const [version,setVersion]=useState('');
@@ -21,7 +21,7 @@ export function ProjectSecSource({projectId}:{projectId:string}){
     const [taxonomy,tag]=JSON.parse(concept);const params=new URLSearchParams({taxonomy,tag,offset:String(offset)});if(asOf)params.set('as_of',asOf);
     try{setRows(await json(await fetch(`${base}/${version}?${params}`)));}catch(e){setRows(null);setError((e as Error).message);}finally{setBusy(false);}};
   return <section className="fs-project-sec" aria-label="SEC结构化数据"><h2>SEC 结构化披露</h2>
-    <p>连接公司公开披露，手动同步为项目内独立版本。可浏览原始指标、期间和单位；这些数据尚未接入研究任务或统一财务指标。</p>
+    <p>连接公司公开披露，手动同步为项目内独立版本。可浏览原始指标、期间和单位；选定版本可用于新研究，目前映射收入、营业利润及营业利润率，限定支持的美元口径。</p>
     <form className="fs-sec-fields" onSubmit={async e=>{e.preventDefault();setBusy(true);setError('');setNotice('');
       try{const saved=await json(await fetch(base,{method:'POST',headers:{'Content-Type':'application/json','X-Workbench-Request':'1'},body:JSON.stringify({version:crypto.randomUUID(),ticker:ticker.trim().toUpperCase(),cik:cik.trim().padStart(10,'0')})}));
         setNotice(saved.status==='complete'?'已保存新的数据版本。请选择版本和指标查看。':`同步未完成：${saved.failure_code||saved.status}。已有版本保留。`);await load();
@@ -39,7 +39,7 @@ export function ProjectSecSource({projectId}:{projectId:string}){
       <label>原始指标<select aria-label="SEC原始指标" disabled={busy} value={concept} onChange={e=>{setConcept(e.target.value);setRows(null);}}><option value="">请选择指标</option>{concepts.map(c=><option key={`${c.taxonomy}:${c.tag}`} value={JSON.stringify([c.taxonomy,c.tag])}>{c.label} · {c.taxonomy}:{c.tag}</option>)}</select></label>
       <label>披露日期不晚于<input aria-label="SEC披露截止日期" type="date" value={asOf} onChange={e=>{setAsOf(e.target.value);setRows(null);}}/></label>
       <button disabled={busy||!concept} onClick={()=>void query()}>查询已保存指标</button></div>
-      <p><a href={`${base}/${version}/download/sec_companyfacts`}>下载指标原件</a>{' · '}<a href={`${base}/${version}/download/sec_submissions`}>下载披露记录原件</a></p></>}
+      <p><a href={`${base}/${version}/download/sec_companyfacts`}>下载指标原件</a>{' · '}<a href={`${base}/${version}/download/sec_submissions`}>下载披露记录原件</a></p><button disabled={busy} onClick={()=>onResearch(version)}>用此数据版本准备研究</button><p>新研究保存独立原件和指标副本。未映射标签、缺失申报身份和冲突会保留原因，不代表公司未披露。</p></>}
     {rows&&<><p>{rows.notice}</p><p>共 {rows.total} 条原始观测，当前显示 {rows.items.length} 条。多个披露版本分别保留。</p><div className="fs-sec-table"><table><thead><tr><th>期间</th><th>原值</th><th>单位</th><th>披露日期</th><th>表单 / 申报号</th></tr></thead><tbody>{rows.items.map((r,i)=><tr key={i}><td>{r.start?`${r.start} 至 `:'时点 '}{r.end}</td><td>{r.val}</td><td>{r.unit}</td><td>{r.filed}</td><td>{r.form}<br/>{r.accn}</td></tr>)}</tbody></table></div>
       {rows.next_offset!==null&&<button disabled={busy} onClick={()=>void query(rows.next_offset!)}>查看下一页</button>}</>}
   </section>;

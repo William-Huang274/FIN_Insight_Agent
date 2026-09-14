@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime, time, timezone
 from hashlib import sha256
 import json
 from pathlib import Path
@@ -819,6 +819,10 @@ class ExistingS2FinancialFactReader:
         )
         if query.research_as_of > run_scope.research_as_of.date():
             raise DataPortContractError("financial_fact_query_after_run_as_of")
+        acceptance_cutoff = min(
+            datetime.combine(query.research_as_of, time.max, tzinfo=timezone.utc),
+            run_scope.research_as_of.astimezone(timezone.utc),
+        ).isoformat()
         period: dict[str, Any] = {
             "end_date": (query.period_end or query.research_as_of).isoformat(),
             "fiscal_years": list(query.fiscal_years),
@@ -837,6 +841,7 @@ class ExistingS2FinancialFactReader:
         for metric_id in query.metric_ids:
             identity = {
                 "query_schema_version": FINANCIAL_FACT_QUERY_SCHEMA_VERSION,
+                "accepted_at_cutoff": acceptance_cutoff,
                 "ticker": query.ticker,
                 "metric_id": metric_id,
                 "research_as_of": query.research_as_of.isoformat(),
@@ -858,6 +863,7 @@ class ExistingS2FinancialFactReader:
                     granularity=query.granularity,
                     requested_unit=query.requested_unit,
                     unit_family=query.unit_family,
+                    accepted_at_cutoff=acceptance_cutoff,
                 ),
             )
             raw_result = result.as_dict()
@@ -872,9 +878,9 @@ class ExistingS2FinancialFactReader:
                     roles = tuple(row[0] for row in db.execute(
                         "SELECT DISTINCT period_role FROM company_fact_observations "
                         "WHERE ticker=? AND metric_id=? AND substr(accepted_at,1,10)<=? "
-                        "AND period_end<=? ORDER BY period_role",
+                        "AND period_end<=? AND julianday(accepted_at)<=julianday(?) ORDER BY period_role",
                         (query.ticker, metric_id, query.research_as_of.isoformat(),
-                         (query.period_end or query.research_as_of).isoformat()),
+                         (query.period_end or query.research_as_of).isoformat(), acceptance_cutoff),
                     ))
                 if roles and query.granularity not in roles:
                     detail.update({

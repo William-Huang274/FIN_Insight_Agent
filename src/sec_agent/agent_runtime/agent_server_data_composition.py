@@ -264,6 +264,12 @@ def open_approved_data_composition(
         if env.get('FINSIGHT_RESEARCH_FACT_MART_PATH'):
             runtime_mart = _required_file_environment('FINSIGHT_RESEARCH_FACT_MART_PATH', env)
             runtime_mart_digest = _file_sha256(runtime_mart)
+        if env.get('FINSIGHT_TASK_ATTACHMENTS_ROOT') and env.get('FINSIGHT_TASK_THREAD_ID'):
+            from sec_agent.research_foundation.project_financial_facts import task_financial_snapshot
+            selected = task_financial_snapshot(env['FINSIGHT_TASK_ATTACHMENTS_ROOT'], env['FINSIGHT_TASK_THREAD_ID'])
+            if selected is not None:
+                runtime_mart, financial_binding = selected
+                runtime_mart_digest = financial_binding['mart_sha256']
         planner_capabilities = derive_planner_tool_capabilities(
             sqlite_path=runtime_mart,
             expected_mart_sha256=runtime_mart_digest,

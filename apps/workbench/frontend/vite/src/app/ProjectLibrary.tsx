@@ -11,7 +11,7 @@ async function readJson(response:Response) {
   return body;
 }
 
-export function ProjectLibrary({project, sessions, navigate, onResearch}:{project:{id:string;name:string};sessions:Session[];navigate:(view:string,id?:string)=>void;onResearch:(documents:{document_id:string;name:string}[])=>void}) {
+export function ProjectLibrary({project, sessions, navigate, onResearch}:{project:{id:string;name:string};sessions:Session[];navigate:(view:string,id?:string)=>void;onResearch:(documents:{document_id:string;name:string}[],secVersion?:string)=>void}) {
   const base=`/api/v1/projects/${project.id}/documents`;
   const [query,setQuery]=useState(''); const [items,setItems]=useState<Document[]>([]);
   const [detail,setDetail]=useState<Detail|null>(null); const [error,setError]=useState('');
@@ -39,7 +39,7 @@ export function ProjectLibrary({project, sessions, navigate, onResearch}:{projec
       <a href={`${base}/${encodeURIComponent(item.document_id)}/download`}>下载原文件</a>
     </article>)}</div>{!busy&&!items.length&&<p>暂无符合条件的资料。可上传文件或更换关键词。</p>}
     {detail&&<section className="fs-project-document-reader" aria-label="项目资料正文"><button onClick={()=>setDetail(null)}>收起正文</button><h2>{detail.name}</h2>{detail.sections.map((s,i)=><section key={i}><h3>{s.heading}</h3><pre>{s.text||'此页需要图像识别，尚无可查找正文。'}</pre></section>)}</section>}
-    <ProjectSecSource key={project.id} projectId={project.id}/>
+    <ProjectSecSource key={project.id} projectId={project.id} onResearch={version=>onResearch([],version)}/>
     <h2>项目内的研究与成果</h2><p>所选资料会进入新研究的资料工具，Agent 按需读取；来源绑定不代表内容已核验。已有研究及报告保持原有权限和版本。</p>
     <div className="fs-research-list">{sessions.map(s=><button key={s.thread_id} onClick={()=>navigate('graph',s.thread_id)}>{s.title||'未命名研究'}</button>)}</div>{!sessions.length&&<p>可在“管理项目”中归入已有研究。</p>}
   </section>;

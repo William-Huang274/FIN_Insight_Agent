@@ -78,7 +78,7 @@ E1私有存储采用独立预算数据库和`FIN_MODEL_BUDGET_POSTGRES_URI`；�
 
 ## 7. 验证、兼容与待决策
 
-E2采用既有SQLite与`TaskAttachmentStore`，不新增存储服务/解析平台。`/api/v1/projects`按认证owner保存索引，修订号+事务防旧窗口覆盖；项目文件由owner/project共同命名空间保存于独立`project-library`目录，复用原大小/数量限制。页面可查找文本、下载原件及选择用于新研究；BFF验证归属后复制原件和已解析页面到新任务，记录原项目/文件/摘要，原生元数据准备状态阻止中途失败误启动。目标SQLite批量原子提交不等同跨原生服务事务；异常草稿保留且不自动重试。现有研究资料工具、专家观察和跨Agent来源回读保留出处，属性仍为用户上传待核验；当前不是语义索引或完整模型质量验收。真实DeepSeek五回合资格复用现有图/MCP/SDK/PG保护，读取、三项计算、引用链通过；模型将未读分部组成表误写为未提供，修正公共专家提示与上传工具局部覆盖notice，没有新增披露裁决平台。修正后同源真实复验未再出现原未披露断言，但相关剩余表检查及完整语义仍未通过。旧浏览器整理保留，空服务端可显式导入。历史研究权限/版本不转移，副本不随项目变化自动更新，撤销传播仍待实现。另复用financial_facts.sec_snapshot/Requests与SQLite，实现owner/project下的SEC原件独立版本、重复提交不重复抓取、失败留存、摘要校验及原始观测浏览。大整数/小数以字符串投影，保留期间/单位/申报号/修订；filed日期筛选不等于完整PIT。官方源只读下载，尚未归一化或接入研究工具；每项目12次更新，无定时同步和生产全局并发资格。见[013](../worklog/fin_0_1_4/013_e2_boundary_revalidation_and_sec_project_source.md)、[010](../worklog/fin_0_1_4/010_e2_persistent_projects_and_document_library.md)、[011](../worklog/fin_0_1_4/011_e2_project_materials_into_research.md)、[012](../worklog/fin_0_1_4/012_e2_live_project_source_qualification.md)。
+E2采用既有SQLite与`TaskAttachmentStore`，不新增存储服务/解析平台。`/api/v1/projects`按认证owner保存索引，修订号+事务防旧窗口覆盖；项目文件由owner/project共同命名空间保存于独立`project-library`目录，复用原大小/数量限制。页面可查找文本、下载原件及选择用于新研究；BFF验证归属后复制原件和已解析页面到新任务，记录原项目/文件/摘要，原生元数据准备状态阻止中途失败误启动。目标SQLite批量原子提交不等同跨原生服务事务；异常草稿保留且不自动重试。现有研究资料工具、专家观察和跨Agent来源回读保留出处，属性仍为用户上传待核验；当前不是语义索引或完整模型质量验收。真实DeepSeek五回合资格复用现有图/MCP/SDK/PG保护，读取、三项计算、引用链通过；模型将未读分部组成表误写为未提供，修正公共专家提示与上传工具局部覆盖notice，没有新增披露裁决平台。修正后同源真实复验未再出现原未披露断言，但相关剩余表检查及完整语义仍未通过。旧浏览器整理保留，空服务端可显式导入。历史研究权限/版本不转移，副本不随项目变化自动更新，撤销传播仍待实现。另复用financial_facts.sec_snapshot/Requests与SQLite，实现owner/project下的SEC原件独立版本、重复提交不重复抓取、失败留存、摘要校验及原始观测浏览。大整数/小数以字符串投影，保留期间/单位/申报号/修订；filed日期筛选不等于完整PIT。官方源只读下载；已复用原financial_facts解析/SQLite/读取器，把选择版本复制到任务并绑定USD收入、营业利润与既有派生计算。任务绑定清单保留原件/财务库摘要及项目出处，损坏拒绝，不回落其他库。run_scope时点限制accepted_at，直接与派生查询排除同日未来修订；未关联申报身份、非10-K/10-Q和未支持期间不接纳，不推定未披露。完整历史PIT、更广标签/币种和修订表单仍开放，见[014](../worklog/fin_0_1_4/014_e2_sec_task_financial_mapping.md)。每项目12次更新，无定时同步和生产全局并发资格。见[013](../worklog/fin_0_1_4/013_e2_boundary_revalidation_and_sec_project_source.md)、[010](../worklog/fin_0_1_4/010_e2_persistent_projects_and_document_library.md)、[011](../worklog/fin_0_1_4/011_e2_project_materials_into_research.md)、[012](../worklog/fin_0_1_4/012_e2_live_project_source_qualification.md)。
 
 [008流式与真实样本](../worklog/fin_0_1_4/008_e1_stream_usage_and_live_probe.md)：沿用SDK的SSE传输/聚合，薄映射补DeepSeek原始usage及cache hit；缺必需字段保留预算占用。无终止字段的提前EOF保持未知；CaseModelAudit拒绝不完整输出，已知截断/中止仍先结算再拒绝接受。Pro当前价表纠正，一次真实非思考响应77输入/37输出估算0.001692元，PG保存后同checkpoint回放不再请求。原付费pytest因数值字符串格式失败保留，离线复核不产生新调用，行数偏差未消除；不是付费硬崩溃或金融全链资格。下一步验证PG原生角色/保留恢复，预算默认仍关闭。
 
@@ -86,7 +86,7 @@ E2采用既有SQLite与`TaskAttachmentStore`，不新增存储服务/解析平�
 
 变更通过隔离配置逐步接入。迁移保留旧任务、来源和报告标识，先验证读兼容与退出；未通过候选维持关闭，不因新文档改动生产模型或0.1.3数据。技术门槛在各工作包开始前确定，失败保持原证据并修复责任层。
 
-尚待实践决定：首个远程数据服务与检索存储、项目持久化映射、并发容量、模型路由、首批方法、更新时延目标、许可和服务器配置。仅为即将执行的切片补API/schema/部署细节；取舍和结果写回本节与执行路线。
+尚待实践决定：后续远程数据服务与检索存储、更广金融映射、并发容量、模型路由、首批方法、更新时延目标、许可和服务器配置。仅为即将执行的切片补API/schema/部署细节；取舍和结果写回本节与执行路线。
 
 [005原生资格](../worklog/fin_0_1_4/005_e1_native_queue_and_recovery.md)已证明0.13.3队列/取消/接续、人工pause与双worker共享队列。保留Agent Server为执行owner。未完成节点在重启后重放，已完成checkpoint不重跑；每worker=1也能产生部署并发2。审计uuid和BFF回执不能当模型去重。不另造调度器；当前日志为lite模式，正式许可仍待核定。
 

@@ -21,7 +21,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse, Response
 from starlette.concurrency import run_in_threadpool
 from langgraph_sdk.client import LangGraphClient
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
+from sec_agent.research_foundation.data_ports import CompanyFinancialFactQuery
 
 from sec_agent.agent_runtime.report_session import ReviewAction, abandoned_question_update
 from sec_agent.agent_runtime.targeted_revision import report_digest, validate_revision_target
@@ -278,7 +279,14 @@ def can_restart_remaining_node(thread, state, last_run, usage):
 class ProjectMaterials(BaseModel):
     model_config = ConfigDict(extra='forbid')
     project_id: UUID
-    document_ids: list[str] = Field(min_length=1, max_length=12)
+    document_ids: list[str] = Field(default_factory=list, max_length=12)
+    sec_version: UUID | None = None
+
+    @model_validator(mode='after')
+    def nonempty(self):
+        if not self.document_ids and self.sec_version is None:
+            raise ValueError('请选择项目资料或SEC数据版本')
+        return self
 
 
 class NewSession(BaseModel):
@@ -470,6 +478,18 @@ def build_report_sessions_router(service):
             "charts_changed": old["report"].get("charts", []) != new["report"].get("charts", []),
             "citations_changed": old["report"].get("citations", {}) != new["report"].get("citations", {})}
 
+    @router.post('/research-sessions/{thread_id}/financial-facts')
+    async def task_financial_query(thread_id: UUID, body: CompanyFinancialFactQuery):
+        thread = await service.owned_thread(thread_id)
+        if service.attachment_store is None:
+            raise HTTPException(503, '本部署未配置任务资料存储')
+        from sec_agent.research_foundation.project_financial_facts import query_task_financial_snapshot
+        try:
+            return await run_in_threadpool(query_task_financial_snapshot, service.attachment_store.root,
+                str(thread_id), body, thread['metadata']['research_as_of'])
+        except (KeyError, ValueError, OSError):
+            raise HTTPException(409, '本任务财务数据未就绪、校验失败或查询超出研究时点；不会改读其他资料。') from None
+
     @router.post("/research-sessions")
     async def create(body: NewSession, request: Request):
         browser_write(request)
@@ -489,6 +509,11 @@ def build_report_sessions_router(service):
                 scope = await run_in_threadpool(project_library.scope, service_owner(), selection.project_id)
                 for document_id in selection.document_ids:
                     project_rows.append(await run_in_threadpool(project_library.documents.get, scope, document_id))
+                if selection.sec_version:
+                    from sec_agent.research_foundation.project_sec_sources import ProjectSecSources
+                    project_sec = ProjectSecSources(project_library)
+                    for kind in ('sec_companyfacts', 'sec_submissions'):
+                        await run_in_threadpool(project_sec.raw, service_owner(), selection.project_id, selection.sec_version, kind)
             except (KeyError, ValueError):
                 raise HTTPException(404, '所选项目或资料不存在于当前工作区') from None
         if service_owner() != 'local-pilot' and body.mode != 'research':
@@ -533,8 +558,15 @@ def build_report_sessions_router(service):
         thread = await service.sdk.threads.create(metadata=metadata)
         if body.project_materials:
             try:
-                await run_in_threadpool(service.attachment_store.copy_project_materials, thread['thread_id'],
-                                        body.project_materials.project_id, project_rows)
+                if project_rows:
+                    await run_in_threadpool(service.attachment_store.copy_project_materials, thread['thread_id'],
+                                            body.project_materials.project_id, project_rows)
+                if body.project_materials.sec_version:
+                    from sec_agent.research_foundation.project_financial_facts import prepare_task_financial_snapshot
+                    financial = await run_in_threadpool(prepare_task_financial_snapshot, project_sec, service_owner(),
+                        body.project_materials.project_id, body.project_materials.sec_version,
+                        service.attachment_store.root, thread['thread_id'])
+                    await service.sdk.threads.update(thread['thread_id'], metadata={'project_financial_data': financial})
                 await run_in_threadpool(project_library.assign_new_thread, service_owner(),
                                         body.project_materials.project_id, thread['thread_id'])
                 await service.sdk.threads.update(thread['thread_id'], metadata={'project_materials_status': 'ready'})
@@ -736,6 +768,7 @@ def build_report_sessions_router(service):
             **projection, "execution": thread.get("metadata", {}).get("execution"), "studio_assistant_id": thread.get('metadata', {}).get('studio_assistant_id'), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
             "project_materials_ready": thread.get('metadata', {}).get('project_materials_status') in (None, 'ready'),
+            "project_financial_data": thread.get('metadata', {}).get('project_financial_data'),
             "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
             "attachments": service.attachment_store.list(thread_id) if service.attachment_store else [],

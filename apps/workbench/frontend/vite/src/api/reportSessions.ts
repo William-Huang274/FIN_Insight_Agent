@@ -84,6 +84,7 @@ export type Session = {
   execution?: ExecutionOptions;
   can_upload?: boolean;
   project_materials_ready?: boolean;
+  project_financial_data?: {project_origin:{ticker:string;project_id:string;sec_version:string};counts:{observations:number};mart_sha256:string};
   report_digest?: string;
   cumulative_usage?: { native_runs: number; known_cny: number; recorded_requests: number; reported_requests: number;
     unknown_or_pending_requests: number; unpriced_requests: number; input_tokens: number; output_tokens: number;
@@ -178,7 +179,7 @@ async function request<T>(url: string, body?: unknown): Promise<T> {
 export const sessionsApi = {
   config: () => request<ResearchConfiguration>("/api/v1/research-session-config"),
   list: () => request<Session[]>(base),
-  create: (body: { mode?: "review" | "research"; title?: string; question?: string; defer_start?: boolean; studio_assistant_id?:string; execution?: ExecutionOptions; project_materials?:{project_id:string;document_ids:string[]} } = {}) =>
+  create: (body: { mode?: "review" | "research"; title?: string; question?: string; defer_start?: boolean; studio_assistant_id?:string; execution?: ExecutionOptions; project_materials?:{project_id:string;document_ids:string[];sec_version?:string} } = {}) =>
     request<{ thread_id: string; run_id: string | null }>(base, body),
   start: (id: string) => request<{ run_id: string }>(`${base}/${id}/start`, {}),
   guidance: (id: string, message: string) => request(`${base}/${id}/guidance`, { message }),

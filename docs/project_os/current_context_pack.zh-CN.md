@@ -4,6 +4,8 @@
 
 ## 当前状态与唯一入口
 
+- 2026-09-14 Owner最新纠正见[022](../worklog/fin_0_1_4/022_progressive_product_cases_and_stack_reuse.md)：案例必须随着工程进展扩大范围和研究价值，成熟办法/技术栈优先。下一产品目标改为新公司多资料、跨期的完整研究简报，经原生项目入口保存回读；021新错误稿验证只是内部前置，不再独立充当产品里程碑。之后跨公司/期间→新披露及用户修改更新→第二用户混合任务，具体执行梯度以路线§4为准。连续两个包仍仅局部验证须报告停滞并简化/采用成熟替代；关键错误不降门槛，独立工作可继续。本轮只更新规划，未增加功能或研究效果，不再先写另一套总规划。
+
 - [0.1.3正式收口](../product/fin_0_1_3_closeout.zh-CN.md)：本地研究工作台/Internal Alpha，迭代结束。不是原PRD全通过、S5生产发布或逐份历史报告接受。
 - 0.1.4当前入口：[PRD](../product/fin_0_1_4_prd.zh-CN.md)、[技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md)、[执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md)。文档草案v0.1，`102a4584`开工审查通过；E1同机BFF真实进程3场景及现有定向测试共15通过，其覆盖仅限同机提交，见[004](../worklog/fin_0_1_4/004_baseline_review_and_e1_process_qualification.md)。原生运行和模型预算后续证据见005/006；当前实施分支`codex/fin014-e1-runtime-qualification`。
 - 本任务用户授权合理范围DS/Qwen测试；逐节点TokenBudgetBasis与未知调用不重发继续生效。Docker/网络问题优先排查本地代理。下方旧日志中的“无新付费权限”是当时授权，不覆盖本次新授权。

@@ -1,6 +1,6 @@
 # FinSight 0.1.4 产品需求文档
 
-2026-09-13 · 文档草案 v0.1 · 已通过开工基线审查，E1工程资格启动；用户功能尚未新增，尚未发布。
+2026-09-14 · 文档草案 v0.1 · 已通过开工基线审查；E1运行与费用、E2项目/数据/报告复用已有局部实现与验证，E3–E5待实施；整版尚未验收或发布。
 
 [技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md) · [执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md) · [当前版本](version_0_1_3.zh-CN.md)
 

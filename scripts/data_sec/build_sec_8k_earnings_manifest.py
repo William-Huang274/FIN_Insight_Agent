@@ -36,7 +36,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--config",
-        default="configs/sec_tech_8k_earnings_pilot_2026_2027.yaml",
+        default="configs/sources/sec_earnings.yaml",
         help="Optional pilot config used as default years/tickers/categories.",
     )
     parser.add_argument(

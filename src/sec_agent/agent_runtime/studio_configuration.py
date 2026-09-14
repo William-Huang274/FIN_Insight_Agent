@@ -18,7 +18,7 @@ ROLE_TITLES = dict(zip(ROLE_METHODS, ["研究负责人", "研究专家", "反证
 
 
 def default_directions():
-    case = json.loads((Path(__file__).resolve().parents[3] / 'configs/research/cases/dell_growth_quality.json').read_text(encoding='utf-8'))
+    case = json.loads((Path(__file__).resolve().parents[3] / 'configs/research/cases/growth_quality.json').read_text(encoding='utf-8'))
     titles = ['收入、利润与现金', '客户需求质量', '数量、价格与产品组合', '产品架构与交付', '供应链与成本',
               '模型与算力需求', '出口管制与区域风险', '竞争与利润分配', '反证与后续验证']
     return {b['branch_id']: {'name': title, 'objective': b['objective'], 'instructions': ''}

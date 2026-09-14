@@ -620,7 +620,7 @@ async def _open_q1_paid_shadow_graph(
                 if seed_envelope.get("phase") != "review_cycle_accepted":
                     raise ModelExecutionPolicyError("lead_requires_reviewed_seed_workpaper")
                 seed = seed_envelope["target_state"]
-                foundation_path = Path(repository_root) / "configs/research/fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json"
+                foundation_path = Path(os.environ["FINSIGHT_RESEARCH_RESOURCES_ROOT"]) / "foundation.json"
                 foundation = load_research_graph_foundation(foundation_path)
                 if canonical_sha256(foundation) != composition.graph_input.task.foundation_digest:
                     raise ModelExecutionPolicyError("lead_foundation_binding_invalid")

@@ -27,6 +27,12 @@ uv run --no-sync python -m pytest -q
 uv run --no-sync python scripts/engineering/verify_active_baseline.py --pretty
 ```
 
-Tests marked `local_data_integration` or `requires_local_data` skip by default. `--run-private-data` requires the original private mounts. Synthetic model adapters prove wiring and invariants, not financial judgment.
+Tests use synthetic data and temporary directories. Platform-specific checks run only on their supported platforms. Model adapters prove wiring and invariants, not financial judgment.
 
-Synthetic tests check interfaces and invariants. Private-data tests require their original sources; model quality must be evaluated separately from these engineering checks.
+Synthetic tests check interfaces and invariants. Model quality must be evaluated separately from these engineering checks.
+
+## Optional runtime and research integration
+
+Runtime probes are in `tests/integration/`; their Docker opt-in and isolated attempt-directory requirements are described in [the qualification guide](../deploy/qualification/README.md). They do not run model requests by default.
+
+Tests marked `local_data_integration` require `--run-private-data` plus explicit environment paths. Configure the resource mounts documented by the research runtime and `FINSIGHT_RESEARCH_RESOURCES_ROOT` (containing `foundation.json`, `source-routes.json`, `reviewed-evidence.json`, and `access-policy.json`). Dataset digests are still validated by the application. Do not restore retired private fixtures into the public checkout. Paid probes additionally require their individual opt-in variables and task-specific budget basis.

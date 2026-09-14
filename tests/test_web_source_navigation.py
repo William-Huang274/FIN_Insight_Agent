@@ -153,37 +153,6 @@ def test_public_network_guard_remains_in_effect(url):
         PublicURLGuard().validate(url)
 
 
-@pytest.mark.local_data_integration
-def test_real_a5_seed_remains_valid_after_additive_web_request_schema():
-    from sec_agent.agent_runtime.workpaper_review_graph import validate_workpaper_state
-    path = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts/20260906-dell-q1-agentic-review-repair-a5/specialist-final-state.private.json")
-    if not path.is_file():
-        pytest.skip("immutable local A5 seed unavailable")
-    seed = json.loads(path.read_text(encoding="utf-8"))["values"]["target_state"]
-    validate_workpaper_state(seed)
-
-
-@pytest.mark.local_data_integration
-def test_web_reader_uses_existing_real_mcp_source_tool(monkeypatch):
-    from test_agent_server_data_composition import DEFAULT_ARTIFACT_ENV, _all_artifacts_available, _execute_evidence
-    from sec_agent.agent_runtime.agent_server_data_composition import open_approved_data_composition
-    if not _all_artifacts_available():
-        pytest.skip("local approved data unavailable")
-    reader, fetcher, _ = _reader()
-    # Real transport/tool/lane composition, fake only external provider network.
-    monkeypatch.setattr("sec_agent.research_foundation.web_source_navigation.WebSourceReader", lambda **kwargs: reader)
-    with open_approved_data_composition(run_invocation_id="web-mcp-fixture", environment=DEFAULT_ARTIFACT_ENV,
-                                            source_read_enabled=True, live_web_read_enabled=True) as composition:
-        assert composition.network_calls_authorized and not composition.paid_calls_authorized
-        search = _execute_evidence(composition, label="web-search", request={"source_document": {
-            "source_space": "web", "operation": "search", "query": "peer results"}})
-        doc_id = next(row["document_id"] for row in search.items if row.get("document_id"))
-        read = _execute_evidence(composition, label="web-read", request={"source_document": {
-            "source_space": "web", "operation": "read", "document_id": doc_id}})
-        assert read.status == "success" and "source_bound_passage" in read.result_states
-        assert len(fetcher.calls) == 1
-
-
 def test_paid_web_permission_is_explicit_and_requires_source_tool(tmp_path):
     from test_model_execution_policy import _authority
     from sec_agent.agent_runtime.model_execution_policy import ModelExecutionAuthority
@@ -259,18 +228,3 @@ def test_live_original_q7_federal_register_source_after_50000():
         save("summary.json", {"status": "long_source_read_pass", "characters": len(row["passage"]),
             "captured_characters": row["captured_characters"], "url": row["source_url"], "model_calls": 0,
             "source_document_completeness_verified": False, "current_legal_effect_verified": False})
-
-
-@pytest.mark.local_data_integration
-def test_live_web_method_uses_current_agent_budget_without_changing_frozen_method():
-    from test_specialist_composition import RUNTIME_ENVIRONMENT
-    from sec_agent.agent_runtime.specialist_composition import open_specialist_receipted_composition
-    with open_specialist_receipted_composition(run_id="scope-disclosure-only", run_invocation_id="scope-disclosure-only",
-            branch_id=BRANCH, environment=RUNTIME_ENVIRONMENT, turn_source="provider_model",
-            model_turn=lambda request: pytest.fail("no model invocation allowed"), source_read_enabled=True,
-            live_web_read_enabled=True, max_tool_actions=24) as composition:
-        method = composition.graph_input.l0_context.skill_summaries[0]["method_context"]
-        assert "scope_ceiling" not in method
-        assert "two-search ceiling does not govern" in method["execution_budget_notice"]
-        assert method["formulas"] and method["freshness_contract"]
-        assert composition.graph_input.max_tool_actions == 24

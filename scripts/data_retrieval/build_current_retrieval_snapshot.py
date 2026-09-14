@@ -322,32 +322,29 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--kernel",
-        default="configs/retrieval/fin_ia_0_1_3_s1_financial_research_kernel_v1_2.json",
+        default="configs/retrieval/financial_research_kernel.json",
     )
     parser.add_argument(
         "--source-object-result",
         default=(
-            "configs/runtime/"
-            "fin_ia_0_1_3_s1b_current_financial_object_store_result_v1_1.json"
+            "data/financial-objects/result.json"
         ),
         help="Optional S1-B object-store result bound into the snapshot.",
     )
     parser.add_argument(
         "--records",
         default=(
-            "data/workbench_private/fin_0_1_3_s1b_current_financial_object_store/"
-            "v2/records.jsonl"
+            "data/financial-objects/records.jsonl"
         ),
     )
     parser.add_argument(
         "--pack-result",
-        default="configs/runtime/fin_ia_current_research_evidence_pack_result_v1_1.json",
+        default="data/evidence-packs/result.json",
     )
     parser.add_argument(
         "--pack-object-root",
         default=(
-            "data/workbench_private/fin_0_1_3_s1_six_case_local_evidence_pack/"
-            "zero-call-r1/objects"
+            "data/evidence-packs/objects"
         ),
     )
     parser.add_argument(
@@ -360,7 +357,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--output",
-        default="configs/runtime/fin_ia_0_1_3_current_retrieval_snapshot_v1_0.json",
+        default="data/retrieval/snapshot.json",
     )
     return parser.parse_args()
 

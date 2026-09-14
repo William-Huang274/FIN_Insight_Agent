@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 from hashlib import sha256
 from pathlib import Path
 from typing import Literal
@@ -15,10 +16,8 @@ from sec_agent.canonical_runtime.contracts_v1_2 import StrictFrozenModel
 Digest = str
 _DIGEST_PATTERN = r"^[0-9a-f]{64}$"
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_OWNER_DATA_GATE_DECISION_PATH = (
-    _REPO_ROOT
-    / "configs/research/fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json"
-)
+DEFAULT_OWNER_DATA_GATE_DECISION_PATH = Path(os.environ.get(
+    "FINSIGHT_RESEARCH_RESOURCES_ROOT") or _REPO_ROOT / ".local" / "research-resources") / "access-policy.json"
 # Trust anchors compiled into the consumer.  A modified and re-signed decision
 # cannot authorize itself merely by changing values inside the JSON document.
 DEFAULT_EXPECTED_OWNER_DATA_GATE_DECISION_SHA256 = (

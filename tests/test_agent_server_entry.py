@@ -296,37 +296,6 @@ def test_lead_schema_is_resource_free_and_not_an_execution_fallback(monkeypatch)
     asyncio.run(exercise())
 
 
-@pytest.mark.local_data_integration
-def test_lead_execution_factory_opens_actual_approved_seed_and_catalog_without_model(monkeypatch, tmp_path):
-    from types import SimpleNamespace
-    from test_model_execution_policy import _lead_authority
-    from test_specialist_composition import RUNTIME_ENVIRONMENT, _assert_assets
-    _assert_assets()
-    authority = _lead_authority(tmp_path)
-    seed_path = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/q1_specialist_paid_shadow/attempts") / authority.lead_scope.seed_state_relative_path
-    if not seed_path.exists(): pytest.skip("accepted A5 artifact unavailable")
-    for key, value in {**RUNTIME_ENVIRONMENT, "DEEPSEEK_API_KEY": "offline-fixture-not-credential",
-                       entry.IMPLEMENTATION_COMMIT_ENV: authority.implementation_commit,
-                       entry.Q1_PAID_SHADOW_AUTHORITY_ENV: "offline-authority.json",
-                       entry.SERVING_MODE_ENV: authority.serving_mode}.items():
-        monkeypatch.setenv(key, value)
-    monkeypatch.setattr(entry, "Path", lambda value: seed_path if value == "/run/fin-insight/review-seed.json" else Path(value))
-    monkeypatch.setattr(entry, 'load_q1_paid_shadow_authority', lambda _: authority)
-    monkeypatch.setattr(entry, "_require_durable_execution_binding", lambda *a, **k: None)
-    monkeypatch.setattr(entry, "build_public_model_audit_sink", lambda _: None)
-    monkeypatch.setattr(entry, "build_private_model_audit_sink", lambda _: None)
-    def forbidden(*a, **k): pytest.fail("factory construction must not call a provider")
-    monkeypatch.setattr(entry.DeepSeekStructuredAgentAdapter, "from_config", lambda **kw:
-                        SimpleNamespace(specialist_model_turn=forbidden, lead_research_turn=forbidden))
-    context = entry.AgentServerRunContext(agent_session_id=authority.agent_session_id,
-        research_run_id=authority.research_run_id, run_invocation_id=authority.run_invocation_id)
-    identity = entry.bind_agent_server_identity(config=_config(), run_context=context.model_dump(mode="json"))
-    async def exercise():
-        async with entry._open_q1_paid_shadow_graph(identity, context, execution_profile="product") as graph:
-            assert "collect_task_artifacts" in graph.get_graph().nodes
-    asyncio.run(exercise())
-
-
 def test_invalid_run_context_traceback_does_not_chain_rejected_input() -> None:
     rejected = "SECRET-REJECTED-CONTEXT-VALUE"
     try:

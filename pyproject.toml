@@ -89,7 +89,7 @@ workbench-delivery = [
 [dependency-groups]
 dev = [
   "httpx2>=2.12,<3",
-  # Hermetic legacy/replay tests only. Dell product serving is Agent Server.
+  # Deterministic checkpoint tests. Research serving uses Agent Server.
   "langgraph-checkpoint-postgres==3.1.2",
   "langgraph-checkpoint-sqlite==3.1.1",
   "psutil>=5.9,<8",
@@ -113,24 +113,12 @@ where = ["src"]
 "sec_agent.research_foundation" = ["methods/*.md"]
 
 [tool.pytest.ini_options]
-pythonpath = [".", "src"]
+pythonpath = [".", "src", "tests"]
 testpaths = ["tests"]
 norecursedirs = ["archive", ".git", ".codex_runtime", "node_modules", "dist"]
 markers = [
-  "contract_compile: mirror of the host-before-attempt contract compilation phase",
-  "host_preflight: mirror of the clean synced host preflight phase",
-  "disposable_current_gate: mirror of the Git-free disposable current gate phase",
-  "historical_audit: mirror of the non-gating immutable historical audit phase",
-  "post_run_attestation: mirror of the host read-only closeout attestation phase",
   "fast_contract: hermetic deterministic contract or unit test",
-  "fixture_integration: integration test using temporary or repository fixtures without live external services",
-  "local_data_integration: test whose result may depend on local non-hermetic data assets",
-  "frontend_e2e: automated product or frontend journey test",
-  "full_chain: broad or deterministic full-chain gate; explicit opt-in profile",
-  "paid_model: test allowed to invoke a paid model; explicit opt-in and credential-gated",
-  "requires_subprocess: test launches a local subprocess",
-  "requires_java: test requires a local JDK/runtime",
-  "requires_browser: test requires a browser or Playwright runtime",
-  "requires_network: test requires outbound or local network access",
-  "requires_local_data: test requires workstation-local data outside its temporary fixture",
+  "local_data_integration: requires explicitly configured local research resources",
+  "requires_local_data: requires local dataset mounts",
+  "paid_model: requires the test-specific explicit paid-call opt-in",
 ]

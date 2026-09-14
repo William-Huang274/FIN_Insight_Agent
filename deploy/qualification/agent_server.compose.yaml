@@ -43,8 +43,8 @@ services:
       BG_JOB_SHUTDOWN_GRACE_PERIOD_SECS: '1'
       LOG_JSON: 'true'
     volumes:
-      - ../../tests/qualification/fixtures/native_runtime_probe.py:/probe/native_runtime_probe.py:ro
-      - ../../tests/qualification/fixtures/model_dispatch_probe.py:/probe/model_dispatch_probe.py:ro
+      - ../../tests/integration/fixtures/native_runtime_probe.py:/probe/native_runtime_probe.py:ro
+      - ../../tests/integration/fixtures/model_dispatch_probe.py:/probe/model_dispatch_probe.py:ro
       - ../../src:/deps/FIN_Insight_Agent/src:ro
       - ${FIN_E1_EVIDENCE_DIR:?unique attempt evidence directory required}:/probe-evidence
   peer:

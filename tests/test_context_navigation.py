@@ -26,8 +26,6 @@ def retained_history():
         HumanMessage(id="continue", content="Continue from the saved result.")]
 
 
-
-
 def summary_record(rows, end=5):
     return {"prefix_end": end, "first_original_id": rows[0].id, "last_original_id": rows[end-1].id,
             "count": 1, "message": HumanMessage(content="Lossy summary: cash fell; numbers omitted.").model_dump(mode="json")}

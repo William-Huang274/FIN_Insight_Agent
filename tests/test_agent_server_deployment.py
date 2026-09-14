@@ -11,9 +11,6 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 DEPLOY = ROOT / "deploy" / 'agent_server'
 COMPOSE_PATH = DEPLOY / "compose.yaml"
-ZERO_MODEL_COMPOSE_OVERRIDE_PATH = (
-    DEPLOY / "compose.zero-model-qualification.yaml"
-)
 DOCKERFILE_PATH = DEPLOY / "Dockerfile"
 DOCKERIGNORE_PATH = DEPLOY / "Dockerfile.dockerignore"
 POSTGRES_INIT_PATH = DEPLOY / "postgres-init" / "010-create-runtime-roles.sh"
@@ -57,70 +54,41 @@ PGVECTOR_IMAGE = (
     "ccc6e83d6e35e931dc7c5def2022729d5a6c370318d099181995567ff1fb4d6b"
 )
 
-CONTROL_FILES = (
-    "fin_ia_0_1_3_dell_reference_vertical_foundation_v1_0.json",
-    "fin_ia_0_1_3_dell_reference_vertical_deepseek_structured_agents_v1_0.json",
-    "fin_ia_0_1_3_dell_q1_source_read_thinking_disabled_v1_0.json",
-    "fin_ia_0_1_3_dell_q1_source_read_thinking_enabled_v1_0.json",
-    "fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json",
-    "fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json",
-    "fin_ia_0_1_3_dell_owner_data_gate_decision_v1_0.json",
-    "fin_ia_0_1_3_dell_full_research_routed_v1_0.json",
-    "fin_ia_0_1_3_dell_q8_targeted_completion_v1_0.json",
-    "fin_ia_0_1_3_dell_report_quick_answer_v1_0.json",
-    "fin_ia_0_1_3_dell_q1_source_read_thinking_workpaper_capacity_v1_0.json",
-    "fin_ia_0_1_3_dell_q1_source_read_corrective_context_v1_0.json",
-    "fin_ia_0_1_3_dell_full_research_pro_low_v1_0.json",
-    "fin_ia_0_1_3_dell_case_review_native_v1_0.json",
-    "fin_ia_0_1_3_dell_case_convergence_native_v1_0.json",
-    "cases/dell_growth_quality.json",
-    "runtime/research_session.json",
-    "runtime/conversation.json",
-)
+CONTROL_FILES = ('cases/growth_quality.json', 'model_routing.json', 'quick_answer.json', 'reference_foundation.json', 'runtime/conversation.json', 'runtime/research_session.json', 'structured_agents.json')
 
 HOST_BINDINGS = {
+    "FINSIGHT_RESEARCH_RESOURCES_HOST_ROOT": ("configure the verified dataset resources directory", "/run/fin-insight/resources"),
     "FINSIGHT_DELL_S1_NODES_HOST_PATH": (
-        "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/"
-        "rag_mature_stack/retrieval_qualification/"
-        "dell_rag_full_stack_preview_attempt_20260902_03/retrieval_nodes.jsonl",
+        "configure the dataset path in your local environment",
         "/run/fin-insight/s1/retrieval_nodes.jsonl",
     ),
     "FINSIGHT_DELL_REVIEWED_BASE_PACK_HOST_PATH": (
-        "D:/FIN_Insight_Agent/data/workbench_private/"
-        "fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json",
+        "configure the dataset path in your local environment",
         "/run/fin-insight/reviewed/base/pack.json",
     ),
     "FINSIGHT_DELL_REVIEWED_OVERLAY_HOST_PATH": (
-        "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/"
-        "evidence_overlay/attempts/"
-        "20260902T051005+0800-dell-fy27q2-sec-ex99-review-a01/"
-        "reviewed-evidence-case-projection.json",
+        "configure the dataset path in your local environment",
         (
             "/run/fin-insight/reviewed/overlay/"
             "reviewed-evidence-case-projection.json"
         ),
     ),
     "FINSIGHT_DELL_S2_RESULT_HOST_PATH": (
-        "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/s2/"
-        "s2_exact_period_contract_successor_20260902_r1/"
-        "company_financial_fact_mart_result.json",
+        "configure the dataset path in your local environment",
         "/run/fin-insight/s2/company_financial_fact_mart_result.json",
     ),
     "FINSIGHT_DELL_S2_MART_HOST_PATH": (
-        "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/s2/"
-        "s2_exact_period_contract_successor_20260902_r1/"
-        "company_financial_facts.sqlite",
+        "configure the dataset path in your local environment",
         "/run/fin-insight/s2/company_financial_facts.sqlite",
     ),
     "FINSIGHT_DELL_EXTERNAL_PACK_HOST_ROOT": (
-        "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/"
-        "external_exact_url_qualification/"
-        "dell_external_exact_url_zero_model_20260902_r12",
+        "configure the dataset path in your local environment",
         "/run/fin-insight/external-r12",
     ),
 }
 
 CONTAINER_DATA_PATHS = {
+    "FINSIGHT_RESEARCH_RESOURCES_ROOT": "/run/fin-insight/resources",
     "FIN_REPO_ROOT": "/deps/FIN_Insight_Agent",
     "FINSIGHT_DELL_S1_NODES_PATH": "/run/fin-insight/s1/retrieval_nodes.jsonl",
     "FINSIGHT_DELL_REVIEWED_BASE_PACK_PATH": (
@@ -265,51 +233,18 @@ def test_env_and_build_context_cannot_copy_checked_in_secrets() -> None:
     )
 
 
-def test_zero_model_qualification_requires_an_explicit_compose_override() -> None:
-    override = yaml.safe_load(
-        ZERO_MODEL_COMPOSE_OVERRIDE_PATH.read_text(encoding="utf-8")
-    )
-
-    assert override == {
-        "name": "finsight-dell-qualification-20260904-r8a3",
-        "services": {
-            "langgraph-api": {
-                "environment": {
-                    "FINSIGHT_DELL_EXECUTION_PROFILE": (
-                        "zero_model_control_plane_v1"
-                    ),
-                    "LANGSMITH_HIDE_INPUTS": "true",
-                    "LANGSMITH_HIDE_OUTPUTS": "true",
-                },
-                "volumes": [
-                    {
-                        "type": "bind",
-                        "source": "../../scripts/qualification/agent_server_r8",
-                        "target": "/opt/fin-insight-qualification/r8",
-                        "read_only": True,
-                        "bind": {"create_host_path": False},
-                    }
-                ],
-            }
-        }
-    }
-    assert "${" not in ZERO_MODEL_COMPOSE_OVERRIDE_PATH.read_text(
-        encoding="utf-8"
-    )
-
-
 def test_only_api_receives_the_six_exact_read_only_data_bindings() -> None:
     services = _compose()["services"]
     api_volumes = services["langgraph-api"]["volumes"]
 
-    assert len(api_volumes) == len(HOST_BINDINGS) == 6
+    assert len(api_volumes) == len(HOST_BINDINGS) == 7
     assert {volume["target"] for volume in api_volumes} == {
         target for _, target in HOST_BINDINGS.values()
     }
     for host_name, (default_source, target) in HOST_BINDINGS.items():
         assert {
             "type": "bind",
-            "source": f"${{{host_name}:-{default_source}}}",
+            "source": f"${{{host_name}:?{default_source}}}",
             "target": target,
             "read_only": True,
             "bind": {"create_host_path": False},
@@ -436,7 +371,7 @@ def test_agent_server_image_uses_a_deny_by_default_minimum_build_context() -> No
         "!configs/",
         "!configs/research/",
         *(f"!configs/research/{name}" for name in CONTROL_FILES if "/" not in name),
-        "!configs/research/cases/", "!configs/research/cases/dell_growth_quality.json",
+        "!configs/research/cases/", "!configs/research/cases/growth_quality.json",
         "!configs/research/runtime/", "!configs/research/runtime/research_session.json",
         "!configs/research/runtime/conversation.json",
     ]
@@ -584,10 +519,11 @@ def test_root_env_example_declares_every_required_secret_without_values() -> Non
     assert {
         name: assignments[name] for name in HOST_BINDINGS
     } == {
-        name: default_source
-        for name, (default_source, _) in HOST_BINDINGS.items()
+        name: ""
+        for name in HOST_BINDINGS
     }
-    assert set(CONTAINER_DATA_PATHS).isdisjoint(assignments)
+    assert (set(CONTAINER_DATA_PATHS) - {"FINSIGHT_RESEARCH_RESOURCES_ROOT"}).isdisjoint(assignments)
+    assert assignments["FINSIGHT_RESEARCH_RESOURCES_ROOT"] == ""
 
 
 def test_postgres_bootstrap_separates_non_superuser_runtime_roles() -> None:

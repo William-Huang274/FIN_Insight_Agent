@@ -75,6 +75,13 @@ def create_app(
             + ",".join(supplied_retired)
         )
 
+    if (workbench_runtime_mode == "current"
+            and current_research_evidence_pack_service is None
+            and research_workspace_service is None
+            and research_retrieval_service is None
+            and not os.environ.get("FINSIGHT_RESEARCH_RESOURCES_ROOT")):
+        return create_unconfigured_app(frontend_dist_root=frontend_dist_root)
+
     runtime_paths = resolve_runtime_paths(CODE_ROOT)
     resolved_frontend_dist_root = Path(
         frontend_dist_root or FRONTEND_DIST_ROOT
@@ -287,6 +294,53 @@ def create_app(
             family="point02_fixture_case",
             replacement="/api/v1/research-cases",
         )
+
+    return app
+
+
+def create_unconfigured_app(frontend_dist_root=None):
+    """Start the public shell without loading a developer's saved case history."""
+    app = FastAPI(title="FinSight Research Workbench", version="0.1.3")
+    from .oidc_login import install_identity_status
+    install_identity_status(app)
+    dist = Path(frontend_dist_root or FRONTEND_DIST_ROOT)
+    if (dist / "assets").is_dir():
+        app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+
+    @app.get("/api/health")
+    def health():
+        return {"status": "ok", "service": "finsight-workbench", "version": "0.1.3",
+                "mode": "unconfigured", "primary_product_route": "/workspace"}
+
+    @app.get("/api/readiness")
+    def readiness():
+        return JSONResponse(status_code=503, content={"status": "data_mount_required",
+            "all_ready": False, "items": [], "detail": "Connect a research service and your own data to run research."})
+
+    @app.get("/api/v1/research-cases")
+    def cases():
+        return {"items": [], "evidence_objects_ready": False}
+
+    @app.get("/api/v1/current-research/evidence-packs/{case_key}")
+    def unavailable_case(case_key: str):
+        raise HTTPException(status_code=503, detail="research_data_not_configured")
+
+    @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "PATCH", "DELETE"],
+                   include_in_schema=False)
+    def research_service_required(path: str):
+        return JSONResponse(status_code=503, content={
+            "detail": "尚未配置研究服务。请按快速开始文档连接运行服务和研究资料后，再启动研究。",
+            "code": "research_service_not_configured",
+        })
+
+    @app.get("/", include_in_schema=False)
+    def root_redirect():
+        return RedirectResponse("/workspace")
+
+    @app.get("/workspace", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace/{path:path}", response_class=HTMLResponse, include_in_schema=False)
+    def workspace(path: str = ""):
+        return _frontend_index(dist)
 
     return app
 

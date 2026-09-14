@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 from copy import deepcopy
 from dataclasses import dataclass
@@ -47,14 +48,11 @@ EntityResolutionState = Literal[
 ]
 _DIGEST_PATTERN = r"^[0-9a-f]{64}$"
 _REPO_ROOT = Path(__file__).resolve().parents[3]
-DEFAULT_CONFIG_PATH = _REPO_ROOT / "configs/research/fin_ia_0_1_3_dell_reviewed_evidence_enrichment_v1_0.json"
-DEFAULT_BASE_PACK_PATH = _REPO_ROOT / "data/workbench_private/fin_0_1_3_s1_dell_direct_source_evidence/r4/successor/pack.json"
-DEFAULT_OVERLAY_PATH = Path(
-    "Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/evidence_overlay/"
-    "attempts/20260902T051005+0800-dell-fy27q2-sec-ex99-review-a01/"
-    "reviewed-evidence-case-projection.json"
-)
-DEFAULT_PHYSICAL_CATALOG_PATH = _REPO_ROOT / "configs/research/fin_ia_0_1_3_dell_source_family_physical_route_catalog_v1_0.json"
+_RESOURCE_ROOT = Path(os.environ.get("FINSIGHT_RESEARCH_RESOURCES_ROOT") or _REPO_ROOT / ".local" / "research-resources")
+DEFAULT_CONFIG_PATH = _RESOURCE_ROOT / "reviewed-evidence.json"
+DEFAULT_BASE_PACK_PATH = _RESOURCE_ROOT / "reviewed" / "pack.json"
+DEFAULT_OVERLAY_PATH = _RESOURCE_ROOT / "reviewed" / "overlay.json"
+DEFAULT_PHYSICAL_CATALOG_PATH = _RESOURCE_ROOT / "source-routes.json"
 # These are trust anchors compiled into the loader, not values learned from the
 # candidate being loaded.  They are updated only when the checked-in candidate
 # is deliberately re-issued.

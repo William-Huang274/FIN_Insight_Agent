@@ -172,7 +172,7 @@ def test_report_save_api_records_host_dependencies_and_refuses_new_export_after_
 @pytest.mark.local_data_integration
 def test_open_mcp_connection_rechecks_sec_version_and_rejects_cached_source_tools(mapped_task):
     from mcp import Client
-    from test_specialist_composition import RUNTIME_ENVIRONMENT, _assert_assets
+    from local_research_resources import RUNTIME_ENVIRONMENT, _assert_assets
     from sec_agent.agent_runtime.agent_server_data_composition import open_approved_data_composition, APPROVED_DATA_SNAPSHOT_ID
     _assert_assets()
     client, service, calls, tid, sec, project, version, request = mapped_task

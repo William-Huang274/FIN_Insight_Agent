@@ -578,7 +578,9 @@ export function ResearchSession() {
                 onChange={(e) => setResearchQuestion(e.target.value)} rows={7}
                 placeholder="写明研究对象、期间，以及希望核实的具体问题…" />
               <div><span>信息截止按任务创建时间固定；具体资料期间以原文为准</span>
-                {configuration?.cost_expectation_cny && <span>完整研究规划估费约 ¥{configuration.cost_expectation_cny.rough_low}–{configuration.cost_expectation_cny.rough_high}，非固定价格</span>}</div>
+                {configuration?.cost_expectation_cny && <span>{typeof configuration.cost_expectation_cny.rough_low === "number" && typeof configuration.cost_expectation_cny.rough_high === "number"
+                  ? `完整研究规划估费约 ¥${configuration.cost_expectation_cny.rough_low}–${configuration.cost_expectation_cny.rough_high}，非固定价格`
+                  : "完整研究费用取决于模型、资料范围与审查深度，按实际用量记录"}</span>}</div>
             </div>
             <button
               className="rs-primary"

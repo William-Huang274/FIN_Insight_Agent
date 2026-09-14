@@ -32,9 +32,17 @@ python -m scripts.deployment.research_workbench serve --settings-directory /path
 | compose.report-session.yaml | 已存报告的审阅与追问 / Saved-report review and follow-up |
 | compose.conversation-data.yaml | 财务数据只读挂载 / Read-only financial-data mount |
 | compose.working-memory.yaml | 持久化工作记忆 / Persistent working memory |
-| compose.zero-model-qualification.yaml | 不调用模型的运行诊断 / No-model runtime diagnostics |
 
-其他可选诊断与专项审阅配置由相应测试覆盖，不随普通研究自动启用。Original case-specific policies remain scoped to their configured datasets; renaming modules does not expand their coverage.
+
+### Dataset resources / 数据资源
+
+Set every host mount in `.env.example` to a real location on your Docker host. There are no workstation-specific defaults. `FINSIGHT_RESEARCH_RESOURCES_HOST_ROOT` mounts read-only at `/run/fin-insight/resources` and contains `foundation.json`, `source-routes.json`, `reviewed-evidence.json` and `access-policy.json`. These dataset-specific, digest-bound records are supplied separately. Existing installations must retain their original bytes when relocating them; identity/digest checks remain active.
+
+所有宿主路径均由使用者配置。资料包中的研究定义、来源路线、审阅索引和访问记录须与 SQL、文档节点及原件匹配。仅复制公开模板不能生成有效的数据授权。0.1.3 的参考资料组合仍有案例约束，通用数据服务接入属于 0.1.4 规划。
+
+The optional historical-data API reads `FINSIGHT_RESEARCH_RESOURCES_ROOT`, with `runtime-resources.json` at its root and referenced relative paths preserved. An explicitly configured but invalid package fails validation. Without a package, the source-only API starts with an empty case catalog and readiness 503.
+
+新克隆不附带历史案例；健康接口可用，案例列表为空，资料就绪接口返回 503。需要实际研究时配置运行服务和资料。历史数据 API 可通过显式目录读取已有记录；目录错误或摘要不匹配会阻止加载。
 
 ## 已有部署兼容 / Existing installations
 

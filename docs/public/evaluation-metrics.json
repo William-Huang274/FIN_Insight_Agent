@@ -113,8 +113,6 @@
     "phase": "human_completed",
     "runs": [
       {
-        "thread_id": "01a08f18-0b40-7813-8f1a-df294d6a5b6f",
-        "run_id": "01a08f18-0b5c-7c61-86a6-38b9e6033872",
         "requests": 43,
         "reported_total_tokens": 1542624,
         "unknown_usage": 0,
@@ -136,8 +134,6 @@
         "native_status": "success"
       },
       {
-        "thread_id": "01a08f2e-422f-7b32-94a7-a799775216dd",
-        "run_id": "01a08f2e-4242-7350-97d4-0cecc92b5828",
         "requests": 27,
         "reported_total_tokens": 927019,
         "unknown_usage": 0,
@@ -159,8 +155,6 @@
         "native_status": "success"
       },
       {
-        "thread_id": "01a08f2e-422f-7b32-94a7-a799775216dd",
-        "run_id": "01a08f3f-d153-7ee2-962c-223d9b950a32",
         "requests": 38,
         "reported_total_tokens": 1321253,
         "unknown_usage": 0,
@@ -182,8 +176,6 @@
         "native_status": "success"
       },
       {
-        "thread_id": "01a08f2e-422f-7b32-94a7-a799775216dd",
-        "run_id": "01a08f4e-2690-7833-b7d6-46aa81f0ef6b",
         "requests": 17,
         "reported_total_tokens": 672006,
         "unknown_usage": 0,
@@ -247,7 +239,6 @@
       "samples_per_cell": 1,
       "blind": false,
       "general_accuracy_claim": false
-    },
-    "evidence": "docs/worklog/fin_0_1_3_s3/211_ai_memory_investment_case.md"
+    }
   }
 }

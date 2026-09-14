@@ -38,15 +38,6 @@ def _paths() -> list[str]:
     return sorted(set(tracked + untracked))
 
 
-def _allowed_fixture(path: str, line: str, rule: str) -> bool:
-    lowered = line.lower()
-    if rule == "tencent_secret_id" and path.endswith(
-        "test_fin_0_1_3_s1_08_query_facet_three_way_evaluation.py"
-    ):
-        return "example.com" in lowered and "src_fake" in lowered
-    return False
-
-
 def main() -> int:
     findings: list[dict[str, object]] = []
     scanned = 0
@@ -61,7 +52,7 @@ def main() -> int:
         scanned += 1
         for line_number, line in enumerate(text.splitlines(), start=1):
             for rule, pattern in RULES.items():
-                if pattern.search(line) and not _allowed_fixture(relative, line, rule):
+                if pattern.search(line):
                     findings.append(
                         {"path": relative, "line": line_number, "rule": rule}
                     )

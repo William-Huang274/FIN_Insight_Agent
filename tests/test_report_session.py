@@ -275,19 +275,6 @@ def test_browser_projection_omits_private_native_state():
     assert public_event({"kind": "messages", "content": "PRIVATE"}) is None
 
 
-def test_deployment_json_budget_and_schema_cache():
-    from pathlib import Path
-    from sec_agent.agent_runtime.report_session import _schema_graph
-    from sec_agent.agent_runtime.deepseek_structured_agents import TokenBudgetBasis
-    path = Path("Z:/FIN_Insight_Agent_qualification/dell_reference_vertical/report-workbench-20260906-a1/host-settings.json")
-    if not path.is_file():
-        pytest.skip("local deployment settings absent")
-    data = json.loads(path.read_text(encoding="utf-8"))
-    for value in data["node_budgets"].values():
-        assert TokenBudgetBasis.model_validate_json(json.dumps(value)).required_outputs
-    assert _schema_graph() is _schema_graph()
-
-
 @pytest.mark.parametrize("body", [{"action": "shell", "message": "x"}, {"action": "ask", "path": "/secrets"},
     {"action": "revise", "message": "x"*16001}, {"action": "revise", "answer_mode": "quick"},
     {"action": "ask", "answer_mode": "custom"}, {"action": "ask", "model": "untrusted"}])
@@ -409,21 +396,6 @@ def test_quick_route_progressive_report_and_private_histories(artifacts):
     asyncio.run(run())
 
 
-def test_quick_task_profile_reaches_existing_provider_request():
-    from pydantic import SecretStr
-    from langchain_core.messages import HumanMessage
-    from sec_agent.agent_runtime.report_session import load_quick_answer_config
-    from sec_agent.agent_runtime.case_review_agent import case_chat_model
-    from sec_agent.agent_runtime.deepseek_structured_agents import load_deepseek_structured_agent_config
-    path = "configs/research/fin_ia_0_1_3_dell_case_convergence_native_v1_0.json"
-    profile, basis, limits = load_quick_answer_config(path)
-    assert limits == {"model_calls": 8, "tool_calls": 24}
-    model = case_chat_model(profile, basis, load_deepseek_structured_agent_config(path), SecretStr("fixture-not-a-secret"))
-    payload = model._get_request_payload([HumanMessage(content="fixture")])
-    assert payload["model"] == "deepseek-v4-flash"
-    assert payload["extra_body"]["thinking"] == {"type": "disabled"}
-    assert payload.get("max_completion_tokens", payload.get("max_tokens")) == 8000
-    assert "reasoning_effort" not in payload and model.max_retries == 0
 def test_archived_locator_addition_does_not_change_existing_evidence_contract():
     from copy import deepcopy
     from sec_agent.agent_runtime.report_session import compatible_archived_citations

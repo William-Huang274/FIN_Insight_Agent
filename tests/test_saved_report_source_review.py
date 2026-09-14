@@ -62,10 +62,6 @@ def test_existing_verifier_and_local_writer_can_use_saved_direct_report_sources(
     asyncio.run(run())
 
 
-
-
-
-
 def test_selected_claim_role_consumes_scope_without_whole_report_obligations():
     async def run():
         artifacts = CaseArtifacts.from_observed_sources({}, case_id="fixture", research_as_of="2026-01-01")

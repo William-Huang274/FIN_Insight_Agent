@@ -22,6 +22,7 @@
 - [0.1.4 E3资料目录去重与同源补查入口](fin_0_1_4/018_e3_document_navigation_and_followup.md)
 - [0.1.4 E3新公司资料与利润率判断迁移](fin_0_1_4/019_e3_amzn_transfer_qualification.md)
 - [0.1.4 E3整稿复核覆盖与责任修订](fin_0_1_4/020_e3_review_coverage_and_responsible_repair.md)
+- [0.1.4 E3有界真实复核与修订](fin_0_1_4/021_e3_live_review_and_revision.md)
 
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 

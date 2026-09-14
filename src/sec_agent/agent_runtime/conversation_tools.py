@@ -80,17 +80,18 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
             body = result.model_dump(mode="json")
             return json.dumps(body, ensure_ascii=False), body
         grants.extend(GrantedTool(t, "read", "本对话上传资料的副本") for t in [list_task_materials, read_task_material])
+    @tool
+    def get_research_method(method_id: str = ""):
+        """Read a role method before substantive financial analysis: finance, industry_product, counter, writer, verifier or lead. Empty ID lists methods. Guidance only, not evidence or extra permissions."""
+        from sec_agent.research_foundation.research_methods import get_research_method as read_method
+        try:
+            return (method_reader or read_method)(method_id)
+        except ValueError as exc:
+            raise ToolException(str(exc)) from exc
+    grants.append(GrantedTool(get_research_method, "read", "已打包研究方法，只读"))
+
     if fact_mart is not None:
         fact_mart = fact_mart.resolve(strict=True)
-        @tool
-        def get_research_method(method_id: str = ""):
-            """Read a role method before substantive financial analysis: finance, industry_product, counter, writer, verifier or lead. Empty ID lists methods. Guidance only, not evidence or extra permissions."""
-            from sec_agent.research_foundation.research_methods import get_research_method as read_method
-            try:
-                return (method_reader or read_method)(method_id)
-            except ValueError as exc:
-                raise ToolException(str(exc)) from exc
-        grants.append(GrantedTool(get_research_method, "read", "已打包研究方法，只读"))
         @tool
         def list_financial_data():
             """List companies, metrics and periods available in the host-approved fact snapshot. Availability is not financial comparability or complete worldwide coverage."""

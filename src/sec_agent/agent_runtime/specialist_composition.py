@@ -223,6 +223,7 @@ def _build_graph_input(
                 "metric_id",
                 "unit_family",
                 "availability",
+                "observed_tickers",
                 "formula",
                 "observed_period_roles",
                 "title",
@@ -231,12 +232,10 @@ def _build_graph_input(
         }
         for row in metric_rows
         if isinstance(row, Mapping)
-        and ("DELL" in tuple(row.get("observed_tickers") or ())
-             or row.get("availability") == "derived_at_query_time")
     )
     if not metrics:
         raise SpecialistAgenticCompositionError(
-            "specialist_dell_finance_metrics_missing"
+            "specialist_finance_metrics_missing"
         )
     topic_refs = tuple(reviewed_topic_refs_by_branch.get(branch_id, ()))
     if not topic_refs:

@@ -6,6 +6,10 @@
 
 ## 1. 分工与数据流
 
+跨公司资料研究适配：专家输入保留宿主财务目录的全部指标及每项 `observed_tickers`，不再按参考案例公司筛选；可见目录不授予查询或数值权威，查询仍检查期间、单位和来源。普通对话的研究方法工具独立于财务数据库配置，使仅有上传资料的任务也能读取既有方法。参考案例标识保持兼容。
+
+多来源验证复用现有项目 BFF、SQLite、资料解析、原生 LangChain Agent、来源计算器和预算适配。七份真实原件的项目选择、任务快照、方法/正文工具及重开回读已有脚本模型证据；这不证明自主研究质量或完整任务费用。单 Agent 成本对照入口在 `tests/integration/test_multisource_cost_baseline.py`，默认关闭；运行资料、预算依据和结果保存在本地，不进入公共仓库。
+
 内部记录 020整稿复核与责任修订：复用CaseArtifacts、原生case reviewer/repair与MCP。完整复核的read coverage只接受workpaper读取，全部claims不包含正文/反证/缺口；局部发现可先保存，revision_only维持原机械差异范围。作者通过既有PaperRevision更新受影响字段/引用，保留未改主张及计算源；新增指引不构成自动金融语义判定或新规则平台。本地保存稿链路通过，自主纠错质量未资格。
 
 内部记录 018资料导航在TaskAttachmentStore投影层复用原块顺序，outline只列一次section并提供不可引用的原文预览；items内document_navigation给出块位置/总数及现有读取或视觉工具参数。字段不记录历史读状态，也不裁决缺口；section/leaf旧ID、来源正文和摘要保持。共享冻结本地树的导航与原件解析不变。

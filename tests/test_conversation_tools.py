@@ -8,6 +8,21 @@ from sec_agent.agent_runtime.conversation_tools import conversation_tools
 from test_conversation_agent import ScriptedTools
 
 
+def test_source_only_agent_consumes_method_without_financial_database():
+    grants = conversation_tools(thread_id='source-only')
+    assert 'query_financial_data' not in {g.tool.name for g in grants}
+    model = ScriptedTools(responses=[AIMessage(content='', tool_calls=[{
+        'name': 'get_research_method', 'args': {'method_id': 'finance'},
+        'id': 'method-read', 'type': 'tool_call'}]), AIMessage(content='Method read.')])
+    agent = build_conversation_agent(model=model, grants=grants, permission_mode='request_standard',
+                                    checkpointer=InMemorySaver())
+    result = agent.invoke({'messages': [HumanMessage(content='Read the packaged finance method.')]},
+                          {'configurable': {'thread_id': 'source-only'}})
+    response = next(m for m in result['messages'] if isinstance(m, ToolMessage))
+    assert response.name == 'get_research_method' and response.status == 'success'
+    assert len(response.content) > 1000
+
+
 def test_recreated_agent_calculates_from_checkpoint_artifacts_and_isolates_threads():
     checkpoint = InMemorySaver()
     config = {"configurable": {"thread_id": "source-owner"}}

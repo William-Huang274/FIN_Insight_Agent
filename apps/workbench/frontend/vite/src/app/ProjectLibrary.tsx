@@ -3,7 +3,7 @@ import type { Session } from '../api/reportSessions';
 import './project-library.css';
 import {ProjectSecSource} from './ProjectSecSource';
 
-type Document = {document_id:string;name:string;bytes:number;text_status:string;excerpt:string;sections:number};
+type Document = {document_id:string;name:string;bytes:number;text_status:string;excerpt:string;sections:number;project_origin?:{research_origin?:{thread_id:string;report_version:number;phase:string;reason:string}}};
 type Detail = {name:string;sections:{heading:string;text:string;page:number|null;needs_vision:boolean}[]};
 async function readJson(response:Response) {
   const body=await response.json();
@@ -21,7 +21,7 @@ export function ProjectLibrary({project, sessions, navigate, onResearch}:{projec
   useEffect(()=>{void load().catch(e=>setError(e.message)).finally(()=>setBusy(false));},[base]);
   const search=async()=>{setBusy(true);setError('');try{await load();}catch(e){setError((e as Error).message);}finally{setBusy(false);}};
   return <section className="fs-page fs-project-library"><span className="fs-kicker">项目资料</span><h1>{project.name}</h1>
-    <p>项目和资料保存在当前工作台服务。可按文件名或已解析正文查找；上传内容仍需核验。</p>
+    <p>项目和资料保存在当前工作台服务。可按文件名或已解析正文查找；上传内容及研究成果仍需核验。历史报告版本分别保留，请明确选择本次需要的版本。</p>
     <div className="fs-project-upload"><label>添加项目资料<input aria-label="添加项目资料" type="file" disabled={busy} accept=".pdf,.docx,.txt,.md,.csv,.html,.htm,.png,.jpg,.jpeg,.webp" onChange={async e=>{
       const file=e.target.files?.[0]; e.target.value=''; if(!file)return;setBusy(true);setError('');setNotice('');
       try{await readJson(await fetch(base,{method:'POST',headers:{'X-Workbench-Request':'1','X-File-Name':encodeURIComponent(file.name)},body:file}));
@@ -34,7 +34,8 @@ export function ProjectLibrary({project, sessions, navigate, onResearch}:{projec
     <p>已选 {selected.length} 份资料。开始研究时保存独立副本，后续项目修改不会自动改变该次研究输入。</p>
     <button disabled={busy||!selected.length} onClick={()=>onResearch(selected)}>用所选资料准备研究</button>
     {!!selected.length&&<button disabled={busy} onClick={()=>setSelected([])}>清空资料选择</button>}
-    <div className="fs-project-documents">{items.map(item=><article key={item.document_id}><label><input type="checkbox" aria-label={`选择资料 ${item.name}`} disabled={busy} checked={selected.some(d=>d.document_id===item.document_id)} onChange={e=>setSelected(old=>e.target.checked?[...old,item]:old.filter(d=>d.document_id!==item.document_id))}/>用于研究</label><h2>{item.name}</h2><small>{item.text_status==='searchable'?'正文可查找':'含需识别的图片或扫描页'} · 用户提供，待核验</small><p>{item.excerpt}</p>
+    <div className="fs-project-documents">{items.map(item=><article key={item.document_id}><label><input type="checkbox" aria-label={`选择资料 ${item.name}`} disabled={busy} checked={selected.some(d=>d.document_id===item.document_id)} onChange={e=>setSelected(old=>e.target.checked?[...old,item]:old.filter(d=>d.document_id!==item.document_id))}/>用于研究</label><h2>{item.name}</h2><small>{item.text_status==='searchable'?'正文可查找':'含需识别的图片或扫描页'} · {item.project_origin?.research_origin?'研究成果，须核对原始依据':'用户提供，待核验'}</small><p>{item.excerpt}</p>
+      {item.project_origin?.research_origin&&<div><p>研究成果 v{item.project_origin.research_origin.report_version} · {['human_completed','human_reviewed_not_released'].includes(item.project_origin.research_origin.phase)?'用户已确认，仍须核对原始依据':'研究草稿，待审阅'}；{item.project_origin.research_origin.reason}</p><button disabled={busy} onClick={()=>navigate('report',item.project_origin!.research_origin!.thread_id)}>打开原研究与修改记录</button></div>}
       <button disabled={busy} onClick={async()=>{setBusy(true);setError('');try{setDetail(await readJson(await fetch(`${base}/${encodeURIComponent(item.document_id)}`)));}catch(e){setError((e as Error).message);}finally{setBusy(false);}}}>阅读已保存正文</button>{' '}
       <a href={`${base}/${encodeURIComponent(item.document_id)}/download`}>下载原文件</a>
     </article>)}</div>{!busy&&!items.length&&<p>暂无符合条件的资料。可上传文件或更换关键词。</p>}

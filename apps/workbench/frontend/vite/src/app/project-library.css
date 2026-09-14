@@ -22,3 +22,7 @@
 .fs-sec-table {overflow:auto;max-width:100%;}
 .fs-sec-table table {border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;}
 .fs-sec-table th,.fs-sec-table td {text-align:left;padding:10px;border-bottom:1px solid var(--line,#d8dedc);white-space:nowrap;}
+.fs-save-project-report {border:1px solid var(--line,#d8dedc);border-radius:10px;padding:14px;margin:16px 0;min-width:0;overflow-wrap:anywhere;font-size:13px;}
+.fs-save-project-report label {display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;max-width:100%;}
+.fs-save-project-report select {max-width:100%;min-width:0;}
+.fs-save-project-report button,.fs-save-project-report select {padding:8px;margin:4px;border:1px solid var(--line,#d8dedc);border-radius:6px;background:var(--surface,#fff);color:inherit;font:inherit;}

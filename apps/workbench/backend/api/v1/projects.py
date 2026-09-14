@@ -25,6 +25,13 @@ class SecRefresh(BaseModel):
     cik: str=Field(pattern=r'^[0-9]{10}$')
 
 
+class SaveReport(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    thread_id: UUID
+    checkpoint_id: UUID | None = None
+    report_digest: str=Field(pattern=r'^[a-f0-9]{64}$')
+
+
 class ProjectIndex(BaseModel):
     model_config=ConfigDict(extra='forbid')
     revision: int=Field(ge=0,strict=True)
@@ -81,6 +88,38 @@ def build_projects_router(root, service):
         identity=owner(request); scope(identity,project_id)
         response.headers['Cache-Control']='no-store'
         return library.search(identity,project_id,query)
+
+    @router.post('/{project_id}/reports')
+    async def save_report(project_id: UUID, body: SaveReport, request: Request, response: Response):
+        identity=owner(request,True)
+        target=await run_in_threadpool(scope,identity,project_id)
+        # Source report, review status and provenance are always server-owned.
+        state=await service.report_state(body.thread_id,body.checkpoint_id)
+        from .report_sessions import report_snapshot
+        from sec_agent.agent_runtime.targeted_revision import report_digest
+        from ...application.report_delivery import export_report
+        if not report_snapshot(state):
+            raise HTTPException(409,'报告尚未完成当前修订，请选择已完成的历史版本或稍后保存。')
+        values=state['values']; report=values['report']
+        if report_digest(report)!=body.report_digest:
+            raise HTTPException(409,'报告已更新，请重新载入并核对要保存的版本。')
+        origin={'thread_id':str(body.thread_id),'checkpoint_id':state['checkpoint']['checkpoint_id'],
+                'report_version':values['report_version'],'report_digest':body.report_digest,
+                'phase':values.get('phase'),'human_edit_count':len(values.get('human_edits',[])),
+                'reason':values.get('report_revision_reason') or '原版本未记录修改说明',
+                'authority':'Research artifact, not independently verified disclosure or NumericFact. User confirmation is not model verification.'}
+        status='人工修改/确认的研究成果，仍须核对原始依据' if values.get('phase') in {'human_completed','human_reviewed_not_released'} else '研究草稿，待人工审阅'
+        content,_=await run_in_threadpool(export_report,report,'md',review_status=status)
+        import json
+        content+=('\n\n## 研究成果出处\n\n'+json.dumps(origin,ensure_ascii=False,indent=2)+'\n').encode()
+        import re
+        name=re.sub(r'[/\\:\x00\r\n]','_',report['title'])[:120]+f" · v{values['report_version']}.md"
+        try:
+            saved=await run_in_threadpool(library.documents.add,target,name,content,research_origin=origin)
+        except ValueError as exc:
+            raise HTTPException(422,str(exc)) from None
+        response.headers['Cache-Control']='no-store'
+        return {**saved,'search_status':'saved_text_searchable','notice':'正文与查找文本已一同保存；保留原版本。研究成果不等于已核验的原始事实。'}
 
     @router.post('/{project_id}/documents')
     async def upload(project_id: UUID, request: Request):

@@ -22,6 +22,7 @@ import { branchName, claimLabel, sourceTitle } from "./researchLabels";
 import { ResearchStudio, ResearchConfigurationPicker } from "./ResearchStudio";
 import { useWorkspaceProjects } from "./workspaceProjects";
 import { ProjectLibrary } from "./ProjectLibrary";
+import { SaveProjectReport } from './SaveProjectReport';
 import type { ReportSnapshot } from "../api/reportSessions";
 import {
   ArrowUp,
@@ -718,6 +719,10 @@ export function ResearchSession() {
                         <a key={format} href={`/api/v1/research-sessions/${id}/report/export/${format}${reportQuery}`} download>{label}</a>)}
                       {!!displayedReport.charts?.length && <a href="#report-charts">查看 {displayedReport.charts.length} 幅图表</a>}
                     </div>}
+                    {displayedReport&&<SaveProjectReport key={`${id}:${historicalReport?.checkpoint_id||session.report_digest}`} thread={id}
+                      version={historicalReport?.report_version||session.report_version||1} digest={historicalReport?.report_digest||session.report_digest}
+                      checkpoint={historicalReport?.checkpoint_id} projects={projects.index.projects}
+                      onOpen={project=>setParams({view:'project',project})}/>}
                     <Markdown
                       reportHeadings
                       text={

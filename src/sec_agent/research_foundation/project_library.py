@@ -61,7 +61,7 @@ class ProjectLibrary:
             at=max(0,text.casefold().find(query.casefold())-100) if query else 0
             result.append({**item,'excerpt':text[at:at+600],'matched_sections':len(matching),
                            'text_status':'needs_vision' if item['needs_vision'] else 'searchable',
-                           'source_role':'user_upload_unverified'})
+                           'source_role':row.get('project_origin', {}).get('source_role','user_upload_unverified')})
         return {'items':result,'query':query,'search_mode':'saved_text_substring'}
 
     def assign_new_thread(self, owner, project_id, thread_id):
@@ -81,4 +81,5 @@ class ProjectLibrary:
     def detail(self, owner, project_id, document_id):
         row=self.documents.get(self.scope(owner,project_id),document_id)
         return {'document_id':row['id'],'name':row['name'],'digest':row['digest'],
-                'sections':json.loads(row['pages']),'source_role':'user_upload_unverified'}
+                'sections':json.loads(row['pages']),'source_role':row.get('project_origin', {}).get('source_role','user_upload_unverified'),
+                **({'project_origin':row['project_origin']} if row.get('project_origin') else {})}

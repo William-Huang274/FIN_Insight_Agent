@@ -122,7 +122,7 @@ class TaskAttachmentStore:
         finally:
             db.close()
 
-    def add(self, thread_id, filename, body):
+    def add(self, thread_id, filename, body, *, research_origin=None):
         thread_id = str(UUID(str(thread_id)))
         if not filename or len(filename) > 180 or any(c in filename for c in '/\\:\x00\r\n') or Path(filename).suffix.lower() not in ALLOWED_SUFFIXES:
             raise ValueError("unsupported_or_unsafe_filename")
@@ -130,14 +130,25 @@ class TaskAttachmentStore:
             raise ValueError("upload_size_limit_20MiB")
         pages, kind = parse_document(filename, body)
         object_id = "UPLOAD::" + uuid4().hex
+        if research_origin:
+            # A fixed report version is an immutable export, not a new revision
+            # authority. Native checkpoints continue to own report history.
+            identity = [thread_id, research_origin['thread_id'], research_origin['report_version'], research_origin['report_digest'],
+                        research_origin['phase'], research_origin['human_edit_count']]
+            object_id = 'UPLOAD::' + _digest(json.dumps(identity).encode())[:32]
         with self.connect() as db:
             # Count and insert in one native transaction; no application lock service.
             db.execute("BEGIN IMMEDIATE")
+            if research_origin and db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (thread_id, object_id)).fetchone():
+                return next(row for row in self.list(thread_id) if row['document_id'] == object_id)
             count, size = db.execute("SELECT COUNT(*), COALESCE(SUM(LENGTH(body)),0) FROM attachments WHERE thread=?", (thread_id,)).fetchone()
             if count >= 12 or size + len(body) > 80 * 1024 * 1024:
                 raise ValueError("task_upload_limit_12_files_80MiB")
             db.execute("INSERT INTO attachments(thread,id,name,kind,body,pages,digest) VALUES(?,?,?,?,?,?,?)",
                 (thread_id, object_id, filename, kind, body, json.dumps(pages, ensure_ascii=False), _digest(body)))
+            if research_origin:
+                db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps({
+                    'source_role': 'project_research_artifact', 'research_origin': research_origin}, ensure_ascii=False)))
         return next(row for row in self.list(thread_id) if row['document_id'] == object_id)
 
     def list(self, thread_id):
@@ -169,6 +180,8 @@ class TaskAttachmentStore:
                 object_id = 'UPLOAD::' + uuid4().hex
                 origin = {'project_id': str(project_id), 'document_id': row['id'], 'raw_body_sha256': row['digest'],
                           'source_role': 'user_upload_unverified', 'copied_at': datetime.now(timezone.utc).isoformat()}
+                if row.get('project_origin', {}).get('research_origin'):
+                    origin.update(source_role='project_research_artifact', research_origin=row['project_origin']['research_origin'])
                 db.execute('INSERT INTO attachments(thread,id,name,kind,body,pages,digest) VALUES(?,?,?,?,?,?,?)',
                            (thread_id, object_id, row['name'], row['kind'], row['body'], row['pages'], row['digest']))
                 db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps(origin)))
@@ -179,7 +192,9 @@ class TaskAttachmentStore:
             row = db.execute("SELECT * FROM attachments WHERE thread=? AND id=?", (str(UUID(str(thread_id))), object_id)).fetchone()
         if row is None:
             raise ValueError("attachment_not_in_current_task")
-        return dict(row)
+        with self.connect() as db:
+            origin = db.execute('SELECT origin FROM attachment_origins WHERE object_id=?', (object_id,)).fetchone()
+        return {**dict(row), **({'project_origin': json.loads(origin['origin'])} if origin else {})}
 
     def image(self, thread_id, object_id, page=1):
         row = self.get(thread_id, object_id)
@@ -250,7 +265,7 @@ class TaskAttachmentStore:
                     node_id = f"CHUNK::{row['id'][8:]}:{index}:{part}" + (":vision:" + digest[:12] if inspect_image else "")
                     base = {"node_id": node_id, "parent_document_id": row["id"], "parent_section_id": f"{row['id']}:{index}",
                         "title": row["name"], "section_path": [section["heading"]], "document_kind": "pdf" if row["kind"] in {"pdf", "image"} else "document",
-                        "page_start": section["page"], "page_end": section["page"], "source_role": "user_upload_vision_interpretation" if inspect_image else "user_upload_unverified",
+                        "page_start": section["page"], "page_end": section["page"], "source_role": "user_upload_vision_interpretation" if inspect_image else row.get('project_origin', {}).get('source_role', 'user_upload_unverified'),
                         "company": "user_supplied_verify_in_context", "stable_url": url, "content": chunk,
                         "content_sha256": _digest(chunk.encode()), "raw_body_sha256": row["digest"]}
                     nodes.extend([{**base, "node_kind": "section"}, {**base, "node_kind": "text", "node_id": node_id + ":leaf"}])

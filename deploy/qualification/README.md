@@ -1,5 +1,9 @@
 # 原生运行服务资格
 
+2026-09-14增加宿主单次真实流式资格入口 `tests/qualification/test_deepseek_stream_budget.py`，须同时设置 `FIN_PAID_STREAM_PROBE=1` 和下述隔离环境，并关闭宿主 `LANGSMITH_TRACING` / `LANGCHAIN_TRACING_V2`。仅读取既有DS key到宿主，Docker仍无模型key。入口按日期拒绝过期价表，运行前保存TokenBudgetBasis/单价/预留：根预算0.10元、输出1000tokens、HTTP最多1次、SDK重试0。日期变化需重新核实价格与任务依据。缺失或未知响应不自动重发，测试断言失败先检查保存证据，不直接重跑付费测试。
+
+`environment.json`中的`fixture_graph_model_calls=0`仅指Docker合成图；宿主真实调用以`paid_http_dispatches.json`、`paid_events.jsonl`和PG snapshot为准。008样本已知保存/结算及回放完成，最后算术字符串断言失败保持原JUnit；后续数值等价复核只读取保存结果。详见[008](../../docs/worklog/fin_0_1_4/008_e1_stream_usage_and_live_probe.md)。
+
 这里只启动合成LangGraph图，使用现有锁定镜像、独立PG/Redis、独立卷和回环端口18414/18415。PG额外绑定127.0.0.1:18416供宿主真实SDK图测试，使用本attempt随机密码；Redis不发布端口。不会挂载旧研究数据或模型凭据。默认pytest跳过；显式启用后使用本地已有LangSmith开发账号做原生服务许可校验，关闭研究trace。
 
 先确认端口空闲、Docker/宿主路由无重叠，并选择未使用的私有子网。`FIN_NATIVE_ATTEMPT_DIR`必须是仓库`.local/fin014`下的新目录，失败后换attempt，不覆盖旧输出：

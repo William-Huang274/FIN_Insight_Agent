@@ -35,6 +35,8 @@ class TokenPrices:
         if len(messages) != 1:
             return None  # Do not undercount an unqualified multi-response handler.
         raw = messages[0]
+        if raw.response_metadata.get('fin_usage_fields_complete') is False:
+            return None
         usage = _usage_audit_fields(raw)
         provider = raw.response_metadata.get('token_usage') or {}
         # Match the audit extractor's source precedence. A second source must
@@ -105,6 +107,9 @@ class ModelDispatchGuard:
     def settle(self, prior, result):
         if result.structured_response is not None:
             raise ValueError('typed_structured_response_replay_not_qualified')
+        if any(isinstance(m, AIMessage) and m.response_metadata.get('finish_reason') not in {
+                'stop', 'tool_calls', 'length', 'content_filter', 'insufficient_system_resource', 'aborted'} for m in result.result):
+            raise DispatchBlocked('provider_terminal_response_missing')
         self.store.received(self.owner, self.budget, prior['key'],
                             {'messages': messages_to_dict(result.result)}, self.prices.cost(result))
 

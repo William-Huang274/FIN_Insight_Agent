@@ -358,6 +358,9 @@ class CaseModelAudit(AgentMiddleware):
             raise
         raw = next(m for m in reversed(response.result) if isinstance(m, AIMessage))
         truncated = raw.response_metadata.get("finish_reason") == "length"
+        finish = raw.response_metadata.get('finish_reason')
+        incomplete = finish in {'content_filter', 'insufficient_system_resource', 'aborted'} or (
+            getattr(request.model, 'streaming', False) and finish not in {'stop', 'tool_calls', 'length'})
         private({"event": "response", "call_id": call_id, "actor": self.actor, "raw_response": raw.model_dump(mode="json")})
         if self.stream_public and not request.state.get("request_summary"):
             from .public_research_output import submitted_prose
@@ -379,12 +382,14 @@ class CaseModelAudit(AgentMiddleware):
                 self.activity_sink(event)
                 self.events.append(event)
                 get_stream_writer()(event)
-        public({**common, "event": "outcome", "status": "truncated" if truncated else "success",
+        public({**common, "event": "outcome", "status": "truncated" if truncated else "incomplete" if incomplete else "success",
             "valid_tool_call_count": len(raw.tool_calls), "invalid_tool_call_count": len(raw.invalid_tool_calls),
             "success_scope": "provider_response_only_not_tool_or_task_acceptance",
             "elapsed_ms": round((perf_counter()-start)*1000, 3), **_usage_audit_fields(raw)})
         if truncated:
             raise ValueError("case_review_truncated_no_partial_acceptance")
+        if incomplete:
+            raise ValueError('case_review_incomplete_provider_response')
         return response
 
 

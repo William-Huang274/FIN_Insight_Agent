@@ -126,7 +126,7 @@ def native():
                FIN_E1_IMAGE=image, FIN_E1_EVIDENCE_DIR=(output / 'events').as_posix())
     assert env.get('FIN_E1_SUBNET'), 'explicit_inspected_subnet_required'
     probe = NativeProbe(output, env, project)
-    probe.save('environment', {'project': project, 'image': image, 'versions': versions, 'model_calls': 0,
+    probe.save('environment', {'project': project, 'image': image, 'versions': versions, 'fixture_graph_model_calls': 0,
                               'git_head': subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
                               'graph': 'tests/qualification/fixtures/native_runtime_probe.py',
                               'graph_sha256': hashlib.sha256((ROOT / 'tests/qualification/fixtures/native_runtime_probe.py').read_bytes()).hexdigest()})

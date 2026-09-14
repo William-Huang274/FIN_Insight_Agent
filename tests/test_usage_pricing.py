@@ -19,5 +19,6 @@ def test_dated_alias_prices_preserve_old_runs_and_provider_cutover():
     assert dated_public_cost("deepseek-flash", *counts, "2026-09-11T04:00:00Z") == 1.0
     assert dated_public_cost("deepseek-v4-flash", *counts, "2026-09-11T06:00:00Z") == 2.0
     assert dated_public_cost("deepseek-v4-pro", *counts, "2026-09-14T03:59:59Z") == 9.0
-    assert dated_public_cost("deepseek-v4-pro", *counts, "2026-09-14T04:00:00Z") == 1.0
+    assert dated_public_cost("deepseek-v4-pro", *counts, "2026-09-14T04:00:00Z") == 4.5
+    assert dated_public_cost("deepseek-v4-pro", *counts, "2026-09-14T06:00:00Z") == 9.0
     assert dated_public_cost("unknown", *counts, "2026-09-11T04:00:00Z") is None

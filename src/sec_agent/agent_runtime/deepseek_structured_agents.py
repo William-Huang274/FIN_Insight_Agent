@@ -1195,6 +1195,23 @@ class ReasoningPreservingChatDeepSeek(ChatDeepSeek):
     # retain the deployed ClearToolUsesEdit policy without experimental labels.
     tool_workpaper_navigation: bool = Field(default=False, exclude=True)
 
+    def _convert_chunk_to_generation_chunk(self, chunk, default_chunk_class, base_generation_info):
+        result = super()._convert_chunk_to_generation_chunk(chunk, default_chunk_class, base_generation_info)
+        usage = chunk.get('usage')
+        if result is not None and isinstance(usage, dict) and usage:
+            # Pinned OpenAI base maps OpenAI cached_tokens but loses DeepSeek's
+            # prompt_cache_hit_tokens in SSE. Preserve reported fields verbatim;
+            # transport, SSE parsing and chunk aggregation stay SDK-owned.
+            result.message.response_metadata['token_usage'] = dict(usage)
+            result.message.response_metadata['fin_usage_fields_complete'] = all(
+                type(usage.get(k)) is int and usage[k] >= 0 for k in ('prompt_tokens', 'completion_tokens'))
+            hit = usage.get('prompt_cache_hit_tokens')
+            if (result.message.usage_metadata is not None and type(hit) is int
+                    and 0 <= hit <= result.message.usage_metadata['input_tokens']):
+                details = result.message.usage_metadata.setdefault('input_token_details', {})
+                details['cache_read'] = hit
+        return result
+
     def _get_request_payload(self, input_, *, stop=None, **kwargs):
         from .model_context import project_tool_history
         originals = self._convert_input(input_).to_messages()

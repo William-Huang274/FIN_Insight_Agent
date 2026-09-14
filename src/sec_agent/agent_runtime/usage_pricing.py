@@ -1,7 +1,7 @@
 """Dated public-price estimates for reported usage, never provider invoices.
 
-This preserves the FIN 0.1.3 price schedule. Historical research audits retain
-their own frozen implementation; product serving does not import experiment code.
+Historical research audits retain their own frozen implementation. Current
+estimates follow dated official corrections; they never rewrite saved invoices.
 """
 from datetime import datetime, timedelta, timezone
 
@@ -20,13 +20,15 @@ def peak_multiplier(timestamp):
 
 
 def dated_public_cost(model, hit, miss, output, timestamp):
-    """Estimate CNY using the recorded request date and the frozen schedule."""
+    """Estimate CNY using the request date and dated public tariff corrections."""
     local = datetime.fromisoformat(timestamp.replace("Z", "+00:00")).astimezone(timezone(timedelta(hours=8)))
     if local.date().isoformat() >= "2026-09-11":
         if model in {"deepseek-flash", "deepseek-v4-flash", "deepseek-v4-flash-vision-exp"}:
             rates = (0.02, 1.0, 4.0)
         elif model == "deepseek-v4-pro":
-            rates = (0.02, 1.0, 4.0) if local.isoformat() >= "2026-09-14T12:00:00+08:00" else (0.15, 4.5, 13.5)
+            # Official 2026-09-14 continuation notice cancelled the previously
+            # expected Flash migration. Pro retains its own tariff.
+            rates = (0.15, 4.5, 13.5)
         else:
             return None
         return sum(count * rate for count, rate in zip((hit, miss, output), rates)) * peak_multiplier(timestamp) / 1_000_000

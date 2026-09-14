@@ -31,9 +31,25 @@ class ModelDispatchStore:
     def connection(self):
         # Do not hold a transaction across provider/network execution.
         with psycopg.connect(self._dsn, connect_timeout=5, row_factory=dict_row) as db:
+            db.execute('SET LOCAL search_path = pg_catalog, public, pg_temp')
             db.execute("SET LOCAL lock_timeout = '5s'")
             db.execute("SET LOCAL statement_timeout = '10s'")
             yield db
+
+    def require_runtime_role(self):
+        """Reject privileged/native-server credentials at the product boundary."""
+        with self.connection() as db:
+            row = db.execute('''SELECT
+                current_user = session_user
+                AND NOT (r.rolsuper OR r.rolcreatedb OR r.rolcreaterole OR r.rolreplication OR r.rolbypassrls)
+                AND pg_has_role(current_user,'fin_model_worker','MEMBER')
+                AND NOT has_schema_privilege(current_user,'public','CREATE')
+                AND NOT has_table_privilege(current_user,'public.fin_model_budget','INSERT,DELETE,TRUNCATE')
+                AND NOT has_column_privilege(current_user,'public.fin_model_budget','limit_micros','UPDATE')
+                AND NOT has_table_privilege(current_user,'public.fin_model_dispatch','DELETE,TRUNCATE')
+                AS allowed FROM pg_roles r WHERE r.rolname=session_user''').fetchone()
+            if not row or not row['allowed']:
+                raise DispatchBlocked('model_budget_runtime_role_overprivileged')
 
     def install(self):
         """Explicit isolated setup/migration only; never called during dispatch."""

@@ -36,3 +36,22 @@ $env:FIN_NATIVE_ATTEMPT_DIR='D:/FIN_Insight_Agent/.local/fin014/<新的attempt�
 真实研究工厂的SDK MockTransport接入验证使用另一个新attempt，单独执行`tests/qualification/test_research_budget_wiring.py`。它覆盖同步负责人/专家、Writer交互专家和原生摘要，数据边界替换为合成fixture，真实PG统一结算；不运行完整金融验收。每次仅运行一个资格模块：fixture为module范围，不把多个模块指向同一attempt目录。失败目录存在即拒绝，不设置exist_ok覆盖。
 
 可选产品接入使用挂载的宿主settings中的`model_budget_bindings`，按原生thread ID绑定`owner_id`、`budget_id`、`prices`和`roles`。`prices`各行对应`TokenPrices`字段；`roles`按固定运行角色给出`reservation_micros`、`reservation_basis`、布尔`delivery`，摘要角色为`context_summary`。预算须由可信宿主事先在同一个PG显式创建，运行图不创建或补充额度。启用bindings后，缺少thread/owner/角色/模型价格时拒绝执行。不存在bindings时沿用0.1.3行为；Hermes路径在启用预算时拒绝执行，不能绕过。该配置尚未默认启用，真实价格和额度需依据研究任务另行计算，不能直接采用资格测试的合成金额。
+
+## 独立预算连接、权限和保留
+
+2026-09-14起，启用上述binding还必须显式提供`FIN_MODEL_BUDGET_POSTGRES_URI`，使用独立预算数据库及受限worker登录。不会回落Agent Server的`POSTGRES_URI`。原生服务的迁移/管理账号不应获得这个业务库的连接配置；模型工具、浏览器、费用读取端也不获取worker凭据。运行入口检查登录角色、建库/授权等属性、表/列及schema危险权限；这不替代部署时的角色成员关系和网络访问审查。
+
+采用[PostgreSQL原生授权](https://www.postgresql.org/docs/16/sql-grant.html)、[受限视图](https://www.postgresql.org/docs/16/sql-createview.html)和[pg_dump](https://www.postgresql.org/docs/16/app-pgdump.html)。在全新专用数据库，由可信迁移账号依次执行`src/sec_agent/agent_runtime/sql/003_model_dispatch_budget_v1.sql`及`004_model_dispatch_access_v1.sql`。004是显式一次性bootstrap，不由运行图自动执行；它建立三个NOLOGIN组，遇到同名角色会拒绝并回滚。其他数据库/新集群应先核对角色，不盲目覆盖现有授权。不得将其直接应用到旧研究/原生服务库。
+
+| 身份 | 权限与边界 |
+| --- | --- |
+| 迁移owner | 拥有DDL/映射/备份权限，凭据不提供给运行图；当前合成资格用独立PG的管理账号 |
+| `fin_model_provisioner` | 新建根预算、读取和锁定预算；不能读取模型响应；既有预算不能修改 |
+| `fin_model_worker` | 锁定预算、创建派发、结算/标记未知和回放原响应；不能新建或增大预算、删表/删账、修改已知或未知回执 |
+| `fin_model_cost_reader` | 只读`fin_model_cost_summary`，通过owner管理的`fin_model_cost_access(login_role,owner_id)`绑定到登录身份；无原始表读取权 |
+
+worker是处理研究任务的可信服务身份，可以读它连接的库内各owner响应；这不是按终端用户隔离的worker。费用视图使用不可由普通会话伪造的`session_user`，SET ROLE或自定义owner变量不改变授权；共享一个费用登录不能用于隔离多个用户。视图尚未接入公共费用API，应用层认证与项目权限仍需另行验证。
+
+当前保留规则是正文、调用身份、预算依据、已知费用和未知占用一起保留；不给运行/费用账号DELETE/TRUNCATE，不运行自动清理。正文到期删除、保留期限、加密与备份副本处置未资格，不能把备份也当作公开资料。已有失败/未知证据不清除。语句查找路径固定可信schema，预算更新及终态回执重写由PG触发器拒绝，不新增运行状态机。
+
+新attempt单独执行`tests/qualification/test_model_budget_access.py`，使用本机既有PG16镜像验证两个读者、受限宿主预算入口、争抢预算、禁止删改和原生dump/restore。恢复目标是本attempt新数据库，角色在同一集群已存在，模型调用0。备份时没有进行中的新请求：恢复后已知费用、未知/缺usage占用和读取ACL不变；这不是跨机器灾备、PITR或活跃系统的RPO证明。旧快照不包含后续派发，不能恢复后直接接通付费自动执行；须先停发并核对快照之后的调用证据。备份/恢复只能显式选择可信源和新目标，不使用`--clean`或覆盖旧库。详见[009](../../docs/worklog/fin_0_1_4/009_e1_private_budget_store_and_restore.md)。

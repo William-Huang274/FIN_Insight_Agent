@@ -24,11 +24,12 @@ def test_host_binding_cannot_be_minted_or_reassigned_by_native_metadata(monkeypa
     factory.assert_not_called()
     budget=module.budget_from_host(settings,thread_id='thread',metadata={
         'owner_id':'alice','budget_id':'forged-root','limit_micros':99999999,'delivery':True},
-        environment={'POSTGRES_URI':'synthetic-not-a-credential'})
+        environment={'FIN_MODEL_BUDGET_POSTGRES_URI':'synthetic-not-a-credential'})
     guard=budget.guard('specialist',DeepSeekModelProfile(model=prices.model,thinking='disabled'))
     assert (guard.owner,guard.budget,guard.delivery)==('alice','approved-root',False)
     store.snapshot.assert_called_once_with('alice','approved-root')
     store.create_budget.assert_not_called()
+    store.require_runtime_role.assert_called_once_with()
     with pytest.raises(DispatchBlocked,match='not_authorized'):
         budget.guard('unapproved-role',DeepSeekModelProfile(model=prices.model,thinking='disabled'))
     with pytest.raises(DispatchBlocked,match='not_authorized'):
@@ -37,6 +38,13 @@ def test_host_binding_cannot_be_minted_or_reassigned_by_native_metadata(monkeypa
 
 def test_absent_host_opt_in_keeps_existing_behavior():
     assert module.budget_from_host({},thread_id='t',metadata={},environment={}) is None
+
+
+def test_native_database_is_not_an_implicit_privileged_budget_fallback():
+    settings={'model_budget_bindings':{'thread':{'owner_id':'alice'}}}
+    with pytest.raises(DispatchBlocked,match='dedicated_model_budget_database_required'):
+        module.budget_from_host(settings,thread_id='thread',metadata={'owner_id':'alice'},
+                                environment={'POSTGRES_URI':'native-server-database'})
 
 
 def test_delivery_authority_requires_boolean_host_policy():

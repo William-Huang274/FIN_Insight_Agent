@@ -30,7 +30,11 @@ def budget_from_host(settings, *, thread_id, metadata, environment):
     binding = bindings.get(thread_id) if isinstance(bindings, dict) else None
     if not isinstance(binding, dict) or not metadata.get('owner_id') or binding.get('owner_id') != metadata['owner_id']:
         raise DispatchBlocked('research_budget_owner_binding_missing')
-    store = ModelDispatchStore(environment['POSTGRES_URI'])
+    dsn = environment.get('FIN_MODEL_BUDGET_POSTGRES_URI')
+    if not dsn:
+        raise DispatchBlocked('dedicated_model_budget_database_required')
+    store = ModelDispatchStore(dsn)
+    store.require_runtime_role()
     snapshot = store.snapshot(binding['owner_id'], binding['budget_id'])
     prices = {row['model']: TokenPrices(**row) for row in binding['prices']}
     if not prices or any(price.currency != snapshot['currency'] for price in prices.values()):

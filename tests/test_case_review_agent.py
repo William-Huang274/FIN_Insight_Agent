@@ -281,6 +281,44 @@ def test_targeted_claim_read_is_smaller_but_not_complete_review_coverage(artifac
     asyncio.run(exercise())
 
 
+def test_all_claims_allow_saved_finding_but_full_review_requires_complete_workpaper():
+    from test_research_convergence import artifact_fixture
+    from sec_agent.agent_runtime.case_review_agent import ReviewWorkBudget
+
+    async def exercise():
+        base = artifact_fixture()
+        finding = {"finding_id": "coverage", "paper_id": "P01", "severity": "advisory",
+            "claim_ids": [base.read_paper("P01")["claims"][0]["claim_id"]],
+            "problematic_quote": base.read_paper("P01")["claims"][0]["statement"],
+            "diagnosis": "Synthetic finding checkpoint; full prose inspection is still pending.",
+            "requested_change": "Inspect narrative and counterevidence before completing the review."}
+        final = {**review_fixture(base), "completion": "complete"}
+        async with Client(_build_server(case_artifacts=base), raise_exceptions=False) as client:
+            tools = await case_mcp_tools(client)
+            replies = [
+                [call("read_research_artifact", {"paper_id": p["paper_id"], "section": "claims"}, "claims-"+p["paper_id"])
+                 for p in base.catalog()["papers"]],
+                [call("record_case_finding", {"finding": finding}, "save")],
+                [call("submit_case_review", {"review": final}, "premature")],
+                [call("read_research_artifact", {"paper_id": p["paper_id"], "section": "workpaper"}, "full-"+p["paper_id"])
+                 for p in base.catalog()["papers"]],
+                [call("submit_case_review", {"review": final}, "complete")]]
+            agent = build_case_reviewer(role="verifier", artifacts=base, tools=tools,
+                model=ScriptedNativeChat(marker="coverage", replies=replies), max_model_calls=7)
+            result = await agent.ainvoke({"messages": [HumanMessage(content="Local coverage qualification.")]})
+        failed = [m for m in result["messages"] if isinstance(m, ToolMessage) and m.status == "error"]
+        assert len(failed) == 1 and "section_workpaper" in failed[0].content
+        assert result["review"]["findings"][0]["finding_id"] == "coverage"
+        claims_reads = [m for m in result["messages"] if isinstance(m, ToolMessage)
+                        and m.name == "read_research_artifact" and m.artifact["section"] == "claims"]
+        assert not ReviewWorkBudget.has_paper_read({"messages": claims_reads})
+        assert ReviewWorkBudget.has_paper_read(result)
+        for message in result["messages"]:
+            if isinstance(message, ToolMessage) and message.name == "read_research_artifact" and message.artifact["section"] == "workpaper":
+                assert {"narrative_markdown", "counterevidence", "open_gaps"}.issubset(message.artifact["content"])
+    asyncio.run(exercise())
+
+
 def test_budget_hint_keeps_provider_history_intact():
     from langchain.agents.middleware.types import ModelRequest
     from langchain_core.messages import SystemMessage

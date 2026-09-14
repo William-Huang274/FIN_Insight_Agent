@@ -763,7 +763,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     read_current_workpaper.handle_tool_error = read_current_source.handle_tool_error = search_research_sources.handle_tool_error = True
     tools = [t for t in tools if t.name != "search_research_sources"] + [search_research_sources]
     if role == "repair":
-        specific = "Revise only your responsible workpaper in Chinese. Use claim_updates for changed/new claims, preserve unaffected claim IDs. Replace the thesis/mechanism/narrative so old errors do not survive in prose; respond to each finding, including explicitly marked human feedback. Do not mechanically accept reviewer causal conclusions."
+        specific = "Revise only your responsible workpaper in Chinese. Use claim_updates for changed/new claims, preserve unaffected claim IDs and their correct values/source bindings. Reconcile affected thesis/mechanism/narrative, counterevidence, what_would_change and open_gaps so old errors do not survive in another field; respond to each finding, including explicitly marked human feedback. Check that each component of a combined claim has supporting citations, adding the actual source or splitting the claim when needed. Preserve useful competing hypotheses with explicit conditions and observable tests; do not turn an unproved explanation into established causality or replace substantive analysis with generic caveats. Do not mechanically accept reviewer causal conclusions."
         submit = submit_paper_revision
         selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     elif role == "synthesis":

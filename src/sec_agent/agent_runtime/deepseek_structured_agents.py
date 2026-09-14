@@ -946,7 +946,8 @@ def _project_request(
             "capabilities", "capacity", "workpapers", "tasks", "progress", "context_digest",
         )}
         projected.update({key: request[key] for key in ('scope_policy', 'execution_policy',
-            'continuation_policy', 'allowed_planning_tools', 'role_method') if key in request})
+            'continuation_policy', 'allowed_planning_tools', 'role_method', 'require_execution_plan',
+            'source_read_enabled', 'planning_source_policy') if key in request})
         return projected
     if role == "planner":
         catalog = request.get("branch_catalog")
@@ -1371,8 +1372,9 @@ class DeepSeekStructuredAgentAdapter:
             native_tools = {name: model for name, model in native_tools.items()
                             if set(get_args(model.model_fields["action"].annotation)) & set(semantic_input["allowed_actions"])}
         if is_lead:
-            from .lead_research_graph import LEAD_RESEARCH_TOOLS, LEAD_RESEARCH_SYSTEM_PROMPT
-            native_tools = LEAD_RESEARCH_TOOLS
+            from .lead_research_graph import lead_tool_models, LEAD_RESEARCH_SYSTEM_PROMPT
+            native_tools = lead_tool_models(require_execution_plan=request_value.get("require_execution_plan", False),
+                                           source_read_enabled=request_value.get("source_read_enabled", False))
             if semantic_input.get("allowed_planning_tools") is not None:
                 native_tools = {name: model for name, model in native_tools.items()
                                 if name in semantic_input["allowed_planning_tools"]}

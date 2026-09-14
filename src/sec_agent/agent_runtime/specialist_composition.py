@@ -75,6 +75,7 @@ class SpecialistScriptedQualificationComposition:
     network_calls_authorized: Literal[False] = False
     paid_calls_authorized: Literal[False] = False
     live_external_calls_authorized: Literal[False] = False
+    source_reader: Any = None
 
 
 @dataclass(frozen=True)
@@ -88,6 +89,7 @@ class SpecialistReceiptedComposition:
     source_route_catalog_digest: str
     turn_source: Literal["saved_response_replay", "provider_model"]
     live_external_calls_authorized: bool = False
+    source_reader: Any = None
 
     @property
     def model_execution_receipts_authorized(self) -> bool:
@@ -113,6 +115,7 @@ class _OpenedSpecialistComposition:
     owner_data_gate_decision_digest: str
     inventory_snapshot_digest: str
     source_route_catalog_digest: str
+    source_reader: Any = None
 
 
 def _model_json(model: type[Any], value: Any, *, code: str) -> Any:
@@ -1094,6 +1097,14 @@ def _open_specialist_composition(
                             agent_id=collaboration.target_agent_id if mode == "repair" else f"{mode}:{branch_id}:r{prior.task_revision}")
                 graph_input = _model_json(SpecialistAgenticInput, body, code="specialist_collaboration_input_invalid")
             task = graph_input.task
+            def read_planning_source(selection):
+                # Same MCP lane, task identity, rights, cutoff and receipts as
+                # specialist reads. The Lead cannot supply a new run or branch.
+                body = task.model_dump(mode="json")
+                body.update(evidence_requests=[{"source_document": selection.model_dump(mode="json")}], fact_requests=[])
+                bound = _model_json(BoundBranchTask, body, code="lead_source_task_invalid")
+                return approved.dependencies.evidence_tool(ToolLaneTask(lane="evidence", task=bound).model_dump(mode="json"))
+
             dependencies = SpecialistAgenticDependencies(
                 model_turn=model_turn,
                 allow_workpaper_field_edits=True,
@@ -1122,6 +1133,7 @@ def _open_specialist_composition(
             )
             yield _OpenedSpecialistComposition(
                 graph_input=graph_input,
+                source_reader=read_planning_source if source_read_enabled else None,
                 graph=build_specialist_agentic_state_graph(
                     dependencies=dependencies, recovery_state=recovery_state
                 ).compile(),
@@ -1170,6 +1182,7 @@ def open_specialist_scripted_qualification_composition(
     ) as opened:
         yield SpecialistScriptedQualificationComposition(
             graph_input=opened.graph_input,
+            source_reader=opened.source_reader,
             graph=opened.graph,
             owner_data_gate_decision_digest=(
                 opened.owner_data_gate_decision_digest
@@ -1231,6 +1244,7 @@ def open_specialist_receipted_composition(
     ) as opened:
         yield SpecialistReceiptedComposition(
             graph_input=opened.graph_input,
+            source_reader=opened.source_reader,
             graph=opened.graph,
             owner_data_gate_decision_digest=(
                 opened.owner_data_gate_decision_digest

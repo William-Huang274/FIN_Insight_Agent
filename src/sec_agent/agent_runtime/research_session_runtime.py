@@ -247,6 +247,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                       "recorded_at": datetime.now(timezone.utc).isoformat()})
                 return output
             graph = build_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],
+                source_reader=bootstrap.source_reader,
                 branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers=seeds,
                 model_turn=cancellable_model_turn(lead_adapter.lead_research_turn, cancelled), run_child=worker,
                 require_all_branches=execution.mode != "auto", public_progress=emit, require_execution_plan=True,

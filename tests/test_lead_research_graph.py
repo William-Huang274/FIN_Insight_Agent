@@ -113,7 +113,8 @@ def test_adaptive_handoff_requires_model_plan_and_exposes_reasons():
         require_execution_plan=True, require_all_branches=False, public_progress=events.append)
     result = graph.invoke(value.model_dump(mode="json"))
     assert len(requests) == 2
-    assert "execution_plan_required" in str(requests[1]["tool_results"])
+    errors = json.loads(requests[1]["tool_results"][0]["content"])["schema_errors"]
+    assert any(e['loc'] == ['execution_plan'] and e['type'] == 'missing' for e in errors)
     assert result["lead_handoff"]["execution_plan"] == plan
     assert plan["omitted_steps_reason"] in events[-1]["objective"]
     assert "问题覆盖" in events[-1]["objective"]
@@ -148,7 +149,11 @@ def test_adaptive_scope_cannot_silently_discard_unfinished_requirements(problem,
     graph, value = _graph(model, lambda *_: pytest.fail("no paid worker or automatic replacement"),
         require_execution_plan=True, require_all_branches=False, max_lead_turns=2)
     result = graph.invoke(value.model_dump(mode="json"))
-    assert expected in str(requests[-1]["tool_results"])
+    if problem == "absent":
+        errors = json.loads(requests[-1]["tool_results"][0]["content"])["schema_errors"]
+        assert any(e['loc'] == ['question_coverage'] and e['type'] == 'too_short' for e in errors)
+    else:
+        assert expected in str(requests[-1]["tool_results"])
     assert result["phase"] == "research_needs_attention"
     assert result["lead_handoff"] is None
 

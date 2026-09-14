@@ -168,7 +168,7 @@ class ResearchDataMCPDependencies:
 
 def build_research_data_mcp_server(
     dependencies: ResearchDataMCPDependencies,
-    *, role_method_reader=None,
+    *, role_method_reader=None, source_access_check=None,
 ) -> Any:
     """Build the thin MCP v2 surface used by the DELL reference vertical.
 
@@ -182,7 +182,19 @@ def build_research_data_mcp_server(
     except ImportError as exc:  # pragma: no cover - optional dependency guard
         raise RuntimeError("mcp_v2_dependency_missing") from exc
 
+    async def check_project_access(context, call_next):
+        if context.method == 'tools/call' and source_access_check:
+            import asyncio
+            from .project_asset_access import ProjectAssetUnavailable
+            try:
+                await asyncio.to_thread(source_access_check)
+            except ProjectAssetUnavailable as exc:
+                from mcp_types import CallToolResult, TextContent
+                return CallToolResult(isError=True, content=[TextContent(text=str(exc))])
+        return await call_next(context)
+
     server = MCPServer(
+        middleware=[check_project_access] if source_access_check else [],
         name="fin-insight-research-data",
         title="FIN Insight Research Data",
         version="0.1.0",

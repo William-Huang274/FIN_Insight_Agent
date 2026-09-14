@@ -216,6 +216,10 @@ def open_approved_data_composition(
             raise ApprovedDataCompositionError(
                 "approved_research_as_of_catalog_mismatch"
             )
+        from sec_agent.research_foundation.project_asset_access import task_access_check
+        source_access_check = task_access_check(env)
+        if source_access_check:
+            source_access_check()
         planner_capabilities = derive_planner_tool_capabilities(
             sqlite_path=paths["s2_mart"],
             expected_mart_sha256=decision.bound_inputs.s2_mart_sha256,
@@ -270,6 +274,10 @@ def open_approved_data_composition(
             if selected is not None:
                 runtime_mart, financial_binding = selected
                 runtime_mart_digest = financial_binding['mart_sha256']
+        from sec_agent.research_foundation.project_asset_access import task_access_check
+        source_access_check = task_access_check(env)
+        if source_access_check:
+            source_access_check()
         planner_capabilities = derive_planner_tool_capabilities(
             sqlite_path=runtime_mart,
             expected_mart_sha256=runtime_mart_digest,
@@ -387,7 +395,7 @@ def open_approved_data_composition(
                 external_capture=capture,  # type: ignore[arg-type]
                 source_document_reader=source_reader,
                 case_artifacts=case_artifacts,
-            ), role_method_reader=role_method_reader,
+            ), role_method_reader=role_method_reader, source_access_check=source_access_check,
         )
     except ApprovedDataCompositionError:
         raise

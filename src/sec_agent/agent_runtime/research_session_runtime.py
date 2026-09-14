@@ -192,7 +192,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         configured = research_config()
         lead_adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
             audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
-            dispatch_guards=research_guards(configured))
+            dispatch_guards=research_guards(configured), source_access_check=source_access_check)
         specialist_limits = profile["nodes"]["specialist"]["limits"]
         branches = [b for b in case["branch_topics"] if not execution.branch_ids or b["branch_id"] in execution.branch_ids]
         first_branch = branches[0]["branch_id"]
@@ -227,7 +227,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 # A fresh provider history and read-only MCP lifecycle per child.
                 adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
                     audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
-                    dispatch_guards=research_guards(configured))
+                    dispatch_guards=research_guards(configured), source_access_check=source_access_check)
                 try:
                     with open_specialist_receipted_composition(run_id=research_id, run_invocation_id=invocation,
                             plan_invocation_id=plan_invocation_id,
@@ -279,6 +279,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 tools = await case_mcp_tools(client, run_scope=binding.structured_content["run_scope"])
                 yield artifacts, tools
 
+    from sec_agent.research_foundation.project_asset_access import task_access_check
+    source_access_check = task_access_check(environment)
+
     def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None):
         if role == "repair" and execution.mode == "selected":
             branch = next((p["branch_id"] for p in artifacts.catalog()["papers"] if p["paper_id"] == paper_id), None)
@@ -296,7 +299,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         model_profile, basis, limits = model_values(role)
         audit = CaseModelAudit(actor=actor_override or ("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True,
-            dispatch_guard=budget_scope.guard(role, model_profile) if budget_scope else None)
+            dispatch_guard=budget_scope.guard(role, model_profile) if budget_scope else None, source_access_check=source_access_check)
         if any(t.name == "consult_research_specialist" for t in tools):
             from langchain.agents.middleware import ToolCallLimitMiddleware
             audit.extra_middlewares = [ToolCallLimitMiddleware(tool_name="consult_research_specialist", run_limit=2, exit_behavior="error")]
@@ -309,7 +312,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             summary_model = case_chat_model(summary_profile, summary_basis, base, api_key)
             summary_audit = CaseModelAudit(actor="context_summary:" + audit.actor, profile=summary_profile,
                 basis=summary_basis, public_sink=public_sink, private_sink=private_sink, stream_public=True,
-                dispatch_guard=budget_scope.guard('context_summary', summary_profile) if budget_scope else None)
+                dispatch_guard=budget_scope.guard('context_summary', summary_profile) if budget_scope else None, source_access_check=source_access_check)
             audit.context_summary = RequestSummaryMiddleware(model=summary_model,
                 audited_model=summary_audit.model_runnable(summary_model), trigger_tokens=summary["trigger_tokens"],
                 keep_tokens=summary["keep_tokens"], max_summaries=summary["max_summaries"])

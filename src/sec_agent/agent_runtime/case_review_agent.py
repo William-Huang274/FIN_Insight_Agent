@@ -235,11 +235,12 @@ async def case_mcp_tools(client, *, run_scope=None, method_arguments=None):
 
 class CaseModelAudit(AgentMiddleware):
     """Existing audit format on the native middleware hook; SDK does transport."""
-    def __init__(self, *, actor, profile, basis: TokenBudgetBasis, public_sink, private_sink, stream_public=False, dispatch_guard=None):
+    def __init__(self, *, actor, profile, basis: TokenBudgetBasis, public_sink, private_sink, stream_public=False, dispatch_guard=None, source_access_check=None):
         self.actor, self.profile, self.basis = actor, profile, basis
         self.private_sink, self.stream_public = private_sink, stream_public
         self.activity_sink = public_sink
         self.dispatch_guard = dispatch_guard
+        self.source_access_check = source_access_check
         self.context_summary = None
         self.extra_middlewares = []
         self.events = []
@@ -295,6 +296,16 @@ class CaseModelAudit(AgentMiddleware):
         return result
 
     async def awrap_model_call(self, request, handler):
+        if self.source_access_check:
+            import asyncio
+            from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
+            try:
+                await asyncio.to_thread(self.source_access_check)
+            except ProjectAssetUnavailable:
+                self.public_sink({'event': 'outcome', 'status': 'blocked_before_transport_source_access',
+                    'call_id': str(uuid4()), 'actor': self.actor, 'role': 'specialist', 'model': self.profile.model,
+                    'recorded_at': datetime.now(timezone.utc).isoformat(), 'provider_call_attempted': False})
+                raise
         messages = ([request.system_message] if request.system_message else []) + list(request.messages)
         serialized = [m.model_dump(mode="json") for m in messages]
         # ToolMessage.artifact is persisted for verification but NOT sent to

@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 
 from langchain_text_splitters import MarkdownHeaderTextSplitter, RecursiveCharacterTextSplitter
 
+from .project_asset_access import access_state, origin_access, require_active, bind_project_store
 from .source_document_navigation import SourceDocumentRequest, navigate_source_nodes
 
 MAX_BYTES = 20 * 1024 * 1024
@@ -135,6 +136,8 @@ class TaskAttachmentStore:
             # authority. Native checkpoints continue to own report history.
             identity = [thread_id, research_origin['thread_id'], research_origin['report_version'], research_origin['report_digest'],
                         research_origin['phase'], research_origin['human_edit_count']]
+            if research_origin.get('source_dependencies'):
+                identity.append(research_origin['source_dependencies'])
             object_id = 'UPLOAD::' + _digest(json.dumps(identity).encode())[:32]
         with self.connect() as db:
             # Count and insert in one native transaction; no application lock service.
@@ -156,7 +159,11 @@ class TaskAttachmentStore:
             rows = db.execute("SELECT id,name,kind,pages,LENGTH(body) AS bytes FROM attachments WHERE thread=? ORDER BY rowid", (str(UUID(str(thread_id))),)).fetchall()
             origins = {r['object_id']: json.loads(r['origin']) for r in db.execute(
                 'SELECT o.* FROM attachment_origins o JOIN attachments a ON a.id=o.object_id WHERE a.thread=?', (str(thread_id),))}
-        return [{"document_id": row["id"], "name": row["name"], "kind": row["kind"], "bytes": row["bytes"],
+        def status(row):
+            with self.connect() as db:
+                own = access_state(db, str(thread_id), 'document', row['id'])
+            return own if own != 'active' else origin_access(self, thread_id, origins.get(row['id']))
+        return [{"access_status": status(row), "document_id": row["id"], "name": row["name"], "kind": row["kind"], "bytes": row["bytes"],
                  **({'project_origin': origins[row['id']]} if row['id'] in origins else {}),
                  "sections": len(json.loads(row["pages"])), "needs_vision": any(p["needs_vision"] for p in json.loads(row["pages"]))} for row in rows]
 
@@ -175,10 +182,11 @@ class TaskAttachmentStore:
             if count + len(rows) > 12 or size + sum(len(r['body']) for r in rows) > 80 * 1024 * 1024:
                 raise ValueError('task_upload_limit_12_files_80MiB')
             for row in rows:
+                bind_project_store(db, thread_id, row['_source_store'])
                 if _digest(row['body']) != row['digest']:
                     raise ValueError('project_material_integrity_failure')
                 object_id = 'UPLOAD::' + uuid4().hex
-                origin = {'project_id': str(project_id), 'document_id': row['id'], 'raw_body_sha256': row['digest'],
+                origin = {'project_id': str(project_id), 'source_scope': row['thread'], 'document_id': row['id'], 'raw_body_sha256': row['digest'],
                           'source_role': 'user_upload_unverified', 'copied_at': datetime.now(timezone.utc).isoformat()}
                 if row.get('project_origin', {}).get('research_origin'):
                     origin.update(source_role='project_research_artifact', research_origin=row['project_origin']['research_origin'])
@@ -194,7 +202,11 @@ class TaskAttachmentStore:
             raise ValueError("attachment_not_in_current_task")
         with self.connect() as db:
             origin = db.execute('SELECT origin FROM attachment_origins WHERE object_id=?', (object_id,)).fetchone()
-        return {**dict(row), **({'project_origin': json.loads(origin['origin'])} if origin else {})}
+        with self.connect() as db:
+            require_active(access_state(db, str(thread_id), 'document', object_id))
+        provenance = json.loads(origin['origin']) if origin else None
+        require_active(origin_access(self, thread_id, provenance))
+        return {**dict(row), '_source_store': str(self.path), **({'project_origin': provenance} if provenance else {})}
 
     def image(self, thread_id, object_id, page=1):
         row = self.get(thread_id, object_id)
@@ -226,9 +238,11 @@ class TaskAttachmentStore:
 
     async def read(self, *, thread_id, request, vision_reader=None):
         thread_id = str(UUID(str(thread_id)))
-        rows = [self.get(thread_id, row["document_id"]) for row in self.list(thread_id)]
-        if request.document_id:
-            rows = [self.get(thread_id, request.document_id)]
+        if not request.document_id:
+            for item in self.list(thread_id):
+                require_active(item['access_status'])
+        rows = ([self.get(thread_id, request.document_id)] if request.document_id else
+                [self.get(thread_id, row["document_id"]) for row in self.list(thread_id) if row["access_status"] == "active"])
         if request.operation == "read" and any(row["kind"] == "image" for row in rows):
             raise ValueError("image_requires_inspect_image_with_document_id")
         if request.operation == "read" and request.page_start and any(

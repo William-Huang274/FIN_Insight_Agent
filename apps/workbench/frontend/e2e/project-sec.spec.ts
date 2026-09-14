@@ -83,4 +83,12 @@ test('SEC真实连接保存与桌面手机回读',async({page,browser},testInfo)
     await phone.screenshot({path:testInfo.outputPath('sec-research-phone.png'),fullPage:true});
     expect(await phone.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
   }finally{await mobile.close();}
+  const draftUrl=page.url();
+  await page.goto(url);
+  await page.getByRole('button',{name:'撤销数据版本使用',exact:true}).click();
+  await expect(page.getByRole('button',{name:'查看数据版本',exact:true})).toHaveCount(0);
+  await page.goto(draftUrl);await expect(page.getByRole('alert')).toContainText('撤销');
+  expect((await page.request.post(`/api/v1/research-sessions/${thread}/start`,{headers:{'X-Workbench-Request':'1'}})).status()).toBe(409);
+  await page.goto(url);await page.getByRole('button',{name:'恢复数据版本使用',exact:true}).click();
+  await expect(page.getByRole('button',{name:'查看数据版本',exact:true})).toBeVisible();
 });

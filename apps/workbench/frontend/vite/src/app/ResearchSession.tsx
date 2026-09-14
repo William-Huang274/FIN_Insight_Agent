@@ -650,12 +650,13 @@ export function ResearchSession() {
                   }} />
               </label>}
             {!!session.attachments?.length && <details className="rs-task-board"><summary>本任务资料 · {session.attachments.length} 份</summary>
-              {session.attachments.map((file) => <p key={file.document_id}><a href={`/api/v1/research-sessions/${id}/attachments/${encodeURIComponent(file.document_id)}`}>{file.name}</a>
+              {session.attachments.map((file) => <p key={file.document_id}><a href={`/api/v1/research-sessions/${id}/attachments/${encodeURIComponent(file.document_id)}`}>{file.name}</a>{file.access_status&&file.access_status!=='active'&&' · 使用已受限，请检查原项目'}
                 {" · "}{file.sections} 个页面/章节{file.needs_vision ? " · 可按需视觉识别" : " · 已解析，可检索"}{file.project_origin&&' · 项目资料快照，待核验'}</p>)}
             </details>}
             {session.project_financial_data&&<div className="rs-report-notice" aria-label="本任务财务数据"><span>已保存项目SEC独立数据副本：{session.project_financial_data.project_origin.ticker}。映射观测 {session.project_financial_data.counts.observations} 条；原始标签、修订和期间仍需按研究问题核对。</span></div>}
+            {session.project_access_error&&<p role="alert">{session.project_access_error}</p>}
             {session.is_draft && <div className="rs-report-notice"><span>{session.project_materials_ready===false?'项目资料准备未确认完成，原草稿已保留，暂不能启动研究。':'资料准备任务已保存，尚未调用研究模型。'}</span>
-              <button disabled={busy||session.project_materials_ready===false} onClick={async () => { setSending(true); try { await sessionsApi.start(id); setSession(await sessionsApi.state(id)); }
+              <button disabled={busy||session.project_materials_ready===false||!!session.project_access_error} onClick={async () => { setSending(true); try { await sessionsApi.start(id); setSession(await sessionsApi.state(id)); }
                 catch (e) { setError((e as Error).message); } finally { setSending(false); } }}>开始已准备的研究</button></div>}
             {session.research_stop_reason && <div className="rs-report-notice">
               <ShieldCheck size={17} /><span>本次仍有未解决问题，已保留成果，不会自动整案重跑。

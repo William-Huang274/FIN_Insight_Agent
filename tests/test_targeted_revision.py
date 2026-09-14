@@ -76,7 +76,7 @@ def test_bff_rejects_stale_and_unknown_target_and_recovers_duplicate_request():
         calls.append(kwargs)
         row = {"run_id": str(uuid4()), "status": "pending", "metadata": kwargs["metadata"]}
         stored.append(row); return row
-    service = SimpleNamespace(owned_thread=owned, state=get_state, report_state=report_state, all_runs=all_runs,
+    service = SimpleNamespace(attachment_store=None, owned_thread=owned, state=get_state, report_state=report_state, all_runs=all_runs,
                              sdk=SimpleNamespace(runs=SimpleNamespace(create=create)))
     app = FastAPI(); app.include_router(build_report_sessions_router(service), prefix="/api/v1")
     with TestClient(app) as client:

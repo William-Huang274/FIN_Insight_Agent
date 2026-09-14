@@ -83,6 +83,7 @@ export type Session = {
   human_edits?: {number:number;owner:string;recorded_at:string;reason:string;base_version:number;report_before:string;report_after:string;charts?:{chart_index:number;title:string;before:string;after:string}[];papers:{paper_id:string;actor:string;title:string;before:string;after:string}[]}[];
   execution?: ExecutionOptions;
   can_upload?: boolean;
+  project_access_error?: string|null;
   project_materials_ready?: boolean;
   project_financial_data?: {project_origin:{ticker:string;project_id:string;sec_version:string};counts:{observations:number};mart_sha256:string};
   report_digest?: string;
@@ -91,7 +92,7 @@ export type Session = {
     total_tokens: number; cache_hit_tokens: number; cache_miss_tokens: number; unknown_cache_requests: number; unknown_elapsed_requests: number;
     elapsed_ms: number; missing_audit_runs: number; partial_audit: boolean; notice: string };
   is_draft?: boolean;
-  attachments?: { document_id: string; name: string; kind: string; bytes: number; sections: number; needs_vision: boolean; project_origin?:{project_id:string;document_id:string;raw_body_sha256:string} }[];
+  attachments?: { access_status?: string; document_id: string; name: string; kind: string; bytes: number; sections: number; needs_vision: boolean; project_origin?:{project_id:string;document_id:string;raw_body_sha256:string} }[];
   thread_id: string;
   title: string;
   status: string;

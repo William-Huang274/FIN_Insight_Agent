@@ -7,6 +7,7 @@ import json
 from uuid import UUID, uuid5, NAMESPACE_URL
 
 from .task_attachments import TaskAttachmentStore
+from .project_asset_access import access_state
 
 
 class ProjectConflict(ValueError):
@@ -17,7 +18,25 @@ class ProjectLibrary:
     def __init__(self, root):
         self.documents = TaskAttachmentStore(root)
         with self.documents.connect() as db:
+            db.execute('CREATE TABLE IF NOT EXISTS project_asset_access(scope TEXT,kind TEXT,asset TEXT,revoked INTEGER,updated_at TEXT DEFAULT CURRENT_TIMESTAMP)')
             db.execute('CREATE TABLE IF NOT EXISTS project_indexes(owner TEXT PRIMARY KEY, revision INTEGER NOT NULL, body TEXT NOT NULL)')
+
+    def set_access(self, owner, project, kind, asset, revoked):
+        scope = self.scope(owner, project)
+        with self.documents.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            if kind == 'document':
+                exists = db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (scope, asset)).fetchone()
+            elif kind == 'sec':
+                exists = db.execute('SELECT 1 FROM project_sec_versions WHERE scope=? AND version=?', (scope, asset)).fetchone()
+            else:
+                raise KeyError('asset_kind_invalid')
+            if not exists:
+                raise KeyError('asset_not_in_project')
+            state = 'revoked' if revoked else 'active'
+            if access_state(db, scope, kind, asset) != state:
+                db.execute('INSERT INTO project_asset_access(scope,kind,asset,revoked) VALUES(?,?,?,?)', (scope, kind, asset, int(revoked)))
+        return {'access_status': state}
 
     def index(self, owner):
         with self.documents.connect() as db:
@@ -50,6 +69,10 @@ class ProjectLibrary:
         items=self.documents.list(scope)
         result=[]
         for item in items:
+            if item['access_status'] != 'active':
+                if not query or query.casefold() in item['name'].casefold():
+                    result.append({**item, 'excerpt': '', 'matched_sections': 0, 'text_status': item['access_status']})
+                continue
             row=self.documents.get(scope,item['document_id'])
             sections=json.loads(row['pages'])
             matching=[s for s in sections if query.casefold() in s['text'].casefold()]

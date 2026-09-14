@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react';
 
-type Version={version:string;ticker:string;cik:string;status:string;company_name?:string;requested_at:string;captured_at?:string;failure_code?:string};
+type Version={access_status:string;version:string;ticker:string;cik:string;status:string;company_name?:string;requested_at:string;captured_at?:string;failure_code?:string};
 type Concept={taxonomy:string;tag:string;label:string};
 type Observation={val:string;unit:string;start?:string;end:string;filed:string;accn:string;form:string;locator:{observation_index:number}};
 type Rows={items:Observation[];total:number;next_offset:number|null;notice?:string};
@@ -13,7 +13,7 @@ export function ProjectSecSource({projectId,onResearch}:{projectId:string;onRese
   const [concepts,setConcepts]=useState<Concept[]>([]);const [concept,setConcept]=useState('');
   const [asOf,setAsOf]=useState('');const [rows,setRows]=useState<Rows|null>(null);
   const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [notice,setNotice]=useState('');
-  const load=async()=>setVersions((await json(await fetch(base))).items);
+  const load=async()=>{setVersions((await json(await fetch(base))).items);setVersion('');setConcepts([]);setRows(null);};
   useEffect(()=>{let active=true;void fetch(base).then(json).then(r=>{if(active)setVersions(r.items);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[base]);
   const readVersion=async(id:string)=>{setBusy(true);setError('');setVersion(id);setConcept('');setRows(null);setConcepts([]);
     try{const data=await json(await fetch(`${base}/${id}`));setConcepts(data.concepts);}catch(e){setError((e as Error).message);}finally{setBusy(false);}};
@@ -32,8 +32,11 @@ export function ProjectSecSource({projectId,onResearch}:{projectId:string;onRese
     <button disabled={busy} onClick={()=>{setBusy(true);setError('');void load().catch(e=>setError(e.message)).finally(()=>setBusy(false));}}>重新载入数据版本</button>
     {busy&&<p role="status">正在处理数据…</p>}{notice&&<p role="status">{notice}</p>}{error&&<p role="alert">{error}</p>}
     <ul>{versions.map(v=><li key={v.version}><strong>{v.ticker} · {v.company_name||v.cik}</strong>{' '}
-      {v.status==='complete'?'已保存':v.status==='failed'?`同步失败（${v.failure_code}）`:'处理中或已中断，请重新载入确认'} · {new Date(v.captured_at||v.requested_at).toLocaleString()}{' '}
-      {v.status==='complete'&&<button disabled={busy} onClick={()=>void readVersion(v.version)}>查看数据版本</button>}</li>)}</ul>
+      {v.access_status==='revoked'?'已撤销使用':v.status==='complete'?'已保存':v.status==='failed'?`同步失败（${v.failure_code}）`:'处理中或已中断，请重新载入确认'} · {new Date(v.captured_at||v.requested_at).toLocaleString()}{' '}
+      {v.status==='complete'&&v.access_status==='active'&&<button disabled={busy} onClick={()=>void readVersion(v.version)}>查看数据版本</button>}
+      <button disabled={busy} onClick={async()=>{setBusy(true);setError('');setVersion('');setConcepts([]);setRows(null);
+        try{await json(await fetch(`/api/v1/projects/${projectId}/assets/sec/${v.version}/access`,{method:'PUT',headers:{'Content-Type':'application/json','X-Workbench-Request':'1'},body:JSON.stringify({revoked:v.access_status==='active'})}));await load();setNotice(v.access_status==='active'?'已撤销此版本使用，任务财务副本也将拒绝新读取。原件与历史报告保留。':'已恢复此版本使用，不会自动重启任务。');}catch(e){setError((e as Error).message);}finally{setBusy(false);}
+      }}>{v.access_status==='active'?'撤销数据版本使用':'恢复数据版本使用'}</button></li>)}</ul>
     {!versions.length&&<p>暂无已连接数据。</p>}
     {version&&!!concepts.length&&<><p>当前版本：{version}</p><div className="fs-sec-fields">
       <label>原始指标<select aria-label="SEC原始指标" disabled={busy} value={concept} onChange={e=>{setConcept(e.target.value);setRows(null);}}><option value="">请选择指标</option>{concepts.map(c=><option key={`${c.taxonomy}:${c.tag}`} value={JSON.stringify([c.taxonomy,c.tag])}>{c.label} · {c.taxonomy}:{c.tag}</option>)}</select></label>

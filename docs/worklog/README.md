@@ -2,6 +2,7 @@
 
 当前版本入口：[0.1.3版本说明](../product/version_0_1_3.zh-CN.md)；[0.1.4 PRD](../product/fin_0_1_4_prd.zh-CN.md)；[技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md)；[执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md)。下方日志和旧总清单保留历史。
 
+- E2项目资产撤销、任务副本与新模型/缓存工具访问限制：`fin_0_1_4/016_e2_project_asset_revocation.md`
 - [0.1.4数据服务、研究资产与成本核算](fin_0_1_4/002_data_services_assets_and_cost_model.md)
 - [0.1.4 PRD、技术与执行文档整理](fin_0_1_4/003_prd_technical_execution_baseline.md)
 - [0.1.4开工审查与E1真实进程资格](fin_0_1_4/004_baseline_review_and_e1_process_qualification.md)

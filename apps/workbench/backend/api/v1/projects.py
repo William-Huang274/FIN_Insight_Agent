@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 from ...authentication import current_owner
 from sec_agent.research_foundation.project_library import ProjectLibrary, ProjectConflict
 from sec_agent.research_foundation.task_attachments import MAX_BYTES
+from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
 from sec_agent.research_foundation.project_sec_sources import ProjectSecSources
 
 
@@ -23,6 +24,11 @@ class SecRefresh(BaseModel):
     version: UUID
     ticker: str=Field(pattern=r'^[A-Z][A-Z0-9.-]{0,9}$')
     cik: str=Field(pattern=r'^[0-9]{10}$')
+
+
+class AssetAccess(BaseModel):
+    model_config=ConfigDict(extra='forbid')
+    revoked: bool=Field(strict=True)
 
 
 class SaveReport(BaseModel):
@@ -83,6 +89,13 @@ def build_projects_router(root, service):
         try: return await run_in_threadpool(library.save,identity,body.revision,data)
         except ProjectConflict as exc: raise HTTPException(409,str(exc)) from None
 
+    @router.put('/{project_id}/assets/{kind}/{asset}/access')
+    def set_access(project_id: UUID, kind: str, asset: str, body: AssetAccess, request: Request, response: Response):
+        identity=owner(request,True); scope(identity,project_id)
+        response.headers['Cache-Control']='no-store'
+        try: return library.set_access(identity,project_id,kind,asset,body.revoked)
+        except KeyError: raise HTTPException(404,'项目资产不存在') from None
+
     @router.get('/{project_id}/documents')
     def search(project_id: UUID, request: Request, response: Response, query: str=Query('',max_length=200)):
         identity=owner(request); scope(identity,project_id)
@@ -100,6 +113,10 @@ def build_projects_router(root, service):
         from ...application.report_delivery import export_report
         if not report_snapshot(state):
             raise HTTPException(409,'报告尚未完成当前修订，请选择已完成的历史版本或稍后保存。')
+        from sec_agent.research_foundation.project_asset_access import require_task_assets, ProjectAssetUnavailable
+        if getattr(service, 'attachment_store', None):
+            try: await run_in_threadpool(require_task_assets, service.attachment_store, body.thread_id)
+            except ProjectAssetUnavailable as exc: raise HTTPException(409,str(exc)) from None
         values=state['values']; report=values['report']
         if report_digest(report)!=body.report_digest:
             raise HTTPException(409,'报告已更新，请重新载入并核对要保存的版本。')
@@ -108,6 +125,10 @@ def build_projects_router(root, service):
                 'phase':values.get('phase'),'human_edit_count':len(values.get('human_edits',[])),
                 'reason':values.get('report_revision_reason') or '原版本未记录修改说明',
                 'authority':'Research artifact, not independently verified disclosure or NumericFact. User confirmation is not model verification.'}
+        if getattr(service, 'attachment_store', None):
+            from sec_agent.research_foundation.project_asset_access import task_source_dependencies
+            try: origin['source_dependencies']=await run_in_threadpool(task_source_dependencies, service.attachment_store, body.thread_id)
+            except ProjectAssetUnavailable as exc: raise HTTPException(409,str(exc)) from None
         status='人工修改/确认的研究成果，仍须核对原始依据' if values.get('phase') in {'human_completed','human_reviewed_not_released'} else '研究草稿，待人工审阅'
         content,_=await run_in_threadpool(export_report,report,'md',review_status=status)
         import json
@@ -137,12 +158,14 @@ def build_projects_router(root, service):
         identity=owner(request); scope(identity,project_id)
         response.headers['Cache-Control']='no-store'
         try: return library.detail(identity,project_id,document_id)
+        except ProjectAssetUnavailable as exc: raise HTTPException(409,str(exc)) from None
         except ValueError: raise HTTPException(404,'项目资料不存在') from None
 
     @router.get('/{project_id}/documents/{document_id}/download')
     def download(project_id: UUID, document_id: str, request: Request):
         target=scope(owner(request),project_id)
         try: row=library.documents.get(target,document_id)
+        except ProjectAssetUnavailable as exc: raise HTTPException(409,str(exc)) from None
         except ValueError: raise HTTPException(404,'项目资料不存在') from None
         return Response(row['body'],media_type='application/octet-stream',headers={
             'Content-Disposition':"attachment; filename*=UTF-8''"+quote(row['name'],safe=''),

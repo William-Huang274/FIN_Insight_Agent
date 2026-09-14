@@ -1242,6 +1242,7 @@ class DeepSeekStructuredAgentAdapter:
         audit_sink: ModelCallAuditSink | None = None,
         private_audit_sink: ModelCallAuditSink | None = None,
         dispatch_guards=None,
+        source_access_check=None,
     ) -> None:
         expected = {"planner", "specialist", "counter", "lead"} | set(config.model_profiles)
         if set(chat_models) != expected:
@@ -1252,6 +1253,7 @@ class DeepSeekStructuredAgentAdapter:
         self._private_audit_sink = private_audit_sink
         self._agentic_history: dict[str, list[Any]] = {}
         self._dispatch_guards = dispatch_guards
+        self._source_access_check = source_access_check
 
     @classmethod
     def from_config(
@@ -1263,6 +1265,7 @@ class DeepSeekStructuredAgentAdapter:
         private_audit_sink: ModelCallAuditSink | None = None,
         context_editing: Mapping[str, int] | None = None,
         dispatch_guards=None,
+        source_access_check=None,
     ) -> "DeepSeekStructuredAgentAdapter":
         """Construct four independently budgeted ChatDeepSeek clients.
 
@@ -1294,7 +1297,7 @@ class DeepSeekStructuredAgentAdapter:
                 **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}),
             )
         return cls(config=config, chat_models=models, audit_sink=audit_sink,
-                   private_audit_sink=private_audit_sink, dispatch_guards=dispatch_guards)
+                   private_audit_sink=private_audit_sink, dispatch_guards=dispatch_guards, source_access_check=source_access_check)
 
     def _audit(self, event: Mapping[str, Any]) -> None:
         if self._audit_sink is None:
@@ -1510,6 +1513,17 @@ class DeepSeekStructuredAgentAdapter:
             raise DeepSeekStructuredAgentError(
                 f"deepseek_{role}_input_character_limit_exceeded"
             )
+        if self._source_access_check:
+            from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
+            try:
+                self._source_access_check()
+            except ProjectAssetUnavailable:
+                from uuid import uuid4
+                audit({'schema_version': 'fin_ia_model_call_audit_event_v1_0', 'event': 'outcome',
+                    'status': 'blocked_before_transport_source_access', 'call_id': 'source-blocked-'+str(uuid4()),
+                    'role': role, 'actor': actor, 'recorded_at': datetime.now(timezone.utc).isoformat(),
+                    'provider_call_attempted': False})
+                raise
         dispatch_guard = None
         dispatch = None
         if self._dispatch_guards is not None and saved_envelope is None:

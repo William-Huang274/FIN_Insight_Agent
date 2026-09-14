@@ -374,6 +374,18 @@ def report_snapshot(state):
 
 
 def build_report_sessions_router(service):
+    from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
+    def project_access_error(thread_id):
+        from sec_agent.research_foundation.project_asset_access import require_task_assets, ProjectAssetUnavailable
+        if service.attachment_store:
+            try: require_task_assets(service.attachment_store, thread_id)
+            except ProjectAssetUnavailable as exc: return str(exc)
+        return None
+
+    async def require_project_access(thread_id):
+        error = await run_in_threadpool(project_access_error, thread_id)
+        if error: raise HTTPException(409, error)
+
     def archived(thread):
         return (getattr(service, 'artifacts', object()) is None
                 and thread.get('metadata', {}).get('graph_id') == GRAPH)
@@ -514,6 +526,8 @@ def build_report_sessions_router(service):
                     project_sec = ProjectSecSources(project_library)
                     for kind in ('sec_companyfacts', 'sec_submissions'):
                         await run_in_threadpool(project_sec.raw, service_owner(), selection.project_id, selection.sec_version, kind)
+            except ProjectAssetUnavailable as exc:
+                raise HTTPException(409, str(exc)) from None
             except (KeyError, ValueError):
                 raise HTTPException(404, '所选项目或资料不存在于当前工作区') from None
         if service_owner() != 'local-pilot' and body.mode != 'research':
@@ -574,6 +588,7 @@ def build_report_sessions_router(service):
                 raise HTTPException(409, f"研究草稿 {thread['thread_id']} 已保留，项目资料准备未确认完成；未启动模型，请检查草稿，不要重复创建。") from None
         if body.defer_start:
             return {"thread_id": thread["thread_id"], "run_id": None, "status": "draft"}
+        await require_project_access(thread["thread_id"])
         run = await service.sdk.runs.create(thread["thread_id"], graph, input=payload, stream_mode="custom",
             config=await run_configuration(service, thread),
             stream_subgraphs=True, stream_resumable=True, multitask_strategy="reject", metadata={"surface": SURFACE, "human_action": body.mode, "execution": metadata.get("execution"), "request_message": payload.get("question")})
@@ -583,6 +598,7 @@ def build_report_sessions_router(service):
     async def start_draft(thread_id: UUID, request: Request):
         browser_write(request)
         thread = await service.owned_thread(thread_id)
+        await require_project_access(thread_id)
         question = thread.get("metadata", {}).get("pending_question")
         if thread.get('metadata', {}).get('project_materials_status') not in (None, 'ready'):
             raise HTTPException(409, '项目资料准备未完成，不能启动研究；请检查原草稿')
@@ -640,6 +656,7 @@ def build_report_sessions_router(service):
             recover_workpaper(state.get('values', {}), decision, owner=current_owner(request))
         except (ValueError, KeyError, TypeError) as exc:
             raise HTTPException(422, str(exc)) from exc
+        await require_project_access(thread_id)
         config = await run_configuration(service, thread)
         config.setdefault('configurable', {})['manual_review_owner'] = current_owner(request)
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH,
@@ -671,6 +688,7 @@ def build_report_sessions_router(service):
                 or not (public_state(state)["can_continue_remaining"] or known_failure)
                 or not (handoff or known_failure)):
             raise HTTPException(409, "仅未完成研究交接或用量已知的接续失败可继续；未知结果不重发，不跳过审查或重跑已交稿")
+        await require_project_access(thread_id)
         invocation = {"input": None} if known_failure else {"command": {"resume": {"action": "continue_remaining"}}}
         run = await service.sdk.runs.create(str(thread_id), RESEARCH_GRAPH, **invocation,
             config=await run_configuration(service, thread),
@@ -713,6 +731,8 @@ def build_report_sessions_router(service):
         await service.owned_thread(thread_id)
         try:
             row = attachments().get(thread_id, document_id)
+        except ProjectAssetUnavailable as exc:
+            raise HTTPException(409, str(exc)) from None
         except ValueError:
             raise HTTPException(404, "本任务没有这份资料") from None
         return Response(row["body"], media_type="application/octet-stream", headers={
@@ -771,6 +791,7 @@ def build_report_sessions_router(service):
             "project_financial_data": thread.get('metadata', {}).get('project_financial_data'),
             "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
+            "project_access_error": await run_in_threadpool(project_access_error, thread_id),
             "attachments": service.attachment_store.list(thread_id) if service.attachment_store else [],
             "runs": public_runs, "cumulative_usage": cumulative}
 
@@ -838,6 +859,8 @@ def build_report_sessions_router(service):
                 body.execution.validate_catalog((service.research_profile or {}).get("branch_topics", []))
             except ValueError as exc:
                 raise HTTPException(422, str(exc)) from exc
+        if body.action not in {'accept', 'manual_complete'}:
+            await require_project_access(thread_id)
         action_config = await run_configuration(service, thread, body.execution.model_dump() if body.execution else None)
         if body.action == 'manual_complete':
             from ...authentication import current_owner

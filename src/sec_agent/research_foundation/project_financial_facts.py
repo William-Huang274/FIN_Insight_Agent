@@ -13,6 +13,7 @@ from uuid import UUID
 from financial_facts import CompanyFactMartPolicy, CompanySourceBinding, MetricDefinition
 from financial_facts.mart import build_company_fact_mart
 from .task_attachments import TaskAttachmentStore
+from .project_asset_access import bind_project_store, origin_access, require_active
 
 
 MAPPING_ID = 'sec_us_gaap_income_usd_v1'
@@ -30,10 +31,11 @@ def prepare_task_financial_snapshot(sec, owner, project, version, task_root, thr
     store = TaskAttachmentStore(task_root)
     thread = str(UUID(str(thread)))
     info = {'status': 'preparing', 'mapping_id': MAPPING_ID,
-            'project_origin': {'project_id': str(project), 'sec_version': str(version),
+            'project_origin': {'project_id': str(project), 'source_scope': sec.library.scope(owner, project), 'sec_version': str(version),
                                'ticker': body['ticker'], 'cik': body['cik']},
             'source_capture_at': body['captured_at'], 'raw_sources': body['sources']}
     with store.connect() as db:
+        bind_project_store(db, thread, sec.library.documents.path)
         db.execute('CREATE TABLE IF NOT EXISTS task_financial_snapshots(thread TEXT PRIMARY KEY, body TEXT NOT NULL)')
         db.execute('INSERT INTO task_financial_snapshots VALUES(?,?)', (thread, json.dumps(info)))
     target = store.root / 'financial-snapshots' / thread
@@ -81,6 +83,7 @@ def task_financial_snapshot(task_root, thread):
     if row is None: return None
     info = json.loads(row['body'])
     if info['status'] != 'ready': raise ValueError('task_financial_snapshot_not_ready')
+    require_active(origin_access(store, thread, info['project_origin'], 'sec'))
     target = store.root / 'financial-snapshots' / thread
     mart = target/'facts.sqlite'
     if not mart.is_file() or sha256(mart.read_bytes()).hexdigest() != info['mart_sha256']:

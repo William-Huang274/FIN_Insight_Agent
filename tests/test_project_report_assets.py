@@ -30,7 +30,8 @@ def prepared(tmp_path,monkeypatch):
         await owned(thread)
         return deepcopy(state)
     app=FastAPI();install_conversation_auth(app,backend=Identity())
-    app.include_router(build_projects_router(tmp_path,SimpleNamespace(owned_thread=owned,report_state=report_state)),prefix='/api/v1')
+    app.include_router(build_projects_router(tmp_path,SimpleNamespace(owned_thread=owned,report_state=report_state,
+        attachment_store=TaskAttachmentStore(tmp_path/'attachments'))),prefix='/api/v1')
     client=TestClient(app)
     assert client.put('/api/v1/projects',headers=WRITE,json=index()).status_code==200
     return client,state,ProjectLibrary(tmp_path)

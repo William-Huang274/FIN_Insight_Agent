@@ -11,6 +11,7 @@ import os
 from uuid import UUID
 
 from dotenv import dotenv_values
+from .project_asset_access import access_state, require_active
 
 from financial_facts.sec_snapshot import (
     SEC_SNAPSHOT_INPUT_SCHEMA_VERSION, SecSnapshotCompany, SecSnapshotInputManifest,
@@ -30,7 +31,8 @@ class ProjectSecSources:
         scope = self.library.scope(owner, project)
         with self.library.documents.connect() as db:
             rows = db.execute('SELECT body FROM project_sec_versions WHERE scope=? ORDER BY rowid DESC', (scope,)).fetchall()
-        return {'items': [json.loads(r['body']) for r in rows]}
+        with self.library.documents.connect() as db:
+            return {'items': [{**json.loads(r['body']), 'access_status': access_state(db, scope, 'sec', json.loads(r['body'])['version'])} for r in rows]}
 
     def capture(self, owner, project, version, ticker, cik):
         scope = self.library.scope(owner, project)
@@ -85,6 +87,8 @@ class ProjectSecSources:
         with self.library.documents.connect() as db:
             row = db.execute('SELECT body FROM project_sec_versions WHERE scope=? AND version=?', (scope, version)).fetchone()
         if not row: raise KeyError('数据版本不存在')
+        with self.library.documents.connect() as db:
+            require_active(access_state(db, scope, 'sec', version))
         body = json.loads(row['body'])
         if body['status'] != 'complete': raise ValueError('该版本尚未完成，不能作为可用数据读取。')
         return body, self.root / scope / version

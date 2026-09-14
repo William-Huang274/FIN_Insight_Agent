@@ -5,6 +5,7 @@ for(const width of [1440,390])test(`human edits and completed workspace ${width}
   let report={title:'测试研究',narrative_markdown:'原观察 [P01:C1]',citations:{},charts:[]};let phase='needs_revision';
   const snapshot=()=>({thread_id:id,status:'interrupted',phase,report,report_version:edits.length+1,human_edits:edits,human_edit_count:edits.length,can_manual_complete:true,can_respond:true,conversation:[],runs:[],report_review:{summary:'观察需要调整',findings:[],unresolved_data_requests:[]}});
   await page.route('**/api/v1/**',async route=>{
+    if(new URL(route.request().url()).pathname.endsWith('/projects')) {await route.fulfill({json:{revision:0,projects:[],assignments:{},pinned:[]}});return;}
     const url=new URL(route.request().url());let data:any={};
     if(url.pathname.endsWith('/research-sessions'))data=[{...snapshot(),title:report.title}];
     else if(url.pathname.endsWith('/manual-review'))data={base_version:1,report_markdown:report.narrative_markdown,charts:[{chart_index:0,title:'现金图',interpretation:'全部为原始事实'}],papers:[{paper_id:'P01',branch_id:'Q1_ISSUER_TRUTH',thesis:'现金观察',body:'原底稿'}],review:snapshot().report_review};

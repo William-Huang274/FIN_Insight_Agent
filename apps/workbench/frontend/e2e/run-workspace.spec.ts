@@ -10,7 +10,7 @@ for (const width of [1440, 1024, 390]) test(`agent conversation and run history 
       { run_id: run, kind: "tool", actor: "writer", event: "outcome", tool: "read_current_source", status: "success", recorded_at: "2026-09-08T08:00:02Z" },
       { run_id: run, kind: "stage", actor: "report_verifier", event: "progress", objective: "正在复核新增的期间限定。", recorded_at: "2026-09-08T08:00:03Z" }] };
   session.runs[0].context_usage = { notice: "最近一次模型请求输入，不是累计计费量。", nodes: [{actor:"writer",call_id:"context-test",model:"deepseek-v4-flash",input_tokens:810000,capacity_tokens:1000000,basis:"provider_reported_input",near_capacity:true}] };
-  await page.route("**/api/v1/**", async route => { if (route.request().method() !== "GET") writes++; const path = new URL(route.request().url()).pathname; await route.fulfill({ json: path.endsWith("research-sessions") ? [session] : path.endsWith("research-session-config") ? { fresh_research_enabled: true } : path.endsWith("report-versions") ? { versions: [], next_cursor: null } : session }); });
+  await page.route("**/api/v1/**", async route => { if (route.request().method() !== "GET") writes++; const path = new URL(route.request().url()).pathname; await route.fulfill({ json: path.endsWith('/projects') ? {revision:0,projects:[],assignments:{},pinned:[]} : path.endsWith("research-sessions") ? [session] : path.endsWith("research-session-config") ? { fresh_research_enabled: true } : path.endsWith("report-versions") ? { versions: [], next_cursor: null } : session }); });
   await page.goto(`/workspace/session?thread=${id}&view=activity`);
   await expect(page.getByRole("log", { name: "Agent 活动流" })).toBeVisible();
   await page.getByText("查看运行用量",{exact:true}).click();

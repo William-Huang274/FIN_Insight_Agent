@@ -21,6 +21,7 @@ import { defaultExecution, type ExecutionOptions } from "../api/reportSessions";
 import { branchName, claimLabel, sourceTitle } from "./researchLabels";
 import { ResearchStudio, ResearchConfigurationPicker } from "./ResearchStudio";
 import { useWorkspaceProjects } from "./workspaceProjects";
+import { ProjectLibrary } from "./ProjectLibrary";
 import type { ReportSnapshot } from "../api/reportSessions";
 import {
   ArrowUp,
@@ -180,7 +181,7 @@ export function ResearchSession() {
   const [taskQuery, setTaskQuery] = useState("");
   const [taskFilter, setTaskFilter] = useState("");
   const dataPage = ["library", "financial-data"].includes(page);
-  const globalPage = dataPage || ["home", "all", "completed", "inbox", "preferences", "studio"].includes(page);
+  const globalPage = dataPage || ["home", "all", "completed", "inbox", "preferences", "studio", "project"].includes(page);
   const projects = useWorkspaceProjects();
   const navigate = (view: string, thread = id) => {
     setParams(next => { next.set("view", view); if (thread !== id) { next.delete("level"); next.delete("topic"); next.delete("claim"); } if (thread) next.set("thread", thread); else next.delete("thread"); return next; });
@@ -512,7 +513,7 @@ export function ResearchSession() {
   const findings = session?.report_review?.findings || [];
   return (
     <div data-theme={theme} data-motion={motion ? "reduced" : "full"} data-page={page} className={`rs-shell fs-workspace ${collapsed ? "fs-collapsed" : ""} ${inspectorOpen ? "rs-has-inspector" : ""}`}>
-      <WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} projects={projects.index} onProjects={projects.update} />
+      <WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} projects={projects.index} onProjects={projects.update} editingDisabled={!projects.ready || projects.saving} onOpenProject={project=>setParams(next=>{next.set('view','project');next.set('project',project);next.delete('thread');return next;})} />
       <main className="rs-main">
         <header className="rs-top">
           <div className="rs-breadcrumb">
@@ -526,11 +527,13 @@ export function ResearchSession() {
             <button onClick={() => navigate("activity")}>运行与费用</button>
           </div>
         </header>
-        {projects.error && <p role="alert">{projects.error}</p>}
+        {projects.error && <p role="alert">{projects.error} <button onClick={()=>void projects.reload()}>重新载入项目</button></p>}
+        {projects.legacy && projects.ready && <p>发现此浏览器的旧项目整理，原记录仍保留。<button disabled={projects.saving} onClick={()=>void projects.update(projects.legacy!)}>导入到当前工作台</button></p>}
+        {page === 'project' && (projects.index.projects.some(p=>p.id===params.get('project')) ? <ProjectLibrary key={params.get('project')} project={projects.index.projects.find(p=>p.id===params.get('project'))!} sessions={sessions.filter(s=>projects.index.assignments[s.thread_id]===params.get('project'))} navigate={navigate}/> : <section className="fs-page"><h1>{projects.ready?'项目不存在或不属于当前工作区':'正在读取项目…'}</h1></section>)}
         {page === "home" && <ResearchStart question={researchQuestion} onQuestion={setResearchQuestion} navigate={navigate} sessions={sessions} execution={execution} onExecution={setExecution} />}
         {page === "studio" && <ResearchStudio />}
         {dataPage && <DataLibrary page={page} navigate={navigate} onSupplement={question=>{setResearchQuestion(question);navigate("new","");}} />}
-        {globalPage && !dataPage && page !== "home" && page !== "studio" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
+        {globalPage && !dataPage && page !== "home" && page !== "studio" && page !== "project" && <GlobalWorkspacePage page={page} sessions={sessions} navigate={navigate} query={taskQuery} onQuery={setTaskQuery} filter={taskFilter} onFilter={setTaskFilter} theme={theme} onTheme={setTheme} motion={motion} onMotion={setMotion} />}
         <div className="fs-session-view" hidden={globalPage}>
         {id && !session && !creating ? <section className="rs-empty" role="status"><LoaderCircle className="rs-spin" /><h1>正在读取已保存研究…</h1><p>读取报告不会发起新的模型调用。</p></section> : !session || creating ? (
           <section className="rs-empty">

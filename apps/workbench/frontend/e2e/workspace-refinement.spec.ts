@@ -7,12 +7,14 @@ for (const width of [1440,1024,390]) test(`research start, organization, panel a
   const config={directions:{Q1_ISSUER_TRUTH:{name:"收入与现金",objective:"核对期间",instructions:""}},schema_version:1,title:"标准研究编排",methods:{lead:"规划",finance:"财务",industry_product:"行业",counter:"反证",writer:"# 写作方法",verifier:"核验"},bindings:{lead:"lead",specialist:"finance",counter:"counter",verifier:"verifier",repair:"finance",synthesis:"writer",research_verifier:"verifier",writer:"writer",report_verifier:"verifier",quick_writer:"writer"},max_parallel_tasks:2,review_order:"parallel"};
   const roles={lead:"研究负责人",specialist:"研究专家",counter:"反证审查",verifier:"底稿核验",repair:"责任修订",synthesis:"综合研究",research_verifier:"研究判断复核",writer:"报告写作与修订",report_verifier:"报告独立复核",quick_writer:"简短追问"};
   let saved:any=null;
+  let projectIndex:any={revision:0,projects:[],assignments:{},pinned:[]};
   const session={thread_id:id,title:"Atlas · 盈利质量",status:"interrupted",report_version:2,report_digest:"a".repeat(64),question:"研究 Atlas 最近季度的盈利质量。".repeat(30),can_upload:true,
     report:{title:"Atlas研究",narrative_markdown:"## 现金质量\n\n当前判断。[C1]",citations:{C1:{claim:{statement:"现金变化需要区分期间。",kind:"inference"},sources:[{source_id:"P01:S06",title:"P01:S06",result_state:"reviewed_evidence"}]}}},research_tasks:[],
     runs:[{run_id:"saved-run",status:"success",human_action:"revise",revision_target:{citation_id:"C1",base_version:1,base_checkpoint:checkpoint}}]};
   await page.route("**/api/v1/**",async route=>{
     const path=new URL(route.request().url()).pathname; if(route.request().method()!=="GET")writes.push(path);
     let body:any={};
+    if(path.endsWith('/projects')) {if(route.request().method()==='PUT')projectIndex={...route.request().postDataJSON(),revision:projectIndex.revision+1};await route.fulfill({json:projectIndex});return;}
     if(path.endsWith("research-studio/configurations")){if(route.request().method()==="POST"){saved=route.request().postDataJSON();body={assistant_id:checkpoint};}else body={default:config,roles,versions:saved?[{assistant_id:checkpoint,title:saved.title,created_at:"2026-09-08T00:00:00Z"}]:[]};}
     else if(path.endsWith(`configurations/${checkpoint}`))body={configuration:saved};
     else if(path.endsWith("/apply"))body={notice:"已应用到任务；下一次运行固定读取此版本"};
@@ -53,5 +55,5 @@ for (const width of [1440,1024,390]) test(`research start, organization, panel a
   expect(saved.directions.Q1_ISSUER_TRUTH.name).toBe("现金流核对");expect(saved.directions.Q1_ISSUER_TRUTH.instructions).toBe("区分CFO与现金余额");expect(saved.max_parallel_tasks).toBe(1);expect(saved.review_order).toBe("counter_first");expect(saved.methods.writer).toContain("核对期间");
   await page.getByLabel("应用配置的任务").selectOption(id);await page.getByRole("button",{name:"应用保存版本"}).click();await expect(page.getByRole("status")).toContainText("已应用到任务");
   await page.reload();await page.getByLabel("保存版本").selectOption(checkpoint);await page.getByRole("button",{name:"投研 Skills"}).click();await expect(page.getByLabel("Skill 内容")).toHaveValue(saved.methods.writer);
-  expect(writes).toEqual(["/api/v1/research-studio/configurations",`/api/v1/research-studio/configurations/${checkpoint}/apply`]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  expect(writes).toEqual(["/api/v1/projects","/api/v1/projects","/api/v1/projects","/api/v1/research-studio/configurations",`/api/v1/research-studio/configurations/${checkpoint}/apply`]);expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
 });

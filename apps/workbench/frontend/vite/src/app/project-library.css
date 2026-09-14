@@ -1,0 +1,15 @@
+.fs-project-library {max-width:1100px; margin-inline:auto;}
+.fs-project-library button,.fs-project-upload input::file-selector-button {border:1px solid var(--line,#d8dedc);border-radius:8px;background:var(--surface,#fff);color:var(--ink,#142039);padding:9px 13px;font:inherit;cursor:pointer;}
+.fs-project-library button:disabled {opacity:.55;cursor:wait;}
+.fs-project-library button:hover:not(:disabled) {border-color:var(--accent,#3159d8);}
+.fs-project-library a {color:var(--accent,#3159d8);}
+.fs-project-documents article,.fs-project-document-reader {background:var(--surface,#fff);}
+.fs-organize-dialog fieldset {border:0;padding:0;min-width:0;}
+.fs-project-upload {display:flex; flex-wrap:wrap; align-items:center; gap:16px; margin:24px 0;}
+.fs-project-upload label {display:grid; gap:8px; font-weight:600;}
+.fs-project-upload small {max-width:460px;}
+.fs-project-documents {display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr)); gap:16px; margin:24px 0;}
+.fs-project-documents article {border:1px solid var(--fs-border,#d8dedc); border-radius:12px; padding:20px; min-width:0;}
+.fs-project-documents p {white-space:pre-wrap; overflow-wrap:anywhere;}
+.fs-project-document-reader {border:1px solid var(--fs-border,#d8dedc);border-radius:12px;padding:20px;margin:24px 0;}
+.fs-project-document-reader pre {white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;line-height:1.8;}

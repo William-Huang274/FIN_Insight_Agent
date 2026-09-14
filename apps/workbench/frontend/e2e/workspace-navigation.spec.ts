@@ -7,6 +7,7 @@ for (const width of [1440, 1024, 390]) test(`formal navigation, generic tasks an
     report:{title:i ? "订阅质量" : "库存结构", narrative_markdown:"## 待核判断\n\n口径需要核实。[C1]", citations:{C1:{claim:{statement:"口径需要核实。",kind:"fact"},sources:[{source_id:"DOC::one",title:"公司披露"}]}}}, runs:[], model_events:[]}));
   const writes: any[] = [];
   await page.route("**/api/v1/**", async route => { const u=new URL(route.request().url()); let body:any={};
+    if(u.pathname.endsWith('/projects')) {await route.fulfill({json:{revision:0,projects:[],assignments:{},pinned:[]}});return;}
     if(route.request().method()!=="GET") writes.push({path:u.pathname,...route.request().postDataJSON()});
     if(u.pathname.endsWith("research-session-config")) body={fresh_research_enabled:true,research_as_of:"2026-09-02"};
     else if(u.pathname.endsWith("research-sessions")) body=route.request().method()==="GET" ? tasks : {thread_id:b};

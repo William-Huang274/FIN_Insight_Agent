@@ -136,7 +136,7 @@ class TaskAttachmentStore:
                 raise ValueError("task_upload_limit_12_files_80MiB")
             db.execute("INSERT INTO attachments(thread,id,name,kind,body,pages,digest) VALUES(?,?,?,?,?,?,?)",
                 (thread_id, object_id, filename, kind, body, json.dumps(pages, ensure_ascii=False), _digest(body)))
-        return self.list(thread_id)[-1]
+        return next(row for row in self.list(thread_id) if row['document_id'] == object_id)
 
     def list(self, thread_id):
         with self.connect() as db:

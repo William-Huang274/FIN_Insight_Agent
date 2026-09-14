@@ -30,6 +30,7 @@ for (const width of [1440, 1024, 390]) {
     let selectedSource = "";
     let sourceUnavailable = false;
     await page.route("**/api/v1/**", async route => {
+      if(new URL(route.request().url()).pathname.endsWith('/projects')) {await route.fulfill({json:{revision:0,projects:[],assignments:{},pinned:[]}});return;}
       const url = new URL(route.request().url());
       let body: unknown = {};
       if (url.pathname.endsWith("/research-session-config")) body = { fresh_research_enabled: false };

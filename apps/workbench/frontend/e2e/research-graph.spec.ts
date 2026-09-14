@@ -15,6 +15,7 @@ for (const width of [1440, 1024, 390]) {
     let failSource = true;
     const requests: string[] = [], writes: string[] = [];
     await page.route("**/api/v1/**", async route => {
+      if(new URL(route.request().url()).pathname.endsWith('/projects')) {await route.fulfill({json:{revision:0,projects:[],assignments:{},pinned:[]}});return;}
       const url = new URL(route.request().url());
       if (route.request().method() !== "GET") writes.push(url.pathname);
       let body: unknown = {};

@@ -20,6 +20,7 @@
 - [0.1.4 E2项目资产撤销与后续使用边界](fin_0_1_4/016_e2_project_asset_revocation.md)
 - [0.1.4 E3方法实际消费、三臂对照与分部边界](fin_0_1_4/017_e3_method_consumption_and_segment_boundary.md)
 - [0.1.4 E3资料目录去重与同源补查入口](fin_0_1_4/018_e3_document_navigation_and_followup.md)
+- [0.1.4 E3新公司资料与利润率判断迁移](fin_0_1_4/019_e3_amzn_transfer_qualification.md)
 
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 

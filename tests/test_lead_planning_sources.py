@@ -32,7 +32,9 @@ def test_native_lead_repairs_schema_then_queries_current_source_before_delegatio
 
     def read(selection):
         reads.append(selection.model_dump(mode='json'))
-        return {'items': [{'document_id': 'DOC::current', 'current_status': 'AVAILABLE_AFTER_REFRESH',
+        return {'runtime_receipt': {'receipt_id': 'HOST_ONLY_RECEIPT_SENTINEL'},
+                'items': [{'document_id': 'DOC::current', 'current_status': 'AVAILABLE_AFTER_REFRESH',
+                           'mcp_receipt_chain': [{'request_digest': 'HOST_ONLY_DIGEST_SENTINEL'}],
                            'passage': 'Synthetic current-source observation; no financial authority.'}],
                 'public_information_gap_proved': False}
 
@@ -53,6 +55,9 @@ def test_native_lead_repairs_schema_then_queries_current_source_before_delegatio
                            selection={'source_space': space, 'operation': 'search', 'query': 'current source availability'})
         elif turn == 3:
             assert 'AVAILABLE_AFTER_REFRESH' in wire['messages'][-1]['content']
+            assert 'HOST_ONLY_RECEIPT_SENTINEL' not in json.dumps(wire)
+            assert 'HOST_ONLY_DIGEST_SENTINEL' not in json.dumps(wire)
+            assert 'DOC::current' in wire['messages'][-1]['content']
             action = _call(current, 'RequestSourceAction', action='request_source',
                            selection={'source_space': space, 'operation': 'read', 'document_id': 'DOC::current'})
         else:
@@ -86,6 +91,7 @@ def test_native_lead_repairs_schema_then_queries_current_source_before_delegatio
         state = graph.get_state(config)
         assert state.next == ('specialist', 'specialist') and len(reads) == 2
         assert len(state.values['planning_observations']) == 2
+        assert state.values['planning_observations'][0]['result']['runtime_receipt']['receipt_id'] == 'HOST_ONLY_RECEIPT_SENTINEL'
 
 
 def test_legacy_schema_stays_readable_and_unauthorized_source_tool_absent():

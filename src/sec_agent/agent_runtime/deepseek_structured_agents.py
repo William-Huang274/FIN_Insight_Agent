@@ -1449,7 +1449,11 @@ class DeepSeekStructuredAgentAdapter:
                         content = json.loads(row["content"])
                     except json.JSONDecodeError:
                         content = {"error": row["content"]}
-                    content = content if is_lead else _agentic_semantic_value(content)
+                    # Source feedback uses the same semantic projection for both
+                    # roles. Keep receipts in graph/audit storage; Lead task
+                    # feedback must retain task IDs for dependency scheduling.
+                    if not is_lead or row.get("name") == "RequestSourceAction":
+                        content = _agentic_semantic_value(content)
                     reply = {"result": content}
                     # One batch has one next-turn context, not a copy per result.
                     # Preserve every source/error and native tool_call_id pairing.

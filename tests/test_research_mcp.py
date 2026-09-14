@@ -270,6 +270,36 @@ def _method_arguments(branches: list[str]) -> dict:
     }
 
 
+@pytest.mark.parametrize('failure', ['source_node_not_in_selected_document', 'private_storage_fault_sentinel'])
+def test_source_locator_error_is_actionable_but_internal_fault_stays_private(failure):
+    from sec_agent.research_foundation.source_document_navigation import SourceDocumentResult
+
+    def reader(*, request, **_):
+        if request.node_id:
+            raise ValueError(failure)
+        return SourceDocumentResult(operation='outline', items=({'node_id': 'NODE::actual'},),
+            next_offset=None, total_matches=1, notice='Available navigation only.', source_snapshot_sha256='a' * 64)
+
+    async def exercise():
+        async with Client(_build_server(source_document_reader=reader)) as client:
+            method = await client.call_tool(GET_RESEARCH_METHOD_TOOL, _method_arguments(['Q1_ISSUER_TRUTH']))
+            common = {'branch_id': 'Q1_ISSUER_TRUTH', 'run_scope': method.structured_content['run_scope']}
+            failed = await client.call_tool('read_source_document', {**common,
+                'request': {'operation': 'read', 'document_id': 'DOC::selected', 'node_id': 'NODE::guessed'}})
+            assert failed.is_error
+            message = ' '.join(getattr(block, 'text', '') for block in failed.content)
+            if failure == 'source_node_not_in_selected_document':
+                assert failure in message and 'outline/search' in message and 'not evidence of non-disclosure' in message
+            else:
+                assert failure not in message
+            recovered = await client.call_tool('read_source_document', {**common,
+                'request': {'operation': 'outline', 'document_id': 'DOC::selected'}})
+            assert not recovered.is_error
+            assert recovered.structured_content['items'][0]['node_id'] == 'NODE::actual'
+
+    asyncio.run(exercise())
+
+
 def test_mcp_exposes_strong_typed_non_cell_surface_and_scope() -> None:
     async def exercise() -> None:
         async with Client(_build_server()) as client:

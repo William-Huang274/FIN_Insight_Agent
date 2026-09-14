@@ -23,7 +23,8 @@ class SourceDocumentRequest(BaseModel):
     operation: Literal["catalog", "outline", "search", "read", "inspect_image"]
     document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
         description="Exact server document_id from catalog/search. Uploaded documents keep the UPLOAD:: prefix; a node's embedded hash is not a document ID.")
-    node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$")
+    node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
+        description="Exact node_id returned by this document's outline/search/read navigation. Never infer the next ID by incrementing a suffix; use returned next_offset or follow-up arguments.")
     query: str = Field(default="", max_length=600)
     page_start: int | None = Field(default=None, ge=1)
     page_end: int | None = Field(default=None, ge=1)

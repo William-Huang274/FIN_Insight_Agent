@@ -440,8 +440,20 @@ def build_research_data_mcp_server(
             request: SourceDocumentToolRequest, branch_id: str, run_scope: ResearchRunScope,
         ) -> SourceDocumentResult:
             await _validate_scope(dependencies.method_reader, run_scope=run_scope, branch_id=branch_id)
-            result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
-                                         request=request, branch_id=branch_id, run_scope=run_scope)
+            try:
+                result = await _invoke_model(dependencies.source_document_reader, SourceDocumentResult,
+                                             request=request, branch_id=branch_id, run_scope=run_scope)
+            except ValueError as exc:
+                # Only anticipated locator mistakes become public tool errors.
+                # Storage/integrity faults retain the SDK's private crash detail.
+                if str(exc) != "source_node_not_in_selected_document":
+                    raise
+                from mcp.server.mcpserver.exceptions import ToolError
+                raise ToolError(
+                    "source_node_not_in_selected_document: use outline/search for the selected document "
+                    "and copy a returned node_id, or use returned next_offset/follow-up arguments. "
+                    "Do not increment or invent node IDs. This locator failure is not evidence of non-disclosure."
+                ) from exc
             return remember_sources(READ_SOURCE_DOCUMENT_TOOL, result)
 
     if dependencies.legacy_reviewed_evidence_cell_reader is not None:

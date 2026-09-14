@@ -6,6 +6,8 @@
 
 ## 1. 分工与数据流
 
+[018资料导航](../worklog/fin_0_1_4/018_e3_document_navigation_and_followup.md)在TaskAttachmentStore投影层复用原块顺序，outline只列一次section并提供不可引用的原文预览；items内document_navigation给出块位置/总数及现有读取或视觉工具参数。字段不记录历史读状态，也不裁决缺口；section/leaf旧ID、来源正文和摘要保持。共享冻结本地树的导航与原件解析不变。
+
 E3首个实现见[017](../worklog/fin_0_1_4/017_e3_method_consumption_and_segment_boundary.md)：复用六项方法资源、现有MCP和Studio绑定，在同步专家允许request_method时追加现有方法指引，去除旧结构化入口发送前的提示重建。方法全文只作指导，不产生来源观察或额外权限，保存配置不被改写。真实Pro三臂证明全文可到达且可动态读取，但不能证明方法有效；同源可读分部表仍未查。下一责任点是现有资料导航与缺口检查，不引入新方法引擎。
 
 工程治理使用Git/CI；执行、队列、事务、存储和观测优先使用成熟组件；FIN负责金融口径、来源权威、方法适用、研究优先级与交付。保留既有运行栈作为首选验证对象，不因为规划更新而整体重写。

@@ -195,6 +195,68 @@ def test_project_provider_payload_preflight_without_paid_transport(tmp_path, mon
     assert 'say not yet inspected, not not disclosed' in json.dumps(payloads[0])
 
 
+@pytest.mark.local_data_integration
+def test_saved_source_navigation_reaches_remaining_table_through_sdk_and_mcp(tmp_path, monkeypatch):
+    """Known-source wiring regression; driver choices are local, not model inference."""
+    _assert_assets()
+    for flag in ('LANGSMITH_TRACING', 'LANGCHAIN_TRACING_V2'):
+        monkeypatch.setenv(flag, 'false')
+    config, profile, _ = configuration()
+    store, tid, question, _ = prepare(tmp_path)
+    doc = store.list(tid)[0]['document_id']
+    payloads, passages = [], []
+
+    def serve(request):
+        payload = json.loads(request.content)
+        payloads.append(payload)
+        replies = [m for m in payload['messages'] if m['role'] == 'tool']
+        if not replies:
+            selection = {'operation': 'outline', 'source_space': 'uploads', 'document_id': doc}
+        else:
+            result = json.loads(replies[-1]['content'])['result']
+            items = [item for observation in result['observations'] for item in observation['content'] if item.get('node_id')]
+            if len(payloads) == 2:
+                # The formerly hidden block must now occur in the default outline page.
+                assert any(i['node_id'].endswith(':1:4') for i in items)
+                assert len({i['node_id'] for i in items}) == len(items)
+                assert all(not i['writer_citable'] and 'preview' in i for i in items)
+                item = next(i for i in items if i['node_id'].endswith(':1:2'))
+                selection = {'operation': 'read', 'source_space': 'uploads', 'document_id': doc, 'node_id': item['node_id']}
+            else:
+                item = items[0]
+                passages.append(item)
+                assert item['project_origin'] and not item['numeric_fact_authority']
+                selection = item['document_navigation']['next_block_request']
+                if item['node_id'].endswith(':1:4'):
+                    assert '18,993' in item['passage'] and '12,140' in item['passage']
+                    assert 'Three Months Ended June 30' in item['passage']
+                    selection = None
+        name = 'RequestSourceAction' if selection else 'RequestHumanReviewAction'
+        args = ({'action': 'request_source', 'selection': selection, 'reason_summary': 'Follow document navigation for the remaining source table.'}
+                if selection else {'action': 'request_human_review', 'blocker_code': 'source_navigation_fixture_complete',
+                                   'reason_summary': 'Source reached; local driver is not a financial quality proof.'})
+        return httpx.Response(200, json={'id': f'nav-{len(payloads)}', 'object': 'chat.completion', 'created': 1,
+            'model': profile.model, 'choices': [{'index': 0, 'finish_reason': 'tool_calls', 'message': {
+                'role': 'assistant', 'content': '', 'tool_calls': [{'id': f'nav-{len(payloads)}', 'type': 'function',
+                    'function': {'name': name, 'arguments': json.dumps(args)}}]}}],
+            'usage': {'prompt_tokens': 100, 'completion_tokens': 20, 'total_tokens': 120}})
+
+    with httpx.Client(transport=httpx.MockTransport(serve)) as client:
+        model = ReasoningPreservingChatDeepSeek(model=profile.model, api_key=SecretStr('local-fixture'),
+            http_client=client, max_retries=0, max_tokens=4000, use_responses_api=False,
+            extra_body={'thinking': {'type': 'disabled'}})
+        adapter = DeepSeekStructuredAgentAdapter(config=config, chat_models={
+            r: model for r in ('planner', 'specialist', 'counter', 'lead')})
+        with compose(store, tid, question, adapter.specialist_model_turn, 'navigation-'+tid) as runtime:
+            result = runtime.graph.invoke(runtime.graph_input.model_dump(mode='json'),
+                {'configurable': {'thread_id': tid}, 'recursion_limit': 60})
+    (tmp_path / 'navigation_wire.json').write_text(json.dumps(payloads, ensure_ascii=False), encoding='utf-8')
+    (tmp_path / 'navigation_result.json').write_text(json.dumps(result, ensure_ascii=False), encoding='utf-8')
+    assert len(payloads) == 5 and len(passages) == 3
+    assert 'source_navigation_fixture_complete' in json.dumps(result)
+    assert not result.get('final_submission')
+
+
 @pytest.mark.paid_model
 @pytest.mark.local_data_integration
 @pytest.mark.skipif(os.getenv('FIN_NATIVE_QUALIFICATION')!='1' or os.getenv('FIN_PAID_PROJECT_PROBE')!='1', reason='explicit six-call project qualification only')

@@ -272,8 +272,6 @@ class TaskAttachmentStore:
         for row in rows:
             url = f"http://localhost:8766/api/v1/research-sessions/{thread_id}/attachments/{row['id']}"
             for index, section in enumerate(json.loads(row["pages"])):
-                if request.operation == "read" and section["needs_vision"]:
-                    continue  # navigation hints are not citable source content
                 content = section["text"] or "此页需视觉识别。请用 source_space=uploads, operation=inspect_image, document_id 与 page_start 读取原图。"
                 for part, chunk in enumerate(splitter.split_text(content)):
                     node_id = f"CHUNK::{row['id'][8:]}:{index}:{part}" + (":vision:" + digest[:12] if inspect_image else "")
@@ -281,12 +279,51 @@ class TaskAttachmentStore:
                         "title": row["name"], "section_path": [section["heading"]], "document_kind": "pdf" if row["kind"] in {"pdf", "image"} else "document",
                         "page_start": section["page"], "page_end": section["page"], "source_role": "user_upload_vision_interpretation" if inspect_image else row.get('project_origin', {}).get('source_role', 'user_upload_unverified'),
                         "company": "user_supplied_verify_in_context", "stable_url": url, "content": chunk,
-                        "content_sha256": _digest(chunk.encode()), "raw_body_sha256": row["digest"]}
+                        "content_sha256": _digest(chunk.encode()), "raw_body_sha256": row["digest"],
+                        "needs_vision": section["needs_vision"]}
                     nodes.extend([{**base, "node_kind": "section"}, {**base, "node_kind": "text", "node_id": node_id + ":leaf"}])
-        result = navigate_source_nodes(nodes, request, snapshot=_digest("".join(row["digest"] for row in rows).encode()), allowed_space="uploads")
+        # Section/leaf are two locators for the same upload bytes, not two
+        # outline entries. Keep both IDs valid for old citations and searches.
+        blocks = [node for node in nodes if node['node_kind'] == 'section']
+        navigation = {}
+        for row in rows:
+            document_blocks = [node for node in blocks if node['parent_document_id'] == row['id']]
+            for index, node in enumerate(document_blocks):
+                following = document_blocks[index + 1] if index + 1 < len(document_blocks) else None
+                next_request = None
+                if following:
+                    next_request = {'source_space': 'uploads', 'document_id': row['id']}
+                    if inspect_image:
+                        next_request.update(operation='inspect_image', page_start=following['page_start'],
+                                            query=request.query, offset=index + 1, limit=1)
+                    elif following['needs_vision']:
+                        next_request.update(operation='inspect_image', page_start=following['page_start'])
+                    else:
+                        next_request.update(operation='read', node_id=following['node_id'])
+                hint = {'scope': 'inspected_image_page' if inspect_image else 'parsed_document',
+                        'block_index': index + 1, 'block_count': len(document_blocks),
+                        'next_block_request': next_request}
+                navigation[node['node_id']] = navigation[node['node_id'] + ':leaf'] = hint
+        selected_nodes = blocks if request.operation == 'outline' else nodes
+        if request.operation == 'read':
+            selected_nodes = [node for node in selected_nodes if not node['needs_vision']]
+        result = navigate_source_nodes(selected_nodes, request,
+            snapshot=_digest("".join(row["digest"] for row in rows).encode()), allowed_space="uploads")
+        by_id = {node['node_id']: node for node in nodes}
+        items = []
         origins = {r['document_id']: r['project_origin'] for r in self.list(thread_id) if r.get('project_origin')}
+        for item in result.items:
+            item = {**item, **({'project_origin': origins[item['document_id']]} if item['document_id'] in origins else {})}
+            if request.operation != 'catalog':
+                item['document_navigation'] = navigation[item['node_id']]
+            if request.operation == 'outline':
+                content = by_id[item['node_id']]['content']
+                item.update(preview=content[:500], preview_truncated=len(content) > 500)
+            items.append(item)
         return result.model_copy(update={
-            'items': tuple({**item, **({'project_origin': origins[item['document_id']]} if item['document_id'] in origins else {})} for item in result.items),
+            'items': tuple(items),
             'notice': result.notice + ' This response covers only the selected blocks/window, not a completeness review of the uploaded document. '
                 'Unread or unmatched material is not non-disclosure. Before claiming a missing breakdown, inspect the relevant remaining sections/tables; '
-                'disclosed components may permit calculation even if the ratio is not printed.'})
+                'disclosed components may permit calculation even if the ratio is not printed. '
+                'document_navigation identifies the position in this document and the next block to inspect, not a record of blocks already read. '
+                'next_offset paginates the current selection only; null does not mean the whole document was inspected. Outline/search previews are not citable.'})

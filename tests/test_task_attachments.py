@@ -49,6 +49,54 @@ def test_upload_markdown_structure_search_read_and_task_isolation(tmp_path):
     assert TaskAttachmentStore(tmp_path).list(thread)[0]["document_id"] == added["document_id"]
 
 
+def test_outline_unique_blocks_and_followup_keep_original_passage_identity(tmp_path):
+    from hashlib import sha256
+    store, thread = TaskAttachmentStore(tmp_path), str(uuid4())
+    body = '\n\n'.join(f'# Section {i}\nPeriod 2025; revenue {100+i}; operating income {10+i}.' for i in range(6))
+    doc = store.add(thread, 'report.md', body.encode())
+    outline = request(store, thread, operation='outline', document_id=doc['document_id'])
+    assert outline.total_matches == 6 and len(outline.items) == 6 and outline.next_offset is None
+    assert all(not item['writer_citable'] and 'preview' in item for item in outline.items)
+    page = request(store, thread, operation='outline', document_id=doc['document_id'], limit=2)
+    second = request(store, thread, operation='outline', document_id=doc['document_id'], limit=2, offset=page.next_offset)
+    assert [i['node_id'] for i in (*page.items, *second.items)] == [i['node_id'] for i in outline.items[:4]]
+    first = request(store, thread, operation='read', document_id=doc['document_id'], node_id=outline.items[0]['node_id'])
+    assert first.next_offset is None  # Selection exhausted, but other document blocks remain.
+    nav = first.items[0]['document_navigation']
+    assert nav['block_index'] == 1 and nav['block_count'] == 6
+    current = first
+    for i in range(1, 6):
+        selection = current.items[0]['document_navigation']['next_block_request']
+        current = asyncio.run(store.read(thread_id=thread, request=SourceDocumentRequest(**selection)))
+        assert f'Section {i}' in current.items[0]['passage']
+    assert current.items[0]['document_navigation']['next_block_request'] is None
+    leaf = request(store, thread, operation='read', document_id=doc['document_id'], node_id=outline.items[0]['node_id']+':leaf')
+    assert leaf.items[0]['passage'] == first.items[0]['passage']
+    assert leaf.items[0]['content_sha256'] == sha256(first.items[0]['passage'].encode()).hexdigest()
+    assert leaf.items[0]['document_navigation'] == nav
+    assert not leaf.numeric_fact_authority
+    with pytest.raises(ValueError, match='not_in_current_task'):
+        asyncio.run(store.read(thread_id=str(uuid4()), request=SourceDocumentRequest(**nav['next_block_request'])))
+
+
+def test_followup_does_not_skip_scanned_page_or_publish_vision_hint_as_evidence(tmp_path, monkeypatch):
+    import sec_agent.research_foundation.task_attachments as module
+    monkeypatch.setattr(module, 'parse_document', lambda *_: ([
+        {'page': 1, 'heading': 'First', 'text': 'Readable page', 'needs_vision': False},
+        {'page': 2, 'heading': 'Scanned table', 'text': '', 'needs_vision': True},
+        {'page': 3, 'heading': 'Notes', 'text': 'Readable footnote', 'needs_vision': False}], 'pdf'))
+    store, thread = TaskAttachmentStore(tmp_path), str(uuid4())
+    doc = store.add(thread, 'scan.pdf', b'fixture-parser-output')
+    outline = request(store, thread, operation='outline', document_id=doc['document_id'])
+    first = request(store, thread, operation='read', document_id=doc['document_id'], node_id=outline.items[0]['node_id'])
+    nav = first.items[0]['document_navigation']
+    assert nav['block_count'] == 3
+    assert nav['next_block_request'] == {'source_space': 'uploads', 'document_id': doc['document_id'], 'operation': 'inspect_image', 'page_start': 2}
+    read = request(store, thread, operation='read', document_id=doc['document_id'])
+    assert [i['parser_page_start'] for i in read.items] == [1, 3]
+    assert all('需视觉识别' not in i['passage'] for i in read.items)
+
+
 @pytest.mark.parametrize("name,data", [("../outside.txt", b"x"), ("C:\\private.txt", b"x"), ("x.svg", b"svg"),
     ("script.exe", b"MZ"), ("x.pdf", b"not a PDF"), ("x.txt", b"a\x00b"), ("x.txt", b"")])
 def test_invalid_uploads_are_rejected_without_rows(tmp_path, name, data):
@@ -110,3 +158,24 @@ def test_image_inspection_source_binding_and_native_cache(tmp_path):
     assert result == again and len(calls) == 1
     assert "user_upload_vision" in result.items[0]["source_role"]
     assert not result.numeric_fact_authority
+
+
+def test_long_image_interpretation_followup_uses_cached_same_page(tmp_path):
+    from PIL import Image
+    stream = io.BytesIO()
+    Image.new('RGB', (80, 80), 'white').save(stream, format='PNG')
+    store, thread = TaskAttachmentStore(tmp_path), str(uuid4())
+    doc = store.add(thread, 'table.png', stream.getvalue())
+    calls = []
+    async def model(image, question):
+        calls.append(question)
+        return '\n\n'.join(f'Row {i}: source transcription fixture.' for i in range(220))
+    req = SourceDocumentRequest(source_space='uploads', operation='inspect_image', document_id=doc['document_id'], query='Read this table.', limit=1)
+    first = asyncio.run(store.read(thread_id=thread, request=req, vision_reader=model))
+    nav = first.items[0]['document_navigation']
+    assert nav['scope'] == 'inspected_image_page' and nav['block_count'] > 1
+    second = asyncio.run(store.read(thread_id=thread, request=SourceDocumentRequest(**nav['next_block_request']), vision_reader=model))
+    assert len(calls) == 1
+    assert second.items[0]['document_navigation']['block_index'] == 2
+    assert first.items[0]['passage_id'] != second.items[0]['passage_id']
+    assert not second.numeric_fact_authority

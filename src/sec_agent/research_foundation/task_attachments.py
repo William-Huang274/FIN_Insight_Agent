@@ -256,4 +256,8 @@ class TaskAttachmentStore:
                     nodes.extend([{**base, "node_kind": "section"}, {**base, "node_kind": "text", "node_id": node_id + ":leaf"}])
         result = navigate_source_nodes(nodes, request, snapshot=_digest("".join(row["digest"] for row in rows).encode()), allowed_space="uploads")
         origins = {r['document_id']: r['project_origin'] for r in self.list(thread_id) if r.get('project_origin')}
-        return result.model_copy(update={'items': tuple({**item, **({'project_origin': origins[item['document_id']]} if item['document_id'] in origins else {})} for item in result.items)})
+        return result.model_copy(update={
+            'items': tuple({**item, **({'project_origin': origins[item['document_id']]} if item['document_id'] in origins else {})} for item in result.items),
+            'notice': result.notice + ' This response covers only the selected blocks/window, not a completeness review of the uploaded document. '
+                'Unread or unmatched material is not non-disclosure. Before claiming a missing breakdown, inspect the relevant remaining sections/tables; '
+                'disclosed components may permit calculation even if the ratio is not printed.'})

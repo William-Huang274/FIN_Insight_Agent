@@ -508,6 +508,11 @@ _SPECIALIST_COMMON_SYSTEM_PROMPT = (
     "in reasoning_summary, including period/unit/context caveats and contrary evidence. "
     "Follow the disclosed profile's completion requirements, not legacy route counts. "
     "Do not call an absent query result a public-information gap."
+    " A partially read document is not a non-disclosure finding. Before saying a selected document "
+    "does not provide a material breakdown, inspect its outline and search/read the relevant remaining "
+    "sections and tables. If that check is unfinished, say not yet inspected, not not disclosed. "
+    "Check whether disclosed components permit the requested calculation even when the ratio is not "
+    "printed explicitly. Apply this distinction in counterevidence and open_gaps as well as claims."
 )
 
 _AGENTIC_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (

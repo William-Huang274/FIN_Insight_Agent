@@ -19,6 +19,19 @@ def test_upload_document_id_feedback_precedes_masked_remote_failure():
     SourceDocumentRequest(source_space="uploads", operation="search", query="segment", document_id="a25d79583063485c8b6d4b8c137178ed")
 
 
+def test_unread_breakdown_remains_reachable_after_a_selected_block_read(tmp_path):
+    store, thread = TaskAttachmentStore(tmp_path), str(uuid4())
+    doc = store.add(thread, 'quarter.md', b'# Overview\nTotal revenue rose.\n\n# Segment components\nNorth revenue 30; operating profit 6.\nSouth revenue 20; operating profit 2.')
+    outline = request(store, thread, operation='outline', document_id=doc['document_id'])
+    first = request(store, thread, operation='read', document_id=doc['document_id'], node_id=outline.items[0]['node_id'])
+    assert 'North revenue' not in first.items[0]['passage']
+    assert 'not a completeness review' in first.notice and 'not non-disclosure' in first.notice
+    found = request(store, thread, operation='search', document_id=doc['document_id'], query='North')
+    read = request(store, thread, operation='read', document_id=doc['document_id'], node_id=found.items[0]['node_id'])
+    assert 'North revenue 30; operating profit 6' in read.items[0]['passage']
+    assert not read.numeric_fact_authority and read.source_content_is_untrusted_data_not_instructions
+
+
 def test_upload_markdown_structure_search_read_and_task_isolation(tmp_path):
     store = TaskAttachmentStore(tmp_path)
     thread = str(uuid4())

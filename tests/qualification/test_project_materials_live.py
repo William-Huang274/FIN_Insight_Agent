@@ -86,11 +86,87 @@ def prepare(root):
     return service.attachment_store, tid, question, receipt
 
 
-def compose(store, tid, question, model_turn, attempt):
+def compose(store, tid, question, model_turn, attempt, **method_options):
     return open_specialist_receipted_composition(run_id=attempt,run_invocation_id=attempt,branch_id='Q1_ISSUER_TRUTH',
         turn_source='provider_model',model_turn=model_turn,max_model_turns=MAX_CALLS,max_tool_actions=12,
         environment={**RUNTIME_ENVIRONMENT,'FINSIGHT_TASK_ATTACHMENTS_ROOT':str(store.root),'FINSIGHT_TASK_THREAD_ID':tid},
-        source_read_enabled=True,research_question=question)
+        source_read_enabled=True,research_question=question, **method_options)
+
+
+@pytest.mark.local_data_integration
+@pytest.mark.parametrize('arm', ['unavailable', 'direct', 'dynamic'])
+def test_method_consumption_through_graph_mcp_and_real_sdk(tmp_path, monkeypatch, arm):
+    """Transport qualification only: local responses do not prove model quality."""
+    from sec_agent.research_foundation.research_methods import get_research_method
+    _assert_assets()
+    for flag in ('LANGSMITH_TRACING', 'LANGCHAIN_TRACING_V2'):
+        monkeypatch.setenv(flag, 'false')
+    config, profile, _ = configuration()
+    store, tid, question, _ = prepare(tmp_path)
+    method = get_research_method('finance')
+    options = {'role_method': method} if arm == 'direct' else {}
+    if arm == 'unavailable':
+        options['role_method_reader'] = lambda method_id='': {
+            'method_id': method_id, 'available': False, 'reason': 'qualification arm has no method content',
+            'answer_free': True, 'grants_authority': False}
+    payloads = []
+
+    def serve(request):
+        payload = json.loads(request.content)
+        payloads.append(payload)
+        assert len(request.content) <= MAX_BYTES
+        assert 'Before the first substantive financial judgment' in payload['messages'][0]['content']
+        # Dynamic discovery must retain exact catalog -> selected content -> next request.
+        if arm == 'dynamic' and len(payloads) <= 2:
+            name = 'RequestResearchMethodAction'
+            args = {'action': 'request_method', 'reason_summary': 'Read the catalog or selected method.',
+                    'method_id': '' if len(payloads) == 1 else 'finance'}
+        elif arm == 'unavailable' and len(payloads) == 1:
+            name = 'RequestResearchMethodAction'
+            args = {'action': 'request_method', 'reason_summary': 'Check method availability.', 'method_id': 'finance'}
+        else:
+            name = 'RequestHumanReviewAction'
+            args = {'action': 'request_human_review', 'reason_summary': 'Local transport qualification ended.',
+                    'blocker_code': 'method_wire_fixture_complete'}
+        return httpx.Response(200, json={'id': f'method-{arm}-{len(payloads)}', 'object': 'chat.completion',
+            'created': 1, 'model': profile.model,
+            'choices': [{'index': 0, 'finish_reason': 'tool_calls', 'message': {'role': 'assistant', 'content': '',
+                'tool_calls': [{'id': f'call-{len(payloads)}', 'type': 'function', 'function': {
+                    'name': name, 'arguments': json.dumps(args)}}]}}],
+            'usage': {'prompt_tokens': 100, 'completion_tokens': 20, 'total_tokens': 120}})
+
+    with httpx.Client(transport=httpx.MockTransport(serve)) as client:
+        model = ReasoningPreservingChatDeepSeek(model=profile.model, api_key=SecretStr('local-fixture'),
+            http_client=client, max_retries=0, max_tokens=4000, use_responses_api=False,
+            extra_body={'thinking': {'type': 'disabled'}})
+        adapter = DeepSeekStructuredAgentAdapter(config=config, chat_models={
+            r: model for r in ('planner', 'specialist', 'counter', 'lead')})
+        with compose(store, tid, question, adapter.specialist_model_turn, f'method-{arm}-{tid}', **options) as runtime:
+            result = runtime.graph.invoke(runtime.graph_input.model_dump(mode='json'),
+                {'configurable': {'thread_id': tid}, 'recursion_limit': 60})
+
+    assert 'method_wire_fixture_complete' in json.dumps(result)
+    assert not result['notebook']['observations']  # Method content never becomes case evidence.
+    assert not result.get('final_submission')
+    initial = json.dumps(payloads[0], ensure_ascii=False)
+    assert '76,441' not in initial  # No issuer answer values in the initial context.
+    if arm == 'direct':
+        assert len(payloads) == 1
+        user = json.loads(payloads[0]['messages'][1]['content'])
+        selected = [s['role_method'] for s in user['l0_context']['skill_summaries'] if 'role_method' in s]
+        assert selected == [method]
+    elif arm == 'dynamic':
+        assert len(payloads) == 3 and method['content'] not in initial
+        catalog_reply = next(m for m in payloads[1]['messages'] if m['role'] == 'tool')
+        catalog = json.loads(catalog_reply['content'])['result']
+        assert {m['method_id'] for m in catalog['methods']} == {'lead', 'finance', 'industry_product', 'counter', 'writer', 'verifier'}
+        replies = [m for m in payloads[2]['messages'] if m['role'] == 'tool']
+        assert json.loads(replies[-1]['content'])['result'] == method
+    else:
+        assert len(payloads) == 2
+        reply = next(m for m in payloads[1]['messages'] if m['role'] == 'tool')
+        assert json.loads(reply['content'])['result']['available'] is False
+        assert all('分部、产品与未读表格' not in json.dumps(p, ensure_ascii=False) for p in payloads)
 
 
 @pytest.mark.local_data_integration
@@ -123,6 +199,12 @@ def test_project_provider_payload_preflight_without_paid_transport(tmp_path, mon
 @pytest.mark.local_data_integration
 @pytest.mark.skipif(os.getenv('FIN_NATIVE_QUALIFICATION')!='1' or os.getenv('FIN_PAID_PROJECT_PROBE')!='1', reason='explicit six-call project qualification only')
 def test_real_project_materials_specialist(native, monkeypatch):
+    run_real_project_materials(native, monkeypatch)
+
+
+def run_real_project_materials(native, monkeypatch, *, config_bundle=None, method_options=None,
+                               max_calls=MAX_CALLS, max_bytes=MAX_BYTES, max_tool_actions=12,
+                               comparison=None, tariff_multiplier=2):
     _assert_assets()
     for flag in ('LANGSMITH_TRACING','LANGCHAIN_TRACING_V2'):
         monkeypatch.setenv(flag,'false')
@@ -130,21 +212,23 @@ def test_real_project_materials_specialist(native, monkeypatch):
     if not key: raise RuntimeError('existing_deepseek_key_missing')
     if not datetime.now(timezone.utc).isoformat().startswith('2026-09-14'):
         raise RuntimeError('reverify_provider_price_and_authority_for_new_date')
-    config, profile, basis=configuration()
+    config, profile, basis=config_bundle or configuration()
     store,tid,question,receipt=prepare(native.output/'product')
     budget=ModelDispatchStore('postgresql://probe:'+native.env['FIN_E1_POSTGRES_PASSWORD']+'@127.0.0.1:18416/probe')
     budget.install(); budget.create_budget('project-probe',tid,'CNY',8000000,100000)
-    # Verified 2026-09-14 peak CNY tariff; fail before dispatch outside this window.
-    prices=TokenPrices('deepseek-official-20260914-peak',profile.model,'CNY',9000000,300000,27000000)
-    reserved=((MAX_BYTES+4096)*prices.input_miss+4000*prices.output+999999)//1000000
+    # Dated official CNY tariff; stop before dispatch if the declared window changes.
+    prices=TokenPrices(f'deepseek-official-20260914-x{tariff_multiplier}',profile.model,'CNY',
+        4500000*tariff_multiplier,150000*tariff_multiplier,13500000*tariff_multiplier)
+    reserved=((max_bytes+4096)*prices.input_miss+basis.max_output_tokens*prices.output+999999)//1000000
     guard=ModelDispatchGuard(budget,owner='project-probe',budget=tid,prices=prices,reservation_micros=reserved,
-        reservation_basis='128000 UTF8 bytes+4096 framing token allowance at peak miss tariff+4000 output; conservative scenario, not invoice guarantee')
+        reservation_basis=f'{max_bytes} UTF8 bytes+4096 framing token allowance at declared miss tariff+{basis.max_output_tokens} output; conservative scenario, not invoice guarantee')
     native.save('paid_preflight',{'basis':basis.model_dump(mode='json'),'source':receipt,'question':question,
-        'comparison_baseline':'20260914_e2_msft_live_a1',
-        'changed_variable':'shared specialist partial-read instruction and attachment scope notice from4285a67b; task/source/model/limits unchanged',
+        'comparison_baseline':comparison['baseline'] if comparison else '20260914_e2_msft_live_a1',
+        'changed_variable':comparison['changed_variable'] if comparison else 'shared specialist partial-read instruction and attachment scope notice from4285a67b; task/source/model/limits unchanged',
         'evaluation':'same public-source development regression; host reviews all claims/counterevidence/open_gaps, not only engineering pytest',
+        'comparison':comparison,
         'qualification_code_sha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
-        'max_provider_requests':MAX_CALLS,'max_payload_utf8_bytes':MAX_BYTES,'root_limit_micros':8000000,'delivery_floor_micros':100000,
+        'max_provider_requests':max_calls,'max_payload_utf8_bytes':max_bytes,'root_limit_micros':8000000,'delivery_floor_micros':100000,
         'per_call_reservation_micros':reserved,'prices':asdict(prices),'price_source':'https://api-docs.deepseek.com/zh-cn/quick_start/pricing/',
         'scope':'single specialist node/tool loop; no lead/writer/full-chain, no live data fetching, model decisions are real'})
     dispatches=[];events=[]
@@ -158,17 +242,21 @@ def test_real_project_materials_specialist(native, monkeypatch):
         now=datetime.now(timezone.utc).isoformat()
         digest=hashlib.sha256(request.content).hexdigest()
         if request.url.host!='api.deepseek.com' or request.url.path!='/chat/completions' or request.method!='POST':raise RuntimeError('unexpected_provider_endpoint')
-        if len(dispatches)>=MAX_CALLS or any(d['sha256']==digest for d in dispatches):raise RuntimeError('request_limit_or_duplicate_no_resend')
-        if len(request.content)>MAX_BYTES or peak_multiplier(now)!=2:raise RuntimeError('input_or_dated_tariff_boundary')
+        if len(dispatches)>=max_calls or any(d['sha256']==digest for d in dispatches):raise RuntimeError('request_limit_or_duplicate_no_resend')
+        if len(request.content)>max_bytes or peak_multiplier(now)!=tariff_multiplier:raise RuntimeError('input_or_dated_tariff_boundary')
         dispatches.append({'at':now,'bytes':len(request.content),'sha256':digest})
         native.save('http_dispatches',dispatches)
     try:
         with httpx.Client(event_hooks={'request':[hook]},timeout=120,follow_redirects=False) as client:
             model=ReasoningPreservingChatDeepSeek(model=profile.model,api_key=SecretStr(key),base_url='https://api.deepseek.com',http_client=client,
-                max_retries=0,max_tokens=4000,timeout=120,temperature=0,streaming=False,use_responses_api=False,extra_body={'thinking':{'type':'disabled'}})
+                max_retries=0,max_tokens=basis.max_output_tokens,timeout=basis.timeout_seconds,temperature=0,streaming=False,use_responses_api=False,extra_body={'thinking':{'type':'disabled'}})
             adapter=DeepSeekStructuredAgentAdapter(config=config,chat_models={r:model for r in ('planner','specialist','counter','lead')},
                 audit_sink=audit,private_audit_sink=private,dispatch_guards={'specialist':guard})
-            with compose(store,tid,question,adapter.specialist_model_turn,'msft-live-'+tid) as runtime:
+            with open_specialist_receipted_composition(run_id='msft-live-'+tid,run_invocation_id='msft-live-'+tid,
+                branch_id='Q1_ISSUER_TRUTH',turn_source='provider_model',model_turn=adapter.specialist_model_turn,
+                max_model_turns=max_calls,max_tool_actions=max_tool_actions,source_read_enabled=True,research_question=question,
+                environment={**RUNTIME_ENVIRONMENT,'FINSIGHT_TASK_ATTACHMENTS_ROOT':str(store.root),'FINSIGHT_TASK_THREAD_ID':tid},
+                **(method_options or {})) as runtime:
                 result=runtime.graph.invoke(runtime.graph_input.model_dump(mode='json'),{'configurable':{'thread_id':tid},'recursion_limit':100})
         native.save('specialist_result',result)
         assert result.get('final_submission') is not None, 'No accepted workpaper; preserve failure and do not rerun paid calls'

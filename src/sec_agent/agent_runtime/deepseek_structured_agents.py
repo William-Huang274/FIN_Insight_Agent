@@ -29,6 +29,8 @@ from pydantic import (
     model_validator,
 )
 
+from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
+
 from .specialist_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestHumanReviewAction,
     RequestSourceAction, RequestResearchMethodAction, SpecialistAction, SpecialistResearchAction, SpecialistDecision, SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction,
@@ -1399,6 +1401,9 @@ class DeepSeekStructuredAgentAdapter:
                            "Do not remove citation/claim records while retaining the unsupported statement in prose. "
                            "This is a new revision using artifact handoff, not continuation of the old provider conversation.")
             messages[0] = SystemMessage(content=prompt)
+        if not is_lead and "request_method" in semantic_input.get("allowed_actions", ()):
+            messages[0] = SystemMessage(content=messages[0].content + METHOD_TOOL_GUIDANCE
+                + " Use RequestResearchMethodAction to access get_research_method in this tool interface.")
         if notes_enabled:
             messages[0] = SystemMessage(content=messages[0].content + WORKING_MEMORY_GUIDANCE)
         if runtime_context_binding:
@@ -1576,17 +1581,6 @@ class DeepSeekStructuredAgentAdapter:
         )
         started = perf_counter()
         if saved_envelope is None:
-            if not persistent_history:
-                messages = [
-                SystemMessage(
-                    content=(
-                        _AGENTIC_SPECIALIST_SYSTEM_PROMPT
-                        if specialist_mode == "agentic_turn"
-                        else _SYSTEM_PROMPTS[role]
-                    )
-                ),
-                HumanMessage(content=semantic_json),
-            ]
             runnable = self._chat_models[model_purpose].with_structured_output(
                 _provider_function_schema(
                     schema,

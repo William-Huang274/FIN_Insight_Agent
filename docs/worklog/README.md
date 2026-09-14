@@ -17,6 +17,8 @@
 - [0.1.4 E2同源复验与SEC项目数据连接](fin_0_1_4/013_e2_boundary_revalidation_and_sec_project_source.md)
 - [0.1.4 E2项目SEC版本进入任务财务工具](fin_0_1_4/014_e2_sec_task_financial_mapping.md)
 - [0.1.4 E2报告版本保存到项目与后续研究复用](fin_0_1_4/015_e2_project_report_versions_and_reuse.md)
+- [0.1.4 E2项目资产撤销与后续使用边界](fin_0_1_4/016_e2_project_asset_revocation.md)
+- [0.1.4 E3方法实际消费、三臂对照与分部边界](fin_0_1_4/017_e3_method_consumption_and_segment_boundary.md)
 
 本目录只记录当前干净基线之后的实施决策和验证结果。历史 attempt 与旧版本记录保留在 `archive/`，不再复制回活动树。
 

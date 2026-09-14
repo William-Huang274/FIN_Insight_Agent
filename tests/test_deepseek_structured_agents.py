@@ -858,12 +858,16 @@ def test_agentic_object_envelope_preserves_closed_host_validation() -> None:
             )
 
 
+@pytest.mark.parametrize('method_available', [False, True])
 def test_agentic_real_sdk_wire_uses_object_envelope_without_network(
     monkeypatch: pytest.MonkeyPatch,
+    method_available: bool,
 ) -> None:
     monkeypatch.setenv("LANGSMITH_TRACING", "false")
     monkeypatch.setenv("LANGCHAIN_TRACING_V2", "false")
     request = _agentic_turn_request()
+    if method_available:
+        request['allowed_actions'].append('request_method')
     action = _agentic_action(context_digest=request["context_digest"])
     wire_payloads: list[dict[str, Any]] = []
 
@@ -923,6 +927,8 @@ def test_agentic_real_sdk_wire_uses_object_envelope_without_network(
         result = adapter.specialist_model_turn(request)
 
     assert len(wire_payloads) == 1
+    assert ('Before the first substantive financial judgment' in
+            wire_payloads[0]['messages'][0]['content']) is method_available
     assert result["action"] == action
     assert result["runtime_receipt"]["output_digest"] == canonical_sha256(action)
     assert result["runtime_receipt"]["transport_attempts"] == 1

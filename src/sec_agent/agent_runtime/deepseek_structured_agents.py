@@ -31,6 +31,7 @@ from pydantic import (
 
 from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction
+from .research_working_state import UpdateResearchStateAction
 
 from .specialist_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestHumanReviewAction,
@@ -546,6 +547,7 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
+    UpdateResearchStateAction,
     DelegateSubtasksAction, ReadDelegatedWorkAction,
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
     SubmitWorkpaperAction, ReviseWorkpaperAction, RequestHumanReviewAction,
@@ -1214,6 +1216,7 @@ class ReasoningPreservingChatDeepSeek(ChatDeepSeek):
 
     tool_context_trigger_tokens: int | None = Field(default=None, ge=1, exclude=True)
     tool_context_keep: int = Field(default=6, ge=1, le=64, exclude=True)
+    tool_context_policy: Literal["legacy_window", "task_boundary"] = Field(default="legacy_window", exclude=True)
     # Qualification-only until paired financial quality passes. Default requests
     # retain the deployed ClearToolUsesEdit policy without experimental labels.
     tool_workpaper_navigation: bool = Field(default=False, exclude=True)
@@ -1241,7 +1244,7 @@ class ReasoningPreservingChatDeepSeek(ChatDeepSeek):
         saved_reader = any(isinstance(t, dict) and t.get('function', {}).get('name') == 'read_saved_result' for t in kwargs.get('tools', []))
         projected = project_tool_history(originals, trigger_tokens=self.tool_context_trigger_tokens,
             keep=self.tool_context_keep, saved_result_reader=saved_reader,
-            workpaper_navigation=self.tool_workpaper_navigation)
+            workpaper_navigation=self.tool_workpaper_navigation, policy=self.tool_context_policy)
         payload = super()._get_request_payload(projected, stop=stop, **kwargs)
         for original, encoded in zip(projected, payload["messages"], strict=True):
             if isinstance(original, AIMessage) and "reasoning_content" in original.additional_kwargs:
@@ -1311,7 +1314,8 @@ class DeepSeekStructuredAgentAdapter:
                 use_responses_api=False,
                 extra_body={"thinking": {"type": profile.thinking}},
                 **({"tool_context_trigger_tokens": context_editing["trigger_tokens"],
-                    "tool_context_keep": context_editing["keep"]} if context_editing else {}),
+                    "tool_context_keep": context_editing["keep"],
+                    "tool_context_policy": context_editing.get("policy", "legacy_window")} if context_editing else {}),
                 **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}),
             )
         return cls(config=config, chat_models=models, audit_sink=audit_sink,
@@ -1389,7 +1393,8 @@ class DeepSeekStructuredAgentAdapter:
         if is_lead:
             from .lead_research_graph import lead_tool_models, LEAD_RESEARCH_SYSTEM_PROMPT
             native_tools = lead_tool_models(require_execution_plan=request_value.get("require_execution_plan", False),
-                                           source_read_enabled=request_value.get("source_read_enabled", False))
+                                           source_read_enabled=request_value.get("source_read_enabled", False),
+                                           assistance=request_value.get("lead_assistance", False))
             if semantic_input.get("allowed_planning_tools") is not None:
                 native_tools = {name: model for name, model in native_tools.items()
                                 if name in semantic_input["allowed_planning_tools"]}
@@ -1403,6 +1408,14 @@ class DeepSeekStructuredAgentAdapter:
             prompt = _NATIVE_REVIEW_SYSTEM_PROMPT if is_reviewer else _NATIVE_SPECIALIST_SYSTEM_PROMPT
             if is_lead:
                 prompt = LEAD_RESEARCH_SYSTEM_PROMPT
+                if request_value.get("lead_assistance"):
+                    prompt = ("You are the Research Lead helping an existing expert that has stopped making observable progress. "
+                        "Read the original assignment, current working state and actual source navigation; use scoped source tools when needed. "
+                        "Distinguish repeated results, wrong locations, missing evidence, invalid interpretations and tool failures. "
+                        "Provide a materially different next approach with expected progress, or stop unresolved work. "
+                        "Do not write the expert's answer, create replacement tasks, grant permissions or reset limits. "
+                        "Old intentions and working notes are fallible, not evidence. Use ProvideResearchGuidanceAction, "
+                        "one action per turn. Public Chinese guidance, not private chain of thought.")
                 if request_value.get("scope_policy"):
                     prompt += "\nCurrent run scope policy overrides the default all-branches requirement: " + request_value["scope_policy"]
                 if request_value.get("continuation_policy"):

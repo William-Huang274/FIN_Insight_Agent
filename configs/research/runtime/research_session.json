@@ -4,6 +4,7 @@
   "max_tasks": 12,
   "max_parallel_tasks": 2,
   "context_editing": {
+    "policy": "task_boundary",
     "trigger_tokens": 16000,
     "keep": 2
   },

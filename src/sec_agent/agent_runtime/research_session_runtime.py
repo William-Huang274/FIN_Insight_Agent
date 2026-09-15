@@ -74,7 +74,8 @@ def load_research_runtime_profile(root):
     if set(profile["nodes"]) != required:
         raise ValueError("research_session_node_configuration_incomplete")
     editing = profile.get("context_editing")
-    if editing is not None and (set(editing) != {"trigger_tokens", "keep"}
+    if editing is not None and (set(editing) not in ({"trigger_tokens", "keep"}, {"trigger_tokens", "keep", "policy"})
+            or editing.get("policy", "legacy_window") not in {"legacy_window", "task_boundary"}
             or type(editing["trigger_tokens"]) is not int or editing["trigger_tokens"] < 1
             or type(editing["keep"]) is not int or not 1 <= editing["keep"] <= 64):
         raise ValueError("research_session_context_editing_configuration_invalid")
@@ -134,6 +135,10 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             turn = block_unknown_model_inputs(turn, blocked_model_inputs)
         turn = cancellable_model_turn(turn, cancelled)
         def invoke(request):
+            progress = (request.get("task_context") or {}).get("runtime_progress", {})
+            if progress.get("status") == "warn":
+                emit({"kind": "stage", "actor": actor, "event": "progress", "task_id": task_id,
+                    "status": "no_new_observations", "objective": "连续读取未增加新的观察，runtime已提示专家核对已读结果、调整检索或研究步骤；持续卡住将交给Lead协助。"})
             response = turn(request)
             for call in response.get("action", {}).get("tool_calls", []):
                 args = call.get("args")
@@ -231,6 +236,38 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     # notebook or sibling message history is copied into the helper.
                     nested_task["objective"] += "\n来源导航/待查方向：" + json.dumps(spec["source_hints"], ensure_ascii=False)
                     return worker(nested_task, {}, nested_config, helper=True)
+                def help_blocked_expert(state, help_config):
+                    from .research_assistance import build_lead_assistance_graph
+                    from .research_graph_contracts import canonical_sha256
+                    emit({**task_event, "event": "progress", "status": "lead_assistance",
+                        "objective": "连续读取没有新增观察，已通知研究负责人检查当前状态和来源导航，协助调整研究方法。"})
+                    basis = configured.token_budget_basis["lead"].model_copy(update={
+                        "node_purpose": "Lead diagnoses the current blocked expert using its original assignment, actual observations and working state; source-check a changed recovery approach or stop, without replacing the task.",
+                        "required_outputs": ("A concrete diagnosis, next approach, expected progress or explicit unresolved stop; preserve current task authority and lifetime limits.",)})
+                    help_configured = configured.model_copy(update={"token_budget_basis": {**configured.token_budget_basis, "lead": basis}})
+                    help_adapter = DeepSeekStructuredAgentAdapter.from_config(config=help_configured, api_key=api_key,
+                        audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
+                        dispatch_guards=research_guards(help_configured), source_access_check=source_access_check)
+                    observations = [{"status": o["status"], "references": o["references"],
+                        "navigation": [{k: item[k] for k in ("node_id", "document_id", "document_navigation", "section_path") if k in item}
+                            for item in o.get("content", []) if isinstance(item, dict)]} for o in state["notebook"]["observations"]]
+                    request_base = {"agent_id": "lead:assistance:" + canonical_sha256(task["task_id"])[:16] + ":" + str(len(state.get("lead_assistance_history", []))),
+                        "research_question": request["question"], "research_as_of": state["task"]["research_as_of"],
+                        "branch_catalog": [b for b in branches if b["branch_id"] in task["coverage_obligation_ids"]],
+                        "required_branch_ids": list(task["coverage_obligation_ids"]),
+                        "capabilities": child.graph_input.l0_context.capability_summaries,
+                        "capacity": {"max_lead_turns": 4, "max_tasks": 0, "max_parallel_tasks": 1},
+                        "tasks": [task], "workpapers": [{"task_id": task["task_id"], "working_state": state.get("research_working_state"),
+                            "runtime_progress": state.get("runtime_progress"), "observations": observations,
+                            "prior_assistance": state.get("lead_assistance_history", [])}],
+                        "scope_policy": "Help this original task only; source access/cutoff and root budget are unchanged."}
+                    spaces = {s for row in child.graph_input.l0_context.capability_summaries for s in row.get("source_spaces", [])}
+                    graph = build_lead_assistance_graph(request_base=request_base,
+                        model_turn=cancellable_model_turn(help_adapter.lead_research_turn, cancelled), source_reader=child.source_reader,
+                        source_spaces=spaces).compile()
+                    result = graph.invoke({}, {**help_config, "recursion_limit": 16})["guidance"]
+                    emit({**task_event, "event": "progress", "status": "lead_guidance_received", "objective": result["next_action"]})
+                    return result
                 # A fresh provider history and read-only MCP lifecycle per child.
                 adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
                     audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
@@ -246,6 +283,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                             recovery_state=recoveries.get(task["task_id"]),
                             research_task=task, dependency_workpapers=dependencies,
                             subtask_runner=None if helper else run_subtask,
+                            working_state_enabled=True, lead_assistance=help_blocked_expert,
                             research_question=(task["objective"] + "\n你负责这个独立子问题；提交前自检数字、引用及正文的一致性，报告限制，不再委派。") if helper else request["question"]) as child:
                         output = child.graph.invoke(child.graph_input.model_dump(mode="json"), {**child_config, "recursion_limit": 200})
                 except Exception as exc:

@@ -91,8 +91,11 @@ _PLANNED_LEAD_TOOLS = {
 }
 
 
-def lead_tool_models(*, require_execution_plan=False, source_read_enabled=False):
+def lead_tool_models(*, require_execution_plan=False, source_read_enabled=False, assistance=False):
+    from .research_assistance import ProvideResearchGuidanceAction
     models = dict(_PLANNED_LEAD_TOOLS if require_execution_plan else LEAD_RESEARCH_TOOLS)
+    if assistance:
+        models["ProvideResearchGuidanceAction"] = ProvideResearchGuidanceAction
     if source_read_enabled:
         models["RequestSourceAction"] = RequestSourceAction
     return models
@@ -245,6 +248,8 @@ def build_lead_research_graph(
         paper = value.get("final_submission")
         return {"task_id": key, "branch_id": value["task"]["branch_id"],
                 "task_outcome": task_outcome(value),
+                "research_working_state": value.get("research_working_state"),
+                "lead_assistance": value.get("lead_assistance_history", []),
                 "workpaper": {k: v for k, v in paper.items() if k != "task_note"} if paper else None,
                 "uncompleted_reviewed_route_ids": sorted(set(value["notebook"]["required_route_obligation_ids"])
                     - set(value["notebook"]["satisfied_route_obligation_ids"])),
@@ -510,7 +515,9 @@ def build_lead_research_graph(
         # Preserve all sibling results and stop before another Lead/model call.
         execution_failures = [row["task_id"] for row in new
             if (row["agent_state"].get("human_review_handoff") or {}).get("trigger")
-            in {"model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"}]
+            in {"model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"}
+            or row["agent_state"].get("review_reason") in {
+                "repeated_no_progress_after_lead_assistance", "lead_could_not_resolve_research_blockage"}]
         return {"tool_results": replies,
                 "phase": "research_needs_attention" if execution_failures else "lead_observing",
                 "stop_reason": "delegated_execution_failure_requires_new_attempt" if execution_failures else None,

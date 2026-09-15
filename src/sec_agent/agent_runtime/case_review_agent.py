@@ -821,6 +821,7 @@ def case_chat_model(profile, basis, model_config, api_key, *, context_editing=No
         timeout=basis.timeout_seconds, max_retries=0, streaming=streaming, stream_usage=streaming, use_responses_api=False,
         extra_body={"thinking": {"type": profile.thinking}},
         **({"tool_context_trigger_tokens": context_editing["trigger_tokens"],
+            "tool_context_policy": context_editing.get("policy", "legacy_window"),
             "tool_context_keep": context_editing["keep"],
             "tool_workpaper_navigation": context_editing.get("workpaper_navigation", False)} if context_editing else {}),
         **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}))

@@ -28,6 +28,7 @@ from pydantic import (
 from .research_contracts import ProviderEvidenceIntent
 from .task_outcome import AuthorTaskNote
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
+from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
 from sec_agent.research_foundation.source_quotes import contains_source_quote
@@ -434,6 +435,7 @@ SpecialistAction = Annotated[
     | RequestCalculationAction
     | RequestHumanReviewAction
     | DelegateSubtasksAction
+    | UpdateResearchStateAction
     | ReadDelegatedWorkAction
     | SubmitWorkpaperAction
     | SubmitReviewAction,
@@ -861,6 +863,9 @@ class SpecialistHumanReviewHandoff(_StrictModel):
 
 
 class SpecialistAgenticState(TypedDict, total=False):
+    research_working_state: dict[str, Any]
+    runtime_progress: dict[str, Any]
+    lead_assistance_history: list[dict[str, Any]]
     schema_version: str
     run_id: str
     run_invocation_id: str
@@ -903,6 +908,8 @@ class SpecialistAgenticDependencies:
     # submission/error-feedback path; only isolated qualification opts in.
     allow_workpaper_field_edits: bool = False
     subtask_runner: Callable | None = None
+    working_state_enabled: bool = False
+    lead_assistance: Callable | None = None
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -978,6 +985,7 @@ def _model_request(
     allow_workpaper_field_edits: bool = False,
     continuation_guidance: str | None = None,
     allow_delegation: bool = False,
+    working_state_enabled: bool = False,
 ) -> dict[str, Any]:
     l0 = _validate_model_json(
         SpecialistL0Context,
@@ -1045,6 +1053,14 @@ def _model_request(
         # the preceding checkpoint. This is input, never a source or authority.
         body["task_context"] = {**body.get("task_context", {}),
             "continuation_guidance": continuation_guidance}
+    if working_state_enabled:
+        allowed_actions.append("update_research_state")
+        body["task_context"] = {**body.get("task_context", {}),
+            "working_state_guidance": WORKING_STATE_GUIDANCE,
+            "research_working_state": state.get("research_working_state"),
+            "runtime_progress": state.get("runtime_progress", {}),
+            "lead_assistance": state.get("lead_assistance_history", []),
+            "overall_assignment": state["task"]["objective"]}
     last = state.get("last_submission_attempt") or {}
     candidate = last.get("arguments")
     if "submit_workpaper" in allowed_actions and isinstance(candidate, dict) and candidate.get("action") == "submit_workpaper" and not last.get("accepted"):
@@ -1456,6 +1472,9 @@ def build_specialist_agentic_state_graph(
                 "last_submission_attempt": _jsonable(recovery_state.get("last_submission_attempt")),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
+                "research_working_state": _jsonable(recovery_state.get("research_working_state")),
+                "runtime_progress": _jsonable(recovery_state.get("runtime_progress", {})),
+                "lead_assistance_history": _jsonable(recovery_state.get("lead_assistance_history", [])),
                 "model_turn_invocations": {
                     str(record.turn_index): recovery_state.get("model_turn_invocations", {}).get(
                         str(record.turn_index), recovery_state["run_invocation_id"])
@@ -1495,7 +1514,13 @@ def build_specialist_agentic_state_graph(
                 ).model_dump(mode="json"),
                 "phase": "human_review_required",
             }
+        if dependencies.working_state_enabled and state.get("runtime_progress", {}).get("consecutive_no_new_observations", 0) >= 4:
+            if dependencies.lead_assistance and len(state.get("lead_assistance_history", [])) < 2:
+                return {"pending_action": None, "phase": "lead_assistance_required"}
+            return {"pending_action": None, "phase": "human_review_required", "review_trigger": "model_request",
+                "review_reason": "repeated_no_progress_after_lead_assistance"}
         request = _model_request(state=state, notebook=notebook,
+            working_state_enabled=dependencies.working_state_enabled,
             allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
             allow_delegation=dependencies.subtask_runner is not None,
             continuation_guidance=config.get("configurable", {}).get("finsight_continuation_guidance"))
@@ -1648,6 +1673,8 @@ def build_specialist_agentic_state_graph(
         }
 
     def route_model_action(state: SpecialistAgenticState) -> str:
+        if state.get("phase") == "lead_assistance_required":
+            return "lead_assistance"
         raw = state.get("pending_action")
         if raw is None:
             if state.get("phase") == "typed_feedback_ready":
@@ -1946,11 +1973,13 @@ def build_specialist_agentic_state_graph(
         )}
         if dependencies.subtask_runner is not None:
             models.update({m.__name__: m for m in (DelegateSubtasksAction, ReadDelegatedWorkAction)})
+        if dependencies.working_state_enabled:
+            models["UpdateResearchStateAction"] = UpdateResearchStateAction
         from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, execute_memory_tool
         if memory_enabled():
             models.update(WORKING_MEMORY_MODELS)
         terminal_mixed = len(batch.tool_calls) > 1 and any(
-            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction"}
+            call.name in {"SubmitWorkpaperAction", "ReviseWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction", "UpdateResearchStateAction"}
             for call in batch.tool_calls)
         l0 = _validate_model_json(SpecialistL0Context, state["l0_context"], code="specialist_l0_context_invalid")
         assigned_routes = {row.get("minimum_route_obligation_id")
@@ -2048,7 +2077,8 @@ def build_specialist_agentic_state_graph(
                     "Copy the current context_digest exactly; this call was not dispatched.")
             if action.action not in _model_request(state=working, notebook=before,
                     allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
-                    allow_delegation=dependencies.subtask_runner is not None)["allowed_actions"]:
+                    allow_delegation=dependencies.subtask_runner is not None,
+                    working_state_enabled=dependencies.working_state_enabled)["allowed_actions"]:
                 return reject("specialist_action_not_available_in_current_runtime", "This action is not available for your assigned role.")
             if isinstance(action, RequestSourceAction) and not l0.source_read_enabled:
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")
@@ -2070,6 +2100,17 @@ def build_specialist_agentic_state_graph(
                 except (ValueError, KeyError) as exc:
                     return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
             working["pending_action"] = action.model_dump(mode="json")
+            if isinstance(action, UpdateResearchStateAction):
+                note = action.working_state.model_dump(mode="json")
+                refs = set(note["retain_source_ids"]) | {r for f in note["findings"] for r in f["source_ids"]}
+                if not refs.issubset(observed_sources(working["notebook"])):
+                    return reject("working_state_unknown_source", "Use only exact source IDs returned in your original observations.", agent_error=True)
+                if before.tool_action_count >= state["max_tool_actions"]:
+                    return reject("working_state_tool_limit", "Preserve state and stop; no additional allowance is granted.")
+                working["research_working_state"] = note
+                working["notebook"] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1).model_dump(mode="json")
+                return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({"accepted": True,
+                    "working_state": note, "notice": "Author assessment, not independent verification. Original sources remain authoritative."}, ensure_ascii=False))
             if isinstance(action, (DelegateSubtasksAction, ReadDelegatedWorkAction)):
                 saved = dict(working.get("delegated_work", {}))
                 digest = _semantic_action_digest(action)
@@ -2187,6 +2228,9 @@ def build_specialist_agentic_state_graph(
                           for call in batch.tool_calls]
         replies = node.invoke([AIMessage(content="", tool_calls=dispatch_calls)],
                               config={**config, "max_concurrency": 1})
+        if dependencies.working_state_enabled:
+            working["runtime_progress"] = progress_after_tools(state["notebook"], working["notebook"], state.get("runtime_progress"),
+                has_reads=any(c.name in {"RequestSourceAction", "RequestEvidenceAction", "RequestFinanceAction", "RequestCalculationAction", "ReadDelegatedWorkAction"} for c in batch.tool_calls))
         return {**working, "pending_action": None,
                 "tool_results": [message.model_dump(mode="json") for message in replies]}
 
@@ -2340,6 +2384,19 @@ def build_specialist_agentic_state_graph(
         SpecialistAgenticState,
         input_schema=SpecialistAgenticInput,
     )
+    def consult_lead(state, config: RunnableConfig):
+        from .research_assistance import ResearchGuidance
+        guidance = ResearchGuidance.model_validate(dependencies.lead_assistance(state, config)).model_dump(mode="json")
+        updates = {"lead_assistance_history": [*state.get("lead_assistance_history", []), guidance],
+            "runtime_progress": {"consecutive_no_new_observations": 0, "status": "lead_guidance_received",
+                "notice": "Lead advice is not evidence; follow its scoped recovery plan with original sources. Counts and budget were not reset."},
+            "pending_action": None, "phase": "ready_for_model_decision"}
+        if guidance["disposition"] == "stop":
+            updates.update(phase="human_review_required", review_trigger="model_request", review_reason="lead_could_not_resolve_research_blockage")
+        return updates
+
+    graph.add_node("lead_assistance", consult_lead)
+    graph.add_conditional_edges("lead_assistance", route_after_tool, {"decide": "model_decide", "human_review": "human_review"})
     graph.add_node("initialize", initialize)
     graph.add_node("model_decide", model_decide)
     graph.add_node("execute_evidence", execute_evidence)
@@ -2355,6 +2412,7 @@ def build_specialist_agentic_state_graph(
         route_model_action,
         {
             "native_tool_batch": "execute_native_tools",
+            "lead_assistance": "lead_assistance",
             "request_evidence": "execute_evidence",
             "request_source": "execute_evidence",
             "request_finance": "execute_finance",

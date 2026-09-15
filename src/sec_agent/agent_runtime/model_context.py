@@ -135,7 +135,53 @@ def _repair_read_working_set(messages):
     return {index: result for index, result in latest.values()}
 
 
-def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False):
+def task_boundary_history(messages):
+    """Only an accepted research phase transition can release older source bodies.
+
+    All active-phase reads and material findings' originals survive together.
+    No inferred phase boundary, automatic summary, or change to stored messages.
+    """
+    boundary, note = -1, None
+    material_sources = set()
+    for index, message in enumerate(messages):
+        if not isinstance(message, ToolMessage) or message.name != "UpdateResearchStateAction" or message.status == "error":
+            continue
+        try:
+            body = json.loads(message.content)
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if isinstance(body, dict):
+            body = body.get("result", body)  # synchronous SDK feedback envelope
+        if not isinstance(body, dict):
+            continue
+        if body.get("accepted"):
+            material_sources.update(ref for f in body.get("working_state", {}).get("findings", []) for ref in f["source_ids"])
+        if body.get("accepted") and body.get("working_state", {}).get("phase_status") == "completed":
+            boundary, note = index, body["working_state"]
+    if boundary < 0:
+        return messages
+    retained = set(note["retain_source_ids"]) | material_sources
+    projected = deepcopy(list(messages))
+    calls = {c["id"]: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
+    for index, message in enumerate(messages):
+        if index >= boundary or not isinstance(message, ToolMessage) or message.status == "error" or message.name not in REREADABLE_TOOLS:
+            continue
+        try:
+            value = json.loads(message.content)
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if retained.intersection(_literal_reference_ids(value)):
+            continue
+        projected[index].content = _read_recovery_notice(message, calls.get(message.tool_call_id), saved_result_reader=False)
+        projected[index].artifact = None
+        projected[index].response_metadata = {**projected[index].response_metadata,
+            "context_editing": {"cleared": True, "reason": "completed_research_phase"}}
+    return projected
+
+
+def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False, policy="legacy_window"):
+    if policy == "task_boundary":
+        return task_boundary_history(messages)
     if trigger_tokens is None:
         return messages
     names = {call["id"]: call["name"] for m in messages if isinstance(m, AIMessage) for call in m.tool_calls}

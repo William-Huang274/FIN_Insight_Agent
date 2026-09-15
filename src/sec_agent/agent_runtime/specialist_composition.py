@@ -1039,6 +1039,7 @@ def _open_specialist_composition(
     subtask_runner=None,
     working_state_enabled=False,
     lead_assistance=None,
+    required_source_checks=(),
 ) -> Iterator[_OpenedSpecialistComposition]:
     try:
         with open_approved_data_composition(
@@ -1099,6 +1100,10 @@ def _open_specialist_composition(
                 body.update(task=task_data, collaboration_context=collaboration.model_dump(mode="json"),
                             agent_id=collaboration.target_agent_id if mode == "repair" else f"{mode}:{branch_id}:r{prior.task_revision}")
                 graph_input = _model_json(SpecialistAgenticInput, body, code="specialist_collaboration_input_invalid")
+            if required_source_checks:
+                body = graph_input.model_dump(mode="json")
+                body["required_source_checks"] = list(required_source_checks)
+                graph_input = _model_json(SpecialistAgenticInput, body, code="specialist_required_source_scope_invalid")
             task = graph_input.task
             def read_planning_source(selection):
                 # Same MCP lane, task identity, rights, cutoff and receipts as
@@ -1222,6 +1227,7 @@ def open_specialist_receipted_composition(
     subtask_runner=None,
     working_state_enabled=False,
     lead_assistance=None,
+    required_source_checks=(),
 ) -> Iterator[SpecialistReceiptedComposition]:
     """Open the same bounded graph for a trusted replay or provider turn port."""
 
@@ -1253,6 +1259,7 @@ def open_specialist_receipted_composition(
         subtask_runner=subtask_runner,
         working_state_enabled=working_state_enabled,
         lead_assistance=lead_assistance,
+        required_source_checks=required_source_checks,
     ) as opened:
         yield SpecialistReceiptedComposition(
             graph_input=opened.graph_input,

@@ -17,7 +17,7 @@ class TaskTarget(NoteModel):
 
 
 class TaskCoverage(TaskTarget):
-    criterion: str = Field(min_length=1, max_length=2000, description="Exact original assignment success criterion.")
+    criterion: str = Field(min_length=1, max_length=2000, description="Exact assignment success criterion or runtime required_source_checks criterion.")
     status: Literal["completed", "partial", "not_completed", "not_applicable"]
     explanation: str = Field(min_length=1, max_length=2000)
 
@@ -85,6 +85,7 @@ def task_outcome(state, *, assignment=None, error_type=None, cancelled=False):
         except ValueError:
             note_status = "invalid"
     criteria = list(assignment.get("success_criteria", []))
+    criteria.extend(c["criterion"] for c in state.get("required_source_checks", []) if c["criterion"] not in criteria)
     navigation = []
     if note:
         raw_claims = (artifact or {}).get("claims")

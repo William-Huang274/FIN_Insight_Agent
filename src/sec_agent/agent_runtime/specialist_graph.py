@@ -29,6 +29,7 @@ from .research_contracts import ProviderEvidenceIntent
 from .task_outcome import AuthorTaskNote
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
 from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools
+from .source_check_scope import RequiredSourceCheck, SOURCE_CHECK_GUIDANCE, source_check_progress, source_check_errors
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
 from sec_agent.research_foundation.source_quotes import contains_source_quote
@@ -94,9 +95,13 @@ class SpecialistAgenticInput(_StrictModel):
     # Trusted composition-root artifact handoff, never provider-supplied state.
     collaboration_context: dict[str, Any] | None = None
     task_context: dict[str, Any] | None = None
+    required_source_checks: tuple[RequiredSourceCheck, ...] = Field(default=(), max_length=24)
 
     @model_validator(mode="after")
     def validate_required_routes(self) -> "SpecialistAgenticInput":
+        criteria = [c.criterion for c in self.required_source_checks]
+        if len(criteria) != len(set(criteria)):
+            raise ValueError("required_source_check_criterion_duplicate")
         if len(self.required_route_obligation_ids) != len(
             set(self.required_route_obligation_ids)
         ):
@@ -877,6 +882,7 @@ class SpecialistAgenticState(TypedDict, total=False):
     max_tool_actions: int
     collaboration_context: dict[str, Any] | None
     task_context: dict[str, Any] | None
+    required_source_checks: list[dict[str, Any]]
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
@@ -1042,6 +1048,10 @@ def _model_request(
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
+    if state.get("required_source_checks"):
+        body["task_context"] = {**(body.get("task_context") or {}),
+            "source_check_guidance": SOURCE_CHECK_GUIDANCE,
+            "required_source_checks": source_check_progress(state["required_source_checks"], notebook.model_dump(mode="json"))}
     if allow_delegation and not collaboration:
         allowed_actions.extend(["delegate_subtasks", "read_delegated_work"])
         body["task_context"] = {**(body.get("task_context") or {}), "delegation_guidance": DELEGATION_GUIDANCE,
@@ -2270,6 +2280,7 @@ def build_specialist_agentic_state_graph(
         else:
             errors = _submission_errors(action, notebook,
                 enforce_case_route_requirements=dependencies.enforce_case_route_requirements)
+            errors += tuple(source_check_errors(state.get("required_source_checks", []), notebook.model_dump(mode="json"), action))
         if errors:
             feedback = _feedback(
                 "specialist_submission_reference_validation_failed",

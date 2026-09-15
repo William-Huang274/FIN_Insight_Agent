@@ -382,13 +382,15 @@ class ResearchTaskSpec(_StrictFrozenModel):
 
     task_id: str = Field(pattern=_REF_PATTERN)
     owner_role: str = Field(pattern=_REF_PATTERN)
-    objective: str = Field(min_length=12, max_length=4_000)
+    objective: str = Field(min_length=12, max_length=4_000,
+        description="Question to verify, not a prescribed conclusion. Any preliminary fact retains its source, period, entity, unit and actual/guidance status; relationships across facts remain hypotheses until checked. The specialist may correct the Lead using original evidence.")
     dependency_ids: tuple[str, ...] = Field(default=(), max_length=64)
     coverage_obligation_ids: tuple[str, ...] = Field(min_length=1, max_length=32,
         description="Semantic coverage IDs from the disclosed scope, never physical route IDs. "
                     "For Dell Lead research use exactly one branch_id from required_branch_ids "
                     "(e.g. Q2_DEMAND_QUALITY), not route:...:required-reviewed.")
-    success_criteria: tuple[str, ...] = Field(min_length=1, max_length=32)
+    success_criteria: tuple[str, ...] = Field(min_length=1, max_length=32,
+        description="Required deliverables to check individually against observed evidence/calculation receipts. State unresolved work explicitly; a readable paper or exhausted budget is not completion.")
     requested_capability_refs: tuple[str, ...] = Field(min_length=1, max_length=32)
     required_authority_refs: tuple[str, ...] = Field(default=(), max_length=32)
     expected_output_kinds: tuple[

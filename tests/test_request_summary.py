@@ -103,6 +103,27 @@ def test_summary_failure_has_no_native_automatic_retry():
     asyncio.run(run())
 
 
+def test_summary_retains_overall_task_latest_task_and_last_public_operation():
+    async def run():
+        rows = history()
+        rows.insert(1, HumanMessage(id='specific-task', content='Repair C2 source binding only; preserve C1 and approved calculations.'))
+        rows[-2].tool_calls[0]['args']['source_id'] = 'PASSAGE::exact::abcdef1234567890'
+        rows.append(HumanMessage(id='continue-task', content='Continue this repair.'))
+        original = deepcopy(rows)
+        middleware = policy([], trigger=200, keep=1)
+        update = await middleware.abefore_model({'messages': rows}, None)
+        sent = middleware.projected_messages({'messages': rows, **update})
+        assert sent[0] == rows[0] and sent[-1] == rows[-1]
+        assert rows[1] in sent
+        note = update['request_summary']['message']['content']
+        assert 'Last public operation before compaction' in note
+        assert 'PASSAGE::exact::abcdef1234567890' in note
+        assert 'private thought' not in note
+        assert 'recover it before dependent work' in note
+        assert rows == original
+    asyncio.run(run())
+
+
 def test_exhausted_summary_allowance_preserves_continuation_without_another_summary():
     async def run():
         calls, rows = [], history()

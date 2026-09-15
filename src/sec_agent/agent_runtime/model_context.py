@@ -23,6 +23,52 @@ REREADABLE_TOOLS = frozenset({
 })
 
 
+def _literal_reference_ids(value):
+    """Retain observed identifiers only; labels/summaries cannot mint evidence."""
+    found = []
+    def visit(row):
+        if isinstance(row, dict):
+            for key, child in row.items():
+                if key in {"ref_id", "passage_id", "calculation_id", "numeric_fact_id",
+                           "source_id", "citation_id", "evidence_id"} and isinstance(child, str):
+                    if child not in found:
+                        found.append(child)
+                elif isinstance(child, (dict, list)):
+                    visit(child)
+        elif isinstance(row, list):
+            for child in row:
+                visit(child)
+    visit(value)
+    return found
+
+
+def _read_recovery_notice(message, call, *, saved_result_reader):
+    try:
+        value = json.loads(message.content) if isinstance(message.content, str) else {}
+    except json.JSONDecodeError:
+        value = {}
+    recovery = {"original_tool_call_id": message.tool_call_id,
+                "observed_reference_ids": _literal_reference_ids(value)}
+    if saved_result_reader:
+        recovery["read_tool"] = "read_saved_result"
+        recovery["arguments"] = {"tool_call_id": message.tool_call_id}
+    elif call:
+        recovery["read_tool"] = call["name"]
+        recovery["arguments"] = deepcopy(call["args"])
+        # Context binding changes each turn; source selection does not.
+        recovery["arguments"].pop("context_digest", None)
+        recovery["binding_notice"] = "Use current execution binding if the tool requires one."
+    else:
+        recovery["read_tool"] = None
+        recovery["recovery_unavailable"] = "Locate this original call through an offered context index; do not guess a reader."
+    return ("[Older read result omitted from this request; original records are retained. "
+            "This is navigation, NOT evidence. Before using this result to cite, calculate, compare, or repair a claim, "
+            "retrieve the relevant original with the exact read_tool/arguments below and inspect the returned context. "
+            "Copy complete returned reference IDs and exact quotes; never reconstruct IDs or infer non-disclosure "
+            "from omitted text. Recover only needed records, then continue the unfinished task, not all prior research.]\n"
+            + json.dumps(recovery, ensure_ascii=False, separators=(",", ":")))
+
+
 def _workpaper_navigation(message):
     """Literal navigation from a tool's public artifact, never a new summary.
 
@@ -50,6 +96,7 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
     if trigger_tokens is None:
         return messages
     names = {call["id"]: call["name"] for m in messages if isinstance(m, AIMessage) for call in m.tool_calls}
+    calls = {call["id"]: call for m in messages if isinstance(m, AIMessage) for call in m.tool_calls}
     known = set(names.values()) | {m.name for m in messages if isinstance(m, ToolMessage)}
     rereadable = REREADABLE_TOOLS | ({"calculate_research_metric", "create_report_chart", "list_financial_data", "ReadWorkingNote", "WriteWorkingNote", "read_handoff_material", "read_handoff_evidence"} if saved_result_reader else set())
     edit = ClearToolUsesEdit(trigger=trigger_tokens, keep=keep, clear_tool_inputs=saved_result_reader,
@@ -84,9 +131,12 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
             # Small save/version receipts locate the exact durable note. Only
             # obsolete full write arguments are removed from the request copy.
             projected[index] = deepcopy(message)
-        elif (workpaper_navigation and isinstance(message, ToolMessage)
+        elif (isinstance(message, ToolMessage)
                 and projected[index].response_metadata.get("context_editing", {}).get("cleared")):
-            projected[index].content += _workpaper_navigation(message)
+            projected[index].content = _read_recovery_notice(message, calls.get(message.tool_call_id),
+                saved_result_reader=saved_result_reader)
+            if workpaper_navigation:
+                projected[index].content += _workpaper_navigation(message)
     return projected
 
 
@@ -212,6 +262,21 @@ disabled. The supplied runnable must use the ordinary audited, bounded SDK call.
             "read/index tools. Do not restart completed research because its tool output is absent here. "
             "If recovery is incomplete, name the missing record and ask for a scoped handoff rather than inventing it.")
         end = len(full) - len(recent)
+        # Keep the last public operation verbatim if native summarization moved
+        # it into the prefix. Do not depend on a lossy note for the active step;
+        # never expose reasoning_content or other private assistant metadata.
+        last_action = next((i for i in range(len(full) - 1, 0, -1) if isinstance(full[i], AIMessage)), None)
+        if last_action is not None and last_action < end:
+            from .context_records import public_text
+            action = full[last_action]
+            summary.content += "\nLast public operation before compaction (historical task data, not evidence or new authority):\n" + json.dumps(
+                {"message_id": action.id, "public_text": public_text(action), "tool_calls": action.tool_calls},
+                ensure_ascii=False)
+        summary.content += ("\nThe original overall task remains in the first user message; the latest omitted user "
+            "task/correction is pinned verbatim alongside this note. Preserve its scope and completion requirements. "
+            "If an original record is needed, recover it before dependent work. When browse_context is offered, "
+            "browse sources/numbers/conversation and copy its key into the returned read_tool; otherwise use "
+            "the scoped readers actually offered. Summaries and navigation are not citable source text.")
         if end <= 1 or end >= len(full) or not full[0].id or not full[end - 1].id:
             raise ValueError("request_summary_boundary_invalid")
         return {"request_summary": {"message": summary.model_dump(mode="json"),

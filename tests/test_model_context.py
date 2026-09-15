@@ -52,6 +52,37 @@ def test_failed_reader_does_not_pin_all_successful_results_from_same_tool():
     assert project_tool_history(rows) is rows
 
 
+def test_cleared_source_has_exact_recovery_arguments_and_complete_ids_without_raw_body():
+    selection = {'operation': 'read', 'source_space': 'uploads', 'document_id': 'UPLOAD::fixture', 'node_id': 'CHUNK::fixture:1:4'}
+    rows = [HumanMessage(content='Overall task: compare periods, retaining units and source identity.'),
+        HumanMessage(content='Current task: repair C2 only; retain C1 and all correct calculations.'),
+        AIMessage(content='', tool_calls=[{'name': 'RequestSourceAction', 'id': 'source-read',
+            'args': {'selection': selection, 'reason_summary': 'Inspect C2 original', 'context_digest': 'a' * 64}, 'type': 'tool_call'}]),
+        ToolMessage(name='RequestSourceAction', tool_call_id='source-read', content=json.dumps({
+            'result': {'items': [{'passage_id': 'PASSAGE::CHUNK::fixture:1:4::abcdef1234567890',
+                'passage': 'Original private source body ' * 200}]}})),
+        AIMessage(content='', tool_calls=[{'name': 'RequestSourceAction', 'id': 'latest',
+            'args': {'selection': {**selection, 'node_id': 'CHUNK::fixture:1:5'}}, 'type': 'tool_call'}]),
+        ToolMessage(name='RequestSourceAction', tool_call_id='latest', content='Latest unread result; retain exactly.')]
+    before = deepcopy(rows)
+    for saved_reader in [False, True]:
+        sent = project_tool_history(rows, trigger_tokens=1, keep=1, saved_result_reader=saved_reader)
+        assert sent[:2] == rows[:2] and sent[-2:] == rows[-2:]
+        text = sent[3].content
+        recovery = json.loads(text.split('\n', 1)[1])
+        assert recovery['observed_reference_ids'] == ['PASSAGE::CHUNK::fixture:1:4::abcdef1234567890']
+        assert 'Original private source body' not in text
+        assert 'Before using this result' in text and 'NOT evidence' in text
+        if saved_reader:
+            assert recovery['read_tool'] == 'read_saved_result'
+            assert recovery['arguments'] == {'tool_call_id': 'source-read'}
+        else:
+            assert recovery['read_tool'] == 'RequestSourceAction'
+            assert recovery['arguments']['selection'] == selection
+            assert 'context_digest' not in recovery['arguments']
+        assert rows == before
+
+
 def test_calculation_receipts_clear_only_when_original_reader_is_offered():
     rows=history()
     old=deepcopy(rows)

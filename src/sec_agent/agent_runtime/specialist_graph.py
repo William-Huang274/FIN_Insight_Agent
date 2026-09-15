@@ -27,6 +27,7 @@ from pydantic import (
 
 from .research_contracts import ProviderEvidenceIntent
 from .task_outcome import AuthorTaskNote
+from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
 from sec_agent.research_foundation.source_quotes import contains_source_quote
@@ -432,6 +433,8 @@ SpecialistAction = Annotated[
     | RequestFinanceAction
     | RequestCalculationAction
     | RequestHumanReviewAction
+    | DelegateSubtasksAction
+    | ReadDelegatedWorkAction
     | SubmitWorkpaperAction
     | SubmitReviewAction,
     # The review terminal is enabled only by a trusted collaboration profile.
@@ -874,6 +877,7 @@ class SpecialistAgenticState(TypedDict, total=False):
     tool_results: list[dict[str, Any]]
     # Native-state provenance for archived turns; not model-editable input.
     model_turn_invocations: dict[str, str]
+    delegated_work: dict[str, Any]
     final_submission: dict[str, Any] | None
     last_submission_attempt: dict[str, Any] | None
     human_review_handoff: dict[str, Any] | None
@@ -898,6 +902,7 @@ class SpecialistAgenticDependencies:
     # Real model qualification is still open. Production uses the existing full
     # submission/error-feedback path; only isolated qualification opts in.
     allow_workpaper_field_edits: bool = False
+    subtask_runner: Callable | None = None
 
 
 _ACTION_ADAPTER = TypeAdapter(SpecialistAction)
@@ -972,6 +977,7 @@ def _model_request(
     notebook: SpecialistNotebook,
     allow_workpaper_field_edits: bool = False,
     continuation_guidance: str | None = None,
+    allow_delegation: bool = False,
 ) -> dict[str, Any]:
     l0 = _validate_model_json(
         SpecialistL0Context,
@@ -1028,6 +1034,12 @@ def _model_request(
         body["collaboration_context"] = collaboration
     if state.get("task_context") is not None:
         body["task_context"] = state["task_context"]
+    if allow_delegation and not collaboration:
+        allowed_actions.extend(["delegate_subtasks", "read_delegated_work"])
+        body["task_context"] = {**(body.get("task_context") or {}), "delegation_guidance": DELEGATION_GUIDANCE,
+            "delegated_work": [{"subtask_id": key, "objective": row["assignment"]["objective"],
+                "phase": row["result"].get("phase"), "outcome": row["outcome"]}
+                for key, row in state.get("delegated_work", {}).items()]}
     if continuation_guidance:
         # A new native invocation can add an analyst instruction while retaining
         # the preceding checkpoint. This is input, never a source or authority.
@@ -1443,6 +1455,7 @@ def build_specialist_agentic_state_graph(
                 "max_tool_actions": prior.tool_action_count + validated.max_tool_actions,
                 "last_submission_attempt": _jsonable(recovery_state.get("last_submission_attempt")),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
+                "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "model_turn_invocations": {
                     str(record.turn_index): recovery_state.get("model_turn_invocations", {}).get(
                         str(record.turn_index), recovery_state["run_invocation_id"])
@@ -1484,6 +1497,7 @@ def build_specialist_agentic_state_graph(
             }
         request = _model_request(state=state, notebook=notebook,
             allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
+            allow_delegation=dependencies.subtask_runner is not None,
             continuation_guidance=config.get("configurable", {}).get("finsight_continuation_guidance"))
         try:
             raw = dependencies.model_turn(request)
@@ -1930,6 +1944,8 @@ def build_specialist_agentic_state_graph(
             RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
             SubmitWorkpaperAction, ReviseWorkpaperAction, SubmitReviewAction, RequestHumanReviewAction,
         )}
+        if dependencies.subtask_runner is not None:
+            models.update({m.__name__: m for m in (DelegateSubtasksAction, ReadDelegatedWorkAction)})
         from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, execute_memory_tool
         if memory_enabled():
             models.update(WORKING_MEMORY_MODELS)
@@ -2031,7 +2047,8 @@ def build_specialist_agentic_state_graph(
                 return reject("specialist_model_turn_context_binding_invalid",
                     "Copy the current context_digest exactly; this call was not dispatched.")
             if action.action not in _model_request(state=working, notebook=before,
-                    allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits)["allowed_actions"]:
+                    allow_workpaper_field_edits=dependencies.allow_workpaper_field_edits,
+                    allow_delegation=dependencies.subtask_runner is not None)["allowed_actions"]:
                 return reject("specialist_action_not_available_in_current_runtime", "This action is not available for your assigned role.")
             if isinstance(action, RequestSourceAction) and not l0.source_read_enabled:
                 return reject("specialist_action_not_available_in_current_runtime", "Source reading is not enabled in this runtime profile.")
@@ -2053,6 +2070,61 @@ def build_specialist_agentic_state_graph(
                 except (ValueError, KeyError) as exc:
                     return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
             working["pending_action"] = action.model_dump(mode="json")
+            if isinstance(action, (DelegateSubtasksAction, ReadDelegatedWorkAction)):
+                saved = dict(working.get("delegated_work", {}))
+                digest = _semantic_action_digest(action)
+                if before.tool_action_count >= state["max_tool_actions"]:
+                    return reject("specialist_delegation_tool_limit", "No additional work was executed; preserve saved results.")
+                if isinstance(action, DelegateSubtasksAction):
+                    ids = [t.subtask_id for t in action.tasks]
+                    if len(ids) != len(set(ids)) or any(k in saved for k in ids) or len(saved) + len(ids) > 4:
+                        return reject("specialist_subtask_duplicate_or_limit", "Read saved results; no fresh identity retry of the same unfinished investigation.")
+                    if any(t.objective.strip() == state["task"]["objective"].strip() for t in action.tasks):
+                        return reject("specialist_subtask_whole_assignment", "Delegate a bounded subquestion; retain your domain integration responsibility.")
+                    from .task_outcome import task_outcome
+                    for spec in action.tasks:
+                        result = dict(dependencies.subtask_runner(spec.model_dump(mode="json"), state, config))
+                        for key in ("case_id", "snapshot_id", "research_as_of", "foundation_digest"):
+                            if result["task"][key] != state["task"][key]:
+                                raise SpecialistAgenticGraphError("delegated_source_scope_mismatch")
+                        for key in ("owner_data_gate_decision_digest", "source_route_catalog_digest", "inventory_snapshot_digest"):
+                            if result["notebook"][key] != before.model_dump()[key]:
+                                raise SpecialistAgenticGraphError("delegated_data_scope_mismatch")
+                        saved[spec.subtask_id] = {"assignment": spec.model_dump(mode="json"), "result": result,
+                            "outcome": task_outcome(result)}
+                        working["delegated_work"] = saved
+                    payload = {"tasks": [{"subtask_id": key, "outcome": saved[key]["outcome"]} for key in ids],
+                        "next": "ReadDelegatedWorkAction provides saved workpapers and original source observations. No helper private history is returned."}
+                else:
+                    if action.subtask_id not in saved:
+                        return reject("specialist_subtask_unknown", "Copy a subtask_id from the actual delegation result.")
+                    child = saved[action.subtask_id]["result"]
+                    from .workpaper_review_graph import validate_workpaper_state
+                    if child.get("phase") != "specialist_submission_accepted":
+                        payload = {"outcome": saved[action.subtask_id]["outcome"], "workpaper": None}
+                    else:
+                        child = validate_workpaper_state(child)
+                        observations = child["notebook"]["observations"]
+                        if action.section == "workpaper":
+                            payload = {"workpaper": child["final_submission"],
+                                "sources": [{"source_observation_ref": obs["observation_digest"], "references": obs["references"]}
+                                    for obs in observations if obs["status"] == "success"],
+                                "notice": "Author analysis is not evidence. Read needed source observations before citing; source records keep their original identity."}
+                        else:
+                            observation = next((obs for obs in observations if obs["observation_digest"] == action.source_observation_ref
+                                and obs["status"] == "success"), None)
+                            if observation is None:
+                                return reject("specialist_subtask_source_unknown", "Copy a source_observation_ref from that helper's source catalog.")
+                            source = SpecialistToolObservation.model_validate_json(json.dumps(observation))
+                            if source.observation_digest not in {o.observation_digest for o in before.observations}:
+                                before = _replace_notebook(before, observations=(*before.observations, source))
+                            payload = {"references": observation["references"], "content": observation["content"],
+                                "notice": "Original successful source observation restored; no new query, authority or route completion is inferred."}
+                if digest not in before.dispatched_action_digests:
+                    before = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
+                        dispatched_action_digests=(*before.dispatched_action_digests, digest))
+                working.update(notebook=before.model_dump(mode="json"), pending_action=None, phase="tool_observation_ready")
+                return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps(payload, ensure_ascii=False))
             if isinstance(action, RequestResearchMethodAction):
                 update, message = execute_method(working, tool_call_id=call.id)
                 working.update(update)

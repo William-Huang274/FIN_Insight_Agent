@@ -78,7 +78,7 @@ def test_legacy_synthesis_without_version_basis_requires_reassessment():
     assert view['previous_synthesis_status'] == 'requires_reassessment_against_current_papers'
 
 
-async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False, depth=None):
+async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False, depth=None, hierarchical=False, unchanged_repair=False, discovered_issue=False):
     artifacts = artifact_fixture()
     if depth == "focused":
         artifacts = CaseArtifacts([_worker_result(_task("first"), _new_worker_fixture())])
@@ -89,9 +89,25 @@ async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=Fals
             sequence.append((role, paper_id, correction_round))
             ref = "P01:" + current.read_paper("P01")["claims"][0]["claim_id"]
             prose = "Deterministic cited research plumbing fixture. This is a synthetic test of native data handoff, not a Dell financial conclusion. " * 3 + f"[{ref}]"
-            output_role = "verifier" if role.endswith("verifier") else role
-            if role == "repair":
+            output_role = "decision" if role == "lead_decision" else "verifier" if role.endswith("verifier") else role
+            if role == "lead_decision":
+                dispositions = [{"paper_id": pid, "finding_id": f["finding_id"], "disposition": "repair",
+                    "rationale": "Synthetic targeted correction based on the supplied original finding, not financial approval.",
+                    "requested_change": "Recheck only the affected fixture paper and associated prose.",
+                    "expected_progress": "A source-bound correction or explicit unresolved response.", "citation_ids": []}
+                    for pid, rows in (feedback or {}).items() for f in rows]
+                replies = [[call("submit_lead_issue_decision", {"decision": {"summary": "Synthetic Lead disposition preserves unrelated research and original findings.",
+                    "action": "repair" if dispositions else "synthesize", "dispositions": dispositions}}, "decide")]]
+                if discovered_issue and correction_round == 0:
+                    value = replies[0][0]["args"]["decision"]
+                    value["action"] = "repair"
+                    value["new_findings"] = [{"paper_id": "P02", "finding_id": "lead_new_scope", "disposition": "repair",
+                        "rationale": "Exact fixture text requires a scoped clarification discovered by the Lead.",
+                        "requested_change": "Clarify the scope in the fixture prose.", "expected_progress": "The affected prose states the limitation."}]
+            elif role == "repair":
                 revision = revision_fixture(current, paper_id)
+                if not unchanged_repair:
+                    revision["narrative_markdown"] += f"\n\nFixture amendment in correction round {correction_round}; not a financial quality assertion."
                 revision["finding_responses"] = [{"finding_id": f["finding_id"], "disposition": "corrected",
                     "explanation": "A deterministic author amendment with real fixture sources, not semantic verification."} for f in feedback]
                 replies = [[call("submit_paper_revision", {"revision": revision}, "revision")]]
@@ -116,6 +132,7 @@ async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=Fals
                 report_revision=role == "writer" and revising_report, require_responsibility=role.endswith("verifier"))
         saver = InMemorySaver()
         graph = build_research_convergence_graph(artifacts=artifacts, question="Synthetic question on growth quality and realization",
+            hierarchical=hierarchical,
             feedback=initial_feedback or {}, research_review_context={"counter": independent_review(), "verifier": independent_review()},
             make_agent=make_agent, existing_state=existing_state, human_feedback="Explicit fixture revision request" if existing_state else None,
             execution_plan={"depth": depth, "rationale": "Synthetic scope-specific route qualification, not a model's financial judgment.",

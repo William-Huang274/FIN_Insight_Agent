@@ -100,7 +100,7 @@ def _stage(actor, event, **details):
                         "recorded_at": datetime.now(timezone.utc).isoformat(), **details})
 
 
-def build_research_session_graph(*, research, review, converge, writer, verifier, quick_writer=None, revise_research=None):
+def build_research_session_graph(*, research, review, converge, writer, verifier, quick_writer=None, revise_research=None, hierarchical=False):
     """One fresh research request -> real artifacts -> review -> report -> HITL.
 
     Existing report session nodes handle subsequent ask/revise/accept actions;
@@ -279,7 +279,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     graph.add_edge(START, "research")
     def after_research(state):
         plan = (state.get("research_handoff") or {}).get("execution_plan")
-        if state["phase"] == "research_reviewing" and plan and plan["depth"] == "focused":
+        if state["phase"] == "research_reviewing" and plan and plan["depth"] == "focused" and not hierarchical:
             return "convergence"
         return "initialize" if state["phase"] == "single_agent_unreviewed" else "case_review" if state["phase"] == "research_reviewing" else "research_attention"
     graph.add_conditional_edges("research", after_research)

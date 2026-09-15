@@ -30,6 +30,7 @@ from pydantic import (
 )
 
 from sec_agent.research_foundation.research_methods import METHOD_TOOL_GUIDANCE
+from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction
 
 from .specialist_graph import (
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestHumanReviewAction,
@@ -545,6 +546,7 @@ _NATIVE_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     "do not replace the tool call with a plain-text final answer."
 )
 _NATIVE_SPECIALIST_TOOLS = {model.__name__: model for model in (
+    DelegateSubtasksAction, ReadDelegatedWorkAction,
     RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
     SubmitWorkpaperAction, ReviseWorkpaperAction, RequestHumanReviewAction,
 )}

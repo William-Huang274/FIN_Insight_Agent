@@ -214,16 +214,23 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     "tasks": [{"task_id": task_id, "owner_role": "specialist", "objective": request["question"], "dependency_ids": []}],
                     "task_results": [{"task_id": task_id, "status": "submitted" if submitted else "needs_attention", "agent_state": output}],
                     "lead_handoff": None, "stop_reason": None if submitted else "single_agent_no_submission"}
-            def worker(task, dependencies, child_config):
+            def worker(task, dependencies, child_config, *, helper=False):
                 # Native checkpoints can retain a child queued by an older
                 # planner. Recheck current continuation authority before any
                 # adapter/provider call, not just when creating a new task.
-                if seeds and task['task_id'] not in {t['task_id'] for t in request.get('unfinished_tasks', [])}:
+                if seeds and not helper and task['task_id'] not in {t['task_id'] for t in request.get('unfinished_tasks', [])}:
                     raise ValueError('continuation_queued_task_outside_original_scope')
                 task_event = {"kind": "task", "task_id": task["task_id"], "actor": task["owner_role"],
                     "objective": task["objective"], "dependency_ids": task["dependency_ids"],
                     "recorded_at": datetime.now(timezone.utc).isoformat()}
                 emit({**task_event, "event": "started", "status": "running"})
+                def run_subtask(spec, parent_state, nested_config):
+                    nested_task = {**task, "task_id": task["task_id"] + "/sub/" + spec["subtask_id"],
+                        "objective": spec["objective"], "success_criteria": spec["success_criteria"], "dependency_ids": []}
+                    # Separate native specialist context; no entire parent question,
+                    # notebook or sibling message history is copied into the helper.
+                    nested_task["objective"] += "\n来源导航/待查方向：" + json.dumps(spec["source_hints"], ensure_ascii=False)
+                    return worker(nested_task, {}, nested_config, helper=True)
                 # A fresh provider history and read-only MCP lifecycle per child.
                 adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
                     audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
@@ -237,7 +244,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                             environment=environment, source_read_enabled=True, live_web_read_enabled=True,
                             max_model_turns=specialist_limits["model_calls"], max_tool_actions=specialist_limits["tool_calls"],
                             recovery_state=recoveries.get(task["task_id"]),
-                            research_task=task, dependency_workpapers=dependencies, research_question=request["question"]) as child:
+                            research_task=task, dependency_workpapers=dependencies,
+                            subtask_runner=None if helper else run_subtask,
+                            research_question=(task["objective"] + "\n你负责这个独立子问题；提交前自检数字、引用及正文的一致性，报告限制，不再委派。") if helper else request["question"]) as child:
                         output = child.graph.invoke(child.graph_input.model_dump(mode="json"), {**child_config, "recursion_limit": 200})
                 except Exception as exc:
                     from .task_outcome import task_outcome
@@ -252,6 +261,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                       "recorded_at": datetime.now(timezone.utc).isoformat()})
                 return output
             graph = build_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],
+                hierarchical=True,
                 source_reader=bootstrap.source_reader,
                 branch_catalog=branches, allowed_branch_ids=tuple(b["branch_id"] for b in branches), seed_workpapers=seeds,
                 model_turn=cancellable_model_turn(lead_adapter.lead_research_turn, cancelled), run_child=worker,
@@ -293,7 +303,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             branch = next((p["branch_id"] for p in artifacts.catalog()["papers"] if p["paper_id"] == paper_id), None)
             if branch not in execution.branch_ids:
                 raise ValueError("所需修订超出所选研究方向；请扩大范围后发起新运行")
-        method_instructions = studio.instructions(role) if studio else ""
+        profile_role = "synthesis" if role == "lead_decision" else role
+        method_instructions = studio.instructions(profile_role) if studio else ""
         async def report_progress(message: str):
             emit({"kind": "stage", "actor": actor_override or ("author_" + paper_id if paper_id else role),
                 "event": "progress", "objective": message})
@@ -302,10 +313,15 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             description="Send a concise public progress update in the user's language (Chinese for a Chinese question) at a meaningful change of work. Do not expose private chain of thought, repeat every tool result, or claim unverified completion.", args_schema=ResearchProgress)
         tools = [*tools, progress_tool]
         method_instructions += "\nUse report_research_progress to briefly tell the researcher your approach before substantial work, and significant findings or a changed plan. Keep it concise and public; do not narrate hidden reasoning or call it after every tool."
-        model_profile, basis, limits = model_values(role)
+        model_profile, basis, limits = model_values(profile_role)
+        if role == "lead_decision":
+            basis = basis.model_copy(update={
+                "node_purpose": "Research Lead inspects current paper versions and independent findings before final judgment; assign targeted repairs, substantiate disagreements, discover missed issues or stop unresolved work.",
+                "required_outputs": ("One disposition per original finding and explicit new findings, responsible papers, source-bound reasons, requested changes and expected progress; no final report or automatic acceptance.",),
+                "input_scale": "Current question, compact version/issue navigation, independent findings, and current papers/original sources read on demand; no specialist private histories."})
         audit = CaseModelAudit(actor=actor_override or ("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True,
-            dispatch_guard=budget_scope.guard(role, model_profile) if budget_scope else None, source_access_check=source_access_check)
+            dispatch_guard=budget_scope.guard(profile_role, model_profile) if budget_scope else None, source_access_check=source_access_check)
         if any(t.name == "consult_research_specialist" for t in tools):
             from langchain.agents.middleware import ToolCallLimitMiddleware
             audit.extra_middlewares = [ToolCallLimitMiddleware(tool_name="consult_research_specialist", run_limit=2, exit_behavior="error")]
@@ -327,7 +343,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit,
                 method_instructions=method_instructions)
         output_role = ("verifier" if role in {"report_verifier", "research_verifier"} else "writer" if role in {"writer", "quick_writer"}
-                       else "synthesis" if role == "synthesis" else "repair")
+                       else "synthesis" if role == "synthesis" else "decision" if role == "lead_decision" else "repair")
         return build_case_output_agent(role=output_role, model=model, tools=tools, artifacts=artifacts,
             feedback=feedback, paper_id=paper_id, limits=limits, audit=audit, report_revision=interactive or revising,
             allow_answers=interactive and output_role == "writer", answer_only=role == "quick_writer",
@@ -350,6 +366,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 return native_agent(role, tools, current, feedback=feedback, paper_id=paper_id,
                     revising=role == "writer" and revising_report)
             graph = build_research_convergence_graph(artifacts=artifacts, question=state["question"], feedback=state["feedback"],
+                hierarchical=True, max_correction_rounds=2,
                 make_agent=make_agent, max_parallel_authors=profile["max_parallel_tasks"],
                 research_review_context={**{r: state.get("case_review", {})[r]["review"] for r in ("counter", "verifier") if r in state.get("case_review", {})},
                     "lead_handoff": state.get("research_handoff"),
@@ -416,7 +433,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 raise
         return RunnableLambda(invoke)
 
-    return {"research": guarded("research", research), "review": guarded("review", review), "converge": guarded("convergence", converge),
+    return {"hierarchical": True, "research": guarded("research", research), "review": guarded("review", review), "converge": guarded("convergence", converge),
             "revise_research": guarded("research_revision", revise_research), "writer": interactive("writer"),
             "verifier": interactive("report_verifier"), "quick_writer": interactive("quick_writer")}
 

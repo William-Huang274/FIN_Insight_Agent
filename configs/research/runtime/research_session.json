@@ -6,7 +6,9 @@
   "context_editing": {
     "policy": "task_boundary",
     "trigger_tokens": 16000,
-    "keep": 2
+    "keep": 2,
+    "checkpoint_trigger_tokens": 140000,
+    "checkpoint_reserve_tokens": 8192
   },
   "context_summarization": {
     "enabled": false,

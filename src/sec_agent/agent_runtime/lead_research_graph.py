@@ -517,7 +517,8 @@ def build_lead_research_graph(
             if (row["agent_state"].get("human_review_handoff") or {}).get("trigger")
             in {"model_execution_failure", "model_turn_ceiling", "tool_action_ceiling"}
             or row["agent_state"].get("review_reason") in {
-                "repeated_no_progress_after_lead_assistance", "lead_could_not_resolve_research_blockage"}]
+                "repeated_no_progress_after_lead_assistance", "lead_could_not_resolve_research_blockage",
+                "research_context_checkpoint_unresolved"}]
         return {"tool_results": replies,
                 "phase": "research_needs_attention" if execution_failures else "lead_observing",
                 "stop_reason": "delegated_execution_failure_requires_new_attempt" if execution_failures else None,

@@ -33,6 +33,11 @@ def _literal_reference_ids(value):
                            "source_id", "citation_id", "evidence_id"} and isinstance(child, str):
                     if child not in found:
                         found.append(child)
+                elif key in {"source_ids", "passage_ids", "calculation_ids", "numeric_fact_ids", "fact_ids",
+                             "citation_ids", "evidence_ids"} and isinstance(child, (list, tuple)):
+                    found.extend(item for item in child if isinstance(item, str) and item not in found)
+                elif key == "citation_quotes" and isinstance(child, dict):
+                    found.extend(item for item in child if item not in found)
                 elif isinstance(child, (dict, list)):
                     visit(child)
         elif isinstance(row, list):
@@ -136,14 +141,19 @@ def _repair_read_working_set(messages):
 
 
 def task_boundary_history(messages):
-    """Only an accepted research phase transition can release older source bodies.
+    """Accepted phase transitions or author checkpoints release old source bodies.
 
     All active-phase reads and material findings' originals survive together.
-    No inferred phase boundary, automatic summary, or change to stored messages.
+    No inferred phase boundary, unaccepted summary, or change to stored messages.
     """
-    boundary, note = -1, None
+    boundary, note, checkpoint = -1, None, False
     material_sources = set()
     for index, message in enumerate(messages):
+        if isinstance(message, AIMessage):
+            # Numerical operands and draft citations must not depend on whether
+            # an author remembered to repeat them in its working-state note.
+            for call in message.tool_calls:
+                material_sources.update(_literal_reference_ids(call.get("args", {})))
         if not isinstance(message, ToolMessage) or message.name != "UpdateResearchStateAction" or message.status == "error":
             continue
         try:
@@ -156,13 +166,19 @@ def task_boundary_history(messages):
             continue
         if body.get("accepted"):
             material_sources.update(ref for f in body.get("working_state", {}).get("findings", []) for ref in f["source_ids"])
-        if body.get("accepted") and body.get("working_state", {}).get("phase_status") == "completed":
+            material_sources.update(ref for q in body.get("working_state", {}).get("resolved_questions", []) for ref in q["source_ids"])
+        if body.get("accepted") and (body.get("working_state", {}).get("phase_status") == "completed" or body.get("checkpoint") is True):
             boundary, note = index, body["working_state"]
+            checkpoint = body.get("checkpoint") is True
     if boundary < 0:
         return messages
     retained = set(note["retain_source_ids"]) | material_sources
     projected = deepcopy(list(messages))
     calls = {c["id"]: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
+    # A checkpoint response must not immediately evict the preceding read batch:
+    # the model may still need to compare it when resuming the unfinished step.
+    last_read = max((i for i, m in enumerate(messages[:boundary]) if isinstance(m, AIMessage)
+        and any(c["name"] in REREADABLE_TOOLS for c in m.tool_calls)), default=boundary)
     for index, message in enumerate(messages):
         if index >= boundary or not isinstance(message, ToolMessage) or message.status == "error" or message.name not in REREADABLE_TOOLS:
             continue
@@ -170,13 +186,98 @@ def task_boundary_history(messages):
             value = json.loads(message.content)
         except (TypeError, json.JSONDecodeError):
             continue
-        if retained.intersection(_literal_reference_ids(value)):
+        result = value.get("result", value) if isinstance(value, dict) else {}
+        if isinstance(result, dict) and (result.get("failure") or result.get("error") or any(
+                isinstance(o, dict) and o.get("status") != "success" for o in result.get("observations", []))):
+            continue
+        if retained.intersection(_literal_reference_ids(result)):
+            continue
+        if checkpoint and index > last_read:
             continue
         projected[index].content = _read_recovery_notice(message, calls.get(message.tool_call_id), saved_result_reader=False)
+        if checkpoint and isinstance(value, dict) and isinstance(value.get("current_context"), dict):
+            original_context = {k: v for k, v in value["current_context"].items() if k not in {"progress", "allowed_actions", "context_digest"}}
+            projected[index].content += "\nOriginal task/Lead handoff (historical instructions retain their original authority):\n" + json.dumps(original_context, ensure_ascii=False)
         projected[index].artifact = None
         projected[index].response_metadata = {**projected[index].response_metadata,
-            "context_editing": {"cleared": True, "reason": "completed_research_phase"}}
+            "context_editing": {"cleared": True, "reason": "research_context_checkpoint" if checkpoint else "completed_research_phase"}}
+    if checkpoint:
+        # Obsolete per-turn counters/catalog projections are not research facts.
+        # Keep task_context, user/Lead instructions, notes, errors, calculation
+        # results and all assistant operations. Never summarize a summary again.
+        for index, message in enumerate(projected[:boundary]):
+            if not isinstance(message, ToolMessage) or message.status == "error":
+                continue
+            try:
+                body = json.loads(message.content)
+            except (TypeError, json.JSONDecodeError):
+                continue
+            context = body.get("current_context") if isinstance(body, dict) else None
+            if isinstance(context, dict):
+                body["current_context"] = {k: v for k, v in context.items() if k not in {"progress", "allowed_actions", "context_digest"}}
+                message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
     return projected
+
+
+def research_checkpoint_request(messages, *, model, native_tools, runtime_context_binding, schema, max_input_characters):
+    """One ordinary audited author turn requests a durable within-phase note.
+
+    LangChain owns message serialization/token estimation. No hidden summarizer
+    call, fabricated tool result, removal of stored messages or fresh allowance.
+    """
+    trigger = model.research_checkpoint_tokens
+    if trigger is None or "UpdateResearchStateAction" not in native_tools:
+        return messages, native_tools, None
+    payload = model._get_request_payload(messages, tools=[schema(t, runtime_context_binding=runtime_context_binding)
+        for t in native_tools.values()], tool_choice="auto")
+    # Estimate the entire wire input, including tool definitions and reasoning.
+    # Not reported provider usage; character limit remains an independent guard.
+    encoded = json.dumps(payload, ensure_ascii=False)
+    estimate = count_tokens_approximately([HumanMessage(content=encoded)])
+    reserve_chars = model.research_checkpoint_reserve_tokens * 4
+    if estimate < trigger and len(encoded) < max_input_characters - reserve_chars:
+        return messages, native_tools, None
+    attempts = 0
+    for message in reversed(messages):
+        if isinstance(message, AIMessage):
+            if not any(c["name"] == "UpdateResearchStateAction" for c in message.tool_calls):
+                break
+            attempts += 1
+        if isinstance(message, ToolMessage) and message.name == "UpdateResearchStateAction" and message.status != "error":
+            try:
+                body = json.loads(message.content)
+                body = body.get("result", body)
+            except (TypeError, json.JSONDecodeError):
+                continue
+            if body.get("accepted") and body.get("checkpoint"):
+                raise ValueError("research_context_checkpoint_insufficient")
+    if attempts >= 2:
+        raise ValueError("research_context_checkpoint_not_resolved")
+    notice = SystemMessage(content=(
+        "Runtime context checkpoint required before further research. This task is still in progress. "
+        "Read the latest tool results now; do not repeat the reads. Submit UpdateResearchStateAction alone with "
+        "checkpoint=true, phase_status=working unless the phase actually finished. Self-compress the current "
+        "research state: overall logic, actual findings with ALL used numerical/metric references and subject, "
+        "period, unit, denominator, revision, actual/guidance qualifiers; rejected interpretations; every open "
+        "issue; the last unfinished task in detail and its exact next action. Pin source IDs that must be compared "
+        "together. Copy prior open questions verbatim into open_questions, or give each an explicit source-bound "
+        "disposition in resolved_questions. Keep prior rejected_interpretations. This is a public continuity note, "
+        "not private reasoning or evidence. Do not invent resolved "
+        "issues. Older recoverable source bodies can leave subsequent requests only after this note is accepted. "
+        "The original assignment, original findings' evidence, calculations, latest read batch and original "
+        "operations remain protected. Every omitted read supplies its exact tool and arguments; retrieve it "
+        "BEFORE dependent citing/calculation/comparison when the original is no longer present. "
+        "Do not redo completed research. No budget, task or turn count is reset. "
+        "If a truthful note cannot be prepared, use RequestHumanReviewAction with the actual blockage."))
+    # Replace this temporary runtime instruction on every request; it is not
+    # historical research data and must not become a growing stack of prompts.
+    notice.additional_kwargs["fin_context_checkpoint_instruction"] = True
+    clean = [m for m in messages if not m.additional_kwargs.get("fin_context_checkpoint_instruction")]
+    return [clean[0], notice, *clean[1:]], {k: v for k, v in native_tools.items()
+        if k in {"UpdateResearchStateAction", "RequestHumanReviewAction"}}, {
+            "estimated_input_tokens": estimate, "trigger_tokens": trigger,
+            "token_basis": "langchain_approximation_of_sdk_payload_not_provider_usage",
+            "reason": "token_threshold" if estimate >= trigger else "input_character_headroom"}
 
 
 def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False, policy="legacy_window"):

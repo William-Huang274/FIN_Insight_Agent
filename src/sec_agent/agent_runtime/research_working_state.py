@@ -11,6 +11,13 @@ class ObservedFinding(BaseModel):
         description="Preserve subject, period, unit, denominator, revision and actual/guidance limits; do not generalize beyond the source.")
 
 
+class ResolvedResearchQuestion(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    question: str = Field(min_length=1, description="Copy the previous open question exactly.")
+    resolution: str = Field(min_length=1, description="Actual disposition including remaining limits; not independent verification.")
+    source_ids: list[str] = Field(min_length=1, max_length=32)
+
+
 class ResearchWorkingState(BaseModel):
     model_config = ConfigDict(extra="forbid")
     current_subtask: str = Field(min_length=1, max_length=2000)
@@ -18,6 +25,7 @@ class ResearchWorkingState(BaseModel):
     findings: list[ObservedFinding] = Field(default_factory=list, max_length=32)
     rejected_interpretations: list[str] = Field(default_factory=list, max_length=24)
     open_questions: list[str] = Field(default_factory=list, max_length=24)
+    resolved_questions: list[ResolvedResearchQuestion] = Field(default_factory=list, max_length=24)
     next_step: str = Field(min_length=1, max_length=2000)
     last_task_detail: str = Field(min_length=1, max_length=4000,
         description="What was just investigated, actual outcome, unresolved issues and the precise continuation; not hidden reasoning.")
@@ -32,6 +40,7 @@ class UpdateResearchStateAction(BaseModel):
     context_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
     reason_summary: str = Field(min_length=1, max_length=1000)
     working_state: ResearchWorkingState
+    checkpoint: bool = Field(default=False, description="Self-compress the current research state at runtime's context threshold. Keep phase_status working if unfinished. Original cited evidence, current comparison sources and latest read batch remain exact; only older recoverable source bodies may leave the request.")
 
 
 WORKING_STATE_GUIDANCE = (
@@ -40,7 +49,12 @@ WORKING_STATE_GUIDANCE = (
     "denominator limits, rejected interpretations, remaining evidence, next step and last task detail. "
     "This is a public working note, not hidden reasoning or evidence. Keep sources needed together in "
     "retain_source_ids. New source bodies stay visible during the active phase; only a completed phase can "
-    "release older non-retained bodies. Updating a note does not prove progress or reset runtime warnings. "
+    "release older non-retained bodies, except an explicit within-phase checkpoint requested by runtime. "
+    "At that checkpoint, keep phase_status working for unfinished work and set checkpoint=true. Preserve the "
+    "overall research logic, every used numerical/metric claim with its source and qualifiers, rejected "
+    "interpretations, all unresolved issues, latest task details and exact next action. Do not resolve an issue "
+    "just to shorten the note. Original recorded findings and calculations remain protected independently. "
+    "Updating a note does not prove progress or reset runtime warnings. "
     "If warned about repeated reads, inspect actual results and next-block/search options, explain a changed "
     "approach or truthful blockage; do not repeat a past intention as though the source confirmed it."
 )

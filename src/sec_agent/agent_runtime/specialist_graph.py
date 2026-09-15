@@ -1532,6 +1532,13 @@ def build_specialist_agentic_state_graph(
             # no partial model response is promoted; native state is retained.
             from .deepseek_structured_agents import DeepSeekStructuredAgentError
             if isinstance(exc, DeepSeekStructuredAgentError) and str(exc) in {
+                "research_context_checkpoint_insufficient", "research_context_checkpoint_not_resolved"}:
+                signal = {"status": "blocked", "notice": str(exc), "consecutive_no_new_observations": 0}
+                if dependencies.lead_assistance and not any(h.get("context_checkpoint_blockage") for h in state.get("lead_assistance_history", [])):
+                    return {"pending_action": None, "phase": "lead_assistance_required", "runtime_progress": signal}
+                return {"pending_action": None, "phase": "human_review_required", "review_trigger": "model_request",
+                    "review_reason": "research_context_checkpoint_unresolved", "runtime_progress": signal}
+            if isinstance(exc, DeepSeekStructuredAgentError) and str(exc) in {
                 "deepseek_specialist_input_character_limit_exceeded",
                 "deepseek_specialist_single_call_failed",
                 "provider_output_truncated_no_partial_promotion",
@@ -2103,14 +2110,25 @@ def build_specialist_agentic_state_graph(
             if isinstance(action, UpdateResearchStateAction):
                 note = action.working_state.model_dump(mode="json")
                 refs = set(note["retain_source_ids"]) | {r for f in note["findings"] for r in f["source_ids"]}
+                refs.update(r for q in note["resolved_questions"] for r in q["source_ids"])
                 if not refs.issubset(observed_sources(working["notebook"])):
                     return reject("working_state_unknown_source", "Use only exact source IDs returned in your original observations.", agent_error=True)
+                if action.checkpoint:
+                    prior_note = working.get("research_working_state") or {}
+                    covered = set(note["open_questions"]) | {q["question"] for q in note["resolved_questions"]}
+                    if set(prior_note.get("open_questions", [])) - covered or set(prior_note.get("rejected_interpretations", [])) - set(note["rejected_interpretations"]):
+                        return reject("working_state_checkpoint_lost_issues", "Keep previous open questions verbatim or explicitly resolve each in resolved_questions with actual observed sources. Preserve rejected interpretations; do not silently omit them.", agent_error=True)
                 if before.tool_action_count >= state["max_tool_actions"]:
                     return reject("working_state_tool_limit", "Preserve state and stop; no additional allowance is granted.")
                 working["research_working_state"] = note
-                working["notebook"] = _replace_notebook(before, tool_action_count=before.tool_action_count + 1).model_dump(mode="json")
+                digest = _semantic_action_digest(action)
+                if digest not in before.dispatched_action_digests:
+                    before = _replace_notebook(before, tool_action_count=before.tool_action_count + 1,
+                        dispatched_action_digests=(*before.dispatched_action_digests, digest))
+                working["notebook"] = before.model_dump(mode="json")
                 return ToolMessage(name=call.name, tool_call_id=call.id, content=json.dumps({"accepted": True,
-                    "working_state": note, "notice": "Author assessment, not independent verification. Original sources remain authoritative."}, ensure_ascii=False))
+                    "working_state": note, "checkpoint": action.checkpoint,
+                    "notice": "Author assessment, not independent verification. Original sources remain authoritative. Checkpoint does not complete the task or reset limits."}, ensure_ascii=False))
             if isinstance(action, (DelegateSubtasksAction, ReadDelegatedWorkAction)):
                 saved = dict(working.get("delegated_work", {}))
                 digest = _semantic_action_digest(action)
@@ -2387,6 +2405,8 @@ def build_specialist_agentic_state_graph(
     def consult_lead(state, config: RunnableConfig):
         from .research_assistance import ResearchGuidance
         guidance = ResearchGuidance.model_validate(dependencies.lead_assistance(state, config)).model_dump(mode="json")
+        if state.get("runtime_progress", {}).get("notice", "").startswith("research_context_checkpoint_"):
+            guidance["context_checkpoint_blockage"] = True
         updates = {"lead_assistance_history": [*state.get("lead_assistance_history", []), guidance],
             "runtime_progress": {"consecutive_no_new_observations": 0, "status": "lead_guidance_received",
                 "notice": "Lead advice is not evidence; follow its scoped recovery plan with original sources. Counts and budget were not reset."},

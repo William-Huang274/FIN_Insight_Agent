@@ -74,11 +74,17 @@ def load_research_runtime_profile(root):
     if set(profile["nodes"]) != required:
         raise ValueError("research_session_node_configuration_incomplete")
     editing = profile.get("context_editing")
-    if editing is not None and (set(editing) not in ({"trigger_tokens", "keep"}, {"trigger_tokens", "keep", "policy"})
+    if editing is not None and (not {"trigger_tokens", "keep"}.issubset(editing)
+            or set(editing) - {"trigger_tokens", "keep", "policy", "checkpoint_trigger_tokens", "checkpoint_reserve_tokens"}
             or editing.get("policy", "legacy_window") not in {"legacy_window", "task_boundary"}
             or type(editing["trigger_tokens"]) is not int or editing["trigger_tokens"] < 1
             or type(editing["keep"]) is not int or not 1 <= editing["keep"] <= 64):
         raise ValueError("research_session_context_editing_configuration_invalid")
+    if editing and any(type(editing[k]) is not int or editing[k] < 1
+            for k in ("checkpoint_trigger_tokens", "checkpoint_reserve_tokens") if k in editing):
+        raise ValueError("research_session_context_checkpoint_configuration_invalid")
+    if editing and "checkpoint_trigger_tokens" in editing and editing.get("policy") != "task_boundary":
+        raise ValueError("research_session_context_checkpoint_requires_task_boundary")
     summary = profile.get("context_summarization")
     if summary:
         if (set(summary) != {"enabled", "trigger_tokens", "keep_tokens", "max_summaries", "profile", "budget"}
@@ -155,6 +161,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     def research_audit(event):
         public_sink(event)
         emit({"kind": "model", **event})
+        if event.get("event") == "started" and event.get("context_checkpoint"):
+            emit({"kind": "stage", "actor": event.get("actor"), "event": "progress", "status": "context_checkpoint",
+                "objective": "上下文接近整理阈值，当前专家正在保存未完成任务、已核对结果和待查问题；原始数字引用及当前对照资料保留，之后继续同一任务。"})
 
     async def with_guidance(state, phase):
         items = await read_guidance() if read_guidance else []
@@ -240,7 +249,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                     from .research_assistance import build_lead_assistance_graph
                     from .research_graph_contracts import canonical_sha256
                     emit({**task_event, "event": "progress", "status": "lead_assistance",
-                        "objective": "连续读取没有新增观察，已通知研究负责人检查当前状态和来源导航，协助调整研究方法。"})
+                        "objective": "研究执行遇到阻塞，已通知研究负责人检查当前状态、上下文负担和来源导航，协助调整研究方法。"})
                     basis = configured.token_budget_basis["lead"].model_copy(update={
                         "node_purpose": "Lead diagnoses the current blocked expert using its original assignment, actual observations and working state; source-check a changed recovery approach or stop, without replacing the task.",
                         "required_outputs": ("A concrete diagnosis, next approach, expected progress or explicit unresolved stop; preserve current task authority and lifetime limits.",)})

@@ -1217,6 +1217,8 @@ class ReasoningPreservingChatDeepSeek(ChatDeepSeek):
     tool_context_trigger_tokens: int | None = Field(default=None, ge=1, exclude=True)
     tool_context_keep: int = Field(default=6, ge=1, le=64, exclude=True)
     tool_context_policy: Literal["legacy_window", "task_boundary"] = Field(default="legacy_window", exclude=True)
+    research_checkpoint_tokens: int | None = Field(default=None, ge=1, exclude=True)
+    research_checkpoint_reserve_tokens: int = Field(default=8192, ge=1, exclude=True)
     # Qualification-only until paired financial quality passes. Default requests
     # retain the deployed ClearToolUsesEdit policy without experimental labels.
     tool_workpaper_navigation: bool = Field(default=False, exclude=True)
@@ -1315,7 +1317,9 @@ class DeepSeekStructuredAgentAdapter:
                 extra_body={"thinking": {"type": profile.thinking}},
                 **({"tool_context_trigger_tokens": context_editing["trigger_tokens"],
                     "tool_context_keep": context_editing["keep"],
-                    "tool_context_policy": context_editing.get("policy", "legacy_window")} if context_editing else {}),
+                    "tool_context_policy": context_editing.get("policy", "legacy_window"),
+                    "research_checkpoint_tokens": context_editing.get("checkpoint_trigger_tokens"),
+                    "research_checkpoint_reserve_tokens": context_editing.get("checkpoint_reserve_tokens", 8192)} if context_editing else {}),
                 **({"reasoning_effort": profile.reasoning_effort} if profile.thinking == "enabled" else {}),
             )
         return cls(config=config, chat_models=models, audit_sink=audit_sink,
@@ -1507,7 +1511,24 @@ class DeepSeekStructuredAgentAdapter:
                 # All observations already arrived in exact earlier messages.
                 messages = [*history, ToolMessage(content=json.dumps(delta, ensure_ascii=False),
                     tool_call_id=prior_raw.tool_calls[0]["id"])]
+        checkpoint_notice = None
         if persistent_history:
+            messages = [m for m in messages if not m.additional_kwargs.get("fin_context_checkpoint_instruction")]
+            current_model = self._chat_models[model_purpose]
+            if isinstance(current_model, ReasoningPreservingChatDeepSeek):
+                from .model_context import research_checkpoint_request
+                budget_role = "specialist" if model_purpose in {"verifier", "repair"} else model_purpose
+                try:
+                    messages, native_tools, checkpoint_notice = research_checkpoint_request(messages,
+                        model=current_model, native_tools=native_tools, runtime_context_binding=runtime_context_binding,
+                        schema=_native_function_schema,
+                        max_input_characters=self._config.token_budget_basis[budget_role].max_input_characters)
+                except ValueError as exc:
+                    if str(exc) not in {"research_context_checkpoint_insufficient", "research_context_checkpoint_not_resolved"}:
+                        raise
+                    audit({"event": "outcome", "status": "blocked_before_transport_context_checkpoint",
+                        "reason": str(exc), "actor": actor, "call_id": call_id, "provider_call_attempted": False})
+                    raise DeepSeekStructuredAgentError(str(exc)) from None
             semantic_json = json.dumps([_audit_value(m) for m in messages], ensure_ascii=False)
         input_characters = len(semantic_json)
         input_utf8_bytes = len(semantic_json.encode("utf-8"))
@@ -1606,6 +1627,7 @@ class DeepSeekStructuredAgentAdapter:
                 "input_utf8_bytes": input_utf8_bytes,
                 "max_input_characters": basis.max_input_characters,
                 "max_output_tokens": basis.max_output_tokens,
+                "context_checkpoint": checkpoint_notice,
                 "provider_call_attempted": provider_call_attempted,
                 "execution_source": execution_source,
                 "transport_attempt_limit": 1,

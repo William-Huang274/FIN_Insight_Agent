@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 
 import httpx
+import pytest
 from langchain_core.messages import AIMessage, HumanMessage, ToolMessage
 from langgraph.checkpoint.memory import InMemorySaver
 from pydantic import SecretStr
@@ -214,6 +215,64 @@ def test_specialist_sdk_advertises_only_actions_allowed_by_native_graph():
         adapter = DeepSeekStructuredAgentAdapter(config=_config().model_copy(update={"agentic_message_history": True}), chat_models=models)
         adapter.specialist_model_turn(request)
     assert len(seen) == 1
+
+
+@pytest.mark.parametrize("guidance", [None, "Recover the rejected draft and read its cited evidence before repair."])
+def test_resumed_specialist_guidance_reaches_sdk_without_repeating_unchanged_assignment(guidance):
+    from test_deepseek_structured_agents import _config, _models, _agentic_turn_request
+    request = _agentic_turn_request()
+    request["task_context"] = {"research_question": "Original overall research objective"}
+    initial = deepcopy(request["task_context"])
+    wires = []
+
+    def serve(wire):
+        wires.append(json.loads(wire.content))
+        return httpx.Response(200, json={"id": "offline-guidance", "object": "chat.completion", "created": 1,
+            "model": "deepseek-v4-pro", "choices": [{"index": 0, "finish_reason": "tool_calls", "message": {
+                "role": "assistant", "content": "", "tool_calls": [{"id": "stop", "type": "function", "function": {
+                    "name": "RequestHumanReviewAction", "arguments": json.dumps({"action": "request_human_review",
+                    "context_digest": request["context_digest"], "reason_summary": "Offline recovery boundary check."})}}]}}],
+            "usage": {"prompt_tokens": 100, "completion_tokens": 30, "total_tokens": 130}})
+
+    with httpx.Client(transport=httpx.MockTransport(serve)) as client:
+        models = _models()
+        models["specialist"] = ReasoningPreservingChatDeepSeek(model="deepseek-v4-pro", api_key=SecretStr("offline-fixture"),
+            http_client=client, max_retries=0, use_responses_api=False)
+        adapter = DeepSeekStructuredAgentAdapter(config=_config().model_copy(update={"agentic_message_history": True}), chat_models=models)
+        adapter.specialist_model_turn(request)
+        if guidance:
+            request["task_context"]["continuation_guidance"] = guidance
+        adapter.specialist_model_turn(request)
+    assert json.loads(wires[1]["messages"][1]["content"])["task_context"] == initial
+    feedback = json.loads(wires[1]["messages"][-1]["content"])
+    if guidance:
+        assert feedback["task_context"]["continuation_guidance"] == guidance
+    else:
+        assert "task_context" not in feedback
+
+
+def test_repair_keeps_distinct_recovered_results_together_until_resubmission():
+    rows = [HumanMessage(content=json.dumps({'progress': {}, 'submission_to_repair': {'candidate': 'rejected draft'}}))]
+    for i, value in enumerate(['first exact source', 'second exact source', 'first exact source', 'changed revision']):
+        rows.append(AIMessage(content='', tool_calls=[{'id': f'read{i}', 'name': 'RequestSourceAction', 'args': {'selection': {'document_id': 'same-document'}}}]))
+        rows.append(ToolMessage(name='RequestSourceAction', tool_call_id=f'read{i}', content=json.dumps({
+            'result': {'observations': [{'status': 'success', 'content': value, 'references': ['same-ref']}], 'checkpoint_replay': True},
+            'current_context': {'progress': {}, 'submission_to_repair': {'candidate': 'rejected draft'}, 'obsolete_marker': i}})))
+    original = deepcopy(rows)
+    projected = project_tool_history(rows, trigger_tokens=1, keep=1)
+    assert 'Older read result omitted' in projected[2].content  # Exact duplicate, latest copy remains.
+    assert json.loads(projected[4].content)['result']['observations'][0]['content'] == 'second exact source'
+    assert json.loads(projected[6].content)['result']['observations'][0]['content'] == 'first exact source'
+    assert 'obsolete_marker' not in projected[4].content + projected[6].content
+    assert projected[-1].content == rows[-1].content  # Latest control feedback remains intact.
+    assert rows == original
+
+    rows.extend([AIMessage(content='', tool_calls=[{'id': 'submit', 'name': 'ReviseWorkpaperAction', 'args': {}}]),
+        ToolMessage(tool_call_id='submit', content=json.dumps({'progress': {}, 'submission_to_repair': {'candidate': 'next rejected draft'}}))])
+    after = project_tool_history(rows, trigger_tokens=1, keep=1)
+    assert 'Older read result omitted' in after[4].content + after[6].content
+    # A new repair cycle must recover only what its new feedback requires.
+    assert all('Older read result omitted' in after[i].content for i in [4, 6])
 
 
 def test_native_checkpoint_and_citation_validation_retain_cleared_sql_observation():

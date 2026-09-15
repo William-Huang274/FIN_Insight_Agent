@@ -63,7 +63,8 @@ def _read_recovery_notice(message, call, *, saved_result_reader):
         recovery["recovery_unavailable"] = "Locate this original call through an offered context index; do not guess a reader."
     return ("[Older read result omitted from this request; original records are retained. "
             "This is navigation, NOT evidence. Before using this result to cite, calculate, compare, or repair a claim, "
-            "retrieve the relevant original with the exact read_tool/arguments below and inspect the returned context. "
+            "use the same original if already present in another retained result; otherwise retrieve it with the "
+            "exact read_tool/arguments below and inspect the returned context. "
             "Copy complete returned reference IDs and exact quotes; never reconstruct IDs or infer non-disclosure "
             "from omitted text. Recover only needed records, then continue the unfinished task, not all prior research.]\n"
             + json.dumps(recovery, ensure_ascii=False, separators=(",", ":")))
@@ -92,6 +93,48 @@ def _workpaper_navigation(message):
         + json.dumps(index, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
 
 
+def _repair_read_working_set(messages):
+    """Retain distinct evidence read since a rejected submission until resubmission.
+
+    Native clearing still owns ordinary research history. A repair needs its
+    recovered evidence together; clearing each preceding batch causes alternating
+    rereads. This request-only working set remains subject to the input ceiling.
+    """
+    context = None
+    boundary = -1
+    for index, message in enumerate(messages):
+        if isinstance(message, AIMessage) and any(c['name'] in {
+            'SubmitWorkpaperAction', 'ReviseWorkpaperAction'} for c in message.tool_calls):
+            boundary = index
+        if isinstance(message, (HumanMessage, ToolMessage)) and isinstance(message.content, str):
+            try:
+                body = json.loads(message.content)
+            except json.JSONDecodeError:
+                continue
+            if isinstance(body, dict):
+                candidate = body.get('current_context', body)
+                if isinstance(candidate, dict) and 'progress' in candidate:
+                    context = candidate
+    if not context or not context.get('submission_to_repair'):
+        return {}
+    latest = {}
+    for index, message in enumerate(messages):
+        if index <= boundary or not isinstance(message, ToolMessage) or message.status == 'error' or message.name not in REREADABLE_TOOLS:
+            continue
+        try:
+            body = json.loads(message.content)
+        except (json.JSONDecodeError, TypeError):
+            continue
+        result = body.get('result') if isinstance(body, dict) else None
+        observations = result.get('observations') if isinstance(result, dict) else None
+        if isinstance(observations, list) and observations and all(isinstance(o, dict) and o.get('status') == 'success' for o in observations):
+            # Compare complete observations, not source IDs or arguments: a
+            # changed revision/window must never alias a different result.
+            key = json.dumps(observations, ensure_ascii=False, sort_keys=True)
+            latest[key] = (index, result)
+    return {index: result for index, result in latest.values()}
+
+
 def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_reader=False, workpaper_navigation=False):
     if trigger_tokens is None:
         return messages
@@ -108,6 +151,7 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
     # Every result after the last assistant turn is unread by the model and
     # must survive its FIRST delivery, even when the batch is larger than keep.
     last_assistant = max((i for i, m in enumerate(messages) if isinstance(m, AIMessage)), default=-1)
+    repair_reads = _repair_read_working_set(messages)
     # Native 1.4 exclusions are by tool name. A single failed read must not pin
     # every successful result from that reader forever. Restore only the exact
     # error messages; the native edit still owns selection and pair preservation.
@@ -127,6 +171,11 @@ def project_tool_history(messages, *, trigger_tokens=None, keep=6, saved_result_
                             context['cleared_tool_inputs'] = remaining
                         else:
                             projected[j].response_metadata = deepcopy(original.response_metadata)
+        elif index in repair_reads:
+            projected[index] = deepcopy(message)
+            # Old per-turn control state is superseded by the latest feedback;
+            # retain the original result, not repeated obsolete draft contexts.
+            projected[index].content = json.dumps({'result': repair_reads[index]}, ensure_ascii=False, separators=(',', ':'))
         elif isinstance(message, ToolMessage) and message.name == 'WriteWorkingNote':
             # Small save/version receipts locate the exact durable note. Only
             # obsolete full write arguments are removed from the request copy.

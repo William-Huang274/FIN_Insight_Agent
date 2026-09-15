@@ -1443,8 +1443,11 @@ class DeepSeekStructuredAgentAdapter:
             # only new tool feedback is added. No raw reasoning enters graph state.
             delta.pop("l0_context", None)
             delta.pop("branch", None)
-            delta.pop("task_context", None)  # Immutable handoff already in the exact first message.
             initial = next((m for m in history if isinstance(m, HumanMessage)), None)
+            # The original assignment is stable, but a resumed invocation may
+            # carry new analyst guidance. Only omit an unchanged handoff.
+            if initial is not None and delta.get("task_context") == json.loads(initial.content).get("task_context"):
+                delta.pop("task_context", None)
             if initial is not None and delta.get("collaboration_context") == json.loads(initial.content).get("collaboration_context"):
                 delta.pop("collaboration_context", None)
             if is_lead:

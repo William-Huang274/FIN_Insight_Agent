@@ -1030,6 +1030,7 @@ def _open_specialist_composition(
     live_web_read_enabled: bool = False,
     collaboration_context: Mapping[str, Any] | None = None,
     recovery_state: Mapping[str, Any] | None = None,
+    revision_feedback: list[dict[str, Any]] | None = None,
     plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
@@ -1146,7 +1147,7 @@ def _open_specialist_composition(
                 graph_input=graph_input,
                 source_reader=read_planning_source if source_read_enabled else None,
                 graph=build_specialist_agentic_state_graph(
-                    dependencies=dependencies, recovery_state=recovery_state
+                    dependencies=dependencies, recovery_state=recovery_state, revision_feedback=revision_feedback
                 ).compile(),
                 owner_data_gate_decision_digest=approved.decision_digest,
                 inventory_snapshot_digest=approved.inventory_snapshot_digest,
@@ -1218,6 +1219,7 @@ def open_specialist_receipted_composition(
     live_web_read_enabled: bool = False,
     collaboration_context: Mapping[str, Any] | None = None,
     recovery_state: Mapping[str, Any] | None = None,
+    revision_feedback: list[dict[str, Any]] | None = None,
     plan_invocation_id: str | None = None,
     research_task: Mapping[str, Any] | None = None,
     dependency_workpapers: Mapping[str, Mapping[str, Any]] | None = None,
@@ -1250,6 +1252,7 @@ def open_specialist_receipted_composition(
         live_web_read_enabled=live_web_read_enabled,
         collaboration_context=collaboration_context,
         recovery_state=recovery_state,
+        revision_feedback=revision_feedback,
         plan_invocation_id=plan_invocation_id,
         research_task=research_task,
         dependency_workpapers=dependency_workpapers,

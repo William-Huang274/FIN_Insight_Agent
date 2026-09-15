@@ -1461,7 +1461,11 @@ class DeepSeekStructuredAgentAdapter:
             ) + " Execution context is injected by the runtime. Do not supply context_digest in tool arguments.")
             messages[1] = HumanMessage(content=json.dumps(semantic_input, ensure_ascii=False, separators=(",", ":")))
         if persistent_history and actor in self._agentic_history:
-            history = self._agentic_history[actor]
+            # Refresh host instructions/schema after a code/configured-role
+            # revision; retain every original non-system message verbatim.
+            history = list(self._agentic_history[actor])
+            if history and isinstance(history[0], SystemMessage):
+                history[0] = messages[0]
             prior_raw = history[-1]
             delta = dict(semantic_input)
             delta["progress"] = {**semantic_input["progress"], "prior_actions": [],

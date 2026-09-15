@@ -21,8 +21,11 @@ with patch('sec_agent.agent_runtime.report_session.load_session_materials', side
 with TestClient(app) as client:
     print(json.dumps({'health':client.get('/api/health').json(),'config':client.get('/api/v1/research-session-config').json()}))
 '''
+    # This is an installation/legacy-isolation contract, not a 40-second
+    # startup SLA. A cold shared Windows host can take ~45 seconds while all
+    # assertions pass; retain a bounded wait without killing that valid import.
     result = subprocess.run([sys.executable, "-X", "utf8", "-c", code], cwd=tmp_path, env=env,
-        capture_output=True, text=True, encoding="utf-8", timeout=40)
+        capture_output=True, text=True, encoding="utf-8", timeout=90)
     assert result.returncode == 0, result.stderr
     proof = json.loads(result.stdout)
     assert not proof["health"]["legacy_report_loaded"]

@@ -3,6 +3,7 @@ test('task outcome separates author assessment from failure and retains attempt 
   await page.setViewportSize({width:390,height:950});
   const id='00000000-0000-4000-8000-000000000091', run='00000000-0000-4000-8000-000000000092';
   const note:any={task_id:'task:scope',attempt_id:'attempt:1',execution_status:'needs_attention',artifact_status:'candidate',artifact_digest:'a'.repeat(64),
+    runtime_changes:[{changed_claim_ids:[],locations:[{path:'/narrative_markdown'}],semantic_status:'not_independently_verified'}],
     stop_reason:'citation_validation_failed',author_note_status:'reported_not_verified',success_criteria:['核对季度与全年口径'],
     author_note:{summary:'作者声称已完成，但提交未通过。',changes:'只修订了引用。',coverage:[{criterion:'核对季度与全年口径',status:'completed',explanation:'这是作者声明。',claim_ids:['C1'],fields:['narrative_markdown']}],
       issues:[{issue_id:'period-1',description:'正文期间仍需核对。',next_action:'核对原文并修改对应段落。',suggested_owner:'author',claim_ids:['C1'],fields:['narrative_markdown']}]},navigation_issues:[],open_gaps:[],validation_locations:[['claims',0,'citation_quotes']]};
@@ -15,6 +16,8 @@ test('task outcome separates author assessment from failure and retains attempt 
   await expect(card).toContainText('任务待处理');
   await card.getByText('查看目标覆盖与修改定位',{exact:true}).click();
   await expect(card).toContainText('作者认为已完成');
+  await expect(card).toContainText('系统记录的实际修改');
+  await expect(card).toContainText('是否解决研究问题，以后续独立复核为准');
   await expect(card).toContainText('底稿正文');
   await expect(card).toContainText('claims / 0 / citation_quotes');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);

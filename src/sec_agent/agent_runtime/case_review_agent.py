@@ -60,11 +60,23 @@ class PaperAssessment(BaseModel):
     assessment: str = Field(min_length=20, max_length=5000)
 
 
+class FindingConfirmation(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    finding_id: str = Field(min_length=1, max_length=240)
+    status: Literal["resolved", "still_open", "unresolved"]
+    reason: str = Field(min_length=20, max_length=3000)
+    related_finding_ids: list[str] = Field(default_factory=list,
+        description="For still_open, IDs of current actionable findings describing the remaining problem.")
+    source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=12)
+
+
 class CaseReview(BaseModel):
     model_config = ConfigDict(extra="forbid")
     summary: str = Field(min_length=20, max_length=12000)
     assessments: list[PaperAssessment] = Field(min_length=1, max_length=12)
     findings: list[CaseReviewFinding] = Field(default_factory=list, max_length=80)
+    finding_checks: list[FindingConfirmation] = Field(default_factory=list, max_length=80,
+        description="In a revision confirmation, check EVERY exact assigned finding ID against current text and sources. Author claims and changed hashes do not prove resolution.")
     unresolved_data_requests: list[str] = Field(default_factory=list, max_length=30)
     withdrawn_finding_reasons: dict[str, Annotated[str, Field(min_length=20, max_length=2000)]] = Field(
         default_factory=dict, max_length=80, description="Saved finding IDs disproved by subsequent inspection, with source-grounded reasons. Do not silently drop findings.")
@@ -538,9 +550,44 @@ class ReviewWorkBudget(AgentMiddleware):
         return await handler(self.request_with_budget(request))
 
 
-def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, max_tool_calls=64, audit=None, method_instructions="", revision_target=None):
+def validate_finding_confirmation(review, confirmation, artifacts):
+    """Check coverage/version navigation, not the reviewer's financial verdict."""
+    expected = {f["finding_id"] for rows in confirmation["findings_to_confirm"].values() for f in rows}
+    checks = [c.finding_id for c in review.finding_checks]
+    errors = []
+    if set(checks) != expected or len(checks) != len(expected):
+        errors.append("confirm_every_assigned_finding_once:" + json.dumps(sorted(expected)))
+    current_ids = {f.finding_id for f in review.findings}
+    material_ids = {f.finding_id for f in review.findings if f.severity == "material"}
+    for check in review.finding_checks:
+        if not set(check.related_finding_ids).issubset(current_ids):
+            errors.append("confirmation_unknown_current_finding:" + check.finding_id)
+        if check.status == "still_open" and not check.related_finding_ids:
+            errors.append("still_open_requires_current_actionable_finding:" + check.finding_id)
+        if check.status == "still_open" and not set(check.related_finding_ids).issubset(material_ids):
+            errors.append("still_open_material_issue_cannot_be_silently_downgraded:" + check.finding_id)
+        if check.status == "resolved" and check.related_finding_ids:
+            errors.append("resolved_cannot_link_remaining_finding:" + check.finding_id)
+        if check.status == "unresolved" and not review.unresolved_data_requests:
+            errors.append("unresolved_confirmation_requires_data_request:" + check.finding_id)
+        for source in check.source_checks:
+            try:
+                body = artifacts._source_text(artifacts.source_item(source.source_id))
+                if not contains_source_quote(body, source.quote):
+                    errors.append("confirmation_source_quote_not_exact:" + check.finding_id + ":" + source.source_id)
+            except ValueError:
+                errors.append("confirmation_source_unknown:" + check.finding_id + ":" + source.source_id)
+    if errors:
+        raise ValueError(json.dumps({"errors": errors}, ensure_ascii=False))
+
+
+def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, max_tool_calls=64, audit=None, method_instructions="", revision_target=None, confirmation=None):
     if role not in {"counter", "verifier"}:
         raise ValueError("case_reviewer_role_invalid")
+    if confirmation:
+        from .workpaper_changes import paper_versions
+        if confirmation["paper_version_digests"] != paper_versions(artifacts):
+            raise ValueError("confirmation_target_does_not_match_current_papers")
     if revision_target:
         from .research_graph_contracts import canonical_sha256
         if (revision_target["kind"] != "revision_only" or revision_target["current_digest"] !=
@@ -590,6 +637,8 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             merged = {key: value for key, value in merged.items() if key not in withdrawn}
             review = CaseReview.model_validate({**review.model_dump(mode="json"), "findings": list(merged.values())})
             validate_case_review(review, artifacts, runtime.state["messages"], revision_target=revision_target)
+            if confirmation:
+                validate_finding_confirmation(review, confirmation, artifacts)
         except ValueError as exc:
             return Command(update={"messages": [ToolMessage(content=str(exc), status="error",
                 name="submit_case_review", tool_call_id=runtime.tool_call_id)]})
@@ -610,6 +659,8 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     emphasis = ("Your role is Counter: challenge the thesis, demand/competition/supply mechanisms and cross-paper contradictions."
                 if role == "counter" else "Your role is Verifier: inspect material factual/numeric/citation/period consistency and whether conclusions are warranted by actual sources.")
     prompt = REVIEW_PROMPT + emphasis
+    if confirmation:
+        prompt += "\nThis is independent confirmation before Lead's final judgment. Read current papers, all changed locations and related explanations/claims; use original sources for necessary checks. Return finding_checks for EVERY ID in findings_to_confirm, with source-grounded reasons. still_open must reference a current finding ID; unresolved must also be recorded in unresolved_data_requests. Inspect newly introduced issues together. Do not re-run unrelated unchanged research, or accept an author's completed note as proof."
     if revision_target:
         # Use the native tool schema for required scoped completion fields.
         # The function still shares the existing citation/finding validator.
@@ -647,15 +698,19 @@ class CaseReviewState(TypedDict, total=False):
     scope_digest: str
 
 
-def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invocation_id, review_order="parallel", research_handoff=None, previous_review=None):
+def case_review_scope_digest(artifacts, question):
+    from .research_graph_contracts import canonical_sha256
+    return canonical_sha256({"question": question, "catalog": artifacts.catalog(),
+        "papers": {p["paper_id"]: {"workpaper": artifacts.read_paper(p["paper_id"]),
+            "sources": artifacts.read_paper(p["paper_id"], "sources")} for p in artifacts.catalog()["papers"]}})
+
+
+def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invocation_id, review_order="parallel", research_handoff=None, previous_review=None, confirmation=None):
     if review_order not in {"parallel", "counter_first", "verifier_first"}:
         raise ValueError("unknown_review_order")
     graph = StateGraph(CaseReviewState)
     from .research_graph_contracts import canonical_sha256
-    scope_digest = canonical_sha256({"question": question, "catalog": artifacts.catalog(),
-        "papers": {p["paper_id"]: {"workpaper": artifacts.read_paper(p["paper_id"]),
-                                   "sources": artifacts.read_paper(p["paper_id"], "sources")}
-                   for p in artifacts.catalog()["papers"]}}) if artifacts else None
+    scope_digest = case_review_scope_digest(artifacts, question) if artifacts else None
     if previous_review and previous_review.get("scope_digest") != scope_digest:
         raise ValueError("review_recovery_requires_same_question_and_artifacts")
     for role in ("counter", "verifier"):
@@ -669,7 +724,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                     HumanMessage(content="Continue this same review using the saved reads and findings. Finish only outstanding checks; explain unresolved items explicitly. This is a new configured run allowance, not a reset of lifetime usage.")],
                     "review": None}
             return {"messages": [HumanMessage(content=json.dumps({"role": _role, "question": question,
-                "catalog": artifacts.catalog(), "research_handoff": research_handoff,
+                "catalog": artifacts.catalog(), "research_handoff": research_handoff, "revision_confirmation": confirmation,
                 "handoff_notice": "Model-authored scope and limitations, not verified facts. Check against the original question and actual papers."}, ensure_ascii=False))]}
 
         def collect(state, _role=role):

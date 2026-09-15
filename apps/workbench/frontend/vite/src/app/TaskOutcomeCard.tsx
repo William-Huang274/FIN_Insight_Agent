@@ -16,6 +16,10 @@ export function TaskOutcomeCard({note}: {note: TaskOutcome}) {
     <details><summary>查看目标覆盖与修改定位</summary>
       {note.success_criteria.map((criterion,i) => <div key={i}><strong>{criterion}</strong>{note.author_note?.coverage.filter(c=>c.criterion===criterion).length ? note.author_note.coverage.filter(c=>c.criterion===criterion).map((row,j)=><p key={j}>{coverage[row.status]}：{row.explanation}<br/>定位：{locate(row)}</p>) : <p>尚未提供此项完成情况。</p>}</div>)}
       {note.author_note?.changes && <p>本次修改：{note.author_note.changes}</p>}
+      {!!note.runtime_changes?.length && <div><strong>系统记录的实际修改</strong>
+        {note.runtime_changes.map((change,i)=><p key={i}>{[...change.changed_claim_ids,
+          ...change.locations.map(row=>field[row.path.slice(1)] || (row.path === "/task_note" ? "任务说明" : row.path))].join("、") || "研究内容未变化"}</p>)}
+        <small>位置变化已记录；是否解决研究问题，以后续独立复核为准。</small></div>}
       {note.author_note?.issues.map((issue,i)=><p key={i}>问题 {issue.issue_id} · {locate(issue)}</p>)}
       {note.open_gaps.map((gap,i)=><p key={i}>研究缺口：{gap}</p>)}
       {!!note.navigation_issues.length && <p>任务说明存在未匹配目标或定位，需核对：{note.navigation_issues.join("；")}</p>}

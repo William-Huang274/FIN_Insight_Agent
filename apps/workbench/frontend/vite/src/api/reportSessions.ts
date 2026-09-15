@@ -2,6 +2,7 @@ import { Client } from "@langchain/langgraph-sdk";
 import { submissionFetch } from './submissionFetch';
 
 export type TaskOutcome = {
+  runtime_changes?: { changed_claim_ids: string[]; locations: {path: string}[]; semantic_status: string }[];
   task_id: string; run_id: string | null; attempt_id: string | null;
   execution_status: "submitted" | "needs_attention" | "error" | "cancelled" | "incomplete";
   phase: string; stop_reason: string | null; artifact_digest: string | null;

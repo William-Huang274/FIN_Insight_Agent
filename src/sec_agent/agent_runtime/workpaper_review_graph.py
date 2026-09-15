@@ -54,10 +54,18 @@ def validate_workpaper_state(value: Mapping[str, Any]) -> dict[str, Any]:
     if (notebook.agent_id != state["agent_id"] or notebook.branch_id != state["task"]["branch_id"]
         or notebook.task_revision != state["task"]["revision"]):
         raise WorkpaperReviewError("review_source_identity_mismatch")
-    return {**({"task_context": {key: json.loads(json.dumps(state["task_context"][key])) for key in
-                                ("research_question", "instruction_source", "assignment")
-                                if key in state["task_context"]}} if state.get("task_context") else {}),
+    # Preserve declared host task/guidance fields, never arbitrary private
+    # histories embedded in a context dict. Raw SDK history stays in its audit.
+    return {**({"task_context": {key: json.loads(json.dumps(state["task_context"][key])) for key in (
+                "research_question", "instruction_source", "assignment", "data_baseline_rule", "dependency_workpapers",
+                "usage_rule", "user_revision", "revision_feedback", "revision_instruction", "continuation_guidance")
+                if key in state["task_context"]}} if state.get("task_context") else {}),
             **{key: state[key] for key in ("run_id", "run_invocation_id") if key in state},
+            **{key: json.loads(json.dumps(state[key])) for key in (
+                "l0_context", "required_route_obligation_ids", "required_source_checks", "last_submission_attempt",
+                "tool_results", "research_working_state", "delegated_work", "runtime_progress", "lead_assistance_history",
+                "model_turn_invocations", "revision_targets", "revision_target_origins", "revision_state_version",
+                "last_edit_feedback", "workpaper_change_history") if key in state},
             "agent_id": notebook.agent_id, "task": state["task"],
             "notebook": notebook.model_dump(mode="json"),
             "final_submission": submission.model_dump(mode="json"),

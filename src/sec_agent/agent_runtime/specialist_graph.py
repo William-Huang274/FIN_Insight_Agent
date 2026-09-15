@@ -978,6 +978,7 @@ class SpecialistAgenticState(TypedDict, total=False):
     task_context: dict[str, Any] | None
     required_source_checks: list[dict[str, Any]]
     revision_targets: dict[str, str]
+    workpaper_change_history: list[dict[str, Any]]
     revision_target_origins: dict[str, Any]
     revision_tracking_version: int
     last_edit_feedback: dict[str, Any]
@@ -1501,6 +1502,7 @@ def build_specialist_agentic_state_graph(
     *,
     dependencies: SpecialistAgenticDependencies,
     recovery_state: Mapping[str, Any] | None = None,
+    revision_feedback: list[dict[str, Any]] | None = None,
 ) -> StateGraph[SpecialistAgenticState]:
     """Build one cyclic Specialist graph with injected model and tool ports."""
 
@@ -1567,8 +1569,17 @@ def build_specialist_agentic_state_graph(
             # Reuse the canonical notebook; do not promote a rejected candidate.
             prior = _validate_model_json(SpecialistNotebook, recovery_state.get("notebook"),
                                         code="recovery_notebook_invalid")
-            if (recovery_state.get("phase") != "specialist_human_review_handoff_emitted"
-                    or recovery_state.get("final_submission") is not None
+            revising = bool(revision_feedback)
+            if revising:
+                from .workpaper_review_graph import validate_workpaper_state
+                validate_workpaper_state(recovery_state)
+                revision_candidate = _jsonable(recovery_state["final_submission"])
+                if revision_candidate.get("task_note"):
+                    # Runtime opens this round's response slots, retaining the
+                    # prior author's note in the immutable submitted artifact.
+                    revision_candidate["task_note"]["finding_responses"] = []
+            if ((not revising and (recovery_state.get("phase") != "specialist_human_review_handoff_emitted"
+                    or recovery_state.get("final_submission") is not None))
                     or recovery_state.get("run_id") != validated.run_id
                     or recovery_state.get("agent_id") != validated.agent_id
                     or recovery_state.get("task") != validated.task.model_dump(mode="json")
@@ -1580,14 +1591,19 @@ def build_specialist_agentic_state_graph(
                     or set(prior.required_route_obligation_ids) != set(notebook.required_route_obligation_ids)):
                 raise SpecialistAgenticGraphError("recovery_task_or_data_scope_mismatch")
             return {**validated.model_dump(mode="json"),
+                "task_context": {**_jsonable(recovery_state.get("task_context") or {}), **_jsonable(validated.task_context or {}),
+                    **({"revision_feedback": _jsonable(revision_feedback),
+                        "revision_instruction": "Continue your original task and current candidate. Use precise edits. Read relevant original sources to evaluate every assigned finding; correct related prose and claim bindings together, or explain disagreement/unresolved work. Return task_note.finding_responses for every exact finding_id once. Runtime changes are not semantic closure; preserve the overall assignment and unfinished details."} if revising else {})},
+                "workpaper_change_history": _jsonable(recovery_state.get("workpaper_change_history", [])),
                 "notebook": _replace_notebook(prior, run_invocation_id=validated.run_invocation_id,
                                              status="researching").model_dump(mode="json"),
                 # A user-initiated new run has its configured allowance. Lifetime
                 # counts are retained, not reset by inventing a replacement task.
                 "max_model_turns": prior.model_turn_count + validated.max_model_turns,
                 "max_tool_actions": prior.tool_action_count + validated.max_tool_actions,
-                "last_submission_attempt": _jsonable(recovery_state.get("last_submission_attempt")),
-                **revision_state(recovery_state),
+                "last_submission_attempt": ({"arguments": revision_candidate, "accepted": False, "feedback": []}
+                    if revising else _jsonable(recovery_state.get("last_submission_attempt"))),
+                **({"revision_targets": {}, "revision_target_origins": {}} if revising else revision_state(recovery_state)),
                 "last_edit_feedback": _jsonable(recovery_state.get("last_edit_feedback", {})),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
@@ -2237,6 +2253,9 @@ def build_specialist_agentic_state_graph(
                 try:
                     candidate = apply_workpaper_edits(prior["arguments"], action)
                     action = SubmitWorkpaperAction.model_validate_json(json.dumps(candidate, ensure_ascii=False))
+                    from .workpaper_changes import workpaper_changes
+                    working["workpaper_change_history"] = [*working.get("workpaper_change_history", []),
+                        {**workpaper_changes(prior["arguments"], candidate), "attempt_id": state["run_invocation_id"]}]
                     working["last_submission_attempt"] = {"arguments": candidate, "accepted": False,
                         "tool_call_id": call.id, "tool_name": call.name, "feedback": []}
                     working["last_edit_feedback"] = {"batch_applied": True, "candidate_unchanged": False,
@@ -2424,6 +2443,13 @@ def build_specialist_agentic_state_graph(
             errors = _submission_errors(action, notebook,
                 enforce_case_route_requirements=dependencies.enforce_case_route_requirements)
             errors += tuple(source_check_errors(state.get("required_source_checks", []), notebook.model_dump(mode="json"), action))
+            findings = (state.get("task_context") or {}).get("revision_feedback", [])
+            if findings:
+                expected = {f["finding_id"] for f in findings}
+                answers = action.task_note.finding_responses if action.task_note else None
+                ids = [r.finding_id for r in answers or []]
+                if set(ids) != expected or len(ids) != len(expected):
+                    errors += ("revision_finding_responses_required:" + json.dumps(sorted(expected)),)
         revision_issues = revision_submission_issues(state, action.model_dump(mode="json")) if isinstance(action, SubmitWorkpaperAction) else []
         if errors or revision_issues:
             locations = list(revision_issues)
@@ -2432,6 +2458,8 @@ def build_specialist_agentic_state_graph(
                 error_type = "reference_validation"
                 if error.startswith("required_source_check_assessment_missing:"):
                     location, error_type = ["task_note", "coverage"], "required_assessment_missing"
+                elif error.startswith("revision_finding_responses_required:"):
+                    location, error_type = ["task_note", "finding_responses"], "required_finding_response_missing"
                 elif error.startswith("required_source_read_missing:"):
                     index = next(i for i, check in enumerate(state["required_source_checks"])
                         if error.startswith("required_source_read_missing:" + check["criterion"] + ":"))

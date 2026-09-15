@@ -112,7 +112,7 @@ def load_research_runtime_profile(root):
 
 def create_research_phase_runnables(*, root, settings, profile, case, run_id, thread_id, api_key,
                                     environment=None, public_sink, private_sink, read_guidance=None, studio=None, execution=None,
-                                    blocked_model_inputs=(), plan_invocation_id=None, budget_scope=None):
+                                    blocked_model_inputs=(), plan_invocation_id=None, budget_scope=None, author_audit_paths=()):
     if studio:
         profile = studio.apply_profile(profile)
         case = studio.apply_case(case)
@@ -320,8 +320,8 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             return await graph.ainvoke(bootstrap.graph_input.model_dump(mode="json"), {**config, "recursion_limit": 240})
 
     @asynccontextmanager
-    async def tools_for(state):
-        artifacts = current_task_artifacts(state)
+    async def tools_for(state, artifacts_override=None):
+        artifacts = artifacts_override if artifacts_override is not None else current_task_artifacts(state)
         with open_approved_data_composition(run_invocation_id=invocation, environment=environment,
                 source_read_enabled=True, live_web_read_enabled=True, case_artifacts=artifacts,
                 role_method_reader=studio.method if studio else None) as data:
@@ -345,7 +345,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     from sec_agent.research_foundation.project_asset_access import task_access_check
     source_access_check = task_access_check(environment)
 
-    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None):
+    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None, confirmation=None):
         if role == "repair" and execution.mode == "selected":
             branch = next((p["branch_id"] for p in artifacts.catalog()["papers"] if p["paper_id"] == paper_id), None)
             if branch not in execution.branch_ids:
@@ -388,7 +388,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         if role in {"counter", "verifier"}:
             return build_case_reviewer(role=role, model=model, tools=tools, artifacts=artifacts,
                 max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit,
-                method_instructions=method_instructions)
+                method_instructions=method_instructions, confirmation=confirmation)
         output_role = ("verifier" if role in {"report_verifier", "research_verifier"} else "writer" if role in {"writer", "quick_writer"}
                        else "synthesis" if role == "synthesis" else "decision" if role == "lead_decision" else "repair")
         return build_case_output_agent(role=output_role, model=model, tools=tools, artifacts=artifacts,
@@ -409,11 +409,66 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     async def execute_convergence(state, config, existing=None):
         state = await with_guidance(state, "convergence")
         async with tools_for(state) as (artifacts, tools):
+            async def run_author(paper_id, convergence_state, child_config):
+                from .author_revision import current_author_state, restore_author_history, native_revision_view, author_feedback
+                from .task_outcome import task_outcome
+                saved = current_author_state(artifacts, paper_id, convergence_state.get("revisions", {}))
+                assignment = saved.get("task_context", {}).get("assignment")
+                if not assignment:
+                    raise ValueError("original_author_assignment_unavailable")
+                if execution.mode == "selected" and saved["task"]["branch_id"] not in execution.branch_ids:
+                    raise ValueError("author_revision_outside_selected_scope")
+                repair_profile, basis, limits = model_values("repair")
+                configured = research_config().model_copy(update={
+                    "model_profiles": {**research_config().model_profiles, "specialist": repair_profile},
+                    "token_budget_basis": {**research_config().token_budget_basis, "specialist": basis.model_copy(update={"node_role": "specialist"})}})
+                adapter = DeepSeekStructuredAgentAdapter.from_config(config=configured, api_key=api_key,
+                    audit_sink=research_audit, private_audit_sink=private_sink, context_editing=profile.get("context_editing"),
+                    dispatch_guards={"specialist": budget_scope.guard("repair", repair_profile)} if budget_scope else None,
+                    source_access_check=source_access_check)
+                paths = [*author_audit_paths, *(Path(settings["audit_root"]) / thread_id).glob("*/model-context-reasoning.private.jsonl")]
+                restore_author_history(adapter, saved, paths)
+                current = artifacts.with_revisions(convergence_state.get("revisions", {}))
+                findings = author_feedback(convergence_state["pending_feedback"][paper_id], current)
+                dependencies = {row["task"]["task_id"]: row for row in current._author_states.values()
+                    if row["task"]["task_id"] in assignment.get("dependency_ids", [])}
+                if set(dependencies) != set(assignment.get("dependency_ids", [])):
+                    raise ValueError("original_author_dependency_handoff_unavailable")
+                async def resume():
+                    with open_specialist_receipted_composition(run_id=saved["run_id"], run_invocation_id=invocation,
+                            plan_invocation_id=plan_invocation_id, branch_id=saved["task"]["branch_id"],
+                            turn_source="provider_model", model_turn=visible_turn(adapter.specialist_model_turn, saved["agent_id"], assignment["task_id"]),
+                            environment=environment, source_read_enabled=True, live_web_read_enabled=True,
+                            research_task=assignment, dependency_workpapers=dependencies,
+                            research_question=state["question"], recovery_state=saved,
+                            revision_feedback=findings, required_source_checks=saved.get("required_source_checks", []),
+                            max_model_turns=limits["model_calls"], max_tool_actions=limits["tool_calls"],
+                            working_state_enabled=True, role_method_reader=studio.method if studio else None) as opened:
+                        return await opened.graph.ainvoke(opened.graph_input.model_dump(mode="json"), {**child_config, "recursion_limit": 200})
+                output = await resume()
+                emit({"kind": "task", "event": "outcome", "actor": saved["agent_id"], "task_id": assignment["task_id"],
+                    "status": output["phase"], "task_outcome": task_outcome(output, assignment=assignment)})
+                if output["phase"] != "specialist_submission_accepted":
+                    raise ValueError("original_author_revision_incomplete:" + str(output.get("review_reason")))
+                return native_revision_view(output, current, paper_id, findings)
+
+            async def review_revisions(current, context, child_config):
+                # A fresh data view is essential: MCP readers and calculators
+                # must see the same current candidate the review validator sees.
+                async with tools_for(state, current) as (_, current_tools):
+                    reviewers = {role: native_agent(role, current_tools, current, confirmation=context,
+                        actor_override="confirmation_" + role) for role in ("counter", "verifier")}
+                    graph = build_case_review_graph(reviewers=reviewers, artifacts=current, question=state["question"],
+                        run_id=research_id, run_invocation_id=invocation, confirmation=context,
+                        review_order=studio.review_order if studio else "parallel").compile()
+                    return await graph.ainvoke({"run_id": research_id, "run_invocation_id": invocation}, child_config)
+
             def make_agent(role, current, *, feedback=None, paper_id=None, correction_round=0, revising_report=False):
                 return native_agent(role, tools, current, feedback=feedback, paper_id=paper_id,
                     revising=role == "writer" and revising_report)
             graph = build_research_convergence_graph(artifacts=artifacts, question=state["question"], feedback=state["feedback"],
                 hierarchical=True, max_correction_rounds=2,
+                run_author=run_author, review_revisions=review_revisions,
                 make_agent=make_agent, max_parallel_authors=profile["max_parallel_tasks"],
                 research_review_context={**{r: state.get("case_review", {})[r]["review"] for r in ("counter", "verifier") if r in state.get("case_review", {})},
                     "lead_handoff": state.get("research_handoff"),

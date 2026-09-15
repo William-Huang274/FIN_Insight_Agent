@@ -68,7 +68,7 @@ class CaseArtifacts:
     def __init__(self, papers: Sequence[Mapping]):
         if not papers:
             raise ValueError("research_bundle_empty")
-        self._papers, self._sources = {}, {}
+        self._papers, self._sources, self._author_states = {}, {}, {}
         identities, binding = set(), None
         for number, original in enumerate(papers, 1):
             paper = validate_workpaper_state(original)
@@ -89,6 +89,7 @@ class CaseArtifacts:
                 raise ValueError("research_bundle_case_or_data_scope_mismatch")
             binding = current
             paper_id = f"P{number:02d}"
+            self._author_states[paper_id] = deepcopy(paper)
             sources, aliases = {}, {}
             for observation in paper["notebook"]["observations"]:
                 for item in observation["content"]:
@@ -209,6 +210,8 @@ class CaseArtifacts:
             if paper_id not in result._papers or row.get("status") != "revision_submitted":
                 raise ValueError("invalid_paper_revision_view")
             result._papers[paper_id]["workpaper"] = deepcopy(row["workpaper"])
+            if row.get("author_state"):
+                result._author_states[paper_id] = deepcopy(row["author_state"])
             for ref, source in row.get("sources", {}).items():
                 if ref in result._sources and result._sources[ref] != source:
                     raise ValueError("revision_source_conflict")

@@ -76,6 +76,8 @@ def research_decision_context(artifacts, current, state, *, question, research_r
 
 
 class ResearchConvergenceState(TypedDict, total=False):
+    workpaper_confirmation: dict[str, Any]
+    confirmation_history: Annotated[list[dict[str, Any]], operator.add]
     unchanged_corrections: Annotated[list[str], operator.add]
     lead_decision: dict[str, Any]
     revisions: Annotated[dict[str, Any], operator.or_]
@@ -124,7 +126,8 @@ def route_material_findings(review, artifacts, *, stage, round_index):
 
 def build_research_convergence_graph(*, artifacts, question, feedback, research_review_context,
                                      make_agent, max_parallel_authors=2, existing_state=None, human_feedback=None,
-                                     execution_plan=None, hierarchical=False, max_correction_rounds=1):
+                                     execution_plan=None, hierarchical=False, max_correction_rounds=1,
+                                     run_author=None, review_revisions=None):
     """A current-task graph: authors -> Lead -> research review -> report review.
 
     make_agent reuses native create_agent and current read-only MCP tools. It is
@@ -177,7 +180,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             return "finish"
         ids = ready_authors(state)
         return [Send("responsible_author", {**state, "paper_id": pid}) for pid in ids] if ids else (
-            "lead_synthesis" if hierarchical or depth == "extended" else "prepare_focused_report" if depth == "focused" else "writer")
+            "confirm_workpapers" if review_revisions else "lead_synthesis" if hierarchical or depth == "extended" else "prepare_focused_report" if depth == "focused" else "writer")
 
     def prepare_focused_report(state):
         from .report_synthesis_agent import report_citations
@@ -223,6 +226,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             decision_context = research_decision_context(artifacts, current, state,
                 question=question, research_review_context=research_review_context)
             body["research_decision_context"] = decision_context
+            if state.get("workpaper_confirmation"):
+                body["independent_current_workpaper_confirmation"] = deepcopy(state["workpaper_confirmation"])
             body.update(catalog=current.catalog(),
                 author_responses={pid: row["finding_responses"] for pid, row in state.get("revisions", {}).items()})
             if hierarchical:
@@ -292,6 +297,9 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             responses = {f["finding_id"]: f for f in previous.get("finding_responses", [])}
             responses.update({f["finding_id"]: f for f in output["finding_responses"]})
             output["finding_responses"] = list(responses.values())
+            from .workpaper_changes import workpaper_changes
+            output["runtime_changes"] = workpaper_changes(current.read_paper(paper_id),
+                artifacts.with_revisions({**state.get("revisions", {}), paper_id: output}).read_paper(paper_id))
             updates.update(revisions={paper_id: output}, author_completed={paper_id: round_index})
             # Exact no-change is an execution fact, not a semantic quality verdict.
             # Do not spend on downstream synthesis when an author claims a repair
@@ -310,7 +318,49 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         return updates
 
     async def author(state, config: RunnableConfig):
+        if run_author:
+            from .workpaper_changes import workpaper_changes
+            pid = state["paper_id"]
+            current = artifacts.with_revisions(state.get("revisions", {}))
+            event("author_" + pid, "started", paper_id=pid, correction_round=state["correction_round"])
+            output = await run_author(pid, state, config)
+            after = artifacts.with_revisions({**state.get("revisions", {}), pid: output})
+            changes = workpaper_changes(current.read_paper(pid), after.read_paper(pid))
+            output = {**output, "runtime_changes": changes}
+            event("author_" + pid, "outcome", status="submitted_pending_independent_confirmation",
+                paper_id=pid, runtime_changes=changes)
+            updates = {"revisions": {pid: output}, "author_completed": {pid: state["correction_round"]},
+                "artifact_history": [{"actor": "author_" + pid, "correction_round": state["correction_round"],
+                    "output": {k: v for k, v in output.items() if k != "author_state"}}]}
+            if (any(r["disposition"] == "corrected" for r in output["finding_responses"])
+                    and not changes["changed_claim_ids"] and not any(r["path"] != "/task_note" for r in changes["locations"])):
+                updates["unchanged_corrections"] = [pid]
+            return updates
         return await invoke("repair", state, config, paper_id=state["paper_id"])
+
+    async def confirm_workpapers(state, config: RunnableConfig):
+        from .case_review_agent import CaseReview, case_review_scope_digest, validate_finding_confirmation
+        from .research_session import responsible_author_feedback
+        from .workpaper_changes import confirmation_context
+        context = confirmation_context(artifacts, state.get("revisions", {}), state["pending_feedback"])
+        current = artifacts.with_revisions(state.get("revisions", {}))
+        result = await review_revisions(current, context, config)
+        record = {"context": context, "review": result, "correction_round": state["correction_round"]}
+        update = {"workpaper_confirmation": record, "confirmation_history": [record],
+            "artifact_history": [{"actor": "independent_workpaper_confirmation", "correction_round": state["correction_round"], "output": record}]}
+        if result.get("scope_digest") != case_review_scope_digest(current, question):
+            return {**update, "stop_reason": "independent_confirmation_stale_version"}
+        if result.get("phase") != "case_review_ready_for_convergence":
+            return {**update, "stop_reason": "independent_confirmation_incomplete"}
+        for role in ("counter", "verifier"):
+            validate_finding_confirmation(CaseReview.model_validate(result[role]["review"]), context, current)
+        pending = responsible_author_feedback(result, current)
+        for rows in pending.values():
+            for finding in rows:
+                finding["finding_id"] = f"confirmation:{state['correction_round']}:" + finding["finding_id"]
+        event("independent_workpaper_confirmation", "outcome", status="findings_returned_to_lead" if pending else "confirmed_pending_lead_judgment",
+            objective="新版底稿独立复核完成；" + ("仍有需处理的问题，已集中交回研究负责人。" if pending else "已记录逐项确认，等待研究负责人作最终判断。"))
+        return {**update, "pending_feedback": pending}
 
     def actor_node(role):
         async def execute(state, config: RunnableConfig):
@@ -321,6 +371,9 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         decision = state["lead_decision"]
         if decision["action"] == "stop":
             return "decision_stop"
+        if (decision["action"] == "repair" and state.get("workpaper_confirmation")
+                and state["correction_round"] >= max_correction_rounds):
+            return "correction_limit_stop"
         return "apply_lead_repairs" if decision["action"] == "repair" else "lead_synthesis"
 
     def apply_lead_repairs(state):
@@ -337,7 +390,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
                 feedback.setdefault(finding["paper_id"], []).append({
                     **finding, "reviewer": "lead_decision", "severity": "material",
                     "diagnosis": finding["rationale"], "lead_rationale": finding["rationale"]})
-        return {"pending_feedback": feedback}
+        repeated = any(state.get("author_completed", {}).get(pid) == state["correction_round"] for pid in feedback)
+        return {"pending_feedback": feedback, "correction_round": state["correction_round"] + int(repeated)}
 
     def route_review(state):
         stage = state["active_review"]
@@ -372,7 +426,11 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_node("lead_decision", actor_node("lead_decision"))
     graph.add_node("apply_lead_repairs", apply_lead_repairs)
     graph.add_node("decision_stop", lambda _: {"stop_reason": "lead_retained_unresolved_research"})
-    graph.add_conditional_edges("lead_decision", after_decision, ["decision_stop", "apply_lead_repairs", "lead_synthesis"])
+    graph.add_node("correction_limit_stop", lambda _: {"stop_reason": "material_findings_remain_after_targeted_correction"})
+    graph.add_edge("correction_limit_stop", "finish")
+    graph.add_node("confirm_workpapers", confirm_workpapers)
+    graph.add_conditional_edges("confirm_workpapers", lambda s: "finish" if s.get("stop_reason") else "lead_decision", ["finish", "lead_decision"])
+    graph.add_conditional_edges("lead_decision", after_decision, ["decision_stop", "correction_limit_stop", "apply_lead_repairs", "lead_synthesis"])
     graph.add_edge("decision_stop", "finish")
     graph.add_edge("apply_lead_repairs", "prepare_authors")
     graph.add_node("prepare_authors", prepare_authors)
@@ -385,7 +443,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
     graph.add_node("finish", finish)
     graph.add_edge(START, "initialize")
     graph.add_conditional_edges("initialize", initial_route, ["lead_decision", "prepare_authors", "prepare_focused_report", "route_review", "writer"])
-    graph.add_conditional_edges("prepare_authors", author_routes, ["responsible_author", "lead_synthesis", "writer", "prepare_focused_report", "finish"])
+    graph.add_conditional_edges("prepare_authors", author_routes, ["responsible_author", "confirm_workpapers", "lead_synthesis", "writer", "prepare_focused_report", "finish"])
     graph.add_edge("prepare_focused_report", "report_verifier")
     graph.add_edge("responsible_author", "prepare_authors")
     graph.add_edge("lead_synthesis", "research_verifier")

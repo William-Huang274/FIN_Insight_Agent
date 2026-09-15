@@ -34,6 +34,22 @@ def test_catalog_exposes_actual_claim_binding_and_rejects_guessed_number():
     assert "P01:C999" not in artifacts.catalog()["papers"][0]["citation_ids"]
 
 
+def test_original_assignment_survives_handoff_without_private_worker_history():
+    from test_research_session import _new_worker_fixture
+    from sec_agent.agent_runtime.workpaper_review_graph import validate_workpaper_state
+    paper = _new_worker_fixture()
+    assignment = {"task_id": paper['task']['task_id'], "objective": "Check scope before combining periods.",
+                  "success_criteria": ["Retain quarter versus annual qualifiers."], "requested_capability_refs": []}
+    paper['task_context'] = {'assignment': deepcopy(assignment), 'research_question': 'Current overall question',
+                             'private_history': 'PRIVATE_WORKER_HISTORY_MUST_NOT_PROPAGATE'}
+    retained = validate_workpaper_state(paper)
+    paper['task_context']['assignment']['success_criteria'].append('Later unrelated mutation')
+    assert retained['task_context']['assignment'] == assignment
+    catalog = CaseArtifacts([retained]).catalog()
+    assert catalog['papers'][0]['assignment'] == {k: assignment[k] for k in ('task_id', 'objective', 'success_criteria')}
+    assert 'PRIVATE_WORKER_HISTORY_MUST_NOT_PROPAGATE' not in json.dumps(retained) + json.dumps(catalog)
+
+
 def test_answer_can_reference_exact_operand_source_alias_without_claim_renaming():
     from test_research_session import _new_worker_fixture
     from sec_agent.agent_runtime.report_synthesis_agent import answer_citations

@@ -22,6 +22,57 @@ from langgraph.types import Command, Send
 
 from .report_synthesis_agent import ReportReview, report_model_view, review_responsibility_errors, paper_revision_input
 from .research_execution_plan import ResearchExecutionPlan
+from .research_graph_contracts import canonical_sha256
+
+
+def research_decision_context(artifacts, current, state, *, question, research_review_context):
+    """Rebuild version/issue navigation from native artifacts, not a model summary.
+
+    Version changes are mechanical facts; their financial consequences still
+    require the Lead's judgment. No finding is marked resolved by this view.
+    """
+    papers = []
+    versions = {}
+    for row in current.catalog()["papers"]:
+        pid = row["paper_id"]
+        before, after = artifacts.read_paper(pid), current.read_paper(pid)
+        old = {c["claim_id"]: c for c in before["claims"]}
+        new = {c["claim_id"]: c for c in after["claims"]}
+        baseline, version = canonical_sha256(before), canonical_sha256(after)
+        versions[pid] = version
+        papers.append({"paper_id": pid, "baseline_digest": baseline, "current_digest": version,
+            "baseline_status": "current_version" if baseline == version else "superseded_version_not_a_financial_verdict",
+            "changed_claim_ids": sorted(k for k in old.keys() | new.keys() if old.get(k) != new.get(k)),
+            "changed_prose_fields": [key for key in ("thesis", "mechanism", "narrative_markdown",
+                "counterevidence", "what_would_change", "open_gaps") if before.get(key) != after.get(key)],
+            "open_gaps": deepcopy(after.get("open_gaps", [])),
+            "pending_findings": deepcopy(state.get("pending_feedback", {}).get(pid, [])),
+            "author_responses": deepcopy(state.get("revisions", {}).get(pid, {}).get("finding_responses", [])),
+            "response_status_notice": "Author responses are assertions, not independent closure. Recheck affected claims AND prose.",
+            "read_tool": "read_current_workpaper", "arguments": {"paper_id": pid},
+            "source_catalog_arguments": {"paper_id": pid, "section": "sources"}})
+    prior = next((row for row in reversed(state.get("artifact_history", []))
+                  if row.get("actor") == "synthesis"), None)
+    basis = (prior or {}).get("decision_context", {}).get("paper_version_digests")
+    synthesis_status = ("absent" if not state.get("synthesis") else
+                        "current_paper_versions_not_automatic_approval" if basis == versions else
+                        "requires_reassessment_against_current_papers")
+    return {"question": question, "research_as_of": current.research_as_of,
+        "paper_version_digests": versions, "papers": papers, "previous_synthesis_status": synthesis_status,
+        "review_unresolved_data_requests": {role: deepcopy(row.get("unresolved_data_requests", []))
+            for role, row in research_review_context.items() if role in {"counter", "verifier"}},
+        "incomplete_review_records": deepcopy(research_review_context.get("incomplete_review_records", {})),
+        "latest_stage_review": {"stage": state.get("active_review"),
+            "review": deepcopy(state.get(state.get("active_review", ""), {}))},
+        "current_stage": {"correction_round": state.get("correction_round", 0),
+            "pending_finding_ids": {pid: [f["finding_id"] for f in rows]
+                for pid, rows in state.get("pending_feedback", {}).items()}},
+        "usage": "Current native version/issue navigation, NOT new evidence or a compressed research conclusion. "
+            "Read current workpapers and relevant original sources with the offered readers before dependent judgment. "
+            "Reconcile support, counterevidence, period and scope; explain which old interpretations remain valid, "
+            "are withdrawn or unresolved. Never use superseded wording as a current premise merely because it "
+            "appears in earlier messages. A corrected citation does not prove the associated prose was repaired. "
+            "Preserve unresolved issues and original source identities; do not restart unaffected research."}
 
 
 class ResearchConvergenceState(TypedDict, total=False):
@@ -151,6 +202,7 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
         value = {"revisions": deepcopy(state.get("revisions", {})),
                  "synthesis": deepcopy(state.get("synthesis", {}))}
         body = {"question": question, "research_as_of": artifacts.research_as_of}
+        decision_context = None
         if human_feedback:
             body.update(human_feedback=human_feedback, human_feedback_is_not_evidence=True)
         if paper_id:
@@ -158,6 +210,9 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             value = {}
             body.update(paper_revision_input(current, paper_id, own_feedback))
         else:
+            decision_context = research_decision_context(artifacts, current, state,
+                question=question, research_review_context=research_review_context)
+            body["research_decision_context"] = decision_context
             body.update(catalog=current.catalog(),
                 author_responses={pid: row["finding_responses"] for pid, row in state.get("revisions", {}).items()})
             if role == "synthesis":
@@ -213,7 +268,8 @@ def build_research_convergence_graph(*, artifacts, question, feedback, research_
             "model_calls": sum(isinstance(m, AIMessage) for m in result.get("messages", [])),
             "tool_calls": sum(isinstance(m, ToolMessage) for m in result.get("messages", []))}
         event(actor, "outcome", status="submitted", correction_round=round_index, paper_id=paper_id)
-        updates = {"actor_metrics": [metrics], "artifact_history": [{"actor": actor, "correction_round": round_index, "output": output}]}
+        updates = {"actor_metrics": [metrics], "artifact_history": [{"actor": actor, "correction_round": round_index, "output": output,
+            **({"decision_context": deepcopy(decision_context)} if decision_context is not None else {})}]}
         if paper_id:
             previous = state.get("revisions", {}).get(paper_id, {})
             output = deepcopy(output)

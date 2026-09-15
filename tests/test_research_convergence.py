@@ -10,7 +10,7 @@ import pytest
 from sec_agent.agent_runtime.case_artifacts import CaseArtifacts
 from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent, ReportReview
 from sec_agent.agent_runtime.case_review_agent import case_mcp_tools
-from sec_agent.agent_runtime.research_convergence import build_research_convergence_graph, route_material_findings
+from sec_agent.agent_runtime.research_convergence import build_research_convergence_graph, route_material_findings, research_decision_context
 from test_report_synthesis_agent import NativeFixtureModel, revision_fixture
 from test_case_review_agent import call
 from test_lead_research_graph import _task, _worker_result, BRANCHES
@@ -34,6 +34,48 @@ def finding(owner, *, pid="P02", finding_id="F1", severity="material"):
 def independent_review(findings=()):
     return {"summary": "Independent scripted review for graph qualification; it does not prove live financial quality or public acceptance.",
             "findings": list(findings), "unresolved_data_requests": []}
+
+
+def test_decision_context_marks_changed_versions_without_inventing_semantic_resolution():
+    artifacts = artifact_fixture()
+    original = artifacts.read_paper('P02')
+    base = research_decision_context(artifacts, artifacts, {}, question='Overall task', research_review_context={})
+    revised = deepcopy(original)
+    # A trusted-native artifact fixture changes claim metadata only. This does
+    # not establish that its unchanged prose or financial conclusion is correct.
+    revised['claims'][0]['authority_note'] = 'Revised fixture qualifier.'
+    response = {'finding_id': 'verifier:F1', 'disposition': 'corrected', 'explanation': 'Author claims a local fix.'}
+    revision = {'status': 'revision_submitted', 'workpaper': revised, 'finding_responses': [response]}
+    current = artifacts.with_revisions({'P02': revision})
+    reviews = {'verifier': {'unresolved_data_requests': ['Check the denominator.']},
+               'incomplete_review_records': {'counter': {'status': 'review_incomplete', 'recorded_findings': []}}}
+    state = {'synthesis': {'narrative_markdown': 'Previous judgment'}, 'revisions': {'P02': revision},
+        'artifact_history': [{'actor': 'synthesis', 'decision_context': base}], 'correction_round': 1,
+        'pending_feedback': {'P02': [{'finding_id': 'verifier:F1', 'diagnosis': 'Still needs independent checking.'}]}}
+    decision = research_decision_context(artifacts, current, state, question='Overall task', research_review_context=reviews)
+    changed = next(p for p in decision['papers'] if p['paper_id'] == 'P02')
+    assert decision['previous_synthesis_status'] == 'requires_reassessment_against_current_papers'
+    assert changed['baseline_status'] == 'superseded_version_not_a_financial_verdict'
+    assert changed['changed_claim_ids'] == [original['claims'][0]['claim_id']]
+    assert changed['changed_prose_fields'] == []
+    assert changed['author_responses'] == [response] and changed['pending_findings']
+    assert decision['review_unresolved_data_requests']['verifier'] == ['Check the denominator.']
+    assert decision['incomplete_review_records'] == reviews['incomplete_review_records']
+    assert current.read_paper(**changed['arguments']) == revised
+    assert current.read_paper(**{'paper_id': 'P02', 'section': 'sources'}) == artifacts.read_paper('P02', 'sources')
+    assert artifacts.read_paper('P02') == original
+    unaffected = next(p for p in decision['papers'] if p['paper_id'] == 'P01')
+    assert unaffected['baseline_status'] == 'current_version' and unaffected['changed_claim_ids'] == []
+    assert original['narrative_markdown'] not in json.dumps(decision)  # Navigation, not duplicate full papers.
+    decision['papers'][1]['author_responses'][0]['explanation'] = 'Changed request copy'
+    assert state['revisions']['P02']['finding_responses'][0]['explanation'] == 'Author claims a local fix.'
+
+
+def test_legacy_synthesis_without_version_basis_requires_reassessment():
+    artifacts = artifact_fixture()
+    view = research_decision_context(artifacts, artifacts, {'synthesis': {'title': 'Saved older synthesis'}},
+        question='Current task', research_review_context={})
+    assert view['previous_synthesis_status'] == 'requires_reassessment_against_current_papers'
 
 
 async def exercise_case(*, terminal_owner=None, research_owner=None, repeat=False, initial_feedback=None, existing_state=None, local_writer_edits=False, depth=None):
@@ -117,6 +159,16 @@ def test_lead_actual_method_read_and_revised_papers_enter_writer_without_private
     assert [s[0] for s in sequence] == ["repair", "synthesis", "research_verifier", "writer", "report_verifier"]
     assert result["phase"] == "case_report_ready_for_human_review"
     lead = models[("synthesis", None, 0)]
+    decision = json.loads(lead.contexts[0][1].content)['research_decision_context']
+    assert decision['question'] == 'Synthetic question on growth quality and realization'
+    affected = next(p for p in decision['papers'] if p['paper_id'] == 'P02')
+    assert affected['pending_findings'] == feedback['P02']
+    assert affected['author_responses'][0]['disposition'] == 'corrected'
+    assert 'not independent closure' in affected['response_status_notice']
+    saved_lead = next(r for r in result['artifact_history'] if r['actor'] == 'synthesis')
+    assert saved_lead['decision_context'] == decision
+    writer = json.loads(models[('writer', None, 0)].contexts[0][1].content)
+    assert writer['research_decision_context']['previous_synthesis_status'] == 'current_paper_versions_not_automatic_approval'
     assert any(getattr(m, "name", "") == "get_research_method" for m in lead.contexts[-1])
     assert result["revisions"]["P02"]["workpaper"]["thesis"] in str(lead.contexts[0])
     writer_input = json.loads(models[("writer", None, 0)].contexts[0][1].content)

@@ -23,6 +23,7 @@ from .specialist_graph import (
 from .workpaper_review_graph import validate_workpaper_state
 from sec_agent.research_foundation.research_methods import get_research_method
 from .research_execution_plan import ResearchExecutionPlan
+from .task_outcome import task_outcome
 
 
 class LeadResearchError(ValueError):
@@ -241,8 +242,10 @@ def build_lead_research_graph(
                 and set(task["dependency_ids"]).issubset(done)][:max_parallel_tasks]
 
     def workpaper_view(key, value):
+        paper = value.get("final_submission")
         return {"task_id": key, "branch_id": value["task"]["branch_id"],
-                "workpaper": value.get("final_submission"),
+                "task_outcome": task_outcome(value),
+                "workpaper": {k: v for k, v in paper.items() if k != "task_note"} if paper else None,
                 "uncompleted_reviewed_route_ids": sorted(set(value["notebook"]["required_route_obligation_ids"])
                     - set(value["notebook"]["satisfied_route_obligation_ids"])),
                 "independent_semantic_review_required": True}
@@ -472,6 +475,7 @@ def build_lead_research_graph(
         for field in ("owner_data_gate_decision_digest", "source_route_catalog_digest", "inventory_snapshot_digest"):
             if result["notebook"][field] != getattr(expected_input.l0_context, field):
                 raise LeadResearchError("delegated_result_data_scope_mismatch")
+        outcome = task_outcome(result, assignment=task)
         if result.get("phase") == "specialist_submission_accepted":
             result = validate_workpaper_state(result)
             status = "submitted"
@@ -479,7 +483,8 @@ def build_lead_research_graph(
             status = "needs_attention"
         else:
             raise LeadResearchError("delegated_result_terminal_unrecognized")
-        return {"task_results": [{"task_id": task["task_id"], "status": status, "agent_state": result}]}
+        return {"task_results": [{"task_id": task["task_id"], "status": status, "agent_state": result,
+                                  "task_outcome": outcome}]}
 
     def collect(state):
         # The long-running planning tool receives its actual worker results once.
@@ -488,6 +493,7 @@ def build_lead_research_graph(
         new = [row for row in state["task_results"] if row["task_id"] not in prior]
         content = json.loads(replies[0]["content"])
         content["task_results"] = [{**workpaper_view(row["task_id"], row["agent_state"]), "status": row["status"],
+            "task_outcome": row["task_outcome"],
             "stop_reason": row["agent_state"].get("human_review_handoff")} for row in new]
         replies[0]["content"] = json.dumps(content, ensure_ascii=False)
         # A semantic follow-up is permitted; recreating a failed model worker

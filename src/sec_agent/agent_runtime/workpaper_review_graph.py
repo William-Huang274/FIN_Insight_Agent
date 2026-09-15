@@ -57,6 +57,7 @@ def validate_workpaper_state(value: Mapping[str, Any]) -> dict[str, Any]:
     return {**({"task_context": {key: json.loads(json.dumps(state["task_context"][key])) for key in
                                 ("research_question", "instruction_source", "assignment")
                                 if key in state["task_context"]}} if state.get("task_context") else {}),
+            **{key: state[key] for key in ("run_id", "run_invocation_id") if key in state},
             "agent_id": notebook.agent_id, "task": state["task"],
             "notebook": notebook.model_dump(mode="json"),
             "final_submission": submission.model_dump(mode="json"),

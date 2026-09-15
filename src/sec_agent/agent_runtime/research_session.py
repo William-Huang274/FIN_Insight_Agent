@@ -158,7 +158,8 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         _stage("research", "outcome", status="handoff" if ready else "needs_attention")
         prior_done = {row["task"]["task_id"] for row in retained}
         new_tasks = deepcopy(result.get("tasks", []))
-        new_outcomes = [{"task_id": row["task_id"], "status": row["status"]} for row in outcomes]
+        new_outcomes = [{"task_id": row["task_id"], "status": row["status"],
+            **({"task_outcome": deepcopy(row["task_outcome"])} if row.get("task_outcome") else {})} for row in outcomes]
         attempt = {"run_id": config.get("configurable", {}).get("run_id"), "continued": continuing,
                    "tasks": new_tasks, "outcomes": new_outcomes, "phase": result.get("phase"),
                    "recorded_at": datetime.now(timezone.utc).isoformat()}
@@ -189,7 +190,8 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
                 "revisions": {}, "phase": "single_agent_unreviewed"}
         return {"case_profile": request.case_profile, "case_papers": papers,
             "research_tasks": [*[t for t in state.get("research_tasks", []) if t["task_id"] in prior_done], *new_tasks],
-            "research_outcomes": [*[{"task_id": key, "status": "submitted"} for key in prior_done], *new_outcomes],
+            "research_outcomes": [*[deepcopy(next((row for row in state.get("research_outcomes", [])
+                if row["task_id"] == key), {"task_id": key, "status": "submitted"})) for key in prior_done], *new_outcomes],
             "research_attempt_history": [*history, attempt],
             "research_failed_workpapers": failed,
             "continue_remaining_research": False,

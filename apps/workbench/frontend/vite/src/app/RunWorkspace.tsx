@@ -8,6 +8,7 @@ import { executionModeName } from "./ExecutionPicker";
 import { useSearchParams } from "react-router";
 import { ContextUsage } from "./ContextUsage";
 import { PublicActivity } from "./PublicActivity";
+import { TaskOutcomeCard } from "./TaskOutcomeCard";
 
 const statusName = (s: string) => ({running:"执行中", pending:"等待执行", success:"运行完成", interrupted:"已停止 / 到达等待点", error:"执行失败", submitted:"底稿已提交", handoff:"已交接结果"} as Record<string,string>)[s] || s;
 const needsAttention = (phase?: string) => phase === "research_needs_attention";
@@ -28,7 +29,16 @@ export function RunWorkspace({ session, events, connected, refresh, onReport }: 
   const failures = (session.research_failures || []).filter(f => f.run_id === run?.run_id);
   const incomplete = !live && (run?.status === "error" || failures.length > 0 ||
     (run?.run_id === session.runs?.[0]?.run_id && needsAttention(session.phase)));
-  const recorded = useMemo(() => events.filter(e => !run || e.run_id === run.run_id).sort((a,b) => (a.recorded_at || "").localeCompare(b.recorded_at || "")), [events, run?.run_id]);
+  const recorded = useMemo(() => {
+    const rows = events.filter(e => !run || e.run_id === run.run_id);
+    // Recover saved handoffs when a live event was missed, without duplicating it.
+    for (const saved of session.task_outcome_history || []) {
+      const note = saved.task_outcome;
+      if (saved.run_id !== run?.run_id || rows.some(e=>e.task_outcome?.task_id===note.task_id && e.task_outcome?.attempt_id===note.attempt_id && e.task_outcome?.artifact_digest===note.artifact_digest)) continue;
+      rows.push({kind:"task", actor:session.research_tasks?.find(t=>t.task_id===note.task_id)?.owner_role || "research", event:"outcome", run_id:saved.run_id || undefined, task_id:note.task_id, task_outcome:note});
+    }
+    return rows.sort((a,b) => (a.recorded_at || "").localeCompare(b.recorded_at || ""));
+  }, [events, run?.run_id, session.task_outcome_history, session.research_tasks]);
   const actors = [...new Set(recorded.map(e => e.actor))];
   const visible = actor ? recorded.filter(e => e.actor === actor) : recorded;
   const groups = useMemo(() => {
@@ -65,7 +75,7 @@ export function RunWorkspace({ session, events, connected, refresh, onReport }: 
     <div className="fs-live-layout"><div className="fs-live-main"><div className="fs-live-feed" ref={feed} role="log" aria-label="Agent 活动流" aria-live="polite" onScroll={() => { const el = feed.current!; setFollow(el.scrollHeight - el.scrollTop - el.clientHeight < 70); }}>
       <div className="fs-live-request"><small>{actionName(run?.human_action)}</small><p>{run?.request_message || (run?.human_action === "research" ? session.question : run?.revision_target ? claimLabel(run.revision_target.citation_id, session.report?.citations || {}) : "本次请求的执行活动")}</p></div>
       {groups.map((g,i) => <article className={`fs-live-entry ${g.kind}`} key={`${g.events[0].recorded_at}:${i}`}><header><span className="fs-live-avatar">{g.kind === "calls" ? <Terminal size={17}/> : <Radio size={17}/>}</span><strong>{nodeName(g.actor)}</strong><time>{g.events[0].recorded_at ? new Date(g.events[0].recorded_at).toLocaleTimeString("zh-CN") : ""}</time></header>
-        {g.kind === "message" ? <div className="fs-live-prose">{g.events[0].event === "output" && <strong className="fs-live-output-label">{g.events[0].status === "recovered_candidate" ? "从历史提交记录恢复的候选输出" : "模型输出 · 候选内容"}</strong>}<PublicActivity text={describe(g.events[0])}/>{g.events[0].status === "planned" && <small>计划中的动作，执行结果见后续工具记录</small>}{g.events[0].event === "output" && <small>保留模型原文；提交校验与独立复核结果以对应阶段为准。</small>}</div> : <details className="fs-live-calls"><summary>模型与工具活动 · {g.events.length} 条记录</summary>{g.events.map((e,j) => <div key={j}>{e.status === "error" || e.status === "provider_failed" ? <TriangleAlert size={15}/> : e.event === "outcome" ? <CheckCircle2 size={15}/> : <Terminal size={15}/>}<span>{e.kind === "model" ? `模型 ${e.model || "已配置模型"}` : toolName(e.tool || "")} · {e.event === "outcome" ? e.status === "success" ? "已返回" : statusName(e.status || "结果已记录") : "已发起"}{e.total_tokens != null ? ` · ${e.total_tokens.toLocaleString()} tokens` : ""}</span></div>)}</details>}
+        {g.kind === "message" ? <div className="fs-live-prose">{g.events[0].event === "output" && <strong className="fs-live-output-label">{g.events[0].status === "recovered_candidate" ? "从历史提交记录恢复的候选输出" : "模型输出 · 候选内容"}</strong>}{g.events[0].task_outcome ? <TaskOutcomeCard note={g.events[0].task_outcome}/> : <PublicActivity text={describe(g.events[0])}/>}{g.events[0].status === "planned" && <small>计划中的动作，执行结果见后续工具记录</small>}{g.events[0].event === "output" && <small>保留模型原文；提交校验与独立复核结果以对应阶段为准。</small>}</div> : <details className="fs-live-calls"><summary>模型与工具活动 · {g.events.length} 条记录</summary>{g.events.map((e,j) => <div key={j}>{e.status === "error" || e.status === "provider_failed" ? <TriangleAlert size={15}/> : e.event === "outcome" ? <CheckCircle2 size={15}/> : <Terminal size={15}/>}<span>{e.kind === "model" ? `模型 ${e.model || "已配置模型"}` : toolName(e.tool || "")} · {e.event === "outcome" ? e.status === "success" ? "已返回" : statusName(e.status || "结果已记录") : "已发起"}{e.total_tokens != null ? ` · ${e.total_tokens.toLocaleString()} tokens` : ""}</span></div>)}</details>}
       </article>)}
       {!groups.length && <p>{live ? "等待 Agent 发出首条活动…" : "本次运行未保存公开活动；不能从耗时重建过程。"}</p>}
       {incomplete && <section className="fs-live-failure" aria-label="失败说明"><strong>研究未完成 · 已产生的输出仍可查看</strong><p>{recorded.filter(e => e.error_type).at(-1)?.error_type ? `系统记录：${recorded.filter(e => e.error_type).at(-1)?.error_type}。` : failures.length ? "以下底稿尚未通过提交校验或完成研究。" : "本次历史记录没有保存可展示的详细系统错误。"} {run?.run_id === session.runs?.[0]?.run_id && session.research_stop_reason}</p><p>模型候选输出不代表提交已通过校验。未收到模型的失败说明时，不推测模型理由。</p></section>}

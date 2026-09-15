@@ -365,7 +365,11 @@ def test_explicit_native_continuation_only_runs_missing_theme_preserves_original
         history = continued["research_attempt_history"]
         assert history[0]["outcomes"] == original["research_outcomes"]
         assert history[0]["outcomes"][1]["status"] == "needs_attention"
-        assert history[1]["outcomes"] == [{"task_id": "task:compute", "status": "submitted"}]
+        assert [{key: row[key] for key in ("task_id", "status")} for row in history[1]["outcomes"]] == [{"task_id": "task:compute", "status": "submitted"}]
+        assert history[1]["outcomes"][0]["task_outcome"]["execution_status"] == "submitted"
+        assert history[1]["outcomes"][0]["task_outcome"]["author_note_status"] == "missing"
+        assert next(row for row in continued["research_outcomes"] if row["task_id"] == "task:price") == next(
+            row for row in original["research_outcomes"] if row["task_id"] == "task:price")
         assert len(continued["research_tasks"]) == 2 and seen == {"research": 2, "review": 1, "converge": 1, "ask": 0}
         assert len([snap for snap in saver.list(None) if snap.config["configurable"].get("checkpoint_ns") == ""]) > 2
     asyncio.run(exercise())

@@ -26,6 +26,7 @@ from pydantic import (
 )
 
 from .research_contracts import ProviderEvidenceIntent
+from .task_outcome import AuthorTaskNote
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
 from sec_agent.research_foundation.source_quotes import contains_source_quote
@@ -209,6 +210,8 @@ class RequestResearchMethodAction(_StrictModel):
 
 
 class RequestHumanReviewAction(_StrictModel):
+    task_note: AuthorTaskNote | None = Field(default=None, exclude_if=lambda value: value is None,
+        description="Public partial task coverage, blockers and located next actions; not runtime or review approval. Include when handing off unfinished research.")
     action: Literal["request_human_review"]
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     reason_summary: str = Field(min_length=1, max_length=1_000)
@@ -307,6 +310,11 @@ class SubmitWorkpaperAction(_StrictModel):
     counterevidence: tuple[str, ...] = Field(min_length=1, max_length=12)
     what_would_change: tuple[str, ...] = Field(min_length=1, max_length=12)
     open_gaps: tuple[str, ...] = Field(default=(), max_length=16)
+    task_note: AuthorTaskNote | None = Field(default=None, exclude_if=lambda value: value is None, description=(
+        "Include a public task result note when returning assigned research: assess each exact original success "
+        "criterion, locate issues using actual claim IDs/fields, and suggest next actions. Explain partial work "
+        "and actual changes. This is an author assessment, never execution or independent-review approval. "
+        "Null is retained for older artifacts; it is displayed as missing, not completed."))
     citation_quotes: dict[str, str | list[str]] = Field(default_factory=dict, exclude=True,
         description="Optional shared quotes keyed by exact evidence ID. Runtime copies them only to claims already citing that ID; no need to repeat the same quote in every claim.")
 

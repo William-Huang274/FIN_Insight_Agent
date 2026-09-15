@@ -104,6 +104,10 @@ def public_event(value):
     result = {k: v for k, v in value.items() if k in PUBLIC_EVENT_FIELDS and isinstance(v, (str, int, float, bool, type(None)))}
     if result.get("kind") == "task":
         result["dependency_ids"] = [v for v in value.get("dependency_ids", []) if isinstance(v, str)][:24]
+        from sec_agent.agent_runtime.task_outcome import public_task_outcome
+        note = public_task_outcome(value.get("task_outcome"))
+        if note and note["task_id"] == value.get("task_id"):
+            result["task_outcome"] = note
     if result.get("actor") == "responsibility_router":
         result["responsible_paper_ids"] = [v for v in value.get("responsible_paper_ids", [])
             if isinstance(v, str) and re.fullmatch(r"P\d{2}", v)][:24]
@@ -175,6 +179,10 @@ def public_state(state):
     result = {k: deepcopy(values[k]) for k in ("report", "report_review", "report_version", "phase", "conversation",
         "question", "case_profile", "research_as_of", "snapshot_id", "research_stop_reason", "human_edits") if k in values}
     outcomes = {row["task_id"]: row["status"] for row in values.get("research_outcomes", [])}
+    from sec_agent.agent_runtime.task_outcome import public_task_outcome
+    result["task_outcome_history"] = [{"run_id": attempt.get("run_id"), "task_outcome": note}
+        for attempt in values.get("research_attempt_history", []) for row in attempt.get("outcomes", [])
+        if (note := public_task_outcome(row.get("task_outcome"))) and note["task_id"] == row.get("task_id")]
     result["research_tasks"] = [{**{key: deepcopy(row[key]) for key in ("task_id", "owner_role", "objective", "dependency_ids") if key in row},
         "status": outcomes.get(row["task_id"], row.get("status", "planned"))} for row in values.get("research_tasks", [])]
     from sec_agent.agent_runtime.research_session import can_continue_remaining_research

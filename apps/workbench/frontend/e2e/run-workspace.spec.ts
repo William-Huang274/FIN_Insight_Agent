@@ -1,4 +1,30 @@
 import { test, expect } from "./identity-fixture";
+test('task outcome separates author assessment from failure and retains attempt history', async ({page}) => {
+  await page.setViewportSize({width:390,height:950});
+  const id='00000000-0000-4000-8000-000000000091', run='00000000-0000-4000-8000-000000000092';
+  const note:any={task_id:'task:scope',attempt_id:'attempt:1',execution_status:'needs_attention',artifact_status:'candidate',artifact_digest:'a'.repeat(64),
+    stop_reason:'citation_validation_failed',author_note_status:'reported_not_verified',success_criteria:['核对季度与全年口径'],
+    author_note:{summary:'作者声称已完成，但提交未通过。',changes:'只修订了引用。',coverage:[{criterion:'核对季度与全年口径',status:'completed',explanation:'这是作者声明。',claim_ids:['C1'],fields:['narrative_markdown']}],
+      issues:[{issue_id:'period-1',description:'正文期间仍需核对。',next_action:'核对原文并修改对应段落。',suggested_owner:'author',claim_ids:['C1'],fields:['narrative_markdown']}]},navigation_issues:[],open_gaps:[],validation_locations:[['claims',0,'citation_quotes']]};
+  const session:any={thread_id:id,title:'任务交接',status:'interrupted',phase:'research_needs_attention',question:'期间口径研究',
+    runs:[{run_id:run,status:'success',human_action:'research',created_at:'2026-09-15T08:00:00Z'}],model_events:[],
+    task_outcome_history:[{run_id:run,task_outcome:note}],research_tasks:[{task_id:note.task_id,owner_role:'research',objective:'核对季度与全年口径',dependency_ids:[],status:'needs_attention'}]};
+  await page.route('**/api/v1/**',route=>{const path=new URL(route.request().url()).pathname;return route.fulfill({json:path.endsWith('/projects')?{revision:0,projects:[],assignments:{},pinned:[]}:path.endsWith('research-sessions')?[session]:path.endsWith('research-session-config')?{fresh_research_enabled:true}:session});});
+  await page.goto(`/workspace/session?thread=${id}&view=activity`);
+  const card=page.getByRole('region',{name:'任务结果说明'});
+  await expect(card).toContainText('任务待处理');
+  await card.getByText('查看目标覆盖与修改定位',{exact:true}).click();
+  await expect(card).toContainText('作者认为已完成');
+  await expect(card).toContainText('底稿正文');
+  await expect(card).toContainText('claims / 0 / citation_quotes');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  session.model_events=[{kind:'task',actor:'research',event:'outcome',task_id:note.task_id,run_id:run,task_outcome:note}];
+  await page.reload();
+  await expect(card).toHaveCount(1);
+  session.runs.unshift({run_id:'new-attempt-run',status:'success',created_at:'2026-09-16T08:00:00Z'});
+  await page.reload();
+  await expect(card).toHaveCount(0);
+});
 for (const width of [1440, 1024, 390]) test(`agent conversation and run history at ${width}`, async ({ page }) => {
   await page.setViewportSize({ width, height: 950 });
   const id = "00000000-0000-4000-8000-000000000031", run = "00000000-0000-4000-8000-000000000032";

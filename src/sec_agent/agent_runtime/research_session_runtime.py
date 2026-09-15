@@ -240,10 +240,15 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                             research_task=task, dependency_workpapers=dependencies, research_question=request["question"]) as child:
                         output = child.graph.invoke(child.graph_input.model_dump(mode="json"), {**child_config, "recursion_limit": 200})
                 except Exception as exc:
+                    from .task_outcome import task_outcome
                     emit({**task_event, "event": "outcome", "status": "error", "error_type": type(exc).__name__,
+                          "task_outcome": task_outcome({"run_id": research_id, "run_invocation_id": invocation},
+                              assignment=task, error_type=type(exc).__name__, cancelled=cancelled.is_set()),
                           "recorded_at": datetime.now(timezone.utc).isoformat()})
                     raise
+                from .task_outcome import task_outcome
                 emit({**task_event, "event": "outcome", "status": output["phase"],
+                      "task_outcome": task_outcome(output, assignment=task),
                       "recorded_at": datetime.now(timezone.utc).isoformat()})
                 return output
             graph = build_lead_research_graph(expected_input=bootstrap.graph_input, research_question=request["question"],

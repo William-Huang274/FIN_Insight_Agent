@@ -1,6 +1,20 @@
 import { Client } from "@langchain/langgraph-sdk";
 import { submissionFetch } from './submissionFetch';
 
+export type TaskOutcome = {
+  task_id: string; run_id: string | null; attempt_id: string | null;
+  execution_status: "submitted" | "needs_attention" | "error" | "cancelled" | "incomplete";
+  phase: string; stop_reason: string | null; artifact_digest: string | null;
+  artifact_status: "submitted" | "candidate" | "none";
+  review_status: "not_assessed_in_this_record";
+  success_criteria: string[]; author_note_status: "reported_not_verified" | "missing" | "invalid";
+  author_note: { summary: string; changes: string;
+    coverage: { criterion: string; status: "completed" | "partial" | "not_completed" | "not_applicable"; explanation: string; claim_ids: string[]; fields: string[] }[];
+    issues: { issue_id: string; description: string; next_action: string; suggested_owner: string; claim_ids: string[]; fields: string[] }[];
+  } | null;
+  navigation_issues: string[]; open_gaps: string[]; validation_locations: (string | number)[][];
+};
+
 export type Event = {
   kind: "stage" | "model" | "tool" | "task";
   actor: string;
@@ -24,6 +38,7 @@ export type Event = {
   correction_round?: number;
   paper_id?: string;
   responsible_paper_ids?: string[];
+  task_outcome?: TaskOutcome;
 };
 export type Source = {
   source_id: string;
@@ -115,6 +130,7 @@ export type Session = {
   }[] }[];
   responsibility_history?: { actor: string; correction_round: number }[];
   research_tasks?: { task_id: string; owner_role?: string; objective: string; dependency_ids: string[]; status: string }[];
+  task_outcome_history?: {run_id: string | null; task_outcome: TaskOutcome}[];
   report_version?: number;
   can_respond?: boolean;
   can_accept?: boolean;

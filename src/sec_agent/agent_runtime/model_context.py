@@ -140,6 +140,46 @@ def _repair_read_working_set(messages):
     return {index: result for index, result in latest.values()}
 
 
+def coalesce_context_snapshots(messages):
+    """Normalize byte-equivalent runtime copies, without summarizing research.
+
+    Each omitted copy refers to a full identical value retained in this request.
+    First occurrences and the latest handoff remain full; tool results, including
+    errors and freshly read sources, are untouched. Stored history is immutable.
+    """
+    projected = deepcopy(list(messages))
+    snapshots = {}
+    contexts = []
+    for index, message in enumerate(projected):
+        if not isinstance(message, ToolMessage):
+            continue
+        try:
+            body = json.loads(message.content)
+        except (TypeError, json.JSONDecodeError):
+            continue
+        if isinstance(body, dict) and isinstance(body.get("current_context"), dict):
+            contexts.append((index, body))
+    for index, body in contexts[:-1]:
+        message = projected[index]
+        context = body["current_context"]
+        changed = False
+        for key in ("task_context", "submission_to_repair"):
+            if key not in context:
+                continue
+            identity = (key, json.dumps(context[key], ensure_ascii=False, sort_keys=True))
+            if identity not in snapshots:
+                snapshots[identity] = message.tool_call_id
+                continue
+            context[key] = {"identical_snapshot_retained_at_tool_call_id": snapshots[identity],
+                "field": "current_context." + key,
+                "notice": "Exact duplicate runtime snapshot. Full identical value remains earlier in this request; "
+                    "use the latest current_context for current task and candidate status. Original storage is unchanged."}
+            changed = True
+        if changed:
+            message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
+    return projected
+
+
 def task_boundary_history(messages):
     """Accepted phase transitions or author checkpoints release old source bodies.
 
@@ -171,7 +211,7 @@ def task_boundary_history(messages):
             boundary, note = index, body["working_state"]
             checkpoint = body.get("checkpoint") is True
     if boundary < 0:
-        return messages
+        return coalesce_context_snapshots(messages)
     retained = set(note["retain_source_ids"]) | material_sources
     projected = deepcopy(list(messages))
     calls = {c["id"]: c for m in messages if isinstance(m, AIMessage) for c in m.tool_calls}
@@ -216,7 +256,7 @@ def task_boundary_history(messages):
             if isinstance(context, dict):
                 body["current_context"] = {k: v for k, v in context.items() if k not in {"progress", "allowed_actions", "context_digest"}}
                 message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
-    return projected
+    return coalesce_context_snapshots(projected)
 
 
 def research_checkpoint_request(messages, *, model, native_tools, runtime_context_binding, schema, max_input_characters):
@@ -238,11 +278,21 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     if estimate < trigger and len(encoded) < max_input_characters - reserve_chars:
         return messages, native_tools, None
     attempts = 0
+    rejected_checkpoint_turn = False
     for message in reversed(messages):
         if isinstance(message, AIMessage):
-            if not any(c["name"] == "UpdateResearchStateAction" for c in message.tool_calls):
+            if not rejected_checkpoint_turn and not any(c["name"] == "UpdateResearchStateAction" for c in message.tool_calls):
                 break
             attempts += 1
+            rejected_checkpoint_turn = False
+        if isinstance(message, ToolMessage) and message.status == "error":
+            try:
+                feedback = json.loads(message.content)
+                feedback = feedback.get("result", feedback)
+                rejected_checkpoint_turn |= (feedback.get("error") == "native_tool_not_allowed_this_turn"
+                    and feedback.get("context_checkpoint_required") is True)
+            except (TypeError, json.JSONDecodeError):
+                pass
         if isinstance(message, ToolMessage) and message.name == "UpdateResearchStateAction" and message.status != "error":
             try:
                 body = json.loads(message.content)

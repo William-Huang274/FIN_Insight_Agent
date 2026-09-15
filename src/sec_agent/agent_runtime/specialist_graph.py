@@ -30,6 +30,7 @@ from .task_outcome import AuthorTaskNote, TaskCoverage
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
 from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools
 from .source_check_scope import RequiredSourceCheck, SOURCE_CHECK_GUIDANCE, source_check_progress, source_check_errors
+from .workpaper_revision_state import revision_state, revision_progress, revision_submission_issues
 from sec_agent.research_foundation.source_document_navigation import SourceDocumentRequest
 from sec_agent.research_foundation.source_bound_calculator import SourceBoundCalculation
 from sec_agent.research_foundation.source_quotes import contains_source_quote
@@ -547,6 +548,10 @@ class SpecialistNativeToolBatch(_StrictModel):
     action: Literal["native_tool_batch"] = "native_tool_batch"
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     tool_calls: tuple[SpecialistNativeToolCall | SpecialistInvalidToolCall, ...] = Field(min_length=1, max_length=48)
+    # Adapter-owned, receipt-bound execution scope; never a provider tool argument.
+    # None preserves stored/scripted batches predating per-turn scope enforcement.
+    runtime_tool_scope: tuple[str, ...] | None = Field(default=None, exclude_if=lambda value: value is None)
+    context_checkpoint_required: bool = Field(default=False, exclude_if=lambda value: value is False)
 
     @model_validator(mode="after")
     def validate_call_ids(self) -> "SpecialistNativeToolBatch":
@@ -554,6 +559,23 @@ class SpecialistNativeToolBatch(_StrictModel):
         if len(ids) != len(set(ids)):
             raise ValueError("specialist_native_tool_call_id_duplicate")
         return self
+
+    def scope_rejection(self) -> list[dict[str, Any]]:
+        wrong_checkpoint = self.context_checkpoint_required and any(
+            c.name == "UpdateResearchStateAction" and isinstance(c.args, dict) and c.args.get("checkpoint") is not True
+            for c in self.tool_calls)
+        if not wrong_checkpoint and (self.runtime_tool_scope is None or all(c.name in self.runtime_tool_scope for c in self.tool_calls)):
+            return []
+        body = {"error": "native_tool_not_allowed_this_turn", "batch_dispatched": False,
+            "context_checkpoint_required": self.context_checkpoint_required,
+            "allowed_tools": list(self.runtime_tool_scope or ()),
+            "rejected_tools": [c.name for c in self.tool_calls if c.name not in (self.runtime_tool_scope or ()) or wrong_checkpoint],
+            "next_action": ("No calls or edits in this batch executed. First submit UpdateResearchStateAction alone with checkpoint=true, "
+                "preserving the current unfinished repair and original sources, or RequestHumanReviewAction for the actual blockage."
+                if self.context_checkpoint_required else
+                "No calls in this batch executed. Choose only tools offered for this turn; do not reuse historical tool permissions.")}
+        return [ToolMessage(name=c.name, tool_call_id=c.id, status="error",
+            content=json.dumps(body, ensure_ascii=False)).model_dump(mode="json") for c in self.tool_calls]
 
 
 SpecialistDecision = SpecialistAction | SpecialistNativeToolBatch
@@ -956,6 +978,8 @@ class SpecialistAgenticState(TypedDict, total=False):
     task_context: dict[str, Any] | None
     required_source_checks: list[dict[str, Any]]
     revision_targets: dict[str, str]
+    revision_target_origins: dict[str, Any]
+    revision_tracking_version: int
     last_edit_feedback: dict[str, Any]
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
@@ -1151,18 +1175,13 @@ def _model_request(
         if allow_workpaper_field_edits:
             allowed_actions.append("revise_workpaper")
         body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
-        targets = []
-        for path, digest in state.get("revision_targets", {}).items():
-            try:
-                unchanged = canonical_sha256(jsonpatch.JsonPointer(path).resolve(candidate)) == digest
-                status = "unchanged_since_revision_requested" if unchanged else "changed_not_semantically_verified"
-            except (jsonpatch.JsonPointerException, TypeError):
-                status = "target_not_found"
-            targets.append({"path": path, "status": status})
+        targets = revision_progress(state, candidate)
         body["submission_to_repair"].update(
             edit_progress=targets, last_edit_feedback=state.get("last_edit_feedback"),
+            current_candidate_digest=canonical_sha256(candidate),
             revision_guidance="Revision is in progress. Keep the whole assignment, required_source_checks and prior review findings in scope, not only the latest tool error. "
-                "Unchanged requested fields still need attention; changed fields are not semantically verified. Correct related body, claims, counterevidence and notes consistently. "
+                "Unchanged requested fields block submission; completion notes do not close them. Changed fields are not semantically verified. "
+                "Before reporting a correction, inspect the actual current candidate, not an earlier proposed edit. Correct related body, claims, counterevidence and notes consistently. "
                 "For a text fragment use str_replace; for one coverage assessment use upsert_coverage. No need to repeat the whole field or coverage array. "
                 "A previous working_state marked completed describes the prior submission, not completion of this revision.")
     return {**body, "context_digest": canonical_sha256(body)}
@@ -1568,7 +1587,7 @@ def build_specialist_agentic_state_graph(
                 "max_model_turns": prior.model_turn_count + validated.max_model_turns,
                 "max_tool_actions": prior.tool_action_count + validated.max_tool_actions,
                 "last_submission_attempt": _jsonable(recovery_state.get("last_submission_attempt")),
-                "revision_targets": _jsonable(recovery_state.get("revision_targets", {})),
+                **revision_state(recovery_state),
                 "last_edit_feedback": _jsonable(recovery_state.get("last_edit_feedback", {})),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
@@ -2069,10 +2088,13 @@ def build_specialist_agentic_state_graph(
             SpecialistNativeToolBatch, state["pending_action"],
             code="specialist_native_tool_batch_invalid",
         )
+        if rejected := batch.scope_rejection():
+            # Check before ToolNode, candidate capture, memory writes or any port.
+            return {"pending_action": None, "tool_results": rejected, "phase": "typed_feedback_ready"}
         # ToolNode owns dispatch and call-ID correlation. Its standard executor
         # is deliberately serial here: existing MCP ports and notebook reduction
         # share one local snapshot; do not add another queue or scheduler.
-        working: SpecialistAgenticState = dict(state)
+        working: SpecialistAgenticState = {**state, **revision_state(state)}
         calls = {call.id: call for call in batch.tool_calls}
         models = {model.__name__: model for model in (
             RequestEvidenceAction, RequestFinanceAction, RequestCalculationAction, RequestSourceAction, RequestResearchMethodAction,
@@ -2402,8 +2424,9 @@ def build_specialist_agentic_state_graph(
             errors = _submission_errors(action, notebook,
                 enforce_case_route_requirements=dependencies.enforce_case_route_requirements)
             errors += tuple(source_check_errors(state.get("required_source_checks", []), notebook.model_dump(mode="json"), action))
-        if errors:
-            locations = []
+        revision_issues = revision_submission_issues(state, action.model_dump(mode="json")) if isinstance(action, SubmitWorkpaperAction) else []
+        if errors or revision_issues:
+            locations = list(revision_issues)
             for error in errors:
                 location = ["references"]
                 error_type = "reference_validation"
@@ -2415,8 +2438,8 @@ def build_specialist_agentic_state_graph(
                     location, error_type = ["required_source_checks", index, "required_source_ids"], "required_read_missing"
                 locations.append({"location": location, "type": error_type, "message": error})
             feedback = _feedback(
-                "specialist_submission_reference_validation_failed",
-                "Submission rejected: " + "; ".join(errors),
+                "specialist_submission_reference_validation_failed" if errors else "specialist_submission_revision_incomplete",
+                "Submission rejected: " + "; ".join([*errors, *(row["path"] + ": " + row["message"] for row in revision_issues)]),
                 owner_layer="agent",
                 next_actions=(
                     "correct_claim_ledger",
@@ -2426,6 +2449,7 @@ def build_specialist_agentic_state_graph(
                 ),
             )
             return {
+                **revision_state(state),
                 "last_submission_attempt": {**(state.get("last_submission_attempt") or {}),
                     "arguments": action.model_dump(mode="json"), "accepted": False,
                     "validation_issues": locations, "feedback": [feedback.model_dump(mode="json")]},
@@ -2440,6 +2464,7 @@ def build_specialist_agentic_state_graph(
             "last_submission_attempt": {**(state.get("last_submission_attempt") or {}),
                 "arguments": action.model_dump(mode="json"), "accepted": True,
                 "validation_issues": [], "feedback": []},
+            **revision_state(state),
             "pending_action": None,
             "final_submission": action.model_dump(mode="json"),
             "notebook": _replace_notebook(

@@ -331,6 +331,8 @@ def build_lead_research_graph(
     def execute_tools(state, config: RunnableConfig):
         batch = SpecialistNativeToolBatch.model_validate_json(json.dumps(state["pending_batch"]))
         working = {"phase": "lead_observing", "pending_batch": None}
+        if rejected := batch.scope_rejection():
+            return {**working, "tool_results": rejected}
         from .working_memory_tools import memory_enabled, WORKING_MEMORY_MODELS, execute_memory_tool
         tool_models = {**planning_tools, **(WORKING_MEMORY_MODELS if memory_enabled() else {})}
 

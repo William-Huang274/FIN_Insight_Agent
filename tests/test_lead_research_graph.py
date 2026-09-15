@@ -319,7 +319,8 @@ def test_native_sdk_lead_history_keeps_own_reasoning_and_exact_tool_feedback(bou
     assert {row["function"]["name"] for row in wires[0]["tools"]} == ({"ContinueResearchTasksAction", "SubmitResearchHandoffAction"} | (set() if bounded else {"DelegateResearchTasksAction"}))
     assert wires[1]["messages"][2]["reasoning_content"] == "synthetic private planning reasoning"
     assert wires[1]["messages"][3]["tool_call_id"] == "wire-1"
-    assert "Expecting value" in wires[1]["messages"][3]["content"]
+    # A tool omitted from this turn is rejected before parsing its arguments.
+    assert ("native_tool_not_allowed_this_turn" if bounded else "Expecting value") in wires[1]["messages"][3]["content"]
     assert "workpapers" not in json.loads(wires[1]["messages"][3]["content"])["current_context"]
     assert all("semantic_input" not in event and "raw_response" not in event for event in events)
 

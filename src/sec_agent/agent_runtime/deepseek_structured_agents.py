@@ -567,6 +567,10 @@ _NATIVE_REVIEW_SYSTEM_PROMPT = (
     "combinations of individually valid facts: retain each source's period, entity, denominator and "
     "actual-versus-guidance status in the combined sentence, heading and table. The Lead's preliminary "
     "framing is also fallible. Compare required deliverables with actual evidence, not author completion labels. "
+    "When task_note says an error was corrected, locate the claimed correction in this exact target_submission, "
+    "then compare the associated narrative, claims and counterevidence. A completed coverage assessment, "
+    "changed field or successful edit receipt cannot substitute for that check. Report any material remaining "
+    "contradiction with a quote from the current body, even if the task note or an earlier draft says resolved. "
     "Verifier checks material "
     "assertions even when the author omitted them from the claim ledger. Counter seeks alternative explanations, "
     "contrary evidence and what would change the thesis; do not invent a flaw merely to disagree. "
@@ -1688,8 +1692,9 @@ class DeepSeekStructuredAgentAdapter:
                     ids = [call.get("id") for call in tool_calls]
                     valid = valid and all(isinstance(value, str) and value.strip() for value in ids) and len(ids) == len(set(ids))
                     decision = {"action": "native_tool_batch", "context_digest": request_value["context_digest"],
-                                "tool_calls": tool_calls}
-                    if not is_lead and len(tool_calls) == 1 and tool_calls[0].get("type") == "tool_call" and tool_calls[0].get("name") in {
+                                "tool_calls": tool_calls, "runtime_tool_scope": list(native_tools),
+                                "context_checkpoint_required": checkpoint_notice is not None}
+                    if not is_lead and len(tool_calls) == 1 and tool_calls[0].get("type") == "tool_call" and tool_calls[0].get("name") in native_tools and tool_calls[0].get("name") in {
                         "SubmitWorkpaperAction", "SubmitReviewAction", "RequestHumanReviewAction",
                     }:
                         chosen = {**_NATIVE_SPECIALIST_TOOLS, **_NATIVE_REVIEW_TOOLS}[tool_calls[0]["name"]]

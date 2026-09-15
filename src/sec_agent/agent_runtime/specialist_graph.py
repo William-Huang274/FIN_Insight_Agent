@@ -26,7 +26,7 @@ from pydantic import (
 )
 
 from .research_contracts import ProviderEvidenceIntent
-from .task_outcome import AuthorTaskNote
+from .task_outcome import AuthorTaskNote, TaskCoverage
 from .specialist_delegation import DelegateSubtasksAction, ReadDelegatedWorkAction, DELEGATION_GUIDANCE
 from .research_working_state import UpdateResearchStateAction, WORKING_STATE_GUIDANCE, observed_sources, progress_after_tools
 from .source_check_scope import RequiredSourceCheck, SOURCE_CHECK_GUIDANCE, source_check_progress, source_check_errors
@@ -353,12 +353,31 @@ class WorkpaperFieldEdit(_StrictModel):
     new_value: Any = Field(description="Replacement JSON value. Preserve unchanged claims and prose.")
 
 
+class WorkpaperTextEdit(_StrictModel):
+    op: Literal["str_replace"]
+    path: str = Field(min_length=1, description="JSON Pointer to a text field, e.g. /narrative_markdown or /claims/0/statement.")
+    old_string: str = Field(min_length=1, description="Exact original fragment, not the whole field. Must occur exactly once; include adjacent text if ambiguous.")
+    new_string: str = Field(description="Replacement fragment; empty string deletes it. All other text stays unchanged.")
+
+
+class WorkpaperCoverageEdit(_StrictModel):
+    op: Literal["upsert_coverage"]
+    assessment: TaskCoverage = Field(description="One assessment keyed by the exact assigned criterion. Inserts if absent, replaces if unique; do not echo the old coverage array.")
+
+
+class WorkpaperEditError(ValueError):
+    def __init__(self, code, issues):
+        super().__init__(code)
+        self.issues = issues
+
+
 class ReviseWorkpaperAction(_StrictModel):
     action: Literal["revise_workpaper"]
     context_digest: str = Field(pattern=_DIGEST_PATTERN)
     reason_summary: str = Field(min_length=1, max_length=1000)
     base_submission_digest: str = Field(pattern=_DIGEST_PATTERN)
-    edits: tuple[WorkpaperFieldEdit, ...] = Field(min_length=1, max_length=24)
+    edits: tuple[WorkpaperTextEdit | WorkpaperCoverageEdit | WorkpaperFieldEdit, ...] = Field(min_length=1, max_length=24,
+        description="One atomic batch. Prefer str_replace for text fragments and upsert_coverage for one task assessment. Legacy old_value/new_value replaces a complete field.")
 
 
 def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperAction) -> dict[str, Any]:
@@ -367,26 +386,79 @@ def apply_workpaper_edits(original: dict[str, Any], action: ReviseWorkpaperActio
     No file access, accepted-report mutation or independent acceptance authority.
     """
     if canonical_sha256(original) != action.base_submission_digest:
-        raise ValueError("workpaper_edit_base_mismatch")
+        raise WorkpaperEditError("workpaper_edit_base_mismatch", [{"location": ["base_submission_digest"],
+            "code": "stale_base", "remedy": "Use submission_to_repair's current candidate and base_submission_digest; recheck intended fragments before retrying."}])
     editable = set(SubmitWorkpaperAction.model_fields) - {"action", "context_digest", "reason_summary"}
-    operations = []
-    for edit in action.edits:
+    updated, issues = deepcopy(original), []
+    for index, edit in enumerate(action.edits):
+        path = "/task_note/coverage" if isinstance(edit, WorkpaperCoverageEdit) else edit.path
+        def issue(code, remedy, **details):
+            issues.append({"location": ["edits", index], "edit_index": index, "path": path,
+                "code": code, "remedy": remedy, **details})
         try:
-            parts = jsonpatch.JsonPointer(edit.path).parts
+            pointer = jsonpatch.JsonPointer(path)
+            parts = pointer.parts
         except jsonpatch.JsonPointerException:
-            raise ValueError("workpaper_edit_old_value_or_path_mismatch") from None
+            issue("invalid_path", "Use a valid JSON Pointer into the current candidate.")
+            continue
         if not parts or parts[0] not in editable:
-            raise ValueError("workpaper_edit_field_not_editable")
-        operations.extend([{"op": "test", "path": edit.path, "value": edit.old_value},
-            {"op": "replace", "path": edit.path, "value": edit.new_value}])
-    try:
-        updated = jsonpatch.apply_patch(original, operations, in_place=False)
-    except (jsonpatch.JsonPatchException, jsonpatch.JsonPointerException):
-        raise ValueError("workpaper_edit_old_value_or_path_mismatch") from None
+            issue("field_not_editable", "Edit only workpaper content, not action/context/reason metadata.")
+            continue
+        try:
+            current = pointer.resolve(updated)
+        except (jsonpatch.JsonPointerException, TypeError):
+            issue("path_not_found", "Locate the existing field in submission_to_repair.candidate; array paths use numeric indices.")
+            continue
+        if isinstance(edit, WorkpaperTextEdit):
+            if not isinstance(current, str):
+                issue("text_field_required", "Use str_replace only on a text field; use upsert_coverage for assessments.")
+                continue
+            # Include overlapping matches in ambiguity detection; never pick one silently.
+            count, start = 0, 0
+            while (start := current.find(edit.old_string, start)) >= 0:
+                count += 1
+                start += 1
+            if count != 1:
+                issue("text_not_found" if count == 0 else "text_not_unique",
+                    "Copy an exact fragment from the current candidate; include adjacent text to identify one occurrence. Do not resend the whole document.",
+                    match_count=count, field_characters=len(current))
+                continue
+            if edit.old_string == edit.new_string:
+                issue("edit_no_change", "Provide a changed replacement or omit this edit.")
+                continue
+            replacement = current.replace(edit.old_string, edit.new_string, 1)
+        elif isinstance(edit, WorkpaperCoverageEdit):
+            if not isinstance(current, list):
+                issue("coverage_array_required", "Provide a valid task_note with summary and coverage before updating individual assessments.")
+                continue
+            matches = [i for i, row in enumerate(current) if isinstance(row, dict) and row.get("criterion") == edit.assessment.criterion]
+            if len(matches) > 1:
+                issue("coverage_criterion_not_unique", "Resolve duplicate assessments in the current task_note first.", match_count=len(matches))
+                continue
+            replacement = deepcopy(current)
+            if matches:
+                replacement[matches[0]] = edit.assessment.model_dump(mode="json")
+            else:
+                replacement.append(edit.assessment.model_dump(mode="json"))
+        else:
+            if current != edit.old_value:
+                issue("old_value_mismatch", "old_value must equal the entire current field. For a text fragment use op=str_replace with old_string/new_string; for one assessment use op=upsert_coverage.",
+                    field_characters=len(current) if isinstance(current, str) else None)
+                continue
+            replacement = edit.new_value
+        try:
+            updated = jsonpatch.apply_patch(updated, [{"op": "test", "path": path, "value": current},
+                {"op": "replace", "path": path, "value": replacement}], in_place=False)
+        except (jsonpatch.JsonPatchException, jsonpatch.JsonPointerException):
+            issue("path_update_failed", "Recheck this path against the current candidate.")
+    if issues:
+        raise WorkpaperEditError("workpaper_edit_old_value_or_path_mismatch", issues)
     if not isinstance(updated.get("claims"), list) or not all(isinstance(c, dict) for c in updated["claims"]):
-        raise ValueError("workpaper_edit_must_preserve_claim_identity_and_order")
+        raise WorkpaperEditError("workpaper_edit_must_preserve_claim_identity_and_order", [{"location": ["claims"], "path": "/claims",
+            "code": "claim_identity_changed", "remedy": "Preserve existing claim IDs and ordering; edit their content by numeric index."}])
     if [c.get("claim_id") for c in updated["claims"]] != [c.get("claim_id") for c in original.get("claims", [])]:
-        raise ValueError("workpaper_edit_must_preserve_claim_identity_and_order")
+        raise WorkpaperEditError("workpaper_edit_must_preserve_claim_identity_and_order", [{"location": ["claims"], "path": "/claims",
+            "code": "claim_identity_changed", "remedy": "Preserve existing claim IDs and ordering; edit their content by numeric index."}])
     return {**updated, "context_digest": action.context_digest, "reason_summary": action.reason_summary}
 
 
@@ -883,6 +955,8 @@ class SpecialistAgenticState(TypedDict, total=False):
     collaboration_context: dict[str, Any] | None
     task_context: dict[str, Any] | None
     required_source_checks: list[dict[str, Any]]
+    revision_targets: dict[str, str]
+    last_edit_feedback: dict[str, Any]
     notebook: dict[str, Any]
     pending_action: dict[str, Any] | None
     tool_results: list[dict[str, Any]]
@@ -1077,6 +1151,20 @@ def _model_request(
         if allow_workpaper_field_edits:
             allowed_actions.append("revise_workpaper")
         body["submission_to_repair"] = {"base_submission_digest": canonical_sha256(candidate), "candidate": candidate}
+        targets = []
+        for path, digest in state.get("revision_targets", {}).items():
+            try:
+                unchanged = canonical_sha256(jsonpatch.JsonPointer(path).resolve(candidate)) == digest
+                status = "unchanged_since_revision_requested" if unchanged else "changed_not_semantically_verified"
+            except (jsonpatch.JsonPointerException, TypeError):
+                status = "target_not_found"
+            targets.append({"path": path, "status": status})
+        body["submission_to_repair"].update(
+            edit_progress=targets, last_edit_feedback=state.get("last_edit_feedback"),
+            revision_guidance="Revision is in progress. Keep the whole assignment, required_source_checks and prior review findings in scope, not only the latest tool error. "
+                "Unchanged requested fields still need attention; changed fields are not semantically verified. Correct related body, claims, counterevidence and notes consistently. "
+                "For a text fragment use str_replace; for one coverage assessment use upsert_coverage. No need to repeat the whole field or coverage array. "
+                "A previous working_state marked completed describes the prior submission, not completion of this revision.")
     return {**body, "context_digest": canonical_sha256(body)}
 
 
@@ -1480,6 +1568,8 @@ def build_specialist_agentic_state_graph(
                 "max_model_turns": prior.model_turn_count + validated.max_model_turns,
                 "max_tool_actions": prior.tool_action_count + validated.max_tool_actions,
                 "last_submission_attempt": _jsonable(recovery_state.get("last_submission_attempt")),
+                "revision_targets": _jsonable(recovery_state.get("revision_targets", {})),
+                "last_edit_feedback": _jsonable(recovery_state.get("last_edit_feedback", {})),
                 "tool_results": _jsonable(recovery_state.get("tool_results", [])),
                 "delegated_work": _jsonable(recovery_state.get("delegated_work", {})),
                 "research_working_state": _jsonable(recovery_state.get("research_working_state")),
@@ -2046,15 +2136,23 @@ def build_specialist_agentic_state_graph(
                         attempt["readable_candidate"] = {key: deepcopy(value) for key, value in recovered.items()
                             if key in models[call.name].model_fields and key != "context_digest"}
 
-            def reject(code: str, message: str, *, agent_error: bool = False) -> ToolMessage:
+            def reject(code: str, message: str, *, agent_error: bool = False, edit_details=None) -> ToolMessage:
                 feedback = _feedback(code, message, owner_layer="agent" if agent_error else "runtime",
                     next_actions=("revise_request", "request_human_review"))
                 working["notebook"] = _replace_notebook(before, feedback=(*before.feedback, feedback)).model_dump(mode="json")
                 working["phase"] = "typed_feedback_ready"
                 if terminal_submission:
                     working["last_submission_attempt"]["feedback"] = [feedback.model_dump(mode="json")]
+                body = {"observations": [], "feedback": [feedback.model_dump(mode="json")]}
+                if call.name == "ReviseWorkpaperAction":
+                    detail = {"batch_applied": False, "candidate_unchanged": True,
+                        "base_submission_digest": canonical_sha256((working.get("last_submission_attempt") or {}).get("arguments")),
+                        "issues": edit_details or (working.get("last_submission_attempt") or {}).get("validation_issues", []),
+                        "next_action": "No edits from this batch were applied. Correct the identified edits and resubmit the intended atomic batch against the current candidate. Keep other required repairs in scope."}
+                    working["last_edit_feedback"] = detail
+                    body["edit_result"] = detail
                 return ToolMessage(name=call.name, tool_call_id=call.id, status="error",
-                    content=json.dumps({"observations": [], "feedback": [feedback.model_dump(mode="json")]}, ensure_ascii=False))
+                    content=json.dumps(body, ensure_ascii=False))
 
             if terminal_mixed:
                 return reject("specialist_terminal_action_must_be_alone",
@@ -2067,9 +2165,12 @@ def build_specialist_agentic_state_graph(
                     detail = "Arguments must be one JSON object matching the supplied schema."
                 except json.JSONDecodeError as exc:
                     detail = f"{exc.msg}; line {exc.lineno}, column {exc.colno}, character {exc.pos}."
+                    if terminal_submission:
+                        working["last_submission_attempt"]["validation_issues"] = [{"location": ["tool_arguments", exc.pos],
+                            "type": "json_invalid", "message": detail}]
                 return reject("specialist_tool_arguments_json_invalid",
                     "This call was not dispatched or accepted. Correct the JSON syntax and resubmit the complete arguments; "
-                    "escape quotes inside JSON strings. " + detail, agent_error=True)
+                    "check object/array delimiters and string escaping. For revision, use a short str_replace or one upsert_coverage assessment instead of echoing large old/new fields. " + detail, agent_error=True)
             try:
                 # Validate ORIGINAL args, including extras, not a repaired or
                 # runtime-injected version. Unknown names never reach this tool.
@@ -2103,17 +2204,34 @@ def build_specialist_agentic_state_graph(
                 return reject("specialist_evidence_route_not_assigned", "This evidence route is outside this Specialist task assignment.")
             if isinstance(action, ReviseWorkpaperAction):
                 prior = working.get("last_submission_attempt") or {}
+                targets = dict(working.get("revision_targets", {}))
+                for edit in action.edits:
+                    path = "/task_note/coverage" if isinstance(edit, WorkpaperCoverageEdit) else edit.path
+                    try:
+                        targets.setdefault(path, canonical_sha256(jsonpatch.JsonPointer(path).resolve(prior["arguments"])))
+                    except (jsonpatch.JsonPointerException, TypeError, KeyError):
+                        pass
+                working["revision_targets"] = targets
                 try:
                     candidate = apply_workpaper_edits(prior["arguments"], action)
+                    action = SubmitWorkpaperAction.model_validate_json(json.dumps(candidate, ensure_ascii=False))
                     working["last_submission_attempt"] = {"arguments": candidate, "accepted": False,
                         "tool_call_id": call.id, "tool_name": call.name, "feedback": []}
-                    action = SubmitWorkpaperAction.model_validate_json(json.dumps(candidate, ensure_ascii=False))
+                    working["last_edit_feedback"] = {"batch_applied": True, "candidate_unchanged": False,
+                        "base_submission_digest": canonical_sha256(candidate), "issues": [],
+                        "notice": "Edits applied to candidate only; submission checks and semantic review still apply."}
                 except ValidationError as exc:
                     working["last_submission_attempt"]["validation_issues"] = [
                         {"location": list(item["loc"]), "type": item["type"], "message": item["msg"]}
                         for item in exc.errors(include_input=False, include_context=False, include_url=False)]
                     terminal_submission = True
-                    return reject("specialist_workpaper_edit_invalid", "Edited workpaper did not pass the existing submission schema.", agent_error=True)
+                    return reject("specialist_workpaper_edit_invalid", "Edited workpaper did not pass the existing submission schema; no changes were applied. "
+                        + json.dumps(working["last_submission_attempt"]["validation_issues"], ensure_ascii=False)[:1800], agent_error=True)
+                except WorkpaperEditError as exc:
+                    working["last_submission_attempt"]["validation_issues"] = [{"location": row["location"],
+                        "type": row["code"], "message": row["remedy"]} for row in exc.issues]
+                    return reject("specialist_workpaper_edit_invalid", str(exc) + "; no changes were applied. See edit_result.issues for each edit's path and remedy.",
+                        agent_error=True, edit_details=exc.issues)
                 except (ValueError, KeyError) as exc:
                     return reject("specialist_workpaper_edit_invalid", str(exc), agent_error=True)
             working["pending_action"] = action.model_dump(mode="json")
@@ -2204,10 +2322,13 @@ def build_specialist_agentic_state_graph(
                 working.update(validate_submission(working))
                 after = _validate_model_json(SpecialistNotebook, working["notebook"], code="specialist_notebook_invalid")
                 accepted = working.get("final_submission") is not None
+                body = {"accepted": accepted, "feedback": [item.model_dump(mode="json")
+                    for item in after.feedback[len(before.feedback):]],
+                    "validation_issues": (working.get("last_submission_attempt") or {}).get("validation_issues", [])}
+                if call.name == "ReviseWorkpaperAction":
+                    body["edit_result"] = {**working.get("last_edit_feedback", {}), "submission_accepted": accepted}
                 return ToolMessage(name=call.name, tool_call_id=call.id,
-                    status="success" if accepted else "error", content=json.dumps({
-                        "accepted": accepted, "feedback": [item.model_dump(mode="json")
-                            for item in after.feedback[len(before.feedback):]]}, ensure_ascii=False))
+                    status="success" if accepted else "error", content=json.dumps(body, ensure_ascii=False))
             if isinstance(action, RequestHumanReviewAction):
                 working.update(review_reason=action.blocker_code, review_trigger="model_request",
                     phase="human_review_required")
@@ -2282,6 +2403,17 @@ def build_specialist_agentic_state_graph(
                 enforce_case_route_requirements=dependencies.enforce_case_route_requirements)
             errors += tuple(source_check_errors(state.get("required_source_checks", []), notebook.model_dump(mode="json"), action))
         if errors:
+            locations = []
+            for error in errors:
+                location = ["references"]
+                error_type = "reference_validation"
+                if error.startswith("required_source_check_assessment_missing:"):
+                    location, error_type = ["task_note", "coverage"], "required_assessment_missing"
+                elif error.startswith("required_source_read_missing:"):
+                    index = next(i for i, check in enumerate(state["required_source_checks"])
+                        if error.startswith("required_source_read_missing:" + check["criterion"] + ":"))
+                    location, error_type = ["required_source_checks", index, "required_source_ids"], "required_read_missing"
+                locations.append({"location": location, "type": error_type, "message": error})
             feedback = _feedback(
                 "specialist_submission_reference_validation_failed",
                 "Submission rejected: " + "; ".join(errors),
@@ -2296,8 +2428,7 @@ def build_specialist_agentic_state_graph(
             return {
                 "last_submission_attempt": {**(state.get("last_submission_attempt") or {}),
                     "arguments": action.model_dump(mode="json"), "accepted": False,
-                    "validation_issues": [{"location": ["references"], "type": "reference_validation", "message": error}
-                        for error in errors], "feedback": [feedback.model_dump(mode="json")]},
+                    "validation_issues": locations, "feedback": [feedback.model_dump(mode="json")]},
                 "pending_action": None,
                 "notebook": _replace_notebook(
                     notebook,

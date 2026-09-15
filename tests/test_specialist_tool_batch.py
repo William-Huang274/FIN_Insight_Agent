@@ -303,7 +303,7 @@ def test_missing_or_misattributed_batch_feedback_stops_before_next_transport(res
         adapter.specialist_model_turn(request)
 
 
-def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=False, local_edit=False):
+def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=False, local_edit=False, partial_edit=False):
     """Offline model responses, actual SDK/ToolNode/history; not paid research."""
     from test_deepseek_structured_agents import _config
     requests, wires, public, ports = [], [], [], _ToolPorts()
@@ -334,6 +334,9 @@ def _terminal_feedback_sdk_graph(*, saved_raw=None, runtime_context_binding=Fals
                     action = {"action": "revise_workpaper", "reason_summary": "Restore the observed evidence binding.",
                         "base_submission_digest": target["base_submission_digest"], "edits": [
                             {"path": "/claims/0/evidence_ids", "old_value": [], "new_value": ["E:DELL:Q1"]}]}
+                    if partial_edit:
+                        action['edits'].append({'op': 'str_replace', 'path': '/narrative_markdown',
+                            'old_string': 'The causal interpretation remains bounded.', 'new_string': 'Uncertainty remains explicit.'})
             calls = _batch(request, [action])["tool_calls"]
         if runtime_context_binding:
             for call in calls:
@@ -392,6 +395,15 @@ def test_local_edit_survives_real_sdk_tool_binding_and_returns_whole_workpaper()
     assert result["final_submission"]["narrative_markdown"] == _submission()({})["narrative_markdown"]
     assert requests[2]["submission_to_repair"]["base_submission_digest"] in json.dumps(wires[2])
     assert result["last_submission_attempt"]["tool_name"] == "ReviseWorkpaperAction"
+
+
+def test_partial_edit_is_exposed_and_consumed_through_actual_sdk_and_native_graph():
+    result, requests, wires = _terminal_feedback_sdk_graph(runtime_context_binding=True, local_edit=True, partial_edit=True)
+    assert result['final_submission']['narrative_markdown'] == _submission()({})['narrative_markdown'].replace(
+        'The causal interpretation remains bounded.', 'Uncertainty remains explicit.')
+    schema = next(t for t in wires[2]['tools'] if t['function']['name'] == 'ReviseWorkpaperAction')
+    assert 'str_replace' in json.dumps(schema) and 'upsert_coverage' in json.dumps(schema)
+    assert 'revision_guidance' in json.dumps(wires[2])
 
 
 def test_runtime_context_is_not_a_model_argument_and_quote_guards_still_apply():

@@ -1,0 +1,36 @@
+import {test,expect} from 'playwright/test';
+
+for(const width of [1440,390])test(`资产原地对话与研究交接 ${width}`,async({page},info)=>{
+  test.setTimeout(90000);await page.setViewportSize({width,height:1050});
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  const headers={'X-Workbench-Request':'1'},project=crypto.randomUUID();
+  const index=await(await page.request.get('/api/v1/projects')).json();
+  expect((await page.request.put('/api/v1/projects',{headers,data:{...index,projects:[...index.projects,{id:project,name:`原地讨论 ${width}`}]}})).ok()).toBe(true);
+  expect((await page.request.post('/api/v1/asset-workspace/documents',{headers,data:{project_id:project,title:'用户假设',text:'需要检查原始财报，用户假设不是事实。'}})).ok()).toBe(true);
+  await page.goto(`/workspace/assets?area=project&project=${project}`);
+  await page.getByRole('button',{name:'围绕资料提问',exact:true}).click();
+  await page.getByLabel('资产问题').fill('请检查这份用户假设需要哪些原始依据。');
+  await page.getByRole('button',{name:'准备助手对话',exact:true}).click();
+  await expect(page).toHaveURL(/workspace\/assets.*assistant=/);
+  const panel=page.getByRole('complementary',{name:'资产小助手'});
+  await expect(panel.getByLabel('发送消息')).toHaveValue('请检查这份用户假设需要哪些原始依据。');
+  await panel.getByRole('button',{name:'发送',exact:true}).click();
+  await expect(panel.getByText(/工程脚本回答/)).toHaveCount(1);
+  await panel.getByLabel('发送消息').fill('继续核查这个用户假设的期间与单位。');
+  await panel.getByRole('button',{name:'发送',exact:true}).click();
+  await expect(panel.getByText(/工程脚本回答/)).toHaveCount(2);
+  await page.reload();await expect(panel.getByText(/工程脚本回答/)).toHaveCount(2);
+  await panel.getByRole('button',{name:'维护我的记忆',exact:true}).click();
+  const memory=page.getByRole('dialog',{name:'我的记忆'});
+  await memory.getByLabel('个人长期记忆').fill('关注现金流，先核对期间再比较。');
+  await memory.getByRole('button',{name:'保存我的记忆',exact:true}).click();
+  await expect(memory).not.toBeVisible();
+  await page.screenshot({path:info.outputPath(`asset-assistant-${width}.png`),fullPage:true});
+  await panel.getByRole('button',{name:'交给研究团队',exact:true}).click();
+  await expect(page).toHaveURL(/workspace\/session\?thread=/);
+  const tid=new URL(page.url()).searchParams.get('thread');
+  const snapshot=await(await page.request.get(`/api/v1/research-sessions/${tid}`)).json();
+  expect(snapshot.asset_context.refs).toHaveLength(2);
+  expect(snapshot.asset_context.memory.body).toContain('先核对期间');
+  expect(snapshot.runs).toEqual([]);expect(errors).toEqual([]);
+});

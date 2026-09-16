@@ -38,8 +38,12 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
         **({"model": ids["conversation_model"]} if ids.get("conversation_model") else {})})
     basis = TokenBudgetBasis.model_validate_json(json.dumps(specification["budget"]))
     public, private = session_audit_sinks(Path(settings["audit_root"]) / thread_id / run_id)
-    from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
-    store = TaskAttachmentStore(Path(os.environ["FINSIGHT_TASK_ATTACHMENTS_ROOT"])) if os.environ.get("FINSIGHT_TASK_ATTACHMENTS_ROOT") else None
+    from sec_agent.research_foundation.task_asset_updates import TaskAssetUpdates, TaskAssetView, asset_update_prompt
+    store = None
+    if os.environ.get('FINSIGHT_TASK_ATTACHMENTS_ROOT'):
+        asset_root = Path(os.environ['FINSIGHT_TASK_ATTACHMENTS_ROOT'])
+        TaskAssetUpdates(asset_root).pin(thread_id, run_id, ids.get('finsight_asset_revision', 0))
+        store = TaskAssetView(asset_root, thread_id, run_id)
     grants = conversation_tools(thread_id=thread_id, attachment_store=store,
         fact_mart=Path(settings["conversation_fact_mart"]) if settings.get("conversation_fact_mart") else None)
     if store is not None:
@@ -58,6 +62,9 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
     from .conversation_handoff import handoff_tools
     sdk = get_client(api_key=None)
     audit = CaseModelAudit(actor="conversation", profile=profile, basis=basis, public_sink=public, private_sink=private, stream_public=True)
+    if store:
+        from sec_agent.research_foundation.project_asset_access import require_task_assets
+        audit.source_access_check = lambda: require_task_assets(store, thread_id)
     model = case_chat_model(profile, basis, SimpleNamespace(base_url="https://api.deepseek.com"), SecretStr(os.environ["DEEPSEEK_API_KEY"]), streaming=True,
                             context_editing=specification.get("context_editing"))
     try:
@@ -86,7 +93,21 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
         from .working_memory_tools import working_memory_tools
         from .user_context import user_context_prompt
         from sec_agent.research_foundation.asset_workspace import asset_context_prompt
-        task_context += asset_context_prompt(metadata)
+        # The run configuration is server-owned and frozen before queueing.
+        # A newer profile must not rewrite an approval continuation's input.
+        from copy import deepcopy
+        asset_metadata = deepcopy(metadata)
+        if store and store.binding:
+            asset_metadata['asset_context'] = deepcopy(store.binding['body']['context'])
+        if 'finsight_asset_memory' in ids and asset_metadata.get('asset_context'):
+            asset_metadata['asset_context']['memory'] = ids['finsight_asset_memory']
+            # This is a run projection, not a mutation of the saved context digest.
+            asset_metadata['asset_context']['original_context_digest'] = asset_metadata['asset_context'].pop('digest', None)
+        task_context += asset_context_prompt(asset_metadata)
+        if store:
+            task_context += asset_update_prompt(store, include_context=False)
+        if ids.get('finsight_asset_memory'):
+            task_context += '\n本轮个人偏好以本轮快照为准，旧对话中的偏好可能已经修改或清空。它不是金融事实；不得擅自写入长期记忆。'
         task_context += user_context_prompt(metadata.get('owner_id','local-pilot'),thread_id)
         from .conversation_agent import GrantedTool
         grants.extend(GrantedTool(t, "working_note_write" if t.name == "WriteWorkingNote" else "read",
@@ -112,6 +133,7 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
             summary_basis = TokenBudgetBasis.model_validate_json(json.dumps(summary_spec['budget']))
             summary_audit = CaseModelAudit(actor='conversation_summary',profile=summary_profile,basis=summary_basis,
                 public_sink=public,private_sink=private,
+                source_access_check=audit.source_access_check,
                 dispatch_guard=budget_scope.guard('context_summary', summary_profile) if budget_scope else None)
             summary_model = case_chat_model(summary_profile,summary_basis,SimpleNamespace(base_url='https://api.deepseek.com'),
                 SecretStr(os.environ['DEEPSEEK_API_KEY']))

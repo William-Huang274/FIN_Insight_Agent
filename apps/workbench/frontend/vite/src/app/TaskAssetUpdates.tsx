@@ -6,20 +6,20 @@ type Status={supported:boolean;revision:number;active_revision:number;pending:bo
   history:{revision:number;state:string;created_at:string}[];
   adoptions:{run:string;revision:number;recorded_at:string}[]};
 
-export function TaskAssetUpdates({thread,selected,refreshKey}:{thread:string;selected:AssetVersion|null;refreshKey:number}){
+export function TaskAssetUpdates({thread,selected,refreshKey,surface='research-sessions'}:{thread:string;selected:AssetVersion|null;refreshKey:number;surface?:'research-sessions'|'conversations'}){
   const [status,setStatus]=useState<Status|null>(null),[error,setError]=useState(''),[saving,setSaving]=useState(false),[version,setVersion]=useState(0);
-  useEffect(()=>{let alive=true;const read=()=>void assetRequest<Status>(`research-sessions/${thread}/asset-updates`)
+  useEffect(()=>{let alive=true;const read=()=>void assetRequest<Status>(`${surface}/${thread}/asset-updates`)
     .then(r=>{if(alive){setStatus(r);setError('');}}).catch(e=>{if(alive)setError(e.message);});
     read();const timer=setInterval(read,10000);window.addEventListener('focus',read);
     return()=>{alive=false;clearInterval(timer);window.removeEventListener('focus',read);};
-  },[thread,refreshKey,version]);
+  },[thread,refreshKey,version,surface]);
   const target=status?.items?.find(r=>selected&&r.ref.project_id===selected.ref.project_id&&r.ref.kind===selected.ref.kind&&r.ref.asset_id===selected.ref.asset_id);
   const changed=target&&selected&&target.ref.version_id!==selected.ref.version_id;
   async function apply(){if(!status||!selected||saving)return;setSaving(true);setError('');
-    try{await assetRequest(`research-sessions/${thread}/asset-updates`,'POST',{request_id:crypto.randomUUID(),base_revision:status.revision,ref:selected.ref});setVersion(n=>n+1);}
+    try{await assetRequest(`${surface}/${thread}/asset-updates`,'POST',{request_id:crypto.randomUUID(),base_revision:status.revision,ref:selected.ref});setVersion(n=>n+1);}
     catch(e){setError(e instanceof Error?e.message:'提交未确认，请刷新查看记录');}finally{setSaving(false);}}
   async function abandon(revision:number){setSaving(true);setError('');
-    try{await assetRequest(`research-sessions/${thread}/asset-updates/${revision}/abandon`,'POST');setVersion(n=>n+1);}
+    try{await assetRequest(`${surface}/${thread}/asset-updates/${revision}/abandon`,'POST');setVersion(n=>n+1);}
     catch(e){setError(e instanceof Error?e.message:'未能放弃准备，请刷新检查');}finally{setSaving(false);}}
   if(!status?.supported&&!error)return null;
   return <section className="fp-update" aria-label="任务资料更新">

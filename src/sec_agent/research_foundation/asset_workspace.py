@@ -80,6 +80,18 @@ class AssetWorkspace:
             raise AssetConflict(result['reason'])
         return self.profile(owner)
 
+    def profile_history(self, owner, offset=0):
+        memory = self.profile_store(owner)
+        rows = memory.search(actor=PROFILE_ACTOR)['items']
+        if not rows:
+            return {'items': [], 'next_offset': None}
+        with memory.connection() as db:
+            versions = db.execute('SELECT version,body,updated_at FROM working_note_versions WHERE id=? '
+                                  'ORDER BY version DESC LIMIT 21 OFFSET ?', (rows[0]['id'], offset)).fetchall()
+        return {'items': [{'version': r['version'], 'body': '' if r['body'] == CLEARED else r['body'],
+                           'updated_at': r['updated_at']} for r in versions[:20]],
+                'next_offset': offset + 20 if len(versions) > 20 else None}
+
     def catalog(self, owner, project):
         scope = self.library.scope(owner, project)
         groups = {}

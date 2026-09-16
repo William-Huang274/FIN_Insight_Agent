@@ -41,7 +41,12 @@ OriginalService=report_sessions.ReportSessionService
 class FixtureService(OriginalService):
     def __init__(self,*args,**kwargs):
         kwargs['research_profile'] = {'title': 'Synthetic draft qualification', 'default_question': 'Read a synthetic project document.', 'branch_topics': []}
-        super().__init__(*args,**kwargs,sdk=SimpleNamespace(threads=DraftThreads(),assistants=EmptyThreads(),runs=NoRuns()))
+        threads = DraftThreads()
+        runs = NoRuns()
+        if os.environ.get('FIN_ASSET_CONVERSATION_FIXTURE') == '1':
+            from .asset_conversation_script import ScriptedRuns
+            runs = ScriptedRuns(threads)
+        super().__init__(*args,**kwargs,sdk=SimpleNamespace(threads=threads,assistants=EmptyThreads(),runs=runs))
 
 report_sessions.ReportSessionService=FixtureService
 app=create_report_session_app()

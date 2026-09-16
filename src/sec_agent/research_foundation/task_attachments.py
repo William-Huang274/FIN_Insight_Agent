@@ -149,7 +149,7 @@ class TaskAttachmentStore:
         finally:
             db.close()
 
-    def add(self, thread_id, filename, body, *, research_origin=None, revision=None, source_capture=None):
+    def add(self, thread_id, filename, body, *, research_origin=None, revision=None, source_capture=None, deduplicate=False):
         thread_id = str(UUID(str(thread_id)))
         if not filename or len(filename) > 180 or any(c in filename for c in '/\\:\x00\r\n') or Path(filename).suffix.lower() not in ALLOWED_SUFFIXES:
             raise ValueError("unsupported_or_unsafe_filename")
@@ -157,6 +157,10 @@ class TaskAttachmentStore:
             raise ValueError("upload_size_limit_20MiB")
         pages, kind = parse_document(filename, body)
         object_id = "UPLOAD::" + uuid4().hex
+        if deduplicate:
+            if research_origin or revision or source_capture:
+                raise ValueError('plain_immutable_snapshot_required')
+            object_id = 'UPLOAD::' + _digest(json.dumps([thread_id, filename, _digest(body)], sort_keys=True).encode())[:32]
         if source_capture:
             from .project_source_captures import capture_manifest, render_capture
             manifest = capture_manifest(source_capture['snapshot'])
@@ -175,7 +179,7 @@ class TaskAttachmentStore:
         with self.connect() as db:
             # Count and insert in one native transaction; no application lock service.
             db.execute("BEGIN IMMEDIATE")
-            if source_capture and db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (thread_id, object_id)).fetchone():
+            if (source_capture or deduplicate) and db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (thread_id, object_id)).fetchone():
                 require_active(access_state(db, thread_id, 'document', object_id))
                 return self.list(thread_id, ids=[object_id])[0]
             if revision:

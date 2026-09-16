@@ -41,3 +41,29 @@
 @media(max-width:760px){.fa-workspace,.fa-workspace.fa-collapsed{grid-template-columns:64px minmax(0,1fr)}.fa-nav{padding:16px 8px}.fa-nav .fs-brand strong,.fa-nav span,.fa-nav footer,.fa-caption{display:none}.fa-nav .fs-logo{display:grid}.fa-area{flex-direction:column;margin-bottom:18px}.fa-nav nav button{justify-content:center;padding:13px 0}.fa-main>.rs-top{padding:12px!important;min-height:56px;font-size:11px}.fa-toggle{display:none}.fa-research-return{font-size:10px}.fa-main .dl-page{padding:22px 16px}.fa-main .dl-heading h1{font-size:23px}.fa-main .dl-card{grid-template-columns:72px minmax(0,1fr)!important;gap:10px!important}.fa-main .dl-cover{padding:9px}.fa-main .dl-cover strong{font-size:11px}.fa-main .dl-filters label{min-width:100%;box-sizing:border-box}.fa-main .dl-filters select{min-width:100px;max-width:100%}.fa-main .dl-filters .dl-date{min-width:100%}.aw-shell,.aw-assistant-closed{display:flex;flex-direction:column;overflow:auto}.aw-top{padding:12px;gap:8px;flex-wrap:wrap}.aw-top>span{width:100%;font-size:11px}.aw-memory-trigger{margin-left:0}.aw-nav{flex-shrink:0;padding:15px;border-right:0;border-bottom:1px solid var(--line);overflow:visible}.aw-nav-title{display:none}.aw-asset-list{max-height:160px;overflow:auto}.aw-add{margin:10px 0}.aw-connectors{padding-top:5px}.aw-main{overflow:visible;padding:20px 16px}.aw-reading{font-size:13px}.aw-document-head h1{font-size:20px}.aw-reading-footer{flex-wrap:wrap}.aw-shell:not(.aw-assistant-closed) .aw-assistant{position:static;width:auto;flex-shrink:0;border-left:0;border-top:1px solid var(--line)}.aw-assistant-body{overflow:visible}.aw-assistant h2 br{display:none}.aw-concepts{grid-template-columns:1fr}}
 
 .aw-selectable-asset{display:flex;align-items:center;gap:4px;min-width:0}.aw-selectable-asset>button{flex:1;min-width:0}.aw-selectable-asset>input[type=checkbox]{flex-shrink:0;width:15px;height:15px;accent-color:var(--accent);padding:0}.aw-capture{border:1px solid var(--line);border-radius:10px;padding:16px;margin:20px 0;background:var(--canvas);font-size:12px}.aw-capture>p{color:var(--muted);line-height:1.8}.aw-capture .aw-actions{align-items:center;gap:16px}.aw-capture label{display:block;margin:18px 0}.aw-capture textarea{min-height:120px;margin-top:8px;resize:vertical}.aw-capture-note{white-space:pre-wrap;overflow-wrap:anywhere}
+.aw-conversation-picker{display:flex;gap:6px;padding:10px;flex-shrink:0}
+.aw-conversation-picker select{min-width:0}.aw-conversation-picker button{white-space:nowrap}
+.aw-embedded-conversation{flex:1;min-height:0;overflow:hidden}
+.aw-embedded-conversation .fs-assistant-shell{height:100%;min-height:0;display:block;border:0}
+.aw-embedded-conversation .fs-assistant-nav,.aw-embedded-conversation .fs-assistant-menu{display:none!important}
+.aw-embedded-conversation .fs-assistant-main{height:100%;min-width:0;grid-template-rows:auto minmax(100px,1fr) auto}
+.aw-embedded-conversation .fs-assistant-main>header{padding:10px}
+.aw-embedded-conversation .fs-assistant-main>header h1{font-size:12px}
+.aw-embedded-conversation .fs-assistant-main>header small{display:none}
+.aw-embedded-conversation .fs-assistant-messages{padding:12px;min-height:100px}
+.aw-embedded-conversation .fs-assistant-message{font-size:13px;overflow-wrap:anywhere}
+.aw-embedded-conversation .fs-assistant-message table{display:block;overflow:auto}
+.aw-embedded-conversation .fs-assistant-compose{padding:10px;max-height:45%;overflow:auto}
+.aw-embedded-conversation .fs-assistant-controls{flex-wrap:wrap}
+.aw-embedded-conversation .fs-harness-selector,.aw-embedded-conversation .fs-permission-selector,.aw-embedded-conversation .fs-assistant-compose>small{display:none}
+.aw-embedded-conversation .fs-assistant-compose{flex-shrink:0;max-height:50%;background:var(--surface)}
+.aw-embedded-conversation .fs-assistant-controls{margin:6px 0;gap:6px}
+.aw-embedded-conversation .fs-assistant-controls select{background:var(--surface);color:var(--ink)}
+.aw-embedded-conversation .fs-assistant-compose textarea{min-height:70px;resize:vertical;padding:9px}
+.aw-embedded-conversation .fs-assistant-message.user{background:var(--soft)}
+.aw-embedded-conversation .fs-assistant-message :is(h1,h2,h3){font-size:15px}
+.aw-discussion-actions{display:flex;flex-wrap:wrap;gap:6px}.aw-discussion-actions small{flex-basis:100%}
+.aw-assistant>.fp-update{max-height:135px;overflow:auto;padding:8px;font-size:11px}
+.aw-memory-dialog details p{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(min-width:1200px){.aw-shell:not(.aw-assistant-closed){grid-template-columns:185px minmax(0,1fr) 390px}}
+@media(max-width:760px){.aw-shell:not(.aw-assistant-closed) .aw-assistant{height:calc(100dvh - 110px);min-height:500px}}

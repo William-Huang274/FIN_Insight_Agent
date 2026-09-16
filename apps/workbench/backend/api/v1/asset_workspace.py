@@ -1,6 +1,6 @@
 """Asset workspace transport; original project stores own content and versions."""
 from uuid import UUID
-from fastapi import APIRouter, HTTPException, Request, Response
+from fastapi import APIRouter, HTTPException, Request, Response, Query
 from pydantic import BaseModel, ConfigDict, Field
 
 from ...authentication import current_owner
@@ -65,6 +65,10 @@ def build_asset_workspace_router(root, *, attachments_root=None, fact_mart=None)
     @router.put('/profile')
     def save_profile(body: ProfileEdit, request: Request, response: Response):
         return call(workspace.save_profile, identity(request, response, True), body.body, body.version)
+
+    @router.get('/profile/history')
+    def profile_history(request: Request, response: Response, offset: int = Query(0, ge=0)):
+        return call(workspace.profile_history, identity(request, response), offset)
 
     @router.post('/documents')
     def save_document(body: DocumentEdit, request: Request, response: Response):

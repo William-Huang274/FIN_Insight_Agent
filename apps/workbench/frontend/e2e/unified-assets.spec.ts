@@ -12,7 +12,8 @@ for(const width of [1440,900,390])test(`真实知识库数据库与项目侧栏 
   await page.addInitScript(()=>{if(!localStorage.getItem('finsight.theme'))localStorage.setItem('finsight.theme','light');});
   await page.goto('/workspace/assets');
   await expect(page.getByRole('heading',{name:'知识库',exact:true})).toBeVisible();
-  await expect(page.locator('.dl-summary strong')).toHaveText(`${evidence.documents} 份公共资料`);
+  // Cold parsing of the real library is separate from the UI's default 5s assertion timeout.
+  await expect(page.locator('.dl-summary strong')).toHaveText(`${evidence.documents} 份公共资料`,{timeout:30000});
   await expect(page.locator('.dl-card')).toHaveCount(24);
   const palette=await page.locator('.fs-workspace').evaluate(e=>{const s=getComputedStyle(e);return [s.fontFamily,s.getPropertyValue('--accent'),s.getPropertyValue('--surface')];});
   await page.screenshot({path:info.outputPath(`knowledge-${width}.png`),fullPage:true});

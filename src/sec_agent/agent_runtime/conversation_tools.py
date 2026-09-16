@@ -28,7 +28,8 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
     """Paths and thread ownership come from the host, never tool arguments."""
     # A user-selected project snapshot takes precedence over deployment defaults.
     from sec_agent.research_foundation.project_financial_facts import task_financial_snapshot
-    selected_snapshot = task_financial_snapshot(attachment_store.root, thread_id) if attachment_store else None
+    financial_scope = getattr(attachment_store, 'financial_scope', thread_id)
+    selected_snapshot = task_financial_snapshot(attachment_store.root, financial_scope) if attachment_store else None
     if selected_snapshot:
         fact_mart = selected_snapshot[0]
 
@@ -36,7 +37,7 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         if not selected_snapshot:
             return None
         try:
-            current = task_financial_snapshot(attachment_store.root, thread_id)
+            current = task_financial_snapshot(attachment_store.root, financial_scope)
             if current is None or current[1]['mart_sha256'] != selected_snapshot[1]['mart_sha256']:
                 raise ValueError('任务财务快照已变化，请重新读取任务')
             return current[1]

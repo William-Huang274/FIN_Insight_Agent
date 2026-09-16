@@ -224,7 +224,7 @@ class TaskAssetView(TaskAttachmentStore):
         return result
 
 
-def asset_update_prompt(view):
+def asset_update_prompt(view, *, include_context=True):
     if not view.binding:
         return ''
     body = view.binding['body']
@@ -234,7 +234,8 @@ def asset_update_prompt(view):
             '在任务状态说明中列明实际检查与仍未解决的影响。不能声称仅采用资料就已完成复核。'
             '历史引用可按原文档ID回读，目录只列当前选择。研究截止日不自动改变。\n'
             + json.dumps({'previous_ref': body['previous_ref'], 'selected_ref': body['selected_ref'],
-                          'context': body['context'], 'current_materials': task_material_catalog(view.list(view.thread))}, ensure_ascii=False))
+                          **({'context': body['context']} if include_context else {}),
+                          'current_materials': task_material_catalog(view.list(view.thread))}, ensure_ascii=False))
 
 
 def task_asset_view(environment):

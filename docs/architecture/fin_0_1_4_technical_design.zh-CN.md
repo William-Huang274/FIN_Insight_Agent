@@ -1,5 +1,7 @@
 # FinSight 0.1.4 技术方案
 
+2026-09-16 058：资产侧栏嵌入既有原生对话；run提交固定资料修订及owner个人记忆，审批恢复沿用原快照。工具目录/财务reader和模型派发权限检查共用TaskAssetView；同一公开讨论checkpoint与已读凭证固定保存为未核验资产，复用asset_context.v1交给研究。用户记忆沿WorkingMemory历史/CAS维护，没有新Agent框架或记忆引擎。见[协议058](asset_workspace_protocol.zh-CN.md#原地资产对话与记忆058)。
+
 2026-09-16 057：复用附件SQLite保存不可变task_asset_updates与原生run输入绑定；BFF提交config固定输入修订，运行期编辑只准备后续集合。文档/SEC各集合独立副本，目录与金融reader使用本run绑定，历史引用继续按ID读取；运行各角色得到更新与影响核查要求，未另建调度器。乐观并发/幂等/失败状态、跨目录恢复关联校验及侧栏状态已接入；定向金融影响判断和自动关闭仍待研究质量验收。详见[协议057](asset_workspace_protocol.zh-CN.md#已有研究采用明确新版本057)。
 
 2026-09-16 056长期资产底座：项目与任务配额分离；同库目录摘要及FTS5 trigram候选索引加性迁移，原件/版本身份不变。项目管理API分页，资产列表渐进展开，用量按原文件展示。asset_set_backup.v1使用SQLite写入保留锁与原生备份协调项目及任务资料，校验依赖、复制ready金融映射，恢复到新目录重新绑定宿主路径；可显式纳入公共库/财务库。没有备份native checkpoint/费用派发账，不自动恢复运行。具体配置和恢复操作见[资产协议](asset_workspace_protocol.zh-CN.md)。

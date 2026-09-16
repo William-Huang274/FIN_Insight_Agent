@@ -49,6 +49,12 @@ class ConversationApproval(BaseModel):
     decisions: list[Literal["approve", "reject"]] = Field(min_length=1, max_length=12)
 
 
+class AssetDiscussionHandoff(BaseModel):
+    model_config = ConfigDict(extra='forbid', str_strip_whitespace=True)
+    checkpoint_id: UUID
+    question: str = Field(min_length=10, max_length=4000)
+
+
 def pending_approvals(state):
     return [{"id": item["id"], "value": item["value"]}
         for task in state.get("tasks", []) for item in task.get("interrupts", [])
@@ -117,11 +123,13 @@ def build_conversations_router(service):
             try: await run_in_threadpool(require_task_assets, service.attachment_store, thread_id)
             except ProjectAssetUnavailable as exc: raise HTTPException(409, str(exc)) from None
         harness=thread.get('metadata',{}).get('harness','native')
+        from ...application.asset_conversation import submission_context
+        asset_input = await run_in_threadpool(submission_context, service, thread)
         return await service.sdk.runs.create(str(thread_id), GRAPH,
             input={"messages": [{"role": "user", "content": body.message}]},
-            config={"configurable": {"conversation_model": body.model, "permission_mode": body.permission_mode,'conversation_harness':harness}},
+            config={"configurable": {"conversation_model": body.model, "permission_mode": body.permission_mode,'conversation_harness':harness, **asset_input}},
             stream_mode=["custom", "messages-tuple"], stream_resumable=True, multitask_strategy="reject",
-            metadata={"surface": SURFACE, "request_message": body.message, "model": body.model, "permission_mode": body.permission_mode})
+            metadata={"surface": SURFACE, "request_message": body.message, "model": body.model, "permission_mode": body.permission_mode, 'asset_input': asset_input})
     from .working_notes import WorkingNoteRevision, revise_working_note
     @router.post('/{thread_id}/working-notes/revise')
     async def revise_note(thread_id: UUID, body: WorkingNoteRevision, request: Request):
@@ -142,7 +150,62 @@ def build_conversations_router(service):
         filters = {"surface": SURFACE, **({"owner_id": owner} if owner != "local-pilot" else {})}
         threads = await service.sdk.threads.search(metadata=filters, limit=100)
         threads = [t for t in threads if t.get("metadata", {}).get("owner_id", "local-pilot") == owner]
-        return [{"thread_id": t["thread_id"], "title": t.get("metadata", {}).get("title"), "status": t.get("status")} for t in threads]
+        return [{"thread_id": t["thread_id"], "title": t.get("metadata", {}).get("title"), "status": t.get("status"),
+                 'asset_project_id': next(iter(t.get('metadata', {}).get('asset_context', {}).get('refs', [])), {}).get('project_id')}
+                for t in threads]
+
+    from sec_agent.research_foundation.task_asset_updates import TaskAssetUpdates, AssetUpdateRequest
+
+    async def asset_thread(thread_id, request):
+        thread = await owned(thread_id, request)
+        if not getattr(service, 'attachment_store', None) or thread.get('metadata', {}).get('asset_context_status') != 'ready':
+            raise HTTPException(409, '此对话没有就绪的资产交接')
+        return thread
+
+    @router.get('/{thread_id}/asset-updates')
+    async def asset_updates(thread_id: UUID, request: Request):
+        thread = await asset_thread(thread_id, request)
+        from ...application.task_asset_updates import update_status
+        return await run_in_threadpool(update_status, service.attachment_store.root, current_owner(request), thread_id, thread['metadata'])
+
+    @router.post('/{thread_id}/asset-updates')
+    async def prepare_asset_update(thread_id: UUID, body: AssetUpdateRequest, request: Request):
+        browser_write(request)
+        thread = await asset_thread(thread_id, request)
+        try:
+            result = await run_in_threadpool(TaskAssetUpdates(service.attachment_store.root).prepare,
+                current_owner(request), thread_id, thread['metadata'], body)
+        except KeyError:
+            raise HTTPException(404, '资产或版本不存在') from None
+        except (ValueError, OSError):
+            raise HTTPException(409, '资料准备未确认完成，请刷新检查版本、权限及更新记录；不会自动重试') from None
+        return {'revision': result['revision'], 'state': result['state']}
+
+    @router.post('/{thread_id}/asset-updates/{revision}/abandon')
+    async def abandon_asset_update(thread_id: UUID, revision: int, request: Request):
+        browser_write(request)
+        await asset_thread(thread_id, request)
+        try:
+            await run_in_threadpool(TaskAssetUpdates(service.attachment_store.root).abandon_preparation, thread_id, revision)
+        except ValueError as exc:
+            raise HTTPException(409, str(exc)) from None
+        return {'state': 'abandoned'}
+
+    @router.post('/{thread_id}/research-context')
+    async def research_context(thread_id: UUID, body: AssetDiscussionHandoff, request: Request):
+        browser_write(request)
+        thread = await asset_thread(thread_id, request)
+        state = await service.sdk.threads.get_state(str(thread_id))
+        if thread.get('status') == 'busy' or pending_approvals(state):
+            raise HTTPException(409, '请先结束本轮并处理待批准操作')
+        if (state.get('checkpoint') or {}).get('checkpoint_id') != str(body.checkpoint_id):
+            raise HTTPException(409, '讨论已变化，请刷新核对交接版本')
+        from ...application.asset_conversation import discussion_context
+        try:
+            return await run_in_threadpool(discussion_context, service, current_owner(request),
+                {**thread, 'thread_id': str(thread_id)}, state, body.question)
+        except (ValueError, KeyError, OSError):
+            raise HTTPException(409, '交接未完成，请检查来源权限、项目容量与讨论范围；原对话保留，不会截断或启动研究') from None
     @router.post("")
     async def create(body: ConversationMessage, request: Request):
         browser_write(request)
@@ -234,9 +297,10 @@ def build_conversations_router(service):
         selected = ConversationMessage(message="批准恢复", model=previous["model"], permission_mode=previous["permission_mode"])
         run = await service.sdk.runs.create(str(thread_id), GRAPH,
             command={"resume": {body.interrupt_id: {"decisions": [{"type": d} for d in body.decisions]}}},
-            config={"configurable": {"conversation_model": selected.model, "permission_mode": selected.permission_mode}},
+            config={"configurable": {"conversation_model": selected.model, "permission_mode": selected.permission_mode, **previous.get('asset_input', {})}},
             stream_mode=["custom", "messages-tuple"], stream_resumable=True, multitask_strategy="reject",
             metadata={"surface": SURFACE, "model": selected.model, "permission_mode": selected.permission_mode,
+                'asset_input': previous.get('asset_input', {}),
                 "approval": {"checkpoint_id": str(body.checkpoint_id), "interrupt_id": body.interrupt_id, "decisions": body.decisions}})
         return {"thread_id": str(thread_id), "run_id": run["run_id"]}
     @router.get("/{thread_id}/handoff-preview")
@@ -331,8 +395,16 @@ def build_conversations_router(service):
                 # stage events only; absence of native calls is not zero usage.
                 "usage": None if hermes else usage, "context_usage": request_context_usage(activity),
                 "cost_estimate": None if hermes else public_cost_estimate(activity)})
+        asset_context = thread.get('metadata', {}).get('asset_context')
+        attachment_store = getattr(service, 'attachment_store', None)
+        if asset_context and attachment_store:
+            from sec_agent.research_foundation.task_asset_updates import TaskAssetView
+            attachment_store = TaskAssetView(attachment_store.root, thread_id, validate=False)
+            if attachment_store.binding:
+                asset_context = attachment_store.binding['body']['context']
         return {"thread_id": str(thread_id), "title": thread.get("metadata", {}).get("title"), "status": thread.get("status"),
-            'asset_context':thread.get('metadata',{}).get('asset_context'),
+            'asset_input': runs[0].get('metadata', {}).get('asset_input') if runs else None,
+            'asset_context':asset_context,
             'asset_context_status':thread.get('metadata',{}).get('asset_context_status'),
             'harness':thread.get('metadata',{}).get('harness','native'),
             'context_memory':context_status(state,thread.get('metadata',{}).get('harness','native')),
@@ -347,7 +419,7 @@ def build_conversations_router(service):
                 for key,item in observed_sources(state).items() if any(key in action.get("args",{}).get("source_ids",[])
                     for pending in pending_approvals(state) for action in pending["value"]["action_requests"]
                     if action.get("name")=="save_sources_to_knowledge" and isinstance(action.get("args",{}).get("source_ids"),list))},
-            "attachments": service.attachment_store.list(thread_id) if getattr(service, "attachment_store", None) else [],
+            "attachments": attachment_store.list(thread_id) if attachment_store else [],
             "handoff": thread.get("metadata", {}).get("handoff"),
             "permissions_notice": "资料和财务快照只读。部署启用隔离Python时，请求标准逐次批准；代我批准/完全访问仅在空白临时容器内执行。各档均未开放用户原文件、宿主终端或服务器写入。"}
     @router.post("/{thread_id}/stop")

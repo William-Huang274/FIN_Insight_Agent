@@ -841,8 +841,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     notes = working_memory_tools(f"{role}:{paper_id or 'report'}")
     return create_agent(model=model, tools=[*selected, *notes, submit], state_schema=CaseOutputState,
         system_prompt=CONTEXT_RULES + specific + (WORKING_MEMORY_GUIDANCE if notes else "") + METHOD_TOOL_GUIDANCE + method_instructions + scope_notice + f"\nBudget: {limits['model_calls']} model calls/{limits['tool_calls']} tools; no transport retry/fallback.",
-        middleware=[StopOnOutput(), InvalidToolCallFeedback(recover_report=role == 'writer'), AnswerSubmissionFeedback(submit.name), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="error"),
-            ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="error"), *(audit.middlewares() if audit else [])],
+        middleware=[StopOnOutput(), InvalidToolCallFeedback(recover_report=role == 'writer'), AnswerSubmissionFeedback(submit.name), ModelCallLimitMiddleware(run_limit=limits["model_calls"], exit_behavior="end" if incomplete_reviewers is not None else "error"),
+            ToolCallLimitMiddleware(run_limit=limits["tool_calls"], exit_behavior="end" if incomplete_reviewers is not None else "error"), *(audit.middlewares() if audit else [])],
         name=f"case_{role}_{paper_id or 'report'}")
 
 

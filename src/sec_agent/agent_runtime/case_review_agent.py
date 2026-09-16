@@ -76,7 +76,7 @@ class ReviewInspectionCheck(BaseModel):
     paper_digest: str
     dimension: Literal["claim_support", "citation_trace", "prose_consistency", "scope_and_counterevidence"]
     claim_ids: list[str] = Field(default_factory=list, max_length=80)
-    field_path: str
+    field_path: str = Field(description="Copy an exact text_targets selector, e.g. /claims/0/statement, /narrative_markdown, /counterevidence/0. An exact claim ID may replace its index. A container plus a uniquely matching exact target_quote is resolved by runtime.")
     target_quote: str = Field(min_length=1, max_length=1500)
     status: Literal["checked", "issue", "unresolved", "not_applicable"]
     result: str = Field(min_length=20, max_length=2000)
@@ -147,6 +147,7 @@ def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages,
         expected = set(paper_ids)
     errors = []
     recovery = []
+    source_recovery = []
     assessed = [p.paper_id for p in review.assessments]
     if set(assessed) != expected or len(assessed) != len(expected):
         errors.append(f"assess_each_paper_once:{sorted(expected)}")
@@ -204,14 +205,23 @@ def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages,
                 body = str(source.get("passage") or source.get("bounded_excerpt") or source.get("value_decimal") or "")
             if not contains_source_quote(body, check.quote):
                 errors.append(f"source_quote_not_exact:{finding.finding_id}:{check.source_id}")
+                from difflib import SequenceMatcher
+                match = SequenceMatcher(None, check.quote, body, autojunk=False).find_longest_match()
+                start = max(0, match.b - 100)
+                source_recovery.append({'finding_id':finding.finding_id, 'source_id':check.source_id,
+                    'original_window':body[start:start+1000], 'accepted':False,
+                    'window_basis':'Known archived source or actually observed tool window; not a new disclosure claim.',
+                    'remedy':'Copy an exact contiguous source quote from the original window; do not reconstruct a table row from memory.',
+                    'read_tool':'read_research_source','arguments':{'source_id':check.source_id}})
     if errors:
         # Return all independent local errors at once. Exactness is unchanged;
         # do not make the model resubmit a whole review to discover each typo.
-        raise ValueError(json.dumps({"errors": errors, **({"quote_recovery": recovery} if recovery else {})}, ensure_ascii=False))
+        raise ValueError(json.dumps({"errors": errors, **({"quote_recovery": recovery} if recovery else {}),
+            **({'source_quote_recovery':source_recovery} if source_recovery else {})}, ensure_ascii=False))
 
 
 def validate_inspection_checks(review, artifacts, messages, *, complete):
-    from .review_inspection import inspection_manifest, text_locations
+    from .review_inspection import inspection_manifest, text_locations, resolve_location
     manifest = inspection_manifest(artifacts)
     findings = {f.finding_id: f for f in review.findings}
     errors = []
@@ -222,7 +232,12 @@ def validate_inspection_checks(review, artifacts, messages, *, complete):
         if pid not in manifest or check.paper_digest != manifest[pid]['paper_digest']:
             errors.append('inspection_unknown_or_stale_paper:' + pid)
             continue
-        fields = dict(text_locations(artifacts.read_paper(pid)))
+        paper = artifacts.read_paper(pid)
+        fields = dict(text_locations(paper))
+        try:
+            check.field_path = resolve_location(paper, check.field_path, check.target_quote)
+        except ValueError as exc:
+            errors.append(str(exc) + ':choose_from_text_targets=' + json.dumps(manifest[pid]['text_targets'], ensure_ascii=False))
         if check.target_quote not in fields.get(check.field_path, ''):
             errors.append('inspection_quote_not_exact:' + pid + ':' + check.field_path)
         from .review_inspection import PROSE_FIELDS

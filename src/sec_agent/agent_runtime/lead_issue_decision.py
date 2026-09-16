@@ -47,7 +47,11 @@ def decision_errors(decision, feedback, paper_ids, *, incomplete_reviewers=None)
     elif decision.action == 'resume_review' or decision.review_assignments:
         errors.append('Review recovery is only available in the incomplete-review triage stage.')
     if len(actual) != len(set(actual)) or set(actual) != expected:
-        errors.append("Each original paper/finding pair must have exactly one disposition.")
+        import json
+        errors.append("Each original paper/finding pair must have exactly one disposition. " + json.dumps({
+            'expected_pairs':sorted(expected), 'missing_pairs':sorted(expected-set(actual)),
+            'unexpected_pairs':sorted(set(actual)-expected),
+            'remedy':'Copy exact paper/finding IDs from expected_pairs; do not drop the reviewer prefix. New issues belong in new_findings, not original dispositions.'}))
     if any(row.paper_id not in paper_ids for row in decision.dispositions):
         errors.append("Unknown responsible paper.")
     discovered = [(row.paper_id, row.finding_id) for row in decision.new_findings]

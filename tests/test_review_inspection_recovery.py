@@ -13,7 +13,7 @@ from sec_agent.agent_runtime.case_review_agent import (
     CaseReview, CaseReviewFinding, build_case_reviewer, case_mcp_tools,
     validate_case_review, validate_inspection_checks, case_review_scope_digest,
 )
-from sec_agent.agent_runtime.review_inspection import inspection_manifest, quote_recovery, read_location
+from sec_agent.agent_runtime.review_inspection import inspection_manifest, quote_recovery, read_location, resolve_location
 from sec_agent.agent_runtime.review_recovery import review_recovery_handoff
 from sec_agent.agent_runtime.lead_issue_decision import LeadIssueDecision, decision_errors
 from sec_agent.agent_runtime.research_session import build_research_session_graph, current_task_artifacts
@@ -94,6 +94,22 @@ def test_quote_error_returns_exact_current_windows_without_accepting_normalized_
     assert original['narrative_markdown'] != changed['narrative_markdown']
 
 
+def test_exact_field_names_and_claim_ids_resolve_without_rewriting_financial_text():
+    artifacts=artifact_fixture()
+    paper=artifacts.read_paper('P01')
+    cid=paper['claims'][0]['claim_id']
+    assert resolve_location(paper,'claims/'+cid+'/statement')=='/claims/0/statement'
+    assert resolve_location(paper,'claims',paper['claims'][0]['statement'])=='/claims/0/statement'
+    assert read_location(artifacts,'P01','narrative_markdown')['text']==paper['narrative_markdown']
+    directory=read_location(artifacts,'P01','claims')
+    assert directory['kind']=='field_directory' and directory['locations']
+    with pytest.raises(ValueError,match='unknown_review_field'):
+        resolve_location(paper,'claims','a paraphrased claim that is not present')
+    with pytest.raises(ValueError,match='ambiguous_review_field'):
+        resolve_location(paper,'claims','Dell')
+    assert artifacts.read_paper('P01')==paper
+
+
 def test_strict_native_reviewer_consumes_manifest_and_can_submit_truthful_incomplete():
     async def exercise():
         artifacts = artifact_fixture()
@@ -164,6 +180,38 @@ def test_native_lead_tool_rejects_synthesis_during_incomplete_review_triage():
         assert any(isinstance(m,ToolMessage) and m.status=='error' and 'only resume_review or stop' in m.content for m in result['messages'])
         assert 'incomplete-review triage' in model.contexts[0][0].content
     asyncio.run(exercise())
+
+
+def test_native_lead_limit_ends_without_fabricating_a_decision_or_raising():
+    from sec_agent.agent_runtime.report_synthesis_agent import build_case_output_agent
+    from test_report_synthesis_agent import NativeFixtureModel
+    async def exercise():
+        decision={**recovery_decision(),'action':'synthesize'}
+        model=NativeFixtureModel(marker='triage-stop',replies=[[call('submit_lead_issue_decision',{'decision':decision},'bad')]])
+        agent=build_case_output_agent(role='decision',model=model,tools=[],artifacts=artifact_fixture(),
+            limits={'model_calls':1,'tool_calls':3},incomplete_reviewers=['counter'])
+        result=await agent.ainvoke({'messages':[HumanMessage(content='Triage this actual incomplete review only.')],'revisions':{}})
+        assert not result.get('output')
+        assert any(isinstance(m,ToolMessage) and m.status=='error' for m in result['messages'])
+        assert len(model.contexts)==1
+    asyncio.run(exercise())
+
+
+def test_advisory_findings_keep_same_namespaced_id_in_lead_packet_and_feedback():
+    artifacts=artifact_fixture()
+    review=incomplete_review(artifacts,'Current question')
+    review['counter']['recorded_findings']={'F1':{'finding_id':'F1','paper_id':'P01','severity':'advisory',
+        'problematic_quote':artifacts.read_paper('P01')['thesis'],'diagnosis':'A partial advisory finding, not a proven financial error.'}}
+    handoff=review_recovery_handoff(review,artifacts,'Current question')
+    assert handoff['feedback']['P01'][0]['finding_id']=='counter:F1'
+    assert handoff['review_records']['counter']['findings'][0]['finding_id']=='counter:F1'
+    assert handoff['required_dispositions']==[{'paper_id':'P01','finding_id':'counter:F1','severity':'advisory'}]
+    assert handoff['candidate_changed'] is False
+    bad=LeadIssueDecision.model_validate({**recovery_decision(),'dispositions':[{'finding_id':'F1','paper_id':'P01',
+        'disposition':'unresolved','rationale':'This requires further independent inspection of original sources.',
+        'expected_progress':'Recover the outstanding check before any acceptance.'}]})
+    errors=decision_errors(bad,handoff['feedback'],{'P01','P02'},incomplete_reviewers=['counter'])
+    assert 'counter:F1' in str(errors) and 'unexpected_pairs' in str(errors)
 
 
 def test_new_inspection_cannot_silently_reuse_legacy_clean_review():

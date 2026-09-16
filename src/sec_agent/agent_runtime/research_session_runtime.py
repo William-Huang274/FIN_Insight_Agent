@@ -18,7 +18,7 @@ from uuid import UUID
 
 from langchain_core.runnables import RunnableConfig, RunnableLambda
 from langchain_core.tools import StructuredTool, tool, ToolException
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, ToolMessage
 from langgraph.prebuilt import ToolRuntime
 from langgraph.config import get_stream_writer
 from langgraph_sdk.runtime import ServerRuntime
@@ -423,7 +423,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 'revisions': state.get('revisions', {})}, config)
             output = result.get('output')
             if not output or output.get('kind') != 'lead_issue_decision':
-                return {'action': 'stop', 'summary': 'Lead did not submit a valid bounded review recovery decision.'}
+                return {'action': 'stop', 'decision_source':'runtime_incomplete_lead',
+                    'summary': 'Lead did not submit a valid bounded review recovery decision; runtime stopped without report acceptance.',
+                    'tool_feedback':[m.content for m in result.get('messages',[]) if isinstance(m,ToolMessage) and m.status=='error'][-4:]}
             return output
 
     async def execute_convergence(state, config, existing=None):

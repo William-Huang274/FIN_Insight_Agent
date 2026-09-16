@@ -124,3 +124,41 @@ def test_native_record_tool_persists_runtime_origin_separately_from_raw_model_ca
         assert saved.artifact['runtime_parsing'][0]['origin']=='runtime_compatibility_parse'
         assert finding['source_checks'][0]['quote']=='Income | 10 | 20 |'
     asyncio.run(run())
+
+
+def test_concise_semantic_result_keeps_evidence_and_relationship_checks():
+    a=artifact_fixture();payload=inspected(a)
+    for check in payload['inspection_checks']:
+        check['result']='一致'
+    review=CaseReview.model_validate(payload)
+    validate_inspection_checks(review,a,reads(a),complete=True)
+    payload['inspection_checks'][0]['result']='  '
+    with pytest.raises(ValueError,match='must_not_be_blank'):
+        CaseReview.model_validate(payload)
+    prose=next(c for c in review.inspection_checks if c.dimension=='prose_consistency')
+    prose.supported_relationship=''
+    with pytest.raises(ValueError,match='semantic_relationship_comparison_required'):
+        validate_inspection_checks(review,a,reads(a),complete=True)
+
+
+def test_native_schema_feedback_keeps_paths_without_echoing_full_model_arguments():
+    async def run():
+        a=sample()
+        finding={'finding_id':'F','paper_id':'P01','severity':'invalid-severity',
+            'problematic_quote':'Growth contribution','diagnosis':'UNIQUE_RAW_PAYLOAD_'+('x'*20000),
+            'requested_change':'Inspect original source only.'}
+        model=ScriptedNativeChat(marker='synthetic',replies=[
+            [call('read_research_artifact',{'paper_id':'P01','section':'workpaper'},'read')],
+            [call('record_case_finding',{'finding':finding},'bad')]])
+        async with Client(_build_server(case_artifacts=a)) as client:
+            agent=build_case_reviewer(role='counter',model=model,tools=await case_mcp_tools(client),artifacts=a,max_model_calls=2)
+            result=await agent.ainvoke({'messages':[HumanMessage(content='Synthetic schema failure only.')]})
+        feedback=next(m for m in result['messages'] if isinstance(m,ToolMessage) and m.tool_call_id=='bad')
+        assert feedback.status=='error' and len(feedback.content)<2000
+        assert 'finding.severity' in feedback.content and 'finding.diagnosis' in feedback.content
+        assert 'UNIQUE_RAW_PAYLOAD_' not in feedback.content
+        assert feedback.artifact['runtime_parsing'][0]['origin']=='runtime_compatibility_parse'
+        assert not result.get('recorded_findings') and not result.get('review')
+        original=next(m for m in result['messages'] if getattr(m,'tool_calls',[]) and m.tool_calls[0]['id']=='bad')
+        assert original.tool_calls[0]['args']['finding']==finding
+    asyncio.run(run())

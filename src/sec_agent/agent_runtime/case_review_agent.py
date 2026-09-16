@@ -22,7 +22,7 @@ from langchain_core.tools import StructuredTool, ToolException
 from langchain_core.utils.function_calling import convert_to_openai_tool
 from langgraph.graph import END, START, StateGraph
 from langgraph.types import Command
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from .deepseek_structured_agents import TokenBudgetBasis, ReasoningPreservingChatDeepSeek, _usage_audit_fields
 from .case_artifacts import CaseArtifacts
@@ -87,13 +87,21 @@ class ReviewInspectionCheck(BaseModel):
     field_path: str = Field(description="Copy an exact text_targets selector, e.g. /claims/0/statement, /narrative_markdown, /counterevidence/0. An exact claim ID may replace its index. A container plus a uniquely matching exact target_quote is resolved by runtime.")
     target_quote: str = Field(min_length=1, max_length=1500)
     status: Literal["checked", "issue", "unresolved", "not_applicable"]
-    result: str = Field(min_length=20, max_length=2000)
+    result: str = Field(min_length=1, max_length=2000,
+        description="Concise public result. Evidence and semantic relationships are checked separately; no padding to a character quota.")
     finding_ids: list[str] = Field(default_factory=list, max_length=80)
     source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=12)
     semantic_target_id: str | None = None
     expressed_relationship: str = Field(default='', max_length=1600)
     supported_relationship: str = Field(default='', max_length=1600)
     semantic_verdict: Literal['consistent','contradictory','ambiguous','unsupported'] | None = None
+
+    @field_validator('result')
+    @classmethod
+    def result_not_blank(cls, value):
+        if not value.strip():
+            raise ValueError('inspection_result_must_not_be_blank')
+        return value
 
 
 class CaseReview(BaseModel):
@@ -312,7 +320,8 @@ def validate_inspection_checks(review, artifacts, messages, *, complete, parsing
             probe = CaseReview(summary='Inspection source validation; not semantic acceptance.',
                 assessments=[a for a in review.assessments if a.paper_id == pid],
                 findings=[CaseReviewFinding(finding_id='inspection', paper_id=pid,
-                    problematic_quote=check.target_quote, severity='advisory', diagnosis=check.result,
+                    problematic_quote=check.target_quote, severity='advisory',
+                    diagnosis='Source-binding validation only: ' + check.result,
                     requested_change='Validate source binding only, without changing research.', source_checks=check.source_checks)])
             try:
                 validate_case_review(probe, artifacts, messages, paper_ids=[pid], require_full_workpaper=False,
@@ -640,6 +649,35 @@ class InvalidToolCallFeedback(AgentMiddleware):
         return {"messages": feedback, **({"jump_to": "model"} if not message.tool_calls else {})}
 
 
+class CompactReviewSchemaFeedback(AgentMiddleware):
+    """Keep native schema validation, omit its duplicate full argument echo."""
+    @staticmethod
+    def compact(message):
+        if (not isinstance(message, ToolMessage) or message.status != 'error'
+                or not isinstance(message.content, str)
+                or not message.content.startswith("Error invoking tool '")):
+            return message
+        original, separator, errors = message.content.rpartition(' with error:\n')
+        if not separator:
+            return message
+        from .research_graph_contracts import canonical_sha256
+        from .evidence_resolution import parsing_record
+        detail = {'error':'tool_arguments_schema_invalid', 'details':errors.strip(),
+            'executed':False, 'remedy':'Correct the named fields using the declared schema. The original tool arguments remain in the prior assistant message; no review was accepted.'}
+        receipt = parsing_record('native_schema_feedback_v1',
+            {'tool_call_id':message.tool_call_id,'feedback_digest':canonical_sha256(message.content)},
+            detail, original_arguments_retained_in_assistant_message=True)
+        artifact = dict(message.artifact) if isinstance(message.artifact,dict) else {}
+        artifact['runtime_parsing'] = [*artifact.get('runtime_parsing',[]),receipt]
+        return message.model_copy(update={'content':json.dumps(detail,ensure_ascii=False),'artifact':artifact})
+
+    def wrap_tool_call(self, request, handler):
+        return self.compact(handler(request))
+
+    async def awrap_tool_call(self, request, handler):
+        return self.compact(await handler(request))
+
+
 class StopOnAcceptedReview(AgentMiddleware):
     @hook_config(can_jump_to=["end"])
     def before_model(self, state, runtime):
@@ -935,7 +973,7 @@ When done, submit_case_review with an assessment of this revision, all saved fin
     notes = working_memory_tools(f"review_{role}")
     agent = create_agent(model=model, tools=[*tools, *notes, record_case_finding, submit_case_review], state_schema=CaseReviewerState,
         system_prompt=prompt + (WORKING_MEMORY_GUIDANCE if notes else "") + METHOD_TOOL_GUIDANCE + method_instructions + f"\nBudget: up to {max_model_calls} model calls / {max_tool_calls} tools; no retries or silent partial acceptance.",
-        middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), ReviewWorkBudget(max_model_calls), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="end"),
+        middleware=[StopOnAcceptedReview(), InvalidToolCallFeedback(), CompactReviewSchemaFeedback(), ReviewWorkBudget(max_model_calls), ModelCallLimitMiddleware(run_limit=max_model_calls, exit_behavior="end"),
                     ToolCallLimitMiddleware(run_limit=max_tool_calls, exit_behavior="end"), *(audit.middlewares() if audit else [])],
         name=f"case_{role}")
     # Expose only the native count to the parent collector. Binding ainvoke

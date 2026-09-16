@@ -120,6 +120,17 @@ def test_arithmetic_navigation_does_not_treat_date_or_period_comparison_as_a_for
     assert arithmetic_hint('11,547 / 155,667 = 0.074')
 
 
+def test_arithmetic_hint_does_not_confuse_period_values_or_reference_locators_with_calculations():
+    from sec_agent.agent_runtime.review_claim_contracts import arithmetic_hint
+    assert not arithmetic_hint('Net sales 155,667/143,313; profit 18,405/15,307; EPS 1.59/0.98.')
+    assert not arithmetic_hint('PASSAGE::...2:0/2:1/2:5/2:6; CALC::cc53a469/25440550016805cd4e823447.')
+    assert arithmetic_hint('11,547/29,267=39.45%, 2,126/3,098≈69%.')
+    assert arithmetic_hint('5,841+1,017+11,547=18,405')
+    # An unmarked ratio is ambiguous to this mechanical hint. The reviewer's
+    # explicit declaration and independent semantic review remain necessary.
+    assert not arithmetic_hint('11,547 / 155,667')
+
+
 def test_nested_calculation_lineage_keeps_all_leaf_sources_and_explicit_assumptions():
     a=artifact_fixture();first,message=calculation_fixture(a)
     a._sources[first['calculation_id']]=first

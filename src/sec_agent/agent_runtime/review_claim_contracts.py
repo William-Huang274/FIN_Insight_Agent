@@ -57,13 +57,17 @@ def calculation_lineage(artifacts, messages, reference):
         'assumptions':assumptions,'financial_semantics_verified':False}
 
 
-# Narrow arithmetic navigation hint, not a classifier. Date ranges and isolated
-# growth percentages are excluded. Other claims still need model declaration.
-ARITHMETIC = re.compile(r'\d(?:[\d,.]*\d)?\s*(?:/|÷|\*|×|\+|=)\s*[−-]?\d(?:[\d,.]*\d)?')
+# Narrow arithmetic navigation hint, not a classifier. A slash alone may mean
+# current/prior values or source locators. Only a slash with an explicit result
+# marker is an arithmetic hint; unmarked ratios still need model declaration.
+_NUMBER = r'\d(?:[\d,.]*\d)?'
+ARITHMETIC = re.compile(
+    _NUMBER + r'\s*(?:(?:÷|\*|×|\+|=)\s*[−-]?' + _NUMBER
+    + r'|/\s*[−-]?' + _NUMBER + r'(?=\s*[=≈≃]))')
 
 
 def arithmetic_hint(text):
-    return any(not re.fullmatch(r'\d{4}\s*/\s*\d{1,4}',m.group()) for m in ARITHMETIC.finditer(text))
+    return ARITHMETIC.search(text) is not None
 
 
 def prepare_review_claims(review, artifacts, messages, *, parsing_records=None):

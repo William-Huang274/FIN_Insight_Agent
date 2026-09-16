@@ -75,6 +75,9 @@ for(const width of [1440,900,390])test(`真实知识库数据库与项目侧栏 
   const task=await(await page.request.get(`/api/v1/research-sessions/${tid}`)).json();
   expect(task.attachments[0].project_origin.document_id).toBe(ref.version_id);
   expect(task.runs).toEqual([]);
+  await page.getByRole('button',{name:/下次运行采用所选 v/}).click();
+  await expect(page.getByRole('region',{name:'任务资料更新'})).toContainText('输入 r1 已保存，待下次运行采用');
+  await page.screenshot({path:info.outputPath(`real-source-update-${width}.png`),fullPage:true});
   await page.getByRole('button',{name:'关闭项目资料侧栏',exact:true}).click();
   await expect(panel).toHaveCount(0);
   await page.evaluate(()=>localStorage.setItem('finsight.theme','dark'));

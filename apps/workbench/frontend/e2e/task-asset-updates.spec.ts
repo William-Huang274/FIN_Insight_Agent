@@ -1,0 +1,30 @@
+import {test,expect} from 'playwright/test';
+
+for(const width of [1440,390])test(`任务明确采用更新版本 ${width}`,async({page},info)=>{
+  test.setTimeout(60000);await page.setViewportSize({width,height:1000});
+  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
+  const headers={'X-Workbench-Request':'1'};
+  const saved=await(await page.request.get('/api/v1/projects')).json();const project=crypto.randomUUID();
+  expect((await page.request.put('/api/v1/projects',{headers,data:{...saved,projects:[...saved.projects,{id:project,name:`版本接续 ${width}`}]}})).ok()).toBe(true);
+  expect((await page.request.post(`/api/v1/projects/${project}/documents`,{headers:{...headers,'X-File-Name':'Assumption.md'},data:'旧版用户假设：先核对经营现金流与资本支出的期间。'})).ok()).toBe(true);
+  const catalog=await(await page.request.get(`/api/v1/asset-workspace/projects/${project}`)).json();const ref=catalog.items[0].current.ref;
+  const draft=await page.request.post('/api/v1/research-sessions',{headers,data:{mode:'research',defer_start:true,question:'比较两版用户假设并核对来源，暂不调用模型。',project_materials:{project_id:project,document_ids:[ref.version_id]}}});
+  expect(draft.ok()).toBe(true);const tid=(await draft.json()).thread_id;
+  expect((await page.request.post('/api/v1/asset-workspace/documents',{headers,data:{project_id:project,base_ref:ref,title:'Assumption.md',text:'新版用户假设：增加营运资本影响的检查，不把现金流变化直接认作利润变化。'}})).ok()).toBe(true);
+  await page.goto(`/workspace/session?thread=${tid}&view=graph`);
+  await page.getByRole('button',{name:'项目资料',exact:true}).click();
+  await expect(page.getByLabel('侧栏资料正文')).toContainText('增加营运资本影响');
+  const updates=page.getByRole('region',{name:'任务资料更新'});
+  await expect(updates).toContainText('项目资料有新版本');
+  await updates.getByRole('button',{name:'下次运行采用所选 v2'}).click();
+  await expect(updates).toContainText('输入 r1 已保存，待下次运行采用');
+  await updates.getByText('采用规则与记录',{exact:true}).click();
+  await expect(updates).toContainText('准备完成');
+  await page.screenshot({path:info.outputPath(`asset-update-pending-${width}.png`),fullPage:true});
+  await page.reload();await page.getByRole('button',{name:'项目资料',exact:true}).click();
+  await expect(page.getByRole('region',{name:'任务资料更新'})).toContainText('输入 r1 已保存，待下次运行采用');
+  const state=await(await page.request.get(`/api/v1/research-sessions/${tid}`)).json();
+  expect(state.attachments[0].project_origin.document_id).toBe(ref.version_id);
+  expect(state.runs).toEqual([]);expect(state.asset_input_revision).toBe(0);
+  expect(errors).toEqual([]);
+});

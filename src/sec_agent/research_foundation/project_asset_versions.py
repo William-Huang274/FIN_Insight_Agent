@@ -130,11 +130,15 @@ def matches_dependency(dependency, project, scope, kind, asset):
 def task_bindings(store, thread):
     """Metadata-only inspection also works when an old source was revoked."""
     with store.connect() as db:
+        scopes = [str(thread)]
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='task_asset_updates'").fetchone():
+            scopes.extend(json.loads(row[0])['scope'] for row in db.execute(
+                "SELECT body FROM task_asset_updates WHERE thread=? AND state='ready'", (str(thread),)))
+        placeholders = ','.join('?' for _ in scopes)
         origins = [json.loads(row[0]) for row in db.execute(
-            'SELECT o.origin FROM attachment_origins o JOIN attachments a ON a.id=o.object_id WHERE a.thread=?', (thread,))]
+            f'SELECT o.origin FROM attachment_origins o JOIN attachments a ON a.id=o.object_id WHERE a.thread IN ({placeholders})', scopes)]
         if db.execute("SELECT 1 FROM sqlite_master WHERE name='task_financial_snapshots'").fetchone():
-            row = db.execute('SELECT body FROM task_financial_snapshots WHERE thread=?', (thread,)).fetchone()
-            if row:
+            for row in db.execute(f'SELECT body FROM task_financial_snapshots WHERE thread IN ({placeholders})', scopes):
                 origin = json.loads(row[0]).get('project_origin')
                 if origin:
                     origins.append({**origin, 'asset_kind': 'sec'})

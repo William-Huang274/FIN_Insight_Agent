@@ -76,7 +76,14 @@ def origin_access(store, thread, origin, kind='document', source_path=None):
         return 'unavailable'
 
 
-def task_source_dependencies(store, thread):
+def task_source_dependencies(store, thread, *, _source_scope=False):
+    if not _source_scope and not hasattr(store, 'binding'):
+        from .task_asset_updates import TaskAssetView
+        store = TaskAssetView(store.root, thread)
+    if len(getattr(store, 'scopes', [])) > 1:
+        from .task_attachments import TaskAttachmentStore
+        base = TaskAttachmentStore(store.root)
+        return [item for scope in store.scopes for item in task_source_dependencies(base, scope, _source_scope=True)]
     require_task_assets(store, thread)
     dependencies = [item['project_origin'] for item in store.list(thread) if item.get('project_origin')]
     with store.connect() as db:
@@ -89,6 +96,12 @@ def task_source_dependencies(store, thread):
 
 def require_task_assets(store, thread):
     """Also stops reuse of prior context before a new provider request."""
+    if len(getattr(store, 'scopes', [])) > 1:
+        from .task_attachments import TaskAttachmentStore
+        base = TaskAttachmentStore(store.root)
+        for scope in store.scopes:
+            require_task_assets(base, scope)
+        return
     for item in store.list(thread):
         require_active(item['access_status'])
     with store.connect() as db:
@@ -105,7 +118,7 @@ def require_task_assets(store, thread):
 def task_access_check(environment):
     if not environment.get('FINSIGHT_TASK_ATTACHMENTS_ROOT') or not environment.get('FINSIGHT_TASK_THREAD_ID'):
         return None
-    from .task_attachments import TaskAttachmentStore
-    store = TaskAttachmentStore(environment['FINSIGHT_TASK_ATTACHMENTS_ROOT'])
+    from .task_asset_updates import task_asset_view
+    store = task_asset_view(environment)
     thread = environment['FINSIGHT_TASK_THREAD_ID']
     return lambda: require_task_assets(store, thread)

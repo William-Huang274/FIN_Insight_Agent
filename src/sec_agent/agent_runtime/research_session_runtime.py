@@ -192,10 +192,12 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         recoveries = {row["task_id"]: row["agent_state"] for row in request.get("failed_workpapers", [])
                       if row["task_id"] not in seeds}
         if environment.get("FINSIGHT_TASK_ATTACHMENTS_ROOT"):
-            from sec_agent.research_foundation.task_attachments import TaskAttachmentStore, task_material_catalog
-            uploads = TaskAttachmentStore(environment["FINSIGHT_TASK_ATTACHMENTS_ROOT"]).list(thread_id)
+            from sec_agent.research_foundation.task_attachments import task_material_catalog
+            from sec_agent.research_foundation.task_asset_updates import task_asset_view
+            view = task_asset_view(environment)
+            uploads = view.list(thread_id)
             from sec_agent.research_foundation.project_financial_facts import task_financial_snapshot
-            selected = task_financial_snapshot(environment['FINSIGHT_TASK_ATTACHMENTS_ROOT'], thread_id)
+            selected = task_financial_snapshot(environment['FINSIGHT_TASK_ATTACHMENTS_ROOT'], view.financial_scope)
             if selected is not None:
                 request = {**request, 'question': request['question'] + '\n\n本任务已绑定项目SEC财务数据版本（独立快照）：'
                     + json.dumps(selected[1], ensure_ascii=False)
@@ -417,6 +419,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             return await graph.ainvoke({"run_id": research_id, "run_invocation_id": invocation}, config)
 
     async def triage_review(state, config: RunnableConfig):
+        state = await with_guidance(state, 'lead_review_triage')
         from .review_recovery import review_recovery_handoff
         async with tools_for(state) as (artifacts, tools):
             handoff = review_recovery_handoff(state['case_review'], artifacts, state['question'])
@@ -514,6 +517,10 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
 
     def interactive(role):
         async def execute(state, config: RunnableConfig):
+            guidance = await read_guidance() if read_guidance else []
+            if guidance:
+                state = {**state, 'messages': [*state.get('messages', []), HumanMessage(content=
+                    '\n'.join(row['message'] for row in guidance))]}
             async with tools_for(state) as (artifacts, tools):
                 if execution.mode in {"auto", "selected", "standard"}:
                     allowed = [b for b in case["branch_topics"] if not execution.branch_ids or b["branch_id"] in execution.branch_ids]
@@ -598,6 +605,16 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
             "objective": f"已固定配置：{studio.title} · {studio.digest[:12]} · 专家并行 {studio.max_parallel_tasks} · 审查 {studio.review_order}",
             "recorded_at": datetime.now(timezone.utc).isoformat(), "run_id": run_id})
     from langgraph_sdk import get_client
+    asset_view = None
+    if os.environ.get('FINSIGHT_TASK_ATTACHMENTS_ROOT'):
+        from sec_agent.research_foundation.task_asset_updates import TaskAssetUpdates, TaskAssetView, asset_update_prompt
+        updates = TaskAssetUpdates(os.environ['FINSIGHT_TASK_ATTACHMENTS_ROOT'])
+        updates.pin(thread_id, run_id, ids.get('finsight_asset_revision', 0))
+        asset_view = TaskAssetView(updates.store.root, thread_id, run_id)
+        if asset_view.binding:
+            public({'kind': 'stage', 'actor': 'asset_inputs', 'event': 'applied', 'status': 'requires_reassessment',
+                'objective': f"本次运行采用资料输入 r{asset_view.binding['revision']}；已有研究结果仍须核查影响，未自动更新。",
+                'recorded_at': datetime.now(timezone.utc).isoformat(), 'run_id': run_id})
     native = get_client()  # official in-process Agent Server connection
     async def read_guidance():
         thread = await native.threads.get(thread_id)
@@ -605,7 +622,7 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         metadata = thread.get('metadata', {})
         current = user_context_prompt(metadata.get('owner_id','local-pilot'),thread_id)
         from sec_agent.research_foundation.asset_workspace import asset_context_prompt
-        assets = asset_context_prompt(metadata)
+        assets = asset_update_prompt(asset_view) if asset_view and asset_view.binding else asset_context_prompt(metadata)
         return [*([{'message':assets}] if assets else []), *metadata.get("research_guidance", []), *([{'message':current}] if current else [])]
     try:
         from .research_budget import budget_from_host

@@ -79,6 +79,30 @@ def _validate_links(project_path, task_path):
         if _table(tasks,'task_financial_snapshots'):
             for row in tasks.execute('SELECT body FROM task_financial_snapshots'):
                 info=json.loads(row[0]);check(info['project_origin'],'sec')
+        if _table(tasks,'task_asset_updates'):
+            from .asset_workspace import _digest
+            for thread,revision,state,raw in tasks.execute('SELECT thread,revision,state,body FROM task_asset_updates'):
+                body=json.loads(raw)
+                if state!='ready':
+                    continue
+                context=body['context'];scope=str(UUID(body['scope']))
+                if context['digest']!=_digest({k:v for k,v in context.items() if k!='digest'}):
+                    raise ValueError('asset_set_input_context_invalid')
+                actual={(json.loads(origin)['document_id'],digest) for origin,digest in tasks.execute(
+                    'SELECT o.origin,a.digest FROM attachments a JOIN attachment_origins o ON o.object_id=a.id WHERE a.thread=?',(scope,))}
+                expected={(r['version_id'],r['digest']) for r in context['refs'] if r['kind']=='document'}
+                if actual!=expected:
+                    raise ValueError('asset_set_input_documents_missing')
+                sec=next((r for r in context['refs'] if r['kind']=='sec'),None)
+                if sec:
+                    row=tasks.execute('SELECT body FROM task_financial_snapshots WHERE thread=?',(scope,)).fetchone() if _table(tasks,'task_financial_snapshots') else None
+                    if not row or json.loads(row[0])['status']!='ready' or json.loads(row[0])['project_origin']['sec_version']!=sec['version_id']:
+                        raise ValueError('asset_set_input_financial_binding_missing')
+        if _table(tasks,'task_asset_runs'):
+            for thread,revision in tasks.execute('SELECT thread,revision FROM task_asset_runs WHERE revision>0'):
+                if not _table(tasks,'task_asset_updates') or not tasks.execute(
+                    "SELECT 1 FROM task_asset_updates WHERE thread=? AND revision=? AND state='ready'",(thread,revision)).fetchone():
+                    raise ValueError('asset_set_adopted_revision_missing')
         return _financial_files(tasks)
 
 

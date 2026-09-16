@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Literal
 from urllib.parse import urlsplit, unquote, quote
 from uuid import UUID
+from sec_agent.research_foundation.task_asset_updates import AssetUpdateRequest
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -384,11 +385,14 @@ def report_snapshot(state):
 
 def build_report_sessions_router(service):
     from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
+    from sec_agent.research_foundation.task_asset_updates import TaskAssetUpdates, TaskAssetView
+    from sec_agent.research_foundation.asset_workspace import AssetConflict
     def project_access_error(thread_id):
         from sec_agent.research_foundation.project_asset_access import require_task_assets, ProjectAssetUnavailable
         if service.attachment_store:
-            try: require_task_assets(service.attachment_store, thread_id)
+            try: require_task_assets(TaskAssetView(service.attachment_store.root, thread_id), thread_id)
             except ProjectAssetUnavailable as exc: return str(exc)
+            except (ValueError, OSError): return '任务资料版本校验失败，请检查已保存资料；不会自动回退到旧版本。'
         return None
 
     async def require_project_access(thread_id):
@@ -407,6 +411,48 @@ def build_report_sessions_router(service):
                 raise HTTPException(409, '这是旧版只读研究档案；请新建研究继续，原始报告和运行记录仍可查看。')
 
     router = APIRouter(dependencies=[Depends(protect_archive)])
+
+    @router.get('/research-sessions/{thread_id}/asset-updates')
+    async def asset_updates(thread_id: UUID, response: Response):
+        response.headers['Cache-Control'] = 'no-store'
+        thread = await service.owned_thread(thread_id)
+        if service.attachment_store is None:
+            raise HTTPException(503, '本部署未配置资产存储')
+        from ...application.task_asset_updates import update_status
+        return await run_in_threadpool(update_status, service.attachment_store.root, service_owner(),
+                                       thread_id, thread.get('metadata', {}))
+
+    @router.post('/research-sessions/{thread_id}/asset-updates')
+    async def prepare_asset_update(thread_id: UUID, body: AssetUpdateRequest, request: Request):
+        browser_write(request)
+        thread = await service.owned_thread(thread_id)
+        if graph_for_thread(thread) != RESEARCH_GRAPH or service.attachment_store is None:
+            raise HTTPException(409, '仅当前研究任务可采用新版项目资料')
+        if thread.get('metadata', {}).get('project_materials_status') not in (None, 'ready'):
+            raise HTTPException(409, '原始任务资料尚未准备完成')
+        try:
+            result = await run_in_threadpool(TaskAssetUpdates(service.attachment_store.root).prepare,
+                service_owner(), thread_id, thread.get('metadata', {}), body)
+        except KeyError:
+            raise HTTPException(404, '所选资产不属于当前用户或版本不存在') from None
+        except (AssetConflict, ProjectAssetUnavailable) as exc:
+            raise HTTPException(409, str(exc)) from None
+        except Exception:
+            raise HTTPException(409, '资料准备未确认完成，原任务仍用原版本；请刷新查看记录，不会自动重试或启动模型') from None
+        return {'revision': result['revision'], 'state': result['state'],
+                'notice': '已保存版本选择，下一次运行采用；当前运行和旧结果保留。' if result['state'] == 'ready' else '该请求尚未就绪，请检查更新记录。'}
+
+    @router.post('/research-sessions/{thread_id}/asset-updates/{revision}/abandon')
+    async def abandon_asset_preparation(thread_id: UUID, revision: int, request: Request):
+        browser_write(request)
+        await service.owned_thread(thread_id)
+        if service.attachment_store is None:
+            raise HTTPException(503, '本部署未配置资产存储')
+        try:
+            await run_in_threadpool(TaskAssetUpdates(service.attachment_store.root).abandon_preparation, thread_id, revision)
+        except AssetConflict as exc:
+            raise HTTPException(409, str(exc)) from None
+        return {'state': 'abandoned', 'notice': '已放弃未完成的准备，原任务保持原输入；副本与失败记录保留，可重新选择版本。'}
 
     def browser_write(request):
         # A cross-site form/opaque fetch must not be able to start paid work.
@@ -507,7 +553,7 @@ def build_report_sessions_router(service):
         from sec_agent.research_foundation.project_financial_facts import query_task_financial_snapshot
         try:
             return await run_in_threadpool(query_task_financial_snapshot, service.attachment_store.root,
-                str(thread_id), body, thread['metadata']['research_as_of'])
+                TaskAssetView(service.attachment_store.root, thread_id).financial_scope, body, thread['metadata']['research_as_of'])
         except (KeyError, ValueError, OSError):
             raise HTTPException(409, '本任务财务数据未就绪、校验失败或查询超出研究时点；不会改读其他资料。') from None
 
@@ -722,7 +768,7 @@ def build_report_sessions_router(service):
     @router.get("/research-sessions/{thread_id}/attachments")
     async def list_attachments(thread_id: UUID):
         await service.owned_thread(thread_id)
-        return attachments().list(thread_id)
+        return TaskAssetView(attachments().root, thread_id).list(thread_id)
 
     @router.post("/research-sessions/{thread_id}/attachments")
     async def upload(thread_id: UUID, request: Request):
@@ -748,7 +794,7 @@ def build_report_sessions_router(service):
     async def download_attachment(thread_id: UUID, document_id: str):
         await service.owned_thread(thread_id)
         try:
-            row = attachments().get(thread_id, document_id)
+            row = TaskAssetView(attachments().root, thread_id, validate=False).get(thread_id, document_id)
         except ProjectAssetUnavailable as exc:
             raise HTTPException(409, str(exc)) from None
         except ValueError:
@@ -802,16 +848,29 @@ def build_report_sessions_router(service):
         if thread.get("status") == "error" and not archived(thread):
             projection["can_continue_remaining"] = can_restart_remaining_node(thread, state, runs[0] if runs else None,
                 public_runs[0]["usage"] if public_runs else None)
+        asset_view, asset_binding = None, None
+        financial_data = thread.get('metadata', {}).get('project_financial_data')
+        if service.attachment_store:
+            asset_binding = TaskAssetUpdates(service.attachment_store.root).binding(thread_id)
+            try:
+                asset_view = TaskAssetView(service.attachment_store.root, thread_id)
+                if asset_binding:
+                    from sec_agent.research_foundation.project_financial_facts import task_financial_snapshot
+                    chosen = task_financial_snapshot(service.attachment_store.root, asset_view.financial_scope)
+                    financial_data = chosen[1] if chosen else None
+            except (ValueError, OSError):
+                pass  # Preserve public history; project_access_error disables new work.
         return {"thread_id": str(thread_id), "status": thread["status"], "title": thread.get("metadata", {}).get("title"),
             **projection, "execution": thread.get("metadata", {}).get("execution"), "studio_assistant_id": thread.get('metadata', {}).get('studio_assistant_id'), "can_abandon_question": bool(can_abandon_question(thread, state, runs[0] if runs else None)),
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
             "project_materials_ready": thread.get('metadata', {}).get('project_materials_status') in (None, 'ready'),
-            "project_financial_data": thread.get('metadata', {}).get('project_financial_data'),
-            "asset_context": thread.get('metadata', {}).get('asset_context'),
+            "project_financial_data": financial_data,
+            "asset_context": asset_binding['body']['context'] if asset_binding else thread.get('metadata', {}).get('asset_context'),
+            "asset_input_revision": asset_binding['revision'] if asset_binding else 0,
             "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
             "project_access_error": await run_in_threadpool(project_access_error, thread_id),
-            "attachments": service.attachment_store.list(thread_id) if service.attachment_store else [],
+            "attachments": asset_view.list(thread_id) if asset_view else [],
             "runs": public_runs, "cumulative_usage": cumulative}
 
     @router.post("/research-sessions/{thread_id}/abandon-question")

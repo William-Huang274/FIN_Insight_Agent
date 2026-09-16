@@ -646,7 +646,7 @@ export function ResearchSession() {
             </section>
             <div id="task-details-panel" className="rs-task-details" hidden={!taskDetails} onKeyDown={e => { if (e.key === "Escape") { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); } }}>
             <div className="fs-task-panel-bar"><strong>任务说明与资料</strong><button onClick={() => { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); }}><X size={15} />收起资料面板</button></div>
-            <AssetContextBanner context={session.asset_context}/>{session.question && <div className="rs-task-question">{session.question}</div>}
+            <AssetContextBanner context={session.asset_context}/>{!!session.asset_input_revision&&<p className="rs-report-notice">本次任务已采用资料输入 r{session.asset_input_revision}。旧结果和引用保留；资料采用记录不代表研究影响已复核。可在“项目资料”查看版本与采用记录。</p>}{session.question && <div className="rs-task-question">{session.question}</div>}
             {uploadStatus && <div className="rs-report-notice">{uploadStatus}</div>}
             {!busy && (session.is_draft || session.can_upload) &&
               <label className="rs-upload-label">补充本任务资料

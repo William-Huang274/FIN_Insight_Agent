@@ -263,7 +263,8 @@ def open_approved_data_composition(
             runtime_mart_digest = _file_sha256(runtime_mart)
         if env.get('FINSIGHT_TASK_ATTACHMENTS_ROOT') and env.get('FINSIGHT_TASK_THREAD_ID'):
             from sec_agent.research_foundation.project_financial_facts import task_financial_snapshot
-            selected = task_financial_snapshot(env['FINSIGHT_TASK_ATTACHMENTS_ROOT'], env['FINSIGHT_TASK_THREAD_ID'])
+            from sec_agent.research_foundation.task_asset_updates import task_asset_view
+            selected = task_financial_snapshot(env['FINSIGHT_TASK_ATTACHMENTS_ROOT'], task_asset_view(env).financial_scope)
             if selected is not None:
                 runtime_mart, financial_binding = selected
                 runtime_mart_digest = financial_binding['mart_sha256']
@@ -364,7 +365,8 @@ def open_approved_data_composition(
             from sec_agent.research_foundation.task_attachments import TaskAttachmentStore
             from sec_agent.research_foundation.vision_reader import task_vision_reader
             from .report_session import session_audit_sinks
-            attachment_store = TaskAttachmentStore(env["FINSIGHT_TASK_ATTACHMENTS_ROOT"])
+            from sec_agent.research_foundation.task_asset_updates import task_asset_view
+            attachment_store = task_asset_view(env)
             original_source_reader = source_reader
             vision = None
             if env.get("FINSIGHT_TASK_VISION_ENABLED") == "1":

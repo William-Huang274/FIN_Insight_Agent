@@ -559,7 +559,7 @@ financial_semantics_verified=false means not verified, not a failed review; abse
 """
 
 
-def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions="", review_scope="full_report"):
+def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, paper_id=None, limits, audit=None, report_revision=False, allow_answers=False, answer_only=False, require_responsibility=False, allow_report_edits=True, method_instructions="", review_scope="full_report", incomplete_reviewers=None):
     if review_scope not in {"full_report", "selected_claims"} or (review_scope == "selected_claims" and role != "verifier"):
         raise ValueError("selected_claim_review_requires_verifier")
     feedback = feedback or []
@@ -567,7 +567,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     @tool
     def submit_lead_issue_decision(decision: LeadIssueDecision, runtime: ToolRuntime) -> Command:
         """Decide every original finding using current papers/sources. No self-certified acceptance. Repair only affected work, or retain unresolved and stop."""
-        errors = decision_errors(decision, feedback or {}, {p["paper_id"] for p in artifacts.catalog()["papers"]})
+        errors = decision_errors(decision, feedback or {}, {p["paper_id"] for p in artifacts.catalog()["papers"]}, incomplete_reviewers=incomplete_reviewers)
         try:
             refs = " ".join("[" + ref + "]" for row in [*decision.dispositions, *decision.new_findings] for ref in row.citation_ids)
             citations = report_citations(refs, artifacts, runtime.state.get("messages", [])) if refs else {}
@@ -794,6 +794,11 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     elif role == "decision":
         specific = "You are the Research Lead handling current independent review findings BEFORE final judgment. Read relevant current workpapers and original sources. For each supplied paper/finding pair decide targeted repair, source-backed disagreement, or unresolved. Preserve unaffected work, numerical/period/unit/denominator qualifiers and counterevidence. State expected progress, not just 'try again'. Do not write the final report here. Disagreement remains visible to the independent downstream verifier. If no findings need work, proceed to synthesis; if necessary evidence cannot be obtained, stop explicitly. Never declare a reviewer or author correct merely because they submitted."
         submit = submit_lead_issue_decision
+        if incomplete_reviewers is not None:
+            specific += '\nThis is incomplete-review triage. You may only resume_review or stop. Read the current paper and saved public findings/errors. '
+            specific += 'Decide the supplied findings, but do not execute repairs or claim review acceptance. Assign EACH incomplete reviewer a precise outstanding check, recovery action, expected progress and stop condition. '
+            specific += 'Reuse its saved source reads and findings; no whole research restart. Source/tool failure is not issuer non-disclosure. Only one automatic triage continuation is authorized; repeated failure stops. '
+            specific += 'Treat reviewer scope assumptions as fallible: distinguish the actual question from broad author wording, and preserve period/denominator differences in proposed counterevidence.'
         specific += " Also inspect cross-paper logic and material omissions proactively. Record newly discovered issues in new_findings with an exact problematic quote, responsible paper and concrete expected progress. An empty reviewer list does not mean the papers are correct."
         selected = [t for t in tools if t.name not in {"research_artifact_catalog", "read_research_artifact", "read_research_source"}] + [research_artifact_catalog, read_current_workpaper, read_current_source]
     elif role == "verifier":

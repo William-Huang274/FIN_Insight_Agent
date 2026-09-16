@@ -70,11 +70,27 @@ class FindingConfirmation(BaseModel):
     source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=12)
 
 
+class ReviewInspectionCheck(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    paper_id: str
+    paper_digest: str
+    dimension: Literal["claim_support", "citation_trace", "prose_consistency", "scope_and_counterevidence"]
+    claim_ids: list[str] = Field(default_factory=list, max_length=80)
+    field_path: str
+    target_quote: str = Field(min_length=1, max_length=1500)
+    status: Literal["checked", "issue", "unresolved", "not_applicable"]
+    result: str = Field(min_length=20, max_length=2000)
+    finding_ids: list[str] = Field(default_factory=list, max_length=80)
+    source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=12)
+
+
 class CaseReview(BaseModel):
     model_config = ConfigDict(extra="forbid")
+    completion: Literal["complete", "incomplete"] | None = None
     summary: str = Field(min_length=20, max_length=12000)
     assessments: list[PaperAssessment] = Field(min_length=1, max_length=12)
     findings: list[CaseReviewFinding] = Field(default_factory=list, max_length=80)
+    inspection_checks: list[ReviewInspectionCheck] = Field(default_factory=list, max_length=160)
     finding_checks: list[FindingConfirmation] = Field(default_factory=list, max_length=80,
         description="In a revision confirmation, check EVERY exact assigned finding ID against current text and sources. Author claims and changed hashes do not prove resolution.")
     unresolved_data_requests: list[str] = Field(default_factory=list, max_length=30)
@@ -97,6 +113,11 @@ class SubmittedCaseReview(CaseReview):
 
 class RevisionCaseReview(SubmittedCaseReview):
     """Same explicit submission boundary for a mechanically scoped revision."""
+
+
+class InspectedCaseReview(SubmittedCaseReview):
+    inspection_checks: list[ReviewInspectionCheck] = Field(min_length=1, max_length=160,
+        description="Version-bound public checks of material claims, prose/citation consistency and question scope. Unchecked required dimensions remain incomplete.")
 
 
 class CaseReviewerState(AgentState):
@@ -125,6 +146,7 @@ def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages,
             raise ValueError("unknown_paper_id")
         expected = set(paper_ids)
     errors = []
+    recovery = []
     assessed = [p.paper_id for p in review.assessments]
     if set(assessed) != expected or len(assessed) != len(expected):
         errors.append(f"assess_each_paper_once:{sorted(expected)}")
@@ -166,6 +188,8 @@ def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages,
                 errors.append(f"quote_outside_revision_scope:{finding.finding_id}")
         if not any(finding.problematic_quote in text for text in _text_values(paper)):
             errors.append(f"problematic_quote_not_exact:{finding.finding_id}")
+            from .review_inspection import quote_recovery
+            recovery.append(quote_recovery(artifacts, finding))
         if not set(finding.claim_ids).issubset({c["claim_id"] for c in paper["claims"]}):
             errors.append(f"unknown_claim_id:{finding.finding_id}")
         for check in finding.source_checks:
@@ -183,7 +207,65 @@ def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages,
     if errors:
         # Return all independent local errors at once. Exactness is unchanged;
         # do not make the model resubmit a whole review to discover each typo.
-        raise ValueError(json.dumps({"errors": errors}, ensure_ascii=False))
+        raise ValueError(json.dumps({"errors": errors, **({"quote_recovery": recovery} if recovery else {})}, ensure_ascii=False))
+
+
+def validate_inspection_checks(review, artifacts, messages, *, complete):
+    from .review_inspection import inspection_manifest, text_locations
+    manifest = inspection_manifest(artifacts)
+    findings = {f.finding_id: f for f in review.findings}
+    errors = []
+    covered = {pid: set() for pid in manifest}
+    claims = {pid: set() for pid in manifest}
+    for check in review.inspection_checks:
+        pid = check.paper_id
+        if pid not in manifest or check.paper_digest != manifest[pid]['paper_digest']:
+            errors.append('inspection_unknown_or_stale_paper:' + pid)
+            continue
+        fields = dict(text_locations(artifacts.read_paper(pid)))
+        if check.target_quote not in fields.get(check.field_path, ''):
+            errors.append('inspection_quote_not_exact:' + pid + ':' + check.field_path)
+        from .review_inspection import PROSE_FIELDS
+        allowed_prose = any(check.field_path == '/' + key or check.field_path.startswith('/' + key + '/') for key in PROSE_FIELDS)
+        if check.dimension != 'claim_support' and not allowed_prose:
+            errors.append('inspection_requires_actual_prose_field:' + pid + ':' + check.dimension)
+        if check.dimension == 'claim_support' and not (allowed_prose or check.field_path.startswith('/claims/')):
+            errors.append('inspection_task_note_is_not_claim_evidence:' + pid)
+        ids = {c['claim_id'] for c in artifacts.read_paper(pid)['claims']}
+        if not set(check.claim_ids).issubset(ids):
+            errors.append('inspection_unknown_claim:' + pid)
+        if check.status == 'issue':
+            if not check.finding_ids or any(fid not in findings or findings[fid].paper_id != pid for fid in check.finding_ids):
+                errors.append('inspection_issue_requires_current_finding:' + pid)
+        elif check.finding_ids:
+            errors.append('inspection_nonissue_cannot_link_findings:' + pid)
+        if check.status == 'not_applicable' and check.dimension != 'prose_consistency':
+            errors.append('inspection_required_dimension_cannot_be_skipped:' + pid + ':' + check.dimension)
+        if check.status == 'unresolved' and (complete or not review.unresolved_data_requests):
+            errors.append('inspection_unresolved_requires_incomplete_handoff:' + pid)
+        if check.status in {'checked', 'issue'} and not check.source_checks:
+            errors.append('inspection_checked_requires_source_basis:' + pid + ':' + check.dimension)
+        if check.source_checks:
+            probe = CaseReview(summary='Inspection source validation; not semantic acceptance.',
+                assessments=[a for a in review.assessments if a.paper_id == pid],
+                findings=[CaseReviewFinding(finding_id='inspection', paper_id=pid,
+                    problematic_quote=check.target_quote, severity='advisory', diagnosis=check.result,
+                    requested_change='Validate source binding only, without changing research.', source_checks=check.source_checks)])
+            try:
+                validate_case_review(probe, artifacts, messages, paper_ids=[pid], require_full_workpaper=False)
+            except ValueError as exc:
+                errors.append('inspection_source_binding:' + str(exc))
+        covered[pid].add(check.dimension)
+        if check.dimension == 'claim_support':
+            claims[pid].update(check.claim_ids)
+    if complete:
+        for pid, scope in manifest.items():
+            missing = set(scope['required_dimensions']) - covered[pid]
+            absent = set(scope['material_claim_ids']) - claims[pid]
+            if missing or absent:
+                errors.append(f'inspection_incomplete:{pid}:dimensions={sorted(missing)}:claims={sorted(absent)}')
+    if errors:
+        raise ValueError(json.dumps({'errors': errors, 'remedy': 'Complete missing source-bound checks or submit incomplete with explicit unfinished scope; no wholesale paper rewrite.'}, ensure_ascii=False))
 
 
 async def case_mcp_tools(client, *, run_scope=None, method_arguments=None):
@@ -515,7 +597,7 @@ class ReviewWorkBudget(AgentMiddleware):
                   "state the exact unfinished check and last useful result. " +
                   ("This penultimate call retains tools for a necessary source check or correction of an observed tool result; "
                    "the final call is reserved for findings/submission. Do not restart the research."
-                   if remaining == 2 else "Only finding/closeout tools are available on this final call."))
+                   if remaining == 2 else "Only finding/closeout tools are available on this final call. Put any corrected/new finding DIRECTLY in submit_case_review; do not spend the last response only recording a finding. Submit incomplete with explicit unresolved checks if needed."))
         original = request.system_message
         blocks = original.content if original else ""
         content = blocks + notice if isinstance(blocks, str) else [*blocks, {"type": "text", "text": notice}]
@@ -581,7 +663,7 @@ def validate_finding_confirmation(review, confirmation, artifacts):
         raise ValueError(json.dumps({"errors": errors}, ensure_ascii=False))
 
 
-def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, max_tool_calls=64, audit=None, method_instructions="", revision_target=None, confirmation=None):
+def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, max_tool_calls=64, audit=None, method_instructions="", revision_target=None, confirmation=None, require_inspection=False):
     if role not in {"counter", "verifier"}:
         raise ValueError("case_reviewer_role_invalid")
     if confirmation:
@@ -598,6 +680,13 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     def read_review_target() -> tuple[str, dict]:
         """Read the exact before/after review scope, source IDs and current quoteable text. Not a complete paper review."""
         return json.dumps(revision_target, ensure_ascii=False), deepcopy(revision_target)
+
+    @tool(response_format="content_and_artifact")
+    def read_review_location(paper_id: str, field_path: str, offset: int = 0, max_characters: int = 2000) -> tuple[str, dict]:
+        """Read exact current field text for review quote recovery. Use the JSON pointer returned in quote_recovery; copy literal markdown without normalization."""
+        from .review_inspection import read_location
+        value = read_location(artifacts, paper_id, field_path, offset, max_characters)
+        return json.dumps(value, ensure_ascii=False), value
 
     @tool
     def record_case_finding(finding: CaseReviewFinding, runtime: ToolRuntime) -> Command:
@@ -639,10 +728,14 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
             validate_case_review(review, artifacts, runtime.state["messages"], revision_target=revision_target)
             if confirmation:
                 validate_finding_confirmation(review, confirmation, artifacts)
+            if require_inspection and not revision_target:
+                validate_inspection_checks(review, artifacts, runtime.state['messages'], complete=completion == 'complete')
         except ValueError as exc:
             return Command(update={"messages": [ToolMessage(content=str(exc), status="error",
                 name="submit_case_review", tool_call_id=runtime.tool_call_id)]})
         value = review.model_dump(mode="json")
+        if require_inspection:
+            value['completion'] = completion
         if revision_target:
             value["review_scope"] = {k: revision_target[k] for k in ("kind", "paper_id", "baseline_digest", "current_digest", "changed_claim_ids")}
             value["completion"] = completion
@@ -659,6 +752,17 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     emphasis = ("Your role is Counter: challenge the thesis, demand/competition/supply mechanisms and cross-paper contradictions."
                 if role == "counter" else "Your role is Verifier: inspect material factual/numeric/citation/period consistency and whether conclusions are warranted by actual sources.")
     prompt = REVIEW_PROMPT + emphasis
+    if require_inspection and not revision_target:
+        from .review_inspection import INSPECTION_GUIDANCE, inspection_manifest
+        prompt += INSPECTION_GUIDANCE + '\ninspection_manifest=' + json.dumps(inspection_manifest(artifacts), ensure_ascii=False)
+
+        @tool('submit_case_review')
+        def submit_inspected_review(review: InspectedCaseReview, runtime: ToolRuntime) -> Command:
+            """Submit current-version inspection, saved findings and explicit unfinished work. On the last call include new/corrected findings directly here; no separate save is needed."""
+            return save_review(CaseReview.model_validate(review.model_dump(exclude={'completion'})), runtime, completion=review.completion)
+
+        submit_case_review = submit_inspected_review
+        tools = [*tools, read_review_location]
     if confirmation:
         prompt += "\nThis is independent confirmation before Lead's final judgment. Read current papers, all changed locations and related explanations/claims; use original sources for necessary checks. Return finding_checks for EVERY ID in findings_to_confirm, with source-grounded reasons. still_open must reference a current finding ID; unresolved must also be recorded in unresolved_data_requests. Inspect newly introduced issues together. Do not re-run unrelated unchanged research, or accept an author's completed note as proof."
     if revision_target:
@@ -695,6 +799,7 @@ class CaseReviewState(TypedDict, total=False):
     verifier: dict[str, Any]
     phase: str
     material_finding_count: int
+    pending_saved_material_finding_count: int
     scope_digest: str
 
 
@@ -705,7 +810,7 @@ def case_review_scope_digest(artifacts, question):
             "sources": artifacts.read_paper(p["paper_id"], "sources")} for p in artifacts.catalog()["papers"]}})
 
 
-def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invocation_id, review_order="parallel", research_handoff=None, previous_review=None, confirmation=None):
+def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invocation_id, review_order="parallel", research_handoff=None, previous_review=None, confirmation=None, recovery_instructions=None, require_inspection=False):
     if review_order not in {"parallel", "counter_first", "verifier_first"}:
         raise ValueError("unknown_review_order")
     graph = StateGraph(CaseReviewState)
@@ -721,7 +826,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
             if saved:
                 return {"recorded_findings": deepcopy(saved.get("recorded_findings", {})),
                     "messages": [*messages_from_dict(saved["messages"]),
-                    HumanMessage(content="Continue this same review using the saved reads and findings. Finish only outstanding checks; explain unresolved items explicitly. This is a new configured run allowance, not a reset of lifetime usage.")],
+                    HumanMessage(content="Continue this same review using the saved reads and findings. Finish only outstanding checks; explain unresolved items explicitly. This is a new configured run allowance, not a reset of lifetime usage. Lead assignment (fallible, not source evidence): " + json.dumps((recovery_instructions or {}).get(_role), ensure_ascii=False))],
                     "review": None}
             return {"messages": [HumanMessage(content=json.dumps({"role": _role, "question": question,
                 "catalog": artifacts.catalog(), "research_handoff": research_handoff, "revision_confirmation": confirmation,
@@ -729,7 +834,7 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
 
         def collect(state, _role=role):
             review = state.get("review")
-            complete = bool(review) and not review.get("unresolved_data_requests") and not review.get("review_scope")
+            complete = bool(review) and review.get('completion') != 'incomplete' and not review.get("unresolved_data_requests") and not review.get("review_scope")
             answers = [m for m in state["messages"] if isinstance(m, AIMessage)]
             # Native middleware private counters are not graph input fields.
             # This new invocation enforces its own run limit; aggregate prior
@@ -751,6 +856,8 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
         # each reviewer receives its own messages, not sibling reasoning.
         prior = (previous_review or {}).get(role)
         if prior and prior.get("status") == "review_submitted":
+            if require_inspection and not (prior.get('review') or {}).get('inspection_checks'):
+                raise ValueError('legacy_complete_review_requires_new_inspection_no_silent_reuse:' + role)
             graph.add_node(role, RunnableLambda(lambda state, _role=role, _prior=deepcopy(prior): {_role: _prior}))
         else:
             if prior and not prior.get("recovery_state"):
@@ -765,7 +872,10 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
                     for f in (state[r].get("review") or {}).get("findings", []))
         return {"phase": "case_review_ready_for_convergence" if complete else "case_review_incomplete",
                 "scope_digest": scope_digest,
-                "material_finding_count": count}
+                "material_finding_count": count,
+                "pending_saved_material_finding_count": sum(f.get('severity') == 'material'
+                    for r in ('counter', 'verifier') if not state[r].get('review')
+                    for f in state[r].get('recorded_findings', {}).values())}
 
     graph.add_node("collect_case_review", close)
     if review_order == "parallel":

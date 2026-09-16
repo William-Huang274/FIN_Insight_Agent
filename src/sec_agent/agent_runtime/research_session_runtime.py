@@ -345,7 +345,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     from sec_agent.research_foundation.project_asset_access import task_access_check
     source_access_check = task_access_check(environment)
 
-    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None, confirmation=None):
+    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None, confirmation=None, incomplete_reviewers=None):
         if role == "repair" and execution.mode == "selected":
             branch = next((p["branch_id"] for p in artifacts.catalog()["papers"] if p["paper_id"] == paper_id), None)
             if branch not in execution.branch_ids:
@@ -366,6 +366,10 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 "node_purpose": "Research Lead inspects current paper versions and independent findings before final judgment; assign targeted repairs, substantiate disagreements, discover missed issues or stop unresolved work.",
                 "required_outputs": ("One disposition per original finding and explicit new findings, responsible papers, source-bound reasons, requested changes and expected progress; no final report or automatic acceptance.",),
                 "input_scale": "Current question, compact version/issue navigation, independent findings, and current papers/original sources read on demand; no specialist private histories."})
+            if incomplete_reviewers is not None:
+                basis = basis.model_copy(update={
+                    'node_purpose': 'Lead diagnoses incomplete review from saved public findings and exact tool errors, without restarting research or accepting the paper.',
+                    'required_outputs': ('One bounded outstanding-check assignment per incomplete reviewer, with expected progress and stop condition; or explicit stop. No report or author-edit execution.',)})
         audit = CaseModelAudit(actor=actor_override or ("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True,
             dispatch_guard=budget_scope.guard(profile_role, model_profile) if budget_scope else None, source_access_check=source_access_check)
@@ -388,13 +392,14 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         if role in {"counter", "verifier"}:
             return build_case_reviewer(role=role, model=model, tools=tools, artifacts=artifacts,
                 max_model_calls=limits["model_calls"], max_tool_calls=limits["tool_calls"], audit=audit,
-                method_instructions=method_instructions, confirmation=confirmation)
+                method_instructions=method_instructions, confirmation=confirmation, require_inspection=confirmation is None)
         output_role = ("verifier" if role in {"report_verifier", "research_verifier"} else "writer" if role in {"writer", "quick_writer"}
                        else "synthesis" if role == "synthesis" else "decision" if role == "lead_decision" else "repair")
         return build_case_output_agent(role=output_role, model=model, tools=tools, artifacts=artifacts,
             feedback=feedback, paper_id=paper_id, limits=limits, audit=audit, report_revision=interactive or revising,
             allow_answers=interactive and output_role == "writer", answer_only=role == "quick_writer",
-            require_responsibility=role in {"report_verifier", "research_verifier"}, method_instructions=method_instructions)
+            require_responsibility=role in {"report_verifier", "research_verifier"}, method_instructions=method_instructions,
+            incomplete_reviewers=incomplete_reviewers)
 
     async def review(state, config: RunnableConfig):
         state = await with_guidance(state, "review")
@@ -403,8 +408,23 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question=state["question"],
                 run_id=research_id, run_invocation_id=invocation,
                 review_order=studio.review_order if studio else "parallel",
-                research_handoff=state.get("research_handoff"), previous_review=state.get("previous_review")).compile()
+                research_handoff=state.get("research_handoff"), previous_review=state.get("previous_review"),
+                recovery_instructions=state.get('review_recovery_instructions'), require_inspection=True).compile()
             return await graph.ainvoke({"run_id": research_id, "run_invocation_id": invocation}, config)
+
+    async def triage_review(state, config: RunnableConfig):
+        from .review_recovery import review_recovery_handoff
+        async with tools_for(state) as (artifacts, tools):
+            handoff = review_recovery_handoff(state['case_review'], artifacts, state['question'])
+            agent = native_agent('lead_decision', tools, artifacts, feedback=handoff['feedback'],
+                actor_override='lead_review_triage', incomplete_reviewers=handoff['incomplete_reviewers'])
+            result = await agent.ainvoke({'messages': [HumanMessage(content=json.dumps({
+                'question': state['question'], 'catalog': artifacts.catalog(), 'incomplete_review_handoff': handoff}, ensure_ascii=False))],
+                'revisions': state.get('revisions', {})}, config)
+            output = result.get('output')
+            if not output or output.get('kind') != 'lead_issue_decision':
+                return {'action': 'stop', 'summary': 'Lead did not submit a valid bounded review recovery decision.'}
+            return output
 
     async def execute_convergence(state, config, existing=None):
         state = await with_guidance(state, "convergence")
@@ -535,7 +555,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 raise
         return RunnableLambda(invoke)
 
-    return {"hierarchical": True, "research": guarded("research", research), "review": guarded("review", review), "converge": guarded("convergence", converge),
+    return {"hierarchical": True, "research": guarded("research", research), "review": guarded("review", review), "triage_review": guarded("lead_review_triage", triage_review), "converge": guarded("convergence", converge),
             "revise_research": guarded("research_revision", revise_research), "writer": interactive("writer"),
             "verifier": interactive("report_verifier"), "quick_writer": interactive("quick_writer")}
 

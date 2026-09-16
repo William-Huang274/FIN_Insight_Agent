@@ -43,6 +43,9 @@ class ResearchSessionState(SessionState, total=False):
     continue_remaining_research: bool
     research_review_history: list[dict[str, Any]]
     case_review: dict[str, Any]
+    review_triage_count: int
+    review_triage_history: list[dict[str, Any]]
+    review_recovery_instructions: dict[str, Any]
     author_feedback: dict[str, list[dict[str, Any]]]
     research_stop_reason: str | None
     synthesis: dict[str, Any]
@@ -100,7 +103,7 @@ def _stage(actor, event, **details):
                         "recorded_at": datetime.now(timezone.utc).isoformat(), **details})
 
 
-def build_research_session_graph(*, research, review, converge, writer, verifier, quick_writer=None, revise_research=None, hierarchical=False):
+def build_research_session_graph(*, research, review, converge, writer, verifier, quick_writer=None, revise_research=None, hierarchical=False, triage_review=None):
     """One fresh research request -> real artifacts -> review -> report -> HITL.
 
     Existing report session nodes handle subsequent ask/revise/accept actions;
@@ -189,6 +192,9 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
                 "citations": report_citations(prose, artifacts), "charts": []}, "report_review": unreviewed_report_status(),
                 "revisions": {}, "phase": "single_agent_unreviewed"}
         return {"case_profile": request.case_profile, "case_papers": papers,
+            "review_triage_count": state.get('review_triage_count', 0) if continuing else 0,
+            "review_triage_history": state.get('review_triage_history', []) if continuing else [],
+            "review_recovery_instructions": state.get('review_recovery_instructions', {}) if continuing else {},
             "research_tasks": [*[t for t in state.get("research_tasks", []) if t["task_id"] in prior_done], *new_tasks],
             "research_outcomes": [*[deepcopy(next((row for row in state.get("research_outcomes", [])
                 if row["task_id"] == key), {"task_id": key, "status": "submitted"})) for key in prior_done], *new_outcomes],
@@ -211,18 +217,44 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         _stage("case_review", "started")
         result = await review.ainvoke({"question": state["question"], "case_papers": state["case_papers"],
             "research_handoff": state.get("research_handoff"),
+            "review_recovery_instructions": state.get('review_recovery_instructions'),
             "previous_review": state.get("case_review") if state.get("continue_remaining_research") else None}, config)
         retained = {"continue_remaining_research": False,
                     "research_review_history": [*deepcopy(state.get("research_review_history", [])),
                         {"run_id": config.get("configurable", {}).get("run_id"), "result": deepcopy(result)}]}
         if result.get("phase") == "case_review_incomplete":
             _stage("case_review", "outcome", status="needs_attention")
-            return {**retained, "case_review": {**deepcopy(result), "source_run_id": config.get("configurable", {}).get("run_id")}, "phase": "research_needs_attention",
+            resumable = bool(result.get('scope_digest')) and all(result.get(r, {}).get('status') == 'review_submitted'
+                or result.get(r, {}).get('recovery_state') for r in ('counter', 'verifier'))
+            return {**retained, "case_review": {**deepcopy(result), "source_run_id": config.get("configurable", {}).get("run_id")},
+                    "phase": 'research_review_triage' if triage_review and resumable and state.get('review_triage_count', 0) < 1 else "research_needs_attention",
                     "research_stop_reason": "independent_review_incomplete_no_report_acceptance"}
         artifacts = current_task_artifacts(state)
         feedback = responsible_author_feedback(result, artifacts)
         _stage("case_review", "outcome", status="handoff", responsible_author_count=len(feedback))
         return {**retained, "case_review": deepcopy(result), "author_feedback": feedback, "phase": "research_writing"}
+
+    async def triage_node(state, config: RunnableConfig):
+        from .review_recovery import review_recovery_handoff
+        from .lead_issue_decision import LeadIssueDecision, decision_errors
+        handoff = review_recovery_handoff(state['case_review'], current_task_artifacts(state), state['question'])
+        _stage('lead_review_triage', 'started', objective='独立复核未完成，研究负责人正在检查已保存发现和运行阻碍。')
+        output = await triage_review.ainvoke(state, config)
+        assignments = output.get('review_assignments', [])
+        errors = []
+        if output.get('action') == 'resume_review':
+            decision = LeadIssueDecision.model_validate({k: v for k, v in output.items() if k in LeadIssueDecision.model_fields})
+            errors = decision_errors(decision, handoff['feedback'], set(handoff['feedback']) | {
+                p['paper_id'] for p in current_task_artifacts(state).catalog()['papers']}, incomplete_reviewers=handoff['incomplete_reviewers'])
+        resume = output.get('action') == 'resume_review' and not errors
+        _stage('lead_review_triage', 'outcome', status='bounded_review_continuation' if resume else 'needs_attention',
+            objective=output.get('summary', '复核未完成，保留当前发现并停止。'))
+        return {'review_triage_count': state.get('review_triage_count', 0) + 1,
+            'review_triage_history': [*state.get('review_triage_history', []), {'handoff': handoff, 'decision': output, 'validation_errors': errors}],
+            'review_recovery_instructions': {row['reviewer']: row for row in assignments} if resume else {},
+            'continue_remaining_research': resume,
+            'phase': 'research_reviewing' if resume else 'research_needs_attention',
+            'research_stop_reason': None if resume else 'lead_review_triage_stopped_without_acceptance'}
 
     async def converge_node(state, config: RunnableConfig):
         _stage("convergence", "started")
@@ -274,6 +306,7 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
     graph.add_node("research", research_node)
     graph.add_node("remaining_research", remaining_research_node)
     graph.add_node("case_review", review_node)
+    graph.add_node('lead_review_triage', triage_node)
     graph.add_node("convergence", converge_node)
     graph.add_node("research_attention", attention)
     graph.add_edge(START, "research")
@@ -284,7 +317,8 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         return "initialize" if state["phase"] == "single_agent_unreviewed" else "case_review" if state["phase"] == "research_reviewing" else "research_attention"
     graph.add_conditional_edges("research", after_research)
     graph.add_conditional_edges("remaining_research", after_research)
-    graph.add_conditional_edges("case_review", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "convergence")
+    graph.add_conditional_edges("case_review", lambda state: 'lead_review_triage' if state['phase'] == 'research_review_triage' else "research_attention" if state["phase"] == "research_needs_attention" else "convergence")
+    graph.add_conditional_edges('lead_review_triage', lambda state: 'case_review' if state['phase'] == 'research_reviewing' else 'research_attention')
     graph.add_conditional_edges("convergence", lambda state: "research_attention" if state["phase"] == "research_needs_attention" else "initialize")
     graph.add_conditional_edges("research_attention", lambda state: 'convergence' if state.get('phase') == 'research_writing' else 'case_review' if state.get('phase') == 'research_reviewing' else ("case_review" if state.get("case_review") else "remaining_research") if state.get("continue_remaining_research") else END)
     return graph

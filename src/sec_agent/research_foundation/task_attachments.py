@@ -29,7 +29,14 @@ IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp"}
 def task_material_catalog(materials):
     """Compact navigation only; full source/provenance stays in the read tools."""
     fields = ("document_id", "name", "kind", "sections", "needs_vision")
-    return [{key: item[key] for key in fields if key in item} for item in materials]
+    result = []
+    for item in materials:
+        row = {key: item[key] for key in fields if key in item}
+        captured = item.get('project_origin', {}).get('asset_capture')
+        if captured:
+            row['source_selection'] = {k:captured[k] for k in ('kind','snapshot_digest','selection_mode','selected_count') if k in captured}
+        result.append(row)
+    return result
 
 
 def _digest(value):
@@ -129,7 +136,7 @@ class TaskAttachmentStore:
         finally:
             db.close()
 
-    def add(self, thread_id, filename, body, *, research_origin=None, revision=None):
+    def add(self, thread_id, filename, body, *, research_origin=None, revision=None, source_capture=None):
         thread_id = str(UUID(str(thread_id)))
         if not filename or len(filename) > 180 or any(c in filename for c in '/\\:\x00\r\n') or Path(filename).suffix.lower() not in ALLOWED_SUFFIXES:
             raise ValueError("unsupported_or_unsafe_filename")
@@ -137,6 +144,13 @@ class TaskAttachmentStore:
             raise ValueError("upload_size_limit_20MiB")
         pages, kind = parse_document(filename, body)
         object_id = "UPLOAD::" + uuid4().hex
+        if source_capture:
+            from .project_source_captures import capture_manifest, render_capture
+            manifest = capture_manifest(source_capture['snapshot'])
+            if research_origin or render_capture(source_capture['snapshot'], source_capture['note']).encode() != body:
+                raise ValueError('source_capture_body_mismatch')
+            # A repeated save of exactly the same selection/note is idempotent.
+            object_id = 'UPLOAD::' + _digest(json.dumps([thread_id, filename, _digest(body), revision], sort_keys=True).encode())[:32]
         if research_origin:
             # A fixed report version is an immutable export, not a new revision
             # authority. Native checkpoints continue to own report history.
@@ -148,6 +162,9 @@ class TaskAttachmentStore:
         with self.connect() as db:
             # Count and insert in one native transaction; no application lock service.
             db.execute("BEGIN IMMEDIATE")
+            if source_capture and db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (thread_id, object_id)).fetchone():
+                require_active(access_state(db, thread_id, 'document', object_id))
+                return next(row for row in self.list(thread_id) if row['document_id'] == object_id)
             if revision:
                 from .project_asset_versions import register_revision
                 register_revision(db, thread_id, object_id, revision)
@@ -161,6 +178,11 @@ class TaskAttachmentStore:
             if research_origin:
                 db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps({
                     'source_role': 'project_research_artifact', 'research_origin': research_origin}, ensure_ascii=False)))
+            if source_capture:
+                db.execute('CREATE TABLE IF NOT EXISTS attachment_captures(object_id TEXT PRIMARY KEY,snapshot TEXT NOT NULL,note TEXT NOT NULL)')
+                db.execute('INSERT INTO attachment_captures VALUES(?,?,?)', (object_id, json.dumps(source_capture['snapshot'],ensure_ascii=False),source_capture['note']))
+                db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps({
+                    'source_role':'project_source_snapshot_with_user_note', 'asset_capture':manifest},ensure_ascii=False)))
         return next(row for row in self.list(thread_id) if row['document_id'] == object_id)
 
     def list(self, thread_id):
@@ -200,6 +222,8 @@ class TaskAttachmentStore:
                           'source_role': 'user_upload_unverified', 'copied_at': datetime.now(timezone.utc).isoformat()}
                 if row.get('project_origin', {}).get('research_origin'):
                     origin.update(source_role='project_research_artifact', research_origin=row['project_origin']['research_origin'])
+                if row.get('project_origin', {}).get('asset_capture'):
+                    origin.update(source_role='project_source_snapshot_with_user_note', asset_capture=row['project_origin']['asset_capture'])
                 db.execute('INSERT INTO attachments(thread,id,name,kind,body,pages,digest) VALUES(?,?,?,?,?,?,?)',
                            (thread_id, object_id, row['name'], row['kind'], row['body'], row['pages'], row['digest']))
                 db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps(origin)))

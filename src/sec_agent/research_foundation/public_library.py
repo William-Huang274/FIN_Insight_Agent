@@ -6,6 +6,9 @@ from functools import lru_cache
 from hashlib import sha256
 import json
 from pathlib import Path
+from threading import Lock
+
+_snapshot_read_lock = Lock()
 
 
 def library_path(attachments_root):
@@ -24,7 +27,10 @@ def library_nodes(attachments_root, as_of='9999-12-31'):
     if not path.is_file():
         return (), ''
     stat = path.stat()
-    rows, digest = _read(str(path), stat.st_mtime_ns, stat.st_size)
+    # lru_cache alone allows concurrent first misses to parse the same large file
+    # repeatedly. Serialize the cache lookup/load, not subsequent source queries.
+    with _snapshot_read_lock:
+        rows, digest = _read(str(path), stat.st_mtime_ns, stat.st_size)
     return tuple(r for r in rows if str(r.get('publication_date','9999')) <= as_of), digest
 
 

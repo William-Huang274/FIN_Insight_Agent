@@ -38,6 +38,33 @@ def test_document_coverage_and_renderable_body(library):
     assert 'node_id' not in detail['sections'][0]
 
 
+def test_concurrent_cold_reads_share_one_snapshot_parse(library, monkeypatch):
+    from concurrent.futures import ThreadPoolExecutor
+    from pathlib import Path
+    from threading import Barrier
+    from time import sleep
+    from sec_agent.research_foundation import public_library
+    _, root = library
+    path = root/'public-library/retrieval_nodes.jsonl'
+    original = Path.read_bytes
+    reads = []
+    public_library._read.cache_clear()
+    def counted(self):
+        if self == path:
+            reads.append(self)
+            sleep(.03)
+        return original(self)
+    monkeypatch.setattr(Path,'read_bytes',counted)
+    barrier = Barrier(4)
+    def fetch(_):
+        barrier.wait()
+        return library_nodes(root)
+    with ThreadPoolExecutor(4) as pool:
+        results = list(pool.map(fetch,range(4)))
+    assert len(reads)==1
+    assert all(r==results[0] for r in results)
+
+
 def test_unknown_document_not_arbitrary_path(library):
     client,_=library
     assert client.get('/api/v1/data-library/sources/unknown').status_code==404

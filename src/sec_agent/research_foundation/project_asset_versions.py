@@ -28,6 +28,9 @@ def register_revision(db, scope, child, revision):
     origin = db.execute('SELECT origin FROM attachment_origins WHERE object_id=?', (parent,)).fetchone()
     if origin and json.loads(origin[0]).get('research_origin'):
         raise RevisionConflict('研究成果请在原任务修订后另存，保留原生报告版本记录。')
+    captured = json.loads(origin[0]).get('asset_capture') if origin else None
+    if captured and revision.get('capture_digest') != captured['snapshot_digest']:
+        raise RevisionConflict('固定来源不可替换，请使用批注编辑；新披露需另存来源快照。')
     db.execute('CREATE TABLE IF NOT EXISTS attachment_revisions '
                '(child TEXT PRIMARY KEY,parent TEXT UNIQUE NOT NULL,root TEXT NOT NULL,sequence INTEGER NOT NULL,change_kind TEXT NOT NULL,note TEXT NOT NULL)')
     if db.execute('SELECT 1 FROM attachment_revisions WHERE parent=?', (parent,)).fetchone():

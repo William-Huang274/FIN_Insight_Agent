@@ -7,9 +7,7 @@ from fastapi import APIRouter, HTTPException, Query, Request
 from ...authentication import current_owner
 from sec_agent.research_foundation.public_library import library_nodes, document_catalog
 
-METRIC_LABELS = {'revenue':'营业收入','operating_cash_flow':'经营现金流 CFO','capital_expenditures':'资本开支 Capex',
-    'net_income':'净利润','operating_income':'营业利润','gross_profit':'毛利润','cash_and_equivalents':'现金及现金等价物',
-    'accounts_payable':'应付账款','accounts_receivable':'应收账款','inventory':'存货','diluted_eps':'稀释每股收益 EPS','shares_outstanding':'流通股数'}
+from sec_agent.research_foundation.financial_library import FinancialQuery, financial_page
 
 
 def build_data_library_router(attachments_root, fact_mart=None):
@@ -53,31 +51,19 @@ def build_data_library_router(attachments_root, fact_mart=None):
         selected = [r for r in rows if r['parent_document_id'] == document_id and r['node_kind'] == 'section']
         if not selected: raise HTTPException(404, '目录中没有这份公共资料')
         # Full sections, rendered as text/Markdown by the client, never raw HTML.
-        return {'sections':[{'title':' / '.join(r.get('section_path') or []), 'text':r.get('content','')} for r in selected[offset:offset+limit]],
-                'total':len(selected),'snapshot':digest}
+        return {'sections':[{'title':' / '.join(r.get('section_path') or []), 'text':r.get('content',''), 'selection_id':r['node_id']} for r in selected[offset:offset+limit]],
+                'total':len(selected),'snapshot':digest, 'document':next(d for d in document_catalog(rows) if d['document_id']==document_id)}
 
     @router.get('/financials')
-    def financials(request: Request, ticker: str = '', query: str = Query('',max_length=200),
-                   fiscal_year: int | None = None, period: str = '', metric: str = '',
+    def financials(request: Request, ticker: str = Query('',max_length=30), query: str = Query('',max_length=200),
+                   fiscal_year: int | None = None, period: str = Query('',max_length=30), metric: str = Query('',max_length=100),
                    as_of: str = Query('9999-12-31',pattern=r'^\d{4}-\d{2}-\d{2}$'),
                    offset: int = Query(0,ge=0), limit: int = Query(30,ge=1,le=100)):
         current_owner(request)
-        if not fact_mart or not Path(fact_mart).is_file(): raise HTTPException(503,'财务数据库尚未接入')
-        where, args = ['filed_at <= ?'], [as_of]
-        for column, value in [('ticker',ticker.upper()),('fiscal_year',fiscal_year),('fiscal_period',period),('metric_id',metric)]:
-            if value not in ('',None): where.append(column+' = ?'); args.append(value)
-        if query:
-            matched = [key for key,label in METRIC_LABELS.items() if query.casefold() in label.casefold()]
-            where.append('(instr(lower(metric_id),lower(?))>0 OR instr(lower(legal_name),lower(?))>0 OR instr(lower(ticker),lower(?))>0 OR instr(lower(concept),lower(?))>0'+ (' OR metric_id IN ('+','.join('?' for _ in matched)+')' if matched else '') + ')')
-            args.extend([query]*4)
-            args.extend(matched)
-        condition = ' AND '.join(where)
-        with closing(sqlite3.connect(Path(fact_mart).resolve().as_uri()+'?mode=ro',uri=True)) as db:
-            db.row_factory = sqlite3.Row
-            total = db.execute('SELECT count(*) FROM company_fact_observations WHERE '+condition,args).fetchone()[0]
-            items = [dict(r) for r in db.execute('SELECT ticker,legal_name,metric_id,value_decimal,unit,period_start,period_end,fiscal_year,fiscal_period,form,filed_at,citation_url,superseded_by_observation_id FROM company_fact_observations WHERE '+condition+' ORDER BY ticker,fiscal_year DESC,period_end DESC,metric_id,filed_at DESC LIMIT ? OFFSET ?',[*args,limit,offset])]
-            facets = {key:[r[0] for r in db.execute('SELECT DISTINCT '+column+' FROM company_fact_observations ORDER BY '+column)]
-                      for key,column in [('tickers','ticker'),('years','fiscal_year'),('metrics','metric_id'),('periods','fiscal_period')]}
-        return {'items':items,'total':total,**facets,'metric_labels':METRIC_LABELS,'notice':'保留各披露版本；同一期间可能有多行。数值为来源单位，正式计算由 Agent 标准指标工具按时点选择。'}
+        try:
+            return financial_page(fact_mart, FinancialQuery(ticker=ticker, query=query, fiscal_year=fiscal_year,
+                period=period, metric=metric, as_of=as_of, offset=offset, limit=limit))
+        except FileNotFoundError:
+            raise HTTPException(503, '财务数据库尚未接入') from None
 
     return router

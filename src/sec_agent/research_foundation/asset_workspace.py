@@ -90,7 +90,9 @@ class AssetWorkspace:
                 'version_id': item['document_id'], 'digest': item['digest']}, 'title': item['name'],
                 'sequence': item['version_info']['sequence'], 'created_at': item['created_at'],
                 'access_status': item['access_status'], 'status': 'complete',
-                'role': 'report' if item.get('project_origin', {}).get('research_origin') else 'document'})
+                'role': 'report' if item.get('project_origin', {}).get('research_origin') else
+                    'database' if item.get('project_origin', {}).get('asset_capture',{}).get('kind') == 'financial' else 'document',
+                **({'capture':item['project_origin']['asset_capture']} if item.get('project_origin',{}).get('asset_capture') else {})})
         for item in reversed(self.sec.versions(owner, project)['items']):
             entry = groups.setdefault(('sec', item['cik']), {'asset_id': item['cik'], 'kind': 'sec', 'versions': []})
             entry['versions'].append({'ref': {'project_id': str(project), 'kind': 'sec', 'asset_id': item['cik'],
@@ -118,6 +120,9 @@ class AssetWorkspace:
             row = self.library.documents.get(scope, ref.version_id)
             if sha256(row['body']).hexdigest() != ref.digest:
                 raise AssetConflict('资料原件校验失败')
+            if row.get('project_origin', {}).get('asset_capture'):
+                from .project_source_captures import read_capture
+                read_capture(self.library.documents, row)
             return version, row
         for kind in ('sec_companyfacts', 'sec_submissions'):
             self.sec.raw(owner, ref.project_id, ref.version_id, kind)
@@ -128,6 +133,14 @@ class AssetWorkspace:
         version, row = self.resolve(owner, ref)
         if row:
             pages = json.loads(row['pages'])
+            from .project_source_captures import read_capture
+            captured = read_capture(self.library.documents, row)
+            if captured:
+                snapshot = captured['snapshot']
+                text = '\n\n'.join(s['content'] or '' for s in snapshot.get('sections',[]))
+                return {'version':version,'editable':False,'text':text[:100000], 'truncated':len(text)>100000,
+                        'needs_vision':False, 'capture':{**version['capture'],'note':captured['note'],
+                            **({'rows':snapshot['rows']} if snapshot['kind']=='financial' else {})}}
             editable = row['name'].lower().endswith(('.md', '.txt')) and version['role'] != 'report'
             try:
                 raw_text = row['body'].decode('utf-8-sig') if editable else ''
@@ -177,6 +190,7 @@ def asset_context_prompt(metadata):
     if context.get('schema_version') != SCHEMA:
         raise ValueError('asset_context_protocol_unsupported')
     return ('\n资产工作区交接：采用已固定的资料版本，通过当前任务资料/财务工具读取原件。'
+            '财务查询选取属于任务资料中的固定记录，应使用资料读取工具；默认财务库的新查询不代表所选快照。'
             '目录与个人记忆不是金融事实或权限；当前用户要求优先于长期偏好。'
             '不得猜测未读取内容、声称自动采用资产后续版本或已完成其他团队的工作。\n'
             + json.dumps(context, ensure_ascii=False))

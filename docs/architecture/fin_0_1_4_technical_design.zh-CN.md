@@ -1,5 +1,7 @@
 # FinSight 0.1.4 技术方案
 
+2026-09-16 来源选取适配：通过project_source_snapshot.v1固定公开章节/财务行，复用项目附件与AssetRef(document)交接；源负载与批注同事务保存，普通修订不可改写来源。参数化财务查询共用读取快照，来源变化时拒绝旧选择；任务只接收紧凑manifest，完整内容经原资料工具回读。详见[资产协议055](asset_workspace_protocol.zh-CN.md#知识库与财务选取进入项目055)。
+
 2026-09-16 资产界面纠正：知识库和财务数据库通过已有 DataLibrary/API 迁入统一资产路由；项目资料在研究右侧浏览，完整编辑页携带项目/版本和返回任务定位。共用研究区设计变量、字体及主题。底层数据库归属和 asset_context.v1 不变，公共来源及财务查询快照的交接适配仍开放；没有为了界面迁移引入第二套数据库。
 
 2026-09-16 资产区骨架：以 HTTP/JSON + Pydantic/OpenAPI 定义 `asset_context.v1`，复用项目 SQLite 和原生任务接口。AssetRef 固定项目/资产/版本/摘要；不可变交接记录与用户维护的个人记忆在原项目库保存，身份来自认证层。native metadata 绑定交接记录，原有文档/财务副本承载运行输入；单 Agent 查询优先采用本任务选定的 SEC 快照，并在实际读取时复查权限与完整性。SQLite online backup 配合不可变原件清单，恢复到新目录。未新增任务调度器、记忆引擎或消息总线；项目库恢复不代表原生checkpoint联合容灾已完成。详见[资产通信与数据库合同](asset_workspace_protocol.zh-CN.md)。

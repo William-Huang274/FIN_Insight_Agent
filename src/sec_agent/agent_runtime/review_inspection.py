@@ -1,5 +1,6 @@
 """Current-paper review navigation; no financial verdicts or extra runtime."""
 from difflib import SequenceMatcher
+import re
 from .research_graph_contracts import canonical_sha256
 
 
@@ -93,7 +94,41 @@ def inspection_manifest(artifacts):
         'text_targets': [{'field_path':path, 'preview':text[:120]} for path,text in text_locations(artifacts.read_paper(row['paper_id']))
             if path.split('/')[1] in PROSE_FIELDS or (path.startswith('/claims/') and path.endswith('/statement'))],
         'required_dimensions': ['claim_support', 'citation_trace', 'prose_consistency', 'scope_and_counterevidence'],
+        'semantic_targets': semantic_targets(artifacts.read_paper(row['paper_id'])),
     } for row in artifacts.catalog()['papers']}
+
+
+def semantic_targets(paper):
+    """Version-bound paragraph navigation, not a classifier of economic truth."""
+    targets = []
+    relation = re.compile(r'增长|增加|减少|下降|上升|贡献|驱动|抵减|叠加|转化|归因|导致|受益|压力|质量|假设|'
+                          r'growth|increase|decrease|contribut|offset|driv|caus|because|quality', re.I)
+    for path, text in text_locations(paper):
+        field = path.split('/')[1]
+        if field not in {'thesis','mechanism','narrative_markdown','counterevidence','what_would_change'}:
+            continue
+        for part in re.finditer(r'[^\n]+(?:\n(?!\n)[^\n]+)*', text):
+            quote = part.group()
+            if quote.lstrip().startswith(('#','|')) or not quote.strip():
+                continue
+            if field=='narrative_markdown' and not relation.search(quote):
+                continue
+            targets.append({'target_id':canonical_sha256([canonical_sha256(paper),path,part.start(),quote])[:20],
+                'field_path':path,'start':part.start(),'end':part.end(),'preview':quote[:160],
+                'selection_basis':'runtime paragraph navigation; main judgment/condition or relation wording, not a financial verdict'})
+    return targets
+
+
+SEMANTIC_SELF_CHECK = """
+For each important judgment and numeric attribution paragraph, check arithmetic separately from meaning.
+State what relationship the actual sentence expresses, what relationship the cited evidence supports, and whether
+they agree, contradict, are ambiguous, or remain unsupported. Preserve positive/negative contribution, period,
+denominator, actual/forecast and conditional language. A correct bridge or plausible overall thesis does not certify
+each related sentence. Ambiguous wording may need clarification without being a material factual reversal.
+Use complete source identifiers in prose. A guessed abbreviation-to-source mapping is a candidate, not a confirmed
+citation. Reuse an actual source observation to confirm it; unresolved identity remains explicit. A confirmed intended
+source still requires repair of an unresolvable identifier in the delivered draft.
+"""
 
 
 INSPECTION_GUIDANCE = """
@@ -111,4 +146,14 @@ Do not accept model prior knowledge or an author's hypothetical caveat as source
 Each dimension must say checked, issue (link recorded/current finding IDs), unresolved (also list unfinished work), or not_applicable with a concrete scope reason.
 Not-applicable is only allowed for prose_consistency; it cannot replace checking claims, citation trace or scope. A check is a reviewer assertion, not runtime semantic proof.
 Read every full workpaper once and relevant original source windows. Avoid repeating reads already available. Never fill inspection checks from an author note alone.
-"""
+For prose_consistency, cover each semantic_targets entry separately with semantic_target_id, expressed_relationship,
+supported_relationship and semantic_verdict (consistent/contradictory/ambiguous/unsupported). Copy an exact quote
+inside that paragraph; do not use one correct equation to mark unrelated paragraphs checked. Reuse existing evidence.
+Use read_review_references for runtime citation parsing. Exact means identifier identity only, not semantic support.
+For a nonexact candidate, confirm_review_reference requires a prior actual source read and your concise mapping reason.
+Suffix/content resemblance is never confirmation. Runtime automatically attaches delivery-reference repair findings;
+do not rewrite them as model findings. Unconfirmed nonexact references require incomplete and unresolved work.
+read_review_source_span returns a digest-bound quote_span that can replace copied quote text in source_checks.
+Runtime table-layout compatibility may restore a unique literal span with identical nonempty cells; its
+runtime_compatibility_parse record is not model output or proof of column/period meaning.
+""" + SEMANTIC_SELF_CHECK

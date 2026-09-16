@@ -822,6 +822,8 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         specific += "\nWhen research_synthesis is supplied, it is the Lead's independently reviewed judgment and source-bound rationale. Organize it faithfully with the current papers; do not silently substitute a new unsupported research conclusion. Corrections may recheck original sources. Distinguish remaining findings from stylistic advice."
     if role in {"writer", "verifier", "synthesis"}:
         specific += "\nReport citations may use actual paper:claim IDs, newly read [PASSAGE::id] source windows, [NUMFACT::id] SQL facts or [CALC::id] source-bound calculator results. Do not invent an old workpaper claim for new data. Passage numbers and calculations retain non-S2/non-authoritative status with sources and operands. For an existing report, use read_current_source with the exact inline citation ID to inspect its bound record on demand; then verify relevant original context."
+    from .review_inspection import SEMANTIC_SELF_CHECK
+    specific += SEMANTIC_SELF_CHECK
     # A full-submission control can disable only the edit interface while
     # keeping the same revision role, sources, model and validation.
     if role == "writer" and (report_revision or allow_answers) and allow_report_edits:

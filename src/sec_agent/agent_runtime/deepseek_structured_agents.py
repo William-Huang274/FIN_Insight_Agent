@@ -528,6 +528,10 @@ _SPECIALIST_COMMON_SYSTEM_PROMPT = (
     "do not restart broad reading or drop required claims merely to pass validation."
 )
 
+from .review_inspection import SEMANTIC_SELF_CHECK
+
+_SPECIALIST_COMMON_SYSTEM_PROMPT += SEMANTIC_SELF_CHECK
+
 _AGENTIC_SPECIALIST_SYSTEM_PROMPT = _SPECIALIST_COMMON_SYSTEM_PROMPT + (
     " Return one object whose sole top-level field is action, containing the next action matching the schema."
 )

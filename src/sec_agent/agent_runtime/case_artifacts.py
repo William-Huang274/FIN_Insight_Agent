@@ -174,6 +174,14 @@ class CaseArtifacts:
                 + "; inspect the current paper sources catalog for exact IDs, or read_current_source for a saved report/chart binding. Do not invent an alias.")
         return json.loads(json.dumps(self._sources[source_id]))
 
+    def source_identity_catalog(self, paper_id):
+        """Current paper's source identities only; no cross-task suffix lookup."""
+        from .evidence_resolution import IDENTITY_KEYS
+        return [{'source_id':ref, 'canonical_ids':sorted({item[k] for k in IDENTITY_KEYS if item.get(k)}),
+                 'identity':{k:item[k] for k in ('document_id','node_id','content_sha256','publication_date',
+                     'period_start','period_end','unit','source_locator') if item.get(k) is not None}}
+                for ref in self._papers[paper_id]['sources'] for item in [self.source_item(ref)]]
+
     def with_saved_calculations(self, citations):
         """Reuse complete host-bound calculations from this native task only."""
         result = deepcopy(self)

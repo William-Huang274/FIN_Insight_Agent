@@ -35,6 +35,18 @@ def inspected(artifacts):
     review['inspection_checks'] = []
     for pid, manifest in inspection_manifest(artifacts).items():
         for dimension in manifest['required_dimensions']:
+            if dimension == 'prose_consistency' and manifest['semantic_targets']:
+                for target in manifest['semantic_targets']:
+                    from sec_agent.agent_runtime.review_inspection import text_locations
+                    text = dict(text_locations(artifacts.read_paper(pid)))[target['field_path']]
+                    review['inspection_checks'].append({'paper_id':pid,'paper_digest':manifest['paper_digest'],
+                        'dimension':dimension,'field_path':target['field_path'],
+                        'target_quote':text[target['start']:target['end']], 'semantic_target_id':target['target_id'],
+                        'expressed_relationship':'Synthetic relation used for contract testing.',
+                        'supported_relationship':'Synthetic evidence relation used for contract testing.',
+                        'semantic_verdict':'consistent','status':'checked','result':'Synthetic structural test, not financial acceptance.',
+                        'source_checks':[{'source_id':pid+':S002','quote':'29800'}]})
+                continue
             review['inspection_checks'].append({'paper_id':pid,'paper_digest':manifest['paper_digest'],
                 'dimension':dimension,'claim_ids':manifest['material_claim_ids'] if dimension=='claim_support' else [],
                 'field_path':'/narrative_markdown','target_quote':artifacts.read_paper(pid)['narrative_markdown'],

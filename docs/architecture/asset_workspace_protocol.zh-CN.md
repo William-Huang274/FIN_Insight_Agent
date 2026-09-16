@@ -30,7 +30,9 @@
 
 跨区后可回到原资产工作区和保存的问题；原生任务输出继续走已有报告保存路径。多轮助手对话自动提炼研究交接、所有资产类型统一编辑、实时行情/新闻、主动提醒、运行中自动定向重算尚不在本版骨架范围。
 
-容量沿用此前本地试用限制：每项目最多12个文档版本、总原件80MiB，单文件20MiB；SEC最多12次更新。修订占用版本数，超限不会清理历史。长期大库的独立配额、分页/索引、多人共享项目与负载验收必须另行完成，当前验证的是用户隔离和并发冲突保护。该限制不应作为上线产品的长期容量设计。
+项目持久容量与单次任务输入分开：项目默认最多2000个文档版本、原文件合计2GiB，单文件20MiB；SEC默认最多200次更新（包含失败记录）。部署者可配置`FINSIGHT_PROJECT_MAX_VERSIONS`（1–10000）、`FINSIGHT_PROJECT_MAX_BYTES`（20MiB–1TiB）和`FINSIGHT_PROJECT_MAX_SEC_VERSIONS`（1–10000），所有写入实例须使用同一配置。此为本地工程默认值，不是套餐承诺或已验证负载上限。修订/撤销版本仍占容量，超限不清理历史；SEC原件、解析文本、检索索引另占磁盘，原文件配额不是全目录磁盘上限。降低配额不删除现有记录，只阻止继续超额写入。单次任务仍限制12份文档/80MiB，研究交接refs限制保持。
+
+目录使用同库`attachment_summaries`及thread/access索引，升级时加性回填，插入正文和摘要同事务；浏览不加载历史正文。项目管理API默认每页50条、最多100条，返回total/offset/next_offset，前端每页30条、跨页保留明确选择。资产阅读区仍获取有界元数据目录，列表按30项渐进展开；历史版本按需展开。三字符及以上查找使用SQLite FTS5 trigram缩小候选，再执行原Unicode子串核对和当前使用权限校验；一至两字符保留项目内扫描。旧数据索引首次启动回填，内容不是新事实来源；部署SQLite须提供FTS5/trigram，升级前备份并协调重启写入实例。未增加语义检索服务，暂不承诺多机共享SQLite或无限规模目录。
 
 ## 本地持久化与恢复
 
@@ -42,6 +44,23 @@ uv run --no-sync python -m sec_agent.research_foundation.asset_backup restore /p
 ```
 
 路径必须由部署者指定；目标必须不存在，备份与恢复均拒绝覆盖。复制/校验失败保留现场，只有带完整清单且校验通过的目录可恢复。恢复不自动改应用配置，也不自动重启服务。
+
+### 项目与任务资料集协调恢复（056）
+
+`asset_set_backup.v1`在项目库和任务附件库同时持有SQLite写入保留锁，再分别使用online backup。期间仍可读取，写请求可能等待或超时；建议在维护窗口执行，锁等待有15秒上限。已提交的原件、批注、历史、个人记忆、资产交接、任务资料副本及ready财务映射一起保留；preparing/failed记录不升级为完成，不自动重试。备份核对原件摘要、项目引用及任务绑定，完成清单最后写入。任务引用其他未提供的项目库时明确拒绝，不生成不完整成功包。
+
+可显式加入已配置的公共知识库JSONL和财务SQLite：前者复制前后核对摘要，后者使用SQLite备份。这两项是各自的保存时点，不声称与外部数据供应商或原生checkpoint同一全局事务。清单明确列出未包括的组件。恢复只创建新目录、先验证清单/数据库/必需原件，再复制和复验，随后把任务的宿主项目库路径绑定到新目录；完成标记`restore-result.json`最后写入。失败现场保留，缺少完成标记的目录不可启用。
+
+```bash
+uv run --no-sync python -m sec_agent.research_foundation.asset_set_backup backup /state/project-library /state/attachments /backup/new-set --public-library /state/attachments/public-library/retrieval_nodes.jsonl --financial-mart /data/financial-facts.sqlite
+uv run --no-sync python -m sec_agent.research_foundation.asset_set_backup restore /backup/new-set /restore/new-state
+```
+
+恢复后的公共库位于`attachments/public-library/retrieval_nodes.jsonl`；财务库位于`library/financial-facts.sqlite`，实际路径写入恢复回执。部署者核对后配置BFF的任务根、项目根及`conversation_fact_mart`，先只读回验，再恢复写入。原有`asset_backup.v1`项目单库命令仍兼容。
+
+**不包括原生threads/runs/checkpoints、提交幂等回执、供应商费用/派发账。** 因此不能单独用本包恢复或自动启动旧研究；这些服务仍须各自备份并完成联合演练。共享项目权限、跨机切换、异地副本、备份调度与保留策略仍是部署工作。当前工程验证包括旧库迁移、并发配额、1000合成版本/5并发读、真实已存70文档/2274财务行及跨目录恢复，不是生产SLA或金融质量验证。
+
+基础设施依据：[SQLite Online Backup](https://www.sqlite.org/backup.html)、[FTS5 trigram](https://www.sqlite.org/fts5.html#the_trigram_tokenizer)。FIN仅维护来源身份、版本语义、配额和恢复后的引用检查。
 
 ## 验收
 

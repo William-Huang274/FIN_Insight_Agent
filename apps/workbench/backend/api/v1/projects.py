@@ -101,10 +101,17 @@ def build_projects_router(root, service):
         except KeyError: raise HTTPException(404,'项目资产不存在') from None
 
     @router.get('/{project_id}/documents')
-    def search(project_id: UUID, request: Request, response: Response, query: str=Query('',max_length=200)):
+    def search(project_id: UUID, request: Request, response: Response, query: str=Query('',max_length=200),
+               offset: int=Query(0,ge=0), limit: int=Query(50,ge=1,le=100)):
         identity=owner(request); scope(identity,project_id)
         response.headers['Cache-Control']='no-store'
-        return library.search(identity,project_id,query)
+        return library.search(identity,project_id,query,offset,limit)
+
+    @router.get('/{project_id}/storage')
+    def storage(project_id: UUID, request: Request, response: Response):
+        identity=owner(request); scope(identity,project_id)
+        response.headers['Cache-Control']='no-store'
+        return library.usage(identity,project_id)
 
     @router.post('/{project_id}/reports')
     async def save_report(project_id: UUID, body: SaveReport, request: Request, response: Response):

@@ -20,6 +20,8 @@ from test_project_library import app_at, index, PROJECT, THREAD, WRITE, Identity
 
 @pytest.fixture
 def project(tmp_path, monkeypatch):
+    # Exercise rollback at an explicit deployment quota, not the product default.
+    monkeypatch.setenv('FINSIGHT_PROJECT_MAX_VERSIONS','12')
     client=TestClient(app_at(tmp_path,monkeypatch))
     client.put('/api/v1/projects',headers=WRITE,json=index())
     base=f'/api/v1/projects/{PROJECT}'

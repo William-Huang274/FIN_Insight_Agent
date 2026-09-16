@@ -104,7 +104,7 @@ class AssetWorkspace:
             entry['versions'].sort(key=lambda r: (r['sequence'], r['created_at']))
             # A failed refresh is history, not a replacement for usable data.
             entry['current'] = next((v for v in reversed(entry['versions']) if v['status'] == 'complete'), entry['versions'][-1])
-        return {'items': list(groups.values()), 'schema_version': SCHEMA}
+        return {'items': list(groups.values()), 'schema_version': SCHEMA, 'usage':self.library.usage(owner,project)}
 
     def resolve(self, owner, ref):
         ref = AssetRef.model_validate(ref)

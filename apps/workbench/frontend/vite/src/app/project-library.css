@@ -35,3 +35,5 @@
 .fs-diff-added {color:#176139;background:#e8f6ec;}
 .fs-diff-removed {color:#922b31;background:#fff0f0;}
 .fs-project-library li {overflow-wrap:anywhere;}
+
+.project-pages{display:flex;align-items:center;gap:14px;margin:18px 0;font-size:12px}.project-storage{font-size:11px;color:var(--muted);margin:12px 0;line-height:1.7}.project-storage summary{cursor:pointer}.project-storage p{font-size:11px;max-width:65ch}.aw-nav .project-storage{flex-shrink:0}

@@ -10,7 +10,7 @@ const python=resolve(repo,'.venv','Scripts','python.exe');
 const fixture=process.env.FIN_ASSET_WORKSPACE_FIXTURE?'asset_workspace_web':process.env.FIN_PROJECT_REPORT_SOURCE?'project_report_web':process.env.FIN_PROJECT_VERSIONS_FIXTURE?'project_versions_web':'project_library_web';
 if(!state) throw new Error('Use a new isolated FINSIGHT_LOCAL_STATE_ROOT for each attempt.');
 export default defineConfig({
-  testDir:'./e2e',testMatch:['source-captures.spec.ts','unified-assets.spec.ts','asset-workspace.spec.ts','project-library.spec.ts','project-sec.spec.ts','project-report.spec.ts','project-versions.spec.ts'],workers:1,retries:0,reporter:'list',
+  testDir:'./e2e',testMatch:['asset-storage.spec.ts','source-captures.spec.ts','unified-assets.spec.ts','asset-workspace.spec.ts','project-library.spec.ts','project-sec.spec.ts','project-report.spec.ts','project-versions.spec.ts'],workers:1,retries:0,reporter:'list',
   outputDir:resolve(state,'browser'),
   use:{baseURL:'http://127.0.0.1:5173',screenshot:'only-on-failure',trace:'retain-on-failure'},
   projects:[{name:'chromium',use:{...devices['Desktop Chrome']}}],

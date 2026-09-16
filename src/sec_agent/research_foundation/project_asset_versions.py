@@ -41,8 +41,8 @@ def register_revision(db, scope, child, revision):
                 revision['change_kind'], revision.get('note', '')))
 
 
-def document_versions(store, scope):
-    items = store.list(scope)
+def document_versions(store, scope, *, ids=None):
+    items = store.list(scope, ids=ids)
     with store.connect() as db:
         revisions = {r['child']: dict(r) for r in db.execute(
             'SELECT r.* FROM attachment_revisions r JOIN attachments a ON a.id=r.child WHERE a.thread=?', (scope,))} if db.execute(

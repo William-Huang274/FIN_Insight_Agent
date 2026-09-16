@@ -4,6 +4,7 @@ No new retrieval service: this bounded slice searches saved text literally.
 Projects do not grant access to native research threads or promote source truth.
 """
 import json
+import os
 from uuid import UUID, uuid5, NAMESPACE_URL
 
 from .task_attachments import TaskAttachmentStore
@@ -16,10 +17,26 @@ class ProjectConflict(ValueError):
 
 class ProjectLibrary:
     def __init__(self, root):
-        self.documents = TaskAttachmentStore(root)
+        max_files = int(os.environ.get('FINSIGHT_PROJECT_MAX_VERSIONS', '2000'))
+        max_bytes = int(os.environ.get('FINSIGHT_PROJECT_MAX_BYTES', str(2 * 1024**3)))
+        if not 1 <= max_files <= 10000 or not 20 * 1024**2 <= max_bytes <= 1024**4:
+            raise ValueError('invalid_project_storage_limits')
+        self.documents = TaskAttachmentStore(root, max_files=max_files, max_bytes=max_bytes)
         with self.documents.connect() as db:
+            db.execute('BEGIN IMMEDIATE')
+            from .project_text_index import ensure_index
+            ensure_index(db)
             db.execute('CREATE TABLE IF NOT EXISTS project_asset_access(scope TEXT,kind TEXT,asset TEXT,revoked INTEGER,updated_at TEXT DEFAULT CURRENT_TIMESTAMP)')
             db.execute('CREATE TABLE IF NOT EXISTS project_indexes(owner TEXT PRIMARY KEY, revision INTEGER NOT NULL, body TEXT NOT NULL)')
+            db.execute('CREATE INDEX IF NOT EXISTS project_access_lookup ON project_asset_access(scope,kind,asset)')
+
+    def usage(self, owner, project_id):
+        scope = self.scope(owner, project_id)
+        with self.documents.connect() as db:
+            count, size = db.execute('SELECT count(*),coalesce(sum(s.bytes),0) FROM attachments a '
+                                    'JOIN attachment_summaries s ON s.object_id=a.id WHERE a.thread=?', (scope,)).fetchone()
+        return {'versions':count, 'original_bytes':size, 'max_versions':self.documents.max_files,
+                'max_original_bytes':self.documents.max_bytes, 'automatic_history_deletion':False}
 
     def set_access(self, owner, project, kind, asset, revoked):
         scope = self.scope(owner, project)
@@ -64,15 +81,44 @@ class ProjectLibrary:
         # Separate owner/project namespace, even if two owners choose the same UUID.
         return str(uuid5(NAMESPACE_URL,json.dumps(['fin-project',owner,project_id])))
 
-    def search(self, owner, project_id, query=''):
+    def search(self, owner, project_id, query='', offset=0, limit=50):
         scope=self.scope(owner,project_id)
         from .project_asset_versions import document_versions
-        items=document_versions(self.documents,scope)
+        if not 0 <= offset or not 1 <= limit <= 100:
+            raise ValueError('invalid_project_page')
+        # Keep exact Unicode substring semantics. Only search requests inspect text;
+        # browsing uses summaries and only a bounded result page is materialized.
+        candidates = None
+        if len(query.casefold()) >= 3:
+            with self.documents.connect() as db:
+                candidates = [r[0] for r in db.execute('SELECT id FROM attachments WHERE thread=? AND id IN '
+                    '(SELECT object_id FROM project_text_index WHERE project_text_index MATCH ?)',
+                    (scope,'"'+query.casefold().replace('"','""')+'"'))]
+        active = [r['document_id'] for r in self.documents.list(scope,ids=candidates) if r['access_status']=='active'] if query else []
+        with self.documents.connect() as db:
+            db.create_function('casefold', 1, lambda value: (value or '').casefold(), deterministic=True)
+            db.execute('BEGIN')
+            if query:
+                db.execute('CREATE TEMP TABLE searchable_ids(id TEXT PRIMARY KEY)')
+                db.executemany('INSERT INTO searchable_ids VALUES(?)', [(i,) for i in active])
+            clause = " AND (instr(casefold(name),?)>0 OR (id IN (SELECT id FROM searchable_ids) AND EXISTS(SELECT 1 FROM json_each(pages) WHERE instr(casefold(json_extract(value,'$.text')),?)>0)))" if query else ''
+            args = (scope, query.casefold(), query.casefold()) if query else (scope,)
+            if len(query.casefold()) >= 3:
+                clause += ' AND id IN (SELECT object_id FROM project_text_index WHERE project_text_index MATCH ?)'
+                args += ('"'+query.casefold().replace('"','""')+'"',)
+            total = db.execute('SELECT count(*) FROM attachments WHERE thread=?'+clause, args).fetchone()[0]
+            ids = [r[0] for r in db.execute('SELECT id FROM attachments WHERE thread=?'+clause+' ORDER BY rowid LIMIT ? OFFSET ?', (*args,limit,offset))]
+        items=document_versions(self.documents,scope,ids=ids)
         result=[]
         for item in items:
             if item['access_status'] != 'active':
                 if not query or query.casefold() in item['name'].casefold():
                     result.append({**item, 'excerpt': '', 'matched_sections': 0, 'text_status': item['access_status']})
+                continue
+            if not query:
+                result.append({**item,'matched_sections':item['sections'],
+                               'text_status':'needs_vision' if item['needs_vision'] else 'searchable',
+                               'source_role':item.get('project_origin',{}).get('source_role','user_upload_unverified')})
                 continue
             row=self.documents.get(scope,item['document_id'])
             sections=json.loads(row['pages'])
@@ -86,7 +132,9 @@ class ProjectLibrary:
             result.append({**item,'excerpt':text[at:at+600],'matched_sections':len(matching),
                            'text_status':'needs_vision' if item['needs_vision'] else 'searchable',
                            'source_role':row.get('project_origin', {}).get('source_role','user_upload_unverified')})
-        return {'items':result,'query':query,'search_mode':'saved_text_substring'}
+        return {'items':result,'query':query,'search_mode':'saved_text_substring','search_index':'sqlite_fts5_trigram' if len(query.casefold())>=3 else 'scoped_scan','total':total,
+                'offset':offset,'next_offset':offset+limit if offset+limit<total else None,
+                'usage':self.usage(owner,project_id)}
 
     def assign_new_thread(self, owner, project_id, thread_id):
         """Merge a server-created thread without overwriting concurrent UI edits."""

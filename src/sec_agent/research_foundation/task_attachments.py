@@ -117,7 +117,8 @@ def parse_document(filename, body):
 
 
 class TaskAttachmentStore:
-    def __init__(self, root):
+    def __init__(self, root, *, max_files=12, max_bytes=80 * 1024 * 1024):
+        self.max_files, self.max_bytes = max_files, max_bytes
         self.root = Path(root).resolve()
         self.root.mkdir(parents=True, exist_ok=True)
         self.path = self.root / "attachments.sqlite"
@@ -125,6 +126,18 @@ class TaskAttachmentStore:
             db.execute("CREATE TABLE IF NOT EXISTS attachments (thread TEXT, id TEXT PRIMARY KEY, name TEXT, kind TEXT, body BLOB, pages TEXT, digest TEXT, created TEXT DEFAULT CURRENT_TIMESTAMP)")
             db.execute("CREATE TABLE IF NOT EXISTS vision (thread TEXT, object_id TEXT, page INTEGER, prompt_hash TEXT, result TEXT, PRIMARY KEY(thread, object_id, page, prompt_hash))")
             db.execute("CREATE TABLE IF NOT EXISTS attachment_origins (object_id TEXT PRIMARY KEY, origin TEXT NOT NULL)")
+            db.execute('CREATE INDEX IF NOT EXISTS attachments_thread ON attachments(thread)')
+            # Additive, transactional migration; directory reads never load pages/body.
+            db.execute('CREATE TABLE IF NOT EXISTS attachment_summaries '
+                       '(object_id TEXT PRIMARY KEY, bytes INTEGER, sections INTEGER, needs_vision INTEGER, excerpt TEXT)')
+            db.execute('''CREATE TRIGGER IF NOT EXISTS attachment_summary_insert AFTER INSERT ON attachments BEGIN
+                INSERT INTO attachment_summaries VALUES(NEW.id,length(NEW.body),json_array_length(NEW.pages),
+                  EXISTS(SELECT 1 FROM json_each(NEW.pages) WHERE json_extract(value,'$.needs_vision')=1),
+                  substr(json_extract(NEW.pages,'$[0].text'),1,600)); END''')
+            db.execute('''INSERT INTO attachment_summaries SELECT id,length(body),json_array_length(pages),
+                EXISTS(SELECT 1 FROM json_each(pages) WHERE json_extract(value,'$.needs_vision')=1),
+                substr(json_extract(pages,'$[0].text'),1,600) FROM attachments
+                WHERE id NOT IN (SELECT object_id FROM attachment_summaries)''')
 
     @contextmanager
     def connect(self):
@@ -164,17 +177,21 @@ class TaskAttachmentStore:
             db.execute("BEGIN IMMEDIATE")
             if source_capture and db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (thread_id, object_id)).fetchone():
                 require_active(access_state(db, thread_id, 'document', object_id))
-                return next(row for row in self.list(thread_id) if row['document_id'] == object_id)
+                return self.list(thread_id, ids=[object_id])[0]
             if revision:
                 from .project_asset_versions import register_revision
                 register_revision(db, thread_id, object_id, revision)
             if research_origin and db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (thread_id, object_id)).fetchone():
-                return next(row for row in self.list(thread_id) if row['document_id'] == object_id)
-            count, size = db.execute("SELECT COUNT(*), COALESCE(SUM(LENGTH(body)),0) FROM attachments WHERE thread=?", (thread_id,)).fetchone()
-            if count >= 12 or size + len(body) > 80 * 1024 * 1024:
-                raise ValueError("task_upload_limit_12_files_80MiB")
+                return self.list(thread_id, ids=[object_id])[0]
+            count, size = db.execute('SELECT COUNT(*),COALESCE(SUM(s.bytes),0) FROM attachments a '
+                                    'JOIN attachment_summaries s ON s.object_id=a.id WHERE a.thread=?', (thread_id,)).fetchone()
+            if count >= self.max_files or size + len(body) > self.max_bytes:
+                raise ValueError("task_upload_limit_12_files_80MiB" if self.max_files == 12 else
+                                 '项目资料配额已满，已有版本保留；请联系维护者调整项目配额。')
             db.execute("INSERT INTO attachments(thread,id,name,kind,body,pages,digest) VALUES(?,?,?,?,?,?,?)",
                 (thread_id, object_id, filename, kind, body, json.dumps(pages, ensure_ascii=False), _digest(body)))
+            from .project_text_index import index_document
+            index_document(db, object_id, filename, pages)
             if research_origin:
                 db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps({
                     'source_role': 'project_research_artifact', 'research_origin': research_origin}, ensure_ascii=False)))
@@ -183,21 +200,29 @@ class TaskAttachmentStore:
                 db.execute('INSERT INTO attachment_captures VALUES(?,?,?)', (object_id, json.dumps(source_capture['snapshot'],ensure_ascii=False),source_capture['note']))
                 db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps({
                     'source_role':'project_source_snapshot_with_user_note', 'asset_capture':manifest},ensure_ascii=False)))
-        return next(row for row in self.list(thread_id) if row['document_id'] == object_id)
+        return self.list(thread_id, ids=[object_id])[0]
 
-    def list(self, thread_id):
+    def list(self, thread_id, *, ids=None):
         with self.connect() as db:
-            rows = db.execute("SELECT id,name,kind,pages,digest,created,LENGTH(body) AS bytes FROM attachments WHERE thread=? ORDER BY rowid", (str(UUID(str(thread_id))),)).fetchall()
+            if ids is not None and not ids:
+                return []
+            condition = ' AND a.id IN ('+','.join('?' for _ in ids)+')' if ids is not None else ''
+            rows = db.execute('SELECT a.id,a.name,a.kind,a.digest,a.created,s.bytes,s.sections,s.needs_vision,s.excerpt '
+                              'FROM attachments a JOIN attachment_summaries s ON s.object_id=a.id '
+                              'WHERE a.thread=?'+condition+' ORDER BY a.rowid',
+                              (str(UUID(str(thread_id))), *(ids or []))).fetchall()
             origins = {r['object_id']: json.loads(r['origin']) for r in db.execute(
-                'SELECT o.* FROM attachment_origins o JOIN attachments a ON a.id=o.object_id WHERE a.thread=?', (str(thread_id),))}
-        def status(row):
-            with self.connect() as db:
-                own = access_state(db, str(thread_id), 'document', row['id'])
-            return own if own != 'active' else origin_access(self, thread_id, origins.get(row['id']))
-        return [{"access_status": status(row), "document_id": row["id"], "name": row["name"], "kind": row["kind"], "bytes": row["bytes"],
+                'SELECT o.* FROM attachment_origins o JOIN attachments a ON a.id=o.object_id WHERE a.thread=?'+condition,
+                (str(thread_id), *(ids or [])))}
+            access = {r['asset']:r['revoked'] for r in db.execute(
+                "SELECT asset,revoked FROM project_asset_access WHERE scope=? AND kind='document' ORDER BY rowid",(str(thread_id),))} if db.execute(
+                    "SELECT 1 FROM sqlite_master WHERE name='project_asset_access'").fetchone() else {}
+            states = {r['id']:'revoked' if access.get(r['id']) else 'active' for r in rows}
+        states = {key:state if state != 'active' else origin_access(self, thread_id, origins.get(key)) for key,state in states.items()}
+        return [{"access_status": states[row['id']], "document_id": row["id"], "name": row["name"], "kind": row["kind"], "bytes": row["bytes"],
                  "digest": row['digest'], "created_at": row['created'].replace(' ', 'T') + 'Z',
                  **({'project_origin': origins[row['id']]} if row['id'] in origins else {}),
-                 "sections": len(json.loads(row["pages"])), "needs_vision": any(p["needs_vision"] for p in json.loads(row["pages"]))} for row in rows]
+                 "sections": row['sections'], "needs_vision": bool(row['needs_vision']), "excerpt": (row['excerpt'] or '') if states[row['id']]=='active' else ''} for row in rows]
 
     def copy_project_materials(self, thread_id, project_id, rows):
         """Copy an authorized selection atomically, retaining exact parsed bytes.
@@ -226,6 +251,8 @@ class TaskAttachmentStore:
                     origin.update(source_role='project_source_snapshot_with_user_note', asset_capture=row['project_origin']['asset_capture'])
                 db.execute('INSERT INTO attachments(thread,id,name,kind,body,pages,digest) VALUES(?,?,?,?,?,?,?)',
                            (thread_id, object_id, row['name'], row['kind'], row['body'], row['pages'], row['digest']))
+                from .project_text_index import index_document
+                index_document(db, object_id, row['name'], row['pages'])
                 db.execute('INSERT INTO attachment_origins VALUES(?,?)', (object_id, json.dumps(origin)))
         return self.list(thread_id)
 

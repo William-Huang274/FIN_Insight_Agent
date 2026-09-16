@@ -22,6 +22,9 @@ from financial_facts.sec_snapshot import (
 class ProjectSecSources:
     def __init__(self, library):
         self.library = library
+        self.max_versions = int(os.environ.get('FINSIGHT_PROJECT_MAX_SEC_VERSIONS','200'))
+        if not 1 <= self.max_versions <= 10000:
+            raise ValueError('invalid_project_sec_storage_limit')
         self.root = library.documents.root / 'sec-snapshots'
         with library.documents.connect() as db:
             db.execute('CREATE TABLE IF NOT EXISTS project_sec_versions '
@@ -50,8 +53,8 @@ class ProjectSecSources:
                     raise ValueError('该更新标识已用于另一家公司，请重新载入。')
                 return saved  # A repeated HTTP submission never repeats a remote fetch.
             count = db.execute('SELECT COUNT(*) FROM project_sec_versions WHERE scope=?', (scope,)).fetchone()[0]
-            if count >= 12:
-                raise ValueError('本地试用每项目最多保留12次数据更新；已有版本保留。')
+            if count >= self.max_versions:
+                raise ValueError(f'项目已达到{self.max_versions}次数据更新的保留配额；已有版本保留，请联系维护者调整配额。')
             db.execute('INSERT INTO project_sec_versions VALUES(?,?,?)', (scope, version, json.dumps(body)))
         output = self.root / scope / version
         try:

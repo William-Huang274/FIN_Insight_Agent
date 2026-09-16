@@ -90,6 +90,8 @@ Windows 可使用 `D:/private/finsight-session`。先完成上节前端构建，
 
 ## 更多工程检查
 
+开发分支的持久项目默认保留最多2000个文档版本/原文件2GiB，单次研究仍最多12份/80MiB；SEC默认200次更新。项目页可分页查找和展开存储用量。维护者可配置容量，超限不自动清理历史。首次升级会回填同库目录摘要和FTS5 trigram索引，请先备份并协调重启写入实例；SQLite需支持FTS5/trigram。项目、任务资料副本、知识库与财务库的可选联合备份及新目录恢复命令见[资产存储与恢复](../architecture/asset_workspace_protocol.zh-CN.md#项目与任务资料集协调恢复056)。该恢复包不包含原生运行checkpoint或费用派发账，不能据此直接恢复旧研究执行。
+
 完整公开 Python 套件需要附加依赖：
 
 ```bash

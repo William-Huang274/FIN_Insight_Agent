@@ -88,6 +88,8 @@ The 0.1.4 development branch adds `/workspace/assets`, with the configured knowl
 
 ## Broader engineering checks
 
+On the development branch, persistent projects default to 2,000 document versions / 2 GiB of original files and 200 SEC refresh records. Per-research inputs remain limited to 12 documents / 80 MiB. Project management provides paged search and expandable storage usage. Operators may configure quotas; history is never deleted automatically. Back up before upgrading and restart writers together: startup adds directory summaries and an FTS5 trigram index to the existing database, requiring SQLite with FTS5/trigram support. See the [asset storage and recovery contract](../architecture/asset_workspace_protocol.zh-CN.md) for coordinated project/task-source backups, optional public-library/financial-mart copies and restore into a new directory. Native execution checkpoints and provider dispatch/cost records are excluded; restoring assets alone must not resume old research runs.
+
 The full public Python suite needs additional dependencies:
 
 ```bash

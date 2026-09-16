@@ -8,7 +8,11 @@ from contextlib import closing
 
 
 def _hash(path):
-    return sha256(path.read_bytes()).hexdigest()
+    digest = sha256()
+    with path.open('rb') as stream:
+        for block in iter(lambda: stream.read(1024 * 1024), b''):
+            digest.update(block)
+    return digest.hexdigest()
 
 
 def backup_assets(source, target):
@@ -70,6 +74,8 @@ def restore_assets(backup, target):
         path = target / relative
         path.parent.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(backup / relative, path)
+        if _hash(path) != manifest['files'][relative]:
+            raise ValueError('restore_copy_integrity_failure')
     return manifest
 
 

@@ -6,6 +6,7 @@ import {ArrowRight,BookOpen,Check,ChevronDown,Database,FileText,FolderOpen,Messa
 import {assetRequest as request,type Asset,type AssetVersion,type AssetContext,type AssetProfile,type AssetRef,type SourceCapture} from '../api/assetWorkspace';
 import './asset-workspace.css';
 import {SourceCapturePanel,CapturedFinancialTable} from './SourceCapturePanel';
+import {ProjectStorageUsage} from './ProjectStorageUsage';
 
 type Reading={capture?:SourceCapture;version:AssetVersion;editable:boolean;text:string;truncated:boolean;needs_vision?:boolean;concepts?:{taxonomy:string;tag:string;label:string}[];concept_total?:number};
 const valid=(v:AssetVersion)=>v.access_status==='active'&&v.status==='complete';
@@ -20,6 +21,8 @@ export default function ProjectAssetWorkspace(){
   const [question,setQuestion]=useState(''),[context,setContext]=useState<AssetContext|null>(null);
   const [editing,setEditing]=useState(false),[title,setTitle]=useState(''),[text,setText]=useState('');
   const [assistantOpen,setAssistantOpen]=useState(false),[history,setHistory]=useState(false);
+  const [visibleCount,setVisibleCount]=useState(30);
+  useEffect(()=>setVisibleCount(30),[project,query,filter]);
   const [noteEditing,setNoteEditing]=useState(false),[chosen,setChosen]=useState<AssetRef[]>([]);
   const memoryDialog=useRef<HTMLDialogElement>(null);
   const currentGroup=assets.find(a=>a.asset_id===selected?.ref.asset_id&&a.kind===selected?.ref.kind);
@@ -48,9 +51,9 @@ export default function ProjectAssetWorkspace(){
     <aside className="aw-nav"><div className="aw-nav-title"><FolderOpen size={16}/><span>研究资产</span></div><label className="aw-project-label">当前项目<select aria-label="资产项目" value={project} disabled={busy||editing||noteEditing} onChange={e=>setParams(current=>{current.set('project',e.target.value);current.delete('asset');current.delete('context');return current;})}><option value="">选择项目</option>{projects.map(p=><option value={p.id} key={p.id}>{p.name}</option>)}</select></label>
       <label className="aw-search"><Search size={16}/><input aria-label="搜索资产" placeholder="搜索资产名称" value={query} onChange={e=>setQuery(e.target.value)}/></label>
       <div className="aw-filters" aria-label="资产分类">{[['all','全部'],['document','资料'],['report','成果'],['database','数据']].map(([id,label])=><button key={id} aria-pressed={filter===id} onClick={()=>setFilter(id)}>{label}</button>)}</div>
-      <div className="aw-asset-list">{filtered.map(a=><div className="aw-selectable-asset" key={`${a.kind}:${a.asset_id}`}>{assistantOpen&&<input type="checkbox" aria-label={`用于研究 ${a.current.title}`} disabled={busy||editing||noteEditing||!valid(a.current)} checked={chosen.some(r=>r.asset_id===a.asset_id&&r.kind===a.kind)} onChange={e=>{setChosen(refs=>e.target.checked?[...refs,selected?.ref.asset_id===a.asset_id?selected.ref:a.current.ref]:refs.filter(r=>r.asset_id!==a.asset_id||r.kind!==a.kind));clearContext();}}/>}<button className={a.asset_id===selected?.ref.asset_id?'selected':''} onClick={()=>choose(a.current)}>{a.kind==='sec'?<Database size={18}/>:a.current.role==='report'?<BookOpen size={18}/>:<FileText size={18}/>}<span><strong>{a.current.title}</strong><small>{roleName[a.current.role]} · v{a.current.sequence}{!valid(a.current)?' · 暂不可用':''}</small></span></button></div>)}{!busy&&!filtered.length&&<p className="aw-muted">{project?'还没有这类资产。可以添加资料，或调整筛选。':'先创建或选择一个项目。'}</p>}</div>
+      <div className="aw-asset-list">{filtered.slice(0,visibleCount).map(a=><div className="aw-selectable-asset" key={`${a.kind}:${a.asset_id}`}>{assistantOpen&&<input type="checkbox" aria-label={`用于研究 ${a.current.title}`} disabled={busy||editing||noteEditing||!valid(a.current)} checked={chosen.some(r=>r.asset_id===a.asset_id&&r.kind===a.kind)} onChange={e=>{setChosen(refs=>e.target.checked?[...refs,selected?.ref.asset_id===a.asset_id?selected.ref:a.current.ref]:refs.filter(r=>r.asset_id!==a.asset_id||r.kind!==a.kind));clearContext();}}/>}<button className={a.asset_id===selected?.ref.asset_id?'selected':''} onClick={()=>choose(a.current)}>{a.kind==='sec'?<Database size={18}/>:a.current.role==='report'?<BookOpen size={18}/>:<FileText size={18}/>}<span><strong>{a.current.title}</strong><small>{roleName[a.current.role]} · v{a.current.sequence}{!valid(a.current)?' · 暂不可用':''}</small></span></button></div>)}{filtered.length>visibleCount&&<button onClick={()=>setVisibleCount(n=>n+30)}>显示更多资料（{visibleCount} / {filtered.length}）</button>}{!busy&&!filtered.length&&<p className="aw-muted">{project?'还没有这类资产。可以添加资料，或调整筛选。':'先创建或选择一个项目。'}</p>}</div>
       <button className="aw-add" disabled={!project||busy||editing||noteEditing} onClick={()=>{setSelected(null);setReading(null);setTitle('');setText('');setContext(null);setEditing(true);}}><Plus size={16}/>新建笔记</button>
-      <div className="aw-connectors"><a href={project?`/workspace/session?view=project&project=${project}`:'/workspace/session'}>导入资料与管理项目 <ArrowRight size={14}/></a></div>
+      <ProjectStorageUsage project={project} revision={assets.reduce((n,a)=>n+a.versions.length,0)}/><div className="aw-connectors"><a href={project?`/workspace/session?view=project&project=${project}`:'/workspace/session'}>导入资料与管理项目 <ArrowRight size={14}/></a></div>
     </aside>
     <main className="aw-main"><div className="aw-breadcrumb">{projects.find(p=>p.id===project)?.name||'我的资产'}<span>/</span>{editing?'编辑资产':selected?roleName[selected.role]:'开始积累'}</div>
       {error&&<p className="aw-alert" role="alert">{error}</p>}{notice&&<p className="aw-notice" role="status"><Check size={16}/>{notice}</p>}{busy&&<p role="status" className="aw-muted">正在读取或保存…</p>}

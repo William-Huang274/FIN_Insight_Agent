@@ -23,7 +23,13 @@ PLAN = {"depth": "integrated", "rationale": "Two independent papers need source 
 
 
 @pytest.mark.parametrize("space", ["uploads", "web"])
-def test_native_lead_repairs_schema_then_queries_current_source_before_delegation(space):
+def test_native_lead_repairs_schema_then_queries_current_source_before_delegation(space, tmp_path, monkeypatch):
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    from sec_agent.agent_runtime.working_memory_tools import native_memory_scope
+    monkeypatch.setenv('FINSIGHT_WORKING_MEMORY_PATH',str(tmp_path/'notes.sqlite'))
+    memory=WorkingMemory(tmp_path/'notes.sqlite',owner='alice',workspace='native-planning',actor='lead')
+    note=memory.save('Current working assumption','Original')
+    memory.save('Current working assumption','Human revision body must be read on demand.',1,user_edit=True)
     requests, wires, reads = [], [], []
     body = _input()
     body['l0_context']['capability_summaries'].append({
@@ -47,7 +53,12 @@ def test_native_lead_repairs_schema_then_queries_current_source_before_delegatio
         assert 'RequestSourceAction' in functions
         current = requests[-1]
         turn = len(wires)
+        system=wire['messages'][0]['content']
+        assert note['note_id'] in system and system.count('用户曾直接修改') == 1
+        assert f'"version": {2 if turn==1 else 3}' in system
+        assert 'Human revision body' not in system
         if turn == 1:
+            memory.save('Current working assumption','New human revision between model turns.',2,user_edit=True)
             action = _call(current, 'DelegateResearchTasksAction', tasks=[_task('a'), _task('b')])
         elif turn == 2:
             assert 'execution_plan' in wire['messages'][-1]['content']
@@ -84,10 +95,12 @@ def test_native_lead_repairs_schema_then_queries_current_source_before_delegatio
             require_all_branches=False, require_execution_plan=True, turn_source='provider_model').compile(
                 checkpointer=InMemorySaver(), interrupt_after=['lead_tools'])
         config = {'configurable': {'thread_id': 'native-planning'}}
-        graph.invoke(value.model_dump(mode='json'), config)
+        with native_memory_scope('alice','native-planning'):
+            graph.invoke(value.model_dump(mode='json'), config)
         for _ in range(3):
             assert graph.get_state(config).next == ('lead',)
-            graph.invoke(None, config)
+            with native_memory_scope('alice','native-planning'):
+                graph.invoke(None, config)
         state = graph.get_state(config)
         assert state.next == ('specialist', 'specialist') and len(reads) == 2
         assert len(state.values['planning_observations']) == 2

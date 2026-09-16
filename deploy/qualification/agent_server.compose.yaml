@@ -32,7 +32,7 @@ services:
       redis:
         condition: service_healthy
     environment:
-      POSTGRES_URI: postgres://probe:${FIN_E1_POSTGRES_PASSWORD}@postgres:5432/probe?sslmode=disable
+      POSTGRES_URI: postgres://probe:${FIN_E1_POSTGRES_PASSWORD}@postgres:5432/${FIN_E1_DATABASE:-probe}?sslmode=disable
       REDIS_URI: redis://redis:6379
       LANGSMITH_API_KEY: ${LANGSMITH_API_KEY:?existing local development account required}
       LANGSMITH_TRACING: 'false'

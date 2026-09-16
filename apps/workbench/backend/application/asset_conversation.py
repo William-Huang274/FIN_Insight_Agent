@@ -1,5 +1,6 @@
 """Thin native conversation adapters; no second session or memory engine."""
 import json
+from hashlib import sha256
 
 from sec_agent.research_foundation.asset_workspace import AssetWorkspace, AssetContextRequest
 from sec_agent.research_foundation.task_asset_updates import TaskAssetUpdates, TaskAssetView
@@ -46,10 +47,21 @@ def discussion_context(service, owner, thread, state, question):
         refs.append(ref)
         source_bindings.append({'conversation_document_id': item['document_id'], 'project_ref': ref})
     checkpoint = state['checkpoint']['checkpoint_id']
+    from sec_agent.agent_runtime.working_memory_tools import memory_for, memory_enabled
+    papers = []
+    if memory_enabled():
+        memory = memory_for({}, 'conversation', owner=owner, workspace=thread['thread_id'])
+        with memory.connection() as db:
+            # One query fixes the current revisions together. Human edits can
+            # postdate the last chat checkpoint and must not disappear at handoff.
+            rows = db.execute('SELECT id,title,actor,version,body FROM working_notes WHERE owner=? AND workspace=? ORDER BY id',
+                              (owner, thread['thread_id'])).fetchall()
+            papers = [{**dict(row), 'sha256': sha256(row['body'].encode()).hexdigest()} for row in rows]
     snapshot = {'source_thread': thread['thread_id'], 'checkpoint_id': checkpoint,
                 'authority': '用户与助手的未核验讨论。旧回答不是原始事实；工具凭证仍须核查来源、期间、单位。',
                 'messages': public_history(state), 'observed_sources': observed_sources(state),
-                'source_bindings': source_bindings,
+                'source_bindings': source_bindings, 'working_papers': papers,
+                'working_paper_rule': '交接时固定的当前底稿版本，可能晚于最后一条对话；优先于旧讨论中的同名假设。底稿仍是未核验研究意见，不能替代原件。',
                 'reading_rule': '讨论中的旧UPLOAD标识属于原对话；新任务须从当前目录读取相应项目原件，引用本次工具返回的完整标识。'}
     text = '# 资产讨论交接\n\n' + json.dumps(snapshot, ensure_ascii=False, indent=2)
     if len(text.encode()) > 2 * 1024 * 1024:

@@ -46,8 +46,14 @@ def test_submission_freezes_latest_memory_and_selected_input(tmp_path):
     assert client.get('/api/v1/asset-workspace/profile/history?offset=-1').status_code == 422
 
 
-def test_discussion_handoff_is_pinned_unverified_and_keeps_original_sources(tmp_path):
+def test_discussion_handoff_is_pinned_unverified_and_keeps_original_sources(tmp_path, monkeypatch):
     client, service, calls, tid, workspace, project, ref = draft(tmp_path)
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    monkeypatch.setenv('FINSIGHT_WORKING_MEMORY_PATH',str(tmp_path/'notes.sqlite'))
+    memory=WorkingMemory(tmp_path/'notes.sqlite',owner='local-pilot',workspace=tid,actor='conversation')
+    note=memory.save('Assumption','Old assumption')
+    memory.save('Assumption','Human corrected period after the last chat.',1,user_edit=True)
+    WorkingMemory(tmp_path/'notes.sqlite',owner='bob',workspace=tid,actor='conversation').save('Private','OTHER_OWNER_PRIVATE')
     checkpoint = str(uuid4())
     state = {'checkpoint': {'checkpoint_id': checkpoint}, 'values': {'messages': [
         {'id': 'user', 'type': 'human', 'content': 'Explain this working assumption and check its sources.'},
@@ -66,9 +72,15 @@ def test_discussion_handoff_is_pinned_unverified_and_keeps_original_sources(tmp_
     text = workspace.read('local-pilot', saved['refs'][1])['text']
     assert checkpoint in text and 'Unverified answer' in text and '未核验' in text
     assert 'PRIVATE_REASONING' not in text
+    assert 'Human corrected period after the last chat.' in text and 'OTHER_OWNER_PRIVATE' not in text
     assert not any(c[0] == 'run' for c in calls)
     again = client.post(path, headers=WRITE, json=body).json()
     assert again['refs'] == saved['refs']  # No duplicate snapshot on a retry.
+    memory.save('Assumption','A still newer human assumption.',2,user_edit=True)
+    changed=client.post(path,headers=WRITE,json=body).json()
+    assert changed['refs'][-1] != saved['refs'][-1]
+    assert 'Human corrected period after the last chat.' in workspace.read('local-pilot',saved['refs'][-1])['text']
+    assert 'A still newer human assumption.' in workspace.read('local-pilot',changed['refs'][-1])['text']
     uploaded = service.attachment_store.add(tid, 'Additional.md', b'Additional original must accompany the discussion.')
     expanded = client.post(path, headers=WRITE, json=body)
     assert expanded.status_code == 200, expanded.text

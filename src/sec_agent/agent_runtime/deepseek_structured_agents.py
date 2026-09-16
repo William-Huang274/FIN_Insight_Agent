@@ -1527,6 +1527,13 @@ class DeepSeekStructuredAgentAdapter:
                 # All observations already arrived in exact earlier messages.
                 messages = [*history, ToolMessage(content=json.dumps(delta, ensure_ascii=False),
                     tool_call_id=prior_raw.tool_calls[0]["id"])]
+        if notes_enabled and saved_envelope is None:
+            from .user_workpaper_context import current_scope_revision_prompt
+            guidance = current_scope_revision_prompt(actor)
+            if guidance:
+                # The host system message is refreshed above on every turn;
+                # current revision locators never accumulate in prior history.
+                messages[0] = SystemMessage(content=messages[0].content + guidance)
         checkpoint_notice = None
         if persistent_history:
             messages = [m for m in messages if not m.additional_kwargs.get("fin_context_checkpoint_instruction")]

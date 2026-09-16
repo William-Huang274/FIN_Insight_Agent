@@ -769,13 +769,13 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
         return json.dumps(result,ensure_ascii=False),result
 
     @tool(response_format='content_and_artifact')
-    def read_review_source_span(source_id: str, start: int, end: int):
-        """Select exact characters in an archived source. Return quote_span to avoid retyping tables; never infer financial meaning."""
+    def read_review_source_span(source_id: str, start: int = 0, end: int | None = None, anchor: str | None = None, max_characters: int = 1000):
+        """Select original text by source_id and unique literal anchor, or offsets. Runtime computes quote_span; no manual character counting or table copying. Default reads first1000 characters. This is not financial verification."""
         if audit and audit.source_access_check:
             audit.source_access_check()
         from .evidence_resolution import read_source_span
         try:
-            result = read_source_span(artifacts,source_id,start,end)
+            result = read_source_span(artifacts,source_id,start,end,anchor,max_characters)
         except ValueError as exc:
             raise ToolException(str(exc)) from exc
         return json.dumps(result,ensure_ascii=False),result

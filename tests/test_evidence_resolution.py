@@ -83,6 +83,16 @@ def test_digest_bound_quote_selection_and_compatibility_receipts():
         validate_case_review(review,a,reads(a))
 
 
+def test_literal_anchor_selection_needs_no_model_character_count_and_rejects_ambiguity():
+    a=sample()
+    selected=read_source_span(a,'P01:S002',anchor='Tax',max_characters=100)
+    assert selected['text']=='Tax |  | (2) |  | (4) |\n'
+    assert selected['quote_span']['start']==len('Income |  | 10 |  | 20 |\n')
+    assert selected['runtime_parsing']['method']=='exact_source_anchor_v1'
+    with pytest.raises(ValueError,match='not_unique'):
+        read_source_span(a,'P01:S002',anchor='|')
+
+
 def test_overall_equation_cannot_cover_other_paragraphs_or_ambiguous_wording():
     a=artifact_fixture();good=CaseReview.model_validate(inspected(a))
     validate_inspection_checks(good,a,reads(a),complete=True)

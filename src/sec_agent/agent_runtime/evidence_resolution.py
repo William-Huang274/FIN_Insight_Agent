@@ -106,13 +106,25 @@ def citation_inventory(artifacts, paper_id):
     return result
 
 
-def read_source_span(artifacts, source_id, start, end):
+def read_source_span(artifacts, source_id, start=0, end=None, anchor=None, max_characters=1000):
     body = source_body(artifacts, source_id)
+    if not 1 <= max_characters <= 6000:
+        raise ValueError('source_span_max_characters_must_be_1_to_6000')
+    original = {'source_id':source_id,'start':start,'end':end,'anchor':anchor,'max_characters':max_characters}
+    if anchor is not None:
+        if not anchor or start != 0 or end is not None:
+            raise ValueError('use_one_nonempty_anchor_or_explicit_offsets')
+        positions = [m.start() for m in re.finditer(re.escape(anchor),body)]
+        if len(positions)!=1:
+            raise ValueError('source_anchor_not_unique:positions=' + str(positions[:12]))
+        start = positions[0]
+    if end is None:
+        end = min(len(body),start+max_characters)
     digest = canonical_sha256(body)
     text = select_source_span(body, digest, start, end)
     return {'source_id':source_id, 'source_digest':digest, 'text':text,
             'quote_span':{'source_digest':digest,'start':start,'end':end},
-            'runtime_parsing':parsing_record('exact_source_span_v1', {'source_id':source_id,'start':start,'end':end},text,
+            'runtime_parsing':parsing_record('exact_source_anchor_v1' if anchor else 'exact_source_span_v1', original,text,
                                             source_digest=digest)}
 
 

@@ -1,5 +1,7 @@
 # FinSight 0.1.4 技术方案
 
+真实资产交接检查补充：Lead 的 ReadWorkingNote/SearchWorkingNotes 与 RequestSourceAction 可组成最多4项的只读批次；不能把该组合误报为规划修改。委派/继续/交接等修改仍按单次规划动作处理。此修正减少人为增加的模型往返，不改变原已付费运行的记录或金融验收结果。
+
 060持久化收尾：联合恢复工具仅协调成熟SQLite/PostgreSQL原生备份，要求入口/worker/同步停止，拒绝活跃PG连接与排队run，文件摘要/SQLite变更检测/完成标记阻止部分包启用。恢复到新库新目录，保留owner/ACL，重绑资料路径和BFF实际回执位置，不自动重启任务；[操作与局限](../engineering/service_recovery.zh-CN.md)。真实原生暂停点及费用/回执恢复与金融质量分别验收。
 
 059补充：资产页复用现有任务底稿编辑和SEC连接管理；`working_note_user_edits`与版本正文同事务，CaseModelAudit在实际派发前注入用户修订定位目录。按owner/workspace隔离、有限分页、当前base_version写入，正文仍按原工具回读。运行中人工编辑不会改写已发出请求或正式报告。详见[资产协议](asset_workspace_protocol.zh-CN.md)。

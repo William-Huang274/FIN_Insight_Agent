@@ -156,6 +156,34 @@ def test_query_capability_limits_are_not_advertised_as_source_disclosure_limits(
     assert 'query interface only' in row['capability_limit_scope']
 
 
+def test_human_note_and_source_reads_share_one_readonly_batch(tmp_path,monkeypatch):
+    from sec_agent.agent_runtime.working_memory import WorkingMemory
+    from sec_agent.agent_runtime.working_memory_tools import native_memory_scope
+    monkeypatch.setenv('FINSIGHT_WORKING_MEMORY_PATH',str(tmp_path/'notes.sqlite'))
+    memory=WorkingMemory(tmp_path/'notes.sqlite',owner='alice',workspace='mixed-read',actor='lead')
+    note=memory.save('Scope','Human edited scope',user_edit=True)
+    body=_input();body['l0_context']['capability_summaries'].append({'capability_ref':'read','source_spaces':['uploads']})
+    value=SpecialistAgenticInput.model_validate_json(json.dumps(body));reads=[]
+    def turn(request):
+        batch=_call(request,'RequestSourceAction',action='request_source',selection={'source_space':'uploads','operation':'catalog'})
+        batch['action']['tool_calls'].insert(0,{'id':'read-current-note','type':'tool_call','name':'ReadWorkingNote','args':{'note_id':note['note_id']}})
+        return batch
+    def read(selection):reads.append(selection.operation);return {'source':'available'}
+    graph=build_lead_research_graph(expected_input=value,research_question='Read current notes and sources.',
+        branch_catalog=CATALOG,allowed_branch_ids=BRANCHES,seed_workpapers={},model_turn=turn,
+        run_child=lambda *_:pytest.fail('No worker'),source_reader=read,require_all_branches=False,
+        require_execution_plan=True).compile(checkpointer=InMemorySaver(),interrupt_after=['lead_tools'])
+    config={'configurable':{'thread_id':'mixed-read'}}
+    with native_memory_scope('alice','mixed-read'):graph.invoke(value.model_dump(mode='json'),config)
+    state=graph.get_state(config).values
+    assert reads==['catalog'] and len(state['planning_observations'])==1
+    assert len(state['tool_results'])==2 and not state['tasks']
+    parsed=[json.loads(r['content']) for r in state['tool_results']]
+    contents=[r.get('result',r) for r in parsed]
+    assert any(r.get('found') and r.get('body')=='Human edited scope' for r in contents)
+    assert not any('error' in r for r in contents)
+
+
 def test_lead_cannot_invent_web_authority_or_delegate_without_source_check():
     body = _input()
     body['l0_context']['capability_summaries'].append({

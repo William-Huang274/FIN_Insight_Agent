@@ -338,13 +338,14 @@ def build_lead_research_graph(
 
         def invoke_tool(runtime: ToolRuntime, **kwargs):
             call = next(row for row in batch.tool_calls if row.id == runtime.tool_call_id)
-            if call.name in WORKING_MEMORY_MODELS:
-                value = execute_memory_tool(call.name, call.args, config, "lead")
-                return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
             try:
-                read_batch = all(row.name == "RequestSourceAction" for row in batch.tool_calls)
+                read_batch = all(row.name in {"RequestSourceAction", "ReadWorkingNote", "SearchWorkingNotes"}
+                                 for row in batch.tool_calls)
                 if read_batch and len(batch.tool_calls) > 4:
                     raise ValueError("planning_source_batch_limit_four_split_independent_reads")
+                if call.name in WORKING_MEMORY_MODELS:
+                    value = execute_memory_tool(call.name, call.args, config, "lead")
+                    return ToolMessage(content=json.dumps(value, ensure_ascii=False), tool_call_id=call.id, name=call.name)
                 if len(batch.tool_calls) != 1 and not read_batch:
                     raise ValueError("one_planning_mutation_per_turn_put_parallel_tasks_in_one_tasks_list")
                 if isinstance(call, SpecialistInvalidToolCall):

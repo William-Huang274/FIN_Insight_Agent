@@ -1,5 +1,7 @@
 # FinSight 0.1.4 产品需求文档
 
+2026-09-16：P2/P3/P4/P7/P8 的资料更新工作流新增文档显式修订/新期间版本、保存内容差异、同公司 SEC 快照观测差异、已记录直接依赖提示与新任务明确选版。历史资料和报告不自动覆盖；未知依赖不视为不受影响。此交付不包括自动判断金融结论变化或重新研究，Agent 研究修复与付费验证继续暂停。见[功能与边界](../engineering/project_asset_versions.zh-CN.md)。
+
 2026-09-14 · 文档草案 v0.1 · 已通过开工基线审查；E1运行与费用、E2项目/数据/报告复用已有局部实现，E3方法消费与资料导航已有验证、金融质量未接受，E4/E5待实施；整版尚未验收或发布。
 
 [技术方案](../architecture/fin_0_1_4_technical_design.zh-CN.md) · [执行路线](../engineering/fin_0_1_4_execution_roadmap.zh-CN.md) · [当前版本](version_0_1_3.zh-CN.md)

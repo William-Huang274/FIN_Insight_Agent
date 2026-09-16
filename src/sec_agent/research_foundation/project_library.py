@@ -66,7 +66,8 @@ class ProjectLibrary:
 
     def search(self, owner, project_id, query=''):
         scope=self.scope(owner,project_id)
-        items=self.documents.list(scope)
+        from .project_asset_versions import document_versions
+        items=document_versions(self.documents,scope)
         result=[]
         for item in items:
             if item['access_status'] != 'active':

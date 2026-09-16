@@ -26,3 +26,12 @@
 .fs-save-project-report label {display:inline-flex;flex-wrap:wrap;gap:8px;align-items:center;max-width:100%;}
 .fs-save-project-report select {max-width:100%;min-width:0;}
 .fs-save-project-report button,.fs-save-project-report select {padding:8px;margin:4px;border:1px solid var(--line,#d8dedc);border-radius:6px;background:var(--surface,#fff);color:inherit;font:inherit;}
+.fs-asset-history {border:1px solid var(--line,#d8dedc);border-radius:12px;padding:20px;margin:24px 0;background:var(--surface,#fff);min-width:0;overflow-wrap:anywhere;}
+.fs-version-heading {display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;}
+.fs-asset-history ol {padding-left:24px;}
+.fs-asset-history li {padding:12px 0;border-bottom:1px solid var(--line,#d8dedc);}
+.fs-asset-history fieldset {min-width:0;border:1px solid var(--line,#d8dedc);margin-top:24px;border-radius:8px;}
+.fs-source-diff {white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:13px;line-height:1.7;background:var(--surface-soft,#f5f7fa);padding:12px;border-radius:8px;max-height:500px;overflow:auto;}
+.fs-diff-added {color:#176139;background:#e8f6ec;}
+.fs-diff-removed {color:#922b31;background:#fff0f0;}
+.fs-project-library li {overflow-wrap:anywhere;}

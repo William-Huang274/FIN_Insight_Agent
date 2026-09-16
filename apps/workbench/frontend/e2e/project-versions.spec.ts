@@ -1,0 +1,73 @@
+import {test,expect} from 'playwright/test';
+import {randomUUID} from 'node:crypto';
+
+for(const width of [1440,390]) test(`资料更新差异、依赖和明确选版 ${width}`,async({page,browser},testInfo)=>{
+  test.setTimeout(60000);
+  const project=randomUUID();const name=`资料迭代 ${width}`;
+  const headers={'X-Workbench-Request':'1'};
+  const index=await (await page.request.get('/api/v1/projects')).json();
+  expect((await page.request.put('/api/v1/projects',{headers,data:{...index,projects:[...index.projects,{id:project,name}]}})).status()).toBe(200);
+  const base=`/api/v1/projects/${project}`;
+  const old=await (await page.request.post(base+'/documents',{headers:{...headers,'X-File-Name':'source.md'},data:Buffer.from('# Q1\nRevenue 100 USD\n')})).json();
+  const taskResponse=await page.request.post('/api/v1/research-sessions',{headers,data:{mode:'research',question:'Read this synthetic source and identify limitations.',defer_start:true,project_materials:{project_id:project,document_ids:[old.document_id]}}});
+  expect(taskResponse.status()).toBe(200);const task=await taskResponse.json();const thread=task.thread_id;
+  const url=`/workspace/session?view=project&project=${project}`;
+  await page.setViewportSize({width,height:1000});await page.goto(url);
+  await expect(page.getByRole('heading',{name,exact:true})).toBeVisible();
+  await page.getByLabel('选择资料 source.md',{exact:true}).check();
+  await page.getByRole('button',{name:'版本、差异与关联成果',exact:true}).click();
+  const panel=page.getByLabel('资料版本与关联成果',{exact:true});
+  await panel.getByLabel('更新性质',{exact:true}).selectOption('new_period');
+  await panel.getByLabel('更新说明',{exact:true}).fill('增加 Q2 披露；不是 Q1 更正');
+  await panel.getByLabel('上传新版本',{exact:true}).setInputFiles({name:'q2.md',mimeType:'text/markdown',buffer:Buffer.from('# Q2\nRevenue 120 USD\n<script>window.versionInjected=true</script>')});
+  await expect(panel.getByRole('status')).toContainText('新版本已保存');
+  await expect(page.getByLabel('选择资料 source.md',{exact:true})).toBeChecked();
+  await expect(page.getByLabel('选择资料 q2.md',{exact:true})).not.toBeChecked();
+  await panel.getByRole('button',{name:'比较所选版本',exact:true}).click();
+  await expect(panel.getByLabel('版本差异',{exact:true})).toContainText('-Revenue 100 USD');
+  await expect(panel.getByLabel('版本差异',{exact:true})).toContainText('+Revenue 120 USD');
+  expect(await page.evaluate(()=>(window as any).versionInjected)).toBeUndefined();
+  await panel.getByRole('button',{name:'查基准版本的关联任务与成果',exact:true}).click();
+  await expect(panel.getByLabel('已记录的来源依赖',{exact:true})).toContainText('任务 1 个');
+  await expect(panel.getByRole('button',{name:`打开关联任务 ${thread}`,exact:true})).toBeVisible();
+  await expect(panel).toContainText('未列出不等于未受影响');
+  await panel.scrollIntoViewIfNeeded();
+  await page.screenshot({path:testInfo.outputPath(`version-diff-${width}.png`),fullPage:true});
+  await panel.getByLabel('版本差异',{exact:true}).scrollIntoViewIfNeeded();
+  await page.screenshot({path:testInfo.outputPath(`version-diff-content-${width}.png`),fullPage:true});
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);
+  await panel.getByRole('button',{name:'选择此版本用于新研究',exact:true}).nth(1).click();
+  await expect(page.getByLabel('选择资料 q2.md',{exact:true})).toBeChecked();
+  await expect(page.getByLabel('选择资料 source.md',{exact:true})).not.toBeChecked();
+  const oldTask=await (await page.request.get(`/api/v1/research-sessions/${thread}`)).json();
+  expect(oldTask.attachments[0].project_origin.document_id).toBe(old.document_id);expect(oldTask.runs).toEqual([]);
+  await page.getByRole('button',{name:'用所选资料准备研究',exact:true}).click();
+  await page.getByLabel('这次你想研究什么？',{exact:true}).fill('读取新期间披露，保留原期间和单位。');
+  await page.getByRole('button',{name:'保存为资料准备草稿',exact:true}).click();
+  await expect(page.getByText('资料准备任务已保存，尚未调用研究模型。',{exact:true})).toBeVisible();
+  const newThread=new URL(page.url()).searchParams.get('thread');
+  const newTask=await (await page.request.get(`/api/v1/research-sessions/${newThread}`)).json();
+  expect(newTask.attachments[0].project_origin.document_id).not.toBe(old.document_id);
+  expect(newTask.attachments[0].name).toBe('q2.md');expect(newTask.runs).toEqual([]);
+  const second=await browser.newContext({viewport:{width,height:1000}});
+  try{const other=await second.newPage();await other.goto(url);await other.getByRole('button',{name:'版本、差异与关联成果',exact:true}).first().click();await expect(other.getByLabel('资料版本与关联成果',{exact:true})).toContainText('增加 Q2 披露');}finally{await second.close();}
+  await page.goto(url);await page.getByRole('button',{name:'撤销使用',exact:true}).first().click();
+  await page.getByRole('button',{name:'版本、差异与关联成果',exact:true}).first().click();
+  await expect(panel.getByRole('button',{name:'选择此版本用于新研究',exact:true}).first()).toBeDisabled();
+  await panel.getByRole('button',{name:'查基准版本的关联任务与成果',exact:true}).click();
+  await expect(panel.getByLabel('已记录的来源依赖',{exact:true})).toContainText('任务 1 个');
+});
+
+test('保存的 SEC 快照精确差异与手机回读',async({page},testInfo)=>{
+  test.skip(!process.env.FIN_PROJECT_VERSIONS_FIXTURE,'Requires isolated synthetic saved snapshots');
+  await page.goto('/workspace/session?view=project&project=00000000-0000-4000-8000-000000000051');
+  await page.getByRole('button',{name:'数据版本差异与关联成果',exact:true}).last().click();
+  const panel=page.getByLabel('资料版本与关联成果',{exact:true});
+  await panel.getByRole('button',{name:'比较所选版本',exact:true}).click();
+  await expect(panel.getByLabel('版本差异',{exact:true})).toContainText('9007199254740993 USD');
+  await expect(panel.getByLabel('版本差异',{exact:true})).toContainText('9007199254740994 USD');
+  await expect(panel.getByLabel('版本差异',{exact:true})).toContainText('synthetic-2');
+  for(const width of [1440,390]){await page.setViewportSize({width,height:1000});await panel.getByLabel('版本差异',{exact:true}).scrollIntoViewIfNeeded();await page.screenshot({path:testInfo.outputPath(`sec-diff-${width}.png`),fullPage:true});expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1)).toBe(true);}
+  await panel.getByRole('button',{name:'选择此版本用于新研究',exact:true}).last().click();
+  await expect(page.getByText('当前版本：00000000-0000-4000-8000-000000000002',{exact:true})).toBeVisible();
+});

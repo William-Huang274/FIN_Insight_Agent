@@ -12,7 +12,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 from langchain_core.runnables import RunnableLambda
 
-from tests.qualification.fixtures.project_library_web import DraftThreads, EmptyThreads, OriginalService
+from tests.integration.fixtures.project_library_web import DraftThreads, EmptyThreads, OriginalService
 from apps.workbench.backend.api.v1 import report_sessions
 from apps.workbench.backend.app import create_report_session_app
 from sec_agent.agent_runtime.case_artifacts import CaseArtifacts

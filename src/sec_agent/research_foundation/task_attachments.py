@@ -129,7 +129,7 @@ class TaskAttachmentStore:
         finally:
             db.close()
 
-    def add(self, thread_id, filename, body, *, research_origin=None):
+    def add(self, thread_id, filename, body, *, research_origin=None, revision=None):
         thread_id = str(UUID(str(thread_id)))
         if not filename or len(filename) > 180 or any(c in filename for c in '/\\:\x00\r\n') or Path(filename).suffix.lower() not in ALLOWED_SUFFIXES:
             raise ValueError("unsupported_or_unsafe_filename")
@@ -148,6 +148,9 @@ class TaskAttachmentStore:
         with self.connect() as db:
             # Count and insert in one native transaction; no application lock service.
             db.execute("BEGIN IMMEDIATE")
+            if revision:
+                from .project_asset_versions import register_revision
+                register_revision(db, thread_id, object_id, revision)
             if research_origin and db.execute('SELECT 1 FROM attachments WHERE thread=? AND id=?', (thread_id, object_id)).fetchone():
                 return next(row for row in self.list(thread_id) if row['document_id'] == object_id)
             count, size = db.execute("SELECT COUNT(*), COALESCE(SUM(LENGTH(body)),0) FROM attachments WHERE thread=?", (thread_id,)).fetchone()
@@ -162,7 +165,7 @@ class TaskAttachmentStore:
 
     def list(self, thread_id):
         with self.connect() as db:
-            rows = db.execute("SELECT id,name,kind,pages,LENGTH(body) AS bytes FROM attachments WHERE thread=? ORDER BY rowid", (str(UUID(str(thread_id))),)).fetchall()
+            rows = db.execute("SELECT id,name,kind,pages,digest,created,LENGTH(body) AS bytes FROM attachments WHERE thread=? ORDER BY rowid", (str(UUID(str(thread_id))),)).fetchall()
             origins = {r['object_id']: json.loads(r['origin']) for r in db.execute(
                 'SELECT o.* FROM attachment_origins o JOIN attachments a ON a.id=o.object_id WHERE a.thread=?', (str(thread_id),))}
         def status(row):
@@ -170,6 +173,7 @@ class TaskAttachmentStore:
                 own = access_state(db, str(thread_id), 'document', row['id'])
             return own if own != 'active' else origin_access(self, thread_id, origins.get(row['id']))
         return [{"access_status": status(row), "document_id": row["id"], "name": row["name"], "kind": row["kind"], "bytes": row["bytes"],
+                 "digest": row['digest'], "created_at": row['created'].replace(' ', 'T') + 'Z',
                  **({'project_origin': origins[row['id']]} if row['id'] in origins else {}),
                  "sections": len(json.loads(row["pages"])), "needs_vision": any(p["needs_vision"] for p in json.loads(row["pages"]))} for row in rows]
 

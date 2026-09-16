@@ -2,6 +2,8 @@
 from urllib.parse import unquote, quote
 from uuid import UUID
 from datetime import date
+import asyncio
+import httpx
 from fastapi import APIRouter, HTTPException, Request, Query, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from starlette.concurrency import run_in_threadpool
@@ -11,6 +13,8 @@ from sec_agent.research_foundation.project_library import ProjectLibrary, Projec
 from sec_agent.research_foundation.task_attachments import MAX_BYTES
 from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
 from sec_agent.research_foundation.project_sec_sources import ProjectSecSources
+from sec_agent.research_foundation import project_asset_versions as asset_versions
+from typing import Literal
 
 
 class Project(BaseModel):
@@ -143,15 +147,79 @@ def build_projects_router(root, service):
         return {**saved,'search_status':'saved_text_searchable','notice':'正文与查找文本已一同保存；保留原版本。研究成果不等于已核验的原始事实。'}
 
     @router.post('/{project_id}/documents')
-    async def upload(project_id: UUID, request: Request):
+    async def upload(project_id: UUID, request: Request,
+                     parent: str=Query('',max_length=100),
+                     change_kind: Literal['correction','new_period']='correction',
+                     note: str=Query('',max_length=500)):
         identity=owner(request,True); target=await run_in_threadpool(scope,identity,project_id)
         body=bytearray()
         async for part in request.stream():
             body.extend(part)
             if len(body)>MAX_BYTES: raise HTTPException(413,'单个文件最多20 MiB')
         filename=unquote(request.headers.get('x-file-name',''))
-        try: return await run_in_threadpool(library.documents.add,target,filename,bytes(body))
+        revision={'parent':parent,'change_kind':change_kind,'note':note} if parent else None
+        try: return await run_in_threadpool(library.documents.add,target,filename,bytes(body),revision=revision)
+        except KeyError: raise HTTPException(404,'原资料不属于当前项目') from None
+        except (asset_versions.RevisionConflict,ProjectAssetUnavailable) as exc: raise HTTPException(409,str(exc)) from None
         except ValueError as exc: raise HTTPException(422,str(exc)) from None
+
+    @router.get('/{project_id}/assets/{kind}/{asset}/history')
+    def asset_history(project_id: UUID, kind: str, asset: str, request: Request, response: Response):
+        identity=owner(request); scope(identity,project_id)
+        response.headers['Cache-Control']='no-store'
+        try: return asset_versions.history(library,sec,identity,project_id,kind,asset)
+        except KeyError: raise HTTPException(404,'项目资产不存在') from None
+
+    @router.get('/{project_id}/assets/{kind}/{asset}/compare')
+    def asset_compare(project_id: UUID, kind: str, asset: str, request: Request, response: Response,
+                      other: str=Query(...,max_length=100), offset: int=Query(0,ge=0,le=1000000)):
+        identity=owner(request); scope(identity,project_id)
+        response.headers['Cache-Control']='no-store'
+        try: return asset_versions.compare(library,sec,identity,project_id,kind,asset,other,offset)
+        except KeyError: raise HTTPException(404,'项目资产不存在') from None
+        except (ValueError,OSError): raise HTTPException(409,'版本不可比较：请选择同组的不同可用版本，并检查保存原件。') from None
+
+    @router.get('/{project_id}/assets/{kind}/{asset}/dependencies')
+    async def asset_dependencies(project_id: UUID, kind: str, asset: str, request: Request, response: Response):
+        identity=owner(request); target=await run_in_threadpool(scope,identity,project_id)
+        response.headers['Cache-Control']='no-store'
+        try: await run_in_threadpool(asset_versions.history,library,sec,identity,project_id,kind,asset)
+        except KeyError: raise HTTPException(404,'项目资产不存在') from None
+        matches=lambda d: asset_versions.matches_dependency(d,project_id,target,kind,asset)
+        index=await run_in_threadpool(library.index,identity)
+        tasks=[]; unknown_tasks=0; native_available=True
+        store=getattr(service,'attachment_store',None)
+        for thread in index['assignments']:
+            # Owner index is only a candidate set, never a substitute for native ownership.
+            if not native_available:
+                unknown_tasks+=1; continue
+            try: await asyncio.wait_for(service.owned_thread(thread),timeout=5)
+            except HTTPException as exc:
+                if exc.status_code not in (403,404): raise
+                unknown_tasks+=1; continue
+            except httpx.HTTPStatusError as exc:
+                unknown_tasks+=1
+                if exc.response.status_code not in (403,404): native_available=False
+                continue
+            except (httpx.RequestError,TimeoutError):
+                # Do not retry a disconnected backend once per archived task.
+                unknown_tasks+=1; native_available=False; continue
+            bindings=await run_in_threadpool(asset_versions.task_bindings,store,thread) if store else []
+            if any(matches(d) for d in bindings): tasks.append({'thread_id':thread})
+            if not bindings or any(not d.get('source_scope') for d in bindings): unknown_tasks+=1
+        reports=[]; unknown_reports=0
+        documents=await run_in_threadpool(library.documents.list,target)
+        for doc in documents:
+            origin=doc.get('project_origin',{}).get('research_origin')
+            if origin is None: continue
+            dependencies=origin.get('source_dependencies')
+            if dependencies is None or any(not d.get('source_scope') for d in dependencies): unknown_reports+=1
+            if any(matches(d) for d in dependencies or []):
+                reports.append({'document_id':doc['document_id'],'name':doc['name'],
+                                'report_version':origin['report_version'],'access_status':doc['access_status']})
+        return {'tasks':tasks,'reports':reports,'unknown_tasks':unknown_tasks,'unknown_reports':unknown_reports,
+                'coverage':'recorded_direct_bindings_only',
+                'notice':'仅列出当前账户已归档任务与本项目成果中记录的直接来源绑定；不推断间接引用或具体结论影响。未列出不等于未受影响，历史依赖缺失时无法判断。'}
 
     @router.get('/{project_id}/documents/{document_id}')
     def detail(project_id: UUID, document_id: str, request: Request, response: Response):

@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import type { Session } from '../api/reportSessions';
 import './project-library.css';
 import {ProjectSecSource} from './ProjectSecSource';
+import {ProjectAssetHistory} from './ProjectAssetHistory';
 
-type Document = {access_status:string;document_id:string;name:string;bytes:number;text_status:string;excerpt:string;sections:number;project_origin?:{research_origin?:{thread_id:string;report_version:number;phase:string;reason:string}}};
+type Document = {access_status:string;document_id:string;name:string;bytes:number;text_status:string;excerpt:string;sections:number;created_at:string;version_info:{sequence:number;family:string};project_origin?:{research_origin?:{thread_id:string;report_version:number;phase:string;reason:string}}};
 type Detail = {name:string;sections:{heading:string;text:string;page:number|null;needs_vision:boolean}[]};
 async function readJson(response:Response) {
   const body=await response.json();
@@ -17,9 +18,10 @@ export function ProjectLibrary({project, sessions, navigate, onResearch}:{projec
   const [detail,setDetail]=useState<Detail|null>(null); const [error,setError]=useState('');
   const [busy,setBusy]=useState(true); const [notice,setNotice]=useState('');
   const [selected,setSelected]=useState<Document[]>([]);
+  const [history,setHistory]=useState('');
   const load=async()=>{const result=await readJson(await fetch(`${base}?query=${encodeURIComponent(query)}`));setItems(result.items);setSelected(old=>old.filter(d=>!result.items.some((r:Document)=>r.document_id===d.document_id&&r.access_status!=='active')));setDetail(null);};
   useEffect(()=>{void load().catch(e=>setError(e.message)).finally(()=>setBusy(false));},[base]);
-  const changeAccess=async(item:Document)=>{setBusy(true);setError('');setDetail(null);
+  const changeAccess=async(item:Document)=>{setBusy(true);setError('');setDetail(null);setHistory('');
     try{await readJson(await fetch(`/api/v1/projects/${project.id}/assets/document/${encodeURIComponent(item.document_id)}/access`,{method:'PUT',headers:{'Content-Type':'application/json','X-Workbench-Request':'1'},body:JSON.stringify({revoked:item.access_status==='active'})}));await load();setNotice(item.access_status==='active'?'已撤销使用。新读取和依赖此资料的模型请求将被阻止；原件与历史报告保留。':'已恢复使用；不会自动重启任务。');}
     catch(e){setError((e as Error).message);}finally{setBusy(false);}};
   const search=async()=>{setBusy(true);setError('');try{await load();}catch(e){setError((e as Error).message);}finally{setBusy(false);}};
@@ -35,16 +37,22 @@ export function ProjectLibrary({project, sessions, navigate, onResearch}:{projec
     <button disabled={busy} onClick={()=>void search()}>重新载入资料</button>
     {notice&&<p role="status">{notice}</p>}{busy&&<p role="status">正在处理资料…</p>}{error&&<p role="alert">{error}</p>}
     <p>已选 {selected.length} 份资料。开始研究时保存独立副本，后续项目修改不会自动改变该次研究输入；撤销使用仍会限制任务副本。</p>
+    {!!selected.length&&<ul>{selected.map(d=><li key={d.document_id}>{d.name} · v{d.version_info?.sequence||1} · {d.document_id}</li>)}</ul>}
     <button disabled={busy||!selected.length} onClick={()=>onResearch(selected)}>用所选资料准备研究</button>
     {!!selected.length&&<button disabled={busy} onClick={()=>setSelected([])}>清空资料选择</button>}
     <div className="fs-project-documents">{items.map(item=><article key={item.document_id}><label><input type="checkbox" aria-label={`选择资料 ${item.name}`} disabled={busy||item.access_status!=='active'} checked={selected.some(d=>d.document_id===item.document_id)} onChange={e=>setSelected(old=>e.target.checked?[...old,item]:old.filter(d=>d.document_id!==item.document_id))}/>用于研究</label><h2>{item.name}</h2><small>{item.access_status==='dependency_unavailable'?'原始依据使用受限':item.access_status!=='active'?'已撤销使用':item.text_status==='searchable'?'正文可查找':'含需识别的图片或扫描页'} · {item.project_origin?.research_origin?'研究成果，须核对原始依据':'用户提供，待核验'}</small><p>{item.excerpt}</p>
       {item.project_origin?.research_origin&&<div><p>研究成果 v{item.project_origin.research_origin.report_version} · {['human_completed','human_reviewed_not_released'].includes(item.project_origin.research_origin.phase)?'用户已确认，仍须核对原始依据':'研究草稿，待审阅'}；{item.project_origin.research_origin.reason}</p><button disabled={busy} onClick={()=>navigate('report',item.project_origin!.research_origin!.thread_id)}>打开原研究与修改记录</button></div>}
       <button disabled={busy||item.access_status!=='active'} onClick={async()=>{setBusy(true);setError('');try{setDetail(await readJson(await fetch(`${base}/${encodeURIComponent(item.document_id)}`)));}catch(e){setError((e as Error).message);}finally{setBusy(false);}}}>阅读已保存正文</button>{' '}
       {item.access_status==='active'&&<a href={`${base}/${encodeURIComponent(item.document_id)}/download`}>下载原文件</a>}
+      <p>资料 v{item.version_info?.sequence||1} · 保存于 {new Date(item.created_at).toLocaleString()}</p>
+      <button disabled={busy} onClick={()=>setHistory(item.document_id)}>版本、差异与关联成果</button>
       <button disabled={busy||item.access_status==='dependency_unavailable'} onClick={()=>void changeAccess(item)}>{item.access_status==='active'?'撤销使用':'恢复使用'}</button>
     </article>)}</div>{!busy&&!items.length&&<p>暂无符合条件的资料。可上传文件或更换关键词。</p>}
     {detail&&<section className="fs-project-document-reader" aria-label="项目资料正文"><button onClick={()=>setDetail(null)}>收起正文</button><h2>{detail.name}</h2>{detail.sections.map((s,i)=><section key={i}><h3>{s.heading}</h3><pre>{s.text||'此页需要图像识别，尚无可查找正文。'}</pre></section>)}</section>}
-    <ProjectSecSource key={project.id} projectId={project.id} onResearch={version=>onResearch([],version)}/>
+    {history&&<ProjectAssetHistory key={history} projectId={project.id} kind="document" asset={history} onClose={()=>setHistory('')} onChanged={load} navigate={navigate} onSelect={async id=>{
+      setBusy(true);setError('');try{const result=await readJson(await fetch(base));const chosen=result.items.find((d:Document)=>d.document_id===id&&d.access_status==='active');if(!chosen)throw new Error('该版本当前不可用，请重新载入。');setSelected(old=>[...old.filter(d=>d.version_info.family!==chosen.version_info.family),chosen]);}finally{setBusy(false);}
+    }}/>}
+    <ProjectSecSource key={project.id} projectId={project.id} navigate={navigate} onResearch={version=>onResearch([],version)}/>
     <h2>项目内的研究与成果</h2><p>所选资料会进入新研究的资料工具，Agent 按需读取；来源绑定不代表内容已核验。已有研究及报告保持原有权限和版本。</p>
     <div className="fs-research-list">{sessions.map(s=><button key={s.thread_id} onClick={()=>navigate('graph',s.thread_id)}>{s.title||'未命名研究'}</button>)}</div>{!sessions.length&&<p>可在“管理项目”中归入已有研究。</p>}
   </section>;

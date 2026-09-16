@@ -1,4 +1,5 @@
 import {useEffect,useState} from 'react';
+import {ProjectAssetHistory} from './ProjectAssetHistory';
 
 type Version={access_status:string;version:string;ticker:string;cik:string;status:string;company_name?:string;requested_at:string;captured_at?:string;failure_code?:string};
 type Concept={taxonomy:string;tag:string;label:string};
@@ -6,17 +7,18 @@ type Observation={val:string;unit:string;start?:string;end:string;filed:string;a
 type Rows={items:Observation[];total:number;next_offset:number|null;notice?:string};
 async function json(response:Response){const body=await response.json();if(!response.ok)throw new Error(typeof body.detail==='string'?body.detail:'数据操作失败');return body;}
 
-export function ProjectSecSource({projectId,onResearch}:{projectId:string;onResearch:(version:string)=>void}){
+export function ProjectSecSource({projectId,onResearch,navigate}:{projectId:string;onResearch:(version:string)=>void;navigate?:(view:string,id?:string)=>void}){
   const base=`/api/v1/projects/${projectId}/sec`;
   const [ticker,setTicker]=useState('');const [cik,setCik]=useState('');
   const [versions,setVersions]=useState<Version[]>([]);const [version,setVersion]=useState('');
   const [concepts,setConcepts]=useState<Concept[]>([]);const [concept,setConcept]=useState('');
   const [asOf,setAsOf]=useState('');const [rows,setRows]=useState<Rows|null>(null);
   const [busy,setBusy]=useState(false);const [error,setError]=useState('');const [notice,setNotice]=useState('');
+  const [history,setHistory]=useState('');
   const load=async()=>{setVersions((await json(await fetch(base))).items);setVersion('');setConcepts([]);setRows(null);};
   useEffect(()=>{let active=true;void fetch(base).then(json).then(r=>{if(active)setVersions(r.items);}).catch(e=>{if(active)setError(e.message);});return()=>{active=false;};},[base]);
-  const readVersion=async(id:string)=>{setBusy(true);setError('');setVersion(id);setConcept('');setRows(null);setConcepts([]);
-    try{const data=await json(await fetch(`${base}/${id}`));setConcepts(data.concepts);}catch(e){setError((e as Error).message);}finally{setBusy(false);}};
+  const readVersion=async(id:string,propagate=false)=>{setBusy(true);setError('');setVersion(id);setConcept('');setRows(null);setConcepts([]);
+    try{const data=await json(await fetch(`${base}/${id}`));setConcepts(data.concepts);}catch(e){setVersion('');setError((e as Error).message);if(propagate)throw e;}finally{setBusy(false);}};
   const query=async(offset=0)=>{if(!concept)return;setBusy(true);setError('');
     const [taxonomy,tag]=JSON.parse(concept);const params=new URLSearchParams({taxonomy,tag,offset:String(offset)});if(asOf)params.set('as_of',asOf);
     try{setRows(await json(await fetch(`${base}/${version}?${params}`)));}catch(e){setRows(null);setError((e as Error).message);}finally{setBusy(false);}};
@@ -34,10 +36,12 @@ export function ProjectSecSource({projectId,onResearch}:{projectId:string;onRese
     <ul>{versions.map(v=><li key={v.version}><strong>{v.ticker} · {v.company_name||v.cik}</strong>{' '}
       {v.access_status==='revoked'?'已撤销使用':v.status==='complete'?'已保存':v.status==='failed'?`同步失败（${v.failure_code}）`:'处理中或已中断，请重新载入确认'} · {new Date(v.captured_at||v.requested_at).toLocaleString()}{' '}
       {v.status==='complete'&&v.access_status==='active'&&<button disabled={busy} onClick={()=>void readVersion(v.version)}>查看数据版本</button>}
-      <button disabled={busy} onClick={async()=>{setBusy(true);setError('');setVersion('');setConcepts([]);setRows(null);
+      <button disabled={busy} onClick={()=>setHistory(v.version)}>数据版本差异与关联成果</button>
+      <button disabled={busy} onClick={async()=>{setBusy(true);setError('');setVersion('');setConcepts([]);setRows(null);setHistory('');
         try{await json(await fetch(`/api/v1/projects/${projectId}/assets/sec/${v.version}/access`,{method:'PUT',headers:{'Content-Type':'application/json','X-Workbench-Request':'1'},body:JSON.stringify({revoked:v.access_status==='active'})}));await load();setNotice(v.access_status==='active'?'已撤销此版本使用，任务财务副本也将拒绝新读取。原件与历史报告保留。':'已恢复此版本使用，不会自动重启任务。');}catch(e){setError((e as Error).message);}finally{setBusy(false);}
       }}>{v.access_status==='active'?'撤销数据版本使用':'恢复数据版本使用'}</button></li>)}</ul>
     {!versions.length&&<p>暂无已连接数据。</p>}
+    {history&&<ProjectAssetHistory key={history} projectId={projectId} kind="sec" asset={history} onClose={()=>setHistory('')} onChanged={load} navigate={navigate} onSelect={id=>readVersion(id,true)}/>}
     {version&&!!concepts.length&&<><p>当前版本：{version}</p><div className="fs-sec-fields">
       <label>原始指标<select aria-label="SEC原始指标" disabled={busy} value={concept} onChange={e=>{setConcept(e.target.value);setRows(null);}}><option value="">请选择指标</option>{concepts.map(c=><option key={`${c.taxonomy}:${c.tag}`} value={JSON.stringify([c.taxonomy,c.tag])}>{c.label} · {c.taxonomy}:{c.tag}</option>)}</select></label>
       <label>披露日期不晚于<input aria-label="SEC披露截止日期" type="date" value={asOf} onChange={e=>{setAsOf(e.target.value);setRows(null);}}/></label>

@@ -9,7 +9,11 @@ if not os.environ.get('FINSIGHT_LOCAL_STATE_ROOT'):
     raise RuntimeError('isolated_state_root_required')
 os.environ['FINSIGHT_AUTH_MODE']='local'
 os.environ['FINSIGHT_REPORT_SESSION_API_URL']='http://127.0.0.1:19999'
-os.environ.pop('FINSIGHT_REPORT_SESSION_SETTINGS',None)
+if os.environ.get('FIN_ASSET_LIBRARY_SETTINGS'):
+    # Explicit local qualification: real saved public library/mart, no model runs.
+    os.environ['FINSIGHT_REPORT_SESSION_SETTINGS']=os.environ['FIN_ASSET_LIBRARY_SETTINGS']
+else:
+    os.environ.pop('FINSIGHT_REPORT_SESSION_SETTINGS',None)
 
 class EmptyThreads:
     async def search(self, **kwargs): return []

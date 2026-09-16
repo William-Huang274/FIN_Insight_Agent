@@ -1,4 +1,5 @@
 import {AssetContextBanner} from './AssetContextBanner';
+import {ProjectAssetsPanel} from './ProjectAssetsPanel';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -185,6 +186,8 @@ export function ResearchSession() {
   const dataPage = ["library", "financial-data"].includes(page);
   const globalPage = dataPage || ["home", "all", "completed", "inbox", "preferences", "studio", "project"].includes(page);
   const projects = useWorkspaceProjects();
+  const [assetsOpen,setAssetsOpen]=useState(false),[assetProject,setAssetProject]=useState('');
+  const closeAssets=useCallback(()=>setAssetsOpen(false),[]);
   const navigate = (view: string, thread = id) => {
     setParams(next => { next.set("view", view); if (thread !== id) { next.delete("level"); next.delete("topic"); next.delete("claim"); } if (thread) next.set("thread", thread); else next.delete("thread"); return next; });
   };
@@ -192,7 +195,7 @@ export function ResearchSession() {
   const [configuration, setConfiguration] = useState<ResearchConfiguration | null>(null);
   const [configurationError, setConfigurationError] = useState("");
   const creating = page === "new";
-  const [researchQuestion, setResearchQuestion] = useState("");
+  const [researchQuestion, setResearchQuestion] = useState(()=>(params.get('question')||'').slice(0,16000));
   const [studioAssistant, setStudioAssistant] = useState("");
   const [uploadFiles, setUploadFiles] = useState<File[]>([]);
   const [projectMaterials,setProjectMaterials]=useState<{project_id:string;project_name:string;documents:{document_id:string;name:string}[];sec_version?:string}|null>(null);
@@ -235,7 +238,7 @@ export function ResearchSession() {
   const [inspector, setInspector] = useState<"review" | "activity" | "source">(
     "review",
   );
-  useEffect(() => { if (page === "review") { setInspector(page); setInspectorOpen(true); } else setInspectorOpen(false); }, [page, session?.thread_id]);
+  useEffect(() => { if (page === "review") { setInspector(page); setInspectorOpen(true); setAssetsOpen(false); } else setInspectorOpen(false); }, [page, session?.thread_id]);
   const [selected, setSelected] = useState<{
     key: string;
     citation: Citation;
@@ -506,7 +509,7 @@ export function ResearchSession() {
     setSource(null);
     setSourceHistory([]); setSourceError(""); setSourceLoading(false);
     setInspector("source");
-    setInspectorOpen(true);
+    setInspectorOpen(true); setAssetsOpen(false);
   };
   const readSource = async (sourceId: string, offset = 0, keepHistory = false) => {
     const request = ++sourceRequest.current;
@@ -521,18 +524,19 @@ export function ResearchSession() {
   };
   const findings = session?.report_review?.findings || [];
   return (
-    <div data-theme={theme} data-motion={motion ? "reduced" : "full"} data-page={page} className={`rs-shell fs-workspace ${collapsed ? "fs-collapsed" : ""} ${inspectorOpen ? "rs-has-inspector" : ""}`}>
+    <div data-theme={theme} data-motion={motion ? "reduced" : "full"} data-page={page} className={`rs-shell fs-workspace ${collapsed ? "fs-collapsed" : ""} ${inspectorOpen ? "rs-has-inspector" : ""} ${assetsOpen?'fa-has-assets':''}`}>
       <WorkspaceNavigation sessions={sessions} id={id} page={page} collapsed={collapsed} onCollapse={() => setCollapsed(value => !value)} navigate={navigate} projects={projects.index} onProjects={projects.update} editingDisabled={!projects.ready || projects.saving} onOpenProject={project=>setParams(next=>{next.set('view','project');next.set('project',project);next.delete('thread');return next;})} />
       <main className="rs-main">
         <header className="rs-top">
           <div className="rs-breadcrumb">
             <button onClick={() => navigate("home")}>工作台</button> / <b>{page === "library" ? "公司资料库" : page === "financial-data" ? "财务数据" : pageTitles[page] || "研究工作区"}</b>
           </div>
+          <button className="fa-project-open" onClick={()=>{setAssetProject(projects.index.assignments[id]||params.get('project')||projects.index.projects[0]?.id||'');setAssetsOpen(!assetsOpen);setInspectorOpen(false);}}><FileText size={15}/>项目资料</button>
           <span className="rs-local">
             <span /> LOCAL PILOT
           </span>
           <div className="rs-detail-actions" hidden={!session || globalPage || creating}>
-            <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); }}>审查意见</button>
+            <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); setAssetsOpen(false); }}>审查意见</button>
             <button onClick={() => navigate("activity")}>运行与费用</button>
           </div>
         </header>
@@ -690,7 +694,7 @@ export function ResearchSession() {
             </div>
             {session.report && session.research_stop_reason && !taskDetails && <div className="rs-report-notice">
               <ShieldCheck size={16} /><span>本次研究仍有未解决问题，已保存报告供审阅，不会自动重跑。</span>
-              <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); }}>查看未决审查</button>
+              <button onClick={(e) => { sourceReturnFocus.current = e.currentTarget; setInspector("review"); setInspectorOpen(true); setAssetsOpen(false); }}>查看未决审查</button>
             </div>}
             {(page === "activity" || (page === "graph" && !session.report && !session.is_draft)) && <RunWorkspace key={id} session={session} events={allEvents} connected={connected} refresh={async () => { setSession(await sessionsApi.state(id)); await refresh(); }} onReport={() => setTab("report")} />}
             {(tab === "sources" || tab === "revisions") && displayedReport && <SessionLibrary key={`${id}:${historicalReport?.checkpoint_id || session.report_version}:${tab}`} session={session} checkpoint={historicalReport?.checkpoint_id} report={displayedReport} view={tab} />}
@@ -913,7 +917,8 @@ export function ResearchSession() {
           </div>
         )}
       </main>
-      <aside className={`rs-inspector ${inspectorOpen ? "rs-inspector-open" : ""}`} aria-label="审查与运行详情" hidden={!inspectorOpen || globalPage || creating || page === "activity"}>
+      {assetsOpen&&<ProjectAssetsPanel key={assetProject} projects={projects.index.projects} initialProject={assetProject} thread={id} onClose={closeAssets}/>}
+      <aside className={`rs-inspector ${inspectorOpen ? "rs-inspector-open" : ""}`} aria-label="审查与运行详情" hidden={assetsOpen || !inspectorOpen || globalPage || creating || page === "activity"}>
         <header>
           <span>
             <Radio size={16} /> {inspector === "source" ? "来源与计算" : inspector === "review" ? "审查意见" : "运行与费用"}

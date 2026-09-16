@@ -38,6 +38,11 @@ function canonicalEntry(pathname: string): "/workspace" | "/operations" {
 const root = document.getElementById("root");
 if (!root) throw new Error("workbench_root_missing");
 
+// Preserve old links while making the asset workspace the canonical data surface.
+const oldView=new URLSearchParams(window.location.search).get('view');
+if(['/workspace','/workspace/session'].includes(window.location.pathname)&&['library','financial-data'].includes(oldView||'')){
+  window.history.replaceState({},'',`/workspace/assets?view=${oldView}`);
+}
 const entry = canonicalEntry(window.location.pathname);
 createRoot(root).render(
   <React.StrictMode>

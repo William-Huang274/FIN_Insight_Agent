@@ -4,7 +4,7 @@ for(const width of [1440,390])test(`资产阅读修订记忆与双向交接 ${wi
   test.skip(!process.env.FIN_ASSET_WORKSPACE_FIXTURE,'Requires isolated asset fixture');
   await page.setViewportSize({width,height:1000});
   const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('/workspace/assets');
+  await page.goto('/workspace/assets?view=project');
   await expect(page.getByLabel('资产项目')).toHaveValue('00000000-0000-4000-8000-000000000053');
   await page.getByRole('button',{name:/资本开支与现金创造/}).click();
   await expect(page.getByLabel('资产正文')).toContainText('从投资规模');
@@ -40,11 +40,13 @@ for(const width of [1440,390])test(`资产阅读修订记忆与双向交接 ${wi
   await page.getByRole('button',{name:/^v1 ·/}).click();
   await expect(page.getByLabel('资产正文')).toContainText('初始判断');
   const question=`请先读取这份历史资料，指出仍待核验的假设和所需原始来源。${width}`;
+  await page.getByRole('button',{name:'围绕资料提问',exact:true}).click();
   await page.getByLabel('资产问题').fill(question);
   await page.getByRole('button',{name:'保存问题',exact:true}).click();
   await expect(page.getByText('问题与所选资料版本已保存，尚未调用模型。')).toBeVisible();
   const savedUrl=page.url();
   await page.reload();
+  await page.getByRole('button',{name:'围绕资料提问',exact:true}).click();
   await expect(page.getByLabel('资产问题')).toHaveValue(question);
   await expect(page.getByLabel('资产正文')).toContainText('初始判断');
   await page.getByRole('button',{name:'交给研究团队',exact:true}).click();
@@ -57,6 +59,7 @@ for(const width of [1440,390])test(`资产阅读修订记忆与双向交接 ${wi
   await page.screenshot({path:info.outputPath(`asset-research-${width}.png`),fullPage:true});
   await page.getByRole('link',{name:'返回资产与原问题 →'}).click();
   await expect(page.getByLabel('资产正文')).toContainText('初始判断');
+  await page.getByRole('button',{name:'围绕资料提问',exact:true}).click();
   await expect(page.getByLabel('资产问题')).toHaveValue(question);
   await page.getByRole('button',{name:'准备助手对话',exact:true}).click();
   await expect(page.getByLabel('资产交接信息')).toContainText('已固定资料版本');

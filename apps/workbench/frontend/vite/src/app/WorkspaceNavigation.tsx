@@ -18,13 +18,12 @@ export function WorkspaceNavigation({ sessions, id, page, collapsed, onCollapse,
   const organize = useRef<HTMLDialogElement>(null);
   const [projectName, setProjectName] = useState("");
   const drawer = useRef<HTMLDialogElement>(null);
-  const go = (view: string, thread?: string) => { navigate(view, thread); drawer.current?.close(); };
+  const go = (view: string, thread?: string) => { if(['library','financial-data'].includes(view)){window.location.assign(`/workspace/assets?view=${view}`);return;} navigate(view, thread); drawer.current?.close(); };
   const content = (mobile = false) => <>
     <div className="fs-brand"><span className="fs-logo"><Layers size={21} /></span><strong>FinSight<small>RESEARCH WORKSPACE</small></strong>
       <button aria-label={mobile ? "关闭导航" : collapsed ? "展开侧边栏" : "收起侧边栏"} onClick={() => mobile ? drawer.current?.close() : onCollapse()}>{mobile ? <X size={17} /> : collapsed ? <PanelLeftOpen size={17} /> : <PanelLeftClose size={17} />}</button></div>
-    <div className="fs-area-switch" aria-label="工作区域"><button title="研究工作台" aria-pressed={!dataArea} onClick={()=>go("home")}><Layers size={16}/><span>研究工作台</span></button><button title="资料与数据" aria-pressed={dataArea} onClick={()=>go("library")}><Database size={16}/><span>资料与数据</span></button></div>
+    <div className="fs-area-switch" aria-label="工作区域"><button title="研究工作台" aria-pressed={!dataArea} onClick={()=>go("home")}><Layers size={16}/><span>研究工作台</span></button><button title="资产工作区" aria-pressed={dataArea} onClick={()=>go("library")}><Database size={16}/><span>资产工作区</span></button></div>
     {dataArea ? <><nav className="fs-global-nav" aria-label="资料与数据导航"><button aria-current={page==="library"?"page":undefined} onClick={()=>go("library")}><BookOpen size={17}/><span>公司资料库</span></button><button aria-current={page==="financial-data"?"page":undefined} onClick={()=>go("financial-data")}><Database size={17}/><span>财务数据</span></button></nav><div className="fs-library-guide">查阅公开资料与财务数据覆盖。研究问题、底稿和历史报告在研究工作台中。</div></> : <>
-    <a className="fs-assistant-entry" href="/workspace/assets"><FolderOpen size={17}/><span>资产工作区</span></a>
     <button className="fs-create" title="新建研究" onClick={() => go("new")}><Plus size={17} /><span>新建研究</span></button>
     <a className="fs-assistant-entry" href="/workspace/assistant"><MessageSquare size={17}/><span>通用对话</span></a>
     <nav aria-label={mobile ? "移动工作区导航" : "工作区导航"} className="fs-global-nav">{[

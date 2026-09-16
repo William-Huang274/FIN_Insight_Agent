@@ -55,11 +55,12 @@ class CaseReviewFinding(BaseModel):
     paper_id: str
     claim_ids: list[str] = Field(default_factory=list)
     severity: Literal["material", "advisory"]
+    finding_type: Literal['financial_error','clarification','traceability','other'] = 'other'
     problematic_quote: str = Field(min_length=1, max_length=6000,
         description="One contiguous exact substring of ONE current claim or prose field. Never join passages with ellipses, paraphrase, or combine several fields.")
     diagnosis: str = Field(min_length=10, max_length=8000)
     requested_change: str = Field(min_length=10, max_length=8000)
-    source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=12)
+    source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=64)
 
 
 class PaperAssessment(BaseModel):
@@ -75,7 +76,10 @@ class FindingConfirmation(BaseModel):
     reason: str = Field(min_length=20, max_length=3000)
     related_finding_ids: list[str] = Field(default_factory=list,
         description="For still_open, IDs of current actionable findings describing the remaining problem.")
-    source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=12)
+    source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=64)
+    clarity_verdict: Literal['clear','needs_clarification','unassessed'] | None = None
+    current_quote: str = Field(default='', max_length=4000,
+        description='When resolving a clarification finding, quote the exact current wording and assess its clarity independently of financial support.')
 
 
 class ReviewInspectionCheck(BaseModel):
@@ -90,11 +94,21 @@ class ReviewInspectionCheck(BaseModel):
     result: str = Field(min_length=1, max_length=2000,
         description="Concise public result. Evidence and semantic relationships are checked separately; no padding to a character quota.")
     finding_ids: list[str] = Field(default_factory=list, max_length=80)
-    source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=12)
+    source_checks: list[ReviewSourceCheck] = Field(default_factory=list, max_length=64)
     semantic_target_id: str | None = None
     expressed_relationship: str = Field(default='', max_length=1600)
     supported_relationship: str = Field(default='', max_length=1600)
-    semantic_verdict: Literal['consistent','contradictory','ambiguous','unsupported'] | None = None
+    semantic_verdict: Literal['consistent','contradictory','ambiguous','unsupported'] | None = Field(default=None,
+        description='Legacy read compatibility. New prose checks require financial_verdict and clarity_verdict separately.')
+    financial_verdict: Literal['supported','contradicted','insufficient'] | None = None
+    clarity_verdict: Literal['clear','needs_clarification','unassessed'] | None = None
+    clarity_reason: str = Field(default='', max_length=2000)
+    clarification: str = Field(default='', max_length=4000,
+        description='Precise requested wording repair preserving supported conclusions. Runtime creates and links the finding; do not duplicate it.')
+    calculation_check: Literal['none_added','bound','unresolved'] | None = Field(default=None,
+        description='Calculations added in your result/relationship/clarification. Bound requires actual calculation_ids; unresolved cannot be a completed check.')
+    calculation_ids: list[str] = Field(default_factory=list, max_length=16,
+        description='Case CALC IDs or successful calculate_research_metric results. Runtime expands all operands and adds their exact source bindings; no manual recopy.')
 
     @field_validator('result')
     @classmethod
@@ -135,8 +149,13 @@ class RevisionCaseReview(SubmittedCaseReview):
     """Same explicit submission boundary for a mechanically scoped revision."""
 
 
+class SubmittedReviewInspectionCheck(ReviewInspectionCheck):
+    calculation_check: Literal['none_added','bound','unresolved'] = Field(
+        description='Required scope declaration for calculations added in this check. Bound requires saved calculation_ids.')
+
+
 class InspectedCaseReview(SubmittedCaseReview):
-    inspection_checks: list[ReviewInspectionCheck] = Field(min_length=1, max_length=160,
+    inspection_checks: list[SubmittedReviewInspectionCheck] = Field(min_length=1, max_length=160,
         description="Version-bound public checks of material claims, prose/citation consistency and question scope. Unchecked required dimensions remain incomplete.")
 
 
@@ -263,6 +282,8 @@ def validate_case_review(review: CaseReview, artifacts: CaseArtifacts, messages,
 
 def validate_inspection_checks(review, artifacts, messages, *, complete, parsing_records=None):
     from .review_inspection import inspection_manifest, text_locations, resolve_location
+    from .review_claim_contracts import prepare_review_claims
+    prepare_review_claims(review, artifacts, messages, parsing_records=parsing_records)
     manifest = inspection_manifest(artifacts)
     findings = {f.finding_id: f for f in review.findings}
     errors = []
@@ -291,8 +312,8 @@ def validate_inspection_checks(review, artifacts, messages, *, complete, parsing
         ids = {c['claim_id'] for c in artifacts.read_paper(pid)['claims']}
         if not set(check.claim_ids).issubset(ids):
             errors.append('inspection_unknown_claim:' + pid)
-        if check.status == 'issue':
-            if not check.finding_ids or any(fid not in findings or findings[fid].paper_id != pid for fid in check.finding_ids):
+        if check.status in {'issue', 'unresolved'}:
+            if (check.status == 'issue' and not check.finding_ids) or any(fid not in findings or findings[fid].paper_id != pid for fid in check.finding_ids):
                 errors.append('inspection_issue_requires_current_finding:' + pid)
         elif check.finding_ids:
             errors.append('inspection_nonissue_cannot_link_findings:' + pid)
@@ -304,11 +325,13 @@ def validate_inspection_checks(review, artifacts, messages, *, complete, parsing
                     fields.get(check.field_path,'')[target['start']:target['end']]):
                 errors.append('semantic_target_missing_stale_or_wrong_paragraph:' + pid)
             elif (not check.expressed_relationship.strip() or not check.supported_relationship.strip()
-                    or not check.semantic_verdict):
+                    or not check.financial_verdict or not check.clarity_verdict):
                 errors.append('semantic_relationship_comparison_required:' + target['target_id'])
-            elif ((check.semantic_verdict=='consistent' and check.status!='checked') or
-                  (check.semantic_verdict in {'contradictory','ambiguous'} and check.status!='issue') or
-                  (check.semantic_verdict=='unsupported' and check.status!='unresolved')):
+            elif check.status not in (
+                {'unresolved'} if check.financial_verdict=='insufficient' or check.clarity_verdict=='unassessed' or check.calculation_check=='unresolved'
+                else {'issue'} if check.financial_verdict=='contradicted' or check.clarity_verdict=='needs_clarification'
+                else {'checked', 'issue', 'unresolved'}
+            ):
                 errors.append('semantic_verdict_status_mismatch:' + target['target_id'])
             else:
                 semantic_covered[pid].add(target['target_id'])
@@ -772,6 +795,15 @@ def validate_finding_confirmation(review, confirmation, artifacts):
     current_ids = {f.finding_id for f in review.findings}
     material_ids = {f.finding_id for f in review.findings if f.severity == "material"}
     for check in review.finding_checks:
+        assigned = next((f for rows in confirmation['findings_to_confirm'].values() for f in rows
+                         if f['finding_id']==check.finding_id),None)
+        if assigned and assigned.get('finding_type')=='clarification' and check.status=='resolved':
+            current=artifacts.read_paper(assigned['paper_id'])
+            from .review_inspection import text_locations, PROSE_FIELDS
+            prose=[text for path,text in text_locations(current) if path.split('/')[1] in PROSE_FIELDS]
+            if (check.clarity_verdict!='clear' or not check.current_quote.strip()
+                    or not any(check.current_quote in text for text in prose)):
+                errors.append('clarification_closure_requires_current_clear_wording:' + check.finding_id)
         if not set(check.related_finding_ids).issubset(current_ids):
             errors.append("confirmation_unknown_current_finding:" + check.finding_id)
         if check.status == "still_open" and not check.related_finding_ids:
@@ -894,6 +926,8 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     def save_review(review: CaseReview, runtime: ToolRuntime, *, completion=None) -> Command:
         parsing = []
         try:
+            if audit and audit.source_access_check:
+                audit.source_access_check()
             current = next((m for m in reversed(runtime.state["messages"]) if isinstance(m, AIMessage)), None)
             if current and any(c["name"] == "record_case_finding" for c in current.tool_calls):
                 raise ValueError("submit_after_record_finding_batch_has_completed")
@@ -955,6 +989,7 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
         tools = [*tools, read_review_location]
     if confirmation:
         prompt += "\nThis is independent confirmation before Lead's final judgment. Read current papers, all changed locations and related explanations/claims; use original sources for necessary checks. Return finding_checks for EVERY ID in findings_to_confirm, with source-grounded reasons. still_open must reference a current finding ID; unresolved must also be recorded in unresolved_data_requests. Inspect newly introduced issues together. Do not re-run unrelated unchanged research, or accept an author's completed note as proof."
+        prompt += "\nA finding_type=clarification is a delivery wording issue, not automatically a wrong financial conclusion. To mark it resolved, supply current_quote and clarity_verdict=clear based on the actual corrected wording. Repeating that the central thesis or arithmetic is supported does not close the clarification. Leave remaining ambiguity still_open with a current actionable finding."
     if revision_target:
         # Use the native tool schema for required scoped completion fields.
         # The function still shares the existing citation/finding validator.

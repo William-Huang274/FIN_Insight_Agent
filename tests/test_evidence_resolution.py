@@ -101,7 +101,7 @@ def test_overall_equation_cannot_cover_other_paragraphs_or_ambiguous_wording():
     with pytest.raises(ValueError,match='semantic_paragraphs_unchecked'):
         validate_inspection_checks(good,a,reads(a),complete=True)
     good=CaseReview.model_validate(inspected(a));check=next(c for c in good.inspection_checks if c.dimension=='prose_consistency')
-    check.semantic_verdict='ambiguous'
+    check.financial_verdict='contradicted'
     with pytest.raises(ValueError,match='semantic_verdict_status_mismatch'):
         validate_inspection_checks(good,a,reads(a),complete=True)
 

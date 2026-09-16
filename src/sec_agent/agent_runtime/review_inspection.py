@@ -125,6 +125,11 @@ State what relationship the actual sentence expresses, what relationship the cit
 they agree, contradict, are ambiguous, or remain unsupported. Preserve positive/negative contribution, period,
 denominator, actual/forecast and conditional language. A correct bridge or plausible overall thesis does not certify
 each related sentence. Ambiguous wording may need clarification without being a material factual reversal.
+Assess financial support and delivery clarity separately. A charitable interpretation that makes the thesis true
+does not make wording clear: readers should not have to supply a missing sign, period, denominator or condition.
+Preserve supported conclusions while requesting a precise local clarification. Do not call this a financial error.
+For new calculations, use the existing source-bound calculator and retain its ID; identity-valid citations alone
+do not bind every operand. Keep source-reported signs distinct from signed contributions in the formula rationale.
 Use complete source identifiers in prose. A guessed abbreviation-to-source mapping is a candidate, not a confirmed
 citation. Reuse an actual source observation to confirm it; unresolved identity remains explicit. A confirmed intended
 source still requires repair of an unresolvable identifier in the delivered draft.
@@ -144,11 +149,21 @@ For a bridge explain positive and negative contributions to the CHANGE, not mere
 For citation_trace, resolve prose identifiers and ensure new material explanations have matching claim/source bindings; archived sources existing somewhere is insufficient.
 Do not accept model prior knowledge or an author's hypothetical caveat as source evidence. Counter must distinguish a qualification of broad author wording from refutation of the actual user question.
 Each dimension must say checked, issue (link recorded/current finding IDs), unresolved (also list unfinished work), or not_applicable with a concrete scope reason.
-Not-applicable is only allowed for prose_consistency; it cannot replace checking claims, citation trace or scope. A check is a reviewer assertion, not runtime semantic proof.
+Not-applicable is only allowed for prose_consistency when there are no required semantic_targets; it cannot replace checking a listed paragraph, claims, citation trace or scope. A check is a reviewer assertion, not runtime semantic proof.
 Read every full workpaper once and relevant original source windows. Avoid repeating reads already available. Never fill inspection checks from an author note alone.
 For prose_consistency, cover each semantic_targets entry separately with semantic_target_id, expressed_relationship,
-supported_relationship and semantic_verdict (consistent/contradictory/ambiguous/unsupported). Copy an exact quote
+supported_relationship, financial_verdict (supported/contradicted/insufficient), clarity_verdict
+(clear/needs_clarification/unassessed), and clarity_reason. If clarification is needed, supply clarification as a
+precise local requested change. Runtime generates the version-bound clarification finding and links it; do not
+duplicate that finding manually. Its material severity means delivery requires resolution, not that numbers are false.
+Legacy semantic_verdict alone is not a new completed check. Copy an exact quote
 inside that paragraph; do not use one correct equation to mark unrelated paragraphs checked. Reuse existing evidence.
+For EVERY inspection check declare calculation_check: none_added, bound, or unresolved. If adding a derived number,
+ratio, bridge or numeric attribution to your explanation, reuse saved case calculations or calculate_research_metric,
+then provide calculation_ids. Runtime expands nested operands and adds their original source_checks with labeled
+runtime_compatibility_parse records; do not recopy all sources. Do not attach an unrelated calculation just to fill
+the field. If a required calculation cannot be bound, mark the check unresolved and list the unfinished work.
+Record all necessary original-source and assumed operands; an assumption remains an assumption, not disclosed fact.
 Use read_review_references for runtime citation parsing. Exact means identifier identity only, not semantic support.
 For a nonexact candidate, confirm_review_reference requires a prior actual source read and your concise mapping reason.
 Suffix/content resemblance is never confirmation. Runtime automatically attaches delivery-reference repair findings;

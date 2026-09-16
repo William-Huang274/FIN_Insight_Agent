@@ -44,13 +44,15 @@ def inspected(artifacts):
                         'target_quote':text[target['start']:target['end']], 'semantic_target_id':target['target_id'],
                         'expressed_relationship':'Synthetic relation used for contract testing.',
                         'supported_relationship':'Synthetic evidence relation used for contract testing.',
-                        'semantic_verdict':'consistent','status':'checked','result':'Synthetic structural test, not financial acceptance.',
+                        'semantic_verdict':'consistent','financial_verdict':'supported','clarity_verdict':'clear',
+                        'clarity_reason':'The synthetic statement has explicit scope.','calculation_check':'none_added',
+                        'status':'checked','result':'Synthetic structural test, not financial acceptance.',
                         'source_checks':[{'source_id':pid+':S002','quote':'29800'}]})
                 continue
             review['inspection_checks'].append({'paper_id':pid,'paper_digest':manifest['paper_digest'],
                 'dimension':dimension,'claim_ids':manifest['material_claim_ids'] if dimension=='claim_support' else [],
                 'field_path':'/narrative_markdown','target_quote':artifacts.read_paper(pid)['narrative_markdown'],
-                'status':'checked','result':'Synthetic contract inspection only; not a verified economic conclusion.',
+                'status':'checked','calculation_check':'none_added','result':'Synthetic contract inspection only; not a verified economic conclusion.',
                 'source_checks':[{'source_id':pid+':S002','quote':'29800'}]})
     return review
 

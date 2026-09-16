@@ -1,3 +1,4 @@
+import {AssetContextBanner} from './AssetContextBanner';
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -641,7 +642,7 @@ export function ResearchSession() {
             </section>
             <div id="task-details-panel" className="rs-task-details" hidden={!taskDetails} onKeyDown={e => { if (e.key === "Escape") { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); } }}>
             <div className="fs-task-panel-bar"><strong>任务说明与资料</strong><button onClick={() => { setTaskDetails(false); document.querySelector<HTMLButtonElement>(".rs-task-toggle")?.focus(); }}><X size={15} />收起资料面板</button></div>
-            {session.question && <div className="rs-task-question">{session.question}</div>}
+            <AssetContextBanner context={session.asset_context}/>{session.question && <div className="rs-task-question">{session.question}</div>}
             {uploadStatus && <div className="rs-report-notice">{uploadStatus}</div>}
             {!busy && (session.is_draft || session.can_upload) &&
               <label className="rs-upload-label">补充本任务资料

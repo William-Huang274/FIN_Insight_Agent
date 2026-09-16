@@ -92,6 +92,7 @@ export type Finding = {
   paper_ids?: string[];
 };
 export type Session = {
+  asset_context?: import('./assetWorkspace').AssetContext;
   studio_assistant_id?: string;
   can_manual_complete?: boolean;
   archive_notice?: string;

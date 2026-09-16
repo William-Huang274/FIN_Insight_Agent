@@ -85,6 +85,8 @@ async def conversation_session_graph(config: RunnableConfig, runtime: ServerRunt
                 'than silently preserving your old conclusion or changing facts. Target: '+json.dumps(target,ensure_ascii=False))
         from .working_memory_tools import working_memory_tools
         from .user_context import user_context_prompt
+        from sec_agent.research_foundation.asset_workspace import asset_context_prompt
+        task_context += asset_context_prompt(metadata)
         task_context += user_context_prompt(metadata.get('owner_id','local-pilot'),thread_id)
         from .conversation_agent import GrantedTool
         grants.extend(GrantedTool(t, "working_note_write" if t.name == "WriteWorkingNote" else "read",

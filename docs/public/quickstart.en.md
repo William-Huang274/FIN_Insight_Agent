@@ -76,6 +76,8 @@ Report steps, expected/actual behavior, browser/viewport, code commit and public
 
 ## Troubleshooting
 
+The 0.1.4 development branch adds `/workspace/assets`: read and revise project documents, maintain personal preferences, and pass a saved question with pinned source versions into an assistant or research draft. Draft preparation does not call a model; explicit send/start uses the existing runtime. This skeleton retains local capacity limits, uses manually maintained memory, and does not automatically rebind running tasks to newer assets. See the [asset protocol and project-store backup/restore guide](../architecture/asset_workspace_protocol.zh-CN.md). Native checkpoint recovery and production-scale collaboration remain separate work.
+
 | Symptom | Check |
 | --- | --- |
 | Studio reports an unavailable runtime | Full functionality requires the research BFF and native API. Vite alone is not a research backend. |

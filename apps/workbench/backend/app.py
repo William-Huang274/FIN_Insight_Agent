@@ -505,6 +505,8 @@ def create_report_session_app(frontend_dist_root=None):
     app.include_router(build_data_library_router(attachment_store.root, settings.get('conversation_fact_mart')), prefix='/api/v1')
     from .api.v1.projects import build_projects_router
     app.include_router(build_projects_router(attachment_store.root.parent / 'project-library', service), prefix='/api/v1')
+    from .api.v1.asset_workspace import build_asset_workspace_router
+    app.include_router(build_asset_workspace_router(attachment_store.root.parent / 'project-library'), prefix='/api/v1')
     @app.exception_handler(__import__("httpx").HTTPError)
     async def upstream_error(request, exc):
         status = getattr(getattr(exc, "response", None), "status_code", 502)
@@ -522,6 +524,7 @@ def create_report_session_app(frontend_dist_root=None):
     @app.get("/workspace", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/workspace/session", response_class=HTMLResponse, include_in_schema=False)
     @app.get("/workspace/assistant", response_class=HTMLResponse, include_in_schema=False)
+    @app.get("/workspace/assets", response_class=HTMLResponse, include_in_schema=False)
     def session_page():
         return _frontend_index(dist)
     return app

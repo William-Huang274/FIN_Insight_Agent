@@ -306,6 +306,7 @@ class NewSession(BaseModel):
     studio_assistant_id: UUID | None = None
     execution: ExecutionOptions | None = None
     project_materials: ProjectMaterials | None = None
+    asset_context_id: UUID | None = None
 
 
 class ResearchGuidance(BaseModel):
@@ -513,6 +514,13 @@ def build_report_sessions_router(service):
     @router.post("/research-sessions")
     async def create(body: NewSession, request: Request):
         browser_write(request)
+        asset_context = None
+        if body.asset_context_id:
+            if body.mode != 'research' or not body.defer_start or body.project_materials or body.question:
+                raise HTTPException(422, '资产交接须先准备草稿，问题和资料由已保存交接记录提供')
+            from ...application.asset_handoff import load_asset_context, context_materials
+            asset_context = await run_in_threadpool(load_asset_context, service, service_owner(), body.asset_context_id)
+            body = body.model_copy(update={'question': asset_context['question'], 'project_materials': ProjectMaterials.model_validate(context_materials(asset_context))})
         project_library = None
         project_rows = []
         if body.project_materials:
@@ -555,6 +563,8 @@ def build_report_sessions_router(service):
         if body.defer_start and body.mode != "research":
             raise HTTPException(422, "只有新研究支持先上传资料")
         metadata = {"surface": SURFACE, "title": body.title, "graph": graph, "mode": body.mode, 'owner_id': service_owner()}
+        if asset_context:
+            metadata['asset_context'] = asset_context
         if graph == RESEARCH_GRAPH:
             # Freeze new research at creation time; continuations retain it.
             # Existing tasks without this field keep their historical binding.
@@ -797,6 +807,7 @@ def build_report_sessions_router(service):
             "is_draft": bool(thread.get("metadata", {}).get("pending_question")) and not runs,
             "project_materials_ready": thread.get('metadata', {}).get('project_materials_status') in (None, 'ready'),
             "project_financial_data": thread.get('metadata', {}).get('project_financial_data'),
+            "asset_context": thread.get('metadata', {}).get('asset_context'),
             "can_upload": service.attachment_store is not None and graph_for_thread(thread) == RESEARCH_GRAPH and thread.get("status") != "busy",
             "research_guidance": deepcopy(thread.get("metadata", {}).get("research_guidance", [])),
             "project_access_error": await run_in_threadpool(project_access_error, thread_id),

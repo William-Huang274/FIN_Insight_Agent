@@ -26,6 +26,23 @@ class TaskMaterialRequest(SourceDocumentRequest):
 
 def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | None = None, method_reader=None):
     """Paths and thread ownership come from the host, never tool arguments."""
+    # A user-selected project snapshot takes precedence over deployment defaults.
+    from sec_agent.research_foundation.project_financial_facts import task_financial_snapshot
+    selected_snapshot = task_financial_snapshot(attachment_store.root, thread_id) if attachment_store else None
+    if selected_snapshot:
+        fact_mart = selected_snapshot[0]
+
+    def financial_binding():
+        if not selected_snapshot:
+            return None
+        try:
+            current = task_financial_snapshot(attachment_store.root, thread_id)
+            if current is None or current[1]['mart_sha256'] != selected_snapshot[1]['mart_sha256']:
+                raise ValueError('任务财务快照已变化，请重新读取任务')
+            return current[1]
+        except ValueError as exc:
+            raise ToolException(str(exc)) from exc
+
     grants = []
     from .context_navigation import context_navigation_tools
     grants.extend(GrantedTool(t, "read", "本对话原生checkpoint的分区目录与公开消息")
@@ -95,11 +112,13 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
         @tool
         def list_financial_data():
             """List companies, metrics and periods available in the host-approved fact snapshot. Availability is not financial comparability or complete worldwide coverage."""
+            binding = financial_binding()
             with closing(sqlite3.connect(fact_mart.as_uri() + "?mode=ro", uri=True)) as db:
                 rows = db.execute("SELECT ticker, legal_name, metric_id, period_role, MIN(fiscal_year), MAX(fiscal_year) FROM company_fact_observations GROUP BY ticker,legal_name,metric_id,period_role").fetchall()
                 base_ids = [row[0] for row in db.execute("SELECT metric_id FROM metric_definitions WHERE formula IS NULL")]
             from financial_facts.derived_metrics import derived_metric_catalog
             return {"coverage": [dict(zip(["ticker", "company", "metric", "period_role", "first_year", "last_year"], row)) for row in rows],
+                    **({'project_binding': binding} if binding else {}),
                     "derived_metrics": derived_metric_catalog(base_ids),
                     "notice": "本地申报快照；查询时必须指定信息截止日，不宣称实时数据。"}
         @tool(response_format="content_and_artifact")
@@ -114,11 +133,17 @@ def conversation_tools(*, thread_id, attachment_store=None, fact_mart: Path | No
             selected = metric_ids or [metric_id]
             if not 1 <= len(selected) <= 12 or len(set(selected)) != len(selected) or any(not m.strip() for m in selected):
                 raise ToolException("请选择一至十二个不重复、非空的指标")
+            binding = financial_binding()
             rows = [execute_fact_lookup(fact_mart, FactLookup(fact_request_id=(f"{runtime.tool_call_id}:{metric}:{year}" if metric_ids else f"{runtime.tool_call_id}:{year}"),
                 ticker=ticker, metric_id=metric, research_as_of=research_as_of.isoformat(),
                 period={"fiscal_years": [year], "selection_mode": "latest_on_or_before"},
                 granularity=granularity, requested_unit="reported_source_unit")).as_dict() for metric in selected for year in fiscal_years]
             result = {"authority_state": "s2_numeric_fact_query_result", "results": rows}
+            if binding:
+                result['project_binding'] = binding
+                for row in rows:
+                    for fact in row.get('facts', []):
+                        fact['project_origin'] = binding['project_origin']
             return json.dumps(result, ensure_ascii=False), result
         grants.extend(GrantedTool(t, "read", "部署已批准的财务事实快照，只读查询") for t in [list_financial_data, query_financial_data])
     @tool(response_format="content_and_artifact")

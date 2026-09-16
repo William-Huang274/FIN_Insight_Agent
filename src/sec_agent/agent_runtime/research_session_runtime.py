@@ -604,7 +604,9 @@ async def research_session_graph(config: RunnableConfig, runtime: ServerRuntime)
         from .user_context import user_context_prompt
         metadata = thread.get('metadata', {})
         current = user_context_prompt(metadata.get('owner_id','local-pilot'),thread_id)
-        return [*metadata.get("research_guidance", []), *([{'message':current}] if current else [])]
+        from sec_agent.research_foundation.asset_workspace import asset_context_prompt
+        assets = asset_context_prompt(metadata)
+        return [*([{'message':assets}] if assets else []), *metadata.get("research_guidance", []), *([{'message':current}] if current else [])]
     try:
         from .research_budget import budget_from_host
         thread = await native.threads.get(thread_id)

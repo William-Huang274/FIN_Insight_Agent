@@ -33,6 +33,7 @@ class ConversationDraft(BaseModel):
     model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
     title: str = Field(default="新对话", min_length=1, max_length=80)
     harness: Literal['native','hermes'] = 'native'
+    asset_context_id: UUID | None = None
 
 
 class ConversationHandoff(BaseModel):
@@ -109,6 +110,12 @@ def build_conversations_router(service):
         if not service.research_profile:
             raise HTTPException(503, "本部署未启用模型运行")
         thread=await service.sdk.threads.get(str(thread_id))
+        if thread.get('metadata', {}).get('asset_context'):
+            if thread['metadata'].get('asset_context_status') != 'ready':
+                raise HTTPException(409, '资产资料尚未准备完成，不能启动模型')
+            from sec_agent.research_foundation.project_asset_access import require_task_assets, ProjectAssetUnavailable
+            try: await run_in_threadpool(require_task_assets, service.attachment_store, thread_id)
+            except ProjectAssetUnavailable as exc: raise HTTPException(409, str(exc)) from None
         harness=thread.get('metadata',{}).get('harness','native')
         return await service.sdk.runs.create(str(thread_id), GRAPH,
             input={"messages": [{"role": "user", "content": body.message}]},
@@ -153,7 +160,18 @@ def build_conversations_router(service):
         browser_write(request)
         if body.harness=='hermes':
             raise HTTPException(422,'Hermes 工作底稿试用尚不支持上传资料，请直接发送消息或选择当前 Agent')
-        thread = await service.sdk.threads.create(metadata={"surface": SURFACE, "graph": GRAPH, "title": body.title, "owner_id": current_owner(request),'harness':body.harness})
+        metadata={"surface": SURFACE, "graph": GRAPH, "title": body.title, "owner_id": current_owner(request),'harness':body.harness}
+        if body.asset_context_id:
+            from ...application.asset_handoff import load_asset_context, copy_context_materials
+            context = await run_in_threadpool(load_asset_context, service, current_owner(request), body.asset_context_id)
+            metadata.update(asset_context=context, asset_context_status='preparing')
+        thread = await service.sdk.threads.create(metadata=metadata)
+        if body.asset_context_id:
+            try:
+                financial = await run_in_threadpool(copy_context_materials, service, current_owner(request), context, thread['thread_id'])
+                await service.sdk.threads.update(thread['thread_id'], metadata={'asset_context_status': 'ready', **({'project_financial_data': financial} if financial else {})})
+            except Exception:
+                raise HTTPException(409, f"对话草稿 {thread['thread_id']} 已保留，资料准备尚未确认完成；未调用模型，请先检查草稿。") from None
         return {"thread_id": thread["thread_id"], "model_calls": 0}
     @router.post("/{thread_id}/attachments")
     async def upload(thread_id: UUID, request: Request):
@@ -314,6 +332,8 @@ def build_conversations_router(service):
                 "usage": None if hermes else usage, "context_usage": request_context_usage(activity),
                 "cost_estimate": None if hermes else public_cost_estimate(activity)})
         return {"thread_id": str(thread_id), "title": thread.get("metadata", {}).get("title"), "status": thread.get("status"),
+            'asset_context':thread.get('metadata',{}).get('asset_context'),
+            'asset_context_status':thread.get('metadata',{}).get('asset_context_status'),
             'harness':thread.get('metadata',{}).get('harness','native'),
             'context_memory':context_status(state,thread.get('metadata',{}).get('harness','native')),
             "messages": public_messages(state), "events": events, "runs": public_runs,

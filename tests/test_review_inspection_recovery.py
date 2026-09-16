@@ -108,13 +108,15 @@ def test_strict_native_reviewer_consumes_manifest_and_can_submit_truthful_incomp
                 return super()._generate(messages, stop=stop, run_manager=run_manager, **kwargs)
         model = InspectedChat(marker='inspection', replies=[
             [call('read_research_artifact',{'paper_id':p['paper_id']},p['paper_id']) for p in artifacts.catalog()['papers']],
+            [call('read_review_location',{'paper_id':'P01','field_path':'/missing'},'bad-location')],
             [call('submit_case_review',{'review':submitted},'submit')]])
         async with Client(_build_server(case_artifacts=artifacts),raise_exceptions=False) as client:
             agent = build_case_reviewer(role='verifier', model=model, tools=await case_mcp_tools(client), artifacts=artifacts,
-                max_model_calls=2, require_inspection=True)
+                max_model_calls=3, require_inspection=True)
             result = await agent.ainvoke({'messages':[HumanMessage(content='Inspect the synthetic current papers.')]})
         assert result['review']['completion']=='incomplete'
         assert result['review']['unresolved_data_requests']
+        assert any(isinstance(m,ToolMessage) and m.status=='error' and 'unknown_review_field' in m.content for m in result['messages'])
     asyncio.run(exercise())
 
 

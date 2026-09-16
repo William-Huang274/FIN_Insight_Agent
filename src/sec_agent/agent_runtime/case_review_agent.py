@@ -685,8 +685,13 @@ def build_case_reviewer(*, role, model, tools, artifacts, max_model_calls=24, ma
     def read_review_location(paper_id: str, field_path: str, offset: int = 0, max_characters: int = 2000) -> tuple[str, dict]:
         """Read exact current field text for review quote recovery. Use the JSON pointer returned in quote_recovery; copy literal markdown without normalization."""
         from .review_inspection import read_location
-        value = read_location(artifacts, paper_id, field_path, offset, max_characters)
+        try:
+            value = read_location(artifacts, paper_id, field_path, offset, max_characters)
+        except ValueError as exc:
+            raise ToolException(str(exc) + '; use a field_path from the current quote_recovery window or inspection manifest.') from exc
         return json.dumps(value, ensure_ascii=False), value
+
+    read_review_location.handle_tool_error = True
 
     @tool
     def record_case_finding(finding: CaseReviewFinding, runtime: ToolRuntime) -> Command:

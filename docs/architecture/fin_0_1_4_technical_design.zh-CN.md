@@ -1,5 +1,7 @@
 # FinSight 0.1.4 技术方案
 
+059补充：资产页复用现有任务底稿编辑和SEC连接管理；`working_note_user_edits`与版本正文同事务，CaseModelAudit在实际派发前注入用户修订定位目录。按owner/workspace隔离、有限分页、当前base_version写入，正文仍按原工具回读。运行中人工编辑不会改写已发出请求或正式报告。详见[资产协议](asset_workspace_protocol.zh-CN.md)。
+
 2026-09-16 058：资产侧栏嵌入既有原生对话；run提交固定资料修订及owner个人记忆，审批恢复沿用原快照。工具目录/财务reader和模型派发权限检查共用TaskAssetView；同一公开讨论checkpoint与已读凭证固定保存为未核验资产，复用asset_context.v1交给研究。用户记忆沿WorkingMemory历史/CAS维护，没有新Agent框架或记忆引擎。见[协议058](asset_workspace_protocol.zh-CN.md#原地资产对话与记忆058)。
 
 2026-09-16 057：复用附件SQLite保存不可变task_asset_updates与原生run输入绑定；BFF提交config固定输入修订，运行期编辑只准备后续集合。文档/SEC各集合独立副本，目录与金融reader使用本run绑定，历史引用继续按ID读取；运行各角色得到更新与影响核查要求，未另建调度器。乐观并发/幂等/失败状态、跨目录恢复关联校验及侧栏状态已接入；定向金融影响判断和自动关闭仍待研究质量验收。详见[协议057](asset_workspace_protocol.zh-CN.md#已有研究采用明确新版本057)。

@@ -508,6 +508,8 @@ def create_report_session_app(frontend_dist_root=None):
     from .api.v1.asset_workspace import build_asset_workspace_router
     app.include_router(build_asset_workspace_router(attachment_store.root.parent / 'project-library',
         attachments_root=attachment_store.root, fact_mart=settings.get('conversation_fact_mart')), prefix='/api/v1')
+    from .api.v1.project_workpapers import build_project_workpapers_router
+    app.include_router(build_project_workpapers_router(attachment_store.root.parent / 'project-library', service), prefix='/api/v1')
     @app.exception_handler(__import__("httpx").HTTPError)
     async def upstream_error(request, exc):
         status = getattr(getattr(exc, "response", None), "status_code", 502)

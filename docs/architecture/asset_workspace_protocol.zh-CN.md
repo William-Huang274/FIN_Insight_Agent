@@ -106,3 +106,9 @@ uv run --no-sync python -m sec_agent.research_foundation.asset_set_backup restor
 - 项目库的既有SQLite online backup覆盖新增表，无宿主来源路径依赖；新目录恢复后验证固定内容、批注、版本和交接仍可读。这不替代原生任务checkpoint联合恢复。
 
 当前不包括任意文本拖选、跨页累计财务勾选、自动同步当前源、财务查询快照转完整指标mart、正在运行的任务自动采用新版本。批注可清空；用户仍需明确选择新版本进入后续任务。
+
+## 原任务底稿与连接维护（059）
+
+资产区“底稿与连接”复用既有 WorkingNotes 和 ProjectSecSource。项目任务目录分页，并同时核对项目 owner 与原生任务 owner；原生服务不可用时保留任务定位并显示不可读取。新资产对话归属原项目；原任务页仍可进入，正式报告不被工作笔记编辑覆盖。
+
+工作笔记允许运行中以 base_version 保存，正文版本和用户修改记录在同一 SQLite 事务提交；旧版可回读，过期 Agent 写回被拒绝。下一次模型调用前，既有 CaseModelAudit 提供 owner/workspace 范围内的最新修改目录，要求依赖相关判断前 ReadWorkingNote 回读；目录最多20条，其余沿 SearchWorkingNotes(user_edits_only=true, offset=...) 分页。提醒本身包含定位与版本，不重复整稿。已发出的模型调用不追溯改变；用户输入仍是待判断的假设或意见，不升级为外部权威事实。模型是否正确处理修改及其金融影响须由真实研究验收。

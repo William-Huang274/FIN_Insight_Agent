@@ -232,6 +232,9 @@ def build_conversations_router(service):
         if body.asset_context_id:
             try:
                 financial = await run_in_threadpool(copy_context_materials, service, current_owner(request), context, thread['thread_id'])
+                from sec_agent.research_foundation.project_library import ProjectLibrary
+                await run_in_threadpool(ProjectLibrary(service.attachment_store.root.parent / 'project-library').assign_new_thread,
+                    current_owner(request), context['refs'][0]['project_id'], thread['thread_id'])
                 await service.sdk.threads.update(thread['thread_id'], metadata={'asset_context_status': 'ready', **({'project_financial_data': financial} if financial else {})})
             except Exception:
                 raise HTTPException(409, f"对话草稿 {thread['thread_id']} 已保留，资料准备尚未确认完成；未调用模型，请先检查草稿。") from None

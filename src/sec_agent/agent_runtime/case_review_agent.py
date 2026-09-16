@@ -437,6 +437,7 @@ class CaseModelAudit(AgentMiddleware):
         self.activity_sink = public_sink
         self.dispatch_guard = dispatch_guard
         self.source_access_check = source_access_check
+        self.working_note_context = None
         self.context_summary = None
         self.review_execution_control = None
         self.extra_middlewares = []
@@ -495,6 +496,14 @@ class CaseModelAudit(AgentMiddleware):
         return result
 
     async def awrap_model_call(self, request, handler):
+        import asyncio
+        from .user_workpaper_context import current_scope_revision_prompt
+        guidance = await asyncio.to_thread(self.working_note_context or (lambda: current_scope_revision_prompt(self.actor)))
+        if guidance:
+            from langchain_core.messages import SystemMessage
+            content = request.system_message.content if request.system_message else ''
+            blocks = content if isinstance(content, list) else [{'type': 'text', 'text': content}]
+            request = request.override(system_message=SystemMessage(content=[*blocks, {'type': 'text', 'text': guidance}]))
         if self.review_execution_control:
             self.review_execution_control.before_dispatch(request.state)
         if self.source_access_check:

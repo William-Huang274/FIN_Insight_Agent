@@ -71,6 +71,7 @@ class SearchWorkingNotes(BaseModel):
     query: str = ""
     actor: str | None = None
     offset: int = 0
+    user_edits_only: bool = False
 
 
 WORKING_MEMORY_MODELS = {m.__name__: m for m in (WriteWorkingNote, ReadWorkingNote, SearchWorkingNotes)}
@@ -104,6 +105,9 @@ def execute_memory_tool(name, arguments, config, actor, *, owner=None, workspace
             return memory.save(args.title, args.body, args.base_version, mode=args.mode)
         if name == "ReadWorkingNote":
             return memory.read(args.note_id, version=args.version, offset=args.offset)
+        if args.user_edits_only:
+            from .user_workpaper_context import human_revision_catalog
+            return human_revision_catalog(memory, offset=max(0, args.offset))
         from .working_memory_search import search_working_papers
         return search_working_papers(memory,args.query,actor=args.actor,offset=args.offset)
     except (ValueError, TypeError, KeyError, OSError, sqlite3.Error) as exc:

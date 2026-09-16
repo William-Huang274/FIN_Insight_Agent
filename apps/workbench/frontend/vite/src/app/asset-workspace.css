@@ -67,3 +67,7 @@
 .aw-memory-dialog details p{white-space:pre-wrap;overflow-wrap:anywhere}
 @media(min-width:1200px){.aw-shell:not(.aw-assistant-closed){grid-template-columns:185px minmax(0,1fr) 390px}}
 @media(max-width:760px){.aw-shell:not(.aw-assistant-closed) .aw-assistant{height:calc(100dvh - 110px);min-height:500px}}
+.aw-maintenance-dialog{width:min(980px,94vw);max-height:90dvh;overflow:auto;border:1px solid var(--line);border-radius:12px;padding:24px;background:var(--surface);color:var(--ink)}
+.aw-maintenance-dialog::backdrop{background:#17264d66}.aw-maintenance-dialog>header,.aw-project-papers>header{display:flex;justify-content:space-between;gap:12px;align-items:center}
+.aw-maintenance-dialog h2{font-size:18px}.aw-maintenance-dialog>nav{display:flex;gap:8px;margin:15px 0}.aw-maintenance-dialog button[aria-pressed=true]{color:var(--accent);background:var(--soft)}
+.aw-project-papers>article{padding:16px 0;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap}.aw-project-papers>article strong{flex:1;min-width:150px}.aw-project-papers>article small{width:100%}

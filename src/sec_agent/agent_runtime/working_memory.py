@@ -35,12 +35,14 @@ class WorkingMemory:
             db.execute("""CREATE TABLE IF NOT EXISTS working_note_versions (
                 id TEXT NOT NULL, version INTEGER NOT NULL, body TEXT NOT NULL,
                 updated_at TEXT NOT NULL, PRIMARY KEY(id, version))""")
+            db.execute('''CREATE TABLE IF NOT EXISTS working_note_user_edits (
+                id TEXT NOT NULL,version INTEGER NOT NULL,updated_at TEXT NOT NULL,PRIMARY KEY(id,version))''')
             db.commit()
             yield db
         finally:
             db.close()
 
-    def save(self, title: str, body: str, base_version: int = 0, *, mode="replace"):
+    def save(self, title: str, body: str, base_version: int = 0, *, mode="replace", user_edit=False):
         # Only transport/resource limits; no heading, prose, citation or finance schema.
         if mode not in {"replace", "append"}:
             raise ValueError("working_note_mode_invalid")
@@ -70,6 +72,8 @@ class WorkingMemory:
                     return {"saved": False, "reason": "合并后正文过长；请另建关联底稿。"}
             version = current + 1
             db.execute("INSERT INTO working_note_versions VALUES (?,?,?,?)", (note_id, version, body, now))
+            if user_edit:
+                db.execute('INSERT INTO working_note_user_edits VALUES(?,?,?)', (note_id, version, now))
             db.execute("""INSERT INTO working_notes VALUES (?,?,?,?,?,?,?,?)
                 ON CONFLICT(id) DO UPDATE SET body=excluded.body, version=excluded.version,
                 updated_at=excluded.updated_at""",

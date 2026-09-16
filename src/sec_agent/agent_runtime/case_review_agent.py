@@ -496,7 +496,7 @@ class CaseModelAudit(AgentMiddleware):
             from httpx import HTTPError
             from sec_agent.adapters.model_dispatch_store import DispatchBlocked
             if self.review_execution_control and isinstance(exc, (APIError, HTTPError, DispatchBlocked)):
-                self.review_execution_control.stop('review_provider_failure_usage_may_be_unknown', request.state, call_id=call_id)
+                self.review_execution_control.stop('review_provider_failure_usage_may_be_unknown', request.state, call_id=call_id, provider_call_attempted=True)
             raise
         raw = next(m for m in reversed(response.result) if isinstance(m, AIMessage))
         truncated = raw.response_metadata.get("finish_reason") == "length"
@@ -530,11 +530,11 @@ class CaseModelAudit(AgentMiddleware):
             "elapsed_ms": round((perf_counter()-start)*1000, 3), **_usage_audit_fields(raw)})
         if truncated:
             if self.review_execution_control:
-                self.review_execution_control.stop('case_review_truncated_no_partial_acceptance', request.state, call_id=call_id, raw=raw)
+                self.review_execution_control.stop('case_review_truncated_no_partial_acceptance', request.state, call_id=call_id, raw=raw, provider_call_attempted=True)
             raise ValueError("case_review_truncated_no_partial_acceptance")
         if incomplete:
             if self.review_execution_control:
-                self.review_execution_control.stop('case_review_incomplete_provider_response', request.state, call_id=call_id, raw=raw)
+                self.review_execution_control.stop('case_review_incomplete_provider_response', request.state, call_id=call_id, raw=raw, provider_call_attempted=True)
             raise ValueError('case_review_incomplete_provider_response')
         return response
 

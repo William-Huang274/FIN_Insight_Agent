@@ -567,7 +567,9 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
     @tool
     def submit_lead_issue_decision(decision: LeadIssueDecision, runtime: ToolRuntime) -> Command:
         """Decide every original finding using current papers/sources. No self-certified acceptance. Repair only affected work, or retain unresolved and stop."""
-        errors = decision_errors(decision, feedback or {}, {p["paper_id"] for p in artifacts.catalog()["papers"]}, incomplete_reviewers=incomplete_reviewers)
+        from .workpaper_changes import paper_versions
+        errors = decision_errors(decision, feedback or {}, {p["paper_id"] for p in artifacts.catalog()["papers"]}, incomplete_reviewers=incomplete_reviewers,
+            current_versions=paper_versions(artifacts.with_revisions(runtime.state.get('revisions', {}))) if incomplete_reviewers is not None else None)
         try:
             refs = " ".join("[" + ref + "]" for row in [*decision.dispositions, *decision.new_findings] for ref in row.citation_ids)
             citations = report_citations(refs, artifacts, runtime.state.get("messages", [])) if refs else {}
@@ -797,6 +799,7 @@ def build_case_output_agent(*, role, model, tools, artifacts, feedback=None, pap
         if incomplete_reviewers is not None:
             specific += '\nThis is incomplete-review triage. You may only resume_review or stop. Read the current paper and saved public findings/errors. '
             specific += 'Decide the supplied findings, but do not execute repairs or claim review acceptance. Assign EACH incomplete reviewer a precise outstanding check, recovery action, expected progress and stop condition. '
+            specific += 'Every recovery assignment must explicitly name prerequisite=current_candidate and copy the inspected paper digests from available_candidate_versions. Only the unchanged current draft exists. If the work needs an author_revision first, stop instead of scheduling its confirmation now. A requested repair is a proposal, not a completed dependency. '
             specific += 'Reuse its saved source reads and findings; no whole research restart. Source/tool failure is not issuer non-disclosure. Only one automatic triage continuation is authorized; repeated failure stops. '
             specific += 'Treat reviewer scope assumptions as fallible: distinguish the actual question from broad author wording, and preserve period/denominator differences in proposed counterevidence.'
         specific += " Also inspect cross-paper logic and material omissions proactively. Record newly discovered issues in new_findings with an exact problematic quote, responsible paper and concrete expected progress. An empty reviewer list does not mean the papers are correct."

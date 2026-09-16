@@ -353,6 +353,7 @@ class CaseModelAudit(AgentMiddleware):
         self.dispatch_guard = dispatch_guard
         self.source_access_check = source_access_check
         self.context_summary = None
+        self.review_execution_control = None
         self.extra_middlewares = []
         self.events = []
         def emit(event):
@@ -364,7 +365,9 @@ class CaseModelAudit(AgentMiddleware):
         self.public_sink = emit
 
     def middlewares(self):
-        return [*([self.context_summary] if self.context_summary else []), *self.extra_middlewares, self]
+        from .review_execution import ReviewExecutionBoundary
+        return [*([ReviewExecutionBoundary()] if self.review_execution_control else []),
+            *([self.context_summary] if self.context_summary else []), *self.extra_middlewares, self]
 
     def model_runnable(self, model):
         """The native summarizer uses this same fee/error/private-audit hook."""
@@ -407,6 +410,8 @@ class CaseModelAudit(AgentMiddleware):
         return result
 
     async def awrap_model_call(self, request, handler):
+        if self.review_execution_control:
+            self.review_execution_control.before_dispatch(request.state)
         if self.source_access_check:
             import asyncio
             from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
@@ -436,11 +441,19 @@ class CaseModelAudit(AgentMiddleware):
                 "recorded_at": datetime.now(timezone.utc).isoformat(), "provider_call_attempted": False,
                 "input_characters": size, "max_input_characters": self.basis.max_input_characters,
                 "input_character_basis": character_basis})
+            if self.review_execution_control:
+                self.review_execution_control.stop('case_review_input_ceiling_before_transport', request.state, call_id=call_id)
             raise ValueError("case_review_input_ceiling_before_transport")
         if self.dispatch_guard is not None:
             import asyncio
+            from sec_agent.adapters.model_dispatch_store import DispatchBlocked
             guard = self.dispatch_guard
-            prior = await asyncio.to_thread(guard.prepare, request, actor=self.actor, basis=self.basis, profile=self.profile)
+            try:
+                prior = await asyncio.to_thread(guard.prepare, request, actor=self.actor, basis=self.basis, profile=self.profile)
+            except DispatchBlocked:
+                if self.review_execution_control:
+                    self.review_execution_control.stop('review_dispatch_blocked_no_new_request', request.state)
+                raise
             async def transport(bound_request):
                 return await guard.run_async(prior, lambda identity: handler(bound_request), replay_sink=self.public_sink)
             return await self._execute_model_call(request, transport, serialized, size, character_basis,
@@ -477,6 +490,13 @@ class CaseModelAudit(AgentMiddleware):
             public({**common, "event": "outcome", "status": "provider_failed",
                 "usage_reported": False, "error_type": type(exc).__name__,
                 "http_status_code": getattr(exc, "status_code", None), "elapsed_ms": round((perf_counter()-start)*1000, 3)})
+            # User cancellation still propagates. Expected provider failures
+            # have already been recorded by the dispatch guard as unknown.
+            from openai import APIError
+            from httpx import HTTPError
+            from sec_agent.adapters.model_dispatch_store import DispatchBlocked
+            if self.review_execution_control and isinstance(exc, (APIError, HTTPError, DispatchBlocked)):
+                self.review_execution_control.stop('review_provider_failure_usage_may_be_unknown', request.state, call_id=call_id)
             raise
         raw = next(m for m in reversed(response.result) if isinstance(m, AIMessage))
         truncated = raw.response_metadata.get("finish_reason") == "length"
@@ -484,7 +504,7 @@ class CaseModelAudit(AgentMiddleware):
         incomplete = finish in {'content_filter', 'insufficient_system_resource', 'aborted'} or (
             getattr(request.model, 'streaming', False) and finish not in {'stop', 'tool_calls', 'length'})
         private({"event": "response", "call_id": call_id, "actor": self.actor, "raw_response": raw.model_dump(mode="json")})
-        if self.stream_public and not request.state.get("request_summary"):
+        if self.stream_public and not request.state.get("request_summary") and not truncated and not incomplete:
             from .public_research_output import submitted_prose
             from langgraph.config import get_stream_writer
             # Ordinary assistant text / explicit FIN submissions only. Provider
@@ -509,8 +529,12 @@ class CaseModelAudit(AgentMiddleware):
             "success_scope": "provider_response_only_not_tool_or_task_acceptance",
             "elapsed_ms": round((perf_counter()-start)*1000, 3), **_usage_audit_fields(raw)})
         if truncated:
+            if self.review_execution_control:
+                self.review_execution_control.stop('case_review_truncated_no_partial_acceptance', request.state, call_id=call_id, raw=raw)
             raise ValueError("case_review_truncated_no_partial_acceptance")
         if incomplete:
+            if self.review_execution_control:
+                self.review_execution_control.stop('case_review_incomplete_provider_response', request.state, call_id=call_id, raw=raw)
             raise ValueError('case_review_incomplete_provider_response')
         return response
 
@@ -860,12 +884,14 @@ def build_case_review_graph(*, reviewers, artifacts, question, run_id, run_invoc
             # This new invocation enforces its own run limit; aggregate prior
             # usage in the parent, never silently reset the displayed lifetime.
             count = state.get("thread_model_call_count", len(answers)) + (previous_review or {}).get(_role, {}).get("model_calls", 0)
+            execution_error = state.get('execution_error')
             return {_role: {"status": "review_submitted" if complete else "incomplete_review" if review else "incomplete_no_submission", "review": review,
+                **({'execution_error': execution_error} if execution_error else {}),
                 "model_calls": count,
                 **({"recovery_state": {"messages": messages_to_dict(state["messages"]),
                      "recorded_findings": deepcopy(state.get("recorded_findings", {})),
                      "thread_model_call_count": count,
-                     "thread_tool_call_count": deepcopy(state.get("thread_tool_call_count", {}))}} if not complete else {}),
+                     "thread_tool_call_count": deepcopy(state.get("thread_tool_call_count", {}))}} if not complete and not execution_error else {}),
                 **({"incomplete_output": [m.content for m in answers[:count] if m.content],
                     "recorded_findings": state.get("recorded_findings", {}),
                     "runtime_notices": [m.content for m in answers[count:] if m.content],

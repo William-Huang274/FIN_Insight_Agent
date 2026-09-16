@@ -20,6 +20,10 @@ class ReviewerRecoveryAssignment(BaseModel):
     objective: str = Field(min_length=20, max_length=3000)
     expected_progress: str = Field(min_length=20, max_length=2000)
     stop_condition: str = Field(min_length=20, max_length=2000)
+    prerequisite: Literal['current_candidate', 'author_revision'] | None = Field(default=None,
+        description='State which artifact must exist before this work can run. Initial-review recovery permits current_candidate only; author_revision requires a later author-edit stage.')
+    candidate_versions: dict[str, str] = Field(default_factory=dict,
+        description='Exact paper_id to current digest mapping for papers inspected by this assignment; copy available_candidate_versions. Do not invent a future version.')
 
 
 class LeadIssueDecision(BaseModel):
@@ -32,7 +36,7 @@ class LeadIssueDecision(BaseModel):
         description="Material issues discovered by Lead in current papers, not duplicates of supplied findings. Use a new finding_id, responsible paper, exact problematic quote in rationale, targeted repair and expected progress; or unresolved and stop.")
 
 
-def decision_errors(decision, feedback, paper_ids, *, incomplete_reviewers=None):
+def decision_errors(decision, feedback, paper_ids, *, incomplete_reviewers=None, current_versions=None):
     expected = {(pid, f["finding_id"]) for pid, rows in feedback.items() for f in rows}
     actual = [(row.paper_id, row.finding_id) for row in decision.dispositions]
     errors = []
@@ -44,6 +48,14 @@ def decision_errors(decision, feedback, paper_ids, *, incomplete_reviewers=None)
             errors.append('Assign every incomplete reviewer once, retaining its own saved reads and findings.')
         if decision.action == 'stop' and roles:
             errors.append('Stop must not schedule reviewer work.')
+        if current_versions is not None:
+            for assignment in decision.review_assignments:
+                if assignment.prerequisite != 'current_candidate':
+                    errors.append('review_prerequisite_unavailable:' + assignment.reviewer +
+                        ':Only current_candidate exists. Complete inspection of this unchanged draft, or stop if author_revision is necessary. No author edits are executed by resume_review.')
+                if (not assignment.candidate_versions or any(current_versions.get(pid) != digest
+                        for pid, digest in assignment.candidate_versions.items())):
+                    errors.append('review_candidate_version_missing_or_stale:' + assignment.reviewer + ':' + str(current_versions))
     elif decision.action == 'resume_review' or decision.review_assignments:
         errors.append('Review recovery is only available in the incomplete-review triage stage.')
     if len(actual) != len(set(actual)) or set(actual) != expected:

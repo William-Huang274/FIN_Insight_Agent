@@ -144,9 +144,11 @@ def incomplete_review(artifacts, question):
             'tool_feedback':['problematic_quote_not_exact:location'],'model_calls':10}}
 
 
-def recovery_decision():
+def recovery_decision(artifacts=None):
+    from sec_agent.agent_runtime.workpaper_changes import paper_versions
     return {'summary':'Resume only the missing independent review; no financial approval.', 'action':'resume_review',
         'review_assignments':[{'reviewer':'counter','objective':'Recover the exact current prose location and complete outstanding scope checks.',
+            'prerequisite':'current_candidate','candidate_versions':paper_versions(artifacts or artifact_fixture()),
             'expected_progress':'Submit the preserved findings and remaining uncertainties using the current candidate.',
             'stop_condition':'Stop if the same location error recurs or necessary evidence remains unavailable.'}]}
 
@@ -242,7 +244,7 @@ def test_native_parent_lead_resumes_only_saved_review_once_then_converges_or_sto
             return result
         async def triage(state, config):
             seen.append('lead')
-            return recovery_decision()
+            return recovery_decision(current_task_artifacts(state))
         async def converge(state, config):
             seen.append('converge')
             return {'phase':'research_convergence_needs_attention','stop_reason':'fixture_stops_before_any_financial_acceptance'}

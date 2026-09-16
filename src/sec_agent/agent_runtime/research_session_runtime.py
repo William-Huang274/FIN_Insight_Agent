@@ -345,7 +345,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     from sec_agent.research_foundation.project_asset_access import task_access_check
     source_access_check = task_access_check(environment)
 
-    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None, confirmation=None, incomplete_reviewers=None):
+    def native_agent(role, tools, artifacts, *, feedback=None, paper_id=None, interactive=False, revising=False, actor_override=None, confirmation=None, incomplete_reviewers=None, review_execution_control=None):
         if role == "repair" and execution.mode == "selected":
             branch = next((p["branch_id"] for p in artifacts.catalog()["papers"] if p["paper_id"] == paper_id), None)
             if branch not in execution.branch_ids:
@@ -373,6 +373,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
         audit = CaseModelAudit(actor=actor_override or ("author_"+paper_id if paper_id else role), profile=model_profile, basis=basis,
             public_sink=public_sink, private_sink=private_sink, stream_public=True,
             dispatch_guard=budget_scope.guard(profile_role, model_profile) if budget_scope else None, source_access_check=source_access_check)
+        audit.review_execution_control = review_execution_control
         if any(t.name == "consult_research_specialist" for t in tools):
             from langchain.agents.middleware import ToolCallLimitMiddleware
             audit.extra_middlewares = [ToolCallLimitMiddleware(tool_name="consult_research_specialist", run_limit=2, exit_behavior="error")]
@@ -386,6 +387,7 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
             summary_audit = CaseModelAudit(actor="context_summary:" + audit.actor, profile=summary_profile,
                 basis=summary_basis, public_sink=public_sink, private_sink=private_sink, stream_public=True,
                 dispatch_guard=budget_scope.guard('context_summary', summary_profile) if budget_scope else None, source_access_check=source_access_check)
+            summary_audit.review_execution_control = review_execution_control
             audit.context_summary = RequestSummaryMiddleware(model=summary_model,
                 audited_model=summary_audit.model_runnable(summary_model), trigger_tokens=summary["trigger_tokens"],
                 keep_tokens=summary["keep_tokens"], max_summaries=summary["max_summaries"])
@@ -404,7 +406,9 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     async def review(state, config: RunnableConfig):
         state = await with_guidance(state, "review")
         async with tools_for(state) as (artifacts, tools):
-            reviewers = {role: native_agent(role, tools, artifacts) for role in ("counter", "verifier")}
+            from .review_execution import ReviewExecutionControl
+            control = ReviewExecutionControl()
+            reviewers = {role: native_agent(role, tools, artifacts, review_execution_control=control) for role in ("counter", "verifier")}
             graph = build_case_review_graph(reviewers=reviewers, artifacts=artifacts, question=state["question"],
                 run_id=research_id, run_invocation_id=invocation,
                 review_order=studio.review_order if studio else "parallel",
@@ -478,8 +482,10 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
                 # A fresh data view is essential: MCP readers and calculators
                 # must see the same current candidate the review validator sees.
                 async with tools_for(state, current) as (_, current_tools):
+                    from .review_execution import ReviewExecutionControl
+                    control = ReviewExecutionControl()
                     reviewers = {role: native_agent(role, current_tools, current, confirmation=context,
-                        actor_override="confirmation_" + role) for role in ("counter", "verifier")}
+                        actor_override="confirmation_" + role, review_execution_control=control) for role in ("counter", "verifier")}
                     graph = build_case_review_graph(reviewers=reviewers, artifacts=current, question=state["question"],
                         run_id=research_id, run_invocation_id=invocation, confirmation=context,
                         review_order=studio.review_order if studio else "parallel").compile()

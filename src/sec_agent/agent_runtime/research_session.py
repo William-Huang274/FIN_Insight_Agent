@@ -245,7 +245,8 @@ def build_research_session_graph(*, research, review, converge, writer, verifier
         if output.get('action') == 'resume_review':
             decision = LeadIssueDecision.model_validate({k: v for k, v in output.items() if k in LeadIssueDecision.model_fields})
             errors = decision_errors(decision, handoff['feedback'], set(handoff['feedback']) | {
-                p['paper_id'] for p in current_task_artifacts(state).catalog()['papers']}, incomplete_reviewers=handoff['incomplete_reviewers'])
+                p['paper_id'] for p in current_task_artifacts(state).catalog()['papers']}, incomplete_reviewers=handoff['incomplete_reviewers'],
+                current_versions=handoff['available_candidate_versions'])
         resume = output.get('action') == 'resume_review' and not errors
         _stage('lead_review_triage', 'outcome', status='bounded_review_continuation' if resume else 'needs_attention',
             objective=output.get('summary', '复核未完成，保留当前发现并停止。'))

@@ -27,7 +27,7 @@ def test_actual_mcp_progressive_method_read_and_rejection():
     async def exercise():
         async with Client(_build_server(), raise_exceptions=False) as client:
             catalog = await client.call_tool("get_research_method", {})
-            assert not catalog.is_error and len(catalog.structured_content["methods"]) == 6
+            assert not catalog.is_error and {row["method_id"] for row in catalog.structured_content["methods"]} == set(METHODS)
             method = await client.call_tool("get_research_method", {"method_id": "finance"})
             assert not method.is_error
             assert "利润率变化用百分点" in method.structured_content["content"]

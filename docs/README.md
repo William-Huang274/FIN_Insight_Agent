@@ -12,6 +12,7 @@ FinSight Agent 是支持资料查询、来源追溯、多角色研究和人工�
 | [路线图](product/roadmap.zh-CN.md) | 后续研究能力的开发方向 |
 | [v0.1.4 PRD](product/fin_0_1_4_prd.zh-CN.md) · [技术方案](architecture/fin_0_1_4_technical_design.zh-CN.md) · [执行路线](engineering/fin_0_1_4_execution_roadmap.zh-CN.md) | 开发中；局部功能已实现，整版未验收或发布 |
 | [项目资料版本与更新](engineering/project_asset_versions.zh-CN.md) | 0.1.4 开发分支的版本差异、直接依赖提示、明确选版与适用范围 |
+| [研究问题体系](product/research_question_system.zh-CN.md) · [行业方法与执行合同](architecture/research_method_execution.zh-CN.md) | 六类免费来源如何组合成研究问题、行业步骤、动态委派与有界诊断；非完整研究质量认证 |
 | [资产工作区与交接协议](architecture/asset_workspace_protocol.zh-CN.md) | 知识库/财务库/项目资料统一界面、研究侧栏、版本与记忆交接、项目库恢复及边界 |
 | [数据与报告说明](public/sharing-scope.md) | 示例数据、研究结果和使用范围 |
 | [代码目录](architecture/repository/naming_and_entrypoints.zh-CN.md) | 模块职责和开发入口 |

@@ -74,7 +74,10 @@ def test_future_completion_and_actual_tool_batch_trigger_before_character_ceilin
         schema=_native_function_schema, max_input_characters=600000)
     assert notice["reason"] == "input_character_headroom"
     assert notice["growth_reserve_characters"] > 160000
-    assert projected[-1] == rows[-1] and rows == original
+    assert projected[:-1] == rows and rows == original
+    assert projected[-1].additional_kwargs['fin_context_checkpoint_instruction'] is True
+    assert 'CURRENT REQUEST STATE: context_checkpoint_required=true' in projected[-1].content
+    assert 'overrides allowed_actions' in projected[-1].content
 
 
 def test_exact_assignment_copy_reuses_original_human_message_but_keeps_latest_handoff():
@@ -182,6 +185,42 @@ def test_same_checkpoint_cannot_be_repaid_when_protected_context_still_exceeds_t
         request_checkpoint(rows,model(research_checkpoint_tokens=1))
 
 
+def test_accepted_checkpoint_archives_completed_reasoning_without_losing_exact_results():
+    rows = [HumanMessage(content="User scope: quarter only"), *source_messages("SOURCE-A")]
+    rows[1].additional_kwargs['reasoning_content'] = 'private old analysis ' * 20000
+    rows += checkpoint_message(working_note(phase_status='working'))
+    rows += source_messages('FRESH')
+    rows[-2].additional_kwargs['reasoning_content'] = 'active reasoning must remain'
+    original = deepcopy(rows)
+    projected = task_boundary_history(rows)
+    assert rows == original
+    assert projected[0] == rows[0] and projected[-2:] == rows[-2:]
+    operation = json.loads(projected[1].content)
+    result = json.loads(projected[2].content)
+    assert operation['tool_calls'] == rows[1].tool_calls
+    assert result['original_content'] == rows[2].content
+    assert result['tool_call_id'] == rows[2].tool_call_id
+    assert 'NOT a user instruction' in result['notice']
+    assert 'private old analysis' not in json.dumps([m.model_dump() for m in projected])
+    # No accepted checkpoint, or an ordinary completed phase, retires reasoning.
+    assert task_boundary_history(rows[:3])[1] == rows[1]
+    rejected = deepcopy(rows); rejected[4].status = 'error'
+    assert task_boundary_history(rejected)[1] == rows[1]
+
+
+def test_checkpoint_archive_never_splits_pending_calls_and_keeps_error_text():
+    rows = [*source_messages('SOURCE-A')]
+    rows[0].additional_kwargs['reasoning_content'] = 'private completed'
+    rows[1].status = 'error'; rows[1].content = 'timeout: not source absence'
+    pending = AIMessage(content='pending',additional_kwargs={'reasoning_content':'still active'},
+        tool_calls=[{'name':'RequestSourceAction','id':'unfinished','args':{},'type':'tool_call'}])
+    rows += [pending, *checkpoint_message(working_note(phase_status='working'))]
+    projected = task_boundary_history(rows)
+    assert projected[2] == pending
+    assert json.loads(projected[1].content)['status'] == 'error'
+    assert json.loads(projected[1].content)['original_content'] == rows[1].content
+
+
 @pytest.mark.parametrize("reason", ["research_context_checkpoint_insufficient", "research_context_checkpoint_input_limit_exceeded"])
 def test_context_blockage_notifies_lead_once_and_never_restarts_the_expert_allowance(reason):
     ports=_ToolPorts();helps=[];calls=[]
@@ -227,6 +266,8 @@ def test_actual_sdk_uses_audited_author_turn_for_checkpoint_and_native_acceptanc
         body=json.loads(request.content);captured.append(body)
         assert {t["function"]["name"] for t in body["tools"]}=={"UpdateResearchStateAction","RequestHumanReviewAction"}
         assert "Runtime context checkpoint required" in json.dumps(body["messages"])
+        assert body['messages'][-1]['role'] == 'system'
+        assert 'CURRENT REQUEST STATE' in body['messages'][-1]['content']
         args={"action":"update_research_state","reason_summary":"Save the unresolved research step.","checkpoint":True,"working_state":note}
         return httpx.Response(200,json={"id":"fixture","object":"chat.completion","created":1,"model":"deepseek-v4-pro",
             "choices":[{"index":0,"finish_reason":"tool_calls","message":{"role":"assistant","content":"","tool_calls":[{

@@ -96,7 +96,9 @@ def test_actual_sdk_checkpoint_rejects_unoffered_actions_and_stops_after_two(nam
         body = json.loads(request.content); wires.append(body)
         assert {t['function']['name'] for t in body['tools']} == {'UpdateResearchStateAction', 'RequestHumanReviewAction'}
         if len(wires) == 2:
-            feedback = json.loads(body['messages'][-1]['content'])['result']
+            assert body['messages'][-1]['role'] == 'system'
+            assert 'CURRENT REQUEST STATE' in body['messages'][-1]['content']
+            feedback = json.loads(next(m['content'] for m in reversed(body['messages']) if m['role'] == 'tool'))['result']
             assert feedback['error'] == 'native_tool_not_allowed_this_turn'
             assert feedback['batch_dispatched'] is False
             assert feedback['context_checkpoint_required'] is True

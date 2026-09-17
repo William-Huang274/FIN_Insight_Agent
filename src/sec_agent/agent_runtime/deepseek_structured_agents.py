@@ -517,6 +517,10 @@ _SPECIALIST_COMMON_SYSTEM_PROMPT = (
     "sections and tables. If that check is unfinished, say not yet inspected, not not disclosed. "
     "Check whether disclosed components permit the requested calculation even when the ratio is not "
     "printed explicitly. Apply this distinction in counterevidence and open_gaps as well as claims."
+    " Reading every block is not proof that a breakdown is absent. For each proposed information gap, "
+    "name the specific missing quantity or explanation and contrast it with the relevant rows already observed. "
+    "Distinguish disclosed line-item values, calculations possible from those values, and unreported business "
+    "causes or footnote detail. Do not classify the whole breakdown as missing when only the cause is unknown."
     " The Lead's preliminary numbers and relationships are unverified task context, not source authority. "
     "Correct them when original evidence differs. Preserve each fact's entity, period, unit, denominator and "
     "actual-versus-guidance status when combining sources, including in headings and tables. "
@@ -1587,6 +1591,7 @@ class DeepSeekStructuredAgentAdapter:
                     "unprojected_input_characters": unprojected_characters,
                     "input_utf8_bytes": input_utf8_bytes,
                     "max_input_characters": basis.max_input_characters,
+                    "context_checkpoint": checkpoint_notice,
                     "provider_call_attempted": False,
                     "execution_source": execution_source,
                     **(
@@ -1597,7 +1602,8 @@ class DeepSeekStructuredAgentAdapter:
                 }
             )
             raise DeepSeekStructuredAgentError(
-                f"deepseek_{role}_input_character_limit_exceeded"
+                "research_context_checkpoint_input_limit_exceeded" if checkpoint_notice is not None
+                else f"deepseek_{role}_input_character_limit_exceeded"
             )
         if self._source_access_check:
             from sec_agent.research_foundation.project_asset_access import ProjectAssetUnavailable
@@ -1781,6 +1787,12 @@ class DeepSeekStructuredAgentAdapter:
                 }
             )
             raise DeepSeekStructuredAgentError("model_structured_envelope_invalid")
+        if persistent_history and saved_envelope is None and isinstance(envelope.get("raw"), AIMessage):
+            reported = _usage_audit_fields(envelope["raw"]).get("input_tokens")
+            if type(reported) is int and reported > 0:
+                envelope["raw"].response_metadata["fin_runtime_input_measurement"] = {
+                    "model": model_profile.model, "input_characters": input_characters,
+                    "provider_input_tokens": reported, "origin": "runtime_sdk_projection_and_provider_usage"}
         if self._private_audit_sink is not None:
             self._private_audit_sink({
                 "call_id": call_id, "actor": actor, "request_digest": request_digest,

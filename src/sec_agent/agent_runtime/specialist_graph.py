@@ -8,6 +8,7 @@ from collections.abc import Callable, Mapping
 from copy import deepcopy
 from .workpaper_delivery import decode_workpaper_arguments
 from dataclasses import dataclass
+from difflib import get_close_matches
 from typing import Annotated, Any, Literal, TypedDict
 
 from langchain_core.messages import AIMessage, ToolMessage
@@ -1180,6 +1181,13 @@ def _model_request(
         body["submission_to_repair"].update(
             edit_progress=targets, last_edit_feedback=state.get("last_edit_feedback"),
             current_candidate_digest=canonical_sha256(candidate),
+            validation_feedback={"issues": last.get("validation_issues", []),
+                "validated_candidate_digest": last.get("validated_candidate_digest"),
+                "binding": ("current_candidate" if last.get("validated_candidate_digest") == canonical_sha256(candidate)
+                    else "legacy_or_attempt_feedback_not_confirmed_for_current_candidate"),
+                "origin": "runtime_submission_validation",
+                "notice": "Use precise current-candidate locations for repair. Older notebook feedback is history; "
+                    "it does not establish an unresolved error in a later candidate. Unbound feedback requires checking the current value."},
             revision_guidance="Revision is in progress. Keep the whole assignment, required_source_checks and prior review findings in scope, not only the latest tool error. "
                 "Unchanged requested fields block submission; completion notes do not close them. Changed fields are not semantically verified. "
                 "Before reporting a correction, inspect the actual current candidate, not an earlier proposed edit. Correct related body, claims, counterevidence and notes consistently. "
@@ -1338,6 +1346,60 @@ def _feedback(
         available_next_actions=next_actions,
         public_information_gap_proved=False,
     )
+
+
+def _quote_issue_location(error, submission, notebook):
+    """Locate the exact rejected value; candidates are navigation, not repairs."""
+    if not error.startswith("source_quote_not_in_observed_passage:"):
+        return None
+    for claim_index, claim in enumerate(submission.claims):
+        for source_id, value in claim.citation_quotes.items():
+            quotes = value if isinstance(value, list) else [value]
+            for quote_index, quote in enumerate(quotes):
+                prefix = (f"source_quote_not_in_observed_passage:{source_id}:"
+                    f"claim={claim.claim_id}:quote_index={quote_index}:")
+                if not error.startswith(prefix):
+                    continue
+                passages = [str(item.get("passage", "")) for obs in notebook.observations
+                    for item in obs.content if item.get("passage_id") == source_id]
+                lines = list(dict.fromkeys(line for p in passages for line in p.splitlines()
+                    if line.strip() and len(line) <= 2000))
+                location = ["claims", claim_index, "citation_quotes", source_id] + ([quote_index] if isinstance(value, list) else [])
+                return {"location": location, "path": jsonpatch.JsonPointer.from_parts(location).path,
+                    "type": "source_quote_not_in_observed_passage", "message": error,
+                    "claim_id": claim.claim_id, "source_id": source_id, "submitted_quote": quote,
+                    "source_line_candidates": get_close_matches(quote, lines, n=3, cutoff=.65),
+                    "origin": "runtime_quote_navigation_not_confirmation",
+                    "instruction": "Inspect candidate lines in their original source context; candidates may differ "
+                        "in period, value or meaning. Use ReviseWorkpaperAction to replace only this candidate field "
+                        "with exact original text after checking support. No quote or claim has been auto-corrected."}
+    return None
+
+
+def _normalize_submission_quotes(submission, notebook):
+    """Reuse the reviewer's strict layout parser, preserving original arguments."""
+    from .evidence_resolution import resolve_quote
+    value = submission.model_dump(mode="json")
+    records = []
+    for index, claim in enumerate(submission.claims):
+        for source_id, raw in claim.citation_quotes.items():
+            bodies = list(dict.fromkeys(str(item.get("passage", "")) for obs in notebook.observations
+                for item in obs.content if item.get("passage_id") == source_id))
+            if len(bodies) != 1:
+                continue
+            quotes = raw if isinstance(raw, list) else [raw]
+            for quote_index, quote in enumerate(quotes):
+                if contains_source_quote(bodies[0], quote):
+                    continue
+                exact, record = resolve_quote(bodies[0], quote)
+                if record is None:
+                    continue
+                location = ["claims", index, "citation_quotes", source_id] + ([quote_index] if isinstance(raw, list) else [])
+                path = jsonpatch.JsonPointer.from_parts(location).path
+                value = jsonpatch.apply_patch(value, [{"op":"replace", "path":path, "value":exact}])
+                records.append({**record, "location":location, "claim_id":claim.claim_id, "source_id":source_id})
+    normalized = SubmitWorkpaperAction.model_validate_json(json.dumps(value)) if records else submission
+    return normalized, records
 
 
 def _submission_errors(
@@ -1667,7 +1729,8 @@ def build_specialist_agentic_state_graph(
             # no partial model response is promoted; native state is retained.
             from .deepseek_structured_agents import DeepSeekStructuredAgentError
             if isinstance(exc, DeepSeekStructuredAgentError) and str(exc) in {
-                "research_context_checkpoint_insufficient", "research_context_checkpoint_not_resolved"}:
+                "research_context_checkpoint_insufficient", "research_context_checkpoint_not_resolved",
+                "research_context_checkpoint_input_limit_exceeded"}:
                 signal = {"status": "blocked", "notice": str(exc), "consecutive_no_new_observations": 0}
                 if dependencies.lead_assistance and not any(h.get("context_checkpoint_blockage") for h in state.get("lead_assistance_history", [])):
                     return {"pending_action": None, "phase": "lead_assistance_required", "runtime_progress": signal}
@@ -2437,6 +2500,15 @@ def build_specialist_agentic_state_graph(
             raise SpecialistAgenticGraphError(
                 "specialist_submission_action_invalid"
             )
+        parsing = {"original_arguments":None, "runtime_compatibility_parses":[],
+            "original_candidate_digest":None, "normalized_candidate_digest":None}
+        if isinstance(action, SubmitWorkpaperAction):
+            original = action.model_dump(mode="json")
+            action, records = _normalize_submission_quotes(action, notebook)
+            if records:
+                parsing = {"original_arguments":original, "runtime_compatibility_parses":records,
+                    "original_candidate_digest":canonical_sha256(original),
+                    "normalized_candidate_digest":canonical_sha256(action.model_dump(mode="json"))}
         if isinstance(action, SubmitReviewAction):
             errors = _review_submission_errors(action, notebook, state.get("collaboration_context"))
         else:
@@ -2454,6 +2526,10 @@ def build_specialist_agentic_state_graph(
         if errors or revision_issues:
             locations = list(revision_issues)
             for error in errors:
+                quote_issue = _quote_issue_location(error, action, notebook)
+                if quote_issue is not None:
+                    locations.append(quote_issue)
+                    continue
                 location = ["references"]
                 error_type = "reference_validation"
                 if error.startswith("required_source_check_assessment_missing:"):
@@ -2479,7 +2555,9 @@ def build_specialist_agentic_state_graph(
             return {
                 **revision_state(state),
                 "last_submission_attempt": {**(state.get("last_submission_attempt") or {}),
+                    **parsing,
                     "arguments": action.model_dump(mode="json"), "accepted": False,
+                    "validated_candidate_digest": canonical_sha256(action.model_dump(mode="json")),
                     "validation_issues": locations, "feedback": [feedback.model_dump(mode="json")]},
                 "pending_action": None,
                 "notebook": _replace_notebook(
@@ -2490,7 +2568,9 @@ def build_specialist_agentic_state_graph(
             }
         return {
             "last_submission_attempt": {**(state.get("last_submission_attempt") or {}),
+                **parsing,
                 "arguments": action.model_dump(mode="json"), "accepted": True,
+                "validated_candidate_digest": canonical_sha256(action.model_dump(mode="json")),
                 "validation_issues": [], "feedback": []},
             **revision_state(state),
             "pending_action": None,

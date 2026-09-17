@@ -150,27 +150,35 @@ def coalesce_context_snapshots(messages):
     projected = deepcopy(list(messages))
     snapshots = {}
     contexts = []
+    snapshot_keys = ("task_context", "submission_to_repair", "progress")
     for index, message in enumerate(projected):
-        if not isinstance(message, ToolMessage):
+        if not isinstance(message, (HumanMessage, ToolMessage)):
             continue
         try:
             body = json.loads(message.content)
         except (TypeError, json.JSONDecodeError):
             continue
-        if isinstance(body, dict) and isinstance(body.get("current_context"), dict):
+        if isinstance(message, HumanMessage) and isinstance(body, dict):
+            for key in snapshot_keys:
+                if key in body:
+                    identity = (key, json.dumps(body[key], ensure_ascii=False, sort_keys=True))
+                    snapshots.setdefault(identity, {"message_index": index, "field": key})
+        elif isinstance(body, dict) and isinstance(body.get("current_context"), dict):
             contexts.append((index, body))
     for index, body in contexts[:-1]:
         message = projected[index]
         context = body["current_context"]
         changed = False
-        for key in ("task_context", "submission_to_repair"):
+        for key in snapshot_keys:
             if key not in context:
                 continue
             identity = (key, json.dumps(context[key], ensure_ascii=False, sort_keys=True))
-            if identity not in snapshots:
-                snapshots[identity] = message.tool_call_id
+            if identity not in snapshots or snapshots[identity].get("message_index", -1) >= index:
+                snapshots[identity] = {"tool_call_id": message.tool_call_id, "field": "current_context." + key}
                 continue
-            context[key] = {"identical_snapshot_retained_at_tool_call_id": snapshots[identity],
+            context[key] = {"identical_snapshot_retained_at": snapshots[identity],
+                **({"identical_snapshot_retained_at_tool_call_id": snapshots[identity]["tool_call_id"]}
+                   if "tool_call_id" in snapshots[identity] else {}),
                 "field": "current_context." + key,
                 "notice": "Exact duplicate runtime snapshot. Full identical value remains earlier in this request; "
                     "use the latest current_context for current task and candidate status. Original storage is unchanged."}
@@ -178,6 +186,45 @@ def coalesce_context_snapshots(messages):
         if changed:
             message.content = json.dumps(body, ensure_ascii=False, separators=(",", ":"))
     return projected
+
+
+def research_input_pressure(encoded, messages, model):
+    """An auditable estimate, never provider usage or a tokenizer guarantee.
+
+    DS documents ~0.3 token/English character and ~0.6/Chinese character.
+    Use LangChain's counter with that weighted density, then conservatively
+    calibrate against this model's actual prior wire-input measurements. The
+    measurement lives on its response, not shared mutable model-instance state.
+    """
+    non_ascii = sum(not char.isascii() for char in encoded)
+    density = .3 + .3 * non_ascii / max(1, len(encoded))
+    calibrations = []
+    for message in messages:
+        if not isinstance(message, AIMessage):
+            continue
+        row = message.response_metadata.get("fin_runtime_input_measurement", {})
+        if (row.get("model") == model.model_name
+                and type(row.get("input_characters")) is int and row["input_characters"] > 0
+                and type(row.get("provider_input_tokens")) is int and row["provider_input_tokens"] > 0):
+            calibrations.append(row["provider_input_tokens"] / row["input_characters"])
+    density = max(density, *calibrations) if calibrations else density
+    estimate = count_tokens_approximately([HumanMessage(content=encoded)], chars_per_token=1 / density)
+    # One future completion (including reasoning/tool arguments), one actual
+    # recent tool batch, plus the configured checkpoint allowance. This is a
+    # conservative growth reserve, not permission to discard tool responses.
+    latest_batch = 0
+    for message in reversed(messages):
+        if isinstance(message, AIMessage):
+            break
+        if isinstance(message, ToolMessage):
+            latest_batch += len(str(message.content))
+    completion = model.max_tokens or 0
+    reserve = (model.research_checkpoint_reserve_tokens + completion) * 4 + latest_batch
+    return {"estimated_input_tokens": estimate, "trigger_tokens": model.research_checkpoint_tokens,
+        "token_basis": "langchain_ds_character_estimate_with_same_model_wire_usage_calibration",
+        "calibration_samples": len(calibrations), "estimated_tokens_per_character": density,
+        "growth_reserve_characters": reserve, "recent_tool_batch_characters": latest_batch,
+        "configured_output_tokens": completion}
 
 
 def task_boundary_history(messages):
@@ -273,8 +320,9 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     # Estimate the entire wire input, including tool definitions and reasoning.
     # Not reported provider usage; character limit remains an independent guard.
     encoded = json.dumps(payload, ensure_ascii=False)
-    estimate = count_tokens_approximately([HumanMessage(content=encoded)])
-    reserve_chars = model.research_checkpoint_reserve_tokens * 4
+    pressure = research_input_pressure(encoded, messages, model)
+    estimate = pressure["estimated_input_tokens"]
+    reserve_chars = pressure["growth_reserve_characters"]
     if estimate < trigger and len(encoded) < max_input_characters - reserve_chars:
         return messages, native_tools, None
     attempts = 0
@@ -325,8 +373,7 @@ def research_checkpoint_request(messages, *, model, native_tools, runtime_contex
     clean = [m for m in messages if not m.additional_kwargs.get("fin_context_checkpoint_instruction")]
     return [clean[0], notice, *clean[1:]], {k: v for k, v in native_tools.items()
         if k in {"UpdateResearchStateAction", "RequestHumanReviewAction"}}, {
-            "estimated_input_tokens": estimate, "trigger_tokens": trigger,
-            "token_basis": "langchain_approximation_of_sdk_payload_not_provider_usage",
+            **pressure,
             "reason": "token_threshold" if estimate >= trigger else "input_character_headroom"}
 
 

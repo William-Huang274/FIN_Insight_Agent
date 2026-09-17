@@ -48,6 +48,52 @@ def test_configurable_140k_272k_threshold_counts_wire_input_without_sending():
     assert rows==initial
 
 
+def test_mixed_language_pressure_uses_reported_wire_density_without_sharing_agents():
+    from sec_agent.agent_runtime.model_context import research_input_pressure
+    chat = model(research_checkpoint_tokens=140000, max_tokens=32000)
+    measured = AIMessage(content="", response_metadata={"fin_runtime_input_measurement": {
+        "model": chat.model_name, "input_characters": 500000, "provider_input_tokens": 175000}})
+    pressure = research_input_pressure("x" * 400000, [measured], chat)
+    assert pressure["estimated_input_tokens"] >= 140000
+    assert pressure["calibration_samples"] == 1
+    # A separate agent/history must not inherit usage from another conversation.
+    assert research_input_pressure("x" * 400000, [], chat)["estimated_input_tokens"] < 140000
+    assert research_input_pressure("研究" * 200000, [], chat)["estimated_input_tokens"] > 200000
+    measured.response_metadata["fin_runtime_input_measurement"]["model"] = "another-model"
+    assert research_input_pressure("x" * 400000, [measured], chat)["calibration_samples"] == 0
+
+
+def test_future_completion_and_actual_tool_batch_trigger_before_character_ceiling():
+    chat = model(research_checkpoint_tokens=272000, max_tokens=32000)
+    rows = [HumanMessage(content="Scope " + "x" * 450000),
+        AIMessage(content="", tool_calls=[{"name":"RequestSourceAction","id":"read", "args":{}, "type":"tool_call"}]),
+        ToolMessage(content="Fresh source " + "y" * 20000, tool_call_id="read")]
+    original = deepcopy(rows)
+    projected, _, notice = research_checkpoint_request(rows, model=chat,
+        native_tools={"UpdateResearchStateAction":UpdateResearchStateAction}, runtime_context_binding=True,
+        schema=_native_function_schema, max_input_characters=600000)
+    assert notice["reason"] == "input_character_headroom"
+    assert notice["growth_reserve_characters"] > 160000
+    assert projected[-1] == rows[-1] and rows == original
+
+
+def test_exact_assignment_copy_reuses_original_human_message_but_keeps_latest_handoff():
+    from sec_agent.agent_runtime.model_context import coalesce_context_snapshots
+    context = {"assignment": {"objective": "Compare two quarters", "units": "USD/share"}}
+    rows = [HumanMessage(content=json.dumps({"task_context":context})),
+        ToolMessage(tool_call_id="first",content=json.dumps({"result":{"text":"original source"}, "current_context":{"task_context":context}})),
+        ToolMessage(tool_call_id="latest",content=json.dumps({"result":{"error":"keep this"}, "current_context":{"task_context":context}}))]
+    original = deepcopy(rows)
+    result = coalesce_context_snapshots(rows)
+    assert result[0] == rows[0] and result[-1] == rows[-1] and rows == original
+    body = json.loads(result[1].content)
+    assert body["result"] == {"text":"original source"}
+    assert body["current_context"]["task_context"]["identical_snapshot_retained_at"] == {"message_index":0,"field":"task_context"}
+    # A future user message cannot be described as an earlier retained copy.
+    reordered = [rows[1], rows[0], rows[2]]
+    assert coalesce_context_snapshots(reordered)[0] == rows[1]
+
+
 def test_working_phase_checkpoint_preserves_exact_material_evidence_and_recent_batch():
     rows=[HumanMessage(content="Overall assignment; no annual inference from quarter."),
         *source_messages("SOURCE-A"), *source_messages("SOURCE-B"), *source_messages("SOURCE-C"), *source_messages("LATEST")]
@@ -136,11 +182,12 @@ def test_same_checkpoint_cannot_be_repaid_when_protected_context_still_exceeds_t
         request_checkpoint(rows,model(research_checkpoint_tokens=1))
 
 
-def test_context_blockage_notifies_lead_once_and_never_restarts_the_expert_allowance():
+@pytest.mark.parametrize("reason", ["research_context_checkpoint_insufficient", "research_context_checkpoint_input_limit_exceeded"])
+def test_context_blockage_notifies_lead_once_and_never_restarts_the_expert_allowance(reason):
     ports=_ToolPorts();helps=[];calls=[]
     def turn(request):
         calls.append(request)
-        raise DeepSeekStructuredAgentError("research_context_checkpoint_insufficient")
+        raise DeepSeekStructuredAgentError(reason)
     def help(state,config):
         helps.append(state)
         return {"disposition":"continue", "diagnosis":"Required joint evidence still exceeds the current window.",
@@ -174,7 +221,7 @@ def test_checkpoint_cannot_silently_drop_an_open_question():
 
 def test_actual_sdk_uses_audited_author_turn_for_checkpoint_and_native_acceptance():
     from test_deepseek_structured_agents import _config, _models
-    captured=[];events=[];ports=_ToolPorts()
+    captured=[];events=[];private=[];ports=_ToolPorts()
     note=working_note(phase_status="working",findings=[],retain_source_ids=[])
     def serve(request):
         body=json.loads(request.content);captured.append(body)
@@ -188,7 +235,8 @@ def test_actual_sdk_uses_audited_author_turn_for_checkpoint_and_native_acceptanc
     with httpx.Client(transport=httpx.MockTransport(serve)) as client:
         models=_models();models["specialist"]=model(http_client=client,research_checkpoint_tokens=1)
         configured=_config().model_copy(update={"agentic_message_history":True,"runtime_context_binding":True})
-        adapter=DeepSeekStructuredAgentAdapter(config=configured,chat_models=models,audit_sink=events.append)
+        adapter=DeepSeekStructuredAgentAdapter(config=configured,chat_models=models,audit_sink=events.append,
+            private_audit_sink=private.append)
         graph=build_specialist_agentic_state_graph(dependencies=SpecialistAgenticDependencies(
             model_turn=adapter.specialist_model_turn,turn_source="provider_model",
             evidence_tool=ports.evidence,finance_tool=ports.finance,working_state_enabled=True)).compile()
@@ -198,3 +246,27 @@ def test_actual_sdk_uses_audited_author_turn_for_checkpoint_and_native_acceptanc
     assert len(captured)==1 and result["notebook"]["model_turn_count"]==1
     assert any(e.get("context_checkpoint") for e in events)
     assert result["review_reason"]=="research_context_checkpoint_unresolved"
+    response = next(e['raw_response'] for e in private if e.get('raw_response'))
+    assert response['response_metadata']['fin_runtime_input_measurement']['provider_input_tokens'] == 100
+    assert 'fin_runtime_input_measurement' not in json.dumps(captured)
+
+
+def test_oversized_checkpoint_has_diagnostic_notice_and_never_calls_transport():
+    from test_deepseek_structured_agents import _config, _models, _agentic_turn_request
+    events=[]
+    def forbidden(request):
+        raise AssertionError("Oversized checkpoint must not reach transport")
+    with httpx.Client(transport=httpx.MockTransport(forbidden)) as client:
+        models=_models(); models['specialist']=model(http_client=client,research_checkpoint_tokens=1)
+        config=_config().model_copy(update={'agentic_message_history':True,'runtime_context_binding':True})
+        config=config.model_copy(update={'token_budget_basis':{**config.token_budget_basis,
+            'specialist':config.token_budget_basis['specialist'].model_copy(update={'max_input_characters':10000})}})
+        adapter=DeepSeekStructuredAgentAdapter(config=config,chat_models=models,audit_sink=events.append)
+        request=_agentic_turn_request()
+        request['allowed_actions']=[*request['allowed_actions'],'update_research_state']
+        request['task_context']={'overall_assignment':'x'*20000}
+        with pytest.raises(DeepSeekStructuredAgentError,match='research_context_checkpoint_input_limit_exceeded'):
+            adapter.specialist_model_turn(request)
+    blocked=next(e for e in events if e.get('status')=='blocked_before_transport_input_limit')
+    assert blocked['context_checkpoint']['trigger_tokens']==1
+    assert blocked['provider_call_attempted'] is False

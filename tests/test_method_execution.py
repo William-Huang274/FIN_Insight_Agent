@@ -29,10 +29,34 @@ def fixture():
 def test_method_content_is_actually_bound_and_hash_changes_on_method_selection():
     task,_,_=fixture()
     payload=method_payload(task)
-    assert "OCI重分类" in payload["methods"][0]["content"]
+    assert "OCI重分类" in next(m['content'] for m in payload['methods'] if m['method_id']=='financial_quality')
+    assert 'finance' in payload['method_digests']
     assert len(payload["method_digests"]["financial_quality"])==64
     task.method_ids=["power_projects"]
-    assert "取水" in method_payload(task)["methods"][0]["content"]
+    assert "取水" in next(m['content'] for m in method_payload(task)['methods'] if m['method_id']=='power_projects')
+
+
+def test_execution_receipt_can_explain_blocker_but_cannot_support_financial_claim():
+    from sec_agent.research_foundation.source_document_navigation import SourceExecutionReceipt
+    task, source, result = fixture()
+    receipt = SourceExecutionReceipt(receipt_id='EXEC::'+'b'*64, operation='read',
+        status='tool_failure', provider_receipt_digest='c'*64)
+    result.task_note.execution_receipt_refs = [receipt.receipt_id]
+    receipts = {receipt.receipt_id:receipt}
+    assert assess_result_contract(task,result,{'S1':source},receipts)==[]
+    result.findings[0].source_ids = [receipt.receipt_id]
+    assert assess_result_contract(task,result,{'S1':source},receipts)[0]['code']=='unknown_source'
+    result.findings[0].source_ids = ['S1']
+    assert assess_result_contract(task,result,{'S1':source})[0]['code']=='unknown_execution_receipt'
+
+
+def test_current_capture_date_does_not_become_historical_publication():
+    task, source, result = fixture()
+    source = source.model_copy(update={'vintage':'known_as_of','known_at':date(2026,9,18)})
+    assert 'source_publication_outside_scope' in {e['code'] for e in assess_result_contract(task,result,{'S1':source})}
+    task.as_of=date(2026,9,18)
+    source.published_at=None
+    assert assess_result_contract(task,result,{'S1':source})==[]
 
 
 @pytest.mark.parametrize("change,code",[

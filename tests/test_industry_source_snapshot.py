@@ -2,9 +2,60 @@ from __future__ import annotations
 
 import importlib.util
 from pathlib import Path
+import json
+import pytest
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
+
+
+def test_fred_latest_history_filters_future_and_retains_retrospective_boundary(monkeypatch):
+    module=_load_industry_snapshot_module()
+    class Response:
+        text='observation_date,TEST\n2025-01-01,101\n2026-01-01,999\n2025-02-01,102\n2025-03-01,NaN\n'
+        def raise_for_status(self):pass
+    monkeypatch.setattr(module.requests,'get',lambda *a,**kw:Response())
+    source=dict(provider='FRED',source_family='macro',route_type='fred_csv')
+    series=dict(series_id='TEST',unit='index')
+    rows=module.download_fred_series(source,series,as_of_date='2025-08-31',fetched_at='2026-09-18T00:00:00Z',timeout=1)
+    assert [r['value'] for r in rows]==[101,102]
+    assert all(r['revision_status']=='current_revised_not_historical_vintage' for r in rows)
+    basis=json.loads(rows[0]['facet_json'])['temporal_basis']
+    assert basis['known_as_of'] is None and not basis['historical_information_set_eligible']
+    evidence=module.build_series_evidence_row(source,series,rows,as_of_date='2025-08-31',fetched_at='2026-09-18T00:00:00Z')
+    assert 'not the information available then' in evidence['caveats'][-1]
+    assert evidence['facet']['temporal_basis']==basis
+    assert json.loads(module.industry_observation_row(rows[0])[-2])['temporal_basis']==basis
+
+
+def test_fred_strict_vintage_requests_information_date_and_redacts_key(monkeypatch):
+    module=_load_industry_snapshot_module();monkeypatch.setenv('FRED_API_KEY','test-secret')
+    class Response:
+        def raise_for_status(self):pass
+        def json(self):
+            return dict(realtime_start='2025-08-31',realtime_end='2025-08-31',count=1,observations=[dict(date='2025-07-01',value='100')])
+    def get(url,params,timeout):
+        assert url=='https://api.stlouisfed.org/fred/series/observations'
+        assert params['realtime_start']==params['realtime_end']==params['observation_end']=='2025-08-31'
+        assert params['api_key']=='test-secret'
+        return Response()
+    monkeypatch.setattr(module.requests,'get',get)
+    rows=module.download_fred_series(dict(time_mode='strict_as_of'),dict(series_id='TEST'),as_of_date='2025-08-31',fetched_at='2026-09-18T00:00:00Z',timeout=1)
+    assert rows[0]['revision_status']=='historical_vintage_as_of'
+    assert json.loads(rows[0]['facet_json'])['temporal_basis']['historical_information_set_eligible']
+    assert 'test-secret' not in json.dumps(rows)
+    def fail(*a,**kw):raise module.requests.HTTPError('https://example.com?api_key=test-secret')
+    monkeypatch.setattr(module.requests,'get',fail)
+    with pytest.raises(RuntimeError) as exc:
+        module.download_fred_series(dict(time_mode='strict_as_of'),dict(series_id='TEST'),as_of_date='2025-08-31',fetched_at='2026-09-18T00:00:00Z',timeout=1)
+    assert 'test-secret' not in str(exc.value)
+
+
+def test_fred_strict_missing_key_never_falls_back_to_current_csv(monkeypatch):
+    module=_load_industry_snapshot_module();monkeypatch.delenv('FRED_API_KEY',raising=False)
+    monkeypatch.setattr(module.requests,'get',lambda *a,**kw:pytest.fail('unexpected transport'))
+    with pytest.raises(ValueError,match='no_latest_csv_fallback'):
+        module.download_fred_series(dict(time_mode='strict_as_of'),dict(series_id='TEST'),as_of_date='2025-08-31',fetched_at='2026-09-18T00:00:00Z',timeout=1)
 
 
 def _load_industry_snapshot_module():

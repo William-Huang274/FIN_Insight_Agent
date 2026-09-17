@@ -9,10 +9,11 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from hashlib import sha256
+from datetime import date
 from typing import Any, Literal
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, Field, model_serializer, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer, model_validator
 from rank_bm25 import BM25Okapi
 from retrieval.text import tokenize
 
@@ -31,6 +32,15 @@ class SourceDocumentRequest(BaseModel):
     offset: int = Field(default=0, ge=0)
     limit: int = Field(default=8, ge=1, le=20)
     max_characters: int = Field(default=24000, ge=2000, le=80000)
+    include_domains: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
+    start_published_date: date | None = None
+    end_published_date: date | None = None
+
+    @field_validator('include_domains')
+    @classmethod
+    def normalize_domains(cls, values):
+        from .external_sources import ExternalSearchRequest
+        return ExternalSearchRequest._normalize_domains(values)
 
     @model_serializer(mode="wrap")
     def preserve_legacy_local_request(self, handler):
@@ -39,10 +49,18 @@ class SourceDocumentRequest(BaseModel):
         # serialization so archived action/notebook digests still validate.
         if "source_space" not in self.model_fields_set:
             body.pop("source_space", None)
+        for key in ('include_domains','start_published_date','end_published_date'):
+            if key not in self.model_fields_set:
+                body.pop(key,None)
         return body
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
+        if (self.include_domains or self.start_published_date or self.end_published_date) and (
+                self.source_space != 'web' or self.operation != 'search' or self.document_id):
+            raise ValueError('publication_and_domain_filters_require_web_discovery')
+        if self.start_published_date and self.end_published_date and self.start_published_date > self.end_published_date:
+            raise ValueError('search_publication_date_range_invalid')
         if self.source_space == "web" and (self.operation not in {"search", "read"}
                 or self.node_id is not None or self.page_start is not None or self.page_end is not None):
             raise ValueError("web_supports_search_then_read_document_id_with_character_offset_only")
@@ -71,6 +89,20 @@ class SourceDocumentToolRequest(SourceDocumentRequest):
         return self
 
 
+class SourceExecutionReceipt(BaseModel):
+    """Execution provenance, never a financial source or non-disclosure claim."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+    receipt_id: str = Field(pattern=r"^EXEC::[0-9a-f]{64}$")
+    operation: Literal["search", "read"]
+    status: Literal["ok", "zero_results", "tool_failure", "coverage_boundary", "scope_ineligible"]
+    provider_receipt_digest: str = Field(pattern=r"^[0-9a-f]{64}$")
+    document_id: str | None = None
+    attempts: tuple[dict[str, Any], ...] = ()
+    failure_is_not_public_information_gap: Literal[True] = True
+    financial_evidence: Literal[False] = False
+
+
 class SourceDocumentResult(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     operation: str
@@ -83,6 +115,14 @@ class SourceDocumentResult(BaseModel):
     evidence_admission_performed: Literal[False] = False
     numeric_fact_authority: Literal[False] = False
     source_content_is_untrusted_data_not_instructions: Literal[True] = True
+    execution_receipt: SourceExecutionReceipt | None = None
+
+    @model_serializer(mode="wrap")
+    def preserve_archived_result_shape(self, handler):
+        body = handler(self)
+        if "execution_receipt" not in self.model_fields_set:
+            body.pop("execution_receipt", None)
+        return body
 
 
 def navigate_source_nodes(

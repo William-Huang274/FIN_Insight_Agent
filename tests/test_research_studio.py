@@ -14,7 +14,12 @@ def test_studio_public_methods_and_native_topology_only():
     app.include_router(build_report_sessions_router(SimpleNamespace(sdk=SimpleNamespace(assistants=SimpleNamespace(get_graph=graph)))))
     with TestClient(app) as client:
         methods = client.get("/research-studio").json()
-        assert {m["method_id"] for m in methods["methods"]} == {"lead", "finance", "industry_product", "counter", "writer", "verifier"}
+        assert {m["method_id"] for m in methods["methods"]} == {
+            "lead", "finance", "industry_product", "counter", "writer", "verifier",
+            "research_loop", "semiconductor_systems", "model_compute_demand", "manufacturing_capacity",
+            "cloud_infrastructure", "software_platforms", "power_projects", "financing_ownership",
+            "financial_quality", "macro_valuation",
+        }
         assert all(m["content"] and m["grants_authority"] is False for m in methods["methods"])
         assert methods["editable_runtime"] is False
         result = client.get("/research-studio/graph/research")

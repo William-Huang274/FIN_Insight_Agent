@@ -10,10 +10,22 @@ from __future__ import annotations
 
 from datetime import date
 from hashlib import sha256
+import json
 from urllib.parse import urlsplit
 
 from .external_sources import ExternalCaptureRequest, ExternalSearchRequest
-from .source_document_navigation import SourceDocumentRequest, SourceDocumentResult, navigate_source_nodes
+from .source_document_navigation import SourceDocumentRequest, SourceDocumentResult, SourceExecutionReceipt, navigate_source_nodes
+
+
+def _execution_receipt(request, provider_digest, status, attempts=()):
+    # A capture can serve many read windows and searches. Bind the execution ID
+    # to the request and result state, while retaining the original capture ID.
+    identity = json.dumps({'request': request.model_dump(mode='json'),
+        'provider_receipt_digest': provider_digest, 'status': status},
+        sort_keys=True, ensure_ascii=False, separators=(',', ':'))
+    return SourceExecutionReceipt(receipt_id='EXEC::'+sha256(identity.encode()).hexdigest(),
+        operation=request.operation, status=status, provider_receipt_digest=provider_digest,
+        document_id=request.document_id, attempts=tuple(a.model_dump(mode='json') for a in attempts))
 
 
 class WebSourceReader:
@@ -30,6 +42,7 @@ class WebSourceReader:
             receipt = await self.discovery.search(ExternalSearchRequest(
                 query=request.query, branch_id=branch_id, run_scope=run_scope,
                 purpose="Agent-selected public source research; no Evidence or NumericFact promotion",
+                **{k:getattr(request,k) for k in ('include_domains','start_published_date','end_published_date') if k in request.model_fields_set},
                 max_results=min(request.limit, 8)))
             items = []
             for candidate in receipt.candidates:
@@ -42,6 +55,8 @@ class WebSourceReader:
                     "publication_date_status": "search_provider_metadata_not_independently_verified"})
             return SourceDocumentResult(operation="search", items=tuple(items), next_offset=None,
                 total_matches=len(items), source_snapshot_sha256=receipt.receipt_digest,
+                execution_receipt=_execution_receipt(request, receipt.receipt_digest,
+                    receipt.status, receipt.attempted_providers),
                 notice="Live Exa search. Snippets are not citations. Read a WEB document_id in this branch; an empty result or tool failure is not a public-information gap. "
                        + str([attempt.model_dump() for attempt in receipt.attempted_providers]))
         stored = self._candidates.get((*key, request.document_id))
@@ -64,8 +79,9 @@ class WebSourceReader:
                 branch_id=branch_id, run_scope=run_scope, render_policy="hosted",
                 max_characters=200000, timeout_seconds=30))
             if result.status != "captured":
-                return SourceDocumentResult(operation="read", items=(), next_offset=None, total_matches=0,
+                return SourceDocumentResult(operation=request.operation, items=(), next_offset=None, total_matches=0,
                     source_snapshot_sha256=result.receipt_digest,
+                    execution_receipt=_execution_receipt(request, result.receipt_digest, 'tool_failure', result.attempts),
                     notice="Source fetch failed, not public non-disclosure: " + str([a.model_dump() for a in result.attempts]))
             self._captures[capture_key] = result
         if request.operation == "search":
@@ -87,12 +103,15 @@ class WebSourceReader:
                     "offset":start, "max_characters":item["content_characters"]}), branch_id=branch_id, run_scope=run_scope)
                 passages.extend(read.items)
             return matches.model_copy(update={"items":tuple(passages),
+                "execution_receipt":_execution_receipt(request, result.receipt_digest,
+                    'ok' if passages else 'zero_results', result.attempts),
                 "notice":"Matched bounded passages read verbatim from the captured original, with exact character locators. These are not complete-document or financial-quality verification. Read adjacent offsets only if the passage ends before the needed context."})
         end = min(len(result.text), request.offset + request.max_characters)
         passage = result.text[request.offset:end]
         if not passage:
             return SourceDocumentResult(operation="read", items=(), next_offset=None, total_matches=0,
                 source_snapshot_sha256=result.receipt_digest,
+                execution_receipt=_execution_receipt(request, result.receipt_digest, 'coverage_boundary', result.attempts),
                 notice=f"Captured text ends at character {len(result.text)}; requested offset {request.offset}. "
                     f"Host capture truncated={result.truncated}. This is the captured-text boundary, NOT verified "
                     "document completeness or public non-disclosure. Read an earlier offset or search for the relevant "
@@ -128,4 +147,5 @@ class WebSourceReader:
                    if commercial_preview else "News, posts and self-media may be used with explicit source limitations; do not present them as authoritative numbers.")}
         return SourceDocumentResult(operation="read", items=(item,), next_offset=end if end < len(result.text) else None,
             total_matches=1, source_snapshot_sha256=result.receipt_digest,
+            execution_receipt=_execution_receipt(request, result.receipt_digest, 'ok', result.attempts),
             notice="Web read uses character offsets, not PDF pages. Exact quotes remain required; citation eligibility is not factual, temporal or completeness verification.")

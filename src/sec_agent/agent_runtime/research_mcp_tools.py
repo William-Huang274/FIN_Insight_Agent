@@ -496,6 +496,8 @@ class MCPToolLaneAdapter(AbstractContextManager["MCPToolLaneAdapter"]):
                     items.append({"result_state": "typed_gap", "navigation": {
                         "next_offset": result.next_offset, "total_matches": result.total_matches,
                         "notice": result.notice, "public_information_gap_proved": False,
+                        **({'execution_receipt': result.execution_receipt.model_dump(mode='json')}
+                           if result.execution_receipt is not None else {}),
                     }, "mcp_receipt_chain": [call.receipt]})
                     states.add("typed_gap")
                 continue

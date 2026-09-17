@@ -31,6 +31,28 @@ def test_snapshot_filters_future_and_revision_without_hiding_failure(tmp_path):
     with pytest.raises(FileExistsError):build_snapshot(snapshot.path,[],[])
 
 
+def test_retrospective_policy_is_explicit_and_shared_by_read_search_and_contract(tmp_path):
+    import sqlite3, json
+    from datetime import date
+    from test_method_execution import fixture
+    from sec_agent.research_foundation.method_execution import assess_result_contract
+    original=make_snapshot(tmp_path)
+    with sqlite3.connect(original.path) as db:
+        db.execute("UPDATE sources SET published_at=NULL, metadata=? WHERE id='REVISED'",(json.dumps({'known_at':'2026-09-18'}),))
+    assert original.read('REVISED','2025-06-01')['status']=='ineligible_vintage_or_date'
+    retrospective=ResearchSnapshot(original.path,time_mode='retrospective',knowledge_as_of='2026-09-18')
+    assert retrospective.read('REVISED','2025-06-01')['status']=='readable'
+    assert any(s['id']=='REVISED' and s['eligible'] for s in retrospective.catalog('2025-06-01'))
+    with pytest.raises(ValueError,match='knowledge_date_precedes'):
+        retrospective.catalog('2027-01-01')
+    task,source,result=fixture()
+    task.time_mode='retrospective';task.knowledge_as_of=date(2026,9,18)
+    source.vintage='current_revised';source.published_at=None;source.known_at=date(2026,9,18)
+    assert assess_result_contract(task,result,{'S1':source})==[]
+    task.time_mode='strict_as_of'
+    assert assess_result_contract(task,result,{'S1':source})
+
+
 def test_scoped_full_originals_are_not_cut_to_top_k_when_within_budget(tmp_path):
     import sqlite3
     snapshot=make_snapshot(tmp_path)
@@ -122,3 +144,34 @@ def test_no_paid_worker_when_all_source_inputs_are_unavailable(tmp_path):
     graph=compile_method_probe(snapshot=make_snapshot(tmp_path),call=call,record=lambda *a:None)
     result=asyncio.run(graph.ainvoke(dict(question='q',as_of='2025-06-01',catalog_ids=['FAILED'],waves=0,results=[],decisions=[])))
     assert calls==['lead','lead'] and result['terminal']=='bounded_stop'
+
+
+def test_same_wave_dependencies_use_native_order_and_original_sources(tmp_path):
+    calls=[]
+    async def call(actor,payload,schema):
+        calls.append(actor)
+        if actor=='lead':
+            if payload['results']:
+                return dict(action='stop',public_basis='used dependencies',synthesis='limited',open_issues=[],tasks=[])
+            return dict(action='delegate',public_basis='sequential checks',synthesis='',open_issues=[],tasks=[dict(
+                task_id=name,question='compare',method_id='financial_quality',steps=['F2'],expectation='factual',
+                source_ids=['S1'],search_terms=['Revenue'],dependency_ids=['first'] if name=='second' else [])
+                for name in ['second','first']])
+        assert [r['obligation']['obligation_id'] for r in payload['prior_results']]==(['first'] if actor=='second' else [])
+        return dict(obligation_id=actor,execution='completed',summary='checked',steps=[dict(step_id='F2',status='completed',finding='checked',source_ids=['S1:p1'])],findings=[],unresolved=[],task_note=dict(changes=['checked'],blockers=[],next_action='lead'))
+    graph=compile_method_probe(snapshot=make_snapshot(tmp_path),call=call,record=lambda *a:None,max_waves=1)
+    result=asyncio.run(graph.ainvoke(dict(question='q',as_of='2025-06-01',catalog_ids=['S1'],waves=0,results=[],decisions=[])))
+    assert calls==['lead','first','second','lead'] and result['waves']==1
+
+
+def test_cyclic_same_wave_plan_is_rejected_before_workers(tmp_path):
+    calls=[]
+    async def call(actor,payload,schema):
+        calls.append(actor)
+        return dict(action='delegate',public_basis='bad cycle',synthesis='',open_issues=[],tasks=[dict(
+            task_id=name,question='compare',method_id='financial_quality',steps=['F2'],expectation='factual',
+            source_ids=['S1'],search_terms=['Revenue'],dependency_ids=[other]) for name,other in [('a','b'),('b','a')]])
+    graph=compile_method_probe(snapshot=make_snapshot(tmp_path),call=call,record=lambda *a:None)
+    with pytest.raises(ValueError,match='cyclic_task_dependency'):
+        asyncio.run(graph.ainvoke(dict(question='q',as_of='2025-06-01',catalog_ids=['S1'],waves=0,results=[],decisions=[])))
+    assert calls==['lead']

@@ -2,16 +2,17 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Callable, Mapping, Sequence
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from hashlib import sha256
 import ipaddress
+import json
 import re
 import socket
 import time
 from typing import Any, AsyncContextManager, Literal, Protocol
 from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_serializer, model_validator
 
 from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from sec_agent.research_foundation.contracts import ResearchRunScope
@@ -75,6 +76,16 @@ class ExternalSearchRequest(BaseModel):
     purpose: str = Field(min_length=3, max_length=500)
     max_results: int = Field(default=5, ge=1, le=8)
     include_domains: tuple[str, ...] = Field(default_factory=tuple, max_length=12)
+    start_published_date: date | None = None
+    end_published_date: date | None = None
+
+    @model_serializer(mode='wrap')
+    def preserve_legacy_digest(self, handler):
+        body=handler(self)
+        for key in ('start_published_date','end_published_date'):
+            if key not in self.model_fields_set:
+                body.pop(key,None)
+        return body
 
     @field_validator("query", "branch_id", "purpose")
     @classmethod
@@ -102,6 +113,10 @@ class ExternalSearchRequest(BaseModel):
     def validate_branch_scope(self) -> "ExternalSearchRequest":
         if self.branch_id not in self.run_scope.selected_branch_ids:
             raise ValueError("external_search_branch_outside_run_scope")
+        if self.start_published_date and self.end_published_date and self.start_published_date > self.end_published_date:
+            raise ValueError('search_publication_date_range_invalid')
+        if self.end_published_date and self.end_published_date > self.run_scope.research_as_of.date():
+            raise ValueError('search_end_after_research_cutoff')
         return self
 
     @property
@@ -128,6 +143,7 @@ class ProviderHit(BaseModel):
     url: str
     snippet: str = ""
     published_at: str | None = None
+    runtime_compatibility: str | None = None
 
 
 class RetrievalCandidate(BaseModel):
@@ -170,6 +186,14 @@ class ProviderAttempt(BaseModel):
     returned_hits: int = Field(ge=0)
     accepted_hits: int = Field(ge=0)
     failure_code: str | None = None
+    runtime_compatibility: tuple[str, ...] = ()
+
+    @model_serializer(mode='wrap')
+    def preserve_archived_shape(self, handler):
+        body=handler(self)
+        if 'runtime_compatibility' not in self.model_fields_set:
+            body.pop('runtime_compatibility',None)
+        return body
 
 
 class DiscoveryReceipt(BaseModel):
@@ -247,34 +271,45 @@ class ExaHostedMCPProvider:
         endpoint: str = EXA_HOSTED_MCP_ENDPOINT,
         client_factory: Callable[[], AsyncContextManager[_MCPClient]] | None = None,
         timeout_seconds: float = 30.0,
+        on_response=None,
     ) -> None:
         self.endpoint = endpoint
         self.timeout_seconds = timeout_seconds
         self._client_factory = client_factory
+        self.on_response = on_response
 
-    def _client(self) -> AsyncContextManager[_MCPClient]:
+    def _client(self, *, advanced=False) -> AsyncContextManager[_MCPClient]:
         if self._client_factory is not None:
             return self._client_factory()
         try:
             from mcp import Client
         except ImportError as exc:  # pragma: no cover - dependency profile guard
             raise ExternalSourceError("exa_mcp_dependency_missing") from exc
-        return Client(self.endpoint, read_timeout_seconds=self.timeout_seconds)
+        endpoint=self.endpoint
+        if advanced and endpoint == EXA_HOSTED_MCP_ENDPOINT:
+            endpoint += '?tools=web_search_exa,web_fetch_exa,web_search_advanced_exa'
+        return Client(endpoint, read_timeout_seconds=self.timeout_seconds)
 
     async def search(self, request: ExternalSearchRequest) -> Sequence[ProviderHit]:
+        advanced=bool(request.include_domains or request.start_published_date or request.end_published_date)
+        arguments={'query':request.query,'numResults':request.max_results}
+        if request.include_domains:
+            arguments['includeDomains']=list(request.include_domains)
+        for field, wire in [('start_published_date','startPublishedDate'),('end_published_date','endPublishedDate')]:
+            if getattr(request,field):
+                arguments[wire]=getattr(request,field).isoformat()
         try:
-            async with self._client() as client:
+            async with self._client(advanced=advanced) as client:
                 result = await client.call_tool(
-                    "web_search_exa",
-                    {
-                        "query": request.query,
-                        "numResults": request.max_results,
-                    },
+                    'web_search_advanced_exa' if advanced else 'web_search_exa', arguments,
                 )
         except ExternalSourceError:
             raise
         except Exception as exc:
             raise ExternalSourceError("exa_mcp_search_failed") from exc
+
+        if self.on_response is not None:
+            self.on_response('web_search_advanced_exa' if advanced else 'web_search_exa',arguments,result)
 
         if bool(_read_attr(result, "is_error", "isError", default=False)):
             raise ExternalSourceError("exa_mcp_tool_error")
@@ -289,8 +324,27 @@ class ExaHostedMCPProvider:
             return tuple(structured_hits[: request.max_results])
         text = "\n".join(_tool_result_text(result)).strip()
         if not text:
+            if isinstance(structured, Mapping) and structured.get('results') == []:
+                return ()
+            raise ExternalSourceError('exa_search_empty_unclassified_response')
+        try:
+            encoded=json.loads(text)
+        except json.JSONDecodeError:
+            encoded=None
+        if isinstance(encoded, Mapping):
+            hits=_parse_structured_search_hits(encoded)
+            if hits:
+                return tuple(h.model_copy(update={'runtime_compatibility':
+                    'runtime_compatibility:json_text_to_structured_search_results'}) for h in hits[:request.max_results])
+            if encoded.get('results') == []:
+                return ()
+            raise ExternalSourceError('exa_search_json_results_unrecognized')
+        hits=_parse_exa_search_text(text)
+        if hits:
+            return tuple(hits[:request.max_results])
+        if text.strip().lower().rstrip('.') in {'no results found', 'no search results found'}:
             return ()
-        return tuple(_parse_exa_search_text(text)[: request.max_results])
+        raise ExternalSourceError('exa_search_response_unrecognized_not_zero_results')
 
 
 class DDGSDiagnosticProvider:
@@ -464,6 +518,8 @@ class ExternalSourceDiscovery:
                     status="ok" if accepted else "zero_results",
                     returned_hits=len(hits),
                     accepted_hits=accepted,
+                    **({'runtime_compatibility':tuple(sorted({h.runtime_compatibility for h in hits if h.runtime_compatibility}))}
+                       if any(h.runtime_compatibility for h in hits) else {}),
                 )
             )
 

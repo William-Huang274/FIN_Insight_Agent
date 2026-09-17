@@ -19,7 +19,8 @@ snapshot_policy:
       - "revision_status"
       - "fetched_at"
   notes:
-    - "FRED CSV routes require no key and are used as the first normalized snapshot path."
+    - "FRED CSV is a keyless retrospective route: observation cutoff is not historical information availability. Revision mode persists in revision_status and facet_json.temporal_basis."
+    - "For a historical information set use --fred-time-mode strict_as_of with FRED_API_KEY; the official observations API fixes realtime_start/realtime_end and never falls back to current CSV."
     - "FDA/CMS public JSON routes are metadata/event-context canaries and do not replace company-filed financial facts."
     - "EIA v2 routes require EIA_API_KEY at runtime; API URLs written to artifacts must redact the key."
 

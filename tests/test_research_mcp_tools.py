@@ -67,6 +67,26 @@ def _binding():
     return _COMPOSITION.mcp_run_binding
 
 
+def test_source_execution_receipt_reaches_tool_lane_without_becoming_evidence():
+    from types import SimpleNamespace
+    from sec_agent.research_foundation.source_document_navigation import SourceDocumentResult, SourceExecutionReceipt
+    receipt=SourceExecutionReceipt(receipt_id='EXEC::'+'a'*64,operation='read',status='tool_failure',
+        provider_receipt_digest='b'*64,attempts=({'failure_code':'capture_http_status_503'},))
+    result=SourceDocumentResult(operation='read',items=(),next_offset=None,total_matches=0,
+        notice='Fetch failed',source_snapshot_sha256='b'*64,execution_receipt=receipt)
+    adapter=object.__new__(MCPToolLaneAdapter)
+    adapter._source_read_enabled=True
+    adapter._call=lambda *a,**kw:SimpleNamespace(error=False,content=result.model_dump(mode='json'),receipt={'test':'mcp'})
+    lane=SimpleNamespace(task=SimpleNamespace(branch_id=_BRANCH,evidence_requests=[{
+        'source_document':{'source_space':'web','operation':'read','document_id':'WEB::found'}}]))
+    items=[];states=set()
+    adapter._evidence(lane,SimpleNamespace(model_dump=lambda **kw:{}),items=items,states=states,calls=[],recoverable_calls=[])
+    assert len(items)==1 and states=={'typed_gap'}
+    preserved=items[0]['navigation']['execution_receipt']
+    assert preserved['status']=='tool_failure' and preserved['receipt_id']==receipt.receipt_id
+    assert not preserved['financial_evidence'] and not items[0]['navigation']['public_information_gap_proved']
+
+
 def test_run_composition_projects_foundation_specialist_round_authority() -> None:
     ceiling = _COMPOSITION.foundation_binding.scope_ceiling
 

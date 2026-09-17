@@ -61,9 +61,13 @@ def test_web_search_read_paginate_preserve_exact_source_without_numeric_promotio
     assert next_page.items[0]["passage"] == text[2000:4000]
     assert len(fetcher.calls) == 1
     assert next_page.source_snapshot_sha256 == read.source_snapshot_sha256
+    assert next_page.execution_receipt.receipt_id != read.execution_receipt.receipt_id
+    assert next_page.execution_receipt.provider_receipt_digest == read.execution_receipt.provider_receipt_digest
     exhausted = _call(reader, "read", document_id=doc_id, offset=len(text))
     assert not exhausted.items and exhausted.next_offset is None
     assert "NOT verified" in exhausted.notice and "public non-disclosure" in exhausted.notice
+    assert exhausted.execution_receipt.status == 'coverage_boundary'
+    assert exhausted.execution_receipt.receipt_id != read.execution_receipt.receipt_id
 
 
 def test_long_public_source_remains_readable_after_old_50000_capture_boundary():
@@ -113,6 +117,30 @@ def test_failed_fetch_is_not_promoted_to_public_information_gap():
     result = _call(reader, "read", document_id=doc_id)
     assert not result.items and "not public non-disclosure" in result.notice
     assert "fixture_network_failure" in result.notice
+    assert result.execution_receipt.status == 'tool_failure'
+    assert not result.execution_receipt.financial_evidence
+    assert result.execution_receipt.attempts[0]['failure_code'] == 'fixture_network_failure'
+
+
+@pytest.mark.parametrize('failure,expected', [(False,'zero_results'), (True,'tool_failure')])
+def test_empty_search_keeps_provider_failure_distinct(failure, expected):
+    class Provider:
+        provider_id='test'
+        async def search(self, request):
+            if failure:
+                raise ExternalSourceError('test_provider_failure')
+            return ()
+    reader=WebSourceReader(discovery=ExternalSourceDiscovery(primary=Provider()),capture=None)
+    result=_call(reader,'search',query='missing')
+    assert not result.items and result.execution_receipt.status==expected
+    assert result.model_dump()['execution_receipt']['failure_is_not_public_information_gap']
+
+
+def test_legacy_navigation_result_serialization_is_preserved():
+    from sec_agent.research_foundation.source_document_navigation import SourceDocumentResult
+    result=SourceDocumentResult(operation='read',items=(),next_offset=None,total_matches=0,notice='',source_snapshot_sha256='old')
+    assert 'execution_receipt' not in result.model_dump()
+    assert 'execution_receipt' not in json.loads(result.model_dump_json())
 
 
 def test_web_requires_discovery_within_current_run_and_branch():

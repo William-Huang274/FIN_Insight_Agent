@@ -6,6 +6,7 @@ digests; graph traversal produces candidates, never an inferred financial fact.
 import json
 import sqlite3
 from contextlib import closing
+from datetime import date
 from hashlib import sha256
 from pathlib import Path
 
@@ -67,11 +68,36 @@ def build_snapshot(path: Path, sources, passages, *, entities=(), edges=(), obse
 
 
 class ResearchSnapshot:
-    def __init__(self, path):
+    def __init__(self, path, *, time_mode='strict_as_of', knowledge_as_of=None):
         self.path = Path(path).resolve()
+        if time_mode not in {'strict_as_of', 'retrospective'} or (time_mode=='retrospective' and knowledge_as_of is None):
+            raise ValueError('invalid_snapshot_time_policy')
+        if knowledge_as_of:
+            date.fromisoformat(knowledge_as_of)
+        self.time_mode, self.knowledge_as_of = time_mode, knowledge_as_of
         rows=self._query("SELECT value FROM snapshot_metadata WHERE key='state'")
         if rows != [{'value':'diagnostic_not_production'}]:
             raise ValueError('snapshot_not_complete')
+
+    def _cutoff(self, as_of):
+        date.fromisoformat(as_of)
+        if self.time_mode=='retrospective':
+            if self.knowledge_as_of < as_of:
+                raise ValueError('knowledge_date_precedes_research_date')
+            return self.knowledge_as_of
+        return as_of
+
+    def _vintages(self):
+        return ('dated_original','known_as_of','current_revised') if self.time_mode=='retrospective' else ('dated_original','known_as_of')
+
+    def _source(self, row, as_of):
+        metadata=json.loads(row.get('metadata') or '{}')
+        known=metadata.get('known_at')
+        row['known_at']=known
+        available=known if row['vintage'] in {'known_as_of','current_revised'} and known else row['published_at']
+        row['eligible']=(row['access_state']=='readable' and available is not None
+            and available <= self._cutoff(as_of) and row['vintage'] in self._vintages())
+        return row
 
     def _query(self, sql, parameters=()):
         with closing(sqlite3.connect(self.path.as_uri() + '?mode=ro', uri=True)) as db:
@@ -80,10 +106,9 @@ class ResearchSnapshot:
 
     def catalog(self, as_of):
         # Unavailable and future items remain visible as gaps, not eligible evidence.
-        rows = self._query('SELECT id,title,url,published_at,vintage,access_state FROM sources ORDER BY id')
+        rows = self._query('SELECT id,title,url,published_at,vintage,access_state,metadata FROM sources ORDER BY id')
         for r in rows:
-            r['eligible'] = (r['access_state'] == 'readable' and r['published_at'] is not None
-                             and r['published_at'] <= as_of and r['vintage'] in {'dated_original', 'known_as_of'})
+            self._source(r,as_of)
         return rows
 
     def read(self, source_id, as_of, *, start=0, limit=8):
@@ -92,10 +117,10 @@ class ResearchSnapshot:
         sources = self._query('SELECT * FROM sources WHERE id=?', (source_id,))
         if not sources:
             return {'status': 'unknown_source', 'source_id': source_id, 'items': []}
-        s = sources[0]
+        s = self._source(sources[0],as_of)
         if s['access_state'] != 'readable':
             return {'status': s['access_state'], 'source': s, 'items': []}
-        if s['published_at'] is None or s['published_at'] > as_of or s['vintage'] not in {'dated_original', 'known_as_of'}:
+        if not s['eligible']:
             return {'status': 'ineligible_vintage_or_date', 'source': s, 'items': []}
         items = self._query('SELECT * FROM passages WHERE source_id=? ORDER BY rowid LIMIT ? OFFSET ?', (source_id, limit+1, start))
         return {'status': 'readable', 'source': s, 'items': items[:limit],
@@ -106,27 +131,28 @@ class ResearchSnapshot:
             raise ValueError('empty_terms_or_invalid_limit')
         # Literal terms, no caller-authored SQL or FTS operators.
         expression = ' OR '.join('"' + str(t).replace('"', '""') + '"' for t in terms)
-        scope = (' AND s.id IN (' + ','.join('?' for _ in source_ids) + ')') if source_ids else ''
+        eligible=[s['id'] for s in self.catalog(as_of) if s['eligible'] and (not source_ids or s['id'] in source_ids)]
+        if not eligible:
+            return []
+        scope = ' AND s.id IN (' + ','.join('?' for _ in eligible) + ')'
         return self._query('SELECT p.id,p.source_id,p.locator,p.body,p.digest FROM passage_search f '
             'JOIN passages p ON p.id=f.id JOIN sources s ON s.id=p.source_id '
-            "WHERE passage_search MATCH ? AND s.access_state='readable' AND s.published_at<=? "
-            "AND s.vintage IN ('dated_original','known_as_of')" + scope + ' ORDER BY bm25(passage_search) LIMIT ?',
-            (expression, as_of, *source_ids, limit))
+            "WHERE passage_search MATCH ?" + scope + ' ORDER BY bm25(passage_search) LIMIT ?',
+            (expression, *eligible, limit))
 
     def related(self, entity_id, as_of):
-        return self._query("SELECT e.* FROM edges e JOIN sources s ON s.id=e.source_id "
-            "WHERE (e.subject=? OR e.object=?) AND e.published_at<=? AND s.published_at<=? "
-            "AND s.access_state='readable' AND s.vintage IN ('dated_original','known_as_of') "
+        eligible={s['id'] for s in self.catalog(as_of) if s['eligible']}
+        return [r for r in self._query("SELECT e.* FROM edges e "
+            "WHERE (e.subject=? OR e.object=?) AND e.published_at<=? "
             "AND (e.valid_from IS NULL OR e.valid_from<=?) AND (e.valid_to IS NULL OR e.valid_to>=?)",
-            (entity_id, entity_id, as_of, as_of, as_of, as_of))
+            (entity_id, entity_id, self._cutoff(as_of), as_of, as_of)) if r['source_id'] in eligible]
 
     def entities(self):
         return self._query('SELECT * FROM entities ORDER BY id')
 
     def observations(self, entity, as_of):
-        rows = self._query("SELECT o.* FROM observations o JOIN sources s ON s.id=o.source_id "
-            "WHERE o.entity=? AND s.published_at<=? AND s.access_state='readable' "
-            "AND s.vintage IN ('dated_original','known_as_of') ORDER BY o.period", (entity, as_of))
+        eligible={s['id'] for s in self.catalog(as_of) if s['eligible']}
+        rows = [r for r in self._query("SELECT * FROM observations WHERE entity=? ORDER BY period", (entity,)) if r['source_id'] in eligible]
         for r in rows:
             r['payload'] = json.loads(r['payload'])
         return rows

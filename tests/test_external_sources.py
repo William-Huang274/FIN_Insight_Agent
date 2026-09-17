@@ -271,6 +271,41 @@ def test_exa_hosted_mcp_adapter_parses_locator_only_output() -> None:
     ]
 
 
+def test_exa_advanced_passes_filters_to_provider_and_preserves_legacy_request_digest():
+    from datetime import date
+    client=_FakeExaClient('Title: Original\nURL: https://example.com/report\nPublished: 2026-06-01\nHighlights:\nOriginal locator')
+    provider=ExaHostedMCPProvider(client_factory=lambda:_FakeClientContext(client))
+    request=ExternalSearchRequest(query='quarterly update',branch_id='Q1_ISSUER_TRUTH',
+        run_scope=_run_scope('Q1_ISSUER_TRUTH'),purpose='Find later original',max_results=2,
+        include_domains=('example.com',),start_published_date=date(2026,1,1),end_published_date=date(2026,8,1))
+    asyncio.run(provider.search(request))
+    tool,args=client.calls[0]
+    assert tool=='web_search_advanced_exa'
+    assert args['includeDomains']==['example.com']
+    assert args['startPublishedDate']=='2026-01-01' and args['endPublishedDate']=='2026-08-01'
+    legacy=ExternalSearchRequest(query='quarterly update',branch_id='Q1_ISSUER_TRUTH',
+        run_scope=_run_scope('Q1_ISSUER_TRUTH'),purpose='Find later original')
+    assert 'start_published_date' not in legacy.model_dump(mode='json')
+
+
+@pytest.mark.parametrize('text,expected',[
+    ('{"results":[{"title":"Original filing","url":"https://www.sec.gov/Archives/filing.htm","text":"locator only"}]}','ok'),
+    ('{"results":[]}','zero_results'),
+    ('<html>Unexpected gateway response</html>','tool_failure'),
+    ('{"unexpected_format":true}','tool_failure'),
+])
+def test_json_text_compatibility_is_recorded_and_unknown_response_is_not_empty(text,expected):
+    client=_FakeExaClient(text)
+    provider=ExaHostedMCPProvider(client_factory=lambda:_FakeClientContext(client))
+    request=ExternalSearchRequest(query='original filing',branch_id='Q1_ISSUER_TRUTH',
+        run_scope=_run_scope('Q1_ISSUER_TRUTH'),purpose='Find original')
+    receipt=asyncio.run(ExternalSourceDiscovery(primary=provider).search(request))
+    assert receipt.status==expected
+    if expected=='ok':
+        assert receipt.attempted_providers[0].runtime_compatibility==('runtime_compatibility:json_text_to_structured_search_results',)
+        assert receipt.candidates[0].candidate_is_not_evidence
+
+
 def test_exa_prefers_structured_content_over_text_fallback() -> None:
     client = _FakeExaClient(
         "Title: Wrong fallback\nURL: https://example.com/wrong",

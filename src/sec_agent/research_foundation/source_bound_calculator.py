@@ -35,9 +35,10 @@ class SourceBoundCalculation(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     expression: str = Field(min_length=1, max_length=1000,
         description="Arithmetic using the operand KEYS, parentheses and + - * /. Example: expression '(a-b)-(c-d)' with operands a,b,c,d bound to original source numbers. Every declared operand key must occur; never substitute raw source numbers into the formula and leave their bindings unused. Small integer scale constants allowed; decimals use operands. No functions, attributes, powers or code.")
-    operands: dict[str, CalculationOperand] = Field(min_length=1, max_length=16)
-    result_unit: str = Field(min_length=1, max_length=80,
-        description="Your declared result unit; this calculator does not prove dimensional or financial comparability.")
+    operands: dict[str, CalculationOperand] = Field(min_length=1, max_length=16,
+        description="Operand keys are case-sensitive ASCII identifiers: a letter followed by up to 31 letters, digits or underscores. Use exactly the same names in expression.")
+    result_unit: str = Field(min_length=1, max_length=256,
+        description="Your declared result unit, preferably a short unit label; put explanation in rationale. Preserved verbatim, not normalized or a proof of dimensional or financial comparability.")
     rationale: str = Field(min_length=1, max_length=2000,
         description="Explain the financial formula and period/unit choices for independent review, not hidden reasoning.")
 
@@ -78,8 +79,8 @@ def source_items_from_tool(tool_name: str, body: dict) -> dict[str, dict]:
 def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Callable[[str], dict]) -> dict:
     values, bindings = {}, {}
     for name, operand in request.operands.items():
-        if not re.fullmatch(r"[a-z][a-z0-9_]{0,31}", name):
-            raise ValueError("operand_name_must_be_lowercase_identifier")
+        if not re.fullmatch(r"[A-Za-z][A-Za-z0-9_]{0,31}", name):
+            raise ValueError("operand_name_must_be_ascii_identifier")
         if operand.source_id is None:
             if not operand.assumption_note or operand.literal is None or operand.quote is not None:
                 raise ValueError("unsourced_operand_requires_literal_and_explicit_assumption")
@@ -131,6 +132,17 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                             r"[kMGTPE]?FLOPS|[kMGTPE]?FLOPs|[kMGTPE]?OPS)(?![\w/])",
                             operand.quote)
                         quantity_rule = "numeric_specification_unit_suffix_v1"
+                    if quantity_match is None:
+                        # Only thousands-group punctuation may differ. Require
+                        # a unique complete token in the already exact quote;
+                        # never round, change sign/scale or match identifiers.
+                        matches = [m for m in re.finditer(
+                            r"(?<![\w.,])-?(?:\d{1,3}(?:,\d{3})+|\d+)(?:\.\d+)?(?![\w.,])",
+                            operand.quote)
+                            if m.group().replace(',', '') == operand.literal.replace(',', '')]
+                        if len(matches) == 1:
+                            quantity_match = matches[0]
+                            quantity_rule = "numeric_thousands_grouping_v1"
                     if quantity_match is None:
                         raise ValueError("numeric_literal_not_in_exact_source_quote: operand=" + name)
                 value = _number(operand.literal)
@@ -186,6 +198,12 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
         "authority_note": "Locally calculated from bound inputs and explicit assumptions; NOT an S2 NumericFact or issuer-reported measure. "
             "Disclose non-authoritative inputs and assumptions wherever the result or its inference is used. "
             "Check units, periods, business scope and denominator meaning in financial review."}
+    if any(name != name.lower() for name in values):
+        body["runtime_compatibility_parse"] = {
+            "rule": "case_sensitive_ascii_operand_names_v1",
+            "original_expression_and_names_preserved": True,
+            "semantic_inference": False,
+        }
     return {"calculation_id": "CALC::" + canonical_sha256(body)[:24], **body}
 
 

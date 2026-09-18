@@ -31,6 +31,7 @@
 | financing_ownership | 融资/持仓/资本关系 | 身份与期限→承诺/到账/股数/市值→客户资本链→压力路径 | 13F不是资金流；关联不是造假；未披露动机不能编 |
 | financial_quality | 全行业财务检查 | 分部/同期→经营/非经营→利润现金桥接→季节/交易→反证 | OCI重分类非自动现金出售；税费增加通常抵减净利润增量 |
 | macro_valuation | 宏观/政策/市场定价 | 版本/生效→业务暴露→机制/时滞→事件窗口/反向估值→敏感性 | 当前修订值污染历史任务；价格变化不证明唯一原因 |
+| public_observations | 公开调查/新闻转述/产品反馈 | 原始证据链→题目与分母→转述核对→样本范围→可检验的商业线索 | 多篇转述不是独立测量；采用/计划、态度/错误率、边际比例/交叉分布不可混用 |
 
 每份资源含触发条件、顺序动作、实际交付、下一轮触发与停止。没有样例公司结论，不把072答案放进方法。行业方法共用角色基础金融要求；Verifier不独占基础会计知识。
 
@@ -323,3 +324,15 @@ Lead和worker都接收runtime生成的`judgment_policy`：上级意见不是证�
 `method_revision.revise_workpaper`复用锁定依赖JSON Patch，接受调用方冻结原稿摘要、授权字段路径和模型局部新值。只允许替换已有字段，拒绝旧版本、越权、重复及重叠路径；runtime保留原稿并记录真实前后差异、模型公开理由和`task_note.changes`。无实际变化不记作修改。模型不必重抄整份底稿或长版本身份。返回经过完整Pydantic验证的候选，明确`accepted=false`，调用者还须核原来源/计算合同和研究语义。
 
 该能力独立于`amend_candidate`的schema错误补交，不伪造schema错误来授权语义修订。084由有预算身份的原生LangGraph节点调用，属于方法诊断的显式局部接续；没有将此私有调用脚本当作正式全图的自动派修接线。既有生产编辑接口和数据库身份保持兼容。
+
+### 8.11 公开观察方法的运行接入（085）
+
+新增包内方法`public_observations`，复用`get_research_method`目录与MCP入口。`ResearchObligation`显式选择O1—O5步骤，既有`method_payload`绑定正文/摘要，并注入有界原生worker及共享finance方法。方法包括来源链、题目/分母/样本、转述核对、代表性边界和具体可检验线索；任务以相同`MethodWorkResult`交付，不新增统计意见或来源权威身份。
+
+问卷原图可能只展示部分选项，先检查实际获取/解析范围，不能从百分比余数编造一个类别。来源页面披露方法只提供评估依据，不是可靠性认证。抽样与披露部分参考[AAPOR调查实践](https://aapor.org/standards-and-ethics/best-practices/)及[透明倡议](https://aapor.org/standards-and-ethics/transparency-initiative/)，研究线索与经营机制为FIN适配。
+
+工程测试证明新方法确实送入worker，不能证明模型实际执行正确。真实资格使用本地来源快照、原始获取回执、预先固定的宿主评分和既有来源计算器，按D5-B01/B02分别记录；单次调查/新闻案例不覆盖匿名评论真伪、跨平台去重、历史事件或完整外源采集。结果见[六维测试记录](../engineering/six_source_qualification.zh-CN.md)。
+
+085真实局部修订暴露了路径定位负担：模型把相邻主张的数组位置错配，造成两条线索重复，JSON结构与引用存在性检查仍通过。新增显式`revision_targets`目录与`TargetedMethodRevision`入口：目录给出当前字段全文、版本摘要及短目标引用，模型按当前内容选择`target_ref`，runtime转为既有JSON Patch路径。旧路径入口保持兼容，不静默改写旧运行。绑定以`runtime_compatibility_parse/current_workpaper_revision_target_v1`记录；旧版本、未知目标、重复或越权目标拒绝。该接口仍不能自动证明模型选对了语义目标或改对了内容，必须复核整个修改字段及关联判断。
+
+目标目录能力已通过离线验证，未再次调用模型验证；085在预设3响应上限停止，未采纳错位候选。public_observations v2区分不能按概率设计估计误差与误差不存在，强调每条探索主张保留复用计算依据；真实修订已改统计措辞，但未完整保留两条线索及引用，不记为研究通过。

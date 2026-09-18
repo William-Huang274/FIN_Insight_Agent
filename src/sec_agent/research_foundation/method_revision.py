@@ -11,6 +11,7 @@ import jsonpointer
 from pydantic import Field
 
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+from sec_agent.agent_runtime.evidence_resolution import parsing_record
 from .method_execution import Contract, MethodWorkResult
 
 
@@ -23,6 +24,54 @@ class FieldRevision(Contract):
 class MethodRevision(Contract):
     changes: list[FieldRevision] = Field(max_length=32)
     review_note: str = Field(min_length=1, description='Explain retained judgments and any remaining uncertainty. Do not invent changes.')
+
+
+class TargetedFieldRevision(Contract):
+    target_ref: str = Field(min_length=1, description='Select the runtime target_ref by its CURRENT field content; do not infer array indices or count findings.')
+    value: Any = Field(description='Complete new value for this selected field only.')
+    reason: str = Field(min_length=1)
+
+
+class TargetedMethodRevision(Contract):
+    changes: list[TargetedFieldRevision] = Field(max_length=32)
+    review_note: str = Field(min_length=1)
+
+
+def revision_targets(original: dict, allowed_paths: set[str]) -> dict:
+    """A current-content menu, scoped to the exact workpaper version.
+
+    Long identities and zero-based pointer selection stay runtime-owned.
+    Content is supplied verbatim; no semantic target selection is inferred.
+    """
+    digest = canonical_sha256(original)
+    targets = {}
+    for path in sorted(allowed_paths):
+        current = deepcopy(jsonpointer.resolve_pointer(original, path))
+        ref = 'R-' + canonical_sha256({'base_digest': digest, 'path': path})[:24]
+        targets[ref] = {'path': path, 'current_value': current, 'base_digest': digest}
+    return targets
+
+
+def revise_targeted_workpaper(original: dict, original_digest: str,
+                             revision: TargetedMethodRevision, allowed_paths: set[str]):
+    if canonical_sha256(original) != original_digest:
+        raise ValueError('stale_workpaper_revision')
+    directory = revision_targets(original, allowed_paths)
+    mapped = []
+    records = []
+    for change in revision.changes:
+        if change.target_ref not in directory:
+            raise ValueError('unknown_or_stale_revision_target')
+        target = directory[change.target_ref]
+        mapped.append(FieldRevision(path=target['path'], value=change.value, reason=change.reason))
+        records.append(parsing_record('current_workpaper_revision_target_v1',
+            {'target_ref': change.target_ref}, {'path': target['path'], 'base_digest': original_digest},
+            target_value_digest=canonical_sha256(target['current_value']),
+            financial_meaning_not_inferred=True))
+    candidate, audit = revise_workpaper(original, original_digest,
+        MethodRevision(changes=mapped, review_note=revision.review_note), allowed_paths)
+    audit['runtime_parsing'] = records
+    return candidate, audit
 
 
 def revise_workpaper(original: dict, original_digest: str, revision: MethodRevision,

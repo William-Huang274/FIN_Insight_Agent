@@ -18,7 +18,7 @@ def test_studio_public_methods_and_native_topology_only():
             "lead", "finance", "industry_product", "counter", "writer", "verifier",
             "research_loop", "semiconductor_systems", "model_compute_demand", "manufacturing_capacity",
             "cloud_infrastructure", "software_platforms", "power_projects", "financing_ownership",
-            "financial_quality", "macro_valuation",
+            "financial_quality", "macro_valuation", "public_observations",
         }
         assert all(m["content"] and m["grants_authority"] is False for m in methods["methods"])
         assert methods["editable_runtime"] is False

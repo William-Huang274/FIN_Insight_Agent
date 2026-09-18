@@ -3,7 +3,10 @@ from copy import deepcopy
 import pytest
 
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
-from sec_agent.research_foundation.method_revision import MethodRevision, revise_workpaper
+from sec_agent.research_foundation.method_revision import (
+    MethodRevision, revise_workpaper, revision_targets, TargetedMethodRevision,
+    revise_targeted_workpaper,
+)
 
 
 def paper():
@@ -59,3 +62,32 @@ def test_duplicate_overlapping_and_noop_edits():
         revise_workpaper(original,digest,r,{'/findings','/findings/0/alternative'})
     result,audit=revise_workpaper(original,digest,revision('/summary',original['summary']),{'/summary'})
     assert audit['changes']==[] and result.task_note.changes==[]
+
+
+def test_content_selected_revision_does_not_require_model_array_index():
+    original=paper()
+    original['findings'].append({**deepcopy(original['findings'][0]), 'statement':'Second distinct hypothesis'})
+    paths={'/findings/0/statement','/findings/1/statement'}
+    targets=revision_targets(original,paths)
+    ref=next(k for k,v in targets.items() if v['current_value']=='Second distinct hypothesis')
+    request=TargetedMethodRevision(changes=[dict(target_ref=ref,value='Second qualified hypothesis',reason='Clarify its condition')],review_note='Keep first finding')
+    candidate,audit=revise_targeted_workpaper(original,canonical_sha256(original),request,paths)
+    assert candidate.findings[0].statement==original['findings'][0]['statement']
+    assert candidate.findings[1].statement=='Second qualified hypothesis'
+    assert audit['changes'][0]['path']=='/findings/1/statement'
+    assert audit['runtime_parsing'][0]['origin']=='runtime_compatibility_parse'
+    assert not audit['accepted']
+
+
+def test_target_menu_cannot_survive_version_change_or_grant_new_paths():
+    original=paper();paths={'/summary'}
+    ref=next(iter(revision_targets(original,paths)))
+    request=TargetedMethodRevision(changes=[dict(target_ref=ref,value='Changed',reason='Review')],review_note='Local')
+    changed=deepcopy(original);changed['summary']='New saved version'
+    with pytest.raises(ValueError,match='unknown_or_stale'):
+        revise_targeted_workpaper(changed,canonical_sha256(changed),request,paths)
+    with pytest.raises(ValueError,match='unknown_or_stale'):
+        revise_targeted_workpaper(original,canonical_sha256(original),request,{'/unresolved'})
+    request.changes.append(request.changes[0])
+    with pytest.raises(ValueError,match='unique'):
+        revise_targeted_workpaper(original,canonical_sha256(original),request,paths)

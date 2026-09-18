@@ -92,6 +92,16 @@ class ResearchSnapshot:
 
     def _source(self, row, as_of):
         metadata=json.loads(row.get('metadata') or '{}')
+        # Structured import scope is distinct from pagination of indexed passages.
+        # Old snapshots without this field retain their original behavior.
+        if 'document_coverage' in metadata:
+            coverage = metadata['document_coverage']
+            if (not isinstance(coverage, dict)
+                    or not isinstance(coverage.get('complete_document'), bool)
+                    or not isinstance(coverage.get('scope'), str) or not coverage['scope'].strip()
+                    or not isinstance(coverage.get('unread_scope'), str) or not coverage['unread_scope'].strip()):
+                raise ValueError('invalid_snapshot_document_coverage')
+            row['document_coverage'] = coverage
         known=metadata.get('known_at')
         row['known_at']=known
         available=known if row['vintage'] in {'known_as_of','current_revised'} and known else row['published_at']

@@ -5,6 +5,7 @@ has MethodWorkResult objects, not CaseArtifacts papers, so navigation/lineage
 validation is deliberately adapted here instead of creating a second reviewer.
 """
 from copy import deepcopy
+from difflib import SequenceMatcher
 from typing import Literal
 
 from pydantic import Field
@@ -98,11 +99,68 @@ def quote_location_candidates(source, quote, evidence):
 def review_context(outputs, previous=None):
     previous = previous or {}
     targets = [t for r in outputs for t in review_targets(r)]
-    return {'targets': targets, 'previous_checks': list(previous.get('checks', {}).values()),
+    return {'targets': targets, 'revision_comparisons': revision_comparisons(outputs),
+            'previous_checks': list(previous.get('checks', {}).values()),
             'open_findings': [f for fid, f in previous.get('findings', {}).items()
                               if fid not in previous.get('closures', {})],
             'closures': list(previous.get('closures', {}).values()),
             'financial_semantics_checked_by_runtime': False}
+
+
+def revision_comparisons(outputs):
+    """Exact paragraph changes, not semantic labels or an answer key.
+
+    Align steps by stable method step ID, never by reordered array positions.
+    Findings have no stable cross-version ID: expose the entire new statements.
+    """
+    papers = {r['obligation']['obligation_id']: r for r in outputs}
+    comparisons = []
+    for repair in outputs:
+        grouped = {}
+        for request in repair.get('repair_targets', []):
+            grouped.setdefault((request['paper_id'], request['paper_digest']), []).append(request)
+        for (original_id, original_digest), requests in grouped.items():
+            original = papers.get(original_id)
+            item = {'original_paper_id': original_id, 'original_paper_digest': original_digest,
+                    'paper_id': repair['obligation']['obligation_id'],
+                    'paper_digest': canonical_sha256(repair['result']),
+                    'repair_advice': [{'finding_id': r['finding_id'], 'text': r['requested_change'],
+                                      'authority': 'fallible_reviewer_opinion_not_source'} for r in requests],
+                    'changes': [], 'financial_semantics_checked_by_runtime': False}
+            if not original or canonical_sha256(original['result']) != original_digest:
+                item['comparison_status'] = 'original_missing_or_changed'
+                comparisons.append(item)
+                continue
+            old, new = original['result'], repair['result']
+            pairs = [('/summary', '/summary', old['summary'], new['summary'])]
+            for i, step in enumerate(new['steps']):
+                matches = [(j, s) for j, s in enumerate(old['steps']) if s['step_id'] == step['step_id']]
+                j, before = matches[0] if len(matches) == 1 else (None, {})
+                pairs.append((f'/steps/{j}/finding' if j is not None else None,
+                              f'/steps/{i}/finding', before.get('finding', ''), step['finding']))
+            new_step_ids = {s['step_id'] for s in new['steps']}
+            pairs += [(f'/steps/{i}/finding', None, s['finding'], '')
+                      for i, s in enumerate(old['steps']) if s['step_id'] not in new_step_ids]
+            old_statements = {f['statement'] for f in old['findings']}
+            new_statements = {f['statement'] for f in new['findings']}
+            pairs += [(None, f'/findings/{i}/statement', '', f['statement'])
+                      for i, f in enumerate(new['findings']) if f['statement'] not in old_statements]
+            pairs += [(f'/findings/{i}/statement', None, f['statement'], '')
+                      for i, f in enumerate(old['findings']) if f['statement'] not in new_statements]
+            for before_path, after_path, before, after in pairs:
+                if before == after:
+                    continue
+                a, b = before.splitlines(keepends=True), after.splitlines(keepends=True)
+                edits = [{'removed_text': ''.join(a[i:j]), 'introduced_text': ''.join(b[k:l])}
+                         for tag, i, j, k, l in SequenceMatcher(None, a, b, autojunk=False).get_opcodes()
+                         if tag != 'equal']
+                item['changes'].append({'original_field_path': before_path, 'field_path': after_path,
+                    'before': before, 'after': after, 'paragraph_edits': edits,
+                    'alignment': ('removed_or_rewritten_statement' if not after_path else
+                                  'summary_or_step_id' if before_path else 'new_or_unaligned_statement')})
+            item['comparison_status'] = 'current_versions_compared'
+            comparisons.append(item)
+    return comparisons
 
 
 def assess_method_review(outputs, review, previous=None):
@@ -291,6 +349,11 @@ def assess_method_review(outputs, review, previous=None):
 
 METHOD_REVIEW_GUIDANCE = '''
 review_context列出待审底稿的paper_id、paper_digest和精确field_path；这些是runtime导航，不是金融结论。
+revision_comparisons按原版本/新版本列出修改前后全文及段落增删；不是runtime对语义的判定。
+每处修订同时检查旧问题是否消失，以及新增的事实、必要条件、因果、期间限制是否成立。
+repair_advice是先前复核者可能有错的建议，不能作为新增断言的依据；即使由你提出也重新按原文和共享方法核对。
+expressed_relationship要覆盖修改后整个字段，包括“只有/必须/取决于”等限定；supported_relationship须说明证据究竟支持哪些限定。
+原文只说明缺少当前数字，不足以支持新增的会计或业务必要条件。新增表述缺依据应记issue或unresolved，不能仅因旧句删除就resolved。
 在review.inspection_checks逐项审阅summary、各步骤finding和各finding.statement；检查其整个字段的含义，
 target_quote只需摘录一处精确文本。使用现有复核合同：明确expressed_relationship、supported_relationship、
 financial_verdict、clarity_verdict、clarity_reason及原文source_checks。source_checks可引用review_evidence，

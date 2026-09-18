@@ -53,25 +53,49 @@ def test_retrospective_policy_is_explicit_and_shared_by_read_search_and_contract
     assert assess_result_contract(task,result,{'S1':source})
 
 
-def test_scoped_full_originals_are_not_cut_to_top_k_when_within_budget(tmp_path):
-    import sqlite3
+@pytest.mark.parametrize('excerpt', [False, True])
+def test_scoped_full_originals_are_not_cut_to_top_k_when_within_budget(tmp_path, excerpt):
+    import sqlite3, json
     snapshot=make_snapshot(tmp_path)
     # Long enough to exceed the old26k cutoff; necessary tail does not match query.
     with sqlite3.connect(snapshot.path) as db:
+        if excerpt:
+            db.execute('UPDATE sources SET metadata=? WHERE id=?', (json.dumps({'document_coverage': {
+                'complete_document': False, 'scope': 'selected accounting notes',
+                'unread_scope': 'other annual report sections'}}), 'S1'))
         for i in range(9):
             body=('revenue ' if i<8 else 'necessary comparative segment table ')+'x'*3400
             db.execute('INSERT INTO passages VALUES(?,?,?,?,?)',(f'S1:p{i+2}','S1',f'p{i+2}',body,sha256(body.encode()).hexdigest()))
             db.execute('INSERT INTO passage_search VALUES(?,?,?)',(f'S1:p{i+2}','S1',body))
     async def call(actor,payload,schema):
         if actor=='lead':
+            shared=payload['shared_methods'][0]
+            assert shared['method_id']=='finance'
+            assert sha256(shared['content'].encode()).hexdigest()==payload['shared_method_digests']['finance']
+            assert '业务事件、会计确认与研究取证' in shared['content']
             if payload['results']:
                 return dict(action='stop',public_basis='done',synthesis='limited',open_issues=[],tasks=[])
             return dict(action='delegate',public_basis='compare',synthesis='',open_issues=[],tasks=[dict(task_id='t',question='compare',method_id='financial_quality',steps=['F2'],expectation='factual',source_ids=['S1'],search_terms=['revenue'])])
-        assert payload['read_results'][0]['coverage']['complete_document']
+        coverage = payload['read_results'][0]['coverage']
+        assert coverage['complete_document'] is not excerpt
+        if excerpt:
+            assert coverage['complete_indexed_scope']
+            assert coverage['scope']=='selected accounting notes'
+            assert coverage['unread_scope']=='other annual report sections'
         assert any('necessary comparative' in p['body'] for p in payload['read_results'][0]['items'])
         return dict(obligation_id='t',execution='completed',summary='checked',steps=[dict(step_id='F2',status='completed',finding='checked tail',source_ids=['S1:p10'])],findings=[],unresolved=[],task_note=dict(changes=['checked'],blockers=[],next_action='lead'))
     graph=compile_method_probe(snapshot=snapshot,call=call,record=lambda *a:None)
     asyncio.run(graph.ainvoke(dict(question='q',as_of='2025-06-01',catalog_ids=['S1'],waves=0,results=[],decisions=[])))
+
+
+@pytest.mark.parametrize('coverage', [None, {}, {'complete_document': 'false', 'scope': 'notes', 'unread_scope': 'other sections'}])
+def test_invalid_declared_snapshot_coverage_is_not_treated_as_full(tmp_path, coverage):
+    import sqlite3, json
+    snapshot=make_snapshot(tmp_path)
+    with sqlite3.connect(snapshot.path) as db:
+        db.execute('UPDATE sources SET metadata=? WHERE id=?', (json.dumps({'document_coverage': coverage}), 'S1'))
+    with pytest.raises(ValueError, match='invalid_snapshot_document_coverage'):
+        snapshot.read('S1','2025-06-01')
 
 
 def test_native_fanout_then_lead_consumes_actual_work_and_updates(tmp_path):

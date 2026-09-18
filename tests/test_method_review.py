@@ -194,6 +194,46 @@ def repair_fixture():
     return first,repair,MethodReview.model_validate(review),saved['state']
 
 
+def test_revision_comparison_preserves_entire_added_meaning_and_fallible_advice():
+    from sec_agent.research_foundation.method_review import revision_comparisons
+    first,repair,_,_=repair_fixture()
+    repair['result']['summary']='Profit fell. Public disclosure is required before recognition.'
+    before=deepcopy([first,repair])
+    comparison=revision_comparisons([first,repair])[0]
+    assert comparison['comparison_status']=='current_versions_compared'
+    delta=next(x for x in comparison['changes'] if x['field_path']=='/summary')
+    assert delta['before']==first['result']['summary'] and delta['after']==repair['result']['summary']
+    assert 'Public disclosure' in delta['paragraph_edits'][0]['introduced_text']
+    assert comparison['repair_advice'][0]['authority']=='fallible_reviewer_opinion_not_source'
+    assert [first,repair]==before and not comparison['financial_semantics_checked_by_runtime']
+
+
+def test_revision_comparison_aligns_reordered_steps_by_id_and_records_removals():
+    from sec_agent.research_foundation.method_review import revision_comparisons
+    from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
+    first,repair,_,_=repair_fixture()
+    first['result']['steps'] += [dict(step_id='F3',status='completed',finding='Old F3.',source_ids=['S1:p1']),
+                                 dict(step_id='F4',status='completed',finding='Deleted step.',source_ids=['S1:p1'])]
+    first['result']['findings']=[dict(statement='Old claim.')]
+    repair['repair_targets'][0]['paper_digest']=canonical_sha256(first['result'])
+    repair['result']['steps']=[dict(step_id='F3',status='completed',finding='New F3.',source_ids=['S1:p1']),repair['result']['steps'][0]]
+    repair['result']['findings']=[dict(statement='New claim.')]
+    rows=revision_comparisons([first,repair])[0]['changes']
+    step=next(r for r in rows if r['field_path']=='/steps/0/finding')
+    assert step['original_field_path']=='/steps/1/finding' and step['before']=='Old F3.'
+    assert any(r['before']=='Deleted step.' and r['field_path'] is None for r in rows)
+    assert any(r['after']=='New claim.' and r['original_field_path'] is None for r in rows)
+    assert any(r['before']=='Old claim.' and r['field_path'] is None for r in rows)
+
+
+def test_revision_comparison_refuses_stale_original_instead_of_guessing_diff():
+    from sec_agent.research_foundation.method_review import revision_comparisons
+    first,repair,_,_=repair_fixture()
+    first['result']['summary']='A changed original.'
+    row=revision_comparisons([first,repair])[0]
+    assert row['comparison_status']=='original_missing_or_changed' and row['changes']==[]
+
+
 def test_new_author_completion_does_not_close_issue_explicit_review_does():
     first,repair,review,state=repair_fixture()
     before=assess_method_review([first,repair],full_review(repair),state)
@@ -239,6 +279,9 @@ def test_native_graph_dispatches_issue_and_confirms_exact_repair(tmp_path, resum
                 review=issue_review(payload['results'][0])
                 return decision('delegate',[task('repair',dependency_ids=['first'],repair_finding_ids=['issue-1'])],review)
             row=payload['results'][-1]; review=full_review(row).model_dump(mode='json')
+            comparisons=payload['review_context']['revision_comparisons']
+            assert comparisons[0]['paper_id']=='repair'
+            assert comparisons[0]['changes'][0]['before']=='Profit rose.'
             review['finding_checks']=repair_fixture()[2].model_dump(mode='json')['finding_checks']
             review['finding_checks'][0]['paper_digest']=review_targets(row)[0]['paper_digest']
             assert payload['review_context']['open_findings'][0]['finding_id']=='issue-1'

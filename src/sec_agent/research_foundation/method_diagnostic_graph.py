@@ -103,6 +103,8 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
             'question': state['question'], 'as_of': state['as_of'],
             'time_mode': snapshot.time_mode, 'knowledge_as_of': snapshot.knowledge_as_of,
             'role_method': get_research_method('research_loop'),
+            'shared_methods': [get_research_method('finance')],
+            'shared_method_digests': {'finance': sha256(get_research_method('finance')['content'].encode()).hexdigest()},
             'industry_methods': [get_research_method(m) for m in (
                 'semiconductor_systems','model_compute_demand','manufacturing_capacity',
                 'software_platforms','financial_quality','cloud_infrastructure',
@@ -290,6 +292,14 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                 if sid not in extra:
                     read['coverage']={'complete_document':full,'returned_passages':len(read['items']),
                                       'unread_scope':'none' if full else 'remaining original document; do not claim exhaustive reading'}
+                    declared = read['source'].get('document_coverage')
+                    if declared is not None:
+                        unread = [] if full else ['remaining indexed passages']
+                        if not declared['complete_document']:
+                            unread.append(declared['unread_scope'])
+                        read['coverage'].update(complete_document=full and declared['complete_document'],
+                            complete_indexed_scope=full, scope=declared['scope'],
+                            unread_scope='; '.join(unread) or 'none')
                 s=read['source']
                 for p in read['items']:
                     evidence[p['id']]=EvidencePointer(source_id=p['id'],digest=p['digest'],locator=p['locator'],

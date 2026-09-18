@@ -83,8 +83,8 @@ class ResearchFinding(Contract):
     public_basis: str = Field(min_length=1)
     assumptions: list[str] = Field(description='For kind=conditional, state the actual conditions supporting the judgment. '
         'Empty conditions will be flagged for review; use factual/exploratory when appropriate. Never invent an assumption just to pass.')
-    alternative: str = Field(min_length=1)
-    would_change: str = Field(min_length=1)
+    alternative: str = Field(default='', description='For an explanatory inference, give a plausible competing explanation when applicable. Direct facts and arithmetic need no invented alternative; leave empty when none applies.')
+    would_change: str = Field(default='', description='For conditional/exploratory judgments, identify evidence or a condition that could change the judgment. Direct facts may omit this field.')
     basis_step_ids: list[str] = Field(default_factory=list,
         description='IDs of this task steps carrying the reasoning and qualifications for this finding. Runtime carries their exact text during handoff.')
 
@@ -181,6 +181,9 @@ def assess_result_contract(obligation: ResearchObligation, result: MethodWorkRes
         if finding.kind == 'conditional' and not finding.assumptions:
             issue('conditional_finding_needs_assumptions', f'/findings/{i}/assumptions',
                   'Explain the actual conditions or correct the finding kind; do not invent an assumption to pass.')
+        if finding.kind in {'conditional', 'exploratory'} and not finding.would_change:
+            issue('inference_needs_change_condition', f'/findings/{i}/would_change',
+                  'Identify evidence or a condition that could change this inference; facts need no invented counter-story.')
         for ref in finding.calculation_refs:
             if ref not in (calculations or {}):
                 issue('unknown_calculation',f'/findings/{i}/calculation_refs',ref)

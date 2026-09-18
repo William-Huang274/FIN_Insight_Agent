@@ -125,3 +125,24 @@ def test_missing_condition_survives_parsing_but_remains_precise_contract_error()
     assert parsed.findings[0].kind=='conditional' and parsed.findings[0].assumptions==[]
     assert errors[0]['code']=='conditional_finding_needs_assumptions'
     assert errors[0]['location']=='/findings/0/assumptions'
+
+
+def test_direct_fact_does_not_need_invented_alternative_or_change_condition():
+    task,source,result=fixture()
+    raw=result.model_dump(mode='json')
+    row=raw['findings'][0]
+    row.update(kind='factual',assumptions=[],statement='Reported segment revenue increased')
+    row.pop('alternative');row.pop('would_change')
+    parsed=MethodWorkResult.model_validate(raw)
+    assert assess_result_contract(task,parsed,{'S1':source})==[]
+    assert parsed.findings[0].alternative==parsed.findings[0].would_change==''
+
+
+def test_limited_inference_keeps_real_conditions_but_no_forced_counter_story():
+    task,source,result=fixture()
+    result.findings[0].alternative=''
+    assert assess_result_contract(task,result,{'S1':source})==[]
+    result.findings[0].would_change=''
+    errors=assess_result_contract(task,result,{'S1':source})
+    assert [e['location'] for e in errors]==['/findings/0/would_change']
+    assert not errors[0]['financial_semantics_checked']

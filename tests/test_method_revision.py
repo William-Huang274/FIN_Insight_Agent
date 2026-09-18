@@ -91,3 +91,19 @@ def test_target_menu_cannot_survive_version_change_or_grant_new_paths():
     request.changes.append(request.changes[0])
     with pytest.raises(ValueError,match='unique'):
         revise_targeted_workpaper(original,canonical_sha256(original),request,paths)
+
+
+def test_identical_empty_reference_fields_keep_their_own_finding_context():
+    original=paper()
+    original['findings'].append({**deepcopy(original['findings'][0]),'statement':'Second distinct hypothesis'})
+    original['findings'][0]['calculation_refs']=[]
+    original['findings'][1]['calculation_refs']=[]
+    paths={'/findings/0/calculation_refs','/findings/1/calculation_refs'}
+    targets=revision_targets(original,paths)
+    assert len({t['owner_label'] for t in targets.values()})==2
+    assert all(t['field']=='calculation_refs' and t['current_value']==[] for t in targets.values())
+    ref=next(k for k,v in targets.items() if v['owner_label']=='Second distinct hypothesis')
+    request=TargetedMethodRevision(changes=[dict(target_ref=ref,value=['CALC::1'],reason='Reuse observed calculation')],review_note='Second only')
+    candidate,_=revise_targeted_workpaper(original,canonical_sha256(original),request,paths)
+    assert candidate.findings[0].calculation_refs==[]
+    assert candidate.findings[1].calculation_refs==['CALC::1']

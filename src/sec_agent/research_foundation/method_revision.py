@@ -27,7 +27,7 @@ class MethodRevision(Contract):
 
 
 class TargetedFieldRevision(Contract):
-    target_ref: str = Field(min_length=1, description='Select the runtime target_ref by its CURRENT field content; do not infer array indices or count findings.')
+    target_ref: str = Field(min_length=1, description='Select the runtime target_ref by owner_label, field and CURRENT field content; do not infer array indices or count findings. Empty reference lists belong to the owner shown in the menu.')
     value: Any = Field(description='Complete new value for this selected field only.')
     reason: str = Field(min_length=1)
 
@@ -47,8 +47,14 @@ def revision_targets(original: dict, allowed_paths: set[str]) -> dict:
     targets = {}
     for path in sorted(allowed_paths):
         current = deepcopy(jsonpointer.resolve_pointer(original, path))
+        parent_path, _, field = path.rpartition('/')
+        parent = jsonpointer.resolve_pointer(original, parent_path)
+        owner_label = 'workpaper'
+        if isinstance(parent, dict):
+            owner_label = parent.get('statement') or parent.get('step_id') or owner_label
         ref = 'R-' + canonical_sha256({'base_digest': digest, 'path': path})[:24]
-        targets[ref] = {'path': path, 'current_value': current, 'base_digest': digest}
+        targets[ref] = {'path': path, 'current_value': current, 'base_digest': digest,
+                        'field': field, 'owner_label': owner_label}
     return targets
 
 

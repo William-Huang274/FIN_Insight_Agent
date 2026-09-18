@@ -5,11 +5,12 @@ has MethodWorkResult objects, not CaseArtifacts papers, so navigation/lineage
 validation is deliberately adapted here instead of creating a second reviewer.
 """
 from copy import deepcopy
+from typing import Literal
 
 from pydantic import Field
 
 from sec_agent.agent_runtime.case_review_agent import (
-    CaseReviewFinding, FindingConfirmation, ReviewInspectionCheck,
+    CaseReviewFinding, FindingConfirmation, ReviewInspectionCheck, ReviewSourceCheck,
 )
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
 from .method_execution import Contract
@@ -25,6 +26,27 @@ class MethodReview(Contract):
     inspection_checks: list[ReviewInspectionCheck] = Field(default_factory=list, max_length=160)
     findings: list[CaseReviewFinding] = Field(default_factory=list, max_length=80)
     finding_checks: list[MethodFindingConfirmation] = Field(default_factory=list, max_length=80)
+
+
+class SubmittedMethodInspectionCheck(ReviewInspectionCheck):
+    """Explicit model submission; permissive archived wire objects remain readable."""
+    source_checks: list[ReviewSourceCheck] = Field(max_length=64,
+        description='Required. checked/issue needs at least one exact original quote or span. Empty only for unresolved/not_applicable, with a reason; never invent evidence.')
+    expressed_relationship: str = Field(min_length=1, max_length=1600,
+        description='What the entire candidate field asserts, including period and causal/financial direction.')
+    supported_relationship: str = Field(min_length=1, max_length=1600,
+        description='What the cited original actually supports. State any evidence gap explicitly.')
+    financial_verdict: Literal['supported','contradicted','insufficient']
+    clarity_verdict: Literal['clear','needs_clarification','unassessed']
+    clarity_reason: str = Field(min_length=1, max_length=2000,
+        description='Explain whether the wording preserves the supported relationship and its limits.')
+    calculation_check: Literal['none_added','bound','unresolved'] = Field(
+        description='Required calculation scope; bound needs executed CALC IDs. unresolved cannot be checked/issue.')
+
+
+class SubmittedMethodReview(MethodReview):
+    inspection_checks: list[SubmittedMethodInspectionCheck] = Field(max_length=160,
+        description='Explicit checks for current targets; omitted targets stay pending. Use unresolved honestly if not checked.')
 
 
 def review_targets(output):
@@ -194,8 +216,22 @@ def assess_method_review(outputs, review, previous=None):
         elif check['status'] == 'issue' and not all(fid in state['closures'] for fid in check['finding_ids']):
             pending.append(key)
     open_ids = sorted(set(state['findings']) - set(state['closures']))
+    outstanding_contract_errors = []
+    for paper_id, paper in papers.items():
+        for error in paper['contract_errors']:
+            parts = error['location'].split('/')
+            # Only an explicitly reviewed repair of this exact result element
+            # supersedes its diagnostic. Global/missing-step errors stay open.
+            target = ('/' + '/'.join(parts[1:3]) + ('/statement' if parts[1]=='findings' else '/finding')
+                      if len(parts)>3 and parts[1] in {'findings','steps'} and parts[2].isdigit() else None)
+            covered = any(finding['paper_id']==paper_id and target in finding.get('field_paths', [])
+                and finding['paper_digest']==canonical_sha256(paper['result']) and fid in state['closures']
+                for fid,finding in state['findings'].items()) if target else False
+            if not covered:
+                outstanding_contract_errors.append({'paper_id':paper_id, **error})
     return {'state': state, 'errors': errors, 'pending_targets': pending, 'open_finding_ids': open_ids,
-            'complete': not errors and not pending and not open_ids,
+            'outstanding_contract_errors': outstanding_contract_errors,
+            'complete': not errors and not pending and not open_ids and not outstanding_contract_errors,
             'invalidated_closures': invalidated_closures,
             'financial_semantics_checked_by_runtime': False}
 
@@ -210,6 +246,7 @@ checked必须supported且clear；有证据的问题用issue，填写review.findi
 证据或时间不足用unresolved。not_applicable仅适用于原任务已标inapplicable的步骤，不得用来跳过重要判断。
 计算沿用已有CALC绑定；不新增运算时calculation_check=none_added。有疑点先保留，不能为通过合同虚构已核验。
 旧检查由runtime保留，省略不等于撤回；新版本必须重新检查。缺失或有误的审阅不构成研究收口。
+结果中的contract_errors也需要按具体位置处理；类型或条件缺失不自动等于金融判断错，核对后合理修订，不能虚构假设过关。
 需要修订时delegate一个有边界的新任务，在repair_finding_ids填已记录的问题ID，dependency_ids包含原任务。
 worker会收到具体问题、原版本和准确位置，修改应覆盖这些位置及关联解释，无须重做无关研究。
 修订结果返回后，先逐项检查新底稿，再用review.finding_checks确认每个已处理问题；填写新paper_id/paper_digest、

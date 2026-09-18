@@ -70,6 +70,8 @@ class StepResult(Contract):
     status: Literal["completed", "inapplicable", "blocked", "not_done"]
     finding: str = Field(min_length=1)
     source_ids: list[str]
+    calculation_refs: list[str] = Field(default_factory=list,
+        description='Exact successful CALC IDs supporting this step, separate from original source_ids.')
     execution_receipt_refs: list[str] = Field(default_factory=list)
 
 
@@ -79,16 +81,10 @@ class ResearchFinding(Contract):
     source_ids: list[str] = Field(min_length=1)
     calculation_refs: list[str] = Field(default_factory=list)
     public_basis: str = Field(min_length=1)
-    assumptions: list[str]
+    assumptions: list[str] = Field(description='For kind=conditional, state the actual conditions supporting the judgment. '
+        'Empty conditions will be flagged for review; use factual/exploratory when appropriate. Never invent an assumption just to pass.')
     alternative: str = Field(min_length=1)
     would_change: str = Field(min_length=1)
-
-    @model_validator(mode="after")
-    def conditional_assumptions(self):
-        if self.kind == "conditional" and not self.assumptions:
-            raise ValueError("conditional_finding_needs_assumptions")
-        return self
-
 
 class TaskNote(Contract):
     changes: list[str]
@@ -152,6 +148,9 @@ def assess_result_contract(obligation: ResearchObligation, result: MethodWorkRes
     # A completed conditional study may retain unobservable variables. Completion
     # describes execution of its obligations, not certainty about the world.
     for i, finding in enumerate(result.findings):
+        if finding.kind == 'conditional' and not finding.assumptions:
+            issue('conditional_finding_needs_assumptions', f'/findings/{i}/assumptions',
+                  'Explain the actual conditions or correct the finding kind; do not invent an assumption to pass.')
         for ref in finding.calculation_refs:
             if ref not in (calculations or {}):
                 issue('unknown_calculation',f'/findings/{i}/calculation_refs',ref)
@@ -170,6 +169,9 @@ def assess_result_contract(obligation: ResearchObligation, result: MethodWorkRes
             # Facts supporting exploration are legitimate. No blanket downgrade.
             pass
     for i, step in enumerate(result.steps):
+        for ref in step.calculation_refs:
+            if ref not in (calculations or {}):
+                issue('unknown_calculation', f'/steps/{i}/calculation_refs', ref)
         for source_id in step.source_ids:
             ptr = evidence.get(source_id)
             where = f"/steps/{i}/source_ids"

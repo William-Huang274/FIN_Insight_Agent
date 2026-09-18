@@ -33,6 +33,38 @@ def full_review(row):
     return MethodReview(inspection_checks=[check(t) for t in review_targets(row)])
 
 
+def test_new_submission_exposes_required_review_fields_but_archives_stay_readable():
+    from pydantic import ValidationError
+    from sec_agent.research_foundation.method_review import SubmittedMethodReview
+    schema=SubmittedMethodReview.model_json_schema()
+    required=schema['$defs']['SubmittedMethodInspectionCheck']['required']
+    fields=['source_checks','expressed_relationship','supported_relationship',
+            'financial_verdict','clarity_verdict','clarity_reason','calculation_check']
+    assert set(fields)<=set(required)
+    valid=full_review(output()).model_dump(mode='json')
+    SubmittedMethodReview.model_validate(valid)
+    for field in fields:
+        old=deepcopy(valid); del old['inspection_checks'][0][field]
+        MethodReview.model_validate(old)
+        with pytest.raises(ValidationError): SubmittedMethodReview.model_validate(old)
+
+
+def test_reentry_exposes_exact_rejection_and_submission_schema_without_dispatch(tmp_path):
+    from sec_agent.research_foundation.method_diagnostic_graph import SubmittedProbeDecision
+    calls=[]
+    async def call(actor,payload,schema):
+        calls.append(actor)
+        assert schema is SubmittedProbeDecision
+        assert payload['previous_review_feedback']['errors']==['review_checked_requires_original:first:/summary']
+        assert payload['results'][0]['result']==output()['result']
+        return decision('stop')
+    graph=compile_method_probe(snapshot=make_snapshot(tmp_path),call=call,record=lambda *a:None)
+    state=asyncio.run(graph.ainvoke(dict(question='q',as_of='2025-06-01',catalog_ids=['S1'],
+        results=[output()],waves=1,review_receipt={'errors':['review_checked_requires_original:first:/summary']})))
+    assert calls==['lead'] and state['terminal']=='bounded_stop'
+    assert not state['review_receipt']['complete']
+
+
 def issue_review(row):
     review = full_review(row)
     first = review.inspection_checks[0]
@@ -191,6 +223,19 @@ def test_changed_repair_reopens_historical_closure():
     reopened=assess_method_review([first,repair],full_review(repair),closed['state'])
     assert reopened['invalidated_closures']==['issue-1']
     assert reopened['open_finding_ids']==['issue-1'] and not reopened['complete']
+
+
+def test_contract_errors_remain_until_exact_element_repair_is_confirmed():
+    first,repair,review,state=repair_fixture()
+    first['contract_errors']=[dict(code='unknown_source',location='/steps/0/source_ids',detail='missing')]
+    # The existing issue targets /summary, not the broken step. Cannot waive it.
+    blocked=assess_method_review([first,repair],review,state)
+    assert not blocked['complete'] and len(blocked['outstanding_contract_errors'])==1
+    state['findings']['issue-1']['field_paths'].append('/steps/0/finding')
+    fixed=assess_method_review([first,repair],review,state)
+    assert fixed['complete'] and fixed['outstanding_contract_errors']==[]
+    first['contract_errors'].append(dict(code='missing_required_steps',location='/steps',detail=['F3']))
+    assert not assess_method_review([first,repair],review,state)['complete']
 
 
 def test_well_formed_but_wrong_model_verdict_is_not_machine_financial_acceptance():

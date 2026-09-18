@@ -79,6 +79,10 @@ def test_native_fanout_then_lead_consumes_actual_work_and_updates(tmp_path):
     async def call(actor,payload,schema):
         calls.append((actor,payload))
         if actor=='lead':
+            assert {m['method_id'] for m in payload['industry_methods']} == {
+                'semiconductor_systems','model_compute_demand','manufacturing_capacity',
+                'software_platforms','financial_quality','cloud_infrastructure',
+                'power_projects','financing_ownership','macro_valuation'}
             if not payload['results']:
                 return dict(action='delegate',public_basis='Need scoped comparisons',synthesis='',open_issues=['profit'],tasks=[
                     dict(task_id=k,question=q,method_id='financial_quality',steps=['F2'],
@@ -179,3 +183,32 @@ def test_cyclic_same_wave_plan_is_rejected_before_workers(tmp_path):
     with pytest.raises(ValueError,match='cyclic_task_dependency'):
         asyncio.run(graph.ainvoke(dict(question='q',as_of='2025-06-01',catalog_ids=['S1'],waves=0,results=[],decisions=[])))
     assert calls==['lead']
+
+
+def test_paginated_neighbour_does_not_clip_complete_document_within_scope_budget(tmp_path):
+    import sqlite3
+    snapshot=make_snapshot(tmp_path)
+    with sqlite3.connect(snapshot.path) as db:
+        db.execute("UPDATE sources SET published_at='2025-01-01' WHERE id='FUTURE'")
+        for sid,count,body in [('S1',9,'x'*3400),('FUTURE',44,'revenue details')]:
+            for i in range(count):
+                text=('necessary tail comparison ' if sid=='S1' and i==8 else 'revenue ')+body
+                pid=f'{sid}:p{i+2}'
+                db.execute('INSERT INTO passages VALUES(?,?,?,?,?)',(pid,sid,f'p{i+2}',text,sha256(text.encode()).hexdigest()))
+                db.execute('INSERT INTO passage_search VALUES(?,?,?)',(pid,sid,text))
+    async def call(actor,payload,schema):
+        if actor=='lead':
+            if payload['results']:
+                return dict(action='stop',public_basis='done',synthesis='limited',open_issues=[],tasks=[])
+            return dict(action='delegate',public_basis='check both originals',synthesis='',open_issues=[],tasks=[dict(
+                task_id='t',question='compare',method_id='financial_quality',steps=['F2'],expectation='factual',
+                source_ids=['S1','FUTURE'],search_terms=['revenue'])])
+        reads={r['source']['id']:r for r in payload['read_results']}
+        assert reads['S1']['coverage']['complete_document']
+        assert any('necessary tail' in p['body'] for p in reads['S1']['items'])
+        assert not reads['FUTURE']['coverage']['complete_document']
+        return dict(obligation_id='t',execution='partial',summary='more reading needed',
+            steps=[dict(step_id='F2',status='completed',finding='tail preserved',source_ids=['S1:p10'])],
+            findings=[],unresolved=['remaining neighbour pages'],task_note=dict(changes=[],blockers=[],next_action='read more'))
+    graph=compile_method_probe(snapshot=snapshot,call=call,record=lambda *a:None)
+    asyncio.run(graph.ainvoke(dict(question='q',as_of='2025-06-01',catalog_ids=['S1','FUTURE'],results=[],waves=0)))

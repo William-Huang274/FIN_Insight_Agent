@@ -21,7 +21,8 @@ from .method_execution import (Contract, EvidencePointer, MethodWorkResult,
 from .research_methods import get_research_method
 from .method_source_acquisition import SourceAcquisition
 from .source_document_navigation import SourceExecutionReceipt
-from .method_review import MethodReview, METHOD_REVIEW_GUIDANCE, review_context, assess_method_review
+from .method_review import (MethodReview, SubmittedMethodReview, METHOD_REVIEW_GUIDANCE,
+    review_context, assess_method_review)
 
 
 class ProbeTask(Contract):
@@ -72,6 +73,10 @@ class ProbeState(TypedDict, total=False):
     review_receipt: dict
 
 
+class SubmittedProbeDecision(ProbeDecision):
+    review: SubmittedMethodReview = Field(description='Required current-version review before downstream dispatch.')
+
+
 def cited_review_evidence(reads, result):
     """Projection only: preserve exact cited input, never repair model claims."""
     cited = {sid for entry in [*result.steps, *result.findings] for sid in entry.source_ids}
@@ -99,12 +104,17 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
             'time_mode': snapshot.time_mode, 'knowledge_as_of': snapshot.knowledge_as_of,
             'role_method': get_research_method('research_loop'),
             'industry_methods': [get_research_method(m) for m in (
-                'semiconductor_systems','financial_quality','cloud_infrastructure',
+                'semiconductor_systems','model_compute_demand','manufacturing_capacity',
+                'software_platforms','financial_quality','cloud_infrastructure',
                 'power_projects','financing_ownership','macro_valuation')],
             'catalog': catalog, 'results': [{k:v for k,v in r.items() if k != 'review_evidence'}
                 for r in state.get('results', [])],
             'review_evidence': list(review_evidence.values()),
             'review_context': review_context(state.get('results', []), state.get('review_state')),
+            'previous_review_feedback': {
+                'errors': state.get('review_receipt', {}).get('errors', []),
+                'pending_targets': state.get('review_receipt', {}).get('pending_targets', []),
+                'meaning': 'Runtime contract diagnostics, not financial verdicts. A rejected review did not authorize its downstream tasks.'},
             'acquisition_results': [{k:v for k,v in a.items() if k not in {'reads', 'navigation_state'}}
                 for a in state.get('acquisitions', [])],
             'capabilities': {'source_acquisition': acquire is not None,
@@ -145,7 +155,8 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
         payload['instructions'] += (' time_mode=strict_as_of只使用截止日当时可得信息；retrospective允许知识截止日内的后来修订资料，'
             '但必须说明是事后回顾，不能把后来的数值、事件或修订当成当时已知；观察期间与信息可见日期分别检查。')
         payload['instructions'] += METHOD_REVIEW_GUIDANCE
-        decision = ProbeDecision.model_validate(await call('lead', payload, ProbeDecision))
+        schema = SubmittedProbeDecision if state.get('results') else ProbeDecision
+        decision = ProbeDecision.model_validate(await call('lead', payload, schema))
         review_receipt = assess_method_review(state.get('results', []), decision.review, state.get('review_state'))
         record('lead_review_receipt', review_receipt)
         if review_receipt['errors']:
@@ -198,8 +209,7 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                    for a in decision.acquisitions for p in prior):
                 terminal = 'repeated_acquisition_no_progress'
         if decision.action == 'stop':
-            terminal = 'bounded_stop' if (decision.open_issues or not review_receipt['complete']
-                or any(r['contract_errors'] for r in state.get('results', []))) else 'probe_closed_not_report_acceptance'
+            terminal = 'bounded_stop' if decision.open_issues or not review_receipt['complete'] else 'probe_closed_not_report_acceptance'
         elif state.get('waves', 0) >= max_waves:
             terminal = 'wave_limit_unresolved'
         record('lead_decision', decision.model_dump(mode='json'))
@@ -262,8 +272,9 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
         # Allocate against the complete scoped task, not an arbitrary per-document
         # top-k when every original fits. 150k leaves room for methods, schemas and
         # dependency results within the diagnostic's 200k character input ceiling.
-        complete_scope_fits=(all(r.get('next_start') is None for r in originals)
-            and sum(len(p['body']) for r in originals for p in r['items'])<=150000)
+        # A paginated neighbour must not force an otherwise affordable complete
+        # document into top-k. Completeness stays a per-document decision below.
+        complete_scope_fits=sum(len(p['body']) for r in originals for p in r['items'])<=150000
         for sid,read in zip(source_ids,originals):
             if read['status'] == 'readable':
                 # Full small documents; larger ones use bounded local FTS.

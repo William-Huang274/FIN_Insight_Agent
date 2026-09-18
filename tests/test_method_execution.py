@@ -101,3 +101,27 @@ def test_unknown_method_is_rejected_before_dispatch():
     task,_,_=fixture()
     with pytest.raises(ValueError,match="unknown_method_id"):
         ResearchObligation.model_validate({**task.model_dump(),"method_ids":["invented"]})
+
+
+def test_step_calculation_binding_uses_same_executed_registry_as_findings():
+    task,source,result=fixture()
+    raw=result.model_dump(mode='json')
+    raw['steps'][0]['calculation_refs']=['CALC::executed']
+    result=MethodWorkResult.model_validate(raw)
+    assert assess_result_contract(task,result,{'S1':source},calculations={'CALC::executed':{}})==[]
+    errors=assess_result_contract(task,result,{'S1':source})
+    assert errors==[dict(code='unknown_calculation',location='/steps/0/calculation_refs',
+                         detail='CALC::executed',financial_semantics_checked=False)]
+    result.steps[0].source_ids=['CALC::executed']
+    assert any(e['code']=='unknown_source' for e in assess_result_contract(
+        task,result,{'S1':source},calculations={'CALC::executed':{}}))
+
+
+def test_missing_condition_survives_parsing_but_remains_precise_contract_error():
+    task,source,result=fixture()
+    raw=result.model_dump(mode='json');raw['findings'][0]['assumptions']=[]
+    parsed=MethodWorkResult.model_validate(raw)
+    errors=assess_result_contract(task,parsed,{'S1':source})
+    assert parsed.findings[0].kind=='conditional' and parsed.findings[0].assumptions==[]
+    assert errors[0]['code']=='conditional_finding_needs_assumptions'
+    assert errors[0]['location']=='/findings/0/assumptions'

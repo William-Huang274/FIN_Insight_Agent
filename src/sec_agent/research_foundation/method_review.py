@@ -15,6 +15,7 @@ from sec_agent.agent_runtime.case_review_agent import (
 from sec_agent.agent_runtime.research_graph_contracts import canonical_sha256
 from .method_execution import Contract
 from .source_quotes import contains_source_quote
+from sec_agent.agent_runtime.evidence_resolution import parsing_record, resolve_quote
 
 
 class MethodFindingConfirmation(FindingConfirmation):
@@ -65,6 +66,35 @@ def _key(paper_id, path):
     return paper_id + ':' + path
 
 
+def quote_location_candidates(source, quote, evidence):
+    """Locate a quote in delivered windows of the same archived document.
+
+    Suggestions only: never move a citation, rewrite a draft or infer support.
+    Missing document identity/digest and another revision are not safe matches.
+    """
+    identity = source.get('source', {})
+    if not identity.get('id') or not identity.get('digest') or not quote.strip():
+        return []
+    candidates = []
+    for item in evidence.values():
+        other = item.get('source', {})
+        if item['id'] == source['id'] or any(other.get(k) != identity.get(k)
+                for k in ('id', 'digest', 'published_at', 'known_at', 'vintage')):
+            continue
+        if not contains_source_quote(item['body'], quote):
+            continue
+        selected, _ = resolve_quote(item['body'], quote)
+        start = item['body'].find(selected)
+        # A repeated sentence within one window also needs model selection.
+        if start < 0 or item['body'].find(selected, start + 1) >= 0:
+            continue
+        candidates.append({'source_id': item['id'], 'document_id': identity['id'],
+            'document_digest': identity['digest'], 'quote': selected,
+            'quote_span': {'source_digest': item['digest'], 'start': start, 'end': start + len(selected)},
+            'locator': item.get('locator', '')})
+    return candidates
+
+
 def review_context(outputs, previous=None):
     previous = previous or {}
     targets = [t for r in outputs for t in review_targets(r)]
@@ -86,6 +116,9 @@ def assess_method_review(outputs, review, previous=None):
     papers = {r['obligation']['obligation_id']: r for r in outputs}
     evidence = {p['id']: p for r in outputs for p in r.get('review_evidence', [])}
     errors = []
+    # Never mutate the provider's archived submission while resolving wire links.
+    review = review.model_copy(deep=True)
+    runtime_parsing, source_quote_recovery = [], []
     # A later candidate cannot inherit closure of an older repair version.
     invalidated_closures = []
     for fid, closure in list(state['closures'].items()):
@@ -95,7 +128,7 @@ def assess_method_review(outputs, review, previous=None):
             del state['closures'][fid]
 
     def source_errors(checks, label):
-        for check in checks:
+        for index, check in enumerate(checks):
             source = evidence.get(check.source_id)
             if not source:
                 errors.append('review_source_not_delivered:' + label + ':' + check.source_id)
@@ -107,6 +140,12 @@ def assess_method_review(outputs, review, previous=None):
                     errors.append('review_source_span_mismatch:' + label)
             elif not contains_source_quote(source['body'], check.quote):
                 errors.append('review_source_quote_not_exact:' + label)
+                source_quote_recovery.append({
+                    'origin': 'runtime_compatibility_parse', 'target': label,
+                    'source_check_index': index, 'original_source_id': check.source_id,
+                    'candidates': quote_location_candidates(source, check.quote, evidence),
+                    'draft_changed': False, 'citation_rebound': False,
+                    'remedy': 'Candidate occurrence is not claim support. Check context, select the exact original, and repair any affected draft citation; the old review remains rejected.'})
 
     new_findings = {}
     for finding in review.findings:
@@ -154,6 +193,18 @@ def assess_method_review(outputs, review, previous=None):
             errors.append('review_checked_verdict_mismatch:' + key)
         if check.status == 'not_applicable' and target['step_status'] != 'inapplicable':
             errors.append('review_cannot_skip_required_target:' + key)
+        if check.status == 'issue' and not check.finding_ids:
+            matches = [fid for fid, finding in new_findings.items()
+                if finding['paper_id'] == check.paper_id and finding['paper_digest'] == check.paper_digest
+                and finding['problematic_quote'] == check.target_quote
+                and sum(t['paper_id'] == check.paper_id and finding['problematic_quote'] in t['text']
+                        for t in targets.values()) == 1]
+            if len(matches) == 1:
+                check.finding_ids = matches
+                runtime_parsing.append(parsing_record('unique_current_review_finding_link_v1', [], matches,
+                    paper_id=check.paper_id, paper_digest=check.paper_digest, field_path=check.field_path,
+                    basis='One current finding and one current target share the exact same quote.',
+                    draft_changed=False, financial_verdict_changed=False))
         if check.status == 'issue' and not check.finding_ids:
             errors.append('review_issue_requires_actionable_finding:' + key)
         if check.status != 'issue' and check.finding_ids:
@@ -230,6 +281,8 @@ def assess_method_review(outputs, review, previous=None):
             if not covered:
                 outstanding_contract_errors.append({'paper_id':paper_id, **error})
     return {'state': state, 'errors': errors, 'pending_targets': pending, 'open_finding_ids': open_ids,
+            'runtime_parsing': [{**r, 'operation_status': 'rejected' if errors else 'review_recorded'} for r in runtime_parsing],
+            'source_quote_recovery': source_quote_recovery,
             'outstanding_contract_errors': outstanding_contract_errors,
             'complete': not errors and not pending and not open_ids and not outstanding_contract_errors,
             'invalidated_closures': invalidated_closures,

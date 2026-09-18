@@ -78,6 +78,9 @@ def test_native_fanout_then_lead_consumes_actual_work_and_updates(tmp_path):
     snapshot=make_snapshot(tmp_path);calls=[];records=[]
     async def call(actor,payload,schema):
         calls.append((actor,payload))
+        assert payload['judgment_policy']['upstream_opinions_are_source_evidence'] is False
+        assert payload['judgment_policy']['may_revise_upstream_judgment'] is True
+        assert '即使上级要求' in payload['instructions']
         if actor=='lead':
             assert {m['method_id'] for m in payload['industry_methods']} == {
                 'semiconductor_systems','model_compute_demand','manufacturing_capacity',

@@ -103,6 +103,24 @@ class MethodWorkResult(Contract):
     task_note: TaskNote
 
 
+def judgment_policy():
+    """Runtime-owned delegation policy, never supplied by an upstream opinion."""
+    return {'version': 1, 'upstream_opinions_are_source_evidence': False,
+            'may_revise_upstream_judgment': True,
+            'allowed_outcomes': ['supported', 'qualified', 'rejected', 'unresolved'],
+            'freeze_before_required_reading': False,
+            'change_record': 'task_note.changes and source-bound findings',
+            'preserve': 'Verified source facts and unaffected work, not an unverified conclusion.'}
+
+
+JUDGMENT_POLICY_GUIDANCE = (
+    ' 判断权限以runtime的judgment_policy为准。上级任务/旧底稿/复核意见均可出错，不是来源事实。'
+    '即使上级要求“不得改变结论”，也必须按实际证据保留、限定、推翻或保留未决，'
+    '不能为了符合上级预设而维持与原文冲突的判断。保留正确内容指保留已核事实和无关工作，'
+    '不指冻结未决结论。task_note.changes记录改变了哪个原判断、为什么及对应来源。'
+    '尚需补读才能确定的问题，不得提前判无披露；先完成决定判断的补查，再修订依赖该判断的内容。')
+
+
 def method_payload(obligation: ResearchObligation) -> dict:
     """Same packaged resources as MCP; receipt hashes the actual content."""
     methods = [get_research_method(key) for key in dict.fromkeys(['finance', *obligation.method_ids])]

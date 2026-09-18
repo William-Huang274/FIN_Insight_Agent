@@ -17,7 +17,7 @@ from langgraph.types import Send
 from pydantic import Field, model_validator
 
 from .method_execution import (Contract, EvidencePointer, MethodWorkResult,
-    ResearchObligation, assess_result_contract, method_payload)
+    ResearchObligation, assess_result_contract, method_payload, judgment_policy, JUDGMENT_POLICY_GUIDANCE)
 from .research_methods import get_research_method
 from .method_source_acquisition import SourceAcquisition
 from .source_document_navigation import SourceExecutionReceipt
@@ -114,7 +114,10 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
             'previous_review_feedback': {
                 'errors': state.get('review_receipt', {}).get('errors', []),
                 'pending_targets': state.get('review_receipt', {}).get('pending_targets', []),
+                'runtime_parsing': state.get('review_receipt', {}).get('runtime_parsing', []),
+                'source_quote_recovery': state.get('review_receipt', {}).get('source_quote_recovery', []),
                 'meaning': 'Runtime contract diagnostics, not financial verdicts. A rejected review did not authorize its downstream tasks.'},
+            'judgment_policy': judgment_policy(),
             'acquisition_results': [{k:v for k,v in a.items() if k not in {'reads', 'navigation_state'}}
                 for a in state.get('acquisitions', [])],
             'capabilities': {'source_acquisition': acquire is not None,
@@ -155,6 +158,7 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
         payload['instructions'] += (' time_mode=strict_as_of只使用截止日当时可得信息；retrospective允许知识截止日内的后来修订资料，'
             '但必须说明是事后回顾，不能把后来的数值、事件或修订当成当时已知；观察期间与信息可见日期分别检查。')
         payload['instructions'] += METHOD_REVIEW_GUIDANCE
+        payload['instructions'] += JUDGMENT_POLICY_GUIDANCE
         schema = SubmittedProbeDecision if state.get('results') else ProbeDecision
         decision = ProbeDecision.model_validate(await call('lead', payload, schema))
         review_receipt = assess_method_review(state.get('results', []), decision.review, state.get('review_state'))
@@ -312,6 +316,7 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
         payload.update({'read_results':reads,'prior_results':[{k:v for k,v in r.items() if k != 'review_evidence'}
                 for r in state['prior_results']],
             'repair_targets': state.get('repair_targets', []),
+            'judgment_policy': judgment_policy(),
             'execution_receipts': [r.model_dump(mode='json') for r in receipts.values()],
             'capabilities': {'financial_sql':False, 'source_bound_calculator':calculator_enabled,
                 'original_passages':True, 'followup_via_lead':True},
@@ -325,6 +330,7 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
             payload['instructions'] += (' repair_targets是Lead对指定原版本的待核修订要求，不是权威答案。'
                 '结合原文核查并修改对应步骤和关联主张；保留正确结论，不重做无关任务。'
                 'task_note.changes列出实际修改，无法修复时明确保留blockers；作者自报完成不等于问题已关闭。')
+        payload['instructions'] += JUDGMENT_POLICY_GUIDANCE
         record('worker_input', {'task':task.model_dump(),'payload':payload})
         calculations={}
         if not evidence:

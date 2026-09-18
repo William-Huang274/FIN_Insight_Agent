@@ -49,12 +49,74 @@ def test_new_submission_exposes_required_review_fields_but_archives_stay_readabl
         with pytest.raises(ValidationError): SubmittedMethodReview.model_validate(old)
 
 
+def test_unique_issue_link_is_audited_without_mutating_model_submission():
+    row=output(); review=issue_review(row)
+    review.inspection_checks[0].finding_ids=[]
+    original=review.model_dump(mode='json')
+    receipt=assess_method_review([row],review)
+    assert receipt['errors']==[] and receipt['open_finding_ids']==['issue-1']
+    assert not receipt['complete']
+    assert review.model_dump(mode='json')==original
+    record=receipt['runtime_parsing'][0]
+    assert record['origin']=='runtime_compatibility_parse'
+    assert record['normalized_result']==['issue-1'] and not record['financial_semantics_verified']
+    assert receipt['state']['checks']['first:/summary']['finding_ids']==['issue-1']
+
+
+@pytest.mark.parametrize('ambiguity',['finding','target','stale','explicit_wrong'])
+def test_issue_link_does_not_guess_or_override_explicit_model_link(ambiguity):
+    row=output(); review=issue_review(row); review.inspection_checks[0].finding_ids=[]
+    if ambiguity=='finding':
+        review.findings.append(review.findings[0].model_copy(update={'finding_id':'another'}))
+    elif ambiguity=='target': row['result']['steps'][0]['finding']=row['result']['summary']
+    elif ambiguity=='stale': review.inspection_checks[0].paper_digest='old'
+    else: review.inspection_checks[0].finding_ids=['nonexistent']
+    receipt=assess_method_review([row],review)
+    assert receipt['errors'] and receipt['runtime_parsing']==[] and not receipt['complete']
+
+
+@pytest.mark.parametrize('variant',['same','other_document','other_revision','unidentified','repeated','invented'])
+def test_quote_locator_only_suggests_delivered_same_version_and_keeps_rejection(variant):
+    row=output(); review=full_review(row)
+    identity=dict(id='doc',digest='v1',published_at='2025-01-01',vintage='dated_original')
+    row['review_evidence'][0]['source']=identity
+    other=dict(id='S1:p2',body='Revenue rose. Future costs will rise.',digest='window2',source=deepcopy(identity))
+    if variant=='other_document': other['source']['id']='different'
+    elif variant=='other_revision': other['source']['digest']='v2'
+    elif variant=='unidentified': row['review_evidence'][0]['source']={}
+    elif variant=='repeated': other['body']+=' Future costs will rise.'
+    elif variant=='invented': other['body']='No such quote exists.'
+    row['review_evidence'].append(other)
+    review.inspection_checks[0].source_checks[0].quote='Future costs will rise.'
+    original=review.model_dump(mode='json')
+    receipt=assess_method_review([row],review)
+    assert any('quote_not_exact' in e for e in receipt['errors'])
+    assert not receipt['complete'] and receipt['state']['checks']=={}
+    assert review.model_dump(mode='json')==original
+    recovery=receipt['source_quote_recovery'][0]
+    assert not recovery['citation_rebound'] and not recovery['draft_changed']
+    assert bool(recovery['candidates'])==(variant=='same')
+    if variant=='same':
+        candidate=recovery['candidates'][0]; span=candidate['quote_span']
+        assert other['body'][span['start']:span['end']]==candidate['quote']
+
+
+def test_two_matching_windows_remain_two_candidates_not_a_silent_selection():
+    from sec_agent.research_foundation.method_review import quote_location_candidates
+    identity=dict(id='doc',digest='v1')
+    sources={str(i):dict(id=str(i),source=identity,digest=str(i),body='The same sentence.') for i in range(3)}
+    candidates=quote_location_candidates(sources['0'],'The same sentence.',sources)
+    assert [c['source_id'] for c in candidates]==['1','2']
+
+
 def test_reentry_exposes_exact_rejection_and_submission_schema_without_dispatch(tmp_path):
     from sec_agent.research_foundation.method_diagnostic_graph import SubmittedProbeDecision
     calls=[]
     async def call(actor,payload,schema):
         calls.append(actor)
         assert schema is SubmittedProbeDecision
+        assert payload['judgment_policy']['may_revise_upstream_judgment']
+        assert not payload['judgment_policy']['freeze_before_required_reading']
         assert payload['previous_review_feedback']['errors']==['review_checked_requires_original:first:/summary']
         assert payload['results'][0]['result']==output()['result']
         return decision('stop')

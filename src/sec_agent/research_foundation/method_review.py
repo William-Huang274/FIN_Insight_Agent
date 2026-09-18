@@ -176,7 +176,7 @@ def assess_method_review(outputs, review, previous=None):
     errors = []
     # Never mutate the provider's archived submission while resolving wire links.
     review = review.model_copy(deep=True)
-    runtime_parsing, source_quote_recovery = [], []
+    runtime_parsing, source_quote_recovery, submission_errors = [], [], []
     # A later candidate cannot inherit closure of an older repair version.
     invalidated_closures = []
     for fid, closure in list(state['closures'].items()):
@@ -185,8 +185,9 @@ def assess_method_review(outputs, review, previous=None):
             invalidated_closures.append(fid)
             del state['closures'][fid]
 
-    def source_errors(checks, label):
+    def source_errors(checks, label, field_path):
         for index, check in enumerate(checks):
+            before = len(errors)
             source = evidence.get(check.source_id)
             if not source:
                 errors.append('review_source_not_delivered:' + label + ':' + check.source_id)
@@ -204,9 +205,13 @@ def assess_method_review(outputs, review, previous=None):
                     'candidates': quote_location_candidates(source, check.quote, evidence),
                     'draft_changed': False, 'citation_rebound': False,
                     'remedy': 'Candidate occurrence is not claim support. Check context, select the exact original, and repair any affected draft citation; the old review remains rejected.'})
+            for error in errors[before:]:
+                submission_errors.append({'location': f'{field_path}/{index}',
+                    'code': error.split(':')[0], 'detail': error,
+                    'candidate_only': True, 'requires_full_revalidation': True})
 
     new_findings = {}
-    for finding in review.findings:
+    for finding_index, finding in enumerate(review.findings):
         fid = finding.finding_id
         if fid in state['findings'] or fid in new_findings:
             errors.append('review_finding_id_reused:' + fid)
@@ -216,14 +221,14 @@ def assess_method_review(outputs, review, previous=None):
             errors.append('review_finding_quote_not_current:' + fid)
         if not finding.source_checks:
             errors.append('review_finding_requires_source:' + fid)
-        source_errors(finding.source_checks, fid)
+        source_errors(finding.source_checks, fid, f'/review/findings/{finding_index}/source_checks')
         new_findings[fid] = {**finding.model_dump(mode='json'),
                             'paper_digest': matching[0]['paper_digest'] if matching else '', 'field_paths': []}
     state['findings'].update(new_findings)
 
     seen = set()
     linked_new_findings = set()
-    for check in review.inspection_checks:
+    for check_index, check in enumerate(review.inspection_checks):
         key = _key(check.paper_id, check.field_path)
         target = targets.get(key)
         if key in seen:
@@ -276,13 +281,13 @@ def assess_method_review(outputs, review, previous=None):
             if fid in new_findings:
                 linked_new_findings.add(fid)
                 state['findings'][fid]['field_paths'].append(check.field_path)
-        source_errors(check.source_checks, key)
+        source_errors(check.source_checks, key, f'/review/inspection_checks/{check_index}/source_checks')
         state['checks'][key] = check.model_dump(mode='json')
     for fid in new_findings.keys() - linked_new_findings:
         errors.append('review_finding_not_linked_to_target:' + fid)
 
     seen_confirmations = set()
-    for confirmation in review.finding_checks:
+    for confirmation_index, confirmation in enumerate(review.finding_checks):
         fid = confirmation.finding_id
         if fid in seen_confirmations or fid in state['closures']:
             errors.append('review_duplicate_or_closed_confirmation:' + fid)
@@ -299,7 +304,7 @@ def assess_method_review(outputs, review, previous=None):
         if not confirmation.current_quote.strip() or not any(
                 confirmation.current_quote in t['text'] for t in review_targets(repair)):
             errors.append('review_confirmation_requires_current_quote:' + fid)
-        source_errors(confirmation.source_checks, fid)
+        source_errors(confirmation.source_checks, fid, f'/review/finding_checks/{confirmation_index}/source_checks')
         if not confirmation.source_checks:
             errors.append('review_confirmation_requires_original:' + fid)
         if confirmation.status == 'resolved':
@@ -341,6 +346,7 @@ def assess_method_review(outputs, review, previous=None):
     return {'state': state, 'errors': errors, 'pending_targets': pending, 'open_finding_ids': open_ids,
             'runtime_parsing': [{**r, 'operation_status': 'rejected' if errors else 'review_recorded'} for r in runtime_parsing],
             'source_quote_recovery': source_quote_recovery,
+            'submission_errors': submission_errors,
             'outstanding_contract_errors': outstanding_contract_errors,
             'complete': not errors and not pending and not open_ids and not outstanding_contract_errors,
             'invalidated_closures': invalidated_closures,

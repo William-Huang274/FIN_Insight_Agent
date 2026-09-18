@@ -9,6 +9,7 @@ from langgraph.graph import START, END, StateGraph
 
 from .method_execution import Contract, MethodWorkResult
 from .source_bound_calculator import SourceBoundCalculation, calculate_from_sources
+from .method_submission import invoke_submission, SubmissionRejected
 
 
 class WorkerAction(Contract):
@@ -29,9 +30,10 @@ class WorkerState(TypedDict, total=False):
     action: dict
     tool_rounds: int
     observations: Annotated[list[dict], operator.add]
+    submission_failure: dict
 
 
-def compile_method_worker(*, call, actor, payload, record, max_tool_rounds=2):
+def compile_method_worker(*, call, actor, payload, record, max_tool_rounds=2, runtime_submissions=False):
     originals={p['id']:{'result_state':'source_bound_passage','writer_citable':True,
         'numeric_fact_authority':False,'passage':p['body'],'content_sha256':p['digest'],
         'source_url':r['source']['url'],'source_locator':p['locator']}
@@ -44,7 +46,14 @@ def compile_method_worker(*, call, actor, payload, record, max_tool_rounds=2):
             '读到实际工具结果后再action=finish，calculations=[]，result填最终任务结果。'
             '数字/引文必须来自read_results的精确段落或已有CALC；引用原文仍填source_ids，计算结果填findings.calculation_refs。'
             '工具轮次耗尽后finish并如实保留未决，不得编造计算结果；运算通过不证明金融解释正确。')
-        action=WorkerAction.model_validate(await call(actor,task,WorkerAction))
+        if runtime_submissions:
+            try:
+                action=await invoke_submission(call,actor,task,WorkerAction,record)
+            except SubmissionRejected as exc:
+                exc.receipt['tool_observations']=state.get('observations',[])
+                return {'submission_failure':exc.receipt}
+        else:
+            action=WorkerAction.model_validate(await call(actor,task,WorkerAction))
         if action.action=='calculate' and state.get('tool_rounds',0)>=max_tool_rounds:
             raise ValueError('worker_calculation_limit_unresolved')
         return {'action':action.model_dump(mode='json')}
@@ -69,6 +78,7 @@ def compile_method_worker(*, call, actor, payload, record, max_tool_rounds=2):
     graph=StateGraph(WorkerState)
     graph.add_node('analyst',analyst);graph.add_node('calculate',calculate)
     graph.add_edge(START,'analyst')
-    graph.add_conditional_edges('analyst',lambda s:'calculate' if s['action']['action']=='calculate' else END,['calculate',END])
+    graph.add_conditional_edges('analyst',lambda s:END if s.get('submission_failure') else
+        'calculate' if s['action']['action']=='calculate' else END,['calculate',END])
     graph.add_edge('calculate','analyst')
     return graph.compile()

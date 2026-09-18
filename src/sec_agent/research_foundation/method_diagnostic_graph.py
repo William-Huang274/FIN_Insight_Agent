@@ -23,6 +23,8 @@ from .method_source_acquisition import SourceAcquisition
 from .source_document_navigation import SourceExecutionReceipt
 from .method_review import (MethodReview, SubmittedMethodReview, METHOD_REVIEW_GUIDANCE,
     review_context, assess_method_review)
+from .method_submission import invoke_submission, SubmissionRejected
+from .method_handoffs import judgment_directory, select_judgments, HANDOFF_GUIDANCE
 
 
 class ProbeTask(Contract):
@@ -36,6 +38,8 @@ class ProbeTask(Contract):
     entity_ids: list[str] = Field(default_factory=list, max_length=6)
     dependency_ids: list[str] = Field(default_factory=list, max_length=4)
     repair_finding_ids: list[str] = Field(default_factory=list, max_length=20)
+    judgment_refs: list[str] = Field(default_factory=list, max_length=12,
+        description='Select current judgment_context references to carry exact author conditions and backing steps. Include their paper_id in dependency_ids.')
 
 
 class ProbeDecision(Contract):
@@ -71,6 +75,7 @@ class ProbeState(TypedDict, total=False):
     acquisitions: Annotated[list[dict], operator.add]
     review_state: dict
     review_receipt: dict
+    submission_failures: Annotated[list[dict], operator.add]
 
 
 class SubmittedProbeDecision(ProbeDecision):
@@ -85,8 +90,9 @@ def cited_review_evidence(reads, result):
 
 
 def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves=2,
-                         interrupt_after=None, acquire=None, max_acquisitions=2, calculator_enabled=False):
-    """`call(actor, payload, schema)` is asynchronous and returns parsed JSON."""
+                         interrupt_after=None, acquire=None, max_acquisitions=2, calculator_enabled=False,
+                         runtime_handoffs=False):
+    """`call` returns raw JSON text/dict with runtime_handoffs, legacy dict otherwise."""
     if max_waves < 1 or max_acquisitions < 0:
         raise ValueError('invalid_wave_limit')
 
@@ -118,6 +124,7 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                 'pending_targets': state.get('review_receipt', {}).get('pending_targets', []),
                 'runtime_parsing': state.get('review_receipt', {}).get('runtime_parsing', []),
                 'source_quote_recovery': state.get('review_receipt', {}).get('source_quote_recovery', []),
+                'submission_errors': state.get('review_receipt', {}).get('submission_errors', []),
                 'meaning': 'Runtime contract diagnostics, not financial verdicts. A rejected review did not authorize its downstream tasks.'},
             'judgment_policy': judgment_policy(),
             'acquisition_results': [{k:v for k,v in a.items() if k not in {'reads', 'navigation_state'}}
@@ -161,8 +168,18 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
             '但必须说明是事后回顾，不能把后来的数值、事件或修订当成当时已知；观察期间与信息可见日期分别检查。')
         payload['instructions'] += METHOD_REVIEW_GUIDANCE
         payload['instructions'] += JUDGMENT_POLICY_GUIDANCE
+        judgments=judgment_directory(state.get('results',[]),state.get('review_state'))
+        if runtime_handoffs:
+            payload['judgment_context']=list(judgments.values())
+            payload['instructions'] += HANDOFF_GUIDANCE
         schema = SubmittedProbeDecision if state.get('results') else ProbeDecision
-        decision = ProbeDecision.model_validate(await call('lead', payload, schema))
+        if runtime_handoffs:
+            try:
+                decision=await invoke_submission(call,'lead',payload,schema,record,compact=True)
+            except SubmissionRejected as exc:
+                return {'terminal':'submission_format_unresolved','submission_failures':[exc.receipt]}
+        else:
+            decision = ProbeDecision.model_validate(await call('lead', payload, schema))
         review_receipt = assess_method_review(state.get('results', []), decision.review, state.get('review_state'))
         record('lead_review_receipt', review_receipt)
         if review_receipt['errors']:
@@ -180,6 +197,9 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
         except CycleError:
             raise ValueError('cyclic_task_dependency') from None
         for task in decision.tasks:
+            chosen=select_judgments(task.judgment_refs,judgments)
+            if any(j['paper_id'] not in task.dependency_ids for j in chosen):
+                raise ValueError('judgment_requires_original_dependency')
             if task.task_id in used:
                 raise ValueError('reused_task_id')
             if not set(task.dependency_ids) <= set(used) | planned:
@@ -238,6 +258,8 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                                    if r['obligation']['obligation_id'] in t.get('dependency_ids', [])],
                                'repair_targets': [state['review_state']['findings'][fid]
                                    for fid in t.get('repair_finding_ids', [])],
+                               'selected_judgments':select_judgments(t.get('judgment_refs',[]),
+                                   judgment_directory(state.get('results',[]),state.get('review_state'))),
                                'wave': state.get('waves',0)+1})
                 for t in state['decision']['tasks'] if t['task_id'] not in completed
                 and set(t.get('dependency_ids', [])) <= completed]
@@ -341,6 +363,9 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                 '结合原文核查并修改对应步骤和关联主张；保留正确结论，不重做无关任务。'
                 'task_note.changes列出实际修改，无法修复时明确保留blockers；作者自报完成不等于问题已关闭。')
         payload['instructions'] += JUDGMENT_POLICY_GUIDANCE
+        if runtime_handoffs:
+            payload['judgment_context']=state.get('selected_judgments',[]) or list(judgment_directory(state['prior_results']).values())
+            payload['instructions'] += HANDOFF_GUIDANCE
         record('worker_input', {'task':task.model_dump(),'payload':payload})
         calculations={}
         if not evidence:
@@ -353,14 +378,22 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                 task_note=dict(changes=[],blockers=['No eligible evidence input'],next_action='Lead handle retrieval/vintage gap before research.'))
             result_origin='runtime_execution_receipt_no_model_call'
         else:
-            if calculator_enabled:
-                from .method_worker import compile_method_worker
-                subgraph=compile_method_worker(call=call,actor=task.task_id,payload=payload,record=record)
-                finished=await subgraph.ainvoke({'tool_rounds':0,'observations':[]})
-                result=MethodWorkResult.model_validate(finished['action']['result'])
-                calculations={o['result']['calculation_id']:o['result'] for o in finished.get('observations',[]) if o['status']=='ok'}
-            else:
-                result=MethodWorkResult.model_validate(await call(task.task_id,payload,MethodWorkResult))
+            try:
+                if calculator_enabled:
+                    from .method_worker import compile_method_worker
+                    subgraph=compile_method_worker(call=call,actor=task.task_id,payload=payload,record=record,
+                        runtime_submissions=runtime_handoffs)
+                    finished=await subgraph.ainvoke({'tool_rounds':0,'observations':[]})
+                    if finished.get('submission_failure'):
+                        return {'submission_failures':[finished['submission_failure']]}
+                    result=MethodWorkResult.model_validate(finished['action']['result'])
+                    calculations={o['result']['calculation_id']:o['result'] for o in finished.get('observations',[]) if o['status']=='ok'}
+                elif runtime_handoffs:
+                    result=await invoke_submission(call,task.task_id,payload,MethodWorkResult,record)
+                else:
+                    result=MethodWorkResult.model_validate(await call(task.task_id,payload,MethodWorkResult))
+            except SubmissionRejected as exc:
+                return {'submission_failures':[exc.receipt]}
             result_origin='model'
         errors=assess_result_contract(obligation,result,evidence,receipts,calculations)
         output={'obligation':obligation.model_dump(mode='json'),'result':result.model_dump(mode='json'),
@@ -375,14 +408,18 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
         return {'results':[output]}
 
     def wave_done(state):
+        if state.get('submission_failures'):
+            return {'terminal':'submission_format_unresolved'}
         return {} if ready_workers(state) else {'waves':state.get('waves',0)+1}
 
     def after_wave(state):
+        if state.get('submission_failures'):
+            return END
         return ready_workers(state) or 'lead'
 
     graph=StateGraph(ProbeState)
     graph.add_node('lead',lead);graph.add_node('worker',worker);graph.add_node('wave_done',wave_done)
     graph.add_node('acquire', acquire_sources);graph.add_edge('acquire','lead')
     graph.add_edge(START,'lead');graph.add_conditional_edges('lead',route,['worker','acquire',END])
-    graph.add_edge('worker','wave_done');graph.add_conditional_edges('wave_done',after_wave,['worker','lead'])
+    graph.add_edge('worker','wave_done');graph.add_conditional_edges('wave_done',after_wave,['worker','lead',END])
     return graph.compile(checkpointer=checkpointer, interrupt_after=interrupt_after)

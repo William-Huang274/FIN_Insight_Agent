@@ -9,7 +9,7 @@ from hashlib import sha256
 import re
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator, model_serializer
 
 from .research_methods import METHODS, get_research_method
 from .source_document_navigation import SourceExecutionReceipt
@@ -85,6 +85,15 @@ class ResearchFinding(Contract):
         'Empty conditions will be flagged for review; use factual/exploratory when appropriate. Never invent an assumption just to pass.')
     alternative: str = Field(min_length=1)
     would_change: str = Field(min_length=1)
+    basis_step_ids: list[str] = Field(default_factory=list,
+        description='IDs of this task steps carrying the reasoning and qualifications for this finding. Runtime carries their exact text during handoff.')
+
+    @model_serializer(mode='wrap')
+    def serialize(self, handler):
+        value=handler(self)
+        if not self.basis_step_ids:
+            value.pop('basis_step_ids',None)
+        return value
 
 class TaskNote(Contract):
     changes: list[str]
@@ -166,6 +175,9 @@ def assess_result_contract(obligation: ResearchObligation, result: MethodWorkRes
     # A completed conditional study may retain unobservable variables. Completion
     # describes execution of its obligations, not certainty about the world.
     for i, finding in enumerate(result.findings):
+        if (len(finding.basis_step_ids)!=len(set(finding.basis_step_ids))
+                or not set(finding.basis_step_ids)<=set(ids)):
+            issue('invalid_finding_basis_steps',f'/findings/{i}/basis_step_ids',ids)
         if finding.kind == 'conditional' and not finding.assumptions:
             issue('conditional_finding_needs_assumptions', f'/findings/{i}/assumptions',
                   'Explain the actual conditions or correct the finding kind; do not invent an assumption to pass.')

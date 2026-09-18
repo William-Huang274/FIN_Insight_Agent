@@ -31,10 +31,32 @@ def test_quantity_suffix_keeps_original_binding_and_compatibility_audit(text):
 
 
 @pytest.mark.parametrize("text", ["18x accelerators", "0.8x accelerators", "1,008x accelerators",
-    "A8x accelerators", "model8x", "8xlarge", "8X_model", "8GB memory", "FP8", "8.5x units"])
+    "A8x accelerators", "model8x", "8xlarge", "8X_model", "FP8", "8.5x units",
+    "8GB200", "A8GB", "8GB_model", "8GB/s_extra", "8Widgets", "8gb", "18GB", "0.8GB"])
 def test_quantity_compatibility_rejects_partial_numbers_and_identifiers(text):
     with pytest.raises(ValueError, match="numeric_literal_not_in_exact_source_quote: operand=count"):
         calculate_count(text)
+
+
+@pytest.mark.parametrize("text,literal,value", [
+    ("Memory | 80GB | 94GB", "80", "160"),
+    ("Bandwidth 3.35TB/s", "3.35", "6.70"),
+    ("Power up to 700W (configurable)", "700", "1400"),
+    ("Capacity 8GiB", "8", "16"),
+    ("Capacity 8GB", "8", "16"),
+    ("Compute 8PFLOPS", "8", "16"),
+])
+def test_known_specification_units_preserve_lexical_receipt_without_semantic_inference(text, literal, value):
+    result = calculate_count(text, literal)
+    assert result["value_decimal"] == value
+    binding = result["operands"]["count"]
+    assert binding["literal"] == literal and binding["quote"] == text
+    receipt = binding["runtime_compatibility_parse"]
+    assert receipt["rule"] == "numeric_specification_unit_suffix_v1"
+    start, end = receipt["quote_span"]
+    assert text[start:end] == receipt["matched_text"]
+    assert not receipt["semantic_inference"] and not binding["extraction_meaning_verified"]
+    assert not result["financial_semantics_verified"] and not result["numeric_fact_authority"]
 
 
 def test_plain_number_retains_existing_shape_and_exact_quote_validation():

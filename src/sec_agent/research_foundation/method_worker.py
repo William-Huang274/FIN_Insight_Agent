@@ -43,6 +43,7 @@ def compile_method_worker(*, call, actor, payload, record, max_tool_rounds=2, ru
         task={**payload,'tool_observations':state.get('observations',[]),
             'remaining_calculation_rounds':max_tool_rounds-state.get('tool_rounds',0)}
         task['instructions'] += (' 来源绑定计算器已启用。需要派生数值时action=calculate，calculations填原文数字绑定和公式，result=null；'
+            'remaining_calculation_rounds大于0时，calculate会实际执行并将回执送入下一次模型调用；本次不必同时finish，已有工具回执也不表示禁止新增必要计算。'
             '读到实际工具结果后再action=finish，calculations=[]，result填最终任务结果。'
             '数字/引文必须来自read_results的精确段落或已有CALC；引用原文仍填source_ids，计算结果填findings.calculation_refs。'
             '工具轮次耗尽后finish并如实保留未决，不得编造计算结果；运算通过不证明金融解释正确。')

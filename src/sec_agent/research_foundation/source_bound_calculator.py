@@ -116,11 +116,21 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                 literal_pattern = r"(?<![\w.,])" + re.escape(operand.literal)
                 literal_match = re.search(literal_pattern + r"(?![\w.,])", operand.quote)
                 quantity_match = None
+                quantity_rule = "numeric_quantity_x_suffix_v1"
                 if literal_match is None:
                     # Product specifications commonly write counts as "8x GPU".
                     # Keep exact quote/literal binding; do not accept identifiers,
                     # longer numbers or arbitrary unit suffixes by dropping \w.
                     quantity_match = re.search(literal_pattern + r"[xX](?=\s|$)", operand.quote)
+                    if quantity_match is None:
+                        # Exact SI/IEC specification suffixes, case-sensitive.
+                        # This recognizes a token boundary, not a unit conversion
+                        # or proof that the chosen table cell has the right meaning.
+                        quantity_match = re.search(literal_pattern +
+                            r"(?:[kMGTPE]?B(?:/s)?|[KMGTPE]iB(?:/s)?|[kMGT]?W|"
+                            r"[kMGTPE]?FLOPS|[kMGTPE]?FLOPs|[kMGTPE]?OPS)(?![\w/])",
+                            operand.quote)
+                        quantity_rule = "numeric_specification_unit_suffix_v1"
                     if quantity_match is None:
                         raise ValueError("numeric_literal_not_in_exact_source_quote: operand=" + name)
                 value = _number(operand.literal)
@@ -129,7 +139,7 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                     "extraction_meaning_verified": False}
                 if quantity_match is not None:
                     binding["runtime_compatibility_parse"] = {
-                        "rule": "numeric_quantity_x_suffix_v1",
+                        "rule": quantity_rule,
                         "matched_text": quantity_match.group(),
                         "quote_span": [quantity_match.start(), quantity_match.end()],
                         "original_literal_preserved": True,

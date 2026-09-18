@@ -13,7 +13,8 @@ from hashlib import sha256
 import json
 from urllib.parse import urlsplit
 
-from .external_sources import ExternalCaptureRequest, ExternalSearchRequest
+from .external_sources import ExternalCaptureRequest, ExternalSearchRequest, DiscoveryReceipt
+from sec_agent.research.reviewed_evidence_pack import canonical_digest
 from .source_document_navigation import SourceDocumentRequest, SourceDocumentResult, SourceExecutionReceipt, navigate_source_nodes
 
 
@@ -33,6 +34,62 @@ class WebSourceReader:
         self.discovery, self.capture = discovery, capture
         self._candidates = {}
         self._captures = {}
+        self._link_receipts = {}
+        self._link_rows = {}
+
+    def restore_navigation(self, receipts, *, branch_id, run_scope):
+        """Host-only checkpoint restoration; never accept receipts from a model."""
+        for raw in receipts:
+            receipt = DiscoveryReceipt.model_validate(raw)
+            if receipt.run_scope_digest != run_scope.run_scope_digest or receipt.branch_id != branch_id:
+                raise ValueError('restored_navigation_scope_mismatch')
+            for candidate in receipt.candidates:
+                ExternalCaptureRequest(discovery_receipt=receipt, candidate_id=candidate.candidate_id,
+                    branch_id=branch_id, run_scope=run_scope)
+                self._candidates[(run_scope.run_scope_digest, branch_id, 'WEB::'+candidate.candidate_id)] = (receipt, candidate)
+
+    def export_navigation(self):
+        return [r.model_dump(mode='json') for r in
+            {receipt.receipt_digest: receipt for receipt, _ in self._candidates.values()}.values()]
+
+    def has_document(self, document_id, *, branch_id, run_scope):
+        return (run_scope.run_scope_digest, branch_id, document_id) in self._candidates
+
+    def _observed_links(self, discovery, candidate, capture, key, document_id):
+        from .source_link_navigation import observed_document_links
+        cache_key = (*key, document_id, capture.receipt_digest)
+        if cache_key in self._link_rows:
+            return self._link_rows[cache_key]
+        links = observed_document_links(capture.text, capture.final_url)
+        if not links:
+            self._link_rows[cache_key] = []
+            return []
+        query_digest = canonical_digest({'parent_document_id': document_id,
+            'parent_capture_digest': capture.receipt_digest, 'operation': 'observed_document_links'})
+        purpose = 'Observed document links; parent capture '+capture.receipt_digest
+        children, rows = [], []
+        for rank, link in enumerate(links, 1):
+            identity = canonical_digest({'query_digest': query_digest, 'url': link['url']})
+            child = candidate.model_copy(update=dict(candidate_id=identity, provider_id='captured_document_links',
+                purpose=purpose, query_digest=query_digest, provider_rank=rank, title=link['title'],
+                canonical_url=link['url'], source_domain=urlsplit(link['url']).hostname,
+                snippet=link['origin'], published_at=None, discovered_at=capture.captured_at))
+            children.append(child.model_dump(mode='json'))
+            rows.append({'document_id': 'WEB::'+identity, 'source_url': link['url'], 'title': link['title'],
+                'parent_document_id': document_id, 'parent_capture_digest': capture.receipt_digest,
+                'origin': link['origin'], 'read_state': 'not_read', 'writer_citable': False,
+                'publication_date': None, 'publication_date_inherited': False})
+        body = discovery.model_dump(mode='json', exclude={'receipt_digest'})
+        body.update(status='ok', purpose=purpose, query_digest=query_digest, requested_max_results=len(children),
+            candidates=children, started_at=capture.captured_at, completed_at=capture.captured_at, elapsed_ms=0,
+            attempted_providers=[dict(provider_id='captured_document_links', status='ok',
+                returned_hits=len(children), accepted_hits=len(children), failure_code=None)])
+        receipt = DiscoveryReceipt(**body, receipt_digest=canonical_digest(body))
+        self._link_receipts[(*key, document_id)] = receipt
+        for child in receipt.candidates:
+            self._candidates[(*key, 'WEB::'+child.candidate_id)] = (receipt, child)
+        self._link_rows[cache_key] = rows
+        return rows
 
     async def __call__(self, *, request: SourceDocumentRequest, branch_id, run_scope):
         if request.source_space != "web" or branch_id not in run_scope.selected_branch_ids:
@@ -84,6 +141,7 @@ class WebSourceReader:
                     execution_receipt=_execution_receipt(request, result.receipt_digest, 'tool_failure', result.attempts),
                     notice="Source fetch failed, not public non-disclosure: " + str([a.model_dump() for a in result.attempts]))
             self._captures[capture_key] = result
+        links = self._observed_links(discovery, candidate, result, key, request.document_id)
         if request.operation == "search":
             # Reuse the existing chunker/BM25 navigator inside one captured
             # source; no second index, full-document prompt or new ranking rules.
@@ -138,6 +196,7 @@ class WebSourceReader:
             "writer_citable": True, "numeric_fact_authority": False,
             "truncated": end < len(result.text) or result.truncated,
             "source_document_completeness_verified": False,
+            "discovered_links": links,
             "captured_characters": len(result.text),
             "host_capture_truncated": result.truncated,
             "authority_note": "Exact fetched public-source window, not Reviewed Evidence or S2 NumericFact. "

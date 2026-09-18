@@ -5,17 +5,20 @@ crawler nor mutates the frozen input snapshot. Provider dates remain unverified.
 """
 from datetime import date, datetime
 import json
+from copy import deepcopy
 
 from pydantic import Field, model_validator
 from typing import Annotated
 
 from .method_execution import Contract
 from .source_document_navigation import SourceDocumentRequest
+from .web_source_navigation import _execution_receipt
 
 
 class SourceAcquisition(Contract):
     acquisition_id: str = Field(min_length=1)
-    query: str = Field(min_length=1, max_length=600)
+    query: str = Field(default='', max_length=600)
+    linked_document_ids: list[str] = Field(default_factory=list, max_length=3)
     unresolved_question: str = Field(min_length=1)
     why_existing_sources_insufficient: str = Field(min_length=1)
     max_results: int = Field(default=2, ge=1, le=3)
@@ -27,6 +30,12 @@ class SourceAcquisition(Contract):
 
     @model_validator(mode='after')
     def validate_discovery_request(self):
+        if self.linked_document_ids:
+            if self.query or self.include_domains or self.start_published_date or self.end_published_date:
+                raise ValueError('select_observed_links_or_web_query_not_both')
+            if len(set(self.linked_document_ids)) != len(self.linked_document_ids):
+                raise ValueError('duplicate_link_selection')
+            return self
         SourceDocumentRequest(source_space='web',operation='search',query=self.query,
             include_domains=self.include_domains,start_published_date=self.start_published_date,
             end_published_date=self.end_published_date)
@@ -36,6 +45,52 @@ class SourceAcquisition(Contract):
 class MethodSourceAcquirer:
     def __init__(self, *, reader, branch_id, run_scope, record):
         self.reader, self.branch_id, self.run_scope, self.record = reader, branch_id, run_scope, record
+        self.linked_candidates = {}
+
+    def restore(self, acquisitions):
+        for acquisition in acquisitions:
+            self.reader.restore_navigation(acquisition.get('navigation_state', []),
+                branch_id=self.branch_id, run_scope=self.run_scope)
+            self.linked_candidates.update({r['document_id']: r for r in acquisition.get('linked_candidates', [])})
+
+    async def read_for_task(self, read, search_terms):
+        """Apply the specialist's scope to the captured original, not old hits."""
+        read = deepcopy(read)
+        sid = read['source']['id']
+        if read['status'] != 'readable' or not self.reader.has_document(
+                sid, branch_id=self.branch_id, run_scope=self.run_scope):
+            return read, []
+        passages = {p['id']: p for p in read['items']}
+        receipts, searches = [], []
+        for term in dict.fromkeys(search_terms):
+            request = SourceDocumentRequest(source_space='web', operation='search',
+                document_id=sid, query=term, limit=4, max_characters=16000)
+            self.record('source_request', request.model_dump(mode='json'))
+            result = await self.reader(request=request, branch_id=self.branch_id, run_scope=self.run_scope)
+            self.record('source_result', result.model_dump(mode='json'))
+            future_capture = any(datetime.fromisoformat(str(p['source_locator']['captured_at']).replace('Z', '+00:00')).date()
+                > self.run_scope.research_as_of.date() for p in result.items)
+            if future_capture:
+                receipt = _execution_receipt(request, result.source_snapshot_sha256, 'scope_ineligible')
+                receipts.append(receipt)
+                searches.append({'query': term, 'returned_passages': 0, 'status': 'scope_ineligible',
+                    'reason': 'new_capture_after_research_cutoff; retained prior eligible windows only',
+                    'execution_receipt_id': receipt.receipt_id})
+                self.record('source_scope_exclusion', searches[-1])
+                continue
+            if result.execution_receipt:
+                receipts.append(result.execution_receipt)
+            searches.append({'query': term, 'returned_passages': len(result.items),
+                'execution_receipt_id': result.execution_receipt.receipt_id if result.execution_receipt else None})
+            for p in result.items:
+                passages[p['passage_id']] = {'id': p['passage_id'], 'source_id': p['document_id'],
+                    'body': p['passage'], 'digest': p['content_sha256'],
+                    'locator': json.dumps(p['source_locator'], ensure_ascii=False, default=str)}
+        read['items'] = list(passages.values())
+        read['coverage'] = {**read['coverage'], 'task_searches': searches,
+            'returned_passages': len(passages), 'complete_document': False,
+            'unread_scope': 'Remaining original and linked attachments; task searches are bounded, not exhaustive.'}
+        return read, receipts
 
     async def __call__(self, request: SourceAcquisition, as_of: str):
         if date.fromisoformat(as_of) != self.run_scope.research_as_of.date():
@@ -50,21 +105,27 @@ class MethodSourceAcquirer:
                 receipts.append(result.execution_receipt.model_dump(mode='json'))
             return result
 
-        found = await invoke(SourceDocumentRequest(source_space='web', operation='search',
-            query=request.query, limit=request.max_results, include_domains=request.include_domains,
-            start_published_date=request.start_published_date, end_published_date=request.end_published_date))
-        if (found.execution_receipt and found.execution_receipt.status=='zero_results'
-                and (request.start_published_date or request.end_published_date)):
-            # Some original filing pages have no provider publication metadata.
-            # One explicit, recorded filter relaxation is a different query scope,
-            # not a retry of a failed paid request or permission to use future facts.
-            adjustments.append({'origin':'runtime_retrieval_adjustment',
-                'reason':'zero_results_with_provider_date_filter; date metadata may be missing',
-                'change':'remove_provider_date_filters_once_preserve_query_domains_and_research_cutoff',
-                'historical_evidence_policy_relaxed':False})
-            found=await invoke(SourceDocumentRequest(source_space='web',operation='search',
-                query=request.query,limit=request.max_results,include_domains=request.include_domains))
-        for candidate in found.items:
+        if request.linked_document_ids:
+            if not set(request.linked_document_ids) <= self.linked_candidates.keys():
+                raise ValueError('linked_document_not_in_observed_checkpoint_candidates')
+            candidates = [self.linked_candidates[k] for k in request.linked_document_ids]
+        else:
+            found = await invoke(SourceDocumentRequest(source_space='web', operation='search',
+                query=request.query, limit=request.max_results, include_domains=request.include_domains,
+                start_published_date=request.start_published_date, end_published_date=request.end_published_date))
+            if (found.execution_receipt and found.execution_receipt.status=='zero_results'
+                    and (request.start_published_date or request.end_published_date)):
+                # One recorded query-scope change, never a transport retry or
+                # permission to use future facts.
+                adjustments.append({'origin':'runtime_retrieval_adjustment',
+                    'reason':'zero_results_with_provider_date_filter; date metadata may be missing',
+                    'change':'remove_provider_date_filters_once_preserve_query_domains_and_research_cutoff',
+                    'historical_evidence_policy_relaxed':False})
+                found=await invoke(SourceDocumentRequest(source_space='web',operation='search',
+                    query=request.query,limit=request.max_results,include_domains=request.include_domains))
+            candidates = found.items
+        linked = {}
+        for candidate in candidates:
             # Search snippets never become financial evidence. Read every bounded
             # candidate in provider order, without host selection of a desired answer.
             published = candidate.get('publication_date')
@@ -81,6 +142,7 @@ class MethodSourceAcquirer:
             if not result.items:
                 continue
             item = result.items[0]
+            linked.update({r['document_id']: r for r in item.get('discovered_links', [])})
             passages={p['passage_id']:p for p in result.items}
             for query in request.section_queries:
                 matched=await invoke(SourceDocumentRequest(source_space='web',operation='search',
@@ -106,5 +168,8 @@ class MethodSourceAcquirer:
                     'returned_passages': len(passages) if eligible else 0,
                     'unread_scope': 'linked documents and source completeness unverified; '+
                         ('remaining captured text' if item['truncated'] else 'captured body fully returned')}})
+        self.linked_candidates.update(linked)
         return {'request': request.model_dump(mode='json'), 'reads': reads,
-                'execution_receipts': receipts, 'exclusions': exclusions,'runtime_adjustments':adjustments}
+                'execution_receipts': receipts, 'exclusions': exclusions,'runtime_adjustments':adjustments,
+                'linked_candidates': list(linked.values()),
+                'navigation_state': self.reader.export_navigation() if hasattr(self.reader, 'export_navigation') else []}

@@ -86,6 +86,10 @@ def test_native_fanout_then_lead_consumes_actual_work_and_updates(tmp_path):
                     for k,q in [('revenue','Check revenue'),('profit','Check operating profit')]])
             assert len(payload['results'])==2
             assert all(not r['contract_errors'] for r in payload['results'])
+            assert len(payload['review_evidence'])==1
+            assert payload['review_evidence'][0]['id']=='S1:p1'
+            assert payload['review_evidence'][0]['body']=='Revenue rose, operating profit fell.'
+            assert all('review_evidence' not in r for r in payload['results'])
             return dict(action='stop',public_basis='Consumed both results',synthesis='Growth without profit improvement',open_issues=['causal attribution'],tasks=[])
         assert payload['method_digests']['financial_quality']
         assert payload['read_results'][0]['coverage']['complete_document']

@@ -21,6 +21,7 @@ from .method_execution import (Contract, EvidencePointer, MethodWorkResult,
 from .research_methods import get_research_method
 from .method_source_acquisition import SourceAcquisition
 from .source_document_navigation import SourceExecutionReceipt
+from .method_review import MethodReview, METHOD_REVIEW_GUIDANCE, review_context, assess_method_review
 
 
 class ProbeTask(Contract):
@@ -33,6 +34,7 @@ class ProbeTask(Contract):
     search_terms: list[str] = Field(min_length=1, max_length=10)
     entity_ids: list[str] = Field(default_factory=list, max_length=6)
     dependency_ids: list[str] = Field(default_factory=list, max_length=4)
+    repair_finding_ids: list[str] = Field(default_factory=list, max_length=20)
 
 
 class ProbeDecision(Contract):
@@ -42,6 +44,8 @@ class ProbeDecision(Contract):
     open_issues: list[str]
     tasks: list[ProbeTask] = Field(max_length=2)
     acquisitions: list[SourceAcquisition] = Field(default_factory=list, max_length=1)
+    review: MethodReview = Field(default_factory=MethodReview,
+        description='Version-bound review of returned work; omission preserves pending review, never implies acceptance.')
 
     @model_validator(mode='after')
     def action_matches_tasks(self):
@@ -64,6 +68,8 @@ class ProbeState(TypedDict, total=False):
     decisions: Annotated[list[dict], operator.add]
     terminal: str
     acquisitions: Annotated[list[dict], operator.add]
+    review_state: dict
+    review_receipt: dict
 
 
 def cited_review_evidence(reads, result):
@@ -86,9 +92,8 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
         catalog = [r for r in snapshot.catalog(state['as_of']) if r['id'] in state['catalog_ids']]
         catalog.extend(r['source'] for r in acquired_reads(state).values())
         used = [r['obligation']['obligation_id'] for r in state.get('results', [])]
-        current_tasks = {t['task_id'] for t in state.get('decision', {}).get('tasks', [])}
         review_evidence = {p['id']: p for r in state.get('results', [])
-            if r['obligation']['obligation_id'] in current_tasks for p in r.get('review_evidence', [])}
+            for p in r.get('review_evidence', [])}
         payload = {
             'question': state['question'], 'as_of': state['as_of'],
             'time_mode': snapshot.time_mode, 'knowledge_as_of': snapshot.knowledge_as_of,
@@ -99,6 +104,7 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
             'catalog': catalog, 'results': [{k:v for k,v in r.items() if k != 'review_evidence'}
                 for r in state.get('results', [])],
             'review_evidence': list(review_evidence.values()),
+            'review_context': review_context(state.get('results', []), state.get('review_state')),
             'acquisition_results': [{k:v for k,v in a.items() if k not in {'reads', 'navigation_state'}}
                 for a in state.get('acquisitions', [])],
             'capabilities': {'source_acquisition': acquire is not None,
@@ -138,9 +144,20 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                 '未来监测与截止日内补查分开。禁用外源时只能保留明确获取任务，不得宣称已联网。')}
         payload['instructions'] += (' time_mode=strict_as_of只使用截止日当时可得信息；retrospective允许知识截止日内的后来修订资料，'
             '但必须说明是事后回顾，不能把后来的数值、事件或修订当成当时已知；观察期间与信息可见日期分别检查。')
+        payload['instructions'] += METHOD_REVIEW_GUIDANCE
         decision = ProbeDecision.model_validate(await call('lead', payload, ProbeDecision))
+        review_receipt = assess_method_review(state.get('results', []), decision.review, state.get('review_state'))
+        record('lead_review_receipt', review_receipt)
+        if review_receipt['errors']:
+            record('lead_decision', decision.model_dump(mode='json'))
+            return {'decision': decision.model_dump(mode='json'),
+                    'decisions': [decision.model_dump(mode='json')], 'terminal': 'review_contract_unresolved',
+                    'review_state': review_receipt['state'], 'review_receipt': review_receipt}
         known = {r['id'] for r in catalog}
         planned = {t.task_id for t in decision.tasks}
+        repairs = [fid for t in decision.tasks for fid in t.repair_finding_ids]
+        if len(repairs) != len(set(repairs)):
+            raise ValueError('duplicate_repair_assignment')
         try:
             tuple(TopologicalSorter({t.task_id:set(t.dependency_ids) for t in decision.tasks}).static_order())
         except CycleError:
@@ -154,6 +171,14 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                 raise ValueError('plan_unknown_source')
             if not set(task.entity_ids) <= {e['id'] for e in snapshot.entities()}:
                 raise ValueError('plan_unknown_entity')
+            if len(set(task.repair_finding_ids)) != len(task.repair_finding_ids):
+                raise ValueError('duplicate_repair_finding')
+            for fid in task.repair_finding_ids:
+                finding = review_receipt['state']['findings'].get(fid)
+                if not finding or fid in review_receipt['state']['closures']:
+                    raise ValueError('repair_requires_current_open_finding:' + fid)
+                if finding['paper_id'] not in task.dependency_ids:
+                    raise ValueError('repair_requires_original_dependency:' + fid)
             # Validate the method/steps before any paid worker dispatch.
             obligation_for(task, state)
         terminal = ''
@@ -173,12 +198,14 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                    for a in decision.acquisitions for p in prior):
                 terminal = 'repeated_acquisition_no_progress'
         if decision.action == 'stop':
-            terminal = 'bounded_stop' if decision.open_issues or any(r['contract_errors'] for r in state.get('results', [])) else 'probe_closed_not_report_acceptance'
+            terminal = 'bounded_stop' if (decision.open_issues or not review_receipt['complete']
+                or any(r['contract_errors'] for r in state.get('results', []))) else 'probe_closed_not_report_acceptance'
         elif state.get('waves', 0) >= max_waves:
             terminal = 'wave_limit_unresolved'
         record('lead_decision', decision.model_dump(mode='json'))
         return {'decision': decision.model_dump(mode='json'),
-                'decisions': [decision.model_dump(mode='json')], 'terminal': terminal}
+                'decisions': [decision.model_dump(mode='json')], 'terminal': terminal,
+                'review_state': review_receipt['state'], 'review_receipt': review_receipt}
 
     def route(state):
         if state['terminal']:
@@ -193,6 +220,8 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
                                'acquisitions': state.get('acquisitions', []),
                                'prior_results': [r for r in state.get('results', [])
                                    if r['obligation']['obligation_id'] in t.get('dependency_ids', [])],
+                               'repair_targets': [state['review_state']['findings'][fid]
+                                   for fid in t.get('repair_finding_ids', [])],
                                'wave': state.get('waves',0)+1})
                 for t in state['decision']['tasks'] if t['task_id'] not in completed
                 and set(t.get('dependency_ids', [])) <= completed]
@@ -271,6 +300,7 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
         observations=[o for o in candidates if o['payload'].get('verified_passage_id') in evidence]
         payload.update({'read_results':reads,'prior_results':[{k:v for k,v in r.items() if k != 'review_evidence'}
                 for r in state['prior_results']],
+            'repair_targets': state.get('repair_targets', []),
             'execution_receipts': [r.model_dump(mode='json') for r in receipts.values()],
             'capabilities': {'financial_sql':False, 'source_bound_calculator':calculator_enabled,
                 'original_passages':True, 'followup_via_lead':True},
@@ -280,6 +310,10 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
             'instructions':payload['instructions']+' 引用source_ids必须填所读items中的精确段落id，而非文件ID。'
                 '报告每个指定步骤。尚未完成应做的步骤时execution=partial；已完成条件分析可保留条件性未决而标completed，不能将未知变量当作执行失败。'
                 '当前检索覆盖不代表穷尽公开材料；可提出针对性的补查。只返回指定JSON。'})
+        if state.get('repair_targets'):
+            payload['instructions'] += (' repair_targets是Lead对指定原版本的待核修订要求，不是权威答案。'
+                '结合原文核查并修改对应步骤和关联主张；保留正确结论，不重做无关任务。'
+                'task_note.changes列出实际修改，无法修复时明确保留blockers；作者自报完成不等于问题已关闭。')
         record('worker_input', {'task':task.model_dump(),'payload':payload})
         calculations={}
         if not evidence:
@@ -305,6 +339,7 @@ def compile_method_probe(*, snapshot, call, record, checkpointer=None, max_waves
         output={'obligation':obligation.model_dump(mode='json'),'result':result.model_dump(mode='json'),
                 'review_evidence': cited_review_evidence(reads, result),
                 'result_origin':result_origin,
+                'repair_targets': state.get('repair_targets', []),
                 'calculations':calculations,
                 'contract_errors':errors,'method_digests':payload['method_digests'],
                 'coverage':[{'source_id':r.get('source',{}).get('id',r.get('source_id')),

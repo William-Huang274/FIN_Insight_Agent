@@ -113,12 +113,28 @@ def calculate_from_sources(request: SourceBoundCalculation, source_lookup: Calla
                 text = str(item.get("passage") or item.get("bounded_excerpt") or "")
                 if not operand.quote or operand.quote not in text or operand.literal is None:
                     raise ValueError("operand_quote_not_in_observed_source")
-                if not re.search(r"(?<![\w.,])" + re.escape(operand.literal) + r"(?![\w.,])", operand.quote):
-                    raise ValueError("numeric_literal_not_in_exact_source_quote")
+                literal_pattern = r"(?<![\w.,])" + re.escape(operand.literal)
+                literal_match = re.search(literal_pattern + r"(?![\w.,])", operand.quote)
+                quantity_match = None
+                if literal_match is None:
+                    # Product specifications commonly write counts as "8x GPU".
+                    # Keep exact quote/literal binding; do not accept identifiers,
+                    # longer numbers or arbitrary unit suffixes by dropping \w.
+                    quantity_match = re.search(literal_pattern + r"[xX](?=\s|$)", operand.quote)
+                    if quantity_match is None:
+                        raise ValueError("numeric_literal_not_in_exact_source_quote: operand=" + name)
                 value = _number(operand.literal)
                 binding = {"source_id": operand.source_id, "quote": operand.quote,
                     "literal": operand.literal, "authority": "non_authoritative_source_reported",
                     "extraction_meaning_verified": False}
+                if quantity_match is not None:
+                    binding["runtime_compatibility_parse"] = {
+                        "rule": "numeric_quantity_x_suffix_v1",
+                        "matched_text": quantity_match.group(),
+                        "quote_span": [quantity_match.start(), quantity_match.end()],
+                        "original_literal_preserved": True,
+                        "semantic_inference": False,
+                    }
             else:
                 raise ValueError("operand_requires_observed_citable_source_or_s2_fact")
             binding["source_provenance"] = {key: item[key] for key in (

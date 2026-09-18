@@ -3,6 +3,7 @@
 Used by method qualification; no new arithmetic evaluator or research service.
 """
 import operator
+from copy import deepcopy
 from typing import Annotated, Literal, TypedDict
 from pydantic import Field, model_validator
 from langgraph.graph import START, END, StateGraph
@@ -10,12 +11,26 @@ from langgraph.graph import START, END, StateGraph
 from .method_execution import Contract, MethodWorkResult
 from .source_bound_calculator import SourceBoundCalculation, calculate_from_sources
 from .method_submission import invoke_submission, SubmissionRejected
+from sec_agent.agent_runtime.evidence_resolution import parsing_record
 
 
 class WorkerAction(Contract):
     action: Literal['calculate', 'finish']
     calculations: list[SourceBoundCalculation] = Field(default_factory=list, max_length=8)
     result: MethodWorkResult | None = None
+
+    @classmethod
+    def normalize_submission_envelope(cls, value):
+        """Wrap a complete work result; no text repair, tool action or acceptance."""
+        required = {name for name, field in MethodWorkResult.model_fields.items() if field.is_required()}
+        if (required <= value.keys() <= MethodWorkResult.model_fields.keys()
+                and not {'action', 'result', 'calculations'} & value.keys()):
+            MethodWorkResult.model_validate(value)
+            wrapped = {'action': 'finish', 'calculations': [], 'result': deepcopy(value)}
+            return wrapped, [parsing_record(
+                'complete_method_result_finish_envelope_v1', deepcopy(value), deepcopy(wrapped),
+                content_unchanged=True, financial_acceptance=False, tool_execution=False)]
+        return value, []
 
     @model_validator(mode='after')
     def exclusive_actions(self):

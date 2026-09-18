@@ -108,6 +108,10 @@ def decode_submission(raw, schema, directory=None, sources=None):
     normalized=None;records=[]
     try:
         normalized,records=_strict_object(raw)
+        normalize = getattr(schema, 'normalize_submission_envelope', None)
+        if normalize is not None:
+            normalized, envelope_records = normalize(normalized)
+            records.extend(envelope_records)
         review=normalized.get('review')
         if isinstance(review,dict):
             for section in ('inspection_checks','findings','finding_checks'):

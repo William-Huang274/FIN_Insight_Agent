@@ -3,20 +3,22 @@ import {useSearchParams} from 'react-router';
 import {BookOpen,Database,FolderOpen,Layers,ArrowLeft,PanelLeftClose,PanelLeftOpen} from 'lucide-react';
 import {DataLibrary} from './DataLibrary';
 import ProjectAssetWorkspace from './ProjectAssetWorkspace';
+import CompanyWorkspace from './CompanyWorkspace';
 import './research-session.css';
 import './workspace-design.css';
 import './asset-workspace.css';
 
 export default function AssetWorkspace(){
   const [params,setParams]=useSearchParams();
-  const view=params.get('view')||(params.has('project')?'project':'library');
+  const view=params.get('view')||(params.has('project')?'project':'companies');
   const [collapsed,setCollapsed]=useState(false);
   const theme=localStorage.getItem('finsight.theme')||'system';
   const thread=params.get('return_thread');
   const research=thread?`/workspace/session?thread=${encodeURIComponent(thread)}&view=graph`:'/workspace/session';
   const navigate=(next:string)=>setParams(current=>{current.set('view',next);return current;});
-  const tabs=[{id:'library',title:'知识库',icon:BookOpen,description:'公司披露与研究资料'},
-    {id:'financial-data',title:'财务数据库',icon:Database,description:'指标、期间与披露版本'},
+  const tabs=[{id:'companies',title:'公司光谱',icon:Layers,description:'关系、资料卡与行业网络'},
+    {id:'library',title:'知识库',icon:BookOpen,description:'公司披露与研究资料'},
+    {id:'financial-data',title:'数据库',icon:Database,description:'公司财务、行情与机构持仓'},
     {id:'project',title:'项目资料',icon:FolderOpen,description:'项目文件与研究成果'}];
   return <div className={`rs-shell fs-workspace fa-workspace ${collapsed?'fa-collapsed':''}`} data-theme={theme}>
     <aside className="fa-nav"><a className="fs-brand" href="/workspace/assets"><span className="fs-logo"><Layers size={21}/></span><strong>FinSight<small>ASSET WORKSPACE</small></strong></a>
@@ -25,7 +27,7 @@ export default function AssetWorkspace(){
       <footer><p>资料和数据统一查阅。<br/>项目文件可在研究中随时打开。</p><a href={research}><ArrowLeft size={15}/><span>返回研究工作台</span></a></footer>
     </aside>
     <main className="fa-main"><header className="rs-top"><button className="fa-toggle" aria-label={collapsed?'展开资产导航':'收起资产导航'} onClick={()=>setCollapsed(!collapsed)}>{collapsed?<PanelLeftOpen size={17}/>:<PanelLeftClose size={17}/>}</button><div className="rs-breadcrumb">资产工作区 <span>/</span> <b>{tabs.find(t=>t.id===view)?.title||'知识库'}</b></div><a className="fa-research-return" href={research}>返回研究 <ArrowLeft size={14}/></a></header>
-      {view==='project'?<ProjectAssetWorkspace/>:<DataLibrary key={view} page={view==='financial-data'?view:'library'} navigate={navigate} onSupplement={question=>window.location.assign(`/workspace/session?view=new&question=${encodeURIComponent(question)}`)}/>}
+      {(['companies','company-data','financial-data','library'].includes(view)&&!params.has('source')&&!params.has('metric'))?<CompanyWorkspace key={view} database={['company-data','financial-data'].includes(view)} materials={view==='library'}/>:view==='project'?<ProjectAssetWorkspace/>:<DataLibrary key={view} page={['financial-data','financial-history'].includes(view)?'financial-data':'library'} navigate={navigate} onSupplement={question=>window.location.assign(`/workspace/session?view=new&question=${encodeURIComponent(question)}`)}/>}
     </main>
   </div>;
 }

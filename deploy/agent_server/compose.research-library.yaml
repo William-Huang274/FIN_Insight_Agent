@@ -1,0 +1,21 @@
+# Immutable public release + separately writable prepared retrieval cache.
+# No private model audit or data-collection working directory is mounted here.
+services:
+  langgraph-api:
+    environment:
+      QWEN_API_KEY: ${QWEN_API_KEY:-}
+    volumes:
+      - type: bind
+        source: ${FINSIGHT_RESEARCH_LIBRARY_HOST_PATH:?published SQL library}
+        target: /run/fin-insight/research-library/library.sqlite
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${FINSIGHT_RESEARCH_LIBRARY_MANIFEST_HOST_PATH:?published library manifest}
+        target: /run/fin-insight/research-library/library.sqlite.manifest.json
+        read_only: true
+        bind: {create_host_path: false}
+      - type: bind
+        source: ${FINSIGHT_LIBRARY_RAG_CACHE_HOST_ROOT:?prepared retrieval cache directory}
+        target: /run/fin-insight/library-rag
+        bind: {create_host_path: false}

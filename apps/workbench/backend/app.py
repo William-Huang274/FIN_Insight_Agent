@@ -502,7 +502,8 @@ def create_report_session_app(frontend_dist_root=None):
     from .api.v1.conversations import build_conversations_router
     app.include_router(build_conversations_router(service), prefix="/api/v1")
     from .api.v1.data_library import build_data_library_router
-    app.include_router(build_data_library_router(attachment_store.root, settings.get('conversation_fact_mart')), prefix='/api/v1')
+    app.include_router(build_data_library_router(attachment_store.root, settings.get('conversation_fact_mart'),
+        settings.get('research_library') or os.environ.get('FINSIGHT_RESEARCH_LIBRARY_PATH')), prefix='/api/v1')
     from .api.v1.projects import build_projects_router
     app.include_router(build_projects_router(attachment_store.root.parent / 'project-library', service), prefix='/api/v1')
     from .api.v1.asset_workspace import build_asset_workspace_router

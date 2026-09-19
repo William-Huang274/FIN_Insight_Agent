@@ -10,7 +10,7 @@ from sec_agent.research_foundation.source_document_navigation import SourceDocum
 class OrientationLibrarySelection(SourceDocumentRequest):
     """This stage's archived library; no implicit legacy local or web fallback."""
     source_space: Literal['library'] = 'library'
-    operation: Literal['catalog', 'search', 'read', 'related', 'observations']
+    operation: Literal['catalog', 'search', 'read', 'related', 'observations', 'company', 'data']
     limit: int = Field(default=4, ge=1, le=20)
     max_characters: int = Field(default=8000, ge=2000, le=80000)
 

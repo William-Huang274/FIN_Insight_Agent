@@ -62,7 +62,7 @@ def main():
         os.environ["FINSIGHT_WORKING_MEMORY_PATH"] = str(memory_root / "notes.sqlite")
         os.environ["FINSIGHT_WORKING_MEMORY_SEMANTIC"] = "1" if args.semantic_memory else "0"
     if args.action == "serve":
-        if args.semantic_memory:
+        if args.semantic_memory or settings.get('research_library_hybrid'):
             from scripts.deployment.environment import read_local_environment
             key = configured_key('QWEN_API_KEY')
             if not key:
@@ -103,6 +103,18 @@ def main():
         raise FileNotFoundError("Docker CLI not found; add the installed Docker CLI to PATH")
     command = [str(docker), "compose", "--env-file", str(repo / ".env"), "-p", "finsight-dell-report-workbench",
         "-f", "deploy/agent_server/compose.yaml", "-f", "deploy/agent_server/compose.research-session.yaml" if args.fresh_only else "deploy/agent_server/compose.report-session.yaml"]
+    if settings.get('research_library'):
+        from sec_agent.research_foundation.research_library import open_library
+        library=Path(settings['research_library']).resolve(strict=True);open_library(library)
+        cache=Path(settings['research_library_rag_cache']).resolve(strict=True)
+        container_settings=json.loads((settings_root/'container-settings.json').read_text(encoding='utf-8'))
+        if container_settings.get('research_library')!='/run/fin-insight/research-library/library.sqlite' or container_settings.get('research_library_rag_cache')!='/run/fin-insight/library-rag':
+            raise ValueError('research_library_container_binding_mismatch')
+        env.update(FINSIGHT_RESEARCH_LIBRARY_HOST_PATH=str(library),FINSIGHT_RESEARCH_LIBRARY_MANIFEST_HOST_PATH=str(library.with_suffix(library.suffix+'.manifest.json')),FINSIGHT_LIBRARY_RAG_CACHE_HOST_ROOT=str(cache))
+        if settings.get('research_library_hybrid'):
+            env['QWEN_API_KEY']=configured_key('QWEN_API_KEY') or ''
+            if not env['QWEN_API_KEY']:raise ValueError('QWEN_API_KEY_required_for_library_retrieval')
+        command.extend(['-f','deploy/agent_server/compose.research-library.yaml'])
     if settings.get("conversation_fact_mart"):
         mart = Path(settings["conversation_fact_mart"]).resolve(strict=True)
         if not mart.is_file():

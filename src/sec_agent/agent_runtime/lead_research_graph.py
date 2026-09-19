@@ -346,7 +346,7 @@ def build_lead_research_graph(
                 execution_policy="Orientation only. Save findings and proposed topics; no child dispatch or final-report handoff.",
                 continuation_policy="Stop after submitting orientation. Proposed tasks are not executed.")
             request['capabilities'] = [{**row, 'source_spaces': ['library'],
-                'actions': ['catalog', 'search', 'read', 'related', 'observations']}
+                'actions': ['catalog', 'search', 'read', 'related', 'observations', 'company', 'data']}
                 for row in request['capabilities'] if 'library' in row.get('source_spaces', [])]
         request["context_digest"] = canonical_sha256(request)
         response = model_turn(request)

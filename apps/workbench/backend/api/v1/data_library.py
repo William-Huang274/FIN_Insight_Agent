@@ -10,8 +10,55 @@ from sec_agent.research_foundation.public_library import library_nodes, document
 from sec_agent.research_foundation.financial_library import FinancialQuery, financial_page
 
 
-def build_data_library_router(attachments_root, fact_mart=None):
+def build_data_library_router(attachments_root, fact_mart=None, research_library=None):
     router = APIRouter(prefix='/data-library')
+
+    def foundation():
+        path=research_library or Path(attachments_root)/'public-library'/'research-library.sqlite'
+        if not Path(path).is_file(): raise HTTPException(503,'公司数据基座尚未接入')
+        from sec_agent.research_foundation.industry_data import installed
+        from sec_agent.research_foundation.research_library import open_library
+        open_library(path)  # Refuse a corrupt or unpublished release on every route.
+        if not installed(path): raise HTTPException(503,'当前资料版本尚无公司资料卡')
+        return path
+
+    @router.get('/companies')
+    def company_catalog(request:Request,query:str=Query('',max_length=200),sector:str=Query('',max_length=100),offset:int=Query(0,ge=0),limit:int=Query(100,ge=1,le=200)):
+        current_owner(request)
+        from sec_agent.research_foundation.industry_data import companies
+        return companies(foundation(),query=query,sector=sector,offset=offset,limit=limit)
+
+    @router.get('/companies/{entity_id}')
+    def company_card(request:Request,entity_id:str):
+        current_owner(request)
+        from sec_agent.research_foundation.industry_data import company_detail
+        try:return company_detail(foundation(),entity_id)
+        except KeyError:raise HTTPException(404,'未找到这家公司') from None
+
+    @router.get('/companies/{entity_id}/data')
+    def company_data(request:Request,entity_id:str,kind:str=Query('financial',pattern='^(financial|prices|positions|holders|filings)$'),query:str=Query('',max_length=200),offset:int=Query(0,ge=0),limit:int=Query(30,ge=1,le=100)):
+        current_owner(request)
+        from sec_agent.research_foundation.industry_data import data_page
+        return data_page(foundation(),entity_id,kind=kind,query=query,offset=offset,limit=limit)
+
+    @router.get('/companies/{entity_id}/network')
+    def company_network(request:Request,entity_id:str,depth:int=Query(1,ge=1,le=2)):
+        current_owner(request)
+        from sec_agent.research_foundation.research_library import open_library
+        library=open_library(foundation())
+        result=library.graph_search(entity_id,'9999-12-31',depth=depth)
+        ids={entity_id}|{e[k] for e in result['edges'] for k in ('subject','object')}
+        result['nodes']=[e for e in library.entities() if e['id'] in ids]
+        return result
+
+    @router.get('/research-sources/{document_id}')
+    def research_source(request:Request,document_id:str,offset:int=Query(0,ge=0),limit:int=Query(5,ge=1,le=20)):
+        current_owner(request)
+        from sec_agent.research_foundation.research_library import open_library
+        library=open_library(foundation())
+        result=library.read(document_id,'9999-12-31',start=offset,limit=limit)
+        result['total']=library._query('SELECT count(*) AS n FROM passages WHERE source_id=?',(document_id,))[0]['n']
+        return result
 
     @router.get('/market-prices')
     def market_prices(request: Request, ticker: str = Query('',max_length=30),

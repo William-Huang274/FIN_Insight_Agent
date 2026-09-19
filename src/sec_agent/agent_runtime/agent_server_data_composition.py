@@ -381,13 +381,18 @@ def open_approved_data_composition(
 
         if source_read_enabled and env.get('FINSIGHT_RESEARCH_LIBRARY_PATH'):
             from sec_agent.research_foundation.research_library import ResearchLibrary
-            library = ResearchLibrary(env['FINSIGHT_RESEARCH_LIBRARY_PATH'])
+            library = ResearchLibrary(env['FINSIGHT_RESEARCH_LIBRARY_PATH'],retrieval_environment=env)
             pre_library_reader = source_reader
             async def source_reader(*, request, branch_id, run_scope):
                 if request.source_space == 'library':
                     if branch_id not in run_scope.selected_branch_ids:
                         raise ValueError('library_branch_outside_run_scope')
-                    return library.navigate(request, run_scope.research_as_of.date().isoformat())
+                    from zoneinfo import ZoneInfo
+                    # Library publication/period fields are calendar dates.
+                    # Preserve the host's declared research calendar instead of
+                    # moving an Asia/Shanghai research day back when UTC-normalized.
+                    calendar=ZoneInfo(env.get('FINSIGHT_RESEARCH_DATE_TIMEZONE','UTC'))
+                    return library.navigate(request, run_scope.research_as_of.astimezone(calendar).date().isoformat())
                 value = pre_library_reader(request=request, branch_id=branch_id, run_scope=run_scope)
                 import inspect
                 return await value if inspect.isawaitable(value) else value

@@ -126,6 +126,15 @@ def create_research_phase_runnables(*, root, settings, profile, case, run_id, th
     profile = execution.apply_profile(profile)
     environment = {**(os.environ if environment is None else environment), "FINSIGHT_TASK_THREAD_ID": thread_id,
         "FINSIGHT_TASK_RUN_ID": run_id, "FINSIGHT_TASK_AUDIT_ROOT": settings["audit_root"]}
+    if settings.get('research_library'):
+        from sec_agent.research_foundation.research_library import open_library
+        library_path=Path(settings['research_library']).resolve(strict=True)
+        open_library(library_path)
+        environment['FINSIGHT_RESEARCH_LIBRARY_PATH']=str(library_path)
+        environment['FINSIGHT_RESEARCH_DATE_TIMEZONE']=settings.get('research_date_timezone','UTC')
+        if settings.get('research_library_hybrid'):
+            environment['FINSIGHT_LIBRARY_HYBRID']='1'
+            environment['FINSIGHT_LIBRARY_RAG_CACHE_PATH']=str(Path(settings['research_library_rag_cache']).resolve(strict=True))
     # The same host-approved, mounted fact snapshot serves both entry points.
     # Frozen Dell source inventories and historical result bindings stay intact.
     if settings.get('conversation_fact_mart'):

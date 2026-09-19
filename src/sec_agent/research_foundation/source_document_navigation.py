@@ -21,14 +21,16 @@ from retrieval.text import tokenize
 class SourceDocumentRequest(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
     source_space: Literal["local", "web", "uploads", "library"] = "local"
-    operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations"]
+    operation: Literal["catalog", "outline", "search", "read", "inspect_image", "related", "observations", "company", "data"]
+    data_kind: Literal['financial', 'prices', 'positions', 'holders', 'filings'] = 'financial'
     entity_id: str | None = Field(default=None, max_length=200)
     graph_depth: int = Field(default=1, ge=1, le=2)
     document_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
         description="Exact server document_id from catalog/search. Uploaded documents keep the UPLOAD:: prefix; a node's embedded hash is not a document ID.")
     node_id: str | None = Field(default=None, pattern=r"^[A-Za-z0-9_:.-]{1,200}$",
         description="Exact node_id returned by this document's outline/search/read navigation. Never infer the next ID by incrementing a suffix; use returned next_offset or follow-up arguments.")
-    query: str = Field(default="", max_length=600)
+    query: str = Field(default="", max_length=600,
+        description="For catalog use a company name/ticker or leave empty (also '*' lists the menu), not a research sentence. Search accepts research keywords. For data this is a literal field filter: financial=concept e.g. Revenue, positions=issuer name, filings=form e.g.10-Q; prices=ticker, normally leave empty. Dates/period instructions are NOT parsed from query.")
     page_start: int | None = Field(default=None, ge=1)
     page_end: int | None = Field(default=None, ge=1)
     offset: int = Field(default=0, ge=0)
@@ -51,18 +53,18 @@ class SourceDocumentRequest(BaseModel):
         # serialization so archived action/notebook digests still validate.
         if "source_space" not in self.model_fields_set:
             body.pop("source_space", None)
-        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth'):
+        for key in ('include_domains','start_published_date','end_published_date', 'entity_id', 'graph_depth', 'data_kind'):
             if key not in self.model_fields_set:
                 body.pop(key,None)
         return body
 
     @model_validator(mode="after")
     def validate_selection(self) -> "SourceDocumentRequest":
-        if (self.operation in {'related','observations'} or self.entity_id or self.graph_depth != 1) and self.source_space != 'library':
+        if (self.operation in {'related','observations','company','data'} or self.entity_id or self.graph_depth != 1) and self.source_space != 'library':
             raise ValueError('graph_navigation_requires_library')
-        if self.operation in {'related','observations'} and not self.entity_id:
+        if self.operation in {'related','observations','company','data'} and not self.entity_id:
             raise ValueError('relation_or_observation_requires_entity_id_from_catalog')
-        if self.source_space == 'library' and self.operation not in {'catalog', 'search', 'read', 'related','observations'}:
+        if self.source_space == 'library' and self.operation not in {'catalog', 'search', 'read', 'related','observations','company','data'}:
             raise ValueError('library_supports_catalog_search_read_related_observations')
         if (self.include_domains or self.start_published_date or self.end_published_date) and (
                 self.source_space != 'web' or self.operation != 'search' or self.document_id):

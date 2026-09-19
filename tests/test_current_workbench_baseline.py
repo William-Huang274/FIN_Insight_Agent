@@ -175,13 +175,17 @@ def test_frontend_composition_root_has_no_old_product_consumer() -> None:
 
 
 def _wait_for_terminal(client: TestClient, job_id: str) -> str:
-    # The active import-graph eval grows with admitted current modules; keep the
-    # product test bounded without assuming it always finishes in five seconds.
-    for _ in range(300):
+    # This verifies eventual completion, not a latency SLA. The real repository
+    # scan can take ~80s on a loaded Windows host; use a bounded wall-clock wait
+    # instead of a poll count that expires before a successful job finishes.
+    deadline = time.monotonic() + 120
+    last_status = "not_observed"
+    while time.monotonic() < deadline:
         status = client.get(f"/api/operations/runs/{job_id}/status")
         assert status.status_code == 200
         payload = status.json()
+        last_status = str(payload["status"])
         if payload["is_terminal"]:
-            return str(payload["status"])
-        time.sleep(0.05)
-    raise AssertionError(f"job did not reach terminal state: {job_id}")
+            return last_status
+        time.sleep(0.1)
+    raise AssertionError(f"job did not reach terminal state within 120s: {job_id} ({last_status})")

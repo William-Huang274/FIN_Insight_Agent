@@ -21,13 +21,60 @@ def submission(ref='O1'):
                        read_refs=[ref], unresolved='实际履约仍需核查。')],
         topics=[dict(topic_id='T1', question='该项目当前处于什么阶段？', why_now='项目的履约阶段影响对总题的判断。',
                      finding_ids=['F1'], professional_roles=['项目财务'], source_dimensions=['D4'],
-                     next_evidence='项目合同与进度原件。', success_criteria=['区分承诺和履约。'])],
+                     next_evidence='项目合同与进度原件。', success_criteria=['区分承诺和履约。'],
+                     activation='next_wave', depends_on=[], activation_reason='先核定供电承诺状态。',
+                     revisit_when='取得合同和接网进度后重新安排下游研究。')],
+        scope_map=[dict(question='供电项目是否兑现？', status='planned', topic_ids=['T1'],
+                        reason='已有原文可开展研究。', revisit_when='T1返回时复评。'),
+                   dict(question='采用与收入是否兑现？', status='needs_discovery', topic_ids=[],
+                        reason='还需读取客户与云服务商披露。', revisit_when='补读后形成下一专题。')],
         coverage_and_gaps='其余问题仍需后续研究，不冒充已完成。')
 
 
 def read_result():
     return {'status': 'success', 'items': [{'result_state': 'source_bound_passage', 'passage': 'Test original.',
             'passage_id': 'PASSAGE::test', 'document_id': 'DOC::test', 'content_sha256': 'f'*64}]}
+
+
+def blocked_submission():
+    args = submission()
+    args.update(disposition='needs_attention', findings=[], topics=[], scope_map=[dict(
+        question='总题资料尚待取得', status='needs_discovery', topic_ids=[],
+        reason='当前来源读取受阻。', revisit_when='资料恢复后重新预研究。')])
+    return args
+
+
+def bind_test_submission(args):
+    action = SubmitResearchOrientationAction.model_validate({**args, 'context_digest': 'a'*64})
+    return bind_orientation(action, [{'read_ref': 'O1', 'selection': {'operation': 'read'}, 'result': read_result()}])
+
+
+def test_one_topic_first_preserves_other_scope_without_fake_evidence():
+    result = bind_test_submission(submission())
+    assert result['contract_version'] == 'research_orientation.v2'
+    assert len(result['topics']) == 1 and len(result['scope_map']) == 2
+    assert result['scope_map'][1]['status'] == 'needs_discovery'
+    assert result['semantic_acceptance'] == 'not_assessed'
+
+
+def test_deferred_topic_requires_valid_scope_and_acyclic_dependencies():
+    args = submission()
+    args['topics'].append({**args['topics'][0], 'topic_id': 'T2', 'activation': 'deferred', 'depends_on': ['T1']})
+    args['scope_map'][1].update(status='planned', topic_ids=['T2'])
+    assert bind_test_submission(args)['topics'][1]['depends_on'] == ['T1']
+    args['topics'][0].update(activation='deferred', depends_on=['T2'])
+    with pytest.raises(ValueError, match='acyclic'): bind_test_submission(args)
+
+
+@pytest.mark.parametrize('problem', ['unknown_dependency', 'early_activation', 'unknown_topic', 'orphan_topic', 'no_wave'])
+def test_schedule_contract_rejects_unexecutable_or_unmapped_plan(problem):
+    args = submission()
+    if problem == 'unknown_dependency': args['topics'][0]['depends_on'] = ['absent']
+    if problem == 'early_activation': args['topics'][0]['depends_on'] = ['T1']
+    if problem == 'unknown_topic': args['scope_map'][0]['topic_ids'] = ['absent']
+    if problem == 'orphan_topic': args['scope_map'].pop(0)
+    if problem == 'no_wave': args['topics'][0]['activation'] = 'deferred'
+    with pytest.raises(ValueError, match='orientation_'): bind_test_submission(args)
 
 
 def make_graph(model, reader= None, **kwargs):
@@ -77,7 +124,7 @@ def test_metadata_failed_reads_and_invented_refs_cannot_ground_findings(operatio
 
 def test_retrieval_failure_can_stop_honestly_without_fake_evidence():
     def model(req):
-        args=submission();args.update(disposition='needs_attention',findings=[],topics=[])
+        args=blocked_submission()
         return call(req,'SubmitResearchOrientationAction',args)
     graph,value=make_graph(model)
     result=graph.invoke(value.model_dump(mode='json'))
@@ -100,12 +147,14 @@ def test_orientation_native_wire_excludes_execution_tools_and_old_role_prompt():
         wire=json.loads(request.content);wires.append(wire)
         assert {t['function']['name'] for t in wire['tools']}=={'RequestSourceAction','SubmitResearchOrientationAction'}
         assert 'preliminary research' in wire['messages'][0]['content']
+        assert 'whole-question scope_map' in wire['messages'][0]['content']
+        assert 'research_as_of' in wire['messages'][0]['content']
         assert 'One task covers one disclosed obligation' not in wire['messages'][0]['content']
         read_schema=next(t['function']['parameters'] for t in wire['tools'] if t['function']['name']=='RequestSourceAction')
         assert read_schema['properties']['selection']['properties']['source_space']['const']=='library'
         payload=json.loads(wire['messages'][1]['content'])
         assert payload['orientation_context']=={'catalog_navigation':'library'}
-        args=submission();args.update(disposition='needs_attention', findings=[], topics=[], context_digest=payload['context_digest'])
+        args=blocked_submission();args.update(context_digest=payload['context_digest'])
         return httpx.Response(200,json={'id':'offline','object':'chat.completion','created':1,'model':'deepseek-v4-pro',
             'choices':[{'index':0,'finish_reason':'tool_calls','message':{'role':'assistant','content':'',
             'reasoning_content':'offline fixture','tool_calls':[{'id':'stop','type':'function',
